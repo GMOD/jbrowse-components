@@ -275,8 +275,8 @@ const CLINVAR_CNV_TRACK = cgiabPageTrack('hg38_clinvar_cnv_ucsc')
 // capture, so a fraction of the track's height means nothing here and a viewport
 // y means whatever the arc band happened to be that day.
 const INVDUP_PILEUP = {
-  track: 'HG02768.final',
-  locus: '1:39,658,200',
+  trackId: 'HG02768.final',
+  loc: '1:39,658,200',
   fracY: 0,
 }
 
@@ -1561,8 +1561,8 @@ export const svSpecs: ScreenshotSpec[] = [
         fromAnchor: { text: SV_85_DEL, dy: 30 },
         anchor: {
           view: 1,
-          track: 'hg008t_benchmark_sv',
-          locus: SV_85_DEL,
+          trackId: 'hg008t_benchmark_sv',
+          loc: SV_85_DEL,
           fracY: 0,
           dy: 14,
         },
@@ -1576,8 +1576,8 @@ export const svSpecs: ScreenshotSpec[] = [
         // the 50px gap whatever width the deletion draws at
         anchor: {
           view: 1,
-          track: 'hg008t_benchmark_sv',
-          locus: SV_85_DEL,
+          trackId: 'hg008t_benchmark_sv',
+          loc: SV_85_DEL,
           fracY: 0,
           alignX: 'right',
           dx: 50,
@@ -1885,8 +1885,8 @@ export const svSpecs: ScreenshotSpec[] = [
         maxWidth: 600,
         fontSize: 18,
         anchor: {
-          track: 'hg008t_bicseq2',
-          locus: 'chr5:6,000,000',
+          trackId: 'hg008t_bicseq2',
+          loc: 'chr5:6,000,000',
           fracY: 0.8,
         },
       },
@@ -1896,8 +1896,8 @@ export const svSpecs: ScreenshotSpec[] = [
         fontSize: 18,
         leader: true,
         anchor: {
-          track: 'hg008t_bicseq2',
-          locus: 'chr5:38,000,000',
+          trackId: 'hg008t_bicseq2',
+          loc: 'chr5:38,000,000',
           fracY: 0.3,
         },
         dx: 60,
@@ -1908,8 +1908,8 @@ export const svSpecs: ScreenshotSpec[] = [
         text: 'one copy lost: tumor halved, BAF at 0 and 1',
         fontSize: 18,
         anchor: {
-          track: 'hg008t_bicseq2',
-          locus: 'chr5:100,000,000',
+          trackId: 'hg008t_bicseq2',
+          loc: 'chr5:100,000,000',
           fracY: 0.2,
         },
       },
@@ -2009,8 +2009,8 @@ export const svSpecs: ScreenshotSpec[] = [
         dx: 90,
         dy: -75,
         anchor: {
-          track: 'hg008_depth',
-          locus: 'chr9:21,962,000',
+          trackId: 'hg008_depth',
+          loc: 'chr9:21,962,000',
           fracY: 0.9,
         },
       },
@@ -2022,8 +2022,8 @@ export const svSpecs: ScreenshotSpec[] = [
         leader: true,
         dx: 90,
         anchor: {
-          track: 'hg008t_dragen_cnv',
-          locus: 'chr9:21,962,000',
+          trackId: 'hg008t_dragen_cnv',
+          loc: 'chr9:21,962,000',
           fracY: 0.7,
         },
       },
@@ -2032,8 +2032,8 @@ export const svSpecs: ScreenshotSpec[] = [
         text: 'Wakhan: arm-level segments only',
         fontSize: 18,
         anchor: {
-          track: 'hg008t_wakhan_hifi_hic',
-          locus: 'chr9:22,450,000',
+          trackId: 'hg008t_wakhan_hifi_hic',
+          loc: 'chr9:22,450,000',
           fracY: 0.5,
         },
       },
@@ -2115,15 +2115,15 @@ export const svSpecs: ScreenshotSpec[] = [
         type: 'text',
         text: 'p-arm: one copy left, heterozygosity lost',
         fontSize: 18,
-        anchor: { track: 'hg008_depth', locus: 'chr3:45,000,000', fracY: 0.12 },
+        anchor: { trackId: 'hg008_depth', loc: 'chr3:45,000,000', fracY: 0.12 },
       },
       {
         type: 'text',
         text: 'q-arm: two copies, both alleles',
         fontSize: 18,
         anchor: {
-          track: 'hg008_depth',
-          locus: 'chr3:145,000,000',
+          trackId: 'hg008_depth',
+          loc: 'chr3:145,000,000',
           fracY: 0.85,
         },
       },
@@ -2465,8 +2465,8 @@ export const svSpecs: ScreenshotSpec[] = [
         text: 'p-arm: one copy left, heterozygosity lost',
         fontSize: 18,
         anchor: {
-          track: 'hg008_depth',
-          locus: 'chr17:12,000,000',
+          trackId: 'hg008_depth',
+          loc: 'chr17:12,000,000',
           fracY: 0.15,
         },
       },
@@ -2475,8 +2475,8 @@ export const svSpecs: ScreenshotSpec[] = [
         text: 'q-arm: two copies, both of one allele',
         fontSize: 18,
         anchor: {
-          track: 'hg008_depth',
-          locus: 'chr17:45,000,000',
+          trackId: 'hg008_depth',
+          loc: 'chr17:45,000,000',
           fracY: 0.85,
         },
       },
@@ -2591,8 +2591,8 @@ export const svSpecs: ScreenshotSpec[] = [
         fontSize: 16,
         textAlign: 'end',
         anchor: {
-          track: 'mane_hg38',
-          locus: 'chr18:51,030,212',
+          trackId: 'mane_hg38',
+          loc: 'chr18:51,030,212',
           fracY: 0.1,
           alignX: 'left',
           dx: -16,

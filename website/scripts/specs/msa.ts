@@ -68,8 +68,8 @@ const NLRP1_SESSION = sessionSpec(UCSC_HG38_CONFIG, { views: [NLRP1_LGV] })
 const RIGHT_CLICK_NLRP1: ScreenshotAction = {
   type: 'rightclick',
   anchor: {
-    track: 'hg38-ncbiRefSeqCurated',
-    locus: 'chr17:5,543,000',
+    trackId: 'hg38-ncbiRefSeqCurated',
+    loc: 'chr17:5,543,000',
     // near the top of the band, not its middle. `longestCoding` draws this
     // locus as a single gene row, so the lower two thirds of a 60px track are
     // empty canvas: a centered right-click opens the view's own menu with no

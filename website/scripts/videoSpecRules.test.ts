@@ -84,7 +84,7 @@ test('a drag that names only one of its two ends', () => {
   ).toMatch('name only one of their two ends')
   expect(
     problems([
-      spec({ steps: [{ type: 'drag', toAnchor: { locus: 'ctgA:100' } }] }),
+      spec({ steps: [{ type: 'drag', toAnchor: { loc: 'ctgA:100' } }] }),
     ]),
   ).toMatch('name only one of their two ends')
 })
@@ -97,7 +97,7 @@ test('a drag with an end of each kind', () => {
           {
             type: 'drag',
             from: { x: 1, y: 2 },
-            toAnchor: { locus: 'ctgA:100', band: '#ruler' },
+            toAnchor: { loc: 'ctgA:100', band: '#ruler' },
           },
         ],
       }),

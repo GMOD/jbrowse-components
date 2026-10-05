@@ -153,12 +153,12 @@ test('a census with no views open does not satisfy the gate', async () => {
   )
 })
 
-test('views: 0 accepts a session with none open, and still needs the census', async () => {
+test('minViews: 0 accepts a session with none open, and still needs the census', async () => {
   await expect(
-    waitForSession(gatePage(), { views: 0, timeout: 300 }),
+    waitForSession(gatePage(), { minViews: 0, timeout: 300 }),
   ).rejects.toThrow('Wanted a session; found no census')
   census(0, [], [])
   await expect(
-    waitForSession(gatePage(), { views: 0, timeout: 300 }),
+    waitForSession(gatePage(), { minViews: 0, timeout: 300 }),
   ).resolves.toBeUndefined()
 })

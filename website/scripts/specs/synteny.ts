@@ -939,7 +939,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
         leader: true,
         anchor: {
           view: [0, 0],
-          locus: 'chrG1:6,000,000',
+          loc: 'chrG1:6,000,000',
           alignY: 'bottom',
           dy: 8,
         },
@@ -1239,8 +1239,8 @@ export const syntenySpecs: ScreenshotSpec[] = [
           // the MIDDLE panel of the three-genome stack; without the view path
           // this resolves against the top one (peach), which has no such track
           view: [0, 1],
-          track: 'GCF_030704535.1-ncbiRefSeq',
-          locus: 'chr11:863,000',
+          trackId: 'GCF_030704535.1-ncbiRefSeq',
+          loc: 'chr11:863,000',
           fracY: 0.5,
         },
       },
@@ -1437,8 +1437,8 @@ export const syntenySpecs: ScreenshotSpec[] = [
       {
         type: 'click',
         anchor: {
-          locus: 'chr11:836,500',
-          track: 'grape_peach_cacao_blocks',
+          loc: 'chr11:836,500',
+          trackId: 'grape_peach_cacao_blocks',
           fracY: 0.15,
         },
       },
@@ -1767,7 +1767,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
         type: 'text',
         text: 'fusion site',
         leader: true,
-        anchor: { view: [0, 0], locus: 'chr2:113,600,000', fracY: 1 },
+        anchor: { view: [0, 0], loc: 'chr2:113,600,000', fracY: 1 },
         dx: 0,
         dy: 110,
       },
@@ -2249,8 +2249,8 @@ export const syntenySpecs: ScreenshotSpec[] = [
         // rows nor ruler
         anchor: {
           view: [0, 0],
-          track: 'human_genes',
-          locus: '12:69,351,000',
+          trackId: 'human_genes',
+          loc: '12:69,351,000',
           fracY: 1,
           dy: 45,
           alignX: 'right',
@@ -2261,8 +2261,8 @@ export const syntenySpecs: ScreenshotSpec[] = [
         type: 'arrow',
         fromAnchor: {
           view: [0, 0],
-          track: 'human_genes',
-          locus: '12:69,351,000',
+          trackId: 'human_genes',
+          loc: '12:69,351,000',
           fracY: 1,
           dy: 52,
           alignX: 'right',
@@ -2270,8 +2270,8 @@ export const syntenySpecs: ScreenshotSpec[] = [
         },
         anchor: {
           view: [0, 0],
-          track: 'human_genes',
-          locus: '12:69,351,000',
+          trackId: 'human_genes',
+          loc: '12:69,351,000',
           fracY: 1,
           dy: 52,
           dx: 8,
@@ -3313,8 +3313,8 @@ export const syntenySpecs: ScreenshotSpec[] = [
         fontSize: 18,
         maxWidth: 560,
         anchor: {
-          track: 'ecoli_ava',
-          locus: 'chr:1,444,500',
+          trackId: 'ecoli_ava',
+          loc: 'chr:1,444,500',
           alignY: 'bottom',
           dy: -40,
         },
@@ -4011,8 +4011,8 @@ export const syntenySpecs: ScreenshotSpec[] = [
           {
             type: 'rightclick',
             anchor: {
-              track: 'hg38_to_panTro6_liftOver',
-              locus: 'chr16:54,038,800',
+              trackId: 'hg38_to_panTro6_liftOver',
+              loc: 'chr16:54,038,800',
               fracY: 0,
               dy: 4,
             },
@@ -4317,7 +4317,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
         type: 'text',
         text: 'chr3/chr13 fusion',
         leader: true,
-        anchor: { view: 0, hLocus: 'chr13', vLocus: 'chr3_chr13_hap1' },
+        anchor: { view: 0, hLoc: 'chr13', vLoc: 'chr3_chr13_hap1' },
         dx: 40,
         dy: 80,
       },
@@ -4325,7 +4325,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
         type: 'text',
         text: 'chr13 intact',
         leader: true,
-        anchor: { view: 1, hLocus: 'chr13', vLocus: 'chr13_hap2' },
+        anchor: { view: 1, hLoc: 'chr13', vLoc: 'chr13_hap2' },
         dx: 40,
         dy: 80,
       },
@@ -4904,8 +4904,8 @@ export const syntenySpecs: ScreenshotSpec[] = [
       {
         type: 'box',
         anchor: {
-          hLocus: 'chrY:9,050,000-9,750,000',
-          vLocus: 'chrY:9,050,000-9,750,000',
+          hLoc: 'chrY:9,050,000-9,750,000',
+          vLoc: 'chrY:9,050,000-9,750,000',
         },
       },
       {
@@ -4913,8 +4913,8 @@ export const syntenySpecs: ScreenshotSpec[] = [
         text: 'TSPY array',
         fontSize: 17,
         anchor: {
-          hLocus: 'chrY:9,050,000-9,750,000',
-          vLocus: 'chrY:9,050,000-9,750,000',
+          hLoc: 'chrY:9,050,000-9,750,000',
+          vLoc: 'chrY:9,050,000-9,750,000',
           alignY: 'bottom',
           dy: 40,
         },
@@ -4922,8 +4922,8 @@ export const syntenySpecs: ScreenshotSpec[] = [
       {
         type: 'box',
         anchor: {
-          hLocus: CHRY_YQ_PALINDROMES,
-          vLocus: CHRY_YQ_PALINDROMES,
+          hLoc: CHRY_YQ_PALINDROMES,
+          vLoc: CHRY_YQ_PALINDROMES,
         },
       },
       {
@@ -4931,8 +4931,8 @@ export const syntenySpecs: ScreenshotSpec[] = [
         text: 'Yq palindromes',
         fontSize: 17,
         anchor: {
-          hLocus: CHRY_YQ_PALINDROMES,
-          vLocus: CHRY_YQ_PALINDROMES,
+          hLoc: CHRY_YQ_PALINDROMES,
+          vLoc: CHRY_YQ_PALINDROMES,
           alignX: 'left',
           dx: -130,
         },
@@ -4988,8 +4988,8 @@ export const syntenySpecs: ScreenshotSpec[] = [
       {
         type: 'box',
         anchor: {
-          hLocus: CHRY_P_PALINDROME_WINDOW,
-          vLocus: CHRY_P_PALINDROME_WINDOW,
+          hLoc: CHRY_P_PALINDROME_WINDOW,
+          vLoc: CHRY_P_PALINDROME_WINDOW,
         },
       },
       // AN ARROW, NOT A SENTENCE (review: "still is presumptive and says 'this
@@ -5004,8 +5004,8 @@ export const syntenySpecs: ScreenshotSpec[] = [
         type: 'arrow',
         strokeWidth: 3,
         fromAnchor: {
-          hLocus: CHRY_P_PALINDROME_WINDOW,
-          vLocus: CHRY_P_PALINDROME_WINDOW,
+          hLoc: CHRY_P_PALINDROME_WINDOW,
+          vLoc: CHRY_P_PALINDROME_WINDOW,
           alignY: 'bottom',
           dy: 16,
         },
@@ -5014,8 +5014,8 @@ export const syntenySpecs: ScreenshotSpec[] = [
         // sloped away to the middle of the plot instead of running straight
         // down out of the box. `dy` carries it to just above the bottom axis.
         anchor: {
-          hLocus: CHRY_P_PALINDROME_WINDOW,
-          vLocus: CHRY_P_PALINDROME_WINDOW,
+          hLoc: CHRY_P_PALINDROME_WINDOW,
+          vLoc: CHRY_P_PALINDROME_WINDOW,
           alignY: 'bottom',
           dy: 122,
         },
@@ -5358,7 +5358,7 @@ function launchMenuStills(): ScreenshotSpec[] {
         // canvas-drawn, so a locus and a depth is the only handle
         {
           type: 'rightclick',
-          anchor: { track: 'ecoli_ava', locus: 'chr:801,000', fracY: 0, dy: 8 },
+          anchor: { trackId: 'ecoli_ava', loc: 'chr:801,000', fracY: 0, dy: 8 },
         },
         { type: 'waitForText', text: 'Open feature details' },
         // the Launch submenu arrives a fetch after the menu: its entries need
@@ -5434,14 +5434,14 @@ function launchMenuStills(): ScreenshotSpec[] {
         {
           type: 'drag',
           fromAnchor: {
-            locus: 'chr:800,800',
-            track: 'ecoli_pggb_maf',
+            loc: 'chr:800,800',
+            trackId: 'ecoli_pggb_maf',
             band: '[data-testid="maf-rows"]',
             fracY: 0.02,
           },
           toAnchor: {
-            locus: 'chr:802,400',
-            track: 'ecoli_pggb_maf',
+            loc: 'chr:802,400',
+            trackId: 'ecoli_pggb_maf',
             band: '[data-testid="maf-rows"]',
             fracY: 0.98,
           },

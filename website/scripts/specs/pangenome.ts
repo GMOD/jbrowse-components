@@ -296,7 +296,7 @@ export const pangenomeSpecs: ScreenshotSpec[] = [
       type: 'box' as const,
       color,
       strokeWidth: 3,
-      anchor: { track: 'ecoli_pggb_untangle_rows', locus: k12 },
+      anchor: { trackId: 'ecoli_pggb_untangle_rows', loc: k12 },
     })),
   },
 
@@ -343,14 +343,14 @@ export const pangenomeSpecs: ScreenshotSpec[] = [
     viewportWidth: 1000,
     viewportHeight: 640,
     // The same arm the rows figure boxes, on both axes here: a dotplot cell is
-    // `{hLocus, vLocus}` and resolves through the plot's own axes, so this
+    // `{hLoc, vLoc}` and resolves through the plot's own axes, so this
     // follows the data rather than a measured pixel. See the note on
     // pggb_untangle_rows for why the pair is marked at all.
     annotations: UNTANGLE_ARMS.map(({ k12, iai39, color }) => ({
       type: 'box' as const,
       color,
       strokeWidth: 3,
-      anchor: { hLocus: k12, vLocus: iai39 },
+      anchor: { hLoc: k12, vLoc: iai39 },
     })),
   },
   {

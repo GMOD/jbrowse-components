@@ -319,8 +319,8 @@ export const aluAgeSpecs: ScreenshotSpec[] = [
           fontSize: 18,
           maxWidth: 400,
           anchor: {
-            track: 'alu_age',
-            locus: 'chr1:151,010,600',
+            trackId: 'alu_age',
+            loc: 'chr1:151,010,600',
             fracY: 0.05,
           },
         },
@@ -339,8 +339,8 @@ export const aluAgeSpecs: ScreenshotSpec[] = [
         fontSize: 18,
         leader: true,
         anchor: {
-          track: 'alu_young_share',
-          locus: 'chr1:191,500,000',
+          trackId: 'alu_young_share',
+          loc: 'chr1:191,500,000',
           fracY: 0.3,
         },
         dx: -40,
@@ -352,8 +352,8 @@ export const aluAgeSpecs: ScreenshotSpec[] = [
         fontSize: 18,
         leader: true,
         anchor: {
-          track: 'alu_young_share',
-          locus: 'chr1:203,500,000',
+          trackId: 'alu_young_share',
+          loc: 'chr1:203,500,000',
           fracY: 0.75,
         },
         dx: 80,

@@ -17,12 +17,12 @@ jest.mock('../liveLinks.generated.ts', () => {
   const query = `?config=test_data/volvox/config.json&session=spec-${encodeURIComponent(JSON.stringify(lgv))}`
   const onData = {
     type: 'box',
-    anchor: { track: 'volvox_cram', locus: 'ctgA:100-200' },
+    anchor: { trackId: 'volvox_cram', loc: 'ctgA:100-200' },
   }
   const onMenu = { type: 'box', anchor: { text: 'Sort by' } }
   const onAddedTrack = {
     type: 'box',
-    anchor: { track: 'added_by_a_click', locus: 'ctgA:100' },
+    anchor: { trackId: 'added_by_a_click', loc: 'ctgA:100' },
   }
   const atPixel = { type: 'text', text: 'here', x: 10, y: 20 }
   return {

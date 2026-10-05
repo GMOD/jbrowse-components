@@ -201,7 +201,7 @@ const kiv2WalkRowsSpec: ScreenshotSpec = {
   annotations: [
     {
       type: 'box',
-      anchor: { track: 'hprc_minigraph_bubbles', locus: KIV2_BUBBLE_WINDOW },
+      anchor: { trackId: 'hprc_minigraph_bubbles', loc: KIV2_BUBBLE_WINDOW },
       pad: 3,
     },
     {
@@ -211,8 +211,8 @@ const kiv2WalkRowsSpec: ScreenshotSpec = {
       maxWidth: 520,
       textAlign: 'end',
       anchor: {
-        track: 'hprc_minigraph_bubbles',
-        locus: KIV2_BUBBLE_WINDOW,
+        trackId: 'hprc_minigraph_bubbles',
+        loc: KIV2_BUBBLE_WINDOW,
         alignX: 'right',
         fracY: 0,
         dx: -48,

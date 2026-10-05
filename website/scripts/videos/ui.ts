@@ -75,8 +75,8 @@ export const uiVideos: VideoSpec[] = [
       // already.
       {
         type: 'drag',
-        fromAnchor: { locus: highlightSpan.start, band: RUBBERBAND },
-        toAnchor: { locus: highlightSpan.end, band: RUBBERBAND },
+        fromAnchor: { loc: highlightSpan.start, band: RUBBERBAND },
+        toAnchor: { loc: highlightSpan.end, band: RUBBERBAND },
         say: 'Select the start of PTEN on the scale bar and highlight it',
         hold: 600,
       },

@@ -247,8 +247,8 @@ export const bigwigSpecs: ScreenshotSpec[] = [
         type: 'text',
         text: 'Mostly positive skew (leading strand)',
         anchor: {
-          track: 'gc_skew_hpylori',
-          locus: 'NC_018939v1:166,800',
+          trackId: 'gc_skew_hpylori',
+          loc: 'NC_018939v1:166,800',
           fracY: 0.11,
         },
         maxWidth: 260,
@@ -257,8 +257,8 @@ export const bigwigSpecs: ScreenshotSpec[] = [
         type: 'text',
         text: 'Mostly negative skew (lagging strand)',
         anchor: {
-          track: 'gc_skew_hpylori',
-          locus: 'NC_018939v1:1,034,100',
+          trackId: 'gc_skew_hpylori',
+          loc: 'NC_018939v1:1,034,100',
           fracY: 0.89,
         },
         maxWidth: 260,
@@ -268,8 +268,8 @@ export const bigwigSpecs: ScreenshotSpec[] = [
         text: 'Terminus: skew flips from + to −',
         leader: true,
         anchor: {
-          track: 'gc_skew_hpylori',
-          locus: 'NC_018939v1:814,000',
+          trackId: 'gc_skew_hpylori',
+          loc: 'NC_018939v1:814,000',
           fracY: 0.45,
         },
         dx: 60,
@@ -281,8 +281,8 @@ export const bigwigSpecs: ScreenshotSpec[] = [
         text: 'Origin: skew flips from − to +',
         leader: true,
         anchor: {
-          track: 'gc_skew_hpylori',
-          locus: 'NC_018939v1:1,608,000',
+          trackId: 'gc_skew_hpylori',
+          loc: 'NC_018939v1:1,608,000',
           fracY: 0.45,
         },
         dx: -60,

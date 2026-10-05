@@ -298,13 +298,13 @@ export const LEADER_BASELINE = 21
 function anchorSite(anchor: Annotation['anchor']) {
   return anchor
     ? JSON.stringify([
-        anchor.track,
-        anchor.locus,
+        anchor.trackId,
+        anchor.loc,
         anchor.selector,
         anchor.text,
         anchor.graphNode,
-        anchor.hLocus,
-        anchor.vLocus,
+        anchor.hLoc,
+        anchor.vLoc,
         anchor.view,
         anchor.fracY,
       ])

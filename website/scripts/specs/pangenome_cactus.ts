@@ -384,8 +384,8 @@ export const pangenomeCactusSpecs: ScreenshotSpec[] = [
         fontSize: 16,
         textAlign: 'end',
         anchor: {
-          track: 'ecoli_depth_by_builder',
-          locus: 'chr:3,954,300',
+          trackId: 'ecoli_depth_by_builder',
+          loc: 'chr:3,954,300',
           fracY: 0.12,
         },
       },
@@ -396,8 +396,8 @@ export const pangenomeCactusSpecs: ScreenshotSpec[] = [
         fontSize: 16,
         textAlign: 'end',
         anchor: {
-          track: 'ecoli_depth_by_builder',
-          locus: 'chr:3,954,300',
+          trackId: 'ecoli_depth_by_builder',
+          loc: 'chr:3,954,300',
           fracY: 0.62,
         },
       },

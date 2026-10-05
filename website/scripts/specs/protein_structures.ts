@@ -83,7 +83,7 @@ export const proteinStructuresSpecs: ScreenshotSpec[] = [
         text: 'R248 codon',
         fontSize: 18,
         leader: true,
-        anchor: { track: GENES, locus: R248_CODON, fracY: 0.3 },
+        anchor: { trackId: GENES, loc: R248_CODON, fracY: 0.3 },
         dx: 120,
         dy: 12,
       },

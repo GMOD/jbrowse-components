@@ -116,8 +116,8 @@ export function crossoverHighlights(opts: TrioCrossover): Annotation[] {
     type: 'box',
     color: '#333',
     anchor: {
-      track: TRIO_PAINT_TRACK,
-      locus: crossover,
+      trackId: TRIO_PAINT_TRACK,
+      loc: crossover,
       fracY: 0,
       dy: stepTop,
     },
@@ -134,8 +134,8 @@ export function crossoverHighlights(opts: TrioCrossover): Annotation[] {
       color,
       fillOpacity: TRIO_HL_FILL,
       anchor: {
-        track: TRIO_VCF_TRACK,
-        locus,
+        trackId: TRIO_VCF_TRACK,
+        loc: locus,
         fracY: trioRowFrac(row),
       },
       pad: 0,
@@ -147,7 +147,7 @@ export function crossoverHighlights(opts: TrioCrossover): Annotation[] {
     ({
       type: 'text',
       color,
-      anchor: { track: TRIO_VCF_TRACK, fracY: 1, dy: 27, ...anchor },
+      anchor: { trackId: TRIO_VCF_TRACK, fracY: 1, dy: 27, ...anchor },
       text,
       maxWidth: 600,
     }) satisfies Annotation
@@ -160,14 +160,14 @@ export function crossoverHighlights(opts: TrioCrossover): Annotation[] {
       // straight down the crossover, from the bottom of the painting step to the
       // top of the child's row in the display below
       fromAnchor: {
-        track: TRIO_PAINT_TRACK,
-        locus: crossover,
+        trackId: TRIO_PAINT_TRACK,
+        loc: crossover,
         fracY: 0,
         dy: stepTop + stepHeight,
       },
       anchor: {
-        track: TRIO_VCF_TRACK,
-        locus: crossover,
+        trackId: TRIO_VCF_TRACK,
+        loc: crossover,
         fracY: trioRowFrac(child),
       },
     },
@@ -178,7 +178,7 @@ export function crossoverHighlights(opts: TrioCrossover): Annotation[] {
     // left caption from the track's left edge, right caption from the crossover
     // — each starts where the half it describes does
     caption(palette.left, { alignX: 'left', dx: 60 }, opts.leftText),
-    caption(palette.right, { locus: crossover, dx: 50 }, opts.rightText),
+    caption(palette.right, { loc: crossover, dx: 50 }, opts.rightText),
   ]
 }
 

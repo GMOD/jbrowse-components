@@ -754,8 +754,8 @@ export const hg002HaplotypeSpecs: ScreenshotSpec[] = [
         leader: true,
         anchor: {
           view: [0, 0],
-          track: 'hg002v1.2_mat_vs_pat',
-          locus: 'chr11_MATERNAL:24,513,461',
+          trackId: 'hg002v1.2_mat_vs_pat',
+          loc: 'chr11_MATERNAL:24,513,461',
           fracY: 1,
         },
         dx: 180,

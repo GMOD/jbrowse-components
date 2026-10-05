@@ -49,7 +49,7 @@ const ratchet =
   found.length > baseline
     ? [
         `${found.length} hand-placed viewport coordinates in screenshot specs, up from ${baseline}.`,
-        '  Anchor the new one instead: `anchor: {track, locus, fracY}` for data,',
+        '  Anchor the new one instead: `anchor: {trackId, loc, fracY}` for data,',
         '  `{selector}`/`{text}` for chrome. See website/CLAUDE.md and',
         '  website/scripts/locusAnchor.ts for what a stale coordinate has cost.',
         ...found.map(entry => `  - ${entry}`),

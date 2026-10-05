@@ -174,7 +174,7 @@ export const svVideos: VideoSpec[] = [
       // a menu with no sort row in it at all.
       {
         type: 'rightclick',
-        anchor: { track: matrixTrackId, locus: deletionSpan, fracY: 0.5 },
+        anchor: { trackId: matrixTrackId, loc: deletionSpan, fracY: 0.5 },
         say: 'Right-click the deletion and sort the rows by genotype there',
         hold: 1800,
       },

@@ -35,11 +35,11 @@ export interface AgentRecipe {
 interface Anchor {
   selector?: string
   text?: string
-  locus?: string
-  track?: string
+  loc?: string
+  trackId?: string
   graphNode?: string
-  hLocus?: string
-  vLocus?: string
+  hLoc?: string
+  vLoc?: string
   view?: number | number[]
 }
 
@@ -82,12 +82,12 @@ function standsWithoutClicks(callout: Callout, spec: SessionSpec) {
     !!anchor &&
     !anchor.selector &&
     !anchor.text &&
-    (anchor.locus ??
-      anchor.track ??
+    (anchor.loc ??
+      anchor.trackId ??
       anchor.graphNode ??
-      anchor.hLocus ??
-      anchor.vLocus) !== undefined &&
-    (anchor.track === undefined || tracks.has(anchor.track)) &&
+      anchor.hLoc ??
+      anchor.vLoc) !== undefined &&
+    (anchor.trackId === undefined || tracks.has(anchor.trackId)) &&
     viewExists(spec, anchor.view)
   return (
     onData(callout.anchor) &&

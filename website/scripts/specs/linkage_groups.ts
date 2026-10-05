@@ -14,7 +14,7 @@ const HIDE_LEGEND = {
   selector: '[aria-label="Hide legend"]',
 } as const
 
-const A1A_BLOCK = { hLocus: 'RES2', vLocus: 'EMU19' }
+const A1A_BLOCK = { hLoc: 'RES2', vLoc: 'EMU19' }
 
 export const linkageGroupsSpecs: ScreenshotSpec[] = [
   {

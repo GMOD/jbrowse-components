@@ -13,7 +13,7 @@
 // callout tracks the real thing instead of a hand-measured pixel. In
 // decreasing order of preference:
 //
-// - `track` + `locus`: MODEL anchoring. Reads the live LGV model
+// - `trackId` + `loc`: MODEL anchoring. Reads the live LGV model
 //   (`window.JBrowseSession`) for the track's rendering container and the
 //   locus's pixel position, so a callout lands on a genomic coordinate. Nothing
 //   to re-measure when a track height, viewport width, or zoom changes. Use
@@ -25,7 +25,7 @@
 //   one of them. This reads the pane's own `nodePositions` through its
 //   `scale`/`translateX`/`translateY`, so a node is named by its GFA segment id
 //   and the layout can change underneath it.
-// - `hLocus`/`vLocus`: a dotplot's cell, read off the two axes' own layout.
+// - `hLoc`/`vLoc`: a dotplot's cell, read off the two axes' own layout.
 // - `selector`: the first matching element.
 // - `text`: the smallest-area element whose visible text matches — for menu
 //   items and buttons with no testid. Scans the whole document, so prefer
@@ -38,7 +38,7 @@
 export interface AnnotationAnchor {
   selector?: string
   text?: string
-  // GFA segment id in a graph track of the `view`-th view (`track` picks one
+  // GFA segment id in a graph track of the `view`-th view (`trackId` picks one
   // when it holds several), or in that view when it is a GraphGenomeView. The
   // resolved rect is the node's drawn polyline bounds in viewport px.
   graphNode?: string
@@ -48,8 +48,8 @@ export interface AnnotationAnchor {
   // axis spans the plot on the other. Resolved by the caller
   // (`dotplotAnchor.ts`) — the plot is one canvas, so there is
   // nothing here to measure.
-  hLocus?: string
-  vLocus?: string
+  hLoc?: string
+  vLoc?: string
   // which view to resolve against: an index into `session.views` (default 0
   // for a model anchor; a `selector`/`text` anchor without one searches the
   // whole document). An array descends through nested `.views` — `[0, 1]` is
@@ -58,13 +58,13 @@ export interface AnnotationAnchor {
   // config `trackId` of the track supplying the y band and the x origin. Its
   // rendering container is the same element the blocks draw into, so a locus
   // resolved against it lands exactly where the feature is painted. On its own
-  // (no `locus`) it anchors to the whole track. With `graphNode` it names the
+  // (no `loc`) it anchors to the whole track. With `graphNode` it names the
   // graph track the node is in.
-  track?: string
+  trackId?: string
   // '8:127,735,434' or '8:127,700,000-127,800,000' — 1-based, commas optional,
   // aliases resolved through the assembly (so 'chr8' works on a bare-named
-  // assembly). Without `track` the view's whole tracks area is used.
-  locus?: string
+  // assembly). Without `trackId` the view's whole tracks area is used.
+  loc?: string
   // where in the track's height to put the anchor point: 0 = top, 1 = bottom.
   // Omit to anchor to the whole track band (what a `box` wants).
   //
@@ -256,7 +256,7 @@ export function parseAnnotationLocus(
   const match = /^(\d+)(?:\.\.|-)?(\d+)?$/.exec(coords)
   if (idx === -1 || !match) {
     throw new Error(
-      `annotation anchor locus "${locus}" is not <refName>:<start>[-<end>]`,
+      `annotation anchor loc "${locus}" is not <refName>:<start>[-<end>]`,
     )
   }
   const start = Number(match[1]) - 1
@@ -345,9 +345,9 @@ export function drawAnnotationOverlay(
     if (!view) {
       return undefined
     }
-    const el = anchor.track
+    const el = anchor.trackId
       ? document.querySelector(
-          `[data-testid="trackRenderingContainer-${CSS.escape(view.id)}-${CSS.escape(anchor.track)}"]`,
+          `[data-testid="trackRenderingContainer-${CSS.escape(view.id)}-${CSS.escape(anchor.trackId)}"]`,
         )
       : document
           .querySelector(viewContainerSelector(view))
@@ -434,8 +434,8 @@ export function drawAnnotationOverlay(
   const isModel = (anchor: NonNullable<Anchor>) =>
     anchor.selector === undefined &&
     anchor.text === undefined &&
-    (anchor.track !== undefined ||
-      anchor.locus !== undefined ||
+    (anchor.trackId !== undefined ||
+      anchor.loc !== undefined ||
       anchor.view !== undefined)
 
   const misses: string[] = []
@@ -448,8 +448,8 @@ export function drawAnnotationOverlay(
     // unresolved one carries no rect, so it falls through to the miss below
     const preResolved =
       anchor.graphNode !== undefined ||
-      anchor.hLocus !== undefined ||
-      anchor.vLocus !== undefined
+      anchor.hLoc !== undefined ||
+      anchor.vLoc !== undefined
     const rect = preResolved
       ? anchor.rect
       : isModel(anchor)

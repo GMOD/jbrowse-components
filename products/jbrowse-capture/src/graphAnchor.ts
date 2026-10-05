@@ -165,10 +165,10 @@ export function nodeGeometryInPage(
 
 export function locateGraphPane(
   page: Page,
-  anchor: Pick<AnnotationAnchor, 'view' | 'track'>,
+  anchor: Pick<AnnotationAnchor, 'view' | 'trackId'>,
 ): Promise<JSHandle<LocatedGraphPane | undefined>> {
   const path = Array.isArray(anchor.view) ? anchor.view : [anchor.view ?? 0]
-  return page.evaluateHandle(locateGraphPaneInPage, path, anchor.track)
+  return page.evaluateHandle(locateGraphPaneInPage, path, anchor.trackId)
 }
 
 async function graphNodeGeometry(page: Page, anchor: AnnotationAnchor) {

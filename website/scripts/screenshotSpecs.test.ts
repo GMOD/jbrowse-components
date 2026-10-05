@@ -190,7 +190,7 @@ test('the ordinary spec shapes are quiet', () => {
 // authored pair and stays quiet on an arrow that merely shares a figure with a
 // pill. A ratchet that matches everything is as useless as one that matches
 // nothing, and both look like a passing check.
-const site = { track: 't', locus: 'ctgA:100' }
+const site = { trackId: 't', loc: 'ctgA:100' }
 const labels = (list: ScreenshotSpec[]) => countDetachableLabels(list).found
 
 test('a pill and the arrow leaving it', () => {
@@ -246,7 +246,7 @@ test('an arrow that starts somewhere else is not this pattern', () => {
           {
             type: 'arrow',
             anchor: { ...site, dx: 14 },
-            fromAnchor: { track: 't', locus: 'ctgA:900' },
+            fromAnchor: { trackId: 't', loc: 'ctgA:900' },
           },
         ],
       },

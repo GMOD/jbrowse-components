@@ -58,8 +58,8 @@ export const PROTEIN3D_CONFIG = 'test_data/protein3d_config.json'
 // the row that mRNA packs into, measured from the track's top edge rather than
 // from the top of the page.
 const APPLE3_MRNA = {
-  track: 'gff3tabix_genes',
-  locus: 'ctgA:17,400-23,000',
+  trackId: 'gff3tabix_genes',
+  loc: 'ctgA:17,400-23,000',
   fracY: 0,
   dy: 121,
 }
@@ -73,8 +73,8 @@ const NES_MOTIF =
 // centered right-click lands on empty canvas and opens the view's own menu with
 // no feature items on it.
 const PROTEIN_LAUNCH_ANCHOR = {
-  track: PROTEIN_LAUNCH_GENE_TRACK,
-  locus: 'chr17:7,676,000',
+  trackId: PROTEIN_LAUNCH_GENE_TRACK,
+  loc: 'chr17:7,676,000',
   fracY: 0.2,
 }
 
@@ -738,8 +738,8 @@ export const featuresSpecs: ScreenshotSpec[] = [
         fontSize: 18,
         leader: true,
         anchor: {
-          track: 'hg38-ncbiRefSeq',
-          locus: 'chr17:7,670,650',
+          trackId: 'hg38-ncbiRefSeq',
+          loc: 'chr17:7,670,650',
           fracY: 0.3,
         },
         dx: 80,
@@ -830,8 +830,8 @@ export const featuresSpecs: ScreenshotSpec[] = [
         maxWidth: 700,
         anchor: {
           view: 1,
-          track: 'P04637-DNA binding',
-          locus: 'P04637:108',
+          trackId: 'P04637-DNA binding',
+          loc: 'P04637:108',
           fracY: 0.72,
         },
       },
@@ -842,8 +842,8 @@ export const featuresSpecs: ScreenshotSpec[] = [
         maxWidth: 400,
         anchor: {
           view: 1,
-          track: 'P04637-DNA binding',
-          locus: 'P04637:4',
+          trackId: 'P04637-DNA binding',
+          loc: 'P04637:4',
           fracY: 0.72,
         },
       },

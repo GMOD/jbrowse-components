@@ -742,8 +742,8 @@ export const hprcGraphSpecs: ScreenshotSpec[] = [
         fontSize: 14,
         maxWidth: 100,
         anchor: {
-          track: 'hprc_bubble_score',
-          locus: 'chr1:126,000,000',
+          trackId: 'hprc_bubble_score',
+          loc: 'chr1:126,000,000',
           fracY: 0.08,
         },
       },
@@ -751,8 +751,8 @@ export const hprcGraphSpecs: ScreenshotSpec[] = [
         type: 'box',
         strokeWidth: 3,
         anchor: {
-          track: 'hprc_tier',
-          locus: 'chr1:121,700,000-125,100,000',
+          trackId: 'hprc_tier',
+          loc: 'chr1:121,700,000-125,100,000',
         },
       },
       {
@@ -761,8 +761,8 @@ export const hprcGraphSpecs: ScreenshotSpec[] = [
         fontSize: 14,
         maxWidth: 100,
         anchor: {
-          track: 'hprc_tier',
-          locus: 'chr1:126,000,000',
+          trackId: 'hprc_tier',
+          loc: 'chr1:126,000,000',
           fracY: 0.06,
         },
       },
@@ -970,8 +970,8 @@ export const hprcGraphSpecs: ScreenshotSpec[] = [
         type: 'box',
         anchor: {
           view: [0, 1],
-          track: 'hprc_minigraph_bubbles',
-          locus: INV_BLOCK_LOCUS,
+          trackId: 'hprc_minigraph_bubbles',
+          loc: INV_BLOCK_LOCUS,
         },
       },
       // the same two genes on each haplotype row, so the swap is a thing to
@@ -986,7 +986,7 @@ export const hprcGraphSpecs: ScreenshotSpec[] = [
       ).map(([level, track, locus]): Annotation => ({
         type: 'box',
         strokeWidth: 3,
-        anchor: { view: [0, level], track, locus },
+        anchor: { view: [0, level], trackId: track, loc: locus },
       })),
       // The order, spelled left to right so it matches what the boxes do. Short
       // enough to clear the leftmost box on its own row (the carrier's is 23%
@@ -999,8 +999,8 @@ export const hprcGraphSpecs: ScreenshotSpec[] = [
         maxWidth: 260,
         anchor: {
           view: [0, 0],
-          track: INV_CARRIER_GENES,
-          locus: windowStart(INV_CARRIER_WINDOW),
+          trackId: INV_CARRIER_GENES,
+          loc: windowStart(INV_CARRIER_WINDOW),
           fracY: 1,
           dx: 14,
           dy: -24,
@@ -1013,8 +1013,8 @@ export const hprcGraphSpecs: ScreenshotSpec[] = [
         maxWidth: 260,
         anchor: {
           view: [0, 2],
-          track: INV_NONCARRIER_GENES,
-          locus: windowStart(INV_NONCARRIER_WINDOW),
+          trackId: INV_NONCARRIER_GENES,
+          loc: windowStart(INV_NONCARRIER_WINDOW),
           fracY: 1,
           dx: 14,
           dy: -24,
@@ -1139,8 +1139,8 @@ export const hprcGraphSpecs: ScreenshotSpec[] = [
       {
         type: 'box',
         anchor: {
-          track: 'hprc_minigraph_bubbles',
-          locus: 'chr6:160,616,002-160,646,753',
+          trackId: 'hprc_minigraph_bubbles',
+          loc: 'chr6:160,616,002-160,646,753',
         },
         pad: 3,
       },
@@ -1155,8 +1155,8 @@ export const hprcGraphSpecs: ScreenshotSpec[] = [
         // the box's left one; its width is only known once the text is measured
         textAlign: 'end',
         anchor: {
-          track: 'hprc_minigraph_bubbles',
-          locus: 'chr6:160,616,002-160,646,753',
+          trackId: 'hprc_minigraph_bubbles',
+          loc: 'chr6:160,616,002-160,646,753',
           alignX: 'left',
           fracY: 0,
           dx: -16,
@@ -1247,8 +1247,8 @@ export const hprcGraphSpecs: ScreenshotSpec[] = [
         type: 'arrow',
         fromAnchor: {
           view: 0,
-          track: PGBI_TRACK,
-          locus: MHC_MARKED_DELETION,
+          trackId: PGBI_TRACK,
+          loc: MHC_MARKED_DELETION,
           fracY: 1,
           dy: -8,
         },
@@ -1329,8 +1329,8 @@ export const hprcGraphSpecs: ScreenshotSpec[] = [
             type: 'box',
             anchor: {
               view: 1,
-              track: HAPLOTYPE_GENES_TRACK,
-              locus: HAPLOTYPE_ALLELE_LOCUS,
+              trackId: HAPLOTYPE_GENES_TRACK,
+              loc: HAPLOTYPE_ALLELE_LOCUS,
             },
             pad: 4,
           },
@@ -1339,8 +1339,8 @@ export const hprcGraphSpecs: ScreenshotSpec[] = [
             fromAnchor: { graphNode: HPRC_ALLELE, dy: 22 },
             anchor: {
               view: 1,
-              track: HAPLOTYPE_GENES_TRACK,
-              locus: HAPLOTYPE_ALLELE_LOCUS,
+              trackId: HAPLOTYPE_GENES_TRACK,
+              loc: HAPLOTYPE_ALLELE_LOCUS,
               fracY: 0,
               dy: -6,
             },
@@ -1387,8 +1387,8 @@ export const hprcGraphSpecs: ScreenshotSpec[] = [
       {
         type: 'rightclick',
         anchor: {
-          locus: 'chr6:160,631,000',
-          track: 'hprc_kiv2_copies_all',
+          loc: 'chr6:160,631,000',
+          trackId: 'hprc_kiv2_copies_all',
           fracY: 0.2,
         },
       },
@@ -1438,8 +1438,8 @@ export const hprcGraphSpecs: ScreenshotSpec[] = [
       {
         type: 'rightclick',
         anchor: {
-          locus: 'chr6:160,631,000',
-          track: 'hprc_kiv2_copies_all',
+          loc: 'chr6:160,631,000',
+          trackId: 'hprc_kiv2_copies_all',
           fracY: 0.2,
         },
       },
@@ -1514,8 +1514,8 @@ export const hprcGraphSpecs: ScreenshotSpec[] = [
       {
         type: 'click',
         anchor: {
-          locus: 'chr19:1,049,750',
-          track: 'hprc_abca7_cnvtr',
+          loc: 'chr19:1,049,750',
+          trackId: 'hprc_abca7_cnvtr',
           fracY: 0.2,
         },
       },

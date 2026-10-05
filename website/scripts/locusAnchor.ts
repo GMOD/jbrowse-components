@@ -33,7 +33,7 @@ import type { Page } from 'puppeteer'
 // resolve, so the caller fails the spec by name rather than clicking (0,0).
 export async function locusPoint(page: Page, anchor: ActionAnchor) {
   const path = Array.isArray(anchor.view) ? anchor.view : [anchor.view ?? 0]
-  const region = parseLocus(anchor.locus ?? '')
+  const region = parseLocus(anchor.loc ?? '')
   const point = await page.evaluate(
     (
       viewPath: number[],
@@ -104,7 +104,7 @@ export async function locusPoint(page: Page, anchor: ActionAnchor) {
       }
     },
     path,
-    anchor.track,
+    anchor.trackId,
     anchor.band,
     region,
     anchor.fracY ?? 0.5,
@@ -126,7 +126,7 @@ function parseLocus(locus: string) {
   const m = /^(.+):(\d+)(?:-(\d+))?$/.exec(locus.replaceAll(/[\s,]/g, ''))
   if (!m) {
     throw new Error(
-      `action anchor locus "${locus}" is not <refName>:<start>[-<end>]`,
+      `action anchor loc "${locus}" is not <refName>:<start>[-<end>]`,
     )
   }
   const start = Number(m[2]) - 1

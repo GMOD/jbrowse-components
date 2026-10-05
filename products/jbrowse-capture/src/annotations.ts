@@ -36,11 +36,11 @@ async function withRegion(
   if (!anchor) {
     return undefined
   }
-  const isDotplot = anchor.hLocus !== undefined || anchor.vLocus !== undefined
+  const isDotplot = anchor.hLoc !== undefined || anchor.vLoc !== undefined
   return {
     ...anchor,
-    region: anchor.locus
-      ? parseAnnotationLocus(anchor.locus, wantBounds)
+    region: anchor.loc
+      ? parseAnnotationLocus(anchor.loc, wantBounds)
       : undefined,
     rect: anchor.graphNode
       ? await graphNodeRect(page, anchor, wantBounds)

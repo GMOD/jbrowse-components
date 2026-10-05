@@ -20,7 +20,7 @@ selenium harness over the packaged Electron app ("Desktop figures").
 `website/CLAUDE.md` states the rule: never hand-measure a callout position; every
 annotation `anchor`s, and a click anchors too. The vocabulary is
 `AnnotationAnchor` in `products/jbrowse-capture/src/annotationOverlay.ts`,
-shared with the desktop harness; prefer `track`+`locus`, then `graphNode`,
+shared with the desktop harness; prefer `trackId`+`loc`, then `graphNode`,
 `selector`, `text`. `check-specs.ts` ratchets what is left unanchored.
 
 Each of these produces a plausible figure rather than an error:

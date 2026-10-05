@@ -287,8 +287,8 @@ export const cnv1000gSpecs: ScreenshotSpec[] = [
       {
         type: 'text',
         anchor: {
-          track: 'cnv_1000g_zarr',
-          locus: 'chr17:36,470,000',
+          trackId: 'cnv_1000g_zarr',
+          loc: 'chr17:36,470,000',
           fracY: 0,
           alignX: 'left',
           dx: 12,

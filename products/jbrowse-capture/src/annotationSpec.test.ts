@@ -56,3 +56,11 @@ test('each bad callout is named by position', () => {
     ])
   }).toThrow(/annotation 1: .*annotation 2: /)
 })
+
+test('an anchor key the overlay does not read is refused, not ignored', () => {
+  expect(() => {
+    assertValidAnnotations([
+      { type: 'box', anchor: { track: 't', locus: 'chr1:1-2' } } as Annotation,
+    ])
+  }).toThrow('anchor key(s) track, locus not recognized')
+})

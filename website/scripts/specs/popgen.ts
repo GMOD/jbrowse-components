@@ -353,8 +353,8 @@ export const popgenSpecs: ScreenshotSpec[] = [
       {
         type: 'text',
         anchor: {
-          track: 'tajd_all',
-          locus: 'chr2R:12,008,000',
+          trackId: 'tajd_all',
+          loc: 'chr2R:12,008,000',
           fracY: 0.63,
           alignX: 'left',
         },
@@ -430,8 +430,8 @@ export const popgenSpecs: ScreenshotSpec[] = [
         text: '19 In(2L)t carriers',
         anchor: {
           view: 1,
-          track: 'dgrp_In2Lt_sv',
-          locus: 'chr2L:7,000,000',
+          trackId: 'dgrp_In2Lt_sv',
+          loc: 'chr2L:7,000,000',
           fracY: 0.7,
         },
       },
@@ -439,14 +439,14 @@ export const popgenSpecs: ScreenshotSpec[] = [
         type: 'arrow',
         fromAnchor: {
           view: 1,
-          track: 'dgrp_In2Lt_sv',
-          locus: 'chr2L:7,000,000',
+          trackId: 'dgrp_In2Lt_sv',
+          loc: 'chr2L:7,000,000',
           fracY: 0.78,
         },
         anchor: {
           view: 1,
-          track: 'dgrp_In2Lt_sv',
-          locus: 'chr2L:7,000,000',
+          trackId: 'dgrp_In2Lt_sv',
+          loc: 'chr2L:7,000,000',
           fracY: 0.947,
         },
       },

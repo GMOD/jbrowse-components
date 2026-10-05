@@ -301,8 +301,8 @@ export const alphagenomeSpecs: ScreenshotSpec[] = [
         text: 'GM12878: TAL1 is off, so no junctions',
         fontSize: 18,
         anchor: {
-          track: 'demo-tal1-interval-junctions-reference-2',
-          locus: 'chr1:47,221,000',
+          trackId: 'demo-tal1-interval-junctions-reference-2',
+          loc: 'chr1:47,221,000',
           fracY: 0.5,
         },
       },
@@ -372,8 +372,8 @@ export const alphagenomeSpecs: ScreenshotSpec[] = [
       {
         type: 'rightclick',
         anchor: {
-          locus: ENHANCER_1_LOCUS,
-          track: 'tal1_variants',
+          loc: ENHANCER_1_LOCUS,
+          trackId: 'tal1_variants',
           fracY: TOP_ROW,
         },
       },
@@ -461,8 +461,8 @@ export const alphagenomeSpecs: ScreenshotSpec[] = [
         fontSize: 18,
         leader: true,
         anchor: {
-          track: `${VARIANT_TOKEN}-delta-dnase.0`,
-          locus: 'chr1:47,239,296',
+          trackId: `${VARIANT_TOKEN}-delta-dnase.0`,
+          loc: 'chr1:47,239,296',
           fracY: 0.3,
         },
         dx: -60,
@@ -473,8 +473,8 @@ export const alphagenomeSpecs: ScreenshotSpec[] = [
         fontSize: 18,
         leader: true,
         anchor: {
-          track: `${VARIANT_TOKEN}-delta-rna_seq.0`,
-          locus: 'chr1:47,220,300',
+          trackId: `${VARIANT_TOKEN}-delta-rna_seq.0`,
+          loc: 'chr1:47,220,300',
           fracY: 0.4,
         },
         dx: 60,
@@ -484,8 +484,8 @@ export const alphagenomeSpecs: ScreenshotSpec[] = [
         text: 'H3K27ac gained across the locus',
         fontSize: 18,
         anchor: {
-          track: `${VARIANT_TOKEN}-delta-chip_histone.0`,
-          locus: 'chr1:47,212,300',
+          trackId: `${VARIANT_TOKEN}-delta-chip_histone.0`,
+          loc: 'chr1:47,212,300',
           fracY: 0.3,
         },
       },

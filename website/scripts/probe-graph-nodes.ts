@@ -36,7 +36,7 @@ const { values, positionals } = parseArgs({
   },
 })
 const specName = positionals[0]
-const target = { view: Number(values.view ?? 0), track: values.track }
+const target = { view: Number(values.view ?? 0), trackId: values.track }
 const timeout = Number(values.timeout ?? 300000)
 
 const spec = resolveUrlSpec(specName, `no url-mode spec named "${specName}"`)

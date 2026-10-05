@@ -11,7 +11,7 @@ export interface SessionExpectations {
    */
   trackIds?: string[]
   /** The fewest open views that count. Default 1; 0 accepts none. */
-  views?: number
+  minViews?: number
 }
 
 export interface SessionCensus {
@@ -66,7 +66,7 @@ export async function waitForSession(
   {
     assembly,
     trackIds = [],
-    views = 1,
+    minViews = 1,
     timeout = DEFAULT_TIMEOUT,
   }: SessionExpectations & { timeout?: number } = {},
 ) {
@@ -89,7 +89,7 @@ export async function waitForSession(
       last = census
       return (
         !!census &&
-        census.views >= views &&
+        census.views >= minViews &&
         (assembly === undefined || census.assemblies.includes(assembly)) &&
         trackIds.every(id => census.trackIds.includes(id))
       )
@@ -113,7 +113,7 @@ export async function waitForSession(
       ? `The app said: ${[...notices].join(' | ')}.`
       : 'A trackId the config does not define, or an assembly name that does not match the config, looks like this.'
     throw new Error(
-      `the session never reached the requested state after ${timeout}ms. Wanted ${wanted || (views > 0 ? 'an open view' : 'a session')}; found ${found}. ${said}`,
+      `the session never reached the requested state after ${timeout}ms. Wanted ${wanted || (minViews > 0 ? 'an open view' : 'a session')}; found ${found}. ${said}`,
     )
   }
 }

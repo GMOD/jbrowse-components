@@ -5,7 +5,7 @@
  *   node scripts/probe-dotplot-axes.ts homoeolog_synteny/oat_ds
  *
  * A dotplot is one canvas, so a callout on an off-diagonal block names its two
- * chromosomes (`anchor: { hLocus, vLocus }`, @jbrowse/capture's
+ * chromosomes (`anchor: { hLoc, vLoc }`, @jbrowse/capture's
  * dotplotAnchor.ts). Which names exist, and which of the two assemblies ended
  * up on which axis, is a property of the data and of the session — this prints
  * both axes' displayed regions with the viewport px each one covers, so a spec

@@ -207,7 +207,7 @@ test('a views floor of 0 reaches the gate through the whole chain', async () => 
   document.body.innerHTML = `<span hidden data-app-phase="ready"
     data-app-views="0" data-app-assemblies='[]' data-app-tracks='[]'></span>`
   const report = await waitForJBrowseReady(fakePage(), {
-    views: 0,
+    minViews: 0,
     timeout: 10000,
   })
   expect(report.unsettled).toEqual([])

@@ -305,9 +305,9 @@ export const methylationSpecs: ScreenshotSpec[] = [
         text: 'expressed gene body: CpG only',
         fontSize: 20,
         anchor: {
-          track: TAIR10_GENES,
+          trackId: TAIR10_GENES,
           // AT1G12930's own span, from the gene lane's NM_101164.5
-          locus: 'chr1:4,398,322-4,405,669',
+          loc: 'chr1:4,398,322-4,405,669',
           fracY: 1,
           dy: -16,
         },
@@ -318,8 +318,8 @@ export const methylationSpecs: ScreenshotSpec[] = [
         fontSize: 20,
         maxWidth: 300,
         anchor: {
-          track: TAIR10_GENES,
-          locus: 'chr1:4,405,996-4,411,119',
+          trackId: TAIR10_GENES,
+          loc: 'chr1:4,405,996-4,411,119',
           fracY: 1,
           dy: -16,
         },
@@ -451,8 +451,8 @@ export const methylationSpecs: ScreenshotSpec[] = [
         text: 'Hia5-treated',
         fontSize: 22,
         anchor: {
-          track: 'PAY22766-nanopore',
-          locus: 'chr12:6,530,200',
+          trackId: 'PAY22766-nanopore',
+          loc: 'chr12:6,530,200',
           fracY: 0.28,
         },
       },
@@ -461,8 +461,8 @@ export const methylationSpecs: ScreenshotSpec[] = [
         text: 'No-enzyme control',
         fontSize: 22,
         anchor: {
-          track: 'PBA15131-nanopore',
-          locus: 'chr12:6,530,200',
+          trackId: 'PBA15131-nanopore',
+          loc: 'chr12:6,530,200',
           fracY: 0.28,
         },
       },

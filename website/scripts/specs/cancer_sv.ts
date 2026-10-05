@@ -154,7 +154,7 @@ const FLOW_NUMBER = (n: number, extra?: { view: [number, number] }) =>
     fontSize: 30,
     anchor: {
       ...extra,
-      track: SV,
+      trackId: SV,
       fracY: 0,
       alignX: 'left',
       dx: 34,
@@ -389,7 +389,7 @@ function realignedReadsPartSpecs(): ScreenshotSpec[] {
         {
           type: 'circle',
           text: '1',
-          anchor: { view: [0, 0], track: TUMOUR, fracY: 0, alignX: 'left' },
+          anchor: { view: [0, 0], trackId: TUMOUR, fracY: 0, alignX: 'left' },
           radius: 15,
           dx: 24,
           dy: 78,
@@ -403,7 +403,7 @@ function realignedReadsPartSpecs(): ScreenshotSpec[] {
           // accident rather than on purpose.
           anchor: {
             view: [0, 0],
-            track: TUMOUR,
+            trackId: TUMOUR,
             fracY: 0,
             alignX: 'left',
             dx: 10,
@@ -464,7 +464,7 @@ function realignedReadsPartSpecs(): ScreenshotSpec[] {
         {
           type: 'circle',
           text: '2',
-          anchor: { track: 'reads_vs_der3', fracY: 0, alignX: 'left' },
+          anchor: { trackId: 'reads_vs_der3', fracY: 0, alignX: 'left' },
           radius: 15,
           dx: 24,
           dy: 78,
@@ -473,7 +473,7 @@ function realignedReadsPartSpecs(): ScreenshotSpec[] {
           type: 'text',
           text: 'realigned to the derived contig',
           anchor: {
-            track: 'reads_vs_der3',
+            trackId: 'reads_vs_der3',
             fracY: 0,
             alignX: 'left',
             dx: 10,
@@ -728,7 +728,7 @@ export const cancerSvSpecs: ScreenshotSpec[] = [
         type: 'text',
         anchor: {
           view: [0, 1],
-          track: DER3_GENES_TRACK.trackId,
+          trackId: DER3_GENES_TRACK.trackId,
           fracY: 0,
           alignX: 'left',
           dx: 40,
@@ -746,8 +746,8 @@ export const cancerSvSpecs: ScreenshotSpec[] = [
         leader: true,
         anchor: {
           view: [0, 0],
-          track: TUMOUR,
-          locus: 'chr3:25,356,000',
+          trackId: TUMOUR,
+          loc: 'chr3:25,356,000',
           fracY: 0.8,
         },
         dx: -140,
@@ -1064,8 +1064,8 @@ export const cancerSvSpecs: ScreenshotSpec[] = [
         dx: 80,
         anchor: {
           view: [0, 0],
-          track: TRUTH_SET,
-          locus: 'chr3:25,359,568',
+          trackId: TRUTH_SET,
+          loc: 'chr3:25,359,568',
           fracY: 0.5,
         },
       },
@@ -1075,8 +1075,8 @@ export const cancerSvSpecs: ScreenshotSpec[] = [
         fontSize: 19,
         anchor: {
           view: [0, 0],
-          track: GENES,
-          locus: 'chr3:25,358,800',
+          trackId: GENES,
+          loc: 'chr3:25,358,800',
           fracY: 0.75,
         },
       },
@@ -1093,7 +1093,7 @@ export const cancerSvSpecs: ScreenshotSpec[] = [
         // and it still labels the panel rather than any one track.
         anchor: {
           view: [0, 1],
-          track: 'der3_genes',
+          trackId: 'der3_genes',
           alignX: 'left',
           dx: 10,
           fracY: 0.95,
@@ -1585,8 +1585,8 @@ export const cancerSvSpecs: ScreenshotSpec[] = [
         fontSize: 18,
         maxWidth: 250,
         anchor: {
-          track: 'K562_isoseq',
-          locus: 'chr9:131,195,200',
+          trackId: 'K562_isoseq',
+          loc: 'chr9:131,195,200',
           fracY: 0.55,
           alignX: 'left',
           dx: 20,
@@ -1608,8 +1608,8 @@ export const cancerSvSpecs: ScreenshotSpec[] = [
         fontSize: 17,
         maxWidth: 330,
         anchor: {
-          track: GENES,
-          locus: 'chr22:16,805,600',
+          trackId: GENES,
+          loc: 'chr22:16,805,600',
           fracY: 0.5,
           alignX: 'left',
         },
@@ -1793,8 +1793,8 @@ export const cancerSvSpecs: ScreenshotSpec[] = [
         fontSize: 18,
         maxWidth: 250,
         anchor: {
-          track: 'K562_isoseq',
-          locus: 'chr9:130,851,100',
+          trackId: 'K562_isoseq',
+          loc: 'chr9:130,851,100',
           fracY: 0.32,
           alignX: 'left',
           dx: 20,
@@ -1806,8 +1806,8 @@ export const cancerSvSpecs: ScreenshotSpec[] = [
         fontSize: 18,
         maxWidth: 560,
         anchor: {
-          track: 'K562_isoseq',
-          locus: 'chr9:130,778,200',
+          trackId: 'K562_isoseq',
+          loc: 'chr9:130,778,200',
           fracY: 0,
           dy: 230,
           alignX: 'left',
@@ -1899,8 +1899,8 @@ export const cancerSvSpecs: ScreenshotSpec[] = [
         fontSize: 17,
         leader: true,
         anchor: {
-          track: 'K562_star_fusion',
-          locus: 'chr9:130,854,064',
+          trackId: 'K562_star_fusion',
+          loc: 'chr9:130,854,064',
           fracY: 0.3,
         },
         dx: 60,
@@ -1912,8 +1912,8 @@ export const cancerSvSpecs: ScreenshotSpec[] = [
         fontSize: 17,
         leader: true,
         anchor: {
-          track: 'K562_10x_sv',
-          locus: 'chr9:130,731,760',
+          trackId: 'K562_10x_sv',
+          loc: 'chr9:130,731,760',
           fracY: 0.3,
         },
         dx: 60,
@@ -1925,8 +1925,8 @@ export const cancerSvSpecs: ScreenshotSpec[] = [
         fontSize: 17,
         leader: true,
         anchor: {
-          track: 'K562_10x_sv',
-          locus: 'chr9:131,280,138',
+          trackId: 'K562_10x_sv',
+          loc: 'chr9:131,280,138',
           fracY: 0.3,
         },
         dx: -90,

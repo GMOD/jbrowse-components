@@ -23,8 +23,8 @@ interface AxisLocus {
 // was measured against, with nothing to say when one of those moved. This is the
 // `graphAnchor.ts` treatment: resolve it out here, against the live model.
 //
-// Two axes, so an anchor names up to two loci. `hLocus` is the horizontal
-// (`hview`) axis and `vLocus` the vertical one; either may be omitted, and the
+// Two axes, so an anchor names up to two loci. `hLoc` is the horizontal
+// (`hview`) axis and `vLoc` the vertical one; either may be omitted, and the
 // omitted axis spans the whole plot — which is what a callout on "this
 // chromosome, whatever it pairs with" wants. Naming neither is not a dotplot
 // anchor at all, and `annotations.ts` never routes one here.
@@ -124,8 +124,8 @@ export async function dotplotAnchorRect(
       }
     },
     path,
-    anchor.hLocus ? parseAxisLocus(anchor.hLocus) : null,
-    anchor.vLocus ? parseAxisLocus(anchor.vLocus) : null,
+    anchor.hLoc ? parseAxisLocus(anchor.hLoc) : null,
+    anchor.vLoc ? parseAxisLocus(anchor.vLoc) : null,
   )
 }
 
@@ -143,7 +143,7 @@ function parseAxisLocus(locus: string): AxisLocus {
   const match = /^(\d+)(?:\.\.|-)?(\d+)?$/.exec(cleaned.slice(idx + 1))
   if (!match) {
     throw new Error(
-      `dotplot anchor locus "${locus}" is not <refName>[:<start>[-<end>]]`,
+      `dotplot anchor loc "${locus}" is not <refName>[:<start>[-<end>]]`,
     )
   }
   const start = Number(match[1]) - 1

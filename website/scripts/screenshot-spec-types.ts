@@ -23,10 +23,10 @@ export interface ActionAnchor extends AnnotationAnchor {
   // band's middle and checked against the view's own `bandAt`.
   ideogram?: string
   // A selector, matched INSIDE the view, whose vertical band the point lands in
-  // — the third way of choosing the y after `track` and the default tracks
+  // — the third way of choosing the y after `trackId` and the default tracks
   // area. The x still comes from the locus, which is what makes it useful: the
   // scalebar a rubberband is drawn on spans exactly the tracks' x-range and
-  // sits above them, so `{ locus, band: '[data-testid="rubberband_controls"]' }`
+  // sits above them, so `{ loc, band: '[data-testid="rubberband_controls"]' }`
   // is a drag on the ruler with no measured pixel in it.
   band?: string
 }
@@ -96,11 +96,11 @@ export interface ScreenshotAction {
   // one. A rubberband is the case that needs it most and had it least: both its
   // ends were measured pixels, so a drag was correct only at the width, locus
   // and layout it was measured against, and widening the video frame from 1280
-  // invalidated every one of them at once. Pair a `locus` with a `band` naming
+  // invalidated every one of them at once. Pair a `loc` with a `band` naming
   // the strip to drag on:
   //
-  //   fromAnchor: { locus: 'ctgA:4000', band: RUBBERBAND }
-  //   toAnchor:   { locus: 'ctgA:9000', band: RUBBERBAND }
+  //   fromAnchor: { loc: 'ctgA:4000', band: RUBBERBAND }
+  //   toAnchor:   { loc: 'ctgA:9000', band: RUBBERBAND }
   //
   // Each takes precedence over the matching `from`/`to`.
   fromAnchor?: ActionAnchor
@@ -110,11 +110,11 @@ export interface ScreenshotAction {
   // with no element per feature) where the app can still say where it drew
   // things. Takes precedence over `from`. Two kinds resolve:
   //
-  //   graphNode  a GFA segment in a graph track, with `track` naming which when
+  //   graphNode  a GFA segment in a graph track, with `trackId` naming which when
   //              the view holds several, or in a GraphGenomeView
   //              (@jbrowse/capture's graphAnchor.ts)
-  //   locus      a genomic coordinate in a linear view (scripts/locusAnchor.ts),
-  //              with `track` naming which track to land in and `fracY` how far
+  //   loc        a genomic coordinate in a linear view (scripts/locusAnchor.ts),
+  //              with `trackId` naming which track to land in and `fracY` how far
   //              down its band (default the middle)
   //   selector   an element's own rect (scripts/selectorAnchor.ts), with `view`
   //              scoping the query to one view's container and

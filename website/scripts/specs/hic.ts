@@ -155,7 +155,7 @@ export const hicSpecs: ScreenshotSpec[] = [
         type: 'text',
         text: 'GM12878, normal karyotype: no chr9-chr22 contacts',
         anchor: {
-          track: 'hic_gm12878_insitu',
+          trackId: 'hic_gm12878_insitu',
           fracY: 0,
           alignX: 'left',
           dx: 12,
@@ -170,7 +170,7 @@ export const hicSpecs: ScreenshotSpec[] = [
         // connect the block to a structural variant.
         text: 'K562 (CML): t(9;22) fuses chr9 to chr22, so they contact',
         anchor: {
-          track: 'hic_k562_insitu',
+          trackId: 'hic_k562_insitu',
           fracY: 0,
           alignX: 'left',
           dx: 12,
@@ -189,13 +189,13 @@ export const hicSpecs: ScreenshotSpec[] = [
       {
         type: 'arrow',
         anchor: {
-          track: 'hic_k562_insitu',
-          locus: 'chr22:22,300,000',
+          trackId: 'hic_k562_insitu',
+          loc: 'chr22:22,300,000',
           fracY: 0.7,
         },
         fromAnchor: {
-          track: 'hic_k562_insitu',
-          locus: 'chr9:130,200,000',
+          trackId: 'hic_k562_insitu',
+          loc: 'chr9:130,200,000',
           fracY: 0.34,
         },
       },
@@ -268,8 +268,8 @@ export const hicSpecs: ScreenshotSpec[] = [
         text: 'GM12878, B-cell line: A, open',
         fontSize: 16,
         anchor: {
-          track: 'hic_gm12878_compartments',
-          locus: 'chr5:158,160,000',
+          trackId: 'hic_gm12878_compartments',
+          loc: 'chr5:158,160,000',
           fracY: 0.85,
         },
       },
@@ -278,8 +278,8 @@ export const hicSpecs: ScreenshotSpec[] = [
         text: 'K562, erythroleukemia: B, closed',
         fontSize: 16,
         anchor: {
-          track: 'hic_k562_compartments',
-          locus: 'chr5:158,160,000',
+          trackId: 'hic_k562_compartments',
+          loc: 'chr5:158,160,000',
           fracY: 0.4,
         },
       },

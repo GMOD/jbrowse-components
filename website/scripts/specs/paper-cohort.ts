@@ -94,8 +94,8 @@ export const paperCohortSpecs: ScreenshotSpec[] = [
       {
         type: 'rightclick',
         anchor: {
-          track: SV_TRACK.trackId,
-          locus: OUTER_DELETION_SORT_POINT,
+          trackId: SV_TRACK.trackId,
+          loc: OUTER_DELETION_SORT_POINT,
           fracY: 0.5,
         },
       },

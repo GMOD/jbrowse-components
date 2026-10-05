@@ -283,8 +283,8 @@ export const mouseCattleGraphSpecs: ScreenshotSpec[] = [
         fontSize: 18,
         leader: true,
         anchor: {
-          track: 'bovine_pangenome_vcf',
-          locus: 'chr5:98,600,000',
+          trackId: 'bovine_pangenome_vcf',
+          loc: 'chr5:98,600,000',
           fracY: 0.78,
         },
         dx: 60,
@@ -326,8 +326,8 @@ export const mouseCattleGraphSpecs: ScreenshotSpec[] = [
         fontSize: 18,
         leader: true,
         anchor: {
-          track: 'bovine_minigraph_alleles',
-          locus: 'chr23:27,521,000',
+          trackId: 'bovine_minigraph_alleles',
+          loc: 'chr23:27,521,000',
           fracY: 0.45,
         },
         dx: 80,
@@ -369,8 +369,8 @@ export const mouseCattleGraphSpecs: ScreenshotSpec[] = [
         fontSize: 18,
         leader: true,
         anchor: {
-          track: 'bovine_bubble_score',
-          locus: 'chr23:25,900,000',
+          trackId: 'bovine_bubble_score',
+          loc: 'chr23:25,900,000',
           fracY: 0.15,
         },
         dx: -100,

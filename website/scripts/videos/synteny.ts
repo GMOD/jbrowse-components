@@ -66,20 +66,20 @@ const chromosomeBox = (axis: 'x' | 'y') =>
 const COLOR_BY_MENU = '[data-testid="color_by_menu"]'
 
 // One sideways drag across the HG002 tour's top panel, named by the two
-// maternal coordinates it grabs and releases at. `track` puts the press inside
+// maternal coordinates it grabs and releases at. `trackId` puts the press inside
 // the gene lane's own rendering container: the LGV's click-drag pan skips a
 // press that lands on a resize handle, which is what the strip between two lanes
 // is, and the tracks container's own midpoint is one of those.
 const panMaternal = (from: string, to: string, say?: string): VideoStep => ({
   type: 'drag',
   fromAnchor: {
-    locus: `chr8_MATERNAL:${from}`,
-    track: 'hg002_genes_mat',
+    loc: `chr8_MATERNAL:${from}`,
+    trackId: 'hg002_genes_mat',
     view: [0, 0],
   },
   toAnchor: {
-    locus: `chr8_MATERNAL:${to}`,
-    track: 'hg002_genes_mat',
+    loc: `chr8_MATERNAL:${to}`,
+    trackId: 'hg002_genes_mat',
     view: [0, 0],
   },
   dragMs: 2200,
@@ -769,8 +769,8 @@ export const syntenyVideos: VideoSpec[] = [
       // the x still comes from the locus.
       {
         type: 'drag',
-        fromAnchor: { locus: restackSpan.start, band: RUBBERBAND },
-        toAnchor: { locus: restackSpan.end, band: RUBBERBAND },
+        fromAnchor: { loc: restackSpan.start, band: RUBBERBAND },
+        toAnchor: { loc: restackSpan.end, band: RUBBERBAND },
         say: 'Select the locus on the scale bar and launch a synteny view',
         hold: 900,
       },
@@ -883,8 +883,8 @@ export const syntenyVideos: VideoSpec[] = [
       // locus.
       {
         type: 'drag',
-        fromAnchor: { locus: allVsAllSpan.start, band: RUBBERBAND },
-        toAnchor: { locus: allVsAllSpan.end, band: RUBBERBAND },
+        fromAnchor: { loc: allVsAllSpan.start, band: RUBBERBAND },
+        toAnchor: { loc: allVsAllSpan.end, band: RUBBERBAND },
         say: 'Select the locus on the scale bar and launch a synteny view',
         hold: 900,
       },
@@ -1023,8 +1023,8 @@ export const syntenyVideos: VideoSpec[] = [
       {
         type: 'rightclick',
         anchor: {
-          track: 'hg38_to_hs1_liftOver',
-          locus: liftoverBlock,
+          trackId: 'hg38_to_hs1_liftOver',
+          loc: liftoverBlock,
           fracY: 0,
           dy: 8,
         },
@@ -1128,11 +1128,11 @@ export const syntenyVideos: VideoSpec[] = [
       {
         type: 'drag',
         fromAnchor: {
-          locus: roundTripSpan.start,
+          loc: roundTripSpan.start,
           band: RUBBERBAND,
         },
         toAnchor: {
-          locus: roundTripSpan.end,
+          loc: roundTripSpan.end,
           band: RUBBERBAND,
         },
         say: 'Select a span and launch a stack of the strains on it',
@@ -1251,14 +1251,14 @@ export const syntenyVideos: VideoSpec[] = [
       {
         type: 'drag',
         fromAnchor: {
-          locus: mafRowSpan.start,
-          track: mafTrackId,
+          loc: mafRowSpan.start,
+          trackId: mafTrackId,
           band: MAF_ROWS,
           fracY: 0.02,
         },
         toAnchor: {
-          locus: mafRowSpan.end,
-          track: mafTrackId,
+          loc: mafRowSpan.end,
+          trackId: mafTrackId,
           band: MAF_ROWS,
           fracY: 0.98,
         },
@@ -1291,8 +1291,8 @@ export const syntenyVideos: VideoSpec[] = [
       {
         type: 'hover',
         anchor: {
-          locus: mafRowSpan.start,
-          track: mafTrackId,
+          loc: mafRowSpan.start,
+          trackId: mafTrackId,
           band: MAF_ROWS,
           fracY: 0.5,
         },

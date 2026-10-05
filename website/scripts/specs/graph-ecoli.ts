@@ -1121,8 +1121,8 @@ export const ecoliGraphSpecs: ScreenshotSpec[] = [
         text: 'odgi depth, windowed',
         fontSize: 15,
         anchor: {
-          track: PGGB_DEPTH_TRACK,
-          locus: 'chr:1,300,000',
+          trackId: PGGB_DEPTH_TRACK,
+          loc: 'chr:1,300,000',
           fracY: 0.3,
         },
       },
@@ -1139,8 +1139,8 @@ export const ecoliGraphSpecs: ScreenshotSpec[] = [
         text: 'GFA SM:Z: tag, per segment',
         fontSize: 15,
         anchor: {
-          track: PGGB_CARRIAGE_TRACK,
-          locus: 'chr:1,299,340',
+          trackId: PGGB_CARRIAGE_TRACK,
+          loc: 'chr:1,299,340',
           fracY: 0.55,
         },
       },
@@ -1266,8 +1266,8 @@ export const ecoliGraphSpecs: ScreenshotSpec[] = [
         pad: 11,
         anchor: {
           view: 0,
-          track: ECOLI_SEGMENTS_TRACK,
-          locus: 'chr:4,063,561-4,069,329',
+          trackId: ECOLI_SEGMENTS_TRACK,
+          loc: 'chr:4,063,561-4,069,329',
           fracY: 0.1,
         },
       },
@@ -1461,8 +1461,8 @@ export const ecoliGraphSpecs: ScreenshotSpec[] = [
         type: 'circle',
         anchor: {
           view: [0, 1],
-          track: ECOLI_SEGMENTS_TRACK,
-          locus: `chr:${PAA_ISLAND_HIGHLIGHT.start}-${PAA_ISLAND_HIGHLIGHT.end}`,
+          trackId: ECOLI_SEGMENTS_TRACK,
+          loc: `chr:${PAA_ISLAND_HIGHLIGHT.start}-${PAA_ISLAND_HIGHLIGHT.end}`,
         },
         // the 50px lane, ringed a little proud of it. The block is ~150px wide
         // here, so a ring sized to the whole segment would swallow its
@@ -1757,8 +1757,8 @@ export const ecoliGraphSpecs: ScreenshotSpec[] = [
         // only offers start and end and the pill's width is not known here.
         textAlign: 'end',
         anchor: {
-          track: 'K12_genes',
-          locus: 'chr:1,095,502-1,097,564',
+          trackId: 'K12_genes',
+          loc: 'chr:1,095,502-1,097,564',
           alignX: 'left',
           fracY: 0,
           dx: -6,
@@ -1818,8 +1818,8 @@ export const ecoliGraphSpecs: ScreenshotSpec[] = [
         fontSize: 18,
         anchor: {
           view: [0, 1],
-          track: 'CFT073_genes',
-          locus: 'chr:1,127,332-1,241,061',
+          trackId: 'CFT073_genes',
+          loc: 'chr:1,127,332-1,241,061',
           fracY: 0,
           dy: -70,
         },
@@ -1831,8 +1831,8 @@ export const ecoliGraphSpecs: ScreenshotSpec[] = [
         leader: true,
         anchor: {
           view: [0, 0],
-          track: 'K12_genes',
-          locus: 'chr:1,095,502-1,097,564',
+          trackId: 'K12_genes',
+          loc: 'chr:1,095,502-1,097,564',
           fracY: 1,
         },
         dx: 60,

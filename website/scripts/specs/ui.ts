@@ -242,8 +242,8 @@ export const uiVideoFixtures = {
   // Where that figure clicks to select the mRNA, resolved against the track's
   // own band rather than off the page.
   sequencePanelGene: {
-    track: 'gff3tabix_genes',
-    locus: 'ctgA:17,400-23,000',
+    trackId: 'gff3tabix_genes',
+    loc: 'ctgA:17,400-23,000',
     fracY: 0,
     dy: 121,
   },
@@ -768,8 +768,8 @@ export const uiSpecs: ScreenshotSpec[] = [
       {
         type: 'rightclick',
         anchor: {
-          track: '1KGP_3202.Illumina_ensemble_callset.freeze_V1.vcf',
-          locus: '19:46,555,000',
+          trackId: '1KGP_3202.Illumina_ensemble_callset.freeze_V1.vcf',
+          loc: '19:46,555,000',
           fracY: 0.5,
         },
       },
@@ -831,8 +831,8 @@ export const uiSpecs: ScreenshotSpec[] = [
       {
         type: 'rightclick',
         anchor: {
-          track: '1KGP_3202.Illumina_ensemble_callset.freeze_V1.vcf',
-          locus: '19:46,555,000',
+          trackId: '1KGP_3202.Illumina_ensemble_callset.freeze_V1.vcf',
+          loc: '19:46,555,000',
           fracY: 0.5,
         },
       },
@@ -919,8 +919,8 @@ export const uiSpecs: ScreenshotSpec[] = [
       {
         type: 'rightclick',
         anchor: {
-          track: multisvVideoFixtures.matrixTrackId,
-          locus: multisvVideoFixtures.deletionSpan,
+          trackId: multisvVideoFixtures.matrixTrackId,
+          loc: multisvVideoFixtures.deletionSpan,
           fracY: 0.5,
         },
       },
@@ -1350,8 +1350,8 @@ export const uiSpecs: ScreenshotSpec[] = [
       {
         type: 'rightclick',
         anchor: {
-          track: 'ngmlr',
-          locus: '1:85,620,091',
+          trackId: 'ngmlr',
+          loc: '1:85,620,091',
           fracY: 0,
           dy: 56,
         },
@@ -2312,8 +2312,8 @@ export const uiSpecs: ScreenshotSpec[] = [
       {
         type: 'box',
         anchor: {
-          track: 'roadmap_chromhmm_multirow_hg19',
-          locus: 'chr9:36,833,266-37,034,265',
+          trackId: 'roadmap_chromhmm_multirow_hg19',
+          loc: 'chr9:36,833,266-37,034,265',
         },
         pad: 2,
       },
@@ -2323,8 +2323,8 @@ export const uiSpecs: ScreenshotSpec[] = [
         leader: true,
         // rows 40 and 41 of 127 in ROADMAP_FIGURE_GROUPS order
         anchor: {
-          track: 'roadmap_chromhmm_multirow_hg19',
-          locus: 'chr9:36,900,000',
+          trackId: 'roadmap_chromhmm_multirow_hg19',
+          loc: 'chr9:36,900,000',
           fracY: 40.5 / 127,
         },
         dx: -260,
@@ -2370,16 +2370,16 @@ export const uiSpecs: ScreenshotSpec[] = [
       {
         type: 'box',
         anchor: {
-          track: 'roadmap_chromhmm_multirow_hg19',
-          locus: 'chr7:27,132,613-27,196,294',
+          trackId: 'roadmap_chromhmm_multirow_hg19',
+          loc: 'chr7:27,132,613-27,196,294',
         },
         pad: 2,
       },
       {
         type: 'box',
         anchor: {
-          track: 'roadmap_chromhmm_multirow_hg19',
-          locus: 'chr7:27,202,056-27,246,878',
+          trackId: 'roadmap_chromhmm_multirow_hg19',
+          loc: 'chr7:27,202,056-27,246,878',
         },
         pad: 2,
         color: '#1565c0',

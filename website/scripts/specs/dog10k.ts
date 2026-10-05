@@ -333,7 +333,7 @@ const fstCallout = (
     text,
     fontSize: 20,
     leader: true,
-    anchor: { track: trackId, locus, fracY: 0, dy: fstY(fst) },
+    anchor: { trackId, loc: locus, fracY: 0, dy: fstY(fst) },
     dx: side * 150,
   },
 ]
@@ -642,8 +642,8 @@ export const dog10kSpecs: ScreenshotSpec[] = [
         fontSize: 21,
         maxWidth: 760,
         anchor: {
-          track: 'dog10k_wolfdog_named',
-          locus: WOLFDOG_PILL_X,
+          trackId: 'dog10k_wolfdog_named',
+          loc: WOLFDOG_PILL_X,
           fracY: 0,
           dy: 55,
         },
@@ -654,8 +654,8 @@ export const dog10kSpecs: ScreenshotSpec[] = [
         fontSize: 21,
         maxWidth: 700,
         anchor: {
-          track: 'dog10k_wolfdog_named',
-          locus: WOLFDOG_PILL_X,
+          trackId: 'dog10k_wolfdog_named',
+          loc: WOLFDOG_PILL_X,
           fracY: 0,
           dy: 250,
         },
@@ -781,8 +781,8 @@ export const dog10kSpecs: ScreenshotSpec[] = [
         fontSize: 22,
         maxWidth: 460,
         anchor: {
-          track: 'dog10k_nhej1_svs',
-          locus: 'chr37:25,574,005-25,581,807',
+          trackId: 'dog10k_nhej1_svs',
+          loc: 'chr37:25,574,005-25,581,807',
           fracY: 0,
           dx: -704,
           dy: 170,
@@ -791,15 +791,15 @@ export const dog10kSpecs: ScreenshotSpec[] = [
       {
         type: 'arrow',
         fromAnchor: {
-          track: 'dog10k_nhej1_svs',
-          locus: 'chr37:25,574,005-25,581,807',
+          trackId: 'dog10k_nhej1_svs',
+          loc: 'chr37:25,574,005-25,581,807',
           fracY: 0,
           dx: -249,
           dy: 175,
         },
         anchor: {
-          track: 'dog10k_nhej1_svs',
-          locus: 'chr37:25,574,005-25,581,807',
+          trackId: 'dog10k_nhej1_svs',
+          loc: 'chr37:25,574,005-25,581,807',
           fracY: 0,
           dx: -100,
           dy: 175,
@@ -897,8 +897,8 @@ export const dog10kSpecs: ScreenshotSpec[] = [
         // measured in the page.
         textAlign: 'end',
         anchor: {
-          track: 'dog10k_amy2b_svs',
-          locus: 'chr6:47,375,677-47,390,529',
+          trackId: 'dog10k_amy2b_svs',
+          loc: 'chr6:47,375,677-47,390,529',
           fracY: AMY2B_CALLOUT_FRAC_Y,
           dx: -430,
           dy: 0,
@@ -907,15 +907,15 @@ export const dog10kSpecs: ScreenshotSpec[] = [
       {
         type: 'arrow',
         fromAnchor: {
-          track: 'dog10k_amy2b_svs',
-          locus: 'chr6:47,375,677-47,390,529',
+          trackId: 'dog10k_amy2b_svs',
+          loc: 'chr6:47,375,677-47,390,529',
           fracY: AMY2B_CALLOUT_FRAC_Y,
           dx: -420,
           dy: 0,
         },
         anchor: {
-          track: 'dog10k_amy2b_svs',
-          locus: 'chr6:47,375,677-47,390,529',
+          trackId: 'dog10k_amy2b_svs',
+          loc: 'chr6:47,375,677-47,390,529',
           fracY: AMY2B_CALLOUT_FRAC_Y,
           dx: -40,
           dy: 0,
@@ -984,8 +984,8 @@ export const dog10kSpecs: ScreenshotSpec[] = [
         // to place the edge the arrow leaves from.
         textAlign: 'end',
         anchor: {
-          track: 'dog10k_rnase1_svs',
-          locus: 'chr15:18,164,072-18,164,074',
+          trackId: 'dog10k_rnase1_svs',
+          loc: 'chr15:18,164,072-18,164,074',
           fracY: 0.62,
           dx: -180,
           dy: 0,
@@ -994,15 +994,15 @@ export const dog10kSpecs: ScreenshotSpec[] = [
       {
         type: 'arrow',
         fromAnchor: {
-          track: 'dog10k_rnase1_svs',
-          locus: 'chr15:18,164,072-18,164,074',
+          trackId: 'dog10k_rnase1_svs',
+          loc: 'chr15:18,164,072-18,164,074',
           fracY: 0.62,
           dx: -170,
           dy: 0,
         },
         anchor: {
-          track: 'dog10k_rnase1_svs',
-          locus: 'chr15:18,164,072-18,164,074',
+          trackId: 'dog10k_rnase1_svs',
+          loc: 'chr15:18,164,072-18,164,074',
           fracY: 0.62,
           dx: -30,
           dy: 0,
@@ -1177,8 +1177,8 @@ export const dog10kSpecs: ScreenshotSpec[] = [
         text: 'IGF1',
         fontSize: 20,
         anchor: {
-          track: 'dog10k_size_fst_igf1_20kb',
-          locus: IGF1_PEAK_WINDOW,
+          trackId: 'dog10k_size_fst_igf1_20kb',
+          loc: IGF1_PEAK_WINDOW,
           fracY: 0,
           dy: 30,
         },
@@ -1339,8 +1339,8 @@ export const dog10kSpecs: ScreenshotSpec[] = [
         text: 'retrogene - no introns (CFA18)',
         anchor: {
           view: [0, 0],
-          track: 'dog10k_fgf4_retro_cfa18_genes',
-          locus: 'FGF4retro-CFA18:1',
+          trackId: 'dog10k_fgf4_retro_cfa18_genes',
+          loc: 'FGF4retro-CFA18:1',
           fracY: 1,
           dx: 14,
           dy: -26,
@@ -1353,8 +1353,8 @@ export const dog10kSpecs: ScreenshotSpec[] = [
         text: 'regular gene (dog reference)',
         anchor: {
           view: [0, 1],
-          track: 'canFam4_ncbi_refseq',
-          locus: 'chr18:48,869,100',
+          trackId: 'canFam4_ncbi_refseq',
+          loc: 'chr18:48,869,100',
           fracY: 1,
           dx: 14,
           dy: -26,
@@ -1367,8 +1367,8 @@ export const dog10kSpecs: ScreenshotSpec[] = [
         text: 'retrogene - no introns (CFA12)',
         anchor: {
           view: [0, 2],
-          track: 'dog10k_fgf4_retro_cfa12_genes',
-          locus: 'FGF4retro-CFA12:2',
+          trackId: 'dog10k_fgf4_retro_cfa12_genes',
+          loc: 'FGF4retro-CFA12:2',
           fracY: 1,
           dx: 14,
           dy: -26,
@@ -1491,8 +1491,8 @@ export const dog10kSpecs: ScreenshotSpec[] = [
         text: 'CGA → TGA (Arg373 → stop)\nhomozygotes make no CYP1A2:\npoor drug metabolizers',
         fontSize: 22,
         anchor: {
-          track: 'dog10k_cyp1a2_snvs',
-          locus: 'chr30:38,261,637',
+          trackId: 'dog10k_cyp1a2_snvs',
+          loc: 'chr30:38,261,637',
           fracY: 0,
           // right of the genotype column, over empty homozygous-reference grey
           dx: 24,
@@ -1502,15 +1502,15 @@ export const dog10kSpecs: ScreenshotSpec[] = [
       {
         type: 'arrow',
         fromAnchor: {
-          track: 'dog10k_cyp1a2_snvs',
-          locus: 'chr30:38,261,637',
+          trackId: 'dog10k_cyp1a2_snvs',
+          loc: 'chr30:38,261,637',
           fracY: 0,
           dx: 24,
           dy: 14,
         },
         anchor: {
-          track: 'UU_Cfam_GSD_1.0-ReferenceSequenceTrack',
-          locus: 'chr30:38,261,636',
+          trackId: 'UU_Cfam_GSD_1.0-ReferenceSequenceTrack',
+          loc: 'chr30:38,261,636',
           fracY: 1,
         },
       },

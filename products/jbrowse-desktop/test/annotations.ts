@@ -30,7 +30,7 @@ function resolveAnchor(
   return anchor
     ? {
         ...anchor,
-        region: anchor.locus ? parseAnnotationLocus(anchor.locus) : undefined,
+        region: anchor.loc ? parseAnnotationLocus(anchor.loc) : undefined,
       }
     : undefined
 }

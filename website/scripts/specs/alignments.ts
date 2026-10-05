@@ -66,8 +66,8 @@ const HSV1_CONFIG = encodeURIComponent(
 // view — the fracY sits in the pileup below the coverage subtrack, and every
 // read row in this column carries the mismatch.
 const SORT_COLUMN = {
-  track: 'volvox_bam',
-  locus: 'ctgA:14,481',
+  trackId: 'volvox_bam',
+  loc: 'ctgA:14,481',
   // Down into the run of three adjacent A rows at the top of the (unsorted)
   // pileup: only a read carrying the mismatch offers "SNP/Mismatch", so this
   // fraction has to land on one of the eleven that do rather than on any read.
@@ -114,8 +114,8 @@ const COLUMN_BOX = {
 // second read row whatever height the display is given, where a fraction of the
 // height is only the second row at one height.
 const CTX_MENU_READ = {
-  track: 'volvox_sv_cram',
-  locus: 'ctgA:1633',
+  trackId: 'volvox_sv_cram',
+  loc: 'ctgA:1633',
   fracY: 0,
   dy: 57,
 }
@@ -205,8 +205,8 @@ function strandSpecificSpec(): ScreenshotSpec {
         maxWidth: 700,
         text: label,
         anchor: {
-          track: 'ncbi_gff_hg19',
-          locus: 'chr9:136,216,000',
+          trackId: 'ncbi_gff_hg19',
+          loc: 'chr9:136,216,000',
           fracY: 0.6,
         },
       },
@@ -230,13 +230,13 @@ function strandSpecificSpec(): ScreenshotSpec {
         type: 'arrow' as const,
         strokeWidth: 9,
         fromAnchor: {
-          track: 'ncbi_gff_hg19',
-          locus: `chr9:${from}`,
+          trackId: 'ncbi_gff_hg19',
+          loc: `chr9:${from}`,
           fracY: 0.86,
         },
         anchor: {
-          track: 'ncbi_gff_hg19',
-          locus: `chr9:${to}`,
+          trackId: 'ncbi_gff_hg19',
+          loc: `chr9:${to}`,
           fracY: 0.86,
         },
       })),
@@ -671,7 +671,7 @@ export const alignmentsSpecs: ScreenshotSpec[] = [
     annotations: [
       {
         ...COLUMN_BOX,
-        anchor: { track: 'hg002_nanopore_hp', locus: '1:55,705,711' },
+        anchor: { trackId: 'hg002_nanopore_hp', loc: '1:55,705,711' },
       },
       {
         type: 'text',
@@ -679,8 +679,8 @@ export const alignmentsSpecs: ScreenshotSpec[] = [
         fontSize: 15,
         textAlign: 'end',
         anchor: {
-          track: 'hg002_nanopore_hp',
-          locus: '1:55,705,711',
+          trackId: 'hg002_nanopore_hp',
+          loc: '1:55,705,711',
           fracY: 0,
           // -30 overshot into the ruler's own tick labels; -14 lands the pill
           // in the label row itself
@@ -691,7 +691,7 @@ export const alignmentsSpecs: ScreenshotSpec[] = [
       },
       {
         ...COLUMN_BOX,
-        anchor: { track: 'hg002_nanopore_hp', locus: '1:55,705,716' },
+        anchor: { trackId: 'hg002_nanopore_hp', loc: '1:55,705,716' },
       },
       {
         // the two pills share the label row and leave their own column in
@@ -702,8 +702,8 @@ export const alignmentsSpecs: ScreenshotSpec[] = [
         text: 'both strands: a real variant',
         fontSize: 15,
         anchor: {
-          track: 'hg002_nanopore_hp',
-          locus: '1:55,705,716',
+          trackId: 'hg002_nanopore_hp',
+          loc: '1:55,705,716',
           fracY: 0,
           dy: -14,
           alignX: 'right',
@@ -1127,7 +1127,7 @@ export const alignmentsSpecs: ScreenshotSpec[] = [
         // bottom-left of the display, which is the corner of the triangle's
         // bounding box that has no data in it at any zoom
         anchor: {
-          track: 'hic',
+          trackId: 'hic',
           alignX: 'left' as const,
           alignY: 'bottom' as const,
         },

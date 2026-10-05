@@ -366,8 +366,8 @@ export const mafSpecs: ScreenshotSpec[] = [
       {
         type: 'hover',
         anchor: {
-          track: 'ce11.26way',
-          locus: 'chrI:2,999,247',
+          trackId: 'ce11.26way',
+          loc: 'chrI:2,999,247',
           fracY: 0,
           dy: 68,
         },
@@ -660,7 +660,7 @@ export const mafSpecs: ScreenshotSpec[] = [
         // bottom-left of the track band, `dx` clear of the tree sidebar and its
         // species names.
         anchor: {
-          track: 'hg38.multiz470way',
+          trackId: 'hg38.multiz470way',
           alignX: 'left' as const,
           alignY: 'bottom' as const,
         },
@@ -940,8 +940,8 @@ export const mafSpecs: ScreenshotSpec[] = [
         // is what decides where it starts.
         textAlign: 'end' as const,
         anchor: {
-          track: 'hprc_v2_1_mc_grch38',
-          locus: 'chr6:32,049,000',
+          trackId: 'hprc_v2_1_mc_grch38',
+          loc: 'chr6:32,049,000',
           fracY: 0.12,
         },
       },
@@ -967,8 +967,8 @@ export const mafSpecs: ScreenshotSpec[] = [
         // the tail leaves the band at the band's own x rather than beside it
         fromAnchor: {
           view: 0,
-          track: 'hprc_v2_1_mc_grch38',
-          locus: HPRC_C4_MARKED,
+          trackId: 'hprc_v2_1_mc_grch38',
+          loc: HPRC_C4_MARKED,
           fracY: 1,
           dy: -8,
         },

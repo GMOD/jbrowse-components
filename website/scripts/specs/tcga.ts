@@ -58,7 +58,11 @@ function subtypeCallout({
   headDy: number
   labelDx: number
 }): Annotation[] {
-  const at = { track: 'tcga_brca_cnv_recurrence_by_subtype', locus, fracY: 0 }
+  const at = {
+    trackId: 'tcga_brca_cnv_recurrence_by_subtype',
+    loc: locus,
+    fracY: 0,
+  }
   const y = (frac: number) => (row + frac) * SUBTYPE_ROW_PITCH
   // The arrow FIRST, so the label's pill (opaque white) draws over its tail. A
   // tail has to start inside the label to leave from it -- the pill's width is
@@ -405,7 +409,7 @@ export const tcgaSpecs: ScreenshotSpec[] = [
       ({ gene, locus, labelDx, tailDx, labelDy = 532, headDy = 422 }) => {
         // fracY 0 puts the anchor on the stack's top edge; dy then walks down
         // from there, so every offset is measured against the track itself
-        const at = { track: COHORT_TRACK_ID, locus, fracY: 0 }
+        const at = { trackId: COHORT_TRACK_ID, loc: locus, fracY: 0 }
         return [
           {
             type: 'text' as const,
@@ -514,7 +518,7 @@ export const tcgaSpecs: ScreenshotSpec[] = [
         type: 'text',
         text: 'balanced: the largest group, painted near-white',
         anchor: {
-          track: 'tcga_brca_cnv',
+          trackId: 'tcga_brca_cnv',
           fracY: 0.44,
           alignX: 'left',
           dx: 430,
@@ -524,8 +528,8 @@ export const tcgaSpecs: ScreenshotSpec[] = [
         type: 'text',
         text: 'amplified',
         anchor: {
-          track: 'tcga_brca_cnv',
-          locus: '17:39,150,000',
+          trackId: 'tcga_brca_cnv',
+          loc: '17:39,150,000',
           fracY: 0.06,
         },
       },
@@ -545,7 +549,7 @@ export const tcgaSpecs: ScreenshotSpec[] = [
   // that event draws in: a gain rises from the row's midline, so the ERBB2
   // label sits near the top edge, and a loss hangs below it, so the 16q label
   // sits near the bottom. Both anchor to the locus in the
-  // live view (`{track, locus}` resolves through the same bp->px layout that
+  // live view (`{trackId, loc}` resolves through the same bp->px layout that
   // painted the bar), with dy measured off the track's top edge in whole row
   // pitches, so neither has a hand-measured coordinate in it.
   {
@@ -683,7 +687,7 @@ export const tcgaSpecs: ScreenshotSpec[] = [
         type: 'text',
         text: 'lobular: most of the calls in this window',
         anchor: {
-          track: 'tcga_brca_mutations',
+          trackId: 'tcga_brca_mutations',
           fracY: 0.45,
           alignX: 'left',
           dx: 400,
@@ -692,13 +696,13 @@ export const tcgaSpecs: ScreenshotSpec[] = [
       {
         type: 'arrow',
         fromAnchor: {
-          track: 'tcga_brca_mutations',
+          trackId: 'tcga_brca_mutations',
           fracY: 0.5,
           alignX: 'left',
           dx: 400,
         },
         anchor: {
-          track: 'tcga_brca_mutations',
+          trackId: 'tcga_brca_mutations',
           fracY: 0.87,
           alignX: 'left',
           dx: 400,

@@ -114,8 +114,8 @@ export const readMarksSpecs: ScreenshotSpec[] = [
         fontSize: 18,
         leader: true,
         anchor: {
-          track: 'na12878_chr20_pair_counts',
-          locus: 'chr20:34,250,000',
+          trackId: 'na12878_chr20_pair_counts',
+          loc: 'chr20:34,250,000',
           fracY: 0.3,
         },
         dx: 80,
@@ -127,8 +127,8 @@ export const readMarksSpecs: ScreenshotSpec[] = [
         fontSize: 18,
         leader: true,
         anchor: {
-          track: 'na12878_chr20_pairs',
-          locus: 'chr20:26,300,000',
+          trackId: 'na12878_chr20_pairs',
+          loc: 'chr20:26,300,000',
           fracY: 0.5,
         },
         dx: -80,

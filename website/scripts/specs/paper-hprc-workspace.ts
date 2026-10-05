@@ -88,7 +88,7 @@ const callouts: Annotation[] = [
     type: 'text',
     text: '84.7 kb deletion',
     fontSize: 20,
-    anchor: { track: LANES_TRACK, locus: DELETION_LOCUS, fracY: 0.56 },
+    anchor: { trackId: LANES_TRACK, loc: DELETION_LOCUS, fracY: 0.56 },
   },
   {
     type: 'text',

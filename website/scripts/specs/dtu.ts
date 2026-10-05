@@ -88,13 +88,13 @@ export const dtuSpecs: ScreenshotSpec[] = [
     viewportHeight: 730,
     annotations: [
       {
-        // no `track`, so the band spans the view's whole tracks area: one
+        // no `trackId`, so the band spans the view's whole tracks area: one
         // vertical line tying the absent muscle signal, the liver peak and the
         // exon box on ATP5F1C-202 together. At this zoom the exon itself is ~2
         // px, so the pad is what makes the band findable — and what it marks is
         // a column through three lanes, not the feature's width.
         type: 'box',
-        anchor: { locus: CASSETTE_EXON },
+        anchor: { loc: CASSETTE_EXON },
         pad: 9,
         strokeWidth: 3,
       },
@@ -106,8 +106,8 @@ export const dtuSpecs: ScreenshotSpec[] = [
         type: 'text',
         text: 'exon skipped',
         anchor: {
-          locus: CASSETTE_EXON,
-          track: 'muscle_plus',
+          loc: CASSETTE_EXON,
+          trackId: 'muscle_plus',
           fracY: 0.5,
           alignX: 'left',
         },
@@ -118,8 +118,8 @@ export const dtuSpecs: ScreenshotSpec[] = [
         type: 'text',
         text: 'exon retained',
         anchor: {
-          locus: CASSETTE_EXON,
-          track: 'liver_plus',
+          loc: CASSETTE_EXON,
+          trackId: 'liver_plus',
           fracY: 0.35,
           alignX: 'left',
         },

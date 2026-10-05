@@ -173,12 +173,12 @@ dialog hands you its callouts as a file to pass here.
 ```bash
 cat > callouts.json <<'JSON'
 [
-  { "type": "box", "anchor": { "locus": "chr17:43,044,295-43,125,483" } },
+  { "type": "box", "anchor": { "loc": "chr17:43,044,295-43,125,483" } },
   {
     "type": "text",
     "text": "BRCA1",
     "leader": true,
-    "anchor": { "track": "hg38-ncbiRefSeqCurated", "locus": "chr17:43,044,295", "fracY": 0.5 },
+    "anchor": { "trackId": "hg38-ncbiRefSeqCurated", "loc": "chr17:43,044,295", "fracY": 0.5 },
     "dx": -60,
     "dy": -30
   }
@@ -191,13 +191,12 @@ npx @jbrowse/capture --hub hg38 --loc BRCA1 --track hg38-ncbiRefSeqCurated \
 Each callout places itself through an `anchor` that resolves against the running
 session, so none of them is a pixel measured off an earlier capture:
 
-- `locus`, with an optional `track` (a trackId) and `fracY` (0 is the track's
-  top, 1 its bottom), lands on a genomic position in a linear genome view. A
-  `view` index picks the view, and an array (`[0, 1]`) descends into a synteny
-  view's rows.
+- `loc`, with an optional `trackId` and `fracY` (0 is the track's top, 1 its
+  bottom), lands on a genomic position in a linear genome view. A `view` index
+  picks the view, and an array (`[0, 1]`) descends into a synteny view's rows.
 - `graphNode` names a GFA segment in a graph view or graph track.
-- `hLocus` and `vLocus` name a dotplot's cell, as a whole chromosome (`chr4`) or
-  a span (`chr4:1-5,000,000`).
+- `hLoc` and `vLoc` name a dotplot's cell, as a whole chromosome (`chr4`) or a
+  span (`chr4:1-5,000,000`).
 - `selector` and `text` name an element of the page, such as a menu item.
 
 `dx` and `dy` nudge a callout off its anchor, and `fromAnchor` anchors an

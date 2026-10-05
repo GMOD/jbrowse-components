@@ -28,8 +28,8 @@ export function zoomToSteps(window: string, say?: string): VideoStep[] {
   return [
     {
       type: 'drag',
-      fromAnchor: { locus: `${ref}:${start}`, band: RUBBERBAND },
-      toAnchor: { locus: `${ref}:${end}`, band: RUBBERBAND },
+      fromAnchor: { loc: `${ref}:${start}`, band: RUBBERBAND },
+      toAnchor: { loc: `${ref}:${end}`, band: RUBBERBAND },
       ...(say ? { say } : {}),
       hold: 900,
     },

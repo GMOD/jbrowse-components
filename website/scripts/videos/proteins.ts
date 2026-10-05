@@ -9,8 +9,8 @@ import { proteinTourFixtures } from '../specs/msa.ts'
 import type { VideoSpec, VideoStep } from '../video-spec-types.ts'
 
 const TP53_MENU_ANCHOR = {
-  track: proteinTourFixtures.geneTrack,
-  locus: 'chr17:7,676,000',
+  trackId: proteinTourFixtures.geneTrack,
+  loc: 'chr17:7,676,000',
   // near the top of the band: `longestCoding` draws one gene row, so a centred
   // right-click lands on empty canvas and opens the view's own menu
   fracY: 0.2,
@@ -18,7 +18,7 @@ const TP53_MENU_ANCHOR = {
 
 const hoverAt = (locus: string, hold: number, say?: string): VideoStep => ({
   type: 'hover',
-  anchor: { track: proteinTourFixtures.geneTrack, locus },
+  anchor: { trackId: proteinTourFixtures.geneTrack, loc: locus },
   hold,
   ...(say ? { say } : {}),
 })
