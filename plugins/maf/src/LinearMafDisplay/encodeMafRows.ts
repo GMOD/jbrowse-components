@@ -116,6 +116,11 @@ function codonFills(fill: Record<string, string | undefined>): CodonFills {
  * One region's rows as the row marks' channels. Only the rendering on screen
  * encodes: the others' channels are empty or absent, which packs nothing and
  * releases the pass's GPU buffer.
+ *
+ * Main thread on purpose: an edit to colour or row order re-encodes without a
+ * refetch. A fetch costs about 5 ms over 26 species and 62-94 ms over 470
+ * (`plugins/maf/benches/mafEncodeRows.bench.ts`), a one-off
+ * pause at fetch landing judged not worth a worker split.
  */
 export function encodeMafRows(
   { detail, summary, frames }: MafRowsSource,
