@@ -25,8 +25,8 @@ array:
 useEffect(
   () =>
     autorun(() => {
-      // reads session.views itself, so it re-runs when the view set changes;
-      // homeUnassignedViews is an action and would not be tracked from inside
+      // homes newly launched views; reads session.views here because an
+      // action's reads are untracked
       session.homeUnassignedViews(session.views.map(v => v.id))
     }),
   [session],
