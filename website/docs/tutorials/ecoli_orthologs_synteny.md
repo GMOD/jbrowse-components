@@ -263,10 +263,12 @@ A window anchored on K-12 draws only the rows holding a K-12 gene, so the
 serotype's own sugar pathway genes stay grey. A gene PGAP left under its locus
 tag, such as `ECOLC_RS24020` in the ATCC_8739 lane, has no row either.
 
-Loci like the O-antigen cluster need a homology call across the proteomes to
-fill the table: an [OrthoFinder](/docs/tutorials/orthofinder_synteny) run, or
-the [all-vs-all alignment](/docs/tutorials/allvsall_synteny) that draws the same
-locus base by base for five strains.
+Most of that grey is the biology: each serotype's sugar genes arrived by
+horizontal transfer and have no K-12 counterpart to join. A homology call across
+the proteomes, such as an [OrthoFinder](/docs/tutorials/orthofinder_synteny)
+run, would add the genes the annotations named differently, and the
+[all-vs-all alignment](/docs/tutorials/allvsall_synteny) draws the same locus
+base by base for five strains.
 
 ## Reproduce it end to end
 
