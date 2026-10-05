@@ -27,6 +27,17 @@ test.each<[string, Annotation, string]>([
     'a head and a tail',
   ],
   ['a box placed nowhere', { type: 'box' }, 'a box needs'],
+  ['a box with no size', { type: 'box', x: 1, y: 1 }, 'a box needs'],
+  [
+    'a box with no position',
+    { type: 'box', width: 5, height: 5 },
+    'a box needs',
+  ],
+  [
+    'an unknown type',
+    { type: 'squiggle' } as unknown as Annotation,
+    'type "squiggle" is not one of arrow, box',
+  ],
   ['a text with no words', { type: 'text', anchor }, 'a text needs'],
   ['a legend with no entries', { type: 'legend', anchor }, 'a legend needs'],
   ['a trapezoid with one end', { type: 'trapezoid', anchor }, 'both anchor'],

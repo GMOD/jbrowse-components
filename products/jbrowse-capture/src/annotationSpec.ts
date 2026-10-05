@@ -1,6 +1,6 @@
-import type { Annotation } from './annotationOverlay.ts'
+import { ANNOTATION_TYPES } from './annotationOverlay.ts'
 
-const TYPES = new Set(['arrow', 'box', 'text', 'circle', 'legend', 'trapezoid'])
+import type { Annotation } from './annotationOverlay.ts'
 
 const isNumber = (n: unknown) => typeof n === 'number' && Number.isFinite(n)
 
@@ -13,7 +13,7 @@ function missing(a: Annotation) {
       return head && tail ? undefined : 'an arrow needs a head and a tail'
     }
     case 'box':
-      return placed || (isNumber(a.width) && isNumber(a.height))
+      return !!a.anchor || (placed && isNumber(a.width) && isNumber(a.height))
         ? undefined
         : 'a box needs an anchor or x, y, width and height'
     case 'circle':
@@ -30,6 +30,8 @@ function missing(a: Annotation) {
       return a.anchor && a.fromAnchor
         ? undefined
         : 'a trapezoid needs both anchor and fromAnchor'
+    default:
+      return `type "${a.type as string}" is not one of ${ANNOTATION_TYPES.join(', ')}`
   }
 }
 
@@ -40,10 +42,7 @@ function missing(a: Annotation) {
  */
 export function assertValidAnnotations(annotations: Annotation[]) {
   const problems = (annotations as (Annotation | null)[]).flatMap((a, i) => {
-    const why =
-      a && TYPES.has(a.type)
-        ? missing(a)
-        : `type "${a?.type}" is not one of ${[...TYPES].join(', ')}`
+    const why = a ? missing(a) : 'a callout must be an object'
     return why ? [`annotation ${i}: ${why}`] : []
   })
   if (problems.length > 0) {

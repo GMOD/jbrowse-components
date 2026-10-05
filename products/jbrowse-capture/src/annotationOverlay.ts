@@ -113,6 +113,15 @@ export interface AnnotationAnchor {
 // Prefer `anchor` over raw x/y in every case: an anchored callout resolves its
 // geometry at capture time, a hand-tuned coordinate goes stale silently.
 // `dx`/`dy` nudge the anchored position.
+export const ANNOTATION_TYPES = [
+  'arrow',
+  'box',
+  'text',
+  'circle',
+  'legend',
+  'trapezoid',
+] as const
+
 export interface Annotation {
   // arrow: tail -> head; box/highlight: x/y/width/height (ring around a region);
   // text: x/y baseline; circle: filled numbered badge (with text) or an outline
@@ -120,7 +129,7 @@ export interface Annotation {
   // one swatch-and-label row per `entries` item; trapezoid: a lineage wedge
   // joining `fromAnchor`'s facing edge to `anchor`'s, which is how a zoomed
   // panel is shown to come FROM a span of a wider one
-  type: 'arrow' | 'box' | 'text' | 'circle' | 'legend' | 'trapezoid'
+  type: (typeof ANNOTATION_TYPES)[number]
   // for 'legend': the color key itself. A display that identifies its rows by a
   // color the figure never names (thousands of sub-pixel rows, an overlay whose
   // in-app legend is off screen) needs the mapping in the frame; authoring it
