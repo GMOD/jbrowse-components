@@ -170,7 +170,7 @@ describe('encodeInputs', () => {
     encode.dispose()
   })
 
-  // The hit test reads `encodedChannels` out of a React event handler, so
+  // The hit test reads the channels out of a React event handler, so
   // nothing there is tracked and MobX drops the value as it hands it over.
   // `afterAttach` holds an observer so the cache survives between pointer
   // frames.

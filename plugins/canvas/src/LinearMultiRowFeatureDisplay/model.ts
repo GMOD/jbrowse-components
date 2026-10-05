@@ -1182,7 +1182,7 @@ export default function stateModelFactory(
     .actions(self => {
       return {
         afterAttach() {
-          // What makes `encodedChannels` a memo at all: its consumers are
+          // What makes `uploadedChannels` a memo at all: its consumers are
           // pointer handlers, and MobX discards an unobserved computed's value
           // as it hands it over. Safe to hold because it keys off the data, the
           // rows and the colors, never live view geometry.

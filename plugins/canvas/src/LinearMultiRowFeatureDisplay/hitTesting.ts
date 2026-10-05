@@ -64,7 +64,7 @@ interface HitTestView {
 /**
  * Callers pass `self` straight in so MobX tracks exactly what each function
  * below reads; building an argument object instead would make `hoverInk`
- * depend on the whole encoded map.
+ * depend on the whole channel map.
  */
 export interface MultiRowHitTestSlice {
   showTree: boolean
@@ -78,7 +78,6 @@ export interface MultiRowHitTestSlice {
   renderBlocks: RenderBlock[]
   renderState: MultiRowRenderState
   drawnRegionData: ReadonlyMap<number, MultiRowRegionData>
-  encodedChannels: ReadonlyMap<number, MultiRowEncoded>
   uploadedChannels: ReadonlyMap<number, MultiRowUploadData>
   view: HitTestView
 }
@@ -187,9 +186,9 @@ function featureAtBase(
   mouseY: number,
 ): MultiRowHit | undefined {
   const region = self.drawnRegionData.get(p.index)
-  const encoded = self.uploadedChannels.get(p.index)
+  const channels = self.uploadedChannels.get(p.index)
   const block = self.renderBlocks.find(b => b.displayedRegionIndex === p.index)
-  if (!region || !encoded || !block) {
+  if (!region || !channels || !block) {
     return undefined
   }
   const rowHeight = self.effectiveRowHeight
@@ -203,33 +202,33 @@ function featureAtBase(
   const yPx = contentYAt(mouseY, { rowHeight })
   const keys = rowKeysUnder(self, nearest, lowest)
   const marker = MULTI_ROW_INSERTION_MARK.hitNearest?.(
-    encoded,
+    channels,
     block,
     self.renderState,
     xPx,
     yPx,
-    markersOnRows(encoded.insertions, keys),
+    markersOnRows(channels.insertions, keys),
     INSIDE_ONLY,
   )
   const c = marker
-    ? encoded.insertions.channel[marker.index]
+    ? channels.insertions.channel[marker.index]
     : MULTI_ROW_MARK.hitNearest?.(
-        encoded,
+        channels,
         block,
         self.renderState,
         xPx,
         yPx,
-        channelsOnRows(encoded, block, xPx, keys),
+        channelsOnRows(channels, block, xPx, keys),
         INSIDE_ONLY,
       )?.index
   if (c === undefined) {
     return undefined
   }
-  const rowName = self.rowKeys.names[encoded.row[c]!]
+  const rowName = self.rowKeys.names[channels.row[c]!]
   if (rowName === undefined) {
     return undefined
   }
-  const i = encoded.featureIndex[c]!
+  const i = channels.featureIndex[c]!
   return {
     id: region.featureIds[i]!,
     regionIndex: p.index,
@@ -281,22 +280,22 @@ export function contextTargetAtPixel(
 export function hitInstance(
   self: Pick<
     MultiRowHitTestSlice,
-    'rowIndexByValue' | 'rowKeys' | 'drawnRegionData' | 'encodedChannels'
+    'rowIndexByValue' | 'rowKeys' | 'drawnRegionData' | 'uploadedChannels'
   >,
   hit: MultiRowHit | undefined,
 ): MarkInstance | undefined {
   const region = hit && self.drawnRegionData.get(hit.regionIndex)
-  const encoded = hit && self.encodedChannels.get(hit.regionIndex)
-  if (!region || !encoded || !self.rowIndexByValue.has(hit.rowName)) {
+  const channels = hit && self.uploadedChannels.get(hit.regionIndex)
+  if (!region || !channels || !self.rowIndexByValue.has(hit.rowName)) {
     return undefined
   }
   const key = self.rowKeys.lookup(hit.rowName)
   const found: number[] = []
   if (key !== undefined) {
     spansInRow(
-      encoded.rowIndex,
-      encoded.x,
-      encoded.x2,
+      channels.rowIndex,
+      channels.x,
+      channels.x2,
       key,
       hit.start,
       hit.end,
@@ -304,7 +303,7 @@ export function hitInstance(
     )
   }
   const index = found.find(
-    c => region.featureIds[encoded.featureIndex[c]!] === hit.id,
+    c => region.featureIds[channels.featureIndex[c]!] === hit.id,
   )
   return index === undefined ? undefined : { mark: 0, index }
 }
