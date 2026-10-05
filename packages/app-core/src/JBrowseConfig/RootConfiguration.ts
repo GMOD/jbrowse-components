@@ -111,12 +111,9 @@ export default function RootConfiguration({
      * #slot configuration.logoPath
      */
     logoPath: {
-      type: 'fileLocation',
-      description: 'path to a custom logo image displayed in the app header',
-      defaultValue: {
-        uri: '',
-        locationType: 'UriLocation',
-      },
+      type: 'maybeFileLocation',
+      description:
+        'a custom logo image displayed in the app header; unset, the JBrowse logo',
       advanced: true,
     },
     /**
