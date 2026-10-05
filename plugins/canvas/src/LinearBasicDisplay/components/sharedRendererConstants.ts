@@ -11,12 +11,13 @@ export {
 // a `PipelineDescriptor` is built before any canvas exists.
 export const MAX_VISIBLE_CHEVRONS_PER_LINE = 128
 
-// Slots a line can put on screen across a canvas this wide. The window is over
-// chevron CENTRES widened by the arms, and `reach` adds under a tenth of a slot
-// at any spacing `showChevrons` admits, so the ceil plus one slot is the whole
-// of it — `chevronWindow.test.ts` walks the window itself against this.
+// Slots a line can put on screen across a canvas this wide. Spacing is the
+// line split into count + 1 gaps, always a little under CHEVRON_SPACING_PX, so
+// a line one or two chevrons longer than the canvas fits a slot past ceil + 1;
+// a longer line's spacing is near enough the full step to fit none.
+// `chevronWindow.test.ts` walks the window itself against this.
 export function chevronSlotBudget(canvasWidthPx: number) {
-  return Math.ceil(canvasWidthPx / CHEVRON_SPACING_PX) + 1
+  return Math.ceil(canvasWidthPx / CHEVRON_SPACING_PX) + 2
 }
 
 // Continuation markers fire only at the true canvas edge, never at an internal

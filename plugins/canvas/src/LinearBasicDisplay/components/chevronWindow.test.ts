@@ -146,26 +146,38 @@ test('it is at least as tight as the shader window it replaced', () => {
   }
 })
 
+function slotsAt(blockPx: number, lineWidthPx: number, viewportStart: number) {
+  const total = chevronCount(lineWidthPx)
+  const spacing = chevronOffset(lineWidthPx, total, 0)
+  const first = chevronFirstVisible(viewportStart, spacing, HALF_W)
+  const last = chevronLastVisible(
+    viewportStart + blockPx,
+    spacing,
+    total,
+    HALF_W,
+  )
+  return last < first ? 0 : last - first + 1
+}
+
 // How many slots the window can walk across a block this wide, which is what
 // each draw asks the GPU to shade. No bpPerPx axis: the slot count turns on
-// `reach / spacing`, in which the conversion cancels.
+// `reach / spacing`, in which the conversion cancels. The worst case is a line
+// a chevron or two longer than the block, whose spacing sits furthest under
+// CHEVRON_SPACING_PX, so that band is walked at sub-pixel steps and the long
+// lines on a geometric grid.
 function worstCaseSlots(blockPx: number) {
   let max = 0
+  for (let w = Math.max(20, blockPx - 80); w <= blockPx + 400; w += 0.5) {
+    for (let start = -HALF_W; start <= w - blockPx + HALF_W; start += 0.25) {
+      max = Math.max(max, slotsAt(blockPx, w, start))
+    }
+  }
   for (let mult = 0.001; mult <= 4096; mult *= 1.3) {
     const lineWidthPx = Math.max(CHEVRON_SPACING_PX / 2, blockPx * mult)
-    const total = chevronCount(lineWidthPx)
-    const spacing = chevronOffset(lineWidthPx, total, 0)
     const steps = 200
     for (let k = -1; k <= steps + 1; k++) {
-      const viewportStart = (k / steps) * (lineWidthPx - blockPx)
-      const first = chevronFirstVisible(viewportStart, spacing, HALF_W)
-      const last = chevronLastVisible(
-        viewportStart + blockPx,
-        spacing,
-        total,
-        HALF_W,
-      )
-      max = Math.max(max, last < first ? 0 : last - first + 1)
+      const start = (k / steps) * (lineWidthPx - blockPx)
+      max = Math.max(max, slotsAt(blockPx, lineWidthPx, start))
     }
   }
   return max
@@ -175,19 +187,24 @@ function worstCaseSlots(blockPx: number) {
 // laptop width, and two past what the registered worst case covers.
 const CANVAS_WIDTHS = [120, 320, 800, 1200, 1920, 3840, 5077, 7680]
 
-test('the per-frame budget is exactly what the window can walk', () => {
-  // `reach` adds under a tenth of a slot at any spacing the gate admits, so the
-  // ceil plus one slot is both sufficient and tight — a draw asking for
-  // `chevronSlotBudget` truncates no line and shades no slot it need not.
+test('the per-frame budget covers every window a line can open', () => {
   for (const canvasPx of CANVAS_WIDTHS) {
-    expect(worstCaseSlots(canvasPx)).toBe(chevronSlotBudget(canvasPx))
+    expect(worstCaseSlots(canvasPx)).toBeLessThanOrEqual(
+      chevronSlotBudget(canvasPx),
+    )
   }
 })
 
+test('and spends its last slot: one budget shorter drops a chevron at the edge', () => {
+  // a 2000px line on a 1920px canvas spaces 50 chevrons 39.2px apart, and
+  // a window starting 39px in holds all of them
+  expect(slotsAt(1920, 2000, 39)).toBe(chevronSlotBudget(1920))
+})
+
 test('and is a fraction of the count the pass registers', () => {
-  expect(chevronSlotBudget(1920)).toBe(49)
+  expect(chevronSlotBudget(1920)).toBe(50)
   expect(MAX_VISIBLE_CHEVRONS_PER_LINE / chevronSlotBudget(1920)).toBeCloseTo(
-    2.61,
+    2.56,
     2,
   )
   // Past the registered count the per-frame budget is what keeps the far-end
