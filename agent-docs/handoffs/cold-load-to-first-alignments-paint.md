@@ -1,6 +1,6 @@
 ---
 name: cold-load-to-first-alignments-paint
-description: "A 2026-10-04 profile of jbrowse-web's cold load to a BAM or CRAM track's first paint. On small data the wait is serialized idle time, not bytes or a CPU hot spot. The 300ms Suspense reveal throttle and the render-RPC code's late discovery are fixed; left are the BAM header waiting on its index and a synchronous WebGL2 shader compile at first draw. Deep windows are bound by one RPC worker."
+description: "A 2026-10-04 profile of jbrowse-web's cold load to a BAM or CRAM track's first paint. On small data the wait is serialized idle time, not bytes or a CPU hot spot. The 300ms Suspense reveal throttle, the render-RPC code's late discovery and CRAM's header-then-index order are fixed; left are releasing the BAM header fix, ~117ms of diffuse main-thread work before the render request, and a synchronous WebGL2 shader compile at first draw. Deep windows are bound by one RPC worker."
 ---
 
 # Cold load to first alignments paint
@@ -41,13 +41,24 @@ inclusive, so the main-thread boot has no hot spot to optimize.
 
 ## Plan
 
-### 1. Read the BAM header beside its index
+### 1. Release the BAM header fix, then shorten the main-thread chain
 
-`@gmod/bam` `getHeaderPre` awaits `index.parse()` only to size the first header
-read, and the range cache rounds that read to a 256 KB page anyway. Read the
-header beside the index and fall back to the sized read when it does not parse.
-That is a `@gmod/bam` change. For CRAM the order is reversed: the `.crai`
-(needed for the byte estimate) waits on the header.
+The header reads no longer wait a round trip on their index: CRAM's
+`readSamHeader` reads header and `.crai` together (`f2dd3d5e4f`), and
+bam-js `1a088c0` reads the first bgzf block beside the index, **committed but
+not published**. Releasing it means a bam-js version, a
+`@gmod/bam` bump in `plugins/alignments`, and `BamAdapter.readSamHeader`'s
+comment, which still says the header waits on the index.
+
+On ada each took 195-200 ms off one track at 200 ms RTT and about nothing at
+80 ms, because a second chain is now as long: the assembly's `.2bit` read, then
+~117 ms of main-thread work before the render request goes out. That work is
+diffuse (probe `inclusive` over the window): `launchTrackGeneric` 21 ms
+inclusive, forced layout in `useScrollPortOverflow` and `useChromeHeightVar`
+~14 ms, then the alignments display's layout getters (`sections`, `lanes`,
+`scrollContentHeight`) and React's first render of the track. Worth checking
+whether the fetch autorun can run before React renders the display rather
+than after it.
 
 ### 2. Compile WebGL2 shaders before the first draw
 
