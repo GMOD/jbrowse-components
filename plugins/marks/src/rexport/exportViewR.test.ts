@@ -100,6 +100,18 @@ const presigned = register(
   'nrow(df_marks_line_posneg) > 0',
 )
 
+const insertCuts = register(
+  'insert_cuts',
+  scriptFor([
+    track(main, 'volvox_sv', 'LinearAlignmentsDisplay', {
+      color: { field: 'insertSize', domain: ['300', '600'] },
+    }),
+  ]),
+  `{ r <- reads_volvox_sv; t <- abs(r$template_length)
+  c(all(r$insertSize[t > 600] == "long"), all(r$insertSize[t > 0 & t < 300] == "short"),
+    all(r$insertSize[t >= 300 & t <= 600] == "normal"), sum(t > 600) > 0, sum(t > 0 & t < 300) > 0) }`,
+)
+
 function wiggle(display: Record<string, unknown>) {
   return scriptFor(
     [track(main, 'wiggle_track_posneg', 'LinearWiggleDisplay', display)],
@@ -219,6 +231,10 @@ maybe('the emitted script, run under R', () => {
     expect(results.get(barsColours)?.replaceAll(/\s+/g, ' ')).toBe(
       `EDEN.1 EDEN.3 "${categoricalValueColor('EDEN.1')}" "${categoricalValueColor('EDEN.3')}"`,
     )
+  })
+
+  it('cuts insert sizes at the domain the config lists', () => {
+    expect(results.get(insertCuts)).toBe('[1] TRUE TRUE TRUE TRUE TRUE')
   })
 
   it('draws a value its shape domain leaves unlisted', () => {

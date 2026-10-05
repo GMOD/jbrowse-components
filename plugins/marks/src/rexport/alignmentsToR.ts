@@ -126,10 +126,23 @@ function writtenColour(color: AlignmentsDisplaySnapshot['color']): ColorSpec {
  * held apart from the categorical translation, which parts near colours where
  * the category table repeats them on purpose.
  */
+function insertSizeCuts(domain: readonly string[] | undefined) {
+  const cuts = (domain ?? []).map(Number)
+  return cuts.length === 2 && cuts.every(Number.isFinite)
+    ? ([Math.min(...cuts), Math.max(...cuts)] as [number, number])
+    : undefined
+}
+
 function readColour(
   color: AlignmentsDisplaySnapshot['color'],
   notes: string[],
-): { spec: ColorSpec; manual?: Scale; derive?: string; tags: string[] } {
+): {
+  spec: ColorSpec
+  manual?: Scale
+  derive?: string
+  tags: string[]
+  cuts?: [number, number]
+} {
   const written = writtenColour(color)
   const { field } = written
   if (!field || written.scale === 'none') {
@@ -151,7 +164,12 @@ function readColour(
   }
   const dimension = READ_DIMENSIONS[field]
   if (dimension) {
-    if (written.scale === 'threshold' || written.scale === 'linear') {
+    const bands = field === 'insertSize' && written.scale !== 'categorical'
+    const cuts = bands ? insertSizeCuts(written.domain) : undefined
+    if (
+      written.scale === 'linear' ||
+      (written.scale === 'threshold' && field !== 'insertSize')
+    ) {
       notes.push(
         `color: a ${written.scale} scale over ${field} is not translated`,
       )
@@ -160,7 +178,9 @@ function readColour(
       ...dimension.levels,
       ...(dimension.mateAware ? MATE_LEVELS : []),
     ]
-    const order = written.domain ?? dimension.levels.map(l => l.value)
+    const order = bands
+      ? dimension.levels.map(l => l.value)
+      : (written.domain ?? dimension.levels.map(l => l.value))
     const declared = new Map(
       order.map((v, i) => [v, written.range?.[i]] as const),
     )
@@ -180,6 +200,7 @@ function readColour(
       },
       derive: deriveLevel(dimension.column, dimension.mateAware),
       tags: [],
+      cuts,
     }
   }
   if (field === 'insertSizeAndOrientation' || field === 'mateRefName') {
@@ -196,7 +217,7 @@ function readColour(
   const scale = written.scale ?? 'categorical'
   if (scale === 'categorical' && !written.domain?.length) {
     notes.push(
-      `color: ${field} walks the tag palette in the data's order, where the browser hashes each value to its colour`,
+      `color: a ${field} value that is not a whole number hashes into the browser's 30 palette shades, and here into the first 10`,
     )
   }
   return {
@@ -314,7 +335,7 @@ export function alignmentsPanels({
     coords: base.coords,
     packages: base.packages,
     statements: [
-      `${readsName} <- alignments_fields(read_filter(${readsName}, ${filterArgs(display.filterBy)}))`,
+      `${readsName} <- alignments_fields(read_filter(${readsName}, ${filterArgs(display.filterBy)})${colour.cuts ? `, cuts = c(${colour.cuts.join(', ')})` : ''})`,
       ...(colour.derive
         ? [
             `${readsName}$${rIdent(LEVEL_COLUMN)} <- ${colour.derive.replaceAll('READS', readsName)}`,

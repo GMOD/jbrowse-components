@@ -26,6 +26,10 @@ function located(adapter: Record<string, unknown>) {
       out[k] = { ...v, baseUri: BASE_URI }
     }
   }
+  const index = adapter.index as { location?: object } | undefined
+  if (index?.location) {
+    out.index = { ...index, location: { ...index.location, baseUri: BASE_URI } }
+  }
   if (typeof adapter.uri === 'string') {
     out.uri = new URL(adapter.uri, BASE_URI).href
   }

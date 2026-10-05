@@ -8,8 +8,9 @@
 # The insert-size band is JBrowse's: median +/- 3 * 1.4826 * MAD of |TLEN| over
 # primary proper pairs (mean +/- 3 sd where the MAD is 0), widened to at least
 # 2x and at most 0.5x its centre. A band with no width colours nothing, and
-# |TLEN| 0 is never short.
-alignments_fields <- function(reads) {
+# |TLEN| 0 is never short. 'cuts', the display's two insert-size cut points,
+# replace the band.
+alignments_fields <- function(reads, cuts = NULL) {
   bit <- function(f) bitwAnd(reads$flags, f) != 0
   reads$firstOfPairStrand <- ifelse(bit(0x80L), -reads$strand, reads$strand)
   reads$mapq <- reads$score
@@ -30,6 +31,7 @@ alignments_fields <- function(reads) {
       band <- c(lower = max(0, min(lower, mid * 0.5)), upper = max(upper, mid * 2))
     }
   }
+  if (!is.null(cuts)) band <- c(lower = min(cuts), upper = max(cuts))
   reads$insertSize <- if (is.null(band)) rep("normal", nrow(reads)) else
     ifelse(tlen > band[["upper"]], "long",
       ifelse(tlen > 0 & tlen < band[["lower"]], "short", "normal"))
