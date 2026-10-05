@@ -127,11 +127,11 @@ The view opens at residue zoom, a window on the N terminus of a long protein.
 **Fit horizontally**, under the toolbar's fit and zoom button, puts the whole
 alignment on screen, which is the zoom the domain blocks read at.
 
-Each panel's menu has **Global: tile horizontally**, which lines every open view
-up side by side so a hover reaches the genome, alignment and structure views at
-once.
+Each panel's menu has **Arrange all views > Side by side**, which lines every
+open view up side by side so a hover reaches the genome, alignment and structure
+views at once.
 
-<Video src="/media/proteins/tiled_views.mp4" caption="TP53's gene menu launching both an alignment and a structure, then Global: tile horizontally arranging the genome, the alignment and the structure in three columns. One hover in the genome moves the highlighted column in the alignment and the highlighted residue on the structure together." />
+<Video src="/media/proteins/tiled_views.mp4" caption="TP53's gene menu launching both an alignment and a structure, then Arrange all views > Side by side arranging the genome, the alignment and the structure in three columns. One hover in the genome moves the highlighted column in the alignment and the highlighted residue on the structure together." />
 
 The figures below take _NLRP1_, an inflammasome sensor whose domain architecture
 varies between mammals. Type `NLRP1` into the location box, right-click the

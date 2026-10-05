@@ -76,7 +76,7 @@ test('homing writes nothing when there is nothing to home', () => {
 // the case where it was false. `normalize` runs on every action, so if it has
 // no fixed point then every action rewrites every size and the undo history
 // fills with entries in which nothing observable changed. Seven equal panes is
-// the first shape a user reaches by accident: "Global: tile horizontally" with
+// the first shape a user reaches by accident: "Arrange all views > Side by side" with
 // seven views.
 test('a tiled workspace stops emitting snapshots once it is settled', () => {
   const session = TestSession.create({ name: 't' })

@@ -8,8 +8,8 @@ import { act, fireEvent, render, screen } from '@testing-library/react'
 import { observer } from 'mobx-react'
 
 import { LayoutRenderer } from './LayoutRenderer.tsx'
-import { dv } from './dockviewTheme.ts'
 import { WorkspaceLayoutMixin } from './model.ts'
+import { workspaceTheme } from './workspaceTheme.ts'
 
 const TestSession = types.compose(
   'TestSession',
@@ -282,8 +282,10 @@ test('the tab strip is dockview chrome, not the MUI theme', () => {
 
   const strip = container.querySelector('[data-tab-strip]')!
   const style = getComputedStyle(strip)
-  expect(style.backgroundColor).toBe(colord(dv.tabsBackground).toRgbString())
-  expect(style.height).toBe(`${dv.tabsHeight}px`)
+  expect(style.backgroundColor).toBe(
+    colord(workspaceTheme.stripBackground).toRgbString(),
+  )
+  expect(style.height).toBe(`${workspaceTheme.stripHeight}px`)
   // and emphatically not the theme's surface colour
   expect(style.backgroundColor).not.toBe(
     colord(createJBrowseTheme().palette.background.paper).toRgbString(),
@@ -349,13 +351,11 @@ test('a tab is coloured by both its panel and its selection', () => {
     ).backgroundColor
 
   expect(bg(secondTab)).toBe(
-    colord(dv.inactiveGroupVisibleTabBackground).toRgbString(),
+    colord(workspaceTheme.selectedTabBackground).toRgbString(),
   )
-  expect(bg(firstTab)).toBe(
-    colord(dv.inactiveGroupHiddenTabBackground).toRgbString(),
-  )
+  expect(bg(firstTab)).toBe(colord(workspaceTheme.tabBackground).toRgbString())
   expect(bg(p2.tabs[0]!.id)).toBe(
-    colord(dv.activeGroupVisibleTabBackground).toRgbString(),
+    colord(workspaceTheme.selectedTabBackground).toRgbString(),
   )
 })
 

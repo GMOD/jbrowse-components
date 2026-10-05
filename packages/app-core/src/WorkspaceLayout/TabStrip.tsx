@@ -3,8 +3,8 @@ import { useEffect, useRef, useState } from 'react'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { observer } from 'mobx-react'
 
-import { dv, tabColors } from './dockviewTheme.ts'
 import { tabDomId, tabPanelDomId } from './panelChrome.ts'
+import { tabColors, workspaceTheme } from './workspaceTheme.ts'
 
 import type { WorkspaceLayout } from './model.ts'
 import type { PanelChrome } from './panelChrome.ts'
@@ -25,9 +25,9 @@ const useStyles = makeStyles()({
     display: 'flex',
     flexShrink: 0,
     boxSizing: 'border-box',
-    height: dv.tabsHeight,
-    fontSize: dv.tabsFontSize,
-    background: dv.tabsBackground,
+    height: workspaceTheme.stripHeight,
+    fontSize: workspaceTheme.stripFontSize,
+    background: workspaceTheme.stripBackground,
   },
   tabs: {
     display: 'flex',
@@ -53,14 +53,14 @@ const useStyles = makeStyles()({
     cursor: 'pointer',
     userSelect: 'none',
     touchAction: 'none',
-    borderRight: `1px solid ${dv.tabDividerColor}`,
+    borderRight: `1px solid ${workspaceTheme.tabDivider}`,
     '&:hover .jbrowse-tab-menu': { visibility: 'visible' },
     // a keyboard user needs the ⋮ too, and hover is not a thing they can do
     '&:focus-within .jbrowse-tab-menu': { visibility: 'visible' },
     // the strip is dark in either theme, so the focus ring is the drop
     // indicator's blue rather than the UA default black-on-dark
     '&:focus-visible': {
-      outline: `2px solid ${dv.edgeDockIndicatorColor}`,
+      outline: `2px solid ${workspaceTheme.accent}`,
       outlineOffset: -2,
     },
   },
@@ -99,7 +99,7 @@ interface TabStripProps {
   /** the tab this panel is showing — the strip does not decide it */
   active: TabNode | undefined
   /** whether this is the cell a newly launched view lands in */
-  groupActive: boolean
+  cellActive: boolean
 }
 
 export const TabStrip = observer(function TabStrip({
@@ -107,7 +107,7 @@ export const TabStrip = observer(function TabStrip({
   layout,
   chrome,
   active,
-  groupActive,
+  cellActive,
 }: TabStripProps) {
   const { classes } = useStyles()
   const { renderPanelActions } = chrome
@@ -246,7 +246,7 @@ export const TabStrip = observer(function TabStrip({
             chrome={chrome}
             className={classes.tab}
             selected={tab.id === active?.id}
-            groupActive={groupActive}
+            cellActive={cellActive}
             tabIndex={tab.id === roving ? 0 : -1}
             onKeyDown={onKeyDown}
             onFocus={setFocusedTabId}
@@ -265,7 +265,7 @@ interface TabProps {
   chrome: PanelChrome
   className: string
   selected: boolean
-  groupActive: boolean
+  cellActive: boolean
   tabIndex: number
   onKeyDown: (event: React.KeyboardEvent, tabId: string) => void
   onFocus: (tabId: string) => void
@@ -278,7 +278,7 @@ const Tab = observer(function Tab({
   chrome,
   className,
   selected,
-  groupActive,
+  cellActive,
   tabIndex,
   onKeyDown,
   onFocus,
@@ -340,7 +340,7 @@ const Tab = observer(function Tab({
       onPointerCancel={dragHandlers.onPointerCancel}
       onLostPointerCapture={dragHandlers.onLostPointerCapture}
       className={className}
-      style={tabColors(groupActive, selected)}
+      style={tabColors(cellActive, selected)}
     >
       {renderTabLabel(tab)}
     </div>

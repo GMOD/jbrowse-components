@@ -14,7 +14,7 @@ import ViewModuleIcon from '@mui/icons-material/ViewModule'
 import { IconButton, Tooltip } from '@mui/material'
 import { observer } from 'mobx-react'
 
-import { dv } from './dockviewTheme.ts'
+import { stripIconColor, workspaceTheme } from './workspaceTheme.ts'
 
 import type { WorkspaceSessionType } from '../ui/App/types.ts'
 import type { WorkspaceLayout } from './model.ts'
@@ -28,8 +28,11 @@ const useStyles = makeStyles()({
   button: {
     padding: 4,
     borderRadius: 2,
-    color: dv.activeGroupHiddenTabColor,
-    '&:hover': { background: dv.iconHoverBackground, borderRadius: 2 },
+    color: stripIconColor,
+    '&:hover': {
+      background: workspaceTheme.iconHoverBackground,
+      borderRadius: 2,
+    },
   },
   icon: { fontSize: 16 },
 })
@@ -81,14 +84,14 @@ export const WorkspacePanelActions = observer(function WorkspacePanelActions({
             },
           },
           {
-            label: 'New empty split horizontal',
+            label: 'New empty split (right)',
             icon: VerticalSplitIcon,
             onClick: () => {
               session.splitPanel(panel.id, 'row')
             },
           },
           {
-            label: 'New empty split vertical',
+            label: 'New empty split (below)',
             icon: HorizontalSplitIcon,
             onClick: () => {
               session.splitPanel(panel.id, 'column')
@@ -109,41 +112,44 @@ export const WorkspacePanelActions = observer(function WorkspacePanelActions({
                 },
               ]
             : []),
-          // The whole-workspace commands, kept behind the same "Global:" prefix
-          // and the same >1-view gate they had on the dockview header, so a
-          // returning user finds them where they were and the label still says
-          // that the button in THIS cell rearranges every cell.
           ...(session.views.length > 1
-            ? ([
+            ? [
                 {
-                  label: 'Global: change layout into set of tabs',
-                  icon: DynamicFeedIcon,
-                  onClick: () => {
-                    tile('tabs')
-                  },
-                },
-                {
-                  label: 'Global: tile horizontally',
-                  icon: ViewColumnIcon,
-                  onClick: () => {
-                    tile('horizontal')
-                  },
-                },
-                {
-                  label: 'Global: tile vertically',
-                  icon: TableRowsIcon,
-                  onClick: () => {
-                    tile('vertical')
-                  },
-                },
-                {
-                  label: 'Global: tile grid',
+                  label: 'Arrange all views',
                   icon: ViewModuleIcon,
-                  onClick: () => {
-                    tile('grid')
-                  },
+                  type: 'subMenu' as const,
+                  subMenu: [
+                    {
+                      label: 'As tabs',
+                      icon: DynamicFeedIcon,
+                      onClick: () => {
+                        tile('tabs')
+                      },
+                    },
+                    {
+                      label: 'Side by side',
+                      icon: ViewColumnIcon,
+                      onClick: () => {
+                        tile('horizontal')
+                      },
+                    },
+                    {
+                      label: 'Stacked',
+                      icon: TableRowsIcon,
+                      onClick: () => {
+                        tile('vertical')
+                      },
+                    },
+                    {
+                      label: 'Grid',
+                      icon: ViewModuleIcon,
+                      onClick: () => {
+                        tile('grid')
+                      },
+                    },
+                  ],
                 },
-              ] as const)
+              ]
             : []),
         ]}
         tooltip="Panel menu"

@@ -4,10 +4,10 @@ import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { observer } from 'mobx-react'
 
 import { PanelView } from './PanelView.tsx'
-import { dv } from './dockviewTheme.ts'
 import { pairSpan, withBoundaryAt } from './splitter.ts'
 import { isBranch } from './tree.ts'
 import { usePointerGesture } from './usePointerGesture.ts'
+import { workspaceTheme } from './workspaceTheme.ts'
 
 import type { WorkspaceLayout } from './model.ts'
 import type { PanelChrome } from './panelChrome.ts'
@@ -102,20 +102,20 @@ function measurePairPx(
 // hit. Its dark theme deliberately gives the sash no hover colour at all.
 const useSplitterStyles = makeStyles()({
   splitter: {
-    flex: `0 0 ${dv.sashSize}px`,
+    flex: `0 0 ${workspaceTheme.splitterSize}px`,
     position: 'relative',
     background: 'transparent',
     touchAction: 'none',
     // it is focusable, so it has to show focus — dockview's sash deliberately
     // has no HOVER colour, which is a different thing and still holds
     '&:focus-visible': {
-      outline: `2px solid ${dv.edgeDockIndicatorColor}`,
+      outline: `2px solid ${workspaceTheme.accent}`,
       outlineOffset: -1,
     },
     '&::before': {
       content: '""',
       position: 'absolute',
-      background: dv.separatorBorder,
+      background: workspaceTheme.splitterLine,
     },
   },
   horizontal: {

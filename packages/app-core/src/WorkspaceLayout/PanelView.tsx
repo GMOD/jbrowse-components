@@ -4,10 +4,10 @@ import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { observer } from 'mobx-react'
 
 import { TabStrip } from './TabStrip.tsx'
-import { dv } from './dockviewTheme.ts'
 import { indicatorRect } from './dropZone.ts'
 import { tabDomId, tabPanelDomId } from './panelChrome.ts'
 import { activeTabIn } from './tree.ts'
+import { workspaceTheme } from './workspaceTheme.ts'
 
 import type { DropTarget } from './dropZone.ts'
 import type { WorkspaceLayout } from './model.ts'
@@ -58,8 +58,8 @@ const useStyles = makeStyles()(theme => ({
     // above this panel's own content and nothing else — the panel is
     // position:relative, so an app-wide z-index would let it cover menus
     zIndex: 1,
-    background: dv.dragOverBackground,
-    outline: `1px solid ${dv.edgeDockIndicatorColor}`,
+    background: workspaceTheme.dropWash,
+    outline: `1px solid ${workspaceTheme.accent}`,
   },
   // where a tab dragged onto the strip would land
   caret: {
@@ -68,8 +68,8 @@ const useStyles = makeStyles()(theme => ({
     zIndex: 1,
     top: 0,
     width: 2,
-    height: dv.tabsHeight,
-    background: dv.edgeDockIndicatorColor,
+    height: workspaceTheme.stripHeight,
+    background: workspaceTheme.accent,
   },
 }))
 
@@ -108,7 +108,7 @@ export const PanelView = observer(function PanelView({
         layout={layout}
         chrome={chrome}
         active={active}
-        groupActive={layout.activePanelId === panel.id}
+        cellActive={layout.activePanelId === panel.id}
       />
 
       {active ? (

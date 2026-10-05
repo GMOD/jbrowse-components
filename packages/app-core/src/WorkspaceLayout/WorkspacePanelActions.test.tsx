@@ -39,28 +39,25 @@ function setup(viewCount: number) {
   return { session, user: userEvent.setup() }
 }
 
-const TILINGS = [
-  'Global: change layout into set of tabs',
-  'Global: tile horizontally',
-  'Global: tile vertically',
-  'Global: tile grid',
-]
+const ARRANGEMENTS = ['As tabs', 'Side by side', 'Stacked', 'Grid']
 
-test('the cell menu offers the four whole-workspace tilings', async () => {
+test('the cell menu offers the four whole-workspace arrangements', async () => {
   const { user } = setup(3)
   await user.click(screen.getByRole('button', { name: 'Panel menu' }))
+  await user.click(await screen.findByText('Arrange all views'))
 
-  for (const label of TILINGS) {
+  for (const label of ARRANGEMENTS) {
     expect(await screen.findByText(label)).toBeTruthy()
   }
 })
 
-test('tiling horizontally from the menu rearranges every cell', async () => {
+test('side by side from the menu rearranges every cell', async () => {
   const { session, user } = setup(3)
   expect(session.panels).toHaveLength(1)
 
   await user.click(screen.getByRole('button', { name: 'Panel menu' }))
-  await user.click(await screen.findByText('Global: tile horizontally'))
+  await user.click(await screen.findByText('Arrange all views'))
+  await user.click(await screen.findByText('Side by side'))
 
   expect(session.panels).toHaveLength(3)
   expect(session.tabs.map(t => [...t.viewIds])).toEqual([
@@ -70,16 +67,13 @@ test('tiling horizontally from the menu rearranges every cell', async () => {
   ])
 })
 
-test('a lone view gets the per-cell items and none of the global ones', async () => {
-  // same gate the dockview header used: with one view there is no arrangement
-  // for a tiling to change, so the items would be four no-ops
+// with one view there is no arrangement to change
+test('a lone view gets the per-cell items and no arrangements', async () => {
   const { user } = setup(1)
   await user.click(screen.getByRole('button', { name: 'Panel menu' }))
 
   expect(await screen.findByText('New empty tab')).toBeTruthy()
-  for (const label of TILINGS) {
-    expect(screen.queryByText(label)).toBeNull()
-  }
+  expect(screen.queryByText('Arrange all views')).toBeNull()
 })
 
 // The strip's double-click is maximize's gesture, and this item is how anyone

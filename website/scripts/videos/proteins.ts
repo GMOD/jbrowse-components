@@ -91,7 +91,7 @@ export const proteinVideos: VideoSpec[] = [
     tailMs: 1200,
   },
   // Both launchers ask the session to split the new view off to the right, and
-  // two sequential splits nest, so `Global: tile horizontally` is what lays the
+  // `Arrange all views > Side by side` is what lays the
   // three views out one to a column. `findConnectedMsaView` bridges the
   // alignment and the structure through the genome view both point at.
   {
@@ -173,7 +173,11 @@ export const proteinVideos: VideoSpec[] = [
       },
       {
         type: 'click',
-        text: 'Global: tile horizontally',
+        text: 'Arrange all views',
+      },
+      {
+        type: 'click',
+        text: 'Side by side',
         hold: 1000,
       },
       { type: 'waitForAppSettled', timeout: 120000 },
