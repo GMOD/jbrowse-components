@@ -387,15 +387,17 @@ Right-click a read and open the **View mate** submenu, present when the mate is
 mapped:
 
 - **Split current view to show mate** replaces the displayed regions with the
-  read's locus and its mate's side by side, each padded by a read length. A
-  snackbar offers **Undo**
+  read's locus and its mate's side by side, each padded by a read length, and
+  turns on **View as pairs / link supplementary alignments** so the pair is
+  drawn joined. A snackbar offers **Undo**, which restores both
 - **Open breakpoint split view** puts the two loci in
   [their own stacked panels](/docs/user_guides/sv_visualization#breakpoint-split-view),
   which draws the connecting splines
 
-For a split read, **Split current view to show split alignments** does the same
-with one region per segment of its `SA` tag, in read order, and turns on **View
-as pairs / link supplementary alignments**; **Undo** restores both.
+For a split read, the **View split alignments** submenu offers the same two:
+**Split current view to show split alignments** lays out one region per segment
+of its `SA` tag, in read order, and **Open breakpoint split view** stacks one
+panel per segment, zoomed so the longest fits.
 
 ## One read against the reference
 

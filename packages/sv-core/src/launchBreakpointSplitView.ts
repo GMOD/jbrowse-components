@@ -1,6 +1,7 @@
 import { lazy } from 'react'
 
 import type { SvEvent } from './eventStops.ts'
+import type { PanelStop } from './navToMultiLevelBreak.ts'
 import type { BreakpointSplitViewHost } from './util.ts'
 import type { FindJunctionsNear } from './walkBreakendChain.ts'
 import type { Feature } from '@jbrowse/core/util'
@@ -19,6 +20,7 @@ export function launchBreakpointSplitView({
   findJunctionsNear,
   event,
   defaultTrackIds,
+  stops,
 }: {
   session: BreakpointSplitViewHost
   feature: Feature
@@ -49,6 +51,12 @@ export function launchBreakpointSplitView({
    * — which `showTrack` already does, off the config.
    */
   defaultTrackIds?: string[]
+  /**
+   * The loci to open, a panel each in this order, from a launcher that already
+   * holds the whole shape: a split read's own segments. The dialog then offers
+   * no chain to follow and, past two stops, no single row.
+   */
+  stops?: PanelStop[]
 }) {
   session.queueDialog(handleClose => [
     BreakpointSplitViewChoiceDialog,
@@ -62,6 +70,7 @@ export function launchBreakpointSplitView({
       findJunctionsNear,
       event,
       defaultTrackIds,
+      stops,
     },
   ])
 }

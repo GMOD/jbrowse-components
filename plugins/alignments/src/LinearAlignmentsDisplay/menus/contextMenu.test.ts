@@ -39,6 +39,13 @@ function makeFeature(fields: Record<string, unknown>): Feature {
   } as unknown as Feature
 }
 
+// A plain object stands in for the display, so the launch-site gate reads a
+// stub rather than an MST env.
+jest.mock('@jbrowse/sv-core', () => ({
+  ...jest.requireActual('@jbrowse/sv-core'),
+  hasBreakpointSplitView: () => true,
+}))
+
 function makeModel(
   over: {
     cigarHit?: CigarHitResult
@@ -645,7 +652,7 @@ function labels(items: unknown[]) {
   return items.map(i => (i as { label: string }).label)
 }
 
-test('a split read offers to show its segments side by side', () => {
+test('a split read offers its segments along this view or a panel each', () => {
   const model = makeModel({
     contextMenuFeature: makeFeature({
       name: 'readABC',
@@ -657,9 +664,10 @@ test('a split read offers to show its segments side by side', () => {
       tags: { SA: 'chr9,20001,+,500S300M,60,0;' },
     }),
   })
-  expect(labels(run(model))).toContain(
+  expect(labels(findSubMenu(run(model), 'View split alignments'))).toEqual([
     'Split current view to show split alignments',
-  )
+    'Open breakpoint split view',
+  ])
 })
 
 test('a read with no SA tag is not offered the split-alignment view', () => {
@@ -672,9 +680,7 @@ test('a read with no SA tag is not offered the split-alignment view', () => {
       CIGAR: '500M',
     }),
   })
-  expect(labels(run(model))).not.toContain(
-    'Split current view to show split alignments',
-  )
+  expect(labels(run(model))).not.toContain('View split alignments')
 })
 
 // LGVSyntenyDisplay reuses the hit items but curates the sort out (its own

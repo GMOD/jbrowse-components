@@ -4,11 +4,13 @@ import {
   getClip,
   splitSA,
 } from '@jbrowse/cigar-utils'
+import { SimpleFeature } from '@jbrowse/core/util'
 
 import { extractFeatureTagValue } from './extractFeatureTagValue.ts'
 import { getFlags, getStrand } from './util.ts'
 
 import type { Feature } from '@jbrowse/core/util'
+import type { PanelStop } from '@jbrowse/sv-core'
 
 /**
  * Whether a read is one piece of a chimeric (split) alignment.
@@ -89,4 +91,36 @@ export function splitAlignmentSegments(feature: Feature): AlignedSegment[] {
       clip: s.clipLengthAtStartOfRead,
     }))
   return [own, ...others].sort((a, b) => a.clip - b.clip)
+}
+
+/**
+ * A split read as a breakpoint split view launch: its first two segments as
+ * the read-plus-mate feature the launcher frames, the shape
+ * `buildPairedEndMateFeature` gives a mate, and every segment as a stop on its
+ * midpoint spanning the segment, a panel each in read order.
+ */
+export function splitReadLaunch(
+  id: string,
+  name: string | undefined,
+  segments: AlignedSegment[],
+) {
+  const end = (suffix: string, s: AlignedSegment) => ({
+    uniqueId: `${id}-${suffix}`,
+    refName: s.refName,
+    start: s.start,
+    end: s.end,
+    strand: s.strand,
+  })
+  return {
+    feature: new SimpleFeature({
+      ...end('split', segments[0]!),
+      name,
+      mate: end('split-mate', segments[1]!),
+    }),
+    stops: segments.map((s): PanelStop => ({
+      refName: s.refName,
+      pos: Math.round((s.start + s.end) / 2),
+      span: s.end - s.start,
+    })),
+  }
 }

@@ -16,10 +16,9 @@ crossed. The four entries below are one thread and are triaged one at a time.
 
 `useAlignmentsBase.ts` drops a click on an arc on purpose and
 `hitTestPipeline.ts` returns no context-menu target for one. A reader who spots
-a junction in the band has to find a read under it, open its detail widget and
-follow the link there; a long read with an SA tag and no mapped mate has no
-"View mate" item at all, so for ONT and HiFi data the band is the only place
-the junction is named.
+a junction in the band has to find a read under it and follow that read's
+"View split alignments" or "View mate" item, which opens the read's own
+junctions rather than the one the arc counted.
 
 The gesture is a left click.
 [arc-band-open-calls](arc-band-open-calls.md) §"Give an arc's right-click
@@ -125,6 +124,16 @@ The tolerance is the one number, and the hover prints it. Waits on the arc
 click above, which builds the hit plumbing this reads.
 
 ## Loose ends
+
+**View as pairs on by default in the panels: declined (2026-10-04).** The split
+view already draws every evidence curve between panels, and inside any panel
+whose display does not link its own reads. Chain layout on by default would
+swap those coloured intra-panel curves for the chain's grey hairline, make
+"Show intra-view links" a no-op for reads, grey out sort and soft clipping,
+and relayout on every landing, for mates on one row, which the view never
+draws as evidence. A fresh track from `openDefaultTracks` is the one place a
+default could honestly live, through `setUnit` so the colour swap comes with
+it.
 
 Two findings from the same survey were fixed at once and are not here: the
 view-menu toggle that also gates variant curves is named for both, and the

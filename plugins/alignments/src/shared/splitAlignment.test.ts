@@ -1,4 +1,4 @@
-import { splitAlignmentSegments } from './splitAlignment.ts'
+import { splitAlignmentSegments, splitReadLaunch } from './splitAlignment.ts'
 
 import type { Feature } from '@jbrowse/core/util'
 
@@ -63,4 +63,24 @@ test('a truncated SA record is dropped rather than shown as a locus', () => {
     tags: { SA: 'chr9,20001,+,500S,60,0;' },
   })
   expect(splitAlignmentSegments(junk)).toHaveLength(1)
+})
+
+test('a launch frames the first junction and stops on every segment', () => {
+  const { feature, stops } = splitReadLaunch(
+    'read1',
+    'long',
+    splitAlignmentSegments(fusion),
+  )
+  expect(feature.toJSON()).toMatchObject({
+    name: 'long',
+    refName: 'chr22',
+    start: 10_000,
+    end: 10_500,
+    strand: 1,
+    mate: { refName: 'chr9', start: 20_000, end: 20_300, strand: -1 },
+  })
+  expect(stops).toEqual([
+    { refName: 'chr22', pos: 10_250, span: 500 },
+    { refName: 'chr9', pos: 20_150, span: 300 },
+  ])
 })

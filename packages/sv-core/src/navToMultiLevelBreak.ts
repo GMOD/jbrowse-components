@@ -15,6 +15,29 @@ import type {
   Feature,
 } from '@jbrowse/core/util'
 
+/** A locus a stacked launch opens a panel at. */
+export interface PanelStop {
+  refName: string
+  pos: number
+  /**
+   * bp the panel keeps in view around `pos`, for a stop that is a whole
+   * segment of a read rather than a junction
+   */
+  span?: number
+}
+
+/**
+ * The window every panel shows either side of its stop: the reader's, widened
+ * until the longest segment fits with a tenth of its length either side, since
+ * one zoom serves every panel.
+ */
+export function multiLevelWindowSize(windowSize: number, stops: PanelStop[]) {
+  return Math.max(
+    windowSize,
+    ...stops.map(s => (s.span === undefined ? 0 : s.span * 0.6)),
+  )
+}
+
 export async function navToMultiLevelBreak({
   stableViewId,
   feature,
@@ -53,9 +76,10 @@ export async function navToMultiLevelBreak({
    * junctions leave from each other's loci is one shape across three or four
    * chromosomes, and a two-panel view of any one of its junctions shows a third
    * of it. The walk is the caller's, not this function's, so a caller with its
-   * own idea of the chain (a spreadsheet row set, say) can pass that instead.
+   * own idea of the chain (a spreadsheet row set, or a split read's own
+   * segments) can pass that instead.
    */
-  stops?: { refName: string; pos: number }[]
+  stops?: PanelStop[]
 }) {
   const { assembly, coverage } = await getBreakendAssemblyRegions({
     feature,
@@ -122,7 +146,10 @@ export async function navToMultiLevelBreak({
   )
   await awaitSplitViewSettled(view)
 
-  const bpPerPx = breakpointBpPerPx(windowSize, view.views[0]!.width)
+  const bpPerPx = breakpointBpPerPx(
+    multiLevelWindowSize(windowSize, panels),
+    view.views[0]!.width,
+  )
   for (const [idx, panel] of panels.entries()) {
     const lgv = view.views[idx]!
     lgv.zoomTo(bpPerPx)

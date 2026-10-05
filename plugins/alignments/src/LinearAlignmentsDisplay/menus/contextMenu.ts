@@ -19,7 +19,10 @@ import {
   buildPairedEndMateFeature,
   getMateFields,
 } from '../../shared/mateFeature.ts'
-import { splitAlignmentSegments } from '../../shared/splitAlignment.ts'
+import {
+  splitAlignmentSegments,
+  splitReadLaunch,
+} from '../../shared/splitAlignment.ts'
 import { getCigarTypeLabel, isInterbaseType } from '../../shared/types.ts'
 import {
   openCigarWidget,
@@ -43,6 +46,7 @@ import type { FeatureLookupModel } from './contextMenuFeature.ts'
 import type { MenuItem } from '@jbrowse/core/ui'
 import type { Feature } from '@jbrowse/core/util'
 import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
+import type { PanelStop } from '@jbrowse/sv-core'
 
 // What the CIGAR / modification / indicator items need, and no more. Split from
 // the read-level surface below because LGVSyntenyDisplay reuses only these — a
@@ -396,6 +400,36 @@ export function getHitMenuItems(
   return items
 }
 
+// The "Open breakpoint split view" row, gated like every other launch site:
+// `@jbrowse/react-linear-genome-view` bundles this plugin without
+// breakpoint-split-view, and an ungated row there opens the choice dialog only
+// to fail on `addView` once the reader has answered it. `launch` resolves what
+// the view frames at click time.
+function openSplitViewItems(
+  self: ContextMenuModel,
+  launch: () => { feature: Feature; stops?: PanelStop[] },
+): MenuItem[] {
+  return hasBreakpointSplitView(self)
+    ? [
+        {
+          label: 'Open breakpoint split view',
+          onClick: () => {
+            const view = containingLgv(self)
+            const assemblyName = view.assemblyNames[0]
+            if (assemblyName) {
+              launchBreakpointSplitView({
+                session: getSession(self),
+                view,
+                assemblyName,
+                ...launch(),
+              })
+            }
+          },
+        },
+      ]
+    : []
+}
+
 // Right-click menu over the pileup: the hit items above, plus mate-view,
 // filter, copy and feature-detail actions for the read itself. Split out of the
 // model to mirror trackMenuItems (menus/index.ts).
@@ -493,44 +527,33 @@ export function getContextMenuItems(
               })
             },
           },
-          // gated like every other launch site: `@jbrowse/react-linear-genome-view`
-          // bundles this plugin without breakpoint-split-view, and an ungated row
-          // there opens the choice dialog only to fail on `addView` once the
-          // reader has answered it
-          ...(hasBreakpointSplitView(self)
-            ? [
-                {
-                  label: 'Open breakpoint split view',
-                  onClick: () => {
-                    const view = containingLgv(self)
-                    const assemblyName = view.assemblyNames[0]
-                    if (assemblyName) {
-                      launchBreakpointSplitView({
-                        session: getSession(self),
-                        view,
-                        assemblyName,
-                        feature: buildPairedEndMateFeature(mateFields),
-                      })
-                    }
-                  },
-                },
-              ]
-            : []),
+          ...openSplitViewItems(self, () => ({
+            feature: buildPairedEndMateFeature(mateFields),
+          })),
         ],
       })
     }
     const segments = splitAlignmentSegments(feat)
     if (segments.length > 1) {
       items.push({
-        label: 'Split current view to show split alignments',
+        label: 'View split alignments',
         icon: CallSplitIcon,
-        onClick: () => {
-          viewSplitAlignmentRegionsInCurrentView({
-            view: containingLgv(self),
-            display: self,
-            segments,
-          })
-        },
+        type: 'subMenu',
+        subMenu: [
+          {
+            label: 'Split current view to show split alignments',
+            onClick: () => {
+              viewSplitAlignmentRegionsInCurrentView({
+                view: containingLgv(self),
+                display: self,
+                segments,
+              })
+            },
+          },
+          ...openSplitViewItems(self, () =>
+            splitReadLaunch(feat.id(), feat.get('name'), segments),
+          ),
+        ],
       })
     }
     const filterSubMenu = getFilterSubMenu(self, feat)

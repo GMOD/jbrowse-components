@@ -4,6 +4,7 @@ import { launchBreakpointSplitView, navToLoc } from '@jbrowse/sv-core'
 
 import type { AlignmentFeatureWidgetModel } from './stateModelFactory.ts'
 import type { Feature } from '@jbrowse/core/util'
+import type { PanelStop } from '@jbrowse/sv-core'
 import type { ReactNode } from 'react'
 
 // Navigates the widget's associated view to a locstring.
@@ -27,16 +28,19 @@ export function NavToLocLink({
   )
 }
 
-// Opens a breakpoint split view for a read+mate (or read+supplementary) feature.
+// Opens a breakpoint split view for a read+mate feature, or a split read's
+// segments when `stops` names them.
 export function LaunchBreakpointSplitViewLink({
   model,
   assemblyName,
   feature,
+  stops,
   children,
 }: {
   model: AlignmentFeatureWidgetModel
   assemblyName: string
   feature: Feature
+  stops?: PanelStop[]
   children: ReactNode
 }) {
   return (
@@ -47,6 +51,7 @@ export function LaunchBreakpointSplitViewLink({
           view: model.view,
           assemblyName,
           feature,
+          stops,
         })
       }}
     >

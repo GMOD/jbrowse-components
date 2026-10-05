@@ -23,6 +23,7 @@ import { navToSingleLevelBreak } from './navToSingleLevelBreak.ts'
 import { junctionFromFeature, walkBreakendChain } from './walkBreakendChain.ts'
 
 import type { SvEvent } from './eventStops.ts'
+import type { PanelStop } from './navToMultiLevelBreak.ts'
 import type { Track } from './types.ts'
 import type { BreakpointSplitViewHost } from './util.ts'
 import type { FindJunctionsNear } from './walkBreakendChain.ts'
@@ -57,6 +58,7 @@ const BreakpointSplitViewChoiceDialog = observer(
     findJunctionsNear,
     event,
     defaultTrackIds,
+    stops,
   }: {
     session: BreakpointSplitViewHost
     handleClose: () => void
@@ -67,6 +69,7 @@ const BreakpointSplitViewChoiceDialog = observer(
     findJunctionsNear?: FindJunctionsNear
     event?: SvEvent
     defaultTrackIds?: string[]
+    stops?: PanelStop[]
   }) {
     // ONE STEP. This dialog used to ask its two questions on two screens --
     // shape, then options -- so opening a split view took a right-click, a menu
@@ -93,13 +96,17 @@ const BreakpointSplitViewChoiceDialog = observer(
       '5000',
     )
 
-    const isSplitLevel = viewType === 'split'
+    // A launcher holding the panels already (a split read's segments) leaves
+    // nothing to infer, and past two of them no single row to lay them on.
+    const given = stops !== undefined
+    const isSplitLevel = viewType === 'split' || (given && stops.length > 2)
     // Only for the stacked shape. A single-level view lays its loci along one
     // row, so a third one is more of the row rather than another panel, and
     // `navToSingleLevelBreak` frames the record's own pair.
-    const opensEvent = event !== undefined && isSplitLevel && openEvent
+    const opensEvent =
+      !given && event !== undefined && isSplitLevel && openEvent
     const canFollowChain =
-      findJunctionsNear !== undefined && isSplitLevel && !opensEvent
+      !given && findJunctionsNear !== undefined && isSplitLevel && !opensEvent
 
     const handleLaunch = () => {
       // `undefined`, not `[]`, when there is no view to copy from: the two are
@@ -122,7 +129,7 @@ const BreakpointSplitViewChoiceDialog = observer(
             canFollowChain && followChain
               ? junctionFromFeature(feature, assembly)
               : undefined
-          const stops = opensEvent
+          const chain = opensEvent
             ? eventStops(
                 event.junctions,
                 windowSizeNum,
@@ -130,7 +137,7 @@ const BreakpointSplitViewChoiceDialog = observer(
               )
             : start && findJunctionsNear
               ? await walkBreakendChain({ start, findJunctionsNear })
-              : undefined
+              : stops
           await (isSplitLevel
             ? navToMultiLevelBreak({
                 stableViewId: suffixedId('multilevel'),
@@ -141,7 +148,7 @@ const BreakpointSplitViewChoiceDialog = observer(
                 feature,
                 assemblyName,
                 windowSize: windowSizeNum,
-                stops,
+                stops: chain,
               })
             : navToSingleLevelBreak({
                 feature,
@@ -176,23 +183,29 @@ const BreakpointSplitViewChoiceDialog = observer(
               </ListItemIcon>
               <ListItemText
                 primary="Split level (top/bottom)"
-                secondary="Opens two stacked linear genome views, one for each breakend"
+                secondary={
+                  given
+                    ? `Opens ${stops.length} stacked linear genome views, one per segment of the read`
+                    : 'Opens two stacked linear genome views, one for each breakend'
+                }
               />
             </ListItemButton>
-            <ListItemButton
-              selected={!isSplitLevel}
-              onClick={() => {
-                setViewType('single')
-              }}
-            >
-              <ListItemIcon>
-                <SingleLevelIcon />
-              </ListItemIcon>
-              <ListItemText
-                primary="Single level (single row)"
-                secondary="Opens one linear genome view spanning both breakends"
-              />
-            </ListItemButton>
+            {given && stops.length > 2 ? null : (
+              <ListItemButton
+                selected={!isSplitLevel}
+                onClick={() => {
+                  setViewType('single')
+                }}
+              >
+                <ListItemIcon>
+                  <SingleLevelIcon />
+                </ListItemIcon>
+                <ListItemText
+                  primary="Single level (single row)"
+                  secondary="Opens one linear genome view spanning both breakends"
+                />
+              </ListItemButton>
+            )}
           </List>
           <FormGroup>
             {view ? (

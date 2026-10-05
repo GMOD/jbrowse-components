@@ -42,6 +42,7 @@ export {
   singleLevelFocusedSnapshotFromBreakendFeature,
 } from './navToSingleLevelBreak.ts'
 export { navToMultiLevelBreak } from './navToMultiLevelBreak.ts'
+export type { PanelStop } from './navToMultiLevelBreak.ts'
 export { openOrReuseSplitView } from './openSplitView.ts'
 export { makeFindJunctionsNear } from './findJunctionsNear.ts'
 export { distinctJunctions, eventStops } from './eventStops.ts'
