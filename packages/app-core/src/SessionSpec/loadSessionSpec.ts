@@ -213,18 +213,8 @@ function unresolvedLayoutRefs(
   ]
 }
 
-// A `tabs` node shares one cell between its children rather than dividing the
-// space, so a `size` on one of them describes nothing. This is the ONLY case
-// left where a stated size is dropped.
-//
-// It used to be far wider — dockview forces its branches to alternate
-// orientation by depth, so a nested container had no branch to size against and
-// the whole sizing pass bailed, top-level numbers included. That is gone
-// (ADR-068): the spec's nesting is the tree's nesting, `size` applies wherever
-// it is written, and a bare sibling takes an equal share of the remainder. The
-// wider check outlived the limitation it reported and told an author their
-// nested or partial sizes had been ignored while the layout honoured them —
-// which is also what website/docs/urlparams.md promises.
+// A `tabs` node shares one cell between its children, so a `size` on one of
+// them describes nothing; it is the only stated size the layout drops.
 function unsizeableLayoutNodes(layout: LayoutNode): boolean {
   const children = Array.isArray(layout.children) ? layout.children : []
   const sizedTabsChild =

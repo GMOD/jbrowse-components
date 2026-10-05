@@ -25,16 +25,8 @@ const noDrag = {
   onLostPointerCapture: () => {},
 }
 
-/**
- * `node` is a plain snapshot, so it has to be re-read for the render to follow
- * the tree — which is what `WorkspaceContainer` does by being an observer. The
- * harness does the same rather than passing `session.tree` once: a second
- * keypress on a splitter otherwise computes from the sizes the first one
- * replaced, and reads as an off-by-one-step bug in the handler.
- *
- * The pointer drag never needed this, which is why it went unnoticed — it
- * captures its start sizes in a ref on pointerdown and works from those.
- */
+// an observer re-reading `visibleTree`, as `WorkspaceContainer` does; a
+// snapshot passed once goes stale after the first splitter keypress
 const Harness = observer(function Harness({
   session,
 }: {
@@ -59,8 +51,6 @@ function renderLayout(session: ReturnType<typeof TestSession.create>) {
   return render(<Harness session={session} />)
 }
 
-// One instance reused across tabs kept the first tab's initial state, so the
-// next tab's views all counted as newly launched and scrolled themselves in
 test('switching tabs mounts the new tab content afresh', () => {
   function FirstTab({ tabId }: { tabId: string }) {
     const [first] = useState(tabId)
@@ -106,18 +96,10 @@ test('each cell shows only its active tab', () => {
 
   renderLayout(session)
 
-  // second was added last, so it is active
   expect(screen.getByTestId(`content-${second}`).textContent).toBe('view-2')
   expect(screen.queryByTestId(`content-${first}`)).toBeNull()
-  // but both tabs are in the strip
   expect(document.querySelectorAll('[role="tab"]')).toHaveLength(2)
 })
-
-// ---------------------------------------------------------------------------
-// Maximize. The renderer knows nothing about it — `WorkspaceContainer` hands it
-// `visibleTree`, which is the maximized cell or the whole tree — so what is
-// checked here is that the mode reaches the DOM and reverses cleanly.
-// ---------------------------------------------------------------------------
 
 test('a maximized cell is the only one drawn, and restoring brings the rest back', () => {
   const session = TestSession.create({ name: 't' })
@@ -132,10 +114,7 @@ test('a maximized cell is the only one drawn, and restoring brings the rest back
 
   const drawn = [...container.querySelectorAll('[data-panel-id]')]
   expect(drawn.map(el => (el as HTMLElement).dataset.panelId)).toEqual([right])
-  // and no boundary to drag, since there is nothing to divide
   expect(container.querySelectorAll('[data-splitter]')).toHaveLength(0)
-  // it fills: a cell keeps its share of a split in `size`, and a grow factor
-  // under 1 alone in the workspace draws that fraction of the window
   expect(drawn[0]!.parentElement!.style.flexGrow).toBe('1')
 
   act(() => {
@@ -146,9 +125,6 @@ test('a maximized cell is the only one drawn, and restoring brings the rest back
   expect(container.querySelectorAll('[data-splitter]')).toHaveLength(1)
 })
 
-// The gesture. Double-clicking the strip's empty space is the IDE convention
-// and was free — the strip's only other double-click is a tab label's, for
-// rename, and `target === currentTarget` is what keeps the two apart.
 test('double-clicking the strip background maximizes the cell, and again restores', () => {
   const session = TestSession.create({ name: 't' })
   const left = session.panels[0]!.id
@@ -163,8 +139,6 @@ test('double-clicking the strip background maximizes the cell, and again restore
   expect(session.maximizedPanelId).toBeUndefined()
 })
 
-// A rename double-click bubbles out of the label to the strip, so without the
-// target test renaming a tab would also maximize its cell.
 test('double-clicking a tab does not maximize its cell', () => {
   const session = TestSession.create({ name: 't' })
   session.splitPanel(session.panels[0]!.id, 'row')
@@ -173,7 +147,6 @@ test('double-clicking a tab does not maximize its cell', () => {
   fireEvent.doubleClick(container.querySelector('[role="tab"]')!)
   expect(session.maximizedPanelId).toBeUndefined()
 
-  // including on the label inside it, which is what a rename is actually on
   fireEvent.doubleClick(container.querySelector('[role="tab"] span')!)
   expect(session.maximizedPanelId).toBeUndefined()
 })
@@ -186,7 +159,6 @@ test('a splitter sits between each pair of siblings, not at the edges', () => {
 
   const { container } = renderLayout(session)
 
-  // three panes, two boundaries
   expect(container.querySelectorAll('[data-splitter]')).toHaveLength(2)
 })
 
@@ -230,15 +202,7 @@ test('a renamed tab shows its title', () => {
   expect(screen.getByText('My comparison')).toBeDefined()
 })
 
-// A panel must FILL its cell, not shrink to its content. This is a real bug that
-// shipped: the panel is a child of a `display: flex` row, so without `flex: 1`
-// its width is its content's width — and a view measures its container to decide
-// how wide to draw (useWidthSetter), so the two settle at the view's intrinsic
-// width and the workspace renders at half the window with dead space beside it.
-//
-// jsdom computes no layout, so this asserts the declared style rather than a
-// measured box. That is the whole mechanism here: the bug was a missing
-// declaration, not a miscalculation.
+// jsdom computes no layout, so this asserts the declared style
 test('a panel fills its cell rather than shrinking to its content', () => {
   const session = TestSession.create({ name: 't' })
   session.splitPanel(session.panels[0]!.id, 'row')
@@ -248,10 +212,7 @@ test('a panel fills its cell rather than shrinking to its content', () => {
   for (const el of container.querySelectorAll('[data-panel-id]')) {
     const style = getComputedStyle(el)
     expect(style.flexGrow).toBe('1')
-    // without this a long tab title or a wide view can push the cell past its
-    // share of the split instead of scrolling inside it. jsdom reports the
-    // class-derived value unitless and the inline one as `0px`, so compare
-    // numerically rather than pinning a spelling.
+    // jsdom reports this unitless or as `0px` depending on its source
     expect(Number.parseFloat(style.minWidth)).toBe(0)
   }
 })
@@ -272,11 +233,8 @@ test('the cell wrapper carries the size, and does not collapse either', () => {
   )
 })
 
-// The chrome is dockview's dark theme, FIXED — not derived from the MUI theme,
-// and dark in a light JBrowse theme too. Pinned because "follow the theme" is
-// the obvious thing to write and is wrong here: a light strip reads as content
-// rather than as the frame around it.
-test('the tab strip is dockview chrome, not the MUI theme', () => {
+// the chrome stays dark in a light theme, so the frame never reads as content
+test('the tab strip is fixed workspace chrome, not the MUI theme', () => {
   const session = TestSession.create({ name: 't' })
   const { container } = renderLayout(session)
 
@@ -286,25 +244,18 @@ test('the tab strip is dockview chrome, not the MUI theme', () => {
     colord(workspaceTheme.stripBackground).toRgbString(),
   )
   expect(style.height).toBe(`${workspaceTheme.stripHeight}px`)
-  // and emphatically not the theme's surface colour
   expect(style.backgroundColor).not.toBe(
     colord(createJBrowseTheme().palette.background.paper).toRgbString(),
   )
 })
 
-// The other half of that rule, and the one that shipped wrong: dockview's dark
-// theme also colours the surface its content sits on, and transcribing THAT
-// made a light JBrowse theme come up dark everywhere a view did not reach the
-// bottom of its cell — the frame swallowing the thing it frames. The strip is
-// chrome; the body is content and follows the theme.
 test('the panel body is content, so it follows the theme rather than the chrome', () => {
   const session = TestSession.create({ name: 't' })
   const { container } = renderLayout(session)
 
   const panel = container.querySelector('[data-panel-id]')!
   const strip = container.querySelector('[data-tab-strip]')!
-  // the theme `makeStyles` hands a component with no provider mounted, which is
-  // what this bare render has
+  // the theme `makeStyles` uses with no provider mounted
   expect(getComputedStyle(panel).backgroundColor).toBe(
     colord(defaultStyleTheme.palette.background.default).toRgbString(),
   )
@@ -313,10 +264,6 @@ test('the panel body is content, so it follows the theme rather than the chrome'
   )
 })
 
-// The strip's children are the tab list and then the panel's own buttons, so a
-// tab list that takes the leftover space puts the `+` hard against the right
-// edge of the cell — arbitrarily far from the tabs it adds to, and reading as
-// part of the window chrome rather than of the panel.
 test('the tab list does not grow, so the panel actions stay beside the tabs', () => {
   const session = TestSession.create({ name: 't' })
   const { container } = renderLayout(session)
@@ -324,13 +271,10 @@ test('the tab list does not grow, so the panel actions stay beside the tabs', ()
   const tabs = container.querySelector('[role="tab"]')!.parentElement!
   const style = getComputedStyle(tabs)
   expect(style.flexGrow).toBe('0')
-  // but it must still SHRINK, or a cell too narrow for its tabs pushes the
-  // buttons off the strip instead of scrolling the tabs under them
+  // shrinking is what makes the tabs scroll rather than push the buttons out
   expect(style.flexShrink).toBe('1')
 })
 
-// All four states dockview enumerates. The focused panel's selected tab is the
-// only fully-white label on screen, which is the whole point of having four.
 test('a tab is coloured by both its panel and its selection', () => {
   const session = TestSession.create({ name: 't' })
   const p1 = session.panels[0]!.id
@@ -341,8 +285,7 @@ test('a tab is coloured by both its panel and its selection', () => {
   expect(session.activePanelId).toBe(p2.id)
 
   const { container } = renderLayout(session)
-  // looked up by dataset rather than an attribute selector: jsdom has no
-  // `CSS.escape`, which is what lint rewrites an interpolated selector to use
+  // by dataset: jsdom lacks the `CSS.escape` an attribute selector would need
   const bg = (tabId: string) =>
     getComputedStyle(
       [...container.querySelectorAll('[data-tab-id]')].find(
@@ -359,12 +302,6 @@ test('a tab is coloured by both its panel and its selection', () => {
   )
 })
 
-// ---------------------------------------------------------------------------
-// Keyboard. The strip carried `role="tab"` and `aria-selected` with no way to
-// reach or operate any of it, which is worse than plain divs would have been:
-// it announces tabs to a screen reader whose user then cannot find them.
-// ---------------------------------------------------------------------------
-
 const tabsIn = (container: HTMLElement) =>
   [...container.querySelectorAll('[role="tab"]')] as HTMLElement[]
 
@@ -373,8 +310,6 @@ const childSizes = (session: ReturnType<typeof TestSession.create>) =>
     c => c.size,
   )
 
-// One tab stop for the whole strip, not one per tab — otherwise a panel with
-// eight tabs is eight stops between the user and the view.
 test('the strip is a single tab stop, and the shown tab holds it', () => {
   const session = TestSession.create({ name: 't' })
   session.addTab(session.panels[0]!.id)
@@ -388,10 +323,7 @@ test('the strip is a single tab stop, and the shown tab holds it', () => {
   expect(tabs.filter(t => t.tabIndex === -1)).toHaveLength(tabs.length - 1)
 })
 
-// MANUAL activation — the WAI tabs pattern's exception rather than its default,
-// and the right one here: only the shown tab's views are mounted, and each
-// display costs a WebGL2 context against a ceiling of 16, so activating on
-// arrow would build and tear down a set of them per keypress.
+// manual activation, since showing a tab mounts views that cost WebGL2 contexts
 test('arrowing moves focus without showing the tab it lands on', () => {
   const session = TestSession.create({ name: 't' })
   const p1 = session.panels[0]!.id
@@ -404,9 +336,7 @@ test('arrowing moves focus without showing the tab it lands on', () => {
   shownTab.focus()
   fireEvent.keyDown(shownTab, { key: 'ArrowLeft' })
 
-  // focus moved to the other tab...
   expect((document.activeElement as HTMLElement).dataset.tabId).toBe(first)
-  // ...and the second tab is still the one being shown
   expect(session.activeTabOf(p1)?.id).toBe(second)
   expect(screen.getByTestId(`content-${second}`)).toBeTruthy()
   expect(screen.queryByTestId(`content-${first}`)).toBeNull()
@@ -445,8 +375,6 @@ test('arrowing wraps around rather than stopping at the ends', () => {
   expect((document.activeElement as HTMLElement).dataset.tabId).toBe(second)
 })
 
-// A tablist's children have to be tabs, so the panel's own +/× buttons sit
-// beside it rather than inside — inside, a screen reader counts them as tabs.
 test('the panel actions are in the strip but not in the tablist', () => {
   const session = TestSession.create({ name: 't' })
   const { container } = render(
@@ -469,8 +397,6 @@ test('the panel actions are in the strip but not in the tablist', () => {
   expect(strip.querySelector('button')).toBeTruthy()
 })
 
-// Wired both ways, which is what lets a screen reader say which tab's content
-// it is about to read.
 test('the shown tab and its panel name each other', () => {
   const session = TestSession.create({ name: 't' })
   const { container } = renderLayout(session)
@@ -497,8 +423,6 @@ test('a hidden tab controls nothing, because none of it is rendered', () => {
   }
 })
 
-// The splitter claimed `role="separator"` while being neither focusable nor
-// operable: an affordance announced and then not there.
 test('the splitter resizes from the keyboard, in both directions', () => {
   const session = TestSession.create({ name: 't' })
   session.splitPanel(session.panels[0]!.id, 'row')
@@ -515,8 +439,7 @@ test('the splitter resizes from the keyboard, in both directions', () => {
   fireEvent.keyDown(splitter, { key: 'ArrowLeft' })
   expect(childSizes(session)[0]!).toBeCloseTo(0.5, 5)
 
-  // Home and End drive the boundary to its limits, never through them — a pane
-  // dragged to nothing still exists and can be brought back
+  // unmeasured in jsdom, so Home reaches zero but the pane survives
   fireEvent.keyDown(splitter, { key: 'Home' })
   expect(childSizes(session)[0]!).toBeCloseTo(0, 5)
   expect(childSizes(session)[1]!).toBeCloseTo(1, 5)
@@ -555,16 +478,8 @@ test('the splitter reports where it sits, as a percentage of its pair', () => {
   expect(splitter.getAttribute('aria-label')).toBeTruthy()
 })
 
-// ---------------------------------------------------------------------------
-// The splitter's pointer drag. Pointer events are chosen for capture, which
-// means owning the rules the browser was applying — the same three the tab drag
-// owns (`useLayoutDrag`), on the handle that predates them being written down.
-//
-// jsdom lays nothing out, so every rect is zero, `measurePairPx` returns 0 and
-// the handler bails before arming: the pair has to be given a width for any of
-// this to be reachable at all, which is why it went untested.
-// ---------------------------------------------------------------------------
-
+// jsdom measures every rect as zero and the splitter will not arm on a zero
+// pair, so the panes get a width
 function splitterOverPanes(session: ReturnType<typeof TestSession.create>) {
   const { container } = renderLayout(session)
   for (const el of container.querySelectorAll<HTMLElement>('div')) {
@@ -592,9 +507,7 @@ test('a splitter drag moves the boundary with the pointer', () => {
   expect(childSizes(session)[1]!).toBeCloseTo(0.4, 5)
 })
 
-// A right-press armed the drag and then lost its `pointerup` to the native
-// context menu, and capture routes every later move back to the handle — so a
-// button-less pointer went on resizing from where the right-press started.
+// a right-press loses its `pointerup` to the context menu
 test('only the primary button of the primary pointer starts a resize', () => {
   const session = twoPanes()
   const splitter = splitterOverPanes(session)
@@ -613,9 +526,6 @@ test('only the primary button of the primary pointer starts a resize', () => {
   expect(childSizes(session)[0]!).toBeCloseTo(0.5, 5)
 })
 
-// One pointerId per gesture: a second finger landing on the handle steered the
-// first one's resize from the first one's start position, and its release ended
-// the gesture the first one was still holding.
 test('a second pointer neither steers nor ends the resize', () => {
   const session = twoPanes()
   const splitter = splitterOverPanes(session)
@@ -629,9 +539,7 @@ test('a second pointer neither steers nor ends the resize', () => {
   expect(childSizes(session)[0]!).toBeCloseTo(0.6, 5)
 })
 
-// A touch long-press opens the platform's context menu and cancels the pointer
-// with no `pointerup` behind it, leaving the resize armed to resume from the
-// next move.
+// a touch long-press cancels the pointer with no `pointerup`
 test('pointercancel ends the resize', () => {
   const session = twoPanes()
   const splitter = splitterOverPanes(session)
@@ -643,16 +551,7 @@ test('pointercancel ends the resize', () => {
   expect(childSizes(session)[0]!).toBeCloseTo(0.5, 5)
 })
 
-// ---------------------------------------------------------------------------
-// Overflow. The strip scrolls and hides its scrollbar (it is chrome, and a
-// scrollbar across it would be noise), so with more tabs than fit there is
-// nothing saying there is more and nothing a mouse can do about it. Measured at
-// 1400px with 30 tabs: 11 of them entirely outside the strip.
-// ---------------------------------------------------------------------------
-
-// jsdom computes no layout, so scrollLeft never moves on its own and
-// scrollWidth is 0 — the handler's arithmetic is what is checkable here, and
-// the reachability it buys was measured in a real browser.
+// jsdom computes no layout, so only the handler's arithmetic is checkable
 test('a mouse wheel over the strip scrolls it sideways', () => {
   const session = TestSession.create({ name: 't' })
   const { container } = renderLayout(session)
@@ -666,11 +565,7 @@ test('a mouse wheel over the strip scrolls it sideways', () => {
   expect(list.scrollLeft).toBe(80)
 })
 
-// `deltaY` is only pixels when `deltaMode` says so. Firefox reports whole LINES
-// for a mouse wheel (mode 1, deltaY ±3) where Chrome reports pixels (mode 0,
-// ±100), so taking the number at face value moves the strip three pixels per
-// notch there — which is scrolling, technically, and unusable. Chrome-only
-// verification cannot see this, which is why it is pinned here.
+// Firefox reports a mouse wheel in lines; Chrome-only checks cannot see this
 test('a wheel reporting lines or pages is converted to pixels', () => {
   const session = TestSession.create({ name: 't' })
   const { container } = renderLayout(session)
@@ -681,8 +576,7 @@ test('a wheel reporting lines or pages is converted to pixels', () => {
   fireEvent.wheel(list, { deltaY: 3, deltaX: 0, deltaMode: 1 })
   expect(list.scrollLeft).toBe(48)
 
-  // pages are the strip's own visible width; jsdom measures 0, so this asserts
-  // the multiplication happened rather than a distance
+  // a page is the strip's visible width, which jsdom measures as 0
   list.scrollLeft = 0
   Object.defineProperty(list, 'clientWidth', {
     value: 400,
@@ -692,8 +586,7 @@ test('a wheel reporting lines or pages is converted to pixels', () => {
   expect(list.scrollLeft).toBe(800)
 })
 
-// A trackpad swipe already arrives as deltaX and the browser has applied it.
-// Adding deltaY on top would scroll twice as far as the fingers moved.
+// the browser already applied a trackpad's deltaX
 test('a horizontal gesture is left to the browser', () => {
   const session = TestSession.create({ name: 't' })
   const { container } = renderLayout(session)
@@ -704,9 +597,6 @@ test('a horizontal gesture is left to the browser', () => {
   expect(list.scrollLeft).toBe(50)
 })
 
-// Clicking never needs this and arrowing gets it from focus(); the case is a
-// tab that becomes current without being touched, which is what `+` does on a
-// strip already full.
 test('a tab that becomes current without being touched is scrolled into view', () => {
   const session = TestSession.create({ name: 't' })
   const p1 = session.panels[0]!.id

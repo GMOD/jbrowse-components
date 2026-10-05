@@ -14,17 +14,6 @@ import type { PanelChrome } from './panelChrome.ts'
 import type { BranchNode, LayoutTree } from './tree.ts'
 import type { DragState } from './useLayoutDrag.ts'
 
-/**
- * The layout, rendered. There is no imperative api and no event to listen to:
- * the tree is state, this is a function of it, and a gesture is an action.
- *
- * Sizes are `flex-grow`, which is why there is no resize handling anywhere in
- * here. A branch's children divide its space in proportion to their `size`
- * whatever that space becomes, so a window resize is the browser's problem —
- * this is the layout maths dockview does in pixels, and it is the part of a
- * grid engine most likely to be got subtly wrong.
- */
-
 interface Props {
   node: LayoutTree
   layout: WorkspaceLayout
@@ -35,9 +24,8 @@ interface Props {
 }
 
 /**
- * A node's share of its parent's space — the whole grid engine. The `min*: 0`
- * are what stop a flex item refusing to shrink below its content; without them
- * a wide view pushes its own cell past its share.
+ * A node's share of its parent's space, as `flex-grow`, so window resizes need
+ * no code. `min*: 0` stops a wide view pushing its cell past its share.
  */
 function paneStyle(size: number): React.CSSProperties {
   return {
@@ -75,12 +63,7 @@ export const LayoutRenderer = observer(function LayoutRenderer(props: Props) {
   )
 })
 
-/**
- * The pixels the two panes either side of a handle occupy. Read from the DOM
- * because sizes are shares of a container whose width only the browser knows.
- * The panes are the handle's siblings minus the other handles, which is what
- * `data-splitter` marks.
- */
+/** The pixels the two panes either side of a handle occupy. */
 function measurePairPx(
   handle: HTMLElement,
   index: number,
@@ -97,17 +80,13 @@ function measurePairPx(
   return horizontal ? before.width + after.width : before.height + after.height
 }
 
-// dockview's sash is a transparent grab strip with a 1px separator line drawn
-// down the middle of it — the line is what you see, the 4px is what you can
-// hit. Its dark theme deliberately gives the sash no hover colour at all.
+// a transparent grab strip with a 1px line drawn down its middle
 const useSplitterStyles = makeStyles()({
   splitter: {
     flex: `0 0 ${workspaceTheme.splitterSize}px`,
     position: 'relative',
     background: 'transparent',
     touchAction: 'none',
-    // it is focusable, so it has to show focus — dockview's sash deliberately
-    // has no HOVER colour, which is a different thing and still holds
     '&:focus-visible': {
       outline: `2px solid ${workspaceTheme.accent}`,
       outlineOffset: -1,
@@ -127,11 +106,8 @@ const useSplitterStyles = makeStyles()({
 })
 
 /**
- * Drags the boundary between children `index - 1` and `index`.
- *
- * The DOM half only: it measures, and hands position and pair span to
- * `splitter.ts`, which decides where the boundary is allowed to land. Same
- * split as the drag — geometry pure, wiring dumb.
+ * Drags the boundary between children `index - 1` and `index`; `splitter.ts`
+ * decides where it may land.
  */
 const Splitter = observer(function Splitter({
   branch,
@@ -157,8 +133,6 @@ const Splitter = observer(function Splitter({
           }
         : undefined
     },
-    // the pointer's travel as a fraction of the pair's pixels, applied to the
-    // pair's share, so the handle tracks the pointer whatever the units are
     move(drag, event) {
       const delta = (event[drag.axis] - drag.start) / drag.pairPx
       const sizes = drag.startSizes
@@ -179,8 +153,6 @@ const Splitter = observer(function Splitter({
     const pair = pairSpan(sizes, index)
     const decrease = horizontal ? 'ArrowLeft' : 'ArrowUp'
     const increase = horizontal ? 'ArrowRight' : 'ArrowDown'
-    // 2% of the PAIR per press, matching the drag: the boundary moves within
-    // the two panes either side of it and every other pane holds still
     const step = pair * 0.02
     let moved: number | undefined
     if (event.key === decrease) {
@@ -196,8 +168,6 @@ const Splitter = observer(function Splitter({
       return
     }
     event.preventDefault()
-    // Home/End mean "as far as this goes", which is the minimum rather than
-    // zero — the same stop the drag hits
     layout.setSizes(
       branch.id,
       withBoundaryAt(
@@ -209,8 +179,7 @@ const Splitter = observer(function Splitter({
     )
   }
 
-  // the pane BEFORE the handle, as a percentage of the pair it divides — which
-  // is what the handle actually moves
+  // the pane before the handle, as a percentage of the pair it divides
   const sizes = branch.children.map(c => c.size)
   const valueNow = Math.round(
     (sizes[index - 1]! / pairSpan(sizes, index)) * 100,

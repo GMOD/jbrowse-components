@@ -14,25 +14,9 @@ import type { WorkspaceLayout } from './model.ts'
 import type { PanelChrome } from './panelChrome.ts'
 import type { PanelNode, TabNode } from './tree.ts'
 
-/**
- * One cell of the grid: a tab strip, and the content of whichever tab is
- * showing.
- *
- * The strip and its state are `TabStrip`; this is the frame around them, and
- * has no state of its own — it is a function of its node, which is the whole
- * point of the layout being one MST tree.
- *
- * The line between chrome and content is the strip's lower edge: everything
- * above it is dockview's dark theme in either JBrowse theme (see
- * `dockviewTheme.ts`), everything below it follows the app's.
- */
-
 const useStyles = makeStyles()(theme => ({
-  // `flex: 1` and `minWidth: 0` are load-bearing, not tidiness. This is a child
-  // of a `display: flex` row, so without them its width is its CONTENT's width
-  // — and a view measures its container to decide how wide to draw
-  // (useWidthSetter), so the two settle at the view's intrinsic width and the
-  // panel renders at half the window with dead space beside it.
+  // without `flex: 1` and `minWidth: 0` the cell takes its content's width, and
+  // a view sizes itself to its container, so both settle too narrow
   panel: {
     position: 'relative',
     display: 'flex',
@@ -40,9 +24,7 @@ const useStyles = makeStyles()(theme => ({
     flex: 1,
     minWidth: 0,
     minHeight: 0,
-    // the surface the views sit on, so it is the app's background and not
-    // dockview's — see `dockviewTheme.ts`. A cell is taller than its views
-    // whenever they don't fill it, so this is most of what a panel shows.
+    // below the strip the cell follows the app theme, not `workspaceTheme`
     background: theme.palette.background.default,
   },
   content: {
@@ -55,13 +37,11 @@ const useStyles = makeStyles()(theme => ({
   indicator: {
     position: 'absolute',
     pointerEvents: 'none',
-    // above this panel's own content and nothing else — the panel is
-    // position:relative, so an app-wide z-index would let it cover menus
+    // local to the position:relative panel, so it cannot cover menus
     zIndex: 1,
     background: workspaceTheme.dropWash,
     outline: `1px solid ${workspaceTheme.accent}`,
   },
-  // where a tab dragged onto the strip would land
   caret: {
     position: 'absolute',
     pointerEvents: 'none',
@@ -95,9 +75,8 @@ export const PanelView = observer(function PanelView({
       data-panel-id={panel.id}
       className={classes.panel}
       onPointerDownCapture={() => {
-        // clicking anywhere in a cell makes it the one a new view lands in.
-        // Capture, so it still registers when the click is consumed by a
-        // control inside the view.
+        // capture phase, so a control inside the view that consumes the click
+        // still activates the cell
         if (layout.activePanelId !== panel.id) {
           layout.setActivePanelId(panel.id)
         }
@@ -128,8 +107,7 @@ export const PanelView = observer(function PanelView({
   )
 })
 
-// Keyed by tab, so a switch mounts a fresh ViewStack at the top of its own
-// scroll port rather than inheriting the last tab's
+// keyed by tab, so a switch gets a fresh ViewStack and scroll port
 const TabPanel = observer(function TabPanel({
   panelId,
   tab,
@@ -155,13 +133,7 @@ const TabPanel = observer(function TabPanel({
   )
 })
 
-/**
- * Where a drop would land, drawn over the cell.
- *
- * A strip drop gets a caret at the gap rather than a wash over half the cell:
- * it is a position in the tab order, and shading half the panel would say
- * "split this cell", which is the wrong thing.
- */
+/** Where a drop would land: a caret at a strip gap, or a wash over a zone. */
 const DropIndicator = observer(function DropIndicator({
   drop,
   classes,
@@ -174,11 +146,7 @@ const DropIndicator = observer(function DropIndicator({
       <div
         data-drop-caret={drop.strip.index}
         className={classes.caret}
-        // A scrolled strip's left-most gap has a negative panel-relative x, and
-        // the panel has no `overflow: hidden` — the caret drew into the
-        // neighbour. Clamped here because `stripDropAt` is deliberately
-        // ignorant of which coordinate space it was handed, so it cannot know
-        // where zero is.
+        // a scrolled strip's first gap is left of the panel, which does not clip
         style={{ left: Math.max(0, drop.strip.left) }}
       />
     )

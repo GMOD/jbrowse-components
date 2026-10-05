@@ -23,8 +23,6 @@ import type { PanelNode } from './tree.ts'
 
 const useStyles = makeStyles()({
   actions: { display: 'flex', alignItems: 'center', flex: '0 0 auto' },
-  // dockview's `.dv-default-tab-action`: inherits the strip's colour, and takes
-  // a small rounded chip on hover rather than MUI's circular ripple surface
   button: {
     padding: 4,
     borderRadius: 2,
@@ -37,15 +35,6 @@ const useStyles = makeStyles()({
   icon: { fontSize: 16 },
 })
 
-/**
- * The per-cell buttons: new tab, split, close.
- *
- * Every one of these is a single MST action on the layout, where the dockview
- * versions were an api call plus a session write that had to be kept consistent
- * with it — `handleSplit` was `containerApi.addGroup(...)` followed by
- * `addEmptyTab(newGroup)`, and the gap between those two was where the
- * "resource is already disposed" crash lived.
- */
 export const WorkspacePanelActions = observer(function WorkspacePanelActions({
   panel,
   session,
@@ -53,13 +42,7 @@ export const WorkspacePanelActions = observer(function WorkspacePanelActions({
 }: {
   panel: PanelNode
   session: WorkspaceSessionType & WorkspaceLayout
-  /**
-   * Closing a cell closes the views its tabs held, and the layout does not own
-   * views — so the pair is one function at the call site, the same way
-   * `WorkspaceTab` takes its `onClose`. Spelled here as well, this file would
-   * be the third place stating "and also remove the views", which is one more
-   * than the number that can be kept in step.
-   */
+  /** closes the cell and the views its tabs hold */
   onClose: () => void
 }) {
   const { classes } = useStyles()
@@ -97,10 +80,8 @@ export const WorkspacePanelActions = observer(function WorkspacePanelActions({
               session.splitPanel(panel.id, 'column')
             },
           },
-          // The strip's double-click is the gesture; this is how anyone finds
-          // it, and the only way to reach it from the keyboard. Gated on there
-          // being another cell to hide, since maximizing the only one is a
-          // no-op with a label promising otherwise.
+          // the keyboard route to the strip's double-click; hidden when there
+          // is no other cell to hide
           ...(session.panels.length > 1 || maximized
             ? [
                 {

@@ -20,8 +20,6 @@ import {
 
 import type { BranchNode, LayoutTree, PanelNode } from './tree.ts'
 
-// one tab per panel unless a test says otherwise, since the tab level is
-// orthogonal to every structural rule below
 let seq = 0
 function panel(id: string, viewIds: string[] = [], size = 1): PanelNode {
   seq += 1
@@ -35,13 +33,8 @@ function tabIdOf(node: LayoutTree, panelId: string) {
 const sizesOf = (node: LayoutTree) =>
   isBranch(node) ? node.children.map(c => Number(c.size.toFixed(4))) : []
 
-// Canonical form, stated once so every test can assert it rather than restate
-// it. These are the invariants normalize() exists to establish.
-// Walks first and asserts once, rather than asserting per node. The 2000-step
-// sequence below calls this on a tree that grows as it goes, so an `expect` per
-// branch made the run quadratic — ~1.4M assertions, 25 of the suite's 29
-// seconds. Returning the offender also names it, which a bare
-// `expect(child.size).toBeGreaterThan(0)` two hundred nodes deep never did.
+// returns the offender rather than asserting per node, which made the 2000-step
+// sequence quadratic
 function canonicalViolation(node: LayoutTree): string | undefined {
   if (!isBranch(node)) {
     return undefined
@@ -164,11 +157,7 @@ describe('normalize', () => {
     expectCanonical(once)
   })
 
-  // ...including in floating point, which is the half that was not true.
-  // Dividing by a sum of 1 and multiplying by 1 is not the identity for most
-  // pane counts, and normalisation runs on EVERY action — so an equal split of
-  // six or more panes oscillated between two size vectors forever, and every
-  // action on a settled layout wrote a snapshot in which nothing had changed.
+  // rescaling by 1 is not the identity in floating point
   test('is idempotent for an equal split of any size', () => {
     for (const count of [2, 3, 5, 6, 7, 11, 19, 24]) {
       const once = normalize({
@@ -215,9 +204,7 @@ describe('splitPanel', () => {
     const twoWide = splitPanel(panel('p1'), 'p1', 'row', panel('p2'))
     const nested = splitPanel(twoWide, 'p2', 'column', panel('p3'))
     expect(panels(nested).map(p => p.id)).toEqual(['p1', 'p2', 'p3'])
-    // p1 still owns half the width; p2/p3 share the other half vertically.
-    // dockview cannot express this, which is why `size` only ever worked on the
-    // top-level split there.
+    // p1 still owns half the width; p2/p3 share the other half vertically
     expect(sizesOf(nested)).toEqual([0.5, 0.5])
     const right = isBranch(nested) ? nested.children[1]! : nested
     expect(isBranch(right) && right.direction).toBe('column')
@@ -288,11 +275,7 @@ describe('views and tabs', () => {
     expect(target.activeTabId).toBe(movedTab)
   })
 
-  // `index` counts the strip the USER is looking at, which is the tree before
-  // the move. Within one panel that differs from the post-removal ordering
-  // exactly when the tab starts to the left of the gap it was dropped in, and
-  // getting it wrong lands the tab one place too far right — the classic
-  // remove-then-insert off-by-one, and invisible until a UI passed an index.
+  // `index` counts the strip the user sees, before the move
   describe('reordering within one panel', () => {
     const threeTabs = (): PanelNode => ({
       id: 'p1',
@@ -306,10 +289,6 @@ describe('views and tabs', () => {
     })
     const order = (tree: LayoutTree) => (tree as PanelNode).tabs.map(t => t.id)
 
-    // The shift is about reading a STATED index against the strip on screen, so
-    // it must not touch the no-index case: a caller that states nothing is not
-    // describing a gap. Dropping a tab on its own panel's BODY takes this path,
-    // and the shift landed it one place short of the end.
     test('no index appends, even when the tab is already in that panel', () => {
       expect(order(moveTabToPanel(threeTabs(), 'a', 'p1'))).toEqual([
         'b',
@@ -385,8 +364,6 @@ describe('views and tabs', () => {
       ])
     })
 
-    // Across panels there is no shift: removing the tab does not disturb the
-    // target's ordering, so the index means what it says.
     test('moving into another panel inserts at the index as given', () => {
       const split = splitPanel(threeTabs(), 'p1', 'row', {
         id: 'p2',
@@ -417,14 +394,7 @@ describe('views and tabs', () => {
   })
 })
 
-// The operations are total: any sequence of them, from any starting tree, ends
-// canonical. This is the property the imperative bridge could not have, because
-// there "canonical" depended on what dockview did in response.
-//
-// Every operation the tree has is in the mix, `homeViews` included — it runs on
-// every change to `session.views` and used to sit in the model, which is to say
-// outside the one test that drives operations against each other. The
-// interesting sequences are the ones where it follows a removal.
+// every operation the tree has belongs in this mix
 test('any sequence of operations leaves a canonical tree', () => {
   let tree: LayoutTree = panel('p0', ['v0'])
   let n = 0
@@ -450,15 +420,11 @@ test('any sequence of operations leaves a canonical tree', () => {
     } else if (roll < 0.5 && ids.length > 1) {
       tree = removePanel(tree, target)
     } else if (roll < 0.65 && someTab) {
-      // With an index as well as without: driving it with none left the index
-      // shift — the fiddliest arithmetic in the file — outside the sequence.
-      // The assertion states the reading rather than reproducing the shift,
-      // which would prove nothing: whatever was left of the gap on screen is
-      // what ends up left of the tab, minus the tab itself.
+      // asserts the reading, not the shift: what was left of the gap on screen
+      // ends up left of the tab
       const into = panels(tree).find(p => p.id === target)!
       const onScreen = into.tabs.map(t => t.id)
-      // half of them a REORDER, the only case the shift applies to — picked
-      // from the whole tree it was 5 of 160, which samples nothing
+      // half reorders, the only case the index shift applies to
       const moving = (rng() < 0.5 ? pick(into.tabs) : undefined) ?? someTab
       const at =
         rng() < 0.5 ? undefined : Math.floor(rng() * (onScreen.length + 1))
@@ -479,8 +445,7 @@ test('any sequence of operations leaves a canonical tree', () => {
     } else if (roll < 0.86 && someTab) {
       tree = setActiveTab(tree, target, someTab.id)
     } else if (roll < 0.86) {
-      // homing against a list that has drifted from the tree in both
-      // directions: some views it does not know about, some it has lost
+      // a list that has drifted from the tree in both directions
       const held = tabs(tree).flatMap(t => t.viewIds)
       n++
       const session = [...held.filter(() => rng() < 0.8), `v${n}`]
@@ -492,17 +457,11 @@ test('any sequence of operations leaves a canonical tree', () => {
         rng() < 0.5 ? 'Named' : undefined,
       )
     } else if (roll < 0.93) {
-      // the two prunes are the gesture-level operations, and the ones with a
-      // "unless it is the last" guard to get wrong. Driven standalone rather
-      // than only after the move that empties something, because they are
-      // exported and total like the rest
       tree = pruneEmptyPanel(tree, target)
     } else if (roll < 0.96 && someTab) {
       tree = pruneEmptyTabIn(tree, target, someTab.id)
     } else {
-      // any branch, not just the root: rule 3 rescales a flattened branch's
-      // children to the share it held, so a nested one just resized is the
-      // input that exercises that arithmetic
+      // any branch, so nested rescaling is exercised
       const branch = pick(branchesIn(tree))
       if (branch) {
         tree = setSizes(
@@ -513,18 +472,12 @@ test('any sequence of operations leaves a canonical tree', () => {
       }
     }
     expectCanonical(tree)
-    // canonical AND settled: normalising again must change nothing at all.
-    // `expectCanonical` alone cannot see this — it asserts the sizes sum to 1
-    // to six places, which every step of an oscillation does.
+    // settled too: `expectCanonical` passes both halves of an oscillation
     expect(normalize(tree)).toEqual(tree)
-    // no view and no tab is ever duplicated or stranded
     const allViews = tabs(tree).flatMap(t => t.viewIds)
     expect(new Set(allViews).size).toBe(allViews.length)
     const allTabs = tabs(tree).map(t => t.id)
     expect(new Set(allTabs).size).toBe(allTabs.length)
-    // and a panel never shows a tab it does not have. `activeTabId` is a
-    // `maybe` naming a sibling, so nothing structural enforces this — every
-    // operation that can retire a tab has to hand it on.
     const orphanedActive = panels(tree).find(
       p =>
         p.activeTabId !== undefined &&
@@ -534,8 +487,6 @@ test('any sequence of operations leaves a canonical tree', () => {
   }
 })
 
-// there are no parent pointers, so a branch is found by walking rather than by
-// asking one — the same reason `panels` exists
 function branchesIn(node: LayoutTree): BranchNode[] {
   return isBranch(node) ? [node, ...node.children.flatMap(branchesIn)] : []
 }
@@ -550,10 +501,8 @@ function mulberry32(seed: number) {
   }
 }
 
-// The pure functions are exported and callable directly, so each has to be
-// total on its own — a guard in the MST action above it protects that caller
-// and nobody else. `moveTabToPanel` takes the tab out before putting it back,
-// which makes a missing target a silent deletion rather than a no-op.
+// each exported function must be total on its own; the model's guards protect
+// only the model
 describe('operations are total on bad arguments', () => {
   const base = splitPanel(panel('p1', ['v1']), 'p1', 'row', panel('p2'))
 

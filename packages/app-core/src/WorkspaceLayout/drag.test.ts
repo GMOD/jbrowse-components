@@ -9,8 +9,7 @@ const TestSession = types.compose(
   WorkspaceLayoutMixin(),
 )
 
-// two cells side by side. left has two tabs (view-1, view-2), right has one
-// (view-3) — the shape every drag question needs.
+// left holds two tabs (view-1, view-2), right one (view-3)
 function twoPanels() {
   const session = TestSession.create({ name: 't' })
   const left = session.panels[0]!.id
@@ -57,8 +56,6 @@ test('dropping on an edge splits and lands in the new half', () => {
   expect(session.activePanelId).toBe(created)
 })
 
-// The case that would otherwise need a guard: the gesture is a no-op, and it
-// falls out of pruning the empty source rather than being special-cased.
 test('dropping a cell’s only tab on its own edge collapses back', () => {
   const { session, right, tabC } = twoPanels()
 
@@ -69,10 +66,8 @@ test('dropping a cell’s only tab on its own edge collapses back', () => {
   expect(session.panels.every(p => p.tabs.length > 0)).toBe(true)
 })
 
-// The gesture no longer publishes a drag for this at all, so nothing reaches
-// the action by that route — which is the reason to pin it here. `useLayoutDrag`
-// declining and `dropTabInPanel` declining are one rule at two layers, the same
-// shape as `moveTabToPanel`'s totality under the model's own guards.
+// `useLayoutDrag` never sends this drop, so only this test reaches the action's
+// own refusal
 test('dropping a tab in its own cell without an index does nothing', () => {
   const { session, left, tabA, tabB } = twoPanels()
   const before = getSnapshot(session)
@@ -91,7 +86,6 @@ test('a cell with tabs left over is not pruned', () => {
 
   session.dropTabInPanel(tabA, right)
 
-  // left still has tabB, so it stays
   expect(session.panels.map(p => p.id).sort()).toEqual([left, right].sort())
   expect(session.panelContainingView('view-2')?.id).toBe(left)
 })
@@ -120,15 +114,11 @@ test('sizes stay normalised through a drag', () => {
   if (isBranch(root)) {
     const total = root.children.reduce((sum, c) => sum + c.size, 0)
     expect(total).toBeCloseTo(1, 6)
-    // the left pane kept its 80% — a split on the right does not move it
     expect(root.children[0]!.size).toBeCloseTo(0.8, 6)
   }
 })
 
-// The mirror of "dragging the last tab out of a cell collapses it", by the
-// gesture that empties the same cell without moving anything: closing its last
-// tab. It left a blank half of the split that rendered NOTHING — not even the
-// view launcher an empty tab shows — with only the `+` to get out of it.
+// a tabless cell renders nothing, not even the view launcher
 test('closing the last tab of one half of a split collapses it too', () => {
   const { session, left, tabC } = twoPanels()
 
@@ -140,7 +130,6 @@ test('closing the last tab of one half of a split collapses it too', () => {
   expect(session.activePanelId).toBe(left)
 })
 
-// but a cell with tabs left over is not a cell anyone emptied
 test('closing one of several tabs leaves the cell standing', () => {
   const { session, left, tabA } = twoPanels()
 
@@ -150,9 +139,6 @@ test('closing one of several tabs leaves the cell standing', () => {
   expect(session.panels.map(p => p.id)).toContain(left)
 })
 
-// and the last cell in the workspace has nowhere to collapse to, so it stays —
-// `pruneEmptyPanel` already refuses, and this is the state `removePanel` hands
-// back for the same reason
 test('closing the last tab of the only cell keeps the cell', () => {
   const session = TestSession.create({ name: 't' })
 

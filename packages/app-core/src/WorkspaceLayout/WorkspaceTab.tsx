@@ -13,18 +13,13 @@ import type { TabNode } from './tree.ts'
 import type { AbstractViewModel } from '@jbrowse/core/util'
 
 const useStyles = makeStyles()(theme => ({
-  // Only the label and its menu. The background, the selected state and the
-  // hover live on the strip's own `[role=tab]` wrapper, which is where the
-  // selection is known — two places styling one tab is how they drift.
+  // the `[role=tab]` wrapper in TabStrip owns background and selected state
   tab: {
     display: 'flex',
     alignItems: 'center',
     gap: 4,
     minWidth: 0,
   },
-  // dockview's `.dv-default-tab-content`: takes the space, truncates with an
-  // ellipsis, and takes its colour from the tab, which is what encodes
-  // active/inactive
   title: {
     flexGrow: 1,
     marginRight: 4,
@@ -55,12 +50,7 @@ export const WorkspaceTab = observer(function WorkspaceTab({
   views: AbstractViewModel[]
   session: WorkspaceSessionType
   layout: WorkspaceLayout
-  /**
-   * Closing a tab closes the views it held, and the layout does not own views —
-   * so the pair is one function at the call site rather than spelled out here.
-   * The strip's middle-click needs the same pair, and two spellings of "and
-   * also remove the views" is how one of them comes to be missing it.
-   */
+  /** closes the tab and the views it holds */
   onClose: () => void
 }) {
   const { classes } = useStyles()
@@ -73,8 +63,7 @@ export const WorkspaceTab = observer(function WorkspaceTab({
     setEditing(true)
   }
 
-  // An empty box, or the automatic name left as it was, means "not renamed",
-  // so the name goes on following the tab's views
+  // an empty box or the unchanged automatic name keeps the name automatic
   const save = () => {
     const name = draft.trim()
     const automatic = tabDisplayName(

@@ -1,25 +1,10 @@
 /**
- * The layout tree, as pure functions over plain snapshots.
- *
- * This is the half of an MST-native workspace that carries the risk, so it is
- * deliberately not MST: no nodes, no parents, no lifecycle, nothing to be alive
- * or dead. Every operation is `tree in -> tree out`, which means the invariants
- * below can be tested exhaustively instead of observed to hold.
- *
- * The trade being made is worth naming, because it is not "complexity for no
- * complexity". Reconciling with dockview is replaced by **normalisation**: a
- * tree that has just had a panel removed, or a branch split, is usually not in
- * canonical form, and every operation has to put it back. That is real work and
- * it is where this design's bugs would live. What it is not is timing: there is
- * no event, no re-entrancy, no window during which the tree is half-updated,
- * and no second owner to disagree with.
+ * The layout tree as pure functions over plain snapshots, deliberately not MST
+ * so its invariants can be tested exhaustively. Every operation returns a tree
+ * in canonical form (`normalize`).
  */
 
-/**
- * One tab. Its content is a **vertical stack of views**, which is JBrowse's own
- * concept and the reason a generic window manager never fits cleanly: dockview
- * has a group holding tabs, and we need a third level under that.
- */
+/** One tab: a vertical stack of views. */
 export interface TabNode {
   id: string
   /** membership only — `session.views` is the order (see WorkspaceLayout/CLAUDE.md) */
@@ -111,14 +96,8 @@ export function panelContainingView(node: LayoutTree, viewId: string) {
  *    it, its children's sizes scaled to preserve their share of the whole
  * 4. sizes are renormalised so a node's siblings always sum to 1
  *
- * Rule 3 is the one dockview cannot express: it forces orientation to alternate
- * by depth, so `row` inside `row` is not representable and a nested split gets
- * silently reparented. Here it is representable AND canonicalised, which is
- * what makes `size` work at any depth rather than only on the top-level split.
- *
- * Empty panels are NOT dropped, and neither are empty tabs. A tab with no views
- * is exactly what "new empty tab" creates — it shows the view launcher — so
- * pruning empties wholesale would delete the thing the user just asked for.
+ * Empty panels and empty tabs stay: "new empty tab" creates one on purpose, to
+ * show the view launcher.
  */
 export function normalize(node: LayoutTree): LayoutTree {
   if (!isBranch(node)) {
@@ -140,31 +119,14 @@ export function normalize(node: LayoutTree): LayoutTree {
 }
 
 /**
- * Siblings whose sizes are already right are left ALONE, rather than divided by
- * a sum of 1 and multiplied by 1.
- *
- * That round trip is not the identity in floating point, and normalisation runs
- * on every action: seven equal panes renormalise to `0.14285714285714285`,
- * which sums to `0.9999999999999998`, which renormalises to
- * `0.14285714285714288`, which sums to `1.0000000000000002`, which renormalises
- * back. So `normalize` had no fixed point — every action rewrote every size,
- * a settled layout emitted a snapshot for each one, and the undo history filled
- * with entries in which nothing observable changed. Exactly the failure
- * dockview's echoing layout event caused, arrived at from the other side.
- *
- * The tolerance is what makes it terminate; the drift it admits does not
- * accumulate, because the sizes stop moving as soon as they are inside it.
+ * Siblings already summing to the target within this tolerance are left alone.
+ * Rescaling is not the identity in floating point (seven equal panes oscillate
+ * between sums of 0.9999999999999998 and 1.0000000000000002), so without it
+ * `normalize` has no fixed point and every action fills undo with a no-op.
  */
 const SIZE_EPSILON = 1e-9
 
-/**
- * Rescale a set of siblings so their sizes sum to `total`.
- *
- * Rule 4 renormalises to 1; rule 3 rescales a flattened branch's children to
- * the share that branch held, so a child at half of a branch that was a third
- * of its parent ends up at a sixth. Siblings summing to nothing take equal
- * shares — the alternative is dividing by zero.
- */
+/** Rescale siblings to sum to `total`; siblings summing to zero share equally. */
 function scaleSizes(children: LayoutTree[], total = 1): LayoutTree[] {
   const sum = children.reduce((acc, c) => acc + c.size, 0)
   if (sum <= 0) {
@@ -197,12 +159,8 @@ function mapNode(
 }
 
 /**
- * Split `panelId`, putting `newPanel` beside it in `direction`.
- *
- * Always builds a branch around the panel and lets `normalize` flatten it into
- * the parent when the directions agree. Trying to decide up front whether to
- * nest or to insert as a sibling is the same decision rule twice, and the two
- * copies drift.
+ * Split `panelId`, putting `newPanel` beside it in `direction`. Always wraps
+ * the panel in a branch and lets `normalize` flatten it when directions agree.
  */
 export function splitPanel(
   root: LayoutTree,
@@ -211,8 +169,7 @@ export function splitPanel(
   newPanel: PanelNode,
   before = false,
 ): LayoutTree {
-  // derived rather than minted: this function is pure, and the new panel's id
-  // is already unique in the tree, so a branch named after it is too
+  // derived rather than minted: the new panel's id is unique, so this is too
   const branchId = `branch-${newPanel.id}`
   const split = mapNode(root, panelId, found => {
     const pair = before ? [newPanel, found] : [found, newPanel]
@@ -229,11 +186,8 @@ export function splitPanel(
 /** Drop a panel. Its space goes back to its siblings via renormalisation. */
 export function removePanel(root: LayoutTree, panelId: string): LayoutTree {
   const removed = mapNode(root, panelId, () => undefined)
-  // Removing the only panel leaves nothing to render, which is not a state the
-  // workspace has: the caller gets an empty panel to put the next tab in.
-  // `activeTabId` has to go with the tabs — it named one of them, and a panel
-  // pointing at a tab it no longer has is the dangling state every other
-  // operation here is careful not to leave (see integrity.test.ts).
+  // The only panel empties instead, and `activeTabId` goes with its tabs so it
+  // cannot dangle
   return removed
     ? normalize(removed)
     : { ...(root as PanelNode), tabs: [], activeTabId: undefined }
@@ -288,10 +242,6 @@ function mapTab(
 }
 
 // --- tabs ------------------------------------------------------------------
-//
-// A tab is the unit the user drags, closes and renames; a view is what lives
-// inside one. Keeping them separate is what dockview models as group/panel, and
-// it is the level the first version of this tree left out entirely.
 
 export function addTab(
   root: LayoutTree,
@@ -322,12 +272,7 @@ export function removeTab(root: LayoutTree, tabId: string): LayoutTree {
       tabs: remaining,
       activeTabId:
         panel.activeTabId === tabId
-          ? // Fall to the neighbour on the left — which for the leftmost tab is
-            // the one that slid into its place. A deliberate divergence from
-            // dockview, which opened `mostRecentlyUsed[0]`: that needs a
-            // per-panel MRU list in the tree, which is state to persist, keep
-            // pruned and hold as an invariant, for a difference nobody has
-            // asked about.
+          ? // the left neighbour, or for the leftmost tab the one that slid in
             remaining[Math.max(at - 1, 0)]?.id
           : panel.activeTabId,
     }
@@ -335,25 +280,11 @@ export function removeTab(root: LayoutTree, tabId: string): LayoutTree {
 }
 
 /**
- * Move a tab into another panel, at `index` if given.
+ * Move a tab into another panel, at `index` if given, or append.
  *
- * One function returning one tree, so there is no instant at which the tab is
- * in both panels or neither — the state the imperative bridge had to wrap an
- * explicit `runInAction` around to hide from its own reconcile autorun.
- *
- * **`index` counts the tabs as they are ordered NOW**, before the move. That is
- * the only reading a caller can supply, because it is the strip the user is
- * looking at — and it differs from the post-removal ordering exactly when the
- * tab is moving within its own panel and is currently to the LEFT of the gap it
- * was dropped in. Dragging A to the gap between B and C in `[A, B, C]` is index
- * 2 on screen; taking A out first makes that gap index 1, and inserting at 2
- * lands it after C instead. Adjusting here rather than in the caller keeps the
- * whole "remove then insert" mechanic inside the one function that does it.
- *
- * dockview reaches the same rule from the other end and it is worth knowing
- * they agree, since this is the fiddliest arithmetic in the file: its tabs
- * container computes `insertionIndex - (sourceIndex !== -1 && sourceIndex <
- * insertionIndex ? 1 : 0)`, which is the condition below with the same bounds.
+ * `index` counts the strip the user sees, before the move. Within one panel a
+ * tab left of the gap shifts it by one once removed: dragging A between B and C
+ * in `[A, B, C]` is index 2 on screen but 1 after A comes out.
  */
 export function moveTabToPanel(
   root: LayoutTree,
@@ -362,9 +293,7 @@ export function moveTabToPanel(
   index?: number,
 ): LayoutTree {
   const home = findTab(root, tabId)
-  // The target has to be checked BEFORE the removal, not after. This function
-  // takes the tab out and puts it back, so a target that cannot be found and is
-  // not rejected here leaves the tab — and every view in it — nowhere at all.
+  // checked before the removal, or a missing target would delete the tab
   if (!home || !findPanel(root, targetPanelId)) {
     return root
   }
@@ -374,10 +303,6 @@ export function moveTabToPanel(
       ? home.panel.tabs.findIndex(t => t.id === tabId)
       : -1
   return mapPanel(removeTab(root, tabId), targetPanelId, panel => {
-    // No index means append, and it has to keep meaning that within one panel.
-    // The shift below is about reading a STATED index against the strip on
-    // screen; a caller that states nothing is not describing a gap, so shifting
-    // its position lands the tab one place short of the end.
     const at =
       index === undefined
         ? panel.tabs.length
@@ -439,14 +364,8 @@ export function removeView(root: LayoutTree, viewId: string): LayoutTree {
 }
 
 /**
- * Make the tree's membership agree with the session's list of views.
- *
- * The only reconciliation left, and one-directional: `session.views` owns which
- * views exist, and nothing reads back.
- *
- * **`viewIds` is the session's WHOLE set.** A shorter list does not leave the
- * rest alone — it unhomes them, and the next homing pass sweeps them into one
- * tab.
+ * Make the tree's membership agree with `session.views`, which owns which views
+ * exist. `viewIds` is the WHOLE set: a shorter list unhomes the rest.
  */
 export function homeViews(
   root: LayoutTree,
@@ -462,9 +381,7 @@ export function homeViews(
   let next = root
   let homeTabId = activeTabIn(target)?.id
   if (!homeTabId) {
-    // A panel with no tabs is legal, but it cannot be where a view lands — so
-    // this mints one rather than declining, which also means a blank cell built
-    // by `closePanel` on the last panel is repaired by the next homing pass.
+    // a tabless panel is legal but cannot hold a view, so give it a tab
     homeTabId = nextTabId()
     next = addTab(next, target.id, { id: homeTabId, viewIds: [] })
   }
@@ -473,8 +390,6 @@ export function homeViews(
       next = addViewToTab(next, homeTabId, viewId)
     }
   }
-  // read the memberships once, then drop: `removeView` returns a new tree each
-  // call, so a list taken from a tree it has already replaced goes stale
   const owned = new Set(viewIds)
   const departed = tabs(next)
     .flatMap(t => t.viewIds)
@@ -486,13 +401,8 @@ export function homeViews(
 }
 
 /**
- * Drop a panel that has been left with no tabs, unless it is the only one.
- *
- * Deliberately NOT a normalisation rule. A panel with no tabs is reachable on
- * purpose, so pruning empties wholesale would delete a space the user asked
- * for. It is a step the *drag* gesture takes about its own source panel,
- * because dragging the last tab out of a split and leaving a blank half is the
- * one place an empty panel is clearly not what was meant.
+ * Drop a panel left with no tabs, unless it is the only one. Not a
+ * normalisation rule: only the gesture that emptied the panel calls it.
  */
 export function pruneEmptyPanel(root: LayoutTree, panelId: string): LayoutTree {
   const found = findPanel(root, panelId)
@@ -502,16 +412,9 @@ export function pruneEmptyPanel(root: LayoutTree, panelId: string): LayoutTree {
 }
 
 /**
- * Drop a tab that a move has left with no views, unless it is the panel's last.
- *
- * The mirror of `pruneEmptyPanel`, and deliberately as narrow: an empty tab is
- * legitimate (it shows the view launcher), so this only ever runs on the tab a
- * move just emptied, never as a rule over the tree.
- *
- * Which is why closing a tab's last VIEW leaves the tab standing where a move
- * out of it does not: the move acted somewhere else and left this behind, and
- * the close acted here, where an empty tab is a usable place to open the next
- * thing. A cell's last tab prunes because a blank cell is not usable.
+ * Drop a tab a move has left with no views, unless it is the panel's last.
+ * Closing a tab's last view leaves the tab standing, as a place to open the
+ * next one; only a move out of it prunes.
  */
 export function pruneEmptyTabIn(
   root: LayoutTree,

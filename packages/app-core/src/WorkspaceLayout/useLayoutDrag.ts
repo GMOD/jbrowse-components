@@ -59,9 +59,7 @@ export function useLayoutDrag(layout: WorkspaceLayout) {
     const panelId = panelEl.dataset.panelId
     const panelRect = panelEl.getBoundingClientRect()
 
-    // The strip is a finer answer than `center`, and it has to be tested first:
-    // the strip sits inside the panel's top edge band, so `dropZoneAt` alone
-    // reads a drop between two tabs as "split this cell upwards".
+    // the strip first: it sits inside the panel's top edge band
     const stripEl = under.find(el => 'tabStrip' in el.dataset)
     if (stripEl) {
       // panel-relative, so the caret can be drawn inside the panel's own box
@@ -92,8 +90,7 @@ export function useLayoutDrag(layout: WorkspaceLayout) {
         : { tabId, x: event.clientX, y: event.clientY }
     },
     move(pending, event) {
-      // a few pixels of slop, so a tab click is a click and not a
-      // zero-distance drag that lands the tab back where it started
+      // slop, so a click is not a zero-distance drag
       const moved =
         Math.abs(event.clientX - pending.x) +
         Math.abs(event.clientY - pending.y)

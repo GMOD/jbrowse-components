@@ -210,13 +210,7 @@ describe('middle-click closes a tab', () => {
   })
 })
 
-/**
- * A drag starts on the primary button of the primary pointer, and nothing else.
- *
- * dockview never had to say this: its tab drags over HTML5 dnd, where the
- * browser owns the rule, and its pointer source is touch/pen only by default.
- * Pointer events here are for capture, which means owning the rule as well.
- */
+// a drag starts on the primary button of the primary pointer, and nothing else
 describe('which press starts a drag', () => {
   test('the right button does not drag a tab', () => {
     const { session, left, tabA } = setup()
@@ -253,9 +247,8 @@ describe('which press starts a drag', () => {
     expect(document.querySelector('[data-drop-indicator]')).toBeNull()
   })
 
-  // Showing a tab mounts its views, at a WebGL2 context per display against a
-  // ceiling of 16, so it is the left button that asks for it — dockview gates
-  // `_activateOnPointerDown` the same way.
+  // showing a tab mounts its views, a WebGL2 context per display, so only the
+  // left button asks for it
   test('the right button does not show the tab either', () => {
     const { session, left } = setup()
     const other = session.addTab(left, ['view-2'])!.id
@@ -272,8 +265,7 @@ describe('which press starts a drag', () => {
     expect(session.activeTabOf(left)?.id).toBe(other)
   })
 
-  // A second finger elsewhere in the strip must not steer the first one's drag,
-  // and its release must not end it. dockview tracks the same pointerId.
+  // a second finger must not steer the first one's drag, or end it on release
   test('a second pointer does not steer the first one’s drag', () => {
     const { session, left, tabA } = setup()
     const tab = screen.getByTestId(`tab-${tabA}`)

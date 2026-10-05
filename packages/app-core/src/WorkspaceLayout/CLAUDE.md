@@ -3,7 +3,7 @@
 One MST tree — no window manager, no imperative api. Layout is session state,
 React renders it, a gesture is an action.
 [ADR-068](../../../../agent-docs/architecture-decision-records/adr-068-workspace-layout-is-an-mst-tree.md)
-is the decision; read it before trusting an old comment naming dockview.
+records the decision and the history the code no longer narrates.
 
 ```
 branch (a split)  >  panel (a grid cell)  >  tab  >  views (stacked vertically)

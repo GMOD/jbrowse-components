@@ -1024,14 +1024,8 @@ describe('sessionConnections', () => {
   })
 })
 
-// A `tabs` node shares one cell between its children, so a `size` on one of
-// them describes nothing and is the one place a stated size is still dropped.
-//
-// Everything else here used to warn as well, because dockview honoured `size`
-// only on the top-level split and only when every panel there carried one. That
-// limitation is gone (ADR-068) and the warning outlived it, so these cases now
-// pin the SILENCE: a spec author whose nested or partial sizes were applied
-// must not be told they were ignored.
+// A `size` on a child of a `tabs` node describes nothing and is reported; every
+// other size applies, so these cases pin that nothing else warns.
 describe('layout size that cannot be applied', () => {
   async function loadWithLayout(layout: unknown) {
     const { session, pluginManager } = setup({

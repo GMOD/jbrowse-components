@@ -45,10 +45,8 @@ import type {
 } from '@jbrowse/mobx-state-tree'
 
 /**
- * The session's whole view list, read off the host this mixin is composed
- * into. Duck-typed because `views` is MultipleViewsSessionMixin's and
- * composition is the only thing that puts the two together; undefined on a
- * host that has no view list, which only a test composes.
+ * Duck-typed because `views` comes from MultipleViewsSessionMixin, which only
+ * composition joins to this one; a host without it exists only in tests.
  */
 interface LayoutHostSelf extends IStateTreeNode {
   views?: { id: string }[]
@@ -60,15 +58,8 @@ function sessionViewIds(self: LayoutHostSelf) {
 }
 
 /**
- * A caller-supplied view list narrowed to the views the session actually has.
- *
- * The list is the caller's snapshot, and `applyLayoutSpec` refuses an id no
- * view has — so a view added after the list was built, or removed between
- * building it and the call, would throw out of a sugar action no plugin wraps.
- * The arrangement a stale name asks for is still the one it means for every
- * view that IS there, so the name is dropped rather than the action. A repeat
- * is dropped for the same reason: it would seat one view in two cells, which
- * the resolver also refuses.
+ * A caller's view list narrowed to the session's views, deduplicated. The list
+ * may be stale, and `applyLayoutSpec` throws on an unknown or repeated id.
  */
 function liveViewIds(self: LayoutHostSelf, allViewIds: string[]) {
   const live = sessionViewIds(self)
@@ -80,22 +71,12 @@ function liveViewIds(self: LayoutHostSelf, allViewIds: string[]) {
 /**
  * #stateModel WorkspaceLayoutMixin
  *
- * The whole workspace, in one MST tree. There is no second owner, so there is
- * nothing to reconcile, no event to echo, and no window during which the two
- * disagree — which is the entire content of `useDockviewController`.
- *
- * Four levels, matching what the workspace actually has and what a generic
- * window manager cannot quite express:
+ * The whole workspace as one MST tree:
  *
  *   branch (a split)  >  panel (a grid cell)  >  tab  >  views (stacked)
  *
- * dockview models the first three as branch/group/panel and stops there; the
- * vertical stack of views inside a tab is ours, which is why
- * `panelViewAssignments` had to exist alongside dockview's own serialized grid.
- * Here it is one tree, and a tab simply *contains* its views.
- *
  * Every action is `tree -> tree` through the pure functions in `tree.ts`, so
- * undo is `applySnapshot` on this node and nothing else has to be told.
+ * undo is `applySnapshot` on this node.
  */
 
 const LayoutTab = types.model('LayoutTab', {
@@ -121,9 +102,7 @@ const LayoutBranch = types.model('LayoutBranch', {
   ),
 })
 
-// `children` is a union of both node kinds, resolved late because a branch
-// contains branches. The dispatcher keys off `direction`, which only a branch
-// has, so an ambiguous snapshot is impossible rather than merely unlikely.
+// only a branch has `direction`, so the dispatcher is never ambiguous
 const LayoutNode = types.union(
   {
     dispatcher: (snapshot: { direction?: string }) =>
@@ -134,12 +113,8 @@ const LayoutNode = types.union(
 )
 
 /**
- * Panel and tab ids.
- *
- * Random, NOT a counter. These are `types.identifier`, so they must be unique
- * within the tree — and a counter is reset by every page load while the restored
- * snapshot still holds `panel-1`, `tab-1`, .... The first tab a returning user
- * opened would mint an id the tree already had.
+ * Random, not a counter: a counter restarts on page load while a restored
+ * snapshot still holds its old ids, and these are `types.identifier`s.
  */
 function nextId(kind: NodeKind) {
   return `${kind}-${createElementId()}`
@@ -162,30 +137,17 @@ export function WorkspaceLayoutMixin() {
         layout: types.optional(LayoutNode, emptyPanel),
         activePanelId: types.maybe(types.string),
         /**
-         * Show only this cell, at the size of the whole workspace.
-         *
-         * Deliberately HERE and not a `maximized` flag on `PanelNode`. On the
-         * node it would be inside `tree.ts`, the half that carries the risk and
-         * is proven by a randomised operation sequence asserting canonical form
-         * after every step — and every operation would then have to say what it
-         * does to the flag: a split of a maximized panel, a drag of its last tab
-         * out, a normalize that collapses it into its parent. Beside
-         * `activePanelId` it is the same class of thing as `activePanelId`,
-         * including its failure mode, which `livePanelIds` already repairs.
+         * Show only this cell, at the size of the whole workspace. Kept here
+         * rather than as a flag on `PanelNode` so no `tree.ts` operation has to
+         * say what it does to it.
          */
         maximizedPanelId: types.maybe(types.string),
       })
       .views(self => ({
         /**
-         * The plain tree the pure functions take.
-         *
-         * `getSnapshot` is a `keepAlive` computed, so this is cached and
-         * referentially stable — which also lets MST's reconcile short-circuit on
-         * identity when `apply` writes an untouched subtree back.
-         *
-         * Uncast on purpose: the models below and the interfaces in `tree.ts` are
-         * two spellings of one shape, and this assignment is the only thing that
-         * checks they agree.
+         * Referentially stable, since `getSnapshot` is cached. Uncast on
+         * purpose: this assignment is what checks the models above agree with
+         * the interfaces in `tree.ts`.
          */
         get tree(): LayoutTree {
           return getSnapshot(self.layout)
@@ -221,13 +183,9 @@ export function WorkspaceLayoutMixin() {
           return panel ? activeTabIn(panel) : undefined
         },
         /**
-         * What to render: the maximized cell alone, or the whole tree.
-         *
-         * Sized to 1 rather than handed over as it sits. A pane's `size` is its
-         * share of its siblings, and CSS distributes free space by grow factor
-         * only up to a total of 1 — so a cell that was a third of a row, alone
-         * in the workspace with `flexGrow: 0.33`, draws a third of the window
-         * and leaves the rest blank.
+         * The maximized cell alone, or the whole tree. The cell is resized to 1
+         * because CSS hands out free space by grow factor only up to a total of
+         * 1, so a third-of-a-row cell would draw a third of the window.
          */
         get visibleTree(): LayoutTree {
           const maximized = panels(self.tree).find(
@@ -238,20 +196,9 @@ export function WorkspaceLayoutMixin() {
       }))
       .actions(self => {
         /**
-         * Both panel ids this model holds outside the tree must name a cell
-         * that exists, whatever just stopped existing. A dangling
-         * `activePanelId` puts homed views in a cell nobody draws; a dangling
-         * `maximizedPanelId` draws nothing at all.
-         *
-         * Stated as the invariant rather than as "the panel I just closed",
-         * because a removal collapses branches on the way out and the cell that
-         * disappears is not always the one that was named.
-         *
-         * They fall back differently, and the difference is the whole reason
-         * this is two lines rather than a loop. A workspace always shows some
-         * cell, so `activePanelId` takes the first one; maximize is a mode the
-         * user is IN, so losing its cell leaves the mode rather than picking an
-         * arbitrary cell to hold the user in it.
+         * Both panel ids held outside the tree must name a live cell. A lost
+         * active cell falls back to the first; a lost maximized cell leaves the
+         * mode.
          */
         function livePanelIds() {
           if (
@@ -277,27 +224,11 @@ export function WorkspaceLayoutMixin() {
           }
         }
 
-        /**
-         * Every write to the tree, and therefore the one place the invariant
-         * above is repaired.
-         *
-         * It used to be a `keepActivePanel()` the two closing actions called,
-         * which was right while a closing action was the only way to retire a
-         * cell. `maximizedPanelId` is not reached that way: BOTH drop gestures
-         * prune their emptied source panel, and `applyLayoutSpec` replaces every
-         * id in the tree at once. That is five call sites for one rule, which is
-         * the shape that ends with one of them missing.
-         */
+        /** Every write to the tree, so the one place `livePanelIds` runs. */
         function apply(next: LayoutTree) {
           const before = panels(self.tree).length
           self.layout = cast(normalize(next) as never)
-          // A cell appearing where it cannot be seen is the one thing maximize
-          // must not do, so gaining one leaves the mode. Stated as the count
-          // rather than at the three actions that split (`splitPanel`,
-          // `dropTabInNewSplit`, `moveViewToSplit`) for the reason above —
-          // and a fourth, `applyLayoutSpec`, arrives at it from the other side:
-          // it replaces every id, so `livePanelIds` was going to clear the mode
-          // regardless. Losing a cell needs nothing here; that IS `livePanelIds`.
+          // a new cell would appear where maximize hides it
           if (panels(self.tree).length > before) {
             self.maximizedPanelId = undefined
           }
@@ -310,16 +241,6 @@ export function WorkspaceLayoutMixin() {
           )
         }
 
-        /**
-         * The shape ViewMenu's two "give this view a home of its own" moves share.
-         *
-         * Homing first is what removed the old fork here — the live dockview api
-         * when the workspace was up, an `init` when it was not — because from the
-         * classic stack nothing has been assigned to a tab yet.
-         *
-         * Returns where the view came from, or `undefined` if it is not in the
-         * session, in which case nothing is applied.
-         */
         function everyViewId(action: string, allViewIds: string[] | undefined) {
           const ids = allViewIds ?? sessionViewIds(self)
           if (!ids) {
@@ -330,6 +251,11 @@ export function WorkspaceLayoutMixin() {
           return ids
         }
 
+        /**
+         * Homes every view first, since from the classic stack none has a tab
+         * yet. Returns where the view came from, or `undefined` if it is not in
+         * the session, in which case nothing is applied.
+         */
         function rehomeView(
           viewId: string,
           allViewIds: string[],
@@ -356,24 +282,16 @@ export function WorkspaceLayoutMixin() {
         }
 
         /**
-         * The panel a dropped tab is leaving, or `undefined` if the drop cannot
-         * happen — which BOTH drop gestures have to establish before they touch
-         * the tree, and for two different reasons. A missing tab leaves an
-         * edge-drop's new cell behind empty; a missing target splits nothing while
-         * the gesture goes on to point `activePanelId` at a cell nobody draws, and
-         * makes `moveTabToPanel`'s remove-then-insert a deletion.
-         *
-         * One place, so the next drop gesture inherits the rule rather than
-         * restating it — the two of them restating it is how one came to be
-         * missing half of it.
+         * The panel a dropped tab is leaving, or `undefined` if the tab or the
+         * target is missing. Every drop gesture checks this before touching the
+         * tree.
          */
         function dropSource(tabId: string, targetPanelId: string) {
           const source = findTab(self.tree, tabId)?.panel
           return source && self.hasPanel(targetPanelId) ? source : undefined
         }
 
-        // `apply` is deliberately not returned: it takes a whole tree, so as an
-        // action it is a public "set the layout to this" on the session.
+        // `apply` stays private: as an action it would be a public "set layout"
         return {
           setActivePanelId(panelId: string | undefined) {
             if (panelId === undefined) {
@@ -383,19 +301,10 @@ export function WorkspaceLayoutMixin() {
             }
           },
           /**
-           * Show one cell at the size of the workspace, or go back.
-           *
-           * A toggle rather than a pair, because the gesture is a toggle: the
-           * strip's double-click and the cell menu's one item both mean "this
-           * cell, or not any more". Maximizing a DIFFERENT cell while one is
-           * already maximized moves the mode rather than restoring, which is
-           * what the menu item on another cell's strip is asking for.
-           *
-           * Mounts no views that were not mounted — it is the same cell showing
-           * the same tab — and unmounts every other cell's, so the WebGL2
-           * context ceiling (`agent-docs/reference/GPU_PORTABILITY.md`) can
-           * only go down. That is the reason it is this and not a `display:
-           * none` over a still-mounted workspace.
+           * Show one cell at the size of the workspace, or go back; naming a
+           * different cell moves the mode. Unmounts every other cell's views
+           * rather than hiding them, to stay under the WebGL2 context ceiling
+           * (`agent-docs/reference/GPU_PORTABILITY.md`).
            */
           toggleMaximizedPanel(panelId: string) {
             if (!self.hasPanel(panelId)) {
@@ -425,9 +334,8 @@ export function WorkspaceLayoutMixin() {
           ) {
             const panel = emptyPanel()
             apply(splitPanel(self.tree, panelId, direction, panel, before))
-            // A split of a cell that is not there inserts nothing, so claiming
-            // the id anyway would leave activePanelId naming a cell nobody draws
-            // — and homing falls back on activePanelId.
+            // a split of a missing cell inserts nothing, and homing falls back
+            // on activePanelId
             if (!self.hasPanel(panel.id)) {
               return undefined
             }
@@ -448,18 +356,8 @@ export function WorkspaceLayoutMixin() {
             return tab
           },
           /**
-           * Close a tab, and the cell with it if that was its last.
-           *
-           * A cell whose tabs are all gone is the state `pruneEmptyPanel` was
-           * written for — "dragging the last tab out of a split and leaving a
-           * blank half is the one place an empty panel is clearly not what was
-           * meant" — and closing that tab arrives at the identical half by a
-           * different gesture. It rendered nothing at all, not even the launcher
-           * an empty TAB shows, so the only way back out of it was the `+`.
-           *
-           * `pruneEmptyPanel` carries both guards already: a cell with tabs left
-           * stays, and the last cell in the workspace stays whatever happens to
-           * it, since there is nowhere for the tree to collapse to.
+           * Close a tab, and its cell too if that was the last tab and not the
+           * workspace's last cell: a tabless cell renders nothing at all.
            */
           closeTab(tabId: string) {
             const panelId = findTab(self.tree, tabId)?.panel.id
@@ -471,42 +369,15 @@ export function WorkspaceLayoutMixin() {
           addViewToTab(tabId: string, viewId: string) {
             apply(addViewToTab(self.tree, tabId, viewId))
           },
-          // NO `removeView` HERE. This mixin is composed into the session, where
-          // `removeView(view)` is already the action that takes a view out of
-          // `session.views` — part of AbstractSessionModel, and what every close
-          // button and every host calls. A same-named action here does not extend
-          // it, it *replaces* it (types.compose merges, last one wins), so the
-          // session action stopped being reachable at all: closing a view pruned
-          // the layout tree and left the view in the session forever, and
-          // `session.removeView(view)` passed a model where this wanted an id, so
-          // it matched nothing and even the pruning was a no-op.
-          //
-          // Nothing needs one either way: `home` below drops any tab entry whose
-          // view is no longer in `session.views`, so removing the view is the
-          // whole operation and the tree follows.
-          /**
-           * Drop a dragged tab into an existing panel, as a tab.
-           *
-           * One action, so the tree never exists in a state where the tab is in
-           * both panels or neither. The imperative bridge needed an explicit
-           * `runInAction` around the unassign+reassign pair for exactly this, and
-           * a comment explaining that without it the reconcile autorun would
-           * observe the gap and re-home the view.
-           */
+          // NO `removeView` here: composed into the session it would replace
+          // `session.removeView`, and homing already drops a removed view
+          /** Drop a dragged tab into an existing panel, as a tab. */
           dropTabInPanel(tabId: string, targetPanelId: string, index?: number) {
             const source = dropSource(tabId, targetPanelId)
             if (!source) {
               return
             }
-            // A drop on the BODY of the cell the tab is already in asks for
-            // nothing. There is no gap under the pointer to state a position, and
-            // the indicator washes the whole cell — which says "be a tab of this
-            // cell", which it already is. Appending reordered the strip to say
-            // something the gesture never said, and sent the tab to the end.
-            // dockview declines a centre drop on the group a tab came from too.
-            //
-            // The rule is the gesture's, not `moveTabToPanel`'s: no index there
-            // still means append, which is the only reading a total function has.
+            // a drop on the body of the tab's own cell asks for nothing
             if (source.id === targetPanelId && index === undefined) {
               return
             }
@@ -541,9 +412,7 @@ export function WorkspaceLayoutMixin() {
               before,
             )
             next = moveTabToPanel(next, tabId, panel.id)
-            // Dragging a panel's only tab onto that same panel's edge prunes the
-            // now-empty source, which collapses the split — the gesture undoes
-            // itself rather than leaving a blank half, without needing a case.
+            // a panel's only tab dropped on its own edge collapses the split
             next = pruneEmptyPanel(next, source.id)
             apply(next)
             activate(panel.id)
@@ -553,21 +422,10 @@ export function WorkspaceLayoutMixin() {
             apply(setSizes(self.tree, branchId, sizes))
           },
           /**
-           * Arrange the workspace as a spec states.
-           *
-           * The spec is the same shape a session spec's `layout` takes: a leaf's
-           * `views` names views by index into `session.views` or by id, so
-           * `{ direction: 'horizontal', children: [{ views: [0] }, { views: [1] }] }`
-           * means here what it means in a link. A leaf spelled any other way, an
-           * index past the end or an id no view has throws rather than arranging
-           * nothing — an untyped caller used to collapse the workspace into one
-           * blank tab that way.
-           *
-           * There is no `init` property and no standing request: the spec is
-           * converted and *becomes* the layout, here and now. `init` existed only
-           * because dockview had to be told, could not be told before it mounted,
-           * and had to be told again afterwards — three problems that all came
-           * from the layout living somewhere this action could not reach.
+           * Arrange the workspace as a spec states, in the shape a session
+           * spec's `layout` takes: a leaf's `views` names views by index into
+           * `session.views` or by id. A malformed leaf, an index past the end or
+           * an unknown id throws.
            */
           applyLayoutSpec(spec: LayoutSpecNode) {
             const resolved = resolveLayoutSpec(spec, sessionViewIds(self))
@@ -577,10 +435,8 @@ export function WorkspaceLayoutMixin() {
           },
           /**
            * ViewMenu's "move to new tab": the view leaves its tab for a new one.
-           *
            * `allViewIds` is EVERY view in the session, defaulting to the host's
-           * own list — homing drops any view the list does not name, so the
-           * `[viewId]` default this used to carry unhomed all the others.
+           * own list, since homing drops any view the list omits.
            */
           moveViewToNewTab(viewId: string, allViewIds?: string[]) {
             const tab: TabNode = { id: nextId('tab'), viewIds: [viewId] }
@@ -647,22 +503,17 @@ export function WorkspaceLayoutMixin() {
           },
         }
       })
-      /**
-       * Sugars, in their own block so they reach the actions they wrap through
-       * `self`: a `this.` hop is pinned to the literal its block returned, so a
-       * later override would silently go uncalled.
-       */
+      // a separate block so these reach the actions they wrap through `self`,
+      // where a later override still gets called
       .actions(self => ({
         /**
          * Move one view to a new tab or a split beside its cell, keeping the
          * rest of the arrangement. PUBLIC API: protein3d and msaview call it
-         * behind a `'setPendingMove' in session` guard with the move alone, so
-         * `allViewIds` stays optional; it is read only on a host with no view
-         * list.
+         * with the move alone, so `allViewIds` stays optional; it is read only
+         * on a host with no view list.
          */
         setPendingMove(move: PendingMove | undefined, allViewIds?: string[]) {
-          // The session's own list wins: homing unhomes any view a list omits,
-          // and a plugin's list is its snapshot of the session
+          // the session's own list wins over a plugin's possibly stale copy
           const ids = sessionViewIds(self) ?? allViewIds
           if (!move || !ids?.includes(move.viewId)) {
             return
@@ -680,15 +531,9 @@ export function WorkspaceLayoutMixin() {
           }
         },
         /**
-         * The whole-workspace re-arrange: every view one cell, in one of four
-         * shapes. Restored from the dockview header's four "Global:" commands,
-         * which went with that component and were not reimplemented.
-         *
-         * `allViewIds` is passed in rather than read off the session for the same
-         * reason `moveViewToNewTab` takes it: this mixin owns the tree and has no
-         * view list of its own. Passing `session.views` order means the
-         * arrangement it states is already the order views render in, so unlike a
-         * session spec's layout there is nothing for `orderViews` to apply.
+         * Re-arrange the whole workspace, one view per cell, in one of four
+         * shapes. Pass `allViewIds` in `session.views` order so there is
+         * nothing for `orderViews` to apply.
          */
         tileViews(mode: TileMode, allViewIds: string[]) {
           self.applyLayoutSpec(

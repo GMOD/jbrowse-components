@@ -26,18 +26,12 @@ describe('dropZoneAt', () => {
   })
 
   test('a corner goes to whichever edge the pointer is deeper into', () => {
-    // the bands over this 400x200 rect are 100px wide and 50px tall. 1px from
-    // the left edge is nearly all the way into the left band while 40px from
-    // the top is barely inside the top one, so left takes it — and nearly
-    // touching the other axis instead swaps the answer, which is the whole
-    // content of the rule. dockview would answer `left` to both: it tests left,
-    // right, top, bottom in that order and returns the first hit.
+    // bands here are 100px wide and 50px tall
     expect(dropZoneAt(rect, 1, 40)).toBe('left')
     expect(dropZoneAt(rect, 60, 1)).toBe('top')
   })
 
   test('the exact corner is decided, not undefined', () => {
-    // equal proportional depth on both axes — still returns one of them
     expect(['left', 'top']).toContain(dropZoneAt(rect, 0, 0))
   })
 
@@ -90,9 +84,6 @@ describe('stripDropAt', () => {
     expect(stripDropAt(tabs, 5000).index).toBe(3)
   })
 
-  // The midpoint test is what makes this total: every x belongs to exactly one
-  // gap, so there is no band between two tabs where a drop has to fall back to
-  // appending — which is what "drop anywhere on the strip" would degrade to.
   test('every position on the strip resolves to a gap', () => {
     for (let x = -50; x < 350; x += 7) {
       const { index } = stripDropAt(tabs, x)
@@ -104,7 +95,6 @@ describe('stripDropAt', () => {
   test('the caret is drawn at the gap, not at the pointer', () => {
     expect(stripDropAt(tabs, 10).left).toBe(0)
     expect(stripDropAt(tabs, 120).left).toBe(100)
-    // after the last tab, the caret sits at its trailing edge
     expect(stripDropAt(tabs, 400).left).toBe(300)
   })
 

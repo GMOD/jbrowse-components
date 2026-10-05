@@ -1,11 +1,4 @@
-/**
- * Where a pointer sitting over a panel would drop a view.
- *
- * Kept as geometry over a plain rect rather than reading the DOM, because this
- * is the part of drag-and-drop with actual decisions in it — the edge band, the
- * tie-break between two edges, what happens in the middle — and all of it is
- * checkable without rendering anything or synthesising a pointer.
- */
+/** Drop geometry over plain rects, so it is testable without a DOM. */
 
 export type DropZone = 'center' | 'left' | 'right' | 'top' | 'bottom'
 
@@ -16,11 +9,7 @@ export interface Rect {
   height: number
 }
 
-/**
- * Where a drop would land. `zone` alone says which half of a cell; `strip` is
- * set when the pointer is on the tab strip itself, which is a finer answer than
- * `center` — that one appends, this one says where in the order.
- */
+/** `strip` is set on the tab strip, and gives a position in the tab order. */
 export interface DropTarget {
   zone: DropZone
   strip?: StripDrop
@@ -35,20 +24,9 @@ export interface StripDrop {
 }
 
 /**
- * `center` means "add as a tab in this panel"; an edge means "split this panel
- * and put the view in the new half".
- *
- * The bands are proportional rather than a fixed pixel depth so a narrow panel
- * stays droppable — at a fixed 40px a 100px-wide panel would be all edge and
- * have no centre to drop a tab into. `edgeFraction` is capped below 0.5 for the
- * same reason: at 0.5 the centre vanishes entirely.
- *
- * Corners go to whichever edge the pointer is proportionally deeper into, so
- * the diagonal is the tie-break and neither axis silently wins. **This is a
- * deliberate divergence from dockview**, whose `calculateQuadrantAsPercentage`
- * tests left, right, top, bottom in that order and returns the first hit — so
- * in its top-left corner `left` always wins, however far into the top band the
- * pointer is. Its band is 20% where this defaults to 25%.
+ * `center` adds as a tab; an edge splits the panel. Bands are proportional and
+ * capped below half, so a narrow panel keeps a centre. A corner goes to the
+ * edge the pointer is proportionally deeper into.
  */
 export function dropZoneAt(
   rect: Rect,
@@ -81,16 +59,8 @@ export function dropZoneAt(
 }
 
 /**
- * Which gap between tabs a pointer at `x` is nearest — the insertion index a
- * drop there would use, and the x to draw the caret at.
- *
- * The test is each tab's MIDPOINT rather than its edges, so every x belongs to
- * exactly one gap and there is no dead band between tabs where a drop would
- * have to fall back to appending. `rects` are in strip order and `x` is in
- * their coordinate space, whatever that is — this function does not know
- * whether it was handed viewport or panel-relative numbers.
- *
- * An empty strip is index 0, which is the only sensible place for a first tab.
+ * The gap between tabs nearest `x`, by tab midpoint so every x has exactly one.
+ * `x` is in the rects' coordinate space, whichever that is.
  */
 export function stripDropAt(rects: Rect[], x: number): StripDrop {
   for (const [i, rect] of rects.entries()) {
@@ -105,18 +75,7 @@ export function stripDropAt(rects: Rect[], x: number): StripDrop {
   }
 }
 
-/**
- * What each zone means, in one table.
- *
- * `split` is the split a drop there asks for — which way the panel divides and
- * whether the new half goes first; `center` is not a split. `rect` is where the
- * indicator is drawn, as CSS percentages of the panel.
- *
- * One table rather than two switches because the pair has to agree: the shaded
- * half IS the half the drop lands in, and that is the whole content of the
- * indicator. Written apart, `right` could shade the left half and nothing would
- * be wrong with either function on its own.
- */
+// one table, so the shaded half and the half a drop lands in cannot disagree
 const ZONES = {
   left: {
     split: { direction: 'row', before: true },

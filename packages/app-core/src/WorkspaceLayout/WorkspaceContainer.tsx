@@ -38,15 +38,6 @@ const useStyles = makeStyles()(theme => ({
 
 type WorkspaceSession = WorkspaceSessionType & WorkspaceLayout
 
-/**
- * The workspace. Compare `TiledViewsContainer` + `useDockviewController`, which
- * this replaces: there is no api to hold, no `onReady`, no event to subscribe
- * to, and no reconciliation — the layout is session state and this renders it.
- *
- * The one reaction left is homing: `session.views` is owned by the session, so
- * a view launched from a menu arrives belonging to no tab and has to land
- * somewhere. That is one-directional and idempotent, and nothing reads back.
- */
 export const WorkspaceContainer = observer(function WorkspaceContainer({
   session,
 }: {
@@ -59,19 +50,16 @@ export const WorkspaceContainer = observer(function WorkspaceContainer({
   useEffect(
     () =>
       autorun(() => {
-        // reads session.views itself, so it re-runs when the view set changes;
-        // homeUnassignedViews is an action and would not be tracked from inside
+        // homes newly launched views; reads session.views here because an
+        // action's reads are untracked
         session.homeUnassignedViews(session.views.map(v => v.id))
       }),
     [session],
   )
   // #endregion
 
-  // The layout does not own views, so closing anything that holds them is
-  // explicitly the pair. Stated ONCE, here, because every spelling of it is a
-  // chance to drop the node and leave its views in the session forever — and
-  // three gestures want it now: the tab's ⋮ menu, middle-clicking the tab, and
-  // the cell's ×.
+  // the layout does not own views, so every close gesture goes through here
+  // or leaks them
   const closeViews = useCallback(
     (viewIds: string[]) => {
       for (const view of viewsOf(session, viewIds)) {
@@ -105,15 +93,8 @@ export const WorkspaceContainer = observer(function WorkspaceContainer({
     [session, closeViews],
   )
 
-  /**
-   * Memoised because this reaches every panel, so a fresh one per render
-   * defeats `observer`'s memo for all of them and each re-render rebuilds a
-   * `ViewStack`. `drag` is deliberately NOT in here — it goes down its own prop
-   * so it reaches only the cell it describes.
-   *
-   * Nothing does this for us: `observer(function(){})` is not compiled by the
-   * React Compiler.
-   */
+  // memoised by hand (the React Compiler skips `observer`): a fresh object
+  // re-renders every panel's ViewStack. `drag` stays out for the same reason.
   const chrome = useMemo<PanelChrome>(
     () => ({
       dragHandlers: handlers,
@@ -170,8 +151,7 @@ export const WorkspaceContainer = observer(function WorkspaceContainer({
   )
 })
 
-// `session.views` is the one ordering of views, in both layout modes, so a
-// tab's membership list is filtered through it rather than read as an order.
+// `session.views` is the order; a tab's `viewIds` is membership only
 function viewsOf(session: WorkspaceSession, viewIds: string[]) {
   const members = new Set(viewIds)
   return session.views.filter(v => members.has(v.id))

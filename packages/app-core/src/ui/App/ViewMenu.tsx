@@ -26,10 +26,8 @@ type ViewMenuSession = SessionWithMultipleViews &
   WorkspaceLayout &
   WorkspaceSessionType
 
-// takes the icon's class, not an SvgIconProps object: the object was built
-// inline by ViewHeader and so was new on each of its renders, which defeated
-// mobx-react's memo for this whole menu (a Tooltip and an IconButton) every
-// time anything re-rendered the header
+// takes a class string rather than an SvgIconProps object, which a caller
+// builds inline and so defeats this observer's memo
 const ViewMenu = observer(function ViewMenu({
   model,
   className,
@@ -76,16 +74,9 @@ const ViewMenu = observer(function ViewMenu({
       data-testid="view_menu_icon"
       tooltip="View menu"
       menuItems={() => {
-        // The views this move is relative to: in a workspace, the ones sharing
-        // this view's panel; in the classic stack, all of them. `session.views`
-        // is the order either way, so the mode decides the SCOPE of a move and
-        // nothing else. There is one implementation of "move a view" again.
-        //
-        // Resolved here rather than during render. It scans every panel's
-        // assignment list and copies one of them, and reading those lists in
-        // render would also subscribe this menu to them, so a view moving
-        // between panels anywhere re-rendered every view's menu. None of it is
-        // needed until the menu opens.
+        // A move's scope is this view's tab in a workspace, else every view.
+        // Read on open rather than in render, so the menu does not observe
+        // every tab's membership.
         const home = session.effectiveUseWorkspaces
           ? session.tabContainingView(model.id)
           : undefined

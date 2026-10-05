@@ -36,7 +36,6 @@ test('a new tab lands in the cell it was asked for, and becomes active', () => {
   const panel = session.panels[0]!
   expect(panel.tabs.map(t => t.id)).toEqual([session.tabs[0]!.id, tab.id])
   expect(panel.activeTabId).toBe(tab.id)
-  // an empty tab is the view launcher, not a bug
   expect(tab.viewIds).toEqual([])
 })
 
@@ -54,10 +53,6 @@ test('closing a tab falls back to its left neighbour', () => {
   expect(session.activeTabOf(panelId)?.id).toBe(first)
 })
 
-// The point of the exercise. Undo is applySnapshot on the session and nothing
-// else has to be notified, because nothing else holds layout state. In the
-// dockview seam this needed an autorun that re-applied the blob, and that
-// autorun is what had to be stopped from running mid-mutation.
 test('undo is applySnapshot, with nothing to notify', () => {
   const session = createSession()
   const before = getSnapshot(session)
@@ -73,11 +68,7 @@ test('undo is applySnapshot, with nothing to notify', () => {
   expect(session.panelContainingView('view-2')).toBeUndefined()
 })
 
-// The dockview seam wrote api.toJSON() back into the session on every layout
-// event, and `types.frozen` set to a deep-equal-but-new object still fires
-// onSnapshot — so an undo pushed its own re-serialisation into the undo history
-// 300ms later and truncated the redo stack. With one owner there is no echo to
-// write back, so a settled layout emits nothing at all.
+// a snapshot from a settled layout would truncate the redo stack
 test('a settled layout produces no further snapshots', () => {
   const session = createSession()
   session.splitPanel(session.panels[0]!.id, 'row')
@@ -153,15 +144,8 @@ test('a renamed tab keeps its title; an unnamed one has none to keep', () => {
   expect(session.findTab(tabId)?.tab.title).toBeUndefined()
 })
 
-// The scenario that needed three separate mechanisms in the dockview seam.
-// A user closes a panel; another model reacts to the resulting state change by
-// rearranging the workspace. There, that was a reaction re-entering dockview
-// mid-mutation — `clear()` disposing groups whose events were still being
-// dispatched — and making it safe took an origin filter, a last-seen-layout
-// comparison, and a deferral onto a microtask.
-//
-// Here it is two actions. MST finishes one before reactions run, there is no
-// half-applied tree to catch, and nothing outside the tree to notify.
+// MST finishes one action before reactions run, so the reaction sees no
+// half-applied tree
 test('a reaction rearranging the workspace during a close is just two actions', () => {
   const session = createSession()
   const right = session.splitPanel(session.panels[0]!.id, 'row')!
@@ -188,9 +172,7 @@ test('a reaction rearranging the workspace during a close is just two actions', 
   dispose()
 })
 
-// The four whole-workspace commands the dockview header owned. They went with
-// that component in ea9cb165af and were not reimplemented, so these pin that
-// each shape reaches the tree rather than only the spec.
+// each tiling shape must reach the tree, not only the spec
 test('tiling horizontally gives every view a cell of one row', () => {
   const session = createSession()
   session.addViewToTab(session.tabs[0]!.id, 'view-2')
@@ -220,15 +202,8 @@ test('tiling into tabs collapses the grid back to one cell', () => {
   ])
 })
 
-// `setPendingMove` is the plugin-facing spelling of the two View menu moves
-// (jbrowse-plugin-protein3d, putting a protein view beside its genome view), and
-// a plugin asking for one is asking for its view to be ON SCREEN.
-//
-// It goes through a spec, and a spec states an arrangement rather than a
-// selection — `treeFromSpec` shows each cell's first tab. `newTab` puts the
-// moved view in a tab beside all the others, so it was landing as the one tab
-// nobody could see: the plugin's view was in the workspace and invisible, and
-// the menu's `moveViewToNewTab` had always ended with it showing.
+// a plugin calling `setPendingMove` (protein3d) wants its view on screen, not
+// in a background tab
 describe('setPendingMove', () => {
   const shownIn = (session: ReturnType<typeof createSession>, i: number) =>
     session.activeTabOf(session.panels[i]!.id)?.viewIds
@@ -304,9 +279,7 @@ test('a tiling leaves every view somewhere, and homing after it is a no-op', () 
 
   session.tileViews('grid', ids)
   const tiled = getSnapshot(session.layout)
-  // homing exists to place views no tab holds; a tiling has just placed them
-  // all, so it must have nothing left to do — otherwise the arrangement would
-  // be undone by the autorun that runs on every views change
+  // otherwise the homing autorun would undo the arrangement
   session.homeUnassignedViews(ids)
 
   expect(getSnapshot(session.layout)).toEqual(tiled)
@@ -315,16 +288,8 @@ test('a tiling leaves every view somewhere, and homing after it is a no-op', () 
   }
 })
 
-// `setPendingMove` and `tileViews` are sugar over `applyLayoutSpec`, and they
-// have to reach it through `self` rather than sideways with `this`. The fork's
-// `instantiateActions` does `fn.bind(actions)`, so a `this.` hop resolves
-// against the literal its own block returned and is pinned to that block's
-// implementation for good — a later block, or a plugin's `extendStateModel`,
-// replaces the action on the instance and the hop goes on calling the one it
-// replaced, with no error and no type complaint.
-//
-// Overriding is the only way to see the difference: both spellings behave
-// identically until something replaces the callee.
+// a `this.` hop binds to the block's own literal and would skip an override;
+// only overriding shows the difference
 test('the sugars call the applyLayoutSpec the session actually has', () => {
   const calls: string[] = []
   const Overridden = types
@@ -351,14 +316,6 @@ test('the sugars call the applyLayoutSpec the session actually has', () => {
   expect(calls).toEqual(['override'])
 })
 
-// ---------------------------------------------------------------------------
-// Maximize. The flag is on the MIXIN, beside activePanelId, and not on
-// PanelNode — on the node every operation in `tree.ts` would have to say what
-// it does to it, and the randomised sequence would need a new invariant to
-// catch any of that going wrong. Beside activePanelId it is the same class of
-// thing, so it shares the same repair.
-// ---------------------------------------------------------------------------
-
 describe('maximize', () => {
   function twoCells() {
     const session = createSession()
@@ -378,8 +335,6 @@ describe('maximize', () => {
     expect(session.maximizedPanelId).toBeUndefined()
   })
 
-  // The menu item on another cell's strip asks for THAT cell, not for a
-  // restore, so the mode moves rather than ending.
   test('maximizing another cell moves the mode', () => {
     const { session, left, right } = twoCells()
     session.toggleMaximizedPanel(left)
@@ -395,10 +350,6 @@ describe('maximize', () => {
     expect(session.maximizedPanelId).toBeUndefined()
   })
 
-  // `visibleTree` is what the renderer is handed, and the size matters: CSS
-  // hands out free space by grow factor only up to a total of 1, so a cell that
-  // was a third of a row would draw a third of the window and leave the rest
-  // blank.
   test('the visible tree is the maximized cell alone, at full size', () => {
     const { session, right } = twoCells()
     session.setSizes(
@@ -419,9 +370,6 @@ describe('maximize', () => {
     expect(session.visibleTree).toEqual(session.tree)
   })
 
-  // Losing the cell leaves the mode rather than picking an arbitrary cell to
-  // hold the user in it — the fallback that differs from activePanelId's, which
-  // takes the first cell because a workspace always shows one.
   test('closing the maximized cell restores rather than moving the mode', () => {
     const { session, left, right } = twoCells()
     session.toggleMaximizedPanel(right)
@@ -442,11 +390,6 @@ describe('maximize', () => {
     expect(session.maximizedPanelId).toBeUndefined()
   })
 
-  // A cell appearing where it cannot be seen is the one thing maximize must not
-  // do, so anything that adds one leaves the mode. Three actions split, and
-  // stating it once as the cell COUNT is what keeps the fourth
-  // (`applyLayoutSpec`, which arrives at the same place by replacing every id)
-  // from being a case of its own.
   test.each([
     [
       'a split of the maximized cell',
@@ -481,7 +424,6 @@ describe('maximize', () => {
     expect(session.maximizedPanelId).toBeUndefined()
   })
 
-  // ...but everything reachable INSIDE a maximized cell leaves it alone.
   test('working inside the maximized cell keeps it maximized', () => {
     const { session, left } = twoCells()
     session.toggleMaximizedPanel(left)
@@ -494,7 +436,6 @@ describe('maximize', () => {
     expect(session.maximizedPanelId).toBe(left)
   })
 
-  // Session state, so a shared link opens maximized and undo steps through it.
   test('the mode is in the snapshot, and undo steps through it', () => {
     const { session, left } = twoCells()
     const before = getSnapshot(session)
@@ -507,12 +448,6 @@ describe('maximize', () => {
   })
 })
 
-// `applyLayoutSpec` takes the shape a session spec's `layout` takes, with a
-// leaf's `views` counting into `session.views` — the list this mixin reads
-// off its host — or naming ids. One shape, so what an agent wrote into a link
-// is what it can call live, and a leaf spelled any other way is refused rather
-// than arranging nothing: an untyped caller that wrote `viewIds` used to get
-// an empty leaf and a workspace collapsed into one blank tab.
 const ViewsSession = types.compose(
   'ViewsSession',
   types.model({
@@ -541,9 +476,6 @@ test('applyLayoutSpec counts a leaf index into session.views, beside ids', () =>
   expect(session.tabs.map(t => [...t.viewIds])).toEqual([['v3', 'v1'], ['v2']])
 })
 
-// The composite a spec `layout` and a live re-layout both call: workspaces on,
-// the tree replaced, and `session.views` put in the order the spec states —
-// each of which, alone, changes nothing visible and says nothing.
 describe('layoutViews', () => {
   const order: string[] = []
   const HostSession = ViewsSession.actions(() => ({
@@ -596,8 +528,7 @@ describe('layoutViews', () => {
   })
 })
 
-// The wrong shapes an untyped caller (the MCP run_javascript tool) can hand
-// the action, hence the cast: the point is what the runtime says to them.
+// shapes an untyped caller (MCP run_javascript) can send, hence the cast
 test.each([
   [
     'a leaf spelled viewIds',
@@ -633,12 +564,7 @@ test.each([
   },
 )
 
-// The empty panel `treeFromSpec` has always built for a node stating nothing
-// (`{ direction: 'horizontal', children: [] }` is the same shape, and
-// spec.test.ts calls it usable) — and the one the session-spec path kept
-// building while this action refused it outright, so the two surfaces
-// disagreed about the one shape they share. An unrecognized KEY is the slip
-// worth refusing, and it is named above.
+// the same empty panel `treeFromSpec` builds on the session-spec path
 test('a node stating neither views nor children is the empty panel', () => {
   const session = createViewsSession()
 
@@ -647,9 +573,6 @@ test('a node stating neither views nor children is the empty panel', () => {
   expect(session.tabs).toEqual([])
 })
 
-// A cell with nothing in it is a cell nothing can be dragged out of, so the
-// builder drops it rather than leaving a dead zone; the point here is that the
-// rest of the layout survives it.
 test('an empty leaf beside a populated one costs only its own cell', () => {
   const session = createViewsSession()
 
@@ -661,11 +584,7 @@ test('an empty leaf beside a populated one costs only its own cell', () => {
   expect(session.tabs.map(t => [...t.viewIds])).toEqual([['v1', 'v2', 'v3']])
 })
 
-// `applyLayoutSpec` refuses an id no view has, and these two sugars route a
-// CALLER's id list through it — a plugin's snapshot of the session, which can
-// name a view it is about to add or one already closed. Throwing out of them
-// breaks a launch no plugin wraps, which is the failure `setPendingMove`'s
-// optional second argument exists because of.
+// a plugin's id list can be stale, and a throw here breaks a launch nobody wraps
 describe('a stale id in a caller-supplied list', () => {
   test('costs setPendingMove nothing, since it reads the session', () => {
     const session = createViewsSession()
@@ -712,8 +631,6 @@ test('an index means nothing on a host with no view list, and says so', () => {
   expect(session.applyLayoutSpec({ views: ['view-1'] })).toEqual(['view-1'])
 })
 
-// The View menu passes every view id; a caller that has only the session (the
-// one-argument call an agent tries first) gets the same list read off it.
 test('moveViewToSplit without a view list homes the whole session', () => {
   const session = createViewsSession()
 

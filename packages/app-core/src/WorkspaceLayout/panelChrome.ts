@@ -2,11 +2,8 @@ import type { PanelNode, TabNode } from './tree.ts'
 import type { PointerGestureHandlers } from './usePointerGesture.ts'
 
 /**
- * The app's half of a panel — what a tab is *called* and what it *contains*.
- *
- * One object rather than five props because every one is forwarded unchanged
- * down the whole recursion, and because one object can be memoised: it reaches
- * every panel, so a fresh one per render re-renders the entire workspace.
+ * The app's half of a panel, as one object so it can be memoised: it reaches
+ * every panel, and a fresh one re-renders the whole workspace.
  */
 export interface PanelChrome {
   renderTabLabel: (tab: TabNode) => React.ReactNode
@@ -17,7 +14,5 @@ export interface PanelChrome {
   onTabClose?: (tabId: string) => void
 }
 
-// The tablist wires `aria-controls`/`aria-labelledby` with these, and the strip
-// mints one end of each pair while the tabpanel mints the other.
 export const tabDomId = (tabId: string) => `jbrowse-tab-${tabId}`
 export const tabPanelDomId = (panelId: string) => `jbrowse-tabpanel-${panelId}`

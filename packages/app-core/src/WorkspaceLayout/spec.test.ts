@@ -3,11 +3,8 @@ import { isBranch } from './tree.ts'
 
 import type { BranchNode, LayoutTree, NodeKind, PanelNode } from './tree.ts'
 
-/**
- * `treeFromSpec` converts the **public** `layout` URL parameter, so what it does
- * with a given spec is documented behaviour in `website/docs/urlparams.md` and
- * changing it changes a user's saved links.
- */
+// `treeFromSpec` converts the public `layout` URL parameter, documented in
+// `website/docs/urlparams.md`; changing it changes users' saved links
 
 let counter = 0
 const nextId = (kind: NodeKind) => `${kind}-${counter++}`
@@ -44,8 +41,6 @@ test('a flat split keeps the stated proportions', () => {
   expect(sizes(tree)).toEqual([0.7, 0.3])
 })
 
-// Sizes are weights, renormalised — so they need not sum to 100, and a spec
-// written in any consistent unit lays out the same way.
 test('sizes are proportions, not required to total 100', () => {
   const tree = treeFromSpec(
     {
@@ -61,10 +56,6 @@ test('sizes are proportions, not required to total 100', () => {
   expect(sizes(tree)).toEqual([0.7, 0.3])
 })
 
-// THE thing the rewrite made possible, and the reason the docs describing it as
-// impossible were worth fixing: dockview forced orientation to alternate by
-// depth, so a nested split had no branch to size against and every nested size
-// was discarded. Here the spec's nesting IS the tree's nesting.
 test('a nested split is sized at its own depth', () => {
   const tree = treeFromSpec(
     {
@@ -90,11 +81,7 @@ test('a nested split is sized at its own depth', () => {
   expect(sizes(nested)).toEqual([0.8, 0.2])
 })
 
-// `size` is documented as a percentage, so a sibling left bare means "the rest".
-// Read as a plain weight it would default to 1 against a 70, and the panel comes
-// out at 1/71 of the width — visible in the tree, about a pixel wide on screen,
-// and reported by nothing. This case was unreachable while nested layouts were
-// discarded wholesale.
+// as a plain weight, a bare sibling would be 1 against 70: a 1/71 sliver
 test('an unsized sibling takes what the sized ones left over', () => {
   const tree = treeFromSpec(
     {
@@ -107,11 +94,7 @@ test('an unsized sibling takes what the sized ones left over', () => {
   expect(sizes(tree)).toEqual([0.7, 0.3])
 })
 
-// The half of that rule urlparams.md used to state and then contradict: the
-// proportions reading ("7 and 3 lay out the same as 70 and 30") holds only when
-// every sibling is sized. Beside a bare one the number is a percentage, so 7 is
-// a 7% sliver rather than the 70% the same spec means with a 3 written next to
-// it.
+// sizes read as weights only when every sibling has one
 test('beside a bare sibling, a small size is a percentage and not a weight', () => {
   const tree = treeFromSpec(
     {
@@ -140,9 +123,6 @@ test('several unsized siblings divide the remainder between them', () => {
   expect(sizes(tree)).toEqual([0.6, 0.2, 0.2])
 })
 
-// Over-subscribed: the stated sizes already reach 100, so there is no remainder
-// to hand out. The bare sibling takes a typical share rather than collapsing —
-// the spec is malformed and the layout still has to be usable.
 test('an over-subscribed branch still gives a bare sibling a real share', () => {
   const tree = treeFromSpec(
     {
@@ -160,7 +140,6 @@ test('an over-subscribed branch still gives a bare sibling a real share', () => 
   expect(a).toBeCloseTo(0.4, 2)
   expect(b).toBeCloseTo(0.267, 2)
   expect(c).toBeCloseTo(0.333, 2)
-  // the point of the fallback: it is a share somebody can see and drag
   expect(c).toBeGreaterThan(0.1)
 })
 
@@ -177,8 +156,6 @@ test('no sizes at all divides the space evenly', () => {
   expect(sizes(tree)).toEqual([0.333, 0.333, 0.333])
 })
 
-// `tabs` is not a split: the children become tabs of ONE cell, so there is no
-// space to divide and no sizes to resolve.
 test('direction tabs puts every child in one cell', () => {
   const tree = treeFromSpec(
     {
@@ -194,11 +171,7 @@ test('direction tabs puts every child in one cell', () => {
   expect(panel.activeTabId).toBe(panel.tabs[0]!.id)
 })
 
-// A tab holds a flat stack of views, so a container child of a `tabs` node has
-// no split to become — and containers nest arbitrarily deep everywhere else, so
-// one can be written. Flattened into a single tab, NOT dropped: dropping it
-// left those views in no tab at all, and homing then swept them into whichever
-// tab happened to be showing. The layout came out wrong with nothing said.
+// a tab holds a flat stack, so a container child flattens into one tab
 test('a container inside a tabs node becomes one tab, keeping its views', () => {
   const tree = treeFromSpec(
     {
@@ -221,8 +194,6 @@ test('a container inside a tabs node becomes one tab, keeping its views', () => 
   ])
 })
 
-// but a child that names nothing at all is not a tab, the same way an empty
-// container is not a panel
 test('a tabs node skips a child with no views anywhere under it', () => {
   const tree = treeFromSpec(
     {
@@ -242,8 +213,6 @@ test('a spec with no children at all still yields a usable empty panel', () => {
   expect((tree as PanelNode).tabs).toEqual([])
 })
 
-// normalize collapses a single-child branch into that child, which inherits the
-// branch's size — so a one-panel "split" is just the panel, filling the space.
 test('a split with one child collapses to the child', () => {
   const tree = treeFromSpec(
     { direction: 'horizontal', children: [{ views: ['a'], size: 40 }] },
@@ -278,9 +247,7 @@ test.each(['tabs', 'horizontal', 'vertical'] as const)(
 )
 
 test('a grid is rows of ceil(sqrt(n)) columns, filled row-major', () => {
-  // 5 views -> 3 columns -> a full row and a short one. The short row is not
-  // padded: its two cells share that row, which is what "tile grid" looked like
-  // in the dockview version too.
+  // 5 views -> 3 columns -> a full row and an unpadded short one
   expect(tileLayoutSpec(['a', 'b', 'c', 'd', 'e'], 'grid')).toEqual({
     direction: 'vertical',
     children: [
@@ -299,9 +266,6 @@ test('a grid is rows of ceil(sqrt(n)) columns, filled row-major', () => {
 test.each(['tabs', 'horizontal', 'vertical', 'grid'] as const)(
   'tiling %s with one view is the whole workspace, not a one-child split',
   mode => {
-    // `normalize` would collapse a single-child branch anyway; stating the leaf
-    // means the tree never has to, and an empty session states an empty leaf
-    // rather than a branch with no children.
     expect(tileLayoutSpec(['only'], mode)).toEqual({ views: ['only'] })
     expect(tileLayoutSpec([], mode)).toEqual({ views: [] })
   },

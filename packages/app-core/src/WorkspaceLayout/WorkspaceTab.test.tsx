@@ -18,11 +18,6 @@ const session = {
 const view = (v: Partial<AbstractViewModel>) => v as AbstractViewModel
 const tab = (title?: string) => ({ id: 't', viewIds: [], title })
 
-// A tab's name is derived from its views unless the user set one, and
-// `title === undefined` is the sentinel for "not renamed". That is a plain
-// `maybe` here. The dockview version had to compare the title against the panel
-// id, because dockview restores an unset title AS the panel id — a comparison
-// that misfires the moment someone names a tab after one.
 test('a user-set title always wins', () => {
   expect(tabDisplayName(tab('Mine'), [], session)).toBe('Mine')
   expect(
@@ -50,7 +45,6 @@ test('several views are counted', () => {
   )
 })
 
-// an empty string is not a name, and must fall through rather than render blank
 test('an empty display name falls through', () => {
   expect(
     tabDisplayName(
@@ -61,9 +55,7 @@ test('an empty display name falls through', () => {
   ).toBe('hg19!')
 })
 
-// `title === undefined` is the sentinel for "not renamed", `renameTab` accepts
-// it, and until now no UI passed it: clearing the box discarded the edit
-// instead, so a rename could be made and never unmade.
+// `title === undefined` means "not renamed"
 describe('renaming', () => {
   function renderTab(title?: string) {
     const renamed: (string | undefined)[] = []
@@ -113,11 +105,8 @@ describe('renaming', () => {
   })
 })
 
-// The box is not a component on its own: it renders INSIDE the `role="tab"`
-// that carries the strip's roving tabindex, and every key that handler takes —
-// the arrows, Home, End, Enter, Space — it also preventDefault()s. All of them
-// reach it by bubbling out of the box, so this has to be rendered in a real
-// strip to be about anything. Isolated, the tests above pass either way.
+// the box sits inside a `role="tab"` whose key handler preventDefault()s, so
+// only a real strip tests it
 describe('renaming inside the tab strip', () => {
   const TestSession = types.compose(
     'TestSession',
@@ -164,8 +153,7 @@ describe('renaming inside the tab strip', () => {
     return { session, input: screen.getByRole('textbox') }
   }
 
-  // `fireEvent` returns false when a handler called preventDefault, which is
-  // what decides whether the character is inserted at all
+  // `fireEvent` returns false when a handler called preventDefault
   test('a space reaches the box, so a tab name can have one in it', () => {
     const { input } = openTheBox()
     expect(fireEvent.keyDown(input, { key: ' ' })).toBe(true)

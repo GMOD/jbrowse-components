@@ -10,16 +10,6 @@ import type { WorkspaceLayout } from './model.ts'
 import type { PanelChrome } from './panelChrome.ts'
 import type { PanelNode, TabNode } from './tree.ts'
 
-/**
- * A panel's tab strip: the tabs, and the panel's own buttons beside them.
- *
- * Everything with state in a cell lives here — the roving tabindex, the wheel
- * translation, the scroll-into-view — which leaves `PanelView` a pure function
- * of its node. The strip is dockview's dark theme, transcribed in
- * `dockviewTheme.ts`; see there for why it is fixed rather than derived from
- * the MUI theme.
- */
-
 const useStyles = makeStyles()({
   strip: {
     display: 'flex',
@@ -32,14 +22,9 @@ const useStyles = makeStyles()({
   tabs: {
     display: 'flex',
     overflowX: 'auto',
-    // shrink but never GROW: the panel actions are the next child of the strip,
-    // so a tab list that takes the leftover space pushes the `+` to the far
-    // right edge, arbitrarily far from the tab it acts on. `0 1 auto` sizes the
-    // list to its tabs and leaves the `+` beside the last one, and the shrink
-    // half is what makes it scroll here rather than push the `+` off the strip.
+    // never grow, so the `+` after the list sits beside the last tab
     flex: '0 1 auto',
     minWidth: 0,
-    // the strip is chrome, so a scrollbar across it would be noise
     scrollbarWidth: 'none',
     '&::-webkit-scrollbar': { display: 'none' },
   },
@@ -55,10 +40,7 @@ const useStyles = makeStyles()({
     touchAction: 'none',
     borderRight: `1px solid ${workspaceTheme.tabDivider}`,
     '&:hover .jbrowse-tab-menu': { visibility: 'visible' },
-    // a keyboard user needs the ⋮ too, and hover is not a thing they can do
     '&:focus-within .jbrowse-tab-menu': { visibility: 'visible' },
-    // the strip is dark in either theme, so the focus ring is the drop
-    // indicator's blue rather than the UA default black-on-dark
     '&:focus-visible': {
       outline: `2px solid ${workspaceTheme.accent}`,
       outlineOffset: -2,
@@ -66,19 +48,7 @@ const useStyles = makeStyles()({
   },
 })
 
-/**
- * A wheel event's delta in PIXELS.
- *
- * `deltaY` is only pixels when `deltaMode` says so. Firefox reports whole lines
- * for a mouse wheel — `deltaMode: 1`, `deltaY: ±3` — where Chrome reports
- * `deltaMode: 0`, `deltaY: ±100`. Using the raw number moves the strip three
- * pixels per notch there: scrolling, technically, and unusable in practice.
- *
- * The line height is nominal rather than measured. `getComputedStyle` per wheel
- * event to resolve a `line-height: normal` that is itself font-dependent buys
- * accuracy nobody can perceive in a scroll gesture, and the strip is a fixed
- * 35px of chrome in one size.
- */
+// Firefox reports a mouse wheel in lines (`deltaMode: 1`, `deltaY: ±3`)
 const WHEEL_LINE_PX = 16
 
 function wheelDeltaPixels(event: React.WheelEvent, pageSize: number) {
@@ -112,17 +82,14 @@ export const TabStrip = observer(function TabStrip({
   const { classes } = useStyles()
   const { renderPanelActions } = chrome
 
-  // Roving tabindex: the strip is ONE tab stop, and the arrow keys move within
-  // it. Focus is tracked separately from selection because activation here is
-  // manual (see `onKeyDown`), so the two genuinely differ while arrowing.
+  // roving tabindex; focus differs from selection because activation is manual
   const stripRef = useRef<HTMLDivElement>(null)
   const [focusedTabId, setFocusedTabId] = useState<string | undefined>(
     undefined,
   )
   const roving = panel.tabs.find(t => t.id === focusedTabId)?.id ?? active?.id
 
-  // by dataset rather than an interpolated attribute selector: a tab id is
-  // nanoid output and would need CSS.escape, which jsdom does not have
+  // not an attribute selector: a nanoid needs CSS.escape, which jsdom lacks
   function tabElement(tabId: string | undefined) {
     return [...(stripRef.current?.children ?? [])].find(
       child => (child as HTMLElement).dataset.tabId === tabId,
@@ -131,25 +98,11 @@ export const TabStrip = observer(function TabStrip({
 
   function focusTab(tabId: string) {
     setFocusedTabId(tabId)
-    // focusing scrolls it into view on its own, which is the whole reason the
-    // keyboard could always reach an overflowing strip when the mouse could not
     tabElement(tabId)?.focus()
   }
 
-  /**
-   * Keep the shown tab in view.
-   *
-   * The strip scrolls, so a tab can become current while sitting outside it —
-   * `+` on a full strip appends a tab, makes it active, and leaves the user
-   * looking at the tabs it scrolled past. Clicking never needs this (you
-   * clicked something visible) and arrowing gets it from `focus()`, so this is
-   * for the tab that becomes current without being touched.
-   *
-   * `block: 'nearest'` so it cannot scroll an ancestor vertically. jsdom has no
-   * scrollIntoView at all, but `config/jest/scrollIntoView.js` already no-ops it
-   * for the whole suite — don't add an optional call for that, it reads as a
-   * browser that might not have the method.
-   */
+  // for a tab made current without being touched, e.g. by `+` on a full strip;
+  // `block: 'nearest'` keeps it from scrolling an ancestor vertically
   useEffect(() => {
     tabElement(active?.id)?.scrollIntoView({
       block: 'nearest',
@@ -158,14 +111,9 @@ export const TabStrip = observer(function TabStrip({
   }, [active?.id])
 
   /**
-   * MANUAL activation: arrows move focus, Enter/Space selects.
-   *
-   * The automatic form (arrowing selects as it goes) is the more common reading
-   * of the tabs pattern, and is wrong here for the reason WAI-ARIA names as its
-   * exception — showing a tab is expensive. Only the selected tab's views are
-   * mounted, and a JBrowse view costs a WebGL2 context per display against a
-   * ceiling of 16, so arrowing across five tabs would build and tear down five
-   * sets of them to pass through.
+   * Manual activation (arrows focus, Enter/Space selects), the WAI-ARIA
+   * exception for expensive tabs: showing one mounts views that each cost
+   * WebGL2 contexts.
    */
   function onKeyDown(event: React.KeyboardEvent, tabId: string) {
     const ids = panel.tabs.map(t => t.id)
@@ -191,20 +139,12 @@ export const TabStrip = observer(function TabStrip({
   }
 
   return (
-    // the strip is the chrome; the `tablist` inside it is the tabs ALONE,
-    // because a tablist's children have to be tabs and the panel actions beside
-    // them are not
+    // the `tablist` inside holds only tabs, so the panel actions sit outside it
     <div
       data-tab-strip
       className={classes.strip}
-      // Double-clicking the strip's empty space maximizes the cell and
-      // restores it — the IDE convention, and free here because the strip's
-      // only other `onDoubleClick` is the one on a tab's own label, for rename.
-      //
-      // `target === currentTarget` is what keeps those two apart, and it is the
-      // test rather than a `stopPropagation` in `WorkspaceTab` because it holds
-      // for anything ever put on the strip: a rename double-click bubbles out
-      // of the label to here, and so would a double-click on the `+`.
+      // empty strip space only, so a tab's rename double-click does not bubble
+      // into a maximize
       onDoubleClick={event => {
         if (event.target === event.currentTarget) {
           layout.toggleMaximizedPanel(panel.id)
@@ -220,15 +160,8 @@ export const TabStrip = observer(function TabStrip({
             setFocusedTabId(undefined)
           }
         }}
-        // A mouse wheel only has a vertical axis, and this scrolls
-        // horizontally — so without translating it, a strip with more tabs
-        // than fit is reachable by trackpad swipe and by keyboard and NOT AT
-        // ALL by mouse. The scrollbar is hidden on purpose (the strip is
-        // chrome) which removes the other way of noticing there is more.
-        //
-        // `deltaX` is a trackpad's own horizontal axis and the browser has
-        // already applied it; taking the larger axis leaves that gesture alone
-        // rather than doubling it.
+        // translate a vertical wheel to horizontal scroll; a trackpad's larger
+        // `deltaX` is already applied by the browser
         onWheel={event => {
           const el = stripRef.current
           if (!el || Math.abs(event.deltaX) > Math.abs(event.deltaY)) {
@@ -290,13 +223,11 @@ const Tab = observer(function Tab({
       id={tabDomId(tab.id)}
       data-tab-id={tab.id}
       aria-selected={selected}
-      // only the shown tab has a panel in the DOM to control — the rest are not
-      // rendered, so pointing at an absent id would be a lie
+      // only the shown tab's panel is in the DOM
       aria-controls={selected ? tabPanelDomId(panel.id) : undefined}
       tabIndex={tabIndex}
       onKeyDown={event => {
-        // keys from a control inside the tab (its ⋮, its open menu, the
-        // rename input) belong to that control
+        // keys from a control inside the tab belong to that control
         if (event.target === event.currentTarget) {
           onKeyDown(event, tab.id)
         }
@@ -305,24 +236,13 @@ const Tab = observer(function Tab({
         onFocus(tab.id)
       }}
       onPointerDown={event => {
-        // The middle button closes rather than drags, and its default action is
-        // the browser's autoscroll — which would otherwise start the moment a
-        // tab is middle-pressed.
-        //
-        // Cancelling pointerdown suppresses the compatibility mouse events
-        // (which is what stops the autoscroll) and NOT `click` / `auxclick`:
-        // Pointer Events L3 dispatches those two independently of that mapping.
-        // So the close below still fires, which is the thing this looks like it
-        // would break.
+        // Stops middle-button autoscroll; Pointer Events L3 still dispatches
+        // the `auxclick` that closes the tab
         if (event.button === 1) {
           event.preventDefault()
           return
         }
-        // Showing a tab is expensive — it mounts a stack of views, each display
-        // costing a WebGL2 context — so it is the LEFT button that asks for it,
-        // the same gate dockview puts on `_activateOnPointerDown`. A right-press
-        // is on its way to a context menu and is not a request to look at
-        // anything.
+        // only the left button activates: showing a tab mounts views
         if (event.button !== 0) {
           return
         }

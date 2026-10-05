@@ -1,15 +1,4 @@
-/**
- * Moving the boundary between two panes: pure, so it is checkable without a DOM
- * or a synthetic pointer. The handle in `LayoutRenderer.tsx` only measures.
- */
-
-/**
- * A pane never shrinks below this many pixels.
- *
- * dockview's `MINIMUM_DOCKVIEW_GROUP_PANEL_WIDTH`/`_HEIGHT`. A `flex-grow`
- * share of zero is legal, so without it a pane can be dragged — or `Home`'d —
- * to nothing, taking its tab strip and views with it.
- */
+// a `flex-grow` share of zero is legal, so this keeps a pane from vanishing
 export const MIN_PANE_PX = 100
 
 /** The space the two panes either side of the boundary before `index` share. */
@@ -18,14 +7,9 @@ export function pairSpan(sizes: number[], index: number) {
 }
 
 /**
- * `sizes` with that boundary moved to `position`, measured in the same units.
- *
- * The move stays inside the pair, so every other pane holds still. The pointer
- * and the arrow keys are the same gesture at two resolutions and both land here.
- *
- * `pairPx` is the pair's current pixel span, needed only to convert
- * `MIN_PANE_PX` into a share; 0 means nothing measurable (jsdom, or a pane not
- * laid out yet) and gives the unconstrained clamp.
+ * `sizes` with that boundary moved to `position`, in the same units; other
+ * panes hold still. `pairPx` converts `MIN_PANE_PX` to a share; 0 (jsdom, or
+ * not laid out) skips the minimum.
  */
 export function withBoundaryAt(
   sizes: number[],
@@ -34,8 +18,7 @@ export function withBoundaryAt(
   pairPx = 0,
 ) {
   const pair = pairSpan(sizes, index)
-  // no room for two minimums: the boundary stops in the middle rather than
-  // pinning both ends past each other
+  // with no room for two minimums the boundary stops in the middle
   const floor =
     pairPx > 0 ? Math.min((MIN_PANE_PX / pairPx) * pair, pair / 2) : 0
   const before = Math.min(Math.max(position, floor), pair - floor)

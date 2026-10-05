@@ -8,11 +8,7 @@ import { WorkspaceLayoutMixin } from './model.ts'
 import type { WorkspaceSessionType } from '../ui/App/types.ts'
 import type { WorkspaceLayout } from './model.ts'
 
-// The menu is the whole point of this test. Four of its items — the "Global:"
-// tilings — were lost in ea9cb165af with the dockview header component that
-// held them, and nothing failed: a deleted menu item is invisible to the type
-// checker, to every model test, and to anyone not looking for it. So this
-// asserts the labels, not the plumbing.
+// asserts labels: a deleted menu item fails no type check and no model test
 
 const TestSession = types.compose(
   'TestSession',
@@ -67,7 +63,6 @@ test('side by side from the menu rearranges every cell', async () => {
   ])
 })
 
-// with one view there is no arrangement to change
 test('a lone view gets the per-cell items and no arrangements', async () => {
   const { user } = setup(1)
   await user.click(screen.getByRole('button', { name: 'Panel menu' }))
@@ -76,10 +71,6 @@ test('a lone view gets the per-cell items and no arrangements', async () => {
   expect(screen.queryByText('Arrange all views')).toBeNull()
 })
 
-// The strip's double-click is maximize's gesture, and this item is how anyone
-// discovers it — and the only way to reach it from the keyboard. It is in the
-// file that exists because a deleted menu item is invisible to the type checker
-// and to every model test.
 test('the cell menu offers maximize, and says restore once maximized', async () => {
   const session = TestSession.create({
     name: 't',
@@ -128,8 +119,6 @@ test('a maximized cell shows a restore button beside its menu', async () => {
   expect(session.maximizedPanelId).toBeUndefined()
 })
 
-// With one cell there is nothing to hide, so the item would be a no-op wearing
-// a label that promises otherwise.
 test('a lone cell is not offered maximize', async () => {
   const { user } = setup(2)
   await user.click(screen.getByRole('button', { name: 'Panel menu' }))
@@ -138,13 +127,8 @@ test('a lone cell is not offered maximize', async () => {
   expect(screen.queryByText('Maximize panel')).toBeNull()
 })
 
-// The cell's × closes the views its tabs held, and this component is not where
-// that happens: `WorkspaceContainer` pairs it with `closeTab`'s removal through
-// one `closeViews`, because the layout tree does not own views and a second
-// spelling of "and also remove the views" is how one comes to be missing it. So
-// the button hands the gesture out and touches the session not at all — which
-// is the seam being pinned, since a component that quietly went back to calling
-// `session.closePanel` itself would pass every other test in this file.
+// `WorkspaceContainer.closeViews` owns removing the views, so the button must
+// not touch the session itself
 test('the cell close button delegates rather than closing anything itself', async () => {
   const closed: string[] = []
   const session = TestSession.create({
