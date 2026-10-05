@@ -4065,6 +4065,7 @@
         "colorRangeSlot",
         "colorReverseSlot",
         "colorSettingOf",
+        "colorSnapshotOf",
         "colorTitleSlot",
         "colorUnknownSlot",
         "dealRowColors",
@@ -4331,8 +4332,10 @@
         "hiddenGroupsItems",
         "mergeDomain",
         "moveSectionTo",
+        "resetOrderItem",
         "sectionOrderMenuItems",
-        "sectionRowMenuItems"
+        "sectionRowMenuItems",
+        "showHiddenItems"
       ],
       "worker": "real"
     },
