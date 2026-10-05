@@ -126,9 +126,11 @@ test('bigMaf keeps every copy', async () => {
       ),
     ),
   )
-  expect(features.map(f => copyStarts(f.get('alignments')))).toEqual(
-    BLOCKS.map(b => b.copies.map(([at]) => at)),
-  )
+  expect(
+    features.map(f =>
+      copyStarts(f.get('alignments') as Record<string, AlignmentRecord>),
+    ),
+  ).toEqual(BLOCKS.map(b => b.copies.map(([at]) => at)))
 })
 
 test('MAF-tabix keeps every copy', async () => {
@@ -151,9 +153,11 @@ test('MAF-tabix keeps every copy', async () => {
       ),
     ),
   )
-  expect(features.map(f => copyStarts(f.get('alignments')))).toEqual(
-    BLOCKS.map(b => b.copies.map(([at]) => at)),
-  )
+  expect(
+    features.map(f =>
+      copyStarts(f.get('alignments') as Record<string, AlignmentRecord>),
+    ),
+  ).toEqual(BLOCKS.map(b => b.copies.map(([at]) => at)))
 })
 
 test('TAF keeps every copy', () => {
