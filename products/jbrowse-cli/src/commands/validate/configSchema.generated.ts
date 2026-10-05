@@ -299,7 +299,12 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "type": "object",
       "properties": {
         "cytobandLocation": {
-          "$ref": "#/$defs/FileLocation"
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/FileLocation"
+          }
         },
         "uri": {
           "type": "string",
@@ -337,32 +342,57 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "properties": {
         "fetchSizeLimit": {
           "description": "size in bytes over which to display a warning to the user that too much data will be fetched.",
-          "type": "number",
-          "default": 5000000
+          "default": 5000000,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "number"
+          }
         },
         "densityAdapter": {
           "description": "optional quantitative sub-adapter (e.g. a BigWigAdapter over a features-per-bin bigWig) drawn as a density band where the region is too large to fetch features; leave it unset to disable. Any JSON value: the slot is \`frozen\`, so its shape is not checked here.",
-          "not": {
-            "$ref": "#/$defs/JexlString"
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "not": {
+              "$ref": "#/$defs/JexlString"
+            }
           }
         },
         "useSliceWorkerPool": {
           "description": "decode CRAM slices on a pool of workers rather than in the thread that asked.",
-          "type": "boolean",
-          "default": true
+          "default": true,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "boolean"
+          }
         },
         "cramLocation": {
-          "$ref": "#/$defs/FileLocation",
           "default": {
             "uri": "/path/to/my.cram",
             "locationType": "UriLocation"
+          },
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/FileLocation"
           }
         },
         "craiLocation": {
-          "$ref": "#/$defs/FileLocation",
           "default": {
             "uri": "/path/to/my.cram.crai",
             "locationType": "UriLocation"
+          },
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/FileLocation"
           }
         },
         "uri": {
@@ -402,18 +432,28 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "properties": {
         "indexType": {
           "description": "\`BAI\` is the usual \`samtools index\` output. \`CSI\` is required for a reference longer than 512 Mb, which BAI cannot address. Derived from the index file name where the config names a \`.csi\` and leaves this unset.",
-          "enum": [
-            "BAI",
-            "CSI"
-          ],
-          "default": "BAI"
+          "default": "BAI",
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "enum": [
+              "BAI",
+              "CSI"
+            ]
+          }
         },
         "location": {
           "description": "location of the index. Only needed when it is not named \`<file>.bam.bai\` (or \`.bam.csi\`), the names the \`uri\` shorthand assumes.",
-          "$ref": "#/$defs/FileLocation",
           "default": {
             "uri": "/path/to/my.bam.bai",
             "locationType": "UriLocation"
+          },
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/FileLocation"
           }
         }
       },
@@ -426,24 +466,44 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "type": "object",
       "properties": {
         "bamLocation": {
-          "$ref": "#/$defs/FileLocation",
           "default": {
             "uri": "/path/to/my.bam",
             "locationType": "UriLocation"
+          },
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/FileLocation"
           }
         },
         "index": {
-          "$ref": "#/$defs/BamIndex"
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/BamIndex"
+          }
         },
         "fetchSizeLimit": {
           "description": "size to fetch in bytes over which to display a warning to the user that too much data will be fetched.",
-          "type": "number",
-          "default": 5000000
+          "default": 5000000,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "number"
+          }
         },
         "densityAdapter": {
           "description": "optional quantitative sub-adapter (e.g. a BigWigAdapter over a features-per-bin bigWig) drawn as a density band where the region is too large to fetch features; leave it unset to disable. Any JSON value: the slot is \`frozen\`, so its shape is not checked here.",
-          "not": {
-            "$ref": "#/$defs/JexlString"
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "not": {
+              "$ref": "#/$defs/JexlString"
+            }
           }
         },
         "uri": {
@@ -485,15 +545,25 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "type": "object",
       "properties": {
         "samLocation": {
-          "$ref": "#/$defs/FileLocation",
           "default": {
             "uri": "/path/to/my.sam",
             "locationType": "UriLocation"
+          },
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/FileLocation"
           }
         },
         "samText": {
-          "$ref": "#/$defs/PlainString",
-          "default": ""
+          "default": "",
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/PlainString"
+          }
         },
         "uri": {
           "type": "string",
@@ -531,28 +601,43 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "properties": {
         "htsgetBase": {
           "description": "the base URL to fetch from.",
-          "anyOf": [
-            {
-              "$ref": "#/$defs/FileLocation"
-            },
-            {
-              "type": "string"
-            }
-          ],
           "default": {
             "uri": "",
             "locationType": "UriLocation"
+          },
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "anyOf": [
+              {
+                "$ref": "#/$defs/FileLocation"
+              },
+              {
+                "type": "string"
+              }
+            ]
           }
         },
         "htsgetTrackId": {
           "description": "the trackId, which is appended to the base URL.",
-          "$ref": "#/$defs/PlainString",
-          "default": ""
+          "default": "",
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/PlainString"
+          }
         },
         "densityAdapter": {
           "description": "optional quantitative sub-adapter (e.g. a BigWigAdapter over a features-per-bin bigWig) drawn as a density band where the region is too large to fetch features; leave it unset to disable. Any JSON value: the slot is \`frozen\`, so its shape is not checked here.",
-          "not": {
-            "$ref": "#/$defs/JexlString"
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "not": {
+              "$ref": "#/$defs/JexlString"
+            }
           }
         }
       }
@@ -582,31 +667,56 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "type": "object",
       "properties": {
         "bigBedLocation": {
-          "$ref": "#/$defs/FileLocation",
           "default": {
             "uri": "/path/to/my.bb",
             "locationType": "UriLocation"
+          },
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/FileLocation"
           }
         },
         "scoreColumn": {
           "description": "The column to use as a \\"score\\" attribute.",
-          "$ref": "#/$defs/PlainString",
-          "default": ""
+          "default": "",
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/PlainString"
+          }
         },
         "aggregateField": {
           "description": "An attribute to aggregate features with.",
-          "$ref": "#/$defs/PlainString",
-          "default": "geneName2"
+          "default": "geneName2",
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/PlainString"
+          }
         },
         "disableGeneHeuristic": {
           "description": "Disable the heuristic that auto-detects BED12 features as gene/transcript structures. Useful for files that have BED12-like structure but are not genes (e.g. tandem duplications).",
-          "type": "boolean",
-          "default": false
+          "default": false,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "boolean"
+          }
         },
         "densityAdapter": {
           "description": "optional quantitative sub-adapter (e.g. a BigWigAdapter over a features-per-bin bigWig) drawn as a density band where the region is too large to fetch features; leave it unset to disable. Any JSON value: the slot is \`frozen\`, so its shape is not checked here.",
-          "not": {
-            "$ref": "#/$defs/JexlString"
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "not": {
+              "$ref": "#/$defs/JexlString"
+            }
           }
         },
         "uri": {
@@ -645,48 +755,88 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "properties": {
         "bedLocation": {
           "description": "path to bed file, also allows gzipped bed.",
-          "$ref": "#/$defs/FileLocation",
           "default": {
             "uri": "/path/to/my.bed.gz",
             "locationType": "UriLocation"
+          },
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/FileLocation"
           }
         },
         "columnNames": {
           "description": "List of column names. A column named like a standard BED column is parsed as that column's type (chromStart numeric, blockSizes a numeric list); any other column is text.",
-          "type": "array",
-          "items": {
-            "type": "string"
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
           }
         },
         "scoreColumn": {
           "description": "The column to use as a \\"score\\" attribute.",
-          "$ref": "#/$defs/PlainString",
-          "default": ""
+          "default": "",
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/PlainString"
+          }
         },
         "autoSql": {
           "description": "The autoSql definition for the data fields in the file.",
-          "$ref": "#/$defs/PlainString",
-          "default": ""
+          "default": "",
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/PlainString"
+          }
         },
         "colRef": {
           "description": "The column to use as a \\"refName\\" attribute.",
-          "type": "number",
-          "default": 0
+          "default": 0,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "number"
+          }
         },
         "colStart": {
           "description": "The column to use as a \\"start\\" attribute.",
-          "type": "number",
-          "default": 1
+          "default": 1,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "number"
+          }
         },
         "colEnd": {
           "description": "The column to use as a \\"end\\" attribute.",
-          "type": "number",
-          "default": 2
+          "default": 2,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "number"
+          }
         },
         "disableGeneHeuristic": {
           "description": "Disable the heuristic that auto-detects BED12 features as gene/transcript structures. Useful for files that have BED12-like structure but are not genes (e.g. tandem duplications).",
-          "type": "boolean",
-          "default": false
+          "default": false,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "boolean"
+          }
         },
         "uri": {
           "type": "string",
@@ -724,17 +874,27 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "properties": {
         "bedpeLocation": {
           "description": "can be plaintext or gzipped, not indexed so loaded into memory on startup.",
-          "$ref": "#/$defs/FileLocation",
           "default": {
             "uri": "/path/to/my.bedpe.gz",
             "locationType": "UriLocation"
+          },
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/FileLocation"
           }
         },
         "columnNames": {
           "description": "List of column names.",
-          "type": "array",
-          "items": {
-            "type": "string"
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
           }
         },
         "uri": {
@@ -773,10 +933,15 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "properties": {
         "starFusionLocation": {
           "description": "STAR-Fusion TSV output file (plain text or gzipped).",
-          "$ref": "#/$defs/FileLocation",
           "default": {
             "uri": "/path/to/star-fusion.fusion_predictions.tsv",
             "locationType": "UriLocation"
+          },
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/FileLocation"
           }
         },
         "uri": {
@@ -816,18 +981,28 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "properties": {
         "indexType": {
           "description": "\`TBI\` is the usual \`tabix\` output. \`CSI\` is required for a reference longer than 512 Mb, which TBI cannot address. Derived from the index file name where the config names a \`.csi\` and leaves this unset.",
-          "enum": [
-            "TBI",
-            "CSI"
-          ],
-          "default": "TBI"
+          "default": "TBI",
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "enum": [
+              "TBI",
+              "CSI"
+            ]
+          }
         },
         "location": {
           "description": "location of the tabix index. Only needed when it is not named \`<file>.tbi\`, which is what the \`uri\` shorthand assumes — a \`.csi\` beside the file is reached with \`csi: true\` rather than by spelling this out.",
-          "$ref": "#/$defs/FileLocation",
           "default": {
             "uri": "/path/to/my.gz.tbi",
             "locationType": "UriLocation"
+          },
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/FileLocation"
           }
         }
       },
@@ -840,41 +1015,76 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "type": "object",
       "properties": {
         "bedGzLocation": {
-          "$ref": "#/$defs/FileLocation",
           "default": {
             "uri": "/path/to/my.bed.gz",
             "locationType": "UriLocation"
+          },
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/FileLocation"
           }
         },
         "index": {
-          "$ref": "#/$defs/TabixIndex"
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/TabixIndex"
+          }
         },
         "columnNames": {
           "description": "List of column names. A column named like a standard BED column is parsed as that column's type (chromStart numeric, blockSizes a numeric list); any other column is text.",
-          "type": "array",
-          "items": {
-            "type": "string"
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
           }
         },
         "scoreColumn": {
           "description": "The column to use as a \\"score\\" attribute.",
-          "$ref": "#/$defs/PlainString",
-          "default": ""
+          "default": "",
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/PlainString"
+          }
         },
         "autoSql": {
           "description": "The autoSql definition for the data fields in the file.",
-          "$ref": "#/$defs/PlainString",
-          "default": ""
+          "default": "",
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/PlainString"
+          }
         },
         "disableGeneHeuristic": {
           "description": "Disable the heuristic that auto-detects BED12 features as gene/transcript structures. Useful for files that have BED12-like structure but are not genes (e.g. tandem duplications).",
-          "type": "boolean",
-          "default": false
+          "default": false,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "boolean"
+          }
         },
         "densityAdapter": {
           "description": "optional quantitative sub-adapter (e.g. a BigWigAdapter over a features-per-bin bigWig) drawn as a density band where the region is too large to fetch features; leave it unset to disable. Any JSON value: the slot is \`frozen\`, so its shape is not checked here.",
-          "not": {
-            "$ref": "#/$defs/JexlString"
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "not": {
+              "$ref": "#/$defs/JexlString"
+            }
           }
         },
         "uri": {
@@ -916,17 +1126,27 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "type": "object",
       "properties": {
         "bedGraphLocation": {
-          "$ref": "#/$defs/FileLocation",
           "default": {
             "uri": "/path/to/my.bedgraph",
             "locationType": "UriLocation"
+          },
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/FileLocation"
           }
         },
         "columnNames": {
           "description": "List of column names.",
-          "type": "array",
-          "items": {
-            "type": "string"
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
           }
         },
         "uri": {
@@ -964,20 +1184,35 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "type": "object",
       "properties": {
         "bedGraphGzLocation": {
-          "$ref": "#/$defs/FileLocation",
           "default": {
             "uri": "/path/to/my.bedgraph",
             "locationType": "UriLocation"
+          },
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/FileLocation"
           }
         },
         "index": {
-          "$ref": "#/$defs/TabixIndex"
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/TabixIndex"
+          }
         },
         "columnNames": {
           "description": "List of column names.",
-          "type": "array",
-          "items": {
-            "type": "string"
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
           }
         },
         "uri": {
@@ -1019,13 +1254,23 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "type": "object",
       "properties": {
         "adapterId": {
-          "$ref": "#/$defs/PlainString",
-          "default": ""
+          "default": "",
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/PlainString"
+          }
         },
         "features": {
           "description": "Any JSON value: the slot is \`frozen\`, so its shape is not checked here.",
-          "not": {
-            "$ref": "#/$defs/JexlString"
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "not": {
+              "$ref": "#/$defs/JexlString"
+            }
           }
         }
       }
@@ -1055,13 +1300,23 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "type": "object",
       "properties": {
         "adapterId": {
-          "$ref": "#/$defs/PlainString",
-          "default": ""
+          "default": "",
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/PlainString"
+          }
         },
         "features": {
           "description": "Any JSON value: the slot is \`frozen\`, so its shape is not checked here.",
-          "not": {
-            "$ref": "#/$defs/JexlString"
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "not": {
+              "$ref": "#/$defs/JexlString"
+            }
           }
         }
       }
@@ -1091,13 +1346,23 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "type": "object",
       "properties": {
         "adapterId": {
-          "$ref": "#/$defs/PlainString",
-          "default": ""
+          "default": "",
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/PlainString"
+          }
         },
         "features": {
           "description": "Any JSON value: the slot is \`frozen\`, so its shape is not checked here.",
-          "not": {
-            "$ref": "#/$defs/JexlString"
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "not": {
+              "$ref": "#/$defs/JexlString"
+            }
           }
         }
       }
@@ -1127,16 +1392,31 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "type": "object",
       "properties": {
         "location": {
-          "$ref": "#/$defs/FileLocation"
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/FileLocation"
+          }
         },
         "refNameColumn": {
-          "type": "number",
-          "default": 0
+          "default": 0,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "number"
+          }
         },
         "refNameColumnHeaderName": {
           "description": "alternative to refNameColumn, instead looks at header (starts with # and finds column name).",
-          "$ref": "#/$defs/PlainString",
-          "default": ""
+          "default": "",
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/PlainString"
+          }
         },
         "uri": {
           "type": "string",
@@ -1173,12 +1453,22 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "type": "object",
       "properties": {
         "location": {
-          "$ref": "#/$defs/FileLocation"
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/FileLocation"
+          }
         },
         "useNameOverride": {
           "description": "forces usage of the UCSC names over the NCBI style names from a FASTA.",
-          "type": "boolean",
-          "default": true
+          "default": true,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "boolean"
+          }
         },
         "uri": {
           "type": "string",
@@ -1216,16 +1506,26 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "properties": {
         "gtfLocation": {
           "description": "path to gtf file, also allows for gzipped gtf.",
-          "$ref": "#/$defs/FileLocation",
           "default": {
             "uri": "/path/to/my.gtf",
             "locationType": "UriLocation"
+          },
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/FileLocation"
           }
         },
         "aggregateField": {
           "description": "attribute naming the parent gene that transcripts are aggregated into. transcripts are grouped by gene_id where the file has one (gene names are not unique within a reference), so this is the gene label, and the grouping key only for files with no gene_id.",
-          "$ref": "#/$defs/PlainString",
-          "default": "gene_name"
+          "default": "gene_name",
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/PlainString"
+          }
         },
         "uri": {
           "type": "string",
@@ -1262,37 +1562,62 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "type": "object",
       "properties": {
         "gtfGzLocation": {
-          "$ref": "#/$defs/FileLocation",
           "default": {
             "uri": "/path/to/my.gtf.gz",
             "locationType": "UriLocation"
+          },
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/FileLocation"
           }
         },
         "index": {
-          "$ref": "#/$defs/TabixIndex"
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/TabixIndex"
+          }
         },
         "dontRedispatch": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          },
           "default": [
             "chromosome",
             "region",
             "contig",
             "supercontig",
             "scaffold"
-          ]
+          ],
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
         },
         "aggregateField": {
           "description": "attribute naming the parent gene that transcripts are aggregated into. transcripts are grouped by gene_id where the file has one (gene names are not unique within a reference), so this is the gene label, and the grouping key only for files with no gene_id.",
-          "$ref": "#/$defs/PlainString",
-          "default": "gene_name"
+          "default": "gene_name",
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/PlainString"
+          }
         },
         "densityAdapter": {
           "description": "optional quantitative sub-adapter (e.g. a BigWigAdapter over a features-per-bin bigWig) drawn as a density band where the region is too large to fetch features; leave it unset to disable. Any JSON value: the slot is \`frozen\`, so its shape is not checked here.",
-          "not": {
-            "$ref": "#/$defs/JexlString"
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "not": {
+              "$ref": "#/$defs/JexlString"
+            }
           }
         },
         "uri": {
@@ -1334,32 +1659,52 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "type": "object",
       "properties": {
         "gffGzLocation": {
-          "$ref": "#/$defs/FileLocation",
           "default": {
             "uri": "/path/to/my.gff.gz",
             "locationType": "UriLocation"
+          },
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/FileLocation"
           }
         },
         "index": {
-          "$ref": "#/$defs/TabixIndex"
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/TabixIndex"
+          }
         },
         "dontRedispatch": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          },
           "default": [
             "chromosome",
             "region",
             "contig",
             "supercontig",
             "scaffold"
-          ]
+          ],
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
         },
         "densityAdapter": {
           "description": "optional quantitative sub-adapter (e.g. a BigWigAdapter over a features-per-bin bigWig) drawn as a density band where the region is too large to fetch features; leave it unset to disable. Any JSON value: the slot is \`frozen\`, so its shape is not checked here.",
-          "not": {
-            "$ref": "#/$defs/JexlString"
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "not": {
+              "$ref": "#/$defs/JexlString"
+            }
           }
         },
         "uri": {
@@ -1401,10 +1746,15 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "type": "object",
       "properties": {
         "gffLocation": {
-          "$ref": "#/$defs/FileLocation",
           "default": {
             "uri": "/path/to/my.gff",
             "locationType": "UriLocation"
+          },
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/FileLocation"
           }
         },
         "uri": {
@@ -1442,17 +1792,27 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "type": "object",
       "properties": {
         "rootUrlTemplate": {
-          "$ref": "#/$defs/FileLocation",
           "default": {
             "uri": "/path/to/my/{refseq}/trackData.json",
             "locationType": "UriLocation"
+          },
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/FileLocation"
           }
         },
         "refNames": {
           "description": "List of refNames used by the NCList used for aliasing.",
-          "type": "array",
-          "items": {
-            "type": "string"
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
           }
         }
       }
@@ -1483,34 +1843,59 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "properties": {
         "endpoint": {
           "description": "URL of the SPARQL endpoint.",
-          "$ref": "#/$defs/FileLocation",
           "default": {
             "uri": "https://somesite.com/sparql",
             "locationType": "UriLocation"
+          },
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/FileLocation"
           }
         },
         "queryTemplate": {
           "description": "SPARQL query where {start} {end} and {refName} will get replaced for each call.",
-          "$ref": "#/$defs/PlainString",
-          "default": ""
+          "default": "",
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/PlainString"
+          }
         },
         "refNamesQueryTemplate": {
           "description": "SPARQL query that returns the possible refNames in a ?refName column.",
-          "$ref": "#/$defs/PlainString",
-          "default": ""
+          "default": "",
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/PlainString"
+          }
         },
         "refNames": {
           "description": "Possible refNames used by the SPARQL endpoint (ignored if \\"refNamesQueryTemplate\\" is provided).",
-          "type": "array",
-          "items": {
-            "type": "string"
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
           }
         },
         "additionalQueryParams": {
           "description": "Additional parameters to add to the query, e.g. \\"format=JSON\\".",
-          "type": "array",
-          "items": {
-            "type": "string"
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
           }
         }
       }
@@ -1540,15 +1925,25 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "type": "object",
       "properties": {
         "twoBitLocation": {
-          "$ref": "#/$defs/FileLocation",
           "default": {
             "uri": "/path/to/my.2bit",
             "locationType": "UriLocation"
+          },
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/FileLocation"
           }
         },
         "chromSizesLocation": {
           "description": "An optional chrom.sizes file can be supplied to speed up loading since parsing the twobit file can take time.",
-          "$ref": "#/$defs/FileLocation"
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/FileLocation"
+          }
         },
         "uri": {
           "type": "string",
@@ -1588,28 +1983,48 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "type": "object",
       "properties": {
         "fastaLocation": {
-          "$ref": "#/$defs/FileLocation",
           "default": {
             "uri": "/path/to/seq.fa.gz",
             "locationType": "UriLocation"
+          },
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/FileLocation"
           }
         },
         "faiLocation": {
-          "$ref": "#/$defs/FileLocation",
           "default": {
             "uri": "/path/to/seq.fa.gz.fai",
             "locationType": "UriLocation"
+          },
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/FileLocation"
           }
         },
         "metadataLocation": {
           "description": "Optional metadata file.",
-          "$ref": "#/$defs/FileLocation"
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/FileLocation"
+          }
         },
         "gziLocation": {
-          "$ref": "#/$defs/FileLocation",
           "default": {
             "uri": "/path/to/seq.fa.gz.gzi",
             "locationType": "UriLocation"
+          },
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/FileLocation"
           }
         },
         "uri": {
@@ -1647,10 +2062,15 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "type": "object",
       "properties": {
         "chromSizesLocation": {
-          "$ref": "#/$defs/FileLocation",
           "default": {
             "uri": "/path/to/species.chrom.sizes",
             "locationType": "UriLocation"
+          },
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/FileLocation"
           }
         },
         "uri": {
@@ -1688,22 +2108,37 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "type": "object",
       "properties": {
         "fastaLocation": {
-          "$ref": "#/$defs/FileLocation",
           "default": {
             "uri": "/path/to/seq.fa",
             "locationType": "UriLocation"
+          },
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/FileLocation"
           }
         },
         "faiLocation": {
-          "$ref": "#/$defs/FileLocation",
           "default": {
             "uri": "/path/to/seq.fa.fai",
             "locationType": "UriLocation"
+          },
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/FileLocation"
           }
         },
         "metadataLocation": {
           "description": "Optional metadata file.",
-          "$ref": "#/$defs/FileLocation"
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/FileLocation"
+          }
         },
         "uri": {
           "type": "string",
@@ -1740,19 +2175,34 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "type": "object",
       "properties": {
         "rewriteRefNames": {
-          "$ref": "#/$defs/StringOrJexl",
-          "default": ""
+          "default": "",
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/StringOrJexl"
+          }
         },
         "fastaLocation": {
-          "$ref": "#/$defs/FileLocation",
           "default": {
             "uri": "/path/to/seq.fa",
             "locationType": "UriLocation"
+          },
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/FileLocation"
           }
         },
         "metadataLocation": {
           "description": "Optional metadata file.",
-          "$ref": "#/$defs/FileLocation"
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/FileLocation"
+          }
         },
         "uri": {
           "type": "string",
@@ -1790,26 +2240,51 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "properties": {
         "search": {
           "description": "Search string or regex to search for.",
-          "$ref": "#/$defs/PlainString",
-          "default": ""
+          "default": "",
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/PlainString"
+          }
         },
         "sequenceAdapter": {
           "description": "Any JSON value: the slot is \`frozen\`, so its shape is not checked here.",
-          "not": {
-            "$ref": "#/$defs/JexlString"
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "not": {
+              "$ref": "#/$defs/JexlString"
+            }
           }
         },
         "searchForward": {
-          "type": "boolean",
-          "default": true
+          "default": true,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "boolean"
+          }
         },
         "searchReverse": {
-          "type": "boolean",
-          "default": true
+          "default": true,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "boolean"
+          }
         },
         "caseInsensitive": {
-          "type": "boolean",
-          "default": true
+          "default": true,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "boolean"
+          }
         }
       }
     },
@@ -1839,52 +2314,107 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "properties": {
         "sequenceAdapter": {
           "description": "Any JSON value: the slot is \`frozen\`, so its shape is not checked here.",
-          "not": {
-            "$ref": "#/$defs/JexlString"
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "not": {
+              "$ref": "#/$defs/JexlString"
+            }
           }
         },
         "pam": {
-          "$ref": "#/$defs/PlainString",
-          "default": "NGG"
+          "default": "NGG",
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/PlainString"
+          }
         },
         "guideLength": {
-          "type": "number",
-          "default": 20
+          "default": 20,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "number"
+          }
         },
         "pamLocation": {
-          "enum": [
-            "3prime",
-            "5prime"
-          ],
-          "default": "3prime"
+          "default": "3prime",
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "enum": [
+              "3prime",
+              "5prime"
+            ]
+          }
         },
         "cutOffset": {
-          "type": "number",
-          "default": 3
+          "default": 3,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "number"
+          }
         },
         "cutOffsetBottom": {
-          "type": "number",
-          "default": 3
+          "default": 3,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "number"
+          }
         },
         "minGcPercent": {
-          "type": "number",
-          "default": 0
+          "default": 0,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "number"
+          }
         },
         "maxGcPercent": {
-          "type": "number",
-          "default": 100
+          "default": 100,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "number"
+          }
         },
         "excludePolyT": {
-          "type": "boolean",
-          "default": false
+          "default": false,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "boolean"
+          }
         },
         "searchForward": {
-          "type": "boolean",
-          "default": true
+          "default": true,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "boolean"
+          }
         },
         "searchReverse": {
-          "type": "boolean",
-          "default": true
+          "default": true,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "boolean"
+          }
         }
       }
     },
@@ -1914,22 +2444,42 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "properties": {
         "motifs": {
           "description": "Named motifs to search for, one per line.",
-          "$ref": "#/$defs/PlainString",
-          "default": ""
+          "default": "",
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/PlainString"
+          }
         },
         "sequenceAdapter": {
           "description": "Any JSON value: the slot is \`frozen\`, so its shape is not checked here.",
-          "not": {
-            "$ref": "#/$defs/JexlString"
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "not": {
+              "$ref": "#/$defs/JexlString"
+            }
           }
         },
         "searchForward": {
-          "type": "boolean",
-          "default": true
+          "default": true,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "boolean"
+          }
         },
         "searchReverse": {
-          "type": "boolean",
-          "default": true
+          "default": true,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "boolean"
+          }
         }
       }
     },
@@ -1958,15 +2508,25 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "type": "object",
       "properties": {
         "vcfLocation": {
-          "$ref": "#/$defs/FileLocation",
           "default": {
             "uri": "/path/to/my.vcf",
             "locationType": "UriLocation"
+          },
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/FileLocation"
           }
         },
         "samplesTsvLocation": {
           "description": "optional tab-separated table of per-sample metadata. It needs a header row, and its first column is the sample name exactly as the adapter spells it: a VCF sample, a MultiWiggle subtrack's name, a MAF species id. Every other column (\`population\`, \`tissue\`, ...) becomes an attribute of that sample, which the multi-row displays group, sort, color and tooltip rows by; a MAF adapter reads the \`label\`, \`color\` and \`assemblyName\` columns onto its species rows, over its \`samples\` entries. The table also narrows the adapter's samples to the ones it lists, and a table naming none of them is an error. An adapter that lists no samples of its own (a MAF track discovering its species from the file) takes the table's rows as its samples.",
-          "$ref": "#/$defs/FileLocation"
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/FileLocation"
+          }
         },
         "uri": {
           "type": "string",
@@ -2003,28 +2563,53 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "type": "object",
       "properties": {
         "vcfGzLocation": {
-          "$ref": "#/$defs/FileLocation",
           "default": {
             "uri": "/path/to/my.vcf.gz",
             "locationType": "UriLocation"
+          },
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/FileLocation"
           }
         },
         "index": {
-          "$ref": "#/$defs/TabixIndex"
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/TabixIndex"
+          }
         },
         "samplesTsvLocation": {
           "description": "optional tab-separated table of per-sample metadata. It needs a header row, and its first column is the sample name exactly as the adapter spells it: a VCF sample, a MultiWiggle subtrack's name, a MAF species id. Every other column (\`population\`, \`tissue\`, ...) becomes an attribute of that sample, which the multi-row displays group, sort, color and tooltip rows by; a MAF adapter reads the \`label\`, \`color\` and \`assemblyName\` columns onto its species rows, over its \`samples\` entries. The table also narrows the adapter's samples to the ones it lists, and a table naming none of them is an error. An adapter that lists no samples of its own (a MAF track discovering its species from the file) takes the table's rows as its samples.",
-          "$ref": "#/$defs/FileLocation"
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/FileLocation"
+          }
         },
         "fetchSizeLimit": {
           "description": "size in bytes over which to display a warning to the user that too much data will be fetched.",
-          "type": "number",
-          "default": 5000000
+          "default": 5000000,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "number"
+          }
         },
         "densityAdapter": {
           "description": "optional quantitative sub-adapter (e.g. a BigWigAdapter over a features-per-bin bigWig) drawn as a density band where the region is too large to fetch features; leave it unset to disable. Any JSON value: the slot is \`frozen\`, so its shape is not checked here.",
-          "not": {
-            "$ref": "#/$defs/JexlString"
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "not": {
+              "$ref": "#/$defs/JexlString"
+            }
           }
         },
         "uri": {
@@ -2067,36 +2652,66 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "properties": {
         "vcfGzLocationMap": {
           "description": "Any JSON value: the slot is \`frozen\`, so its shape is not checked here.",
-          "not": {
-            "$ref": "#/$defs/JexlString"
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "not": {
+              "$ref": "#/$defs/JexlString"
+            }
           }
         },
         "indexLocationMap": {
           "description": "Any JSON value: the slot is \`frozen\`, so its shape is not checked here.",
-          "not": {
-            "$ref": "#/$defs/JexlString"
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "not": {
+              "$ref": "#/$defs/JexlString"
+            }
           }
         },
         "indexType": {
-          "enum": [
-            "TBI",
-            "CSI"
-          ],
-          "default": "TBI"
+          "default": "TBI",
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "enum": [
+              "TBI",
+              "CSI"
+            ]
+          }
         },
         "samplesTsvLocation": {
           "description": "optional tab-separated table of per-sample metadata. It needs a header row, and its first column is the sample name exactly as the adapter spells it: a VCF sample, a MultiWiggle subtrack's name, a MAF species id. Every other column (\`population\`, \`tissue\`, ...) becomes an attribute of that sample, which the multi-row displays group, sort, color and tooltip rows by; a MAF adapter reads the \`label\`, \`color\` and \`assemblyName\` columns onto its species rows, over its \`samples\` entries. The table also narrows the adapter's samples to the ones it lists, and a table naming none of them is an error. An adapter that lists no samples of its own (a MAF track discovering its species from the file) takes the table's rows as its samples.",
-          "$ref": "#/$defs/FileLocation"
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/FileLocation"
+          }
         },
         "fetchSizeLimit": {
           "description": "size in bytes over which to display a warning to the user that too much data will be fetched.",
-          "type": "number",
-          "default": 5000000
+          "default": 5000000,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "number"
+          }
         },
         "densityAdapter": {
           "description": "optional quantitative sub-adapter (e.g. a BigWigAdapter over a features-per-bin bigWig) drawn as a density band where the region is too large to fetch features; leave it unset to disable. Any JSON value: the slot is \`frozen\`, so its shape is not checked here.",
-          "not": {
-            "$ref": "#/$defs/JexlString"
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "not": {
+              "$ref": "#/$defs/JexlString"
+            }
           }
         }
       }
@@ -2126,10 +2741,15 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "type": "object",
       "properties": {
         "ldLocation": {
-          "$ref": "#/$defs/FileLocation",
           "default": {
             "uri": "/path/to/plink.ld",
             "locationType": "UriLocation"
+          },
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/FileLocation"
           }
         },
         "uri": {
@@ -2167,14 +2787,24 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "type": "object",
       "properties": {
         "ldLocation": {
-          "$ref": "#/$defs/FileLocation",
           "default": {
             "uri": "/path/to/plink.ld.gz",
             "locationType": "UriLocation"
+          },
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/FileLocation"
           }
         },
         "index": {
-          "$ref": "#/$defs/TabixIndex"
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/TabixIndex"
+          }
         },
         "uri": {
           "type": "string",
@@ -2216,24 +2846,44 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "properties": {
         "subadapters": {
           "description": "array of subadapter JSON objects. Any JSON value: the slot is \`frozen\`, so its shape is not checked here.",
-          "not": {
-            "$ref": "#/$defs/JexlString"
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "not": {
+              "$ref": "#/$defs/JexlString"
+            }
           }
         },
         "bigWigs": {
           "description": "array of BigWig URLs/paths, alternative to the subadapters slot. Any JSON value: the slot is \`frozen\`, so its shape is not checked here.",
-          "not": {
-            "$ref": "#/$defs/JexlString"
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "not": {
+              "$ref": "#/$defs/JexlString"
+            }
           }
         },
         "baseUri": {
           "description": "what relative bigWigs URLs resolve against, stamped from the location the config was loaded from.",
-          "$ref": "#/$defs/PlainString",
-          "default": ""
+          "default": "",
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/PlainString"
+          }
         },
         "samplesTsvLocation": {
           "description": "optional tab-separated table of per-sample metadata. It needs a header row, and its first column is the sample name exactly as the adapter spells it: a VCF sample, a MultiWiggle subtrack's name, a MAF species id. Every other column (\`population\`, \`tissue\`, ...) becomes an attribute of that sample, which the multi-row displays group, sort, color and tooltip rows by; a MAF adapter reads the \`label\`, \`color\` and \`assemblyName\` columns onto its species rows, over its \`samples\` entries. The table also narrows the adapter's samples to the ones it lists, and a table naming none of them is an error. An adapter that lists no samples of its own (a MAF track discovering its species from the file) takes the table's rows as its samples.",
-          "$ref": "#/$defs/FileLocation"
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/FileLocation"
+          }
         }
       }
     },
@@ -2262,21 +2912,36 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "type": "object",
       "properties": {
         "bigWigLocation": {
-          "$ref": "#/$defs/FileLocation",
           "default": {
             "uri": "/path/to/my.bw",
             "locationType": "UriLocation"
+          },
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/FileLocation"
           }
         },
         "source": {
           "description": "Label added to all features; used as the subtrack/row name when this adapter is a subadapter of a multi-wiggle track.",
-          "$ref": "#/$defs/PlainString",
-          "default": ""
+          "default": "",
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/PlainString"
+          }
         },
         "resolutionMultiplier": {
           "description": "Resolution multiplier applied to every fetch: <1 fetches more points (higher resolution), >1 fetches fewer (e.g. 2 = half as many points).",
-          "type": "number",
-          "default": 1
+          "default": 1,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "number"
+          }
         },
         "uri": {
           "type": "string",
@@ -2314,25 +2979,45 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "properties": {
         "sequenceAdapter": {
           "description": "Any JSON value: the slot is \`frozen\`, so its shape is not checked here.",
-          "not": {
-            "$ref": "#/$defs/JexlString"
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "not": {
+              "$ref": "#/$defs/JexlString"
+            }
           }
         },
         "windowSize": {
-          "type": "number",
-          "default": 100
+          "default": 100,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "number"
+          }
         },
         "windowDelta": {
-          "type": "number",
-          "default": 100
+          "default": 100,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "number"
+          }
         },
         "gcMode": {
           "description": "calculate GC content fraction or GC skew (G-C)/(G+C).",
-          "enum": [
-            "content",
-            "skew"
-          ],
-          "default": "content"
+          "default": "content",
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "enum": [
+              "content",
+              "skew"
+            ]
+          }
         }
       }
     },
@@ -2362,44 +3047,79 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "properties": {
         "mafGzLocation": {
           "description": "bgzip-compressed MAF file.",
-          "$ref": "#/$defs/FileLocation",
           "default": {
             "uri": "/path/to/my.maf.gz",
             "locationType": "UriLocation"
+          },
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/FileLocation"
           }
         },
         "taiLocation": {
           "description": "taffy index.",
-          "$ref": "#/$defs/FileLocation",
           "default": {
             "uri": "/path/to/my.maf.gz.tai",
             "locationType": "UriLocation"
+          },
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/FileLocation"
           }
         },
         "samples": {
           "description": "string[] or {id:string,label:string,color?:string,assemblyName?:string,assemblyConfigLocation?:UriLocation}[]; assemblyName makes rows for that sample navigable to its own genome, and assemblyConfigLocation says where to load that assembly from when the session lacks it. Any JSON value: the slot is \`frozen\`, so its shape is not checked here.",
-          "not": {
-            "$ref": "#/$defs/JexlString"
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "not": {
+              "$ref": "#/$defs/JexlString"
+            }
           }
         },
         "nhLocation": {
           "description": "newick tree naming and ordering the species rows; its leaf names are the sample ids, and any \`samples\` entries supply label/color overrides matched by id.",
-          "$ref": "#/$defs/FileLocation"
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/FileLocation"
+          }
         },
         "summaryAdapter": {
           "description": "optional swappable sub-adapter (a BedTabixAdapter over a maf2bed --summary BED, or a BigBedAdapter over UCSC bigMafSummary.bb) used for cheap zoom-out rendering; leave it unset to disable. The \`.tai\` makes a read cost the span on screen rather than the blocks it lands in, which is why this slot was left off at first — but span is only half of it. Cost is span × depth, and measured against HPRC's own v2.1 index the constant is about **19 compressed bytes per bp** at 464 haplotypes, flat from 100 kb up: 1 Mb is a 19 MB read and chr1 whole is 4.4 GB. So a deep alignment still runs out, just linearly instead of by block. Any JSON value: the slot is \`frozen\`, so its shape is not checked here.",
-          "not": {
-            "$ref": "#/$defs/JexlString"
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "not": {
+              "$ref": "#/$defs/JexlString"
+            }
           }
         },
         "samplesTsvLocation": {
           "description": "optional tab-separated table of per-sample metadata. It needs a header row, and its first column is the sample name exactly as the adapter spells it: a VCF sample, a MultiWiggle subtrack's name, a MAF species id. Every other column (\`population\`, \`tissue\`, ...) becomes an attribute of that sample, which the multi-row displays group, sort, color and tooltip rows by; a MAF adapter reads the \`label\`, \`color\` and \`assemblyName\` columns onto its species rows, over its \`samples\` entries. The table also narrows the adapter's samples to the ones it lists, and a table naming none of them is an error. An adapter that lists no samples of its own (a MAF track discovering its species from the file) takes the table's rows as its samples.",
-          "$ref": "#/$defs/FileLocation"
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/FileLocation"
+          }
         },
         "annotationAdapter": {
           "description": "optional sub-adapter (typically a BigBedAdapter over a UCSC multiz<N>wayFrames.bb) supplying per-species CDS reading frames for the gene-structure overlay and codon view; leave it unset to disable. The display looks this slot up by path off the parent track and is otherwise format-blind, so every MAF adapter takes it the same way. Any JSON value: the slot is \`frozen\`, so its shape is not checked here.",
-          "not": {
-            "$ref": "#/$defs/JexlString"
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "not": {
+              "$ref": "#/$defs/JexlString"
+            }
           }
         },
         "uri": {
@@ -2441,44 +3161,79 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "properties": {
         "tafGzLocation": {
           "description": "bgzip taffy file.",
-          "$ref": "#/$defs/FileLocation",
           "default": {
             "uri": "/path/to/my.taf.gz",
             "locationType": "UriLocation"
+          },
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/FileLocation"
           }
         },
         "taiLocation": {
           "description": "taffy index.",
-          "$ref": "#/$defs/FileLocation",
           "default": {
             "uri": "/path/to/my.taf.gz.tai",
             "locationType": "UriLocation"
+          },
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/FileLocation"
           }
         },
         "samples": {
           "description": "string[] or {id:string,label:string,color?:string,assemblyName?:string,assemblyConfigLocation?:UriLocation}[]; assemblyName makes rows for that sample navigable to its own genome, and assemblyConfigLocation says where to load that assembly from when the session lacks it. Any JSON value: the slot is \`frozen\`, so its shape is not checked here.",
-          "not": {
-            "$ref": "#/$defs/JexlString"
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "not": {
+              "$ref": "#/$defs/JexlString"
+            }
           }
         },
         "nhLocation": {
           "description": "newick tree naming and ordering the species rows; its leaf names are the sample ids, and any \`samples\` entries supply label/color overrides matched by id.",
-          "$ref": "#/$defs/FileLocation"
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/FileLocation"
+          }
         },
         "summaryAdapter": {
           "description": "optional swappable sub-adapter (a BedTabixAdapter over a maf2bed --summary BED, or a BigBedAdapter over UCSC bigMafSummary.bb) used for cheap zoom-out rendering; leave it unset to disable. The zoom-out tier on the same terms as \`BgzipMafAdapter\`'s: the \`.tai\` makes a read cost the span on screen rather than the blocks it lands in, but cost is span × depth and a deep alignment runs out of the second factor. Measured against HPRC's published v2.0 TAF index, 464 haplotypes cost about **2 compressed bytes per bp**, flat from 100 kb up — a ninth of the same alignment's MAF, and still 354 MB for chr6 whole. TAF moves the ceiling out by about 10x; it does not remove it. Any JSON value: the slot is \`frozen\`, so its shape is not checked here.",
-          "not": {
-            "$ref": "#/$defs/JexlString"
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "not": {
+              "$ref": "#/$defs/JexlString"
+            }
           }
         },
         "samplesTsvLocation": {
           "description": "optional tab-separated table of per-sample metadata. It needs a header row, and its first column is the sample name exactly as the adapter spells it: a VCF sample, a MultiWiggle subtrack's name, a MAF species id. Every other column (\`population\`, \`tissue\`, ...) becomes an attribute of that sample, which the multi-row displays group, sort, color and tooltip rows by; a MAF adapter reads the \`label\`, \`color\` and \`assemblyName\` columns onto its species rows, over its \`samples\` entries. The table also narrows the adapter's samples to the ones it lists, and a table naming none of them is an error. An adapter that lists no samples of its own (a MAF track discovering its species from the file) takes the table's rows as its samples.",
-          "$ref": "#/$defs/FileLocation"
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/FileLocation"
+          }
         },
         "annotationAdapter": {
           "description": "optional sub-adapter (typically a BigBedAdapter over a UCSC multiz<N>wayFrames.bb) supplying per-species CDS reading frames for the gene-structure overlay and codon view; leave it unset to disable. The display looks this slot up by path off the parent track and is otherwise format-blind, so every MAF adapter takes it the same way. Any JSON value: the slot is \`frozen\`, so its shape is not checked here.",
-          "not": {
-            "$ref": "#/$defs/JexlString"
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "not": {
+              "$ref": "#/$defs/JexlString"
+            }
           }
         },
         "uri": {
@@ -2519,36 +3274,66 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "type": "object",
       "properties": {
         "bigBedLocation": {
-          "$ref": "#/$defs/FileLocation",
           "default": {
             "uri": "/path/to/my.bb",
             "locationType": "UriLocation"
+          },
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/FileLocation"
           }
         },
         "samples": {
           "description": "string[] or {id:string,label:string,color?:string,assemblyName?:string,assemblyConfigLocation?:UriLocation}[]; assemblyName makes rows for that sample navigable to its own genome, and assemblyConfigLocation says where to load that assembly from when the session lacks it. Any JSON value: the slot is \`frozen\`, so its shape is not checked here.",
-          "not": {
-            "$ref": "#/$defs/JexlString"
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "not": {
+              "$ref": "#/$defs/JexlString"
+            }
           }
         },
         "nhLocation": {
           "description": "newick tree naming and ordering the species rows; its leaf names are the sample ids, and any \`samples\` entries supply label/color overrides matched by id.",
-          "$ref": "#/$defs/FileLocation"
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/FileLocation"
+          }
         },
         "summaryAdapter": {
           "description": "optional swappable sub-adapter (typically a BigBedAdapter over UCSC bigMafSummary.bb, which is published alongside the bigMaf) used for cheap zoom-out rendering; leave it unset to disable. Any JSON value: the slot is \`frozen\`, so its shape is not checked here.",
-          "not": {
-            "$ref": "#/$defs/JexlString"
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "not": {
+              "$ref": "#/$defs/JexlString"
+            }
           }
         },
         "samplesTsvLocation": {
           "description": "optional tab-separated table of per-sample metadata. It needs a header row, and its first column is the sample name exactly as the adapter spells it: a VCF sample, a MultiWiggle subtrack's name, a MAF species id. Every other column (\`population\`, \`tissue\`, ...) becomes an attribute of that sample, which the multi-row displays group, sort, color and tooltip rows by; a MAF adapter reads the \`label\`, \`color\` and \`assemblyName\` columns onto its species rows, over its \`samples\` entries. The table also narrows the adapter's samples to the ones it lists, and a table naming none of them is an error. An adapter that lists no samples of its own (a MAF track discovering its species from the file) takes the table's rows as its samples.",
-          "$ref": "#/$defs/FileLocation"
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/FileLocation"
+          }
         },
         "annotationAdapter": {
           "description": "optional sub-adapter (typically a BigBedAdapter over a UCSC multiz<N>wayFrames.bb) supplying per-species CDS reading frames for the gene-structure overlay and codon view; leave it unset to disable. The display looks this slot up by path off the parent track and is otherwise format-blind, so every MAF adapter takes it the same way. Any JSON value: the slot is \`frozen\`, so its shape is not checked here.",
-          "not": {
-            "$ref": "#/$defs/JexlString"
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "not": {
+              "$ref": "#/$defs/JexlString"
+            }
           }
         },
         "uri": {
@@ -2589,43 +3374,83 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "type": "object",
       "properties": {
         "bedGzLocation": {
-          "$ref": "#/$defs/FileLocation",
           "default": {
             "uri": "/path/to/my.bed.gz",
             "locationType": "UriLocation"
+          },
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/FileLocation"
           }
         },
         "refAssemblyName": {
-          "$ref": "#/$defs/PlainString",
-          "default": ""
+          "default": "",
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/PlainString"
+          }
         },
         "index": {
-          "$ref": "#/$defs/TabixIndex"
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/TabixIndex"
+          }
         },
         "samples": {
           "description": "string[] or {id:string,label:string,color?:string,assemblyName?:string,assemblyConfigLocation?:UriLocation}[]; assemblyName makes rows for that sample navigable to its own genome, and assemblyConfigLocation says where to load that assembly from when the session lacks it. Any JSON value: the slot is \`frozen\`, so its shape is not checked here.",
-          "not": {
-            "$ref": "#/$defs/JexlString"
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "not": {
+              "$ref": "#/$defs/JexlString"
+            }
           }
         },
         "nhLocation": {
           "description": "newick tree naming and ordering the species rows; its leaf names are the sample ids, and any \`samples\` entries supply label/color overrides matched by id.",
-          "$ref": "#/$defs/FileLocation"
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/FileLocation"
+          }
         },
         "summaryAdapter": {
           "description": "optional swappable sub-adapter (a BedTabixAdapter over a maf2bed --summary BED, or a BigBedAdapter over UCSC bigMafSummary.bb) used for cheap zoom-out rendering; leave it unset to disable. A tabix MAF carries every species' bases on one line, so a wide read downloads the whole alignment and the byte gate blocks it; without this slot the track simply has no zoom-out path. Any JSON value: the slot is \`frozen\`, so its shape is not checked here.",
-          "not": {
-            "$ref": "#/$defs/JexlString"
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "not": {
+              "$ref": "#/$defs/JexlString"
+            }
           }
         },
         "samplesTsvLocation": {
           "description": "optional tab-separated table of per-sample metadata. It needs a header row, and its first column is the sample name exactly as the adapter spells it: a VCF sample, a MultiWiggle subtrack's name, a MAF species id. Every other column (\`population\`, \`tissue\`, ...) becomes an attribute of that sample, which the multi-row displays group, sort, color and tooltip rows by; a MAF adapter reads the \`label\`, \`color\` and \`assemblyName\` columns onto its species rows, over its \`samples\` entries. The table also narrows the adapter's samples to the ones it lists, and a table naming none of them is an error. An adapter that lists no samples of its own (a MAF track discovering its species from the file) takes the table's rows as its samples.",
-          "$ref": "#/$defs/FileLocation"
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/FileLocation"
+          }
         },
         "annotationAdapter": {
           "description": "optional sub-adapter (typically a BigBedAdapter over a UCSC multiz<N>wayFrames.bb) supplying per-species CDS reading frames for the gene-structure overlay and codon view; leave it unset to disable. The display looks this slot up by path off the parent track and is otherwise format-blind, so every MAF adapter takes it the same way. Any JSON value: the slot is \`frozen\`, so its shape is not checked here.",
-          "not": {
-            "$ref": "#/$defs/JexlString"
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "not": {
+              "$ref": "#/$defs/JexlString"
+            }
           }
         },
         "uri": {
@@ -2670,10 +3495,15 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "type": "object",
       "properties": {
         "hicLocation": {
-          "$ref": "#/$defs/FileLocation",
           "default": {
             "uri": "/path/to/my.hic",
             "locationType": "UriLocation"
+          },
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/FileLocation"
           }
         },
         "uri": {
@@ -2712,28 +3542,48 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "properties": {
         "attributeColumns": {
           "description": "PAF tags to offer as color-by fields, by name: [\\"syri\\", \\"color\\"] offers \`syri:Z:INV\` as a field whose labels paint in the \`color:Z:\` beside them.",
-          "type": "array",
-          "items": {
-            "type": "string"
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
           }
         },
         "assemblyNames": {
-          "type": "array",
-          "items": {
-            "type": "string"
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
           }
         },
         "pafLocation": {
-          "$ref": "#/$defs/FileLocation",
           "default": {
             "uri": "/path/to/file.paf",
             "locationType": "UriLocation"
+          },
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/FileLocation"
           }
         },
         "assemblyNameToPanSN": {
           "description": "Any JSON value: the slot is \`frozen\`, so its shape is not checked here.",
-          "not": {
-            "$ref": "#/$defs/JexlString"
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "not": {
+              "$ref": "#/$defs/JexlString"
+            }
           }
         },
         "uri": {
@@ -2772,37 +3622,67 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "properties": {
         "attributeColumns": {
           "description": "PAF tags to offer as color-by fields, by name: [\\"syri\\", \\"color\\"] offers \`syri:Z:INV\` as a field whose labels paint in the \`color:Z:\` beside them.",
-          "type": "array",
-          "items": {
-            "type": "string"
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
           }
         },
         "assemblyNames": {
-          "type": "array",
-          "items": {
-            "type": "string"
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
           }
         },
         "pifGzLocation": {
           "description": "location of the multi-genome tabix indexed PAF (pif).",
-          "$ref": "#/$defs/FileLocation",
           "default": {
             "uri": "/path/to/all_vs_all.pif.gz",
             "locationType": "UriLocation"
+          },
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/FileLocation"
           }
         },
         "assemblyNameToPanSN": {
           "description": "Any JSON value: the slot is \`frozen\`, so its shape is not checked here.",
-          "not": {
-            "$ref": "#/$defs/JexlString"
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "not": {
+              "$ref": "#/$defs/JexlString"
+            }
           }
         },
         "coarseBpPerPxThreshold": {
-          "type": "number",
-          "default": 10000
+          "default": 10000,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "number"
+          }
         },
         "index": {
-          "$ref": "#/$defs/TabixIndex"
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/TabixIndex"
+          }
         },
         "uri": {
           "type": "string",
@@ -2844,33 +3724,58 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "properties": {
         "assemblyNames": {
           "description": "Array of assembly names to use for this file. The query assembly name is the first value in the array, target assembly name is the second.",
-          "type": "array",
-          "items": {
-            "type": "string"
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
           }
         },
         "targetAssembly": {
           "description": "Alternative to assemblyNames: the target assembly name.",
-          "$ref": "#/$defs/PlainString",
-          "default": ""
+          "default": "",
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/PlainString"
+          }
         },
         "queryAssembly": {
           "description": "Alternative to assemblyNames: the query assembly name.",
-          "$ref": "#/$defs/PlainString",
-          "default": ""
+          "default": "",
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/PlainString"
+          }
         },
         "attributeColumns": {
           "description": "PAF tags to offer as color-by fields, by name: [\\"syri\\", \\"color\\"] offers \`syri:Z:INV\` as a field whose labels paint in the \`color:Z:\` beside them.",
-          "type": "array",
-          "items": {
-            "type": "string"
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
           }
         },
         "pafLocation": {
-          "$ref": "#/$defs/FileLocation",
           "default": {
             "uri": "/path/to/file.paf",
             "locationType": "UriLocation"
+          },
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/FileLocation"
           }
         },
         "uri": {
@@ -2909,42 +3814,77 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "properties": {
         "assemblyNames": {
           "description": "Array of assembly names to use for this file. The query assembly name is the first value in the array, target assembly name is the second.",
-          "type": "array",
-          "items": {
-            "type": "string"
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
           }
         },
         "targetAssembly": {
           "description": "Alternative to assemblyNames: the target assembly name.",
-          "$ref": "#/$defs/PlainString",
-          "default": ""
+          "default": "",
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/PlainString"
+          }
         },
         "queryAssembly": {
           "description": "Alternative to assemblyNames: the query assembly name.",
-          "$ref": "#/$defs/PlainString",
-          "default": ""
+          "default": "",
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/PlainString"
+          }
         },
         "attributeColumns": {
           "description": "PAF tags to offer as color-by fields, by name: [\\"syri\\", \\"color\\"] offers \`syri:Z:INV\` as a field whose labels paint in the \`color:Z:\` beside them.",
-          "type": "array",
-          "items": {
-            "type": "string"
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
           }
         },
         "pifGzLocation": {
           "description": "location of pairwise tabix indexed PAF (pif).",
-          "$ref": "#/$defs/FileLocation",
           "default": {
             "uri": "/path/to/data/file.pif.gz",
             "locationType": "UriLocation"
+          },
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/FileLocation"
           }
         },
         "coarseBpPerPxThreshold": {
-          "type": "number",
-          "default": 10000
+          "default": 10000,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "number"
+          }
         },
         "index": {
-          "$ref": "#/$defs/TabixIndex"
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/TabixIndex"
+          }
         },
         "uri": {
           "type": "string",
@@ -2986,18 +3926,33 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "properties": {
         "adapters": {
           "description": "array of pairwise synteny adapter configs sharing one assembly. Any JSON value: the slot is \`frozen\`, so its shape is not checked here.",
-          "not": {
-            "$ref": "#/$defs/JexlString"
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "not": {
+              "$ref": "#/$defs/JexlString"
+            }
           }
         },
         "coarseBpPerPxThreshold": {
-          "type": "number",
-          "default": 10000
+          "default": 10000,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "number"
+          }
         },
         "lanes": {
           "description": "per mate assembly, the label and group the multiway lane picker offers it under. Any JSON value: the slot is \`frozen\`, so its shape is not checked here.",
-          "not": {
-            "$ref": "#/$defs/JexlString"
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "not": {
+              "$ref": "#/$defs/JexlString"
+            }
           }
         }
       }
@@ -3028,26 +3983,46 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "properties": {
         "assemblyNames": {
           "description": "Array of assembly names to use for this file. The query assembly name is the first value in the array, target assembly name is the second.",
-          "type": "array",
-          "items": {
-            "type": "string"
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
           }
         },
         "targetAssembly": {
           "description": "Alternative to assemblyNames: the target assembly name.",
-          "$ref": "#/$defs/PlainString",
-          "default": ""
+          "default": "",
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/PlainString"
+          }
         },
         "queryAssembly": {
           "description": "Alternative to assemblyNames: the query assembly name.",
-          "$ref": "#/$defs/PlainString",
-          "default": ""
+          "default": "",
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/PlainString"
+          }
         },
         "deltaLocation": {
-          "$ref": "#/$defs/FileLocation",
           "default": {
             "uri": "/path/to/file.delta",
             "locationType": "UriLocation"
+          },
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/FileLocation"
           }
         },
         "uri": {
@@ -3086,26 +4061,46 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "properties": {
         "assemblyNames": {
           "description": "Array of assembly names to use for this file. The query assembly name is the first value in the array, target assembly name is the second.",
-          "type": "array",
-          "items": {
-            "type": "string"
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
           }
         },
         "targetAssembly": {
           "description": "Alternative to assemblyNames: the target assembly name.",
-          "$ref": "#/$defs/PlainString",
-          "default": ""
+          "default": "",
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/PlainString"
+          }
         },
         "queryAssembly": {
           "description": "Alternative to assemblyNames: the query assembly name.",
-          "$ref": "#/$defs/PlainString",
-          "default": ""
+          "default": "",
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/PlainString"
+          }
         },
         "chainLocation": {
-          "$ref": "#/$defs/FileLocation",
           "default": {
             "uri": "/path/to/file.chain",
             "locationType": "UriLocation"
+          },
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/FileLocation"
           }
         },
         "uri": {
@@ -3143,30 +4138,50 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "type": "object",
       "properties": {
         "mcscanAnchorsLocation": {
-          "$ref": "#/$defs/FileLocation",
           "default": {
             "uri": "/path/to/mcscan.anchors",
             "locationType": "UriLocation"
+          },
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/FileLocation"
           }
         },
         "bed1Location": {
-          "$ref": "#/$defs/FileLocation",
           "default": {
             "uri": "/path/to/file.bed",
             "locationType": "UriLocation"
+          },
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/FileLocation"
           }
         },
         "bed2Location": {
-          "$ref": "#/$defs/FileLocation",
           "default": {
             "uri": "/path/to/file.bed",
             "locationType": "UriLocation"
+          },
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/FileLocation"
           }
         },
         "assemblyNames": {
-          "type": "array",
-          "items": {
-            "type": "string"
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
           }
         },
         "uri": {
@@ -3210,34 +4225,59 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "type": "object",
       "properties": {
         "mcscanBlocksLocation": {
-          "$ref": "#/$defs/FileLocation",
           "default": {
             "uri": "/path/to/mcscan.blocks",
             "locationType": "UriLocation"
+          },
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/FileLocation"
           }
         },
         "blockAssemblies": {
-          "type": "array",
-          "items": {
-            "type": "string"
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
           }
         },
         "bedLocations": {
           "description": "Any JSON value: the slot is \`frozen\`, so its shape is not checked here.",
-          "not": {
-            "$ref": "#/$defs/JexlString"
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "not": {
+              "$ref": "#/$defs/JexlString"
+            }
           }
         },
         "assemblyNames": {
-          "type": "array",
-          "items": {
-            "type": "string"
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
           }
         },
         "attributeColumns": {
-          "type": "array",
-          "items": {
-            "type": "string"
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
           }
         },
         "uri": {
@@ -3275,30 +4315,50 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "type": "object",
       "properties": {
         "mcscanSimpleAnchorsLocation": {
-          "$ref": "#/$defs/FileLocation",
           "default": {
             "uri": "/path/to/mcscan.anchors.simple",
             "locationType": "UriLocation"
+          },
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/FileLocation"
           }
         },
         "bed1Location": {
-          "$ref": "#/$defs/FileLocation",
           "default": {
             "uri": "/path/to/file.bed",
             "locationType": "UriLocation"
+          },
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/FileLocation"
           }
         },
         "bed2Location": {
-          "$ref": "#/$defs/FileLocation",
           "default": {
             "uri": "/path/to/file.bed",
             "locationType": "UriLocation"
+          },
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/FileLocation"
           }
         },
         "assemblyNames": {
-          "type": "array",
-          "items": {
-            "type": "string"
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
           }
         },
         "uri": {
@@ -3343,26 +4403,46 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "properties": {
         "assemblyNames": {
           "description": "Array of assembly names to use for this file. The query assembly name is the first value in the array, target assembly name is the second.",
-          "type": "array",
-          "items": {
-            "type": "string"
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
           }
         },
         "targetAssembly": {
           "description": "Alternative to assemblyNames: the target assembly name.",
-          "$ref": "#/$defs/PlainString",
-          "default": ""
+          "default": "",
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/PlainString"
+          }
         },
         "queryAssembly": {
           "description": "Alternative to assemblyNames: the query assembly name.",
-          "$ref": "#/$defs/PlainString",
-          "default": ""
+          "default": "",
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/PlainString"
+          }
         },
         "outLocation": {
-          "$ref": "#/$defs/FileLocation",
           "default": {
             "uri": "/path/to/mashmap.out",
             "locationType": "UriLocation"
+          },
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/FileLocation"
           }
         },
         "uri": {
@@ -3401,32 +4481,57 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "properties": {
         "assemblyNames": {
           "description": "Array of assembly names to use for this file. The query assembly name is the first value in the array, target assembly name is the second.",
-          "type": "array",
-          "items": {
-            "type": "string"
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
           }
         },
         "targetAssembly": {
           "description": "Alternative to assemblyNames: the target assembly name.",
-          "$ref": "#/$defs/PlainString",
-          "default": ""
+          "default": "",
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/PlainString"
+          }
         },
         "queryAssembly": {
           "description": "Alternative to assemblyNames: the query assembly name.",
-          "$ref": "#/$defs/PlainString",
-          "default": ""
+          "default": "",
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/PlainString"
+          }
         },
         "blastTableLocation": {
-          "$ref": "#/$defs/FileLocation",
           "default": {
             "uri": "/path/to/blastTable.tsv",
             "locationType": "UriLocation"
+          },
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/FileLocation"
           }
         },
         "columns": {
           "description": "Optional space-separated column name list. If custom columns were used in outfmt, enter them here exactly as specified in the command. At least qseqid, sseqid, qstart, qend, sstart, and send are required.",
-          "$ref": "#/$defs/PlainString",
-          "default": "qseqid sseqid pident length mismatch gapopen qstart qend sstart send evalue bitscore"
+          "default": "qseqid sseqid pident length mismatch gapopen qstart qend sstart send evalue bitscore",
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/PlainString"
+          }
         },
         "uri": {
           "type": "string",
@@ -3463,52 +4568,97 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "type": "object",
       "properties": {
         "bedGzLocation": {
-          "$ref": "#/$defs/FileLocation",
           "default": {
             "uri": "/path/to/my.bed.gz",
             "locationType": "UriLocation"
+          },
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/FileLocation"
           }
         },
         "index": {
-          "$ref": "#/$defs/TabixIndex"
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/TabixIndex"
+          }
         },
         "columnNames": {
           "description": "List of column names. A column named like a standard BED column is parsed as that column's type (chromStart numeric, blockSizes a numeric list); any other column is text.",
-          "type": "array",
-          "items": {
-            "type": "string"
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
           }
         },
         "scoreColumn": {
           "description": "BED column to read as the Manhattan plot score.",
-          "$ref": "#/$defs/PlainString",
-          "default": "neg_log_pvalue"
+          "default": "neg_log_pvalue",
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/PlainString"
+          }
         },
         "autoSql": {
           "description": "The autoSql definition for the data fields in the file.",
-          "$ref": "#/$defs/PlainString",
-          "default": ""
+          "default": "",
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/PlainString"
+          }
         },
         "disableGeneHeuristic": {
           "description": "Disable the heuristic that auto-detects BED12 features as gene/transcript structures. Useful for files that have BED12-like structure but are not genes (e.g. tandem duplications).",
-          "type": "boolean",
-          "default": false
+          "default": false,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "boolean"
+          }
         },
         "densityAdapter": {
           "description": "optional quantitative sub-adapter (e.g. a BigWigAdapter over a features-per-bin bigWig) drawn as a density band where the region is too large to fetch features; leave it unset to disable. Any JSON value: the slot is \`frozen\`, so its shape is not checked here.",
-          "not": {
-            "$ref": "#/$defs/JexlString"
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "not": {
+              "$ref": "#/$defs/JexlString"
+            }
           }
         },
         "scoreTransform": {
           "description": "transform applied to the score column.",
-          "$ref": "#/$defs/StringOrJexl",
-          "default": "none"
+          "default": "none",
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/StringOrJexl"
+          }
         },
         "ldAdapter": {
           "description": "sub-adapter config for PLINK .ld pairwise r² data. Any JSON value: the slot is \`frozen\`, so its shape is not checked here.",
-          "not": {
-            "$ref": "#/$defs/JexlString"
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "not": {
+              "$ref": "#/$defs/JexlString"
+            }
           }
         },
         "uri": {
@@ -3561,108 +4711,173 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "properties": {
             "value": {
               "description": "CSS colour or jexl callback.",
-              "$ref": "#/$defs/CssColorOrJexl"
+              "if": {
+                "type": "null"
+              },
+              "else": {
+                "$ref": "#/$defs/CssColorOrJexl"
+              }
             },
             "field": {
               "description": "a feature field, or a jexl expression over feature, whose values each paint one range colour with a key; a transcript and its parts paint the transcript's value, or its gene's where the transcript has none; strand paints forward tomato and reverse cornflowerblue unless domain or range says otherwise.",
-              "$ref": "#/$defs/FeatureField",
-              "default": ""
+              "default": "",
+              "if": {
+                "type": "null"
+              },
+              "else": {
+                "$ref": "#/$defs/FeatureField"
+              }
             },
             "scale": {
               "description": "none paints value and keeps the field for a switch back; categorical a range colour per value of field; threshold a range colour per interval between the cut points in domain; linear or log a colour along a ramp from domainMin to domainMax; identity paints each feature's own colour, as none does, and the key names the colours in domain; unset is linear for score and categorical for any other field.",
-              "enum": [
-                "none",
-                "categorical",
-                "threshold",
-                "linear",
-                "log",
-                "identity"
-              ]
+              "if": {
+                "type": "null"
+              },
+              "else": {
+                "enum": [
+                  "none",
+                  "categorical",
+                  "threshold",
+                  "linear",
+                  "log",
+                  "identity"
+                ]
+              }
             },
             "domain": {
               "description": "the values that take the range first, in order; a value left out takes a colour no listed value or value met before it paints, the first time the track shows it, and keeps it. Under threshold, the ascending cut points, a value on a cut taking the interval above it. Under identity, the CSS colours the key names, in order.",
-              "anyOf": [
-                {
-                  "type": "array",
-                  "items": {
-                    "anyOf": [
-                      {
-                        "type": "string"
-                      },
-                      {
-                        "type": "number"
-                      }
-                    ]
+              "if": {
+                "type": "null"
+              },
+              "else": {
+                "anyOf": [
+                  {
+                    "type": "array",
+                    "items": {
+                      "anyOf": [
+                        {
+                          "type": "string"
+                        },
+                        {
+                          "type": "number"
+                        }
+                      ]
+                    }
                   }
-                }
-              ]
+                ]
+              }
             },
             "range": {
               "description": "CSS colours the domain takes, in order, continuing into the default palette past its end; under threshold one per interval, one more than the cuts; under linear or log the ramp's stops, winning over scheme.",
-              "type": "array",
-              "items": {
-                "$ref": "#/$defs/CssColorEntry"
+              "if": {
+                "type": "null"
+              },
+              "else": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/$defs/CssColorEntry"
+                }
               }
             },
             "labels": {
               "description": "what the key names each domain value, one each in order, or under threshold each interval from the lowest; one past the list keeps its own name.",
-              "anyOf": [
-                {
-                  "type": "array",
-                  "items": {
-                    "anyOf": [
-                      {
-                        "type": "string"
-                      },
-                      {
-                        "type": "number"
-                      }
-                    ]
+              "if": {
+                "type": "null"
+              },
+              "else": {
+                "anyOf": [
+                  {
+                    "type": "array",
+                    "items": {
+                      "anyOf": [
+                        {
+                          "type": "string"
+                        },
+                        {
+                          "type": "number"
+                        }
+                      ]
+                    }
                   }
-                }
-              ]
+                ]
+              }
             },
             "scheme": {
               "description": "a named ramp for a linear or log scale; range's colours, where it lists any, win over it.",
-              "enum": [
-                "viridis",
-                "magma",
-                "inferno",
-                "cividis",
-                "juicebox",
-                "fall",
-                "reds",
-                "blues",
-                "redblue",
-                "purpleorange",
-                "redgreyblue"
-              ]
+              "if": {
+                "type": "null"
+              },
+              "else": {
+                "enum": [
+                  "viridis",
+                  "magma",
+                  "inferno",
+                  "cividis",
+                  "juicebox",
+                  "fall",
+                  "reds",
+                  "blues",
+                  "redblue",
+                  "purpleorange",
+                  "redgreyblue"
+                ]
+              }
             },
             "reverse": {
               "description": "turns a linear or log scale's ramp round, so its last colour paints the bottom of the domain.",
-              "type": "boolean",
-              "default": false
+              "default": false,
+              "if": {
+                "type": "null"
+              },
+              "else": {
+                "type": "boolean"
+              }
             },
             "domainMid": {
               "description": "the value the ramp's middle stop sits at, so a diverging ramp centres somewhere other than the middle of the domain, both sides on one scale: the farther end of the domain reaches its end colour and equal distances from the middle take equal colours; unset, the stops are evenly spaced across it.",
-              "type": "number"
+              "if": {
+                "type": "null"
+              },
+              "else": {
+                "type": "number"
+              }
             },
             "domainMin": {
               "description": "the bottom of a linear or log scale's domain; unset follows the loaded values.",
-              "type": "number"
+              "if": {
+                "type": "null"
+              },
+              "else": {
+                "type": "number"
+              }
             },
             "domainMax": {
               "description": "the top of a linear or log scale's domain; unset follows the loaded values.",
-              "type": "number"
+              "if": {
+                "type": "null"
+              },
+              "else": {
+                "type": "number"
+              }
             },
             "domainQuantile": {
               "description": "the quantile an open end of a linear or log scale follows over the loaded values: 1 their extremes, 0.99 clips the outermost 1% at each end, each sign measured on its own.",
-              "type": "number",
-              "default": 1
+              "default": 1,
+              "if": {
+                "type": "null"
+              },
+              "else": {
+                "type": "number"
+              }
             },
             "title": {
               "description": "key title; unset keeps the display's own heading, \\"\\" draws none.",
-              "$ref": "#/$defs/PlainString"
+              "if": {
+                "type": "null"
+              },
+              "else": {
+                "$ref": "#/$defs/PlainString"
+              }
             }
           },
           "patternProperties": {
@@ -3677,8 +4892,8 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "anyOf": [
         {
           "description": "Shorthand for \`{ \\"field\\": ... }\`.",
-          "$ref": "#/$defs/FeatureField",
           "default": "",
+          "$ref": "#/$defs/FeatureField",
           "type": "string"
         },
         {
@@ -3688,26 +4903,36 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "properties": {
             "field": {
               "description": "feature field (or jexl expression) to group by, one labelled section per value; \`strand\` for one per strand.",
-              "$ref": "#/$defs/FeatureField",
-              "default": ""
+              "default": "",
+              "if": {
+                "type": "null"
+              },
+              "else": {
+                "$ref": "#/$defs/FeatureField"
+              }
             },
             "domain": {
               "description": "values whose sections stack first, in order.",
-              "anyOf": [
-                {
-                  "type": "array",
-                  "items": {
-                    "anyOf": [
-                      {
-                        "type": "string"
-                      },
-                      {
-                        "type": "number"
-                      }
-                    ]
+              "if": {
+                "type": "null"
+              },
+              "else": {
+                "anyOf": [
+                  {
+                    "type": "array",
+                    "items": {
+                      "anyOf": [
+                        {
+                          "type": "string"
+                        },
+                        {
+                          "type": "number"
+                        }
+                      ]
+                    }
                   }
-                }
-              ]
+                ]
+              }
             }
           },
           "patternProperties": {
@@ -3723,13 +4948,23 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "properties": {
         "name": {
           "description": "the primary name of the feature to show.",
-          "$ref": "#/$defs/StringOrJexl",
-          "default": "jexl:get(feature,'name') || get(feature,'id')"
+          "default": "jexl:get(feature,'name') || get(feature,'id')",
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/StringOrJexl"
+          }
         },
         "description": {
           "description": "the text description to show.",
-          "$ref": "#/$defs/StringOrJexl",
-          "default": "jexl:get(feature,'note') || get(feature,'description') || get(feature,'function')"
+          "default": "jexl:get(feature,'note') || get(feature,'description') || get(feature,'function')",
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/StringOrJexl"
+          }
         }
       },
       "patternProperties": {
@@ -3742,183 +4977,309 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "properties": {
         "fetchSizeLimit": {
           "description": "maximum data to attempt to download for a given track, used if adapter doesn't specify one.",
-          "type": "number",
-          "default": 5000000
+          "default": 5000000,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "number"
+          }
         },
         "forceLoad": {
           "description": "Declarative equivalent of the \\"Force load\\" button on the \\"too much data\\" banner: when true the display always renders, however large the region or dense the features. Off by default (the gate guards against huge downloads). Set it on a view no one can interact with — an embedded / notebook view, or a screenshot — where the region is known and you want it drawn without a click.",
-          "type": "boolean",
-          "default": false
+          "default": false,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "boolean"
+          }
         },
         "height": {
           "description": "default height for the track.",
-          "type": "number",
-          "default": 100
+          "default": 100,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "number"
+          }
         },
         "mouseover": {
           "description": "text to display when the cursor hovers over a feature.",
-          "$ref": "#/$defs/StringOrJexl",
-          "default": "jexl:get(feature,'_mouseOver')||get(feature,'name')||get(feature,'function')||get(feature,'id')"
+          "default": "jexl:get(feature,'_mouseOver')||get(feature,'name')||get(feature,'function')||get(feature,'id')",
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/StringOrJexl"
+          }
         },
         "heightMode": {
           "description": "Track-sizing strategy — how the track responds when there are more features than fit (shared vocabulary with the alignments display, exposed in the \\"Track sizing\\" menu). \`fit\` (the default) keeps the track height and gives up descriptions, then isoforms, then names, then squeezes boxes down to 2px, and scrolls only what still overflows; \`fixed\` keeps a scrollable fixed height; \`grow\` expands the track to show all features. Orthogonal to the per-feature size set by \`displayMode\`, which fit never enlarges.",
-          "enum": [
-            "fixed",
-            "grow",
-            "fit"
-          ],
-          "default": "fit"
+          "default": "fit",
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "enum": [
+              "fixed",
+              "grow",
+              "fit"
+            ]
+          }
         },
         "growMaxHeight": {
           "description": "Ceiling in pixels for the \\"autogrow track height\\" sizing mode; a track with more content than this grows to the ceiling and scrolls the rest. Does not apply to the fixed or fit modes.",
-          "type": "number",
-          "default": 800
+          "default": 800,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "number"
+          }
         },
         "densityTier": {
           "description": "when to draw the features-per-bin density band in place of features: \\"auto\\" swaps to it where the region is too large to fetch, \\"features\\" never does and keeps the banner, \\"density\\" always does. Needs a density source on the adapter (its densityAdapter slot).",
-          "enum": [
-            "auto",
-            "features",
-            "density"
-          ],
-          "default": "auto"
+          "default": "auto",
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "enum": [
+              "auto",
+              "features",
+              "density"
+            ]
+          }
         },
         "densityTierBpPerPx": {
           "description": "in \\"auto\\" mode, also draw the density band from this many bp per pixel outward, before the region is too large to fetch; 0 leaves the swap to the fetch-size gate alone.",
-          "type": "number",
-          "default": 0
+          "default": 0,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "number"
+          }
         },
         "filter": {
           "description": "jexl: expressions a feature must pass to be drawn.",
-          "type": "array",
-          "items": {
-            "$ref": "#/$defs/JexlExpression"
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "array",
+            "items": {
+              "$ref": "#/$defs/JexlExpression"
+            }
           }
         },
         "maxFeatureScreenDensity": {
           "description": "maximum features per pixel before showing a \\"too many features\\" message.",
-          "type": "number",
-          "default": 1
+          "default": 1,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "number"
+          }
         },
         "showLegend": {
           "description": "show the color key. Defaults to on.",
-          "type": "boolean",
-          "default": true
+          "default": true,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "boolean"
+          }
         },
         "showLabels": {
           "description": "Which label text is drawn beside each feature: \\"auto\\" adapts to zoom, dropping descriptions at maxDescriptionFeatureDensity and names at maxLabelFeatureDensity; \\"nameAndDescription\\", \\"name\\", \\"description\\", and \\"none\\" pin a choice at every zoom. Defaults to \`auto\`. Replaces the former showLabels on/off enum + showDescriptions boolean pair.",
-          "anyOf": [
-            {
-              "enum": [
-                "auto",
-                "nameAndDescription",
-                "name",
-                "description",
-                "none"
-              ]
-            },
-            {
-              "enum": [
-                true,
-                false
-              ],
-              "deprecated": true,
-              "description": "Legacy spellings a migration rewrites when the config loads."
-            }
-          ],
-          "default": "auto"
+          "default": "auto",
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "anyOf": [
+              {
+                "enum": [
+                  "auto",
+                  "nameAndDescription",
+                  "name",
+                  "description",
+                  "none"
+                ]
+              },
+              {
+                "enum": [
+                  true,
+                  false
+                ],
+                "deprecated": true,
+                "description": "Legacy spellings a migration rewrites when the config loads."
+              }
+            ]
+          }
         },
         "maxLabelFeatureDensity": {
           "description": "In \\"auto\\" showLabels mode, hide labels when visible feature density (features/pixel) exceeds this value.",
-          "type": "number",
-          "default": 0.2
+          "default": 0.2,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "number"
+          }
         },
         "maxDescriptionFeatureDensity": {
           "description": "In \\"auto\\" showLabels mode, hide descriptions when visible feature density (features/pixel) exceeds this value. Lower than maxLabelFeatureDensity so descriptions drop before names.",
-          "type": "number",
-          "default": 0.1
+          "default": 0.1,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "number"
+          }
         },
         "color": {
-          "$ref": "#/$defs/FeatureColor"
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/FeatureColor"
+          }
         },
         "outlineColor": {
           "description": "outline color for features (empty string = no outline).",
-          "$ref": "#/$defs/CssColor",
-          "default": ""
+          "default": "",
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/CssColor"
+          }
         },
         "featureHeight": {
           "description": "height in pixels of the main body of each feature.",
-          "$ref": "#/$defs/NumberOrJexl",
-          "default": 10
+          "default": 10,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/NumberOrJexl"
+          }
         },
         "displayMode": {
           "description": "Feature height preset, \`normal\` by default; \`compact\` and \`superCompact\` shrink the rows, and \`collapsed\` packs every feature onto a single row with all labels hidden.",
-          "anyOf": [
-            {
-              "enum": [
-                "normal",
-                "compact",
-                "superCompact",
-                "collapsed"
-              ]
-            },
-            {
-              "enum": [
-                "reducedRepresentation",
-                "collapse"
-              ],
-              "deprecated": true,
-              "description": "Legacy spellings a migration rewrites when the config loads."
-            }
-          ],
-          "default": "normal"
+          "default": "normal",
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "anyOf": [
+              {
+                "enum": [
+                  "normal",
+                  "compact",
+                  "superCompact",
+                  "collapsed"
+                ]
+              },
+              {
+                "enum": [
+                  "reducedRepresentation",
+                  "collapse"
+                ],
+                "deprecated": true,
+                "description": "Legacy spellings a migration rewrites when the config loads."
+              }
+            ]
+          }
         },
         "facet": {
-          "$ref": "#/$defs/Facet"
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/Facet"
+          }
         },
         "labels": {
-          "$ref": "#/$defs/CanvasFeatureLabels"
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/CanvasFeatureLabels"
+          }
         },
         "showOnlyGenes": {
-          "type": "boolean",
-          "default": false
+          "default": false,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "boolean"
+          }
         },
         "connectorColor": {
           "description": "color of the connecting/intron lines between feature segments (defaults to the theme text color).",
-          "$ref": "#/$defs/CssColorOrJexl"
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/CssColorOrJexl"
+          }
         },
         "utrColor": {
           "description": "fill color for UTRs on gene/transcript glyphs. Unset, a feature's own BED itemRgb paints them too (matching UCSC's whole-item coloring), else a contrasting blue.",
-          "$ref": "#/$defs/CssColorOrJexl"
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/CssColorOrJexl"
+          }
         },
         "geneGlyphMode": {
           "description": "Gene glyph display mode: \\"auto\\" collapses each gene to one transcript when zoomed out and trims the rest to what the track height holds, \\"all\\" draws every transcript and scrolls the surplus instead of trimming, \\"longestCoding\\" shows one transcript per gene — the one canonicalTranscriptTags names, else the longest coding.",
-          "enum": [
-            "auto",
-            "all",
-            "longestCoding"
-          ],
-          "default": "auto"
+          "default": "auto",
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "enum": [
+              "auto",
+              "all",
+              "longestCoding"
+            ]
+          }
         },
         "subfeatureLabels": {
           "description": "subfeature label display mode: \`none\` (the default), \`below\` or \`overlay\`.",
-          "enum": [
-            "none",
-            "below",
-            "overlay"
-          ],
-          "default": "none"
+          "default": "none",
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "enum": [
+              "none",
+              "below",
+              "overlay"
+            ]
+          }
         },
         "displayDirectionalChevrons": {
           "description": "Display directional chevrons on intron lines to indicate strand direction. Defaults to on.",
-          "type": "boolean",
-          "default": true
+          "default": true,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "boolean"
+          }
         },
         "transcriptTypes": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          },
           "default": [
             "mRNA",
             "transcript",
@@ -3927,17 +5288,27 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "C_gene_segment",
             "D_gene_segment",
             "J_gene_segment"
-          ]
+          ],
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
         },
         "canonicalTranscriptField": {
-          "$ref": "#/$defs/PlainString",
-          "default": "tag"
+          "default": "tag",
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/PlainString"
+          }
         },
         "canonicalTranscriptTags": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          },
           "default": [
             "MANE Select",
             "MANE_Select",
@@ -3945,31 +5316,60 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "Ensembl_canonical",
             "MANE Plus Clinical",
             "MANE_Plus_Clinical"
-          ]
+          ],
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
         },
         "containerTypes": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          },
           "default": [
             "proteoform_orf"
-          ]
+          ],
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
         },
         "subParts": {
           "description": "subparts for a glyph.",
-          "$ref": "#/$defs/PlainString",
-          "default": "CDS,UTR,five_prime_UTR,three_prime_UTR"
+          "default": "CDS,UTR,five_prime_UTR,three_prime_UTR",
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/PlainString"
+          }
         },
         "impliedUTRs": {
           "description": "imply UTRs from exon/CDS differences on transcript glyphs that carry no explicit UTR subfeatures.",
-          "type": "boolean",
-          "default": true
+          "default": true,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "boolean"
+          }
         },
         "hideSourceFeatures": {
           "description": "hide the GFF3 source record, the whole-molecule type=region feature NCBI RefSeq emits per sequence (gbkey=Src). It spans the entire chromosome and carries only taxon/strain metadata, so it draws as a bar across every window. Set false to draw it. No effect on files that carry no gbkey attribute.",
-          "type": "boolean",
-          "default": true
+          "default": true,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "boolean"
+          }
         },
         "color1": {
           "deprecated": true,
@@ -4037,8 +5437,8 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "anyOf": [
         {
           "description": "Shorthand for \`{ \\"field\\": ... }\`.",
-          "$ref": "#/$defs/FeatureField",
           "default": "",
+          "$ref": "#/$defs/FeatureField",
           "type": "string"
         },
         {
@@ -4048,61 +5448,91 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "properties": {
             "domain": {
               "description": "the row order: the rows listed lead, in this order, and the rest keep the order they arrived in.",
-              "anyOf": [
-                {
-                  "type": "array",
-                  "items": {
-                    "anyOf": [
-                      {
-                        "type": "string"
-                      },
-                      {
-                        "type": "number"
-                      }
-                    ]
+              "if": {
+                "type": "null"
+              },
+              "else": {
+                "anyOf": [
+                  {
+                    "type": "array",
+                    "items": {
+                      "anyOf": [
+                        {
+                          "type": "string"
+                        },
+                        {
+                          "type": "number"
+                        }
+                      ]
+                    }
                   }
-                }
-              ]
+                ]
+              }
             },
             "labels": {
               "description": "a label drawn beside a row in place of its name, by name.",
-              "type": "object",
-              "additionalProperties": {
-                "type": "string"
+              "if": {
+                "type": "null"
+              },
+              "else": {
+                "type": "object",
+                "additionalProperties": {
+                  "type": "string"
+                }
               }
             },
             "tree": {
               "description": "the dendrogram beside the rows, as newick, written by a clustering run beside the order it produced.",
-              "$ref": "#/$defs/PlainString"
+              "if": {
+                "type": "null"
+              },
+              "else": {
+                "$ref": "#/$defs/PlainString"
+              }
             },
             "treeProvenance": {
               "description": "what tree was computed from, the locus and the settings; unset for a tree that arrived as data. Any JSON value: the slot is \`frozen\`, so its shape is not checked here.",
-              "not": {
-                "$ref": "#/$defs/JexlString"
+              "if": {
+                "type": "null"
+              },
+              "else": {
+                "not": {
+                  "$ref": "#/$defs/JexlString"
+                }
               }
             },
             "kept": {
               "description": "the rows shown, by name; empty, or naming no current row, shows every row.",
-              "anyOf": [
-                {
-                  "type": "array",
-                  "items": {
-                    "anyOf": [
-                      {
-                        "type": "string"
-                      },
-                      {
-                        "type": "number"
-                      }
-                    ]
+              "if": {
+                "type": "null"
+              },
+              "else": {
+                "anyOf": [
+                  {
+                    "type": "array",
+                    "items": {
+                      "anyOf": [
+                        {
+                          "type": "string"
+                        },
+                        {
+                          "type": "number"
+                        }
+                      ]
+                    }
                   }
-                }
-              ]
+                ]
+              }
             },
             "field": {
               "description": "the field each value of which takes a row of its own.",
-              "$ref": "#/$defs/FeatureField",
-              "default": ""
+              "default": "",
+              "if": {
+                "type": "null"
+              },
+              "else": {
+                "$ref": "#/$defs/FeatureField"
+              }
             }
           },
           "patternProperties": {
@@ -4117,8 +5547,8 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "anyOf": [
         {
           "description": "Shorthand for \`{ \\"field\\": ... }\`.",
-          "$ref": "#/$defs/PlainString",
           "default": "name",
+          "$ref": "#/$defs/PlainString",
           "type": "string"
         },
         {
@@ -4128,37 +5558,57 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "properties": {
             "field": {
               "description": "the row attribute whose values take the colours: name, the row itself, or an attribute the rows carry, such as a column of a multi-sample variant adapter's samplesTsvLocation, e.g. population, or a subtrack's group.",
-              "$ref": "#/$defs/PlainString",
-              "default": "name"
+              "default": "name",
+              "if": {
+                "type": "null"
+              },
+              "else": {
+                "$ref": "#/$defs/PlainString"
+              }
             },
             "domain": {
               "description": "the field's values given a colour of their own, in order: under name, rows by name.",
-              "anyOf": [
-                {
-                  "type": "array",
-                  "items": {
-                    "anyOf": [
-                      {
-                        "type": "string"
-                      },
-                      {
-                        "type": "number"
-                      }
-                    ]
+              "if": {
+                "type": "null"
+              },
+              "else": {
+                "anyOf": [
+                  {
+                    "type": "array",
+                    "items": {
+                      "anyOf": [
+                        {
+                          "type": "string"
+                        },
+                        {
+                          "type": "number"
+                        }
+                      ]
+                    }
                   }
-                }
-              ]
+                ]
+              }
             },
             "range": {
               "description": "the CSS colour each value in domain takes, in the same order.",
-              "type": "array",
-              "items": {
-                "$ref": "#/$defs/CssColorEntry"
+              "if": {
+                "type": "null"
+              },
+              "else": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/$defs/CssColorEntry"
+                }
               }
             },
             "unknown": {
               "description": "what a value domain does not list takes: unset the next palette colour where the display deals one, a colour that colour, \\"\\" none from this setting.",
-              "$ref": "#/$defs/CssColor"
+              "if": {
+                "type": "null"
+              },
+              "else": {
+                "$ref": "#/$defs/CssColor"
+              }
             }
           },
           "patternProperties": {
@@ -4173,105 +5623,210 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "properties": {
         "fetchSizeLimit": {
           "description": "maximum data to attempt to download for a given track, used if adapter doesn't specify one.",
-          "type": "number",
-          "default": 5000000
+          "default": 5000000,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "number"
+          }
         },
         "forceLoad": {
           "description": "Declarative equivalent of the \\"Force load\\" button on the \\"too much data\\" banner: when true the display always renders, however large the region or dense the features. Off by default (the gate guards against huge downloads). Set it on a view no one can interact with — an embedded / notebook view, or a screenshot — where the region is known and you want it drawn without a click.",
-          "type": "boolean",
-          "default": false
+          "default": false,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "boolean"
+          }
         },
         "height": {
           "description": "default height for the track.",
-          "type": "number",
-          "default": 100
+          "default": 100,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "number"
+          }
         },
         "mouseover": {
           "description": "text to display when the cursor hovers over a feature.",
-          "$ref": "#/$defs/StringOrJexl",
-          "default": "jexl:get(feature,'_mouseOver')||get(feature,'name')||get(feature,'function')||get(feature,'id')"
+          "default": "jexl:get(feature,'_mouseOver')||get(feature,'name')||get(feature,'function')||get(feature,'id')",
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/StringOrJexl"
+          }
         },
         "rows": {
-          "$ref": "#/$defs/Rows"
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/Rows"
+          }
         },
         "clusterField": {
           "description": "feature attribute the rows cluster on, or a jexl expression deriving one. 'auto' = the attribute the color slot reads, else name; empty = cluster on presence alone.",
-          "$ref": "#/$defs/FeatureField",
-          "default": "auto"
+          "default": "auto",
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/FeatureField"
+          }
         },
         "lengthField": {
           "description": "feature attribute holding a signed bp length change vs the reference; enables indel glyphs. Empty = off.",
-          "$ref": "#/$defs/PlainString",
-          "default": ""
+          "default": "",
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/PlainString"
+          }
         },
         "color": {
-          "$ref": "#/$defs/FeatureColor"
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/FeatureColor"
+          }
         },
         "rowColor": {
-          "$ref": "#/$defs/RowColor"
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/RowColor"
+          }
         },
         "rowHeight": {
           "description": "fixed row height in px; 0 (the default) auto-fits all rows to the display height, so adding rows shrinks them instead of growing the track.",
-          "type": "number",
-          "default": 0
+          "default": 0,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "number"
+          }
         },
         "rowProportion": {
           "description": "fraction of the row height each block fills.",
-          "type": "number",
-          "default": 1
+          "default": 1,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "number"
+          }
         },
         "showRowSeparators": {
           "description": "draw a hairline between adjacent rows; off by default, because a painting whose neighbouring rows differ in color already separates itself and the line only earns its pixel where they do not — a run of same-colored rows reads as one block without it, with no way to recover the row count by eye. Drawn only once rows are at least 4px tall: below that the line is as thick as the row it borders, turning a dense painting into a grid of hairlines with a little color between them.",
-          "type": "boolean",
-          "default": false
+          "default": false,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "boolean"
+          }
         },
         "densityTier": {
           "description": "when to draw the features-per-bin density band in place of features: \\"auto\\" swaps to it where the region is too large to fetch, \\"features\\" never does and keeps the banner, \\"density\\" always does. Needs a density source on the adapter (its densityAdapter slot).",
-          "enum": [
-            "auto",
-            "features",
-            "density"
-          ],
-          "default": "auto"
+          "default": "auto",
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "enum": [
+              "auto",
+              "features",
+              "density"
+            ]
+          }
         },
         "densityTierBpPerPx": {
           "description": "in \\"auto\\" mode, also draw the density band from this many bp per pixel outward, before the region is too large to fetch; 0 leaves the swap to the fetch-size gate alone.",
-          "type": "number",
-          "default": 0
+          "default": 0,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "number"
+          }
         },
         "showLegend": {
           "description": "show the categorical color key for per-feature coloring. Defaults to on.",
-          "type": "boolean",
-          "default": true
+          "default": true,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "boolean"
+          }
         },
         "rowGroups": {
           "description": "array of {match,group} tagging each row with the group of the first entry whose regex its name matches; rowColor: {field: \\"group\\"} colours the groups. Any JSON value: the slot is \`frozen\`, so its shape is not checked here.",
-          "not": {
-            "$ref": "#/$defs/JexlString"
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "not": {
+              "$ref": "#/$defs/JexlString"
+            }
           }
         },
         "facet": {
-          "$ref": "#/$defs/Facet"
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/Facet"
+          }
         },
         "showTree": {
           "description": "show the cluster tree sidebar.",
-          "type": "boolean",
-          "default": true
+          "default": true,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "boolean"
+          }
         },
         "showBranchLength": {
           "description": "position tree nodes by branch length (dendrogram) rather than evenly by topology (cladogram).",
-          "type": "boolean",
-          "default": true
+          "default": true,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "boolean"
+          }
         },
         "showRowLabels": {
           "description": "draw the row name over the left of each row.",
-          "type": "boolean",
-          "default": true
+          "default": true,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "boolean"
+          }
         },
         "treeAreaWidth": {
           "description": "width in px of the tree sidebar, which a drag on its edge also writes.",
-          "type": "number",
-          "default": 80
+          "default": 80,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "number"
+          }
         }
       }
     },
@@ -4314,106 +5869,171 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "properties": {
             "value": {
               "description": "CSS colour of a read no field paints.",
-              "$ref": "#/$defs/CssColor"
+              "if": {
+                "type": "null"
+              },
+              "else": {
+                "$ref": "#/$defs/CssColor"
+              }
             },
             "field": {
               "description": "what colours a read: strand, firstOfPairStrand, pairOrientation, insertSize, insertSizeAndOrientation, mateRefName and mapq paint their own vocabulary or ramp; tags.XX reads a SAM tag and any other name a feature attribute.",
-              "$ref": "#/$defs/PlainString",
-              "default": ""
+              "default": "",
+              "if": {
+                "type": "null"
+              },
+              "else": {
+                "$ref": "#/$defs/PlainString"
+              }
             },
             "scale": {
               "description": "none paints value and keeps the field for a switch back; categorical a range colour per value; linear a ramp over a numeric tag or attribute between domainMin and domainMax; threshold the bins domain cuts; unset, threshold over insertSize and insertSizeAndOrientation and categorical over any other field.",
-              "enum": [
-                "none",
-                "categorical",
-                "linear",
-                "threshold"
-              ]
+              "if": {
+                "type": "null"
+              },
+              "else": {
+                "enum": [
+                  "none",
+                  "categorical",
+                  "linear",
+                  "threshold"
+                ]
+              }
             },
             "domain": {
               "description": "for a categorical scale, the values that take the range first, in order: a preset field's own levels (strand 1 and -1; pairOrientation LR, RL, RR and LL; insertSize short, normal and long; mapq 255 for unavailable; '' a read with no value) or a tag's values; for a threshold scale, the cut points, which over insertSize are the two between short, normal and long, where the sampled distribution otherwise sets them.",
-              "anyOf": [
-                {
-                  "type": "array",
-                  "items": {
-                    "anyOf": [
-                      {
-                        "type": "string"
-                      },
-                      {
-                        "type": "number"
-                      }
-                    ]
+              "if": {
+                "type": "null"
+              },
+              "else": {
+                "anyOf": [
+                  {
+                    "type": "array",
+                    "items": {
+                      "anyOf": [
+                        {
+                          "type": "string"
+                        },
+                        {
+                          "type": "number"
+                        }
+                      ]
+                    }
                   }
-                }
-              ]
+                ]
+              }
             },
             "domainMin": {
               "description": "the bottom of a linear or log scale's domain; unset follows the loaded values.",
-              "type": "number"
+              "if": {
+                "type": "null"
+              },
+              "else": {
+                "type": "number"
+              }
             },
             "domainMax": {
               "description": "the top of a linear or log scale's domain; unset follows the loaded values.",
-              "type": "number"
+              "if": {
+                "type": "null"
+              },
+              "else": {
+                "type": "number"
+              }
             },
             "domainQuantile": {
               "description": "the quantile an open end of a linear or log scale follows over the loaded values: 1 their extremes, 0.99 clips the outermost 1% at each end, each sign measured on its own.",
-              "type": "number",
-              "default": 1
+              "default": 1,
+              "if": {
+                "type": "null"
+              },
+              "else": {
+                "type": "number"
+              }
             },
             "range": {
               "description": "CSS colours a categorical scale hands its domain in order, or with no domain a preset field's levels in their own order, a threshold scale its bins, or a linear scale's stops, evenly spaced; a level left out keeps its default; empty is the field's own colours, the tag palette or viridis.",
-              "type": "array",
-              "items": {
-                "$ref": "#/$defs/CssColorEntry"
+              "if": {
+                "type": "null"
+              },
+              "else": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/$defs/CssColorEntry"
+                }
               }
             },
             "scheme": {
               "description": "a named ramp for a linear or log scale; range's colours, where it lists any, win over it.",
-              "enum": [
-                "viridis",
-                "magma",
-                "inferno",
-                "cividis",
-                "juicebox",
-                "fall",
-                "reds",
-                "blues",
-                "redblue",
-                "purpleorange",
-                "redgreyblue"
-              ]
+              "if": {
+                "type": "null"
+              },
+              "else": {
+                "enum": [
+                  "viridis",
+                  "magma",
+                  "inferno",
+                  "cividis",
+                  "juicebox",
+                  "fall",
+                  "reds",
+                  "blues",
+                  "redblue",
+                  "purpleorange",
+                  "redgreyblue"
+                ]
+              }
             },
             "reverse": {
               "description": "turns a linear or log scale's ramp round, so its last colour paints the bottom of the domain.",
-              "type": "boolean",
-              "default": false
+              "default": false,
+              "if": {
+                "type": "null"
+              },
+              "else": {
+                "type": "boolean"
+              }
             },
             "domainMid": {
               "description": "the value the ramp's middle stop sits at, so a diverging ramp centres somewhere other than the middle of the domain, both sides on one scale: the farther end of the domain reaches its end colour and equal distances from the middle take equal colours; unset, the stops are evenly spaced across it.",
-              "type": "number"
+              "if": {
+                "type": "null"
+              },
+              "else": {
+                "type": "number"
+              }
             },
             "labels": {
               "description": "what the key names each value domain names, in order, or with no domain a preset field's levels in their own order, a threshold scale's bins from the lowest; an empty or missing entry keeps its own name.",
-              "anyOf": [
-                {
-                  "type": "array",
-                  "items": {
-                    "anyOf": [
-                      {
-                        "type": "string"
-                      },
-                      {
-                        "type": "number"
-                      }
-                    ]
+              "if": {
+                "type": "null"
+              },
+              "else": {
+                "anyOf": [
+                  {
+                    "type": "array",
+                    "items": {
+                      "anyOf": [
+                        {
+                          "type": "string"
+                        },
+                        {
+                          "type": "number"
+                        }
+                      ]
+                    }
                   }
-                }
-              ]
+                ]
+              }
             },
             "title": {
               "description": "key title; unset keeps the display's own heading, \\"\\" draws none.",
-              "$ref": "#/$defs/PlainString"
+              "if": {
+                "type": "null"
+              },
+              "else": {
+                "$ref": "#/$defs/PlainString"
+              }
             }
           },
           "patternProperties": {
@@ -4443,16 +6063,26 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "properties": {
             "field": {
               "description": "the per-base variable painted over the reads: modifications, bisulfite, baseQuality or base; unset draws none.",
-              "enum": [
-                "baseQuality",
-                "base",
-                "modifications",
-                "bisulfite"
-              ]
+              "if": {
+                "type": "null"
+              },
+              "else": {
+                "enum": [
+                  "baseQuality",
+                  "base",
+                  "modifications",
+                  "bisulfite"
+                ]
+              }
             },
             "scale": {
               "description": "none draws no layer and keeps the field for a switch back.",
-              "const": "none"
+              "if": {
+                "type": "null"
+              },
+              "else": {
+                "const": "none"
+              }
             }
           },
           "patternProperties": {
@@ -4467,8 +6097,8 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "anyOf": [
         {
           "description": "Shorthand for \`{ \\"value\\": ... }\`.",
-          "type": "number",
-          "default": 0
+          "default": 0,
+          "type": "number"
         },
         {
           "title": "ValueScaleRule",
@@ -4477,17 +6107,32 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "properties": {
             "value": {
               "description": "the value the rule is drawn at.",
-              "type": "number",
-              "default": 0
+              "default": 0,
+              "if": {
+                "type": "null"
+              },
+              "else": {
+                "type": "number"
+              }
             },
             "color": {
               "description": "line and label colour; unset is the chrome’s own.",
-              "$ref": "#/$defs/CssColor"
+              "if": {
+                "type": "null"
+              },
+              "else": {
+                "$ref": "#/$defs/CssColor"
+              }
             },
             "label": {
               "description": "text at the rule's right-hand end.",
-              "$ref": "#/$defs/PlainString",
-              "default": ""
+              "default": "",
+              "if": {
+                "type": "null"
+              },
+              "else": {
+                "$ref": "#/$defs/PlainString"
+              }
             }
           },
           "patternProperties": {
@@ -4504,58 +6149,113 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "properties": {
         "type": {
           "description": "linear or log or symlog.",
-          "enum": [
-            "linear",
-            "log",
-            "symlog"
-          ],
-          "default": "linear"
+          "default": "linear",
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "enum": [
+              "linear",
+              "log",
+              "symlog"
+            ]
+          }
         },
         "domainMin": {
           "description": "pinned bottom of the axis; unset autoscales.",
-          "type": "number"
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "number"
+          }
         },
         "domainMax": {
           "description": "pinned top of the axis; unset autoscales.",
-          "type": "number"
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "number"
+          }
         },
         "zero": {
           "description": "an autoscaled linear or symlog axis reaches 0; off, it spans the loaded values.",
-          "type": "boolean",
-          "default": true
+          "default": true,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "boolean"
+          }
         },
         "autoscaleGroup": {
           "description": "tracks naming one group autoscale together.",
-          "$ref": "#/$defs/PlainString"
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/PlainString"
+          }
         },
         "symlogConstant": {
           "description": "width of symlog's linear region around zero.",
-          "type": "number",
-          "default": 1
+          "default": 1,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "number"
+          }
         },
         "domainQuantile": {
           "description": "fences outliers: 1 follows the extremes; below it an extreme past twice the span this quantile draws is cut there.",
-          "type": "number",
-          "default": 1
+          "default": 1,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "number"
+          }
         },
         "grid": {
           "description": "rule the plot at the tick positions.",
-          "type": "boolean",
-          "default": false
+          "default": false,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "boolean"
+          }
         },
         "minimalTicks": {
           "description": "label only the ends of the axis.",
-          "type": "boolean",
-          "default": false
+          "default": false,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "boolean"
+          }
         },
         "title": {
           "description": "axis caption; unset draws none.",
-          "$ref": "#/$defs/PlainString"
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/PlainString"
+          }
         },
         "rules": {
-          "type": "array",
-          "items": {
-            "$ref": "#/$defs/ValueScaleRule"
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "array",
+            "items": {
+              "$ref": "#/$defs/ValueScaleRule"
+            }
           }
         }
       },
@@ -4570,7 +6270,12 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "x-closed": true,
       "properties": {
         "y": {
-          "$ref": "#/$defs/ValueScale"
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/ValueScale"
+          }
         }
       },
       "patternProperties": {
@@ -4583,13 +6288,13 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "anyOf": [
         {
           "description": "Shorthand for \`{ \\"field\\": ... }\`.",
+          "default": "",
           "enum": [
             "",
             "insertSizeAndOrientation",
             "insertSize",
             "pairOrientation"
           ],
-          "default": "",
           "type": "string"
         },
         {
@@ -4599,13 +6304,18 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "properties": {
             "field": {
               "description": "the pair field the arcs paint: insertSizeAndOrientation, insertSize or pairOrientation; empty takes the reads' color field where an arc paints it.",
-              "enum": [
-                "",
-                "insertSizeAndOrientation",
-                "insertSize",
-                "pairOrientation"
-              ],
-              "default": ""
+              "default": "",
+              "if": {
+                "type": "null"
+              },
+              "else": {
+                "enum": [
+                  "",
+                  "insertSizeAndOrientation",
+                  "insertSize",
+                  "pairOrientation"
+                ]
+              }
             }
           },
           "patternProperties": {
@@ -4620,269 +6330,514 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "properties": {
         "fetchSizeLimit": {
           "description": "maximum data to attempt to download for a given track, used if adapter doesn't specify one.",
-          "type": "number",
-          "default": 1000000
+          "default": 1000000,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "number"
+          }
         },
         "forceLoad": {
           "description": "Declarative equivalent of the \\"Force load\\" button on the \\"too much data\\" banner: when true the display always renders, however large the region or dense the features. Off by default (the gate guards against huge downloads). Set it on a view no one can interact with — an embedded / notebook view, or a screenshot — where the region is known and you want it drawn without a click.",
-          "type": "boolean",
-          "default": false
+          "default": false,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "boolean"
+          }
         },
         "height": {
           "description": "Starting height in pixels for the coverage band and pileup together; heightMode decides what a pileup deeper than this does.",
-          "type": "number",
-          "default": 250
+          "default": 250,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "number"
+          }
         },
         "mouseover": {
           "description": "text to display when the cursor hovers over a feature.",
-          "$ref": "#/$defs/StringOrJexl",
-          "default": "jexl:get(feature,'_mouseOver')||get(feature,'name')||get(feature,'function')||get(feature,'id')"
+          "default": "jexl:get(feature,'_mouseOver')||get(feature,'name')||get(feature,'function')||get(feature,'id')",
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/StringOrJexl"
+          }
         },
         "featureHeight": {
           "description": "Height of each feature (read) in pixels. Defaults to 7.",
-          "type": "number",
-          "default": 7
+          "default": 7,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "number"
+          }
         },
         "heightMode": {
           "description": "Track-sizing strategy — how the track responds when there are more reads than fit (shared vocabulary with the canvas feature display, exposed in the \\"Track sizing\\" menu). \`fixed\` (the default) keeps \`featureHeight\` and scrolls; \`grow\` expands the track to show every read at the configured height; \`fit\` squeezes reads so every uncollapsed group fills the display without scrolling. Orthogonal to the per-read size set by \`featureHeight\`.",
-          "enum": [
-            "fixed",
-            "grow",
-            "fit"
-          ],
-          "default": "fixed"
+          "default": "fixed",
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "enum": [
+              "fixed",
+              "grow",
+              "fit"
+            ]
+          }
         },
         "growMaxHeight": {
           "description": "Ceiling in pixels for the \\"autogrow track height\\" sizing mode; a pileup deeper than this grows to the ceiling and scrolls the rest. Does not apply to the fixed or fit modes, and does not limit how much is laid out (see maxHeight).",
-          "type": "number",
-          "default": 800
+          "default": 800,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "number"
+          }
         },
         "densityTier": {
           "description": "when to draw the features-per-bin density band in place of features: \\"auto\\" swaps to it where the region is too large to fetch, \\"features\\" never does and keeps the banner, \\"density\\" always does. Needs a density source on the adapter (its densityAdapter slot).",
-          "enum": [
-            "auto",
-            "features",
-            "density"
-          ],
-          "default": "auto"
+          "default": "auto",
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "enum": [
+              "auto",
+              "features",
+              "density"
+            ]
+          }
         },
         "densityTierBpPerPx": {
           "description": "in \\"auto\\" mode, also draw the density band from this many bp per pixel outward, before the region is too large to fetch; 0 leaves the swap to the fetch-size gate alone.",
-          "type": "number",
-          "default": 0
+          "default": 0,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "number"
+          }
         },
         "readConnectionsLineWidth": {
           "description": "Line width for read-connection arcs/lines in pixels.",
-          "type": "number",
-          "default": 1
+          "default": 1,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "number"
+          }
         },
         "showSashimiLabels": {
           "description": "Draw the supporting-read count on each sashimi arc.",
-          "type": "boolean",
-          "default": false
+          "default": false,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "boolean"
+          }
         },
         "hideNonCanonicalJunctions": {
           "description": "Hide sashimi arcs whose splice-site motif is none of GT-AG, GC-AG or AT-AC. Read off the reference under each junction, so it needs a sequence adapter; a junction whose motif could not be read stays.",
-          "type": "boolean",
-          "default": false
+          "default": false,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "boolean"
+          }
         },
         "maxHeight": {
           "description": "Maximum pixel height of the pileup layout; reads beyond this are not stacked (coverage still reflects true depth).",
-          "type": "number",
-          "default": 6000
+          "default": 6000,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "number"
+          }
         },
         "color": {
-          "$ref": "#/$defs/AlignmentsColor"
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/AlignmentsColor"
+          }
         },
         "baseColor": {
-          "$ref": "#/$defs/AlignmentsBaseColor"
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/AlignmentsBaseColor"
+          }
         },
         "modifications": {
           "description": "Settings of the modifications and bisulfite color fields. Any JSON value: the slot is \`frozen\`, so its shape is not checked here.",
-          "not": {
-            "$ref": "#/$defs/JexlString"
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "not": {
+              "$ref": "#/$defs/JexlString"
+            }
           }
         },
         "filterBy": {
           "description": "Filter settings for reads. Any JSON value: the slot is \`frozen\`, so its shape is not checked here.",
-          "not": {
-            "$ref": "#/$defs/JexlString"
-          },
           "default": {
             "flagInclude": 0,
             "flagExclude": 1540
+          },
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "not": {
+              "$ref": "#/$defs/JexlString"
+            }
           }
         },
         "facet": {
-          "$ref": "#/$defs/Facet"
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/Facet"
+          }
         },
         "collapseGroupRows": {
           "description": "Draw each group as a single row rather than a stack.",
-          "type": "boolean",
-          "default": false
+          "default": false,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "boolean"
+          }
         },
         "scales": {
-          "$ref": "#/$defs/Scales"
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/Scales"
+          }
         },
         "mismatchAlpha": {
           "description": "Fade mismatch bases by their per-base Phred quality. Defaults to off.",
-          "type": "boolean",
-          "default": false
+          "default": false,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "boolean"
+          }
         },
         "showLowFreqMismatches": {
           "description": "Draw sub-pixel mismatches, insertions and clip bars in the pileup at full opacity instead of fading the ones below the depth-dependent frequency threshold. Read through the \`filterMismatchesByFrequency\` getter, which is this in the polarity the renderers and hit-test take. Does not affect the coverage band (see runCoveragePipeline).",
-          "type": "boolean",
-          "default": false
+          "default": false,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "boolean"
+          }
         },
         "showLegend": {
           "description": "Show the color-scheme legend overlay. Defaults to off.",
-          "type": "boolean",
-          "default": false
+          "default": false,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "boolean"
+          }
         },
         "sortedBy": {
           "description": "Sort reads at a genomic position, e.g. by base, strand, or a tag (unset = unsorted). Any JSON value: the slot is \`frozen\`, so its shape is not checked here.",
-          "not": {
-            "$ref": "#/$defs/JexlString"
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "not": {
+              "$ref": "#/$defs/JexlString"
+            }
           }
         },
         "layoutOrder": {
           "description": "Pileup row order where no sort applies: by start (position), widest first (length), or spliced reads first (spliced).",
-          "enum": [
-            "position",
-            "length",
-            "spliced"
-          ],
-          "default": "position"
+          "default": "position",
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "enum": [
+              "position",
+              "length",
+              "spliced"
+            ]
+          }
         },
         "showOutline": {
           "description": "Draw an outline around each read (unset = auto by mode). Any JSON value: the slot is \`frozen\`, so its shape is not checked here.",
-          "not": {
-            "$ref": "#/$defs/JexlString"
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "not": {
+              "$ref": "#/$defs/JexlString"
+            }
           }
         },
         "unit": {
           "description": "What one row stands for: a read, or a chain of a read, its mate and its split segments (the \\"View as pairs\\" menu row).",
-          "enum": [
-            "read",
-            "chain"
-          ],
-          "default": "read"
+          "default": "read",
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "enum": [
+              "read",
+              "chain"
+            ]
+          }
         },
         "showBezierConnections": {
           "description": "Draw paired-read connection curves over the pileup.",
-          "type": "boolean",
-          "default": false
+          "default": false,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "boolean"
+          }
         },
         "showCoverage": {
           "description": "Draw the coverage histogram band.",
-          "type": "boolean",
-          "default": true
+          "default": true,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "boolean"
+          }
         },
         "showPileup": {
           "description": "Draw the stacked-read pileup band.",
-          "type": "boolean",
-          "default": true
+          "default": true,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "boolean"
+          }
         },
         "coverageHeight": {
           "description": "Height of the coverage band in pixels.",
-          "type": "number",
-          "default": 45
+          "default": 45,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "number"
+          }
         },
         "coverageSnpMinFrequency": {
           "description": "Hide a coverage-band allele segment whose share of that position's depth is below this fraction, so the band stops painting a sliver for every sequencing error at high depth. 0 (the default) colors every mismatch. Distinct from \`showLowFreqMismatches\`, which turns OFF the pileup's fade of sub-pixel marks against a depth-dependent threshold; this is a flat allele-fraction floor on the band, and the grey depth bar still shows through where a segment is hidden.",
-          "type": "number",
-          "default": 0
+          "default": 0,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "number"
+          }
         },
         "showMismatches": {
           "description": "Draw how reads differ from the reference: per-base mismatches, insertion markers and deletion bars. Not the intron centerlines — a spliced read is drawn as separate exon blocks, so the line joining them says they are one read rather than several, and it draws either way (PILEUP_MARKS).",
-          "type": "boolean",
-          "default": true
+          "default": true,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "boolean"
+          }
         },
         "showInterbaseIndicators": {
           "description": "Draw interbase insertion/clip count bars and indicator triangles.",
-          "type": "boolean",
-          "default": true
+          "default": true,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "boolean"
+          }
         },
         "flipStrandLongReadChains": {
           "description": "Color split segments relative to the predominant orientation of the reads on screen, rather than by their own mapping strand.",
-          "type": "boolean",
-          "default": true
+          "default": true,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "boolean"
+          }
         },
         "colorSupplementaryChains": {
           "description": "Paint every chain carrying a supplementary segment a flat supplementary color, paired or not.",
-          "type": "boolean",
-          "default": false
+          "default": false,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "boolean"
+          }
         },
         "drawInter": {
           "description": "Draw inter-chromosomal read-connection arcs.",
-          "type": "boolean",
-          "default": true
+          "default": true,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "boolean"
+          }
         },
         "drawProperPairArcs": {
           "description": "Draw arcs for ordinary concordant pairs. Uncheck to leave only the arcs that carry a category (abnormal insert size or orientation, split junctions), which on deep coverage is the difference between a readable band and a solid mass.",
-          "type": "boolean",
-          "default": true
+          "default": true,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "boolean"
+          }
         },
         "minInterchromSupport": {
           "description": "Hide inter-chromosomal connections supported by fewer than this many reads clustered at the same breakpoint.",
-          "type": "number",
-          "default": 2
+          "default": 2,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "number"
+          }
         },
         "drawLongRange": {
           "description": "Draw long-range read-connection arcs.",
-          "type": "boolean",
-          "default": true
+          "default": true,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "boolean"
+          }
         },
         "arcColor": {
-          "$ref": "#/$defs/AlignmentsArcColor"
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/AlignmentsArcColor"
+          }
         },
         "readConnections": {
           "description": "Read-connection rendering mode (mate pairs + split reads).",
-          "enum": [
-            "off",
-            "arc",
-            "cloud"
-          ],
-          "default": "off"
+          "default": "off",
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "enum": [
+              "off",
+              "arc",
+              "cloud"
+            ]
+          }
         },
         "readConnectionsDown": {
           "description": "Draw read connections below the coverage band. Defaults to on.",
-          "type": "boolean",
-          "default": true
+          "default": true,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "boolean"
+          }
         },
         "showSashimiArcs": {
           "description": "Draw sashimi (splice-junction) arcs.",
-          "type": "boolean",
-          "default": true
+          "default": true,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "boolean"
+          }
         },
         "sashimiArcsMode": {
           "description": "Sashimi junction-arc placement.",
-          "enum": [
-            "up",
-            "down",
-            "auto"
-          ],
-          "default": "up"
+          "default": "up",
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "enum": [
+              "up",
+              "down",
+              "auto"
+            ]
+          }
         },
         "minSashimiScore": {
           "description": "Hide sashimi arcs with fewer than this many supporting reads.",
-          "type": "number",
-          "default": 2
+          "default": 2,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "number"
+          }
         },
         "sashimiArcsHeight": {
           "description": "Height of the sashimi-arc band in pixels.",
-          "type": "number",
-          "default": 40
+          "default": 40,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "number"
+          }
         },
         "readConnectionsHeight": {
           "description": "Height of the read-connection band in pixels.",
-          "type": "number",
-          "default": 35
+          "default": 35,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "number"
+          }
         },
         "showSoftClipping": {
           "description": "Draw soft-clipped read portions. Defaults to off.",
-          "type": "boolean",
-          "default": false
+          "default": false,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "boolean"
+          }
         },
         "colorBy": {
           "deprecated": true,
@@ -4929,8 +6884,8 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "anyOf": [
         {
           "description": "Shorthand for \`{ \\"value\\": ... }\`.",
-          "$ref": "#/$defs/CssColorOrJexl",
           "default": "rgba(255,133,0,0.32)",
+          "$ref": "#/$defs/CssColorOrJexl",
           "type": "string"
         },
         {
@@ -4940,68 +6895,103 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "properties": {
             "value": {
               "description": "CSS colour or jexl callback for every chord.",
-              "$ref": "#/$defs/CssColorOrJexl",
-              "default": "rgba(255,133,0,0.32)"
+              "default": "rgba(255,133,0,0.32)",
+              "if": {
+                "type": "null"
+              },
+              "else": {
+                "$ref": "#/$defs/CssColorOrJexl"
+              }
             },
             "field": {
               "description": "a record field, svType say, or a jexl expression over feature, whose values each paint one range colour with a key.",
-              "$ref": "#/$defs/FeatureField",
-              "default": ""
+              "default": "",
+              "if": {
+                "type": "null"
+              },
+              "else": {
+                "$ref": "#/$defs/FeatureField"
+              }
             },
             "scale": {
               "description": "none paints value and keeps the field for a switch back; categorical a range colour per value of field; threshold a range colour per interval between the cut points in domain; unset follows field.",
-              "enum": [
-                "none",
-                "categorical",
-                "threshold"
-              ]
+              "if": {
+                "type": "null"
+              },
+              "else": {
+                "enum": [
+                  "none",
+                  "categorical",
+                  "threshold"
+                ]
+              }
             },
             "domain": {
               "description": "the values that take the range first, in order; under threshold, the ascending cut points, a value on a cut taking the interval above it.",
-              "anyOf": [
-                {
-                  "type": "array",
-                  "items": {
-                    "anyOf": [
-                      {
-                        "type": "string"
-                      },
-                      {
-                        "type": "number"
-                      }
-                    ]
+              "if": {
+                "type": "null"
+              },
+              "else": {
+                "anyOf": [
+                  {
+                    "type": "array",
+                    "items": {
+                      "anyOf": [
+                        {
+                          "type": "string"
+                        },
+                        {
+                          "type": "number"
+                        }
+                      ]
+                    }
                   }
-                }
-              ]
+                ]
+              }
             },
             "range": {
               "description": "CSS colours the domain takes, in order, continuing into the default palette past its end; under threshold one per interval, one more than the cuts.",
-              "type": "array",
-              "items": {
-                "$ref": "#/$defs/CssColorEntry"
+              "if": {
+                "type": "null"
+              },
+              "else": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/$defs/CssColorEntry"
+                }
               }
             },
             "labels": {
               "description": "what the key names each domain value, one each in order, or under threshold each interval from the lowest; one past the list keeps its own name.",
-              "anyOf": [
-                {
-                  "type": "array",
-                  "items": {
-                    "anyOf": [
-                      {
-                        "type": "string"
-                      },
-                      {
-                        "type": "number"
-                      }
-                    ]
+              "if": {
+                "type": "null"
+              },
+              "else": {
+                "anyOf": [
+                  {
+                    "type": "array",
+                    "items": {
+                      "anyOf": [
+                        {
+                          "type": "string"
+                        },
+                        {
+                          "type": "number"
+                        }
+                      ]
+                    }
                   }
-                }
-              ]
+                ]
+              }
             },
             "title": {
               "description": "key title; unset keeps the display's own heading, \\"\\" draws none.",
-              "$ref": "#/$defs/PlainString"
+              "if": {
+                "type": "null"
+              },
+              "else": {
+                "$ref": "#/$defs/PlainString"
+              }
             }
           },
           "patternProperties": {
@@ -5016,31 +7006,61 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "properties": {
         "bezierRadiusRatio": {
           "description": "how far from the center a chord across the circle passes, as a fraction of the circle's radius: 0 draws it straight through the center, and a larger value keeps every chord nearer the rim. A shorter chord bows less, in proportion to its span.",
-          "type": "number",
-          "default": 0.1
+          "default": 0.1,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "number"
+          }
         },
         "onChordClick": {
           "description": "a jexl callback run when a chord is clicked, in place of opening the record's details.",
-          "$ref": "#/$defs/BooleanOrJexl",
-          "default": false
+          "default": false,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/BooleanOrJexl"
+          }
         },
         "color": {
-          "$ref": "#/$defs/ChordColor"
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/ChordColor"
+          }
         },
         "opacity": {
           "description": "the alpha every resting chord draws at, over its colour's own.",
-          "type": "number",
-          "default": 1
+          "default": 1,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "number"
+          }
         },
         "colorSelected": {
           "description": "the line color of a chord that has been selected.",
-          "$ref": "#/$defs/CssColorOrJexl",
-          "default": "black"
+          "default": "black",
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/CssColorOrJexl"
+          }
         },
         "colorHover": {
           "description": "the line color of a chord that is being hovered over with the mouse.",
-          "$ref": "#/$defs/CssColorOrJexl",
-          "default": "#555"
+          "default": "#555",
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/CssColorOrJexl"
+          }
         },
         "strokeColor": {
           "deprecated": true,
@@ -5089,18 +7109,33 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "properties": {
         "bezierRadiusRatio": {
           "description": "how far from the center a chord across the circle passes, as a fraction of the circle's radius: 0 draws it straight through the center, and a larger value keeps every chord nearer the rim. A shorter chord bows less, in proportion to its span.",
-          "type": "number",
-          "default": 0.1
+          "default": 0.1,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "number"
+          }
         },
         "colorSelected": {
           "description": "the fill color of a ribbon that has been selected.",
-          "$ref": "#/$defs/CssColorOrJexl",
-          "default": "rgba(0,0,0,0.6)"
+          "default": "rgba(0,0,0,0.6)",
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/CssColorOrJexl"
+          }
         },
         "colorHover": {
           "description": "the fill color of a ribbon that is being hovered over with the mouse.",
-          "$ref": "#/$defs/CssColorOrJexl",
-          "default": "rgba(85,85,85,0.6)"
+          "default": "rgba(85,85,85,0.6)",
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/CssColorOrJexl"
+          }
         }
       }
     },
@@ -5199,106 +7234,171 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "properties": {
             "value": {
               "description": "CSS colour of a read no field paints.",
-              "$ref": "#/$defs/CssColor"
+              "if": {
+                "type": "null"
+              },
+              "else": {
+                "$ref": "#/$defs/CssColor"
+              }
             },
             "field": {
               "description": "what colours a read: strand, firstOfPairStrand, pairOrientation, insertSize, insertSizeAndOrientation, mateRefName and mapq paint their own vocabulary or ramp; tags.XX reads a SAM tag and any other name a feature attribute.",
-              "$ref": "#/$defs/PlainString",
-              "default": "strand"
+              "default": "strand",
+              "if": {
+                "type": "null"
+              },
+              "else": {
+                "$ref": "#/$defs/PlainString"
+              }
             },
             "scale": {
               "description": "none paints value and keeps the field for a switch back; categorical a range colour per value; linear a ramp over a numeric tag or attribute between domainMin and domainMax; threshold the bins domain cuts; unset, threshold over insertSize and insertSizeAndOrientation and categorical over any other field.",
-              "enum": [
-                "none",
-                "categorical",
-                "linear",
-                "threshold"
-              ]
+              "if": {
+                "type": "null"
+              },
+              "else": {
+                "enum": [
+                  "none",
+                  "categorical",
+                  "linear",
+                  "threshold"
+                ]
+              }
             },
             "domain": {
               "description": "for a categorical scale, the values that take the range first, in order: a preset field's own levels (strand 1 and -1; pairOrientation LR, RL, RR and LL; insertSize short, normal and long; mapq 255 for unavailable; '' a read with no value) or a tag's values; for a threshold scale, the cut points, which over insertSize are the two between short, normal and long, where the sampled distribution otherwise sets them.",
-              "anyOf": [
-                {
-                  "type": "array",
-                  "items": {
-                    "anyOf": [
-                      {
-                        "type": "string"
-                      },
-                      {
-                        "type": "number"
-                      }
-                    ]
+              "if": {
+                "type": "null"
+              },
+              "else": {
+                "anyOf": [
+                  {
+                    "type": "array",
+                    "items": {
+                      "anyOf": [
+                        {
+                          "type": "string"
+                        },
+                        {
+                          "type": "number"
+                        }
+                      ]
+                    }
                   }
-                }
-              ]
+                ]
+              }
             },
             "domainMin": {
               "description": "the bottom of a linear or log scale's domain; unset follows the loaded values.",
-              "type": "number"
+              "if": {
+                "type": "null"
+              },
+              "else": {
+                "type": "number"
+              }
             },
             "domainMax": {
               "description": "the top of a linear or log scale's domain; unset follows the loaded values.",
-              "type": "number"
+              "if": {
+                "type": "null"
+              },
+              "else": {
+                "type": "number"
+              }
             },
             "domainQuantile": {
               "description": "the quantile an open end of a linear or log scale follows over the loaded values: 1 their extremes, 0.99 clips the outermost 1% at each end, each sign measured on its own.",
-              "type": "number",
-              "default": 1
+              "default": 1,
+              "if": {
+                "type": "null"
+              },
+              "else": {
+                "type": "number"
+              }
             },
             "range": {
               "description": "CSS colours a categorical scale hands its domain in order, or with no domain a preset field's levels in their own order, a threshold scale its bins, or a linear scale's stops, evenly spaced; a level left out keeps its default; empty is the field's own colours, the tag palette or viridis.",
-              "type": "array",
-              "items": {
-                "$ref": "#/$defs/CssColorEntry"
+              "if": {
+                "type": "null"
+              },
+              "else": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/$defs/CssColorEntry"
+                }
               }
             },
             "scheme": {
               "description": "a named ramp for a linear or log scale; range's colours, where it lists any, win over it.",
-              "enum": [
-                "viridis",
-                "magma",
-                "inferno",
-                "cividis",
-                "juicebox",
-                "fall",
-                "reds",
-                "blues",
-                "redblue",
-                "purpleorange",
-                "redgreyblue"
-              ]
+              "if": {
+                "type": "null"
+              },
+              "else": {
+                "enum": [
+                  "viridis",
+                  "magma",
+                  "inferno",
+                  "cividis",
+                  "juicebox",
+                  "fall",
+                  "reds",
+                  "blues",
+                  "redblue",
+                  "purpleorange",
+                  "redgreyblue"
+                ]
+              }
             },
             "reverse": {
               "description": "turns a linear or log scale's ramp round, so its last colour paints the bottom of the domain.",
-              "type": "boolean",
-              "default": false
+              "default": false,
+              "if": {
+                "type": "null"
+              },
+              "else": {
+                "type": "boolean"
+              }
             },
             "domainMid": {
               "description": "the value the ramp's middle stop sits at, so a diverging ramp centres somewhere other than the middle of the domain, both sides on one scale: the farther end of the domain reaches its end colour and equal distances from the middle take equal colours; unset, the stops are evenly spaced across it.",
-              "type": "number"
+              "if": {
+                "type": "null"
+              },
+              "else": {
+                "type": "number"
+              }
             },
             "labels": {
               "description": "what the key names each value domain names, in order, or with no domain a preset field's levels in their own order, a threshold scale's bins from the lowest; an empty or missing entry keeps its own name.",
-              "anyOf": [
-                {
-                  "type": "array",
-                  "items": {
-                    "anyOf": [
-                      {
-                        "type": "string"
-                      },
-                      {
-                        "type": "number"
-                      }
-                    ]
+              "if": {
+                "type": "null"
+              },
+              "else": {
+                "anyOf": [
+                  {
+                    "type": "array",
+                    "items": {
+                      "anyOf": [
+                        {
+                          "type": "string"
+                        },
+                        {
+                          "type": "number"
+                        }
+                      ]
+                    }
                   }
-                }
-              ]
+                ]
+              }
             },
             "title": {
               "description": "key title; unset keeps the display's own heading, \\"\\" draws none.",
-              "$ref": "#/$defs/PlainString"
+              "if": {
+                "type": "null"
+              },
+              "else": {
+                "$ref": "#/$defs/PlainString"
+              }
             }
           },
           "patternProperties": {
@@ -5313,283 +7413,538 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "properties": {
         "fetchSizeLimit": {
           "description": "maximum data to attempt to download for a given track, used if adapter doesn't specify one.",
-          "type": "number",
-          "default": 1000000
+          "default": 1000000,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "number"
+          }
         },
         "forceLoad": {
           "description": "Declarative equivalent of the \\"Force load\\" button on the \\"too much data\\" banner: when true the display always renders, however large the region or dense the features. Off by default (the gate guards against huge downloads). Set it on a view no one can interact with — an embedded / notebook view, or a screenshot — where the region is known and you want it drawn without a click.",
-          "type": "boolean",
-          "default": false
+          "default": false,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "boolean"
+          }
         },
         "height": {
           "description": "Starting height in pixels for the coverage band and pileup together; heightMode decides what a pileup deeper than this does.",
-          "type": "number",
-          "default": 250
+          "default": 250,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "number"
+          }
         },
         "mouseover": {
           "description": "text to display when the cursor hovers over a feature.",
-          "$ref": "#/$defs/StringOrJexl",
-          "default": "jexl:lgvSyntenyTooltip(feature)"
+          "default": "jexl:lgvSyntenyTooltip(feature)",
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/StringOrJexl"
+          }
         },
         "featureHeight": {
           "description": "Height of each feature (read) in pixels. Defaults to 7.",
-          "type": "number",
-          "default": 7
+          "default": 7,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "number"
+          }
         },
         "heightMode": {
           "description": "Track-sizing strategy — how the track responds when there are more reads than fit (shared vocabulary with the canvas feature display, exposed in the \\"Track sizing\\" menu). \`fixed\` (the default) keeps \`featureHeight\` and scrolls; \`grow\` expands the track to show every read at the configured height; \`fit\` squeezes reads so every uncollapsed group fills the display without scrolling. Orthogonal to the per-read size set by \`featureHeight\`.",
-          "enum": [
-            "fixed",
-            "grow",
-            "fit"
-          ],
-          "default": "fixed"
+          "default": "fixed",
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "enum": [
+              "fixed",
+              "grow",
+              "fit"
+            ]
+          }
         },
         "growMaxHeight": {
           "description": "Ceiling in pixels for the \\"autogrow track height\\" sizing mode; a pileup deeper than this grows to the ceiling and scrolls the rest. Does not apply to the fixed or fit modes, and does not limit how much is laid out (see maxHeight).",
-          "type": "number",
-          "default": 800
+          "default": 800,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "number"
+          }
         },
         "densityTier": {
           "description": "when to draw the features-per-bin density band in place of features: \\"auto\\" swaps to it where the region is too large to fetch, \\"features\\" never does and keeps the banner, \\"density\\" always does. Needs a density source on the adapter (its densityAdapter slot).",
-          "enum": [
-            "auto",
-            "features",
-            "density"
-          ],
-          "default": "auto"
+          "default": "auto",
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "enum": [
+              "auto",
+              "features",
+              "density"
+            ]
+          }
         },
         "densityTierBpPerPx": {
           "description": "in \\"auto\\" mode, also draw the density band from this many bp per pixel outward, before the region is too large to fetch; 0 leaves the swap to the fetch-size gate alone.",
-          "type": "number",
-          "default": 0
+          "default": 0,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "number"
+          }
         },
         "readConnectionsLineWidth": {
           "description": "Line width for read-connection arcs/lines in pixels.",
-          "type": "number",
-          "default": 1
+          "default": 1,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "number"
+          }
         },
         "showSashimiLabels": {
           "description": "Draw the supporting-read count on each sashimi arc.",
-          "type": "boolean",
-          "default": false
+          "default": false,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "boolean"
+          }
         },
         "hideNonCanonicalJunctions": {
           "description": "Hide sashimi arcs whose splice-site motif is none of GT-AG, GC-AG or AT-AC. Read off the reference under each junction, so it needs a sequence adapter; a junction whose motif could not be read stays.",
-          "type": "boolean",
-          "default": false
+          "default": false,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "boolean"
+          }
         },
         "maxHeight": {
           "description": "Maximum pixel height of the pileup layout; reads beyond this are not stacked (coverage still reflects true depth).",
-          "type": "number",
-          "default": 6000
+          "default": 6000,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "number"
+          }
         },
         "color": {
-          "$ref": "#/$defs/LGVSyntenyColor"
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/LGVSyntenyColor"
+          }
         },
         "baseColor": {
-          "$ref": "#/$defs/AlignmentsBaseColor"
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/AlignmentsBaseColor"
+          }
         },
         "modifications": {
           "description": "Settings of the modifications and bisulfite color fields. Any JSON value: the slot is \`frozen\`, so its shape is not checked here.",
-          "not": {
-            "$ref": "#/$defs/JexlString"
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "not": {
+              "$ref": "#/$defs/JexlString"
+            }
           }
         },
         "filterBy": {
           "description": "Filter settings for reads. Any JSON value: the slot is \`frozen\`, so its shape is not checked here.",
-          "not": {
-            "$ref": "#/$defs/JexlString"
-          },
           "default": {
             "flagInclude": 0,
             "flagExclude": 1540
+          },
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "not": {
+              "$ref": "#/$defs/JexlString"
+            }
           }
         },
         "facet": {
-          "$ref": "#/$defs/Facet"
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/Facet"
+          }
         },
         "collapseGroupRows": {
           "description": "Draw each group as a single row rather than a stack.",
-          "type": "boolean",
-          "default": true
+          "default": true,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "boolean"
+          }
         },
         "scales": {
-          "$ref": "#/$defs/Scales"
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/Scales"
+          }
         },
         "mismatchAlpha": {
           "description": "Fade mismatch bases by their per-base Phred quality. Defaults to off.",
-          "type": "boolean",
-          "default": false
+          "default": false,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "boolean"
+          }
         },
         "showLowFreqMismatches": {
           "description": "Draw sub-pixel mismatches, insertions and clip bars in the pileup at full opacity instead of fading the ones below the depth-dependent frequency threshold. Read through the \`filterMismatchesByFrequency\` getter, which is this in the polarity the renderers and hit-test take. Does not affect the coverage band (see runCoveragePipeline).",
-          "type": "boolean",
-          "default": false
+          "default": false,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "boolean"
+          }
         },
         "showLegend": {
           "description": "Show the color-scheme legend overlay. Defaults to off.",
-          "type": "boolean",
-          "default": false
+          "default": false,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "boolean"
+          }
         },
         "sortedBy": {
           "description": "Sort reads at a genomic position, e.g. by base, strand, or a tag (unset = unsorted). Any JSON value: the slot is \`frozen\`, so its shape is not checked here.",
-          "not": {
-            "$ref": "#/$defs/JexlString"
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "not": {
+              "$ref": "#/$defs/JexlString"
+            }
           }
         },
         "layoutOrder": {
           "description": "Row order where no sort applies: by start (position), widest first (length), or spliced first (spliced).",
-          "enum": [
-            "position",
-            "length",
-            "spliced"
-          ],
-          "default": "length"
+          "default": "length",
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "enum": [
+              "position",
+              "length",
+              "spliced"
+            ]
+          }
         },
         "showOutline": {
           "description": "Draw an outline around each read (unset = auto by mode). Any JSON value: the slot is \`frozen\`, so its shape is not checked here.",
-          "not": {
-            "$ref": "#/$defs/JexlString"
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "not": {
+              "$ref": "#/$defs/JexlString"
+            }
           }
         },
         "unit": {
           "description": "What one row stands for: a read, or a chain of a read, its mate and its split segments (the \\"View as pairs\\" menu row).",
-          "enum": [
-            "read",
-            "chain"
-          ],
-          "default": "read"
+          "default": "read",
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "enum": [
+              "read",
+              "chain"
+            ]
+          }
         },
         "showBezierConnections": {
           "description": "Draw paired-read connection curves over the pileup.",
-          "type": "boolean",
-          "default": false
+          "default": false,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "boolean"
+          }
         },
         "showCoverage": {
           "description": "Draw the coverage histogram band.",
-          "type": "boolean",
-          "default": false
+          "default": false,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "boolean"
+          }
         },
         "showPileup": {
           "description": "Draw the stacked-read pileup band.",
-          "type": "boolean",
-          "default": true
+          "default": true,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "boolean"
+          }
         },
         "coverageHeight": {
           "description": "Height of the coverage band in pixels.",
-          "type": "number",
-          "default": 45
+          "default": 45,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "number"
+          }
         },
         "coverageSnpMinFrequency": {
           "description": "Hide a coverage-band allele segment whose share of that position's depth is below this fraction, so the band stops painting a sliver for every sequencing error at high depth. 0 (the default) colors every mismatch. Distinct from \`showLowFreqMismatches\`, which turns OFF the pileup's fade of sub-pixel marks against a depth-dependent threshold; this is a flat allele-fraction floor on the band, and the grey depth bar still shows through where a segment is hidden.",
-          "type": "number",
-          "default": 0
+          "default": 0,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "number"
+          }
         },
         "showMismatches": {
           "description": "Draw how reads differ from the reference: per-base mismatches, insertion markers and deletion bars. Not the intron centerlines — a spliced read is drawn as separate exon blocks, so the line joining them says they are one read rather than several, and it draws either way (PILEUP_MARKS).",
-          "type": "boolean",
-          "default": true
+          "default": true,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "boolean"
+          }
         },
         "showInterbaseIndicators": {
           "description": "Draw interbase insertion/clip count bars and indicator triangles.",
-          "type": "boolean",
-          "default": true
+          "default": true,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "boolean"
+          }
         },
         "flipStrandLongReadChains": {
           "description": "Color split segments relative to the predominant orientation of the reads on screen, rather than by their own mapping strand.",
-          "type": "boolean",
-          "default": true
+          "default": true,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "boolean"
+          }
         },
         "colorSupplementaryChains": {
           "description": "Paint every chain carrying a supplementary segment a flat supplementary color, paired or not.",
-          "type": "boolean",
-          "default": false
+          "default": false,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "boolean"
+          }
         },
         "drawInter": {
           "description": "Draw inter-chromosomal read-connection arcs.",
-          "type": "boolean",
-          "default": true
+          "default": true,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "boolean"
+          }
         },
         "drawProperPairArcs": {
           "description": "Draw arcs for ordinary concordant pairs. Uncheck to leave only the arcs that carry a category (abnormal insert size or orientation, split junctions), which on deep coverage is the difference between a readable band and a solid mass.",
-          "type": "boolean",
-          "default": true
+          "default": true,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "boolean"
+          }
         },
         "minInterchromSupport": {
           "description": "Hide inter-chromosomal connections supported by fewer than this many reads clustered at the same breakpoint.",
-          "type": "number",
-          "default": 2
+          "default": 2,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "number"
+          }
         },
         "drawLongRange": {
           "description": "Draw long-range read-connection arcs.",
-          "type": "boolean",
-          "default": true
+          "default": true,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "boolean"
+          }
         },
         "arcColor": {
-          "$ref": "#/$defs/AlignmentsArcColor"
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/AlignmentsArcColor"
+          }
         },
         "readConnections": {
           "description": "Read-connection rendering mode (mate pairs + split reads).",
-          "enum": [
-            "off",
-            "arc",
-            "cloud"
-          ],
-          "default": "off"
+          "default": "off",
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "enum": [
+              "off",
+              "arc",
+              "cloud"
+            ]
+          }
         },
         "readConnectionsDown": {
           "description": "Draw read connections below the coverage band. Defaults to on.",
-          "type": "boolean",
-          "default": true
+          "default": true,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "boolean"
+          }
         },
         "showSashimiArcs": {
           "description": "Draw sashimi (splice-junction) arcs.",
-          "type": "boolean",
-          "default": true
+          "default": true,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "boolean"
+          }
         },
         "sashimiArcsMode": {
           "description": "Sashimi junction-arc placement.",
-          "enum": [
-            "up",
-            "down",
-            "auto"
-          ],
-          "default": "up"
+          "default": "up",
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "enum": [
+              "up",
+              "down",
+              "auto"
+            ]
+          }
         },
         "minSashimiScore": {
           "description": "Hide sashimi arcs with fewer than this many supporting reads.",
-          "type": "number",
-          "default": 2
+          "default": 2,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "number"
+          }
         },
         "sashimiArcsHeight": {
           "description": "Height of the sashimi-arc band in pixels.",
-          "type": "number",
-          "default": 40
+          "default": 40,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "number"
+          }
         },
         "readConnectionsHeight": {
           "description": "Height of the read-connection band in pixels.",
-          "type": "number",
-          "default": 35
+          "default": 35,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "number"
+          }
         },
         "showSoftClipping": {
           "description": "Draw soft-clipped read portions. Defaults to off.",
-          "type": "boolean",
-          "default": false
+          "default": false,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "boolean"
+          }
         },
         "lodMode": {
           "description": "which stored tier of a tiered file is fetched: 'auto' switches on the adapter's bpPerPx threshold, 'fine' pins the per-row CIGAR tier, and 'coarse' the tier whose CIGAR is folded to its large indels.",
-          "enum": [
-            "auto",
-            "fine",
-            "coarse"
-          ],
-          "default": "auto"
+          "default": "auto",
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "enum": [
+              "auto",
+              "fine",
+              "coarse"
+            ]
+          }
         },
         "hideSelfAlignments": {
           "description": "Hide the group matching the view's own assembly when grouping by mate assembly.",
-          "type": "boolean",
-          "default": false
+          "default": false,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "boolean"
+          }
         },
         "colorBy": {
           "deprecated": true,
@@ -5640,67 +7995,102 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "properties": {
             "value": {
               "description": "CSS colour or jexl callback.",
-              "$ref": "#/$defs/CssColorOrJexl"
+              "if": {
+                "type": "null"
+              },
+              "else": {
+                "$ref": "#/$defs/CssColorOrJexl"
+              }
             },
             "field": {
               "description": "a feature field, or a jexl expression over feature, whose values each paint one range colour with a key; cluster paints a gene by the ortholog group it carries and a placement box by its own.",
-              "$ref": "#/$defs/FeatureField",
-              "default": ""
+              "default": "",
+              "if": {
+                "type": "null"
+              },
+              "else": {
+                "$ref": "#/$defs/FeatureField"
+              }
             },
             "scale": {
               "description": "none paints value and keeps the field for a switch back; categorical a range colour per value of field; threshold a range colour per interval between the cut points in domain; unset follows field.",
-              "enum": [
-                "none",
-                "categorical",
-                "threshold"
-              ]
+              "if": {
+                "type": "null"
+              },
+              "else": {
+                "enum": [
+                  "none",
+                  "categorical",
+                  "threshold"
+                ]
+              }
             },
             "domain": {
               "description": "the values that take the range first, in order; a value left out takes a colour no listed value or value met before it paints, the first time the track shows it, and keeps it. Under threshold, the ascending cut points, a value on a cut taking the interval above it.",
-              "anyOf": [
-                {
-                  "type": "array",
-                  "items": {
-                    "anyOf": [
-                      {
-                        "type": "string"
-                      },
-                      {
-                        "type": "number"
-                      }
-                    ]
+              "if": {
+                "type": "null"
+              },
+              "else": {
+                "anyOf": [
+                  {
+                    "type": "array",
+                    "items": {
+                      "anyOf": [
+                        {
+                          "type": "string"
+                        },
+                        {
+                          "type": "number"
+                        }
+                      ]
+                    }
                   }
-                }
-              ]
+                ]
+              }
             },
             "range": {
               "description": "CSS colours the domain takes, in order, continuing into the default palette past its end; under threshold one per interval, one more than the cuts.",
-              "type": "array",
-              "items": {
-                "$ref": "#/$defs/CssColorEntry"
+              "if": {
+                "type": "null"
+              },
+              "else": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/$defs/CssColorEntry"
+                }
               }
             },
             "labels": {
               "description": "what the key names each domain value, one each in order, or under threshold each interval from the lowest; one past the list keeps its own name.",
-              "anyOf": [
-                {
-                  "type": "array",
-                  "items": {
-                    "anyOf": [
-                      {
-                        "type": "string"
-                      },
-                      {
-                        "type": "number"
-                      }
-                    ]
+              "if": {
+                "type": "null"
+              },
+              "else": {
+                "anyOf": [
+                  {
+                    "type": "array",
+                    "items": {
+                      "anyOf": [
+                        {
+                          "type": "string"
+                        },
+                        {
+                          "type": "number"
+                        }
+                      ]
+                    }
                   }
-                }
-              ]
+                ]
+              }
             },
             "title": {
               "description": "key title; unset keeps the display's own heading, \\"\\" draws none.",
-              "$ref": "#/$defs/PlainString"
+              "if": {
+                "type": "null"
+              },
+              "else": {
+                "$ref": "#/$defs/PlainString"
+              }
             }
           },
           "patternProperties": {
@@ -5715,8 +8105,8 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "anyOf": [
         {
           "description": "Shorthand for \`{ \\"value\\": ... }\`.",
-          "$ref": "#/$defs/CssColor",
           "default": "rgba(130,130,130,0.3)",
+          "$ref": "#/$defs/CssColor",
           "type": "string"
         },
         {
@@ -5726,97 +8116,157 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "properties": {
             "value": {
               "description": "the color of the ribbons connecting adjacent lanes.",
-              "$ref": "#/$defs/CssColor",
-              "default": "rgba(130,130,130,0.3)"
+              "default": "rgba(130,130,130,0.3)",
+              "if": {
+                "type": "null"
+              },
+              "else": {
+                "$ref": "#/$defs/CssColor"
+              }
             },
             "field": {
               "description": "what colours a ribbon: strand reads the relative strand between the two lanes the ribbon joins (the two placements' orientations multiplied out, not the drawn twist, so a flipped lane still shows its inversions); identity, mapq and dnds paint the synteny view's ramps; any other name is a column the table declares in attributeColumns, a ramp over the values seen for numbers and one colour per label for text (or the colour a color column put beside it).",
-              "$ref": "#/$defs/PlainString",
-              "default": ""
+              "default": "",
+              "if": {
+                "type": "null"
+              },
+              "else": {
+                "$ref": "#/$defs/PlainString"
+              }
             },
             "scale": {
               "description": "none paints value and keeps the field for a switch back; unset, a field paints.",
-              "const": "none"
+              "if": {
+                "type": "null"
+              },
+              "else": {
+                "const": "none"
+              }
             },
             "domain": {
               "description": "a text column's labels that take the palette first, in order, and lead the key, the rest following sorted; a label left out takes a colour no listed label or label met before it paints, the first time the view meets it, and keeps it.",
-              "anyOf": [
-                {
-                  "type": "array",
-                  "items": {
-                    "anyOf": [
-                      {
-                        "type": "string"
-                      },
-                      {
-                        "type": "number"
-                      }
-                    ]
+              "if": {
+                "type": "null"
+              },
+              "else": {
+                "anyOf": [
+                  {
+                    "type": "array",
+                    "items": {
+                      "anyOf": [
+                        {
+                          "type": "string"
+                        },
+                        {
+                          "type": "number"
+                        }
+                      ]
+                    }
                   }
-                }
-              ]
+                ]
+              }
             },
             "range": {
               "description": "CSS colours a text column's labels take, in domain order, continuing into the default palette past its end; with no domain, each label takes one of them by its name; on a ramp (identity, mapq, dnds or a numeric column), its stops, evenly spaced, in place of the field's own.",
-              "type": "array",
-              "items": {
-                "$ref": "#/$defs/CssColorEntry"
+              "if": {
+                "type": "null"
+              },
+              "else": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/$defs/CssColorEntry"
+                }
               }
             },
             "scheme": {
               "description": "a named ramp for a linear or log scale; range's colours, where it lists any, win over it.",
-              "enum": [
-                "viridis",
-                "magma",
-                "inferno",
-                "cividis",
-                "juicebox",
-                "fall",
-                "reds",
-                "blues",
-                "redblue",
-                "purpleorange",
-                "redgreyblue"
-              ]
+              "if": {
+                "type": "null"
+              },
+              "else": {
+                "enum": [
+                  "viridis",
+                  "magma",
+                  "inferno",
+                  "cividis",
+                  "juicebox",
+                  "fall",
+                  "reds",
+                  "blues",
+                  "redblue",
+                  "purpleorange",
+                  "redgreyblue"
+                ]
+              }
             },
             "reverse": {
               "description": "turns a linear or log scale's ramp round, so its last colour paints the bottom of the domain.",
-              "type": "boolean",
-              "default": false
+              "default": false,
+              "if": {
+                "type": "null"
+              },
+              "else": {
+                "type": "boolean"
+              }
             },
             "domainMid": {
               "description": "the value the ramp's middle stop sits at, so a diverging ramp centres somewhere other than the middle of the domain, both sides on one scale: the farther end of the domain reaches its end colour and equal distances from the middle take equal colours; unset, the stops are evenly spaced across it.",
-              "type": "number"
+              "if": {
+                "type": "null"
+              },
+              "else": {
+                "type": "number"
+              }
             },
             "domainMin": {
               "description": "the bottom of a linear or log scale's domain; unset follows the loaded values.",
-              "type": "number"
+              "if": {
+                "type": "null"
+              },
+              "else": {
+                "type": "number"
+              }
             },
             "domainMax": {
               "description": "the top of a linear or log scale's domain; unset follows the loaded values.",
-              "type": "number"
+              "if": {
+                "type": "null"
+              },
+              "else": {
+                "type": "number"
+              }
             },
             "labels": {
               "description": "what the key names each domain value, one each in order, or under threshold each interval from the lowest; one past the list keeps its own name.",
-              "anyOf": [
-                {
-                  "type": "array",
-                  "items": {
-                    "anyOf": [
-                      {
-                        "type": "string"
-                      },
-                      {
-                        "type": "number"
-                      }
-                    ]
+              "if": {
+                "type": "null"
+              },
+              "else": {
+                "anyOf": [
+                  {
+                    "type": "array",
+                    "items": {
+                      "anyOf": [
+                        {
+                          "type": "string"
+                        },
+                        {
+                          "type": "number"
+                        }
+                      ]
+                    }
                   }
-                }
-              ]
+                ]
+              }
             },
             "title": {
               "description": "key title; unset keeps the display's own heading, \\"\\" draws none.",
-              "$ref": "#/$defs/PlainString"
+              "if": {
+                "type": "null"
+              },
+              "else": {
+                "$ref": "#/$defs/PlainString"
+              }
             }
           },
           "patternProperties": {
@@ -5831,8 +8281,8 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "anyOf": [
         {
           "description": "Shorthand for \`{ \\"pos\\": ... }\`.",
-          "$ref": "#/$defs/FeatureField",
           "default": "end",
+          "$ref": "#/$defs/FeatureField",
           "type": "string"
         },
         {
@@ -5842,13 +8292,23 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "properties": {
             "pos": {
               "description": "position field.",
-              "$ref": "#/$defs/FeatureField",
-              "default": "end"
+              "default": "end",
+              "if": {
+                "type": "null"
+              },
+              "else": {
+                "$ref": "#/$defs/FeatureField"
+              }
             },
             "chrom": {
               "description": "sequence field; empty is the feature’s own.",
-              "$ref": "#/$defs/FeatureField",
-              "default": ""
+              "default": "",
+              "if": {
+                "type": "null"
+              },
+              "else": {
+                "$ref": "#/$defs/FeatureField"
+              }
             }
           },
           "patternProperties": {
@@ -5863,8 +8323,8 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "anyOf": [
         {
           "description": "Shorthand for \`{ \\"field\\": ... }\`.",
-          "$ref": "#/$defs/FeatureField",
           "default": "",
+          "$ref": "#/$defs/FeatureField",
           "type": "string"
         },
         {
@@ -5874,134 +8334,214 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "properties": {
             "value": {
               "description": "CSS colour or jexl callback; unset is the default blue.",
-              "$ref": "#/$defs/CssColorOrJexl"
+              "if": {
+                "type": "null"
+              },
+              "else": {
+                "$ref": "#/$defs/CssColorOrJexl"
+              }
             },
             "field": {
               "description": "the feature field a scale reads, or a jexl expression over feature, which is slower per feature and so the opt-in.",
-              "$ref": "#/$defs/FeatureField",
-              "default": ""
+              "default": "",
+              "if": {
+                "type": "null"
+              },
+              "else": {
+                "$ref": "#/$defs/FeatureField"
+              }
             },
             "scale": {
               "description": "how field becomes a colour: categorical hands out range colours per distinct value; linear and log read the value between domainMin and domainMax into a ramp; threshold cuts the value at the domain and hands each interval a range colour; none paints value, keeping a field for a switch back; unset is linear for score and categorical for any other field.",
-              "enum": [
-                "none",
-                "categorical",
-                "linear",
-                "log",
-                "threshold"
-              ]
+              "if": {
+                "type": "null"
+              },
+              "else": {
+                "enum": [
+                  "none",
+                  "categorical",
+                  "linear",
+                  "log",
+                  "threshold"
+                ]
+              }
             },
             "domain": {
               "description": "for a categorical scale, the values in legend order, walking the range from the first entry and continuing into the default palette past its end (a value left out derives its colour from itself and never takes a listed value's, so every region agrees); for a threshold scale, the cut points in ascending order, a value taking the range entry for the number of them it is at or past, so range has one entry more than this; a linear or log scale reads domainMin and domainMax instead.",
-              "anyOf": [
-                {
-                  "type": "array",
-                  "items": {
-                    "anyOf": [
-                      {
-                        "type": "string"
-                      },
-                      {
-                        "type": "number"
-                      }
-                    ]
+              "if": {
+                "type": "null"
+              },
+              "else": {
+                "anyOf": [
+                  {
+                    "type": "array",
+                    "items": {
+                      "anyOf": [
+                        {
+                          "type": "string"
+                        },
+                        {
+                          "type": "number"
+                        }
+                      ]
+                    }
                   }
-                }
-              ]
+                ]
+              }
             },
             "domainMin": {
               "description": "the bottom of a linear or log scale's domain; unset follows the loaded values.",
-              "type": "number"
+              "if": {
+                "type": "null"
+              },
+              "else": {
+                "type": "number"
+              }
             },
             "domainMax": {
               "description": "the top of a linear or log scale's domain; unset follows the loaded values.",
-              "type": "number"
+              "if": {
+                "type": "null"
+              },
+              "else": {
+                "type": "number"
+              }
             },
             "domainQuantile": {
               "description": "the quantile an open end of a linear or log scale follows over the loaded values: 1 their extremes, 0.99 clips the outermost 1% at each end, each sign measured on its own.",
-              "type": "number",
-              "default": 1
+              "default": 1,
+              "if": {
+                "type": "null"
+              },
+              "else": {
+                "type": "number"
+              }
             },
             "range": {
               "description": "CSS colours a categorical scale hands its domain in order, a threshold scale its intervals, or a linear or log scale's ramp as evenly spaced stops; empty is the default palette, or the scheme.",
-              "type": "array",
-              "items": {
-                "$ref": "#/$defs/CssColorEntry"
+              "if": {
+                "type": "null"
+              },
+              "else": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/$defs/CssColorEntry"
+                }
               }
             },
             "labels": {
               "description": "what the key names each domain value, one each in order, or under threshold each interval from the lowest; one past the list keeps its own name.",
-              "anyOf": [
-                {
-                  "type": "array",
-                  "items": {
-                    "anyOf": [
-                      {
-                        "type": "string"
-                      },
-                      {
-                        "type": "number"
-                      }
-                    ]
+              "if": {
+                "type": "null"
+              },
+              "else": {
+                "anyOf": [
+                  {
+                    "type": "array",
+                    "items": {
+                      "anyOf": [
+                        {
+                          "type": "string"
+                        },
+                        {
+                          "type": "number"
+                        }
+                      ]
+                    }
                   }
-                }
-              ]
+                ]
+              }
             },
             "scheme": {
               "description": "a named ramp for a linear or log scale; range's colours, where it lists any, win over it.",
-              "enum": [
-                "viridis",
-                "magma",
-                "inferno",
-                "cividis",
-                "juicebox",
-                "fall",
-                "reds",
-                "blues",
-                "redblue",
-                "purpleorange",
-                "redgreyblue"
-              ]
+              "if": {
+                "type": "null"
+              },
+              "else": {
+                "enum": [
+                  "viridis",
+                  "magma",
+                  "inferno",
+                  "cividis",
+                  "juicebox",
+                  "fall",
+                  "reds",
+                  "blues",
+                  "redblue",
+                  "purpleorange",
+                  "redgreyblue"
+                ]
+              }
             },
             "reverse": {
               "description": "turns a linear or log scale's ramp round, so its last colour paints the bottom of the domain.",
-              "type": "boolean",
-              "default": false
+              "default": false,
+              "if": {
+                "type": "null"
+              },
+              "else": {
+                "type": "boolean"
+              }
             },
             "domainMid": {
               "description": "the value the ramp's middle stop sits at, so a diverging ramp centres somewhere other than the middle of the domain, both sides on one scale: the farther end of the domain reaches its end colour and equal distances from the middle take equal colours; unset, the stops are evenly spaced across it.",
-              "type": "number"
+              "if": {
+                "type": "null"
+              },
+              "else": {
+                "type": "number"
+              }
             },
             "title": {
               "description": "key title; unset keeps the display's own heading, \\"\\" draws none.",
-              "$ref": "#/$defs/PlainString"
+              "if": {
+                "type": "null"
+              },
+              "else": {
+                "$ref": "#/$defs/PlainString"
+              }
             },
             "breaks": {
               "description": "values the key lists; empty lists every value met.",
-              "anyOf": [
-                {
-                  "type": "array",
-                  "items": {
-                    "anyOf": [
-                      {
-                        "type": "string"
-                      },
-                      {
-                        "type": "number"
-                      }
-                    ]
+              "if": {
+                "type": "null"
+              },
+              "else": {
+                "anyOf": [
+                  {
+                    "type": "array",
+                    "items": {
+                      "anyOf": [
+                        {
+                          "type": "string"
+                        },
+                        {
+                          "type": "number"
+                        }
+                      ]
+                    }
                   }
-                }
-              ]
+                ]
+              }
             },
             "descending": {
               "description": "threshold key lists the highest interval first.",
-              "type": "boolean",
-              "default": false
+              "default": false,
+              "if": {
+                "type": "null"
+              },
+              "else": {
+                "type": "boolean"
+              }
             },
             "missingLabel": {
               "description": "key row for a feature with no value.",
-              "$ref": "#/$defs/PlainString"
+              "if": {
+                "type": "null"
+              },
+              "else": {
+                "$ref": "#/$defs/PlainString"
+              }
             }
           },
           "patternProperties": {
@@ -6016,8 +8556,8 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "anyOf": [
         {
           "description": "Shorthand for \`{ \\"field\\": ... }\`.",
-          "$ref": "#/$defs/FeatureField",
           "default": "",
+          "$ref": "#/$defs/FeatureField",
           "type": "string"
         },
         {
@@ -6027,104 +8567,149 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "properties": {
             "value": {
               "description": "circle, triangle-down, diamond or jexl callback.",
-              "anyOf": [
-                {
+              "default": "circle",
+              "if": {
+                "type": "null"
+              },
+              "else": {
+                "anyOf": [
+                  {
+                    "enum": [
+                      "circle",
+                      "triangle-down",
+                      "diamond"
+                    ]
+                  },
+                  {
+                    "$ref": "#/$defs/JexlString"
+                  }
+                ]
+              }
+            },
+            "field": {
+              "description": "feature field, or jexl expression.",
+              "default": "",
+              "if": {
+                "type": "null"
+              },
+              "else": {
+                "$ref": "#/$defs/FeatureField"
+              }
+            },
+            "scale": {
+              "description": "none or categorical; unset follows field.",
+              "if": {
+                "type": "null"
+              },
+              "else": {
+                "enum": [
+                  "none",
+                  "categorical"
+                ]
+              }
+            },
+            "range": {
+              "description": "shape names, in order.",
+              "if": {
+                "type": "null"
+              },
+              "else": {
+                "type": "array",
+                "items": {
                   "enum": [
                     "circle",
                     "triangle-down",
                     "diamond"
                   ]
-                },
-                {
-                  "$ref": "#/$defs/JexlString"
                 }
-              ],
-              "default": "circle"
-            },
-            "field": {
-              "description": "feature field, or jexl expression.",
-              "$ref": "#/$defs/FeatureField",
-              "default": ""
-            },
-            "scale": {
-              "description": "none or categorical; unset follows field.",
-              "enum": [
-                "none",
-                "categorical"
-              ]
-            },
-            "range": {
-              "description": "shape names, in order.",
-              "type": "array",
-              "items": {
-                "enum": [
-                  "circle",
-                  "triangle-down",
-                  "diamond"
-                ]
               }
             },
             "domain": {
               "description": "category order.",
-              "anyOf": [
-                {
-                  "type": "array",
-                  "items": {
-                    "anyOf": [
-                      {
-                        "type": "string"
-                      },
-                      {
-                        "type": "number"
-                      }
-                    ]
+              "if": {
+                "type": "null"
+              },
+              "else": {
+                "anyOf": [
+                  {
+                    "type": "array",
+                    "items": {
+                      "anyOf": [
+                        {
+                          "type": "string"
+                        },
+                        {
+                          "type": "number"
+                        }
+                      ]
+                    }
                   }
-                }
-              ]
+                ]
+              }
             },
             "title": {
               "description": "key title; unset follows field, \\"\\" draws none.",
-              "$ref": "#/$defs/PlainString"
+              "if": {
+                "type": "null"
+              },
+              "else": {
+                "$ref": "#/$defs/PlainString"
+              }
             },
             "labels": {
               "description": "key names for the domain values, in order.",
-              "anyOf": [
-                {
-                  "type": "array",
-                  "items": {
-                    "anyOf": [
-                      {
-                        "type": "string"
-                      },
-                      {
-                        "type": "number"
-                      }
-                    ]
+              "if": {
+                "type": "null"
+              },
+              "else": {
+                "anyOf": [
+                  {
+                    "type": "array",
+                    "items": {
+                      "anyOf": [
+                        {
+                          "type": "string"
+                        },
+                        {
+                          "type": "number"
+                        }
+                      ]
+                    }
                   }
-                }
-              ]
+                ]
+              }
             },
             "breaks": {
               "description": "values the key lists; empty lists every value met.",
-              "anyOf": [
-                {
-                  "type": "array",
-                  "items": {
-                    "anyOf": [
-                      {
-                        "type": "string"
-                      },
-                      {
-                        "type": "number"
-                      }
-                    ]
+              "if": {
+                "type": "null"
+              },
+              "else": {
+                "anyOf": [
+                  {
+                    "type": "array",
+                    "items": {
+                      "anyOf": [
+                        {
+                          "type": "string"
+                        },
+                        {
+                          "type": "number"
+                        }
+                      ]
+                    }
                   }
-                }
-              ]
+                ]
+              }
             },
             "missingLabel": {
               "description": "key row for a feature with no value.",
-              "$ref": "#/$defs/PlainString"
+              "if": {
+                "type": "null"
+              },
+              "else": {
+                "$ref": "#/$defs/PlainString"
+              }
             }
           },
           "patternProperties": {
@@ -6143,8 +8728,8 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         },
         {
           "description": "Shorthand for \`{ \\"field\\": ... }\`.",
-          "$ref": "#/$defs/FeatureField",
           "default": "",
+          "$ref": "#/$defs/FeatureField",
           "type": "string"
         },
         {
@@ -6154,46 +8739,76 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "properties": {
             "value": {
               "description": "px for every instance; unset is the mark's own.",
-              "type": "number"
+              "if": {
+                "type": "null"
+              },
+              "else": {
+                "type": "number"
+              }
             },
             "field": {
               "description": "feature field, or jexl expression.",
-              "$ref": "#/$defs/FeatureField",
-              "default": ""
+              "default": "",
+              "if": {
+                "type": "null"
+              },
+              "else": {
+                "$ref": "#/$defs/FeatureField"
+              }
             },
             "scale": {
               "description": "linear or log.",
-              "enum": [
-                "linear",
-                "log"
-              ],
-              "default": "linear"
+              "default": "linear",
+              "if": {
+                "type": "null"
+              },
+              "else": {
+                "enum": [
+                  "linear",
+                  "log"
+                ]
+              }
             },
             "domainMin": {
               "description": "value at the thinnest width; unset follows the regions.",
-              "type": "number"
+              "if": {
+                "type": "null"
+              },
+              "else": {
+                "type": "number"
+              }
             },
             "domainMax": {
               "description": "value at the widest width; unset follows the regions.",
-              "type": "number"
+              "if": {
+                "type": "null"
+              },
+              "else": {
+                "type": "number"
+              }
             },
             "range": {
               "description": "px at each end of the domain.",
-              "anyOf": [
-                {
-                  "type": "array",
-                  "items": {
-                    "anyOf": [
-                      {
-                        "type": "string"
-                      },
-                      {
-                        "type": "number"
-                      }
-                    ]
+              "if": {
+                "type": "null"
+              },
+              "else": {
+                "anyOf": [
+                  {
+                    "type": "array",
+                    "items": {
+                      "anyOf": [
+                        {
+                          "type": "string"
+                        },
+                        {
+                          "type": "number"
+                        }
+                      ]
+                    }
                   }
-                }
-              ]
+                ]
+              }
             }
           },
           "patternProperties": {
@@ -6210,35 +8825,75 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "properties": {
         "x": {
           "description": "left edge field.",
-          "$ref": "#/$defs/FeatureField",
-          "default": "start"
+          "default": "start",
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/FeatureField"
+          }
         },
         "x2": {
-          "$ref": "#/$defs/MarkLocus"
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/MarkLocus"
+          }
         },
         "y": {
           "description": "value field, or jexl expression; empty follows a step.",
-          "$ref": "#/$defs/FeatureField",
-          "default": ""
+          "default": "",
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/FeatureField"
+          }
         },
         "row": {
           "description": "band field; empty follows a pileup step.",
-          "$ref": "#/$defs/FeatureField",
-          "default": ""
+          "default": "",
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/FeatureField"
+          }
         },
         "color": {
-          "$ref": "#/$defs/MarkColor"
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/MarkColor"
+          }
         },
         "shape": {
-          "$ref": "#/$defs/MarkShape"
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/MarkShape"
+          }
         },
         "text": {
           "description": "text field, or jexl expression.",
-          "$ref": "#/$defs/FeatureField",
-          "default": "name"
+          "default": "name",
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/FeatureField"
+          }
         },
         "size": {
-          "$ref": "#/$defs/MarkSize"
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/MarkSize"
+          }
         }
       },
       "patternProperties": {
@@ -6256,8 +8911,13 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         },
         "expr": {
           "description": "jexl callback over feature.",
-          "$ref": "#/$defs/StringOrJexl",
-          "default": ""
+          "default": "",
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/StringOrJexl"
+          }
         }
       },
       "patternProperties": {
@@ -6275,13 +8935,23 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         },
         "expr": {
           "description": "jexl callback over feature.",
-          "$ref": "#/$defs/StringOrJexl",
-          "default": ""
+          "default": "",
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/StringOrJexl"
+          }
         },
         "as": {
           "description": "output field.",
-          "$ref": "#/$defs/PlainString",
-          "default": "value"
+          "default": "value",
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/PlainString"
+          }
         }
       },
       "patternProperties": {
@@ -6299,38 +8969,58 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         },
         "step": {
           "description": "bin width in bp, or \\"auto\\" to follow the zoom.",
-          "anyOf": [
-            {
-              "type": "number"
-            },
-            {
-              "const": "auto"
-            }
-          ],
-          "default": 10000
+          "default": 10000,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "const": "auto"
+              }
+            ]
+          }
         },
         "field": {
           "description": "field placing a feature in a bin.",
-          "$ref": "#/$defs/PlainString",
-          "default": "start"
+          "default": "start",
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/PlainString"
+          }
         },
         "fields": {
           "description": "an interval's start and end, cut at the bin edges.",
-          "type": "array",
-          "items": {
-            "type": "string"
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
           }
         },
         "as": {
           "description": "the bin's start and end fields.",
-          "type": "array",
-          "items": {
-            "type": "string"
-          },
           "default": [
             "start",
             "end"
-          ]
+          ],
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
         }
       },
       "patternProperties": {
@@ -6345,29 +9035,49 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "properties": {
         "op": {
           "description": "count, sum, mean, min or max.",
-          "enum": [
-            "count",
-            "sum",
-            "mean",
-            "min",
-            "max"
-          ],
-          "default": "count"
+          "default": "count",
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "enum": [
+              "count",
+              "sum",
+              "mean",
+              "min",
+              "max"
+            ]
+          }
         },
         "field": {
           "description": "field the op reads.",
-          "$ref": "#/$defs/PlainString",
-          "default": ""
+          "default": "",
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/PlainString"
+          }
         },
         "weight": {
           "description": "field each feature counts by.",
-          "$ref": "#/$defs/PlainString",
-          "default": ""
+          "default": "",
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/PlainString"
+          }
         },
         "as": {
           "description": "output field.",
-          "$ref": "#/$defs/PlainString",
-          "default": ""
+          "default": "",
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/PlainString"
+          }
         }
       },
       "patternProperties": {
@@ -6385,15 +9095,25 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         },
         "groupby": {
           "description": "grouping fields; empty follows a preceding bin.",
-          "type": "array",
-          "items": {
-            "type": "string"
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
           }
         },
         "ops": {
-          "type": "array",
-          "items": {
-            "$ref": "#/$defs/MarkAggregateOp"
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "array",
+            "items": {
+              "$ref": "#/$defs/MarkAggregateOp"
+            }
           }
         }
       },
@@ -6412,8 +9132,13 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         },
         "as": {
           "description": "depth field.",
-          "$ref": "#/$defs/PlainString",
-          "default": "coverage"
+          "default": "coverage",
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/PlainString"
+          }
         }
       },
       "patternProperties": {
@@ -6431,23 +9156,43 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         },
         "field": {
           "description": "array or record field fanned out.",
-          "$ref": "#/$defs/PlainString",
-          "default": "subfeatures"
+          "default": "subfeatures",
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/PlainString"
+          }
         },
         "index": {
           "description": "field for the element's position.",
-          "$ref": "#/$defs/PlainString",
-          "default": ""
+          "default": "",
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/PlainString"
+          }
         },
         "key": {
           "description": "field for the entry's key.",
-          "$ref": "#/$defs/PlainString",
-          "default": ""
+          "default": "",
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/PlainString"
+          }
         },
         "keepEmpty": {
           "description": "keep a feature whose field is empty.",
-          "type": "boolean",
-          "default": false
+          "default": false,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "boolean"
+          }
         }
       },
       "patternProperties": {
@@ -6465,8 +9210,13 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         },
         "field": {
           "description": "aligned text field.",
-          "$ref": "#/$defs/PlainString",
-          "default": "seq"
+          "default": "seq",
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/PlainString"
+          }
         }
       },
       "patternProperties": {
@@ -6484,24 +9234,39 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         },
         "as": {
           "description": "row field.",
-          "$ref": "#/$defs/PlainString",
-          "default": "row"
+          "default": "row",
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/PlainString"
+          }
         },
         "fields": {
           "description": "start and end fields of the packed interval.",
-          "type": "array",
-          "items": {
-            "type": "string"
-          },
           "default": [
             "start",
             "end"
-          ]
+          ],
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
         },
         "padding": {
           "description": "bp between two features on one row.",
-          "type": "number",
-          "default": 0
+          "default": 0,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "number"
+          }
         }
       },
       "patternProperties": {
@@ -6698,65 +9463,110 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "properties": {
         "mark": {
           "description": "bar, point, rule, line, span, text or link.",
-          "enum": [
-            "bar",
-            "point",
-            "rule",
-            "line",
-            "span",
-            "text",
-            "link"
-          ],
-          "default": "bar"
+          "default": "bar",
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "enum": [
+              "bar",
+              "point",
+              "rule",
+              "line",
+              "span",
+              "text",
+              "link"
+            ]
+          }
         },
         "interpolate": {
           "description": "step or linear, for a line.",
-          "enum": [
-            "step",
-            "linear"
-          ],
-          "default": "step"
+          "default": "step",
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "enum": [
+              "step",
+              "linear"
+            ]
+          }
         },
         "linkShape": {
           "description": "dome, arc or line.",
-          "enum": [
-            "dome",
-            "arc",
-            "line"
-          ],
-          "default": "dome"
+          "default": "dome",
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "enum": [
+              "dome",
+              "arc",
+              "line"
+            ]
+          }
         },
         "rowProportion": {
           "description": "fraction of its row a span fills.",
-          "type": "number",
-          "default": 1
+          "default": 1,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "number"
+          }
         },
         "encoding": {
-          "$ref": "#/$defs/MarkEncoding"
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/MarkEncoding"
+          }
         },
         "transform": {
-          "type": "array",
-          "items": {
-            "$ref": "#/$defs/MarkTransform"
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "array",
+            "items": {
+              "$ref": "#/$defs/MarkTransform"
+            }
           }
         },
         "source": {
           "description": "features, or density past the fetch budget.",
-          "enum": [
-            "features",
-            "density"
-          ],
-          "default": "features"
+          "default": "features",
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "enum": [
+              "features",
+              "density"
+            ]
+          }
         },
         "minBpPerPx": {
           "description": "draw only at or above this bp/px.",
-          "type": "number",
-          "default": 0
+          "default": 0,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "number"
+          }
         },
         "maxBpPerPx": {
           "description": "draw only below this bp/px.",
-          "type": "number",
-          "default": 0
+          "default": 0,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "number"
+          }
         }
       },
       "patternProperties": {
@@ -6771,31 +9581,56 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "properties": {
         "name": {
           "description": "what the layer's band is labelled.",
-          "$ref": "#/$defs/PlainString",
-          "default": ""
+          "default": "",
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/PlainString"
+          }
         },
         "tracks": {
           "description": "the trackId each lane draws the layer from, one per genome, matched to a lane by the track's assembly. A lane no entry names draws an empty band.",
-          "type": "array",
-          "items": {
-            "type": "string"
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
           }
         },
         "adapter": {
           "description": "an adapter computing from the sequence, such as \`{ type: 'GCContentAdapter' }\`, that every lane \`tracks\` names nothing for reads through its own genome. A lane reads it only while its window is under 5 Mb, since that window is the sequence it downloads, and the band's title says to zoom in past that. Any JSON value: the slot is \`frozen\`, so its shape is not checked here.",
-          "not": {
-            "$ref": "#/$defs/JexlString"
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "not": {
+              "$ref": "#/$defs/JexlString"
+            }
           }
         },
         "height": {
           "description": "px of band the layer takes in each lane.",
-          "type": "number",
-          "default": 24
+          "default": 24,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "number"
+          }
         },
         "marks": {
-          "type": "array",
-          "items": {
-            "$ref": "#/$defs/Mark"
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "array",
+            "items": {
+              "$ref": "#/$defs/Mark"
+            }
           }
         }
       },
@@ -6809,103 +9644,198 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "properties": {
         "fetchSizeLimit": {
           "description": "maximum data to attempt to download for a given track, used if adapter doesn't specify one.",
-          "type": "number",
-          "default": 1000000
+          "default": 1000000,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "number"
+          }
         },
         "forceLoad": {
           "description": "Declarative equivalent of the \\"Force load\\" button on the \\"too much data\\" banner: when true the display always renders, however large the region or dense the features. Off by default (the gate guards against huge downloads). Set it on a view no one can interact with — an embedded / notebook view, or a screenshot — where the region is known and you want it drawn without a click.",
-          "type": "boolean",
-          "default": false
+          "default": false,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "boolean"
+          }
         },
         "height": {
           "description": "default height for the track.",
-          "type": "number",
-          "default": 240
+          "default": 240,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "number"
+          }
         },
         "mouseover": {
           "description": "text to display when the cursor hovers over a feature.",
-          "$ref": "#/$defs/StringOrJexl",
-          "default": "jexl:get(feature,'_mouseOver')||get(feature,'name')||get(feature,'function')||get(feature,'id')"
+          "default": "jexl:get(feature,'_mouseOver')||get(feature,'name')||get(feature,'function')||get(feature,'id')",
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/StringOrJexl"
+          }
         },
         "color": {
-          "$ref": "#/$defs/MultiWayGeneColor"
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/MultiWayGeneColor"
+          }
         },
         "utrColor": {
           "description": "the fill color of the untranslated parts of a gene glyph, matching the canvas gene track default.",
-          "$ref": "#/$defs/CssColorOrJexl",
-          "default": "#357089"
+          "default": "#357089",
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/CssColorOrJexl"
+          }
         },
         "lodMode": {
           "description": "which stored tier of a tiered file is fetched: 'auto' switches on the adapter's bpPerPx threshold, 'fine' pins the per-row CIGAR tier, and 'coarse' the tier whose CIGAR is folded to its large indels.",
-          "enum": [
-            "auto",
-            "fine",
-            "coarse"
-          ],
-          "default": "auto"
+          "default": "auto",
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "enum": [
+              "auto",
+              "fine",
+              "coarse"
+            ]
+          }
         },
         "domain": {
           "description": "the lanes that stack first below the anchor, in order; the rest follow densest-first, so a ribbon chain through adjacent lanes is cut as late as possible. What the Lanes menu and a header drag write.",
-          "type": "array",
-          "items": {
-            "type": "string"
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
           }
         },
         "ribbonColor": {
-          "$ref": "#/$defs/RibbonColor"
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/RibbonColor"
+          }
         },
         "hideUnlabelled": {
           "description": "under a text column, draw only the ribbons whose pair carries a label.",
-          "type": "boolean",
-          "default": false
+          "default": false,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "boolean"
+          }
         },
         "drawCurves": {
           "description": "draw the ribbons as bezier curves rather than straight chords. A plain per-track slot: this display does not share the linear synteny view's view-level \`drawCurves\` override. Straight is the default in both places: a chord's slant reads directly as the offset between two lanes drawn in different coordinate frames, which is exactly what a curve hides.",
-          "type": "boolean",
-          "default": false
+          "default": false,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "boolean"
+          }
         },
         "laneGeneTracks": {
           "description": "the trackId of the gene track each lane draws, one per genome. A lane whose genome no entry names draws the session's best-ranked annotation track for it, which on a config holding several gene sets per genome is whichever is declared first.",
-          "type": "array",
-          "items": {
-            "type": "string"
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
           }
         },
         "bridgeSkippedLanes": {
           "description": "join a group across a lane that places nothing for it, to the next lane down that does. A ribbon otherwise joins adjacent lanes only, so a sparse lane mid-stack cuts every chain running through it.",
-          "type": "boolean",
-          "default": true
+          "default": true,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "boolean"
+          }
         },
         "showLegend": {
           "description": "show the color key: the anchor lane's drawn gene colors, and what \`ribbonColor\` paints — the strand colors, the identity ramp, or a column's labels. Derived from what is on screen, so a \`color\` slot resolving to one color and a ribbon scale painting nothing key nothing. Defaults to on.",
-          "type": "boolean",
-          "default": true
+          "default": true,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "boolean"
+          }
         },
         "showLaneTicks": {
           "description": "draw each lane's own coordinate ticks, at one interval shared by every lane. Equal spacing between two lanes means equal bp-per-pixel; a lane whose ticks crowd together is zoomed out. Turning this off leaves the header's span and multiple as the only scale statement.",
-          "type": "boolean",
-          "default": true
+          "default": true,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "boolean"
+          }
         },
         "text": {
           "description": "gene label field, or jexl expression.",
-          "$ref": "#/$defs/FeatureField",
-          "default": ""
+          "default": "",
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/FeatureField"
+          }
         },
         "showGeneLabels": {
           "description": "print gene names in a row under each lane's genes, dropping a name where its neighbours leave it no room.",
-          "type": "boolean",
-          "default": true
+          "default": true,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "boolean"
+          }
         },
         "laneLayers": {
-          "type": "array",
-          "items": {
-            "$ref": "#/$defs/MultiWayLaneLayer"
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "array",
+            "items": {
+              "$ref": "#/$defs/MultiWayLaneLayer"
+            }
           }
         },
         "splitStrands": {
           "description": "draw each lane's genes in two rows either side of its line: the ones reading rightwards on screen above, leftwards below, so a flipped lane's genes turn over with it and a collinear block keeps one row down the stack. A lane too short for two rows draws one.",
-          "type": "boolean",
-          "default": true
+          "default": true,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "boolean"
+          }
         }
       }
     },
@@ -6938,32 +9868,62 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "properties": {
         "height": {
           "description": "display height in pixels; unset auto-fits to the sequence.",
-          "type": "number"
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "number"
+          }
         },
         "showForward": {
           "description": "show the forward-strand sequence row.",
-          "type": "boolean",
-          "default": true
+          "default": true,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "boolean"
+          }
         },
         "showReverse": {
           "description": "show the reverse-complement sequence row (DNA only).",
-          "type": "boolean",
-          "default": true
+          "default": true,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "boolean"
+          }
         },
         "showTranslation": {
           "description": "show the translation frame rows (DNA only).",
-          "type": "boolean",
-          "default": true
+          "default": true,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "boolean"
+          }
         },
         "fetchSizeLimit": {
           "description": "maximum data to attempt to download for a given track, used if adapter doesn't specify one.",
-          "type": "number",
-          "default": 1000000
+          "default": 1000000,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "number"
+          }
         },
         "forceLoad": {
           "description": "Declarative equivalent of the \\"Force load\\" button on the \\"too much data\\" banner: when true the display always renders, however large the region or dense the features. Off by default (the gate guards against huge downloads). Set it on a view no one can interact with — an embedded / notebook view, or a screenshot — where the region is known and you want it drawn without a click.",
-          "type": "boolean",
-          "default": false
+          "default": false,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "boolean"
+          }
         }
       }
     },
@@ -6996,142 +9956,242 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "properties": {
         "fetchSizeLimit": {
           "description": "maximum data to attempt to download for a given track, used if adapter doesn't specify one.",
-          "type": "number",
-          "default": 1000000
+          "default": 1000000,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "number"
+          }
         },
         "forceLoad": {
           "description": "Declarative equivalent of the \\"Force load\\" button on the \\"too much data\\" banner: when true the display always renders, however large the region or dense the features. Off by default (the gate guards against huge downloads). Set it on a view no one can interact with — an embedded / notebook view, or a screenshot — where the region is known and you want it drawn without a click.",
-          "type": "boolean",
-          "default": false
+          "default": false,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "boolean"
+          }
         },
         "height": {
           "description": "default height for the track.",
-          "type": "number",
-          "default": 100
+          "default": 100,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "number"
+          }
         },
         "mouseover": {
           "description": "text to display when the cursor hovers over a feature.",
-          "$ref": "#/$defs/StringOrJexl",
-          "default": "jexl:get(feature,'_mouseOver')||get(feature,'name')||get(feature,'function')||get(feature,'id')"
+          "default": "jexl:get(feature,'_mouseOver')||get(feature,'name')||get(feature,'function')||get(feature,'id')",
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/StringOrJexl"
+          }
         },
         "heightMode": {
           "description": "Track-sizing strategy — how the track responds when there are more features than fit (shared vocabulary with the alignments display, exposed in the \\"Track sizing\\" menu). \`fit\` (the default) keeps the track height and gives up descriptions, then isoforms, then names, then squeezes boxes down to 2px, and scrolls only what still overflows; \`fixed\` keeps a scrollable fixed height; \`grow\` expands the track to show all features. Orthogonal to the per-feature size set by \`displayMode\`, which fit never enlarges.",
-          "enum": [
-            "fixed",
-            "grow",
-            "fit"
-          ],
-          "default": "fit"
+          "default": "fit",
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "enum": [
+              "fixed",
+              "grow",
+              "fit"
+            ]
+          }
         },
         "growMaxHeight": {
           "description": "Ceiling in pixels for the \\"autogrow track height\\" sizing mode; a track with more content than this grows to the ceiling and scrolls the rest. Does not apply to the fixed or fit modes.",
-          "type": "number",
-          "default": 800
+          "default": 800,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "number"
+          }
         },
         "densityTier": {
           "description": "when to draw the features-per-bin density band in place of features: \\"auto\\" swaps to it where the region is too large to fetch, \\"features\\" never does and keeps the banner, \\"density\\" always does. Needs a density source on the adapter (its densityAdapter slot).",
-          "enum": [
-            "auto",
-            "features",
-            "density"
-          ],
-          "default": "auto"
+          "default": "auto",
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "enum": [
+              "auto",
+              "features",
+              "density"
+            ]
+          }
         },
         "densityTierBpPerPx": {
           "description": "in \\"auto\\" mode, also draw the density band from this many bp per pixel outward, before the region is too large to fetch; 0 leaves the swap to the fetch-size gate alone.",
-          "type": "number",
-          "default": 0
+          "default": 0,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "number"
+          }
         },
         "filter": {
           "description": "jexl: expressions a feature must pass to be drawn.",
-          "type": "array",
-          "items": {
-            "$ref": "#/$defs/JexlExpression"
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "array",
+            "items": {
+              "$ref": "#/$defs/JexlExpression"
+            }
           }
         },
         "maxFeatureScreenDensity": {
           "description": "maximum features per pixel before showing a \\"too many features\\" message.",
-          "type": "number",
-          "default": 1
+          "default": 1,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "number"
+          }
         },
         "showLegend": {
           "description": "show the color key. Defaults to on.",
-          "type": "boolean",
-          "default": true
+          "default": true,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "boolean"
+          }
         },
         "showLabels": {
           "description": "Which label text is drawn beside each feature: \\"auto\\" adapts to zoom, dropping descriptions at maxDescriptionFeatureDensity and names at maxLabelFeatureDensity; \\"nameAndDescription\\", \\"name\\", \\"description\\", and \\"none\\" pin a choice at every zoom. Defaults to \`auto\`. Replaces the former showLabels on/off enum + showDescriptions boolean pair.",
-          "anyOf": [
-            {
-              "enum": [
-                "auto",
-                "nameAndDescription",
-                "name",
-                "description",
-                "none"
-              ]
-            },
-            {
-              "enum": [
-                true,
-                false
-              ],
-              "deprecated": true,
-              "description": "Legacy spellings a migration rewrites when the config loads."
-            }
-          ],
-          "default": "auto"
+          "default": "auto",
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "anyOf": [
+              {
+                "enum": [
+                  "auto",
+                  "nameAndDescription",
+                  "name",
+                  "description",
+                  "none"
+                ]
+              },
+              {
+                "enum": [
+                  true,
+                  false
+                ],
+                "deprecated": true,
+                "description": "Legacy spellings a migration rewrites when the config loads."
+              }
+            ]
+          }
         },
         "maxLabelFeatureDensity": {
           "description": "In \\"auto\\" showLabels mode, hide labels when visible feature density (features/pixel) exceeds this value.",
-          "type": "number",
-          "default": 0.2
+          "default": 0.2,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "number"
+          }
         },
         "maxDescriptionFeatureDensity": {
           "description": "In \\"auto\\" showLabels mode, hide descriptions when visible feature density (features/pixel) exceeds this value. Lower than maxLabelFeatureDensity so descriptions drop before names.",
-          "type": "number",
-          "default": 0.1
+          "default": 0.1,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "number"
+          }
         },
         "color": {
-          "$ref": "#/$defs/FeatureColor"
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/FeatureColor"
+          }
         },
         "outlineColor": {
           "description": "outline color for features (empty string = no outline).",
-          "$ref": "#/$defs/CssColor",
-          "default": ""
+          "default": "",
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/CssColor"
+          }
         },
         "featureHeight": {
           "description": "height in pixels of the main body of each feature.",
-          "$ref": "#/$defs/NumberOrJexl",
-          "default": 10
+          "default": 10,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/NumberOrJexl"
+          }
         },
         "displayMode": {
           "description": "Feature height preset, \`normal\` by default; \`compact\` and \`superCompact\` shrink the rows, and \`collapsed\` packs every feature onto a single row with all labels hidden.",
-          "anyOf": [
-            {
-              "enum": [
-                "normal",
-                "compact",
-                "superCompact",
-                "collapsed"
-              ]
-            },
-            {
-              "enum": [
-                "reducedRepresentation",
-                "collapse"
-              ],
-              "deprecated": true,
-              "description": "Legacy spellings a migration rewrites when the config loads."
-            }
-          ],
-          "default": "normal"
+          "default": "normal",
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "anyOf": [
+              {
+                "enum": [
+                  "normal",
+                  "compact",
+                  "superCompact",
+                  "collapsed"
+                ]
+              },
+              {
+                "enum": [
+                  "reducedRepresentation",
+                  "collapse"
+                ],
+                "deprecated": true,
+                "description": "Legacy spellings a migration rewrites when the config loads."
+              }
+            ]
+          }
         },
         "facet": {
-          "$ref": "#/$defs/Facet"
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/Facet"
+          }
         },
         "labels": {
-          "$ref": "#/$defs/CanvasFeatureLabels"
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/CanvasFeatureLabels"
+          }
         },
         "color1": {
           "deprecated": true,
@@ -7198,56 +10258,81 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "properties": {
         "domain": {
           "description": "the row order: the rows listed lead, in this order, and the rest keep the order they arrived in.",
-          "anyOf": [
-            {
-              "type": "array",
-              "items": {
-                "anyOf": [
-                  {
-                    "type": "string"
-                  },
-                  {
-                    "type": "number"
-                  }
-                ]
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "anyOf": [
+              {
+                "type": "array",
+                "items": {
+                  "anyOf": [
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "number"
+                    }
+                  ]
+                }
               }
-            }
-          ]
+            ]
+          }
         },
         "labels": {
           "description": "a label drawn beside a row in place of its name, by name.",
-          "type": "object",
-          "additionalProperties": {
-            "type": "string"
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string"
+            }
           }
         },
         "tree": {
           "description": "the dendrogram beside the rows, as newick, written by a clustering run beside the order it produced.",
-          "$ref": "#/$defs/PlainString"
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/PlainString"
+          }
         },
         "treeProvenance": {
           "description": "what tree was computed from, the locus and the settings; unset for a tree that arrived as data. Any JSON value: the slot is \`frozen\`, so its shape is not checked here.",
-          "not": {
-            "$ref": "#/$defs/JexlString"
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "not": {
+              "$ref": "#/$defs/JexlString"
+            }
           }
         },
         "kept": {
           "description": "the rows shown, by name; empty, or naming no current row, shows every row.",
-          "anyOf": [
-            {
-              "type": "array",
-              "items": {
-                "anyOf": [
-                  {
-                    "type": "string"
-                  },
-                  {
-                    "type": "number"
-                  }
-                ]
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "anyOf": [
+              {
+                "type": "array",
+                "items": {
+                  "anyOf": [
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "number"
+                    }
+                  ]
+                }
               }
-            }
-          ]
+            ]
+          }
         }
       },
       "patternProperties": {
@@ -7270,67 +10355,102 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "properties": {
             "value": {
               "description": "CSS colour or jexl callback for every alt cell.",
-              "$ref": "#/$defs/CssColorOrJexl"
+              "if": {
+                "type": "null"
+              },
+              "else": {
+                "$ref": "#/$defs/CssColorOrJexl"
+              }
             },
             "field": {
               "description": "impact, the most severe SnpEff/VEP consequence tier; svType, the structural-variant class; phaseSet, the FORMAT PS block in phased mode; or any record field, INFO.CLNSIG say, or a jexl expression over feature, whose values each paint one range colour with a key. A record with no value keeps the default alt colour.",
-              "$ref": "#/$defs/FeatureField",
-              "default": ""
+              "default": "",
+              "if": {
+                "type": "null"
+              },
+              "else": {
+                "$ref": "#/$defs/FeatureField"
+              }
             },
             "scale": {
               "description": "none paints value and keeps the field for a switch back; categorical a range colour per value of field; threshold a range colour per interval between the cut points in domain; unset follows field.",
-              "enum": [
-                "none",
-                "categorical",
-                "threshold"
-              ]
+              "if": {
+                "type": "null"
+              },
+              "else": {
+                "enum": [
+                  "none",
+                  "categorical",
+                  "threshold"
+                ]
+              }
             },
             "domain": {
               "description": "the values that take the range first, in order; under threshold, the ascending cut points, a value on a cut taking the interval above it.",
-              "anyOf": [
-                {
-                  "type": "array",
-                  "items": {
-                    "anyOf": [
-                      {
-                        "type": "string"
-                      },
-                      {
-                        "type": "number"
-                      }
-                    ]
+              "if": {
+                "type": "null"
+              },
+              "else": {
+                "anyOf": [
+                  {
+                    "type": "array",
+                    "items": {
+                      "anyOf": [
+                        {
+                          "type": "string"
+                        },
+                        {
+                          "type": "number"
+                        }
+                      ]
+                    }
                   }
-                }
-              ]
+                ]
+              }
             },
             "range": {
               "description": "CSS colours the domain takes, in order, continuing into the default palette past its end; under threshold one per interval, one more than the cuts.",
-              "type": "array",
-              "items": {
-                "$ref": "#/$defs/CssColorEntry"
+              "if": {
+                "type": "null"
+              },
+              "else": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/$defs/CssColorEntry"
+                }
               }
             },
             "labels": {
               "description": "what the key names each domain value, one each in order, or under threshold each interval from the lowest; one past the list keeps its own name.",
-              "anyOf": [
-                {
-                  "type": "array",
-                  "items": {
-                    "anyOf": [
-                      {
-                        "type": "string"
-                      },
-                      {
-                        "type": "number"
-                      }
-                    ]
+              "if": {
+                "type": "null"
+              },
+              "else": {
+                "anyOf": [
+                  {
+                    "type": "array",
+                    "items": {
+                      "anyOf": [
+                        {
+                          "type": "string"
+                        },
+                        {
+                          "type": "number"
+                        }
+                      ]
+                    }
                   }
-                }
-              ]
+                ]
+              }
             },
             "title": {
               "description": "key title; unset keeps the display's own heading, \\"\\" draws none.",
-              "$ref": "#/$defs/PlainString"
+              "if": {
+                "type": "null"
+              },
+              "else": {
+                "$ref": "#/$defs/PlainString"
+              }
             }
           },
           "patternProperties": {
@@ -7345,150 +10465,290 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "properties": {
         "fetchSizeLimit": {
           "description": "maximum data to attempt to download for a given track, used if adapter doesn't specify one.",
-          "type": "number",
-          "default": 1000000
+          "default": 1000000,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "number"
+          }
         },
         "forceLoad": {
           "description": "Declarative equivalent of the \\"Force load\\" button on the \\"too much data\\" banner: when true the display always renders, however large the region or dense the features. Off by default (the gate guards against huge downloads). Set it on a view no one can interact with — an embedded / notebook view, or a screenshot — where the region is known and you want it drawn without a click.",
-          "type": "boolean",
-          "default": false
+          "default": false,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "boolean"
+          }
         },
         "height": {
           "description": "Starting height in pixels for the whole display, including any band above the rows; drag-resizable, and the rows divide what is left while row height is on auto-fit.",
-          "type": "number",
-          "default": 200
+          "default": 200,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "number"
+          }
         },
         "mouseover": {
           "description": "text to display when the cursor hovers over a feature.",
-          "$ref": "#/$defs/StringOrJexl",
-          "default": "jexl:get(feature,'_mouseOver')||get(feature,'name')||get(feature,'function')||get(feature,'id')"
+          "default": "jexl:get(feature,'_mouseOver')||get(feature,'name')||get(feature,'function')||get(feature,'id')",
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/StringOrJexl"
+          }
         },
         "variantLayout": {
           "description": "'genomic' draws each variant at its span; 'columns' draws one equal-width column per variant, tied to its position by a connector line.",
-          "enum": [
-            "genomic",
-            "columns"
-          ],
-          "default": "genomic"
+          "default": "genomic",
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "enum": [
+              "genomic",
+              "columns"
+            ]
+          }
         },
         "lineZoneHeight": {
-          "type": "number",
-          "default": 20
+          "default": 20,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "number"
+          }
         },
         "filter": {
           "description": "jexl: expressions a feature must pass to be drawn.",
-          "type": "array",
-          "items": {
-            "$ref": "#/$defs/JexlExpression"
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "array",
+            "items": {
+              "$ref": "#/$defs/JexlExpression"
+            }
           }
         },
         "rowHeight": {
           "description": "per-row height in px, scrolling the rows that do not fit; 0 (the default) fits the rows to the display height instead, dividing it between them.",
-          "type": "number",
-          "default": 0
+          "default": 0,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "number"
+          }
         },
         "showTree": {
           "description": "Show the sample clustering tree in the sidebar.",
-          "type": "boolean",
-          "default": true
+          "default": true,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "boolean"
+          }
         },
         "showBranchLength": {
           "description": "position tree nodes by branch length (dendrogram) rather than evenly by topology (cladogram).",
-          "type": "boolean",
-          "default": true
+          "default": true,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "boolean"
+          }
         },
         "showRowLabels": {
           "description": "Show the per-sample row labels in the sidebar.",
-          "type": "boolean",
-          "default": true
+          "default": true,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "boolean"
+          }
         },
         "treeAreaWidth": {
           "description": "width in px of the tree sidebar, which a drag on its edge also writes.",
-          "type": "number",
-          "default": 80
+          "default": 80,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "number"
+          }
         },
         "rows": {
-          "$ref": "#/$defs/RowArrangement"
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/RowArrangement"
+          }
         },
         "showRowSeparators": {
           "description": "draw a hairline between adjacent rows; off by default, because a painting whose neighbouring rows differ in color already separates itself and the line only earns its pixel where they do not — a run of same-colored rows reads as one block without it, with no way to recover the row count by eye. Drawn only once rows are at least 4px tall: below that the line is as thick as the row it borders, turning a dense painting into a grid of hairlines with a little color between them.",
-          "type": "boolean",
-          "default": false
+          "default": false,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "boolean"
+          }
         },
         "showTooltips": {
           "description": "show the hover tooltip over the genotype rows; the crosshairs and the hover highlight stay either way.",
-          "type": "boolean",
-          "default": true
+          "default": true,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "boolean"
+          }
         },
         "unit": {
           "description": "What one row stands for: 'sample' colors each row by allele dosage, 'haplotype' draws one row per phased haplotype.",
-          "enum": [
-            "sample",
-            "haplotype"
-          ],
-          "default": "sample"
+          "default": "sample",
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "enum": [
+              "sample",
+              "haplotype"
+            ]
+          }
         },
         "color": {
-          "$ref": "#/$defs/VariantCellColor"
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/VariantCellColor"
+          }
         },
         "shadeByDosage": {
           "description": "shade each alt cell by the fraction of its called alleles that are non-reference, so a homozygote is darker than a heterozygote; off paints every alt cell the mode's flat hue.",
-          "type": "boolean",
-          "default": true
+          "default": true,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "boolean"
+          }
         },
         "minorAlleleFrequencyFilter": {
           "description": "Hide variants whose minor allele frequency is below this threshold.",
-          "type": "number",
-          "default": 0
+          "default": 0,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "number"
+          }
         },
         "maxMissingnessFilter": {
           "description": "Hide variants whose fraction of uncalled alleles is above this threshold; 1 keeps every variant.",
-          "type": "number",
-          "default": 1
+          "default": 1,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "number"
+          }
         },
         "showLegend": {
           "description": "Whether to show the floating legend over the display; turn it off to size a short display to its rows rather than to its key. Defaults to on.",
-          "type": "boolean",
-          "default": true
+          "default": true,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "boolean"
+          }
         },
         "rowColor": {
-          "$ref": "#/$defs/RowColor"
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/RowColor"
+          }
         },
         "facet": {
-          "$ref": "#/$defs/Facet"
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/Facet"
+          }
         },
         "referenceDrawingMode": {
           "description": "whether to paint reference alleles: 'skip' (the default) fills the row background solid grey and paints only ALT alleles, which makes overlapping variants easier to pick out; 'draw' paints reference alleles like any other genotype.",
-          "enum": [
-            "draw",
-            "skip"
-          ],
-          "default": "skip"
+          "default": "skip",
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "enum": [
+              "draw",
+              "skip"
+            ]
+          }
         },
         "showInsertionGlyphs": {
           "description": "widen insertion cells to a marker sized by the inserted bp, instead of drawing them at the 2px floor like a SNP.",
-          "type": "boolean",
-          "default": true
+          "default": true,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "boolean"
+          }
         },
         "showVariantLane": {
           "description": "draw a lane of the variants themselves above the genotype rows, at their genomic positions.",
-          "type": "boolean",
-          "default": false
+          "default": false,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "boolean"
+          }
         },
         "variantLaneHeight": {
-          "type": "number",
-          "default": 40
+          "default": 40,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "number"
+          }
         },
         "variantLaneLabels": {
           "description": "which label text the variant lane draws beside each mark: the record's ID and/or its description, in plugin-canvas's own vocabulary. 'auto' admits both — the lane has no density thresholds of its own, so adaptivity is its collision cull.",
-          "enum": [
-            "auto",
-            "nameAndDescription",
-            "name",
-            "description",
-            "none"
-          ],
-          "default": "auto"
+          "default": "auto",
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "enum": [
+              "auto",
+              "nameAndDescription",
+              "name",
+              "description",
+              "none"
+            ]
+          }
         },
         "jexlFilters": {
           "deprecated": true,
@@ -7535,43 +10795,73 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "properties": {
         "field": {
           "description": "the statistic the cells are, r2 or dprime.",
-          "enum": [
-            "r2",
-            "dprime"
-          ],
-          "default": "r2"
+          "default": "r2",
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "enum": [
+              "r2",
+              "dprime"
+            ]
+          }
         },
         "scheme": {
           "description": "the named ramp the statistic runs across; unset is the field's own, reds for r2 and blues for dprime.",
-          "enum": [
-            "viridis",
-            "magma",
-            "inferno",
-            "cividis",
-            "juicebox",
-            "fall",
-            "reds",
-            "blues",
-            "redblue",
-            "purpleorange",
-            "redgreyblue"
-          ]
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "enum": [
+              "viridis",
+              "magma",
+              "inferno",
+              "cividis",
+              "juicebox",
+              "fall",
+              "reds",
+              "blues",
+              "redblue",
+              "purpleorange",
+              "redgreyblue"
+            ]
+          }
         },
         "reverse": {
           "description": "turns the scheme's ramp round; unset reverses a scheme dark at its low end.",
-          "type": "boolean"
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "boolean"
+          }
         },
         "domainMin": {
           "description": "the value the bottom colour paints, everything below it too; unset is 0.",
-          "type": "number"
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "number"
+          }
         },
         "domainMax": {
           "description": "the value the top colour paints, everything above it too; unset is 1.",
-          "type": "number"
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "number"
+          }
         },
         "scale": {
           "description": "linear, the one scale; unset is linear.",
-          "const": "linear"
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "const": "linear"
+          }
         }
       },
       "patternProperties": {
@@ -7584,52 +10874,102 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "properties": {
         "height": {
           "description": "default height of the display, the band above the triangle included.",
-          "type": "number",
-          "default": 400
+          "default": 400,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "number"
+          }
         },
         "showLegend": {
           "description": "show the color scale legend.",
-          "type": "boolean",
-          "default": false
+          "default": false,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "boolean"
+          }
         },
         "squashToHeight": {
           "description": "squash the triangle vertically to fill the display height instead of drawing square cells.",
-          "type": "boolean",
-          "default": false
+          "default": false,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "boolean"
+          }
         },
         "lineZoneHeight": {
           "description": "height of the band above the triangle holding the connector lines and labels.",
-          "type": "number",
-          "default": 100
+          "default": 100,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "number"
+          }
         },
         "color": {
-          "$ref": "#/$defs/LDColor"
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/LDColor"
+          }
         },
         "maxVariantSeparation": {
-          "type": "number",
-          "default": 0
+          "default": 0,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "number"
+          }
         },
         "showVerticalGuides": {
           "description": "on hover, draw guides across the view at the pair's genomic positions.",
-          "type": "boolean",
-          "default": true
+          "default": true,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "boolean"
+          }
         },
         "showLabels": {
           "description": "show variant labels above the tick marks.",
-          "type": "boolean",
-          "default": false
+          "default": false,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "boolean"
+          }
         },
         "tickHeight": {
           "description": "height of the tick marks at the genomic positions.",
-          "type": "number",
-          "default": 6
+          "default": 6,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "number"
+          }
         },
         "variantLayout": {
-          "enum": [
-            "genomic",
-            "columns"
-          ],
-          "default": "columns"
+          "default": "columns",
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "enum": [
+              "genomic",
+              "columns"
+            ]
+          }
         },
         "ldMetric": {
           "deprecated": true,
@@ -7676,91 +11016,141 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "properties": {
             "value": {
               "description": "CSS colour painting every bar.",
-              "$ref": "#/$defs/CssColor"
+              "if": {
+                "type": "null"
+              },
+              "else": {
+                "$ref": "#/$defs/CssColor"
+              }
             },
             "field": {
               "description": "score, the value each bar carries.",
-              "const": "score"
+              "if": {
+                "type": "null"
+              },
+              "else": {
+                "const": "score"
+              }
             },
             "scale": {
               "description": "threshold bands score at the domain cuts, linear ramps it across the y domain, none paints value; unset beside a field is threshold.",
-              "enum": [
-                "none",
-                "linear",
-                "threshold"
-              ]
+              "if": {
+                "type": "null"
+              },
+              "else": {
+                "enum": [
+                  "none",
+                  "linear",
+                  "threshold"
+                ]
+              }
             },
             "domain": {
               "description": "for a threshold scale, up to eight cut points, sorted, empty meaning one at the origin.",
-              "anyOf": [
-                {
-                  "type": "array",
-                  "items": {
-                    "anyOf": [
-                      {
-                        "type": "string"
-                      },
-                      {
-                        "type": "number"
-                      }
-                    ]
+              "if": {
+                "type": "null"
+              },
+              "else": {
+                "anyOf": [
+                  {
+                    "type": "array",
+                    "items": {
+                      "anyOf": [
+                        {
+                          "type": "string"
+                        },
+                        {
+                          "type": "number"
+                        }
+                      ]
+                    }
                   }
-                }
-              ]
+                ]
+              }
             },
             "range": {
               "description": "a threshold scale's colour for each band, lowest first, one more than the cuts, a missing middle band grey; a linear scale's stops, evenly spaced, one colour meaning white to it.",
-              "type": "array",
-              "items": {
-                "$ref": "#/$defs/CssColorEntry"
+              "if": {
+                "type": "null"
+              },
+              "else": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/$defs/CssColorEntry"
+                }
               }
             },
             "scheme": {
               "description": "a named ramp for a linear or log scale; range's colours, where it lists any, win over it.",
-              "enum": [
-                "viridis",
-                "magma",
-                "inferno",
-                "cividis",
-                "juicebox",
-                "fall",
-                "reds",
-                "blues",
-                "redblue",
-                "purpleorange",
-                "redgreyblue"
-              ]
+              "if": {
+                "type": "null"
+              },
+              "else": {
+                "enum": [
+                  "viridis",
+                  "magma",
+                  "inferno",
+                  "cividis",
+                  "juicebox",
+                  "fall",
+                  "reds",
+                  "blues",
+                  "redblue",
+                  "purpleorange",
+                  "redgreyblue"
+                ]
+              }
             },
             "reverse": {
               "description": "turns a linear or log scale's ramp round, so its last colour paints the bottom of the domain.",
-              "type": "boolean",
-              "default": false
+              "default": false,
+              "if": {
+                "type": "null"
+              },
+              "else": {
+                "type": "boolean"
+              }
             },
             "domainMid": {
               "description": "the value the ramp's middle stop sits at, so a diverging ramp centres somewhere other than the middle of the domain, both sides on one scale: the farther end of the domain reaches its end colour and equal distances from the middle take equal colours; unset, the stops are evenly spaced across it.",
-              "type": "number"
+              "if": {
+                "type": "null"
+              },
+              "else": {
+                "type": "number"
+              }
             },
             "labels": {
               "description": "what the key names each domain value, one each in order, or under threshold each interval from the lowest; one past the list keeps its own name.",
-              "anyOf": [
-                {
-                  "type": "array",
-                  "items": {
-                    "anyOf": [
-                      {
-                        "type": "string"
-                      },
-                      {
-                        "type": "number"
-                      }
-                    ]
+              "if": {
+                "type": "null"
+              },
+              "else": {
+                "anyOf": [
+                  {
+                    "type": "array",
+                    "items": {
+                      "anyOf": [
+                        {
+                          "type": "string"
+                        },
+                        {
+                          "type": "number"
+                        }
+                      ]
+                    }
                   }
-                }
-              ]
+                ]
+              }
             },
             "title": {
               "description": "key title; unset keeps the display's own heading, \\"\\" draws none.",
-              "$ref": "#/$defs/PlainString"
+              "if": {
+                "type": "null"
+              },
+              "else": {
+                "$ref": "#/$defs/PlainString"
+              }
             }
           },
           "patternProperties": {
@@ -7777,58 +11167,113 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "properties": {
         "type": {
           "description": "linear or log or symlog.",
-          "enum": [
-            "linear",
-            "log",
-            "symlog"
-          ],
-          "default": "linear"
+          "default": "linear",
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "enum": [
+              "linear",
+              "log",
+              "symlog"
+            ]
+          }
         },
         "domainMin": {
           "description": "pinned bottom of the axis; unset autoscales.",
-          "type": "number"
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "number"
+          }
         },
         "domainMax": {
           "description": "pinned top of the axis; unset autoscales.",
-          "type": "number"
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "number"
+          }
         },
         "zero": {
           "description": "an autoscaled linear or symlog axis reaches 0; off, it spans the loaded values.",
-          "type": "boolean",
-          "default": true
+          "default": true,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "boolean"
+          }
         },
         "autoscaleGroup": {
           "description": "tracks naming one group autoscale together.",
-          "$ref": "#/$defs/PlainString"
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/PlainString"
+          }
         },
         "symlogConstant": {
           "description": "width of symlog's linear region around zero.",
-          "type": "number",
-          "default": 0
+          "default": 0,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "number"
+          }
         },
         "domainQuantile": {
           "description": "fences outliers: 1 follows the extremes; below it an extreme past twice the span this quantile draws is cut there.",
-          "type": "number",
-          "default": 0.99
+          "default": 0.99,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "number"
+          }
         },
         "grid": {
           "description": "rule the plot at the tick positions.",
-          "type": "boolean",
-          "default": false
+          "default": false,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "boolean"
+          }
         },
         "minimalTicks": {
           "description": "label only the ends of the axis.",
-          "type": "boolean",
-          "default": false
+          "default": false,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "boolean"
+          }
         },
         "title": {
           "description": "axis caption; unset draws none.",
-          "$ref": "#/$defs/PlainString"
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/PlainString"
+          }
         },
         "rules": {
-          "type": "array",
-          "items": {
-            "$ref": "#/$defs/ValueScaleRule"
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "array",
+            "items": {
+              "$ref": "#/$defs/ValueScaleRule"
+            }
           }
         }
       },
@@ -7843,7 +11288,12 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "x-closed": true,
       "properties": {
         "y": {
-          "$ref": "#/$defs/ValueScale2"
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/ValueScale2"
+          }
         }
       },
       "patternProperties": {
@@ -7856,108 +11306,208 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "properties": {
         "mark": {
           "description": "bar, point, line or heatmap.",
-          "enum": [
-            "bar",
-            "point",
-            "line",
-            "heatmap"
-          ],
-          "default": "bar"
+          "default": "bar",
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "enum": [
+              "bar",
+              "point",
+              "line",
+              "heatmap"
+            ]
+          }
         },
         "interpolate": {
           "description": "step or linear, for a line.",
-          "enum": [
-            "step",
-            "linear"
-          ],
-          "default": "step"
+          "default": "step",
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "enum": [
+              "step",
+              "linear"
+            ]
+          }
         },
         "rows": {
-          "$ref": "#/$defs/Rows"
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/Rows"
+          }
         },
         "rowColor": {
-          "$ref": "#/$defs/RowColor"
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/RowColor"
+          }
         },
         "height": {
           "description": "default height for the track.",
-          "type": "number",
-          "default": 100
+          "default": 100,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "number"
+          }
         },
         "color": {
-          "$ref": "#/$defs/WiggleColor"
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/WiggleColor"
+          }
         },
         "scoreField": {
           "description": "Feature field plotted on the score axis, read natively off each feature. The default \`score\` is the field every adapter serves — including the value a BED adapter's \`scoreColumn\` rewrote it to — so an explicit name here reaches a raw column the adapter left alone (a BED extra column, a GFF attribute) and takes precedence over that adapter-tier rewrite. The Manhattan plot skips a feature with no finite value in the field; the wiggle renderings plot it at 0.",
-          "$ref": "#/$defs/PlainString",
-          "default": "score"
+          "default": "score",
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/PlainString"
+          }
         },
         "resolution": {
           "description": "how many points per pixel the fetch asks a tiered file for: 1 is one per pixel, larger is finer and smaller is coarser. Clamped to the range the Resolution menu offers, so a value outside it reads as the nearest end.",
-          "type": "number",
-          "default": 1
+          "default": 1,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "number"
+          }
         },
         "origin": {
           "description": "The value bars grow from, and the cut a threshold color scale with an empty domain uses. The same slot, with the same meaning, as the mark display's origin.",
-          "type": "number",
-          "default": 0
+          "default": 0,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "number"
+          }
         },
         "size": {
           "description": "Point diameter in px for the point mark, the display's constant for what the mark display spells encoding.size.",
-          "type": "number",
-          "default": 2
+          "default": 2,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "number"
+          }
         },
         "lineWidth": {
           "description": "Line thickness in px for line rendering. Defaults to 1.",
-          "type": "number",
-          "default": 1
+          "default": 1,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "number"
+          }
         },
         "maxGapMultiple": {
           "description": "Interpolated line only: break the line where consecutive points sit further apart than this multiple of the track's own mean point spacing, instead of drawing one long chord across the hole. Scaled to the data rather than a fixed bp distance so it holds at every zoom. 0 keeps one connected line.",
-          "type": "number",
-          "default": 0
+          "default": 0,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "number"
+          }
         },
         "scales": {
-          "$ref": "#/$defs/Scales2"
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/Scales2"
+          }
         },
         "showLegend": {
           "description": "Draw the key: density's score color ramp, or the source colors where several share one plot. Defaults to on.",
-          "type": "boolean",
-          "default": true
+          "default": true,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "boolean"
+          }
         },
         "summaryScoreMode": {
           "description": "choose whether to use max/min/average or whiskers which combines all three into the same rendering.",
-          "enum": [
-            "max",
-            "min",
-            "avg",
-            "whiskers"
-          ],
-          "default": "whiskers"
+          "default": "whiskers",
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "enum": [
+              "max",
+              "min",
+              "avg",
+              "whiskers"
+            ]
+          }
         },
         "showTree": {
           "description": "Show the subtrack clustering tree in the sidebar.",
-          "type": "boolean",
-          "default": true
+          "default": true,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "boolean"
+          }
         },
         "showBranchLength": {
           "description": "position tree nodes by branch length (dendrogram) rather than evenly by topology (cladogram).",
-          "type": "boolean",
-          "default": true
+          "default": true,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "boolean"
+          }
         },
         "showRowLabels": {
           "description": "Name each subtrack row down the left edge.",
-          "type": "boolean",
-          "default": true
+          "default": true,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "boolean"
+          }
         },
         "treeAreaWidth": {
           "description": "width in px of the tree sidebar, which a drag on its edge also writes.",
-          "type": "number",
-          "default": 80
+          "default": 80,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "number"
+          }
         },
         "showRowSeparators": {
           "description": "draw a hairline between adjacent rows; off by default, because a painting whose neighbouring rows differ in color already separates itself and the line only earns its pixel where they do not — a run of same-colored rows reads as one block without it, with no way to recover the row count by eye. Drawn only once rows are at least 4px tall: below that the line is as thick as the row it borders, turning a dense painting into a grid of hairlines with a little color between them.",
-          "type": "boolean",
-          "default": false
+          "default": false,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "boolean"
+          }
         },
         "displayCrossHatches": {
           "deprecated": true,
@@ -8007,6 +11557,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "anyOf": [
         {
           "description": "Shorthand for \`{ \\"field\\": ... }\`.",
+          "default": "mismatch",
           "enum": [
             "mismatch",
             "base",
@@ -8014,7 +11565,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "chromosome",
             "codon"
           ],
-          "default": "mismatch",
           "type": "string"
         },
         {
@@ -8024,94 +11574,144 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "properties": {
             "field": {
               "description": "what colours a cell: mismatch, base, identity, chromosome or codon.",
-              "enum": [
-                "mismatch",
-                "base",
-                "identity",
-                "chromosome",
-                "codon"
-              ],
-              "default": "mismatch"
+              "default": "mismatch",
+              "if": {
+                "type": "null"
+              },
+              "else": {
+                "enum": [
+                  "mismatch",
+                  "base",
+                  "identity",
+                  "chromosome",
+                  "codon"
+                ]
+              }
             },
             "domain": {
               "description": "the values the key lists, in order: under chromosome each rank from 0, the main source chromosome; under codon nonsyn, syn and stop.",
-              "anyOf": [
-                {
-                  "type": "array",
-                  "items": {
-                    "anyOf": [
-                      {
-                        "type": "string"
-                      },
-                      {
-                        "type": "number"
-                      }
-                    ]
+              "if": {
+                "type": "null"
+              },
+              "else": {
+                "anyOf": [
+                  {
+                    "type": "array",
+                    "items": {
+                      "anyOf": [
+                        {
+                          "type": "string"
+                        },
+                        {
+                          "type": "number"
+                        }
+                      ]
+                    }
                   }
-                }
-              ]
+                ]
+              }
             },
             "range": {
               "description": "CSS colours: under chromosome one per rank from the main source chromosome, the last painting every rank past it; under identity the ramp's stops, winning over scheme; the bases and the codons paint the theme's colours.",
-              "type": "array",
-              "items": {
-                "$ref": "#/$defs/CssColorEntry"
+              "if": {
+                "type": "null"
+              },
+              "else": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/$defs/CssColorEntry"
+                }
               }
             },
             "labels": {
               "description": "what the key names each domain value, one each in order; one past the list keeps its own name.",
-              "anyOf": [
-                {
-                  "type": "array",
-                  "items": {
-                    "anyOf": [
-                      {
-                        "type": "string"
-                      },
-                      {
-                        "type": "number"
-                      }
-                    ]
+              "if": {
+                "type": "null"
+              },
+              "else": {
+                "anyOf": [
+                  {
+                    "type": "array",
+                    "items": {
+                      "anyOf": [
+                        {
+                          "type": "string"
+                        },
+                        {
+                          "type": "number"
+                        }
+                      ]
+                    }
                   }
-                }
-              ]
+                ]
+              }
             },
             "title": {
               "description": "key title; unset is the field's own heading, \\"\\" draws none.",
-              "$ref": "#/$defs/PlainString"
+              "if": {
+                "type": "null"
+              },
+              "else": {
+                "$ref": "#/$defs/PlainString"
+              }
             },
             "scheme": {
               "description": "the named ramp identity runs along; unset is redgreyblue, and range's colours, where it lists any, win over it.",
-              "enum": [
-                "viridis",
-                "magma",
-                "inferno",
-                "cividis",
-                "juicebox",
-                "fall",
-                "reds",
-                "blues",
-                "redblue",
-                "purpleorange",
-                "redgreyblue"
-              ]
+              "if": {
+                "type": "null"
+              },
+              "else": {
+                "enum": [
+                  "viridis",
+                  "magma",
+                  "inferno",
+                  "cividis",
+                  "juicebox",
+                  "fall",
+                  "reds",
+                  "blues",
+                  "redblue",
+                  "purpleorange",
+                  "redgreyblue"
+                ]
+              }
             },
             "reverse": {
               "description": "turns the identity ramp round, so its last colour paints the low end.",
-              "type": "boolean",
-              "default": false
+              "default": false,
+              "if": {
+                "type": "null"
+              },
+              "else": {
+                "type": "boolean"
+              }
             },
             "domainMin": {
               "description": "the identity the ramp's low end paints, 0 to 1; unset is 0, and 0.7 spreads the ramp over close relatives.",
-              "type": "number"
+              "if": {
+                "type": "null"
+              },
+              "else": {
+                "type": "number"
+              }
             },
             "domainMax": {
               "description": "the identity the ramp's high end paints; unset is 1.",
-              "type": "number"
+              "if": {
+                "type": "null"
+              },
+              "else": {
+                "type": "number"
+              }
             },
             "domainMid": {
               "description": "the value the ramp's middle stop sits at, so a diverging ramp centres somewhere other than the middle of the domain, both sides on one scale: the farther end of the domain reaches its end colour and equal distances from the middle take equal colours; unset, the stops are evenly spaced across it.",
-              "type": "number"
+              "if": {
+                "type": "null"
+              },
+              "else": {
+                "type": "number"
+              }
             }
           },
           "patternProperties": {
@@ -8126,133 +11726,268 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "properties": {
         "fetchSizeLimit": {
           "description": "maximum data to attempt to download for a given track, used if adapter doesn't specify one.",
-          "type": "number",
-          "default": 5000000
+          "default": 5000000,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "number"
+          }
         },
         "forceLoad": {
           "description": "Declarative equivalent of the \\"Force load\\" button on the \\"too much data\\" banner: when true the display always renders, however large the region or dense the features. Off by default (the gate guards against huge downloads). Set it on a view no one can interact with — an embedded / notebook view, or a screenshot — where the region is known and you want it drawn without a click.",
-          "type": "boolean",
-          "default": false
+          "default": false,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "boolean"
+          }
         },
         "height": {
           "description": "display height in pixels; unset fits rows to content, bounded so a deep alignment shrinks its rows rather than growing the track off-screen.",
-          "type": "number"
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "number"
+          }
         },
         "mouseover": {
           "description": "text to display when the cursor hovers over a feature.",
-          "$ref": "#/$defs/StringOrJexl",
-          "default": "jexl:get(feature,'_mouseOver')||get(feature,'name')||get(feature,'function')||get(feature,'id')"
+          "default": "jexl:get(feature,'_mouseOver')||get(feature,'name')||get(feature,'function')||get(feature,'id')",
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/StringOrJexl"
+          }
         },
         "rowHeight": {
           "description": "per-row height in px, scrolling the rows that do not fit; 0 (the default) fits the rows to the display height instead, dividing it between them.",
-          "type": "number",
-          "default": 0
+          "default": 0,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "number"
+          }
         },
         "rowProportion": {
           "description": "fraction of the row height each glyph fills.",
-          "type": "number",
-          "default": 0.8
+          "default": 0.8,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "number"
+          }
         },
         "showAllLetters": {
           "description": "draw every base's letter, not only the mismatches'.",
-          "type": "boolean",
-          "default": false
+          "default": false,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "boolean"
+          }
         },
         "color": {
-          "$ref": "#/$defs/MafColor"
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/MafColor"
+          }
         },
         "y": {
           "description": "what a row's bar height carries: identity, or unset for none.",
-          "const": "identity"
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "const": "identity"
+          }
         },
         "showAsUpperCase": {
           "description": "uppercase all base letters.",
-          "type": "boolean",
-          "default": true
+          "default": true,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "boolean"
+          }
         },
         "showTree": {
           "description": "show the species tree sidebar.",
-          "type": "boolean",
-          "default": true
+          "default": true,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "boolean"
+          }
         },
         "showBranchLength": {
           "description": "position tree nodes by branch length (dendrogram) rather than evenly by topology (cladogram).",
-          "type": "boolean",
-          "default": true
+          "default": true,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "boolean"
+          }
         },
         "showRowLabels": {
           "description": "draw the species name over the left of each row.",
-          "type": "boolean",
-          "default": true
+          "default": true,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "boolean"
+          }
         },
         "treeAreaWidth": {
           "description": "width in px of the tree sidebar, which a drag on its edge also writes.",
-          "type": "number",
-          "default": 80
+          "default": 80,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "number"
+          }
         },
         "rows": {
-          "$ref": "#/$defs/RowArrangement"
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/RowArrangement"
+          }
         },
         "rowColor": {
-          "$ref": "#/$defs/RowColor"
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/RowColor"
+          }
         },
         "showLegend": {
           "description": "show the color key for the active row rendering. Defaults to on.",
-          "type": "boolean",
-          "default": true
+          "default": true,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "boolean"
+          }
         },
         "showCoverage": {
           "description": "show the coverage band.",
-          "type": "boolean",
-          "default": true
+          "default": true,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "boolean"
+          }
         },
         "showAlignments": {
           "description": "show the per-sample alignment rows.",
-          "type": "boolean",
-          "default": true
+          "default": true,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "boolean"
+          }
         },
         "coverageHeight": {
           "description": "height of the coverage band in px.",
-          "type": "number",
-          "default": 45
+          "default": 45,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "number"
+          }
         },
         "showConservation": {
           "description": "show the conservation band.",
-          "type": "boolean",
-          "default": false
+          "default": false,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "boolean"
+          }
         },
         "conservationHeight": {
           "description": "height of the conservation band in px.",
-          "type": "number",
-          "default": 40
+          "default": 40,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "number"
+          }
         },
         "conservationMode": {
           "description": "conservation band resolution: base or codon.",
-          "enum": [
-            "base",
-            "codon"
-          ],
-          "default": "base"
+          "default": "base",
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "enum": [
+              "base",
+              "codon"
+            ]
+          }
         },
         "rowIdentityAutoZoom": {
           "description": "show the bases instead of the identity plot once zoomed in to base level (UCSC wigMaf); false draws identity at every zoom.",
-          "type": "boolean",
-          "default": true
+          "default": true,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "boolean"
+          }
         },
         "showAnnotations": {
           "description": "show the per-species CDS reading-frame overlay.",
-          "type": "boolean",
-          "default": false
+          "default": false,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "boolean"
+          }
         },
         "showReferenceRow": {
           "description": "give the reference species a row of its own.",
-          "type": "boolean",
-          "default": true
+          "default": true,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "boolean"
+          }
         },
         "showInversions": {
           "description": "hatch strand-flipped (inverted) alignment blocks.",
-          "type": "boolean",
-          "default": false
+          "default": false,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "boolean"
+          }
         }
       }
     },
@@ -8287,49 +12022,84 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "properties": {
         "field": {
           "description": "count, each bin's contact count.",
-          "const": "count",
-          "default": "count"
+          "default": "count",
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "const": "count"
+          }
         },
         "scheme": {
           "description": "the named ramp counts run across; juicebox fades from transparent to red.",
-          "enum": [
-            "viridis",
-            "magma",
-            "inferno",
-            "cividis",
-            "juicebox",
-            "fall",
-            "reds",
-            "blues",
-            "redblue",
-            "purpleorange",
-            "redgreyblue"
-          ],
-          "default": "juicebox"
+          "default": "juicebox",
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "enum": [
+              "viridis",
+              "magma",
+              "inferno",
+              "cividis",
+              "juicebox",
+              "fall",
+              "reds",
+              "blues",
+              "redblue",
+              "purpleorange",
+              "redgreyblue"
+            ]
+          }
         },
         "reverse": {
           "description": "turns the scheme's ramp round; unset reverses a scheme dark at its low end.",
-          "type": "boolean"
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "boolean"
+          }
         },
         "domainMin": {
           "description": "the bottom of the scale; unset is 0.",
-          "type": "number"
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "number"
+          }
         },
         "domainQuantile": {
           "description": "the quantile of the loaded counts an unset domainMax follows; 1 is their maximum.",
-          "type": "number",
-          "default": 0.95
+          "default": 0.95,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "number"
+          }
         },
         "scale": {
           "description": "linear, or log2 of the count, which lifts sparse long-range bins off the floor; unset is linear.",
-          "enum": [
-            "linear",
-            "log"
-          ]
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "enum": [
+              "linear",
+              "log"
+            ]
+          }
         },
         "domainMax": {
           "description": "the top of a linear or log scale's domain; unset follows the loaded values.",
-          "type": "number"
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "number"
+          }
         }
       },
       "patternProperties": {
@@ -8342,36 +12112,71 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "properties": {
         "height": {
           "description": "default height for the Hi-C track.",
-          "type": "number",
-          "default": 300
+          "default": 300,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "number"
+          }
         },
         "showLegend": {
           "description": "show the color scale legend.",
-          "type": "boolean",
-          "default": false
+          "default": false,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "boolean"
+          }
         },
         "squashToHeight": {
           "description": "squash the triangle vertically to fill the display height instead of drawing square cells.",
-          "type": "boolean",
-          "default": false
+          "default": false,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "boolean"
+          }
         },
         "color": {
-          "$ref": "#/$defs/HicColor"
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/HicColor"
+          }
         },
         "resolutionBias": {
           "description": "steps from the zoom-picked binsize: -1 one finer, +1 one coarser, 0 follows the zoom.",
-          "type": "number",
-          "default": 0
+          "default": 0,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "number"
+          }
         },
         "showResolutionControls": {
           "description": "show the on-figure resolution dropdown in the overlay.",
-          "type": "boolean",
-          "default": false
+          "default": false,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "boolean"
+          }
         },
         "selectedNormalization": {
           "description": "preferred matrix normalization (KR, SCALE, VC, VC_SQRT, NONE); a scheme the file lacks falls back to one it has.",
-          "$ref": "#/$defs/PlainString",
-          "default": "KR"
+          "default": "KR",
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/PlainString"
+          }
         },
         "useColorPercentile": {
           "deprecated": true,
@@ -8408,8 +12213,8 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "anyOf": [
         {
           "description": "Shorthand for \`{ \\"field\\": ... }\`.",
-          "$ref": "#/$defs/FeatureField",
           "default": "",
+          "$ref": "#/$defs/FeatureField",
           "type": "string"
         },
         {
@@ -8419,31 +12224,46 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "properties": {
             "field": {
               "description": "feature field (or jexl expression) to group by, one labelled section per value; \`strand\` for one per strand.",
-              "$ref": "#/$defs/FeatureField",
-              "default": ""
+              "default": "",
+              "if": {
+                "type": "null"
+              },
+              "else": {
+                "$ref": "#/$defs/FeatureField"
+              }
             },
             "domain": {
               "description": "values whose sections stack first, in order.",
-              "anyOf": [
-                {
-                  "type": "array",
-                  "items": {
-                    "anyOf": [
-                      {
-                        "type": "string"
-                      },
-                      {
-                        "type": "number"
-                      }
-                    ]
+              "if": {
+                "type": "null"
+              },
+              "else": {
+                "anyOf": [
+                  {
+                    "type": "array",
+                    "items": {
+                      "anyOf": [
+                        {
+                          "type": "string"
+                        },
+                        {
+                          "type": "number"
+                        }
+                      ]
+                    }
                   }
-                }
-              ]
+                ]
+              }
             },
             "transform": {
-              "type": "array",
-              "items": {
-                "$ref": "#/$defs/MarkTransform"
+              "if": {
+                "type": "null"
+              },
+              "else": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/$defs/MarkTransform"
+                }
               }
             }
           },
@@ -8461,58 +12281,113 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "properties": {
         "type": {
           "description": "linear or log or symlog.",
-          "enum": [
-            "linear",
-            "log",
-            "symlog"
-          ],
-          "default": "linear"
+          "default": "linear",
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "enum": [
+              "linear",
+              "log",
+              "symlog"
+            ]
+          }
         },
         "domainMin": {
           "description": "pinned bottom of the axis; unset autoscales.",
-          "type": "number"
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "number"
+          }
         },
         "domainMax": {
           "description": "pinned top of the axis; unset autoscales.",
-          "type": "number"
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "number"
+          }
         },
         "zero": {
           "description": "an autoscaled linear or symlog axis reaches 0; off, it spans the loaded values.",
-          "type": "boolean",
-          "default": true
+          "default": true,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "boolean"
+          }
         },
         "autoscaleGroup": {
           "description": "tracks naming one group autoscale together.",
-          "$ref": "#/$defs/PlainString"
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/PlainString"
+          }
         },
         "symlogConstant": {
           "description": "width of symlog's linear region around zero.",
-          "type": "number",
-          "default": 0
+          "default": 0,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "number"
+          }
         },
         "domainQuantile": {
           "description": "fences outliers: 1 follows the extremes; below it an extreme past twice the span this quantile draws is cut there.",
-          "type": "number",
-          "default": 1
+          "default": 1,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "number"
+          }
         },
         "grid": {
           "description": "rule the plot at the tick positions.",
-          "type": "boolean",
-          "default": false
+          "default": false,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "boolean"
+          }
         },
         "minimalTicks": {
           "description": "label only the ends of the axis.",
-          "type": "boolean",
-          "default": false
+          "default": false,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "boolean"
+          }
         },
         "title": {
           "description": "axis caption; unset draws none.",
-          "$ref": "#/$defs/PlainString"
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/PlainString"
+          }
         },
         "rules": {
-          "type": "array",
-          "items": {
-            "$ref": "#/$defs/ValueScaleRule"
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "array",
+            "items": {
+              "$ref": "#/$defs/ValueScaleRule"
+            }
           }
         }
       },
@@ -8527,7 +12402,12 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "x-closed": true,
       "properties": {
         "y": {
-          "$ref": "#/$defs/ValueScale3"
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/ValueScale3"
+          }
         }
       },
       "patternProperties": {
@@ -8540,102 +12420,202 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "properties": {
         "height": {
           "description": "default height for the track.",
-          "type": "number",
-          "default": 100
+          "default": 100,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "number"
+          }
         },
         "fetchSizeLimit": {
           "description": "maximum data to attempt to download for a given track, used if adapter doesn't specify one.",
-          "type": "number",
-          "default": 1000000
+          "default": 1000000,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "number"
+          }
         },
         "forceLoad": {
           "description": "Declarative equivalent of the \\"Force load\\" button on the \\"too much data\\" banner: when true the display always renders, however large the region or dense the features. Off by default (the gate guards against huge downloads). Set it on a view no one can interact with — an embedded / notebook view, or a screenshot — where the region is known and you want it drawn without a click.",
-          "type": "boolean",
-          "default": false
+          "default": false,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "boolean"
+          }
         },
         "densityTier": {
           "description": "when to draw the features-per-bin density band in place of features: \\"auto\\" swaps to it where the region is too large to fetch, \\"features\\" never does and keeps the banner, \\"density\\" always does. Needs a density source on the adapter (its densityAdapter slot).",
-          "enum": [
-            "auto",
-            "features",
-            "density"
-          ],
-          "default": "auto"
+          "default": "auto",
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "enum": [
+              "auto",
+              "features",
+              "density"
+            ]
+          }
         },
         "densityTierBpPerPx": {
           "description": "in \\"auto\\" mode, also draw the density band from this many bp per pixel outward, before the region is too large to fetch; 0 leaves the swap to the fetch-size gate alone.",
-          "type": "number",
-          "default": 0
+          "default": 0,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "number"
+          }
         },
         "marks": {
-          "type": "array",
-          "items": {
-            "$ref": "#/$defs/Mark"
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "array",
+            "items": {
+              "$ref": "#/$defs/Mark"
+            }
           }
         },
         "transform": {
-          "type": "array",
-          "items": {
-            "$ref": "#/$defs/MarkTransform"
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "array",
+            "items": {
+              "$ref": "#/$defs/MarkTransform"
+            }
           }
         },
         "facet": {
-          "$ref": "#/$defs/MarkFacet"
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/MarkFacet"
+          }
         },
         "rows": {
-          "$ref": "#/$defs/Rows"
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/Rows"
+          }
         },
         "rowColor": {
-          "$ref": "#/$defs/RowColor"
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/RowColor"
+          }
         },
         "showTree": {
           "description": "show the cluster tree beside the rows.",
-          "type": "boolean",
-          "default": true
+          "default": true,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "boolean"
+          }
         },
         "showBranchLength": {
           "description": "position tree nodes by branch length (dendrogram) rather than evenly by topology (cladogram).",
-          "type": "boolean",
-          "default": true
+          "default": true,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "boolean"
+          }
         },
         "showRowLabels": {
           "description": "draw the row value over the left of each row.",
-          "type": "boolean",
-          "default": true
+          "default": true,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "boolean"
+          }
         },
         "treeAreaWidth": {
           "description": "width in px of the tree sidebar, which a drag on its edge also writes.",
-          "type": "number",
-          "default": 80
+          "default": 80,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "number"
+          }
         },
         "rowHeight": {
           "description": "per-row height in px under rows, scrolling the rows that do not fit; 0 (the default) fits the rows to the plot instead, dividing it between them.",
-          "type": "number",
-          "default": 0
+          "default": 0,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "number"
+          }
         },
         "scales": {
-          "$ref": "#/$defs/Scales3"
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/Scales3"
+          }
         },
         "origin": {
           "description": "baseline value for bars.",
-          "type": "number",
-          "default": 0
+          "default": 0,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "number"
+          }
         },
         "minWidthPx": {
           "description": "minimum bar/span width in px.",
-          "type": "number",
-          "default": 1
+          "default": 1,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "number"
+          }
         },
         "showLegend": {
           "description": "draw the colour key.",
-          "type": "boolean",
-          "default": true
+          "default": true,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "boolean"
+          }
         },
         "filter": {
           "description": "jexl: expressions a feature must pass to be drawn.",
-          "type": "array",
-          "items": {
-            "$ref": "#/$defs/JexlExpression"
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "array",
+            "items": {
+              "$ref": "#/$defs/JexlExpression"
+            }
           }
         },
         "displayCrossHatches": {
@@ -8681,102 +12661,202 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "properties": {
         "height": {
           "description": "default height for the track.",
-          "type": "number",
-          "default": 150
+          "default": 150,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "number"
+          }
         },
         "fetchSizeLimit": {
           "description": "maximum data to attempt to download for a given track, used if adapter doesn't specify one.",
-          "type": "number",
-          "default": 1000000
+          "default": 1000000,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "number"
+          }
         },
         "forceLoad": {
           "description": "Declarative equivalent of the \\"Force load\\" button on the \\"too much data\\" banner: when true the display always renders, however large the region or dense the features. Off by default (the gate guards against huge downloads). Set it on a view no one can interact with — an embedded / notebook view, or a screenshot — where the region is known and you want it drawn without a click.",
-          "type": "boolean",
-          "default": false
+          "default": false,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "boolean"
+          }
         },
         "densityTier": {
           "description": "when to draw the features-per-bin density band in place of features: \\"auto\\" swaps to it where the region is too large to fetch, \\"features\\" never does and keeps the banner, \\"density\\" always does. Needs a density source on the adapter (its densityAdapter slot).",
-          "enum": [
-            "auto",
-            "features",
-            "density"
-          ],
-          "default": "auto"
+          "default": "auto",
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "enum": [
+              "auto",
+              "features",
+              "density"
+            ]
+          }
         },
         "densityTierBpPerPx": {
           "description": "in \\"auto\\" mode, also draw the density band from this many bp per pixel outward, before the region is too large to fetch; 0 leaves the swap to the fetch-size gate alone.",
-          "type": "number",
-          "default": 0
+          "default": 0,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "number"
+          }
         },
         "marks": {
-          "type": "array",
-          "items": {
-            "$ref": "#/$defs/Mark"
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "array",
+            "items": {
+              "$ref": "#/$defs/Mark"
+            }
           }
         },
         "transform": {
-          "type": "array",
-          "items": {
-            "$ref": "#/$defs/MarkTransform"
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "array",
+            "items": {
+              "$ref": "#/$defs/MarkTransform"
+            }
           }
         },
         "facet": {
-          "$ref": "#/$defs/MarkFacet"
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/MarkFacet"
+          }
         },
         "rows": {
-          "$ref": "#/$defs/Rows"
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/Rows"
+          }
         },
         "rowColor": {
-          "$ref": "#/$defs/RowColor"
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/RowColor"
+          }
         },
         "showTree": {
           "description": "show the cluster tree beside the rows.",
-          "type": "boolean",
-          "default": true
+          "default": true,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "boolean"
+          }
         },
         "showBranchLength": {
           "description": "position tree nodes by branch length (dendrogram) rather than evenly by topology (cladogram).",
-          "type": "boolean",
-          "default": true
+          "default": true,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "boolean"
+          }
         },
         "showRowLabels": {
           "description": "draw the row value over the left of each row.",
-          "type": "boolean",
-          "default": true
+          "default": true,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "boolean"
+          }
         },
         "treeAreaWidth": {
           "description": "width in px of the tree sidebar, which a drag on its edge also writes.",
-          "type": "number",
-          "default": 80
+          "default": 80,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "number"
+          }
         },
         "rowHeight": {
           "description": "per-row height in px under rows, scrolling the rows that do not fit; 0 (the default) fits the rows to the plot instead, dividing it between them.",
-          "type": "number",
-          "default": 0
+          "default": 0,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "number"
+          }
         },
         "scales": {
-          "$ref": "#/$defs/Scales3"
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/Scales3"
+          }
         },
         "origin": {
           "description": "baseline value for bars.",
-          "type": "number",
-          "default": 0
+          "default": 0,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "number"
+          }
         },
         "minWidthPx": {
           "description": "minimum bar/span width in px.",
-          "type": "number",
-          "default": 1
+          "default": 1,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "number"
+          }
         },
         "showLegend": {
           "description": "draw the colour key.",
-          "type": "boolean",
-          "default": true
+          "default": true,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "boolean"
+          }
         },
         "filter": {
           "description": "jexl: expressions a feature must pass to be drawn.",
-          "type": "array",
-          "items": {
-            "$ref": "#/$defs/JexlExpression"
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "array",
+            "items": {
+              "$ref": "#/$defs/JexlExpression"
+            }
           }
         },
         "displayCrossHatches": {
@@ -8825,31 +12905,51 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "type": "object",
       "properties": {
         "bigBedLocation": {
-          "$ref": "#/$defs/FileLocation",
           "default": {
             "uri": "/path/to/my.bb",
             "locationType": "UriLocation"
+          },
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/FileLocation"
           }
         },
         "ixFilePath": {
-          "$ref": "#/$defs/FileLocation",
           "default": {
             "uri": "",
             "locationType": "UriLocation"
+          },
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/FileLocation"
           }
         },
         "ixxFilePath": {
-          "$ref": "#/$defs/FileLocation",
           "default": {
             "uri": "",
             "locationType": "UriLocation"
+          },
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/FileLocation"
           }
         },
         "assemblyNames": {
           "description": "List of assemblies covered by text search adapter.",
-          "type": "array",
-          "items": {
-            "type": "string"
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
           }
         }
       }
@@ -8880,24 +12980,39 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "properties": {
         "namesIndexLocation": {
           "description": "the location of the JBrowse1 names index data directory.",
-          "$ref": "#/$defs/FileLocation",
           "default": {
             "uri": "/volvox/names",
             "locationType": "UriLocation"
+          },
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/FileLocation"
           }
         },
         "tracks": {
           "description": "List of tracks covered by text search adapter.",
-          "type": "array",
-          "items": {
-            "type": "string"
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
           }
         },
         "assemblyNames": {
           "description": "List of assemblies covered by text search adapter.",
-          "type": "array",
-          "items": {
-            "type": "string"
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
           }
         }
       }
@@ -8927,24 +13042,39 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "type": "object",
       "properties": {
         "ixFilePath": {
-          "$ref": "#/$defs/FileLocation",
           "default": {
             "uri": "out.ix",
             "locationType": "UriLocation"
+          },
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/FileLocation"
           }
         },
         "ixxFilePath": {
-          "$ref": "#/$defs/FileLocation",
           "default": {
             "uri": "out.ixx",
             "locationType": "UriLocation"
+          },
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/FileLocation"
           }
         },
         "assemblyNames": {
           "description": "List of assemblies covered by text search adapter.",
-          "type": "array",
-          "items": {
-            "type": "string"
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
           }
         },
         "uri": {
@@ -8984,36 +13114,56 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "properties": {
         "indexingAttributes": {
           "description": "list of which feature attributes to index for text searching.",
-          "type": "array",
-          "items": {
-            "type": "string"
-          },
           "default": [
             "Name",
             "ID",
             "symbol"
-          ]
+          ],
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
         },
         "indexingFeatureTypesToExclude": {
           "description": "list of feature types to exclude in text search index.",
-          "type": "array",
-          "items": {
-            "type": "string"
-          },
           "default": [
             "CDS",
             "exon"
-          ]
+          ],
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
         },
         "indexingFeatureTypesToInclude": {
           "description": "the only feature types to index; empty means index every type not excluded.",
-          "type": "array",
-          "items": {
-            "type": "string"
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
           }
         },
         "textSearchAdapter": {
-          "$ref": "#/$defs/TextSearchAdapter"
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/TextSearchAdapter"
+          }
         }
       },
       "patternProperties": {
@@ -9033,11 +13183,21 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         },
         "depth": {
           "description": "levels of subfeature the formatDetails.subfeatures callback runs on, default 2.",
-          "type": "number"
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "number"
+          }
         },
         "maxDepth": {
           "description": "hide subfeatures nested deeper than this, default no limit.",
-          "type": "number"
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "number"
+          }
         }
       },
       "patternProperties": {
@@ -9053,8 +13213,13 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "description": "formats configuration object in about dialog. Any JSON value: the slot is \`frozen\`, so its shape is not checked here."
         },
         "hideUris": {
-          "type": "boolean",
-          "default": false
+          "default": false,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "boolean"
+          }
         }
       },
       "patternProperties": {
@@ -9067,54 +13232,104 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "properties": {
         "name": {
           "description": "descriptive name of the track, falls back to the trackId when unset.",
-          "$ref": "#/$defs/PlainString",
-          "default": ""
+          "default": "",
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/PlainString"
+          }
         },
         "assemblyNames": {
           "description": "name of the assembly (or assemblies) track belongs to.",
-          "type": "array",
-          "items": {
-            "type": "string"
-          },
           "default": [
             "assemblyName"
-          ]
+          ],
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
         },
         "description": {
           "description": "a description of the track.",
-          "$ref": "#/$defs/PlainString",
-          "default": ""
+          "default": "",
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/PlainString"
+          }
         },
         "category": {
           "description": "the category and sub-categories of a track.",
-          "type": "array",
-          "items": {
-            "type": "string"
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
           }
         },
         "metadata": {
           "description": "anything to add about this track. Any JSON value: the slot is \`frozen\`, so its shape is not checked here.",
-          "not": {
-            "$ref": "#/$defs/JexlString"
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "not": {
+              "$ref": "#/$defs/JexlString"
+            }
           }
         },
         "adapter": {
-          "$ref": "#/$defs/Adapter"
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/Adapter"
+          }
         },
         "textSearching": {
-          "$ref": "#/$defs/textSearching"
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/textSearching"
+          }
         },
         "displays": {
-          "type": "array",
-          "items": {
-            "$ref": "#/$defs/Display"
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "array",
+            "items": {
+              "$ref": "#/$defs/Display"
+            }
           }
         },
         "formatDetails": {
-          "$ref": "#/$defs/FormatDetails"
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/FormatDetails"
+          }
         },
         "formatAbout": {
-          "$ref": "#/$defs/FormatAbout"
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/FormatAbout"
+          }
         }
       }
     },
@@ -9675,54 +13890,104 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "properties": {
         "name": {
           "description": "descriptive name of the track, falls back to the trackId when unset.",
-          "$ref": "#/$defs/PlainString",
-          "default": ""
+          "default": "",
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/PlainString"
+          }
         },
         "assemblyNames": {
           "description": "name of the assembly (or assemblies) track belongs to.",
-          "type": "array",
-          "items": {
-            "type": "string"
-          },
           "default": [
             "assemblyName"
-          ]
+          ],
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
         },
         "description": {
           "description": "a description of the track.",
-          "$ref": "#/$defs/PlainString",
-          "default": ""
+          "default": "",
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/PlainString"
+          }
         },
         "category": {
           "description": "the category and sub-categories of a track.",
-          "type": "array",
-          "items": {
-            "type": "string"
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
           }
         },
         "metadata": {
           "description": "anything to add about this track. Any JSON value: the slot is \`frozen\`, so its shape is not checked here.",
-          "not": {
-            "$ref": "#/$defs/JexlString"
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "not": {
+              "$ref": "#/$defs/JexlString"
+            }
           }
         },
         "adapter": {
-          "$ref": "#/$defs/Adapter"
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/Adapter"
+          }
         },
         "textSearching": {
-          "$ref": "#/$defs/textSearching"
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/textSearching"
+          }
         },
         "displays": {
-          "type": "array",
-          "items": {
-            "$ref": "#/$defs/Display"
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "array",
+            "items": {
+              "$ref": "#/$defs/Display"
+            }
           }
         },
         "formatDetails": {
-          "$ref": "#/$defs/FormatDetails"
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/FormatDetails"
+          }
         },
         "formatAbout": {
-          "$ref": "#/$defs/FormatAbout"
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/FormatAbout"
+          }
         }
       }
     },
@@ -10039,37 +14304,72 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "type": "object",
       "properties": {
         "adapter": {
-          "$ref": "#/$defs/Adapter"
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/Adapter"
+          }
         },
         "displays": {
-          "type": "array",
-          "items": {
-            "$ref": "#/$defs/Display"
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "array",
+            "items": {
+              "$ref": "#/$defs/Display"
+            }
           }
         },
         "name": {
           "description": "optional track name, otherwise uses the \\"Reference sequence (assemblyName)\\".",
-          "$ref": "#/$defs/PlainString",
-          "default": ""
+          "default": "",
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/PlainString"
+          }
         },
         "sequenceType": {
           "description": "either dna or pep.",
-          "$ref": "#/$defs/PlainString",
-          "default": "dna"
+          "default": "dna",
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/PlainString"
+          }
         },
         "description": {
           "description": "a description of the track.",
-          "$ref": "#/$defs/PlainString",
-          "default": ""
+          "default": "",
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/PlainString"
+          }
         },
         "metadata": {
           "description": "anything to add about this track. Any JSON value: the slot is \`frozen\`, so its shape is not checked here.",
-          "not": {
-            "$ref": "#/$defs/JexlString"
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "not": {
+              "$ref": "#/$defs/JexlString"
+            }
           }
         },
         "formatAbout": {
-          "$ref": "#/$defs/FormatAbout"
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/FormatAbout"
+          }
         }
       }
     },
@@ -10151,54 +14451,104 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "properties": {
         "name": {
           "description": "descriptive name of the track, falls back to the trackId when unset.",
-          "$ref": "#/$defs/PlainString",
-          "default": ""
+          "default": "",
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/PlainString"
+          }
         },
         "assemblyNames": {
           "description": "name of the assembly (or assemblies) track belongs to.",
-          "type": "array",
-          "items": {
-            "type": "string"
-          },
           "default": [
             "assemblyName"
-          ]
+          ],
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
         },
         "description": {
           "description": "a description of the track.",
-          "$ref": "#/$defs/PlainString",
-          "default": ""
+          "default": "",
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/PlainString"
+          }
         },
         "category": {
           "description": "the category and sub-categories of a track.",
-          "type": "array",
-          "items": {
-            "type": "string"
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
           }
         },
         "metadata": {
           "description": "anything to add about this track. Any JSON value: the slot is \`frozen\`, so its shape is not checked here.",
-          "not": {
-            "$ref": "#/$defs/JexlString"
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "not": {
+              "$ref": "#/$defs/JexlString"
+            }
           }
         },
         "adapter": {
-          "$ref": "#/$defs/Adapter"
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/Adapter"
+          }
         },
         "textSearching": {
-          "$ref": "#/$defs/textSearching"
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/textSearching"
+          }
         },
         "displays": {
-          "type": "array",
-          "items": {
-            "$ref": "#/$defs/Display"
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "array",
+            "items": {
+              "$ref": "#/$defs/Display"
+            }
           }
         },
         "formatDetails": {
-          "$ref": "#/$defs/FormatDetails"
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/FormatDetails"
+          }
         },
         "formatAbout": {
-          "$ref": "#/$defs/FormatAbout"
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/FormatAbout"
+          }
         }
       }
     },
@@ -10611,54 +14961,104 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "properties": {
         "name": {
           "description": "descriptive name of the track, falls back to the trackId when unset.",
-          "$ref": "#/$defs/PlainString",
-          "default": ""
+          "default": "",
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/PlainString"
+          }
         },
         "assemblyNames": {
           "description": "name of the assembly (or assemblies) track belongs to.",
-          "type": "array",
-          "items": {
-            "type": "string"
-          },
           "default": [
             "assemblyName"
-          ]
+          ],
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
         },
         "description": {
           "description": "a description of the track.",
-          "$ref": "#/$defs/PlainString",
-          "default": ""
+          "default": "",
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/PlainString"
+          }
         },
         "category": {
           "description": "the category and sub-categories of a track.",
-          "type": "array",
-          "items": {
-            "type": "string"
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
           }
         },
         "metadata": {
           "description": "anything to add about this track. Any JSON value: the slot is \`frozen\`, so its shape is not checked here.",
-          "not": {
-            "$ref": "#/$defs/JexlString"
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "not": {
+              "$ref": "#/$defs/JexlString"
+            }
           }
         },
         "adapter": {
-          "$ref": "#/$defs/Adapter"
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/Adapter"
+          }
         },
         "textSearching": {
-          "$ref": "#/$defs/textSearching"
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/textSearching"
+          }
         },
         "displays": {
-          "type": "array",
-          "items": {
-            "$ref": "#/$defs/Display"
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "array",
+            "items": {
+              "$ref": "#/$defs/Display"
+            }
           }
         },
         "formatDetails": {
-          "$ref": "#/$defs/FormatDetails"
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/FormatDetails"
+          }
         },
         "formatAbout": {
-          "$ref": "#/$defs/FormatAbout"
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/FormatAbout"
+          }
         }
       }
     },
@@ -10755,54 +15155,104 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "properties": {
         "name": {
           "description": "descriptive name of the track, falls back to the trackId when unset.",
-          "$ref": "#/$defs/PlainString",
-          "default": ""
+          "default": "",
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/PlainString"
+          }
         },
         "assemblyNames": {
           "description": "name of the assembly (or assemblies) track belongs to.",
-          "type": "array",
-          "items": {
-            "type": "string"
-          },
           "default": [
             "assemblyName"
-          ]
+          ],
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
         },
         "description": {
           "description": "a description of the track.",
-          "$ref": "#/$defs/PlainString",
-          "default": ""
+          "default": "",
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/PlainString"
+          }
         },
         "category": {
           "description": "the category and sub-categories of a track.",
-          "type": "array",
-          "items": {
-            "type": "string"
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
           }
         },
         "metadata": {
           "description": "anything to add about this track. Any JSON value: the slot is \`frozen\`, so its shape is not checked here.",
-          "not": {
-            "$ref": "#/$defs/JexlString"
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "not": {
+              "$ref": "#/$defs/JexlString"
+            }
           }
         },
         "adapter": {
-          "$ref": "#/$defs/Adapter"
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/Adapter"
+          }
         },
         "textSearching": {
-          "$ref": "#/$defs/textSearching"
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/textSearching"
+          }
         },
         "displays": {
-          "type": "array",
-          "items": {
-            "$ref": "#/$defs/Display"
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "array",
+            "items": {
+              "$ref": "#/$defs/Display"
+            }
           }
         },
         "formatDetails": {
-          "$ref": "#/$defs/FormatDetails"
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/FormatDetails"
+          }
         },
         "formatAbout": {
-          "$ref": "#/$defs/FormatAbout"
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/FormatAbout"
+          }
         }
       }
     },
@@ -11052,54 +15502,104 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "properties": {
         "name": {
           "description": "descriptive name of the track, falls back to the trackId when unset.",
-          "$ref": "#/$defs/PlainString",
-          "default": ""
+          "default": "",
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/PlainString"
+          }
         },
         "assemblyNames": {
           "description": "name of the assembly (or assemblies) track belongs to.",
-          "type": "array",
-          "items": {
-            "type": "string"
-          },
           "default": [
             "assemblyName"
-          ]
+          ],
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
         },
         "description": {
           "description": "a description of the track.",
-          "$ref": "#/$defs/PlainString",
-          "default": ""
+          "default": "",
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/PlainString"
+          }
         },
         "category": {
           "description": "the category and sub-categories of a track.",
-          "type": "array",
-          "items": {
-            "type": "string"
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
           }
         },
         "metadata": {
           "description": "anything to add about this track. Any JSON value: the slot is \`frozen\`, so its shape is not checked here.",
-          "not": {
-            "$ref": "#/$defs/JexlString"
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "not": {
+              "$ref": "#/$defs/JexlString"
+            }
           }
         },
         "adapter": {
-          "$ref": "#/$defs/Adapter"
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/Adapter"
+          }
         },
         "textSearching": {
-          "$ref": "#/$defs/textSearching"
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/textSearching"
+          }
         },
         "displays": {
-          "type": "array",
-          "items": {
-            "$ref": "#/$defs/Display"
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "array",
+            "items": {
+              "$ref": "#/$defs/Display"
+            }
           }
         },
         "formatDetails": {
-          "$ref": "#/$defs/FormatDetails"
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/FormatDetails"
+          }
         },
         "formatAbout": {
-          "$ref": "#/$defs/FormatAbout"
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/FormatAbout"
+          }
         }
       }
     },
@@ -11349,54 +15849,104 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "properties": {
         "name": {
           "description": "descriptive name of the track, falls back to the trackId when unset.",
-          "$ref": "#/$defs/PlainString",
-          "default": ""
+          "default": "",
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/PlainString"
+          }
         },
         "assemblyNames": {
           "description": "name of the assembly (or assemblies) track belongs to.",
-          "type": "array",
-          "items": {
-            "type": "string"
-          },
           "default": [
             "assemblyName"
-          ]
+          ],
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
         },
         "description": {
           "description": "a description of the track.",
-          "$ref": "#/$defs/PlainString",
-          "default": ""
+          "default": "",
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/PlainString"
+          }
         },
         "category": {
           "description": "the category and sub-categories of a track.",
-          "type": "array",
-          "items": {
-            "type": "string"
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
           }
         },
         "metadata": {
           "description": "anything to add about this track. Any JSON value: the slot is \`frozen\`, so its shape is not checked here.",
-          "not": {
-            "$ref": "#/$defs/JexlString"
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "not": {
+              "$ref": "#/$defs/JexlString"
+            }
           }
         },
         "adapter": {
-          "$ref": "#/$defs/Adapter"
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/Adapter"
+          }
         },
         "textSearching": {
-          "$ref": "#/$defs/textSearching"
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/textSearching"
+          }
         },
         "displays": {
-          "type": "array",
-          "items": {
-            "$ref": "#/$defs/Display"
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "array",
+            "items": {
+              "$ref": "#/$defs/Display"
+            }
           }
         },
         "formatDetails": {
-          "$ref": "#/$defs/FormatDetails"
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/FormatDetails"
+          }
         },
         "formatAbout": {
-          "$ref": "#/$defs/FormatAbout"
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/FormatAbout"
+          }
         }
       }
     },
@@ -11529,54 +16079,104 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "properties": {
         "name": {
           "description": "descriptive name of the track, falls back to the trackId when unset.",
-          "$ref": "#/$defs/PlainString",
-          "default": ""
+          "default": "",
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/PlainString"
+          }
         },
         "assemblyNames": {
           "description": "name of the assembly (or assemblies) track belongs to.",
-          "type": "array",
-          "items": {
-            "type": "string"
-          },
           "default": [
             "assemblyName"
-          ]
+          ],
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
         },
         "description": {
           "description": "a description of the track.",
-          "$ref": "#/$defs/PlainString",
-          "default": ""
+          "default": "",
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/PlainString"
+          }
         },
         "category": {
           "description": "the category and sub-categories of a track.",
-          "type": "array",
-          "items": {
-            "type": "string"
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
           }
         },
         "metadata": {
           "description": "anything to add about this track. Any JSON value: the slot is \`frozen\`, so its shape is not checked here.",
-          "not": {
-            "$ref": "#/$defs/JexlString"
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "not": {
+              "$ref": "#/$defs/JexlString"
+            }
           }
         },
         "adapter": {
-          "$ref": "#/$defs/Adapter"
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/Adapter"
+          }
         },
         "textSearching": {
-          "$ref": "#/$defs/textSearching"
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/textSearching"
+          }
         },
         "displays": {
-          "type": "array",
-          "items": {
-            "$ref": "#/$defs/Display"
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "array",
+            "items": {
+              "$ref": "#/$defs/Display"
+            }
           }
         },
         "formatDetails": {
-          "$ref": "#/$defs/FormatDetails"
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/FormatDetails"
+          }
         },
         "formatAbout": {
-          "$ref": "#/$defs/FormatAbout"
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/FormatAbout"
+          }
         }
       }
     },
@@ -11834,54 +16434,104 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "properties": {
         "name": {
           "description": "descriptive name of the track, falls back to the trackId when unset.",
-          "$ref": "#/$defs/PlainString",
-          "default": ""
+          "default": "",
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/PlainString"
+          }
         },
         "assemblyNames": {
           "description": "name of the assembly (or assemblies) track belongs to.",
-          "type": "array",
-          "items": {
-            "type": "string"
-          },
           "default": [
             "assemblyName"
-          ]
+          ],
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
         },
         "description": {
           "description": "a description of the track.",
-          "$ref": "#/$defs/PlainString",
-          "default": ""
+          "default": "",
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/PlainString"
+          }
         },
         "category": {
           "description": "the category and sub-categories of a track.",
-          "type": "array",
-          "items": {
-            "type": "string"
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
           }
         },
         "metadata": {
           "description": "anything to add about this track. Any JSON value: the slot is \`frozen\`, so its shape is not checked here.",
-          "not": {
-            "$ref": "#/$defs/JexlString"
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "not": {
+              "$ref": "#/$defs/JexlString"
+            }
           }
         },
         "adapter": {
-          "$ref": "#/$defs/Adapter"
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/Adapter"
+          }
         },
         "textSearching": {
-          "$ref": "#/$defs/textSearching"
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/textSearching"
+          }
         },
         "displays": {
-          "type": "array",
-          "items": {
-            "$ref": "#/$defs/Display"
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "array",
+            "items": {
+              "$ref": "#/$defs/Display"
+            }
           }
         },
         "formatDetails": {
-          "$ref": "#/$defs/FormatDetails"
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/FormatDetails"
+          }
         },
         "formatAbout": {
-          "$ref": "#/$defs/FormatAbout"
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/FormatAbout"
+          }
         }
       }
     },
@@ -11969,54 +16619,104 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "properties": {
         "name": {
           "description": "descriptive name of the track, falls back to the trackId when unset.",
-          "$ref": "#/$defs/PlainString",
-          "default": ""
+          "default": "",
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/PlainString"
+          }
         },
         "assemblyNames": {
           "description": "name of the assembly (or assemblies) track belongs to.",
-          "type": "array",
-          "items": {
-            "type": "string"
-          },
           "default": [
             "assemblyName"
-          ]
+          ],
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
         },
         "description": {
           "description": "a description of the track.",
-          "$ref": "#/$defs/PlainString",
-          "default": ""
+          "default": "",
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/PlainString"
+          }
         },
         "category": {
           "description": "the category and sub-categories of a track.",
-          "type": "array",
-          "items": {
-            "type": "string"
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
           }
         },
         "metadata": {
           "description": "anything to add about this track. Any JSON value: the slot is \`frozen\`, so its shape is not checked here.",
-          "not": {
-            "$ref": "#/$defs/JexlString"
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "not": {
+              "$ref": "#/$defs/JexlString"
+            }
           }
         },
         "adapter": {
-          "$ref": "#/$defs/Adapter"
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/Adapter"
+          }
         },
         "textSearching": {
-          "$ref": "#/$defs/textSearching"
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/textSearching"
+          }
         },
         "displays": {
-          "type": "array",
-          "items": {
-            "$ref": "#/$defs/Display"
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "array",
+            "items": {
+              "$ref": "#/$defs/Display"
+            }
           }
         },
         "formatDetails": {
-          "$ref": "#/$defs/FormatDetails"
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/FormatDetails"
+          }
         },
         "formatAbout": {
-          "$ref": "#/$defs/FormatAbout"
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/FormatAbout"
+          }
         }
       }
     },
@@ -12418,54 +17118,104 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "properties": {
         "name": {
           "description": "descriptive name of the track, falls back to the trackId when unset.",
-          "$ref": "#/$defs/PlainString",
-          "default": ""
+          "default": "",
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/PlainString"
+          }
         },
         "assemblyNames": {
           "description": "name of the assembly (or assemblies) track belongs to.",
-          "type": "array",
-          "items": {
-            "type": "string"
-          },
           "default": [
             "assemblyName"
-          ]
+          ],
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
         },
         "description": {
           "description": "a description of the track.",
-          "$ref": "#/$defs/PlainString",
-          "default": ""
+          "default": "",
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/PlainString"
+          }
         },
         "category": {
           "description": "the category and sub-categories of a track.",
-          "type": "array",
-          "items": {
-            "type": "string"
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
           }
         },
         "metadata": {
           "description": "anything to add about this track. Any JSON value: the slot is \`frozen\`, so its shape is not checked here.",
-          "not": {
-            "$ref": "#/$defs/JexlString"
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "not": {
+              "$ref": "#/$defs/JexlString"
+            }
           }
         },
         "adapter": {
-          "$ref": "#/$defs/Adapter"
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/Adapter"
+          }
         },
         "textSearching": {
-          "$ref": "#/$defs/textSearching"
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/textSearching"
+          }
         },
         "displays": {
-          "type": "array",
-          "items": {
-            "$ref": "#/$defs/Display"
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "array",
+            "items": {
+              "$ref": "#/$defs/Display"
+            }
           }
         },
         "formatDetails": {
-          "$ref": "#/$defs/FormatDetails"
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/FormatDetails"
+          }
         },
         "formatAbout": {
-          "$ref": "#/$defs/FormatAbout"
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/FormatAbout"
+          }
         }
       }
     },
@@ -12598,22 +17348,37 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "properties": {
         "name": {
           "description": "a unique name for this connection.",
-          "$ref": "#/$defs/PlainString",
-          "default": "nameOfConnection"
+          "default": "nameOfConnection",
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/PlainString"
+          }
         },
         "assemblyNames": {
           "description": "optional list of genomes to import from this track hub, if empty all genomes will be imported.",
-          "type": "array",
-          "items": {
-            "type": "string"
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
           }
         },
         "hubTxtLocation": {
           "description": "location of the hub file (usually called hub.txt).",
-          "$ref": "#/$defs/FileLocation",
           "default": {
             "uri": "https://mysite.com/path/to/hub.txt",
             "locationType": "UriLocation"
+          },
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/FileLocation"
           }
         }
       }
@@ -12647,22 +17412,37 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "properties": {
         "name": {
           "description": "a unique name for this connection.",
-          "$ref": "#/$defs/PlainString",
-          "default": "nameOfConnection"
+          "default": "nameOfConnection",
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/PlainString"
+          }
         },
         "assemblyNames": {
           "description": "optional list of genomes to import from this config.json, if empty all genomes will be imported.",
-          "type": "array",
-          "items": {
-            "type": "string"
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
           }
         },
         "configJsonLocation": {
           "description": "location of the jb2 config file (usually called config.json).",
-          "$ref": "#/$defs/FileLocation",
           "default": {
             "uri": "https://mysite.com/path/to/config.json",
             "locationType": "UriLocation"
+          },
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/FileLocation"
           }
         }
       }
@@ -12696,22 +17476,37 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "properties": {
         "name": {
           "description": "a unique name for this connection.",
-          "$ref": "#/$defs/PlainString",
-          "default": "nameOfConnection"
+          "default": "nameOfConnection",
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/PlainString"
+          }
         },
         "assemblyNames": {
           "description": "name of the assembly the connection belongs to, should be a single entry.",
-          "type": "array",
-          "items": {
-            "type": "string"
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
           }
         },
         "dataDirLocation": {
           "description": "the location of the JBrowse 1 data directory, often something like https://mysite.com/jbrowse/data/.",
-          "$ref": "#/$defs/FileLocation",
           "default": {
             "uri": "https://mysite.com/jbrowse/data/",
             "locationType": "UriLocation"
+          },
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/FileLocation"
           }
         }
       }
@@ -12745,65 +17540,125 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "properties": {
         "name": {
           "description": "descriptive name of the internet account.",
-          "$ref": "#/$defs/PlainString",
-          "default": ""
+          "default": "",
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/PlainString"
+          }
         },
         "description": {
           "description": "a description of the internet account.",
-          "$ref": "#/$defs/PlainString",
-          "default": ""
+          "default": "",
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/PlainString"
+          }
         },
         "authHeader": {
           "description": "request header for credentials.",
-          "$ref": "#/$defs/PlainString",
-          "default": "Authorization"
+          "default": "Authorization",
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/PlainString"
+          }
         },
         "tokenType": {
           "description": "a custom name for a token to include in the header.",
-          "$ref": "#/$defs/PlainString",
-          "default": "Bearer"
+          "default": "Bearer",
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/PlainString"
+          }
         },
         "domains": {
           "description": "array of valid domains the url can contain to use this account.",
-          "type": "array",
-          "items": {
-            "type": "string"
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
           }
         },
         "authEndpoint": {
           "description": "the authorization code endpoint of the internet account.",
-          "$ref": "#/$defs/PlainString",
-          "default": ""
+          "default": "",
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/PlainString"
+          }
         },
         "tokenEndpoint": {
           "description": "the token endpoint of the internet account.",
-          "$ref": "#/$defs/PlainString",
-          "default": ""
+          "default": "",
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/PlainString"
+          }
         },
         "needsPKCE": {
           "description": "boolean to indicate if the endpoint needs a PKCE code.",
-          "type": "boolean",
-          "default": false
+          "default": false,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "boolean"
+          }
         },
         "clientId": {
           "description": "id for the OAuth application.",
-          "$ref": "#/$defs/PlainString",
-          "default": ""
+          "default": "",
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/PlainString"
+          }
         },
         "scopes": {
           "description": "optional scopes for the authorization call.",
-          "$ref": "#/$defs/PlainString",
-          "default": ""
+          "default": "",
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/PlainString"
+          }
         },
         "state": {
           "description": "optional state for the authorization call.",
-          "$ref": "#/$defs/PlainString",
-          "default": ""
+          "default": "",
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/PlainString"
+          }
         },
         "responseType": {
           "description": "the type of response from the authorization endpoint. can be 'token' or 'code'.",
-          "$ref": "#/$defs/PlainString",
-          "default": "code"
+          "default": "code",
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/PlainString"
+          }
         }
       }
     },
@@ -12836,35 +17691,65 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "properties": {
         "name": {
           "description": "descriptive name of the internet account.",
-          "$ref": "#/$defs/PlainString",
-          "default": ""
+          "default": "",
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/PlainString"
+          }
         },
         "description": {
           "description": "a description of the internet account.",
-          "$ref": "#/$defs/PlainString",
-          "default": ""
+          "default": "",
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/PlainString"
+          }
         },
         "authHeader": {
           "description": "request header for credentials.",
-          "$ref": "#/$defs/PlainString",
-          "default": "Authorization"
+          "default": "Authorization",
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/PlainString"
+          }
         },
         "tokenType": {
           "description": "a custom name for a token to include in the header.",
-          "$ref": "#/$defs/PlainString",
-          "default": ""
+          "default": "",
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/PlainString"
+          }
         },
         "domains": {
           "description": "array of valid domains the url can contain to use this account.",
-          "type": "array",
-          "items": {
-            "type": "string"
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
           }
         },
         "validateWithHEAD": {
           "description": "validate the token with a HEAD request before using it.",
-          "type": "boolean",
-          "default": true
+          "default": true,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "boolean"
+          }
         }
       }
     },
@@ -12897,35 +17782,65 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "properties": {
         "name": {
           "description": "descriptive name of the internet account.",
-          "$ref": "#/$defs/PlainString",
-          "default": ""
+          "default": "",
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/PlainString"
+          }
         },
         "description": {
           "description": "a description of the internet account.",
-          "$ref": "#/$defs/PlainString",
-          "default": ""
+          "default": "",
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/PlainString"
+          }
         },
         "authHeader": {
           "description": "request header for credentials.",
-          "$ref": "#/$defs/PlainString",
-          "default": "Authorization"
+          "default": "Authorization",
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/PlainString"
+          }
         },
         "tokenType": {
           "description": "a custom name for a token to include in the header.",
-          "$ref": "#/$defs/PlainString",
-          "default": "Basic"
+          "default": "Basic",
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/PlainString"
+          }
         },
         "domains": {
           "description": "array of valid domains the url can contain to use this account.",
-          "type": "array",
-          "items": {
-            "type": "string"
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
           }
         },
         "validateWithHEAD": {
           "description": "validate the token with a HEAD request before using it.",
-          "type": "boolean",
-          "default": true
+          "default": true,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "boolean"
+          }
         }
       }
     },
@@ -12958,30 +17873,46 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "properties": {
         "name": {
           "description": "descriptive name of the internet account.",
-          "$ref": "#/$defs/PlainString",
-          "default": ""
+          "default": "",
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/PlainString"
+          }
         },
         "description": {
           "description": "a description of the internet account.",
-          "$ref": "#/$defs/PlainString",
-          "default": ""
+          "default": "",
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/PlainString"
+          }
         },
         "authHeader": {
           "description": "request header for credentials.",
-          "$ref": "#/$defs/PlainString",
-          "default": "Authorization"
+          "default": "Authorization",
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/PlainString"
+          }
         },
         "tokenType": {
           "description": "a custom name for a token to include in the header.",
-          "$ref": "#/$defs/PlainString",
-          "default": "Bearer"
+          "default": "Bearer",
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/PlainString"
+          }
         },
         "domains": {
           "description": "array of valid domains the url can contain to use this account.",
-          "type": "array",
-          "items": {
-            "type": "string"
-          },
           "default": [
             "addtodropbox.com",
             "db.tt",
@@ -12990,42 +17921,86 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "dropboxbusiness.com",
             "dropbox.tech",
             "getdropbox.com"
-          ]
+          ],
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
         },
         "authEndpoint": {
           "description": "the authorization code endpoint of the internet account.",
-          "$ref": "#/$defs/PlainString",
-          "default": "https://www.dropbox.com/oauth2/authorize"
+          "default": "https://www.dropbox.com/oauth2/authorize",
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/PlainString"
+          }
         },
         "tokenEndpoint": {
           "description": "the token endpoint of the internet account.",
-          "$ref": "#/$defs/PlainString",
-          "default": "https://api.dropbox.com/oauth2/token"
+          "default": "https://api.dropbox.com/oauth2/token",
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/PlainString"
+          }
         },
         "needsPKCE": {
           "description": "boolean to indicate if the endpoint needs a PKCE code.",
-          "type": "boolean",
-          "default": true
+          "default": true,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "boolean"
+          }
         },
         "clientId": {
           "description": "id for the OAuth application.",
-          "$ref": "#/$defs/PlainString",
-          "default": ""
+          "default": "",
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/PlainString"
+          }
         },
         "scopes": {
           "description": "optional scopes for the authorization call.",
-          "$ref": "#/$defs/PlainString",
-          "default": ""
+          "default": "",
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/PlainString"
+          }
         },
         "state": {
           "description": "optional state for the authorization call.",
-          "$ref": "#/$defs/PlainString",
-          "default": ""
+          "default": "",
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/PlainString"
+          }
         },
         "responseType": {
           "description": "the type of response from the authorization endpoint. can be 'token' or 'code'.",
-          "$ref": "#/$defs/PlainString",
-          "default": "code"
+          "default": "code",
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/PlainString"
+          }
         }
       }
     },
@@ -13058,68 +18033,128 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "properties": {
         "name": {
           "description": "descriptive name of the internet account.",
-          "$ref": "#/$defs/PlainString",
-          "default": ""
+          "default": "",
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/PlainString"
+          }
         },
         "description": {
           "description": "a description of the internet account.",
-          "$ref": "#/$defs/PlainString",
-          "default": ""
+          "default": "",
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/PlainString"
+          }
         },
         "authHeader": {
           "description": "request header for credentials.",
-          "$ref": "#/$defs/PlainString",
-          "default": "Authorization"
+          "default": "Authorization",
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/PlainString"
+          }
         },
         "tokenType": {
           "description": "a custom name for a token to include in the header.",
-          "$ref": "#/$defs/PlainString",
-          "default": "Bearer"
+          "default": "Bearer",
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/PlainString"
+          }
         },
         "domains": {
           "description": "array of valid domains the url can contain to use this account.",
-          "type": "array",
-          "items": {
-            "type": "string"
-          },
           "default": [
             "drive.google.com"
-          ]
+          ],
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
         },
         "authEndpoint": {
           "description": "the authorization code endpoint of the internet account.",
-          "$ref": "#/$defs/PlainString",
-          "default": "https://accounts.google.com/o/oauth2/v2/auth"
+          "default": "https://accounts.google.com/o/oauth2/v2/auth",
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/PlainString"
+          }
         },
         "tokenEndpoint": {
           "description": "the token endpoint of the internet account.",
-          "$ref": "#/$defs/PlainString",
-          "default": ""
+          "default": "",
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/PlainString"
+          }
         },
         "needsPKCE": {
           "description": "boolean to indicate if the endpoint needs a PKCE code.",
-          "type": "boolean",
-          "default": false
+          "default": false,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "boolean"
+          }
         },
         "clientId": {
           "description": "id for the OAuth application.",
-          "$ref": "#/$defs/PlainString",
-          "default": ""
+          "default": "",
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/PlainString"
+          }
         },
         "scopes": {
           "description": "optional scopes for the authorization call.",
-          "$ref": "#/$defs/PlainString",
-          "default": "https://www.googleapis.com/auth/drive.readonly"
+          "default": "https://www.googleapis.com/auth/drive.readonly",
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/PlainString"
+          }
         },
         "state": {
           "description": "optional state for the authorization call.",
-          "$ref": "#/$defs/PlainString",
-          "default": ""
+          "default": "",
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/PlainString"
+          }
         },
         "responseType": {
           "description": "the type of response from the authorization endpoint.",
-          "$ref": "#/$defs/PlainString",
-          "default": "token"
+          "default": "token",
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/PlainString"
+          }
         }
       }
     },
@@ -14863,45 +19898,85 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         },
         "name": {
           "description": "descriptive name of the track, falls back to the trackId when unset.",
-          "$ref": "#/$defs/PlainString",
-          "default": ""
+          "default": "",
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/PlainString"
+          }
         },
         "assemblyNames": {
           "description": "name of the assembly (or assemblies) track belongs to.",
-          "type": "array",
-          "items": {
-            "type": "string"
-          },
           "default": [
             "assemblyName"
-          ]
+          ],
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
         },
         "description": {
           "description": "a description of the track.",
-          "$ref": "#/$defs/PlainString",
-          "default": ""
+          "default": "",
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/PlainString"
+          }
         },
         "category": {
           "description": "the category and sub-categories of a track.",
-          "type": "array",
-          "items": {
-            "type": "string"
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
           }
         },
         "metadata": {
           "description": "anything to add about this track. Any JSON value: the slot is \`frozen\`, so its shape is not checked here.",
-          "not": {
-            "$ref": "#/$defs/JexlString"
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "not": {
+              "$ref": "#/$defs/JexlString"
+            }
           }
         },
         "textSearching": {
-          "$ref": "#/$defs/textSearching"
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/textSearching"
+          }
         },
         "formatDetails": {
-          "$ref": "#/$defs/FormatDetails"
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/FormatDetails"
+          }
         },
         "formatAbout": {
-          "$ref": "#/$defs/FormatAbout"
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/FormatAbout"
+          }
         },
         "displayDefaults": {
           "type": "object"
@@ -15195,7 +20270,12 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "type": "object",
           "properties": {
             "adapter": {
-              "$ref": "#/$defs/Adapter"
+              "if": {
+                "type": "null"
+              },
+              "else": {
+                "$ref": "#/$defs/Adapter"
+              }
             },
             "uri": {
               "type": "string",
@@ -15225,7 +20305,12 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "type": "object",
           "properties": {
             "adapter": {
-              "$ref": "#/$defs/Adapter"
+              "if": {
+                "type": "null"
+              },
+              "else": {
+                "$ref": "#/$defs/Adapter"
+              }
             },
             "uri": {
               "type": "string",
@@ -15266,9 +20351,14 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         },
         "aliases": {
           "description": "Other possible names for the assembly.",
-          "type": "array",
-          "items": {
-            "type": "string"
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
           }
         },
         "sequence": {
@@ -15276,31 +20366,61 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         },
         "refNameColors": {
           "description": "Define custom colors for each reference sequence. Will cycle through this list if there are not enough colors for every sequence.",
-          "type": "array",
-          "items": {
-            "type": "string"
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
           }
         },
         "geneticCodes": {
           "description": "Map of reference sequence name to NCBI genetic-code (translation table) id for sequences not using the standard code, e.g. { \\"chrM\\": 2 }. Any JSON value: the slot is \`frozen\`, so its shape is not checked here.",
-          "not": {
-            "$ref": "#/$defs/JexlString"
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "not": {
+              "$ref": "#/$defs/JexlString"
+            }
           }
         },
         "geneticCodesLocation": {
           "description": "Optional TSV file of refName<TAB>geneticCodeId, an alternative to inlining the geneticCodes map.",
-          "$ref": "#/$defs/FileLocation"
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/FileLocation"
+          }
         },
         "refNameAliases": {
-          "$ref": "#/$defs/RefNameAliases"
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/RefNameAliases"
+          }
         },
         "cytobands": {
-          "$ref": "#/$defs/Cytoband"
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/Cytoband"
+          }
         },
         "displayName": {
           "description": "A human readable display name for the assembly e.g. \\"Homo sapiens (hg38)\\" while the assembly name may just be \\"hg38\\".",
-          "$ref": "#/$defs/PlainString",
-          "default": ""
+          "default": "",
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/PlainString"
+          }
         },
         "uri": {
           "type": "string",
@@ -18261,96 +23381,156 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "properties": {
             "value": {
               "description": "the color of every alignment in place of the default scheme.",
-              "$ref": "#/$defs/CssColor"
+              "if": {
+                "type": "null"
+              },
+              "else": {
+                "$ref": "#/$defs/CssColor"
+              }
             },
             "field": {
               "description": "what colours an alignment: strand paints forward and reverse; query and target one colour per sequence on that side, reference one per chromosome of the anchor assembly across a stack, track one per overlaid track (pinned under Track colors); identity, mapq and dnds paint the preset ramps; any other name is a column the tracks declare in attributeColumns, a ramp over the values seen for numbers and one colour per label for text (or the colour a color column put beside it).",
-              "$ref": "#/$defs/PlainString",
-              "default": ""
+              "default": "",
+              "if": {
+                "type": "null"
+              },
+              "else": {
+                "$ref": "#/$defs/PlainString"
+              }
             },
             "scale": {
               "description": "none paints value and keeps the field for a switch back; unset, a field paints.",
-              "const": "none"
+              "if": {
+                "type": "null"
+              },
+              "else": {
+                "const": "none"
+              }
             },
             "domain": {
               "description": "a text column's labels that take the palette first, in order, and lead the key, the rest following sorted; a label left out takes a colour no listed label or label met before it paints, the first time the view meets it, and keeps it.",
-              "anyOf": [
-                {
-                  "type": "array",
-                  "items": {
-                    "anyOf": [
-                      {
-                        "type": "string"
-                      },
-                      {
-                        "type": "number"
-                      }
-                    ]
+              "if": {
+                "type": "null"
+              },
+              "else": {
+                "anyOf": [
+                  {
+                    "type": "array",
+                    "items": {
+                      "anyOf": [
+                        {
+                          "type": "string"
+                        },
+                        {
+                          "type": "number"
+                        }
+                      ]
+                    }
                   }
-                }
-              ]
+                ]
+              }
             },
             "range": {
               "description": "CSS colours a text column's labels take, in domain order, continuing into the default palette past its end; with no domain, each label takes one of them by its name; on a ramp (identity, mapq, dnds or a numeric column), its stops, evenly spaced, in place of the field's own.",
-              "type": "array",
-              "items": {
-                "$ref": "#/$defs/CssColorEntry"
+              "if": {
+                "type": "null"
+              },
+              "else": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/$defs/CssColorEntry"
+                }
               }
             },
             "scheme": {
               "description": "a named ramp for a linear or log scale; range's colours, where it lists any, win over it.",
-              "enum": [
-                "viridis",
-                "magma",
-                "inferno",
-                "cividis",
-                "juicebox",
-                "fall",
-                "reds",
-                "blues",
-                "redblue",
-                "purpleorange",
-                "redgreyblue"
-              ]
+              "if": {
+                "type": "null"
+              },
+              "else": {
+                "enum": [
+                  "viridis",
+                  "magma",
+                  "inferno",
+                  "cividis",
+                  "juicebox",
+                  "fall",
+                  "reds",
+                  "blues",
+                  "redblue",
+                  "purpleorange",
+                  "redgreyblue"
+                ]
+              }
             },
             "reverse": {
               "description": "turns a linear or log scale's ramp round, so its last colour paints the bottom of the domain.",
-              "type": "boolean",
-              "default": false
+              "default": false,
+              "if": {
+                "type": "null"
+              },
+              "else": {
+                "type": "boolean"
+              }
             },
             "domainMid": {
               "description": "the value the ramp's middle stop sits at, so a diverging ramp centres somewhere other than the middle of the domain, both sides on one scale: the farther end of the domain reaches its end colour and equal distances from the middle take equal colours; unset, the stops are evenly spaced across it.",
-              "type": "number"
+              "if": {
+                "type": "null"
+              },
+              "else": {
+                "type": "number"
+              }
             },
             "domainMin": {
               "description": "the bottom of a linear or log scale's domain; unset follows the loaded values.",
-              "type": "number"
+              "if": {
+                "type": "null"
+              },
+              "else": {
+                "type": "number"
+              }
             },
             "domainMax": {
               "description": "the top of a linear or log scale's domain; unset follows the loaded values.",
-              "type": "number"
+              "if": {
+                "type": "null"
+              },
+              "else": {
+                "type": "number"
+              }
             },
             "labels": {
               "description": "what the key names each domain value, one each in order, or under threshold each interval from the lowest; one past the list keeps its own name.",
-              "anyOf": [
-                {
-                  "type": "array",
-                  "items": {
-                    "anyOf": [
-                      {
-                        "type": "string"
-                      },
-                      {
-                        "type": "number"
-                      }
-                    ]
+              "if": {
+                "type": "null"
+              },
+              "else": {
+                "anyOf": [
+                  {
+                    "type": "array",
+                    "items": {
+                      "anyOf": [
+                        {
+                          "type": "string"
+                        },
+                        {
+                          "type": "number"
+                        }
+                      ]
+                    }
                   }
-                }
-              ]
+                ]
+              }
             },
             "title": {
               "description": "key title; unset keeps the display's own heading, \\"\\" draws none.",
-              "$ref": "#/$defs/PlainString"
+              "if": {
+                "type": "null"
+              },
+              "else": {
+                "$ref": "#/$defs/PlainString"
+              }
             }
           },
           "patternProperties": {
@@ -18369,8 +23549,8 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         },
         {
           "description": "Shorthand for \`{ \\"field\\": ... }\`.",
-          "$ref": "#/$defs/PlainString",
           "default": "",
+          "$ref": "#/$defs/PlainString",
           "type": "string"
         },
         {
@@ -18380,63 +23560,98 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "properties": {
             "value": {
               "description": "every alignment's opacity; unset is the view's default.",
-              "type": "number"
+              "if": {
+                "type": "null"
+              },
+              "else": {
+                "type": "number"
+              }
             },
             "field": {
               "description": "measurement or attributeColumns column; empty is value.",
-              "$ref": "#/$defs/PlainString",
-              "default": ""
+              "default": "",
+              "if": {
+                "type": "null"
+              },
+              "else": {
+                "$ref": "#/$defs/PlainString"
+              }
             },
             "scale": {
               "description": "none, threshold, or unset to follow the field.",
-              "enum": [
-                "none",
-                "threshold"
-              ]
+              "if": {
+                "type": "null"
+              },
+              "else": {
+                "enum": [
+                  "none",
+                  "threshold"
+                ]
+              }
             },
             "domain": {
               "description": "labels, or threshold cut points.",
-              "anyOf": [
-                {
-                  "type": "array",
-                  "items": {
-                    "anyOf": [
-                      {
-                        "type": "string"
-                      },
-                      {
-                        "type": "number"
-                      }
-                    ]
+              "if": {
+                "type": "null"
+              },
+              "else": {
+                "anyOf": [
+                  {
+                    "type": "array",
+                    "items": {
+                      "anyOf": [
+                        {
+                          "type": "string"
+                        },
+                        {
+                          "type": "number"
+                        }
+                      ]
+                    }
                   }
-                }
-              ]
+                ]
+              }
             },
             "range": {
               "description": "opacities along the domain.",
-              "anyOf": [
-                {
-                  "type": "array",
-                  "items": {
-                    "anyOf": [
-                      {
-                        "type": "string"
-                      },
-                      {
-                        "type": "number"
-                      }
-                    ]
+              "if": {
+                "type": "null"
+              },
+              "else": {
+                "anyOf": [
+                  {
+                    "type": "array",
+                    "items": {
+                      "anyOf": [
+                        {
+                          "type": "string"
+                        },
+                        {
+                          "type": "number"
+                        }
+                      ]
+                    }
                   }
-                }
-              ]
+                ]
+              }
             },
             "domainMin": {
               "description": "value at the faintest end; unset follows the field.",
-              "type": "number"
+              "if": {
+                "type": "null"
+              },
+              "else": {
+                "type": "number"
+              }
             },
             "domainMax": {
               "description": "value at the most opaque end; unset follows the field.",
-              "type": "number"
+              "if": {
+                "type": "null"
+              },
+              "else": {
+                "type": "number"
+              }
             }
           },
           "patternProperties": {
@@ -20440,13 +25655,23 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "properties": {
         "defaultDriver": {
           "description": "the RPC driver to run data fetching on: MainThreadRpcDriver or WebWorkerRpcDriver. Leave empty to use the default for this application.",
-          "$ref": "#/$defs/PlainString",
-          "default": ""
+          "default": "",
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/PlainString"
+          }
         },
         "workerCount": {
           "description": "The number of workers to use. If 0 (the default) JBrowse will decide how many workers to use.",
-          "type": "number",
-          "default": 0
+          "default": 0,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "number"
+          }
         }
       },
       "patternProperties": {
@@ -20459,12 +25684,22 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "type": "object",
       "properties": {
         "trackNames": {
-          "type": "boolean",
-          "default": false
+          "default": false,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "boolean"
+          }
         },
         "categories": {
-          "type": "boolean",
-          "default": false
+          "default": false,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "boolean"
+          }
         }
       },
       "patternProperties": {
@@ -20477,18 +25712,33 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "type": "object",
       "properties": {
         "categoryNames": {
-          "type": "array",
-          "items": {
-            "type": "string"
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
           }
         },
         "topLevelCategories": {
-          "type": "boolean",
-          "default": false
+          "default": false,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "boolean"
+          }
         },
         "subCategories": {
-          "type": "boolean",
-          "default": false
+          "default": false,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "boolean"
+          }
         }
       },
       "patternProperties": {
@@ -20501,17 +25751,32 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "type": "object",
       "properties": {
         "sort": {
-          "$ref": "#/$defs/hierarchicalSort"
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/hierarchicalSort"
+          }
         },
         "defaultFolderCategories": {
           "description": "list of category names to display as folders by default.",
-          "type": "array",
-          "items": {
-            "type": "string"
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
           }
         },
         "defaultCollapsed": {
-          "$ref": "#/$defs/defaultCollapsed"
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/defaultCollapsed"
+          }
         }
       },
       "patternProperties": {
@@ -20524,28 +25789,53 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "type": "object",
       "properties": {
         "animationMode": {
-          "enum": [
-            "system",
-            "enabled",
-            "disabled"
-          ],
-          "default": "enabled"
+          "default": "enabled",
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "enum": [
+              "system",
+              "enabled",
+              "disabled"
+            ]
+          }
         },
         "scrollZoom": {
-          "type": "boolean",
-          "default": false
+          "default": false,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "boolean"
+          }
         },
         "numberGrouping": {
-          "type": "boolean",
-          "default": true
+          "default": true,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "boolean"
+          }
         },
         "useWorkspaces": {
-          "type": "boolean",
-          "default": false
+          "default": false,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "boolean"
+          }
         },
         "developerMode": {
-          "type": "boolean",
-          "default": false
+          "default": false,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "boolean"
+          }
         }
       },
       "patternProperties": {
@@ -20558,12 +25848,17 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "type": "object",
       "properties": {
         "trackLabels": {
-          "enum": [
-            "offset",
-            "overlapping",
-            "hidden"
-          ],
-          "default": "offset"
+          "default": "offset",
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "enum": [
+              "offset",
+              "overlapping",
+              "hidden"
+            ]
+          }
         }
       },
       "patternProperties": {
@@ -20577,50 +25872,105 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "type": "object",
       "properties": {
         "rpc": {
-          "$ref": "#/$defs/RpcOptions"
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/RpcOptions"
+          }
         },
         "formatDetails": {
-          "$ref": "#/$defs/FormatDetails"
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/FormatDetails"
+          }
         },
         "formatAbout": {
-          "$ref": "#/$defs/FormatAbout"
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/FormatAbout"
+          }
         },
         "shareURL": {
-          "$ref": "#/$defs/PlainString",
-          "default": "https://share.jbrowse.org/api/v1/"
+          "default": "https://share.jbrowse.org/api/v1/",
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/PlainString"
+          }
         },
         "disableAnalytics": {
-          "type": "boolean",
-          "default": false
+          "default": false,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "boolean"
+          }
         },
         "hierarchical": {
-          "$ref": "#/$defs/hierarchical"
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/hierarchical"
+          }
         },
         "preferences": {
-          "$ref": "#/$defs/Preferences"
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/Preferences"
+          }
         },
         "theme": {
           "description": "Material UI theme overrides applied to the JBrowse UI. Any JSON value: the slot is \`frozen\`, so its shape is not checked here.",
-          "not": {
-            "$ref": "#/$defs/JexlString"
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "not": {
+              "$ref": "#/$defs/JexlString"
+            }
           }
         },
         "extraThemes": {
           "description": "additional named themes the user can switch between. Any JSON value: the slot is \`frozen\`, so its shape is not checked here.",
-          "not": {
-            "$ref": "#/$defs/JexlString"
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "not": {
+              "$ref": "#/$defs/JexlString"
+            }
           }
         },
         "logoPath": {
           "description": "path to a custom logo image displayed in the app header.",
-          "$ref": "#/$defs/FileLocation",
           "default": {
             "uri": "",
             "locationType": "UriLocation"
+          },
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/FileLocation"
           }
         },
         "LinearGenomeViewPlugin": {
-          "$ref": "#/$defs/LinearGenomeViewConfigSchema"
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/LinearGenomeViewConfigSchema"
+          }
         }
       },
       "patternProperties": {

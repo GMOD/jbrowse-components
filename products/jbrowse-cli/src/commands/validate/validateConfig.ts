@@ -501,7 +501,7 @@ function declaredEntries<T>(
   }
   return Array.isArray(list)
     ? list.map((entry, i) =>
-        hasDeclaredShape(written[i], `${SLOTS_POINTER}/${slot}/items`)
+        hasDeclaredShape([written[i]], `${SLOTS_POINTER}/${slot}`)
           ? (entry as T)
           : undefined,
       )

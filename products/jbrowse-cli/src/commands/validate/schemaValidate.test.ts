@@ -215,6 +215,17 @@ describe('the schema', () => {
     },
   )
 
+  // ADR-146: a config member's `null` is its reset, at any depth
+  it('accepts null as a slot or sub-schema reset', () => {
+    const config = baseConfig()
+    config.tracks[0]!.displays = [
+      { type: 'LinearBasicDisplay', outlineColor: null, height: null },
+      { type: 'LinearAlignmentsDisplay', color: null },
+      { type: 'LinearWiggleDisplay', scales: { y: { domainMin: null } } },
+    ]
+    expect(schemaProblems(config)).toEqual([])
+  })
+
   it('checks a shorthand string as the slot it lifts into', () => {
     const config = baseConfig()
     config.tracks[0]!.displays = [

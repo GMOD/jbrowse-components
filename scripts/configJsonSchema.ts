@@ -559,6 +559,28 @@ export function buildConfigJsonSchema(deps: Deps): JsonSchema {
     )
   }
 
+  // A config member takes `null` as a reset to its default (ADR-146). An
+  // if/else rather than an anyOf, so a wrong value is still explained against
+  // the member's own schema.
+  function resettable(schema: JsonSchema): JsonSchema {
+    const { description, default: defaultValue, deprecated, ...rest } = schema
+    return Object.keys(rest).length === 0
+      ? schema
+      : {
+          ...(description === undefined ? {} : { description }),
+          ...(defaultValue === undefined ? {} : { default: defaultValue }),
+          ...(deprecated === undefined ? {} : { deprecated }),
+          if: { type: 'null' },
+          else: rest,
+        }
+  }
+
+  // what a member takes besides the reset
+  function valueSchema(member: JsonSchema = {}): JsonSchema {
+    const { if: _if, else: value, ...annotations } = member
+    return value ? { ...annotations, ...(value as JsonSchema) } : member
+  }
+
   function slotTable(
     meta: SchemaMetadata,
     depth: number,
@@ -567,14 +589,16 @@ export function buildConfigJsonSchema(deps: Deps): JsonSchema {
     const properties: Record<string, JsonSchema> = {}
     for (const [slot, entry] of Object.entries(meta.definition)) {
       if (isSlotDefinition(entry)) {
-        properties[slot] = slotSchema(
-          entry,
-          depth + 1,
-          legacyValues[slot],
-          liftsFor(meta, slot, entry.type),
+        properties[slot] = resettable(
+          slotSchema(
+            entry,
+            depth + 1,
+            legacyValues[slot],
+            liftsFor(meta, slot, entry.type),
+          ),
         )
       } else if (deps.isType(entry)) {
-        properties[slot] = mstSchema(entry as MstType, depth + 1)
+        properties[slot] = resettable(mstSchema(entry as MstType, depth + 1))
       }
     }
     return properties
@@ -769,7 +793,7 @@ export function buildConfigJsonSchema(deps: Deps): JsonSchema {
     // titled as its def is, since a key the object refuses is reported
     // against this branch rather than the union
     const bare = Object.entries(forms.targets).map(([form, slot]) => ({
-      ...slots[slot],
+      ...valueSchema(slots[slot]),
       type: form,
       description: `Shorthand for \`{ "${slot}": ...${companionText(meta)} }\`.`,
     }))
