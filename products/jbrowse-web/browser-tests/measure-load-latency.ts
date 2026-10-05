@@ -45,6 +45,10 @@ const scenarios = {
     'config=test_data/volvox/config.json&assembly=volvox&loc=ctgA:1-20000&tracks=volvox_bam&renderer=canvas2d',
   'volvox, one CRAM track':
     'config=test_data/volvox/config.json&assembly=volvox&loc=ctgA:1-20000&tracks=volvox_cram&renderer=canvas2d',
+  'volvox, one BigWig track':
+    'config=test_data/volvox/config.json&assembly=volvox&loc=ctgA:1-20000&tracks=volvox_microarray&renderer=canvas2d',
+  'volvox, one GFF track':
+    'config=test_data/volvox/config.json&assembly=volvox&loc=ctgA:1-20000&tracks=gff3tabix_genes&renderer=canvas2d',
   'hg38 hub, its default session':
     'config=https://jbrowse.org/ucsc/hg38/config.json',
 }
