@@ -23,6 +23,7 @@ import {
   slotSpreadPart,
 } from './enumConstants.ts'
 import { writePage } from './format.ts'
+import { collectSlotTypes } from './generateSlotTypeDocs.ts'
 import {
   assertSingleHeader,
   assertUniquePages,
@@ -1156,27 +1157,12 @@ const SLOT_TYPES_GUIDE = '/docs/config_guides/slot_types'
 const FILE_TYPES_GUIDE = '/docs/config_guides/file_types'
 const DISPLAYS_GUIDE = '/docs/config_guides/tracks#configuring-displays'
 const MAYBE_TYPES_ANCHOR = 'the-maybe-types'
-const DOCUMENTED_SLOT_TYPES = new Map([
-  ['string', 'string'],
-  ['featureField', 'featurefield'],
-  ['number', 'number'],
-  ['integer', 'integer'],
-  ['boolean', 'boolean'],
-  // the six the guide's `maybe*` section actually names
-  ['maybeNumber', MAYBE_TYPES_ANCHOR],
-  ['maybeBoolean', MAYBE_TYPES_ANCHOR],
-  ['maybeString', MAYBE_TYPES_ANCHOR],
-  ['maybeStringEnum', MAYBE_TYPES_ANCHOR],
-  ['maybeFrozen', MAYBE_TYPES_ANCHOR],
-  ['maybeFileLocation', MAYBE_TYPES_ANCHOR],
-  ['fileLocation', 'filelocation'],
-  ['stringEnum', 'stringenum'],
-  ['stringEnumArray', 'stringenumarray'],
-  ['color', 'color'],
-  ['colorArray', 'colorarray'],
-  ['frozen', 'frozen'],
-  ['text', 'text'],
-])
+const DOCUMENTED_SLOT_TYPES = new Map(
+  collectSlotTypes().map(({ name }) => [
+    name,
+    name.startsWith('maybe') ? MAYBE_TYPES_ANCHOR : name.toLowerCase(),
+  ]),
+)
 function typeLink(type: string) {
   const anchor = DOCUMENTED_SLOT_TYPES.get(type)
   return anchor ? `[\`${type}\`](${SLOT_TYPES_GUIDE}#${anchor})` : `\`${type}\``

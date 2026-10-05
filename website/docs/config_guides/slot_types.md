@@ -28,6 +28,26 @@ once per feature, the way it reads a named field.
 
 A list of strings, e.g. a track's `assemblyNames` or `category`.
 
+## expressionArray
+
+A list of [`jexl:` expressions](/docs/config_guides/jexl), each written with its
+prefix, e.g. a display's `filter`: `["jexl:get(feature, 'score') > 10"]`. An
+entry without the prefix fails the load and names the slot.
+
+## stringArrayMap
+
+An object whose every value is a list of strings, e.g.
+`{ "groupA": ["sample1", "sample2"] }`.
+
+## numberMap
+
+An object whose every value is a number, e.g. `{ "chr1": 0.5 }`.
+
+## stringMap
+
+An object whose every value is a string, e.g. a row arrangement's `labels`,
+which name a row by its key: `{ "HG002": "Child" }`.
+
 ## number
 
 A numeric value (integer or decimal), e.g. a pixel height or a score threshold.
@@ -71,8 +91,10 @@ the load and names the slot.
 
 ## color
 
-A CSS color: a hex string (`#f00`), an `rgb()`/`rgba()` value, or a named color.
-Many color slots also accept a [`jexl:` callback](/docs/config_guides/jexl) for
+A CSS color: a hex string (`#f00`), an `rgb()`/`rgba()` or `hsl()` value, a
+named color, or a BED color triple (`255,0,0`). The empty string `""` means no
+color, as in an `outlineColor` that draws no outline. Many color slots also
+accept a [`jexl:` callback](/docs/config_guides/jexl) for
 [per-feature coloring](/docs/config_guides/customizing_feature_colors).
 
 ## colorArray
@@ -92,9 +114,9 @@ A multi-line string, e.g. an HTML template for a feature-details panel.
 
 ## The `maybe*` types {#the-maybe-types}
 
-`maybeNumber`, `maybeBoolean`, `maybeString`, `maybeStringEnum`, `maybeFrozen`
-and `maybeFileLocation` each accept everything the type without the prefix
-accepts, plus one more state: **unset**.
+`maybeNumber`, `maybeBoolean`, `maybeString`, `maybeColor`, `maybeStringEnum`,
+`maybeFrozen` and `maybeFileLocation` each accept everything the type without
+the prefix accepts, plus one more state: **unset**.
 
 A slot left unset holds no value of its own, which lets the display decide what
 to do from the data in front of it — a state distinct from any value the slot

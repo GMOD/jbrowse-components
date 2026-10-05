@@ -20,7 +20,10 @@ import {
   isRegisteredConfigurationSchema,
 } from './schemaRegistry.ts'
 
-import type { ConfigSlotDefinition } from './configurationSlot.ts'
+import type {
+  ConfigSlotDefinition,
+  ConfigSlotType,
+} from './configurationSlot.ts'
 import type { ConfigurationSchemaMetadata } from './schemaRegistry.ts'
 import type {
   AnyConfigurationModel,
@@ -107,7 +110,11 @@ export function isConfigurationModel(
   return isStateTreeNode(thing) && isConfigurationSchemaType(getType(thing))
 }
 
-const NUMBER_SLOT_TYPES = new Set(['number', 'integer', 'maybeNumber'])
+const NUMBER_SLOT_TYPES = new Set<string>([
+  'number',
+  'integer',
+  'maybeNumber',
+] satisfies ConfigSlotType[])
 
 /** A bare value a schema's `shorthand` lifts. */
 export type ShorthandForm = 'string' | 'number'

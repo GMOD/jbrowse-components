@@ -61,7 +61,7 @@ const SLOT_ROW =
 // object or the string its shorthand lifts
 const SUB_SCHEMA_KIND = 'subSchema'
 
-const ENUM_KINDS = new Set(['stringEnum', 'maybeStringEnum', 'enum'])
+const ENUM_KINDS = new Set(['stringEnum', 'maybeStringEnum', 'stringEnumArray'])
 
 // Config vocabulary that is not a `#slot` row, so it never appears in the
 // generated tables, but is routinely backticked in the same breath as a slot's
@@ -91,6 +91,7 @@ const STRUCTURAL_KEYS = [
 const NON_STRING_KINDS = new Set([
   'number',
   'maybeNumber',
+  'integer',
   'boolean',
   'maybeBoolean',
 ])

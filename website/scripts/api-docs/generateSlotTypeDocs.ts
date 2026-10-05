@@ -8,36 +8,17 @@ import {
 } from './util.ts'
 
 // The closed set of config slot `type` names, rendered into the
-// configuration-schema guide from the three tables that define it.
-//
-// The guide used to carry two hand-written mirrors of this set, and both had
-// already gone wrong in the same direction — short, and silently so. The slot
-// type table listed twelve of the seventeen names (every `maybe*` form was
-// relegated to a following paragraph) and called `color` a "Validated CSS color
-// string", which it has never been: the model is a bare `types.string` and the
-// editor picks a widget off the slot's `type` metadata. The graphical-editing
-// list under it was the same set minus two more, restating the editor column of
-// the first table for ten of the seventeen.
-//
-// Three sources, each already the single source of truth for one column, none
-// of them hand-mirrored here:
+// configuration-schema guide from the three tables that define it:
 //
 // - `slotTypes` in configurationSlot.ts — the names, and the MST model each one
 //   builds its value from. `ENUM_SLOT_TYPES` beside it carries the names with
 //   no builtin model, since the author supplies the `types.enumeration`.
 // - `SlotValueByType` in types.ts — what a `getConf`/`readConfObject` read of
-//   the slot is typed as. tsc already checks that it names the same set as
-//   `slotTypes`; this only has to find a row per name.
-// - `valueComponents` in SlotEditor.tsx — the config editor's dispatch from a
-//   runtime type string to a control, with the control named by a `#slotEditor`
-//   tag on the component itself.
+//   the slot is typed as.
+// - `valueComponents` in SlotEditor.tsx — the config editor's control for each
+//   type, named by a `#slotEditor` tag on the component itself.
 //
-// That last one is the gate worth having. `valueComponents` is typed
-// `Record<string, ...>` (it has to be — see its own comment), so nothing checks
-// it against the slot types that exist: a new type with no entry there falls
-// back to `StringEditor` behind a `console.warn`, which is a config editor that
-// renders a number as a text box and says so nowhere a user or an author looks.
-// A missing entry fails this generator instead.
+// tsc checks that the second and third name every type the first does.
 const SLOT_FILE = 'packages/core/src/configuration/configurationSlot.ts'
 const TYPES_FILE = 'packages/core/src/configuration/types.ts'
 const EDITOR_FILE =
@@ -193,7 +174,7 @@ export function collectSlotTypes(): SlotTypeRow[] {
     [
       ...block(
         EDITOR_FILE,
-        'const valueComponents: Record<string, React.ComponentType<any>> = {',
+        'const valueComponents = {',
         '\n}',
         "the config editor's slot type -> control dispatch",
       ).matchAll(/^ {2}(\w+): (\w+),$/gm),
@@ -228,7 +209,7 @@ export function collectSlotTypes(): SlotTypeRow[] {
 
   if (missingEditor.length > 0) {
     throw new Error(
-      `these slot types have no entry in \`valueComponents\` (${EDITOR_FILE}), so the config editor renders them as a plain text box behind a console.warn: ${missingEditor.join(', ')}`,
+      `these slot types have no entry in \`valueComponents\` (${EDITOR_FILE}), which its \`satisfies\` should have refused:${missingEditor.join(', ')}`,
     )
   }
   if (unlabelled.size > 0) {
@@ -255,12 +236,34 @@ function sortByBaseType(rows: SlotTypeRow[]) {
   )
 }
 
+// Every config page links a slot's type to its section here: a `maybe*` type to
+// the section naming them all, any other to the heading spelling its name.
+const GUIDE = 'website/docs/config_guides/slot_types.md'
+
+function undocumented(rows: SlotTypeRow[]) {
+  const guide = fs.readFileSync(GUIDE, 'utf8')
+  return rows
+    .map(r => r.name)
+    .filter(name =>
+      name.startsWith('maybe')
+        ? !guide.includes(`\`${name}\``)
+        : !new RegExp(`^## ${name}$`, 'm').test(guide),
+    )
+}
+
 export function writeSlotTypeDocs({ check = false } = {}) {
+  const rows = collectSlotTypes()
+  const missing = undocumented(rows)
+  if (missing.length > 0) {
+    throw new Error(
+      `${GUIDE} has no section for ${missing.join(', ')}, which every config page links its slots to`,
+    )
+  }
   return rewriteMarkerBlock(
     'SLOT_TYPES',
     markdownTable(
       ['`type`', 'MST model', 'Reads as', 'Config editor renders'],
-      collectSlotTypes().map(r => {
+      rows.map(r => {
         // the enum rows say where their model and read type come from,
         // which is prose; every other row's is an expression from the source
         const value = r.fromModel ? tableCell : codeCell

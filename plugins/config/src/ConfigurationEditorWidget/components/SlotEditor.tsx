@@ -149,12 +149,10 @@ const FileSelectorWrapper = observer(function FileSelectorWrapper({
   )
 })
 
-// dynamic dispatch from a runtime slot `type` string to a typed editor. The
-// `any` is irreducible here: each editor declares a narrow `slot.value` type
-// (number, boolean, FileLocation, string[], ...) but makeSlotFacade can only
-// type value as `unknown`, so no single registry prop type satisfies them all.
-// The editors stay fully typed internally; only this lookup is untyped.
-const valueComponents: Record<string, React.ComponentType<any>> = {
+// The `any` is irreducible: each editor declares a narrow `slot.value` type, but
+// makeSlotFacade can only type value as `unknown`. The keys are checked: a slot
+// type with no editor is a compile error.
+const valueComponents = {
   string: StringEditor,
   maybeString: StringEditor,
   featureField: StringEditor,
@@ -179,7 +177,7 @@ const valueComponents: Record<string, React.ComponentType<any>> = {
   maybeBoolean: BooleanEditor,
   frozen: JsonEditor,
   maybeFrozen: JsonEditor,
-}
+} satisfies Record<SlotFacade['type'], React.ComponentType<any>>
 
 const SlotEditor = observer(function SlotEditor({
   slot,
@@ -201,13 +199,9 @@ const SlotEditor = observer(function SlotEditor({
   // json, callback) seed internal state from slot.value only on mount, so an
   // external set wouldn't otherwise show in the field
   const [resetNonce, setResetNonce] = useState(0)
-  const TypedComponent = valueComponents[type]
-  if (!callbackMode && !TypedComponent) {
-    console.warn(`no slot editor defined for ${type}, editing as string`)
-  }
   const ValueComponent: React.ComponentType<any> = callbackMode
     ? CallbackEditor
-    : (TypedComponent ?? StringEditor)
+    : valueComponents[type]
   const { modified } = slot
   return (
     <Paper className={classes.paper}>
