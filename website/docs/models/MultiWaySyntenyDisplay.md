@@ -115,6 +115,7 @@ Members a composed model contributes are listed here too, so these tables are th
 | <span id="getter-genecolorencoding">**geneColorEncoding**</span><br><code>string &#124; FieldColorEncoding &#124; undefined</code> |  | MultiWaySyntenyDisplay |
 | <span id="getter-genecolorslots">**geneColorSlots**</span><br><code>HeldSlots &#124; undefined</code> | The slots a categorical gene colour deals its values into. | MultiWaySyntenyDisplay |
 | <span id="getter-genecolorfield">**geneColorField**</span><br><code>string</code> | `''` while `color.value` paints | MultiWaySyntenyDisplay |
+| <span id="getter-genesolidcolor">**geneSolidColor**</span><br><code>string &#124; undefined</code> | the constant `color.value` holds, undefined for none or a `jexl:` one | MultiWaySyntenyDisplay |
 | <span id="getter-boxcolors">**boxColors**</span><br><code>GeneColors</code> |  | MultiWaySyntenyDisplay |
 | <span id="getter-lanegenecolors">**laneGeneColors**</span><br><code>ReadonlyMap&lt;string, GeneColors&gt;</code> |  | MultiWaySyntenyDisplay |
 | <span id="getter-selectedfeatureid">**selectedFeatureId**</span><br><code>string &#124; undefined</code> |  | MultiWaySyntenyDisplay |
@@ -181,7 +182,7 @@ Members a composed model contributes are listed here too, so these tables are th
 | <span id="getter-genecolorscales">**geneColorScales**</span><br><code>ColorScale[]</code> | keys the anchor lane alone, over the settled window | MultiWaySyntenyDisplay |
 | <span id="getter-colorscales">**colorScales**</span><br><code>ColorScale[]</code> |  | MultiWaySyntenyDisplay |
 | <span id="getter-legendright">**legendRight**</span><br><code>number</code> |  | MultiWaySyntenyDisplay |
-| <span id="getter-lanelayerplacements">**laneLayerPlacements**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>{ specLane: string; held: HeldLaneLayer; row: number; top: numb…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>{ specLane: string; held: HeldLaneLayer; row: number; top: number; height: number; px: Span; }[]</code></pre></dialog></span> | each payload's region placed in its lane's own frame; a payload whose lane or contig no longer draws is left out | MultiWaySyntenyDisplay |
+| <span id="getter-lanelayerplacements">**laneLayerPlacements**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>{ specLane: string; held: HeldLaneLayer; row: number; top: numb…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>{ specLane: string; held: HeldLaneLayer; row: number; top: number; height: number; segments: { start: number; end: number; px: Span; }[]; }[]</code></pre></dialog></span> | each payload's region placed in its lane's own frame; a payload whose lane or contig no longer draws is left out | MultiWaySyntenyDisplay |
 | <span id="getter-lanelayerdomains">**laneLayerDomains**</span><br><code>([number, number] &#124; undefined)[]</code> | undefined for a layer no drawn lane holds values for yet | MultiWaySyntenyDisplay |
 | <span id="getter-lanelayercolors">**laneLayerColors**</span><br><code>ColorSource[][]</code> | where each lane layer's marks take their colour from, one per mark, read as the mark display reads its own | MultiWaySyntenyDisplay |
 | <span id="getter-selectedglyphhits">**selectedGlyphHits**</span><br><code>GlyphHit[][]</code> | the selected feature's glyph hits per row, which a pan leaves alone | MultiWaySyntenyDisplay |
@@ -340,6 +341,9 @@ Members a composed model contributes are listed here too, so these tables are th
 | <span id="action-advanceanimation">**advanceAnimation**</span><br><code>(nowMs: number) =&gt; void</code> |  | MultiWaySyntenyDisplay |
 | <span id="action-endanimation">**endAnimation**</span><br><code>() =&gt; void</code> |  | MultiWaySyntenyDisplay |
 | <span id="action-setgenecolorby">**setGeneColorBy**</span><br><code>(field: string) =&gt; void</code> | `''` paints by `color.value` | MultiWaySyntenyDisplay |
+| <span id="action-setgenesolidcolor">**setGeneSolidColor**</span><br><code>(color: string &#124; undefined) =&gt; void</code> |  | MultiWaySyntenyDisplay |
+| <span id="action-pickdefaultgenecolor">**pickDefaultGeneColor**</span><br><code>() =&gt; void</code> | Color by's Default: no field and no constant, so the config's own colour paints, a `jexl:` expression included | MultiWaySyntenyDisplay |
+| <span id="action-pickgenesolidcolor">**pickGeneSolidColor**</span><br><code>() =&gt; void</code> | Color by's Solid color...: paints the constant kept beside a field, where there is one, and opens the picker | MultiWaySyntenyDisplay |
 | <span id="action-selectfeature">**selectFeature**</span><br><code>(feature: Feature) =&gt; void</code> |  | MultiWaySyntenyDisplay |
 | <span id="action-openinnewview">**openInNewView**</span><br><code>(assemblyName: string, loc: string) =&gt; void</code> |  | MultiWaySyntenyDisplay |
 | <span id="action-reanchor">**reanchor**</span><br><code>(assemblyName: string, loc: string) =&gt; void</code> |  | MultiWaySyntenyDisplay |
