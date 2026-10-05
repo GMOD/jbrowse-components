@@ -253,7 +253,7 @@ other:
 
 ```bash
 jb2export --fasta https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz \
-  --bam https://jbrowse.org/demos/hg002/HG002.ONTrel2.HP.hs37d5.demo_slices.bam group:tag:HP color:tag:HP height:400 \
+  --bam https://jbrowse.org/demos/hg002/HG002.ONTrel2.HP.hs37d5.demo_slices.bam facet=tags.HP color.field=tags.HP height:400 \
   --loc 1:63,005,675-63,007,432 --width 1200 --out alignments_haplotype.png
 ```
 
@@ -274,7 +274,7 @@ menu instead.
 jb2export --fasta https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz \
   --aliases https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/hg38_aliases.txt \
   --bedgz https://jbrowse.org/ucsc/hg38/cpgIslandExt.bed.gz index:https://jbrowse.org/ucsc/hg38/cpgIslandExt.bed.gz.csi \
-  --bam https://jbrowse.org/demos/ont/COLO829_tumor.ht.chr20_18.5Mb.bam baseColor:methylation legend height:350 \
+  --bam https://jbrowse.org/demos/ont/COLO829_tumor.ht.chr20_18.5Mb.bam baseColor:methylation showLegend=true height:350 \
   --loc chr20:18,503,000-18,509,000 --width 1200 --out methylation.png
 ```
 
@@ -294,7 +294,7 @@ arcs, with the spliced read pairs (green mate lines) below:
 
 ```bash
 jb2export --hub hg19 --track hg19-ncbiRefSeqCurated height:90 \
-  --bam https://s3.amazonaws.com/jbrowse.org/genomes/hg19/paired_end_rnaseq/Pairend_StrandSpecific_51mer_Human_hg19.bam sashimi:auto coverageHeight:170 scaletype:log featureHeight:super-compact height:420 \
+  --bam https://s3.amazonaws.com/jbrowse.org/genomes/hg19/paired_end_rnaseq/Pairend_StrandSpecific_51mer_Human_hg19.bam sashimi:auto coverageHeight=170 scales.y.type=log featureHeight:super-compact height:420 \
   --loc B2M --width 1400 --out sashimi_junctions.png
 ```
 
@@ -318,7 +318,7 @@ S3) over a ~1.2 kb inversion on chr1 draws the same event three ways:
 
 ```bash
 jb2export --hub hg38 \
-  --bam https://jbrowse.org/demos/ont/HG00151-ONT-hg38.chr1_inversion.bam arcs:down unit:chain group:splitRead coverageHeight:80 height:560 \
+  --bam https://jbrowse.org/demos/ont/HG00151-ONT-hg38.chr1_inversion.bam arcs:down unit=chain facet=splitRead coverageHeight=80 height:560 \
   --loc chr1:197,786,900-197,789,700 --width 1400 --out sv_read_arcs.png
 ```
 
@@ -451,7 +451,7 @@ deletions of the cancer karyotype stand out:
 
 ```bash
 jb2export --loc all --fasta https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz \
-  --bigwig https://jbrowse.org/genomes/hg19/reads_lr_skbr3.fa_ngmlr-0.2.3_mapped.bam.regions.bw scaletype:log fill:false resolution:superfine height:400 color:purple minmax:1:1024 \
+  --bigwig https://jbrowse.org/genomes/hg19/reads_lr_skbr3.fa_ngmlr-0.2.3_mapped.bam.regions.bw scales.y.type=log mark=point resolution=100 height:400 color:purple scales.y.domainMin=1 scales.y.domainMax=1024 \
   --width 1900 --out skbr3_cov.png
 ```
 
@@ -1321,8 +1321,8 @@ height. Reproducible with the bundled volvox alignments:
 
 ```bash
 jb2export --fasta data/volvox/volvox.fa \
-  --bam data/volvox/volvox-sorted.bam showPileup=false coverageHeight=200 height:200 --loc ctgA:1-20000 \
-  --width 1200 --out snpcov.png
+  --bam data/volvox/volvox-sorted.bam showPileup=false coverageHeight=200 height:200 \
+  --loc ctgA:1-20000 --width 1200 --out snpcov.png
 ```
 
 ![The bundled volvox alignments as a coverage histogram alone, with the read pileup hidden](https://jbrowse.org/jb2-figures/jbrowse-img/snpcov.4f8407542144.png)
