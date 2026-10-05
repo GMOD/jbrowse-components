@@ -3360,13 +3360,6 @@
     "reviewedAt": "2026-09-14T03:48:04.022Z",
     "hash": "d2c2f800685348df21394bb7e9361aa5260b66fc"
   },
-  "multiway_synteny/hg38_vertebrates_17p_break": {
-    "name": "multiway_synteny/hg38_vertebrates_17p_break",
-    "status": "good",
-    "note": "",
-    "reviewedAt": "2026-09-14T03:48:11.551Z",
-    "hash": "56a5be5a5f4649770d3990251126cac168f03f39"
-  },
   "multiway_synteny/hg38_vertebrates_tp53": {
     "name": "multiway_synteny/hg38_vertebrates_tp53",
     "status": "good",
