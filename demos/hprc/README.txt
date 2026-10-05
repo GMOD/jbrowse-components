@@ -244,6 +244,12 @@ Curated VNTRs
   config loads jbrowse-plugin-tandem-repeat, whose Show repeat copies item on
   the record draws each copy in its unit's colour.
 
+  hprc_samples.tsv is both KIV-2 tracks' samplesTsvLocation: one row per
+  sample of the records (name, population, superpopulation, sex), from HPRC's
+  release 2 sample table and the 1000 Genomes superpopulation codes, written
+  by scripts/build_hprc_samples.sh, which also prints the KIV-2B counts by
+  superpopulation that the tutorial's faceted figure shows.
+
   hprc_kiv2_copies_all.vcf.gz{,.tbi} is the same record over every haplotype,
   from a cut of all 465 walks through the array (21,721 nodes):
 

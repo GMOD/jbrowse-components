@@ -391,7 +391,10 @@
       "assemblyNames": ["hg38"],
       "adapter": {
         "type": "VcfAdapter",
-        "uri": "https://jbrowse.org/demos/hprc/hprc_kiv2_copies.vcf"
+        "uri": "https://jbrowse.org/demos/hprc/hprc_kiv2_copies.vcf",
+        "samplesTsvLocation": {
+          "uri": "https://jbrowse.org/demos/hprc/hprc_samples.tsv"
+        }
       }
     },
     {
@@ -401,7 +404,10 @@
       "assemblyNames": ["hg38"],
       "adapter": {
         "type": "VcfTabixAdapter",
-        "uri": "https://jbrowse.org/demos/hprc/hprc_kiv2_copies_all.vcf.gz"
+        "uri": "https://jbrowse.org/demos/hprc/hprc_kiv2_copies_all.vcf.gz",
+        "samplesTsvLocation": {
+          "uri": "https://jbrowse.org/demos/hprc/hprc_samples.tsv"
+        }
       }
     },
     {
