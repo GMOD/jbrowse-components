@@ -106,6 +106,23 @@ the track menu open **Lanes → Choose lanes...**, press **Untick shown**, tick
 
 <Figure caption="C4 from the HPRC page's haplotypes launch with two lanes chosen, HG01978.2 and HG02004.2, each with three copies of the C4-CYP21-TNX module, under the RefSeq genes. The band from GRCh38 leaves the third module unmatched, and the band between the two haplotypes matches it off the nodes both paths share." src="/img/multiway_synteny/hprc_c4_graph_stack.png" />
 
+## GSTT1: a gene GRCh38's chromosome lacks
+
+GRCh38's chromosome 22 carries the common _GSTT1_ deletion, so the gene sits on
+an alternate contig and no chr22 track draws it. From any **haplotypes** launch,
+we'll move to `chr22:23,950,001-24,060,000`, choose `HG00128.2`, `HG01960.1`,
+`HG00146.2`, `HG01109.1`, `HG00099.1`, `HG00232.1`, `HG00133.1`, `HG00126.2`,
+`HG00146.1` and `HG00097.1` under **Lanes → Choose lanes...**, and then:
+
+- **Lanes → Order lanes by structure** stacks each lane beside the one whose
+  deletions and insertions against GRCh38 are most alike, so the haplotypes
+  carrying _GSTT1_ sit as one block.
+- **Purple on a lane** is sequence that haplotype carries and hg38 lacks here,
+  and a purple band between two lanes is that sequence aligned between the two
+  haplotypes, read off the nodes both walks share.
+
+<Figure caption="The GSTT1 window from the haplotypes launch with ten lanes ordered by structure, under the RefSeq genes. The lanes that match GRCh38 come first; below them each carrier draws the inserted sequence in purple under its CAT genes, joined to the next carrier by a purple band." src="/img/multiway_synteny/hprc_gstt1_lanes.png" />
+
 ## Amylase: counting AMY1 copies per haplotype
 
 Press **haplotypes** on the AMY1 row, the salivary amylase gene copies, and

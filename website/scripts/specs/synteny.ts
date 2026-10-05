@@ -1965,6 +1965,18 @@ export const syntenySpecs: ScreenshotSpec[] = [
     viewportHeight: 460,
   },
 
+  // GSTT1, which GRCh38's chr22 lacks, from the haplotypes launch with ten
+  // lanes ordered by structure: the carriers draw the insertion purple and
+  // share it through purple bands between them.
+  {
+    mode: 'url',
+    name: 'multiway_synteny/hprc_gstt1_lanes',
+    url: portalHaplotypeLanes(PORTAL_LOCI.gstt1),
+    readySelector: displaySettled('multiway-synteny-display'),
+    readyTimeout: 240000,
+    viewportHeight: 960,
+  },
+
   // SyRI's typed regions between two Arabidopsis accessions
   // (scripts/build_syri_synteny.sh), colored by the syri tag in plotsr's
   // palette. The crossed ribbon is the 1.17 Mb Chr4 inversion between Col-0 and

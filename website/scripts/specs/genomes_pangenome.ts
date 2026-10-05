@@ -52,9 +52,11 @@ export function portalGraphLaunch({
   })
 }
 
-// The haplotypes launch's window and lanes at three loci: CFH is the page's own
-// panel for the locus (public/pangenome-hprc/panels.json in jb2hubs), C4 and
-// amylase the lanes pangenome_hprc_haplotypes chooses there.
+// The haplotypes launch's window and lanes at four loci: CFH is the page's own
+// panel for the locus (public/pangenome-hprc/panels.json in jb2hubs), C4,
+// amylase and GSTT1 the lanes pangenome_hprc_haplotypes chooses there. GSTT1's
+// lanes are in the order "Order lanes by structure" writes: four that match
+// GRCh38's chr22, then six carrying the GSTT1 insertion.
 export const PORTAL_LOCI = {
   cfhr: {
     loc: 'chr1:196740001-196850000',
@@ -67,6 +69,21 @@ export const PORTAL_LOCI = {
   amylase: {
     loc: 'chr1:103610001-103760000',
     lanes: ['HG01361#1', 'HG00133#2', 'HG00133#1', 'NA18608#2', 'HG00232#1'],
+  },
+  gstt1: {
+    loc: 'chr22:23950001-24060000',
+    lanes: [
+      'HG00128#2',
+      'HG01960#1',
+      'HG00146#2',
+      'HG01109#1',
+      'HG00099#1',
+      'HG00232#1',
+      'HG00133#1',
+      'HG00126#2',
+      'HG00146#1',
+      'HG00097#1',
+    ],
   },
 }
 
