@@ -12,7 +12,6 @@ import type {
   BaseTextSearchArgs,
 } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { getSubAdapterType } from '@jbrowse/core/data_adapters/dataAdapterCache'
-import type { FileLocation } from '@jbrowse/core/util/types'
 
 // each name a query resolves costs a walk of the BigBed's B+ tree, so a query
 // resolves every name its exact word carries up to one cap, and the words it
@@ -26,14 +25,6 @@ interface Hit {
   refName: string
   start: number
   end: number
-}
-
-function isSet(location: FileLocation) {
-  return 'uri' in location
-    ? !!location.uri
-    : 'localPath' in location
-      ? !!location.localPath
-      : true
 }
 
 // the column that matched is the name the hit goes by: a gene symbol for a
@@ -112,7 +103,7 @@ export default class BigBedTextSearchAdapter
     })
     const ix = this.getConf('ixFilePath')
     const ixx = this.getConf('ixxFilePath')
-    if (isSet(ix) && isSet(ixx)) {
+    if (ix && ixx) {
       this.trix = new Trix(
         openLocation(ixx, pluginManager),
         openLocation(ix, pluginManager),

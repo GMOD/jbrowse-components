@@ -39,16 +39,14 @@ const BigBedTextSearchAdapter = ConfigurationSchema(
      * indexes hold. Unset, a search matches a name exactly as typed
      */
     ixFilePath: {
-      type: 'fileLocation',
-      defaultValue: { uri: '', locationType: 'UriLocation' },
+      type: 'maybeFileLocation',
     },
     /**
      * #slot
      * the `.ixx` beside `ixFilePath`
      */
     ixxFilePath: {
-      type: 'fileLocation',
-      defaultValue: { uri: '', locationType: 'UriLocation' },
+      type: 'maybeFileLocation',
     },
     /**
      * #slot
