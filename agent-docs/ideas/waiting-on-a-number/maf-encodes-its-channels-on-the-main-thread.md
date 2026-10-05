@@ -1,6 +1,6 @@
 ---
 name: maf-encodes-its-channels-on-the-main-thread
-description: MAF's encodeMafRows walks every fetched block on the main thread per fetch — buildMafChannels, then mafInsertionChannels at about a fifth of that again. Moving both to the worker is the fix if anything is; it waits on a main-thread time from a real MAF that says a reader feels it.
+description: MAF's encodeMafRows walks every fetched block on the main thread per fetch — buildMafChannels, then mafInsertionChannels at about a fifth of that again. Nobody knows the main-thread share at a real zoom; the encode cannot move to the worker without refetching on every colour or order edit, so a number that says a reader feels it buys a lane split, not a move.
 ---
 
 # MAF encodes its channels on the main thread
@@ -11,16 +11,24 @@ description: MAF's encodeMafRows walks every fetched block on the main thread pe
 about a fifth of the channel encode over the same blocks, measured on
 2026-10-02 when the shared insertion mark landed.
 
-**If anything, both encodes move to the worker together**, which ships packed
-channels rather than blocks. A lazy insertion index would only defer the
-smaller fifth.
+**The encode stays on the main thread.** It reads the palette, the identity
+ramp, the source-chromosome colours, the row order and the codon toggles, all
+of which an edit changes without a refetch, as ADR-202 keeps every mark colour.
+Moving it to the worker turns each of those edits into a fetch, or keeps a
+second encoder that has to agree with this one forever — the obstacle
+[wiggle-instance-packing-moves-to-the-worker](../waiting-on-a-call/wiggle-instance-packing-moves-to-the-worker.md)
+found for wiggle.
 
-The encode reads the palette and `binBp`, so moving it means a toggle or a
-zoom tier change re-asks the worker instead of re-encoding locally. That is
-the trade to price.
+**If the number says a reader feels it**, split the lanes instead: the worker
+ships what no edit moves (cell positions, base codes, the row each block row
+lands on) and the main thread writes colour and order over them, the first of
+the three designs in
+[alignments-still-repacks-every-row-instanced-pass-on-the-main-thread](alignments-still-repacks-every-row-instanced-pass-on-the-main-thread.md).
 
-**Waiting on:** main-thread milliseconds per fetch for `encodeMafRows` on a
-real multi-species MAF at the zoom where bases
-draw, against a frame budget. The synthetic fixture in
-`plugins/maf/benches/mafOnMarks.bench.ts` times the channel encode in node
-and says nothing about the frame.
+**Waiting on:** `encodeMafRows` milliseconds per fetch, apart from the worker's
+pack and `placeMafRegionData`, at the zoom where bases draw over 26 and 470
+species. `typed-sources-maf-display` times all three together over a whole
+fixture region at a base a cell
+(94.4-203.8ms<!--m:typed-sources-maf-display.mafMs.range-->), which says neither which thread
+pays nor what a real window costs. `plugins/maf/benches/mafOnMarks.bench.ts`
+is the harness to split.
