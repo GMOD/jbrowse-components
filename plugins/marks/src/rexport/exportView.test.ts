@@ -3,8 +3,8 @@ import { existsSync, mkdtempSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import path from 'node:path'
 
+import { REGIONS, configTracks, hasR, track } from './exportView.fixture.ts'
 import { exportTracksToR, rKey } from './exportView.ts'
-import { REGIONS, configTracks, hasR, track } from './testFixtures.ts'
 
 describe('exporting a view of tracks to one R script', () => {
   const marks = configTracks('config_marks.json')

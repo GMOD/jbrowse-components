@@ -8,8 +8,6 @@ import {
 } from '@jbrowse/core/ui/colors'
 import { colorFwdStrand, colorRevStrand } from '@jbrowse/core/ui/palette'
 
-import { exportTracksToR } from './exportView.ts'
-import { HELPERS } from './rHelpers.generated.ts'
 import {
   REGIONS,
   VOLVOX,
@@ -17,11 +15,13 @@ import {
   hasR,
   runCases,
   track,
-} from './testFixtures.ts'
+} from './exportView.fixture.ts'
+import { exportTracksToR } from './exportView.ts'
+import { HELPERS } from './rHelpers.generated.ts'
 
+import type { RCase } from './exportView.fixture.ts'
 import type { RExportTrack } from './exportView.ts'
 import type { Region } from './rScript.ts'
-import type { RCase } from './testFixtures.ts'
 
 const marks = configTracks('config_marks.json')
 const main = configTracks('config.json')
