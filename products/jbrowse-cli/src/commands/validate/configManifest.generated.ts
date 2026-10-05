@@ -985,7 +985,7 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "bigWigs",
-          "type": "frozen"
+          "type": "string[]"
         },
         {
           "name": "baseUri",

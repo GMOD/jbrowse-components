@@ -2856,13 +2856,14 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           }
         },
         "bigWigs": {
-          "description": "array of BigWig URLs/paths, alternative to the subadapters slot. Any JSON value: the slot is \`frozen\`, so its shape is not checked here.",
+          "description": "array of BigWig URLs/paths, alternative to the subadapters slot.",
           "if": {
             "type": "null"
           },
           "else": {
-            "not": {
-              "$ref": "#/$defs/JexlString"
+            "type": "array",
+            "items": {
+              "type": "string"
             }
           }
         },

@@ -619,6 +619,18 @@ categorical over a `category` column per label.
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/markEncoding.ts)
 
+### evaluateForFeature
+
+A config value as `feature` reads it: a `jexl:` callback evaluated against the
+feature, anything else as written.
+
+```js
+// type signature
+(value: unknown, feature: Feature, jexl: JexlInstance) => unknown
+```
+
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/configuration/readConfObject.ts)
+
 ### FacetedLayer
 
 One layer of a faceted request: its rows in section order, and the stacked row

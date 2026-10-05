@@ -861,6 +861,7 @@
         "arraySlotUnion",
         "bamIndexFields",
         "bamIndexSchema",
+        "evaluateForFeature",
         "evaluateJexl",
         "expandTabixShorthand",
         "expandUriShorthand",
