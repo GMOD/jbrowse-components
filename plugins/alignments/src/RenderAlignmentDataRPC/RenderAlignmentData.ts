@@ -19,9 +19,12 @@ declare module '@jbrowse/core/rpc/RpcRegistry' {
 export default class RenderAlignmentData extends RpcMethodTypeWithFiltersAndRenameRegions<'RenderAlignmentData'> {
   name = 'RenderAlignmentData' as const
 
+  override preload() {
+    return import('./executeRenderAlignmentData.ts')
+  }
+
   async execute(args: RpcExecuteArgs<'RenderAlignmentData'>) {
-    const { executeRenderAlignmentData } =
-      await import('./executeRenderAlignmentData.ts')
+    const { executeRenderAlignmentData } = await this.preload()
     return executeRenderAlignmentData({
       pluginManager: this.pluginManager,
       args,

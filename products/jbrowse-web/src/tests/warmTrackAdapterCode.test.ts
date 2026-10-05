@@ -70,8 +70,8 @@ test('a pending track loads its adapter code and reads its index under the id it
   await Promise.allSettled(call.mock.results.map(r => r.value))
   expect(call.mock.calls[0]).toEqual([
     idOf('RenderFeatureData'),
-    'CoreLoadAdapterCode',
-    { adapterTypes: ['Gff3TabixAdapter'] },
+    'CoreLoadTrackCode',
+    { adapterTypes: ['Gff3TabixAdapter'], rpcMethods: ['RenderFeatureData'] },
   ])
   expect(call.mock.calls[1]).toEqual([
     idOf('RenderFeatureData'),
@@ -145,7 +145,7 @@ test('a pending track whose source declares its lanes loads its code and reads n
     },
   })
   const isWarmUp = ([, m, a]: [unknown, string, unknown]) =>
-    m === 'CoreLoadAdapterCode' &&
+    m === 'CoreLoadTrackCode' &&
     (a as { adapterTypes: string[] }).adapterTypes.includes(
       'MultiPairwiseSyntenyAdapter',
     )

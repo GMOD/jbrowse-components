@@ -27,6 +27,7 @@ export default function register(pluginManager: PluginManager) {
       // consumer (LGVSyntenyDisplay) that builds on this factory.
       stateModel: () => import('./model.ts').then(f => f.default(configSchema)),
       trackType: 'AlignmentsTrack',
+      rpcMethods: ['RenderAlignmentData'],
       viewType: 'LinearGenomeView',
       plotExamples: ALIGNMENTS_PLOT_EXAMPLES,
       ReactComponent: AlignmentsDisplayComponent,

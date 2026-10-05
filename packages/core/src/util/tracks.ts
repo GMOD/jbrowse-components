@@ -1442,11 +1442,9 @@ export function warmTrackDisplayGeneric(
       trackId,
       displayInitialSnapshot,
     )
-    pluginManager
-      .resolveDisplayTypeRecord(picked.type)
-      ?.loadStateModel()
-      .catch(() => {})
-    warmTrackAdapter(self, trackId, assemblyName)
+    const display = pluginManager.resolveDisplayTypeRecord(picked.type)
+    display?.loadStateModel().catch(() => {})
+    warmTrackAdapter(self, trackId, display?.rpcMethods ?? [], assemblyName)
   } catch {
     // the launch reports an unresolvable track
   }
@@ -1470,8 +1468,8 @@ function adapterTypesIn(
 }
 
 /**
- * Load the track's adapter code and read its index in the worker, beside the
- * assembly load the track's first request waits for.
+ * Load the track's adapter code and its display's RPC code, and read its index,
+ * in the worker, beside the assembly load the track's first request waits for.
  *
  * Sent under the id the track's own requests will use, so it reaches, and
  * boots, the worker that serves them. That id hashes the adapter config as the
@@ -1500,6 +1498,7 @@ function declaresLanes(
 function warmTrackAdapter(
   self: GenericView,
   trackId: string,
+  rpcMethods: readonly string[],
   assemblyName?: string,
 ) {
   const { pluginManager } = getEnv(self)
@@ -1521,8 +1520,9 @@ function warmTrackAdapter(
     const sessionId = getConfRpcSessionId(conf)
     session.rpcManager
       // eslint-disable-next-line no-restricted-syntax -- a code download the track's first request would make anyway: nothing to show, and nothing a user can move on from
-      .call(sessionId, 'CoreLoadAdapterCode', {
+      .call(sessionId, 'CoreLoadTrackCode', {
         adapterTypes: [...adapterTypesIn(adapterConfig, pluginManager)],
+        rpcMethods: [...rpcMethods],
       })
       .catch(() => {})
     // a source that declares its lanes reads an index per lane asked about,

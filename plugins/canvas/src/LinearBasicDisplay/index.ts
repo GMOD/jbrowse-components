@@ -25,6 +25,7 @@ export default function register(pluginManager: PluginManager) {
       // display outside this plugin builds on either.
       stateModel: () => import('./model.ts').then(f => f.default(configSchema)),
       trackType: 'FeatureTrack',
+      rpcMethods: ['RenderFeatureData'],
       viewType: 'LinearGenomeView',
       plotExamples: PLOT_EXAMPLES,
       ReactComponent: LinearBasicDisplayComponent,

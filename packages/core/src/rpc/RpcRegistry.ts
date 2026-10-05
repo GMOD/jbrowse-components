@@ -121,8 +121,8 @@ export interface RpcRegistry {
     args: Record<string, unknown>
     return: void
   }
-  CoreLoadAdapterCode: {
-    args: { adapterTypes: string[] }
+  CoreLoadTrackCode: {
+    args: { adapterTypes: string[]; rpcMethods: string[] }
     return: void
   }
 }

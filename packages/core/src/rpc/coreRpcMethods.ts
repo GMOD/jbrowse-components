@@ -6,7 +6,7 @@ export { default as CoreGetEncodedLayers } from './methods/CoreGetEncodedLayers.
 export { default as CoreGetEncodedFeature } from './methods/CoreGetEncodedFeature.ts'
 export { default as CoreGetSequence } from './methods/CoreGetSequence.ts'
 export { default as CoreFreeResources } from './methods/CoreFreeResources.ts'
-export { default as CoreLoadAdapterCode } from './methods/CoreLoadAdapterCode.ts'
+export { default as CoreLoadTrackCode } from './methods/CoreLoadTrackCode.ts'
 export { default as CoreGetRegionByteEstimate } from './methods/CoreGetRegionByteEstimate.ts'
 export { default as CoreGetFeatureDensity } from './methods/CoreGetFeatureDensity.ts'
 export { default as CoreGetRegions } from './methods/CoreGetRegions.ts'

@@ -253,6 +253,16 @@ export default abstract class RpcMethodType<
     this.pluginManager = pluginManager
   }
 
+  /**
+   * Start loading the code `execute` runs, for a method whose body is a dynamic
+   * import. A display that names the method in `rpcMethods` has its worker call
+   * this when its track launches, so the import lands beside the adapter's code
+   * instead of after the first request's refName lookup.
+   */
+  async preload(): Promise<unknown> {
+    return undefined
+  }
+
   async serializeArguments(args: object): Promise<Record<string, unknown>> {
     const augmented = await this.augmentLocationObjects(
       this.attachReference(args as Record<string, unknown>),
