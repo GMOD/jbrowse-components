@@ -707,7 +707,7 @@ export default function stateModelFactory(
        * #getter
        */
       get rowsContentHeight(): number {
-        return self.height
+        return self.rowsHeight
       },
     }))
     .views(self => ({

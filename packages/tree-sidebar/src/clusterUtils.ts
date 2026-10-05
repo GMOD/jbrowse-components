@@ -317,8 +317,9 @@ export function treeDescribesRows(
 //
 // It reads as an alias for `height` on a display that grows to its content (the
 // multi-row feature display redefines `height` as exactly `nrow ×
-// effectiveRowHeight`) or that is always fit-to-height (multi-wiggle). It is not
-// one on a display that scrolls: maf passes `rowsContentHeight` and NOT
+// effectiveRowHeight`) or that is always fit-to-height (multi-wiggle, whose
+// rows fill `rowsHeight`, under the focus chip's line). It is not one on a
+// display that scrolls: maf passes `rowsContentHeight` and NOT
 // `rowsHeight`, and the variant displays spell the product out. Changing a
 // caller to the viewport height is the tidy-up this parameter is named to refuse.
 //
