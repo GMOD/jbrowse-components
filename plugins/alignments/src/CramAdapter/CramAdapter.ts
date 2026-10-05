@@ -151,14 +151,17 @@ export default class CramAdapter extends BaseSamAdapter<CramAdapterConfig> {
 
   // CraiIndex.getIndex memoizes its own parse, so the later per-region
   // getEntriesForRange calls reuse this download instead of pulling the index
-  // again. Progress goes to the .crai read, which dominates the phase.
+  // again. Progress goes to the .crai read, which dominates the phase. The two
+  // reads are independent, so neither waits a round trip on the other.
   protected async readSamHeader(
     onProgress?: (n: number, t?: number) => void,
     signal?: AbortSignal,
   ) {
     const { cram, index } = this.configure()
-    const rawHeader = await cram.cram.getSamHeader({ signal })
-    await index.getIndex({ onProgress, signal })
+    const [rawHeader] = await Promise.all([
+      cram.cram.getSamHeader({ signal }),
+      index.getIndex({ onProgress, signal }),
+    ])
     return rawHeader
   }
 
