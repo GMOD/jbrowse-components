@@ -129,6 +129,15 @@ Steps 1-3 and 5 are yours; step 4 is CI running unattended off the tag.
      so extend it with `git log` before re-running or the chart stops where the
      last run did.
 
+     The notes' `load_time_by_version` chart is measured rather than read from
+     git, so retake it when the boot path changes before the release: after a
+     build, on an idle machine (ada), run
+     `node products/jbrowse-web/browser-tests/load-time-by-version.ts --local=main=products/jbrowse-web/build`,
+     then
+     `Rscript products/jbrowse-web/browser-tests/load-time-by-version.R website/static/img/blog/v5.0.0/load_time_by_version.png`
+     and `pnpm figures:push --filter load_time`, and commit `figures.lock` with
+     the harness's CSV.
+
    **A figure in the changelog file needs an absolute URL.** `release.ts` drops
    that file in verbatim: only the notes get their image paths rewritten, by
    `prepareDraftNotes` for the blog and `absolutizeImages` for the GitHub
