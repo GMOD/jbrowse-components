@@ -1,8 +1,17 @@
 import { PUBLIC_INSTANCE, instanceUrl, jbrowseUrl } from './url.ts'
 
-test('an instance that is not a URL names itself', () => {
-  expect(() => instanceUrl('nonsense')).toThrow(
-    'instance "nonsense" is not a URL',
+test.each(['nonsense', 'localhost:3000'])(
+  'an instance %s that is not an http(s) or file URL names itself',
+  instance => {
+    expect(() => instanceUrl(instance)).toThrow(
+      `instance "${instance}" is not an http(s) or file URL`,
+    )
+  },
+)
+
+test('a file instance is accepted', () => {
+  expect(instanceUrl('file:///srv/jb2/index.html').href).toBe(
+    'file:///srv/jb2/index.html',
   )
 })
 

@@ -11,10 +11,10 @@ export const PUBLIC_INSTANCE = `https://jbrowse.org/code/jb2/v${version}/`
  * its slash, which the host redirects, resolves relative URLs one level up.
  */
 export function instanceUrl(instance = PUBLIC_INSTANCE) {
-  if (!URL.canParse(instance)) {
-    throw new Error(`instance "${instance}" is not a URL`)
+  const url = URL.parse(instance)
+  if (!url || !['http:', 'https:', 'file:'].includes(url.protocol)) {
+    throw new Error(`instance "${instance}" is not an http(s) or file URL`)
   }
-  const url = new URL(instance)
   if (!url.pathname.endsWith('/') && !/\.html?$/.test(url.pathname)) {
     url.pathname += '/'
   }
