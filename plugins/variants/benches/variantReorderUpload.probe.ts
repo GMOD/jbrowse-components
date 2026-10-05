@@ -15,7 +15,7 @@
 // share, the call returning; `done` adds a `finish()` so the GPU process has
 // taken the bytes.
 //
-//   buffer-columns   `matrixCell`'s 12 bytes a cell, a new buffer each gesture
+//   buffer-columns   `matrixCell`'s 12 bytes a cell, a new buffer each gesture, the last one freed first
 //   buffer-control   the same bytes through a second arm
 //   buffer-genomic   `cell`'s 20 bytes a cell
 //   table            the row table's RGBA8 texture, `rows` keys
@@ -75,20 +75,19 @@ try {
       const genomic = fill(numCells * 5)
       const texels = Uint8Array.from(tableBytes)
 
-      let held: WebGLBuffer | null = null
       const uploadBuffer = (data: Uint32Array) => {
         const vbo = gl.createBuffer()
         gl.bindBuffer(gl.ARRAY_BUFFER, vbo)
         gl.bufferData(gl.ARRAY_BUFFER, data, gl.STATIC_DRAW)
         const issued = performance.now()
         gl.finish()
-        if (held) {
-          gl.deleteBuffer(held)
+        return {
+          issued,
+          free: () => {
+            gl.deleteBuffer(vbo)
+          },
         }
-        held = vbo
-        return issued
       }
-      let heldTex: WebGLTexture | null = null
       const uploadTable = () => {
         const tex = gl.createTexture()
         gl.bindTexture(gl.TEXTURE_2D, tex)
@@ -105,11 +104,12 @@ try {
         )
         const issued = performance.now()
         gl.finish()
-        if (heldTex) {
-          gl.deleteTexture(heldTex)
+        return {
+          issued,
+          free: () => {
+            gl.deleteTexture(tex)
+          },
         }
-        heldTex = tex
-        return issued
       }
       const arms = [
         {
@@ -131,11 +131,21 @@ try {
       ]
       const issue = new Map(arms.map(a => [a.name, [] as number[]]))
       const done = new Map(arms.map(a => [a.name, [] as number[]]))
+      // Each arm frees its previous upload before its timing starts, and a
+      // finish settles the GPU process, so no arm pays for its neighbour.
+      // The order rotates a step each round: the arm after a given upload
+      // reads up to 3x slower or faster than the same bytes elsewhere in the
+      // round, which is Chrome's transfer buffer, not the upload.
+      const held = new Map<string, () => void>()
       for (let round = 0; round < rounds; round++) {
-        for (const arm of arms) {
+        for (let k = 0; k < arms.length; k++) {
+          const arm = arms[(round + k) % arms.length]!
+          held.get(arm.name)?.()
+          gl.finish()
           const t0 = performance.now()
-          const issued = arm.run()
+          const { issued, free } = arm.run()
           const t1 = performance.now()
+          held.set(arm.name, free)
           issue.get(arm.name)!.push(issued - t0)
           done.get(arm.name)!.push(t1 - t0)
         }
