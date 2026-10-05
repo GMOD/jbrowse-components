@@ -3,8 +3,8 @@
 # it. Read off the MD tag where a read carries one and, as BamAdapter does,
 # against 'ref' (an indexed FASTA or 2bit) where it does not; with no 'ref' an
 # MD-less read contributes nothing.
-bam_mismatches <- function(uri, chrom, start, end, ref = NULL) {
-  ga <- readGAlignments(uri, param = ScanBamParam(
+bam_mismatches <- function(uri, chrom, start, end, ref = NULL, index = uri) {
+  ga <- readGAlignments(BamFile(uri, index = index), param = ScanBamParam(
     which = GRanges(chrom, IRanges(start + 1, end)), what = "seq", tag = "MD"))
   md <- as.character(mcols(ga)$MD)
   seqs <- as.character(mcols(ga)$seq)

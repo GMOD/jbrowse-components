@@ -3,8 +3,8 @@
 # read where NULL), so the band counts the reads the pileup under it draws.
 # Deletions and skips are carved out of the depth, as JBrowse's coverage sweep
 # carves them, and zero-depth runs are dropped.
-bam_coverage <- function(uri, chrom, start, end, keep = NULL) {
-  ga <- readGAlignments(uri, param = ScanBamParam(
+bam_coverage <- function(uri, chrom, start, end, keep = NULL, index = uri) {
+  ga <- readGAlignments(BamFile(uri, index = index), param = ScanBamParam(
     which = GRanges(chrom, IRanges(start + 1, end))))
   if (!is.null(keep)) ga <- ga[keep]
   cov <- coverage(grglist(ga, drop.D.ranges = TRUE))[[chrom]]

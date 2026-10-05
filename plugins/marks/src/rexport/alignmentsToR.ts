@@ -250,6 +250,7 @@ export function alignmentsPanels({
   reference,
   key,
   aliases,
+  index,
 }: {
   display: AlignmentsDisplaySnapshot
   uri: string
@@ -258,6 +259,8 @@ export function alignmentsPanels({
   key?: string
   /** Canonical refName to the name the file spells it with, where they differ. */
   aliases?: Record<string, string>
+  /** The BAM index, which R cannot find beside a remote file. */
+  index?: string
   /** The assembly's FASTA or 2bit, which a read with no MD tag is compared against. */
   reference?: string
 }): { panels: Panel[]; notes: string[] } {
@@ -286,6 +289,7 @@ export function alignmentsPanels({
     uri,
     name: readsName,
     aliases,
+    index,
     fields: [
       ...new Set([
         ...colour.tags.map(t => `tags.${t}`),
@@ -338,6 +342,7 @@ export function alignmentsPanels({
     { steps: [pileup] },
   )
   const region = regions[0]!
+  const indexArg = index ? `, index = ${rStr(index)}` : ''
   const at = `${fileChrom('regions$chrom[1]', aliases)}, regions$start[1], regions$end[1]`
   const layers = reads ? [reads.layer] : []
   const scales: Plot['scales'] = {
@@ -351,7 +356,7 @@ export function alignmentsPanels({
       name: mismatchesName,
       columns: ['read_index', 'refpos', 'base', 'row'],
       packages: ['GenomicAlignments'],
-      statements: `${mismatchesName} <- bam_mismatches(${rStr(uri)}, ${at}, ${reference ? rStr(reference) : 'NULL'})
+      statements: `${mismatchesName} <- bam_mismatches(${rStr(uri)}, ${at}, ${reference ? rStr(reference) : 'NULL'}${indexArg})
 ${mismatchesName}$row <- ${readsName}$row[match(${mismatchesName}$read_index, ${readsName}$read_index)]
 ${mismatchesName} <- ${mismatchesName}[!is.na(${mismatchesName}$row), ]`,
       parent: packed,
@@ -401,7 +406,7 @@ ${mismatchesName} <- ${mismatchesName}[!is.na(${mismatchesName}$row), ]`,
       name: named('depth'),
       columns: ['start', 'end', 'depth'],
       packages: ['GenomicAlignments'],
-      statements: `${named('depth')} <- bam_coverage(${rStr(uri)}, ${at}, keep = ${readsName}$read_index)`,
+      statements: `${named('depth')} <- bam_coverage(${rStr(uri)}, ${at}, keep = ${readsName}$read_index${indexArg})`,
       parent: packed,
     })
     panels.unshift({

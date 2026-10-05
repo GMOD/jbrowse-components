@@ -135,6 +135,7 @@ describe('exporting a view of tracks to one R script', () => {
         ],
       })
       expect(drawn).toBe(6)
+      expect(script).toContain('volvox-sorted.bam.bai')
       const file = path.join(dir, 'view.R')
       writeFileSync(file, script!)
       execFileSync('Rscript', [file], { stdio: 'pipe' })

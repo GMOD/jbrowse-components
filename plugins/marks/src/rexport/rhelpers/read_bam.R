@@ -9,8 +9,8 @@
 # contig. One tags.<TAG> column per name in 'tags', numeric where every value
 # parses as a number. Unmapped reads are not returned, and a contig the index
 # lacks reads as no reads.
-read_bam <- function(uri, chrom, start, end, tags = character(0)) {
-  bf <- BamFile(uri)
+read_bam <- function(uri, chrom, start, end, tags = character(0), index = uri) {
+  bf <- BamFile(uri, index = index)
   known <- chrom %in% seqlevels(bf)
   which <- if (known) GRanges(chrom, IRanges(start + 1, end))
     else GRanges(seqlevels(bf)[1], IRanges(1, 1))

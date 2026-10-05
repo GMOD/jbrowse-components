@@ -4,6 +4,7 @@ import {
   READERS,
   frameFor,
   isReadable,
+  locationPath,
   sourceNotes,
   uriOf,
 } from './frameFor.ts'
@@ -48,7 +49,7 @@ export function rKey(trackId: string) {
 function locate(
   track: RExportTrack,
   accepted: readonly string[],
-): RExportSkipped | { type: ReaderName; uri: string } {
+): RExportSkipped | { type: ReaderName; uri: string; index?: string } {
   const type = String(track.adapter.type)
   if (!accepted.includes(type) || !isReadable(type)) {
     return { skipped: `${type} has no R reader for this display` }
@@ -57,9 +58,19 @@ function locate(
   if (!uri) {
     return { skipped: `${type} names no file` }
   }
-  return uri.startsWith('blob:')
-    ? { skipped: 'it reads a file opened in the browser, which R cannot reach' }
-    : { type, uri }
+  if (uri.startsWith('blob:')) {
+    return {
+      skipped: 'it reads a file opened in the browser, which R cannot reach',
+    }
+  }
+  const declared = locationPath(
+    (track.adapter.index as { location?: unknown } | undefined)?.location,
+  )
+  return {
+    type,
+    uri,
+    index: type === 'BamAdapter' ? (declared ?? `${uri}.bai`) : undefined,
+  }
 }
 
 const markExporter: RExporter = (track, regions) => {
@@ -67,12 +78,13 @@ const markExporter: RExporter = (track, regions) => {
   if ('skipped' in located) {
     return located
   }
-  const { type, uri } = located
+  const { type, uri, index } = located
   const key = rKey(track.trackId)
   const display = track.display as unknown as DisplaySpec
   const base = frameFor({
     type,
     uri,
+    index,
     name: `df_${key}`,
     aliases: track.refNames,
     fields: fieldsRead(display),
@@ -112,10 +124,11 @@ const alignmentsExporter: RExporter = (track, regions) => {
   if ('skipped' in located) {
     return located
   }
-  const { uri } = located
+  const { uri, index } = located
   const { panels, notes } = alignmentsPanels({
     display: track.display,
     uri,
+    index,
     regions,
     reference: track.reference,
     aliases: track.refNames,

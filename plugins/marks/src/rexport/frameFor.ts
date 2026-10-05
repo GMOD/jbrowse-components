@@ -183,6 +183,7 @@ export function frameFor<K extends ReaderName>({
   fields = [],
   wholeFeatures = false,
   aliases,
+  index,
 }: {
   type: K
   uri: string
@@ -190,6 +191,8 @@ export function frameFor<K extends ReaderName>({
   fields?: readonly string[]
   wholeFeatures?: boolean
   aliases?: Record<string, string>
+  /** The BAM's index, which R cannot find beside a remote file. */
+  index?: string
 }): RFrame {
   const reader = READERS[type]
   const held = new Set<string>(reader.columns)
@@ -197,9 +200,10 @@ export function frameFor<K extends ReaderName>({
   const asked = extra
     ? fields.filter(f => !held.has(f) && f.startsWith(extra.prefix))
     : []
-  const args = asked.length
+  const fieldArgs = asked.length
     ? `, ${extra!.arg} = c(${asked.map(f => rStr(f.slice(extra!.prefix.length))).join(', ')})`
     : ''
+  const args = index ? `${fieldArgs}, index = ${rStr(index)}` : fieldArgs
   const coords = reader.coords.map(c => rStr(c)).join(', ')
   const read = `${reader.helper}(${rStr(uri)}, ${fileChrom('chrom', aliases)}, start, end${args})`
   return frame({
