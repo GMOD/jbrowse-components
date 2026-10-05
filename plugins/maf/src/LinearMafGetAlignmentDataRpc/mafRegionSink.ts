@@ -1,3 +1,4 @@
+import { isRowVisible } from '../util/sampleCopies.ts'
 import { MafWirePacker } from './mafWirePacker.ts'
 
 import type { AlignmentContext, EmptyRecord } from '../types.ts'
@@ -102,7 +103,7 @@ export class MafRegionSink implements MafBlockSink {
       this.seeking = false
     }
     this.discovered.add(sampleId)
-    if (!this.visible || this.visible.has(sampleId)) {
+    if (isRowVisible(sampleId, this.visible)) {
       this.packer.addRowText(
         sampleId,
         text,
@@ -119,7 +120,7 @@ export class MafRegionSink implements MafBlockSink {
 
   addEmpty(sampleId: string, empty: EmptyRecord) {
     this.discovered.add(sampleId)
-    if (!this.visible || this.visible.has(sampleId)) {
+    if (isRowVisible(sampleId, this.visible)) {
       this.packer.addEmpty(sampleId, empty)
     }
   }

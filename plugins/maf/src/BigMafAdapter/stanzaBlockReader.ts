@@ -1,6 +1,7 @@
 import { applyMafLine } from '../util/mafLines.ts'
 import { makeSourceResolver } from '../util/parseAssemblyName.ts'
 import { RecordSlots } from '../util/recordSlots.ts'
+import { freeRowId } from '../util/sampleCopies.ts'
 
 import type { AlignmentContext, EmptyRecord } from '../types.ts'
 import type { MafBlockSink } from '../util/mafBlockSink.ts'
@@ -25,13 +26,17 @@ export class BigMafBlockReader implements MafLineTarget {
   private srcSize: number[] = []
   private rowContext: (AlignmentContext | undefined)[] = []
   private emptyRecord: EmptyRecord[] = []
+  private lastRowId = new Map<string, string>()
 
   constructor(sampleIds: Set<string> | undefined) {
     this.resolver = makeSourceResolver(sampleIds)
   }
 
   row(sampleId: string, chr: string, line: MafSourceLine) {
-    const slot = this.rows.slot(this.rows.key(sampleId))
+    const { rows } = this
+    const rowId = freeRowId(sampleId, id => rows.slotOf(id) !== -1)
+    this.lastRowId.set(sampleId, rowId)
+    const slot = rows.slot(rows.key(rowId))
     this.seq[slot] = line.seq
     this.chr[slot] = chr
     this.srcStart[slot] = line.start
@@ -41,14 +46,16 @@ export class BigMafBlockReader implements MafLineTarget {
   }
 
   context(sampleId: string, context: AlignmentContext) {
-    const slot = this.rows.slotOf(sampleId)
+    const slot = this.rows.slotOf(this.lastRowId.get(sampleId))
     if (slot !== -1) {
       this.rowContext[slot] = context
     }
   }
 
   empty(sampleId: string, empty: EmptyRecord) {
-    this.emptyRecord[this.empties.slot(this.empties.key(sampleId))] = empty
+    const { empties } = this
+    const rowId = freeRowId(sampleId, id => empties.slotOf(id) !== -1)
+    this.emptyRecord[empties.slot(empties.key(rowId))] = empty
   }
 
   read(
@@ -61,6 +68,7 @@ export class BigMafBlockReader implements MafLineTarget {
     const { rows, empties } = this
     rows.startBlock()
     empties.startBlock()
+    this.lastRowId.clear()
     let ref: string | undefined
     for (const line of stanza.split(';')) {
       const s = applyMafLine(line, this.resolver.resolve, this)

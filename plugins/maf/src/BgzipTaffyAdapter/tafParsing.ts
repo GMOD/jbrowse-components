@@ -1,6 +1,7 @@
 import { DASH } from '@jbrowse/core/util/alignedBytes'
 
 import { flipBlockToForwardStrand } from '../util/forwardStrandBlock.ts'
+import { freeRowId } from '../util/sampleCopies.ts'
 
 import type { AlignmentRecord } from '../types.ts'
 import type { SourceResolver } from '../util/parseAssemblyName.ts'
@@ -224,7 +225,9 @@ export function blockToFeature(
   for (const row of block.rows) {
     const parsed = resolve(row.sequenceName)
     if (parsed?.assemblyName) {
-      alignments[parsed.assemblyName] = {
+      alignments[
+        freeRowId(parsed.assemblyName, id => Object.hasOwn(alignments, id))
+      ] = {
         chr: parsed.chr,
         srcStart: row.start,
         seq: row.bases,

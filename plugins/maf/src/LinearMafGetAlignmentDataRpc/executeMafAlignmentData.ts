@@ -2,6 +2,7 @@ import { measureRegionBytes } from '@jbrowse/core/rpc/byteBudget'
 import { rpcResult } from '@jbrowse/core/util/librpc'
 
 import { loadMafSamplesAdapter } from '../util/loadMafSamplesAdapter.ts'
+import { isRowVisible, withCopyRows } from '../util/sampleCopies.ts'
 import { visibleSamples } from '../util/visibleSamples.ts'
 import { buildMafCoverageRegion } from './buildMafCoverageRegion.ts'
 import { collectMafTransferables } from './collectTransferables.ts'
@@ -118,12 +119,15 @@ export async function executeMafAlignmentData({
   await adapter.readBlocks(region, sink, opts)
   const { refSampleId } = sink
 
-  const samples: Sample[] = hasConfiguredSamples
-    ? configSamples
-    : [...sink.discovered].map(id => ({ id, label: id }))
+  const samples = withCopyRows(
+    hasConfiguredSamples
+      ? configSamples
+      : [...sink.discovered].map(id => ({ id, label: id })),
+    sink.discovered,
+  )
 
   const packed = sink.packer.finishBlocks()
-  const isVisible = (sampleId: string) => !visible || visible.has(sampleId)
+  const isVisible = (sampleId: string) => isRowVisible(sampleId, visible)
 
   // `packed` already contains exactly the visible rows (narrowed by the subtree
   // filter above), so coverage over them is automatically scoped to the visible

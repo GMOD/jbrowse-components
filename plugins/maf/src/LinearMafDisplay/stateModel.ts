@@ -74,6 +74,7 @@ import {
   getMafColorPalette,
 } from '../LinearMafRenderer/util.ts'
 import { navigationFields } from '../util/navigationFields.ts'
+import { copyParent, placeCopyRows } from '../util/sampleCopies.ts'
 import { computeVisibleCodonGlyphs, findCodonAt } from './codons.ts'
 import {
   computeVisibleAnnotations,
@@ -164,7 +165,11 @@ import type {
 import type { IndexedRegion } from '@jbrowse/display-kit/planRegionFetch'
 import type { ExportSvgDisplayOptions } from '@jbrowse/display-kit/types'
 import type { Instance } from '@jbrowse/mobx-state-tree'
-import type { RowSource, SvgSidebarProps } from '@jbrowse/tree-sidebar'
+import type {
+  RowAlias,
+  RowSource,
+  SvgSidebarProps,
+} from '@jbrowse/tree-sidebar'
 import type { YAxis } from '@jbrowse/wiggle-core'
 
 /**
@@ -213,7 +218,40 @@ function unionSources(
   for (const source of incoming) {
     byName.set(source.name, source)
   }
-  return [...byName.values()]
+  return placeCopyRows([...byName.values()])
+}
+
+/**
+ * A listed sample set, plus the copy rows of its samples that earlier regions
+ * found: a copy row exists only where the blocks hold the copy, so a canonical
+ * set from a region without one must not drop it.
+ */
+function withKnownCopies(
+  known: readonly MafSource[],
+  incoming: readonly MafSource[],
+): MafSource[] {
+  const names = new Set(incoming.map(s => s.name))
+  const kept = known.filter(s => {
+    const parent = copyParent(s.name)
+    return parent !== undefined && names.has(parent) && !names.has(s.name)
+  })
+  return kept.length ? placeCopyRows([...incoming, ...kept]) : [...incoming]
+}
+
+/**
+ * A discovery track's focus applied as given, with a copy row kept when its
+ * sample is named.
+ */
+function focusRows(
+  rows: MafSource[],
+  focus: readonly string[] | undefined,
+  alias: RowAlias | undefined,
+) {
+  if (!alias || !focus?.length) {
+    return filterRowsBySubtree(rows, focus)
+  }
+  const named = new Set(focus)
+  return rows.filter(r => named.has(r.name) || named.has(alias(r.name) ?? ''))
 }
 
 function categoricalScale(
@@ -590,7 +628,7 @@ export default function stateModelFactory(
             ...navigationFields(s),
           }))
           const next = samplesCanonical
-            ? incoming
+            ? withKnownCopies(self.sourcesVolatile, incoming)
             : unionSources(self.sourcesVolatile, incoming)
           if (!deepEqual(next, self.sourcesVolatile)) {
             self.sourcesVolatile = next
@@ -786,6 +824,21 @@ export default function stateModelFactory(
         },
         /**
          * #getter
+         * `TreeSidebarMixin`'s hook: a copy row answers to its sample, so an
+         * order, label, colour or focus written against the sample reaches its
+         * copies. None while no row is a copy.
+         */
+        get rowAlias(): RowAlias | undefined {
+          const names = self.sourcesVolatile.map(s => s.name)
+          if (!names.some(name => copyParent(name) !== undefined)) {
+            return undefined
+          }
+          const known = new Set(names)
+          return name =>
+            copyParent(name) ?? (known.has(name) ? name : undefined)
+        },
+        /**
+         * #getter
          * `TreeSidebarMixin`'s hook: with a tree the rows follow its leaves,
          * read off the `parsedTree` that `rows.domain` already rotated, so the
          * row order and the leaf order cannot drift and `treeDescribesRows`
@@ -811,10 +864,10 @@ export default function stateModelFactory(
          * blocks hold draws no rows.
          */
         get clusterableSources(): MafSource[] {
-          const { editableSources, rowFocus } = self
+          const { editableSources, rowFocus, rowAlias } = self
           return self.speciesListed
-            ? keptRows(editableSources, rowFocus)
-            : filterRowsBySubtree(editableSources, rowFocus)
+            ? keptRows(editableSources, rowFocus, rowAlias)
+            : focusRows(editableSources, rowFocus, rowAlias)
         },
       }))
       .views(self => ({

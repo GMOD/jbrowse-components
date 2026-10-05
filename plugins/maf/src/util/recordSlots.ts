@@ -56,6 +56,11 @@ export class RecordSlots {
     return key.slot
   }
 
+  /** Whether `key` already has a slot this block. */
+  holds(key: RecordKey) {
+    return key.block === this.block
+  }
+
   /** The slot `name` holds this block, or -1. */
   slotOf(name: string | undefined) {
     const key = name ? this.keys.get(name) : undefined

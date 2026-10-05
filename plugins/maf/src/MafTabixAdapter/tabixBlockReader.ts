@@ -1,5 +1,6 @@
 import { makeSourceResolver } from '../util/parseAssemblyName.ts'
 import { RecordSlots } from '../util/recordSlots.ts'
+import { freeRowId } from '../util/sampleCopies.ts'
 
 import type { MafBlockSink } from '../util/mafBlockSink.ts'
 import type { RecordKey } from '../util/recordSlots.ts'
@@ -129,7 +130,13 @@ export class MafTabixBlockReader {
       ) {
         const token = this.tokenAt(k, text, from, c0)
         if (token) {
-          const slot = rows.slot(token.key)
+          const slot = rows.slot(
+            rows.holds(token.key)
+              ? rows.key(
+                  freeRowId(token.key.name, id => rows.slotOf(id) !== -1),
+                )
+              : token.key,
+          )
           this.from[slot] = c4 + 1
           this.to[slot] = to
           this.chr[slot] = token.chr

@@ -1,5 +1,6 @@
 import { toMafStatus } from './mafStatus.ts'
 import { parseStrand } from './parseStrand.ts'
+import { freeRowId } from './sampleCopies.ts'
 
 import type {
   AlignmentContext,
@@ -54,9 +55,13 @@ export interface MafLineTarget {
 export class MafStanzaRows implements MafLineTarget {
   alignments: Record<string, AlignmentRecord> = {}
   empties: Record<string, EmptyRecord> = {}
+  private lastRowId = new Map<string, string>()
 
   row(sampleId: string, chr: string, line: MafSourceLine) {
-    this.alignments[sampleId] = {
+    const { alignments } = this
+    const rowId = freeRowId(sampleId, id => Object.hasOwn(alignments, id))
+    this.lastRowId.set(sampleId, rowId)
+    alignments[rowId] = {
       chr,
       srcStart: line.start,
       seq: line.seq,
@@ -66,14 +71,16 @@ export class MafStanzaRows implements MafLineTarget {
   }
 
   context(sampleId: string, context: AlignmentContext) {
-    const rec = this.alignments[sampleId]
+    const rowId = this.lastRowId.get(sampleId)
+    const rec = rowId === undefined ? undefined : this.alignments[rowId]
     if (rec) {
       rec.context = context
     }
   }
 
   empty(sampleId: string, empty: EmptyRecord) {
-    this.empties[sampleId] = empty
+    const { empties } = this
+    empties[freeRowId(sampleId, id => Object.hasOwn(empties, id))] = empty
   }
 }
 
