@@ -3,15 +3,22 @@ import { useEffect } from 'react'
 import { normalizeWheelDelta } from '@jbrowse/core/util/wheelZoom'
 import { isAlive } from '@jbrowse/mobx-state-tree'
 
-import type { MultiWaySyntenyDisplayModel } from '../model.ts'
+import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
 import type React from 'react'
+
+export interface LaneSlideModel extends IStateTreeNode {
+  laneDragPx: ReadonlyMap<string, number>
+  slidableLaneAt: (y: number) => string | undefined
+  setLaneDragPx: (assemblyName: string, dxPx: number) => void
+  endLaneDrag: (assemblyName: string) => void
+}
 
 // one undo step per side-scroll burst, not one per event
 const WHEEL_SETTLE_MS = 250
 
 /** Claims the press before the view's own pan sees it. */
 export function useLaneSlide(
-  model: MultiWaySyntenyDisplayModel,
+  model: LaneSlideModel,
   panel: HTMLDivElement | null,
 ) {
   useEffect(() => {
@@ -54,7 +61,10 @@ export function useLaneSlide(
   return (event: React.PointerEvent<HTMLDivElement>) => {
     const target = event.target as HTMLElement
     const lane =
-      event.button === 0 && !event.shiftKey && target.tagName === 'CANVAS'
+      event.isPrimary &&
+      event.button === 0 &&
+      !event.shiftKey &&
+      target.tagName === 'CANVAS'
         ? model.slidableLaneAt(
             event.clientY - event.currentTarget.getBoundingClientRect().top,
           )
@@ -63,10 +73,14 @@ export function useLaneSlide(
       return
     }
     event.stopPropagation()
+    const { pointerId } = event
     const startX = event.clientX
     let frame: number | undefined
     let x = startX
     const move = (e: PointerEvent) => {
+      if (e.pointerId !== pointerId) {
+        return
+      }
       x = e.clientX
       frame ??= requestAnimationFrame(() => {
         frame = undefined
@@ -75,7 +89,10 @@ export function useLaneSlide(
         }
       })
     }
-    const up = () => {
+    const up = (e: PointerEvent) => {
+      if (e.pointerId !== pointerId) {
+        return
+      }
       window.removeEventListener('pointermove', move)
       window.removeEventListener('pointerup', up)
       window.removeEventListener('pointercancel', up)
