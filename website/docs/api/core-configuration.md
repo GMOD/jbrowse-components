@@ -208,22 +208,13 @@ cannot hold. Throws what the schema's `preProcessSnapshot` throws.
 
 ## readConfObject
 
-Given a configuration model (an instance of a ConfigurationSchema), read the
-configuration value at the given path. Use this when you hold the
-configuration model directly, e.g. a track's `configuration`.
+Read the value at a path of a live config node, such as a track's
+`configuration`, evaluating a `jexl:` callback with `args`.
 
-Wants a **live config node**, not a snapshot of one, and passing a snapshot is
-a type error. Slots are built with `types.stripDefault`, so a slot sitting at
-its default is absent from a snapshot — "unset" and "at its default" are
-indistinguishable there, and a read off one reports a default as missing.
-
-An entry of `session.tracks` is such a snapshot, typed `TrackConfigEntry`, so
-this refuses one. Read `trackId` and `type` off it directly, and a slot
-through a helper that supplies the default, such as
-`getConfAssemblyNamesOrNone`. The refusal is in the types only: the track
-selector reads raw members off thousands of frozen entries on purpose,
-because hydrating every track to answer it is what `types.frozen` exists to
-avoid.
+A snapshot is refused by the types, since a slot at its default is absent
+from one. A `session.tracks` entry is one (`TrackConfigEntry`): read its
+`trackId` and `type` directly, and a slot through a helper that supplies the
+default, such as `getConfAssemblyNamesOrNone`.
 
 ```js
 // type signature
