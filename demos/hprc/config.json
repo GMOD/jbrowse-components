@@ -179,6 +179,9 @@
       "assemblyNames": ["hg38"],
       "adapter": {
         "type": "VcfTabixAdapter",
+        "samplesTsvLocation": {
+          "uri": "https://jbrowse.org/demos/hprc/hprc_samples.tsv"
+        },
         "uri": "https://s3-us-west-2.amazonaws.com/human-pangenomics/pangenomes/freeze/release2/minigraph-cactus/v2.1/hprc-v2.1-mc-grch38/hprc-v2.1-mc-grch38.wave.vcf.gz"
       },
       "displays": [
@@ -196,6 +199,9 @@
       "assemblyNames": ["hg38"],
       "adapter": {
         "type": "VcfTabixAdapter",
+        "samplesTsvLocation": {
+          "uri": "https://jbrowse.org/demos/hprc/hprc_samples.tsv"
+        },
         "uri": "https://s3-us-west-2.amazonaws.com/human-pangenomics/pangenomes/freeze/release2/minigraph-cactus/v2.1/hprc-v2.1-mc-grch38/hprc-v2.1-mc-grch38.pgbi.vcf.gz",
         "fetchSizeLimit": 20000000
       },
