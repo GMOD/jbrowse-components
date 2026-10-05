@@ -1462,6 +1462,10 @@ export const hprcGraphSpecs: ScreenshotSpec[] = [
         type: 'waitForSelector',
         selector: '[data-testid="tandem-repeat-section"]',
       },
+      // a radio item leaves its menu open; Escape here closes only the menu
+      { type: 'press', key: 'Escape' },
+      { type: 'press', key: 'Escape' },
+      { type: 'waitForText', text: 'Group by…', hidden: true },
       { type: 'delay', ms: 500 },
     ],
   },
