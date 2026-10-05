@@ -132,6 +132,14 @@ export function colorSettingOf<C extends AnyConfigurationModel>(
   return setting as ColorSettingOf<C>
 }
 
+/** {@link colorSettingOf} with the key's `labels` and `title` spread on top. */
+export function colorSnapshotOf<C extends AnyConfigurationModel>(color: C) {
+  const node: AnyConfigurationModel = color
+  const labels: readonly string[] | undefined = readConfObject(node, 'labels')
+  const title: string | undefined = readConfObject(node, 'title')
+  return { ...colorSettingOf(color), labels, title }
+}
+
 /**
  * What every channel object checks on the way in, `name` being the setting's
  * key: a `domain` or `range` is a list, and a `domain`, `breaks` or `labels`

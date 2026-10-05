@@ -1,11 +1,11 @@
 import { readConfObject } from '@jbrowse/core/configuration'
 import { coarseStripHTML } from '@jbrowse/core/util'
 import { groupKeyComparator } from '@jbrowse/core/util/groupKeys'
-import { colorSettingOf } from '@jbrowse/display-kit/colorConfigSchema'
+import { colorSnapshotOf } from '@jbrowse/display-kit/colorConfigSchema'
 import { cast, types } from '@jbrowse/mobx-state-tree'
 
 import { colorByScales } from './colorLegend.ts'
-import { isAttributeLabels, presetRamp } from './colorRamps.ts'
+import { declaredRampOf, isAttributeLabels, presetRamp } from './colorRamps.ts'
 import { paintedField, syntenyColorFor } from './syntenyColorBy.ts'
 import {
   SYNTENY_VIEW_FIELDS,
@@ -276,11 +276,7 @@ export function TrackColorsMixin({ defaultColorField = '' } = {}) {
        * The `color` object as its snapshot holds it.
        */
       get colorSetting(): SyntenyColorSnapshot {
-        return {
-          ...colorSettingOf(self.color),
-          labels: readConfObject(self.color, 'labels'),
-          title: readConfObject(self.color, 'title'),
-        }
+        return colorSnapshotOf(self.color)
       },
       /**
        * #getter
@@ -289,14 +285,7 @@ export function TrackColorsMixin({ defaultColorField = '' } = {}) {
        * Read off its own slots, so a key-only edit repaints no ramp.
        */
       get colorRamp(): DeclaredRamp {
-        return {
-          range: readConfObject(self.color, 'range'),
-          scheme: readConfObject(self.color, 'scheme'),
-          reverse: readConfObject(self.color, 'reverse'),
-          domainMin: readConfObject(self.color, 'domainMin'),
-          domainMax: readConfObject(self.color, 'domainMax'),
-          domainMid: readConfObject(self.color, 'domainMid'),
-        }
+        return declaredRampOf(self.color)
       },
       /**
        * #getter

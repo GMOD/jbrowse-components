@@ -23,7 +23,7 @@ import {
 import {
   colorEncodingOf,
   colorFieldOf,
-  colorSettingOf,
+  colorSnapshotOf,
 } from '@jbrowse/display-kit/colorConfigSchema'
 import { types } from '@jbrowse/mobx-state-tree'
 
@@ -182,12 +182,7 @@ const stateModelFactory = (configSchema: ChordVariantDisplayConfigModel) => {
        * the `color` object as written
        */
       get colorSetting(): ColorSetting {
-        const { color } = self.configuration
-        return {
-          ...colorSettingOf(color),
-          labels: readConfObject(color, 'labels'),
-          title: readConfObject(color, 'title'),
-        }
+        return colorSnapshotOf(self.configuration.color)
       },
       /**
        * #getter

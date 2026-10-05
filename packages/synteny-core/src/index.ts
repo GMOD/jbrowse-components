@@ -218,6 +218,7 @@ export { comparativeTooltipLines } from './comparativeTooltipLines.ts'
 export type { ComparativeTooltipSide } from './comparativeTooltipLines.ts'
 export {
   continuousRampConfig,
+  declaredRampOf,
   presetRamp,
   dnDsRatio,
   isAttributeLabels,

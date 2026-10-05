@@ -1,4 +1,3 @@
-import { readConfObject } from '@jbrowse/core/configuration'
 import { dealKeyColors } from '@jbrowse/core/util/categoricalField'
 import { NO_CATEGORY_COLOR } from '@jbrowse/core/util/color'
 import { abgrToCssRgba } from '@jbrowse/core/util/colorBits'
@@ -11,7 +10,7 @@ import {
   FEATURE_FIELD_PRESETS,
   categoricalColorField,
   colorFieldOf,
-  colorSettingOf,
+  colorSnapshotOf,
   featureColorEncoding,
   identityKeyEntries,
 } from '@jbrowse/display-kit/colorConfigSchema'
@@ -56,11 +55,7 @@ const RAMP_KEY_STOPS = 8
 function featureColorSettingOf({
   conf: { color },
 }: FeatureColorHost): ColorSetting {
-  return {
-    ...colorSettingOf(color),
-    labels: readConfObject(color, 'labels'),
-    title: readConfObject(color, 'title'),
-  }
+  return colorSnapshotOf(color)
 }
 
 // Each painted box's value, the region's own boxes where it ships their

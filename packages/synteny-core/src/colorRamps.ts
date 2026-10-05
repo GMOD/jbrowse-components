@@ -1,3 +1,4 @@
+import { readConfObject } from '@jbrowse/core/configuration'
 import {
   VIRIDIS_STOPS,
   colorRampStops,
@@ -6,6 +7,7 @@ import {
 import { formatScore } from '@jbrowse/core/util/numericUtils'
 import { SCALE_TYPE_LINEAR, rampMidNorm } from '@jbrowse/render-core/scoreScale'
 
+import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { ColorRampStop } from '@jbrowse/core/util/colorRamp'
 import type { ColorSchemeName } from '@jbrowse/core/util/colorSchemes'
 
@@ -74,6 +76,20 @@ export interface DeclaredRamp {
   domainMin?: number
   domainMax?: number
   domainMid?: number
+}
+
+/**
+ * Read off the ramp's own slots, so a key-only edit repaints no ramp.
+ */
+export function declaredRampOf(color: AnyConfigurationModel): DeclaredRamp {
+  return {
+    range: readConfObject(color, 'range'),
+    scheme: readConfObject(color, 'scheme'),
+    reverse: readConfObject(color, 'reverse'),
+    domainMin: readConfObject(color, 'domainMin'),
+    domainMax: readConfObject(color, 'domainMax'),
+    domainMid: readConfObject(color, 'domainMid'),
+  }
 }
 
 // The preset fields. Each carries domain knowledge a column name cannot: that

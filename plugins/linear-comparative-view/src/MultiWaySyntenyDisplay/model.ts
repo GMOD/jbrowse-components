@@ -40,7 +40,7 @@ import {
   colorEncodingOf,
   colorFieldOf,
   colorForField,
-  colorSettingOf,
+  colorSnapshotOf,
 } from '@jbrowse/display-kit/colorConfigSchema'
 import { heldColorSlots } from '@jbrowse/display-kit/heldColorSlots'
 import { editPlotMenuItems } from '@jbrowse/display-kit/plotMenu'
@@ -65,6 +65,7 @@ import {
   bandPalette,
   colorableColumns,
   declaredAttributes,
+  declaredRampOf,
   declaredLanesOf,
   featureAttributeRanges,
   lodMenuItems,
@@ -376,12 +377,7 @@ export function stateModelFactory(
     }))
     .actions(self => {
       function ribbonColorSetting(): SyntenyColorSnapshot {
-        const { ribbonColor } = self.configuration
-        return {
-          ...colorSettingOf(ribbonColor),
-          labels: readConfObject(ribbonColor, 'labels'),
-          title: readConfObject(ribbonColor, 'title'),
-        }
+        return colorSnapshotOf(self.configuration.ribbonColor)
       }
       function observeRibbonFeatures(features: readonly Feature[]) {
         self.seenAttributeRanges = widenAttributeRanges(
@@ -673,14 +669,7 @@ export function stateModelFactory(
       },
       /** #getter */
       get ribbonRamp(): DeclaredRamp {
-        return {
-          range: getConf(self, ['ribbonColor', 'range']),
-          scheme: getConf(self, ['ribbonColor', 'scheme']),
-          reverse: getConf(self, ['ribbonColor', 'reverse']),
-          domainMin: getConf(self, ['ribbonColor', 'domainMin']),
-          domainMax: getConf(self, ['ribbonColor', 'domainMax']),
-          domainMid: getConf(self, ['ribbonColor', 'domainMid']),
-        }
+        return declaredRampOf(self.configuration.ribbonColor)
       },
       /** #getter */
       get ribbonAttributeRanges(): Record<string, AttributeRange> {
@@ -736,15 +725,7 @@ export function stateModelFactory(
       /** #getter */
       get geneColorSettings(): GeneColorSettings {
         return {
-          color: {
-            value: self.configuration.color.value,
-            field: getConf(self, ['color', 'field']),
-            scale: getConf(self, ['color', 'scale']),
-            domain: getConf(self, ['color', 'domain']),
-            range: getConf(self, ['color', 'range']),
-            labels: getConf(self, ['color', 'labels']),
-            title: getConf(self, ['color', 'title']),
-          },
+          color: colorSnapshotOf(self.configuration.color),
           utrColor: self.configuration.utrColor,
         }
       },
