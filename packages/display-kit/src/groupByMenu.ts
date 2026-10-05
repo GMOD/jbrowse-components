@@ -116,16 +116,23 @@ export interface HiddenGroupsModel {
  * feature most tracks never use.
  */
 export function hiddenGroupsItems(model: HiddenGroupsModel) {
-  const { size } = model.hiddenGroups
+  return showHiddenItems(model.hiddenGroups.size, 'group', () => {
+    model.showAllGroups()
+  })
+}
+
+export function showHiddenItems(
+  count: number,
+  noun: 'group' | SectionNoun,
+  show: () => void,
+) {
   return (
-    size > 0
+    count > 0
       ? [
           {
-            label: `Show ${size} hidden group${size > 1 ? 's' : ''}`,
+            label: `Show ${count} hidden ${noun}${count > 1 ? 's' : ''}`,
             icon: VisibilityIcon,
-            onClick: () => {
-              model.showAllGroups()
-            },
+            onClick: show,
           },
         ]
       : []
@@ -257,14 +264,22 @@ export function sectionOrderMenuItems(model: SectionOrderModel): MenuItem[] {
           label,
           subMenu: sectionRowMenuItems(model, key, 'section'),
         })),
-        {
-          label: 'Reset section order',
-          disabled: model.domain.length === 0,
-          onClick: () => {
-            model.setDomain([])
-          },
-        },
+        resetOrderItem(model, 'section'),
       ],
     },
   ]
+}
+
+/** Dead while the domain pins nothing. */
+export function resetOrderItem(
+  model: Pick<SectionOrderModel, 'domain' | 'setDomain'>,
+  noun: SectionNoun,
+) {
+  return {
+    label: `Reset ${noun} order`,
+    disabled: model.domain.length === 0,
+    onClick: () => {
+      model.setDomain([])
+    },
+  } satisfies MenuItem
 }

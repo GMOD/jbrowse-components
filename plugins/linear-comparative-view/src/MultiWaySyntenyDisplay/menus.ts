@@ -9,10 +9,13 @@ import { STRAND_FIELD } from '@jbrowse/core/util/categoricalField'
 import { openMateLabel } from '@jbrowse/core/util/tracks'
 import { legendCheckboxItem } from '@jbrowse/display-kit/LegendMixin'
 import { colorByMenuItem } from '@jbrowse/display-kit/colorByMenu'
-import { sectionRowMenuItems } from '@jbrowse/display-kit/groupByMenu'
+import {
+  resetOrderItem,
+  sectionRowMenuItems,
+  showHiddenItems,
+} from '@jbrowse/display-kit/groupByMenu'
 import { colorByMenuItems } from '@jbrowse/synteny-core'
 import SwapVertIcon from '@mui/icons-material/SwapVert'
-import VisibilityIcon from '@mui/icons-material/Visibility'
 
 import { CLUSTER_FIELD } from './geneColor.ts'
 import { laneRegion } from './laneHeader.ts'
@@ -208,21 +211,6 @@ function laneFlipMenuItems(
   ]
 }
 
-function hiddenLanesMenuItems(model: MultiWayMenuModel): MenuItem[] {
-  const count = model.hiddenLanes.length
-  return count > 0
-    ? [
-        {
-          label: `Show ${count} hidden lane${count > 1 ? 's' : ''}`,
-          icon: VisibilityIcon,
-          onClick: () => {
-            model.showHiddenLanes()
-          },
-        },
-      ]
-    : []
-}
-
 export function showSubMenuItems(model: MultiWayMenuModel): MenuItem[] {
   return [
     toggleItem('Show lane ticks', model.showLaneTicks, model.setShowLaneTicks),
@@ -246,7 +234,9 @@ export function showSubMenuItems(model: MultiWayMenuModel): MenuItem[] {
       },
     ),
     ...(model.hasLegendKey ? [legendCheckboxItem(model)] : []),
-    ...hiddenLanesMenuItems(model),
+    ...showHiddenItems(model.hiddenLanes.length, 'lane', () => {
+      model.showHiddenLanes()
+    }),
   ]
 }
 
@@ -322,13 +312,7 @@ function laneSelectionMenuItems(model: MultiWayMenuModel): MenuItem[] {
 export function lanesMenuItem(model: MultiWayMenuModel) {
   const subMenu: MenuItem[] = [
     ...laneSelectionMenuItems(model),
-    {
-      label: 'Reset lane order',
-      disabled: model.domain.length === 0,
-      onClick: () => {
-        model.setDomain([])
-      },
-    },
+    resetOrderItem(model, 'lane'),
     toggleItem('Freeze lanes', model.lanesFrozen, model.setLanesFrozen, {
       helpText:
         'Keep every lane where it is as you pan and zoom, instead of re-fitting it to each new window. While frozen, drag or side-scroll a lane to slide it. The lanes unfreeze once the view leaves the window they froze on.',
