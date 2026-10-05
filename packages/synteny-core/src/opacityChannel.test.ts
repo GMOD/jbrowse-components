@@ -69,6 +69,14 @@ describe('a number field', () => {
     expect(fade(2) * 0.4).toBeCloseTo(0.4)
   })
 
+  test('a one-entry range draws every value at that opacity', () => {
+    const setting = { field: 'identity', range: ['0.5'] }
+    expect(opacityLevel(setting, 0.2)).toBe(0.5)
+    const fade = fadeOf(setting, attributes)
+    expect(fade(0)).toBe(1)
+    expect(fade(2)).toBe(1)
+  })
+
   test('pinned ends clamp the values past them', () => {
     const fade = fadeOf(
       { field: 'identity', domainMin: 0.9, domainMax: 1 },

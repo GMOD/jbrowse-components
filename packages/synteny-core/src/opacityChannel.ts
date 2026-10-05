@@ -144,7 +144,7 @@ export function createOpacityFunction({
   if (!mode) {
     return undefined
   }
-  const [lo, hi] = rangeOf(setting, true)
+  const [lo, hi = lo] = rangeOf(setting, true)
   return index => {
     const value = values?.[index]
     if (value === undefined || !Number.isFinite(value)) {
