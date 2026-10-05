@@ -116,6 +116,17 @@ test("picking the field's own scheme leaves it following the field", () => {
   expect(display.colorScheme).toBe('blues')
 })
 
+test("on a file serving only D', picking reds paints reds", () => {
+  const { display } = createDisplay()
+  display.setRpcData(served('dprime'))
+  display.setColorScheme('reds')
+  expect(display.colorScheme).toBe('reds')
+  display.setColorScheme('blues')
+  expect(
+    readConfObject(display.configuration, ['color', 'scheme']),
+  ).toBeUndefined()
+})
+
 test('the ramp texture follows only the scheme and its direction', () => {
   const { display } = createDisplay()
   const dispose = autorun(() => display.renderState)

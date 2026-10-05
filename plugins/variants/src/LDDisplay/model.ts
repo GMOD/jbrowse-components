@@ -132,21 +132,6 @@ export default function stateModelFactory(configSchema: LDDisplayConfigSchema) {
       },
       /**
        * #action
-       * The scheme, with `reverse` back to unset so it follows the scheme. The
-       * field's own preset scheme writes `scheme` unset, so it keeps following
-       * the field.
-       */
-      setColorScheme(scheme: ColorSchemeName) {
-        const field: LDMetric = getConf(self, ['color', 'field'])
-        setConf(
-          self,
-          ['color', 'scheme'],
-          scheme === LD_FIELD_PRESETS[field].scheme ? undefined : scheme,
-        )
-        setConf(self, ['color', 'reverse'], undefined)
-      },
-      /**
-       * #action
        */
       setShowVerticalGuides(show: boolean) {
         setConf(self, 'showVerticalGuides', show)
@@ -476,6 +461,22 @@ export default function stateModelFactory(configSchema: LDDisplayConfigSchema) {
       },
     }))
     .actions(self => ({
+      /**
+       * #action
+       * The scheme, with `reverse` back to unset so it follows the scheme.
+       * The painted metric's own preset writes `scheme` unset, so it keeps
+       * following the metric.
+       */
+      setColorScheme(scheme: ColorSchemeName) {
+        setConf(
+          self,
+          ['color', 'scheme'],
+          scheme === LD_FIELD_PRESETS[self.effectiveLdMetric].scheme
+            ? undefined
+            : scheme,
+        )
+        setConf(self, ['color', 'reverse'], undefined)
+      },
       /**
        * #action
        */
