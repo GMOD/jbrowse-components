@@ -1,6 +1,6 @@
 // The JBrowse 2 v5 paper's Figure 3a, which the paper repo syncs from
 // figures.lock: five Drosophila species as collinear ortholog blocks, coloured
-// by Muller element. The caption names the elements, so the key is closed.
+// by Muller element. The caption names the elements, so the key is hidden.
 import { displayPainted } from '@jbrowse/browser-test-utils'
 
 import { sessionSpec } from '../screenshot-spec-helpers.ts'
@@ -82,11 +82,13 @@ export const paperDrosophilaSpecs: ScreenshotSpec[] = [
     readySelector: displayPainted('synteny_canvas'),
     readyTimeout: 240000,
     viewportWidth: 1900,
-    viewportHeight: 1150,
-    clicksChange: 'close the legend',
-    actions: [{ type: 'click', selector: '[aria-label="Hide legend"]' }],
-    // Each row's floating zoom controls, which a synteny row draws in place of
-    // its hidden header; no session setting turns them off
-    hideSelectors: ['[data-testid="lgv-mini-controls"]'],
+    viewportHeight: 1040,
+    // No session setting closes the legend or a row's zoom controls. Hidden
+    // rather than clicked closed, since a click focuses the view and restyles
+    // its header.
+    hideSelectors: [
+      '[data-testid="floating-legend"]',
+      '[data-testid="lgv-mini-controls"]',
+    ],
   },
 ]
