@@ -48,11 +48,16 @@ cost is linear in lanes.
   (`anchorlessGroupsOf`, `PlacedGroup` with no `anchor`). Each mate lane reads
   the table on its own window (`laneGroupsFetchSpecs`); the lanes place and
   bridge those rows like any group, and the frames, the vote and the holes read
-  only anchored groups. It is the default with no slot: in grammar terms the
-  anchor's x scale shows its invalid values (Vega-Lite's `invalid: "show"`),
-  which an alignment source already did through its lane-pair fetch, and no
-  captured figure read worse for it. A star source indexes its anchor alone and
-  gets no such fetch.
+  only anchored groups. The display reads every row placed in any drawn lane's
+  window: the anchor is one lane among them for the data and the frame
+  reference for the geometry, which is what an alignment source's lane-pair
+  fetch already did. It is the default with no slot; no captured figure read
+  worse for it. Rows sharing a placement merge into one group keyed by its
+  lowest placement, since a table folds a lane query's rows by that lane's gene
+  (a paralog pair reads as two rows from one lane and one from the other) and
+  per-genome gene IDs differ, so no name can key it. Each placement's
+  orientation is its gene's own strand. A star source indexes its anchor alone
+  and gets no such fetch.
 - **Strand means the record's strand**, never the drawn twist, in the config
   schema, the `Color ribbons by` help and `multiwayGeometry.ts`. A mate's
   `orientation` is the pair's strand, never the mate's transcription strand.

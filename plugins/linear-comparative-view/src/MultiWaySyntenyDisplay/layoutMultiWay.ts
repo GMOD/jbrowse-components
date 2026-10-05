@@ -278,52 +278,83 @@ export function groupFeatures(features: Feature[]) {
 }
 
 /**
- * Rows fetched on each lane's own window that place nothing on the anchor. A
- * row read from two lanes is one group, keyed by every placement it holds;
- * its orientations are against the lane that read it first.
+ * Rows fetched on each lane's own window that place nothing on the anchor.
+ * Rows sharing a placement are one group, however many lanes read them: a
+ * table folds a lane's rows by that lane's gene, so a paralog pair reads as
+ * two rows from one lane and one from the other. A group is keyed by its
+ * lowest placement, and each placement's orientation is its gene's own
+ * strand, since the rows of one group were read against different lanes.
  */
 export function anchorlessGroupsOf(
   byLane: Iterable<readonly [string, readonly Feature[]]>,
   onAnchor: (assemblyName: string) => boolean,
 ) {
-  const byKey = new Map<string, PlacedGroup>()
+  const parent = new Map<string, string>()
+  const find = (id: string): string => {
+    const up = parent.get(id) ?? id
+    if (up === id) {
+      return id
+    }
+    const root = find(up)
+    parent.set(id, root)
+    return root
+  }
+  const placements = new Map<
+    string,
+    { assemblyName: string; placement: MatePlacement }
+  >()
   for (const [lane, features] of byLane) {
     for (const feature of features) {
       const mates = matesOf(feature)
       if (!mates.some(mate => onAnchor(mate.assemblyName))) {
-        const placements = [
+        const ids = [
           {
             assemblyName: lane,
             refName: feature.get('refName'),
             start: feature.get('start'),
             end: feature.get('end'),
             name: feature.get('name'),
-            orientation: 1,
+            strand: feature.get('strand'),
           },
           ...mates,
-        ]
-        const key = placements
-          .map(p => `${p.assemblyName}:${p.refName}:${p.start}-${p.end}`)
-          .sort()
-          .join(',')
-        if (!byKey.has(key)) {
-          const byAssembly = new Map<string, MatePlacement[]>()
-          for (const p of placements) {
-            const on = byAssembly.get(p.assemblyName) ?? []
-            on.push({
-              refName: p.refName,
-              start: p.start,
-              end: p.end,
-              name: nameOf(p.name),
-              orientation: p.orientation < 0 ? -1 : 1,
-              feature,
+        ].map(p => {
+          const id = `${p.assemblyName}:${p.refName}:${p.start}-${p.end}`
+          if (!placements.has(id)) {
+            placements.set(id, {
+              assemblyName: p.assemblyName,
+              placement: {
+                refName: p.refName,
+                start: p.start,
+                end: p.end,
+                name: nameOf(p.name),
+                orientation: p.strand === -1 ? -1 : 1,
+                feature,
+              },
             })
-            byAssembly.set(p.assemblyName, on)
           }
-          byKey.set(key, { key, mates: byAssembly, feature })
+          return id
+        })
+        for (const id of ids.slice(1)) {
+          const a = find(ids[0]!)
+          const b = find(id)
+          if (a !== b) {
+            parent.set(a < b ? b : a, a < b ? a : b)
+          }
         }
       }
     }
+  }
+  const byKey = new Map<string, PlacedGroup>()
+  for (const [id, { assemblyName, placement }] of placements) {
+    const key = find(id)
+    let group = byKey.get(key)
+    if (!group) {
+      group = { key, mates: new Map(), feature: placement.feature }
+      byKey.set(key, group)
+    }
+    const on = group.mates.get(assemblyName) ?? []
+    on.push(placement)
+    group.mates.set(assemblyName, on)
   }
   return [...byKey.values()]
 }

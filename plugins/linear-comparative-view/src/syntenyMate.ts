@@ -28,6 +28,8 @@ export function isNamedRecord(feature: Feature) {
 // share one feature.
 export type SyntenyGroupedMate = SyntenyMate & {
   orientation: number
+  /** the mate gene's own strand, where the source has one */
+  strand?: number
 }
 
 // The `mates` of a feature fetched with `mateShape: 'grouped'`; undefined on

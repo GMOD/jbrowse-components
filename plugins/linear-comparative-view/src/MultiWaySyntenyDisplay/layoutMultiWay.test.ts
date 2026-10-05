@@ -224,36 +224,89 @@ test('groups by anchor gene, dedupes repeated mates, sorts by anchor position', 
   expect(groups[1]!.mates.has('cacao')).toBe(false)
 })
 
+// a table row as a lane query answers it: the lane's own gene, grouped mates
+function laneRow(
+  lane: string,
+  [own, ...mates]: { assemblyName: string; name: string; strand: number }[],
+) {
+  const at = (name: string) => {
+    const i = Number(name.slice(1))
+    return { refName: 'c1', start: 100 * i, end: 100 * i + 50 }
+  }
+  return new SimpleFeature({
+    uniqueId: `${lane}-${own!.name}`,
+    ...at(own!.name),
+    name: own!.name,
+    strand: own!.strand,
+    assemblyName: lane,
+    mates: mates.map(m => ({ ...m, ...at(m.name), orientation: 1 })),
+  })
+}
+
+const peachGene = (name: string, strand = 1) => ({
+  assemblyName: 'peach',
+  name,
+  strand,
+})
+const cacaoGene = (name: string, strand = 1) => ({
+  assemblyName: 'cacao',
+  name,
+  strand,
+})
+
 test('a row the anchor lacks is one group however many lanes read it, and a row on the anchor is none', () => {
-  const vio = { refName: 'c1', start: 10, end: 20, strand: 1, name: 'vioB' }
-  const row = (lane: string, mate: string) =>
-    new SimpleFeature({
-      uniqueId: `${lane}-row`,
-      ...vio,
-      assemblyName: lane,
-      mates: [{ ...vio, assemblyName: mate, orientation: -1 }],
-    })
   const anchored = new SimpleFeature({
     uniqueId: 'anchored',
-    ...vio,
-    name: 'g1',
-    mates: [{ ...vio, assemblyName: 'grape', orientation: 1 }],
+    refName: 'c1',
+    start: 900,
+    end: 950,
+    name: 'p9',
+    mates: [{ assemblyName: 'grape', refName: 'g', start: 0, end: 50 }],
   })
   const groups = anchorlessGroupsOf(
     [
-      ['peach', [row('peach', 'cacao'), anchored]],
-      ['cacao', [row('cacao', 'peach')]],
+      [
+        'peach',
+        [laneRow('peach', [peachGene('p1'), cacaoGene('c1', -1)]), anchored],
+      ],
+      ['cacao', [laneRow('cacao', [cacaoGene('c1', -1), peachGene('p1')])]],
     ],
     assemblyName => assemblyName === 'grape',
   )
   expect(groups).toHaveLength(1)
   const [group] = groups
   expect(group!.anchor).toBeUndefined()
-  expect(group!.feature.id()).toBe('peach-row')
+  expect(group!.feature.id()).toBe('peach-p1')
   expect(group!.mates.get('peach')).toMatchObject([{ orientation: 1 }])
   expect(group!.mates.get('cacao')).toMatchObject([
-    { refName: 'c1', start: 10, end: 20, name: 'vioB', orientation: -1 },
+    { refName: 'c1', start: 100, end: 150, name: 'c1', orientation: -1 },
   ])
+})
+
+test('paralog rows joined through one gene are one group, whichever lane reads them', () => {
+  // rows p1-c3 and p2-c3: peach reads two rows, cacao folds them into one
+  const fromPeach = [
+    laneRow('peach', [peachGene('p1'), cacaoGene('c3')]),
+    laneRow('peach', [peachGene('p2'), cacaoGene('c3')]),
+  ]
+  const fromCacao = [
+    laneRow('cacao', [cacaoGene('c3'), peachGene('p1'), peachGene('p2')]),
+  ]
+  const noAnchor = () => false
+  const both = anchorlessGroupsOf(
+    [
+      ['peach', fromPeach],
+      ['cacao', fromCacao],
+    ],
+    noAnchor,
+  )
+  expect(both).toHaveLength(1)
+  expect(both[0]!.mates.get('peach')).toHaveLength(2)
+  expect(both[0]!.mates.get('cacao')).toHaveLength(1)
+  const peachOnly = anchorlessGroupsOf([['peach', fromPeach]], noAnchor)
+  const cacaoOnly = anchorlessGroupsOf([['cacao', fromCacao]], noAnchor)
+  expect(peachOnly.map(g => g.key)).toEqual(both.map(g => g.key))
+  expect(cacaoOnly.map(g => g.key)).toEqual(both.map(g => g.key))
 })
 
 test('row assemblies come out densest lane first, domain pinning over that', () => {
