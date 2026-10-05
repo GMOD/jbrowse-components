@@ -1,6 +1,6 @@
 ---
 name: cold-load-to-first-alignments-paint
-description: "A 2026-10-04 profile of jbrowse-web's cold load to a BAM or CRAM track's first paint. On small data the wait is serialized idle time, not bytes or a CPU hot spot. The 300ms Suspense reveal throttle, the render-RPC code's late discovery and CRAM's header-then-index order are fixed; left are ~117ms of diffuse main-thread work before the render request, and a synchronous WebGL2 shader compile at first draw. Deep windows are bound by one RPC worker."
+description: "A 2026-10-04 profile of jbrowse-web's cold load to a BAM or CRAM track's first paint. On small data the wait is serialized idle time, not bytes or a CPU hot spot. The 300ms Suspense reveal throttle, the render-RPC code's late discovery and CRAM's header-then-index order are fixed; left is ~117ms of diffuse main-thread work before the render request; the WebGL2 shader compile was measured on a real GPU and declined. Deep windows are bound by one RPC worker."
 ---
 
 # Cold load to first alignments paint
@@ -57,19 +57,7 @@ inclusive, forced layout in `useScrollPortOverflow` and `useChromeHeightVar`
 whether the fetch autorun can run before React renders the display rather
 than after it.
 
-### 2. Compile WebGL2 shaders before the first draw
-
-[`webgl2Hal.ts`](../../packages/render-core/src/hal/webgl2Hal.ts) links every
-pass on first draw and reads `COMPILE_STATUS` right after `compileShader`, so
-the compile runs synchronously in the draw task after the data arrives: 158-167
-ms of it under SwiftShader. The WebGPU HAL already uses
-`createRenderPipelineAsync`. The candidate: issue compile and link for every
-declared pass when the HAL is created, while data is still in flight, and query
-status at first use (`KHR_parallel_shader_compile` where present). **Needs a
-headed real-GPU number first**: the SwiftShader figure does not show what a
-user's driver costs.
-
-### 3. Decide whether deep windows parallelize the parse
+### 2. Decide whether deep windows parallelize the parse
 
 100x short reads over 1 Mb, BAM: drawn at 3.96 s, and the render worker was
 busy 2.6 s of it. Inclusive:
@@ -85,7 +73,7 @@ busy 2.6 s of it. Inclusive:
   [`filterChainFeatures.ts`](../../plugins/alignments/src/RenderAlignmentDataRPC/filterChainFeatures.ts)
   108 ms, against its comment's "nearly free"
 
-The first draw's main-thread task was 546 ms: shader compile (item 2), about
+The first draw's main-thread task was 546 ms: shader compile, about
 155 ms of `sortLayout`, then packing and `createBuffer`. Each worker line above
 is a 3-7% cut. Only splitting one region's parse across the RPC pool could give
 2x or more, and that is a design decision to weigh against
@@ -97,12 +85,18 @@ and [collections/alignments](../ideas/collections/alignments.md). The other
 heavy cells, mount to drawn: 200x at 100 kb 1.1 s BAM / 1.0 s CRAM; 1000x at
 19 kb 1.06 s / 0.93 s; 200x long reads at 19 kb 0.97 s / 0.70 s.
 
-### 4. Minor
+### 3. Minor
 
 The BGZF pool (BAM) and the CRAM slice pool each start four workers for volvox
 files of 140-400 KB, 4-31 ms of CPU each and off the critical path.
 
 ## Not worth chasing here
+
+The WebGL2 shader compile at first draw. In headed Chrome on an Intel UHD 630
+it is 145-213 ms on a first visit and 19-26 ms once Chrome's shader cache holds
+the programs; Firefox Nightly's WebGPU creates its 17 pipelines asynchronously
+in 2-35 ms each, off the critical path. Starting every pass's compile when the
+HAL is created was a loss, recorded in `webgl2Hal.ts`.
 
 The pileup display's Suspense boundary (`AlignmentsTooltip`) shows a fallback
 on every BAM and CRAM load, but its reveal lands with the first draw and the
