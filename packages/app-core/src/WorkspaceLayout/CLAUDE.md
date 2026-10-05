@@ -83,6 +83,9 @@ rebuilds every `ViewStack`. `drag` is deliberately not in it.
   cannot be seen is the one thing maximize must not do. Both drop gestures
   prune, and `applyLayoutSpec` replaces every id, so per-gesture would be five
   call sites for one rule.
+- **A maximized cell is the active one.** Every activation goes through
+  `activate`, which leaves the mode for any other cell, so a move or a launch
+  never lands where nobody can see it.
 - The gesture is the strip background's `onDoubleClick`, kept off the tab's own
   rename double-click by `target === currentTarget`. The cell menu's item is how
   it is discovered and the only way to it from the keyboard.

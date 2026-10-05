@@ -268,6 +268,15 @@ export function WorkspaceLayoutMixin() {
           }
         }
 
+        // a maximized cell is the active one, so activating any other leaves
+        // the mode rather than putting new views where nobody can see them
+        function activate(panelId: string) {
+          self.activePanelId = panelId
+          if (self.maximizedPanelId !== panelId) {
+            self.maximizedPanelId = undefined
+          }
+        }
+
         /**
          * Every write to the tree, and therefore the one place the invariant
          * above is repaired.
@@ -367,7 +376,11 @@ export function WorkspaceLayoutMixin() {
         // action it is a public "set the layout to this" on the session.
         return {
           setActivePanelId(panelId: string | undefined) {
-            self.activePanelId = panelId
+            if (panelId === undefined) {
+              self.activePanelId = undefined
+            } else {
+              activate(panelId)
+            }
           },
           /**
            * Show one cell at the size of the workspace, or go back.
@@ -399,7 +412,7 @@ export function WorkspaceLayoutMixin() {
           },
           setActiveTab(panelId: string, tabId: string) {
             apply(setActiveTab(self.tree, panelId, tabId))
-            self.activePanelId = panelId
+            activate(panelId)
           },
           renameTab(tabId: string, title: string | undefined) {
             apply(renameTab(self.tree, tabId, title))
@@ -418,7 +431,7 @@ export function WorkspaceLayoutMixin() {
             if (!self.hasPanel(panel.id)) {
               return undefined
             }
-            self.activePanelId = panel.id
+            activate(panel.id)
             return panel
           },
           closePanel(panelId: string) {
@@ -431,7 +444,7 @@ export function WorkspaceLayoutMixin() {
             }
             const tab: TabNode = { id: nextId('tab'), viewIds }
             apply(addTab(self.tree, panelId, tab))
-            self.activePanelId = panelId
+            activate(panelId)
             return tab
           },
           /**
@@ -502,7 +515,7 @@ export function WorkspaceLayoutMixin() {
               next = pruneEmptyPanel(next, source.id)
             }
             apply(next)
-            self.activePanelId = targetPanelId
+            activate(targetPanelId)
           },
           /** Drop a dragged tab on a panel edge: split, and land in the new half. */
           dropTabInNewSplit(
@@ -533,7 +546,7 @@ export function WorkspaceLayoutMixin() {
             // itself rather than leaving a blank half, without needing a case.
             next = pruneEmptyPanel(next, source.id)
             apply(next)
-            self.activePanelId = panel.id
+            activate(panel.id)
             return panel.id
           },
           setSizes(branchId: string, sizes: number[]) {
@@ -579,7 +592,7 @@ export function WorkspaceLayoutMixin() {
             if (!from) {
               return undefined
             }
-            self.activePanelId = from.panel.id
+            activate(from.panel.id)
             return tab.id
           },
           /**
@@ -606,7 +619,7 @@ export function WorkspaceLayoutMixin() {
             if (!from) {
               return undefined
             }
-            self.activePanelId = panel.id
+            activate(panel.id)
             return panel.id
           },
           /**
@@ -626,7 +639,7 @@ export function WorkspaceLayoutMixin() {
             const landed = findTab(self.tree, tabId)
             if (from && landed) {
               apply(setActiveTab(self.tree, landed.panel.id, tabId))
-              self.activePanelId = landed.panel.id
+              activate(landed.panel.id)
             }
           },
           homeUnassignedViews(viewIds: string[]) {

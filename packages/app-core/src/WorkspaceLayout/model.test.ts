@@ -744,6 +744,19 @@ test('moveViewToSplit column puts the new cell below', () => {
 })
 
 describe('moveViewToTab', () => {
+  test('into a cell hidden by maximize leaves maximize, so it lands on screen', () => {
+    const session = createViewsSession()
+    session.moveViewToSplit('v2', 'row')
+    const [left, right] = session.panels
+    session.toggleMaximizedPanel(left!.id)
+
+    session.moveViewToTab('v3', right!.tabs[0]!.id)
+    session.homeUnassignedViews(['v1', 'v2', 'v3', 'v4'])
+
+    expect(session.maximizedPanelId).toBeUndefined()
+    expect(session.panelContainingView('v4')?.id).toBe(right!.id)
+  })
+
   test('joins an existing tab in another cell, and shows it', () => {
     const session = createViewsSession()
     session.moveViewToSplit('v2', 'row')
