@@ -89,6 +89,8 @@ export interface ColorSpec {
 
 /** How many stops a continuous ramp hands ggplot's `gradientn`. */
 const RAMP_STOPS = 16
+/** Two nominal pixels, so a sub-pixel span survives the panel being narrower than the figure. */
+const MIN_MARK_PX = 2
 
 /** A px on screen as ggplot's mm, at the 96 dpi a browser draws at. */
 const MM_PER_PX = 25.4 / 96
@@ -373,21 +375,33 @@ function band(row: string | undefined, offset: number) {
   return offset ? expr(`${rIdent(row)} + ${offset}`) : row
 }
 
+/** A rect at least `minWidthBp` wide, as the browser keeps a mark at least a pixel across. */
+function rightEdge(x: string, x2: string, minWidthBp: number | undefined) {
+  return minWidthBp
+    ? expr(`pmax(${rIdent(x2)}, ${rIdent(x)} + ${round(minWidthBp)})`)
+    : x2
+}
+
 function markAes(
   m: MarkConfig,
   origin: RExpr,
-  { y, row }: { y?: string; row?: string },
+  { y, row, minWidthBp }: { y?: string; row?: string; minWidthBp?: number },
 ) {
   const { x = 'start', text, x2: locus }: Encoding = m.encoding ?? {}
   const x2 = locusField(locus)
   switch (m.mark) {
     case 'bar':
-      return { xmin: x, xmax: x2, ymin: origin, ymax: y! }
+      return {
+        xmin: x,
+        xmax: rightEdge(x, x2, minWidthBp),
+        ymin: origin,
+        ymax: y!,
+      }
     case 'span': {
       const pad = round((1 - (m.rowProportion ?? DEFAULT_ROW_PROPORTION)) / 2)
       return {
         xmin: x,
-        xmax: x2,
+        xmax: rightEdge(x, x2, minWidthBp),
         ymin: band(row, pad),
         ymax: band(row, round(1 - pad)),
       }
@@ -577,6 +591,7 @@ export function markLayer(
     steps = [],
     by = [],
     name = `${frame.name}_path`,
+    minWidthBp,
   }: {
     /** Every step the mark's frame went through, display's first. */
     steps?: readonly Step[]
@@ -584,6 +599,8 @@ export function markLayer(
     by?: readonly string[]
     /** The binding a step line's vertices land in. */
     name?: string
+    /** The least width in bp a span or bar draws. */
+    minWidthBp?: number
   } = {},
 ) {
   const encoding: Encoding = m.encoding ?? {}
@@ -656,7 +673,7 @@ export function markLayer(
     geom,
     frame: drawn,
     aes: {
-      ...markAes(m, origin, { y, row }),
+      ...markAes(m, origin, { y, row, minWidthBp }),
       ...(colour.field ? { [colourAes]: colour.field } : {}),
       ...(shape.field ? { shape: shape.field } : {}),
       ...(size.field ? { linewidth: size.field } : {}),
@@ -828,6 +845,7 @@ export function markPlot({
       steps: [...above, ...(m.transform ?? [])],
       by: facetBy ? [facetBy.field] : [],
       name: `${frame.name}_path${i + 1}`,
+      minWidthBp: bpPerPx * MIN_MARK_PX,
     })
     if (!built) {
       continue

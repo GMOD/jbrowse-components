@@ -35,7 +35,9 @@ describe('a mark becomes a geom', () => {
         },
       ],
     })
-    expect(r).toContain('aes(xmin = start, xmax = end, ymin = 0, ymax = score)')
+    expect(r).toContain(
+      'aes(xmin = start, xmax = pmax(end, start + 0.133333), ymin = 0, ymax = score)',
+    )
     expect(r).toContain('fill = "steelblue"')
   })
 
@@ -512,7 +514,14 @@ describe('a mark reads the grammar’s own vocabulary', () => {
     const { r } = render({
       marks: [{ mark: 'span', encoding: { x2: { pos: 'end' } } }],
     })
-    expect(r).toContain('xmax = end')
+    expect(r).toContain('xmax = pmax(end, start +')
+  })
+
+  it('keeps a span at least one device pixel wide, as the browser does', () => {
+    const { r } = render({ marks: [{ mark: 'span', encoding: {} }] }, [
+      { refName: 'ctgA', start: 0, end: 15000 },
+    ])
+    expect(r).toContain('xmax = pmax(end, start + 20)')
   })
 
   it('maps a shape scale onto R pch codes', () => {
