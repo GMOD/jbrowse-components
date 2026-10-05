@@ -80,6 +80,10 @@ describe('against a served config', () => {
     await new Promise(resolve => server.close(resolve))
   })
 
+  afterEach(() => {
+    jest.restoreAllMocks()
+  })
+
   // relative, the way the app resolves it: against the instance
   test('tracks and assembly come back spelled the way the config spells them', async () => {
     await expect(
@@ -115,15 +119,12 @@ describe('against a served config', () => {
   })
 
   test('a hosted hub that does not exist fails before any browser launches', async () => {
-    const real = globalThis.fetch
-    globalThis.fetch = () => Promise.resolve(new Response('', { status: 404 }))
-    try {
-      await expect(
-        resolveAgainstConfig({ hub: 'hg39zz', loc: 'x' }),
-      ).rejects.toThrow('hub "hg39zz" not found (HTTP 404')
-    } finally {
-      globalThis.fetch = real
-    }
+    jest
+      .spyOn(globalThis, 'fetch')
+      .mockResolvedValue(new Response('', { status: 404 }))
+    await expect(
+      resolveAgainstConfig({ hub: 'hg39zz', loc: 'x' }),
+    ).rejects.toThrow('hub "hg39zz" not found (HTTP 404')
   })
 
   test('a spec passes through unread', async () => {

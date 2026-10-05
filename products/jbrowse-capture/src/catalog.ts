@@ -105,10 +105,15 @@ export async function resolveAgainstConfig(
   if (spec || session || !url || (!wanted && !tracks?.length)) {
     return options
   }
-  const fetched = fetchJson(url, config ? 'config' : `hub "${hub}"`)
-  const catalog = (await (config
-    ? fetched.catch(() => undefined)
-    : fetched)) as Catalog | undefined
+  const catalog = (await fetchJson(
+    url,
+    config ? 'config' : `hub "${hub}"`,
+  ).catch((error: unknown) => {
+    if (config) {
+      return undefined
+    }
+    throw error
+  })) as Catalog | undefined
   if (!catalog) {
     return options
   }
