@@ -260,8 +260,8 @@ absolutely positioned. So it is the right parent for a child placed by
 for a child placed by `right` — `ScrollChrome` mounted in there put the thumb a
 track width off the display's LEFT edge, where `contain: strict` clipped it, and
 gave the edge fade zero width. Anything anchored to the right edge, or that
-applies `rowsTopOffset` itself, goes on the display's own box beside
-`VariantOverlay`.
+applies `rowsTopOffset` itself, goes on the display's own box, where
+`RowsPanel` mounts the scrollbar and the row labels.
 
 The lane **is** a plugin-canvas feature band, not a painter of ours. It is not a
 _hosted_ `LinearVariantDisplay` — a track renders one display, and a second one

@@ -32,7 +32,7 @@ test('the genomic layout binds the wheel to a panel holding the sidebar', () => 
   const { display } = createTestEnvironment().createDisplay()
   render(<VariantDisplayComponent model={clustered(display)} />)
 
-  const panel = screen.getByTestId('variant-rows-panel')
+  const panel = screen.getByTestId('variant-rows')
   expect(panel.contains(screen.getByTestId('variant_canvas'))).toBe(true)
   expect(panel.querySelector('[data-gesture-owner]')).not.toBeNull()
 })
@@ -41,7 +41,7 @@ test('the columns layout binds the wheel to a panel holding the sidebar', () => 
   const { display } = createMatrixTestEnvironment().createDisplay()
   render(<VariantMatrixDisplayComponent model={clustered(display)} />)
 
-  const panel = screen.getByTestId('variant-matrix-rows-panel')
+  const panel = screen.getByTestId('variant-matrix-rows')
   expect(panel.contains(screen.getByTestId('variant_matrix_canvas'))).toBe(true)
   expect(panel.querySelector('[data-gesture-owner]')).not.toBeNull()
 })

@@ -102,9 +102,9 @@ const useStyles = makeStyles()(theme => ({
  * node-picking box and the resize handle — deliberately stays inline: those draw
  * nothing, so being under the masks costs them nothing, and staying inside the
  * display keeps every pointer path they already have. In particular the portal
- * node is `pointer-events: none` (so it doesn't eat canvas events), and maf's
- * wheel-to-scroll listener is bound to the DOM element these sit in, not to the
- * React tree the portal travels through.
+ * node is `pointer-events: none` (so it doesn't eat canvas events), and
+ * `RowsPanel`'s wheel-to-scroll listener is bound to the DOM element these sit
+ * in, not to the React tree the portal travels through.
  *
  * The two layers share an origin and their z-indexes are still read against each
  * other, so the ordering within the gutter is unchanged.
@@ -114,11 +114,10 @@ const TreeSidebar = observer(function TreeSidebar({
   top = 0,
 }: {
   model: TreeSidebarModel
-  // Top of the sidebar within the display's own box. Non-zero only for a display
-  // that stacks something above its rows (maf's coverage/conservation bands):
-  // the painted layer is portaled onto the display's origin, so an offset it
-  // used to inherit from its container has to be passed explicitly. The inline
-  // layer still sits in that container and so does not take it.
+  // Top of the container the sidebar sits in, within the display's own box:
+  // `RowsPanel` passes `rowsTopOffset`. The painted layer is portaled onto the
+  // display's origin, so it takes the offset explicitly; the inline layer
+  // already sits in that container and does not.
   top?: number
 }) {
   const { classes } = useStyles()
@@ -133,12 +132,9 @@ const TreeSidebar = observer(function TreeSidebar({
     spatialIndex,
   } = model
 
-  // What's left to apply here, on top of whatever `top` already carries. A
-  // caller passing `top` (maf) has already put that amount on the ancestor the
-  // inline layer sits in, and on the portaled `GutterLayer` itself — so
-  // reusing `rowsTopOffset` again below double-counts it. A caller passing
-  // none (variants, wiggle, multi-row) needs the full amount supplied here,
-  // since nothing external is offsetting either layer.
+  // What's left to apply here, on top of whatever `top` already carries:
+  // nothing inside `RowsPanel`, the full `rowsTopOffset` for a caller passing
+  // none (wiggle, multi-row).
   const innerTop = rowsTopOffset - top
 
   // Cursor → tree node. All this owns is the coordinate change: the hit box is

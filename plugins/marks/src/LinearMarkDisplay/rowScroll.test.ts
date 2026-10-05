@@ -224,8 +224,7 @@ test('a text label follows its row up the plot, and one scrolled past the top is
 
 test('the rows panel mounts a scrollbar over itself while the rows overflow, and none once they fit', () => {
   const display = loaded(PINNED)
-  const { yTop, plotHeight } = axisPlotBox(display.height)
-  render(createElement(MarkRows, { model: display, yTop, plotHeight }))
+  render(createElement(MarkRows, { model: display }))
   expect(screen.getByRole('scrollbar').getAttribute('aria-controls')).toBe(
     screen.getByTestId('mark-rows').id,
   )

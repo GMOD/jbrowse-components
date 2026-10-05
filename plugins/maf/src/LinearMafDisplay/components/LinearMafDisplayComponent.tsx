@@ -1,8 +1,7 @@
-import { useId, useRef, useState } from 'react'
+import { useRef, useState } from 'react'
 
-import { ScrollChrome, useMouseState } from '@jbrowse/core/ui'
+import { useMouseState } from '@jbrowse/core/ui'
 import { eventPoint } from '@jbrowse/core/util/eventPoint'
-import { useRowVirtualScroll } from '@jbrowse/core/util/useRowVirtualScroll'
 import BottomRightIndicators from '@jbrowse/display-kit/BottomRightIndicators'
 import ConfigProblemsIndicator from '@jbrowse/display-kit/ConfigProblemsIndicator'
 import DisplayChrome from '@jbrowse/display-kit/DisplayChrome'
@@ -11,9 +10,7 @@ import { createMarkBackend } from '@jbrowse/render-core/marks/backend'
 import {
   DisplayContextMenu,
   DisplayCrosshairs,
-  RowLabelsOverlay,
-  TreeSidebar,
-  treeSidebarOffset,
+  RowsPanel,
   treeSidebarRightEdge,
 } from '@jbrowse/tree-sidebar'
 import { observer } from 'mobx-react'
@@ -141,18 +138,7 @@ const MafBody = observer(function MafBody({
   drag: ReturnType<typeof useDragSelection>
   mouseTracker: MouseTracker
 }) {
-  const {
-    rowsHeight,
-    rowsTopOffset,
-    scrollTop,
-    effectiveRowHeight,
-    sources,
-    colorPalette,
-  } = model
-  const canvasId = useId()
-  // the rows container, so a wheel over the species names scrolls their rows
-  const [rowsEl, setRowsEl] = useState<HTMLDivElement | null>(null)
-  useRowVirtualScroll(rowsEl, model, model.view.scrollZoom)
+  const { rowsHeight, rowsTopOffset, colorPalette } = model
   const [resizeActive, setResizeActive] = useState(false)
   // the canvas box, not the viewport: must equal renderState.canvasWidth, and
   // every overlay below is positioned in the same space — see canvasWidthPx
@@ -171,7 +157,6 @@ const MafBody = observer(function MafBody({
   // one coordinate space, as they were when both came off the same state.
   const mouse = useMouseState(mouseTracker)
 
-  const sidebarOffset = treeSidebarOffset(model)
   // Mouse guides/tooltips hide left of the sidebar's resize-handle edge.
   const dataLeft = treeSidebarRightEdge(model)
 
@@ -200,11 +185,8 @@ const MafBody = observer(function MafBody({
     <>
       {/* The rendering backend's canvas, spanning the band stack AND the rows:
           the coverage band is drawn into its top by the same backend that draws
-          the rows, scissored to its own strip. It sits outside the rows
-          container — which is offset to `rowsTopOffset` and owns the wheel
-          listener — because it is no longer the rows' canvas alone. */}
+          the rows, scissored to its own strip, so it sits outside the rows panel. */}
       <canvas
-        id={canvasId}
         ref={canvasRef}
         style={{
           position: 'absolute',
@@ -216,17 +198,10 @@ const MafBody = observer(function MafBody({
       />
       <MafBandHandles model={model} onResizeActiveChange={setResizeActive} />
       <MafBandLabels model={model} />
-      <div
-        ref={setRowsEl}
-        data-testid="maf-rows"
-        style={{
-          position: 'absolute',
-          top: rowsTopOffset,
-          left: 0,
-          width,
-          height: rowsHeight,
-          cursor: overInsertion ? 'pointer' : undefined,
-        }}
+      <RowsPanel
+        model={model}
+        testIdPrefix="maf"
+        cursor={overInsertion ? 'pointer' : undefined}
       >
         <EmptyLinesOverlay
           segments={model.visibleEmptyLines}
@@ -267,33 +242,7 @@ const MafBody = observer(function MafBody({
           width={width}
           height={rowsHeight}
         />
-        {/* Both halves are portaled above the LGV's inter-region masks and so
-            land on the display's origin, not this container's — hence the
-            explicit `top`, which is the band stack above the rows.
-
-            Not a `rowsTopOffset` getter on the model, which is the same idea
-            and would look tidier: the sidebar's *inline* half stays in this
-            container, which already carries the offset, so the model spelling
-            would apply it twice. It stays here because maf's wheel listener is
-            bound to this element by DOM node — that is what makes a wheel over
-            the species names scroll the rows it labels. See the tree-sidebar
-            package CLAUDE.md. */}
-        <RowLabelsOverlay
-          testId="maf-row-labels"
-          sources={sources}
-          rowHeight={effectiveRowHeight}
-          labelOffset={sidebarOffset}
-          width={width}
-          height={rowsHeight}
-          top={rowsTopOffset}
-          scrollTop={scrollTop}
-          showLabels={model.showRowLabels}
-        />
-        <TreeSidebar model={model} top={rowsTopOffset} />
-      </div>
-      {/* Offset below the stacked bands, which are pinned: only the rows
-          scroll. */}
-      <ScrollChrome model={model} controlsId={canvasId} top={rowsTopOffset} />
+      </RowsPanel>
       {pointer && !contextCoord && !resizeActive ? (
         <div style={{ position: 'relative' }}>
           <DisplayCrosshairs

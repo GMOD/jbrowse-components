@@ -396,20 +396,25 @@ parameter is named to refuse.
 ## On screen: `TreeSidebar` + `RowLabelsOverlay`, both portalled
 
 Render both — a display that hand-rolls the labels half re-states overlay
-geometry that has to be right for it to work at all.
+geometry that has to be right for it to work at all. A display whose rows
+scroll mounts `RowsPanel` instead, which places both, the scrollbar and the
+wheel-bound panel from `rowsTopOffset` and `scrollViewportHeight`; the
+variant layouts, MAF and the mark display do. Multi-row and wiggle fit their
+rows to the display height and mount the two directly.
 
 **Both paint through `TrackOverlayPortal`, above the LGV's masks**: a display
 renders inside `TrackRenderingContainer`'s `contain: strict` sandbox and
 `PaddingBlocks` is a later sibling painting over all of it, so nothing inside
 can `z-index` out. `TreeSidebar` therefore splits paint from hit-test — panel,
 tree canvas, hover canvas and hints go through the portal; the transparent
-picking box and resize handle stay inline because they draw nothing and maf
-binds its wheel listener to that DOM element. The two layers share an origin.
+picking box and resize handle stay inline because they draw nothing and
+`RowsPanel` binds its wheel listener to the DOM element they sit in. The two
+layers share an origin.
 
 The portal lands on the **display's own box**; a display drawing its sidebar
-elsewhere passes that down as `top`. **maf's `top` is not the model's
-`rowsTopOffset`** — its sidebar already sits inside a container translated by
-it.
+elsewhere passes that down as `top`. Inside `RowsPanel` that `top` is
+`rowsTopOffset`, and the inline half takes none, since the panel already sits
+there.
 
 ## Install the autoruns statically; don't `import()` this barrel
 

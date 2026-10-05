@@ -82,8 +82,7 @@ one resolution, a label bar, groups as attributes, one key and one dialog.
   shader could read them from a per-record table instead, which the HAL's one
   RGBA8 texture per pass and its re-upload on identity do not yet carry (the
   ADR's Rejected rows).
-- Both variant chromes and MAF's mount the same scroll/sidebar/overlay tree.
-  `spatialIndex` is the same `buildSpatialIndex(self.hierarchy)` on five
+- `spatialIndex` is the same `buildSpatialIndex(self.hierarchy)` on five
   displays, but the mixin owns no `hierarchy`.
 - MAF: the coverage band hard-codes a linear scale four times
   (`stateModel.ts:1592-1664`), the shape `scales.y` would replace when its

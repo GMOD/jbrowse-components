@@ -14,6 +14,7 @@ import type { SkippedFeatures } from '@jbrowse/display-kit/SkippedFeaturesIndica
 import type { RenderBlock } from '@jbrowse/render-core/renderBlock'
 import type {
   ClusterProvenance,
+  RowBand,
   RowSource,
   SvgSidebarProps,
   TreeSidebarModel,
@@ -48,6 +49,7 @@ export interface MarkDisplayModel
   drawsKeyedRows: boolean
   svgSidebar: SvgSidebarProps | undefined
   sources: RowSource[]
+  rowBands: readonly RowBand[]
   effectiveRowHeight: number
   nrow: number
   rowsTopOffset: number

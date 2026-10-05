@@ -127,22 +127,15 @@ export function variantMatrixSurface(
   }
 }
 
-// The matrix canvas + its click targets. DisplayChrome (owned by the outer
-// VariantMatrixDisplayComponent) owns the GPU backend, the terminal states and
-// the pointer measurement the hover comes from, handing the live canvas down
-// here.
-//
-// The scroll affordances are not here — they hang off the display's own box, one
-// level up, outside `MatrixBodyOffset`. `canvasId` is made up there and passed
-// in so the scrollbar's `aria-controls` still names this canvas.
+// The matrix canvas + its click targets. DisplayChrome owns the GPU backend, the
+// terminal states and the pointer measurement the hover comes from, handing the
+// live canvas down here.
 const VariantMatrixBody = observer(function VariantMatrixBody({
   model,
   canvasRef,
-  canvasId,
 }: {
   model: LinearMultiSampleVariantDisplayModel
   canvasRef: (node: HTMLCanvasElement | null) => void
-  canvasId: string
 }) {
   // `model.matrixWidth`, the getter `renderState` and `columnGeometry` are both
   // built from: the width the cells were mapped into, rather than a second
@@ -155,7 +148,6 @@ const VariantMatrixBody = observer(function VariantMatrixBody({
 
   return (
     <canvas
-      id={canvasId}
       role="img"
       aria-label="Variant genotype matrix"
       data-testid="variant_matrix_canvas"

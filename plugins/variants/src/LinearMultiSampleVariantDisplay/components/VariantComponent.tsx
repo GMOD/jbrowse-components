@@ -165,25 +165,17 @@ export function variantRowsSurface(
   }
 }
 
-// The per-sample variant canvas + its click targets. DisplayChrome (owned by
-// the outer VariantDisplayComponent) owns the GPU backend, the terminal states
-// and the pointer measurement the hover comes from, handing the live canvas
-// down here. Scroll is virtual (fixed canvas + VerticalScrollbar overlay,
-// everything positioned from model.scrollTop) — no native overflow container,
-// so the GPU cells and the chrome's hover box share one scroll source and can
-// never tear apart.
-//
-// The scroll affordances themselves are NOT here: they hang off the display's
-// own box, one level up. `canvasId` is therefore made up there too and passed
-// in, so the scrollbar's `aria-controls` still names this canvas.
+// The per-sample variant canvas + its click targets. DisplayChrome owns the GPU
+// backend, the terminal states and the pointer measurement the hover comes
+// from, handing the live canvas down here. Scroll is virtual: a fixed canvas,
+// everything positioned from `model.scrollTop`, and the scroll affordances on
+// the `RowsPanel` around this.
 const VariantBody = observer(function VariantBody({
   model,
   canvasRef,
-  canvasId,
 }: {
   model: LinearMultiSampleVariantDisplayModel
   canvasRef: (node: HTMLCanvasElement | null) => void
-  canvasId: string
 }) {
   // `canvasWidthPx`, not a second `view.trackWidthPx` read: it is the width
   // `renderState.canvasWidth` carries, so the canvas below and every overlay
@@ -195,7 +187,6 @@ const VariantBody = observer(function VariantBody({
   return (
     <>
       <canvas
-        id={canvasId}
         role="img"
         aria-label="Variant genotypes"
         data-testid="variant_canvas"

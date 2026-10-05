@@ -41,7 +41,7 @@ const LinearMarkDisplayComponent = observer(
           <>
             <MarkTextLayer model={model} yTop={yTop} plotHeight={plotHeight} />
             <MarkFacetChips model={model} yTop={yTop} plotHeight={plotHeight} />
-            <MarkRows model={model} yTop={yTop} plotHeight={plotHeight} />
+            <MarkRows model={model} />
           </>
         )}
         tooltip={mouseState => (

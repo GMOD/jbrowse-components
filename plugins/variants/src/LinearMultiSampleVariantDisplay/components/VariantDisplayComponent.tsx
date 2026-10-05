@@ -1,17 +1,13 @@
-import { useId, useState } from 'react'
-
-import { ScrollChrome } from '@jbrowse/core/ui'
-import { useRowVirtualScroll } from '@jbrowse/core/util/useRowVirtualScroll'
 import DisplayChrome from '@jbrowse/display-kit/DisplayChrome'
 import { DisplayContextMenu } from '@jbrowse/display-kit/DisplayContextMenu'
 import { PointerLayer } from '@jbrowse/display-ui'
 import { createMarkBackend } from '@jbrowse/render-core/marks/backend'
-import { TreeSidebar, treeSidebarRightEdge } from '@jbrowse/tree-sidebar'
+import { RowsPanel, treeSidebarRightEdge } from '@jbrowse/tree-sidebar'
 import { observer } from 'mobx-react'
 
 import Crosshair from '../../shared/components/MultiSampleVariantCrosshairs.tsx'
-import VariantOverlay from '../../shared/components/MultiSampleVariantOverlay.tsx'
 import VariantConfigProblems from '../../shared/components/VariantConfigProblems.tsx'
+import VariantRowSeparators from '../../shared/components/VariantRowSeparators.tsx'
 import { hoverVariantSurface } from '../../shared/variantSurface.ts'
 import VariantMatrixDisplayComponent from '../matrix/VariantMatrixDisplayComponent.tsx'
 import VariantBody, { variantRowsSurface } from './VariantComponent.tsx'
@@ -34,10 +30,6 @@ const GenomicPositionsDisplay = observer(
   }) {
     const { model } = props
     const { rowsTopOffset } = model
-    const canvasId = useId()
-    // the rows panel, so a wheel over the dendrogram beside the canvas is theirs
-    const [rowsEl, setRowsEl] = useState<HTMLDivElement | null>(null)
-    useRowVirtualScroll(rowsEl, model, model.view.scrollZoom)
     return (
       <DisplayChrome
         model={model}
@@ -77,40 +69,10 @@ const GenomicPositionsDisplay = observer(
         {({ canvasRef, mouseTracker }) => (
           <>
             <VariantLaneOverlay model={model} />
-            {/* The rows and everything positioned against them sit below the
-                bands `topBands` reserved. Same container offset the matrix
-                display takes for its connector zone, and the same one
-                `SvgVariantOverlay` translates the export by — `TreeSidebar`
-                takes it off the model as `rowsTopOffset`. */}
-            <div
-              ref={setRowsEl}
-              data-testid="variant-rows-panel"
-              style={{
-                position: 'absolute',
-                top: rowsTopOffset,
-                left: 0,
-                width: model.canvasWidthPx,
-                height: model.availableHeight,
-              }}
-            >
-              <VariantBody
-                model={model}
-                canvasRef={canvasRef}
-                canvasId={canvasId}
-              />
-              {/* Inside the panel so a wheel over the dendrogram scrolls the
-                  rows it labels, which means the offset is on the container and
-                  the portaled half takes it explicitly (`top`). */}
-              <TreeSidebar model={model} top={rowsTopOffset} />
-            </div>
-            {/* On the display's own box: the rows panel is canvas-wide, and
-                anything placed by `right` belongs to the display (CLAUDE.md). */}
-            <ScrollChrome
-              model={model}
-              controlsId={canvasId}
-              top={rowsTopOffset}
-            />
-            <VariantOverlay model={model} top={rowsTopOffset} />
+            <RowsPanel model={model} testIdPrefix="variant">
+              <VariantBody model={model} canvasRef={canvasRef} />
+              <VariantRowSeparators model={model} />
+            </RowsPanel>
             {/* The crosshairs are gated to the rows: drawn over the variant
                 lane they would name a genotype row the pointer is not on. The
                 tooltip is not — the lane's marks are hoverable too, and what

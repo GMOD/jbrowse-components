@@ -1,17 +1,13 @@
-import { useId, useState } from 'react'
-
-import { ScrollChrome } from '@jbrowse/core/ui'
-import { useRowVirtualScroll } from '@jbrowse/core/util/useRowVirtualScroll'
 import DisplayChrome from '@jbrowse/display-kit/DisplayChrome'
 import { DisplayContextMenu } from '@jbrowse/display-kit/DisplayContextMenu'
 import { PointerLayer } from '@jbrowse/display-ui'
 import { createMarkBackend } from '@jbrowse/render-core/marks/backend'
-import { TreeSidebar, treeSidebarRightEdge } from '@jbrowse/tree-sidebar'
+import { RowsPanel, treeSidebarRightEdge } from '@jbrowse/tree-sidebar'
 import { observer } from 'mobx-react'
 
 import Crosshair from '../../shared/components/MultiSampleVariantCrosshairs.tsx'
-import VariantOverlay from '../../shared/components/MultiSampleVariantOverlay.tsx'
 import VariantConfigProblems from '../../shared/components/VariantConfigProblems.tsx'
+import VariantRowSeparators from '../../shared/components/VariantRowSeparators.tsx'
 import { hoverVariantSurface } from '../../shared/variantSurface.ts'
 import LinesConnectingMatrixToGenomicPosition from './LinesConnectingMatrixToGenomicPosition.tsx'
 import VariantMatrixBody, {
@@ -28,8 +24,7 @@ async function createVariantMatrixBackend(canvas: HTMLCanvasElement) {
   })
 }
 
-// The matrix's own box, offset past the bands above the rows and clamped to the
-// viewport's left edge.
+// The matrix's own box in the rows panel, clamped to the viewport's left edge.
 //
 // Its own observer purely so the column origin is read HERE. It moves every
 // frame of a pan, and read in the component that mounts `DisplayChrome` it
@@ -44,21 +39,13 @@ async function createVariantMatrixBackend(canvas: HTMLCanvasElement) {
 // same-looking expression beside it.
 const MatrixBodyOffset = observer(function MatrixBodyOffset({
   model,
-  top,
   children,
 }: {
   model: LinearMultiSampleVariantDisplayModel
-  top: number
   children: ReactNode
 }) {
   return (
-    <div
-      style={{
-        position: 'absolute',
-        top,
-        left: model.columnGeometry.left,
-      }}
-    >
+    <div style={{ position: 'absolute', left: model.columnGeometry.left }}>
       {children}
     </div>
   )
@@ -70,10 +57,6 @@ const VariantMatrixDisplayComponent = observer(
   }) {
     const { model } = props
     const { rowsTopOffset } = model
-    const canvasId = useId()
-    // the rows panel, so a wheel over the dendrogram beside the matrix is theirs
-    const [rowsEl, setRowsEl] = useState<HTMLDivElement | null>(null)
-    useRowVirtualScroll(rowsEl, model, model.view.scrollZoom)
     return (
       <DisplayChrome
         model={model}
@@ -121,42 +104,12 @@ const VariantMatrixDisplayComponent = observer(
                 />
               )}
             </PointerLayer>
-            {/* The rows panel the wheel is bound to. It carries the band
-                offset so `applyRowResizeWheel` measures against the rows' own
-                top, which leaves `MatrixBodyOffset` with the horizontal column
-                origin alone — the number that moves every frame of a pan, and
-                the reason it is read in a child observer. */}
-            <div
-              ref={setRowsEl}
-              data-testid="variant-matrix-rows-panel"
-              style={{
-                position: 'absolute',
-                top: rowsTopOffset,
-                left: 0,
-                width: model.canvasWidthPx,
-                height: model.availableHeight,
-              }}
-            >
-              <MatrixBodyOffset model={model} top={0}>
-                <VariantMatrixBody
-                  model={model}
-                  canvasRef={canvasRef}
-                  canvasId={canvasId}
-                />
+            <RowsPanel model={model} testIdPrefix="variant-matrix">
+              <MatrixBodyOffset model={model}>
+                <VariantMatrixBody model={model} canvasRef={canvasRef} />
               </MatrixBodyOffset>
-              {/* Inside the panel so a wheel over the dendrogram scrolls the
-                  rows it labels; the portaled half takes the offset the
-                  container already carries. */}
-              <TreeSidebar model={model} top={rowsTopOffset} />
-            </div>
-            {/* Outside `MatrixBodyOffset`, a 0x0 box that pans with the matrix:
-                anything placed by `right` belongs to the display (CLAUDE.md). */}
-            <ScrollChrome
-              model={model}
-              controlsId={canvasId}
-              top={rowsTopOffset}
-            />
-            <VariantOverlay model={model} top={rowsTopOffset} />
+              <VariantRowSeparators model={model} />
+            </RowsPanel>
             <PointerLayer
               mouseTracker={mouseTracker}
               rowsTopOffset={rowsTopOffset}
