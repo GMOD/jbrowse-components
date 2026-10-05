@@ -9,7 +9,7 @@ exports[`breakpoint split view 1`] = `
   <path
     d="M 408.99312656000257 92.5 C 454.02419029032706 92.5 358.38761648492994 486.5 403.4186802152544 486.5"
     data-testid="r1"
-    stroke="#af4d19"
+    stroke="#ff0000"
     stroke-opacity="0.8"
     stroke-width="1"
   />
@@ -22,7 +22,7 @@ exports[`breakpoint split view 1`] = `
   <path
     d="M 658.4186802152544 486.5 C 746.2499549001666 486.5 319.1618518750904 68.5 406.99312656000257 68.5"
     data-testid="r1"
-    stroke="#af4d19"
+    stroke="#ff0000"
     stroke-opacity="0.8"
     stroke-width="1"
   />
