@@ -34,7 +34,7 @@
     "@jbrowse/mobx-state-tree": "^6.7.0",
     "@mui/material": "^9.4.0",
     "generic-filehandle2": "^2.5.0",
-    "mobx": "^7.0.5"
+    "mobx": "^7.0.6"
   },
   "peerDependencies": {
     "react": ">=19.0.0",

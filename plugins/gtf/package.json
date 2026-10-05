@@ -33,7 +33,7 @@
     "@gmod/tabix": "^3.9.1",
     "@jbrowse/core": "workspace:^",
     "@jbrowse/mobx-state-tree": "^6.7.0",
-    "mobx": "^7.0.5",
+    "mobx": "^7.0.6",
     "rxjs": "^7.8.2"
   },
   "peerDependencies": {
