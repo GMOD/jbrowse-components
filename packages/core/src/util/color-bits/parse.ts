@@ -284,16 +284,28 @@ export function parseColor(color: string): Color {
   throw new Error(`Color.parse(): invalid CSS color: "${color}"`)
 }
 
+/** A channel's leading number, throwing where it has none, as `rgb(a,b,1)`. */
+function parseNumber(value: string) {
+  const n = Number.parseFloat(value)
+  if (Number.isNaN(n)) {
+    throw new TypeError(`Color.parse(): invalid CSS color channel: "${value}"`)
+  }
+  return n
+}
+
 /**
- * Accepts: "50%", "128"
+ * Accepts: "50%", "128", "none"
  * https://developer.mozilla.org/en-US/docs/Web/CSS/color_value/rgb#values
  * @returns a value in the 0 to 255 range
  */
 function parseColorChannel(channel: string) {
-  if (channel.charCodeAt(channel.length - 1) === PERCENT) {
-    return Math.round((Number.parseFloat(channel) / 100) * 255)
+  if (channel === 'none') {
+    return 0
   }
-  return Math.round(Number.parseFloat(channel))
+  if (channel.charCodeAt(channel.length - 1) === PERCENT) {
+    return Math.round((parseNumber(channel) / 100) * 255)
+  }
+  return Math.round(parseNumber(channel))
 }
 
 /**
@@ -315,9 +327,9 @@ function parseAlphaValue(channel: string) {
     return 0
   }
   if (channel.charCodeAt(channel.length - 1) === PERCENT) {
-    return Number.parseFloat(channel) / 100
+    return parseNumber(channel) / 100
   }
-  return Number.parseFloat(channel)
+  return parseNumber(channel)
 }
 
 /**
@@ -350,7 +362,7 @@ function parseAngle(angle: string) {
       factor = 360
     }
   }
-  const turns = Number.parseFloat(angle) / factor
+  const turns = parseNumber(angle) / factor
   // Hue is periodic, and every caller of this is a hue. `hueToRGB` corrects its
   // argument by at most one turn, so it reads `hsl(-720deg)` as a hue two turns
   // below the wheel rather than as red — folding here is what makes the three
@@ -366,7 +378,7 @@ function parsePercentage(value: string) {
   if (value.charCodeAt(0) === N) {
     return 0
   }
-  return Number.parseFloat(value) / 100
+  return parseNumber(value) / 100
 }
 
 /**
@@ -378,9 +390,9 @@ function parsePercentageOrValue(value: string) {
     return 0
   }
   if (value.charCodeAt(value.length - 1) === PERCENT) {
-    return Number.parseFloat(value) / 100
+    return parseNumber(value) / 100
   }
-  return Number.parseFloat(value)
+  return parseNumber(value)
 }
 
 /**
@@ -392,9 +404,9 @@ function parsePercentageFor(value: string, range: number) {
     return 0
   }
   if (value.charCodeAt(value.length - 1) === PERCENT) {
-    return (Number.parseFloat(value) / 100) * range
+    return (parseNumber(value) / 100) * range
   }
-  return Number.parseFloat(value)
+  return parseNumber(value)
 }
 
 // HSL functions

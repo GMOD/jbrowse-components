@@ -140,6 +140,29 @@ describe('colorBits helpers', () => {
       }
     })
 
+    test('a non-numeric channel reaches the sentinel', () => {
+      for (const bad of [
+        'rgb(red,green,1)',
+        'rgb(a,b,1)',
+        'rgba(1,2,3,x)',
+        'hsl(x, 50%, 50%)',
+        'hsl(120, x, 50%)',
+        'color(srgb a 0 0)',
+        'oklab(x 0 0)',
+      ]) {
+        const c = parseCssColor(bad)
+        expect([bad, getRed(c), getGreen(c), getBlue(c)]).toEqual([
+          bad,
+          255,
+          0,
+          255,
+        ])
+      }
+      expect(cssColorToRgba('rgb(none 0 255)')).toEqual(
+        cssColorToRgba('rgb(0 0 255)'),
+      )
+    })
+
     test('malformed hex reaches the sentinel too', () => {
       // parseHex used to map any character through a nibble trick, so '#zzzzzz'
       // came out a plausible dark grey and '#ff' opaque black — a wrong color
