@@ -17,8 +17,11 @@ declare global {
 type StatValue = string | number | boolean | undefined
 type AnalyticsObj = Record<string, StatValue>
 
-// MST config models expose slot getters; tracks have a 'type' slot
-type TrackConfig = AnyConfigurationModel & { type: string }
+// a frozen track entry holds what was written, so a slot at its default is absent
+interface TrackConfig {
+  type: string
+  assemblyNames?: string[]
+}
 
 interface AnalyticsRootModel {
   jbrowse: {
@@ -51,7 +54,7 @@ export async function writeAWSAnalytics(
     const url = 'https://analytics.jbrowse.org/api/v1'
 
     const multiAssemblyTracks = rootModel.jbrowse.tracks.filter(
-      track => readConfObject(track, 'assemblyNames').length > 1,
+      track => (track.assemblyNames?.length ?? 0) > 1,
     ).length
 
     // The rung createGpuHal built where a display has built one by idle time,
