@@ -245,7 +245,7 @@ exports[`every registered schema slot default 1`] = `
   },
   "adapter: MultiWiggleAdapter": {
     "baseUri": "string = """,
-    "bigWigs": "frozen = []",
+    "bigWigs": "stringArray = []",
     "samplesTsvLocation": "maybeFileLocation = undefined",
     "subadapters": "frozen = []",
   },

@@ -79,7 +79,7 @@ const MultiWiggleAdapter = ConfigurationSchema(
      * #slot
      */
     bigWigs: {
-      type: 'frozen',
+      type: 'stringArray',
       description:
         'array of BigWig URLs/paths, alternative to the subadapters slot',
       defaultValue: [],
