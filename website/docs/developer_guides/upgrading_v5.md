@@ -782,6 +782,13 @@ deliberately no snapshot migration: MST ignores properties a model no longer
 declares, so a session holding `dockviewLayout` or `panelViewAssignments` loads
 without error and every view survives — only the arrangement does not.
 
+**The workspace is always on.** The session's `useWorkspaces`,
+`effectiveUseWorkspaces`, `defaultUseWorkspaces`, `setUseWorkspacesPreference`
+and `resetUseWorkspaces`, the `configuration.preferences.useWorkspaces` slot,
+and product-core's `workspacesMenuItem` and `bakeSessionCascades` are gone.
+`setUseWorkspaces` remains and does nothing. A session saved with
+`useWorkspaces: false` opens as the stack it showed.
+
 **The LD display's `showRecombination` lane was removed.** It plotted `1 - r2`
 between adjacent SNPs and called it a recombination rate, which restated the
 triangle's own first off-diagonal on an axis of allele frequency.

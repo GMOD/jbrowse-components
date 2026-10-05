@@ -100,8 +100,8 @@ export const proteinVideos: VideoSpec[] = [
       'A gene menu to a genome view, a cross-species alignment and an AlphaFold structure tiled side by side with the workspace layout, and one hover in the genome walking a residue through both',
     goal: 'Tile a gene, its ortholog alignment and its structure, linked by hover',
     url: proteinTourFixtures.session,
-    // the tallest column once tiled, where a stack was the sum of all three
-    viewportHeight: 1100,
+    // the tallest column once tiled, plus the payoff's two-line caption under it
+    viewportHeight: 1060,
     readySelector: '::-p-text(NCBI RefSeq)',
     readyTimeout: 120000,
     steps: [
