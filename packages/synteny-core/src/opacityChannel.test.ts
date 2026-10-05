@@ -6,6 +6,7 @@ import {
   fadedColor,
   opacityFadeOf,
   opacityLevel,
+  opacityRangeAt,
 } from './opacityChannel.ts'
 
 import type { ColorFunctionInputs } from './colorFunctions.ts'
@@ -144,6 +145,12 @@ test('a range scaled alike at both ends hands the colour pass the same fade', ()
     opacityFadeOf({ field: 'identity', range: ['0.2', '1'] }),
   )
   expect(opacityFadeOf({ value: 0.3 })).toBeUndefined()
+})
+
+test('a text column with no range keeps every label at the new level', () => {
+  const setting = { field: 'kind', domain: ['a', 'b'] }
+  const ranges = { kind: { labels: ['a', 'b'], colors: {} } }
+  expect(opacityRangeAt(setting, 0.6, ranges)).toEqual(['0.6', '0.6'])
 })
 
 describe('the colour pass', () => {

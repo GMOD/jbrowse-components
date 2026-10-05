@@ -69,6 +69,34 @@ export function opacityLevel(
   return range.length > 0 ? clamp01(Math.max(...range)) : 1
 }
 
+/**
+ * #api
+ * `range` rescaled so the mapping's most opaque end lands on `value`,
+ * keeping each entry's share of it. A threshold or a text column with no
+ * range written draws every bin at the level, so it gets one `value` per bin
+ * rather than the number column's default fade.
+ */
+export function opacityRangeAt(
+  setting: SyntenyOpacitySnapshot,
+  value: number,
+  ranges?: Record<string, AttributeRange>,
+) {
+  const level = opacityLevel(setting, 1, ranges)
+  const written = rangeOf(setting, isNumericField(setting, ranges))
+  const range =
+    written.length > 0
+      ? written
+      : Array.from({ length: binCount(setting) }, () => level)
+  return range.map(n => String(level > 0 ? (n * value) / level : value))
+}
+
+function binCount(setting: SyntenyOpacitySnapshot) {
+  const domain = setting.domain ?? []
+  return setting.scale === 'threshold'
+    ? thresholdCuts(domain).length + 1
+    : Math.max(1, domain.length)
+}
+
 function isNumericField(
   setting: SyntenyOpacitySnapshot,
   ranges?: Record<string, AttributeRange>,

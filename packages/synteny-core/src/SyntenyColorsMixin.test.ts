@@ -28,6 +28,15 @@ test('the slider sets the constant, or scales a field to its top', () => {
   ])
 })
 
+test('the slider scales a threshold with no range without fading it', () => {
+  const v = view({
+    opacity: { field: 'break_FET', scale: 'threshold', domain: ['0.05'] },
+  })
+  v.setOpacity(0.8)
+  expect(v.opacityLevel).toBeCloseTo(0.8)
+  expect(v.opacitySetting.range!.map(Number)).toEqual([0.8, 0.8])
+})
+
 // a dimmed whole-genome view stays dim when its fade turns on, and the fade
 // turned off leaves it where the fade's top was
 test('the identity fade runs from the current opacity, and back', () => {

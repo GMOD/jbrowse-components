@@ -10,6 +10,7 @@ import {
   opacityFadeOf,
   opacityLevel,
   opacityMapsField,
+  opacityRangeAt,
 } from './opacityChannel.ts'
 import { syntenyOpacityConfigSchema } from './syntenyOpacityConfigSchema.ts'
 
@@ -165,13 +166,9 @@ export function SyntenyColorsMixin({
       setOpacity(value: number) {
         const setting = self.opacitySetting
         if (opacityMapsField(setting)) {
-          const level = self.opacityLevel
-          const range = (setting.range ?? []).map(Number)
           self.opacity = cast({
             ...setting,
-            range: (range.length > 0 ? range : DEFAULT_NUMERIC_OPACITY_RANGE)
-              .map(n => (level > 0 ? (n * value) / level : value))
-              .map(String),
+            range: opacityRangeAt(setting, value, self.attributeRanges),
           })
         } else {
           self.opacity = cast({ ...setting, value })
