@@ -119,8 +119,8 @@ function schemaMatches(schema: AnyConfigurationModel, query: string): boolean {
   )
 }
 
-// a slot flagged `advanced` in its schema definition, hidden behind a toggle
-function isAdvancedSlot(
+// narrower than the About dialog's Advanced card, which also takes callbacks
+function hidesBehindAdvancedToggle(
   schema: AnyConfigurationModel,
   slotName: string,
 ): boolean {
@@ -389,10 +389,10 @@ const Schema = observer(function Schema({
       !query || memberMatches(schema, slotName, slotSchema, query),
   )
   const normal = visible.filter(
-    ([slotName]) => !isAdvancedSlot(schema, slotName),
+    ([slotName]) => !hidesBehindAdvancedToggle(schema, slotName),
   )
   const advanced = visible.filter(([slotName]) =>
-    isAdvancedSlot(schema, slotName),
+    hidesBehindAdvancedToggle(schema, slotName),
   )
   const renderMember = ([slotName, slotSchema]: [string, IAnyType]) => (
     <Member

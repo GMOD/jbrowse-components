@@ -1,10 +1,14 @@
+import { isPlainObject } from '../util/objectUtils.ts'
 import { getConfigurationSchemaDefinition } from './schemaRegistry.ts'
 import { isConfigurationModel, isSlotDefinitionEntry } from './schemaTypes.ts'
 
+import type { ConfigSlotDefinition } from './configurationSlot.ts'
 import type { AnyConfigurationModel } from './types.ts'
 
-function isPlainObject(value: unknown): value is Record<string, unknown> {
-  return typeof value === 'object' && value !== null && !Array.isArray(value)
+// wider than the config editor's toggle, which reads only `advanced`: a callback
+// is editable there, and only jexl noise to a reader of the About dialog
+function foldsIntoAdvancedCard(def: ConfigSlotDefinition) {
+  return !!def.advanced || !!def.contextVariable?.length
 }
 
 /**
@@ -24,7 +28,7 @@ export function partitionAdvanced(
   for (const [key, value] of Object.entries(snapshot)) {
     const def = definition?.[key]
     if (isSlotDefinitionEntry(def)) {
-      const side = def.advanced || def.contextVariable ? advanced : rest
+      const side = foldsIntoAdvancedCard(def) ? advanced : rest
       side[key] = value
       continue
     }
