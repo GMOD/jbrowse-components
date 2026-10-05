@@ -18,6 +18,7 @@ How to drive JBrowse once it is running. New here? Start with the
 - [](/docs/user_guides/basic_usage)
 - [](/docs/user_guides/connections)
 - [](/docs/user_guides/edit_plot)
+- [](/docs/user_guides/r_export)
 - [](/docs/user_guides/highlights)
 - [](/docs/user_guides/plugin_store)
 - [](/docs/user_guides/hub_url)
