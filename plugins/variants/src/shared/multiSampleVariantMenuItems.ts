@@ -134,7 +134,7 @@ export function variantShowSubmenuItems(
   ]
 }
 
-// The display-specific track-menu items (row height, rendering mode, filtering,
+// The display-specific track-menu items (row height, rows, filtering,
 // clustering, colors/arrangement). The model's `trackMenuItems` view prepends
 // the inherited base items via super-capture.
 export function variantTrackMenuItems(
@@ -155,13 +155,13 @@ export function variantTrackMenuItems(
     // has, so fit and a typed height are the two that mean anything here.
     rowHeightMenuItem(self),
     {
-      label: 'Rendering mode',
+      label: 'Rows',
       icon: SplitscreenIcon,
       subMenu: [
         {
-          label: 'Allele count (dosage)',
+          label: 'Per sample',
           helpText:
-            'Draws the color darker the more times this allele exists, so homozygous variants are darker than heterozygous. Works on polyploid also',
+            'One row per sample. The color darkens with each copy of the allele the sample carries, so a homozygous call reads darker than a heterozygous one, at any ploidy',
           type: 'radio',
           checked: self.unit === 'sample',
           onClick: () => {
@@ -170,15 +170,15 @@ export function variantTrackMenuItems(
         },
         {
           // `hasPhasedOrHaploid`, the painter's own predicate: a pangenome
-          // callset is haploid, with no `|` anywhere, and phased mode draws it
+          // callset is haploid, with no `|` anywhere, and draws per haplotype
           ...needs(
-            'Phased',
+            'Per haplotype',
             'phased genotypes',
             self.hasPhasedOrHaploid,
             loaded,
           ),
           helpText:
-            'Phased mode splits each sample into multiple rows representing each haplotype, and the phasing of the variants is used to color the variant in the individual haplotype rows. For example, a diploid sample SAMPLE1 will generate two rows SAMPLE1 HP0 and SAMPLE1 HP1 and a variant 1|0 will draw a box in the top row but not the bottom row. A haploid sample keeps one row, labelled with its own name',
+            'One row per haplotype, which needs phased genotypes: a diploid SAMPLE1 becomes rows SAMPLE1 HP0 and SAMPLE1 HP1, and a 1|0 call draws in the first row only. A row holds one allele, so there is no dosage shading. A haploid sample keeps one row, under its own name',
           checked: self.unit === 'haplotype',
           type: 'radio',
           onClick: () => {
@@ -197,7 +197,7 @@ export function variantTrackMenuItems(
             {
               label: 'Genotype',
               helpText:
-                'Default coloring: allele dosage in allele-count mode, haplotype/allele color in phased mode',
+                'Default coloring: allele dosage with a row per sample, the allele each haplotype carries with a row per haplotype',
               type: 'radio',
               checked: self.colorEncoding === undefined,
               onClick: () => {
@@ -213,7 +213,7 @@ export function variantTrackMenuItems(
               disabled: phaseSet.disabled || self.unit !== 'haplotype',
               disabledHelpText: phaseSet.disabled
                 ? undefined
-                : 'Only applies in phased mode — switch Rendering mode to phased',
+                : 'Only applies with a row per haplotype — switch Rows to Per haplotype',
               onClick: () => {
                 self.setColorField(PHASE_SET_FIELD)
               },

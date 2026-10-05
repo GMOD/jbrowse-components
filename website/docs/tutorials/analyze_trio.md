@@ -98,16 +98,16 @@ positions.
 
 ## Splitting each sample into two haplotype rows
 
-Turn on **Rendering mode → Phased** from the track menu:
+Choose **Rows → Per haplotype** from the track menu:
 
 - each sample splits into its two haplotypes, so the three trio members become
   six rows
-- the mode needs phased genotypes, written `0|1`; unphased calls (`0/1`) need a
-  phasing program such as SHAPEIT first
+- per-haplotype rows need phased genotypes, written `0|1`; unphased calls
+  (`0/1`) need a phasing program such as SHAPEIT first
 
-<Figure caption="The phased rendering mode. Rows are the two haplotypes (HP0, HP1) of child HG02024, mother HG02025 and father HG02026, top to bottom, under the RefSeq genes, with connector lines tying each matrix column back to the position it came from." src="/img/trio-matrix-phased-clean.png"/>
+<Figure caption="One row per haplotype: the two haplotypes (HP0, HP1) of child HG02024, mother HG02025 and father HG02026, top to bottom, under the RefSeq genes, with connector lines tying each matrix column back to the position it came from." src="/img/trio-matrix-phased-clean.png"/>
 
-<Video src="/media/variants/trio_phased_matrix.mp4" caption="The multi-sample matrix display switched on, then the phased rendering mode splitting each trio member into its two haplotype rows." />
+<Video src="/media/variants/trio_phased_matrix.mp4" caption="The multi-sample matrix display switched on, then Rows → Per haplotype splitting each trio member into its two haplotype rows." />
 
 Each of the child's two haplotypes comes from one parent: along it, the matching
 parental copy is one of that parent's two copies for a stretch, then the other.

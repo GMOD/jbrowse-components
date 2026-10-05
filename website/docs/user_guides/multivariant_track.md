@@ -63,13 +63,14 @@ and
 display slots. See
 [configuring default display settings](/docs/config_guides/variant_track#configuring-default-display-settings).
 
-## Genotype coloring: allele dosage vs phased
+## Rows: per sample or per haplotype
 
-Both layouts color each genotype cell, and how they color it is set by the
+Both layouts color each genotype cell, and how they color it depends on what one
+row stands for: the
 [`unit`](/docs/config/linearmultisamplevariantdisplay/#slot-unit) display
-option, which says what one row stands for.
+option, which the track menu's **Rows** item sets.
 
-In **allele-dosage** mode (`unit: 'sample'`), one cell is drawn per sample and
+With **Rows → Per sample** (`unit: 'sample'`), one cell is drawn per sample and
 shaded by how many alternate alleles the call has:
 
 - homozygous reference (`0/0`) → light grey
@@ -81,22 +82,20 @@ runs of homozygous-alt samples stand out as the darkest blocks. The dosage
 counts every non-reference allele, so `1/2` draws as dark as `1/1`, and an
 uncalled genotype (`./.`) takes the no-call color.
 
-In **phased** mode (`unit: 'haplotype'`), each sample is split into one row per
-haplotype and every haplotype cell is colored reference vs alt on its own,
-rather than collapsed to a dosage, so inherited haplotype blocks line up as the
+With **Rows → Per haplotype** (`unit: 'haplotype'`), each sample is split into
+one row per haplotype and every haplotype cell is colored reference vs alt on
+its own, with no dosage shading, so inherited haplotype blocks line up as the
 contiguous vertical bands in the trio matrix above. A haplotype with the site's
-most frequent alt takes the same blue as a homozygous-alt cell in allele-dosage
-mode, and any other alt draws red.
+most frequent alt takes the same blue as a homozygous-alt cell in per-sample
+rows, and any other alt draws red.
 
-Phased mode draws only what the VCF phases: `|`-separated genotypes, and haploid
-calls, which have nothing to phase. A genotype written with `/` fills every
-haplotype row of its sample black, homozygous ones included, since the file does
-not assign its alleles to haplotypes. Read-backed phasers such as WhatsHap leave
-homozygous calls unphased, so on their output the black marks every call the
-phaser left alone, homozygous ones among them.
-
-You can switch modes from the track menu, or set `unit` in the display
-configuration.
+Per-haplotype rows draw only what the VCF phases: `|`-separated genotypes, and
+haploid calls, which have nothing to phase. A genotype written with `/` fills
+every haplotype row of its sample black, homozygous ones included, since the
+file does not assign its alleles to haplotypes. Read-backed phasers such as
+WhatsHap leave homozygous calls unphased, so on their output the black marks
+every call the phaser left alone, homozygous ones among them. The menu item
+stays disabled until the view holds phased or haploid genotypes.
 
 ## Coloring by consequence impact (SnpEff/VEP annotations)
 
@@ -214,8 +213,8 @@ modes, the dendrogram, and how to share a result in a session URL.
 
 <Figure caption="Clustering a multi-sample variant track. Top: the 'Cluster rows by genotype' dialog. Bottom: the rows reordered by genotype similarity, with a dendrogram on the left." src="/img/variants/cluster_dialog.png" />
 
-In phased mode, clustering treats each haplotype as a separate row, so the
-dendrogram shows haplotype-level relationships.
+With per-haplotype rows, clustering treats each haplotype as a separate row, so
+the dendrogram shows haplotype-level relationships.
 
 ## See also
 

@@ -281,7 +281,7 @@ export const trioSpecs: ScreenshotSpec[] = [
     ],
   },
 
-  // Phased matrix with the "Rendering mode" menu visible.
+  // Phased matrix with the "Rows" menu visible.
   {
     mode: 'url',
     name: 'trio-matrix-phased',
@@ -302,9 +302,9 @@ export const trioSpecs: ScreenshotSpec[] = [
     readyTimeout: 60000,
     actions: [
       { type: 'click', selector: '[data-testid="track_menu_icon"]' },
-      ...menuCascade(['Rendering mode', 'Phased']),
+      ...menuCascade(['Rows', 'Per haplotype']),
     ],
-    annotations: [{ type: 'box', anchor: { text: 'Phased' } }],
+    annotations: [{ type: 'box', anchor: { text: 'Per haplotype' } }],
   },
 
   // Phased matrix clean (no menu overlay).

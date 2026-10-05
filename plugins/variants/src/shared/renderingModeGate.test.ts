@@ -5,7 +5,7 @@ import { createTestEnvironment } from '../LinearMultiSampleVariantDisplay/testEn
 import type { CellDataResult } from '../VariantRPC/executeVariantCellData.ts'
 import type { MenuItem } from '@jbrowse/core/ui'
 
-// The rendering-mode submenu is the only door a user has into phased mode —
+// The Rows submenu is the only door a user has into per-haplotype rows —
 // `setUnit` has no other caller — so this row decides whether a callset
 // the painter renders correctly is reachable at all. The gate is the painter's
 // own predicate (`isPhasedOrHaploid`, i.e. no `/`) rather than a literal `|`,
@@ -47,17 +47,17 @@ function phasedRow(flags?: { ploidy: number; hasPhasedOrHaploid: boolean }) {
   }
   const mode = display
     .trackMenuItems()
-    .find(item => 'label' in item && item.label === 'Rendering mode')
+    .find(item => 'label' in item && item.label === 'Rows')
   const subMenu: MenuItem[] =
     mode && 'subMenu' in mode ? resolveSubMenu(mode) : []
   const row = subMenu.find(
     item =>
       'label' in item &&
       typeof item.label === 'string' &&
-      item.label.startsWith('Phased'),
+      item.label.startsWith('Per haplotype'),
   )
   if (!row) {
-    throw new Error('no "Phased" rendering-mode row')
+    throw new Error('no "Per haplotype" row')
   }
   return row as MenuItem & { label: string; disabled?: boolean }
 }
@@ -68,25 +68,25 @@ const diploidUnphased = { ploidy: 2, hasPhasedOrHaploid: false }
 // `|` in the file
 const haploid = { ploidy: 1, hasPhasedOrHaploid: true }
 
-test('offers phased mode on a phased diploid callset', () => {
+test('offers per-haplotype rows on a phased diploid callset', () => {
   const row = phasedRow(diploidPhased)
 
   expect(row.disabled).toBe(false)
-  expect(row.label).toBe('Phased')
+  expect(row.label).toBe('Per haplotype')
 })
 
-test('offers phased mode on a callset that is entirely haploid', () => {
+test('offers per-haplotype rows on a callset that is entirely haploid', () => {
   const row = phasedRow(haploid)
 
   expect(row.disabled).toBe(false)
-  expect(row.label).toBe('Phased')
+  expect(row.label).toBe('Per haplotype')
 })
 
-test('refuses phased mode when every genotype in view is unphased, and says so', () => {
+test('refuses per-haplotype rows when every genotype in view is unphased, and says so', () => {
   const row = phasedRow(diploidUnphased)
 
   expect(row.disabled).toBe(true)
-  expect(row.label).toBe('Phased (no phased genotypes in view)')
+  expect(row.label).toBe('Per haplotype (no phased genotypes in view)')
 })
 
 // Before a fetch lands the answer is unknown, not "no" — a row that blamed the
@@ -95,5 +95,5 @@ test('says it is still checking before the first fetch lands', () => {
   const row = phasedRow()
 
   expect(row.disabled).toBe(true)
-  expect(row.label).toBe('Phased (checking for phased genotypes...)')
+  expect(row.label).toBe('Per haplotype (checking for phased genotypes...)')
 })

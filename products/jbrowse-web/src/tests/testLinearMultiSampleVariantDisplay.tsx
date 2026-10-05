@@ -73,14 +73,14 @@ export async function testLinearMultiSampleVariantDisplay({
 
   if (phasedMode) {
     fireEvent.click(await findByTestId('track_menu_icon', ...opts))
-    fireEvent.click(await findByText('Rendering mode', ...opts))
+    fireEvent.click(await findByText('Rows', ...opts))
     // The row is disabled, and its label carries a "(checking for phased
     // variants...)" suffix, until the background scan reports whether the data
-    // has phased genotypes. A `/^Phased/` match took that disabled row, and a
-    // click on a disabled MUI item is a no-op, so both phased cases silently
-    // captured allele-count mode. The bare label only exists once the row is
-    // enabled, so matching it exactly waits for the scan.
-    fireEvent.click(await findByText('Phased', ...opts))
+    // has phased genotypes. A `/^Per haplotype/` match took that disabled row,
+    // and a click on a disabled MUI item is a no-op, so both phased cases
+    // silently captured per-sample rows. The bare label only exists once the
+    // row is enabled, so matching it exactly waits for the scan.
+    fireEvent.click(await findByText('Per haplotype', ...opts))
     const display: LinearMultiSampleVariantDisplayModel =
       view.tracks[0].displays[0]
     expect(display.unit).toBe('haplotype')

@@ -1,15 +1,18 @@
 // The tours over the variant tutorials, where the subject is a display the
 // track menu switches to rather than a file the reader prepares.
 import { trioVideoFixtures } from '../specs/trio.ts'
-import { leaveMenu, trackMenu } from './shared.ts'
+import { cascade, leaveMenu, trackMenu } from './shared.ts'
 
 import type { VideoSpec, VideoStep } from '../video-spec-types.ts'
 
 const { defaultDisplay, vcfTrackId, zoomOutsToMatrix } = trioVideoFixtures
 
+const ROWS = cascade('submenu', 'Rows')
+const PER_HAPLOTYPE = cascade('menuitem', 'Per haplotype')
+
 export const variantVideos: VideoSpec[] = [
   // analyze_trio.md spends three sections and four figures on one route: the
-  // display type and then the rendering mode, on one track and one window.
+  // display type and then the rows, on one track and one window.
   // What the stills cannot carry is that the six rows ARE the three, each
   // sample split into its two haplotypes in place.
   //
@@ -19,7 +22,7 @@ export const variantVideos: VideoSpec[] = [
   {
     name: 'variants/trio_phased_matrix',
     description:
-      "A trio VCF becomes six haplotype rows: the track menu's Display types, the multi-sample matrix, then Rendering mode Phased splitting each of the three samples into its two haplotypes, zoomed out to the figures' window",
+      "A trio VCF becomes six haplotype rows: the track menu's Display types, the multi-sample matrix, then Rows Per haplotype splitting each of the three samples into its two haplotypes, zoomed out to the figures' window",
     goal: 'Turn a trio VCF into six haplotype rows: child, mother, father',
     url: defaultDisplay,
     // the matrix is the tall state, which trio-matrix-phased-clean is captured
@@ -59,11 +62,11 @@ export const variantVideos: VideoSpec[] = [
         say: "Split each sample's row into its two haplotypes",
         hold: 1200,
       },
-      { type: 'waitForText', text: 'Rendering mode' },
-      { type: 'click', text: 'Rendering mode', hold: 1200 },
-      { type: 'waitForText', text: 'Phased' },
-      { type: 'click', text: 'Phased' },
-      ...leaveMenu('::-p-text(Rendering mode)'),
+      { type: 'waitForSelector', selector: ROWS },
+      { type: 'click', selector: ROWS, hold: 1200 },
+      { type: 'waitForSelector', selector: PER_HAPLOTYPE },
+      { type: 'click', selector: PER_HAPLOTYPE },
+      ...leaveMenu(ROWS),
       { type: 'waitForAppSettled', timeout: 180000, cut: true },
       { type: 'delay', ms: 3000 },
       ...Array.from({ length: zoomOutsToMatrix }, (_, i): VideoStep => ({

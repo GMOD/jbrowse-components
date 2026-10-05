@@ -1424,7 +1424,7 @@ export const trackFields: Record<string, FieldRecipe> = {
           displayType &&
           MULTI_SAMPLE_VARIANT_DISPLAYS.has(displayType)
         ? {
-            path: `${TRACK_MENU} → Rendering mode → ${value === 'haplotype' ? 'Phased' : 'Allele count (dosage)'}`,
+            path: `${TRACK_MENU} → Rows → ${value === 'haplotype' ? 'Per haplotype' : 'Per sample'}`,
             note:
               value === 'haplotype'
                 ? 'Splits each sample into one row per haplotype. The item stays disabled until phased variants are found in the file.'

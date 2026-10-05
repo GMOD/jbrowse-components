@@ -158,8 +158,8 @@ export async function assertViewsRendered(page: Page, name: string) {
 // Deliberately keyed off test-ids and TooLargeMessage's own literal rather than
 // waitForQuiescent's /^(loading|rendering|…)/ pattern: that pattern is safe for a
 // *wait* (a false match only costs a swallowed timeout) but not for an assertion
-// — the open track menu's "Rendering mode" item matches it, which failed the
-// trio-matrix specs while catching nothing real across the suite.
+// — a track menu item once labelled "Rendering mode" matched it, which failed
+// the trio-matrix specs while catching nothing real across the suite.
 export async function assertRenderSettled(
   page: Page,
   spec: BrowserScreenshotSpec,
