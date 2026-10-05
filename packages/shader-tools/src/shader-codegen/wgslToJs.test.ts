@@ -638,6 +638,17 @@ describe('every translated builtin, at inputs where a near-miss differs', () => 
       },
     },
     {
+      rule: 'asin',
+      check: () => {
+        const asin = call1('asin')
+        // An arcsine, not a sine or its degrees: the ends of the domain are
+        // the quarter turns.
+        expect(asin(1)).toBeCloseTo(Math.PI / 2, 12)
+        expect(asin(-0.5)).toBeCloseTo(-Math.PI / 6, 12)
+        expect(asin(0)).toBe(0)
+      },
+    },
+    {
       rule: 'ceil',
       check: () => {
         const ceil = call1('ceil')

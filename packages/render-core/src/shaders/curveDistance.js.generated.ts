@@ -4,13 +4,25 @@
 // Scalar twins of curveDistance.slang, transliterated from slangc's WGSL so
 // the Canvas2D and SVG paths run the shader's own math. See adr-051.
 
+function _clamp(x: number, lo: number, hi: number) {
+  return _min(_max(x, lo), hi)
+}
+
 function _max(a: number, b: number) {
   return b > a || Number.isNaN(a) ? b : a
+}
+
+function _min(a: number, b: number) {
+  return b < a || Number.isNaN(a) ? b : a
 }
 
 export function distToWideCirclePx(x: number, y: number, r: number): number {
   let rk = ((2.0 * x) + (((x * x) + (y * y)) / r))
   return Math.abs((rk / (Math.sqrt(_max((1.0 + (rk / r)), 0.0)) + 1.0)))
+}
+
+export function legSweepAngle(radiusPx: number, yReachPx: number): number {
+  return Math.asin(_clamp((yReachPx / _max(radiusPx, 9.99999997475242708e-07)), 0.0, 1.0))
 }
 
 export function wideCircleLeg(seg: number, segments: number, legSweep: number): [number, number] {

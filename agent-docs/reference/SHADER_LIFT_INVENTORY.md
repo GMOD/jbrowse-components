@@ -14,8 +14,8 @@ Read [ADR-051](../architecture-decision-records/adr-051-shader-js-codegen-is-sca
 in the export set and what deliberately does not. This file says what the
 tree currently looks like against that standard.
 
-Scanned 48 shaders with entry points. 130 functions
-are inside the emitter's subset, of which **101 are exported**.
+Scanned 48 shaders with entry points. 131 functions
+are inside the emitter's subset, of which **103 are exported**.
 
 ## Candidates
 
@@ -49,7 +49,6 @@ longer see, or one that is exported after all, fails `pnpm gen:shaders`.
 | `footRadians` | `(f32, f32, f32, f32) -> f32` | the stage's two-term scale, which chordStage.ts applies with the same two uniforms |
 | `hpSplitUint` | `(u32) -> vec2f` | the hi/lo float32 precision split exists because a GPU has no float64; the Canvas2D path just uses a number |
 | `insetValueYPx` | `(f32, f32, f32, f32, i32, f32, f32) -> f32` | its two consumers lift it under their own anchors, pointMark.slang as pointYPx and linkMark.slang as linkValuePx, and those are the spellings the painters and hit tests read; a third twin would be one nothing calls |
-| `linkIsFar` | `(f32, f32) -> bool` | reached as a private helper inside the generated linkRadiiPx, so the far decision is shared without a second way to ask it |
 | `log1pf` | `(f32) -> f32` | JS has Math.log1p, so a twin of this would be the float32 workaround spelled out where the language already answers it |
 | `nearCircleDistancePx` | `(f32, f32, f32, f32) -> f32` | a float32 remedy with no float64 caller. The hit tests' copy of this file's solve (marks/ellipseDistance.ts) holds the ellipse at every aspect, so nothing outside the shader has an approximation to want. |
 | `perpCoverage` | `(f32, f32, f32, f32, f32, f32, bool, f32) -> f32` | measures perpendicular width per fragment from each edge own foreshortening, where Canvas2D measures it once for the whole ribbon (ribbonPerpWidth). Same quantity, deliberately different estimator — only the perpW < 1 boundary is shared, and that is a comparison, not a function |
@@ -93,7 +92,6 @@ noticing in a diff.
 | //! js-export: 'chordControlPoint' reaches polarPoint(), which is outside the supported scalar subset | 1 | `chordControlPoint` |
 | //! js-export: 'rowScoreToClipY' reaches rowScoreToYPx(), which is outside the supported scalar subset | 1 | `rowScoreToClipY` |
 | //! js-export: 'turnControlPoint' reaches polarPoint(), which is outside the supported scalar subset | 1 | `turnControlPoint` |
-| call to 'asin' at line N is neither a supported builtin nor a function in this module | 1 | `legSweepAngle` |
 | type 'ColorVsOut' is outside the supported scalar subset | 1 | `discardVertex` |
 | type 'CoverageVsOut' is outside the supported scalar subset | 1 | `covDiscardVertex` |
 | type 'RowBand' is outside the supported scalar subset | 1 | `rowBandPx` |

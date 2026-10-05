@@ -25,8 +25,7 @@
 //! topology: triangle-strip
 //! coverage: analytic
 //! export-consts: LINK_SHAPE_DOME, LINK_SHAPE_ARC, LINK_SHAPE_LINE, LINK_LINE_MIN_PX, LINK_NO_REGION, LINK_ELSEWHERE, LINK_MAX_REGIONS, LINK_STEM_PX, LINK_FOOT_PX, LINK_FAR_SCREEN_WIDTHS, LINK_SIZE_CONSTANT, LINK_SIZE_SCALED, LINK_NO_SIZE, LINK_CURVE_SEGMENTS
-//! js-export: linkApexPx, linkRadiiPx, linkStrokeWidthPx, linkValuePx, linkBaseYPx, linkFootLenPx, linkFootDir
-//! js-skip: linkIsFar — reached as a private helper inside the generated linkRadiiPx, so the far decision is shared without a second way to ask it
+//! js-export: linkApexPx, linkRadiiPx, linkIsFar, linkStrokeWidthPx, linkValuePx, linkBaseYPx, linkFootLenPx, linkFootDir
 
 import antialias;
 import colorPack;
@@ -175,7 +174,9 @@ float entryPx(uint bp, float4 r, float hpZero) {
   return r.x - hpViewportOffsetBp(hpSplitUint(bp), float3(r.y, r.z, 0.0), hpZero) * r.w;
 }
 
-bool linkIsFar(float halfWidthPx, float screenWidthPx) {
+// Whether a pair is wide enough to draw as a true circle's two legs, which the
+// painter strokes as a circle and `linkRadiiPx` sizes as one.
+public bool linkIsFar(float halfWidthPx, float screenWidthPx) {
   return 2.0 * halfWidthPx > LINK_FAR_SCREEN_WIDTHS * screenWidthPx;
 }
 

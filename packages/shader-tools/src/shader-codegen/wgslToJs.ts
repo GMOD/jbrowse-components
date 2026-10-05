@@ -694,6 +694,7 @@ class Parser {
 // WGSL builtins that map 1:1 onto a `Math.*` of the same semantics.
 const MATH_BUILTINS: Record<string, string> = {
   abs: 'Math.abs',
+  asin: 'Math.asin',
   ceil: 'Math.ceil',
   exp: 'Math.exp',
   floor: 'Math.floor',

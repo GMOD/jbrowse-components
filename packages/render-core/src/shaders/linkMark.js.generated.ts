@@ -130,7 +130,7 @@ export function linkApexPx(halfWidthPx: number, reachPx: number, strokeHalfPx: n
   return _min(halfWidthPx, _max((reachPx - strokeHalfPx), 0.0))
 }
 
-function linkIsFar(halfWidthPx: number, screenWidthPx: number): boolean {
+export function linkIsFar(halfWidthPx: number, screenWidthPx: number): boolean {
   return ((2.0 * halfWidthPx) > (3.0 * screenWidthPx))
 }
 

@@ -1,10 +1,12 @@
 import { getDpr } from '../canvas2dUtils.ts'
 import { SCALE_TYPE_LOG } from '../scoreScale.ts'
-import { distToWideCirclePx } from '../shaders/curveDistance.js.generated.ts'
+import {
+  distToWideCirclePx,
+  legSweepAngle,
+} from '../shaders/curveDistance.js.generated.ts'
 import {
   LINK_CURVE_SEGMENTS,
   LINK_ELSEWHERE,
-  LINK_FAR_SCREEN_WIDTHS,
   LINK_FOOT_PX,
   LINK_MAX_REGIONS,
   LINK_NO_REGION,
@@ -23,6 +25,7 @@ import {
   linkBaseYPx,
   linkFootDir,
   linkFootLenPx,
+  linkIsFar,
   linkRadiiPx,
   linkStrokeWidthPx,
   linkValuePx,
@@ -406,11 +409,9 @@ function placeCurve(c: LinkChannels, g: LinkFrame, i: number) {
   const [rx, ry] = linkRadiiPx(pairHalf, apex, g.screenW)
   g.rx = rx
   g.ry = ry
-  if (2 * pairHalf > LINK_FAR_SCREEN_WIDTHS * g.screenW) {
+  if (linkIsFar(pairHalf, g.screenW)) {
     g.kind = KIND_CIRCLE
-    g.legSweep = Math.asin(
-      Math.min(1, Math.max(0, (g.reach + g.strokePx / 2) / Math.max(rx, 1e-6))),
-    )
+    g.legSweep = legSweepAngle(rx, g.reach + g.strokePx / 2)
     g.legHeight = rx * Math.sin(g.legSweep)
   } else {
     g.kind = KIND_ELLIPSE
