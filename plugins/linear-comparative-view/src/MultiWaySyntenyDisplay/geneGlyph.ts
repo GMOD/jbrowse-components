@@ -66,7 +66,10 @@ export function annotatedSpans(annotated: Span[]) {
   }
 }
 
-function subtractIntervals(base: [number, number][], cut: [number, number][]) {
+function subtractIntervals(
+  base: readonly (readonly [number, number])[],
+  cut: readonly (readonly [number, number])[],
+) {
   const out: [number, number][] = []
   for (const [start, end] of base) {
     let cursor = start
@@ -161,24 +164,6 @@ export function geneGlyphGeometry(
   const fullPx = toPx(full)
   const thinPx = toPx(thin)
   const pieces = toPx([[feature.get('start'), feature.get('end')]])
-  const inked = mergeSpans(
-    [...fullPx, ...thinPx].map(([a, b]): GlyphSpan => [a, b]),
-  )
-  const introns: Span[] = []
-  for (const [lo, hi] of pieces) {
-    let cursor = lo
-    for (const [start, end] of inked) {
-      if (start >= hi) {
-        break
-      }
-      if (start > cursor) {
-        introns.push([cursor, start])
-      }
-      cursor = Math.max(cursor, end)
-    }
-    if (cursor < hi) {
-      introns.push([cursor, hi])
-    }
-  }
+  const introns = subtractIntervals(pieces, mergeSpans([...fullPx, ...thinPx]))
   return { left, right, pxDir, pieces, full: fullPx, thin: thinPx, introns }
 }

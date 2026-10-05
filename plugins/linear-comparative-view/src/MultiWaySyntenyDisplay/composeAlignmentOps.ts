@@ -8,6 +8,8 @@ import {
   CIGAR_X,
 } from '@jbrowse/cigar-utils'
 
+import { getMate } from '../syntenyMate.ts'
+
 import type { LanePlacementRecord } from './composeLaneLinks.ts'
 
 interface Cursor {
@@ -39,9 +41,7 @@ function consumesAnchor(op: number) {
 
 /** Walks from the feature's own coordinates, not the placement's. */
 function cursorAt(record: LanePlacementRecord, ops: Uint32Array) {
-  const mate = record.feature.get('mate') as
-    | { start: number; end: number }
-    | undefined
+  const mate = getMate(record.feature)
   if (!mate) {
     return undefined
   }

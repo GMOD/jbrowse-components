@@ -8,7 +8,9 @@ export type Span = [start: number, end: number]
  * halves of one exon abut exactly and are one exonic piece. Sorts a copy,
  * because both callers go on to use their list in its original order.
  */
-export function mergeSpans(spans: readonly Span[]): Span[] {
+export function mergeSpans(
+  spans: readonly (readonly [number, number])[],
+): Span[] {
   const merged: Span[] = []
   for (const [start, end] of [...spans].sort((a, b) => a[0] - b[0])) {
     const last = merged.at(-1)

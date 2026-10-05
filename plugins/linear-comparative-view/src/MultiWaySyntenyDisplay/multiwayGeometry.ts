@@ -29,7 +29,7 @@ import {
   KIND_BASE_TILE,
   KIND_MARKER,
 } from '../LinearSyntenyRPC/syntenyKinds.ts'
-import { isNamedRecord } from '../syntenyMate.ts'
+import { getMate, isNamedRecord } from '../syntenyMate.ts'
 import { lanePairKey } from './alignmentOps.ts'
 import { annotatedSpans, geneGlyphGeometry } from './geneGlyph.ts'
 import { STRAND_GAP_PX } from './laneStack.ts'
@@ -577,10 +577,9 @@ export function buildRibbonGeometry({
         ? laneLinks?.get(lanePairKey(upper.assemblyName, lower.assemblyName))
         : undefined
     for (const link of pairLinks?.links ?? []) {
-      const mate = link.get('mate') as {
-        refName: string
-        start: number
-        end: number
+      const mate = getMate(link)
+      if (!mate) {
+        continue
       }
       const s1 = upper.spanOf(
         link.get('refName'),
