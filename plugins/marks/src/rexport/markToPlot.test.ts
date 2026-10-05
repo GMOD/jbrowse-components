@@ -196,8 +196,8 @@ describe('a channel scale becomes a ggplot scale', () => {
     })
     // keyed by its text, so strand's numbers reach a discrete scale
     expect(r).toContain('fill = as.character(strand)')
-    expect(r).toContain(
-      'scale_fill_manual(values = c("1" = "blue", "-1" = "red"), name = "strand")',
+    expect(r).toMatch(
+      /scale_fill_manual\(values = category_values\(df\$strand, c\([^)]*\), c\("1" = "blue", "-1" = "red"\)\), name = "strand"\)/,
     )
   })
 
@@ -222,12 +222,12 @@ describe('a channel scale becomes a ggplot scale', () => {
     )
   })
 
-  it('walks the palette in the data\u2019s order for an unlisted domain', () => {
+  it('hashes each value into the palette for an unlisted domain, as the browser does', () => {
     const { r } = render({
       marks: [{ mark: 'bar', encoding: { y: 'score', color: 'seqnames' } }],
     })
     expect(r).toContain(
-      `discrete_scale("fill", palette = function(n) rep_len(c("${categoricalPalette[0]}", `,
+      `scale_fill_manual(values = category_values(df$seqnames, c("${categoricalPalette[0]}", `,
     )
   })
 
@@ -236,7 +236,7 @@ describe('a channel scale becomes a ggplot scale', () => {
       marks: [{ mark: 'bar', encoding: { y: 'score', color: 'strand' } }],
     })
     expect(r).toContain(
-      'values = c("1" = "tomato", "-1" = "cornflowerblue", "0" = "goldenrod")',
+      'c("1" = "tomato", "-1" = "cornflowerblue", "0" = "goldenrod")',
     )
     expect(r).toContain(
       'labels = c("Forward strand", "Reverse strand", "No strand")',
@@ -541,12 +541,12 @@ describe('a mark reads the grammar’s own vocabulary', () => {
       gff,
     )
     expect(r).toContain('shape = as.character(type)')
-    expect(r).toContain(
-      'scale_shape_manual(values = c(snv = 16, del = 25), name = "type")',
+    expect(r).toMatch(
+      /scale_shape_manual\(values = category_values\(df\$type, c\([\d, ]+\), c\(snv = 16, del = 25\)\), name = "type"\)/,
     )
   })
 
-  it('cycles the shape list over a domain the config leaves unlisted', () => {
+  it('hashes values into the shape list for a domain the config leaves unlisted', () => {
     const { r } = render(
       {
         marks: [
@@ -557,7 +557,7 @@ describe('a mark reads the grammar’s own vocabulary', () => {
       gff,
     )
     expect(r).toContain(
-      'discrete_scale("shape", palette = function(n) rep_len(c(16, 25, 18), n), name = "type")',
+      'scale_shape_manual(values = category_values(df$type, c(16, 25, 18)), name = "type")',
     )
   })
 
@@ -661,7 +661,9 @@ describe('the facet runs its own steps over each section', () => {
       undefined,
       gff,
     )
-    expect(r).toContain('factor(strand, levels = c("-1", "1"))')
+    expect(r).toContain(
+      'factor(strand, levels = c("-1", "1", sort(setdiff(unique(strand), c("-1", "1")))))',
+    )
   })
 
   it('refuses a facet on a field no stage produces', () => {

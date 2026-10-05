@@ -263,15 +263,16 @@ function categoricalColour(color: ColorSpec, field: string): Scale {
   const domain = color.domain ?? []
   if (!domain.length) {
     return {
-      kind: 'cycle',
-      values: color.range?.length ? color.range : categoricalPalette,
+      kind: 'hashed',
+      palette: color.range?.length ? color.range : categoricalPalette,
       name: color.title ?? field,
     }
   }
   const colourOf = categoricalColorScale(domain, color.range)
   return {
-    kind: 'manual',
-    values: domain.map(v => [v, colourOf(v)] as const),
+    kind: 'hashed',
+    palette: categoricalPalette,
+    listed: domain.map(v => [v, colourOf(v)] as const),
     labels: color.labels?.length ? color.labels : undefined,
     name: color.title ?? field,
   }
@@ -489,8 +490,8 @@ function shapeOf(
       field: categories(field),
       reads: field,
       scale: {
-        kind: 'cycle',
-        values: (range.length ? range : SHAPE_NAMES).map(pch),
+        kind: 'hashed',
+        palette: (range.length ? range : SHAPE_NAMES).map(pch),
         name: field,
       },
     }
@@ -502,8 +503,9 @@ function shapeOf(
     field: categories(field),
     reads: field,
     scale: {
-      kind: 'manual',
-      values: domain.map(v => [v, String(pch(shapeOfValue(v)))] as const),
+      kind: 'hashed',
+      palette: SHAPE_NAMES.map(pch),
+      listed: domain.map(v => [v, pch(shapeOfValue(v))] as const),
       name: field,
     },
   }
@@ -648,8 +650,12 @@ export function markLayer(
     m.mark === 'text' ? undefined : DEFAULT_MARK_COLOR,
   )
   const scales: Partial<Record<Aesthetic, Scale>> = {}
+  const over = (scale: Scale | undefined, reads: string | undefined) =>
+    scale?.kind === 'hashed' && reads
+      ? { ...scale, of: `${drawn.name}$${rIdent(reads)}` }
+      : scale
   if (colour.scale) {
-    scales[colourAes] = colour.scale
+    scales[colourAes] = over(colour.scale, colour.reads)
   }
   if (m.source === 'density') {
     notes.push(`${m.mark}: drawn from the density sidecar, not the features`)
@@ -663,7 +669,7 @@ export function markLayer(
   const takes = MARK_SPECS[m.mark].channels as readonly string[]
   const shape = takes.includes('shape') ? shapeOf(encoding.shape, notes) : {}
   if (shape.scale) {
-    scales.shape = shape.scale
+    scales.shape = over(shape.scale, shape.reads)
   }
   const size = sizeOf(m, notes)
   if (size.scale) {

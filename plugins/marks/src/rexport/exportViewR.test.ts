@@ -2,7 +2,13 @@ import { copyFileSync, mkdtempSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import path from 'node:path'
 
+import {
+  categoricalPalette,
+  categoricalValueColor,
+} from '@jbrowse/core/ui/colors'
+
 import { exportTracksToR } from './exportView.ts'
+import { HELPERS } from './rHelpers.generated.ts'
 import {
   REGIONS,
   VOLVOX,
@@ -123,6 +129,68 @@ const wigglePlain = register(
   layerColours('fill'),
 )
 
+function oracleStrings() {
+  let seed = 12345
+  const next = () => {
+    seed = (seed * 1103515245 + 12345) % 2147483648
+    return seed
+  }
+  const alphabet = 'abcXYZ019._-:/ \u00E9\u4E2D'
+  const out = new Set<string>(['', '0', '1', '7', '10', '2.5', '-3', '1e3'])
+  while (out.size < 200) {
+    const n = 1 + (next() % 12)
+    let word = ''
+    for (let i = 0; i < n; i++) {
+      word += alphabet[next() % alphabet.length]
+    }
+    out.add(word)
+  }
+  return [...out]
+}
+
+const strings = oracleStrings().filter(v => v !== '')
+const colourOracle = register(
+  'colour_oracle',
+  `${HELPERS.category_values}
+vals <- c(${strings.map(v => JSON.stringify(v)).join(', ')})
+pal <- c(${categoricalPalette.map(c => JSON.stringify(c)).join(', ')})
+expected <- c(${strings.map(v => JSON.stringify(categoricalValueColor(v))).join(', ')})
+`,
+  'sum(unname(category_values(vals, pal)[vals]) != expected)',
+)
+
+const barsColours = register(
+  'bars_colours',
+  scriptFor(
+    [
+      track(
+        marks,
+        'marks_bars',
+        'LinearMarkDisplay',
+        markDisplay('marks_bars'),
+      ),
+    ],
+    [{ refName: 'ctgA', start: 0, end: 50000 }],
+  ),
+  'setNames(ggplot_build(p_marks_bars)$data[[1]]$fill, df_marks_bars$name)[c("EDEN.1", "EDEN.3")]',
+)
+
+const pointsShapes = register(
+  'points_shapes',
+  scriptFor(
+    [
+      track(
+        marks,
+        'marks_points',
+        'LinearMarkDisplay',
+        markDisplay('marks_points'),
+      ),
+    ],
+    [{ refName: 'ctgA', start: 0, end: 50000 }],
+  ),
+  'table(ggplot_build(p_marks_points)$data[[1]]$shape, useNA = "ifany")',
+)
+
 maybe('the emitted script, run under R', () => {
   beforeAll(() => {
     for (const [k, v] of runCases(cases)) {
@@ -144,6 +212,17 @@ maybe('the emitted script, run under R', () => {
 
   it('reads a BigWig whose URL hides its extension', () => {
     expect(results.get(presigned)).toBe('[1] TRUE')
+  })
+
+  it('colours categories by the browser\u2019s hash, value for value', () => {
+    expect(results.get(colourOracle)).toBe('[1] 0')
+    expect(results.get(barsColours)?.replaceAll(/\s+/g, ' ')).toBe(
+      `EDEN.1 EDEN.3 "${categoricalValueColor('EDEN.1')}" "${categoricalValueColor('EDEN.3')}"`,
+    )
+  })
+
+  it('draws a value its shape domain leaves unlisted', () => {
+    expect(results.get(pointsShapes)).not.toContain('<NA>')
   })
 
   it('draws the default wiggle display as bars in the pos/neg pair', () => {

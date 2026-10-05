@@ -376,8 +376,10 @@ maybe('the emitted script runs', () => {
     uri: VCF,
     regions: [{ refName: 'ctgA', start: 0, end: 50000 }],
   })
-  it('cycles the shape list over a domain the config leaves unlisted', () => {
-    expect(shapes.source).toContain('discrete_scale("shape"')
+  it('hashes values into the shape list for a domain the config leaves unlisted', () => {
+    expect(shapes.source).toContain(
+      'scale_shape_manual(values = category_values(',
+    )
     ran(shapes.name)
     expect(existsSync(shapes.png)).toBe(true)
   })

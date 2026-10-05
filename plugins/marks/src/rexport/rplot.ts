@@ -123,8 +123,19 @@ export type Scale =
       labels?: readonly string[]
       name?: string
     }
-  /** A palette walked in the data's own order, for a domain the config leaves unlisted. */
-  | { kind: 'cycle'; values: readonly (string | number)[]; name?: string }
+  /**
+   * A palette entry per value by the browser's hash rule, over the values the
+   * `of` expression holds, with the `listed` values keeping their entry.
+   */
+  | {
+      kind: 'hashed'
+      palette: readonly (string | number)[]
+      listed?: readonly (readonly [string, string | number])[]
+      labels?: readonly string[]
+      /** The R expression for the values being coloured, bound by the layer that draws them. */
+      of?: string
+      name?: string
+    }
   | { kind: 'linewidth'; range: [number, number]; name?: string }
   | { kind: 'linewidthLog'; range: [number, number]; name?: string }
   | {
@@ -220,12 +231,25 @@ function renderScale(aesthetic: Aesthetic, s: Scale) {
   if (s.kind === 'reverse') {
     return `scale_${aesthetic}_reverse()`
   }
-  if (s.kind === 'cycle') {
-    const values = s.values.map(v =>
-      typeof v === 'number' ? String(v) : rStr(rColour(v)),
-    )
-    const named = s.name ? `, name = ${rStr(s.name)}` : ''
-    return `discrete_scale(${rStr(aesthetic)}, palette = function(n) rep_len(c(${values.join(', ')}), n)${named})`
+  if (s.kind === 'hashed') {
+    const entry = (v: string | number) =>
+      typeof v === 'number' ? String(v) : rStr(rColour(v))
+    const listed = s.listed?.length
+      ? `, c(${s.listed.map(([k, v]) => `${rName(k)} = ${entry(v)}`).join(', ')})`
+      : ''
+    const labels =
+      s.listed?.length && s.labels?.length
+        ? [
+            `breaks = c(${s.listed.map(([k]) => rStr(k)).join(', ')})`,
+            `labels = c(${s.listed.map(([k], i) => rStr(s.labels![i] ?? k)).join(', ')})`,
+          ]
+        : []
+    const args = [
+      `values = category_values(${s.of}, c(${s.palette.map(entry).join(', ')})${listed})`,
+      ...labels,
+      ...(s.name ? [`name = ${rStr(s.name)}`] : []),
+    ]
+    return `scale_${aesthetic}_manual(${args.join(', ')})`
   }
   const name = s.name ? `name = ${rStr(s.name)}` : ''
   if (s.kind === 'linewidth' || s.kind === 'linewidthLog') {
@@ -278,7 +302,7 @@ function renderScale(aesthetic: Aesthetic, s: Scale) {
 
 function renderFacet({ field, levels }: NonNullable<Plot['facetBy']>) {
   const by = levels?.length
-    ? `factor(${rIdent(field)}, levels = c(${levels.map(l => rStr(l)).join(', ')}))`
+    ? `factor(${rIdent(field)}, levels = c(${levels.map(l => rStr(l)).join(', ')}, sort(setdiff(unique(${rIdent(field)}), c(${levels.map(l => rStr(l)).join(', ')})))))`
     : rIdent(field)
   return `facet_wrap(~${by}, ncol = 1, strip.position = "right")`
 }
