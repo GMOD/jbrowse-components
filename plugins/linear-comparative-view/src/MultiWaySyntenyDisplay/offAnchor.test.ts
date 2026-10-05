@@ -8,12 +8,12 @@ const record = (
   mate: { start: number; end: number },
   strand = 1,
   assemblyName = 'HG1#1',
+  anchor = { start: 1000, end: 2000 },
 ) =>
   new SimpleFeature({
     uniqueId: id,
     refName: 'chr1',
-    start: 1000,
-    end: 2000,
+    ...anchor,
     strand,
     mate: { assemblyName, refName: 'h1', ...mate },
   })
@@ -38,11 +38,45 @@ test('a deletion opens nothing on the lane', () => {
   expect(offAnchorIntervals([f], ops).get('HG1#1')).toBeUndefined()
 })
 
-test('the stretch between two records of one lane contig is off the anchor', () => {
-  const left = record('l', { start: 0, end: 500 })
-  const right = record('r', { start: 54_500, end: 55_000 })
+test('the lane between two records that the anchor runs straight across is off the anchor', () => {
+  const left = record('l', { start: 0, end: 500 }, 1, 'HG1#1', {
+    start: 1000,
+    end: 1500,
+  })
+  const right = record('r', { start: 54_500, end: 55_000 }, 1, 'HG1#1', {
+    start: 1500,
+    end: 2000,
+  })
   expect(offAnchorIntervals([left, right], new Map()).get('HG1#1')).toEqual([
     { refName: 'h1', start: 500, end: 54_500 },
+  ])
+})
+
+test('a lane gap the anchor spans alike, as between two displayed regions, is not', () => {
+  const left = record('l', { start: 0, end: 10_000 }, 1, 'HG1#1', {
+    start: 0,
+    end: 10_000,
+  })
+  const right = record('r', { start: 40_000, end: 50_000 }, 1, 'HG1#1', {
+    start: 40_000,
+    end: 50_000,
+  })
+  expect(
+    offAnchorIntervals([left, right], new Map()).get('HG1#1'),
+  ).toBeUndefined()
+})
+
+test('only the lane gap past the anchor gap is off the anchor', () => {
+  const left = record('l', { start: 0, end: 1000 }, 1, 'HG1#1', {
+    start: 0,
+    end: 1000,
+  })
+  const right = record('r', { start: 4000, end: 5000 }, 1, 'HG1#1', {
+    start: 3000,
+    end: 4000,
+  })
+  expect(offAnchorIntervals([left, right], new Map()).get('HG1#1')).toEqual([
+    { refName: 'h1', start: 2000, end: 3000 },
   ])
 })
 

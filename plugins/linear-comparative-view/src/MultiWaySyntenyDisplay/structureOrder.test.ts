@@ -83,6 +83,23 @@ test('an insertion that split its record weighs what one inside a record does', 
   expect([...split]).toEqual([...whole])
 })
 
+test('a lane gap the anchor spans alike carries nothing the anchor lacks', () => {
+  const piece = (id: string, start: number, end: number) =>
+    new SimpleFeature({
+      uniqueId: id,
+      refName: 'chr1',
+      start,
+      end,
+      strand: 1,
+      mate: { assemblyName: 'apart', refName: 'c', start, end },
+    })
+  const apart = laneProfiles(
+    [piece('l', 0, 10_000), piece('r', 40_000, 50_000)],
+    new Map(),
+  ).get('apart')!
+  expect(Math.max(...apart.slice(apart.length / 2))).toBe(0)
+})
+
 test('a profile reads a deletion as uncovered bins and an insertion as carried sequence', () => {
   const profiles = stack([
     ['del', 'deletion'],

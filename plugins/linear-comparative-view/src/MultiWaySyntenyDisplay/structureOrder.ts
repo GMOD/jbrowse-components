@@ -9,6 +9,7 @@ import {
 } from '@jbrowse/cigar-utils'
 
 import { getMate } from '../syntenyMate.ts'
+import { forEachLaneGap } from './laneGaps.ts'
 
 import type { AlignmentOpsById } from './alignmentOps.ts'
 import type { Feature } from '@jbrowse/core/util'
@@ -101,7 +102,6 @@ export function laneProfiles(
       }
     }
   }
-  // an insertion long enough to split its record is the lane between pieces
   const pieces = Map.groupBy(features, f => {
     const mate = getMate(f)
     return `${mate?.assemblyName}\t${mate?.refName}`
@@ -110,19 +110,33 @@ export function laneProfiles(
     const lane = getMate(group[0]!)?.assemblyName
     const profile = lane === undefined ? undefined : profiles.get(lane)
     if (profile) {
-      const sorted = group.toSorted(
-        (a, b) => getMate(a)!.start - getMate(b)!.start,
-      )
-      for (let i = 1; i < sorted.length; i++) {
-        const prev = sorted[i - 1]!
-        const gap = getMate(sorted[i]!)!.start - getMate(prev)!.end
-        if (gap > 0) {
-          const at: number =
-            prev.get('strand') === -1 ? prev.get('start') : prev.get('end')
-          profile[BINS + axis.binOf(prev.get('refName'), at)]! +=
-            gap / axis.binBp
+      const sorted = group
+        .map(f => {
+          const mate = getMate(f)!
+          return {
+            lane: {
+              start: mate.start,
+              end: mate.end,
+              orientation: f.get('strand') === -1 ? -1 : 1,
+            },
+            anchor: {
+              refName: f.get('refName'),
+              start: f.get('start'),
+              end: f.get('end'),
+            },
+          }
+        })
+        .sort((a, b) => a.lane.start - b.lane.start)
+      forEachLaneGap(sorted, (left, _right, laneGap, anchorGap) => {
+        const excess =
+          anchorGap === undefined ? 0 : laneGap - Math.max(0, anchorGap)
+        if (excess > 0) {
+          const at =
+            left.lane.orientation < 0 ? left.anchor.start : left.anchor.end
+          profile[BINS + axis.binOf(left.anchor.refName, at)]! +=
+            excess / axis.binBp
         }
-      }
+      })
     }
   }
   for (const profile of profiles.values()) {
