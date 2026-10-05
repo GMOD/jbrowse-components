@@ -768,6 +768,7 @@
       "package": "@jbrowse/core",
       "names": [
         "default",
+        "hasAttributeRows",
         "withoutLocations"
       ],
       "worker": "stub",

@@ -232,7 +232,7 @@ const libs: Record<string, unknown> = {
   '@jbrowse/core/assemblyManager/assemblyConfigSchema': { ...m2, __esModule: true },
   '@jbrowse/core/BaseFeatureWidget': m3,
   '@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail': uiNamespace(['BaseAttributes', 'BaseCard', 'BaseCoreDetails', 'FeatureDetails', 'FeatureDetailsFrame', 'FeatureWash', 'default', 'filterByValueItems', 'jexlFilterDisplay'], true),
-  '@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail/Attributes': uiNamespace(['default', 'withoutLocations'], true),
+  '@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail/Attributes': uiNamespace(['default', 'hasAttributeRows', 'withoutLocations'], true),
   '@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail/BaseCard': uiStub,
   '@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail/FeatureDetails': uiStub,
   '@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail/Formatter': uiStub,
