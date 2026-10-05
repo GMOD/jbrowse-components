@@ -1,11 +1,6 @@
 import { Fragment } from 'react'
 
-import {
-  CONNECTION_LABELS,
-  connectionEndpoints,
-  pairDirectionOfNum,
-  pairFieldEntry,
-} from '@jbrowse/alignments-core'
+import { CONNECTION_LABELS, classifyConnection } from '@jbrowse/alignments-core'
 import { usePalette } from '@jbrowse/core/ui/PaletteContext'
 import {
   assembleLocString,
@@ -17,14 +12,22 @@ import { observer } from 'mobx-react'
 
 import { readIdOf } from '../readChains.ts'
 import BreakpointTooltip from './BreakpointTooltip.tsx'
-import { connectionKind, connectionLabel } from './connectionStyle.ts'
 import { computeOverlayRect } from './overlayGeometry.ts'
 
 import type { BreakpointViewModel } from '../model.ts'
 import type { ReadChain, ReadEntry } from '../readChains.ts'
-import type { LayoutRecord, OverlayLevel, OverlayMatch } from '../types.ts'
+import type {
+  ConnectorRow,
+  LayoutRecord,
+  OverlayLevel,
+  OverlayMatch,
+} from '../types.ts'
 import type { OverlayTrack } from '../util.ts'
-import type { ConnectionKind, ReadConnection } from '@jbrowse/alignments-core'
+import type {
+  ClassifiedConnection,
+  ConnectionKind,
+  ReadConnection,
+} from '@jbrowse/alignments-core'
 import type { Assembly } from '@jbrowse/core/assemblyManager/assembly'
 import type { Feature } from '@jbrowse/core/util'
 import type { ViewLayout } from '@jbrowse/core/util/Base1DUtils'
@@ -296,61 +299,48 @@ export function isLevelPairMinimized(
   return !!(tracks[level1]?.minimized || tracks[level2]?.minimized)
 }
 
-export interface DrawnConnection {
+export interface DrawnConnection extends ClassifiedConnection {
   connection: ReadConnection<ReadEntry>
   /** the read chain it belongs to, so a hover can emphasize the whole route */
   chainIndex: number
   c1: LayoutRecord
   c2: LayoutRecord
-  kind: ConnectionKind
 }
 
-// The alignment connectors the overlay draws, each with its kind: a read laid
-// out in no row draws nothing, the pileup links an intra-view junction itself,
-// and showIntraviewLinks off drops the rest of them.
+// The alignment connectors the overlay draws, each classified: a read laid out
+// in no row draws nothing, the pileup links an intra-view junction itself, and
+// showIntraviewLinks off drops the rest of them.
 export function* drawnConnections({
   chains,
   entryLayouts,
-  tracks,
-  levels,
+  rows,
   showIntraviewLinks,
 }: {
   chains: ReadChain[]
   entryLayouts: ReadonlyMap<ReadEntry, LayoutRecord>
-  tracks: MinimizableTrack[]
-  levels: Pick<OverlayLevel, 'linksReads'>[]
+  rows: ConnectorRow[]
   showIntraviewLinks: boolean
 }): Generator<DrawnConnection> {
   for (const [chainIndex, { connections }] of chains.entries()) {
     for (const connection of connections) {
-      const { e1, e2, isSplit } = connection
+      const { e1, e2 } = connection
       const c1 = entryLayouts.get(e1)
       const c2 = entryLayouts.get(e2)
       if (
         !c1 ||
         !c2 ||
-        isLevelPairMinimized(tracks, e1.level, e2.level) ||
+        isLevelPairMinimized(rows, e1.level, e2.level) ||
         (e1.level === e2.level &&
-          (!showIntraviewLinks || levels[e1.level]?.linksReads))
+          (!showIntraviewLinks || rows[e1.level]?.linksReads))
       ) {
         continue
       }
-      const { s1, s2 } = connectionEndpoints(connection)
-      const src = pairFieldEntry(e1, e2)
       yield {
+        ...classifyConnection(connection),
         connection,
         chainIndex,
         c1,
         c2,
-        kind: connectionKind({
-          isSplit,
-          interchrom: e1.refName !== e2.refName,
-          pairDirection: pairDirectionOfNum(
-            src.data.readPairOrientations[src.readIdx]!,
-          ),
-          s1,
-          s2,
-        }),
       }
     }
   }
@@ -358,36 +348,33 @@ export function* drawnConnections({
 
 const KIND_ORDER = Object.keys(CONNECTION_LABELS) as ConnectionKind[]
 
-// What the overlay's alignment connectors draw, one entry per label, in
-// CONNECTION_LABELS order.
+// The kinds the overlay's alignment connectors draw, in CONNECTION_LABELS
+// order.
 export function connectionKeyEntries(
   model: BreakpointViewModel,
   trackIds = model.overlayTracks.map(t => t.configuration.trackId),
 ) {
   const { overlayMatches, showIntraviewLinks } = model
-  const entries = new Map<string, { kind: ConnectionKind; isSplit: boolean }>()
+  const kinds = new Set<ConnectionKind>()
   for (const trackId of trackIds) {
     const match = overlayMatches.get(trackId)
-    const tracks = model.getMatchedTracks(trackId)
     if (
       match?.kind !== 'alignment' ||
-      tracks.some(t => t.displays[0]?.regionTooLarge)
+      model.getMatchedTracks(trackId).some(t => t.displays[0]?.regionTooLarge)
     ) {
       continue
     }
-    for (const { kind, connection } of drawnConnections({
+    for (const { kind } of drawnConnections({
       chains: match.chains,
       entryLayouts: match.layouts,
-      tracks,
-      levels: model.overlayLinksReads(trackId),
+      rows: model.connectorRows(trackId),
       showIntraviewLinks,
     })) {
-      const { isSplit } = connection
-      entries.set(connectionLabel(kind, isSplit), { kind, isSplit })
+      kinds.add(kind)
     }
   }
-  return [...entries.values()].sort(
-    (a, b) => KIND_ORDER.indexOf(a.kind) - KIND_ORDER.indexOf(b.kind),
+  return [...kinds].sort(
+    (a, b) => KIND_ORDER.indexOf(a) - KIND_ORDER.indexOf(b),
   )
 }
 
@@ -413,20 +400,20 @@ export interface HighlightRect {
 export function chainHighlightRects({
   entries,
   entryLayouts,
-  tracks,
+  rows,
   levels,
   layouts,
 }: {
   entries: ReadEntry[]
   entryLayouts: ReadonlyMap<ReadEntry, LayoutRecord>
-  tracks: MinimizableTrack[]
+  rows: MinimizableTrack[]
   levels: OverlayLevel[]
   layouts: ViewLayout[]
 }) {
   const rects: HighlightRect[] = []
   for (const e of entries) {
     const layout = entryLayouts.get(e)
-    if (layout && !tracks[e.level]?.minimized) {
+    if (layout && !rows[e.level]?.minimized) {
       const rect = computeOverlayRect({
         level: levels[e.level]!,
         layout,
@@ -434,7 +421,12 @@ export function chainHighlightRects({
         viewLayout: layouts[e.level]!,
       })
       if (rect) {
-        rects.push({ key: `${e.level}-${readIdOf(e)}`, ...rect })
+        // One record fetched by two overlapping windows of a panel is in the
+        // chain once per window, so the window is part of the key.
+        rects.push({
+          key: `${e.level}-${e.displayedRegionIndex}-${readIdOf(e)}`,
+          ...rect,
+        })
       }
     }
   }

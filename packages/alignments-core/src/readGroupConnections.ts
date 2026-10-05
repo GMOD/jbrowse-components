@@ -10,7 +10,9 @@ import {
 } from '@jbrowse/cigar-utils'
 
 import { formatLocationRange } from './locStrings.ts'
+import { pairDirectionOfNum, splitJunctionKind } from './orientation.ts'
 
+import type { ConnectionKind } from './connectionLabels.ts'
 import type { ReadKey, ReadKeys } from './readIdentity.ts'
 
 /**
@@ -317,6 +319,57 @@ export function primaryOf<E extends MinEntry>(segs: E[]) {
 // to disagree in the first place.
 export function pairFieldEntry<E extends MinEntry>(e1: E, e2: E) {
   return isSupplementary(e1) && !isSupplementary(e2) ? e2 : e1
+}
+
+export interface ClassifiedConnection extends ConnectionEndpoints {
+  kind: ConnectionKind
+}
+
+/**
+ * What a connection is, in the one vocabulary the pileup's connectors and the
+ * breakpoint split view share. A split junction is classified from its two
+ * segments' strands on any pair of chromosomes: the read crossed that
+ * junction, and the strand relation is the breakend's orientation class. A
+ * mate link is inter-chromosomal ahead of any orientation, since orientation
+ * and insert size describe a fragment on one chromosome; otherwise it is the
+ * fragment's pair direction, read off a primary (`pairFieldEntry`).
+ */
+export function classifyConnection<E extends MinEntry>(
+  c: ReadConnection<E>,
+): ClassifiedConnection {
+  const ends = connectionEndpoints(c)
+  if (c.isSplit) {
+    const kind = splitJunctionKind(ends.s1, ends.s2)
+    return {
+      ...ends,
+      kind:
+        kind === 'inversion'
+          ? 'splitInversion'
+          : kind === 'deletion'
+            ? 'splitDeletion'
+            : 'readPair',
+    }
+  }
+  const src = pairFieldEntry(c.e1, c.e2)
+  const dir = pairDirectionOfNum(src.data.readPairOrientations[src.readIdx]!)
+  return {
+    ...ends,
+    kind: interchromOf(src) ? 'interchrom' : dir ? `pair${dir}` : 'readPair',
+  }
+}
+
+/**
+ * A connection that is not the ordinary pair or the co-linear split, which
+ * both views draw as a dipping curve rather than a straight line.
+ */
+export function isAbnormalConnection(kind: ConnectionKind) {
+  return (
+    kind === 'pairRL' ||
+    kind === 'pairRR' ||
+    kind === 'pairLL' ||
+    kind === 'splitInversion' ||
+    kind === 'interchrom'
+  )
 }
 
 // The same physical read overlapping two displayedRegions (e.g. spanning

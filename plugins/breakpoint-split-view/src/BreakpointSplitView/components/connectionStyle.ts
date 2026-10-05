@@ -1,7 +1,6 @@
 import {
   CONNECTION_LABELS,
-  SPLIT_JUNCTION_LABELS,
-  splitJunctionKind,
+  isAbnormalConnection,
 } from '@jbrowse/alignments-core'
 import { usePalette } from '@jbrowse/core/ui/PaletteContext'
 import {
@@ -11,47 +10,11 @@ import {
   colorSplitReadInversion,
 } from '@jbrowse/core/ui/palette'
 
-import type { ConnectionKind, PairDirection } from '@jbrowse/alignments-core'
+import type { ConnectionKind } from '@jbrowse/alignments-core'
 
 // Every connector this view draws is evidence — a pair the aligner did not
 // call proper, or a split read — so the kinds the pileup draws in its faded
 // concordant grey and its pale supplementary orange take long-insert red here.
-export function connectionKind({
-  isSplit,
-  interchrom,
-  pairDirection,
-  s1,
-  s2,
-}: {
-  isSplit: boolean
-  interchrom: boolean
-  pairDirection: PairDirection | undefined
-  s1: number
-  s2: number
-}): ConnectionKind {
-  if (interchrom) {
-    return 'interchrom'
-  } else if (isSplit) {
-    const kind = splitJunctionKind(s1, s2)
-    return kind === 'inversion'
-      ? 'splitInversion'
-      : kind === 'deletion'
-        ? 'splitDeletion'
-        : 'readPair'
-  } else {
-    return pairDirection ? `pair${pairDirection}` : 'readPair'
-  }
-}
-
-export function isAbnormalConnection(kind: ConnectionKind) {
-  return (
-    kind === 'pairRL' ||
-    kind === 'pairRR' ||
-    kind === 'pairLL' ||
-    kind === 'splitInversion'
-  )
-}
-
 function colorSlot(kind: ConnectionKind) {
   return kind === 'readPair' || kind === 'pairLR' || kind === 'splitDeletion'
     ? 'longInsert'
@@ -79,49 +42,39 @@ export function connectionColor(
 
 // An LR pair reaches this view only without the proper-pair flag, so the
 // display's "Normal pair orientation" would misname it.
-export function connectionLabel(kind: ConnectionKind, isSplit: boolean) {
-  return kind === 'interchrom' && isSplit
-    ? SPLIT_JUNCTION_LABELS.interchrom
-    : kind === 'pairLR'
-      ? 'LR - Not a proper pair'
-      : CONNECTION_LABELS[kind]
+export function connectionLabel(kind: ConnectionKind) {
+  return kind === 'pairLR' ? 'LR - Not a proper pair' : CONNECTION_LABELS[kind]
 }
 
 export function useConnectionStyle() {
   const palette = usePalette()
-  return (kind: ConnectionKind, isSplit: boolean) => ({
+  return (kind: ConnectionKind) => ({
     abnormal: isAbnormalConnection(kind),
     color: alpha(connectionColor(kind, palette.alignmentFill), 0.8),
-    label: connectionLabel(kind, isSplit),
+    label: connectionLabel(kind),
   })
-}
-
-export interface KeyEntry {
-  kind: ConnectionKind
-  isSplit: boolean
 }
 
 // One row per colour: kinds that share a swatch share a row, their labels
 // joined.
-export function connectionKeyRows(entries: KeyEntry[]) {
+export function connectionKeyRows(kinds: ConnectionKind[]) {
   const rows = new Map<string, { kind: ConnectionKind; labels: string[] }>()
-  for (const { kind, isSplit } of entries) {
-    const label = connectionLabel(kind, isSplit)
+  for (const kind of kinds) {
     const row = rows.get(colorSlot(kind))
     if (row) {
-      row.labels.push(label)
+      row.labels.push(connectionLabel(kind))
     } else {
-      rows.set(colorSlot(kind), { kind, labels: [label] })
+      rows.set(colorSlot(kind), { kind, labels: [connectionLabel(kind)] })
     }
   }
   return [...rows.values()]
 }
 
-export function useConnectionKeyRows(entries: KeyEntry[]) {
+export function useConnectionKeyRows(kinds: ConnectionKind[]) {
   const connectionStyle = useConnectionStyle()
-  return connectionKeyRows(entries).map(({ kind, labels }) => ({
+  return connectionKeyRows(kinds).map(({ kind, labels }) => ({
     key: kind,
-    color: connectionStyle(kind, false).color,
+    color: connectionStyle(kind).color,
     label: labels.join(' / '),
   }))
 }

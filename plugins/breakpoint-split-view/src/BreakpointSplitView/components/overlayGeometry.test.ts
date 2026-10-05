@@ -21,7 +21,6 @@ const level: OverlayLevel = {
   coverageOffset: 40,
   scrollTop: 0,
   offsetPx: 0,
-  linksReads: false,
 }
 
 const rect = (layout: LayoutRecord, overrides?: Partial<OverlayLevel>) =>

@@ -7,14 +7,21 @@ import {
 } from './overlayUtils.tsx'
 
 import type { ReadEntry } from '../readChains.ts'
-import type { LayoutRecord, OverlayLevel } from '../types.ts'
+import type { ConnectorRow, LayoutRecord, OverlayLevel } from '../types.ts'
 import type { ViewLayout } from '@jbrowse/core/util/Base1DUtils'
 
+const row: ConnectorRow = { minimized: false, linksReads: false }
+
 describe('chainHighlightRects', () => {
-  const entry = (id: string, refName: string, level: number): ReadEntry => ({
+  const entry = (
+    id: string,
+    refName: string,
+    level: number,
+    displayedRegionIndex = 0,
+  ): ReadEntry => ({
     level,
     groupKey: '',
-    displayedRegionIndex: 0,
+    displayedRegionIndex,
     refName,
     data: {
       readKeys: [id],
@@ -28,7 +35,6 @@ describe('chainHighlightRects', () => {
     coverageOffset: 0,
     scrollTop: 0,
     offsetPx: 0,
-    linksReads: false,
   })
   const layout = (refName: string): ViewLayout => ({
     displayedRegions: [
@@ -43,7 +49,7 @@ describe('chainHighlightRects', () => {
   const b = entry('b', 'chr2', 1)
   const c = entry('c', 'chr3', 2)
   const ctx = {
-    tracks: [{ minimized: false }, { minimized: false }, { minimized: false }],
+    rows: [row, row, row],
     levels: [level(0), level(200), level(400)],
     layouts: [layout('chr1'), layout('chr2'), layout('chr3')],
     entryLayouts: new Map<ReadEntry, LayoutRecord>([
@@ -55,19 +61,19 @@ describe('chainHighlightRects', () => {
 
   test('boxes every panel a multi-hop read visits', () => {
     expect(chainHighlightRects({ ...ctx, entries: [a, b, c] })).toEqual([
-      { key: '0-a', x: 10, y: 5, width: 50, height: 10 },
-      { key: '1-b', x: 20, y: 205, width: 50, height: 10 },
-      { key: '2-c', x: 30, y: 405, width: 50, height: 10 },
+      { key: '0-0-a', x: 10, y: 5, width: 50, height: 10 },
+      { key: '1-0-b', x: 20, y: 205, width: 50, height: 10 },
+      { key: '2-0-c', x: 30, y: 405, width: 50, height: 10 },
     ])
   })
 
   test('a minimized level contributes no box', () => {
     const rects = chainHighlightRects({
       ...ctx,
-      tracks: [{ minimized: false }, { minimized: true }, { minimized: false }],
+      rows: [row, { ...row, minimized: true }, row],
       entries: [a, b],
     })
-    expect(rects.map(r => r.key)).toEqual(['0-a'])
+    expect(rects.map(r => r.key)).toEqual(['0-0-a'])
   })
 
   test('a segment with no layout rect is left out', () => {
@@ -75,7 +81,22 @@ describe('chainHighlightRects', () => {
       ...ctx,
       entries: [a, entry('d', 'chr2', 1)],
     })
-    expect(rects.map(r => r.key)).toEqual(['0-a'])
+    expect(rects.map(r => r.key)).toEqual(['0-0-a'])
+  })
+
+  // A read two overlapping windows of one panel both fetched is in the chain
+  // once per window, and the two boxes need two keys.
+  test('one record fetched by two windows boxes twice under distinct keys', () => {
+    const again = entry('a', 'chr1', 0, 1)
+    const rects = chainHighlightRects({
+      ...ctx,
+      entryLayouts: new Map<ReadEntry, LayoutRecord>([
+        [a, [10, 5, 60, 15]],
+        [again, [10, 5, 60, 15]],
+      ]),
+      entries: [a, again],
+    })
+    expect(rects.map(r => r.key)).toEqual(['0-0-a', '0-1-a'])
   })
 })
 
@@ -85,6 +106,7 @@ describe('drawnConnections', () => {
     strand: number,
     level: number,
     orientation = 0,
+    interchrom = 0,
   ): ReadEntry => ({
     level,
     groupKey: '',
@@ -95,18 +117,17 @@ describe('drawnConnections', () => {
       readPositions: Uint32Array.from([100, 200]),
       readFlags: Uint16Array.from([0]),
       readStrands: Int8Array.from([strand]),
-      readInterchrom: Uint8Array.from([0]),
+      readInterchrom: Uint8Array.from([interchrom]),
       readPairOrientations: Uint8Array.from([orientation]),
     } as unknown as ReadEntry['data'],
     readIdx: 0,
   })
-  const tracks = [{ minimized: false }, { minimized: false }]
-  const levels = [{ linksReads: true }, { linksReads: false }]
+  const rows: ConnectorRow[] = [{ ...row, linksReads: true }, row]
   const kinds = (
     pairs: [ReadEntry, ReadEntry][],
     showIntraviewLinks = true,
     isSplit = true,
-    rowTracks = tracks,
+    drawnRows = rows,
   ) =>
     [
       ...drawnConnections({
@@ -117,19 +138,18 @@ describe('drawnConnections', () => {
         entryLayouts: new Map(
           pairs.flat().map(e => [e, [0, 0, 0, 0] as LayoutRecord]),
         ),
-        tracks: rowTracks,
-        levels,
+        rows: drawnRows,
         showIntraviewLinks,
       }),
     ].map(c => c.kind)
 
-  test('a split junction takes its kind, and one between chromosomes is interchromosomal', () => {
+  test('a split junction takes its strands, on any pair of chromosomes', () => {
     expect(
       kinds([
         [entry('chr1', 1, 0), entry('chr1', -1, 1)],
         [entry('chr1', 1, 0), entry('chr2', 1, 1)],
       ]),
-    ).toEqual(['splitInversion', 'interchrom'])
+    ).toEqual(['splitInversion', 'splitDeletion'])
   })
 
   test('drops what the pileup links itself, and intra-view links when they are off', () => {
@@ -142,7 +162,7 @@ describe('drawnConnections', () => {
     )
   })
 
-  test('a mate link takes its kind from the pair orientation', () => {
+  test('a mate link takes its pair orientation, or inter-chromosomal ahead of it', () => {
     expect(
       kinds(
         [[entry('chr1', 1, 0, PAIR_DIRECTION_NUM.RL), entry('chr1', -1, 1)]],
@@ -150,13 +170,25 @@ describe('drawnConnections', () => {
         false,
       ),
     ).toEqual(['pairRL'])
+    expect(
+      kinds(
+        [
+          [
+            entry('chr1', 1, 0, PAIR_DIRECTION_NUM.LR, 1),
+            entry('chr2', -1, 1, PAIR_DIRECTION_NUM.LR, 1),
+          ],
+        ],
+        true,
+        false,
+      ),
+    ).toEqual(['interchrom'])
   })
 
   test('a connection touching a minimized row is not drawn', () => {
     expect(
       kinds([[entry('chr1', 1, 0), entry('chr2', 1, 1)]], true, true, [
-        { minimized: false },
-        { minimized: true },
+        rows[0]!,
+        { ...row, minimized: true },
       ]),
     ).toEqual([])
   })
@@ -170,8 +202,7 @@ describe('drawnConnections', () => {
           { entries: [e1, e2], connections: [{ e1, e2, isSplit: true }] },
         ],
         entryLayouts: new Map([[e1, [0, 0, 0, 0] as LayoutRecord]]),
-        tracks,
-        levels,
+        rows,
         showIntraviewLinks: true,
       }),
     ]).toEqual([])

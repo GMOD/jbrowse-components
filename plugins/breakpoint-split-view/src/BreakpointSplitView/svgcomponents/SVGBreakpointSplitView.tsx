@@ -116,8 +116,8 @@ export async function renderToSvg(model: BSV, opts: ExportSvgOptions) {
     .filter(id =>
       rowTracks.some(r => r.tracks.some(t => t.configuration.trackId === id)),
     )
-  const keyEntries = connectionKeyEntries(model, overlayTrackIds)
-  const keyRows = connectionKeyRows(keyEntries).length
+  const keyKinds = connectionKeyEntries(model, overlayTrackIds)
+  const keyRows = connectionKeyRows(keyKinds).length
   const keyBand = keyRows > 0 ? keyRows * LEGEND_ROW_HEIGHT + 4 : 0
   let y = keyBand
   const rows = views.map((view, idx) => {
@@ -149,7 +149,7 @@ export async function renderToSvg(model: BSV, opts: ExportSvgOptions) {
       <>
         {keyBand > 0 ? (
           <SvgConnectionKey
-            entries={keyEntries}
+            kinds={keyKinds}
             canvasWidth={w + exportMargin + 4}
           />
         ) : null}

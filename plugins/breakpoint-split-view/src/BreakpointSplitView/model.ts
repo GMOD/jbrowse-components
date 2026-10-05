@@ -53,6 +53,7 @@ import type { ReadChain } from './readChains.ts'
 import type {
   BreakpointSplitViewCommands,
   BreakpointSplitViewInitView,
+  ConnectorRow,
   ExportSvgOptions,
   LayoutRecord,
   OverlayLevel,
@@ -446,13 +447,25 @@ export default function stateModelFactory(pluginManager: PluginManager) {
 
       /**
        * #method
-       * Per view level, whether the track's own pileup draws a junction's
-       * connector, so the overlay leaves it out. Reads no scroll or zoom.
+       * Per row, whether the track is minimized and whether its own pileup
+       * draws a junction's connector, so the overlay leaves it out. Reads no
+       * scroll or zoom.
        */
-      overlayLinksReads(trackId: string) {
+      connectorRows(trackId: string): ConnectorRow[] {
         return this.getMatchedTracks(trackId).map(t => ({
+          minimized: t.minimized,
           linksReads: linksOwnReads(t.displays[0]!),
         }))
+      },
+
+      /**
+       * #method
+       * The reads each row's alignments display lays out, one entry per row.
+       */
+      readSources(trackId: string) {
+        return this.getMatchedTracks(trackId).map(t =>
+          readSourceOf(t.displays[0]),
+        )
       },
 
       /**
@@ -501,7 +514,6 @@ export default function stateModelFactory(pluginManager: PluginManager) {
             coverageOffset: d.coverageDisplayHeight ?? 0,
             scrollTop: d.scrollTop ?? 0,
             offsetPx: view.offsetPx,
-            linksReads: linksOwnReads(d),
           })
           layouts.push({
             displayedRegions: view.displayedRegions,
@@ -598,12 +610,7 @@ export default function stateModelFactory(pluginManager: PluginManager) {
             const trackId = track.configuration.trackId
             result.set(
               trackId,
-              buildReadChains(
-                this.getMatchedTracks(trackId).map(t =>
-                  readSourceOf(t.displays[0]),
-                ),
-                self.assemblies,
-              ),
+              buildReadChains(this.readSources(trackId), self.assemblies),
             )
           }
         }
@@ -630,9 +637,7 @@ export default function stateModelFactory(pluginManager: PluginManager) {
             chains,
             layouts: layoutReadChains(
               chains,
-              this.getMatchedTracks(trackId).map(t =>
-                readSourceOf(t.displays[0]),
-              ),
+              this.readSources(trackId),
               self.views.map(view => view.staticBlocks.contentBlocks),
             ),
           })

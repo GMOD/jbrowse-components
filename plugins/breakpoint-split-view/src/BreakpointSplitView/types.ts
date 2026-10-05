@@ -56,10 +56,15 @@ export interface OverlayLevel {
   scrollTop: number
   /** the view's horizontal scroll, to turn absolute bp px into screen px */
   offsetPx: number
+}
+
+/** One row's say in which read connectors the overlay draws. */
+export interface ConnectorRow {
+  minimized: boolean
   /**
-   * the display links its own reads (view-as-pairs / link supplementary
+   * the display links its own reads (View as pairs / link supplementary
    * alignments, or curved connectors on every pair), so it already connects
-   * everything that stays inside this level and an intra-view overlay curve
+   * everything that stays inside this row and an intra-view overlay curve
    * would just double it up
    */
   linksReads: boolean

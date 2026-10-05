@@ -463,17 +463,19 @@ export function attachChainFields(
   const shared = new Uint8Array(numChains)
   const firstSeen = new Map<string, number>()
   let anyShared = false
-  for (let e = 0; entries.length > 1 && e < entries.length; e++) {
-    const names = chainsOf[e]!.chainNames
-    const base = offsets[e]!
-    for (let c = 0; c < names.length; c++) {
-      const prev = firstSeen.get(names[c]!)
-      if (prev === undefined) {
-        firstSeen.set(names[c]!, base + c)
-      } else {
-        shared[prev] = 1
-        shared[base + c] = 1
-        anyShared = true
+  if (entries.length > 1) {
+    for (let e = 0; e < entries.length; e++) {
+      const names = chainsOf[e]!.chainNames
+      const base = offsets[e]!
+      for (let c = 0; c < names.length; c++) {
+        const prev = firstSeen.get(names[c]!)
+        if (prev === undefined) {
+          firstSeen.set(names[c]!, base + c)
+        } else {
+          shared[prev] = 1
+          shared[base + c] = 1
+          anyShared = true
+        }
       }
     }
   }

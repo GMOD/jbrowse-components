@@ -23,7 +23,6 @@ import {
   LINKED_READ_COLOR_SPLIT_NORMAL,
   classifyPair,
   groupReadsByName,
-  isNormalOrientation,
 } from './compute.ts'
 import { resolveConnectors } from './computeOverlay.ts'
 
@@ -122,44 +121,6 @@ describe('connectionEndpoints', () => {
       s1: 1,
       s2: -1,
     })
-  })
-})
-
-describe('isNormalOrientation', () => {
-  it('paired LR (orient 1) → normal', () => {
-    expect(isNormalOrientation(true, 1, 1, -1)).toBe(true)
-  })
-
-  it('paired orient 0 → normal (degenerate)', () => {
-    expect(isNormalOrientation(true, 0, 1, -1)).toBe(true)
-  })
-
-  it('paired RL (orient 2) → not normal', () => {
-    expect(isNormalOrientation(true, 2, 1, -1)).toBe(false)
-  })
-
-  it('paired RR (orient 3) → not normal', () => {
-    expect(isNormalOrientation(true, 3, 1, -1)).toBe(false)
-  })
-
-  it('paired LL (orient 4) → not normal', () => {
-    expect(isNormalOrientation(true, 4, 1, -1)).toBe(false)
-  })
-
-  it('split both fwd (s1=1, s2=1) → normal (deletion)', () => {
-    expect(isNormalOrientation(false, 0, 1, 1)).toBe(true)
-  })
-
-  it('split both rev (s1=-1, s2=-1) → normal (reverse-strand deletion)', () => {
-    expect(isNormalOrientation(false, 0, -1, -1)).toBe(true)
-  })
-
-  it('split fwd+rev inversion (s1=1, s2=-1) → not normal', () => {
-    expect(isNormalOrientation(false, 0, 1, -1)).toBe(false)
-  })
-
-  it('split rev+fwd inversion (s1=-1, s2=1) → not normal', () => {
-    expect(isNormalOrientation(false, 0, -1, 1)).toBe(false)
   })
 })
 

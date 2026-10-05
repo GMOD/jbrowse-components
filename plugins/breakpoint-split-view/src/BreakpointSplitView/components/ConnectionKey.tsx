@@ -6,7 +6,7 @@ import { useConnectionKeyRows } from './connectionStyle.ts'
 import { connectionKeyEntries } from './overlayUtils.tsx'
 
 import type { BreakpointViewModel } from '../model.ts'
-import type { KeyEntry } from './connectionStyle.ts'
+import type { ConnectionKind } from '@jbrowse/alignments-core'
 
 const useStyles = makeStyles()({
   key: {
@@ -51,17 +51,17 @@ const ConnectionKey = observer(function ConnectionKey({
 })
 
 export function SvgConnectionKey({
-  entries,
+  kinds,
   canvasWidth,
 }: {
-  entries: KeyEntry[]
+  kinds: ConnectionKind[]
   canvasWidth: number
 }) {
   return (
     <SvgColorLegend
       canvasWidth={canvasWidth}
       testid="connection-key"
-      entries={useConnectionKeyRows(entries)}
+      entries={useConnectionKeyRows(kinds)}
     />
   )
 }

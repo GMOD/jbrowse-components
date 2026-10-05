@@ -68,10 +68,12 @@ export {
   toNavLocString,
 } from './locStrings.ts'
 export {
+  classifyConnection,
   clipAt,
   connectionEndpoints,
   flagsOf,
   interchromOf,
+  isAbnormalConnection,
   pairFieldEntry,
   primaryOf,
   readGroupConnections,
@@ -80,6 +82,7 @@ export {
   strandOf,
 } from './readGroupConnections.ts'
 export type {
+  ClassifiedConnection,
   ConnectionEndpoints,
   ConnectionReadArrays,
   ReadConnection,

@@ -1,10 +1,8 @@
 import {
   CONNECTION_LABELS,
-  splitJunctionKind,
   PAIR_DIRECTION_NUM,
-  connectionEndpoints,
-  interchromOf,
-  pairFieldEntry,
+  classifyConnection,
+  isAbnormalConnection,
   readGroupConnections,
   readNameAt,
 } from '@jbrowse/alignments-core'
@@ -16,15 +14,13 @@ import type { SwatchCategory } from '../../LinearAlignmentsDisplay/colorUtils.ts
 import type { LaidOutPileupData } from '../../RenderAlignmentDataRPC/types.ts'
 import type { CanonicalRefName } from '../arcs/arcTypes.ts'
 import type { LinkedReadLinesUploadData } from './types.ts'
+import type { ConnectionKind } from '@jbrowse/alignments-core'
 
-// Color type indices for linked-read connecting lines + bezier curves.
-// Shared by main-thread (Canvas2D / SVG) and the GPU palette uniform.
-// Order is fixed to match linkedReadColorPalette in shaders/palettes.ts.
-//
-// The four pair slots ARE the worker's orientation codes, because
-// `pairedColorType` below passes an orientNum through unchanged. Taken from
-// PAIR_DIRECTION_NUM rather than restated, so the two orderings cannot be
-// renumbered apart — they used to be two hand-kept lists under a SYNC comment.
+// Color slots for the linked-read connecting lines and bezier curves, shared by
+// Canvas2D / SVG and the GPU palette uniform; the order matches
+// linkedReadColorPalette in shaders/palettes.ts. The four pair slots are the
+// worker's orientation codes, taken from PAIR_DIRECTION_NUM so the two
+// orderings cannot be renumbered apart.
 export const LINKED_READ_COLOR_PAIR_UNKNOWN = 0
 export const LINKED_READ_COLOR_PAIR_LR = PAIR_DIRECTION_NUM.LR
 export const LINKED_READ_COLOR_PAIR_RL = PAIR_DIRECTION_NUM.RL
@@ -34,20 +30,12 @@ export const LINKED_READ_COLOR_PAIR_LL = PAIR_DIRECTION_NUM.LL
 // code of their own, so they number off its end.
 export const LINKED_READ_COLOR_SPLIT_NORMAL = LINKED_READ_COLOR_PAIR_LL + 1
 export const LINKED_READ_COLOR_SPLIT_INV = LINKED_READ_COLOR_PAIR_LL + 2
-// A MATE LINK whose two ends are on different chromosomes. Last, in the slot
-// that was a dead duplicate of the LR fallback — `pairedColorType` and
-// `splitColorType` between them never emitted it — so the palette keeps its
-// eight entries and `LINKED_READ_COLOR_SLOTS` does not move.
-//
-// Its own slot because orientation is meaningless across a translocation, which
-// the other two vocabularies already say: a read fill takes `interchrom` ahead
-// of every orientation bucket, and the arc band refuses to draw an arc at all
-// and drops a tick at each breakpoint. Only this overlay still asserted an
-// LR/RL/RR/LL — and it arrives populated and plausible, because `@gmod/bam`
-// resolves `selfIsLeft` from `refId < mateRefId` and hands back a real code off
-// an ordering of chromosome ids. So one translocation fragment could carry three
-// colours at once, two of them meaning "inter-chromosomal" and one naming an
-// orientation nothing measured.
+// A mate link whose two ends are on different chromosomes, in the slot that
+// was a dead duplicate of the LR fallback, so the palette keeps its eight
+// entries. Its own slot because orientation is meaningless across a
+// translocation yet arrives populated and plausible: `@gmod/bam` resolves
+// `selfIsLeft` from `refId < mateRefId` and hands back a real code off an
+// ordering of chromosome ids.
 export const LINKED_READ_COLOR_INTERCHROM = LINKED_READ_COLOR_PAIR_LL + 3
 
 // The bezier-arc hover tooltip's and legend row's wording, shared with the
@@ -75,44 +63,17 @@ export interface ReadEntry {
   data: LaidOutPileupData
 }
 
-// Normal LR pairs — and unknown orientations, which code 0 and are not worth
-// calling out — plus same-strand split reads get a straight line; aberrant
-// orientations get a bezier curve to stand out visually. A split read is
-// "normal" (a plain deletion) when both segments keep the same strand; opposite
-// strands flag an inversion.
-export function isNormalOrientation(
-  hasPaired: boolean,
-  orientNum: number,
-  s1: number,
-  s2: number,
-) {
-  // Measured against LR rather than a literal 1: everything aberrant numbers
-  // above it, so this stays right if the codes are ever renumbered.
-  return hasPaired ? orientNum <= PAIR_DIRECTION_NUM.LR : s1 === s2
-}
-
-// `orientNum` is a PAIR_DIRECTION_NUM code, passed through as the color index
-// unchanged — which the LINKED_READ_COLOR_PAIR_* definitions above make true by
-// construction rather than by agreement.
-function pairedColorType(orientNum: number) {
-  return orientNum >= LINKED_READ_COLOR_PAIR_LR &&
-    orientNum <= LINKED_READ_COLOR_PAIR_LL
-    ? orientNum
-    : LINKED_READ_COLOR_PAIR_UNKNOWN
-}
-
-// This path's encoding of the shared junction classifier: an unknown-strand
-// split falls back to the default pair color.
-const SPLIT_KIND_COLOR = {
-  inversion: LINKED_READ_COLOR_SPLIT_INV,
-  deletion: LINKED_READ_COLOR_SPLIT_NORMAL,
-}
-
-export function splitColorType(s1: number, s2: number) {
-  const kind = splitJunctionKind(s1, s2)
-  return kind === undefined
-    ? LINKED_READ_COLOR_PAIR_UNKNOWN
-    : SPLIT_KIND_COLOR[kind]
+// The slot each connection kind draws in: the inverse of
+// LINKED_READ_SLOT_CATEGORY, which names the swatch a slot takes.
+const LINKED_READ_SLOT: Record<ConnectionKind, number> = {
+  readPair: LINKED_READ_COLOR_PAIR_UNKNOWN,
+  pairLR: LINKED_READ_COLOR_PAIR_LR,
+  pairRL: LINKED_READ_COLOR_PAIR_RL,
+  pairRR: LINKED_READ_COLOR_PAIR_RR,
+  pairLL: LINKED_READ_COLOR_PAIR_LL,
+  splitDeletion: LINKED_READ_COLOR_SPLIT_NORMAL,
+  splitInversion: LINKED_READ_COLOR_SPLIT_INV,
+  interchrom: LINKED_READ_COLOR_INTERCHROM,
 }
 
 // Group reads across all displayed regions by readName. Used by both the
@@ -161,45 +122,24 @@ export interface ClassifiedPair {
   isSplit: boolean
 }
 
-// Classify a resolved connection. `isSplit` (from readGroupConnections) selects
-// the semantics: a mate link uses paired-read rules, a split junction uses
-// split-read rules. This lets paired short reads, split long reads, and paired
-// reads that are themselves SA-split all coexist in one view.
-//
-// Geometry is both entries'; the ORIENTATION is the fragment's, so it comes off
-// a primary (`pairFieldEntry`) rather than off `e1` whichever segment that
-// turned out to be. Reading e1 unconditionally cost this path two things a
-// colour alone would not: `isNormal` decides curve-vs-straight, and
-// `isBezierArcPair` drops a within-region normal pair entirely — so a
-// supplementary reporting LR for a genuinely RL pair took the aberrant
-// connection off the overlay and handed it to the plain-line pass, in the one
-// case the overlay exists to draw. The arc band already sourced this from a
-// primary; the two now read the same rule rather than two spellings of it.
+// This path's reading of the shared classification (`classifyConnection`,
+// which the breakpoint split view draws from too): the kind's palette slot,
+// and whether the connection is normal enough for the straight-line pass.
 export function classifyPair(
   e1: ReadEntry,
   e2: ReadEntry,
   isSplit: boolean,
 ): ClassifiedPair {
-  const hasPaired = !isSplit
-  const { bp1, s1, bp2, s2 } = connectionEndpoints({ e1, e2, isSplit })
-  const src = pairFieldEntry(e1, e2)
-  const orientNum = src.data.readPairOrientations[src.readIdx]!
-  // A MATE LINK only. A split junction is classified from its two segments'
-  // strands, which stays true whichever chromosomes they are on — the read
-  // crossed that junction, and `splitJunctionKind` never consults a refName. It
-  // is the pair rules that break: orientation and insert size describe a
-  // fragment on one chromosome, so across a translocation both are answers to a
-  // question nobody asked. Read off the same primary the orientation is,
-  // interchrom-ness being a fact about the fragment rather than about a segment.
-  const interchrom = hasPaired && interchromOf(src)
-  const isNormal =
-    !interchrom && isNormalOrientation(hasPaired, orientNum, s1, s2)
-  const colorType = interchrom
-    ? LINKED_READ_COLOR_INTERCHROM
-    : hasPaired
-      ? pairedColorType(orientNum)
-      : splitColorType(s1, s2)
-  return { bp1, bp2, s1, s2, isNormal, colorType, isSplit }
+  const { kind, bp1, s1, bp2, s2 } = classifyConnection({ e1, e2, isSplit })
+  return {
+    bp1,
+    bp2,
+    s1,
+    s2,
+    isNormal: !isAbnormalConnection(kind),
+    colorType: LINKED_READ_SLOT[kind],
+    isSplit,
+  }
 }
 
 export interface LinkedPair {
