@@ -37,13 +37,31 @@ export interface RExportSkipped {
   skipped: string
 }
 
+export interface KeyedTrack extends RExportTrack {
+  /** An R-safe name, unique within the script, that suffixes this track's bindings. */
+  key: string
+}
+
 export type RExporter = (
-  track: RExportTrack,
+  track: KeyedTrack,
   regions: readonly Region[],
 ) => RExportPanels | RExportSkipped
 
 export function rKey(trackId: string) {
   return trackId.replaceAll(/[^a-zA-Z0-9]/g, '_').replace(/^(?=[\d_])/, 'x')
+}
+
+function keyed(tracks: readonly RExportTrack[]): KeyedTrack[] {
+  const taken = new Set<string>()
+  return tracks.map(track => {
+    const base = rKey(track.trackId)
+    let key = base
+    for (let n = 2; taken.has(key); n++) {
+      key = `${base}_${n}`
+    }
+    taken.add(key)
+    return { ...track, key }
+  })
 }
 
 function locate(
@@ -79,7 +97,7 @@ const markExporter: RExporter = (track, regions) => {
     return located
   }
   const { type, uri, index } = located
-  const key = rKey(track.trackId)
+  const { key } = track
   const display = track.display as unknown as DisplaySpec
   const base = frameFor({
     type,
@@ -102,7 +120,7 @@ const featureExporter: RExporter = (track, regions) => {
     return located
   }
   const { type, uri } = located
-  const key = rKey(track.trackId)
+  const { key } = track
   const display = track.display as unknown as FeatureDisplaySpec
   const base = frameFor({
     type,
@@ -132,7 +150,7 @@ const alignmentsExporter: RExporter = (track, regions) => {
     regions,
     reference: track.reference,
     aliases: track.refNames,
-    key: rKey(track.trackId),
+    key: track.key,
   })
   return { panels, notes: [...sourceNotes(uri), ...notes] }
 }
@@ -161,7 +179,7 @@ export function exportTracksToR({
 }) {
   const panels: Panel[] = []
   const notes: string[] = []
-  for (const track of tracks) {
+  for (const track of keyed(tracks)) {
     const exporter = exporters[track.displayType]
     if (!exporter) {
       notes.push(`${track.trackName}: ${track.displayType} has no R export`)

@@ -1,6 +1,6 @@
 import { rampLutOf, stopsFromRampLut } from '@jbrowse/core/util/colorRamp'
 
-import { rColour, rName } from './rplot.ts'
+import { rColour, rIdent, rName } from './rplot.ts'
 
 describe('a colour reaches R in a spelling it takes', () => {
   it('converts the ramp LUT spelling to hex', () => {
@@ -38,6 +38,26 @@ describe('a colour reaches R in a spelling it takes', () => {
     )
     expect(rColour(back.at(-1)!.color)).toBe(rColour(forward[0]!.color))
   })
+})
+
+describe('a column name read as an R symbol', () => {
+  it('stays bare where R reads it as an identifier', () => {
+    expect(rIdent('score')).toBe('score')
+    expect(rIdent('tags.NM')).toBe('tags.NM')
+  })
+
+  it('is backticked where R would not read it as a name', () => {
+    expect(rIdent('INFO-DP')).toBe('`INFO-DP`')
+    expect(rIdent('1')).toBe('`1`')
+  })
+
+  it.each(['function', 'if', 'in', 'NA', 'TRUE', 'NULL', 'Inf', 'next'])(
+    'backticks the reserved word %s',
+    word => {
+      expect(rIdent(word)).toBe(`\`${word}\``)
+      expect(rName(word)).toBe(`"${word}"`)
+    },
+  )
 })
 
 describe('a name on the left of = in c()', () => {

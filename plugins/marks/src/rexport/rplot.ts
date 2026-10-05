@@ -347,7 +347,33 @@ function renderCoordArgs(plot: Plot) {
   ].join(', ')
 }
 
-const IDENTIFIER = /^[A-Za-z.][A-Za-z0-9._]*$/
+const SYNTAX_NAME = /^[A-Za-z.][A-Za-z0-9._]*$/
+
+const RESERVED = new Set([
+  'if',
+  'else',
+  'repeat',
+  'while',
+  'function',
+  'for',
+  'next',
+  'break',
+  'in',
+  'TRUE',
+  'FALSE',
+  'NULL',
+  'Inf',
+  'NaN',
+  'NA',
+  'NA_integer_',
+  'NA_real_',
+  'NA_character_',
+  'NA_complex_',
+])
+
+function isIdentifier(s: string) {
+  return SYNTAX_NAME.test(s) && !RESERVED.has(s)
+}
 
 /**
  * An R name safe on the left of `=` inside `c()`. An identifier stays bare;
@@ -355,7 +381,7 @@ const IDENTIFIER = /^[A-Za-z.][A-Za-z0-9._]*$/
  * values.
  */
 export function rName(s: string) {
-  return IDENTIFIER.test(s) ? s : rStr(s)
+  return isIdentifier(s) ? s : rStr(s)
 }
 
 /**
@@ -364,7 +390,7 @@ export function rName(s: string) {
  * `gene-name` is not, and bare it parses as a subtraction.
  */
 export function rIdent(s: string) {
-  return IDENTIFIER.test(s) ? s : `\`${s.replaceAll('`', '\\`')}\``
+  return isIdentifier(s) ? s : `\`${s.replaceAll('`', '\\`')}\``
 }
 
 export function rStr(s: string) {
