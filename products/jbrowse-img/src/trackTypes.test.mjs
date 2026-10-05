@@ -139,12 +139,12 @@ test('color:strand splits a feature track by strand', async () => {
   )
 })
 
-// The canvas analogue of alignments' color:tag:X — one stable color per distinct
+// A color field on a feature track: one stable color per distinct
 // value of the attribute, via the same randomColor jexl the display's own
 // "Color by attribute" dialog writes.
-test('color:attribute:<name> gives each attribute value its own color', async () => {
+test('color.field=<name> gives each attribute value its own color', async () => {
   const plain = fillCounts(await renderGff())
-  const byType = fillCounts(await renderGff('color:attribute:type'))
+  const byType = fillCounts(await renderGff('color.field=type'))
   assert.equal(
     plain[GOLDENROD],
     134,
