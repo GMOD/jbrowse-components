@@ -264,6 +264,27 @@ describe('setPendingMove', () => {
     expect(session.activePanelId).toBe(session.panels[1]!.id)
   })
 
+  test('keeps the arrangement it moves the view out of', () => {
+    const session = createViewsSession()
+    session.moveViewToSplitRight('v2')
+    const right = session.panels[1]!.id
+    const renamed = session.tabs[1]!.id
+    session.renameTab(renamed, 'mine')
+    session.setSizes(session.tree.id, [0.7, 0.3])
+
+    session.setPendingMove({ type: 'newTab', viewId: 'v3' })
+
+    expect(session.panels.map(p => p.id)).toContain(right)
+    expect(session.findTab(renamed)?.tab.title).toBe('mine')
+    expect(session.panels.map(p => p.size)).toEqual([0.7, 0.3])
+    expect(session.tabs.map(t => [...t.viewIds])).toEqual([
+      ['v1'],
+      ['v3'],
+      ['v2'],
+    ])
+    expect(session.activeTabOf(session.panels[0]!.id)?.viewIds).toEqual(['v3'])
+  })
+
   test('with nothing to move relative to, the view takes the space', () => {
     const session = createSession()
 
@@ -326,9 +347,8 @@ test('the sugars call the applyLayoutSpec the session actually has', () => {
   session.addViewToTab(session.tabs[0]!.id, 'view-1')
 
   session.tileViews('grid', ['view-1'])
-  session.setPendingMove({ type: 'splitRight', viewId: 'view-1' }, ['view-1'])
 
-  expect(calls).toEqual(['override', 'override'])
+  expect(calls).toEqual(['override'])
 })
 
 // ---------------------------------------------------------------------------
@@ -556,11 +576,16 @@ describe('layoutViews', () => {
     ])
   })
 
-  test('a layout seating no view throws rather than leaving a blank tab', () => {
+  test.each([
+    ['seating no view', { children: [] }, /seats no views/],
+    ['naming no view the session has', { views: ['nope'] }, /view id "nope"/],
+  ])('a layout %s throws before changing anything', (_, spec, message) => {
     const session = HostSession.create({ views: [{ id: 'v1' }] })
-    expect(() => session.layoutViews({ children: [] })).toThrow(
-      /seats no views/,
-    )
+    session.homeUnassignedViews(['v1'])
+    const before = getSnapshot(session.layout)
+    expect(() => session.layoutViews(spec)).toThrow(message)
+    expect(order).toEqual([])
+    expect(getSnapshot(session.layout)).toEqual(before)
   })
 
   test('a host with no view list says so', () => {
@@ -642,7 +667,7 @@ test('an empty leaf beside a populated one costs only its own cell', () => {
 // breaks a launch no plugin wraps, which is the failure `setPendingMove`'s
 // optional second argument exists because of.
 describe('a stale id in a caller-supplied list', () => {
-  test('costs setPendingMove that name and nothing else', () => {
+  test('costs setPendingMove nothing, since it reads the session', () => {
     const session = createViewsSession()
 
     expect(() => {
@@ -652,7 +677,10 @@ describe('a stale id in a caller-supplied list', () => {
         'v3',
       ])
     }).not.toThrow()
-    expect(session.tabs.map(t => [...t.viewIds])).toEqual([['v1'], ['v3']])
+    expect(session.tabs.map(t => [...t.viewIds])).toEqual([
+      ['v1', 'v2'],
+      ['v3'],
+    ])
   })
 
   test('leaves setPendingMove nothing to move when it is the moved view', () => {
@@ -688,6 +716,16 @@ test('an index means nothing on a host with no view list, and says so', () => {
 // one-argument call an agent tries first) gets the same list read off it.
 test('moveViewToSplitRight with one argument homes the whole session', () => {
   const session = createViewsSession()
+
+  session.moveViewToSplitRight('v2')
+
+  expect(session.panels).toHaveLength(2)
+  expect(session.tabs.map(t => [...t.viewIds])).toEqual([['v1', 'v3'], ['v2']])
+})
+
+test('splitting out the only view of a cell leaves no blank cell behind', () => {
+  const session = createViewsSession()
+  session.moveViewToSplitRight('v2')
 
   session.moveViewToSplitRight('v2')
 

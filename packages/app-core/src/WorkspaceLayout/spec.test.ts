@@ -1,9 +1,4 @@
-import {
-  specForPendingMove,
-  tileLayoutSpec,
-  treeFromSpec,
-  viewIdsInSpec,
-} from './spec.ts'
+import { tileLayoutSpec, treeFromSpec, viewIdsInSpec } from './spec.ts'
 import { isBranch } from './tree.ts'
 
 import type { BranchNode, LayoutTree, NodeKind, PanelNode } from './tree.ts'
@@ -311,20 +306,3 @@ test.each(['tabs', 'horizontal', 'vertical', 'grid'] as const)(
     expect(tileLayoutSpec([], mode)).toEqual({ views: [] })
   },
 )
-
-test('a pending splitRight puts the named view opposite everything else', () => {
-  const spec = specForPendingMove({ type: 'splitRight', viewId: 'v2' }, [
-    'v1',
-    'v2',
-    'v3',
-  ])
-
-  expect(spec.direction).toBe('horizontal')
-  expect(spec.children).toEqual([{ views: ['v1', 'v3'] }, { views: ['v2'] }])
-})
-
-test('a pending move with nothing to split from just takes the space', () => {
-  expect(
-    specForPendingMove({ type: 'splitRight', viewId: 'v1' }, ['v1']),
-  ).toEqual({ views: ['v1'] })
-})

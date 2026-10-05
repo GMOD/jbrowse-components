@@ -3,7 +3,6 @@ import { cast, getSnapshot, types } from '@jbrowse/mobx-state-tree'
 
 import {
   resolveLayoutSpec,
-  specForPendingMove,
   tileLayoutSpec,
   treeFromSpec,
   viewIdsInSpec,
@@ -333,7 +332,17 @@ export function WorkspaceLayoutMixin() {
             return undefined
           }
           const placed = place(removeView(tree, viewId), from)
-          apply(pruneEmptyTabIn(placed, from.panel.id, from.tab.id))
+          const pruned = pruneEmptyTabIn(placed, from.panel.id, from.tab.id)
+          const source = panels(pruned).find(p => p.id === from.panel.id)
+          const emptiedCell =
+            source?.tabs.length === 1 &&
+            source.tabs[0]!.id === from.tab.id &&
+            source.tabs[0]!.viewIds.length === 0
+          apply(
+            emptiedCell
+              ? pruneEmptyPanel(removeTab(pruned, from.tab.id), from.panel.id)
+              : pruned,
+          )
           return from
         }
 
@@ -602,54 +611,32 @@ export function WorkspaceLayoutMixin() {
         }
       })
       /**
-       * The two sugars, in their own block so they can reach the actions they are
-       * sugar FOR through `self`.
-       *
-       * `this.applyLayoutSpec()` reaches sideways into the action literal the
-       * block returned — the fork's `instantiateActions` does `fn.bind(actions)`
-       * — so it is pinned to that block's implementation for good. A later block,
-       * or a plugin's `extendStateModel`, replaces `self.applyLayoutSpec` and the
-       * sideways hop goes on calling the one it replaced, with no error and no
-       * type complaint. An extra layer costs a line.
+       * Sugars, in their own block so they reach the actions they wrap through
+       * `self`: a `this.` hop is pinned to the literal its block returned, so a
+       * later override would silently go uncalled.
        */
       .actions(self => ({
         /**
-         * Move one view relative to the others. PUBLIC API: an external plugin
-         * calls this behind a `'setPendingMove' in session` guard
-         * (jbrowse-plugin-protein3d, putting a protein view beside its genome
-         * view). It survived the last storage change by being kept as sugar, and
-         * it survives this one the same way — a capability-detecting caller
-         * cannot tell you it lost a capability.
-         *
-         * **`allViewIds` is therefore OPTIONAL, and has to stay that way.** The
-         * plugin passes the move alone, because that was the whole signature when
-         * its call site was written; requiring the second argument threw
-         * `undefined.filter` out of a launch the plugin does not wrap, and the
-         * figure was again the only thing that noticed. Keeping the NAME is half
-         * of not breaking a runtime lookup — the call has to keep working as it
-         * is spelled.
+         * Move one view to a new tab or a split beside its cell, keeping the
+         * rest of the arrangement. PUBLIC API: protein3d and msaview call it
+         * behind a `'setPendingMove' in session` guard with the move alone, so
+         * `allViewIds` stays optional; it is read only on a host with no view
+         * list.
          */
         setPendingMove(move: PendingMove | undefined, allViewIds?: string[]) {
-          // Not `?? []`: homing drops every view the list does not name, so an
-          // empty one would answer "put this view beside nothing" and unhome the
-          // rest. Nothing to say is nothing to do.
-          const ids = allViewIds ?? sessionViewIds(self)
-          if (!move || !ids) {
+          // The session's own list wins: homing unhomes any view a list omits,
+          // and a plugin's list is its snapshot of the session
+          const ids = sessionViewIds(self) ?? allViewIds
+          if (!move || !ids?.includes(move.viewId)) {
             return
           }
-          const known = liveViewIds(self, ids)
-          // Nothing to move: the view named is not in the session, so there is
-          // no arrangement to state about it.
-          if (sessionViewIds(self) && !known.includes(move.viewId)) {
-            return
+          if (ids.length === 1) {
+            self.homeUnassignedViews(ids)
+          } else if (move.type === 'newTab') {
+            self.moveViewToNewTab(move.viewId, ids)
+          } else {
+            self.moveViewToSplitRight(move.viewId, ids)
           }
-          self.applyLayoutSpec(specForPendingMove(move, known))
-          // Show where the view went. A spec states an arrangement and not a
-          // selection, so `treeFromSpec` shows each cell's FIRST tab — and
-          // `newTab` puts the moved view in a tab beside the others, which makes
-          // it the one tab nobody can see. The plugin asking for this is asking
-          // for its view to be on screen; `moveViewToNewTab`, the same gesture
-          // from the View menu, has always ended with it there.
           const home = tabContainingView(self.tree, move.viewId)
           if (home) {
             self.setActiveTab(home.panel.id, home.tab.id)
@@ -689,13 +676,16 @@ export function WorkspaceLayoutMixin() {
               'This session has no view list to arrange: layoutViews needs a host composed with MultipleViewsSessionMixin',
             )
           }
-          host.setUseWorkspaces(true)
-          const ids = self.applyLayoutSpec(spec)
-          if (ids.length === 0) {
+          const seated = viewIdsInSpec(
+            resolveLayoutSpec(spec, sessionViewIds(self)),
+          )
+          if (seated.length === 0) {
             throw new Error(
               'The layout seats no views: a leaf names its views with "views" (view ids, or indexes into session.views) and a container nests "children"',
             )
           }
+          host.setUseWorkspaces(true)
+          const ids = self.applyLayoutSpec(spec)
           host.orderViews(ids)
           return ids
         },

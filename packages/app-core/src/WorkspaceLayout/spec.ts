@@ -290,21 +290,3 @@ export function tileLayoutSpec(
   }
   return { direction: 'vertical', children: rows }
 }
-
-/**
- * `setPendingMove` as a spec: everything else keeps its side, the named view
- * takes the other. With nothing else on screen there is nothing to split from,
- * so the view just takes the space.
- */
-export function specForPendingMove(
-  move: PendingMove,
-  allViewIds: string[],
-): ResolvedLayoutSpecNode {
-  const others = allViewIds.filter(id => id !== move.viewId)
-  return others.length > 0
-    ? {
-        direction: move.type === 'splitRight' ? 'horizontal' : 'tabs',
-        children: [{ views: others }, { views: [move.viewId] }],
-      }
-    : { views: [move.viewId] }
-}
