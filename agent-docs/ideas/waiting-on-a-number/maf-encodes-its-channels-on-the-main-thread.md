@@ -1,15 +1,13 @@
 ---
 name: maf-encodes-its-channels-on-the-main-thread
-description: MAF's encodeMafRows walks every fetched block on the main thread per fetch — buildMafChannels, then mafInsertionChannels at about a fifth of that again. Measured on 2026-10-05: under a frame at 26 species, four to six frames at 470. The encode cannot move to the worker without refetching on every colour or order edit, so a number that says a reader feels it buys a lane split, not a move.
+description: MAF's encodeMafRows walks every fetched block on the main thread per fetch, the channel walk and the insertion walk. Measured on 2026-10-05: under a frame at 26 species, four to six frames at 470, with the insertion walk the larger part at the widest window. The encode cannot move to the worker without refetching on every colour or order edit, so a number that says a reader feels it buys a lane split, not a move.
 ---
 
 # MAF encodes its channels on the main thread
 
 `encodeMafRows` (`plugins/maf/src/LinearMafDisplay/encodeMafRows.ts`) runs
 `buildMafChannels` and `mafInsertionChannels` over a region's whole
-`MafBlock` arena on the main thread for each fetch. The insertion walk costs
-about a fifth of the channel encode over the same blocks, measured on
-2026-10-02 when the shared insertion mark landed.
+`MafBlock` arena on the main thread for each fetch.
 
 **The encode stays on the main thread.** It reads the palette, the identity
 ramp, the source-chromosome colours, the row order and the codon toggles, all
