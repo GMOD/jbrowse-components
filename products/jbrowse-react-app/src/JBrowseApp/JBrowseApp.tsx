@@ -8,6 +8,8 @@ import { observer } from 'mobx-react'
 
 import type { ViewModel } from '../createModel.ts'
 
+// Preloading it from createViewState measured no gain: the chunk download,
+// not React's 300ms Suspense reveal throttle, bounds this boundary
 const App = lazy(() => import('./AppReExport.tsx'))
 
 const useStyles = makeStyles()({
