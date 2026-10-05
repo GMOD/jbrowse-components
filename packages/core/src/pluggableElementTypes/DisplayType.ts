@@ -2,7 +2,6 @@ import LazyStateModelElement from './LazyStateModelElement.ts'
 
 import type { AnyConfigurationSchemaType } from '../configuration/index.ts'
 import type { PlotExample } from '../configuration/plot.ts'
-import type { RpcMethodName } from '../rpc/RpcRegistry.ts'
 import type { AnyReactComponentType } from '../util/index.ts'
 import type { IAnyModelType } from '@jbrowse/mobx-state-tree'
 
@@ -71,7 +70,7 @@ export default class DisplayType extends LazyStateModelElement {
    * it loads their code in its worker beside the adapter's
    * (`RpcMethodType.preload`).
    */
-  rpcMethods: readonly RpcMethodName[]
+  rpcMethods: readonly string[]
 
   retiredTypes: readonly RetiredDisplayType[]
 
@@ -93,7 +92,7 @@ export default class DisplayType extends LazyStateModelElement {
     ReactComponent: AnyReactComponentType
     helpText?: string
     adapterCapabilities?: readonly string[]
-    rpcMethods?: readonly RpcMethodName[]
+    rpcMethods?: readonly string[]
     retiredTypes?: readonly RetiredDisplayType[]
     retiredState?: RetiredDisplayState
     plotExamples?: readonly PlotExample[]

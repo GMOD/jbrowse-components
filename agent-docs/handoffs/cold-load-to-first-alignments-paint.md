@@ -6,7 +6,7 @@ description: "A 2026-10-04 profile of jbrowse-web's cold load to a BAM or CRAM t
 # Cold load to first alignments paint
 
 Measured 2026-10-04 on main `677a5d63db`: a production build with
-`node scripts/build.ts --stats`, headless Chrome on an idle 24-core box, a fresh
+`node products/jbrowse-web/scripts/build.ts --stats`, headless Chrome on an idle 24-core box, a fresh
 browser context per cold load, medians of 3-5 interleaved runs. Colin agreed the
 plan below the same day.
 
