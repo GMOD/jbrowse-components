@@ -1,11 +1,8 @@
 /**
  * @module
- * The config **readers**: `readConfObject` off a live MST config node, and
- * `readConfigValue` off a plain snapshot object in a worker or a renderer. Both
- * exist to evaluate a slot's `jexl:...` callback on read; they differ only in
- * where the jexl instance comes from, the node's env or an explicit argument.
- * A `featureField` slot's `jexl:` expression is the display's to evaluate per
- * feature, so `readConfObject` hands it over as written.
+ * The config readers: `readConfObject` off a live config node, whose env
+ * supplies the jexl instance, and `readConfigValue` off a plain snapshot in a
+ * worker or renderer, which is handed one.
  */
 import {
   getEnv,
@@ -29,22 +26,12 @@ import type {
   ConfigurationSlotValue,
 } from './types.ts'
 
-// Evaluate a slot's `jexl:...` callback string against the realm's single jexl
-// instance (carrying plugin-registered functions), read from the config node's
-// env. readConfObject only ever operates on live MST configs — nested sub-config
-// reads stay MST (env resolves to the root), and frozen track configs hydrate to
-// MST before any callback is read — so the env instance is always present here.
 function evalConfigCallback(
   expr: string,
   args: Record<string, unknown>,
   confObject: unknown,
 ) {
   if (!isStateTreeNode(confObject)) {
-    // A jexl slot needs the realm's jexl instance, which is read from a live
-    // config node's env. A plain config snapshot (e.g. an un-hydrated
-    // session.tracks entry) carries no env — read it through a hydrated model,
-    // or use readConfigValue(config, key, feature, jexl) which takes jexl
-    // explicitly.
     throw new Error(
       `cannot evaluate jexl config callback ${JSON.stringify(expr)}: config is a plain snapshot, not a live model (no env to resolve the jexl instance)`,
     )
@@ -59,8 +46,6 @@ function evalConfigCallback(
   return evaluateJexl(expr, args, jexl)
 }
 
-// A config readable by readConfObject: a live schema model, or a plain config
-// snapshot (an un-hydrated session.tracks entry, etc.).
 type ReadableConfig = AnyConfigurationModel | AnyConfigurationSnapshot
 
 function isFeatureField(confObject: ReadableConfig, slotName: string) {
@@ -72,15 +57,11 @@ function isFeatureField(confObject: ReadableConfig, slotName: string) {
   )
 }
 
-// Read and resolve a single slot: raw value, jexl callback evaluation, then a
-// referentially-stable snapshot for sub-config nodes.
 function readSlot(
   confObject: ReadableConfig,
   slotName: string,
   args: Record<string, unknown>,
 ) {
-  // strict undefined check, not truthiness — a slot value can legitimately be
-  // falsy (0, '', false, null)
   const value = confObject[slotName]
   if (value === undefined) {
     return undefined
@@ -89,35 +70,23 @@ function readSlot(
     isCallbackValue(value) && !isFeatureField(confObject, slotName)
       ? evalConfigCallback(value, args, confObject)
       : value
-  // Fast path for primitives (most common case)
   if (val === null || typeof val !== 'object') {
     return val
   }
-  // Return the live, referentially-stable snapshot (frozen in dev) rather than
-  // a per-read clone: stable identity lets downstream computeds memoize, and
-  // the old structuredClone was both a hot-path allocation and a source of
-  // spurious recomputation. Treat as read-only.
+  // the live snapshot, stable across reads so downstream computeds memoize;
+  // read-only
   return isStateTreeNode(val) ? getSnapshot(val) : val
 }
 
 /**
  * #api core/configuration
- * Given a configuration model (an instance of a ConfigurationSchema), read the
- * configuration value at the given path. Use this when you hold the
- * configuration model directly, e.g. a track's `configuration`.
+ * Read the value at a path of a live config node, such as a track's
+ * `configuration`, evaluating a `jexl:` callback with `args`.
  *
- * Wants a **live config node**, not a snapshot of one, and passing a snapshot is
- * a type error. Slots are built with `types.stripDefault`, so a slot sitting at
- * its default is absent from a snapshot — "unset" and "at its default" are
- * indistinguishable there, and a read off one reports a default as missing.
- *
- * An entry of `session.tracks` is such a snapshot, typed `TrackConfigEntry`, so
- * this refuses one. Read `trackId` and `type` off it directly, and a slot
- * through a helper that supplies the default, such as
- * `getConfAssemblyNamesOrNone`. The refusal is in the types only: the track
- * selector reads raw members off thousands of frozen entries on purpose,
- * because hydrating every track to answer it is what `types.frozen` exists to
- * avoid.
+ * A snapshot is refused by the types, since a slot at its default is absent
+ * from one. A `session.tracks` entry is one (`TrackConfigEntry`): read its
+ * `trackId` and `type` directly, and a slot through a helper that supplies the
+ * default, such as `getConfAssemblyNamesOrNone`.
  *
  * @param model - instance of ConfigurationSchema
  * @param slotPaths - array of paths to read
@@ -140,36 +109,22 @@ export function readConfObject<
 ): SLOT extends string
   ? ConfigurationSlotValue<ConfigurationSchemaForModel<CONFMODEL>, SLOT>
   : ConfigurationSlotPathValue<ConfigurationSchemaForModel<CONFMODEL>, SLOT>
-// loose implementation signature: the body returns values that are `any` by
-// nature (raw slot values, snapshots); the typed overloads above are what
-// callers see. No looser overload admits the model: one that did was a
-// catch-all a slot-name typo fell through to, compiling clean as `any`.
+// No looser overload admits the model: a catch-all lets a slot-name typo
+// compile as `any`.
 export function readConfObject(
   confObject: ReadableConfig,
   slotPath?: string | string[],
   args: Record<string, unknown> = {},
 ): any {
-  // the single-slot read, first and allocation-free: it is the shape of nearly
-  // every one of the ~1300 call sites, so it doesn't get normalized into a
-  // one-element array on the way past
   if (typeof slotPath === 'string') {
     return readSlot(confObject, slotPath, args)
   }
   if (slotPath !== undefined && !Array.isArray(slotPath)) {
     throw new TypeError('slotPath must be a string or array')
   }
-  // No path, or an empty one — which means the same thing, and used not to: `[]`
-  // is truthy, so it reached the walk below and read `confObject[undefined]`.
-  //
-  // Returns the whole config as a plain object: the live, referentially-stable
-  // snapshot (frozen in dev), not a fresh clone — treat as read-only.
   if (!slotPath?.length) {
     return isStateTreeNode(confObject) ? getSnapshot(confObject) : confObject
   }
-  // every segment but the last names a sub-config, and only the last is a slot
-  // read — which is where jexl evaluation and snapshotting happen, and nowhere
-  // else. Iterative rather than a self-call per segment, which re-entered the
-  // whole argument-shape preamble above at each level.
   let conf: ReadableConfig = confObject
   for (let i = 0; i < slotPath.length - 1; i++) {
     const subConf = conf[slotPath[i]!]
@@ -181,9 +136,6 @@ export function readConfObject(
   return readSlot(conf, slotPath[slotPath.length - 1]!, args)
 }
 
-// The plain-object half of the slot walk, for readConfigValue. The MST half is
-// readSlot/rawSlotValue above. A plain object has no map entries and no
-// sub-config nodes to snapshot, so it is just a path reduce.
 function resolveConfigValue(
   config: Record<string, unknown>,
   key: string | string[],
@@ -199,10 +151,9 @@ function resolveConfigValue(
 }
 
 /**
- * Read a value from a plain config snapshot object. Automatically evaluates
- * "jexl:..." strings per-feature. Works without MST — intended for use in
- * rendering code (GPU, Canvas2D, workers). Pass the realm's `pluginManager.jexl`
- * so plugin-registered functions (e.g. in a custom `mouseover` slot) resolve.
+ * Read a value from a plain config snapshot, evaluating a `jexl:` callback
+ * against `feature`. For rendering code and workers; pass the realm's
+ * `pluginManager.jexl` so plugin-registered functions resolve.
  */
 export function readConfigValue<T>(
   config: Record<string, unknown>,
