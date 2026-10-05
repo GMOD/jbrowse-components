@@ -6,6 +6,7 @@ import { decideLaneFrames, frameFromDecision } from './laneDecision.ts'
 import { laneRegion } from './laneHeader.ts'
 import { buildLanes } from './laneStack.ts'
 import {
+  frameSegments,
   frameSpan,
   groupFeatures,
   laneOpeningsOf,
@@ -554,4 +555,18 @@ describe('a gene on a lane with a hole', () => {
     ])
     expect(introns).toEqual([])
   })
+})
+
+test('a lane layer region across a hole draws as one piece either side of it', () => {
+  const [, at] = CARRIERS['HG01123.1']
+  const groups = groupFeatures(cfhFeatures())
+  const frame = framesOf(groups, decide(groups)).get('HG01123.1')!
+  const pieces = frameSegments(frame, at, at + BEFORE + AFTER, WIDTH)
+  expect(pieces.map(p => [p.start, p.end])).toEqual([
+    [at, at + BEFORE],
+    [at + BEFORE, at + BEFORE + AFTER],
+  ])
+  const [left, right] = pieces.map(p => p.px.map(x => Math.round(x)))
+  expect(left).toEqual([px(WINDOW_START), px(DEL_START)].map(Math.round))
+  expect(right).toEqual([px(DEL_END), px(WINDOW_END)].map(Math.round))
 })

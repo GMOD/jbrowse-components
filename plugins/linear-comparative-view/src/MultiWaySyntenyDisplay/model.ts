@@ -143,13 +143,13 @@ import {
 import {
   anchorlessGroupsOf,
   clipGroupToAnchor,
+  frameSegments,
   groupFeatures,
   laneFetchRegion,
   laneFetchRegionMaxBp,
   laneOpeningsOf,
   mergeContiguousRegions,
   rowAssembliesOf,
-  rowFrameX,
   tickIntervalFor,
 } from './layoutMultiWay.ts'
 import { laneColorKey, laneFieldKey, ribbonColorScales } from './legend.ts'
@@ -2386,7 +2386,7 @@ export function stateModelFactory(
           row: number
           top: number
           height: number
-          px: Span
+          segments: { start: number; end: number; px: Span }[]
         }[] = []
         for (const [specLane, held] of self.laneLayerData.held ?? []) {
           const row = rowOf.get(held.assemblyName)
@@ -2396,29 +2396,24 @@ export function stateModelFactory(
             continue
           }
           const { refName, start, end } = held.region
-          const px: Span | undefined = lane.isAnchor
-            ? axisSpan(
-                view,
-                lane.canon(refName),
-                start,
-                end,
-                self.renderOriginPx,
-              )
-            : lane.frame &&
+          const anchorPx =
+            lane.isAnchor &&
+            axisSpan(view, lane.canon(refName), start, end, self.renderOriginPx)
+          const segments = anchorPx
+            ? [{ start, end, px: anchorPx }]
+            : !lane.isAnchor &&
+                lane.frame &&
                 lane.canon(lane.frame.refName) === lane.canon(refName)
-              ? [
-                  rowFrameX(lane.frame, start, self.canvasWidth),
-                  rowFrameX(lane.frame, end, self.canvasWidth),
-                ]
-              : undefined
-          if (px) {
+              ? frameSegments(lane.frame, start, end, self.canvasWidth)
+              : []
+          if (segments.length) {
             out.push({
               specLane,
               held,
               row,
               top: layerBandTops(lane.layerTop, heights)[held.layer]!,
               height,
-              px,
+              segments,
             })
           }
         }
@@ -2535,13 +2530,12 @@ export function stateModelFactory(
           row,
           top,
           height,
-          px,
+          segments,
         } of self.laneLayerPlacements) {
           const domain = domains[held.layer]
           if (!domain) {
             continue
           }
-          const { start, end } = held.region
           self.coloredLayersOf(held).forEach((channels, mark) => {
             const colorScale = layerColorScale(
               channels,
@@ -2555,20 +2549,23 @@ export function stateModelFactory(
                 : undefined,
             )
             if (cell) {
-              const key = `bars:${specLane}:${mark}`
-              cells.set(key, cell)
-              layers.push({
-                kind: 'bars',
-                key,
-                row,
-                top,
-                height,
-                domain,
-                origin: laneLayerOrigin(domain),
-                colorScale,
-                start,
-                end,
-                px,
+              // one block per piece between the lane's holes, each its own cell
+              segments.forEach(({ start, end, px }, piece) => {
+                const key = `bars:${specLane}:${mark}${piece ? `:${piece}` : ''}`
+                cells.set(key, cell)
+                layers.push({
+                  kind: 'bars',
+                  key,
+                  row,
+                  top,
+                  height,
+                  domain,
+                  origin: laneLayerOrigin(domain),
+                  colorScale,
+                  start,
+                  end,
+                  px,
+                })
               })
             }
           })

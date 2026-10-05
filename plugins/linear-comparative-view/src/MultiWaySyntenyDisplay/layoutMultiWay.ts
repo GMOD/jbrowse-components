@@ -549,6 +549,24 @@ export function frameSpans(
   )
 }
 
+/** each hole-free piece of a stretch of the lane, with its px span */
+export function frameSegments(
+  frame: RowFrame,
+  start: number,
+  end: number,
+  width: number,
+) {
+  const openings = frameOpenings(frame)
+  return cutAtOpenings(openings, start, end).map(([from, to]) => ({
+    start: from,
+    end: to,
+    px: [
+      openedX(frame, openedBp(openings, from, true), width),
+      openedX(frame, openedBp(openings, to), width),
+    ] as Span,
+  }))
+}
+
 /** px spans of a stretch of the lane, cut at each hole the frame opens in it */
 export function frameSegmentsX(
   frame: RowFrame,
@@ -556,11 +574,7 @@ export function frameSegmentsX(
   end: number,
   width: number,
 ): Span[] {
-  const openings = frameOpenings(frame)
-  return cutAtOpenings(openings, start, end).map(([from, to]) => [
-    openedX(frame, openedBp(openings, from, true), width),
-    openedX(frame, openedBp(openings, to), width),
-  ])
+  return frameSegments(frame, start, end, width).map(s => s.px)
 }
 
 interface PlacementRun {
