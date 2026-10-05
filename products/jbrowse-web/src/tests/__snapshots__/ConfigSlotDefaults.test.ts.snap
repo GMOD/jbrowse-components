@@ -674,8 +674,8 @@ exports[`every registered schema slot default 1`] = `
   "text search adapter: BigBedTextSearchAdapter": {
     "assemblyNames": "stringArray = []",
     "bigBedLocation": "fileLocation = {"uri":"/path/to/my.bb","locationType":"UriLocation"}",
-    "ixFilePath": "fileLocation = {"uri":"","locationType":"UriLocation"}",
-    "ixxFilePath": "fileLocation = {"uri":"","locationType":"UriLocation"}",
+    "ixFilePath": "maybeFileLocation = undefined",
+    "ixxFilePath": "maybeFileLocation = undefined",
   },
   "text search adapter: JBrowse1TextSearchAdapter": {
     "assemblyNames": "stringArray = []",
