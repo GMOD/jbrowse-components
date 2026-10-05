@@ -3724,6 +3724,7 @@
         "stripTrackIds",
         "toTrackConfigEntry",
         "toggleTrackGeneric",
+        "trackDisplayType",
         "viewCanDisplayTrack",
         "viewDisplayNames",
         "warmTrackDisplayGeneric"
