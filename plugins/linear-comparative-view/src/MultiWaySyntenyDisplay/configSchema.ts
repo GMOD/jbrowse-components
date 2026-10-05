@@ -2,6 +2,7 @@ import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import { utrDefaultColor } from '@jbrowse/core/ui/palette'
 import baseLinearDisplayConfigSchema from '@jbrowse/display-kit/configSchema'
 import { types } from '@jbrowse/mobx-state-tree'
+import { lodModeSlot } from '@jbrowse/synteny-core'
 
 import { geneColorConfigSchema } from './geneColorConfigSchema.ts'
 import { laneLayerConfigSchema } from './laneLayerConfigSchema.ts'
@@ -95,16 +96,7 @@ export function configSchemaFactory() {
         defaultValue: utrDefaultColor,
         contextVariable: ['feature'],
       },
-      /**
-       * #slot
-       */
-      lodMode: {
-        type: 'stringEnum',
-        model: types.enumeration('LodMode', ['auto', 'fine', 'coarse']),
-        defaultValue: 'auto',
-        description:
-          "which stored tier of a tiered file is fetched: 'auto' switches on the adapter's bpPerPx threshold, 'fine' pins the per-row CIGAR tier, and 'coarse' the tier whose CIGAR is folded to its large indels",
-      },
+      ...lodModeSlot,
       /**
        * #slot
        */
