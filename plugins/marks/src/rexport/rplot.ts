@@ -94,7 +94,7 @@ export interface Layer {
   /** Aesthetics set to a literal, outside `aes()`. */
   constants?: Partial<Record<Aesthetic, string | number>>
   /** A geom's own arguments, which are not aesthetics — `curvature`. */
-  params?: Record<string, string | number>
+  params?: Record<string, string | number | RExpr>
 }
 
 /**
@@ -109,7 +109,7 @@ export function layer<C extends string>(l: {
   frame: RFrame<C>
   aes: Aes<NoInfer<C>>
   constants?: Partial<Record<Aesthetic, string | number>>
-  params?: Record<string, string | number>
+  params?: Record<string, string | number | RExpr>
 }): Layer {
   return l
 }
@@ -138,6 +138,8 @@ export type Scale =
       name?: string
     }
   | { kind: 'log' }
+  /** Rows counted down from the top, as a track stacks them. */
+  | { kind: 'reverse' }
 
 /** A reference line across the panel at a value on the y axis. */
 export interface Rule {
@@ -162,8 +164,10 @@ export interface Plot {
   xlim?: { start: number; end: number } | RExpr
   ylim?: { min?: number; max?: number }
   /** A value the y axis reaches whatever the data span, `scales.y.zero`'s 0. */
-  expandY?: number
+  expandY?: number | RExpr
   legend?: boolean
+  /** A y axis of packed rows, whose values mean nothing to a reader. */
+  hideY?: boolean
 }
 
 export function packagesFor(plot: Plot) {
@@ -182,9 +186,12 @@ function renderAes(aes: Aes<string>) {
     .join(', ')
 }
 
-function renderConstant(key: string, v: string | number) {
+function renderConstant(key: string, v: string | number | RExpr) {
   if (typeof v === 'number') {
     return String(v)
+  }
+  if (typeof v === 'object') {
+    return v.expr
   }
   return rStr(key === 'fill' || key === 'colour' ? rColour(v) : v)
 }
@@ -209,6 +216,9 @@ function renderScale(aesthetic: Aesthetic, s: Scale) {
   const value = (v: string) => (aesthetic === 'shape' ? v : rStr(rColour(v)))
   if (s.kind === 'log') {
     return `scale_${aesthetic}_log10()`
+  }
+  if (s.kind === 'reverse') {
+    return `scale_${aesthetic}_reverse()`
   }
   if (s.kind === 'cycle') {
     const values = s.values.map(v =>
@@ -297,7 +307,9 @@ export function renderPlot(variable: string, plot: Plot) {
       renderScale(a as Aesthetic, s),
     ),
     ...(plot.expandY !== undefined
-      ? [`expand_limits(y = ${plot.expandY})`]
+      ? [
+          `expand_limits(y = ${typeof plot.expandY === 'number' ? plot.expandY : plot.expandY.expr})`,
+        ]
       : []),
     ...(plot.facetBy ? [renderFacet(plot.facetBy)] : []),
     ...(plot.xlim || plot.ylim
@@ -312,6 +324,11 @@ export function renderPlot(variable: string, plot: Plot) {
       : []),
     'theme_minimal()',
     ...(plot.legend === false ? ['theme(legend.position = "none")'] : []),
+    ...(plot.hideY
+      ? [
+          'theme(axis.text.y = element_blank(), panel.grid.major.y = element_blank(), panel.grid.minor.y = element_blank())',
+        ]
+      : []),
   ]
   return `${variable} <- ${pieces.join(' +\n  ')}`
 }

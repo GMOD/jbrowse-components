@@ -42,6 +42,24 @@ export const READERS = {
     coords: ['start', 'end'],
     extra: { arg: 'attrs', prefix: '' },
   },
+  BedTabixAdapter: {
+    helper: 'read_bed',
+    location: 'bedGzLocation',
+    packages: ['rtracklayer', 'Rsamtools', 'GenomicRanges'],
+    columns: [
+      'start',
+      'end',
+      'strand',
+      'name',
+      'score',
+      'thick_start',
+      'thick_end',
+      'block_starts',
+      'block_sizes',
+    ],
+    coords: ['start', 'end', 'thick_start', 'thick_end'],
+    extra: undefined,
+  },
   VcfTabixAdapter: {
     helper: 'read_vcf',
     location: 'vcfGzLocation',
@@ -118,17 +136,22 @@ export function sourceNotes(uri: string) {
  *
  * `read_regions` is the only place genomic coordinates become cumulative ones,
  * so a reader stays genomic and a new format needs no axis code.
+ *
+ * `wholeFeatures` reads each feature with its whole subtree and unclipped, for
+ * a glyph laid out from parts outside the region; its caller clips after.
  */
 export function frameFor<K extends ReaderName>({
   type,
   uri,
   name = 'df',
   fields = [],
+  wholeFeatures = false,
 }: {
   type: K
   uri: string
   name?: string
   fields?: readonly string[]
+  wholeFeatures?: boolean
 }): RFrame {
   const reader = READERS[type]
   const held = new Set<string>(reader.columns)
@@ -140,13 +163,19 @@ export function frameFor<K extends ReaderName>({
     ? `, ${extra!.arg} = c(${asked.map(f => rStr(f.slice(extra!.prefix.length))).join(', ')})`
     : ''
   const coords = reader.coords.map(c => rStr(c)).join(', ')
+  const read = `${reader.helper}(${rStr(uri)}, chrom, start, end${args})`
   return frame({
     name,
     columns: [...reader.columns, ...asked, '.region'],
     coords: reader.coords,
     packages: reader.packages,
-    statements: `${name} <- read_regions(
-  function(chrom, start, end) ${reader.helper}(${rStr(uri)}, chrom, start, end${args}),
+    statements: wholeFeatures
+      ? `${name} <- read_regions(
+  function(chrom, start, end) whole_features(
+    function(chrom, start, end) ${read}, chrom, start, end),
+  regions, c(${coords}), clip = FALSE)`
+      : `${name} <- read_regions(
+  function(chrom, start, end) ${read},
   regions, c(${coords}))`,
   })
 }
