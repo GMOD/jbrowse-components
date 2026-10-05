@@ -1,7 +1,6 @@
 import { render, screen } from '@testing-library/react'
 
 import VariantDisplayComponent from './components/VariantDisplayComponent.tsx'
-import VariantMatrixDisplayComponent from './matrix/VariantMatrixDisplayComponent.tsx'
 import { createTestEnvironment as createMatrixTestEnvironment } from './matrix/testEnv.ts'
 import { createTestEnvironment } from './testEnv.ts'
 
@@ -39,7 +38,7 @@ test('the genomic layout binds the wheel to a panel holding the sidebar', () => 
 
 test('the columns layout binds the wheel to a panel holding the sidebar', () => {
   const { display } = createMatrixTestEnvironment().createDisplay()
-  render(<VariantMatrixDisplayComponent model={clustered(display)} />)
+  render(<VariantDisplayComponent model={clustered(display)} />)
 
   const panel = screen.getByTestId('variant-matrix-rows')
   expect(panel.contains(screen.getByTestId('variant_matrix_canvas'))).toBe(true)
