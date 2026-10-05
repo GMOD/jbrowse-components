@@ -779,9 +779,8 @@ describe('a drag in flight', () => {
   test('a changed indicator redraws the indicator, not any tab content', () => {
     const { tab } = dragInto()
     const zone = () =>
-      document
-        .querySelector('[data-drop-indicator]')
-        ?.getAttribute('data-drop-indicator')
+      document.querySelector<HTMLElement>('[data-drop-indicator]')?.dataset
+        .dropIndicator
     const before = zone()
 
     act(() => {

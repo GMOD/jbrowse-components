@@ -17,11 +17,14 @@ import { observer } from 'mobx-react'
 import { tabDisplayName } from '../../WorkspaceLayout/tabName.ts'
 
 import type { WorkspaceLayout } from '../../WorkspaceLayout/model.ts'
+import type { WorkspaceSessionType } from './types.ts'
 import type { IBaseViewModel } from '@jbrowse/core/pluggableElementTypes/models'
 import type { ReorderDirection } from '@jbrowse/core/util'
 import type { SessionWithMultipleViews } from '@jbrowse/product-core'
 
-type ViewMenuSession = SessionWithMultipleViews & WorkspaceLayout
+type ViewMenuSession = SessionWithMultipleViews &
+  WorkspaceLayout &
+  WorkspaceSessionType
 
 // takes the icon's class, not an SvgIconProps object: the object was built
 // inline by ViewHeader and so was new on each of its renders, which defeated
