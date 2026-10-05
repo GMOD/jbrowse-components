@@ -1,4 +1,5 @@
 import { getSession } from '@jbrowse/core/util'
+import { getEditableTrackConfigById } from '@jbrowse/core/util/types'
 import { ElementId } from '@jbrowse/core/util/types/mst'
 import { addDisposer, getSnapshot, types } from '@jbrowse/mobx-state-tree'
 import { autorun } from 'mobx'
@@ -17,16 +18,31 @@ export default function stateModelFactory(_pluginManager: PluginManager) {
     .model('ConfigurationEditorWidget', {
       id: ElementId,
       type: types.literal('ConfigurationEditorWidget'),
+      /**
+       * #property
+       * the track whose working copy this edits, re-resolved on every read so
+       * an undo that replaces the copy moves the editor with it
+       */
+      trackId: types.maybe(types.string),
     })
     .volatile(() => ({
-      // Target is stored as volatile since it doesn't need to be serialized.
-      // The target is an MST model from track.configuration (which creates
-      // an MST model from frozen config via ConfigurationReference).
-      target: undefined as AnyConfigurationModel | undefined,
+      // a config the session cannot resolve by trackId: an assembly, a
+      // connection, or a track a view holds inline
+      inlineTarget: undefined as AnyConfigurationModel | undefined,
       // displayId of the display active in the view this editor was opened
       // from; its config accordion expands by default while the track's other
       // (incompatible/inactive) displays start collapsed
       expandedDisplayId: undefined as string | undefined,
+    }))
+    .views(self => ({
+      /**
+       * #getter
+       */
+      get target(): AnyConfigurationModel | undefined {
+        return self.trackId === undefined
+          ? self.inlineTarget
+          : getEditableTrackConfigById(getSession(self), self.trackId)
+      },
     }))
     .actions(self => {
       type TrackSnapshot = { trackId: string; [key: string]: unknown }
@@ -41,26 +57,38 @@ export default function stateModelFactory(_pluginManager: PluginManager) {
         }
       }
       return {
+        /**
+         * #action
+         * edit the working copy of `trackId`, saving any edit still pending
+         * on the previous target first
+         */
+        setTrackId(trackId: string) {
+          save()
+          self.inlineTarget = undefined
+          self.trackId = trackId
+        },
+        /**
+         * #action
+         * edit a config node directly, saving any edit still pending on the
+         * previous target first
+         */
         setTarget(newTarget: AnyConfigurationModel | undefined) {
-          self.target = newTarget
+          save()
+          self.trackId = undefined
+          self.inlineTarget = newTarget
         },
         setExpandedDisplayId(displayId: string | undefined) {
           self.expandedDisplayId = displayId
         },
         afterCreate() {
-          // Auto-save configuration changes with 400ms debounce, through
-          // updateTrackConfiguration, which routes admin edits to the jbrowse
-          // config in place and everyone else's to a shareable per-track delta
-          // (trackConfigDeltas) against the admin base. A config with no
-          // trackId (assembly/connection) finds no home there, so the edit
-          // stays on the live MST node for this session.
+          // Saves through updateTrackConfiguration as a per-track delta. A
+          // config with no trackId (assembly/connection) finds no home there,
+          // so the edit stays on the live MST node for this session.
           //
-          // BaseTrackModel's afterAttach runs a sibling debounced save for
-          // direct setSlot quick-edits on a *shown* track. Both intentionally
-          // coexist: this widget also handles an unshown track edited from the
-          // selector, which has no BaseTrackModel. When both fire they compute
-          // an identical delta, deduped in updateTrackConfiguration — don't
-          // drop one to "simplify".
+          // BaseTrackModel runs a sibling saver on a shown track's working
+          // copy, which this widget edits too; this one covers a track that is
+          // not shown. When both fire they compute an identical delta, deduped
+          // in updateTrackConfiguration.
           addDisposer(
             self,
             autorun(() => {

@@ -528,9 +528,9 @@ test('a config-editor widget edit persists as a delta via its debounced autorun 
   // afterCreate autorun) — distinct from BaseTrackModel's reaction, which is
   // covered above. The track is deliberately NOT shown: with no BaseTrackModel
   // instance, only the widget's autorun can persist, so this isolates it.
-  // editConfiguration hydrates a temp MST target from the frozen base config;
-  // mutating a slot re-runs the autorun, which snapshots the target and after a
-  // 400ms debounce calls updateTrackConfiguration.
+  // The widget's target is the track's working copy; mutating a slot re-runs
+  // the autorun, which snapshots it and after a 400ms debounce calls
+  // updateTrackConfiguration.
   jest.useFakeTimers()
   try {
     const { rootModel } = await getPluginManager(undefined, false)
@@ -560,7 +560,7 @@ test('a config-editor widget edit persists as a delta via its debounced autorun 
 
     jest.advanceTimersByTime(400)
 
-    // only the name is a real change; the temp target hydrates with injected
+    // only the name is a real change; the working copy hydrates with injected
     // {type, displayId} display stubs that ride along in the raw delta but are
     // dropped by getTrackConfigChanges (they're not genuine overrides)
     expect(session.isTrackOverride(TRACK_ID)).toBe(true)

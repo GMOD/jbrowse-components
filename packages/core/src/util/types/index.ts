@@ -1,7 +1,8 @@
-import { isStateTreeNode } from '@jbrowse/mobx-state-tree'
+import { getEnv, isStateTreeNode } from '@jbrowse/mobx-state-tree'
 
 import { isSessionServices } from './services.ts'
 
+import type PluginManager from '../../PluginManager.ts'
 import type { ViewSnapshotInput } from '../../PluginManager.ts'
 import type TextSearchManager from '../../TextSearch/TextSearchManager.ts'
 import type { AnyConfigurationModel } from '../../configuration/index.ts'
@@ -311,6 +312,27 @@ export function isSessionWithEditableTrackConfig(
   t: unknown,
 ): t is SessionWithEditableTrackConfig {
   return isSessionModel(t) && 'getEditableTrackConfig' in t
+}
+
+/**
+ * The working copy `trackId` resolves to (ADR-032), through its track type's
+ * own schema, which is the one a shown track's `configuration` reference
+ * holds, so both reach one node. Re-resolves on every read: an undo or a
+ * session restore replaces the working copy. Undefined when the session keeps
+ * no working copies or nothing answers the id.
+ */
+export function getEditableTrackConfigById(session: unknown, trackId: string) {
+  if (!isSessionWithEditableTrackConfig(session)) {
+    return undefined
+  }
+  const type = session.getTrackById(trackId)?.type
+  const schema =
+    typeof type === 'string'
+      ? getEnv<{ pluginManager: PluginManager }>(
+          session,
+        ).pluginManager.getTrackType(type).configSchema
+      : undefined
+  return schema ? session.getEditableTrackConfig(trackId, schema) : undefined
 }
 
 /**

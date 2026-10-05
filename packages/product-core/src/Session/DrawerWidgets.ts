@@ -4,12 +4,12 @@ import {
   localStorageSetItem,
   scheduleDetachedDestroy,
 } from '@jbrowse/core/util'
+import { getEditableTrackConfigById } from '@jbrowse/core/util/types'
 import {
   addDisposer,
   detach,
   getEnv,
   isAlive,
-  isStateTreeNode,
   types,
 } from '@jbrowse/mobx-state-tree'
 import { autorun } from 'mobx'
@@ -340,30 +340,40 @@ export function DrawerWidgetSessionMixin(pluginManager: PluginManager) {
         configuration: AnyConfigurationModel | { trackId: string },
         opts?: { expandedDisplayId?: string },
       ) {
-        let targetConfig: AnyConfigurationModel
-
-        if (
-          isStateTreeNode(configuration) &&
-          isConfigurationModel(configuration)
-        ) {
-          // Already an MST model (e.g., from track.configuration), use directly
-          targetConfig = configuration
-        } else if ('trackId' in configuration) {
-          // Frozen/plain object - create a temporary MST model for editing
-          const trackSchema = pluginManager.pluggableConfigSchemaType('track')
-          targetConfig = trackSchema.create(configuration, getEnv(self))
-        } else {
+        const isNode = isConfigurationModel(configuration)
+        if (!isNode && !('trackId' in configuration)) {
           throw new Error(
             'must pass a configuration model or frozen config with trackId to editConfiguration',
           )
         }
-
+        const trackId: unknown = configuration.trackId
+        const workingCopy =
+          typeof trackId === 'string'
+            ? getEditableTrackConfigById(self, trackId)
+            : undefined
         const editor = self.openWidget(
           'ConfigurationEditorWidget',
           'configEditor',
         )
-        // Set target via action since it's now volatile
-        editor.setTarget(targetConfig)
+        // A shown track edits its working copy, so the editor edits that same
+        // node, and follows it when an undo replaces it (ADR-032). A node the
+        // session does not resolve by id, such as a track a view holds
+        // inline, is edited as it stands.
+        if (
+          typeof trackId === 'string' &&
+          workingCopy &&
+          (!isNode || workingCopy === configuration)
+        ) {
+          editor.setTrackId(trackId)
+        } else {
+          editor.setTarget(
+            isNode
+              ? configuration
+              : pluginManager
+                  .pluggableConfigSchemaType('track')
+                  .create(configuration, getEnv(self)),
+          )
+        }
         editor.setExpandedDisplayId(opts?.expandedDisplayId)
       },
     }))
