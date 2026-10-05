@@ -129,49 +129,23 @@ to letter, so hover a bar for its haplotype, length and excess over GRCh38.
 Click the KIV-2 bubble boxed in the bubbles track. Its details give
 `shortestAlleleLength` and `longestAlleleLength`, the shortest and longest
 routes the rGFA holds there, and the bars run from about the one to about the
-other. GRCh38's short blue bar sits near the bottom of that range, with a
-haplotype carrying fewer copies below it.
+other.
 
 To read one sample at full size, right-click its bar and pick **Show only** with
 its name, or pick names under **Samples → Choose samples...**, and **Samples →
 Every sample** brings the cohort back.
 
-## Telling KIV-2's two repeat units apart {#which-copy-is-which}
+## Telling KIV-2A from KIV-2B {#which-copy-is-which}
 
 Walk rows give each haplotype's copy count. KIV-2's copies are near-identical,
 and the aligner's choice of which GRCh38 copy an extra one matches is arbitrary,
 so the walks leave open which copy is which. A record that lists each
 haplotype's copies settles it.
 
-We host a record of the eight haplotypes' KIV-2 copies as a track. It holds a
-single VCF 4.5 `<CNV:TR>` record at the array: each allele lists its runs of one
-unit and every copy's length, and a phased genotype puts each allele on its
-haplotype:
-
-```json addtrack
-{
-  "type": "VariantTrack",
-  "trackId": "hprc_kiv2_copies",
-  "name": "LPA KIV-2 copies by unit, eight HPRC haplotypes",
-  "assemblyNames": ["hg38"],
-  "uri": "https://jbrowse.org/demos/hprc/hprc_kiv2_copies.vcf"
-}
-```
-
-Turn the track on, right-click the record and choose **Show repeat copies**. The
-TandemRepeat plugin, which the hosted config loads beside the graph plugin,
-opens a view with one bar per haplotype, each on a separate bp axis, and each
-copy coloured by its unit.
-
-<Figure caption="The KIV-2 record under LPA, and the view its right-click item opens: one bar per haplotype, each copy coloured by its unit. GRCh38's short array has one copy of unit 2, and HG00133's runs far past the dashed line that marks GRCh38's length, all of unit 1." src="/img/pangenome/hprc_kiv2_copies_by_unit.png" />
-
-The copies across the nine arrays form two units, and copies of one unit differ
-from each other less than the two units do. Unit 2 opens five of the eight HPRC
-arrays and sits fourth in GRCh38's. The copy counts agree with the walk lengths
-in walk rows.
-
-A second hosted track holds the same record over every haplotype whose walk
-reaches both flanks of the array, 464 arrays counting GRCh38's:
+We host one as a track: a single VCF 4.5 `<CNV:TR>` record at the array over
+every haplotype whose walk reaches both flanks. Each allele lists its runs of
+one copy type and every copy's length, a phased genotype puts each allele on its
+haplotype, and a samples table gives each sample's population:
 
 ```json addtrack
 {
@@ -179,18 +153,37 @@ reaches both flanks of the array, 464 arrays counting GRCh38's:
   "trackId": "hprc_kiv2_copies_all",
   "name": "LPA KIV-2 copies by unit, all HPRC haplotypes",
   "assemblyNames": ["hg38"],
-  "uri": "https://jbrowse.org/demos/hprc/hprc_kiv2_copies_all.vcf.gz"
+  "adapter": {
+    "type": "VcfTabixAdapter",
+    "uri": "https://jbrowse.org/demos/hprc/hprc_kiv2_copies_all.vcf.gz",
+    "samplesTsvLocation": {
+      "uri": "https://jbrowse.org/demos/hprc/hprc_samples.tsv"
+    }
+  }
 }
 ```
 
-**Show repeat copies** on its record squeezes the 464 bars into the height of
-30, the arrays with the most unit 2 copies first, then longest. They are too
-thin to label, so hover a copy for its haplotype.
+Turn the track on, right-click the record and choose **Show repeat copies**. The
+TandemRepeat plugin, which the hosted config loads beside the graph plugin,
+opens a view with one bar per haplotype, each on its own bp axis and each copy
+coloured by its type. The bars are too many to label, so the view squeezes them
+into its height, those with the most KIV-2B first, then longest; hover a copy
+for its haplotype.
 
-<Figure caption="The KIV-2 record over all 464 HPRC arrays, those with the most unit 2 copies first, then longest, each copy coloured by its unit. Unit 2 leads every array that holds it; the lone bar whose unit 2 copy sits fourth is GRCh38's." src="/img/pangenome/hprc_kiv2_copies_all_by_unit.png" />
+<Figure caption="The KIV-2 record over every HPRC haplotype, those with the most KIV-2B copies first, then longest, each copy coloured by its type. KIV-2B leads every array that holds it; the lone bar whose KIV-2B copy sits fourth is GRCh38's." src="/img/pangenome/hprc_kiv2_copies_all_by_unit.png" />
 
-Unit 2 is KIV-2B, the copy type LPA studies tell apart by three synonymous sites
-in exon 1. The script below finds those sites from the copies alone.
+KIV-2A and KIV-2B are the copy types LPA studies tell apart by three synonymous
+sites in exon 1, and the script that wrote the record finds those sites from the
+copies alone (below).
+
+**Group by… → superpopulation** in the view's menu splits the bars by that
+column of the samples table, every section on the same ruler and row height:
+
+<Figure caption="The same record grouped by superpopulation. Arrays opening with a block of KIV-2B copies gather in the AMR, EAS and SAS sections; in EUR, KIV-2B is mostly a single opening copy, and most AFR arrays hold none." src="/img/pangenome/hprc_kiv2_copies_by_superpopulation.png" />
+
+The same record over the eight haplotypes of the walks above is
+`LPA KIV-2 copies by unit, eight HPRC haplotypes` in the track selector, few
+enough bars to label each by name.
 
 We wrote the KIV-2 record from the walks above. To write one for your own array,
 we'll first cut the walks over it out of the gbz-base database as a GFA
@@ -199,14 +192,19 @@ side:
 
 ```bash
 # the reference walk is PanSN GRCh38#0#chr6; the interval is the array
-gbz-base query --sample GRCh38 --contig chr6 -i 160616002..160646753 \
-  --context 1000 graph.gbz.db > cut.gfa
+npx --yes -p @gmod/gbz-base gbz-base-query \
+  https://s3-us-west-2.amazonaws.com/human-pangenomics/pangenomes/freeze/release2/minigraph-cactus/v2.1/hprc-v2.1-mc-grch38/hprc-v2.1-mc-grch38.gbz.db \
+  --haplotype-index https://jbrowse.org/demos/hprc/hprc-v2.1-mc-grch38.haplotype-index.anchored.db \
+  --sample GRCh38 --contig chr6 --interval 160616002..160646753 \
+  --context 1000 --snarls --haplotypes all --limit 100000 --resolve \
+  --format gfa > cut.gfa
 ```
 
 [`tandem-repeat-vcf.mjs`](https://github.com/GMOD/jbrowse-plugin-tandem-repeat/blob/main/scripts/tandem-repeat-vcf.mjs)
 splits each walk into copies wherever the reference array's first 24 bases
 recur, and groups copies within 1% of each other into a unit. It takes the cut
-and a BED row naming the array on the reference (chrom, start, end, name):
+and a BED row naming the array on the reference (chrom, start, end, name), and
+`--unit-names` names the units, the one with the most copies first:
 
 ```bash
 curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-plugin-tandem-repeat/main/scripts/tandem-repeat-vcf.mjs
@@ -214,7 +212,8 @@ curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-plugin-tandem-repeat/mai
 
 ```bash
 printf 'chr6\t160616002\t160646753\tKIV-2\n' > arrays.bed
-node tandem-repeat-vcf.mjs cut.gfa --bed arrays.bed --name KIV-2 > kiv2.vcf
+node tandem-repeat-vcf.mjs cut.gfa --bed arrays.bed --name KIV-2 \
+  --unit-names KIV-2A,KIV-2B > kiv2.vcf
 ```
 
 Given one copy's exons as BED rows with their strand, `--sites` reports where

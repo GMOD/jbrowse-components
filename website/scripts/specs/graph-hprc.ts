@@ -1350,60 +1350,8 @@ export const hprcGraphSpecs: ScreenshotSpec[] = [
       },
     ],
   },
-  // The KIV-2 record's copies by unit, opened the way a reader opens it: the
-  // record's right-click item, which the TandemRepeat plugin the hosted config
-  // loads adds to a variant track.
-  {
-    mode: 'url',
-    name: 'pangenome/hprc_kiv2_copies_by_unit',
-    url: sessionSpec(HOSTED_HPRC_CONFIG, {
-      views: [
-        {
-          type: 'LinearGenomeView',
-          assembly: 'hg38',
-          loc: 'chr6:160,596,000-160,666,000',
-          tracks: [
-            {
-              trackId: 'hg38_ncbiRefSeq_ucsc',
-              type: 'LinearBasicDisplay',
-              showOnlyGenes: true,
-              displayMode: 'compact',
-              height: 40,
-            },
-            {
-              trackId: 'hprc_kiv2_copies',
-              type: 'LinearVariantDisplay',
-              height: 40,
-            },
-          ],
-        },
-      ],
-    }),
-    viewportWidth: 1400,
-    viewportHeight: 640,
-    hideTooltip: true,
-    clicksChange: "open the record's repeat copies view",
-    actions: [
-      { type: 'waitForAppSettled', timeout: 120000 },
-      {
-        type: 'rightclick',
-        anchor: {
-          locus: 'chr6:160,631,000',
-          track: 'hprc_kiv2_copies',
-          fracY: 0.2,
-        },
-      },
-      { type: 'waitForText', text: 'Show repeat copies' },
-      { type: 'click', text: 'Show repeat copies' },
-      {
-        type: 'waitForSelector',
-        selector: '[data-testid="tandem-repeat-view"]',
-      },
-      { type: 'delay', ms: 500 },
-    ],
-  },
-  // The same record over every haplotype: the view squeezes 464 rows into the
-  // height of 30, longest first
+  // The KIV-2 record over every haplotype: the view squeezes 464 rows into the
+  // height of 30, most KIV-2B first, then longest
   {
     mode: 'url',
     name: 'pangenome/hprc_kiv2_copies_all_by_unit',
@@ -1449,6 +1397,70 @@ export const hprcGraphSpecs: ScreenshotSpec[] = [
       {
         type: 'waitForSelector',
         selector: '[data-testid="tandem-repeat-view"]',
+      },
+      { type: 'delay', ms: 500 },
+    ],
+  },
+  // The cohort record grouped by the samples table's superpopulation, picked
+  // from the repeat view's own menu
+  {
+    mode: 'url',
+    name: 'pangenome/hprc_kiv2_copies_by_superpopulation',
+    url: sessionSpec(HOSTED_HPRC_CONFIG, {
+      views: [
+        {
+          type: 'LinearGenomeView',
+          assembly: 'hg38',
+          loc: 'chr6:160,596,000-160,666,000',
+          tracks: [
+            {
+              trackId: 'hg38_ncbiRefSeq_ucsc',
+              type: 'LinearBasicDisplay',
+              showOnlyGenes: true,
+              displayMode: 'compact',
+              height: 40,
+            },
+            {
+              trackId: 'hprc_kiv2_copies_all',
+              type: 'LinearVariantDisplay',
+              height: 40,
+            },
+          ],
+        },
+      ],
+    }),
+    viewportWidth: 1400,
+    viewportHeight: 1300,
+    hideTooltip: true,
+    clicksChange: "open the record's repeat copies view",
+    actions: [
+      { type: 'waitForAppSettled', timeout: 120000 },
+      {
+        type: 'rightclick',
+        anchor: {
+          locus: 'chr6:160,631,000',
+          track: 'hprc_kiv2_copies_all',
+          fracY: 0.2,
+        },
+      },
+      { type: 'waitForText', text: 'Show repeat copies' },
+      { type: 'click', text: 'Show repeat copies' },
+      {
+        type: 'waitForSelector',
+        selector: '[data-testid="tandem-repeat-view"]',
+      },
+      {
+        type: 'click',
+        selector:
+          '[data-testid^="view-container-"]:has([data-testid="tandem-repeat-view"]) [data-testid="view_menu_icon"]',
+      },
+      { type: 'waitForText', text: 'Group by…' },
+      { type: 'click', text: 'Group by…' },
+      { type: 'waitForText', text: 'superpopulation' },
+      { type: 'click', text: 'superpopulation' },
+      {
+        type: 'waitForSelector',
+        selector: '[data-testid="tandem-repeat-section"]',
       },
       { type: 'delay', ms: 500 },
     ],
