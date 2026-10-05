@@ -2441,6 +2441,25 @@ export function stateModelFactory(
     .views(self => ({
       /**
        * #getter
+       * the selected feature's glyph hits per row, which a pan leaves alone
+       */
+      get selectedGlyphHits() {
+        const id = self.selectedFeatureId
+        return id === undefined
+          ? []
+          : self.laneStack.lanes.map((_lane, row) =>
+              [boxesKey(row), glyphsKey(row)].flatMap(key => {
+                const cell = self.laneGlyphCells.get(key)
+                return cell?.kind === 'glyphs'
+                  ? cell.data.hits.filter(hit => hit.feature.id() === id)
+                  : []
+              }),
+            )
+      },
+    }))
+    .views(self => ({
+      /**
+       * #getter
        * the ramp or threshold each lane layer's bars paint numbers through,
        * one per mark and undefined for a mark coloured another way; a ramp's
        * domain covers the values of every drawn lane, as `laneLayerDomains`
@@ -2584,28 +2603,19 @@ export function stateModelFactory(
       },
       /** #getter */
       get selectionInk(): HighlightRect[] {
-        const { selectedFeatureId, dragOffsetPx, scrollTop } = self
-        return selectedFeatureId === undefined
-          ? []
-          : self.laneStack.lanes.flatMap((_lane, row) => {
-              const map = laneMapOf(self, row)
-              return [boxesKey(row), glyphsKey(row)].flatMap(key => {
-                const cell = self.laneGlyphCells.get(key)
-                return cell?.kind === 'glyphs'
-                  ? cell.data.hits
-                      .filter(hit => hit.feature.id() === selectedFeatureId)
-                      .map(hit =>
-                        drawnRect(
-                          map,
-                          [hit.x1, hit.x2],
-                          dragOffsetPx,
-                          hit.y1 - scrollTop,
-                          hit.y2 - hit.y1,
-                        ),
-                      )
-                  : []
-              })
-            })
+        const { dragOffsetPx, scrollTop } = self
+        return self.selectedGlyphHits.flatMap((hits, row) => {
+          const map = laneMapOf(self, row)
+          return hits.map(hit =>
+            drawnRect(
+              map,
+              [hit.x1, hit.x2],
+              dragOffsetPx,
+              hit.y1 - scrollTop,
+              hit.y2 - hit.y1,
+            ),
+          )
+        })
       },
       /** #getter */
       get highlightStyle(): HighlightStyle {
