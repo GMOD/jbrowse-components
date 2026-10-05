@@ -136,8 +136,7 @@ export type Scale =
       of?: string
       name?: string
     }
-  | { kind: 'linewidth'; range: [number, number]; name?: string }
-  | { kind: 'linewidthLog'; range: [number, number]; name?: string }
+  | { kind: 'linewidth'; range: [number, number]; log?: boolean; name?: string }
   | {
       kind: 'gradient'
       colours: string[]
@@ -252,10 +251,10 @@ function renderScale(aesthetic: Aesthetic, s: Scale) {
     return `scale_${aesthetic}_manual(${args.join(', ')})`
   }
   const name = s.name ? `name = ${rStr(s.name)}` : ''
-  if (s.kind === 'linewidth' || s.kind === 'linewidthLog') {
+  if (s.kind === 'linewidth') {
     const args = [
       `range = c(${s.range[0]}, ${s.range[1]})`,
-      ...(s.kind === 'linewidthLog' ? ['trans = "log10"'] : []),
+      ...(s.log ? ['trans = "log10"'] : []),
       name,
     ].filter(Boolean)
     return `scale_linewidth_continuous(${args.join(', ')})`

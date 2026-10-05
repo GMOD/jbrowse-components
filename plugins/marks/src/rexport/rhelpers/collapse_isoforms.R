@@ -1,35 +1,10 @@
-# Collapse each gene to a single transcript, reproducing the display's
-# representative-transcript gene glyph mode (geneGlyphMode 'longestCoding').
-# Without it the panel draws every isoform a gene has, which at gene-scale zoom
-# is what the browser deliberately stops doing - a 6 kb window over one hg38
-# gene came out as a solid block of stacked transcripts.
-#
-# The ranking is rankIsoforms', in its order:
-#
-# 1. The CURATED TAG the annotation carries, by its position in
-#    'canonical_tags' - a tag outranks every measurement, because it is the
-#    choice a human made, and for a gene whose longest protein is a minor
-#    variant it is the only thing that gets that gene right. The position
-#    matters rather than a boolean: one gene can carry both 'MANE Select' and
-#    'MANE Plus Clinical', and the second is often the longer.
-# 2. Coding isoforms above non-coding ones.
-# 3. Size: the longest PROTEIN for a coding isoform - summed CDS bp over its
-#    subtree, deduped by (start, end) because duplicated CDS rows are a real
-#    GFF3 quirk and counting one twice would win it the pick - and the widest
-#    span for a non-coding one, which it is only ever compared against other
-#    non-coding ones on.
-# 4. An exact tie resolves to the LATER isoform, matching the display.
-#
-# 'canonical_field' names the attribute the tag lives in ('tag' in NCBI's and
-# GENCODE's GFF3) and read_gff has to have been asked for it; a comma list in it
-# matches on any member, case-insensitively. With no field or no tags the
-# ranking is measurement alone, which is what a BED or BigBed track gets.
-#
-# 'transcript_types' names the child types that count as isoforms; a gene with
-# no child of those types treats its direct children as the isoform list, as
-# getIsoforms does. Matched case-insensitively, like every other type test here.
-# Only a feature whose children have parts of their own stacks isoforms, so an
-# mRNA keeps every CDS.
+# Keep one transcript per gene, as the display's representative-transcript
+# glyph mode does. Ranked as the browser ranks isoforms: a curated tag in
+# 'canonical_tags' (by its position, held in the 'canonical_field' attribute,
+# which read_gff must have been asked for), then coding over non-coding, then the
+# longest protein (summed CDS bp, deduplicated) or widest span, a tie going to
+# the later isoform. 'transcript_types' names the child types counted as
+# isoforms; a gene with none treats its direct children as the isoforms.
 collapse_isoforms <- function(f, transcript_types, canonical_field = NULL,
                               canonical_tags = character(0)) {
   if (is.null(f) || !nrow(f)) return(f)

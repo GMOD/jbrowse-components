@@ -557,8 +557,9 @@ function sizeOf(
     return {
       field,
       scale: {
-        kind: spec.scale === 'log' ? 'linewidthLog' : 'linewidth',
+        kind: 'linewidth',
         range: [linewidth(lo), linewidth(hi)],
+        log: spec.scale === 'log',
       },
     }
   }
