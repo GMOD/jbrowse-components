@@ -6,6 +6,7 @@ import {
   categoricalPalette,
   categoricalValueColor,
 } from '@jbrowse/core/ui/colors'
+import { colorFwdStrand, colorRevStrand } from '@jbrowse/core/ui/palette'
 
 import { exportTracksToR } from './exportView.ts'
 import { HELPERS } from './rHelpers.generated.ts'
@@ -136,6 +137,40 @@ const renamedIndex = register(
   'nrow(genes_gff3tabix_genes) > 0',
 )
 
+const drawnRows = `sum(vapply(
+  Filter(function(o) inherits(o, "ggplot"), mget(ls(), inherits = FALSE)),
+  function(p) sum(vapply(ggplot_build(p)$data, nrow, 1)), 1))`
+
+const wide = [{ refName: 'ctgA', start: 0, end: 50000 }]
+const NEEDS_JEXL_FORMULA = new Set(['marks_facet'])
+const everyMark = new Map<string, string>()
+for (const [trackId, conf] of marks) {
+  const display = conf.displays?.[0]
+  if (display?.type === 'LinearMarkDisplay') {
+    const result = exportTracksToR({
+      tracks: [track(marks, trackId, 'LinearMarkDisplay', display)],
+      regions: wide,
+      out,
+    })
+    if (result.script) {
+      everyMark.set(
+        trackId,
+        register(`mark_${trackId}`, result.script, drawnRows),
+      )
+    }
+  }
+}
+
+const strandColours = register(
+  'strand_colours',
+  scriptFor([
+    track(main, 'volvox_alignments', 'LinearAlignmentsDisplay', {
+      color: { field: 'strand' },
+    }),
+  ]),
+  'sort(unique(ggplot_build(pileup_volvox_alignments)$data[[1]]$fill))',
+)
+
 function wiggle(display: Record<string, unknown>) {
   return scriptFor(
     [track(main, 'wiggle_track_posneg', 'LinearWiggleDisplay', display)],
@@ -254,6 +289,25 @@ maybe('the emitted script, run under R', () => {
     expect(results.get(colourOracle)).toBe('[1] 0')
     expect(results.get(barsColours)?.replaceAll(/\s+/g, ' ')).toBe(
       `EDEN.1 EDEN.3 "${categoricalValueColor('EDEN.1')}" "${categoricalValueColor('EDEN.3')}"`,
+    )
+  })
+
+  it('draws rows for every readable track in the marks config', () => {
+    const empty = [...everyMark]
+      .filter(([trackId]) => !NEEDS_JEXL_FORMULA.has(trackId))
+      .filter(
+        ([, name]) => !(Number(results.get(name)?.replace('[1] ', '')) > 0),
+      )
+      .map(([trackId]) => `${trackId}: ${results.get(everyMark.get(trackId)!)}`)
+    expect(empty).toEqual([])
+  })
+
+  it('paints reads in the strand colours the browser does', () => {
+    const wanted = [colorFwdStrand, colorRevStrand]
+      .map(c => c.toLowerCase())
+      .sort()
+    expect(results.get(strandColours)?.toLowerCase()).toBe(
+      `[1] ${wanted.map(c => `"${c}"`).join(' ')}`,
     )
   })
 
