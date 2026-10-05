@@ -28,6 +28,9 @@ Most sessions and configs migrate through `preProcessSnapshot`:
 - `outline` becomes `outlineColor`
 - a v4 session's `heightPreConfig` migrates onto the `height` slot
 - the LD display's `ldMetric` becomes `color.field`
+- the multi-sample variant display's `renderingMode: 'phased' | 'alleleCount'`
+  becomes `unit: 'haplotype' | 'sample'`, from the config slot and from a
+  session's `renderingModeSetting` alike
 
 The `heightOverride` shadow-prop that existed during development is gone, and
 there is no `<name>Override` shadow-property system.
