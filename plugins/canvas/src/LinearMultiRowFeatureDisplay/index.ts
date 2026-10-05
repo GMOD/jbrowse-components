@@ -21,6 +21,7 @@ export default function register(pluginManager: PluginManager) {
       configSchema,
       stateModel: () => import('./model.ts').then(f => f.default(configSchema)),
       trackType: 'FeatureTrack',
+      rpcMethods: ['MultiRowGetFeatures'],
       viewType: 'LinearGenomeView',
       plotExamples: MULTI_ROW_PLOT_EXAMPLES,
       ReactComponent: LinearMultiRowFeatureDisplayComponent,

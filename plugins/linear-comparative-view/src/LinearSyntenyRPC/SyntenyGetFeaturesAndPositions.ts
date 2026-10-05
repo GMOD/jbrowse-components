@@ -43,9 +43,12 @@ declare module '@jbrowse/core/rpc/RpcRegistry' {
 export class SyntenyGetFeaturesAndPositions extends RpcMethodType<'SyntenyGetFeaturesAndPositions'> {
   name = 'SyntenyGetFeaturesAndPositions' as const
 
+  override preload() {
+    return import('./executeSyntenyFeaturesAndPositions.ts')
+  }
+
   async execute(args: RpcExecuteArgs<'SyntenyGetFeaturesAndPositions'>) {
-    const { executeSyntenyFeaturesAndPositions } =
-      await import('./executeSyntenyFeaturesAndPositions.ts')
+    const { executeSyntenyFeaturesAndPositions } = await this.preload()
     return executeSyntenyFeaturesAndPositions({
       ...args,
       pluginManager: this.pluginManager,

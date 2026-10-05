@@ -37,8 +37,12 @@ declare module '@jbrowse/core/rpc/RpcRegistry' {
 export default class RenderLDData extends RpcMethodTypeWithRenameRegions<'RenderLDData'> {
   name = 'RenderLDData' as const
 
+  override preload() {
+    return import('./executeRenderLDData.ts')
+  }
+
   async execute(args: RpcExecuteArgs<'RenderLDData'>) {
-    const { executeRenderLDData } = await import('./executeRenderLDData.ts')
+    const { executeRenderLDData } = await this.preload()
     return executeRenderLDData({
       pluginManager: this.pluginManager,
       args,

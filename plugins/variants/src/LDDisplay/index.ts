@@ -20,6 +20,7 @@ export default function LDDisplayF(pluginManager: PluginManager) {
         stateModel: () =>
           import('./model.ts').then(f => f.default(configSchema)),
         trackType: 'LDTrack',
+        rpcMethods: ['RenderLDData'],
         viewType: 'LinearGenomeView',
         ReactComponent: lazyWithPreload(
           () => import('./components/LDDisplayComponent.tsx'),

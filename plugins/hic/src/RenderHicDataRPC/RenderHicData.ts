@@ -17,8 +17,12 @@ declare module '@jbrowse/core/rpc/RpcRegistry' {
 export default class RenderHicData extends RpcMethodTypeWithRenameRegions<'RenderHicData'> {
   name = 'RenderHicData' as const
 
+  override preload() {
+    return import('./executeRenderHicData.ts')
+  }
+
   async execute(args: RpcExecuteArgs<'RenderHicData'>) {
-    const { executeRenderHicData } = await import('./executeRenderHicData.ts')
+    const { executeRenderHicData } = await this.preload()
     return executeRenderHicData({
       pluginManager: this.pluginManager,
       args,

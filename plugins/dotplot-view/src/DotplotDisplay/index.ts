@@ -18,6 +18,7 @@ export default function DotplotDisplayF(pm: PluginManager) {
           f.stateModelFactory(configSchema),
         ),
       trackType: 'SyntenyTrack',
+      rpcMethods: ['DotplotGetFeaturesAndPositions'],
       viewType: 'DotplotView',
       ReactComponent: () => null,
     })

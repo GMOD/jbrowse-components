@@ -30,6 +30,7 @@ export default function LinearMultiSampleVariantDisplayF(
       // it
       stateModel: () => import('./model.ts').then(f => f.default(configSchema)),
       trackType: 'VariantTrack',
+      rpcMethods: ['MultiSampleVariantGetCellData'],
       viewType: 'LinearGenomeView',
       plotExamples: MULTI_SAMPLE_VARIANT_PLOT_EXAMPLES,
       ReactComponent: VariantDisplayComponent,

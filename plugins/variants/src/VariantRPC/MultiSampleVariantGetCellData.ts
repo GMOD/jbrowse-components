@@ -20,9 +20,12 @@ declare module '@jbrowse/core/rpc/RpcRegistry' {
 export class MultiSampleVariantGetCellData extends RpcMethodTypeWithFiltersAndRenameRegions<'MultiSampleVariantGetCellData'> {
   name = 'MultiSampleVariantGetCellData' as const
 
+  override preload() {
+    return import('./executeVariantCellData.ts')
+  }
+
   async execute(args: RpcExecuteArgs<'MultiSampleVariantGetCellData'>) {
-    const { executeVariantCellData } =
-      await import('./executeVariantCellData.ts')
+    const { executeVariantCellData } = await this.preload()
     return executeVariantCellData({
       pluginManager: this.pluginManager,
       args,

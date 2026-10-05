@@ -17,6 +17,7 @@ export default function LinearHicDisplayF(pluginManager: PluginManager) {
       // this display
       stateModel: () => import('./model.ts').then(f => f.default(configSchema)),
       trackType: 'HicTrack',
+      rpcMethods: ['RenderHicData'],
       viewType: 'LinearGenomeView',
       plotExamples: HIC_PLOT_EXAMPLES,
       ReactComponent: lazyWithPreload(

@@ -19,6 +19,7 @@ export default function LGVSyntenyDisplayF(pluginManager: PluginManager) {
       // static edge here would pull that whole subgraph into the eager bundle
       stateModel: () => import('./model.ts').then(f => f.default(configSchema)),
       trackType: 'SyntenyTrack',
+      rpcMethods: ['RenderAlignmentData'],
       viewType: 'LinearGenomeView',
       plotExamples: LGV_SYNTENY_PLOT_EXAMPLES,
       ReactComponent,

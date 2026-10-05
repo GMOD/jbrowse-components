@@ -48,6 +48,7 @@ export default function LinearWiggleDisplayF(pluginManager: PluginManager) {
           'GCContentTrack',
           'FeatureTrack',
         ],
+        rpcMethods: ['RenderMultiWiggleData'],
         viewType: 'LinearGenomeView',
         plotExamples: PLOT_EXAMPLES,
         ReactComponent,

@@ -17,6 +17,7 @@ export default function LinearSyntenyDisplayF(pluginManager: PluginManager) {
       // eager one — either way it is off the initial download.
       stateModel: () => import('./model.ts').then(f => f.default(configSchema)),
       trackType: 'SyntenyTrack',
+      rpcMethods: ['SyntenyGetFeaturesAndPositions'],
       viewType: 'LinearSyntenyView',
       ReactComponent: lazyWithPreload(
         () => import('./components/LinearSyntenyRendering.tsx'),

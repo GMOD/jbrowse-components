@@ -25,6 +25,7 @@ export default function LinearMafDisplayF(pluginManager: PluginManager) {
       viewType: 'LinearGenomeView',
       plotExamples: MAF_PLOT_EXAMPLES,
       trackType: 'MafTrack',
+      rpcMethods: ['LinearMafGetSummaryData', 'LinearMafGetAlignmentData'],
       displayName: 'MAF display',
       // what jbrowse-plugin-mafviewer's display kept of the arrangement
       retiredState: {

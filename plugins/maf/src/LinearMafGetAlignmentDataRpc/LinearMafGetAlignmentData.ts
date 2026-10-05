@@ -22,9 +22,12 @@ declare module '@jbrowse/core/rpc/RpcRegistry' {
 export default class LinearMafGetAlignmentData extends RpcMethodTypeWithFiltersAndRenameRegions<'LinearMafGetAlignmentData'> {
   name = 'LinearMafGetAlignmentData' as const
 
+  override preload() {
+    return import('./executeMafAlignmentData.ts')
+  }
+
   async execute(args: RpcExecuteArgs<'LinearMafGetAlignmentData'>) {
-    const { executeMafAlignmentData } =
-      await import('./executeMafAlignmentData.ts')
+    const { executeMafAlignmentData } = await this.preload()
     return executeMafAlignmentData({
       pluginManager: this.pluginManager,
       args,

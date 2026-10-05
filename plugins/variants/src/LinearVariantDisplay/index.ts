@@ -36,6 +36,7 @@ export default function LinearVariantDisplayF(pluginManager: PluginManager) {
         stateModel: () =>
           import('./model.ts').then(f => f.default(configSchema)),
         trackType: 'VariantTrack',
+        rpcMethods: ['RenderFeatureData'],
         viewType: 'LinearGenomeView',
         plotExamples: VARIANT_PLOT_EXAMPLES,
         ReactComponent,
