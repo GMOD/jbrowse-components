@@ -1,6 +1,7 @@
 import {
   getConf,
   mergeFormatCallbacks,
+  partitionAdvanced,
   readConfObject,
 } from '@jbrowse/core/configuration'
 
@@ -32,6 +33,10 @@ declare module '@jbrowse/core/PluginManager' {
  * track's `formatAbout` callbacks merged over it, plus the resolved `hideUris`.
  * The two slots fold differently on purpose: `config` is a merge the track can
  * win key-by-key, `hideUris` an OR a track cannot turn back off.
+ *
+ * The result splits in two: `advanced` holds the slots the schema flags
+ * `advanced` or gives a callback, `config` the rest. A callback sees the whole
+ * config, and a key it names replaces or hides that key on both sides.
  */
 export function getAboutDialogConfig({
   config,
@@ -41,16 +46,19 @@ export function getAboutDialogConfig({
   session: AbstractSessionModel
 }) {
   const conf: Record<string, unknown> = readConfObject(config)
+  const edits = mergeFormatCallbacks(
+    getConf(session, ['formatAbout', 'config'], { config: conf }),
+    readConfObject(config, ['formatAbout', 'config'], { config: conf }),
+  )
+  const split = partitionAdvanced(config, conf)
   const shown: { metadata?: Record<string, unknown>; [key: string]: unknown } =
-    {
-      ...conf,
-      ...mergeFormatCallbacks(
-        getConf(session, ['formatAbout', 'config'], { config: conf }),
-        readConfObject(config, ['formatAbout', 'config'], { config: conf }),
-      ),
-    }
+    { ...split.rest, ...edits }
+  const advanced = Object.fromEntries(
+    Object.entries(split.advanced).filter(([key]) => !(key in edits)),
+  )
   return {
     config: shown,
+    advanced,
     hideUris: Boolean(
       getConf(session, ['formatAbout', 'hideUris']) ||
       readConfObject(config, ['formatAbout', 'hideUris']),

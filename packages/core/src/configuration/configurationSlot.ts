@@ -171,8 +171,10 @@ interface ConfigSlotDefinitionCommon {
    */
   contextVariable?: string[]
   /**
-   * hide this slot behind a "Show advanced settings" toggle in the config
-   * editor, so common slots aren't crowded out by rarely-changed ones
+   * put this slot behind a toggle so common slots aren't crowded out by
+   * rarely-changed ones: "Show advanced settings" in the config editor, and
+   * the collapsed Advanced card in a track's About dialog, which also takes
+   * every slot with a `contextVariable`
    */
   advanced?: boolean
 }

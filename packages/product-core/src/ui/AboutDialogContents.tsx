@@ -1,6 +1,8 @@
 import { useState } from 'react'
 
-import Attributes from '@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail/Attributes'
+import Attributes, {
+  withoutLocations,
+} from '@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail/Attributes'
 import BaseCard from '@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail/BaseCard'
 import { readConfObject } from '@jbrowse/core/configuration'
 import PluggableComponents from '@jbrowse/core/ui/PluggableComponents'
@@ -26,6 +28,15 @@ const useStyles = makeStyles()({
 
 const hideFields = ['displays', 'baseUri', 'refNames', 'formatAbout']
 
+function hasRows(attributes: Record<string, unknown>) {
+  return Object.entries(attributes).some(
+    ([key, value]) =>
+      value != null &&
+      !hideFields.includes(key) &&
+      !(typeof value === 'object' && !Object.keys(value).length),
+  )
+}
+
 const AboutDialogContents = observer(function AboutDialogContents({
   config,
   session,
@@ -34,7 +45,12 @@ const AboutDialogContents = observer(function AboutDialogContents({
   const [showRefNames, setShowRefNames] = useState(false)
 
   const { pluginManager } = getEnv(session)
-  const { config: shown, hideUris } = getAboutDialogConfig({ config, session })
+  const {
+    config: shown,
+    advanced,
+    hideUris,
+  } = getAboutDialogConfig({ config, session })
+  const advancedShown = hideUris ? withoutLocations(advanced) : advanced
 
   return (
     <div className={classes.content}>
@@ -50,6 +66,11 @@ const AboutDialogContents = observer(function AboutDialogContents({
           hideUris={hideUris}
         />
       </BaseCard>
+      {hasRows(advancedShown) ? (
+        <BaseCard title="Advanced" defaultExpanded={false}>
+          <Attributes attributes={advancedShown} omit={hideFields} />
+        </BaseCard>
+      ) : null}
       {shown.metadata ? (
         <BaseCard title="Metadata">
           {/* no `hideFields` here: those name config structure, and metadata is

@@ -91,4 +91,56 @@ describe('getAboutDialogConfig', () => {
         .hideUris,
     ).toBe(expected)
   })
+
+  describe('advanced split', () => {
+    const written = {
+      trackId: 't1',
+      name: 'Track 1',
+      textSearching: { searchLabel: 'genes.ix', indexingAttributes: ['Name'] },
+      formatDetails: { feature: 'jexl:{x:feature.id}', depth: 3 },
+    }
+
+    it('moves advanced and callback slots out of the main config', () => {
+      const out = getAboutDialogConfig({
+        config: makeTrackConf(written),
+        session: makeSession(),
+      })
+      expect(out.config.name).toBe('Track 1')
+      expect(out.config.textSearching).toEqual({ searchLabel: 'genes.ix' })
+      expect(out.config.formatDetails).toBeUndefined()
+      expect(out.advanced.textSearching).toEqual({
+        indexingAttributes: ['Name'],
+      })
+      expect(out.advanced.formatDetails).toEqual({
+        feature: 'jexl:{x:feature.id}',
+        depth: 3,
+      })
+    })
+
+    it('gives a formatAbout callback the whole config', () => {
+      const out = getAboutDialogConfig({
+        config: makeTrackConf({
+          ...written,
+          formatAbout: {
+            config: 'jexl:{Indexed: config.textSearching.indexingAttributes}',
+          },
+        }),
+        session: makeSession(),
+      })
+      expect(out.config.Indexed).toEqual(['Name'])
+    })
+
+    it('lets a callback hide an advanced key from both sides', () => {
+      const out = getAboutDialogConfig({
+        config: makeTrackConf({
+          ...written,
+          formatAbout: { config: 'jexl:{textSearching: undefined}' },
+        }),
+        session: makeSession(),
+      })
+      expect(out.config.textSearching).toBeUndefined()
+      expect(out.advanced.textSearching).toBeUndefined()
+      expect(out.advanced.formatDetails).toBeDefined()
+    })
+  })
 })

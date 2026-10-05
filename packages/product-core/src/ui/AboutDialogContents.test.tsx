@@ -5,7 +5,7 @@ import {
 import { createJBrowseTheme } from '@jbrowse/core/ui'
 import { types } from '@jbrowse/mobx-state-tree'
 import { ThemeProvider } from '@mui/material'
-import { render } from '@testing-library/react'
+import { fireEvent, render, within } from '@testing-library/react'
 
 import AboutDialogContents from './AboutDialogContents.tsx'
 import { aboutTestPluginManager, makeTrackConf } from './aboutTestUtils.ts'
@@ -88,4 +88,42 @@ test('shows inline trackDb prose in the Description card only', () => {
   expect(getAllByText('predictions for all')).toHaveLength(1)
   expect(getByText('Description')).toBeTruthy()
   expect(getByText('alphaMissense')).toBeTruthy()
+})
+
+describe('Advanced card', () => {
+  const advancedConfig = makeTrackConf({
+    trackId: 't3',
+    name: 'Track 3',
+    textSearching: { searchLabel: 'genes.ix', indexingAttributes: ['Zeta'] },
+    formatDetails: { feature: 'jexl:{x:feature.id}' },
+    formatAbout: { config: 'jexl:{Shown: 1}' },
+  })
+
+  test('holds advanced and callback slots, collapsed, out of Configuration', async () => {
+    const { findByTestId, getByTestId, queryByText } =
+      renderContents(advancedConfig)
+    const main = within(getByTestId('BaseCard-Configuration'))
+    expect(main.getByText('genes.ix')).toBeTruthy()
+    expect(main.queryByText('Zeta')).toBeNull()
+    expect(queryByText('Zeta')).toBeNull()
+    fireEvent.click(
+      within(getByTestId('BaseCard-Advanced')).getByRole('button'),
+    )
+    const advanced = within(await findByTestId('BaseCard-Advanced'))
+    expect(await advanced.findByText('Zeta')).toBeTruthy()
+    expect(advanced.getByText('jexl:{x:feature.id}')).toBeTruthy()
+    expect(advanced.queryByText(/Shown/)).toBeNull()
+  })
+
+  test('is absent when the config sets nothing advanced', () => {
+    const { queryByTestId } = renderContents(config)
+    expect(queryByTestId('BaseCard-Advanced')).toBeNull()
+  })
+
+  test('is absent when only formatAbout.config, which the dialog omits, qualifies', () => {
+    const { queryByTestId } = renderContents(
+      makeTrackConf({ trackId: 't4', formatAbout: { config: 'jexl:{}' } }),
+    )
+    expect(queryByTestId('BaseCard-Advanced')).toBeNull()
+  })
 })

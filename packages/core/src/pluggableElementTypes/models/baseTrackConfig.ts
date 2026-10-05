@@ -251,6 +251,7 @@ export function createBaseTrackConfig(pluginManager: PluginManager) {
           description:
             'list of which feature attributes to index for text searching',
           defaultValue: ['Name', 'ID', 'symbol'],
+          advanced: true,
         },
         /**
          * #slot textSearching.indexingFeatureTypesToExclude
@@ -259,6 +260,7 @@ export function createBaseTrackConfig(pluginManager: PluginManager) {
           type: 'stringArray',
           description: 'list of feature types to exclude in text search index',
           defaultValue: ['CDS', 'exon'],
+          advanced: true,
         },
         /**
          * #slot textSearching.indexingFeatureTypesToInclude
@@ -282,6 +284,7 @@ export function createBaseTrackConfig(pluginManager: PluginManager) {
           description:
             'the only feature types to index; empty means index every type not excluded',
           defaultValue: [],
+          advanced: true,
         },
 
         /**

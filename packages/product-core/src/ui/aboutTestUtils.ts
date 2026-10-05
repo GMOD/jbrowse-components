@@ -2,6 +2,7 @@ import PluginManager from '@jbrowse/core/PluginManager'
 import {
   ConfigurationSchema,
   FormatAboutConfigSchemaFactory,
+  FormatDetailsConfigSchemaFactory,
 } from '@jbrowse/core/configuration'
 
 import type { SnapshotIn } from '@jbrowse/mobx-state-tree'
@@ -27,6 +28,15 @@ export const TestTrackConf = ConfigurationSchema(
       },
     }),
     metadata: { type: 'frozen', defaultValue: {} },
+    textSearching: ConfigurationSchema('TestTextSearching', {
+      searchLabel: { type: 'string', defaultValue: '' },
+      indexingAttributes: {
+        type: 'stringArray',
+        defaultValue: [],
+        advanced: true,
+      },
+    }),
+    formatDetails: FormatDetailsConfigSchemaFactory(),
     formatAbout: FormatAboutConfigSchemaFactory(),
   },
   { explicitIdentifier: 'trackId' },

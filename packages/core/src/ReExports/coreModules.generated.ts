@@ -273,7 +273,7 @@ const libs: Record<string, unknown> = {
   '@jbrowse/core/assemblyManager/assemblyConfigSchema': { ...m2, __esModule: true },
   '@jbrowse/core/BaseFeatureWidget': m3,
   '@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail': { ...m4, __esModule: true },
-  '@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail/Attributes': m5.default,
+  '@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail/Attributes': { ...m5, __esModule: true },
   '@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail/BaseCard': m6.default,
   '@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail/FeatureDetails': m7.default,
   '@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail/Formatter': m8.default,

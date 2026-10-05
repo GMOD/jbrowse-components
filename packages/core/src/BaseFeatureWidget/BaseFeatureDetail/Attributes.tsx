@@ -68,7 +68,7 @@ function isLocation(value: unknown) {
 
 // hideUris prunes the data rather than each render branch checking: an array
 // of objects reaches the data grid and ArrayValue, which print locations too
-function withoutLocations(
+export function withoutLocations(
   attributes: Record<string, unknown>,
 ): Record<string, unknown> {
   return Object.fromEntries(

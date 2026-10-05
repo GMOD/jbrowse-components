@@ -57,6 +57,7 @@ export {
   isConstantEntry,
   isSlotDefinitionEntry,
 } from './schemaTypes.ts'
+export { partitionAdvanced } from './partitionAdvanced.ts'
 export { FormatAboutConfigSchemaFactory } from './formatAboutConfigSchema.ts'
 export {
   DEFAULT_FORMAT_DETAILS_DEPTH,

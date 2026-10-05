@@ -75,6 +75,7 @@ export function FormatDetailsConfigSchemaFactory() {
       type: 'maybeNumber',
       description:
         'levels of subfeature the formatDetails.subfeatures callback runs on, default 2',
+      advanced: true,
     },
     /**
      * #slot formatDetails.maxDepth
@@ -85,6 +86,7 @@ export function FormatDetailsConfigSchemaFactory() {
     maxDepth: {
       type: 'maybeNumber',
       description: 'hide subfeatures nested deeper than this, default no limit',
+      advanced: true,
     },
   })
 }

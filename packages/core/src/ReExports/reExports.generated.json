@@ -767,7 +767,8 @@
     "@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail/Attributes": {
       "package": "@jbrowse/core",
       "names": [
-        "default"
+        "default",
+        "withoutLocations"
       ],
       "worker": "stub",
       "uiVia": [
@@ -890,6 +891,7 @@
         "makeSlotFacade",
         "mergeFormatCallbacks",
         "parsePlot",
+        "partitionAdvanced",
         "plotKeysOf",
         "plotOf",
         "plotWrites",
