@@ -264,7 +264,7 @@ export const GATE_OPT_IN_SITES: Record<string, string> = {
     'LinearMultiRowFeatureDisplay',
   'plugins/canvas/src/shared/CanvasFeatureGateMixin.ts': 'LinearBasicDisplay',
   'plugins/maf/src/LinearMafDisplay/stateModel.ts': 'LinearMafDisplay',
-  'plugins/variants/src/shared/MultiSampleVariantBaseModel.ts':
+  'plugins/variants/src/LinearMultiSampleVariantDisplay/model.ts':
     'VcfTabixAdapter/SplitVcfTabixAdapter declare 5 Mb',
 }
 

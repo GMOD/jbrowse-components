@@ -3,9 +3,9 @@ import { readConfObject } from '@jbrowse/core/configuration'
 import CanvasPlugin from '@jbrowse/plugin-canvas'
 import LinearGenomeViewPlugin from '@jbrowse/plugin-linear-genome-view'
 
-import configSchemaFactory from '../LinearMultiSampleVariantDisplay/configSchema.ts'
-import { createTestEnvironment } from '../LinearMultiSampleVariantDisplay/testEnv.ts'
 import VariantsPlugin from '../index.ts'
+import configSchemaFactory from './configSchema.ts'
+import { createTestEnvironment } from './testEnv.ts'
 
 describe('the display config schema', () => {
   const configSchema = configSchemaFactory()

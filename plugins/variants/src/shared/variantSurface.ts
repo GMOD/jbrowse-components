@@ -2,8 +2,8 @@ import { eventPoint } from '@jbrowse/core/util/eventPoint'
 
 import { variantTooltipKey } from './buildVariantHit.ts'
 
-import type { VariantContextMenuInfo } from './MultiSampleVariantBaseModel.ts'
 import type { VariantTooltipFields } from './buildVariantHit.ts'
+import type { VariantContextMenuInfo } from './types.ts'
 import type { Feature } from '@jbrowse/core/util'
 import type { MouseEvent } from 'react'
 

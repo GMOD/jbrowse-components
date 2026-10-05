@@ -1,3 +1,6 @@
+import type { ContextMenuAnchor } from '@jbrowse/core/ui'
+import type { Feature } from '@jbrowse/core/util'
+
 export interface Source {
   baseUri?: string
   name: string
@@ -15,6 +18,14 @@ export interface Source {
 }
 
 export type ProcessedSource = Source & { sampleName: string }
+
+/**
+ * What a right-click on a genotype cell or a lane mark resolved to: the record
+ * under it, already a `Feature`, plus where the menu opens.
+ */
+export interface VariantContextMenuInfo extends ContextMenuAnchor {
+  feature: Feature
+}
 
 // Per-feature info for hover tooltips and the feature widget: one per record
 // in a payload's `featureInfo`, in the order its cells index them.

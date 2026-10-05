@@ -3,7 +3,7 @@ import { observer } from 'mobx-react'
 
 import MultiSampleVariantTooltip from './MultiSampleVariantTooltip.tsx'
 
-import type { MultiSampleVariantBaseModel } from '../MultiSampleVariantBaseModel.ts'
+import type { LinearMultiSampleVariantDisplayModel } from '../../LinearMultiSampleVariantDisplay/model.ts'
 import type { MouseState } from '@jbrowse/core/ui'
 
 // The two things that follow the pointer: the row/column crosshairs and the
@@ -23,7 +23,7 @@ const MultiSampleVariantCrosshairs = observer(
     crosshairs = true,
   }: {
     mouseState: MouseState
-    model: MultiSampleVariantBaseModel
+    model: LinearMultiSampleVariantDisplayModel
     crosshairs?: boolean
   }) {
     const { hoveredTooltipSource } = model

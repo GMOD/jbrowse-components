@@ -82,10 +82,6 @@ one resolution, a label bar, groups as attributes, one key and one dialog.
   shader could read them from a per-record table instead, which the HAL's one
   RGBA8 texture per pass and its re-upload on identity do not yet carry (the
   ADR's Rejected rows).
-- **`MultiSampleVariantBaseModel`** (1,736 lines) has one consumer
-  (`LinearMultiSampleVariantDisplay/model.ts:124`); merging it follows "keep
-  the main model chain in one file" and drops the super-capture overrides and
-  casts. Check MST type depth first.
 - Both variant chromes and MAF's mount the same scroll/sidebar/overlay tree.
   `spatialIndex` is the same `buildSpatialIndex(self.hierarchy)` on five
   displays, but the mixin owns no `hierarchy`.

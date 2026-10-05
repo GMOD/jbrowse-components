@@ -17,7 +17,7 @@ PreferencesConfigSchema
 RpcOptions
 TabixIndex
 
-# display/view models with no #example (11)
+# display/view models with no #example (10)
 # fix: add an #example to the type’s #stateModel JSDoc
 BaseChordDisplay
 BaseDisplay
@@ -28,7 +28,6 @@ LinearCanvasBaseDisplay
 LinearManhattanDisplay
 LinearMarkDisplay
 LinearMultiRowFeatureDisplay
-LinearMultiSampleVariantDisplay
 MultiWaySyntenyDisplay
 
 # configs that fell back to the General category (0)

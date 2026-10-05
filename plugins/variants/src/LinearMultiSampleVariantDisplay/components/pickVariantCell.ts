@@ -104,7 +104,7 @@ export function pickVariantCell({
   mouseY: number
   rowNearest: number
   rowLowest: number
-  // Screen row -> worker row, or -1. See MultiSampleVariantBaseModel.rowUnmap.
+  // Screen row -> worker row, or -1. See the display model's `rowUnmap`.
   rowUnmap: Int32Array
   pxPerBp: number
   // The display's `showInsertionGlyphs`: with it off an insertion is a 2px cell

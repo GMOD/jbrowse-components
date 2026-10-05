@@ -47,7 +47,7 @@ import { IMPACT_FIELD } from './variantConsequence.ts'
 import { VARIANT_FILTER_EXAMPLES } from './variantFilterExamples.ts'
 import { variantFilterFields } from './variantFilterFields.ts'
 
-import type { MultiSampleVariantBaseModel } from './MultiSampleVariantBaseModel.ts'
+import type { LinearMultiSampleVariantDisplayModel } from '../LinearMultiSampleVariantDisplay/model.ts'
 import type { MenuItem } from '@jbrowse/core/ui'
 
 // A row that needs something in the fetched window, greyed with the reason
@@ -63,7 +63,7 @@ function needs(label: string, what: string, present: boolean, loaded: boolean) {
 
 // Paints the constant kept beside a field, where there is one, and opens the
 // picker.
-function pickCellSolidColor(self: MultiSampleVariantBaseModel) {
+function pickCellSolidColor(self: LinearMultiSampleVariantDisplayModel) {
   const { value } = self.colorSetting
   if (self.colorField && value !== undefined && !isJexl(value)) {
     self.setColor(colorForField(self.colorSetting, ''))
@@ -77,7 +77,7 @@ function pickCellSolidColor(self: MultiSampleVariantBaseModel) {
 // The rows' colour, as the arrangement dialog offers it: None and the
 // attributes, and Each row while it is the choice, since its colours are
 // picked in the dialog.
-function rowColorItems(self: MultiSampleVariantBaseModel): MenuItem[] {
+function rowColorItems(self: LinearMultiSampleVariantDisplayModel): MenuItem[] {
   const current = self.rowColorChoice
   return [
     '',
@@ -97,7 +97,7 @@ function rowColorItems(self: MultiSampleVariantBaseModel): MenuItem[] {
 // with its variant lane rows; the subtree filter has its own entry via
 // `clusteringMenuItem`.
 export function variantShowSubmenuItems(
-  self: MultiSampleVariantBaseModel,
+  self: LinearMultiSampleVariantDisplayModel,
 ): MenuItem[] {
   return [
     ...treeSidebarShowMenuItems(self),
@@ -138,7 +138,7 @@ export function variantShowSubmenuItems(
 // clustering, colors/arrangement). The model's `trackMenuItems` view prepends
 // the inherited base items via super-capture.
 export function variantTrackMenuItems(
-  self: MultiSampleVariantBaseModel,
+  self: LinearMultiSampleVariantDisplayModel,
 ): MenuItem[] {
   const loaded = !!self.cellData
   const hueField = recordHueField(self.colorEncoding)?.field
@@ -429,7 +429,7 @@ export function variantTrackMenuItems(
 
 // Right-click context-menu items for the hovered/clicked variant feature.
 export function variantContextMenuItems(
-  self: MultiSampleVariantBaseModel,
+  self: LinearMultiSampleVariantDisplayModel,
 ): MenuItem[] {
   const feat = self.contextMenuInfo?.feature
   return feat

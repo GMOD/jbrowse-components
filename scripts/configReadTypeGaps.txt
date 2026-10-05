@@ -276,7 +276,7 @@ plugins/variants/src/LinearMultiSampleVariantDisplay/showInsertionGlyphsSlot.tes
   31	getConf('notARealSlot')
 plugins/variants/src/shared/jexlFilterContract.test.ts  (1)  [test]
   111	readConfObject('filter')
-plugins/variants/src/shared/MultiSampleVariantBaseModel.test.ts  (1)  [test]
+plugins/variants/src/LinearMultiSampleVariantDisplay/configSchema.test.ts  (1)  [test]
   142	readConfObject('unit')
 plugins/wiggle/src/MultiQuantitativeTrack/displayDefaults.test.ts  (2)  [test]
   69	readConfObject('height')

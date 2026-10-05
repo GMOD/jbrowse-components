@@ -5,7 +5,6 @@ const root = path.resolve(__dirname, '../../..')
 
 const DISPLAY_MODELS = [
   'plugins/canvas/src/LinearMultiRowFeatureDisplay/model.ts',
-  'plugins/variants/src/shared/MultiSampleVariantBaseModel.ts',
   'plugins/variants/src/LinearMultiSampleVariantDisplay/model.ts',
   'plugins/wiggle/src/LinearWiggleDisplay/model.ts',
   'plugins/maf/src/LinearMafDisplay/stateModel.ts',

@@ -32,7 +32,7 @@ import type { HeldSlots } from '@jbrowse/core/ui/colors'
 import type { CategoricalField } from '@jbrowse/core/util/categoricalField'
 import type { ColorEncoding } from '@jbrowse/core/util/markEncoding'
 
-// Pure scale builders, split out of MultiSampleVariantBaseModel so they can be
+// Pure scale builders, split out of the display model so they can be
 // unit-tested without instantiating the display model. The model's
 // `colorScales` feeds these its scalar getters.
 //

@@ -305,8 +305,8 @@ export default function FetchMixin() {
        * preliminary.
        *
        * Two displays set it, one per fetch foundation, so it lives beside
-       * `fetchInert` rather than on either: HiC's contacts fetch
-       * declines until `CoreGetInfo` lands, and `MultiSampleVariantBaseModel`'s
+       * `fetchInert` rather than on either: HiC's contacts fetch declines until
+       * `CoreGetInfo` lands, and `LinearMultiSampleVariantDisplay`'s
        * `fetchNeeded` declines until `sourcesBase` does. Both have a `reload()`
        * that wakes the prerequisite's autorun as well as their own.
        *

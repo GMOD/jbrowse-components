@@ -305,7 +305,7 @@ export const variantsSpecs: ScreenshotSpec[] = [
     // caption names in words.
     //
     // A click rather than a session prop because `showLegend` is volatile on
-    // MultiSampleVariantBaseModel — legend visibility is deliberately not
+    // LinearMultiSampleVariantDisplay — legend visibility is deliberately not
     // session state, so a spec cannot set it. `actions` run after
     // `readySelector`, so the button exists, and the generator re-waits the
     // display phases and re-asserts render-settled afterwards.
