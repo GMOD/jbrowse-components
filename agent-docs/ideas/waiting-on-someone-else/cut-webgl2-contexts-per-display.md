@@ -30,6 +30,16 @@ the two things that must not break (the cross-backend gate, the figure corpus)
 are in
 [reference/GPU_PORTABILITY.md](../../reference/GPU_PORTABILITY.md).
 
+**Per-display contexts also cost every repeat visit, not only at 17+ tracks.**
+Measured 2026-10-04 in headed Chrome on the Intel UHD 630 (WebGL2; WebGPU is
+blocklisted there), an 11-track volvox session opens 12 contexts and links 52
+programs, because the BAM, CRAM and SV tracks each compile the alignments
+programs again. On a repeat visit `getContext` alone took 131 ms of main thread
+and shader status waits 120-310 ms; on a first visit the waits were 0.4-1.7 s.
+Firefox Nightly's WebGPU path built 27 pipelines for the same session, one
+device serving every canvas. `measure-load-latency.ts "--only=11 tracks" --warm`
+and the probe's `--only=many` set take it again.
+
 **So re-measure the population before building the structural work.** The
 remaining group is *hardware* GL with no WebGPU and 17+ tracks: a machine with
 WebGPU builds no WebGL2 display context at all, and software ones now take

@@ -39,6 +39,17 @@ took one round trip off each `measure-load-latency` scenario at 80 ms RTT.
 Boot CPU is diffuse: the costliest app function, `loadSessionSpec`, is 21 ms
 inclusive, so the main-thread boot has no hot spot to optimize.
 
+## Repeat visits
+
+A returning user's load is CPU and GPU, not network: `static/` is immutable,
+config and data files carry only `Last-Modified` on jbrowse.org so browsers
+reuse them heuristically, and `index.html` revalidates for one round trip.
+`measure-load-latency.ts --warm` at 80 ms RTT on ada: one BAM track ready in
+0.36 s against 1.11 s cold, the 11-track session (`"--only=11 tracks"`) in
+0.65 s against 1.25 s. What grows with track count on the WebGL2 rung is one
+context and one set of programs per display, now recorded in
+[cut-webgl2-contexts-per-display](../ideas/waiting-on-someone-else/cut-webgl2-contexts-per-display.md).
+
 ## Plan
 
 ### 1. Shorten the main-thread chain before the render request
