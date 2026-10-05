@@ -1,11 +1,11 @@
 ---
 name: jb2export-modifier-tables
-description: The jb2export track-modifier tables are the last big hand-maintained surface list in the docs, and the registry behind them already knows the names and the track types. What it does not know is the description, so generating them is a 32-entry tagging pass first. Read before adding a modifier, or before writing a checker for these tables.
+description: The jb2export track-modifier tables are the last big hand-maintained surface list in the docs, and the registry behind them already knows the names and the track types. What it does not know is the description, so generating them is an 18-entry tagging pass first. Read before adding a modifier, or before writing a checker for these tables.
 ---
 
 # The jb2export modifier tables
 
-`products/jbrowse-img/README.md` documents 32 track modifiers across four
+`products/jbrowse-img/README.md` documents 18 track modifiers across four
 tables, and `website/scripts/generate-img-doc.ts` mirrors the whole README onto
 the site — so the tables are hand-written once and published twice.
 
@@ -22,7 +22,7 @@ opens, not a repair — which is why it is parked rather than in TODO.md.
 
 The names and the track types are derivable; the **description and the example
 are not**, so a generator means a `#modifier <example> | <description>` tag on
-each of the 32 entries, in the manner of `#shaderExport` (whose generator throws
+each of the 18 entries, in the manner of `#shaderExport` (whose generator throws
 on an untagged emit site, which is the property that makes the docs unable to
 fall behind). The registry is `const modifiers`, not exported, so a generator
 reads it syntactically or the module starts exporting it.
