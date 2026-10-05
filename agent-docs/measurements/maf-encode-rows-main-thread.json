@@ -1,0 +1,150 @@
+{
+  "id": "maf-encode-rows-main-thread",
+  "measured": "2026-10-05",
+  "published": false,
+  "source": {
+    "kind": "bench",
+    "repro": "npx esbuild plugins/maf/benches/mafEncodeRows.bench.ts --bundle --platform=node --format=esm --outfile=/tmp/mafEncodeRows.mjs --banner:js=\"import { createRequire } from 'module'; const require = createRequire(import.meta.url);\" && node --expose-gc --max-old-space-size=12000 /tmp/mafEncodeRows.mjs --rounds=15 --json",
+    "notes": "On ada (load under 1). Main-thread cost per fetch of the MAF display's placeMafRegionData and encodeMafRows (bases on, identity off, conservation off, no codons), over a contiguous stretch of the synthetic MAF-tabix fixture (250-column blocks every 240 bp), opened as a sub-window of the stated fetched span. A 15 kb fetch is a 7.5 kb view, binBp 1 below 4 bp/px (a view about 2000 px wide) and binBp 2 at 1200 px; a 40 kb fetch is a 20 kb view at binBp 8, the widest span where bases draw. Every encode arm runs over a region placed fresh and untimed just before it, because mafInsertionChannels caches its walk per region and a fetch always lands a new one; a WeakSet of the timed regions fails the run if one repeats. Channels is buildMafChannels and insertions walk is mafInsertionChannels, each over its own cold region; encode is encodeMafRows whole, control the same declared again, and place + encode both in one call, which is the per-fetch cost. Interleaved round-robin with the order rotated, MIN across 15 rounds after 2 warmups. Cells and insertions are what the two walks emitted."
+  },
+  "columns": [
+    {
+      "key": "shape",
+      "label": "window"
+    },
+    {
+      "key": "cells",
+      "label": "cells",
+      "format": "compact",
+      "align": "right"
+    },
+    {
+      "key": "insertions",
+      "label": "insertions",
+      "format": "compact",
+      "align": "right"
+    },
+    {
+      "key": "placeMs",
+      "label": "place",
+      "format": "ms",
+      "precision": 1,
+      "align": "right"
+    },
+    {
+      "key": "channelsMs",
+      "label": "channels",
+      "format": "ms",
+      "precision": 1,
+      "align": "right"
+    },
+    {
+      "key": "insertionsMs",
+      "label": "insertions walk",
+      "format": "ms",
+      "precision": 1,
+      "align": "right"
+    },
+    {
+      "key": "encodeMs",
+      "label": "encode",
+      "format": "ms",
+      "precision": 1,
+      "align": "right"
+    },
+    {
+      "key": "controlMs",
+      "label": "encode control",
+      "format": "ms",
+      "precision": 1,
+      "align": "right"
+    },
+    {
+      "key": "sumMs",
+      "label": "place + encode",
+      "format": "ms",
+      "precision": 1,
+      "align": "right"
+    }
+  ],
+  "rows": [
+    {
+      "values": {
+        "shape": "26 species, 15 kb fetched, binBp 1",
+        "cells": 76641,
+        "insertions": 15425,
+        "placeMs": 0.06,
+        "channelsMs": 3.23,
+        "insertionsMs": 1.15,
+        "encodeMs": 4.73,
+        "controlMs": 4.73,
+        "sumMs": 4.77
+      }
+    },
+    {
+      "values": {
+        "shape": "26 species, 15 kb fetched, binBp 2",
+        "cells": 39069,
+        "insertions": 15125,
+        "placeMs": 0.06,
+        "channelsMs": 4.14,
+        "insertionsMs": 1.29,
+        "encodeMs": 4.98,
+        "controlMs": 5.58,
+        "sumMs": 6
+      }
+    },
+    {
+      "values": {
+        "shape": "26 species, 40 kb fetched, binBp 8",
+        "cells": 28806,
+        "insertions": 36650,
+        "placeMs": 0.14,
+        "channelsMs": 1.43,
+        "insertionsMs": 3.48,
+        "encodeMs": 5.23,
+        "controlMs": 5.27,
+        "sumMs": 5.24
+      }
+    },
+    {
+      "values": {
+        "shape": "470 species, 15 kb fetched, binBp 1",
+        "cells": 1452409,
+        "insertions": 287497,
+        "placeMs": 0.89,
+        "channelsMs": 69.03,
+        "insertionsMs": 23.43,
+        "encodeMs": 91.65,
+        "controlMs": 92.26,
+        "sumMs": 93.15
+      }
+    },
+    {
+      "values": {
+        "shape": "470 species, 15 kb fetched, binBp 2",
+        "cells": 739766,
+        "insertions": 280931,
+        "placeMs": 0.89,
+        "channelsMs": 34.31,
+        "insertionsMs": 24.93,
+        "encodeMs": 61.38,
+        "controlMs": 61.29,
+        "sumMs": 62.3
+      }
+    },
+    {
+      "values": {
+        "shape": "470 species, 40 kb fetched, binBp 8",
+        "cells": 544212,
+        "insertions": 662697,
+        "placeMs": 2.32,
+        "channelsMs": 26.84,
+        "insertionsMs": 62.77,
+        "encodeMs": 90.89,
+        "controlMs": 90.9,
+        "sumMs": 93.99
+      }
+    }
+  ]
+}
