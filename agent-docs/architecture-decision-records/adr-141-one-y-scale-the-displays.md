@@ -74,8 +74,8 @@ both `maybeNumber`. An unset end autoscales over the loaded regions, which is
 what `encoding.y.domain`'s `""` sentinel meant. The spelling is Vega-Lite's
 `scale.domainMin`/`domainMax` rather than a `[min, null]` array, so the slot
 types stay `maybeNumber` and the JSON schema, the config docs and the config
-editor each see an end as a number. The colour ramp's `domain: [min, max]`
-stays an array, both ends always being pinned there.
+editor each see an end as a number. The colour ramp spells its ends the same
+way since [ADR-151](adr-151-a-channels-scale-is-spelt-as-scales-y-spells-one.md).
 
 **The score menu writes `scales.y` and nothing else.** Set min/max, Pin current
 min/max and Clear all land on `domainMin`/`domainMax` through `setConf` on the
@@ -180,3 +180,7 @@ and the browser suite's scene shows the coverage run zoomed out.
   wiggle family.** They are two config slots, two rows of generated config
   documentation and two things a reader can set, and nothing on this display
   reads either.
+- **`domain: [0, 100]` beside `domainMin` and `domainMax`**, a shorthand for
+  pinning both ends. It saves one key and brings back two spellings of one pin
+  with a precedence rule between them, the reason ADR-151 declined it for the
+  colour ramp (2026-10-04).
