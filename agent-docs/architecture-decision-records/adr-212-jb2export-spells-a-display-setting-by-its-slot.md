@@ -41,11 +41,13 @@ slot the synteny view declares.
 - A misspelled slot fails the render with the display's own list of valid names,
   where a misspelled modifier warned and left a wrong figure.
 - `mark=` reaches `line` and `heatmap`, which `fill` never did.
-- The category gate (`on` lists, `categoryByTrackType`) now covers only the
-  remaining translators. A slot write needs no gate, since the display rejects
-  a key it does not declare. A track type whose display no translator targets
-  (GWAS, MAF, LD, synteny, sequence) is category `other` and takes the
-  all-tracks modifiers alone; a test fails on a registered track type missing
+- The category gate (`on` lists) covers only the remaining translators. A slot
+  write needs no gate, since the display rejects a key it does not declare. The
+  category is the family of the display the linear view opens the track as,
+  read through core's `trackDisplayType` (the picker `showTrack` uses), so it
+  follows `display:` and the adapter. A display no translator targets (GWAS,
+  MAF, LD, marks, synteny, sequence) is category `other` and takes the
+  all-tracks modifiers alone; a test fails on a registered display type missing
   from the table.
 - A script using a removed modifier gets `unknown track option` and draws the
   default. Beta only, so no migration.

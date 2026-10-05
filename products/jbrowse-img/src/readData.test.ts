@@ -2,75 +2,7 @@ import fs from 'node:fs'
 import os from 'node:os'
 import path from 'node:path'
 
-import { configTrackCategory } from './applyTrackOpts.ts'
-import { trackTypes } from './makeConfigs.ts'
 import { readData } from './readData.ts'
-
-import type { Track } from './types.ts'
-
-const tracks: Track[] = [
-  { trackId: 'aln', type: 'AlignmentsTrack' },
-  { trackId: 'cov', type: 'QuantitativeTrack' },
-  { trackId: 'vars', type: 'VariantTrack' },
-  { trackId: 'genes', type: 'FeatureTrack' },
-  { trackId: 'contacts', type: 'HicTrack' },
-  { trackId: 'gc', type: 'GCContentTrack' },
-  { trackId: 'gwas', type: 'GWASTrack' },
-  { trackId: 'maf', type: 'MafTrack' },
-  { trackId: 'ld', type: 'LDTrack' },
-]
-
-test('config track type maps to a display category', () => {
-  expect(configTrackCategory(tracks, 'aln')).toBe('alignments')
-  expect(configTrackCategory(tracks, 'cov')).toBe('wiggle')
-  expect(configTrackCategory(tracks, 'vars')).toBe('variant')
-  expect(configTrackCategory(tracks, 'genes')).toBe('feature')
-  expect(configTrackCategory(tracks, 'contacts')).toBe('hic')
-})
-
-test('GC content opens a wiggle display, and the displays no modifier targets are other', () => {
-  expect(configTrackCategory(tracks, 'gc')).toBe('wiggle')
-  for (const id of ['gwas', 'maf', 'ld']) {
-    expect(configTrackCategory(tracks, id)).toBe('other')
-  }
-})
-
-test('an unknown, missing or inherited track type is other', () => {
-  expect(configTrackCategory(tracks, 'nope')).toBe('other')
-  expect(configTrackCategory([{ trackId: 'x' }], 'x')).toBe('other')
-  expect(
-    configTrackCategory([{ trackId: 'x', type: 'constructor' }], 'x'),
-  ).toBe('other')
-})
-
-// A CLI file-type flag used to carry its own hand-written category map, parallel
-// to (and independently editable from) this one. A flag's track now goes into
-// the config like any other and its category is read back off that, so this
-// walks every flag through the real path: a new --flag whose track type has no
-// category entry shows up here rather than silently driving a feature display.
-test('every CLI file-type flag resolves to its display category', () => {
-  const byFlag = Object.fromEntries(
-    trackTypes.map(flag => {
-      const file = flag === 'multiwig' ? 'a.bw,b.bw' : `input.${flag}`
-      const data = readData({
-        fasta: '/ref.fa',
-        trackList: [[flag, [file]]],
-      })
-      return [flag, configTrackCategory(data.tracks, file)]
-    }),
-  )
-  expect(byFlag).toEqual({
-    bam: 'alignments',
-    cram: 'alignments',
-    bigwig: 'wiggle',
-    multiwig: 'wiggle',
-    vcfgz: 'variant',
-    gffgz: 'feature',
-    bigbed: 'feature',
-    bedgz: 'feature',
-    hic: 'hic',
-  })
-})
 
 test('a config assembly written as { name, uri } gets its sequence track', () => {
   const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'jb2export-shorthand-'))

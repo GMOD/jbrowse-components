@@ -89,7 +89,7 @@ describe('breakpointTracks', () => {
       breakpointTracks(
         undefined,
         [{ trackId: 'tumor_bam', opts: ['height:240', 'force:true'] }],
-        [{ trackId: 'tumor_bam', type: 'AlignmentsTrack' }],
+        () => 'alignments',
       ),
     ).toEqual([{ trackId: 'tumor_bam', height: 240, forceLoad: true }])
   })

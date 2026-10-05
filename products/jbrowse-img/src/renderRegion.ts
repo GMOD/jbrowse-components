@@ -20,7 +20,7 @@ import { autorun } from 'mobx'
 
 import {
   applyDisplayOpts,
-  configTrackCategory,
+  trackCategory,
   resolveTrackId,
   writeMembers,
 } from './applyTrackOpts.ts'
@@ -559,15 +559,15 @@ const renderLinear: ModeRenderer = async ctx => {
   // so they land above the file-type (--bam/--gffgz/--hic/...) tracks readData
   // built — argv order top-to-bottom, same convention as every other stacked
   // view in this CLI (synteny levels, multi-way assemblies). Both then take the
-  // same path: the display category comes from the track's own type in the
-  // config, so modifiers (height:, color:, …) route to the right display slots
+  // same path: the display category comes from the display the view opens the
+  // track as, so modifiers (height:, color:, …) route to the right display slots
   // whichever way the track got there.
   const toOpen = [...flagTracks, ...(data.openTracks ?? [])]
   for (const { trackId, opts } of toOpen) {
     await applyDisplayOpts(
       view,
       trackId,
-      configTrackCategory(data.tracks, trackId),
+      trackCategory(model.session, trackId, opts),
       opts,
     )
   }
@@ -710,7 +710,11 @@ const renderBreakpoint: ModeRenderer = async ctx => {
     () => {
       const showTracks = resolvedShowTracks(opts.showTracks, data)
       flagTracks = [...showTracks, ...(data.openTracks ?? [])]
-      return { views: breakpointInit(data, opts, showTracks) }
+      return {
+        views: breakpointInit(data, opts, showTracks, (trackId, modifiers) =>
+          trackCategory(model.session, trackId, modifiers),
+        ),
+      }
     },
     spec => ({ views: breakpointPanelsFromSpec(spec) }),
   )

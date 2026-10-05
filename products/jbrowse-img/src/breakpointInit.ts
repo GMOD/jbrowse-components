@@ -1,9 +1,12 @@
-import { buildDisplaySnapshot, configTrackCategory } from './applyTrackOpts.ts'
+import { buildDisplaySnapshot } from './applyTrackOpts.ts'
 
+import type { Category } from './applyTrackOpts.ts'
 import type { Entry } from './parseArgv.ts'
 import type { Config, OpenTrack, Opts } from './types.ts'
 import type { TrackInit } from '@jbrowse/core/util/tracks'
 import type { BreakpointSplitViewInitView } from '@jbrowse/plugin-breakpoint-split-view'
+
+type CategoryOf = (trackId: string, opts: string[]) => Category
 
 // The `views` array a BreakpointSplitView is opened with, built from CLI flags.
 // Pure, and split out of renderRegion.ts for the reason comparativeInit.ts is:
@@ -75,11 +78,11 @@ export function breakpointLocs(argv: Entry[] | undefined, loc?: string) {
 export function breakpointTracks(
   openTracks: OpenTrack[] | undefined,
   showTracks: OpenTrack[],
-  tracks: Config['tracks'] = [],
+  categoryOf: CategoryOf = () => 'other',
 ): TrackInit[] {
   return [...showTracks, ...(openTracks ?? [])].map(({ trackId, opts }) => {
     const { snap, sort, displayType } = buildDisplaySnapshot(
-      configTrackCategory(tracks, trackId),
+      categoryOf(trackId, opts),
       opts,
     )
     if (sort) {
@@ -131,6 +134,7 @@ export function breakpointInit(
   data: Config,
   opts: Opts,
   showTracks: OpenTrack[],
+  categoryOf?: CategoryOf,
 ): BreakpointSplitViewInitView[] {
   const locs = breakpointLocs(opts.argv, opts.loc)
   if (locs.length < 2) {
@@ -140,6 +144,6 @@ export function breakpointInit(
         'Quote a single --loc only to put SEVERAL windows in one panel.',
     )
   }
-  const tracks = breakpointTracks(data.openTracks, showTracks, data.tracks)
+  const tracks = breakpointTracks(data.openTracks, showTracks, categoryOf)
   return locs.map(loc => ({ assembly: data.assembly.name, loc, tracks }))
 }

@@ -1,8 +1,9 @@
 import { samFlagNames } from '@jbrowse/cigar-utils'
-import { getSession } from '@jbrowse/core/util'
+import { getEnv, getSession } from '@jbrowse/core/util'
 import { basePaintedAt } from '@jbrowse/core/util/Base1DUtils'
 import { COLOR_SCHEMES } from '@jbrowse/core/util/colorSchemes'
-import { getSnapshot } from '@jbrowse/mobx-state-tree'
+import { trackDisplayType } from '@jbrowse/core/util/tracks'
+import { getSnapshot, isStateTreeNode } from '@jbrowse/mobx-state-tree'
 
 import {
   applySlotWrite,
@@ -69,9 +70,10 @@ function mergeColor(r: BuildResult, patch: Partial<ColorObject>) {
   }
 }
 
-// Display category: the family of display a track type opens with, which says
-// which translating modifiers write keys it declares. `other` is a display none
-// of them target, so it takes the all-tracks modifiers and slot writes alone.
+// Display category: the family of display a track opens as, which says which
+// translating modifiers write keys that display declares. `other` is a display
+// none of them target, so it takes the all-tracks modifiers and slot writes
+// alone.
 export type Category =
   | 'alignments'
   | 'wiggle'
@@ -80,39 +82,58 @@ export type Category =
   | 'hic'
   | 'other'
 
-// Every registered track type, keyed by the config track's own `type`. A track
-// reaches the view through the config whether `--track` named it or a
-// `--bam`/`--bigwig` flag built it, so the category is read off the config for
-// both. `trackCategory.test.ts` lists the registered track types and fails on one
-// missing here, so a new type picks its family instead of falling to a default.
-const categoryByTrackType: Record<string, Category> = {
-  AlignmentsTrack: 'alignments',
-  QuantitativeTrack: 'wiggle',
-  MultiQuantitativeTrack: 'wiggle',
-  GCContentTrack: 'wiggle',
-  VariantTrack: 'variant',
-  MultiVariantTrack: 'variant',
-  HicTrack: 'hic',
-  FeatureTrack: 'feature',
-  GWASTrack: 'other',
-  MafTrack: 'other',
-  LDTrack: 'other',
-  SyntenyTrack: 'other',
-  ReferenceSequenceTrack: 'other',
+// The linear display types a modifier targets. `trackCategory.test.ts` lists
+// every registered display type and fails on one missing here, so a new display
+// picks its family instead of falling to `other`.
+const categoryByDisplayType: Record<string, Category> = {
+  LinearAlignmentsDisplay: 'alignments',
+  LinearWiggleDisplay: 'wiggle',
+  LinearHicDisplay: 'hic',
+  LinearBasicDisplay: 'feature',
+  LinearMultiRowFeatureDisplay: 'feature',
+  LinearVariantDisplay: 'variant',
+  LinearMultiSampleVariantDisplay: 'variant',
+  LinearMarkDisplay: 'other',
+  LinearManhattanDisplay: 'other',
+  LinearMafDisplay: 'other',
+  LDTrackDisplay: 'other',
+  LinearReferenceSequenceDisplay: 'other',
+  LinearSyntenyDisplay: 'other',
+  LGVSyntenyDisplay: 'other',
+  MultiWaySyntenyDisplay: 'other',
+  DotplotDisplay: 'other',
+  ChordSyntenyDisplay: 'other',
+  ChordVariantDisplay: 'other',
 }
 
-export const categorizedTrackTypes = Object.keys(categoryByTrackType)
+export const categorizedDisplayTypes = Object.keys(categoryByDisplayType)
 
-export function configTrackCategory(
-  tracks: Track[],
+// The display a `display:` modifier asks for, which the last one given wins.
+export function requestedDisplayType(opts: string[]) {
+  const name = opts.findLast(opt => opt.startsWith('display:'))?.slice(8)
+  return name ? (lookup(displayTypeAliases, name)?.type ?? name) : undefined
+}
+
+// The category of the display a linear view opens `trackId` as, read off the
+// session's own display picker so it follows `display:` and the adapter rather
+// than a list of track types.
+export function trackCategory(
+  session: { getTrackById: (trackId: string) => unknown },
   trackId: string,
+  opts: string[],
 ): Category {
-  const type = tracks.find(t => t.trackId === trackId)?.type
-  return (
-    (typeof type === 'string'
-      ? lookup(categoryByTrackType, type)
-      : undefined) ?? 'other'
+  const conf = session.getTrackById(trackId)
+  if (!conf) {
+    return 'other'
+  }
+  const { pluginManager } = getEnv(session)
+  const type = trackDisplayType(
+    pluginManager,
+    (isStateTreeNode(conf) ? getSnapshot(conf) : conf) as { type: string },
+    'LinearGenomeView',
+    requestedDisplayType(opts),
   )
+  return (type ? lookup(categoryByDisplayType, type) : undefined) ?? 'other'
 }
 
 function matchTrackId(tracks: Track[], input: string, assemblyName: string) {
