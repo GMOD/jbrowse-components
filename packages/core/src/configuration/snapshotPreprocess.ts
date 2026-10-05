@@ -1,4 +1,5 @@
 import { isJexl } from '../util/jexlStrings.ts'
+import { isPlainObject } from '../util/objectUtils.ts'
 import { slotWriteRefusal } from './configurationSlot.ts'
 import { getConfigurationSchemaMetadata } from './schemaRegistry.ts'
 import { bareFormOf, isConstantEntry, shorthandTargets } from './schemaTypes.ts'
@@ -88,10 +89,6 @@ function isOwnSnapshot(
     snapshot.type === undefined ||
     snapshot.type === name
   )
-}
-
-function isPlainObject(value: unknown): value is Record<string, unknown> {
-  return typeof value === 'object' && value !== null && !Array.isArray(value)
 }
 
 // `lifted` under `written`: what the snapshot spells wins, member by member
