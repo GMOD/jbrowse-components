@@ -15,12 +15,12 @@ import {
   treeSidebarConfigSchemaFields,
 } from '@jbrowse/tree-sidebar/treeSidebarConfigSchemaFields'
 
-import { cellColorConfigSchema } from '../shared/cellColorConfigSchema.ts'
 import {
   MULTI_SAMPLE_VARIANT_DISPLAY,
   VARIANT_UNITS,
 } from '../shared/constants.ts'
-import { DEFAULT_VARIANT_LANE_HEIGHT } from '../shared/variantTopBands.ts'
+import { cellColorConfigSchema } from './cellColorConfigSchema.ts'
+import { DEFAULT_VARIANT_LANE_HEIGHT } from './variantTopBands.ts'
 
 /**
  * #config LinearMultiSampleVariantDisplay

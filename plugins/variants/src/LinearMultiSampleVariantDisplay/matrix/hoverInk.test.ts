@@ -4,7 +4,7 @@ import {
   featureInfoOf,
 } from '../../shared/cellDataFixtures.ts'
 import { f2 } from '../../shared/constants.ts'
-import { findCellIndex } from '../../shared/variantCellLookup.ts'
+import { findCellIndex } from '../components/variantCellLookup.ts'
 import { variantMatrixSurface } from './VariantMatrixComponent.tsx'
 import { createTestEnvironment } from './testEnv.ts'
 

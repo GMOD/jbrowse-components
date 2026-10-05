@@ -40,7 +40,7 @@ export interface VariantCellData extends CellHueValues {
   // here rather than through a cell.
   featurePositions: Uint32Array
   // Spatial index over `featurePositions` — numFeatures intervals, not
-  // numFeatures x numSamples cells. See shared/variantCellLookup.ts for why the
+  // numFeatures x numSamples cells. See variantCellLookup.ts for why the
   // per-cell index it replaced was redundant.
   featureIndexData: ArrayBuffer
   // bp this record inserts relative to the reference, per feature. 0 for SNPs
@@ -216,7 +216,7 @@ export function computeVariantCells({
   // appended c1..cN landed as cN..c1. Flip it in place so *within each bucket*
   // the cells are again sorted by (featureIndex, rowIndex) — the invariant the
   // hit-test binary-searches instead of carrying a per-cell spatial index (see
-  // shared/variantCellLookup.ts). Anything that reorders cells (a different paint
+  // variantCellLookup.ts). Anything that reorders cells (a different paint
   // order, a per-cell sort) has to preserve it or rework that lookup.
   for (let lo = nonRefStart, hi = maxCells - 1; lo < hi; lo++, hi--) {
     swapCells(lo, hi)

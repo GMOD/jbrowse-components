@@ -7,13 +7,13 @@ import OverlayCanvas from '@jbrowse/render-core/OverlayCanvas'
 import { observer } from 'mobx-react'
 
 import { BandSeamHandle } from '../../shared/BandSeamHandle.tsx'
-import { buildVariantLaneHit } from '../../shared/buildVariantHit.ts'
-import { enrichFeatureFromClick } from '../../shared/enrichFeatureFromClick.ts'
-import { variantSurfaceHandlers } from '../../shared/variantSurface.ts'
+import { buildVariantLaneHit } from './buildVariantHit.ts'
+import { enrichFeatureFromClick } from './enrichFeatureFromClick.ts'
+import { variantSurfaceHandlers } from './variantSurface.ts'
 
-import type { VariantTooltipFields } from '../../shared/buildVariantHit.ts'
-import type { VariantSurface } from '../../shared/variantSurface.ts'
 import type { LinearMultiSampleVariantDisplayModel } from '../model.ts'
+import type { VariantTooltipFields } from './buildVariantHit.ts'
+import type { VariantSurface } from './variantSurface.ts'
 import type { HitFeatureResult } from '@jbrowse/plugin-canvas'
 
 interface VariantLaneHit {

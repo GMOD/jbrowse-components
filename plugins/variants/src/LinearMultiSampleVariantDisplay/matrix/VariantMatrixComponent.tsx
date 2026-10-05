@@ -1,16 +1,16 @@
 import { observer } from 'mobx-react'
 
-import { buildVariantHit } from '../../shared/buildVariantHit.ts'
-import { enrichFeatureFromClick } from '../../shared/enrichFeatureFromClick.ts'
 import { decodeGenotype } from '../../shared/genotypeCodec.ts'
-import { findCellIndex } from '../../shared/variantCellLookup.ts'
-import { variantSurfaceHandlers } from '../../shared/variantSurface.ts'
+import { buildVariantHit } from '../components/buildVariantHit.ts'
+import { enrichFeatureFromClick } from '../components/enrichFeatureFromClick.ts'
+import { findCellIndex } from '../components/variantCellLookup.ts'
+import { variantSurfaceHandlers } from '../components/variantSurface.ts'
 import { matrixCellAt } from './matrixHitTest.ts'
 
-import type { VariantTooltipFields } from '../../shared/buildVariantHit.ts'
 import type { VariantFeatureInfo } from '../../shared/types.ts'
-import type { CellLookupData } from '../../shared/variantCellLookup.ts'
-import type { VariantSurface } from '../../shared/variantSurface.ts'
+import type { VariantTooltipFields } from '../components/buildVariantHit.ts'
+import type { CellLookupData } from '../components/variantCellLookup.ts'
+import type { VariantSurface } from '../components/variantSurface.ts'
 import type { LinearMultiSampleVariantDisplayModel } from '../model.ts'
 
 interface MatrixHit {

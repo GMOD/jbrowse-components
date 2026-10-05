@@ -1,4 +1,4 @@
-import { variantShowSubmenuItems } from '../shared/multiSampleVariantMenuItems.ts'
+import { variantShowSubmenuItems } from './multiSampleVariantMenuItems.ts'
 import { createTestEnvironment } from './testEnv.ts'
 
 test('the layout is a fetch input, and columns spend no band on the lane', () => {

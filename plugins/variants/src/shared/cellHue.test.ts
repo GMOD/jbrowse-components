@@ -3,11 +3,11 @@ import { SimpleFeature } from '@jbrowse/core/util'
 import { SV_TYPE_FIELD } from '@jbrowse/core/util/categoricalField'
 import { NO_CATEGORY_COLOR } from '@jbrowse/core/util/color'
 
+import { paintFeatureColors } from '../LinearMultiSampleVariantDisplay/paintCells.ts'
 import VariantsPlugin from '../index.ts'
 import { ALT_HUE } from './cellFill.ts'
 import { cellHueOf, cellHueReaderOf, sameHueRead } from './cellHue.ts'
 import { PHASE_SET_FIELD } from './getPhasedColor.ts'
-import { paintFeatureColors } from './paintCells.ts'
 import { IMPACT_FIELD, getVariantImpactColor } from './variantConsequence.ts'
 import { getCachedABGR as abgr } from './variantWebglUtils.ts'
 

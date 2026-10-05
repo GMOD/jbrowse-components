@@ -6,9 +6,9 @@ import { createMarkBackend } from '@jbrowse/render-core/marks/backend'
 import { RowsPanel, treeSidebarRightEdge } from '@jbrowse/tree-sidebar'
 import { observer } from 'mobx-react'
 
-import Crosshair from '../../shared/components/MultiSampleVariantCrosshairs.tsx'
-import VariantRowSeparators from '../../shared/components/VariantRowSeparators.tsx'
-import { hoverVariantSurface } from '../../shared/variantSurface.ts'
+import Crosshair from '../components/MultiSampleVariantCrosshairs.tsx'
+import VariantRowSeparators from '../components/VariantRowSeparators.tsx'
+import { hoverVariantSurface } from '../components/variantSurface.ts'
 import LinesConnectingMatrixToGenomicPosition from './LinesConnectingMatrixToGenomicPosition.tsx'
 import VariantMatrixBody, {
   variantMatrixSurface,
@@ -92,7 +92,7 @@ const VariantMatrixDisplayComponent = observer(
                 the only band this display currently stacks, so the two are
                 equal here — but the offset the rows actually begin at is the
                 total, and reaching for one band's height as if it were that
-                total is what `shared/variantTopBands.ts` exists to stop. */}
+                total is what `variantTopBands.ts` exists to stop. */}
             <PointerLayer
               mouseTracker={mouseTracker}
               rowsTopOffset={rowsTopOffset}

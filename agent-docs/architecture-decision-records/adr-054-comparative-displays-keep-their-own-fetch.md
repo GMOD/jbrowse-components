@@ -40,7 +40,7 @@ an unfinished migration.
 
 The motivating smell is two latest-wins token rotations — `FetchMixin.runFetch`
 and `createStopTokenRotation`. Folding the comparative displays removes neither:
-`getMultiSampleVariantSourcesAutorun` (`plugins/variants/src/shared`) uses the
+`getMultiSampleVariantSourcesAutorun` (`plugins/variants/src/LinearMultiSampleVariantDisplay`) uses the
 rotation on `MultiSampleVariantBaseModel`, which **already** composes `FetchMixin`
 through `MultiRegionDisplayMixin`. It has to, because `FetchMixin` holds a single
 `activeStopToken` and can therefore host exactly one in-flight fetch per node,

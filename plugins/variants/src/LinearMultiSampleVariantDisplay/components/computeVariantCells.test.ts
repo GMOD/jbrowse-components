@@ -12,7 +12,7 @@ import {
   paintCellColors,
   paintFeatureColors,
   paintedColorKeys,
-} from '../../shared/paintCells.ts'
+} from '../paintCells.ts'
 import { computeVariantCells } from './computeVariantCells.ts'
 
 import type { VariantUnit } from '../../shared/constants.ts'

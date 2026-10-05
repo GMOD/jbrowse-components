@@ -1,12 +1,12 @@
 import { setConf } from '@jbrowse/core/configuration'
 import { fireEvent, render, screen } from '@testing-library/react'
 
+import VariantLaneOverlay from './components/VariantLaneOverlay.tsx'
+import { createTestEnvironment } from './testEnv.ts'
 import {
   DEFAULT_VARIANT_LANE_HEIGHT,
   MIN_VARIANT_LANE_HEIGHT,
-} from '../shared/variantTopBands.ts'
-import VariantLaneOverlay from './components/VariantLaneOverlay.tsx'
-import { createTestEnvironment } from './testEnv.ts'
+} from './variantTopBands.ts'
 
 function laneDisplay() {
   const { display } = createTestEnvironment().createDisplay()

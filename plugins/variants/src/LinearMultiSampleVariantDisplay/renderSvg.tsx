@@ -6,19 +6,19 @@ import MarkSvgLayer from '@jbrowse/display-kit/MarkSvgLayer'
 import { renderDisplaySvg } from '@jbrowse/display-kit/renderDisplaySvg'
 import { paintFeatureBand } from '@jbrowse/plugin-canvas'
 
-import SvgVariantOverlay from '../shared/components/SvgVariantOverlay.tsx'
 import { REFERENCE_COLOR } from '../shared/constants.ts'
+import SvgVariantOverlay from './components/SvgVariantOverlay.tsx'
 import {
   VARIANT_MARKS,
   variantInsertionParams,
 } from './components/variantMarks.ts'
 
-import type { RenderSvgBaseModel } from '../shared/renderSvgUtils.ts'
 import type {
   VariantRenderBlock,
   VariantRenderState,
   VariantUploadData,
 } from './components/variantRenderingBackendTypes.ts'
+import type { RenderSvgBaseModel } from './renderSvgUtils.ts'
 import type { LgvSvgBodyProps } from '@jbrowse/display-kit/renderDisplaySvg'
 import type { ExportSvgDisplayOptions } from '@jbrowse/display-kit/types'
 import type { FeatureDataResult } from '@jbrowse/plugin-canvas'

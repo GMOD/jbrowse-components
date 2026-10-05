@@ -3,12 +3,12 @@ import MarkSvgLayer from '@jbrowse/display-kit/MarkSvgLayer'
 import { renderDisplaySvg } from '@jbrowse/display-kit/renderDisplaySvg'
 
 import { SvgConnectorField } from '../../shared/ConnectorLines.tsx'
-import SvgVariantOverlay from '../../shared/components/SvgVariantOverlay.tsx'
 import { MATRIX_CONNECTOR_STROKE_PX } from '../../shared/constants.ts'
+import SvgVariantOverlay from '../components/SvgVariantOverlay.tsx'
 import { VARIANT_MATRIX_MARKS } from './variantMatrixMarks.ts'
 
 import type { ConnectorLinesModel } from '../../shared/ConnectorLines.tsx'
-import type { RenderSvgBaseModel } from '../../shared/renderSvgUtils.ts'
+import type { RenderSvgBaseModel } from '../renderSvgUtils.ts'
 import type {
   MatrixRenderState,
   VariantMatrixRenderBlock,

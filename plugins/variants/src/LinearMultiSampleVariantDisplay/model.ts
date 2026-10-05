@@ -74,7 +74,6 @@ import {
   loadedRegionIndexAt,
 } from '@jbrowse/tree-sidebar'
 
-import { sortSourcesAroundVariant } from '../shared/anchoredHaplotypeSort.ts'
 import { cellHueField, cellHueOf, sameHueRead } from '../shared/cellHue.ts'
 import {
   HIDDEN_ROW,
@@ -83,11 +82,6 @@ import {
   VARIANT_FEATURE_WIDGET,
   clampLineZoneHeight,
 } from '../shared/constants.ts'
-import {
-  densityRung,
-  fadeCellColors,
-  recordDensityAlpha,
-} from '../shared/densityFade.ts'
 import { locusViewportXFor } from '../shared/genomicViewportX.ts'
 import { buildSampleIndex } from '../shared/genotypeCodec.ts'
 import {
@@ -96,21 +90,7 @@ import {
   resolveSampleName,
   rowAliasOf,
 } from '../shared/getSources.ts'
-import {
-  variantContextMenuItems,
-  variantTrackMenuItems,
-} from '../shared/multiSampleVariantMenuItems.ts'
-import {
-  paintCellColors,
-  paintFeatureColors,
-  paintedColorKeys,
-} from '../shared/paintCells.ts'
-import { placeVariantRows } from '../shared/placeVariantRows.ts'
-import { getVariantColorScales } from '../shared/variantLegend.ts'
-import {
-  VARIANT_LANE_BOUNDS,
-  variantTopBandsGeometry,
-} from '../shared/variantTopBands.ts'
+import { sortSourcesAroundVariant } from './anchoredHaplotypeSort.ts'
 import { cellGlyphs } from './components/cellGlyphs.ts'
 import { drawnCellHeightPx } from './components/shaders/variant.js.generated.ts'
 import { variantCellSpanPx } from './components/variantCellSpan.ts'
@@ -119,14 +99,33 @@ import {
   variantInsertionChannels,
 } from './components/variantInsertions.ts'
 import { VARIANT_MARKS } from './components/variantMarks.ts'
+import {
+  densityRung,
+  fadeCellColors,
+  recordDensityAlpha,
+} from './densityFade.ts'
 import { laneDisplayConfig } from './laneDisplayConfig.ts'
 import { buildLaneRenderData } from './laneRenderData.ts'
 import { VARIANT_MATRIX_MARKS } from './matrix/variantMatrixMarks.ts'
+import {
+  variantContextMenuItems,
+  variantTrackMenuItems,
+} from './multiSampleVariantMenuItems.ts'
+import {
+  paintCellColors,
+  paintFeatureColors,
+  paintedColorKeys,
+} from './paintCells.ts'
+import { placeVariantRows } from './placeVariantRows.ts'
+import { getVariantColorScales } from './variantLegend.ts'
+import {
+  VARIANT_LANE_BOUNDS,
+  variantTopBandsGeometry,
+} from './variantTopBands.ts'
 
 import type { CellDataResult } from '../VariantRPC/executeVariantCellData.ts'
 import type { ConnectorCoord } from '../shared/ConnectorLines.tsx'
 import type { VariantUnit } from '../shared/constants.ts'
-import type { Placed } from '../shared/placeVariantRows.ts'
 import type {
   ProcessedSource,
   Source,
@@ -142,6 +141,7 @@ import type {
   VariantMatrixRenderBlock,
   VariantMatrixRenderingBackend,
 } from './matrix/variantMatrixRenderingBackendTypes.ts'
+import type { Placed } from './placeVariantRows.ts'
 import type { InsertionChannels } from '@jbrowse/alignments-core'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { MenuItem } from '@jbrowse/core/ui'
@@ -2565,7 +2565,7 @@ export function stateModelFactory(
           runLazyAfterAttach(
             self,
             async () =>
-              (await import('../shared/setupMultiSampleVariantAutoruns.ts'))
+              (await import('./setupMultiSampleVariantAutoruns.ts'))
                 .setupMultiSampleVariantAutoruns,
           )
           // The hit test reads this only from untracked pointer handlers, so

@@ -6,15 +6,15 @@ import { createMarkBackend } from '@jbrowse/render-core/marks/backend'
 import { RowsPanel, treeSidebarRightEdge } from '@jbrowse/tree-sidebar'
 import { observer } from 'mobx-react'
 
-import Crosshair from '../../shared/components/MultiSampleVariantCrosshairs.tsx'
-import VariantRowSeparators from '../../shared/components/VariantRowSeparators.tsx'
-import { hoverVariantSurface } from '../../shared/variantSurface.ts'
 import VariantMatrixDisplayComponent from '../matrix/VariantMatrixDisplayComponent.tsx'
+import Crosshair from './MultiSampleVariantCrosshairs.tsx'
 import VariantBody, { variantRowsSurface } from './VariantComponent.tsx'
 import VariantLaneOverlay, {
   variantLaneSurface,
 } from './VariantLaneOverlay.tsx'
+import VariantRowSeparators from './VariantRowSeparators.tsx'
 import { VARIANT_MARKS } from './variantMarks.ts'
+import { hoverVariantSurface } from './variantSurface.ts'
 
 import type { LinearMultiSampleVariantDisplayModel } from '../model.ts'
 

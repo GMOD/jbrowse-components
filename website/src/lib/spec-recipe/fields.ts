@@ -1747,7 +1747,7 @@ export const trackFields: Record<string, FieldRecipe> = {
     path: `${TRACK_MENU} → Read height → Set max layout height... → ${n}`,
   })),
   // Two inline sliders under the multi-sample variant "Filter by..." submenu
-  // (labels verified in shared/multiSampleVariantMenuItems.ts). Both re-fetch
+  // (labels verified in LinearMultiSampleVariantDisplay/multiSampleVariantMenuItems.ts). Both re-fetch
   // on release; a value of 0 (MAF) / 1 (missingness) turns the filter off.
   minorAlleleFrequencyFilter: numberField(n => ({
     path: `${TRACK_MENU} → Filter by... → Minor allele frequency → ${n.toFixed(2)}`,

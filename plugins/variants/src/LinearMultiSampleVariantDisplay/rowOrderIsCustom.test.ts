@@ -1,0 +1,91 @@
+import { getSnapshot } from '@jbrowse/mobx-state-tree'
+
+import { createTestEnvironment } from './testEnv.ts'
+
+const SOURCES = [
+  { name: 'HG001', population: 'EUR', super_pop: 'EUR' },
+  { name: 'HG002', population: 'AFR', super_pop: 'AFR' },
+]
+
+function colored() {
+  const { display } = createTestEnvironment().createDisplay()
+  display.setRowColorField('population')
+  display.setSources(SOURCES)
+  return display
+}
+
+// `rows` holds only what a reader or a clustering run did, so the tint and the
+// band leave it alone. Both channels used to seed the order on first load,
+// which offered "Reset row order" on every population-colored track before
+// anyone had touched it.
+test('a configured colorBy writes no order and is not a custom row order', () => {
+  const display = colored()
+  expect(display.rowDomain).toEqual([])
+  expect(display.rowArrangementIsCustom).toBe(false)
+  expect(display.sources.every(s => s.rowColor)).toBe(true)
+})
+
+test('a configured facet writes no order and is not a custom row order', () => {
+  const { display } = createTestEnvironment().createDisplay()
+  display.setFacet('population')
+  display.setSources(SOURCES)
+
+  expect(display.rowDomain).toEqual([])
+  expect(display.rowArrangementIsCustom).toBe(false)
+  expect(display.sources.map(s => s.name)).toEqual(['HG002', 'HG001'])
+})
+
+// The palette is a pure function of the attribute, so persisting it would buy
+// nothing and cost every session a row table it had to carry.
+test('the config after setColorBy carries no palette colours', () => {
+  const display = colored()
+  expect(getSnapshot(display.configuration).rows).toBeUndefined()
+  expect(getSnapshot(display.configuration).rowColor).toEqual({
+    field: 'population',
+  })
+})
+
+test('a reorder is custom, and the reset clears it', () => {
+  const display = colored()
+  display.setRowOrder([...display.sources].reverse())
+  expect(display.rowArrangementIsCustom).toBe(true)
+
+  display.resetRowArrangement()
+
+  expect(display.rowArrangementIsCustom).toBe(false)
+  expect(display.sources.map(s => s.name)).toEqual(['HG001', 'HG002'])
+})
+
+test('a second color-by still writes no order', () => {
+  const display = colored()
+  display.setRowColorField('super_pop')
+
+  expect(display.rowDomain).toEqual([])
+  expect(display.rowArrangementIsCustom).toBe(false)
+})
+
+// The menu's None writes the dialog's, so a colour by and back is the config
+// it started from, with no reset to offer.
+test('None after a color-by is the config it started from', () => {
+  const display = colored()
+  display.setRowColorField('')
+
+  expect(display.rowArrangementIsCustom).toBe(false)
+  expect(getSnapshot(display.configuration).rowColor).toBeUndefined()
+})
+
+// What the rows are coloured by is the reader's view, as every Color by is:
+// None over a configured one offers no reset, and picking it again is the
+// config's own object.
+test('None over a configured color-by is no custom arrangement', () => {
+  const { display } = createTestEnvironment({
+    displayConfig: { rowColor: 'population' },
+  }).createDisplay()
+  display.setSources(SOURCES)
+  display.setRowColorField('')
+  expect(display.rowColorAttribute).toBe('')
+  expect(display.rowArrangementIsCustom).toBe(false)
+
+  display.setRowColorField('population')
+  expect(display.rowColorSetting).toEqual(display.baseRowColor)
+})

@@ -49,7 +49,7 @@ same rule with inputs the step lacks, or (c) something else.
 | `plugins/canvas/src/RenderFeatureDataRPC/glyphs/subfeatures.ts` `layoutSubfeatures` | 247–345 | one row per isoform whatever the overlap, ranked and of variable height — a tier, not a packing | (c) |
 | `plugins/alignments/src/LinearAlignmentsDisplay/spanOverlaps.ts` | 23–63 | a position covered by `d` spans emitted `d − 1` times, deliberately not deduplicated, so stacked alpha tints carry the depth | (c) |
 | `plugins/alignments/src/LinearAlignmentsDisplay/collapsedLayout.ts` | 62–80 | row 0 for everything; there is no placement pass | (c) |
-| `plugins/variants/src/shared/placeVariantRows.ts` | 32–49 | a permutation from worker row to screen row — a row is a sample | (c) |
+| `plugins/variants/src/LinearMultiSampleVariantDisplay/placeVariantRows.ts` | 32–49 | a permutation from worker row to screen row — a row is a sample | (c) |
 | `plugins/canvas/src/MultiRowGetFeaturesRPC/packMultiRowFeatures.ts` | 202–296 | a row is a partition value, interned in first-seen order | (c) |
 | `plugins/alignments/src/features/sashimi/junctions.ts` | 256–339 | greedy two-colouring into an up band and a down band, heaviest junction first, per refName | (c) |
 | `plugins/arc/src/shared/arcLayout.ts` `layOutArcs` | 132–184 | no lane assignment at all: arcs overlap and the height is a jexl slot | (c) |

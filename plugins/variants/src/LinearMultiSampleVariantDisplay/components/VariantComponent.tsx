@@ -1,19 +1,19 @@
 import { pxPerBpOf, regionAtPixel } from '@jbrowse/render-core/canvas2dUtils'
 import { observer } from 'mobx-react'
 
-import { buildVariantHit } from '../../shared/buildVariantHit.ts'
 import { REFERENCE_COLOR } from '../../shared/constants.ts'
-import { enrichFeatureFromClick } from '../../shared/enrichFeatureFromClick.ts'
 import { decodeGenotype } from '../../shared/genotypeCodec.ts'
-import { variantSurfaceHandlers } from '../../shared/variantSurface.ts'
 import VariantInsertionLabels from './VariantInsertionLabels.tsx'
+import { buildVariantHit } from './buildVariantHit.ts'
+import { enrichFeatureFromClick } from './enrichFeatureFromClick.ts'
 import { pickVariantCell } from './pickVariantCell.ts'
 import { computeVariantHitQuery } from './variantHitTest.ts'
+import { variantSurfaceHandlers } from './variantSurface.ts'
 
-import type { VariantTooltipFields } from '../../shared/buildVariantHit.ts'
 import type { VariantFeatureInfo } from '../../shared/types.ts'
-import type { VariantSurface } from '../../shared/variantSurface.ts'
 import type { LinearMultiSampleVariantDisplayModel } from '../model.ts'
+import type { VariantTooltipFields } from './buildVariantHit.ts'
+import type { VariantSurface } from './variantSurface.ts'
 
 export interface HoveredCell {
   cellIndex: number

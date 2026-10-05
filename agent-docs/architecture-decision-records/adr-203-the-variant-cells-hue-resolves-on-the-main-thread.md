@@ -39,7 +39,7 @@ cohort callset that re-read is the slow part of the display.
   carries the same three and gains `cellAltDosage`. The payload stamps the read
   it answered (`colorRead`), and a payload read for another field paints as
   though it read nothing.
-- **`paintCellColors` repaints the alt cells** (`shared/paintCells.ts`): in
+- **`paintCellColors` repaints the alt cells** (`LinearMultiSampleVariantDisplay/paintCells.ts`): in
   allele-count mode every alt cell takes `cellFill(hue, altDosage, shade)`, in
   phased mode the alt cells a hue paints take it and the rest keep the worker's
   allele colours, and every other cell keeps the worker's colour. Under the
