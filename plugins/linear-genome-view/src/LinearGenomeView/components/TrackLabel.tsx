@@ -20,6 +20,10 @@ const useStyles = makeStyles()(theme => ({
     // above breakpoint split view
     zIndex: 200,
     backgroundColor: theme.palette.background.paper,
+    ...(theme.palette.mode === 'dark' && {
+      outline: `1px solid ${theme.palette.divider}`,
+      outlineOffset: -1,
+    }),
     display: 'inline-flex',
     alignItems: 'center',
     maxWidth: 'calc(100% - 16px)',
