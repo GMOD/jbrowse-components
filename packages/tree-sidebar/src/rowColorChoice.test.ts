@@ -77,6 +77,17 @@ describe('withPair', () => {
       range: ['#f00', '#0f0', '#00f'],
     })
   })
+
+  it('keeps the spare range entries the unpaired values take', () => {
+    const spares = lift({
+      field: 'population',
+      range: ['red', 'blue', 'green'],
+    })
+    expect(withPair(spares, 'EAS', 'black')).toMatchObject({
+      domain: ['EAS'],
+      range: ['black', 'red', 'blue', 'green'],
+    })
+  })
 })
 
 describe('startingRowColor', () => {
@@ -165,6 +176,12 @@ describe('rowColorResetTarget', () => {
     expect(settled('superpop', { field: 'population', unknown: '#ccc' })).toBe(
       undefined,
     )
+  })
+
+  it('returns cleared spare range entries', () => {
+    const base = { field: 'population', range: ['red', 'blue', 'green'] }
+    expect(settled({ field: 'population' }, base)).toEqual(base)
+    expect(settled(base, base)).toBeUndefined()
   })
 
   it('reads pairs listed in another order as the same', () => {

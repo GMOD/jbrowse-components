@@ -35,11 +35,21 @@ export function rowColorMembers(setting: RowColorSetting): RowColorSnapshot {
   )
 }
 
-/** Whether `a` and `b` pair the same values with the same colours. */
+/** The `range` entries past `domain`, which `dealRowColors` deals first. */
+function spareRange({ domain, range }: RowColorSetting) {
+  return range.slice(domain.length)
+}
+
+/**
+ * Whether `a` and `b` pair the same values with the same colours and deal the
+ * same spare `range` entries.
+ */
 export function samePairs(a: RowColorSetting, b: RowColorSetting) {
-  return compareStructural(
-    Object.fromEntries(pairedColorsOf(a)),
-    Object.fromEntries(pairedColorsOf(b)),
+  return (
+    compareStructural(
+      Object.fromEntries(pairedColorsOf(a)),
+      Object.fromEntries(pairedColorsOf(b)),
+    ) && compareStructural(spareRange(a), spareRange(b))
   )
 }
 
@@ -52,14 +62,21 @@ export function sameRowColor(a: RowColorSetting, b: RowColorSetting) {
   )
 }
 
-/** `setting` with `value` paired to `color`, in place or appended. */
+/**
+ * `setting` with `value` paired to `color`, in place or appended, keeping the
+ * spare `range` entries the unpaired values take.
+ */
 export function withPair(
   setting: RowColorSetting,
   value: string,
   color: string,
 ): RowColorSetting {
   const pairs = new Map(pairedColorsOf(setting)).set(value, color)
-  return { ...setting, domain: [...pairs.keys()], range: [...pairs.values()] }
+  return {
+    ...setting,
+    domain: [...pairs.keys()],
+    range: [...pairs.values(), ...spareRange(setting)],
+  }
 }
 
 /**
