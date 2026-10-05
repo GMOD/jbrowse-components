@@ -135,7 +135,7 @@ function installGpu(device: GPUDevice) {
   })
 }
 
-const desc = slangPass({ id: 'link', mod: linkShader, verticesPerInstance: 6 })
+const desc = slangPass({ id: 'link', mod: linkShader })
 const slot = Math.ceil(desc.uniformByteSize / 256) * 256
 
 async function makeHal(device: GPUDevice) {

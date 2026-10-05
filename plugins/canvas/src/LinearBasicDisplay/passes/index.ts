@@ -33,18 +33,12 @@ export const ArrowPass: PipelineDescriptor = slangPass({
   mod: arrowShader,
 })
 
-// Chevron draws over line's vertex buffer, and its per-instance vertex count
-// scales with the consumer's cap on chevrons per line, so each consumer builds
-// its own.
-export function makeChevronPass(
-  maxChevronsPerLine: number,
-): PipelineDescriptor {
-  return slangPass({
-    id: 'chevron',
-    mod: chevronShader,
-    verticesPerInstance: maxChevronsPerLine * chevronShader.CHEVRON_VERTS,
-  })
-}
+// Chevron draws over line's vertex buffer, as many chevrons a line as each
+// draw asks for.
+export const ChevronPass: PipelineDescriptor = slangPass({
+  id: 'chevron',
+  mod: chevronShader,
+})
 
 // Continuation reads rect's vertex buffer, so a marker drawing on at most two
 // blocks of a frame needs no second per-region pack and upload.

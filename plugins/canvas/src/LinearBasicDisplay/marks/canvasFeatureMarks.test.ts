@@ -233,7 +233,6 @@ describe('the index a primitive family is filed under', () => {
     const lanes = featureGlyphMarks<RegionRenderData, RenderState>({
       glyphs: d => d,
       params: () => ({ scrollY: 0, outlineColor: 0 }),
-      maxChevronsPerLine: 4,
       continuation: false,
     })
     expect(lanes).toHaveLength(FAMILIES.length - 1)

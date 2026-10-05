@@ -5,12 +5,6 @@ export {
   LABEL_OVERLAY_BACKGROUND,
 } from '../../RenderFeatureDataRPC/constants.ts'
 
-// What `makeChevronPass` registers, and the count a draw supplying no width
-// uses. The GPU path supplies one — `chevronSlotBudget` off the frame's canvas
-// — so this binds nothing it draws; it stays the registered worst case because
-// a `PipelineDescriptor` is built before any canvas exists.
-export const MAX_VISIBLE_CHEVRONS_PER_LINE = 128
-
 // Slots a line can put on screen across a canvas this wide. Spacing is the
 // line split into count + 1 gaps, always a little under CHEVRON_SPACING_PX, so
 // a line one or two chevrons longer than the canvas fits a slot past ceil + 1;

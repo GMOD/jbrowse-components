@@ -7,6 +7,8 @@ export const BINDINGS: readonly ShaderBinding[] = [
   { index: 1, kind: 'uniform', name: 'u', stages: ['vertex'] },
 ]
 
+export const VERTS_PER_INSTANCE = 12
+
 export const UNIFORMS_SIZE_BYTES = 48
 
 // Word indices into a Float32Array view over the uniform buffer.

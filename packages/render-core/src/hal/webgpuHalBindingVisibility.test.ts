@@ -230,8 +230,8 @@ test.each(shaders)('%s', async rel => {
       VERTEX_ATTRIBUTES,
       INSTANCE_STRIDE_BYTES,
       UNIFORMS_SIZE_BYTES,
+      VERTS_PER_INSTANCE: 6,
     },
-    verticesPerInstance: 6,
   })
   installGpu(fake.device)
   const hal = await WebGPUHal.create(fakeCanvas(), [desc], 1)

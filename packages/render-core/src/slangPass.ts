@@ -19,7 +19,6 @@ export interface ShaderModule {
   VERTEX_ATTRIBUTES: readonly VertexAttributeLayout[]
   // Emitted when the .slang source declares
   // `public static const uint VERTS_PER_INSTANCE = <expr>;` at module scope.
-  // Lets slangPass() avoid taking the count as a separate argument.
   VERTS_PER_INSTANCE?: number
   // Emitted from `//! topology:` / `//! blend:`. Both are properties of what the
   // stages do — topology decides what a vertex id means, blend follows from
@@ -47,8 +46,6 @@ export interface ShaderModule {
  * Every remaining field is an override of something the module already carries,
  * for a shader drawn by two passes that disagree:
  *
- * - `verticesPerInstance` — the canvas chevron pass, whose count is the
- *   shader's `CHEVRON_VERTS` times a cap the *renderer* chooses.
  * - `blendState` / `topology` — no pass in the tree overrides these. Wiggle's
  *   step line and center line did while they shared one module and blended
  *   differently (src-over against max); each record now has its own module,
@@ -56,6 +53,11 @@ export interface ShaderModule {
  *   disagree declares neither and says which at each pass.
  * - `blend: false` — nothing disables blending today, which is why there is no
  *   `//! blend: none` to inherit it from.
+ *
+ * There is deliberately no `verticesPerInstance` override. A shape whose count
+ * moves per frame (the canvas chevrons, one slot per chevron the canvas can
+ * show) states one instance's worth in the module and answers the rest in
+ * `MarkShape.verticesPerInstance` at each draw.
  *
  * There is deliberately no `textures` override either. It existed for one
  * caller, which rebuilt the generated `TEXTURES` with `filter: 'nearest'`
@@ -76,7 +78,6 @@ export interface ShaderModule {
 export interface SlangPassOpts {
   id: string
   mod: ShaderModule
-  verticesPerInstance?: number
   topology?: PipelineDescriptor['topology']
   blend?: boolean
   blendState?: BlendState
@@ -94,13 +95,12 @@ export function slangPass(opts: SlangPassOpts): PipelineDescriptor {
         `regenerate it`,
     )
   }
-  const verticesPerInstance =
-    opts.verticesPerInstance ?? opts.mod.VERTS_PER_INSTANCE
+  const verticesPerInstance = opts.mod.VERTS_PER_INSTANCE
   if (verticesPerInstance === undefined) {
     throw new Error(
       `slangPass(${opts.id}): no verticesPerInstance — declare ` +
         `'public static const uint VERTS_PER_INSTANCE = N;' in the .slang ` +
-        `source or pass verticesPerInstance explicitly`,
+        `source`,
     )
   }
   return {

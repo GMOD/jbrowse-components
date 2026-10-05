@@ -76,18 +76,6 @@ describe('slangPass', () => {
     }
   })
 
-  it('lets the consumer override the shader vertex count', () => {
-    // The canvas chevron pass: its count is the shader's own times a cap the
-    // renderer chooses, so the module cannot state it.
-    const desc = slangPass({
-      id: 'chevron',
-      mod: shaderModule({ VERTS_PER_INSTANCE: 3 }),
-      verticesPerInstance: 30,
-    })
-
-    expect(desc.verticesPerInstance).toBe(30)
-  })
-
   it('inherits topology and blend from the module when the pass says nothing', () => {
     const desc = slangPass({
       id: 'line',

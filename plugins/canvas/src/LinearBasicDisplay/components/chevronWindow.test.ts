@@ -7,7 +7,6 @@ import {
 import {
   CHEVRON_SPACING_PX,
   CHEVRON_W_PX,
-  MAX_VISIBLE_CHEVRONS_PER_LINE,
   chevronSlotBudget,
 } from './sharedRendererConstants.ts'
 
@@ -130,8 +129,8 @@ test('a line entirely off the canvas yields an empty window', () => {
 })
 
 test('it is at least as tight as the shader window it replaced', () => {
-  // The vertex budget is sized off how many slots the window walks, so tightening
-  // it can only widen the block MAX_VISIBLE_CHEVRONS_PER_LINE covers.
+  // The per-frame budget is sized off how many slots the window walks, so a
+  // tighter window never asks the GPU for more.
   for (const lineWidthPx of LINE_WIDTHS) {
     for (const minX of OFFSETS) {
       const { total, spacing, first, last } = windowFor(minX, lineWidthPx)
@@ -201,17 +200,6 @@ test('and spends its last slot: one budget shorter drops a chevron at the edge',
   expect(slotsAt(1920, 2000, 39)).toBe(chevronSlotBudget(1920))
 })
 
-test('and is a fraction of the count the pass registers', () => {
-  expect(chevronSlotBudget(1920)).toBe(50)
-  expect(MAX_VISIBLE_CHEVRONS_PER_LINE / chevronSlotBudget(1920)).toBeCloseTo(
-    2.56,
-    2,
-  )
-  // Past the registered count the per-frame budget is what keeps the far-end
-  // chevrons of a long line, which a fixed 128 dropped.
-  expect(chevronSlotBudget(7680)).toBeGreaterThan(MAX_VISIBLE_CHEVRONS_PER_LINE)
-})
-
 test('the window needs no floor and no total guard of its own', () => {
   // `chevronFirstVisible` floors at 0 and `chevronLastVisible` clamps to
   // count-1, so chevron.slang's `> lastVisible` implies both of the two
@@ -219,7 +207,7 @@ test('the window needs no floor and no total guard of its own', () => {
   for (const lineWidthPx of LINE_WIDTHS) {
     for (const minX of OFFSETS) {
       const { total, first, last } = windowFor(minX, lineWidthPx)
-      for (let slot = 0; slot < MAX_VISIBLE_CHEVRONS_PER_LINE; slot++) {
+      for (let slot = 0; slot < chevronSlotBudget(CANVAS_WIDTH); slot++) {
         const global = Math.trunc(first) + slot
         if (global <= Math.trunc(last)) {
           expect(global).toBeGreaterThanOrEqual(0)

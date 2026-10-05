@@ -17,10 +17,12 @@ static const float CHEVRON_W_PX        = 4.0;
 static const float CHEVRON_H_PX        = 4.0;
 static const float CHEVRON_THICKNESS_PX = 1.0;
 
-// Two 6-vertex quad arms per chevron. The pass's per-instance vertex count is
-// CHEVRON_VERTS times the renderer's per-line chevron budget, hence the export.
+// Two 6-vertex quad arms per chevron. The pass registers one chevron's worth;
+// each draw asks for CHEVRON_VERTS times the slots its canvas can show
+// (`chevronSlotBudget`), hence the export.
 static const uint CHEVRON_ARM_VERTS = 6u;
 static const uint CHEVRON_VERTS = CHEVRON_ARM_VERTS * 2u;
+public static const uint VERTS_PER_INSTANCE = CHEVRON_VERTS;
 
 [[vk::binding(1, 0)]] ConstantBuffer<FeatureGlyphUniforms> u;
 

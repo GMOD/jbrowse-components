@@ -2,9 +2,9 @@ import { defineMark } from '@jbrowse/render-core/marks'
 
 import {
   arrowShape,
+  chevronShape,
   continuationShape,
   lineShape,
-  makeChevronShape,
   rectShape,
 } from './featureGlyphShapes.ts'
 
@@ -41,9 +41,6 @@ export function glyphMarkIndex(family: GlyphFamily) {
  * are a union can put these marks beside others over one list: the multi-way
  * stack's lanes and its ribbon gutters are cells of one map, and the lens
  * answers `undefined` for a cell these marks have nothing in.
- *
- * `maxChevronsPerLine` is what the chevron pass registers; what it shades is
- * per draw, off the canvas (`makeChevronShape`).
  */
 export function featureGlyphMarks<TRegion, TState extends MarkFrame>(spec: {
   glyphs: (region: TRegion) => RegionRenderData | undefined
@@ -52,10 +49,9 @@ export function featureGlyphMarks<TRegion, TState extends MarkFrame>(spec: {
     region: TRegion,
     block: RenderBlock,
   ) => FeatureGlyphParams
-  maxChevronsPerLine: number
   continuation: boolean
 }): Mark<TRegion, TState>[] {
-  const { glyphs, params, maxChevronsPerLine, continuation } = spec
+  const { glyphs, params, continuation } = spec
   const lineLens = (region: TRegion) => {
     const d = glyphs(region)
     return (
@@ -87,7 +83,7 @@ export function featureGlyphMarks<TRegion, TState extends MarkFrame>(spec: {
   const byFamily: Record<GlyphFamily, Mark<TRegion, TState>> = {
     line,
     chevron: defineMark({
-      shape: makeChevronShape(maxChevronsPerLine),
+      shape: chevronShape,
       channels: lineLens,
       params,
       bufferOf: line,

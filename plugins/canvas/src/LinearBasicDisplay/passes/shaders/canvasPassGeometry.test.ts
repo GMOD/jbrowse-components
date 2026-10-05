@@ -9,7 +9,7 @@
 // `LineInstance` struct out of `lineInstance.slang`, so both modules reflect the
 // same stride and the same attributes.
 //
-// `makeChevronPass` used to state it a second way, copying line's
+// The chevron pass used to state it a second way, copying line's
 // `INSTANCE_STRIDE_BYTES` and `VERTEX_ATTRIBUTES` onto the chevron descriptor
 // through `slangPass`'s `bufferStride` / `bufferAttributes`. That pair is gone:
 // it restated the agreement rather than causing it, and would have masked the

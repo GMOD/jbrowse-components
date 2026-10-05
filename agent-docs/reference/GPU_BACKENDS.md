@@ -47,12 +47,14 @@ kept by construction. Preserve whichever of these the display uses:
   registry.
 - **A per-instance vertex budget is a cap the other backend lacks.** Where one
   instance draws an unbounded number of marks (canvas's chevron pass), the
-  pipeline's `verticesPerInstance` fixes how many the shader can address and
-  every instance pays for every slot. Raise it and all pay; leave it and a large
-  input silently loses marks past it while Canvas2D keeps drawing them. No other
-  mechanism here catches this, so state **the input range the budget covers where
-  the number is**, measured. `MAX_VISIBLE_CHEVRONS_PER_LINE`
-  (`sharedRendererConstants.ts`) is the worked example; read its figures there.
+  draw's vertex count fixes how many the shader can address and every instance
+  pays for every slot. Too high and all pay; too low and a large input silently
+  loses marks past it while Canvas2D keeps drawing them. No other mechanism here
+  catches this, so derive the budget from what the frame can show and test it
+  against the window it feeds. `chevronSlotBudget`
+  (`sharedRendererConstants.ts`, walked by `chevronWindow.test.ts`) is the
+  worked example: a fixed 128 chevrons a line dropped them on wide canvases,
+  and the first per-frame budget was one slot short.
 
 **Intentional divergences — do NOT "fix" these into parity.** GPU rasterization
 is watertight while Canvas2D antialiases each primitive independently.

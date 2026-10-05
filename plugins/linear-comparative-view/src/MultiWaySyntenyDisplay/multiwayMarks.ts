@@ -1,7 +1,4 @@
-import {
-  MAX_VISIBLE_CHEVRONS_PER_LINE,
-  featureGlyphMarks,
-} from '@jbrowse/plugin-canvas'
+import { featureGlyphMarks } from '@jbrowse/plugin-canvas'
 import { CANVAS_SEAM_PX } from '@jbrowse/render-core/canvas2dUtils'
 import { barMark, defineMark } from '@jbrowse/render-core/marks'
 import { canvasWideBlock } from '@jbrowse/render-core/renderBlock'
@@ -54,7 +51,6 @@ export const MULTIWAY_MARKS = [
       scrollY: state.scrollTopPx,
       outlineColor: cell.kind === 'glyphs' ? (cell.data.outlineColor ?? 0) : 0,
     }),
-    maxChevronsPerLine: MAX_VISIBLE_CHEVRONS_PER_LINE,
     continuation: false,
   }),
   defineMark({

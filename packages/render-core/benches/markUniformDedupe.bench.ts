@@ -41,9 +41,9 @@
 
 import {
   arrowShape,
+  chevronShape,
   continuationShape,
   lineShape,
-  makeChevronShape,
   rectShape,
 } from '../../../plugins/canvas/src/LinearBasicDisplay/marks/featureGlyphShapes.ts'
 import {
@@ -372,7 +372,6 @@ const arrowLens = (d: GlyphRegion) => ({
   color: d.arrowColors,
   count: d.arrowYs.length,
 })
-const CHEVRON_SHAPE = makeChevronShape(20)
 
 // --------------------------------------------------------------- mark lists
 
@@ -408,7 +407,7 @@ function glyphList(
   return [
     line,
     make({
-      shape: CHEVRON_SHAPE,
+      shape: chevronShape,
       channels: lineLens,
       params,
       bufferOf: line,

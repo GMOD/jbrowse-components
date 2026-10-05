@@ -105,7 +105,6 @@ export { featureGlyphMarks } from './LinearBasicDisplay/marks/featureGlyphMarks.
 export { keepFeatureLabel } from './LinearBasicDisplay/labelReservation.ts'
 export { computeLabelLeftPx } from './LinearBasicDisplay/components/labelPositioning.ts'
 export { getFeatureName } from './RenderFeatureDataRPC/labelUtils.ts'
-export { MAX_VISIBLE_CHEVRONS_PER_LINE } from './LinearBasicDisplay/components/sharedRendererConstants.ts'
 // The gene glyph's shape rules, for a display outside this plugin drawing these
 // glyphs through the passes above.
 export {

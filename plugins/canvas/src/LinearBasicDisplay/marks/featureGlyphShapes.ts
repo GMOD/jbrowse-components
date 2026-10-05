@@ -40,12 +40,12 @@ import {
 } from '../components/sharedRendererConstants.ts'
 import {
   ArrowPass,
+  ChevronPass,
   ContinuationPass,
   LinePass,
   RectPass,
   arrowShader,
   lineShader,
-  makeChevronPass,
   rectShader,
 } from '../passes/index.ts'
 import {
@@ -317,7 +317,7 @@ export const rectShape: MarkShape<RectChannels, FeatureGlyphParams> = {
 
 /**
  * The line's painter also strokes its chevrons, per line, where the GPU draws
- * them as a separate pass off the line buffer (`makeChevronShape`).
+ * them as a separate pass off the line buffer (`chevronShape`).
  */
 export const lineShape: MarkShape<LineChannels, FeatureGlyphParams> = {
   id: 'line',
@@ -407,27 +407,18 @@ export const lineShape: MarkShape<LineChannels, FeatureGlyphParams> = {
 
 /**
  * The GPU's chevrons: one pass over the line buffer, so a consumer declares it
- * with `bufferOf` the line mark. The painter is a no-op — the line shape
- * strokes its chevrons per line.
- *
- * `maxChevronsPerLine` is what the pass registers; each draw asks instead for
- * the slots this frame's canvas can hold (`chevronSlotBudget`).
+ * with `bufferOf` the line mark, and each draw asks for the slots this frame's
+ * canvas can hold (`chevronSlotBudget`). The painter is a no-op — the line
+ * shape strokes its chevrons per line.
  */
-export function makeChevronShape(
-  maxChevronsPerLine: number,
-): MarkShape<LineChannels, FeatureGlyphParams> {
-  return {
-    id: 'chevron',
-    pass: {
-      ...makeChevronPass(maxChevronsPerLine),
-      pack: c => lineShader.packInstances(c, c.count),
-    },
-    writeUniforms: writeFeatureGlyphUniforms,
-    paintsBlock: (_block, _frame, params) => !params.hideChevrons,
-    verticesPerInstance: frame =>
-      chevronSlotBudget(frame.canvasWidth) * CHEVRON_VERTS,
-    paintBlock() {},
-  }
+export const chevronShape: MarkShape<LineChannels, FeatureGlyphParams> = {
+  id: 'chevron',
+  pass: { ...ChevronPass, pack: c => lineShader.packInstances(c, c.count) },
+  writeUniforms: writeFeatureGlyphUniforms,
+  paintsBlock: (_block, _frame, params) => !params.hideChevrons,
+  verticesPerInstance: frame =>
+    chevronSlotBudget(frame.canvasWidth) * CHEVRON_VERTS,
+  paintBlock() {},
 }
 
 export const arrowShape: MarkShape<ArrowChannels, FeatureGlyphParams> = {
