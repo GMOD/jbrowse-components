@@ -77,6 +77,7 @@ const { glyphs: lane } = buildLaneCells({
   lane: {
     glyphTop: 0,
     spanOf: (_refName: string, start: number, end: number) => [start, end],
+    spansOf: (_refName: string, start: number, end: number) => [[start, end]],
     baseline: [[0, 1000]],
     canon: (refName: string) => refName,
     placements: new Map(),

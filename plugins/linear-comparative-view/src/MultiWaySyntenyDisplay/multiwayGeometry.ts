@@ -982,11 +982,10 @@ export function buildLaneCells({
   for (const { gene, span, cluster } of drawn) {
     const { feature } = gene
     const refName = feature.get('refName')
-    const { left, right, pxDir, full, thin, introns } = geneGlyphGeometry(
-      gene,
-      span,
-      (start, end) => lane.spanOf(refName, start, end),
-    )
+    const { left, right, pxDir, pieces, full, thin, introns } =
+      geneGlyphGeometry(gene, span, (start, end) =>
+        lane.spansOf(refName, start, end),
+      )
     const fill = colors.genes.fill(feature, cluster)
     const utrColor = colors.genes.utr(feature)
     const row = geneRow(lane, glyphHeight, pxDir)
@@ -1016,19 +1015,22 @@ export function buildLaneCells({
         stroke,
       )
     }
-    glyphs.hits.push({
-      x1: left,
-      x2: right,
-      y1: row.top,
-      y2: row.top + row.height,
-      feature,
-      groupKey: cluster,
-      label: lines(
-        getFeatureName(feature),
-        locOn(lane, refName, feature.get('start'), feature.get('end')),
-      ),
-      fill,
-    })
+    const label = lines(
+      getFeatureName(feature),
+      locOn(lane, refName, feature.get('start'), feature.get('end')),
+    )
+    for (const [x1, x2] of pieces) {
+      glyphs.hits.push({
+        x1,
+        x2,
+        y1: row.top,
+        y2: row.top + row.height,
+        feature,
+        groupKey: cluster,
+        label,
+        fill,
+      })
+    }
   }
 
   const boxNames: NamedSpan[] = []

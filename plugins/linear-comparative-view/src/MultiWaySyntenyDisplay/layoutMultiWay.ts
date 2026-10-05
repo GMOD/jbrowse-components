@@ -433,6 +433,31 @@ export function frameSpan(
   return start <= end ? [a, b] : [b, a]
 }
 
+function cutAtOpenings(
+  openings: readonly LaneOpening[],
+  start: number,
+  end: number,
+) {
+  const cuts = openings.filter(o => o.at > start && o.at < end).map(o => o.at)
+  const bounds = [start, ...cuts, end]
+  return bounds.slice(1).map((to, i) => [bounds[i]!, to] as const)
+}
+
+/** `frameSpan` of each piece of an ascending interval, cut at every hole */
+export function frameSpans(
+  frame: RowFrame,
+  start: number,
+  end: number,
+  width: number,
+): Span[] {
+  return cutAtOpenings(frameOpenings(frame), start, end).flatMap(
+    ([from, to]) => {
+      const span = frameSpan(frame, from, to, width)
+      return span ? [span] : []
+    },
+  )
+}
+
 /** px spans of a stretch of the lane, cut at each hole the frame opens in it */
 export function frameSegmentsX(
   frame: RowFrame,
@@ -441,15 +466,10 @@ export function frameSegmentsX(
   width: number,
 ): Span[] {
   const openings = frameOpenings(frame)
-  const cuts = openings.filter(o => o.at > start && o.at < end).map(o => o.at)
-  const bounds = [start, ...cuts, end]
-  return bounds.slice(1).map((to, i) => {
-    const from = bounds[i]!
-    return [
-      openedX(frame, openedBp(openings, from, true), width),
-      openedX(frame, openedBp(openings, to), width),
-    ]
-  })
+  return cutAtOpenings(openings, start, end).map(([from, to]) => [
+    openedX(frame, openedBp(openings, from, true), width),
+    openedX(frame, openedBp(openings, to), width),
+  ])
 }
 
 interface PlacementRun {

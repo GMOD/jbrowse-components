@@ -356,7 +356,7 @@ for (let step = 0; step < 19; step++, span *= 1.35) {
   const tGeom = minOf(() => {
     for (const { lane, gene, span } of spans) {
       const refName = gene.feature.get('refName')
-      geneGlyphGeometry(gene, span, (s, e) => lane.spanOf(refName, s, e))
+      geneGlyphGeometry(gene, span, (s, e) => lane.spansOf(refName, s, e))
     }
   })
   const tColor = minOf(() => {

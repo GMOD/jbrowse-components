@@ -1,6 +1,7 @@
 import { SimpleFeature } from '@jbrowse/core/util'
 
 import { NO_OPS } from './alignmentOps.ts'
+import { LaneGene } from './geneGlyph.ts'
 import { decideLaneFrames, frameFromDecision } from './laneDecision.ts'
 import { laneRegion } from './laneHeader.ts'
 import { buildLanes } from './laneStack.ts'
@@ -10,7 +11,12 @@ import {
   laneOpeningsOf,
   rowFrameX,
 } from './layoutMultiWay.ts'
-import { buildRibbonGeometry } from './multiwayGeometry.ts'
+import {
+  buildLaneCells,
+  buildRibbonGeometry,
+  glyphHitAt,
+} from './multiwayGeometry.ts'
+import { PX_ORIGIN } from './multiwayRenderTypes.ts'
 
 import type { LaneDecision } from './laneDecision.ts'
 import type { MultiWayGroup, RowFrame, Span } from './layoutMultiWay.ts'
@@ -409,5 +415,142 @@ describe('a deletion the lane carries against the anchor', () => {
     )
     expect(moved.min).toBeCloseTo(frame.min, 6)
     expect(moved.max).toBeCloseTo(frame.max, 6)
+  })
+})
+
+describe('a gene on a lane with a hole', () => {
+  const [ref, at] = CARRIERS['HG01123.1']
+  const HOLE_AT = at + BEFORE
+  const GLYPH_HEIGHT = 10
+  const fills = {
+    fill: () => ({ css: 'goldenrod', packed: 1 }),
+    utr: () => 1,
+  }
+  const laneX = (bp: number) =>
+    bp <= HOLE_AT ? px(WINDOW_START + bp - at) : px(DEL_END + bp - HOLE_AT)
+  const gene = (id: string, start: number, end: number, exons: Span[]) =>
+    new LaneGene(
+      new SimpleFeature({
+        uniqueId: id,
+        name: id,
+        refName: ref,
+        start,
+        end,
+        strand: 1,
+        type: 'gene',
+        subfeatures: [
+          {
+            uniqueId: `${id}.t`,
+            refName: ref,
+            start,
+            end,
+            strand: 1,
+            type: 'mRNA',
+            subfeatures: exons.map(([s, e], i) => ({
+              uniqueId: `${id}.e${i}`,
+              refName: ref,
+              start: s,
+              end: e,
+              type: 'exon',
+            })),
+          },
+        ],
+      }),
+    )
+
+  function drawn(genes: LaneGene[]) {
+    const groups = groupFeatures(cfhFeatures())
+    const lane = stackOf(groups, framesOf(groups, decide(groups))).lanes.find(
+      l => l.assemblyName === 'HG01123.1',
+    )!
+    const { glyphs } = buildLaneCells({
+      lane,
+      genes,
+      glyphHeight: GLYPH_HEIGHT,
+      width: WIDTH,
+      colors: { genes: fills, boxes: fills, stroke: '#222', divider: '#ccc' },
+    })
+    const pairs = (positions: Uint32Array, keep: (i: number) => boolean) =>
+      Array.from({ length: positions.length / 2 }, (_, i) => i)
+        .filter(keep)
+        .map(i => [
+          positions[2 * i]! - PX_ORIGIN,
+          positions[2 * i + 1]! - PX_ORIGIN,
+        ])
+        .sort((a, b) => a[0]! - b[0]!)
+    return {
+      lane,
+      glyphs,
+      rects: pairs(glyphs.rectPositions, () => true),
+      introns: pairs(glyphs.linePositions, i => glyphs.lineDirections[i] !== 0),
+    }
+  }
+
+  const near = (actual: number[][], expected: number[][]) => {
+    expect(actual).toHaveLength(expected.length)
+    actual.forEach(([a, b], i) => {
+      expect(Math.abs(a! - expected[i]![0]!)).toBeLessThanOrEqual(1)
+      expect(Math.abs(b! - expected[i]![1]!)).toBeLessThanOrEqual(1)
+    })
+  }
+
+  test('cuts an exon and an intron spanning the hole at its edges, and draws nothing across it', () => {
+    const { rects, introns, glyphs, lane } = drawn([
+      gene('spanning', HOLE_AT - 6000, HOLE_AT + 8000, [
+        [HOLE_AT - 6000, HOLE_AT - 5000],
+        [HOLE_AT - 2000, HOLE_AT + 2000],
+        [HOLE_AT + 7000, HOLE_AT + 8000],
+      ]),
+    ])
+    near(rects, [
+      [laneX(HOLE_AT - 6000), laneX(HOLE_AT - 5000)],
+      [laneX(HOLE_AT - 2000), px(DEL_START)],
+      [px(DEL_END), laneX(HOLE_AT + 2000)],
+      [laneX(HOLE_AT + 7000), laneX(HOLE_AT + 8000)],
+    ])
+    near(introns, [
+      [laneX(HOLE_AT - 5000), laneX(HOLE_AT - 2000)],
+      [laneX(HOLE_AT + 2000), laneX(HOLE_AT + 7000)],
+    ])
+    const midHole = (px(DEL_START) + px(DEL_END)) / 2
+    expect(
+      glyphHitAt(glyphs.hits, midHole, lane.glyphTop + GLYPH_HEIGHT / 2),
+    ).toBeUndefined()
+    expect(
+      glyphHitAt(
+        glyphs.hits,
+        laneX(HOLE_AT + 7500),
+        lane.glyphTop + GLYPH_HEIGHT / 2,
+      )?.feature.id(),
+    ).toBe('spanning')
+  })
+
+  test('cuts an intron line the hole falls in at its edges', () => {
+    const { rects, introns } = drawn([
+      gene('intronic', HOLE_AT - 6000, HOLE_AT + 8000, [
+        [HOLE_AT - 6000, HOLE_AT - 5000],
+        [HOLE_AT + 7000, HOLE_AT + 8000],
+      ]),
+    ])
+    near(rects, [
+      [laneX(HOLE_AT - 6000), laneX(HOLE_AT - 5000)],
+      [laneX(HOLE_AT + 7000), laneX(HOLE_AT + 8000)],
+    ])
+    near(introns, [
+      [laneX(HOLE_AT - 5000), px(DEL_START)],
+      [px(DEL_END), laneX(HOLE_AT + 7000)],
+    ])
+  })
+
+  test('draws a gene ending at the hole and one starting there flush to its edges', () => {
+    const { rects, introns } = drawn([
+      gene('before', HOLE_AT - 3000, HOLE_AT, [[HOLE_AT - 3000, HOLE_AT]]),
+      gene('after', HOLE_AT, HOLE_AT + 3000, [[HOLE_AT, HOLE_AT + 3000]]),
+    ])
+    near(rects, [
+      [laneX(HOLE_AT - 3000), px(DEL_START)],
+      [px(DEL_END), laneX(HOLE_AT + 3000)],
+    ])
+    expect(introns).toEqual([])
   })
 })

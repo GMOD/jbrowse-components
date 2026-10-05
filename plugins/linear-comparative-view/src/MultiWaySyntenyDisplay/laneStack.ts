@@ -6,6 +6,7 @@ import {
   frameReachPx,
   frameSegmentsX,
   frameSpan,
+  frameSpans,
   groupRunSpansOnRow,
 } from './layoutMultiWay.ts'
 
@@ -118,6 +119,8 @@ export interface Lane {
   placements: Map<string, LaneGroup>
   /** a bp interval of this lane in px, clipped, or undefined where it misses */
   spanOf: (refName: string, start: number, end: number) => Span | undefined
+  /** `spanOf` of each piece of an ascending interval, cut at every hole */
+  spansOf: (refName: string, start: number, end: number) => Span[]
   bpPerPx: number
   /** the canonical refName; compare a BED and a GFF3 spelling through it */
   canon: (refName: string) => string
@@ -278,6 +281,15 @@ export function buildLanes({
               frame && canon(refName) === frameRefName
                 ? frameSpan(frame, start, end, width)
                 : undefined,
+        spansOf: isAnchor
+          ? (refName: string, start: number, end: number) => {
+              const span = axisSpanOf(canon(refName), start, end)
+              return span ? [span] : []
+            }
+          : (refName: string, start: number, end: number) =>
+              frame && canon(refName) === frameRefName
+                ? frameSpans(frame, start, end, width)
+                : [],
         bpPerPx: isAnchor
           ? anchorBpPerPx
           : frame

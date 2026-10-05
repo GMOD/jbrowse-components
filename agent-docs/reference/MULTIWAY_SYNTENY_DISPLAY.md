@@ -41,8 +41,9 @@ cost is linear in lanes.
   (`model.laneOpenings`), not the viewport's, so one opens when both its pieces
   arrive; the decision's `pivotLaneBp` stays lane bp, so a hole appearing
   elsewhere moves only what lies beyond it. A lane-pair ribbon crossing a hole is
-  cut there (`addAcrossHoles`). Gene records never open: their spacing is no
-  deletion. An insertion opens nothing; its sequence draws as before.
+  cut there (`addAcrossHoles`), and so are a gene's exons, intron lines and hit
+  boxes (`Lane.spansOf`, `frameSpans`). Gene records never open: their spacing
+  is no deletion. An insertion opens nothing; its sequence draws as before.
 - **Strand means the record's strand**, never the drawn twist, in the config
   schema, the `Color ribbons by` help and `multiwayGeometry.ts`. A mate's
   `orientation` is the pair's strand, never the mate's transcription strand.

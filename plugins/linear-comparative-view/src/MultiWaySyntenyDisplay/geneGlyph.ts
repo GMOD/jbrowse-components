@@ -132,44 +132,53 @@ export interface GeneGlyphGeometry {
   right: number
   // the gene's strand mirrored where the lane is, 0 for a strandless feature
   pxDir: number
+  // the gene's own extent, one piece per side of each hole its lane opens in it
+  pieces: Span[]
   full: Span[]
   thin: Span[]
   // one line per gap, or the chevron pass spaces its marks over the exons
   introns: Span[]
 }
 
-/** Ascending px intervals on the lane. */
+function ascending(px: Span): Span {
+  return px[0] < px[1] ? px : [px[1], px[0]]
+}
+
+/** Ascending px intervals on the lane; `spansOf` cuts at the lane's holes. */
 export function geneGlyphGeometry(
   gene: LaneGene,
   span: Span,
-  spanOf: (start: number, end: number) => Span | undefined,
+  spansOf: (start: number, end: number) => Span[],
 ): GeneGlyphGeometry {
   const [l, r] = span
-  const strand = gene.feature.get('strand') ?? 0
+  const { feature } = gene
+  const strand = feature.get('strand') ?? 0
   const pxDir = strand === 0 ? 0 : l <= r ? strand : -strand
   const [left, right] = l < r ? [l, r] : [r, l]
   const toPx = (intervals: [number, number][]) =>
-    intervals.flatMap(([s, e]) => {
-      const px = spanOf(s, e)
-      return px === undefined
-        ? []
-        : [px[0] < px[1] ? px : ([px[1], px[0]] as Span)]
-    })
+    intervals.flatMap(([s, e]) => spansOf(s, e).map(ascending))
   const { full, thin } = gene.shape
   const fullPx = toPx(full)
   const thinPx = toPx(thin)
-  const introns: Span[] = []
-  let cursor = left
-  for (const [start, end] of mergeSpans(
+  const pieces = toPx([[feature.get('start'), feature.get('end')]])
+  const inked = mergeSpans(
     [...fullPx, ...thinPx].map(([a, b]): GlyphSpan => [a, b]),
-  )) {
-    if (start > cursor) {
-      introns.push([cursor, start])
+  )
+  const introns: Span[] = []
+  for (const [lo, hi] of pieces) {
+    let cursor = lo
+    for (const [start, end] of inked) {
+      if (start >= hi) {
+        break
+      }
+      if (start > cursor) {
+        introns.push([cursor, start])
+      }
+      cursor = Math.max(cursor, end)
     }
-    cursor = Math.max(cursor, end)
+    if (cursor < hi) {
+      introns.push([cursor, hi])
+    }
   }
-  if (cursor < right) {
-    introns.push([cursor, right])
-  }
-  return { left, right, pxDir, full: fullPx, thin: thinPx, introns }
+  return { left, right, pxDir, pieces, full: fullPx, thin: thinPx, introns }
 }

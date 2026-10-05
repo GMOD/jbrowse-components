@@ -54,7 +54,7 @@ function geneFeature({
   })
 }
 
-const identity = (s: number, e: number): Span => [s, e]
+const identity = (s: number, e: number): Span[] => [[s, e]]
 
 describe('a gene glyph in px', () => {
   test('splits into CDS-less exon boxes and reads forward', () => {
@@ -81,7 +81,9 @@ describe('a gene glyph in px', () => {
     const g = gene({ start: 0, end: 100, exons: [[0, 100]] })
     const mirrored = (s: number, e: number): Span => [CANVAS - s, CANVAS - e]
     const forward = geneGlyphGeometry(g, [0, 100], identity)
-    const flipped = geneGlyphGeometry(g, mirrored(0, 100), mirrored)
+    const flipped = geneGlyphGeometry(g, mirrored(0, 100), (s, e) => [
+      mirrored(s, e),
+    ])
     expect(forward.pxDir).toBe(1)
     expect(flipped.pxDir).toBe(-1)
     expect(flipped.left).toBe(CANVAS - 100)
@@ -98,8 +100,8 @@ describe('a gene glyph in px', () => {
         [80, 100],
       ],
     })
-    const clipping = (s: number, e: number) =>
-      s >= 50 ? undefined : ([s, Math.min(e, 50)] as Span)
+    const clipping = (s: number, e: number): Span[] =>
+      s >= 50 ? [] : [[s, Math.min(e, 50)]]
     const px = geneGlyphGeometry(g, [0, 50], clipping)
     expect(px.full).toEqual([[0, 20]])
   })
