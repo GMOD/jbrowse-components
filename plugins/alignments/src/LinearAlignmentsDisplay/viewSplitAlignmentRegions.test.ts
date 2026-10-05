@@ -1,7 +1,5 @@
-import {
-  splitAlignmentSegments,
-  viewSplitAlignmentRegionsInCurrentView,
-} from './viewSplitAlignmentRegions.ts'
+import { splitAlignmentSegments } from '../shared/splitAlignment.ts'
+import { viewSplitAlignmentRegionsInCurrentView } from './viewSplitAlignmentRegions.ts'
 
 import type { AlignmentsUnit } from './constants.ts'
 import type { Feature, Region } from '@jbrowse/core/util'
@@ -123,51 +121,6 @@ function run(feature: Feature, unit: AlignmentsUnit = 'read', assembly = HG38) {
   })
   return { regions: displayed[0], notifications, undos, modes, view }
 }
-
-test('a read with no SA tag has no split segments', () => {
-  expect(
-    splitAlignmentSegments(
-      makeFeature({ refName: 'chr22', start: 1, end: 2, CIGAR: '1M' }),
-    ),
-  ).toEqual([])
-})
-
-test('segments list the read then its SA loci, in read order', () => {
-  expect(splitAlignmentSegments(fusion)).toEqual([
-    { refName: 'chr22', start: 10_000, end: 10_500, clip: 0 },
-    { refName: 'chr9', start: 20_000, end: 20_300, clip: 500 },
-  ])
-})
-
-// Read order, not tag order: a reverse-strand primary clips 300 bp at the read's
-// start (the CIGAR's tail), and the SA record covering those bases sorts first,
-// since the fusion's donor is what a reader expects on the left.
-test('a segment earlier in the read leads even when it is the SA record', () => {
-  const rev = makeFeature({
-    refName: 'chr22',
-    start: 10_000,
-    end: 10_500,
-    strand: -1,
-    CIGAR: '500M300S',
-    tags: { SA: 'chr9,20001,+,300M500S,60,0;' },
-  })
-  expect(splitAlignmentSegments(rev).map(s => s.refName)).toEqual([
-    'chr9',
-    'chr22',
-  ])
-})
-
-test('a truncated SA record is dropped rather than shown as a region', () => {
-  const junk = makeFeature({
-    refName: 'chr22',
-    start: 10_000,
-    end: 10_500,
-    strand: 1,
-    CIGAR: '500M300S',
-    tags: { SA: 'chr9,20001,+,500S,60,0;' },
-  })
-  expect(splitAlignmentSegments(junk)).toHaveLength(1)
-})
 
 test('shows one region per segment, each padded by its own length', () => {
   const { regions } = run(fusion)

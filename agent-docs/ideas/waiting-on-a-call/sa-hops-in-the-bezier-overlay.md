@@ -159,8 +159,8 @@ not plumbing:
   across a visit elsewhere. Overlapping windows fetch the same records,
   `dedupeByReadId` keeps one copy per record id, and both ends of the junction
   land in the region that copy came from, so the other window draws the reads
-  again with no connector. `buildSplitViewFromPath` can keep a panel per visit
-  because each panel there is a separate view.
+  again with no connector. A split view can keep a panel per visit, since
+  each panel there is a separate view.
 - **The gesture is the open half.** `PileupBezierOverlay` has no context menu,
   and a plain click already selects the nearer endpoint. Either a right-click
   item on the arc target (the display's `openContextMenu` builds its items from

@@ -19,6 +19,7 @@ import {
   buildPairedEndMateFeature,
   getMateFields,
 } from '../../shared/mateFeature.ts'
+import { splitAlignmentSegments } from '../../shared/splitAlignment.ts'
 import { getCigarTypeLabel, isInterbaseType } from '../../shared/types.ts'
 import {
   openCigarWidget,
@@ -27,10 +28,7 @@ import {
   openModificationWidget,
 } from '../components/detailWidgets.ts'
 import { viewMateRegionInCurrentView } from '../viewMateRegion.ts'
-import {
-  splitAlignmentSegments,
-  viewSplitAlignmentRegionsInCurrentView,
-} from '../viewSplitAlignmentRegions.ts'
+import { viewSplitAlignmentRegionsInCurrentView } from '../viewSplitAlignmentRegions.ts'
 import {
   copyFeatureInfo,
   withContextMenuFeature,
@@ -82,8 +80,8 @@ interface ContextMenuModel
   // point and the track menu's "Tag..." open with the same field filled.
   sortedBy?: { type: string; tag?: string }
   selectFeature: (feature: Feature) => void
-  // Read by "Split current view to show split alignments", which enters chain
-  // layout so the segments it lays side by side get their connector.
+  // Read by the two "Split current view" items, which enter chain layout so
+  // the pieces they lay side by side get their connector.
   unit: AlignmentsUnit
   setUnit: (unit: AlignmentsUnit) => void
 }
@@ -490,6 +488,7 @@ export function getContextMenuItems(
             onClick: () => {
               viewMateRegionInCurrentView({
                 view: containingLgv(self),
+                display: self,
                 mate: mateFields,
               })
             },

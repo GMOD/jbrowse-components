@@ -1,6 +1,7 @@
 import { viewMateRegionInCurrentView } from './viewMateRegion.ts'
 
 import type { MateFields } from '../shared/mateFeature.ts'
+import type { AlignmentsUnit } from './constants.ts'
 import type { Region } from '@jbrowse/core/util'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
@@ -18,6 +19,7 @@ const ALIASES = new Map([['B', 'ctgB']])
 function makeView() {
   const displayed: Region[][] = []
   const notifications: string[] = []
+  const undos: (() => void)[] = []
   const view = {
     assemblyNames: ['volvox'],
     displayedRegions: [] as Region[],
@@ -33,8 +35,15 @@ function makeView() {
     fitAllRegions() {},
     setWindow() {},
     session: {
-      notify(message: string) {
+      notify(
+        message: string,
+        _level: string,
+        action?: { onClick: () => void },
+      ) {
         notifications.push(message)
+        if (action) {
+          undos.push(action.onClick)
+        }
       },
       assemblyManager: {
         get: () => ({
@@ -48,7 +57,22 @@ function makeView() {
       },
     },
   }
-  return { view, displayed, notifications }
+  return { view, displayed, notifications, undos }
+}
+
+function makeDisplay(unit: AlignmentsUnit = 'read') {
+  const modes: AlignmentsUnit[] = []
+  return {
+    modes,
+    display: {
+      get unit() {
+        return modes.at(-1) ?? unit
+      },
+      setUnit(next: AlignmentsUnit) {
+        modes.push(next)
+      },
+    },
+  }
 }
 
 // getSession walks up the MST tree, which a plain object has none of, so the
@@ -74,22 +98,19 @@ function mate(over: Partial<MateFields> = {}): MateFields {
   }
 }
 
-function show(m: MateFields) {
-  const { view, displayed } = makeView()
+function run(m: MateFields, unit: AlignmentsUnit = 'read') {
+  const { view, displayed, notifications, undos } = makeView()
+  const { display, modes } = makeDisplay(unit)
   viewMateRegionInCurrentView({
     view: view as unknown as LinearGenomeViewModel,
+    display,
     mate: m,
   })
-  return displayed[0]!
+  return { regions: displayed[0], notifications, undos, modes, view }
 }
 
-function run(m: MateFields) {
-  const { view, displayed, notifications } = makeView()
-  viewMateRegionInCurrentView({
-    view: view as unknown as LinearGenomeViewModel,
-    mate: m,
-  })
-  return { regions: displayed[0], notifications }
+function show(m: MateFields) {
+  return run(m).regions!
 }
 
 // The commonest case by far, and the one this used to get wrong: each locus is
@@ -123,6 +144,23 @@ test('an inter-chromosomal mate stays two regions', () => {
   const regions = show(mate({ nextRef: 'ctgB', nextPos: 1100 }))
   expect(regions).toHaveLength(2)
   expect(regions.map(r => r.refName)).toEqual(['ctgA', 'ctgB'])
+})
+
+// Two regions show two lone reads unless the layout joins them, which is the
+// same switch the split-alignment action makes.
+test('enters chain layout so the pair arrives joined, and Undo leaves it again', () => {
+  const { modes, undos, view } = run(mate({ nextRef: 'ctgB', nextPos: 1100 }))
+  expect(modes).toEqual(['chain'])
+  undos[0]!()
+  expect(modes).toEqual(['chain', 'read'])
+  expect(view.displayedRegions).toEqual([])
+})
+
+test('leaves chain layout alone when it was already on', () => {
+  const { modes, undos } = run(mate(), 'chain')
+  expect(modes).toEqual([])
+  undos[0]!()
+  expect(modes).toEqual([])
 })
 
 // Abutting rather than overlapping still merges: a boundary drawn exactly

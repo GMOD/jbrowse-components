@@ -1,4 +1,3 @@
-import { featurizeSAEntries, getClip, splitSA } from '@jbrowse/cigar-utils'
 import {
   clampToListedContig,
   gatherOverlaps,
@@ -6,56 +5,13 @@ import {
   notEmpty,
   pluralize,
 } from '@jbrowse/core/util'
-import { showRegionsWithUndo } from '@jbrowse/plugin-linear-genome-view'
 
-import { extractFeatureTagValue } from '../shared/extractFeatureTagValue.ts'
-import { getStrand } from '../shared/util.ts'
+import { showLinkedRegionsWithUndo } from './showLinkedRegions.ts'
 
-import type { AlignmentsUnit } from './constants.ts'
-import type { Feature, Region } from '@jbrowse/core/util'
+import type { AlignedSegment } from '../shared/splitAlignment.ts'
+import type { UnitDisplay } from './showLinkedRegions.ts'
+import type { Region } from '@jbrowse/core/util'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
-
-export interface AlignedSegment {
-  refName: string
-  start: number
-  end: number
-  clip: number
-}
-
-/**
- * Every locus a split read aligns to — the record's own plus each one its SA
- * tag names — ordered along the read by clip-at-start, so a fusion lists its
- * donor before its acceptor. Empty for a read with no SA tag, so a caller can
- * gate on the length. A truncated SA record parses to an empty span and is
- * dropped rather than sent to the view as a region.
- */
-export function splitAlignmentSegments(feature: Feature): AlignedSegment[] {
-  const records = splitSA(extractFeatureTagValue(feature, 'SA'))
-  if (records.length === 0) {
-    return []
-  }
-  const cigar = (feature.get('CIGAR') as string | undefined) ?? ''
-  const own: AlignedSegment = {
-    refName: feature.get('refName'),
-    start: feature.get('start'),
-    end: feature.get('end'),
-    clip: getClip(cigar, getStrand(feature)),
-  }
-  const others = featurizeSAEntries(records, feature.id(), undefined, undefined)
-    .filter(s => Number.isFinite(s.start) && s.end > s.start)
-    .map(s => ({
-      refName: s.refName,
-      start: s.start,
-      end: s.end,
-      clip: s.clipLengthAtStartOfRead,
-    }))
-  return [own, ...others].sort((a, b) => a.clip - b.clip)
-}
-
-interface UnitDisplay {
-  unit: AlignmentsUnit
-  setUnit: (unit: AlignmentsUnit) => void
-}
 
 function windowsInReadOrder(regions: Region[]) {
   return gatherOverlaps(regions, 0)
@@ -81,10 +37,6 @@ function windowsInReadOrder(regions: Region[]) {
  * connects a read in only one of the regions that fetched it, so a second
  * window over the same reads would draw them again with no connector. A merged
  * window sits where its earliest segment does.
- *
- * The view is switched into chain layout when it isn't already, since the point
- * of putting the segments side by side is the connector between them, and Undo
- * puts the layout back with the regions.
  */
 export function viewSplitAlignmentRegionsInCurrentView({
   view,
@@ -122,10 +74,6 @@ export function viewSplitAlignmentRegionsInCurrentView({
   const dropped = loci.filter(locus => locus.region === undefined)
   const pastEnd = dropped.filter(locus => locus.onAssembly)
   const unlisted = dropped.filter(locus => !locus.onAssembly)
-  const wasLinked = display.unit === 'chain'
-  if (!wasLinked) {
-    display.setUnit('chain')
-  }
   const windows = windowsInReadOrder(regions)
   const shown = `Showing ${windows.length} aligned ${pluralize(windows.length, 'segment')} of this read`
   const leftOut = [
@@ -136,16 +84,12 @@ export function viewSplitAlignmentRegionsInCurrentView({
       ? `${unlisted.length} ${pluralize(unlisted.length, 'segment')} on ${[...new Set(unlisted.map(l => l.refName))].join(', ')}, which ${assembly.name} does not have`
       : undefined,
   ].filter(notEmpty)
-  showRegionsWithUndo({
+  showLinkedRegionsWithUndo({
     view,
+    display,
     regions: windows,
     message: leftOut.length
       ? `${shown} — left out ${leftOut.join(' and ')}`
       : shown,
-    alsoUndo: wasLinked
-      ? undefined
-      : () => {
-          display.setUnit('read')
-        },
   })
 }

@@ -1,17 +1,39 @@
-import { ErrorBanner } from '@jbrowse/core/ui'
 import { SimpleFeature } from '@jbrowse/core/util'
-import { useFetch } from '@jbrowse/core/util/useFetch'
 import { getAssemblyName } from '@jbrowse/sv-core'
 import { Typography } from '@mui/material'
 import { observer } from 'mobx-react'
 
-import BreakpointPair from './BreakpointPair.tsx'
-import { getSAFeatures } from './getSAFeatures.ts'
+import { splitAlignmentSegments } from '../shared/splitAlignment.ts'
+import BreakpointPair, { junctionLocations } from './BreakpointPair.tsx'
 import { LaunchBreakpointSplitViewLink } from './links.tsx'
-import { splitReadJunctions } from './splitReadJunctions.ts'
 
+import type { AlignedSegment } from '../shared/splitAlignment.ts'
 import type { AlignmentFeatureWidgetModel } from './stateModelFactory.ts'
 import type { AlignmentFeatureSerialized } from './util.ts'
+
+// The two segments either side of a junction as the read-plus-mate feature the
+// split view frames, the shape `buildPairedEndMateFeature` gives a pair.
+function junctionFeature(
+  feature: AlignmentFeatureSerialized,
+  f1: AlignedSegment,
+  f2: AlignedSegment,
+) {
+  return new SimpleFeature({
+    uniqueId: `${feature.uniqueId}-${f1.clip}`,
+    name: feature.name,
+    refName: f1.refName,
+    start: f1.start,
+    end: f1.end,
+    strand: f1.strand,
+    mate: {
+      uniqueId: `${feature.uniqueId}-${f2.clip}`,
+      refName: f2.refName,
+      start: f2.start,
+      end: f2.end,
+      strand: f2.strand,
+    },
+  })
+}
 
 const LaunchBreakpointSplitViewPanel = observer(
   function LaunchBreakpointSplitViewPanel({
@@ -21,31 +43,30 @@ const LaunchBreakpointSplitViewPanel = observer(
     model: AlignmentFeatureWidgetModel
     feature: AlignmentFeatureSerialized
   }) {
-    const { view } = model
-    const { data: res, error } = useFetch(
-      ['getSAFeatures', feature.uniqueId],
-      () => getSAFeatures({ view, feature }),
-    )
-    const junctions = res ? splitReadJunctions(res, feature.strand) : []
     const assemblyName = getAssemblyName(model.view)
-    return error ? (
-      <ErrorBanner error={error} />
-    ) : junctions.length && assemblyName ? (
+    const segments = splitAlignmentSegments(new SimpleFeature(feature))
+    return segments.length > 1 && assemblyName ? (
       <div>
         <Typography>Launch split view</Typography>
         <ul>
-          {junctions.map(({ f1, f2, from, to }) => (
-            <li key={`${f1.uniqueId}-${f2.uniqueId}`}>
-              <BreakpointPair from={from} to={to} />{' '}
-              <LaunchBreakpointSplitViewLink
-                model={model}
-                assemblyName={assemblyName}
-                feature={new SimpleFeature({ ...f1, mate: f2 })}
-              >
-                (breakpoint split view)
-              </LaunchBreakpointSplitViewLink>
-            </li>
-          ))}
+          {segments.slice(0, -1).map((f1, i) => {
+            const f2 = segments[i + 1]!
+            return (
+              <li key={f1.clip}>
+                <BreakpointPair
+                  from={junctionLocations(f1).downstream}
+                  to={junctionLocations(f2).upstream}
+                />{' '}
+                <LaunchBreakpointSplitViewLink
+                  model={model}
+                  assemblyName={assemblyName}
+                  feature={junctionFeature(feature, f1, f2)}
+                >
+                  (breakpoint split view)
+                </LaunchBreakpointSplitViewLink>
+              </li>
+            )
+          })}
         </ul>
       </div>
     ) : null

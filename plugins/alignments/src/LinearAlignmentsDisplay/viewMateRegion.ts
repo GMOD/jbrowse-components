@@ -5,9 +5,11 @@ import {
   getSession,
   notEmpty,
 } from '@jbrowse/core/util'
-import { showRegionsWithUndo } from '@jbrowse/plugin-linear-genome-view'
+
+import { showLinkedRegionsWithUndo } from './showLinkedRegions.ts'
 
 import type { MateFields } from '../shared/mateFeature.ts'
+import type { UnitDisplay } from './showLinkedRegions.ts'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 /**
@@ -15,7 +17,7 @@ import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
  * locus, so a single LGV shows both side by side. Each locus is padded by one
  * read-length of context. Inter-chromosomal mates just become a second region on
  * a different refName, which `setDisplayedRegions` handles for free, and
- * `showRegionsWithUndo` owns the framing and the Undo.
+ * `showLinkedRegionsWithUndo` owns the chain layout, the framing and the Undo.
  *
  * The two loci are **merged where they touch**, which for an ordinary pair is the
  * normal case rather than an edge one: `setDisplayedRegions` does not merge, so a
@@ -40,9 +42,11 @@ import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
  */
 export function viewMateRegionInCurrentView({
   view,
+  display,
   mate,
 }: {
   view: LinearGenomeViewModel
+  display: UnitDisplay
   mate: MateFields
 }) {
   const session = getSession(view)
@@ -79,8 +83,9 @@ export function viewMateRegionInCurrentView({
     )
     return
   }
-  showRegionsWithUndo({
+  showLinkedRegionsWithUndo({
     view,
+    display,
     regions: gatherOverlaps(regions, 0),
     // Naming the dropped half, because the view alone cannot show it was
     // dropped: one region is also what a proper pair merges to, so "Showing

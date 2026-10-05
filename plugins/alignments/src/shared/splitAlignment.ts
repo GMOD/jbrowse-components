@@ -1,7 +1,12 @@
-import { SAM_FLAG_SUPPLEMENTARY } from '@jbrowse/cigar-utils'
+import {
+  SAM_FLAG_SUPPLEMENTARY,
+  featurizeSAEntries,
+  getClip,
+  splitSA,
+} from '@jbrowse/cigar-utils'
 
 import { extractFeatureTagValue } from './extractFeatureTagValue.ts'
-import { getFlags } from './util.ts'
+import { getFlags, getStrand } from './util.ts'
 
 import type { Feature } from '@jbrowse/core/util'
 
@@ -43,4 +48,45 @@ export function isSplitAlignment(feature: Feature) {
  */
 export function chainIsSplit(chain: Feature[]) {
   return chain.some(isSplitAlignment)
+}
+
+export interface AlignedSegment {
+  refName: string
+  start: number
+  end: number
+  strand: number
+  clip: number
+}
+
+/**
+ * Every locus a split read aligns to — the record's own plus each one its SA
+ * tag names, each with its mapping strand — ordered along the read by
+ * clip-at-start, so a fusion lists its donor before its acceptor. Empty for a
+ * read with no SA tag, so a caller can gate on the length. A truncated SA
+ * record parses to an empty span and is dropped rather than shown as a locus.
+ */
+export function splitAlignmentSegments(feature: Feature): AlignedSegment[] {
+  const records = splitSA(extractFeatureTagValue(feature, 'SA'))
+  if (records.length === 0) {
+    return []
+  }
+  const cigar = (feature.get('CIGAR') as string | undefined) ?? ''
+  const strand = getStrand(feature)
+  const own: AlignedSegment = {
+    refName: feature.get('refName'),
+    start: feature.get('start'),
+    end: feature.get('end'),
+    strand,
+    clip: getClip(cigar, strand),
+  }
+  const others = featurizeSAEntries(records, feature.id(), undefined, undefined)
+    .filter(s => Number.isFinite(s.start) && s.end > s.start)
+    .map(s => ({
+      refName: s.refName,
+      start: s.start,
+      end: s.end,
+      strand: s.strand,
+      clip: s.clipLengthAtStartOfRead,
+    }))
+  return [own, ...others].sort((a, b) => a.clip - b.clip)
 }
