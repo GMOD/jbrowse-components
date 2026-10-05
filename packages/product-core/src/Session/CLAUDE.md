@@ -34,6 +34,10 @@ track's stay in the session.
   stayed on screen against a snapshot that said default, and the next edit
   re-diffed the stale copy and put the undone change back. Both directions are
   canaries in `UpdateTrackConfiguration.test.ts`.
+- **The config editor holds a trackId, never a working copy**, and resolves the
+  copy on every read (`getEditableTrackConfigById`), so it edits the node the
+  shown track edits and follows a rebuild. A node it held went stale on an undo
+  and saved the undone value back. `ConfigEditorWorkingCopy.test.ts`.
 
 ## Reset, not delete
 

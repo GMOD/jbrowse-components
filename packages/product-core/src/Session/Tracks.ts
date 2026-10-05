@@ -270,8 +270,8 @@ export function TracksManagerSessionMixin(pluginManager: PluginManager) {
         }) {
           // an opened connection track lives in connectionTrackConfigs, not
           // jbrowse.tracks; persist its edit there (jbrowse.updateTrackConf would
-          // no-op, since the track isn't in the config). Desktop uses this base
-          // mixin, so without this branch a connection-track edit is lost on
+          // no-op, since the track isn't in the config). SessionTracks defers a
+          // connection track's edit here, so without this branch it is lost on
           // reload.
           if (
             isSessionWithConnections(self) &&

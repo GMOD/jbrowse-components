@@ -403,10 +403,8 @@ export function createBaseTrackModel(
          * completely untouched ones — `reaction` only fires on an actual change.
          *
          * `equals: compareStructural` is load-bearing, not an optimization:
-         * `self.configuration` is a re-resolving reference, and persisting a save
-         * can swap the resolved node identity (the delta path reconciles in place
-         * but still churns once, and a session without deltas replaces the frozen
-         * `jbrowse.tracks` entry, rehydrating a brand-new MST node every write).
+         * `self.configuration` is a re-resolving reference, and an undo or a
+         * session restore swaps the resolved node for a new working copy.
          * Referential comparison would treat every such swap as a fresh change
          * and re-fire the save, an unbounded debounced loop. Structural
          * comparison settles once the content stops changing.

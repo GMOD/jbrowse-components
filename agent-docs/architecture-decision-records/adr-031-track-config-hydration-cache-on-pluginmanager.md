@@ -79,9 +79,15 @@ whether the frozen object is reused, because
 `pluginManager.trackConfigHydrationCache` is a different `WeakMap` object per
 instance. `WeakMap` semantics apply at both levels, so entries collect normally
 — no manual invalidation or teardown hook needed. The cached node is never
-mutated: admin edits replace the frozen entry (new identity, entry drops), and
-a non-admin's edits go to a private session working copy rather than this node
-(ADR-032).
+mutated: every edit, an admin's included, goes to a private session working
+copy rather than this node, and is stored as a delta whose merged config is a
+new object (ADR-032).
+
+Amended 2026-10-04: every product composes `SessionTracksManagerSessionMixin`,
+so `track.configuration` resolves through the session's working copy
+(`getEditableTrackConfig`), which is what keeps it stable there. This cache
+serves `hydrateTrackConfig`'s callers and sessions without that mixin, such as
+the display test session.
 
 ## Rejected alternative: module-level `WeakMap` nested by schemaType
 

@@ -666,9 +666,12 @@ export default class PluginManager {
    * frozen object, so a hit can only ever come from this same instance and this
    * same track type. See ADR-031.
    *
-   * The node is never mutated: admin edits replace the frozen entry (new
-   * identity drops the WeakMap entry), and a non-admin's edits go to a private
-   * session working copy, not here (ADR-032). Both levels are `WeakMap`s so
+   * The node is never mutated: every edit goes to a private session working
+   * copy, not here, and is stored as a delta whose merged config is a new
+   * object (ADR-032). In a session composing `SessionTracksManagerSessionMixin`,
+   * which every product does, `track.configuration` resolves to that working
+   * copy, so this memo serves `hydrateTrackConfig` and sessions without the
+   * mixin. Both levels are `WeakMap`s so
    * entries collect normally — no manual invalidation needed, which is why this
    * is a memo and not a cache with a lifecycle to expose.
    */

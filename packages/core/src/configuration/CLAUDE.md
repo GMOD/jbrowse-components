@@ -161,9 +161,11 @@ is not how one arrives from a variable or a `JSON.parse`.
 
 ## Frozen tracks + hydration
 
-The hydration cache on `PluginManager` is load-bearing, not an optimization —
-MST's custom reference `get()` has no memoization, so without it every read of
-`track.configuration` fabricates a fresh non-identical node (ADR-031).
+MST's custom reference `get()` has no memoization, so something has to hand back
+the same node on every read of `track.configuration`. In every product that is
+the session's working copy (`getEditableTrackConfig`, ADR-032); the hydration
+cache on `PluginManager` does it for `hydrateTrackConfig` and for a session
+without `SessionTracksManagerSessionMixin` (ADR-031).
 
 Hydration is `create(frozen)`, so an invalid config throws on first read. The
 invariant is that **`view.tracks` only ever holds usable tracks**, enforced at
