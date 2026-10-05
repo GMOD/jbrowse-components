@@ -234,9 +234,13 @@ Curated VNTRs
 
     node scripts/tandem-repeat-vcf.mjs \
       hprc-v2.1-mc-grch38.kiv2.eight-haplotypes.gfa \
-      --bed hprc_curated_vntrs.bed --name KIV-2 > hprc_kiv2_copies.vcf
+      --bed hprc_curated_vntrs.bed --name KIV-2 --unit-names KIV-2A,KIV-2B \
+      > hprc_kiv2_copies.vcf
 
-  At its 1% divergence the 138 copies form two units about 2.3% apart. The
+  At its 1% divergence the 138 copies form two units about 2.3% apart. They
+  are KIV-2A and KIV-2B: given one copy's exons, --sites finds them differing
+  only at exon 1's positions 14, 41 and 86, the sites that define KIV-2B, and
+  --unit-names writes those names into RUNAME, a non-spec field beside RUS. The
   config loads jbrowse-plugin-tandem-repeat, whose Show repeat copies item on
   the record draws each copy in its unit's colour.
 
@@ -250,7 +254,8 @@ Curated VNTRs
       --context 1000 --snarls --haplotypes all --limit 100000 --resolve \
       --format gfa > kiv2_all.gfa
     node scripts/tandem-repeat-vcf.mjs kiv2_all.gfa \
-      --bed hprc_curated_vntrs.bed --name KIV-2 > hprc_kiv2_copies_all.vcf
+      --bed hprc_curated_vntrs.bed --name KIV-2 --unit-names KIV-2A,KIV-2B \
+      > hprc_kiv2_copies_all.vcf
     bgzip hprc_kiv2_copies_all.vcf && tabix -p vcf hprc_kiv2_copies_all.vcf.gz
 
   The script leaves out NA18983#1, whose walk reaches one flank, so 464 arrays
