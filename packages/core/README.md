@@ -986,27 +986,15 @@ at 0 for a mark with no value.
 
 ### hydrateTrackConfig
 
-Hydrate a plain track config into a live config node, dispatching on its `type`
-to find the schema. `session.tracks` holds `types.frozen` plain objects until
-something references a track (ADR-031). One of those holds only what was
-literally authored: a slot at its schema default is absent, `preProcessSnapshot`
-has not run, and nothing that walks a live node applies to it.
+Hydrate a plain track config, such as a `session.tracks` entry, into a live
+config node, dispatching on its `type` to find the schema. A plain entry holds
+only what was authored: a slot at its default is absent and `preProcessSnapshot`
+has not run.
 
-Use it where a caller needs the resolved config and may be handed either form.
-The About dialog's "Copy config" is reached from two menus, and one of them
-passes a `session.tracks` entry.
-
-Returns **undefined** when the config names a track type no plugin registered,
-or when `create` rejects it as invalid. An un-hydrated config has never been
-validated, so the dialog opening over it should not throw. Callers fall back to
-using the plain object.
-
-Shares `TrackConfigurationReference`'s per-PluginManager cache, so hydrating the
-same entry twice returns the same node, and in an admin session a track opened
-later resolves to that same node. A non-admin's open track resolves to the
-session's private working copy (ADR-032), and this function returns the pristine
-mirror beside it. The two have the same content; `CopyConfigEntryPoints.test.ts`
-tests both cases.
+Returns **undefined** when no plugin registered the type or `create` rejects the
+config, which has never been validated; callers fall back to the plain object.
+Hydrating one entry twice returns one node. A shown track resolves to the
+session's working copy instead (ADR-032), which has the same content.
 
 ```js
 // type signature
