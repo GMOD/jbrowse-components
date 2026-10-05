@@ -5,7 +5,7 @@ import {
 import { createJBrowseTheme } from '@jbrowse/core/ui'
 import { types } from '@jbrowse/mobx-state-tree'
 import { ThemeProvider } from '@mui/material'
-import { fireEvent, render, within } from '@testing-library/react'
+import { cleanup, fireEvent, render, within } from '@testing-library/react'
 
 import AboutDialogContents from './AboutDialogContents.tsx'
 import { aboutTestPluginManager, makeTrackConf } from './aboutTestUtils.ts'
@@ -125,5 +125,23 @@ describe('Advanced card', () => {
       makeTrackConf({ trackId: 't4', formatAbout: { config: 'jexl:{}' } }),
     )
     expect(queryByTestId('BaseCard-Advanced')).toBeNull()
+  })
+
+  // hideUris strips the location and leaves `adapter: {}`, which draws nothing
+  test('is absent when hideUris leaves it only emptied sub-objects', () => {
+    const indexed = makeTrackConf({
+      trackId: 't5',
+      adapter: {
+        type: 'BamAdapter',
+        baiLocation: { uri: 'x.bai', locationType: 'UriLocation' },
+      },
+    })
+    expect(
+      renderContents(indexed).queryByTestId('BaseCard-Advanced'),
+    ).toBeTruthy()
+    cleanup()
+    expect(
+      renderContents(indexed, true).queryByTestId('BaseCard-Advanced'),
+    ).toBeNull()
   })
 })

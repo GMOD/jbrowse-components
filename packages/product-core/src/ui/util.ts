@@ -28,16 +28,7 @@ declare module '@jbrowse/core/PluginManager' {
 }
 // #endregion
 
-/**
- * What a track's About dialog shows: the config with the session's and the
- * track's `formatAbout` callbacks merged over it, plus the resolved `hideUris`.
- * The two slots fold differently on purpose: `config` is a merge the track can
- * win key-by-key, `hideUris` an OR a track cannot turn back off.
- *
- * The result splits in two: `advanced` holds the slots the schema flags
- * `advanced` or gives a callback, `config` the rest. A callback sees the whole
- * config, and a key it names replaces or hides that key on both sides.
- */
+/** About's two cards and `hideUris`, plus the raw `conf` Copy config copies. */
 export function getAboutDialogConfig({
   config,
   session,
@@ -57,6 +48,7 @@ export function getAboutDialogConfig({
     Object.entries(split.advanced).filter(([key]) => !(key in edits)),
   )
   return {
+    conf,
     config: shown,
     advanced,
     hideUris: Boolean(

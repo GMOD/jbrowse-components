@@ -26,6 +26,11 @@ export const TestTrackConf = ConfigurationSchema(
         type: 'fileLocation',
         defaultValue: { uri: '', locationType: 'UriLocation' },
       },
+      baiLocation: {
+        type: 'fileLocation',
+        defaultValue: { uri: '', locationType: 'UriLocation' },
+        advanced: true,
+      },
     }),
     metadata: { type: 'frozen', defaultValue: {} },
     textSearching: ConfigurationSchema('TestTextSearching', {

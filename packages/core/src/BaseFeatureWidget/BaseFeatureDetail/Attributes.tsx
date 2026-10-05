@@ -136,6 +136,25 @@ function measureLabels(
   return widest
 }
 
+/** Whether `Attributes` given these `attributes` and `omit` draws any row. */
+export function hasAttributeRows(
+  attributes: Record<string, unknown>,
+  omit: string[] = [],
+): boolean {
+  const omits = new Set([...omit, ...globalOmit])
+  return Object.entries(attributes).some(([key, value]) =>
+    value == null || omits.has(key)
+      ? false
+      : Array.isArray(value)
+        ? isHomogeneousObjectArray(value) ||
+          !isObjectArray(value) ||
+          value.some(entry => hasAttributeRows(entry))
+        : isObject(value)
+          ? isUriLocation(value) || hasAttributeRows(value, omit)
+          : true,
+  )
+}
+
 function widestLabel(
   attributes: Record<string, unknown>,
   opts: Parameters<typeof measureLabels>[1],
