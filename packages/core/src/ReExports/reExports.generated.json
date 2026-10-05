@@ -5508,6 +5508,7 @@
       "names": [
         "distToWideCirclePx",
         "ellipseHullPoint",
+        "legSweepAngle",
         "wideCircleHullPoint",
         "wideCircleLeg",
         "wideCircleLegStep"
@@ -5615,6 +5616,7 @@
         "linkBaseYPx",
         "linkFootDir",
         "linkFootLenPx",
+        "linkIsFar",
         "linkRadiiPx",
         "linkStrokeWidthPx",
         "linkValuePx"
