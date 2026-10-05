@@ -9,13 +9,17 @@ import { MULTI_ROW_MIN_CELL_PX } from '@jbrowse/render-core/shaders/rowRectConst
 import { treeSidebarRightEdge } from '@jbrowse/tree-sidebar'
 
 import { regionWithDeltas } from './rendering/featurePainting.ts'
-import { MULTI_ROW_MARK } from './rendering/multiRowMarks.ts'
+import {
+  MULTI_ROW_INSERTION_MARK,
+  MULTI_ROW_MARK,
+} from './rendering/multiRowMarks.ts'
 import { rowBand } from './rendering/rowBand.ts'
 
 import type { MultiRowEncoded } from './rendering/multiRowChannels.ts'
 import type {
   MultiRowRegionData,
   MultiRowRenderState,
+  MultiRowUploadData,
 } from './rendering/multiRowRenderingBackendTypes.ts'
 import type { ContextMenuAnchor } from '@jbrowse/core/ui'
 import type { MarkInstance, RowKeys } from '@jbrowse/render-core/marks'
@@ -75,6 +79,7 @@ export interface MultiRowHitTestSlice {
   renderState: MultiRowRenderState
   drawnRegionData: ReadonlyMap<number, MultiRowRegionData>
   encodedChannels: ReadonlyMap<number, MultiRowEncoded>
+  uploadedChannels: ReadonlyMap<number, MultiRowUploadData>
   view: HitTestView
 }
 
@@ -99,33 +104,64 @@ function pointerBase(self: MultiRowHitTestSlice, mouseX: number) {
 
 const drawnLastFirst = (a: number, b: number) => b - a
 
+/** The keys of rows `nearest` down to `lowest`, skipping rows with none. */
+function rowKeysUnder(
+  self: Pick<MultiRowHitTestSlice, 'sources' | 'rowKeys'>,
+  nearest: number,
+  lowest: number,
+) {
+  const keys: number[] = []
+  for (let r = nearest; r >= lowest; r--) {
+    const name = self.sources[r]?.name
+    const key = name === undefined ? undefined : self.rowKeys.lookup(name)
+    if (key !== undefined) {
+      keys.push(key)
+    }
+  }
+  return keys
+}
+
 /**
- * The channel indices drawn on rows `nearest` down to `lowest` within reach of
- * `xPx`, each row's back to front: both render paths paint in array order, so
- * a later channel sits on top, and the mark keeps the first zero-distance
- * candidate. The reach is the minimum cell and a pixel either side, the most a
- * span's paint stands past its bp.
+ * The channel indices drawn on `keys` within reach of `xPx`, each row's back
+ * to front: both render paths paint in array order, so a later channel sits on
+ * top, and the mark keeps the first zero-distance candidate. The reach is the
+ * minimum cell and a pixel either side, the most a span's paint stands past
+ * its bp.
  */
 function channelsOnRows(
-  self: Pick<MultiRowHitTestSlice, 'sources' | 'rowKeys'>,
   { rowIndex, x, x2 }: MultiRowEncoded,
   block: RenderBlock,
   xPx: number,
-  nearest: number,
-  lowest: number,
+  keys: readonly number[],
 ) {
   const reachBp =
     ((MULTI_ROW_MIN_CELL_PX + 1) * (block.end - block.start)) /
     (block.screenEndPx - block.screenStartPx)
   const bp = bpAtPxExact(xPx, block)
   const out: number[] = []
-  for (let r = nearest; r >= lowest; r--) {
-    const name = self.sources[r]?.name
-    const key = name === undefined ? undefined : self.rowKeys.lookup(name)
-    if (key !== undefined) {
-      const found: number[] = []
-      spansInRow(rowIndex, x, x2, key, bp - reachBp, bp + reachBp, found)
-      out.push(...found.sort(drawnLastFirst))
+  for (const key of keys) {
+    const found: number[] = []
+    spansInRow(rowIndex, x, x2, key, bp - reachBp, bp + reachBp, found)
+    out.push(...found.sort(drawnLastFirst))
+  }
+  return out
+}
+
+/**
+ * The insertion markers on `keys`, each row's back to front. A marker can
+ * stand wider than its block, so the span's reach cannot find it; there are
+ * few enough per region to scan.
+ */
+function markersOnRows(
+  { row, count }: MultiRowUploadData['insertions'],
+  keys: readonly number[],
+) {
+  const out: number[] = []
+  for (const key of keys) {
+    for (let k = count - 1; k >= 0; k--) {
+      if (row[k] === key) {
+        out.push(k)
+      }
     }
   }
   return out
@@ -136,8 +172,9 @@ function channelsOnRows(
  * color under the cursor — at the 0.32 px rows a cohort painting fits into, the
  * top edge names a row one and a half off. Several sub-pixel rows share one
  * drawn pixel, so the walk from `nearest` to `lowest` finds whichever of them
- * actually put a block there. The mark then answers which of those rows'
- * blocks the pixel's centre is on.
+ * actually put a block there. The insertion mark, painted over the blocks,
+ * answers first; then the span mark, which of those rows' blocks the pixel's
+ * centre is on.
  *
  * The row window is asked in band space because `rowProportion` insets each
  * band inside its slot; `yPx` stays slot-relative, the space `spanMark`
@@ -150,7 +187,7 @@ function featureAtBase(
   mouseY: number,
 ): MultiRowHit | undefined {
   const region = self.drawnRegionData.get(p.index)
-  const encoded = self.encodedChannels.get(p.index)
+  const encoded = self.uploadedChannels.get(p.index)
   const block = self.renderBlocks.find(b => b.displayedRegionIndex === p.index)
   if (!region || !encoded || !block) {
     return undefined
@@ -163,23 +200,36 @@ function featureAtBase(
     band.height,
   )
   const xPx = Math.floor(mouseX) + 0.5
-  const hit = MULTI_ROW_MARK.hitNearest?.(
+  const yPx = contentYAt(mouseY, { rowHeight })
+  const keys = rowKeysUnder(self, nearest, lowest)
+  const marker = MULTI_ROW_INSERTION_MARK.hitNearest?.(
     encoded,
     block,
     self.renderState,
     xPx,
-    contentYAt(mouseY, { rowHeight }),
-    channelsOnRows(self, encoded, block, xPx, nearest, lowest),
+    yPx,
+    markersOnRows(encoded.insertions, keys),
     INSIDE_ONLY,
   )
-  if (!hit) {
+  const c = marker
+    ? encoded.insertions.channel[marker.index]
+    : MULTI_ROW_MARK.hitNearest?.(
+        encoded,
+        block,
+        self.renderState,
+        xPx,
+        yPx,
+        channelsOnRows(encoded, block, xPx, keys),
+        INSIDE_ONLY,
+      )?.index
+  if (c === undefined) {
     return undefined
   }
-  const rowName = self.rowKeys.names[encoded.row[hit.index]!]
+  const rowName = self.rowKeys.names[encoded.row[c]!]
   if (rowName === undefined) {
     return undefined
   }
-  const i = encoded.featureIndex[hit.index]!
+  const i = encoded.featureIndex[c]!
   return {
     id: region.featureIds[i]!,
     regionIndex: p.index,

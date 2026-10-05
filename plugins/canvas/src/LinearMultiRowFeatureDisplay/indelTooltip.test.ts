@@ -61,6 +61,33 @@ describe('the hit carries the length change the block cannot show', () => {
   })
 })
 
+// A 300bp insertion into a 1bp bubble at 1bp/px draws a 28px count box
+// centred on a block one pixel wide.
+describe('the insertion marker is the hit target where it outgrows its block', () => {
+  function oneBpInsertion(delta: number) {
+    return displayWith({
+      ...region([delta]),
+      featureStarts: Uint32Array.of(500),
+      featureEnds: Uint32Array.of(501),
+    })
+  }
+
+  it('answers the block from the flank of its marker', () => {
+    const display = oneBpInsertion(300)
+
+    expect(display.featureAt(490, 10)?.id).toBe('f0')
+    expect(display.featureAt(512, 10)?.delta).toBe(300)
+  })
+
+  it('answers nothing past the marker', () => {
+    expect(oneBpInsertion(300).featureAt(530, 10)).toBeUndefined()
+  })
+
+  it('answers nothing beside a deletion, which draws no marker', () => {
+    expect(oneBpInsertion(-300).featureAt(490, 10)).toBeUndefined()
+  })
+})
+
 describe('indelMagnitude', () => {
   it('signs both directions and groups the digits', () => {
     expect(indelMagnitude(35)).toBe('+35 bp')
