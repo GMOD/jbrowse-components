@@ -87,7 +87,7 @@ function collectComposes(file: string, src: string) {
   }))
   return composeCalls(file, src).flatMap(call => {
     const composer = modelNameAt(models, call.pos) ?? call.name
-    return call.mixins.map(mixin => ({ mixin, composer }))
+    return composer ? call.mixins.map(mixin => ({ mixin, composer })) : []
   })
 }
 

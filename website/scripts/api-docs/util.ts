@@ -1956,8 +1956,10 @@ export function collectTransitive<T>(
 }
 
 export interface ComposeCall {
-  // The compose call's own name literal.
-  name: string
+  // The compose call's own name literal, if it has one. A non-literal first
+  // argument counts as a composed type, so a name held in a constant is read
+  // off the `#stateModel` tag instead.
+  name: string | undefined
   // Offset of the call, so a caller can attribute it to the `#stateModel` tag
   // above it.
   pos: number
@@ -1991,7 +1993,7 @@ function composeArgHeads(args: readonly ts.Expression[]): string[] {
   })
 }
 
-// Every `types.compose('<name>', A(), B(), types.model({}))` in a file.
+// Every `types.compose(['<name>',] A(), B(), types.model({}))` in a file.
 //
 // Two generated tables read composition — the display-foundations "Composes"
 // column and the cross-cutting-mixin "Composed by" column — and they had a walk
@@ -2004,13 +2006,12 @@ export function composeCalls(file: string, text?: string): ComposeCall[] {
   const walk = (node: ts.Node) => {
     if (isComposeCall(node)) {
       const [first, ...rest] = node.arguments
-      if (first && ts.isStringLiteral(first)) {
-        out.push({
-          name: first.text,
-          pos: node.getStart(),
-          mixins: composeArgHeads(rest),
-        })
-      }
+      const named = first && ts.isStringLiteral(first)
+      out.push({
+        name: named ? first.text : undefined,
+        pos: node.getStart(),
+        mixins: composeArgHeads(named ? rest : node.arguments),
+      })
     }
     ts.forEachChild(node, walk)
   }
