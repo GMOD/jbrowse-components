@@ -60,7 +60,7 @@ Members a composed model contributes are listed here too, so these tables are th
 <!-- prettier-ignore -->
 | Member | Description |
 | --- | --- |
-| <span id="method-getpreferencedefault">**getPreferenceDefault**</span><br><code>(key: string) =&gt; unknown</code> | the admin/embedder `configuration.preferences` value for a key, ignoring any runtime override — i.e. what a reset falls back to. Exposed rather than inlined because "differs from the default" is a question the Preferences reset diff asks about settings this map doesn't hold (see `defaultUseWorkspaces`). |
+| <span id="method-getpreferencedefault">**getPreferenceDefault**</span><br><code>(key: string) =&gt; unknown</code> | the admin/embedder `configuration.preferences` value for a key, ignoring any runtime override — i.e. what a reset falls back to |
 | <span id="method-getpreference">**getPreference**</span><br><code>(key: string) =&gt; unknown</code> | resolved value of a user preference: a runtime override if the user set one, otherwise the admin/embedder `configuration.preferences` default. The override map is empty unless the product loads it (web/desktop). |
 | <span id="method-getpreferencechanges">**getPreferenceChanges**</span><br><code>() =&gt; TrackConfigChange[]</code> | every scalar preference override that currently differs from its config/admin default, as `{ path, from, to }` rows whose path is the override's own key. A scalar pref (animationMode, scrollZoom) whose override equals the default is omitted, since reverting it is a no-op. |
 

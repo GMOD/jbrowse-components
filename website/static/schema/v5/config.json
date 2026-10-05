@@ -24378,9 +24378,6 @@
         "stickyViewHeaders": {
           "type": "boolean"
         },
-        "useWorkspaces": {
-          "type": "boolean"
-        },
         "sessionTracks": {
           "type": "array",
           "items": {
@@ -24734,15 +24731,6 @@
         },
         "numberGrouping": {
           "default": true,
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "type": "boolean"
-          }
-        },
-        "useWorkspaces": {
-          "default": false,
           "if": {
             "type": "null"
           },

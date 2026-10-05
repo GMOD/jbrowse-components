@@ -25442,9 +25442,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         "stickyViewHeaders": {
           "type": "boolean"
         },
-        "useWorkspaces": {
-          "type": "boolean"
-        },
         "sessionTracks": {
           "type": "array",
           "items": {
@@ -25805,15 +25802,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         },
         "numberGrouping": {
           "default": true,
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "type": "boolean"
-          }
-        },
-        "useWorkspaces": {
-          "default": false,
           "if": {
             "type": "null"
           },
