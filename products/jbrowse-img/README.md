@@ -959,7 +959,7 @@ flags:
 | `--autoDiagonalize`    | Reorders each lower assembly's chromosomes for least overlap    |
 | `--minAlignmentLength` | Hides alignments shorter than N bp — the main de-spaghetti knob |
 | `--colorBy query`      | Tints each ribbon by its query chromosome                       |
-| `--alpha`              | Ribbon opacity (0–1); lower values reveal overlap density       |
+| `--opacity`            | Ribbon opacity (0–1); lower values reveal overlap density       |
 | `--drawCurves`         | Bezier ribbons instead of straight trapezoids                   |
 | `--levelHeights`       | Per-level pixel height (comma-separated, e.g. `300,300`)        |
 
@@ -1002,7 +1002,7 @@ the alignment PAF from S3):
 jb2export synteny --chromSizes data/comparative/peach.chrom.sizes \
   --paf https://s3.amazonaws.com/jbrowse.org/genomes/synteny/peach_grape.paf.gz \
   --chromSizes data/comparative/grape.chrom.sizes --autoDiagonalize \
-  --colorBy query --alpha 0.4 --levelHeights 350 --drawCurves --width 1400 \
+  --colorBy query --opacity 0.4 --levelHeights 350 --drawCurves --width 1400 \
   --out grape_peach_synteny.png
 ```
 
@@ -1020,7 +1020,7 @@ streams from the web, so this reproduces with only the public chain:
 jb2export synteny --chromSizes data/comparative/hs1.chrom.sizes \
   --chain https://jbrowse.org/demos/hs1ToMm39/hs1ToMm39.over.chain.gz \
   --chromSizes data/comparative/mm39.chrom.sizes --minAlignmentLength 500000 \
-  --autoDiagonalize --colorBy query --alpha 0.4 --levelHeights 350 --drawCurves \
+  --autoDiagonalize --colorBy query --opacity 0.4 --levelHeights 350 --drawCurves \
   --cigarMode matches --width 1400 --out hs1_mm39_synteny.png
 ```
 
@@ -1040,7 +1040,7 @@ jb2export synteny --chromSizes data/comparative/hg38.chrom.sizes \
   --chromSizes data/comparative/hs1.chrom.sizes \
   --chain https://jbrowse.org/demos/hs1ToMm39/hs1ToMm39.over.chain.gz \
   --chromSizes data/comparative/mm39.chrom.sizes --minAlignmentLength 500000 \
-  --autoDiagonalize --colorBy query --alpha 0.4 --levelHeights 300,300 \
+  --autoDiagonalize --colorBy query --opacity 0.4 --levelHeights 300,300 \
   --drawCurves --cigarMode matches --width 1400 --out hg38_hs1_mm39_synteny.png
 ```
 
@@ -1526,7 +1526,7 @@ Options:
   --drawCurves          Draw synteny ribbons as bezier curves instead of trapezoids [default: false]
   --minAlignmentLength  Hide alignments shorter than N bp (de-spaghetti a busy plot)
   --colorBy             Color synteny ribbons by: strand, query, target, reference, track, identity, mapq, or dnds. "query" gives each query chromosome its own color; "reference" needs a stack of three or more genomes and "track" more than one alignment file
-  --alpha               Ribbon opacity 0-1 (lower reveals density)
+  --opacity               Ribbon opacity 0-1 (lower reveals density)
   --levelHeights        Comma-separated pixel height per level, e.g. 300,300 (one value applies to all)
   --cigarMode           CIGAR indels in synteny ribbons: 'full' (colored), 'matches' (see-through), or 'off' (one solid block per alignment, so overlapping blocks run together) [default: full]
 

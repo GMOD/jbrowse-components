@@ -129,8 +129,8 @@ describe('numeric flags', () => {
     const warn = jest.spyOn(console, 'warn').mockImplementation(() => {})
     try {
       expect(getNumber(parse('--width 1200'), 'width', 1500)).toBe(1200)
-      expect(getOptionalNumber(parse('--alpha 0.4'), 'alpha')).toBe(0.4)
-      expect(getOptionalNumber(parse('--loc chr1'), 'alpha')).toBeUndefined()
+      expect(getOptionalNumber(parse('--opacity 0.4'), 'opacity')).toBe(0.4)
+      expect(getOptionalNumber(parse('--loc chr1'), 'opacity')).toBeUndefined()
       expect(warn).not.toHaveBeenCalled()
     } finally {
       warn.mockRestore()
@@ -240,7 +240,7 @@ describe('comparative options are scoped to the modes that read them', () => {
     for (const flag of [
       '--drawCurves',
       '--cigarMode',
-      '--alpha',
+      '--opacity',
       '--levelHeights',
     ]) {
       expect(synteny).toContain(flag)
@@ -262,7 +262,7 @@ describe('comparative options are scoped to the modes that read them', () => {
   test('ignoredComparativeOptions names what a mode drops', () => {
     expect(ignoredComparativeOptions('dotplot')).toEqual([
       'drawCurves',
-      'alpha',
+      'opacity',
       'levelHeights',
       'cigarMode',
     ])

@@ -68,8 +68,8 @@ export function specMode(spec: ViewSpec): ViewMode {
 // object, which is the one shape a view takes.
 //
 // `knobs` are the CLI flags naming the same settings, and they win — the
-// precedence `--loc` already has over a `--session`. `--spec view.json --alpha
-// 0.2` used to parse and validate --alpha and then apply it nowhere. A knob
+// precedence `--loc` already has over a `--session`. `--spec view.json --opacity
+// 0.2` used to parse and validate --opacity and then apply it nowhere. A knob
 // builder drops its unset entries, so an absent flag leaves the spec's own
 // value alone rather than overwriting it with undefined.
 export function viewSettingsFromSpec(

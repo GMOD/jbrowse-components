@@ -114,7 +114,7 @@ async function main() {
     } else if (mode) {
       // Under a comparative subcommand, the flags the OTHER comparative mode
       // owns are still parsed but never reach that view's init (a dotplot has no
-      // ribbon shape, so --drawCurves/--cigarMode/--alpha/--levelHeights do
+      // ribbon shape, so --drawCurves/--cigarMode/--opacity/--levelHeights do
       // nothing there). Name them instead of dropping them silently.
       const ignored = ignoredComparativeOptions(mode).filter(
         name => name in rest,
@@ -153,7 +153,7 @@ async function main() {
       drawCurves: getBoolean(rest, 'drawCurves'),
       minAlignmentLength: getOptionalNumber(rest, 'minAlignmentLength'),
       colorBy: getColorBy(rest),
-      alpha: getOptionalNumber(rest, 'alpha'),
+      opacity: getOptionalNumber(rest, 'opacity'),
       levelHeights: getNumberList(rest, 'levelHeights'),
       cigarMode: getCigarMode(rest),
       spec: getString(rest, 'spec'),

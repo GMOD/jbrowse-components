@@ -7,7 +7,7 @@ import type { ViewSpec } from './spec.ts'
 const spec: ViewSpec = {
   type: 'LinearSyntenyView',
   views: [{ assembly: 'a' }, { assembly: 'b' }],
-  alpha: 0.9,
+  opacity: 0.9,
   drawCurves: true,
 }
 
@@ -15,24 +15,24 @@ describe('viewSettingsFromSpec', () => {
   it('drops the type discriminator and keeps the rest', () => {
     expect(viewSettingsFromSpec(spec)).toEqual({
       views: [{ assembly: 'a' }, { assembly: 'b' }],
-      alpha: 0.9,
+      opacity: 0.9,
       drawCurves: true,
     })
   })
 
   it('lets an explicit flag win over the spec', () => {
-    // `--spec view.json --alpha 0.2` parsed and validated --alpha, then applied
+    // `--spec view.json --opacity 0.2` parsed and validated --opacity, then applied
     // it nowhere
     expect(
-      viewSettingsFromSpec(spec, syntenyViewKnobs({ alpha: 0.2 })),
-    ).toMatchObject({ alpha: 0.2 })
+      viewSettingsFromSpec(spec, syntenyViewKnobs({ opacity: 0.2 })),
+    ).toMatchObject({ opacity: { value: 0.2 } })
   })
 
   it('leaves a setting the flags never mention alone', () => {
     expect(
       viewSettingsFromSpec(spec, syntenyViewKnobs({ colorBy: 'query' })),
     ).toMatchObject({
-      alpha: 0.9,
+      opacity: 0.9,
       drawCurves: true,
       color: { field: 'query' },
     })
@@ -49,10 +49,10 @@ describe('viewSettingsFromSpec', () => {
   it('merges only the shared knobs for a dotplot', () => {
     const settings = viewSettingsFromSpec(
       { type: 'DotplotView', views: [], color: { field: 'target' } },
-      dotplotViewKnobs({ colorBy: 'query', alpha: 0.2 }),
+      dotplotViewKnobs({ colorBy: 'query', opacity: 0.2 }),
     )
     expect(settings).toMatchObject({ color: { field: 'query' } })
-    expect(settings).not.toHaveProperty('alpha')
+    expect(settings).not.toHaveProperty('opacity')
   })
 })
 

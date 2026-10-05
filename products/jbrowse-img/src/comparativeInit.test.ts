@@ -56,10 +56,10 @@ describe('syntenyViewKnobs', () => {
   })
 
   test('keeps a meaningful zero', () => {
-    // alpha 0 (fully transparent) and minAlignmentLength 0 are real values, not
+    // opacity 0 (fully transparent) and minAlignmentLength 0 are real values, not
     // "unset" — a truthiness filter would drop both
-    expect(syntenyViewKnobs({ alpha: 0, minAlignmentLength: 0 })).toEqual({
-      alpha: 0,
+    expect(syntenyViewKnobs({ opacity: 0, minAlignmentLength: 0 })).toEqual({
+      opacity: { value: 0 },
       minAlignmentLength: 0,
     })
   })
@@ -118,12 +118,12 @@ describe('dotplotInit', () => {
     const init = dotplotInit(data, {
       drawCurves: true,
       cigarMode: 'full',
-      alpha: 0.4,
+      opacity: 0.4,
       levelHeights: [300],
     })
     expect(init).not.toHaveProperty('drawCurves')
     expect(init).not.toHaveProperty('cigarMode')
-    expect(init).not.toHaveProperty('alpha')
+    expect(init).not.toHaveProperty('opacity')
     expect(init).not.toHaveProperty('levelHeights')
   })
 })

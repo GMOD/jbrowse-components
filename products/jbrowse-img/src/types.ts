@@ -66,7 +66,7 @@ export interface Opts {
   drawCurves?: boolean
   minAlignmentLength?: number
   colorBy?: string
-  alpha?: number
+  opacity?: number
   levelHeights?: number[]
   cigarMode?: CigarMode
   // N-way comparative views: a session-spec JSON (inline or path to .json,

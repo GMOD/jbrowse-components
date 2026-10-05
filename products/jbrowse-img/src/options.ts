@@ -16,7 +16,7 @@ export interface OptionDef {
   default?: number | boolean | string
   // Comparative modes that actually read this flag; absent means all of them.
   // The dotplot has no ribbon shape and no levels, so its init interface carries
-  // none of drawCurves/cigarMode/alpha/levelHeights — listing them under
+  // none of drawCurves/cigarMode/opacity/levelHeights — listing them under
   // `dotplot --help` documented flags that then silently did nothing. One table
   // drives both the per-subcommand help and the warning in main.ts.
   modes?: ViewMode[]
@@ -230,7 +230,7 @@ const comparativeOptionDefs: OptionDef[] = [
     description: `Color synteny ribbons by: ${orList(syntenyColorByModes)}. "query" gives each query chromosome its own color; "reference" needs a stack of three or more genomes and "track" more than one alignment file`,
   },
   {
-    name: 'alpha',
+    name: 'opacity',
     description: 'Ribbon opacity 0-1 (lower reveals density)',
     modes: ['synteny'],
   },

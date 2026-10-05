@@ -60,7 +60,7 @@ export function syntenyViewKnobs(opts: Opts) {
     ...sharedComparativeKnobs(opts),
     drawCurves: opts.drawCurves ? true : undefined,
     cigarMode: opts.cigarMode,
-    alpha: opts.alpha,
+    opacity: opts.opacity === undefined ? undefined : { value: opts.opacity },
     levelHeights: opts.levelHeights,
   })
 }
