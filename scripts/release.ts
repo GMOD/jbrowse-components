@@ -192,32 +192,71 @@ function assertCiGreen(head: string) {
 
 const POLL_MS = 15_000
 const APPEAR_MS = 5 * 60_000
-const WAIT_MS = Number(process.env.CI_WAIT_MINUTES ?? 60) * 60_000
+const GH_ATTEMPTS = 4
+
+function ciWaitMs() {
+  const raw = process.env.CI_WAIT_MINUTES
+  const minutes = raw === undefined || raw === '' ? 60 : Number(raw)
+  if (!Number.isFinite(minutes) || minutes <= 0) {
+    throw new Error(
+      `CI_WAIT_MINUTES="${raw}" is not a positive number of minutes`,
+    )
+  }
+  return minutes * 60_000
+}
+
+function assertGhAuthed() {
+  try {
+    capture('gh', ['auth', 'status'])
+  } catch {
+    throw new Error(
+      'gh is not authenticated, and the release reads CI through it. Run gh auth login, or pass --skip-ci-check.',
+    )
+  }
+}
 
 const sleep = (ms: number) =>
   Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, ms)
 
+function latestPushRun(sha: string) {
+  const raw = capture('gh', [
+    'api',
+    `repos/${REPO}/actions/runs?head_sha=${sha}`,
+    '--jq',
+    '.workflow_runs[] | select(.name == "Push") | "\\(.id)\t\\(.status)\t\\(.conclusion // "")\t\\(.html_url)"',
+  ])
+  const [id, status, conclusion, url] = raw.split('\n')[0]?.split('\t') ?? []
+  return { id, status, conclusion, url }
+}
+
 // Tags only after Push is green on the release commit itself: Publish and
 // Release start on the tag and cannot un-ring it. assertCiGreen checks the
 // commit before the version bump; this checks the one that gets tagged.
-function waitForPushCi(sha: string) {
+function waitForPushCi(sha: string, waitMs: number) {
   const short = sha.slice(0, 9)
   const started = Date.now()
   let announced: string | undefined
+  let ghFailures = 0
   for (;;) {
-    const raw = capture('gh', [
-      'api',
-      `repos/${REPO}/actions/runs?head_sha=${sha}`,
-      '--jq',
-      '.workflow_runs[] | select(.name == "Push") | "\\(.id)\t\\(.status)\t\\(.conclusion // "")\t\\(.html_url)"',
-    ])
-    const [id, status, conclusion, url] = raw.split('\n')[0]?.split('\t') ?? []
+    let latest: ReturnType<typeof latestPushRun>
+    try {
+      latest = latestPushRun(sha)
+      ghFailures = 0
+    } catch (e) {
+      ghFailures += 1
+      if (ghFailures >= GH_ATTEMPTS) {
+        throw new Error(
+          `gh failed ${GH_ATTEMPTS} times in a row reading Push on ${short}`,
+          { cause: e },
+        )
+      }
+      sleep(POLL_MS)
+      continue
+    }
+    const { id, status, conclusion, url } = latest
     if (status === 'completed') {
       if (conclusion !== 'success') {
-        throw new Error(
-          `Push concluded ${conclusion} on ${short}: ${url}\n` +
-            'Nothing is tagged. Fix forward on main, then re-run pnpm release.',
-        )
+        throw new Error(`Push concluded ${conclusion} on ${short}: ${url}`)
       }
       console.log(`  ✓ Push is green on ${short}: ${url}`)
       return
@@ -230,9 +269,9 @@ function waitForPushCi(sha: string) {
     if (!id && waited > APPEAR_MS) {
       throw new Error(`No Push run appeared for ${short} in 5 minutes.`)
     }
-    if (waited > WAIT_MS) {
+    if (waited > waitMs) {
       throw new Error(
-        `Push is still ${status} on ${short} after ${WAIT_MS / 60_000} minutes: ${url}`,
+        `Push is still ${status ?? 'not started'} on ${short} after ${waitMs / 60_000} minutes: ${url}`,
       )
     }
     sleep(POLL_MS)
@@ -429,6 +468,7 @@ function reportDryRun({
   bumped,
   deleted,
   post,
+  skipCiCheck,
 }: {
   destDir: string
   releaseTag: string
@@ -436,6 +476,7 @@ function reportDryRun({
   bumped: string[]
   deleted: string[]
   post?: string
+  skipCiCheck: boolean
 }) {
   const rule = '─'.repeat(72)
   if (post) {
@@ -458,7 +499,7 @@ function reportDryRun({
     console.log(`  - ${file}`)
   }
   console.log(
-    `\nWould then push the commit, wait for Push to go green on it, tag ${releaseTag} and push the tag.`,
+    `\nWould then push the commit, ${skipCiCheck ? '' : 'wait for Push to go green on it, '}tag ${releaseTag} and push the tag.`,
   )
   console.log(`Rendered tree left at ${destDir} — nothing in the repo changed.`)
 }
@@ -490,9 +531,13 @@ function main() {
   // a local lookup and the commonest way to mistype a release.
   assertTagFree(releaseTag)
 
+  const waitMs = skipCiCheck ? 0 : ciWaitMs()
   if (skipCiCheck) {
-    console.log('Skipping the CI status check (--skip-ci-check)')
+    console.log(
+      'Skipping the CI status check and the wait for Push (--skip-ci-check)',
+    )
   } else {
+    assertGhAuthed()
     assertCiGreen(capture('git', ['rev-parse', 'HEAD']))
   }
 
@@ -588,6 +633,7 @@ function main() {
       bumped,
       deleted,
       post: rendered?.post,
+      skipCiCheck,
     })
     return
   }
@@ -623,8 +669,21 @@ function main() {
       { cause: e },
     )
   }
-  waitForPushCi(capture('git', ['rev-parse', 'HEAD']))
-  run('git', ['tag', '-a', releaseTag, '-m', releaseTag])
+  const releaseSha = capture('git', ['rev-parse', 'HEAD'])
+  if (!skipCiCheck) {
+    try {
+      waitForPushCi(releaseSha, waitMs)
+    } catch (e) {
+      throw new Error(
+        `${e instanceof Error ? e.message : e}\n` +
+          `${releaseTag} is PUSHED as ${releaseSha.slice(0, 9)} and untagged. Do not re-run pnpm release.\n` +
+          `Once Push is green on ${releaseSha.slice(0, 9)} (re-run it if it flaked), tag it:\n` +
+          `  git tag -a ${releaseTag} -m ${releaseTag} ${releaseSha} && git push origin ${releaseTag}`,
+        { cause: e },
+      )
+    }
+  }
+  run('git', ['tag', '-a', releaseTag, '-m', releaseTag, releaseSha])
   run('git', ['push', 'origin', releaseTag])
 
   console.log(`✓ Released ${releaseTag}`)
