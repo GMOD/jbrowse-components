@@ -15,10 +15,12 @@ All of it is in `plugins/marks/src/rexport/`, because the grammar's translator l
 
 - `exportLinearView.ts` reads the live view (visible regions, each track's first display, adapter, the assembly's reference, refName aliases). `index.ts` adds the menu item through `addViewMenuItems`.
 - `exportView.ts` dispatches by display type (`BUILTIN_EXPORTERS`) and assembles one script. A track no exporter reads, or one that throws, becomes a header note.
-- `markToPlot.ts` + `transformR.ts` (`LinearMarkDisplay`), `featureToPlot.ts` (`LinearBasicDisplay`, the gene glyph), `alignmentsToR.ts` (`LinearAlignmentsDisplay`).
+- `markToPlot.ts` + `transformR.ts` (`LinearMarkDisplay`), `wiggleToMarks.ts` (`LinearWiggleDisplay`, as the mark display that draws the same plot), `featureToPlot.ts` (`LinearBasicDisplay`, the gene glyph), `alignmentsToR.ts` (`LinearAlignmentsDisplay`).
 - `rplot.ts` (typed plot model), `rScript.ts` (assembler), `frameFor.ts` (the `READERS` table: BigWig, GFF3, VCF, BED, BAM), `rhelpers/*.R` bundled by `pnpm gen:rhelpers`.
 
-Not exported yet: modifications, CRAM, linked reads and chains, sort and facet on the alignments display, indels, clips and splice gaps on reads, and the gene glyph's colour by field, facet and compact modes. Each lands in the script header when set.
+Not exported yet: modifications, CRAM, linked reads and chains, sort and facet on the alignments display, indels, clips and splice gaps on reads, the gene glyph's colour by field, facet and compact modes, BigBed (rtracklayer cannot read BED12's block lists from a bigBed, so a gene track would lose its exons), and `LinearManhattanDisplay` (no GWAS reader). Each lands in the script header when set.
+
+The live path reads each display's resolved config (`fullConfSnapshot`), drops the empty strings, lists and objects an unset slot resolves to (`withoutUnset`), and hands the translators that. The translators keep their own defaults for the partial specs the unit tests build; a live export never needs them.
 
 Two older branches hold work this does not: `r-export4-rebase` (the fidelity-first exporter with the CRAM, modification and sort helpers and oracles) and `r-export-rewrite` (**no remote**, `emitR.ts` and `figureSpec.ts`, which exist nowhere else; check before deleting an unpushed branch). Their per-display `exportRCode.ts` files read displays that no longer exist ([ADR-143](../architecture-decision-records/adr-143-one-quantitative-display-and-facet-is-the-layout.md), [ADR-157](../architecture-decision-records/adr-157-a-row-displays-arrangement-is-the-rows-config-object.md), [ADR-163](../architecture-decision-records/adr-163-a-link-is-a-mark-and-the-arc-plugin-is-gone.md)), so pull their `rhelpers/*.R` and oracles across rather than rebasing.
 
@@ -52,6 +54,12 @@ A reader takes `(uri, chrom, start, end)` and returns a **genomic**-coordinate f
 **The region's `refName` has to be the file's spelling.** R has no assembly manager, so a view's `chr1` reaches a file indexed as `1` as a missing contig (CLAUDE.md §Names). `exportLinearView.ts` asks the assembly manager for each track's differing names, and `file_refname` translates at the read.
 
 **A remote BAM needs its index passed.** Rsamtools finds the index only beside a local file, so `read_bam`, `bam_coverage` and `bam_mismatches` take `index` and the exporter fills it from the adapter's `index.location`, else `<bam>.bai`.
+
+**Categorical colours and shapes hash as the browser does.** A value with no listed entry takes `valueSlot`'s palette slot (a non-negative integer takes the slot it names anchored at 1, anything else hashes), which `category_values` ports and `exportViewR.test.ts` holds to `categoricalValueColor` over 200 strings. An unlisted value beside a partial `domain` hashes the same way, without the browser's collision avoidance, which depends on the order values streamed in. A facet's unlisted values keep a panel each after the listed ones.
+
+**A mark with a zoom range draws only at the view's `bpPerPx`**, taken from the live view (lower bound inclusive, upper exclusive), so a figure shows the one mark the view showed.
+
+**A tabix file reads through the index its adapter names**, and a BAM always passes one; the readers default to `<file>.tbi`.
 
 **A span or bar draws at least two figure pixels wide** (`MIN_MARK_PX`). The browser keeps every mark visible, and a 1 bp variant in a 5 kb window is under a device pixel in ggplot2.
 

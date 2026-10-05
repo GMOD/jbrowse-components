@@ -21,11 +21,11 @@ ggplot2 knowledge.
 
 ## What it draws
 
-| Track                                          | Drawn                                                                                                       |
-| ---------------------------------------------- | ----------------------------------------------------------------------------------------------------------- |
-| Mark displays over BigWig, GFF3, VCF, BED, BAM | Each mark, colour, shape and size scale, transform step, facet and row, as the display's config spells them |
-| Feature tracks (GFF3 and BED gene models)      | Exons, thinner UTRs, intron lines, strand arrows, transcripts stacked under their gene, labels              |
-| Alignments tracks (BAM)                        | A coverage band over the reads, packed as the browser packs them, with mismatch ticks                       |
+| Track                                                     | Drawn                                                                                                       |
+| --------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------- |
+| Wiggle and mark displays over BigWig, GFF3, VCF, BED, BAM | Each mark, colour, shape and size scale, transform step, facet and row, as the display's config spells them |
+| Feature tracks (GFF3 and BED gene models)                 | Exons, thinner UTRs, intron lines, strand arrows, transcripts stacked under their gene, labels              |
+| Alignments tracks (BAM)                                   | A coverage band over the reads, packed as the browser packs them, with mismatch ticks                       |
 
 Alignments colour by strand, mapping quality, insert size, pair orientation or a
 SAM tag, and honour the **Filter by** flags, read name and tag filters.
@@ -36,7 +36,7 @@ A track the exporter cannot draw, and a setting it cannot reproduce, land in a
 comment block at the top of the script. A figure that differs from the view says
 so there. Today that covers CRAM, modifications, linked reads and chains, sort,
 and facets on the alignments display, indels, clips and splice gaps on reads,
-and displays other than the three above.
+BigBed tracks, and displays other than those in the table.
 
 ## Where the data lives
 
