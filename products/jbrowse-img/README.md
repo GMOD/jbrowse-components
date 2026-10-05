@@ -1020,8 +1020,8 @@ streams from the web, so this reproduces with only the public chain:
 jb2export synteny --chromSizes data/comparative/hs1.chrom.sizes \
   --chain https://jbrowse.org/demos/hs1ToMm39/hs1ToMm39.over.chain.gz \
   --chromSizes data/comparative/mm39.chrom.sizes --minAlignmentLength 500000 \
-  --autoDiagonalize --colorBy query --opacity 0.4 --levelHeights 350 --drawCurves \
-  --cigarMode matches --width 1400 --out hs1_mm39_synteny.png
+  --autoDiagonalize --colorBy query --opacity 0.4 --levelHeights 350 \
+  --drawCurves --cigarMode matches --width 1400 --out hs1_mm39_synteny.png
 ```
 
 ![Mammalian-scale synteny, human (hs1) vs mouse (mm39)](https://jbrowse.org/jb2-figures/jbrowse-img/hs1_mm39_synteny.7a7f75b58046.png)
