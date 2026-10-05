@@ -49,8 +49,8 @@ function draw(props: Partial<TreeSidebarModel>, top?: number) {
 // `top`, the prop, lands on the `GutterLayer` div wrapping the canvas — the
 // canvas's own `top` style is only the remainder left to apply on top of that.
 // The rendered position is their sum, which is what every caller actually
-// cares about (and what regressed: maf's `top` and the canvas's own `top` used
-// to both carry the full `rowsTopOffset`).
+// cares about (and what regressed: the caller's `top` and the canvas's own `top`
+// used to both carry the full `rowsTopOffset`).
 function renderedTop(el: HTMLElement) {
   const own = Number.parseFloat(el.style.top || '0')
   const parent = el.parentElement
@@ -59,22 +59,17 @@ function renderedTop(el: HTMLElement) {
 }
 
 describe('TreeSidebar', () => {
-  // maf is the only caller that passes `top`: its inline hit-test layer already
-  // sits inside a container translated by `rowsTopOffset` (its wheel listener is
-  // bound to that container by DOM node, see the package CLAUDE.md), and its
-  // portaled canvas layer escapes that container through the portal — both are
-  // *already* offset by the time they reach here, once via the ancestor and
-  // once via `top` standing in for it. Adding `rowsTopOffset` again on top, as
-  // every other caller's un-offset layers need, pushed the dendrogram an extra
-  // `rowsTopOffset` px down the track — worse the deeper the band stack (maf's
-  // conservation band stacks on top of its coverage band).
+  // `RowsPanel` passes `top`: its inline layer already sits in the panel
+  // translated by `rowsTopOffset`, and `top` stands in for that ancestor on
+  // the portaled layer. Adding `rowsTopOffset` again pushed the dendrogram an
+  // extra `rowsTopOffset` px down the track.
   it('does not add rowsTopOffset again when the caller already passed it as top', () => {
     const { getByTestId } = draw({ rowsTopOffset: 85 }, 85)
     expect(renderedTop(getByTestId('tree_sidebar_dendrogram'))).toBe(85)
   })
 
-  // The default caller (variants, multi-wiggle, multi-row) renders the sidebar
-  // unnested and passes no `top`, so the full offset has to come from here.
+  // Wiggle and multi-row render the sidebar unnested and pass no `top`, so the
+  // full offset has to come from here.
   it('applies rowsTopOffset itself when the caller passes no top', () => {
     const { getByTestId } = draw({ rowsTopOffset: 40 })
     expect(renderedTop(getByTestId('tree_sidebar_dendrogram'))).toBe(40)

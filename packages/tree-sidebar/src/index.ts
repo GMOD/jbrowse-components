@@ -52,7 +52,6 @@ export {
   buildClusteredLayout,
   buildTree,
   clusteredCladeLayout,
-  computeClusterHierarchy,
   filterRowsBySubtree,
   getLeafNames,
   keptRows,
@@ -130,10 +129,8 @@ export type {
   SetColorDialogProps,
   TreeLayoutModel,
 } from './setColorDialog/SetColorDialog.tsx'
-// Displays reach the layout through `computeClusterHierarchy` (clusterUtils);
-// the raw `clusterLayout` primitive stays public only for SVG-export tests.
-// hierarchy/leaves/links/sum and the y-assignment/traversal helpers remain
-// internal to the layout and draw code (kept in hierarchy.ts, not re-exported).
+// Displays reach the layout through `TreeSidebarMixin`'s `hierarchy`;
+// `clusterLayout` stays public only for SVG-export tests.
 export { clusterLayout } from './hierarchy.ts'
 export type { HierarchyNode, PositionedHierarchyNode } from './hierarchy.ts'
 export type {
