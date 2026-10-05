@@ -35,8 +35,7 @@ public bool arrowDraws(float featureWidthPx, bool gene) {
 }
 
 // Arrowhead half-height, capped at half the box's drawn height so the head
-// never overhangs a short box. continuation.slang's `markerHalfHeight` follows
-// the same rule.
+// never overhangs a short box.
 public float arrowHeadHalfHeightPx(float boxHeightPx) {
   return min(HEAD_HALF_H_PX, snapBoxHeightPx(boxHeightPx) * 0.5);
 }
