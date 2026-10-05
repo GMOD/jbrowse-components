@@ -5,14 +5,21 @@
 //
 //   npx esbuild plugins/maf/benches/mafEncodeRows.bench.ts --bundle --platform=node --format=esm --outfile=/tmp/mafEncodeRows.mjs --banner:js="import { createRequire } from 'module'; const require = createRequire(import.meta.url);" && node --expose-gc --max-old-space-size=12000 /tmp/mafEncodeRows.mjs [--rounds=15] [--json]
 //
-// Arms per point, interleaved with the order rotated, MIN across rounds:
-//   place    `placeMafRegionData` over the packed wire
-//   encode   `encodeMafRows` over the placed region
-//   control  the same encode declared a second time; far from 1.00 means the
-//            row measured nothing
-//   sum      place then encode, as a fetch's landing pays
+// Arms per point, interleaved with the order rotated, MIN across rounds. Every
+// arm but `place` and `sum` runs over a region placed fresh and untimed just
+// before it: `mafInsertionChannels` caches its walk in a WeakMap keyed by the
+// region, so a reused region skips the walk and a real fetch, which always
+// lands a new region, pays it.
+//   place       `placeMafRegionData` over the packed wire
+//   channels    `buildMafChannels` over a cold region
+//   insertions  `mafInsertionChannels` over a cold region
+//   encode      `encodeMafRows` whole, over a cold region
+//   control     the same encode declared a second time; far from 1.00 means
+//               the row measured nothing
+//   sum         place then encode in one call, as a fetch's landing pays
 import { performance } from 'node:perf_hooks'
 
+import { cssColorToABGR } from '@jbrowse/core/util/colorBits'
 import {
   BedTabixAdapter,
   bedTabixConfigSchema as BedTabixConfigSchema,
@@ -26,6 +33,8 @@ import {
 } from '../src/LinearMafDisplay/encodeMafRows.ts'
 import { placeMafRegionData } from '../src/LinearMafDisplay/placeMafRows.ts'
 import { MafWirePacker } from '../src/LinearMafGetAlignmentDataRpc/mafWirePacker.ts'
+import { buildMafChannels } from '../src/LinearMafRenderer/mafChannels.ts'
+import { mafInsertionChannels } from '../src/LinearMafRenderer/rendering/insertions.ts'
 import MafTabixAdapter from '../src/MafTabixAdapter/MafTabixAdapter.ts'
 import MafTabixConfigSchema from '../src/MafTabixAdapter/configSchema.ts'
 import { DEFAULT_SPEC, ensureMafTabixFixture } from './mafTabixFixture.ts'
@@ -147,6 +156,8 @@ function encodePropsOf(
   }
 }
 
+type Placed = ReturnType<typeof placeMafRegionData>
+
 function armPlace(
   packed: MafWireRegionData,
   rowIndexBySrc: Map<string, number>,
@@ -154,10 +165,19 @@ function armPlace(
   return placeMafRegionData(packed, rowIndexBySrc).blocks.length
 }
 
-function armEncode(
-  detail: ReturnType<typeof placeMafRegionData>,
-  props: MafRowsEncodeProps,
-) {
+function armChannels(detail: Placed, props: MafRowsEncodeProps) {
+  return buildMafChannels({ blocks: detail.blocks, ...props.gpu }).count
+}
+
+function armInsertions(detail: Placed, props: MafRowsEncodeProps) {
+  return mafInsertionChannels(
+    detail,
+    cssColorToABGR(props.gpu.palette.insertionColor),
+    props.gpu.binBp,
+  ).count
+}
+
+function armEncode(detail: Placed, props: MafRowsEncodeProps) {
   const { cells, insertions } = encodeMafRows(
     { detail, summary: undefined, frames: undefined },
     props,
@@ -165,10 +185,7 @@ function armEncode(
   return cells.count + (insertions?.count ?? 0)
 }
 
-function armControl(
-  detail: ReturnType<typeof placeMafRegionData>,
-  props: MafRowsEncodeProps,
-) {
+function armControl(detail: Placed, props: MafRowsEncodeProps) {
   const { cells, insertions } = encodeMafRows(
     { detail, summary: undefined, frames: undefined },
     props,
@@ -204,15 +221,27 @@ for (const species of SPECIES) {
       Array.from({ length: species }, (_, i) => [`sp${i}`, i]),
     )
     const packed = pack(features)
-    const detail = placeMafRegionData(packed, rowIndexBySrc)
     const props = encodePropsOf(binBp, rowIndexBySrc)
+    const used = new WeakSet<object>()
+    const freshRegion = () => {
+      const detail = placeMafRegionData(packed, rowIndexBySrc)
+      if (used.has(detail)) {
+        throw new Error('a region was timed twice, so a cache could hit')
+      }
+      used.add(detail)
+      return detail
+    }
+    const cold: Record<string, (d: Placed) => number> = {
+      channels: d => armChannels(d, props),
+      insertions: d => armInsertions(d, props),
+      encode: d => armEncode(d, props),
+      control: d => armControl(d, props),
+    }
     const arms: Record<string, () => number> = {
       place: () => armPlace(packed, rowIndexBySrc),
-      encode: () => armEncode(detail, props),
-      control: () => armControl(detail, props),
       sum: () => armSum(packed, rowIndexBySrc, props),
     }
-    const order = Object.keys(arms)
+    const order = ['place', ...Object.keys(cold), 'sum']
     const best: Record<string, number> = {}
     const counts: Record<string, number> = {}
     for (let r = 0; r < rounds + 2; r++) {
@@ -221,9 +250,11 @@ for (const species of SPECIES) {
         ...order.slice(0, r % order.length),
       ]
       for (const arm of rotated) {
+        const run = cold[arm]
+        const detail = run ? freshRegion() : undefined
         gc?.()
         const t0 = performance.now()
-        const n = arms[arm]!()
+        const n = run ? run(detail!) : arms[arm]!()
         const ms = performance.now() - t0
         if (r >= 2) {
           best[arm] = Math.min(best[arm] ?? Infinity, ms)
@@ -231,20 +262,29 @@ for (const species of SPECIES) {
         counts[arm] = n
       }
     }
-    if (counts.encode === 0 || counts.encode !== counts.control) {
+    if (
+      counts.encode === 0 ||
+      counts.encode !== counts.control ||
+      counts.encode !== counts.sum ||
+      counts.encode !== counts.channels! + counts.insertions!
+    ) {
       throw new Error(`broken fixture: encode emitted ${counts.encode}`)
     }
+    const ms = (arm: string) => Math.round(best[arm]! * 100) / 100
     const row = {
       species,
       fetchedBp,
       binBp,
       blocks: features.length,
       columns: features.length * BLOCK_COLUMNS,
-      emitted: counts.encode,
-      placeMs: Math.round(best.place! * 100) / 100,
-      encodeMs: Math.round(best.encode! * 100) / 100,
-      controlMs: Math.round(best.control! * 100) / 100,
-      sumMs: Math.round(best.sum! * 100) / 100,
+      cells: counts.channels,
+      insertions: counts.insertions,
+      placeMs: ms('place'),
+      channelsMs: ms('channels'),
+      insertionsMs: ms('insertions'),
+      encodeMs: ms('encode'),
+      controlMs: ms('control'),
+      sumMs: ms('sum'),
     }
     results.push(row)
     if (!asJson) {
