@@ -96,12 +96,10 @@ test.each([
   )
 })
 
-test('an explicit config wins over a hub, which still names the assembly', () => {
-  const url = jbrowseUrl({ hub: 'hg38', config: 'https://x.test/config.json' })
-  expect(Object.fromEntries(params(url))).toEqual({
-    config: 'https://x.test/config.json',
-    assembly: 'hg38',
-  })
+test('a hub and a config are two sources for one config, so both is refused', () => {
+  expect(() =>
+    jbrowseUrl({ hub: 'hg38', config: 'https://x.test/config.json' }),
+  ).toThrow('pass a hosted hub or a config URL, not both')
 })
 
 test('instance selects the deployment', () => {

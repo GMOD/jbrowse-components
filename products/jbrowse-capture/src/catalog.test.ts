@@ -5,6 +5,7 @@
 import http from 'node:http'
 
 import {
+  canonicalSessionAssembly,
   resolveAgainstConfig,
   resolveAssemblyName,
   resolveTrackId,
@@ -116,6 +117,22 @@ describe('against a served config', () => {
       tracks: ['whatever'],
     }
     await expect(resolveAgainstConfig(options)).resolves.toBe(options)
+  })
+
+  test('a spec names the assembly by alias and the census by its canonical name', async () => {
+    const options = { instance: base, config: 'data/config.json' }
+    await expect(canonicalSessionAssembly(options, 'GRCh38')).resolves.toBe(
+      'hg38',
+    )
+    await expect(canonicalSessionAssembly(options, 'mine')).resolves.toBe(
+      'mine',
+    )
+    await expect(
+      canonicalSessionAssembly(
+        { ...options, config: 'missing.json' },
+        'GRCh38',
+      ),
+    ).resolves.toBe('GRCh38')
   })
 
   test('a hosted hub that does not exist fails before any browser launches', async () => {

@@ -15,7 +15,7 @@ export interface ParsedArgs {
   out?: string
   width?: number
   height?: number
-  scale?: number
+  dpr?: number
   timeout?: number
   fullPage: boolean
   annotations?: string
@@ -42,7 +42,7 @@ const OPTIONS = {
   track: { type: 'string', multiple: true, default: [] as string[] },
   width: { type: 'string' },
   height: { type: 'string' },
-  scale: { type: 'string' },
+  dpr: { type: 'string' },
   timeout: { type: 'string' },
   fullPage: { type: 'boolean', default: false },
   annotations: { type: 'string' },
@@ -133,7 +133,7 @@ export function parseArgs(argv: string[]): ParsedArgs {
       `${fromStdin.map(f => `--${f}`).join(' and ')} cannot both read stdin (-)`,
     )
   }
-  const { track, width, height, scale, timeout, ...rest } = values
+  const { track, width, height, dpr, timeout, ...rest } = values
   return {
     ...rest,
     command,
@@ -141,7 +141,7 @@ export function parseArgs(argv: string[]): ParsedArgs {
     tracks: [...track],
     width: positiveInt('width', width),
     height: positiveInt('height', height),
-    scale: positive('scale', scale),
+    dpr: positive('dpr', dpr),
     timeout: positive('timeout', timeout),
     positionals,
   }

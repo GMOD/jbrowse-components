@@ -34,12 +34,13 @@ THE IMAGE
                         subcommand)
   --width <px>          viewport width (default 1400)
   --height <px>         viewport height (default 900)
-  --scale <n>           device pixel ratio (default 2)
+  --dpr <n>             device pixel ratio (default 2)
   --fullPage            grow the image until every view fits, not just the
                         --height of the viewport
   --annotations <json|path|->
                         callouts to draw over the view: a JSON array of arrows,
-                        boxes and labels, each anchored to a locus or an element
+                        boxes and labels, each anchored to a locus, a graph
+                        node, a dotplot cell or an element
 
 WAITING
   --timeout <ms>        budget per wait stage (default 60000)
@@ -140,7 +141,7 @@ async function main() {
     out: args.out,
     width: args.width,
     height: args.height,
-    deviceScaleFactor: args.scale,
+    dpr: args.dpr,
     fullPage: args.fullPage,
     annotations: args.annotations
       ? readAnnotations(args.annotations)

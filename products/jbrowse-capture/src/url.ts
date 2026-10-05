@@ -24,7 +24,7 @@ export function instanceUrl(instance = PUBLIC_INSTANCE) {
 export interface JBrowseUrlOptions {
   /** A genomes.jbrowse.org assembly: a UCSC db name (`hg38`) or GenArk accession. */
   hub?: string
-  /** A config.json URL, for data that is not on genomes.jbrowse.org. Wins over `hub`. */
+  /** A config.json URL, for data that is not on genomes.jbrowse.org. Not combined with `hub`. */
   config?: string
   /** Assembly to open. Defaults to `hub`, whose config names its assembly after it. */
   assembly?: string
@@ -50,16 +50,24 @@ export interface JBrowseUrlOptions {
 }
 
 /**
- * A spec or a saved session says which assembly, locations and tracks to
- * open, so the URL carries one of the three ways of saying so, never two.
+ * One source for the config, never a hub and a config URL. A spec or a saved
+ * session says which assembly, locations and tracks to open, so the URL carries
+ * one of the three ways of saying so, never two.
  */
-export function assertSessionStandsAlone({
+export function assertCoherentOptions({
+  hub,
+  config,
   spec,
   session,
   assembly,
   loc,
   tracks,
 }: JBrowseUrlOptions) {
+  if (hub && config) {
+    throw new Error(
+      'pass a hosted hub or a config URL, not both (--hub, --config); name the assembly with --assembly',
+    )
+  }
   if (spec && session) {
     throw new Error('pass a session spec or a saved session, not both')
   }
@@ -94,7 +102,15 @@ export function jbrowseUrl({
   sessionName,
   instance,
 }: JBrowseUrlOptions) {
-  assertSessionStandsAlone({ spec, session, assembly, loc, tracks })
+  assertCoherentOptions({
+    hub,
+    config,
+    spec,
+    session,
+    assembly,
+    loc,
+    tracks,
+  })
   const params = new URLSearchParams()
   const set = (key: string, value: string | undefined) => {
     if (value) {

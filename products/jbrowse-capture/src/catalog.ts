@@ -23,14 +23,19 @@ const assembliesOf = (catalog: Catalog) =>
  * The canonical name of the assembly `input` names by name or alias, ignoring
  * case: the name the app's census publishes.
  */
-export function resolveAssemblyName(catalog: Catalog, input: string) {
-  const assemblies = assembliesOf(catalog)
+const findAssembly = (catalog: Catalog, input: string) => {
   const target = input.toLowerCase()
-  const found = assemblies.find(a =>
+  return assembliesOf(catalog).find(a =>
     [a.name, ...(a.aliases ?? [])].some(n => n.toLowerCase() === target),
   )
+}
+
+export function resolveAssemblyName(catalog: Catalog, input: string) {
+  const found = findAssembly(catalog, input)
   if (!found) {
-    const names = assemblies.map(a => a.name).join(', ')
+    const names = assembliesOf(catalog)
+      .map(a => a.name)
+      .join(', ')
     throw new Error(
       `assembly "${input}" is not in the config, which has ${names || 'none'}`,
     )
@@ -84,6 +89,25 @@ export function resolveTrackId(
   throw new Error(`--track "${input}" is not in the config${hint}`)
 }
 
+async function fetchCatalog({
+  hub,
+  config,
+  instance,
+}: JBrowseUrlOptions): Promise<Catalog | undefined> {
+  const url = config
+    ? new URL(config, instanceUrl(instance)).href
+    : hub
+      ? hubUrl(hub)
+      : undefined
+  if (!url) {
+    return undefined
+  }
+  const fetched = fetchJson(url, config ? 'config' : `hub "${hub}"`)
+  return (await (config ? fetched.catch(() => undefined) : fetched)) as
+    | Catalog
+    | undefined
+}
+
 /**
  * The options with the assembly and tracks checked against the config and
  * spelled the way it spells them, so a typo fails before a browser launches.
@@ -95,25 +119,12 @@ export function resolveTrackId(
 export async function resolveAgainstConfig(
   options: JBrowseUrlOptions,
 ): Promise<JBrowseUrlOptions> {
-  const { hub, config, assembly, tracks, spec, session, instance } = options
+  const { hub, assembly, tracks, spec, session } = options
   const wanted = assembly ?? hub
-  const url = config
-    ? new URL(config, instanceUrl(instance)).href
-    : hub
-      ? hubUrl(hub)
-      : undefined
-  if (spec || session || !url || (!wanted && !tracks?.length)) {
+  if (spec || session || (!wanted && !tracks?.length)) {
     return options
   }
-  const catalog = (await fetchJson(
-    url,
-    config ? 'config' : `hub "${hub}"`,
-  ).catch((error: unknown) => {
-    if (config) {
-      return undefined
-    }
-    throw error
-  })) as Catalog | undefined
+  const catalog = await fetchCatalog(options)
   if (!catalog) {
     return options
   }
@@ -127,4 +138,18 @@ export async function resolveAgainstConfig(
       resolveTrackId(catalog.tracks ?? [], t, assemblyName ?? ''),
     ),
   }
+}
+
+/**
+ * The assembly a spec or saved session names, spelled the way the config does,
+ * since the app's census publishes the config's name and a spec may use an
+ * alias. A name the config does not list stays as given: a spec can declare
+ * its own assemblies.
+ */
+export async function canonicalSessionAssembly(
+  options: JBrowseUrlOptions,
+  name: string,
+) {
+  const catalog = await fetchCatalog(options)
+  return (catalog && findAssembly(catalog, name)?.name) ?? name
 }

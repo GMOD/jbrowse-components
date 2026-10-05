@@ -173,11 +173,11 @@ Three fields on a successful capture:
 
 ## Callouts
 
-`--annotations` draws arrows, boxes, labels and numbered badges over the view
-once it has settled, from a JSON array (inline, a path, or `-` for stdin). These
-are the callouts on the JBrowse documentation's figures, drawn by the same code,
-so a figure's **Open or rebuild this view** dialog hands you its callouts as a
-file to pass here.
+`--annotations` draws arrows, boxes, labels, numbered badges, legends and
+lineage trapezoids over the view once it has settled, from a JSON array (inline,
+a path, or `-` for stdin). These are the callouts on the JBrowse documentation's
+figures, drawn by the same code, so a figure's **Open or rebuild this view**
+dialog hands you its callouts as a file to pass here.
 
 ```bash
 cat > callouts.json <<'JSON'

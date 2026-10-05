@@ -4,7 +4,7 @@ import { dirname } from 'node:path'
 import { assertValidAnnotations } from './annotationSpec.ts'
 import { drawAnnotations } from './annotations.ts'
 import { isBrowserConsoleNoise, launchBrowser } from './browser.ts'
-import { resolveAgainstConfig } from './catalog.ts'
+import { canonicalSessionAssembly, resolveAgainstConfig } from './catalog.ts'
 import { assertImagePath } from './imagePath.ts'
 import { assertSupportedInstance } from './instanceVersion.ts'
 import { DEFAULT_TIMEOUT } from './poll.ts'
@@ -15,7 +15,7 @@ import {
   trackIdsFromSession,
 } from './session.ts'
 import { sessionOverflowInPage } from './sessionOverflow.ts'
-import { PUBLIC_INSTANCE, assertSessionStandsAlone, jbrowseUrl } from './url.ts'
+import { PUBLIC_INSTANCE, assertCoherentOptions, jbrowseUrl } from './url.ts'
 
 import type { Annotation } from './annotationOverlay.ts'
 import type { LaunchOptions } from './browser.ts'
@@ -28,8 +28,8 @@ export interface OpenOptions
   width?: number
   height?: number
   /** Device pixel ratio. Default 2, the density a figure usually wants. */
-  deviceScaleFactor?: number
-  /** Called with each page console message that is not known GPU noise, and each uncaught page error. */
+  dpr?: number
+  /** Called with each page console message that is not known GPU noise, each uncaught page error, and each failed or HTTP 4xx/5xx request. */
   onConsole?: (text: string) => void
 }
 
@@ -51,7 +51,7 @@ export async function openJBrowse(
   const {
     width = 1400,
     height = 900,
-    deviceScaleFactor = 2,
+    dpr = 2,
     headless,
     executablePath,
     args,
@@ -60,7 +60,7 @@ export async function openJBrowse(
     trackIds,
     ...given
   } = options
-  assertSessionStandsAlone(given)
+  assertCoherentOptions(given)
   const [urlOptions] = await Promise.all([
     resolveAgainstConfig(given),
     assertSupportedInstance(given.instance ?? PUBLIC_INSTANCE),
@@ -70,10 +70,17 @@ export async function openJBrowse(
     ...urlOptions,
     sessionName: urlOptions.sessionName ?? 'Screenshot',
   })
+  const { spec, session, assembly, hub, tracks } = urlOptions
+  const opens = spec ?? (session && savedSnapshot(session))
+  const sessionAssembly = opens && assemblyFromSession(opens)
+  const expectedAssembly = opens
+    ? sessionAssembly &&
+      (await canonicalSessionAssembly(urlOptions, sessionAssembly))
+    : (assembly ?? hub)
   const browser = await launchBrowser({ headless, executablePath, args })
   try {
     const page = await browser.newPage()
-    await page.setViewport({ width, height, deviceScaleFactor })
+    await page.setViewport({ width, height, deviceScaleFactor: dpr })
     if (onConsole) {
       page.on('console', msg => {
         const text = msg.text()
@@ -83,6 +90,17 @@ export async function openJBrowse(
       })
       page.on('pageerror', error => {
         onConsole(`uncaught ${error instanceof Error ? error.stack : error}`)
+      })
+      page.on('requestfailed', request => {
+        const reason = request.failure()?.errorText
+        if (reason !== 'net::ERR_ABORTED') {
+          onConsole(`request failed: ${request.url()} (${reason})`)
+        }
+      })
+      page.on('response', response => {
+        if (response.status() >= 400) {
+          onConsole(`HTTP ${response.status()}: ${response.url()}`)
+        }
       })
     }
     // an app streaming track data may never reach networkidle; the session
@@ -96,11 +114,9 @@ export async function openJBrowse(
         `${url} answered HTTP ${response.status()}. Check --instance.`,
       )
     }
-    const { spec, session, assembly, hub, tracks } = urlOptions
-    const opens = spec ?? (session && savedSnapshot(session))
     const report = await waitForJBrowseReady(page, {
       ...options,
-      assembly: opens ? assemblyFromSession(opens) : (assembly ?? hub),
+      assembly: expectedAssembly,
       trackIds: trackIds ?? (opens ? trackIdsFromSession(opens) : tracks),
     })
     return { browser, page, url, ...report }
@@ -167,6 +183,6 @@ export async function captureJBrowse(
     const image = await page.screenshot({ path: out })
     return { url, image, ...report }
   } finally {
-    await browser.close()
+    await browser.close().catch(() => {})
   }
 }

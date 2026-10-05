@@ -23,7 +23,7 @@ test('a viewport is a whole number of pixels', () => {
   expect(() => parseArgs(['--width', '1400.5'])).toThrow(
     '--width needs a whole number, got "1400.5"',
   )
-  expect(parseArgs(['--scale', '1.5']).scale).toBe(1.5)
+  expect(parseArgs(['--dpr', '1.5']).dpr).toBe(1.5)
 })
 
 test('only one JSON flag reads stdin', () => {
@@ -80,8 +80,8 @@ test('a value handed to a flag is an error, not true', () => {
 // the property that matters — a zero size fails there naming neither the flag
 // nor the value.
 test('a zero or negative viewport dimension is an error', () => {
-  expect(() => parseArgs(['--scale', '0'])).toThrow(
-    '--scale needs a positive number, got "0"',
+  expect(() => parseArgs(['--dpr', '0'])).toThrow(
+    '--dpr needs a positive number, got "0"',
   )
   expect(() => parseArgs(['--width=-5'])).toThrow(
     '--width needs a positive number, got "-5"',

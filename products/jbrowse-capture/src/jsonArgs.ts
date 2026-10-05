@@ -2,7 +2,7 @@ import { readFileSync } from 'node:fs'
 
 import type { Annotation } from './annotationOverlay.ts'
 
-// inline JSON, `-` for stdin, or a path: the forms `jb2export --spec` reads
+// inline JSON, `-` for stdin, or a path
 function parseJson(flag: string, value: string): unknown {
   try {
     const inline = /^\s*[[{]/.test(value)

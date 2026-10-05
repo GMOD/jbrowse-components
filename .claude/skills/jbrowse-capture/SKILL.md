@@ -21,7 +21,7 @@ and then **read it**.
 |        | `@jbrowse/img`                | `@jbrowse/capture`                              |
 | ------ | ----------------------------- | ----------------------------------------------- |
 | how    | server-side React, no browser | Puppeteer against a real instance               |
-| output | SVG or PNG                    | PNG                                             |
+| output | SVG, PNG or PDF               | PNG, JPEG or WebP                               |
 | cost   | fast                          | launches Chromium                               |
 | shows  | the tracks                    | the whole app: chrome, menus, dialogs, ideogram |
 | covers | the SVG-export path           | canvas / WebGPU rendering, as a user sees it    |
@@ -93,20 +93,21 @@ browser. `networkidle` does not help: it fires before the session is built, and
 an app streaming track data may never go idle.
 
 If you are writing your own Puppeteer script rather than using the CLI, the fix
-is a **positive gate** first — jbrowse-web publishes its live session model as
-`window.JBrowseSession`:
+is a **positive gate** first — jbrowse-web publishes what is open as a census on
+a hidden `[data-app-tracks]` element:
 
 ```js
 await page.waitForFunction(
   (assembly, trackIds) => {
-    const views = window.JBrowseSession?.views
-    if (!views?.length || views.some(v => v.initialized === false)) return false
-    if (!views.some(v => (v.assemblyNames ?? []).includes(assembly)))
-      return false
-    const open = new Set(
-      views.flatMap(v => v.tracks.map(t => t.configuration.trackId)),
+    const census = document.querySelector('[data-app-tracks]')
+    if (!census) return false
+    const open = JSON.parse(census.dataset.appTracks)
+    const assemblies = JSON.parse(census.dataset.appAssemblies)
+    return (
+      Number(census.dataset.appViews) > 0 &&
+      assemblies.includes(assembly) &&
+      trackIds.every(id => open.includes(id))
     )
-    return trackIds.every(id => open.has(id))
   },
   { timeout: 60000, polling: 250 },
   'hg38',
@@ -177,8 +178,9 @@ no failure but is not the picture either.
 - Headless Chromium rasterizes in **software**. A view that is slow or dies on
   volume there may be fine on real hardware — do not write a product limit into
   a comment on that basis.
-- In a container, pass `--no-sandbox` (the library already does).
-- `--scale 2` is the default and is what a figure wants; `--scale 1` for a
+- In a container, nothing to pass: the library already launches Chromium with
+  `--no-sandbox`.
+- `--dpr 2` is the default and is what a figure wants; `--dpr 1` for a
   screenshot you only intend to read.
 - Raise `--timeout` for a slow remote file.
 - Downscale before reading a large PNG:

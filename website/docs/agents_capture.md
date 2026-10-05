@@ -14,7 +14,7 @@ script there are two tools:
 |        | [`@jbrowse/img`](/docs/jbrowse-img) | [`@jbrowse/capture`](/docs/jbrowse-capture)              |
 | ------ | ----------------------------------- | -------------------------------------------------------- |
 | how    | server-side React, no browser       | Puppeteer against a real instance                        |
-| output | SVG or PNG                          | PNG                                                      |
+| output | SVG, PNG or PDF                     | PNG, JPEG or WebP                                        |
 | speed  | fast, no Chromium download          | slower, launches a browser                               |
 | shows  | the tracks                          | the whole app: chrome, menus, dialogs, overview ideogram |
 | covers | the SVG-export rendering path       | canvas and WebGPU rendering, exactly as a user sees it   |
@@ -86,8 +86,9 @@ For one display rather than the whole app:
 - **The browser renders in software** unless you give it a GPU. A view that is
   slow or fails on volume under headless Chromium may be fine in a real one, so
   do not conclude anything about JBrowse's limits from a headless run.
-- **In a container**, pass `--no-sandbox`; `@jbrowse/capture` already does.
-- **A retina image** is `--scale 2`, the default. Drop it to 1 for a screenshot
+- **In a container**, pass nothing; `@jbrowse/capture` already launches Chromium
+  with `--no-sandbox`.
+- **A retina image** is `--dpr 2`, the default. Drop it to 1 for a screenshot
   you only intend to read.
 - **A slow remote file** outlives the default budget. Raise `--timeout`.
 - **Read the image you produced.** An empty track is obvious in a picture and
