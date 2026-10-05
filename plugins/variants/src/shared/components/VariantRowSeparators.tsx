@@ -3,14 +3,14 @@ import { observer } from 'mobx-react'
 
 import { SEPARATOR_OPACITY } from '../constants.ts'
 
-import type { VariantRowsModel } from './types.ts'
+import type { LinearMultiSampleVariantDisplayModel } from '../../LinearMultiSampleVariantDisplay/model.ts'
 
 // The lines between rows, drawn in the rows panel over the canvas. On-screen
 // counterpart of the separators `SvgVariantOverlay` draws in the export.
 const VariantRowSeparators = observer(function VariantRowSeparators({
   model,
 }: {
-  model: VariantRowsModel
+  model: LinearMultiSampleVariantDisplayModel
 }) {
   const {
     availableHeight,
