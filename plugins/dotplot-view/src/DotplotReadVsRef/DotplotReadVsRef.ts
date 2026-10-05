@@ -38,7 +38,7 @@ export async function launchDotplotReadVsRef({
   const { temporaryAssembly, viewSpec } = buildDotplotReadVsRefSpec({
     feature: primaryFeature,
     windowSize,
-    trackAssembly,
+    trackAssembly: assembly.name,
     plotWidth: Math.max(width - MIN_BORDER, MIN_BORDER),
     plotHeight: Math.max(defaultHeight - MIN_BORDER, MIN_BORDER),
     getCanonicalRefName: assembly.getCanonicalRefName2,

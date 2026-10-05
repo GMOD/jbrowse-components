@@ -30,7 +30,7 @@ export async function launchLinearReadVsRef({
   const { temporaryAssembly, viewSpec } = buildReadVsRefSpec({
     primaryFeature,
     windowSize,
-    trackAssembly,
+    trackAssembly: assembly.name,
     getCanonicalRefName: assembly.getCanonicalRefName2,
     sequenceTrackConf,
     now: () => Date.now(),
