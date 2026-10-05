@@ -14,17 +14,14 @@ import type { MarkDisplayModel } from './markDisplayTypes.ts'
  */
 const MarkTextLayer = observer(function MarkTextLayer({
   model,
-  yTop,
-  plotHeight,
 }: {
   model: MarkDisplayModel
-  yTop: number
-  plotHeight: number
 }) {
   const { palette, typography } = useStyleTheme()
   if (!model.markTypes.includes('text')) {
     return null
   }
+  const { yTop, plotHeight } = model.plotBox
   const font = { size: TEXT_MARK_FONT_PX, family: typography.fontFamily }
   const labels = placeTextMarks(
     model.textMarkEntries,

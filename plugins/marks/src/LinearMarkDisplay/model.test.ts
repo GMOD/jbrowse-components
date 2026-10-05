@@ -2645,9 +2645,7 @@ test('the chip row names each section at the top of the rows it labels, from whe
   display.setRpcData(0, facetResult([0, 1, 2]), REGION)
   display.setHeight(60 + 2 * YSCALEBAR_LABEL_OFFSET)
   const { yTop } = axisPlotBox(display.height)
-  render(
-    createElement(MarkFacetChips, { model: display, yTop, plotHeight: 60 }),
-  )
+  render(createElement(MarkFacetChips, { model: display }))
   expect(screen.getByTestId('mark-facet-chips').style.top).toBe(`${yTop}px`)
   expect(
     screen.getAllByTestId('group-label-text').map(e => e.textContent),

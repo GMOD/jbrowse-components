@@ -12,17 +12,14 @@ import type { MarkDisplayModel } from './markDisplayTypes.ts'
  */
 const MarkFacetChips = observer(function MarkFacetChips({
   model,
-  yTop,
-  plotHeight,
 }: {
   model: MarkDisplayModel
-  yTop: number
-  plotHeight: number
 }) {
   const { sections, rows } = model.facetLayout
   if (rows || sections.length === 0) {
     return null
   }
+  const { yTop, plotHeight } = model.plotBox
   const rowHeight = model.effectiveRowHeight
   const canHide = sections.length > 1
   return (

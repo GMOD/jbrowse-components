@@ -37,10 +37,10 @@ const LinearMarkDisplayComponent = observer(
           )
         }
         contextMenu={model}
-        overlay={({ yTop, plotHeight }) => (
+        overlay={() => (
           <>
-            <MarkTextLayer model={model} yTop={yTop} plotHeight={plotHeight} />
-            <MarkFacetChips model={model} yTop={yTop} plotHeight={plotHeight} />
+            <MarkTextLayer model={model} />
+            <MarkFacetChips model={model} />
             <MarkRows model={model} />
           </>
         )}
