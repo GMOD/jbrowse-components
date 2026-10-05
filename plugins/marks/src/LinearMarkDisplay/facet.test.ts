@@ -166,3 +166,18 @@ test('a section is as deep as the layers drawn at this zoom stand in it', () => 
   const zoomedIn = facetLayout([region], field, new Set(), [true, true])
   expect(zoomedIn.rowCount).toBe(6)
 })
+
+test('a region first laid out under another field gets its rows under its own', () => {
+  const region: MarkRegionData = {
+    layers: [barLayer([0, 1, 2])],
+    facet: [
+      { key: 'a', firstRow: 0, rowCount: 2 },
+      { key: 'b', firstRow: 2, rowCount: 1 },
+    ],
+    request: splitOn('grp'),
+  }
+  const lay = (field: string) =>
+    facetLayout([region], categoricalField(field), new Set(), [true]).rowCount
+  expect(lay('other')).toBe(0)
+  expect(lay('grp')).toBe(3)
+})

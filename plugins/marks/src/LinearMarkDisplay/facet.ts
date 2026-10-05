@@ -41,7 +41,7 @@ export function sectionsOn(region: MarkRegionData, field: string) {
 
 const drawnRowsCache = new WeakMap<
   MarkRegionData,
-  { drawn: string; rows: number[] }
+  { sections: readonly FacetSection[]; drawn: string; rows: number[] }
 >()
 
 // The rows each section holds under the layers drawn at this zoom: one past
@@ -55,7 +55,7 @@ function drawnSectionRows(
 ) {
   const signature = drawn.join(',')
   const held = drawnRowsCache.get(region)
-  if (held?.drawn === signature) {
+  if (held?.sections === sections && held.drawn === signature) {
     return held.rows
   }
   const total = sections.reduce(
@@ -81,7 +81,7 @@ function drawnSectionRows(
       }
     }
   })
-  drawnRowsCache.set(region, { drawn: signature, rows })
+  drawnRowsCache.set(region, { sections, drawn: signature, rows })
   return rows
 }
 
