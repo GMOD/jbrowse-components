@@ -33,6 +33,6 @@ These slots go inside the track's `adapter`: `"adapter": { "type": "BigBedTextSe
 | Slot | Description |
 | --- | --- |
 | <span id="slot-bigbedlocation">**bigBedLocation**</span><br>[`fileLocation`](/docs/config_guides/slot_types#filelocation) = <code>{ uri: '/path/to/my.bb', locationType: 'UriLocation' }</code> | the BigBed whose extra indexes resolve a name to its features |
-| <span id="slot-ixfilepath">**ixFilePath**</span><br>[`fileLocation`](/docs/config_guides/slot_types#filelocation) = <code>{ uri: '', locationType: 'UriLocation' }</code> | a UCSC `searchTrix` `.ix`, whose records are the names the extra indexes hold. Unset, a search matches a name exactly as typed |
-| <span id="slot-ixxfilepath">**ixxFilePath**</span><br>[`fileLocation`](/docs/config_guides/slot_types#filelocation) = <code>{ uri: '', locationType: 'UriLocation' }</code> | the `.ixx` beside `ixFilePath` |
+| <span id="slot-ixfilepath">**ixFilePath**</span><br>[`maybeFileLocation`](/docs/config_guides/slot_types#the-maybe-types) | a UCSC `searchTrix` `.ix`, whose records are the names the extra indexes hold. Unset, a search matches a name exactly as typed |
+| <span id="slot-ixxfilepath">**ixxFilePath**</span><br>[`maybeFileLocation`](/docs/config_guides/slot_types#the-maybe-types) | the `.ixx` beside `ixFilePath` |
 | <span id="slot-assemblynames">**assemblyNames**</span><br>`stringArray` = <code>[]</code> | List of assemblies covered by text search adapter |

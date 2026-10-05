@@ -12917,10 +12917,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           }
         },
         "ixFilePath": {
-          "default": {
-            "uri": "",
-            "locationType": "UriLocation"
-          },
           "if": {
             "type": "null"
           },
@@ -12929,10 +12925,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           }
         },
         "ixxFilePath": {
-          "default": {
-            "uri": "",
-            "locationType": "UriLocation"
-          },
           "if": {
             "type": "null"
           },
@@ -25952,11 +25944,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           }
         },
         "logoPath": {
-          "description": "path to a custom logo image displayed in the app header.",
-          "default": {
-            "uri": "",
-            "locationType": "UriLocation"
-          },
+          "description": "a custom logo image displayed in the app header; unset, the JBrowse logo.",
           "if": {
             "type": "null"
           },

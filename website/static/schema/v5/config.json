@@ -12466,10 +12466,6 @@
           }
         },
         "ixFilePath": {
-          "default": {
-            "uri": "",
-            "locationType": "UriLocation"
-          },
           "if": {
             "type": "null"
           },
@@ -12478,10 +12474,6 @@
           }
         },
         "ixxFilePath": {
-          "default": {
-            "uri": "",
-            "locationType": "UriLocation"
-          },
           "if": {
             "type": "null"
           },
@@ -24877,11 +24869,7 @@
           }
         },
         "logoPath": {
-          "description": "path to a custom logo image displayed in the app header.",
-          "default": {
-            "uri": "",
-            "locationType": "UriLocation"
-          },
+          "description": "a custom logo image displayed in the app header; unset, the JBrowse logo.",
           "if": {
             "type": "null"
           },

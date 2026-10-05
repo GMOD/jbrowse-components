@@ -7112,11 +7112,11 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "ixFilePath",
-          "type": "(LocalPathLocation | UriLocation | BlobLocation | FileHandleLocation)"
+          "type": "((LocalPathLocation | UriLocation | BlobLocation | FileHandleLocation) | undefined)"
         },
         {
           "name": "ixxFilePath",
-          "type": "(LocalPathLocation | UriLocation | BlobLocation | FileHandleLocation)"
+          "type": "((LocalPathLocation | UriLocation | BlobLocation | FileHandleLocation) | undefined)"
         },
         {
           "name": "assemblyNames",
