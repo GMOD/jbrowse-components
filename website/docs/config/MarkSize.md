@@ -39,4 +39,4 @@ These slots go on a display entry: `"displays": [{ "type": "MarkSize", ... }]`, 
 | <span id="slot-scale">**scale**</span><br>[`stringEnum`](/docs/config_guides/slot_types#stringenum) (linear, log) = <code>'linear'</code> | How the value becomes a width: `linear` or `log` between `domainMin` and `domainMax`. |
 | <span id="slot-domainmin">**domainMin**</span><br>[`maybeNumber`](/docs/config_guides/slot_types#the-maybe-types) | The value the thinnest width stands at; unset, the loaded regions' own least. |
 | <span id="slot-domainmax">**domainMax**</span><br>[`maybeNumber`](/docs/config_guides/slot_types#the-maybe-types) | The value the widest width stands at; unset, the loaded regions' own greatest. |
-| <span id="slot-range">**range**</span><br>`stringArray` = <code>[]</code> | The px at each end of the domain, thinnest first. Empty is 1 to 6. |
+| <span id="slot-range">**range**</span><br>[`stringArray`](/docs/config_guides/slot_types#stringarray) = <code>[]</code> | The px at each end of the domain, thinnest first. Empty is 1 to 6. |

@@ -32,5 +32,5 @@ These slots go inside the track's `adapter`: `"adapter": { "type": "JBrowse1Text
 | Slot | Description |
 | --- | --- |
 | <span id="slot-namesindexlocation">**namesIndexLocation**</span><br>[`fileLocation`](/docs/config_guides/slot_types#filelocation) = <code>{ uri: '/volvox/names', locationType: 'UriLocation' }</code> | the location of the JBrowse1 names index data directory |
-| <span id="slot-tracks">**tracks**</span><br>`stringArray` = <code>[]</code> | List of tracks covered by text search adapter |
-| <span id="slot-assemblynames">**assemblyNames**</span><br>`stringArray` = <code>[]</code> | List of assemblies covered by text search adapter |
+| <span id="slot-tracks">**tracks**</span><br>[`stringArray`](/docs/config_guides/slot_types#stringarray) = <code>[]</code> | List of tracks covered by text search adapter |
+| <span id="slot-assemblynames">**assemblyNames**</span><br>[`stringArray`](/docs/config_guides/slot_types#stringarray) = <code>[]</code> | List of assemblies covered by text search adapter |

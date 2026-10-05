@@ -31,4 +31,4 @@ Every BaseInternetAccount has a unique `internetAccountId`, a required top-level
 | <span id="slot-description">**description**</span><br>[`string`](/docs/config_guides/slot_types#string) = <code>''</code> | a description of the internet account |
 | <span id="slot-authheader">**authHeader**</span><br>[`string`](/docs/config_guides/slot_types#string) = <code>'Authorization'</code> | request header for credentials |
 | <span id="slot-tokentype">**tokenType**</span><br>[`string`](/docs/config_guides/slot_types#string) = <code>''</code> | a custom name for a token to include in the header |
-| <span id="slot-domains">**domains**</span><br>`stringArray` = <code>[]</code> | array of valid domains the url can contain to use this account |
+| <span id="slot-domains">**domains**</span><br>[`stringArray`](/docs/config_guides/slot_types#stringarray) = <code>[]</code> | array of valid domains the url can contain to use this account |

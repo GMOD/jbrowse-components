@@ -51,4 +51,4 @@ These slots go inside the track's `adapter`: `"adapter": { "type": "BedpeAdapter
 | Slot | Description |
 | --- | --- |
 | <span id="slot-bedpelocation">**bedpeLocation**</span><br>[`fileLocation`](/docs/config_guides/slot_types#filelocation) = <code>{ uri: '/path/to/my.bedpe.gz', locationType: 'UriLocation' }</code> | can be plaintext or gzipped, not indexed so loaded into memory on startup |
-| <span id="slot-columnnames">**columnNames**</span><br>`stringArray` = <code>[]</code> | List of column names |
+| <span id="slot-columnnames">**columnNames**</span><br>[`stringArray`](/docs/config_guides/slot_types#stringarray) = <code>[]</code> | List of column names |

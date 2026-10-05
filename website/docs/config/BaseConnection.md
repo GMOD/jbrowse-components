@@ -32,4 +32,4 @@ Every BaseConnection has a unique `connectionId`, a required top-level field tha
 | Slot | Description |
 | --- | --- |
 | <span id="slot-name">**name**</span><br>[`string`](/docs/config_guides/slot_types#string) = <code>'nameOfConnection'</code> | a unique name for this connection |
-| <span id="slot-assemblynames">**assemblyNames**</span><br>`stringArray` = <code>[]</code> | optional list of names of assemblies in this connection |
+| <span id="slot-assemblynames">**assemblyNames**</span><br>[`stringArray`](/docs/config_guides/slot_types#stringarray) = <code>[]</code> | optional list of names of assemblies in this connection |

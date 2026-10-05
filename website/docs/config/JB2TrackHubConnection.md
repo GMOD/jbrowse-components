@@ -38,6 +38,6 @@ These slots are top-level fields of the connection's entry in `connections`. Slo
 | Slot | Description |
 | --- | --- |
 | <span id="slot-configjsonlocation">**configJsonLocation**</span><br>[`fileLocation`](/docs/config_guides/slot_types#filelocation) = <span class="cell-more"><button type="button" class="cell-more-trigger"><code>{ uri: 'https://mysite.com/path/to/config.json', locationType:…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>{&#10;&#160;&#160;&#160;&#160;uri: 'https://mysite.com/path/to/config.json',&#10;&#160;&#160;&#160;&#160;locationType: 'UriLocation',&#10;&#160;&#160;}</code></pre></dialog></span> | location of the jb2 config file (usually called config.json) |
-| <span id="slot-assemblynames">**assemblyNames**</span><br>`stringArray` = <code>[]</code> | optional list of genomes to import from this config.json, if empty all genomes will be imported |
+| <span id="slot-assemblynames">**assemblyNames**</span><br>[`stringArray`](/docs/config_guides/slot_types#stringarray) = <code>[]</code> | optional list of genomes to import from this config.json, if empty all genomes will be imported |
 | <span class="slot-group">Inherited from [BaseConnection](../baseconnection)</span> | <span class="slot-group-count">1 slot</span> |
 | <span id="slot-name">**name**</span><br>[`string`](/docs/config_guides/slot_types#string) = <code>'nameOfConnection'</code> | a unique name for this connection |

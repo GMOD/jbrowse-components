@@ -45,9 +45,9 @@ These slots go on a display entry: `"displays": [{ "type": "MafColor", ... }]`, 
 | Slot | Description |
 | --- | --- |
 | <span id="slot-field">**field**</span><br>[`stringEnum`](/docs/config_guides/slot_types#stringenum) (mismatch, base, identity, chromosome, codon) = <code>'mismatch'</code> | what colours a cell: mismatch, base, identity, chromosome or codon |
-| <span id="slot-domain">**domain**</span><br>`stringArray` = <code>[]</code> | the values the key lists, in order: under chromosome each rank from 0, the main source chromosome; under codon nonsyn, syn and stop |
+| <span id="slot-domain">**domain**</span><br>[`stringArray`](/docs/config_guides/slot_types#stringarray) = <code>[]</code> | the values the key lists, in order: under chromosome each rank from 0, the main source chromosome; under codon nonsyn, syn and stop |
 | <span id="slot-range">**range**</span><br>[`colorArray`](/docs/config_guides/slot_types#colorarray) = <code>[]</code> | CSS colours: under chromosome one per rank from the main source chromosome, the last painting every rank past it; under identity the ramp's stops, winning over scheme; the bases and the codons paint the theme's colours |
-| <span id="slot-labels">**labels**</span><br>`stringArray` = <code>[]</code> | what the key names each domain value, one each in order; one past the list keeps its own name |
+| <span id="slot-labels">**labels**</span><br>[`stringArray`](/docs/config_guides/slot_types#stringarray) = <code>[]</code> | what the key names each domain value, one each in order; one past the list keeps its own name |
 | <span id="slot-title">**title**</span><br>[`maybeString`](/docs/config_guides/slot_types#the-maybe-types) | key title; unset is the field's own heading, "" draws none |
 | <span id="slot-scheme">**scheme**</span><br>[`maybeStringEnum`](/docs/config_guides/slot_types#the-maybe-types) (viridis, magma, inferno, cividis, juicebox, fall, reds, blues, redblue, purpleorange, redgreyblue) | the named ramp identity runs along; unset is redgreyblue, and range's colours, where it lists any, win over it |
 | <span id="slot-reverse">**reverse**</span><br>[`boolean`](/docs/config_guides/slot_types#boolean) = <code>false</code> | turns the identity ramp round, so its last colour paints the low end |

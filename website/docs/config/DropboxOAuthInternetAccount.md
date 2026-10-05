@@ -38,7 +38,7 @@ These slots are top-level fields of the account's entry in `internetAccounts`. S
 | <span id="slot-authendpoint">**authEndpoint**</span><br>[`string`](/docs/config_guides/slot_types#string) = <code>'https://www.dropbox.com/oauth2/authorize'</code> | the authorization code endpoint of the internet account |
 | <span id="slot-tokenendpoint">**tokenEndpoint**</span><br>[`string`](/docs/config_guides/slot_types#string) = <code>'https://api.dropbox.com/oauth2/token'</code> | the token endpoint of the internet account |
 | <span id="slot-needspkce">**needsPKCE**</span><br>[`boolean`](/docs/config_guides/slot_types#boolean) = <code>true</code> | boolean to indicate if the endpoint needs a PKCE code |
-| <span id="slot-domains">**domains**</span><br>`stringArray` = <code>[]</code> | array of valid domains the url can contain to use this account |
+| <span id="slot-domains">**domains**</span><br>[`stringArray`](/docs/config_guides/slot_types#stringarray) = <code>[]</code> | array of valid domains the url can contain to use this account |
 | <span class="slot-group">Inherited from [OAuthInternetAccount](../oauthinternetaccount)</span> | <span class="slot-group-count">5 slots</span> |
 | <span id="slot-tokentype">**tokenType**</span><br>[`string`](/docs/config_guides/slot_types#string) = <code>'Bearer'</code> | a custom name for a token to include in the header |
 | <span id="slot-clientid">**clientId**</span><br>[`string`](/docs/config_guides/slot_types#string) = <code>''</code> | id for the OAuth application |

@@ -34,8 +34,8 @@ These slots go on a display entry: `"displays": [{ "type": "RowArrangement", ...
 <!-- prettier-ignore -->
 | Slot | Description |
 | --- | --- |
-| <span id="slot-domain">**domain**</span><br>`stringArray` = <code>[]</code> | The row order: the rows listed lead, in this order, and the rest keep the order they arrived in. A clustering run, the arrangement dialog and "Sort rows here" all write it, and a run rotates its dendrogram towards it rather than discarding it. |
-| <span id="slot-labels">**labels**</span><br>`stringMap` = <code>{}</code> | A label drawn beside a row in place of its name, by name. |
+| <span id="slot-domain">**domain**</span><br>[`stringArray`](/docs/config_guides/slot_types#stringarray) = <code>[]</code> | The row order: the rows listed lead, in this order, and the rest keep the order they arrived in. A clustering run, the arrangement dialog and "Sort rows here" all write it, and a run rotates its dendrogram towards it rather than discarding it. |
+| <span id="slot-labels">**labels**</span><br>[`stringMap`](/docs/config_guides/slot_types#stringmap) = <code>{}</code> | A label drawn beside a row in place of its name, by name. |
 | <span id="slot-tree">**tree**</span><br>[`maybeString`](/docs/config_guides/slot_types#the-maybe-types) | The dendrogram beside the rows, as newick. A clustering run writes it beside the order it produced, and a reorder that moves a row drops it. |
 | <span id="slot-treeprovenance">**treeProvenance**</span><br>[`maybeFrozen`](/docs/config_guides/slot_types#the-maybe-types) | What `tree` was computed from, the locus and the settings; unset for a tree that arrived as data. |
-| <span id="slot-kept">**kept**</span><br>`stringArray` = <code>[]</code> | The rows shown, by name: a clade picked off the tree, or the rows one key row stands for. Empty, or naming no current row, shows every row. |
+| <span id="slot-kept">**kept**</span><br>[`stringArray`](/docs/config_guides/slot_types#stringarray) = <code>[]</code> | The rows shown, by name: a clade picked off the tree, or the rows one key row stands for. Empty, or naming no current row, shows every row. |
