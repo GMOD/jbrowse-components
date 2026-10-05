@@ -3753,6 +3753,7 @@
         "AuthNeededError",
         "addOrReplaceView",
         "canReplaceView",
+        "getEditableTrackConfigById",
         "isAbstractMenuManager",
         "isAppRootModel",
         "isAuthNeededException",
