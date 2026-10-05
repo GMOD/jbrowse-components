@@ -170,7 +170,7 @@ test('the relevant-regions toggle narrows the circle to refNames with data', asy
 }, 40000)
 
 // Regression: the width binding used to hardcode 0.66, so any parent resize
-// (window, dockview) discarded a divider drag
+// (window, workspace cell) discarded a divider drag
 test('dragging the divider survives a parent resize', async () => {
   const view = await loadedSvInspector()
   view.setWidth(1000)

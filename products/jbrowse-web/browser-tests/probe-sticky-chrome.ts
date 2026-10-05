@@ -13,7 +13,7 @@
 //     at 96 and floated 66px down into the first track. Sampled every frame
 //     under throttling, since the window is a few hundred ms.
 //   - a pinned-track block capped against `100vh`. The scroll port is not the
-//     window — it sits under the app bar here, and is a dockview cell or the
+//     window — it sits under the app bar here, and is a workspace cell or the
 //     host's box elsewhere — so the cap that exists to stop pinned tracks
 //     burying the unpinned stack was a full app-bar too generous.
 //   - a chrome box pinned to the constant the offsets sum. `VIEW_HEADER_HEIGHT`

@@ -1,5 +1,4 @@
 declare module '@fontsource/roboto'
-declare module 'dockview-react/dist/styles/dockview.css'
 
 interface Window {
   // Debug/automation handles, the same pair jbrowse-web publishes: the console,

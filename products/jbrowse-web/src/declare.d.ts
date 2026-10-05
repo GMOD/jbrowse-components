@@ -1,5 +1,4 @@
 declare module '@fontsource/roboto'
-declare module 'dockview-react/dist/styles/dockview.css'
 
 interface Window {
   // Both are set by the HOST PAGE in an inline script, never by anything in

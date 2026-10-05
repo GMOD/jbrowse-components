@@ -2,7 +2,7 @@
 // The many-view freeze harness; findings in
 // agent-docs/reference/GPU_PORTABILITY.md.
 //
-// Loads N views x K real volvox tracks in classic and in tiled (dockview) mode
+// Loads N views x K real volvox tracks in classic and in tiled workspace mode
 // and reports where the main thread goes: long tasks, frame times, WebGL
 // context churn, and GL-API attribution. The freeze only reproduces with real
 // tracks on a GPU backend -- an earlier harness used empty views on canvas2d
@@ -284,8 +284,8 @@ function report(label: string, m: Awaited<ReturnType<typeof readMetrics>>) {
 }
 
 async function scrollPass(page: Page, pattern: string) {
-  // Scroll whichever container actually scrolls (classic container or the
-  // dockview panel).
+  // Scroll whichever container actually scrolls (classic container or a
+  // workspace cell).
   //
   // Two patterns, because they ask different questions. `sweep` traverses the
   // whole stack top to bottom: every view crosses the mount band exactly once
