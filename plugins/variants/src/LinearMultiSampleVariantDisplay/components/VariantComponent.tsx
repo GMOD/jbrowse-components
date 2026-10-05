@@ -111,12 +111,7 @@ function getHoveredFeature(
     info.genotypeCodes,
     source.sampleName,
   )
-  // No tooltip rather than a crash when the code doesn't decode — the same
-  // answer the columns layout's hit test already gives. A drawn cell implies a
-  // genotype, so this should not happen, but `makeSimpleAltString` would split
-  // undefined if it ever did: the hover reads a sample name off the row while
-  // the codes are addressed by the payload's own sample order, and a row whose
-  // name is absent from that order decodes to nothing.
+  // a row named outside the payload's sample order decodes to nothing
   if (genotype === undefined) {
     return undefined
   }

@@ -1,4 +1,6 @@
-export const LD_PLOT_EXAMPLES = [
+import type { PlotExample } from '@jbrowse/core/configuration'
+
+export const LD_PLOT_EXAMPLES: PlotExample[] = [
   {
     plot: '{ "color": { "field": "dprime" } }',
     description: "cells show D' on blues instead of R² on reds",

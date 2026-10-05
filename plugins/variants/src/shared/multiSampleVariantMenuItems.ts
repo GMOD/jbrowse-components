@@ -154,25 +154,23 @@ export function variantShowSubmenuItems(
               self.setShowVariantLane(!self.showVariantLane)
             },
           },
-        ]
-      : []),
-    // plugin-canvas's own five choices under its own names, so a
-    // reader who has set this on a variant track finds the same menu
-    // here
-    ...(self.showVariantLane
-      ? [
-          {
-            label: 'Variant lane labels',
-            helpText:
-              'Which text is drawn under each mark. The lane is one row, so a label is drawn only where it clears the previous one — they thin out as you zoom out, and a line is dropped when the lane is too short to hold the mark and the text',
-            subMenu: radioItems(
-              VARIANT_LANE_LABEL_OPTIONS,
-              self.variantLaneLabels,
-              mode => {
-                self.setVariantLaneLabels(mode)
-              },
-            ),
-          },
+          // plugin-canvas's own choices under its own names
+          ...(self.showVariantLane
+            ? [
+                {
+                  label: 'Variant lane labels',
+                  helpText:
+                    'Which text is drawn under each mark. The lane is one row, so a label is drawn only where it clears the previous one — they thin out as you zoom out, and a line is dropped when the lane is too short to hold the mark and the text',
+                  subMenu: radioItems(
+                    VARIANT_LANE_LABEL_OPTIONS,
+                    self.variantLaneLabels,
+                    mode => {
+                      self.setVariantLaneLabels(mode)
+                    },
+                  ),
+                },
+              ]
+            : []),
         ]
       : []),
   ]

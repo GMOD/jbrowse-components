@@ -382,8 +382,6 @@ export function stateModelFactory(
         types.model({
           type: types.literal(MULTI_SAMPLE_VARIANT_DISPLAY),
           configuration: ConfigurationReference(configSchema),
-          // `runClustering` / `clusterRegion` are TreeSidebarMixin's — they
-          // trigger a run whose output is that mixin's `rows`.
         }),
       )
       .volatile(() => ({
@@ -2518,10 +2516,6 @@ export function stateModelFactory(
             ...self.rowColorScales,
           ]
         },
-      }))
-      // separate block so renderSvg's `self` sees perRegionCellMap/renderBlocks
-      // and insertionGlyphRegions
-      .views(self => ({
         async renderSvg(opts?: ExportSvgDisplayOptions) {
           if (self.atGenomicPositions) {
             const { renderSvg } = await import('./renderSvg.tsx')

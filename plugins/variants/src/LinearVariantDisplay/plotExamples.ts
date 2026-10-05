@@ -1,6 +1,8 @@
+import type { PlotExample } from '@jbrowse/core/configuration'
+
 // The VCF vocabulary for "Edit plot...": a field is a record field, a path
 // into INFO, or one of the `impact` and `svType` presets.
-export const VARIANT_PLOT_EXAMPLES = [
+export const VARIANT_PLOT_EXAMPLES: PlotExample[] = [
   {
     plot: '{ "color": { "field": "type" } }',
     description: 'one color per variant class: SNV, deletion, insertion',
