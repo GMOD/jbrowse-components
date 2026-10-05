@@ -1534,7 +1534,7 @@ Options:
   --drawCurves          Draw synteny ribbons as bezier curves instead of trapezoids [default: false]
   --minAlignmentLength  Hide alignments shorter than N bp (de-spaghetti a busy plot)
   --colorBy             Color synteny ribbons by: strand, query, target, reference, track, identity, mapq, or dnds. "query" gives each query chromosome its own color; "reference" needs a stack of three or more genomes and "track" more than one alignment file
-  --opacity               Ribbon opacity 0-1 (lower reveals density)
+  --opacity             Ribbon opacity 0-1 (lower reveals density)
   --levelHeights        Comma-separated pixel height per level, e.g. 300,300 (one value applies to all)
   --cigarMode           CIGAR indels in synteny ribbons: 'full' (colored), 'matches' (see-through), or 'off' (one solid block per alignment, so overlapping blocks run together) [default: full]
 
