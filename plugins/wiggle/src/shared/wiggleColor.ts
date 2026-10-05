@@ -45,9 +45,19 @@ export function wiggleColorEncoding(color: ColorSetting) {
   return colorEncodingOf(color, WIGGLE_FIELD_PRESETS)
 }
 
+/**
+ * The `color` object as it paints: naming neither `value` nor `field`, it is
+ * the pos/neg pair, `score` through a threshold at its cuts or the `origin`.
+ */
+export function paintedWiggleColor<C extends ColorSetting>(color: C): C {
+  return color.value !== undefined || color.field
+    ? color
+    : { ...color, field: 'score', scale: 'threshold' }
+}
+
 /** What the `color` object's slots say together that it cannot paint as written. */
 export function wiggleColorNotices(color: ColorSetting) {
-  return colorNotices(color, WIGGLE_FIELD_PRESETS)
+  return colorNotices(paintedWiggleColor(color), WIGGLE_FIELD_PRESETS)
 }
 
 /**
