@@ -78,8 +78,9 @@ export abstract class BamAdapterBase<
     onProgress?: (n: number, t?: number) => void,
     signal?: AbortSignal,
   ) {
-    // BamFile.getHeaderPre parses the .bai/.csi before reading the header
-    // block, so this one await covers the whole "Downloading index" phase
+    // BamFile.getHeaderPre reads the header block beside the .bai/.csi parse
+    // and awaits both, so this one await covers the whole "Downloading index"
+    // phase
     const { bam } = this.configure()
     return bam.getHeader({ onProgress, signal })
   }
