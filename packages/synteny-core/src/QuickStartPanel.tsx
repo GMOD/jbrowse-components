@@ -15,7 +15,7 @@ import {
 } from '@mui/material'
 import { observer } from 'mobx-react'
 
-import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
+import type { AnyTrackConfig } from '@jbrowse/core/configuration'
 import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
 
 const useStyles = makeStyles()(theme => ({
@@ -63,7 +63,7 @@ const QuickStartPanel = observer(function QuickStartPanel({
   // only read for getSession, so node-ness is the whole requirement.
   // IStateTreeNode rather than IAnyStateTreeNode, which resolves to `any`
   model: IStateTreeNode
-  tracks: AnyConfigurationModel[]
+  tracks: AnyTrackConfig[]
   trackId: string
   onChange: (trackId: string) => void
   onLaunch: () => void

@@ -491,11 +491,29 @@ export type AnyConfigurationSnapshot = SnapshotOut<AnyConfigurationModel>
 
 /**
  * A value readable as configuration: either a live configuration model or a
- * plain snapshot of one. `session.tracks` holds plain base or merged configs
- * that hydrate to MST only on first reference access, `getTrackById` also
- * answers live assembly-sequence and connection nodes, and `readConfObject`
- * reads both — so this is the honest type at those boundaries. Reserve
- * `AnyConfigurationModel` for values that must be live (actions, identity,
- * reference resolution).
+ * plain snapshot of one, such as a config a caller hands to an add action.
+ * Reserve `AnyConfigurationModel` for values that must be live (actions,
+ * identity, reference resolution).
  */
 export type AnyConfiguration = AnyConfigurationModel | AnyConfigurationSnapshot
+
+/**
+ * A track config as `jbrowse.tracks` and `session.tracks` hold it: a frozen
+ * plain object, which hydrates to a config node only when a track reads its
+ * `configuration`. It holds what was written, so a slot at its default is
+ * absent. `readConfObject` refuses one for that reason; read `trackId` and
+ * `type` off it directly, and a slot through a helper that supplies the
+ * default, such as `getConfAssemblyNamesOrNone`.
+ */
+export interface TrackConfigEntry {
+  trackId: string
+  type: string
+  [key: string]: unknown
+}
+
+/**
+ * What `getTrackById` answers: a {@link TrackConfigEntry}, or a live node for
+ * an assembly's sequence track or a track a connection holds. A raw member
+ * read works on both, and finds a slot at its default only on the node.
+ */
+export type AnyTrackConfig = TrackConfigEntry | AnyConfigurationModel

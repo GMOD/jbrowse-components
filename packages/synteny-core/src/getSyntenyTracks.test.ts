@@ -1,18 +1,13 @@
 import { getConnectedAssemblies, getSyntenyTracks } from './getSyntenyTracks.ts'
 import { assemblyManager, loadingAssemblyManager, track } from './testUtils.ts'
 
-import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
-
-jest.mock('@jbrowse/core/configuration', () => ({
-  readConfObject: (t: { configuration: { assemblyNames: string[] } }) =>
-    t.configuration.assemblyNames,
-}))
+import type { TrackConfigEntry } from '@jbrowse/core/configuration'
 
 const cross = track('cross', 'SyntenyTrack', ['a', 'b'])
 const selfA = track('selfA', 'SyntenyTrack', ['a', 'a'])
 const feature = track('feature', 'FeatureTrack', ['a', 'b'])
 
-const matching = (tracks: AnyConfigurationModel[], assemblies: string[]) =>
+const matching = (tracks: TrackConfigEntry[], assemblies: string[]) =>
   getSyntenyTracks(tracks, assemblies, assemblyManager)
 
 test('matches a pairwise synteny track for a distinct pair', () => {
@@ -47,7 +42,7 @@ test('a self-alignment written through an alias is still one', () => {
 })
 
 describe('getConnectedAssemblies', () => {
-  const connected = (tracks: AnyConfigurationModel[], assembly: string) =>
+  const connected = (tracks: TrackConfigEntry[], assembly: string) =>
     getConnectedAssemblies(tracks, assembly, assemblyManager)
 
   test('the other endpoint of every dataset naming the assembly', () => {

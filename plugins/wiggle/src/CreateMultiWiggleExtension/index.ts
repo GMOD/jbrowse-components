@@ -1,12 +1,15 @@
 import { lazy } from 'react'
 
-import { readConfObject } from '@jbrowse/core/configuration'
 import { addMultiTrackMenuItems } from '@jbrowse/core/ui/multiTrackMenuItems'
 import {
   getDialogHost,
   getSession,
   isSessionWithAddSessionTrack,
 } from '@jbrowse/core/util'
+import {
+  getConfAssemblyNamesOrNone,
+  toTrackConfigEntry,
+} from '@jbrowse/core/util/tracks'
 
 import {
   addMultiRowTrack,
@@ -15,14 +18,14 @@ import {
 
 import type { StackKind } from '../MultiWiggleAddTrackWorkflow/util.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
-import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
+import type { AnyTrackConfig } from '@jbrowse/core/configuration'
 import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
 
 const ConfirmDialog = lazy(() => import('./ConfirmDialog.tsx'))
 
 interface MakeTrackArg {
   name: string
-  tracks: AnyConfigurationModel[]
+  tracks: AnyTrackConfig[]
   kind: StackKind
 }
 
@@ -31,7 +34,7 @@ interface MakeTrackArg {
 // widget a dependency of this one, and it already depends on this one.
 interface TrackSelectorSelf extends IStateTreeNode {
   view?: { launchTrack: (trackId: string) => Promise<unknown> }
-  selection: AnyConfigurationModel[]
+  selection: AnyTrackConfig[]
 }
 
 function makeTrack({
@@ -49,16 +52,16 @@ function makeTrack({
       view: model.view,
       name,
       kind,
-      // #region readConfObject
-      // `tracks` are the selected track *configs*, not track models, so these
-      // are readConfObject reads rather than getConf ones
+      // #region trackConfigEntry
+      // `tracks` are the selection's track configs, mostly frozen entries
+      // that omit a slot at its default, so each read supplies the default
       assemblyNames: [
-        ...new Set(tracks.flatMap(c => readConfObject(c, 'assemblyNames'))),
+        ...new Set(tracks.flatMap(c => getConfAssemblyNamesOrNone(c))),
       ],
       adapter: {
-        subadapters: tracks.map(c => ({
-          ...readConfObject(c, 'adapter'),
-          source: readConfObject(c, 'name'),
+        subadapters: tracks.map(toTrackConfigEntry).map(c => ({
+          ...(c.adapter as Record<string, unknown>),
+          source: (c.name as string | undefined) ?? '',
         })),
       },
       // #endregion

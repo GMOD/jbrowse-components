@@ -1,6 +1,5 @@
 import { useState } from 'react'
 
-import { readConfObject } from '@jbrowse/core/configuration'
 import { allSessionTracks } from '@jbrowse/core/util/tracks'
 import {
   EmbedProvider,
@@ -25,13 +24,13 @@ const variantTrack = {
 
 function listTracks(session: Session) {
   return allSessionTracks(session).map(conf => {
-    const trackId: string = readConfObject(conf, 'trackId')
-    const [category = 'Uncategorized'] = (readConfObject(conf, 'category') ??
-      []) as string[]
+    const trackId: string = conf.trackId
+    const [category = 'Uncategorized'] =
+      (conf.category as string[] | undefined) ?? []
     return {
       trackId,
       category,
-      name: (readConfObject(conf, 'name') as string) || trackId,
+      name: (conf.name as string | undefined) || trackId,
     }
   })
 }

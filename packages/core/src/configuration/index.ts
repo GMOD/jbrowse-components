@@ -21,6 +21,7 @@ export type {
   AnyConfigurationModel,
   AnyConfigurationSchemaType,
   AnyConfigurationSnapshot,
+  AnyTrackConfig,
   ConfigModelForFields,
   ConfigNodeActions,
   ConfigNodeBrand,
@@ -34,6 +35,7 @@ export type {
   HostChecksSlotNames,
   IdentifierSlotDef,
   PluggableConfigNode,
+  TrackConfigEntry,
   TypeSlotDef,
 } from './types.ts'
 

@@ -1,4 +1,6 @@
+import { hydrateTrackConfig } from '@jbrowse/core/configuration'
 import { isSameAssemblyName } from '@jbrowse/core/util/tracks'
+import { isStateTreeNode } from '@jbrowse/mobx-state-tree'
 import { allSessionTracks } from '@jbrowse/synteny-core'
 
 import { makeMateDiscovery } from '../../LaunchSyntenyView/discoverMates.ts'
@@ -8,6 +10,7 @@ import {
   widestRegion,
 } from '../../LaunchSyntenyView/regionLaunchMenuItems.ts'
 
+import type PluginManager from '@jbrowse/core/PluginManager'
 import type {
   AssemblyHost,
   Region,
@@ -33,6 +36,7 @@ export function zoomedInWindow(row: LinearGenomeViewModel) {
  * aligns there.
  */
 export async function matchingRowLoc({
+  pluginManager,
   session,
   trackId,
   region,
@@ -40,6 +44,7 @@ export async function matchingRowLoc({
   widthPx,
   signal,
 }: {
+  pluginManager: PluginManager
   session: AssemblyHost & RpcHost & TrackCatalog
   trackId: string
   region: Region
@@ -47,7 +52,12 @@ export async function matchingRowLoc({
   widthPx: number
   signal?: AbortSignal
 }) {
-  const track = allSessionTracks(session).find(t => t.trackId === trackId)
+  const entry = allSessionTracks(session).find(t => t.trackId === trackId)
+  // a node, because discovery reads the adapter's tier threshold, which a
+  // frozen entry omits at its default
+  const track = isStateTreeNode(entry)
+    ? entry
+    : entry && hydrateTrackConfig(pluginManager, entry)
   if (!track) {
     return undefined
   }

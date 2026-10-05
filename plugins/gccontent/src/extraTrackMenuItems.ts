@@ -1,10 +1,12 @@
-import { readConfObject } from '@jbrowse/core/configuration'
 import { addExtraTrackMenuItems } from '@jbrowse/core/ui/buildExtraTrackMenuItems'
 import {
   addAndShowTrack,
   isSessionWithAddSessionTrack,
 } from '@jbrowse/core/util'
-import { getConfAssemblyNames } from '@jbrowse/core/util/tracks'
+import {
+  getConfAssemblyNames,
+  toTrackConfigEntry,
+} from '@jbrowse/core/util/tracks'
 
 import { makeGCContentTrackConf } from './makeGCContentTrackConf.ts'
 
@@ -18,14 +20,14 @@ export default function GCContentExtraTrackMenuItemsF(
   pluginManager: PluginManager,
 ) {
   addExtraTrackMenuItems(pluginManager, ({ session, config, view }) =>
-    readConfObject(config, 'type') === 'ReferenceSequenceTrack' &&
+    config.type === 'ReferenceSequenceTrack' &&
     isSessionWithAddSessionTrack(session)
       ? {
           label: 'Add GC content track',
           onClick: () => {
             const conf = makeGCContentTrackConf({
               assemblyNames: getConfAssemblyNames(config),
-              sequenceAdapter: readConfObject(config, 'adapter'),
+              sequenceAdapter: toTrackConfigEntry(config).adapter,
               gcMode: 'content',
             })
             addAndShowTrack(session, conf, view)

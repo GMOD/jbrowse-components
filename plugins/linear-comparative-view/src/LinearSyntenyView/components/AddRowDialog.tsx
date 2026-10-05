@@ -1,6 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
 
-import { readConfObject } from '@jbrowse/core/configuration'
 import { AssemblySelector, ErrorBanner, SubmitDialog } from '@jbrowse/core/ui'
 import {
   getEnv,
@@ -25,7 +24,6 @@ import { matchingRowLoc, zoomedInWindow } from '../util/matchingRowLoc.ts'
 import { getAddRowOptions } from '../util/syntenyTracks.ts'
 
 import type { LinearSyntenyViewModel } from '../model.ts'
-import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { ImportFormSyntenyTrack } from '@jbrowse/synteny-core'
 
 type UserOpened = Extract<ImportFormSyntenyTrack, { type: 'userOpened' }>
@@ -47,7 +45,7 @@ function rowAssembly(
 // of a level, named so the copy below is checked against something smaller than
 // the whole level model.
 interface LevelTracks {
-  tracks: { configuration: AnyConfigurationModel }[]
+  tracks: { configuration: { trackId: string } }[]
 }
 
 const AddRowDialog = observer(function AddRowDialog({
@@ -69,9 +67,7 @@ const AddRowDialog = observer(function AddRowDialog({
     terminalAssembly,
     levelAbove: bandAbove && {
       assembly: rowAssemblies.at(-2) ?? '',
-      trackIds: bandAbove.tracks.map(
-        t => readConfObject(t.configuration, 'trackId') as string,
-      ),
+      trackIds: bandAbove.tracks.map(t => t.configuration.trackId),
     },
   })
 
@@ -124,6 +120,7 @@ const AddRowDialog = observer(function AddRowDialog({
     try {
       const loc = region
         ? await matchingRowLoc({
+            pluginManager,
             session,
             trackId: syntenyTrackId,
             region,

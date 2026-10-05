@@ -1,5 +1,5 @@
 import type PluginManager from '../PluginManager.ts'
-import type { AnyConfigurationModel } from '../configuration/index.ts'
+import type { AnyTrackConfig } from '../configuration/index.ts'
 import type {
   AbstractSessionModel,
   TrackActionView,
@@ -8,7 +8,7 @@ import type { MenuItem } from './MenuTypes.ts'
 
 export interface ExtraTrackMenuItemsProps {
   session: AbstractSessionModel
-  config: AnyConfigurationModel
+  config: AnyTrackConfig
   view?: TrackActionView
 }
 

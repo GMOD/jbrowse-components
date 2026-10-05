@@ -1,4 +1,4 @@
-import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
+import type { AnyTrackConfig } from '@jbrowse/core/configuration'
 
 // a resolved track plus where the tree put it
 export interface TreeTrackNode extends TrackNodeSource {
@@ -60,7 +60,7 @@ export interface TrackGroup {
 // a track config plus every slot the tree reads from it, resolved once in
 // model.allTracks so a filterText keystroke does no config reads
 export interface TrackNodeSource {
-  conf: AnyConfigurationModel
+  conf: AnyTrackConfig
   name: string
   sortName: string
   description: string

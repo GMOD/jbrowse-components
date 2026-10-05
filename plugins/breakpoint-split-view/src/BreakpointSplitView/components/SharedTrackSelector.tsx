@@ -3,7 +3,7 @@ import { getTrackName } from '@jbrowse/core/util/tracks'
 import { MenuItem, TextField } from '@mui/material'
 import { observer } from 'mobx-react'
 
-import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
+import type { AnyTrackConfig } from '@jbrowse/core/configuration'
 import type { TrackCatalog } from '@jbrowse/core/util'
 
 const SharedTrackSelector = observer(function SharedTrackSelector({
@@ -13,7 +13,7 @@ const SharedTrackSelector = observer(function SharedTrackSelector({
   onChange,
 }: {
   session: TrackCatalog
-  tracks: AnyConfigurationModel[]
+  tracks: AnyTrackConfig[]
   value: string
   onChange: (trackId: string) => void
 }) {

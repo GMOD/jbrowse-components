@@ -1,12 +1,12 @@
 import { lazy } from 'react'
 
-import { readConfObject } from '@jbrowse/core/configuration'
+import { getConfAssemblyNamesOrNone } from '@jbrowse/core/util/tracks'
 
 import { getMate } from '../syntenyMate.ts'
 import { canLaunchSyntenyForMate } from './canLaunchSyntenyForMate.ts'
 
 import type { RegionOfInterest } from './resolvePanel.ts'
-import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
+import type { AnyTrackConfig } from '@jbrowse/core/configuration'
 import type {
   AbstractViewContainer,
   AbstractViewModel,
@@ -54,12 +54,12 @@ export function pairwiseSyntenyLaunch({
   anchorAssembly: string | undefined
   anchorTracks?: TrackInit[]
   mateTracks?: Record<string, TrackInit[]>
-  track: AnyConfigurationModel
+  track: AnyTrackConfig
   region?: RegionOfInterest
   // the launching view, which the dialog offers to put the result in place of
   sourceView?: AbstractViewModel
 }): (() => void) | undefined {
-  const trackAssemblyNames = readConfObject(track, 'assemblyNames') as string[]
+  const trackAssemblyNames = getConfAssemblyNamesOrNone(track)
   if (
     anchorAssembly === undefined ||
     !canLaunchSyntenyForMate(trackAssemblyNames, getMate(feature)?.assemblyName)
@@ -71,7 +71,7 @@ export function pairwiseSyntenyLaunch({
       LaunchSyntenyViewDialog,
       {
         region,
-        trackId: readConfObject(track, 'trackId') as string,
+        trackId: track.trackId as string,
         handleClose,
         session: host,
         anchorAssembly,

@@ -1,4 +1,3 @@
-import { readConfObject } from '@jbrowse/core/configuration'
 import { coarseStripHTML } from '@jbrowse/core/util'
 import { getTrackName } from '@jbrowse/core/util/tracks'
 import { allSessionTracks, connectedEndpoints } from '@jbrowse/synteny-core'
@@ -53,7 +52,7 @@ export function getAddRowOptions({
   // is dropped rather than offered: every option has to be one `appendRow` can
   // actually open. connectedEndpoints says why.
   const all = datasets.flatMap(({ track, newAssemblies }) => {
-    const trackId = readConfObject(track, 'trackId') as string
+    const { trackId } = track
     const name = coarseStripHTML(getTrackName(track, session))
     return newAssemblies.map(newAssembly => ({
       id: JSON.stringify([trackId, newAssembly]),

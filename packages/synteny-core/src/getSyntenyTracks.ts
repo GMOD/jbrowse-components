@@ -1,9 +1,11 @@
-import { readConfObject } from '@jbrowse/core/configuration'
-import { canonicalAssemblyNames } from '@jbrowse/core/util/tracks'
+import {
+  canonicalAssemblyNames,
+  getConfAssemblyNamesOrNone,
+} from '@jbrowse/core/util/tracks'
 import { getEnv, isStateTreeNode } from '@jbrowse/mobx-state-tree'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
-import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
+import type { AnyTrackConfig } from '@jbrowse/core/configuration'
 import type {
   AssemblyNameResolver,
   SessionAssemblies,
@@ -36,7 +38,7 @@ export function sameAssemblySet(a: string[], b: string[]) {
 
 const SYNTENY_ADAPTER_CATEGORY = 'Synteny adapters'
 
-function readsSyntenyAdapter(track: AnyConfigurationModel) {
+function readsSyntenyAdapter(track: AnyTrackConfig) {
   const adapterType: unknown = track.adapter?.type
   if (typeof adapterType !== 'string' || !isStateTreeNode(track)) {
     return false
@@ -54,7 +56,7 @@ function readsSyntenyAdapter(track: AnyConfigurationModel) {
  * track over a gbz-base database aligns haplotypes as well as a SyntenyTrack
  * does. No config read, so it can gate the `readConfObject` in every scan below.
  */
-export function isSyntenyTrack(track: AnyConfigurationModel) {
+export function isSyntenyTrack(track: AnyTrackConfig) {
   return track.type.includes('Synteny') || readsSyntenyAdapter(track)
 }
 
@@ -72,8 +74,8 @@ export function isSyntenyTrack(track: AnyConfigurationModel) {
  * alias, and comparing the two raw leaves a perfectly good synteny track
  * invisible to the import form that exists to find it.
  */
-export function getSyntenyTracks(
-  tracks: AnyConfigurationModel[],
+export function getSyntenyTracks<T extends AnyTrackConfig>(
+  tracks: T[],
   assemblies: string[],
   assemblyManager: AssemblyNameResolver,
 ) {
@@ -86,7 +88,7 @@ export function getSyntenyTracks(
     }
     const available = countByName(
       canonicalAssemblyNames(
-        readConfObject(track, 'assemblyNames') as string[],
+        getConfAssemblyNamesOrNone(track),
         assemblyManager,
       ),
     )
@@ -119,7 +121,7 @@ export function getSyntenyTracks(
  * endpoint the screen just removed — which must not be offered at all.
  */
 export function connectedEndpoints(
-  tracks: AnyConfigurationModel[],
+  tracks: AnyTrackConfig[],
   assembly: string,
   assemblyManager: SessionAssemblies,
 ) {
@@ -138,7 +140,7 @@ export function connectedEndpoints(
       ? []
       : getSyntenyTracks(tracks, [assembly], assemblyManager).map(track => {
           const others = canonicalAssemblyNames(
-            readConfObject(track, 'assemblyNames') as string[],
+            getConfAssemblyNamesOrNone(track),
             assemblyManager,
           ).filter(name => name !== canonicalAssembly)
           return {
@@ -158,7 +160,7 @@ export function connectedEndpoints(
  * flagged as unconfigured.
  */
 export function getConnectedAssemblies(
-  tracks: AnyConfigurationModel[],
+  tracks: AnyTrackConfig[],
   assembly: string,
   assemblyManager: SessionAssemblies,
 ) {
@@ -181,7 +183,7 @@ export function getConnectedAssemblies(
  */
 export function pickSyntenyTrackId(
   preferredTrackId: string,
-  syntenyTracks: AnyConfigurationModel[],
+  syntenyTracks: AnyTrackConfig[],
 ) {
   return syntenyTracks.some(track => track.trackId === preferredTrackId)
     ? preferredTrackId

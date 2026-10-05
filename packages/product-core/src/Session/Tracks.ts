@@ -11,7 +11,8 @@ import { assertTrackConfOutlivesItsAssemblies } from './temporaryAssemblyTracks.
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type {
   AnyConfiguration,
-  AnyConfigurationModel,
+  AnyTrackConfig,
+  TrackConfigEntry,
 } from '@jbrowse/core/configuration'
 import type { ConnectionInstance } from '@jbrowse/core/util'
 import type { IAnyStateTreeNode, Instance } from '@jbrowse/mobx-state-tree'
@@ -33,8 +34,8 @@ export function TracksManagerSessionMixin(pluginManager: PluginManager) {
        * Each track's base by trackId: the entry its edits diff against. Here
        * the config.json entry, which an edit writes directly.
        */
-      get trackBasesById(): Map<string, AnyConfigurationModel> {
-        const tracks: AnyConfigurationModel[] = self.jbrowse.tracks
+      get trackBasesById(): Map<string, TrackConfigEntry> {
+        const tracks: TrackConfigEntry[] = self.jbrowse.tracks
         return new Map(tracks.map(t => [t.trackId, t]))
       },
       /**
@@ -42,20 +43,20 @@ export function TracksManagerSessionMixin(pluginManager: PluginManager) {
        * A track's base as the session resolves it, its edits applied. Here the
        * base itself.
        */
-      withTrackEdits(base: AnyConfigurationModel): AnyConfigurationModel {
+      withTrackEdits(base: TrackConfigEntry): TrackConfigEntry {
         return base
       },
       /**
        * #getter
        */
-      get tracks(): AnyConfigurationModel[] {
+      get tracks(): TrackConfigEntry[] {
         return self.jbrowse.tracks
       },
     }))
     .extend(self => {
       // Assembly sequences and connection tracks by trackId, which win over a
       // track base of the same id.
-      const otherConfigsById = computed<Record<string, AnyConfigurationModel>>(
+      const otherConfigsById = computed<Record<string, AnyTrackConfig>>(
         () => {
           const temporaryAssemblies =
             'temporaryAssemblies' in self
@@ -95,9 +96,9 @@ export function TracksManagerSessionMixin(pluginManager: PluginManager) {
       // holding it would rebuild it on every edit
       let tracksById:
         | {
-            tracks: AnyConfigurationModel[]
-            others: Record<string, AnyConfigurationModel>
-            record: Record<string, AnyConfigurationModel>
+            tracks: TrackConfigEntry[]
+            others: Record<string, AnyTrackConfig>
+            record: Record<string, AnyTrackConfig>
           }
         | undefined
       // Per-id computeds backing getTrackById, so an id's readers wake only
@@ -105,7 +106,7 @@ export function TracksManagerSessionMixin(pluginManager: PluginManager) {
       // distinct ids resolved this session.
       const trackByIdComputeds = new Map<
         string,
-        IComputedValue<AnyConfigurationModel | undefined>
+        IComputedValue<AnyTrackConfig | undefined>
       >()
       return {
         views: {
@@ -117,7 +118,7 @@ export function TracksManagerSessionMixin(pluginManager: PluginManager) {
            * subscribes only to its own id, so one track's settings edit doesn't
            * re-render the others.
            */
-          getTrackById(id: string): AnyConfigurationModel | undefined {
+          getTrackById(id: string): AnyTrackConfig | undefined {
             let c = trackByIdComputeds.get(id)
             if (!c) {
               c = computed(() => {
@@ -142,7 +143,7 @@ export function TracksManagerSessionMixin(pluginManager: PluginManager) {
            *
            * @deprecated
            */
-          getTracksById(): Record<string, AnyConfigurationModel> {
+          getTracksById(): Record<string, AnyTrackConfig> {
             const { tracks } = self
             const others = otherConfigsById.get()
             if (tracksById?.tracks !== tracks || tracksById.others !== others) {
@@ -152,7 +153,7 @@ export function TracksManagerSessionMixin(pluginManager: PluginManager) {
                 record: Object.fromEntries([
                   ...tracks.map(t => [t.trackId, t]),
                   ...Object.entries(others),
-                ]) as Record<string, AnyConfigurationModel>,
+                ]),
               }
             }
             return tracksById.record
@@ -286,7 +287,7 @@ export function TracksManagerSessionMixin(pluginManager: PluginManager) {
         /**
          * #action
          */
-        deleteTrackConf(trackConf: AnyConfigurationModel) {
+        deleteTrackConf(trackConf: AnyTrackConfig) {
           const { trackId } = trackConf
           self.dereferenceTrack(trackId, self.getReferring(trackId))
           if (self.adminMode) {

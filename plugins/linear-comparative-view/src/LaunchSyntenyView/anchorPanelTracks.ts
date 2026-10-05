@@ -1,4 +1,3 @@
-import { readConfObject } from '@jbrowse/core/configuration'
 import { isSyntenyTrack } from '@jbrowse/synteny-core'
 
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
@@ -40,7 +39,7 @@ export function anchorPanelTracks(tracks: SourceViewTrack[]): TrackInit[] {
   return tracks
     .filter(track => !isSyntenyTrack(track.configuration))
     .map(track => {
-      const trackId = readConfObject(track.configuration, 'trackId') as string
+      const trackId: string = track.configuration.trackId
       const type = track.displays[0]?.type
       return type ? { trackId, type } : { trackId }
     })

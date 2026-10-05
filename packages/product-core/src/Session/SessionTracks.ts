@@ -4,7 +4,10 @@ import {
   flattenTrackConfigDelta,
   mergeTrackConfig,
 } from '@jbrowse/core/util'
-import { expandLooseTrackConfig } from '@jbrowse/core/util/tracks'
+import {
+  expandLooseTrackConfig,
+  getConfAssemblyNamesOrNone,
+} from '@jbrowse/core/util/tracks'
 import {
   applySnapshot,
   getSnapshot,
@@ -22,6 +25,8 @@ import type PluginManager from '@jbrowse/core/PluginManager'
 import type {
   AnyConfiguration,
   AnyConfigurationModel,
+  AnyTrackConfig,
+  TrackConfigEntry,
 } from '@jbrowse/core/configuration'
 import type {
   IAnyStateTreeNode,
@@ -46,16 +51,14 @@ export interface EditableTrackConfig {
   source: unknown
 }
 
-// jbrowse.tracks holds frozen plain objects in every product; single site for
-// the cast from its loose frozen type.
 function baseTracks(self: {
-  jbrowse: { tracks: unknown }
-}): PlainTrackConfig[] {
-  return self.jbrowse.tracks as PlainTrackConfig[]
+  jbrowse: { tracks: TrackConfigEntry[] }
+}): TrackConfigEntry[] {
+  return self.jbrowse.tracks
 }
 
 function sessionEntries(self: { sessionTracks: IAnyStateTreeNode }) {
-  return getSnapshot(self.sessionTracks) as PlainTrackConfig[]
+  return getSnapshot(self.sessionTracks) as TrackConfigEntry[]
 }
 
 // Not a key count: every delta keeps its trackId, and one can hold nothing but
@@ -92,11 +95,9 @@ function assembliesNotInTheCatalog(
         | undefined) ?? []),
     ]),
   )
-  const names = readConfObject(
-    trackConf as AnyConfigurationModel,
-    'assemblyNames',
-  ) as string[] | undefined
-  return names?.filter(name => !catalog.has(name)) ?? []
+  return getConfAssemblyNamesOrNone(trackConf).filter(
+    name => !catalog.has(name),
+  )
 }
 
 function withoutDelta(
@@ -131,13 +132,13 @@ export function SessionTracksManagerSessionMixin(pluginManager: PluginManager) {
   // both sides go through the same schema first; a base is memoized per
   // frozen-base identity, which is stable until a jbrowse.tracks write.
   const hydrate = hydratedTrackForm(pluginManager)
-  const canonicalBaseCache = new WeakMap<object, PlainTrackConfig>()
-  function toPlainConfig(base: PlainTrackConfig): PlainTrackConfig {
+  const canonicalBaseCache = new WeakMap<object, TrackConfigEntry>()
+  function toPlainConfig(base: TrackConfigEntry): TrackConfigEntry {
     const cached = canonicalBaseCache.get(base)
     if (cached) {
       return cached
     }
-    const hydrated = hydrate(base)
+    const hydrated = hydrate(base) as TrackConfigEntry
     canonicalBaseCache.set(base, hydrated)
     return hydrated
   }
@@ -211,23 +212,20 @@ export function SessionTracksManagerSessionMixin(pluginManager: PluginManager) {
       // added, key this cache on base content too.
       const mergeCache = new WeakMap<
         object,
-        { delta: PlainTrackConfig; merged: AnyConfigurationModel }
+        { delta: PlainTrackConfig; merged: TrackConfigEntry }
       >()
       function withDelta(
-        base: PlainTrackConfig,
+        base: TrackConfigEntry,
         delta: PlainTrackConfig | undefined,
       ) {
         if (!delta) {
-          return base as unknown as AnyConfigurationModel
+          return base
         }
         const cached = mergeCache.get(base)
         if (cached?.delta === delta) {
           return cached.merged
         }
-        const merged = mergeTrackConfig(
-          toPlainConfig(base),
-          delta,
-        ) as unknown as AnyConfigurationModel
+        const merged = mergeTrackConfig(toPlainConfig(base), delta)
         mergeCache.set(base, { delta, merged })
         return merged
       }
@@ -241,7 +239,7 @@ export function SessionTracksManagerSessionMixin(pluginManager: PluginManager) {
             ...entries,
             ...baseTracks(self).filter(t => !sessionIds.has(t.trackId)),
           ]
-          const byId = new Map<string, PlainTrackConfig>()
+          const byId = new Map<string, TrackConfigEntry>()
           const at = new Map<string, number>()
           for (let i = 0; i < list.length; i++) {
             const { trackId } = list[i]!
@@ -258,9 +256,7 @@ export function SessionTracksManagerSessionMixin(pluginManager: PluginManager) {
       const deltaFor = perIdComputed(trackId => self.trackConfigDeltas[trackId])
       const baseFor = perIdComputed(trackId => {
         const base = self.trackBasesById.get(trackId)
-        return base
-          ? toPlainConfig(base as unknown as PlainTrackConfig)
-          : undefined
+        return base ? toPlainConfig(base) : undefined
       })
       const editableBySchema = new Map<
         IAnyType,
@@ -273,11 +269,8 @@ export function SessionTracksManagerSessionMixin(pluginManager: PluginManager) {
          * config.json entry. Rebuilt when either list changes, never on an
          * edit.
          */
-        get trackBasesById(): Map<string, AnyConfigurationModel> {
-          return trackBaseIndex.get().byId as unknown as Map<
-            string,
-            AnyConfigurationModel
-          >
+        get trackBasesById(): Map<string, TrackConfigEntry> {
+          return trackBaseIndex.get().byId
         },
         /**
          * #method
@@ -285,9 +278,8 @@ export function SessionTracksManagerSessionMixin(pluginManager: PluginManager) {
          * itself by identity when it has none, which keeps the hydration cache
          * warm.
          */
-        withTrackEdits(base: AnyConfigurationModel): AnyConfigurationModel {
-          const plain = base as unknown as PlainTrackConfig
-          return withDelta(plain, deltaFor(plain.trackId))
+        withTrackEdits(base: TrackConfigEntry): TrackConfigEntry {
+          return withDelta(base, deltaFor(base.trackId))
         },
         /**
          * #getter
@@ -295,9 +287,9 @@ export function SessionTracksManagerSessionMixin(pluginManager: PluginManager) {
          * An edit copies the list of bases and lays each delta at its track's
          * position, so past that copy it costs the count of edited tracks.
          */
-        get tracks(): AnyConfigurationModel[] {
+        get tracks(): TrackConfigEntry[] {
           const { list, at } = trackBaseIndex.get()
-          const tracks = list.slice() as unknown as AnyConfigurationModel[]
+          const tracks = list.slice()
           for (const [trackId, delta] of Object.entries(
             self.trackConfigDeltas,
           )) {
@@ -315,7 +307,7 @@ export function SessionTracksManagerSessionMixin(pluginManager: PluginManager) {
          * arranged" and "reset" compare its live config against. Per-id
          * reactive, like `getTrackById`.
          */
-        baseTrackConfig(trackId: string): PlainTrackConfig | undefined {
+        baseTrackConfig(trackId: string): TrackConfigEntry | undefined {
           return baseFor(trackId)
         },
         /**
@@ -687,7 +679,7 @@ export function SessionTracksManagerSessionMixin(pluginManager: PluginManager) {
                 : []
           const bases = self.trackBasesById
           for (const id of ids) {
-            const base = bases.get(id) as unknown as PlainTrackConfig
+            const base = bases.get(id)!
             self.jbrowse.updateTrackConf(
               mergeTrackConfig(
                 toPlainConfig(base),
@@ -714,7 +706,7 @@ export function SessionTracksManagerSessionMixin(pluginManager: PluginManager) {
         /**
          * #action
          */
-        deleteTrackConf(trackConf: AnyConfigurationModel) {
+        deleteTrackConf(trackConf: AnyTrackConfig) {
           superDeleteTrackConf(trackConf)
           const { trackId } = trackConf
           // A delta only outlives its base if the base is gone, so drop it here

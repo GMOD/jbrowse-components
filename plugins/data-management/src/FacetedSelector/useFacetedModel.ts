@@ -5,7 +5,7 @@ import { destroy } from '@jbrowse/mobx-state-tree'
 import { facetedStateTreeF } from './facetedModel.ts'
 
 import type { HierarchicalTrackSelectorModel } from '../HierarchicalTrackSelectorWidget/model.ts'
-import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
+import type { AnyTrackConfig } from '@jbrowse/core/configuration'
 
 /**
  * Faceted-selector UI state for the lifetime of a dialog, destroyed on unmount.
@@ -24,7 +24,7 @@ import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
  */
 export function useFacetedModel(
   model: HierarchicalTrackSelectorModel,
-  getTracks: () => AnyConfigurationModel[],
+  getTracks: () => AnyTrackConfig[],
 ) {
   const faceted = useCreateOnce(() => {
     const ret = facetedStateTreeF().create({})

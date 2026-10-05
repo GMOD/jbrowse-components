@@ -1,4 +1,3 @@
-import { readConfObject } from '@jbrowse/core/configuration'
 import { getTrackName } from '@jbrowse/core/util/tracks'
 
 import { buildSearchText } from '../shared/searchText.ts'
@@ -8,7 +7,7 @@ import type {
   TreeCategoryNode,
   TreeTrackNode,
 } from './types.ts'
-import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
+import type { AnyTrackConfig } from '@jbrowse/core/configuration'
 import type { TrackCatalog } from '@jbrowse/core/util'
 
 // The tree id of a category: its group (the config's own tracks, or a
@@ -32,7 +31,8 @@ const sessionTracksCategory = ' Session tracks'
 // description it carries as a tooltip — and is normalized by buildSearchText,
 // which the faceted selector's rows go through too. Adapter and metadata are
 // left out here because, unlike in the faceted grid, the tree renders neither.
-// sortName is the raw name slot rather than getTrackName, so the unnamed
+// Each is a raw member read, so a frozen entry answers without hydrating, and
+// supplies the slot's default itself since a frozen entry omits it. sortName is the raw name slot rather than getTrackName, so the unnamed
 // reference sequence track still sorts to the top.
 //
 // A session track's pseudo-category is prepended here rather than where the
@@ -41,7 +41,7 @@ const sessionTracksCategory = ' Session tracks'
 // that folder, and the rule is that the filter box searches what the tree
 // shows.
 export function trackNodeSourceFor(
-  conf: AnyConfigurationModel,
+  conf: AnyTrackConfig,
   {
     session,
     isSessionTrack = false,
@@ -51,17 +51,15 @@ export function trackNodeSourceFor(
   },
 ): TrackNodeSource {
   const name = getTrackName(conf, session)
-  const ownCategories =
-    (readConfObject(conf, 'category') as string[] | undefined) ?? []
+  const ownCategories = (conf.category as string[] | undefined) ?? []
   const categories = isSessionTrack
     ? [sessionTracksCategory, ...ownCategories]
     : ownCategories
-  const description =
-    (readConfObject(conf, 'description') as string | undefined) ?? ''
+  const description = (conf.description as string | undefined) ?? ''
   return {
     conf,
     name,
-    sortName: String(readConfObject(conf, 'name') ?? ''),
+    sortName: String(conf.name ?? ''),
     description,
     categories,
     searchText: buildSearchText([name, description, ...categories]),

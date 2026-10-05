@@ -5,7 +5,11 @@ import { isSessionServices } from './services.ts'
 import type PluginManager from '../../PluginManager.ts'
 import type { ViewSnapshotInput } from '../../PluginManager.ts'
 import type TextSearchManager from '../../TextSearch/TextSearchManager.ts'
-import type { AnyConfigurationModel } from '../../configuration/index.ts'
+import type {
+  AnyConfigurationModel,
+  AnyTrackConfig,
+  TrackConfigEntry,
+} from '../../configuration/index.ts'
 import type {
   BaseInternetAccountModel,
   BaseTrackConfig,
@@ -134,10 +138,10 @@ export type AnimationMode = 'system' | 'enabled' | 'disabled'
  * in `./services.ts`, which is the file that stays cheap to name.
  */
 export interface TrackCatalog {
-  tracks: AnyConfigurationModel[]
+  tracks: TrackConfigEntry[]
   assemblies: AnyConfigurationModel[]
   connectionInstances?: { tracks: AnyConfigurationModel[] }[]
-  getTrackById: (id: string) => AnyConfigurationModel | undefined
+  getTrackById: (id: string) => AnyTrackConfig | undefined
 }
 
 /** minimum interface that all session state models must implement */
@@ -149,7 +153,7 @@ export interface AbstractSessionModel
     DialogHost,
     TrackCatalog {
   /** @deprecated prefer the per-id reactive `getTrackById(id)` */
-  getTracksById: () => Record<string, AnyConfigurationModel>
+  getTracksById: () => Record<string, AnyTrackConfig>
   jbrowse: IAnyStateTreeNode
   drawerPosition?: DrawerPosition
   // per-browser UI preference (localStorage-backed, stripped from snapshots by
@@ -210,9 +214,9 @@ export interface AbstractSessionModel
     config: BaseTrackConfig
     view?: TrackActionView
   }) => MenuItem[]
-  getTrackActions?: (arg: BaseTrackConfig, view?: TrackActionView) => MenuItem[]
+  getTrackActions?: (arg: AnyTrackConfig, view?: TrackActionView) => MenuItem[]
   getTrackListMenuItems?: (
-    arg: BaseTrackConfig,
+    arg: AnyTrackConfig,
     view?: TrackActionView,
   ) => MenuItem[]
   addAssembly?: (conf: Record<string, unknown>) => void
@@ -524,7 +528,7 @@ export function isSessionWithAddAssembly(
 
 /** abstract interface for a session that allows deleting track configs */
 export interface SessionWithDeleteTrackConf extends AbstractSessionModel {
-  deleteTrackConf(configuration: AnyConfigurationModel): void
+  deleteTrackConf(configuration: AnyTrackConfig): void
 }
 export function isSessionWithDeleteTrackConf(
   t: unknown,

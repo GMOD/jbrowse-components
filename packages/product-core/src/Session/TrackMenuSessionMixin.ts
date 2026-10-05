@@ -5,7 +5,10 @@ import { aboutTrackMenuItem, trackListMenuItems } from './TrackMenu.ts'
 import { pluginExtraTrackItems } from './pluginExtraTrackItems.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
-import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
+import type {
+  AnyConfigurationModel,
+  AnyTrackConfig,
+} from '@jbrowse/core/configuration'
 import type { MenuItem } from '@jbrowse/core/ui'
 import type { TrackActionView } from '@jbrowse/core/util/types'
 
@@ -27,7 +30,7 @@ export function TrackMenuSessionMixin(pluginManager: PluginManager) {
        * flattened menu items for use in hierarchical track selector
        */
       getTrackListMenuItems(
-        config: AnyConfigurationModel,
+        config: AnyTrackConfig,
         view?: TrackActionView,
       ): MenuItem[] {
         return [

@@ -1,4 +1,4 @@
-import { readConfObject } from '@jbrowse/core/configuration'
+import { getConfAssemblyNamesOrNone } from '@jbrowse/core/util/tracks'
 
 import { containingPanelStack } from '../LGVSyntenyDisplay/matePanelNavigation.ts'
 import { anchorPanelTracks } from './anchorPanelTracks.ts'
@@ -39,7 +39,7 @@ export function allAssembliesLaunchItems({
   region: { refName: string; start: number; end: number } | undefined
 }): MenuItem[] {
   const assemblyName = view.assemblyNames[0]
-  const declared = new Set(readConfObject(track, 'assemblyNames') as string[])
+  const declared = new Set(getConfAssemblyNamesOrNone(track))
   return !region || assemblyName === undefined || declared.size < 3
     ? []
     : syntenyRegionMenuItems({

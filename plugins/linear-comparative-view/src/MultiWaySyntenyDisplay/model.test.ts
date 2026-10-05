@@ -1,5 +1,5 @@
 import { parseCigar2 } from '@jbrowse/cigar-utils'
-import { readConfObject, setConf } from '@jbrowse/core/configuration'
+import { setConf } from '@jbrowse/core/configuration'
 import { resolveSubMenu } from '@jbrowse/core/ui/menuItems'
 import { SimpleFeature } from '@jbrowse/core/util'
 import {
@@ -1187,7 +1187,7 @@ test('a lane draws the gene track the display names for its genome', () => {
     display.laneGenesFetchSpecs.find(spec => spec.lane === 'volvox')?.key
   const trackIdOf = (lane: string) => {
     const track = display.laneGeneTracks.get(lane)
-    return track && readConfObject(track, 'trackId')
+    return track?.trackId
   }
   expect(trackIdOf('volvox_random')).toBe('volvox_random_ccds')
 

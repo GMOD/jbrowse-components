@@ -5,12 +5,7 @@ import {
 } from './syntenyTrackRows.ts'
 import { assemblyManager, loadingAssemblyManager, track } from './testUtils.ts'
 
-import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
-
-jest.mock('@jbrowse/core/configuration', () => ({
-  readConfObject: (t: { configuration: { assemblyNames: string[] } }) =>
-    t.configuration.assemblyNames,
-}))
+import type { TrackConfigEntry } from '@jbrowse/core/configuration'
 
 const cross = track('cross', 'SyntenyTrack', ['a', 'b'])
 const ava = track('ava', 'SyntenyTrack', ['a', 'b', 'c', 'd'])
@@ -18,7 +13,7 @@ const selfA = track('selfA', 'SyntenyTrack', ['a', 'a'])
 const lone = track('lone', 'SyntenyTrack', ['a'])
 const feature = track('feature', 'FeatureTrack', ['a', 'b'])
 
-const rows = (t: AnyConfigurationModel) => syntenyTrackRows(t, assemblyManager)
+const rows = (t: TrackConfigEntry) => syntenyTrackRows(t, assemblyManager)
 
 test('a pairwise track fills two rows', () => {
   expect(rows(cross)).toEqual(['a', 'b'])
@@ -46,7 +41,7 @@ test('an empty assembly name is not a row', () => {
   expect(rows(track('padded', 'SyntenyTrack', ['a', '']))).toEqual(['a'])
 })
 
-const quickStart = (tracks: AnyConfigurationModel[]) =>
+const quickStart = (tracks: TrackConfigEntry[]) =>
   quickStartSyntenyTracks(tracks, assemblyManager)
 
 test('quick start offers every launchable synteny track', () => {

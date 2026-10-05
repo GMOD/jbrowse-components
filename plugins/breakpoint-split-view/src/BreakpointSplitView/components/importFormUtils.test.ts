@@ -1,8 +1,6 @@
-import { readConfObject } from '@jbrowse/core/configuration'
-
 import { getSharedTracks, rowsToViewInits, swap } from './importFormUtils.ts'
 
-import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
+import type { TrackConfigEntry } from '@jbrowse/core/configuration'
 
 test('swap exchanges two elements without mutating the original', () => {
   const arr = ['a', 'b', 'c']
@@ -34,17 +32,16 @@ const assemblyManager = {
 }
 
 test('getSharedTracks keeps only tracks covering all selected assemblies', () => {
-  const tracks = [
-    { trackId: 'a', assemblyNames: ['hg38'] },
-    { trackId: 'b', assemblyNames: ['hg38', 'hg19'] },
-    { trackId: 'c', assemblyNames: ['mm10'] },
-    { trackId: 'noAssemblies' },
-  ] as unknown as AnyConfigurationModel[]
+  const type = 'VariantTrack'
+  const tracks: TrackConfigEntry[] = [
+    { trackId: 'a', type, assemblyNames: ['hg38'] },
+    { trackId: 'b', type, assemblyNames: ['hg38', 'hg19'] },
+    { trackId: 'c', type, assemblyNames: ['mm10'] },
+    { trackId: 'noAssemblies', type },
+  ]
 
   const ids = (assemblies: string[]) =>
-    getSharedTracks(tracks, assemblies, assemblyManager).map(t =>
-      readConfObject(t, 'trackId'),
-    )
+    getSharedTracks(tracks, assemblies, assemblyManager).map(t => t.trackId)
 
   expect(ids(['hg38'])).toEqual(['a', 'b'])
   expect(ids(['hg38', 'hg19'])).toEqual(['b'])

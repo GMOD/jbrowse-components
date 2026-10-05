@@ -104,18 +104,20 @@ function readSlot(
  * #api core/configuration
  * Given a configuration model (an instance of a ConfigurationSchema), read the
  * configuration value at the given path. Use this when you hold the
- * configuration model directly, e.g. an entry from `session.tracks`.
+ * configuration model directly, e.g. a track's `configuration`.
  *
  * Wants a **live config node**, not a snapshot of one, and passing a snapshot is
  * a type error. Slots are built with `types.stripDefault`, so a slot sitting at
  * its default is absent from a snapshot — "unset" and "at its default" are
  * indistinguishable there, and a read off one reports a default as missing.
  *
- * That is enforced in the types only, deliberately: it can't be a runtime check.
- * `generateHierarchy` reads slots straight off the **un-hydrated frozen** entries
- * of `jbrowse.tracks` on purpose, because hydrating every track to answer the
- * track selector is what `types.frozen` exists to avoid — and those reads are
- * indistinguishable at runtime from the broken spelling.
+ * An entry of `session.tracks` is such a snapshot, typed `TrackConfigEntry`, so
+ * this refuses one. Read `trackId` and `type` off it directly, and a slot
+ * through a helper that supplies the default, such as
+ * `getConfAssemblyNamesOrNone`. The refusal is in the types only: the track
+ * selector reads raw members off thousands of frozen entries on purpose,
+ * because hydrating every track to answer it is what `types.frozen` exists to
+ * avoid.
  *
  * @param model - instance of ConfigurationSchema
  * @param slotPaths - array of paths to read

@@ -30,6 +30,7 @@ import { measureText } from '@jbrowse/core/util/measureText'
 import {
   allSessionTracks,
   getConfAssemblyNamesOrNone,
+  toTrackConfigEntry,
   getTrackAssemblyNames,
   isSameAssemblyName,
   openAssemblyInLinearView,
@@ -229,7 +230,7 @@ import type {
   RibbonRef,
 } from './multiwayRenderTypes.ts'
 import type { AssemblyDescription } from '@jbrowse/core/PluginManager'
-import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
+import type { AnyTrackConfig } from '@jbrowse/core/configuration'
 import type { MenuItem, MouseState } from '@jbrowse/core/ui'
 import type { ColorScale } from '@jbrowse/core/ui/colorScale'
 import type { Feature } from '@jbrowse/core/util'
@@ -1234,14 +1235,11 @@ export function stateModelFactory(
           const key = self.laneKey(lane)
           lanesByKey.set(key, [...(lanesByKey.get(key) ?? []), lane])
         }
-        const best = new Map<
-          string,
-          { rank: number; track: AnyConfigurationModel }
-        >()
+        const best = new Map<string, { rank: number; track: AnyTrackConfig }>()
         for (const track of allSessionTracks(session)) {
           const names = getConfAssemblyNamesOrNone(track)
-          const type: unknown = readConfObject(track, ['adapter', 'type'])
-          const rank = named.has(readConfObject(track, 'trackId') as string)
+          const type = (track.adapter as { type?: unknown } | undefined)?.type
+          const rank = named.has(track.trackId)
             ? -1
             : annotationRank(typeof type === 'string' ? type : undefined)
           if (names.length === 1 && rank !== undefined) {
@@ -1255,7 +1253,7 @@ export function stateModelFactory(
             }
           }
         }
-        const out = new Map<string, AnyConfigurationModel>()
+        const out = new Map<string, AnyTrackConfig>()
         for (const [key, { track }] of best) {
           for (const lane of lanesByKey.get(key)!) {
             out.set(lane, track)
@@ -1269,7 +1267,10 @@ export function stateModelFactory(
       get laneGeneAdapters() {
         const out = new Map<string, Record<string, unknown>>()
         for (const [lane, track] of self.laneGeneTracks) {
-          out.set(lane, readConfObject(track, 'adapter'))
+          out.set(
+            lane,
+            toTrackConfigEntry(track).adapter as Record<string, unknown>,
+          )
         }
         for (const [lane, { geneAdapter }] of self.laneDescriptions) {
           if (geneAdapter && !out.has(lane)) {
@@ -1728,7 +1729,7 @@ export function stateModelFactory(
           if (adapter) {
             const track = tracks.get(assemblyName)
             const source = track
-              ? (readConfObject(track, 'trackId') as string)
+              ? track.trackId
               : `adapter:${JSON.stringify(adapter)}`
             specs.push({
               lane: assemblyName,
@@ -1840,7 +1841,7 @@ export function stateModelFactory(
       get laneLayerSources(): Map<string, LaneLayerSource>[] {
         const byId = new Map(
           allSessionTracks(getSession(self)).map(track => [
-            readConfObject(track, 'trackId') as string,
+            track.trackId as string,
             track,
           ]),
         )
@@ -1858,7 +1859,10 @@ export function stateModelFactory(
               ) {
                 out.set(lane, {
                   source: trackId,
-                  adapterConfig: readConfObject(track, 'adapter'),
+                  adapterConfig: toTrackConfigEntry(track).adapter as Record<
+                    string,
+                    unknown
+                  >,
                   template: false,
                 })
               }
@@ -2953,7 +2957,7 @@ export function stateModelFactory(
           loc,
           tracks: [
             self.parentTrack.configuration.trackId,
-            ...(genes ? [readConfObject(genes, 'trackId') as string] : []),
+            ...(genes ? [genes.trackId as string] : []),
           ],
         }).catch((e: unknown) => {
           session.notifyError(`${e}`, e)

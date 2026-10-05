@@ -10,7 +10,7 @@ import TrackSelectorTrackMenu from './TrackSelectorTrackMenu.tsx'
 import { useMenuGuardedClick } from './useMenuGuardedClick.ts'
 
 import type { HierarchicalTrackSelectorModel } from '../../model.ts'
-import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
+import type { AnyTrackConfig } from '@jbrowse/core/configuration'
 import type { MenuItem } from '@jbrowse/core/ui/Menu'
 
 const useStyles = makeStyles()({
@@ -40,7 +40,7 @@ const BadgeDropdownTracks = observer(function BadgeDropdownTracks({
   'data-testid': testId,
 }: {
   model: HierarchicalTrackSelectorModel
-  tracks: AnyConfigurationModel[]
+  tracks: AnyTrackConfig[]
   counter: number
   icon: React.ReactNode
   tooltip: string

@@ -1,8 +1,9 @@
 import BaseCard from '@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail/BaseCard'
-import { readConfObject } from '@jbrowse/core/configuration'
+import { hydrateTrackConfig } from '@jbrowse/core/configuration'
 import { ActionLink } from '@jbrowse/core/ui'
-import { SimpleFeature, getSession } from '@jbrowse/core/util'
+import { SimpleFeature, getEnv, getSession } from '@jbrowse/core/util'
 import { openMateLabel } from '@jbrowse/core/util/tracks'
+import { isStateTreeNode } from '@jbrowse/mobx-state-tree'
 import { allSessionTracks } from '@jbrowse/synteny-core'
 import { observer } from 'mobx-react'
 
@@ -15,6 +16,7 @@ import { getMate } from '../syntenyMate.ts'
 import { centerStackOnFeature } from './centerOnFeature.ts'
 
 import type { SyntenyFeatureDetailModel } from './types.ts'
+import type PluginManager from '@jbrowse/core/PluginManager'
 import type {
   AssemblyHost,
   Feature,
@@ -33,10 +35,18 @@ import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 // allSessionTracks rather than session.tracks, which holds only the session's
 // own: a synteny track arriving from a connection is the case this link used to
 // drop, hiding the launch on exactly the datasets that are loaded by reference.
-function findTrack(session: TrackCatalog, trackId: string | undefined) {
-  return allSessionTracks(session).find(
-    t => readConfObject(t, 'trackId') === trackId,
-  )
+//
+// A node, because mate discovery reads the adapter's tier threshold, which a
+// frozen entry omits at its default.
+function findTrack(
+  pluginManager: PluginManager,
+  session: TrackCatalog,
+  trackId: string | undefined,
+) {
+  const entry = allSessionTracks(session).find(t => t.trackId === trackId)
+  return isStateTreeNode(entry)
+    ? entry
+    : entry && hydrateTrackConfig(pluginManager, entry)
 }
 
 function isLinearGenomeView(view: {
@@ -121,7 +131,7 @@ const LinkToSyntenyView = observer(function LinkToSyntenyView({
   const { view, level, trackId } = model
   const session = getSession(model)
   const row = anchorRow(model)
-  const track = findTrack(session, trackId)
+  const track = findTrack(getEnv(model).pluginManager, session, trackId)
   const feature = new SimpleFeature(feat)
   const anchor = launchAnchor(model, session, feature)
   const mate = anchor

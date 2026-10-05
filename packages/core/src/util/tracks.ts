@@ -31,7 +31,7 @@ import {
 } from '@jbrowse/mobx-state-tree'
 import { observable, runInAction, untracked } from 'mobx'
 
-import { readConfObject } from '../configuration/index.ts'
+import { isConfigurationModel, readConfObject } from '../configuration/index.ts'
 import { adapterConfigCacheKey } from '../data_adapters/dataAdapterCache.ts'
 import {
   displayCandidates,
@@ -54,7 +54,12 @@ import { isViewModel } from './types/index.ts'
 import { setterOnlyMessage, unknownKeysMessage } from './unknownSnapshotKeys.ts'
 
 import type PluginManager from '../PluginManager.ts'
-import type { AnyConfigurationModel } from '../configuration/index.ts'
+import type {
+  AnyConfiguration,
+  AnyConfigurationModel,
+  AnyTrackConfig,
+  TrackConfigEntry,
+} from '../configuration/index.ts'
 import type {
   BlobLocation,
   FileHandleLocation,
@@ -178,8 +183,14 @@ export function isSameAssemblyName(
  * copy a non-admin's edits would go to, ADR-032). `hasParent` is the guard:
  * without it the walk raises MST's "Failed to find the parent" from a helper
  * whose other two failure modes are a plain `undefined`.
+ *
+ * A frozen {@link TrackConfigEntry} omits a slot at its default, so one
+ * without `assemblyNames` names the slot's default, `[]`.
  */
-function confAssemblyNames(conf: AnyConfigurationModel) {
+function confAssemblyNames(conf: AnyConfiguration) {
+  if (!isConfigurationModel(conf)) {
+    return (conf.assemblyNames as string[] | undefined) ?? []
+  }
   const trackAssemblyNames = readConfObject(conf, 'assemblyNames') as
     | string[]
     | undefined
@@ -195,7 +206,7 @@ function confAssemblyNames(conf: AnyConfigurationModel) {
     : undefined
 }
 
-export function getConfAssemblyNames(conf: AnyConfigurationModel) {
+export function getConfAssemblyNames(conf: AnyConfiguration) {
   const names = confAssemblyNames(conf)
   if (!names) {
     throw new Error('unknown assembly names')
@@ -214,8 +225,16 @@ export function getConfAssemblyNames(conf: AnyConfigurationModel) {
  * answers `[]` for a ReferenceSequenceTrack whose assembly this already knows
  * how to name.
  */
-export function getConfAssemblyNamesOrNone(conf: AnyConfigurationModel) {
+export function getConfAssemblyNamesOrNone(conf: AnyConfiguration) {
   return confAssemblyNames(conf) ?? []
+}
+
+/**
+ * A track config as a frozen entry: `conf` itself, or a live node's snapshot.
+ * Either way a slot at its default is absent, so a read supplies the default.
+ */
+export function toTrackConfigEntry(conf: AnyTrackConfig): TrackConfigEntry {
+  return isStateTreeNode(conf) ? (getSnapshot(conf) as TrackConfigEntry) : conf
 }
 
 /**
@@ -733,17 +752,13 @@ export function generateUnknownTrackConf(
 }
 
 export function getTrackName(
-  conf:
-    | AnyConfigurationModel
-    | { name?: string; type?: string; trackId?: string },
+  conf: AnyConfiguration,
   session: { assemblies: AnyConfigurationModel[] },
 ): string {
-  const isMst = isStateTreeNode(conf)
-  const trackName = isMst
+  const trackName = isConfigurationModel(conf)
     ? (readConfObject(conf, 'name') as string)
-    : (conf.name ?? '')
-  const trackType = isMst ? (readConfObject(conf, 'type') as string) : conf.type
-  if (!trackName && trackType === 'ReferenceSequenceTrack') {
+    : ((conf.name as string | undefined) ?? '')
+  if (!trackName && conf.type === 'ReferenceSequenceTrack') {
     const asm = session.assemblies.find(a => a.sequence === conf)
     return asm
       ? `Reference sequence (${
@@ -751,10 +766,7 @@ export function getTrackName(
         })`
       : 'Reference sequence'
   }
-  const trackId = isMst
-    ? (readConfObject(conf, 'trackId') as string)
-    : (conf.trackId ?? '')
-  return trackName || trackId
+  return trackName || ((conf.trackId as string | undefined) ?? '')
 }
 
 type MSTArray<T extends IAnyType> = Instance<ReturnType<typeof types.array<T>>>
@@ -990,8 +1002,8 @@ function containsAll<T>(superset: T[] = [], subset: T[] = []) {
  * and every other picker that opens a track into a view read this one answer,
  * or one of them offers a track the next hides.
  */
-export function filterTracks(
-  tracks: AnyConfigurationModel[],
+export function filterTracks<T extends AnyTrackConfig>(
+  tracks: T[],
   self: {
     // the view the tracks would open into, and the node the session and the
     // plugin manager are read off: a caller whose assembly list comes from
@@ -1012,15 +1024,12 @@ export function filterTracks(
   const viewAssemblyNames = canonical(self.assemblyNames)
   const viewDisplays = viewDisplayNames(pluginManager, view.type)
   return tracks.filter(c => {
-    const trackAssemblyNames = readConfObject(c, 'assemblyNames') as
-      | string[]
-      | undefined
     return (
       // a view that declares no assemblies (one still initializing) constrains
       // nothing; otherwise the track must cover every one of them
       (viewAssemblyNames.length === 0 ||
         containsAll(
-          trackAssemblyNames && canonical(trackAssemblyNames),
+          canonical(getConfAssemblyNamesOrNone(c)),
           viewAssemblyNames,
         )) &&
       viewCanDisplayTrack(pluginManager, viewDisplays, {
@@ -1063,7 +1072,7 @@ function refSeqTrackConf(
  * first and then {@link filterTracks} over the list handed in.
  */
 export function offeredTracks(
-  tracks: AnyConfigurationModel[],
+  tracks: AnyTrackConfig[],
   self: {
     view?: IStateTreeNode & { type: string }
     assemblyNames: string[]
@@ -1621,9 +1630,9 @@ export async function launchToggleTrackGeneric(
  * yields every session track twice.
  */
 export function allSessionTracks(session: {
-  tracks: AnyConfigurationModel[]
+  tracks: TrackConfigEntry[]
   connectionInstances?: { tracks: AnyConfigurationModel[] }[]
-}) {
+}): AnyTrackConfig[] {
   const connectionTracks = (session.connectionInstances ?? []).flatMap(
     conn => conn.tracks,
   )
@@ -1641,18 +1650,18 @@ export function allSessionTracks(session: {
  */
 export function annotationTrackIds(
   session: {
-    tracks: AnyConfigurationModel[]
+    tracks: TrackConfigEntry[]
     connectionInstances?: { tracks: AnyConfigurationModel[] }[]
     assemblyManager: AssemblyNameResolver
   },
   assemblyName: string,
-) {
+): string[] {
   return allSessionTracks(session).flatMap(track =>
-    readConfObject(track, 'type') === 'FeatureTrack' &&
-    (readConfObject(track, 'assemblyNames') as string[]).some(name =>
+    track.type === 'FeatureTrack' &&
+    getConfAssemblyNamesOrNone(track).some(name =>
       isSameAssemblyName(name, assemblyName, session.assemblyManager),
     )
-      ? [readConfObject(track, 'trackId') as string]
+      ? [track.trackId]
       : [],
   )
 }

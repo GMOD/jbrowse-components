@@ -1,5 +1,4 @@
 import { canonicalLocString } from '@jbrowse/core/TextSearch/places'
-import { readConfObject } from '@jbrowse/core/configuration'
 import { SanitizedHTML } from '@jbrowse/core/ui'
 import { getSession } from '@jbrowse/core/util'
 import {
@@ -39,7 +38,7 @@ const SearchResultsTable = observer(function SearchResultsTable({
   function getTrackName(trackId: string | undefined) {
     const conf =
       trackId !== undefined ? session.getTrackById(trackId) : undefined
-    return conf ? (readConfObject(conf, 'name') as string) : ''
+    return (conf?.name as string | undefined) ?? ''
   }
 
   // A location the assembly can't resolve is listed as-is: Go navigates

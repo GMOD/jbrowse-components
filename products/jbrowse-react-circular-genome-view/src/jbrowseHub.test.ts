@@ -1,4 +1,3 @@
-import { readConfObject } from '@jbrowse/core/configuration'
 import { fetchHub } from '@jbrowse/core/util/fetchHub'
 
 import { createViewState } from './index.ts'
@@ -36,7 +35,7 @@ test('jbrowseHub takes a list, and the circle holds each genome and its catalog 
     'volvox2',
   ])
   expect(state.session.assemblyNames).toEqual(['volvox', 'volvox2'])
-  expect(state.session.tracks.map(t => readConfObject(t, 'trackId'))).toEqual([
+  expect(state.session.tracks.map(t => t.trackId)).toEqual([
     'volvox_sv',
     'volvox2_sv',
   ])

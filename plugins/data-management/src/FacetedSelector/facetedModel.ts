@@ -1,4 +1,3 @@
-import { readConfObject } from '@jbrowse/core/configuration'
 import {
   coarseStripHTML,
   localStorageGetBoolean,
@@ -25,7 +24,7 @@ import {
 } from './facetedFilter.ts'
 import { findNonSparseKeys, getRootKeys } from './facetedUtil.ts'
 
-import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
+import type { AnyTrackConfig } from '@jbrowse/core/configuration'
 import type { TrackCatalog } from '@jbrowse/core/util'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 
@@ -109,7 +108,7 @@ export function facetedStateTreeF() {
        * while the selector is open flows through instead of leaving a stale row
        * pointing at a destroyed config.
        */
-      getTracks: (() => []) as () => AnyConfigurationModel[],
+      getTracks: (() => []) as () => AnyTrackConfig[],
       /**
        * #volatile
        */
@@ -120,7 +119,7 @@ export function facetedStateTreeF() {
        * #action
        */
       setTrackSource(
-        getTracks: () => AnyConfigurationModel[],
+        getTracks: () => AnyTrackConfig[],
         session: TrackCatalog,
         assemblyNames: string[],
       ) {
@@ -210,20 +209,13 @@ export function facetedStateTreeF() {
         return session
           ? self.getTracks().map(track => {
               const row = {
-                id: track.trackId as string,
+                id: track.trackId,
                 conf: track,
                 name: getTrackName(track, session),
-                category: readConfObject(track, 'category')?.join(', ') as
-                  | string
-                  | undefined,
+                category: (track.category as string[] | undefined)?.join(', '),
                 adapter: (track.adapter as { type?: string } | undefined)?.type,
-                description: readConfObject(track, 'description') as
-                  | string
-                  | undefined,
-                metadata: (readConfObject(track, 'metadata') ?? {}) as Record<
-                  string,
-                  unknown
-                >,
+                description: track.description as string | undefined,
+                metadata: (track.metadata ?? {}) as Record<string, unknown>,
               }
               return { ...row, searchText: rowSearchText(row) } as const
             })

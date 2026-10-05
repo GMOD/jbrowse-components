@@ -12,7 +12,10 @@ import SettingsBackupRestoreIcon from '@mui/icons-material/SettingsBackupRestore
 import { pluginExtraTrackItems } from './pluginExtraTrackItems.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
-import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
+import type {
+  AnyConfigurationModel,
+  AnyTrackConfig,
+} from '@jbrowse/core/configuration'
 import type { BaseTrackConfig } from '@jbrowse/core/pluggableElementTypes'
 import type { MenuItem } from '@jbrowse/core/ui'
 import type { DialogComponentType } from '@jbrowse/core/util'
@@ -26,7 +29,7 @@ interface TrackActionSession<C> {
     opts?: { expandedDisplayId?: string },
   ) => void
   publishTrackConf: (conf: C) => unknown
-  deleteTrackConf: (conf: AnyConfigurationModel) => void
+  deleteTrackConf: (conf: AnyTrackConfig) => void
   resetTrackConfiguration?: (trackId: string) => void
   /**
    * Declared here, though only the copy guard below reads it, so a session that
@@ -62,7 +65,7 @@ export function trackActionItems<C extends { trackId: string }>({
   makeCopy,
 }: {
   session: TrackActionSession<C>
-  config: BaseTrackConfig
+  config: AnyTrackConfig
   view?: TrackActionView
   canEdit: boolean
   isSessionOverride?: boolean
@@ -210,7 +213,7 @@ export function trackActionMenuItems(
 }
 
 interface SessionWithGetTrackActions extends SessionWithDialog {
-  getTrackActions(config: BaseTrackConfig, view?: TrackActionView): MenuItem[]
+  getTrackActions(config: AnyTrackConfig, view?: TrackActionView): MenuItem[]
 }
 
 // (TrackMenuSessionMixin — the minimal embedded-view variant — lives in its own
@@ -234,7 +237,7 @@ export function TrackMenuItemsSessionMixin(pluginManager: PluginManager) {
        * flattened menu items for use in hierarchical track selector
        */
       getTrackListMenuItems(
-        config: BaseTrackConfig,
+        config: AnyTrackConfig,
         view?: TrackActionView,
       ): MenuItem[] {
         return [

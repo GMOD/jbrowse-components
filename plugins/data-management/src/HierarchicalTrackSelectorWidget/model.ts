@@ -33,7 +33,7 @@ import type {
   TreeTrackNode,
 } from './types.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
-import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
+import type { AnyTrackConfig } from '@jbrowse/core/configuration'
 import type { TrackContainer } from '@jbrowse/core/util'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 
@@ -562,7 +562,7 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
       // Resolved and sorted here rather than in generateHierarchy, so a
       // filterText keystroke reads no configs and re-sorts nothing
       function resolve(
-        tracks: AnyConfigurationModel[],
+        tracks: AnyTrackConfig[],
         sessionTrackIds = new Set<string>(),
       ) {
         const session = getSession(self)
@@ -646,7 +646,7 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
        * the selected track configs, resolved from `selectedTrackIds` on read,
        * so a deleted track drops out and an edited one stays selected
        */
-      get selection(): AnyConfigurationModel[] {
+      get selection(): AnyTrackConfig[] {
         return self.selectedTrackIds
           .map(t => self.allTrackConfigurationMap.get(t))
           .filter(notEmpty)
@@ -656,7 +656,7 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
        * the selected trackIds that still resolve to a track
        */
       get selectionSet() {
-        return new Set(this.selection.map(t => t.trackId as string))
+        return new Set(this.selection.map(t => t.trackId))
       },
       /**
        * #method

@@ -2,7 +2,7 @@ import { buildExtraTrackMenuItems } from '@jbrowse/core/ui/buildExtraTrackMenuIt
 
 import type { SessionWithDialog } from './TrackMenu.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
-import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
+import type { AnyTrackConfig } from '@jbrowse/core/configuration'
 import type { MenuItem } from '@jbrowse/core/ui'
 import type {
   AbstractSessionModel,
@@ -17,7 +17,7 @@ import type {
 export function pluginExtraTrackItems(
   pluginManager: PluginManager,
   session: SessionWithDialog,
-  config: AnyConfigurationModel,
+  config: AnyTrackConfig,
   view?: TrackActionView,
 ): MenuItem[] {
   return buildExtraTrackMenuItems(pluginManager, {

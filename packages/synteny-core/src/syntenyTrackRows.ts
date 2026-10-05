@@ -1,9 +1,11 @@
-import { readConfObject } from '@jbrowse/core/configuration'
-import { canonicalAssemblyNames } from '@jbrowse/core/util/tracks'
+import {
+  canonicalAssemblyNames,
+  getConfAssemblyNamesOrNone,
+} from '@jbrowse/core/util/tracks'
 
 import { isSyntenyTrack } from './getSyntenyTracks.ts'
 
-import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
+import type { AnyTrackConfig } from '@jbrowse/core/configuration'
 import type {
   AssemblyNameResolver,
   SessionAssemblies,
@@ -26,11 +28,11 @@ import type {
  * launch the same thing for the same track.
  */
 export function syntenyTrackRows(
-  track: AnyConfigurationModel,
+  track: AnyTrackConfig,
   assemblyManager: AssemblyNameResolver,
 ) {
   return canonicalAssemblyNames(
-    readConfObject(track, 'assemblyNames') as string[],
+    getConfAssemblyNamesOrNone(track),
     assemblyManager,
   )
 }
@@ -84,7 +86,7 @@ export function dotplotAxesFromRows(rows: string[], swapped = false) {
  * behind is not a row and so cannot be the second one that qualifies a track.
  */
 export function quickStartSyntenyTracks(
-  tracks: AnyConfigurationModel[],
+  tracks: AnyTrackConfig[],
   assemblyManager: SessionAssemblies,
 ) {
   return tracks.filter(track => {

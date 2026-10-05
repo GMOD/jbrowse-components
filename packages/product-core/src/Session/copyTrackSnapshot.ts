@@ -1,6 +1,6 @@
 import { getSnapshot, isStateTreeNode } from '@jbrowse/mobx-state-tree'
 
-import type { BaseTrackConfig } from '@jbrowse/core/pluggableElementTypes'
+import type { AnyTrackConfig } from '@jbrowse/core/configuration'
 
 type TrackCopySnapshot = {
   trackId: string
@@ -17,7 +17,7 @@ type TrackCopySnapshot = {
  * (displayId is a types.identifier, so a collision would crash MST).
  */
 export function copyTrackSnapshot(
-  config: BaseTrackConfig,
+  config: AnyTrackConfig,
   opts: { clearCategory: boolean },
 ): TrackCopySnapshot {
   const snap = structuredClone(

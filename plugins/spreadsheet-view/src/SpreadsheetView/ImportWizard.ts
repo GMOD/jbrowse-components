@@ -1,10 +1,11 @@
-import { readConfObject } from '@jbrowse/core/configuration'
 import { fetchAndMaybeUnzip, getEnv, getSession } from '@jbrowse/core/util'
 import { openLocation } from '@jbrowse/core/util/io'
 import {
   allSessionTracks,
+  getConfAssemblyNamesOrNone,
   getFileName,
   getTrackName,
+  toTrackConfigEntry,
 } from '@jbrowse/core/util/tracks'
 import { isAlive, types } from '@jbrowse/mobx-state-tree'
 
@@ -195,7 +196,7 @@ export default function stateModelFactory() {
        * file type resolved, in label order.
        *
        * A getter rather than the body of tracksForAssembly so the sweep — a
-       * readConfObject per track over the whole config, plus a localeCompare
+       * config read per track over the whole config, plus a localeCompare
        * sort — is memoized instead of re-running on every render. TrackSelector
        * is an observer and calls this during render, and the assembly filter it
        * applies is a cheap array check on the result
@@ -207,10 +208,10 @@ export default function stateModelFactory() {
         // sessionTracks, so that listed every session track twice
         return allSessionTracks(session)
           .flatMap(track => {
-            const assemblyNames: string[] =
-              readConfObject(track, 'assemblyNames') ?? []
-            const rawAdapter = readConfObject(track, 'adapter')
-            const adapterTypeName = rawAdapter?.type
+            const entry = toTrackConfigEntry(track)
+            const assemblyNames = getConfAssemblyNamesOrNone(track)
+            const rawAdapter = (entry.adapter ?? {}) as Record<string, unknown>
+            const adapterTypeName = rawAdapter.type
             if (typeof adapterTypeName !== 'string') {
               return []
             }
@@ -228,7 +229,7 @@ export default function stateModelFactory() {
             if (!isFileLocation(loc)) {
               return []
             }
-            const category = readConfObject(track, 'category') ?? []
+            const category = (entry.category as string[] | undefined) ?? []
             const categoryStr = category.join(',')
             return {
               track,

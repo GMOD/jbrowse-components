@@ -1,7 +1,7 @@
 import { resolveSyntenyTrackActions } from './resolveRowTrackAction.ts'
 
 import type { ImportFormSyntenyTrack } from './SelectorTypes.ts'
-import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
+import type { AnyTrackConfig } from '@jbrowse/core/configuration'
 import type { AssemblyNameResolver } from '@jbrowse/core/util/tracks'
 
 /**
@@ -39,7 +39,7 @@ export function syntenyPairStatuses({
   assemblyNames,
   assemblyManager,
 }: {
-  tracks: AnyConfigurationModel[]
+  tracks: AnyTrackConfig[]
   selections: (ImportFormSyntenyTrack | undefined)[]
   assemblyNames: string[]
   assemblyManager: AssemblyNameResolver

@@ -1,6 +1,6 @@
-import { readConfObject } from '../configuration/index.ts'
+import { getConfAssemblyNamesOrNone } from './tracks.ts'
 
-import type { AnyConfigurationModel } from '../configuration/index.ts'
+import type { AnyConfiguration } from '../configuration/index.ts'
 
 interface SessionWithTemporaryAssemblies {
   temporaryAssemblies?: { name?: string }[]
@@ -27,16 +27,14 @@ interface SessionWithTemporaryAssemblies {
  */
 export function namesTemporaryAssembly(
   session: unknown,
-  trackConf: AnyConfigurationModel | Record<string, unknown>,
+  trackConf: AnyConfiguration,
 ) {
   const temporary = (session as SessionWithTemporaryAssemblies)
     .temporaryAssemblies
   if (!temporary?.length) {
     return false
   }
-  const names = readConfObject(
-    trackConf as AnyConfigurationModel,
-    'assemblyNames',
-  ) as string[] | undefined
-  return !!names?.some(name => temporary.some(a => a.name === name))
+  return getConfAssemblyNamesOrNone(trackConf).some(name =>
+    temporary.some(a => a.name === name),
+  )
 }

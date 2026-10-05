@@ -6,6 +6,7 @@ import {
   getConf,
   getConfigurationSchemaDefinition,
   getConfigurationSchemaMetadata,
+  hydrateTrackConfig,
   isSlotDefinitionEntry,
   readConfObject,
   shorthandTargets,
@@ -60,9 +61,9 @@ import type { ViewSpec } from '../SessionSpec/index.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type {
   AnyConfigurationModel,
+  AnyTrackConfig,
   ShorthandForm,
 } from '@jbrowse/core/configuration'
-import type { BaseTrackConfig } from '@jbrowse/core/pluggableElementTypes/models'
 import type {
   AbstractSessionModel,
   AbstractViewModel,
@@ -821,10 +822,10 @@ async function fitToWindow(
 // Dropping assemblyNames wherever the session has a single assembly saved
 // nothing and made the row shape vary by session: a config declares far more
 // assemblies than it opens, and volvox — every eval run's config — declares 10.
-function trackEntry(conf: BaseTrackConfig) {
+function trackEntry(conf: AnyTrackConfig) {
   return {
     trackId: conf.trackId,
-    name: readConfObject(conf, 'name'),
+    name: (conf.name as string | undefined) ?? '',
     type: conf.type,
     // getConfAssemblyNamesOrNone, not the slot: an assembly's sequence track
     // has no assemblyNames slot and answers through its parent assembly
@@ -835,7 +836,9 @@ function trackEntry(conf: BaseTrackConfig) {
 // Each assembly's own sequence track, which no track list holds: the config
 // keeps it under the assembly as `sequence`, so `jb.getFeatures` on its
 // trackId reads bases while `listTracks` never named it.
-function sequenceTracks(session: AbstractSessionModel) {
+function sequenceTracks(
+  session: AbstractSessionModel,
+): AnyConfigurationModel[] {
   return session.assemblyManager.assemblyList.map(asm => asm.sequence)
 }
 
@@ -1032,7 +1035,7 @@ function isRegionLoc(loc: unknown): loc is Exclude<JbLoc, string> {
 
 async function trackAssembly(
   session: AbstractSessionModel,
-  conf: AnyConfigurationModel,
+  conf: AnyTrackConfig,
   requested: string | undefined,
 ) {
   // getConfAssemblyNamesOrNone, not the assemblyNames slot: an assembly's own
@@ -1064,7 +1067,7 @@ async function trackAssembly(
 
 async function locToRegion(
   session: AbstractSessionModel,
-  conf: AnyConfigurationModel,
+  conf: AnyTrackConfig,
   loc: unknown,
   assemblyArg: string | undefined,
 ): Promise<JbRegion> {
@@ -1194,12 +1197,18 @@ async function visibleRegionsOf(
 // and the features come back rebuilt as SimpleFeature. What crosses the worker
 // boundary is bounded by the byte gate that runs first.
 async function fetchFeatures(
+  pluginManager: PluginManager,
   session: AbstractSessionModel,
   trackId: string,
   regions: JbRegion[],
   requestedByteLimit?: number,
 ) {
-  const conf = session.getTrackById(trackId)
+  const entry = session.getTrackById(trackId)
+  // the node a shown track reads: its adapter is in the hydrated form, which is
+  // what the shown track's session id hashes
+  const conf = isStateTreeNode(entry)
+    ? entry
+    : entry && hydrateTrackConfig(pluginManager, entry)
   if (!conf) {
     throw new Error(
       `No track with trackId "${trackId}" — jb.listTracks() shows what is available`,
@@ -1614,6 +1623,7 @@ export function createJbApi(
               getConfAssemblyNamesOrNone(conf),
             )
       return fetchFeatures(
+        pluginManager,
         session,
         fetchArgs.trackId,
         regions,
@@ -1734,13 +1744,10 @@ async function addTrack(
 
 // A track already in the catalog, shown: the same view choice and the same
 // settle the file route ends in.
-// `conf` is whatever `session.getTrackById` answered, which is a track config
-// but not necessarily a `BaseTrackConfig` — an assembly's ReferenceSequenceTrack
-// declares a subset of those slots. The four reads below are all ones it has.
 async function showCatalogTrack(
   pluginManager: PluginManager,
   session: AbstractSessionModel,
-  conf: AnyConfigurationModel,
+  conf: AnyTrackConfig,
   args: Record<string, unknown>,
 ) {
   // index, assembly and name describe the file being added, and the catalog's
@@ -1758,9 +1765,7 @@ async function showCatalogTrack(
     trackType: conf.type,
     assembly: getConfAssemblyNamesOrNone(conf)[0],
   }
-  const adapterType = readConfObject(conf, ['adapter', 'type']) as
-    | string
-    | undefined
+  const adapterType = (conf.adapter as { type?: string } | undefined)?.type
   const summary = { ...track, ...(adapterType ? { adapterType } : {}) }
   // show:false over a catalog trackId asks for nothing — there is no file to
   // add — and showing it anyway would contradict the flag

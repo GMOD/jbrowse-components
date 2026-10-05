@@ -1,8 +1,10 @@
-import { readConfObject } from '@jbrowse/core/configuration'
-import { canonicalAssemblyNames } from '@jbrowse/core/util/tracks'
+import {
+  canonicalAssemblyNames,
+  getConfAssemblyNamesOrNone,
+} from '@jbrowse/core/util/tracks'
 
 import type { BreakpointSplitViewInitView } from '../types.ts'
-import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
+import type { AnyTrackConfig } from '@jbrowse/core/configuration'
 import type { AssemblyNameResolver } from '@jbrowse/core/util/tracks'
 
 export interface ImportFormRowData {
@@ -19,14 +21,14 @@ export interface ImportFormRowData {
 // dropdown of the session's) while a track config is free to name an alias, and
 // comparing the two raw hides a track here that the track selector offers.
 export function getSharedTracks(
-  tracks: AnyConfigurationModel[],
+  tracks: AnyTrackConfig[],
   assemblies: string[],
   assemblyManager: AssemblyNameResolver,
 ) {
   const needed = canonicalAssemblyNames(assemblies, assemblyManager)
   return tracks.filter(track => {
-    const names = readConfObject(track, 'assemblyNames') as string[] | undefined
-    if (!names) {
+    const names = getConfAssemblyNamesOrNone(track)
+    if (!names.length) {
       return false
     }
     const available = new Set(canonicalAssemblyNames(names, assemblyManager))

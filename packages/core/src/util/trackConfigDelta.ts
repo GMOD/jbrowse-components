@@ -177,11 +177,11 @@ function mergeValue(base: Json, delta: Json): Json {
  * longer has is dropped, so no `null` member reaches the config a track
  * hydrates from.
  */
-export function mergeTrackConfig(
-  base: Record<string, unknown>,
+export function mergeTrackConfig<BASE extends Record<string, unknown>>(
+  base: BASE,
   delta: Record<string, unknown>,
-): Record<string, unknown> {
-  return mergeValue(base as JsonObject, delta as JsonObject) as JsonObject
+): BASE {
+  return mergeValue(base as JsonObject, delta as JsonObject) as BASE
 }
 
 /**

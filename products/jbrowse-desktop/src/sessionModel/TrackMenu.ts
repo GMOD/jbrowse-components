@@ -18,7 +18,7 @@ import {
 
 import type { DesktopRootModel } from '../rootModel/rootModel.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
-import type { BaseTrackConfig } from '@jbrowse/core/pluggableElementTypes'
+import type { AnyTrackConfig } from '@jbrowse/core/configuration'
 import type { MenuItem } from '@jbrowse/core/ui'
 import type { TrackActionView } from '@jbrowse/core/util/types'
 import type {
@@ -43,7 +43,7 @@ export function DesktopSessionTrackMenuMixin(pluginManager: PluginManager) {
        * raw track actions (Settings, Copy, Delete, Index) without submenu wrapper
        */
       getTrackActions(
-        trackConfig: BaseTrackConfig,
+        trackConfig: AnyTrackConfig,
         view?: TrackActionView,
       ): MenuItem[] {
         const session = self as SessionBase

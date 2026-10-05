@@ -930,11 +930,14 @@ describe('getFeatures', () => {
 // and had them ignored, so that form is accepted too.
 describe('getFeatures reads through the RPC', () => {
   const adapter = { type: 'BigBedAdapter', adapterId: 'genes-adapter' }
-  const conf = {
-    trackId: 'genes',
-    adapter,
-    assemblyNames: ['volvox'],
-  }
+  const conf = ConfigurationSchema(
+    'GenesTrack',
+    {
+      assemblyNames: { type: 'stringArray', defaultValue: [] },
+      adapter: { type: 'frozen', defaultValue: {} },
+    },
+    { explicitIdentifier: 'trackId' },
+  ).create({ trackId: 'genes', adapter, assemblyNames: ['volvox'] })
   const calls: unknown[][] = []
   const rpcManager = {
     call: async (...args: unknown[]) => {

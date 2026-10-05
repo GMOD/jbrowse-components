@@ -1,6 +1,5 @@
 import { useState } from 'react'
 
-import { readConfObject } from '@jbrowse/core/configuration'
 import { SanitizedHTML, SubmitDialog } from '@jbrowse/core/ui'
 import { measureGridWidth } from '@jbrowse/core/util'
 import DeleteIcon from '@mui/icons-material/Delete'
@@ -14,18 +13,22 @@ import {
 } from '../MultiWiggleAddTrackWorkflow/util.ts'
 
 import type { StackKind } from '../MultiWiggleAddTrackWorkflow/util.ts'
-import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
+import type { AnyTrackConfig } from '@jbrowse/core/configuration'
+
+function nameOf(track: AnyTrackConfig) {
+  return (track.name as string | undefined) || track.trackId
+}
 
 const ConfirmDialog = ({
   tracks: initialTracks,
   leftOut,
   onClose,
 }: {
-  tracks: AnyConfigurationModel[]
-  leftOut: AnyConfigurationModel[]
+  tracks: AnyTrackConfig[]
+  leftOut: AnyTrackConfig[]
   onClose: (result?: {
     name: string
-    tracks: AnyConfigurationModel[]
+    tracks: AnyTrackConfig[]
     kind: StackKind
   }) => void
 }) => {
@@ -49,7 +52,7 @@ const ConfirmDialog = ({
       {leftOut.length > 0 ? (
         <Alert severity="warning">
           Left out, since only quantitative and feature tracks stack:{' '}
-          {leftOut.map(t => readConfObject(t, 'name')).join(', ')}
+          {leftOut.map(t => nameOf(t)).join(', ')}
         </Alert>
       ) : null}
       {kind === 'mixed' ? (
@@ -63,10 +66,8 @@ const ConfirmDialog = ({
           {
             field: 'name',
             headerName: 'Name',
-            width: measureGridWidth(tracks.map(t => readConfObject(t, 'name'))),
-            renderCell: ({ row }) => (
-              <SanitizedHTML html={readConfObject(row, 'name')} />
-            ),
+            width: measureGridWidth(tracks.map(t => nameOf(t))),
+            renderCell: ({ row }) => <SanitizedHTML html={nameOf(row)} />,
           },
           {
             field: 'remove',

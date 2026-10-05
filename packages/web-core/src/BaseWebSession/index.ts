@@ -35,8 +35,10 @@ import type { AbstractWebRootModel } from '../WebRootModel.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type TextSearchManager from '@jbrowse/core/TextSearch/TextSearchManager'
 import type { BaseAssemblyConfigSchema } from '@jbrowse/core/assemblyManager'
-import type { AnyConfiguration } from '@jbrowse/core/configuration'
-import type { BaseTrackConfig } from '@jbrowse/core/pluggableElementTypes'
+import type {
+  AnyConfiguration,
+  AnyTrackConfig,
+} from '@jbrowse/core/configuration'
 import type { PluginDefinition } from '@jbrowse/core/pluginDefinitions'
 import type { MenuItem } from '@jbrowse/core/ui'
 import type { TrackActionView } from '@jbrowse/core/util/types'
@@ -176,7 +178,7 @@ export function BaseWebSessionModel({
        * raw track actions (Settings, Copy, Delete) without submenu wrapper
        */
       getTrackActions(
-        config: BaseTrackConfig,
+        config: AnyTrackConfig,
         view?: TrackActionView,
       ): MenuItem[] {
         return trackActionItems({

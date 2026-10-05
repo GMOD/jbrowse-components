@@ -1,3 +1,4 @@
+import { getConfAssemblyNamesOrNone } from '@jbrowse/core/util/tracks'
 import { createTestSession } from '@jbrowse/web/testUtils'
 
 import { doSubmit } from './components/doSubmit.ts'
@@ -46,7 +47,9 @@ test('adding a track for an assembly not open in the view notifies the user', ()
   doSubmit({ model: widget })
 
   // track is still added to the session...
-  expect(session.tracks.some(t => t.assemblyNames?.[0] === 'asmB')).toBe(true)
+  expect(
+    session.tracks.some(t => getConfAssemblyNamesOrNone(t)[0] === 'asmB'),
+  ).toBe(true)
   // ...but not shown in the asmA view, and the user is told why
   expect(view.tracks.length).toBe(0)
   expect(

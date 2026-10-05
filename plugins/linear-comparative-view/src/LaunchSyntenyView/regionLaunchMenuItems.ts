@@ -1,6 +1,5 @@
 import { lazy } from 'react'
 
-import { readConfObject } from '@jbrowse/core/configuration'
 import { coarseStripHTML } from '@jbrowse/core/util'
 import { getTrackName } from '@jbrowse/core/util/tracks'
 import { getSyntenyTracks } from '@jbrowse/synteny-core'
@@ -76,7 +75,7 @@ function launchableTracks(
     [assemblyName],
     session.assemblyManager,
   ).map(conf => ({
-    trackId: readConfObject(conf, 'trackId') as string,
+    trackId: conf.trackId,
     name: coarseStripHTML(getTrackName(conf, session)),
     conf,
   }))

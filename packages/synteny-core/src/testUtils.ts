@@ -1,17 +1,15 @@
-import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
+import type { TrackConfigEntry } from '@jbrowse/core/configuration'
 
 /**
- * The track-scan fixtures, shared so that a member added to what these helpers
- * take of an assembly manager is added once. Each suite still declares its own
- * `jest.mock('@jbrowse/core/configuration')` — the mock is hoisted per module
- * registry — and this factory matches the shape those mocks read.
+ * A track-scan fixture, shaped as `session.tracks` holds one: a frozen entry.
+ * Shared so that a member added to what these helpers take of an assembly
+ * manager is added once.
  */
-export const track = (trackId: string, type: string, assemblyNames: string[]) =>
-  ({
-    trackId,
-    type,
-    configuration: { assemblyNames },
-  }) as unknown as AnyConfigurationModel
+export const track = (
+  trackId: string,
+  type: string,
+  assemblyNames: string[],
+): TrackConfigEntry => ({ trackId, type, assemblyNames })
 
 /**
  * 'aliasOfA' is another name for assembly 'a'; 'ghost' is named by a track and

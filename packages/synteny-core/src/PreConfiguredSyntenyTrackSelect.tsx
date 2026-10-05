@@ -9,7 +9,7 @@ import { observer } from 'mobx-react'
 import { pickSyntenyTrackId } from './getSyntenyTracks.ts'
 
 import type { ImportFormSyntenyModel } from './SelectorTypes.ts'
-import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
+import type { AnyTrackConfig } from '@jbrowse/core/configuration'
 import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
 
 const useStyles = makeStyles()(theme => ({
@@ -41,7 +41,7 @@ const PreConfiguredSyntenyTrackSelect = observer(
     children,
   }: {
     model: IStateTreeNode & ImportFormSyntenyModel
-    tracks: AnyConfigurationModel[]
+    tracks: AnyTrackConfig[]
     rowIndex: number
     emptyState: React.ReactNode
     children?: React.ReactNode

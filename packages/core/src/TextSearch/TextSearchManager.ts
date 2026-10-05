@@ -4,10 +4,17 @@ import { hydrateTrackConfig, readConfObject } from '../configuration/index.ts'
 import { adapterConfigCacheKey } from '../data_adapters/dataAdapterCache.ts'
 import QuickLRU from '../util/QuickLRU/index.ts'
 import { checkAbortSignal, isAbortException } from '../util/aborting.ts'
-import { allSessionTracks, canonicalAssemblyNames } from '../util/tracks.ts'
+import {
+  allSessionTracks,
+  canonicalAssemblyNames,
+  getConfAssemblyNamesOrNone,
+} from '../util/tracks.ts'
 
 import type PluginManager from '../PluginManager.ts'
-import type { AnyConfigurationModel } from '../configuration/index.ts'
+import type {
+  AnyConfigurationModel,
+  AnyTrackConfig,
+} from '../configuration/index.ts'
 import type {
   BaseTextSearchAdapter,
   BaseTextSearchArgs,
@@ -133,21 +140,20 @@ export default class TextSearchManager {
 
   getTrackAdaptersWithAssembly(
     matches: (names: string[] | undefined) => boolean,
-    confs: AnyConfigurationModel[],
+    confs: AnyTrackConfig[],
   ) {
     return confs
       .filter(conf => {
-        const indexNames = readConfObject(conf, [
-          'textSearching',
-          'textSearchAdapter',
-          'assemblyNames',
-        ]) as string[] | undefined
+        const adapter = (
+          conf.textSearching as
+            | { textSearchAdapter?: { assemblyNames?: string[] } }
+            | undefined
+        )?.textSearchAdapter
+        const indexNames = adapter?.assemblyNames
         return (
-          !!readConfObject(conf, ['textSearching', 'textSearchAdapter']) &&
+          !!adapter &&
           matches(
-            indexNames?.length
-              ? indexNames
-              : (readConfObject(conf, 'assemblyNames') as string[] | undefined),
+            indexNames?.length ? indexNames : getConfAssemblyNamesOrNone(conf),
           )
         )
       })
@@ -158,9 +164,7 @@ export default class TextSearchManager {
         const conf = live?.textSearching.textSearchAdapter as
           | AnyConfigurationModel
           | undefined
-        return conf
-          ? [{ conf, trackId: readConfObject(track, 'trackId') as string }]
-          : []
+        return conf ? [{ conf, trackId: track.trackId }] : []
       })
   }
 

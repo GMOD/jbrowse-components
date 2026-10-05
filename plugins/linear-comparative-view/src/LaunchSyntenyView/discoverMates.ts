@@ -1,4 +1,5 @@
 import { readConfObject } from '@jbrowse/core/configuration'
+import { getConfAssemblyNamesOrNone } from '@jbrowse/core/util/tracks'
 import {
   getCoarseBpPerPxThreshold,
   regionsInAssemblyNamespace,
@@ -59,11 +60,8 @@ export function makeMateDiscovery({
 }): MateDiscovery {
   return async (signal, statusCallback) => {
     const { rpcManager } = session
-    const trackId = readConfObject(track, 'trackId') as string
-    const trackAssemblyNames = readConfObject(
-      track,
-      'assemblyNames',
-    ) as string[]
+    const trackId: string = track.trackId
+    const trackAssemblyNames = getConfAssemblyNamesOrNone(track)
     // Spelled as the TRACK spells it, because that is the namespace the far
     // side runs in: the worker has no assembly manager, the adapter answers
     // only a region whose assembly it recognizes, and a mate's `assemblyName`

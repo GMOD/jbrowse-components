@@ -1,9 +1,11 @@
 import { pickSyntenyTrackId } from './getSyntenyTracks.ts'
 
-import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
+import type { TrackConfigEntry } from '@jbrowse/core/configuration'
 
-const track = (trackId: string) =>
-  ({ trackId }) as unknown as AnyConfigurationModel
+const track = (trackId: string): TrackConfigEntry => ({
+  trackId,
+  type: 'SyntenyTrack',
+})
 
 test('keeps a still-valid preference', () => {
   expect(pickSyntenyTrackId('b', [track('a'), track('b')])).toBe('b')

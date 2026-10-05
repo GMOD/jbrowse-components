@@ -52,14 +52,12 @@ test("jbrowseHub brings the hub's assembly, catalog and search index, and the ho
     expect(fetchHub).toHaveBeenCalledWith('volvox')
     const { session } = state
     expect(session.assemblyNames).toEqual(['volvox'])
-    expect(session.tracks.map(t => readConfObject(t, 'trackId'))).toEqual([
+    expect(session.tracks.map(t => t.trackId)).toEqual([
       'hub_genes',
       'mine',
       'shared',
     ])
-    expect(readConfObject(session.getTrackById('shared')!, 'name')).toBe(
-      'the host copy',
-    )
+    expect(session.getTrackById('shared')?.name).toBe('the host copy')
     expect(session.view.pendingLaunch).toMatchObject({
       assembly: 'volvox',
       tracks: ['hub_genes', 'mine'],

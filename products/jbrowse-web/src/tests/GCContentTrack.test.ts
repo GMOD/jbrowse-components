@@ -58,9 +58,7 @@ function makeSession(
 }
 
 function findGCTrack(session: Awaited<ReturnType<typeof makeSession>>) {
-  const added = session.tracks.find(
-    t => readConfObject(t, 'type') === 'GCContentTrack',
-  )
+  const added = session.tracks.find(t => t.type === 'GCContentTrack')
   if (!added) {
     throw new Error('no GCContentTrack was added')
   }
@@ -97,11 +95,10 @@ test('hierarchical track selector menu offers "Add GC content track" on refseq',
   if (addGc && 'onClick' in addGc) {
     addGc.onClick()
   }
-  const added = findGCTrack(session)
-  expect(readConfObject(added, 'assemblyNames')).toEqual(['volvox'])
-  expect(readConfObject(added, ['adapter', 'sequenceAdapter', 'type'])).toBe(
-    'FromConfigSequenceAdapter',
-  )
+  expect(findGCTrack(session)).toMatchObject({
+    assemblyNames: ['volvox'],
+    adapter: { sequenceAdapter: { type: 'FromConfigSequenceAdapter' } },
+  })
 })
 
 test('in-view track menu offers "Add GC content track" on refseq', async () => {
@@ -268,8 +265,10 @@ test('the new GC track computes content through its adapter, drawn as a wiggle',
     row.onClick()
   }
   const track = findGCTrack(session)
-  expect(readConfObject(track, ['adapter', 'type'])).toBe('GCContentAdapter')
+  expect(track).toMatchObject({ adapter: { type: 'GCContentAdapter' } })
+  expect((track.displays as { type: string }[])[0]?.type).toBe(
+    'LinearWiggleDisplay',
+  )
   // the stored conf leaves the default, content, out
-  expect(readConfObject(track, ['adapter', 'gcMode'])).not.toBe('skew')
-  expect(readConfObject(track.displays[0], 'type')).toBe('LinearWiggleDisplay')
+  expect(track.adapter).not.toHaveProperty('gcMode', 'skew')
 })

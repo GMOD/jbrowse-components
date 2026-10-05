@@ -14,6 +14,8 @@ import {
   stripFileExtension,
 } from './tracks.ts'
 
+import type { TrackConfigEntry } from '../configuration/index.ts'
+
 jest.mock('./fileHandleStore.ts', () => ({
   getFileHandle: jest.fn(),
   storeFileHandle: jest.fn(),
@@ -580,5 +582,22 @@ describe('confAssemblyNames', () => {
     expect(() => getConfAssemblyNames(detached)).toThrow(
       'unknown assembly names',
     )
+  })
+
+  // what session.tracks holds: a frozen entry, which omits a slot at its
+  // default, and whose parent walk would raise MST's "not a state tree node"
+  test("a frozen entry without assemblyNames reads the slot's default", () => {
+    const entry: TrackConfigEntry = { trackId: 'genes', type: 'FeatureTrack' }
+    expect(getConfAssemblyNamesOrNone(entry)).toEqual([])
+    expect(getConfAssemblyNames(entry)).toEqual([])
+  })
+
+  test('a frozen entry reads the assemblyNames it was written with', () => {
+    const entry: TrackConfigEntry = {
+      trackId: 'genes',
+      type: 'FeatureTrack',
+      assemblyNames: ['volvox'],
+    }
+    expect(getConfAssemblyNamesOrNone(entry)).toEqual(['volvox'])
   })
 })

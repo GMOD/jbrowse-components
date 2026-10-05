@@ -5,8 +5,12 @@ import {
 
 import { readConfObject } from '../configuration/index.ts'
 import { isElectron, rIC } from '../util/index.ts'
+import { getConfAssemblyNamesOrNone } from './tracks.ts'
 
-import type { AnyConfigurationModel } from '../configuration/index.ts'
+import type {
+  AnyConfigurationModel,
+  TrackConfigEntry,
+} from '../configuration/index.ts'
 
 declare global {
   interface Window {
@@ -17,20 +21,14 @@ declare global {
 type StatValue = string | number | boolean | undefined
 type AnalyticsObj = Record<string, StatValue>
 
-// a frozen track entry holds what was written, so a slot at its default is absent
-interface TrackConfig {
-  type: string
-  assemblyNames?: string[]
-}
-
 interface AnalyticsRootModel {
   jbrowse: {
-    tracks: TrackConfig[]
+    tracks: TrackConfigEntry[]
     assemblies: unknown[]
     plugins?: { name?: string }[]
   }
   session?: {
-    sessionTracks: TrackConfig[]
+    sessionTracks: { type: string }[]
     views: unknown[]
   }
   version: string
@@ -54,7 +52,7 @@ export async function writeAWSAnalytics(
     const url = 'https://analytics.jbrowse.org/api/v1'
 
     const multiAssemblyTracks = rootModel.jbrowse.tracks.filter(
-      track => (track.assemblyNames?.length ?? 0) > 1,
+      track => getConfAssemblyNamesOrNone(track).length > 1,
     ).length
 
     // The rung createGpuHal built where a display has built one by idle time,
