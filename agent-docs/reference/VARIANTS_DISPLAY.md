@@ -48,6 +48,12 @@ below are relative to `plugins/variants/src/`.
   depends on zoom: the insertion marker is the cell's own colour widened, and
   "insertion" is its shape and width. A purple marker made a variant read as an
   insertion only at the zooms where the marker outgrew its cell.
+- **A cell's alpha does depend on zoom, where records share pixels**
+  (`shared/densityFade.ts`). At genomic positions each record draws at
+  `1 - 0.1 ** (1 / n)`, `n` the most records over any pixel it covers, so a
+  row's pixel reaches 90% opacity when every record under it is alt and less
+  when a share are. Without it every pixel of a 2 Mb HPRC window held some alt
+  record and the rows drew a solid wall; with it the haplotype blocks show.
 
 ## One composition rule: `fill = shade(hue(variant, cell), dosage)`
 

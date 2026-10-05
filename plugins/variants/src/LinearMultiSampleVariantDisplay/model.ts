@@ -30,6 +30,11 @@ import {
   MULTI_SAMPLE_VARIANT_DISPLAY,
   clampLineZoneHeight,
 } from '../shared/constants.ts'
+import {
+  densityRung,
+  fadeCellColors,
+  recordDensityAlpha,
+} from '../shared/densityFade.ts'
 import { locusViewportXFor } from '../shared/genomicViewportX.ts'
 import { paintCellColors, paintFeatureColors } from '../shared/paintCells.ts'
 import { placeVariantRows } from '../shared/placeVariantRows.ts'
@@ -377,18 +382,50 @@ export function stateModelFactory(
         },
         /**
          * #getter
-         * Each fetched region's cell colours through the current `color`.
-         * Apart from the rows, so a reorder repaints nothing, and a recolour
-         * re-places nothing and refetches nothing.
+         * Each fetched region's records' alpha factors where they share
+         * pixels at genomic positions (`recordDensityAlpha`), so a zoomed-out
+         * row shades by the share of its records that are alt instead of
+         * filling wherever any is
+         */
+        get regionRecordAlpha() {
+          const { cellData } = self
+          const out = new Map<number, Float32Array | undefined>()
+          if (cellData && self.variantLayout === 'genomic') {
+            const bpPerPx = densityRung(self.host.bpPerPx)
+            for (const k in cellData.perRegionCellData) {
+              const data = cellData.perRegionCellData[k]!
+              out.set(
+                Number(k),
+                recordDensityAlpha(data.featurePositions, bpPerPx),
+              )
+            }
+          }
+          return out
+        },
+        /**
+         * #getter
+         * Each fetched region's cell colours through the current `color`,
+         * faded where records share pixels. Apart from the rows, so a reorder
+         * repaints nothing, and a recolour re-places nothing and refetches
+         * nothing.
          */
         get regionCellColors() {
           const { cellData, cellHue } = self
           const options = this.cellPaintOptions
+          const alpha = this.regionRecordAlpha
           const out = new Map<number, Uint32Array>()
           if (cellData) {
             for (const k in cellData.perRegionCellData) {
               const data = cellData.perRegionCellData[k]!
-              out.set(Number(k), paintCellColors(data, cellHue, options))
+              out.set(
+                Number(k),
+                fadeCellColors(
+                  paintCellColors(data, cellHue, options),
+                  data.cellFeatureIndices,
+                  data.numCells,
+                  alpha.get(Number(k)),
+                ),
+              )
             }
           }
           return out

@@ -166,3 +166,43 @@ test('a constant reads nothing, and a jexl callback is read in the worker', () =
   display.setColor({ value: "jexl:'#123456'" })
   expect(display.rpcProps().color).toBe("jexl:'#123456'")
 })
+
+test('records that share pixels paint their cells faded, keeping the hue', () => {
+  const { display } = createTestEnvironment().createDisplay()
+  display.setSources(SAMPLES.map(name => ({ name })))
+  const index = new Flatbush(2, 16, Uint32Array)
+  index.add(100, 0, 200, 1)
+  index.add(150, 1, 250, 2)
+  index.finish()
+  const data = cellData({ field: '' })
+  const region = data.perRegionCellData[0]!
+  display.setCellData({
+    ...data,
+    simplifiedFeatures: [
+      ...data.simplifiedFeatures,
+      { id: 'v1', data: { start: 150, end: 250, refName: 'ctgA', name: 'v1' } },
+    ],
+    perRegionCellData: {
+      0: {
+        ...region,
+        cellRowIndices: Uint32Array.from([0, 1, 2, 0, 1, 2]),
+        cellColors: new Uint32Array(6).fill(het(ALT_HUE)),
+        cellAltDosage: new Uint8Array(6).fill(128),
+        cellFeatureIndices: Uint32Array.from([0, 0, 0, 1, 1, 1]),
+        numCells: 6,
+        featureColorValues: Uint32Array.of(0, 0),
+        featureInfo: [
+          featureInfoOf('v0', { length: 100 }),
+          featureInfoOf('v1', { length: 100 }),
+        ],
+        featurePositions: Uint32Array.from([100, 200, 150, 250]),
+        featureIndexData: index.data,
+        featureInsertedBp: Int32Array.from([0, 0]),
+      },
+    },
+  })
+  const painted = [...display.regionCellColors.get(0)!]
+  const full = het(ALT_HUE)
+  expect(painted.every(c => c >>> 24 < full >>> 24)).toBe(true)
+  expect(painted.every(c => (c & 0xffffff) === (full & 0xffffff))).toBe(true)
+})
