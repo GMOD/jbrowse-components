@@ -121,6 +121,7 @@ function trackModel({
   domain = [],
   hasLegendKey = false,
   geneColorField = '',
+  geneSolidColor,
 }: {
   universe?: number
   laneFilter?: LaneFilter
@@ -128,6 +129,7 @@ function trackModel({
   domain?: string[]
   hasLegendKey?: boolean
   geneColorField?: string
+  geneSolidColor?: string
 } = {}) {
   const { model: header, calls } = headerModel()
   const model = {
@@ -175,6 +177,13 @@ function trackModel({
     setGeneColorBy: (field: string) => {
       calls.push(`gene color ${field}`)
     },
+    geneSolidColor,
+    pickDefaultGeneColor: () => {
+      calls.push('gene default')
+    },
+    pickGeneSolidColor: () => {
+      calls.push('gene solid')
+    },
     setLanesFrozen: (flag: boolean) => {
       calls.push(`freeze ${flag}`)
     },
@@ -216,6 +225,7 @@ test('Color by heads the gene modes and the ribbon modes', () => {
     'Cluster',
     'Name',
     'Strand',
+    'Solid color...',
     'Ribbons',
     'Default',
     'Strand',
@@ -223,6 +233,7 @@ test('Color by heads the gene modes and the ribbon modes', () => {
   ])
   expect(colorBy.map(i => i.type)).toEqual([
     'subHeader',
+    'radio',
     'radio',
     'radio',
     'radio',
@@ -251,6 +262,7 @@ test('the gene modes name a configured field, with no pin under it', () => {
     'Name',
     'Strand',
     'biotype',
+    'Solid color...',
   ])
   expect(labelsOf(geneColorMenuItems(model))).toEqual(labelsOf(genes))
   expect(genes.map(i => 'checked' in i && i.checked)).toEqual([
@@ -259,7 +271,22 @@ test('the gene modes name a configured field, with no pin under it', () => {
     false,
     false,
     true,
+    false,
   ])
+})
+
+test('a constant gene colour ticks Solid color..., and Default takes it back', () => {
+  const { model, calls } = trackModel({ geneSolidColor: 'teal' })
+  const genes = genesOf(model)
+  const checked = (label: string) => {
+    const item = genes[labelsOf(genes).indexOf(label)]
+    return item && 'checked' in item && item.checked
+  }
+  expect(checked('Solid color...')).toBe(true)
+  expect(checked('Default')).toBe(false)
+  click(genes[0])
+  click(genes.at(-1))
+  expect(calls).toEqual(['gene default', 'gene solid'])
 })
 
 test('Show offers the legend only when something is keyed, and the hidden lanes once there are some', () => {

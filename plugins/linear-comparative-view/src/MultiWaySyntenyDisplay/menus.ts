@@ -8,7 +8,10 @@ import { assembleLocStringRaw } from '@jbrowse/core/util'
 import { STRAND_FIELD } from '@jbrowse/core/util/categoricalField'
 import { openMateLabel } from '@jbrowse/core/util/tracks'
 import { legendCheckboxItem } from '@jbrowse/display-kit/LegendMixin'
-import { colorByMenuItem } from '@jbrowse/display-kit/colorByMenu'
+import {
+  colorByMenuItem,
+  solidColorItem,
+} from '@jbrowse/display-kit/colorByMenu'
 import {
   resetOrderItem,
   sectionRowMenuItems,
@@ -78,6 +81,9 @@ export interface MultiWayMenuModel extends LaneHeaderModel, LaneSelectionModel {
   hasLegendKey: boolean
   geneColorField: string
   setGeneColorBy: (field: string) => void
+  geneSolidColor: string | undefined
+  pickDefaultGeneColor: () => void
+  pickGeneSolidColor: () => void
   setLanesFrozen: (flag: boolean) => void
 }
 
@@ -240,13 +246,7 @@ export function showSubMenuItems(model: MultiWayMenuModel): MenuItem[] {
   ]
 }
 
-const GENE_COLOR_MODES: RadioOption<string>[] = [
-  {
-    value: '',
-    label: 'Default',
-    helpText:
-      "The gene color the track's config sets, goldenrod where it sets none.",
-  },
+const GENE_COLOR_FIELDS: RadioOption<string>[] = [
   {
     value: CLUSTER_FIELD,
     label: 'Cluster',
@@ -263,12 +263,28 @@ const GENE_COLOR_MODES: RadioOption<string>[] = [
 
 export function geneColorMenuItems(model: MultiWayMenuModel): MenuItem[] {
   const field = model.geneColorField
-  const modes = GENE_COLOR_MODES.some(mode => mode.value === field)
-    ? GENE_COLOR_MODES
-    : [...GENE_COLOR_MODES, { value: field, label: field }]
-  return radioItems(modes, field, value => {
-    model.setGeneColorBy(value)
-  })
+  const fields =
+    field === '' || GENE_COLOR_FIELDS.some(mode => mode.value === field)
+      ? GENE_COLOR_FIELDS
+      : [...GENE_COLOR_FIELDS, { value: field, label: field }]
+  return [
+    {
+      label: 'Default',
+      type: 'radio',
+      checked: field === '' && model.geneSolidColor === undefined,
+      helpText:
+        "The gene color the track's config sets, goldenrod where it sets none.",
+      onClick: () => {
+        model.pickDefaultGeneColor()
+      },
+    },
+    ...radioItems(fields, field, value => {
+      model.setGeneColorBy(value)
+    }),
+    solidColorItem(field === '' && model.geneSolidColor !== undefined, () => {
+      model.pickGeneSolidColor()
+    }),
+  ]
 }
 
 export function ribbonColorMenuItems(model: MultiWayMenuModel): MenuItem[] {

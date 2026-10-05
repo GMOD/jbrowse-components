@@ -476,6 +476,32 @@ test('Default keeps the field, and the field keeps its order', () => {
   })
 })
 
+test('Solid color... paints the kept constant and opens the picker; Default drops it', () => {
+  const { display, session } = createDisplayWithSession()
+  setConf(display, 'color', { value: 'red', field: 'name' })
+  expect(display.geneSolidColor).toBe('red')
+  display.pickGeneSolidColor()
+  expect(display.geneColorField).toBe('')
+  expect(display.geneColorSettings.color).toMatchObject({
+    value: 'red',
+    field: 'name',
+    scale: 'none',
+  })
+  expect(session.queuedDialogs).toHaveLength(1)
+  display.setGeneSolidColor('teal')
+  expect(display.geneSolidColor).toBe('teal')
+  display.pickDefaultGeneColor()
+  expect(display.geneSolidColor).toBeUndefined()
+  expect(display.geneColorField).toBe('')
+  expect(display.geneColorSettings.color).toMatchObject({ field: 'name' })
+})
+
+test('a jexl gene colour is no constant', () => {
+  const display = createDisplay()
+  setConf(display, ['color', 'value'], "jexl:'red'")
+  expect(display.geneSolidColor).toBeUndefined()
+})
+
 test('gene names the hash puts on one colour each take their own', () => {
   const display = createDisplay()
   anchorGenes(display, [

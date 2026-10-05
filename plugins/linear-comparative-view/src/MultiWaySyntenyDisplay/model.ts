@@ -8,6 +8,7 @@ import { READS_REFERENCE } from '@jbrowse/core/data_adapters/dataAdapterCache'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes'
 import { legendIsReadable, pushLaunchViewMenuItem } from '@jbrowse/core/ui'
 import { colorScaleIsEmpty } from '@jbrowse/core/ui/colorScale'
+import { featureDefaultColor } from '@jbrowse/core/ui/palette'
 import {
   animationAllowed,
   doesIntersect2,
@@ -35,6 +36,7 @@ import {
 } from '@jbrowse/core/util/tracks'
 import GlobalFetchMixin from '@jbrowse/display-kit/GlobalFetchMixin'
 import LegendMixin from '@jbrowse/display-kit/LegendMixin'
+import SolidColorDialog from '@jbrowse/display-kit/SolidColorDialog'
 import TrackHeightMixin from '@jbrowse/display-kit/TrackHeightMixin'
 import {
   colorEncodingOf,
@@ -757,6 +759,14 @@ export function stateModelFactory(
        */
       get geneColorField(): string {
         return colorFieldOf(self.geneColorEncoding)?.field ?? ''
+      },
+      /**
+       * #getter
+       * the constant `color.value` holds, undefined for none or a `jexl:` one
+       */
+      get geneSolidColor(): string | undefined {
+        const raw = self.geneColorSettings.color.value
+        return raw !== undefined && !isJexl(raw) ? raw : undefined
       },
     }))
     .views(self => {
@@ -2340,6 +2350,55 @@ export function stateModelFactory(
           'color',
           colorForField(self.geneColorSettings.color, field),
         )
+      },
+      /** #action */
+      setGeneSolidColor(color: string | undefined) {
+        setConf(self, ['color', 'value'], color)
+      },
+    }))
+    .actions(self => ({
+      /**
+       * #action
+       * Color by's Default: no field and no constant, so the config's own
+       * colour paints, a `jexl:` expression included
+       */
+      pickDefaultGeneColor() {
+        const { color } = self.geneColorSettings
+        setConf(
+          self,
+          'color',
+          colorForField(
+            self.geneSolidColor === undefined
+              ? color
+              : { ...color, value: undefined },
+            '',
+          ),
+        )
+      },
+      /**
+       * #action
+       * Color by's Solid color...: paints the constant kept beside a field,
+       * where there is one, and opens the picker
+       */
+      pickGeneSolidColor() {
+        if (self.geneColorField !== '' && self.geneSolidColor !== undefined) {
+          self.setGeneColorBy('')
+        }
+        getSession(self).queueDialog(handleClose => [
+          SolidColorDialog,
+          {
+            label: 'Gene color',
+            color: self.geneSolidColor ?? featureDefaultColor,
+            written: self.geneColorSettings.color.value,
+            onChange: (color: string) => {
+              self.setGeneSolidColor(color)
+            },
+            onReset: () => {
+              self.setGeneSolidColor(undefined)
+            },
+            handleClose,
+          },
+        ])
       },
     }))
     .views(self => ({
