@@ -315,10 +315,6 @@ function lanePlacements(
   return out
 }
 
-function sharedGroupCount(upperX: Map<string, number>, lane: LanePlacement[]) {
-  return new Set(lane.filter(p => upperX.has(p.key)).map(p => p.key)).size
-}
-
 function lanePlacementXs(
   placements: LanePlacement[],
   frame: RowFrame,
@@ -354,9 +350,11 @@ function orientationVote(upperX: Map<string, number>, lane: LanePlacement[]) {
   }
   let { total, backwards } = weightedPairs(shared)
   for (const runs of byKey.values()) {
-    const same = weightedPairs(runs)
-    total -= same.total
-    backwards -= same.backwards
+    if (runs.length > 1) {
+      const same = weightedPairs(runs)
+      total -= same.total
+      backwards -= same.backwards
+    }
   }
   const share = total > 0 ? backwards / total : 0.5
   return {
@@ -544,11 +542,17 @@ export function decideLaneFrames({
   openingsOf = laneOpeningsOf(groups),
 }: DecideLaneFramesOpts) {
   const out = new Map<string, LaneDecision | undefined>()
+  if (unitBp <= 0 || width <= 0) {
+    for (const assemblyName of assemblyNames) {
+      out.set(assemblyName, undefined)
+    }
+    return out
+  }
   let upperX = anchorX
   for (const [i, assemblyName] of assemblyNames.entries()) {
     const kept = frozen?.get(assemblyName)
     const keptPx = kept && pxOfAnchor(kept.pivotAnchor)
-    if (kept && keptPx !== undefined && unitBp > 0 && width > 0) {
+    if (kept && keptPx !== undefined) {
       out.set(assemblyName, kept)
       if (i + 1 < assemblyNames.length) {
         const frame = frameFromDecision(
@@ -576,18 +580,16 @@ export function decideLaneFrames({
       pinned?.get(assemblyName),
       openingsOf,
     )
-    if (fit === undefined || unitBp <= 0 || width <= 0) {
+    if (fit === undefined) {
       out.set(assemblyName, undefined)
       continue
     }
     const { rung, pinned: onPin, frame: fitted } = fit
     const placements = lanePlacements(groups, assemblyName, fitted)
-    const reference =
-      sharedGroupCount(upperX, placements) >= MIN_SHARED_FOR_ORIENTATION
-        ? upperX
-        : anchorX
     // the vote reads screen px; the decision is against the anchor's order
-    const vote = orientationVote(reference, placements)
+    const upperVote = orientationVote(upperX, placements)
+    const reference = upperVote ? upperX : anchorX
+    const vote = upperVote ?? orientationVote(anchorX, placements)
     const voted = decideOrientation(
       fitted.flipped,
       vote && {
@@ -607,6 +609,7 @@ export function decideLaneFrames({
     const aligned = alignFrameTo(reference, placements, oriented, width)
 
     let decision: LaneDecision | undefined
+    let decisionPx: number | undefined
     const held =
       prev &&
       prev.refName === aligned.refName &&
@@ -638,6 +641,7 @@ export function decideLaneFrames({
         HOLD_COVERAGE * weightInside(placements, aligned)
       ) {
         decision = sameDecision(held, carried) ? held : carried
+        decisionPx = heldPx
       }
     }
     if (!decision) {
@@ -668,20 +672,22 @@ export function decideLaneFrames({
         if (prev && sameDecision(prev, decision)) {
           decision = prev
         }
+        decisionPx = pivotPx
       }
     }
     out.set(assemblyName, decision)
     if (i + 1 < assemblyNames.length) {
-      const frame = decision
-        ? frameFromDecision(
-            decision,
-            pxOfAnchor(decision.pivotAnchor)!,
-            unitBp,
-            width,
-            anchorReversed,
-            frameOpenings(aligned),
-          )
-        : aligned
+      const frame =
+        decision && decisionPx !== undefined
+          ? frameFromDecision(
+              decision,
+              decisionPx,
+              unitBp,
+              width,
+              anchorReversed,
+              frameOpenings(aligned),
+            )
+          : aligned
       upperX = lanePlacementXs(
         lanePlacements(groups, assemblyName, frame),
         frame,
