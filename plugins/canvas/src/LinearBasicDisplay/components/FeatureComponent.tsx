@@ -1,7 +1,6 @@
 import React, { useCallback, useId, useState } from 'react'
 
 import { ScrollChrome } from '@jbrowse/core/ui'
-import { VERTICAL_SCROLLBAR_CLEARANCE } from '@jbrowse/core/ui/VerticalScrollbar'
 import { useCoalescedPointer } from '@jbrowse/core/ui/useCoalescedPointer'
 import { capitalizeFirst } from '@jbrowse/core/util'
 import { eventPoint } from '@jbrowse/core/util/eventPoint'
@@ -314,9 +313,7 @@ const FeatureBody = observer(function FeatureBody({
 
       <ScrollChrome model={model} controlsId={canvasId} />
 
-      <BottomRightIndicators
-        scrollbarWidth={model.hasOverflow ? VERTICAL_SCROLLBAR_CLEARANCE : 0}
-      >
+      <BottomRightIndicators scrollableHeight={model.scrollableHeight}>
         <SoloSelectionChip
           count={model.soloFeatureCount}
           applied={model.soloApplied}

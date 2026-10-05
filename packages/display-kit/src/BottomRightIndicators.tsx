@@ -1,5 +1,6 @@
 import { use } from 'react'
 
+import { VERTICAL_SCROLLBAR_CLEARANCE } from '@jbrowse/core/ui/VerticalScrollbar'
 import {
   BOTTOM_RIGHT_CONTROLS_ORDER,
   BottomRightCornerContext,
@@ -45,24 +46,22 @@ import type { ReactNode } from 'react'
 const OVERFLOW_INDICATOR_Z_INDEX = 999
 
 function BottomRightIndicators({
-  scrollbarWidth = 0,
+  scrollableHeight = 0,
   children,
 }: {
   /**
-   * How much of the display's right edge its own scrollbar occupies *right
-   * now* — 0 when nothing is overflowing. Keeps the indicators from rendering
-   * underneath it. Displays that scroll with a native overflow container pass
-   * that container's scrollbar width; displays drawing `VerticalScrollbar` pass
-   * its track width.
+   * The display's `VirtualScrollModel.scrollableHeight`: while it is positive
+   * the `VerticalScrollbar` shows, and the row clears it.
    *
    * It shifts this row alone rather than the whole corner, and that is right in
    * both directions: the row is the rightmost member, so the status chip stacked
    * above it clears the scrollbar transitively, and a display showing only the
    * chip is where the chip was before.
    */
-  scrollbarWidth?: number
+  scrollableHeight?: number
   children: ReactNode
 }) {
+  const scrollbarWidth = scrollableHeight > 0 ? VERTICAL_SCROLLBAR_CLEARANCE : 0
   // The chrome anchors the corner and puts its background-progress chip in it,
   // so landing in that box is what keeps the two from being drawn on top of
   // each other — see bottomRightCorner.ts. Null outside a chrome (a display an

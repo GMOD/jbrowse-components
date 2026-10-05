@@ -265,7 +265,7 @@ const MafBody = observer(function MafBody({
         setContextCoord={setContextCoord}
       />
       <DisplayContextMenu model={model} />
-      <BottomRightIndicators>
+      <BottomRightIndicators scrollableHeight={model.scrollableHeight}>
         <ConfigProblemsIndicator notices={model.notices} />
       </BottomRightIndicators>
     </>

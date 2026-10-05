@@ -1,3 +1,5 @@
+import BottomRightIndicators from '@jbrowse/display-kit/BottomRightIndicators'
+import ConfigProblemsIndicator from '@jbrowse/display-kit/ConfigProblemsIndicator'
 import DisplayChrome from '@jbrowse/display-kit/DisplayChrome'
 import { DisplayContextMenu } from '@jbrowse/display-kit/DisplayContextMenu'
 import { PointerLayer } from '@jbrowse/display-ui'
@@ -6,7 +8,6 @@ import { RowsPanel, treeSidebarRightEdge } from '@jbrowse/tree-sidebar'
 import { observer } from 'mobx-react'
 
 import Crosshair from '../../shared/components/MultiSampleVariantCrosshairs.tsx'
-import VariantConfigProblems from '../../shared/components/VariantConfigProblems.tsx'
 import VariantRowSeparators from '../../shared/components/VariantRowSeparators.tsx'
 import { hoverVariantSurface } from '../../shared/variantSurface.ts'
 import VariantMatrixDisplayComponent from '../matrix/VariantMatrixDisplayComponent.tsx'
@@ -91,7 +92,9 @@ const GenomicPositionsDisplay = observer(
                 ) : null
               }
             </PointerLayer>
-            <VariantConfigProblems model={model} />
+            <BottomRightIndicators scrollableHeight={model.scrollableHeight}>
+              <ConfigProblemsIndicator notices={model.notices} />
+            </BottomRightIndicators>
             <DisplayContextMenu model={model} />
           </>
         )}

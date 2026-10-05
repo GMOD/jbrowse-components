@@ -1,6 +1,5 @@
 import { Suspense } from 'react'
 
-import { VERTICAL_SCROLLBAR_CLEARANCE } from '@jbrowse/core/ui/VerticalScrollbar'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import BottomRightIndicators from '@jbrowse/display-kit/BottomRightIndicators'
 import ConfigProblemsIndicator from '@jbrowse/display-kit/ConfigProblemsIndicator'
@@ -53,13 +52,7 @@ const AlignmentsCornerControls = observer(function AlignmentsCornerControls({
   }
   const hasOverflow = model.scrollableHeight > 0
   return (
-    // The pileup's own scrollbar sits on the same edge, so the row has to clear
-    // it while it is drawn. Same expression as the canvas display's: the
-    // scrollbar's track plus a hairline. Passing nothing here drew these chips
-    // over the thumb.
-    <BottomRightIndicators
-      scrollbarWidth={hasOverflow ? VERTICAL_SCROLLBAR_CLEARANCE : 0}
-    >
+    <BottomRightIndicators scrollableHeight={model.scrollableHeight}>
       <ConfigProblemsIndicator notices={model.notices} />
       <TrackHeightIndicator
         heightMode={model.heightMode}
