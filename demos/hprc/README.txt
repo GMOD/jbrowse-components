@@ -254,5 +254,6 @@ Curated VNTRs
     bgzip hprc_kiv2_copies_all.vcf && tabix -p vcf hprc_kiv2_copies_all.vcf.gz
 
   The script leaves out NA18983#1, whose walk reaches one flank, so 464 arrays
-  remain, holding 8,943 copies in two units. Seven copies of 11-17 kb span two
-  or three units where the array start mutated and count as one.
+  remain, holding 8,951 copies in two units. In seven, the array start had
+  mutated at a copy boundary, and the script split those 11-17 kb stretches
+  into 5.5 kb copies by probes from further into the unit.
