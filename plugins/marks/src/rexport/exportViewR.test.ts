@@ -112,6 +112,30 @@ const insertCuts = register(
     all(r$insertSize[t >= 300 & t <= 600] == "normal"), sum(t > 600) > 0, sum(t > 0 & t < 300) > 0) }`,
 )
 
+copyFileSync(
+  path.join(VOLVOX, 'volvox.sort.gff3.gz'),
+  path.join(dir, 'genes.gff3.gz'),
+)
+copyFileSync(
+  path.join(VOLVOX, 'volvox.sort.gff3.gz.tbi'),
+  path.join(dir, 'genes.index'),
+)
+
+const renamedIndex = register(
+  'renamed_index',
+  scriptFor([
+    {
+      ...track(main, 'gff3tabix_genes', 'LinearBasicDisplay', {}),
+      adapter: {
+        type: 'Gff3TabixAdapter',
+        gffGzLocation: { localPath: path.join(dir, 'genes.gff3.gz') },
+        index: { location: { localPath: path.join(dir, 'genes.index') } },
+      },
+    },
+  ]),
+  'nrow(genes_gff3tabix_genes) > 0',
+)
+
 function wiggle(display: Record<string, unknown>) {
   return scriptFor(
     [track(main, 'wiggle_track_posneg', 'LinearWiggleDisplay', display)],
@@ -231,6 +255,10 @@ maybe('the emitted script, run under R', () => {
     expect(results.get(barsColours)?.replaceAll(/\s+/g, ' ')).toBe(
       `EDEN.1 EDEN.3 "${categoricalValueColor('EDEN.1')}" "${categoricalValueColor('EDEN.3')}"`,
     )
+  })
+
+  it('reads a tabix file through the index its adapter names', () => {
+    expect(results.get(renamedIndex)).toBe('[1] TRUE')
   })
 
   it('cuts insert sizes at the domain the config lists', () => {

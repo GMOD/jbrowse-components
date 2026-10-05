@@ -87,10 +87,16 @@ function locate(
   const declared = locationPath(
     (track.adapter.index as { location?: unknown } | undefined)?.location,
   )
+  const beside = `${uri}${type === 'BamAdapter' ? '.bai' : '.tbi'}`
   return {
     type,
     uri,
-    index: type === 'BamAdapter' ? (declared ?? `${uri}.bai`) : undefined,
+    index:
+      type === 'BamAdapter'
+        ? (declared ?? beside)
+        : declared !== beside
+          ? declared
+          : undefined,
   }
 }
 
@@ -138,12 +144,13 @@ const featureExporter: RExporter = (track, regions) => {
   if ('skipped' in located) {
     return located
   }
-  const { type, uri } = located
+  const { type, uri, index } = located
   const { key } = track
   const display = track.display as unknown as FeatureDisplaySpec
   const base = frameFor({
     type,
     uri,
+    index,
     name: `genes_${key}`,
     aliases: track.refNames,
     fields: featureFields(display, regions),
@@ -196,14 +203,17 @@ export function exportTracksToR({
   regions,
   exporters = BUILTIN_EXPORTERS,
   out,
+  notes: viewNotes = [],
 }: {
   tracks: readonly RExportTrack[]
   regions: readonly Region[]
   exporters?: Record<string, RExporter>
   out?: string
+  /** What the caller knows of the view that the figure does not show. */
+  notes?: readonly string[]
 }) {
   const panels: Panel[] = []
-  const notes: string[] = []
+  const notes: string[] = [...viewNotes]
   for (const track of keyed(tracks)) {
     const exporter = exporters[track.displayType]
     if (!exporter) {

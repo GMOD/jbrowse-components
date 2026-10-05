@@ -6,7 +6,7 @@
 # and SVTYPE come from INFO; sequence indels are classed by REF/ALT length.
 # start is 0-based half-open (BED-style). A contig the index lacks reads as no
 # records, as the browser draws it.
-read_vcf <- function(uri, chrom, start, end, info = character(0)) {
+read_vcf <- function(uri, chrom, start, end, info = character(0), index = paste0(uri, ".tbi")) {
   info_field <- function(inf, key) {
     pat <- paste0("(?:^|;)", key, "(?:=([^;]*))?(?:;|$)")
     vapply(inf, function(x) {
@@ -14,7 +14,7 @@ read_vcf <- function(uri, chrom, start, end, info = character(0)) {
       if (!length(m)) NA_character_ else if (nzchar(m[2])) m[2] else "TRUE"
     }, character(1), USE.NAMES = FALSE)
   }
-  tf <- TabixFile(uri)
+  tf <- TabixFile(uri, index = index)
   lines <- if (!chrom %in% seqnamesTabix(tf)) character(0) else
     unlist(scanTabix(tf, param = GRanges(chrom, IRanges(start + 1, end))))
   cols <- if (length(lines)) do.call(rbind, strsplit(lines, "\t", fixed = TRUE))

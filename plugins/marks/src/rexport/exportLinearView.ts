@@ -110,5 +110,8 @@ export async function exportLinearViewToR(
     tracks: await tracksOf(view),
     regions: viewRegions(view),
     out,
+    notes: view.displayedRegions.some(r => r.reversed)
+      ? ['view: shown right to left, where the figure runs left to right']
+      : [],
   })
 }

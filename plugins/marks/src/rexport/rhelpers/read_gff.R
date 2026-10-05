@@ -6,8 +6,8 @@
 # lacks the attribute. start is 0-based half-open, and strand is 1, -1 or 0, the
 # values a config's strand domain names. A contig the index lacks reads as no
 # features, as the browser draws it.
-read_gff <- function(uri, chrom, start, end, attrs = character(0)) {
-  tf <- TabixFile(uri)
+read_gff <- function(uri, chrom, start, end, attrs = character(0), index = paste0(uri, ".tbi")) {
+  tf <- TabixFile(uri, index = index)
   g <- if (!chrom %in% seqnamesTabix(tf)) GRanges() else withCallingHandlers(
     import(tf, which = GRanges(chrom, IRanges(start + 1, end)), format = "gff3"),
     # rtracklayer rewinds the connection it opened itself and warns about it

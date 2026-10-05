@@ -4,8 +4,8 @@
 # strand 1, -1 or 0, and the block columns are BED12's comma lists, block
 # starts relative to the record's start, NA on a record without blocks. A
 # contig the index lacks reads as no records, as the browser draws it.
-read_bed <- function(uri, chrom, start, end) {
-  tf <- TabixFile(uri)
+read_bed <- function(uri, chrom, start, end, index = paste0(uri, ".tbi")) {
+  tf <- TabixFile(uri, index = index)
   g <- if (!chrom %in% seqnamesTabix(tf)) GRanges() else
     import(tf, which = GRanges(chrom, IRanges(start + 1, end)), format = "bed")
   m <- mcols(g)
