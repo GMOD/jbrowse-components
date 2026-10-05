@@ -146,16 +146,46 @@ export interface Deps {
 }
 
 // The forms `isCssColor` parses, as one alternation: JSON Schema patterns carry
-// no case flag, so each named color is spelled letter by letter. A functional
-// form needs an argument and a triple's components stop at 255, as the
-// parser's do; a functional form's arguments go unchecked.
+// no case flag, so each word is spelled letter by letter. A functional form
+// takes three to five arguments, each a number or `none`, and `color()` a
+// colour space before them, as `color-bits/parse.ts` does; a triple's
+// components stop at 255, as the parser's do.
 function cssColorForms(names: readonly string[]) {
   const anyCase = (word: string) =>
     word.replaceAll(/[a-z]/g, c => `[${c}${c.toUpperCase()}]`)
+  const anyOf = (words: readonly string[]) =>
+    `(?:${words.map(anyCase).join('|')})`
   const byte = String.raw`(?:25[0-5]|2[0-4]\d|[01]?\d?\d)`
+  const sep = String.raw`[\s,/]`
+  const arg = String.raw`(?:[+-]?(?:\d+\.?\d*|\.\d+)[^\s,/()]*|${anyCase('none')})`
+  const args = (from: number, to: number) =>
+    `(?:${sep}+${arg}){${from},${to}}${sep}*\\)`
+  const functions = [
+    'rgba',
+    'rgb',
+    'hsla',
+    'hsl',
+    'hwb',
+    'lab',
+    'lch',
+    'oklab',
+    'oklch',
+  ]
+  const spaces = [
+    'srgb-linear',
+    'srgb',
+    'display-p3',
+    'a98-rgb',
+    'prophoto-rgb',
+    'rec2020',
+    'xyz-d65',
+    'xyz-d50',
+    'xyz',
+  ]
   return [
     '#(?:[0-9a-fA-F]{3,4}|[0-9a-fA-F]{6}|[0-9a-fA-F]{8})',
-    String.raw`(?:rgba?|hsla?|hwb|lab|lch|oklab|oklch|color)\([^()]*\d[^()]*\)`,
+    `${anyOf(functions)}\\(${sep}*${arg}${args(2, 4)}`,
+    `${anyCase('color')}\\(${sep}*${anyOf(spaces)}${args(3, 4)}`,
     String.raw`${byte}\s*,\s*${byte}\s*,\s*${byte}`,
     ...[...names, 'transparent'].map(anyCase),
   ].join('|')

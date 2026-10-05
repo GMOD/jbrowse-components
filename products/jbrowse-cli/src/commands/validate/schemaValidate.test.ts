@@ -179,16 +179,25 @@ describe('the schema', () => {
     )
   })
 
-  it.each(['Red', '#ff000080', 'rgba(255, 0, 0, 0.5)', 'hsl(120,100%,50%)'])(
-    'accepts the color %s',
-    color => {
-      const config = baseConfig()
-      config.tracks[0]!.displays = [
-        { type: 'LinearBasicDisplay', utrColor: color },
-      ]
-      expect(schemaProblems(config)).toEqual([])
-    },
-  )
+  it.each([
+    'Red',
+    '#ff000080',
+    'rgba(255, 0, 0, 0.5)',
+    'hsl(120,100%,50%)',
+    'RGB(1,2,3)',
+    'rgb(0 0 255 / 50%)',
+    'rgb(none 0 255)',
+    'hsl(1.5turn 50% 50% / .5)',
+    'COLOR(Display-P3 1 0 0)',
+    'color(srgb 1 0 0 / 0.5)',
+    'oklch(0.7 0.1 -2e1)',
+  ])('accepts the color %s', color => {
+    const config = baseConfig()
+    config.tracks[0]!.displays = [
+      { type: 'LinearBasicDisplay', utrColor: color },
+    ]
+    expect(schemaProblems(config)).toEqual([])
+  })
 
   it.each(['', '255,0,0', ' 0 , 128 , 255 '])(
     'accepts the outline color %j',
@@ -202,18 +211,29 @@ describe('the schema', () => {
   )
 
   // each of these fails the slot's own check, so the track would not load
-  it.each(['rgb()', 'hsl(  )', '999,0,0', '256,0,0', ' '])(
-    'refuses the color %j',
-    color => {
-      const config = baseConfig()
-      config.tracks[0]!.displays = [
-        { type: 'LinearBasicDisplay', outlineColor: color },
-      ]
-      expect(schemaProblems(config).map(p => p.where)).toEqual([
-        'tracks[0].displays[0].outlineColor',
-      ])
-    },
-  )
+  it.each([
+    'rgb()',
+    'hsl(  )',
+    '999,0,0',
+    '256,0,0',
+    ' ',
+    'rgb(1)',
+    'rgb(1,2)',
+    'rgb(1,2,3,4,5,6)',
+    'rgb(a,b,1)',
+    'rgb(red,green,1)',
+    'color(foo 1 2 3)',
+    'color(srgb 1 2)',
+    'foo(1,2,3)',
+  ])('refuses the color %j', color => {
+    const config = baseConfig()
+    config.tracks[0]!.displays = [
+      { type: 'LinearBasicDisplay', outlineColor: color },
+    ]
+    expect(schemaProblems(config).map(p => p.where)).toEqual([
+      'tracks[0].displays[0].outlineColor',
+    ])
+  })
 
   // ADR-146: a config member's `null` is its reset, at any depth
   it('accepts null as a slot or sub-schema reset', () => {
