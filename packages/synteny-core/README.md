@@ -377,6 +377,20 @@ default. Under a field it moves the field's most opaque end.
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/synteny-core/src/settingsMenuItems.ts)
 
+### opacityRangeAt
+
+`range` rescaled so the mapping's most opaque end lands on `value`, keeping each
+entry's share of it. A threshold or a text column with no range written draws
+every bin at the level, so it gets one `value` per bin rather than the number
+column's default fade.
+
+```js
+// type signature
+(setting: SyntenyOpacitySnapshot, value: number, ranges?: Record<string, AttributeRange> | undefined) => string[]
+```
+
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/synteny-core/src/opacityChannel.ts)
+
 ### paintedField
 
 The field a synteny colour object paints by, or `''` while it paints its
