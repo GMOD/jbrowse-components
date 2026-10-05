@@ -1130,6 +1130,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
     ),
     readySelector: displayPainted('synteny_canvas'),
     readyTimeout: 120000,
+    viewportHeight: 433,
   },
 
   // Gene-level ortholog zoom: drill into a ~75 kb window of the conserved
@@ -1425,7 +1426,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
     ),
     readySelector: displaySettled('multiway-synteny-display'),
     readyTimeout: 120000,
-    viewportHeight: 680,
+    viewportHeight: 692,
   },
 
   // The gene-level zoom of the same lanes, with a ribbon clicked: a ~35 kb cut
@@ -1690,7 +1691,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
     ),
     readySelector: displaySettled('multiway-synteny-display'),
     readyTimeout: 180000,
-    viewportHeight: 820,
+    viewportHeight: 833,
     hideTooltip: true,
     clicksChange: "close the legend's gene cluster section",
     actions: [
