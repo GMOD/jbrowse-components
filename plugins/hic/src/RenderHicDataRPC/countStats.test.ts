@@ -186,6 +186,13 @@ test('computeCountStats leaves its input untouched', () => {
   expect([...instances]).toEqual(before)
 })
 
+test('a quantile below 0.5 reads as 0.5, as the scale notice says', () => {
+  const counts = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+  expect(computeCountStats(asInstances(counts), 10, 0.1).quantileScore).toBe(
+    computeCountStats(asInstances(counts), 10, 0.5).quantileScore,
+  )
+})
+
 test('a pre-sorted million counts selects without quadratic blowup', () => {
   // guards the median-of-three pivot: a first-element pivot on sorted input
   // partitions one element at a time, which at this size does not finish

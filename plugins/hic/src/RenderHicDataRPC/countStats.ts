@@ -1,4 +1,7 @@
-import { quantileOf } from '@jbrowse/core/util/quantileExtent'
+import {
+  MIN_DOMAIN_QUANTILE,
+  quantileOf,
+} from '@jbrowse/core/util/quantileExtent'
 
 import { getInstanceCount } from '../LinearHicDisplay/components/shaders/hic.iface.generated.ts'
 
@@ -34,6 +37,10 @@ export function computeCountStats(
     ? { maxScore: 0, quantileScore: 0 }
     : {
         maxScore,
-        quantileScore: quantileOf(finite, n, quantile),
+        quantileScore: quantileOf(
+          finite,
+          n,
+          Math.max(MIN_DOMAIN_QUANTILE, quantile),
+        ),
       }
 }

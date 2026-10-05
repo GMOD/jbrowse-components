@@ -1,6 +1,9 @@
 /** The quantile "Clip outliers" clips at on a scale whose own default is the extremes. */
 export const DEFAULT_CLIP_QUANTILE = 0.99
 
+/** The lowest `domainQuantile` a scale reads, where its two ends meet; one below reads as this. */
+export const MIN_DOMAIN_QUANTILE = 0.5
+
 /**
  * #api
  * The quantile a clip toggle writes: a scale's declared default where that
@@ -133,7 +136,7 @@ export function quantileExtent(
   if (!(quantile < 1)) {
     return finiteExtremes(values, count)
   }
-  const q = Math.max(0.5, quantile)
+  const q = Math.max(MIN_DOMAIN_QUANTILE, quantile)
   const positive = new Float32Array(count)
   const negative = new Float32Array(count)
   let np = 0
