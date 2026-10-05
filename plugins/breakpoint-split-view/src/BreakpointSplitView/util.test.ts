@@ -66,23 +66,17 @@ describe('layoutUnknown', () => {
 
 describe('linksOwnReads', () => {
   test('chained rows link every read in the row', () => {
-    expect(linksOwnReads({ height: 100, unit: 'chain' })).toBe(true)
+    expect(linksOwnReads({ height: 100, bezierArcScope: 'crossRegion' })).toBe(
+      true,
+    )
   })
 
   test('curved connectors on every pair link them too', () => {
-    expect(
-      linksOwnReads({ height: 100, unit: 'read', bezierArcScope: 'all' }),
-    ).toBe(true)
+    expect(linksOwnReads({ height: 100, bezierArcScope: 'all' })).toBe(true)
   })
 
-  test('cross-region curves alone leave the row to the overlay', () => {
-    expect(
-      linksOwnReads({
-        height: 100,
-        unit: 'read',
-        bezierArcScope: 'crossRegion',
-      }),
-    ).toBe(false)
+  test('a display drawing no connectors leaves the row to the overlay', () => {
+    expect(linksOwnReads({ height: 100, bezierArcScope: 'none' })).toBe(false)
     expect(linksOwnReads({ height: 100 })).toBe(false)
   })
 })

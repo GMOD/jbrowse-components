@@ -441,3 +441,35 @@ test('a one-row relaunch of a stacked view rebuilds it with its tracks', async (
 
   expect(panelTrackIds(splitViews(session)[0])).toEqual([['calls']])
 })
+
+// A split read's segments as stops: every stop carries its span, and one zoom
+// serves every panel, so the longest segment sets the window.
+test('segment stops open a panel each, centred, zoomed so the longest fits', async () => {
+  const session = setup()
+  const stops = [
+    { refName: 'ctgA', pos: 60_000, span: 300 },
+    { refName: 'ctgB', pos: 20_000, span: 20_000 },
+    { refName: 'ctgA', pos: 10_000, span: 500 },
+  ]
+  await withWidth(session, () =>
+    navToMultiLevelBreak({
+      session,
+      assemblyName: 'volvox',
+      windowSize: 5000,
+      feature: breakend('ctgA', 60_000, 'A[ctgB:20001['),
+      stops,
+    }),
+  )
+  const view = splitViews(session)[0] as unknown as BreakpointViewModel
+  expect(view.views).toHaveLength(3)
+  // 0.6 of the 20 kb segment either side of its midpoint, over 800 px, rather
+  // than the 5 kb the reader set
+  const bpPerPx = (12_000 * 2) / 800
+  for (const [idx, stop] of stops.entries()) {
+    const lgv = view.views[idx]!
+    expect(lgv.bpPerPx).toBeCloseTo(bpPerPx, 6)
+    const centre = lgv.pxToBp(lgv.width / 2)
+    expect(centre.refName).toBe(stop.refName)
+    expectEdgeAt(centre, stop.pos, bpPerPx)
+  }
+})

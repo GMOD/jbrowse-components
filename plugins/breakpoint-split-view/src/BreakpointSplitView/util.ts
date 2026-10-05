@@ -37,13 +37,12 @@ interface OverlayDisplayBase extends Partial<ReadSource> {
   /** height of the coverage subtrack, on displays that have one */
   coverageDisplayHeight?: number
   /**
-   * What one row stands for; only LinearAlignmentsDisplay's `'chain'` links
-   * reads. Mirrors that plugin's AlignmentsUnit structurally: this plugin has
-   * no dependency on plugin-alignments, so a rename there surfaces as
-   * `undefined` here, not as a type error.
+   * What the display's own connector overlay draws, LinearAlignmentsDisplay's
+   * `bezierArcScope`: `'all'` under curved connectors, `'crossRegion'` in
+   * chain layout, where the per-region line covers the rest. Structural, since
+   * this plugin has no dependency on plugin-alignments, so a rename there
+   * surfaces as `undefined` here, not as a type error.
    */
-  unit?: string
-  /** the same display's curved connectors; `'all'` links every pair itself */
   bezierArcScope?: 'all' | 'crossRegion' | 'none'
   /** the "Filter by..." contract, `JexlFilterSource`, on displays that have one */
   configuredFilters?: () => string[]
@@ -221,9 +220,10 @@ export function calc(track: OverlayTrack, f: Feature) {
 }
 
 // Everything that stays inside one row is already connected by the display
-// itself, whether chained onto rows or curved over the pileup.
+// itself, whether chained onto rows or curved over the pileup: the one scope
+// that draws nothing is the one that leaves the row to this overlay.
 export function linksOwnReads(d: OverlayDisplay) {
-  return d.unit === 'chain' || d.bezierArcScope === 'all'
+  return (d.bezierArcScope ?? 'none') !== 'none'
 }
 
 // A failed `calc` is ambiguous. With a layout, the feature really is off-display
