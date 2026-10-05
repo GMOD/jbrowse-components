@@ -94,6 +94,35 @@ const presigned = register(
   'nrow(df_marks_line_posneg) > 0',
 )
 
+function wiggle(display: Record<string, unknown>) {
+  return scriptFor(
+    [track(main, 'wiggle_track_posneg', 'LinearWiggleDisplay', display)],
+    [{ refName: 'ctgA', start: 0, end: 50000 }],
+  )
+}
+
+const layerRows = 'nrow(ggplot_build(p_wiggle_track_posneg)$data[[1]])'
+const layerColours = (aes: string) =>
+  `sort(unique(ggplot_build(p_wiggle_track_posneg)$data[[1]]$${aes}))`
+
+const wiggleBar = register('wiggle_bar', wiggle({}), layerColours('fill'))
+const wiggleBarRows = register('wiggle_bar_rows', wiggle({}), layerRows)
+const wiggleLine = register(
+  'wiggle_line',
+  wiggle({ mark: 'line' }),
+  layerColours('colour'),
+)
+const wiggleHeat = register(
+  'wiggle_heatmap',
+  wiggle({ mark: 'heatmap' }),
+  `length(unique(ggplot_build(p_wiggle_track_posneg)$data[[1]]$fill)) > 2`,
+)
+const wigglePlain = register(
+  'wiggle_plain',
+  wiggle({ color: 'darkgreen' }),
+  layerColours('fill'),
+)
+
 maybe('the emitted script, run under R', () => {
   beforeAll(() => {
     for (const [k, v] of runCases(cases)) {
@@ -115,5 +144,18 @@ maybe('the emitted script, run under R', () => {
 
   it('reads a BigWig whose URL hides its extension', () => {
     expect(results.get(presigned)).toBe('[1] TRUE')
+  })
+
+  it('draws the default wiggle display as bars in the pos/neg pair', () => {
+    expect(
+      Number(results.get(wiggleBarRows)?.replace('[1] ', '')),
+    ).toBeGreaterThan(0)
+    expect(results.get(wiggleBar)).toBe('[1] "#0068d1" "#e01e26"')
+  })
+
+  it('draws a wiggle line, heatmap and plain colour', () => {
+    expect(results.get(wiggleLine)).toBe('[1] "#0068d1" "#e01e26"')
+    expect(results.get(wiggleHeat)).toBe('[1] TRUE')
+    expect(results.get(wigglePlain)).toBe('[1] "darkgreen"')
   })
 })

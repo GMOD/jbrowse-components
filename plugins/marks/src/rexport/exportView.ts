@@ -10,6 +10,7 @@ import {
 } from './frameFor.ts'
 import { fieldsRead, markPlot } from './markToPlot.ts'
 import { assembleRScript } from './rScript.ts'
+import { wiggleDisplaySpec } from './wiggleToMarks.ts'
 
 import type { FeatureDisplaySpec } from './featureToPlot.ts'
 import type { ReaderName } from './frameFor.ts'
@@ -91,14 +92,25 @@ function locate(
   }
 }
 
-const markExporter: RExporter = (track, regions) => {
-  const located = locate(track, Object.keys(READERS))
+function markExporter(
+  accepted: readonly string[],
+  specOf: (track: KeyedTrack) => DisplaySpec,
+): RExporter {
+  return (track, regions) => markPanels(track, regions, accepted, specOf(track))
+}
+
+function markPanels(
+  track: KeyedTrack,
+  regions: readonly Region[],
+  accepted: readonly string[],
+  display: DisplaySpec,
+): RExportPanels | RExportSkipped {
+  const located = locate(track, accepted)
   if ('skipped' in located) {
     return located
   }
   const { type, uri, index } = located
   const { key } = track
-  const display = track.display as unknown as DisplaySpec
   const base = frameFor({
     type,
     uri,
@@ -156,7 +168,13 @@ const alignmentsExporter: RExporter = (track, regions) => {
 }
 
 export const BUILTIN_EXPORTERS: Record<string, RExporter> = {
-  LinearMarkDisplay: markExporter,
+  LinearMarkDisplay: markExporter(
+    Object.keys(READERS),
+    track => track.display as unknown as DisplaySpec,
+  ),
+  LinearWiggleDisplay: markExporter(['BigWigAdapter'], track =>
+    wiggleDisplaySpec(track.display),
+  ),
   LinearBasicDisplay: featureExporter,
   LinearAlignmentsDisplay: alignmentsExporter,
 }
