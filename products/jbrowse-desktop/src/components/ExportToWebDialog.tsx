@@ -236,7 +236,7 @@ const ExportToWebDialog = observer(function ExportToWebDialog({
   // bake at a different moment than the snapshot was taken, and must not blank
   // the portability warnings while it re-encodes.
   const prepared = useFetch(['exportToWebPlan'], () =>
-    prepareExport(snapshot, session, forms),
+    prepareExport(snapshot, forms),
   )
   // The short mode is the only one that leaves this computer, so it waits for
   // the user to ask; the inline modes assemble locally and need no permission.
@@ -347,7 +347,7 @@ const ExportToWebDialog = observer(function ExportToWebDialog({
               <ShareLinkField value={url} />
             )}
             {preparation ? (
-              <SessionJsonPanel session={preparation.bakedSession} />
+              <SessionJsonPanel session={preparation.plan.session} />
             ) : null}
           </>
         )}

@@ -96,7 +96,7 @@ export const TASKS: EvalTask[] = [
     grade: `
       const views = session.views.map(v => ({ id: v.id, type: v.type, loc: v.coarseVisibleLocStrings, tracks: v.tracks.map(t => t.configuration.trackId) }))
       const second = views.find(v => v.type === 'LinearGenomeView' && String(v.loc).startsWith('ctgB') && v.tracks.includes('gff3tabix_genes'))
-      const sideBySide = jb.mst.getSnapshot(session).useWorkspaces === true
+      const sideBySide = session.panels.length > 1
       return { pass: views.length === 2 && !!second && sideBySide, detail: { views, sideBySide } }`,
   },
   {

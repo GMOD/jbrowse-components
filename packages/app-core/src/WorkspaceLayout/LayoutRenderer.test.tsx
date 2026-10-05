@@ -51,6 +51,48 @@ function renderLayout(session: ReturnType<typeof TestSession.create>) {
   return render(<Harness session={session} />)
 }
 
+// the strip only shows once there is a second tab or cell
+function withTwoTabs(session: ReturnType<typeof TestSession.create>) {
+  const panel = session.panels[0]!
+  const first = panel.tabs[0]!.id
+  session.addTab(panel.id)
+  session.setActiveTab(panel.id, first)
+  return session
+}
+
+test('a lone cell with one tab draws no strip', () => {
+  const { container } = renderLayout(TestSession.create({ name: 't' }))
+
+  expect(container.querySelector('[data-tab-strip]')).toBeNull()
+  expect(container.querySelector('[role="tabpanel"]')).toBeTruthy()
+})
+
+test('a second tab or a second cell brings the strip in', () => {
+  const tabbed = withTwoTabs(TestSession.create({ name: 't' }))
+  const split = TestSession.create({ name: 't' })
+  split.splitPanel(split.panels[0]!.id, 'row')
+
+  expect(
+    renderLayout(tabbed).container.querySelectorAll('[data-tab-strip]'),
+  ).toHaveLength(1)
+  expect(
+    renderLayout(split).container.querySelectorAll('[data-tab-strip]'),
+  ).toHaveLength(2)
+})
+
+// the strip holds the restore control, so a maximized one-tab cell keeps it
+test('a maximized cell keeps its strip while other cells exist', () => {
+  const session = TestSession.create({ name: 't' })
+  const first = session.panels[0]!.id
+  session.splitPanel(first, 'row')
+  session.toggleMaximizedPanel(first)
+
+  const { container } = renderLayout(session)
+
+  expect(container.querySelectorAll('[data-panel-id]')).toHaveLength(1)
+  expect(container.querySelector('[data-tab-strip]')).toBeTruthy()
+})
+
 test('switching tabs mounts the new tab content afresh', () => {
   function FirstTab({ tabId }: { tabId: string }) {
     const [first] = useState(tabId)
@@ -194,7 +236,7 @@ test('a nested split renders as a nested flex container', () => {
 })
 
 test('a renamed tab shows its title', () => {
-  const session = TestSession.create({ name: 't' })
+  const session = withTwoTabs(TestSession.create({ name: 't' }))
   session.renameTab(session.tabs[0]!.id, 'My comparison')
 
   renderLayout(session)
@@ -235,7 +277,7 @@ test('the cell wrapper carries the size, and does not collapse either', () => {
 
 // the chrome stays dark in a light theme, so the frame never reads as content
 test('the tab strip is fixed workspace chrome, not the MUI theme', () => {
-  const session = TestSession.create({ name: 't' })
+  const session = withTwoTabs(TestSession.create({ name: 't' }))
   const { container } = renderLayout(session)
 
   const strip = container.querySelector('[data-tab-strip]')!
@@ -250,7 +292,7 @@ test('the tab strip is fixed workspace chrome, not the MUI theme', () => {
 })
 
 test('the panel body is content, so it follows the theme rather than the chrome', () => {
-  const session = TestSession.create({ name: 't' })
+  const session = withTwoTabs(TestSession.create({ name: 't' }))
   const { container } = renderLayout(session)
 
   const panel = container.querySelector('[data-panel-id]')!
@@ -265,7 +307,7 @@ test('the panel body is content, so it follows the theme rather than the chrome'
 })
 
 test('the tab list does not grow, so the panel actions stay beside the tabs', () => {
-  const session = TestSession.create({ name: 't' })
+  const session = withTwoTabs(TestSession.create({ name: 't' }))
   const { container } = renderLayout(session)
 
   const tabs = container.querySelector('[role="tab"]')!.parentElement!
@@ -376,7 +418,7 @@ test('arrowing wraps around rather than stopping at the ends', () => {
 })
 
 test('the panel actions are in the strip but not in the tablist', () => {
-  const session = TestSession.create({ name: 't' })
+  const session = withTwoTabs(TestSession.create({ name: 't' }))
   const { container } = render(
     <LayoutRenderer
       node={session.tree}
@@ -398,7 +440,7 @@ test('the panel actions are in the strip but not in the tablist', () => {
 })
 
 test('the shown tab and its panel name each other', () => {
-  const session = TestSession.create({ name: 't' })
+  const session = withTwoTabs(TestSession.create({ name: 't' }))
   const { container } = renderLayout(session)
 
   const tab = container.querySelector('[role="tab"]')!
@@ -553,7 +595,7 @@ test('pointercancel ends the resize', () => {
 
 // jsdom computes no layout, so only the handler's arithmetic is checkable
 test('a mouse wheel over the strip scrolls it sideways', () => {
-  const session = TestSession.create({ name: 't' })
+  const session = withTwoTabs(TestSession.create({ name: 't' }))
   const { container } = renderLayout(session)
   const list = container.querySelector('[role="tablist"]') as HTMLElement
 
@@ -567,7 +609,7 @@ test('a mouse wheel over the strip scrolls it sideways', () => {
 
 // Firefox reports a mouse wheel in lines; Chrome-only checks cannot see this
 test('a wheel reporting lines or pages is converted to pixels', () => {
-  const session = TestSession.create({ name: 't' })
+  const session = withTwoTabs(TestSession.create({ name: 't' }))
   const { container } = renderLayout(session)
   const list = container.querySelector('[role="tablist"]') as HTMLElement
 
@@ -588,7 +630,7 @@ test('a wheel reporting lines or pages is converted to pixels', () => {
 
 // the browser already applied a trackpad's deltaX
 test('a horizontal gesture is left to the browser', () => {
-  const session = TestSession.create({ name: 't' })
+  const session = withTwoTabs(TestSession.create({ name: 't' }))
   const { container } = renderLayout(session)
   const list = container.querySelector('[role="tablist"]') as HTMLElement
 

@@ -3,14 +3,13 @@ import { encodeSessionParam, fetchJson } from '@jbrowse/core/util'
 import { addRelativeUris } from '@jbrowse/core/util/addRelativeUris'
 import {
   DEFAULT_WEB_BASE_URL,
-  bakeSessionCascades,
   buildWebExportUrl,
   planWebExport,
 } from '@jbrowse/product-core'
 
 import packageJSON from '../../package.json' with { type: 'json' }
 
-import type { AbstractSessionModel, SessionShareMode } from '@jbrowse/core/util'
+import type { SessionShareMode } from '@jbrowse/core/util'
 import type {
   HostedBaseConfig,
   HydratedForms,
@@ -28,15 +27,12 @@ import type {
 
 export interface PreparedExport {
   plan: WebExportPlan
-  // plan.session with the live session's read-time cascades flattened in
-  bakedSession: Record<string, unknown>
   // the share store a short link must upload to, see below
   shareURL: string
 }
 
 export async function prepareExport(
   snapshot: WebExportInput,
-  session: AbstractSessionModel,
   forms: HydratedForms,
 ): Promise<PreparedExport> {
   const sourceConfigUrl = snapshot.configuration?.sourceConfigUrl
@@ -62,11 +58,6 @@ export async function prepareExport(
   )
   return {
     plan,
-    // Stamp what this desktop instance resolves at read time, the same as
-    // jbrowse-web's ShareDialog, so the exported session shows what the sender
-    // saw. Not `getShareableSessionSnapshot`, because the snapshot being baked
-    // is planWebExport's transformed one rather than the live session's.
-    bakedSession: bakeSessionCascades(session, plan.session),
     // A short link uploads to the share server that the export TARGET reads back
     // from — never this desktop instance's own shareURL config, since Desktop never
     // reads share links at all. That target is DEFAULT_WEB_BASE_URL loading
@@ -110,10 +101,10 @@ export async function buildLink(
   prepared: PreparedExport,
   mode: SessionShareMode,
 ) {
-  const { plan, bakedSession, shareURL } = prepared
+  const { plan, shareURL } = prepared
   const { sessionParam, password } = await encodeSessionParam(
     mode,
-    bakedSession,
+    plan.session,
     { shareURL, referer: DEFAULT_WEB_BASE_URL },
   )
   return buildWebExportUrl(plan, sessionParam, {

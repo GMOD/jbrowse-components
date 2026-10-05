@@ -132,43 +132,8 @@ export function MultipleViewsSessionMixin(pluginManager: PluginManager) {
         stickyViewHeaders: types.optional(types.boolean, () =>
           localStorageGetBoolean('stickyViewHeaders', true),
         ),
-        /**
-         * #property
-         * enables the tabbed/tiled workspace layout for this session. Undefined
-         * means unspecified — read `effectiveUseWorkspaces`.
-         */
-        useWorkspaces: types.stripDefault(
-          types.maybe(types.boolean),
-          undefined,
-        ),
       }),
     )
-    .views(self => ({
-      /**
-       * #getter
-       * resolved workspaces flag (never undefined): this session's value, else
-       * the user preference over the `configuration.preferences.useWorkspaces`
-       * admin default. Every consumer reads this, not the raw property — only
-       * sessions built from a snapshot or a spec `layout` set that, so the
-       * admin default is what reaches the arrivals that bypass defaultSession.
-       */
-      get effectiveUseWorkspaces(): boolean {
-        return (
-          self.useWorkspaces ?? self.getPreference('useWorkspaces') === true
-        )
-      },
-      /**
-       * #getter
-       * what `effectiveUseWorkspaces` becomes after `resetUseWorkspaces` — the
-       * admin default, with both this session's own value and the user's
-       * override out of the way. The Preferences reset diff needs this rather
-       * than the override map, which can't see a session-scoped value (a spec
-       * `layout`, a "move view to a tab") and so reported nothing to reset.
-       */
-      get defaultUseWorkspaces(): boolean {
-        return self.getPreferenceDefault('useWorkspaces') === true
-      },
-    }))
     .actions(self => {
       // `scopeIds` narrows the move to a subset of the stack: in a tabbed
       // workspace "move this view up" means up past the previous view IN THIS
@@ -430,38 +395,10 @@ export function MultipleViewsSessionMixin(pluginManager: PluginManager) {
 
         /**
          * #action
-         * set the workspaces layout for this session only, leaving the user's
-         * personal default untouched. For session-scoped intent — a spec
-         * carrying a `layout`, or an ad-hoc "move view to a tab/split" — where
-         * rewriting the visitor's global preference would be a surprise. The
-         * user-facing default toggle is `setUseWorkspacesPreference`.
+         * Does nothing: the workspace is always on. Kept because published
+         * protein3d and msaview bundles call it after placing a view.
          */
-        setUseWorkspaces(useWorkspaces: boolean) {
-          self.useWorkspaces = useWorkspaces
-        },
-
-        /**
-         * #action
-         * the user-facing workspaces toggle: applies to this session and
-         * becomes their default for sessions that don't specify one. Persisted
-         * only here, on an explicit toggle — an autorun mirroring the resolved
-         * value would bake the admin default into every visitor's localStorage
-         * on first load, so a later admin change could never reach them.
-         */
-        setUseWorkspacesPreference(useWorkspaces: boolean) {
-          self.useWorkspaces = useWorkspaces
-          self.setPreferenceOverride('useWorkspaces', useWorkspaces)
-        },
-
-        /**
-         * #action
-         * drop both this session's explicit value and the user's override so
-         * workspaces falls back to the admin default
-         */
-        resetUseWorkspaces() {
-          self.useWorkspaces = undefined
-          self.clearPreferenceOverride('useWorkspaces')
-        },
+        setUseWorkspaces(_useWorkspaces?: boolean) {},
 
         afterAttach() {
           addDisposer(
@@ -507,8 +444,6 @@ export function MultipleViewsSessionMixin(pluginManager: PluginManager) {
       // stickyViewHeaders is a personal per-browser UI preference, not shared
       // view state: destructure it out so it never lands in the snapshot. It
       // stays localStorage-backed, so each browser keeps its own value.
-      // useWorkspaces stays: it changes layout intent (and pairs with the
-      // `layout` tree the snapshot carries), which is meaningful to share.
       const { stickyViewHeaders, ...rest } = snap
       return rest as typeof snap
     })

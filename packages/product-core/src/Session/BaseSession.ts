@@ -208,10 +208,7 @@ export function BaseSessionModel<
       /**
        * #method
        * the admin/embedder `configuration.preferences` value for a key, ignoring
-       * any runtime override — i.e. what a reset falls back to. Exposed rather
-       * than inlined because "differs from the default" is a question the
-       * Preferences reset diff asks about settings this map doesn't hold (see
-       * `defaultUseWorkspaces`).
+       * any runtime override — i.e. what a reset falls back to
        */
       getPreferenceDefault(key: string): unknown {
         const { preferences } = self.configuration

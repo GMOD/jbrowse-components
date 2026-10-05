@@ -23,7 +23,6 @@ import {
   preferencesMenuItem,
   redoMenuItem,
   undoMenuItem,
-  workspacesMenuItem,
 } from '@jbrowse/product-core'
 import { sessionLastUsed } from '@jbrowse/web-core'
 import FileCopyIcon from '@mui/icons-material/FileCopy'
@@ -565,7 +564,6 @@ export default function RootModel({
               },
 
               preferencesMenuItem(pluginManager, PreferencesDialog),
-              workspacesMenuItem(self.session),
             ],
           },
         ]

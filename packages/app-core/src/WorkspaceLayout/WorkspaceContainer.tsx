@@ -23,11 +23,6 @@ const useStyles = makeStyles()(theme => ({
     gridRow: 'components',
     background: theme.palette.background.default,
   },
-  stack: {
-    display: 'flex',
-    flexDirection: 'column',
-    minWidth: 0,
-  },
   empty: {
     display: 'flex',
     alignItems: 'center',
@@ -122,11 +117,7 @@ export const WorkspaceContainer = observer(function WorkspaceContainer({
       renderTabContent: tab => {
         const views = viewsOf(session, tab.viewIds)
         return views.length > 0 ? (
-          <ViewStack
-            views={views}
-            session={session}
-            className={classes.stack}
-          />
+          <ViewStack views={views} session={session} />
         ) : (
           <div className={classes.empty}>
             <Suspense fallback={null}>
@@ -136,7 +127,7 @@ export const WorkspaceContainer = observer(function WorkspaceContainer({
         )
       },
     }),
-    [session, handlers, closeTab, closePanel, classes.stack, classes.empty],
+    [session, handlers, closeTab, closePanel, classes.empty],
   )
 
   return (

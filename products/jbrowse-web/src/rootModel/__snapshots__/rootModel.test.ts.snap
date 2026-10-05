@@ -147,22 +147,6 @@ exports[`adds menus 1`] = `
         "label": "Preferences",
         "onClick": [Function],
       },
-      {
-        "checked": false,
-        "helpText": "Workspaces allow you to organize views into tabs and tiles. There are a variety of unique features, for instance, you can drag views between tabs or split them side-by-side. Try clicking and dragging the tab header to create a new split",
-        "icon": {
-          "$$typeof": Symbol(react.memo),
-          "compare": null,
-          "type": {
-            "$$typeof": Symbol(react.forward_ref),
-            "render": [Function],
-          },
-        },
-        "keepMenuOpen": false,
-        "label": "Use workspaces",
-        "onClick": [Function],
-        "type": "checkbox",
-      },
     ],
   },
 ]
@@ -314,22 +298,6 @@ exports[`adds menus 2`] = `
         },
         "label": "Preferences",
         "onClick": [Function],
-      },
-      {
-        "checked": false,
-        "helpText": "Workspaces allow you to organize views into tabs and tiles. There are a variety of unique features, for instance, you can drag views between tabs or split them side-by-side. Try clicking and dragging the tab header to create a new split",
-        "icon": {
-          "$$typeof": Symbol(react.memo),
-          "compare": null,
-          "type": {
-            "$$typeof": Symbol(react.forward_ref),
-            "render": [Function],
-          },
-        },
-        "keepMenuOpen": false,
-        "label": "Use workspaces",
-        "onClick": [Function],
-        "type": "checkbox",
       },
     ],
   },

@@ -4,10 +4,8 @@ import {
   preferencesMenuItem,
   redoMenuItem,
   undoMenuItem,
-  workspacesMenuItem,
 } from './menuItems.ts'
 
-import type { SessionWithMultipleViews } from '../Session/index.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { MenuItem, NormalMenuItem } from '@jbrowse/core/ui'
 
@@ -105,23 +103,5 @@ describe('undoMenuItem / redoMenuItem', () => {
     history.canRedo = false
     clickOf(redoMenuItem(history))()
     expect(redo).toHaveBeenCalledTimes(1)
-  })
-})
-
-describe('workspacesMenuItem', () => {
-  it('reflects current state and toggles on click', () => {
-    const setUseWorkspacesPreference = jest.fn()
-    const item = workspacesMenuItem({
-      effectiveUseWorkspaces: true,
-      setUseWorkspacesPreference,
-    } as unknown as SessionWithMultipleViews)
-    expect('checked' in item && item.checked).toBe(true)
-    clickOf(item)()
-    expect(setUseWorkspacesPreference).toHaveBeenCalledWith(false)
-  })
-
-  it('defaults checked to false when no session', () => {
-    const item = workspacesMenuItem(undefined)
-    expect('checked' in item && item.checked).toBe(false)
   })
 })

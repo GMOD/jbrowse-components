@@ -59,7 +59,6 @@ async function openViewOptions(
 
 test('a view can be moved into a new tab or either split', async () => {
   const { session, user } = setup()
-  session.setUseWorkspaces(false)
   await openViewOptions(user, session.views[0])
 
   expect(await screen.findByText('Move to new tab')).toBeTruthy()
@@ -69,7 +68,6 @@ test('a view can be moved into a new tab or either split', async () => {
 
 test('a view moves into another tab, by that tab’s name, at its bottom', async () => {
   const { session, user } = setup()
-  session.setUseWorkspaces(true)
   const [first, second, third] = session.views
   session.moveViewToNewTab(third!.id)
   const target = session.tabContainingView(third!.id)!.tab.id
@@ -90,7 +88,6 @@ test('a view moves into another tab, by that tab’s name, at its bottom', async
 
 test('with one tab there is no tab to move to', async () => {
   const { session, user } = setup()
-  session.setUseWorkspaces(true)
   await openViewOptions(user, session.views[0])
 
   expect(await screen.findByText('Move to new tab')).toBeTruthy()

@@ -107,7 +107,6 @@ function setup(
   } = {},
 ) {
   const views: StubView[] = []
-  const setUseWorkspaces = jest.fn()
   // Returns what the real action returns — the view ids the spec names,
   // in the order it states — because that return value is the whole
   // input to `orderViews`, and a stub returning `[]` cannot tell a
@@ -126,10 +125,9 @@ function setup(
     ),
   )
   const orderViews = jest.fn()
-  // The composite the real WorkspaceLayoutMixin.layoutViews is, over the three
+  // The composite the real WorkspaceLayoutMixin.layoutViews is, over the two
   // stubs above, so the assertions on each of them keep meaning what they say.
   const layoutViews = jest.fn((spec: LayoutSpecNode) => {
-    setUseWorkspaces(true)
     const ids = applyLayoutSpec(spec)
     orderViews(ids)
     return ids
@@ -138,9 +136,7 @@ function setup(
     views,
     notifyError: jest.fn(),
     notify: jest.fn(),
-    ...(workspaces
-      ? { layoutViews, setUseWorkspaces, applyLayoutSpec, orderViews }
-      : undefined),
+    ...(workspaces ? { layoutViews, applyLayoutSpec, orderViews } : undefined),
     ...connections?.session,
   }
   const rootModel = { session, setSession: jest.fn() }
@@ -198,7 +194,6 @@ test('a layout index names every view its spec entry created, not a session posi
     pluginManager,
   )
 
-  expect(session.setUseWorkspaces).toHaveBeenCalledWith(true)
   expect(session.applyLayoutSpec).toHaveBeenCalledWith({
     direction: 'horizontal',
     children: [{ views: ['a-main', 'a-aux'] }, { views: ['b'] }],
@@ -507,9 +502,8 @@ test('a node stating nothing costs its own cell, not the layout', async () => {
 })
 
 // The layout is the LAST thing the spec does, so a layout the resolver will not
-// arrange used to reach the whole load's catch — after `setUseWorkspaces(true)`
-// had run, with the views left unordered and the spec's error reported as the
-// session's.
+// arrange used to reach the whole load's catch, with the views left unordered
+// and the spec's error reported as the session's.
 test.each([
   [
     'seats one view twice',

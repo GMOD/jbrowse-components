@@ -464,6 +464,42 @@ function createViewsSession() {
   return session
 }
 
+describe('a session saved before the workspace was always on', () => {
+  const split = {
+    id: 'branch-1',
+    size: 1,
+    direction: 'row',
+    children: [
+      { id: 'panel-1', size: 0.5, tabs: [{ id: 'tab-1', viewIds: ['v1'] }] },
+      { id: 'panel-2', size: 0.5, tabs: [{ id: 'tab-2', viewIds: ['v2'] }] },
+    ],
+  }
+  const views = [{ id: 'v1' }, { id: 'v2' }]
+
+  test('with workspaces off opens as the stack it showed', () => {
+    const session = ViewsSession.create({
+      views,
+      layout: split,
+      activePanelId: 'panel-2',
+      useWorkspaces: false,
+    } as never)
+    session.homeUnassignedViews(['v1', 'v2'])
+
+    expect(session.panels).toHaveLength(1)
+    expect(session.tabs.map(t => [...t.viewIds])).toEqual([['v1', 'v2']])
+  })
+
+  test('with workspaces on keeps its arrangement', () => {
+    const session = ViewsSession.create({
+      views,
+      layout: split,
+      useWorkspaces: true,
+    } as never)
+
+    expect(session.panels.map(p => p.id)).toEqual(['panel-1', 'panel-2'])
+  })
+})
+
 test('applyLayoutSpec counts a leaf index into session.views, beside ids', () => {
   const session = createViewsSession()
 
@@ -479,9 +515,6 @@ test('applyLayoutSpec counts a leaf index into session.views, beside ids', () =>
 describe('layoutViews', () => {
   const order: string[] = []
   const HostSession = ViewsSession.actions(() => ({
-    setUseWorkspaces(on: boolean) {
-      order.push(`workspaces:${on}`)
-    },
     orderViews(ids: string[]) {
       order.push(`order:${ids.join(',')}`)
     },
@@ -491,7 +524,7 @@ describe('layoutViews', () => {
     order.length = 0
   })
 
-  test('turns workspaces on, applies the spec and orders the views', () => {
+  test('applies the spec and orders the views', () => {
     const session = HostSession.create({
       views: [{ id: 'v1' }, { id: 'v2' }, { id: 'v3' }],
     })
@@ -501,7 +534,7 @@ describe('layoutViews', () => {
       children: [{ views: ['v2'] }, { views: [0, 'v3'] }],
     })
     expect(seated).toEqual(['v2', 'v1', 'v3'])
-    expect(order).toEqual(['workspaces:true', 'order:v2,v1,v3'])
+    expect(order).toEqual(['order:v2,v1,v3'])
     expect(session.tabs.map(t => [...t.viewIds])).toEqual([
       ['v2'],
       ['v1', 'v3'],

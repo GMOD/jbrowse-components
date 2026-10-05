@@ -1031,8 +1031,8 @@ loaded, through the config's `plugins`, a hosted config, or a session's own
 
 ### Tiled views / Workspaces
 
-A spec's `layout` arranges its views into a tiled workspace, and turns
-workspaces mode on by doing so. It is a tree of two kinds of node:
+A spec's `layout` arranges its views into a tiled workspace. It is a tree of two
+kinds of node:
 
 - a **panel**, with a `views` array of indices into the spec's own `views`,
   stacked vertically. An index names every view that entry created: a

@@ -12,7 +12,6 @@ test('a stated within-tab order is what the tab renders', () => {
   const session = createTestSession()
   const a = session.addView('LinearGenomeView', {}).id
   const b = session.addView('LinearGenomeView', {}).id
-  session.setUseWorkspaces(true)
 
   // the spec stacks b above a, the reverse of the order they were added in
   session.orderViews(session.applyLayoutSpec({ views: [b, a] }))
@@ -35,7 +34,6 @@ test('an order for one panel leaves the views of another where they sit', () => 
   const a = session.addView('LinearGenomeView', {}).id
   const b = session.addView('LinearGenomeView', {}).id
   const c = session.addView('LinearGenomeView', {}).id
-  session.setUseWorkspaces(true)
 
   // left panel keeps launch order; right panel reverses its own
   session.orderViews(

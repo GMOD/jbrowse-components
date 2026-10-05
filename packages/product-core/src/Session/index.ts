@@ -53,10 +53,7 @@ export type {
 } from './SessionTracks.ts'
 export { hydratedForms } from './hydratedForms.ts'
 export type { HydratedForms } from './hydratedForms.ts'
-export {
-  bakeSessionCascades,
-  getShareableSessionSnapshot,
-} from './shareableSnapshot.ts'
+export { getShareableSessionSnapshot } from './shareableSnapshot.ts'
 export {
   TrackMenuItemsSessionMixin,
   aboutTrackMenuItem,

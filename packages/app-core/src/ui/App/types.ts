@@ -1,3 +1,4 @@
+import type { WorkspaceLayout } from '../../WorkspaceLayout/model.ts'
 import type { Menu } from '../../menus.ts'
 import type {
   ErrorDialogState,
@@ -25,11 +26,11 @@ export type WorkspaceSessionType = SessionWithFocusedViewAndDrawerWidgets
 // views. An extension rather than a parallel list, since App hands the same
 // session to ViewsContainer and on to the workspace.
 export type AppSession = WorkspaceSessionType &
+  WorkspaceLayout &
   ThemeSwitchSession & {
     menus: () => Menu[]
     errorDialog: ErrorDialogState | undefined
     setErrorDialog: (state: ErrorDialogState | undefined) => void
-    effectiveUseWorkspaces: boolean
     renameCurrentSession: (arg: string) => void
     snackbarMessages: SnackbarMessage[]
     popSnackbarMessage: () => unknown

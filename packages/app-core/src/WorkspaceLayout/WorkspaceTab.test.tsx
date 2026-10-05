@@ -148,8 +148,11 @@ describe('renaming inside the tab strip', () => {
 
   function openTheBox() {
     const session = TestSession.create({ name: 't' })
+    const panel = session.panels[0]!
+    session.addTab(panel.id)
+    session.setActiveTab(panel.id, panel.tabs[0]!.id)
     render(<Harness session={session} />)
-    fireEvent.doubleClick(screen.getByText('Empty'))
+    fireEvent.doubleClick(screen.getAllByText('Empty')[0]!)
     return { session, input: screen.getByRole('textbox') }
   }
 

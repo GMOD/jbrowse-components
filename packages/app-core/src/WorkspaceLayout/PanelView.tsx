@@ -82,13 +82,15 @@ export const PanelView = observer(function PanelView({
         }
       }}
     >
-      <TabStrip
-        panel={panel}
-        layout={layout}
-        chrome={chrome}
-        active={active}
-        cellActive={layout.activePanelId === panel.id}
-      />
+      {layout.panels.length > 1 || panel.tabs.length > 1 ? (
+        <TabStrip
+          panel={panel}
+          layout={layout}
+          chrome={chrome}
+          active={active}
+          cellActive={layout.activePanelId === panel.id}
+        />
+      ) : null}
 
       {active ? (
         <TabPanel

@@ -3,28 +3,12 @@ import { act, fireEvent, render, waitFor } from '@testing-library/react'
 import ExportToWebDialog from './ExportToWebDialog.tsx'
 
 import type { AbstractSessionModel } from '@jbrowse/core/util'
-import type * as ProductCore from '@jbrowse/product-core'
 import type { HydratedForms, WebExportInput } from '@jbrowse/product-core'
-
-// The dialog's only read of the live session is the workspaces stamp, which needs a
-// whole app to produce anything; pass the plan's session through so the rest of
-// the pipeline (planning, encoding, url assembly) stays real.
-jest.mock('@jbrowse/product-core', () => {
-  const actual = jest.requireActual<typeof ProductCore>('@jbrowse/product-core')
-  return {
-    ...actual,
-    bakeSessionCascades: (
-      _session: unknown,
-      snapshot: Record<string, unknown>,
-    ) => snapshot,
-  }
-})
 
 // the configs below are written the way a schema writes them back already
 const asWritten: HydratedForms = { track: t => t, assembly: a => a }
 
-// stands in for the live session — only ever handed back to the mocked bake and
-// to copyTextWithSession's notification
+// stands in for the live session, for copyTextWithSession's notification
 const session = { notify: () => {} } as unknown as AbstractSessionModel
 
 const LOCAL_TRACK = {

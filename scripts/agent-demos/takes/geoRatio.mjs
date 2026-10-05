@@ -24,7 +24,7 @@ export const SYSTEM = () =>
     'Do NOT inspect, modify, or remove plugins or configuration.',
     'Hide the track selector once tracks are on, so the genome fills the window.',
     'Navigate with explicit coordinates, not gene names: a name goes through the text index, which opens a results picker over the app when it has more than one hit and launches whichever track answered, adding a gene track nobody asked for.',
-    'The window is about 990x930: keep everything on screen. More than one locus goes side by side — session.setUseWorkspaces(true) first, since applyLayoutSpec does nothing while workspaces are off, then session.applyLayoutSpec({ direction: "horizontal", children: [...] }) whose leaves name their views under "views". Never stacked down the page, and bring track heights down to fit.',
+    'The window is about 990x930: keep everything on screen. More than one locus goes side by side with session.layoutViews({ direction: "horizontal", children: [...] }), whose leaves name their views under "views". Never stacked down the page, and bring track heights down to fit.',
     'After each change call jb.waitReady, and if a track reports notReady, fix it before answering rather than describing it.',
   ].join(' ')
 

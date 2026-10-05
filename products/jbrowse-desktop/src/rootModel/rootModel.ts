@@ -24,7 +24,6 @@ import {
   preferencesMenuItem,
   redoMenuItem,
   undoMenuItem,
-  workspacesMenuItem,
 } from '@jbrowse/product-core'
 import AppsIcon from '@mui/icons-material/Apps'
 import DescriptionIcon from '@mui/icons-material/Description'
@@ -549,7 +548,6 @@ export default function rootModelFactory({
                       )
                     },
                   },
-                  workspacesMenuItem(self.session),
                 ],
               },
               // The native menu bar that carries these exists on macOS alone

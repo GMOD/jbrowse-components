@@ -47,17 +47,6 @@ export function PreferencesConfigSchemaFactory() {
       defaultValue: true,
     },
     /**
-     * #slot configuration.preferences.useWorkspaces
-     * when true, views open in the tabbed/tiled workspace layout rather than
-     * stacked vertically. Only the default: a session that names
-     * `useWorkspaces` itself (a shared snapshot, or a session spec carrying a
-     * `layout`) still wins, and a user's own toggle overrides it.
-     */
-    useWorkspaces: {
-      type: 'boolean',
-      defaultValue: false,
-    },
-    /**
      * #slot configuration.preferences.developerMode
      * when true, the ordering-contract checks a display or plugin can break
      * report themselves in the app rather than only in a development build.

@@ -496,5 +496,16 @@ describe('JBrowseWebSessionModel', () => {
       session.clearPreferenceOverrides()
       expect(session.getPreferenceChanges()).toEqual([])
     })
+
+    it('drops a stored override the config no longer declares', () => {
+      localStorage.setItem(
+        'jbrowsePreferences',
+        JSON.stringify({ useWorkspaces: true, scrollZoom: true }),
+      )
+      const session = createTestSession()
+      expect(session.getPreferenceChanges()).toEqual([
+        { path: ['scrollZoom'], from: false, to: true },
+      ])
+    })
   })
 })

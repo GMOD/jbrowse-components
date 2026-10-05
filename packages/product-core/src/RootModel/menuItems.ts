@@ -5,13 +5,11 @@ import GetAppIcon from '@mui/icons-material/GetApp'
 import PublishIcon from '@mui/icons-material/Publish'
 import RedoIcon from '@mui/icons-material/Redo'
 import SettingsIcon from '@mui/icons-material/Settings'
-import SpaceDashboardIcon from '@mui/icons-material/SpaceDashboard'
 import StorageIcon from '@mui/icons-material/Storage'
 import UndoIcon from '@mui/icons-material/Undo'
 
 import { getShareableSessionSnapshot } from '../Session/index.ts'
 
-import type { SessionWithMultipleViews } from '../Session/index.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { MenuItem } from '@jbrowse/core/ui'
 import type {
@@ -25,9 +23,6 @@ import type {
 
 const MULTI_VIEW_WARNING =
   'This will add a track to the first view. Note: if you want to open a track in a specific view open the track selector for that view and use the add track (plus icon) in the bottom right'
-
-const WORKSPACES_HELP_TEXT =
-  'Workspaces allow you to organize views into tabs and tiles. There are a variety of unique features, for instance, you can drag views between tabs or split them side-by-side. Try clicking and dragging the tab header to create a new split'
 
 // the "new session" action lives on the root, not the session, so these two take
 // it rather than reading it off the bound argument like the rest
@@ -172,25 +167,6 @@ export function redoMenuItem(history: HistoryManager): MenuItem {
       if (history.canRedo) {
         history.redo()
       }
-    },
-  }
-}
-
-export function workspacesMenuItem(
-  session: SessionWithMultipleViews | undefined,
-): MenuItem {
-  return {
-    label: 'Use workspaces',
-    icon: SpaceDashboardIcon,
-    type: 'checkbox',
-    checked: session?.effectiveUseWorkspaces ?? false,
-    helpText: WORKSPACES_HELP_TEXT,
-    // opts out of the checkbox "stay open" default: this re-lays out the whole
-    // app (classic stack <-> tiled workspace), so it's a one-shot mode switch
-    // rather than a setting to flip repeatedly with the menu up
-    keepMenuOpen: false,
-    onClick: () => {
-      session?.setUseWorkspacesPreference(!session.effectiveUseWorkspaces)
     },
   }
 }

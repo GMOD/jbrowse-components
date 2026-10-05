@@ -709,9 +709,8 @@ which is when hiding a track or a `fullPage` screenshot is the answer.
 
 Views stack down the page until the session is arranged into panels.
 `session.layoutViews` takes the same tree a session spec's `layout` does, with
-view ids (or indexes into `session.views`) in its leaves, turns workspaces mode
-on, and applies the order the leaves state. One panel per open view, left to
-right:
+view ids (or indexes into `session.views`) in its leaves, and applies the order
+the leaves state. One panel per open view, left to right:
 
 ```js
 const seated = session.layoutViews({

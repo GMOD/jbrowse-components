@@ -50,7 +50,6 @@ import type {
  */
 interface LayoutHostSelf extends IStateTreeNode {
   views?: { id: string }[]
-  setUseWorkspaces?: (useWorkspaces: boolean) => void
   orderViews?: (ids: string[]) => void
 }
 function sessionViewIds(self: LayoutHostSelf) {
@@ -542,18 +541,16 @@ export function WorkspaceLayoutMixin() {
         },
         /**
          * #action
-         * Arrange the session's views into panels. Calls `applyLayoutSpec`,
-         * turns workspaces mode on for this session (a layout renders nowhere
-         * else), and orders `session.views` to the spec's top-to-bottom
-         * order, which tabs read their order from. Without the last two steps
-         * the layout applies but does not display, or the tabs appear in the
-         * wrong order. Leaves take view ids or indexes into `session.views`; a
-         * layout that seats no view throws rather than leaving a blank tab. A
-         * session spec's `layout` and an agent's live re-layout both call it.
+         * Arrange the session's views into panels: `applyLayoutSpec`, then
+         * `session.views` ordered to the spec's top-to-bottom order, which tabs
+         * read their order from. Leaves take view ids or indexes into
+         * `session.views`; a layout that seats no view throws rather than
+         * leaving a blank tab. A session spec's `layout` and an agent's live
+         * re-layout both call it.
          */
         layoutViews(spec: LayoutSpecNode) {
           const host: LayoutHostSelf = self
-          if (!host.setUseWorkspaces || !host.orderViews) {
+          if (!host.orderViews) {
             throw new Error(
               'This session has no view list to arrange: layoutViews needs a host composed with MultipleViewsSessionMixin',
             )
@@ -566,12 +563,23 @@ export function WorkspaceLayoutMixin() {
               'The layout seats no views: a leaf names its views with "views" (view ids, or indexes into session.views) and a container nests "children"',
             )
           }
-          host.setUseWorkspaces(true)
           const ids = self.applyLayoutSpec(spec)
           host.orderViews(ids)
           return ids
         },
       }))
+      // A session saved with workspaces off showed its views stacked whatever
+      // layout it carried, so it opens as one cell holding them all
+      .preProcessSnapshot(snap => {
+        if (
+          (snap as { useWorkspaces?: unknown } | undefined)?.useWorkspaces !==
+          false
+        ) {
+          return snap
+        }
+        const { layout, activePanelId, maximizedPanelId, ...rest } = snap
+        return rest
+      })
   )
 }
 

@@ -44,8 +44,14 @@ export function PreferencesSessionMixin(pluginManager: PluginManager) {
     .actions(self => ({
       afterAttach() {
         // the restore path bypasses `setPreferenceOverride`, so it freezes here
-        // too
-        self.preferencesOverrides.replace(freezeDeep(loadStoredPreferences()))
+        // too; a key the config no longer declares is a retired preference
+        const { preferences } = self.configuration
+        const stored = Object.entries(loadStoredPreferences()).filter(
+          ([key]) => !preferences || key in preferences,
+        )
+        self.preferencesOverrides.replace(
+          freezeDeep(Object.fromEntries(stored)),
+        )
         // Applied once, here, rather than reactively: the same setting has to
         // hold in the RPC workers (which format tooltip strings from jexl
         // `mouseover` slots) and they only learn it at boot, so a live

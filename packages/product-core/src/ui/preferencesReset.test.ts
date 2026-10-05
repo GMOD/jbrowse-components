@@ -16,9 +16,6 @@ function stubSession() {
     setThemeMode: () => {},
     stickyViewHeaders: true,
     setStickyViewHeaders: () => {},
-    effectiveUseWorkspaces: false,
-    defaultUseWorkspaces: false,
-    resetUseWorkspaces: () => {},
     clearPreferenceOverrides: () => {
       scalars.clear()
     },

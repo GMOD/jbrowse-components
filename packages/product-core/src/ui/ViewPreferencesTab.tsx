@@ -14,8 +14,6 @@ export interface ViewPreferencesSession {
   setScrollZoom: (flag: boolean) => void
   stickyViewHeaders: boolean
   setStickyViewHeaders: (sticky: boolean) => void
-  effectiveUseWorkspaces: boolean
-  setUseWorkspacesPreference: (useWorkspaces: boolean) => void
 }
 
 const ViewPreferencesTab = observer(function ViewPreferencesTab({
@@ -39,14 +37,6 @@ const ViewPreferencesTab = observer(function ViewPreferencesTab({
         help="The view header stays at the top of the page while its tracks scroll under it."
         onChange={checked => {
           session.setStickyViewHeaders(checked)
-        }}
-      />
-      <PreferenceCheckbox
-        checked={session.effectiveUseWorkspaces}
-        label="Use workspaces"
-        help="Views open as tabs and tiles instead of stacking down the page."
-        onChange={checked => {
-          session.setUseWorkspacesPreference(checked)
         }}
       />
     </FormGroup>

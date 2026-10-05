@@ -20,7 +20,6 @@ export {
   preferencesMenuItem,
   redoMenuItem,
   undoMenuItem,
-  workspacesMenuItem,
 } from './RootModel/index.ts'
 export type {
   BaseRootModel,
@@ -43,7 +42,6 @@ export {
   TrackMenuSessionMixin,
   TracksManagerSessionMixin,
   aboutTrackMenuItem,
-  bakeSessionCascades,
   getShareableSessionSnapshot,
   copyTrackSnapshot,
   finalizeSession,

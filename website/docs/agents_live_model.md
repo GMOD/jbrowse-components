@@ -282,11 +282,10 @@ return jb.waitReady(30000)
 `session.layoutViews(spec)` arranges the views already open into panels without
 replacing the session: the same tree as a spec `layout` (a leaf has `views`, a
 container `children` and a `direction`), with a leaf naming view ids from
-`jb.sessionSummary()` or indexes into `session.views`. It turns workspaces on,
-applies the stated order and returns the ids it seated; the lower-level
-`session.applyLayoutSpec` does neither and leaves the views stacked down the
-page, which is how a session grows taller than the window (`jb.waitReady`'s
-`offscreen`). `viewIds` is not a key; a node with one throws.
+`jb.sessionSummary()` or indexes into `session.views`. It applies the stated
+order and returns the ids it seated; the lower-level `session.applyLayoutSpec`
+arranges the panels but leaves each tab's views in their old order. `viewIds` is
+not a key; a node with one throws.
 
 ## Reading data directly (fast path)
 

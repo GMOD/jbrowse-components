@@ -54,7 +54,6 @@ const ViewMenu = observer(function ViewMenu({
     } else {
       session.moveViewToSplit(model.id, to, allViewIds)
     }
-    session.setUseWorkspaces(true)
   }
 
   // views render in `session.views` order within a tab, so a view joining one
@@ -74,12 +73,9 @@ const ViewMenu = observer(function ViewMenu({
       data-testid="view_menu_icon"
       tooltip="View menu"
       menuItems={() => {
-        // A move's scope is this view's tab in a workspace, else every view.
-        // Read on open rather than in render, so the menu does not observe
-        // every tab's membership.
-        const home = session.effectiveUseWorkspaces
-          ? session.tabContainingView(model.id)
-          : undefined
+        // A move's scope is this view's tab. Read on open rather than in
+        // render, so the menu does not observe every tab's membership.
+        const home = session.tabContainingView(model.id)
         const scopeIds = home?.tab.viewIds.slice()
         const otherTabs = home
           ? session.tabs.filter(t => t.id !== home.tab.id)

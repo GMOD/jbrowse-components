@@ -18,7 +18,6 @@ import {
   openConnectionMenuItem,
   openTrackMenuItem,
   preferencesMenuItem,
-  workspacesMenuItem,
 } from '@jbrowse/product-core'
 import { autorun } from 'mobx'
 
@@ -200,7 +199,6 @@ export default function RootModel({
               label: 'Tools',
               menuItems: () => [
                 preferencesMenuItem(pluginManager, PreferencesDialog),
-                workspacesMenuItem(self.session),
               ],
             },
           ],

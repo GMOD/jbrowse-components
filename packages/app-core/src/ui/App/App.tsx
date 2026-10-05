@@ -46,6 +46,9 @@ const useStyles = makeStyles()(theme => ({
   appBar: {
     flexGrow: 1,
     gridRow: 'menubar',
+    // above the workspace, whose cells paint a background its shadow falls on
+    position: 'relative',
+    zIndex: 1,
   },
 }))
 

@@ -90,6 +90,15 @@ rebuilds every `ViewStack`. `drag` is deliberately not in it.
   rename double-click by `target === currentTarget`. The cell menu's item is how
   it is discovered and the only way to it from the keyboard.
 
+## Always on
+
+- **The workspace is the only views container** (ADR-213). The strip shows once
+  `layout.panels` has a second cell or the cell a second tab; read it off the
+  whole tree, never `visibleTree`, or a maximized one-tab cell loses its restore
+  control.
+- A snapshot with `useWorkspaces: false` drops its layout in
+  `preProcessSnapshot`. `setUseWorkspaces` is a plugin-ABI no-op.
+
 ## Rendering, keyboard
 
 - **Only the shown tab is mounted** — a display costs a WebGL2 context, ceiling

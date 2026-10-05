@@ -7,9 +7,6 @@ export interface ResettablePreferencesSession {
   setThemeMode: (arg: 'light' | 'dark' | 'system') => void
   stickyViewHeaders: boolean
   setStickyViewHeaders: (sticky: boolean) => void
-  effectiveUseWorkspaces: boolean
-  defaultUseWorkspaces: boolean
-  resetUseWorkspaces: () => void
   clearPreferenceOverrides: () => void
   clearPreferenceOverride: (key: string) => void
   getPreferenceChanges: () => TrackConfigChange[]
@@ -55,20 +52,6 @@ const NON_MAP_PREFERENCES: NonMapPreference[] = [
         : { path: ['stickyViewHeaders'], from: true, to: false },
     reset: s => {
       s.setStickyViewHeaders(true)
-    },
-  },
-  {
-    head: 'useWorkspaces',
-    change: s =>
-      s.effectiveUseWorkspaces === s.defaultUseWorkspaces
-        ? undefined
-        : {
-            path: ['useWorkspaces'],
-            from: s.defaultUseWorkspaces,
-            to: s.effectiveUseWorkspaces,
-          },
-    reset: s => {
-      s.resetUseWorkspaces()
     },
   },
 ]

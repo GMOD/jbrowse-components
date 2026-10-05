@@ -523,7 +523,7 @@ function nonPortableUserTracks(
 // place, keeping the base trackId, and persists the whole config). So a track the
 // hub itself changed since then also lands in `editDeltas`, pinning the recipient
 // to the values the sender is looking at. That is the export's stated intent —
-// reproduce the sender's screen, the same reason `bakeSessionCascades` exists —
+// reproduce the sender's screen —
 // but the delta channel it travels in means "user override" on the far side, and
 // a delta masks later admin changes to that track. Telling the two apart needs
 // the base as it was at session creation, which nothing persists.

@@ -26,5 +26,4 @@ export {
   preferencesMenuItem,
   redoMenuItem,
   undoMenuItem,
-  workspacesMenuItem,
 } from './menuItems.ts'

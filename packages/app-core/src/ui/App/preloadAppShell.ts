@@ -1,12 +1,7 @@
 import { preloadComponent } from '@jbrowse/core/util/preloadComponent'
 import { getEnv } from '@jbrowse/mobx-state-tree'
 
-import { isSessionWithWorkspaceLayout } from '../../WorkspaceLayout/model.ts'
-import {
-  ClassicViewsContainer,
-  DrawerWidget,
-  WorkspaceContainer,
-} from './lazyParts.ts'
+import { DrawerWidget, WorkspaceContainer } from './lazyParts.ts'
 
 import type { AppSession } from './types.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
@@ -19,7 +14,7 @@ import type PluginManager from '@jbrowse/core/PluginManager'
  */
 export async function preloadAppFrame() {
   await Promise.allSettled([
-    ClassicViewsContainer.preload(),
+    WorkspaceContainer.preload(),
     DrawerWidget.preload(),
   ])
 }
@@ -31,11 +26,7 @@ export async function preloadAppFrame() {
  */
 export function preloadAppShell(session: AppSession) {
   if (session.views.length > 0) {
-    preloadComponent(
-      session.effectiveUseWorkspaces && isSessionWithWorkspaceLayout(session)
-        ? WorkspaceContainer
-        : ClassicViewsContainer,
-    )
+    preloadComponent(WorkspaceContainer)
   }
   const { drawerVisible, visibleWidget } = session
   if (drawerVisible) {

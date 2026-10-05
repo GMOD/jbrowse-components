@@ -17,20 +17,9 @@ const suite: TestSuite = {
   name: 'Workspaces',
   tests: [
     {
-      name: 'can add Linear genome view from menu with workspaces enabled',
+      name: 'can add Linear genome view from menu',
       fn: async page => {
         await navigateToApp(page)
-
-        const toolsMenu = await findByText(page, 'Tools', 10000)
-        await toolsMenu.click()
-        await delay(300)
-        const useWorkspacesCheckbox = await findByText(
-          page,
-          'Use workspaces',
-          10000,
-        )
-        await useWorkspacesCheckbox.click()
-        await delay(500)
 
         const searchInputsBefore = await page.$$(
           'input[placeholder="Search for location"]',
@@ -72,7 +61,7 @@ const suite: TestSuite = {
       },
     },
     {
-      name: 'move to new tab enables workspaces',
+      name: 'move to new tab shows the tab strip',
       fn: async page => {
         await navigateToApp(page)
         await setupWorkspacesViaMoveToTab(page)
@@ -80,7 +69,7 @@ const suite: TestSuite = {
       },
     },
     {
-      name: 'move to split right enables workspaces',
+      name: 'move to split right shows a strip per cell',
       fn: async page => {
         await navigateToApp(page)
         await copyView(page)
