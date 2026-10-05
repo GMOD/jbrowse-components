@@ -1592,7 +1592,9 @@ export function stateModelFactory(
          * #getter
          * The first mark drawing at this zoom that stands at a value: what a
          * row's value at a column is read from, and what clustering compares.
-         * -1 where none does.
+         * -1 where none does, so span rows cluster nothing: they would need
+         * multi-row's presence and categorical encodings
+         * (`buildMultiRowMatrix`) moved into tree-sidebar.
          */
         get valueMarkIndex(): number {
           return (

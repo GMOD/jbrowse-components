@@ -327,7 +327,10 @@ export default function stateModelFactory(
         /**
          * #getter
          * `TreeSidebarMixin`'s hook: the `facet`, its bands listed first and
-         * then the `rowGroups` groups in the order they are declared.
+         * then the `rowGroups` groups in the order they are declared. A row
+         * carries only its name and `group`, so a facet on a feature field
+         * bands nothing and says so in `rowBandingNotices`; banding by one
+         * would split rows in the worker.
          */
         get rowBanding(): RowBanding | undefined {
           const { facet } = self
