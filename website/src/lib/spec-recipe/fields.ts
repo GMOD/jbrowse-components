@@ -1531,6 +1531,12 @@ export const trackFields: Record<string, FieldRecipe> = {
         }
       : undefined
   },
+  showGeneLabels: (value, { displayType }) =>
+    typeof value === 'boolean' && displayType === 'MultiWaySyntenyDisplay'
+      ? {
+          path: `${TRACK_MENU} → Show... → Show gene labels (${value ? 'checked' : 'unchecked'})`,
+        }
+      : undefined,
   hideSelfAlignments: (value, { displayType }) =>
     typeof value === 'boolean' && displayType === 'LGVSyntenyDisplay'
       ? {
