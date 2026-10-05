@@ -44,6 +44,15 @@ cost is linear in lanes.
   cut there (`addAcrossHoles`), and so are a gene's exons, intron lines and hit
   boxes (`Lane.spansOf`, `frameSpans`). Gene records never open: their spacing
   is no deletion. An insertion opens nothing; its sequence draws as before.
+- **A gene-table row the anchor lacks draws between the lanes that carry it**
+  (`anchorlessGroupsOf`, `PlacedGroup` with no `anchor`). Each mate lane reads
+  the table on its own window (`laneGroupsFetchSpecs`); the lanes place and
+  bridge those rows like any group, and the frames, the vote and the holes read
+  only anchored groups. It is the default with no slot: in grammar terms the
+  anchor's x scale shows its invalid values (Vega-Lite's `invalid: "show"`),
+  which an alignment source already did through its lane-pair fetch, and no
+  captured figure read worse for it. A star source indexes its anchor alone and
+  gets no such fetch.
 - **Strand means the record's strand**, never the drawn twist, in the config
   schema, the `Color ribbons by` help and `multiwayGeometry.ts`. A mate's
   `orientation` is the pair's strand, never the mate's transcription strand.

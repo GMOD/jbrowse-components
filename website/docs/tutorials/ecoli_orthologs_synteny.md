@@ -14,9 +14,10 @@ at once, without aligning any of them. RefSeq's bacterial pipeline gives an
 orthologous gene the same symbol in every strain it names, so the ortholog table
 is a join on the gene name over the GFF3 files, and each genome becomes a lane
 under the K-12 view, holding the gene models annotated in that genome. The join
-connects genes that share a symbol with a K-12 gene, which covers the core
-genome. The page ends at a cluster that differs between strains, where most
-genes in each lane draw grey with no ribbon.
+connects genes that share a symbol, which covers the core genome, and joins a
+symbol K-12 lacks between the strains that carry it. The page ends at a cluster
+that differs between strains, where many genes in each lane draw grey with no
+ribbon.
 
 ## Prerequisites
 
@@ -248,7 +249,7 @@ differs most between strains. Open the cluster:
 }
 ```
 
-<Figure caption="The O-antigen cluster on K-12 over the same forty-three lanes. K-12 derivatives at the top match the cluster gene for gene. In every lane below, the flanking galF, gnd, ugd and wzzB ribbons run through, the rfb genes, wzx and wzy join where a strain has them, and the serotype-specific genes between them are grey." src="/img/multiway_synteny/ecoli_symbol_oantigen.png" />
+<Figure caption="The O-antigen cluster on K-12 over the same forty-three lanes. K-12 derivatives at the top match the cluster gene for gene. In every lane below, the flanking galF, gnd, ugd and wzzB ribbons run through, the rfb genes, wzx and wzy join where a strain has them, serotype genes K-12 lacks join the strains that share them, and the genes no other strain carries are grey." src="/img/multiway_synteny/ecoli_symbol_oantigen.png" />
 
 Read the lanes from the top:
 
@@ -259,11 +260,12 @@ Read the lanes from the top:
 - The interior is grey, except the _rfb_ genes, _wzx_ and _wzy_, which join
   wherever a strain has them.
 
-A window anchored on K-12 draws only the rows holding a K-12 gene, so the
-serotype's own sugar pathway genes stay grey. A gene PGAP left under its locus
-tag, such as `ECOLC_RS24020` in the ATCC_8739 lane, has no row either.
+A row for a symbol K-12 lacks joins only the lanes that carry it, so a serotype
+gene a few strains share, such as _vioB_ in IAI39 and the BL21 lanes, runs down
+those lanes and skips the rest. A gene PGAP left under its locus tag, such as
+`ECOLC_RS24020` in the ATCC_8739 lane, has no row.
 
-Most of that grey is the biology: each serotype's sugar genes arrived by
+Most of the grey left is the biology: each serotype's sugar genes arrived by
 horizontal transfer and have no K-12 counterpart to join. A homology call across
 the proteomes, such as an [OrthoFinder](/docs/tutorials/orthofinder_synteny)
 run, would add the genes the annotations named differently, and the
