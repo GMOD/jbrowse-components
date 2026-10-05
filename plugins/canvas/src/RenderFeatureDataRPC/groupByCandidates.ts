@@ -38,6 +38,11 @@ const NOT_A_GROUPING = new Set([
  * tenths of the ~16µs an NCBI-shaped gene costs here. The dialog scans once
  * per open, so a thousand genes is ~20ms; anything reading this per fetch
  * needs a cheaper enumeration than the interface has today.
+ *
+ * Multi-row's per-fetch rows-field count (`packMultiRowFeatures.ts`) is a
+ * different scan: it samples its field list, caps at 200 rather than
+ * `MAX_GROUPS`, and ships each region's value sets for the main thread to
+ * union, which a count cannot do.
  */
 export function summarizeGroupByCandidates(
   features: Iterable<Feature>,

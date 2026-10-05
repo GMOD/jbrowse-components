@@ -219,6 +219,10 @@ function rowCount(blocks: readonly MafBlock[]) {
  * sample. A base is classifiable where the reference has a base other than
  * `N` and the row has a base; a window spans the bases it classified, so an
  * unaligned stretch paints nothing.
+ *
+ * Core's `binnedCellMatches` shares the base tests but not this walk: it reads
+ * feature-table texts, returns bin-edged groups with ids and hover JSON, and
+ * makes groups for gap-only runs where this emits nothing.
  */
 export function buildIdentityRuns(
   blocks: readonly MafBlock[],
