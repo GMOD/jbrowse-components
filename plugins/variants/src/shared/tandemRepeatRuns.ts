@@ -1,5 +1,6 @@
 // A VCF 4.5 <CNV:TR> allele's runs: RN says how many RUS/RUL/RUC/RB entries
-// each allele takes, and RUB holds one entry per copy of every run.
+// each allele takes, and RUB holds one entry per copy of every run. RUNAME,
+// outside the spec, names each run's unit beside its RUS.
 
 export const TANDEM_REPEAT = '<CNV:TR>'
 
@@ -30,6 +31,7 @@ export function strings(value: unknown) {
 export interface ParsedRun {
   key: string
   length: number
+  name?: string
   sequence?: string
   count: number
   bp: number
@@ -45,6 +47,7 @@ export function tandemAlleles(
   const alts = strings(alt)
   const rn = numbers(info?.RN)
   const rus = strings(info?.RUS)
+  const runame = strings(info?.RUNAME)
   const rul = numbers(info?.RUL)
   const ruc = numbers(info?.RUC)
   const rb = numbers(info?.RB)
@@ -59,6 +62,7 @@ export function tandemAlleles(
       const stated = rus[k]
       const sequence = stated && IUPAC.test(stated) ? stated : undefined
       const length = rul[k] ?? sequence?.length
+      const name = runame[k]
       const bp = rb[k]
       const count =
         ruc[k] ?? (length && bp !== undefined ? bp / length : undefined)
@@ -68,6 +72,7 @@ export function tandemAlleles(
         runs.push({
           key: sequence ?? String(length),
           length,
+          ...(name ? { name } : {}),
           ...(sequence ? { sequence } : {}),
           count,
           bp: bp ?? Math.round(length * count),

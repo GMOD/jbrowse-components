@@ -17,6 +17,7 @@ import {
   mergeNarrowCopies,
   readout,
   rowLayout,
+  unitLabel,
 } from './layout.ts'
 
 import type { RepeatAllele, TandemRepeat } from './tandemRepeat.ts'
@@ -71,11 +72,11 @@ function Legend({
   return (
     <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px 16px' }}>
       {repeat.units.slice(0, UNIT_COLORS.length).map((unit, i) => (
-        // eslint-disable-next-line @eslint-react/no-array-index-key -- a unit is named by its position, "unit 1"
+        // eslint-disable-next-line @eslint-react/no-array-index-key -- a unit is identified by its position
         <div key={i} style={legendRow}>
           <div style={{ ...swatch, backgroundColor: unitColor(i) }} />
           <span>
-            unit {i + 1} · {unit.length.toLocaleString()} bp
+            {unitLabel(repeat.units, i)} · {unit.length.toLocaleString()} bp
           </span>
         </div>
       ))}
@@ -197,7 +198,7 @@ function Row({
               fill={unitColor(run.unit)}
             >
               <title>
-                {`${named}: ${which} of ${copies.length}, unit ${run.unit + 1}, ${run.bp.toLocaleString()} bp`}
+                {`${named}: ${which} of ${copies.length}, ${unitLabel(repeat.units, run.unit)}, ${run.bp.toLocaleString()} bp`}
               </title>
             </rect>
           )

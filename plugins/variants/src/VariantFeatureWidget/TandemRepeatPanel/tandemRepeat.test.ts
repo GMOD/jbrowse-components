@@ -160,3 +160,18 @@ test('a run that states a non-positive or non-numeric count is not drawn', () =>
     }),
   ).toBeUndefined()
 })
+
+test('RUNAME names each unit, from whichever run of it states one', () => {
+  const repeat = tandemRepeatOf({
+    ...tandem,
+    INFO: { ...tandem.INFO, RUNAME: ['KIV-2B', '.', 'KIV-2A'] },
+  })!
+  expect(repeat.units).toEqual([
+    { length: 10, name: 'KIV-2A', copies: 7, sequence: A },
+    { length: 10, name: 'KIV-2B', copies: 2, sequence: B },
+  ])
+  expect(repeat.alleles[0]!.runs).toEqual([
+    { unit: 1, count: 2, bp: 20, copyBp: [10, 10] },
+    { unit: 0, count: 3, bp: 29, copyBp: [10, 10, 9] },
+  ])
+})

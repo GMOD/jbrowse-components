@@ -246,6 +246,37 @@ test('draws a <CNV:TR> record as a tandem repeat panel', async () => {
   expect(getByText('HG00128#2')).toBeTruthy()
 })
 
+test('a <CNV:TR> record with RUNAME labels its units by name', async () => {
+  const { findByText, getAllByTestId, queryByText } = renderWidget({
+    uniqueId: 'kiv2-named',
+    refName: 'chr6',
+    start: 160616002,
+    end: 160616003,
+    REF: 'A',
+    ALT: ['<CNV:TR>'],
+    INFO: {
+      SVLEN: [30],
+      RN: [2],
+      RUS: ['ACGTTCGTAC', 'ACGTACGTAC'],
+      RUNAME: ['KIV-2B', 'KIV-2A'],
+      RUC: [1, 2],
+      RB: [10, 20],
+    },
+    samples: { HG00128: { GT: ['1'] } },
+  })
+  await findByText('KIV-2A · 10 bp')
+  expect(queryByText('KIV-2B · 10 bp')).toBeTruthy()
+  expect(queryByText(/unit \d/)).toBeNull()
+  const titles = [
+    ...getAllByTestId('tandem-repeat-row')[0]!.querySelectorAll('title'),
+  ].map(t => t.textContent)
+  expect(titles).toEqual([
+    'HG00128: copy 1 of 3, KIV-2B, 10 bp',
+    'HG00128: copy 2 of 3, KIV-2A, 10 bp',
+    'HG00128: copy 3 of 3, KIV-2A, 10 bp',
+  ])
+})
+
 test('a copy number record stating no repeat gets no tandem repeat panel', () => {
   const { queryByText } = renderWidget({
     uniqueId: 'cnv',

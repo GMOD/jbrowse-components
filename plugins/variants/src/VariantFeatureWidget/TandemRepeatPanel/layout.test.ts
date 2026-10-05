@@ -5,6 +5,7 @@ import {
   mergeNarrowCopies,
   readout,
   rowLayout,
+  unitLabel,
 } from './layout.ts'
 
 const units = [{ length: 5548, copies: 7 }]
@@ -146,4 +147,10 @@ test('rows past 30 squash into their height, unlabelled below 11 px', () => {
   expect(cohort).toMatchObject({ barPx: cohort.rowPx, labelled: false })
   expect(rowLayout(60)).toEqual({ rowPx: 11, barPx: 6, labelled: true })
   expect(rowLayout(61).labelled).toBe(false)
+})
+
+test('a unit is labelled by its RUNAME, else by its rank', () => {
+  const named = [{ length: 5548, copies: 7, name: 'KIV-2A' }, ...units]
+  expect(unitLabel(named, 0)).toBe('KIV-2A')
+  expect(unitLabel(named, 1)).toBe('unit 2')
 })

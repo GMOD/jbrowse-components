@@ -24,6 +24,8 @@ export interface RepeatRun {
 
 export interface RepeatUnit {
   length: number
+  // RUNAME's name for the unit, where the record gives one
+  name?: string
   // copies across the record's alleles, which orders the units
   copies: number
   sequence?: string
@@ -63,11 +65,19 @@ function info(f: VCFFeatureSerialized, name: string): unknown {
 
 function unitsOf(alleles: (ParsedRun[] | undefined)[]) {
   const units = new Map<string, RepeatUnit & { key: string }>()
-  for (const { key, length, sequence, count } of alleles.flatMap(
+  for (const { key, length, name, sequence, count } of alleles.flatMap(
     runs => runs ?? [],
   )) {
-    const copies = (units.get(key)?.copies ?? 0) + count
-    units.set(key, { key, length, copies, ...(sequence ? { sequence } : {}) })
+    const known = units.get(key)
+    const copies = (known?.copies ?? 0) + count
+    const named = known?.name ?? name
+    units.set(key, {
+      key,
+      length,
+      ...(named ? { name: named } : {}),
+      copies,
+      ...(sequence ? { sequence } : {}),
+    })
   }
   return [...units.values()].sort(
     (a, b) =>
@@ -220,10 +230,12 @@ export function tandemRepeatOf(
     ...allele,
     ...(runs
       ? {
-          runs: runs.map(({ key, length: _length, sequence: _s, ...run }) => ({
-            unit: index.get(key)!,
-            ...run,
-          })),
+          runs: runs.map(
+            ({ key, length: _length, name: _name, sequence: _s, ...run }) => ({
+              unit: index.get(key)!,
+              ...run,
+            }),
+          ),
         }
       : {}),
   })

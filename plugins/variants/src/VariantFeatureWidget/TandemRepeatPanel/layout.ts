@@ -11,6 +11,10 @@ export interface CopyBox {
   unit: number
 }
 
+export function unitLabel(units: RepeatUnit[], i: number) {
+  return units[i]?.name ?? `unit ${i + 1}`
+}
+
 // Each copy an allele's runs state. RUB gives each copy's bases; without it a
 // whole count splits its run evenly, and a fractional count takes whole units
 // with the remainder last.
