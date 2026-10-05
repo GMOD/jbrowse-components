@@ -1,12 +1,13 @@
 # Read the alignments overlapping a region into data.frame(start, end, strand,
-# name, score, flags, template_length, pair_orientation, next_ref, next_pos),
-# the fields a JBrowse read answers to under the same names: start is 0-based
+# name, score, flags, template_length, pair_orientation, next_ref, next_pos,
+# refName, read_index), the fields a JBrowse read answers to under the same
+# names, plus each read's position in readGAlignments order, which a per-read
+# overlay such as bam_mismatches joins on: start is 0-based
 # half-open over the reference span the CIGAR covers, strand is 1 or -1, score
 # is MAPQ with 255 (unavailable) as NA, template_length is signed TLEN, and
 # pair_orientation is the F1R2-style code, NA unless both mates map to one
 # contig. One tags.<TAG> column per name in 'tags', numeric where every value
-# parses as a number. Rows come in readGAlignments order, which a per-read
-# overlay joins on. Unmapped reads are not returned, and a contig the index
+# parses as a number. Unmapped reads are not returned, and a contig the index
 # lacks reads as no reads.
 read_bam <- function(uri, chrom, start, end, tags = character(0)) {
   bf <- BamFile(uri)
@@ -33,6 +34,7 @@ read_bam <- function(uri, chrom, start, end, tags = character(0)) {
       ifelse(self_left, paste0(self, mate), paste0(mate, self)), NA_character_),
     next_ref = ifelse(paired, mate_chrom, NA_character_),
     next_pos = ifelse(paired & !is.na(m$mpos), m$mpos - 1L, NA_integer_),
+    refName = rep(chrom, length(ga)), read_index = seq_along(ga),
     stringsAsFactors = FALSE, check.names = FALSE)
   for (t in tags) df[[paste0("tags.", t)]] <- utils::type.convert(
     if (is.null(m[[t]])) rep(NA_character_, length(ga)) else as.character(m[[t]]),

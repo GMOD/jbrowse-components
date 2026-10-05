@@ -83,6 +83,8 @@ export const READERS = {
       'pair_orientation',
       'next_ref',
       'next_pos',
+      'refName',
+      'read_index',
     ],
     coords: ['start', 'end'],
     extra: { arg: 'tags', prefix: 'tags.' },

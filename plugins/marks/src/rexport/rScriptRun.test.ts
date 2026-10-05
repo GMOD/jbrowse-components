@@ -9,6 +9,9 @@ import {
 import { tmpdir } from 'node:os'
 import path from 'node:path'
 
+import { placeRect } from '@jbrowse/core/util/layouts/placeRect'
+
+import { alignmentsPanels } from './alignmentsToR.ts'
 import { featureFields, featurePlot } from './featureToPlot.ts'
 import { frameFor, sourceNotes } from './frameFor.ts'
 import { fieldsRead, markPlot } from './markToPlot.ts'
@@ -16,6 +19,7 @@ import { HELPERS } from './rHelpers.generated.ts'
 import { assembleRScript, helpersIn } from './rScript.ts'
 import { rStr } from './rplot.ts'
 
+import type { AlignmentsDisplaySnapshot } from './alignmentsToR.ts'
 import type { FeatureDisplaySpec } from './featureToPlot.ts'
 import type { ReaderName } from './frameFor.ts'
 import type { DisplaySpec } from './markToPlot.ts'
@@ -1068,5 +1072,101 @@ cat(paste(names(t), t, sep = "=", collapse = " "))
   )
   it('reads a contig the BAM lacks as no reads', () => {
     expect(ran(absent)).toBe('0')
+  })
+})
+
+maybe('an alignments display draws as a pileup', () => {
+  const region = [{ refName: 'ctgA', start: 1000, end: 6000 }]
+  const FASTA = path.resolve('test_data/volvox/volvox.fa')
+  const script = (
+    display: AlignmentsDisplaySnapshot,
+    uri: string,
+    out?: string,
+  ) =>
+    assembleRScript({
+      regions: region,
+      ...alignmentsPanels({ display, uri, regions: region, reference: FASTA }),
+      out,
+    })
+  const pileupFigure = (
+    name: string,
+    display: AlignmentsDisplaySnapshot,
+    uri: string,
+  ) => {
+    const png = path.join(CASES, `${name}.png`)
+    return { name: register(name, script(display, uri, png)), png }
+  }
+  const strand = pileupFigure('aln_strand', { color: { field: 'strand' } }, BAM)
+  const insert = pileupFigure(
+    'aln_insert',
+    { color: { field: 'insertSize' } },
+    PAIRED_BAM,
+  )
+  const nm = pileupFigure(
+    'aln_nm',
+    { color: { field: 'tags.NM', scale: 'linear', scheme: 'viridis' } },
+    BAM,
+  )
+  it('draws coverage over a coloured pileup with mismatch ticks', () => {
+    for (const f of [strand, insert, nm]) {
+      ran(f.name)
+      expect(existsSync(f.png)).toBe(true)
+    }
+  })
+
+  const probe = (
+    name: string,
+    display: AlignmentsDisplaySnapshot,
+    uri: string,
+    body: string,
+  ) => {
+    const s = script(display, uri)
+    return register(
+      name,
+      `${s.slice(0, s.indexOf('coverage <- ggplot'))}\n${body}\n`,
+    )
+  }
+  const rows = probe(
+    'aln_rows',
+    {},
+    BAM,
+    'cat(paste(reads$start, reads$end, reads$row), sep = ",")',
+  )
+  it('packs reads into the rows placeRect gives them', () => {
+    const placed: number[][] = []
+    const reads = ran(rows)
+      .split(',')
+      .map(r => r.split(' ').map(Number))
+    expect(reads.length).toBeGreaterThan(900)
+    for (const [start, end, row] of reads) {
+      expect(placeRect(placed, start!, end!)).toBe(row)
+    }
+  })
+
+  const classes = probe(
+    'aln_insert_classes',
+    { color: { field: 'insertSize' } },
+    PAIRED_BAM,
+    `t <- table(reads$insertSize); o <- table(reads$pairOrientation)
+cat(paste(names(t), t, sep = "=", collapse = " "), paste(names(o), o, sep = "=", collapse = " "))`,
+  )
+  it('classes insert size and pair orientation as the browser does', () => {
+    // computePairedInsertSizeStats over the same 257 reads bands 244..976
+    expect(ran(classes)).toBe('long=19 normal=236 short=2 LR=220 RL=5 RR=32')
+  })
+
+  const unread = alignmentsPanels({
+    display: { color: { field: 'mateRefName' }, facet: { field: 'strand' } },
+    uri: BAM,
+    regions: region,
+  }).notes
+  it('names the settings it does not draw', () => {
+    expect(unread).toEqual(
+      expect.arrayContaining([
+        'facet: not translated',
+        'color: mateRefName is not translated, so reads draw plain',
+        'mismatches: a read with no MD tag draws no ticks, since no reference was given',
+      ]),
+    )
   })
 })
