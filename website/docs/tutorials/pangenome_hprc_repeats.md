@@ -183,13 +183,13 @@ reaches both flanks of the array, 464 arrays counting GRCh38's:
 ```
 
 **Show repeat copies** on its record squeezes the 464 bars into the height of
-30, longest first and too thin to label, so hover a copy for its haplotype.
+30, the arrays with the most unit 2 copies first, then longest. They are too
+thin to label, so hover a copy for its haplotype.
 
-<Figure caption="The KIV-2 record over all 464 HPRC arrays, longest first, each copy coloured by its unit. Unit 2's copies gather at the start of the arrays that hold any, and the arrays end in a staircase one copy apart." src="/img/pangenome/hprc_kiv2_copies_all_by_unit.png" />
+<Figure caption="The KIV-2 record over all 464 HPRC arrays, those with the most unit 2 copies first, then longest, each copy coloured by its unit. Unit 2 leads every array that holds it; the lone bar whose unit 2 copy sits fourth is GRCh38's." src="/img/pangenome/hprc_kiv2_copies_all_by_unit.png" />
 
-Across the cohort, unit 2 opens just over half the arrays, 245 of 464. Every
-array that holds unit 2 opens with it except GRCh38's, whose only unit 2 copy
-sits fourth.
+Unit 2 is KIV-2B, the copy type LPA studies tell apart by three synonymous sites
+in exon 1. The script below finds those sites from the copies alone.
 
 We wrote the KIV-2 record from the walks above. To write one for your own array,
 we'll first cut the walks over it out of the gbz-base database as a GFA
@@ -214,6 +214,16 @@ curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-plugin-tandem-repeat/mai
 ```bash
 printf 'chr6\t160616002\t160646753\tKIV-2\n' > arrays.bed
 node tandem-repeat-vcf.mjs cut.gfa --bed arrays.bed --name KIV-2 > kiv2.vcf
+```
+
+Given one copy's exons as BED rows with their strand, `--sites` reports where
+the units differ inside each. At KIV-2 that is exon 1's positions 14, 41 and 86,
+the sites that define KIV-2B, and nothing in exon 2:
+
+```bash
+printf 'chr6\t160617116\t160617276\texon 1\t0\t-\nchr6\t160618483\t160618665\texon 2\t0\t-\n' > kiv2_exons.bed
+node tandem-repeat-vcf.mjs cut.gfa --bed arrays.bed --name KIV-2 \
+  --sites kiv2_exons.bed > /dev/null
 ```
 
 A repeat finder's output draws as these bars too once it is written as a
