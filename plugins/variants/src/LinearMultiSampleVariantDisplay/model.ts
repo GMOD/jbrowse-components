@@ -1644,14 +1644,8 @@ export function stateModelFactory(
         /**
          * #getter
          */
-        get totalHeight() {
-          return self.effectiveRowHeight * self.nrow
-        },
-        /**
-         * #getter
-         */
         get scrollContentHeight() {
-          return this.totalHeight
+          return self.rowsContentHeight
         },
         /**
          * #getter

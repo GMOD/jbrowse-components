@@ -67,9 +67,6 @@ const Display = types
     get effectiveRowHeight() {
       return self.rowHeight === 0 ? self.height / 4 : self.rowHeight
     },
-    get totalHeight() {
-      return self.height
-    },
     get scrollTop() {
       return 0
     },

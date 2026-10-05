@@ -28,8 +28,6 @@ export function setupTreeDrawingAutorun(self: TreeDrawingModel) {
         if (!isAlive(self) || self.isMinimized) {
           return
         }
-        // touch totalHeight so MobX tracks it as a dependency (row height changes)
-        void self.totalHeight
         const { treeCanvas, hierarchy, treeAreaWidth, scrollTop = 0 } = self
 
         if (!treeCanvas || !hierarchy) {
@@ -72,8 +70,6 @@ export function setupTreeDrawingAutorun(self: TreeDrawingModel) {
         if (!isAlive(self) || self.isMinimized) {
           return
         }
-        // touch totalHeight so MobX tracks it as a dependency (row height changes)
-        void self.totalHeight
         const {
           mouseoverCanvas,
           hierarchy,

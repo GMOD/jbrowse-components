@@ -32,7 +32,7 @@ describe('row height resolution', () => {
     m.setSources([{ name: 'A' }, { name: 'B' }, { name: 'C' }])
     expect(m.nrow).toBe(3)
     expect(m.effectiveRowHeight).toBe(m.availableHeight / 3)
-    expect(m.totalHeight).toBeCloseTo(m.availableHeight)
+    expect(m.scrollContentHeight).toBeCloseTo(m.availableHeight)
     expect(m.scrollableHeight).toBe(0)
   })
 
@@ -52,20 +52,20 @@ describe('row height resolution', () => {
   })
 
   // A pinned rowHeight taller than the fit height makes the rows overflow the
-  // viewport; totalHeight tracks nrow and the excess becomes scrollable.
+  // viewport; the content tracks nrow and the excess becomes scrollable.
   it('a pinned rowHeight taller than fit overflows and scrolls', () => {
     const m = createDisplay()
     m.setSources([{ name: 'A' }, { name: 'B' }, { name: 'C' }])
     const rh = m.availableHeight // each row as tall as the whole viewport
     m.setRowHeight(rh)
-    expect(m.totalHeight).toBe(rh * 3)
+    expect(m.scrollContentHeight).toBe(rh * 3)
     expect(m.scrollableHeight).toBe(rh * 2)
   })
 
   // With more samples than pixels (e.g. a 3202-sample cohort in a 200px
   // display), the auto-fit height is legitimately sub-1px. effectiveRowHeight
   // must return that fractional value, not floor it to 1 -- flooring here
-  // would make totalHeight balloon past availableHeight and falsely report a
+  // would make the content balloon past availableHeight and falsely report a
   // scroll in a mode that's documented to never have one.
   it('fit mode keeps a sub-1px row height when samples outnumber pixels', () => {
     const m = createDisplay()

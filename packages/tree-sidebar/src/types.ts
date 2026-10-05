@@ -46,7 +46,6 @@ export type TreeSource = Pick<RowSource, 'name'>
 export type RowLabelSource = Pick<RowSource, 'name' | 'label' | 'rowColor'>
 
 export interface TreeSidebarModel extends IStateTreeNode {
-  totalHeight?: number
   hierarchy?: ClusterHierarchyNode
   // The parsed (and subtree-filtered) tree, from TreeSidebarMixin. `hierarchy`
   // is this *positioned*, and is undefined both when there is no tree and when
@@ -102,7 +101,6 @@ export interface TreeDrawingModel extends IStateTreeNode {
   // resolved value `effectiveRowHeight`, which is the one to pass here — see
   // agent-docs/reference/ROW_HEIGHT_AND_FIT.
   effectiveRowHeight: number
-  totalHeight?: number
   hoveredTreeNode?: HoveredTreeNode
   sources: TreeSource[]
   isMinimized?: boolean
