@@ -48,7 +48,7 @@ const TILINGS = [
 
 test('the cell menu offers the four whole-workspace tilings', async () => {
   const { user } = setup(3)
-  await user.click(screen.getByRole('button', { name: '' }))
+  await user.click(screen.getByRole('button', { name: 'Panel menu' }))
 
   for (const label of TILINGS) {
     expect(await screen.findByText(label)).toBeTruthy()
@@ -59,7 +59,7 @@ test('tiling horizontally from the menu rearranges every cell', async () => {
   const { session, user } = setup(3)
   expect(session.panels).toHaveLength(1)
 
-  await user.click(screen.getByRole('button', { name: '' }))
+  await user.click(screen.getByRole('button', { name: 'Panel menu' }))
   await user.click(await screen.findByText('Global: tile horizontally'))
 
   expect(session.panels).toHaveLength(3)
@@ -74,7 +74,7 @@ test('a lone view gets the per-cell items and none of the global ones', async ()
   // same gate the dockview header used: with one view there is no arrangement
   // for a tiling to change, so the items would be four no-ops
   const { user } = setup(1)
-  await user.click(screen.getByRole('button', { name: '' }))
+  await user.click(screen.getByRole('button', { name: 'Panel menu' }))
 
   expect(await screen.findByText('New empty tab')).toBeTruthy()
   for (const label of TILINGS) {
@@ -100,7 +100,7 @@ test('the cell menu offers maximize, and says restore once maximized', async () 
     <WorkspacePanelActions panel={panel} session={cast} onClose={() => {}} />,
   )
   const user = userEvent.setup()
-  await user.click(screen.getByRole('button', { name: '' }))
+  await user.click(screen.getByRole('button', { name: 'Panel menu' }))
   await user.click(await screen.findByText('Maximize panel'))
 
   expect(session.maximizedPanelId).toBe(panel.id)
@@ -108,16 +108,37 @@ test('the cell menu offers maximize, and says restore once maximized', async () 
   view.rerender(
     <WorkspacePanelActions panel={panel} session={cast} onClose={() => {}} />,
   )
-  await user.click(screen.getByRole('button', { name: '' }))
+  await user.click(screen.getByRole('button', { name: 'Panel menu' }))
   expect(await screen.findByText('Restore panel')).toBeTruthy()
   expect(screen.queryByText('Maximize panel')).toBeNull()
+})
+
+test('a maximized cell shows a restore button beside its menu', async () => {
+  const session = TestSession.create({ name: 't', views: [{ id: 'view-0' }] })
+  session.homeUnassignedViews(['view-0'])
+  const panel = session.panels[0]!
+  session.splitPanel(panel.id, 'row')
+  session.toggleMaximizedPanel(panel.id)
+
+  render(
+    <WorkspacePanelActions
+      panel={panel}
+      session={session as unknown as WorkspaceSessionType & WorkspaceLayout}
+      onClose={() => {}}
+    />,
+  )
+  await userEvent
+    .setup()
+    .click(screen.getByRole('button', { name: 'Restore panel' }))
+
+  expect(session.maximizedPanelId).toBeUndefined()
 })
 
 // With one cell there is nothing to hide, so the item would be a no-op wearing
 // a label that promises otherwise.
 test('a lone cell is not offered maximize', async () => {
   const { user } = setup(2)
-  await user.click(screen.getByRole('button', { name: '' }))
+  await user.click(screen.getByRole('button', { name: 'Panel menu' }))
 
   expect(await screen.findByText('New empty tab')).toBeTruthy()
   expect(screen.queryByText('Maximize panel')).toBeNull()

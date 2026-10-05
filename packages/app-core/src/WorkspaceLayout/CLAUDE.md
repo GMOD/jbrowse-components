@@ -51,18 +51,17 @@ rebuilds every `ViewStack`. `drag` is deliberately not in it.
   nothing.** `dropTabInPanel` declines on the cell a tab is already in and
   `useLayoutDrag` paints no wash. That belongs to the gesture, not
   `moveTabToPanel`, where no index means append.
-- Pointer events, so own the three rules the browser was applying: **primary
-  button of the primary pointer**, **one `pointerId` per gesture**,
-  **`pointercancel` ends it**. Both gestures — the tab drag and the splitter —
-  and any third one.
+- **Every pointer gesture goes through `usePointerGesture`**, which owns the
+  rules the browser was applying: primary button of the primary pointer, one
+  `pointerId` per gesture, and a cancel, a lost capture or Escape ending it. The
+  tab drag and the splitter both use it; a third gesture should too.
 - **Capture is also what stops a drag selecting the text it crosses**, so
   neither gesture needs `user-select: none` or a cancelled `pointerdown`.
   Measured against the real `Splitter` in Chrome: take `setPointerCapture` out
   and one sash drag selects both cells' content, as well as no longer resizing.
   A synthetic repro of this answers the opposite — drive the component.
 - **The in-flight drag is React state, never MST** — every hover would enter
-  undo. Escape cancels from a `window` listener and must clear `pendingRef` too,
-  since the drag is rebuilt from `pending` on every move.
+  undo.
 - **`showDrag` publishes nothing when the new target would paint the same
   indicator** — same reason `drag` is kept out of the chrome.
 - **`index` counts the strip the user sees**; `moveTabToPanel` adjusts for its
@@ -96,8 +95,11 @@ rebuilds every `ViewStack`. `drag` is deliberately not in it.
 - Strip hides its scrollbar: wheel is translated (larger axis), and a tab made
   current _without being touched_ scrolls itself in.
 - Roving tabindex. `role="tablist"` wraps the tabs alone.
-- **A control inside a tab must stop its keys — the whole event.** The strip
-  `preventDefault()`s arrows/Home/End/Enter/Space. Component tests can't see it.
+- **The strip handles only keys aimed at the tab itself**
+  (`target === currentTarget`), so the ⋮, its portalled menu and the rename box
+  keep theirs.
+- **Tab content is keyed by tab**, so a switch mounts a fresh `ViewStack` and
+  scroll port rather than inheriting the last tab's state.
 
 ## Snapshots, specs
 

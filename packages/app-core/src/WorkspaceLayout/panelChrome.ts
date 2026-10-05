@@ -1,5 +1,5 @@
 import type { PanelNode, TabNode } from './tree.ts'
-import type { TabDragHandlers } from './useLayoutDrag.ts'
+import type { PointerGestureHandlers } from './usePointerGesture.ts'
 
 /**
  * The app's half of a panel — what a tab is *called* and what it *contains*.
@@ -12,7 +12,7 @@ export interface PanelChrome {
   renderTabLabel: (tab: TabNode) => React.ReactNode
   renderTabContent: (tab: TabNode) => React.ReactNode
   renderPanelActions?: (panel: PanelNode) => React.ReactNode
-  dragHandlers: TabDragHandlers
+  dragHandlers: PointerGestureHandlers
   /** middle-click; the caller pairs it with closing that tab's views */
   onTabClose?: (tabId: string) => void
 }

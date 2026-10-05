@@ -69,6 +69,7 @@ export default function JBrowseTabMenu({
             onClick: onClose,
           },
         ]}
+        tooltip="Tab menu"
         size="small"
         className={classes.tabIcon}
         setOpen={setOpen}

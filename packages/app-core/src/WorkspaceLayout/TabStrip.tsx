@@ -215,6 +215,11 @@ export const TabStrip = observer(function TabStrip({
         role="tablist"
         ref={stripRef}
         className={classes.tabs}
+        onBlur={event => {
+          if (!event.currentTarget.contains(event.relatedTarget)) {
+            setFocusedTabId(undefined)
+          }
+        }}
         // A mouse wheel only has a vertical axis, and this scrolls
         // horizontally — so without translating it, a strip with more tabs
         // than fit is reachable by trackpad swipe and by keyboard and NOT AT
@@ -290,7 +295,11 @@ const Tab = observer(function Tab({
       aria-controls={selected ? tabPanelDomId(panel.id) : undefined}
       tabIndex={tabIndex}
       onKeyDown={event => {
-        onKeyDown(event, tab.id)
+        // keys from a control inside the tab (its ⋮, its open menu, the
+        // rename input) belong to that control
+        if (event.target === event.currentTarget) {
+          onKeyDown(event, tab.id)
+        }
       }}
       onFocus={() => {
         onFocus(tab.id)
@@ -318,7 +327,7 @@ const Tab = observer(function Tab({
           return
         }
         layout.setActiveTab(panel.id, tab.id)
-        dragHandlers.onTabPointerDown(tab.id, event)
+        dragHandlers.onPointerDown(event)
       }}
       onAuxClick={event => {
         if (event.button === 1) {
@@ -326,9 +335,10 @@ const Tab = observer(function Tab({
           onTabClose?.(tab.id)
         }
       }}
-      onPointerMove={dragHandlers.onTabPointerMove}
-      onPointerUp={dragHandlers.onTabPointerUp}
-      onPointerCancel={dragHandlers.onTabPointerCancel}
+      onPointerMove={dragHandlers.onPointerMove}
+      onPointerUp={dragHandlers.onPointerUp}
+      onPointerCancel={dragHandlers.onPointerCancel}
+      onLostPointerCapture={dragHandlers.onLostPointerCapture}
       className={className}
       style={tabColors(groupActive, selected)}
     >

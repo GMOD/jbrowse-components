@@ -65,10 +65,11 @@ const Workspace = observer(function Workspace({
       layout={session}
       chrome={{
         dragHandlers: {
-          onTabPointerDown: () => {},
-          onTabPointerMove: () => {},
-          onTabPointerUp: () => {},
-          onTabPointerCancel: () => {},
+          onPointerDown: () => {},
+          onPointerMove: () => {},
+          onPointerUp: () => {},
+          onPointerCancel: () => {},
+          onLostPointerCapture: () => {},
         },
         renderTabLabel: tab => <span>{tab.id}</span>,
         renderTabContent: tab => (

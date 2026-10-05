@@ -146,11 +146,25 @@ export const WorkspacePanelActions = observer(function WorkspacePanelActions({
               ] as const)
             : []),
         ]}
+        tooltip="Panel menu"
         size="small"
         className={classes.button}
       >
         <AddIcon className={classes.icon} />
       </CascadingMenuButton>
+      {maximized ? (
+        <Tooltip title="Restore panel">
+          <IconButton
+            size="small"
+            className={classes.button}
+            onClick={() => {
+              session.restorePanels()
+            }}
+          >
+            <CloseFullscreenIcon className={classes.icon} />
+          </IconButton>
+        </Tooltip>
+      ) : null}
       {canClose ? (
         <Tooltip title="Close panel">
           <IconButton size="small" className={classes.button} onClick={onClose}>

@@ -1,3 +1,5 @@
+import { useState } from 'react'
+
 import { createJBrowseTheme } from '@jbrowse/core/ui'
 import { defaultStyleTheme } from '@jbrowse/core/ui/styleTheme'
 import { colord } from '@jbrowse/core/util/colord'
@@ -16,10 +18,11 @@ const TestSession = types.compose(
 )
 
 const noDrag = {
-  onTabPointerDown: () => {},
-  onTabPointerMove: () => {},
-  onTabPointerUp: () => {},
-  onTabPointerCancel: () => {},
+  onPointerDown: () => {},
+  onPointerMove: () => {},
+  onPointerUp: () => {},
+  onPointerCancel: () => {},
+  onLostPointerCapture: () => {},
 }
 
 /**
@@ -55,6 +58,44 @@ const Harness = observer(function Harness({
 function renderLayout(session: ReturnType<typeof TestSession.create>) {
   return render(<Harness session={session} />)
 }
+
+// One instance reused across tabs kept the first tab's initial state, so the
+// next tab's views all counted as newly launched and scrolled themselves in
+test('switching tabs mounts the new tab content afresh', () => {
+  function FirstTab({ tabId }: { tabId: string }) {
+    const [first] = useState(tabId)
+    return <div data-testid="first-tab">{first}</div>
+  }
+  const Remounting = observer(function Remounting({
+    session,
+  }: {
+    session: ReturnType<typeof TestSession.create>
+  }) {
+    return (
+      <LayoutRenderer
+        node={session.visibleTree}
+        layout={session}
+        chrome={{
+          dragHandlers: noDrag,
+          renderTabLabel: tab => <span>{tab.id}</span>,
+          renderTabContent: tab => <FirstTab tabId={tab.id} />,
+        }}
+      />
+    )
+  })
+  const session = TestSession.create({ name: 't' })
+  const panelId = session.panels[0]!.id
+  const one = session.tabs[0]!.id
+  const two = session.addTab(panelId)!.id
+  render(<Remounting session={session} />)
+  expect(screen.getByTestId('first-tab').textContent).toBe(two)
+
+  act(() => {
+    session.setActiveTab(panelId, one)
+  })
+
+  expect(screen.getByTestId('first-tab').textContent).toBe(one)
+})
 
 test('each cell shows only its active tab', () => {
   const session = TestSession.create({ name: 't' })

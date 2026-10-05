@@ -104,6 +104,12 @@ describe('renaming', () => {
     fireEvent.keyDown(input, { key: 'Escape' })
     expect(renamed).toEqual([])
   })
+
+  test('leaving the automatic name as it was keeps it automatic', () => {
+    const { renamed, input } = renderTab()
+    fireEvent.blur(input)
+    expect(renamed).toEqual([undefined])
+  })
 })
 
 // The box is not a component on its own: it renders INSIDE the `role="tab"`
@@ -129,10 +135,11 @@ describe('renaming inside the tab strip', () => {
         layout={session}
         chrome={{
           dragHandlers: {
-            onTabPointerDown: () => {},
-            onTabPointerMove: () => {},
-            onTabPointerUp: () => {},
-            onTabPointerCancel: () => {},
+            onPointerDown: () => {},
+            onPointerMove: () => {},
+            onPointerUp: () => {},
+            onPointerCancel: () => {},
+            onLostPointerCapture: () => {},
           },
           renderTabLabel: t => (
             <WorkspaceTab

@@ -12,7 +12,7 @@ import { activeTabIn } from './tree.ts'
 import type { DropTarget } from './dropZone.ts'
 import type { WorkspaceLayout } from './model.ts'
 import type { PanelChrome } from './panelChrome.ts'
-import type { PanelNode } from './tree.ts'
+import type { PanelNode, TabNode } from './tree.ts'
 
 /**
  * One cell of the grid: a tab strip, and the content of whichever tab is
@@ -89,7 +89,6 @@ export const PanelView = observer(function PanelView({
 }: PanelViewProps) {
   const { classes } = useStyles()
   const active = activeTabIn(panel)
-  const contentRef = useScrollPortHeightVar()
 
   return (
     <div
@@ -112,20 +111,46 @@ export const PanelView = observer(function PanelView({
         groupActive={layout.activePanelId === panel.id}
       />
 
-      <div
-        role="tabpanel"
-        id={tabPanelDomId(panel.id)}
-        // no tabIndex: the WAI pattern adds one only for a panel with nothing
-        // focusable inside, and a tab here holds views full of controls (an
-        // empty one holds the launcher's buttons)
-        aria-labelledby={active ? tabDomId(active.id) : undefined}
-        className={classes.content}
-        ref={contentRef}
-      >
-        {active ? chrome.renderTabContent(active) : null}
-      </div>
+      {active ? (
+        <TabPanel
+          key={active.id}
+          panelId={panel.id}
+          tab={active}
+          chrome={chrome}
+          className={classes.content}
+        />
+      ) : (
+        <div role="tabpanel" className={classes.content} />
+      )}
 
       <DropIndicator drop={drop} classes={classes} />
+    </div>
+  )
+})
+
+// Keyed by tab, so a switch mounts a fresh ViewStack at the top of its own
+// scroll port rather than inheriting the last tab's
+const TabPanel = observer(function TabPanel({
+  panelId,
+  tab,
+  chrome,
+  className,
+}: {
+  panelId: string
+  tab: TabNode
+  chrome: PanelChrome
+  className: string
+}) {
+  const ref = useScrollPortHeightVar()
+  return (
+    <div
+      role="tabpanel"
+      id={tabPanelDomId(panelId)}
+      aria-labelledby={tabDomId(tab.id)}
+      className={className}
+      ref={ref}
+    >
+      {chrome.renderTabContent(tab)}
     </div>
   )
 })

@@ -94,12 +94,21 @@ export const WorkspaceTab = observer(function WorkspaceTab({
   const [draft, setDraft] = useState('')
   const title = tabDisplayName(tab, views, session)
 
+  const startEditing = () => {
+    setDraft(title)
+    setEditing(true)
+  }
+
+  // An empty box, or the automatic name left as it was, means "not renamed",
+  // so the name goes on following the tab's views
   const save = () => {
-    // An empty box means "go back to the automatic name". `title === undefined`
-    // is the sentinel for "not renamed" and `renameTab` takes it, but nothing
-    // in the UI passed it: clearing the box just discarded the edit, so a
-    // rename could be made and never unmade.
-    layout.renameTab(tab.id, draft.trim() || undefined)
+    const name = draft.trim()
+    const automatic = tabDisplayName(
+      { ...tab, title: undefined },
+      views,
+      session,
+    )
+    layout.renameTab(tab.id, name && name !== automatic ? name : undefined)
     setEditing(false)
   }
 
@@ -118,13 +127,6 @@ export const WorkspaceTab = observer(function WorkspaceTab({
           }}
           onBlur={save}
           onKeyDown={e => {
-            // The box sits INSIDE the `role="tab"` that owns the strip's roving
-            // tabindex, and every key it handles — the arrows, Home, End, Enter
-            // and Space — it also preventDefault()s. All of them reach that
-            // handler by bubbling out of here, so while the box is open the
-            // arrows jumped to the next tab instead of moving the caret and a
-            // space never reached the input at all: a tab could not be given a
-            // name with a space in it.
             e.stopPropagation()
             if (e.key === 'Enter') {
               save()
@@ -145,20 +147,11 @@ export const WorkspaceTab = observer(function WorkspaceTab({
           <Typography
             className={classes.title}
             variant="body2"
-            onDoubleClick={() => {
-              setDraft(title)
-              setEditing(true)
-            }}
+            onDoubleClick={startEditing}
           >
             {title}
           </Typography>
-          <JBrowseTabMenu
-            onRename={() => {
-              setDraft(title)
-              setEditing(true)
-            }}
-            onClose={onClose}
-          />
+          <JBrowseTabMenu onRename={startEditing} onClose={onClose} />
         </>
       )}
     </div>

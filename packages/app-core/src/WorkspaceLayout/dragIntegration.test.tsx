@@ -322,6 +322,50 @@ test('a cancelled pointer takes the drag with it, and it does not resume', () =>
   expect(session.panels).toHaveLength(2)
 })
 
+test('Escape abandons a drag that is painting nothing at the moment', () => {
+  const { session, left, tabA } = setup()
+  const tab = screen.getByTestId(`tab-${tabA}`)
+
+  act(() => {
+    fireEvent.pointerDown(tab, { clientX: 10, clientY: 10 })
+    fireEvent.pointerMove(tab, { clientX: 200, clientY: 200 })
+  })
+  expect(document.querySelector('[data-drop-indicator]')).toBeNull()
+
+  act(() => {
+    fireEvent.keyDown(window, { key: 'Escape' })
+    fireEvent.pointerMove(tab, { clientX: 600, clientY: 200 })
+  })
+  expect(document.querySelector('[data-drop-indicator]')).toBeNull()
+
+  act(() => {
+    fireEvent.pointerUp(tab, { clientX: 600, clientY: 200 })
+  })
+  expect(session.findTab(tabA)?.panel.id).toBe(left)
+})
+
+test('a lost pointer capture takes the drag with it', () => {
+  const { session, left, tabA } = setup()
+  const tab = screen.getByTestId(`tab-${tabA}`)
+
+  act(() => {
+    fireEvent.pointerDown(tab, { clientX: 10, clientY: 10 })
+    fireEvent.pointerMove(tab, { clientX: 600, clientY: 200 })
+  })
+  expect(document.querySelector('[data-drop-indicator]')).toBeTruthy()
+
+  act(() => {
+    fireEvent.lostPointerCapture(tab)
+  })
+  expect(document.querySelector('[data-drop-indicator]')).toBeNull()
+
+  act(() => {
+    fireEvent.pointerMove(tab, { clientX: 650, clientY: 220 })
+    fireEvent.pointerUp(tab, { clientX: 650, clientY: 220 })
+  })
+  expect(session.findTab(tabA)?.panel.id).toBe(left)
+})
+
 // The other half of "a drop that says nothing does nothing": a drop the model
 // declines must not be PROMISED either, and the centre wash over the cell a tab
 // is already in was drawn for the whole hover before it did nothing on release.
@@ -451,6 +495,14 @@ test('a press on a tab menu never starts a drag, so its click survives', () => {
 
   expect(session.findTab(tabA)?.panel.id).toBe(left)
   expect(session.panels.map(p => p.id)).toEqual(before)
+})
+
+test('the strip leaves Enter on the tab menu button to the button', () => {
+  const { container } = setup(true)
+  const menuButton = container.querySelector('.jbrowse-tab-menu button')!
+
+  expect(fireEvent.keyDown(menuButton, { key: 'Enter' })).toBe(true)
+  expect(fireEvent.keyDown(menuButton, { key: ' ' })).toBe(true)
 })
 
 test('the tab menu opens on click', () => {
@@ -724,18 +776,20 @@ describe('a drag in flight', () => {
     expect(drawn).toEqual([])
   })
 
-  test('redraws the cell whose indicator changes, and only that one', () => {
-    const { tab, tabA, tabB } = dragInto()
+  test('a changed indicator redraws the indicator, not any tab content', () => {
+    const { tab } = dragInto()
+    const zone = () =>
+      document
+        .querySelector('[data-drop-indicator]')
+        ?.getAttribute('data-drop-indicator')
+    const before = zone()
 
-    // out of the centre band and into the right edge one: a different
-    // indicator, so this cell genuinely has something new to draw
     act(() => {
       fireEvent.pointerMove(tab, { clientX: 790, clientY: 200 })
     })
 
-    expect(drawn).toContain(tabB)
-    // the cell the drag started in has nothing new to say and must hold still
-    expect(drawn).not.toContain(tabA)
+    expect(zone()).not.toBe(before)
+    expect(drawn).toEqual([])
   })
 })
 
