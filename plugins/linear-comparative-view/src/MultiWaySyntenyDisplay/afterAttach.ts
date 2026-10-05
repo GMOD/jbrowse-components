@@ -11,6 +11,7 @@ import { installAnimationDeadline } from '@jbrowse/display-kit/displayAutoruns'
 import { installGlobalFetchAutorun } from '@jbrowse/display-kit/installGlobalFetchAutorun'
 import { addDisposer, isAlive } from '@jbrowse/mobx-state-tree'
 import {
+  getCanonicalRefNameFn,
   installClearHoverOnSurfaceMove,
   installLodTierInfoFetch,
 } from '@jbrowse/synteny-core'
@@ -92,13 +93,11 @@ async function laneRegions(
   assemblyName: string,
   regions: LaneRegion[],
 ) {
-  const assembly = await session.assemblyManager
-    .waitForAssembly(assemblyName)
-    .catch(() => undefined)
-  return regions.map(r => ({
-    ...r,
-    refName: assembly?.getCanonicalRefName2(r.refName) ?? r.refName,
-  }))
+  const canonical = await getCanonicalRefNameFn({
+    assemblyManager: session.assemblyManager,
+    assemblyName,
+  })
+  return regions.map(r => ({ ...r, refName: canonical(r.refName) }))
 }
 
 /** One lane failing is a partial result: it commits `empty` under its key. */

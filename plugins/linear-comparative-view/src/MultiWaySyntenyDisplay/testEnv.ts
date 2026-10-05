@@ -245,6 +245,7 @@ export function createDisplayWithSession({
         get: assemblyOf,
         // without this a lane fetch fails on a TypeError its own error handling swallows
         waitForAssembly: () => Promise.resolve(testAssembly()),
+        requireAssembly: () => Promise.resolve(testAssembly()),
         getCanonicalAssemblyName: (name: string) => assemblyAliases[name],
         getDisplayName: (name: string) => {
           const temporary = temporaryAssemblies.find(a => a.name === name)
