@@ -1506,7 +1506,7 @@ export const hprcGraphSpecs: ScreenshotSpec[] = [
     viewportHeight: 1010,
     // the card alone: the clicked record's view held one 40px row over 70% of
     // the frame, all blank under it
-    crop: { x: 1016, y: 48, width: 384, height: 862 },
+    crop: { x: 1022, y: 48, width: 378, height: 862 },
     hideTooltip: true,
     clicksChange: "open the record's repeat copies view",
     actions: [

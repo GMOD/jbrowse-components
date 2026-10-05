@@ -251,11 +251,11 @@ export const mouseCattleGraphSpecs: ScreenshotSpec[] = [
         graphTrack('bovine_minigraph_segments', {
           colorScheme: 'reference-position',
           bubbleSpread: 'compress',
-          paneHeight: 180,
+          paneHeight: 240,
           maxRegionBp: cutNear(100_000),
         }),
       ],
-      860,
+      920,
     ),
     readySelector: GRAPH_DRAWN,
   },
@@ -269,11 +269,11 @@ export const mouseCattleGraphSpecs: ScreenshotSpec[] = [
         graphTrack('bovine_minigraph_segments', {
           colorScheme: 'reference-position',
           bubbleSpread: 'compress',
-          paneHeight: 180,
+          paneHeight: 240,
           maxRegionBp: cutNear(40_000),
         }),
       ],
-      860,
+      920,
     ),
     readySelector: GRAPH_DRAWN,
     annotations: [

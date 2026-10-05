@@ -542,7 +542,7 @@ export const hg002HaplotypeSpecs: ScreenshotSpec[] = [
     // only aspect control there is and 1400 gives a plot twice as wide as it is
     // tall. A dotplot's diagonal should read as a diagonal.
     viewportWidth: 950,
-    viewportHeight: 1480,
+    viewportHeight: 1450,
   },
   {
     ...CAPTURE,

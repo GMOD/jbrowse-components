@@ -473,7 +473,7 @@ export const pangenomeSpecs: ScreenshotSpec[] = [
     readyTimeout: 90000,
     viewportWidth: 1000,
     // the gene lane, the 150px depth track and the whole 240px stack
-    viewportHeight: 740,
+    viewportHeight: 775,
     hideTooltip: true,
     actions: [PARK_CURSOR, { type: 'delay', ms: 2000 }],
   },
