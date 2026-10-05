@@ -6,6 +6,7 @@ import {
   getBreakendAssemblyRegions,
   makeTitle,
   splitRegionAtPosition,
+  toCanonicalRefName,
 } from './util.ts'
 
 import type { Track } from './types.ts'
@@ -19,23 +20,38 @@ import type {
 export interface PanelStop {
   refName: string
   pos: number
-  /**
-   * bp the panel keeps in view around `pos`, for a stop that is a whole
-   * segment of a read rather than a junction
-   */
-  span?: number
 }
 
 /**
- * The window every panel shows either side of its stop: the reader's, widened
- * until the longest segment fits with a tenth of its length either side, since
- * one zoom serves every panel.
+ * The stops in the order given, each folded into the nearest earlier stop on
+ * its contig within `withinBp`, so two ends one window apart share a panel and
+ * the route keeps its order: a read that leaves a locus and returns a few
+ * hundred bases away is one panel, not two. A folded stop sits midway between
+ * the ends it holds.
  */
-export function multiLevelWindowSize(windowSize: number, stops: PanelStop[]) {
-  return Math.max(
-    windowSize,
-    ...stops.map(s => (s.span === undefined ? 0 : s.span * 0.6)),
-  )
+export function mergeStopsWithin(
+  stops: PanelStop[],
+  withinBp: number,
+): PanelStop[] {
+  const kept: { refName: string; min: number; max: number }[] = []
+  for (const { refName, pos } of stops) {
+    const near = kept.find(
+      k =>
+        k.refName === refName &&
+        pos >= k.min - withinBp &&
+        pos <= k.max + withinBp,
+    )
+    if (near) {
+      near.min = Math.min(near.min, pos)
+      near.max = Math.max(near.max, pos)
+    } else {
+      kept.push({ refName, min: pos, max: pos })
+    }
+  }
+  return kept.map(k => ({
+    refName: k.refName,
+    pos: Math.round((k.min + k.max) / 2),
+  }))
 }
 
 export async function navToMultiLevelBreak({
@@ -77,7 +93,7 @@ export async function navToMultiLevelBreak({
    * chromosomes, and a two-panel view of any one of its junctions shows a third
    * of it. The walk is the caller's, not this function's, so a caller with its
    * own idea of the chain (a spreadsheet row set, or a split read's own
-   * segments) can pass that instead.
+   * junctions) can pass that instead.
    */
   stops?: PanelStop[]
 }) {
@@ -98,14 +114,19 @@ export async function navToMultiLevelBreak({
   // Every stop resolves the same way, the record's own two ends included:
   // `getBreakendAssemblyRegions` found those by this exact lookup against this
   // exact assembly, so special-casing them here only said the same thing twice.
+  // A stop arrives in its file's spelling (a read's SA tag names `chr3` where
+  // the assembly keeps `3`), so it is canonicalized the way the record's own
+  // ends are.
+  const canonical = toCanonicalRefName(assembly)
   const panels = chain.map(stop => {
-    const region = assembly.getRegionForRefName(stop.refName)
+    const refName = canonical(stop.refName)
+    const region = assembly.getRegionForRefName(refName)
     if (!region) {
       throw new Error(
         `region ${stop.refName} not found in assembly ${assemblyName}`,
       )
     }
-    return { ...stop, region }
+    return { ...stop, refName, region }
   })
 
   const { view, reused } = await openOrReuseSplitView({
@@ -146,10 +167,7 @@ export async function navToMultiLevelBreak({
   )
   await awaitSplitViewSettled(view)
 
-  const bpPerPx = breakpointBpPerPx(
-    multiLevelWindowSize(windowSize, panels),
-    view.views[0]!.width,
-  )
+  const bpPerPx = breakpointBpPerPx(windowSize, view.views[0]!.width)
   for (const [idx, panel] of panels.entries()) {
     const lgv = view.views[idx]!
     lgv.zoomTo(bpPerPx)

@@ -396,8 +396,8 @@ mapped:
 
 For a split read, the **View split alignments** submenu offers the same two:
 **Split current view to show split alignments** lays out one region per segment
-of its `SA` tag, in read order, and **Open breakpoint split view** stacks one
-panel per segment, zoomed so the longest fits.
+of its `SA` tag, in read order, and **Open breakpoint split view** stacks a
+panel per locus the read visits, each centred on its junction.
 
 ## One read against the reference
 

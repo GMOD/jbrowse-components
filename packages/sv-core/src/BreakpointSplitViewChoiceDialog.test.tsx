@@ -51,15 +51,19 @@ test('given stops stand the chain row down, and past two the single row', () => 
   expect(two.queryByText('Single level (single row)')).not.toBeNull()
   two.unmount()
 
+  // six junction ends, two of them a few hundred bases apart on one contig
   const three = open([
-    { refName: 'chr22', pos: 10_250 },
-    { refName: 'chr9', pos: 20_150 },
+    { refName: 'chr22', pos: 10_500 },
+    { refName: 'chr9', pos: 20_300 },
+    { refName: 'chr9', pos: 20_100 },
     { refName: 'chr3', pos: 30_000 },
+    { refName: 'chr3', pos: 30_400 },
+    { refName: 'chr22', pos: 10_200 },
   ])
   expect(three.queryByText('Single level (single row)')).toBeNull()
   expect(
     three.queryByText(
-      'Opens 3 stacked linear genome views, one per segment of the read',
+      'Opens 3 stacked linear genome views, one per locus the read visits',
     ),
   ).not.toBeNull()
 })

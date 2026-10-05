@@ -65,7 +65,7 @@ test('a truncated SA record is dropped rather than shown as a locus', () => {
   expect(splitAlignmentSegments(junk)).toHaveLength(1)
 })
 
-test('a launch frames the first junction and stops on every segment', () => {
+test("a launch frames the first junction and stops on each junction's ends", () => {
   const { feature, stops } = splitReadLaunch(
     'read1',
     'long',
@@ -79,8 +79,10 @@ test('a launch frames the first junction and stops on every segment', () => {
     strand: 1,
     mate: { refName: 'chr9', start: 20_000, end: 20_300, strand: -1 },
   })
+  // the edge the read leaves chr22 by, and the edge it enters the reverse
+  // chr9 segment by, which is that segment's high end
   expect(stops).toEqual([
-    { refName: 'chr22', pos: 10_250, span: 500 },
-    { refName: 'chr9', pos: 20_150, span: 300 },
+    { refName: 'chr22', pos: 10_500 },
+    { refName: 'chr9', pos: 20_300 },
   ])
 })

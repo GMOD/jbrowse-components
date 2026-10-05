@@ -17,6 +17,16 @@ const CTG_LEN = 100_000
 // arithmetic rather than a tolerance.
 const assembly = {
   name: 'volvox',
+  // the BAM's spelling of each contig, which a read's SA tag names a stop by
+  refNameAliases: {
+    adapter: {
+      type: 'FromConfigAdapter',
+      features: [
+        { refName: 'ctgA', uniqueId: 'alias1', aliases: ['A'] },
+        { refName: 'ctgB', uniqueId: 'alias2', aliases: ['B'] },
+      ],
+    },
+  },
   sequence: {
     type: 'ReferenceSequenceTrack',
     trackId: 'volvox_refseq',
@@ -442,14 +452,12 @@ test('a one-row relaunch of a stacked view rebuilds it with its tracks', async (
   expect(panelTrackIds(splitViews(session)[0])).toEqual([['calls']])
 })
 
-// A split read's segments as stops: every stop carries its span, and one zoom
-// serves every panel, so the longest segment sets the window.
-test('segment stops open a panel each, centred, zoomed so the longest fits', async () => {
+test('every stop opens a panel centred on it at the window the reader set', async () => {
   const session = setup()
   const stops = [
-    { refName: 'ctgA', pos: 60_000, span: 300 },
-    { refName: 'ctgB', pos: 20_000, span: 20_000 },
-    { refName: 'ctgA', pos: 10_000, span: 500 },
+    { refName: 'ctgA', pos: 60_000 },
+    { refName: 'ctgB', pos: 20_000 },
+    { refName: 'ctgA', pos: 10_000 },
   ]
   await withWidth(session, () =>
     navToMultiLevelBreak({
@@ -462,9 +470,7 @@ test('segment stops open a panel each, centred, zoomed so the longest fits', asy
   )
   const view = splitViews(session)[0] as unknown as BreakpointViewModel
   expect(view.views).toHaveLength(3)
-  // 0.6 of the 20 kb segment either side of its midpoint, over 800 px, rather
-  // than the 5 kb the reader set
-  const bpPerPx = (12_000 * 2) / 800
+  const bpPerPx = (5000 * 2) / 800
   for (const [idx, stop] of stops.entries()) {
     const lgv = view.views[idx]!
     expect(lgv.bpPerPx).toBeCloseTo(bpPerPx, 6)
@@ -472,4 +478,28 @@ test('segment stops open a panel each, centred, zoomed so the longest fits', asy
     expect(centre.refName).toBe(stop.refName)
     expectEdgeAt(centre, stop.pos, bpPerPx)
   }
+})
+
+// A split read's segments name their contigs the way the BAM does, which the
+// assembly may know only as an alias. The record's own ends were already
+// resolved; a stop spelled `A` failed with "region A not found".
+test("a stop in the file's spelling resolves to the assembly's contig", async () => {
+  const session = setup()
+  await withWidth(session, () =>
+    navToMultiLevelBreak({
+      session,
+      assemblyName: 'volvox',
+      windowSize: 5000,
+      feature: breakend('ctgA', 60_000, 'A[ctgB:20001['),
+      stops: [
+        { refName: 'A', pos: 60_000 },
+        { refName: 'B', pos: 20_000 },
+      ],
+    }),
+  )
+  const view = splitViews(session)[0] as unknown as BreakpointViewModel
+  expect(
+    view.views.map(v => [...new Set(v.displayedRegions.map(r => r.refName))]),
+  ).toEqual([['ctgA'], ['ctgB']])
+  expectEdgeAt(view.views[1]!.pxToBp(400), 20_000, view.views[1]!.bpPerPx)
 })

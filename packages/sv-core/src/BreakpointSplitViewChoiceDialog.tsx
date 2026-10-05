@@ -18,7 +18,10 @@ import {
 import { observer } from 'mobx-react'
 
 import { distinctJunctions, eventStops } from './eventStops.ts'
-import { navToMultiLevelBreak } from './navToMultiLevelBreak.ts'
+import {
+  mergeStopsWithin,
+  navToMultiLevelBreak,
+} from './navToMultiLevelBreak.ts'
 import { navToSingleLevelBreak } from './navToSingleLevelBreak.ts'
 import { junctionFromFeature, walkBreakendChain } from './walkBreakendChain.ts'
 
@@ -96,10 +99,13 @@ const BreakpointSplitViewChoiceDialog = observer(
       '5000',
     )
 
-    // A launcher holding the panels already (a split read's segments) leaves
-    // nothing to infer, and past two of them no single row to lay them on.
-    const given = stops !== undefined
-    const isSplitLevel = viewType === 'split' || (given && stops.length > 2)
+    const windowSizeNum = Number(windowSize) || 0
+    // A launcher holding the loci already (a split read's junctions) leaves
+    // nothing to infer; its ends a window apart on one contig share a panel,
+    // and past two panels there is no single row to lay them on.
+    const panels = stops && mergeStopsWithin(stops, windowSizeNum)
+    const given = panels !== undefined
+    const isSplitLevel = viewType === 'split' || (given && panels.length > 2)
     // Only for the stacked shape. A single-level view lays its loci along one
     // row, so a third one is more of the row rather than another panel, and
     // `navToSingleLevelBreak` frames the record's own pair.
@@ -118,7 +124,6 @@ const BreakpointSplitViewChoiceDialog = observer(
           ? (getSnapshot(view.tracks) as Track[])
           : []
         : undefined
-      const windowSizeNum = Number(windowSize) || 0
       const suffixedId = (suffix: string) =>
         stableViewId === undefined ? undefined : `${stableViewId}_${suffix}`
       void (async () => {
@@ -137,7 +142,7 @@ const BreakpointSplitViewChoiceDialog = observer(
               )
             : start && findJunctionsNear
               ? await walkBreakendChain({ start, findJunctionsNear })
-              : stops
+              : panels
           await (isSplitLevel
             ? navToMultiLevelBreak({
                 stableViewId: suffixedId('multilevel'),
@@ -185,12 +190,12 @@ const BreakpointSplitViewChoiceDialog = observer(
                 primary="Split level (top/bottom)"
                 secondary={
                   given
-                    ? `Opens ${stops.length} stacked linear genome views, one per segment of the read`
+                    ? `Opens ${panels.length} stacked linear genome views, one per locus the read visits`
                     : 'Opens two stacked linear genome views, one for each breakend'
                 }
               />
             </ListItemButton>
-            {given && stops.length > 2 ? null : (
+            {given && panels.length > 2 ? null : (
               <ListItemButton
                 selected={!isSplitLevel}
                 onClick={() => {

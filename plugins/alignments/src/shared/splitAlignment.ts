@@ -1,5 +1,6 @@
 import {
   SAM_FLAG_SUPPLEMENTARY,
+  connectionEndpointBps,
   featurizeSAEntries,
   getClip,
   splitSA,
@@ -96,8 +97,9 @@ export function splitAlignmentSegments(feature: Feature): AlignedSegment[] {
 /**
  * A split read as a breakpoint split view launch: its first two segments as
  * the read-plus-mate feature the launcher frames, the shape
- * `buildPairedEndMateFeature` gives a mate, and every segment as a stop on its
- * midpoint spanning the segment, a panel each in read order.
+ * `buildPairedEndMateFeature` gives a mate, and each junction's two ends as
+ * stops in read order, the edge the read leaves one segment by and the edge
+ * it enters the next by, which the launcher folds into a panel per locus.
  */
 export function splitReadLaunch(
   id: string,
@@ -117,10 +119,21 @@ export function splitReadLaunch(
       name,
       mate: end('split-mate', segments[1]!),
     }),
-    stops: segments.map((s): PanelStop => ({
-      refName: s.refName,
-      pos: Math.round((s.start + s.end) / 2),
-      span: s.end - s.start,
-    })),
+    stops: segments.slice(0, -1).flatMap((s1, i): PanelStop[] => {
+      const s2 = segments[i + 1]!
+      const { bp1, bp2 } = connectionEndpointBps({
+        s1: s1.strand,
+        start1: s1.start,
+        end1: s1.end,
+        s2: s2.strand,
+        start2: s2.start,
+        end2: s2.end,
+        isSplit: true,
+      })
+      return [
+        { refName: s1.refName, pos: bp1 },
+        { refName: s2.refName, pos: bp2 },
+      ]
+    }),
   }
 }

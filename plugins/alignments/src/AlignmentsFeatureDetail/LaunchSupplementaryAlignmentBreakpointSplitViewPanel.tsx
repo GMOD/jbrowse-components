@@ -46,7 +46,7 @@ const LaunchBreakpointSplitViewPanel = observer(
           feature={launch.feature}
           stops={launch.stops}
         >
-          Open breakpoint split view, one panel per segment
+          Open breakpoint split view, a panel per locus
         </LaunchBreakpointSplitViewLink>
       </div>
     )
