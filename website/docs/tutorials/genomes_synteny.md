@@ -142,7 +142,17 @@ no chain, its lane is the newest build of that species that does. **[rev]**
 after a lane's coordinates marks a genome drawn reversed so that it reads in
 hg38's orientation.
 
-<Figure src="/img/genomes_synteny/star_lanes.png" caption="The view the link opens: hg38 at TNNT3 above one lane per genome. In every lane that names them, the genes around TNNT3 read in hg38's order, SYT8 to MRPL23; the platypus lane spreads over many sequences and names none of them." />
+The link opens a lane for every species it found, too many to read at once. In
+the track menu:
+
+- **Lanes → Choose lanes...** and tick chimp, orangutan, rhesus, gray mouse
+  lemur, Chinese tree shrew, naked mole-rat, elephant and platypus, a span from
+  the apes to the monotremes
+- **Color by... → Strand**, under **Ribbons**, paints a ribbon red where the two
+  lanes it joins run the same way and blue where one is inverted against the
+  other
+
+<Figure src="/img/genomes_synteny/star_lanes.png" caption="hg38 at TNNT3 over eight genomes from chimp to platypus, ribbons colored by strand. Down to elephant the ribbons run nearly all red and the genes that lanes name keep hg38's order, while purple, sequence hg38 lacks, grows down the stack. The platypus lane spreads over many sequences, joined by blue." />
 
 Each lane reads the same chain file as that genome's pairwise liftOver track, so
 the one view holds what a synteny view per genome would. The ribbons between two
@@ -166,7 +176,7 @@ and mm39 is C57BL/6J, the strain that lost _Nnt_ exons 7 to 11 (Freeman et al.
 - in the track menu, **Lanes → Choose lanes...**, type `house mouse` into the
   filter and tick the strains, the C57BL/6J T2T assembly among them
 
-<Figure src="/img/genomes_synteny/mouse_strains_nnt.png" caption="mm39 at Nnt over the Mus assemblies the track holds, the C57BL/6J T2T assembly first. Every other lane opens a gap under the middle of the gene, the sequence the reference strain lacks, and the T2T assembly of that same strain runs straight." />
+<Figure src="/img/genomes_synteny/mouse_strains_nnt.png" caption="mm39 at Nnt over the Mus assemblies the track holds, the C57BL/6J T2T assembly first. Every other lane draws purple under the middle of the gene, the exons the reference strain lost, and the T2T assembly of that same strain runs straight with none." />
 
 ## Comparing one person's two haplotypes at the 17q21.31 inversion
 
@@ -176,11 +186,16 @@ haplotype is a 900 kb inversion (Stefansson et al. 2005), and H9 carries one of
 each. On hg38 at
 [staging.genomes.jbrowse.org](https://staging.genomes.jbrowse.org), turn on
 **hg38 vs 240 genomes (liftOver, multi-way)**, type
-`chr17:45,300,000-46,800,000` into the location box, and in **Lanes → Choose
-lanes...** tick the two H9 haplotypes, the HG002 maternal assembly, the NA24631
-maternal assembly and T2T-CHM13 (hs1).
+`chr17:45,300,000-46,800,000` into the location box, then in the track menu:
 
-<Figure src="/img/genomes_synteny/human_17q21_haplotypes.png" caption="hg38 from MAPT to NSF over five T2T haplotypes. The H9 hap2 lane crosses the lane above it across the inversion and runs straight either side of it; the other four haplotypes run straight throughout." />
+- **Lanes → Choose lanes...** and tick the two H9 haplotypes, the HG002 maternal
+  assembly, the NA24631 maternal assembly and T2T-CHM13 (hs1)
+- drag the H9 hap2 lane's label to the top of the stack, beside hg38
+- **Color by... → Strand**, under **Ribbons**
+- **Show... → Show gene labels** off, since the RefSeq track above names the
+  genes
+
+<Figure src="/img/genomes_synteny/human_17q21_haplotypes.png" caption="hg38 from MAPT to NSF over five T2T haplotypes, ribbons colored by strand. The H9 hap2 lane, beside hg38, is the inverted H2 haplotype: its ribbons turn blue across MAPT and KANSL1, and the purple on it is sequence hg38 lacks. Its partner hap1 and the other three haplotypes run red throughout." />
 
 ## See also
 

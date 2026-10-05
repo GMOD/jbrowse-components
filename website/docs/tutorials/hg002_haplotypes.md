@@ -104,18 +104,24 @@ Press **Launch**, then click the palette icon in the view's header and pick
 HG002 is male, so `chrX_MATERNAL` and `chrY_PATERNAL` have nothing on the other
 haplotype to chain to, and their column and row stay empty.
 
-<Figure caption="The Q100 maternal-to-paternal chain as a dotplot, maternal contigs on x against paternal on y, colored by strand. Each chromosome pairs with the same chromosome on the other haplotype; the empty lane and column are chrX and chrY." src="/img/hg002_haplotypes_wholegenome.png" />
+Genome-wide, an inversion of a few megabases is a pixel or two of the line. Open
+a second dotplot the same way with `chr8_MATERNAL` and `chr8_PATERNAL` in the
+two boxes, colored by strand, to read one chromosome pair at a scale where it
+has room.
+
+<Figure caption="The Q100 maternal-to-paternal chain as dotplots colored by strand, maternal on x against paternal on y: the whole genome above, chr8 alone below. Genome-wide each chromosome pairs with its homolog along one red diagonal, the empty lane and column being chrX and chrY; on chr8 the 8p23.1 inversion is the blue stretch running against the diagonal near the start." src="/img/hg002_haplotypes_wholegenome.png" />
 
 ## Opening the 8p23.1 inversion in a linear synteny view
 
 In the whole-genome plot, every chromosome is a red diagonal against the same
 chromosome on the other haplotype, and a few have small blue marks where a
 stretch runs inverted. At genome scale those marks look alike, so the literature
-picks which to open: HG002 is heterozygous for the 8p23.1 inversion polymorphism
-(Bosch _et al._ 2009), so the maternal and paternal copies of that arm run in
-opposite directions, and the Q100 chain records it as its largest inverted
-block, close to 4 Mb. A linear synteny view reads the two copies against each
-other, with the tracks for each haplotype beside the ribbons.
+picks which to open, and the chr8 plot shows it: HG002 is heterozygous for the
+8p23.1 inversion polymorphism (Bosch _et al._ 2009), so the maternal and
+paternal copies of that arm run in opposite directions, and the Q100 chain
+records it as its largest inverted block, close to 4 Mb. A linear synteny view
+reads the two copies against each other, with the tracks for each haplotype
+beside the ribbons.
 
 Open **Add → Linear synteny view**. Its **Quick start** already offers the two
 rows the chain implies and the chain between them, so press **Launch**; both

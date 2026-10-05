@@ -405,7 +405,7 @@ bar for each of the 167 alleles, squeezed into the card's height longest first.
 They are too many to label, so hovering a copy names its allele, that allele's
 share of the 188 called alleles and its length.
 
-<Figure caption="The ABCA7 VNTR record's Tandem repeat card, by allele. Each of the 167 bars is one of TRGT's alleles as copies of the 51 bp motif, longest first, squeezed into the card's height; hovering a copy gives its allele, share and length." src="/img/pangenome/hprc_abca7_tandem_repeat_alleles.png" />
+<Figure caption="The ABCA7 VNTR record's Tandem repeat card, by allele: one bar per TRGT allele as copies of the motif, longest first. The dotted line is GRCh38's allele, and all but a handful of the bars run past it." src="/img/pangenome/hprc_abca7_tandem_repeat_alleles.png" />
 
 Almost every allele is called once, and no sample has GRCh38's allele. Click a
 bar: the other bars fade and the **Samples** card narrows to the samples with

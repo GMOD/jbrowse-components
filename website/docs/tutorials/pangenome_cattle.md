@@ -272,9 +272,11 @@ Add the records as a track:
 }
 ```
 
-Then open `chr1:2,424,000-2,436,000`.
+Then open `chr1:2,428,800-2,429,800`. The figure shades
+`chr1:2,429,109-2,429,320`, the stretch OMIA's record says the allele
+duplicates.
 
-<Figure caption="The POLLED locus on ARS-UCD1.2: OMIA's record of the Celtic polled allele, and the callset, whose variant lane names the call and its allele change. Only the Angus row has the insertion under the record." src="/img/pangenome/bovine_polled.png" />
+<Figure caption="The POLLED locus on ARS-UCD1.2: OMIA's record of the Celtic polled allele, and the callset. The Angus row alone carries the insertion, at the right edge of the shaded sequence it copies; every other row is reference." src="/img/pangenome/bovine_polled.png" />
 
 OMIA also records the Friesian polled allele, an 80 kb duplication 200 kb
 further along, which Holstein cattle have. The panel has no Holstein, and the
@@ -285,9 +287,11 @@ callset holds nothing that size there.
 Simmental and Hereford cattle have white heads. Milia et al. (2025) tied the
 trait to a 14.3 kb segment repeated in tandem upstream of _KIT_: white-headed
 breeds have extra copies, colour-headed breeds a deletion. The Hereford
-reference holds one collapsed copy. Open `chr6:70,080,000-70,180,000`.
+reference holds one collapsed copy. Open `chr6:70,080,000-70,180,000`, and put
+the graph track back on the reference's coordinates under the callset with
+**Layout → Anchored** in its menu.
 
-<Figure caption="Upstream of KIT on ARS-UCD1.2: RefSeq genes and the callset, whose variant lane draws the record across the repeat and names its alleles. The Simmental row has a distinct allele across the repeat, and every other row has the deletion." src="/img/pangenome/bovine_kit.png" />
+<Figure caption="Upstream of KIT on ARS-UCD1.2: RefSeq genes, the callset and the graph track. The Simmental row has a distinct allele across the repeat and every other row has the deletion, which the graph draws as the dashed arc skipping the repeat." src="/img/pangenome/bovine_kit.png" />
 
 The larger box at the left of the Simmental row is an insertion the length of
 the 14.3 kb segment: Simmental has one more copy than the Hereford reference.
@@ -297,7 +301,7 @@ the 14.3 kb segment: Simmental has one more copy than the Hereford reference.
 _TAS2R46_ encodes a bitter taste receptor. Leonard et al. (2022) found a 17 kb
 deletion in gaur that removes it. Open `chr5:98,575,000-98,615,000`.
 
-<Figure caption="TAS2R46 on ARS-UCD1.2: RefSeq genes and the callset, whose variant lane draws the record over the deleted span and names its alleles. The gaur row has the deletion, and four cattle rows have a different allele across the same span." src="/img/pangenome/bovine_tas2r46.png" />
+<Figure caption="TAS2R46 on ARS-UCD1.2: RefSeq genes, the callset and the graph track. The gaur row has the deletion, which the graph draws as the dashed arc over TAS2R46, and four cattle rows have a different allele across the same span." src="/img/pangenome/bovine_tas2r46.png" />
 
 The four cattle rows, Angus, Piedmontese, Brahman and Nellore, hold an allele
 slightly longer than the reference, and the insertion boxed in each row, between

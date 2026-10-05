@@ -230,11 +230,15 @@ in a row per assembly the track lists.
     ["ecoli_cactus_ava"]
   ],
   "minAlignmentLength": 10000,
-  "levelHeights": [110, 110, 110, 110]
+  "levelHeights": [110, 110, 110, 110],
+  "color": { "field": "strand" }
 }
 ```
 
-<Figure caption="The Minigraph-Cactus graph's synteny projection: five strains stacked K12 to IAI39, a halSynteny ribbon between each adjacent pair. The bottom band crosses where IAI39 has large inversions relative to the others." src="/img/pangenome_cactus/synteny.png" />
+`color` paints a ribbon red where the two strains run the same way and blue
+where one is inverted against the other.
+
+<Figure caption="The Minigraph-Cactus graph's synteny projection: five strains stacked K12 to IAI39, a halSynteny ribbon between each adjacent pair, colored by strand. The top three bands run red throughout, and IAI39's large inversions are the blue ribbons crossing the bottom one." src="/img/pangenome_cactus/synteny.png" />
 
 The synteny view stacks the same five strains in the same row order as the
 [all-vs-all tutorial's stack](/docs/tutorials/allvsall_synteny#stacking-the-genomes)

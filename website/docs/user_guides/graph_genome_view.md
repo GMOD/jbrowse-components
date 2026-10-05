@@ -312,7 +312,7 @@ groups rows by the assembly each allele came from. A row then shows what that
 strain does to the reference: the backbone sits on top, and each strain's
 charcoal marks sit under it, tied by grey threads to where they attach.
 
-<Figure caption="460 bp of the pggb graph in Sample rows, under the genes, MAF and segments lanes for the same window. CFT073's row is one long bar over the K12 span its segment bypasses, and its MAF row is empty over the same span." src="/img/pangenome/pggb_locus_sample_rows.png" />
+<Figure caption="460 bp of the pggb graph in Sample rows, under the genes and MAF lanes for the same window. CFT073's row is one long bar over the K12 span its segment bypasses, where the other strains' rows hold only short alleles." src="/img/pangenome/pggb_locus_sample_rows.png" />
 
 The assembly an allele "came from" depends on the format. On rGFA it is the
 strain that _first contributed_ the sequence, because `SR` is build order and

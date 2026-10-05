@@ -449,7 +449,10 @@ column is a stretch that strain lacks:
 }
 ```
 
-<Figure caption="The aggregate depth curve over all of K12, with odgi pav on the same windows below it, one row per non-K12 strain. Under the shaded span a single row goes white; the deepest troughs in the curve above are where all four do." src="/img/pangenome/pav.png" />
+Open `chr:450,000-590,000` with the K12 genes on. The figure shades
+`chr:501,500-539,000`.
+
+<Figure caption="K12 genes, the aggregate depth curve, and odgi pav on the same windows below it, one row per non-K12 strain. Under the shaded span only the IAI39 row goes white and the curve drops by one; where the curve falls to K12 alone at the right, every row goes white." src="/img/pangenome/pav.png" />
 
 ### Testing the CPZ-55 depth trough with nanopore reads
 
@@ -528,7 +531,7 @@ session:
 
 <Video src="/media/pangenome/pggb_subgraph_launch.mp4" caption="A K12 session with no graph in it, to a graph track: the track added through Open track... → Add pangenome graph track, the window narrowed onto the IS5 element, and the track drawing the graph on K12's coordinates." />
 
-Type `chr:1,250,000-1,350,000`. Zoomed out past one bp per pixel, the track
+Type `chr:1,292,500-1,307,500`. Zoomed out past one bp per pixel, the track
 draws the coarse tier (one node per bubble), with the reference as backbone and
 charcoal where the strains differ. The tier also loads as a separate track whose
 **Display types → Feature display** draws the bubbles as a row at any zoom:
@@ -555,7 +558,7 @@ The tier marks where the strains differ, and the
 the tier track and the graph, and a strain's row breaks across each bubble it
 skips.
 
-<Figure caption="100 kb of K12 around an IS5 element (an insertion sequence), one node per bubble: the tier, the MAF's strain rows, and the graph track, which draws from the tier at this zoom. The highlight and the boxed node are insH21, the IS5 element K12's annotation names, which K12 has and the other four skip, their MAF rows breaking across it." src="/img/pangenome/pggb_bubble_tier.png" />
+<Figure caption="K12 around two insertion sequences, one node per bubble: the tier, the MAF's strain rows, and the graph track, which draws from the tier at this zoom. The highlight and boxed node are the IS5 element insH21, which all four other strains skip, their MAF rows breaking across it; NCTC86's row runs through insZ to its left." src="/img/pangenome/pggb_bubble_tier.png" />
 
 Right-click the IS5 node in the graph track and take **Open in K12**, the route
 [the HPRC page](/docs/tutorials/pangenome_hprc#opening-the-haplotype-an-allele-came-from)
