@@ -68,6 +68,22 @@ const SETS: Record<string, Record<string, Scenario>> = {
     emptylgv: volvox([]),
     bam: volvox(['volvox_bam']),
     cram: volvox(['volvox_cram']),
+    many: {
+      ...volvox([
+        'gff3tabix_genes',
+        'bigbed_genes',
+        'volvox_filtered_vcf',
+        'volvox_test_vcf',
+        'volvox_microarray',
+        'volvox_microarray_density',
+        'volvox_microarray_multi',
+        'volvox_gc',
+        'volvox_bam',
+        'volvox_cram',
+        'volvox_sv',
+      ]),
+      wait: '[data-app-phase="ready"]',
+    },
   },
   heavy: {
     s200bam100k: bench('hg19mod', W100, '200x.shortread.bam'),

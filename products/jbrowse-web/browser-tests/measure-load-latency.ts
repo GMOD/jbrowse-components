@@ -7,13 +7,15 @@
 //
 //   node browser-tests/measure-load-latency.ts [--latency=100] [--runs=3]
 //     [--only=hub] [--base=https://jbrowse.org/code/jb2/main/] [--waterfall]
-//     [--http1] [--nothrottle]
+//     [--http1] [--nothrottle] [--warm]
 //
 // Run after a build. The server speaks HTTP/2 and sends the deploy's
 // Cache-Control for static/; --http1 serves HTTP/1.1, whose six connections a
 // host queue a round of chunks. --base measures a deployed copy instead, whose
 // remote requests pay their real round trip on top of the emulated one.
-// --waterfall prints every request.
+// --waterfall prints every request. --warm measures a repeat visit: the same
+// browser loads the page once in another tab first, so the HTTP cache holds
+// what a returning user's would.
 import { BASE_CHROME_ARGS } from '@jbrowse/browser-test-utils'
 import { launch } from 'puppeteer'
 
@@ -37,6 +39,7 @@ const waterfall = process.argv.includes('--waterfall')
 const http1 = process.argv.includes('--http1')
 // collapses React 19's 300ms Suspense reveal throttle; see probe-coldload-phases.ts
 const noThrottle = process.argv.includes('--nothrottle')
+const warm = process.argv.includes('--warm')
 
 const scenarios = {
   'volvox, 4 tracks':
@@ -45,6 +48,8 @@ const scenarios = {
     'config=test_data/volvox/config.json&assembly=volvox&loc=ctgA:1-20000&tracks=volvox_bam&renderer=canvas2d',
   'volvox, one CRAM track':
     'config=test_data/volvox/config.json&assembly=volvox&loc=ctgA:1-20000&tracks=volvox_cram&renderer=canvas2d',
+  'volvox, 11 tracks':
+    'config=test_data/volvox/config.json&assembly=volvox&loc=ctgA:1-20000&tracks=gff3tabix_genes,bigbed_genes,volvox_filtered_vcf,volvox_test_vcf,volvox_microarray,volvox_microarray_density,volvox_microarray_multi,volvox_gc,volvox_bam,volvox_cram,volvox_sv',
   'volvox, one BigWig track':
     'config=test_data/volvox/config.json&assembly=volvox&loc=ctgA:1-20000&tracks=volvox_microarray&renderer=canvas2d',
   'volvox, one GFF track':
@@ -120,6 +125,14 @@ async function measure(root: string, query: string, chromeArgs: string[]) {
     args: [...BASE_CHROME_ARGS, ...chromeArgs],
   })
   try {
+    if (warm) {
+      const prime = await browser.newPage()
+      await prime.goto(`${root}?${query}`)
+      await prime.waitForSelector('[data-app-phase="ready"]', {
+        timeout: 120_000,
+      })
+      await prime.close()
+    }
     const page = await browser.newPage()
     const requests = await collectTimedRequests(page, latency)
     if (noThrottle) {
@@ -181,7 +194,9 @@ async function main() {
     : []
   const ms = (n: number | undefined) =>
     n === undefined || !Number.isFinite(n) ? '-' : `${(n / 1000).toFixed(2)} s`
-  console.log(`${root}, ${latency} ms round trip, ${runs} cold loads each\n`)
+  console.log(
+    `${root}, ${latency} ms round trip, ${runs} ${warm ? 'repeat visits' : 'cold loads'} each\n`,
+  )
   for (const [name, query] of Object.entries(scenarios)) {
     if (only && !name.includes(only)) {
       continue
