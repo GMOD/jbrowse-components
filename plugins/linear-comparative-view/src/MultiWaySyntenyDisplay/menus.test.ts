@@ -136,6 +136,7 @@ function trackModel({
     ...header,
     domain,
     laneStack: { lanes: [grape, peach] },
+    laneStructureOrder: [],
     laneUniverse: Array.from({ length: universe }, (_, i) => ({
       name: `lane${i}`,
       placed: true,
@@ -301,6 +302,25 @@ test('Show offers the legend only when something is keyed, and the hidden lanes 
   ])
   click(show[6])
   expect(calls).toEqual(['show hidden'])
+})
+
+test('an alignment stack offers its structure order, which writes the domain', () => {
+  const { model } = trackModel()
+  const order = ['c', 'a', 'b']
+  const domains: string[][] = []
+  const lanes = lanesMenuItem({
+    ...model,
+    laneStructureOrder: order,
+    setDomain: (domain: string[]) => {
+      domains.push(domain)
+    },
+  }).subMenu
+  const item = lanes.find(
+    i => 'label' in i && i.label === 'Order lanes by structure',
+  )
+  expect(item).toBeDefined()
+  ;(item as { onClick: () => void }).onClick()
+  expect(domains).toEqual([order])
 })
 
 test('Lanes lists each lane under its own header menu', () => {

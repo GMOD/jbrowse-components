@@ -57,6 +57,7 @@ export interface LaneHeaderModel {
 
 export interface MultiWayMenuModel extends LaneHeaderModel, LaneSelectionModel {
   laneStack: { lanes: readonly HeaderLane[] }
+  laneStructureOrder: readonly string[]
   hiddenLanes: readonly string[]
   showHiddenLanes: () => void
   openLaneSelection: () => void
@@ -328,6 +329,18 @@ function laneSelectionMenuItems(model: MultiWayMenuModel): MenuItem[] {
 export function lanesMenuItem(model: MultiWayMenuModel) {
   const subMenu: MenuItem[] = [
     ...laneSelectionMenuItems(model),
+    ...(model.laneStructureOrder.length > 2
+      ? [
+          {
+            label: 'Order lanes by structure',
+            helpText:
+              'Stack each lane beside the one whose deletions and insertions against the anchor are most alike, starting from the lane most like the anchor, so a structure its lanes share shows as one block. The order stays until you reset it.',
+            onClick: () => {
+              model.setDomain([...model.laneStructureOrder])
+            },
+          },
+        ]
+      : []),
     resetOrderItem(model, 'lane'),
     toggleItem('Freeze lanes', model.lanesFrozen, model.setLanesFrozen, {
       helpText:

@@ -7,6 +7,7 @@ import {
   categoricalField,
 } from '@jbrowse/core/util/categoricalField'
 import { NO_CATEGORY_COLOR } from '@jbrowse/core/util/color'
+import { cssColorToABGR } from '@jbrowse/core/util/colorBits'
 import { takeSnackbarAction, testAssembly } from '@jbrowse/display-test-utils'
 import { getSnapshot } from '@jbrowse/mobx-state-tree'
 import {
@@ -29,6 +30,8 @@ import {
 import { laneResetLabel } from './laneSelection.ts'
 import { MIN_LANE_PITCH } from './laneStack.ts'
 import { lanesMenuItem } from './menus.ts'
+import { glyphsKey } from './multiwayGeometry.ts'
+import { OFF_ANCHOR_COLOR } from './offAnchor.ts'
 import { createDisplay, createDisplayWithSession } from './testEnv.ts'
 
 import type { MultiWaySyntenyDisplayModel } from './model.ts'
@@ -1584,6 +1587,99 @@ describe('lane pairs on a graph source', () => {
         display.laneLinks.held!.get(spec.lane)!.links.map(l => l.id()),
       ).toEqual([spec.lane])
     }
+  })
+})
+
+describe('sequence the anchor lacks', () => {
+  // both lanes carry 1,000 bp at ctgA:200 that the anchor does not; a direct
+  // pair link aligns them to each other across it
+  const carrier = (id: string, assemblyName: string, refName: string) =>
+    new SimpleFeature({
+      uniqueId: id,
+      refName: 'ctgA',
+      start: 100,
+      end: 300,
+      strand: 1,
+      mate: { assemblyName, refName, start: 100, end: 1300 },
+    })
+  const insertionOps = Uint32Array.from(parseCigar2('100=1000I100='))
+  const setUp = () => {
+    const display = createDisplay()
+    display.setFeatures(
+      [
+        carrier('r1', 'volvox_random', 'ctgB'),
+        carrier('r2', 'volvox_ins', 'ctgC'),
+      ],
+      undefined,
+      undefined,
+      new Map([
+        ['r1', insertionOps],
+        ['r2', insertionOps],
+      ]),
+    )
+    display.setLaneFrames(
+      0,
+      new Map([
+        ['volvox_random', decisionOn('ctgB', 700)],
+        ['volvox_ins', decisionOn('ctgC', 700)],
+      ]),
+    )
+    return display
+  }
+  const purple = cssColorToABGR(OFF_ANCHOR_COLOR)
+
+  test('each lane holds the stretch as its own, and the legend names it', () => {
+    const display = setUp()
+    expect(display.laneOffAnchor.get('volvox_random')).toEqual([
+      { refName: 'ctgB', start: 200, end: 1200 },
+    ])
+    expect(
+      display.colorScales.find(scale => scale.id === 'offAnchor'),
+    ).toMatchObject({
+      entries: [
+        { label: expect.stringMatching(/^Not in /), color: OFF_ANCHOR_COLOR },
+      ],
+    })
+  })
+
+  test('a lane draws it as a bar, and a pair link across it paints it', () => {
+    const display = setUp()
+    const glyphs = display.laneCells.cells.get(glyphsKey(1))
+    expect(
+      glyphs?.kind === 'glyphs' && [...glyphs.data.rectColors].includes(purple),
+    ).toBe(true)
+    display.setLaneLinks(
+      new Map([
+        [
+          'volvox_random|volvox_ins',
+          {
+            key: 'k',
+            links: [
+              new SimpleFeature({
+                uniqueId: 'pair',
+                refName: 'ctgB',
+                start: 100,
+                end: 1300,
+                strand: 1,
+                mate: {
+                  assemblyName: 'volvox_ins',
+                  refName: 'ctgC',
+                  start: 100,
+                  end: 1300,
+                },
+              }),
+            ],
+            ops: new Map([['pair', Uint32Array.from(parseCigar2('1200='))]]),
+          },
+        ],
+      ]),
+      display.laneLinksFetchSpecs,
+      display.anchorAssemblyName,
+    )
+    const cell = display.ribbonGeometry.cells.get('ribbons:1')
+    expect(
+      cell?.kind === 'ribbons' && [...cell.data.colors].includes(purple),
+    ).toBe(true)
   })
 })
 
