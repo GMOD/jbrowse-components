@@ -293,7 +293,8 @@ empty `subgraphHaplotypes`):
 ```
 
 Each row is one haplotype's walk between the flanking reference nodes, blue on
-GRCh38's path and purple off it; GRCh38's walk is the short bar at the top.
+GRCh38's path and purple off it, packed to fit the track. Hover a row for its
+haplotype and length.
 
 ## Overlaying TRGT's read-based genotypes on the ABCA7 bars
 
@@ -323,11 +324,12 @@ trgt merge --vcf *.sorted.vcf.gz --genome GRCh38.fa --output-type z --output mer
 ```
 
 The session names the TRGT track as its `repeatTrackId`, so a **Repeat** entry
-joins **Walk** in the track menu. Pick the _ABCA7_ record: the bars divide into
-motif-length units, each walk gets a black tick at the allele TRGT called for it
-(paired by length), and a readout turns red past 10% apart.
+joins **Walk** in the track menu. Pick the _ABCA7_ record: each walk gets a
+black tick at the allele TRGT called for it (paired by length), red where the
+two lie more than 10% apart. At full size, as in the next section, the bars also
+divide into motif-length units.
 
-<Figure caption="The ABCA7 VNTR in walk rows, one bar per HPRC haplotype, longest first, with the TRGT record picked under Repeat. The catalogue track marks the VNTR on GRCh38, whose walk is the short blue bar at the top. Each bar is tiled by the motif, and a black tick marks the allele TRGT called for that walk. A red readout is a walk far from its allele." src="/img/pangenome/hprc_abca7_repeat_units.png" />
+<Figure caption="The ABCA7 VNTR in walk rows, one bar per HPRC haplotype, longest first and packed to fit, with the TRGT record picked under Repeat and the catalogue track marking the VNTR on GRCh38. The black ticks tracing the bar ends are TRGT's calls agreeing with the walks; each red tick is a call more than 10% from its walk." src="/img/pangenome/hprc_abca7_repeat_units.png" />
 
 ## Samples where reads and assemblies disagree
 

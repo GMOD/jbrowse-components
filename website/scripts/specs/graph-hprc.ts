@@ -1431,7 +1431,7 @@ export const hprcGraphSpecs: ScreenshotSpec[] = [
       ],
     }),
     viewportWidth: 1400,
-    viewportHeight: 1260,
+    viewportHeight: 1120,
     hideTooltip: true,
     clicksChange: "open the record's repeat copies view",
     actions: [
