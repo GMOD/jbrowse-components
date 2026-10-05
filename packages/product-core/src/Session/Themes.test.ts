@@ -9,13 +9,10 @@ const ConfigSchema = ConfigurationSchema('Root', {
   extraThemes: { type: 'frozen', defaultValue: {} },
 })
 
-// `jbrowse` on a real session is the root model's config holder, and the mixin
-// reads its slots through `getConf`
+// the mixin reads its slots off `jbrowse` through `getConf`
 const JBrowseModel = types.model('JBrowse', { configuration: ConfigSchema })
 
-// jsdom ships no matchMedia, so the OS half is stood up per test and torn down
-// after — an absent query is itself a case, and it is the one every other suite
-// in the repo runs under.
+// jsdom ships no matchMedia, so each test stands up the OS half itself
 class FakeMediaQueryList extends EventTarget implements MediaQueryList {
   readonly media = '(prefers-color-scheme: dark)'
   onchange = null
@@ -45,8 +42,7 @@ afterEach(() => {
   delete document.documentElement.dataset.darkreaderScheme
 })
 
-// The session hangs off a parent, as it does in every product: `afterAttach`,
-// where the OS subscription is installed, does not fire for a root node.
+// `afterAttach`, which subscribes to the OS, never fires on a root node
 function makeSession(config: Record<string, unknown> = {}) {
   const pluginManager = new PluginManager([])
     .createPluggableElements()
@@ -317,6 +313,16 @@ test('a page Dark Reader has darkened draws dark until it is switched off', asyn
   await Promise.resolve()
   expect(session.themeIsDark).toBe(false)
   expect(session.themeMode).toBe('light')
+})
+
+test('an export keeps the selected mode while Dark Reader darkens the page', () => {
+  installMatchMedia(false)
+  document.documentElement.dataset.darkreaderScheme = 'dark'
+  const session = makeSession()
+
+  expect(session.themeIsDark).toBe(true)
+  expect(session.selectedThemeMode).toBe('light')
+  expect(session.getActiveThemeOptions().palette?.mode).toBe('light')
 })
 
 test('Dark Reader already on at startup draws dark, and its light scheme does not', () => {

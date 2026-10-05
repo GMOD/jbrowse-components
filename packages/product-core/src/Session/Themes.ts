@@ -131,21 +131,22 @@ export function ThemeManagerSessionMixin(_pluginManager: PluginManager) {
         },
         /**
          * #getter
-         * Light or dark, with `system` resolved against the OS preference or
-         * the toolbar's hold on the other mode. Dark once Dark Reader has
-         * darkened the page, whatever the stored mode says: it leaves canvas
-         * pixels alone, so a light canvas on its dark page is unreadable. The
-         * stored mode is untouched and applies again as soon as Dark Reader
-         * is switched off.
+         * Light or dark as the reader chose it, `system` resolved against the
+         * OS or the toolbar's hold. What a file leaves the session in, since
+         * Dark Reader never touches the file.
          */
-        get effectiveThemeMode(): PaletteMode {
-          if (self.darkReaderDark) {
-            return 'dark'
-          }
+        get selectedThemeMode(): PaletteMode {
           return this.themeMode === 'system'
             ? (self.systemThemeOverride ??
                 (self.systemPrefersDark ? 'dark' : 'light'))
             : this.themeMode
+        },
+        /**
+         * #getter
+         * `selectedThemeMode`, but dark while Dark Reader darkens the page.
+         */
+        get effectiveThemeMode(): PaletteMode {
+          return self.darkReaderDark ? 'dark' : this.selectedThemeMode
         },
         /**
          * #getter
@@ -237,7 +238,7 @@ export function ThemeManagerSessionMixin(_pluginManager: PluginManager) {
           const themeName = resolveThemeName(all, selection.themeName)
           const theme = all[themeName]
           const mode =
-            theme?.palette?.mode ?? selection.mode ?? this.effectiveThemeMode
+            theme?.palette?.mode ?? selection.mode ?? this.selectedThemeMode
           if (themeName !== 'default') {
             return { ...theme, palette: { ...theme?.palette, mode } }
           }
@@ -330,7 +331,6 @@ export function ThemeManagerSessionMixin(_pluginManager: PluginManager) {
             self.noteDarkReader()
           }),
         )
-        self.noteDarkReader()
         addDisposer(
           self,
           autorun(

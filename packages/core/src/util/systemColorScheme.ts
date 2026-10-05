@@ -31,13 +31,7 @@ export function onColorSchemeChange(listener: () => void) {
 
 const DARK_READER_ATTRIBUTE = 'data-darkreader-scheme'
 
-/**
- * Whether the Dark Reader extension is darkening the page in its Dynamic mode,
- * which marks `<html>` with its scheme. Dynamic mode leaves canvas pixels
- * alone, so a canvas drawn in the light palette stays light on a darkened page.
- * Its light ("dimmed") scheme and its Filter and Static modes set no dark
- * scheme, and Filter inverts canvases itself.
- */
+/** Whether Dark Reader darkens the page around canvases it leaves light. */
 export function darkReaderIsDark() {
   return (
     typeof document !== 'undefined' &&
