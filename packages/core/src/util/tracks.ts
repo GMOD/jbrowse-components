@@ -1174,6 +1174,65 @@ export function normalizeTrackInit(t: TrackInit) {
   }
 }
 
+/**
+ * The display a view of `viewType` opens `conf` as, chosen from the displays the
+ * track's adapter feeds and the view draws. `requested` is the display type a
+ * caller asks for; a name no display answers to leaves `picked` undefined.
+ * Aliases resolve first, so a caller or a config naming a pre-consolidation
+ * display type (`LinearPileupDisplay`) reaches the type that replaced it.
+ */
+function pickTrackDisplay(
+  pluginManager: PluginManager,
+  conf: {
+    type: string
+    adapter?: Parameters<typeof displayCandidates>[1]['adapter']
+    displays?: DisplayConfSnapshot[]
+  },
+  viewTypeName: string,
+  requested: string | undefined,
+) {
+  const viewType = pluginManager.getViewType(viewTypeName)
+  const candidates = displayCandidates(pluginManager, conf)
+  const viewDisplayTypes = viewType.displayTypes.map(d => d.name)
+  const canonical = (name: string) =>
+    pluginManager.resolveDisplayTypeRecord(name)?.name ?? name
+  const declaredDisplays: DisplayConfSnapshot[] = conf.displays ?? []
+  const picked = pickDisplayForView({
+    candidates,
+    declaredDisplays: declaredDisplays.map(d => ({
+      ...d,
+      type: canonical(d.type),
+    })),
+    requestedType: requested === undefined ? undefined : canonical(requested),
+    viewDisplayTypes,
+    preferredDisplayTypes: new Set(
+      viewType.displayTypes
+        .filter(d => d.viewType === viewTypeName)
+        .map(d => d.name),
+    ),
+  })
+  return { picked, candidates, viewDisplayTypes }
+}
+
+/**
+ * The display type a view of `viewType` opens the track `rawConf` as, the one
+ * `showTrack` picks, or undefined when the view draws none of the track's
+ * displays. For a caller that needs to know the display before the view exists,
+ * such as a CLI choosing which settings to write.
+ */
+export function trackDisplayType(
+  pluginManager: PluginManager,
+  rawConf: { type: string },
+  viewType: string,
+  requested?: string,
+) {
+  const conf = pluginManager.evaluateExtensionPoint(
+    'Core-preProcessTrackConfig',
+    structuredClone(rawConf),
+  ) as Parameters<typeof pickTrackDisplay>[1]
+  return pickTrackDisplay(pluginManager, conf, viewType, requested).picked?.type
+}
+
 function resolveTrackDisplayChoice(
   self: GenericView,
   trackId: string,
@@ -1231,30 +1290,13 @@ function resolveTrackDisplayChoice(
   // display choice from the view it sits in, which is the same node
   // getContainingView already resolves to for everything else beneath it.
   const view = isViewModel(self) ? self : getContainingView(self)
-  const viewType = pluginManager.getViewType(view.type)
-  const candidates = displayCandidates(pluginManager, conf)
-  const viewDisplayTypes = viewType.displayTypes.map(d => d.name)
-  // Aliases resolve first, so a caller or a config naming a pre-consolidation
-  // display type (`LinearPileupDisplay`) reaches the type that replaced it; a
-  // name no display answers to stays as written, for the refusal to quote.
-  const canonical = (name: string) =>
-    pluginManager.resolveDisplayTypeRecord(name)?.name ?? name
   const requested = displayInitialSnapshot.type
-  const declaredDisplays: DisplayConfSnapshot[] = conf.displays ?? []
-  const picked = pickDisplayForView({
-    candidates,
-    declaredDisplays: declaredDisplays.map(d => ({
-      ...d,
-      type: canonical(d.type),
-    })),
-    requestedType: requested === undefined ? undefined : canonical(requested),
-    viewDisplayTypes,
-    preferredDisplayTypes: new Set(
-      viewType.displayTypes
-        .filter(d => d.viewType === view.type)
-        .map(d => d.name),
-    ),
-  })
+  const { picked, candidates, viewDisplayTypes } = pickTrackDisplay(
+    pluginManager,
+    conf,
+    view.type,
+    requested,
+  )
 
   if (!picked) {
     const drawable = candidates.filter(name => viewDisplayTypes.includes(name))
