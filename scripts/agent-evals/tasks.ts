@@ -499,10 +499,12 @@ export const TASKS: EvalTask[] = [
       'How many variant tracks does the catalog list for the volvox assembly? Reply with just the number.',
     solution: `
       const { tracks } = jb.listTracks('', 1000)
-      return String(tracks.filter(t => t.type === 'VariantTrack' && t.assemblyNames.includes('volvox')).length)`,
+      const asm = session.assemblyManager
+      return String(tracks.filter(t => t.type === 'VariantTrack' && t.assemblyNames.some(n => asm.getCanonicalAssemblyName(n) === 'volvox')).length)`,
     grade: `
       const { tracks } = jb.listTracks('', 1000)
-      const truth = tracks.filter(t => t.type === 'VariantTrack' && t.assemblyNames.includes('volvox')).length
+      const asm = session.assemblyManager
+      const truth = tracks.filter(t => t.type === 'VariantTrack' && t.assemblyNames.some(n => asm.getCanonicalAssemblyName(n) === 'volvox')).length
       const said = (answer.match(/\\d[\\d,]*/g) ?? []).map(n => Number(n.replaceAll(',', '')))
       return { pass: truth > 0 && said.includes(truth), detail: { truth, said } }`,
   },
