@@ -18,6 +18,7 @@ import {
   laneFetchWindow,
   groupFeatures,
   groupRunSpansOnRow,
+  laneOpeningsOf,
   mergeContiguousRegions,
   rowAssembliesOf,
   rowFrameX,
@@ -98,6 +99,7 @@ function settleLanes(
 ) {
   return decideLaneFrames({
     groups,
+    openingsOf: laneOpeningsOf(groups),
     assemblyNames,
     anchorX,
     anchorCoordOf: g => ({

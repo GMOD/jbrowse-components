@@ -52,6 +52,7 @@ import {
 import {
   groupFeatures,
   groupRunsOnRow,
+  laneOpeningsOf,
   rowAssembliesOf,
   rowFrameX,
 } from '../src/MultiWaySyntenyDisplay/layoutMultiWay.ts'
@@ -290,6 +291,7 @@ const runs = new Map<string, LaneRun>(
   ]),
 )
 let steps = 0
+const openingsOf = laneOpeningsOf(groups)
 // carried from step to step, the way the display carries it from settle to
 // settle — what the incumbent rule has to hold on to
 let previous = new Map<string, LaneDecision | undefined>()
@@ -303,6 +305,7 @@ for (let start = 0; start + WINDOW_BP <= ANCHOR_BP; start += STEP_BP) {
   // display makes, not approximations of them
   const drawn = decideLaneFrames({
     groups: visible,
+    openingsOf,
     assemblyNames: lanes,
     anchorX: anchorSeed(visible, start, WIDTH),
     anchorCoordOf: g => ({

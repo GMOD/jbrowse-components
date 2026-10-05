@@ -501,7 +501,7 @@ export interface DecideLaneFramesOpts {
   pinnedFlips?: ReadonlyMap<string, LaneFlipPin>
   frozen?: ReadonlyMap<string, LaneDecision>
   /** read off every fetched group, so a hole does not wait on the viewport */
-  openingsOf?: OpeningsOf
+  openingsOf: OpeningsOf
 }
 
 function sameDecision(a: LaneDecision, b: LaneDecision) {
@@ -539,7 +539,7 @@ export function decideLaneFrames({
   pinned,
   pinnedFlips,
   frozen,
-  openingsOf = laneOpeningsOf(groups),
+  openingsOf,
 }: DecideLaneFramesOpts) {
   const out = new Map<string, LaneDecision | undefined>()
   if (unitBp <= 0 || width <= 0) {

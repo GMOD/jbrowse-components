@@ -2155,6 +2155,7 @@ test('a record running off the viewport aligns its lane on the part it shows', (
   expect(anchorAbsX.get('r1')?.x).toBe(400)
   const decision = decideLaneFrames({
     groups: display.fitGroups,
+    openingsOf: display.laneOpenings,
     assemblyNames: ['volvox_random'],
     anchorX: new Map([...anchorAbsX].map(([key, { x }]) => [key, x])),
     anchorCoordOf: group => anchorAbsX.get(group.key)!.coord,

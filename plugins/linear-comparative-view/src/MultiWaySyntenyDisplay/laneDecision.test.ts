@@ -7,7 +7,7 @@ import {
   nudgeDecision,
   pickRung,
 } from './laneDecision.ts'
-import { groupFeatures, rowFrameX } from './layoutMultiWay.ts'
+import { groupFeatures, laneOpeningsOf, rowFrameX } from './layoutMultiWay.ts'
 
 import type { LaneDecision, LaneFlipPin } from './laneDecision.ts'
 
@@ -64,6 +64,7 @@ function decide(
     anchorReversed ? WIDTH - px(bp - panBp) : px(bp - panBp)
   return decideLaneFrames({
     groups,
+    openingsOf: laneOpeningsOf(groups),
     assemblyNames,
     anchorX: new Map(
       groups.map(g => [g.key, pxOf((g.anchor.start + g.anchor.end) / 2)]),
@@ -616,6 +617,7 @@ describe('the placement', () => {
     const zoomedPx = (bp: number) => (bp / 850) * WIDTH
     const zoomed = decideLaneFrames({
       groups: dense,
+      openingsOf: laneOpeningsOf(dense),
       assemblyNames: ['peach'],
       anchorX: new Map(
         dense.map(g => [g.key, zoomedPx((g.anchor.start + g.anchor.end) / 2)]),

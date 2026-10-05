@@ -97,6 +97,7 @@ const anchorCenter = (g: MultiWayGroup) => (g.anchor.start + g.anchor.end) / 2
 function decide(groups: MultiWayGroup[], assemblyNames = LANES) {
   return decideLaneFrames({
     groups,
+    openingsOf: laneOpeningsOf(groups),
     assemblyNames,
     anchorX: new Map(groups.map(g => [g.key, px(anchorCenter(g))])),
     anchorCoordOf: g => ({ refName: 'chr1', coord: anchorCenter(g) }),
