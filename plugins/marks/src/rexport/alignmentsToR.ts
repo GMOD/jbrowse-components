@@ -15,7 +15,7 @@ import {
   tagColorPalette,
 } from '@jbrowse/core/ui/palette'
 
-import { frameFor } from './frameFor.ts'
+import { fileChrom, frameFor } from './frameFor.ts'
 import { markLayer } from './markToPlot.ts'
 import { expr, frame, layer, rIdent, rStr } from './rplot.ts'
 import { applyTransforms } from './transformR.ts'
@@ -249,12 +249,15 @@ export function alignmentsPanels({
   regions,
   reference,
   key,
+  aliases,
 }: {
   display: AlignmentsDisplaySnapshot
   uri: string
   regions: readonly Region[]
   /** Suffixes every R name, so several alignments tracks share one script. */
   key?: string
+  /** Canonical refName to the name the file spells it with, where they differ. */
+  aliases?: Record<string, string>
   /** The assembly's FASTA or 2bit, which a read with no MD tag is compared against. */
   reference?: string
 }): { panels: Panel[]; notes: string[] } {
@@ -282,6 +285,7 @@ export function alignmentsPanels({
     type: 'BamAdapter',
     uri,
     name: readsName,
+    aliases,
     fields: [
       ...new Set([
         ...colour.tags.map(t => `tags.${t}`),
@@ -334,7 +338,7 @@ export function alignmentsPanels({
     { steps: [pileup] },
   )
   const region = regions[0]!
-  const at = `regions$chrom[1], regions$start[1], regions$end[1]`
+  const at = `${fileChrom('regions$chrom[1]', aliases)}, regions$start[1], regions$end[1]`
   const layers = reads ? [reads.layer] : []
   const scales: Plot['scales'] = {
     ...reads?.scales,

@@ -152,6 +152,18 @@ export function sourceNotes(uri: string) {
 }
 
 /**
+ * The R expression for the name a file spells `chrom` with: the bare name
+ * where the assembly's aliases leave it, `file_refname` over the differing
+ * aliases where they do not.
+ */
+export function fileChrom(chrom: string, aliases?: Record<string, string>) {
+  const pairs = Object.entries(aliases ?? {})
+  return pairs.length
+    ? `file_refname(${chrom}, c(${pairs.map(([k, v]) => `${rStr(k)} = ${rStr(v)}`).join(', ')}))`
+    : chrom
+}
+
+/**
  * The frame a track's adapter reads, over every region on one cumulative axis,
  * holding the reader's own columns and `fields` on top: the file's fields the
  * display names, which a GFF3 reader fetches as attributes and a VCF reader as
@@ -170,12 +182,14 @@ export function frameFor<K extends ReaderName>({
   name = 'df',
   fields = [],
   wholeFeatures = false,
+  aliases,
 }: {
   type: K
   uri: string
   name?: string
   fields?: readonly string[]
   wholeFeatures?: boolean
+  aliases?: Record<string, string>
 }): RFrame {
   const reader = READERS[type]
   const held = new Set<string>(reader.columns)
@@ -187,7 +201,7 @@ export function frameFor<K extends ReaderName>({
     ? `, ${extra!.arg} = c(${asked.map(f => rStr(f.slice(extra!.prefix.length))).join(', ')})`
     : ''
   const coords = reader.coords.map(c => rStr(c)).join(', ')
-  const read = `${reader.helper}(${rStr(uri)}, chrom, start, end${args})`
+  const read = `${reader.helper}(${rStr(uri)}, ${fileChrom('chrom', aliases)}, start, end${args})`
   return frame({
     name,
     columns: [...reader.columns, ...asked, '.region'],

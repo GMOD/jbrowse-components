@@ -10,8 +10,8 @@ import {
 import { fieldsRead, markPlot } from './markToPlot.ts'
 import { assembleRScript } from './rScript.ts'
 
-import type { AlignmentsDisplaySnapshot } from './alignmentsToR.ts'
 import type { FeatureDisplaySpec } from './featureToPlot.ts'
+import type { ReaderName } from './frameFor.ts'
 import type { DisplaySpec } from './markToPlot.ts'
 import type { Panel, Region } from './rScript.ts'
 
@@ -23,6 +23,8 @@ export interface RExportTrack {
   display: Record<string, unknown>
   /** The assembly's FASTA or 2bit, for a read with no MD tag. */
   reference?: string
+  /** Canonical refName to the name the track's file spells it with, where they differ. */
+  refNames?: Record<string, string>
 }
 
 export interface RExportPanels {
@@ -43,13 +45,21 @@ export function rKey(trackId: string) {
   return trackId.replaceAll(/[^a-zA-Z0-9]/g, '_').replace(/^(?=[\d_])/, 'x')
 }
 
-function locate(track: RExportTrack, accepted: readonly string[]) {
+function locate(
+  track: RExportTrack,
+  accepted: readonly string[],
+): RExportSkipped | { type: ReaderName; uri: string } {
   const type = String(track.adapter.type)
   if (!accepted.includes(type) || !isReadable(type)) {
     return { skipped: `${type} has no R reader for this display` }
   }
   const uri = uriOf(track.adapter, READERS[type].location)
-  return uri ? { type, uri } : { skipped: `${type} names no file` }
+  if (!uri) {
+    return { skipped: `${type} names no file` }
+  }
+  return uri.startsWith('blob:')
+    ? { skipped: 'it reads a file opened in the browser, which R cannot reach' }
+    : { type, uri }
 }
 
 const markExporter: RExporter = (track, regions) => {
@@ -64,6 +74,7 @@ const markExporter: RExporter = (track, regions) => {
     type,
     uri,
     name: `df_${key}`,
+    aliases: track.refNames,
     fields: fieldsRead(display),
   })
   const { plot, notes } = markPlot({ display, frame: base, regions })
@@ -85,6 +96,7 @@ const featureExporter: RExporter = (track, regions) => {
     type,
     uri,
     name: `genes_${key}`,
+    aliases: track.refNames,
     fields: featureFields(display, regions),
     wholeFeatures: true,
   })
@@ -106,6 +118,7 @@ const alignmentsExporter: RExporter = (track, regions) => {
     uri,
     regions,
     reference: track.reference,
+    aliases: track.refNames,
     key: rKey(track.trackId),
   })
   return { panels, notes: [...sourceNotes(uri), ...notes] }

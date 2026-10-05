@@ -142,4 +142,38 @@ describe('exporting a view of tracks to one R script', () => {
     },
     180_000,
   )
+
+  maybe(
+    'reads a file under the name it spells a contig with',
+    () => {
+      const dir = mkdtempSync(path.join(tmpdir(), 'rexport-alias-'))
+      const refNames = { chrA: 'ctgA' }
+      const { script } = exportTracksToR({
+        regions: [{ refName: 'chrA', start: 1000, end: 6000 }],
+        out: path.join(dir, 'alias.png'),
+        tracks: [
+          {
+            ...track(main, 'gff3tabix_genes', 'LinearBasicDisplay', {}),
+            refNames,
+          },
+          {
+            ...track(main, 'volvox_alignments', 'LinearAlignmentsDisplay', {}),
+            refNames,
+          },
+        ],
+      })
+      const file = path.join(dir, 'alias.R')
+      writeFileSync(file, script!)
+      const out = execFileSync(
+        'Rscript',
+        [
+          '-e',
+          `e <- new.env(); source("${file}", local = e); cat(nrow(e$genes_gff3tabix_genes) > 0, nrow(e$reads_volvox_alignments) > 0)`,
+        ],
+        { encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'] },
+      )
+      expect(out.trimEnd().endsWith('TRUE TRUE')).toBe(true)
+    },
+    180_000,
+  )
 })
