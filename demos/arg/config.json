@@ -93,7 +93,9 @@
         {
           "type": "LinearArgDisplay",
           "displayId": "prnp_arg-LinearArgDisplay",
-          "height": 330
+          "height": 230,
+          "showMutations": false,
+          "colorDomain": ["YRI", "CEU", "CHB"]
         }
       ]
     },
