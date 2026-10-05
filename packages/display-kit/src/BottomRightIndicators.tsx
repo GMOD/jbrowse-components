@@ -61,7 +61,7 @@ function BottomRightIndicators({
   scrollableHeight?: number
   children: ReactNode
 }) {
-  const scrollbarWidth = scrollableHeight > 0 ? VERTICAL_SCROLLBAR_CLEARANCE : 0
+  const clearance = scrollableHeight > 0 ? VERTICAL_SCROLLBAR_CLEARANCE : 0
   // The chrome anchors the corner and puts its background-progress chip in it,
   // so landing in that box is what keeps the two from being drawn on top of
   // each other — see bottomRightCorner.ts. Null outside a chrome (a display an
@@ -80,7 +80,7 @@ function BottomRightIndicators({
               // no `position` of its own (Flexbox §5.4).
               order: BOTTOM_RIGHT_CONTROLS_ORDER,
               zIndex: OVERFLOW_INDICATOR_Z_INDEX,
-              marginRight: scrollbarWidth,
+              marginRight: clearance,
               display: 'flex',
               alignItems: 'center',
               gap: 4,
@@ -89,7 +89,7 @@ function BottomRightIndicators({
           : {
               position: 'absolute',
               bottom: 2,
-              right: scrollbarWidth + 2,
+              right: clearance + 2,
               zIndex: OVERFLOW_INDICATOR_Z_INDEX,
               display: 'flex',
               alignItems: 'center',

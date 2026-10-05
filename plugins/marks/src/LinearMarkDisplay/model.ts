@@ -1604,8 +1604,8 @@ export function stateModelFactory(
         },
         /**
          * #getter
-         * The dendrogram positioned against the rows drawn, or undefined where
-         * it no longer names them.
+         * `TreeSidebarMixin`'s hook: the dendrogram positioned against the
+         * rows drawn, or undefined where it no longer names them.
          */
         get hierarchy() {
           return computeClusterHierarchy(

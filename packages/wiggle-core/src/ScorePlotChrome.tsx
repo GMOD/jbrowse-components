@@ -47,8 +47,7 @@ export type ScorePlotChromeModel<
 > = ChromeModel &
   RenderLifecycleModel<PerRegionRenderingBackend<TRegion, TState>> & {
     canvasWidthPx: number
-    /** Set where the display scrolls its rows, so the corner clears the bar. */
-    scrollableHeight?: number
+    scrollableHeight: number
     setHoveredFeature: (hit?: Hit) => void
     selectFeature: (hit: Hit) => void
   }
@@ -151,7 +150,7 @@ const ScorePlotBody = observer(function ScorePlotBody({
   indicators,
   contextMenu,
 }: {
-  model: { scrollableHeight?: number }
+  model: { scrollableHeight: number }
   canvasRef: (node: HTMLCanvasElement | null) => void
   mouseTracker: MouseTracker
   width: number

@@ -10,8 +10,7 @@ test('indexes internal nodes only', () => {
   expect(buildSpatialIndex(laid)!.nodes).toHaveLength(3)
 })
 
-test('undefined for no tree, and for a tree with no internal nodes', () => {
-  expect(buildSpatialIndex(undefined)).toBeUndefined()
+test('undefined for a tree with no internal nodes', () => {
   expect(
     buildSpatialIndex(clusterLayout(buildTree('a;'), 100, 80)),
   ).toBeUndefined()

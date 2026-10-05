@@ -154,7 +154,7 @@ const libs: Record<string, unknown> = {
   '@jbrowse/display-kit/coarseTierPhase': m6,
   '@jbrowse/display-kit/colorByMenu': m7,
   '@jbrowse/display-kit/colorConfigSchema': m8,
-  '@jbrowse/display-kit/ConfigProblemsIndicator': uiStub,
+  '@jbrowse/display-kit/ConfigProblemsIndicator': uiNamespace(['ConfigProblemsCorner', 'default'], true),
   '@jbrowse/display-kit/configSchema': m10.default,
   '@jbrowse/display-kit/const': m11,
   '@jbrowse/display-kit/ContextMenuMixin': m12,

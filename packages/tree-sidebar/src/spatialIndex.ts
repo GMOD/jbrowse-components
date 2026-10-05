@@ -31,11 +31,8 @@ function nodeBox(node: ClusterHierarchyNode) {
 // single row is not an operation the menu offers. A band forest's root draws
 // nothing, so nothing points at it.
 export function buildSpatialIndex(
-  hierarchy: ClusterHierarchyNode | undefined,
+  hierarchy: ClusterHierarchyNode,
 ): TreeSpatialIndex | undefined {
-  if (!hierarchy) {
-    return undefined
-  }
   const nodes = descendants(hierarchy).filter(
     n => n.children?.length && !n.forestRoot,
   )

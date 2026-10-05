@@ -83,10 +83,8 @@ export const RowLabelsOverlay = memo(function RowLabelsOverlay({
   width: number
   // Height of the rows viewport, which is what the labels are culled against.
   height: number
-  // Top of the rows viewport within the display's own box. Non-zero only for a
-  // display that stacks something above its rows (maf's coverage/conservation
-  // bands): the portal lands on the display's origin, so an offset the labels
-  // used to inherit from their container has to be passed explicitly.
+  // Top of the rows viewport within the display's box: the portal lands on the
+  // display's origin, so the bands stacked above the rows are passed here.
   top?: number
   scrollTop?: number
   testId?: string

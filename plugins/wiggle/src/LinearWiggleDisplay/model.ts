@@ -700,8 +700,8 @@ export default function stateModelFactory(
 
       /**
        * #getter
-       * The positioned dendrogram, or undefined in an overlay mode: overlay
-       * collapses every source onto one row, so a tree spreading its leaves over
+       * `TreeSidebarMixin`'s hook: the positioned dendrogram, or undefined in
+       * an overlay mode: overlay collapses every source onto one row, so a tree spreading its leaves over
        * the full height would align to nothing. This is the single gate — the
        * on-screen sidebar, the SVG export, `spatialIndex` (subtree hover), and
        * `treeSidebarRightEdge` (the tooltip/crosshair dead zone the sidebar

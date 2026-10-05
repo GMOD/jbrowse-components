@@ -699,8 +699,9 @@ export default function stateModelFactory(
     .views(self => ({
       /**
        * #getter
-       * Positioned dendrogram, when a cluster tree exists and describes the rows
-       * on screen. Passing the drawn row names is the backstop against anything
+       * `TreeSidebarMixin`'s hook: the positioned dendrogram, when a cluster
+       * tree exists and describes the rows on screen. Passing the drawn row
+       * names is the backstop against anything
        * reordering `sources` downstream of the arrangement: such a reorder drops
        * the dendrogram rather than drawing it against rows it does not name.
        */
@@ -871,12 +872,10 @@ export default function stateModelFactory(
       return {
         /**
          * #getter
-         * Every loaded region's `span` channels with the per-key buckets the
-         * hit test reads; one encode serves the upload, the hit test and the
-         * SVG export. The memo lives in this closure so it outlives a
-         * context-loss recovery, and `afterAttach` installs the observer it
-         * needs to exist at all, since a pointer handler reading a computed
-         * nobody watches caches nothing.
+         * Every loaded region's `span` channels with their per-key buckets:
+         * what `uploadedChannels` adds the insertion markers to, and what the
+         * row sort reads. The memo lives in this closure so it outlives a
+         * context-loss recovery.
          */
         get encodedChannels(): ReadonlyMap<number, MultiRowEncoded> {
           return encoded()
@@ -884,8 +883,8 @@ export default function stateModelFactory(
         /**
          * #getter
          * `encodedChannels` with each region's insertion markers, in the
-         * theme's insertion colour: what the backend uploads and the hover
-         * and export draw from.
+         * theme's insertion colour: what the backend uploads, the hit test
+         * reads and the hover and export draw from.
          */
         get uploadedChannels(): ReadonlyMap<number, MultiRowUploadData> {
           return uploaded()
@@ -1191,7 +1190,7 @@ export default function stateModelFactory(
             () => {
               void self.uploadedChannels
             },
-            { name: 'MultiRowEncodedChannels' },
+            { name: 'MultiRowUploadedChannels' },
           )
           // The table the hit test places through, held for the same reason.
           autorunOnReadyView(

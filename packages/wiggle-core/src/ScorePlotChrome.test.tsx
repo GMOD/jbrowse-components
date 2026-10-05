@@ -20,6 +20,7 @@ function makeModel() {
     configuration: { displayId: 'probe' },
     height: 100,
     canvasWidthPx: 200,
+    scrollableHeight: 0,
     displayPhase: 'ready' as const,
     painted: false,
     error: undefined,

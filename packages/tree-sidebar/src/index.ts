@@ -2,7 +2,6 @@
 // this package, and a plugin's imports are ABI
 export { parseNewick } from '@gmod/newick'
 export type { NewickNode } from '@gmod/newick'
-export { buildSpatialIndex, pickTreeNode } from './spatialIndex.ts'
 export type { TreeSpatialIndex } from './spatialIndex.ts'
 export { default as TreeSidebar } from './TreeSidebar.tsx'
 export { DisplayCrosshairs } from './DisplayCrosshairs.tsx'

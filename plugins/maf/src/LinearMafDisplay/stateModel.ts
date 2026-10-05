@@ -1395,7 +1395,8 @@ export default function stateModelFactory(
         },
         /**
          * #getter
-         * Positioned tree hierarchy. Coordinates are computed against
+         * `TreeSidebarMixin`'s hook: the positioned tree. Coordinates are
+         * computed against
          * `(rowsContentHeight, treeAreaWidth)` so leaf rows align with row tops
          * even where the rows scroll past the viewport — the tree canvas and the
          * SVG labels shift the whole thing by `scrollTop`, exactly as the rows

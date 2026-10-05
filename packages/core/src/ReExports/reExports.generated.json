@@ -4086,6 +4086,7 @@
     "@jbrowse/display-kit/ConfigProblemsIndicator": {
       "package": "@jbrowse/display-kit",
       "names": [
+        "ConfigProblemsCorner",
         "default"
       ],
       "worker": "stub",

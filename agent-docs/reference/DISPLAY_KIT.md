@@ -116,7 +116,7 @@ holding.
 
 The fix is an `autorunOnReadyView` reading them bare, named `*HitIndexes`
 (`CanvasHitIndexes`, `LaneHitIndexes`) so the set is greppable; multi-row's is
-`MultiRowEncodedChannels`, its hit index being a byproduct of the encode memo
+`MultiRowUploadedChannels`, its hit index being a byproduct of the channel memo
 the autorun holds. Where the read goes through a structural `self`, **type it
 with the getters' real types**, not `unknown`: a rename otherwise reads
 `undefined`, establishes no dependency, and leaves a keep-alive holding nothing.

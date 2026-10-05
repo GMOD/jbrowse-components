@@ -1455,6 +1455,8 @@ export function stateModelFactory(
           },
           /**
            * #getter
+           * `TreeSidebarMixin`'s hook: the dendrogram positioned against the
+           * rows drawn, banded as they are.
            */
           get hierarchy() {
             return computeClusterHierarchy(
@@ -1689,7 +1691,7 @@ export function stateModelFactory(
           return self.availableHeight
         },
       }))
-      .views(() => ({
+      .views(self => ({
         /**
          * #getter
          * Opt into RegionTooLargeMixin's byte gate: `fetchNeeded` passes
@@ -1709,8 +1711,6 @@ export function stateModelFactory(
         get prefersOffset() {
           return true
         },
-      }))
-      .views(self => ({
         /**
          * #getter
          * Retry here is two-stage: the sources autorun reads the same

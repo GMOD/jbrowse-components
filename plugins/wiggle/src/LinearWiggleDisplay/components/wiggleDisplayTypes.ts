@@ -40,6 +40,7 @@ export interface WiggleDisplayModel
   numRows: number
   effectiveRowHeight: number
   rowsTopOffset: number
+  scrollableHeight: number
   rowFocusLineHeight: number
   axes: YAxis[]
   scoreRampApplies: boolean

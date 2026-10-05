@@ -1,5 +1,7 @@
 import { pluralize } from '@jbrowse/core/util'
+import { observer } from 'mobx-react'
 
+import BottomRightIndicators from './BottomRightIndicators.tsx'
 import TrackControl from './trackControl/TrackControl.tsx'
 
 /**
@@ -27,3 +29,20 @@ export default function ConfigProblemsIndicator({
     />
   ) : null
 }
+
+/**
+ * The bottom-right corner of a display whose only chip is its config
+ * problems. An observer of its own, so a display chrome that renders it reads
+ * neither value in its own render.
+ */
+export const ConfigProblemsCorner = observer(function ConfigProblemsCorner({
+  model,
+}: {
+  model: { notices: readonly string[]; scrollableHeight: number }
+}) {
+  return (
+    <BottomRightIndicators scrollableHeight={model.scrollableHeight}>
+      <ConfigProblemsIndicator notices={model.notices} />
+    </BottomRightIndicators>
+  )
+})

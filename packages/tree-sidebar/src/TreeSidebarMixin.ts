@@ -422,7 +422,8 @@ export function TreeSidebarMixin<S extends RowSource = RowSource>() {
        * `hierarchy`.
        */
       get spatialIndex(): TreeSpatialIndex | undefined {
-        return buildSpatialIndex(this.hierarchy)
+        const { hierarchy } = this
+        return hierarchy && buildSpatialIndex(hierarchy)
       },
       /**
        * #getter

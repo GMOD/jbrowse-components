@@ -1,5 +1,4 @@
-import BottomRightIndicators from '@jbrowse/display-kit/BottomRightIndicators'
-import ConfigProblemsIndicator from '@jbrowse/display-kit/ConfigProblemsIndicator'
+import { ConfigProblemsCorner } from '@jbrowse/display-kit/ConfigProblemsIndicator'
 import DisplayChrome from '@jbrowse/display-kit/DisplayChrome'
 import { DisplayContextMenu } from '@jbrowse/display-kit/DisplayContextMenu'
 import { PointerLayer } from '@jbrowse/display-ui'
@@ -92,9 +91,7 @@ const GenomicPositionsDisplay = observer(
                 ) : null
               }
             </PointerLayer>
-            <BottomRightIndicators scrollableHeight={model.scrollableHeight}>
-              <ConfigProblemsIndicator notices={model.notices} />
-            </BottomRightIndicators>
+            <ConfigProblemsCorner model={model} />
             <DisplayContextMenu model={model} />
           </>
         )}
