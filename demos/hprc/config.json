@@ -216,7 +216,7 @@
     {
       "type": "GraphTrack",
       "trackId": "hprc_minigraph_segments",
-      "name": "HPRC release 2 graph (rGFA segments)",
+      "name": "HPRC release 2.1 graph (rGFA segments)",
       "assemblyNames": ["hg38"],
       "adapter": {
         "type": "RgfaTabixAdapter",
