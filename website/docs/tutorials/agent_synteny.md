@@ -30,33 +30,28 @@ Typed one at a time, the requests ask the agent to:
 
 ## Where the data comes from
 
-Two GenArk assemblies and their genome hubs on genomes.jbrowse.org
+The assemblies are two GenArk genomes
 ([_D. simulans_](https://genomes.jbrowse.org/accession/GCF_016746395.2/),
-[_D. mauritiana_](https://genomes.jbrowse.org/accession/GCF_004382145.1/)). Each
-hub's config holds the 2bit sequence, a chromAlias file, an NCBI RefSeq gene
-track and a Trix text index.
+[_D. mauritiana_](https://genomes.jbrowse.org/accession/GCF_004382145.1/)); each
+hub config holds the 2bit sequence, a chromAlias file, an NCBI RefSeq gene track
+and a Trix text index.
 
-- _D. simulans_ GCF_016746395.2 sequence:
+<details>
+<summary>The files involved (no download needed)</summary>
+
+- _D. simulans_ sequence, which the agent downloads to align:
   https://hgdownload.soe.ucsc.edu/hubs/GCF/016/746/395/GCF_016746395.2/GCF_016746395.2.fa.gz
-- _D. simulans_ hosted config:
-  https://jbrowse.org/hubs/genark/GCF/016/746/395/GCF_016746395.2/config.json
-- _D. mauritiana_ GCF_004382145.1 sequence:
+- _D. mauritiana_ sequence, which the agent downloads to align:
   https://hgdownload.soe.ucsc.edu/hubs/GCF/004/382/145/GCF_004382145.1/GCF_004382145.1.fa.gz
-- _D. mauritiana_ hosted config:
+- _D. simulans_ JBrowse config from genomes.jbrowse.org:
+  https://jbrowse.org/hubs/genark/GCF/016/746/395/GCF_016746395.2/config.json
+- _D. mauritiana_ JBrowse config from genomes.jbrowse.org:
   https://jbrowse.org/hubs/genark/GCF/004/382/145/GCF_004382145.1/config.json
-- the alignment the figures below open, indexed and rehosted:
-  https://jbrowse.org/demos/fly_agent_synteny/sim_vs_mau.pif.gz beside the
-  merged config at https://jbrowse.org/demos/fly_agent_synteny/config.json
+- the alignment the figures below open, already indexed, beside its merged
+  config: https://jbrowse.org/demos/fly_agent_synteny/sim_vs_mau.pif.gz and
+  https://jbrowse.org/demos/fly_agent_synteny/config.json
 
-## The four tools the agent gets in JBrowse Desktop
-
-Connected to JBrowse Desktop, the agent gets four tools: `run_javascript`,
-`open`, `screenshot` and `docs`. The requests below go through `run_javascript`,
-which runs code against the session through a `jb` helper library.
-
-Set up the client as in [](/docs/agents), then run the four requests below.
-
-<Video src="/media/mcp/agent_synteny_take1.mp4" caption="A Claude Code session driving JBrowse Desktop: the agent aligns the two genomes, builds the comparison and dotplot, and navigates to what it found." />
+</details>
 
 ## Ask the agent to align and open the two genomes
 
@@ -91,8 +86,8 @@ whole file:
 jbrowse make-pif sim_vs_mau.paf
 ```
 
-The config the agent writes merges the two hosted ones, keeping each gene track
-and adding the alignment as a synteny track.
+The config the agent writes merges the two genomes.jbrowse.org configs listed
+above, keeping each gene track and adding the alignment as a synteny track.
 
 Check the order of `assemblyNames` on the track the agent wrote. For your own
 pair, swap `uri` for your `.pif.gz`, which needs its `.tbi` beside it, and load

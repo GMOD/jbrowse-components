@@ -194,6 +194,10 @@ A tutorial with real requirements puts `## Prerequisites` under the opening
 paragraph: a bulleted list, optionally one short paragraph on installing what
 apt has no package for. Nothing else. The intro goes under its own `##` heading.
 
+**Collapse a source list the reader never downloads** in a `<details>` whose
+summary says so ("no download needed"). Say nothing extra where the reader does
+download; the visible list is the instruction.
+
 **`## Where the data comes from` is a source list, one bullet per file**, and
 each bullet ends in the raw full URL rather than a link label, because the host
 and the path are the thing worth showing. Link the FTP or bucket folder instead

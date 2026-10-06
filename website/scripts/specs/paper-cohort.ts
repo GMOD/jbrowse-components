@@ -3,7 +3,8 @@
 import { displaySettled } from '@jbrowse/browser-test-utils'
 
 import { PARK_CURSOR, sessionSpec } from '../screenshot-spec-helpers.ts'
-import { CLUSTERED_READY, CNV_CONFIG, CN_HEATMAP_SETTINGS } from './cnv1000g.ts'
+import { CLUSTERED_READY, CN_HEATMAP_SETTINGS } from './cnv1000g.ts'
+import { GRAPH_DRAWN, graphTrack } from './graph-fixtures.ts'
 import { SORT_BY_GENOTYPE } from './ui.ts'
 
 import type { Annotation, ScreenshotSpec } from '../screenshot-spec-types.ts'
@@ -22,6 +23,7 @@ const SV_TRACK = {
   },
 }
 const WIDTH = 1500
+const CNV_GRAPH_CONFIG = 'test_data/graphgenomeview/hprc_cnv.json'
 
 const NESTED_DELETION_WINDOW = 'chr3:162,650,000-163,050,000'
 const HGSVC3_SV_TRACK = {
@@ -109,7 +111,7 @@ export const paperCohortSpecs: ScreenshotSpec[] = [
   {
     mode: 'url',
     name: 'paper/cohort_cnv',
-    url: sessionSpec(CNV_CONFIG, {
+    url: sessionSpec(CNV_GRAPH_CONFIG, {
       sessionTracks: [HGSVC3_SV_TRACK],
       views: [
         {
@@ -122,24 +124,29 @@ export const paperCohortSpecs: ScreenshotSpec[] = [
               type: 'LinearVariantDisplay',
               filter: ['jexl:alleleLength(feature)>=5000'],
               displayMode: 'compact',
-              height: 90,
+              height: 70,
             },
             {
               ...CN_HEATMAP_SETTINGS,
               trackId: 'cnv_1000g_zarr',
-              height: 370,
+              height: 220,
               runClustering: true,
               showTree: false,
               showRowLabels: false,
             },
+            graphTrack('hprc_minigraph_segments', {
+              layoutMode: 'force',
+              paneHeight: 300,
+              colorScheme: 'reference-position',
+            }),
           ],
         },
       ],
     }),
-    readySelector: CLUSTERED_READY,
+    readySelector: `body:has(${CLUSTERED_READY}) ${GRAPH_DRAWN}`,
     readyTimeout: 300000,
     viewportWidth: WIDTH,
-    viewportHeight: 712,
+    viewportHeight: 907,
     diffThreshold: 0.02,
   },
   {
