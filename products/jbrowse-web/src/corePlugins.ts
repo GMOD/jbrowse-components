@@ -26,6 +26,7 @@ import Sequence from '@jbrowse/plugin-sequence'
 import SpreadsheetViewPlugin from '@jbrowse/plugin-spreadsheet-view'
 import SvInspectorPlugin from '@jbrowse/plugin-sv-inspector'
 import TrixPlugin from '@jbrowse/plugin-trix'
+import VariantReview from '@jbrowse/plugin-variant-review'
 import Variants from '@jbrowse/plugin-variants'
 import Wiggle from '@jbrowse/plugin-wiggle'
 
@@ -57,6 +58,7 @@ const corePlugins = [
   HicPlugin,
   TrixPlugin,
   GridBookmarkPlugin,
+  VariantReview,
   ComparativeAdapters,
   Gwas,
   Marks,

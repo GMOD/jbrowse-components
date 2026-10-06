@@ -7523,7 +7523,13 @@ export const configManifest: ConfigManifest = {
         "showAminoAcids",
         "showTrackOutlines",
         "scalebarOnly",
-        "launch"
+        "launch",
+        "reviewSchemaVersion",
+        "reviewTrackId",
+        "reviewCursorId",
+        "reviewSpanBp",
+        "reviewDecisions",
+        "reviewPriorDisplayState"
       ],
       "launchKeys": [
         "assembly",

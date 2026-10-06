@@ -2028,6 +2028,36 @@ importers:
         specifier: '>=19.0.0'
         version: 19.3.0(react@19.3.0)
 
+  plugins/variant-review:
+    dependencies:
+      '@jbrowse/core':
+        specifier: workspace:^
+        version: link:../../packages/core
+      '@jbrowse/mobx-state-tree':
+        specifier: ^6.7.0
+        version: 6.7.0(mobx@7.0.6)
+      '@jbrowse/plugin-linear-genome-view':
+        specifier: workspace:^
+        version: link:../linear-genome-view
+      '@mui/icons-material':
+        specifier: ^9.4.0
+        version: 9.4.0(@mui/material@9.4.0(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.0)(supports-color@8.1.1))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.0)(supports-color@8.1.1))(@types/react@19.3.0)(react@19.3.0)(supports-color@8.1.1))(@types/react@19.3.0)(react-dom@19.3.0(react@19.3.0))(react@19.3.0))(@types/react@19.3.0)(react@19.3.0)
+      '@mui/material':
+        specifier: ^9.4.0
+        version: 9.4.0(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.0)(supports-color@8.1.1))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.0)(supports-color@8.1.1))(@types/react@19.3.0)(react@19.3.0)(supports-color@8.1.1))(@types/react@19.3.0)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)
+      mobx:
+        specifier: ^7.0.6
+        version: 7.0.6
+      mobx-react:
+        specifier: ^10.0.2
+        version: 10.0.2(mobx@7.0.6)(react@19.3.0)
+      react:
+        specifier: '>=19.0.0'
+        version: 19.3.0
+      react-dom:
+        specifier: '>=19.0.0'
+        version: 19.3.0(react@19.3.0)
+
   plugins/variants:
     dependencies:
       '@gmod/tabix':
@@ -2379,6 +2409,9 @@ importers:
       '@jbrowse/plugin-trix':
         specifier: workspace:^
         version: link:../../plugins/trix
+      '@jbrowse/plugin-variant-review':
+        specifier: workspace:^
+        version: link:../../plugins/variant-review
       '@jbrowse/plugin-variants':
         specifier: workspace:^
         version: link:../../plugins/variants
@@ -3098,6 +3131,9 @@ importers:
       '@jbrowse/plugin-trix':
         specifier: workspace:^
         version: link:../../plugins/trix
+      '@jbrowse/plugin-variant-review':
+        specifier: workspace:^
+        version: link:../../plugins/variant-review
       '@jbrowse/plugin-variants':
         specifier: workspace:^
         version: link:../../plugins/variants
