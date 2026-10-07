@@ -1492,6 +1492,13 @@ halves = lambda strand: [
 check("a minus-strand symbol's copies read from the high coordinate down",
       [[g["label"] for g in sy.reading_order(halves(s))] for s in "+-"],
       [["w", "w-2"], ["w-2", "w"]])
+# no direction runs from X to Y, so copies on two sequences keep file order
+par = [
+    {"ref": "X", "start": 10, "strand": "-", "label": "p"},
+    {"ref": "Y", "start": 10, "strand": "-", "label": "p-2"},
+]
+check("copies on different sequences keep the order the annotation lists",
+      [g["label"] for g in sy.reading_order(par)], ["p", "p-2"])
 check("first takes the first copy in file order",
       sy.symbol_rows(sdup, "first", 4), [["h1", "c1a", "g1"]])
 check("a symbol past --max-copies is a gene family and empties its cell",

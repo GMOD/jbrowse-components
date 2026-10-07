@@ -133,15 +133,19 @@ def label_genes(genes):
 
 
 def reading_order(genes):
-    """One symbol's genes in one genome, first to last along the gene.
+    """One symbol's genes in one genome, in the order they pair across genomes.
 
-    Copies are paired across genomes by index, and a chromosome deposited the
-    other way round lists them in the opposite order, so two halves of a split
-    gene would pair first with last. Genes all on the minus strand read from
-    the high coordinate down.
+    Copies pair by index. On one sequence, a chromosome deposited the other
+    way round lists them in the opposite order, so two halves of a split gene
+    would pair first with last: there, genes all on the minus strand read from
+    the high coordinate down. Copies on different sequences, as a gene with
+    one copy on X and one on Y has, keep the order the annotation lists them
+    in, since no direction runs from one sequence to the other.
     """
-    ordered = sorted(genes, key=lambda g: (g['ref'], g['start']))
-    return ordered[::-1] if {g['strand'] for g in genes} == {'-'} else ordered
+    one_sequence = len({g['ref'] for g in genes}) == 1
+    if one_sequence and {g['strand'] for g in genes} == {'-'}:
+        return sorted(genes, key=lambda g: g['start'], reverse=True)
+    return genes
 
 
 def symbol_rows(copies, pick, max_copies, counts=None):
