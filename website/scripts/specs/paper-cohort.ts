@@ -1,5 +1,5 @@
-// The JBrowse 2 v5 paper's Figure 3, which the paper repo syncs from
-// figures.lock. The compose needs both parts at one viewportWidth.
+// The JBrowse 2 v5 paper's cohort figure, which the paper repo syncs from
+// figures.lock.
 import { displaySettled } from '@jbrowse/browser-test-utils'
 
 import { PARK_CURSOR, sessionSpec } from '../screenshot-spec-helpers.ts'
@@ -9,9 +9,6 @@ import { SORT_BY_GENOTYPE } from './ui.ts'
 
 import type { Annotation, ScreenshotSpec } from '../screenshot-spec-types.ts'
 
-const CONFIG_1000G = encodeURIComponent(
-  'https://jbrowse.org/demos/1000g/config.json',
-)
 const SV_TRACK = {
   type: 'VariantTrack',
   trackId: 'kgp3202_sv',
@@ -22,7 +19,6 @@ const SV_TRACK = {
     uri: 'https://jbrowse.org/demos/1000g/1KGP_3202.Illumina_ensemble_callset.freeze_V1.vcf.gz',
   },
 }
-const WIDTH = 1500
 const CNV_GRAPH_CONFIG = 'test_data/graphgenomeview/hprc_cnv.json'
 
 const NESTED_DELETION_WINDOW = 'chr3:162,650,000-163,050,000'
@@ -38,28 +34,29 @@ const HGSVC3_SV_TRACK = {
 }
 
 // Inside the callset's 114 kb deletion (HGSV_105993) but outside the 22 kb
-// one nested in it, which the callset does not record and panel b shows
+// one nested in it, which the callset does not record and the heatmap shows
 const OUTER_DELETION_SORT_POINT = 'chr3:162,880,000'
 
-const partLabel = (part: number, text: string): Annotation => ({
+// Beside the track's name, where the window has no deletion calls
+const panelLabel = (trackId: string, text: string): Annotation => ({
   type: 'text',
   text,
-  fontSize: 44,
+  fontSize: 20,
   anchor: {
-    selector: `[data-part="${part}"]`,
+    trackId,
+    loc: 'chr3:162,750,500',
+    fracY: 0,
     alignX: 'left',
-    alignY: 'top',
-    dx: 40,
-    dy: 64,
+    dy: 8,
   },
 })
 
 export const paperCohortSpecs: ScreenshotSpec[] = [
   {
     mode: 'url',
-    name: 'paper/cohort_sv_multisample',
-    url: sessionSpec(CONFIG_1000G, {
-      sessionTracks: [SV_TRACK],
+    name: 'paper/cohort_views',
+    url: sessionSpec(CNV_GRAPH_CONFIG, {
+      sessionTracks: [SV_TRACK, HGSVC3_SV_TRACK],
       views: [
         {
           type: 'LinearGenomeView',
@@ -81,44 +78,8 @@ export const paperCohortSpecs: ScreenshotSpec[] = [
               // The key would cover the lane's label at the window's right
               // edge; the paper's caption gives it instead
               showLegend: false,
-              height: 360,
+              height: 300,
             },
-          ],
-        },
-      ],
-    }),
-    readySelector: displaySettled('variant-display'),
-    readyTimeout: 300000,
-    viewportWidth: WIDTH,
-    viewportHeight: 585,
-    hideTooltip: true,
-    actions: [
-      {
-        type: 'rightclick',
-        anchor: {
-          trackId: SV_TRACK.trackId,
-          loc: OUTER_DELETION_SORT_POINT,
-          fracY: 0.5,
-        },
-      },
-      { type: 'waitForText', text: SORT_BY_GENOTYPE },
-      { type: 'click', text: SORT_BY_GENOTYPE },
-      { type: 'delay', ms: 6000 },
-      PARK_CURSOR,
-      { type: 'delay', ms: 800 },
-    ],
-  },
-  {
-    mode: 'url',
-    name: 'paper/cohort_cnv',
-    url: sessionSpec(CNV_GRAPH_CONFIG, {
-      sessionTracks: [HGSVC3_SV_TRACK],
-      views: [
-        {
-          type: 'LinearGenomeView',
-          assembly: 'hg38',
-          loc: NESTED_DELETION_WINDOW,
-          tracks: [
             {
               trackId: HGSVC3_SV_TRACK.trackId,
               type: 'LinearVariantDisplay',
@@ -143,17 +104,30 @@ export const paperCohortSpecs: ScreenshotSpec[] = [
         },
       ],
     }),
-    readySelector: `body:has(${CLUSTERED_READY}) ${GRAPH_DRAWN}`,
+    readySelector: `body:has(${displaySettled('variant-display')}):has(${CLUSTERED_READY}) ${GRAPH_DRAWN}`,
     readyTimeout: 300000,
-    viewportWidth: WIDTH,
-    viewportHeight: 907,
+    viewportWidth: 1500,
+    viewportHeight: 1210,
+    hideTooltip: true,
     diffThreshold: 0.02,
-  },
-  {
-    mode: 'compose',
-    name: 'paper/cohort_views',
-    parts: ['paper/cohort_sv_multisample', 'paper/cohort_cnv'],
-    gutter: 40,
-    annotations: [partLabel(0, 'a'), partLabel(1, 'b')],
+    actions: [
+      {
+        type: 'rightclick',
+        anchor: {
+          trackId: SV_TRACK.trackId,
+          loc: OUTER_DELETION_SORT_POINT,
+          fracY: 0.5,
+        },
+      },
+      { type: 'waitForText', text: SORT_BY_GENOTYPE },
+      { type: 'click', text: SORT_BY_GENOTYPE },
+      { type: 'delay', ms: 6000 },
+      PARK_CURSOR,
+      { type: 'delay', ms: 800 },
+    ],
+    annotations: [
+      panelLabel(SV_TRACK.trackId, 'a'),
+      panelLabel('cnv_1000g_zarr', 'b'),
+    ],
   },
 ]
