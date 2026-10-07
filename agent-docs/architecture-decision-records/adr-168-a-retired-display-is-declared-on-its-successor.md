@@ -112,8 +112,11 @@ live display.
   tree and focus.
 - Still not carried: v4 wiggle `fill`, `minSize`, `invertedSetting` and
   `showSidebar`; an autoscale mode v5 dropped; a v4 variant row's hand-set
-  colour; and the v4 variant settings besides the arrangement and filters,
-  which load at their defaults.
+  colour; the v4 variant settings besides the arrangement and filters, which
+  load at their defaults; a pileup's `jexlFilters`, since the alignments
+  display filters by `filterBy` alone; and a `Start location` sort, which was
+  the default order. A pileup's `Read strand`, `Base pair` and tag sort carries
+  into `sortedBy` (2026-10-07), its position counted from 0.
 - A `facet` left in a quantitative display's config, which only v5.0.0-beta.9
   wrote, still fails the load (ADR-157).
 

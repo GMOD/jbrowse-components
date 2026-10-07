@@ -137,6 +137,31 @@ test('lifts the released *Setting spelling, which wins over the bare one', () =>
   })
 })
 
+test('a v4 sort carries into sortedBy by its v5 name, counted from 0', () => {
+  expect(
+    retiredState.lift({
+      sortedBy: {
+        type: 'Base pair',
+        pos: 101,
+        refName: 'ctgA',
+        assemblyName: 'volvox',
+      },
+    }),
+  ).toEqual({
+    sortedBy: { type: 'basePair', pos: 100, refName: 'ctgA', tag: undefined },
+  })
+  expect(
+    retiredState.lift({
+      sortedBy: { type: 'tag', pos: 5, refName: 'ctgA', tag: 'HP' },
+    }),
+  ).toEqual({ sortedBy: { type: 'tag', pos: 4, refName: 'ctgA', tag: 'HP' } })
+  expect(
+    retiredState.lift({
+      sortedBy: { type: 'Start location', pos: 5, refName: 'ctgA' },
+    }),
+  ).toEqual({})
+})
+
 test('an instance with only live props lifts nothing', () => {
   expect(retiredState.lift({ type: 'LinearAlignmentsDisplay' })).toEqual({})
 })

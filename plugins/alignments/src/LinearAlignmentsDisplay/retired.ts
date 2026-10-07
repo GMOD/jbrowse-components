@@ -103,11 +103,31 @@ export function colorSlotsOf(value: unknown): DisplayEntry {
 //
 // `hideSmallIndelsSetting` and `hideLargeIndelsSetting` have no slot to go to:
 // the feature went rather than moved.
+// v4 named a sort by its menu label and counted the position from 1; a
+// `Start location` sort was the default order and names nothing here.
+const V4_SORT_TYPES: Record<string, string> = {
+  'Read strand': 'strand',
+  'Base pair': 'basePair',
+  tag: 'tag',
+}
+
+function sortedBySlot(value: unknown): DisplayEntry {
+  if (!isObject(value)) {
+    return {}
+  }
+  const { type, pos, refName, tag } = value
+  const sortType = V4_SORT_TYPES[String(type)]
+  return sortType && typeof pos === 'number' && typeof refName === 'string'
+    ? { sortedBy: { type: sortType, pos: pos - 1, refName, tag } }
+    : {}
+}
+
 const INSTANCE_SLOTS: Record<string, (value: unknown) => DisplayEntry> = {
   colorBy: colorSlotsOf,
   colorBySetting: colorSlotsOf,
   filterBy: value => ({ filterBy: value }),
   filterBySetting: value => ({ filterBy: value }),
+  sortedBy: sortedBySlot,
   trackMaxHeight: value => ({ maxHeight: value }),
   hideMismatchesSetting: value => ({ showMismatches: !value }),
 }
