@@ -40,7 +40,10 @@ one connection twice.
   design. Its palette is **all-distinct on purpose**: the stock palette is the one
   configuration where a baked constant passes by coincidence.
 - `LinearAlignmentsDisplay/arcReadColorParity.test.ts` holds `getArcColorType`
-  against `readColorCategory`, which are still two classifiers.
+  against `readColorCategory`. Both classify a pair through `pairCategory`
+  (`shared/pairCategory.ts`); what the test pins is the arc side's own gates
+  and its category-to-slot fold, under which `pairLR` and `nonSplit` share the
+  baseline slot.
 - `chromosomePainting.test.ts` sabotage-checks `paintedRefNamePosition`, since both
   failure modes fall back to a plausible colour.
 
@@ -81,7 +84,10 @@ corrected that way: an unset TLEN is unknown, a supplementary paints neutral und
 
 ## Insert size is TLEN, on both sides
 
-Arc colour and read colour both classify `|TLEN|`; `absrad` sets only arc height.
-Declined: colouring arcs by drawn span past `LARGE_INSERT_THRESHOLD`.
-`classifyInsertSize` sorts TLEN 0 into `normal`, so span-coloured arcs went red
-over grey reads on exactly those pairs.
+Arc colour and read colour both classify `|TLEN|` through `pairCategory`;
+`absrad` sets only arc height. Declined: colouring arcs by drawn span past a
+fixed threshold. `classifyInsertSize` sorts TLEN 0 into `normal`, so
+span-coloured arcs went red over grey reads on exactly those pairs. The reads
+once handed the classifier the signed TLEN as it stood, so the second mate of a
+long-insert pair painted `normal`; one function takes the absolute value for
+both sides now.

@@ -1,7 +1,17 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import { types } from '@jbrowse/mobx-state-tree'
 
-import { cytosineContextOptions } from '../shared/modificationData.ts'
+import type { CytosineContext } from '@jbrowse/modifications-utils'
+
+// Spelled out so the slot's type is the literal union and not the alias: a
+// display in another plugin composing this schema cannot name the alias in its
+// declaration emit without a dependency of its own on modifications-utils.
+const CYTOSINE_CONTEXTS = [
+  'CG',
+  'CHG',
+  'CHH',
+  'all',
+] as const satisfies readonly CytosineContext[]
 
 /**
  * #config AlignmentsModifications
@@ -64,10 +74,7 @@ export const alignmentsModificationsConfigSchema = ConfigurationSchema(
      */
     cytosineContext: {
       type: 'stringEnum',
-      model: types.enumeration(
-        'CytosineContext',
-        cytosineContextOptions.map(o => o.value),
-      ),
+      model: types.enumeration('CytosineContext', [...CYTOSINE_CONTEXTS]),
       defaultValue: 'CG',
       description:
         'which cytosines the methylation fill and bisulfite paint: CG, CHG, CHH or all',
