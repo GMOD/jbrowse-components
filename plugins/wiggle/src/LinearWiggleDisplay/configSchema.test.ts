@@ -78,3 +78,42 @@ test('the old cross hatch and tick flags land on the scale, beside a scale the c
   expect(readConfObject(conf, ['scales', 'y', 'type'])).toBe('log')
   expect(readConfObject(conf, ['scales', 'y', 'minimalTicks'])).toBe(false)
 })
+
+describe('the slots v4 declared on the display', () => {
+  const y = (snap: Record<string, unknown>, slot: string) =>
+    readConfObject(create(snap), ['scales', 'y', slot])
+
+  test('a fixed range and a log scale reach scales.y, with no warning', () => {
+    const warn = jest.spyOn(console, 'warn').mockImplementation(() => {})
+    const v4 = { minScore: 0, maxScore: 50, scaleType: 'log' }
+    expect(y(v4, 'domainMin')).toBe(0)
+    expect(y(v4, 'domainMax')).toBe(50)
+    expect(y(v4, 'type')).toBe('log')
+    expect(warn).not.toHaveBeenCalled()
+    warn.mockRestore()
+  })
+
+  test("v4's unset sentinels leave the range to the data", () => {
+    const unset = { minScore: Number.MIN_VALUE, maxScore: Number.MAX_VALUE }
+    expect(y(unset, 'domainMin')).toBe(y({}, 'domainMin'))
+    expect(y(unset, 'domainMax')).toBe(y({}, 'domainMax'))
+  })
+
+  test('autoscale follows the extremes, as v4 did', () => {
+    expect(y({ autoscale: 'local' }, 'domainQuantile')).toBe(1)
+  })
+
+  test('a slot with no successor is let go without a warning', () => {
+    const warn = jest.spyOn(console, 'warn').mockImplementation(() => {})
+    create({ numStdDev: 3, inverted: true })
+    expect(warn).not.toHaveBeenCalled()
+    warn.mockRestore()
+  })
+
+  test("a renderers block gives the display its renderer's colour", () => {
+    const conf = create({
+      renderers: { XYPlotRenderer: { color: 'purple', filled: false } },
+    })
+    expect(readConfObject(conf, ['color', 'value'])).toBe('purple')
+  })
+})

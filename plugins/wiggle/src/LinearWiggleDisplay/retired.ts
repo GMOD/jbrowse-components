@@ -117,6 +117,34 @@ function colorOf({ color, posColor, negColor }: DisplayEntry) {
 const SAME_NAME = ['summaryScoreMode', 'displayCrossHatches', 'resolution']
 
 // What a v4 menu wrote on the display instance, and a beta's arrangement.
+const V4_RENDERERS = ['XYPlotRenderer', 'LinePlotRenderer', 'DensityRenderer']
+
+/**
+ * The config slots v4's wiggle display declared that `scales.y` and `color`
+ * took over, as the display's `retired` reads them. `minScore` and `maxScore`
+ * were unset at v4's own sentinels; `numStdDev` and `inverted` have no
+ * successor and are let go, as is everything in a `renderers` block but its
+ * colours.
+ */
+export const retiredConfigSpellings = {
+  scaleType: (scale: unknown) => scaleOf({ scale }),
+  autoscale: (autoscale: unknown) => scaleOf({ autoscale }),
+  minScore: (min: unknown) =>
+    min === Number.MIN_VALUE ? {} : scaleOf({ constraints: { min } }),
+  maxScore: (max: unknown) =>
+    max === Number.MAX_VALUE ? {} : scaleOf({ constraints: { max } }),
+  numStdDev: () => ({}),
+  inverted: () => ({}),
+  renderers: (renderers: unknown) => {
+    const block = isRecord(renderers) ? renderers : {}
+    const coloured = V4_RENDERERS.map(name => block[name])
+      .filter(isRecord)
+      .map(colorOf)
+      .find(lifted => 'color' in lifted)
+    return coloured ?? {}
+  },
+}
+
 // `rendererTypeNameState` is the plot a reader picked, which on a multi
 // display the retired type's fold splits into a plot and a layout.
 export const retiredState: RetiredDisplayState = {

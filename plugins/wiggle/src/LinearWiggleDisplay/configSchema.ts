@@ -16,6 +16,7 @@ import {
   wiggleValueScale,
 } from '../shared/wiggleConfigSchemaFields.ts'
 import { LINE_INTERPOLATIONS, WIGGLE_MARK_NAMES, markOf } from '../util.ts'
+import { retiredConfigSpellings } from './retired.ts'
 
 /**
  * #config LinearWiggleDisplay
@@ -211,6 +212,7 @@ const linearWiggleDisplayConfigSchema = ConfigurationSchema(
     explicitIdentifier: 'displayId',
     retired: {
       ...retiredAxisSpellings,
+      ...retiredConfigSpellings,
       defaultRendering: rendering =>
         markOf(String(rendering)) ?? { mark: rendering },
       lineWidth: size => ({ size }),
