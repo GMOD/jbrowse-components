@@ -120,6 +120,13 @@ export function configSlotViews(self: ConfigSlotSelf) {
     },
     /**
      * #getter
+     * Whether the read cloud keeps the pairs of ordinary insert size.
+     */
+    get drawModalPairsInCloud(): boolean {
+      return getConf(self, 'drawModalPairsInCloud')
+    },
+    /**
+     * #getter
      * Reads a translocation must gather, within one fragment length on both
      * sides, before its connector ticks are drawn. See
      * `clusteredInterchromSupport` — the count is over a window because a

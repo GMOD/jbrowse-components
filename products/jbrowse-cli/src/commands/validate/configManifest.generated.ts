@@ -3738,6 +3738,10 @@ export const configManifest: ConfigManifest = {
           "type": "boolean"
         },
         {
+          "name": "drawModalPairsInCloud",
+          "type": "boolean"
+        },
+        {
           "name": "minInterchromSupport",
           "type": "number"
         },
@@ -4318,6 +4322,10 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "drawProperPairArcs",
+          "type": "boolean"
+        },
+        {
+          "name": "drawModalPairsInCloud",
           "type": "boolean"
         },
         {

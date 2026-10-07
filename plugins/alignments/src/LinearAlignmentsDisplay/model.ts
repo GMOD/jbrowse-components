@@ -2028,6 +2028,7 @@ export default function stateModelFactory(
               drawInter: self.drawInter,
               drawLongRange: self.drawLongRange,
               drawProperPairArcs: self.drawProperPairArcs,
+              drawModalPairsInCloud: self.drawModalPairsInCloud,
               minInterchromSupport: self.minInterchromSupport,
               // SA-tag / RNEXT refNames use the BAM's own naming, so a same-chr
               // split junction to an SA segment would otherwise be misclassified

@@ -13,6 +13,7 @@ contigThickness
 diagonalizeAnchorRow
 displayMode
 domain
+drawModalPairsInCloud
 facet
 fadeThinAlignmentsMode
 filter

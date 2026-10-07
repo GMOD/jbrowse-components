@@ -421,6 +421,15 @@ export default function configSchemaFactory(_pluginManager: PluginManager) {
       /**
        * #slot
        */
+      drawModalPairsInCloud: {
+        type: 'boolean',
+        defaultValue: false,
+        description:
+          'Keep the pairs of ordinary insert size in the read cloud, as the band the abnormal pairs are read against',
+      },
+      /**
+       * #slot
+       */
       minInterchromSupport: {
         type: 'number',
         // Reads are counted over a window of one fragment length on BOTH sides,

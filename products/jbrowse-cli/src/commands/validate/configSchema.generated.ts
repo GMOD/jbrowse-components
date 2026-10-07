@@ -6724,6 +6724,16 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "type": "boolean"
           }
         },
+        "drawModalPairsInCloud": {
+          "description": "Keep the pairs of ordinary insert size in the read cloud, as the band the abnormal pairs are read against.",
+          "default": false,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "boolean"
+          }
+        },
         "minInterchromSupport": {
           "description": "Hide inter-chromosomal connections supported by fewer than this many reads clustered at the same breakpoint.",
           "default": 2,
@@ -7800,6 +7810,16 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         "drawProperPairArcs": {
           "description": "Draw arcs for ordinary concordant pairs. Uncheck to leave only the arcs that carry a category (abnormal insert size or orientation, split junctions), which on deep coverage is the difference between a readable band and a solid mass.",
           "default": true,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "boolean"
+          }
+        },
+        "drawModalPairsInCloud": {
+          "description": "Keep the pairs of ordinary insert size in the read cloud, as the band the abnormal pairs are read against.",
+          "default": false,
           "if": {
             "type": "null"
           },
@@ -14354,6 +14374,9 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "drawProperPairArcs": {
               "$ref": "#/$defs/LinearAlignmentsDisplaySlots/properties/drawProperPairArcs"
             },
+            "drawModalPairsInCloud": {
+              "$ref": "#/$defs/LinearAlignmentsDisplaySlots/properties/drawModalPairsInCloud"
+            },
             "minInterchromSupport": {
               "$ref": "#/$defs/LinearAlignmentsDisplaySlots/properties/minInterchromSupport"
             },
@@ -17117,6 +17140,9 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             },
             "drawProperPairArcs": {
               "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/drawProperPairArcs"
+            },
+            "drawModalPairsInCloud": {
+              "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/drawModalPairsInCloud"
             },
             "minInterchromSupport": {
               "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/minInterchromSupport"

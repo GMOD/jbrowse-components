@@ -251,6 +251,7 @@ function resolveArcs(
     cloud = false,
     drawInter,
     drawProperPairArcs = true,
+    drawModalPairsInCloud = false,
     minInterchromSupport = 1,
   } = settings
   const arcs: ComputedArc[] = []
@@ -587,6 +588,7 @@ function resolveArcs(
     // setting above still filters on top of it.
     if (
       cloud &&
+      !drawModalPairsInCloud &&
       !arc.isSplit &&
       isConcordantFRPair(arc.pairOrientationNum, arc.tlen, arc.stats)
     ) {

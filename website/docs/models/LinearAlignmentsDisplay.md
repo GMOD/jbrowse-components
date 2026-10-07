@@ -148,6 +148,7 @@ Members a composed model contributes are listed here too, so these tables are th
 | <span id="getter-colorsupplementarychains">**colorSupplementaryChains**</span><br><code>boolean</code> |  | LinearAlignmentsDisplay |
 | <span id="getter-drawinter">**drawInter**</span><br><code>boolean</code> |  | LinearAlignmentsDisplay |
 | <span id="getter-drawproperpairarcs">**drawProperPairArcs**</span><br><code>boolean</code> | Whether ordinary concordant pairs get an arc. Same definition of concordant as `filterBy.properPairs`, which hides the reads themselves — see `isConcordantPairRead`. | LinearAlignmentsDisplay |
+| <span id="getter-drawmodalpairsincloud">**drawModalPairsInCloud**</span><br><code>boolean</code> | Whether the read cloud keeps the pairs of ordinary insert size. | LinearAlignmentsDisplay |
 | <span id="getter-mininterchromsupport">**minInterchromSupport**</span><br><code>number</code> | Reads a translocation must gather, within one fragment length on both sides, before its connector ticks are drawn. See `clusteredInterchromSupport` — the count is over a window because a mate-pair breakpoint is not localized to a base. | LinearAlignmentsDisplay |
 | <span id="getter-drawlongrange">**drawLongRange**</span><br><code>boolean</code> |  | LinearAlignmentsDisplay |
 | <span id="getter-readconnections">**readConnections**</span><br><code>"arc" &#124; "cloud" &#124; "off"</code> |  | LinearAlignmentsDisplay |
