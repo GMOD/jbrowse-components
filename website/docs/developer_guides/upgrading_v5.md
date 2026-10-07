@@ -343,7 +343,7 @@ row labels, and `rows: ''` draws every source in one shared plot. A
 display setting still opens as a stack of rows.
 
 `defaultRendering` is now `mark`, in the mark display's words: `xyplot` loads as
-`bar`, `scatter` as `point`, `density` as `heatmap`, `line` as `line`, and
+`bar`, `scatter` as `point`, `density` as `span`, `line` as `line`, and
 `linecenter` as a `line` with `interpolate: 'linear'`. A config or a session
 naming `MultiLinearWiggleDisplay` loads as `LinearWiggleDisplay`, its rendering
 read as the plot and the layout it drew: `multirowxy` is a `bar` on rows, and

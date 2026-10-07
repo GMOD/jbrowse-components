@@ -5740,6 +5740,11 @@ export const configManifest: ConfigManifest = {
         "defaultRendering",
         "lineWidth"
       ],
+      "legacyValues": {
+        "summaryScoreMode": [
+          "avg"
+        ]
+      },
       "aliases": [
         "MultiLinearWiggleDisplay",
         "LinearGCContentDisplay",

@@ -102,10 +102,11 @@ stop, and never reads `origin`; the white fade, a threshold's density, measures
 distance from `pivot`. The lines alone still part under a gradient, at
 `domainMid ?? origin` in its two end colours, with a corner notice saying so.
 The gradient follows the y domain and y scale, so the colour declares no
-`domainMin`/`domainMax` and no `log`. `score` paints through `threshold` and
-`linear`, `source` through `categorical`, and the other pairings paint the
-misconfiguration grey, because a two-sided plot has nothing to paint a colour
-per score or a cut over subtrack names with. ADR-144, ADR-153.
+`domainMin`/`domainMax` and no `log`. `score` is the one field and `threshold`
+and `linear` the scales the schema admits, since a two-sided plot has nothing
+to paint a cut over subtrack names with; `resolveWiggleColor`'s `categorical`
+arm paints the misconfiguration grey only to cover the shared encoding union.
+ADR-144, ADR-153.
 
 **Everything shared over the geometry is `wiggleDisplayViews`**:
 `scoreColorScale`, `renderState` and the shared halves of the two props methods,
@@ -210,7 +211,7 @@ floored at 1 or the shader seeds the row transform with Infinity.
 
 ## Effective vs raw `summaryScoreMode`
 
-`effectiveSummaryScoreMode` resolves whiskers to `avg` under density, and the
+`effectiveSummaryScoreMode` resolves whiskers to `mean` under density, and the
 autoscale domain, menu radio, tooltip and `gpuProps` all read it. **`rpcProps`
 carries the raw slot** — the effective one moves with the rendering type, so
 switching to density would re-download every region.
@@ -231,7 +232,7 @@ carry `colorsAbgr` for the pivot where a threshold cuts elsewhere; density
 splits at the pivot. Under a gradient bars and points carry no colour lane and
 no whiskers tint: the ramp is the whole colour. Density needs it because
 `drawDensity` builds one gradient per layer, and it is the only mode that
-reaches the split with a single band (`avg`). Everything else keeps each band
+reaches the split with a single band (`mean`). Everything else keeps each band
 whole and carries `colorsAbgr`, one packed colour per instance — or none at all
 where both sides of the pivot come out the same colour, which is what a
 solid-colour track is.

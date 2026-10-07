@@ -195,7 +195,7 @@ const suite: TestSuite = {
           trackId: 'volvox_microarray_multi_grouped',
           displaySnapshot: {
             type: 'LinearWiggleDisplay',
-            mark: 'heatmap',
+            mark: 'span',
           },
         },
       ],

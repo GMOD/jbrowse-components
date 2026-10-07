@@ -757,14 +757,14 @@ colors by one.
 A BigWig's score axis is the `scales.y` setting, which also applies to a
 BAM/CRAM track's coverage band, where `scales.y.type=log` is usually what an
 RNA-seq figure wants. `mark` names how the scores draw: `bar`, `point`, `line`
-or `heatmap`.
+or `span`.
 
 | Write                                           | Description                              |
 | ----------------------------------------------- | ---------------------------------------- |
 | `scales.y.domainMin=0` `scales.y.domainMax=100` | Manual score range                       |
 | `scales.y.type=log`                             | Scale type (`linear`, `log` or `symlog`) |
 | `scales.y.grid=true`                            | Draw gridlines                           |
-| `mark=point`                                    | `bar`, `point`, `line` or `heatmap`      |
+| `mark=point`                                    | `bar`, `point`, `line` or `span`         |
 | `resolution=100`                                | BigWig resolution multiplier             |
 | `color:purple`                                  | Fill color (any CSS color)               |
 

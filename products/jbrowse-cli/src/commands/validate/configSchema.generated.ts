@@ -11622,11 +11622,22 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "type": "null"
           },
           "else": {
-            "enum": [
-              "max",
-              "min",
-              "mean",
-              "whiskers"
+            "anyOf": [
+              {
+                "enum": [
+                  "max",
+                  "min",
+                  "mean",
+                  "whiskers"
+                ]
+              },
+              {
+                "enum": [
+                  "avg"
+                ],
+                "deprecated": true,
+                "description": "Legacy spellings a migration rewrites when the config loads."
+              }
             ]
           }
         },

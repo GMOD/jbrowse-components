@@ -15,7 +15,7 @@ const timeout = 20000
 
 // A plain FeatureTrack over a BedTabixAdapter, told to draw as one of the
 // quantitative displays. This file's `score` tops out at 1000 and its
-// `thickEnd` column at 50001, so a non-default `scoreField` reaching the
+// `thickEnd` column at 50001, so a non-default `y` field reaching the
 // worker shows up as a y domain fifty times taller.
 const TRACK = 'volvox_mouse_inheritance_painting'
 
@@ -132,9 +132,9 @@ test('a FeatureTrack paints the wiggle display', async () => {
   expect(display.domain[1]).toBeLessThanOrEqual(1000)
 }, 30000)
 
-test('a wiggle scoreField reaches featuresToRaw', async () => {
+test('a wiggle y field reaches featuresToRaw', async () => {
   const { display } = await openTrack(
-    { type: 'LinearWiggleDisplay', scoreField: 'thickEnd' },
+    { type: 'LinearWiggleDisplay', y: 'thickEnd' },
     'wiggle-display',
   )
   await waitFor(() => {

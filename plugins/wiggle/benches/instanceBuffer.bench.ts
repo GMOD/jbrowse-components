@@ -176,9 +176,9 @@ function props(renderingType: string, mode: string): WiggleGpuProps {
     maxGapMultiple: 0,
   }
 }
-const xyProps = props('xyplot', 'avg')
-const lineProps = props('line', 'avg')
-const centerProps = props('linecenter', 'avg')
+const xyProps = props('xyplot', 'mean')
+const lineProps = props('line', 'mean')
+const centerProps = props('linecenter', 'mean')
 const bandProps = props('line', 'whiskers')
 
 const xyLayers = buildSourceRenderData(dataAvg, xyProps)

@@ -440,14 +440,16 @@ function legacyKeysOf(configSchema, declaredSlots) {
 }
 
 // Values an enum slot no longer spells but that the schema's preProcessSnapshot
-// still rewrites — \`showLabels: false\` from before the unified enum. Asked of
-// each schema by construction, like the keys above: a candidate the migration
-// consumes builds and comes out as something else, one it does not throws.
+// still rewrites — \`showLabels: false\` from before the unified enum, v4's
+// \`summaryScoreMode: 'avg'\`. Asked of each schema by construction, like the
+// keys above: a candidate the migration consumes builds and comes out as
+// something else, one it does not throws.
 const LEGACY_VALUE_CANDIDATES = [
   true,
   false,
   'reducedRepresentation',
   'collapse',
+  'avg',
 ]
 
 function legacyValuesOf(configSchema, declaredSlots) {

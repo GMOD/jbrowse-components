@@ -248,7 +248,7 @@ function tracks(cells: Cells) {
         uri: `${BASE}/percell.zarr`,
       },
       displayDefaults: {
-        mark: 'heatmap',
+        mark: 'span',
         height: 420,
         scales: { y: { domainMin: 0, domainMax: 4 } },
       },

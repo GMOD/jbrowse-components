@@ -50,10 +50,10 @@ function sourceLayers({
     return lineLayers(source, summaryScoreMode, posColor, negColor)
   }
   // whiskers draws min, mean and max, min/max the one band the user picked,
-  // avg the mean alone; every one of them is coloured by each value's own sign
-  // against the pivot, so signed data reads as pos/neg on the main thread.
+  // mean the mean alone; every one of them is coloured by each value's own
+  // sign against the pivot, so signed data reads as pos/neg on the main thread.
   //
-  // Density is the one mode that gets to 'avg' without the user picking it, and
+  // Density is the one mode that gets to 'mean' without the user picking it, and
   // the model resolves that (see `effectiveSummaryScoreMode`, which is what
   // gpuProps carries) rather than this re-deciding it. The autoscale domain,
   // the track menu's radio and the tooltip all read that same resolved mode, so
@@ -92,7 +92,7 @@ export interface WiggleGpuProps {
   // The score filled bars grow from, which orders a band's layers.
   origin: number
   // The mode actually drawn, never the raw config slot, since density has no
-  // whiskers presentation and resolves to 'avg'. Named for the model getter
+  // whiskers presentation and resolves to 'mean'. Named for the model getter
   // that produces it so a new caller cannot skip the resolution.
   effectiveSummaryScoreMode: string
   renderingType: string

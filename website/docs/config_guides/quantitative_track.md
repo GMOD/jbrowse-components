@@ -79,7 +79,6 @@ scale it reads through:
 | one solid colour                    | `"#8b0000"`                                                                            |
 | a colour each side of a cut         | `{ "field": "score", "scale": "threshold", "domain": [5], "range": ["#aaa", "#f00"] }` |
 | a ramp, which density fades through | `{ "field": "score", "scale": "linear", "scheme": "viridis" }`                         |
-| a colour per source                 | `{ "field": "source", "scale": "categorical" }`                                        |
 
 A threshold with an empty `domain` cuts at
 [`origin`](/docs/config/linearwiggledisplay/#slot-origin), the value the bars
@@ -87,6 +86,11 @@ also grow from. A ramp takes a named `scheme` or a `range` of CSS stops, runs
 straight across the y domain unless `domainMid` places its middle stop, and with
 one colour runs from white to it. The
 [cookbook](/docs/cookbook#quantitative-wiggle-tracks) has worked recipes.
+
+`color` reads `score` alone. A colour per source is the row's:
+[`rowColor`](/docs/config/linearwiggledisplay/#slot-rowcolor) names each
+source's colour as `domain`/`range` pairs, and several sources sharing one plot
+box with no `color` set take palette colours by name unprompted.
 
 ## Adapters
 

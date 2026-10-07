@@ -68,8 +68,6 @@ bare-string shorthand, went with ADR-215.
 
 - `website/docs/config_guides/variant_track.md:209` teaches `LDDisplay`,
   removed in `53bb2b9551`.
-- `quantitative_track.md:82` teaches `{ field: "source", scale: "categorical" }`
-  on wiggle `color`, which the schema refuses; that is `rowColor`.
 - `mark_display.md:161` names `scales.y.autoscale` (now `domainQuantile`);
   `:333` and `slot_types.md:124` say an unset axis `title` derives, where the
   schema draws none (`valueScaleConfigSchema.ts:260`).
