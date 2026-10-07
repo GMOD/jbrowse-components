@@ -138,7 +138,7 @@ the track menu:
   lanes it joins run the same way and blue where one is inverted against the
   other
 
-<Figure src="/img/genomes_synteny/star_lanes.png" caption="hg38 at TNNT3 over eight genomes from chimp to platypus, ribbons colored by strand. Down to elephant the ribbons run nearly all red and the genes that lanes name keep hg38's order, while purple, sequence hg38 lacks, grows down the stack. The platypus lane spreads over many sequences, joined by blue." />
+<Figure src="/img/genomes_synteny/star_lanes.png" caption="hg38 at TNNT3 over eight genomes from chimp to platypus, ribbons colored by strand. Down to elephant the ribbons run nearly all red and the genes that lanes name keep hg38's order, while the gaps between ribbons widen down the stack. The platypus lane spreads over many sequences, joined by blue." />
 
 Each lane reads the same chain file as that genome's pairwise liftOver track, so
 the one view holds what a synteny view per genome would. The ribbons between two
@@ -162,7 +162,7 @@ and mm39 is C57BL/6J, the strain that lost _Nnt_ exons 7 to 11 (Freeman et al.
 - in the track menu, **Lanes → Choose lanes...**, type `house mouse` into the
   filter and tick the strains, the C57BL/6J T2T assembly among them
 
-<Figure src="/img/genomes_synteny/mouse_strains_nnt.png" caption="mm39 at Nnt over the Mus assemblies the track holds, the C57BL/6J T2T assembly first. Every other lane draws purple under the middle of the gene, the exons the reference strain lost, and the T2T assembly of that same strain runs straight with none." />
+<Figure src="/img/genomes_synteny/mouse_strains_nnt.png" caption="mm39 at Nnt over the Mus assemblies the track holds, the C57BL/6J T2T assembly first. The T2T assembly of that strain runs straight under mm39, and the ribbon to the next lane fans open in the middle of the gene, over the exons the reference strain lost." />
 
 ## Comparing one person's two haplotypes at the 17q21.31 inversion
 
@@ -181,7 +181,7 @@ each. On hg38 at
 - **Show... → Show gene labels** off, since the RefSeq track above names the
   genes
 
-<Figure src="/img/genomes_synteny/human_17q21_haplotypes.png" caption="hg38 from MAPT to NSF over five T2T haplotypes, ribbons colored by strand. The H9 hap2 lane, beside hg38, is the inverted H2 haplotype: its ribbons turn blue across MAPT and KANSL1, and the purple on it is sequence hg38 lacks. Its partner hap1 and the other three haplotypes run red throughout." />
+<Figure src="/img/genomes_synteny/human_17q21_haplotypes.png" caption="hg38 from MAPT to NSF over five T2T haplotypes, ribbons colored by strand. The H9 hap2 lane, beside hg38, is the inverted H2 haplotype: its ribbons turn blue across MAPT and KANSL1. Its partner hap1 and the other three haplotypes run red throughout." />
 
 ## See also
 

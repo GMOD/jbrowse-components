@@ -44,6 +44,11 @@ cost is linear in lanes.
   cut there (`addAcrossHoles`), and so are a gene's exons, intron lines and hit
   boxes (`Lane.spansOf`, `frameSpans`). Gene records never open: their spacing
   is no deletion. An insertion opens nothing; its sequence draws as before.
+- **A lane draws no mark for sequence the anchor lacks.** The ribbon to the
+  lane above fans open over an insertion, and two lanes sharing one join
+  unbroken. A purple bar on every carrier lane plus a purple tint on the ribbon
+  between carriers was tried and removed: it compared each lane with the anchor
+  where the ribbons compare neighbours, so one insertion drew on every carrier.
 - **A gene-table row the anchor lacks draws between the lanes that carry it**
   (`anchorlessGroupsOf`, `PlacedGroup` with no `anchor`). Each mate lane reads
   the table on its own window (`laneGroupsFetchSpecs`); the lanes place and

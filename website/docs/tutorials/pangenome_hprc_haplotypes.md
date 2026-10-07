@@ -111,7 +111,7 @@ Press **haplotypes** on the C4A / C4B row, the complement component 4 genes. In
 the track menu open **Lanes → Choose lanes...**, press **Untick shown**, tick
 `HG01978.2` and `HG02004.2`, and press **Draw these lanes**.
 
-<Figure caption="C4 from the HPRC page's haplotypes launch with two lanes chosen, HG01978.2 and HG02004.2, each with three copies of the C4-CYP21-TNX module, under the RefSeq genes. The third module is purple on both lanes, sequence hg38 lacks, and the purple band between them is that module aligned between the two haplotypes off the nodes both paths share." src="/img/multiway_synteny/hprc_c4_graph_stack.png" />
+<Figure caption="C4 from the HPRC page's haplotypes launch with two lanes chosen, HG01978.2 and HG02004.2, each with three copies of the C4-CYP21-TNX module, under the RefSeq genes. Both lanes run one module longer than hg38, and the band between them joins the two haplotypes along their whole length, aligned off the nodes both paths share." src="/img/multiway_synteny/hprc_c4_graph_stack.png" />
 
 ## GSTT1: a gene GRCh38's chromosome lacks
 
@@ -124,11 +124,11 @@ we'll move to `chr22:23,950,001-24,060,000`, choose `HG00128.2`, `HG01960.1`,
 - **Lanes → Order lanes by structure** stacks each lane beside the one whose
   deletions and insertions against GRCh38 are most alike, so the haplotypes
   carrying _GSTT1_ sit as one block.
-- **Purple on a lane** is sequence that haplotype carries and hg38 lacks here,
-  and a purple band between two lanes is that sequence aligned between the two
-  haplotypes, read off the nodes both walks share.
+- **The band between two lanes** aligns the two haplotypes to each other, read
+  off the nodes both walks share. It fans open where the lower lane carries
+  sequence the upper one lacks, and runs unbroken between two carriers.
 
-<Figure caption="The GSTT1 window from the haplotypes launch with ten lanes ordered by structure, under the RefSeq genes. The lanes that match GRCh38 come first; below them each carrier draws the inserted sequence in purple under its CAT genes, joined to the next carrier by a purple band." src="/img/multiway_synteny/hprc_gstt1_lanes.png" />
+<Figure caption="The GSTT1 window from the haplotypes launch with ten lanes ordered by structure, under the RefSeq genes. The lanes that match GRCh38 come first; under the last of them the band fans open across the inserted sequence, and the carriers below join in unbroken bands." src="/img/multiway_synteny/hprc_gstt1_lanes.png" />
 
 ## Amylase: counting AMY1 copies per haplotype
 
@@ -137,7 +137,7 @@ choose `HG01361.1`, `HG00133.2`, `HG00133.1`, `NA18608.2` and `HG00232.1`. A
 lane with more copies spans more of its contig in the same width, and its label
 gives that span as a multiple of the window.
 
-<Figure caption="The amylase locus from the HPRC page's haplotypes launch with five lanes chosen, one per amylase structure, under the RefSeq genes. Each lane is drawn on the haplotype's contig under its CAT genes, with the stretch hg38 lacks in purple; a lane longer than the window gives its span as a multiple in its label." src="/img/multiway_synteny/hprc_amylase_lanes.png" />
+<Figure caption="The amylase locus from the HPRC page's haplotypes launch with five lanes chosen, one per amylase structure, under the RefSeq genes. Each lane is drawn on the haplotype's contig under its CAT genes; a lane longer than the window gives its span as a multiple in its label." src="/img/multiway_synteny/hprc_amylase_lanes.png" />
 
 To read the lengths, take **Display types → Graph**, enter the five names in
 **Settings → Haplotypes**, then pick **Layout → Walk rows** and **Color →

@@ -1958,8 +1958,8 @@ export const syntenySpecs: ScreenshotSpec[] = [
   },
 
   // GSTT1, which GRCh38's chr22 lacks, from the haplotypes launch with ten
-  // lanes ordered by structure: the carriers draw the insertion purple and
-  // share it through purple bands between them.
+  // lanes ordered by structure: the ribbon fans open at the first carrier and
+  // runs unbroken between the carriers below it.
   {
     mode: 'url',
     name: 'multiway_synteny/hprc_gstt1_lanes',
@@ -4249,9 +4249,9 @@ export const syntenySpecs: ScreenshotSpec[] = [
     mode: 'url',
     name: 'genomes_synteny/human_17q21_haplotypes',
     // H9 hap2, the H2 inversion carrier, sits beside hg38 so its inverted
-    // ribbons and the sequence hg38 lacks are the first band down; hap1 under
-    // it puts one person's two chromosomes side by side. Lane gene names off,
-    // since the RefSeq track above names the genes once.
+    // ribbons are the first band down; hap1 under it puts one person's two
+    // chromosomes side by side. Lane gene names off, since the RefSeq track
+    // above names the genes once.
     url: hostedStarSession(
       'hg38',
       'chr17:45,300,000-46,800,000',

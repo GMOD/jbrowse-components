@@ -199,12 +199,12 @@ _FXR2_, because gorGor6 holds the _TP53_ end of the window on an unplaced
 contig. A chain records its insertions and deletions inside one alignment
 record, and the track cuts a record at every indel of 10 kb or more, drawing one
 ribbon per gap-free run. Sequence a lane has between two runs and hg38 lacks
-draws purple on the lane. The mouse, cow and dog chains have many such gaps, and
-the ape chains have gaps under the cut, so their ribbons look continuous. The
-mouse lane shows `[rev]` because its chain runs the other way against hg38 here,
-so the ribbons either side of it are blue.
+leaves a gap between its ribbons. The mouse, cow and dog chains have many such
+gaps, and the ape chains have gaps under the cut, so their ribbons look
+continuous. The mouse lane shows `[rev]` because its chain runs the other way
+against hg38 here, so the ribbons either side of it are blue.
 
-<Figure caption="The TP53 neighbourhood on hg38 over eight UCSC genome lanes, ribbons colored by strand. Chimp and orangutan run red and unbroken under hg38; the lanes below them carry purple, sequence hg38 lacks, between their ribbons, and the reversed mouse lane is joined by blue ones." src="/img/multiway_synteny/hg38_vertebrates_tp53.png" />
+<Figure caption="The TP53 neighbourhood on hg38 over eight UCSC genome lanes, ribbons colored by strand. Chimp and orangutan run red and unbroken under hg38; the lanes below them break into many ribbons, and the reversed mouse lane is joined by blue ones." src="/img/multiway_synteny/hg38_vertebrates_tp53.png" />
 
 Navigate to `chr17:15,200,000-16,400,000`, eight megabases toward the
 centromere, near _PMP22_. The region is a hotspot of segmental duplications
