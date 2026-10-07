@@ -3,8 +3,8 @@ title: 'Pangenome (HPRC) part 2: haplotypes against each other'
 sidebar_label: Pangenome (HPRC pt 2, haplotypes against each other)
 description:
   Draw HPRC haplotypes as lanes in assembly coordinates, aligned to each other
-  by the release's pangenome graph, at a CFH deletion, a C4 duplication, the
-  amylase copy-number array and an inversion at 1q21.1
+  by the release's pangenome graph, at a CFH deletion, the GSTT1 gene GRCh38
+  lacks and the FLNA / EMD inversion
 guide_category: Tutorials
 tutorial_category: Pangenomes
 tutorial_subcategory: HPRC release 2
@@ -16,9 +16,8 @@ assembly, and use the pangenome graph to show where neighbouring lanes match.
 With that view we:
 
 - at CFH, find haplotypes missing two genes
-- at C4, find two haplotypes sharing a copy GRCh38 lacks
-- at amylase, count gene copies and check them against Yilmaz et al. (2024)
-- at 1q21.1, tell an inversion the graph flags from an inverted paralog
+- at GSTT1, find haplotypes with a gene GRCh38's chromosome lacks
+- at FLNA / EMD, find haplotypes with two genes in the opposite order
 
 :::caution Experimental
 
@@ -30,23 +29,23 @@ until JBrowse 5 ships. We welcome your [feedback](/contact).
 
 ## Prerequisites
 
-- for [Reproduce it end to end](#reproduce-it-end-to-end): `samtools` built with
-  libcurl, [`minimap2`](https://github.com/lh3/minimap2), Node.js for `npx`,
-  `python3`, and the [JBrowse CLI](/docs/cli) for `make-pif`
+- for
+  [Whole-genome synteny from a GFA's walks](#whole-genome-synteny-from-a-gfas-walks):
+  `python3` and the [JBrowse CLI](/docs/cli) for `make-pif`
 
 ## Where the data comes from
 
 [HPRC release 2](https://doi.org/10.64898/2026.07.21.739710).
 
-The [build scripts](#reproduce-it-end-to-end) take these files from their URLs,
+The [build script](#reproduce-it-end-to-end) takes these files from their URLs,
 so there is nothing to download by hand.
 
+- the release's minigraph-cactus graph as a GFA:
+  https://s3-us-west-2.amazonaws.com/human-pangenomics/pangenomes/freeze/release2/minigraph-cactus/v2.1/hprc-v2.1-mc-grch38/hprc-v2.1-mc-grch38.gfa.gz
 - the assemblies:
   https://raw.githubusercontent.com/human-pangenomics/hprc_intermediate_assembly/main/data_tables/assemblies_release2_v1.0.index.csv
 - the CAT gene annotation index, one GFF3 per haplotype:
   https://raw.githubusercontent.com/human-pangenomics/hprc_intermediate_assembly/main/data_tables/annotation/cat/cat_genes_hprc_r2_v1.3.index.csv
-- the release's all-vs-GRCh38 alignment, sliced for the inversion figure:
-  https://s3-us-west-2.amazonaws.com/human-pangenomics/pangenomes/freeze/release2/impg/pafs/hprc465vsgrch38.aln.paf.gz
 
 <details>
 <summary>Read by URL (no download needed)</summary>
@@ -62,16 +61,18 @@ so there is nothing to download by hand.
 
 One track draws the lanes, reading the release's gbz-base database (the graph
 stored as SQLite) directly. The HPRC page's **haplotypes** launch adds it, and
-this config is the one to adapt for your own graph, whose database and haplotype
-index
-[Hosting your own graph](/docs/tutorials/pangenome_prepare_graph#haplotype-walks-a-gbz-base-database)
-builds. Each lane is one haplotype's walk, its route through the graph. List an
-assembly per haplotype in `assemblyNames`; the track finds each walk through the
-assembly's `sample#haplotype` alias. The HPRC config declares that alias for
-every release 2 haplotype (`HG00097.1` is aliased `HG00097#1`), and
-[one assembly entry](/docs/tutorials/pangenome_hprc#opening-the-haplotype-an-allele-came-from)
-does the same for a haplotype of your own. GRCh38 has no such alias, so
-`assemblyNameToPanSN` names its walk:
+the config below is the one to adapt for your own graph:
+
+- **A lane** is one haplotype's walk, its route through the graph.
+- **`assemblyNames`** lists an assembly per haplotype. The track finds each walk
+  through the assembly's `sample#haplotype` alias (`HG00097.1` is aliased
+  `HG00097#1`), which
+  [one assembly entry](/docs/tutorials/pangenome_hprc#opening-the-haplotype-an-allele-came-from)
+  declares.
+- **`assemblyNameToPanSN`** names the walk of an assembly with no such alias,
+  here GRCh38's.
+- **The database and haplotype index** for a graph of your own come from
+  [Hosting your own graph](/docs/tutorials/pangenome_prepare_graph#haplotype-walks-a-gbz-base-database).
 
 ```json addtrack
 {
@@ -105,14 +106,6 @@ HG00253's second haplotype, breaks across both genes.
 
 <Figure caption="The CFH cluster from the haplotypes launch: RefSeq genes over one lane per structural configuration, each lane a haplotype's contig read from the graph, under its CAT genes. HG00253's second haplotype lacks CFHR3 and CFHR1, and its lane breaks across both." src="/img/pangenome/hprc_gbz_cfhr_lanes.png" />
 
-## C4: haplotypes with a copy GRCh38 lacks
-
-Press **haplotypes** on the C4A / C4B row, the complement component 4 genes. In
-the track menu open **Lanes → Choose lanes...**, press **Untick shown**, tick
-`HG01978.2` and `HG02004.2`, and press **Draw these lanes**.
-
-<Figure caption="C4 from the HPRC page's haplotypes launch with two lanes chosen, HG01978.2 and HG02004.2, each with three copies of the C4-CYP21-TNX module, under the RefSeq genes. Both lanes run one module longer than hg38, and the band between them joins the two haplotypes along their whole length, aligned off the nodes both paths share." src="/img/multiway_synteny/hprc_c4_graph_stack.png" />
-
 ## GSTT1: a gene GRCh38's chromosome lacks
 
 GRCh38's chromosome 22 carries the common _GSTT1_ deletion, so the gene sits on
@@ -130,197 +123,30 @@ we'll move to `chr22:23,950,001-24,060,000`, choose `HG00128.2`, `HG01960.1`,
 
 <Figure caption="The GSTT1 window from the haplotypes launch with ten lanes ordered by structure, under the RefSeq genes. The lanes that match GRCh38 come first; under the last of them the band fans open across the inserted sequence, and the carriers below join in unbroken bands." src="/img/multiway_synteny/hprc_gstt1_lanes.png" />
 
-## Amylase: counting AMY1 copies per haplotype
+## FLNA / EMD: two genes in the opposite order {#inversions}
 
-Press **haplotypes** on the AMY1 row, the salivary amylase gene copies, and
-choose `HG01361.1`, `HG00133.2`, `HG00133.1`, `NA18608.2` and `HG00232.1`. A
-lane with more copies spans more of its contig in the same width, and its label
-gives that span as a multiple of the window.
+An inversion keeps the same sequence and reverses it, so no lane changes length.
+_FLNA_ and _EMD_ sit between two inverted repeats on Xq28, and the block between
+them is inverted on many X chromosomes (Small et al. 1997). From any
+**haplotypes** launch, we'll move to `chrX:154,320,001-154,410,000`, choose
+`HG00097.1`, `HG00099.1`, `HG00099.2` and `HG01978.1` under **Lanes → Choose
+lanes...**, and then:
 
-<Figure caption="The amylase locus from the HPRC page's haplotypes launch with five lanes chosen, one per amylase structure, under the RefSeq genes. Each lane is drawn on the haplotype's contig under its CAT genes; a lane longer than the window gives its span as a multiple in its label." src="/img/multiway_synteny/hprc_amylase_lanes.png" />
+- **The band between two lanes** crosses itself where the lower lane runs the
+  block in the other direction.
+- **HPRC release 2 bubbles** in the track selector adds the graph's bubbles, the
+  places where haplotype paths split and rejoin. `gfatools bubble` flags one as
+  `inversion` when its paths disagree about orientation, and **Filter by... →
+  Edit filters...** on that track keeps the flagged ones:
 
-To read the lengths, take **Display types → Graph**, enter the five names in
-**Settings → Haplotypes**, then pick **Walk rows** under the **Layout** row and
-**Uniform** under the **Color** row to draw each haplotype's route as a bar.
+  ```text
+  jexl:feature.inversion
+  ```
 
-<Figure caption="The five haplotypes' walks across the amylase array in walk rows, longest first, under GRCh38's bar, each boxed with its own CAT genes so its AMY1 copies can be counted on the bar. Blue is on GRCh38's path through the graph and purple off it. Each readout gives the walk's length and its excess over GRCh38." src="/img/pangenome/hprc_amylase_walk_rows.png" />
+- **HPRC release 2 graph (rGFA segments)** in the track selector draws the
+  window's graph in the force-directed layout.
 
-HG00133.1 has GRCh38's three _AMY1_ copies and its length, and its bar still
-shows a long purple stretch, because the graph routes copies of a duplication
-through nodes off GRCh38's path.
-
-Right-click a bar to open that haplotype's span in a linear view on its own
-assembly, with its CAT genes.
-
-## Matching the amylase haplotypes to Yilmaz et al.'s structures
-
-Yilmaz et al. (2024) name each structure by its _AMY1_ count. Our five
-haplotypes land on H1a, H2A0, H3r, H5 and H7:
-
-| Span against GRCh38's | _AMY1_ copies | Structure |
-| --------------------- | ------------- | --------- |
-| 94 kb shorter         | 1             | H1a       |
-| 72 kb shorter         | 2, no _AMY2A_ | H2A0      |
-| the same              | 3             | H3r       |
-| 94 kb longer          | 5             | H5        |
-| 188 kb longer         | 7             | H7        |
-
-HG00097.2's span is closest to H5's, yet it has four _AMY1_ copies. Count the
-_AMY1_ boxes on each bar to read copy number.
-
-## Telling the 1q21.1 inversion from an inverted paralog {#inversions}
-
-A deletion or an extra copy changes how long a lane is. An inversion keeps the
-same sequence and reverses it. `gfatools bubble` flags a bubble, a place where
-haplotype paths split and rejoin, as `inversion` when its paths disagree about
-orientation. Press **graph** on the HPRC page's CFH / CFHR row, open **Filter
-by... → Edit filters...** on the bubbles track, and enter:
-
-```text
-jexl:feature.inversion
-```
-
-Type `chr1:144,260,000-144,610,000`, the 1q21.1 locus, where the track flags one
-bubble. The flag fits a polymorphic inversion (present in some people) and an
-inverted paralog (a reversed duplicate copy) equally, and the graph draws the
-breakpoints as two deletion arcs because its edges record no orientation.
-Haplotype alignments tell the two apart. The figure below slices one haplotype
-with the inversion and one without out of HPRC's all-vs-GRCh38 PAF, each with
-its CAT annotation ([Reproduce it end to end](#reproduce-it-end-to-end) builds
-it), and the hg38 row between them agrees with the one without.
-
-<Figure caption="The 1q21.1 bubble the graph flags as an inversion, drawn as alignments. The pink ribbons are each haplotype's alignment to hg38, and a ribbon that crosses itself is an inversion. Between the two haplotype rows: the RefSeq genes, the bubbles track filtered to inversions, and the rGFA segments. The boxed pair on each row, PPIAL4F and PPIAL4E, is in opposite order on the two haplotypes." src="/img/pangenome/hprc_inversion.png" />
-
-## Reproduce it end to end
-
-The amylase build works in four steps, and the commands below run each one on
-any gbz-base database and any bgzipped, indexed assembly:
-
-1. Ask the graph where each haplotype crosses two single-copy windows, one
-   either side of the array. The distance between the two is that haplotype's
-   span across the locus, and the spans fall into the published structures.
-2. Pick one haplotype per structure and fetch only the locus from its assembly.
-3. Count each haplotype's gene copies, and align it to its neighbour in the
-   stack, so each band is an alignment between two haplotypes and can match
-   copies GRCh38 lacks.
-4. Shift each alignment from the fetched piece's coordinates back onto the whole
-   contig, so every row draws in its own assembly's coordinates under its genes.
-
-Get every haplotype's path through a window:
-
-```bash
-npx --yes -p @gmod/gbz-base gbz-base-query graph.gbz.db \
-  --haplotype-index haplotypes.db \
-  --sample GRCh38 --contig chr1 --interval 103540000..103541000 \
-  --context 0 --alignments > window.json
-```
-
-Fetch one haplotype's copy of the locus:
-
-<!-- from: scripts/build_amylase_haplotypes.sh -->
-
-```bash
-samtools faidx HG00232_hap1.fa.gz 'HG00232#1#CM089991.1:103491008-103991760' > HG00232.1.fa
-```
-
-Count gene copies, keeping hits over 90% of the gene at 97% identity:
-
-<!-- from: scripts/build_amylase_haplotypes.sh -->
-
-```bash
-minimap2 -c -x asm20 -N 50 -p 0.5 HG00232.1.fa genes.fa |
-  awk '($4-$3)/$2>=0.9 && $10/$11>=0.97 { c[$1]++ } END { for (g in c) print g, c[g] }'
-```
-
-Align two haplotypes to draw them as synteny:
-
-<!-- from: scripts/build_amylase_haplotypes.sh -->
-
-```bash
-# --secondary=no keeps the primary chain; the secondary ones are paralogous
-# copies aligning to each other
-minimap2 -c --eqx -x asm20 --secondary=no HG00232.1.fa NA18608.2.fa > adjacent.paf
-```
-
-The whole build, for four of the amylase haplotypes above and hg38:
-
-```bash
-curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/build_amylase_haplotypes.sh
-bash build_amylase_haplotypes.sh
-```
-
-The build script writes the `config.json` that this session opens, with the five
-assemblies, their gene tracks and the `amylase_adjacent` alignments. The session
-below opens that config; point `config=` at your copy:
-
-```json session config=test_data/amylase/config.json
-{
-  "defaultSession": {
-    "name": "Amylase haplotypes from one AMY1 copy to seven, each aligned to the next",
-    "views": [
-      {
-        "type": "LinearSyntenyView",
-        "views": [
-          {
-            "assembly": "HG01361.1",
-            "loc": "CM089019.1:103,831,655-104,050,048",
-            "tracks": ["hprc_genes_HG01361_1"]
-          },
-          {
-            "assembly": "hg38",
-            "loc": "chr1:103,520,894-103,832,637",
-            "tracks": ["hg38_ncbiRefSeq_ucsc"]
-          },
-          {
-            "assembly": "HG00133.1",
-            "loc": "CM090045.1:103,669,666-103,981,330",
-            "tracks": ["hprc_genes_HG00133_1"]
-          },
-          {
-            "assembly": "NA18608.2",
-            "loc": "CM089849.1:103,796,766-104,203,421",
-            "tracks": ["hprc_genes_NA18608_2"]
-          },
-          {
-            "assembly": "HG00232.1",
-            "loc": "CM089991.1:103,491,008-103,991,760",
-            "tracks": ["hprc_genes_HG00232_1"]
-          }
-        ],
-        "tracks": [
-          ["amylase_adjacent"],
-          ["amylase_adjacent"],
-          ["amylase_adjacent"],
-          ["amylase_adjacent"]
-        ],
-        "color": { "field": "strand" },
-        "drawCurves": true,
-        "levelHeights": [110, 110, 110, 110]
-      }
-    ]
-  }
-}
-```
-
-<Figure caption="HG01361.1, hg38, HG00133.1, NA18608.2 and HG00232.1, one AMY1 copy at the top to seven at the bottom, each aligned to the row under it by minimap2 and colored by strand. Each step up in copies opens a wedge over the genes only the longer row has." src="/img/multiway_synteny/hprc_amylase_stack.png" />
-
-A separate script builds the [inversion figure](#inversions) from release 2's
-published all-vs-GRCh38 PAF. An assembler can deposit a contig in either
-orientation, so a reversed alignment alone is ambiguous; the test for an
-inversion is a block that reverses while the sequence either side of it stays
-forward. The script:
-
-1. streams the PAF once, keeping every haplotype's alignments over a window that
-   reaches well past the bubble on both sides
-2. sorts each haplotype into inverted (bubble reversed, flanks forward), forward
-   (forward throughout) or neither, and prints how many fall in each
-3. keeps one inverted and one forward haplotype, with each one's contig length
-   and CAT genes for the drawn window
-
-```bash
-curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/build_hprc_inversion_synteny.sh
-bash build_hprc_inversion_synteny.sh
-```
+<Figure caption="The FLNA / EMD window with the RefSeq genes, the bubbles track filtered to inversions, four lanes and the force-directed graph, the flagged bubble shaded. The band crosses between HG00099's two haplotypes and runs straight between the two lanes under it, which both carry EMD ahead of FLNA. The graph draws the block as a loop off the backbone." src="/img/pangenome/hprc_inversion.png" />
 
 ## Whole-genome synteny from a GFA's walks
 
@@ -346,8 +172,14 @@ Index the PAF for JBrowse:
 jbrowse make-pif graph.paf --csi --out graph.pif.gz
 ```
 
-The HPRC build downloads the 63 GB release graph, converts eight haplotypes'
-walks against GRCh38, indexes the PAF, and fetches each haplotype's CAT genes:
+## Reproduce it end to end
+
+The HPRC build runs that conversion on the release graph. It:
+
+1. downloads the 63 GB release graph
+2. converts eight haplotypes' walks against GRCh38's and indexes the PAF
+3. fetches each haplotype's contig lengths and CAT genes
+4. writes a `config.json` with one assembly per haplotype
 
 ```bash
 curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/build_hprc_multiway_synteny.sh
@@ -383,8 +215,6 @@ builds the gbz-base database for a graph of your own.
 - Hughes AE et al.
   [A common CFH haplotype, with deletion of CFHR1 and CFHR3, is associated with lower risk of age-related macular degeneration](https://doi.org/10.1038/ng1890).
   Nature Genetics, 2006.
-- Yilmaz F, et al. Reconstruction of the human amylase locus reveals ancient
-  duplications seeding modern-day variation. Science (2024).
-  https://doi.org/10.1126/science.adn0609
-- Li H. Minimap2: pairwise alignment for nucleotide sequences. Bioinformatics
-  (2018). https://doi.org/10.1093/bioinformatics/bty191
+- Small K, Iber J, Warren ST.
+  [Emerin deletion reveals a common X-chromosome inversion mediated by inverted repeats](https://doi.org/10.1038/ng0597-96).
+  Nature Genetics, 1997.

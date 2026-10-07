@@ -8,8 +8,8 @@
  * them cannot load a module importing React, MUI or a lazy `.tsx`. A leaf module
  * makes the recipe import the label instead of retyping it — which is also why
  * 'off' declares no warning icon here and the settings menu attaches it, and
- * why the label carries no ⚠ glyph: `pangenome/hprc_inversion` sets this mode,
- * so the label is printed as a doc click path.
+ * why the label carries no ⚠ glyph: a figure spec that sets this mode prints
+ * the label as a doc click path.
  *
  * 'off' is the only mode that draws a gap the same as a match, but it is NOT
  * the only one that lays down a full-span block: pass 1 of buildSyntenyGeometry

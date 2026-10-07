@@ -4,7 +4,7 @@
 // The E. coli half of what used to be one specs/graph.ts is
 // specs/graph-ecoli.ts, and the two share only what specs/graph-fixtures.ts
 // holds.
-import { displayPainted } from '@jbrowse/browser-test-utils'
+import { displayPainted, displaySettled } from '@jbrowse/browser-test-utils'
 
 import { sessionSpec } from '../screenshot-spec-helpers.ts'
 import {
@@ -55,86 +55,22 @@ const SEGMENTS_TRACK = 'hprc_minigraph_segments'
 // 12 kb wide reads as the wrong node being ringed unless the words are there.
 const HPRC_ALLELE = 's348700+'
 
-// The inversion figure, at 1q21.1. `hprc-v2.1-mc-grch38.bubbles.bed.gz` flags
-// this bubble as an inversion (245 of its 129,611 rows carry that column), and
-// the links index states the breakpoints as three mixed-orientation rank-0
-// links, bracketing chr1:144,419,292-144,572,458.
-//
-// The flag alone is not the finding, which is why this figure exists at all:
-// gfatools cannot tell a polymorphic inversion from an inverted paralog, 1q21.1
-// is a segmental duplication, and the wave VCF never sets its own INV flag here.
-// scripts/build_hprc_inversion_synteny.sh settles it against HPRC's published
-// all-vs-GRCh38 PAF, classifying every haplotype by TWO orientations -- the
-// bubble's, and the sequence outside it -- because a haplotype whose whole
-// window is reverse says nothing (its contig may be deposited that way). 64
-// haplotypes reverse the bubble with forward flanks and 23 keep it forward; the
-// script prints both counts, so the split is its output rather than prose.
-//
-// It also picks the panel, and NOT on record counts, which was the first attempt
-// and put a crossed ribbon on the non-carrier row. Every haplotype in this window
-// carries inverted paralogs -- 1q21.1 is a segmental duplication -- and each of
-// those draws the same crossing the inversion does. What decides whether one is
-// drawn is not the frame: a level fetches its QUERY axis's visible window widened
-// by `syntenyPanBufferPx` (2000 px of bp per side here, 700 kb, snapped to that
-// grid) and leaves the mate axis unscoped, so a 1.2 Mb slice is fetched whole and
-// a mate a megabase off the other row still draws. So the script cuts each
-// emitted PAF to the frame below and keeps only haplotypes whose in-frame records
-// are the inversion plus forward flanks (31 of 64 carriers, 12 of 23
-// non-carriers). The two windows below are its output, not measurements.
-const INV_CARRIER = 'HG01891.1'
-const INV_CARRIER_TRACK = 'hprc_inv_synteny_HG01891_1'
-const INV_NONCARRIER = 'HG02698.2'
-const INV_NONCARRIER_TRACK = 'hprc_inv_synteny_HG02698_2'
-// Each haplotype's own CAT annotation, which is what makes the non-carrier row
-// worth its height (review: "the third sample ... looks like it matches the hg38
-// reference so not interesting, can consider deleting third row"). With gene
-// lanes on both, the crossing ribbon is no longer the only thing said twice: the
-// named genes inside the block run PPIAL4F, RNVU1-28, RNVU1-2A, RNVU1-26,
-// NBPF15, RNVU1-15, PPIAL4E down the carrier and PPIAL4E, RNVU1-15, NBPF15,
-// RNVU1-26, RNVU1-2A, RNVU1-28, PPIAL4F down the non-carrier, i.e. reference
-// order on one row and reversed on the other. That is the reading a crossing
-// ribbon alone cannot separate from a contig deposited backwards.
-const INV_CARRIER_GENES = 'hprc_inv_genes_HG01891_1'
-const INV_NONCARRIER_GENES = 'hprc_inv_genes_HG02698_2'
-// Each row's own window: the span its in-frame records cover on that haplotype.
-const INV_CARRIER_WINDOW = 'JAGYVO020000062.1:6,437,000-6,868,942'
-const INV_NONCARRIER_WINDOW = 'JBHDTM010000033.1:3,912,000-4,309,991'
-// The drawn reference window, and the frame the script selects against. Its right
-// edge stops short of 144,610,000 because past there most haplotypes carry a
-// paralogous record of their own.
-const INV_WINDOW = 'chr1:144,260,000-144,610,000'
+// The inversion figure, at FLNA / EMD on Xq28: the bubble
+// `hprc-v2.1-mc-grch38.bubbles.bed.gz` flags as an inversion (segments s586922,
+// s586923 twice, s586924), a common polymorphism of the block between two
+// inverted repeats. The lanes are one forward haplotype, both of HG00099's (one
+// each way), and a second carrier, so the band crosses once and runs parallel
+// between the two carriers.
 const INV_REGION = {
-  refName: 'chr1',
+  refName: 'chrX',
   assemblyName: 'hg38',
-  start: 144260000,
-  end: 144610000,
+  start: 154320000,
+  end: 154410000,
 }
-const INV_BLOCK = { refName: 'chr1', start: 144419292, end: 144572458 }
-const INV_BLOCK_LOCUS = `chr1:${INV_BLOCK.start + 1}-${INV_BLOCK.end}`
-
-// THE TWO GENES THAT SWAP, read out of the two CAT GFFs rather than off the
-// picture (`zcat test_data/graphgenomeview/hprc_inv_<hap>.genes.gff3.gz`, gene
-// records only). They are the outermost named pair inside the flagged bubble on
-// both haplotypes, which is what makes them the pair to box:
-//
-//   HG01891.1 (carrier)     PPIAL4F 6,537,074  ...  PPIAL4E 6,757,129
-//   HG02698.2 (non-carrier) PPIAL4E 4,064,546  ...  PPIAL4F 4,284,528
-//
-// Boxed on both rows because the claim was being ASSERTED (review: "the 'genes
-// reversed in this block' is hard to see in this figure"). It was: the evidence
-// was a run of eight ~9 px gene labels on one row against the same eight in the
-// other order on a row 700 px below it, and the pill told the reader the answer
-// rather than pointing at it. Two boxes per row is the same claim as a picture --
-// the left box on the carrier and the right box on the non-carrier name the same
-// gene.
-const INV_CARRIER_PPIAL4F = 'JAGYVO020000062.1:6,537,074-6,537,833'
-const INV_CARRIER_PPIAL4E = 'JAGYVO020000062.1:6,757,129-6,757,888'
-const INV_NONCARRIER_PPIAL4E = 'JBHDTM010000033.1:4,064,546-4,065,305'
-const INV_NONCARRIER_PPIAL4F = 'JBHDTM010000033.1:4,284,528-4,285,287'
-
-// The left edge of a window, as a point locus: what a row label anchors to, so
-// the callout sits at the start of the row it names instead of at a measured x.
-const windowStart = (loc: string) => loc.split('-')[0]!
+const INV_WINDOW = `chrX:${INV_REGION.start + 1}-${INV_REGION.end}`
+const INV_BLOCK = { refName: 'chrX', start: 154347246, end: 154384867 }
+const INV_LANES = ['HG00097#1', 'HG00099#1', 'HG00099#2', 'HG01978#1']
+const INV_LANES_VIEW = portalLanesView({ loc: INV_WINDOW, lanes: INV_LANES })
 
 // C4, from the tutorial's own table of loci worth a look.
 // `tabix hprc-v2.1-mc-grch38.links.bed.gz 'GRCh38#0#chr6:31980000-32050000'`
@@ -223,20 +159,6 @@ function hg38GeneLane(height: number) {
     geneGlyphMode: 'longestCoding',
     displayMode: 'compact',
     height,
-  }
-}
-
-// A haplotype row's own genes: HPRC's CAT annotation of that assembly, sliced to
-// the window by scripts/build_hprc_inversion_synteny.sh. Same glyph settings as the hg38 lane
-// between them, so the three rows are read the same way and the missing genes
-// are missing rather than differently drawn.
-function haplotypeGeneLane(trackId: string) {
-  return {
-    trackId,
-    type: 'LinearBasicDisplay',
-    geneGlyphMode: 'longestCoding',
-    displayMode: 'compact',
-    height: 70,
   }
 }
 
@@ -856,172 +778,41 @@ export const hprcGraphSpecs: ScreenshotSpec[] = [
     viewportHeight: 940,
     hideTooltip: true,
   },
-  // The inversion figure. Insertions are nodes and deletions are edges, and the
-  // tutorial drew both; an inversion is neither, and until this figure the page
-  // named the class without ever showing one.
-  //
-  // The graph track is deliberately NOT here. The view's edges carry no
-  // orientation -- its deletion detector takes any edge between two rank-0
-  // segments with a coordinate gap, whatever the two orientations are -- so an
-  // inversion's breakpoints draw as two dashed deletion arcs. Putting that under
-  // a caption saying "inversion" would teach the drawing wrong. The bubble lane
-  // is what states the flag, and the alignment is what shows the event.
-  //
-  // Carrier above the reference, non-carrier below, so both bands are against hg38. The highlight is the bubble's own
-  // span from the links index rather than a measured one, and the carrier's
-  // ribbon crosses inside it while its flanking ribbons run parallel, which is
-  // the whole figure.
-  //
-  // BOTH HAPLOTYPE ROWS CARRY THEIR OWN CAT GENES, and that is what keeps the
-  // non-carrier row (review: "this looks like it matches the hg38 reference so
-  // not interesting, can consider deleting third row"). It does match, and that
-  // is its job: a lone crossing ribbon is equally what an assembly whose contig
-  // was deposited in the opposite orientation draws, which is why the build
-  // script tests the flanks rather than the block. The gene lanes put that test
-  // in the frame — inside the boxed bubble the carrier's named genes run
-  // PPIAL4F, RNVU1-28, RNVU1-2A, RNVU1-26, NBPF15, RNVU1-15, PPIAL4E and the
-  // non-carrier's run the reference's order, PPIAL4E through PPIAL4F. Delete the
-  // third row and the figure has a crossing with nothing to compare it against.
-  //
-  // `cigarMode: 'off'` because the one thing this figure means by a crossing is
-  // an inversion. HPRC's PAF carries a CIGAR per record, and at 400 kb a record
-  // the default 'full' mode paints each large indel in it as a wedge pinching to
-  // a point -- several thin lines crossing each other, which read as exactly what
-  // the caption says to look for. Blocks only, so a crossing is a reversed
-  // record and nothing else.
+  // The inversion in one linear view: the bubble lane states the flag, the
+  // lanes cross between HG00099's two haplotypes with FLNA and EMD in opposite
+  // order on the carriers, and the graph draws the block as a hairpin.
   {
     mode: 'url',
     name: 'pangenome/hprc_inversion',
-    url: sessionSpec(HPRC_CONFIG, {
+    url: sessionSpec(PORTAL_CONFIG, {
       views: [
         {
-          type: 'LinearSyntenyView',
-          tracks: [[INV_CARRIER_TRACK], [INV_NONCARRIER_TRACK]],
-          drawCurves: true,
-          cigarMode: 'off',
-          // The crossing band keeps its height; the non-carrier's does not need
-          // it. A band's job here is to be followed across, and the lower one is
-          // a single parallel ribbon — 150 px of it was the "third row is
-          // boring" half of the review, and the answer is to spend that height
-          // on the gene lane under it instead of on the ribbon.
-          levelHeights: [150, 90],
-          collapseEmptyRows: true,
-          views: [
+          ...INV_LANES_VIEW,
+          highlight: [{ ...INV_BLOCK, color: 'rgba(60,65,72,0.10)' }],
+          tracks: [
+            hg38GeneLane(60),
             {
-              assembly: INV_CARRIER,
-              loc: INV_CARRIER_WINDOW,
-              tracks: [haplotypeGeneLane(INV_CARRIER_GENES)],
+              trackId: 'hprc_minigraph_bubbles',
+              type: 'LinearBasicDisplay',
+              filter: ['jexl:feature.inversion'],
+              height: 60,
             },
-            {
-              assembly: 'hg38',
-              loc: INV_WINDOW,
-              highlight: [{ ...INV_BLOCK, color: 'rgba(60,65,72,0.10)' }],
-              tracks: [
-                hg38GeneLane(70),
-                {
-                  trackId: 'hprc_minigraph_bubbles',
-                  type: 'LinearBasicDisplay',
-                  // the lane the flag lives on, cut to the flagged bubbles so
-                  // the one under the band is the subject rather than one row
-                  // among the window's bubbles
-                  filter: ['jexl:feature.inversion'],
-                  height: 60,
-                },
-                // Bounded where the other pages let it grow: this is the one
-                // figure whose lane shares a fixed budget with two more rows
-                // below it, and a grown lane is 595 px here (ADR-037 reserves
-                // the min-width clamp, so sub-pixel segments stack as deep as
-                // their deepest pile), which puts the non-carrier row's genes
-                // 460 px past the bottom of the capture. `fit` squeezes the
-                // same segments into the height instead of cutting them off.
-                {
-                  ...hprcSegmentsLane(INV_REGION),
-                  heightMode: 'fit',
-                  height: 45,
-                },
-              ],
-            },
-            {
-              assembly: INV_NONCARRIER,
-              loc: INV_NONCARRIER_WINDOW,
-              tracks: [haplotypeGeneLane(INV_NONCARRIER_GENES)],
-            },
+            INV_LANES_VIEW.tracks[1],
+            graphTrack(SEGMENTS_TRACK, {
+              layoutMode: 'force',
+              colorScheme: 'reference-position',
+              maxRegionBp: cutNear(INV_REGION),
+              paneHeight: 380,
+            }),
           ],
         },
       ],
     }),
-    // the synteny canvas: this is the one HPRC figure that draws no graph
-    readySelector: displayPainted('synteny_canvas'),
-    readyTimeout: 120000,
-    allowUnsettled: true,
+    readySelector: `body:has(${GRAPH_DRAWN}) ${displaySettled('multiway-synteny-display')}`,
+    readyTimeout: 240000,
     viewportWidth: 1000,
-    // the two ribbon bands, the three lanes between them and the bottom row's
-    // ruler, plus a gene lane on each haplotype row and 60 px off the lower band
-    viewportHeight: 965,
+    viewportHeight: 1080,
     hideTooltip: true,
-    // The flagged bubble, and what each haplotype's own genes do inside it. The
-    // row labels hang off the gene lanes the rows now carry, the same way the
-    // CFHR figure's do, and they say the thing the ribbons cannot: a crossing
-    // ribbon on its own is also what a contig deposited backwards draws, and it
-    // is gene order agreeing with the reference on one row and running backwards
-    // on the other that separates the two.
-    annotations: [
-      {
-        type: 'box',
-        anchor: {
-          view: [0, 1],
-          trackId: 'hprc_minigraph_bubbles',
-          loc: INV_BLOCK_LOCUS,
-        },
-      },
-      // the same two genes on each haplotype row, so the swap is a thing to
-      // look at rather than a sentence to believe
-      ...(
-        [
-          [0, INV_CARRIER_GENES, INV_CARRIER_PPIAL4F],
-          [0, INV_CARRIER_GENES, INV_CARRIER_PPIAL4E],
-          [2, INV_NONCARRIER_GENES, INV_NONCARRIER_PPIAL4E],
-          [2, INV_NONCARRIER_GENES, INV_NONCARRIER_PPIAL4F],
-        ] as const
-      ).map(([level, track, locus]): Annotation => ({
-        type: 'box',
-        strokeWidth: 3,
-        anchor: { view: [0, level], trackId: track, loc: locus },
-      })),
-      // The order, spelled left to right so it matches what the boxes do. Short
-      // enough to clear the leftmost box on its own row (the carrier's is 23%
-      // across its window, the non-carrier's 38%), which is why the haplotype
-      // names came off: each row's track header already reads "HG01891.1
-      // genes (HPRC release 2 CAT annotation)".
-      {
-        type: 'text',
-        fontSize: 17,
-        maxWidth: 260,
-        anchor: {
-          view: [0, 0],
-          trackId: INV_CARRIER_GENES,
-          loc: windowStart(INV_CARRIER_WINDOW),
-          fracY: 1,
-          dx: 14,
-          dy: -24,
-        },
-        text: 'PPIAL4F → PPIAL4E',
-      },
-      {
-        type: 'text',
-        fontSize: 17,
-        maxWidth: 260,
-        anchor: {
-          view: [0, 2],
-          trackId: INV_NONCARRIER_GENES,
-          loc: windowStart(INV_NONCARRIER_WINDOW),
-          fracY: 1,
-          dx: 14,
-          dy: -24,
-        },
-        text: 'PPIAL4E → PPIAL4F, as in hg38',
-      },
-    ],
   },
   // pangenome/hprc_repeat_classes was here and is DELETED (review: "i dont think
   // i really understand this figure. consider deleting. just not actually
@@ -1633,7 +1424,7 @@ export const hprcGraphSpecs: ScreenshotSpec[] = [
               layoutMode: 'walkrows',
               colorScheme: 'uniform',
               subgraphHaplotypes: PORTAL_LOCI.amylase.lanes,
-              paneHeight: 300,
+              paneHeight: 380,
               // a bar spans the cut, so the cut stays the array's window
               maxRegionBp: cutNear(150_000),
             }),

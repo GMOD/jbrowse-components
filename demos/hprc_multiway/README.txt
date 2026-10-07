@@ -20,7 +20,7 @@ Nothing in GMOD/jbrowse-components rebuilds this set. The impg filter it came
 from was replaced by scripts/build_hprc_multiway_synteny.sh, which reads the
 alignment out of the graph itself and writes the set described in
 README_gfa.txt beside this file. config.json here serves that set, and the tutorial
-at https://jbrowse.org/jb2/docs/tutorials/pangenome_hprc_haplotypes/#whole-genomes-from-a-gfa
+at https://jbrowse.org/jb2/docs/tutorials/pangenome_hprc_haplotypes/#whole-genome-synteny-from-a-gfas-walks
 walks that build. These files stay hosted for anything pointed at them.
 
 Files

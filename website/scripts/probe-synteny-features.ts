@@ -2,7 +2,7 @@
 /**
  * probe-synteny-features.ts — dump the alignments a LinearSyntenyView spec draws.
  *
- *   node scripts/probe-synteny-features.ts pangenome/hprc_inversion
+ *   node scripts/probe-synteny-features.ts syri/col_ler_chr4
  *
  * Which records land in a synteny figure is a property of the data plus both
  * views' regions, so a spec that says "this row runs straight through" is a

@@ -5,7 +5,7 @@ description:
   Count kringle copies in LPA and tell their two repeat types apart, measure the
   ABCA7 VNTR in HPRC haplotypes straight from the graph's walks, then set TRGT's
   read-based genotypes on the same bars and find the samples where reads and
-  assemblies disagree
+  assemblies disagree, and count AMY1 gene copies across the amylase array
 guide_category: Tutorials
 tutorial_category: Pangenomes
 tutorial_subcategory: HPRC release 2
@@ -22,6 +22,8 @@ haplotype:
 - at _ABCA7_, measure an intronic VNTR and set PacBio's read-based TRGT
   genotypes on the same bars
 - find the samples where the assemblies and the reads disagree
+- at amylase, count _AMY1_ gene copies and check them against Yilmaz et al.
+  (2024)
 
 :::caution Experimental
 
@@ -49,7 +51,9 @@ until JBrowse 5 ships. We welcome your [feedback](/contact).
   [The ABCA7 alleles across 94 samples](#the-abca7-alleles-across-94-samples):
   Node, to run the plugin's scripts
 - for [Reproduce it end to end](#reproduce-it-end-to-end):
-  [DuckDB](https://duckdb.org)
+  [DuckDB](https://duckdb.org), and for its amylase build `samtools` built with
+  libcurl, [`minimap2`](https://github.com/lh3/minimap2), `python3` and Node.js
+  for `npx`
 
 ## Where the data comes from
 
@@ -63,6 +67,8 @@ so there is nothing to download by hand.
   https://zenodo.org/records/8329210/files/adotto_hprc.tdb.tar
 - the catalogue itself:
   https://zenodo.org/records/8329210/files/adotto_repeats.hg38.bed.gz
+- the assemblies, for the amylase build:
+  https://raw.githubusercontent.com/human-pangenomics/hprc_intermediate_assembly/main/data_tables/assemblies_release2_v1.0.index.csv
 
 <details>
 <summary>Read by URL (no download needed)</summary>
@@ -425,6 +431,41 @@ HG00099's genotype in the sample table is `1/2` with `AL` `387,3161`. Hovering a
 copy in the card names its allele with that allele's length: ALT 1's bar gives
 387 bp and ALT 2's 3.2 kb, so the alleles' lengths match what TRGT measured.
 
+## Amylase: counting AMY1 copies per haplotype {#amylase}
+
+A gene array varies the same way a tandem repeat does, in whole gene copies. We
+draw the salivary amylase array as the haplotype lanes of
+[part 2](/docs/tutorials/pangenome_hprc_haplotypes): on the
+[HPRC page](https://staging.genomes.jbrowse.org/pangenomes/hprc), press
+**haplotypes** on the AMY1 row, then choose `HG01361.1`, `HG00133.2`,
+`HG00133.1`, `NA18608.2` and `HG00232.1` under **Lanes → Choose lanes...**. A
+lane with more copies spans more of its contig in the same width, and its label
+gives that span as a multiple of the window.
+
+<Figure caption="The amylase locus from the HPRC page's haplotypes launch with five lanes chosen, one per amylase structure, under the RefSeq genes. Each lane is drawn on the haplotype's contig under its CAT genes; a lane longer than the window gives its span as a multiple in its label." src="/img/multiway_synteny/hprc_amylase_lanes.png" />
+
+To read the lengths, take **Display types → Graph**, enter the five names in
+**Settings → Haplotypes**, then pick **Walk rows** under the **Layout** row and
+**Uniform** under the **Color** row to draw each haplotype's route as a bar.
+
+<Figure caption="The five haplotypes' walks across the amylase array in walk rows, longest first, under GRCh38's bar, each boxed with its own CAT genes so its AMY1 copies can be counted on the bar. Blue is on GRCh38's path through the graph and purple off it. Each readout gives the walk's length and its excess over GRCh38." src="/img/pangenome/hprc_amylase_walk_rows.png" />
+
+HG00133.1 has GRCh38's three _AMY1_ copies and its length, and its bar still
+shows a long purple stretch, because the graph routes copies of a duplication
+through nodes off GRCh38's path. Count the _AMY1_ boxes on each bar to read copy
+number.
+
+Yilmaz et al. (2024) name each structure by its _AMY1_ count. Our five
+haplotypes land on H1a, H2A0, H3r, H5 and H7:
+
+| Span against GRCh38's | _AMY1_ copies | Structure |
+| --------------------- | ------------- | --------- |
+| 94 kb shorter         | 1             | H1a       |
+| 72 kb shorter         | 2, no _AMY2A_ | H2A0      |
+| the same              | 3             | H3r       |
+| 94 kb longer          | 5             | H5        |
+| 188 kb longer         | 7             | H7        |
+
 ## Reproduce it end to end
 
 PacBio publishes TRGT's calls for 100 HPRC samples as a TRGTdb, and the build
@@ -456,6 +497,118 @@ duckdb -json -c "
     where chrom = 'chr19' and start = 1049407)"
 ```
 
+The amylase build draws five haplotypes as a synteny stack, each aligned to the
+row under it. It works in four steps, and the commands below run each one on any
+gbz-base database and any bgzipped, indexed assembly:
+
+1. Ask the graph where each haplotype crosses two single-copy windows, one
+   either side of the array. The distance between the two is that haplotype's
+   span across the locus, and the spans fall into the published structures.
+2. Pick one haplotype per structure and fetch only the locus from its assembly.
+3. Count each haplotype's gene copies, and align it to its neighbour in the
+   stack, so each band is an alignment between two haplotypes and can match
+   copies GRCh38 lacks.
+4. Shift each alignment from the fetched piece's coordinates back onto the whole
+   contig, so every row draws in its own assembly's coordinates under its genes.
+
+Get every haplotype's path through a window:
+
+```bash
+npx --yes -p @gmod/gbz-base gbz-base-query graph.gbz.db \
+  --haplotype-index haplotypes.db \
+  --sample GRCh38 --contig chr1 --interval 103540000..103541000 \
+  --context 0 --alignments > window.json
+```
+
+Fetch one haplotype's copy of the locus:
+
+<!-- from: scripts/build_amylase_haplotypes.sh -->
+
+```bash
+samtools faidx HG00232_hap1.fa.gz 'HG00232#1#CM089991.1:103491008-103991760' > HG00232.1.fa
+```
+
+Count gene copies, keeping hits over 90% of the gene at 97% identity:
+
+<!-- from: scripts/build_amylase_haplotypes.sh -->
+
+```bash
+minimap2 -c -x asm20 -N 50 -p 0.5 HG00232.1.fa genes.fa |
+  awk '($4-$3)/$2>=0.9 && $10/$11>=0.97 { c[$1]++ } END { for (g in c) print g, c[g] }'
+```
+
+Align two haplotypes to draw them as synteny:
+
+<!-- from: scripts/build_amylase_haplotypes.sh -->
+
+```bash
+# --secondary=no keeps the primary chain; the secondary ones are paralogous
+# copies aligning to each other
+minimap2 -c --eqx -x asm20 --secondary=no HG00232.1.fa NA18608.2.fa > adjacent.paf
+```
+
+The whole build, for four of the amylase haplotypes above and hg38:
+
+```bash
+curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/build_amylase_haplotypes.sh
+bash build_amylase_haplotypes.sh
+```
+
+The build script writes the `config.json` that this session opens, with the five
+assemblies, their gene tracks and the `amylase_adjacent` alignments. The session
+below opens that config; point `config=` at your copy:
+
+```json session config=test_data/amylase/config.json
+{
+  "defaultSession": {
+    "name": "Amylase haplotypes from one AMY1 copy to seven, each aligned to the next",
+    "views": [
+      {
+        "type": "LinearSyntenyView",
+        "views": [
+          {
+            "assembly": "HG01361.1",
+            "loc": "CM089019.1:103,831,655-104,050,048",
+            "tracks": ["hprc_genes_HG01361_1"]
+          },
+          {
+            "assembly": "hg38",
+            "loc": "chr1:103,520,894-103,832,637",
+            "tracks": ["hg38_ncbiRefSeq_ucsc"]
+          },
+          {
+            "assembly": "HG00133.1",
+            "loc": "CM090045.1:103,669,666-103,981,330",
+            "tracks": ["hprc_genes_HG00133_1"]
+          },
+          {
+            "assembly": "NA18608.2",
+            "loc": "CM089849.1:103,796,766-104,203,421",
+            "tracks": ["hprc_genes_NA18608_2"]
+          },
+          {
+            "assembly": "HG00232.1",
+            "loc": "CM089991.1:103,491,008-103,991,760",
+            "tracks": ["hprc_genes_HG00232_1"]
+          }
+        ],
+        "tracks": [
+          ["amylase_adjacent"],
+          ["amylase_adjacent"],
+          ["amylase_adjacent"],
+          ["amylase_adjacent"]
+        ],
+        "color": { "field": "strand" },
+        "drawCurves": true,
+        "levelHeights": [110, 110, 110, 110]
+      }
+    ]
+  }
+}
+```
+
+<Figure caption="HG01361.1, hg38, HG00133.1, NA18608.2 and HG00232.1, one AMY1 copy at the top to seven at the bottom, each aligned to the row under it by minimap2 and colored by strand. Each step up in copies opens a wedge over the genes only the longer row has." src="/img/multiway_synteny/hprc_amylase_stack.png" />
+
 ## See also
 
 - [](/docs/tutorials/pangenome_hprc)
@@ -478,3 +631,8 @@ duckdb -json -c "
 - TRGT repeat catalogues and HPRC genotypes, Zenodo.
   https://doi.org/10.5281/zenodo.8329210
 - [HPRC release 2](https://doi.org/10.64898/2026.07.21.739710)
+- Yilmaz F, et al. Reconstruction of the human amylase locus reveals ancient
+  duplications seeding modern-day variation. Science (2024).
+  https://doi.org/10.1126/science.adn0609
+- Li H. Minimap2: pairwise alignment for nucleotide sequences. Bioinformatics
+  (2018). https://doi.org/10.1093/bioinformatics/bty191

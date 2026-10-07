@@ -95,7 +95,7 @@ export default defineConfig({
     '/docs/tutorials/genomes_pangenome/': `${BASE}/docs/tutorials/pangenome_hprc/`,
     '/docs/tutorials/pangenome_graph_reading/': `${BASE}/docs/tutorials/pangenome_hprc/`,
     '/docs/tutorials/hprc_multiway_synteny/': `${BASE}/docs/tutorials/pangenome_hprc_haplotypes/`,
-    '/docs/tutorials/amylase_haplotypes/': `${BASE}/docs/tutorials/pangenome_hprc_haplotypes/`,
+    '/docs/tutorials/amylase_haplotypes/': `${BASE}/docs/tutorials/pangenome_hprc_repeats/`,
     '/docs/tutorials/pangenome_hprc_part2/': `${BASE}/docs/tutorials/pangenome_hprc/`,
     '/docs/tutorials/pangenome_hprc_carriers/': `${BASE}/docs/tutorials/pangenome_hprc/`,
     '/docs/tutorials/pangenome_hprc_part3/': `${BASE}/docs/tutorials/pangenome_hprc_haplotypes/`,

@@ -2015,18 +2015,6 @@ export const syntenySpecs: ScreenshotSpec[] = [
     viewportHeight: 1400,
   },
 
-  // C4 from the HPRC page's haplotypes launch with two three-module haplotypes
-  // chosen, so the band between them draws the module GRCh38 lacks as the
-  // graph states it.
-  {
-    mode: 'url',
-    name: 'multiway_synteny/hprc_c4_graph_stack',
-    url: portalHaplotypeLanes(PORTAL_LOCI.c4),
-    readySelector: displaySettled('multiway-synteny-display'),
-    readyTimeout: 240000,
-    viewportHeight: 460,
-  },
-
   // GSTT1, which GRCh38's chr22 lacks, from the haplotypes launch with ten
   // lanes ordered by structure: the ribbon fans open at the first carrier and
   // runs unbroken between the carriers below it.
