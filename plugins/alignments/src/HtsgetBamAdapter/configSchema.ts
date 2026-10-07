@@ -65,6 +65,7 @@ const HtsgetBamAdapter = ConfigurationSchema(
   {
     explicitlyTyped: true,
     closed: true,
+    retired: { sequenceAdapter: () => ({}) },
 
     /**
      * #preProcessSnapshot

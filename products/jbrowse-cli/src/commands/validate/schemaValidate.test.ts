@@ -379,11 +379,21 @@ describe('the schema', () => {
     expect(schemaProblems(alignments)).toEqual([])
   })
 
-  it('says a sequenceAdapter on a CRAM track comes from the assembly', () => {
+  it('accepts the sequenceAdapter a pre-v4 CRAM config carries', () => {
     const config = baseConfig()
     config.tracks[0]!.adapter = {
       type: 'CramAdapter',
       uri: 'sample.cram',
+      sequenceAdapter: { type: 'IndexedFastaAdapter', uri: 'hg38.fa' },
+    }
+    expect(schemaProblems(config)).toEqual([])
+  })
+
+  it('says a sequenceAdapter on an adapter that never took one comes from the assembly', () => {
+    const config = baseConfig()
+    config.tracks[0]!.adapter = {
+      type: 'BigWigAdapter',
+      uri: 'sample.bw',
       sequenceAdapter: { type: 'IndexedFastaAdapter', uri: 'hg38.fa' },
     }
     const [error] = schemaProblems(config)

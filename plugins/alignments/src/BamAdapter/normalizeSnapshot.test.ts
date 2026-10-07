@@ -1,6 +1,8 @@
 import { resolveUriLocation } from '@jbrowse/core/util/io'
 
-import { normalizeSnapshot } from './configSchema.ts'
+import cramConfigSchema from '../CramAdapter/configSchema.ts'
+import htsgetConfigSchema from '../HtsgetBamAdapter/configSchema.ts'
+import bamConfigSchema, { normalizeSnapshot } from './configSchema.ts'
 
 describe('BamAdapter normalizeSnapshot', () => {
   test('expands uri shorthand to bamLocation + bai index', () => {
@@ -70,4 +72,23 @@ describe('BamAdapter normalizeSnapshot', () => {
     }
     expect(normalizeSnapshot(snap)).toBe(snap)
   })
+})
+
+// `jbrowse add-track` wrote one on every alignments track until v4.0.0
+test.each([
+  ['BamAdapter', bamConfigSchema],
+  ['CramAdapter', cramConfigSchema],
+  ['HtsgetBamAdapter', htsgetConfigSchema],
+])('%s loads a pre-v4 sequenceAdapter without naming it', (type, schema) => {
+  const warn = jest.spyOn(console, 'warn').mockImplementation(() => {})
+  schema.create({
+    type,
+    sequenceAdapter: { type: 'IndexedFastaAdapter', uri: 'hg38.fa' },
+  })
+  expect(warn).not.toHaveBeenCalled()
+  schema.create({ type, sequenceAdaptor: {} })
+  expect(warn).toHaveBeenCalledWith(
+    `${type} does not declare sequenceAdaptor: loading without it`,
+  )
+  warn.mockRestore()
 })

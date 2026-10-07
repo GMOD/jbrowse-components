@@ -76,6 +76,20 @@ describe('validateConfig', () => {
     )
   })
 
+  it('warns that the sequenceAdapter a pre-v4 CRAM config carries is never read', () => {
+    const config = baseConfig()
+    config.tracks[0]!.adapter = {
+      type: 'CramAdapter',
+      uri: 'sample.cram',
+      // @ts-expect-error a slot the adapter declared before v4
+      sequenceAdapter: { type: 'IndexedFastaAdapter', uri: 'hg38.fa' },
+    }
+    expect(errorsOf(config)).toEqual([])
+    const [warning] = warningsOf(config)
+    expect(warning?.where).toBe('tracks[0].adapter.sequenceAdapter')
+    expect(warning?.message).toContain('is never read')
+  })
+
   // A GC track needs nothing but its type now, which is the shape the warning
   // above is steering authors towards.
   it('accepts a GC content track with no sequenceAdapter at all', () => {

@@ -47,6 +47,9 @@ export const configManifest: ConfigManifest = {
           "type": "(LocalPathLocation | UriLocation | BlobLocation | FileHandleLocation)"
         }
       ],
+      "legacyKeys": [
+        "sequenceAdapter"
+      ],
       "shorthandKeys": [
         "uri",
         "baseUri"
@@ -84,6 +87,9 @@ export const configManifest: ConfigManifest = {
           "name": "densityAdapter",
           "type": "(frozen | undefined)"
         }
+      ],
+      "legacyKeys": [
+        "sequenceAdapter"
       ],
       "shorthandKeys": [
         "uri",
@@ -130,6 +136,9 @@ export const configManifest: ConfigManifest = {
           "name": "densityAdapter",
           "type": "(frozen | undefined)"
         }
+      ],
+      "legacyKeys": [
+        "sequenceAdapter"
       ],
       "shorthandKeys": []
     },

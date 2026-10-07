@@ -403,6 +403,10 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         "baseUri": {
           "type": "string",
           "description": "Shorthand: a base URL \`uri\` resolves against."
+        },
+        "sequenceAdapter": {
+          "deprecated": true,
+          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
         }
       }
     },
@@ -519,6 +523,10 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         "csi": {
           "type": "boolean",
           "description": "Shorthand: the index beside \`uri\` is a \`.csi\` rather than a \`.tbi\`/\`.bai\`."
+        },
+        "sequenceAdapter": {
+          "deprecated": true,
+          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
         }
       }
     },
@@ -643,6 +651,10 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               "$ref": "#/$defs/JexlString"
             }
           }
+        },
+        "sequenceAdapter": {
+          "deprecated": true,
+          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
         }
       }
     },

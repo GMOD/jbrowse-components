@@ -61,11 +61,14 @@ adapter dropped it in silence. Three reviews of that state found:
 - **A `MultiWiggleAdapter` subadapter hands its adapter the keys that adapter
   declares** (`declaredSnapshot`), so a row's `name`, `group` and `color` stay
   metadata on the entry.
-- **The v4 keys no slot takes are `retired`**: `rpcDriverName` on a track and
-  `resolutionMultiplier` on `HicAdapter`, which is every one a diff of v4.3.0's
-  documented slots against the manifest found. A hand-written `sequenceAdapter`
-  on an adapter that declares none is not among them: `jbrowse validate`
-  already reports it as an error, and the app now names it once.
+- **The keys an older release wrote and no slot takes are `retired`**:
+  `rpcDriverName` on a track and `resolutionMultiplier` on `HicAdapter`, which
+  a diff of v4.3.0's documented slots against the manifest found, and
+  `sequenceAdapter` on the BAM, CRAM and htsget adapters, which declared it
+  and had `jbrowse add-track` fill it until v4.0.0. Those load without a
+  console line, and `jbrowse validate` warns that the key is never read. On an
+  adapter that never declared one, a `sequenceAdapter` is named like any other
+  undeclared key, and the validator reports it as an error.
 
 ## Consequences
 
