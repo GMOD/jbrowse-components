@@ -176,7 +176,7 @@ describe('LinearManhattanDisplay LD auto-index', () => {
   it('reads no top hit off an LD mark that plots no y', () => {
     const { display } = createTestEnvironment({
       marks: [
-        { mark: 'span', encoding: { color: { field: 'ld' } } },
+        { mark: 'span', encoding: { color: { field: 'r2' } } },
         ...LD_MARKS,
       ],
     }).createDisplay()
@@ -198,9 +198,9 @@ describe('LinearManhattanDisplay LD auto-index', () => {
         mark: 'bar',
         transform: [
           { type: 'bin', step: 1000 },
-          { type: 'aggregate', ops: [{ op: 'max', field: 'ld', as: 'ld' }] },
+          { type: 'aggregate', ops: [{ op: 'max', field: 'r2', as: 'r2' }] },
         ],
-        encoding: { y: 'ld' },
+        encoding: { y: 'r2' },
       },
     ],
     [
@@ -208,14 +208,14 @@ describe('LinearManhattanDisplay LD auto-index', () => {
       {
         mark: 'point',
         transform: [{ type: 'bin', step: 1000 }],
-        encoding: { y: 'score', color: { field: 'ld' } },
+        encoding: { y: 'score', color: { field: 'r2' } },
       },
     ],
     [
       'SNPs placed by another field',
       {
         mark: 'point',
-        encoding: { x: 'pos', y: 'score', color: { field: 'ld' } },
+        encoding: { x: 'pos', y: 'score', color: { field: 'r2' } },
       },
     ],
   ])('reads no top hit off an LD mark whose points are %s', (_, mark) => {
@@ -265,7 +265,7 @@ describe('LinearManhattanDisplay LD auto-index', () => {
     expect(atGate).toEqual({ indexSnp: TOP_SNP, regions: 2 })
   })
 
-  // With no ldAdapter the `ld` field is read off the features like any other
+  // With no ldAdapter the `r2` field is read off the features like any other
   // field, and no join reads an index, so none is adopted.
   it('adopts no index and fetches once with no ldAdapter configured', async () => {
     const { createDisplay, mockRpcCall } = createTestEnvironment({

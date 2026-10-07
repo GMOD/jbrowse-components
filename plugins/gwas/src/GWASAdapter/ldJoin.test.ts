@@ -60,7 +60,7 @@ async function joined(
   const ld = await ldToIndex(source(join.refName, records), region, join)
   return features.map(f => {
     const out = joinLd(f, ld, join)
-    return [out.get('ld'), out.get('ld_role')]
+    return [out.get('r2'), out.get('ld_role')]
   })
 }
 

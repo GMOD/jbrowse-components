@@ -86,7 +86,7 @@
               "encoding": {
                 "y": "score",
                 "color": {
-                  "field": "ld",
+                  "field": "r2",
                   "scale": "threshold",
                   "domain": [0.2, 0.4, 0.6, 0.8],
                   "range": [

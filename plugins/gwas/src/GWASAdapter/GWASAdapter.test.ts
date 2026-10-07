@@ -76,8 +76,8 @@ describe('an LD join asked for through the fetch options', () => {
     })
     const index = named(features, 'rs4274624')
     const partner = named(features, 'rs193239665')
-    expect([index.get('ld'), index.get('ld_role')]).toEqual([1, 'index'])
-    expect(partner.get('ld')).toBeCloseTo(0.037)
+    expect([index.get('r2'), index.get('ld_role')]).toEqual([1, 'index'])
+    expect(partner.get('r2')).toBeCloseTo(0.037)
     expect(partner.get('ld_role')).toBe('partner')
     expect(partner.get('beta')).toBe('0.3293')
   })
@@ -85,7 +85,7 @@ describe('an LD join asked for through the fetch options', () => {
   it('leaves every feature alone without one', async () => {
     const features = await sle()
     expect(features.length).toBeGreaterThan(100)
-    expect(features.some(f => f.get('ld') !== undefined)).toBe(false)
+    expect(features.some(f => f.get('r2') !== undefined)).toBe(false)
   })
 
   it('joins only the index where the LD file is asked under another name', async () => {
@@ -93,7 +93,7 @@ describe('an LD join asked for through the fetch options', () => {
     const features = await sle({
       ld: { index: { start: SLE_INDEX_START }, refName: 'chr2' },
     })
-    expect(features.filter(f => f.get('ld') !== undefined)).toEqual([
+    expect(features.filter(f => f.get('r2') !== undefined)).toEqual([
       named(features, 'rs4274624'),
     ])
     warn.mockRestore()

@@ -110,10 +110,10 @@ function colorOf(conf: { displays: AnyConfigurationModel[] }, type: string) {
   return getSnapshot(display(conf, type).color)
 }
 
-// `ld` is a field the GWAS adapter joins, so `{ field: 'ld' }` is a field
+// `r2` is a field the GWAS adapter joins, so `{ field: 'r2' }` is a field
 // like any other to the routing and reaches the feature display, where it
 // paints a field the features lack (ADR-135).
-test.each(['type', 'ld'])(
+test.each(['type', 'r2'])(
   'a colour field %s reaches the displays whose colour is an object',
   field => {
     const conf = hydrateFeatureTrack({ color: { field } })

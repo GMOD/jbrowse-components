@@ -77,7 +77,7 @@ describe('a point reads back as its whole GWAS record', () => {
       beta: '0.3293',
       ld_role: 'partner',
     })
-    expect(feature?.ld).toBeCloseTo(0.037)
+    expect(feature?.r2).toBeCloseTo(0.037)
   })
 
   it('draws the index SNP alone in the second mark, a pink diamond at r² 1', async () => {
@@ -85,7 +85,7 @@ describe('a point reads back as its whole GWAS record', () => {
     const { glyph, color, feature } = await drawnAt(1, SLE_INDEX_START)
     expect(glyph).toBe(GLYPH_DIAMOND)
     expect(color).toBe(cssColorToABGR(LD_INDEX_COLOR))
-    expect(feature).toMatchObject({ name: 'rs4274624', ld: 1 })
+    expect(feature).toMatchObject({ name: 'rs4274624', r2: 1 })
   })
 })
 

@@ -1,6 +1,6 @@
 ---
 status: Accepted
-summary: "`LinearManhattanDisplay` is the mark display with a default plot: its schema takes `LinearMarkDisplay`'s as its base and redeclares `marks` as a list defaulting to a point per feature at its `score` (`markListSchema`, over a core change that keeps a collection slot's own default), and its model composes the mark model and adds only the LD join. A plot whose encoding names `ld` or `ld_role` joins r² to the index SNP; the join travels as the mark model's `adapterOptions` hook, a fetch input resolved per region by `resolveAdapterOptions`. LD colouring is written into the plot as two point marks, the partners by a threshold colour over `ld` and the index alone as a pink diamond over them, rather than implied by a field preset. `scoreField`, `color`, `size`, `ManhattanColor` and the hand-written point display go, with no retired spellings: the display shipped only in v5 betas. The byte gate stays off for Manhattan. The mark display gains a hover ring for points and three key members any plot may write, as ggplot2's scale arguments are: `breaks` (the values a key lists), `descending` (a threshold key highest first) and `missingLabel` (the no-value row's name), with `title` and `labels` on the shape key too; the LD plot's key is built from them, so it reads as LocusZoom's"
+summary: "`LinearManhattanDisplay` is the mark display with a default plot: its schema takes `LinearMarkDisplay`'s as its base and redeclares `marks` as a list defaulting to a point per feature at its `score` (`markListSchema`, over a core change that keeps a collection slot's own default), and its model composes the mark model and adds only the LD join. A plot whose encoding names `r2` or `ld_role` joins r² to the index SNP; the join travels as the mark model's `adapterOptions` hook, a fetch input resolved per region by `resolveAdapterOptions`. LD colouring is written into the plot as two point marks, the partners by a threshold colour over `r2` and the index alone as a pink diamond over them, rather than implied by a field preset. `scoreField`, `color`, `size`, `ManhattanColor` and the hand-written point display go, with no retired spellings: the display shipped only in v5 betas. The byte gate stays off for Manhattan. The mark display gains a hover ring for points and three key members any plot may write, as ggplot2's scale arguments are: `breaks` (the values a key lists), `descending` (a threshold key highest first) and `missingLabel` (the no-value row's name), with `title` and `labels` on the shape key too; the LD plot's key is built from them, so it reads as LocusZoom's"
 ---
 
 # ADR-178: Manhattan is the mark display with a default plot
@@ -43,9 +43,9 @@ transforms or Edit plot.
   result to the mark model's `dataNotices` and the corner notice, so the model
   infers nothing about the join from how the points are encoded.
 - **A plot that names an LD field joins LD.** `joinsLd` is an `ldAdapter` plus
-  a mark whose encoding names `ld` or `ld_role`. LocusZoom's plot is two
+  a mark whose encoding names `r2` or `ld_role`. LocusZoom's plot is two
   points, each behind a `filter` on `ld_role`: every SNP but the index by a
-  threshold colour over `ld` in LocusZoom's bins, then the index alone on top,
+  threshold colour over `r2` in LocusZoom's bins, then the index alone on top,
   a `#c951c9` diamond, so the plot says what it draws and Edit plot shows it.
   "Color by LD to index SNP" makes that pair of each point mark placing each
   SNP (`withLd`): the partner keeps its size, steps, zoom gates and shape, its
@@ -57,8 +57,10 @@ transforms or Edit plot.
   7 and 8 px points and every Point size to 4 px on a round trip.) A first
   version wrote the colour and shape onto every point mark, which painted the
   index the red of r² 1 and wrote nothing on a plot of bars; the index twin
-  and the greyed item are the answers to those two.
-- **No field preset for `ld`.** The previous colour object painted `{ field:
+  and the greyed item are the answers to those two. (Amended 2026-10-07: the
+  join wrote the statistic as the field `ld`; it writes `r2`, the name the LD
+  display's colour gives the same statistic. No retired spelling, as below.)
+- **No field preset for `r2`.** The previous colour object painted `{ field:
   'ld' }` as the LocusZoom threshold through a preset only the model knew,
   while the rule list and Edit plot read every field as categorical.
 - **The byte gate stays off**, as it was: a genome-wide view of summary
@@ -94,7 +96,7 @@ transforms or Edit plot.
 - **Retired spellings for `scoreField`, `color` and `size`.** The display
   shipped only in betas. The lifts would also have needed three keys to merge
   into one list entry, which the retired-spelling pass cannot express.
-- **A model-level colour preset for `ld`.** Two answers to one field's scale:
+- **A model-level colour preset for `r2`.** Two answers to one field's scale:
   the paint would have said threshold and the editor categorical.
 - **Inferring the LD join from the encodings** (`ld_role` shape entries, the
   colour lanes) for the missing-index notice: it held only for plots shaped

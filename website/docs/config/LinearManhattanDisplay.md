@@ -57,7 +57,7 @@ plot, and leaves the rest of the plot as it was:
         encoding: {
           y: 'score',
           color: {
-            field: 'ld',
+            field: 'r2',
             scale: 'threshold',
             domain: [0.2, 0.4, 0.6, 0.8],
             range: ['#357ebd', '#46b8da', '#5cb85c', '#eea236', '#d43f3a'],

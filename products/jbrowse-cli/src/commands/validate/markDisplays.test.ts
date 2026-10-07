@@ -573,7 +573,7 @@ describe('a marks list in a config file', () => {
     const config = configOf([
       {
         mark: 'point',
-        encoding: { y: 'score', color: { field: 'ld', scale: 'threshold' } },
+        encoding: { y: 'score', color: { field: 'r2', scale: 'threshold' } },
       },
     ])
     const track = (config.tracks as Record<string, unknown>[])[0]!

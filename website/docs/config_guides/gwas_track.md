@@ -72,7 +72,7 @@ why the header is commented with `#`.
 
 ## Example
 
-A plot naming `ld` or `ld_role` joins each SNP's r² to the index SNP from the
+A plot naming `r2` or `ld_role` joins each SNP's r² to the index SNP from the
 `GWASAdapter`'s `ldAdapter`; swap in `PlinkLDTabixAdapter` for an indexed
 `.ld.gz`. The first mark below colors every other point by r² in LocusZoom's
 five bins, and the second draws the index SNP alone as a pink diamond on top.
@@ -106,7 +106,7 @@ right-clicking a point pins it as the index
         "encoding": {
           "y": "score",
           "color": {
-            "field": "ld",
+            "field": "r2",
             "scale": "threshold",
             "domain": [0.2, 0.4, 0.6, 0.8],
             "range": ["#357ebd", "#46b8da", "#5cb85c", "#eea236", "#d43f3a"],

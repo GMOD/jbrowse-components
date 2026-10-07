@@ -512,7 +512,7 @@ test('a channel shaping its key stays in the form, and each key member round-tri
     encoding: {
       y: 'score',
       color: {
-        field: 'ld',
+        field: 'r2',
         scale: 'threshold',
         domain: ['0.5'],
         range: ['blue', 'red'],

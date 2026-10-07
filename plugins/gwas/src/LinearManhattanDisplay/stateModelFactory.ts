@@ -89,9 +89,9 @@ export function stateModelFactory(
       },
       /**
        * #getter
-       * Whether a fetch joins r² to the index: a mark's encoding names `ld`
+       * Whether a fetch joins r² to the index: a mark's encoding names `r2`
        * or `ld_role`, and the adapter has an LD file to read them from.
-       * Without one, a mark reads `ld` off the features like any other field.
+       * Without one, a mark reads `r2` off the features like any other field.
        */
       get joinsLd(): boolean {
         return this.hasLdData && self.conf.marks.some(readsLd)

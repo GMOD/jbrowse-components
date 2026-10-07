@@ -119,7 +119,7 @@ test("LD colouring makes the default plot LocusZoom's, as the add-track workflow
     {
       kind: 'numbers',
       encoding: {
-        field: 'ld',
+        field: 'r2',
         scale: 'threshold',
         domain: LD_COLOR.domain,
         range: LD_COLOR.range,
@@ -127,7 +127,7 @@ test("LD colouring makes the default plot LocusZoom's, as the add-track workflow
     },
     { kind: 'constant', color: cssColorToABGR(LD_INDEX_COLOR) },
   ])
-  expect(partners?.color).toEqual({ field: 'ld', scale: 'threshold' })
+  expect(partners?.color).toEqual({ field: 'r2', scale: 'threshold' })
   expect(index?.shape).toMatchObject({
     field: 'ld_role',
     domain: ['index'],
@@ -230,7 +230,7 @@ test('LD colouring leaves every other mark and member where it was', () => {
   const [partners, index, labels] = marksOf(display)
   expect(partners).toMatchObject({
     encoding: {
-      color: { value: 'green', field: 'ld', scale: 'threshold' },
+      color: { value: 'green', field: 'r2', scale: 'threshold' },
       size: { value: 6 },
     },
   })
@@ -238,7 +238,7 @@ test('LD colouring leaves every other mark and member where it was', () => {
     encoding: { color: { value: LD_INDEX_COLOR }, size: { value: 6 } },
   })
   expect(labels).toMatchObject({ mark: 'text' })
-  expect(display.encodings[0]?.color).toMatchObject({ field: 'ld' })
+  expect(display.encodings[0]?.color).toMatchObject({ field: 'r2' })
 
   display.setPointSize(9)
   display.setLdColoring(false)
@@ -308,7 +308,7 @@ test('unticking a hand-edited LD plot leaves no mark reading LD', () => {
       {
         mark: 'point',
         transform: [{ type: 'filter', expr: "jexl:feature.ld_role!='index'" }],
-        encoding: { y: 'score', color: LD_COLOR, size: { field: 'ld' } },
+        encoding: { y: 'score', color: LD_COLOR, size: { field: 'r2' } },
       },
       {
         mark: 'point',
@@ -317,7 +317,7 @@ test('unticking a hand-edited LD plot leaves no mark reading LD', () => {
         ],
         encoding: { y: 'score', color: { value: '#c951c9' } },
       },
-      { mark: 'text', encoding: { text: 'ld' } },
+      { mark: 'text', encoding: { text: 'r2' } },
     ],
   }).createDisplay()
   expect(display.joinsLd).toBe(true)

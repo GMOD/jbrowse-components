@@ -17,17 +17,17 @@ test("a field's scale comes from the table's own keys, then its *", () => {
 })
 
 const LD = {
-  ld: { scale: 'threshold', domain: ['0.2', '0.8'], range: ['a', 'b', 'c'] },
+  r2: { scale: 'threshold', domain: ['0.2', '0.8'], range: ['a', 'b', 'c'] },
 } as const
 
 test('a preset fills the members a config leaves unwritten, an empty list among them', () => {
-  expect(withPreset({ field: 'ld', domain: [] }, LD)).toEqual({
-    field: 'ld',
+  expect(withPreset({ field: 'r2', domain: [] }, LD)).toEqual({
+    field: 'r2',
     domain: ['0.2', '0.8'],
     range: ['a', 'b', 'c'],
   })
   expect(
-    withPreset({ field: 'ld', scale: 'threshold', domain: ['0.5'] }, LD),
+    withPreset({ field: 'r2', scale: 'threshold', domain: ['0.5'] }, LD),
   ).toMatchObject({ domain: ['0.5'], range: ['a', 'b', 'c'] })
 })
 
@@ -55,9 +55,9 @@ test("a written domain takes none of a categorical preset's range or labels", ()
 })
 
 test('a preset stays out of a colour painting through another scale, or none', () => {
-  const linear = { field: 'ld', scale: 'linear', domain: [] }
+  const linear = { field: 'r2', scale: 'linear', domain: [] }
   expect(withPreset(linear, LD)).toBe(linear)
-  const none = { field: 'ld', scale: 'none' }
+  const none = { field: 'r2', scale: 'none' }
   expect(withPreset(none, LD)).toBe(none)
   const other = { field: 'score' }
   expect(withPreset(other, LD)).toBe(other)
@@ -65,12 +65,12 @@ test('a preset stays out of a colour painting through another scale, or none', (
 
 test("a config's range read against a preset's cuts is held to them", () => {
   expect(
-    colorProblems({ field: 'ld', range: ['a', 'b'] }, LD).map(p => p.rule),
+    colorProblems({ field: 'r2', range: ['a', 'b'] }, LD).map(p => p.rule),
   ).toEqual(['threshold-range'])
 })
 
 test("cuts a config writes are never held to the preset's range", () => {
-  expect(colorProblems({ field: 'ld', domain: ['0.5'] }, LD)).toEqual([])
+  expect(colorProblems({ field: 'r2', domain: ['0.5'] }, LD)).toEqual([])
 })
 
 const rules = (

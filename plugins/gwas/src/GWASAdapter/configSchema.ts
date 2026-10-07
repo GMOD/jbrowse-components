@@ -81,7 +81,7 @@ const GWASAdapterConfigSchema = ConfigurationSchema(
     /**
      * #slot
      * optional PLINK .ld sub-adapter (PlinkLDAdapter / PlinkLDTabixAdapter)
-     * supplying each SNP's r² to an index SNP, which a fetch joins as the `ld`
+     * supplying each SNP's r² to an index SNP, which a fetch joins as the `r2`
      * and `ld_role` fields while the Manhattan display's plot names one;
      * leave it unset to disable
      */
