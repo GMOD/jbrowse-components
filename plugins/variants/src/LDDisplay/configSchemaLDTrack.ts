@@ -119,7 +119,7 @@ export default function ldTrackDisplayConfigSchema() {
     },
     {
       explicitlyTyped: true,
-      closed: true,
+      closed: 'warn',
       /**
        * #identifier
        */

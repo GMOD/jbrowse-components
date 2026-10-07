@@ -550,7 +550,7 @@ export function configSchemaFactory() {
     },
     {
       explicitlyTyped: true,
-      closed: true,
+      closed: 'warn',
       explicitIdentifier: 'displayId',
       retired: { ...retiredAxisSpellings, ...retiredFilterSpelling },
       preProcessSnapshot: checkMarks,

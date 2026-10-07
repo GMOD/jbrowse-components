@@ -15,28 +15,30 @@ function displayType(configSchema: AnyConfigurationSchemaType) {
   })
 }
 
-test('a display refuses a key it does not declare, naming the slots it takes', () => {
+test('a display loads without a key it does not declare, and names it once', () => {
   const schema = ConfigurationSchema(
     'ProbeDisplay',
     { height: { type: 'number', defaultValue: 100 } },
-    { explicitIdentifier: 'displayId', explicitlyTyped: true, closed: true },
+    { explicitIdentifier: 'displayId', explicitlyTyped: true, closed: 'warn' },
   )
   displayType(schema)
-  expect(() =>
-    schema.create({ type: 'ProbeDisplay', displayId: 'd', hieght: 5 }),
-  ).toThrow('ProbeDisplay takes height, type and displayId, not hieght')
-  expect(() =>
-    schema.create({ type: 'ProbeDisplay', displayId: 'd', height: 5 }),
-  ).not.toThrow()
+  const warn = jest.spyOn(console, 'warn').mockImplementation(() => {})
+  const entry = { type: 'ProbeDisplay', displayId: 'd', hieght: 5 }
+  expect(schema.create(entry).height).toBe(100)
+  schema.create(entry)
+  expect(warn.mock.calls).toEqual([
+    ['ProbeDisplay does not declare hieght: loading without it'],
+  ])
+  schema.create({ type: 'ProbeDisplay', displayId: 'd', height: 5 })
+  expect(warn).toHaveBeenCalledTimes(1)
+  warn.mockRestore()
 })
 
-test('an open schema is refused at registration', () => {
+test('a display whose schema says nothing about undeclared keys registers', () => {
   const open = ConfigurationSchema(
     'ProbeDisplay',
     {},
     { explicitIdentifier: 'displayId', explicitlyTyped: true },
   )
-  expect(() => displayType(open)).toThrow(
-    "ProbeDisplay's config schema is not closed",
-  )
+  expect(() => displayType(open)).not.toThrow()
 })

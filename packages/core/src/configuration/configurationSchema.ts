@@ -96,13 +96,15 @@ export interface ConfigurationSchemaOptions<
    */
   shorthandWith?: Record<string, unknown>
   /**
-   * Refuse a snapshot key the schema does not declare, where MST would drop
-   * it in silence. Checked after the `shorthand` lift and the schema's own
-   * `preProcessSnapshot`, on the same paths, and only on the schema's own
-   * snapshot where a union runs every member over an entry. Every display's
-   * schema is closed, which `DisplayType` holds it to.
+   * What a snapshot key the schema does not declare meets, where MST would
+   * drop it in silence: `true` refuses the snapshot, and `'warn'` names the
+   * key on the console and loads without it, which is what a display does so
+   * a config written for another version still draws. Checked after the
+   * `shorthand` lift and the schema's own `preProcessSnapshot`, on the same
+   * paths, and only on the schema's own snapshot where a union runs every
+   * member over an entry.
    */
-  closed?: boolean
+  closed?: boolean | 'warn'
   /**
    * The spellings an older release used, by the name it used, each answering
    * the members that name's value becomes. Lifted

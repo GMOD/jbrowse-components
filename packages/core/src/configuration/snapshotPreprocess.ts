@@ -27,7 +27,9 @@ function declaredKeys({ definition, options }: ConfigurationSchemaMetadata) {
   ]
 }
 
-function refuseUndeclaredKeys(
+const warned = new Set<string>()
+
+function checkUndeclaredKeys(
   schema: ConfigurationSchemaMetadata,
   snapshot: unknown,
 ) {
@@ -40,9 +42,16 @@ function refuseUndeclaredKeys(
           key => !declared.includes(key) && !COMMENT_KEY.test(key),
         )
   if (unknown.length > 0) {
-    throw new Error(
-      `${name} takes ${listed(declared)}, not ${unknown.join(', ')}`,
-    )
+    if (schema.options.closed !== 'warn') {
+      throw new Error(
+        `${name} takes ${listed(declared)}, not ${unknown.join(', ')}`,
+      )
+    }
+    const message = `${name} does not declare ${listed(unknown)}: loading without it`
+    if (!warned.has(message)) {
+      warned.add(message)
+      console.warn(message)
+    }
   }
 }
 
@@ -173,8 +182,9 @@ export function applyRetiredSpellings(
  * `null` member reads as unset; a `retired` spelling becomes the members that
  * replaced it; the schema's own `preProcessSnapshot` runs, which is where a
  * track folds `displayDefaults` into its displays; then a `closed` schema
- * refuses a key it does not declare, unless the caller is a settings bag that
- * routes an undeclared key itself (`routesUndeclared`), and a `jexl:` callback
+ * refuses a key it does not declare, or names it on the console where it is
+ * `'warn'`, unless the caller is a settings bag that routes an undeclared key
+ * itself (`routesUndeclared`), and a `jexl:` callback
  * in a slot declaring no `contextVariable` is refused. A bare value the
  * shorthand does not lift passes through for MST to refuse.
  */
@@ -195,7 +205,7 @@ export function preProcessSnapshotWith(
   const named = liftRetiredSpellings(schema, lifted)
   const processed = preProcessSnapshot ? preProcessSnapshot(named) : named
   if (closed && !routesUndeclared && isOwnSnapshot(schema, processed)) {
-    refuseUndeclaredKeys(schema, processed)
+    checkUndeclaredKeys(schema, processed)
   }
   refuseCallbacks(schema, processed)
   return processed

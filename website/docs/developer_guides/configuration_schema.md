@@ -98,10 +98,9 @@ export default BedGraphAdapter
 
 The name must match the `type` field in config JSON, and `explicitlyTyped: true`
 requires that field to be present. Each slot becomes an observable MST property.
-A display's schema also declares `closed: true`, or inherits it from
-`baseLinearDisplayConfigSchema`: a display refuses a key it does not declare,
-naming the key and the slots it takes, and `DisplayType` refuses to register a
-display whose schema does not say so.
+A display's schema also declares `closed: 'warn'`, or inherits it from
+`baseLinearDisplayConfigSchema`: a display given a key it does not declare draws
+without it and names the key on the console.
 
 The `Instance<typeof …>` export at the bottom is how the rest of the codebase
 gets a typed handle on the schema — it is the `CONF` in

@@ -29,7 +29,7 @@ function configSchemaFactory() {
     {},
     {
       explicitlyTyped: true,
-      closed: true,
+      closed: 'warn',
       explicitIdentifier: 'displayId',
     },
   )

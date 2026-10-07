@@ -817,7 +817,7 @@ export function buildConfigJsonSchema(deps: Deps): JsonSchema {
     }
     const object = closed(properties, [], {
       ...requirements(meta),
-      ...(meta.options.closed ? { [CLOSED]: true } : {}),
+      ...(meta.options.closed === true ? { [CLOSED]: true } : {}),
     })
     const base = defName ?? name
     // titled as its def is, since a key the object refuses is reported
