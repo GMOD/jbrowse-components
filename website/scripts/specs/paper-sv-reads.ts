@@ -74,6 +74,7 @@ const readEvidence = ({
   loc,
   pairsHeight,
   arcsHeight,
+  coverageMax,
   cloud,
   viewportHeight,
 }: {
@@ -81,6 +82,8 @@ const readEvidence = ({
   loc: string
   pairsHeight: number
   arcsHeight: number
+  // caps the Illumina coverage axis where a spike in view would flatten it
+  coverageMax?: number
   cloud: boolean
   viewportHeight: number
 }): ScreenshotSpec => ({
@@ -117,7 +120,7 @@ const readEvidence = ({
             readConnections: 'arc',
             readConnectionsHeight: 60,
             featureHeight: 2,
-            height: 250,
+            height: 275,
             facet: 'splitRead',
             showLegend: true,
           },
@@ -128,6 +131,9 @@ const readEvidence = ({
             readConnections: 'arc',
             drawProperPairArcs: false,
             readConnectionsHeight: arcsHeight,
+            ...(coverageMax
+              ? { scales: { y: { domainMax: coverageMax } } }
+              : {}),
             height: arcsHeight + 70,
           },
           {
@@ -152,9 +158,11 @@ const readEvidence = ({
   }),
   annotations: [
     bandLabel('SV calls', 'draft benchmark somatic SVs', 52),
-    bandLabel('PacBio: split-read arcs', HIFI_NAME, 88),
+    bandLabel('PacBio: split-read coverage', HIFI_NAME, 58),
+    bandLabel('PacBio: split-read arcs', HIFI_NAME, 93),
     bandLabel('PacBio: split reads', HIFI_NAME, 138),
-    bandLabel('PacBio: unsplit reads', HIFI_NAME, 215),
+    bandLabel('PacBio: unsplit-read coverage', HIFI_NAME, 221),
+    bandLabel('PacBio: unsplit reads', HIFI_NAME, 263),
     bandLabel('Illumina: coverage', ARCS_NAME, 44),
     bandLabel('Illumina: read-pair arcs', ARCS_NAME, 100),
     ...(cloud ? [bandLabel('Illumina: read cloud', PAIRS_NAME, 60)] : []),
@@ -170,11 +178,12 @@ const readEvidence = ({
 export const paperSvReadsSpecs: ScreenshotSpec[] = [
   readEvidence({
     name: 'paper/sv_read_evidence',
-    loc: 'chr17:31,951,500-32,016,000',
+    loc: 'chr17:31,937,000-32,030,000',
+    coverageMax: 200,
     pairsHeight: 240,
     arcsHeight: 80,
     cloud: true,
-    viewportHeight: 1133,
+    viewportHeight: 1158,
   }),
   readEvidence({
     name: 'paper/sv_read_evidence_inversion',
@@ -182,6 +191,6 @@ export const paperSvReadsSpecs: ScreenshotSpec[] = [
     pairsHeight: 350,
     arcsHeight: 110,
     cloud: false,
-    viewportHeight: 1246,
+    viewportHeight: 1271,
   }),
 ]
