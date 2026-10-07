@@ -1,7 +1,7 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import baseLinearDisplayConfigSchema from '@jbrowse/display-kit/configSchema'
-import { rowArrangementConfigSchema } from '@jbrowse/display-kit/rowArrangementConfigSchema'
 import { rowColorConfigSchema } from '@jbrowse/display-kit/rowColorConfigSchema'
+import { sampleRowsConfigSchema } from '@jbrowse/display-kit/sampleRowsConfigSchema'
 import { types } from '@jbrowse/mobx-state-tree'
 import { rowHeightConfigSchemaFields } from '@jbrowse/tree-sidebar/rowHeightConfigSchemaFields'
 import { treeSidebarConfigSchemaFields } from '@jbrowse/tree-sidebar/treeSidebarConfigSchemaFields'
@@ -167,7 +167,7 @@ export default function configSchemaF() {
        * { rows: { domain: ['mm10'], labels: { mm10: 'Mouse' } } }
        * ```
        */
-      rows: rowArrangementConfigSchema,
+      rows: sampleRowsConfigSchema,
       /**
        * #slot rowColor
        * A colour per species row, drawn as the bar beside its label, over the

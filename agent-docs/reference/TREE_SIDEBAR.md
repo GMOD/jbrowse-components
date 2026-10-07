@@ -103,11 +103,13 @@ its row colours in the `rowColor` object — the quantitative display's,
 the multi-sample variant display's, the multi-row feature display's, MAF's and the
 mark display's (ADR-157) — and derives the rows from them.
 
-**`rows` comes in two schemas, and the mixin reads either.** display-kit's
-`RowArrangement` is the five members alone, for a display whose rows are
-intrinsic (a sample, a species), and `Rows` extends it with `field` for one
-whose rows are a field's values. The host is typed on `RowArrangement`, so the
-mixin never reaches for `field`, which stays the display's own. `rowColor` is
+**`rows` is one `Rows` object on every display, and the mixin reads its
+arrangement.** display-kit's `RowArrangement` is the five arrangement members,
+and `Rows` extends it with `field`: a feature field where the rows are a field's
+values, `source` alone on the quantitative display (`QuantitativeRows`) and
+`sample` alone where the rows are the file's samples (`SampleRows`, ADR-215).
+The host is typed on `RowArrangement`, so the mixin never reaches for `field`,
+which stays the display's own. `rowColor` is
 display-kit's `RowColor` on every row display, one categorical channel whose
 `field` names a row attribute, `name` by default, with `domain`/`range` pairing
 that field's values with colours (ADR-160). **Shared code reads the mixin's API,

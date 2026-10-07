@@ -163,7 +163,7 @@ describe('on a display', () => {
     expect(readConfObject(display.configuration, ['color', 'field'])).toBe(
       'dprime',
     )
-    expect(display.plot).toEqual({ color: { field: 'dprime' } })
+    expect(display.plot).toEqual({ color: 'dprime' })
     expect(display.rpcProps().ldMetric).toBe('dprime')
   })
 

@@ -149,8 +149,8 @@ by `altDosageByte`, the dosage the cells paint.
 
 ## The arrangement is `rows` and `rowColor`, by row name
 
-**`rows` (`RowArrangement`, no field: the rows are the samples) holds the order,
-labels, tree, provenance and focus; `rowColor` holds the tints**, display-kit's
+**`rows` (`SampleRows`: `sample` is its one field, since the rows are the
+samples) holds the order, labels, tree, provenance and focus; `rowColor` holds the tints**, display-kit's
 `RowColor`: a samplesTsv attribute whose values each take a palette colour, or
 `name`, the default, whose entries are the tints set row by row. Both are
 config, written by a drag, the arrangement dialog, "Sort rows by genotype here"

@@ -10262,94 +10262,115 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       },
       "unevaluatedProperties": false
     },
-    "RowArrangement": {
-      "title": "RowArrangement",
-      "type": "object",
-      "x-closed": true,
-      "properties": {
-        "domain": {
-          "description": "the row order: the rows listed lead, in this order, and the rest keep the order they arrived in.",
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "anyOf": [
-              {
-                "type": "array",
-                "items": {
-                  "anyOf": [
-                    {
-                      "type": "string"
-                    },
-                    {
-                      "type": "number"
+    "SampleRows": {
+      "title": "SampleRows",
+      "anyOf": [
+        {
+          "description": "Shorthand for \`{ \\"field\\": ... }\`.",
+          "default": "sample",
+          "const": "sample",
+          "type": "string"
+        },
+        {
+          "title": "SampleRows",
+          "type": "object",
+          "x-closed": true,
+          "properties": {
+            "domain": {
+              "description": "the row order: the rows listed lead, in this order, and the rest keep the order they arrived in.",
+              "if": {
+                "type": "null"
+              },
+              "else": {
+                "anyOf": [
+                  {
+                    "type": "array",
+                    "items": {
+                      "anyOf": [
+                        {
+                          "type": "string"
+                        },
+                        {
+                          "type": "number"
+                        }
+                      ]
                     }
-                  ]
+                  }
+                ]
+              }
+            },
+            "labels": {
+              "description": "a label drawn beside a row in place of its name, by name.",
+              "if": {
+                "type": "null"
+              },
+              "else": {
+                "type": "object",
+                "additionalProperties": {
+                  "type": "string"
                 }
               }
-            ]
-          }
-        },
-        "labels": {
-          "description": "a label drawn beside a row in place of its name, by name.",
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "type": "object",
-            "additionalProperties": {
-              "type": "string"
-            }
-          }
-        },
-        "tree": {
-          "description": "the dendrogram beside the rows, as newick, written by a clustering run beside the order it produced.",
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "$ref": "#/$defs/PlainString"
-          }
-        },
-        "treeProvenance": {
-          "description": "what tree was computed from, the locus and the settings; unset for a tree that arrived as data. Any JSON value: the slot is \`frozen\`, so its shape is not checked here.",
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "not": {
-              "$ref": "#/$defs/JexlString"
-            }
-          }
-        },
-        "kept": {
-          "description": "the rows shown, by name; empty, or naming no current row, shows every row.",
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "anyOf": [
-              {
-                "type": "array",
-                "items": {
-                  "anyOf": [
-                    {
-                      "type": "string"
-                    },
-                    {
-                      "type": "number"
-                    }
-                  ]
+            },
+            "tree": {
+              "description": "the dendrogram beside the rows, as newick, written by a clustering run beside the order it produced.",
+              "if": {
+                "type": "null"
+              },
+              "else": {
+                "$ref": "#/$defs/PlainString"
+              }
+            },
+            "treeProvenance": {
+              "description": "what tree was computed from, the locus and the settings; unset for a tree that arrived as data. Any JSON value: the slot is \`frozen\`, so its shape is not checked here.",
+              "if": {
+                "type": "null"
+              },
+              "else": {
+                "not": {
+                  "$ref": "#/$defs/JexlString"
                 }
               }
-            ]
-          }
+            },
+            "kept": {
+              "description": "the rows shown, by name; empty, or naming no current row, shows every row.",
+              "if": {
+                "type": "null"
+              },
+              "else": {
+                "anyOf": [
+                  {
+                    "type": "array",
+                    "items": {
+                      "anyOf": [
+                        {
+                          "type": "string"
+                        },
+                        {
+                          "type": "number"
+                        }
+                      ]
+                    }
+                  }
+                ]
+              }
+            },
+            "field": {
+              "description": "sample, the one field a row can be.",
+              "default": "sample",
+              "if": {
+                "type": "null"
+              },
+              "else": {
+                "const": "sample"
+              }
+            }
+          },
+          "patternProperties": {
+            "^_+comment": {}
+          },
+          "additionalProperties": false
         }
-      },
-      "patternProperties": {
-        "^_+comment": {}
-      },
-      "additionalProperties": false
+      ]
     },
     "VariantCellColor": {
       "title": "VariantCellColor",
@@ -10603,7 +10624,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "type": "null"
           },
           "else": {
-            "$ref": "#/$defs/RowArrangement"
+            "$ref": "#/$defs/SampleRows"
           }
         },
         "showRowSeparators": {
@@ -10801,84 +10822,98 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
     },
     "LDColor": {
       "title": "LDColor",
-      "type": "object",
-      "x-closed": true,
-      "properties": {
-        "field": {
-          "description": "the statistic the cells are, r2 or dprime.",
+      "anyOf": [
+        {
+          "description": "Shorthand for \`{ \\"field\\": ... }\`.",
           "default": "r2",
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "enum": [
-              "r2",
-              "dprime"
-            ]
-          }
+          "enum": [
+            "r2",
+            "dprime"
+          ],
+          "type": "string"
         },
-        "scheme": {
-          "description": "the named ramp the statistic runs across; unset is the field's own, reds for r2 and blues for dprime.",
-          "if": {
-            "type": "null"
+        {
+          "title": "LDColor",
+          "type": "object",
+          "x-closed": true,
+          "properties": {
+            "field": {
+              "description": "the statistic the cells are, r2 or dprime.",
+              "default": "r2",
+              "if": {
+                "type": "null"
+              },
+              "else": {
+                "enum": [
+                  "r2",
+                  "dprime"
+                ]
+              }
+            },
+            "scheme": {
+              "description": "the named ramp the statistic runs across; unset is the field's own, reds for r2 and blues for dprime.",
+              "if": {
+                "type": "null"
+              },
+              "else": {
+                "enum": [
+                  "viridis",
+                  "magma",
+                  "inferno",
+                  "cividis",
+                  "juicebox",
+                  "fall",
+                  "reds",
+                  "blues",
+                  "redblue",
+                  "purpleorange",
+                  "redgreyblue"
+                ]
+              }
+            },
+            "reverse": {
+              "description": "turns the scheme's ramp round; unset reverses a scheme dark at its low end.",
+              "if": {
+                "type": "null"
+              },
+              "else": {
+                "type": "boolean"
+              }
+            },
+            "domainMin": {
+              "description": "the value the bottom colour paints, everything below it too; unset is 0.",
+              "if": {
+                "type": "null"
+              },
+              "else": {
+                "type": "number"
+              }
+            },
+            "domainMax": {
+              "description": "the value the top colour paints, everything above it too; unset is 1.",
+              "if": {
+                "type": "null"
+              },
+              "else": {
+                "type": "number"
+              }
+            },
+            "scale": {
+              "description": "linear, the one scale; unset is linear.",
+              "if": {
+                "type": "null"
+              },
+              "else": {
+                "const": "linear"
+              }
+            }
           },
-          "else": {
-            "enum": [
-              "viridis",
-              "magma",
-              "inferno",
-              "cividis",
-              "juicebox",
-              "fall",
-              "reds",
-              "blues",
-              "redblue",
-              "purpleorange",
-              "redgreyblue"
-            ]
-          }
-        },
-        "reverse": {
-          "description": "turns the scheme's ramp round; unset reverses a scheme dark at its low end.",
-          "if": {
-            "type": "null"
+          "patternProperties": {
+            "^_+comment": {}
           },
-          "else": {
-            "type": "boolean"
-          }
-        },
-        "domainMin": {
-          "description": "the value the bottom colour paints, everything below it too; unset is 0.",
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "type": "number"
-          }
-        },
-        "domainMax": {
-          "description": "the value the top colour paints, everything above it too; unset is 1.",
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "type": "number"
-          }
-        },
-        "scale": {
-          "description": "linear, the one scale; unset is linear.",
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "const": "linear"
-          }
+          "additionalProperties": false
         }
-      },
-      "patternProperties": {
-        "^_+comment": {}
-      },
-      "additionalProperties": false
+      ]
     },
     "LDTrackDisplaySlots": {
       "type": "object",
@@ -11992,7 +12027,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "type": "null"
           },
           "else": {
-            "$ref": "#/$defs/RowArrangement"
+            "$ref": "#/$defs/SampleRows"
           }
         },
         "rowColor": {
@@ -12144,95 +12179,106 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
     },
     "HicColor": {
       "title": "HicColor",
-      "type": "object",
-      "x-closed": true,
-      "properties": {
-        "field": {
-          "description": "count, each bin's contact count.",
+      "anyOf": [
+        {
+          "description": "Shorthand for \`{ \\"field\\": ... }\`.",
           "default": "count",
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "const": "count"
-          }
+          "const": "count",
+          "type": "string"
         },
-        "scheme": {
-          "description": "the named ramp counts run across; juicebox fades from transparent to red.",
-          "default": "juicebox",
-          "if": {
-            "type": "null"
+        {
+          "title": "HicColor",
+          "type": "object",
+          "x-closed": true,
+          "properties": {
+            "field": {
+              "description": "count, each bin's contact count.",
+              "default": "count",
+              "if": {
+                "type": "null"
+              },
+              "else": {
+                "const": "count"
+              }
+            },
+            "scheme": {
+              "description": "the named ramp counts run across; juicebox fades from transparent to red.",
+              "default": "juicebox",
+              "if": {
+                "type": "null"
+              },
+              "else": {
+                "enum": [
+                  "viridis",
+                  "magma",
+                  "inferno",
+                  "cividis",
+                  "juicebox",
+                  "fall",
+                  "reds",
+                  "blues",
+                  "redblue",
+                  "purpleorange",
+                  "redgreyblue"
+                ]
+              }
+            },
+            "reverse": {
+              "description": "turns the scheme's ramp round; unset reverses a scheme dark at its low end.",
+              "if": {
+                "type": "null"
+              },
+              "else": {
+                "type": "boolean"
+              }
+            },
+            "domainMin": {
+              "description": "the bottom of the scale; unset is 0.",
+              "if": {
+                "type": "null"
+              },
+              "else": {
+                "type": "number"
+              }
+            },
+            "domainQuantile": {
+              "description": "the quantile of the loaded counts an unset domainMax follows; 1 is their maximum.",
+              "default": 0.95,
+              "if": {
+                "type": "null"
+              },
+              "else": {
+                "type": "number"
+              }
+            },
+            "scale": {
+              "description": "linear, or log2 of the count, which lifts sparse long-range bins off the floor; unset is linear.",
+              "if": {
+                "type": "null"
+              },
+              "else": {
+                "enum": [
+                  "linear",
+                  "log"
+                ]
+              }
+            },
+            "domainMax": {
+              "description": "the top of a linear or log scale's domain; unset follows the loaded values.",
+              "if": {
+                "type": "null"
+              },
+              "else": {
+                "type": "number"
+              }
+            }
           },
-          "else": {
-            "enum": [
-              "viridis",
-              "magma",
-              "inferno",
-              "cividis",
-              "juicebox",
-              "fall",
-              "reds",
-              "blues",
-              "redblue",
-              "purpleorange",
-              "redgreyblue"
-            ]
-          }
-        },
-        "reverse": {
-          "description": "turns the scheme's ramp round; unset reverses a scheme dark at its low end.",
-          "if": {
-            "type": "null"
+          "patternProperties": {
+            "^_+comment": {}
           },
-          "else": {
-            "type": "boolean"
-          }
-        },
-        "domainMin": {
-          "description": "the bottom of the scale; unset is 0.",
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "type": "number"
-          }
-        },
-        "domainQuantile": {
-          "description": "the quantile of the loaded counts an unset domainMax follows; 1 is their maximum.",
-          "default": 0.95,
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "type": "number"
-          }
-        },
-        "scale": {
-          "description": "linear, or log2 of the count, which lifts sparse long-range bins off the floor; unset is linear.",
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "enum": [
-              "linear",
-              "log"
-            ]
-          }
-        },
-        "domainMax": {
-          "description": "the top of a linear or log scale's domain; unset follows the loaded values.",
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "type": "number"
-          }
+          "additionalProperties": false
         }
-      },
-      "patternProperties": {
-        "^_+comment": {}
-      },
-      "additionalProperties": false
+      ]
     },
     "LinearHicDisplaySlots": {
       "type": "object",

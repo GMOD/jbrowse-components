@@ -22,6 +22,12 @@ function make(snap: Record<string, unknown> = {}) {
 }
 
 describe('color', () => {
+  test('a bare string names the field, as every colour object reads one', () => {
+    expect(readConfObject(make({ color: 'count' }), ['color', 'field'])).toBe(
+      'count',
+    )
+  })
+
   test('unset, it is a linear juicebox ramp', () => {
     const conf = make()
     expect(readConfObject(conf, ['color', 'scheme'])).toBe(

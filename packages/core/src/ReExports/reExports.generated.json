@@ -4640,6 +4640,13 @@
       ],
       "worker": "real"
     },
+    "@jbrowse/display-kit/sampleRowsConfigSchema": {
+      "package": "@jbrowse/display-kit",
+      "names": [
+        "sampleRowsConfigSchema"
+      ],
+      "worker": "real"
+    },
     "@jbrowse/display-kit/SkippedFeaturesIndicator": {
       "package": "@jbrowse/display-kit",
       "names": [

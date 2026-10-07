@@ -1,6 +1,6 @@
 ---
 name: grammar-release-audit-2026-10-07
-description: Five parallel audits of the grammar-of-graphics surface before v5.0.0 (schema, vocabulary, mark pipeline, plot write paths, docs and in-repo configs), every finding re-verified against main. Waiting on Colin's call on five shape decisions that are breaking after the release, then the verified defect list is ordinary work. Read before changing a display's grammar slots, the plot write paths or the JSON schema.
+description: Five parallel audits of the grammar-of-graphics surface before v5.0.0 (schema, vocabulary, mark pipeline, plot write paths, docs and in-repo configs), every finding re-verified against main. Colin approved the five shape calls on 2026-10-07; the defect list and the first two calls (ADR-214, ADR-215) have landed, and three calls (wiggle as one mark, multi-way rows, typed frozen slots) plus the docs pass remain. Read before changing a display's grammar slots, the plot write paths or the JSON schema.
 ---
 
 # Grammar-of-graphics release audit, 2026-10-07
@@ -24,27 +24,11 @@ nobody has ruled on, a short defect list, and docs lagging the renames.
 
 ## Five calls that are breaking after 5.0.0
 
-1. **Display-level schemas are open.** No display config schema is `closed`
-   (`rg "closed: true"` hits only sub-schemas), so
-   `{type:'LinearMarkDisplay', totallyBogus:1}` loads and keeps nothing, while
-   `encoding.opacity` throws. Both reviewers hit the consequence: a `filterBy`
-   typo (`plugins/alignments/src/LinearAlignmentsDisplay/configSchema.ts:196`),
-   `rows` written on a session display snapshot
-   (`website/docs/tutorials/chromhmm.md:316`). Closing them makes a 5.0 app
-   refuse a 5.1 key loudly; leaving them open hides every typo until someone
-   runs the CLI. Recommendation: close them, and treat cross-version configs as
-   the CLI's job.
-2. **Merge versus replace is inferred from `shorthand`**
-   (`packages/core/src/configuration/getConf.ts:141-146`). `rows` replaces
-   whole on wiggle, mark, Manhattan and multi-row (`rowsConfigSchema`) and
-   merges member-by-member on MAF and the multi-sample variant display
-   (`rowArrangementConfigSchema`), so one share link keeps a clustering tree
-   beside an order it no longer lists on one display and switches rows off on
-   another. `color` likewise merges on LD and Hi-C alone, because neither
-   declares a shorthand. Recommendation: `rows` and every colour object are
-   written whole on every display (`shorthand: 'field'` on LD and Hi-C colour,
-   the arrangement object treated as one value), leaving `scales` the only
-   namespace, and the write mode declared on the schema rather than derived.
+Calls 1 and 2 landed on 2026-10-07 as ADR-214 (every display's schema is
+closed) and ADR-215 (`rows` and every colour object write whole; `SampleRows`
+on the variant and MAF displays, the field shorthand on LD and Hi-C colour).
+Left:
+
 3. **Wiggle spells a mark its own way.** `mark: bar|point|line|heatmap`,
    `scoreField`, `size` plus `lineWidth`, `summaryScoreMode: avg`
    (`plugins/wiggle/src/LinearWiggleDisplay/configSchema.ts:108`,
@@ -86,15 +70,8 @@ next deploy; and the beta-only retired spellings deleted (`linkedReads`,
 
 ## Verified defects
 
-Eleven of the twelve landed on 2026-10-07 (the log floor, wiggle's rows enum,
-a loose track's `displayDefaults`, the half-written namespace, jb2export's
-`marks.N.*` seed, the v4 pileup sort, the haplotype example, Manhattan's
-constant colour, a facet over a dropped field, the no-config sample config and
-the minors). Left, since it rides on call 2:
-
-- **LD and Hi-C colour refuse the bare-string shorthand** other colour objects
-  take (`ldColorConfigSchema.ts:98`, `hicColorConfigSchema.ts:111` declare no
-  `shorthand`; MAF's does).
+All twelve landed on 2026-10-07; the last, LD and Hi-C colour refusing the
+bare-string shorthand, went with ADR-215.
 
 ## Docs and in-repo configs behind the code
 

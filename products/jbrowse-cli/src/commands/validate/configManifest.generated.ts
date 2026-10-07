@@ -5176,7 +5176,7 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "rows",
-          "type": "RowArrangementConfigurationSchema",
+          "type": "SampleRowsConfigurationSchema",
           "subSlots": [
             {
               "name": "domain",
@@ -5199,8 +5199,15 @@ export const configManifest: ConfigManifest = {
               "name": "kept",
               "type": "string[]",
               "liftsNumbers": true
+            },
+            {
+              "name": "field",
+              "type": "SampleRowsField"
             }
-          ]
+          ],
+          "shorthand": {
+            "string": "field"
+          }
         },
         {
           "name": "showRowSeparators",
@@ -5411,6 +5418,9 @@ export const configManifest: ConfigManifest = {
               "type": "(LDColorScale | undefined)"
             }
           ],
+          "shorthand": {
+            "string": "field"
+          },
           "fieldPresets": {
             "r2": {
               "scale": "linear",
@@ -5928,7 +5938,7 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "rows",
-          "type": "RowArrangementConfigurationSchema",
+          "type": "SampleRowsConfigurationSchema",
           "subSlots": [
             {
               "name": "domain",
@@ -5951,8 +5961,15 @@ export const configManifest: ConfigManifest = {
               "name": "kept",
               "type": "string[]",
               "liftsNumbers": true
+            },
+            {
+              "name": "field",
+              "type": "SampleRowsField"
             }
-          ]
+          ],
+          "shorthand": {
+            "string": "field"
+          }
         },
         {
           "name": "rowColor",
@@ -6089,6 +6106,9 @@ export const configManifest: ConfigManifest = {
               "type": "(number | undefined)"
             }
           ],
+          "shorthand": {
+            "string": "field"
+          },
           "fieldPresets": {
             "count": {
               "scale": "linear"

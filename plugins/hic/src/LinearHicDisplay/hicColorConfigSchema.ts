@@ -108,5 +108,5 @@ export const hicColorConfigSchema = ConfigurationSchema(
         "the top of a linear or log scale's domain; unset follows the loaded values",
     },
   },
-  { closed: true, fieldPresets: HIC_FIELD_PRESETS },
+  { shorthand: 'field', closed: true, fieldPresets: HIC_FIELD_PRESETS },
 )

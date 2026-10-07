@@ -36,6 +36,12 @@ test.each(['mouseover', 'fetchSizeLimit', 'forceLoad'])(
 )
 
 describe('color', () => {
+  test('a bare string names the field, as every colour object reads one', () => {
+    expect(readConfObject(make({ color: 'dprime' }), ['color', 'field'])).toBe(
+      'dprime',
+    )
+  })
+
   test('unset, it maps r2 through a linear ramp with no scheme written', () => {
     const conf = make()
     expect(readConfObject(conf, ['color', 'field'])).toBe('r2')
@@ -53,11 +59,16 @@ describe('color', () => {
   })
 
   test.each([
-    { field: 'dprime' },
     { scheme: 'viridis', domainMax: 0.8 },
     { field: 'dprime', scheme: 'magma', reverse: false, domainMin: 0.2 },
   ])('a config written today reads back unchanged: %j', color => {
     expect(plotOf(make({ color }))).toEqual({ color })
+  })
+
+  test('a field alone reads back as its shorthand', () => {
+    expect(plotOf(make({ color: { field: 'dprime' } }))).toEqual({
+      color: 'dprime',
+    })
   })
 
   test('a default colour reads back as no plot', () => {

@@ -5,8 +5,8 @@ import {
   jexlFilterConfigSchemaFields,
   retiredFilterSpelling,
 } from '@jbrowse/display-kit/jexlFilterConfigSchemaFields'
-import { rowArrangementConfigSchema } from '@jbrowse/display-kit/rowArrangementConfigSchema'
 import { rowColorConfigSchema } from '@jbrowse/display-kit/rowColorConfigSchema'
+import { sampleRowsConfigSchema } from '@jbrowse/display-kit/sampleRowsConfigSchema'
 import { types } from '@jbrowse/mobx-state-tree'
 import { SHOW_LABELS_MODES } from '@jbrowse/plugin-canvas'
 import { rowHeightConfigSchemaFields } from '@jbrowse/tree-sidebar/rowHeightConfigSchemaFields'
@@ -160,13 +160,14 @@ export default function configSchemaFactory() {
       }),
       /**
        * #slot rows
-       * The arrangement a reader gives the rows, each member by row name: a
-       * sample in allele-count mode, a haplotype (`"<sample> HP<n>"`) in phased
-       * mode, where a sample name stands for all of its haplotypes. The
-       * samples `domain` lists come first and the rest keep the file's order; a
-       * facet groups within it.
+       * The rows are the file's samples, and the object is the arrangement a
+       * reader gives them, each member by row name: a sample in allele-count
+       * mode, a haplotype (`"<sample> HP<n>"`) in phased mode, where a sample
+       * name stands for all of its haplotypes. The samples `domain` lists come
+       * first and the rest keep the file's order; a facet groups within it.
+       * Written whole, as every display's `rows` is.
        */
-      rows: rowArrangementConfigSchema,
+      rows: sampleRowsConfigSchema,
       ...rowSeparatorsConfigSchemaFields(),
       /**
        * #slot
