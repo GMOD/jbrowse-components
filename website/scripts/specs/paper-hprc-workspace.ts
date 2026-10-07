@@ -1,9 +1,13 @@
-// Candidates for the JBrowse 2 v5 paper's HPRC figure: the eight gbz-base
-// haplotype lanes and the graph of the SAME CFH window in one view, the graph as
-// the bottom track, rather than the lane stack alone.
+// Candidates for the JBrowse 2 v5 paper's HPRC figure: eight haplotype lanes
+// and the graph of the SAME CFH window in one view, the graph as the bottom
+// track, rather than the lane stack alone.
 //
 // The paper uses the force layout (hprc_lanes_graph_stacked_force); the others
-// differ only in the frame and the graph's layout.
+// differ only in the frame and the graph's layout. The lanes read the PIF of
+// the same eight haplotypes' walks, unpacked offline from the release 2 GFA
+// (the hprc_multiway demo's track), rather than gbz-base at view time. The
+// hprc demo config has no PIF track, so it rides along as a session track and
+// takes its gene gutters from that config's per-haplotype gene tracks.
 import { displaySettled } from '@jbrowse/browser-test-utils'
 
 import { sessionSpec } from '../screenshot-spec-helpers.ts'
@@ -13,7 +17,35 @@ import type { Annotation, ScreenshotSpec } from '../screenshot-spec-types.ts'
 
 const CONFIG = encodeURIComponent('https://jbrowse.org/demos/hprc/config.json')
 const SEGMENTS_TRACK = 'hprc_minigraph_segments'
-const LANES_TRACK = 'hprc_v2_1_gbz_lanes'
+const LANES_TRACK = 'hprc_multiway'
+
+const HAPLOTYPES = [
+  'HG01109.1',
+  'HG01123.1',
+  'HG01960.1',
+  'HG02055.1',
+  'HG00097.1',
+  'HG00099.1',
+  'HG00128.1',
+  'HG00133.1',
+]
+const PIF_ASSEMBLIES = ['hg38', ...HAPLOTYPES]
+const LANES_PIF_TRACK = {
+  type: 'SyntenyTrack',
+  trackId: LANES_TRACK,
+  name: 'HPRC haplotypes vs GRCh38 (hg38 + 8 haplotypes, unpacked from the release 2 GFA)',
+  assemblyNames: PIF_ASSEMBLIES,
+  adapter: {
+    type: 'MultiGenomeIndexedPAFAdapter',
+    uri: 'https://jbrowse.org/demos/hprc_multiway/hprc_multiway_gfa.pif.gz',
+    csi: true,
+    assemblyNames: PIF_ASSEMBLIES,
+    assemblyNameToPanSN: Object.fromEntries([
+      ['hg38', 'GRCh38#0'],
+      ...HAPLOTYPES.map(h => [h, `${h.split('.')[0]}#1`]),
+    ]),
+  },
+}
 
 // The window the eight-lane CFH figure drew before part 3 moved it to the HPRC
 // page's launch.
@@ -76,12 +108,13 @@ const session = (
   inlineLaneNames = false,
 ) =>
   sessionSpec(CONFIG, {
+    sessionTracks: [LANES_PIF_TRACK],
     views: [
       view(layoutMode, lanesHeight, genesHeight, paneHeight, inlineLaneNames),
     ],
   })
 
-// The gbz read is a chain of range requests against two hosted files, and the
+// The lanes are range requests against the hosted PIF and its CSI, and the
 // graph cuts its subgraph from the segments track's tabix indexes.
 const gates = {
   readySelector: BOTH_READY,
