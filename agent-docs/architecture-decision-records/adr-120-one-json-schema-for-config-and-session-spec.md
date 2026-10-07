@@ -14,6 +14,14 @@ last: Gosling and GenomeSpy publish a schema and this format did not.
 and [ADR-091](adr-091-a-displays-settings-are-a-declaration.md) declined a grammar; this
 is the schema that the flat format-typed spec gets instead.
 
+Amended 2026-10-07: counted the way the 67 below was, as top-level slots of
+registered types in `configManifest.generated.ts`, main has 59 `frozen` slots.
+`scoreRules`, `legend`, the alignments display's `colorBy` and `groupBy`,
+`bigWigs` and `sampleColorMap` are typed or gone (eleven slots), and
+`modifications` on two displays and the multi-way display's `lanes` arrived. Nine of the 59
+(`filterBy`, `sortedBy`, `showOutline`, `modifications`, `rowGroups`) are being
+typed as this is written, so the count will move again.
+
 ## Context
 
 `configManifest.generated.ts` was a schema in everything but format: 181 KB of

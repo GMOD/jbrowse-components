@@ -14,6 +14,11 @@ over `preProcessConfigSnapshot`) and
 [ADR-144](adr-144-one-colour-object-on-the-quantitative-display.md)'s amended
 "the box is the escape".
 
+Amended 2026-10-07: LD declares a plot since `86fa244e40` (2026-10-04), when
+its metric became `color.field` on an `LDColor` object, so its track menu
+offers the box with `color` in it. The reference sequence, linear synteny,
+dotplot and chord synteny displays still declare none.
+
 ## Context
 
 Two JSON boxes existed. `ChannelSpec` (canvas, the single-sample variant

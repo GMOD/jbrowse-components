@@ -191,20 +191,23 @@ arcs are `applyDisplaySettings({ readConnections: 'arc' })` and `describeSlots`
 lists what else it takes.
 
 A display's grammar settings are its plot: `display.plot` lists them by slot
-name, the ones that display declares among `facet`, `color`, `rows`, `rowColor`,
-`scales` and `filter`, and on a mark display `marks` and `transform`. A change
-is a copy edited and handed back: `structuredClone(display.plot)`, edited as any
-object, then `display.plotProblems(draft)`, which throws what a config file
-would be refused for and lists what the display cannot draw, and
-`display.applyPlot(draft)`. An object replaces the setting whole and `null`
-resets it. A string is the one-value form, the facet's field or a constant
-color, and an object spells the rest out: `facet: { field, domain }` orders the
-sections, `color: { field, domain, range }` hands the `domain` values the
-`range` colors in order. A field is a feature attribute, a dotted path such as
-`INFO.SVTYPE`, or `strand`; an alignments track's facet field is a read
-dimension (`pairOrientation`, `mapq`, ...) or a tag (`tags.HP`). The `filter` is
-a list of `jexl:` expressions, such as `["jexl:feature.type == 'gene'"]`.
-"Advanced → Edit plot..." in the track menu is the same object as text.
+name, the ones that display declares from one shared vocabulary, and
+`display.plotKeys` names that display's share of it. The common ones are
+`facet`, `color`, `rows`, `rowColor`, `unit`, `y`, `scales` and `filter`, and a
+mark display adds `marks` and `transform`. A change is a copy edited and handed
+back: `structuredClone(display.plot)`, edited as any object, then
+`display.plotProblems(draft)`, which throws what a config file would be refused
+for and lists what the display cannot draw, and `display.applyPlot(draft)`. An
+object replaces the setting whole and `null` resets it. A string is the
+one-value form, the facet's field or a constant color, and an object spells the
+rest out: `facet: { field, domain }` orders the sections,
+`color: { field, domain, range }` hands the `domain` values the `range` colors
+in order. A field is a feature attribute, a dotted path such as `INFO.SVTYPE`,
+or `strand`; an alignments track's facet field is a read dimension
+(`pairOrientation`, `mapq`, ...) or a tag (`tags.HP`). The `filter` is a list of
+`jexl:` expressions, such as `["jexl:feature.type == 'gene'"]`.
+
+"Advanced → Edit plot..." in the track menu shows a display's plot as text.
 
 A plot of a track's features, written as ggplot2 writes one, is the
 `LinearMarkDisplay` on any feature, alignments, variant or quantitative track:
