@@ -68,10 +68,10 @@ node not the snapshot, forwarding a callback slot raw, reference resolution.
   to that display's own tests — a `maybe*` slot with a concrete merged default
   is always an authoring mistake, because no config can spell `undefined`.
 - **A changed slot default shows up in
-  `products/jbrowse-web/src/tests/ConfigSlotDefaults.test.ts`**, a snapshot of
-  every registered schema's slots. It is the only thing that reports one. A diff
-  there is a line to review, not a failure; `-u` when it's intended. It also
-  pins each **enum slot's vocabulary** — dropping a member is a silent
+  `products/jbrowse-web/src/schemaTests/ConfigSlotDefaults.test.ts`**, a
+  snapshot of every registered schema's slots. It is the only thing that reports
+  one. A diff there is a line to review, not a failure; `-u` when it's intended.
+  It also pins each **enum slot's vocabulary** — dropping a member is a silent
   compatibility break, since a saved session holding it fails MST validation and
   the track then fails to hydrate rather than falling back.
 - `actions` / `views` / `extend` / `preProcessSnapshot` / `requires` **compose**

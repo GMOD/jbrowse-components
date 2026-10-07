@@ -47,6 +47,17 @@ backgrounded run are untrustworthy.
 Jest, co-located, `pnpm test-ci`. Node-based and fast: use for logic, config, RPC
 and buffer packing; browser tests for rendering and UI.
 
+**A jbrowse-web suite that boots no app goes in
+`products/jbrowse-web/src/schemaTests`.** `pnpm test` leaves the `jbrowse-web`
+jest project to remote CI, since its suites boot the app and took 47% of the
+suite clock. The six under `schemaTests` only build a `PluginManager` over
+`corePlugins` and read the schemas it registers (slot defaults and enum
+vocabularies, the plot examples, `displayDefaults` routing), 3 seconds
+together, so they run in the default project and `pnpm test-related` selects
+them like any other suite. `config/jest/webSuites.cjs` names the directory for
+`jest.config.js` and `scripts/test-related.ts` both. A suite that creates a
+session or a view stays in `src/tests`.
+
 ### Which suites a change runs
 
 `pnpm test-related` selects by **footprint**: every jest run records, per suite,

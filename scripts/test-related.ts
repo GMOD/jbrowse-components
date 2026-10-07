@@ -12,7 +12,9 @@
  * formatting — selects nothing.
  *
  * The `jbrowse-web` jest project runs on remote CI; one of its suites runs here
- * only when the change edits that test file, or with `--with-web`.
+ * only when the change edits that test file, or with `--with-web`. The
+ * schema-level suites under `config/jest/webSuites.cjs`'s `LOCAL_DIR` are the
+ * default project's and are selected like any other.
  *
  * Usage: `pnpm test-related [base-ref] [--with-web]` (default `main`). Extra
  * jest flags pass through after `--`.
@@ -27,20 +29,24 @@ import { transformSync } from '@babel/core'
 
 import { changedFiles, git, lines } from './changedFiles.ts'
 
-const { readFootprints } = createRequire(import.meta.url)(
-  '../config/jest/footprints.cjs',
-) as {
+const require = createRequire(import.meta.url)
+const { readFootprints } = require('../config/jest/footprints.cjs') as {
   readFootprints: (
     cacheDirectory: string,
     checkoutRoots: string[],
   ) => Map<string, Set<string>>
+}
+const { WEB_SUITES, LOCAL_DIR } = require('../config/jest/webSuites.cjs') as {
+  WEB_SUITES: string
+  LOCAL_DIR: string
 }
 
 const CODE = /\.(ts|tsx|js|jsx|cjs|mjs)$/
 const JSX = /\.(tsx|jsx|js)$/
 const TEST = /\.test\.(ts|tsx|js|jsx)$/
 const NOT_A_SUITE = /(^|\/)(dist|demos)\/|^products\/aws\//
-const WEB = 'products/jbrowse-web/'
+const isRemoteOnly = (suite: string) =>
+  suite.startsWith(WEB_SUITES) && !suite.startsWith(WEB_SUITES + LOCAL_DIR)
 // Loaded by jest itself or resolved outside the repo, so in no footprint, and
 // a change to any of them can move every suite.
 const HARNESS =
@@ -190,7 +196,7 @@ if (unrecorded.length > 0 && staticInputs.length > 0) {
 
 const skippedWeb = withWeb
   ? []
-  : [...selected].filter(t => t.startsWith(WEB) && !live.includes(t))
+  : [...selected].filter(t => isRemoteOnly(t) && !live.includes(t))
 for (const t of skippedWeb) {
   selected.delete(t)
 }
@@ -213,7 +219,7 @@ if (skippedWeb.length > 0) {
 }
 if (harness.length > 0) {
   console.log(
-    `${harness.join(', ')} changed, which no footprint records; \`pnpm test\` runs every suite outside jbrowse-web.`,
+    `${harness.join(', ')} changed, which no footprint records; \`pnpm test\` runs every suite but jbrowse-web's remote-only ones.`,
   )
 }
 if (selected.size === 0) {

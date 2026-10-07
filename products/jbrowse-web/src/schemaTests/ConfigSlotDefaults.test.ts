@@ -10,7 +10,10 @@ import corePlugins from '../corePlugins.ts'
 
 // **Why this lives in jbrowse-web.** This is the only place the whole plugin set
 // is assembled, and the question is about every registered schema at once. Core
-// has no plugins and a plugin sees only its own types.
+// has no plugins and a plugin sees only its own types. It boots no app, so it
+// sits in `schemaTests`, which `pnpm test` runs, and not in `tests`, which only
+// remote CI does: a renamed slot left this snapshot stale across four landings
+// in one day while it sat there.
 //
 // **What it is for.** A slot's default is the value every config that doesn't
 // mention the slot gets, and changing one by accident is silent — nothing

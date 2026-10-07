@@ -3,6 +3,10 @@ import os from 'node:os'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 
+import webSuites from './config/jest/webSuites.cjs'
+
+const { WEB_SUITES, LOCAL_DIR } = webSuites
+
 // availableParallelism() honours the CPU affinity mask, so a run already pinned
 // to a subset of cores (taskset, a container's cpuset) sizes itself to what it
 // was actually given. os.cpus().length reports every core on the box regardless.
@@ -342,7 +346,8 @@ export default {
         '/dist/',
         '/demos/',
         '<rootDir>/products/jbrowse-img/',
-        '<rootDir>/products/jbrowse-web/',
+        // every jbrowse-web suite but the schema-level ones, which boot nothing
+        `<rootDir>/${WEB_SUITES}(?!${LOCAL_DIR})`,
         // Own lockfile/test runner (vitest), CI'd separately (blat_proxy job).
         '<rootDir>/products/aws/',
       ],
@@ -353,10 +358,11 @@ export default {
       // Runs on remote CI only: `pnpm test` ignores this project and
       // `pnpm test-ci` runs it. Narrow roots keep a second haste crawl off every
       // jest invocation; node-module manual mocks apply only from a root, hence
-      // `packages/__mocks__`.
+      // `packages/__mocks__`. The schema-level suites are the default
+      // project's.
       displayName: 'jbrowse-web',
       testMatch: ['<rootDir>/products/jbrowse-web/**/*.test.{ts,tsx,js,jsx}'],
-      testPathIgnorePatterns: ['/dist/'],
+      testPathIgnorePatterns: ['/dist/', `<rootDir>/${WEB_SUITES}${LOCAL_DIR}`],
       ...jsdomConfig,
       id: 'jbrowse-web',
       roots: ['<rootDir>/products/jbrowse-web', '<rootDir>/packages/__mocks__'],
