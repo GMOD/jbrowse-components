@@ -402,10 +402,10 @@ function connectorShape(
   }
 }
 
-// A maps-back loop's apex above its row: two rows, so it clears the read's own
-// bar, within bounds that keep it visible on thin rows and local on tall ones.
-const LOOP_MIN_APEX_PX = 4
-const LOOP_MAX_APEX_PX = 12
+// A maps-back loop's apex above its row: three rows, so it clears the read's
+// own bar, within bounds that keep it visible on thin rows and local on tall ones.
+const LOOP_MIN_APEX_PX = 6
+const LOOP_MAX_APEX_PX = 20
 // Rows thinner than this have no room for an arrowhead.
 const LOOP_ARROW_MIN_FEATURE_HEIGHT_PX = 5
 const LOOP_MAX_ARROW_PX = 8
@@ -519,7 +519,7 @@ export function computePileupBezierArcs(opts: Opts): PileupArc[] {
 
   const loopApexPx = Math.min(
     LOOP_MAX_APEX_PX,
-    Math.max(LOOP_MIN_APEX_PX, 2 * rowH),
+    Math.max(LOOP_MIN_APEX_PX, 3 * rowH),
   )
   const arrowPx =
     featureHeight >= LOOP_ARROW_MIN_FEATURE_HEIGHT_PX
