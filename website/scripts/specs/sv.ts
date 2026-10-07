@@ -11,6 +11,7 @@ import {
   lgvSession,
   sessionSpec,
 } from '../screenshot-spec-helpers.ts'
+import { junctionReads } from './cgiab-junction.ts'
 import { pageTrack } from './pageTrack.ts'
 
 import type { ScreenshotSpec } from '../screenshot-spec-types.ts'
@@ -1164,141 +1165,8 @@ export const svSpecs: ScreenshotSpec[] = [
     ],
   },
 
-  // The chr3<->chr13 translocation that the chord in the SV inspector
-  // points at — benchmark call SV_20 joins chr3:139,976,414 to chr13:114,353,244.
-  // Built declaratively as a BreakpointSplitView (init.views resolves to the two
-  // child LGVs after attach), each panel showing the somatic-SV benchmark call
-  // (compact VCF lane) above the 116x tumor PacBio HiFi reads in Super-compact
-  // mode (featureHeight 1 / spacing 0, reviewer). showIntraviewLinks draws the
-  // splines between reads that map partially to each side of the junction.
-  // The PacBio BAM is HG008_T_PACBIO_BAM, a rehosted slice carrying these two
-  // windows: the NCBI original is 118 GB and its ~26 MB BAI downloaded on every
-  // fresh-tab capture. forceLoad lifts the fetch-size gate so the reads
-  // auto-load headless instead of sitting on a force-load prompt.
-  {
-    mode: 'url',
-    name: 'sv_cgiab/translocation_breakpoint_split',
-    url: cgiabUrl({
-      views: [
-        {
-          type: 'BreakpointSplitView',
-          // LaunchView-BreakpointSplitView takes the two child panels as a
-          // top-level `views` array (loc/assembly/tracks) — it wraps them into
-          // the view's transient `init` itself. Same shape as DotplotView /
-          // LinearSyntenyView session specs.
-          views: [
-            {
-              loc: 'chr3:139,971,414-139,981,414',
-              assembly: 'GRCh38_GIABv3',
-              tracks: [
-                // the somatic-SV benchmark call, so the junction the reads
-                // support is anchored to its benchmark BND on both panels
-                {
-                  trackId: 'hg008t_benchmark_sv',
-                  type: 'LinearVariantDisplay',
-                  height: 40,
-                },
-                {
-                  trackId:
-                    'HG008-T_PacBio-HiFi-Revio_20240125_116x_GRCh38-GIABv3',
-                  type: 'LinearAlignmentsDisplay',
-                  featureHeight: 1,
-                  height: 250,
-                  forceLoad: true,
-                  // Only connections whose BOTH ends are on screen. This view
-                  // is of one junction, and both of its feet are drawn — a
-                  // connection to a partner in neither panel says nothing here
-                  // except that the read has one, and at 116x there are enough
-                  // of them to read as a second bundle.
-                  drawLongRange: false,
-                },
-              ],
-            },
-            {
-              loc: 'chr13:114,348,244-114,358,244',
-              assembly: 'GRCh38_GIABv3',
-              tracks: [
-                {
-                  trackId: 'hg008t_benchmark_sv',
-                  type: 'LinearVariantDisplay',
-                  height: 40,
-                },
-                {
-                  trackId:
-                    'HG008-T_PacBio-HiFi-Revio_20240125_116x_GRCh38-GIABv3',
-                  type: 'LinearAlignmentsDisplay',
-                  featureHeight: 1,
-                  height: 250,
-                  forceLoad: true,
-                  // Only connections whose BOTH ends are on screen. This view
-                  // is of one junction, and both of its feet are drawn — a
-                  // connection to a partner in neither panel says nothing here
-                  // except that the read has one, and at 116x there are enough
-                  // of them to read as a second bundle.
-                  drawLongRange: false,
-                },
-              ],
-            },
-          ],
-        },
-      ],
-    }),
-    // The two breakends named, in the same words the synteny view of this
-    // junction uses (sv_cgiab/synteny_view), so a reader carrying one figure to
-    // the other has the same two labels in both. Anchored to the benchmark
-    // call's own feature label in each panel — the record IS at the breakend,
-    // so there is no offset to measure — rather than to a highlight: this view
-    // shows the evidence, and a band over the reads would cover the thing the
-    // panel is of.
-    annotations: [
-      {
-        type: 'text',
-        text: 'chr3 breakend',
-        fontSize: 19,
-        // PAIRED WITH THE OTHER FIGURE of this junction: the same tinted
-        // pill and blue leader appear on the breakend callouts of
-        // sv_cgiab/synteny_view, so a reader
-        // seeing one figure recognises the other's marks as the same two
-        // positions. Every other callout in the corpus stays white/red.
-        color: '#1f77b4',
-        background: '#dceaf6',
-        leader: true,
-        // The LEFT EDGE of the call's label, pulled back another 30px: the
-        // record sits on the breakend, so an arrow aimed at the label's centre
-        // lands its head on the breakend bar and its feet — the mark the panel
-        // is pointing AT. `LEADER_HEAD_GAP` is one constant for every callout
-        // in the corpus, so the head is kept clear here by moving the target
-        // rather than by shortening every arrow everywhere.
-        anchor: { text: 'SV_20', alignX: 'left', dx: -30 },
-        dx: -150,
-      },
-      {
-        type: 'text',
-        text: 'chr13 breakend',
-        fontSize: 19,
-        // PAIRED WITH THE OTHER FIGURE of this junction: the same tinted
-        // pill and blue leader appear on the breakend callouts of
-        // sv_cgiab/synteny_view, so a reader
-        // seeing one figure recognises the other's marks as the same two
-        // positions. Every other callout in the corpus stays white/red.
-        color: '#1f77b4',
-        background: '#dceaf6',
-        leader: true,
-        // The LEFT EDGE of the call's label, pulled back another 30px: the
-        // record sits on the breakend, so an arrow aimed at the label's centre
-        // lands its head on the breakend bar and its feet — the mark the panel
-        // is pointing AT. `LEADER_HEAD_GAP` is one constant for every callout
-        // in the corpus, so the head is kept clear here by moving the target
-        // rather than by shortening every arrow everywhere.
-        anchor: { text: 'SV_190', alignX: 'left', dx: -30 },
-        dx: -150,
-      },
-    ],
-    readyText: 'HG008-T_PacBio',
-    readyTimeout: 180000,
-    // 1000 left 56 px of blank under the lower panel's reads.
-    viewportHeight: 944,
-  },
+  // The junction the chord in the SV inspector points at
+  junctionReads('sv_cgiab/translocation_breakpoint_split'),
 
   // Five somatic SV callsets over one locus, with the depth that explains them.
   // Four of the five are C-GIAB FTP URLs and nothing here was computed (see the

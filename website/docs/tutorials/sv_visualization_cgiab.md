@@ -856,15 +856,17 @@ assembly-vs-reference diagonal per haplotype.
 
 Drag over a region and take **Launch → Linear synteny view**, keeping
 **HG008T_v3.2 vs GRCh38_GIABv3** (**HG008T v3.2** in the hosted config) as the
-synteny track, then enter `chr3 chr13` in the GRCh38 search box. Raising the
+synteny track, then enter `chr13 chr3` in the GRCh38 search box. Raising the
 **minimum alignment length** drops short, noisy anchors; zooming into a
 breakpoint reads it at base level.
 
-**Add row** in the import form gives each haplotype a separate row: hap2,
-GRCh38, hap1, with ribbons between each adjacent pair. The hap1 ribbons cross
-between chr3 and chr13, and the hap2 ribbons do not.
+<Figure caption="The junction at base level: the two 10 kb reference windows of the breakpoint split view, with the benchmark calls and the tumor reads on them, grouped by split read, above chr3_chr13_hap1. The reads stop at each breakend, a curve joins the two halves of each read split across the junction under one arc that totals them, and the scaffold runs through. The chr3 ribbon twists because the scaffold carries chr3 on the reverse strand." src="/img/sv_cgiab/junction_synteny.png" />
 
-<Figure caption="A three-row synteny view of the chr3/chr13 selection: hap2 on top, GRCh38 chr3 and chr13 in the middle, and the fused chr3_chr13_hap1 scaffold below. Blue bands on the reference row mark the two breakends. The ribbons to hap1 cross between them; the ribbons to hap2 run to an unrearranged chr13 and to a scaffold that fuses chr3 material with chr6 and chr11." src="/img/sv_cgiab/synteny_view.png" />
+**Add row** in the import form gives each haplotype a separate row: hap2,
+GRCh38, hap1, with ribbons between each adjacent pair. The hap2 ribbons run
+straight, and on hap1 the chr13 ribbon meets a twisted chr3 ribbon.
+
+<Figure caption="A three-row synteny view: hap2 on top, GRCh38 chr13 and chr3 in the middle, and the fused chr3_chr13_hap1 scaffold below. The hap2 ribbons run straight to chr13_hap2 and to the chr3 part of a scaffold that continues into chr11 and chr6. On hap1 the chr13 ribbon meets a twisted chr3 ribbon at the marked junction." src="/img/sv_cgiab/synteny_view.png" />
 
 For more on these views, see the
 [dotplot view guide](/docs/user_guides/dotplot_view) and the
