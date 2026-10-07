@@ -51,7 +51,7 @@ const panelLabel = (trackId: string, text: string): Annotation => ({
   },
 })
 
-// Right of the 114 kb deletion, where every track is clear of calls
+// Left of the first deletion call, where every track is clear of calls
 const trackBlurb = (
   trackId: string,
   fracY: number,
@@ -63,7 +63,7 @@ const trackBlurb = (
   fontSize: 18,
   anchor: {
     trackId,
-    loc: 'chr3:162,915,000',
+    loc: 'chr3:162,655,000',
     fracY,
     alignX: 'left',
   },
@@ -156,7 +156,11 @@ export const paperCohortSpecs: ScreenshotSpec[] = [
         0.75,
         'HGSVC long-read assembly calls',
       ),
-      trackBlurb('cnv_1000g_zarr', 0.55, '1000 Genomes\ncopy number'),
+      trackBlurb(
+        'cnv_1000g_zarr',
+        0.55,
+        '1000 Genomes estimated\ncopy number (QuicK-mer2)',
+      ),
       trackBlurb(
         'hprc_minigraph_segments',
         0.3,
