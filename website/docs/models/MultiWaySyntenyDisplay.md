@@ -126,6 +126,7 @@ Members a composed model contributes are listed here too, so these tables are th
 | <span id="getter-adapterpairsonanchor">**adapterPairsOnAnchor**</span><br><code>boolean</code> |  | MultiWaySyntenyDisplay |
 | <span id="getter-adapterbatcheslanepairs">**adapterBatchesLanePairs**</span><br><code>boolean</code> | the adapter answers a window's `lanePairs` in one call | MultiWaySyntenyDisplay |
 | <span id="getter-adjacentlanesaligndirectly">**adjacentLanesAlignDirectly**</span><br><code>boolean</code> |  | MultiWaySyntenyDisplay |
+| <span id="getter-rowsvsanchor">**rowsVsAnchor**</span><br><code>boolean</code> | a source that names an anchor and answers no lane pairs states each lane against the anchor alone, so each gutter draws its lower lane against the anchor | MultiWaySyntenyDisplay |
 | <span id="getter-pinnedlaneflips">**pinnedLaneFlips**</span><br><code>ReadonlyMap&lt;string, LaneFlipPin&gt;</code> |  | MultiWaySyntenyDisplay |
 | <span id="getter-configuredlanes">**configuredLanes**</span><br><code>string[]</code> | the track's assemblies beside the anchor for a source that declares its own lanes, empty for every other source | MultiWaySyntenyDisplay |
 | <span id="getter-laneselection">**laneSelection**</span><br><code>readonly string[] &#124; undefined</code> | undefined means every lane, and a hidden lane stays in force | MultiWaySyntenyDisplay |
@@ -164,7 +165,7 @@ Members a composed model contributes are listed here too, so these tables are th
 | <span id="getter-anchorlessgroups">**anchorlessGroups**</span><br><code>PlacedGroup[]</code> |  | MultiWaySyntenyDisplay |
 | <span id="getter-lanegenesfetchspecs">**laneGenesFetchSpecs**</span><br><code>LaneGenesFetchSpec[]</code> |  | MultiWaySyntenyDisplay |
 | <span id="getter-lanegroupsfetchspecs">**laneGroupsFetchSpecs**</span><br><code>LaneGroupsFetchSpec[]</code> | a gene table read on each mate lane's window, for the rows the anchor lacks; a star source indexes its anchor alone, so it has none to give | MultiWaySyntenyDisplay |
-| <span id="getter-lanelinksfetchspecs">**laneLinksFetchSpecs**</span><br><code>LaneLinksFetchSpec[]</code> | one spec per adjacent mate-lane pair whose gutter is on screen or within a screen of it; a pair scrolled further away draws composed through the anchor, or not at all | MultiWaySyntenyDisplay |
+| <span id="getter-lanelinksfetchspecs">**laneLinksFetchSpecs**</span><br><code>LaneLinksFetchSpec[]</code> | one spec per adjacent mate-lane pair whose gutter is on screen or within a screen of it | MultiWaySyntenyDisplay |
 | <span id="getter-lanelayertemplates">**laneLayerTemplates**</span><br><code>(Record&lt;string, unknown&gt; &#124; undefined)[]</code> |  | MultiWaySyntenyDisplay |
 | <span id="getter-lanelayersources">**laneLayerSources**</span><br><code>Map&lt;string, LaneLayerSource&gt;[]</code> |  | MultiWaySyntenyDisplay |
 | <span id="getter-lanelayerreads">**laneLayerReads**</span><br><code>{ specs: LaneLayerFetchSpec[]; pastCap: boolean[]; }</code> | `pastCap` flags a layer that skipped a lane past `LANE_TEMPLATE_MAX_BP` | MultiWaySyntenyDisplay |
@@ -172,10 +173,11 @@ Members a composed model contributes are listed here too, so these tables are th
 | <span id="getter-lanestack">**laneStack**</span><br><code>LaneStack</code> | carries no lane genes, so a gene commit re-uploads no ribbon or tick | MultiWaySyntenyDisplay |
 | <span id="getter-lanemaps">**laneMaps**</span><br><code>ReadonlyMap&lt;number, LaneMap&gt;</code> |  | MultiWaySyntenyDisplay |
 | <span id="getter-laneheaderrows">**laneHeaderRows**</span><br><code>LaneHeaderRow[]</code> |  | MultiWaySyntenyDisplay |
-| <span id="getter-pairlinks">**pairLinks**</span><br><code>ReadonlyMap&lt;string, LaneLinks&gt;</code> | keyed `upper\|lower` per adjacent mate-lane pair | MultiWaySyntenyDisplay |
+| <span id="getter-pairlinks">**pairLinks**</span><br><code>ReadonlyMap&lt;string, LaneLinks&gt;</code> | the alignments the source answered for each adjacent mate-lane pair, keyed `upper\|lower`; a pair it has not answered draws nothing | MultiWaySyntenyDisplay |
 | <span id="getter-ribbongeometry">**ribbonGeometry**</span><br><code>RibbonGeometry</code> | in the stack's own px | MultiWaySyntenyDisplay |
 | <span id="getter-tickgeometry">**tickGeometry**</span><br><code>TickGeometry</code> |  | MultiWaySyntenyDisplay |
 | <span id="getter-bandcell">**bandCell**</span><br><code>MultiWayCell</code> |  | MultiWaySyntenyDisplay |
+| <span id="getter-anchortickxs">**anchorTickXs**</span><br><code>number[]</code> | px of the anchor's ticks across the displayed regions | MultiWaySyntenyDisplay |
 | <span id="getter-lanecells">**laneCells**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>{ cells: Map&lt;string, MultiWayCell&gt;; boxNames: Map&lt;string, Named…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>{ cells: Map&lt;string, MultiWayCell&gt;; boxNames: Map&lt;string, NamedSpan[]&gt;; geneGroups: Map&lt;string, Map&lt;string, string&gt;&gt;; }</code></pre></dialog></span> | boxes before glyphs, so an in-order hit test finds a box over a gene | MultiWaySyntenyDisplay |
 | <span id="getter-laneglyphcells">**laneGlyphCells**</span><br><code>Map&lt;string, MultiWayCell&gt;</code> |  | MultiWaySyntenyDisplay |
 | <span id="getter-laneboxnames">**laneBoxNames**</span><br><code>Map&lt;string, NamedSpan[]&gt;</code> |  | MultiWaySyntenyDisplay |
