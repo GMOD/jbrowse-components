@@ -2,6 +2,7 @@ import ColorPicker from '@jbrowse/core/ui/ColorPicker'
 import SubmitDialog from '@jbrowse/core/ui/SubmitDialog'
 import { isJexl } from '@jbrowse/core/util/jexlStrings'
 import { Typography } from '@mui/material'
+import { observer } from 'mobx-react'
 
 import type React from 'react'
 
@@ -10,7 +11,7 @@ import type React from 'react'
  * display's further pickers, and a note where the colour object holds an
  * expression a pick would replace.
  */
-export default function SolidColorDialog({
+const SolidColorDialog = observer(function SolidColorDialog({
   label,
   color,
   written,
@@ -47,4 +48,6 @@ export default function SolidColorDialog({
       {children}
     </SubmitDialog>
   )
-}
+})
+
+export default SolidColorDialog

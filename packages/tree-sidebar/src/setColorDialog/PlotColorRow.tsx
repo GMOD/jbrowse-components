@@ -1,6 +1,7 @@
 import PopoverPicker from '@jbrowse/core/ui/PopoverPicker'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { Typography } from '@mui/material'
+import { observer } from 'mobx-react'
 
 const useStyles = makeStyles()(theme => ({
   line: {
@@ -19,7 +20,7 @@ const useStyles = makeStyles()(theme => ({
  * plot is drawn in, either side of where it parts. One line rather than a panel
  * because the rows below are what a reader opens this dialog for.
  */
-export default function PlotColorRow({
+const PlotColorRow = observer(function PlotColorRow({
   above,
   below,
   editable,
@@ -68,4 +69,6 @@ export default function PlotColorRow({
       </Typography>
     </div>
   )
-}
+})
+
+export default PlotColorRow

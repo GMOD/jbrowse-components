@@ -9,6 +9,7 @@ import {
   Chip,
   Typography,
 } from '@mui/material'
+import { observer } from 'mobx-react'
 
 import { makeStyles } from '../util/tss-react/index.ts'
 import ExternalLink from './ExternalLink.tsx'
@@ -46,7 +47,7 @@ const useStyles = makeStyles()({
  * version-pinned, integrity-carrying, and refused when no published version
  * supports this JBrowse.
  */
-export default function PluginStoreCard({
+const PluginStoreCard = observer(function PluginStoreCard({
   plugin,
   resolved,
   installed,
@@ -107,4 +108,6 @@ export default function PluginStoreCard({
       </CardActions>
     </Card>
   )
-}
+})
+
+export default PluginStoreCard

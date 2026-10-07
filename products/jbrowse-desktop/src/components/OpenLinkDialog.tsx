@@ -3,6 +3,7 @@ import { useState } from 'react'
 import { ErrorMessage } from '@jbrowse/core/ui'
 import ConfirmDialog from '@jbrowse/core/ui/ConfirmDialog'
 import { DialogContentText, TextField } from '@mui/material'
+import { observer } from 'mobx-react'
 
 import { useIpcAction } from './StartScreen/dialogs/useIpcAction.ts'
 
@@ -12,7 +13,7 @@ import { useIpcAction } from './StartScreen/dialogs/useIpcAction.ts'
 // itself. Anything else — an unreachable config, a session kind only the
 // originating instance can decrypt — surfaces as the dialog's own error rather
 // than a half-built session.
-export default function OpenLinkDialog({
+const OpenLinkDialog = observer(function OpenLinkDialog({
   onSubmit,
   onClose,
 }: {
@@ -63,4 +64,6 @@ export default function OpenLinkDialog({
       {error ? <ErrorMessage error={error} /> : null}
     </ConfirmDialog>
   )
-}
+})
+
+export default OpenLinkDialog

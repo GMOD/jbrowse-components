@@ -37,7 +37,7 @@ const SHARE_MODES = [
   { value: 'short', label: 'Short link' },
 ] as const
 
-function ShareModeRadios({
+const ShareModeRadios = observer(function ShareModeRadios({
   mode,
   onChange,
 }: {
@@ -64,14 +64,14 @@ function ShareModeRadios({
       ))}
     </RadioGroup>
   )
-}
+})
 
 // Which base the export settled on. The three self-contained cases produce the
 // same session and want different words: a hub that was never involved is the
 // ordinary case, a hub that could not be fetched is a link worth building again
 // on a working connection, since self-contained is also the biggest kind of
 // session and the one that outgrows what a URL can carry.
-function BaseSummary({
+const BaseSummary = observer(function BaseSummary({
   plan,
   sourceConfigUrl,
 }: {
@@ -100,12 +100,12 @@ function BaseSummary({
         : 'Self-contained session (carries its own assemblies and tracks)'}
     </Typography>
   )
-}
+})
 
 // What the export decided and what it had to leave behind. Depends only on the
 // plan, not on the share mode, so it stays on screen while a mode switch
 // re-encodes the link.
-function PlanSummary({
+const PlanSummary = observer(function PlanSummary({
   plan,
   sourceConfigUrl,
 }: {
@@ -167,7 +167,7 @@ function PlanSummary({
       <BaseSummary plan={plan} sourceConfigUrl={sourceConfigUrl} />
     </>
   )
-}
+})
 
 // The host a short link's session gets uploaded to, for the prompt below.
 // Undefined when the configured shareURL isn't an absolute url — jbrowse-web
@@ -186,7 +186,7 @@ function shareHost(shareURL: string) {
 // happens when you press this, and at no other time. That is also why switching
 // modes and coming back asks again instead of quietly reusing or re-sending —
 // see the reset in the dialog's mode handler.
-function ShortLinkPrompt({
+const ShortLinkPrompt = observer(function ShortLinkPrompt({
   shareURL,
   onUpload,
 }: {
@@ -212,7 +212,7 @@ function ShortLinkPrompt({
       </Button>
     </>
   )
-}
+})
 
 const ExportToWebDialog = observer(function ExportToWebDialog({
   handleClose,

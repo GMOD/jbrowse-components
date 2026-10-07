@@ -1,4 +1,5 @@
 import SanitizedHTML from '@jbrowse/core/ui/SanitizedHTML'
+import { observer } from 'mobx-react'
 
 import OverrideBadge from '../../HierarchicalTrackSelectorWidget/components/tree/OverrideBadge.tsx'
 import TrackSelectorTrackMenu from '../../HierarchicalTrackSelectorWidget/components/tree/TrackSelectorTrackMenu.tsx'
@@ -9,7 +10,7 @@ import type { HierarchicalTrackSelectorModel } from '../../HierarchicalTrackSele
 import type { FacetedModel, FacetedRow } from '../facetedModel.ts'
 import type { FacetedColumn } from './FacetedDataGrid.tsx'
 
-function NameCell({
+const NameCell = observer(function NameCell({
   row,
   model,
 }: {
@@ -24,7 +25,7 @@ function NameCell({
       <TrackSelectorTrackMenu id={row.id} conf={row.conf} model={model} />
     </div>
   )
-}
+})
 
 // Builds the column list: a name column (with the per-track menu) followed by
 // the facet columns in field order. A metadata column whose bare key collides

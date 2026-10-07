@@ -1,5 +1,3 @@
-// imported for the module augmentation that types the extension points the
-// panels and menu below fire
 import './startScreenExtensionPoints.ts'
 
 import { useState } from 'react'
@@ -15,6 +13,9 @@ import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { useFetch } from '@jbrowse/core/util/useFetch'
 import MenuIcon from '@mui/icons-material/Menu'
 import { Alert, Button, Paper, Typography } from '@mui/material'
+// imported for the module augmentation that types the extension points the
+// panels and menu below fire
+import { observer } from 'mobx-react'
 
 import { useNotifyError } from '../NotifyContext.ts'
 import GlobalPluginsDialog from './GlobalPluginsDialog.tsx'
@@ -111,7 +112,7 @@ const useStyles = makeStyles()({
  * plugin manager (it is still loading, or failed to build) there is nothing to
  * dispatch to and the shipped component renders directly.
  */
-function StartScreenPanel({
+const StartScreenPanel = observer(function StartScreenPanel({
   pluginManager,
   name,
   component: Component,
@@ -147,7 +148,7 @@ function StartScreenPanel({
   ) : (
     <Component {...props} />
   )
-}
+})
 
 // A global plugin's callback runs here, during the start screen's render, so
 // one that throws would leave the user with no start screen and no way to
@@ -172,7 +173,7 @@ function pluginMenuItems(
   return items
 }
 
-export default function StartScreen({
+const StartScreen = observer(function StartScreen({
   setPluginManager,
 }: {
   setPluginManager: (arg: PluginManager) => void
@@ -325,4 +326,6 @@ export default function StartScreen({
       ) : null}
     </div>
   )
-}
+})
+
+export default StartScreen

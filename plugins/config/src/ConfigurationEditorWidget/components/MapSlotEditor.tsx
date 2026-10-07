@@ -1,4 +1,5 @@
 import { FormHelperText, InputLabel } from '@mui/material'
+import { observer } from 'mobx-react'
 
 import MapEntryCard, { MapAddCard } from './MapEntryCard.tsx'
 
@@ -6,7 +7,7 @@ import MapEntryCard, { MapAddCard } from './MapEntryCard.tsx'
 // list of per-key cards plus an "add key" card. The owning wrapper stays the
 // observer and passes plain entries in, so this stays a non-observer generic
 // (which keeps JSX type args working at the call sites).
-export default function MapSlotEditor<V>({
+const MapSlotEditor = observer(function MapSlotEditor<V>({
   name,
   description,
   entries,
@@ -51,4 +52,6 @@ export default function MapSlotEditor<V>({
       <FormHelperText>{description}</FormHelperText>
     </>
   )
-}
+})
+
+export default MapSlotEditor

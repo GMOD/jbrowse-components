@@ -1,4 +1,5 @@
 import { DiagonalizeDialog } from '@jbrowse/synteny-core'
+import { observer } from 'mobx-react'
 
 import { runCircularDiagonalize } from '../util/runCircularDiagonalize.ts'
 
@@ -8,7 +9,7 @@ import type { DiagonalizeRunOpts } from '@jbrowse/synteny-core'
 // Binds the shared re-order dialog to the circle's reorder: the second genome's
 // arc is laid out to follow the first, mirrored so each ribbon runs between
 // neighboring arcs rather than across the middle.
-export default function ReorderChromosomesDialog({
+const ReorderChromosomesDialog = observer(function ReorderChromosomesDialog({
   model,
   handleClose,
 }: {
@@ -23,4 +24,6 @@ export default function ReorderChromosomesDialog({
       run={(opts: DiagonalizeRunOpts) => runCircularDiagonalize(model, opts)}
     />
   )
-}
+})
+
+export default ReorderChromosomesDialog

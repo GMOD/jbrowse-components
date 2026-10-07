@@ -1,10 +1,11 @@
 import { Grid } from '@mui/material'
+import { observer } from 'mobx-react'
 
 import SessionCard from './RecentSessionCard.tsx'
 
 import type { RecentSessionData } from '../types.ts'
 
-export default function RecentSessionsCards({
+const RecentSessionsCards = observer(function RecentSessionsCards({
   sessions,
   setSessionsToDelete,
   setSessionToRename,
@@ -41,4 +42,6 @@ export default function RecentSessionsCards({
       ))}
     </Grid>
   )
-}
+})
+
+export default RecentSessionsCards

@@ -146,7 +146,7 @@ function nonSpaceCharsBeforeCursor(
 // Renders a chunk one character per span, applying `highlight` to each
 // non-space character. Spaces keep the base `color` so the row background stays
 // contiguous.
-function HighlightedChunk({
+const HighlightedChunk = observer(function HighlightedChunk({
   chunk,
   sequenceOffset,
   color,
@@ -169,6 +169,6 @@ function HighlightedChunk({
     )
   }
   return <>{spans}</>
-}
+})
 
 export default SequenceDisplay

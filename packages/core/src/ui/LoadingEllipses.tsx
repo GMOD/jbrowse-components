@@ -1,4 +1,5 @@
 import { Typography } from '@mui/material'
+import { observer } from 'mobx-react'
 
 import LoadingDots from './LoadingDots.tsx'
 
@@ -25,7 +26,7 @@ interface Props extends TypographyProps {
  * should carry the attribute too — see `isPageBusyInPage` in
  * `@jbrowse/capture`, which is what reads it.
  */
-export default function LoadingEllipses({
+const LoadingEllipses = observer(function LoadingEllipses({
   message,
   variant = 'body2',
   ...rest
@@ -36,4 +37,6 @@ export default function LoadingEllipses({
       <LoadingDots />
     </Typography>
   )
-}
+})
+
+export default LoadingEllipses

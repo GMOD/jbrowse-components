@@ -19,9 +19,13 @@ import type {
   FieldActions,
 } from '../types.tsx'
 
-function SectionHeader({ title }: { title: string }) {
+const SectionHeader = observer(function SectionHeader({
+  title,
+}: {
+  title: string
+}) {
   return <Typography variant="overline">{title}</Typography>
-}
+})
 
 const shownByCoreDetails = [
   'name',

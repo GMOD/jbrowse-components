@@ -1,4 +1,5 @@
 import { FormControl, MenuItem, Select } from '@mui/material'
+import { observer } from 'mobx-react'
 
 import { coarseStripHTML } from '../../../util/index.ts'
 import { makeStyles } from '../../../util/tss-react/index.ts'
@@ -15,7 +16,7 @@ const useStyles = makeStyles()({
 // Only rendered when a container feature (a gene) has more than one
 // transcript child — picks which transcript's exon/CDS structure the
 // sequence-type selector and body compute from.
-export default function TranscriptSelector({
+const TranscriptSelector = observer(function TranscriptSelector({
   transcripts,
   transcriptIndex,
   setTranscriptIndex,
@@ -52,4 +53,6 @@ export default function TranscriptSelector({
       </Select>
     </FormControl>
   )
-}
+})
+
+export default TranscriptSelector

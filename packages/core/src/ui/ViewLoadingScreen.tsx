@@ -1,4 +1,5 @@
 import { Typography } from '@mui/material'
+import { observer } from 'mobx-react'
 
 import { useSlowLoad, useStalled } from '../util/hooks.ts'
 import { makeStyles } from '../util/tss-react/index.ts'
@@ -46,7 +47,7 @@ const useStyles = makeStyles()(theme => ({
  * {@link LoadingProgress} directly — bare, it renders an unconstrained
  * full-width bar under an unaligned label.
  */
-export default function ViewLoadingScreen({
+const ViewLoadingScreen = observer(function ViewLoadingScreen({
   message,
   progress,
   source,
@@ -73,4 +74,6 @@ export default function ViewLoadingScreen({
       ) : null}
     </div>
   )
-}
+})
+
+export default ViewLoadingScreen

@@ -1,4 +1,5 @@
 import { Button, Typography } from '@mui/material'
+import { observer } from 'mobx-react'
 
 import { ErrorBanner, LoadingEllipses } from '../../ui/index.ts'
 import { statusProgressLabel } from '../../util/progress.ts'
@@ -13,7 +14,7 @@ import type {
 } from './model.ts'
 import type { RefObject } from 'react'
 
-export default function SequenceBody({
+const SequenceBody = observer(function SequenceBody({
   error,
   sequence,
   status,
@@ -72,4 +73,6 @@ export default function SequenceBody({
       )}
     </div>
   )
-}
+})
+
+export default SequenceBody

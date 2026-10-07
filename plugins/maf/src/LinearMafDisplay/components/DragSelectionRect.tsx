@@ -1,5 +1,6 @@
 import { usePalette } from '@jbrowse/core/ui/PaletteContext'
 import { alpha } from '@jbrowse/core/ui/palette'
+import { observer } from 'mobx-react'
 
 import type { DragRect } from './useDragSelection.ts'
 
@@ -11,7 +12,11 @@ import type { DragRect } from './useDragSelection.ts'
  * where the cursor is. Adding `scrollTop` here pushed the rect that far below the
  * cursor on any scrolled track.
  */
-export default function DragSelectionRect({ rect }: { rect: DragRect }) {
+const DragSelectionRect = observer(function DragSelectionRect({
+  rect,
+}: {
+  rect: DragRect
+}) {
   const palette = usePalette()
   const { startX, startY, endX, endY } = rect
   return (
@@ -28,4 +33,6 @@ export default function DragSelectionRect({ rect }: { rect: DragRect }) {
       }}
     />
   )
-}
+})
+
+export default DragSelectionRect

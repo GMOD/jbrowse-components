@@ -1,5 +1,6 @@
 import { SubmitForm } from '@jbrowse/core/ui'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
+import { observer } from 'mobx-react'
 
 import type { ReactNode } from 'react'
 
@@ -15,7 +16,7 @@ const useStyles = makeStyles()({
 // The chrome shared by the sequence-search mode panels: the fixed-width column
 // their fields lay out in, plus SubmitForm's Cancel/Submit footer. Each panel
 // still owns its own fields and its own submit, so this is only the frame.
-export default function SearchPanelForm({
+const SearchPanelForm = observer(function SearchPanelForm({
   onSubmit,
   handleClose,
   submitDisabled,
@@ -43,4 +44,6 @@ export default function SearchPanelForm({
       {children}
     </SubmitForm>
   )
-}
+})
+
+export default SearchPanelForm

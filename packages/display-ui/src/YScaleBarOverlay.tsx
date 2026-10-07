@@ -1,4 +1,5 @@
 import { VERTICAL_SCROLLBAR_CLEARANCE } from '@jbrowse/core/ui/VerticalScrollbar'
+import { observer } from 'mobx-react'
 
 import AxisGutter from './AxisGutter.tsx'
 import { axisGutterLeft, axisGutterWidth } from './axisPlacement.ts'
@@ -10,7 +11,7 @@ import type { YAxis } from './valueScale.ts'
  * positioned absolutely over the band at `top`, with `AxisGutter` inside. A
  * right-side gutter clears the vertical scrollbar a display may mount.
  */
-export default function YScaleBarOverlay({
+const YScaleBarOverlay = observer(function YScaleBarOverlay({
   axis,
   top,
   width,
@@ -34,4 +35,6 @@ export default function YScaleBarOverlay({
       <AxisGutter axis={axis} />
     </svg>
   )
-}
+})
+
+export default YScaleBarOverlay

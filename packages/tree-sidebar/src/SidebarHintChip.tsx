@@ -1,6 +1,7 @@
 import { useState } from 'react'
 
 import { makeStyles } from '@jbrowse/core/util/tss-react'
+import { observer } from 'mobx-react'
 
 import { SIDEBAR_HINT_LINE_PX } from './treeSidebarGeometry.ts'
 
@@ -71,7 +72,7 @@ const useStyles = makeStyles()(theme => ({
  * `onClick` makes the chip act instead of dismiss — the subtree-filter chip
  * clears the filter, which is what makes the condition go away.
  */
-export function SidebarHintChip({
+export const SidebarHintChip = observer(function SidebarHintChip({
   hint,
   top = 0,
   maxWidth,
@@ -103,4 +104,4 @@ export function SidebarHintChip({
       {hint.text}
     </button>
   ) : null
-}
+})

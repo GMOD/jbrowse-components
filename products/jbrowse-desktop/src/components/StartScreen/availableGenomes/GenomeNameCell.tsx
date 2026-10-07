@@ -1,5 +1,6 @@
 import { ActionLink, CascadingMenuButton } from '@jbrowse/core/ui'
 import MoreHoriz from '@mui/icons-material/MoreHoriz'
+import { observer } from 'mobx-react'
 
 import type { LaunchCallback } from '../types.ts'
 
@@ -7,7 +8,7 @@ import type { LaunchCallback } from '../types.ts'
  * Shared cell renderer for the name column in both UCSC and non-UCSC genome tables.
  * Renders launch links, a context menu, and optional badge children (e.g. reference/suppressed indicators).
  */
-export default function GenomeNameCell({
+const GenomeNameCell = observer(function GenomeNameCell({
   displayName,
   jbrowseConfig,
   jbrowseMinimalConfig,
@@ -102,4 +103,6 @@ export default function GenomeNameCell({
       </CascadingMenuButton>
     </div>
   )
-}
+})
+
+export default GenomeNameCell

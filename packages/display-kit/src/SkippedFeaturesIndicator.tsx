@@ -1,4 +1,5 @@
 import { pluralize } from '@jbrowse/core/util'
+import { observer } from 'mobx-react'
 
 import TrackControl from './trackControl/TrackControl.tsx'
 
@@ -12,7 +13,7 @@ export type { SkippedFeatures, SkippedLayer } from './skippedFeatures.ts'
  * encoder could not place: a mistyped score field is otherwise an empty
  * track with no message. Renders nothing when nothing was skipped.
  */
-export default function SkippedFeaturesIndicator({
+const SkippedFeaturesIndicator = observer(function SkippedFeaturesIndicator({
   skipped,
   total,
   fields,
@@ -32,4 +33,6 @@ export default function SkippedFeaturesIndicator({
       tooltip={`${skipped.toLocaleString()} of ${total.toLocaleString()} ${pluralize(total, 'feature')} skipped: ${reason}`}
     />
   )
-}
+})
+
+export default SkippedFeaturesIndicator

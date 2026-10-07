@@ -1,3 +1,5 @@
+import { observer } from 'mobx-react'
+
 import { cx, makeStyles } from '../util/tss-react/index.ts'
 import { indeterminateSweep } from './statusProgressKeyframes.ts'
 
@@ -66,7 +68,7 @@ const useStyles = makeStyles()(theme => ({
  * two modules deep, and its own test asserts the rendered tree carries no `Mui*`
  * class, which catches a Material component rendered directly.
  */
-export default function StatusProgressBar({
+const StatusProgressBar = observer(function StatusProgressBar({
   fraction,
   className,
   style,
@@ -97,4 +99,6 @@ export default function StatusProgressBar({
       />
     </div>
   )
-}
+})
+
+export default StatusProgressBar

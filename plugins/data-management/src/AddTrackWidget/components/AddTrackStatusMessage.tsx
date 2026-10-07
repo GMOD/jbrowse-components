@@ -1,5 +1,6 @@
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { Typography } from '@mui/material'
+import { observer } from 'mobx-react'
 
 const useStyles = makeStyles()(theme => ({
   spacing: {
@@ -7,7 +8,7 @@ const useStyles = makeStyles()(theme => ({
   },
 }))
 
-export default function StatusMessage({
+const StatusMessage = observer(function StatusMessage({
   trackAdapter,
   trackType,
 }: {
@@ -29,4 +30,6 @@ export default function StatusMessage({
       update the track type.
     </Typography>
   )
-}
+})
+
+export default StatusMessage

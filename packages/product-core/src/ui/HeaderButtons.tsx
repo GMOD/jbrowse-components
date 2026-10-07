@@ -2,6 +2,7 @@ import { CopyToClipboardButton } from '@jbrowse/core/ui'
 import { stripBaseUris } from '@jbrowse/core/util/addRelativeUris'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { Button } from '@mui/material'
+import { observer } from 'mobx-react'
 
 const useStyles = makeStyles()(theme => ({
   button: {
@@ -22,7 +23,7 @@ interface HeaderButtonsProps {
   setShowRefNames: (show: boolean) => void
 }
 
-function HeaderButtons({
+const HeaderButtons = observer(function HeaderButtons({
   conf,
   hideUris,
   setShowRefNames,
@@ -57,6 +58,6 @@ function HeaderButtons({
       </span>
     </span>
   )
-}
+})
 
 export default HeaderButtons

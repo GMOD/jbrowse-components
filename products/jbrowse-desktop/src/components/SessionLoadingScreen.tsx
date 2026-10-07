@@ -1,6 +1,7 @@
 import { LoadingEllipses } from '@jbrowse/core/ui'
 import { keyframes, makeStyles } from '@jbrowse/core/util/tss-react'
 import { CircularProgress } from '@mui/material'
+import { observer } from 'mobx-react'
 
 // anti-flash: a session that opens in a few hundred milliseconds unmounts this
 // before the delay elapses and never draws anything
@@ -25,7 +26,7 @@ const useStyles = makeStyles()(theme => ({
   },
 }))
 
-export default function SessionLoadingScreen({
+const SessionLoadingScreen = observer(function SessionLoadingScreen({
   message = 'Loading session',
   fullscreen = false,
 }: {
@@ -39,4 +40,6 @@ export default function SessionLoadingScreen({
       <LoadingEllipses variant="h6" message={message} />
     </div>
   )
-}
+})
+
+export default SessionLoadingScreen

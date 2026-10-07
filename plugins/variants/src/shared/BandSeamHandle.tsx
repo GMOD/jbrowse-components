@@ -1,5 +1,6 @@
 import { ResizeHandle } from '@jbrowse/core/ui'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
+import { observer } from 'mobx-react'
 
 const useStyles = makeStyles()({
   seam: {
@@ -14,7 +15,7 @@ const useStyles = makeStyles()({
  * target it wants, since which number the seam is measured from differs per
  * band (a reserved height, an effective height).
  */
-export function BandSeamHandle({
+export const BandSeamHandle = observer(function BandSeamHandle({
   top,
   onDrag,
   title,
@@ -37,4 +38,4 @@ export function BandSeamHandle({
       }}
     />
   )
-}
+})

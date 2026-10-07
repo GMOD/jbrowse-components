@@ -1,10 +1,12 @@
+import { observer } from 'mobx-react'
+
 import LocalFileChooser from './LocalFileChooser.tsx'
 import UrlChooser from './UrlChooser.tsx'
 
 import type { BaseInternetAccountModel } from '../../pluggableElementTypes/index.ts'
 import type { FileLocation } from '../../util/types/index.ts'
 
-export default function LocationInput({
+const LocationInput = observer(function LocationInput({
   toggleButtonValue,
   selectedAccount,
   location,
@@ -32,4 +34,6 @@ export default function LocationInput({
       style={inline ? { margin: 0 } : undefined}
     />
   )
-}
+})
+
+export default LocationInput

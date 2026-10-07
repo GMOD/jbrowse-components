@@ -1,8 +1,10 @@
 import { useEffect, useRef, useState } from 'react'
 
+import { observer } from 'mobx-react'
+
 import { drawImageOntoCanvasContext } from '../util/offscreenCanvasPonyfill.ts'
 
-function PrerenderedCanvas(props: {
+const PrerenderedCanvas = observer(function PrerenderedCanvas(props: {
   width: number
   height: number
   highResolutionScaling?: number
@@ -58,6 +60,6 @@ function PrerenderedCanvas(props: {
       style={{ width, height, ...style }}
     />
   )
-}
+})
 
 export default PrerenderedCanvas

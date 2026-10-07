@@ -6,6 +6,8 @@ import {
   useSyncExternalStore,
 } from 'react'
 
+import { observer } from 'mobx-react'
+
 import {
   onColorSchemeChange,
   prefersDarkColorScheme,
@@ -62,7 +64,7 @@ export function StyleThemeProvider({
  * write that the worker-side half of the rendering derives from. This one
  * colors React and nothing else.
  */
-export function PaletteProvider({
+export const PaletteProvider = observer(function PaletteProvider({
   palette,
   children,
 }: {
@@ -71,7 +73,7 @@ export function PaletteProvider({
 }) {
   const theme = useMemo(() => ({ ...defaultStyleTheme, palette }), [palette])
   return <StyleThemeProvider theme={theme}>{children}</StyleThemeProvider>
-}
+})
 
 export function useStyleTheme(): JBrowseStyleTheme {
   return use(StyleThemeContext) ?? defaultStyleTheme
@@ -190,7 +192,7 @@ export function useSessionPalette(
  * The session is the only thing that resolves a palette here, so a host
  * supplying colors of its own mounts `PaletteProvider` directly instead.
  */
-export function SessionPaletteProvider({
+export const SessionPaletteProvider = observer(function SessionPaletteProvider({
   session,
   mode,
   children,
@@ -201,4 +203,4 @@ export function SessionPaletteProvider({
 }) {
   const palette = useSessionPalette(session, mode)
   return <PaletteProvider palette={palette}>{children}</PaletteProvider>
-}
+})

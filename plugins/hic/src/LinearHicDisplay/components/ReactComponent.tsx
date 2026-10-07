@@ -22,7 +22,7 @@ function formatLocus(data: HicDataResult, regionIdx: number, bin: number) {
 // The two contact axes meeting under the cursor, drawn up to the diagonal. A
 // diagonal's screen slope is `yScalar`, so reaching y=0 costs `y / yScalar`.
 // Not core's `Crosshairs`, which is a vertical rule.
-function ContactAxisGuides({
+const ContactAxisGuides = observer(function ContactAxisGuides({
   x,
   y,
   yScalar,
@@ -55,11 +55,11 @@ function ContactAxisGuides({
       />
     </svg>
   )
-}
+})
 
 // Strings in, never the payload: React's dev performance track walks a typed
 // array prop element by element.
-function HicTooltip({
+const HicTooltip = observer(function HicTooltip({
   locus1,
   locus2,
   label,
@@ -83,7 +83,7 @@ function HicTooltip({
       </div>
     </BaseTooltip>
   )
-}
+})
 
 const HicPointer = observer(function HicPointer({
   model,

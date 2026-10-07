@@ -1,4 +1,5 @@
 import { makeStyles } from '@jbrowse/core/util/tss-react'
+import { observer } from 'mobx-react'
 
 // MUI's own CheckBox / CheckBoxOutlineBlank icon path data (24x24 viewBox), so
 // the glyph is pixel-identical to <Checkbox> without mounting SwitchBase +
@@ -46,7 +47,7 @@ const useStyles = makeStyles()(theme => ({
   },
 }))
 
-export default function CheckboxLite({
+const CheckboxLite = observer(function CheckboxLite({
   checked,
   onChange,
   disabled,
@@ -79,4 +80,6 @@ export default function CheckboxLite({
       </svg>
     </span>
   )
-}
+})
+
+export default CheckboxLite

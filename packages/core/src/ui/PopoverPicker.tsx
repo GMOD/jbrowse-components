@@ -1,5 +1,7 @@
 import { useState } from 'react'
 
+import { observer } from 'mobx-react'
+
 import { makeStyles } from '../util/tss-react/index.ts'
 import { ColorPopover } from './ColorPicker.tsx'
 import { swatchStyle } from './colorSwatchStyle.ts'
@@ -15,7 +17,7 @@ const useStyles = makeStyles()({
   },
 })
 
-export default function PopoverPicker({
+const PopoverPicker = observer(function PopoverPicker({
   color,
   onChange,
   presetAlpha,
@@ -52,4 +54,6 @@ export default function PopoverPicker({
       />
     </div>
   )
-}
+})
+
+export default PopoverPicker

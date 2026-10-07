@@ -1,5 +1,7 @@
 import { useState } from 'react'
 
+import { observer } from 'mobx-react'
+
 import { TrackOverlayContext } from './TrackOverlayContext.ts'
 
 /**
@@ -44,7 +46,7 @@ import { TrackOverlayContext } from './TrackOverlayContext.ts'
  * `data-gesture-owner`, so anything that does is already exempt from the LGV's
  * click-drag pan.
  */
-export function TrackOverlaySlot({
+export const TrackOverlaySlot = observer(function TrackOverlaySlot({
   children,
   zIndex,
   style,
@@ -98,4 +100,4 @@ export function TrackOverlaySlot({
       />
     </div>
   )
-}
+})

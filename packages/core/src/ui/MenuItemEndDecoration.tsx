@@ -2,6 +2,7 @@ import CheckBoxIcon from '@mui/icons-material/CheckBox'
 import CheckBoxOutlineBlankIcon from '@mui/icons-material/CheckBoxOutlineBlank'
 import RadioButtonCheckedIcon from '@mui/icons-material/RadioButtonChecked'
 import RadioButtonUncheckedIcon from '@mui/icons-material/RadioButtonUnchecked'
+import { observer } from 'mobx-react'
 
 import { makeStyles } from '../util/tss-react/index.ts'
 
@@ -13,7 +14,7 @@ const useStyles = makeStyles()({
   },
 })
 
-export function MenuItemEndDecoration({
+export const MenuItemEndDecoration = observer(function MenuItemEndDecoration({
   type,
   checked,
 }: {
@@ -41,4 +42,4 @@ export function MenuItemEndDecoration({
     }
   }
   return <div className={classes.menuItemEndDecoration}>{icon}</div>
-}
+})

@@ -1,6 +1,7 @@
 import { useState } from 'react'
 
 import { TextField } from '@mui/material'
+import { observer } from 'mobx-react'
 
 import type { TextFieldProps } from '@mui/material'
 
@@ -34,7 +35,7 @@ type Props = Omit<TextFieldProps, 'value' | 'onChange' | 'type' | 'error'> &
  * spinners). This component keeps a plain text input and validates with
  * `Number.isFinite` + optional min/max.
  */
-export default function NumberTextField(props: Props) {
+const NumberTextField = observer(function NumberTextField(props: Props) {
   const {
     defaultValue,
     onValueChange,
@@ -64,7 +65,9 @@ export default function NumberTextField(props: Props) {
       }}
     />
   )
-}
+})
+
+export default NumberTextField
 
 function parseInBounds(text: string, min?: number, max?: number) {
   if (text === '') {

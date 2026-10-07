@@ -1,5 +1,6 @@
 import { useLocalStorage } from '@jbrowse/core/util/hooks'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
+import { observer } from 'mobx-react'
 
 import { invokeIpc } from '../../../ipc.ts'
 import { useNotifyError } from '../../NotifyContext.ts'
@@ -28,7 +29,7 @@ async function getQuickstarts(sel: string[]) {
   return Promise.all(sel.map(entry => invokeIpc('getQuickstart', entry)))
 }
 
-export default function LeftSidePanel({
+const LeftSidePanel = observer(function LeftSidePanel({
   setPluginManager,
 }: {
   setPluginManager: (arg0: PluginManager) => void
@@ -86,4 +87,6 @@ export default function LeftSidePanel({
       )}
     </div>
   )
-}
+})
+
+export default LeftSidePanel

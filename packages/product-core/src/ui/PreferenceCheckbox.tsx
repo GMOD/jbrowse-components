@@ -1,6 +1,7 @@
 import { LabeledCheckbox } from '@jbrowse/core/ui'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { Typography } from '@mui/material'
+import { observer } from 'mobx-react'
 
 const useStyles = makeStyles()({
   row: {
@@ -9,7 +10,7 @@ const useStyles = makeStyles()({
   },
 })
 
-export default function PreferenceCheckbox({
+const PreferenceCheckbox = observer(function PreferenceCheckbox({
   checked,
   label,
   help,
@@ -40,4 +41,6 @@ export default function PreferenceCheckbox({
       }
     />
   )
-}
+})
+
+export default PreferenceCheckbox

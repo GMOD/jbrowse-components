@@ -1,5 +1,7 @@
 import { useState } from 'react'
 
+import { observer } from 'mobx-react'
+
 import { isObject } from '../../util/index.ts'
 import { makeStyles } from '../../util/tss-react/index.ts'
 import Attributes from './Attributes.tsx'
@@ -45,7 +47,7 @@ export function isObjectArray(
   return value.every(isObject)
 }
 
-export default function ArrayValue({
+const ArrayValue = observer(function ArrayValue({
   name,
   value,
   description,
@@ -135,4 +137,6 @@ export default function ArrayValue({
       )}
     </div>
   )
-}
+})
+
+export default ArrayValue

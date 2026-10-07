@@ -1,5 +1,7 @@
 import { useState } from 'react'
 
+import { observer } from 'mobx-react'
+
 import { alpha } from '../../ui/palette.ts'
 import { keyframes, makeStyles } from '../../util/tss-react/index.ts'
 
@@ -46,7 +48,7 @@ const useStyles = makeStyles()(theme => {
  * sample grid); inside such a key this remounts on every swap and its counter
  * never leaves zero, so it silently never plays.
  */
-export default function FeatureWash({
+const FeatureWash = observer(function FeatureWash({
   uniqueId,
   children,
 }: {
@@ -85,4 +87,6 @@ export default function FeatureWash({
       ) : null}
     </div>
   )
-}
+})
+
+export default FeatureWash

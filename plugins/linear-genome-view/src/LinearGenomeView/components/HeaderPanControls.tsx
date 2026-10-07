@@ -3,6 +3,7 @@ import { makeStyles } from '@jbrowse/core/util/tss-react'
 import ArrowBackIcon from '@mui/icons-material/ArrowBack'
 import ArrowForwardIcon from '@mui/icons-material/ArrowForward'
 import { Button } from '@mui/material'
+import { observer } from 'mobx-react'
 
 import { SPACING, WIDGET_HEIGHT } from '../consts.ts'
 
@@ -25,7 +26,7 @@ const useStyles = makeStyles()(theme => ({
   },
 }))
 
-export default function HeaderPanControls({
+const HeaderPanControls = observer(function HeaderPanControls({
   model,
   compact,
 }: {
@@ -58,4 +59,6 @@ export default function HeaderPanControls({
       </Button>
     </>
   )
-}
+})
+
+export default HeaderPanControls

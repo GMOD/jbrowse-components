@@ -15,7 +15,7 @@ const useStyles = makeStyles()(theme => ({
   },
 }))
 
-function DisabledButton() {
+const DisabledButton = observer(function DisabledButton() {
   return (
     <Tooltip title="Unable to delete connection in config file as non-admin user">
       <IconButton>
@@ -23,7 +23,7 @@ function DisabledButton() {
       </IconButton>
     </Tooltip>
   )
-}
+})
 
 const ManageConnectionsDialog = observer(function ManageConnectionsDialog({
   session,

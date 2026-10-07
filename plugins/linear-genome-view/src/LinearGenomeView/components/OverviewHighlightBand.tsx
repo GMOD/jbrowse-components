@@ -1,5 +1,6 @@
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { Tooltip } from '@mui/material'
+import { observer } from 'mobx-react'
 
 // A single absolute-positioned band over the overview scalebar. The 1px border
 // keeps very narrow bands visible.
@@ -11,7 +12,7 @@ const useStyles = makeStyles()({
   },
 })
 
-export default function OverviewHighlightBand({
+const OverviewHighlightBand = observer(function OverviewHighlightBand({
   coords,
   background,
   borderColor,
@@ -44,4 +45,6 @@ export default function OverviewHighlightBand({
   ) : (
     band
   )
-}
+})
+
+export default OverviewHighlightBand

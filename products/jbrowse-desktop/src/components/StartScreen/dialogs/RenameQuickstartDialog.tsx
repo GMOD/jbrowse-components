@@ -2,11 +2,12 @@ import { useState } from 'react'
 
 import { ConfirmDialog, ErrorMessage } from '@jbrowse/core/ui'
 import { DialogContentText, TextField } from '@mui/material'
+import { observer } from 'mobx-react'
 
 import { invokeIpc } from '../../../ipc.ts'
 import { useIpcAction } from './useIpcAction.ts'
 
-export default function RenameQuickstartDialog({
+const RenameQuickstartDialog = observer(function RenameQuickstartDialog({
   quickstartNames,
   quickstartToRename,
   onClose,
@@ -66,4 +67,6 @@ export default function RenameQuickstartDialog({
       {error ? <ErrorMessage error={error} /> : null}
     </ConfirmDialog>
   )
-}
+})
+
+export default RenameQuickstartDialog

@@ -1,3 +1,5 @@
+import { observer } from 'mobx-react'
+
 import { makeStyles } from '../util/tss-react/index.ts'
 import ErrorActions from './ErrorActions.tsx'
 import RedErrorMessageBox from './RedErrorMessageBox.tsx'
@@ -25,7 +27,7 @@ const useStyles = makeStyles()(theme => ({
   },
 }))
 
-function ErrorBanner({
+const ErrorBanner = observer(function ErrorBanner({
   error,
   onReset,
   extraAction,
@@ -63,6 +65,6 @@ function ErrorBanner({
       ) : null}
     </RedErrorMessageBox>
   )
-}
+})
 
 export default ErrorBanner

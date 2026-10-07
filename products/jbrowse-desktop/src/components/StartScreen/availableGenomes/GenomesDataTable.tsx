@@ -4,6 +4,7 @@ import { ActionLink } from '@jbrowse/core/ui'
 import ConfirmDialog from '@jbrowse/core/ui/ConfirmDialog'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { DialogContentText } from '@mui/material'
+import { observer } from 'mobx-react'
 
 import NetworkErrorMessage from '../NetworkErrorMessage.tsx'
 import defaultFavs from '../defaultFavs.ts'
@@ -42,7 +43,7 @@ function rowToFav(row: Entry): Fav {
   }
 }
 
-export default function GenomesDataTable({
+const GenomesDataTable = observer(function GenomesDataTable({
   favorites,
   setFavorites,
   onClose,
@@ -233,4 +234,6 @@ export default function GenomesDataTable({
       ) : null}
     </div>
   )
-}
+})
+
+export default GenomesDataTable

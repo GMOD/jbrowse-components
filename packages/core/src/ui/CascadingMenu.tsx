@@ -1,4 +1,4 @@
-import { createContext, memo, use, useEffect, useMemo, useState } from 'react'
+import { createContext, use, useEffect, useMemo, useState } from 'react'
 
 import {
   Divider,
@@ -343,7 +343,7 @@ function makeTestId(kind: string, label: React.ReactNode) {
 
 // Leading icon slot shared by submenu rows and clickable rows; renders nothing
 // when the item has no icon (the row insets instead to stay column-aligned).
-function MenuItemLeadingIcon({
+const MenuItemLeadingIcon = observer(function MenuItemLeadingIcon({
   Icon,
 }: {
   Icon: React.ElementType | undefined
@@ -353,7 +353,7 @@ function MenuItemLeadingIcon({
       <Icon />
     </ListItemIcon>
   ) : null
-}
+})
 
 // Which decoration columns the menu needs, computed menu-wide (true if ANY row
 // needs it) so every row reserves matching slots and the decorations stack into
@@ -418,7 +418,7 @@ function getMenuColumnFlags(menuItems: JBMenuItem[]) {
 // Escape is the exception, and has to be: MUI's Modal reads it off the same
 // React tree, so a row that swallowed every key left the menu with no way out
 // for anyone whose focus was inside the slider.
-function CustomMenuRow({
+const CustomMenuRow = observer(function CustomMenuRow({
   item,
   onHover,
 }: {
@@ -442,14 +442,14 @@ function CustomMenuRow({
       {item.render(onCloseRoot)}
     </li>
   )
-}
+})
 
 // A disabled MenuItem has pointer-events:none, so a Tooltip placed directly on
 // it never fires; the span wrapper (per MUI guidance) restores hover. Disabled
 // rows aren't keyboard-focusable, so the extra wrapper doesn't affect menu
 // navigation. Renders children untouched unless the item is disabled and has
 // disabledHelpText.
-function DisabledTooltip({
+const DisabledTooltip = observer(function DisabledTooltip({
   item,
   children,
 }: {
@@ -463,7 +463,7 @@ function DisabledTooltip({
   ) : (
     children
   )
-}
+})
 
 // One submenu row: label (with optional leading icon), the same trailing
 // decorations a clickable row draws, and the panel it opens.
@@ -474,7 +474,7 @@ function DisabledTooltip({
 // toggle), whose content stops its own click so using it doesn't also open the
 // submenu. Both go through `MenuItemTrailing`, so they land in the columns the
 // clickable rows reserve rather than in a hand-assembled copy of them.
-const CascadingSubmenu = memo(function CascadingSubmenu({
+const CascadingSubmenu = observer(function CascadingSubmenu({
   item,
   itemKey,
   inset,
@@ -580,7 +580,7 @@ const SubMenuList = observer(function SubMenuList({
 // One clickable menu row: label (with optional leading icon) plus its trailing
 // value/help/adornment decorations. The menu-wide `columns` flags let every row
 // reserve matching decoration slots so the columns line up down the menu.
-const CascadingMenuItem = memo(function CascadingMenuItem({
+const CascadingMenuItem = observer(function CascadingMenuItem({
   item,
   inset,
   columns,
@@ -649,7 +649,7 @@ const CascadingMenuItem = memo(function CascadingMenuItem({
   )
 })
 
-function CascadingMenuList({
+const CascadingMenuList = observer(function CascadingMenuList({
   menuItems,
   onNavigateBack,
 }: {
@@ -726,7 +726,7 @@ function CascadingMenuList({
       })}
     </>
   )
-}
+})
 
 interface CascadingMenuProps {
   onMenuItemClick: (callback: MenuItemClickHandler) => void

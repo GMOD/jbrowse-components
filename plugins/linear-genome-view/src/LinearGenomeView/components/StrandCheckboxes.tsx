@@ -1,12 +1,13 @@
 import { LabeledCheckbox } from '@jbrowse/core/ui'
 import { FormGroup, Typography } from '@mui/material'
+import { observer } from 'mobx-react'
 
 import type { ReactNode } from 'react'
 
 // Forward/reverse strand checkboxes plus the "select at least one" guard, shared
 // by the sequence-search mode panels. Extra checkboxes for a specific panel (e.g.
 // "Case insensitive") slot in alongside via `children`.
-export default function StrandCheckboxes({
+const StrandCheckboxes = observer(function StrandCheckboxes({
   searchForward,
   searchReverse,
   setSearchForward,
@@ -47,4 +48,6 @@ export default function StrandCheckboxes({
       ) : null}
     </>
   )
-}
+})
+
+export default StrandCheckboxes

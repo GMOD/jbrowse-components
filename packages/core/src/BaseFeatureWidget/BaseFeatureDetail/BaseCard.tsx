@@ -5,6 +5,7 @@ import {
   AccordionSummary,
   Typography,
 } from '@mui/material'
+import { observer } from 'mobx-react'
 
 import { makeStyles } from '../../util/tss-react/index.ts'
 
@@ -17,7 +18,7 @@ const useStyles = makeStyles()(theme => ({
   },
 }))
 
-export default function BaseCard({
+const BaseCard = observer(function BaseCard({
   children,
   title,
   defaultExpanded = true,
@@ -37,4 +38,6 @@ export default function BaseCard({
       </AccordionDetails>
     </Accordion>
   )
-}
+})
+
+export default BaseCard

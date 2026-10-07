@@ -3,6 +3,7 @@ import { useEffect, useRef, useState } from 'react'
 import { alpha } from '@jbrowse/core/ui/palette'
 import { MUI_TOOLTIP_Z_INDEX } from '@jbrowse/core/ui/zIndexes'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
+import { observer } from 'mobx-react'
 import { createPortal } from 'react-dom'
 
 // roughly how wide a coordinate label is. the guide clamps itself half of this
@@ -66,7 +67,7 @@ const useStyles = makeStyles()(theme => ({
 }))
 
 /** A red vertical line at `coordX` with `children` labelled above it. */
-export function VerticalGuideLine({
+export const VerticalGuideLine = observer(function VerticalGuideLine({
   coordX,
   viewWidth,
   stickyTop,
@@ -89,7 +90,7 @@ export function VerticalGuideLine({
       />
     </>
   )
-}
+})
 
 function anchorStyle(stickyTop: string | undefined) {
   return stickyTop === undefined
@@ -117,7 +118,7 @@ function anchorStyle(stickyTop: string | undefined) {
  * measured once per hover, not per mousemove — only `coordX` changes as the
  * mouse moves, and that needs no measurement.
  */
-export function GuideLabel({
+export const GuideLabel = observer(function GuideLabel({
   coordX,
   viewWidth,
   stickyTop,
@@ -182,7 +183,7 @@ export function GuideLabel({
         : null}
     </>
   )
-}
+})
 
 /**
  * The bp coordinates of a rubberband selection, one label just outside each edge
@@ -190,7 +191,7 @@ export function GuideLabel({
  * with no room outside its edge flips inside instead, which is why the span it
  * has to fit in is a prop.
  */
-export function SpanEdgeLabels({
+export const SpanEdgeLabels = observer(function SpanEdgeLabels({
   stickyTop,
   left,
   right,
@@ -226,4 +227,4 @@ export function SpanEdgeLabels({
       </div>
     </div>
   )
-}
+})

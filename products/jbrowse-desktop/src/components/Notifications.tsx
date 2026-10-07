@@ -3,6 +3,7 @@ import { useCallback, useState } from 'react'
 import StackTraceButton from '@jbrowse/core/ui/StackTraceButton'
 import CloseIcon from '@mui/icons-material/Close'
 import { Alert, Button, IconButton, Snackbar } from '@mui/material'
+import { observer } from 'mobx-react'
 
 import { NotifyContext } from './NotifyContext.ts'
 
@@ -14,7 +15,11 @@ interface Notification {
   action?: NotifyAction
 }
 
-export function NotificationProvider({ children }: { children: ReactNode }) {
+export const NotificationProvider = observer(function NotificationProvider({
+  children,
+}: {
+  children: ReactNode
+}) {
   const [notification, setNotification] = useState<Notification>()
   // `open` rather than the presence of `notification`: MUI keeps a Snackbar's
   // children mounted through the fade-out, so clearing the message on the click
@@ -82,4 +87,4 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
       </Snackbar>
     </NotifyContext>
   )
-}
+})

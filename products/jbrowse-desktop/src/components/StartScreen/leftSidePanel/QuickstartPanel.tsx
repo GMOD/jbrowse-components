@@ -2,6 +2,7 @@ import { useState } from 'react'
 
 import { ErrorMessage, LoadingEllipses } from '@jbrowse/core/ui'
 import { useFetch } from '@jbrowse/core/util/useFetch'
+import { observer } from 'mobx-react'
 
 import { invokeIpc } from '../../../ipc.ts'
 import DeleteQuickstartDialog from '../dialogs/DeleteQuickstartDialog.tsx'
@@ -10,7 +11,7 @@ import { useInnerDims } from '../useInnerDims.ts'
 import CollapsibleSection from './CollapsibleSection.tsx'
 import LinkMenuRow from './LinkMenuRow.tsx'
 
-export default function QuickstartPanel({
+const QuickstartPanel = observer(function QuickstartPanel({
   launch,
 }: {
   launch: (arg0: string[]) => void
@@ -99,4 +100,6 @@ export default function QuickstartPanel({
       ) : null}
     </CollapsibleSection>
   )
-}
+})
+
+export default QuickstartPanel

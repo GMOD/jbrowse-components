@@ -5,6 +5,7 @@ import { measureGridWidth } from '@jbrowse/core/util'
 import DeleteIcon from '@mui/icons-material/Delete'
 import { Alert, IconButton, TextField } from '@mui/material'
 import { DataGrid } from '@mui/x-data-grid'
+import { observer } from 'mobx-react'
 
 import {
   MIXED_MESSAGE,
@@ -19,7 +20,7 @@ function nameOf(track: AnyTrackConfig) {
   return (track.name as string | undefined) || track.trackId
 }
 
-const ConfirmDialog = ({
+const ConfirmDialog = observer(function ConfirmDialog({
   tracks: initialTracks,
   leftOut,
   onClose,
@@ -31,7 +32,7 @@ const ConfirmDialog = ({
     tracks: AnyTrackConfig[]
     kind: StackKind
   }) => void
-}) => {
+}) {
   const [val, setVal] = useState('Multi-row track')
   const [tracks, setTracks] = useState(initialTracks)
   const kind = stackKind(tracks.flatMap(t => stackKindOf(t.type) ?? []))
@@ -99,6 +100,6 @@ const ConfirmDialog = ({
       />
     </SubmitDialog>
   )
-}
+})
 
 export default ConfirmDialog

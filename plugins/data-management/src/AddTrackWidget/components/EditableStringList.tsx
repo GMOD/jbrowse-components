@@ -13,6 +13,7 @@ import {
   ListItem,
   TextField,
 } from '@mui/material'
+import { observer } from 'mobx-react'
 
 const useStyles = makeStyles()(theme => ({
   card: {
@@ -25,7 +26,7 @@ const useStyles = makeStyles()(theme => ({
  * with a delete button, plus a trailing field that appends a new (trimmed,
  * de-duplicated) value on Enter or via the add button.
  */
-export default function EditableStringList({
+const EditableStringList = observer(function EditableStringList({
   label,
   testId,
   values,
@@ -119,4 +120,6 @@ export default function EditableStringList({
       </CardContent>
     </Card>
   )
-}
+})
+
+export default EditableStringList

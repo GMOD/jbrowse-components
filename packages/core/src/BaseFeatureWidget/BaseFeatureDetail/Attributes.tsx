@@ -1,5 +1,7 @@
 import { Suspense, lazy } from 'react'
 
+import { observer } from 'mobx-react'
+
 import {
   isLocalPathLocation,
   isObject,
@@ -162,7 +164,7 @@ function widestLabel(
   return Math.ceil(measureLabels(attributes, opts)) + FIELD_NAME_PADDING
 }
 
-export default function Attributes(props: {
+const Attributes = observer(function Attributes(props: {
   attributes: Record<string, unknown>
   omit?: string[]
   omitSingleLevel?: string[]
@@ -276,4 +278,6 @@ export default function Attributes(props: {
       })}
     </>
   )
-}
+})
+
+export default Attributes

@@ -92,7 +92,7 @@ type LabelClasses = Record<
 // The only label here that is a control. It stays clickable whether or not its
 // gene resolves to an openable feature, since expanding reads the id straight off
 // the attribute.
-function MoreIsoformsBadge({
+const MoreIsoformsBadge = observer(function MoreIsoformsBadge({
   resolved,
   featureId,
   displayedRegionIndex,
@@ -122,11 +122,11 @@ function MoreIsoformsBadge({
       {label.text}
     </FloatingText>
   )
-}
+})
 
 // Carries its ids as data attributes for the layer's delegated handlers, so
 // rebuilding every label each frame allocates no per-label closure.
-function FloatingLabel({
+const FloatingLabel = observer(function FloatingLabel({
   resolved,
   featureId,
   displayedRegionIndex,
@@ -160,7 +160,7 @@ function FloatingLabel({
       {label.text}
     </FloatingText>
   )
-}
+})
 
 function overlaysReady(
   viewInitialized: boolean,

@@ -1,3 +1,5 @@
+import { observer } from 'mobx-react'
+
 import NoConfigMessageLinkList from './NoConfigMessageLinkList.tsx'
 import {
   demoSessions,
@@ -5,7 +7,7 @@ import {
   syntenyConfigs,
 } from './NoConfigMessageSampleData.ts'
 
-export default function NoConfigMessage() {
+const NoConfigMessage = observer(function NoConfigMessage() {
   const url = new URL(window.location.href)
   url.searchParams.delete('config')
   const rest = Object.fromEntries(url.searchParams)
@@ -44,4 +46,6 @@ export default function NoConfigMessage() {
       </div>
     </div>
   )
-}
+})
+
+export default NoConfigMessage

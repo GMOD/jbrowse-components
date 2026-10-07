@@ -172,8 +172,10 @@ const SequenceFeatureDetailsPanel = observer(
 // Otherwise a mode picked on a coding transcript ('cds') survives onto a
 // feature that doesn't offer it, which renders the wrong sequence and puts an
 // out-of-range value in the sequence type selector.
-function SequenceFeatureDetails(props: SequenceFeatureDetailsProps) {
+const SequenceFeatureDetails = observer(function SequenceFeatureDetails(
+  props: SequenceFeatureDetailsProps,
+) {
   return <SequenceFeatureDetailsPanel key={props.feature.uniqueId} {...props} />
-}
+})
 
 export default SequenceFeatureDetails

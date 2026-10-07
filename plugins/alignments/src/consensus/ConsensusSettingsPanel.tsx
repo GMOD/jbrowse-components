@@ -1,6 +1,7 @@
 import { LabeledCheckbox } from '@jbrowse/core/ui'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { TextField } from '@mui/material'
+import { observer } from 'mobx-react'
 
 import FractionSlider from './FractionSlider.tsx'
 import SettingLabel from './SettingLabel.tsx'
@@ -25,7 +26,7 @@ const useStyles = makeStyles()(theme => ({
   },
 }))
 
-export default function ConsensusSettingsPanel({
+const ConsensusSettingsPanel = observer(function ConsensusSettingsPanel({
   settings,
 }: {
   settings: ConsensusSettings
@@ -110,4 +111,6 @@ export default function ConsensusSettingsPanel({
       />
     </div>
   )
-}
+})
+
+export default ConsensusSettingsPanel

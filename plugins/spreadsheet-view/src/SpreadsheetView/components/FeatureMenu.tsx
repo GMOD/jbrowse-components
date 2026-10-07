@@ -7,6 +7,7 @@ import {
   pairedEndsLocString,
 } from '@jbrowse/sv-core'
 import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown'
+import { observer } from 'mobx-react'
 
 import { locationLinkClick } from '../util.ts'
 
@@ -20,7 +21,7 @@ import type {
 // either side of each breakpoint when a row's two ends open as one view
 const PAIRED_END_WINDOW_BP = 5000
 
-export default function FeatureMenu({
+const FeatureMenu = observer(function FeatureMenu({
   assemblyName,
   session,
   spreadsheetViewId,
@@ -96,4 +97,6 @@ export default function FeatureMenu({
       <ArrowDropDownIcon />
     </CascadingMenuButton>
   )
-}
+})
+
+export default FeatureMenu

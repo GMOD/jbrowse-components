@@ -1,6 +1,8 @@
+import { observer } from 'mobx-react'
+
 import InfoDialog from '../InfoDialog.tsx'
 
-export default function HelpDialog({
+const HelpDialog = observer(function HelpDialog({
   handleClose,
 }: {
   handleClose: () => void
@@ -68,4 +70,6 @@ export default function HelpDialog({
       </ul>
     </InfoDialog>
   )
-}
+})
+
+export default HelpDialog

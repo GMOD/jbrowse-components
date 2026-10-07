@@ -7,18 +7,19 @@ import {
   DialogContent,
   DialogTitle,
 } from '@mui/material'
+import { observer } from 'mobx-react'
 
 import ErrorBanner from './ErrorBanner.tsx'
 import ErrorMessageStackTraceContents from './ErrorMessageStackTraceContents.tsx'
 import FactoryResetDialog from './FactoryResetDialog.tsx'
 
-const ResetComponent = ({
+const ResetComponent = observer(function ResetComponent({
   onFactoryReset,
   resetButtonText,
 }: {
   onFactoryReset: () => void
   resetButtonText: string
-}) => {
+}) {
   const [dialogOpen, setDialogOpen] = useState(false)
 
   return (
@@ -42,9 +43,9 @@ const ResetComponent = ({
       />
     </>
   )
-}
+})
 
-export default function FatalErrorDialog({
+const FatalErrorDialog = observer(function FatalErrorDialog({
   componentStack,
   error = 'No error message provided',
   onFactoryReset,
@@ -87,4 +88,6 @@ export default function FatalErrorDialog({
       </DialogActions>
     </Dialog>
   )
-}
+})
+
+export default FatalErrorDialog

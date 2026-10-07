@@ -1,4 +1,5 @@
 import FilterListIcon from '@mui/icons-material/FilterList'
+import { observer } from 'mobx-react'
 
 import CascadingMenuButton from '../../ui/CascadingMenuButton.tsx'
 import { makeStyles } from '../../util/tss-react/index.ts'
@@ -22,7 +23,7 @@ export function useRevealFieldActions() {
   })
 }
 
-export default function FieldActionsButton({
+const FieldActionsButton = observer(function FieldActionsButton({
   path,
   value,
   fieldActions,
@@ -45,4 +46,6 @@ export default function FieldActionsButton({
       </CascadingMenuButton>
     </span>
   ) : null
-}
+})
+
+export default FieldActionsButton

@@ -119,7 +119,11 @@ function errorText(error: unknown) {
 // toolkit-free, but it paints the palette's `accent`; every rule in this
 // file reads the host's own cascade instead, so the bar is drawn here rather
 // than imported.
-function ProgressBar({ fraction }: { fraction: number }) {
+const ProgressBar = observer(function ProgressBar({
+  fraction,
+}: {
+  fraction: number
+}) {
   const filled = Math.min(1, Math.max(0, fraction))
   return (
     <div
@@ -149,7 +153,7 @@ function ProgressBar({ fraction }: { fraction: number }) {
       />
     </div>
   )
-}
+})
 
 const PlainRenderError = observer(function PlainRenderError({
   error,

@@ -1,8 +1,9 @@
 import SvgIcon from '@mui/material/SvgIcon'
+import { observer } from 'mobx-react'
 
 import type { SvgIconProps } from '@mui/material/SvgIcon'
 
-export function CursorMove(props: SvgIconProps) {
+export const CursorMove = observer(function CursorMove(props: SvgIconProps) {
   return (
     <SvgIcon {...props}>
       <path
@@ -11,9 +12,9 @@ export function CursorMove(props: SvgIconProps) {
       />
     </SvgIcon>
   )
-}
+})
 
-export function CursorMouse(props: SvgIconProps) {
+export const CursorMouse = observer(function CursorMouse(props: SvgIconProps) {
   return (
     <SvgIcon {...props}>
       <path
@@ -22,4 +23,4 @@ export function CursorMouse(props: SvgIconProps) {
       />
     </SvgIcon>
   )
-}
+})

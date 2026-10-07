@@ -1,4 +1,5 @@
 import { makeStyles } from '@jbrowse/core/util/tss-react'
+import { observer } from 'mobx-react'
 
 import { worstLevel } from '../markProblemIndex.ts'
 import { problemText } from '../markProblems.ts'
@@ -16,7 +17,7 @@ const useStyles = makeStyles()(theme => ({
  * plot the author may not have meant and reads as a remark, since the display
  * draws it either way. The level is always `MARK_RULES`' own.
  */
-export function MarkSlotProblems({
+export const MarkSlotProblems = observer(function MarkSlotProblems({
   problems,
 }: {
   problems: readonly MarkProblem[]
@@ -28,13 +29,13 @@ export function MarkSlotProblems({
       {problems.map(problem => problem.message).join('; ')}
     </span>
   ) : null
-}
+})
 
 /**
  * Every problem a plot has, each naming its mark and its slot: the report
  * under the JSON box, and the one beside a plot too broken for the controls.
  */
-export function MarkProblemList({
+export const MarkProblemList = observer(function MarkProblemList({
   problems,
 }: {
   problems: readonly MarkProblem[]
@@ -55,4 +56,4 @@ export function MarkProblemList({
       })}
     </ul>
   ) : null
-}
+})

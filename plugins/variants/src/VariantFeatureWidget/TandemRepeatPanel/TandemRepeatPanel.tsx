@@ -8,6 +8,7 @@ import {
   Typography,
   useTheme,
 } from '@mui/material'
+import { observer } from 'mobx-react'
 
 import {
   BAR_PX,
@@ -58,7 +59,7 @@ const legendRow = {
   whiteSpace: 'nowrap' as const,
 }
 
-function Legend({
+const Legend = observer(function Legend({
   repeat,
   alleles,
   referenceBp,
@@ -114,9 +115,9 @@ function Legend({
       </div>
     </div>
   )
-}
+})
 
-function Row({
+const Row = observer(function Row({
   allele,
   repeat,
   y,
@@ -239,7 +240,7 @@ function Row({
       ) : null}
     </g>
   )
-}
+})
 
 const FALLBACK_WIDTH = 360
 // per-haplotype rows up to this many read as a sample list; beyond it the panel
@@ -248,7 +249,7 @@ const SAMPLE_MAX_ROWS = 24
 
 type Mode = 'sample' | 'allele'
 
-export default function TandemRepeatPanel({
+const TandemRepeatPanel = observer(function TandemRepeatPanel({
   repeat,
   selectedAlt,
   onSelectAlt,
@@ -411,4 +412,6 @@ export default function TandemRepeatPanel({
       </div>
     </BaseCard>
   )
-}
+})
+
+export default TandemRepeatPanel

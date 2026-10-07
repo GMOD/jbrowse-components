@@ -1,3 +1,4 @@
+import { observer } from 'mobx-react'
 import { createPortal } from 'react-dom'
 
 import Tooltip from '../tooltip/Tooltip.tsx'
@@ -40,7 +41,7 @@ const ICON_PATHS = {
 // stay legible on both a light and a dark track.
 const WARNING_COLOR = '#d97706'
 
-function Icon({ icon }: { icon: TrackControlIcon }) {
+const Icon = observer(function Icon({ icon }: { icon: TrackControlIcon }) {
   return (
     <svg
       viewBox="0 0 16 16"
@@ -57,11 +58,11 @@ function Icon({ icon }: { icon: TrackControlIcon }) {
       <path d={ICON_PATHS[icon]} />
     </svg>
   )
-}
+})
 
 // The ▾ after a label whose press opens a menu. Drawn like the icons, for the
 // same reason; smaller, because it qualifies the label rather than naming it.
-function Caret() {
+const Caret = observer(function Caret() {
   return (
     <svg
       viewBox="0 0 8 8"
@@ -78,7 +79,7 @@ function Caret() {
       <path d="M1.5 3l2.5 2.5L6.5 3" />
     </svg>
   )
-}
+})
 
 function triggerStyle(warning: boolean): React.CSSProperties {
   return {
@@ -117,7 +118,7 @@ function triggerStyle(warning: boolean): React.CSSProperties {
  * `plainChromeOverlays` — the two are a pair, and both are things you hand to a
  * provider rather than render yourself.
  */
-export default function PlainTrackControl({
+const PlainTrackControl = observer(function PlainTrackControl({
   icon,
   tooltip,
   label,
@@ -233,4 +234,6 @@ export default function PlainTrackControl({
         : null}
     </span>
   )
-}
+})
+
+export default PlainTrackControl

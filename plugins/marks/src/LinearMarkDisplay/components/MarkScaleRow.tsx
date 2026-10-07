@@ -3,6 +3,7 @@ import { useState } from 'react'
 import { LabeledCheckbox } from '@jbrowse/core/ui'
 import { COLOR_SCHEMES } from '@jbrowse/core/util/colorSchemes'
 import { TextField } from '@mui/material'
+import { observer } from 'mobx-react'
 
 import {
   RAMP_ENDS,
@@ -62,7 +63,7 @@ function listsOf(channel: EditChannel, scale: string): ListMember[] {
     : ['domain', 'range', 'labels', 'breaks']
 }
 
-function MemberField({
+const MemberField = observer(function MemberField({
   mark,
   channel,
   member,
@@ -86,11 +87,11 @@ function MemberField({
       slotProps={{ htmlInput: { 'data-testid': `${member}-${channel}` } }}
     />
   )
-}
+})
 
 // Holds the text as typed, so a trailing comma survives until the next item,
 // and writes the list it parses on every keystroke.
-function ListField({
+const ListField = observer(function ListField({
   label,
   initial,
   testId,
@@ -113,7 +114,7 @@ function ListField({
       slotProps={{ htmlInput: { 'data-testid': testId } }}
     />
   )
-}
+})
 
 /**
  * The scale a channel's field is read through, beside the field itself: the
@@ -123,7 +124,7 @@ function ListField({
  * key's title. A list is comma-separated text, and emptying one returns it to
  * the display's default.
  */
-export default function MarkScaleRow({
+const MarkScaleRow = observer(function MarkScaleRow({
   mark,
   channel,
   scales,
@@ -267,4 +268,6 @@ export default function MarkScaleRow({
       ) : null}
     </div>
   )
-}
+})
+
+export default MarkScaleRow

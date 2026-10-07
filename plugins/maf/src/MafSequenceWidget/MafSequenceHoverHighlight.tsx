@@ -1,4 +1,5 @@
 import { ConnectedHoverHighlight } from '@jbrowse/plugin-linear-genome-view'
+import { observer } from 'mobx-react'
 
 import type { MafSequenceWidgetModel } from './stateModelFactory.ts'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
@@ -15,7 +16,7 @@ function isConnectedMafSequenceWidget(
   )
 }
 
-export default function MafSequenceHoverHighlight({
+const MafSequenceHoverHighlight = observer(function MafSequenceHoverHighlight({
   model,
 }: {
   model: LinearGenomeViewModel
@@ -30,4 +31,6 @@ export default function MafSequenceHoverHighlight({
       }
     />
   )
-}
+})
+
+export default MafSequenceHoverHighlight

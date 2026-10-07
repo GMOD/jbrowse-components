@@ -3,6 +3,7 @@ import { makeStyles } from '@jbrowse/core/util/tss-react'
 import ExpandLessIcon from '@mui/icons-material/ExpandLess'
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore'
 import { Typography } from '@mui/material'
+import { observer } from 'mobx-react'
 
 const useStyles = makeStyles()(theme => ({
   header: {
@@ -23,7 +24,7 @@ const useStyles = makeStyles()(theme => ({
   },
 }))
 
-export default function CollapsibleSection({
+const CollapsibleSection = observer(function CollapsibleSection({
   storageKey,
   title,
   children,
@@ -56,4 +57,6 @@ export default function CollapsibleSection({
       {open ? <div className={classes.body}>{children}</div> : null}
     </div>
   )
-}
+})
+
+export default CollapsibleSection

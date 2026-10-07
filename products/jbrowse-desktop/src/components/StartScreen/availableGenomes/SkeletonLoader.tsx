@@ -1,4 +1,5 @@
 import { Skeleton } from '@mui/material'
+import { observer } from 'mobx-react'
 
 const cellStyle = { padding: '2px 4px' }
 
@@ -7,7 +8,7 @@ const headerWidths = [120, 100, 80, 140, 160]
 const rowWidths = ['100%', '80%', '60%', '90%', '70%']
 
 // Takes the real column count so the layout does not jump when rows arrive.
-export default function SkeletonLoader({
+const SkeletonLoader = observer(function SkeletonLoader({
   columnCount,
 }: {
   columnCount: number
@@ -37,4 +38,6 @@ export default function SkeletonLoader({
       </tbody>
     </table>
   )
-}
+})
+
+export default SkeletonLoader

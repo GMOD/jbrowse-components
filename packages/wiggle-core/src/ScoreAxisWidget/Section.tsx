@@ -1,5 +1,6 @@
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { Typography } from '@mui/material'
+import { observer } from 'mobx-react'
 
 import type { ReactNode } from 'react'
 
@@ -10,7 +11,7 @@ const useStyles = makeStyles()(theme => ({
   },
 }))
 
-export default function Section({
+const Section = observer(function Section({
   title,
   children,
 }: {
@@ -24,4 +25,6 @@ export default function Section({
       {children}
     </div>
   )
-}
+})
+
+export default Section

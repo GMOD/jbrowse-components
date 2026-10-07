@@ -1,4 +1,5 @@
 import { usePalette } from '@jbrowse/core/ui/PaletteContext'
+import { observer } from 'mobx-react'
 
 import { DEFAULT_RULE_COLOR } from './yAxisConstants.ts'
 
@@ -88,7 +89,7 @@ export function ScoreRuleLines({
 
 // Once per band the scale rules, like CrossHatches; pointer-events disabled so
 // the canvas underneath still gets mouse events.
-export default function ScoreRules({
+const ScoreRules = observer(function ScoreRules({
   marks,
   width,
   height,
@@ -115,4 +116,6 @@ export default function ScoreRules({
       ))}
     </svg>
   )
-}
+})
+
+export default ScoreRules

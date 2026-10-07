@@ -4,13 +4,14 @@ import {
   useExportSvgPreference,
 } from '@jbrowse/core/ui'
 import { MenuItem, TextField } from '@mui/material'
+import { observer } from 'mobx-react'
 
 import type { TrackLabelMode, ViewTrackLabelMode } from '../types.ts'
 import type { BaseExportSvgOptions } from '@jbrowse/core/ui'
 
 // Shared track-label + gridlines export dialog. Used by LGV, linear-synteny and
 // breakpoint-split views (their lazyDialogs re-export this).
-export default function ExportSvgDialog({
+const ExportSvgDialog = observer(function ExportSvgDialog({
   model,
   handleClose,
 }: {
@@ -71,4 +72,6 @@ export default function ExportSvgDialog({
       </TextField>
     </BaseExportSvgDialog>
   )
-}
+})
+
+export default ExportSvgDialog

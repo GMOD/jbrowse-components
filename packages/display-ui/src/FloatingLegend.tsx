@@ -223,7 +223,7 @@ function gradientCss({ stops }: LegendGradient, paper: string) {
   return `linear-gradient(to right, ${list.join(', ')})`
 }
 
-function GradientRow({
+const GradientRow = observer(function GradientRow({
   label,
   gradient,
 }: {
@@ -252,7 +252,7 @@ function GradientRow({
       </div>
     </div>
   )
-}
+})
 
 // One list of swatches with its own independent collapse state, so each section
 // in a multi-section legend expands/collapses on its own.

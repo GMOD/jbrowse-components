@@ -38,7 +38,7 @@ interface Row {
   assemblyName: string
 }
 
-function NoHighlightsOverlay() {
+const NoHighlightsOverlay = observer(function NoHighlightsOverlay() {
   return (
     <Stack
       sx={{
@@ -54,7 +54,7 @@ function NoHighlightsOverlay() {
       </Typography>
     </Stack>
   )
-}
+})
 
 const HighlightGrid = observer(function HighlightGrid({
   model,

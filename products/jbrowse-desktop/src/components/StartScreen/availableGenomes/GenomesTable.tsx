@@ -1,6 +1,7 @@
 import { alpha } from '@jbrowse/core/ui/palette'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { Checkbox } from '@mui/material'
+import { observer } from 'mobx-react'
 
 import type { Entry, GenomeColumn } from './getColumnDefinitions.tsx'
 import type { Sorting } from './useGenomesTableState.ts'
@@ -80,7 +81,7 @@ function ariaSort(sorting: Sorting | undefined, colId: string) {
     : 'none'
 }
 
-export default function GenomesTable({
+const GenomesTable = observer(function GenomesTable({
   columns,
   rows,
   multipleSelection,
@@ -197,4 +198,6 @@ export default function GenomesTable({
       </tbody>
     </table>
   )
-}
+})
+
+export default GenomesTable

@@ -17,11 +17,19 @@ const baseSeqStyle = {
   fontSize: 11,
 } as const
 
-function WordWrap({ children }: { children: React.ReactNode }) {
+const WordWrap = observer(function WordWrap({
+  children,
+}: {
+  children: React.ReactNode
+}) {
   return <pre style={baseSeqStyle}>{children}</pre>
-}
+})
 
-function NoWordWrap({ children }: { children: React.ReactNode }) {
+const NoWordWrap = observer(function NoWordWrap({
+  children,
+}: {
+  children: React.ReactNode
+}) {
   return (
     <div
       style={{
@@ -34,7 +42,7 @@ function NoWordWrap({ children }: { children: React.ReactNode }) {
       {children}
     </div>
   )
-}
+})
 
 const SequencePanel = observer(function SequencePanel({
   sequence,

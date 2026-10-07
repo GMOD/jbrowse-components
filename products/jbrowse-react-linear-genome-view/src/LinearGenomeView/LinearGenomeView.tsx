@@ -1,6 +1,7 @@
 import { useImperativeHandle } from 'react'
 
 import { useCreateOnce } from '@jbrowse/product-core'
+import { observer } from 'mobx-react'
 
 import JBrowseLinearGenomeView from '../JBrowseLinearGenomeView/index.ts'
 import createViewState from '../createViewState.ts'
@@ -38,7 +39,7 @@ export interface LinearGenomeViewProps extends CreateViewStateBaseOptions {
  * `<JBrowseLinearGenomeView>`, which destroys the engine on unmount, or
  * `createLinearGenomeView`, which owns the whole lifecycle.
  */
-export default function LinearGenomeView({
+const LinearGenomeView = observer(function LinearGenomeView({
   ref,
   ...rest
 }: LinearGenomeViewProps) {
@@ -49,4 +50,6 @@ export default function LinearGenomeView({
   useImperativeHandle(ref, () => state, [state])
 
   return <JBrowseLinearGenomeView viewState={state} />
-}
+})
+
+export default LinearGenomeView

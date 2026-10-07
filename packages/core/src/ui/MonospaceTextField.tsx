@@ -1,4 +1,5 @@
 import { InputLabel, TextField } from '@mui/material'
+import { observer } from 'mobx-react'
 
 import { makeStyles } from '../util/tss-react/index.ts'
 import { alpha } from './palette.ts'
@@ -25,7 +26,7 @@ const useStyles = makeStyles()(theme => ({
 // error turns it red and takes the helper text's place under the field, so
 // the text does not move while it flips between valid and invalid. `children`
 // render below the field (e.g. a description or help button).
-export default function MonospaceTextField({
+const MonospaceTextField = observer(function MonospaceTextField({
   value,
   onChange,
   error,
@@ -81,4 +82,6 @@ export default function MonospaceTextField({
       {children}
     </div>
   )
-}
+})
+
+export default MonospaceTextField

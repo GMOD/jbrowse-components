@@ -24,14 +24,14 @@ const useStyles = makeStyles()(theme => ({
   },
 }))
 
-function ButtonComponent(props: ButtonProps) {
+const ButtonComponent = observer(function ButtonComponent(props: ButtonProps) {
   const { classes } = useStyles()
   return (
     <Button {...props} className={classes.buttonRoot}>
       {props.children}
     </Button>
   )
-}
+})
 
 const DropDownMenu = observer(function DropDownMenu({
   menuTitle,

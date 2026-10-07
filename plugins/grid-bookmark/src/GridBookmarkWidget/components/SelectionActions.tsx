@@ -4,12 +4,13 @@ import { ColorPopover } from '@jbrowse/core/ui/ColorPicker'
 import Delete from '@mui/icons-material/Delete'
 import Palette from '@mui/icons-material/Palette'
 import { IconButton, Stack, Tooltip, Typography } from '@mui/material'
+import { observer } from 'mobx-react'
 
 import { HIGHLIGHT_ALPHA } from '../model.ts'
 
 // gmail-style contextual action bar: shown above a grid once rows are selected,
 // exposing the bulk actions (recolor, delete) as icons instead of a hamburger
-export default function SelectionActions({
+const SelectionActions = observer(function SelectionActions({
   count,
   color,
   onDelete,
@@ -65,4 +66,6 @@ export default function SelectionActions({
       </Tooltip>
     </Stack>
   ) : null
-}
+})
+
+export default SelectionActions

@@ -1,7 +1,8 @@
 import { InfoDialog } from '@jbrowse/core/ui'
 import { DialogContentText } from '@mui/material'
+import { observer } from 'mobx-react'
 
-export default function ExportToWebInfoDialog({
+const ExportToWebInfoDialog = observer(function ExportToWebInfoDialog({
   onClose,
   open,
 }: {
@@ -42,4 +43,6 @@ export default function ExportToWebInfoDialog({
       </DialogContentText>
     </InfoDialog>
   )
-}
+})
+
+export default ExportToWebInfoDialog

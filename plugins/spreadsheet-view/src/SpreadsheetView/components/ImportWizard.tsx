@@ -43,7 +43,7 @@ const useStyles = makeStyles()({
   },
 })
 
-function RadioSelector<T extends string>({
+const RadioSelector = observer(function RadioSelector<T extends string>({
   legend,
   ariaLabel,
   name,
@@ -81,7 +81,7 @@ function RadioSelector<T extends string>({
       </RadioGroup>
     </FormControl>
   )
-}
+})
 
 const ImportWizard = observer(function ImportWizard({
   model,

@@ -1,9 +1,10 @@
 import { Typography } from '@mui/material'
+import { observer } from 'mobx-react'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { Widget } from '@jbrowse/core/util'
 
-function WidgetHeading({
+const WidgetHeading = observer(function WidgetHeading({
   widget,
   pluginManager,
 }: {
@@ -18,6 +19,6 @@ function WidgetHeading({
       {heading}
     </Typography>
   )
-}
+})
 
 export default WidgetHeading

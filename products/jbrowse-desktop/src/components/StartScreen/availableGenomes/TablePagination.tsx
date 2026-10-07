@@ -1,5 +1,6 @@
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { Button, MenuItem, Select, Typography } from '@mui/material'
+import { observer } from 'mobx-react'
 
 const useStyles = makeStyles()(theme => ({
   container: {
@@ -41,7 +42,7 @@ function summarize(
     : `Showing ${range} matching (${fmt(scopeTotal)} ${scopeLabel})`
 }
 
-export default function TablePagination({
+const TablePagination = observer(function TablePagination({
   pageIndex,
   pageSize,
   totalRows,
@@ -130,4 +131,6 @@ export default function TablePagination({
       </Typography>
     </div>
   )
-}
+})
+
+export default TablePagination

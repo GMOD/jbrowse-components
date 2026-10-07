@@ -1,7 +1,6 @@
-import { memo } from 'react'
-
 import BaseTooltip from '@jbrowse/core/ui/BaseTooltip'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
+import { observer } from 'mobx-react'
 
 import { getTooltipRows } from './getTooltipRows.ts'
 
@@ -32,7 +31,7 @@ const useStyles = makeStyles()({
   },
 })
 
-const MultiSampleVariantTooltip = memo(function MultiSampleVariantTooltip({
+const MultiSampleVariantTooltip = observer(function MultiSampleVariantTooltip({
   source,
   x,
   y,

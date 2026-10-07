@@ -1,5 +1,6 @@
 import HelpIcon from '@mui/icons-material/Help'
 import { Tooltip } from '@mui/material'
+import { observer } from 'mobx-react'
 
 // Help icon + tooltip for a labelled field in a dialog or form row — the
 // synteny launch dialog's options are what it draws. Renders nothing when there
@@ -9,7 +10,7 @@ import { Tooltip } from '@mui/material'
 // `pre-line` so help composed one line per option keeps those lines: collapsed
 // into a paragraph, option descriptions read as one run-on sentence. A single-
 // paragraph string is unaffected — it has no newlines to honour.
-export default function HelpTooltip({ help }: { help?: string }) {
+const HelpTooltip = observer(function HelpTooltip({ help }: { help?: string }) {
   return help ? (
     <Tooltip
       title={help}
@@ -19,4 +20,6 @@ export default function HelpTooltip({ help }: { help?: string }) {
       <HelpIcon sx={{ fontSize: '0.875rem', color: 'text.secondary' }} />
     </Tooltip>
   ) : null
-}
+})
+
+export default HelpTooltip

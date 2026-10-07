@@ -1,5 +1,7 @@
 import { useState } from 'react'
 
+import { observer } from 'mobx-react'
+
 import { useCopyToClipboard } from '../../ui/useCopyToClipboard.ts'
 import { ValueText, isBareUrl, valueText } from './BasicValue.tsx'
 
@@ -9,7 +11,7 @@ const TRUNCATE_LENGTH = 100
 // (e.g. a SEQ/CRAM string, or a long read's worth of data in a single div) can
 // slow down the rest of the app, so they are truncated until expanded. A URL
 // is left whole, since a truncated one links nowhere
-export default function Formatter({ value }: { value: unknown }) {
+const Formatter = observer(function Formatter({ value }: { value: unknown }) {
   const [show, setShow] = useState(false)
   const { copied, copy } = useCopyToClipboard(700)
   const display = valueText(value)
@@ -42,4 +44,6 @@ export default function Formatter({ value }: { value: unknown }) {
   ) : (
     <ValueText text={display} />
   )
-}
+})
+
+export default Formatter

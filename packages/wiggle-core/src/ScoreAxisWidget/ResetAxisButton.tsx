@@ -1,6 +1,7 @@
 import { setConf } from '@jbrowse/core/configuration'
 import { baseDisplayConfig } from '@jbrowse/core/util/baseDisplayConfig'
 import { Button } from '@mui/material'
+import { observer } from 'mobx-react'
 
 import { writeThrough } from './writeThrough.ts'
 
@@ -16,7 +17,7 @@ export function resetAxis(display: ScoreAxisDisplay) {
   })
 }
 
-export default function ResetAxisButton({
+const ResetAxisButton = observer(function ResetAxisButton({
   display,
   onReset,
 }: {
@@ -37,4 +38,6 @@ export default function ResetAxisButton({
       </Button>
     </div>
   )
-}
+})
+
+export default ResetAxisButton

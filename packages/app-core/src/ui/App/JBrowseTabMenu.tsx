@@ -5,6 +5,7 @@ import { makeStyles } from '@jbrowse/core/util/tss-react'
 import CloseIcon from '@mui/icons-material/Close'
 import EditIcon from '@mui/icons-material/Edit'
 import MoreVertIcon from '@mui/icons-material/MoreVert'
+import { observer } from 'mobx-react'
 
 const useStyles = makeStyles()({
   // hidden until the tab is hovered or focused, by a rule in `TabStrip` keyed
@@ -32,7 +33,7 @@ const useStyles = makeStyles()({
   },
 })
 
-export default function JBrowseTabMenu({
+const JBrowseTabMenu = observer(function JBrowseTabMenu({
   onRename,
   onClose,
 }: {
@@ -79,4 +80,6 @@ export default function JBrowseTabMenu({
       </CascadingMenuButton>
     </div>
   )
-}
+})
+
+export default JBrowseTabMenu

@@ -88,7 +88,7 @@ async function pickFileHandleLocation() {
   }
 }
 
-function FilePickerButton({
+const FilePickerButton = observer(function FilePickerButton({
   setLocation,
 }: {
   setLocation: (loc: FileLocation) => void
@@ -153,9 +153,9 @@ function FilePickerButton({
       />
     </Button>
   )
-}
+})
 
-function ReloadPrompt({
+const ReloadPrompt = observer(function ReloadPrompt({
   location,
   setLocation,
 }: {
@@ -191,7 +191,7 @@ function ReloadPrompt({
       )}
     </Box>
   )
-}
+})
 
 const LocalFileChooser = observer(function LocalFileChooser({
   location,

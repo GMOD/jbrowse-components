@@ -9,6 +9,7 @@ import {
   ToggleButtonGroup,
   Typography,
 } from '@mui/material'
+import { observer } from 'mobx-react'
 
 import { rowColorChoiceLabel } from '../rowColorChoice.ts'
 
@@ -64,7 +65,7 @@ function rowCount(count: number) {
 
 // The swatch picks a colour; Auto and None are the two states it cannot show,
 // pressed while they hold. None is offered only where it differs from Auto.
-function OtherControls({
+const OtherControls = observer(function OtherControls({
   other,
   offersNone,
   label,
@@ -124,14 +125,14 @@ function OtherControls({
       </div>
     </>
   )
-}
+})
 
 /**
  * What the rows are coloured by, above the rows: nothing, each row its own
  * colour, picked in the row list, or an attribute, whose values are listed
  * with their colours to pick. Either way the rest take the Other colour.
  */
-export default function RowColorPanel({
+const RowColorPanel = observer(function RowColorPanel({
   fields,
   choice,
   values,
@@ -240,4 +241,6 @@ export default function RowColorPanel({
       )}
     </div>
   )
-}
+})
+
+export default RowColorPanel

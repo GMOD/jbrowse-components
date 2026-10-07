@@ -3,6 +3,7 @@ import { Fragment } from 'react'
 import ChevronRightIcon from '@mui/icons-material/ChevronRight'
 import CloseIcon from '@mui/icons-material/Close'
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore'
+import { observer } from 'mobx-react'
 
 import { useGroupLabelStyles } from './groupLabelChipStyles.ts'
 import {
@@ -44,7 +45,7 @@ export interface GroupChipSection {
  * and a divider marks each section's top edge after the first. The topmost
  * chip on screen carries the way back from any hidden sections.
  */
-export function GroupLabelChips({
+export const GroupLabelChips = observer(function GroupLabelChips({
   sections,
   canvasHeight,
   hiddenCount = 0,
@@ -139,4 +140,4 @@ export function GroupLabelChips({
       })}
     </>
   )
-}
+})

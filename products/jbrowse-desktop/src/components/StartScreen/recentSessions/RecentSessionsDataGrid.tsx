@@ -3,6 +3,7 @@ import { measureGridWidth } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { Tooltip, useMediaQuery } from '@mui/material'
 import { DataGrid } from '@mui/x-data-grid'
+import { observer } from 'mobx-react'
 
 import { NARROW_QUERY } from '../narrow.ts'
 import DateSinceLastUsed from './DateSinceLastUsed.tsx'
@@ -28,7 +29,7 @@ const useStyles = makeStyles()({
   },
 })
 
-function RecentSessionsDataGrid({
+const RecentSessionsDataGrid = observer(function RecentSessionsDataGrid({
   launch,
   sessions,
   setSelectedSessions,
@@ -138,6 +139,6 @@ function RecentSessionsDataGrid({
       />
     </DataGridFlexContainer>
   )
-}
+})
 
 export default RecentSessionsDataGrid

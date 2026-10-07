@@ -1,6 +1,8 @@
+import { observer } from 'mobx-react'
+
 import InfoDialog from './InfoDialog.tsx'
 
-export default function CascadingMenuHelpDialog({
+const CascadingMenuHelpDialog = observer(function CascadingMenuHelpDialog({
   onClose,
   helpText,
   label,
@@ -25,4 +27,6 @@ export default function CascadingMenuHelpDialog({
       {helpText}
     </InfoDialog>
   )
-}
+})
+
+export default CascadingMenuHelpDialog

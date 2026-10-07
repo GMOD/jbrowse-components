@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react'
 import { readQueryParams } from '@jbrowse/app-core'
 import { setGpuOverride } from '@jbrowse/render-core/gpuDevice'
 import { prewarmGraphics } from '@jbrowse/render-core/graphicsCapabilities'
+import { observer } from 'mobx-react'
 
 import Loading from './components/Loading.tsx'
 import { loaderChunk } from './earlyStart.ts'
@@ -26,7 +27,7 @@ type LoaderChunk = Awaited<typeof loaderChunk>
 // Plain state rather than React.lazy under Suspense: React holds a retry
 // commit until 300ms after the last committed fallback, so a Suspense fallback
 // here delayed the whole app's first commit by up to that long.
-export default function InitialLoad() {
+const InitialLoad = observer(function InitialLoad() {
   const [chunk, setChunk] = useState<PromiseSettledResult<LoaderChunk>>()
   useEffect(() => {
     loaderChunk.then(
@@ -46,4 +47,6 @@ export default function InitialLoad() {
     const Main = chunk.value.default
     return <Main initialTimestamp={date} />
   }
-}
+})
+
+export default InitialLoad

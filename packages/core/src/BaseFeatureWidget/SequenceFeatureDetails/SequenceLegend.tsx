@@ -1,7 +1,9 @@
+import { observer } from 'mobx-react'
+
 // A small inline legend tying a swatch color to its meaning. Rendered alongside
 // the sequence so e.g. transl_except highlights are self-explanatory. Styles are
 // inline (not classes) so the legend survives copy-paste to an external document.
-export default function SequenceLegend({
+const SequenceLegend = observer(function SequenceLegend({
   items,
 }: {
   items: { color: string; label: string }[]
@@ -38,4 +40,6 @@ export default function SequenceLegend({
       ))}
     </div>
   )
-}
+})
+
+export default SequenceLegend

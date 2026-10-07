@@ -1,4 +1,5 @@
 import { pluralize } from '@jbrowse/core/util'
+import { observer } from 'mobx-react'
 
 import { getHeightModeOptions } from './heightMode.ts'
 import TrackControl from './trackControl/TrackControl.tsx'
@@ -27,7 +28,7 @@ import type { HeightMode } from './heightMode.ts'
 //
 // What it *looks* like is `TrackControl`'s business, not this file's — that is
 // the seam an embedder swaps to get a corner with no Material UI in it.
-export default function TrackHeightIndicator({
+const TrackHeightIndicator = observer(function TrackHeightIndicator({
   heightMode,
   hasOverflow,
   scrollZoom,
@@ -70,4 +71,6 @@ export default function TrackHeightIndicator({
       }))}
     />
   )
-}
+})
+
+export default TrackHeightIndicator

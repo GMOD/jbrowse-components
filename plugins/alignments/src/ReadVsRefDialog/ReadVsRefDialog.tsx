@@ -16,6 +16,7 @@ import {
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { useFetch } from '@jbrowse/core/util/useFetch'
 import { Typography } from '@mui/material'
+import { observer } from 'mobx-react'
 
 import { fetchPrimaryAlignment } from './fetchPrimaryAlignment.ts'
 
@@ -39,7 +40,7 @@ const useStyles = makeStyles()({
  * dialog is what stops the linear and dotplot launchers drifting into different
  * read coordinate systems for the same read.
  */
-export default function ReadVsRefDialog({
+const ReadVsRefDialog = observer(function ReadVsRefDialog({
   track,
   feature: preFeature,
   handleClose,
@@ -148,4 +149,6 @@ export default function ReadVsRefDialog({
       )}
     </SubmitDialog>
   )
-}
+})
+
+export default ReadVsRefDialog

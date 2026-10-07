@@ -1,3 +1,5 @@
+import { observer } from 'mobx-react'
+
 import { cx, makeStyles } from '../util/tss-react/index.ts'
 
 import type { CSSProperties } from 'react'
@@ -10,7 +12,7 @@ const useStyles = makeStyles()({
 })
 
 // https://mui.com/x/react-data-grid/layout/#flex-parent-container
-export default function DataGridFlexContainer({
+const DataGridFlexContainer = observer(function DataGridFlexContainer({
   children,
   className,
   style,
@@ -31,4 +33,6 @@ export default function DataGridFlexContainer({
       {children}
     </div>
   )
-}
+})
+
+export default DataGridFlexContainer

@@ -5,6 +5,7 @@ import AnchorIcon from '@mui/icons-material/Anchor'
 import ArrowDownwardIcon from '@mui/icons-material/ArrowDownward'
 import ArrowUpwardIcon from '@mui/icons-material/ArrowUpward'
 import { Button, IconButton, Tooltip, Typography } from '@mui/material'
+import { observer } from 'mobx-react'
 
 import {
   movePanel,
@@ -104,7 +105,7 @@ function resolvedAnchorSpan(rows: PanelRow[], region: Region) {
 // as a locstring alone is four digits nobody subtracts and as a size is the
 // thing the row is worth opening for. It is also what makes an outlier one — a
 // span far past its neighbours' is a paralog, and unchecking it is a click.
-export function SpanLocus({
+export const SpanLocus = observer(function SpanLocus({
   span,
   className,
 }: {
@@ -121,9 +122,9 @@ export function SpanLocus({
       {span.reversed ? ' (-)' : ''} ({getBpDisplayStr(span.end - span.start)})
     </Typography>
   )
-}
+})
 
-function PanelLocus({
+const PanelLocus = observer(function PanelLocus({
   row,
   anchorSpan,
   className,
@@ -147,7 +148,7 @@ function PanelLocus({
       }
     />
   )
-}
+})
 
 // The anchor is in the stack unconditionally — it is the assembly the region was
 // selected on, and every mate's coordinates were resolved against it — so it
@@ -155,7 +156,11 @@ function PanelLocus({
 // making the row everything else is measured from the lowest-contrast line in
 // the dialog, and by dropping its name out of the tab order while its own move
 // buttons stayed in it. A mark instead: nothing to click, and nothing greyed out.
-function AnchorMark({ assemblyName }: { assemblyName: string }) {
+const AnchorMark = observer(function AnchorMark({
+  assemblyName,
+}: {
+  assemblyName: string
+}) {
   const { classes } = useStyles()
   return (
     <Tooltip title="The assembly you selected in. Every other panel's locus is resolved against it, so this panel can be moved but not removed.">
@@ -167,9 +172,9 @@ function AnchorMark({ assemblyName }: { assemblyName: string }) {
       </div>
     </Tooltip>
   )
-}
+})
 
-function MoveButton({
+const MoveButton = observer(function MoveButton({
   row,
   index,
   delta,
@@ -200,7 +205,7 @@ function MoveButton({
       <Icon fontSize="small" />
     </IconButton>
   )
-}
+})
 
 /**
  * The panels the launch will open, top to bottom: the anchor plus one row per
@@ -210,7 +215,7 @@ function MoveButton({
  * *adjacent* panels only, so this list decides which comparisons the launched
  * view holds at all.
  */
-export default function PanelList({
+const PanelList = observer(function PanelList({
   rows,
   region,
   setRows,
@@ -301,4 +306,6 @@ export default function PanelList({
       ) : null}
     </>
   )
-}
+})
+
+export default PanelList

@@ -1,6 +1,7 @@
 import { useImperativeHandle } from 'react'
 
 import { useCreateOnceAsync } from '@jbrowse/product-core'
+import { observer } from 'mobx-react'
 
 import JBrowseApp from '../JBrowseApp/index.ts'
 import { createViewStateFromPropsAsync } from '../createViewStateFromProps.ts'
@@ -91,7 +92,11 @@ export interface JBrowseProps {
  * `<JBrowseApp>`, which destroys the engine on unmount, or `createApp`, which
  * owns the whole lifecycle.
  */
-function JBrowse({ ref, headerButtons, ...opts }: JBrowseProps) {
+const JBrowse = observer(function JBrowse({
+  ref,
+  headerButtons,
+  ...opts
+}: JBrowseProps) {
   // `useCreateOnceAsync`, not `useState(() => …)`: StrictMode double-invokes a
   // state initializer and discards the second result, which for an engine is a
   // whole orphaned worker pool per mount, and this component never destroys
@@ -104,6 +109,6 @@ function JBrowse({ ref, headerButtons, ...opts }: JBrowseProps) {
   return state ? (
     <JBrowseApp viewState={state} headerButtons={headerButtons} />
   ) : null
-}
+})
 
 export default JBrowse

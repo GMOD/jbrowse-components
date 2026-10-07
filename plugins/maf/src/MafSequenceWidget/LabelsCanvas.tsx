@@ -3,6 +3,7 @@ import { useEffect, useRef } from 'react'
 import { usePalette } from '@jbrowse/core/ui/PaletteContext'
 import { virtualRange } from '@jbrowse/core/util/virtualRange'
 import { getPreparedCanvas2D } from '@jbrowse/render-core/canvas2dUtils'
+import { observer } from 'mobx-react'
 
 import { FONT, ROW_HEIGHT } from './constants.ts'
 
@@ -17,7 +18,7 @@ interface LabelsCanvasProps {
 
 const OVERSCAN = 5
 
-export default function LabelsCanvas({
+const LabelsCanvas = observer(function LabelsCanvas({
   samples,
   labelWidth,
   scrollTop,
@@ -68,4 +69,6 @@ export default function LabelsCanvas({
       }}
     />
   )
-}
+})
+
+export default LabelsCanvas

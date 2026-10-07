@@ -1,3 +1,5 @@
+import { observer } from 'mobx-react'
+
 import { cx, makeStyles } from '../util/tss-react/index.ts'
 import { useResizeDrag } from '../util/useResizeDrag.ts'
 
@@ -61,7 +63,7 @@ const useStyles = makeStyles()(theme => ({
   },
 }))
 
-function ResizeHandle({
+const ResizeHandle = observer(function ResizeHandle({
   onDrag,
   onDragStart,
   onDragEnd,
@@ -131,6 +133,6 @@ function ResizeHandle({
       }}
     />
   )
-}
+})
 
 export default ResizeHandle

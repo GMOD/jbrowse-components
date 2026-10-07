@@ -1,6 +1,7 @@
 import { ActionLink, CascadingMenuButton } from '@jbrowse/core/ui'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import MoreHoriz from '@mui/icons-material/MoreHoriz'
+import { observer } from 'mobx-react'
 
 import type { MenuItem } from '@jbrowse/core/ui'
 
@@ -13,7 +14,7 @@ const useStyles = makeStyles()({
 })
 
 /** A table row with a clickable label link and a cascading context menu. */
-export default function LinkMenuRow({
+const LinkMenuRow = observer(function LinkMenuRow({
   label,
   onLinkClick,
   menuItems,
@@ -36,4 +37,6 @@ export default function LinkMenuRow({
       </td>
     </tr>
   )
-}
+})
+
+export default LinkMenuRow

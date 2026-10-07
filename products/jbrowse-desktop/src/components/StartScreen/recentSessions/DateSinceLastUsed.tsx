@@ -1,5 +1,6 @@
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { Tooltip } from '@mui/material'
+import { observer } from 'mobx-react'
 
 const useStyles = makeStyles()({
   cell: {
@@ -9,7 +10,7 @@ const useStyles = makeStyles()({
   },
 })
 
-export default function DateSinceLastUsed({
+const DateSinceLastUsed = observer(function DateSinceLastUsed({
   row,
 }: {
   row: { lastModified: string; lastModifiedTooltip?: string }
@@ -22,4 +23,6 @@ export default function DateSinceLastUsed({
   ) : (
     content
   )
-}
+})
+
+export default DateSinceLastUsed

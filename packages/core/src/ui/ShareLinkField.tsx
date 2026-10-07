@@ -1,9 +1,10 @@
 import { TextField } from '@mui/material'
+import { observer } from 'mobx-react'
 
 // Read-only single-line field for a shareable URL; clicking selects the whole
 // value so it's easy to copy. Shared by jbrowse-web's ShareDialog and
 // jbrowse-desktop's ExportToWebDialog.
-export default function ShareLinkField({
+const ShareLinkField = observer(function ShareLinkField({
   value,
   label = 'URL',
 }: {
@@ -27,4 +28,6 @@ export default function ShareLinkField({
       }}
     />
   )
-}
+})
+
+export default ShareLinkField

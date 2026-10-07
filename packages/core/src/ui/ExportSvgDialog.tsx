@@ -1,3 +1,5 @@
+import { observer } from 'mobx-react'
+
 import BaseExportSvgDialog from './BaseExportSvgDialog.tsx'
 
 import type { BaseExportSvgOptions } from './BaseExportSvgDialog.tsx'
@@ -6,7 +8,7 @@ import type { BaseExportSvgOptions } from './BaseExportSvgDialog.tsx'
 // shared options: the dotplot and circular views both lazy-import this. A view
 // with extra controls wraps `BaseExportSvgDialog` itself and threads them
 // through `exportSvg` (the LGV family's track labels and gridlines).
-export default function ExportSvgDialog({
+const ExportSvgDialog = observer(function ExportSvgDialog({
   model,
   handleClose,
 }: {
@@ -20,4 +22,6 @@ export default function ExportSvgDialog({
       exportSvg={opts => model.exportSvg(opts)}
     />
   )
-}
+})
+
+export default ExportSvgDialog

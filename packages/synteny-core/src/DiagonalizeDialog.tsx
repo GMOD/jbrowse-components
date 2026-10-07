@@ -15,6 +15,7 @@ import {
   TextField,
   Typography,
 } from '@mui/material'
+import { observer } from 'mobx-react'
 
 import type {
   DiagonalizeRunOpts,
@@ -84,7 +85,7 @@ function summarizeStopped({ totalReordered, totalReversed }: DiagonalizeStats) {
  * expensive RPC that rewrites displayed regions, and starting on a click means
  * no effect is needed to kick it off.
  */
-export default function DiagonalizeDialog({
+const DiagonalizeDialog = observer(function DiagonalizeDialog({
   model,
   handleClose,
   description,
@@ -266,4 +267,6 @@ export default function DiagonalizeDialog({
       </DialogActions>
     </Dialog>
   )
-}
+})
+
+export default DiagonalizeDialog

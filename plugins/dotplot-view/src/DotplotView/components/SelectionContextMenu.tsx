@@ -1,11 +1,12 @@
 import { ContextMenu } from '@jbrowse/core/ui'
 import HighlightAltIcon from '@mui/icons-material/HighlightAlt'
+import { observer } from 'mobx-react'
 
 import type { DotplotViewModel } from '../model.ts'
 import type { Coord } from '../types.ts'
 import type { DotplotInteraction } from './useDotplotInteraction.ts'
 
-export default function SelectionContextMenu({
+const SelectionContextMenu = observer(function SelectionContextMenu({
   model,
   interaction,
 }: {
@@ -62,4 +63,6 @@ export default function SelectionContextMenu({
       ]}
     />
   )
-}
+})
+
+export default SelectionContextMenu

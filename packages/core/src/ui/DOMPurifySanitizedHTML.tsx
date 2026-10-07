@@ -1,10 +1,11 @@
 import { useLayoutEffect, useRef } from 'react'
 
 import dompurify from 'dompurify'
+import { observer } from 'mobx-react'
 
 import { rewriteExternalAnchors } from './rewriteExternalAnchors.ts'
 
-export default function DOMPurifySanitizedHTML({
+const DOMPurifySanitizedHTML = observer(function DOMPurifySanitizedHTML({
   value,
   className,
 }: {
@@ -28,4 +29,6 @@ export default function DOMPurifySanitizedHTML({
       dangerouslySetInnerHTML={{ __html: dompurify.sanitize(value) }}
     />
   )
-}
+})
+
+export default DOMPurifySanitizedHTML

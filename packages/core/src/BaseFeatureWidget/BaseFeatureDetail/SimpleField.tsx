@@ -1,3 +1,5 @@
+import { observer } from 'mobx-react'
+
 import { makeStyles } from '../../util/tss-react/index.ts'
 import BasicValue from './BasicValue.tsx'
 import FieldActionsButton, {
@@ -14,7 +16,7 @@ const useStyles = makeStyles()({
   },
 })
 
-export default function SimpleField({
+const SimpleField = observer(function SimpleField({
   name,
   value,
   description,
@@ -49,4 +51,6 @@ export default function SimpleField({
       />
     </div>
   ) : null
-}
+})
+
+export default SimpleField

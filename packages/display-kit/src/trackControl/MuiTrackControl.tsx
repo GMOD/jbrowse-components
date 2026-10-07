@@ -9,6 +9,7 @@ import FilterAltIcon from '@mui/icons-material/FilterAlt'
 import HeightIcon from '@mui/icons-material/Height'
 import UnfoldLessIcon from '@mui/icons-material/UnfoldLess'
 import { Chip, IconButton, Tooltip } from '@mui/material'
+import { observer } from 'mobx-react'
 
 import type { JBrowseStyleTheme } from '@jbrowse/core/ui/styleTheme'
 import type { TrackControlIcon, TrackControlProps } from '@jbrowse/display-ui'
@@ -114,7 +115,7 @@ function menuItemsFor(options: TrackControlProps['options']) {
   }))
 }
 
-export default function MuiTrackControl({
+const MuiTrackControl = observer(function MuiTrackControl({
   icon,
   tooltip,
   label,
@@ -218,4 +219,6 @@ export default function MuiTrackControl({
       ) : null}
     </>
   )
-}
+})
+
+export default MuiTrackControl

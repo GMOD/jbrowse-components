@@ -2,6 +2,7 @@ import { useState } from 'react'
 
 import { SingleSlider } from '@jbrowse/core/ui'
 import { Typography } from '@mui/material'
+import { observer } from 'mobx-react'
 
 import SettingLabel from './SettingLabel.tsx'
 
@@ -15,7 +16,7 @@ import SettingLabel from './SettingLabel.tsx'
 // beside the slider rather
 // than living only in the drag tooltip, so a consensus can be reproduced from
 // what the dialog was showing.
-export default function FractionSlider({
+const FractionSlider = observer(function FractionSlider({
   label,
   help,
   value,
@@ -51,4 +52,6 @@ export default function FractionSlider({
       </div>
     </>
   )
-}
+})
+
+export default FractionSlider

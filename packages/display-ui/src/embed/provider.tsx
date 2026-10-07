@@ -1,4 +1,5 @@
 import { SessionPaletteProvider } from '@jbrowse/core/ui/PaletteContext'
+import { observer } from 'mobx-react'
 
 import DisplayUIProvider from '../DisplayUIProvider.tsx'
 
@@ -7,7 +8,7 @@ import type { TrackControlComponent } from '../trackControl/types.ts'
 import type { ThemeModeSession } from '@jbrowse/core/ui/PaletteContext'
 import type React from 'react'
 
-export function EmbedProvider({
+export const EmbedProvider = observer(function EmbedProvider({
   session,
   mode,
   overlays,
@@ -27,4 +28,4 @@ export function EmbedProvider({
       </DisplayUIProvider>
     </SessionPaletteProvider>
   )
-}
+})

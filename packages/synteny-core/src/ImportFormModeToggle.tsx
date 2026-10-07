@@ -1,4 +1,5 @@
 import { ToggleButton, ToggleButtonGroup } from '@mui/material'
+import { observer } from 'mobx-react'
 
 export type ImportFormMode = 'quick' | 'manual'
 
@@ -14,7 +15,7 @@ export type ImportFormMode = 'quick' | 'manual'
  * wrapper a Tooltip needs to explain a disabled button can't go here. The empty
  * Quick start panel carries the way out instead. See QuickStartPanel.
  */
-export default function ImportFormModeToggle({
+const ImportFormModeToggle = observer(function ImportFormModeToggle({
   mode,
   onChange,
 }: {
@@ -41,4 +42,6 @@ export default function ImportFormModeToggle({
       <ToggleButton value="manual">Manual</ToggleButton>
     </ToggleButtonGroup>
   )
-}
+})
+
+export default ImportFormModeToggle

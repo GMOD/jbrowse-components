@@ -1,10 +1,11 @@
 import Checkbox from '@mui/material/Checkbox'
+import { observer } from 'mobx-react'
 
 import { checkboxSx, useFacetedTableStyles } from './facetedTableStyles.ts'
 
 import type { FacetedColumn } from './FacetedDataGrid.tsx'
 
-export default function FacetedTableHead({
+const FacetedTableHead = observer(function FacetedTableHead({
   columns,
   allSelected,
   someSelected,
@@ -67,4 +68,6 @@ export default function FacetedTableHead({
       </tr>
     </thead>
   )
-}
+})
+
+export default FacetedTableHead

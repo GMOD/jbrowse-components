@@ -1,5 +1,6 @@
 import RefreshIcon from '@mui/icons-material/Refresh'
 import { Button } from '@mui/material'
+import { observer } from 'mobx-react'
 
 import RedErrorMessageBox from './RedErrorMessageBox.tsx'
 
@@ -18,7 +19,11 @@ function isChunkLoadError(error: unknown) {
   )
 }
 
-export default function ErrorMessage({ error }: { error: unknown }) {
+const ErrorMessage = observer(function ErrorMessage({
+  error,
+}: {
+  error: unknown
+}) {
   return isChunkLoadError(error) ? (
     <RedErrorMessageBox>
       <div>
@@ -40,4 +45,6 @@ export default function ErrorMessage({ error }: { error: unknown }) {
   ) : (
     <RedErrorMessageBox>{`${error}`}</RedErrorMessageBox>
   )
-}
+})
+
+export default ErrorMessage

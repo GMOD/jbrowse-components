@@ -1,7 +1,8 @@
 import { Link } from '@mui/material'
+import { observer } from 'mobx-react'
 
 /** A Link that acts as a button — no real navigation, just calls onClick. */
-export default function ActionLink({
+const ActionLink = observer(function ActionLink({
   onClick,
   children,
   className,
@@ -25,4 +26,6 @@ export default function ActionLink({
       {children}
     </Link>
   )
-}
+})
+
+export default ActionLink

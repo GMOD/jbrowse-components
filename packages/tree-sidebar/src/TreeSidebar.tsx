@@ -40,13 +40,19 @@ interface MenuAnchor {
  * page-scrolling host that would peel the sidebar off the rows it labels, and
  * now that it is two layers, peel them off each other.
  */
-function GutterLayer({ top, children }: { top: number; children: ReactNode }) {
+const GutterLayer = observer(function GutterLayer({
+  top,
+  children,
+}: {
+  top: number
+  children: ReactNode
+}) {
   return (
     <div style={{ position: 'absolute', top, left: 0, height: 0, zIndex: 100 }}>
       {children}
     </div>
   )
-}
+})
 
 // Centered line with a contrasting halo, hidden until the handle is hovered.
 // Both the halo and the panel below take their color from the theme rather than

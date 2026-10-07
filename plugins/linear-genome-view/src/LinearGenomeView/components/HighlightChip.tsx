@@ -1,6 +1,7 @@
 import CascadingMenuButton from '@jbrowse/core/ui/CascadingMenuButton'
 import LinkIcon from '@mui/icons-material/Link'
 import { Box, Tooltip, Typography } from '@mui/material'
+import { observer } from 'mobx-react'
 
 import type { MenuItem } from '@jbrowse/core/ui'
 import type { Colord } from '@jbrowse/core/util/colord'
@@ -8,7 +9,7 @@ import type { Colord } from '@jbrowse/core/util/colord'
 // Interactive chip drawn inside a highlight band: a link icon tinted to the
 // band color plus an optional inline label, wrapped in a context menu. Sets its
 // own pointer-events since the band is click-through.
-export default function HighlightChip({
+const HighlightChip = observer(function HighlightChip({
   color,
   label,
   tooltip,
@@ -41,4 +42,6 @@ export default function HighlightChip({
       </CascadingMenuButton>
     </Box>
   )
-}
+})
+
+export default HighlightChip

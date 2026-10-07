@@ -2,12 +2,13 @@ import { useState } from 'react'
 
 import AddIcon from '@mui/icons-material/Add'
 import { IconButton, InputAdornment, TextField } from '@mui/material'
+import { observer } from 'mobx-react'
 
 import type { ReactNode } from 'react'
 
 // shared "add new" entry field used by the string-array and map slot editors:
 // a text box that commits its contents via onAdd and clears itself
-export default function AddNewField({
+const AddNewField = observer(function AddNewField({
   onAdd,
   testid,
   startAdornment,
@@ -56,4 +57,6 @@ export default function AddNewField({
       }}
     />
   )
-}
+})
+
+export default AddNewField

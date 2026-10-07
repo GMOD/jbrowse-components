@@ -112,11 +112,15 @@ const MultiLevelRubberband = observer(function MultiLevelRubberband({
 
 // one row per rubberband level, in level order. values repeat across levels
 // whenever the assemblies line up, so the index is the only stable key
-function PerLevelRows({ rows }: { rows: string[] }) {
+const PerLevelRows = observer(function PerLevelRows({
+  rows,
+}: {
+  rows: string[]
+}) {
   return rows.map((row, idx) => (
     // eslint-disable-next-line @eslint-react/no-array-index-key
     <div key={idx}>{row}</div>
   ))
-}
+})
 
 export default MultiLevelRubberband

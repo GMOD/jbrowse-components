@@ -4,6 +4,7 @@ import Help from '@mui/icons-material/Help'
 import MoreVertIcon from '@mui/icons-material/MoreVert'
 import SearchIcon from '@mui/icons-material/Search'
 import { InputAdornment } from '@mui/material'
+import { observer } from 'mobx-react'
 
 import CascadingMenuButton from '../CascadingMenuButton.tsx'
 
@@ -14,7 +15,7 @@ const HelpDialog = lazy(() => import('./HelpDialog.tsx'))
 // The search-box overflow (⋮) menu: consumer-supplied rows (e.g. recent
 // locations) sit above the built-in help entry. Rendered only when there is
 // something to show, so a bare box keeps just its search icon.
-export default function EndAdornment({
+const EndAdornment = observer(function EndAdornment({
   showHelp,
   menuItems = [],
 }: {
@@ -62,4 +63,6 @@ export default function EndAdornment({
       ) : null}
     </InputAdornment>
   )
-}
+})
+
+export default EndAdornment

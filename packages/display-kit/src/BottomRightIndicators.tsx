@@ -6,6 +6,7 @@ import {
   BottomRightCornerContext,
   TrackOverlayPortal,
 } from '@jbrowse/display-ui'
+import { observer } from 'mobx-react'
 import { createPortal } from 'react-dom'
 
 import type { ReactNode } from 'react'
@@ -45,7 +46,7 @@ import type { ReactNode } from 'react'
 // `VerticalScrollbar` sits at 10.
 const OVERFLOW_INDICATOR_Z_INDEX = 999
 
-function BottomRightIndicators({
+const BottomRightIndicators = observer(function BottomRightIndicators({
   scrollableHeight = 0,
   children,
 }: {
@@ -110,6 +111,6 @@ function BottomRightIndicators({
   ) : (
     <TrackOverlayPortal>{row}</TrackOverlayPortal>
   )
-}
+})
 
 export default BottomRightIndicators

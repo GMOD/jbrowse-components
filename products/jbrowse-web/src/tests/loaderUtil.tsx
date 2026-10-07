@@ -1,5 +1,7 @@
 import { useState } from 'react'
 
+import { observer } from 'mobx-react'
+
 import { Loader } from '../components/Loader.tsx'
 
 jest.mock('../makeWorkerInstance', () => () => {})
@@ -20,7 +22,7 @@ jest.mock('../makeWorkerInstance', () => () => {})
 
 // The URL is set in a state initializer: it runs once per mount, before
 // `Loader` renders and reads it, and a render stays pure.
-export function App({ search }: { search: string }) {
+export const App = observer(function App({ search }: { search: string }) {
   useState(() => {
     if (search !== window.location.search) {
       window.history.replaceState(
@@ -31,4 +33,4 @@ export function App({ search }: { search: string }) {
     }
   })
   return <Loader />
-}
+})

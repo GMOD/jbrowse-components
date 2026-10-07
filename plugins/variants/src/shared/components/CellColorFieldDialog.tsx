@@ -4,6 +4,7 @@ import { SubmitDialog } from '@jbrowse/core/ui'
 import { SV_TYPE_FIELD } from '@jbrowse/core/util/categoricalField'
 import { useFetch } from '@jbrowse/core/util/useFetch'
 import { Autocomplete, TextField, Typography } from '@mui/material'
+import { observer } from 'mobx-react'
 
 import { IMPACT_FIELD } from '../variantConsequence.ts'
 import { variantFilterFields } from '../variantFilterFields.ts'
@@ -38,7 +39,7 @@ function choicesOf(fields: JexlFilterField[]): FieldChoice[] {
     }))
 }
 
-export default function CellColorFieldDialog({
+const CellColorFieldDialog = observer(function CellColorFieldDialog({
   model,
   handleClose,
 }: {
@@ -144,4 +145,6 @@ export default function CellColorFieldDialog({
       />
     </SubmitDialog>
   )
-}
+})
+
+export default CellColorFieldDialog

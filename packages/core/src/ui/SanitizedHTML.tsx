@@ -1,5 +1,7 @@
 import { Suspense, lazy, useLayoutEffect, useRef } from 'react'
 
+import { observer } from 'mobx-react'
+
 import { escapeHTML, looksLikeHTML } from '../util/htmlText.ts'
 import { linkify } from '../util/index.ts'
 import { rewriteExternalAnchors } from './rewriteExternalAnchors.ts'
@@ -18,7 +20,13 @@ function needsSanitization(str: string) {
   return str.includes('<') || str.includes('://')
 }
 
-function SetHTML({ value, className }: { value: string; className?: string }) {
+const SetHTML = observer(function SetHTML({
+  value,
+  className,
+}: {
+  value: string
+  className?: string
+}) {
   const spanRef = useRef<HTMLSpanElement>(null)
   useLayoutEffect(() => {
     const el = spanRef.current
@@ -32,9 +40,9 @@ function SetHTML({ value, className }: { value: string; className?: string }) {
     }
   }, [value])
   return <span ref={spanRef} className={className} />
-}
+})
 
-export default function SanitizedHTML({
+const SanitizedHTML = observer(function SanitizedHTML({
   html: pre,
   className,
 }: {
@@ -58,4 +66,6 @@ export default function SanitizedHTML({
       <DOMPurifySanitizedHTML value={value} className={className} />
     </Suspense>
   )
-}
+})
+
+export default SanitizedHTML

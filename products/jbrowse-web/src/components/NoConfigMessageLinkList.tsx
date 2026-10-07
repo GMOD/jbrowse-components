@@ -1,4 +1,5 @@
 import { makeStyles } from '@jbrowse/core/util/tss-react'
+import { observer } from 'mobx-react'
 
 import type { SampleLink } from './NoConfigMessageSampleData.ts'
 
@@ -22,7 +23,7 @@ const useStyles = makeStyles()({
 
 const renderers = ['webgpu', 'webgl', 'canvas']
 
-export default function NoConfigMessageLinkList({
+const NoConfigMessageLinkList = observer(function NoConfigMessageLinkList({
   links,
   buildUrl,
 }: {
@@ -62,4 +63,6 @@ export default function NoConfigMessageLinkList({
       })}
     </ul>
   )
-}
+})
+
+export default NoConfigMessageLinkList

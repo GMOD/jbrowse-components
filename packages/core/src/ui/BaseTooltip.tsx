@@ -9,6 +9,7 @@ import {
   useFloating,
   useInteractions,
 } from '@floating-ui/react'
+import { observer } from 'mobx-react'
 import { createPortal } from 'react-dom'
 
 import { useStyleTheme } from './PaletteContext.tsx'
@@ -109,7 +110,7 @@ export type TooltipPlacement =
   | 'left-start'
   | 'left-end'
 
-export default function BaseTooltip({
+const BaseTooltip = observer(function BaseTooltip({
   clientPoint: clientPointCoords,
   anchor,
   id,
@@ -226,4 +227,6 @@ export default function BaseTooltip({
     </div>,
     target,
   )
-}
+})
+
+export default BaseTooltip

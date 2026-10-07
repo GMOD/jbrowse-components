@@ -19,7 +19,7 @@ function gradientCss({ stops }: NonNullable<LegendItem['gradient']>) {
     .join(', ')})`
 }
 
-function Row({ item }: { item: LegendItem }) {
+const Row = observer(function Row({ item }: { item: LegendItem }) {
   const { gradient, label, hidden } = item
   return gradient ? (
     <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}>
@@ -52,7 +52,7 @@ function Row({ item }: { item: LegendItem }) {
       {label}
     </span>
   )
-}
+})
 
 function legendSpecIn(display: unknown) {
   return display && typeof display === 'object' && 'legendSpec' in display

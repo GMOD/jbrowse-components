@@ -1,4 +1,5 @@
 import { makeStyles } from '@jbrowse/core/util/tss-react'
+import { observer } from 'mobx-react'
 
 import CollapsibleSection from './CollapsibleSection.tsx'
 import LinkMenuRow from './LinkMenuRow.tsx'
@@ -19,7 +20,7 @@ function favDisplayName(
     .join(' - ')
 }
 
-export default function FavoriteGenomesPanel({
+const FavoriteGenomesPanel = observer(function FavoriteGenomesPanel({
   favorites,
   setFavorites,
   launch,
@@ -80,4 +81,6 @@ export default function FavoriteGenomesPanel({
       </div>
     </CollapsibleSection>
   )
-}
+})
+
+export default FavoriteGenomesPanel

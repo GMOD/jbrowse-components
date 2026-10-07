@@ -1,4 +1,5 @@
 import { Button, DialogActions, DialogContent } from '@mui/material'
+import { observer } from 'mobx-react'
 
 import type { ButtonProps } from '@mui/material'
 import type { ReactNode } from 'react'
@@ -30,7 +31,7 @@ export interface SubmitFormProps {
  * outer chrome) is shared across several tab panes uses this directly, so the
  * panes get the same keyboard behavior without each owning a Dialog.
  */
-export default function SubmitForm({
+const SubmitForm = observer(function SubmitForm({
   onSubmit,
   onCancel,
   cancelText = 'Cancel',
@@ -82,4 +83,6 @@ export default function SubmitForm({
       </DialogActions>
     </form>
   )
-}
+})
+
+export default SubmitForm

@@ -1,4 +1,5 @@
 import { Autocomplete, TextField } from '@mui/material'
+import { observer } from 'mobx-react'
 
 import { MarkSlotProblems } from './MarkProblems.tsx'
 
@@ -15,7 +16,7 @@ import type { PlotFields } from '../scanPlotFields.ts'
  * focus entering and leaving the control, since an edit is written against
  * the channel as it stood when it began.
  */
-export default function MarkFieldPicker({
+const MarkFieldPicker = observer(function MarkFieldPicker({
   channel,
   edit,
   fields,
@@ -78,4 +79,6 @@ export default function MarkFieldPicker({
       <MarkSlotProblems problems={problems} />
     </>
   )
-}
+})
+
+export default MarkFieldPicker

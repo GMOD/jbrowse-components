@@ -1,4 +1,5 @@
 import { Slider } from '@mui/material'
+import { observer } from 'mobx-react'
 
 import SliderTooltip from './SliderTooltip.tsx'
 
@@ -17,7 +18,7 @@ type Props = Omit<
   onChangeCommitted?: (value: number) => void
 }
 
-export default function SingleSlider(props: Props) {
+const SingleSlider = observer(function SingleSlider(props: Props) {
   const { onChange, onChangeCommitted, slots, ...rest } = props
   return (
     <Slider
@@ -31,4 +32,6 @@ export default function SingleSlider(props: Props) {
       }}
     />
   )
-}
+})
+
+export default SingleSlider

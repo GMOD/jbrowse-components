@@ -39,7 +39,7 @@ const VariantConsequenceDataGrid = lazy(
   () => import('./VariantConsequence/VariantConsequenceDataGrid.tsx'),
 )
 
-function AnnotationPanel({
+const AnnotationPanel = observer(function AnnotationPanel({
   descriptions,
   feature,
   fieldKey,
@@ -68,9 +68,9 @@ function AnnotationPanel({
   return data?.length ? (
     <VariantConsequenceDataGrid fields={fields} data={data} title={title} />
   ) : null
-}
+})
 
-function LaunchBreakendWidgetArea({
+const LaunchBreakendWidgetArea = observer(function LaunchBreakendWidgetArea({
   model,
   feat,
 }: {
@@ -102,7 +102,7 @@ function LaunchBreakendWidgetArea({
   ) : isSvLaunchType(type) ? (
     <LaunchSvPanel feature={feat} model={model} />
   ) : null
-}
+})
 
 const FILTERABLE_COLUMNS = new Set(['QUAL', 'FILTER', 'ID', 'REF', 'ALT'])
 

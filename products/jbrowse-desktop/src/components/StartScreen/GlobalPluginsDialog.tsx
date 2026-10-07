@@ -34,6 +34,7 @@ import {
   Tooltip,
   Typography,
 } from '@mui/material'
+import { observer } from 'mobx-react'
 
 import packageJSON from '../../../package.json' with { type: 'json' }
 import { useGlobalPluginsState } from './useGlobalPluginsState.ts'
@@ -55,7 +56,7 @@ const useStyles = makeStyles()({
   },
 })
 
-function InstalledGlobalPlugins({
+const InstalledGlobalPlugins = observer(function InstalledGlobalPlugins({
   plugins,
   filter,
   onRemove,
@@ -129,7 +130,7 @@ function InstalledGlobalPlugins({
       )}
     </div>
   )
-}
+})
 
 function isBundled(plugin: PluginDefinition) {
   const name = pluginName(plugin)
@@ -139,7 +140,7 @@ function isBundled(plugin: PluginDefinition) {
   )
 }
 
-function AvailablePlugins({
+const AvailablePlugins = observer(function AvailablePlugins({
   installed,
   filter,
   onInstall,
@@ -199,9 +200,9 @@ function AvailablePlugins({
   ) : (
     <LoadingEllipses />
   )
-}
+})
 
-export default function GlobalPluginsDialog({
+const GlobalPluginsDialog = observer(function GlobalPluginsDialog({
   onClose,
 }: {
   onClose: () => void
@@ -341,4 +342,6 @@ export default function GlobalPluginsDialog({
       ) : null}
     </>
   )
-}
+})
+
+export default GlobalPluginsDialog

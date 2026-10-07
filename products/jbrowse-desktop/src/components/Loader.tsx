@@ -248,7 +248,7 @@ const LoaderContents = observer(function LoaderContents() {
   )
 })
 
-export default function Loader() {
+const Loader = observer(function Loader() {
   const { theme, styleTheme } = useMemo(() => {
     const args = storedThemeArgs()
     return {
@@ -267,4 +267,6 @@ export default function Loader() {
       </StyleThemeProvider>
     </ThemeProvider>
   )
-}
+})
+
+export default Loader

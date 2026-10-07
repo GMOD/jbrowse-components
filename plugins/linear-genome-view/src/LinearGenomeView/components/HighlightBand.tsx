@@ -1,5 +1,6 @@
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { Typography } from '@mui/material'
+import { observer } from 'mobx-react'
 
 const useStyles = makeStyles()(theme => ({
   highlight: {
@@ -39,7 +40,7 @@ export function gapMask(gaps: { top: number; height: number }[]) {
 // colored band with an
 // optional top label; when `children` (the highlight chip) is passed it renders
 // that instead of the plain label. Visibility is toggled from the view menu
-export default function HighlightBand({
+const HighlightBand = observer(function HighlightBand({
   coords,
   background,
   label,
@@ -78,4 +79,6 @@ export default function HighlightBand({
       ) : null}
     </div>
   )
-}
+})
+
+export default HighlightBand

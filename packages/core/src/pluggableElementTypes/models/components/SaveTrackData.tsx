@@ -111,7 +111,7 @@ function useTrackDataExport({
  * The format picker, owning the per-format help text and the dialog that shows
  * it — nothing above needs to know a format can carry one.
  */
-function FormatSelector({
+const FormatSelector = observer(function FormatSelector({
   options,
   type,
   setType,
@@ -167,7 +167,7 @@ function FormatSelector({
       </InfoDialog>
     </FormControl>
   )
-}
+})
 
 /**
  * What the preview pane says — the export itself only once there is one, and

@@ -1,5 +1,7 @@
 import { Suspense } from 'react'
 
+import { observer } from 'mobx-react'
+
 import type React from 'react'
 
 // React tags the result of React.lazy() with this; anything else (a plain or
@@ -19,13 +21,15 @@ function lazyifyComponent(
   if (!isLazy(ReactComponent)) {
     return [key, ReactComponent]
   }
-  function Component(props: Record<string, unknown>) {
-    return (
-      <Suspense fallback={null}>
-        <ReactComponent {...props} />
-      </Suspense>
-    )
-  }
+  const Component: React.FC<Record<string, unknown>> = observer(
+    function Component(props) {
+      return (
+        <Suspense fallback={null}>
+          <ReactComponent {...props} />
+        </Suspense>
+      )
+    },
+  )
   Component.displayName = key
   return [key, Component]
 }

@@ -1,5 +1,6 @@
 import { alpha } from '@jbrowse/core/ui/palette'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
+import { observer } from 'mobx-react'
 
 // A drop-in trigger for CascadingMenuButton (via its ButtonComponent prop) that
 // clones MUI's small <IconButton> visually without mounting ButtonBase +
@@ -55,7 +56,7 @@ const useStyles = makeStyles()(theme => ({
   },
 }))
 
-export default function IconButtonLite({
+const IconButtonLite = observer(function IconButtonLite({
   children,
   className,
   onClick,
@@ -84,4 +85,6 @@ export default function IconButtonLite({
       {children}
     </button>
   )
-}
+})
+
+export default IconButtonLite

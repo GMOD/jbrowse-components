@@ -1,6 +1,8 @@
+import { observer } from 'mobx-react'
+
 import SimpleField from './SimpleField.tsx'
 
-export default function UriField({
+const UriField = observer(function UriField({
   value,
   prefix,
   name,
@@ -21,4 +23,6 @@ export default function UriField({
   // width forwarded like any other field's: without it a URI row sized its own
   // label to content and sat out of the column every row beside it shares
   return <SimpleField name={name} prefix={prefix} value={href} width={width} />
-}
+})
+
+export default UriField

@@ -47,7 +47,7 @@ const useStyles = makeStyles()(theme => ({
   },
 }))
 
-function NestingMarkers({
+const NestingMarkers = observer(function NestingMarkers({
   nestingLevel,
   height,
   className,
@@ -67,7 +67,7 @@ function NestingMarkers({
       ))}
     </>
   )
-}
+})
 
 const TreeItem = observer(function TreeItem({
   row,

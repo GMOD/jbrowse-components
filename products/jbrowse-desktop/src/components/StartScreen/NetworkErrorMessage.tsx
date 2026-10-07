@@ -1,5 +1,6 @@
 import { ErrorMessage } from '@jbrowse/core/ui'
 import { Alert } from '@mui/material'
+import { observer } from 'mobx-react'
 
 const NETWORK_ERROR_RE =
   /failed to fetch|networkerror|err_internet|err_network|err_name_not_resolved|enotfound|load failed/i
@@ -13,7 +14,11 @@ function isNetworkError(error: unknown) {
 
 // Shows a friendly offline note for connectivity failures, falling back to the
 // normal error display for anything else.
-export default function NetworkErrorMessage({ error }: { error: unknown }) {
+const NetworkErrorMessage = observer(function NetworkErrorMessage({
+  error,
+}: {
+  error: unknown
+}) {
   return isNetworkError(error) ? (
     <Alert severity="warning">
       You appear to be offline. An internet connection is required to browse
@@ -22,4 +27,6 @@ export default function NetworkErrorMessage({ error }: { error: unknown }) {
   ) : (
     <ErrorMessage error={error} />
   )
-}
+})
+
+export default NetworkErrorMessage

@@ -4,48 +4,53 @@ import BaseCard from '@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail/BaseCard
 import { LabeledCheckbox } from '@jbrowse/core/ui'
 import { Typography } from '@mui/material'
 import { DataGrid } from '@mui/x-data-grid'
+import { observer } from 'mobx-react'
 
 import { measuredColumns } from '../measuredColumns.ts'
 
-export default function VariantConsequenceDataGrid({
-  data,
-  fields,
-  title,
-}: {
-  data: string[]
-  fields: string[]
-  title: string
-}) {
-  const [showOptions, setShowOptions] = useState(false)
-  const rows = data.map((elt, id) => {
-    const parts = elt.split('|')
-    const row: Record<string, string> = { id: `${id}` }
-    for (const [i, field] of fields.entries()) {
-      row[field] = parts[i] ?? ''
-    }
-    return row
-  })
-  const columns = measuredColumns(rows, fields)
+const VariantConsequenceDataGrid = observer(
+  function VariantConsequenceDataGrid({
+    data,
+    fields,
+    title,
+  }: {
+    data: string[]
+    fields: string[]
+    title: string
+  }) {
+    const [showOptions, setShowOptions] = useState(false)
+    const rows = data.map((elt, id) => {
+      const parts = elt.split('|')
+      const row: Record<string, string> = { id: `${id}` }
+      for (const [i, field] of fields.entries()) {
+        row[field] = parts[i] ?? ''
+      }
+      return row
+    })
+    const columns = measuredColumns(rows, fields)
 
-  // Without resolved column names (the VCF header's ANN/CSQ "Format:" field
-  // list) the DataGrid can only render a headerless "No columns" shell, so
-  // suppress the card entirely rather than show an empty table.
-  return rows.length && columns.length ? (
-    <BaseCard title={title}>
-      <LabeledCheckbox
-        label={<Typography variant="body2">Show options</Typography>}
-        checked={showOptions}
-        onChange={val => {
-          setShowOptions(val)
-        }}
-      />
-      <DataGrid
-        rowHeight={25}
-        hideFooter={rows.length < 100}
-        rows={rows}
-        showToolbar={showOptions}
-        columns={columns}
-      />
-    </BaseCard>
-  ) : null
-}
+    // Without resolved column names (the VCF header's ANN/CSQ "Format:" field
+    // list) the DataGrid can only render a headerless "No columns" shell, so
+    // suppress the card entirely rather than show an empty table.
+    return rows.length && columns.length ? (
+      <BaseCard title={title}>
+        <LabeledCheckbox
+          label={<Typography variant="body2">Show options</Typography>}
+          checked={showOptions}
+          onChange={val => {
+            setShowOptions(val)
+          }}
+        />
+        <DataGrid
+          rowHeight={25}
+          hideFooter={rows.length < 100}
+          rows={rows}
+          showToolbar={showOptions}
+          columns={columns}
+        />
+      </BaseCard>
+    ) : null
+  },
+)
+
+export default VariantConsequenceDataGrid

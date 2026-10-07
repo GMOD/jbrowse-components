@@ -2,6 +2,7 @@ import { useState } from 'react'
 
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { Typography } from '@mui/material'
+import { observer } from 'mobx-react'
 
 import { hasAlignmentString } from '../syntenyMate.ts'
 import { SpanLocus } from './PanelList.tsx'
@@ -46,7 +47,7 @@ const useStyles = makeStyles()(theme => ({
  * is a few tens of kb, and unclipped it is the chromosome. The flip checkbox is spelled out as `(-)` on the mate rather
  * than folded into the locstring, since it decides orientation, not position.
  */
-function LaunchPreview({
+const LaunchPreview = observer(function LaunchPreview({
   feature,
   region,
   anchorAssembly,
@@ -88,13 +89,13 @@ function LaunchPreview({
       </div>
     </div>
   )
-}
+})
 
 // The pairwise launch: one clicked alignment, one target panel. Launching every
 // assembly a locus aligns to is the region-anchored flow instead — see
 // LaunchSyntenyViewForRegionDialog, reached from the rubberband — because that
 // one is about a locus rather than about the alignment under the cursor.
-export default function LaunchSyntenyViewDialog({
+const LaunchSyntenyViewDialog = observer(function LaunchSyntenyViewDialog({
   session,
   region,
   feature,
@@ -178,4 +179,6 @@ export default function LaunchSyntenyViewDialog({
       <WindowSizeField onChange={setWindowSize} />
     </SyntenyLaunchDialog>
   )
-}
+})
+
+export default LaunchSyntenyViewDialog

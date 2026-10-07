@@ -1,6 +1,7 @@
 import { CircularProgress } from '@mui/material'
+import { observer } from 'mobx-react'
 
-export default function Loading() {
+const Loading = observer(function Loading() {
   return (
     <CircularProgress
       disableShrink
@@ -14,4 +15,6 @@ export default function Loading() {
       size={50}
     />
   )
-}
+})
+
+export default Loading

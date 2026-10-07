@@ -303,7 +303,7 @@ const MarkPlotDialog = observer(function MarkPlotDialog({
  * the whole editor exists to avoid, and the rule list already says what each
  * one costs.
  */
-function UnreadChannels({
+const UnreadChannels = observer(function UnreadChannels({
   mark,
   onWrite,
 }: {
@@ -332,6 +332,6 @@ function UnreadChannels({
       ))}
     </>
   ) : null
-}
+})
 
 export default MarkPlotDialog

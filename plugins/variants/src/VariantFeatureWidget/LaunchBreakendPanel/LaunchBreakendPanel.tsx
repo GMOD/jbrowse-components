@@ -76,7 +76,7 @@ const LaunchBreakpointSplitViewPanel = observer(
   },
 )
 
-export default function LaunchBreakendPanel({
+const LaunchBreakendPanel = observer(function LaunchBreakendPanel({
   model,
   locStrings,
   feature,
@@ -93,4 +93,6 @@ export default function LaunchBreakendPanel({
       ) : null}
     </BaseCard>
   )
-}
+})
+
+export default LaunchBreakendPanel

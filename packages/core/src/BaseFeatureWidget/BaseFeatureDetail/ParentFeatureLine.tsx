@@ -1,4 +1,5 @@
 import { Typography } from '@mui/material'
+import { observer } from 'mobx-react'
 
 import { makeStyles } from '../../util/tss-react/index.ts'
 
@@ -14,7 +15,7 @@ const useStyles = makeStyles()(theme => ({
 // The panel is opened on the exact isoform the click resolved to, and that
 // isoform's own record is regularly the only place its accession appears --
 // nothing in `NM_004006.2 - mRNA` says DMD.
-export default function ParentFeatureLine({
+const ParentFeatureLine = observer(function ParentFeatureLine({
   parentFeature,
 }: {
   parentFeature: ParentFeatureSummary
@@ -32,4 +33,6 @@ export default function ParentFeatureLine({
       {name}
     </Typography>
   )
-}
+})
+
+export default ParentFeatureLine

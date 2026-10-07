@@ -1,4 +1,5 @@
 import { SubmitDialog, replaceViewAction } from '@jbrowse/core/ui'
+import { observer } from 'mobx-react'
 
 import type {
   AbstractViewContainer,
@@ -29,7 +30,7 @@ import type { ReactNode } from 'react'
  * throw, shows it as a notification and stays open on the choices that produced
  * it.
  */
-export default function SyntenyLaunchDialog<T>({
+const SyntenyLaunchDialog = observer(function SyntenyLaunchDialog<T>({
   session,
   sourceView,
   title,
@@ -87,4 +88,6 @@ export default function SyntenyLaunchDialog<T>({
       {children}
     </SubmitDialog>
   )
-}
+})
+
+export default SyntenyLaunchDialog

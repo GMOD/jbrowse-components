@@ -1,7 +1,8 @@
 import { ConfirmDialog } from '@jbrowse/core/ui'
 import { Typography } from '@mui/material'
+import { observer } from 'mobx-react'
 
-export default function DeletePluginDialog({
+const DeletePluginDialog = observer(function DeletePluginDialog({
   onClose,
   plugin,
 }: {
@@ -31,4 +32,6 @@ export default function DeletePluginDialog({
       </Typography>
     </ConfirmDialog>
   )
-}
+})
+
+export default DeletePluginDialog

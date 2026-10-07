@@ -50,7 +50,11 @@ const useStyles = makeStyles()(() => ({
   },
 }))
 
-function LockedPluginIconButton({ title }: { title: string }) {
+const LockedPluginIconButton = observer(function LockedPluginIconButton({
+  title,
+}: {
+  title: string
+}) {
   const { classes } = useStyles()
   return (
     <Tooltip className={classes.iconMargin} title={title}>
@@ -61,7 +65,7 @@ function LockedPluginIconButton({ title }: { title: string }) {
       </span>
     </Tooltip>
   )
-}
+})
 
 const UninstallPluginIconButton = observer(function UninstallPluginIconButton({
   plugin,

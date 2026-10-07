@@ -141,7 +141,11 @@ export const TrackToggle = observer(function TrackToggle({
   )
 })
 
-function ViewLoading({ message, progress, source }: ViewLoadingValue) {
+const ViewLoading = observer(function ViewLoading({
+  message,
+  progress,
+  source,
+}: ViewLoadingValue) {
   const slow = useSlowLoad()
   const stalled = useStalled(`${message}|${progress}|${source}`)
   return (
@@ -161,7 +165,7 @@ function ViewLoading({ message, progress, source }: ViewLoadingValue) {
       ) : null}
     </>
   )
-}
+})
 
 export const ViewStatus = observer(function ViewStatus({
   view,

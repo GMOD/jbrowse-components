@@ -12,7 +12,7 @@ import TrackControl from './trackControl/TrackControl.tsx'
  * complaining about opens it here. Without one the notice only reports, which
  * is what every display but the mark display does.
  */
-export default function ConfigProblemsIndicator({
+const ConfigProblemsIndicator = observer(function ConfigProblemsIndicator({
   notices,
   onClick,
 }: {
@@ -28,7 +28,9 @@ export default function ConfigProblemsIndicator({
       onClick={onClick}
     />
   ) : null
-}
+})
+
+export default ConfigProblemsIndicator
 
 /**
  * The bottom-right corner of a display whose only chip is its config

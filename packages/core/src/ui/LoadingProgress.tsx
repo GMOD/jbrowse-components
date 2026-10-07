@@ -1,3 +1,5 @@
+import { observer } from 'mobx-react'
+
 import { progressLabel } from '../util/progress.ts'
 import LoadingEllipses from './LoadingEllipses.tsx'
 import StatusProgressBar from './StatusProgressBar.tsx'
@@ -13,7 +15,7 @@ import type { TypographyProps } from '@mui/material'
  * no bar). Callers own the surrounding layout and supply `barClassName` for the
  * bar width.
  */
-export default function LoadingProgress({
+const LoadingProgress = observer(function LoadingProgress({
   message,
   fraction,
   variant,
@@ -35,4 +37,6 @@ export default function LoadingProgress({
       )}
     </>
   )
-}
+})
+
+export default LoadingProgress

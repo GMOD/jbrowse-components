@@ -1,3 +1,5 @@
+import { observer } from 'mobx-react'
+
 import { DisplayChromeOverlayProvider } from './chromeOverlayContext.ts'
 import plainChromeOverlays from './plainChromeOverlays.tsx'
 import plainTrackControl from './trackControl/plainTrackControl.tsx'
@@ -100,7 +102,7 @@ export function resolveOverlays(overlays?: Partial<DisplayChromeOverlays>) {
  * prop and imports no toolkit. See
  * [DISPLAYCHROME.md](https://github.com/GMOD/jbrowse-components/blob/main/agent-docs/reference/DISPLAYCHROME.md).
  */
-export default function DisplayUIProvider({
+const DisplayUIProvider = observer(function DisplayUIProvider({
   overlays,
   trackControl = plainTrackControl,
   children,
@@ -116,4 +118,6 @@ export default function DisplayUIProvider({
       </TrackControlProvider>
     </DisplayChromeOverlayProvider>
   )
-}
+})
+
+export default DisplayUIProvider

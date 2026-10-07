@@ -51,7 +51,7 @@ const useStyles = makeStyles()(theme => ({
 // over (via `band`), not always the top one. Only the coverage/indicator
 // tooltips render it, and both fire only with coverage shown, so `band` is
 // always set when those tooltips appear.
-function CoverageHoverBar({
+const CoverageHoverBar = observer(function CoverageHoverBar({
   left,
   band,
 }: {
@@ -72,7 +72,7 @@ function CoverageHoverBar({
       }}
     />
   ) : null
-}
+})
 
 function formatLocation(refName?: string, position?: number) {
   return position === undefined
@@ -80,9 +80,13 @@ function formatLocation(refName?: string, position?: number) {
     : formatBandLocation(refName, position)
 }
 
-function SimpleTooltipContents({ message }: { message: string }) {
+const SimpleTooltipContents = observer(function SimpleTooltipContents({
+  message,
+}: {
+  message: string
+}) {
   return message ? <SanitizedHTML html={message} /> : null
-}
+})
 
 /**
  * Custom Tooltip for LinearAlignmentsDisplay

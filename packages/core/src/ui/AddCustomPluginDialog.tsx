@@ -7,6 +7,7 @@ import {
   IconButton,
   TextField,
 } from '@mui/material'
+import { observer } from 'mobx-react'
 
 import { cx, makeStyles } from '../util/tss-react/index.ts'
 import SubmitDialog from './SubmitDialog.tsx'
@@ -38,7 +39,7 @@ const useStyles = makeStyles()({
  * `onAdd` returns false to reject the definition and keep the dialog open (the
  * plugin store rejects a name already installed).
  */
-export default function AddCustomPluginDialog({
+const AddCustomPluginDialog = observer(function AddCustomPluginDialog({
   onClose,
   onAdd,
 }: {
@@ -133,4 +134,6 @@ export default function AddCustomPluginDialog({
       </div>
     </SubmitDialog>
   )
-}
+})
+
+export default AddCustomPluginDialog

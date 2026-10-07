@@ -1,11 +1,12 @@
 import { SanitizedHTML } from '@jbrowse/core/ui'
 import { TextField } from '@mui/material'
+import { observer } from 'mobx-react'
 
 import type { TextFieldProps } from '@mui/material'
 
 // adds ability to have html in helperText. note that FormHelperTextProps is
 // div because the default is p which does not like div children
-export default function ConfigurationTextField(
+const ConfigurationTextField = observer(function ConfigurationTextField(
   props: { helperText?: string } & TextFieldProps,
 ) {
   const { helperText, slotProps, ...rest } = props
@@ -26,4 +27,6 @@ export default function ConfigurationTextField(
       }}
     />
   )
-}
+})
+
+export default ConfigurationTextField

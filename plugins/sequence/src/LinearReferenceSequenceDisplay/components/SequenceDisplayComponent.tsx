@@ -65,7 +65,11 @@ function frameLabel(frame: number) {
 
 // Not an observer: `hover` is a plain resolved object, so there is nothing here
 // to track — SequenceHoverTooltip did the reading.
-function HoverContents({ hover }: { hover: SequenceHover }) {
+const HoverContents = observer(function HoverContents({
+  hover,
+}: {
+  hover: SequenceHover
+}) {
   const { refName, coord, detail } = hover
   return (
     <>
@@ -89,7 +93,7 @@ function HoverContents({ hover }: { hover: SequenceHover }) {
       ) : null}
     </>
   )
-}
+})
 
 const SequenceDisplayComponent = observer(function SequenceDisplayComponent({
   model,

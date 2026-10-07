@@ -1,5 +1,6 @@
 import { useTooltipTableStyles } from '@jbrowse/alignments-core/CoverageTooltipTables'
 import { getBpDisplayStr, toLocale } from '@jbrowse/core/util'
+import { observer } from 'mobx-react'
 
 import { describeMafStatus } from '../../util/mafStatus.ts'
 import { insertionForwardStart } from './findRowHover.ts'
@@ -20,18 +21,24 @@ function locationStr(chr?: string, pos?: number, strand?: number) {
   return `${chr}:${toLocale(pos + 1)} (${strandStr(strand)})`
 }
 
-function Row({ label, value }: { label: string; value: ReactNode }) {
+const Row = observer(function Row({
+  label,
+  value,
+}: {
+  label: string
+  value: ReactNode
+}) {
   return (
     <tr>
       <td>{label}</td>
       <td>{value}</td>
     </tr>
   )
-}
+})
 
 // Every tooltip body is this table; `caption` is omitted only by the bare
 // "no hover resolved" readout, which has nothing to title.
-function TableShell({
+const TableShell = observer(function TableShell({
   caption,
   children,
 }: {
@@ -45,7 +52,7 @@ function TableShell({
       <tbody>{children}</tbody>
     </table>
   )
-}
+})
 
 // An i-line context side: the status phrasing plus its bp count when the file
 // gave one. Paren-free descriptions (see `describeMafStatus`) so the count
@@ -59,7 +66,7 @@ function refLabel(p: GenomicPosition) {
   return `${p.refName}:${toLocale(p.coord)}`
 }
 
-function RangeContents({
+const RangeContents = observer(function RangeContents({
   p1,
   p2,
 }: {
@@ -79,9 +86,9 @@ function RangeContents({
       />
     </TableShell>
   )
-}
+})
 
-function HoverContents({
+const HoverContents = observer(function HoverContents({
   hover,
   refName,
   coord,
@@ -161,7 +168,7 @@ function HoverContents({
       />
     </TableShell>
   )
-}
+})
 
 /**
  * The zoom-out tier's answer to `HoverContents`. Without it a summary bar is
@@ -176,7 +183,7 @@ function HoverContents({
  * than as either. It is what shades the bar, and shading is otherwise the one
  * thing here with no decoder at all.
  */
-function SummaryContents({
+const SummaryContents = observer(function SummaryContents({
   bar,
   location,
   sampleLabel,
@@ -201,7 +208,7 @@ function SummaryContents({
       ) : null}
     </TableShell>
   )
-}
+})
 
 // Just the gene name; the raw reading-frame number isn't useful to read.
 export interface FrameHover {
@@ -211,13 +218,17 @@ export interface FrameHover {
 // The CDS gene projected onto this species' row (UCSC mafFrames), so the gene is
 // identifiable by hovering any species. Shown only in the base view — codon view
 // folds the gene into the consolidated codon table.
-function FrameContents({ frame }: { frame: FrameHover }) {
+const FrameContents = observer(function FrameContents({
+  frame,
+}: {
+  frame: FrameHover
+}) {
   return frame.name ? (
     <TableShell caption="CDS">
       <Row label="Gene" value={frame.name} />
     </TableShell>
   ) : null
-}
+})
 
 const CHANGE_LABEL: Record<CodonChange, string> = {
   same: 'none',
@@ -226,7 +237,7 @@ const CHANGE_LABEL: Record<CodonChange, string> = {
   stop: 'stop gained',
 }
 
-function CodonContents({
+const CodonContents = observer(function CodonContents({
   codon,
   location,
   sampleLabel,
@@ -252,10 +263,14 @@ function CodonContents({
       <Row label="Change" value={CHANGE_LABEL[codon.change]} />
     </TableShell>
   )
-}
+})
 
 // The window the identity plot paints under the cursor, read as a number.
-function IdentityContents({ identity }: { identity: IdentityHover }) {
+const IdentityContents = observer(function IdentityContents({
+  identity,
+}: {
+  identity: IdentityHover
+}) {
   return (
     <TableShell caption="Identity to reference">
       <Row
@@ -264,73 +279,77 @@ function IdentityContents({ identity }: { identity: IdentityHover }) {
       />
     </TableShell>
   )
-}
+})
 
 export interface IdentityHover {
   identity: number
   bases: number
 }
 
-export default function MafAlignmentTooltipContents({
-  p1,
-  p2,
-  hover,
-  frame,
-  codon,
-  summary,
-  summarySampleLabel,
-  identity,
-}: {
-  p1?: GenomicPosition
-  p2: GenomicPosition
-  hover?: MafHover
-  frame?: FrameHover
-  codon?: CodonHit
-  summary?: MafSummaryRecord
-  summarySampleLabel?: string
-  identity?: IdentityHover
-}) {
-  if (p1) {
-    return <RangeContents p1={p1} p2={p2} />
-  }
-  // The zoom-out tier: `hover` is always absent here (no alignment blocks), so
-  // this is the whole readout rather than a section stacked under one. The CDS
-  // strip can still draw on this tier, so its table still rides along.
-  if (summary) {
+const MafAlignmentTooltipContents = observer(
+  function MafAlignmentTooltipContents({
+    p1,
+    p2,
+    hover,
+    frame,
+    codon,
+    summary,
+    summarySampleLabel,
+    identity,
+  }: {
+    p1?: GenomicPosition
+    p2: GenomicPosition
+    hover?: MafHover
+    frame?: FrameHover
+    codon?: CodonHit
+    summary?: MafSummaryRecord
+    summarySampleLabel?: string
+    identity?: IdentityHover
+  }) {
+    if (p1) {
+      return <RangeContents p1={p1} p2={p2} />
+    }
+    // The zoom-out tier: `hover` is always absent here (no alignment blocks), so
+    // this is the whole readout rather than a section stacked under one. The CDS
+    // strip can still draw on this tier, so its table still rides along.
+    if (summary) {
+      return (
+        <>
+          <SummaryContents
+            bar={summary}
+            location={refLabel(p2)}
+            sampleLabel={summarySampleLabel}
+          />
+          {frame ? <FrameContents frame={frame} /> : null}
+        </>
+      )
+    }
+    // Codon view: one consolidated table (species + gene + codon change) instead
+    // of stacking the per-base alignment, CDS, and codon tables.
+    if (codon) {
+      return (
+        <CodonContents
+          codon={codon}
+          location={refLabel(p2)}
+          sampleLabel={hover?.sampleLabel}
+          gene={frame?.name}
+        />
+      )
+    }
     return (
       <>
-        <SummaryContents
-          bar={summary}
-          location={refLabel(p2)}
-          sampleLabel={summarySampleLabel}
-        />
+        {hover ? (
+          <HoverContents hover={hover} refName={p2.refName} coord={p2.coord} />
+        ) : (
+          <TableShell>
+            <Row label="Ref" value={refLabel(p2)} />
+          </TableShell>
+        )}
+        {identity ? <IdentityContents identity={identity} /> : null}
         {frame ? <FrameContents frame={frame} /> : null}
       </>
     )
-  }
-  // Codon view: one consolidated table (species + gene + codon change) instead
-  // of stacking the per-base alignment, CDS, and codon tables.
-  if (codon) {
-    return (
-      <CodonContents
-        codon={codon}
-        location={refLabel(p2)}
-        sampleLabel={hover?.sampleLabel}
-        gene={frame?.name}
-      />
-    )
-  }
-  return (
-    <>
-      {hover ? (
-        <HoverContents hover={hover} refName={p2.refName} coord={p2.coord} />
-      ) : (
-        <TableShell>
-          <Row label="Ref" value={refLabel(p2)} />
-        </TableShell>
-      )}
-      {identity ? <IdentityContents identity={identity} /> : null}
-      {frame ? <FrameContents frame={frame} /> : null}
-    </>
-  )
-}
+  },
+)
+
+export default MafAlignmentTooltipContents

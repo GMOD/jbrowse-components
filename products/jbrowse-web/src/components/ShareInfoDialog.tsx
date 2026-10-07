@@ -1,7 +1,8 @@
 import { InfoDialog } from '@jbrowse/core/ui'
 import { DialogContentText } from '@mui/material'
+import { observer } from 'mobx-react'
 
-export default function ShareInfoDialog({
+const ShareInfoDialog = observer(function ShareInfoDialog({
   onClose,
   open,
 }: {
@@ -29,4 +30,6 @@ export default function ShareInfoDialog({
       </DialogContentText>
     </InfoDialog>
   )
-}
+})
+
+export default ShareInfoDialog

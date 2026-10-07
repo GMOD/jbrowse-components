@@ -2,6 +2,7 @@ import { Suspense, lazy, useState } from 'react'
 
 import ReportIcon from '@mui/icons-material/Report'
 import { IconButton, Tooltip } from '@mui/material'
+import { observer } from 'mobx-react'
 
 import type { IconButtonProps } from '@mui/material'
 
@@ -12,7 +13,7 @@ const ErrorMessageStackTraceDialog = lazy(
 // "Show stack trace" icon button that lazy-loads and opens the stack-trace
 // dialog. Shared by ErrorBanner and ErrorBar so the lazy import and open/close
 // state live in one place.
-export default function StackTraceButton({
+const StackTraceButton = observer(function StackTraceButton({
   error,
   color,
 }: {
@@ -44,4 +45,6 @@ export default function StackTraceButton({
       ) : null}
     </>
   )
-}
+})
+
+export default StackTraceButton

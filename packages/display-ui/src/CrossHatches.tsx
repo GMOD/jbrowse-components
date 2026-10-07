@@ -1,3 +1,5 @@
+import { observer } from 'mobx-react'
+
 import { clampStrokeInsideAxis } from './yScaleTicks.ts'
 
 import type { YScaleTicks } from './yScaleTicks.ts'
@@ -44,7 +46,7 @@ export function CrossHatchLines({
 
 // Horizontal guide lines at each Y-scale tick, once per band the scale rules.
 // Pointer-events disabled so the underlying canvas still receives mouse events.
-export default function CrossHatches({
+const CrossHatches = observer(function CrossHatches({
   ticks,
   width,
   height,
@@ -71,4 +73,6 @@ export default function CrossHatches({
       ))}
     </svg>
   )
-}
+})
+
+export default CrossHatches

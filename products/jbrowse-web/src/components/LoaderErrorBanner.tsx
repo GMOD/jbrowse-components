@@ -1,10 +1,15 @@
 import { ErrorBanner } from '@jbrowse/core/ui'
 import { Button } from '@mui/material'
+import { observer } from 'mobx-react'
 
 import factoryReset from '../factoryReset.ts'
 import NoConfigMessage from './NoConfigMessage.tsx'
 
-export default function LoaderErrorBanner({ error }: { error: unknown }) {
+const LoaderErrorBanner = observer(function LoaderErrorBanner({
+  error,
+}: {
+  error: unknown
+}) {
   return /HTTP 404 fetching config.json/.test(`${error}`) ? (
     <div>
       <h1>It worked!</h1>
@@ -47,4 +52,6 @@ export default function LoaderErrorBanner({ error }: { error: unknown }) {
       </Button>
     </div>
   )
-}
+})
+
+export default LoaderErrorBanner

@@ -1,5 +1,7 @@
 import { useState } from 'react'
 
+import { observer } from 'mobx-react'
+
 import LabeledCheckbox from './LabeledCheckbox.tsx'
 import MonospaceTextField from './MonospaceTextField.tsx'
 
@@ -7,7 +9,11 @@ import MonospaceTextField from './MonospaceTextField.tsx'
 // behind a checkbox, so the sender can read what they are sending whichever
 // link carries it. Shared by jbrowse-web's ShareDialog and jbrowse-desktop's
 // ExportToWebDialog.
-export default function SessionJsonPanel({ session }: { session: unknown }) {
+const SessionJsonPanel = observer(function SessionJsonPanel({
+  session,
+}: {
+  session: unknown
+}) {
   const [show, setShow] = useState(false)
   return (
     <>
@@ -29,4 +35,6 @@ export default function SessionJsonPanel({ session }: { session: unknown }) {
       ) : null}
     </>
   )
-}
+})
+
+export default SessionJsonPanel

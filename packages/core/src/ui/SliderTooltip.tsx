@@ -1,4 +1,5 @@
 import { Tooltip } from '@mui/material'
+import { observer } from 'mobx-react'
 
 import type { SliderValueLabelProps } from '@mui/material'
 
@@ -13,7 +14,9 @@ import type { SliderValueLabelProps } from '@mui/material'
 // Popper. On the LGV zoom slider, whose value tracks live `bpPerPx`, that was a
 // Tooltip and a Popper re-rendering on every animation frame of a wheel zoom to
 // show nothing.
-export default function SliderTooltip(props: SliderValueLabelProps) {
+const SliderTooltip = observer(function SliderTooltip(
+  props: SliderValueLabelProps,
+) {
   const { children, open, value } = props
   return open ? (
     <Tooltip open enterTouchDelay={0} placement="top" title={value} arrow>
@@ -22,4 +25,6 @@ export default function SliderTooltip(props: SliderValueLabelProps) {
   ) : (
     children
   )
-}
+})
+
+export default SliderTooltip

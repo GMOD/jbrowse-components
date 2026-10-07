@@ -2,6 +2,7 @@ import { useRef, useState } from 'react'
 
 import { LabeledCheckbox } from '@jbrowse/core/ui'
 import { Autocomplete, TextField, Typography } from '@mui/material'
+import { observer } from 'mobx-react'
 
 import {
   axisMember,
@@ -24,7 +25,7 @@ const SPLIT_LABELS = {
   rows: 'One row per value of',
 } as const
 
-function SplitControls({
+const SplitControls = observer(function SplitControls({
   plot,
   kind,
   options,
@@ -85,9 +86,9 @@ function SplitControls({
       <MarkSlotProblems problems={problems.under(undefined, kind)} />
     </div>
   )
-}
+})
 
-function AxisField({
+const AxisField = observer(function AxisField({
   plot,
   member,
   label,
@@ -111,7 +112,7 @@ function AxisField({
       slotProps={{ htmlInput: { 'data-testid': `axis-${member}` } }}
     />
   )
-}
+})
 
 /**
  * What the plot does as a whole, beside its marks: the sections it stacks by
@@ -120,7 +121,7 @@ function AxisField({
  * its type, pinned ends where a figure wants them fixed, and a line at each
  * tick.
  */
-export default function PlotSettings({
+const PlotSettings = observer(function PlotSettings({
   plot,
   options,
   problems,
@@ -203,4 +204,6 @@ export default function PlotSettings({
       </div>
     </div>
   )
-}
+})
+
+export default PlotSettings

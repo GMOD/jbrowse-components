@@ -5,8 +5,9 @@ import {
   Radio,
   RadioGroup,
 } from '@mui/material'
+import { observer } from 'mobx-react'
 
-export default function RadioSelector<T extends string>({
+const RadioSelector = observer(function RadioSelector<T extends string>({
   label,
   value,
   options,
@@ -39,4 +40,6 @@ export default function RadioSelector<T extends string>({
       </RadioGroup>
     </FormControl>
   )
-}
+})
+
+export default RadioSelector

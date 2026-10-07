@@ -43,7 +43,7 @@ export interface ConnectorLinesModel extends IStateTreeNode {
 // The red connector line drawn for the hovered (or crosshair) column. Stays in
 // the SVG above the field: it is one line, it has to sit on top, and the export
 // wants it as vector whatever the field rasterized to.
-function ConnectorLine({
+const ConnectorLine = observer(function ConnectorLine({
   mx,
   gx,
   lineZoneHeight,
@@ -59,7 +59,7 @@ function ConnectorLine({
       y2={0}
     />
   )
-}
+})
 
 function useConnectorFieldPaint(
   coords: ConnectorCoord[],
@@ -133,7 +133,7 @@ export function SvgConnectorField({
 // The zone's hover hit-test. A transparent rect rather than the lines
 // themselves: they are on a canvas now, and were `pointerEvents: none` before
 // that — a 0.5px line is not something a pointer can be asked to hit.
-function ConnectorHitTestRect({
+const ConnectorHitTestRect = observer(function ConnectorHitTestRect({
   lineCoords,
   lineZoneHeight,
   onHover,
@@ -178,12 +178,12 @@ function ConnectorHitTestRect({
       }}
     />
   )
-}
+})
 
 // The frame the zone's contents draw in. It does not shift horizontally: the
 // coords are viewport-relative to start with, so the |offsetPx| gap when the
 // content doesn't reach the left viewport edge is carried by the coords.
-export function ConnectorZone({
+export const ConnectorZone = observer(function ConnectorZone({
   width,
   height,
   children,
@@ -205,7 +205,7 @@ export function ConnectorZone({
       {children}
     </svg>
   )
-}
+})
 
 /**
  * The drag handle along the bottom of the zone, sitting `top` pixels down. Every

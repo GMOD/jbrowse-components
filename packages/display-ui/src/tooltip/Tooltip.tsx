@@ -1,5 +1,7 @@
 import { cloneElement } from 'react'
 
+import { observer } from 'mobx-react'
+
 import { useTooltip } from './useTooltip.tsx'
 
 import type { TooltipPlacement } from '@jbrowse/core/ui/BaseTooltip'
@@ -57,7 +59,7 @@ function compose<E>(
  * `aria-describedby` and never `aria-label` — see {@link useTooltip}, which is
  * this without the cloning, for a host writing its own markup.
  */
-export default function Tooltip({
+const Tooltip = observer(function Tooltip({
   title,
   placement,
   children,
@@ -97,4 +99,6 @@ export default function Tooltip({
       {tooltip}
     </>
   )
-}
+})
+
+export default Tooltip

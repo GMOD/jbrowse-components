@@ -5,6 +5,7 @@ import {
   statusMessageText,
 } from '@jbrowse/core/util'
 import { Button } from '@mui/material'
+import { observer } from 'mobx-react'
 
 import type { RpcStatus } from '@jbrowse/core/util'
 
@@ -27,7 +28,7 @@ import type { RpcStatus } from '@jbrowse/core/util'
  * an indeterminate bar would announce nothing. Revisit if the startup ever stops
  * being sub-second.
  */
-export default function ClusterProgress({
+const ClusterProgress = observer(function ClusterProgress({
   status,
   label,
   onStop,
@@ -62,4 +63,6 @@ export default function ClusterProgress({
       <StatusProgressBar fraction={fraction ?? 0} />
     </div>
   )
-}
+})
+
+export default ClusterProgress

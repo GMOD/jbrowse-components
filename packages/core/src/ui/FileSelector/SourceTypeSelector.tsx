@@ -1,12 +1,13 @@
 import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown'
 import { ToggleButton, ToggleButtonGroup, Tooltip } from '@mui/material'
+import { observer } from 'mobx-react'
 
 import CascadingMenuButton from '../CascadingMenuButton.tsx'
 import { getAccountLabel } from './util.ts'
 
 import type { BaseInternetAccountModel } from '../../pluggableElementTypes/index.ts'
 
-function AccountToggleButton({
+const AccountToggleButton = observer(function AccountToggleButton({
   account,
 }: {
   account: BaseInternetAccountModel
@@ -18,9 +19,9 @@ function AccountToggleButton({
       </ToggleButton>
     </Tooltip>
   )
-}
+})
 
-function MoreButton({
+const MoreButton = observer(function MoreButton({
   onClick,
   disabled,
   children,
@@ -44,9 +45,9 @@ function MoreButton({
       {children}
     </ToggleButton>
   )
-}
+})
 
-export default function SourceTypeSelector({
+const SourceTypeSelector = observer(function SourceTypeSelector({
   value,
   sourceTypes,
   shownAccounts,
@@ -103,4 +104,6 @@ export default function SourceTypeSelector({
       )}
     </ToggleButtonGroup>
   )
-}
+})
+
+export default SourceTypeSelector

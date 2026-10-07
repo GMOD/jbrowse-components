@@ -11,6 +11,7 @@ import {
   Tooltip,
   Typography,
 } from '@mui/material'
+import { observer } from 'mobx-react'
 
 import { invokeIpc } from '../../../ipc.ts'
 import StarIcon from '../StarIcon.tsx'
@@ -41,7 +42,7 @@ const useStyles = makeStyles()({
   },
 })
 
-function RecentSessionCard({
+const RecentSessionCard = observer(function RecentSessionCard({
   sessionData,
   isFavorite,
   launch,
@@ -121,6 +122,6 @@ function RecentSessionCard({
       </CardActions>
     </Card>
   )
-}
+})
 
 export default RecentSessionCard

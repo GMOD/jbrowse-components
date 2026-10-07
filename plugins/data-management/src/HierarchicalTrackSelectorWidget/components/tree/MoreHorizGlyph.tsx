@@ -1,4 +1,5 @@
 import { makeStyles } from '@jbrowse/core/util/tss-react'
+import { observer } from 'mobx-react'
 
 // MoreHoriz path from @mui/icons-material, inlined to avoid an SvgIcon per row
 const moreHorizPath =
@@ -14,11 +15,13 @@ const useStyles = makeStyles()(theme => ({
   },
 }))
 
-export default function MoreHorizGlyph() {
+const MoreHorizGlyph = observer(function MoreHorizGlyph() {
   const { classes } = useStyles()
   return (
     <svg className={classes.icon} viewBox="0 0 24 24" aria-hidden>
       <path d={moreHorizPath} />
     </svg>
   )
-}
+})
+
+export default MoreHorizGlyph

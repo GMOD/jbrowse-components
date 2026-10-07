@@ -1,4 +1,5 @@
 import { Tooltip } from '@mui/material'
+import { observer } from 'mobx-react'
 
 import { cx, makeStyles } from '../../util/tss-react/index.ts'
 
@@ -19,7 +20,7 @@ const useStyles = makeStyles()(theme => ({
   },
 }))
 
-export default function FieldName({
+const FieldName = observer(function FieldName({
   description,
   name,
   width,
@@ -46,4 +47,6 @@ export default function FieldName({
       {val}
     </div>
   )
-}
+})
+
+export default FieldName

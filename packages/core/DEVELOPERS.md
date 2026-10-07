@@ -6,12 +6,12 @@ This package has **no main entry point**. It is designed exclusively for subpath
 imports:
 
 ```typescript
+// This will error - no default export
+import '@jbrowse/core' // ERR_PACKAGE_PATH_NOT_EXPORTED
+
 // Correct usage
 import PluginManager from '@jbrowse/core/PluginManager'
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
-
-// This will error - no default export
-import '@jbrowse/core' // ERR_PACKAGE_PATH_NOT_EXPORTED
 ```
 
 ## package.json Structure

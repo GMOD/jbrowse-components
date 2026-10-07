@@ -1,5 +1,6 @@
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { Box, Chip, Typography } from '@mui/material'
+import { observer } from 'mobx-react'
 
 import type { AssemblyConf } from '@jbrowse/core/util/assemblyConfigUtils'
 
@@ -15,7 +16,7 @@ const useStyles = makeStyles()(theme => ({
   },
 }))
 
-export default function StagedAssemblies({
+const StagedAssemblies = observer(function StagedAssemblies({
   assemblyConfs,
   onDelete,
 }: {
@@ -40,4 +41,6 @@ export default function StagedAssemblies({
       ))}
     </Box>
   )
-}
+})
+
+export default StagedAssemblies

@@ -26,13 +26,13 @@ export interface FacetedColumn {
 
 // Empty <tr> used to offset the virtualized window from the top/bottom of the
 // scroll area. Renders nothing when there's no gap to fill.
-function SpacerRow({ height }: { height: number }) {
+const SpacerRow = observer(function SpacerRow({ height }: { height: number }) {
   return height > 0 ? (
     <tr style={{ height }}>
       <td />
     </tr>
   ) : null
-}
+})
 
 const FacetedDataGrid = observer(function FacetedDataGrid({
   model,

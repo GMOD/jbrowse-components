@@ -1,6 +1,7 @@
 import { usePalette } from '@jbrowse/core/ui/PaletteContext'
 import { VERTICAL_SCROLLBAR_CLEARANCE } from '@jbrowse/core/ui/VerticalScrollbar'
 import { measureText } from '@jbrowse/core/util/measureText'
+import { observer } from 'mobx-react'
 
 import {
   axisCaptionY,
@@ -81,7 +82,7 @@ export default function AxisCaption({
  * The on-screen caption of one scale: an `<svg>` over the gutter column, the
  * height of the display, with `AxisCaption` inside.
  */
-export function AxisCaptionOverlay({
+export const AxisCaptionOverlay = observer(function AxisCaptionOverlay({
   axis,
   bandTops,
   width,
@@ -106,4 +107,4 @@ export function AxisCaptionOverlay({
       <AxisCaption axis={axis} bandTops={bandTops} height={height} />
     </svg>
   )
-}
+})

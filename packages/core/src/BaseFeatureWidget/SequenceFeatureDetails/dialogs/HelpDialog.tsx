@@ -1,9 +1,10 @@
 import SettingsIcon from '@mui/icons-material/Settings'
 import { Typography } from '@mui/material'
+import { observer } from 'mobx-react'
 
 import { InfoDialog } from '../../../ui/index.ts'
 
-export default function HelpDialog({
+const HelpDialog = observer(function HelpDialog({
   handleClose,
 }: {
   handleClose: () => void
@@ -57,4 +58,6 @@ export default function HelpDialog({
       </Typography>
     </InfoDialog>
   )
-}
+})
+
+export default HelpDialog

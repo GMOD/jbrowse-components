@@ -3,11 +3,12 @@ import { useState } from 'react'
 import { ErrorMessage } from '@jbrowse/core/ui'
 import ConfirmDialog from '@jbrowse/core/ui/ConfirmDialog'
 import { DialogContentText, TextField } from '@mui/material'
+import { observer } from 'mobx-react'
 
 import { invokeIpc } from '../../../ipc.ts'
 import { useIpcAction } from './useIpcAction.ts'
 
-export default function RenameSessionDialog({
+const RenameSessionDialog = observer(function RenameSessionDialog({
   sessionToRename,
   onClose,
 }: {
@@ -47,4 +48,6 @@ export default function RenameSessionDialog({
       {error ? <ErrorMessage error={error} /> : null}
     </ConfirmDialog>
   )
-}
+})
+
+export default RenameSessionDialog

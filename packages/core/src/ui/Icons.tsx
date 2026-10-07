@@ -1,29 +1,32 @@
 import SvgIcon from '@mui/material/SvgIcon'
+import { observer } from 'mobx-react'
 
 import type { SvgIconProps } from '@mui/material/SvgIcon'
 
 export { default as InfoIcon } from '@mui/icons-material/Info'
 
 // https://materialdesignicons.com/ text-search icon
-export function Indexing(props: SvgIconProps) {
+export const Indexing = observer(function Indexing(props: SvgIconProps) {
   return (
     <SvgIcon {...props}>
       <path d="M19.31 18.9L22.39 22L21 23.39L17.88 20.32C17.19 20.75 16.37 21 15.5 21C13 21 11 19 11 16.5C11 14 13 12 15.5 12C18 12 20 14 20 16.5C20 17.38 19.75 18.21 19.31 18.9M15.5 19C16.88 19 18 17.88 18 16.5C18 15.12 16.88 14 15.5 14C14.12 14 13 15.12 13 16.5C13 17.88 14.12 19 15.5 19M21 4V6H3V4H21M3 16V14H9V16H3M3 11V9H21V11H18.97C17.96 10.37 16.77 10 15.5 10C14.23 10 13.04 10.37 12.03 11H3Z" />
     </SvgIcon>
   )
-}
+})
 
 //  format-list-checkbox from https://materialdesignicons.com/
-export function TrackSelector(props: SvgIconProps) {
+export const TrackSelector = observer(function TrackSelector(
+  props: SvgIconProps,
+) {
   return (
     <SvgIcon {...props}>
       <path d="M21 19v-2H8v2h13m0-6v-2H8v2h13M8 7h13V5H8v2M4 5v2h2V5H4M3 5a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1V5m1 6v2h2v-2H4m-1 0a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1v-2m1 6v2h2v-2H4m-1 0a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1v-2z" />
     </SvgIcon>
   )
-}
+})
 
 //  dna from https://materialdesignicons.com/
-export function DNA(props: SvgIconProps) {
+export const DNA = observer(function DNA(props: SvgIconProps) {
   return (
     <SvgIcon {...props}>
       <path
@@ -32,22 +35,22 @@ export function DNA(props: SvgIconProps) {
       />
     </SvgIcon>
   )
-}
+})
 
 // bx-highlight from https://boxicons.com/ (MIT License, Copyright (c) Aniket
 // Suvarna) — https://github.com/atisawd/boxicons/blob/master/svg/regular/bx-highlight.svg
-export function Highlighter(props: SvgIconProps) {
+export const Highlighter = observer(function Highlighter(props: SvgIconProps) {
   return (
     <SvgIcon {...props}>
       <path d="m20.707 5.826-3.535-3.533a.999.999 0 0 0-1.408-.006L7.096 10.82a1.01 1.01 0 0 0-.273.488l-1.024 4.437L4 18h2.828l1.142-1.129 3.588-.828c.18-.042.345-.133.477-.262l8.667-8.535a1 1 0 0 0 .005-1.42zm-9.369 7.833-2.121-2.12 7.243-7.131 2.12 2.12-7.242 7.131zM4 20h16v2H4z" />
     </SvgIcon>
   )
-}
+})
 
-export function Cable(props: SvgIconProps) {
+export const Cable = observer(function Cable(props: SvgIconProps) {
   return (
     <SvgIcon {...props}>
       <path d="M20 5V4c0-.55-.45-1-1-1h-2c-.55 0-1 .45-1 1v1h-1v4c0 .55.45 1 1 1h1v7c0 1.1-.9 2-2 2s-2-.9-2-2V7c0-2.21-1.79-4-4-4S5 4.79 5 7v7H4c-.55 0-1 .45-1 1v4h1v1c0 .55.45 1 1 1h2c.55 0 1-.45 1-1v-1h1v-4c0-.55-.45-1-1-1H7V7c0-1.1.9-2 2-2s2 .9 2 2v10c0 2.21 1.79 4 4 4s4-1.79 4-4v-7h1c.55 0 1-.45 1-1V5h-1z" />
     </SvgIcon>
   )
-}
+})

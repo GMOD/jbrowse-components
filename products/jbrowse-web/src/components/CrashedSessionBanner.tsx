@@ -1,5 +1,6 @@
 import { ErrorBanner } from '@jbrowse/core/ui'
 import { Button } from '@mui/material'
+import { observer } from 'mobx-react'
 
 import type { SessionLoaderModel } from '../SessionLoader.ts'
 import type { CrashedSession } from '../crashedSession.ts'
@@ -14,7 +15,7 @@ import type { CrashedSession } from '../crashedSession.ts'
  * renders instead of the app, so there is no menu to reach and every way out
  * has to be a button here.
  */
-export default function CrashedSessionBanner({
+const CrashedSessionBanner = observer(function CrashedSessionBanner({
   crashedSession,
   loader,
 }: {
@@ -58,4 +59,6 @@ export default function CrashedSessionBanner({
       </p>
     </div>
   )
-}
+})
+
+export default CrashedSessionBanner

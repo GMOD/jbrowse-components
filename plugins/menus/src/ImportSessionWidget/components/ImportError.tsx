@@ -1,6 +1,7 @@
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import ErrorIcon from '@mui/icons-material/Error'
 import { Paper, Typography } from '@mui/material'
+import { observer } from 'mobx-react'
 
 const useStyles = makeStyles()(theme => ({
   error: {
@@ -17,7 +18,11 @@ const useStyles = makeStyles()(theme => ({
   },
 }))
 
-export default function ImportError({ error }: { error: unknown }) {
+const ImportError = observer(function ImportError({
+  error,
+}: {
+  error: unknown
+}) {
   const { classes } = useStyles()
   return (
     <Paper className={classes.error}>
@@ -30,4 +35,6 @@ export default function ImportError({ error }: { error: unknown }) {
       <Typography className={classes.errorMessage}>{`${error}`}</Typography>
     </Paper>
   )
-}
+})
+
+export default ImportError

@@ -2,6 +2,7 @@ import { ErrorMessage } from '@jbrowse/core/ui'
 import ConfirmDialog from '@jbrowse/core/ui/ConfirmDialog'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { DialogContentText } from '@mui/material'
+import { observer } from 'mobx-react'
 
 import { invokeIpc } from '../../../ipc.ts'
 import { useIpcAction } from './useIpcAction.ts'
@@ -26,7 +27,7 @@ const useStyles = makeStyles()(theme => ({
   },
 }))
 
-export default function DeleteSessionDialog({
+const DeleteSessionDialog = observer(function DeleteSessionDialog({
   sessionsToDelete,
   onClose,
 }: {
@@ -94,4 +95,6 @@ export default function DeleteSessionDialog({
       {error ? <ErrorMessage error={error} /> : null}
     </ConfirmDialog>
   )
-}
+})
+
+export default DeleteSessionDialog

@@ -1,6 +1,7 @@
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import HelpIcon from '@mui/icons-material/Help'
 import { InputAdornment, TextField, Tooltip } from '@mui/material'
+import { observer } from 'mobx-react'
 
 const useStyles = makeStyles()({
   // Wide enough for `*_MATERNAL` plus room to see a two-name list, and narrow
@@ -35,7 +36,7 @@ const CHROMOSOME_FILTER_HELP =
  * has to cost nothing to ignore — a helper paragraph under two of these turns a
  * row of two familiar dropdowns into a form with a concept in it.
  */
-export default function ChromosomeFilter({
+const ChromosomeFilter = observer(function ChromosomeFilter({
   label,
   value,
   testId,
@@ -84,4 +85,6 @@ export default function ChromosomeFilter({
       }}
     />
   )
-}
+})
+
+export default ChromosomeFilter

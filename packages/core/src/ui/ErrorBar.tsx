@@ -1,4 +1,5 @@
 import { Alert, Tooltip } from '@mui/material'
+import { observer } from 'mobx-react'
 
 import { makeStyles } from '../util/tss-react/index.ts'
 import ErrorActions from './ErrorActions.tsx'
@@ -16,7 +17,7 @@ const useStyles = makeStyles()({
   },
 })
 
-export default function ErrorBar({
+const ErrorBar = observer(function ErrorBar({
   error,
   onRetry,
   extraAction,
@@ -65,4 +66,6 @@ export default function ErrorBar({
       </Alert>
     </div>
   )
-}
+})
+
+export default ErrorBar

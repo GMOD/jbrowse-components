@@ -30,7 +30,11 @@ const useStyles = makeStyles()({
   },
 })
 
-function ScoreText({ row }: { row: WiggleTooltipRow }) {
+const ScoreText = observer(function ScoreText({
+  row,
+}: {
+  row: WiggleTooltipRow
+}) {
   return row.summary ? (
     <span>
       min:{toP(row.minScore)} avg:{toP(row.score)} max:{toP(row.maxScore)}
@@ -38,9 +42,13 @@ function ScoreText({ row }: { row: WiggleTooltipRow }) {
   ) : (
     <span>{toP(row.score)}</span>
   )
-}
+})
 
-function SourceRow({ row }: { row: WiggleTooltipRow }) {
+const SourceRow = observer(function SourceRow({
+  row,
+}: {
+  row: WiggleTooltipRow
+}) {
   const { classes } = useStyles()
   const { source, color } = row
   return (
@@ -54,9 +62,13 @@ function SourceRow({ row }: { row: WiggleTooltipRow }) {
       </span>
     </div>
   )
-}
+})
 
-function TooltipContents({ feature }: { feature: WiggleHoveredFeature }) {
+const TooltipContents = observer(function TooltipContents({
+  feature,
+}: {
+  feature: WiggleHoveredFeature
+}) {
   const { classes } = useStyles()
   const { refName, start, end, rows } = feature
   return (
@@ -75,7 +87,7 @@ function TooltipContents({ feature }: { feature: WiggleHoveredFeature }) {
       ) : null}
     </div>
   )
-}
+})
 
 // Off the plot (the tree sidebar), the caller's `computeHit` answers undefined,
 // so hover and click-to-select share one definition of "over the plot".

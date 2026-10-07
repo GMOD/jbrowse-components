@@ -1,9 +1,10 @@
 import { pluralize } from '@jbrowse/core/util'
 import TrackControl from '@jbrowse/display-kit/TrackControl'
+import { observer } from 'mobx-react'
 
 // Collecting features filters nothing until the user applies the list, so the
 // (×) is the only way to abandon a part-built selection.
-export default function SoloSelectionChip({
+const SoloSelectionChip = observer(function SoloSelectionChip({
   count,
   applied,
   featureNoun,
@@ -41,4 +42,6 @@ export default function SoloSelectionChip({
       }}
     />
   )
-}
+})
+
+export default SoloSelectionChip

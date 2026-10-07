@@ -1,8 +1,9 @@
 import Star from '@mui/icons-material/Star'
 import StarBorder from '@mui/icons-material/StarBorder'
 import { IconButton, Tooltip } from '@mui/material'
+import { observer } from 'mobx-react'
 
-export default function StarIcon({
+const StarIcon = observer(function StarIcon({
   isFavorite,
   onClick,
   size = 'small',
@@ -25,4 +26,6 @@ export default function StarIcon({
       </IconButton>
     </Tooltip>
   )
-}
+})
+
+export default StarIcon

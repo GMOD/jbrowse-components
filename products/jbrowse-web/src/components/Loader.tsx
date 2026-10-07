@@ -6,6 +6,7 @@ import { FatalErrorDialog } from '@jbrowse/core/ui'
 import { ErrorBoundary } from '@jbrowse/core/ui/ErrorBoundary'
 import { setTypeChecking } from '@jbrowse/mobx-state-tree'
 import { Button } from '@mui/material'
+import { observer } from 'mobx-react'
 
 import { markCrashedSession } from '../crashedSession.ts'
 import { createSessionLoaderFromUrl } from '../createSessionLoader.ts'
@@ -34,15 +35,23 @@ import { useLoaderLifecycle } from './useLoaderLifecycle.ts'
 // one, and every later model is built from it.
 setTypeChecking(true)
 
-export function Loader({ initialTimestamp }: { initialTimestamp?: number }) {
+export const Loader = observer(function Loader({
+  initialTimestamp,
+}: {
+  initialTimestamp?: number
+}) {
   const [loader, setLoader] = useState(() =>
     createSessionLoaderFromUrl(initialTimestamp ?? Date.now()),
   )
   useLoaderLifecycle(loader, setLoader)
   return <Renderer loader={loader} />
-}
+})
 
-function LoaderWrapper({ initialTimestamp }: { initialTimestamp: number }) {
+const LoaderWrapper = observer(function LoaderWrapper({
+  initialTimestamp,
+}: {
+  initialTimestamp: number
+}) {
   return (
     <ErrorBoundary
       // before the dialog renders, because the dialog's own Refresh is what
@@ -82,6 +91,6 @@ function LoaderWrapper({ initialTimestamp }: { initialTimestamp: number }) {
       <Loader initialTimestamp={initialTimestamp} />
     </ErrorBoundary>
   )
-}
+})
 
 export default LoaderWrapper

@@ -1,8 +1,10 @@
+import { observer } from 'mobx-react'
+
 import ErrorBar from './ErrorBar.tsx'
 
 import type { ReactNode } from 'react'
 
-export default function ErrorOverlay({
+const ErrorOverlay = observer(function ErrorOverlay({
   error,
   onRetry,
   width,
@@ -20,4 +22,6 @@ export default function ErrorOverlay({
       <ErrorBar error={error} onRetry={onRetry} extraAction={extraAction} />
     </div>
   )
-}
+})
+
+export default ErrorOverlay

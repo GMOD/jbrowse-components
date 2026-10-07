@@ -28,7 +28,11 @@ const useStyles = makeStyles()(theme => ({
   },
 }))
 
-function ClearButton({ onClick }: { onClick: () => void }) {
+const ClearButton = observer(function ClearButton({
+  onClick,
+}: {
+  onClick: () => void
+}) {
   return (
     <Tooltip title="Clear selection on this facet filter">
       <IconButton onClick={onClick} size="small">
@@ -36,9 +40,9 @@ function ClearButton({ onClick }: { onClick: () => void }) {
       </IconButton>
     </Tooltip>
   )
-}
+})
 
-function ExpandButton({
+const ExpandButton = observer(function ExpandButton({
   expanded,
   onClick,
 }: {
@@ -52,7 +56,7 @@ function ExpandButton({
       </IconButton>
     </Tooltip>
   )
-}
+})
 
 const FacetFilter = observer(function FacetFilter({
   field,

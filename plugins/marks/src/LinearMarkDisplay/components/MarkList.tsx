@@ -3,6 +3,7 @@ import ArrowUpwardIcon from '@mui/icons-material/ArrowUpward'
 import ContentCopyIcon from '@mui/icons-material/ContentCopy'
 import DeleteIcon from '@mui/icons-material/Delete'
 import { Button, IconButton, List, ListItemButton } from '@mui/material'
+import { observer } from 'mobx-react'
 
 import { addMark, markSummary, moveMark, removeMark } from '../markEdit.ts'
 import { worstLevel } from '../markProblemIndex.ts'
@@ -24,7 +25,7 @@ import type { MarkProblemIndex } from '../markProblemIndex.ts'
  * draws from far out, and hands every mark with no zoom range of its own the
  * closer zooms, so the two never draw together.
  */
-export default function MarkList({
+const MarkList = observer(function MarkList({
   marks,
   selected,
   problems,
@@ -131,4 +132,6 @@ export default function MarkList({
       </Button>
     </div>
   )
-}
+})
+
+export default MarkList

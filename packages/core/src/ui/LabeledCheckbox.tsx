@@ -1,8 +1,9 @@
 import { Checkbox, FormControlLabel } from '@mui/material'
+import { observer } from 'mobx-react'
 
 import type { ReactNode } from 'react'
 
-export default function LabeledCheckbox({
+const LabeledCheckbox = observer(function LabeledCheckbox({
   checked,
   onChange,
   label,
@@ -33,4 +34,6 @@ export default function LabeledCheckbox({
       label={label}
     />
   )
-}
+})
+
+export default LabeledCheckbox

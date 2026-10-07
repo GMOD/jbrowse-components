@@ -1,11 +1,12 @@
 import { ErrorMessage } from '@jbrowse/core/ui'
 import ConfirmDialog from '@jbrowse/core/ui/ConfirmDialog'
 import { DialogContentText } from '@mui/material'
+import { observer } from 'mobx-react'
 
 import { invokeIpc } from '../../../ipc.ts'
 import { useIpcAction } from './useIpcAction.ts'
 
-export default function DeleteQuickstartDialog({
+const DeleteQuickstartDialog = observer(function DeleteQuickstartDialog({
   quickstartToDelete,
   onClose,
 }: {
@@ -28,4 +29,6 @@ export default function DeleteQuickstartDialog({
       {error ? <ErrorMessage error={error} /> : null}
     </ConfirmDialog>
   )
-}
+})
+
+export default DeleteQuickstartDialog

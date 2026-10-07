@@ -2,6 +2,7 @@ import {
   formatEndLocation,
   formatStartLocation,
 } from '@jbrowse/alignments-core'
+import { observer } from 'mobx-react'
 
 /**
  * A segment's two junctions as displayed locations. Both are derived from the
@@ -26,7 +27,7 @@ export function junctionLocations(f: {
  * widget prints, whether the two sides are a read and its mate or two segments
  * of a split read.
  */
-export default function BreakpointPair({
+const BreakpointPair = observer(function BreakpointPair({
   from,
   to,
 }: {
@@ -38,4 +39,6 @@ export default function BreakpointPair({
       {from} &rarr; {to}
     </>
   )
-}
+})
+
+export default BreakpointPair

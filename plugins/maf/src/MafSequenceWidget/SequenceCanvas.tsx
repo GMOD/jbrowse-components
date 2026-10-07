@@ -3,6 +3,7 @@ import React, { useCallback, useEffect, useRef } from 'react'
 import { usePalette } from '@jbrowse/core/ui/PaletteContext'
 import { virtualRange } from '@jbrowse/core/util/virtualRange'
 import { getPreparedCanvas2D } from '@jbrowse/render-core/canvas2dUtils'
+import { observer } from 'mobx-react'
 
 import { CHAR_WIDTH, ROW_HEIGHT } from './constants.ts'
 import { drawSequenceGrid } from './drawSequenceGrid.ts'
@@ -29,7 +30,7 @@ interface SequenceCanvasProps {
 const OVERSCAN_ROWS = 5
 const OVERSCAN_COLS = 10
 
-export default function SequenceCanvas({
+const SequenceCanvas = observer(function SequenceCanvas({
   samples,
   sequences,
   colorBackground,
@@ -132,4 +133,6 @@ export default function SequenceCanvas({
       onMouseLeave={onLeave}
     />
   )
-}
+})
+
+export default SequenceCanvas

@@ -1,6 +1,7 @@
 import { useState } from 'react'
 
 import { MenuItem, Popover, Select, TextField } from '@mui/material'
+import { observer } from 'mobx-react'
 
 import { colord } from '../util/colord.ts'
 import { useDebounce, useLocalStorage } from '../util/hooks.ts'
@@ -38,7 +39,7 @@ function isPaletteType(s: string): s is PaletteType {
   return Object.hasOwn(paletteColors, s)
 }
 
-export function ColorPopover({
+export const ColorPopover = observer(function ColorPopover({
   anchorEl,
   onChange,
   onClose,
@@ -60,9 +61,9 @@ export function ColorPopover({
       />
     </Popover>
   )
-}
+})
 
-export default function ColorPicker({
+const ColorPicker = observer(function ColorPicker({
   onChange,
   color,
   presetAlpha,
@@ -138,4 +139,6 @@ export default function ColorPicker({
       </div>
     </div>
   )
-}
+})
+
+export default ColorPicker

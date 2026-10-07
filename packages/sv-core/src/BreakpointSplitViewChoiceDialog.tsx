@@ -33,22 +33,22 @@ import type { FindJunctionsNear } from './walkBreakendChain.ts'
 import type { Feature } from '@jbrowse/core/util'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
-function SplitLevelIcon() {
+const SplitLevelIcon = observer(function SplitLevelIcon() {
   return (
     <svg width="24" height="24" viewBox="0 0 24 24">
       <rect x="2" y="3" width="20" height="8" rx="1" fill="currentColor" />
       <rect x="2" y="13" width="20" height="8" rx="1" fill="currentColor" />
     </svg>
   )
-}
+})
 
-function SingleLevelIcon() {
+const SingleLevelIcon = observer(function SingleLevelIcon() {
   return (
     <svg width="24" height="24" viewBox="0 0 24 24">
       <rect x="2" y="8" width="20" height="8" rx="1" fill="currentColor" />
     </svg>
   )
-}
+})
 
 const BreakpointSplitViewChoiceDialog = observer(
   function BreakpointSplitViewChoiceDialog({

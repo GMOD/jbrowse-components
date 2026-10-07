@@ -51,12 +51,12 @@ const useStyles = makeStyles()(theme => ({
   },
 }))
 
-function Prose({ html }: { html: string }) {
+const Prose = observer(function Prose({ html }: { html: string }) {
   const { classes } = useStyles()
   return <SanitizedHTML html={html} className={classes.prose} />
-}
+})
 
-function DescriptionCard({
+const DescriptionCard = observer(function DescriptionCard({
   url,
   children,
 }: {
@@ -86,7 +86,7 @@ function DescriptionCard({
       {children}
     </BaseCard>
   )
-}
+})
 
 const FetchedDescription = observer(function FetchedDescription({
   url,

@@ -1,5 +1,6 @@
 import InfoDialog from '@jbrowse/core/ui/InfoDialog'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
+import { observer } from 'mobx-react'
 
 const useStyles = makeStyles()({
   max: {
@@ -7,7 +8,7 @@ const useStyles = makeStyles()({
   },
 })
 
-export default function DrawerHeaderHelpDialog({
+const DrawerHeaderHelpDialog = observer(function DrawerHeaderHelpDialog({
   onClose,
   helpText,
 }: {
@@ -28,4 +29,6 @@ export default function DrawerHeaderHelpDialog({
       <div className={classes.max}>{helpText}</div>
     </InfoDialog>
   )
-}
+})
+
+export default DrawerHeaderHelpDialog

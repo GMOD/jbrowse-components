@@ -1,12 +1,13 @@
 import { InfoDialog } from '@jbrowse/core/ui'
 import { Typography } from '@mui/material'
+import { observer } from 'mobx-react'
 
 import SearchResultsTable from './SearchResultsTable.tsx'
 
 import type { LinearGenomeViewModel } from '../../index.ts'
 import type BaseResult from '@jbrowse/core/TextSearch/BaseResults'
 
-export default function SearchResultsDialog({
+const SearchResultsDialog = observer(function SearchResultsDialog({
   model,
   assemblyName,
   searchQuery,
@@ -43,4 +44,6 @@ export default function SearchResultsDialog({
       )}
     </InfoDialog>
   )
-}
+})
+
+export default SearchResultsDialog

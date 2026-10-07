@@ -1,3 +1,5 @@
+import { observer } from 'mobx-react'
+
 import BaseTooltip from './BaseTooltip.tsx'
 
 import type { MouseState } from './useMouseTracking.ts'
@@ -22,7 +24,7 @@ import type React from 'react'
  * `BaseTooltip` is: it reaches @floating-ui (~266KB) and that barrel is on the
  * eager plugin-entry path.
  */
-export default function HoverTooltip({
+const HoverTooltip = observer(function HoverTooltip({
   hit,
   mouseState,
   children,
@@ -37,4 +39,6 @@ export default function HoverTooltip({
       {children}
     </BaseTooltip>
   ) : null
-}
+})
+
+export default HoverTooltip

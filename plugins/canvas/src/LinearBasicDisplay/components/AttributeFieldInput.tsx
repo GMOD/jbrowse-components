@@ -2,6 +2,7 @@ import { ErrorBanner, LoadingEllipses } from '@jbrowse/core/ui'
 import { statusProgressLabel } from '@jbrowse/core/util'
 import { useFetch } from '@jbrowse/core/util/useFetch'
 import { Autocomplete, TextField, Typography } from '@mui/material'
+import { observer } from 'mobx-react'
 
 import { attributeVerdict, candidateCountHint } from './attributeVerdict.ts'
 
@@ -19,7 +20,7 @@ export interface AttributeScanModel {
  * this is mounted. Keyed by the display's id: an MST node stringifies to its
  * whole snapshot.
  */
-export default function AttributeFieldInput({
+const AttributeFieldInput = observer(function AttributeFieldInput({
   model,
   value,
   onChange,
@@ -98,4 +99,6 @@ export default function AttributeFieldInput({
       ) : null}
     </>
   )
-}
+})
+
+export default AttributeFieldInput

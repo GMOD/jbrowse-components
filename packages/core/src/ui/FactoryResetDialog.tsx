@@ -1,8 +1,9 @@
 import { DialogContentText } from '@mui/material'
+import { observer } from 'mobx-react'
 
 import ConfirmDialog from './ConfirmDialog.tsx'
 
-export default function FactoryResetDialog({
+const FactoryResetDialog = observer(function FactoryResetDialog({
   onClose,
   open,
   onFactoryReset,
@@ -28,4 +29,6 @@ export default function FactoryResetDialog({
       </DialogContentText>
     </ConfirmDialog>
   )
-}
+})
+
+export default FactoryResetDialog

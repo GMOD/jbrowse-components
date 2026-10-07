@@ -2,6 +2,7 @@ import { useRef, useState } from 'react'
 
 import CloudUploadIcon from '@mui/icons-material/CloudUpload'
 import { Typography } from '@mui/material'
+import { observer } from 'mobx-react'
 
 import { makeStyles } from '../util/tss-react/index.ts'
 import { alpha } from './palette.ts'
@@ -86,7 +87,7 @@ function validate(file: File, accept?: Accept, maxSize?: number) {
  * set, rejected files with their validation errors. Pass `message` to replace
  * the default prompt and `children` for extra content (e.g. a Browse button).
  */
-export default function FileDropZone({
+const FileDropZone = observer(function FileDropZone({
   onDrop,
   accept,
   maxSize,
@@ -195,4 +196,6 @@ export default function FileDropZone({
       {children}
     </div>
   )
-}
+})
+
+export default FileDropZone

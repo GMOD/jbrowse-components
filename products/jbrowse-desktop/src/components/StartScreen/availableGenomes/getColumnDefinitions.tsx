@@ -2,6 +2,7 @@ import Check from '@mui/icons-material/Check'
 import Close from '@mui/icons-material/Close'
 import { Tooltip } from '@mui/material'
 import { green, red } from '@mui/material/colors'
+import { observer } from 'mobx-react'
 
 import StarIcon from '../StarIcon.tsx'
 import GenomeNameCell from './GenomeNameCell.tsx'
@@ -76,7 +77,7 @@ function websiteUrl(accession: string, isUcsc: boolean) {
 
 // NCBI's verdict on the assembly, shown beside the name. Only GenArk/NCBI rows
 // carry these fields, so the UCSC main genomes render nothing here.
-function NcbiBadges({ row }: { row: Entry }) {
+const NcbiBadges = observer(function NcbiBadges({ row }: { row: Entry }) {
   return (
     <>
       {row.ncbiRefSeqCategory === 'reference genome' ? (
@@ -91,7 +92,7 @@ function NcbiBadges({ row }: { row: Entry }) {
       ) : null}
     </>
   )
-}
+})
 
 export function getColumnDefinitions({
   typeOption,

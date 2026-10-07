@@ -1,3 +1,5 @@
+import { observer } from 'mobx-react'
+
 import ScrollEdgeShadow from './ScrollEdgeShadow.tsx'
 import VerticalScrollbar from './VerticalScrollbar.tsx'
 
@@ -8,7 +10,7 @@ import type { VirtualScrollModel } from '../util/useVirtualScrollWheel.ts'
  * shadow saying content is hidden, and the scrollbar to reach it. Renders
  * nothing when the content fits.
  */
-export default function ScrollChrome({
+const ScrollChrome = observer(function ScrollChrome({
   model,
   controlsId,
   top = 0,
@@ -25,4 +27,6 @@ export default function ScrollChrome({
       <VerticalScrollbar model={model} controlsId={controlsId} top={top} />
     </>
   )
-}
+})
+
+export default ScrollChrome

@@ -2,8 +2,9 @@ import { useState, useTransition } from 'react'
 
 import ClearIcon from '@mui/icons-material/Clear'
 import { IconButton, InputAdornment, TextField } from '@mui/material'
+import { observer } from 'mobx-react'
 
-export default function ClearableSearchField({
+const ClearableSearchField = observer(function ClearableSearchField({
   value,
   onChange,
   label,
@@ -57,4 +58,6 @@ export default function ClearableSearchField({
       }}
     />
   )
-}
+})
+
+export default ClearableSearchField

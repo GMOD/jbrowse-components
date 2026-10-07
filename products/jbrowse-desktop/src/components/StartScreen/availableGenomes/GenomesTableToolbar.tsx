@@ -3,6 +3,7 @@ import { makeStyles } from '@jbrowse/core/util/tss-react'
 import Help from '@mui/icons-material/Help'
 import MoreVert from '@mui/icons-material/MoreVert'
 import { Button, IconButton } from '@mui/material'
+import { observer } from 'mobx-react'
 
 import CategorySelector from './CategorySelector.tsx'
 import SearchField from './SearchField.tsx'
@@ -24,7 +25,7 @@ const useStyles = makeStyles()({
 // selector, the settings menu, and the more-info button. All of it reads and
 // mutates the shared table state; the table body below only displays the
 // resulting rows.
-export default function GenomesTableToolbar({
+const GenomesTableToolbar = observer(function GenomesTableToolbar({
   state,
   activeTypeOption,
   categories,
@@ -95,4 +96,6 @@ export default function GenomesTableToolbar({
       </IconButton>
     </div>
   )
-}
+})
+
+export default GenomesTableToolbar

@@ -4,6 +4,7 @@ import { useRef, useState } from 'react'
 // that exact string. See the note in `util/hooks.ts`.
 import useMeasure from '@jbrowse/core/util/useMeasure'
 import { InputBase, Typography, useTheme } from '@mui/material'
+import { observer } from 'mobx-react'
 
 import { makeStyles } from '../util/tss-react/index.ts'
 
@@ -43,7 +44,7 @@ interface Props {
   ref?: Ref<HTMLDivElement>
 }
 
-function EditableTypography(props: Props) {
+const EditableTypography = observer(function EditableTypography(props: Props) {
   const { value, setValue, variant, ref, classes: overrides, ...other } = props
   const [ref2, { width }] = useMeasure('width')
   const [editedValue, setEditedValue] = useState<string>()
@@ -110,6 +111,6 @@ function EditableTypography(props: Props) {
       />
     </div>
   )
-}
+})
 
 export default EditableTypography

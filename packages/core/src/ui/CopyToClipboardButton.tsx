@@ -1,4 +1,5 @@
 import { Button } from '@mui/material'
+import { observer } from 'mobx-react'
 
 import { useCopyToClipboard } from './useCopyToClipboard.ts'
 
@@ -9,7 +10,7 @@ import type { ButtonProps } from '@mui/material'
  * `copiedLabel` as feedback. `value` may be a function so callers can defer
  * computing large strings (e.g. JSON.stringify) until the click happens.
  */
-export default function CopyToClipboardButton({
+const CopyToClipboardButton = observer(function CopyToClipboardButton({
   value,
   children,
   copiedLabel = 'Copied to clipboard!',
@@ -29,4 +30,6 @@ export default function CopyToClipboardButton({
       {copied ? copiedLabel : children}
     </Button>
   )
-}
+})
+
+export default CopyToClipboardButton

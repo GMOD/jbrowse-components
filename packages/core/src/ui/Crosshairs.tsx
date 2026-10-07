@@ -1,4 +1,6 @@
-const Crosshairs = ({
+import { observer } from 'mobx-react'
+
+const Crosshairs = observer(function Crosshairs({
   width,
   height,
   mouseX,
@@ -20,25 +22,33 @@ const Crosshairs = ({
   top?: number
   zIndex?: number
   minLeft?: number
-}) => (
-  <svg
-    style={{
-      position: 'absolute',
-      top,
-      left: 0,
-      width,
-      height,
-      pointerEvents: 'none',
-      zIndex,
-    }}
-  >
-    {mouseY === undefined ? null : (
-      <line x1={0} x2={width} y1={mouseY} y2={mouseY} stroke="currentColor" />
-    )}
-    {mouseX >= minLeft ? (
-      <line x1={mouseX} x2={mouseX} y1={0} y2={height} stroke="currentColor" />
-    ) : null}
-  </svg>
-)
+}) {
+  return (
+    <svg
+      style={{
+        position: 'absolute',
+        top,
+        left: 0,
+        width,
+        height,
+        pointerEvents: 'none',
+        zIndex,
+      }}
+    >
+      {mouseY === undefined ? null : (
+        <line x1={0} x2={width} y1={mouseY} y2={mouseY} stroke="currentColor" />
+      )}
+      {mouseX >= minLeft ? (
+        <line
+          x1={mouseX}
+          x2={mouseX}
+          y1={0}
+          y2={height}
+          stroke="currentColor"
+        />
+      ) : null}
+    </svg>
+  )
+})
 
 export default Crosshairs

@@ -124,7 +124,7 @@ const PileupBody = observer(function PileupBody({
 // ABOVE it too, so the second group's handle used to travel at twice the
 // pointer's speed and slide out from under the cursor mid-drag. Every caller
 // below states how many copies of its band sit at or above the handle.
-function PileupResizeHandle({
+const PileupResizeHandle = observer(function PileupResizeHandle({
   top,
   canvasHeight,
   onDrag,
@@ -150,7 +150,7 @@ function PileupResizeHandle({
       title={title}
     />
   )
-}
+})
 
 // Coverage-band resize handle at each section's coverage bottom. `coverageHeight`
 // is display-global, so every handle resizes all bands together; grouped mode

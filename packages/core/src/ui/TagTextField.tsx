@@ -1,6 +1,7 @@
 import { useState } from 'react'
 
 import { Chip, Stack, TextField } from '@mui/material'
+import { observer } from 'mobx-react'
 
 import { isValidTag } from '../util/tags.ts'
 
@@ -53,7 +54,7 @@ type Props = Omit<
  * error once two invalid characters are entered. Optional `quickPicks` render a
  * chip row of common tags that fill the field on click.
  */
-export default function TagTextField(props: Props) {
+const TagTextField = observer(function TagTextField(props: Props) {
   const {
     defaultValue = '',
     onValueChange,
@@ -109,4 +110,6 @@ export default function TagTextField(props: Props) {
       />
     </Stack>
   )
-}
+})
+
+export default TagTextField

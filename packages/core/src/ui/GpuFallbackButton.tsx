@@ -1,4 +1,5 @@
 import { Button, Tooltip } from '@mui/material'
+import { observer } from 'mobx-react'
 
 import {
   GPU_FALLBACK_LABEL,
@@ -15,7 +16,7 @@ import {
  * predicate. Every place that repeated it is a place that could forget it, and
  * two already had.
  */
-export default function GpuFallbackButton({
+const GpuFallbackButton = observer(function GpuFallbackButton({
   error,
   onRetry,
 }: {
@@ -38,4 +39,6 @@ export default function GpuFallbackButton({
       </Button>
     </Tooltip>
   )
-}
+})
+
+export default GpuFallbackButton

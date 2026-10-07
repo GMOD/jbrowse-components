@@ -6,13 +6,14 @@ import Dialog from '@jbrowse/core/ui/Dialog'
 import { getEnv } from '@jbrowse/core/util'
 import { getTrackName } from '@jbrowse/core/util/tracks'
 import { isStateTreeNode } from '@jbrowse/mobx-state-tree'
+import { observer } from 'mobx-react'
 
 import AboutContents from './AboutDialogContents.tsx'
 
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { AbstractSessionModel } from '@jbrowse/core/util'
 
-export default function AboutDialog({
+const AboutDialog = observer(function AboutDialog({
   config,
   session,
   handleClose,
@@ -56,4 +57,6 @@ export default function AboutDialog({
       )}
     </Dialog>
   )
-}
+})
+
+export default AboutDialog

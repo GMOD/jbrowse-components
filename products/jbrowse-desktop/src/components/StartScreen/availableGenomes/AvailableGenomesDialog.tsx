@@ -1,11 +1,12 @@
 import { Dialog } from '@jbrowse/core/ui'
 import { DialogContent } from '@mui/material'
+import { observer } from 'mobx-react'
 
 import GenomesDataTable from './GenomesDataTable.tsx'
 
 import type { Fav, LaunchCallback } from '../types.ts'
 
-export default function AvailableGenomesDialog({
+const AvailableGenomesDialog = observer(function AvailableGenomesDialog({
   favorites,
   setFavorites,
   onClose,
@@ -28,4 +29,6 @@ export default function AvailableGenomesDialog({
       </DialogContent>
     </Dialog>
   )
-}
+})
+
+export default AvailableGenomesDialog

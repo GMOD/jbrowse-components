@@ -15,6 +15,7 @@ import {
   TextField,
   Typography,
 } from '@mui/material'
+import { observer } from 'mobx-react'
 
 import PanelList from './PanelList.tsx'
 import SyntenyLaunchDialog from './SyntenyLaunchDialog.tsx'
@@ -72,7 +73,11 @@ function nameList(names: string[], max = 5) {
 // like it, and every panel is framed on what it says. No assembly in the
 // locstring: it is the anchor row of the panel list below, and
 // `{volvox}ctgA:1..50,000` reads as punctuation noise next to it.
-function SelectedRegion({ region }: { region: Region }) {
+const SelectedRegion = observer(function SelectedRegion({
+  region,
+}: {
+  region: Region
+}) {
   return (
     <Typography>
       {assembleLocString({
@@ -83,7 +88,7 @@ function SelectedRegion({ region }: { region: Region }) {
       ({getBpDisplayStr(region.end - region.start)})
     </Typography>
   )
-}
+})
 
 // Which dataset the panels are cut from has to be READ before the list below
 // means anything, but with one open synteny track there is nothing to decide —
@@ -91,7 +96,7 @@ function SelectedRegion({ region }: { region: Region }) {
 // try before ruling it out. Stated in a line instead, in the same words as the
 // field's label so the two renderings agree. Changing the field, when there is
 // one, refetches the list.
-function DatasetField({
+const DatasetField = observer(function DatasetField({
   tracks,
   trackId,
   onChange,
@@ -127,7 +132,7 @@ function DatasetField({
       Synteny dataset: {tracks[0]!.name}
     </Typography>
   )
-}
+})
 
 // Everything between "asked the worker" and "here are your panels": the wait,
 // the failure, and the two ways a dataset can reach nothing openable. Naming the
@@ -136,7 +141,7 @@ function DatasetField({
 // reaches nothing openable, which is a different problem with a different fix,
 // and saying "nothing aligns" for it contradicts the lanes the user can see
 // drawn in the track they launched from.
-function DiscoveryStatus({
+const DiscoveryStatus = observer(function DiscoveryStatus({
   trackName,
   loading,
   error,
@@ -203,12 +208,12 @@ function DiscoveryStatus({
     )
   }
   return null
-}
+})
 
 // The bands a launch will leave blank, named before the click: a star states
 // nothing between two mates, and a stacked view draws a band between adjacent
 // panels only, so every mate-to-mate gap is a level with nothing in it.
-function EmptyLevelsNote({
+const EmptyLevelsNote = observer(function EmptyLevelsNote({
   levels,
   anchor,
 }: {
@@ -224,155 +229,159 @@ function EmptyLevelsNote({
       two panels to compare them, or repeat it below.
     </Typography>
   ) : null
-}
+})
 
-export default function LaunchSyntenyViewForRegionDialog({
-  session,
-  region,
-  tracks,
-  anchorTracks = [],
-  sourceView,
-  discoverMatesFor,
-  starAnchor,
-  handleClose,
-}: {
-  session: AbstractViewContainer & NotificationSink
-  region: Region
-  tracks: LaunchableTrack[]
-  // the launching view's own tracks, for the panel that opens on its assembly
-  anchorTracks?: TrackInit[]
-  // the launching view itself, which the dialog offers to put the result in
-  // place of
-  sourceView?: AbstractViewModel
-  discoverMatesFor: (trackId: string) => MateDiscovery
-  // the one assembly every alignment in the dataset is stated against, when
-  // the launch knows it is such a star: a band between two mates is then
-  // empty, and the dialog says so or repeats the anchor between them
-  starAnchor?: string
-  handleClose: () => void
-}) {
-  const panelsLabelId = useId()
-  const [trackId, setTrackId] = useState(tracks[0]!.trackId)
-  const [flipReversedMates, setFlipReversedMates] = useState(true)
-  const [collapseEmptyRows, setCollapseEmptyRows] = useState(true)
-  const [copySourceTracks, setCopySourceTracks] = useState(true)
-  const [repeatAnchor, setRepeatAnchor] = useState(true)
-  const [windowSize, setWindowSize] = useState<number | undefined>(
-    DEFAULT_WINDOW_SIZE,
-  )
-  const track = tracks.find(t => t.trackId === trackId)!
-  const { rows, setRows, unconfigured, error, status, retry } =
-    useMateDiscovery({
-      discoverMatesFor,
-      trackId,
-      region,
-    })
-  const { anchorIndex, mates } = launchOrder(rows ?? [])
-  const offerRepeat = starAnchor !== undefined && mates.length > 2
-  const repeating = offerRepeat && repeatAnchor
-  // What the DISCOVERY found. `mates` above is what is still ticked, which is
-  // what launches — but the two messages below are about the dataset rather
-  // than about the choices made in it, and reading the ticked list for them
-  // meant "Select none" reported that nothing aligned here.
-  const discoveredMates = rows?.filter(row => row.kind === 'mate').length
+const LaunchSyntenyViewForRegionDialog = observer(
+  function LaunchSyntenyViewForRegionDialog({
+    session,
+    region,
+    tracks,
+    anchorTracks = [],
+    sourceView,
+    discoverMatesFor,
+    starAnchor,
+    handleClose,
+  }: {
+    session: AbstractViewContainer & NotificationSink
+    region: Region
+    tracks: LaunchableTrack[]
+    // the launching view's own tracks, for the panel that opens on its assembly
+    anchorTracks?: TrackInit[]
+    // the launching view itself, which the dialog offers to put the result in
+    // place of
+    sourceView?: AbstractViewModel
+    discoverMatesFor: (trackId: string) => MateDiscovery
+    // the one assembly every alignment in the dataset is stated against, when
+    // the launch knows it is such a star: a band between two mates is then
+    // empty, and the dialog says so or repeats the anchor between them
+    starAnchor?: string
+    handleClose: () => void
+  }) {
+    const panelsLabelId = useId()
+    const [trackId, setTrackId] = useState(tracks[0]!.trackId)
+    const [flipReversedMates, setFlipReversedMates] = useState(true)
+    const [collapseEmptyRows, setCollapseEmptyRows] = useState(true)
+    const [copySourceTracks, setCopySourceTracks] = useState(true)
+    const [repeatAnchor, setRepeatAnchor] = useState(true)
+    const [windowSize, setWindowSize] = useState<number | undefined>(
+      DEFAULT_WINDOW_SIZE,
+    )
+    const track = tracks.find(t => t.trackId === trackId)!
+    const { rows, setRows, unconfigured, error, status, retry } =
+      useMateDiscovery({
+        discoverMatesFor,
+        trackId,
+        region,
+      })
+    const { anchorIndex, mates } = launchOrder(rows ?? [])
+    const offerRepeat = starAnchor !== undefined && mates.length > 2
+    const repeating = offerRepeat && repeatAnchor
+    // What the DISCOVERY found. `mates` above is what is still ticked, which is
+    // what launches — but the two messages below are about the dataset rather
+    // than about the choices made in it, and reading the ticked list for them
+    // meant "Select none" reported that nothing aligned here.
+    const discoveredMates = rows?.filter(row => row.kind === 'mate').length
 
-  return (
-    <SyntenyLaunchDialog
-      session={session}
-      sourceView={sourceView}
-      title="Launch synteny view for region"
-      ready={
-        windowSize !== undefined && mates.length
-          ? { windowSize, anchorIndex, mates }
-          : undefined
-      }
-      handleClose={handleClose}
-      onLaunch={({ windowSize, anchorIndex, mates }, replacing) => {
-        void launchSyntenyViewForPanels({
-          // the rows themselves: the worker resolved each panel against this
-          // region, and reordering or unchecking moves a panel rather than
-          // moving where it opens
-          panels: mates,
-          anchorAssembly: region.assemblyName,
-          anchorRefName: region.refName,
-          anchorIndex,
-          repeatAnchor: repeating,
-          anchorTracks: copySourceTracks ? anchorTracks : undefined,
-          windowSize,
-          flipReversedMates,
-          collapseEmptyRows,
-          trackId,
-          session,
-          replacing,
-        })
-      }}
-    >
-      <SelectedRegion region={region} />
-      <DatasetField tracks={tracks} trackId={trackId} onChange={setTrackId} />
-      {/* outside the scroller below: with a dozen panels the list scrolls, and
+    return (
+      <SyntenyLaunchDialog
+        session={session}
+        sourceView={sourceView}
+        title="Launch synteny view for region"
+        ready={
+          windowSize !== undefined && mates.length
+            ? { windowSize, anchorIndex, mates }
+            : undefined
+        }
+        handleClose={handleClose}
+        onLaunch={({ windowSize, anchorIndex, mates }, replacing) => {
+          void launchSyntenyViewForPanels({
+            // the rows themselves: the worker resolved each panel against this
+            // region, and reordering or unchecking moves a panel rather than
+            // moving where it opens
+            panels: mates,
+            anchorAssembly: region.assemblyName,
+            anchorRefName: region.refName,
+            anchorIndex,
+            repeatAnchor: repeating,
+            anchorTracks: copySourceTracks ? anchorTracks : undefined,
+            windowSize,
+            flipReversedMates,
+            collapseEmptyRows,
+            trackId,
+            session,
+            replacing,
+          })
+        }}
+      >
+        <SelectedRegion region={region} />
+        <DatasetField tracks={tracks} trackId={trackId} onChange={setTrackId} />
+        {/* outside the scroller below: with a dozen panels the list scrolls, and
        the line saying what the order means is what would scroll away first.
        Named rather than merely adjacent, so the checkbox group below announces
        what it is a group of. */}
-      <Typography variant="subtitle2" id={panelsLabelId}>
-        Panels, top to bottom. Alignments are drawn between neighbouring panels,
-        so the order decides which comparisons the view shows.
-      </Typography>
-      <DiscoveryStatus
-        trackName={track.name}
-        loading={!rows}
-        status={status}
-        error={error}
-        onRetry={retry}
-        discoveredMates={discoveredMates}
-        unconfigured={unconfigured}
-      />
-      {rows ? (
-        <PanelList
-          rows={rows}
-          region={region}
-          setRows={setRows}
-          labelledBy={panelsLabelId}
-        />
-      ) : null}
-      {rows && starAnchor !== undefined && !repeating ? (
-        <EmptyLevelsNote levels={mateOnlyLevels(rows)} anchor={starAnchor} />
-      ) : null}
-      {/* Why the list is shorter than the lanes drawn in the track this was
-       launched from: an all-vs-all file carries every sample it was built with,
-       and only the ones the track declares an assembly for can be a panel. */}
-      {unconfigured.length > 0 && !!discoveredMates ? (
-        <Typography variant="body2">
-          {nameList(unconfigured)} also align here, but this track declares no
-          assembly for them, so they get no panel.
+        <Typography variant="subtitle2" id={panelsLabelId}>
+          Panels, top to bottom. Alignments are drawn between neighbouring
+          panels, so the order decides which comparisons the view shows.
         </Typography>
-      ) : null}
-      {/* Everything below the panel list is folded away, and the list is what
-       the dialog is for — see AdvancedLaunchOptions for why these four and not
-       the pairwise dialog's. */}
-      {offerRepeat ? (
-        <RepeatAnchorCheckbox
-          anchor={starAnchor}
-          checked={repeatAnchor}
-          onChange={setRepeatAnchor}
+        <DiscoveryStatus
+          trackName={track.name}
+          loading={!rows}
+          status={status}
+          error={error}
+          onRetry={retry}
+          discoveredMates={discoveredMates}
+          unconfigured={unconfigured}
         />
-      ) : null}
-      <AdvancedLaunchOptions>
-        <FlipInvertedTargetsCheckbox
-          checked={flipReversedMates}
-          onChange={setFlipReversedMates}
-        />
-        {anchorTracks.length ? (
-          <CopySourceTracksCheckbox
-            checked={copySourceTracks}
-            onChange={setCopySourceTracks}
+        {rows ? (
+          <PanelList
+            rows={rows}
+            region={region}
+            setRows={setRows}
+            labelledBy={panelsLabelId}
           />
         ) : null}
-        <CollapsePanelsCheckbox
-          checked={collapseEmptyRows}
-          onChange={setCollapseEmptyRows}
-        />
-        <WindowSizeField onChange={setWindowSize} />
-      </AdvancedLaunchOptions>
-    </SyntenyLaunchDialog>
-  )
-}
+        {rows && starAnchor !== undefined && !repeating ? (
+          <EmptyLevelsNote levels={mateOnlyLevels(rows)} anchor={starAnchor} />
+        ) : null}
+        {/* Why the list is shorter than the lanes drawn in the track this was
+       launched from: an all-vs-all file carries every sample it was built with,
+       and only the ones the track declares an assembly for can be a panel. */}
+        {unconfigured.length > 0 && !!discoveredMates ? (
+          <Typography variant="body2">
+            {nameList(unconfigured)} also align here, but this track declares no
+            assembly for them, so they get no panel.
+          </Typography>
+        ) : null}
+        {/* Everything below the panel list is folded away, and the list is what
+       the dialog is for — see AdvancedLaunchOptions for why these four and not
+       the pairwise dialog's. */}
+        {offerRepeat ? (
+          <RepeatAnchorCheckbox
+            anchor={starAnchor}
+            checked={repeatAnchor}
+            onChange={setRepeatAnchor}
+          />
+        ) : null}
+        <AdvancedLaunchOptions>
+          <FlipInvertedTargetsCheckbox
+            checked={flipReversedMates}
+            onChange={setFlipReversedMates}
+          />
+          {anchorTracks.length ? (
+            <CopySourceTracksCheckbox
+              checked={copySourceTracks}
+              onChange={setCopySourceTracks}
+            />
+          ) : null}
+          <CollapsePanelsCheckbox
+            checked={collapseEmptyRows}
+            onChange={setCollapseEmptyRows}
+          />
+          <WindowSizeField onChange={setWindowSize} />
+        </AdvancedLaunchOptions>
+      </SyntenyLaunchDialog>
+    )
+  },
+)
+
+export default LaunchSyntenyViewForRegionDialog

@@ -1,4 +1,5 @@
 import { Typography } from '@mui/material'
+import { observer } from 'mobx-react'
 
 /**
  * Why the pre-configured picker has nothing to offer for an assembly pair, and
@@ -11,7 +12,7 @@ import { Typography } from '@mui/material'
  * connects these two" would read as a missing cross-species dataset and send the
  * user looking for the wrong file.
  */
-export default function NoSyntenyTrackMessage({
+const NoSyntenyTrackMessage = observer(function NoSyntenyTrackMessage({
   assembly1,
   assembly2,
   remedy,
@@ -28,4 +29,6 @@ export default function NoSyntenyTrackMessage({
       {remedy}
     </Typography>
   )
-}
+})
+
+export default NoSyntenyTrackMessage

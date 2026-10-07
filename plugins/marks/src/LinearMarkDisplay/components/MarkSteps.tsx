@@ -2,6 +2,7 @@ import ArrowDownwardIcon from '@mui/icons-material/ArrowDownward'
 import ArrowUpwardIcon from '@mui/icons-material/ArrowUpward'
 import DeleteIcon from '@mui/icons-material/Delete'
 import { IconButton, TextField, Typography } from '@mui/material'
+import { observer } from 'mobx-react'
 
 import {
   AGGREGATE_OPS,
@@ -33,7 +34,7 @@ function slotText(step: StepSnapshot, slot: string) {
   return held === undefined ? '' : String(held)
 }
 
-function StepRow({
+const StepRow = observer(function StepRow({
   step,
   onChange,
 }: {
@@ -102,7 +103,7 @@ function StepRow({
       ) : null}
     </div>
   )
-}
+})
 
 /**
  * A mark's steps, in the order they run over the features before it encodes
@@ -111,7 +112,7 @@ function StepRow({
  * A step writing a `y` fills a mark that names none (ADR-173), which is why
  * adding a count or a coverage is often the whole edit.
  */
-export default function MarkSteps({
+const MarkSteps = observer(function MarkSteps({
   steps,
   at,
   problems,
@@ -191,4 +192,6 @@ export default function MarkSteps({
       </TextField>
     </div>
   )
-}
+})
+
+export default MarkSteps

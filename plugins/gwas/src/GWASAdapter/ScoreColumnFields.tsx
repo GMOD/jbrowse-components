@@ -1,5 +1,6 @@
 import { isJexl } from '@jbrowse/core/util/jexlStrings'
 import { MenuItem, TextField } from '@mui/material'
+import { observer } from 'mobx-react'
 
 import { DEFAULT_SCORE_COLUMN, SCORE_TRANSFORMS } from './configSchema.ts'
 
@@ -14,7 +15,7 @@ const TRANSFORM_LABELS: Record<ScoreTransform, string> = {
 const CUSTOM = 'custom'
 const CUSTOM_STARTER = 'jexl:score'
 
-export default function ScoreColumnFields({
+const ScoreColumnFields = observer(function ScoreColumnFields({
   scoreColumn,
   setScoreColumn,
   scoreTransform,
@@ -69,4 +70,6 @@ export default function ScoreColumnFields({
       ) : null}
     </>
   )
-}
+})
+
+export default ScoreColumnFields

@@ -3,6 +3,7 @@ import BaseCard from '@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail/BaseCard
 import SimpleField from '@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail/SimpleField'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { Checkbox, FormControlLabel, FormGroup, Tooltip } from '@mui/material'
+import { observer } from 'mobx-react'
 
 const useStyles = makeStyles()({
   compact: {
@@ -13,7 +14,11 @@ const useStyles = makeStyles()({
   },
 })
 
-export default function AlignmentFlags({ flags }: { flags: number }) {
+const AlignmentFlags = observer(function AlignmentFlags({
+  flags,
+}: {
+  flags: number
+}) {
   const { classes } = useStyles()
   return (
     <BaseCard title="Flags">
@@ -38,4 +43,6 @@ export default function AlignmentFlags({ flags }: { flags: number }) {
       </FormGroup>
     </BaseCard>
   )
-}
+})
+
+export default AlignmentFlags

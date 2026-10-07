@@ -1,6 +1,7 @@
 import BaseTooltip from '@jbrowse/core/ui/BaseTooltip'
 import { toLocale } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
+import { observer } from 'mobx-react'
 
 import type { Sample } from '../types.ts'
 
@@ -22,7 +23,7 @@ interface SequenceTooltipProps {
 // Controlled `clientPoint` (not pointer-tracking): the widget already
 // re-renders per mouse move, so positioning rides that render with no window
 // listener or per-move allocation. See ADR-028.
-export default function SequenceTooltip({
+const SequenceTooltip = observer(function SequenceTooltip({
   x,
   y,
   sample,
@@ -53,4 +54,6 @@ export default function SequenceTooltip({
       ) : null}
     </BaseTooltip>
   )
-}
+})
+
+export default SequenceTooltip

@@ -23,7 +23,7 @@ import type {
   MouseTracker,
 } from '@jbrowse/core/ui/useMouseTracking'
 
-function SnpRow({ snp }: { snp: LDCellHit['snp1'] }) {
+const SnpRow = observer(function SnpRow({ snp }: { snp: LDCellHit['snp1'] }) {
   return (
     <div>
       {snp.id ? <b>{snp.id} </b> : null}
@@ -31,9 +31,9 @@ function SnpRow({ snp }: { snp: LDCellHit['snp1'] }) {
       {snp.maf === undefined ? null : ` · MAF ${snp.maf.toFixed(3)}`}
     </div>
   )
-}
+})
 
-function LDTooltip({
+const LDTooltip = observer(function LDTooltip({
   item,
   x,
   y,
@@ -56,7 +56,7 @@ function LDTooltip({
       </div>
     </BaseTooltip>
   )
-}
+})
 
 const LDPointer = observer(function LDPointer({
   model,

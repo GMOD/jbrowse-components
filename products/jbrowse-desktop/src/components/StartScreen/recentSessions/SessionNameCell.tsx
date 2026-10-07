@@ -1,6 +1,7 @@
 import { ActionLink, CascadingMenuButton } from '@jbrowse/core/ui'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import MoreHoriz from '@mui/icons-material/MoreHoriz'
+import { observer } from 'mobx-react'
 
 import StarIcon from '../StarIcon.tsx'
 import { sessionMenuItems } from './sessionMenuItems.ts'
@@ -28,7 +29,7 @@ const useStyles = makeStyles()({
   },
 })
 
-function SessionNameCell({
+const SessionNameCell = observer(function SessionNameCell({
   value,
   row,
   isFavorite,
@@ -88,6 +89,6 @@ function SessionNameCell({
       </div>
     </div>
   )
-}
+})
 
 export default SessionNameCell

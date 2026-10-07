@@ -2,6 +2,7 @@ import { ContextMenu } from '@jbrowse/core/ui'
 import { getSession } from '@jbrowse/core/util'
 import SyncAltIcon from '@mui/icons-material/SyncAlt'
 import VisibilityOffIcon from '@mui/icons-material/VisibilityOff'
+import { observer } from 'mobx-react'
 
 import { centerStackOnFeature } from '../../SyntenyFeatureDetail/centerOnFeature.ts'
 import { bandMoveTargets } from '../bandMoveTargets.ts'
@@ -11,7 +12,7 @@ import { syntenyWidgetFeature } from '../syntenyWidgetFeature.ts'
 import type { LinearSyntenyDisplayModel } from '../model.ts'
 import type { ClickCoord } from './util.ts'
 
-export default function SyntenyContextMenu({
+const SyntenyContextMenu = observer(function SyntenyContextMenu({
   model,
   onClose,
   anchorEl,
@@ -88,4 +89,6 @@ export default function SyntenyContextMenu({
       ]}
     />
   )
-}
+})
+
+export default SyntenyContextMenu

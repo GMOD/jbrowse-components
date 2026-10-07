@@ -1,10 +1,12 @@
+import { observer } from 'mobx-react'
+
 import { assembleLocString, toLocale } from '../../util/index.ts'
 import { getStrandStr } from '../util.tsx'
 import SimpleField from './SimpleField.tsx'
 
 import type { BaseProps } from '../types.tsx'
 
-export default function CoreDetails({ feature }: BaseProps) {
+const CoreDetails = observer(function CoreDetails({ feature }: BaseProps) {
   const { name, description, type, start, end, strand } = feature
   // only a formatDetails callback sets `length`, to rewrite or hide the row:
   // an adapter's own field of that name is in Attributes' globalOmit
@@ -32,4 +34,6 @@ export default function CoreDetails({ feature }: BaseProps) {
       ))}
     </>
   )
-}
+})
+
+export default CoreDetails

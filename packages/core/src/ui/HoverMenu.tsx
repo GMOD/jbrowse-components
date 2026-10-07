@@ -2,6 +2,7 @@
 //  https://github.com/jcoreio/material-ui-popup-state/blob/9dba66241a0c25b172c93ae7d9e45a9745f138e8/LICENSE.md
 
 import { Menu } from '@mui/material'
+import { observer } from 'mobx-react'
 
 import type { PopoverOrigin } from '@mui/material'
 
@@ -21,7 +22,7 @@ import type { PopoverOrigin } from '@mui/material'
 // and `onMouseEnter`, which fires on the paper rather than the click-through
 // root and so means "the pointer arrived here", not "the pointer is somewhere
 // over the viewport".
-function HoverMenu({
+const HoverMenu = observer(function HoverMenu({
   anchorEl,
   onClose,
   onMouseEnter,
@@ -71,6 +72,6 @@ function HoverMenu({
       {children}
     </Menu>
   )
-}
+})
 
 export default HoverMenu

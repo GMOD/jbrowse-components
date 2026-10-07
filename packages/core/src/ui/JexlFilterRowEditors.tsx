@@ -6,6 +6,7 @@ import {
   MenuItem,
   TextField,
 } from '@mui/material'
+import { observer } from 'mobx-react'
 
 import {
   OPERATORS,
@@ -64,15 +65,19 @@ export function compileError(line: string, jexl: Pick<Jexl, 'compile'>) {
   }
 }
 
-function RemoveButton({ onClick }: { onClick: () => void }) {
+const RemoveButton = observer(function RemoveButton({
+  onClick,
+}: {
+  onClick: () => void
+}) {
   return (
     <IconButton size="small" aria-label="Remove condition" onClick={onClick}>
       <CloseIcon fontSize="small" />
     </IconButton>
   )
-}
+})
 
-function ValueInput({
+const ValueInput = observer(function ValueInput({
   row,
   onChange,
 }: {
@@ -130,9 +135,9 @@ function ValueInput({
       }}
     />
   )
-}
+})
 
-export function ConditionRowEditor({
+export const ConditionRowEditor = observer(function ConditionRowEditor({
   row,
   choices,
   onChange,
@@ -208,9 +213,9 @@ export function ConditionRowEditor({
       <RemoveButton onClick={onRemove} />
     </div>
   )
-}
+})
 
-export function TextRowEditor({
+export const TextRowEditor = observer(function TextRowEditor({
   row,
   jexl,
   onChange,
@@ -243,4 +248,4 @@ export function TextRowEditor({
       <RemoveButton onClick={onRemove} />
     </div>
   )
-}
+})

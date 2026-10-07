@@ -10,7 +10,7 @@ import ClusterManualTab from './ClusterManualTab.tsx'
 
 import type { ClusterDialogProps } from './types.ts'
 
-function Header({
+const Header = observer(function Header({
   activeMode,
   setActiveMode,
   description,
@@ -26,7 +26,7 @@ function Header({
       ) : null}
     </ClusterModeSelector>
   )
-}
+})
 
 /**
  * The "Cluster rows by ..." dialog for every clusterable display. Two tabs (run

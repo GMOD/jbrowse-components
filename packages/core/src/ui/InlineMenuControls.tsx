@@ -1,6 +1,7 @@
-/* eslint-disable react-refresh/only-export-components -- the shared row width belongs with these leaf menu-row primitives; no component state to fast-refresh */
 import RestartAltIcon from '@mui/icons-material/RestartAlt'
 import { IconButton, Tooltip } from '@mui/material'
+/* eslint-disable react-refresh/only-export-components -- the shared row width belongs with these leaf menu-row primitives; no component state to fast-refresh */
+import { observer } from 'mobx-react'
 
 // Shared width for inline track-menu control rows (the size sliders and the
 // wiggle resolution stepper), so the rows line up when they stack in one menu
@@ -11,7 +12,7 @@ export { INLINE_MENU_ROW_WIDTH } from './inlineMenuRowWidth.ts'
 // a span so its Tooltip still shows while disabled at the default. Kept in one
 // place so the icon/size/padding and the disabled-at-default behavior stay
 // identical across the sibling controls.
-export function ResetToDefaultButton({
+export const ResetToDefaultButton = observer(function ResetToDefaultButton({
   disabled,
   title = 'Reset to default',
   onClick,
@@ -36,4 +37,4 @@ export function ResetToDefaultButton({
       </span>
     </Tooltip>
   )
-}
+})

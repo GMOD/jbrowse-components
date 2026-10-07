@@ -3,6 +3,7 @@ import { useState } from 'react'
 import { SubmitDialog } from '@jbrowse/core/ui'
 import { parseBpString, toLocale } from '@jbrowse/core/util'
 import { TextField, Typography } from '@mui/material'
+import { observer } from 'mobx-react'
 
 import type { LinearGenomeViewModel } from '../model.ts'
 
@@ -12,7 +13,7 @@ function format(n: number) {
 
 // not an observer: the initial value is seeded once and the field is
 // user-edited thereafter, so it shouldn't reactively reset if bpPerPx changes
-export default function RegionWidthEditorDialog({
+const RegionWidthEditorDialog = observer(function RegionWidthEditorDialog({
   model,
   handleClose,
 }: {
@@ -58,4 +59,6 @@ export default function RegionWidthEditorDialog({
       </div>
     </SubmitDialog>
   )
-}
+})
+
+export default RegionWidthEditorDialog

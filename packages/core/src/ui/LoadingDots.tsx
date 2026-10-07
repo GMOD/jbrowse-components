@@ -1,3 +1,5 @@
+import { observer } from 'mobx-react'
+
 import { makeStyles } from '../util/tss-react/index.ts'
 import { dot1, dot2, dot3 } from './loadingDotKeyframes.ts'
 
@@ -25,7 +27,7 @@ const useStyles = makeStyles()({
   },
 })
 
-export default function LoadingDots() {
+const LoadingDots = observer(function LoadingDots() {
   const { classes } = useStyles()
   return (
     <span className={classes.dots}>
@@ -34,4 +36,6 @@ export default function LoadingDots() {
       <span>.</span>
     </span>
   )
-}
+})
+
+export default LoadingDots

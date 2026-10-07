@@ -1,3 +1,5 @@
+import { observer } from 'mobx-react'
+
 import { makeStyles } from '../util/tss-react/index.ts'
 
 const useStyles = makeStyles()(theme => ({
@@ -17,7 +19,7 @@ const useStyles = makeStyles()(theme => ({
 // that still showed either failed loudly — but an MST type error surfacing here
 // over a view was captured and committed as if the figure were fine. Keying off
 // `#f88` instead would break on the dark theme and on any restyle.
-export default function RedErrorMessageBox({
+const RedErrorMessageBox = observer(function RedErrorMessageBox({
   children,
 }: {
   children: React.ReactNode
@@ -28,4 +30,6 @@ export default function RedErrorMessageBox({
       {children}
     </div>
   )
-}
+})
+
+export default RedErrorMessageBox

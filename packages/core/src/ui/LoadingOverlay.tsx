@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react'
 import CloseIcon from '@mui/icons-material/Close'
 import RefreshIcon from '@mui/icons-material/Refresh'
 import { IconButton, Tooltip } from '@mui/material'
+import { observer } from 'mobx-react'
 
 import { progressLabel } from '../util/progress.ts'
 import { makeStyles } from '../util/tss-react/index.ts'
@@ -104,7 +105,7 @@ const useStyles = makeStyles()(theme => {
   }
 })
 
-export default function LoadingOverlay({
+const LoadingOverlay = observer(function LoadingOverlay({
   statusMessage,
   progress,
   isVisible,
@@ -208,4 +209,6 @@ export default function LoadingOverlay({
       </span>
     </span>
   ) : null
-}
+})
+
+export default LoadingOverlay

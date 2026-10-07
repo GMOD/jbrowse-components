@@ -2,6 +2,7 @@ import { useState } from 'react'
 
 import { ActionLink } from '@jbrowse/core/ui'
 import { getBpDisplayStr } from '@jbrowse/core/util'
+import { observer } from 'mobx-react'
 
 import { getMinimalDesc } from '../VcfFeature/util.ts'
 
@@ -22,7 +23,7 @@ function getDetail({
     : ''
 }
 
-export default function AltFormatter({
+const AltFormatter = observer(function AltFormatter({
   value,
   refString,
   bp,
@@ -51,4 +52,6 @@ export default function AltFormatter({
   ) : (
     `${value}${detail}`
   )
-}
+})
+
+export default AltFormatter

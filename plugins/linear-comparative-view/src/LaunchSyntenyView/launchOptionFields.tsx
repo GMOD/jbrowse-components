@@ -8,6 +8,7 @@ import {
   AccordionSummary,
   Typography,
 } from '@mui/material'
+import { observer } from 'mobx-react'
 
 import { DEFAULT_WINDOW_SIZE } from './launchDefaults.ts'
 
@@ -65,7 +66,11 @@ const useStyles = makeStyles()(theme => ({
 // still discoverable, and each of these was already reachable only by knowing
 // the dialog. The children stay mounted, so the fields' own state is the
 // dialog's whether or not it is ever opened.
-export function AdvancedLaunchOptions({ children }: { children: ReactNode }) {
+export const AdvancedLaunchOptions = observer(function AdvancedLaunchOptions({
+  children,
+}: {
+  children: ReactNode
+}) {
   const { classes } = useStyles()
   return (
     <Accordion disableGutters elevation={0} className={classes.advanced}>
@@ -80,7 +85,7 @@ export function AdvancedLaunchOptions({ children }: { children: ReactNode }) {
       </AccordionDetails>
     </Accordion>
   )
-}
+})
 
 export interface LaunchOptionProps {
   checked: boolean
@@ -90,7 +95,7 @@ export interface LaunchOptionProps {
 // The shape every option below is: one boxed, compact checkbox whose label is
 // the whole of what it says, plus a tooltip carrying the "why". Written once so
 // each option is its own words and nothing else.
-function LaunchCheckbox({
+const LaunchCheckbox = observer(function LaunchCheckbox({
   checked,
   onChange,
   label,
@@ -116,7 +121,7 @@ function LaunchCheckbox({
       }
     />
   )
-}
+})
 
 // Narrow both panels to the slice of the alignment the user is looking at,
 // rather than framing them on the whole block's endpoints. Offered by the
@@ -126,7 +131,7 @@ function LaunchCheckbox({
 // apart: with a CIGAR the alignment is walked base by base, and without one the
 // block is interpolated across — which is all its straight ribbon claims anyway,
 // but is an estimate rather than a mapping and shouldn't be worded as one.
-export function ClipToRegionCheckbox({
+export const ClipToRegionCheckbox = observer(function ClipToRegionCheckbox({
   hasCigar,
   ...props
 }: LaunchOptionProps & { hasCigar: boolean }) {
@@ -142,20 +147,22 @@ export function ClipToRegionCheckbox({
       help="This alignment carries no CIGAR, so the matching interval on the target is estimated by interpolating across the block — the same straight line its ribbon is drawn as"
     />
   )
-}
+})
 
-export function FlipInvertedTargetsCheckbox(props: LaunchOptionProps) {
-  return (
-    <LaunchCheckbox
-      {...props}
-      label="Horizontally flip inverted targets"
-      // the "why" is a tooltip rather than two wrapped lines of dialog: an
-      // unflipped inverted panel runs right to left, which is what the reader
-      // needs on demand, not permanently
-      help="Without flipping, an inverted panel's coordinates decrease left to right"
-    />
-  )
-}
+export const FlipInvertedTargetsCheckbox = observer(
+  function FlipInvertedTargetsCheckbox(props: LaunchOptionProps) {
+    return (
+      <LaunchCheckbox
+        {...props}
+        label="Horizontally flip inverted targets"
+        // the "why" is a tooltip rather than two wrapped lines of dialog: an
+        // unflipped inverted panel runs right to left, which is what the reader
+        // needs on demand, not permanently
+        help="Without flipping, an inverted panel's coordinates decrease left to right"
+      />
+    )
+  },
+)
 
 // The launching view's own tracks, carried onto the panel for its assembly (see
 // anchorPanelTracks). On by default — it is the state the user is already
@@ -168,7 +175,7 @@ export function FlipInvertedTargetsCheckbox(props: LaunchOptionProps) {
 // Repeating the anchor makes every band a direct pair, at the cost of a row
 // between each two mates. Offered only when the launch knows it is a star and
 // has three or more mates — with two, the anchor sits between them already.
-export function RepeatAnchorCheckbox({
+export const RepeatAnchorCheckbox = observer(function RepeatAnchorCheckbox({
   anchor,
   ...props
 }: LaunchOptionProps & { anchor: string }) {
@@ -179,24 +186,28 @@ export function RepeatAnchorCheckbox({
       help={`This dataset aligns each genome to ${anchor} only, so a band between two other genomes would be empty. Repeating ${anchor} between every two panels makes each band a direct comparison, one more row per pair.`}
     />
   )
-}
+})
 
-export function CopySourceTracksCheckbox(props: LaunchOptionProps) {
-  return (
-    <LaunchCheckbox
-      {...props}
-      label="Copy this view's tracks into its panel"
-      help="The panel for the assembly you launched from opens with the tracks open here; the other panels open empty, since nothing here says what they should show"
-    />
-  )
-}
+export const CopySourceTracksCheckbox = observer(
+  function CopySourceTracksCheckbox(props: LaunchOptionProps) {
+    return (
+      <LaunchCheckbox
+        {...props}
+        label="Copy this view's tracks into its panel"
+        help="The panel for the assembly you launched from opens with the tracks open here; the other panels open empty, since nothing here says what they should show"
+      />
+    )
+  },
+)
 
 // A mate panel gets no tracks, so every such row would open on the ~90px "No
 // tracks active / Open track selector" block — on a five-row stack more of the
 // viewport than the ribbons the launch was for. Collapsed to rulers by default,
 // with this to opt out; a row also expands from its own MiniControls afterwards.
 // A row that has tracks (the anchor, when the copy above is on) is unaffected.
-export function CollapsePanelsCheckbox(props: LaunchOptionProps) {
+export const CollapsePanelsCheckbox = observer(function CollapsePanelsCheckbox(
+  props: LaunchOptionProps,
+) {
   return (
     <LaunchCheckbox
       {...props}
@@ -204,7 +215,7 @@ export function CollapsePanelsCheckbox(props: LaunchOptionProps) {
       help="Each genome row opens as just its ruler until you add tracks to it; expand a row from its own controls at any time"
     />
   )
-}
+})
 
 // Padding added to both sides of every launched panel. `undefined` is a cleared
 // or invalid field, which the dialogs turn into a disabled Submit rather than
@@ -216,7 +227,7 @@ export function CollapsePanelsCheckbox(props: LaunchOptionProps) {
 // shares the last one's line as a second column. Checked at full resolution in
 // genomes_synteny/launch_sequence's dialog frame: it reads as a labelled field
 // of its own there, so it is left flowing rather than forced onto a new row.
-export function WindowSizeField({
+export const WindowSizeField = observer(function WindowSizeField({
   onChange,
 }: {
   onChange: (windowSize: number | undefined) => void
@@ -232,4 +243,4 @@ export function WindowSizeField({
       errorText="Must be a non-negative number"
     />
   )
-}
+})

@@ -1,5 +1,6 @@
 import RefreshIcon from '@mui/icons-material/Refresh'
 import { IconButton, Tooltip } from '@mui/material'
+import { observer } from 'mobx-react'
 
 import StackTraceButton from './StackTraceButton.tsx'
 
@@ -17,7 +18,7 @@ import type { ReactNode } from 'react'
  * the environment block and the prefilled issue link — the whole of what that
  * dialog is for — from anyone whose failure arrived as a string.
  */
-export default function ErrorActions({
+const ErrorActions = observer(function ErrorActions({
   error,
   onRetry,
   extraAction,
@@ -52,4 +53,6 @@ export default function ErrorActions({
       ) : null}
     </>
   )
-}
+})
+
+export default ErrorActions

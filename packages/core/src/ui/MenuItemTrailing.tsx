@@ -1,3 +1,5 @@
+import { observer } from 'mobx-react'
+
 import CascadingMenuHelpIconButton, {
   CascadingMenuHelpIconSpacer,
 } from './CascadingMenuHelpIconButton.tsx'
@@ -32,7 +34,7 @@ export interface MenuColumnFlags {
 
 // The checkbox/radio glyph reflecting a row's value. Held slightly apart from
 // the action column when the menu has one, so state and actions don't blur.
-function MenuItemValueGlyph({
+const MenuItemValueGlyph = observer(function MenuItemValueGlyph({
   type,
   checked,
   separated,
@@ -46,12 +48,16 @@ function MenuItemValueGlyph({
       <MenuItemEndDecoration type={type} checked={checked} />
     </div>
   )
-}
+})
 
 // Fixed-width column holding an item's endAdornment (e.g. the "default for all"
 // pin). Reserved on every row of a menu that has any adornment so they
 // right-align into their own column.
-function MenuItemEndAdornmentSlot({ children }: { children: React.ReactNode }) {
+const MenuItemEndAdornmentSlot = observer(function MenuItemEndAdornmentSlot({
+  children,
+}: {
+  children: React.ReactNode
+}) {
   return (
     <div
       style={{
@@ -64,7 +70,7 @@ function MenuItemEndAdornmentSlot({ children }: { children: React.ReactNode }) {
       {children}
     </div>
   )
-}
+})
 
 // Everything trailing a menu row's label, for a clickable row and a submenu row
 // alike: a flex spacer that right-aligns the decorations, then the value glyph,
@@ -72,7 +78,7 @@ function MenuItemEndAdornmentSlot({ children }: { children: React.ReactNode }) {
 // `sharedActionColumn` is set, no row in the menu combines help with an
 // adornment, so the two share one trailing column (whichever this row has)
 // rather than each claiming its own.
-export function MenuItemTrailing({
+export const MenuItemTrailing = observer(function MenuItemTrailing({
   item,
   columns: {
     hasCheckboxOrRadioWithHelp,
@@ -139,4 +145,4 @@ export function MenuItemTrailing({
       ) : null}
     </>
   )
-}
+})

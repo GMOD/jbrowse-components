@@ -1,6 +1,7 @@
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import Search from '@mui/icons-material/Search'
 import { InputAdornment, TextField } from '@mui/material'
+import { observer } from 'mobx-react'
 
 const useStyles = makeStyles()({
   root: {
@@ -10,7 +11,7 @@ const useStyles = makeStyles()({
   },
 })
 
-export default function SearchField({
+const SearchField = observer(function SearchField({
   searchQuery,
   onChange,
 }: {
@@ -41,4 +42,6 @@ export default function SearchField({
       }}
     />
   )
-}
+})
+
+export default SearchField

@@ -1,6 +1,7 @@
 import { isValidElement, useState } from 'react'
 
 import { Link } from '@mui/material'
+import { observer } from 'mobx-react'
 
 import { SanitizedHTML } from '../../ui/index.ts'
 import { isObject } from '../../util/index.ts'
@@ -42,7 +43,11 @@ export function valueText(value: unknown) {
  * open in a new tab: navigating in place discards the session, and in an
  * embedded JBrowse it takes the host page with it.
  */
-export function ValueText({ text }: { text: string }) {
+export const ValueText = observer(function ValueText({
+  text,
+}: {
+  text: string
+}) {
   return isBareUrl(text) ? (
     <Link href={text} target="_blank" rel="noopener noreferrer">
       {text}
@@ -50,9 +55,9 @@ export function ValueText({ text }: { text: string }) {
   ) : (
     <SanitizedHTML html={text} />
   )
-}
+})
 
-export default function BasicValue({ value }: { value: unknown }) {
+const BasicValue = observer(function BasicValue({ value }: { value: unknown }) {
   const { classes, cx } = useStyles()
   const [expanded, setExpanded] = useState(false)
   const [ref, { height }] = useMeasure('height')
@@ -87,4 +92,6 @@ export default function BasicValue({ value }: { value: unknown }) {
       ) : null}
     </div>
   )
-}
+})
+
+export default BasicValue

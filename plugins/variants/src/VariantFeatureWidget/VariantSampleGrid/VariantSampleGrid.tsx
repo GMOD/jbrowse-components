@@ -9,6 +9,7 @@ import { useLocalStorage } from '@jbrowse/core/util/hooks'
 import SettingsIcon from '@mui/icons-material/Settings'
 import { ToggleButton, ToggleButtonGroup, Typography } from '@mui/material'
 import { DataGrid } from '@mui/x-data-grid'
+import { observer } from 'mobx-react'
 
 import { measuredColumns } from '../measuredColumns.ts'
 import VariantAlleleFrequencyTable from './VariantAlleleFrequencyTable.tsx'
@@ -46,7 +47,7 @@ type ColumnDisplayMode = keyof typeof columnDisplayModes
 const EMPTY_SAMPLES: Record<string, InfoFields> = {}
 const EMPTY_ALT: string[] = []
 
-export default function VariantSampleGrid({
+const VariantSampleGrid = observer(function VariantSampleGrid({
   feature,
   descriptions,
   selectedAlt = null,
@@ -282,4 +283,6 @@ export default function VariantSampleGrid({
       </DataGridFlexContainer>
     </BaseCard>
   )
-}
+})
+
+export default VariantSampleGrid

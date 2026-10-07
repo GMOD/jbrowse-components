@@ -112,7 +112,7 @@ const ScalebarRefNameLabels = observer(function ScalebarRefNameLabels({
 
 // Not an observer: `label` is plain data from the parent. The attribute tells
 // the scalebar's rubberband to leave a click here to this label's onClick.
-function RefLabel({
+const RefLabel = observer(function RefLabel({
   model,
   label,
   onOpenMenu,
@@ -141,7 +141,7 @@ function RefLabel({
       {text}
     </span>
   )
-}
+})
 
 const RefNameMenu = observer(function RefNameMenu({
   model,

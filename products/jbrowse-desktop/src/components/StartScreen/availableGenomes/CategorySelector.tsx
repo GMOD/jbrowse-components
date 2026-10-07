@@ -1,5 +1,6 @@
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { MenuItem, TextField } from '@mui/material'
+import { observer } from 'mobx-react'
 
 import type { Category } from './useCategories.ts'
 
@@ -13,7 +14,7 @@ const useStyles = makeStyles()({
 // Rendered only once categories.json has resolved: useFetch clears data while
 // loading and on error, so there is no state where this has a list to show but
 // is also still loading or failed.
-export default function CategorySelector({
+const CategorySelector = observer(function CategorySelector({
   categories,
   typeOption,
   onChange,
@@ -43,4 +44,6 @@ export default function CategorySelector({
       ))}
     </TextField>
   )
-}
+})
+
+export default CategorySelector

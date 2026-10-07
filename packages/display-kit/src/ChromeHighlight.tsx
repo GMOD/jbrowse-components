@@ -39,7 +39,7 @@ interface StrokeStyle {
   dash?: string
 }
 
-function Boxes({
+const Boxes = observer(function Boxes({
   rects,
   testid,
   styleOf,
@@ -96,7 +96,7 @@ function Boxes({
       />
     )
   })
-}
+})
 
 /**
  * The on-screen boxes of a display answering `hoverInk`, drawn by the chrome so

@@ -11,6 +11,7 @@ import {
   createTheme,
   useTheme,
 } from '@mui/material'
+import { observer } from 'mobx-react'
 
 import { makeStyles } from '../util/tss-react/index.ts'
 import ErrorBanner from './ErrorBanner.tsx'
@@ -32,14 +33,18 @@ const useStyles = makeStyles()(theme => ({
   },
 }))
 
-function DialogError({ error }: { error: unknown }) {
+const DialogError = observer(function DialogError({
+  error,
+}: {
+  error: unknown
+}) {
   const { classes } = useStyles()
   return (
     <div className={classes.errorBox}>
       <ErrorBanner error={error} />
     </div>
   )
-}
+})
 
 export interface Props extends Omit<DialogProps, 'onClose'> {
   header?: React.ReactNode
@@ -54,7 +59,7 @@ export interface Props extends Omit<DialogProps, 'onClose'> {
     | undefined
 }
 
-function Dialog(props: Props) {
+const Dialog = observer(function Dialog(props: Props) {
   const { classes } = useStyles()
   const { titleNode, header, title, ...rest } = props
   const { children, onClose } = rest
@@ -111,6 +116,6 @@ function Dialog(props: Props) {
       </ScopedCssBaseline>
     </MUIDialog>
   )
-}
+})
 
 export default Dialog

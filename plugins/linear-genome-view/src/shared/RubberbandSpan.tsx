@@ -1,6 +1,7 @@
 import { alpha } from '@jbrowse/core/ui/palette'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { Typography } from '@mui/material'
+import { observer } from 'mobx-react'
 
 import { LABEL_WIDTH, SpanEdgeLabels } from './coordLabels.tsx'
 
@@ -25,7 +26,7 @@ const useStyles = makeStyles()(theme => ({
  * single view reads one coordinate per edge and the multi-level rubberband reads
  * one per level.
  */
-export default function RubberbandSpan({
+const RubberbandSpan = observer(function RubberbandSpan({
   left,
   width,
   viewWidth,
@@ -75,4 +76,6 @@ export default function RubberbandSpan({
       ) : null}
     </div>
   )
-}
+})
+
+export default RubberbandSpan

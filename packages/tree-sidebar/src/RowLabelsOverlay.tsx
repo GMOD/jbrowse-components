@@ -1,6 +1,5 @@
-import { memo } from 'react'
-
 import { TrackOverlayPortal } from '@jbrowse/display-ui'
+import { observer } from 'mobx-react'
 
 import { SvgBandLabels, bandLabelWidth } from './SvgBandLabels.tsx'
 import { SvgRowLabels } from './SvgRowLabels.tsx'
@@ -59,7 +58,7 @@ import type { RowLabelSource } from './types.ts'
  * element itself instead would make turning labels off also turn off the gate,
  * and the figure would capture blank.
  */
-export const RowLabelsOverlay = memo(function RowLabelsOverlay({
+export const RowLabelsOverlay = observer(function RowLabelsOverlay({
   sources,
   rowHeight,
   labelOffset,

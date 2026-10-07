@@ -1,3 +1,5 @@
+import { observer } from 'mobx-react'
+
 import type { CSSProperties, ComponentPropsWithoutRef, ReactNode } from 'react'
 
 /**
@@ -26,7 +28,7 @@ export const TEXT_BASELINE_RATIO = 0.84
  * a class for the pointer and the cursor, the data attributes a delegated
  * handler reads, a `title`.
  */
-export function FloatingText({
+export const FloatingText = observer(function FloatingText({
   x,
   y,
   color,
@@ -61,7 +63,7 @@ export function FloatingText({
       {children}
     </div>
   )
-}
+})
 
 /**
  * The same line in an SVG export: two `<text>`s at the baseline `y`, a stroke

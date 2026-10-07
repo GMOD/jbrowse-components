@@ -6,6 +6,7 @@ import {
 } from '@jbrowse/core/pluginDefinitions'
 import { ConfirmDialog, LabeledCheckbox } from '@jbrowse/core/ui'
 import { Alert, Button } from '@mui/material'
+import { observer } from 'mobx-react'
 
 import type { PluginDefinition } from '@jbrowse/core/pluginDefinitions'
 
@@ -26,7 +27,7 @@ const text = {
   },
 }
 
-export default function PluginWarningDialog({
+const PluginWarningDialog = observer(function PluginWarningDialog({
   kind,
   onConfirm,
   onCancel,
@@ -84,4 +85,6 @@ export default function PluginWarningDialog({
       />
     </ConfirmDialog>
   )
-}
+})
+
+export default PluginWarningDialog

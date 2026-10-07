@@ -9,6 +9,7 @@ import {
   IconButton,
   Snackbar as MUISnackbar,
 } from '@mui/material'
+import { observer } from 'mobx-react'
 
 import { makeStyles } from '../util/tss-react/index.ts'
 
@@ -26,7 +27,7 @@ const useStyles = makeStyles()({
   },
 })
 
-export default function SnackbarContents({
+const SnackbarContents = observer(function SnackbarContents({
   onClose,
   contents,
 }: {
@@ -76,4 +77,6 @@ export default function SnackbarContents({
       </Alert>
     </MUISnackbar>
   )
-}
+})
+
+export default SnackbarContents

@@ -1,5 +1,6 @@
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { Alert, Tooltip } from '@mui/material'
+import { observer } from 'mobx-react'
 
 import type { AlertColor } from '@mui/material'
 
@@ -18,7 +19,7 @@ const useStyles = makeStyles()({
   },
 })
 
-export default function BlockMsg({
+const BlockMsg = observer(function BlockMsg({
   message,
   severity,
   action,
@@ -48,4 +49,6 @@ export default function BlockMsg({
       {action}
     </Alert>
   )
-}
+})
+
+export default BlockMsg

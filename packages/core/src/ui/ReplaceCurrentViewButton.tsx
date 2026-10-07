@@ -1,4 +1,5 @@
 import { Button } from '@mui/material'
+import { observer } from 'mobx-react'
 
 /**
  * The second way out of a launch dialog: put the view it builds in the slot the
@@ -15,7 +16,7 @@ import { Button } from '@mui/material'
  * Pair it with `isSessionWithViewReplacement` — a session that cannot replace a
  * view should not be offered the choice.
  */
-export default function ReplaceCurrentViewButton({
+const ReplaceCurrentViewButton = observer(function ReplaceCurrentViewButton({
   disabled,
   onClick,
 }: {
@@ -35,4 +36,6 @@ export default function ReplaceCurrentViewButton({
       Replace current view
     </Button>
   )
-}
+})
+
+export default ReplaceCurrentViewButton

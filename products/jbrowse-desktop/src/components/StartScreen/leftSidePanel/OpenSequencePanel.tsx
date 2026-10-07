@@ -2,6 +2,7 @@ import { Suspense, lazy, useState } from 'react'
 
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { Button } from '@mui/material'
+import { observer } from 'mobx-react'
 
 import { newSessionName } from '../sessionName.ts'
 
@@ -25,7 +26,7 @@ const AvailableGenomesDialog = lazy(
   () => import('../availableGenomes/AvailableGenomesDialog.tsx'),
 )
 
-export default function OpenSequencePanel({
+const OpenSequencePanel = observer(function OpenSequencePanel({
   favorites,
   setFavorites,
   launch,
@@ -97,4 +98,6 @@ export default function OpenSequencePanel({
       </Suspense>
     </div>
   )
-}
+})
+
+export default OpenSequencePanel

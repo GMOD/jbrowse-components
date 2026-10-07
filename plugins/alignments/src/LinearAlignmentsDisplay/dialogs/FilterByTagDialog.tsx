@@ -73,7 +73,7 @@ function toggleBit(flag: number, index: number, checked: boolean) {
   return checked ? flag | (1 << index) : flag & ~(1 << index)
 }
 
-function MaskField(props: {
+const MaskField = observer(function MaskField(props: {
   label: string
   flag: number
   setFlag: (arg: number) => void
@@ -95,14 +95,14 @@ function MaskField(props: {
       }}
     />
   )
-}
+})
 
 // One row per SAM flag with a Require and an Exclude box, rather than two
 // twelve-checkbox columns each captioned with a sentence. Half the height, the
 // flag named once, and the contradiction a user can otherwise build without
 // noticing — the same flag required AND excluded, which empties the track — is
 // now two ticks on one line.
-function FlagFilterSection(props: {
+const FlagFilterSection = observer(function FlagFilterSection(props: {
   flagInclude: number
   flagExclude: number
   setFlagInclude: (arg: number) => void
@@ -188,9 +188,9 @@ function FlagFilterSection(props: {
       </Collapse>
     </Paper>
   )
-}
+})
 
-function TagFilterSection(props: {
+const TagFilterSection = observer(function TagFilterSection(props: {
   tag: string
   tagValue: string
   setTag: (arg: string) => void
@@ -230,9 +230,9 @@ function TagFilterSection(props: {
       </div>
     </Paper>
   )
-}
+})
 
-function ReadNameFilterSection(props: {
+const ReadNameFilterSection = observer(function ReadNameFilterSection(props: {
   readName: string
   setReadName: (arg: string) => void
 }) {
@@ -255,7 +255,7 @@ function ReadNameFilterSection(props: {
       />
     </Paper>
   )
-}
+})
 
 // The filters a user TYPES: a read name, a tag and its value, and the flag
 // masks. The four read categories are picked off a list instead, so they are

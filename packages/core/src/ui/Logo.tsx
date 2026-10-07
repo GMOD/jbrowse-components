@@ -1,3 +1,5 @@
+import { observer } from 'mobx-react'
+
 type LogoVariant = 'color' | 'black' | 'white'
 
 interface LogoProps {
@@ -32,24 +34,24 @@ function getColors(variant: LogoVariant = 'color') {
   return colorSets[variant]
 }
 
-export function Logomark({ variant }: LogoProps) {
+export const Logomark = observer(function Logomark({ variant }: LogoProps) {
   return (
     <svg viewBox="0 0 175 175">
       <Icon variant={variant} />
     </svg>
   )
-}
+})
 
-export function LogoFull({ variant }: LogoProps) {
+export const LogoFull = observer(function LogoFull({ variant }: LogoProps) {
   return (
     <svg viewBox="0 0 641 175">
       <Text variant={variant} />
       <Icon variant={variant} />
     </svg>
   )
-}
+})
 
-function Icon({ variant }: LogoProps) {
+const Icon = observer(function Icon({ variant }: LogoProps) {
   const colors = getColors(variant)
   return (
     <>
@@ -75,9 +77,9 @@ function Icon({ variant }: LogoProps) {
       />
     </>
   )
-}
+})
 
-function Text({ variant }: LogoProps) {
+const Text = observer(function Text({ variant }: LogoProps) {
   const colors = getColors(variant)
   return (
     <g
@@ -94,4 +96,4 @@ function Text({ variant }: LogoProps) {
       <path d="m 349.61228,-29.925 h 15.54 q 0,-6.51 -1.05,-10.395 -1.68,-6.3 -5.88,-6.3 -5.04,0 -7.14,6.195 -1.47,4.305 -1.47,10.5 z m 30.03,5.04 h -30.03 q 0,9.135 3.045,13.86 3.57,5.67 11.55,5.67 3.255,0 6.405,-1.26 3.15,-1.26 5.88,-3.465 l 1.26,0.945 -2.31,5.88 q -6.72,4.725 -15.015,4.725 -12.915,0 -19.635,-7.245 -6.72,-7.245 -6.72,-20.37 0,-11.235 6.405,-18.165 6.51,-7.035 17.64,-7.035 11.655,0 16.905,7.56 4.62,6.615 4.62,18.9 z" />
     </g>
   )
-}
+})

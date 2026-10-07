@@ -1,4 +1,5 @@
 import { DiagonalizeDialog } from '@jbrowse/synteny-core'
+import { observer } from 'mobx-react'
 
 import { runDotplotDiagonalize } from '../util/runDotplotDiagonalize.ts'
 
@@ -7,7 +8,7 @@ import type { DiagonalizeRunOpts } from '@jbrowse/synteny-core'
 
 // Binds the shared re-order dialog to the dotplot reorder, which moves the
 // vertical axis only — the horizontal axis is the fixed reference.
-export default function ReorderChromosomesDialog({
+const ReorderChromosomesDialog = observer(function ReorderChromosomesDialog({
   model,
   handleClose,
 }: {
@@ -22,4 +23,6 @@ export default function ReorderChromosomesDialog({
       run={(opts: DiagonalizeRunOpts) => runDotplotDiagonalize(model, opts)}
     />
   )
-}
+})
+
+export default ReorderChromosomesDialog

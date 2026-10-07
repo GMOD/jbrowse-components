@@ -1,6 +1,7 @@
 import { LogoFull } from '@jbrowse/core/ui/Logo'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { Typography } from '@mui/material'
+import { observer } from 'mobx-react'
 
 import packageJSON from '../../../package.json' with { type: 'json' }
 import { narrowMedia } from './narrow.ts'
@@ -23,7 +24,7 @@ const useStyles = makeStyles()({
   },
 })
 
-export default function Logo() {
+const Logo = observer(function Logo() {
   const { classes } = useStyles()
   return (
     <div className={classes.logo}>
@@ -33,4 +34,6 @@ export default function Logo() {
       </Typography>
     </div>
   )
-}
+})
+
+export default Logo

@@ -2,6 +2,7 @@ import { useState } from 'react'
 
 import { Typography } from '@mui/material'
 import { DataGrid } from '@mui/x-data-grid'
+import { observer } from 'mobx-react'
 
 import DataGridFlexContainer from '../../ui/DataGridFlexContainer.tsx'
 import { LabeledCheckbox, SanitizedHTML } from '../../ui/index.ts'
@@ -23,7 +24,7 @@ const useStyles = makeStyles()(theme => ({
   },
 }))
 
-export default function DataGridDetails({
+const DataGridDetails = observer(function DataGridDetails({
   value,
   prefix,
   name,
@@ -77,4 +78,6 @@ export default function DataGridDetails({
       </DataGridFlexContainer>
     </div>
   )
-}
+})
+
+export default DataGridDetails

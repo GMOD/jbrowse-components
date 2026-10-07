@@ -1,7 +1,12 @@
 import { InfoDialog } from '@jbrowse/core/ui'
 import { DialogContentText, Link } from '@mui/material'
+import { observer } from 'mobx-react'
 
-export default function MoreInfoDialog({ onClose }: { onClose: () => void }) {
+const MoreInfoDialog = observer(function MoreInfoDialog({
+  onClose,
+}: {
+  onClose: () => void
+}) {
   return (
     <InfoDialog maxWidth="md" onClose={onClose} title="More info" open>
       <DialogContentText>
@@ -14,4 +19,6 @@ export default function MoreInfoDialog({ onClose }: { onClose: () => void }) {
       </DialogContentText>
     </InfoDialog>
   )
-}
+})
+
+export default MoreInfoDialog

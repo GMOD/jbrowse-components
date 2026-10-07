@@ -28,6 +28,7 @@ import {
   Typography,
   useMediaQuery,
 } from '@mui/material'
+import { observer } from 'mobx-react'
 
 import { invokeIpc } from '../../../ipc.ts'
 import { useNotifyError } from '../../NotifyContext.ts'
@@ -67,7 +68,7 @@ const useStyles = makeStyles()({
 
 type RecentSessions = RecentSessionData[]
 
-function ToggleButtonWithTooltip({
+const ToggleButtonWithTooltip = observer(function ToggleButtonWithTooltip({
   title = '',
   children,
   ...rest
@@ -77,9 +78,9 @@ function ToggleButtonWithTooltip({
       <ToggleButton {...rest}>{children}</ToggleButton>
     </Tooltip>
   )
-}
+})
 
-function IconButtonWithTooltip({
+const IconButtonWithTooltip = observer(function IconButtonWithTooltip({
   title,
   disabled,
   onClick,
@@ -104,9 +105,9 @@ function IconButtonWithTooltip({
       </span>
     </Tooltip>
   )
-}
+})
 
-export default function RecentSessionPanel({
+const RecentSessionPanel = observer(function RecentSessionPanel({
   setPluginManager,
 }: {
   setPluginManager: (pm: PluginManager) => void
@@ -402,4 +403,6 @@ export default function RecentSessionPanel({
       )}
     </div>
   )
-}
+})
+
+export default RecentSessionPanel

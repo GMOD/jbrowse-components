@@ -1,10 +1,11 @@
 import { useState, useTransition } from 'react'
 
 import { TextField, Typography } from '@mui/material'
+import { observer } from 'mobx-react'
 
 import type { Filters } from './types.ts'
 
-export default function VariantSampleFilters({
+const VariantSampleFilters = observer(function VariantSampleFilters({
   columns,
   filter,
   setFilter,
@@ -42,4 +43,6 @@ export default function VariantSampleFilters({
       ))}
     </>
   )
-}
+})
+
+export default VariantSampleFilters

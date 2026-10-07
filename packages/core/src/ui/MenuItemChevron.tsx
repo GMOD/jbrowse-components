@@ -1,4 +1,5 @@
 import ChevronRight from '@mui/icons-material/ChevronRight'
+import { observer } from 'mobx-react'
 
 // The chevron a submenu row ends in, and — `hidden` — an invisible copy
 // reserving the identical footprint on a clickable row that has none, so a menu
@@ -14,6 +15,10 @@ import ChevronRight from '@mui/icons-material/ChevronRight'
 // actually draws at ~20.6px and every clickable row's "?" sat ~3.4px inboard of
 // the submenu rows'. Rendering the icon itself cannot be off by a scale factor
 // nothing here gets to see.
-export function MenuItemChevron({ hidden }: { hidden?: boolean }) {
+export const MenuItemChevron = observer(function MenuItemChevron({
+  hidden,
+}: {
+  hidden?: boolean
+}) {
   return <ChevronRight style={hidden ? { visibility: 'hidden' } : undefined} />
-}
+})
