@@ -2381,7 +2381,7 @@ export const figureFrames: Record<
   },
   "paper/sv_read_evidence_inversion": {
     "width": 1500,
-    "height": 1253,
+    "height": 1263,
     "timeout": 300000
   },
   "paper/ecoli_oantigen": {

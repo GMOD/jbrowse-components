@@ -202,6 +202,6 @@ export const paperSvReadsSpecs: ScreenshotSpec[] = [
     pairsHeight: 350,
     arcsHeight: 110,
     cloud: false,
-    viewportHeight: 1253,
+    viewportHeight: 1263,
   }),
 ]
