@@ -49,9 +49,9 @@ function sourceLayers({
   ) {
     return lineLayers(source, summaryScoreMode, posColor, negColor)
   }
-  // whiskers draws min, mean and max, min/max the one band the user picked,
-  // mean the mean alone; every one of them is coloured by each value's own
-  // sign against the pivot, so signed data reads as pos/neg on the main thread.
+  // whiskers draws min, mean and max; any other mode draws its one band. Every
+  // value is coloured by its own sign against the pivot, so signed data reads
+  // as pos/neg on the main thread.
   //
   // Density is the one mode that gets to 'mean' without the user picking it, and
   // the model resolves that (see `effectiveSummaryScoreMode`, which is what

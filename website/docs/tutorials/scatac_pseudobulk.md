@@ -215,7 +215,7 @@ unencoded, the URL breaks and the row loads with no data.
 
 [`mark`](/docs/config/linearwiggledisplay/#slot-mark) lists every drawing mode,
 and the track menu switches between them. `bar` (the default, and the figures
-here) compares peak shape; `heatmap` maps score to color and fits more rows.
+here) compares peak shape; `span` maps score to color and fits more rows.
 [](/docs/user_guides/quantitative_track) covers the rest of the menu.
 
 To check the rows against marker genes, paste two loci into the location box to

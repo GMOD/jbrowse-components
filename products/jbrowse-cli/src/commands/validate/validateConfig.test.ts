@@ -226,6 +226,22 @@ describe('validateConfig', () => {
     expect(warningsOf(config)[0]?.message).toContain('legacy value')
   })
 
+  it("warns on v4's avg summary mode, which the schema lifts to mean", () => {
+    const config = baseConfig()
+    config.tracks[0] = {
+      ...config.tracks[0]!,
+      type: 'QuantitativeTrack',
+      adapter: { type: 'BigWigAdapter', uri: 'coverage.bw' },
+      // @ts-expect-error the v4 spelling
+      displays: [{ type: 'LinearWiggleDisplay', summaryScoreMode: 'avg' }],
+    }
+    expect(errorsOf(config)).toEqual([])
+    expect(warningsOf(config).map(w => w.where)).toEqual([
+      'tracks[0].displays[0].summaryScoreMode',
+    ])
+    expect(warningsOf(config)[0]?.message).toContain('legacy value')
+  })
+
   // The same rewrites, from the validator's side: a warning naming the current
   // spelling, never an error, because the app loads every one of these.
   it('warns rather than errors on a retired-type rendering value', () => {

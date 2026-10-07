@@ -292,7 +292,7 @@ cat > baf_track.json <<JSON
     "resolutionMultiplier": 0.001
   },
   "displayDefaults": {
-    "defaultRendering": "scatter",
+    "mark": "point",
     "size": 1,
     "minScore": 0,
     "maxScore": 1

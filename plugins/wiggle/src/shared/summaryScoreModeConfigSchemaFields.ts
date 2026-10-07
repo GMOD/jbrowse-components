@@ -2,11 +2,8 @@ import { types } from '@jbrowse/mobx-state-tree'
 
 export const SUMMARY_SCORE_MODES = ['max', 'min', 'mean', 'whiskers'] as const
 
-// Three schemas declare this slot and each wants a different default: the
-// wiggle display whiskers, a MultiQuantitativeTrack mean through its display
-// defaults, gccontent mean because its adapter emits no per-bin min/max. Only
-// the default and the prose vary, so the enumeration is supplied once here; a
-// fifth mode added to one copy and not the others read as the slot rejecting it.
+// One enumeration for the three schemas that declare the slot, since each wants
+// its own default (whiskers, mean on a multi track, mean on gccontent).
 export function summaryScoreModeConfigSchemaFields({
   defaultMode,
   description:

@@ -675,7 +675,7 @@ track = {
     "displays": [{
         "type": "LinearWiggleDisplay",
         "displayId": "pbmc5k_scrna_pseudobulk-LinearWiggleDisplay",
-        "defaultRendering": "xyplot",
+        "mark": "bar",
         "height": 330,
     }],
 }

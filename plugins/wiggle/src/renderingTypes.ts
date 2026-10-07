@@ -12,10 +12,7 @@ export const WIGGLE_RENDERINGS = [
 
 export type WiggleRendering = (typeof WIGGLE_RENDERINGS)[number][0]
 
-/**
- * What a quantitative plot draws each score as, the mark display's words. The
- * `defineMark` list that draws them is `WIGGLE_MARKS` in `shared/wiggleMarks.ts`.
- */
+/** What a quantitative plot draws each score as, the mark display's words. */
 export const WIGGLE_MARK_NAMES = ['bar', 'point', 'line', 'span'] as const
 
 /** A point's diameter and a line's width in px while `size` is unset. */

@@ -96,8 +96,8 @@
 <!-- bands -->
 <g id="node10" class="node">
 <title>bands</title>
-<polygon fill="none" stroke="black" points="506,-572.75 298,-572.75 298,-513.75 506,-513.75 506,-572.75"/>
-<text xml:space="preserve" text-anchor="middle" x="402" y="-559.25" font-family="monospace" font-size="10.00">one band under avg, min and max,</text>
+<polygon fill="none" stroke="black" points="509,-572.75 295,-572.75 295,-513.75 509,-513.75 509,-572.75"/>
+<text xml:space="preserve" text-anchor="middle" x="402" y="-559.25" font-family="monospace" font-size="10.00">one band under mean, min and max,</text>
 <text xml:space="preserve" text-anchor="middle" x="402" y="-546.5" font-family="monospace" font-size="10.00">three under whiskers; each value</text>
 <text xml:space="preserve" text-anchor="middle" x="402" y="-533.75" font-family="monospace" font-size="10.00">coloured by its own sign</text>
 <text xml:space="preserve" text-anchor="middle" x="402" y="-521" font-family="monospace" font-size="10.00">against the origin</text>
@@ -107,8 +107,8 @@
 <title>summary&#45;&gt;bands</title>
 <path fill="none" stroke="black" d="M351.15,-647.28C361.76,-641.91 372.51,-634.69 380,-625.25 389.29,-613.54 394.67,-598.21 397.78,-584.04"/>
 <polygon fill="black" stroke="black" points="401.17,-584.98 399.54,-574.51 394.28,-583.7 401.17,-584.98"/>
-<text xml:space="preserve" text-anchor="start" x="395.61" y="-611.95" font-family="Times,serif" font-size="14.00"> whiskers, min, max, avg</text>
-<text xml:space="preserve" text-anchor="middle" x="485.61" y="-594.7" font-family="Times,serif" font-size="14.00"> (density resolves to avg)</text>
+<text xml:space="preserve" text-anchor="start" x="395.61" y="-611.95" font-family="Times,serif" font-size="14.00"> whiskers, min, max, mean</text>
+<text xml:space="preserve" text-anchor="middle" x="492.36" y="-594.7" font-family="Times,serif" font-size="14.00"> (density resolves to mean)</text>
 </g>
 <!-- nests -->
 <g id="node4" class="node">
@@ -238,5 +238,5 @@
 <polygon fill="black" stroke="black" points="345.5,-58.1 342,-48.1 338.5,-58.1 345.5,-58.1"/>
 </g>
 </g>
-<!-- diagram-source-sha256 7970ebd97dbd53fd840104e87b62af03d5aaabf2331871d6d5a2e1ae232976b0 -->
+<!-- diagram-source-sha256 5599d59e45fef752cad47d2aa87d3b4bd85afcfaf50e7b75c586f59f4708b24c -->
 </svg>

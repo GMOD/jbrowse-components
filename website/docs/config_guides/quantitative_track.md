@@ -90,7 +90,8 @@ one colour runs from white to it. The
 `color` reads `score` alone. A colour per source is the row's:
 [`rowColor`](/docs/config/linearwiggledisplay/#slot-rowcolor) names each
 source's colour as `domain`/`range` pairs, and several sources sharing one plot
-box with no `color` set take palette colours by name unprompted.
+box with no `color` set take palette colours by name unprompted, except under
+`span`, where the score ramp is the whole colour.
 
 ## Adapters
 

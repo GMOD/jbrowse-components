@@ -78,7 +78,7 @@ export async function executeRenderMultiWiggleData({
   const isMulti = isMultiSource(dataAdapter)
   // summaryScoreMode is passed through, not acted on here: an adapter that
   // stores min/max separately can skip reading them when the rendering
-  // cannot show them, which is the default (`avg`). Adapters that get their
+  // cannot show them, as `mean`, the multi track's default, cannot. Adapters that get their
   // summary for free, like a BigWig zoom record, ignore it.
   const opts = {
     bpPerPx,

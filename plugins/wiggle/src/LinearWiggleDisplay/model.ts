@@ -579,13 +579,13 @@ export default function stateModelFactory(
        * #method
        * summaryScoreMode rides along so an adapter can skip work it cannot be
        * asked to show. A store that keeps min/max beside each mean holds three
-       * arrays per level, and `avg` — the default — draws none of them, so
+       * arrays per level, and `mean`, the multi track's default, draws none of them, so
        * sending the mode turns the common case back into one read per level
        * instead of three, and drops the two `processFeaturesFromArrays`
        * allocates per source per region for values it then discards.
        *
        * The raw slot, deliberately, and NOT effectiveSummaryScoreMode. The
-       * effective one would be tighter -- density resolves whiskers to avg, so
+       * effective one would be tighter -- density resolves whiskers to mean, so
        * it could skip the read there too -- but it changes when the rendering
        * type changes, and anything in rpcProps invalidates the fetch. That
        * would make switching to density discard the data and re-download it,

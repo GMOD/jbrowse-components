@@ -52,7 +52,7 @@ Config bounds are still checked first.
   row (a row height, a scalebar and a dendrogram slot each), unset puts every
   source on row 0 of one box.
 - The plot type and the resolved summary mode together decide the **layers**:
-  three summary bands under whiskers, one under min/max or avg.
+  three summary bands under whiskers, one under min/max or mean.
 - Nested filled bars and density split into solid layers drawn back to front,
   largest magnitude first. Everything else keeps one band with per-instance
   colours.
@@ -96,7 +96,7 @@ A row's `rowColor` draws its label bar in every layout that has row labels.
 
 ## Why the odd-looking branches are there
 
-- **Density resolves the summary mode to avg**, because it has no whiskers
+- **Density resolves the summary mode to mean**, because it has no whiskers
   presentation. The resolution happens on the model, so the autoscale domain,
   the menu radio and the tooltip cannot each answer it differently.
 - **`rpcProps` carries the raw slot, not the resolved one.** The effective mode

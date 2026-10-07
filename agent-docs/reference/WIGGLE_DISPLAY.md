@@ -102,10 +102,11 @@ stop, and never reads `origin`; the white fade, a threshold's density, measures
 distance from `pivot`. The lines alone still part under a gradient, at
 `domainMid ?? origin` in its two end colours, with a corner notice saying so.
 The gradient follows the y domain and y scale, so the colour declares no
-`domainMin`/`domainMax` and no `log`. `score` is the one field and `threshold`
-and `linear` the scales the schema admits, since a two-sided plot has nothing
-to paint a cut over subtrack names with; `resolveWiggleColor`'s `categorical`
-arm paints the misconfiguration grey only to cover the shared encoding union.
+`domainMin`/`domainMax` and no `log`. `score` is the one field the schema
+admits, and `threshold`, `linear` and `none` its scales, since a two-sided plot
+has nothing to paint a cut over subtrack names with; `resolveWiggleColor`'s
+`categorical` arm paints the misconfiguration grey only to cover the shared
+encoding union.
 ADR-144, ADR-153.
 
 **Everything shared over the geometry is `wiggleDisplayViews`**:

@@ -115,8 +115,8 @@ The [`bigWigs`](/docs/config/multiwiggleadapter/#slot-bigwigs) shorthand takes a
 plain list of absolute URLs and names each subtrack from its filename. These
 display settings turn that into a copy-number heatmap:
 
-- [`mark`](/docs/config/linearwiggledisplay/#slot-mark) `heatmap` gives each
-  sample one strip of color.
+- [`mark`](/docs/config/linearwiggledisplay/#slot-mark) `span` gives each sample
+  one strip of color.
 - [`origin`](/docs/config/linearwiggledisplay/#slot-origin) `2` puts white at
   the diploid baseline, and [`color`](/docs/config/wigglecolor/) cuts there,
   painting gains in the `range`'s second colour and losses in its first.
@@ -369,7 +369,7 @@ Every level above the finest stores the minimum and maximum of the bins it
 averages alongside the mean.
 [`summaryScoreMode`](/docs/config/linearwiggledisplay/#slot-summaryscoremode)
 picks which a view draws, so an amplification narrower than a bin is visible
-under `max` and averaged away under `avg`.
+under `max` and averaged away under `mean`.
 
 The converter holds the finest level in memory and derives the rest from it.
 Without the `--region` flags this panel takes a few GB at 10 kb bins and tens of

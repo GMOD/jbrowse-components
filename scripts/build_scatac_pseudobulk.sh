@@ -192,7 +192,7 @@ track = {
     "displays": [{
         "type": "LinearWiggleDisplay",
         "displayId": "pbmc5k_scatac_pseudobulk-LinearWiggleDisplay",
-        "defaultRendering": "xyplot",
+        "mark": "bar",
         "height": 400,
     }],
 }
