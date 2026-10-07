@@ -173,6 +173,19 @@ test('the export prints the lane names, and none with names off', async () => {
   )
 })
 
+test('the export backs a name on the gene row, as the screen does', async () => {
+  const display = createDisplay()
+  await when(() => display.features !== undefined, { timeout: 5000 })
+  await when(() => display.svgReady, { timeout: 5000 })
+  const chips = async () =>
+    renderToString(<svg>{await display.renderSvg()}</svg>).split(
+      'multiway-lane-inline-chip',
+    ).length - 1
+  expect(await chips()).toBe(0)
+  display.setInlineLaneNames(true)
+  expect(await chips()).toBeGreaterThanOrEqual(display.laneStack.lanes.length)
+})
+
 test('the export draws lane headers and names in band ink over a band-ground halo, in a dark theme too, inheriting the export font', async () => {
   const display = createDisplay()
   await when(() => display.features !== undefined, { timeout: 5000 })

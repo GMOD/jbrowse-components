@@ -1,9 +1,11 @@
-// The JBrowse 2 v5 paper's 44-genome figure, which the paper repo syncs from
-// figures.lock: the tutorial's O-antigen stack with each genome's name on its
-// gene row, at the 22 px a lane then needs with gene names.
-import { displaySettled } from '@jbrowse/browser-test-utils'
+// The JBrowse 2 v5 paper's two E. coli figures, which the paper repo syncs from
+// figures.lock. Both are tutorial figures set shorter for the page: the
+// 44-genome O-antigen stack with each genome's name on its gene row, and the
+// five-strain view with 60 px ribbon bands.
+import { displayPainted, displaySettled } from '@jbrowse/browser-test-utils'
 
 import { sessionSpec } from '../screenshot-spec-helpers.ts'
+import { ecoliOneVsAllUrl } from './synteny.ts'
 
 import type { ScreenshotSpec } from '../screenshot-spec-types.ts'
 
@@ -36,5 +38,13 @@ export const paperEcoliSpecs: ScreenshotSpec[] = [
     readySelector: displaySettled('multiway-synteny-display'),
     readyTimeout: 240000,
     viewportHeight: 1208,
+  },
+  {
+    mode: 'url',
+    name: 'paper/ecoli_synteny',
+    url: ecoliOneVsAllUrl(60),
+    viewportHeight: 650,
+    readySelector: displayPainted('synteny_canvas'),
+    readyTimeout: 120000,
   },
 ]

@@ -916,6 +916,68 @@ function peachGrapeChr1({
   )
 }
 
+// K-12 against four E. coli strains: mate lanes on the K-12 row over four
+// ribbon bands, each `levelHeight` px tall
+export function ecoliOneVsAllUrl(levelHeight: number) {
+  return sessionSpec(
+    encodeURIComponent('https://jbrowse.org/demos/ecoli_pangenome/config.json'),
+    {
+      views: [
+        {
+          type: 'LinearSyntenyView',
+          views: [
+            {
+              assembly: 'K12',
+              loc: 'chr:1-4,641,652',
+              tracks: [
+                {
+                  trackId: 'ecoli_ava',
+                  type: 'LGVSyntenyDisplay',
+                  facet: 'mateAssembly',
+                  // The K12 lane can hold no self-alignment — all_vs_all.paf
+                  // is built with `minimap2 -X`, which skips each sequence's
+                  // own diagonal — so it is hidden rather than explained away.
+                  hideSelfAlignments: true,
+                  // Per-base mismatches are sub-pixel at 3.2kb/px — thousands
+                  // of inter-strain SNPs, each drawn at a 1px floor, painted
+                  // every lane a solid brown-and-purple wall and buried the
+                  // block structure the figure is about.
+                  showMismatches: false,
+                  // Thicker than the default bar: at 3.2kb/px the information
+                  // is the WHITE, and a 3px gap in a 7px bar is not a gap
+                  // anyone sees.
+                  featureHeight: 20,
+                  height: 100,
+                },
+              ],
+            },
+            // IAI39 SECOND, not last as in the standalone multi-way figure:
+            // the bands are between adjacent rows, so this is the only order
+            // where a K12<->IAI39 band exists at all. Its crossings then sit
+            // directly under the blue stretches of the IAI39 lane above, on
+            // the same K12 axis — which is the whole reason the two
+            // representations are in one frame.
+            { assembly: 'IAI39' },
+            { assembly: 'Sakai' },
+            { assembly: 'CFT073' },
+            { assembly: 'NCTC86' },
+          ],
+          tracks: [['ecoli_ava'], ['ecoli_ava'], ['ecoli_ava'], ['ecoli_ava']],
+          drawCurves: false,
+          // Strand, not the 'default' red the standalone multi-way figure
+          // uses, because strand is what the two halves have in common:
+          // LGVSyntenyDisplay colors its lanes by strand already, so an
+          // inversion is blue in the lane AND a blue ribbon in the band.
+          color: { field: 'strand' },
+          minAlignmentLength: 10000,
+          collapseEmptyRows: true,
+          levelHeights: [levelHeight, levelHeight, levelHeight, levelHeight],
+        },
+      ],
+    },
+  )
+}
+
 export const syntenySpecs: ScreenshotSpec[] = [
   // The off-screen mate marks, one frame. It was a pair with the marks off and
   // on, and the only difference between the halves was a strip a few pixels
@@ -3401,70 +3463,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
   {
     mode: 'url',
     name: 'multiway_synteny/ecoli_one_vs_all_whole_genome',
-    url: sessionSpec(
-      encodeURIComponent(
-        'https://jbrowse.org/demos/ecoli_pangenome/config.json',
-      ),
-      {
-        views: [
-          {
-            type: 'LinearSyntenyView',
-            views: [
-              {
-                assembly: 'K12',
-                loc: 'chr:1-4,641,652',
-                tracks: [
-                  {
-                    trackId: 'ecoli_ava',
-                    type: 'LGVSyntenyDisplay',
-                    facet: 'mateAssembly',
-                    // The K12 lane can hold no self-alignment — all_vs_all.paf
-                    // is built with `minimap2 -X`, which skips each sequence's
-                    // own diagonal — so it is hidden rather than explained away.
-                    hideSelfAlignments: true,
-                    // Per-base mismatches are sub-pixel at 3.2kb/px — thousands
-                    // of inter-strain SNPs, each drawn at a 1px floor, painted
-                    // every lane a solid brown-and-purple wall and buried the
-                    // block structure the figure is about.
-                    showMismatches: false,
-                    // Thicker than the default bar: at 3.2kb/px the information
-                    // is the WHITE, and a 3px gap in a 7px bar is not a gap
-                    // anyone sees.
-                    featureHeight: 20,
-                    height: 100,
-                  },
-                ],
-              },
-              // IAI39 SECOND, not last as in the standalone multi-way figure:
-              // the bands are between adjacent rows, so this is the only order
-              // where a K12<->IAI39 band exists at all. Its crossings then sit
-              // directly under the blue stretches of the IAI39 lane above, on
-              // the same K12 axis — which is the whole reason the two
-              // representations are in one frame.
-              { assembly: 'IAI39' },
-              { assembly: 'Sakai' },
-              { assembly: 'CFT073' },
-              { assembly: 'NCTC86' },
-            ],
-            tracks: [
-              ['ecoli_ava'],
-              ['ecoli_ava'],
-              ['ecoli_ava'],
-              ['ecoli_ava'],
-            ],
-            drawCurves: false,
-            // Strand, not the 'default' red the standalone multi-way figure
-            // uses, because strand is what the two halves have in common:
-            // LGVSyntenyDisplay colors its lanes by strand already, so an
-            // inversion is blue in the lane AND a blue ribbon in the band.
-            color: { field: 'strand' },
-            minAlignmentLength: 10000,
-            collapseEmptyRows: true,
-            levelHeights: [120, 120, 120, 120],
-          },
-        ],
-      },
-    ),
+    url: ecoliOneVsAllUrl(120),
     viewportHeight: 890,
     readySelector: displayPainted('synteny_canvas'),
     readyTimeout: 120000,

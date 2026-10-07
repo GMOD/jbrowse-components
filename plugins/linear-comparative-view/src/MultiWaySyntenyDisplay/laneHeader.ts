@@ -6,6 +6,8 @@ import type { Lane } from './laneStack.ts'
 
 export const LABEL_FONT_SIZE = 10
 export const LABEL_BASELINE_OFFSET = 3
+export const INLINE_CHIP_OPACITY = 0.85
+export const INLINE_CHIP_PAD_PX = 3
 
 // `row.y` is a baseline; a `line-height: 1` box's baseline sits 0.84 em down
 export const LABEL_BASELINE_RATIO = 0.84

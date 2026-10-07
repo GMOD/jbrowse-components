@@ -9,7 +9,12 @@ import AcUnitIcon from '@mui/icons-material/AcUnit'
 import { observer } from 'mobx-react'
 
 import { dropRowAt, laneOrderAfterDrop, pastDragSlop } from '../laneDrag.ts'
-import { LABEL_FONT_SIZE, labelBoxTop } from '../laneHeader.ts'
+import {
+  INLINE_CHIP_OPACITY,
+  INLINE_CHIP_PAD_PX,
+  LABEL_FONT_SIZE,
+  labelBoxTop,
+} from '../laneHeader.ts'
 import { laneHeaderMenuItems } from '../menus.ts'
 
 import type { MultiWaySyntenyDisplayModel } from '../model.ts'
@@ -104,6 +109,13 @@ const LaneHeaders = observer(function LaneHeaders({
     }
   }, [drag, model])
 
+  // text on the gene row reads over the genes it covers
+  const inlineChip = {
+    background: `color-mix(in srgb, ${bandGroundColor()} ${INLINE_CHIP_OPACITY * 100}%, transparent)`,
+    padding: `0 ${INLINE_CHIP_PAD_PX}px`,
+    borderRadius: 2,
+  }
+
   const startDrag = (assemblyName: string, event: React.MouseEvent) => {
     event.stopPropagation()
     event.preventDefault()
@@ -167,13 +179,7 @@ const LaneHeaders = observer(function LaneHeaders({
               userSelect: 'none',
               overflow: 'hidden',
               textOverflow: 'ellipsis',
-              ...(row.inline
-                ? {
-                    background: `color-mix(in srgb, ${bandGroundColor()} 85%, transparent)`,
-                    padding: '0 3px',
-                    borderRadius: 2,
-                  }
-                : {}),
+              ...(row.inline ? inlineChip : {}),
             }}
             onMouseDown={
               row.isAnchor
@@ -227,6 +233,7 @@ const LaneHeaders = observer(function LaneHeaders({
               marginLeft: 'auto',
               color: bandPalette.text.secondary,
               flex: '0 0 auto',
+              ...(row.inline ? inlineChip : {}),
             }}
           >
             {row.scale}
