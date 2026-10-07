@@ -1,6 +1,5 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import { rowColorConfigSchema } from '@jbrowse/display-kit/rowColorConfigSchema'
-import { rowsConfigSchema } from '@jbrowse/display-kit/rowsConfigSchema'
 import { trackHeightConfigSchemaFields } from '@jbrowse/display-kit/trackHeightConfigSchemaFields'
 import { types } from '@jbrowse/mobx-state-tree'
 import {
@@ -9,6 +8,7 @@ import {
 } from '@jbrowse/tree-sidebar/treeSidebarConfigSchemaFields'
 import { retiredAxisSpellings } from '@jbrowse/wiggle-core'
 
+import { quantitativeRowsConfigSchema } from '../shared/quantitativeRowsConfigSchema.ts'
 import { summaryScoreModeConfigSchemaFields } from '../shared/summaryScoreModeConfigSchemaFields.ts'
 import { wiggleColorSchema } from '../shared/wiggleColorConfigSchema.ts'
 import {
@@ -85,33 +85,6 @@ import { LINE_INTERPOLATIONS, WIGGLE_MARKS, markOf } from '../util.ts'
  * }
  * ```
  */
-/**
- * #config Rows
- * #category display
- * A quantitative display's `rows`: `source` is the one field a quantitative row
- * can be, since a wiggle carries a score per base and a subtrack name and
- * nothing else to put on rows. The arrangement members are the shared `Rows`
- * object's.
- */
-export const quantitativeRowsConfigSchema = ConfigurationSchema(
-  'Rows',
-  {
-    /**
-     * #slot field
-     * `source` for one row per subtrack, or empty for one plot every source
-     * shares. Writing `rows: "source"` lands here.
-     */
-    field: {
-      type: 'stringEnum',
-      model: types.enumeration('QuantitativeRowsField', ['', 'source']),
-      defaultValue: '',
-      description:
-        'source for one row per subtrack, or empty for one plot every source shares',
-    },
-  },
-  { baseConfiguration: rowsConfigSchema },
-)
-
 const linearWiggleDisplayConfigSchema = ConfigurationSchema(
   'LinearWiggleDisplay',
   {

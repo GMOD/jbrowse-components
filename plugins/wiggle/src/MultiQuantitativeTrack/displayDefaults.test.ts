@@ -112,6 +112,6 @@ test.each(['QuantitativeTrack', 'MultiQuantitativeTrack'])(
   type => {
     expect(() =>
       loadTrack({ type, displayDefaults: { rows: 'group' } }),
-    ).toThrow(/a quantitative display puts "source" alone on rows/)
+    ).toThrow(/QuantitativeRowsField/)
   },
 )

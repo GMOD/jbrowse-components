@@ -2,9 +2,8 @@ import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import { trackHeightConfigSchemaFields } from '@jbrowse/display-kit/trackHeightConfigSchemaFields'
 import { types } from '@jbrowse/mobx-state-tree'
 
-import linearWiggleDisplayConfigSchema, {
-  quantitativeRowsConfigSchema,
-} from '../LinearWiggleDisplay/configSchema.ts'
+import linearWiggleDisplayConfigSchema from '../LinearWiggleDisplay/configSchema.ts'
+import { quantitativeRowsConfigSchema } from '../shared/quantitativeRowsConfigSchema.ts'
 import { summaryScoreModeConfigSchemaFields } from '../shared/summaryScoreModeConfigSchemaFields.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
