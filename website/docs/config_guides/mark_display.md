@@ -158,8 +158,9 @@ which declares it once as `scales.y`:
 `type` is `linear` (the default), `log` or `symlog`, which reads like `log` away
 from zero and stays linear through it, so values reaching or crossing 0 keep
 their place; `symlogConstant` sets how wide that linear region is. An end left
-unset autoscales over the loaded regions, and `autoscale` chooses how it is
-taken. The axis, its ticks, its grid lines and the bars read this one
+unset autoscales over the loaded regions, and
+[`domainQuantile`](/docs/config/valuescale/#slot-scalesydomainquantile) fences
+its outliers. The axis, its ticks, its grid lines and the bars read this one
 declaration, and so does the **Y axis...** panel.
 
 Every mark drawing at the current zoom folds into that one domain, the way a
@@ -330,9 +331,9 @@ redraws without fetching again. A change to what is read from each feature does
 fetch again: a field named or dropped, a switch between categories and numbers,
 or a `jexl:` colour.
 
-`title` heads the key and has the axis `title`'s three states: unset reads the
-`field` name, text is that text, `""` draws no heading. Marks share one key only
-under one title, and share a ramp only with both ends pinned.
+`title` heads the key and has three states: unset reads the `field` name, text
+is that text, `""` draws no heading. Marks share one key only under one title,
+and share a ramp only with both ends pinned.
 
 Three more members shape the key and paint nothing. `breaks` lists only the
 values it names, in that order, while every value still takes its colour.
