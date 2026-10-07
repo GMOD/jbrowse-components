@@ -77,12 +77,16 @@ const readEvidence = ({
   name,
   loc,
   arcsHeight,
+  connectorCurves,
   coverageMax,
   viewportHeight,
 }: {
   name: string
   loc: string
   arcsHeight: number
+  // the loop of a read that maps back over itself; off where the curves of
+  // inverted splits would cover the reads
+  connectorCurves: boolean
   // caps the Illumina coverage axis where a spike in view would flatten it
   coverageMax?: number
   viewportHeight: number
@@ -145,7 +149,7 @@ const readEvidence = ({
             readConnectionsHeight: 60,
             // rows tall enough for the mark over a read's overlapping segments
             featureHeight: 3,
-            showBezierConnections: true,
+            showBezierConnections: connectorCurves,
             height: 195,
             facet: 'splitRead',
             showLegend: true,
@@ -199,12 +203,14 @@ export const paperSvReadsSpecs: ScreenshotSpec[] = [
     loc: 'chr17:31,937,000-32,030,000',
     coverageMax: 200,
     arcsHeight: 80,
+    connectorCurves: true,
     viewportHeight: 1145,
   }),
   readEvidence({
     name: 'paper/sv_read_evidence_inversion',
     loc: 'chr3:184,709,000-184,723,000',
     arcsHeight: 110,
+    connectorCurves: false,
     viewportHeight: 1175,
   }),
 ]
