@@ -369,7 +369,6 @@ const CATEGORY_LEGEND: Record<SwatchCategory, string> = {
   splitDeletion: 'Split paired-end read (same strand)',
   interchrom: CONNECTION_LABELS.interchrom,
   unmappedMate: 'Unmapped mate',
-  supplementary: 'Supplementary/split',
   // the two leftover buckets, last: a read whose scheme resolved no value for
   // it. `noTagValue` is named per scheme below (no HP value / no mate).
   mapqUnavailable: 'MAPQ unavailable (255)',
@@ -626,7 +625,7 @@ function keyedModifications(
 // The fixed-swatch buckets actually present in the reads, in CATEGORY_LEGEND
 // order. These are cross-cutting: under most schemes they mark exceptions
 // layered over the scheme's primary coloring — unmapped mate, inter-chromosomal,
-// supplementary, and (in chain mode) the split-read strand framing — so every
+// and (in chain mode) the split-read strand framing — so every
 // scheme appends them after its own key rather than any one branch owning them.
 // fwd/rev are reworded per scheme (split read vs. fragment strand) — see
 // strandLabelOverrides.

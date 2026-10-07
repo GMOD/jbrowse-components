@@ -102,10 +102,6 @@ export function configSlotViews(self: ConfigSlotSelf) {
       return getConf(self, 'flipStrandLongReadChains')
     },
     /** #getter */
-    get colorSupplementaryChains(): boolean {
-      return getConf(self, 'colorSupplementaryChains')
-    },
-    /** #getter */
     get drawInter(): boolean {
       return getConf(self, 'drawInter')
     },

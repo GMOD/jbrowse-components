@@ -82,9 +82,9 @@ describe('getReadDisplayLegendItems', () => {
     ])
   })
 
-  test('omits "Supplementary/split" when no supplementary reads are present', () => {
+  test('omits "Unmapped mate" when no such reads are present', () => {
     expect(labels('insertSize', ['normalInsert'])).not.toContain(
-      'Supplementary/split',
+      'Unmapped mate',
     )
     expect(labels('strand', ['fwdStrand'])).toEqual(['Forward strand'])
   })
@@ -127,13 +127,13 @@ describe('getReadDisplayLegendItems', () => {
     ])
   })
 
-  test('includes "Supplementary/split" only when that bucket occurs', () => {
-    expect(labels('insertSize', ['normalInsert', 'supplementary'])).toContain(
-      'Supplementary/split',
+  test('includes "Unmapped mate" only when that bucket occurs', () => {
+    expect(labels('insertSize', ['normalInsert', 'unmappedMate'])).toContain(
+      'Unmapped mate',
     )
-    expect(labels('strand', ['fwdStrand', 'supplementary'])).toEqual([
+    expect(labels('strand', ['fwdStrand', 'unmappedMate'])).toEqual([
       'Forward strand',
-      'Supplementary/split',
+      'Unmapped mate',
     ])
   })
 
@@ -147,7 +147,7 @@ describe('getReadDisplayLegendItems', () => {
   test('normal scheme shows a base-reads swatch plus any cross-cutting buckets', () => {
     // a single "Reads" entry so "Show legend" is never a silent no-op
     expect(labels('normal', ['plain'])).toEqual(['Reads'])
-    // chain mode still surfaces unmapped/supplementary after the base swatch
+    // chain mode still surfaces the unmapped-mate bucket after the base swatch
     expect(labels('normal', ['plain', 'unmappedMate'])).toEqual([
       'Reads',
       'Unmapped mate',
@@ -540,14 +540,14 @@ describe('getReadDisplayLegendItems', () => {
 
   test('a strand tag still keys the cross-cutting buckets it paints', () => {
     // The strand pair is the tag's own key, so it must not be repeated as a
-    // split-read swatch — but supplementary reads still get theirs.
+    // split-read swatch — but an unmapped mate still gets its own.
     expect(
       legendFor({ type: 'tag', tag: 'XS' }, [
         'fwdStrand',
         'revStrand',
-        'supplementary',
+        'unmappedMate',
       ]).map(i => i.label),
-    ).toEqual(['Forward strand', 'Reverse strand', 'Supplementary/split'])
+    ).toEqual(['Forward strand', 'Reverse strand', 'Unmapped mate'])
   })
 
   // Reads the tag is absent from paint the neutral fallback, which used to be
@@ -635,16 +635,16 @@ describe('getReadDisplayLegendItems', () => {
     expect(read?.label).toBe('Read')
   })
 
-  test('modifications list visible mod types by friendly name, gating supplementary on presence', () => {
+  test('modifications list visible mod types by friendly name, gating a cross-cutting bucket on presence', () => {
     const mods = new Map([
       ['m', 'red'],
       ['h', 'blue'],
     ])
     expect(labels('modifications', [], mods)).toEqual(['5mC', '5hmC'])
-    expect(labels('modifications', ['supplementary'], mods)).toEqual([
+    expect(labels('modifications', ['unmappedMate'], mods)).toEqual([
       '5mC',
       '5hmC',
-      'Supplementary/split',
+      'Unmapped mate',
     ])
   })
 
@@ -785,19 +785,19 @@ describe('getReadDisplayLegendItems', () => {
   test('swatch colors come from the live palette when provided', () => {
     const palette = makeTestPalette({
       colorFwdStrand: [0, 0, 1],
-      colorSupplementary: [0, 1, 0],
+      colorUnmappedMate: [0, 1, 0],
     })
     const items = getReadDisplayLegendItems({
       colorBy: { type: 'strand' },
       presentCategories: new Set<ReadColorCategory>([
         'fwdStrand',
-        'supplementary',
+        'unmappedMate',
       ]),
       palette,
     })
     expect(items).toEqual([
       { color: 'rgb(0,0,255)', label: 'Forward strand' },
-      { color: 'rgb(0,255,0)', label: 'Supplementary/split' },
+      { color: 'rgb(0,255,0)', label: 'Unmapped mate' },
     ])
   })
 })

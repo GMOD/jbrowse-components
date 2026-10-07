@@ -383,18 +383,6 @@ export default function configSchemaFactory(_pluginManager: PluginManager) {
       /**
        * #slot
        */
-      colorSupplementaryChains: {
-        type: 'boolean',
-        defaultValue: false,
-        // Not paired-only: `readColorCategory` puts this override above both the
-        // paired and the unpaired split classifiers deliberately (5b8aa129d9 had
-        // scoped it to pairs, which made the tickbox a no-op on long reads).
-        description:
-          'Paint every chain carrying a supplementary segment a flat supplementary color, paired or not',
-      },
-      /**
-       * #slot
-       */
       drawInter: {
         type: 'boolean',
         defaultValue: true,

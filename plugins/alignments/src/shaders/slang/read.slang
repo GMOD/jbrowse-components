@@ -3,7 +3,7 @@
 // clipped to the segment's leading (fwd) or trailing (rev) edge.
 //! targets: wgsl, glsl
 //! js-export: showChevron
-//! export-consts: READ_CATEGORY_SLOTS, CS_NORMAL, CS_STRAND, CS_MAPQ, CS_INSERT_SIZE, CS_FIRST_OF_PAIR, CS_PAIR_ORIENT, CS_IS_AND_ORIENT, CS_MODIFICATIONS, CS_TAG, RC_SUPPLEMENTARY, RC_SPLIT_INVERSION, RC_SPLIT_DELETION, RC_UNMAPPED_MATE, RC_INTERCHROM, RC_FWD_STRAND, RC_REV_STRAND, RC_NON_SPLIT, RC_PAIR_LR, RC_PAIR_RL, RC_PAIR_RR, RC_PAIR_LL, RC_LONG_INSERT, RC_SHORT_INSERT, RC_NORMAL_INSERT, RC_PLAIN, RC_MAPQ, RC_TAG, RC_NO_TAG_VALUE, RC_MOD_FWD, RC_MOD_REV, RC_MAPQ_UNAVAILABLE, CHEVRON_DIRLESS_MIN_WIDTH_PX, PAIR_MIN_SPAN_PX, READ_OUTLINE_PX, READ_OUTLINE_SHADE, READ_OUTLINE_MIN_WIDTH_PX, READ_OUTLINE_MIN_HEIGHT_PX
+//! export-consts: READ_CATEGORY_SLOTS, CS_NORMAL, CS_STRAND, CS_MAPQ, CS_INSERT_SIZE, CS_FIRST_OF_PAIR, CS_PAIR_ORIENT, CS_IS_AND_ORIENT, CS_MODIFICATIONS, CS_TAG, RC_SPLIT_INVERSION, RC_SPLIT_DELETION, RC_UNMAPPED_MATE, RC_INTERCHROM, RC_FWD_STRAND, RC_REV_STRAND, RC_NON_SPLIT, RC_PAIR_LR, RC_PAIR_RL, RC_PAIR_RR, RC_PAIR_LL, RC_LONG_INSERT, RC_SHORT_INSERT, RC_NORMAL_INSERT, RC_PLAIN, RC_MAPQ, RC_TAG, RC_NO_TAG_VALUE, RC_MOD_FWD, RC_MOD_REV, RC_MAPQ_UNAVAILABLE, CHEVRON_DIRLESS_MIN_WIDTH_PX, PAIR_MIN_SPAN_PX, READ_OUTLINE_PX, READ_OUTLINE_SHADE, READ_OUTLINE_MIN_WIDTH_PX, READ_OUTLINE_MIN_HEIGHT_PX
 
 import alignmentsUniforms;
 import colorPack;
@@ -37,36 +37,35 @@ static const int CS_TAG           = 8;
 // `readColorCategory` (colorUtils.ts) — baked per read into
 // `readColorCategories` and uploaded as `inst.colorCategory`. This shader only
 // PAINTS a category; it does not classify. That is why there is no precedence
-// chain here anymore: the ordered rules (paired-supplementary override,
-// long-read chain strand framing, split inversion/deletion, unmapped mate,
-// inter-chromosomal, per-scheme) used to be hand-mirrored between this file and
-// colorUtils.ts, and hand-mirrored ordered rules drift. Now the GPU, the
-// Canvas2D/SVG fallback, and the legend all consume one classification.
+// chain here anymore: the ordered rules (long-read chain strand framing, split
+// inversion/deletion, unmapped mate, inter-chromosomal, per-scheme) used to be
+// hand-mirrored between this file and colorUtils.ts, and hand-mirrored ordered
+// rules drift. Now the GPU, the Canvas2D/SVG fallback, and the legend all
+// consume one classification.
 static const uint RC_PLAIN           = 0u;
-static const uint RC_SUPPLEMENTARY   = 1u;
-static const uint RC_SPLIT_INVERSION = 2u;
-static const uint RC_SPLIT_DELETION  = 3u;
-static const uint RC_UNMAPPED_MATE   = 4u;
-static const uint RC_INTERCHROM      = 5u;
-static const uint RC_FWD_STRAND      = 6u;
-static const uint RC_REV_STRAND      = 7u;
-static const uint RC_NON_SPLIT       = 8u;
-static const uint RC_PAIR_LR         = 9u;
-static const uint RC_PAIR_RL         = 10u;
-static const uint RC_PAIR_RR         = 11u;
-static const uint RC_PAIR_LL         = 12u;
-static const uint RC_LONG_INSERT     = 13u;
-static const uint RC_SHORT_INSERT    = 14u;
-static const uint RC_NORMAL_INSERT   = 15u;
-static const uint RC_MAPQ            = 16u;
-static const uint RC_TAG             = 17u;
-static const uint RC_NO_TAG_VALUE    = 18u;
-static const uint RC_MOD_FWD         = 19u;
-static const uint RC_MOD_REV         = 20u;
+static const uint RC_SPLIT_INVERSION = 1u;
+static const uint RC_SPLIT_DELETION  = 2u;
+static const uint RC_UNMAPPED_MATE   = 3u;
+static const uint RC_INTERCHROM      = 4u;
+static const uint RC_FWD_STRAND      = 5u;
+static const uint RC_REV_STRAND      = 6u;
+static const uint RC_NON_SPLIT       = 7u;
+static const uint RC_PAIR_LR         = 8u;
+static const uint RC_PAIR_RL         = 9u;
+static const uint RC_PAIR_RR         = 10u;
+static const uint RC_PAIR_LL         = 11u;
+static const uint RC_LONG_INSERT     = 12u;
+static const uint RC_SHORT_INSERT    = 13u;
+static const uint RC_NORMAL_INSERT   = 14u;
+static const uint RC_MAPQ            = 15u;
+static const uint RC_TAG             = 16u;
+static const uint RC_NO_TAG_VALUE    = 17u;
+static const uint RC_MOD_FWD         = 18u;
+static const uint RC_MOD_REV         = 19u;
 // MAPQ 255 is the SAM spec's "mapping quality unavailable" sentinel, not a
 // score, so it is a flat category of its own: the neutral grey rather than the
 // ramp's top, keyed exactly when reads carry it.
-static const uint RC_MAPQ_UNAVAILABLE = 21u;
+static const uint RC_MAPQ_UNAVAILABLE = 20u;
 
 // When a read's direction is uninformative (normal color scheme, mate unmapped,
 // or mate on another chromosome), only draw its strand arrow once the read is at

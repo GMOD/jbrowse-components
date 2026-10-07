@@ -19,7 +19,7 @@
 //
 // THE QUESTION. `GpuAlignmentsRenderer` is the tree's last offset-poke uniform
 // writer. It writes the 640-byte pileup struct's frame-constant half — the
-// palette, `readCategoryColor[22]` and `linkedReadColor[8]` included, ~150
+// palette, `readCategoryColor[21]` and `linkedReadColor[8]` included, ~150
 // stores — ONCE ahead of the block loop (`writePalette`), then pokes the 18
 // per-section-block slots and stages the buffer. A `MarkShape.writeUniforms` is
 // handed a bare `ArrayBuffer` and has no frame hook, so converting the thirteen
@@ -448,7 +448,6 @@ function totalValues(block: Block, top: number): Uniforms {
       totalSlot(c.category[18]!),
       totalSlot(c.category[19]!),
       totalSlot(c.category[20]!),
-      totalSlot(c.category[21]!),
     ],
     pxPerBp: block.canvasW / block.bpLen,
     devicePixelRatio: STATE.dpr,
@@ -545,7 +544,6 @@ function templateValues(): Uniforms {
       totalSlot(c.category[18]!),
       totalSlot(c.category[19]!),
       totalSlot(c.category[20]!),
-      totalSlot(c.category[21]!),
     ],
     pxPerBp: 0,
     devicePixelRatio: STATE.dpr,
@@ -693,7 +691,6 @@ function hoistColors(): HoistedColors {
       slot(COLORS.category[18]!),
       slot(COLORS.category[19]!),
       slot(COLORS.category[20]!),
-      slot(COLORS.category[21]!),
     ],
   }
 }

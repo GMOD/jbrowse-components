@@ -21,7 +21,6 @@ import {
   RC_SHORT_INSERT,
   RC_SPLIT_DELETION,
   RC_SPLIT_INVERSION,
-  RC_SUPPLEMENTARY,
   RC_TAG,
   RC_UNMAPPED_MATE,
 } from '../shaders/slang/read.consts.generated.ts'
@@ -68,7 +67,6 @@ interface ReadColorData {
 // paint (or omit one it did): they are correct by construction, not by a
 // mirrored test.
 export type ReadColorCategory =
-  | 'supplementary'
   | 'splitInversion'
   | 'splitDeletion'
   | 'unmappedMate'
@@ -98,7 +96,6 @@ function strandCategory(strand: number): ReadColorCategory {
 export interface ChainFramingSettings {
   chainMode?: boolean
   flipStrandLongReadChains?: boolean
-  colorSupplementaryChains?: boolean
 }
 
 // Whether the unpaired chain-strand framing is live. The display asks once and
@@ -111,22 +108,15 @@ export function framesUnpairedChainStrand(
   {
     chainMode = false,
     flipStrandLongReadChains = true,
-    colorSupplementaryChains = false,
   }: ChainFramingSettings = {},
 ) {
-  return (
-    chainMode &&
-    flipStrandLongReadChains &&
-    !colorSupplementaryChains &&
-    !isDataFillScheme(colorScheme)
-  )
+  return chainMode && flipStrandLongReadChains && !isDataFillScheme(colorScheme)
 }
 
 // Category → the shader's RC_* index. Built from the generated constants, so
 // the GPU and this file cannot disagree on what an index means. Exhaustive by
 // type: adding a ReadColorCategory member without an index fails to compile.
 export const READ_COLOR_CATEGORY: Record<ReadColorCategory, number> = {
-  supplementary: RC_SUPPLEMENTARY,
   splitInversion: RC_SPLIT_INVERSION,
   splitDeletion: RC_SPLIT_DELETION,
   unmappedMate: RC_UNMAPPED_MATE,
@@ -180,7 +170,6 @@ export function buildReadColorCategories(
 
 export interface ReadColorOpts {
   chainMode?: boolean
-  colorSupplementaryChains?: boolean
   framesChainStrand?: boolean
 }
 
@@ -206,30 +195,20 @@ export function readColorCategory(
 // the active scheme would say; `undefined` hands the read on to
 // `schemeCategory`.
 //
-// Three of these repaint a chain that carries a supplementary segment, and they
-// are one ladder rather than three independent rules:
-//
-//   1. orange (opt-in) — "don't classify the split, just mark the chain". The
-//      user asked for it explicitly, so it outranks both classifiers and every
-//      scheme.
-//   2. the unpaired classifier — the red/blue strand framing below.
-//   3. the paired classifier — the magenta/yellow split markers further down.
-//
-// 2 and 3 are scoped to opposite data because a pair HAS a richer answer: a
-// supplementary framed against its own mate's primary is an inversion or a
-// deletion junction, which `attachChainFields` already resolved into
-// CHAIN_SPLIT_*. An unpaired read has no mate to frame against, so the
-// strand flip is the whole story. 1 is scoped to neither, and used to be
-// paired-only purely because it was added to restore what a paired-only change
-// removed (5b8aa129d9) — on long reads the tickbox then did nothing at all,
-// which is the one kind of setting this menu must not have.
+// Two of these repaint a chain that carries a supplementary segment, scoped to
+// opposite data because a pair HAS a richer answer: a supplementary framed
+// against its own mate's primary is an inversion or a deletion junction, which
+// `attachChainFields` already resolved into CHAIN_SPLIT_*, and an unpaired
+// read has no mate to frame against, so the strand flip is the whole story. A
+// flat colour over every split chain, whatever the scheme, was a third rule
+// and went: a `splitRead` facet beside a strand colour draws that picture.
 function overrideCategory(
   i: number,
   data: ReadColorData,
   colorScheme: ColorSchemeType,
   opts: ReadColorOpts,
 ): ReadColorCategory | undefined {
-  const { chainMode: isChain = false, colorSupplementaryChains = false } = opts
+  const { chainMode: isChain = false } = opts
   const flags = data.readFlags[i]!
   const strand = data.readStrands[i]!
 
@@ -244,10 +223,6 @@ function overrideCategory(
     isPaired &&
     (colorScheme === 'pairOrientation' ||
       colorScheme === 'insertSizeAndOrientation')
-
-  if (isChain && hasSupp && colorSupplementaryChains) {
-    return 'supplementary'
-  }
 
   // Long-read (unpaired) supplementary chains frame each segment's strand
   // against the chain's frame: a segment agreeing with it is forward-red and one
@@ -460,7 +435,6 @@ export const swatchPaletteKeys = {
   shortInsert: 'colorShortInsert',
   interchrom: 'colorInterchrom',
   unmappedMate: 'colorUnmappedMate',
-  supplementary: 'colorSupplementary',
   splitInversion: 'colorSplitInversion',
   splitDeletion: 'colorSupplementary',
   noTagValue: 'colorPairLR',

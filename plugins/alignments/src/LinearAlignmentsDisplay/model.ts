@@ -1581,7 +1581,6 @@ export default function stateModelFactory(
               {
                 chainMode: self.unit === 'chain',
                 flipStrandLongReadChains: self.flipStrandLongReadChains,
-                colorSupplementaryChains: self.colorSupplementaryChains,
               },
             )
           },
@@ -1808,7 +1807,6 @@ export default function stateModelFactory(
           get readColorOpts() {
             return {
               chainMode: self.unit === 'chain',
-              colorSupplementaryChains: self.colorSupplementaryChains,
               framesChainStrand: this.framesChainStrand,
             }
           },
@@ -3932,13 +3930,6 @@ export default function stateModelFactory(
 
           /**
            * #action
-           */
-          setColorSupplementaryChains(flag: boolean) {
-            setConf(self, 'colorSupplementaryChains', flag)
-          },
-
-          /**
-           * #action
            * A new unit restacks the whole pileup, so the scroll offset names
            * nothing after the flip, and the `scrollableHeight` clamp only
            * catches the half of that where the new stack is shorter.
@@ -4255,10 +4246,6 @@ export default function stateModelFactory(
                 flipStrandLongReadChains: self.flipStrandLongReadChains,
                 setFlipStrandLongReadChains: (flag: boolean) => {
                   self.setFlipStrandLongReadChains(flag)
-                },
-                colorSupplementaryChains: self.colorSupplementaryChains,
-                setColorSupplementaryChains: (flag: boolean) => {
-                  self.setColorSupplementaryChains(flag)
                 },
               },
             }),

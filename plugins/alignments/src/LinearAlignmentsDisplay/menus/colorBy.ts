@@ -79,18 +79,15 @@ interface ColorByMenuOptions {
     own: ArcColorField | ''
     setField: (field: ArcColorField | '') => void
   }
-  // Supplementary/split-read coloring modifiers. These color how chained
-  // supplementary alignments are drawn, so they belong with the color scheme
-  // rather than in the "Show..." visibility menu. Both are read only by
-  // `readColorCategory`'s chain branches, hence `unit`: without a chain
-  // there is nothing chained to recolor and each row would be a live tickbox
-  // that does nothing.
+  // The split-read strand framing colours how chained supplementary alignments
+  // are drawn, so it belongs with the color scheme rather than in the "Show..."
+  // visibility menu. Read only by `readColorCategory`'s chain branch, hence
+  // `unit`: without a chain there is nothing chained to recolor and the row
+  // would be a live tickbox that does nothing.
   supplementaryColoring?: {
     unit: AlignmentsUnit
     flipStrandLongReadChains: boolean
     setFlipStrandLongReadChains: (flag: boolean) => void
-    colorSupplementaryChains: boolean
-    setColorSupplementaryChains: (flag: boolean) => void
   }
 }
 
@@ -242,14 +239,11 @@ function arcColorItem(
   }
 }
 
-// Both rows recolor a chain that carries a supplementary segment, and orange
-// wins where they overlap (see readColorCategory's ladder). Each row's helpText
-// says which reads it reaches and what the result looks like, because
-// "supplementary" alone doesn't distinguish them and the difference is the whole
-// choice. Prose, so a tooltip rather than a subLabel under every row. Greyed
-// out rather than hidden while chain mode is off, matching the read-connection
-// band options: the settings stay discoverable, and the tooltip names the one
-// switch that makes them live.
+// Greyed out rather than hidden while chain mode is off, matching the
+// read-connection band options: the setting stays discoverable, and the
+// tooltip names the one switch that makes it live. A flat colour marking every
+// split chain, whatever the scheme, was a hue override and went; "Group by
+// split reads" beside a strand colour is that picture.
 function supplementaryItem(
   supp: NonNullable<ColorByMenuOptions['supplementaryColoring']>,
 ): MenuItem {
@@ -265,16 +259,7 @@ function supplementaryItem(
         supp.setFlipStrandLongReadChains,
         {
           helpText:
-            'long (unpaired) reads: segments agreeing with the orientation most reads on screen share stay red and the ones inverted at a junction go blue, so an inversion reads as a color flip',
-        },
-      ),
-      toggleItem(
-        'Color supplementary chains orange',
-        supp.colorSupplementaryChains,
-        supp.setColorSupplementaryChains,
-        {
-          helpText:
-            'one flat color for the whole chain, paired and long reads alike — marks the split without classifying it, so it replaces both the strand flip and the inversion/deletion hues',
+            'long (unpaired) reads: segments agreeing with the orientation most reads on screen share stay red and the ones inverted at a junction go blue, so an inversion reads as a color flip. To mark every split chain instead, group by split reads',
         },
       ),
     ],

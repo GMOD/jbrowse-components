@@ -13,13 +13,13 @@ function byGroup(...regions: Partial<PileupDataResult>[]) {
   ])
 }
 
-const { mapq, mapqUnavailable, supplementary } = READ_COLOR_CATEGORY
+const { mapq, mapqUnavailable, interchrom } = READ_COLOR_CATEGORY
 
 test('the MAPQ extent spans only the reads the ramp paints', () => {
   const groups = byGroup(
     {
       readMapqs: Uint8Array.of(12, 255, 70),
-      readColorCategories: Uint8Array.of(mapq, mapqUnavailable, supplementary),
+      readColorCategories: Uint8Array.of(mapq, mapqUnavailable, interchrom),
     },
     {
       readMapqs: Uint8Array.of(3, 45),

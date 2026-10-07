@@ -180,7 +180,7 @@ describe('readColorCategory', () => {
         chainOpts,
       ),
     ).toBe('pairRR')
-    // never the flat 'supplementary' bucket, in chain mode or pileup
+    // and a strand scheme keeps the read's own strand
     expect(
       readColorCategory(
         0,
@@ -188,7 +188,7 @@ describe('readColorCategory', () => {
         'strand',
         chainOpts,
       ),
-    ).not.toBe('supplementary')
+    ).toBe('fwdStrand')
   })
 
   test('paired split-inversion chains paint the dedicated split-inversion color', () => {
@@ -261,51 +261,6 @@ describe('readColorCategory', () => {
         chainOpts,
       ),
     ).toBe('revStrand')
-  })
-
-  test('colorSupplementaryChains opt-in restores the flat orange override', () => {
-    // with the opt-in on, a paired supplementary chain is the flat bucket again,
-    // overriding the pair-orientation color
-    expect(
-      readColorCategory(
-        0,
-        makeData({ chainHasSupp: SUPP_FWD, flags: 1, pairOrientation: 3 }),
-        'pairOrientation',
-        { ...chainOpts, colorSupplementaryChains: true },
-      ),
-    ).toBe('supplementary')
-    // opt-in has no effect outside chain mode
-    expect(
-      readColorCategory(
-        0,
-        makeData({ chainHasSupp: SUPP_FWD, flags: 1, pairOrientation: 3 }),
-        'pairOrientation',
-        { colorSupplementaryChains: true },
-      ),
-    ).toBe('pairRR')
-  })
-
-  // It reaches long reads too, and outranks the strand framing there — the two
-  // tickboxes are ordered, not scoped to different data.
-  test('the orange opt-in covers unpaired chains and beats the strand framing', () => {
-    const longRead = makeData({ chainHasSupp: SUPP_REV, flags: 0, strand: 1 })
-    expect(readColorCategory(0, longRead, 'normal', framedOpts)).toBe(
-      'revStrand',
-    )
-    expect(
-      readColorCategory(0, longRead, 'normal', {
-        ...framedOpts,
-        colorSupplementaryChains: true,
-      }),
-    ).toBe('supplementary')
-    // and it is the one override that a data-carrying scheme does not displace,
-    // because the user asked for it by name
-    expect(
-      readColorCategory(0, longRead, 'tag', {
-        ...chainOpts,
-        colorSupplementaryChains: true,
-      }),
-    ).toBe('supplementary')
   })
 
   test('long-read (unpaired) supplementary chains frame strand against primary', () => {
@@ -498,12 +453,6 @@ describe('framesUnpairedChainStrand', () => {
       'the tickbox off',
       'strand',
       { ...on, flipStrandLongReadChains: false },
-      false,
-    ],
-    [
-      'the orange override, which outranks the framing',
-      'strand',
-      { ...on, colorSupplementaryChains: true },
       false,
     ],
     // the data-carrying schemes: the framing would displace the datum the user

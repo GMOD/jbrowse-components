@@ -349,16 +349,14 @@ describe('color by modifications menu', () => {
 // A display that composes the alignments state model (LGVSyntenyDisplay does)
 // carries every modification field, so the menu cannot infer from the model's
 // shape that pairs/modifications are meaningless for it — the caller says so.
-// Both rows are read only by `readColorCategory`'s chain branches, so outside
-// chain mode they are settings that change nothing. Greyed out rather than
+// The row is read only by `readColorCategory`'s chain branch, so outside
+// chain mode it is a setting that changes nothing. Greyed out rather than
 // hidden, matching the read-connection band options.
 describe('supplementary / split read coloring', () => {
   const supp = (unit: AlignmentsUnit) => ({
     unit,
     flipStrandLongReadChains: true,
     setFlipStrandLongReadChains: () => {},
-    colorSupplementaryChains: false,
-    setColorSupplementaryChains: () => {},
   })
 
   test('greys out with chain mode off, naming the switch that enables it', () => {
@@ -371,18 +369,16 @@ describe('supplementary / split read coloring', () => {
     ).toMatch(/View as pairs/)
   })
 
-  test('live in chain mode, and both rows say which reads they reach', () => {
+  test('live in chain mode, and the row says which reads it reaches', () => {
     const model = makeModel()
     const item = byLabel(model, 'Supplementary / split reads', {
       supplementaryColoring: supp('chain'),
     })
     expect(item && 'disabled' in item && item.disabled).toBe(false)
     const rows = subMenuOf(item)
-    expect(rows).toHaveLength(2)
-    // the strand flip is long-read only; orange covers both kinds
+    expect(rows).toHaveLength(1)
     expect(rows.map(r => ('helpText' in r ? r.helpText : ''))).toEqual([
       expect.stringContaining('long (unpaired) reads'),
-      expect.stringContaining('paired and long reads alike'),
     ])
   })
 })

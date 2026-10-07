@@ -514,10 +514,9 @@ describe('ordering controls in chain mode', () => {
     expect(item?.disabledHelpText).toMatch(/View as pairs/)
   })
 
-  // The mirror case: `flipStrandLongReadChains` / `colorSupplementaryChains`
-  // are read only inside readColorCategory's isChain branches, so OUTSIDE chain
-  // mode they are the silent no-op — two checkboxes, one ticked by default,
-  // that change nothing.
+  // The mirror case: `flipStrandLongReadChains` is read only inside
+  // readColorCategory's isChain branch, so OUTSIDE chain mode it is the silent
+  // no-op — a checkbox ticked by default that changes nothing.
   //
   // colorBy.test.tsx covers the menu builder given a `unit`; this covers
   // the half that bug actually lived in, which is whether the model hands it the
