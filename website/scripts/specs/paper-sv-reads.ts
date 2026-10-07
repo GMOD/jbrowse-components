@@ -3,7 +3,10 @@
 // connection modes the paper's Method lists: a 13.3 kb tandem duplication
 // (SV_128) beside a 26.7 kb deletion (SV_129) in SUZ12, and a 2.4 kb inversion
 // on chr3 (SV_23, SV_25). One BAM mounts twice because a view shows a track
-// once and a display draws one connection mode. The BAMs are slices of the
+// once and a display draws one connection mode. The long reads group by split
+// or not, so the chains that cross a junction sit under their arcs. The paired
+// track hides proper pairs for the same reason, and its coverage band with
+// them, since the filter runs ahead of coverage. The BAMs are slices of the
 // GIAB files, hosted because the GIAB FTP answers 503 to parallel renders.
 import { cgiabUrl } from '../screenshot-spec-helpers.ts'
 
@@ -56,8 +59,6 @@ const readEvidence = ({
 }: {
   name: string
   loc: string
-  // the pairs that span a junction lay out under the ordinary ones, so the
-  // track is as tall as the locus is deep
   pairsHeight: number
   cloud: boolean
   viewportHeight: number
@@ -69,7 +70,7 @@ const readEvidence = ({
       bamTrack(HIFI, 'HG008-T PacBio HiFi: chains and read arcs', HIFI_BAM),
       bamTrack(
         ILLUMINA_ARCS,
-        'HG008-T Illumina: pairs and read arcs',
+        'HG008-T Illumina: discordant pairs and read arcs',
         ILLUMINA_BAM,
       ),
       bamTrack(ILLUMINA_CLOUD, 'HG008-T Illumina: read cloud', ILLUMINA_BAM),
@@ -100,6 +101,7 @@ const readEvidence = ({
             readConnectionsHeight: 70,
             featureHeight: 3,
             height: 315,
+            facet: 'splitRead',
             showLegend: true,
           },
           {
@@ -110,6 +112,12 @@ const readEvidence = ({
             drawProperPairArcs: false,
             readConnectionsHeight: 150,
             featureHeight: 1,
+            filterBy: {
+              flagInclude: 0,
+              flagExclude: 1540,
+              properPairs: 'exclude',
+            },
+            showCoverage: false,
             height: pairsHeight,
             showLegend: true,
           },
@@ -129,7 +137,7 @@ const readEvidence = ({
       },
     ],
   }),
-  readyText: 'pairs and read arcs',
+  readyText: 'discordant pairs',
   readyTimeout: 300000,
   viewportWidth: 1500,
   viewportHeight,
@@ -139,15 +147,15 @@ export const paperSvReadsSpecs: ScreenshotSpec[] = [
   readEvidence({
     name: 'paper/sv_read_evidence',
     loc: 'chr17:31,955,000-32,012,000',
-    pairsHeight: 500,
+    pairsHeight: 330,
     cloud: true,
-    viewportHeight: 1660,
+    viewportHeight: 1490,
   }),
   readEvidence({
     name: 'paper/sv_read_evidence_inversion',
     loc: 'chr3:184,709,000-184,723,000',
-    pairsHeight: 900,
+    pairsHeight: 620,
     cloud: false,
-    viewportHeight: 1725,
+    viewportHeight: 1445,
   }),
 ]
