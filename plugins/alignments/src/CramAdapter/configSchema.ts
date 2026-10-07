@@ -106,6 +106,7 @@ const configSchema = ConfigurationSchema(
   {
     explicitlyTyped: true,
     closed: true,
+    retired: { sequenceAdapter: () => ({}) },
 
     /**
      * #preProcessSnapshot

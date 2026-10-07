@@ -74,6 +74,7 @@ export type { ConfSettingsReport } from './getConf.ts'
 export { fillLocations } from './fillLocations.ts'
 export {
   applyRetiredSpellings,
+  declaredSnapshot,
   liftRetiredSpellings,
   preProcessConfigSnapshot,
   preProcessSnapshotWith,

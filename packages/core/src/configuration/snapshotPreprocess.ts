@@ -237,6 +237,28 @@ export function preProcessSnapshotWith(
 
 /**
  * #api core/configuration
+ * A snapshot as `type` lifts it, without the keys it does not declare: the
+ * config half of an entry that carries its owner's keys beside one, as a
+ * `MultiWiggleAdapter` subadapter carries its row's `name` and `color`.
+ */
+export function declaredSnapshot(
+  type: IAnyType,
+  snapshot: Record<string, unknown>,
+) {
+  const schema = getConfigurationSchemaMetadata(type)
+  if (!schema) {
+    return snapshot
+  }
+  const declared = new Set(declaredKeys(schema))
+  return Object.fromEntries(
+    Object.entries(
+      preProcessSnapshotWith(schema, snapshot, { routesUndeclared: true }),
+    ).filter(([key]) => declared.has(key)),
+  )
+}
+
+/**
+ * #api core/configuration
  * A snapshot as a write to `type` admits it: the lift and checks `setConf`
  * applies, so a dialog or a validator refuses what an edit cannot hold, an
  * undeclared key included. Throws what the schema's `preProcessSnapshot`

@@ -42,6 +42,7 @@ const HicAdapter = ConfigurationSchema(
   {
     explicitlyTyped: true,
     closed: true,
+    retired: { resolutionMultiplier: () => ({}) },
 
     /**
      * #preProcessSnapshot

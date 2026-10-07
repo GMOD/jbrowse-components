@@ -1,3 +1,4 @@
+import { declaredSnapshot } from '@jbrowse/core/configuration'
 import {
   BaseFeatureDataAdapter,
   cachedSetup,
@@ -137,8 +138,12 @@ export default class MultiWiggleAdapter
 
     const entries = await Promise.all(
       subConfs.map(async (conf: AdapterConfig) => {
-        const dataAdapter = (await getSubAdapter(conf))
-          .dataAdapter as BaseFeatureDataAdapter
+        const schema = this.pluginManager?.getAdapterType(
+          conf.type,
+        ).configSchema
+        const dataAdapter = (
+          await getSubAdapter(schema ? declaredSnapshot(schema, conf) : conf)
+        ).dataAdapter as BaseFeatureDataAdapter
         const source =
           conf.source ||
           conf.name ||

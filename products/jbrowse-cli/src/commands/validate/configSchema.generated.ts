@@ -403,6 +403,10 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         "baseUri": {
           "type": "string",
           "description": "Shorthand: a base URL \`uri\` resolves against."
+        },
+        "sequenceAdapter": {
+          "deprecated": true,
+          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
         }
       }
     },
@@ -519,6 +523,10 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         "csi": {
           "type": "boolean",
           "description": "Shorthand: the index beside \`uri\` is a \`.csi\` rather than a \`.tbi\`/\`.bai\`."
+        },
+        "sequenceAdapter": {
+          "deprecated": true,
+          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
         }
       }
     },
@@ -3557,6 +3565,10 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         "baseUri": {
           "type": "string",
           "description": "Shorthand: a base URL \`uri\` resolves against."
+        },
+        "resolutionMultiplier": {
+          "deprecated": true,
+          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
         }
       }
     },
@@ -13955,12 +13967,17 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "else": {
             "$ref": "#/$defs/FormatAbout"
           }
+        },
+        "rpcDriverName": {
+          "deprecated": true,
+          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
         }
       }
     },
     "FeatureTrack": {
       "title": "FeatureTrack",
       "type": "object",
+      "x-closed": true,
       "allOf": [
         {
           "$ref": "#/$defs/FeatureTrackSlots"
@@ -14634,12 +14651,17 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "else": {
             "$ref": "#/$defs/FormatAbout"
           }
+        },
+        "rpcDriverName": {
+          "deprecated": true,
+          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
         }
       }
     },
     "AlignmentsTrack": {
       "title": "AlignmentsTrack",
       "type": "object",
+      "x-closed": true,
       "allOf": [
         {
           "$ref": "#/$defs/AlignmentsTrackSlots"
@@ -15029,12 +15051,17 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "else": {
             "$ref": "#/$defs/FormatAbout"
           }
+        },
+        "rpcDriverName": {
+          "deprecated": true,
+          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
         }
       }
     },
     "ReferenceSequenceTrack": {
       "title": "ReferenceSequenceTrack",
       "type": "object",
+      "x-closed": true,
       "allOf": [
         {
           "$ref": "#/$defs/ReferenceSequenceTrackSlots"
@@ -15208,12 +15235,17 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "else": {
             "$ref": "#/$defs/FormatAbout"
           }
+        },
+        "rpcDriverName": {
+          "deprecated": true,
+          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
         }
       }
     },
     "VariantTrack": {
       "title": "VariantTrack",
       "type": "object",
+      "x-closed": true,
       "allOf": [
         {
           "$ref": "#/$defs/VariantTrackSlots"
@@ -15718,12 +15750,17 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "else": {
             "$ref": "#/$defs/FormatAbout"
           }
+        },
+        "rpcDriverName": {
+          "deprecated": true,
+          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
         }
       }
     },
     "LDTrack": {
       "title": "LDTrack",
       "type": "object",
+      "x-closed": true,
       "allOf": [
         {
           "$ref": "#/$defs/LDTrackSlots"
@@ -15912,12 +15949,17 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "else": {
             "$ref": "#/$defs/FormatAbout"
           }
+        },
+        "rpcDriverName": {
+          "deprecated": true,
+          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
         }
       }
     },
     "QuantitativeTrack": {
       "title": "QuantitativeTrack",
       "type": "object",
+      "x-closed": true,
       "allOf": [
         {
           "$ref": "#/$defs/QuantitativeTrackSlots"
@@ -16280,12 +16322,17 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "else": {
             "$ref": "#/$defs/FormatAbout"
           }
+        },
+        "rpcDriverName": {
+          "deprecated": true,
+          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
         }
       }
     },
     "MultiQuantitativeTrack": {
       "title": "MultiQuantitativeTrack",
       "type": "object",
+      "x-closed": true,
       "allOf": [
         {
           "$ref": "#/$defs/MultiQuantitativeTrackSlots"
@@ -16648,12 +16695,17 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "else": {
             "$ref": "#/$defs/FormatAbout"
           }
+        },
+        "rpcDriverName": {
+          "deprecated": true,
+          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
         }
       }
     },
     "GCContentTrack": {
       "title": "GCContentTrack",
       "type": "object",
+      "x-closed": true,
       "allOf": [
         {
           "$ref": "#/$defs/GCContentTrackSlots"
@@ -16899,12 +16951,17 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "else": {
             "$ref": "#/$defs/FormatAbout"
           }
+        },
+        "rpcDriverName": {
+          "deprecated": true,
+          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
         }
       }
     },
     "MafTrack": {
       "title": "MafTrack",
       "type": "object",
+      "x-closed": true,
       "allOf": [
         {
           "$ref": "#/$defs/MafTrackSlots"
@@ -17254,12 +17311,17 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "else": {
             "$ref": "#/$defs/FormatAbout"
           }
+        },
+        "rpcDriverName": {
+          "deprecated": true,
+          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
         }
       }
     },
     "HicTrack": {
       "title": "HicTrack",
       "type": "object",
+      "x-closed": true,
       "allOf": [
         {
           "$ref": "#/$defs/HicTrackSlots"
@@ -17439,12 +17501,17 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "else": {
             "$ref": "#/$defs/FormatAbout"
           }
+        },
+        "rpcDriverName": {
+          "deprecated": true,
+          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
         }
       }
     },
     "SyntenyTrack": {
       "title": "SyntenyTrack",
       "type": "object",
+      "x-closed": true,
       "allOf": [
         {
           "$ref": "#/$defs/SyntenyTrackSlots"
@@ -17958,12 +18025,17 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "else": {
             "$ref": "#/$defs/FormatAbout"
           }
+        },
+        "rpcDriverName": {
+          "deprecated": true,
+          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
         }
       }
     },
     "GWASTrack": {
       "title": "GWASTrack",
       "type": "object",
+      "x-closed": true,
       "allOf": [
         {
           "$ref": "#/$defs/GWASTrackSlots"
@@ -20719,6 +20791,10 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "else": {
             "$ref": "#/$defs/FormatAbout"
           }
+        },
+        "rpcDriverName": {
+          "deprecated": true,
+          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
         },
         "displayDefaults": {
           "type": "object"

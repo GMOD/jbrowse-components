@@ -325,6 +325,18 @@ function shorthandKeysOf(adapterType) {
   return found
 }
 
+// A probe hands a schema keys it does not declare, each of which a closed one
+// names on the console.
+function unwarned(probe) {
+  const { warn } = console
+  console.warn = () => {}
+  try {
+    return probe()
+  } finally {
+    console.warn = warn
+  }
+}
+
 // A closed schema names an undeclared key on the console, so a shorthand key
 // its normalizer leaves on the snapshot warns in every config using the
 // documented shorthand.
@@ -417,7 +429,7 @@ function legacyKeysOf(configSchema, declaredSlots) {
   try {
     baseline = JSON.stringify(getSnapshot(configSchema.create({ ...pinnedIds })))
   } catch {
-    return []
+    return declaredRetired
   }
   const candidates = Object.entries(LEGACY_CANDIDATES).filter(
     ([key]) => !declared.has(key) && !declaredRetired.includes(key),
@@ -552,8 +564,8 @@ function collect(group, getType) {
     ) {
       adapterProblems.push(\`\${name}'s config schema is not closed\`)
     }
-    const legacyKeys = legacyKeysOf(entry.configSchema, slots)
-    const probed = legacyValuesOf(entry.configSchema, slots)
+    const legacyKeys = unwarned(() => legacyKeysOf(entry.configSchema, slots))
+    const probed = unwarned(() => legacyValuesOf(entry.configSchema, slots))
     const retiredValues = group === 'display' ? retiredTypeValuesOf(entry) : {}
     const legacyValues = Object.fromEntries(
       [...new Set([...Object.keys(probed), ...Object.keys(retiredValues)])].map(

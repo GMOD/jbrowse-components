@@ -339,6 +339,8 @@ export function createBaseTrackConfig(pluginManager: PluginManager) {
        */
       explicitIdentifier: 'trackId',
       explicitlyTyped: true,
+      closed: true,
+      retired: { rpcDriverName: () => ({}) },
     },
   )
 }

@@ -47,6 +47,9 @@ export const configManifest: ConfigManifest = {
           "type": "(LocalPathLocation | UriLocation | BlobLocation | FileHandleLocation)"
         }
       ],
+      "legacyKeys": [
+        "sequenceAdapter"
+      ],
       "shorthandKeys": [
         "uri",
         "baseUri"
@@ -84,6 +87,9 @@ export const configManifest: ConfigManifest = {
           "name": "densityAdapter",
           "type": "(frozen | undefined)"
         }
+      ],
+      "legacyKeys": [
+        "sequenceAdapter"
       ],
       "shorthandKeys": [
         "uri",
@@ -1233,6 +1239,9 @@ export const configManifest: ConfigManifest = {
           "type": "(LocalPathLocation | UriLocation | BlobLocation | FileHandleLocation)"
         }
       ],
+      "legacyKeys": [
+        "resolutionMultiplier"
+      ],
       "shorthandKeys": [
         "uri",
         "baseUri"
@@ -1783,6 +1792,9 @@ export const configManifest: ConfigManifest = {
           ]
         }
       ],
+      "legacyKeys": [
+        "rpcDriverName"
+      ],
       "displayTypes": [
         "LinearBasicDisplay",
         "LinearMultiRowFeatureDisplay",
@@ -1888,6 +1900,9 @@ export const configManifest: ConfigManifest = {
           ]
         }
       ],
+      "legacyKeys": [
+        "rpcDriverName"
+      ],
       "displayTypes": [
         "LinearAlignmentsDisplay",
         "LinearMarkDisplay"
@@ -1941,6 +1956,9 @@ export const configManifest: ConfigManifest = {
             }
           ]
         }
+      ],
+      "legacyKeys": [
+        "rpcDriverName"
       ],
       "displayTypes": [
         "LinearReferenceSequenceDisplay"
@@ -2042,6 +2060,9 @@ export const configManifest: ConfigManifest = {
             }
           ]
         }
+      ],
+      "legacyKeys": [
+        "rpcDriverName"
       ],
       "displayTypes": [
         "ChordVariantDisplay",
@@ -2147,6 +2168,9 @@ export const configManifest: ConfigManifest = {
           ]
         }
       ],
+      "legacyKeys": [
+        "rpcDriverName"
+      ],
       "displayTypes": [
         "LDTrackDisplay"
       ]
@@ -2247,6 +2271,9 @@ export const configManifest: ConfigManifest = {
             }
           ]
         }
+      ],
+      "legacyKeys": [
+        "rpcDriverName"
       ],
       "displayTypes": [
         "LinearWiggleDisplay",
@@ -2350,6 +2377,9 @@ export const configManifest: ConfigManifest = {
           ]
         }
       ],
+      "legacyKeys": [
+        "rpcDriverName"
+      ],
       "displayTypes": [
         "LinearWiggleDisplay",
         "LinearMarkDisplay"
@@ -2452,6 +2482,9 @@ export const configManifest: ConfigManifest = {
           ]
         }
       ],
+      "legacyKeys": [
+        "rpcDriverName"
+      ],
       "displayTypes": [
         "LinearWiggleDisplay"
       ]
@@ -2552,6 +2585,9 @@ export const configManifest: ConfigManifest = {
             }
           ]
         }
+      ],
+      "legacyKeys": [
+        "rpcDriverName"
       ],
       "displayTypes": [
         "LinearMafDisplay",
@@ -2655,6 +2691,9 @@ export const configManifest: ConfigManifest = {
           ]
         }
       ],
+      "legacyKeys": [
+        "rpcDriverName"
+      ],
       "displayTypes": [
         "LinearHicDisplay"
       ]
@@ -2755,6 +2794,9 @@ export const configManifest: ConfigManifest = {
             }
           ]
         }
+      ],
+      "legacyKeys": [
+        "rpcDriverName"
       ],
       "displayTypes": [
         "ChordSyntenyDisplay",
@@ -2861,6 +2903,9 @@ export const configManifest: ConfigManifest = {
             }
           ]
         }
+      ],
+      "legacyKeys": [
+        "rpcDriverName"
       ],
       "displayTypes": [
         "LinearManhattanDisplay"

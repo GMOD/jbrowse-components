@@ -8,9 +8,11 @@ import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 import { getSnapshot } from '@jbrowse/mobx-state-tree'
 import { of } from 'rxjs'
 
+import bigWigConfigSchema from '../BigWigAdapter/configSchema.ts'
 import MultiWiggleAdapter from './MultiWiggleAdapter.ts'
 import configSchema from './configSchema.ts'
 
+import type PluginManager from '@jbrowse/core/PluginManager'
 import type { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { Feature, StatusCallback } from '@jbrowse/core/util'
 
@@ -1127,5 +1129,37 @@ describe('MultiWiggleAdapter with samplesTsvLocation', () => {
     )
     expect(result.map(r => r.source)).toEqual(['a', 'c'])
     expect(getFeatureArrays).toHaveBeenCalledTimes(2)
+  })
+})
+
+test("a subadapter's row metadata stays off the config its adapter is created from", async () => {
+  const getSubAdapter = jest.fn().mockResolvedValue({ dataAdapter: {} })
+  const adapter = new MultiWiggleAdapter(
+    configSchema.create({
+      subadapters: [
+        {
+          type: 'BigWigAdapter',
+          uri: 'https://x/a.bw',
+          name: 'Alpha',
+          group: 'Islet',
+          color: '#e6194b',
+        },
+      ],
+    }),
+    getSubAdapter,
+    {
+      getAdapterType: () => ({ configSchema: bigWigConfigSchema }),
+    } as unknown as PluginManager,
+  )
+  expect(await adapter.getSources()).toEqual([
+    expect.objectContaining({
+      name: 'Alpha',
+      group: 'Islet',
+      color: '#e6194b',
+    }),
+  ])
+  expect(getSubAdapter).toHaveBeenCalledWith({
+    type: 'BigWigAdapter',
+    bigWigLocation: { uri: 'https://x/a.bw', baseUri: undefined },
   })
 })
