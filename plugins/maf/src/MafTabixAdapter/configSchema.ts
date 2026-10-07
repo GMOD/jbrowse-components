@@ -67,6 +67,7 @@ const configSchema = ConfigurationSchema(
   },
   {
     explicitlyTyped: true,
+    closed: true,
     /**
      * #preProcessSnapshot
      *
@@ -83,7 +84,7 @@ const configSchema = ConfigurationSchema(
      * ```
      */
     preProcessSnapshot: snap =>
-      expandMafShorthand(snap, 'bedGzLocation', tabixIndexSlot),
+      expandMafShorthand(snap, 'bedGzLocation', tabixIndexSlot, ['csi']),
   },
 )
 

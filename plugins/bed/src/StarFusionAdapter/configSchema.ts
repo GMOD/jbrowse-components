@@ -41,6 +41,7 @@ const StarFusionAdapter = ConfigurationSchema(
   },
   {
     explicitlyTyped: true,
+    closed: true,
     /**
      * #preProcessSnapshot
      *

@@ -314,6 +314,7 @@
     "CytobandAdapter": {
       "title": "CytobandAdapter",
       "type": "object",
+      "x-closed": true,
       "allOf": [
         {
           "$ref": "#/$defs/CytobandAdapterSlots"
@@ -401,6 +402,7 @@
     "CramAdapter": {
       "title": "CramAdapter",
       "type": "object",
+      "x-closed": true,
       "allOf": [
         {
           "$ref": "#/$defs/CramAdapterSlots"
@@ -511,6 +513,7 @@
     "BamAdapter": {
       "title": "BamAdapter",
       "type": "object",
+      "x-closed": true,
       "allOf": [
         {
           "$ref": "#/$defs/BamAdapterSlots"
@@ -564,6 +567,7 @@
     "SamAdapter": {
       "title": "SamAdapter",
       "type": "object",
+      "x-closed": true,
       "allOf": [
         {
           "$ref": "#/$defs/SamAdapterSlots"
@@ -629,6 +633,7 @@
     "HtsgetBamAdapter": {
       "title": "HtsgetBamAdapter",
       "type": "object",
+      "x-closed": true,
       "allOf": [
         {
           "$ref": "#/$defs/HtsgetBamAdapterSlots"
@@ -714,6 +719,7 @@
     "BigBedAdapter": {
       "title": "BigBedAdapter",
       "type": "object",
+      "x-closed": true,
       "allOf": [
         {
           "$ref": "#/$defs/BigBedAdapterSlots"
@@ -831,6 +837,7 @@
     "BedAdapter": {
       "title": "BedAdapter",
       "type": "object",
+      "x-closed": true,
       "allOf": [
         {
           "$ref": "#/$defs/BedAdapterSlots"
@@ -888,6 +895,7 @@
     "BedpeAdapter": {
       "title": "BedpeAdapter",
       "type": "object",
+      "x-closed": true,
       "allOf": [
         {
           "$ref": "#/$defs/BedpeAdapterSlots"
@@ -933,6 +941,7 @@
     "StarFusionAdapter": {
       "title": "StarFusionAdapter",
       "type": "object",
+      "x-closed": true,
       "allOf": [
         {
           "$ref": "#/$defs/StarFusionAdapterSlots"
@@ -1075,6 +1084,7 @@
     "BedTabixAdapter": {
       "title": "BedTabixAdapter",
       "type": "object",
+      "x-closed": true,
       "allOf": [
         {
           "$ref": "#/$defs/BedTabixAdapterSlots"
@@ -1131,6 +1141,7 @@
     "BedGraphAdapter": {
       "title": "BedGraphAdapter",
       "type": "object",
+      "x-closed": true,
       "allOf": [
         {
           "$ref": "#/$defs/BedGraphAdapterSlots"
@@ -1199,6 +1210,7 @@
     "BedGraphTabixAdapter": {
       "title": "BedGraphTabixAdapter",
       "type": "object",
+      "x-closed": true,
       "allOf": [
         {
           "$ref": "#/$defs/BedGraphTabixAdapterSlots"
@@ -1243,6 +1255,7 @@
     "FromConfigAdapter": {
       "title": "FromConfigAdapter",
       "type": "object",
+      "x-closed": true,
       "allOf": [
         {
           "$ref": "#/$defs/FromConfigAdapterSlots"
@@ -1287,6 +1300,7 @@
     "FromConfigRegionsAdapter": {
       "title": "FromConfigRegionsAdapter",
       "type": "object",
+      "x-closed": true,
       "allOf": [
         {
           "$ref": "#/$defs/FromConfigRegionsAdapterSlots"
@@ -1331,6 +1345,7 @@
     "FromConfigSequenceAdapter": {
       "title": "FromConfigSequenceAdapter",
       "type": "object",
+      "x-closed": true,
       "allOf": [
         {
           "$ref": "#/$defs/FromConfigSequenceAdapterSlots"
@@ -1390,6 +1405,7 @@
     "RefNameAliasAdapter": {
       "title": "RefNameAliasAdapter",
       "type": "object",
+      "x-closed": true,
       "allOf": [
         {
           "$ref": "#/$defs/RefNameAliasAdapterSlots"
@@ -1440,6 +1456,7 @@
     "NcbiSequenceReportAliasAdapter": {
       "title": "NcbiSequenceReportAliasAdapter",
       "type": "object",
+      "x-closed": true,
       "allOf": [
         {
           "$ref": "#/$defs/NcbiSequenceReportAliasAdapterSlots"
@@ -1495,6 +1512,7 @@
     "GtfAdapter": {
       "title": "GtfAdapter",
       "type": "object",
+      "x-closed": true,
       "allOf": [
         {
           "$ref": "#/$defs/GtfAdapterSlots"
@@ -1590,6 +1608,7 @@
     "GtfTabixAdapter": {
       "title": "GtfTabixAdapter",
       "type": "object",
+      "x-closed": true,
       "allOf": [
         {
           "$ref": "#/$defs/GtfTabixAdapterSlots"
@@ -1675,6 +1694,7 @@
     "Gff3TabixAdapter": {
       "title": "Gff3TabixAdapter",
       "type": "object",
+      "x-closed": true,
       "allOf": [
         {
           "$ref": "#/$defs/Gff3TabixAdapterSlots"
@@ -1719,6 +1739,7 @@
     "Gff3Adapter": {
       "title": "Gff3Adapter",
       "type": "object",
+      "x-closed": true,
       "allOf": [
         {
           "$ref": "#/$defs/Gff3AdapterSlots"
@@ -1767,6 +1788,7 @@
     "NCListAdapter": {
       "title": "NCListAdapter",
       "type": "object",
+      "x-closed": true,
       "allOf": [
         {
           "$ref": "#/$defs/NCListAdapterSlots"
@@ -1848,6 +1870,7 @@
     "SPARQLAdapter": {
       "title": "SPARQLAdapter",
       "type": "object",
+      "x-closed": true,
       "allOf": [
         {
           "$ref": "#/$defs/SPARQLAdapterSlots"
@@ -1904,6 +1927,7 @@
     "TwoBitAdapter": {
       "title": "TwoBitAdapter",
       "type": "object",
+      "x-closed": true,
       "allOf": [
         {
           "$ref": "#/$defs/TwoBitAdapterSlots"
@@ -1981,6 +2005,7 @@
     "BgzipFastaAdapter": {
       "title": "BgzipFastaAdapter",
       "type": "object",
+      "x-closed": true,
       "allOf": [
         {
           "$ref": "#/$defs/BgzipFastaAdapterSlots"
@@ -2025,6 +2050,7 @@
     "ChromSizesAdapter": {
       "title": "ChromSizesAdapter",
       "type": "object",
+      "x-closed": true,
       "allOf": [
         {
           "$ref": "#/$defs/ChromSizesAdapterSlots"
@@ -2090,6 +2116,7 @@
     "IndexedFastaAdapter": {
       "title": "IndexedFastaAdapter",
       "type": "object",
+      "x-closed": true,
       "allOf": [
         {
           "$ref": "#/$defs/IndexedFastaAdapterSlots"
@@ -2152,6 +2179,7 @@
     "UnindexedFastaAdapter": {
       "title": "UnindexedFastaAdapter",
       "type": "object",
+      "x-closed": true,
       "allOf": [
         {
           "$ref": "#/$defs/UnindexedFastaAdapterSlots"
@@ -2224,6 +2252,7 @@
     "SequenceSearchAdapter": {
       "title": "SequenceSearchAdapter",
       "type": "object",
+      "x-closed": true,
       "allOf": [
         {
           "$ref": "#/$defs/SequenceSearchAdapterSlots"
@@ -2349,6 +2378,7 @@
     "CrisprGuideAdapter": {
       "title": "CrisprGuideAdapter",
       "type": "object",
+      "x-closed": true,
       "allOf": [
         {
           "$ref": "#/$defs/CrisprGuideAdapterSlots"
@@ -2412,6 +2442,7 @@
     "MotifListAdapter": {
       "title": "MotifListAdapter",
       "type": "object",
+      "x-closed": true,
       "allOf": [
         {
           "$ref": "#/$defs/MotifListAdapterSlots"
@@ -2465,6 +2496,7 @@
     "VcfAdapter": {
       "title": "VcfAdapter",
       "type": "object",
+      "x-closed": true,
       "allOf": [
         {
           "$ref": "#/$defs/VcfAdapterSlots"
@@ -2551,6 +2583,7 @@
     "VcfTabixAdapter": {
       "title": "VcfTabixAdapter",
       "type": "object",
+      "x-closed": true,
       "allOf": [
         {
           "$ref": "#/$defs/VcfTabixAdapterSlots"
@@ -2636,6 +2669,7 @@
     "SplitVcfTabixAdapter": {
       "title": "SplitVcfTabixAdapter",
       "type": "object",
+      "x-closed": true,
       "allOf": [
         {
           "$ref": "#/$defs/SplitVcfTabixAdapterSlots"
@@ -2680,6 +2714,7 @@
     "PlinkLDAdapter": {
       "title": "PlinkLDAdapter",
       "type": "object",
+      "x-closed": true,
       "allOf": [
         {
           "$ref": "#/$defs/PlinkLDAdapterSlots"
@@ -2736,6 +2771,7 @@
     "PlinkLDTabixAdapter": {
       "title": "PlinkLDTabixAdapter",
       "type": "object",
+      "x-closed": true,
       "allOf": [
         {
           "$ref": "#/$defs/PlinkLDTabixAdapterSlots"
@@ -2802,6 +2838,7 @@
     "MultiWiggleAdapter": {
       "title": "MultiWiggleAdapter",
       "type": "object",
+      "x-closed": true,
       "allOf": [
         {
           "$ref": "#/$defs/MultiWiggleAdapterSlots"
@@ -2866,6 +2903,7 @@
     "BigWigAdapter": {
       "title": "BigWigAdapter",
       "type": "object",
+      "x-closed": true,
       "allOf": [
         {
           "$ref": "#/$defs/BigWigAdapterSlots"
@@ -2929,6 +2967,7 @@
     "GCContentAdapter": {
       "title": "GCContentAdapter",
       "type": "object",
+      "x-closed": true,
       "allOf": [
         {
           "$ref": "#/$defs/GCContentAdapterSlots"
@@ -3041,6 +3080,7 @@
     "BgzipMafAdapter": {
       "title": "BgzipMafAdapter",
       "type": "object",
+      "x-closed": true,
       "allOf": [
         {
           "$ref": "#/$defs/BgzipMafAdapterSlots"
@@ -3153,6 +3193,7 @@
     "BgzipTaffyAdapter": {
       "title": "BgzipTaffyAdapter",
       "type": "object",
+      "x-closed": true,
       "allOf": [
         {
           "$ref": "#/$defs/BgzipTaffyAdapterSlots"
@@ -3251,6 +3292,7 @@
     "BigMafAdapter": {
       "title": "BigMafAdapter",
       "type": "object",
+      "x-closed": true,
       "allOf": [
         {
           "$ref": "#/$defs/BigMafAdapterSlots"
@@ -3370,6 +3412,7 @@
     "MafTabixAdapter": {
       "title": "MafTabixAdapter",
       "type": "object",
+      "x-closed": true,
       "allOf": [
         {
           "$ref": "#/$defs/MafTabixAdapterSlots"
@@ -3414,6 +3457,7 @@
     "HicAdapter": {
       "title": "HicAdapter",
       "type": "object",
+      "x-closed": true,
       "allOf": [
         {
           "$ref": "#/$defs/HicAdapterSlots"
@@ -3492,6 +3536,7 @@
     "MultiGenomePAFAdapter": {
       "title": "MultiGenomePAFAdapter",
       "type": "object",
+      "x-closed": true,
       "allOf": [
         {
           "$ref": "#/$defs/MultiGenomePAFAdapterSlots"
@@ -3592,6 +3637,7 @@
     "MultiGenomeIndexedPAFAdapter": {
       "title": "MultiGenomeIndexedPAFAdapter",
       "type": "object",
+      "x-closed": true,
       "allOf": [
         {
           "$ref": "#/$defs/MultiGenomeIndexedPAFAdapterSlots"
@@ -3680,6 +3726,7 @@
     "PAFAdapter": {
       "title": "PAFAdapter",
       "type": "object",
+      "x-closed": true,
       "allOf": [
         {
           "$ref": "#/$defs/PAFAdapterSlots"
@@ -3790,6 +3837,7 @@
     "PairwiseIndexedPAFAdapter": {
       "title": "PairwiseIndexedPAFAdapter",
       "type": "object",
+      "x-closed": true,
       "allOf": [
         {
           "$ref": "#/$defs/PairwiseIndexedPAFAdapterSlots"
@@ -3845,6 +3893,7 @@
     "MultiPairwiseSyntenyAdapter": {
       "title": "MultiPairwiseSyntenyAdapter",
       "type": "object",
+      "x-closed": true,
       "allOf": [
         {
           "$ref": "#/$defs/MultiPairwiseSyntenyAdapterSlots"
@@ -3921,6 +3970,7 @@
     "DeltaAdapter": {
       "title": "DeltaAdapter",
       "type": "object",
+      "x-closed": true,
       "allOf": [
         {
           "$ref": "#/$defs/DeltaAdapterSlots"
@@ -3997,6 +4047,7 @@
     "ChainAdapter": {
       "title": "ChainAdapter",
       "type": "object",
+      "x-closed": true,
       "allOf": [
         {
           "$ref": "#/$defs/ChainAdapterSlots"
@@ -4082,6 +4133,7 @@
     "MCScanAnchorsAdapter": {
       "title": "MCScanAnchorsAdapter",
       "type": "object",
+      "x-closed": true,
       "allOf": [
         {
           "$ref": "#/$defs/MCScanAnchorsAdapterSlots"
@@ -4170,6 +4222,7 @@
     "MCScanBlocksAdapter": {
       "title": "MCScanBlocksAdapter",
       "type": "object",
+      "x-closed": true,
       "allOf": [
         {
           "$ref": "#/$defs/MCScanBlocksAdapterSlots"
@@ -4255,6 +4308,7 @@
     "MCScanSimpleAnchorsAdapter": {
       "title": "MCScanSimpleAnchorsAdapter",
       "type": "object",
+      "x-closed": true,
       "allOf": [
         {
           "$ref": "#/$defs/MCScanSimpleAnchorsAdapterSlots"
@@ -4331,6 +4385,7 @@
     "MashMapAdapter": {
       "title": "MashMapAdapter",
       "type": "object",
+      "x-closed": true,
       "allOf": [
         {
           "$ref": "#/$defs/MashMapAdapterSlots"
@@ -4417,6 +4472,7 @@
     "BlastTabularAdapter": {
       "title": "BlastTabularAdapter",
       "type": "object",
+      "x-closed": true,
       "allOf": [
         {
           "$ref": "#/$defs/BlastTabularAdapterSlots"
@@ -4547,6 +4603,7 @@
     "GWASAdapter": {
       "title": "GWASAdapter",
       "type": "object",
+      "x-closed": true,
       "allOf": [
         {
           "$ref": "#/$defs/GWASAdapterSlots"
@@ -5246,7 +5303,7 @@
     "LinearBasicDisplay": {
       "title": "LinearBasicDisplay",
       "type": "object",
-      "x-closed": "warn",
+      "x-closed": true,
       "allOf": [
         {
           "$ref": "#/$defs/LinearBasicDisplaySlots"
@@ -5694,7 +5751,7 @@
     "LinearMultiRowFeatureDisplay": {
       "title": "LinearMultiRowFeatureDisplay",
       "type": "object",
-      "x-closed": "warn",
+      "x-closed": true,
       "allOf": [
         {
           "$ref": "#/$defs/LinearMultiRowFeatureDisplaySlots"
@@ -6858,7 +6915,7 @@
     "LinearAlignmentsDisplay": {
       "title": "LinearAlignmentsDisplay",
       "type": "object",
-      "x-closed": "warn",
+      "x-closed": true,
       "allOf": [
         {
           "$ref": "#/$defs/LinearAlignmentsDisplaySlots"
@@ -7084,7 +7141,7 @@
     "ChordVariantDisplay": {
       "title": "ChordVariantDisplay",
       "type": "object",
-      "x-closed": "warn",
+      "x-closed": true,
       "allOf": [
         {
           "$ref": "#/$defs/ChordVariantDisplaySlots"
@@ -7142,7 +7199,7 @@
     "ChordSyntenyDisplay": {
       "title": "ChordSyntenyDisplay",
       "type": "object",
-      "x-closed": "warn",
+      "x-closed": true,
       "allOf": [
         {
           "$ref": "#/$defs/ChordSyntenyDisplaySlots"
@@ -7169,7 +7226,7 @@
     "DotplotDisplay": {
       "title": "DotplotDisplay",
       "type": "object",
-      "x-closed": "warn",
+      "x-closed": true,
       "allOf": [
         {
           "$ref": "#/$defs/DotplotDisplaySlots"
@@ -7196,7 +7253,7 @@
     "LinearSyntenyDisplay": {
       "title": "LinearSyntenyDisplay",
       "type": "object",
-      "x-closed": "warn",
+      "x-closed": true,
       "allOf": [
         {
           "$ref": "#/$defs/LinearSyntenyDisplaySlots"
@@ -7924,7 +7981,7 @@
     "LGVSyntenyDisplay": {
       "title": "LGVSyntenyDisplay",
       "type": "object",
-      "x-closed": "warn",
+      "x-closed": true,
       "allOf": [
         {
           "$ref": "#/$defs/LGVSyntenyDisplaySlots"
@@ -9844,7 +9901,7 @@
     "MultiWaySyntenyDisplay": {
       "title": "MultiWaySyntenyDisplay",
       "type": "object",
-      "x-closed": "warn",
+      "x-closed": true,
       "allOf": [
         {
           "$ref": "#/$defs/MultiWaySyntenyDisplaySlots"
@@ -9931,7 +9988,7 @@
     "LinearReferenceSequenceDisplay": {
       "title": "LinearReferenceSequenceDisplay",
       "type": "object",
-      "x-closed": "warn",
+      "x-closed": true,
       "allOf": [
         {
           "$ref": "#/$defs/LinearReferenceSequenceDisplaySlots"
@@ -10211,7 +10268,7 @@
     "LinearVariantDisplay": {
       "title": "LinearVariantDisplay",
       "type": "object",
-      "x-closed": "warn",
+      "x-closed": true,
       "allOf": [
         {
           "$ref": "#/$defs/LinearVariantDisplaySlots"
@@ -10751,7 +10808,7 @@
     "LinearMultiSampleVariantDisplay": {
       "title": "LinearMultiSampleVariantDisplay",
       "type": "object",
-      "x-closed": "warn",
+      "x-closed": true,
       "allOf": [
         {
           "$ref": "#/$defs/LinearMultiSampleVariantDisplaySlots"
@@ -10981,7 +11038,7 @@
     "LDTrackDisplay": {
       "title": "LDTrackDisplay",
       "type": "object",
-      "x-closed": "warn",
+      "x-closed": true,
       "allOf": [
         {
           "$ref": "#/$defs/LDTrackDisplaySlots"
@@ -11645,7 +11702,7 @@
     "LinearWiggleDisplay": {
       "title": "LinearWiggleDisplay",
       "type": "object",
-      "x-closed": "warn",
+      "x-closed": true,
       "allOf": [
         {
           "$ref": "#/$defs/LinearWiggleDisplaySlots"
@@ -12097,7 +12154,7 @@
     "LinearMafDisplay": {
       "title": "LinearMafDisplay",
       "type": "object",
-      "x-closed": "warn",
+      "x-closed": true,
       "allOf": [
         {
           "$ref": "#/$defs/LinearMafDisplaySlots"
@@ -12297,7 +12354,7 @@
     "LinearHicDisplay": {
       "title": "LinearHicDisplay",
       "type": "object",
-      "x-closed": "warn",
+      "x-closed": true,
       "allOf": [
         {
           "$ref": "#/$defs/LinearHicDisplaySlots"
@@ -12736,7 +12793,7 @@
     "LinearManhattanDisplay": {
       "title": "LinearManhattanDisplay",
       "type": "object",
-      "x-closed": "warn",
+      "x-closed": true,
       "allOf": [
         {
           "$ref": "#/$defs/LinearManhattanDisplaySlots"
@@ -12972,7 +13029,7 @@
     "LinearMarkDisplay": {
       "title": "LinearMarkDisplay",
       "type": "object",
-      "x-closed": "warn",
+      "x-closed": true,
       "allOf": [
         {
           "$ref": "#/$defs/LinearMarkDisplaySlots"

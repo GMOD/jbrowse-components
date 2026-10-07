@@ -64,6 +64,7 @@ const HtsgetBamAdapter = ConfigurationSchema(
   },
   {
     explicitlyTyped: true,
+    closed: true,
 
     /**
      * #preProcessSnapshot

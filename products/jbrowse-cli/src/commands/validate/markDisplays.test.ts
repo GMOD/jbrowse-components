@@ -757,7 +757,7 @@ describe('a transform step in a config file', () => {
     expect(
       stepProblems({ type: 'filter', expr: 'jexl:true', step: 50 }),
     ).toEqual([
-      `${STEP}.step: unknown slot "step" — MarkTransform.filter takes type and expr, and JBrowse refuses to load it rather than drop a key it does not declare`,
+      `${STEP}.step: unknown slot "step" — MarkTransform.filter takes type and expr; JBrowse warns on the console and loads without it, so this setting does nothing`,
     ])
   })
 

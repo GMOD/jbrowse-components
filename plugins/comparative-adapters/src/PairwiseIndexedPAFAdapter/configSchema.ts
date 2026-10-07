@@ -71,6 +71,7 @@ const PairwiseIndexedPAFAdapter = ConfigurationSchema(
   },
   {
     explicitlyTyped: true,
+    closed: true,
 
     /**
      * #preProcessSnapshot

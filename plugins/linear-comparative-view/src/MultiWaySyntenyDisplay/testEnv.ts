@@ -148,7 +148,7 @@ export function createDisplayWithSession({
         configSchema: ConfigurationSchema(
           'TestRefNameAliasAdapter',
           { rows: { type: 'frozen', defaultValue: [] } },
-          { explicitlyTyped: true },
+          { explicitlyTyped: true, closed: true },
         ),
         getAdapterClass: async () =>
           class extends BaseAdapter implements BaseRefNameAliasAdapter {

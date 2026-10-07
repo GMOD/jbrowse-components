@@ -49,6 +49,7 @@ const sequenceConfigSchema = ConfigurationSchema(
   },
   {
     explicitlyTyped: true,
+    closed: true,
   },
 )
 

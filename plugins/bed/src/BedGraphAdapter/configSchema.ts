@@ -53,6 +53,7 @@ const BedGraphAdapter = ConfigurationSchema(
   },
   {
     explicitlyTyped: true,
+    closed: true,
 
     /**
      * #preProcessSnapshot

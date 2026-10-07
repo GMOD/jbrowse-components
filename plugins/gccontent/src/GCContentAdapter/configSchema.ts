@@ -67,7 +67,7 @@ const GCContentAdapterF = (_pluginManager: PluginManager) => {
         description: 'calculate GC content fraction or GC skew (G-C)/(G+C)',
       },
     },
-    { explicitlyTyped: true },
+    { explicitlyTyped: true, closed: true },
   )
 }
 

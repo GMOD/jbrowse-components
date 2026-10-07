@@ -78,9 +78,11 @@ export function expandTabixShorthand(
 ) {
   return snap.uri
     ? {
-        ...fillLocations(snap, {
-          [locationKey]: { uri: snap.uri, baseUri: snap.baseUri },
-        }),
+        ...fillLocations(
+          snap,
+          { [locationKey]: { uri: snap.uri, baseUri: snap.baseUri } },
+          ['csi'],
+        ),
         index: tabixIndexSnapshot(snap),
       }
     : snap

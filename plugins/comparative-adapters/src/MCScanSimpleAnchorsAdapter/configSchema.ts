@@ -94,6 +94,7 @@ const MCScanSimpleAnchorsAdapter = ConfigurationSchema(
   },
   {
     explicitlyTyped: true,
+    closed: true,
 
     /**
      * #preProcessSnapshot

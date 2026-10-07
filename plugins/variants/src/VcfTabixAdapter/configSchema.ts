@@ -75,6 +75,7 @@ const VcfTabixAdapter = ConfigurationSchema(
   },
   {
     explicitlyTyped: true,
+    closed: true,
 
     /**
      * #preProcessSnapshot

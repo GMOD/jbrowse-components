@@ -159,7 +159,11 @@ const MCScanBlocksAdapter = ConfigurationSchema(
       defaultValue: [],
     },
   },
-  { explicitlyTyped: true, preProcessSnapshot: normalizeSnapshot },
+  {
+    explicitlyTyped: true,
+    closed: true,
+    preProcessSnapshot: normalizeSnapshot,
+  },
 )
 
 export type MCScanBlocksAdapterConfig = Instance<typeof MCScanBlocksAdapter>

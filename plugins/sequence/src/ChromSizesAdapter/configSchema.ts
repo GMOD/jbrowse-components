@@ -43,6 +43,7 @@ const ChromSizesAdapter = ConfigurationSchema(
   },
   {
     explicitlyTyped: true,
+    closed: true,
     /**
      * #preProcessSnapshot
      *

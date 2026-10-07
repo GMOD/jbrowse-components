@@ -1,7 +1,9 @@
 /**
  * A shorthand snapshot with its location slots filled in: `derived` supplies
  * what the shorthand implies, and any key the config spells out for itself
- * wins.
+ * wins. The shorthand's own keys leave the result, `uri` and `baseUri` and
+ * whichever others `consumed` names, since an adapter's schema is `closed`
+ * and would name one left behind as undeclared.
  *
  * Spread the other way round — derived over the snapshot — a config naming both
  * a `uri` and a location that is not the sibling of it, `{ uri: 'x.fa',
@@ -12,6 +14,11 @@
 export function fillLocations(
   snap: Record<string, unknown>,
   derived: Record<string, unknown>,
+  consumed: readonly string[] = [],
 ) {
-  return { ...derived, ...snap }
+  const written = { ...snap }
+  for (const key of ['uri', 'baseUri', ...consumed]) {
+    delete written[key]
+  }
+  return { ...derived, ...written }
 }

@@ -83,7 +83,7 @@ const configSchema = ConfigurationSchema(
       defaultValue: true,
     },
   },
-  { explicitlyTyped: true },
+  { explicitlyTyped: true, closed: true },
 )
 
 export type SequenceSearchAdapterConfig = Instance<typeof configSchema>

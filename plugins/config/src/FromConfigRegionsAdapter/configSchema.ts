@@ -50,6 +50,7 @@ const regionsConfigSchema = ConfigurationSchema(
   },
   {
     explicitlyTyped: true,
+    closed: true,
   },
 )
 export default regionsConfigSchema

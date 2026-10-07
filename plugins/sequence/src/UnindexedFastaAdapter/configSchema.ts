@@ -62,6 +62,7 @@ const UnindexedFastaAdapter = ConfigurationSchema(
   },
   {
     explicitlyTyped: true,
+    closed: true,
     /**
      * #preProcessSnapshot
      *

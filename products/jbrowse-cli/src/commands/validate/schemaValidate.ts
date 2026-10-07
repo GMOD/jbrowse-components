@@ -219,10 +219,7 @@ function unknownKeyMessage(
   if (title.endsWith('TrackEntry')) {
     return `"${key}" is neither a config slot nor a property of ${title.replace(/TrackEntry$/, '')}${guess} — the entry's keys are folded onto that display, and one it does not declare silently does nothing`
   }
-  if (schema['x-closed'] === true) {
-    return `unknown slot "${key}"${guess} — ${title} takes ${listed(accepted)}, and JBrowse refuses to load it rather than drop a key it does not declare`
-  }
-  if (schema['x-closed'] === 'warn') {
+  if (schema['x-closed']) {
     return `unknown slot "${key}"${guess} — ${title} takes ${listed(accepted)}; JBrowse warns on the console and loads without it, so this setting does nothing`
   }
   return `unknown slot "${key}"${guess} — JBrowse ignores keys it does not declare, so this setting silently does nothing`

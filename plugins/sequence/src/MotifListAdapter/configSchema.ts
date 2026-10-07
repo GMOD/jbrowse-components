@@ -69,7 +69,7 @@ const configSchema = ConfigurationSchema(
       defaultValue: true,
     },
   },
-  { explicitlyTyped: true },
+  { explicitlyTyped: true, closed: true },
 )
 
 export type MotifListAdapterConfig = Instance<typeof configSchema>

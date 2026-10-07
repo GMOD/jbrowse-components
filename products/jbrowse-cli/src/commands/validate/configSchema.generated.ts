@@ -319,6 +319,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
     "CytobandAdapter": {
       "title": "CytobandAdapter",
       "type": "object",
+      "x-closed": true,
       "allOf": [
         {
           "$ref": "#/$defs/CytobandAdapterSlots"
@@ -408,6 +409,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
     "CramAdapter": {
       "title": "CramAdapter",
       "type": "object",
+      "x-closed": true,
       "allOf": [
         {
           "$ref": "#/$defs/CramAdapterSlots"
@@ -523,6 +525,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
     "BamAdapter": {
       "title": "BamAdapter",
       "type": "object",
+      "x-closed": true,
       "allOf": [
         {
           "$ref": "#/$defs/BamAdapterSlots"
@@ -578,6 +581,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
     "SamAdapter": {
       "title": "SamAdapter",
       "type": "object",
+      "x-closed": true,
       "allOf": [
         {
           "$ref": "#/$defs/SamAdapterSlots"
@@ -645,6 +649,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
     "HtsgetBamAdapter": {
       "title": "HtsgetBamAdapter",
       "type": "object",
+      "x-closed": true,
       "allOf": [
         {
           "$ref": "#/$defs/HtsgetBamAdapterSlots"
@@ -732,6 +737,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
     "BigBedAdapter": {
       "title": "BigBedAdapter",
       "type": "object",
+      "x-closed": true,
       "allOf": [
         {
           "$ref": "#/$defs/BigBedAdapterSlots"
@@ -851,6 +857,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
     "BedAdapter": {
       "title": "BedAdapter",
       "type": "object",
+      "x-closed": true,
       "allOf": [
         {
           "$ref": "#/$defs/BedAdapterSlots"
@@ -910,6 +917,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
     "BedpeAdapter": {
       "title": "BedpeAdapter",
       "type": "object",
+      "x-closed": true,
       "allOf": [
         {
           "$ref": "#/$defs/BedpeAdapterSlots"
@@ -957,6 +965,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
     "StarFusionAdapter": {
       "title": "StarFusionAdapter",
       "type": "object",
+      "x-closed": true,
       "allOf": [
         {
           "$ref": "#/$defs/StarFusionAdapterSlots"
@@ -1104,6 +1113,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
     "BedTabixAdapter": {
       "title": "BedTabixAdapter",
       "type": "object",
+      "x-closed": true,
       "allOf": [
         {
           "$ref": "#/$defs/BedTabixAdapterSlots"
@@ -1162,6 +1172,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
     "BedGraphAdapter": {
       "title": "BedGraphAdapter",
       "type": "object",
+      "x-closed": true,
       "allOf": [
         {
           "$ref": "#/$defs/BedGraphAdapterSlots"
@@ -1232,6 +1243,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
     "BedGraphTabixAdapter": {
       "title": "BedGraphTabixAdapter",
       "type": "object",
+      "x-closed": true,
       "allOf": [
         {
           "$ref": "#/$defs/BedGraphTabixAdapterSlots"
@@ -1278,6 +1290,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
     "FromConfigAdapter": {
       "title": "FromConfigAdapter",
       "type": "object",
+      "x-closed": true,
       "allOf": [
         {
           "$ref": "#/$defs/FromConfigAdapterSlots"
@@ -1324,6 +1337,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
     "FromConfigRegionsAdapter": {
       "title": "FromConfigRegionsAdapter",
       "type": "object",
+      "x-closed": true,
       "allOf": [
         {
           "$ref": "#/$defs/FromConfigRegionsAdapterSlots"
@@ -1370,6 +1384,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
     "FromConfigSequenceAdapter": {
       "title": "FromConfigSequenceAdapter",
       "type": "object",
+      "x-closed": true,
       "allOf": [
         {
           "$ref": "#/$defs/FromConfigSequenceAdapterSlots"
@@ -1431,6 +1446,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
     "RefNameAliasAdapter": {
       "title": "RefNameAliasAdapter",
       "type": "object",
+      "x-closed": true,
       "allOf": [
         {
           "$ref": "#/$defs/RefNameAliasAdapterSlots"
@@ -1483,6 +1499,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
     "NcbiSequenceReportAliasAdapter": {
       "title": "NcbiSequenceReportAliasAdapter",
       "type": "object",
+      "x-closed": true,
       "allOf": [
         {
           "$ref": "#/$defs/NcbiSequenceReportAliasAdapterSlots"
@@ -1540,6 +1557,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
     "GtfAdapter": {
       "title": "GtfAdapter",
       "type": "object",
+      "x-closed": true,
       "allOf": [
         {
           "$ref": "#/$defs/GtfAdapterSlots"
@@ -1637,6 +1655,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
     "GtfTabixAdapter": {
       "title": "GtfTabixAdapter",
       "type": "object",
+      "x-closed": true,
       "allOf": [
         {
           "$ref": "#/$defs/GtfTabixAdapterSlots"
@@ -1724,6 +1743,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
     "Gff3TabixAdapter": {
       "title": "Gff3TabixAdapter",
       "type": "object",
+      "x-closed": true,
       "allOf": [
         {
           "$ref": "#/$defs/Gff3TabixAdapterSlots"
@@ -1770,6 +1790,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
     "Gff3Adapter": {
       "title": "Gff3Adapter",
       "type": "object",
+      "x-closed": true,
       "allOf": [
         {
           "$ref": "#/$defs/Gff3AdapterSlots"
@@ -1820,6 +1841,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
     "NCListAdapter": {
       "title": "NCListAdapter",
       "type": "object",
+      "x-closed": true,
       "allOf": [
         {
           "$ref": "#/$defs/NCListAdapterSlots"
@@ -1903,6 +1925,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
     "SPARQLAdapter": {
       "title": "SPARQLAdapter",
       "type": "object",
+      "x-closed": true,
       "allOf": [
         {
           "$ref": "#/$defs/SPARQLAdapterSlots"
@@ -1961,6 +1984,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
     "TwoBitAdapter": {
       "title": "TwoBitAdapter",
       "type": "object",
+      "x-closed": true,
       "allOf": [
         {
           "$ref": "#/$defs/TwoBitAdapterSlots"
@@ -2040,6 +2064,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
     "BgzipFastaAdapter": {
       "title": "BgzipFastaAdapter",
       "type": "object",
+      "x-closed": true,
       "allOf": [
         {
           "$ref": "#/$defs/BgzipFastaAdapterSlots"
@@ -2086,6 +2111,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
     "ChromSizesAdapter": {
       "title": "ChromSizesAdapter",
       "type": "object",
+      "x-closed": true,
       "allOf": [
         {
           "$ref": "#/$defs/ChromSizesAdapterSlots"
@@ -2153,6 +2179,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
     "IndexedFastaAdapter": {
       "title": "IndexedFastaAdapter",
       "type": "object",
+      "x-closed": true,
       "allOf": [
         {
           "$ref": "#/$defs/IndexedFastaAdapterSlots"
@@ -2217,6 +2244,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
     "UnindexedFastaAdapter": {
       "title": "UnindexedFastaAdapter",
       "type": "object",
+      "x-closed": true,
       "allOf": [
         {
           "$ref": "#/$defs/UnindexedFastaAdapterSlots"
@@ -2291,6 +2319,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
     "SequenceSearchAdapter": {
       "title": "SequenceSearchAdapter",
       "type": "object",
+      "x-closed": true,
       "allOf": [
         {
           "$ref": "#/$defs/SequenceSearchAdapterSlots"
@@ -2421,6 +2450,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
     "CrisprGuideAdapter": {
       "title": "CrisprGuideAdapter",
       "type": "object",
+      "x-closed": true,
       "allOf": [
         {
           "$ref": "#/$defs/CrisprGuideAdapterSlots"
@@ -2486,6 +2516,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
     "MotifListAdapter": {
       "title": "MotifListAdapter",
       "type": "object",
+      "x-closed": true,
       "allOf": [
         {
           "$ref": "#/$defs/MotifListAdapterSlots"
@@ -2541,6 +2572,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
     "VcfAdapter": {
       "title": "VcfAdapter",
       "type": "object",
+      "x-closed": true,
       "allOf": [
         {
           "$ref": "#/$defs/VcfAdapterSlots"
@@ -2629,6 +2661,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
     "VcfTabixAdapter": {
       "title": "VcfTabixAdapter",
       "type": "object",
+      "x-closed": true,
       "allOf": [
         {
           "$ref": "#/$defs/VcfTabixAdapterSlots"
@@ -2719,6 +2752,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
     "SplitVcfTabixAdapter": {
       "title": "SplitVcfTabixAdapter",
       "type": "object",
+      "x-closed": true,
       "allOf": [
         {
           "$ref": "#/$defs/SplitVcfTabixAdapterSlots"
@@ -2765,6 +2799,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
     "PlinkLDAdapter": {
       "title": "PlinkLDAdapter",
       "type": "object",
+      "x-closed": true,
       "allOf": [
         {
           "$ref": "#/$defs/PlinkLDAdapterSlots"
@@ -2823,6 +2858,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
     "PlinkLDTabixAdapter": {
       "title": "PlinkLDTabixAdapter",
       "type": "object",
+      "x-closed": true,
       "allOf": [
         {
           "$ref": "#/$defs/PlinkLDTabixAdapterSlots"
@@ -2891,6 +2927,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
     "MultiWiggleAdapter": {
       "title": "MultiWiggleAdapter",
       "type": "object",
+      "x-closed": true,
       "allOf": [
         {
           "$ref": "#/$defs/MultiWiggleAdapterSlots"
@@ -2957,6 +2994,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
     "BigWigAdapter": {
       "title": "BigWigAdapter",
       "type": "object",
+      "x-closed": true,
       "allOf": [
         {
           "$ref": "#/$defs/BigWigAdapterSlots"
@@ -3025,6 +3063,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
     "GCContentAdapter": {
       "title": "GCContentAdapter",
       "type": "object",
+      "x-closed": true,
       "allOf": [
         {
           "$ref": "#/$defs/GCContentAdapterSlots"
@@ -3139,6 +3178,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
     "BgzipMafAdapter": {
       "title": "BgzipMafAdapter",
       "type": "object",
+      "x-closed": true,
       "allOf": [
         {
           "$ref": "#/$defs/BgzipMafAdapterSlots"
@@ -3253,6 +3293,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
     "BgzipTaffyAdapter": {
       "title": "BgzipTaffyAdapter",
       "type": "object",
+      "x-closed": true,
       "allOf": [
         {
           "$ref": "#/$defs/BgzipTaffyAdapterSlots"
@@ -3353,6 +3394,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
     "BigMafAdapter": {
       "title": "BigMafAdapter",
       "type": "object",
+      "x-closed": true,
       "allOf": [
         {
           "$ref": "#/$defs/BigMafAdapterSlots"
@@ -3474,6 +3516,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
     "MafTabixAdapter": {
       "title": "MafTabixAdapter",
       "type": "object",
+      "x-closed": true,
       "allOf": [
         {
           "$ref": "#/$defs/MafTabixAdapterSlots"
@@ -3520,6 +3563,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
     "HicAdapter": {
       "title": "HicAdapter",
       "type": "object",
+      "x-closed": true,
       "allOf": [
         {
           "$ref": "#/$defs/HicAdapterSlots"
@@ -3600,6 +3644,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
     "MultiGenomePAFAdapter": {
       "title": "MultiGenomePAFAdapter",
       "type": "object",
+      "x-closed": true,
       "allOf": [
         {
           "$ref": "#/$defs/MultiGenomePAFAdapterSlots"
@@ -3702,6 +3747,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
     "MultiGenomeIndexedPAFAdapter": {
       "title": "MultiGenomeIndexedPAFAdapter",
       "type": "object",
+      "x-closed": true,
       "allOf": [
         {
           "$ref": "#/$defs/MultiGenomeIndexedPAFAdapterSlots"
@@ -3792,6 +3838,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
     "PAFAdapter": {
       "title": "PAFAdapter",
       "type": "object",
+      "x-closed": true,
       "allOf": [
         {
           "$ref": "#/$defs/PAFAdapterSlots"
@@ -3904,6 +3951,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
     "PairwiseIndexedPAFAdapter": {
       "title": "PairwiseIndexedPAFAdapter",
       "type": "object",
+      "x-closed": true,
       "allOf": [
         {
           "$ref": "#/$defs/PairwiseIndexedPAFAdapterSlots"
@@ -3961,6 +4009,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
     "MultiPairwiseSyntenyAdapter": {
       "title": "MultiPairwiseSyntenyAdapter",
       "type": "object",
+      "x-closed": true,
       "allOf": [
         {
           "$ref": "#/$defs/MultiPairwiseSyntenyAdapterSlots"
@@ -4039,6 +4088,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
     "DeltaAdapter": {
       "title": "DeltaAdapter",
       "type": "object",
+      "x-closed": true,
       "allOf": [
         {
           "$ref": "#/$defs/DeltaAdapterSlots"
@@ -4117,6 +4167,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
     "ChainAdapter": {
       "title": "ChainAdapter",
       "type": "object",
+      "x-closed": true,
       "allOf": [
         {
           "$ref": "#/$defs/ChainAdapterSlots"
@@ -4204,6 +4255,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
     "MCScanAnchorsAdapter": {
       "title": "MCScanAnchorsAdapter",
       "type": "object",
+      "x-closed": true,
       "allOf": [
         {
           "$ref": "#/$defs/MCScanAnchorsAdapterSlots"
@@ -4294,6 +4346,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
     "MCScanBlocksAdapter": {
       "title": "MCScanBlocksAdapter",
       "type": "object",
+      "x-closed": true,
       "allOf": [
         {
           "$ref": "#/$defs/MCScanBlocksAdapterSlots"
@@ -4381,6 +4434,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
     "MCScanSimpleAnchorsAdapter": {
       "title": "MCScanSimpleAnchorsAdapter",
       "type": "object",
+      "x-closed": true,
       "allOf": [
         {
           "$ref": "#/$defs/MCScanSimpleAnchorsAdapterSlots"
@@ -4459,6 +4513,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
     "MashMapAdapter": {
       "title": "MashMapAdapter",
       "type": "object",
+      "x-closed": true,
       "allOf": [
         {
           "$ref": "#/$defs/MashMapAdapterSlots"
@@ -4547,6 +4602,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
     "BlastTabularAdapter": {
       "title": "BlastTabularAdapter",
       "type": "object",
+      "x-closed": true,
       "allOf": [
         {
           "$ref": "#/$defs/BlastTabularAdapterSlots"
@@ -4679,6 +4735,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
     "GWASAdapter": {
       "title": "GWASAdapter",
       "type": "object",
+      "x-closed": true,
       "allOf": [
         {
           "$ref": "#/$defs/GWASAdapterSlots"
@@ -5409,7 +5466,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
     "LinearBasicDisplay": {
       "title": "LinearBasicDisplay",
       "type": "object",
-      "x-closed": "warn",
+      "x-closed": true,
       "allOf": [
         {
           "$ref": "#/$defs/LinearBasicDisplaySlots"
@@ -5866,7 +5923,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
     "LinearMultiRowFeatureDisplay": {
       "title": "LinearMultiRowFeatureDisplay",
       "type": "object",
-      "x-closed": "warn",
+      "x-closed": true,
       "allOf": [
         {
           "$ref": "#/$defs/LinearMultiRowFeatureDisplaySlots"
@@ -7087,7 +7144,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
     "LinearAlignmentsDisplay": {
       "title": "LinearAlignmentsDisplay",
       "type": "object",
-      "x-closed": "warn",
+      "x-closed": true,
       "allOf": [
         {
           "$ref": "#/$defs/LinearAlignmentsDisplaySlots"
@@ -7319,7 +7376,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
     "ChordVariantDisplay": {
       "title": "ChordVariantDisplay",
       "type": "object",
-      "x-closed": "warn",
+      "x-closed": true,
       "allOf": [
         {
           "$ref": "#/$defs/ChordVariantDisplaySlots"
@@ -7379,7 +7436,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
     "ChordSyntenyDisplay": {
       "title": "ChordSyntenyDisplay",
       "type": "object",
-      "x-closed": "warn",
+      "x-closed": true,
       "allOf": [
         {
           "$ref": "#/$defs/ChordSyntenyDisplaySlots"
@@ -7408,7 +7465,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
     "DotplotDisplay": {
       "title": "DotplotDisplay",
       "type": "object",
-      "x-closed": "warn",
+      "x-closed": true,
       "allOf": [
         {
           "$ref": "#/$defs/DotplotDisplaySlots"
@@ -7437,7 +7494,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
     "LinearSyntenyDisplay": {
       "title": "LinearSyntenyDisplay",
       "type": "object",
-      "x-closed": "warn",
+      "x-closed": true,
       "allOf": [
         {
           "$ref": "#/$defs/LinearSyntenyDisplaySlots"
@@ -8199,7 +8256,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
     "LGVSyntenyDisplay": {
       "title": "LGVSyntenyDisplay",
       "type": "object",
-      "x-closed": "warn",
+      "x-closed": true,
       "allOf": [
         {
           "$ref": "#/$defs/LGVSyntenyDisplaySlots"
@@ -10199,7 +10256,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
     "MultiWaySyntenyDisplay": {
       "title": "MultiWaySyntenyDisplay",
       "type": "object",
-      "x-closed": "warn",
+      "x-closed": true,
       "allOf": [
         {
           "$ref": "#/$defs/MultiWaySyntenyDisplaySlots"
@@ -10288,7 +10345,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
     "LinearReferenceSequenceDisplay": {
       "title": "LinearReferenceSequenceDisplay",
       "type": "object",
-      "x-closed": "warn",
+      "x-closed": true,
       "allOf": [
         {
           "$ref": "#/$defs/LinearReferenceSequenceDisplaySlots"
@@ -10589,7 +10646,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
     "LinearVariantDisplay": {
       "title": "LinearVariantDisplay",
       "type": "object",
-      "x-closed": "warn",
+      "x-closed": true,
       "allOf": [
         {
           "$ref": "#/$defs/LinearVariantDisplaySlots"
@@ -11144,7 +11201,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
     "LinearMultiSampleVariantDisplay": {
       "title": "LinearMultiSampleVariantDisplay",
       "type": "object",
-      "x-closed": "warn",
+      "x-closed": true,
       "allOf": [
         {
           "$ref": "#/$defs/LinearMultiSampleVariantDisplaySlots"
@@ -11391,7 +11448,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
     "LDTrackDisplay": {
       "title": "LDTrackDisplay",
       "type": "object",
-      "x-closed": "warn",
+      "x-closed": true,
       "allOf": [
         {
           "$ref": "#/$defs/LDTrackDisplaySlots"
@@ -12086,7 +12143,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
     "LinearWiggleDisplay": {
       "title": "LinearWiggleDisplay",
       "type": "object",
-      "x-closed": "warn",
+      "x-closed": true,
       "allOf": [
         {
           "$ref": "#/$defs/LinearWiggleDisplaySlots"
@@ -12555,7 +12612,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
     "LinearMafDisplay": {
       "title": "LinearMafDisplay",
       "type": "object",
-      "x-closed": "warn",
+      "x-closed": true,
       "allOf": [
         {
           "$ref": "#/$defs/LinearMafDisplaySlots"
@@ -12760,7 +12817,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
     "LinearHicDisplay": {
       "title": "LinearHicDisplay",
       "type": "object",
-      "x-closed": "warn",
+      "x-closed": true,
       "allOf": [
         {
           "$ref": "#/$defs/LinearHicDisplaySlots"
@@ -13209,7 +13266,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
     "LinearManhattanDisplay": {
       "title": "LinearManhattanDisplay",
       "type": "object",
-      "x-closed": "warn",
+      "x-closed": true,
       "allOf": [
         {
           "$ref": "#/$defs/LinearManhattanDisplaySlots"
@@ -13451,7 +13508,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
     "LinearMarkDisplay": {
       "title": "LinearMarkDisplay",
       "type": "object",
-      "x-closed": "warn",
+      "x-closed": true,
       "allOf": [
         {
           "$ref": "#/$defs/LinearMarkDisplaySlots"

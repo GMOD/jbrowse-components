@@ -42,7 +42,7 @@ const configSchema = ConfigurationSchema(
       defaultValue: [],
     },
   },
-  { explicitlyTyped: true },
+  { explicitlyTyped: true, closed: true },
 )
 
 export default configSchema

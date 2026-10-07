@@ -12,12 +12,11 @@ import type { Instance } from '@jbrowse/mobx-state-tree'
 export function normalizeSnapshot(snap: Record<string, unknown>) {
   return snap.uri
     ? {
-        ...fillLocations(snap, {
-          bamLocation: {
-            uri: snap.uri,
-            baseUri: snap.baseUri,
-          },
-        }),
+        ...fillLocations(
+          snap,
+          { bamLocation: { uri: snap.uri, baseUri: snap.baseUri } },
+          ['csi'],
+        ),
         index: indexSnapshot(snap, 'BAI'),
       }
     : snap
@@ -83,6 +82,7 @@ const configSchema = ConfigurationSchema(
   },
   {
     explicitlyTyped: true,
+    closed: true,
 
     /**
      * #preProcessSnapshot

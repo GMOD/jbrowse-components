@@ -149,7 +149,7 @@ const configSchema = ConfigurationSchema(
       defaultValue: true,
     },
   },
-  { explicitlyTyped: true },
+  { explicitlyTyped: true, closed: true },
 )
 
 export type CrisprGuideAdapterConfig = Instance<typeof configSchema>

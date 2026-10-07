@@ -96,6 +96,7 @@ const GWASAdapterConfigSchema = ConfigurationSchema(
      */
     baseConfiguration: bedTabixConfigSchema,
     explicitlyTyped: true,
+    closed: true,
   },
 )
 

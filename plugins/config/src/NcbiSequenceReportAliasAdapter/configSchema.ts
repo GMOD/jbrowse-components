@@ -89,6 +89,7 @@ const NcbiSequenceReportAliasAdapterConfigSchema = ConfigurationSchema(
   },
   {
     explicitlyTyped: true,
+    closed: true,
 
     /**
      * #preProcessSnapshot

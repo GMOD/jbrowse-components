@@ -321,7 +321,26 @@ function shorthandKeysOf(adapterType) {
   // those adapters' documented shorthand lists. Both expand per key now, the
   // fallback fired for nothing, and it is gone: a normalizer needing several keys
   // at once is a normalizer to narrow, not a case to accept broadly.
+  checkShorthandConsumed(adapterType, normalize, snapOf(found))
   return found
+}
+
+// A closed schema names an undeclared key on the console, so a shorthand key
+// its normalizer leaves on the snapshot warns in every config using the
+// documented shorthand.
+const adapterProblems = []
+function checkShorthandConsumed(adapterType, normalize, snap) {
+  const meta = getConfigurationSchemaMetadata(adapterType.configSchema)
+  const left = meta?.options.closed
+    ? Object.keys(normalize(snap) ?? {}).filter(
+        key => key !== 'type' && key in snap && !(key in meta.definition),
+      )
+    : []
+  if (left.length) {
+    adapterProblems.push(
+      \`\${adapterType.name}'s normalizer leaves \${left.join(', ')} on the snapshot\`,
+    )
+  }
 }
 
 // Keys that no current schema declares but that some schema's own
@@ -527,6 +546,12 @@ function collect(group, getType) {
     if (!slots) {
       continue
     }
+    if (
+      group === 'adapter' &&
+      !getConfigurationSchemaMetadata(entry.configSchema)?.options.closed
+    ) {
+      adapterProblems.push(\`\${name}'s config schema is not closed\`)
+    }
     const legacyKeys = legacyKeysOf(entry.configSchema, slots)
     const probed = legacyValuesOf(entry.configSchema, slots)
     const retiredValues = group === 'display' ? retiredTypeValuesOf(entry) : {}
@@ -658,6 +683,12 @@ function groupOf(group) {
     connection: manifest.connections,
     'internet account': manifest.internetAccounts,
   }[group]
+}
+
+if (adapterProblems.length) {
+  throw new Error(
+    \`An adapter's schema is closed and its normalizer strips the shorthand keys it consumed:\\n  \${adapterProblems.join('\\n  ')}\`,
+  )
 }
 
 console.log(JSON.stringify({ manifest, schema }))

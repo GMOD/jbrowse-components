@@ -106,6 +106,7 @@ const MultiGenomeIndexedPAFAdapter = ConfigurationSchema(
   },
   {
     explicitlyTyped: true,
+    closed: true,
 
     /**
      * #preProcessSnapshot

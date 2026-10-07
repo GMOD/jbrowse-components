@@ -96,7 +96,7 @@ const MultiWiggleAdapter = ConfigurationSchema(
     },
     ...samplesTsvAdapterConfigSchemaFields,
   },
-  { explicitlyTyped: true },
+  { explicitlyTyped: true, closed: true },
 )
 
 export default MultiWiggleAdapter

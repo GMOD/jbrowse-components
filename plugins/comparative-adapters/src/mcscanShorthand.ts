@@ -17,10 +17,14 @@ export function expandMcscanShorthand(
 ) {
   const { uri, bed1, bed2, baseUri } = snap
   return uri || bed1 || bed2
-    ? fillLocations(snap, {
-        ...(uri ? { [anchorsKey]: { uri, baseUri } } : {}),
-        ...(bed1 ? { bed1Location: { uri: bed1, baseUri } } : {}),
-        ...(bed2 ? { bed2Location: { uri: bed2, baseUri } } : {}),
-      })
+    ? fillLocations(
+        snap,
+        {
+          ...(uri ? { [anchorsKey]: { uri, baseUri } } : {}),
+          ...(bed1 ? { bed1Location: { uri: bed1, baseUri } } : {}),
+          ...(bed2 ? { bed2Location: { uri: bed2, baseUri } } : {}),
+        },
+        ['bed1', 'bed2'],
+      )
     : snap
 }

@@ -81,6 +81,7 @@ const MultiGenomePAFAdapter = ConfigurationSchema(
   },
   {
     explicitlyTyped: true,
+    closed: true,
 
     /**
      * #preProcessSnapshot

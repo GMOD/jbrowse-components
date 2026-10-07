@@ -45,6 +45,7 @@ const NCListAdapter = ConfigurationSchema(
   },
   {
     explicitlyTyped: true,
+    closed: true,
   },
 )
 export default NCListAdapter

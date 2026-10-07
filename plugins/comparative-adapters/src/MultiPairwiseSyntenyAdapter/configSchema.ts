@@ -86,7 +86,7 @@ const MultiPairwiseSyntenyAdapter = ConfigurationSchema(
         'per mate assembly, the label and group the multiway lane picker offers it under',
     },
   },
-  { explicitlyTyped: true },
+  { explicitlyTyped: true, closed: true },
 )
 
 export type MultiPairwiseSyntenyAdapterConfig = Instance<

@@ -51,7 +51,7 @@ export function slePluginManager() {
         configSchema: ConfigurationSchema(
           'SleLDAdapter',
           {},
-          { explicitlyTyped: true },
+          { explicitlyTyped: true, closed: true },
         ),
         getAdapterClass: () => Promise.resolve(SleLDAdapter),
       }),

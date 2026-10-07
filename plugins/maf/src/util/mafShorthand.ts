@@ -12,15 +12,20 @@ export function expandMafShorthand(
   snap: Snapshot,
   gzSlot: string,
   index: (snap: Snapshot) => Snapshot,
+  indexKeys: readonly string[] = [],
 ) {
   return snap.uri
-    ? fillLocations(snap, {
-        ...(snap.nhUri
-          ? { nhLocation: { uri: snap.nhUri, baseUri: snap.baseUri } }
-          : {}),
-        [gzSlot]: { uri: snap.uri, baseUri: snap.baseUri },
-        ...index(snap),
-      })
+    ? fillLocations(
+        snap,
+        {
+          ...(snap.nhUri
+            ? { nhLocation: { uri: snap.nhUri, baseUri: snap.baseUri } }
+            : {}),
+          [gzSlot]: { uri: snap.uri, baseUri: snap.baseUri },
+          ...index(snap),
+        },
+        ['nhUri', ...indexKeys],
+      )
     : snap
 }
 

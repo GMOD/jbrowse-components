@@ -66,6 +66,7 @@ const configSchema = ConfigurationSchema(
   },
   {
     explicitlyTyped: true,
+    closed: true,
     preProcessSnapshot: snap =>
       expandMafShorthand(snap, 'mafGzLocation', taiIndexSlot),
   },
