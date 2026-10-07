@@ -102,8 +102,7 @@ export default class JBrowse1TextSearchAdapter
     pluginManager?: PluginManager,
   ) {
     super(config, getSubAdapter, pluginManager)
-    const namesIndex = readConfObject(config, 'namesIndexLocation')
-    const { baseUri, uri } = namesIndex
+    const { baseUri, uri } = readConfObject(config, 'namesIndexLocation')
     this.httpMap = new HttpMap({
       url: baseUri ? new URL(uri, baseUri).href : uri,
     })
