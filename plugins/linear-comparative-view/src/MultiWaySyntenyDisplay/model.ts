@@ -2083,6 +2083,26 @@ export function stateModelFactory(
         }
         return out
       },
+      /**
+       * #getter
+       * the centre, in stack px, of each gutter whose lane pair was asked for
+       * and has not landed
+       */
+      get loadingGutterYs(): number[] {
+        const { lanes, glyphHeight } = self.laneStack
+        const pending = new Set(
+          staleLaneSpecs(self.laneLinksFetchSpecs, self.laneLinks).map(
+            spec => spec.lane,
+          ),
+        )
+        return self.lanePairs.flatMap(({ key }, i) => {
+          const upper = lanes[i + 1]
+          const lower = lanes[i + 2]
+          return pending.has(key) && upper && lower
+            ? [(upper.glyphTop + glyphHeight + lower.layerTop) / 2]
+            : []
+        })
+      },
     }))
     .views(self => ({
       /**

@@ -1291,6 +1291,10 @@ describe('the gutter between two mate lanes', () => {
     display.setLaneFrames(0, frames)
     expect(display.rowsVsAnchor).toBe(false)
     expect(display.laneLinksFetchSpecs.map(s => s.lane)).toEqual([pair])
+    const [, upper, lower] = display.laneStack.lanes
+    expect(display.loadingGutterYs).toEqual([
+      (upper!.glyphTop + display.laneStack.glyphHeight + lower!.layerTop) / 2,
+    ])
     display.setLaneLinks(
       new Map([
         [
@@ -1310,6 +1314,7 @@ describe('the gutter between two mate lanes', () => {
     expect(
       staleLaneSpecs(display.laneLinksFetchSpecs, display.laneLinks),
     ).toEqual([])
+    expect(display.loadingGutterYs).toEqual([])
   })
 
   test('reads the lower lane against the anchor once the header names one and no lane pairs', () => {

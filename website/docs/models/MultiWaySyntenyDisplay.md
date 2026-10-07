@@ -174,6 +174,7 @@ Members a composed model contributes are listed here too, so these tables are th
 | <span id="getter-lanemaps">**laneMaps**</span><br><code>ReadonlyMap&lt;number, LaneMap&gt;</code> |  | MultiWaySyntenyDisplay |
 | <span id="getter-laneheaderrows">**laneHeaderRows**</span><br><code>LaneHeaderRow[]</code> |  | MultiWaySyntenyDisplay |
 | <span id="getter-pairlinks">**pairLinks**</span><br><code>ReadonlyMap&lt;string, LaneLinks&gt;</code> | the alignments the source answered for each adjacent mate-lane pair, keyed `upper\|lower`; a pair it has not answered draws nothing | MultiWaySyntenyDisplay |
+| <span id="getter-loadinggutterys">**loadingGutterYs**</span><br><code>number[]</code> | the centre, in stack px, of each gutter whose lane pair was asked for and has not landed | MultiWaySyntenyDisplay |
 | <span id="getter-ribbongeometry">**ribbonGeometry**</span><br><code>RibbonGeometry</code> | in the stack's own px | MultiWaySyntenyDisplay |
 | <span id="getter-tickgeometry">**tickGeometry**</span><br><code>TickGeometry</code> |  | MultiWaySyntenyDisplay |
 | <span id="getter-bandcell">**bandCell**</span><br><code>MultiWayCell</code> |  | MultiWaySyntenyDisplay |

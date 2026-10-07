@@ -154,6 +154,23 @@ const LaneHeaders = observer(function LaneHeaders({
           }}
         />
       ) : null}
+      {model.loadingGutterYs.map(y => (
+        <div
+          key={`loading-${y}`}
+          data-testid="multiway-gutter-loading"
+          style={{
+            position: 'absolute',
+            left: 0,
+            top: y - scrollTop - LABEL_FONT_SIZE / 2,
+            width,
+            textAlign: 'center',
+            color: bandPalette.text.secondary,
+            textShadow: textHalo(bandGroundColor()),
+          }}
+        >
+          Loading alignments…
+        </div>
+      ))}
       {rows.map(row => (
         <div
           key={`header-${row.assemblyName}`}
