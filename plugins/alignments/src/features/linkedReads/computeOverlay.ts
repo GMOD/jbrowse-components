@@ -78,8 +78,8 @@ export interface PileupArc {
   dash?: string
   hiddenSegmentsBetween?: string[]
   // A maps-back loop lies over its own read's bar and its neighbours', so it
-  // draws at full strength over a light casing that lifts it off them.
-  cased?: boolean
+  // draws at full strength.
+  opaque?: boolean
 }
 
 // Stable React key / selection identity for a bezier arc, shared by the live
@@ -412,9 +412,6 @@ function connectorShape(
 const LOOP_MIN_DIP_PX = 10
 const LOOP_MAX_DIP_PX = 28
 const LOOP_STROKE_WIDTH_PX = 2
-// The casing under a loop's stroke: this much wider on each side.
-export const LOOP_CASING_PX = 1.5
-export const LOOP_CASING_COLOR = 'rgba(255,255,255,0.9)'
 // Rows thinner than this have no room for an arrowhead.
 const LOOP_ARROW_MIN_FEATURE_HEIGHT_PX = 5
 const LOOP_MAX_ARROW_PX = 8
@@ -596,7 +593,7 @@ export function computePileupBezierArcs(opts: Opts): PileupArc[] {
         : loop
           ? LOOP_STROKE_WIDTH_PX
           : CURVE_STROKE_WIDTH_PX,
-      cased: loop || undefined,
+      opaque: loop || undefined,
       // The id STRINGS, not the keys: these reach `selectFeatureById` and
       // `getFeatureInfoById`. One pair per drawn arc, not per read.
       id1: readIdAt(e1.data, e1.readIdx)!,
