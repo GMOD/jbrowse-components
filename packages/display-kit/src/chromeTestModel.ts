@@ -110,6 +110,9 @@ export const TestChromeModel = types
       self.regionTooLarge = value
       self.regionTooLargeReason = reason
     },
+    setHeight(height: number) {
+      self.height = height
+    },
     setCanvasDrawn(value: boolean) {
       self.canvasDrawn = value
     },

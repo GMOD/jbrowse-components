@@ -4,6 +4,7 @@ import {
   BottomRightCornerContext,
   TrackOverlayPortal,
 } from '@jbrowse/display-ui'
+import { observer } from 'mobx-react'
 
 import ChromeLegend from './ChromeLegend.tsx'
 import ReplacedDisplay from './ReplacedDisplay.tsx'
@@ -44,12 +45,6 @@ export type StatusChromeModel = DisplayErrorBarModel &
 // sibling as `drawn`. Before this split arc hand-copied the whole branch and
 // had already drifted — it rendered no background-progress chip at all. A display's
 // alignment with the chrome should cost it a prop, not a copy.
-//
-// Deliberately NOT an observer, and it reads no observable: `phase` and `drawn`
-// arrive as props so the *caller* is the one tracking them (both callers are
-// observers). That keeps the tracked set exactly where it was and leaves this
-// component safe for babel-plugin-react-compiler to compile — there is no MobX
-// read here to stale.
 //
 // The `tooLarge` phase **early-`return`s** its own root rather than nesting
 // under the container below. For a GPU display that unmount is what fires
@@ -150,7 +145,7 @@ function overChrome(props: ChromeDivProps): ChromeDivProps {
   )
 }
 
-export default function DisplayStatusChromeBase({
+const DisplayStatusChromeBase = observer(function DisplayStatusChromeBase({
   model,
   phase,
   drawn,
@@ -298,4 +293,6 @@ export default function DisplayStatusChromeBase({
       {isLegendHost(model) ? <ChromeLegend model={model} /> : null}
     </div>
   )
-}
+})
+
+export default DisplayStatusChromeBase

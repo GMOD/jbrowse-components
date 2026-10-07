@@ -160,9 +160,6 @@ test('ready phase shows the canvas with no banners; the testid does NOT change o
   expect(queryByTestId('chrome-done')).toBeNull()
 })
 
-// Background work (clustering) reports through the same status channel as a
-// fetch, but has no fetch behind it, so the phase stays `ready` and the scrim
-// never comes up. The corner chip is what makes it visible.
 test('the container takes the model height, and a caller style still wins', async () => {
   const model = TestChromeModel.create({})
   const { findByTestId, rerender } = render(
@@ -184,6 +181,31 @@ test('the container takes the model height, and a caller style still wins', asyn
   expect((await findByTestId('probe-display')).style.height).toBe('40px')
 })
 
+test('the container follows a model height change', async () => {
+  const model = TestChromeModel.create({})
+  const { findByTestId } = renderChrome(model)
+  const chrome = await findByTestId('probe-display')
+  act(() => {
+    model.setHeight(250)
+  })
+  expect(chrome.style.height).toBe('250px')
+})
+
+test('the status chrome follows a model height change under a parent that reads nothing', async () => {
+  const model = TestChromeModel.create({})
+  const { findByTestId } = render(
+    <DisplayStatusChrome model={model} phase="ready" drawn testid="probe" />,
+  )
+  const chrome = await findByTestId('probe')
+  act(() => {
+    model.setHeight(250)
+  })
+  expect(chrome.style.height).toBe('250px')
+})
+
+// Background work (clustering) reports through the same status channel as a
+// fetch, but has no fetch behind it, so the phase stays `ready` and the scrim
+// never comes up. The corner chip is what makes it visible.
 test('a status set while ready shows the corner chip, not the scrim', async () => {
   const model = TestChromeModel.create({})
   act(() => {
