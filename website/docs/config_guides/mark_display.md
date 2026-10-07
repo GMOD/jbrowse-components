@@ -555,8 +555,10 @@ puts it at a value on the display's axis instead, so a link plotted by its score
 rises to it. `"line"` draws a straight segment between the two ends, on the
 baseline or at the `y` value. A pair wider than three screens straightens into a
 leg rising from each end, and a mate the view does not show draws a short stem
-at the end it does. A link answers a hover and a click along its stroke, and the
-SVG export writes it as a path.
+at the end it does. Where the `mate` step read a direction for an end, as it
+does from a breakend `ALT`, the link draws a short foot there, lying over the
+side of the junction the rearranged sequence keeps. A link answers a hover and a
+click along its stroke, and the SVG export writes it as a path.
 
 A `text` mark naming no `y` labels the link on its two ends: each label sits
 just inside its own curve's apex, or just over it where the curve is too small

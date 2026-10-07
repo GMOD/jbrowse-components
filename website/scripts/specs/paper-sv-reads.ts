@@ -247,7 +247,7 @@ export const paperSvReadsSpecs: ScreenshotSpec[] = [
     loc: 'chr3:184,709,000-184,723,000',
     arcsHeight: 110,
     connectorCurves: false,
-    viewportHeight: 1250,
+    viewportHeight: 1266,
     callArcs: true,
   }),
 ]
