@@ -56,6 +56,7 @@ import { pangenomeSpecs } from './specs/pangenome.ts'
 import { pangenomeCactusSpecs } from './specs/pangenome_cactus.ts'
 import { paperCohortSpecs } from './specs/paper-cohort.ts'
 import { paperDrosophilaSpecs } from './specs/paper-drosophila.ts'
+import { paperEcoliSpecs } from './specs/paper-ecoli.ts'
 import { paperHprcWorkspaceSpecs } from './specs/paper-hprc-workspace.ts'
 import { paperSvReadsSpecs } from './specs/paper-sv-reads.ts'
 import { popgenSpecs } from './specs/popgen.ts'
@@ -119,6 +120,7 @@ export const specs: ScreenshotSpec[] = [
   ...paperCohortSpecs,
   ...paperDrosophilaSpecs,
   ...paperSvReadsSpecs,
+  ...paperEcoliSpecs,
   ...ecoliGraphSpecs,
   ...hprcGraphSpecs,
   ...mouseCattleGraphSpecs,

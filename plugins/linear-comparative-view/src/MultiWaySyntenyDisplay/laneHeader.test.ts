@@ -1,4 +1,4 @@
-import { laneHeaderRows } from './laneHeader.ts'
+import { LABEL_FONT_SIZE, labelBoxTop, laneHeaderRows } from './laneHeader.ts'
 
 import type { Lane } from './laneStack.ts'
 import type { RowFrame } from './layoutMultiWay.ts'
@@ -145,4 +145,29 @@ test('each baseline sits just above its own layer bands, or its glyph row with n
     expect(row.y).toBeLessThan(lanes[i]!.layerTop)
     expect(row.y).toBeGreaterThan(lanes[i]!.layerTop - 12)
   }
+})
+
+describe('a name on the gene row', () => {
+  const inlineRow = (lane: Lane, glyphHeight: number) =>
+    laneHeaderRows([lane], 2000, 'chr1:1..2,000', glyphHeight)[0]!
+
+  test('prints the genome and its flip, without coordinates', () => {
+    expect(inlineRow(mateLane({}), 10).label).toBe('peach')
+    expect(inlineRow(mateLane({ frame: { flipped: true } }), 10).label).toBe(
+      'peach [rev]',
+    )
+    expect(inlineRow(anchorLane, 10).label).toBe('grape')
+  })
+
+  test('is centred on a row taller than the text', () => {
+    const lane = mateLane({})
+    const top = labelBoxTop(inlineRow(lane, 18).y)
+    expect(top).toBeCloseTo(lane.glyphTop + 4)
+  })
+
+  test('ends a pixel under a row shorter than the text', () => {
+    const lane = mateLane({})
+    const top = labelBoxTop(inlineRow(lane, 5).y)
+    expect(top + LABEL_FONT_SIZE).toBeCloseTo(lane.glyphTop + 5 + 1)
+  })
 })

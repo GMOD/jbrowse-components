@@ -14,6 +14,26 @@ export function labelBoxTop(y: number) {
   return y - LABEL_FONT_SIZE * LABEL_BASELINE_RATIO
 }
 
+// centred on the gene row, and bottom-aligned on one shorter than the text so
+// the name stays clear of the gene names below
+function inlineBoxOffset(glyphHeight: number) {
+  const slack = glyphHeight - LABEL_FONT_SIZE
+  return Math.min(slack / 2, slack + 1)
+}
+
+/** px a name on the gene row stands above that row's top */
+export function inlineNameRise(glyphHeight: number) {
+  return Math.max(0, -inlineBoxOffset(glyphHeight))
+}
+
+function inlineBaseline(glyphTop: number, glyphHeight: number) {
+  return (
+    glyphTop +
+    inlineBoxOffset(glyphHeight) +
+    LABEL_FONT_SIZE * LABEL_BASELINE_RATIO
+  )
+}
+
 export interface LaneHeaderRow {
   assemblyName: string
   label: string
@@ -21,6 +41,7 @@ export interface LaneHeaderRow {
   /** the text baseline, in stack px */
   y: number
   isAnchor: boolean
+  inline: boolean
 }
 
 /** Clamps, since a live pan can put the frame's `min` below zero. */
@@ -56,7 +77,9 @@ export function laneHeaderRows(
   lanes: Lane[],
   visibleBpSpan: number,
   anchorWhere: string,
+  inlineGlyphHeight?: number,
 ): LaneHeaderRow[] {
+  const inline = inlineGlyphHeight !== undefined
   return lanes.map(lane => {
     const where = lane.isAnchor
       ? anchorWhere
@@ -70,10 +93,15 @@ export function laneHeaderRows(
       : undefined
     return {
       assemblyName: lane.assemblyName,
-      label: [lane.label, where, alsoOn].filter(part => !!part).join('  '),
+      label: inline
+        ? `${lane.label}${lane.frame?.flipped ? ' [rev]' : ''}`
+        : [lane.label, where, alsoOn].filter(part => !!part).join('  '),
       scale: scaleLabelOf(lane, visibleBpSpan),
-      y: lane.layerTop - LABEL_BASELINE_OFFSET,
+      y: inline
+        ? inlineBaseline(lane.glyphTop, inlineGlyphHeight)
+        : lane.layerTop - LABEL_BASELINE_OFFSET,
       isAnchor: lane.isAnchor,
+      inline,
     }
   })
 }

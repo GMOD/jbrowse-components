@@ -9807,6 +9807,16 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "$ref": "#/$defs/FeatureField"
           }
         },
+        "inlineLaneNames": {
+          "description": "print each lane's genome name over the left end of its gene row, without its coordinates, instead of on a line above the genes. The stack then fits 12 px less per lane.",
+          "default": false,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "boolean"
+          }
+        },
         "showGeneLabels": {
           "description": "print gene names in a row under each lane's genes, dropping a name where its neighbours leave it no room.",
           "default": true,
@@ -17024,6 +17034,9 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             },
             "text": {
               "$ref": "#/$defs/MultiWaySyntenyDisplaySlots/properties/text"
+            },
+            "inlineLaneNames": {
+              "$ref": "#/$defs/MultiWaySyntenyDisplaySlots/properties/inlineLaneNames"
             },
             "showGeneLabels": {
               "$ref": "#/$defs/MultiWaySyntenyDisplaySlots/properties/showGeneLabels"

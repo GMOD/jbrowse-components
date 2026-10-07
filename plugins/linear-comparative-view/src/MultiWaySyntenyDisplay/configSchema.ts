@@ -180,6 +180,15 @@ export function configSchemaFactory() {
       /**
        * #slot
        */
+      inlineLaneNames: {
+        type: 'boolean',
+        description:
+          "print each lane's genome name over the left end of its gene row, without its coordinates, instead of on a line above the genes. The stack then fits 12 px less per lane",
+        defaultValue: false,
+      },
+      /**
+       * #slot
+       */
       showGeneLabels: {
         type: 'boolean',
         description:

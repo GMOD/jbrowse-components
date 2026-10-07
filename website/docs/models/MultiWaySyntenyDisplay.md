@@ -108,6 +108,7 @@ Members a composed model contributes are listed here too, so these tables are th
 | <span id="getter-splitstrands">**splitStrands**</span><br><code>boolean</code> |  | MultiWaySyntenyDisplay |
 | <span id="getter-showgenelabels">**showGeneLabels**</span><br><code>boolean</code> |  | MultiWaySyntenyDisplay |
 | <span id="getter-genetextfield">**geneTextField**</span><br><code>string</code> | a field, a jexl expression, or empty for the name-else-ID default | MultiWaySyntenyDisplay |
+| <span id="getter-inlinelanenames">**inlineLaneNames**</span><br><code>boolean</code> |  | MultiWaySyntenyDisplay |
 | <span id="getter-genelabelpx">**geneLabelPx**</span><br><code>number</code> |  | MultiWaySyntenyDisplay |
 | <span id="getter-lanelayerheights">**laneLayerHeights**</span><br><code>number[]</code> |  | MultiWaySyntenyDisplay |
 | <span id="getter-layerpx">**layerPx**</span><br><code>number</code> |  | MultiWaySyntenyDisplay |
@@ -323,6 +324,7 @@ Members a composed model contributes are listed here too, so these tables are th
 | <span id="action-setdrawcurves">**setDrawCurves**</span><br><code>(flag: boolean) =&gt; void</code> |  | MultiWaySyntenyDisplay |
 | <span id="action-setshowlaneticks">**setShowLaneTicks**</span><br><code>(flag: boolean) =&gt; void</code> |  | MultiWaySyntenyDisplay |
 | <span id="action-setsplitstrands">**setSplitStrands**</span><br><code>(flag: boolean) =&gt; void</code> |  | MultiWaySyntenyDisplay |
+| <span id="action-setinlinelanenames">**setInlineLaneNames**</span><br><code>(flag: boolean) =&gt; void</code> |  | MultiWaySyntenyDisplay |
 | <span id="action-setshowgenelabels">**setShowGeneLabels**</span><br><code>(flag: boolean) =&gt; void</code> |  | MultiWaySyntenyDisplay |
 | <span id="action-setgenetextfield">**setGeneTextField**</span><br><code>(field: string) =&gt; void</code> |  | MultiWaySyntenyDisplay |
 | <span id="action-setlodmode">**setLodMode**</span><br><code>(mode: LodMode) =&gt; void</code> |  | MultiWaySyntenyDisplay |

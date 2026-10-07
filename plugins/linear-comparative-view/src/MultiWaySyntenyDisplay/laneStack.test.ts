@@ -671,6 +671,16 @@ describe('lane geometry', () => {
   })
 })
 
+test('names on the gene row take the header line off every lane', () => {
+  expect(laneContentHeight(0, 44, 12)).toBe(44 * 34)
+  expect(laneContentHeight(0, 44, 12, 0, true)).toBe(44 * 22)
+  const { rows, glyphHeight } = laneGeometry(0, 44, false, 12, 0, true)
+  expect(rows[3]!.bandTop).toBe(rows[3]!.glyphTop)
+  // the top lane's name is taller than its 5 px genes and still starts at 0
+  expect(glyphHeight).toBe(5)
+  expect(rows[0]!.glyphTop).toBe(4)
+})
+
 test('every checked-in multiway demo sizes its track to the whole stack', () => {
   for (const demo of [
     'ecoli_orthologs',

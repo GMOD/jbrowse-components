@@ -1,5 +1,6 @@
 import { clamp } from '@jbrowse/core/util'
 
+import { inlineNameRise } from './laneHeader.ts'
 import { GENE_LABEL_FONT_PX, GENE_LABEL_GAP_PX } from './laneLabels.ts'
 import { shownFrame } from './laneMotion.ts'
 import {
@@ -38,8 +39,11 @@ export function laneContentHeight(
   rowCount: number,
   geneLabelPx = 0,
   layerPx = 0,
+  inlineNames = false,
 ) {
-  return Math.max(height, rowCount * (MIN_LANE_PITCH + geneLabelPx + layerPx))
+  const floor =
+    MIN_LANE_PITCH - (inlineNames ? LABEL_HEIGHT : 0) + geneLabelPx + layerPx
+  return Math.max(height, rowCount * floor)
 }
 
 export interface LaneBand {
@@ -65,14 +69,16 @@ export function laneGeometry(
   splitStrands = false,
   geneLabelPx = 0,
   layerPx = 0,
+  inlineNames = false,
 ): LaneGeometry {
   const contentHeight = laneContentHeight(
     height,
     rowCount,
     geneLabelPx,
     layerPx,
+    inlineNames,
   )
-  const above = LABEL_HEIGHT + layerPx
+  const above = (inlineNames ? 0 : LABEL_HEIGHT) + layerPx
   const room = contentHeight / rowCount - above - geneLabelPx - 6
   const strandRows = splitStrands && room >= MIN_SPLIT_GLYPH_PX
   const glyphHeight = clamp(
@@ -80,9 +86,11 @@ export function laneGeometry(
     MIN_GLYPH_PX,
     strandRows ? MAX_SPLIT_GLYPH_PX : MAX_GLYPH_PX,
   )
-  const usable = contentHeight - above - glyphHeight - geneLabelPx - 4
+  // room for the top lane's name where it stands taller than its genes
+  const top = above + (inlineNames ? inlineNameRise(glyphHeight) : 0)
+  const usable = contentHeight - top - glyphHeight - geneLabelPx - 4
   const glyphTop = (row: number) =>
-    above + (rowCount === 1 ? 0 : (row * usable) / (rowCount - 1))
+    top + (rowCount === 1 ? 0 : (row * usable) / (rowCount - 1))
   const bandStart = (row: number) =>
     row === 0
       ? 0
@@ -190,6 +198,7 @@ export interface BuildLanesOpts {
   splitStrands?: boolean
   geneLabelPx?: number
   layerPx?: number
+  inlineNames?: boolean
   pastHalfway?: ReadonlySet<string>
   labelOf?: (assemblyName: string) => string
 }
@@ -216,6 +225,7 @@ export function buildLanes({
   splitStrands = false,
   geneLabelPx = 0,
   layerPx = 0,
+  inlineNames,
   pastHalfway = new Set(),
   labelOf = assemblyName => assemblyName,
 }: BuildLanesOpts): LaneStack {
@@ -225,6 +235,7 @@ export function buildLanes({
     splitStrands,
     geneLabelPx,
     layerPx,
+    inlineNames,
   )
   const reach: Span = [-width, 2 * width]
   return {

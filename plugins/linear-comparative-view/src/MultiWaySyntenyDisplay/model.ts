@@ -552,6 +552,10 @@ export function stateModelFactory(
           setConf(self, 'splitStrands', flag)
         },
         /** #action */
+        setInlineLaneNames(flag: boolean) {
+          setConf(self, 'inlineLaneNames', flag)
+        },
+        /** #action */
         setShowGeneLabels(flag: boolean) {
           setConf(self, 'showGeneLabels', flag)
         },
@@ -720,6 +724,10 @@ export function stateModelFactory(
        */
       get geneTextField(): string {
         return getConf(self, 'text')
+      },
+      /** #getter */
+      get inlineLaneNames(): boolean {
+        return getConf(self, 'inlineLaneNames')
       },
       /** #getter */
       get geneLabelPx() {
@@ -1244,6 +1252,7 @@ export function stateModelFactory(
           1 + self.rowAssemblies.length,
           self.geneLabelPx,
           self.layerPx,
+          self.inlineLaneNames,
         )
       },
       /**
@@ -1807,6 +1816,7 @@ export function stateModelFactory(
               self.splitStrands,
               self.geneLabelPx,
               self.layerPx,
+              self.inlineLaneNames,
             ),
             self.scrollTop,
             self.height,
@@ -1993,6 +2003,7 @@ export function stateModelFactory(
           splitStrands: self.splitStrands,
           geneLabelPx: self.geneLabelPx,
           layerPx: self.layerPx,
+          inlineNames: self.inlineLaneNames,
           pastHalfway: self.laneMotionHalfway,
           labelOf: assemblyName => self.laneLabel(assemblyName),
         })
@@ -2041,7 +2052,12 @@ export function stateModelFactory(
               }
             : lane
         })
-        return laneHeaderRows(lanes, self.visibleBpSpan, self.anchorLocString)
+        return laneHeaderRows(
+          lanes,
+          self.visibleBpSpan,
+          self.anchorLocString,
+          self.inlineLaneNames ? self.laneStack.glyphHeight : undefined,
+        )
       },
       /**
        * #getter
@@ -2139,6 +2155,7 @@ export function stateModelFactory(
               self.splitStrands,
               self.geneLabelPx,
               self.layerPx,
+              self.inlineLaneNames,
             ),
             width: self.canvasWidth,
             paper: bandGroundColor(),

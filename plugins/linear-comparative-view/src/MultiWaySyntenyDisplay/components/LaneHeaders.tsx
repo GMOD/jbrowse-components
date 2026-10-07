@@ -167,6 +167,13 @@ const LaneHeaders = observer(function LaneHeaders({
               userSelect: 'none',
               overflow: 'hidden',
               textOverflow: 'ellipsis',
+              ...(row.inline
+                ? {
+                    background: `color-mix(in srgb, ${bandGroundColor()} 85%, transparent)`,
+                    padding: '0 3px',
+                    borderRadius: 2,
+                  }
+                : {}),
             }}
             onMouseDown={
               row.isAnchor

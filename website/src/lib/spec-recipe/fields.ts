@@ -1531,6 +1531,12 @@ export const trackFields: Record<string, FieldRecipe> = {
         }
       : undefined
   },
+  inlineLaneNames: (value, { displayType }) =>
+    typeof value === 'boolean' && displayType === 'MultiWaySyntenyDisplay'
+      ? {
+          path: `${TRACK_MENU} → Show... → Lane names on the gene row (${value ? 'checked' : 'unchecked'})`,
+        }
+      : undefined,
   showGeneLabels: (value, { displayType }) =>
     typeof value === 'boolean' && displayType === 'MultiWaySyntenyDisplay'
       ? {

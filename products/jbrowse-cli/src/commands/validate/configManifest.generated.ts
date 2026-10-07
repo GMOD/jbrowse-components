@@ -4567,6 +4567,10 @@ export const configManifest: ConfigManifest = {
           "type": "string"
         },
         {
+          "name": "inlineLaneNames",
+          "type": "boolean"
+        },
+        {
           "name": "showGeneLabels",
           "type": "boolean"
         },
