@@ -7,7 +7,6 @@ import {
   categoricalField,
 } from '@jbrowse/core/util/categoricalField'
 import { NO_CATEGORY_COLOR } from '@jbrowse/core/util/color'
-import { cssColorToABGR } from '@jbrowse/core/util/colorBits'
 import { takeSnackbarAction, testAssembly } from '@jbrowse/display-test-utils'
 import { getSnapshot } from '@jbrowse/mobx-state-tree'
 import {
@@ -31,7 +30,6 @@ import { laneResetLabel } from './laneSelection.ts'
 import { MIN_LANE_PITCH } from './laneStack.ts'
 import { lanesMenuItem } from './menus.ts'
 import { glyphsKey } from './multiwayGeometry.ts'
-import { OFF_ANCHOR_COLOR } from './offAnchor.ts'
 import { createDisplay, createDisplayWithSession } from './testEnv.ts'
 
 import type { MultiWaySyntenyDisplayModel } from './model.ts'
@@ -1590,9 +1588,7 @@ describe('lane pairs on a graph source', () => {
   })
 })
 
-describe('sequence the anchor lacks', () => {
-  // both lanes carry 1,000 bp at ctgA:200 that the anchor does not; a direct
-  // pair link aligns them to each other across it
+describe('two lanes sharing an insertion the anchor lacks', () => {
   const carrier = (id: string, assemblyName: string, refName: string) =>
     new SimpleFeature({
       uniqueId: id,
@@ -1626,28 +1622,13 @@ describe('sequence the anchor lacks', () => {
     )
     return display
   }
-  const purple = cssColorToABGR(OFF_ANCHOR_COLOR)
-
-  test('each lane holds the stretch as its own, and the legend names it', () => {
-    const display = setUp()
-    expect(display.laneOffAnchor.get('volvox_random')).toEqual([
-      { refName: 'ctgB', start: 200, end: 1200 },
-    ])
-    expect(
-      display.colorScales.find(scale => scale.id === 'offAnchor'),
-    ).toMatchObject({
-      entries: [
-        { label: expect.stringMatching(/^Not in /), color: OFF_ANCHOR_COLOR },
-      ],
-    })
-  })
-
-  test('a lane draws it as a bar, and a pair link across it paints it', () => {
+  test('the lanes draw no mark for it, and their pair link crosses it in one colour', () => {
     const display = setUp()
     const glyphs = display.laneCells.cells.get(glyphsKey(1))
-    expect(
-      glyphs?.kind === 'glyphs' && [...glyphs.data.rectColors].includes(purple),
-    ).toBe(true)
+    expect(glyphs?.kind === 'glyphs' && glyphs.data.rectColors.length).toBe(0)
+    expect(display.colorScales.map(scale => scale.id)).not.toContain(
+      'offAnchor',
+    )
     display.setLaneLinks(
       new Map([
         [
@@ -1677,9 +1658,7 @@ describe('sequence the anchor lacks', () => {
       display.anchorAssemblyName,
     )
     const cell = display.ribbonGeometry.cells.get('ribbons:1')
-    expect(
-      cell?.kind === 'ribbons' && [...cell.data.colors].includes(purple),
-    ).toBe(true)
+    expect(cell?.kind === 'ribbons' && new Set(cell.data.colors).size).toBe(1)
   })
 })
 

@@ -41,7 +41,6 @@ import {
   groupSpansLanes,
 } from './layoutMultiWay.ts'
 import { PX_ORIGIN } from './multiwayRenderTypes.ts'
-import { OFF_ANCHOR_COLOR, splitByIntervals } from './offAnchor.ts'
 
 import type { SyntenyInstanceData } from '../LinearSyntenyRPC/buildSyntenyGeometry.ts'
 import type { AlignmentOpsById, LaneLinks } from './alignmentOps.ts'
@@ -58,7 +57,6 @@ import type {
   RibbonRef,
   RibbonTarget,
 } from './multiwayRenderTypes.ts'
-import type { LaneInterval } from './offAnchor.ts'
 import type { Feature } from '@jbrowse/core/util'
 import type { AttributeRange, DeclaredRamp } from '@jbrowse/synteny-core'
 
@@ -344,7 +342,6 @@ function addAlignmentDetail(
   featureIdx: number,
   fill: number,
   mismatch: number,
-  offAnchor?: { intervals: readonly LaneInterval[]; color: number },
 ) {
   const mate = feature.get('mate') as LinkMate | undefined
   if (
@@ -390,25 +387,7 @@ function addAlignmentDetail(
       dir2,
       (op, bp1Start, bp1End, bp2Start, bp2End) => {
         if (op !== CIGAR_I && op !== CIGAR_D && op !== CIGAR_N) {
-          if (!offAnchor || bp1End === bp1Start) {
-            add(bp1Start, bp1End, bp2Start, bp2End, KIND_BASE, fill)
-          } else {
-            const at = (bp1: number) =>
-              bp2Start +
-              ((bp1 - bp1Start) / (bp1End - bp1Start)) * (bp2End - bp2Start)
-            const { inside, outside } = splitByIntervals(
-              offAnchor.intervals,
-              upper.canon(refName),
-              bp1Start,
-              bp1End,
-            )
-            for (const [s, e] of outside) {
-              add(s, e, at(s), at(e), KIND_BASE, fill)
-            }
-            for (const [s, e] of inside) {
-              add(s, e, at(s), at(e), KIND_BASE, offAnchor.color)
-            }
-          }
+          add(bp1Start, bp1End, bp2Start, bp2End, KIND_BASE, fill)
         }
       },
     )
@@ -476,7 +455,6 @@ export function buildRibbonGeometry({
   ramp,
   drawCurves,
   bridgeSkippedLanes,
-  offAnchor,
 }: {
   stack: LaneStack
   anchorOps?: AlignmentOpsById
@@ -488,8 +466,6 @@ export function buildRibbonGeometry({
   ramp?: DeclaredRamp
   drawCurves: boolean
   bridgeSkippedLanes: boolean
-  /** each lane's sequence the anchor lacks, which a pair link over it paints */
-  offAnchor?: { byLane: ReadonlyMap<string, LaneInterval[]>; color: string }
 }): RibbonGeometry {
   const { lanes, glyphHeight } = stack
   const color = cssColorToABGR(ribbonColor)
@@ -501,22 +477,6 @@ export function buildRibbonGeometry({
     ramp,
   )
   const mismatch = mismatchColor(ribbonColorField)
-  const offColor =
-    offAnchor && ribbonColorField === ''
-      ? cssColorToABGR(offAnchor.color)
-      : undefined
-  const offAnchorOn = (lane: Lane) => {
-    const intervals = offAnchor?.byLane.get(lane.assemblyName)
-    return offColor !== undefined && intervals
-      ? {
-          intervals: intervals.map(i => ({
-            ...i,
-            refName: lane.canon(i.refName),
-          })),
-          color: offColor,
-        }
-      : undefined
-  }
   const cells = new Map<string, MultiWayCell>()
   const layers: RibbonLayer[] = []
   const targets: RibbonTarget[] = []
@@ -612,7 +572,6 @@ export function buildRibbonGeometry({
         })
       })
     }
-    const upperOff = offAnchorOn(upper)
     const pairLinks =
       row > 0
         ? laneLinks?.get(lanePairKey(upper.assemblyName, lower.assemblyName))
@@ -664,7 +623,6 @@ export function buildRibbonGeometry({
             idx,
             fill,
             mismatch,
-            upperOff,
           )
         if (!tiled) {
           const reversed = link.get('strand') === -1
@@ -991,14 +949,12 @@ export function buildLaneCells({
   glyphHeight,
   width,
   colors,
-  offAnchor = [],
 }: {
   lane: Lane
   genes: LaneGene[]
   glyphHeight: number
   width: number
   colors: LaneGlyphColors
-  offAnchor?: readonly LaneInterval[]
 }): LaneCells {
   const glyphs = new GlyphBuilder()
   const boxes = new GlyphBuilder()
@@ -1011,15 +967,6 @@ export function buildLaneCells({
   const divider = cssColorToABGR(colors.divider)
   for (const [x1, x2] of lane.baseline) {
     glyphs.line(x1, x2, centerY, 0, divider)
-  }
-  if (offAnchor.length > 0) {
-    const barHeight = Math.max(3, Math.round(glyphHeight / 3))
-    const offColor = cssColorToABGR(OFF_ANCHOR_COLOR)
-    for (const { refName, start, end } of offAnchor) {
-      for (const [x1, x2] of lane.spansOf(refName, start, end)) {
-        glyphs.rect(x1, x2, centerY - barHeight / 2, barHeight, offColor)
-      }
-    }
   }
 
   const drawn: DrawnGene[] = []

@@ -176,7 +176,6 @@ import {
   packedPx,
   ribbonPickState,
 } from './multiwayRenderTypes.ts'
-import { OFF_ANCHOR_COLOR, offAnchorIntervals } from './offAnchor.ts'
 import { laneProfiles, structureOrder } from './structureOrder.ts'
 
 import type { SyntenyRenderState } from '../LinearSyntenyDisplay/syntenyRenderingBackendTypes.ts'
@@ -231,7 +230,6 @@ import type {
   MultiWayRenderingBackend,
   RibbonRef,
 } from './multiwayRenderTypes.ts'
-import type { LaneInterval } from './offAnchor.ts'
 import type { AssemblyDescription } from '@jbrowse/core/PluginManager'
 import type { AnyTrackConfig } from '@jbrowse/core/configuration'
 import type { MenuItem, MouseState } from '@jbrowse/core/ui'
@@ -262,7 +260,6 @@ export interface HoverTarget extends RibbonRef {
 
 const NO_FLIP_PINS: ReadonlyMap<string, LaneFlipPin> = new Map()
 const NO_GENES: LaneGene[] = []
-const NO_OFF_ANCHOR: ReadonlyMap<string, LaneInterval[]> = new Map()
 
 function regionKey(r: FetchRegion) {
   return `${r.refName}:${r.start}-${r.end}`
@@ -1090,26 +1087,6 @@ export function stateModelFactory(
        */
       get rowOfLane(): ReadonlyMap<string, string> {
         return new Map(this.rowAssemblies.map(r => [self.laneKey(r), r]))
-      },
-      /**
-       * #getter
-       * each lane's stretches between two it aligns to the anchor with, which
-       * the anchor lacks, keyed by the lane's row; empty for a gene table,
-       * whose records are genes
-       */
-      get laneOffAnchor(): ReadonlyMap<string, LaneInterval[]> {
-        const { features, featureOps } = self
-        const row = this.rowOfLane
-        return features && !features.some(isNamedRecord)
-          ? new Map(
-              [...offAnchorIntervals(features, featureOps)].flatMap(
-                ([lane, intervals]) => {
-                  const name = row.get(self.laneKey(lane))
-                  return name === undefined ? [] : [[name, intervals] as const]
-                },
-              ),
-            )
-          : NO_OFF_ANCHOR
       },
       /** #getter */
       get lanesToDescribe(): string[] {
@@ -2137,7 +2114,6 @@ export function stateModelFactory(
           ramp: self.ribbonRamp,
           drawCurves: self.drawCurves,
           bridgeSkippedLanes: self.bridgeSkippedLanes,
-          offAnchor: { byLane: self.laneOffAnchor, color: OFF_ANCHOR_COLOR },
         })
       },
     }))
@@ -2185,7 +2161,6 @@ export function stateModelFactory(
         boxes: MultiWayCell
         boxNames: NamedSpan[]
         geneGroups: Map<string, string>
-        offAnchor: LaneInterval[] | undefined
       }[] = []
       return {
         /**
@@ -2193,7 +2168,7 @@ export function stateModelFactory(
          * boxes before glyphs, so an in-order hit test finds a box over a gene
          */
         get laneCells() {
-          const { laneGeneColors, boxColors, laneOffAnchor } = self
+          const { laneGeneColors, boxColors } = self
           const laneGenes = self.laneGenes.held
           const { lanes, glyphHeight } = self.laneStack
           const ink = bandInk()
@@ -2205,12 +2180,10 @@ export function stateModelFactory(
               divider: ink.divider,
             }
             const genes = laneGenes?.get(lane.assemblyName)?.genes ?? NO_GENES
-            const offAnchor = laneOffAnchor.get(lane.assemblyName)
             const prev = held[row]
             if (
               prev?.lane === lane &&
               prev.genes === genes &&
-              prev.offAnchor === offAnchor &&
               prev.colors.genes === colors.genes &&
               prev.colors.boxes === colors.boxes &&
               prev.colors.stroke === colors.stroke &&
@@ -2224,12 +2197,10 @@ export function stateModelFactory(
               glyphHeight,
               width: self.canvasWidth,
               colors,
-              offAnchor,
             })
             return {
               lane,
               genes,
-              offAnchor,
               colors,
               glyphs: { kind: 'glyphs', data: glyphs },
               boxes: { kind: 'glyphs', data: boxes },
@@ -2474,22 +2445,6 @@ export function stateModelFactory(
               ramp: self.ribbonRamp,
             },
           ),
-          ...(self.laneOffAnchor.size > 0
-            ? [
-                {
-                  kind: 'categorical' as const,
-                  id: 'offAnchor',
-                  title: 'Lane sequence',
-                  entries: [
-                    {
-                      value: 'offAnchor',
-                      label: `Not in ${self.anchorAssembly?.displayName ?? self.anchorAssemblyName}`,
-                      color: OFF_ANCHOR_COLOR,
-                    },
-                  ],
-                },
-              ]
-            : []),
         ]
         return scales.filter(scale => !colorScaleIsEmpty(scale))
       },
