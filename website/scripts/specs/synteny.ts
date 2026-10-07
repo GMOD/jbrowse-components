@@ -1906,9 +1906,9 @@ export const syntenySpecs: ScreenshotSpec[] = [
 
   // Whole-genome alignment as lanes, eukaryote scale: hg38 over eight UCSC
   // genomes from the hosted liftOver PIFs, one MultiPairwiseSyntenyAdapter
-  // track over eight pairwise files, at the TP53 neighbourhood. Ribbons
-  // between adjacent mate lanes are composed through hg38, since a star of
-  // pairwise alignments holds no mate-vs-mate rows.
+  // track over eight pairwise files, at the TP53 neighbourhood. Every gutter
+  // draws its lane against hg38, since a star of pairwise alignments holds no
+  // mate-vs-mate rows.
   {
     mode: 'url',
     name: 'multiway_synteny/hg38_vertebrates_tp53',
@@ -4249,9 +4249,9 @@ export const syntenySpecs: ScreenshotSpec[] = [
     mode: 'url',
     name: 'genomes_synteny/human_17q21_haplotypes',
     // H9 hap2, the H2 inversion carrier, sits beside hg38 so its inverted
-    // ribbons are the first band down; hap1 under it puts one person's two
-    // chromosomes side by side. Lane gene names off, since the RefSeq track
-    // above names the genes once.
+    // ribbons are the first band down; hap1 under it, red against hg38, puts
+    // one person's two chromosomes side by side. Lane gene names off, since
+    // the RefSeq track above names the genes once.
     url: hostedStarSession(
       'hg38',
       'chr17:45,300,000-46,800,000',

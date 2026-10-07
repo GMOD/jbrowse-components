@@ -91,7 +91,6 @@ import { isNamedRecord } from '../syntenyMate.ts'
 import { NO_OPS, lanePairKey } from './alignmentOps.ts'
 import { axisPlacement, axisSpan, displayedRegionSpans } from './anchorAxis.ts'
 import LaneSelectionDialog from './components/LaneSelectionDialog.tsx'
-import { composeLaneLinks } from './composeLaneLinks.ts'
 import { geneColors } from './geneColor.ts'
 import { annotationRank } from './laneAnnotation.ts'
 import {
@@ -164,6 +163,7 @@ import {
   buildLaneCells,
   buildRibbonGeometry,
   buildTickGeometry,
+  anchorRuleY,
   glyphHitAt,
   glyphsKey,
   outlineKey,
@@ -182,7 +182,6 @@ import type { SyntenyRenderState } from '../LinearSyntenyDisplay/syntenyRenderin
 import type { SyntenyInstanceData } from '../LinearSyntenyRPC/buildSyntenyGeometry.ts'
 import type { AlignmentOpsById, LaneLinks } from './alignmentOps.ts'
 import type { AxisPlacement } from './anchorAxis.ts'
-import type { LanePlacementRecord } from './composeLaneLinks.ts'
 import type { MultiWaySyntenyDisplayConfigModel } from './configSchema.ts'
 import type { GeneColorSettings, GeneColors } from './geneColor.ts'
 import type { LaneGene } from './geneGlyph.ts'
@@ -260,6 +259,7 @@ export interface HoverTarget extends RibbonRef {
 
 const NO_FLIP_PINS: ReadonlyMap<string, LaneFlipPin> = new Map()
 const NO_GENES: LaneGene[] = []
+const NO_TICKS: readonly number[] = []
 
 function regionKey(r: FetchRegion) {
   return `${r.refName}:${r.start}-${r.end}`
@@ -901,6 +901,15 @@ export function stateModelFactory(
       /** #getter */
       get adjacentLanesAlignDirectly(): boolean {
         return self.adapterPairsOnAnchor || self.starAnchor === undefined
+      },
+      /**
+       * #getter
+       * a source that names an anchor and answers no lane pairs states each
+       * lane against the anchor alone, so each gutter draws its lower lane
+       * against the anchor
+       */
+      get rowsVsAnchor(): boolean {
+        return !this.adjacentLanesAlignDirectly
       },
       /** #getter */
       get pinnedLaneFlips(): ReadonlyMap<string, LaneFlipPin> {
@@ -1801,8 +1810,7 @@ export function stateModelFactory(
       /**
        * #getter
        * one spec per adjacent mate-lane pair whose gutter is on screen or
-       * within a screen of it; a pair scrolled further away draws composed
-       * through the anchor, or not at all
+       * within a screen of it
        */
       get laneLinksFetchSpecs(): LaneLinksFetchSpec[] {
         const specs: LaneLinksFetchSpec[] = []
@@ -2057,57 +2065,20 @@ export function stateModelFactory(
           self.visibleBpSpan,
           self.anchorLocString,
           self.inlineLaneNames ? self.laneStack.glyphHeight : undefined,
+          self.rowsVsAnchor ? self.anchorAssemblyName : undefined,
         )
       },
       /**
        * #getter
-       * keyed `upper|lower` per adjacent mate-lane pair
+       * the alignments the source answered for each adjacent mate-lane pair,
+       * keyed `upper|lower`; a pair it has not answered draws nothing
        */
       get pairLinks(): ReadonlyMap<string, LaneLinks> {
         const out = new Map<string, LaneLinks>()
-        const placements = new Map<string, LanePlacementRecord[]>()
-        const placementsOn = (assemblyName: string) => {
-          let records = placements.get(assemblyName)
-          if (!records) {
-            records = self.groups.flatMap(group =>
-              (group.mates.get(assemblyName) ?? []).map(
-                (p): LanePlacementRecord => ({
-                  anchorRefName: group.anchor.refName,
-                  anchorStart: group.anchor.start,
-                  anchorEnd: group.anchor.end,
-                  refName: p.refName,
-                  start: p.start,
-                  end: p.end,
-                  strand: p.orientation < 0 ? -1 : 1,
-                  feature: p.feature,
-                  ops: self.featureOps.get(p.feature.id()),
-                }),
-              ),
-            )
-            placements.set(assemblyName, records)
-          }
-          return records
-        }
-        for (const { upper, lower, key: pair } of self.lanePairs) {
-          const fetched = self.laneLinks.held?.get(pair)
+        for (const { key } of self.lanePairs) {
+          const fetched = self.laneLinks.held?.get(key)
           if (fetched !== undefined && fetched.links.length > 0) {
-            out.set(pair, fetched)
-          } else if (
-            self.featuresAreNameless &&
-            (self.starAnchor !== undefined ||
-              fetched !== undefined ||
-              !self.holdsAssembly(upper) ||
-              !self.holdsAssembly(lower))
-          ) {
-            out.set(
-              pair,
-              composeLaneLinks({
-                upper: placementsOn(upper),
-                lower: placementsOn(lower),
-                upperAssemblyName: upper,
-                lowerAssemblyName: lower,
-              }),
-            )
+            out.set(key, fetched)
           }
         }
         return out
@@ -2130,6 +2101,7 @@ export function stateModelFactory(
           ramp: self.ribbonRamp,
           drawCurves: self.drawCurves,
           bridgeSkippedLanes: self.bridgeSkippedLanes,
+          rowsVsAnchor: self.rowsVsAnchor,
         })
       },
     }))
@@ -2169,6 +2141,32 @@ export function stateModelFactory(
         return this.bandCellOn(getPaletteHost(self).palette.background.paper)
       },
     }))
+    .views(self => ({
+      /**
+       * #getter
+       * px of the anchor's ticks across the displayed regions
+       */
+      get anchorTickXs(): number[] {
+        const anchor = self.laneStack.lanes[0]
+        const step = self.tickIntervalBp
+        const out: number[] = []
+        if (anchor && step > 0) {
+          for (const block of self.lgv.dynamicBlocks.contentBlocks) {
+            for (
+              let bp = Math.ceil(block.start / step) * step;
+              bp < block.end;
+              bp += step
+            ) {
+              const span = anchor.spanOf(block.refName, bp, bp + 1)
+              if (span) {
+                out.push(span[0])
+              }
+            }
+          }
+        }
+        return out
+      },
+    }))
     .views(self => {
       let held: {
         lane: Lane
@@ -2178,6 +2176,9 @@ export function stateModelFactory(
         boxes: MultiWayCell
         boxNames: NamedSpan[]
         geneGroups: Map<string, string>
+        ruleSpans: Span[] | undefined
+        ruleTicks: readonly number[]
+        ruled: boolean
       }[] = []
       return {
         /**
@@ -2187,9 +2188,14 @@ export function stateModelFactory(
         get laneCells() {
           const { laneGeneColors, boxColors } = self
           const laneGenes = self.laneGenes.held
-          const { lanes, glyphHeight } = self.laneStack
+          const { lanes, glyphHeight, bandHeight } = self.laneStack
           const ink = bandInk()
+          const anchorLane = self.rowsVsAnchor ? lanes[0] : undefined
+          const ruleSpans = anchorLane?.baseline
+          const ruleTicks = anchorLane ? self.anchorTickXs : NO_TICKS
           held = lanes.map((lane, row) => {
+            const ruled =
+              ruleSpans !== undefined && row > 0 && row + 1 < lanes.length
             const colors = {
               genes: laneGeneColors.get(lane.assemblyName) ?? boxColors,
               boxes: boxColors,
@@ -2200,6 +2206,9 @@ export function stateModelFactory(
             const prev = held[row]
             if (
               prev?.lane === lane &&
+              prev.ruleSpans === ruleSpans &&
+              prev.ruleTicks === ruleTicks &&
+              prev.ruled === ruled &&
               prev.genes === genes &&
               prev.colors.genes === colors.genes &&
               prev.colors.boxes === colors.boxes &&
@@ -2214,9 +2223,20 @@ export function stateModelFactory(
               glyphHeight,
               width: self.canvasWidth,
               colors,
+              anchorRule:
+                ruleSpans && ruled
+                  ? {
+                      y: anchorRuleY(lane, bandHeight),
+                      spans: ruleSpans,
+                      ticks: ruleTicks,
+                    }
+                  : undefined,
             })
             return {
               lane,
+              ruleSpans,
+              ruleTicks,
+              ruled,
               genes,
               colors,
               glyphs: { kind: 'glyphs', data: glyphs },
@@ -2460,6 +2480,7 @@ export function stateModelFactory(
               labels: getConf(self, ['ribbonColor', 'labels']),
               title: getConf(self, ['ribbonColor', 'title']),
               ramp: self.ribbonRamp,
+              against: self.rowsVsAnchor ? self.anchorAssemblyName : undefined,
             },
           ),
         ]

@@ -44,6 +44,8 @@ export interface LaneHeaderRow {
   y: number
   isAnchor: boolean
   inline: boolean
+  /** the genome this lane's ribbons are read against, where it is not the lane above */
+  against?: string
 }
 
 /** Clamps, since a live pan can put the frame's `min` below zero. */
@@ -80,6 +82,8 @@ export function laneHeaderRows(
   visibleBpSpan: number,
   anchorWhere: string,
   inlineGlyphHeight?: number,
+  /** names the anchor on each mate lane that is read against it */
+  against?: string,
 ): LaneHeaderRow[] {
   const inline = inlineGlyphHeight !== undefined
   return lanes.map(lane => {
@@ -104,6 +108,7 @@ export function laneHeaderRows(
         : lane.layerTop - LABEL_BASELINE_OFFSET,
       isAnchor: lane.isAnchor,
       inline,
+      against: lane.isAnchor ? undefined : against,
     }
   })
 }

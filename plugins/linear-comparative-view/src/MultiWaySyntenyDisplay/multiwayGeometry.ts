@@ -170,6 +170,13 @@ function addAcrossHoles(
   }
 }
 
+const ANCHOR_RULE_TICK_PX = 4
+
+/** Where the anchor's rule sits in the gutter under `upper`: flush under that lane */
+export function anchorRuleY(upper: Lane, bandHeight: number) {
+  return upper.bandTop + bandHeight
+}
+
 function* lanePairs(lanes: Lane[], glyphHeight: number) {
   for (let row = 0; row + 1 < lanes.length; row++) {
     const upper = lanes[row]!
@@ -455,6 +462,7 @@ export function buildRibbonGeometry({
   ramp,
   drawCurves,
   bridgeSkippedLanes,
+  rowsVsAnchor = false,
 }: {
   stack: LaneStack
   anchorOps?: AlignmentOpsById
@@ -466,6 +474,8 @@ export function buildRibbonGeometry({
   ramp?: DeclaredRamp
   drawCurves: boolean
   bridgeSkippedLanes: boolean
+  /** each gutter draws its lower lane against the anchor, as a star source states it */
+  rowsVsAnchor?: boolean
 }): RibbonGeometry {
   const { lanes, glyphHeight } = stack
   const color = cssColorToABGR(ribbonColor)
@@ -506,13 +516,18 @@ export function buildRibbonGeometry({
     }
     return idx
   }
-  for (const { row, upper, lower, y1, y2 } of lanePairs(lanes, glyphHeight)) {
+  for (const pair of lanePairs(lanes, glyphHeight)) {
+    const { row, lower, y2 } = pair
+    const onAnchor = rowsVsAnchor && row > 0
+    const upper = onAnchor ? anchor! : pair.upper
+    const y1 = onAnchor ? anchorRuleY(pair.upper, stack.bandHeight) : pair.y1
     const ribbons = new RibbonBuilder()
     const bridges = new Map<number, RibbonBuilder>()
     for (const [key, { group, spans, orientations }] of upper.placements) {
       let toRow = row + 1
       let far = lower.placements.get(key)
-      const bridging = bridgeSkippedLanes && groupSpansLanes(group)
+      const bridging =
+        !rowsVsAnchor && bridgeSkippedLanes && groupSpansLanes(group)
       while (!far && bridging && toRow + 1 < lanes.length) {
         far = lanes[++toRow]!.placements.get(key)
       }
@@ -573,7 +588,7 @@ export function buildRibbonGeometry({
       })
     }
     const pairLinks =
-      row > 0
+      row > 0 && !rowsVsAnchor
         ? laneLinks?.get(lanePairKey(upper.assemblyName, lower.assemblyName))
         : undefined
     for (const link of pairLinks?.links ?? []) {
@@ -590,9 +605,6 @@ export function buildRibbonGeometry({
       if (s1 && s2 && wideEnough(s1, s2, upper, lower)) {
         const idx = targets.length
         linkTarget.set(link.id(), idx)
-        const via = link.get('composedThrough') as
-          | { refName: string; start: number; end: number }
-          | undefined
         targets.push({
           feature: link,
           linkId: link.id(),
@@ -604,11 +616,6 @@ export function buildRibbonGeometry({
               link.get('end'),
             ),
             locOn(lower, mate.refName, mate.start, mate.end),
-            ...(via && anchor
-              ? [
-                  `composed through ${locOn(anchor, via.refName, via.start, via.end)}, not aligned directly`,
-                ]
-              : []),
           ].join('\n'),
         })
         const fill = colorOf(link.get('strand') === -1 ? -1 : 1, link)
@@ -949,12 +956,15 @@ export function buildLaneCells({
   glyphHeight,
   width,
   colors,
+  anchorRule,
 }: {
   lane: Lane
   genes: LaneGene[]
   glyphHeight: number
   width: number
   colors: LaneGlyphColors
+  /** the anchor's axis under this lane, where the next gutter reads it */
+  anchorRule?: { y: number; spans: readonly Span[]; ticks: readonly number[] }
 }): LaneCells {
   const glyphs = new GlyphBuilder()
   const boxes = new GlyphBuilder()
@@ -967,6 +977,20 @@ export function buildLaneCells({
   const divider = cssColorToABGR(colors.divider)
   for (const [x1, x2] of lane.baseline) {
     glyphs.line(x1, x2, centerY, 0, divider)
+  }
+  if (anchorRule) {
+    for (const [x1, x2] of anchorRule.spans) {
+      glyphs.line(x1, x2, anchorRule.y, 0, stroke)
+    }
+    for (const x of anchorRule.ticks) {
+      glyphs.rect(
+        x,
+        x + 1,
+        anchorRule.y - ANCHOR_RULE_TICK_PX,
+        ANCHOR_RULE_TICK_PX,
+        stroke,
+      )
+    }
   }
 
   const drawn: DrawnGene[] = []

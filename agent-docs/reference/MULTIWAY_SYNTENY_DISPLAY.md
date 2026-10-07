@@ -27,8 +27,14 @@ cost is linear in lanes.
 - **Alignment records split at large indels.** `SPLIT_AT_GAP_BP` rides the anchor
   and pair fetches through `clipFeatureToRegion`, so each gap-free run is its own
   group (runs as placements of one group would draw a cross product). Every
-  gutter draws the record's own ops: the anchor's from the record, a lower one's
-  composed from the two records it sits between (`composeAlignmentOps`).
+  gutter draws the ops of the record it places.
+- **A gutter draws only what its source states** (`rowsVsAnchor`). A source
+  whose header names an anchor and answers no lane pairs holds each lane against
+  the anchor alone, so every gutter draws its lower lane against the anchor: the
+  top edge is the anchor's axis, marked by a ticked rule under the lane above
+  (`anchorRuleY`), and each lane label opens with a `vs <anchor>` badge. A source
+  answering lane pairs draws neighbour against neighbour, and a pair it has not
+  answered draws nothing.
 - **A lane opens a hole at each deletion it carries against the anchor**
   (`laneOpeningsOf`, `LaneOpening`): where two alignment pieces of the lane abut,
   or nearly, while their anchor ends sit `SPLIT_AT_GAP_BP` or more further apart.
@@ -44,11 +50,9 @@ cost is linear in lanes.
   cut there (`addAcrossHoles`), and so are a gene's exons, intron lines and hit
   boxes (`Lane.spansOf`, `frameSpans`). Gene records never open: their spacing
   is no deletion. An insertion opens nothing; its sequence draws as before.
-- **A lane draws no mark for sequence the anchor lacks.** The ribbon to the
-  lane above fans open over an insertion, and two lanes sharing one join
-  unbroken. A purple bar on every carrier lane plus a purple tint on the ribbon
-  between carriers was tried and removed: it compared each lane with the anchor
-  where the ribbons compare neighbours, so one insertion drew on every carrier.
+- **A lane draws no mark for sequence the anchor lacks.** The ribbon over an
+  insertion fans open. A purple bar on every carrier lane plus a purple tint on
+  the ribbon between carriers was tried and removed.
 - **A gene-table row the anchor lacks draws between the lanes that carry it**
   (`anchorlessGroupsOf`, `PlacedGroup` with no `anchor`). Each mate lane reads
   the table on its own window (`laneGroupsFetchSpecs`); the lanes place and
@@ -113,11 +117,14 @@ cost is linear in lanes.
   each adjacent pair on the anchor's merged blocks, and `lanePairBatches` ones
   for all of them in one call. Only pairs whose gutter is within a screen of the
   scrolled window are asked for (`gutterNearViewport`): on the HPRC graph each
-  pair cut alone costs 70-660 ms of worker time, so 463 lanes took minutes. `pairLinks` composes a pair's
-  links through the anchor (`MW/composeLaneLinks.ts`) where the star holds no
-  direct record. Composition through GRCh38 loses the loci picked for being absent
-  from it, which is why a graph adapter's lane pair is the alignment
-  `pairAlignments` reads off the graph:
+  pair cut alone costs 70-660 ms of worker time, so 463 lanes took minutes.
+- **Composing a lane pair through the anchor** was built (`composeLaneLinks`,
+  `composeAlignmentOps`) and removed. It drew a neighbour comparison the source
+  never states, with a tooltip as its only disclosure: a reversed lane coloured
+  both gutters touching it, and sequence two lanes share and the anchor lacks
+  drew as a break between them. Through GRCh38 it also loses the loci picked for
+  being absent from it, which is why a graph adapter's lane pair is the
+  alignment `pairAlignments` reads off the graph:
 
 <!-- BEGIN GENERATED MEASUREMENT multiway-composition-through-grch38 -->
 

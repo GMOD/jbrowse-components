@@ -139,6 +139,12 @@ test('the ribbon key is the strand pair, in the genes’ strand colors', () => {
   ])
 })
 
+test('the strand key names the genome each lane is read against', () => {
+  expect(
+    ribbonColorKey('strand', {}, { against: 'hg38' }).map(e => e.label),
+  ).toEqual(['Same orientation as hg38', 'Inverted vs hg38'])
+})
+
 test('the other two ribbon modes key no rows', () => {
   expect(ribbonColorKey('default')).toEqual([])
   expect(ribbonColorKey('identity')).toEqual([])

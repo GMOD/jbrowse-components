@@ -42,6 +42,8 @@ function SvgInlineChip({
   )
 }
 
+const BADGE_PAD_PX = 3
+
 export function SvgLaneHeaders({
   rows,
   width,
@@ -56,37 +58,71 @@ export function SvgLaneHeaders({
   }
   return (
     <>
-      {rows.map(row => (
-        <g key={`header-${row.assemblyName}`}>
-          {row.inline ? (
-            <SvgInlineChip text={row.label} x={2} y={row.y} anchor="start" />
-          ) : null}
-          <SvgHaloText {...text} x={2} y={row.y} fill={bandInk().text}>
-            {row.label}
-          </SvgHaloText>
-          {row.scale ? (
-            <>
-              {row.inline ? (
-                <SvgInlineChip
-                  text={row.scale}
+      {rows.map(row => {
+        const badge = row.against ? `vs ${row.against}` : undefined
+        const badgeWidth = badge
+          ? measureText(badge, LABEL_FONT_SIZE) + 2 * BADGE_PAD_PX
+          : 0
+        const labelX = badge ? 2.5 + badgeWidth + 4 : 2
+        return (
+          <g key={`header-${row.assemblyName}`}>
+            {badge ? (
+              <>
+                <rect
+                  x={2.5}
+                  y={labelBoxTop(row.y) - 0.5}
+                  width={badgeWidth}
+                  height={LABEL_FONT_SIZE + 1}
+                  rx={2}
+                  fill={bandGroundColor()}
+                  stroke={bandInk().text}
+                />
+                <text
+                  x={2.5 + BADGE_PAD_PX}
+                  y={row.y}
+                  fontSize={LABEL_FONT_SIZE}
+                  fontWeight={600}
+                  fill={bandInk().text}
+                >
+                  {badge}
+                </text>
+              </>
+            ) : null}
+            {row.inline ? (
+              <SvgInlineChip
+                text={row.label}
+                x={labelX}
+                y={row.y}
+                anchor="start"
+              />
+            ) : null}
+            <SvgHaloText {...text} x={labelX} y={row.y} fill={bandInk().text}>
+              {row.label}
+            </SvgHaloText>
+            {row.scale ? (
+              <>
+                {row.inline ? (
+                  <SvgInlineChip
+                    text={row.scale}
+                    x={width - 2}
+                    y={row.y}
+                    anchor="end"
+                  />
+                ) : null}
+                <SvgHaloText
+                  {...text}
                   x={width - 2}
                   y={row.y}
                   anchor="end"
-                />
-              ) : null}
-              <SvgHaloText
-                {...text}
-                x={width - 2}
-                y={row.y}
-                anchor="end"
-                fill={bandPalette.text.secondary}
-              >
-                {row.scale}
-              </SvgHaloText>
-            </>
-          ) : null}
-        </g>
-      ))}
+                  fill={bandPalette.text.secondary}
+                >
+                  {row.scale}
+                </SvgHaloText>
+              </>
+            ) : null}
+          </g>
+        )
+      })}
     </>
   )
 }

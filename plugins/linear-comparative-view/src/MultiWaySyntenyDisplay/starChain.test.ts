@@ -7,6 +7,7 @@ import { createDisplayWithSession } from './testEnv.ts'
 import type { MultiWaySyntenyDisplayModel } from './model.ts'
 
 // Three mates sharing no record: B runs with the anchor, C and D against it.
+// The header names the anchor and no lane pairs, so each lane reads against it.
 const A = 'volvox'
 const B = 'volvox_random'
 const C = 'volvox_ins'
@@ -69,7 +70,7 @@ function gutter(display: MultiWaySyntenyDisplayModel, row: number) {
   }))
 }
 
-test('a three-mate star composes relative strand down the chain', async () => {
+test('each lane of a three-mate star takes its strand against the anchor', async () => {
   const display = await starDisplay()
   expect(display.rowAssemblies).toEqual([B, C, D])
   expect(
@@ -79,11 +80,8 @@ test('a three-mate star composes relative strand down the chain', async () => {
     display.laneHeaderRows.map(row => row.label.includes('[rev]')),
   ).toEqual([false, false, true, true])
 
-  const strandsOf = (pair: string) =>
-    display.pairLinks.get(pair)!.links.map(link => link.get('strand'))
   expect(display.laneLinksFetchSpecs).toEqual([])
-  expect(strandsOf(`${B}|${C}`)).toEqual([-1, -1, -1, -1])
-  expect(strandsOf(`${C}|${D}`)).toEqual([1, 1, 1, 1])
+  expect(display.pairLinks.size).toBe(0)
 
   display.setRibbonColorField('strand')
   const alpha = cssColorToABGR(display.ribbonColor) >>> 24
@@ -93,6 +91,6 @@ test('a three-mate star composes relative strand down the chain', async () => {
   expect(gutters.map(ribbons => ribbons.length)).toEqual([4, 4, 4])
   expect(
     gutters.map(ribbons => [...new Set(ribbons.map(r => r.color))]),
-  ).toEqual([[pos], [neg], [pos]])
+  ).toEqual([[pos], [neg], [neg]])
   expect(gutters.flat().some(r => r.crossed)).toBe(false)
 })

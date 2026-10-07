@@ -9,8 +9,8 @@
  * A mismatch mark is a pixel or two wide and fades with its width, so a figure
  * cannot tell a gutter that drew no alignment detail from one whose detail is
  * too faint to see. This counts the instances in each gutter's uploaded
- * geometry by kind, and says whether the gutter's records were fetched for
- * that pair or composed through the anchor.
+ * geometry by kind, and says whether the gutter draws its lane against the
+ * anchor or draws records fetched for that pair.
  */
 import { parseArgs } from 'node:util'
 
@@ -78,6 +78,7 @@ const displays = await withHarness(
         groups: unknown[]
         laneLinks?: Map<string, { links: unknown[] }>
         pairLinks: Map<string, { links: unknown[] }>
+        rowsVsAnchor: boolean
         ribbonGeometry: { cells: Map<string, Cell> }
       }
       interface Session {
@@ -102,13 +103,11 @@ const displays = await withHarness(
                 const lower = rows[to ?? from! + 1]!
                 const pair = `${upper}|${lower}`
                 const source =
-                  from === 0
+                  from === 0 || d.rowsVsAnchor
                     ? 'anchor'
-                    : (d.laneLinks?.get(pair)?.links.length ?? 0) > 0
+                    : d.pairLinks.has(pair)
                       ? 'fetched'
-                      : d.pairLinks.has(pair)
-                        ? 'composed'
-                        : 'none'
+                      : 'none'
                 const counts = new Array<number>(kindCount).fill(0)
                 const { kinds, instanceCount } = cell.data
                 for (let i = 0; i < instanceCount; i++) {

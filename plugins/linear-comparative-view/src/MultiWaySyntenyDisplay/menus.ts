@@ -79,6 +79,7 @@ export interface MultiWayMenuModel extends LaneHeaderModel, LaneSelectionModel {
   setDrawCurves: (flag: boolean) => void
   bridgeSkippedLanes: boolean
   setBridgeSkippedLanes: (flag: boolean) => void
+  rowsVsAnchor: boolean
   showLegend: boolean
   setShowLegend: (flag: boolean) => void
   hasLegendKey: boolean
@@ -242,15 +243,19 @@ export function showSubMenuItems(model: MultiWayMenuModel): MenuItem[] {
         'Genes reading rightwards above the lane line and leftwards below it.',
     }),
     toggleItem('Curved lines', model.drawCurves, model.setDrawCurves),
-    toggleItem(
-      'Show ribbons across gaps',
-      model.bridgeSkippedLanes,
-      model.setBridgeSkippedLanes,
-      {
-        helpText:
-          'Join a gene to the next lane down that places it when the lane between places nothing for it. Off, a sparse lane cuts every chain running through it.',
-      },
-    ),
+    ...(model.rowsVsAnchor
+      ? []
+      : [
+          toggleItem(
+            'Show ribbons across gaps',
+            model.bridgeSkippedLanes,
+            model.setBridgeSkippedLanes,
+            {
+              helpText:
+                'Join a gene to the next lane down that places it when the lane between places nothing for it. Off, a sparse lane cuts every chain running through it.',
+            },
+          ),
+        ]),
     ...(model.hasLegendKey ? [legendCheckboxItem(model)] : []),
     ...showHiddenItems(model.hiddenLanes.length, 'lane', () => {
       model.showHiddenLanes()

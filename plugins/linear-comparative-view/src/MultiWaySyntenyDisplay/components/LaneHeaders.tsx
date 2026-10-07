@@ -170,6 +170,23 @@ const LaneHeaders = observer(function LaneHeaders({
             textShadow: textHalo(bandGroundColor()),
           }}
         >
+          {row.against ? (
+            <span
+              data-testid={`multiway-lane-against-${row.assemblyName}`}
+              style={{
+                background: bandGroundColor(),
+                color: bandInk().text,
+                border: `1px solid ${bandInk().text}`,
+                fontWeight: 600,
+                padding: '0 3px',
+                borderRadius: 2,
+                textShadow: 'none',
+                flex: '0 0 auto',
+              }}
+            >
+              vs {row.against}
+            </span>
+          ) : null}
           <span
             data-testid={`multiway-lane-label-${row.assemblyName}`}
             style={{

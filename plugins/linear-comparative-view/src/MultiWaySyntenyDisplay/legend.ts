@@ -78,18 +78,23 @@ export function laneFieldKey(
 export function ribbonColorKey(
   field: string,
   attributeRanges: Record<string, AttributeRange> = {},
-  { hideUnlabelled = false, slotColor, labels }: RibbonKeyOptions = {},
+  {
+    hideUnlabelled = false,
+    slotColor,
+    labels,
+    against = 'lane above',
+  }: RibbonKeyOptions = {},
 ): CategoricalEntry[] {
   if (field === 'strand') {
     return [
       {
         value: 'same',
-        label: 'Same orientation as lane above',
+        label: `Same orientation as ${against}`,
         color: colorSchemes.strand.posColor,
       },
       {
         value: 'inverted',
-        label: 'Inverted vs lane above',
+        label: `Inverted vs ${against}`,
         color: colorSchemes.strand.negColor,
       },
     ]
@@ -118,6 +123,8 @@ interface RibbonKeyOptions {
   hideUnlabelled?: boolean
   slotColor?: string
   labels?: readonly string[]
+  /** what each ribbon's lower lane is read against; the lane above when unset */
+  against?: string
 }
 
 /** `title` unset keeps the ribbons' own heading; `''` draws none. */

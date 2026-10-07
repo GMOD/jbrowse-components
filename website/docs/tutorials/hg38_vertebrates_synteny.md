@@ -202,9 +202,9 @@ ribbon per gap-free run. Sequence a lane has between two runs and hg38 lacks
 leaves a gap between its ribbons. The mouse, cow and dog chains have many such
 gaps, and the ape chains have gaps under the cut, so their ribbons look
 continuous. The mouse lane shows `[rev]` because its chain runs the other way
-against hg38 here, so the ribbons either side of it are blue.
+against hg38 here, so its ribbons are blue.
 
-<Figure caption="The TP53 neighbourhood on hg38 over eight UCSC genome lanes, ribbons colored by strand. Chimp and orangutan run red and unbroken under hg38; the lanes below them break into many ribbons, and the reversed mouse lane is joined by blue ones." src="/img/multiway_synteny/hg38_vertebrates_tp53.png" />
+<Figure caption="The TP53 neighbourhood on hg38 over eight UCSC genome lanes, ribbons colored by strand. Chimp and orangutan run red and unbroken under hg38; the lanes below them break into many ribbons, and the reversed mouse lane's are blue." src="/img/multiway_synteny/hg38_vertebrates_tp53.png" />
 
 Navigate to `chr17:15,200,000-16,400,000`, eight megabases toward the
 centromere, near _PMP22_. The region is a hotspot of segmental duplications
@@ -237,11 +237,12 @@ window that span is, rounded to one of a few fixed steps. A lane that places up
 to a tenth more than a step stays on that step, and the extra runs off the
 lane's edges.
 
-A ribbon joins a lane to the lane directly above it. No chain aligns two
-neighbouring genomes in this star, so the track composes their ribbon through
-hg38, the anchor. Hovering a ribbon lights the same alignment in every lane it
-reaches, dragging a lane label reorders the stack, and a lane's header menu
-re-anchors the view on that genome or opens it in a separate view.
+Every ribbon joins a lane to hg38, the anchor, since each chain aligns one
+genome to hg38. The ticked rule above a lane's ribbons is hg38's axis, and the
+badge opening each lane label names it. Hovering a ribbon lights the same
+alignment in every lane it reaches, dragging a lane label reorders the stack,
+and a lane's header menu re-anchors the view on that genome or opens it in a
+separate view.
 
 ## Checking the marmoset lane against its chain
 

@@ -21,7 +21,6 @@ import {
   KIND_MARKER,
 } from '../LinearSyntenyRPC/syntenyKinds.ts'
 import { NO_OPS } from './alignmentOps.ts'
-import { composeLaneLinks } from './composeLaneLinks.ts'
 import { LaneGene } from './geneGlyph.ts'
 import { buildLanes } from './laneStack.ts'
 import { groupFeatures } from './layoutMultiWay.ts'
@@ -35,7 +34,6 @@ import {
 } from './multiwayGeometry.ts'
 import { PX_ORIGIN } from './multiwayRenderTypes.ts'
 
-import type { LanePlacementRecord } from './composeLaneLinks.ts'
 import type { BuildLanesOpts } from './laneStack.ts'
 import type { RowFrame, Span } from './layoutMultiWay.ts'
 import type { MultiWayCell } from './multiwayRenderTypes.ts'
@@ -54,23 +52,6 @@ function ribbonData(cells: Map<string, MultiWayCell>, key: string) {
     throw new Error(`${key} is not a ribbon cell`)
   }
   return cell.data
-}
-
-function placement(
-  refName: string,
-  start: number,
-  end: number,
-): LanePlacementRecord {
-  return {
-    anchorRefName: 'chr1',
-    anchorStart: 100,
-    anchorEnd: 200,
-    refName,
-    start,
-    end,
-    strand: 1,
-    feature: new SimpleFeature({ uniqueId: refName, refName, start, end }),
-  }
 }
 
 function pairFeature(
@@ -883,37 +864,41 @@ describe('the ribbons', () => {
     expect(targets[data.instanceFeatureIdx[1]!]!.feature).toBe(link)
     expect(targets[data.instanceFeatureIdx[1]!]!.label).toContain('peach')
   })
+})
 
-  test('say a composed link was composed, and through which anchor span', () => {
-    const s = stack({
-      features: [
-        pairFeature('g1', 100, 200),
-        pairFeature('g1', 100, 200, { mate: 'cacao', mateRef: 'Tc1' }),
-      ],
-      assemblyNames: ['grape', 'peach', 'cacao'],
-    })
-    const { links } = composeLaneLinks({
-      upper: [placement('Pp1', 1500, 1600)],
-      lower: [placement('Tc1', 1500, 1600)],
-      upperAssemblyName: 'peach',
-      lowerAssemblyName: 'cacao',
-    })
-    const [composed] = links
-    const { targets } = buildRibbonGeometry({
+describe('a source stating each lane against the anchor alone', () => {
+  // peach draws at half the anchor's scale, so its px differ from the anchor's
+  const s = stack({
+    features: [
+      pairFeature('g1', 100, 200),
+      pairFeature('g1', 100, 200, { mate: 'cacao', mateRef: 'Tc1' }),
+    ],
+    assemblyNames: ['grape', 'peach', 'cacao'],
+    peach: { ...peachFrame, min: 0, max: 2000 },
+  })
+  const topEdges = (rowsVsAnchor: boolean) => {
+    const { cells } = buildRibbonGeometry({
       stack: s,
-      laneLinks: new Map([
-        ['peach|cacao', { links: [composed!], ops: NO_OPS }],
-      ]),
+      laneLinks: undefined,
       ribbonColor: 'grey',
       drawCurves: false,
       bridgeSkippedLanes: false,
+      rowsVsAnchor,
     })
-    const target = targets.find(t => t.feature === composed)
-    expect(target!.label.split('\n')).toEqual([
-      'peach Pp1:1,501..1,600',
-      'cacao Tc1:1,501..1,600',
-      'composed through grape chr1:101..200, not aligned directly',
-    ])
+    return ['ribbons:0', 'ribbons:1'].map(key => {
+      const data = ribbonData(cells, key)
+      return [data.bp1[0], data.bp2[0]]
+    })
+  }
+
+  test('every gutter takes its top edge from the anchor', () => {
+    const [first, second] = topEdges(true)
+    expect(second).toEqual(first)
+  })
+
+  test('a source stating neighbour pairs takes it from the lane above', () => {
+    const [first, second] = topEdges(false)
+    expect(second).not.toEqual(first)
   })
 })
 

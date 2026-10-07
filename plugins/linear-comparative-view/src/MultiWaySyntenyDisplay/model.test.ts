@@ -321,9 +321,7 @@ test('lane links are asked for only between lanes the session holds', () => {
   )
   expect([...display.rowFrames.values()].every(Boolean)).toBe(true)
   expect(display.laneLinksFetchSpecs).toEqual([])
-  expect(
-    display.pairLinks.get('volvox_random|sample#1#undeclared')?.links.length,
-  ).toBeGreaterThan(0)
+  expect(display.pairLinks.has('volvox_random|sample#1#undeclared')).toBe(false)
 
   display.setFeatures([
     nameless('f1', 'volvox_random'),
@@ -1244,7 +1242,7 @@ test('two mates spelling one assembly two ways both draw from its one gene track
   ])
 })
 
-describe('a star source composes its adjacent-pair links through the anchor', () => {
+describe('the gutter between two mate lanes', () => {
   const ribbonsBetweenMates = (display: ReturnType<typeof createDisplay>) => {
     const { cells } = display.ribbonGeometry
     const cell = cells.get('ribbons:1')!
@@ -1287,13 +1285,12 @@ describe('a star source composes its adjacent-pair links through the anchor', ()
   ])
   const pair = 'volvox_random|volvox_ins'
 
-  test('once the pair fetch has come back empty', () => {
+  test('draws nothing for a pair the source answers with no records', () => {
     const display = createDisplay()
     display.setFeatures(starRecords())
     display.setLaneFrames(0, frames)
+    expect(display.rowsVsAnchor).toBe(false)
     expect(display.laneLinksFetchSpecs.map(s => s.lane)).toEqual([pair])
-    expect(display.pairLinks.has(pair)).toBe(false)
-
     display.setLaneLinks(
       new Map([
         [
@@ -1308,32 +1305,14 @@ describe('a star source composes its adjacent-pair links through the anchor', ()
       display.laneLinksFetchSpecs,
       display.anchorAssemblyName,
     )
-    const composed = display.pairLinks.get(pair)!.links
-    expect(composed).toHaveLength(1)
-    const [link] = composed
-    // forward upper, reversed lower: the link runs crosswise over ctgA:200-300
-    expect(link!.get('refName')).toBe('ctgB')
-    expect([link!.get('start'), link!.get('end')]).toEqual([200, 300])
-    expect(link!.get('strand')).toBe(-1)
-    expect(link!.get('mate')).toEqual({
-      assemblyName: 'volvox_ins',
-      refName: 'ctgC',
-      start: 1200,
-      end: 1300,
-    })
-
-    const data = ribbonsBetweenMates(display)
-    expect(data.instanceCount).toBe(1)
-    const lower = display.laneStack.lanes[2]!
-    const [x1, x2] = lower.spanOf('ctgC', 1200, 1300)!
-    expect(Math.min(data.bp3[0]!, data.bp4[0]!)).toBe(Math.min(x1, x2))
-    expect(Math.max(data.bp3[0]!, data.bp4[0]!)).toBe(Math.max(x1, x2))
+    expect(display.pairLinks.has(pair)).toBe(false)
+    expect(ribbonsBetweenMates(display).instanceCount).toBe(0)
     expect(
       staleLaneSpecs(display.laneLinksFetchSpecs, display.laneLinks),
     ).toEqual([])
   })
 
-  test('without asking, once the header has named the anchor', () => {
+  test('reads the lower lane against the anchor once the header names one and no lane pairs', () => {
     const display = createDisplay()
     display.setFeatures(starRecords())
     display.setLaneFrames(0, frames)
@@ -1341,9 +1320,23 @@ describe('a star source composes its adjacent-pair links through the anchor', ()
       adapterConfig: display.adapterConfig,
       value: { anchorAssemblyName: 'volvox' },
     })
+    expect(display.rowsVsAnchor).toBe(true)
     expect(display.laneLinksFetchSpecs).toEqual([])
-    expect(display.pairLinks.get(pair)!.links).toHaveLength(1)
-    expect(ribbonsBetweenMates(display).instanceCount).toBe(1)
+    expect(display.pairLinks.size).toBe(0)
+
+    const data = ribbonsBetweenMates(display)
+    expect(data.instanceCount).toBe(1)
+    const [anchor, , lower] = display.laneStack.lanes
+    const top = anchor!.spanOf('ctgA', 200, 400)!
+    const bottom = lower!.spanOf('ctgC', 1100, 1300)!
+    const ends = (a: number, b: number) => [Math.min(a, b), Math.max(a, b)]
+    expect(ends(data.bp1[0]!, data.bp2[0]!)).toEqual(ends(...top))
+    expect(ends(data.bp3[0]!, data.bp4[0]!)).toEqual(ends(...bottom))
+    expect(display.laneHeaderRows.map(row => row.against)).toEqual([
+      undefined,
+      'volvox',
+      'volvox',
+    ])
   })
 
   test('a pair the file answers keeps its own records', () => {
@@ -1444,24 +1437,25 @@ describe('a star source composes its adjacent-pair links through the anchor', ()
       [direct],
       new Map([['direct', Uint32Array.from(parseCigar2('40=20D40='))]]),
     )
-    expect(
-      display.pairLinks.get(pair)!.links[0]!.get('composedThrough'),
-    ).toBeDefined()
+    expect(display.rowsVsAnchor).toBe(false)
+    expect(display.pairLinks.has(pair)).toBe(false)
     await until(() => display.laneLinks.held?.has(pair) === true)
     expect(display.pairLinks.get(pair)!.links).toEqual([direct])
+    expect(display.laneHeaderRows.every(row => row.against === undefined)).toBe(
+      true,
+    )
     expect([...ribbonsBetweenMates(display).kinds]).toEqual([
       KIND_BASE,
       KIND_BASE,
     ])
   })
 
-  test('an anchor-window pair the adapter answers with nothing composes', async () => {
+  test('an anchor-window pair the adapter answers with nothing draws nothing', async () => {
     const { display } = await readOnAnchor([])
     await until(() => display.laneLinks.held?.has(pair) === true)
     expect(display.laneLinks.held!.get(pair)!.links).toEqual([])
-    expect(
-      display.pairLinks.get(pair)!.links.map(l => l.get('composedThrough')),
-    ).toEqual([{ refName: 'ctgA', start: 200, end: 300 }])
+    expect(display.pairLinks.has(pair)).toBe(false)
+    expect(ribbonsBetweenMates(display).instanceCount).toBe(0)
   })
 })
 

@@ -138,11 +138,12 @@ the track menu:
   lanes it joins run the same way and blue where one is inverted against the
   other
 
-<Figure src="/img/genomes_synteny/star_lanes.png" caption="hg38 at TNNT3 over eight genomes from chimp to platypus, ribbons colored by strand. Down to elephant the ribbons run nearly all red and the genes that lanes name keep hg38's order, while the gaps between ribbons widen down the stack. The platypus lane spreads over many sequences, joined by blue." />
+<Figure src="/img/genomes_synteny/star_lanes.png" caption="hg38 at TNNT3 over eight genomes from chimp to platypus, ribbons colored by strand. Down to elephant the ribbons run nearly all red and the genes that lanes name keep hg38's order, while the gaps between ribbons widen down the stack. The platypus lane spreads over many sequences, and its ribbons are blue." />
 
 Each lane reads the same chain file as that genome's pairwise liftOver track, so
-the one view holds what a synteny view per genome would. The ribbons between two
-lanes below hg38 pass through hg38, since each chain aligns one genome to hg38.
+the one view holds what a synteny view per genome would. Every lane's ribbons
+run to hg38, since each chain aligns one genome to hg38, and the badge opening
+each lane label says so.
 [Reading the stack](/docs/tutorials/hg38_vertebrates_synteny#reading-the-stack)
 covers the lane labels, the ribbons and the lane menus.
 
@@ -162,14 +163,18 @@ and mm39 is C57BL/6J, the strain that lost _Nnt_ exons 7 to 11 (Freeman et al.
 - in the track menu, **Lanes → Choose lanes...**, type `house mouse` into the
   filter and tick the strains, the C57BL/6J T2T assembly among them
 
-<Figure src="/img/genomes_synteny/mouse_strains_nnt.png" caption="mm39 at Nnt over the Mus assemblies the track holds, the C57BL/6J T2T assembly first. The T2T assembly of that strain runs straight under mm39, and the ribbon to the next lane fans open in the middle of the gene, over the exons the reference strain lost." />
+<Figure src="/img/genomes_synteny/mouse_strains_nnt.png" caption="mm39 at Nnt over the Mus assemblies the track holds, the C57BL/6J T2T assembly first. The T2T assembly of that strain runs straight under mm39, and every other strain's ribbon fans open in the middle of the gene, over the exons the reference strain lost." />
+
+Each strain is compared with mm39 alone. Whether two strains carry the same
+sequence there takes an alignment between them, which this track does not hold.
 
 ## Comparing one person's two haplotypes at the 17q21.31 inversion
 
 hg38's multi-way track holds both haplotypes of the H9 T2T assembly, so a stack
 can put one person's two chromosomes under the reference. At 17q21.31 the H2
 haplotype is a 900 kb inversion (Stefansson et al. 2005), and H9 carries one of
-each. On hg38 at
+each. Each lane is read against hg38, so the haplotype carrying the inversion
+draws blue and its partner draws red. On hg38 at
 [staging.genomes.jbrowse.org](https://staging.genomes.jbrowse.org), turn on
 **hg38 vs 240 genomes (liftOver, multi-way)**, type
 `chr17:45,300,000-46,800,000` into the location box, then in the track menu:

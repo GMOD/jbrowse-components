@@ -186,6 +186,36 @@ test('the export backs a name on the gene row, as the screen does', async () => 
   expect(await chips()).toBeGreaterThanOrEqual(display.laneStack.lanes.length)
 })
 
+test('the export badges each lane a source reads against its anchor', async () => {
+  const display = createDisplay()
+  await when(() => display.features !== undefined, { timeout: 5000 })
+  display.setFeatures([
+    new SimpleFeature({
+      uniqueId: 'r1',
+      refName: 'ctgA',
+      start: 100,
+      end: 200,
+      strand: 1,
+      mate: {
+        assemblyName: 'volvox_random',
+        refName: 'ctgB',
+        start: 100,
+        end: 200,
+      },
+    }),
+  ])
+  await when(() => display.svgReady, { timeout: 5000 })
+  const exported = async () =>
+    renderToString(<svg>{await display.renderSvg()}</svg>)
+  expect(await exported()).not.toContain('vs volvox')
+
+  display.setAdapterHeader({
+    adapterConfig: display.adapterConfig,
+    value: { anchorAssemblyName: 'volvox' },
+  })
+  expect(await exported()).toContain('>vs volvox<')
+})
+
 test('the export draws lane headers and names in band ink over a band-ground halo, in a dark theme too, inheriting the export font', async () => {
   const display = createDisplay()
   await when(() => display.features !== undefined, { timeout: 5000 })

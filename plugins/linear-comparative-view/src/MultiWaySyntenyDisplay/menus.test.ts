@@ -172,6 +172,7 @@ function trackModel({
     drawCurves: false,
     setDrawCurves: () => {},
     bridgeSkippedLanes: true,
+    rowsVsAnchor: false,
     setBridgeSkippedLanes: () => {},
     showLegend: true,
     setShowLegend: () => {},
@@ -209,6 +210,13 @@ test('the track menu is Show, Color by and Lanes', () => {
     'Curved lines',
     'Show ribbons across gaps',
   ])
+})
+
+test('a source reading each lane against its anchor offers no bridging', () => {
+  const { model } = trackModel()
+  expect(
+    labelsOf(showSubMenuItems({ ...model, rowsVsAnchor: true })),
+  ).not.toContain('Show ribbons across gaps')
 })
 
 test('Color by offers the synteny view modes a lane stack paints', () => {
