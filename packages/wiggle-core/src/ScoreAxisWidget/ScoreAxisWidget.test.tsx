@@ -44,10 +44,9 @@ const Track = types
 
 function open(displaySnapshot: Record<string, unknown> = {}) {
   persists = 0
-  const track = Track.create({
+  const { display } = Track.create({
     display: { configuration: {}, ...displaySnapshot },
   })
-  const { display } = track
   const model = { display, label: 'Y axis' } as unknown as ScoreAxisWidgetModel
   const view = render(<ScoreAxisWidget model={model} />)
   return { display, view }

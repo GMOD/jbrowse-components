@@ -70,8 +70,7 @@ class FakeViewPlugin extends Plugin {
 }
 
 test('adds relative URL (BAM)', () => {
-  const session = standardInitializer()
-  const { widget } = session
+  const { widget } = standardInitializer()
   widget.setTrackData({
     uri: 'volvox-sorted.bam',
     locationType: 'UriLocation',
@@ -84,8 +83,7 @@ test('adds relative URL (BAM)', () => {
 })
 
 test('adds full URL (BAM)', () => {
-  const session = standardInitializer()
-  const { widget } = session
+  const { widget } = standardInitializer()
   widget.setTrackData({
     uri: 'https://google.com/volvox-sorted.bam',
     locationType: 'UriLocation',
@@ -106,7 +104,7 @@ test('tests on an view without view.assemblyNames', () => {
   })
   // no assemblyNames on the view, just in case some view does not implement
   // view.assemblyNames (it is just a convenience)
-  const session = SessionModel.create({
+  const { widget } = SessionModel.create({
     view: {
       type: 'FakeView',
       id: 'testing',
@@ -116,8 +114,6 @@ test('tests on an view without view.assemblyNames', () => {
       view: 'testing',
     },
   })
-
-  const { widget } = session
   widget.setTrackData({
     uri: 'volvox-sorted.bam',
     locationType: 'UriLocation',
@@ -128,8 +124,7 @@ test('tests on an view without view.assemblyNames', () => {
 })
 
 test('adds bam', () => {
-  const session = standardInitializer()
-  const { widget } = session
+  const { widget } = standardInitializer()
   widget.setTrackData({
     uri: 'volvox-sorted.bam',
     locationType: 'UriLocation',
@@ -138,8 +133,7 @@ test('adds bam', () => {
 })
 
 test('adds cram', () => {
-  const session = standardInitializer()
-  const { widget } = session
+  const { widget } = standardInitializer()
   widget.setTrackData({
     uri: 'volvox-sorted.cram',
     locationType: 'UriLocation',
@@ -148,8 +142,7 @@ test('adds cram', () => {
 })
 
 test('adds .vcf.gz', () => {
-  const session = standardInitializer()
-  const { widget } = session
+  const { widget } = standardInitializer()
   widget.setTrackData({
     uri: 'volvox-sorted.vcf.gz',
     locationType: 'UriLocation',
@@ -158,8 +151,7 @@ test('adds .vcf.gz', () => {
 })
 
 test('adds .gff3', () => {
-  const session = standardInitializer()
-  const { widget } = session
+  const { widget } = standardInitializer()
   widget.setTrackData({
     uri: 'volvox-sorted.gff3',
     locationType: 'UriLocation',
@@ -168,8 +160,7 @@ test('adds .gff3', () => {
 })
 
 test('adds .hic', () => {
-  const session = standardInitializer()
-  const { widget } = session
+  const { widget } = standardInitializer()
   widget.setTrackData({
     uri: 'volvox-sorted.hic',
     locationType: 'UriLocation',
@@ -178,8 +169,7 @@ test('adds .hic', () => {
 })
 
 test('adds bam localpath', () => {
-  const session = standardInitializer()
-  const { widget } = session
+  const { widget } = standardInitializer()
   widget.setTrackData({
     localPath: 'volvox-sorted.bam',
     locationType: 'LocalPathLocation',
@@ -194,8 +184,7 @@ test('adds bam localpath', () => {
 })
 
 test('clearData resets all volatile state', () => {
-  const session = standardInitializer()
-  const { widget } = session
+  const { widget } = standardInitializer()
 
   // Set various state
   widget.setTrackData({
@@ -243,8 +232,7 @@ test('clearData resets all volatile state', () => {
 })
 
 test('setTrackData clears adapterHint for re-evaluation', () => {
-  const session = standardInitializer()
-  const { widget } = session
+  const { widget } = standardInitializer()
 
   widget.setTrackData({
     uri: 'test.bam',
@@ -262,8 +250,7 @@ test('setTrackData clears adapterHint for re-evaluation', () => {
 })
 
 test('setIndexTrackData keeps adapterHint', () => {
-  const session = standardInitializer()
-  const { widget } = session
+  const { widget } = standardInitializer()
 
   widget.setTrackData({
     uri: 'test.bam',
@@ -280,8 +267,7 @@ test('setIndexTrackData keeps adapterHint', () => {
 })
 
 test('detects FTP URLs in track data', () => {
-  const session = standardInitializer()
-  const { widget } = session
+  const { widget } = standardInitializer()
 
   widget.setTrackData({
     uri: 'ftp://example.com/test.bam',
@@ -291,8 +277,7 @@ test('detects FTP URLs in track data', () => {
 })
 
 test('detects FTP URLs in index data', () => {
-  const session = standardInitializer()
-  const { widget } = session
+  const { widget } = standardInitializer()
 
   widget.setTrackData({
     uri: 'https://example.com/test.bam',
@@ -306,8 +291,7 @@ test('detects FTP URLs in index data', () => {
 })
 
 test('warningMessage returns FTP warning', () => {
-  const session = standardInitializer()
-  const { widget } = session
+  const { widget } = standardInitializer()
 
   widget.setTrackData({
     uri: 'ftp://example.com/test.bam',
@@ -317,8 +301,7 @@ test('warningMessage returns FTP warning', () => {
 })
 
 test('warningMessage returns relative URL warning', () => {
-  const session = standardInitializer()
-  const { widget } = session
+  const { widget } = standardInitializer()
 
   widget.setTrackData({
     uri: 'path/to/test.bam',
@@ -328,8 +311,7 @@ test('warningMessage returns relative URL warning', () => {
 })
 
 test('root-relative URLs are not considered relative', () => {
-  const session = standardInitializer()
-  const { widget } = session
+  const { widget } = standardInitializer()
 
   widget.setTrackData({
     uri: '/absolute/path/test.bam',
@@ -339,8 +321,7 @@ test('root-relative URLs are not considered relative', () => {
 })
 
 test('mixinData is stored and can be retrieved', () => {
-  const session = standardInitializer()
-  const { widget } = session
+  const { widget } = standardInitializer()
 
   expect(widget.mixinData).toEqual({})
 
@@ -364,8 +345,7 @@ test('mixinData is stored and can be retrieved', () => {
 })
 
 test('trackName falls back to filename when altTrackName is empty', () => {
-  const session = standardInitializer()
-  const { widget } = session
+  const { widget } = standardInitializer()
 
   widget.setTrackData({
     uri: 'https://example.com/my-track.bam',
@@ -378,8 +358,7 @@ test('trackName falls back to filename when altTrackName is empty', () => {
 })
 
 test('an emptied track name stays empty rather than refilling the filename', () => {
-  const session = standardInitializer()
-  const { widget } = session
+  const { widget } = standardInitializer()
 
   widget.setTrackData({
     uri: 'https://example.com/my-track.bam',
@@ -391,8 +370,7 @@ test('an emptied track name stays empty rather than refilling the filename', () 
 })
 
 test('a whitespace-only track name is not submittable', () => {
-  const session = standardInitializer()
-  const { widget } = session
+  const { widget } = standardInitializer()
 
   widget.setTrackData({
     uri: 'https://example.com/my-track.bam',
@@ -403,8 +381,7 @@ test('a whitespace-only track name is not submittable', () => {
 })
 
 test('assembly falls back to view assemblyNames when altAssemblyName is empty', () => {
-  const session = standardInitializer()
-  const { widget } = session
+  const { widget } = standardInitializer()
 
   // Should use view's assembly
   expect(widget.assembly).toBe('volvox')
@@ -436,8 +413,7 @@ test('handles undefined view gracefully', () => {
 })
 
 test('BAM file with .out in filename should infer BamAdapter not MashMapAdapter', () => {
-  const session = standardInitializer()
-  const { widget } = session
+  const { widget } = standardInitializer()
 
   widget.setTrackData({
     uri: 'brain.16493_7_8.sortedByCoord.out.bam',
@@ -452,8 +428,7 @@ test('BAM file with .out in filename should infer BamAdapter not MashMapAdapter'
 })
 
 test('adapterHintNotConfigurable distinguishes resolvable hints from dead ones', () => {
-  const session = standardInitializer()
-  const { widget } = session
+  const { widget } = standardInitializer()
   widget.setTrackData({ uri: 'test.txt', locationType: 'UriLocation' })
 
   // BamAdapter has a guesser branch keyed to the hint, so it resolves even on a

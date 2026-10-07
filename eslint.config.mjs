@@ -582,6 +582,11 @@ export default defineConfig(
       'unicorn/no-global-object-property-assignment': 'off', // 115
       'unicorn/prefer-switch': 'off', // 89
       'unicorn/prefer-global-number-constants': 'off', // 227
+      'unicorn/no-asterisk-prefix-in-documentation-comments': 'off', // 9398 — strips the ` * ` gutter from every JSDoc block
+      'unicorn/no-unnecessary-parameters': 'off', // 403 — per-file view of a cross-file API; mostly benches and test helpers
+      'unicorn/no-unnecessary-array-flat-map': 'off', // 99 — `flatMap(x => (c ? [x] : []))` is the house filter-map
+      'unicorn/prefer-short-escape-sequences': 'off', // 34 — every hit is a `\u0000` key separator, and `\0` before a digit is an octal escape, so the fix lands half-applied
+      'unicorn/prefer-default-parameters': 'off', // 93 — NOT a safe rewrite: `x || d` also replaces 0 and '', a default only undefined
       'unicorn/no-array-callback-reference': 'off', // 312
       'unicorn/no-declarations-before-early-exit': 'off', // 88
       'unicorn/consistent-compound-words': 'off', // 123

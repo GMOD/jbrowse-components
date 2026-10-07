@@ -35,8 +35,7 @@ const OpenTrackBadge = observer(function OpenTrackBadge({
   name: string
 }) {
   const { classes } = useStyles()
-  const session = getSession(model)
-  const { getTrackConfigChanges, resetTrackConfiguration } = session
+  const { getTrackConfigChanges, resetTrackConfiguration } = getSession(model)
   const changes = getTrackConfigChanges?.(trackId) ?? []
   const onReset = resetTrackConfiguration
     ? () => {

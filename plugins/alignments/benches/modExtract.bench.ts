@@ -275,8 +275,7 @@ function runPackedMax(reads: Read[]) {
     let anyRef = -1
     let maxRef = -1
     for (let m = 0; m < mods.length; m++) {
-      const mod = mods[m]!
-      const { positions, probStart, probStride } = mod
+      const { positions, probStart, probStride } = mods[m]!
       const posLen = positions.length
       const tag = (m + 1) << Q_BITS
       getNextRefPos(r.ops, positions, (ref, idx) => {
@@ -352,8 +351,7 @@ function runSplitMax(reads: Read[]) {
     let anyRef = -1
     let maxRef = -1
     for (let m = 0; m < mods.length; m++) {
-      const mod = mods[m]!
-      const { positions, probStart, probStride } = mod
+      const { positions, probStart, probStride } = mods[m]!
       const posLen = positions.length
       const tag = m + 1
       getNextRefPos(r.ops, positions, (ref, idx) => {
@@ -429,8 +427,7 @@ function runMlByte(reads: Read[]) {
     let anyRef = -1
     let maxRef = -1
     for (let m = 0; m < mods.length; m++) {
-      const mod = mods[m]!
-      const { positions, probStart, probStride } = mod
+      const { positions, probStart, probStride } = mods[m]!
       const posLen = positions.length
       const tag = (m + 1) << 8
       getNextRefPos(r.ops, positions, (ref, idx) => {
@@ -574,8 +571,7 @@ function runColumns(reads: Read[]) {
     let anyRef = -1
     let maxRef = -1
     for (let m = 0; m < mods.length; m++) {
-      const mod = mods[m]!
-      const { positions, probStart, probStride } = mod
+      const { positions, probStart, probStride } = mods[m]!
       const posLen = positions.length
       const tag = (m + 1) << Q_BITS
       getNextRefPos(r.ops, positions, (ref, idx) => {

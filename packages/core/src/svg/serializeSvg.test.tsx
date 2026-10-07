@@ -10,7 +10,7 @@ function parses(markup: string) {
 test('a no-break space serializes as an XML character reference', () => {
   const svg = serializeSvg(
     <svg xmlns="http://www.w3.org/2000/svg">
-      <text data-label={'a b'}>{'a b'}</text>
+      <text data-label={'a\u{A0}b'}>{'a\u{A0}b'}</text>
     </svg>,
   )
   expect(svg).not.toContain('&nbsp;')

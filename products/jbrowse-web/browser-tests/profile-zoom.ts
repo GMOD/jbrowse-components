@@ -271,7 +271,7 @@ export function summarize(events: TraceEvent[]) {
   const renders = new Map<string, number>()
   for (const e of events) {
     if (e.cat === 'blink.user_timing' && e.ph === 'b' && inWindow(e)) {
-      const n = e.name.replaceAll('​', '')
+      const n = e.name.replaceAll('\u{200B}', '')
       renders.set(n, (renders.get(n) || 0) + 1)
     }
   }

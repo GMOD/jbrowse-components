@@ -201,7 +201,7 @@ const CollapseIntronsDialog = observer(function CollapseIntronsDialog({
           color={result && 'error' in result ? 'error' : 'textSecondary'}
           className={classes.field}
         >
-          {result ? collapseSummary(result, spannedBp) : ' '}
+          {result ? collapseSummary(result, spannedBp) : '\u{A0}'}
         </Typography>
         <FormGroup>
           <LabeledCheckbox

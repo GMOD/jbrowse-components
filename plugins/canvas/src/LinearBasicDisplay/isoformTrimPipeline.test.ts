@@ -92,8 +92,12 @@ function layoutAt(
 // The color value lane is picked with every other rect lane, so a kept
 // transcript's parts still name the transcript's value after the trim.
 it("keeps each rect's color value with the rect it paints", () => {
-  const trimmed = layoutAt(1, GENE, undefined, 'name')
-  const { rectColorValues, rectChildOrdinals, colorValues } = trimmed
+  const { rectColorValues, rectChildOrdinals, colorValues } = layoutAt(
+    1,
+    GENE,
+    undefined,
+    'name',
+  )
   expect(rectColorValues).toHaveLength(rectChildOrdinals.length)
   const valuesOfKept = new Set(
     [...rectColorValues]

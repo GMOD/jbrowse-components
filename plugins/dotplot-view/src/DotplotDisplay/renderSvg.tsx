@@ -36,8 +36,9 @@ export async function renderSvg(
   opts?: PaintLayerOpts,
 ) {
   await awaitSvgReady(model)
-  const view = getContainingView(model) as AbstractViewModel & RenderSvgView
-  const { viewWidth, viewHeight, dotplotRenderState } = view
+  const { viewWidth, viewHeight, dotplotRenderState } = getContainingView(
+    model,
+  ) as AbstractViewModel & RenderSvgView
   const { geometry } = model
   return geometry ? (
     <PaintLayer

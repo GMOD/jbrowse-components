@@ -299,8 +299,7 @@ function runShipped(reads: Read[]) {
     let lastRef = -1
 
     for (let m = 0, ml2 = mods.length; m < ml2; m++) {
-      const mod = mods[m]!
-      const { positions, probStart, probStride } = mod
+      const { positions, probStart, probStride } = mods[m]!
       const posLen = positions.length
       const tag = (m + 1) << 8
       getNextRefPos(r.ops, positions, (ref, idx) => {
@@ -646,8 +645,7 @@ function runControl(reads: Read[]) {
     let lastRef = -1
 
     for (let m = 0, ml2 = mods.length; m < ml2; m++) {
-      const mod = mods[m]!
-      const { positions, probStart, probStride } = mod
+      const { positions, probStart, probStride } = mods[m]!
       const posLen = positions.length
       const tag = (m + 1) << 8
       getNextRefPos(r.ops, positions, (ref, idx) => {

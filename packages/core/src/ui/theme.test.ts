@@ -166,8 +166,7 @@ test('config-defined dark theme inherits dark-tuned color defaults', () => {
 test('top-level config theme opting into dark mode gets dark-tuned defaults', () => {
   const light = createJBrowseTheme()
   const darkStock = createJBrowseTheme({}, undefined, 'darkStock')
-  const configDark = createJBrowseTheme({ palette: { mode: 'dark' } })
-  const { palette } = configDark
+  const { palette } = createJBrowseTheme({ palette: { mode: 'dark' } })
   expect(palette.mode).toBe('dark')
   expect(palette.coverage).toBe(darkStock.palette.coverage)
   expect(palette.gridlineMinor).toBe(darkStock.palette.gridlineMinor)
@@ -211,11 +210,10 @@ test('svg-export rebuild of a config dark theme matches the on-screen theme', ()
 // one; it still has to come out with the JBrowse palette extensions renderers
 // read unconditionally (theme.palette.framesCDS.map(...) etc)
 test('a themes map whose default lacks jbrowse colors still resolves them', () => {
-  const theme = createJBrowseTheme(
+  const { palette } = createJBrowseTheme(
     {},
     { default: { name: 'Bare', palette: { primary: { main: '#abcdef' } } } },
   )
-  const { palette } = theme
   expect(palette.primary.main).toBe('#abcdef')
   expect(palette.frames).toHaveLength(7)
   expect(palette.framesCDS).toHaveLength(7)

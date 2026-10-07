@@ -216,8 +216,7 @@ test('an update before the build settles is applied when the engine arrives', as
 test('assemblyNames is stamped onto full configs arriving after mount', async () => {
   const el = document.createElement('div')
   const controller = createLinearGenomeView(el, { assembly, tracks: [] })
-  const state = await controller.whenReady()
-  const { session } = state
+  const { session } = await controller.whenReady()
 
   await controller.update({ tracks: [unstampedTrack('t1')] })
   expect(assemblyNamesOf(session, 't1')).toEqual(['volvox'])

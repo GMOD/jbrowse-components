@@ -47,8 +47,7 @@ function setup() {
 
 async function connect(tracks: unknown[]) {
   files[`${DATA_DIR}trackList.json`] = JSON.stringify({ tracks })
-  const rootModel = setup()
-  const { session } = rootModel
+  const { session } = setup()
   const conf = session.addConnectionConf({
     type: 'JBrowse1Connection',
     connectionId: 'jb1',

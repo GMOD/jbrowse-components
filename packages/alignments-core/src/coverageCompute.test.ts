@@ -77,8 +77,13 @@ describe('computeCoverage', () => {
       { start: 100, end: 120, strand: 1 },
       { start: 110, end: 130, strand: -1 },
     ]
-    const result = computeCoverage(features, [], 100, 200, true)
-    const { depths, fwdDepths, revDepths } = result
+    const { depths, fwdDepths, revDepths } = computeCoverage(
+      features,
+      [],
+      100,
+      200,
+      true,
+    )
     expect(fwdDepths).toBeDefined()
     expect(revDepths).toBeDefined()
     for (let i = 0; i < depths.length; i++) {

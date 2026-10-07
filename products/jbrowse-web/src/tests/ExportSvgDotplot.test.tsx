@@ -19,7 +19,7 @@ test('export svg of dotplot', async () => {
     ...volvoxConfig,
     defaultSession: {
       id: 'yvVuWHcq2',
-      name: 'Integration test example 2/13/2023, 3:23:07 PM',
+      name: 'Integration test example 2/13/2023, 3:23:07\u{202F}PM',
       margin: 0,
       drawerWidth: 384,
       views: [

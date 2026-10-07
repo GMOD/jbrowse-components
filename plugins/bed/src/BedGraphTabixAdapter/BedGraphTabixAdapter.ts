@@ -75,8 +75,7 @@ export default class BedGraphTabixAdapter extends BaseFeatureDataAdapter<BedGrap
   public getFeatures(query: Region, opts: BaseOptions = {}) {
     return ObservableCreate<Feature>(async observer => {
       const { bedGraph } = await this.configure(opts)
-      const meta = await bedGraph.getMetadata()
-      const { columnNumbers } = meta
+      const { columnNumbers } = await bedGraph.getMetadata()
       const colRef = columnNumbers.ref - 1
       const colStart = columnNumbers.start - 1
       const colEnd = columnNumbers.end - 1

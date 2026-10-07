@@ -2923,8 +2923,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
         opts?: { showHitTrack?: boolean },
       ): Promise<boolean> {
         const { assemblyNames } = self
-        const session = getSession(self)
-        const { assemblyManager } = session
+        const { assemblyManager } = getSession(self)
         const assemblyName = optAssemblyName || assemblyNames[0]!
         if (assemblyName) {
           await assemblyManager.waitForAssembly(assemblyName)
