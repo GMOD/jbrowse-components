@@ -41,11 +41,19 @@ export interface Section {
   // this group at when that is taller (the surplus draws blank, like a track
   // dragged past its own content).
   pileupHeight: number
+  // Room reserved under the pileup band for the deepest connector that dips
+  // below its row, so the curves of the last rows finish above the next
+  // section instead of being clipped at the last read. Not part of
+  // `pileupHeight`: no read draws or hit-tests here, and the dip law takes the
+  // band without it, so reserving the room moves no curve. 0 when no connector
+  // of this section dips past the band.
+  dipReserve: number
   // The whole strip this section owns: the distance from its coverage top to
   // the next section's, so the last section's bottom is `contentHeight`.
   //
-  // Not `pileupTop + pileupHeight - coverageTop`: a section shorter than its own
-  // label chip is padded out to `minSectionHeight`, and that pad belongs to it.
+  // Not `pileupTop + pileupHeight - coverageTop`: the dip reserve belongs to
+  // the section, and one shorter than its own label chip is padded out to
+  // `minSectionHeight`, a pad that belongs to it too.
   // Carried rather than left to consumers to reconstruct from the next section —
   // the label chips need exactly this to cull and to pin, and re-deriving it
   // there put a group's name over the next group's.
@@ -245,6 +253,11 @@ export interface SectionBandOpts {
   // advance is padded — `pileupHeight` stays the drawn row extent, so the pad
   // reads as space below the lane rather than as clickable/paintable pileup.
   minSectionHeight?: number
+  // How far below a group's pileup band its deepest dipping read connector
+  // reaches, given that band's height (`bezierDipReservePx`). Like
+  // `minSectionHeight` it pads only the stacking advance. Omitted, no section
+  // reserves anything.
+  dipReservePx?: (groupKey: string, pileupHeight: number) => number
 }
 
 // Stack sections top-to-bottom, each reserving its own coverage -> arcs ->
@@ -315,10 +328,13 @@ export function computeStackedSections(
       g.minPileupHeight !== undefined && rowsHeight > 0
         ? Math.max(rowsHeight, g.minPileupHeight)
         : rowsHeight
+    // A band with no rows has no connector to finish.
+    const dipReserve =
+      pileupHeight > 0 ? (opts.dipReservePx?.(g.key, pileupHeight) ?? 0) : 0
     // `top` becomes this section's bottom edge — and so the next one's top,
     // which is what makes `height` below the strip this section owns.
     top = Math.max(
-      pileupTop + pileupHeight,
+      pileupTop + pileupHeight + dipReserve,
       coverageTop + (opts.minSectionHeight ?? 0),
     )
     return {
@@ -336,6 +352,7 @@ export function computeStackedSections(
       hasSashimiBand,
       pileupTop,
       pileupHeight,
+      dipReserve,
       height: top - coverageTop,
       maxY: g.maxY,
     }

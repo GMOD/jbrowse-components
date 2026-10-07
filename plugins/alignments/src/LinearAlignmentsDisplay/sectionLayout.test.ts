@@ -591,6 +591,51 @@ test('minSectionHeight floors the advance to the next section, not the pileup', 
   expect(contentHeight).toBe(48)
 })
 
+// A discordant connector dips below its row, so the last rows' curves need
+// room under the band or the section's clip cuts them where the next section
+// begins.
+test('a dip reserve pushes the next section down and leaves the pileup band alone', () => {
+  const seen: [string, number][] = []
+  const { sections, contentHeight } = computeStackedSections(
+    [
+      lane({ key: 'split', maxY: 4 }),
+      lane({ key: 'notSplit', maxY: 4 }),
+      lane({ key: 'collapsed', maxY: 0 }),
+    ],
+    {
+      coverageHeight: 0,
+      showCoverage: false,
+      rowHeight: 8,
+      dipReservePx: (key, pileupHeight) => {
+        seen.push([key, pileupHeight])
+        return key === 'notSplit' ? 0 : 20
+      },
+    },
+  )
+  expect(
+    sections.map(s => [s.pileupTop, s.pileupHeight, s.dipReserve, s.height]),
+  ).toEqual([
+    [0, 32, 20, 52],
+    [52, 32, 0, 32],
+    [84, 0, 0, 0],
+  ])
+  expect(contentHeight).toBe(84)
+  // asked with the band the dip law sees, and never for a band with no rows
+  expect(seen).toEqual([
+    ['split', 32],
+    ['notSplit', 32],
+  ])
+})
+
+test('no dip reserve callback reserves nothing', () => {
+  const { sections, contentHeight } = computeStackedSections(
+    [lane({ key: '', maxY: 4 })],
+    { coverageHeight: 45, rowHeight: 10 },
+  )
+  expect(sections[0]!.dipReserve).toBe(0)
+  expect(contentHeight).toBe(85)
+})
+
 test('minSectionHeight is inert once a section is taller than it', () => {
   const tall = [lane({ key: 'a', maxY: 4 }), lane({ key: 'b', maxY: 4 })]
   const opts = { coverageHeight: 0, showCoverage: false, rowHeight: 8 }

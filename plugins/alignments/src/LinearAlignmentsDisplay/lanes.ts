@@ -190,6 +190,9 @@ export interface LaneSection extends AlignmentLane {
   arcDown: boolean
   hasSashimiBand: boolean
   pileupHeight: number
+  // Room under the pileup band for a dipping connector — see
+  // `Section.dipReserve`.
+  dipReserve: number
   // The strip down to the next section, which is what the label chip heads —
   // see `Section.height`.
   height: number
@@ -224,6 +227,7 @@ export function zipLaneSections(
     arcDown: sec.arcDown,
     hasSashimiBand: sec.hasSashimiBand,
     pileupHeight: sec.pileupHeight,
+    dipReserve: sec.dipReserve,
     height: sec.height,
   }))
 }

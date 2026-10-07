@@ -13,8 +13,9 @@ export const BEZIER_ARC_STROKE_OPACITY = LINKED_READ_LINE_ALPHA
 
 export interface BezierArcSection {
   groupKey: string
-  // Screen-y of the section's pileup band. Its reads scroll under the bands
-  // above it, and so do their connectors.
+  // Screen-y of the section's pileup band, down to the end of the room it
+  // reserves under its last row for a dipping connector. Its reads scroll
+  // under the bands above it, and so do their connectors.
   clipTop: number
   clipBottom: number
   arcs: PileupArc[]
@@ -35,7 +36,7 @@ export function computePileupBezierArcsFromModel(
     const clipTop = bandScreenTop(sec.topOffset, scroll)
     const clipBottom = sectionBandBottom(
       sec.topOffset,
-      sec.pileupHeight,
+      sec.pileupHeight + sec.dipReserve,
       scroll,
     )
     const arcs = computePileupBezierArcs({

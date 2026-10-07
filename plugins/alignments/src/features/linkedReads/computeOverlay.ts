@@ -293,8 +293,8 @@ interface Opts {
   // the scroll position.
   pileupHeight: number
   scrollTop: number
-  // Screen-y of this section's pileup clip top and band bottom, the edges the
-  // visibility cull keeps a curve between.
+  // Screen-y of this section's pileup clip top and of its band bottom, dip
+  // reserve included: the edges the visibility cull keeps a curve between.
   viewportTop: number
   viewportBottom: number
   // The themed palette, for the same reason the read fills take one: a baked
@@ -343,6 +343,109 @@ function crossesOwnAlignment(
     const q = screenOrder(displayedRegions, s.displayedRegionIndex, end)
     return Math.min(p, q) < hi && Math.max(p, q) > lo
   })
+}
+
+// How one pair is drawn, from the layout alone: nothing here reads a screen
+// position, so the section layout can ask it before any curve is projected
+// (`bezierDipReservePx`) and get the answer the overlay draws.
+//
+// A normal connection is a plain line and everything else dips below the
+// reads. A same-strand split junction is normal on any pair of chromosomes,
+// as its colour says, so in chain layout it runs along the molecule's own
+// row. On a row it shares with alignments of the read lying between its
+// two ends, as on a fold-back, that line would paint over them, so it dips
+// like a discordant one. A hidden-segment line whose ends share a row would
+// lie on the chain's connecting line, so it bows up over the row instead.
+// A split junction is judged by the way its two segments point on screen,
+// so an inverted fusion viewed with one partner's region flipped reads
+// straight across the seam.
+function connectorShape(
+  pair: LinkedPair,
+  r1: Opts['displayedRegions'][number],
+  r2: Opts['displayedRegions'][number],
+  displayedRegions: Opts['displayedRegions'],
+  pileupHeight: number,
+) {
+  const { e1, e2, c, hiddenSegmentsBetween } = pair
+  const hidden = !!hiddenSegmentsBetween?.length
+  const sameRow = e1.data.readYs[e1.readIdx] === e2.data.readYs[e2.readIdx]
+  const facesOneWay = c.isSplit
+    ? screenStrand(c.s1, r1.reversed) === screenStrand(c.s2, r2.reversed)
+    : c.isNormal
+  const plain =
+    facesOneWay && !(sameRow && crossesOwnAlignment(pair, displayedRegions))
+  return {
+    hidden,
+    straight: plain && !(hidden && sameRow),
+    // The endpoint bps, not their screen xs, so one event holds its depth
+    // while the reader zooms; no span at all for an interchromosomal pair.
+    // Undefined for a plain connection, which is a line or bows up.
+    dipPx: plain
+      ? undefined
+      : discordantDipPx(
+          pileupHeight,
+          r1.refName === r2.refName ? Math.abs(c.bp2 - c.bp1) : undefined,
+        ),
+  }
+}
+
+// Clearance under the deepest apex for the stroke, which a hover thickens.
+const DIP_RESERVE_PAD_PX = 2
+
+// How far below a section's pileup band its deepest dipping connector reaches,
+// which the section reserves under its last row so that curve can finish
+// (`computeStackedSections`). Zero when nothing dips, or when every dip ends
+// inside the band.
+//
+// `pileupHeight` is the band WITHOUT this reserve, the same number the overlay
+// hands the dip law, so reserving room changes no curve's depth. A cubic's
+// extreme is at most its apex depth below the lower endpoint, and exactly that
+// when the two ends share a row.
+export function bezierDipReservePx({
+  pairs,
+  displayedRegions,
+  featureHeight,
+  featureSpacing,
+  pileupHeight,
+}: Pick<
+  Opts,
+  | 'pairs'
+  | 'displayedRegions'
+  | 'featureHeight'
+  | 'featureSpacing'
+  | 'pileupHeight'
+>) {
+  const rowH = featureHeight + featureSpacing
+  let deepest = 0
+  for (const pair of pairs) {
+    const { e1, e2 } = pair
+    const r1 = displayedRegions[e1.displayedRegionIndex]
+    const r2 = displayedRegions[e2.displayedRegionIndex]
+    if (r1 && r2) {
+      const { dipPx } = connectorShape(
+        pair,
+        r1,
+        r2,
+        displayedRegions,
+        pileupHeight,
+      )
+      if (dipPx !== undefined) {
+        const lowerRow = Math.max(
+          e1.data.readYs[e1.readIdx]!,
+          e2.data.readYs[e2.readIdx]!,
+        )
+        deepest = Math.max(
+          deepest,
+          lowerRow * rowH +
+            featureHeight / 2 +
+            Math.min(dipPx, BEZIER_CONNECTOR_MAX_REACH_PX),
+        )
+      }
+    }
+  }
+  return deepest > 0
+    ? Math.max(0, Math.ceil(deepest + DIP_RESERVE_PAD_PX - pileupHeight))
+    : 0
 }
 
 // Bezier curves for aberrant pairs, plus straight `M..L..` paths for
@@ -401,25 +504,13 @@ export function computePileupBezierArcs(opts: Opts): PileupArc[] {
       continue
     }
 
-    // A normal connection is a plain line and everything else dips below the
-    // reads. A same-strand split junction is normal on any pair of chromosomes,
-    // as its colour says, so in chain layout it runs along the molecule's own
-    // row. On a row it shares with alignments of the read lying between its
-    // two ends, as on a fold-back, that line would paint over them, so it dips
-    // like a discordant one. A hidden-segment line whose ends share a row would
-    // lie on the chain's connecting line, so it bows up over the row instead.
-    // A split junction is judged by the way its two segments point on screen,
-    // so an inverted fusion viewed with one partner's region flipped reads
-    // straight across the seam.
-    const hidden = !!hiddenSegmentsBetween?.length
-    const sameRef = r1.refName === r2.refName
-    const sameRow = sy1 === sy2
-    const facesOneWay = c.isSplit
-      ? screenStrand(c.s1, r1.reversed) === screenStrand(c.s2, r2.reversed)
-      : c.isNormal
-    const plain =
-      facesOneWay && !(sameRow && crossesOwnAlignment(pair, displayedRegions))
-    const straight = plain && !(hidden && sameRow)
+    const { straight, hidden, dipPx } = connectorShape(
+      pair,
+      r1,
+      r2,
+      displayedRegions,
+      pileupHeight,
+    )
     const d = straight
       ? `M ${sx1} ${sy1} L ${sx2} ${sy2}`
       : bezierConnectorPath({
@@ -432,14 +523,7 @@ export function computePileupBezierArcs(opts: Opts): PileupArc[] {
           leadingEnd2: c.isSplit,
           reversed1: !!r1.reversed,
           reversed2: !!r2.reversed,
-          // The endpoint bps, not their screen xs, so one event holds its depth
-          // while the reader zooms; no span at all for an interchromosomal pair.
-          dipPx: plain
-            ? undefined
-            : discordantDipPx(
-                pileupHeight,
-                sameRef ? Math.abs(c.bp2 - c.bp1) : undefined,
-              ),
+          dipPx,
         })
     const stroke = rgb255(linkedReadPalette[linkedReadColorSlot(c.colorType)]!)
 

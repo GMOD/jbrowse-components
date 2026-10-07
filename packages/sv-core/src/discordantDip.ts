@@ -18,10 +18,13 @@ import { BEZIER_CONNECTOR_MAX_REACH_PX } from '@jbrowse/core/util'
 // `pileupHeight`, a split-view panel's height — and not a scroll-dependent one,
 // or the depth moves as the reader scrolls.
 //
-// Residual: the dip starts at the read's row while the band is measured from
-// the band's top, so any read below that top overshoots the clip by its own
-// offset — a 900 kb event in a 60 px band asks for 56 px from every row. That
-// was true of the pixel rule too.
+// The dip starts at the read's row while the band is measured from the band's
+// top, so any read below that top passes the band bottom by its own offset — a
+// 900 kb event in a 60 px band asks for 56 px from every row. The pileup
+// reserves that overshoot under the section's last row (`bezierDipReservePx`
+// in plugins/alignments) and still passes the band WITHOUT the reserve here, so
+// the room changes no depth. In fit-to-height mode it reserves nothing and the
+// clip cuts the lowest rows' curves, as the split view's panel edge does.
 //
 // Capping the dip at the room left below the lower read was tried and measured
 // worse. It makes the ink fit, but on cancer_sv/derivative_inserts — 28

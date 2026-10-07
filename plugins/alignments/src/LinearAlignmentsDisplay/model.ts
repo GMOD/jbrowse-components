@@ -67,6 +67,7 @@ import { computeArcsByGroup } from '../features/arcs/compute.ts'
 import { densityCoverageFields } from '../features/coverage/densityBand.ts'
 import {
   bezierConnectionLegendItems,
+  bezierDipReservePx,
   resolveConnectorsByGroup,
 } from '../features/linkedReads/computeOverlay.ts'
 import { visibleRegionJunctions } from '../features/sashimi/computeOverlay.ts'
@@ -2279,6 +2280,23 @@ export default function stateModelFactory(
             // Only when the chips are actually drawn — an ungrouped display
             // reserves nothing, so its geometry is untouched.
             minSectionHeight: self.showsGroupLabels ? GROUP_LABEL_HEIGHT : 0,
+            // Not in fit mode, whose rows already fill the display: a reserve
+            // there would be the scroll that mode exists to avoid.
+            dipReservePx: self.fitHeightToDisplay
+              ? undefined
+              : (groupKey, pileupHeight) => {
+                  const pairs =
+                    self.connectorsByGroup.get(groupKey)?.overlayPairs
+                  return pairs?.length
+                    ? bezierDipReservePx({
+                        pairs,
+                        displayedRegions: self.host.displayedRegions,
+                        featureHeight: self.featureHeight,
+                        featureSpacing: self.featureSpacing,
+                        pileupHeight,
+                      })
+                    : 0
+                },
           })
         },
 
@@ -2358,6 +2376,7 @@ export default function stateModelFactory(
                     groupKey: sec.groupKey,
                     topOffset: sec.topOffset,
                     pileupHeight: sec.pileupHeight,
+                    dipReserve: sec.dipReserve,
                     pairs,
                   },
                 ]

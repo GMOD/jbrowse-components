@@ -267,7 +267,8 @@ const ConnectionBandResizeHandles = observer(
 )
 
 // Per-group pileup-height drag handles (in-track grouping only). Each sits at a
-// non-collapsed section's pileup bottom and resizes just that group's band, so
+// non-collapsed section's pileup bottom, below any room it reserves for a
+// dipping connector, and resizes just that group's band, so
 // a dense section can be shrunk without touching the others.
 const GroupResizeHandles = observer(function GroupResizeHandles({
   model,
@@ -289,7 +290,7 @@ const GroupResizeHandles = observer(function GroupResizeHandles({
           return null
         }
         const bottom = contentScreenY(
-          section.topOffset + section.pileupHeight,
+          section.topOffset + section.pileupHeight + section.dipReserve,
           scroll,
         )
         return (

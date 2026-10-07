@@ -33,6 +33,7 @@ import {
 } from './compute.ts'
 import {
   bezierConnectionLegendItems,
+  bezierDipReservePx,
   computePileupBezierArcs,
   enumerateBezierPairs,
   resolveConnectors,
@@ -457,6 +458,93 @@ describe('computePileupBezierArcs — discordant curves dip', () => {
         )
       }
     }
+  })
+})
+
+describe('bezierDipReservePx', () => {
+  // Three rows of 12 px: the band ends at the last read, which is where the
+  // section's clip used to cut the bottom rows' curves.
+  const pileupHeight = 36
+  const rrPair = (ys: [number, number]) =>
+    makeData({
+      names: ['p', 'p'],
+      flags: [
+        SAM_FLAG_PAIRED | SAM_FLAG_FIRST_IN_PAIR,
+        SAM_FLAG_PAIRED | SAM_FLAG_SECOND_IN_PAIR,
+      ],
+      strands: [1, 1],
+      orientations: [LINKED_READ_COLOR_PAIR_RR, LINKED_READ_COLOR_PAIR_RR],
+      positions: [
+        [1000, 1100],
+        [21_000, 21_100],
+      ],
+      ys,
+    })
+  const reserveFor = (data: PileupDataResult) =>
+    bezierDipReservePx({
+      ...baseOpts,
+      pileupHeight,
+      pairs: enumerateBezierPairs(new Map([[0, data]])),
+    })
+
+  it('holds the apex of a curve on the last row', () => {
+    const data = rrPair([2, 2])
+    const reserve = reserveFor(data)
+    const arcs = computePileupBezierArcs({
+      colors: PALETTE,
+      ...baseOpts,
+      pileupHeight,
+      pairs: enumerateBezierPairs(new Map([[0, data]])),
+    })
+    const { sy1, cp1y } = controlPoints(arcs[0]!.d)
+    const apex = sy1 + (cp1y - sy1) * CUBIC_APEX_RATIO
+    expect(apex).toBeGreaterThan(pileupHeight)
+    expect(apex).toBeLessThan(pileupHeight + reserve)
+    // only what the curve takes, plus the stroke's clearance
+    expect(pileupHeight + reserve - apex).toBeLessThan(3)
+  })
+
+  it('measures from the lower of two rows', () => {
+    expect(reserveFor(rrPair([0, 2]))).toBe(reserveFor(rrPair([2, 2])))
+    expect(reserveFor(rrPair([0, 0]))).toBeLessThan(reserveFor(rrPair([2, 2])))
+  })
+
+  it('reserves nothing when no connector dips', () => {
+    // An LR pair across two regions is a straight line.
+    const lr = (ys: number[]) =>
+      makeData({
+        names: ['p'],
+        flags: [SAM_FLAG_PAIRED | SAM_FLAG_FIRST_IN_PAIR],
+        strands: [1],
+        orientations: [LINKED_READ_COLOR_PAIR_LR],
+        positions: [[1000, 1100]],
+        ys,
+      })
+    const pairs = enumerateBezierPairs(
+      new Map([
+        [0, lr([2])],
+        [1, lr([2])],
+      ]),
+    )
+    expect(
+      bezierDipReservePx({
+        ...baseOpts,
+        displayedRegions: [{ refName: 'chr1' }, { refName: 'chr1' }],
+        pileupHeight,
+        pairs,
+      }),
+    ).toBe(0)
+    expect(bezierDipReservePx({ ...baseOpts, pileupHeight, pairs: [] })).toBe(0)
+  })
+
+  it('reserves nothing when the dip ends inside a band dragged taller', () => {
+    expect(
+      bezierDipReservePx({
+        ...baseOpts,
+        pileupHeight: 400,
+        pairs: enumerateBezierPairs(new Map([[0, rrPair([2, 2])]])),
+      }),
+    ).toBe(0)
   })
 })
 
