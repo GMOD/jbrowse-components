@@ -411,6 +411,7 @@ function hostedStarSession(
   loc: string,
   lanes: string[],
   display: Record<string, unknown> = {},
+  genes: Record<string, unknown> = {},
 ) {
   return sessionSpec(
     encodeURIComponent(`https://jbrowse.org/ucsc/${db}/config-staging.json`),
@@ -421,7 +422,7 @@ function hostedStarSession(
           assembly: db,
           loc,
           tracks: [
-            `${db}-ncbiRefSeq`,
+            { trackId: `${db}-ncbiRefSeq`, ...genes },
             {
               trackId: `${db}_liftOver_multiway`,
               type: 'MultiWaySyntenyDisplay',
@@ -4222,26 +4223,33 @@ export const syntenySpecs: ScreenshotSpec[] = [
   {
     mode: 'url',
     name: 'genomes_synteny/mouse_strains_nnt',
-    url: hostedStarSession('mm39', 'chr13:119,460,000-119,560,000', [
-      'GCA_964188535.1',
-      'GCA_921999865.2',
-      'GCA_921998555.2',
-      'GCA_001624215.1',
-      'GCA_921997145.2',
-      'GCA_921997125.2',
-      'GCA_001624505.1',
-      'GCA_921998325.2',
-      'GCA_001624745.1',
-      'GCA_001624835.1',
-      'GCA_001624775.1',
-      'GCA_921999005.2',
-      'GCA_921997135.2',
-      'GCF_900094665.2',
-    ]),
+    url: hostedStarSession(
+      'mm39',
+      'chr13:119,460,000-119,560,000',
+      [
+        'GCA_964188535.1',
+        'GCA_921999865.2',
+        'GCA_921998555.2',
+        'GCA_001624215.1',
+        'GCA_921997145.2',
+        'GCA_921997125.2',
+        'GCA_001624505.1',
+        'GCA_921998325.2',
+        'GCA_001624745.1',
+        'GCA_001624835.1',
+        'GCA_001624775.1',
+        'GCA_921999005.2',
+        'GCA_921997135.2',
+        'GCF_900094665.2',
+      ],
+      // one gene in the window, so the gene track gives its height to the lanes
+      { height: 15 * 52 },
+      { height: 70 },
+    ),
     readySelector: displaySettled('multiway-synteny-display'),
     readyTimeout: 240000,
     viewportWidth: 1300,
-    viewportHeight: 900,
+    viewportHeight: 1102,
     liveLabel: 'Open the mouse strains at Nnt',
   },
 
