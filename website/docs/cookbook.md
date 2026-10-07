@@ -140,7 +140,7 @@ and a theme. Every recipe below changes one piece of it.
       "displayDefaults": {
         "heightMode": "fit",
         "color": { "field": "mapq" },
-        "filterBy": { "flagExclude": 1540, "flagInclude": 0 }
+        "filter": { "flagExclude": 1540, "flagInclude": 0 }
       }
     },
     {
@@ -349,7 +349,7 @@ pass every `jexl:` expression, on variant tracks too:
     "color": { "field": "mapq" },
     "showSoftClipping": true,
     "facet": { "field": "tags.HP", "domain": ["2", "1"] },
-    "filterBy": {
+    "filter": {
       "flagExclude": 1540,
       "flagInclude": 0,
       "tagFilters": [{ "tag": "HP", "value": "1" }]

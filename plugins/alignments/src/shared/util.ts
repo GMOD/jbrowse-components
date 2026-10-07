@@ -8,7 +8,7 @@ import {
 } from '@jbrowse/cigar-utils'
 import { getContrastText } from '@jbrowse/core/ui/palette'
 
-import type { FilterBy } from './types.ts'
+import type { ReadFilter } from './types.ts'
 import type { JBrowsePalette } from '@jbrowse/core/ui/palette'
 import type { Feature } from '@jbrowse/core/util'
 
@@ -159,7 +159,7 @@ function filterReadFlag(
 // because answering it means walking the CIGAR, which no read pays for while
 // the filter is off.
 export function filterSpliced(
-  spliced: FilterBy['spliced'],
+  spliced: ReadFilter['spliced'],
   hasSkip: () => boolean,
 ) {
   return spliced === 'only'
@@ -187,7 +187,7 @@ interface FilterableRead {
 // AND-ed tag filters and the spliced filter. `hasSkip` is the format's own
 // test, since CRAM has no CIGAR to walk.
 export function dropsRead<R extends FilterableRead>(
-  filterBy: FilterBy | undefined,
+  filterBy: ReadFilter | undefined,
   hasSkip: (read: R) => boolean,
 ) {
   const {

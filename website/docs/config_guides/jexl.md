@@ -42,10 +42,10 @@ per row
 `feature.start` and `get(feature,'start')` are equivalent; `get()` also works on
 older JBrowse releases. What `feature` is depends on the callback:
 
-| Callback                                                                 | `feature` is                    | Property form | `get()` form |
-| ------------------------------------------------------------------------ | ------------------------------- | ------------- | ------------ |
-| Color, label, tooltip, filter (`color`, `name`, `mouseover`, `filterBy`) | a `SimpleFeature`               | yes           | yes          |
-| [`formatDetails`](/docs/config_guides/customizing_feature_details)       | a plain object from the session | yes           | **no**       |
+| Callback                                                               | `feature` is                    | Property form | `get()` form |
+| ---------------------------------------------------------------------- | ------------------------------- | ------------- | ------------ |
+| Color, label, tooltip, filter (`color`, `name`, `mouseover`, `filter`) | a `SimpleFeature`               | yes           | yes          |
+| [`formatDetails`](/docs/config_guides/customizing_feature_details)     | a plain object from the session | yes           | **no**       |
 
 In JavaScript plugin code a `SimpleFeature` handed to your own function is the
 real object, read with `feature.get('start')`.

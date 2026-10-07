@@ -7,7 +7,6 @@ import { types } from '@jbrowse/mobx-state-tree'
 import { scalesSchema, valueScaleSchema } from '@jbrowse/wiggle-core'
 
 import { LAYOUT_ORDERS } from '../shared/types.ts'
-import { defaultFilterFlags } from '../shared/util.ts'
 import { alignmentsArcColorConfigSchema } from './alignmentsArcColorConfigSchema.ts'
 import { alignmentsBaseColorConfigSchema } from './alignmentsBaseColorConfigSchema.ts'
 import { alignmentsColorConfigSchema } from './alignmentsColorConfigSchema.ts'
@@ -17,6 +16,7 @@ import {
   READ_CONNECTIONS_MODES,
   SASHIMI_ARCS_MODES,
 } from './constants.ts'
+import { readFilterConfigSchema } from './readFilterConfigSchema.ts'
 import { colorSlotsOf } from './retired.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
@@ -186,14 +186,9 @@ export default function configSchemaFactory(_pluginManager: PluginManager) {
        * A read category takes `"only"` or `"exclude"`, and is absent when it
        * isn't filtering — `{ "properPairs": "exclude", "split": "only" }` for
        * the split reads of discordant pairs. `spliced`, `properPairs`,
-       * `singletons` and `split`; see the `FilterBy` type.
+       * `singletons` and `split`.
        */
-      filterBy: {
-        type: 'frozen',
-        defaultValue: defaultFilterFlags,
-        description: 'Filter settings for reads',
-        advanced: true,
-      },
+      filter: readFilterConfigSchema,
       /**
        * #slot facet
        * In-track stacked grouping, one labelled section per value: a read
@@ -290,7 +285,7 @@ export default function configSchemaFactory(_pluginManager: PluginManager) {
        * true/false to force it on or off regardless of mode.
        */
       showOutline: {
-        type: 'maybeFrozen',
+        type: 'maybeBoolean',
         description: 'Draw an outline around each read (unset = auto by mode)',
         advanced: true,
       },
@@ -537,6 +532,7 @@ export default function configSchemaFactory(_pluginManager: PluginManager) {
         colorBy: colorSlotsOf,
         drawInter: (v: unknown) => ({ showInterchrom: v }),
         drawLongRange: (v: unknown) => ({ showLongRange: v }),
+        filterBy: (filter: unknown) => ({ filter }),
         linkedReads: (v: unknown) => ({
           unit: v === 'normal' ? 'chain' : 'read',
         }),

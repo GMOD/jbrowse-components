@@ -859,21 +859,21 @@ describe('read categories + filter submenu', () => {
       menuSubItems(display.trackMenuItems(), 'Proper pairs'),
       'Hide proper pairs',
     )
-    expect(display.filterBy.properPairs).toBe('exclude')
+    expect(display.readFilter.properPairs).toBe('exclude')
 
     // and back to the absent state, not a stored 'all'
     clickMenuItem(
       menuSubItems(display.trackMenuItems(), 'Proper pairs — hidden'),
       'All reads',
     )
-    expect(display.filterBy.properPairs).toBeUndefined()
+    expect(display.readFilter.properPairs).toBeUndefined()
   })
 
   // The category row says what it is doing without being opened, and the group
   // above it counts — so a filtered track reads as filtered at the top level.
   test('an active category shows on its own row and in the count', () => {
     const display = createDisplay()
-    display.setFilterBy({ ...display.filterBy, properPairs: 'exclude' })
+    display.setReadFilter({ ...display.readFilter, properPairs: 'exclude' })
     const filters = menuSubItems(display.trackMenuItems(), 'Filter by... (1)')
     expect(hasMenuItem(filters, 'Proper pairs — hidden')).toBe(true)
   })
@@ -885,8 +885,8 @@ describe('read categories + filter submenu', () => {
     const display = createDisplay()
     expect(findMenuItem(display.trackMenuItems(), 'Filter by...')).toBeDefined()
 
-    display.setFilterBy({
-      ...display.filterBy,
+    display.setReadFilter({
+      ...display.readFilter,
       readName: 'readA',
       tagFilters: [{ tag: 'HP', value: '1' }],
       properPairs: 'exclude',

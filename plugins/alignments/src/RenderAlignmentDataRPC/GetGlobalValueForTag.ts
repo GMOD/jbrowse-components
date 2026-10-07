@@ -5,7 +5,7 @@ import { measureRegionBytes } from '@jbrowse/core/rpc/byteBudget'
 import { extractFeatureTagValue } from '../shared/extractFeatureTagValue.ts'
 import { filterChainFeatures } from './filterChainFeatures.ts'
 
-import type { FilterBy } from '../shared/types.ts'
+import type { ReadFilter } from '../shared/types.ts'
 import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { RpcExecuteArgs } from '@jbrowse/core/rpc/RpcRegistry'
 import type { RegionTooLargeResult } from '@jbrowse/core/rpc/byteBudget'
@@ -21,7 +21,7 @@ interface GetGlobalValueForTagArgs {
   // decide whether a tag grouping would exceed `MAX_GROUPS`, so a value carried
   // only by filtered-out reads both padded "Found values" and could block Submit
   // on a grouping that would in fact have produced a handful of sections.
-  filterBy?: FilterBy
+  filterBy?: ReadFilter
   // The display's own gate budget (`resolvedByteLimit()`), so this scan is
   // refused wherever the render fetch would be. It downloads every read of every
   // visible block — the largest thing the group-by dialog does — so ungated it
@@ -67,7 +67,7 @@ export default class PileupGetGlobalValueForTag extends RpcMethodTypeWithFilters
     // Spread like `fetchFeaturesFromAdapter`'s: `filterBy` is an alignments
     // concept the BAM/CRAM adapters read off the options bag, not a BaseOptions
     // field.
-    const fetchOpts: BaseOptions & { filterBy?: FilterBy } = {
+    const fetchOpts: BaseOptions & { filterBy?: ReadFilter } = {
       signal,
       statusCallback,
       filterBy,

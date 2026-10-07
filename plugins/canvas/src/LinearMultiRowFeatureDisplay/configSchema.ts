@@ -5,11 +5,14 @@ import { densityTierConfigSchemaFields } from '@jbrowse/display-kit/densityTierC
 import { facetConfigSchema } from '@jbrowse/display-kit/facetConfigSchema'
 import { rowColorConfigSchema } from '@jbrowse/display-kit/rowColorConfigSchema'
 import { rowsConfigSchema } from '@jbrowse/display-kit/rowsConfigSchema'
+import { types } from '@jbrowse/mobx-state-tree'
 import { rowHeightConfigSchemaFields } from '@jbrowse/tree-sidebar/rowHeightConfigSchemaFields'
 import {
   rowSeparatorsConfigSchemaFields,
   treeSidebarConfigSchemaFields,
 } from '@jbrowse/tree-sidebar/treeSidebarConfigSchemaFields'
+
+import { rowGroupConfigSchema } from './rowGroupConfigSchema.ts'
 
 import type { Instance } from '@jbrowse/mobx-state-tree'
 
@@ -219,12 +222,7 @@ export default function configSchemaF() {
        * },
        * ```
        */
-      rowGroups: {
-        type: 'frozen',
-        defaultValue: [],
-        description:
-          'array of {match,group} tagging each row with the group of the first entry whose regex its name matches; rowColor: {field: "group"} colours the groups',
-      },
+      rowGroups: types.array(rowGroupConfigSchema),
       /**
        * #slot facet
        * Stacks the rows in labelled bands: `group` bands them by their

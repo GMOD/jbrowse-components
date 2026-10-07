@@ -35,13 +35,20 @@ import type {
 } from '@jbrowse/plugin-variants'
 
 // The filter half of an alignments display's state, as the CLI may state it.
-// Every field optional: `normalizeFilterBy` on the display side fills the masks
-// a partial one leaves out, and an absent category is an unfiltered one.
-export type FilterBySnapshot = {
+// Every field optional: the ReadFilter schema fills the masks a partial one
+// leaves out, and an absent category is an unfiltered one.
+export type ReadFilterSnapshot = {
   flagInclude?: number
   flagExclude?: number
   tagFilters?: { tag: string; value: string }[]
 } & Partial<Record<ReadCategoryKey, CategoryFilter>>
+
+// The read-filter half of a snapshot's `filter`, which on a feature display is
+// a jexl list instead; the alignments modifiers compose onto it.
+function readFilterSnapOf(r: BuildResult): ReadFilterSnapshot {
+  const { filter } = r.snap
+  return filter && !Array.isArray(filter) ? filter : {}
+}
 
 // What `color:` names on an alignments track: a read field fills the reads and
 // anything else is a CSS colour. A per-base field is `baseColor:`'s.
@@ -275,7 +282,7 @@ interface DisplaySnapshot {
   sashimiArcsMode?: 'up' | 'down' | 'auto'
   // Lifted back out by `applyDisplayOpts` rather than passed to showTrack —
   // see there for why this one slot cannot ride in on the snapshot.
-  filterBy?: FilterBySnapshot
+  filter?: ReadFilterSnapshot | string[]
   color?: string | ColorObject
   variantLayout?: 'genomic' | 'columns'
 }
@@ -284,7 +291,12 @@ interface DisplaySnapshot {
 // a property renamed upstream fails the build instead of going dead. `color`,
 // `forceLoad`, `modifications` and `baseColor` are config slots read through
 // differently named getters, which `keyof` the instance misses.
-type ConfigSlotKey = 'color' | 'forceLoad' | 'modifications' | 'baseColor'
+type ConfigSlotKey =
+  | 'color'
+  | 'forceLoad'
+  | 'modifications'
+  | 'baseColor'
+  | 'filter'
 type DisplayKeys =
   | keyof LinearAlignmentsDisplayModel
   | keyof LinearBasicDisplayModel
@@ -484,8 +496,8 @@ function readCategoryModifiers(): Record<string, Modifier> {
         on: ['alignments'],
         apply: (r: BuildResult, v: string) => {
           const choice = parseEnum(key, v, ['all', 'only', 'exclude'] as const)
-          r.snap.filterBy = {
-            ...r.snap.filterBy,
+          r.snap.filter = {
+            ...readFilterSnapOf(r),
             ...(choice === 'all' ? {} : { [key]: choice }),
           }
         },
@@ -606,8 +618,8 @@ const modifiers: Record<string, Modifier> = {
   flags: {
     on: ['alignments'],
     apply: (r, include, exclude) => {
-      r.snap.filterBy = {
-        ...r.snap.filterBy,
+      r.snap.filter = {
+        ...readFilterSnapOf(r),
         ...(include ? { flagInclude: parseFlagMask('flags', include) } : {}),
         ...(exclude ? { flagExclude: parseFlagMask('flags', exclude) } : {}),
       }
@@ -619,10 +631,10 @@ const modifiers: Record<string, Modifier> = {
   filterTag: {
     on: ['alignments'],
     apply: (r, tag, value) => {
-      r.snap.filterBy = {
-        ...r.snap.filterBy,
+      r.snap.filter = {
+        ...readFilterSnapOf(r),
         tagFilters: [
-          ...(r.snap.filterBy?.tagFilters ?? []),
+          ...(readFilterSnapOf(r).tagFilters ?? []),
           {
             tag: parseStr('filterTag', tag, 'a SAM tag name'),
             value: value ?? '',
@@ -811,7 +823,12 @@ export async function applyDisplayOpts(
   // Applied after the open, through the display's own action, so each of
   // `flags:`, `filterTag:` and the four categories composes onto what the config
   // already said instead of erasing its siblings.
-  const { filterBy, ...displaySnap } = snap
+  const readFilter =
+    typeof snap.filter === 'object' && !Array.isArray(snap.filter)
+      ? snap.filter
+      : undefined
+  const { filter: _filter, ...rest } = snap
+  const displaySnap = readFilter ? rest : snap
 
   // Create the display already in its target state rather than mutating a
   // default display with setter actions. An explicit `display:` selects a
@@ -831,21 +848,24 @@ export async function applyDisplayOpts(
       `Failed to open track "${trackId}"${displayType ? ` with display "${displayType}"` : ''}${reason ? `: ${reason}` : ''}`,
     )
   }
-  if (filterBy) {
+  if (readFilter) {
     const display = opened.displays[0] as
-      | { filterBy?: FilterBySnapshot; setFilterBy?: (f: unknown) => void }
+      | {
+          readFilter?: ReadFilterSnapshot
+          setReadFilter?: (f: unknown) => void
+        }
       | undefined
-    if (display?.setFilterBy) {
-      const { tagFilters, ...rest } = filterBy
-      display.setFilterBy({
-        ...display.filterBy,
-        ...rest,
+    if (display?.setReadFilter) {
+      const { tagFilters, ...members } = readFilter
+      display.setReadFilter({
+        ...display.readFilter,
+        ...members,
         // AND-ed, like every other tag filter: a `filterTag:` on the command
         // line adds a condition to the track's own rather than replacing it.
         ...(tagFilters
           ? {
               tagFilters: [
-                ...(display.filterBy?.tagFilters ?? []),
+                ...(display.readFilter?.tagFilters ?? []),
                 ...tagFilters,
               ],
             }
@@ -853,7 +873,7 @@ export async function applyDisplayOpts(
       })
     } else {
       console.warn(
-        `Warning: filter options on "${trackId}" ignored — its display has no filterBy`,
+        `Warning: filter options on "${trackId}" ignored — its display has no read filter`,
       )
     }
   }

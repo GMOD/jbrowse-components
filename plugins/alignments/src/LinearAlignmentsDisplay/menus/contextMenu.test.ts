@@ -7,14 +7,14 @@ import type {
   CigarHitResult,
   ResolvedBlock,
 } from '../../shared/hitTestTypes.ts'
-import type { FilterBy } from '../../shared/types.ts'
+import type { ReadFilter } from '../../shared/types.ts'
 import type { ContextMenuHit } from '../components/hitTestPipeline.ts'
 import type { AlignmentsUnit } from '../constants.ts'
 import type { Feature } from '@jbrowse/core/util'
 
 type SortCall = [type: string, pos: number, refName: string]
 
-const defaultFilterBy: FilterBy = { flagInclude: 0, flagExclude: 1540 }
+const defaultFilterBy: ReadFilter = { flagInclude: 0, flagExclude: 1540 }
 
 // A minimal block under the right-click; only refName is read by the sort items.
 function makeBlock(refName: string): ResolvedBlock {
@@ -62,11 +62,11 @@ function makeModel(
     noHit?: boolean
     contextMenuFeature?: Feature
     contextMenuFeatureId?: string
-    filterBy?: FilterBy
+    readFilter?: ReadFilter
   } = {},
 ) {
   const sortCalls: SortCall[] = []
-  const filterCalls: FilterBy[] = []
+  const filterCalls: ReadFilter[] = []
   const selected: Feature[] = []
   const {
     cigarHit,
@@ -106,12 +106,12 @@ function makeModel(
           modHit,
           coverageHit,
         } as ContextMenuHit | undefined),
-    filterBy: defaultFilterBy,
+    readFilter: defaultFilterBy,
     // Record every call and apply it, so successive quick-filter clicks read the
     // accumulated filterBy (the coexistence path this suite guards).
-    setFilterBy(filterBy: FilterBy) {
+    setReadFilter(filterBy: ReadFilter) {
       filterCalls.push(filterBy)
-      model.filterBy = filterBy
+      model.readFilter = filterBy
     },
     setSortedByAtPosition(arg: { type: string; pos: number; refName: string }) {
       sortCalls.push([arg.type, arg.pos, arg.refName])
@@ -527,7 +527,7 @@ test('haplotype and read-group tag filters coexist instead of clobbering', () =>
 test('re-filtering the same tag replaces its value, not duplicates', () => {
   const model = makeModel({
     contextMenuFeature: makeFeature({ name: 'readABC', tags: { HP: 2 } }),
-    filterBy: {
+    readFilter: {
       flagInclude: 0,
       flagExclude: 1540,
       tagFilters: [{ tag: 'HP', value: '1' }],
@@ -548,7 +548,7 @@ test('re-filtering the same tag replaces its value, not duplicates', () => {
 test('clear appears only when a read/tag filter is active and keeps flags', () => {
   const model = makeModel({
     contextMenuFeature: makeFeature({ name: 'readABC' }),
-    filterBy: { flagInclude: 0, flagExclude: 1540, readName: 'readABC' },
+    readFilter: { flagInclude: 0, flagExclude: 1540, readName: 'readABC' },
   })
   const filter = findSubMenu(run(model), 'Filter')
   filter.find(i => i.label === 'Clear read/tag filters')!.onClick()
@@ -570,7 +570,7 @@ test('clear appears only when a read/tag filter is active and keeps flags', () =
 test('clear leaves the read categories alone', () => {
   const model = makeModel({
     contextMenuFeature: makeFeature({ name: 'readABC' }),
-    filterBy: {
+    readFilter: {
       flagInclude: 0,
       flagExclude: 1540,
       readName: 'readABC',
@@ -602,7 +602,7 @@ test('no clear item without an active read/tag filter', () => {
 test('a read category alone offers no clear item', () => {
   const model = makeModel({
     contextMenuFeature: makeFeature({ name: 'readABC' }),
-    filterBy: { flagInclude: 0, flagExclude: 1540, spliced: 'only' },
+    readFilter: { flagInclude: 0, flagExclude: 1540, spliced: 'only' },
   })
   const filter = findSubMenu(run(model), 'Filter')
   expect(filter.map(i => i.label)).not.toContain('Clear read/tag filters')

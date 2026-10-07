@@ -125,8 +125,8 @@ function sortedBySlot(value: unknown): DisplayEntry {
 const INSTANCE_SLOTS: Record<string, (value: unknown) => DisplayEntry> = {
   colorBy: colorSlotsOf,
   colorBySetting: colorSlotsOf,
-  filterBy: value => ({ filterBy: value }),
-  filterBySetting: value => ({ filterBy: value }),
+  filterBy: value => ({ filter: value }),
+  filterBySetting: value => ({ filter: value }),
   sortedBy: sortedBySlot,
   trackMaxHeight: value => ({ maxHeight: value }),
   hideMismatchesSetting: value => ({ showMismatches: !value }),

@@ -13,7 +13,7 @@ import {
   pinnedInsertSizeBand,
 } from '../shared/alignmentsColor.ts'
 import { arcColorFieldOf } from '../shared/arcColorOptions.ts'
-import { normalizeFilterBy } from '../shared/types.ts'
+import { readFilterOf } from './readFilterConfigSchema.ts'
 
 import type {
   AlignmentsColorEncoding,
@@ -23,7 +23,7 @@ import type {
   ArcColorField,
   BaseLayer,
   ColorSchemeType,
-  FilterBy,
+  ReadFilter,
   Facet,
   LayoutOrder,
   ModificationColorBy,
@@ -279,8 +279,8 @@ export function configSlotViews(self: ConfigSlotSelf) {
     /**
      * #getter
      */
-    get filterBy(): FilterBy {
-      return normalizeFilterBy(getConf(self, 'filterBy'))
+    get readFilter(): ReadFilter {
+      return readFilterOf(self.configuration.filter)
     },
     /**
      * #getter

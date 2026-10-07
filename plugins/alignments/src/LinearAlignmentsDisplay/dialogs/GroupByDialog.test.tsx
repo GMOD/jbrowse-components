@@ -35,7 +35,7 @@ function renderDialog(state: {
     colorBy: state.colorBy,
     baseLayer: state.baseLayer,
     facet: state.facet,
-    filterBy: {},
+    readFilter: {},
     resolvedByteLimit: () => undefined,
     setFacet,
     setColorBy,

@@ -3,7 +3,7 @@ import { getRpcSessionId } from '@jbrowse/core/util/tracks'
 import { onTrackAssembly } from '@jbrowse/display-kit/foundationView'
 import { containingLgv } from '@jbrowse/plugin-linear-genome-view'
 
-import type { FilterBy } from './types.ts'
+import type { ReadFilter } from './types.ts'
 import type { StatusCallback } from '@jbrowse/core/util'
 import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
 
@@ -24,7 +24,7 @@ export async function getUniqueTags({
 }: {
   self: IStateTreeNode & {
     adapterConfig: Record<string, unknown>
-    filterBy: FilterBy
+    readFilter: ReadFilter
     resolvedByteLimit: () => number | undefined
   }
   tag: string
@@ -34,7 +34,7 @@ export async function getUniqueTags({
   }
 }) {
   const { rpcManager } = getSession(self)
-  const { adapterConfig, filterBy } = self
+  const { adapterConfig, readFilter: filterBy } = self
   const sessionId = getRpcSessionId(self)
   const onTrack = onTrackAssembly(self)
   return rpcManager.call(sessionId, 'PileupGetGlobalValueForTag', {

@@ -977,6 +977,7 @@ retired: {
   colorBy: colorSlotsOf,
   drawInter: (v: unknown) => ({ showInterchrom: v }),
   drawLongRange: (v: unknown) => ({ showLongRange: v }),
+  filterBy: (filter: unknown) => ({ filter }),
   linkedReads: (v: unknown) => ({
     unit: v === 'normal' ? 'chain' : 'read',
   }),

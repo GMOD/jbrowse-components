@@ -45,8 +45,8 @@ export const PLOT_VOCABULARY: Readonly<Record<string, string>> = {
   y: 'the field plotted on the value axis',
   size: "a point's diameter or a line's width, in px",
   origin: 'the value bars grow from',
-  filter: 'the jexl: expressions a feature has to pass',
-  filterBy: 'the read flags and tags a read has to pass',
+  filter:
+    'what a feature has to pass: jexl: expressions, or on an alignments display the read flags, name, tags and categories',
 }
 
 /**

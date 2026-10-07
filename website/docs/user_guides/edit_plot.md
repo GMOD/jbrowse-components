@@ -27,7 +27,7 @@ on the display:
 | Feature, single-sample variant       | `facet`, `color`, `filter`                                            |
 | Multi-row feature                    | `facet`, `rows`, `rowColor`, `color`                                  |
 | Multi-sample variant                 | `facet`, `rows`, `rowColor`, `color`, `filter`                        |
-| Alignments, synteny in a genome view | `facet`, `color`, `baseColor`, `arcColor`, `scales`, `filterBy`       |
+| Alignments, synteny in a genome view | `facet`, `color`, `baseColor`, `arcColor`, `scales`, `filter`         |
 | Quantitative                         | `rows`, `rowColor`, `color`, `scales`                                 |
 | Multiple alignment (MAF)             | `rows`, `rowColor`, `color`                                           |
 | Hi-C                                 | `color`                                                               |

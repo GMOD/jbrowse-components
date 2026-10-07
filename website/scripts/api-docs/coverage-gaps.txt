@@ -5,7 +5,7 @@
 # Adding a name here is a coverage regression; removing one is the win. Each
 # section names the tag that clears it.
 
-# configs with no #example (9)
+# configs with no #example (10)
 # fix: add an #example to the type’s #config JSDoc
 BamIndex
 HierarchicalConfigSchema
@@ -16,6 +16,7 @@ LinearScoreDisplay
 PreferencesConfigSchema
 RpcOptions
 TabixIndex
+TagFilter
 
 # display/view models with no #example (10)
 # fix: add an #example to the type’s #stateModel JSDoc

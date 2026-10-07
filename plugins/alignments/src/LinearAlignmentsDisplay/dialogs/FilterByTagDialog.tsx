@@ -20,7 +20,7 @@ import { observer } from 'mobx-react'
 
 import { defaultFilterFlags } from '../../shared/util.ts'
 
-import type { FilterBy } from '../../shared/types.ts'
+import type { ReadFilter } from '../../shared/types.ts'
 
 const useStyles = makeStyles()(theme => ({
   paper: {
@@ -272,13 +272,13 @@ const ReadNameFilterSection = observer(function ReadNameFilterSection(props: {
 // they used to open the dialog and outweigh the rest of it put together.
 const FilterByTagDialog = observer(function FilterByTagDialog(props: {
   model: {
-    filterBy: FilterBy
-    setFilterBy: (arg: FilterBy) => void
+    readFilter: ReadFilter
+    setReadFilter: (arg: ReadFilter) => void
   }
   handleClose: () => void
 }) {
   const { model, handleClose } = props
-  const { filterBy } = model
+  const { readFilter: filterBy } = model
   const [flagInclude, setFlagInclude] = useState(filterBy.flagInclude)
   const [flagExclude, setFlagExclude] = useState(filterBy.flagExclude)
   const [tag, setTag] = useState(filterBy.tagFilters?.[0]?.tag ?? '')
@@ -313,7 +313,7 @@ const FilterByTagDialog = observer(function FilterByTagDialog(props: {
       ...(tag !== '' ? [{ tag, value: tagValue === '' ? '*' : tagValue }] : []),
       ...otherTagFilters,
     ]
-    model.setFilterBy({
+    model.setReadFilter({
       // Spread first: the read categories live in `filterBy` too and are edited
       // from the track menu, so a Submit here must carry them through rather
       // than rebuild the object from what this dialog happens to show.

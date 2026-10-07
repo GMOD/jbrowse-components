@@ -36,7 +36,7 @@ import { defaultFilterFlags } from '../shared/util.ts'
 import ConsensusSettingsPanel from './ConsensusSettingsPanel.tsx'
 import { useConsensusSettings } from './useConsensusSettings.ts'
 
-import type { FilterBy } from '../shared/types.ts'
+import type { ReadFilter } from '../shared/types.ts'
 import type { ConsensusVcfEntry } from '@jbrowse/alignments-core'
 import type { Region } from '@jbrowse/core/util'
 import type {
@@ -56,7 +56,7 @@ function download(content: string, filename: string, type: string) {
 
 export interface ConsensusDisplay extends IStateTreeNode {
   adapterConfig: Record<string, unknown>
-  filterBy?: FilterBy
+  readFilter?: ReadFilter
 }
 
 interface ConsensusData {
@@ -116,7 +116,7 @@ const ConsensusSequenceDialog = observer(function ConsensusSequenceDialog({
   // alignments, unlike samtools. The SECONDARY bit is set/cleared rather than
   // left alone, so unchecking includes secondary even when the track itself
   // excluded them.
-  const base = display.filterBy ?? defaultFilterFlags
+  const base = display.readFilter ?? defaultFilterFlags
   const filterBy = {
     ...base,
     flagExclude: excludeSecondary

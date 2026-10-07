@@ -264,7 +264,7 @@ describe('alignments settings a static export cannot reach any other way', () =>
   test('the read categories fold into filterBy', () => {
     expect(
       buildDisplaySnapshot('alignments', ['properPairs:exclude', 'split:only'])
-        .snap.filterBy,
+        .snap.filter,
     ).toEqual({ properPairs: 'exclude', split: 'only' })
   })
 
@@ -272,7 +272,7 @@ describe('alignments settings a static export cannot reach any other way', () =>
   // script pass a category through from a variable that may be empty.
   test('a category set to all stores nothing', () => {
     expect(
-      buildDisplaySnapshot('alignments', ['singletons:all']).snap.filterBy,
+      buildDisplaySnapshot('alignments', ['singletons:all']).snap.filter,
     ).toEqual({})
   })
 
@@ -285,7 +285,7 @@ describe('alignments settings a static export cannot reach any other way', () =>
   // samtools' -f / -F, in that order
   test('flags sets the two masks', () => {
     expect(
-      buildDisplaySnapshot('alignments', ['flags:2:1540']).snap.filterBy,
+      buildDisplaySnapshot('alignments', ['flags:2:1540']).snap.filter,
     ).toEqual({ flagInclude: 2, flagExclude: 1540 })
   })
 
@@ -294,34 +294,33 @@ describe('alignments settings a static export cannot reach any other way', () =>
   // every read.
   test('an omitted half of flags is left unset', () => {
     expect(
-      buildDisplaySnapshot('alignments', ['flags::256']).snap.filterBy,
+      buildDisplaySnapshot('alignments', ['flags::256']).snap.filter,
     ).toEqual({ flagExclude: 256 })
-    expect(
-      buildDisplaySnapshot('alignments', ['flags:2']).snap.filterBy,
-    ).toEqual({ flagInclude: 2 })
+    expect(buildDisplaySnapshot('alignments', ['flags:2']).snap.filter).toEqual(
+      { flagInclude: 2 },
+    )
   })
 
   // The names carry their own arithmetic, so a reader who wants "drop secondary
   // as well" writes that rather than working out that 1540 becomes 1796.
   test('flags takes samtools flag names as well as numbers', () => {
     expect(
-      buildDisplaySnapshot('alignments', ['flags::SECONDARY,DUP']).snap
-        .filterBy,
+      buildDisplaySnapshot('alignments', ['flags::SECONDARY,DUP']).snap.filter,
     ).toEqual({ flagExclude: 256 | 1024 })
     expect(
-      buildDisplaySnapshot('alignments', ['flags:proper_pair']).snap.filterBy,
+      buildDisplaySnapshot('alignments', ['flags:proper_pair']).snap.filter,
     ).toEqual({ flagInclude: 2 })
     // The display's own default mask, said both ways — and the pair below is
     // the reason the names are worth having: 1540 and 1796 differ by one bit
     // nobody reads off the number.
     expect(
       buildDisplaySnapshot('alignments', ['flags::UNMAP,QCFAIL,DUP']).snap
-        .filterBy,
-    ).toEqual(buildDisplaySnapshot('alignments', ['flags::1540']).snap.filterBy)
+        .filter,
+    ).toEqual(buildDisplaySnapshot('alignments', ['flags::1540']).snap.filter)
     expect(
       buildDisplaySnapshot('alignments', ['flags::UNMAP,SECONDARY,QCFAIL,DUP'])
-        .snap.filterBy,
-    ).toEqual(buildDisplaySnapshot('alignments', ['flags::1796']).snap.filterBy)
+        .snap.filter,
+    ).toEqual(buildDisplaySnapshot('alignments', ['flags::1796']).snap.filter)
   })
 
   test('an unknown flag name lists the vocabulary', () => {
@@ -337,7 +336,7 @@ describe('alignments settings a static export cannot reach any other way', () =>
         'flags:2',
         'filterTag:HP:1',
         'filterTag:RG:lane3',
-      ]).snap.filterBy,
+      ]).snap.filter,
     ).toEqual({
       flagInclude: 2,
       tagFilters: [
@@ -354,7 +353,7 @@ describe('alignments settings a static export cannot reach any other way', () =>
       'flags:2:1540',
     ])
     expect(snap.showSashimiArcs).toBeUndefined()
-    expect(snap.filterBy).toBeUndefined()
+    expect(snap.filter).toBeUndefined()
     expect(warn).toHaveBeenCalledTimes(2)
     warn.mockRestore()
   })

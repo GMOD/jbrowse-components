@@ -1,4 +1,4 @@
-import type { CategoryFilter, FilterBy, ReadCategoryKey } from './types.ts'
+import type { CategoryFilter, ReadFilter, ReadCategoryKey } from './types.ts'
 
 export type { ReadCategoryKey }
 
@@ -92,21 +92,21 @@ export const READ_CATEGORIES = [
 export type ReadCategoryChoice = CategoryFilter | 'all'
 
 export function readCategoryChoice(
-  filterBy: FilterBy,
+  filterBy: ReadFilter,
   key: ReadCategoryKey,
 ): ReadCategoryChoice {
   return filterBy[key] ?? 'all'
 }
 
 export function setReadCategory(
-  filterBy: FilterBy,
+  filterBy: ReadFilter,
   key: ReadCategoryKey,
   choice: ReadCategoryChoice,
-): FilterBy {
+): ReadFilter {
   return { ...filterBy, [key]: choice === 'all' ? undefined : choice }
 }
 
 /** How many categories are filtering. One each, like every other filter. */
-export function activeReadCategoryCount(filterBy: FilterBy) {
+export function activeReadCategoryCount(filterBy: ReadFilter) {
   return READ_CATEGORIES.filter(c => filterBy[c.key] !== undefined).length
 }

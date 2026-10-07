@@ -12,7 +12,7 @@ import { seqFetchSpan } from '../shared/seqFetchSpan.ts'
 import { dropsRead } from '../shared/util.ts'
 import BamSlightlyLazyFeature from './BamSlightlyLazyFeature.ts'
 
-import type { FilterBy } from '../shared/types.ts'
+import type { ReadFilter } from '../shared/types.ts'
 import type { BamAdapterConfig } from './configSchema.ts'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
@@ -93,7 +93,7 @@ export abstract class BamAdapterBase<
   getFeatures(
     region: Region & { originalRefName?: string },
     opts?: BaseOptions & {
-      filterBy?: FilterBy
+      filterBy?: ReadFilter
     },
   ) {
     // originalRefName is not read here — fetchRegionSeq resolves it, since the

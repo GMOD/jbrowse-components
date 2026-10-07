@@ -16,7 +16,7 @@ import { dropsRead, parseSamHeader } from '../shared/util.ts'
 import SamRecordFeature from './SamRecordFeature.ts'
 import { parseSamHeaderLine, parseSamLine } from './parseSam.ts'
 
-import type { FilterBy } from '../shared/types.ts'
+import type { ReadFilter } from '../shared/types.ts'
 import type { SamAdapterConfig } from './configSchema.ts'
 import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { Feature, Region } from '@jbrowse/core/util'
@@ -113,7 +113,7 @@ export default class SamAdapter extends BaseAlignmentsAdapter<SamAdapterConfig> 
 
   getFeatures(
     region: Region & { originalRefName?: string },
-    opts?: BaseOptions & { filterBy?: FilterBy },
+    opts?: BaseOptions & { filterBy?: ReadFilter },
   ) {
     const { refName, start, end, originalRefName } = region
     const { signal, filterBy, statusCallback } = opts ?? {}

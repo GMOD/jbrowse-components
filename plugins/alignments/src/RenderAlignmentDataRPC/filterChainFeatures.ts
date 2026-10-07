@@ -10,7 +10,7 @@ import { featureChainKey } from '../shared/chainGroupingKey.ts'
 import { chainIsSplit } from '../shared/splitAlignment.ts'
 import { getFlags } from '../shared/util.ts'
 
-import type { CategoryFilter, FilterBy } from '../shared/types.ts'
+import type { CategoryFilter, ReadFilter } from '../shared/types.ts'
 import type { ReadKey } from '@jbrowse/alignments-core'
 import type { Feature } from '@jbrowse/core/util'
 
@@ -121,7 +121,10 @@ function keepCategory(
 // the other two, which are about what is on screen. Making them view-wide means
 // moving the filter to the main thread, where the coverage histogram these also
 // thin is no longer being computed.
-export function filterChainFeatures(features: Feature[], filterBy?: FilterBy) {
+export function filterChainFeatures(
+  features: Feature[],
+  filterBy?: ReadFilter,
+) {
   const deduped = dedupeById(features)
   const { properPairs, singletons, split } = filterBy ?? {}
   if (

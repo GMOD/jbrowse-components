@@ -1,6 +1,6 @@
 import { applyDisplayOpts } from './applyTrackOpts.ts'
 
-import type { FilterBySnapshot } from './applyTrackOpts.ts'
+import type { ReadFilterSnapshot } from './applyTrackOpts.ts'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 // `filterBy` is the one modifier target that is EDITED rather than stated, so it
@@ -9,15 +9,15 @@ import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 // the display through its own action instead, and composes with what the track's
 // config already said.
 
-function fakeView(configured: FilterBySnapshot = {}) {
+function fakeView(configured: ReadFilterSnapshot = {}) {
   const display = {
-    filterBy: {
+    readFilter: {
       flagInclude: 0,
       flagExclude: 1540,
       ...configured,
-    } as FilterBySnapshot,
-    setFilterBy(f: unknown) {
-      this.filterBy = f as typeof this.filterBy
+    } as ReadFilterSnapshot,
+    setReadFilter(f: unknown) {
+      this.readFilter = f as typeof this.readFilter
     },
   }
   const calls: unknown[] = []
@@ -41,13 +41,13 @@ test('a category edit leaves the flag masks the track config set', async () => {
   // alignments silently restored.
   const { view, display } = fakeView({ flagExclude: 1796 })
   await applyDisplayOpts(view, 'reads_vs_der3', 'alignments', ['split:only'])
-  expect(display.filterBy).toMatchObject({ flagExclude: 1796, split: 'only' })
+  expect(display.readFilter).toMatchObject({ flagExclude: 1796, split: 'only' })
 })
 
 test('an omitted half of flags keeps the configured mask, as the doc claims', async () => {
   const { view, display } = fakeView({ flagInclude: 2, flagExclude: 1796 })
   await applyDisplayOpts(view, 't', 'alignments', ['flags::256'])
-  expect(display.filterBy).toMatchObject({ flagInclude: 2, flagExclude: 256 })
+  expect(display.readFilter).toMatchObject({ flagInclude: 2, flagExclude: 256 })
 })
 
 test('a tag filter is a second condition, not a replacement', async () => {
@@ -55,7 +55,7 @@ test('a tag filter is a second condition, not a replacement', async () => {
     tagFilters: [{ tag: 'HP', value: '1' }],
   })
   await applyDisplayOpts(view, 't', 'alignments', ['filterTag:RG:lane3'])
-  expect(display.filterBy.tagFilters).toEqual([
+  expect(display.readFilter.tagFilters).toEqual([
     { tag: 'HP', value: '1' },
     { tag: 'RG', value: 'lane3' },
   ])
@@ -75,7 +75,9 @@ test('a display with no filterBy says so rather than dropping the option', async
     launchTrack: async () => ({ displays: [{}] }),
   } as unknown as LinearGenomeViewModel
   await applyDisplayOpts(view, 'wiggle_track', 'alignments', ['split:only'])
-  expect(warn).toHaveBeenCalledWith(expect.stringContaining('has no filterBy'))
+  expect(warn).toHaveBeenCalledWith(
+    expect.stringContaining('has no read filter'),
+  )
   warn.mockRestore()
 })
 

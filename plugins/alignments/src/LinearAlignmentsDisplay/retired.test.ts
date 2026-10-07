@@ -112,7 +112,7 @@ test('lifts the settings off the pre-4.x nested sub-nodes', () => {
     }),
   ).toEqual({
     baseColor: { field: 'modifications' },
-    filterBy: { flagInclude: 0, flagExclude: 1536 },
+    filter: { flagInclude: 0, flagExclude: 1536 },
   })
   expect(retiredState.keys).toEqual(
     expect.arrayContaining(['PileupDisplay', 'SNPCoverageDisplay']),
@@ -131,7 +131,7 @@ test('lifts the released *Setting spelling, which wins over the bare one', () =>
     }),
   ).toEqual({
     color: { field: 'insertSizeAndOrientation' },
-    filterBy: { flagInclude: 0, flagExclude: 1540 },
+    filter: { flagInclude: 0, flagExclude: 1540 },
     maxHeight: 900,
     showMismatches: false,
   })

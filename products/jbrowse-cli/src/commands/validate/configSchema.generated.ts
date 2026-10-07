@@ -5619,6 +5619,37 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         }
       ]
     },
+    "RowGroup": {
+      "title": "RowGroup",
+      "type": "object",
+      "x-closed": true,
+      "properties": {
+        "match": {
+          "description": "a regex a row name has to match; one that does not compile matches nothing.",
+          "default": "",
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/PlainString"
+          }
+        },
+        "group": {
+          "description": "the group a matching row joins.",
+          "default": "",
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/PlainString"
+          }
+        }
+      },
+      "patternProperties": {
+        "^_+comment": {}
+      },
+      "additionalProperties": false
+    },
     "LinearMultiRowFeatureDisplaySlots": {
       "type": "object",
       "properties": {
@@ -5771,13 +5802,13 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           }
         },
         "rowGroups": {
-          "description": "array of {match,group} tagging each row with the group of the first entry whose regex its name matches; rowColor: {field: \\"group\\"} colours the groups. Any JSON value: the slot is \`frozen\`, so its shape is not checked here.",
           "if": {
             "type": "null"
           },
           "else": {
-            "not": {
-              "$ref": "#/$defs/JexlString"
+            "type": "array",
+            "items": {
+              "$ref": "#/$defs/RowGroup"
             }
           }
         },
@@ -6157,6 +6188,135 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "items": {
               "type": "string"
             }
+          }
+        }
+      },
+      "patternProperties": {
+        "^_+comment": {}
+      },
+      "additionalProperties": false
+    },
+    "TagFilter": {
+      "title": "TagFilter",
+      "type": "object",
+      "x-closed": true,
+      "properties": {
+        "tag": {
+          "description": "the SAM tag, HP or RG.",
+          "default": "",
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/PlainString"
+          }
+        },
+        "value": {
+          "description": "the value the tag has to hold; unset passes any read carrying the tag.",
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/PlainString"
+          }
+        }
+      },
+      "patternProperties": {
+        "^_+comment": {}
+      },
+      "additionalProperties": false
+    },
+    "ReadFilter": {
+      "title": "ReadFilter",
+      "type": "object",
+      "x-closed": true,
+      "properties": {
+        "flagInclude": {
+          "description": "a read passes only with every one of these SAM flag bits set, samtools -f.",
+          "default": 0,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "number"
+          }
+        },
+        "flagExclude": {
+          "description": "a read passes only with none of these SAM flag bits set, samtools -F; 1540 drops unmapped, QC-failed and duplicate reads.",
+          "default": 1540,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "number"
+          }
+        },
+        "readName": {
+          "description": "the one read name shown; unset shows every read.",
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/PlainString"
+          }
+        },
+        "tagFilters": {
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "array",
+            "items": {
+              "$ref": "#/$defs/TagFilter"
+            }
+          }
+        },
+        "spliced": {
+          "description": "only, exclude, or unset for unfiltered.",
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "enum": [
+              "only",
+              "exclude"
+            ]
+          }
+        },
+        "properPairs": {
+          "description": "only, exclude, or unset for unfiltered.",
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "enum": [
+              "only",
+              "exclude"
+            ]
+          }
+        },
+        "singletons": {
+          "description": "only, exclude, or unset for unfiltered.",
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "enum": [
+              "only",
+              "exclude"
+            ]
+          }
+        },
+        "split": {
+          "description": "only, exclude, or unset for unfiltered.",
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "enum": [
+              "only",
+              "exclude"
+            ]
           }
         }
       },
@@ -6563,19 +6723,12 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "$ref": "#/$defs/AlignmentsModifications"
           }
         },
-        "filterBy": {
-          "description": "Filter settings for reads. Any JSON value: the slot is \`frozen\`, so its shape is not checked here.",
-          "default": {
-            "flagInclude": 0,
-            "flagExclude": 1540
-          },
+        "filter": {
           "if": {
             "type": "null"
           },
           "else": {
-            "not": {
-              "$ref": "#/$defs/JexlString"
-            }
+            "$ref": "#/$defs/ReadFilter"
           }
         },
         "facet": {
@@ -6660,14 +6813,12 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           }
         },
         "showOutline": {
-          "description": "Draw an outline around each read (unset = auto by mode). Any JSON value: the slot is \`frozen\`, so its shape is not checked here.",
+          "description": "Draw an outline around each read (unset = auto by mode).",
           "if": {
             "type": "null"
           },
           "else": {
-            "not": {
-              "$ref": "#/$defs/JexlString"
-            }
+            "type": "boolean"
           }
         },
         "unit": {
@@ -6918,6 +7069,10 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "description": "Legacy key: a migration rewrites it into current slots when the config loads."
         },
         "drawLongRange": {
+          "deprecated": true,
+          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+        },
+        "filterBy": {
           "deprecated": true,
           "description": "Legacy key: a migration rewrites it into current slots when the config loads."
         },
@@ -7651,19 +7806,12 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "$ref": "#/$defs/AlignmentsModifications"
           }
         },
-        "filterBy": {
-          "description": "Filter settings for reads. Any JSON value: the slot is \`frozen\`, so its shape is not checked here.",
-          "default": {
-            "flagInclude": 0,
-            "flagExclude": 1540
-          },
+        "filter": {
           "if": {
             "type": "null"
           },
           "else": {
-            "not": {
-              "$ref": "#/$defs/JexlString"
-            }
+            "$ref": "#/$defs/ReadFilter"
           }
         },
         "facet": {
@@ -7748,14 +7896,12 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           }
         },
         "showOutline": {
-          "description": "Draw an outline around each read (unset = auto by mode). Any JSON value: the slot is \`frozen\`, so its shape is not checked here.",
+          "description": "Draw an outline around each read (unset = auto by mode).",
           "if": {
             "type": "null"
           },
           "else": {
-            "not": {
-              "$ref": "#/$defs/JexlString"
-            }
+            "type": "boolean"
           }
         },
         "unit": {
@@ -8030,6 +8176,10 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "description": "Legacy key: a migration rewrites it into current slots when the config loads."
         },
         "drawLongRange": {
+          "deprecated": true,
+          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+        },
+        "filterBy": {
           "deprecated": true,
           "description": "Legacy key: a migration rewrites it into current slots when the config loads."
         },
@@ -14353,8 +14503,15 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "modifications": {
               "$ref": "#/$defs/LinearAlignmentsDisplaySlots/properties/modifications"
             },
-            "filterBy": {
-              "$ref": "#/$defs/LinearAlignmentsDisplaySlots/properties/filterBy"
+            "filter": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/LinearAlignmentsDisplaySlots/properties/filter"
+                },
+                {
+                  "$ref": "#/$defs/LinearMarkDisplaySlots/properties/filter"
+                }
+              ]
             },
             "facet": {
               "anyOf": [
@@ -14482,6 +14639,9 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "drawLongRange": {
               "$ref": "#/$defs/LinearAlignmentsDisplaySlots/properties/drawLongRange"
             },
+            "filterBy": {
+              "$ref": "#/$defs/LinearAlignmentsDisplaySlots/properties/filterBy"
+            },
             "linkedReads": {
               "$ref": "#/$defs/LinearAlignmentsDisplaySlots/properties/linkedReads"
             },
@@ -14517,9 +14677,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             },
             "minWidthPx": {
               "$ref": "#/$defs/LinearMarkDisplaySlots/properties/minWidthPx"
-            },
-            "filter": {
-              "$ref": "#/$defs/LinearMarkDisplaySlots/properties/filter"
             },
             "displayCrossHatches": {
               "$ref": "#/$defs/LinearMarkDisplaySlots/properties/displayCrossHatches"
@@ -17120,8 +17277,15 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "modifications": {
               "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/modifications"
             },
-            "filterBy": {
-              "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/filterBy"
+            "filter": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/filter"
+                },
+                {
+                  "$ref": "#/$defs/LinearMarkDisplaySlots/properties/filter"
+                }
+              ]
             },
             "facet": {
               "anyOf": [
@@ -17265,6 +17429,9 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "drawLongRange": {
               "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/drawLongRange"
             },
+            "filterBy": {
+              "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/filterBy"
+            },
             "linkedReads": {
               "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/linkedReads"
             },
@@ -17339,9 +17506,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             },
             "minWidthPx": {
               "$ref": "#/$defs/LinearMarkDisplaySlots/properties/minWidthPx"
-            },
-            "filter": {
-              "$ref": "#/$defs/LinearMarkDisplaySlots/properties/filter"
             },
             "displayCrossHatches": {
               "$ref": "#/$defs/LinearMarkDisplaySlots/properties/displayCrossHatches"

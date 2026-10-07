@@ -11,7 +11,7 @@ import { fetchFeaturesFromAdapter } from '../shared/fetchFeaturesFromAdapter.ts'
 import { fetchReferenceSequence } from '../shared/fetchReferenceSequence.ts'
 import { filterChainFeatures } from './filterChainFeatures.ts'
 
-import type { FilterBy } from '../shared/types.ts'
+import type { ReadFilter } from '../shared/types.ts'
 import type { ConsensusVariant } from '@jbrowse/alignments-core'
 import type { RpcExecuteArgs } from '@jbrowse/core/rpc/RpcRegistry'
 import type { Region } from '@jbrowse/core/util'
@@ -19,7 +19,7 @@ import type { Region } from '@jbrowse/core/util'
 interface GetConsensusSequenceArgs {
   adapterConfig: Record<string, unknown>
   regions: Region[]
-  filterBy?: FilterBy
+  filterBy?: ReadFilter
   minDepth?: number
   callFract?: number
   hetFract?: number

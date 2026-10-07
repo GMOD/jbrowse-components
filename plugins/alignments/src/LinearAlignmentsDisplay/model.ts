@@ -209,7 +209,7 @@ import type { ReadSlot } from '../shared/readSlot.ts'
 import type {
   ArcColorField,
   BaseLayer,
-  FilterBy,
+  ReadFilter,
   Facet,
   LayoutOrder,
   ReadColorBy,
@@ -3154,7 +3154,7 @@ export default function stateModelFactory(
          */
         rpcProps() {
           return {
-            filterBy: self.filterBy,
+            filterBy: self.readFilter,
             // Only the part the worker reads, so switching between the schemes
             // the shader decides on its own (strand, mapq, insert size, pair
             // orientation …) leaves these props identical and repaints from the
@@ -3531,8 +3531,8 @@ export default function stateModelFactory(
           /**
            * #action
            */
-          setFilterBy(filterBy: FilterBy) {
-            setConf(self, 'filterBy', filterBy)
+          setReadFilter(filterBy: ReadFilter) {
+            setConf(self, 'filter', filterBy)
           },
 
           /**

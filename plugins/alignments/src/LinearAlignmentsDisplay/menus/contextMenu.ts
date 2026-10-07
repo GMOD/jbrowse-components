@@ -39,7 +39,7 @@ import {
 import { queueSortByTagDialog } from './sortGroup.ts'
 
 import type { ResolvedBlock } from '../../shared/hitTestTypes.ts'
-import type { FilterBy } from '../../shared/types.ts'
+import type { ReadFilter } from '../../shared/types.ts'
 import type { ContextMenuHit } from '../components/hitTestPipeline.ts'
 import type { AlignmentsUnit } from '../constants.ts'
 import type { FeatureLookupModel } from './contextMenuFeature.ts'
@@ -68,8 +68,8 @@ interface HitMenuModel extends IStateTreeNode {
 // The read/tag quick-filter rows read and merge into the same slot, and nothing
 // else.
 interface FilterModel {
-  filterBy: FilterBy
-  setFilterBy: (filterBy: FilterBy) => void
+  readFilter: ReadFilter
+  setReadFilter: (filterBy: ReadFilter) => void
 }
 
 interface ContextMenuModel
@@ -101,9 +101,9 @@ function getReadTag(feat: Feature, tag: string): string | undefined {
 // Set the filter for one tag while preserving filters on other tags, so quick
 // HP/RG filters (and any dialog-set tag) coexist instead of clobbering.
 function setTagFilter(self: FilterModel, tag: string, value: string) {
-  const others = (self.filterBy.tagFilters ?? []).filter(f => f.tag !== tag)
-  self.setFilterBy({
-    ...self.filterBy,
+  const others = (self.readFilter.tagFilters ?? []).filter(f => f.tag !== tag)
+  self.setReadFilter({
+    ...self.readFilter,
     tagFilters: [...others, { tag, value }],
   })
 }
@@ -177,7 +177,7 @@ function getFilterSubMenu(self: FilterModel, feat: Feature): MenuItem[] {
       label: 'Filter for this read',
       icon: FilterAltIcon,
       onClick: () => {
-        self.setFilterBy({ ...self.filterBy, readName })
+        self.setReadFilter({ ...self.readFilter, readName })
       },
     })
   }
@@ -202,15 +202,15 @@ function getFilterSubMenu(self: FilterModel, feat: Feature): MenuItem[] {
   // would clear four filters this row does not name and did not set. The track
   // menu's "Clear all filters" is the one that clears everything.
   const hasReadOrTagFilter =
-    self.filterBy.readName !== undefined ||
-    (self.filterBy.tagFilters?.length ?? 0) > 0
+    self.readFilter.readName !== undefined ||
+    (self.readFilter.tagFilters?.length ?? 0) > 0
   if (hasReadOrTagFilter) {
     sub.push({
       label: 'Clear read/tag filters',
       icon: FilterAltOffIcon,
       onClick: () => {
-        self.setFilterBy({
-          ...self.filterBy,
+        self.setReadFilter({
+          ...self.readFilter,
           readName: undefined,
           tagFilters: undefined,
         })

@@ -3,7 +3,7 @@ import { checkAbortSignal } from '@jbrowse/core/util/aborting'
 import { firstValueFrom } from 'rxjs'
 import { toArray } from 'rxjs/operators'
 
-import type { FilterBy } from './types.ts'
+import type { ReadFilter } from './types.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type {
   BaseOptions,
@@ -33,7 +33,7 @@ export async function fetchFeaturesFromAdapter({
   adapterConfig: Record<string, unknown>
   sequenceAdapter?: Record<string, unknown>
   region: Region
-  filterBy?: FilterBy
+  filterBy?: ReadFilter
   // Which detail tier a tiered adapter should serve. Only the synteny displays
   // set it (a PIF has a coarse no-CIGAR tier); read adapters ignore it.
   lodMode?: LodTier
@@ -56,7 +56,7 @@ export async function fetchFeaturesFromAdapter({
     sequenceAdapter,
   })
 
-  const fetchOpts: BaseOptions & { filterBy?: FilterBy } = {
+  const fetchOpts: BaseOptions & { filterBy?: ReadFilter } = {
     signal,
     filterBy,
     lodMode,

@@ -153,7 +153,7 @@ export type {
   BaseLayer,
   ColorBy,
   ColorSchemeType,
-  FilterBy,
+  ReadFilter,
   Facet,
   ModificationColorBy,
   ReadColorBy,

@@ -3,14 +3,14 @@ import { SimpleFeature } from '@jbrowse/core/util'
 import { defaultFilterFlags } from '../shared/util.ts'
 import { filterChainFeatures } from './filterChainFeatures.ts'
 
-import type { FilterBy } from '../shared/types.ts'
+import type { ReadFilter } from '../shared/types.ts'
 
 const PROPER_PAIR = 0x2
 const SUPPLEMENTARY = 0x800
 
-// The flag masks are required on FilterBy and irrelevant here — the adapters
+// The flag masks are required on ReadFilter and irrelevant here — the adapters
 // apply those, not this function. Only the categories vary per test.
-function filt(categories: Partial<FilterBy> = {}): FilterBy {
+function filt(categories: Partial<ReadFilter> = {}): ReadFilter {
   return { ...defaultFilterFlags, ...categories }
 }
 

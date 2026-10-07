@@ -16,22 +16,22 @@ import type {
   ReadCategoryChoice,
   ReadCategorySpec,
 } from '../../shared/readCategoryFilters.ts'
-import type { FilterBy } from '../../shared/types.ts'
+import type { ReadFilter } from '../../shared/types.ts'
 import type { MenuItem } from '@jbrowse/core/ui'
 import type { Reversibles } from '@jbrowse/core/ui/filterMenuItems'
 
 const FilterByTagDialog = lazy(() => import('../dialogs/FilterByTagDialog.tsx'))
 
 interface FiltersModel {
-  filterBy: FilterBy
-  setFilterBy: (arg: FilterBy) => void
+  readFilter: ReadFilter
+  setReadFilter: (arg: ReadFilter) => void
 }
 
 // How many independent filters `filterBy` applies. The flag masks are one filter
 // between them (they're edited together and their no-op value is the non-zero
 // default, hence the compare against it rather than against 0), plus one per tag
 // filter, one for a read name and one per read category in effect.
-function activeFilterCount(filterBy: FilterBy) {
+function activeFilterCount(filterBy: ReadFilter) {
   const { flagInclude, flagExclude, readName, tagFilters } = filterBy
   return (
     (flagInclude === defaultFilterFlags.flagInclude &&
@@ -50,9 +50,9 @@ function activeFilterCount(filterBy: FilterBy) {
 function filterNarrowings(model: FiltersModel): Reversibles {
   return {
     filterBy: {
-      count: activeFilterCount(model.filterBy),
+      count: activeFilterCount(model.readFilter),
       clear: () => {
-        model.setFilterBy(defaultFilterFlags)
+        model.setReadFilter(defaultFilterFlags)
       },
     },
   }
@@ -70,7 +70,7 @@ function readCategoryItem(
   model: FiltersModel,
   { key, noun, only, exclude, helpText }: ReadCategorySpec,
 ): MenuItem {
-  const current = readCategoryChoice(model.filterBy, key)
+  const current = readCategoryChoice(model.readFilter, key)
   return makeRadioSubMenu<ReadCategoryChoice>({
     // 'hidden' rather than the stored 'exclude': the row is reporting what the
     // user sees, and the vocabulary is the wire format's, not theirs.
@@ -86,7 +86,7 @@ function readCategoryItem(
       ['exclude', exclude],
     ],
     onChange: choice => {
-      model.setFilterBy(setReadCategory(model.filterBy, key, choice))
+      model.setReadFilter(setReadCategory(model.readFilter, key, choice))
     },
   })
 }

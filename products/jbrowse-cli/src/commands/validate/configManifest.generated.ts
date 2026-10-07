@@ -3329,7 +3329,17 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "rowGroups",
-          "type": "frozen"
+          "type": "RowGroupConfigurationSchema[]",
+          "subSlots": [
+            {
+              "name": "match",
+              "type": "string"
+            },
+            {
+              "name": "group",
+              "type": "string"
+            }
+          ]
         },
         {
           "name": "facet",
@@ -3589,8 +3599,52 @@ export const configManifest: ConfigManifest = {
           ]
         },
         {
-          "name": "filterBy",
-          "type": "frozen"
+          "name": "filter",
+          "type": "ReadFilterConfigurationSchema",
+          "subSlots": [
+            {
+              "name": "flagInclude",
+              "type": "number"
+            },
+            {
+              "name": "flagExclude",
+              "type": "number"
+            },
+            {
+              "name": "readName",
+              "type": "(string | undefined)"
+            },
+            {
+              "name": "tagFilters",
+              "type": "TagFilterConfigurationSchema[]",
+              "subSlots": [
+                {
+                  "name": "tag",
+                  "type": "string"
+                },
+                {
+                  "name": "value",
+                  "type": "(string | undefined)"
+                }
+              ]
+            },
+            {
+              "name": "spliced",
+              "type": "(CategoryFilter | undefined)"
+            },
+            {
+              "name": "properPairs",
+              "type": "(CategoryFilter | undefined)"
+            },
+            {
+              "name": "singletons",
+              "type": "(CategoryFilter | undefined)"
+            },
+            {
+              "name": "split",
+              "type": "(CategoryFilter | undefined)"
+            }
+          ]
         },
         {
           "name": "facet",
@@ -3709,7 +3763,7 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "showOutline",
-          "type": "(frozen | undefined)"
+          "type": "(boolean | undefined)"
         },
         {
           "name": "unit",
@@ -3817,6 +3871,7 @@ export const configManifest: ConfigManifest = {
         "colorBy",
         "drawInter",
         "drawLongRange",
+        "filterBy",
         "linkedReads"
       ],
       "aliases": [
@@ -4196,8 +4251,52 @@ export const configManifest: ConfigManifest = {
           ]
         },
         {
-          "name": "filterBy",
-          "type": "frozen"
+          "name": "filter",
+          "type": "ReadFilterConfigurationSchema",
+          "subSlots": [
+            {
+              "name": "flagInclude",
+              "type": "number"
+            },
+            {
+              "name": "flagExclude",
+              "type": "number"
+            },
+            {
+              "name": "readName",
+              "type": "(string | undefined)"
+            },
+            {
+              "name": "tagFilters",
+              "type": "TagFilterConfigurationSchema[]",
+              "subSlots": [
+                {
+                  "name": "tag",
+                  "type": "string"
+                },
+                {
+                  "name": "value",
+                  "type": "(string | undefined)"
+                }
+              ]
+            },
+            {
+              "name": "spliced",
+              "type": "(CategoryFilter | undefined)"
+            },
+            {
+              "name": "properPairs",
+              "type": "(CategoryFilter | undefined)"
+            },
+            {
+              "name": "singletons",
+              "type": "(CategoryFilter | undefined)"
+            },
+            {
+              "name": "split",
+              "type": "(CategoryFilter | undefined)"
+            }
+          ]
         },
         {
           "name": "facet",
@@ -4316,7 +4415,7 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "showOutline",
-          "type": "(frozen | undefined)"
+          "type": "(boolean | undefined)"
         },
         {
           "name": "unit",
@@ -4432,6 +4531,7 @@ export const configManifest: ConfigManifest = {
         "colorBy",
         "drawInter",
         "drawLongRange",
+        "filterBy",
         "linkedReads"
       ],
       "stateModelProps": [

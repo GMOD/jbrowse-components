@@ -5,22 +5,22 @@ import { cleanup, fireEvent, render, screen } from '@testing-library/react'
 import { defaultFilterFlags, filterTagValue } from '../../shared/util.ts'
 import FilterByTagDialog from './FilterByTagDialog.tsx'
 
-import type { FilterBy } from '../../shared/types.ts'
+import type { ReadFilter } from '../../shared/types.ts'
 
 afterEach(cleanup)
 
-function renderDialog(filterBy: Partial<FilterBy> = {}) {
-  const setFilterBy = jest.fn()
+function renderDialog(filterBy: Partial<ReadFilter> = {}) {
+  const setReadFilter = jest.fn()
   const model = {
-    filterBy: { ...defaultFilterFlags, ...filterBy },
-    setFilterBy,
+    readFilter: { ...defaultFilterFlags, ...filterBy },
+    setReadFilter,
   }
   render(
     <ThemeProvider theme={createJBrowseTheme()}>
       <FilterByTagDialog model={model} handleClose={() => {}} />
     </ThemeProvider>,
   )
-  return { setFilterBy }
+  return { setReadFilter }
 }
 
 const submit = () => {
@@ -32,12 +32,12 @@ const submit = () => {
 // nothing and wiped the track. '*' is the "has this tag" spelling the box's
 // helper text offers.
 test('a tag with no value filters for reads carrying it, not for an empty value', () => {
-  const { setFilterBy } = renderDialog()
+  const { setReadFilter } = renderDialog()
   fireEvent.change(screen.getByLabelText('Tag name'), {
     target: { value: 'HP' },
   })
   submit()
-  expect(setFilterBy).toHaveBeenCalledWith(
+  expect(setReadFilter).toHaveBeenCalledWith(
     expect.objectContaining({ tagFilters: [{ tag: 'HP', value: '*' }] }),
   )
   // and that is the value that keeps a tagged read rather than dropping it
@@ -46,7 +46,7 @@ test('a tag with no value filters for reads carrying it, not for an empty value'
 })
 
 test('an explicit value is stored as typed', () => {
-  const { setFilterBy } = renderDialog()
+  const { setReadFilter } = renderDialog()
   fireEvent.change(screen.getByLabelText('Tag name'), {
     target: { value: 'HP' },
   })
@@ -54,15 +54,15 @@ test('an explicit value is stored as typed', () => {
     target: { value: '2' },
   })
   submit()
-  expect(setFilterBy).toHaveBeenCalledWith(
+  expect(setReadFilter).toHaveBeenCalledWith(
     expect.objectContaining({ tagFilters: [{ tag: 'HP', value: '2' }] }),
   )
 })
 
 test('no tag name stores no tag filter', () => {
-  const { setFilterBy } = renderDialog()
+  const { setReadFilter } = renderDialog()
   submit()
-  expect(setFilterBy).toHaveBeenCalledWith(
+  expect(setReadFilter).toHaveBeenCalledWith(
     expect.objectContaining({ tagFilters: undefined }),
   )
 })
@@ -70,14 +70,14 @@ test('no tag name stores no tag filter', () => {
 // Quick filters set from the read right-click menu aren't editable here, but
 // submitting after tweaking a flag must not drop them.
 test('tag filters beyond the first survive a submit', () => {
-  const { setFilterBy } = renderDialog({
+  const { setReadFilter } = renderDialog({
     tagFilters: [
       { tag: 'HP', value: '1' },
       { tag: 'RG', value: 'x' },
     ],
   })
   submit()
-  expect(setFilterBy).toHaveBeenCalledWith(
+  expect(setReadFilter).toHaveBeenCalledWith(
     expect.objectContaining({
       tagFilters: [
         { tag: 'HP', value: '1' },
@@ -88,12 +88,12 @@ test('tag filters beyond the first survive a submit', () => {
 })
 
 test('an empty read name is stored as absent, not as an empty string', () => {
-  const { setFilterBy } = renderDialog({ readName: 'read1' })
+  const { setReadFilter } = renderDialog({ readName: 'read1' })
   fireEvent.change(screen.getByPlaceholderText('Enter read name'), {
     target: { value: '' },
   })
   submit()
-  expect(setFilterBy).toHaveBeenCalledWith(
+  expect(setReadFilter).toHaveBeenCalledWith(
     expect.objectContaining({ readName: undefined }),
   )
 })
@@ -103,25 +103,25 @@ test('an empty read name is stored as absent, not as an empty string', () => {
 // 1.5 and 1e3, and `flag & (1 << i)` then read a different number than the one
 // on screen.
 test('the bitmask field takes whole numbers only', () => {
-  const { setFilterBy } = renderDialog()
+  const { setReadFilter } = renderDialog()
   const [include] = screen.getAllByDisplayValue(
     String(defaultFilterFlags.flagInclude),
   )
   fireEvent.change(include!, { target: { value: '1.5' } })
   submit()
-  expect(setFilterBy).toHaveBeenCalledWith(
+  expect(setReadFilter).toHaveBeenCalledWith(
     expect.objectContaining({ flagInclude: defaultFilterFlags.flagInclude }),
   )
 })
 
 test('a whole-number bitmask is applied', () => {
-  const { setFilterBy } = renderDialog()
+  const { setReadFilter } = renderDialog()
   const [include] = screen.getAllByDisplayValue(
     String(defaultFilterFlags.flagInclude),
   )
   fireEvent.change(include!, { target: { value: '3' } })
   submit()
-  expect(setFilterBy).toHaveBeenCalledWith(
+  expect(setReadFilter).toHaveBeenCalledWith(
     expect.objectContaining({ flagInclude: 3 }),
   )
 })
@@ -131,7 +131,7 @@ test('a whole-number bitmask is applied', () => {
 // rebuild filterBy from what it shows. It rebuilt it once, and Submitting a
 // flag change silently cleared four filters set from the menu.
 test('a submit preserves the read categories it does not show', () => {
-  const { setFilterBy } = renderDialog({
+  const { setReadFilter } = renderDialog({
     properPairs: 'exclude',
     split: 'only',
   })
@@ -139,7 +139,7 @@ test('a submit preserves the read categories it does not show', () => {
     target: { value: 'readA' },
   })
   submit()
-  expect(setFilterBy).toHaveBeenCalledWith(
+  expect(setReadFilter).toHaveBeenCalledWith(
     expect.objectContaining({
       readName: 'readA',
       properPairs: 'exclude',
@@ -152,14 +152,14 @@ test('a submit preserves the read categories it does not show', () => {
 // read right-click's "Clear read/tag filters" follows. "Clear all filters" in
 // the track menu is the one that resets the whole of filterBy.
 test('resetting leaves the read categories alone', () => {
-  const { setFilterBy } = renderDialog({
+  const { setReadFilter } = renderDialog({
     readName: 'readA',
     spliced: 'only',
     properPairs: 'exclude',
   })
   fireEvent.click(screen.getByText('Reset defaults'))
   submit()
-  expect(setFilterBy).toHaveBeenCalledWith(
+  expect(setReadFilter).toHaveBeenCalledWith(
     expect.objectContaining({
       readName: undefined,
       spliced: 'only',
@@ -178,11 +178,11 @@ test('no read-category control is offered here', () => {
 // required and excluded — a track that renders empty — and now says so on one
 // line rather than across two twelve-checkbox columns.
 test('the flag grid drives both masks off one row per flag', () => {
-  const { setFilterBy } = renderDialog()
+  const { setReadFilter } = renderDialog()
   fireEvent.click(screen.getByLabelText('Require read paired'))
   fireEvent.click(screen.getByLabelText('Exclude not primary alignment'))
   submit()
-  expect(setFilterBy).toHaveBeenCalledWith(
+  expect(setReadFilter).toHaveBeenCalledWith(
     expect.objectContaining({
       flagInclude: defaultFilterFlags.flagInclude | 0x1,
       flagExclude: defaultFilterFlags.flagExclude | 0x100,

@@ -10,7 +10,7 @@
 import type { InsertSizeBand } from '../shared/insertSizeStats.ts'
 import type {
   BaseLayer,
-  FilterBy,
+  ReadFilter,
   ReadColorBy,
   WorkerFacet,
 } from '../shared/types'
@@ -28,7 +28,7 @@ import type Flatbush from '@jbrowse/core/util/flatbush'
 export interface RenderAlignmentDataArgs extends GatedFetchArgs {
   adapterConfig: Record<string, unknown>
   regions: Region[]
-  filterBy?: FilterBy
+  filterBy?: ReadFilter
   colorBy?: ReadColorBy
   // the per-base layer, which extracts beside whatever `colorBy` fills reads with
   baseLayer?: BaseLayer

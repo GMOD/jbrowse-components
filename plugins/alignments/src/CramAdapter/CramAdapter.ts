@@ -10,7 +10,7 @@ import { BaseSamAdapter } from '../shared/BaseSamAdapter.ts'
 import { dropsRead } from '../shared/util.ts'
 import CramSlightlyLazyFeature from './CramSlightlyLazyFeature.ts'
 
-import type { FilterBy } from '../shared/types.ts'
+import type { ReadFilter } from '../shared/types.ts'
 import type { CramAdapterConfig } from './configSchema.ts'
 import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { Feature, Region } from '@jbrowse/core/util'
@@ -172,7 +172,7 @@ export default class CramAdapter extends BaseSamAdapter<CramAdapterConfig> {
   getFeatures(
     region: Region & { originalRefName?: string },
     opts?: BaseOptions & {
-      filterBy?: FilterBy
+      filterBy?: ReadFilter
     },
   ) {
     const { signal, filterBy, statusCallback } = opts ?? {}
