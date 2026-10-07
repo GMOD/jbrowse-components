@@ -1,3 +1,5 @@
+import { refusingUndeclaredKeys } from '@jbrowse/core/configuration'
+
 import { READ_CATEGORY_KEYS } from '../shared/types.ts'
 import { defaultFilterFlags } from '../shared/util.ts'
 import {
@@ -35,8 +37,10 @@ test("a v4 session's single tagFilter lifts into tagFilters", () => {
   ).toMatchObject({ split: 'only', tagFilters: [{ tag: 'HP', value: '1' }] })
 })
 
-test('a key the filter does not declare is refused', () => {
-  expect(() => readFilterConfigSchema.create({ flagExcludes: 4 })).toThrow(
-    'not flagExcludes',
-  )
+test('a write refuses a key the filter does not declare', () => {
+  expect(() =>
+    refusingUndeclaredKeys(() =>
+      readFilterConfigSchema.create({ flagExcludes: 4 }),
+    ),
+  ).toThrow('not flagExcludes')
 })

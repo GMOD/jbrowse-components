@@ -4,6 +4,7 @@ import {
   plotKeysOf,
   plotOf,
   readConfObject,
+  refusingUndeclaredKeys,
 } from '@jbrowse/core/configuration'
 import { getSnapshot } from '@jbrowse/mobx-state-tree'
 
@@ -46,10 +47,12 @@ test('a domain written as numbers reads as strings', () => {
   expect(getSnapshot(conf.color)).toMatchObject({ domain: ['0', '1'] })
 })
 
-test('refuses a scale, since each field has one', () => {
-  expect(() => make({ color: { field: 'base', scale: 'linear' } })).toThrow(
-    /scale/,
-  )
+test('a write refuses a scale, since each field has one', () => {
+  expect(() =>
+    refusingUndeclaredKeys(() =>
+      make({ color: { field: 'base', scale: 'linear' } }),
+    ),
+  ).toThrow(/scale/)
 })
 
 test('the plot reaches the bar height, so Edit plot can draw the X-Y plot', () => {

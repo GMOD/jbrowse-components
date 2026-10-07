@@ -46,7 +46,8 @@ bin }))`. The keys are the vocabulary, the snapshot's `type` picks the
 member, and a `type` naming no member is refused in every build — where a
 bare `types.union` would load it as its first member. Each member is an
 `explicitlyTyped`, `closed` schema named by its key, so a key belonging to
-another member is refused rather than dropped; one that is not throws here.
+another member is named on a load and refused on a write rather than
+dropped; one that is not throws here.
 
 ```js
 // type signature
@@ -54,6 +55,19 @@ another member is refused rather than dropped; one that is not throws here.
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/configuration/configurationSchemaUnion.ts)
+
+## declaredSnapshot
+
+A snapshot as `type` lifts it, without the keys it does not declare: the
+config half of an entry that carries its owner's keys beside one, as a
+`MultiWiggleAdapter` subadapter carries its row's `name` and `color`.
+
+```js
+// type signature
+(type: IAnyType, snapshot: Record<string, unknown>) => Record<string, unknown>
+```
+
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/configuration/snapshotPreprocess.ts)
 
 ## evaluateForFeature
 
@@ -195,9 +209,10 @@ Throws a refusal before anything is written.
 
 ## preProcessConfigSnapshot
 
-A snapshot as `type` admits it: the same lift and checks `type.create`
-applies, so a dialog or a validator refuses exactly what a config file
-cannot hold. Throws what the schema's `preProcessSnapshot` throws.
+A snapshot as a write to `type` admits it: the lift and checks `setConf`
+applies, so a dialog or a validator refuses what an edit cannot hold, an
+undeclared key included. Throws what the schema's `preProcessSnapshot`
+throws.
 
 ```js
 // type signature
@@ -222,6 +237,21 @@ default, such as `getConfAssemblyNamesOrNone`.
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/configuration/readConfObject.ts)
+
+## refusingUndeclaredKeys
+
+Runs `write` as a write: a `closed` schema created inside it refuses a key
+it does not declare, at any depth, where a config loading only names the
+key on the console. `setConf`, a settings bag and a plot draft write this
+way, so a typo in an edit is an error and a config written for another
+version still draws.
+
+```js
+// type signature
+<T>(write: () => T) => T
+```
+
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/configuration/snapshotPreprocess.ts)
 
 ## requirementProblems
 
