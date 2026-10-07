@@ -1,78 +1,78 @@
 {
   "index": {
-    "chunks": 261,
-    "gzipKb": 455
+    "chunks": 264,
+    "gzipKb": 462
   },
   "a-plot-from-json": {
-    "chunks": 262,
-    "gzipKb": 455
+    "chunks": 265,
+    "gzipKb": 462
   },
   "a-table-of-calls": {
-    "chunks": 261,
-    "gzipKb": 455
+    "chunks": 264,
+    "gzipKb": 462
   },
   "color-and-group-by-a-field": {
-    "chunks": 261,
-    "gzipKb": 454
-  },
-  "controlling-the-view": {
-    "chunks": 265,
-    "gzipKb": 459
-  },
-  "gene-lanes": {
-    "chunks": 342,
-    "gzipKb": 574
-  },
-  "genome-by-name": {
-    "chunks": 261,
-    "gzipKb": 454
-  },
-  "highlight-a-region": {
-    "chunks": 261,
-    "gzipKb": 454
-  },
-  "loading-and-errors": {
-    "chunks": 260,
-    "gzipKb": 454
-  },
-  "local-files": {
-    "chunks": 260,
-    "gzipKb": 454
-  },
-  "multiple-tracks": {
-    "chunks": 252,
-    "gzipKb": 447
-  },
-  "removing-material-ui": {
-    "chunks": 259,
-    "gzipKb": 454
-  },
-  "scalebar-and-labels": {
-    "chunks": 262,
-    "gzipKb": 456
-  },
-  "search-by-name": {
-    "chunks": 263,
-    "gzipKb": 456
-  },
-  "svg-figures": {
-    "chunks": 266,
+    "chunks": 264,
     "gzipKb": 461
   },
+  "controlling-the-view": {
+    "chunks": 268,
+    "gzipKb": 466
+  },
+  "gene-lanes": {
+    "chunks": 346,
+    "gzipKb": 585
+  },
+  "genome-by-name": {
+    "chunks": 264,
+    "gzipKb": 461
+  },
+  "highlight-a-region": {
+    "chunks": 264,
+    "gzipKb": 462
+  },
+  "loading-and-errors": {
+    "chunks": 263,
+    "gzipKb": 461
+  },
+  "local-files": {
+    "chunks": 263,
+    "gzipKb": 461
+  },
+  "multiple-tracks": {
+    "chunks": 255,
+    "gzipKb": 454
+  },
+  "removing-material-ui": {
+    "chunks": 262,
+    "gzipKb": 461
+  },
+  "scalebar-and-labels": {
+    "chunks": 265,
+    "gzipKb": 463
+  },
+  "search-by-name": {
+    "chunks": 266,
+    "gzipKb": 463
+  },
+  "svg-figures": {
+    "chunks": 269,
+    "gzipKb": 468
+  },
   "synteny": {
-    "chunks": 369,
-    "gzipKb": 613
+    "chunks": 373,
+    "gzipKb": 625
   },
   "track-settings": {
-    "chunks": 261,
-    "gzipKb": 455
+    "chunks": 264,
+    "gzipKb": 462
   },
   "ultraminimal": {
-    "chunks": 252,
-    "gzipKb": 446
+    "chunks": 255,
+    "gzipKb": 453
   },
   "web-workers": {
-    "chunks": 260,
-    "gzipKb": 453
+    "chunks": 263,
+    "gzipKb": 460
   }
 }
