@@ -133,6 +133,7 @@ export function ScoreScaleMixin() {
             domainMin: this.manualMinScore,
             domainMax: this.manualMaxScore,
             domainQuantile: this.domainQuantile,
+            type: this.scaleType,
           }),
         )
       },

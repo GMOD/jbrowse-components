@@ -57,11 +57,11 @@ export type MarkProblemLevel = 'error' | 'warning'
  * refer to it by.
  */
 export const MARK_RULES = {
-  /** A bar, point or rule naming no `y`, with no step before it writing one it reads by default. */
+  /** A bar, point, rule or line naming no `y`, with no step before it writing one it reads by default. */
   'mark-without-value': 'error',
   /** A channel the mark's type does not read, such as `y` on a `span` or a size field on a point. */
   'unread-channel': 'warning',
-  /** An `encoding.size` on a mark that draws no point or rule and strokes no link. */
+  /** An `encoding.size` on a mark that draws no point, rule or line and strokes no link. */
   'unread-size': 'warning',
   /** A `linkShape` on a mark that draws no link. */
   'unread-link-shape': 'warning',
@@ -85,6 +85,8 @@ export const MARK_RULES = {
   'domain-ends': 'warning',
   /** A colour ramp's or `scales.y`'s `domainQuantile` outside 0.5 to 1, a percent among them. */
   'domain-quantile': 'warning',
+  /** A log scale's `domainMin` at or below 0, which it cannot hold, so the end floors above it. */
+  'log-floor': 'warning',
   /** A colour's or a shape's `field` spelling a CSS colour or a shape name, which is a constant written `{ value }`. */
   'field-spells-constant': 'warning',
   /** A colour's or a shape's `labels` naming values its `domain` does not list, or no categorical scale's. */
@@ -712,7 +714,7 @@ function ownProblems(
       found(
         'unread-size',
         'encoding.size',
-        `a ${type} draws no point or rule and strokes no link, so it reads no size`,
+        `a ${type} draws no point, rule or line and strokes no link, so it reads no size`,
       ),
     )
   } else if (spec.size === 'constant' && sizeFieldOf(size)) {

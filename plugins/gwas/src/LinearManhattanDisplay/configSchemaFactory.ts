@@ -84,7 +84,7 @@ import type { Instance } from '@jbrowse/mobx-state-tree'
  *         ],
  *         encoding: {
  *           y: 'score',
- *           color: '#c951c9',
+ *           color: { value: '#c951c9' },
  *           shape: {
  *             field: 'ld_role',
  *             domain: ['index'],

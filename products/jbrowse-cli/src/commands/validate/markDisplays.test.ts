@@ -496,6 +496,9 @@ describe('a marks list in a config file', () => {
     expect(found(colored('bar', { ...ramp, domainQuantile: 99 }))).toEqual([
       `warning domain-quantile ${color}.domainQuantile`,
     ])
+    expect(
+      found(colored('bar', { ...ramp, scale: 'log', domainMin: 0 })),
+    ).toEqual([`warning log-floor ${color}.domainMin`])
     expect(found(colored('span', ramp))).toEqual([])
     expect(
       found([{ mark: 'text', encoding: { text: 'name', color: ramp } }]),

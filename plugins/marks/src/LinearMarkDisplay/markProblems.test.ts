@@ -784,6 +784,10 @@ test('a ramp reads its ends, not a domain, and leaves an end open on any mark', 
   expect(found(ramp('bar', { domainQuantile: 99 }))).toEqual([
     'warning domain-quantile mark 0 encoding.color.domainQuantile',
   ])
+  expect(found(ramp('bar', { scale: 'log', domainMin: 0 }))).toEqual([
+    'warning log-floor mark 0 encoding.color.domainMin',
+  ])
+  expect(found(ramp('bar', { scale: 'log', domainMin: 1 }))).toEqual([])
   expect(found(ramp('span', {}))).toEqual([])
   const text = (color: Record<string, unknown>) => [
     {
@@ -809,6 +813,11 @@ test("scales.y and a width read their ends by the colour ramp's one rule", () =>
   expect(y({ domainQuantile: 99 })).toEqual([
     'warning domain-quantile mark undefined scales.y.domainQuantile',
   ])
+  expect(
+    found(bar, undefined, undefined, undefined, {
+      y: { type: 'log', domainMin: 0 },
+    }),
+  ).toEqual(['warning log-floor mark undefined scales.y.domainMin'])
   expect(
     found([
       {

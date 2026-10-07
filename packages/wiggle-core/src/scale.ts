@@ -117,10 +117,11 @@ export function getScale({
 /**
  * #api
  * Rounds a domain to "nice" endpoints. `zero` reaches a linear or symlog
- * domain to 0 (`scales.y.zero`, ADR-182); a log domain has no 0 and floors at
- * 1 instead. An end given an explicit `bounds` value keeps that value exactly
- * — only an autoscaled end is rounded. A log scale's floor still outranks a
- * bound it cannot hold.
+ * domain to 0 (`scales.y.zero`, ADR-182); a log domain has no 0, so a min at
+ * or below it floors to a positive value and a positive min stays where the
+ * data put it. An end given an explicit `bounds` value keeps that value
+ * exactly — only an autoscaled end is rounded. A log scale's floor still
+ * outranks a bound it cannot hold, which the `log-floor` rule reports.
  *
  * The result never descends and never collapses: a bound that would put `min`
  * above `max` widens the other end instead, and one value in view widens
@@ -155,12 +156,6 @@ export function getNiceDomain({
       min = 0
     }
   }
-  if (scaleType === 'log') {
-    if (min >= 0 && max > 1) {
-      min = 1
-    }
-  }
-
   if (minScore !== undefined) {
     min = minScore
   }

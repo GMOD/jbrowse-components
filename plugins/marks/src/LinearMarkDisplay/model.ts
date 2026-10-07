@@ -979,10 +979,8 @@ export function stateModelFactory(
           const { origin, domainQuantile, drawnKeys, scaleType } = self
           const reached = [
             ...self.scoreRules.map(rule => rule.value),
-            ...(types.includes('bar') && baselineReached(origin, scaleType)
-              ? [origin]
-              : []),
-          ]
+            ...(types.includes('bar') ? [origin] : []),
+          ].filter(value => baselineReached(value, scaleType))
           return visibleStatsRange({
             active: indices.some(i => self.markEntries[i]!.valued),
             view: self.host,

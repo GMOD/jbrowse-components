@@ -956,7 +956,7 @@ each reported under its id:
 <!-- prettier-ignore -->
 | Rule | Level | Reports |
 | --- | --- | --- |
-| `mark-without-value` | error | A bar, point or rule naming no `y`, with no step before it writing one it reads by default. |
+| `mark-without-value` | error | A bar, point, rule or line naming no `y`, with no step before it writing one it reads by default. |
 | `empty-zoom-range` | error | A `minBpPerPx` not below the mark's `maxBpPerPx`, so the mark never draws. |
 | `step-expression` | error | A `filter` or `formula` whose `expr` is not a `jexl:` expression. |
 | `bin-width` | error | A `bin` whose `step` is neither `"auto"` nor a positive width. |
@@ -964,7 +964,7 @@ each reported under its id:
 | `step-field-expression` | error | A step's field written as a `jexl:` expression, where a step reads a name or a dotted path. |
 | `unwritten-y` | error | A `y` naming a field that no `aggregate` or `coverage` step before it writes. |
 | `unread-channel` | warning | A channel the mark's type does not read, such as `y` on a `span` or a size field on a point. |
-| `unread-size` | warning | An `encoding.size` on a mark that draws no point or rule and strokes no link. |
+| `unread-size` | warning | An `encoding.size` on a mark that draws no point, rule or line and strokes no link. |
 | `unread-link-shape` | warning | A `linkShape` on a mark that draws no link. |
 | `unread-interpolate` | warning | An `interpolate` on a mark that draws no line. |
 | `unread-row-proportion` | warning | A `rowProportion` on a mark that draws no span. |
@@ -976,6 +976,7 @@ each reported under its id:
 | `ramp-domain` | warning | A `domain` on a linear or log colour, whose ends are `domainMin` and `domainMax`. |
 | `domain-ends` | warning | A scale's `domainMax` below its `domainMin`: a colour ramp's, a width's or `scales.y`'s. |
 | `domain-quantile` | warning | A colour ramp's or `scales.y`'s `domainQuantile` outside 0.5 to 1, a percent among them. |
+| `log-floor` | warning | A log scale's `domainMin` at or below 0, which it cannot hold, so the end floors above it. |
 | `field-spells-constant` | warning | A colour's or a shape's `field` spelling a CSS colour or a shape name, which is a constant written `{ value }`. |
 | `labels-domain` | warning | A colour's or a shape's `labels` naming values its `domain` does not list, or no categorical scale's. |
 | `step-pair` | warning | A `bin`'s `as` or `fields`, or a `pileup`'s `fields`, naming other than two fields, so the step reads its defaults. |

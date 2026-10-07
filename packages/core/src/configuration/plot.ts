@@ -194,7 +194,7 @@ export function plotWrites(
     if (value === undefined || compareStructural(lifted[key], current[key])) {
       continue
     }
-    writes[key] = lifted[key] ?? null
+    writes[key] = value === null ? null : (lifted[key] ?? null)
   }
   return writes
 }

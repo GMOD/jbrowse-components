@@ -200,6 +200,7 @@ export interface ScaleProblem {
     | 'ramp-domain'
     | 'domain-ends'
     | 'domain-quantile'
+    | 'log-floor'
     | 'labels-domain'
   /** the slot to look at, relative to the scale's own object */
   slot: string
@@ -214,20 +215,33 @@ export interface ScaleEnds {
   domainMin?: number
   domainMax?: number
   domainQuantile?: number
+  /** the scale's kind, `scales.y.type` or a colour's `scale`, where it bears on the ends */
+  type?: string
 }
 
 /**
  * What a quantitative scale's ends say together that neither can refuse
  * alone: a `domainMax` below its `domainMin`, which every such scale draws in
  * order either way, and a `domainQuantile` outside 0.5 to 1, where the quantile
- * an open end follows is clamped. `reverse` is whether the scale turns round by
- * a member of its own, which is then the spelling to point at.
+ * an open end follows is clamped; and a log scale's `domainMin` at or below 0,
+ * which no log scale can hold, so the end floors above it. `reverse` is whether
+ * the scale turns round by a member of its own, which is then the spelling to
+ * point at.
  */
 export function scaleEndProblems(
-  { domainMin, domainMax, domainQuantile }: ScaleEnds,
+  { domainMin, domainMax, domainQuantile, type }: ScaleEnds,
   { reverse = false }: { reverse?: boolean } = {},
 ): ScaleProblem[] {
   return [
+    ...(type === 'log' && domainMin !== undefined && domainMin <= 0
+      ? [
+          {
+            rule: 'log-floor' as const,
+            slot: 'domainMin',
+            message: `a log scale has no ${domainMin}: the end floors to a positive value, so leave domainMin unset to follow the data or pin it above 0`,
+          },
+        ]
+      : []),
     ...(domainMin !== undefined &&
     domainMax !== undefined &&
     domainMin > domainMax
@@ -292,6 +306,7 @@ export function scaleEndsOf(member: (name: string) => unknown): ScaleEnds {
     domainMin: numberOf(member('domainMin')),
     domainMax: numberOf(member('domainMax')),
     domainQuantile: numberOf(member('domainQuantile')),
+    type: stringOf(member('type')),
   }
 }
 
@@ -371,7 +386,9 @@ export function colorProblems(
           "a linear or log scale reads no domain, which is a categorical scale's order and a threshold scale's cuts; a ramp's ends are domainMin and domainMax where the colour has them",
       })
     }
-    problems.push(...scaleEndProblems(color, { reverse: true }))
+    problems.push(
+      ...scaleEndProblems({ ...color, type: scale }, { reverse: true }),
+    )
   }
   const { labels = [] } = color
   const named =

@@ -52,7 +52,7 @@ test('zero off spans the data on a linear or symlog axis', () => {
         domain: [5, 100],
         bounds: noBounds,
       }),
-    ).toEqual([1, 128])
+    ).toEqual([4, 128])
   }
 })
 
@@ -108,15 +108,31 @@ test('linear explicit max bound caps the domain', () => {
   ).toEqual([0, 50])
 })
 
-test('log positive data floors at the origin', () => {
+test('log positive data keeps its min, and a min at or below 0 floors to 1', () => {
   const [min, max] = getNiceDomain({
     zero: true,
     scaleType: 'log',
     domain: [50, 100],
     bounds: noBounds,
   })
-  expect(min).toBe(1)
+  expect(min).toBe(32)
   expect(max).toBeGreaterThanOrEqual(100)
+  expect(
+    getNiceDomain({
+      zero: true,
+      scaleType: 'log',
+      domain: [0, 100],
+      bounds: noBounds,
+    })[0],
+  ).toBe(1)
+  expect(
+    getNiceDomain({
+      zero: false,
+      scaleType: 'log',
+      domain: [0.01, 100],
+      bounds: [0, undefined],
+    })[0],
+  ).toBe(1)
 })
 
 test('log data crossing zero yields a valid positive domain (no NaN)', () => {
