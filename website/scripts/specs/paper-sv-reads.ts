@@ -65,7 +65,9 @@ const bandLabel = (
   anchor: { text: trackLabel, alignX: 'left', alignY: 'bottom', dx: 8, dy },
 })
 
-const HIFI_NAME = 'HG008-T PacBio HiFi'
+const HIFI_COV = 'hg008_t_hifi_coverage'
+const HIFI_COV_NAME = 'HG008-T PacBio HiFi: coverage'
+const HIFI_NAME = 'HG008-T PacBio HiFi: reads and arcs'
 const ARCS_NAME = 'HG008-T Illumina: coverage and read arcs'
 const PAIRS_NAME = 'HG008-T Illumina: discordant pairs'
 
@@ -91,6 +93,7 @@ const readEvidence = ({
   name,
   url: cgiabUrl({
     sessionTracks: [
+      bamTrack(HIFI_COV, HIFI_COV_NAME, HIFI_BAM),
       bamTrack(HIFI, HIFI_NAME, HIFI_BAM),
       bamTrack(ILLUMINA_ARCS, ARCS_NAME, ILLUMINA_BAM),
       bamTrack(ILLUMINA_PAIRS, PAIRS_NAME, ILLUMINA_BAM),
@@ -113,14 +116,23 @@ const readEvidence = ({
             type: 'LinearVariantDisplay',
             height: 85,
           },
+          // grouping splits coverage per group, so the whole-sample coverage
+          // is a track of its own
+          {
+            ...connections,
+            trackId: HIFI_COV,
+            showPileup: false,
+            height: 62,
+          },
           {
             ...connections,
             trackId: HIFI,
+            showCoverage: false,
             unit: 'chain',
             readConnections: 'arc',
             readConnectionsHeight: 60,
             featureHeight: 2,
-            height: 275,
+            height: 165,
             facet: 'splitRead',
             showLegend: true,
           },
@@ -158,11 +170,10 @@ const readEvidence = ({
   }),
   annotations: [
     bandLabel('SV calls', 'draft benchmark somatic SVs', 52),
-    bandLabel('PacBio: split-read coverage', HIFI_NAME, 58),
-    bandLabel('PacBio: split-read arcs', HIFI_NAME, 93),
-    bandLabel('PacBio: split reads', HIFI_NAME, 138),
-    bandLabel('PacBio: unsplit-read coverage', HIFI_NAME, 221),
-    bandLabel('PacBio: unsplit reads', HIFI_NAME, 263),
+    bandLabel('PacBio: coverage', HIFI_COV_NAME, 36),
+    bandLabel('PacBio: split-read arcs', HIFI_NAME, 38),
+    bandLabel('PacBio: split reads', HIFI_NAME, 82),
+    bandLabel('PacBio: unsplit reads', HIFI_NAME, 142),
     bandLabel('Illumina: coverage', ARCS_NAME, 44),
     bandLabel('Illumina: read-pair arcs', ARCS_NAME, 100),
     ...(cloud ? [bandLabel('Illumina: read cloud', PAIRS_NAME, 60)] : []),
@@ -183,7 +194,7 @@ export const paperSvReadsSpecs: ScreenshotSpec[] = [
     pairsHeight: 240,
     arcsHeight: 80,
     cloud: true,
-    viewportHeight: 1158,
+    viewportHeight: 1140,
   }),
   readEvidence({
     name: 'paper/sv_read_evidence_inversion',
@@ -191,6 +202,6 @@ export const paperSvReadsSpecs: ScreenshotSpec[] = [
     pairsHeight: 350,
     arcsHeight: 110,
     cloud: false,
-    viewportHeight: 1271,
+    viewportHeight: 1253,
   }),
 ]
