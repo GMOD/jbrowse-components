@@ -1783,6 +1783,9 @@ describe('a closed schema', () => {
     expect(() => Scales.create(5 as never)).toThrow(
       'ClosedScales takes type, not 5',
     )
+    expect(() => Scales.create(['log'] as never)).toThrow(
+      'ClosedScales takes type, not ["log"]',
+    )
   })
 
   test('checks after the lift, so the shorthand still reads', () => {

@@ -54,6 +54,9 @@ const pluginManager = {
       { legacyColor: color => ({ color }) },
     ),
     display('PlainDisplay'),
+    display('HeightlessDisplay', {
+      configSchema: ConfigurationSchema('HeightlessDisplay', {}),
+    }),
   ],
 } as unknown as PluginManager
 
@@ -157,6 +160,23 @@ test('lifted state runs through the retired type and the display’s own rewrite
     color: 'red',
     height: 333,
   })
+})
+
+test('heightPreConfig is shed where the display has no height slot', () => {
+  const result = migrate(
+    lgv([
+      track('t', [
+        {
+          id: 'd',
+          type: 'HeightlessDisplay',
+          configuration: 't-HeightlessDisplay',
+          heightPreConfig: 120,
+        },
+      ]),
+    ]),
+  )
+  expect(firstInstance(result).heightPreConfig).toBeUndefined()
+  expect(result.trackConfigDeltas).toBeUndefined()
 })
 
 test('heightPreConfig reaches the height slot of any display type', () => {

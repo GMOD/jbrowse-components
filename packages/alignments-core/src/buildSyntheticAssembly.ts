@@ -39,10 +39,8 @@ export function buildSyntheticAssembly({
     type: 'ReferenceSequenceTrack'
     name: string
     trackId: string
-    assemblyNames: string[]
     adapter: {
       type: 'FromConfigSequenceAdapter'
-      noAssemblyManager: true
       features: {
         start: number
         end: number
@@ -60,10 +58,8 @@ export function buildSyntheticAssembly({
       type: 'ReferenceSequenceTrack',
       name: sequenceTrackName,
       trackId,
-      assemblyNames: [assemblyName],
       adapter: {
         type: 'FromConfigSequenceAdapter',
-        noAssemblyManager: true,
         // The region's length comes from this feature's own start/end
         // (`mergeFeaturesToRegions`), never from `seq.length`, which is what
         // makes the empty-sequence case above a full-length axis rather than a

@@ -73,9 +73,12 @@ adapter dropped it in silence. Three reviews of that state found:
 ## Consequences
 
 - A config written for a later minor draws on an earlier app at every level:
-  track, adapter, display and channel object.
-- A misspelt key in the config editor, a session spec, a share link or a plot
-  draft is still an error naming the key and the slots the schema takes.
+  track, adapter, display and channel object. `displayDefaults` is the
+  exception below.
+- A misspelt key in the config editor, a track's settings bag (a session spec's
+  track entry, a share link, an agent call) or a plot draft is still an error
+  naming the key and the slots the schema takes. A view's own entry in a
+  session spec is a snapshot, so a stray key there is a console line.
 - A `ConfigurationSchemaUnion` entry carrying another member's key warns on a
   load, where it threw.
 - `jbrowse validate` words every closed schema one way, and its schema marks

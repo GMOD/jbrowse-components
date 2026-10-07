@@ -8,8 +8,8 @@ import type { Problem } from './types.ts'
 const description =
   'Check a JBrowse configuration for errors, including the ones JBrowse itself accepts silently'
 
-const notes = `A config key JBrowse does not recognize does nothing: a display names it on
-the browser console and draws without it, and a track, an adapter or a session
+const notes = `A config key JBrowse does not recognize does nothing: a track, an adapter or
+a display names it on the browser console and loads without it, and a session
 snapshot drops it in silence. This command reports each one offline, before
 anyone opens the config.
 

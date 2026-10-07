@@ -54,7 +54,9 @@ function checkUndeclaredKeys(
 ) {
   const { name, options } = schema
   const declared = declaredKeys(schema)
-  const bare = snapshot !== undefined && typeof snapshot !== 'object'
+  const bare =
+    snapshot !== undefined &&
+    (typeof snapshot !== 'object' || Array.isArray(snapshot))
   const unknown = bare
     ? [JSON.stringify(snapshot)]
     : Object.keys(snapshot ?? {}).filter(
@@ -66,7 +68,7 @@ function checkUndeclaredKeys(
         `${name} takes ${listed(declared)}, not ${unknown.join(', ')}`,
       )
     }
-    const key = `${name} ${unknown.join(' ')}`
+    const key = `${name} ${unknown.toSorted().join(' ')}`
     if (!warned.has(key)) {
       warned.add(key)
       const id = (snapshot as Record<string, unknown>)[

@@ -342,9 +342,11 @@ function makeConfigurationSchemaModel<
       // collection takes the whole list or map, and `null` resets it
       setSubschema(slotName: string, data: unknown) {
         if (collectionKeys.has(slotName)) {
-          refusingUndeclaredKeys(() => {
-            self[slotName] = data ?? undefined
-          })
+          // checked on a copy, since the assignment runs patch listeners
+          if (data != null && !isStateTreeNode(data)) {
+            refusingUndeclaredKeys(() => modelDefinition[slotName].create(data))
+          }
+          self[slotName] = data ?? undefined
           return self[slotName]
         }
         if (!subSchemaKeys.has(slotName)) {

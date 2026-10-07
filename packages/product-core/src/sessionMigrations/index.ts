@@ -94,14 +94,14 @@ function migrateDisplay(
   if (typeof configuration !== 'string') {
     return { ...display, type: displayType.name }
   }
+  const meta = getConfigurationSchemaMetadata(displayType.configSchema)
   const lifted: DisplayEntry = {
     ...state?.lift(display),
-    ...(typeof display.heightPreConfig === 'number'
+    ...(typeof display.heightPreConfig === 'number' && meta?.definition.height
       ? { height: display.heightPreConfig }
       : {}),
   }
   const migrated = retired?.migrate?.(lifted) ?? lifted
-  const meta = getConfigurationSchemaMetadata(displayType.configSchema)
   const settings = meta ? liftRetiredSpellings(meta, migrated) : migrated
   const displayId =
     retired && configuration === `${trackConfigId}-${retired.type}`
