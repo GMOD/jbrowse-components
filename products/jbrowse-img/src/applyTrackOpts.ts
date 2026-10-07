@@ -3,7 +3,12 @@ import { getEnv, getSession } from '@jbrowse/core/util'
 import { basePaintedAt } from '@jbrowse/core/util/Base1DUtils'
 import { COLOR_SCHEMES } from '@jbrowse/core/util/colorSchemes'
 import { trackDisplayType } from '@jbrowse/core/util/tracks'
-import { getSnapshot, isStateTreeNode } from '@jbrowse/mobx-state-tree'
+import {
+  getSnapshot,
+  getType,
+  isArrayType,
+  isStateTreeNode,
+} from '@jbrowse/mobx-state-tree'
 
 import {
   applySlotWrite,
@@ -875,22 +880,28 @@ export function writeMembers(
         `"${trackId}" is not open, so ${members.join(' ')} has nothing to write to`,
       )
     }
-    const configured: Record<string, unknown> = getSnapshot(
-      track.activeDisplay.configuration,
-    )
+    const configuration = track.activeDisplay.configuration
+    const configured: Record<string, unknown> = getSnapshot(configuration)
     const writes = members.map(slotWrite)
-    const written = new Set(writes.map(write => write.segments[0]))
+    const written = new Set(writes.map(write => write.segments[0]!))
+    // a list at a default the snapshot strips, Manhattan's marks, still seeds
+    // the write, so `marks.0.mark=bar` edits the mark drawn rather than an
+    // empty one
+    const seed = Object.fromEntries(
+      [...written].flatMap(key => {
+        const member: unknown = configuration[key]
+        const value =
+          configured[key] ??
+          (isStateTreeNode(member) && isArrayType(getType(member))
+            ? getSnapshot(member)
+            : undefined)
+        return value === undefined ? [] : [[key, value]]
+      }),
+    )
     view.showTrack(
       trackId,
       {},
-      writes.reduce(
-        applySlotWrite,
-        structuredClone(
-          Object.fromEntries(
-            Object.entries(configured).filter(([key]) => written.has(key)),
-          ),
-        ),
-      ),
+      writes.reduce(applySlotWrite, structuredClone(seed)),
     )
   }
 }
