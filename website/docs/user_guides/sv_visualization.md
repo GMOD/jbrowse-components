@@ -277,8 +277,10 @@ opposite strand. With **View as pairs / link supplementary alignments** on,
 those segments chain onto one row: the inverted middle paints in the
 reverse-strand color between two forward-strand segments, and an arc joins each
 breakpoint pair: green at the junction LL pairs span, navy at the one RR pairs
-span. A split read across a deletion draws a red arc and one across a tandem
-duplication a teal arc, the colors of the pairs that span them.
+span. A split read across a deletion draws a gold arc. One across a tandem
+duplication draws a teal arc, the color of the pairs that span it, and with
+**Use curved connectors** on, a teal loop under its row where the read maps back
+over itself.
 
 **Group by → Split read (SA tag)** splits the pileup into two sections: reads
 with a supplementary alignment, and the rest. Together the two sections give the
@@ -311,7 +313,7 @@ with COLO829's der(3).
 
 | SV type            | Read pairs                                 | Coverage                                                 | Clipping and arcs                                                                                               |
 | ------------------ | ------------------------------------------ | -------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------- |
-| Deletion           | red, insert larger than expected           | drops between the breakpoints, halves for a heterozygote | clipped reads at both edges, unusually long arcs, red split-read arcs                                           |
+| Deletion           | red, insert larger than expected           | drops between the breakpoints, halves for a heterozygote | clipped reads at both edges, unusually long arcs, gold split-read arcs                                          |
 | Insertion          | pink, insert smaller than expected         | unchanged                                                | clipped reads at one site, a purple insertion indicator, mates unmapped once the insertion outruns the fragment |
 | Inversion          | green LL and dark blue RR at the junctions | unchanged                                                | clipped reads at both breakpoints, green and navy split-read arcs                                               |
 | Tandem duplication | teal RL                                    | elevated over the duplicated segment                     | teal split-read arcs jumping back upstream across the junction                                                  |
