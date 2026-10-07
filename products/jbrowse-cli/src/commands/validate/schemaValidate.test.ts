@@ -79,14 +79,24 @@ function problemsOfMarks(marks: unknown[]) {
   }))
 }
 
-function walk(dir: string, name: string): string[] {
-  return readdirSync(dir, { withFileTypes: true }).flatMap(entry =>
-    entry.isDirectory()
-      ? walk(path.join(dir, entry.name), name)
-      : entry.name === name
-        ? [path.join(dir, entry.name)]
-        : [],
-  )
+// every config under a directory: `config.json` and its `config_*.json`
+// siblings, which the no-config landing page links among them, less the
+// deliberately broken fixtures and a config whose plugins register types the
+// schema never saw
+function walk(dir: string): string[] {
+  return readdirSync(dir, { withFileTypes: true }).flatMap(entry => {
+    const file = path.join(dir, entry.name)
+    if (entry.isDirectory()) {
+      return walk(file)
+    }
+    if (!/^config(?!_broken)[^/]*\.json$/.test(entry.name)) {
+      return []
+    }
+    const config: unknown = JSON.parse(readFileSync(file, 'utf8'))
+    return typeof config === 'object' && config !== null && 'plugins' in config
+      ? []
+      : [file]
+  })
 }
 
 describe('the schema', () => {
@@ -802,12 +812,12 @@ describe('the schema', () => {
 })
 
 describe('the schema against the tree', () => {
-  it.each(walk(path.join(REPO_ROOT, 'test_data'), 'config.json'))(
-    'accepts %s',
-    file => {
-      expect(schemaProblems(JSON.parse(readFileSync(file, 'utf8')))).toEqual([])
-    },
-  )
+  it.each([
+    ...walk(path.join(REPO_ROOT, 'test_data')),
+    ...walk(path.join(REPO_ROOT, 'demos')),
+  ])('accepts %s', file => {
+    expect(schemaProblems(JSON.parse(readFileSync(file, 'utf8')))).toEqual([])
+  })
 
   // Every whole config, track and assembly a guide shows. A fence that fails
   // here is either a doc bug or a schema hole, and check-config-blocks.ts

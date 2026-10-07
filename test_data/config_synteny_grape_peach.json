@@ -52,17 +52,12 @@
   "defaultSession": {
     "id": "Afiay0eI1",
     "name": "Grape vs Peach Demo 3/7/2022, 6:01:44 PM",
-    "margin": 0,
     "drawerWidth": 384,
     "views": [
       {
         "id": "test1",
         "displayName": "Grape vs Peach - MCScan (Python version) synteny",
         "type": "LinearSyntenyView",
-        "height": 400,
-        "showIntraviewLinks": true,
-        "interactiveOverlay": false,
-        "middleComparativeHeight": 100,
         "tracks": [
           {
             "id": "J4VCa6xoWN",
@@ -126,10 +121,6 @@
         "id": "d1asEMtmS",
         "displayName": "Grape vs Peach - PAF file synteny",
         "type": "LinearSyntenyView",
-        "height": 400,
-        "showIntraviewLinks": true,
-        "interactiveOverlay": false,
-        "middleComparativeHeight": 100,
         "tracks": [
           {
             "id": "0JxrbvMHE0",
@@ -1744,9 +1735,6 @@
         ]
       }
     ],
-    "widgets": {},
-    "activeWidgets": {},
-    "connectionInstances": [],
     "sessionTracks": [],
     "sessionConnections": [],
     "sessionAssemblies": [],
@@ -1754,9 +1742,6 @@
     "minimized": false,
     "drawerPosition": "right"
   },
-  "widgets": {},
-  "activeWidgets": {},
-  "connectionInstances": {},
   "tracks": [
     {
       "type": "SyntenyTrack",

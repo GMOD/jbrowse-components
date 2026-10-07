@@ -500,6 +500,26 @@ describe('validateConfig', () => {
       ).toEqual(['threshold-cuts tracks[0].displayDefaults.color.domain'])
     })
 
+    it("checks a loose track's displayDefaults against the display its file implies", () => {
+      const config = baseConfig()
+      const { assemblyNames } = config.tracks[0]!
+      expect(
+        warningsOf({
+          ...config,
+          tracks: [
+            {
+              trackId: 'loose',
+              uri: 'reads.bam',
+              assemblyNames,
+              displayDefaults: {
+                color: { field: 'insertSize', domain: ['2', '1'] },
+              },
+            },
+          ],
+        }).map(p => `${p.rule} ${p.where}`),
+      ).toEqual(['threshold-cuts tracks[0].displayDefaults.color.domain'])
+    })
+
     it("checks scales.y's ends by the colour ramp's rule, once on a mark display", () => {
       const scales = { y: { domainMin: 10, domainMax: 1, domainQuantile: 99 } }
       const at = 'tracks[0].displays[0].scales.y'

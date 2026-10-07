@@ -13,6 +13,7 @@ import {
   fileNameOf,
   isLooseTrackConfig,
   matchFormat,
+  trackTypeForAdapter,
 } from '@jbrowse/add-track-core'
 
 import { configManifest } from './configManifest.generated.ts'
@@ -649,6 +650,28 @@ function checkScaleSlots(
 // entry. Only a mark display declares `marks`, so the walk is over the whole
 // file, past a place where the schema refused the key: a session display node
 // drops it.
+// a track's type as written, or as a loose `{ trackId, uri }` entry's file
+// name decides it, the way add-track does
+function trackTypeOf(node: Record<string, unknown>) {
+  if (typeof node.type === 'string') {
+    return node.type
+  }
+  if (typeof node.uri !== 'string') {
+    return undefined
+  }
+  const fileName = fileNameOf(node.uri)
+  const format = matchFormat(
+    fileName,
+    typeof node.adapterType === 'string' ? node.adapterType : undefined,
+  )
+  return (
+    format?.trackType ??
+    (format && 'adapterType' in format.spec
+      ? trackTypeForAdapter(format.spec.adapterType, fileName)
+      : undefined)
+  )
+}
+
 function checkMarkDisplays(
   node: unknown,
   manifest: ConfigManifest,
@@ -667,8 +690,9 @@ function checkMarkDisplays(
     if (slots) {
       checkScaleSlots(node, slots, where, report)
     }
-    if (typeof node.type === 'string' && isRecord(node.displayDefaults)) {
-      for (const display of displayDefaultsForTrackType(node.type, manifest)
+    const trackType = trackTypeOf(node)
+    if (trackType && isRecord(node.displayDefaults)) {
+      for (const display of displayDefaultsForTrackType(trackType, manifest)
         .displayTypes) {
         checkScaleSlots(
           node.displayDefaults,
