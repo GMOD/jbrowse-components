@@ -2,14 +2,15 @@ import { useState } from 'react'
 
 import { SubmitDialog } from '@jbrowse/core/ui'
 import { TextField } from '@mui/material'
+import { observer } from 'mobx-react'
 
-export const ExternalTokenEntryForm = ({
+export const ExternalTokenEntryForm = observer(function ExternalTokenEntryForm({
   internetAccountId,
   handleClose,
 }: {
   internetAccountId: string
   handleClose: (token?: string) => void
-}) => {
+}) {
   const [token, setToken] = useState('')
 
   return (
@@ -41,4 +42,4 @@ export const ExternalTokenEntryForm = ({
       />
     </SubmitDialog>
   )
-}
+})

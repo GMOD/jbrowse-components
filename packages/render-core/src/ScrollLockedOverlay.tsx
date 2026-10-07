@@ -1,5 +1,7 @@
 import React from 'react'
 
+import { observer } from 'mobx-react'
+
 /**
  * DOM overlay layer for a display that scrolls a fixed GPU canvas virtually (a
  * `VerticalScrollbar` overlay + `useVirtualScrollWheel`, everything positioned
@@ -18,7 +20,7 @@ import React from 'react'
  * is none so mouse events fall through to the canvas; interactive children
  * re-enable `pointerEvents:auto`.
  */
-export function ScrollLockedOverlay({
+export const ScrollLockedOverlay = observer(function ScrollLockedOverlay({
   scrollTop,
   viewportHeight,
   contentHeight,
@@ -61,4 +63,4 @@ export function ScrollLockedOverlay({
       </div>
     </div>
   )
-}
+})

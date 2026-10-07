@@ -1,7 +1,8 @@
 import { Dialog } from '@jbrowse/core/ui'
 import { Button, DialogActions, DialogContent, Typography } from '@mui/material'
+import { observer } from 'mobx-react'
 
-export function OAuthLoginPrompt({
+export const OAuthLoginPrompt = observer(function OAuthLoginPrompt({
   internetAccountId,
   handleClose,
 }: {
@@ -47,4 +48,4 @@ export function OAuthLoginPrompt({
       </DialogActions>
     </Dialog>
   )
-}
+})

@@ -1,4 +1,5 @@
 import { makeStyles } from '@jbrowse/core/util/tss-react'
+import { observer } from 'mobx-react'
 
 import {
   countOfTotal,
@@ -25,9 +26,13 @@ export const useTooltipTableStyles = makeStyles()(theme => ({
   },
 }))
 
-function ColorSwatch({ color }: { color: string }) {
+const ColorSwatch = observer(function ColorSwatch({
+  color,
+}: {
+  color: string
+}) {
   return <div style={{ width: 10, height: 10, background: color }} />
-}
+})
 
 /**
  * The depth, allele, deletion and modification breakdown at one band
@@ -35,7 +40,7 @@ function ColorSwatch({ color }: { color: string }) {
  * colours an allele row the way the display's SNP slices are drawn, and
  * leaving it out drops the swatch column; `children` land under the table.
  */
-export function CoverageTooltipTable({
+export const CoverageTooltipTable = observer(function CoverageTooltipTable({
   bin,
   location,
   unit = 'Reads',
@@ -89,7 +94,7 @@ export function CoverageTooltipTable({
       {children}
     </>
   )
-}
+})
 
 const capitalize = (s: string) => s.charAt(0).toUpperCase() + s.slice(1)
 
@@ -97,7 +102,7 @@ const capitalize = (s: string) => s.charAt(0).toUpperCase() + s.slice(1)
  * The interbase events at one band boundary, per type. Separate from the
  * depth table so an insertion is never counted into a column it sits beside.
  */
-export function InterbaseTooltipTable({
+export const InterbaseTooltipTable = observer(function InterbaseTooltipTable({
   interbase,
   total,
   location,
@@ -146,4 +151,4 @@ export function InterbaseTooltipTable({
       </tbody>
     </table>
   )
-}
+})

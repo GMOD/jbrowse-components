@@ -1,3 +1,5 @@
+import { observer } from 'mobx-react'
+
 import type { DisplayStatusPhase } from './displayPhase.ts'
 import type { ComponentPropsWithoutRef } from 'react'
 
@@ -44,7 +46,7 @@ export interface RenderCanvasHandle {
  * shared canvas repaints unconditionally, so `canvasDrawn` says nothing
  * (ADR-009's scope clause) — so `drawn` is passed at the call site.
  */
-export default function RenderCanvas({
+const RenderCanvas = observer(function RenderCanvas({
   handle,
   drawn,
   phase,
@@ -93,4 +95,6 @@ export default function RenderCanvas({
       {...canvasProps}
     />
   )
-}
+})
+
+export default RenderCanvas

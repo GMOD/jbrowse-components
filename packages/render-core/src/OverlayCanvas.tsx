@@ -1,5 +1,7 @@
 import { useEffect, useRef } from 'react'
 
+import { observer } from 'mobx-react'
+
 import { getPreparedCanvas2D } from './canvas2dUtils.ts'
 
 /**
@@ -25,7 +27,7 @@ import { getPreparedCanvas2D } from './canvas2dUtils.ts'
  * `inset: 0` therefore drew everything at twice its x on a retina display and
  * dropped the right half off the edge, while looking entirely plausible.
  */
-export default function OverlayCanvas({
+const OverlayCanvas = observer(function OverlayCanvas({
   width,
   height,
   draw,
@@ -59,4 +61,6 @@ export default function OverlayCanvas({
       }}
     />
   )
-}
+})
+
+export default OverlayCanvas

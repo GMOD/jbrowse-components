@@ -311,6 +311,12 @@ importers:
       '@jbrowse/wiggle-core':
         specifier: workspace:^
         version: link:../wiggle-core
+      mobx:
+        specifier: ^7.0.6
+        version: 7.0.6
+      mobx-react:
+        specifier: ^10.0.2
+        version: 10.0.2(mobx@7.0.6)(react@19.3.0)
       react:
         specifier: '>=19.0.0'
         version: 19.3.0
@@ -356,6 +362,12 @@ importers:
       esbuild:
         specifier: ^0.28.2
         version: 0.28.2
+      mobx:
+        specifier: ^7.0.6
+        version: 7.0.6
+      mobx-react:
+        specifier: ^10.0.2
+        version: 10.0.2(mobx@7.0.6)(react@19.3.0)
       puppeteer:
         specifier: ^25.12.0
         version: 25.12.0(yauzl@2.10.0)
@@ -637,6 +649,9 @@ importers:
       mobx:
         specifier: ^7.0.6
         version: 7.0.6
+      mobx-react:
+        specifier: ^10.0.2
+        version: 10.0.2(mobx@7.0.6)(react@19.3.0)
       react:
         specifier: '>=19.0.0'
         version: 19.3.0
@@ -931,6 +946,9 @@ importers:
       mobx:
         specifier: ^7.0.6
         version: 7.0.6
+      mobx-react:
+        specifier: ^10.0.2
+        version: 10.0.2(mobx@7.0.6)(react@19.3.0)
       react:
         specifier: '>=19.0.0'
         version: 19.3.0
@@ -6782,11 +6800,6 @@ packages:
     peerDependencies:
       acorn: ^6.0.0 || ^7.0.0 || ^8.0.0
 
-  acorn@8.18.0:
-    resolution: {integrity: sha512-lGq+9yr1/GuAWaVYIHRjvvySG5/4VfKIvC8EWxStPdcDh/Ka7FG3twP6v4d5BkravUilhIAsG4Qj83t02LWUPQ==}
-    engines: {node: '>=0.4.0'}
-    hasBin: true
-
   acorn@8.19.0:
     resolution: {integrity: sha512-oJlA3XiRm7Cyk6qFD2Jn8ak9B7jSy0qy00ADO3+8dpT0LSjFihQYv4C02LFCSYJV3Q37xYwwRy5m+IpIiUzqWw==}
     engines: {node: '>=0.4.0'}
@@ -11418,7 +11431,7 @@ snapshots:
       '@astrojs/internal-helpers': 0.12.0
       '@astrojs/prism': 4.0.2
       '@mdx-js/mdx': 3.1.1(supports-color@8.1.1)
-      acorn: 8.18.0
+      acorn: 8.19.0
       estree-util-visit: 2.0.0
       github-slugger: 2.0.0
       hast-util-from-html: 2.0.3
@@ -13524,7 +13537,7 @@ snapshots:
       '@types/estree-jsx': 1.0.5
       '@types/hast': 3.0.5
       '@types/mdx': 2.0.14
-      acorn: 8.18.0
+      acorn: 8.19.0
       collapse-white-space: 2.1.0
       devlop: 1.1.0
       estree-util-is-identifier-name: 3.0.0
@@ -13533,7 +13546,7 @@ snapshots:
       hast-util-to-jsx-runtime: 2.3.6(supports-color@8.1.1)
       markdown-extensions: 2.0.0
       recma-build-jsx: 1.0.0
-      recma-jsx: 1.0.1(acorn@8.18.0)
+      recma-jsx: 1.0.1(acorn@8.19.0)
       recma-stringify: 1.0.0
       rehype-recma: 1.0.0(supports-color@8.1.1)
       remark-mdx: 3.1.1(supports-color@8.1.1)
@@ -14848,15 +14861,9 @@ snapshots:
       mime-types: 3.0.2
       negotiator: 1.1.0
 
-  acorn-jsx@5.3.2(acorn@8.18.0):
-    dependencies:
-      acorn: 8.18.0
-
   acorn-jsx@5.3.2(acorn@8.19.0):
     dependencies:
       acorn: 8.19.0
-
-  acorn@8.18.0: {}
 
   acorn@8.19.0: {}
 
@@ -15796,7 +15803,7 @@ snapshots:
   esast-util-from-js@2.0.1:
     dependencies:
       '@types/estree-jsx': 1.0.5
-      acorn: 8.18.0
+      acorn: 8.19.0
       esast-util-from-estree: 2.0.0
       vfile-message: 4.0.3
 
@@ -17814,8 +17821,8 @@ snapshots:
 
   micromark-extension-mdxjs@3.0.0:
     dependencies:
-      acorn: 8.18.0
-      acorn-jsx: 5.3.2(acorn@8.18.0)
+      acorn: 8.19.0
+      acorn-jsx: 5.3.2(acorn@8.19.0)
       micromark-extension-mdx-expression: 3.0.1
       micromark-extension-mdx-jsx: 3.0.2
       micromark-extension-mdx-md: 2.0.0
@@ -18672,10 +18679,10 @@ snapshots:
       estree-util-build-jsx: 3.0.1
       vfile: 6.0.3
 
-  recma-jsx@1.0.1(acorn@8.18.0):
+  recma-jsx@1.0.1(acorn@8.19.0):
     dependencies:
-      acorn: 8.18.0
-      acorn-jsx: 5.3.2(acorn@8.18.0)
+      acorn: 8.19.0
+      acorn-jsx: 5.3.2(acorn@8.19.0)
       estree-util-to-js: 2.0.0
       recma-parse: 1.0.0
       recma-stringify: 1.0.0
@@ -19344,7 +19351,7 @@ snapshots:
   terser@5.51.2:
     dependencies:
       '@jridgewell/source-map': 0.3.11
-      acorn: 8.18.0
+      acorn: 8.19.0
       commander: 2.20.3
       source-map-support: 0.5.21
 

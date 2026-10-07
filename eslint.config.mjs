@@ -1,5 +1,3 @@
-import { existsSync, readFileSync, readdirSync } from 'node:fs'
-
 import eslintReact from '@eslint-react/eslint-plugin'
 import eslintPluginAstro from 'eslint-plugin-astro'
 import { importX } from 'eslint-plugin-import-x'
@@ -99,17 +97,6 @@ const unobservedComponents = [
       'Wrap the component in `observer`, which memoizes as `memo` does and also tracks MobX reads: `observer(function Name() {…})`, or `observer(forwardRef(…))`.',
   },
 ]
-// A package with no mobx-react dependency has no `observer` to wrap with.
-const packagesWithoutMobxReact = ['packages', 'plugins', 'products'].flatMap(
-  top =>
-    readdirSync(`${import.meta.dirname}/${top}`).flatMap(name => {
-      const manifest = `${import.meta.dirname}/${top}/${name}/package.json`
-      return existsSync(manifest) &&
-        !readFileSync(manifest, 'utf8').includes('"mobx-react"')
-        ? [`${top}/${name}/**`]
-        : []
-    }),
-)
 const noSetSlot = {
   selector: 'CallExpression[callee.property.name=/^(setSlot|setSubschema)$/]',
   message:
@@ -880,7 +867,6 @@ export default defineConfig(
       '**/browser-tests/**',
       '**/svgcomponents/**',
       'packages/core/src/svg/**',
-      ...packagesWithoutMobxReact,
     ],
     rules: {
       'no-restricted-syntax': [

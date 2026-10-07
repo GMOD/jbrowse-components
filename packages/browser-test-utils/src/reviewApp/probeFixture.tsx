@@ -1,5 +1,6 @@
 import { useEffect } from 'react'
 
+import { observer } from 'mobx-react'
 import { createRoot } from 'react-dom/client'
 
 import { shownStatus } from './protocol.ts'
@@ -21,7 +22,7 @@ import type { PressStatus, ReviewEntry } from './types.ts'
 
 const ENTRY: ReviewEntry = { name: 'x', stale: false, imageHash: 'h' }
 
-function Probe() {
+const Probe = observer(function Probe() {
   const {
     entries,
     loadEntries,
@@ -52,9 +53,9 @@ function Probe() {
       onSaveNote={saveNote}
     />
   )
-}
+})
 
-function Card({
+const Card = observer(function Card({
   entry,
   message,
   pressed,
@@ -103,7 +104,7 @@ function Card({
       <div className="cardmsg">{message}</div>
     </div>
   )
-}
+})
 
 const root = document.getElementById('root')
 if (root) {

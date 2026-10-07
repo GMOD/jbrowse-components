@@ -2,8 +2,9 @@ import { useState } from 'react'
 
 import { SubmitDialog } from '@jbrowse/core/ui'
 import { TextField } from '@mui/material'
+import { observer } from 'mobx-react'
 
-export function HTTPBasicLoginForm({
+export const HTTPBasicLoginForm = observer(function HTTPBasicLoginForm({
   internetAccountId,
   handleClose,
 }: {
@@ -59,4 +60,4 @@ export function HTTPBasicLoginForm({
       </div>
     </SubmitDialog>
   )
-}
+})
