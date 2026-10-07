@@ -62,29 +62,15 @@ function hasCytosineMeth(model: ModificationsMenuModel) {
   return model.detectedModificationTypes.some(k => k === 'm' || k === 'h')
 }
 
+// The slot is a typed object, so a member left at its default is the default:
+// the merge is the whole normalization.
 function patchMods(
   model: ModificationsMenuModel,
   patch: Partial<ModificationColorBy>,
 ) {
-  const m = { ...currentMods(model), ...patch }
-  const keepThreshold =
-    m.threshold !== undefined && m.threshold !== DEFAULT_MODIFICATION_THRESHOLD
   model.setBaseLayer({
     type: 'modifications',
-    modifications: {
-      ...(m.twoColor ? { twoColor: true } : {}),
-      ...(m.fillUnmarked ? { fillUnmarked: true } : {}),
-      // Persisted whenever present, empty list included — `[]` is a real state
-      // (every type unticked, no marks drawn), distinct from absent (= show
-      // every detected type), which is the default and stays omitted.
-      ...(m.shownModifications !== undefined
-        ? { shownModifications: m.shownModifications }
-        : {}),
-      ...(keepThreshold ? { threshold: m.threshold } : {}),
-      ...(m.cytosineContext && m.cytosineContext !== 'CG'
-        ? { cytosineContext: m.cytosineContext }
-        : {}),
-    },
+    modifications: { ...currentMods(model), ...patch },
   })
 }
 
@@ -100,11 +86,18 @@ function setModTypeShown(
   const mods = currentMods(model)
   const visible = types.filter(t => isModificationTypeVisible(mods, t))
   const next = shown ? [...visible, type] : visible.filter(t => t !== type)
-  // Everything ticked = follow the data: store nothing, so a type first seen as
-  // more reads stream in shows up rather than being silently excluded by a list
-  // that was written before it was detected.
+  // An empty list is "every type" (the slot's default), so unticking the last
+  // type turns the layer off instead; ticking one from there turns it back on
+  // with that type alone.
+  if (next.length === 0) {
+    model.setBaseLayer()
+    return
+  }
+  // Everything ticked = follow the data: store the default, so a type first
+  // seen as more reads stream in shows up rather than being silently excluded
+  // by a list that was written before it was detected.
   patchMods(model, {
-    shownModifications: types.every(t => next.includes(t)) ? undefined : next,
+    shownModifications: types.every(t => next.includes(t)) ? [] : next,
   })
 }
 
@@ -124,7 +117,7 @@ export function modificationsMenu(model: ModificationsMenuModel): MenuItem {
     ? { fillUnmarked: true }
     : { twoColor: true }
   const types = model.detectedModificationTypes
-  const clearView = { twoColor: undefined, fillUnmarked: undefined }
+  const clearView = { twoColor: false, fillUnmarked: false }
 
   // The three refinements, revealed together once this is the active scheme and
   // each present only where it bites. One `isActive` rather than one per row:

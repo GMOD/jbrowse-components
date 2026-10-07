@@ -11,6 +11,7 @@ import { defaultFilterFlags } from '../shared/util.ts'
 import { alignmentsArcColorConfigSchema } from './alignmentsArcColorConfigSchema.ts'
 import { alignmentsBaseColorConfigSchema } from './alignmentsBaseColorConfigSchema.ts'
 import { alignmentsColorConfigSchema } from './alignmentsColorConfigSchema.ts'
+import { alignmentsModificationsConfigSchema } from './alignmentsModificationsConfigSchema.ts'
 import {
   ALIGNMENTS_UNITS,
   READ_CONNECTIONS_MODES,
@@ -169,15 +170,9 @@ export default function configSchemaFactory(_pluginManager: PluginManager) {
        * #slot modifications
        * What the `modifications` and `bisulfite` colour fields draw:
        * `threshold` (percent, default 10), `twoColor`, `fillUnmarked`,
-       * `cytosineContext` and `shownModifications`; see the
-       * `ModificationColorBy` type.
+       * `cytosineContext` and `shownModifications`.
        */
-      modifications: {
-        type: 'frozen',
-        defaultValue: {},
-        description: 'Settings of the modifications and bisulfite color fields',
-        advanced: true,
-      },
+      modifications: alignmentsModificationsConfigSchema,
       /**
        * #slot
        * Every read filter, in one object: the flag masks, a read name, tag

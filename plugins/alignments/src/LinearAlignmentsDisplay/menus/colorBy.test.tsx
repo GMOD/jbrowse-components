@@ -145,7 +145,7 @@ describe('color by modifications menu', () => {
     clickRadio(model, TWO_COLOR)
     expect(model.baseLayer).toEqual({
       type: 'modifications',
-      modifications: { fillUnmarked: true },
+      modifications: { twoColor: false, fillUnmarked: true },
     })
   })
 
@@ -155,7 +155,7 @@ describe('color by modifications menu', () => {
     clickRadio(model, TWO_COLOR)
     expect(model.baseLayer).toEqual({
       type: 'modifications',
-      modifications: { twoColor: true },
+      modifications: { twoColor: true, fillUnmarked: false },
     })
   })
 
@@ -178,7 +178,11 @@ describe('color by modifications menu', () => {
     clickRadio(model, BY_TYPE)
     expect(model.baseLayer).toEqual({
       type: 'modifications',
-      modifications: { cytosineContext: 'CHH' },
+      modifications: {
+        twoColor: false,
+        fillUnmarked: false,
+        cytosineContext: 'CHH',
+      },
     })
   })
 
@@ -227,7 +231,7 @@ describe('color by modifications menu', () => {
     })
   })
 
-  test('re-ticking every type stores nothing, so types found later stay visible', () => {
+  test('re-ticking every type stores the default, so types found later stay visible', () => {
     const model = makeModModel(['m', 'h'])
     model.baseLayer = {
       type: 'modifications',
@@ -236,21 +240,20 @@ describe('color by modifications menu', () => {
     tickModType(model, '5hmC')
     expect(model.baseLayer).toEqual({
       type: 'modifications',
-      modifications: {},
+      modifications: { shownModifications: [] },
     })
   })
 
-  test('unticking the last type draws no marks rather than silently drawing all', () => {
+  // an empty allow-list is the slot's default and draws every type, so the
+  // layer goes off rather than silently drawing all
+  test('unticking the last type turns the layer off', () => {
     const model = makeModModel(['m', 'h'])
     model.baseLayer = {
       type: 'modifications',
       modifications: { shownModifications: ['m'] },
     }
     tickModType(model, '5mC')
-    expect(model.baseLayer).toEqual({
-      type: 'modifications',
-      modifications: { shownModifications: [] },
-    })
+    expect(model.baseLayer).toBeUndefined()
   })
 
   test('the per-type filter is hidden when only one type is detected', () => {
@@ -308,12 +311,10 @@ describe('color by modifications menu', () => {
       type: 'modifications',
       modifications: { threshold: 80 },
     })
-    // Resetting writes the default, which patchMods drops so a saved session
-    // carries no redundant threshold.
     onReset()
     expect(model.baseLayer).toEqual({
       type: 'modifications',
-      modifications: {},
+      modifications: { threshold: 10 },
     })
   })
 

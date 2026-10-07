@@ -17,10 +17,10 @@ export interface ModificationColorBy {
   twoColor?: boolean
   // Allow-list of modification type codes to draw: ONLY these render, so a "6mA
   // only" view (shownModifications: ['a']) stays 6mA-only even if the basecaller
-  // also emits 5mC/5hmC on the same reads. Absent means every detected type —
-  // the default, so a type first seen as more reads stream in shows up. The
-  // empty list is a real state (nothing drawn), not a synonym for absent.
-  shownModifications?: string[]
+  // also emits 5mC/5hmC on the same reads. Empty or absent means every
+  // detected type, the default, so a type first seen as more reads stream in
+  // shows up; the menu turns the layer off in place of an empty list.
+  shownModifications?: readonly string[]
   threshold?: number
   // cytosine context for the fill-unmarked view; absent means CpG. CHG/CHH
   // support plant methylation. Only consumed when filling (getMethBins) or in
@@ -39,17 +39,12 @@ export interface ModificationColorBy {
 // Shared by the worker extract filter, the legend, and the color-by menu — the
 // type checkboxes render straight off this predicate, so what is ticked and what
 // is drawn cannot disagree.
-//
-// Absent means "every detected type", so a type first seen as more reads stream
-// in defaults to visible. An explicit list means exactly those, INCLUDING the
-// empty list, which draws no marks — that lets the menu offer a plain checkbox
-// per type with no special "you must keep one ticked" rule.
 export function isModificationTypeVisible(
   modifications: ModificationColorBy | undefined,
   type: string,
 ) {
   const shown = modifications?.shownModifications
-  return shown === undefined || shown.includes(type)
+  return !shown?.length || shown.includes(type)
 }
 
 // Shader color-scheme dispatch paths — the distinct branches read.slang

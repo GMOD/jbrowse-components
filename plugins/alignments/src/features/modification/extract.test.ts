@@ -302,12 +302,18 @@ describe('the fill view honours the modification-type filter', () => {
     expect(fill(['h'])).toEqual([])
   })
 
-  test('unticking every type draws nothing', () => {
-    const out = runFill(makeMethFeature(), {
+  test('an empty allow-list is the default: every type draws', () => {
+    const all = runFill(makeMethFeature(), {
       type: 'modifications',
       modifications: { fillUnmarked: true, shownModifications: [] },
     })
-    expect(out).toEqual([])
+    expect(all).toEqual(
+      runFill(makeMethFeature(), {
+        type: 'modifications',
+        modifications: { fillUnmarked: true },
+      }),
+    )
+    expect(all.length).toBeGreaterThan(0)
   })
 })
 
