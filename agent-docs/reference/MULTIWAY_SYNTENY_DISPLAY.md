@@ -118,8 +118,7 @@ cost is linear in lanes.
   for all of them in one call. Only pairs whose gutter is within a screen of the
   scrolled window are asked for (`gutterNearViewport`): on the HPRC graph each
   pair cut alone costs 70-660 ms of worker time, so 463 lanes took minutes.
-- **Composing a lane pair through the anchor** was built (`composeLaneLinks`,
-  `composeAlignmentOps`) and removed. It drew a neighbour comparison the source
+- **Composing a lane pair through the anchor** was built and removed. It drew a neighbour comparison the source
   never states, with a tooltip as its only disclosure: a reversed lane coloured
   both gutters touching it, and sequence two lanes share and the anchor lacks
   drew as a break between them. Through GRCh38 it also loses the loci picked for
