@@ -41,6 +41,19 @@ Source
 Files
 -----
 
+  hprc-v2.1-mc-grch38.anchored.segs.bed.gz{,.tbi}
+  hprc-v2.1-mc-grch38.anchored.links.bed.gz{,.tbi}
+                                             what the graph track reads: the
+                                             same segments and links, each filed
+                                             under the reference interval its
+                                             bubble hangs from, so one query per
+                                             file cuts a region whole. Built
+                                             2026-10-07 with
+                                               gfa-to-tabix hprc-v2.1-mc-grch38.sv.gfa.gz \
+                                                 -o hprc-v2.1-mc-grch38.anchored
+                                             (gfa-to-tabix 0.2.0). The pair
+                                             below is the contig layout, kept
+                                             for the allele inventory.
   hprc-v2.1-mc-grch38.segs.bed.gz{,.tbi}     one row per segment:
                                              stable name, span, id, rank
                                              759,223 segments

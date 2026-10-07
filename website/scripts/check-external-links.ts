@@ -73,6 +73,10 @@ const PREFIXES: [string, string][] = [
   ],
   ['https://jbrowse.org/demos/hprc/hprc-v2.1-mc-grch38', '.segs.bed.gz'],
   [
+    'https://jbrowse.org/demos/hprc/hprc-v2.1-mc-grch38.anchored',
+    '.segs.bed.gz',
+  ],
+  [
     'https://jbrowse.org/demos/hprc/hprc-v2.1-mc-grch38.tier10000',
     '.segs.bed.gz',
   ],

@@ -122,7 +122,7 @@
       "assemblyNames": ["hg38", "hs1"],
       "adapter": {
         "type": "RgfaTabixAdapter",
-        "uri": "https://jbrowse.org/demos/hprc/hprc-v2.1-mc-grch38",
+        "uri": "https://jbrowse.org/demos/hprc/hprc-v2.1-mc-grch38.anchored",
         "assemblyNameToPanSN": {
           "hg38": "GRCh38",
           "hs1": "CHM13"
