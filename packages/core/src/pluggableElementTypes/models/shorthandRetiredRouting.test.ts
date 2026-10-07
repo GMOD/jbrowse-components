@@ -18,6 +18,7 @@ const display = (
   ConfigurationSchema(name, slots, {
     explicitIdentifier: 'displayId',
     explicitlyTyped: true,
+    closed: true,
     retired,
   }) as AnyConfigurationSchemaType
 

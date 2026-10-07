@@ -36,7 +36,11 @@ function pluginManagerWithAliasedDisplay() {
         configSchema: ConfigurationSchema(
           'LinearAlignmentsDisplay',
           {},
-          { explicitIdentifier: 'displayId', explicitlyTyped: true },
+          {
+            explicitIdentifier: 'displayId',
+            explicitlyTyped: true,
+            closed: true,
+          },
         ),
         // unused at runtime here; stub model avoids importing a full state model
         stateModel: types.model('LinearAlignmentsDisplay', {}),

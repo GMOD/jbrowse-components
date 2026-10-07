@@ -78,7 +78,7 @@ test('a display sharing the name is not reached, because the group is checked', 
     () =>
       new DisplayType({
         name: 'TestViewA',
-        configSchema: ConfigurationSchema('TestViewA', {}),
+        configSchema: ConfigurationSchema('TestViewA', {}, { closed: true }),
         stateModel: baseModel,
         trackType: 'FeatureTrack',
         viewType: 'TestViewA',

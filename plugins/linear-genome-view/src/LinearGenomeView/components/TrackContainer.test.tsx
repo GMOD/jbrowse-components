@@ -235,7 +235,11 @@ class PreMixinDisplayPlugin extends Plugin {
       const configSchema = ConfigurationSchema(
         'PreMixinDisplay',
         {},
-        { explicitlyTyped: true },
+        {
+          explicitIdentifier: 'displayId',
+          explicitlyTyped: true,
+          closed: true,
+        },
       )
       return new DisplayType({
         name: 'PreMixinDisplay',
@@ -330,7 +334,11 @@ class OffsetPreferringDisplayPlugin extends Plugin {
       const configSchema = ConfigurationSchema(
         'OffsetPreferringDisplay',
         {},
-        { explicitlyTyped: true },
+        {
+          explicitIdentifier: 'displayId',
+          explicitlyTyped: true,
+          closed: true,
+        },
       )
       return new DisplayType({
         name: 'OffsetPreferringDisplay',

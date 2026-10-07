@@ -22,7 +22,11 @@ class SubgraphDisplayPlugin extends Plugin {
       const configSchema = ConfigurationSchema(
         'SubgraphDisplay',
         {},
-        { explicitIdentifier: 'displayId', explicitlyTyped: true },
+        {
+          explicitIdentifier: 'displayId',
+          explicitlyTyped: true,
+          closed: true,
+        },
       )
       return new DisplayType({
         name: 'SubgraphDisplay',

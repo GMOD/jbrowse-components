@@ -162,7 +162,11 @@ function lazyViewPlugin(onExtend: (pm: PluginManager) => void) {
               Promise.resolve(
                 types.model('LazyDisplay', { type: 'LazyDisplay' }),
               ),
-            configSchema: ConfigurationSchema('LazyDisplay', {}),
+            configSchema: ConfigurationSchema(
+              'LazyDisplay',
+              {},
+              { closed: true },
+            ),
             trackType: 'FakeTrack',
             viewType: 'LazyView',
             ReactComponent: () => null,
@@ -325,7 +329,11 @@ test('a display naming several track types attaches to each of them', () => {
     () =>
       new DisplayType({
         name: 'SharedDisplay',
-        configSchema: ConfigurationSchema('SharedDisplay', {}),
+        configSchema: ConfigurationSchema(
+          'SharedDisplay',
+          {},
+          { closed: true },
+        ),
         stateModel: types.model('SharedDisplay', {}),
         trackType: ['TrackA', 'TrackB'],
         viewType: 'SomeView',

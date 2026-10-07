@@ -277,7 +277,7 @@ Options:
                              displayDefaults
 
       --displayDefaults      Inline JSON merged into the track displayDefaults
-                             (labels, mouseover, jexlFilters, etc.)
+                             (labels, mouseover, filter, etc.)
 
       --multiwig             Build a MultiQuantitativeTrack from several BigWigs
                              (in place of the positional track arg): a
@@ -332,13 +332,13 @@ text-index.
 JSON. Wrap the value in single quotes and use double quotes inside a jexl
 callback so nothing needs escaping, e.g. --color
 'jexl:feature.strand==1?"blue":"red"'. --displayDefaults takes inline JSON for
-any other appearance setting (labels, mouseover, jexlFilters).
+any other appearance setting (labels, mouseover, filter).
 
 --multiwig bundles several BigWigs into one MultiQuantitativeTrack, in place of
 the positional track argument: pass a comma-separated list of BigWig files/URLs,
 or a .json file with an array of BigWig locations or subadapter objects (each
-with its own name/color/group). With --load, local list entries are copied
-like any other track file.
+with its own name/color/group). With --load, local list entries are copied like
+any other track file.
 
 --density attaches a features-per-bin bigWig (jbrowse make-density) as the
 adapter's densityAdapter, the band a display draws where the region is too large
@@ -403,9 +403,10 @@ Options:
 
 Notes:
 
-A config key JBrowse does not recognize is ignored rather than reported, so a
-misspelled slot leaves the track loading normally with the setting doing
-nothing. That is what this command is mainly for.
+A display refuses a key it does not declare and fails to load; a track, an
+adapter or a session snapshot drops one in silence, so a misspelled slot there
+leaves the track loading normally with the setting doing nothing. This command
+reports both offline, before anyone opens the config.
 
 Two levels are reported:
 
@@ -526,7 +527,8 @@ GtfAdapter, GtfTabixAdapter, VcfAdapter, VcfTabixAdapter) are indexed; tracks
 with other adapter types are skipped automatically.
 
 GTF has no Name/ID attributes, so the default --attributes also match their GTF
-spellings (gene_name, transcript_name, gene_id, transcript_id).
+spellings (gene_name, transcript_name, gene_id, transcript_id). A GFF3 row with
+no Name, as in GENCODE, is named by its own gene_name or transcript_name.
 
 --exclude names types not to index; --include names the only types to index.
 Reach for --include when the file draws from a vocabulary you do not control: an

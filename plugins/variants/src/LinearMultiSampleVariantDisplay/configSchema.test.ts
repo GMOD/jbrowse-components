@@ -30,13 +30,14 @@ describe('the display config schema', () => {
       expect(readConfObject(config, 'referenceDrawingMode')).toBe('draw')
     })
 
-    it('no longer declares showReferenceAlleles', () => {
-      const config = configSchema.create({
-        type: 'LinearMultiSampleVariantDisplay',
-        displayId: 'test-2b',
-        showReferenceAlleles: true,
-      })
-      expect(readConfObject(config, 'referenceDrawingMode')).toBe('skip')
+    it('refuses showReferenceAlleles, which it no longer declares', () => {
+      expect(() =>
+        configSchema.create({
+          type: 'LinearMultiSampleVariantDisplay',
+          displayId: 'test-2b',
+          showReferenceAlleles: true,
+        }),
+      ).toThrow('not showReferenceAlleles')
     })
   })
 

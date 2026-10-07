@@ -5392,11 +5392,11 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "deprecated": true,
           "description": "Legacy key: a migration rewrites it into current slots when the config loads."
         },
-        "jexlFilters": {
+        "renderer": {
           "deprecated": true,
           "description": "Legacy key: a migration rewrites it into current slots when the config loads."
         },
-        "renderer": {
+        "jexlFilters": {
           "deprecated": true,
           "description": "Legacy key: a migration rewrites it into current slots when the config loads."
         },
@@ -10224,11 +10224,11 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "deprecated": true,
           "description": "Legacy key: a migration rewrites it into current slots when the config loads."
         },
-        "jexlFilters": {
+        "renderer": {
           "deprecated": true,
           "description": "Legacy key: a migration rewrites it into current slots when the config loads."
         },
-        "renderer": {
+        "jexlFilters": {
           "deprecated": true,
           "description": "Legacy key: a migration rewrites it into current slots when the config loads."
         },
@@ -13718,6 +13718,9 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "maxHeight": {
               "$ref": "#/$defs/LinearBasicDisplaySlots/properties/maxHeight"
             },
+            "renderer": {
+              "$ref": "#/$defs/LinearBasicDisplaySlots/properties/renderer"
+            },
             "jexlFilters": {
               "anyOf": [
                 {
@@ -13730,9 +13733,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
                   "$ref": "#/$defs/LinearMarkDisplaySlots/properties/jexlFilters"
                 }
               ]
-            },
-            "renderer": {
-              "$ref": "#/$defs/LinearBasicDisplaySlots/properties/renderer"
             },
             "showDescriptions": {
               "$ref": "#/$defs/LinearBasicDisplaySlots/properties/showDescriptions"

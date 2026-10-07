@@ -3108,8 +3108,8 @@ export const configManifest: ConfigManifest = {
         "color3",
         "outline",
         "maxHeight",
-        "jexlFilters",
         "renderer",
+        "jexlFilters",
         "showDescriptions"
       ],
       "legacyValues": {
@@ -5090,8 +5090,8 @@ export const configManifest: ConfigManifest = {
         "color3",
         "outline",
         "maxHeight",
-        "jexlFilters",
         "renderer",
+        "jexlFilters",
         "showDescriptions"
       ],
       "legacyValues": {

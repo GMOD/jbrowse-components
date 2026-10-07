@@ -97,5 +97,5 @@ test('displayDefaults.rows on another field fails the load for the quantitative 
       type: 'QuantitativeTrack',
       displayDefaults: { rows: 'group' },
     }),
-  ).toThrow(/a quantitative display puts "source" alone on rows/)
+  ).toThrow(/QuantitativeRowsField/)
 })

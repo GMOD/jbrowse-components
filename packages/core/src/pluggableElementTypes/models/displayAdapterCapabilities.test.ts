@@ -12,7 +12,11 @@ function adapter(name: string, adapterCapabilities: string[] = []) {
   return () =>
     new AdapterType({
       name,
-      configSchema: ConfigurationSchema(name, {}, { explicitlyTyped: true }),
+      configSchema: ConfigurationSchema(
+        name,
+        {},
+        { explicitlyTyped: true, closed: true },
+      ),
       adapterCapabilities,
       getAdapterClass: () => Promise.reject(new Error('not instantiated')),
     })
@@ -29,7 +33,11 @@ function display(
       configSchema: ConfigurationSchema(
         name,
         { height: { type: 'number', defaultValue: 100 }, ...slots },
-        { explicitIdentifier: 'displayId', explicitlyTyped: true },
+        {
+          explicitIdentifier: 'displayId',
+          explicitlyTyped: true,
+          closed: true,
+        },
       ),
       stateModel: types.model(name, {}),
       trackType: 'FeatureTrack',

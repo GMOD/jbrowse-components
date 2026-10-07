@@ -144,7 +144,11 @@ function initialize() {
           color: { type: 'color', defaultValue: DISPLAY_COLOR },
           showLegend: { type: 'boolean', defaultValue: true },
         },
-        { explicitIdentifier: 'displayId', explicitlyTyped: true },
+        {
+          explicitIdentifier: 'displayId',
+          explicitlyTyped: true,
+          closed: true,
+        },
       )
       return new DisplayType({
         name: displayType,

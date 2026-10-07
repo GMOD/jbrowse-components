@@ -32,7 +32,7 @@ function adapter(
                 },
               }),
         },
-        { explicitlyTyped: true },
+        { explicitlyTyped: true, closed: true },
       ),
       getAdapterClass: () => Promise.reject(new Error('not instantiated')),
     })

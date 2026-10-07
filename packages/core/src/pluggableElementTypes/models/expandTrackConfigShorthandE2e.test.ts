@@ -43,7 +43,11 @@ function makePluginManager() {
             contextVariable: ['feature'],
           },
         },
-        { explicitIdentifier: 'displayId', explicitlyTyped: true },
+        {
+          explicitIdentifier: 'displayId',
+          explicitlyTyped: true,
+          closed: true,
+        },
       ),
       stateModel: types.model(name, {}),
       trackType: 'FeatureTrack',

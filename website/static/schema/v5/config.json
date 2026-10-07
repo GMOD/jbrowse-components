@@ -5229,11 +5229,11 @@
           "deprecated": true,
           "description": "Legacy key: a migration rewrites it into current slots when the config loads."
         },
-        "jexlFilters": {
+        "renderer": {
           "deprecated": true,
           "description": "Legacy key: a migration rewrites it into current slots when the config loads."
         },
-        "renderer": {
+        "jexlFilters": {
           "deprecated": true,
           "description": "Legacy key: a migration rewrites it into current slots when the config loads."
         },
@@ -9859,11 +9859,11 @@
           "deprecated": true,
           "description": "Legacy key: a migration rewrites it into current slots when the config loads."
         },
-        "jexlFilters": {
+        "renderer": {
           "deprecated": true,
           "description": "Legacy key: a migration rewrites it into current slots when the config loads."
         },
-        "renderer": {
+        "jexlFilters": {
           "deprecated": true,
           "description": "Legacy key: a migration rewrites it into current slots when the config loads."
         },
@@ -13246,6 +13246,9 @@
             "maxHeight": {
               "$ref": "#/$defs/LinearBasicDisplaySlots/properties/maxHeight"
             },
+            "renderer": {
+              "$ref": "#/$defs/LinearBasicDisplaySlots/properties/renderer"
+            },
             "jexlFilters": {
               "anyOf": [
                 {
@@ -13258,9 +13261,6 @@
                   "$ref": "#/$defs/LinearMarkDisplaySlots/properties/jexlFilters"
                 }
               ]
-            },
-            "renderer": {
-              "$ref": "#/$defs/LinearBasicDisplaySlots/properties/renderer"
             },
             "showDescriptions": {
               "$ref": "#/$defs/LinearBasicDisplaySlots/properties/showDescriptions"

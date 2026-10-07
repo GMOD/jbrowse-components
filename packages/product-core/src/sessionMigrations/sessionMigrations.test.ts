@@ -15,7 +15,17 @@ function display(
 ) {
   return new DisplayType({
     name,
-    configSchema: ConfigurationSchema(name, {}, { retired }),
+    // the slots the lifts below land on, since a closed schema keeps a lifted
+    // member only where a slot takes it
+    configSchema: ConfigurationSchema(
+      name,
+      {
+        color: { type: 'color', defaultValue: '#000' },
+        height: { type: 'number', defaultValue: 100 },
+        otherBand: { type: 'boolean', defaultValue: true },
+      },
+      { retired, closed: true },
+    ),
     stateModel: types.model(name, {}),
     trackType: 'FeatureTrack',
     viewType: 'LinearGenomeView',

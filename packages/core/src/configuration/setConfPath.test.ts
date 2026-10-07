@@ -34,16 +34,22 @@ const searchIndex = ConfigurationSchema(
   { explicitlyTyped: true },
 )
 
-const display = ConfigurationSchema('Display', {
-  height: { type: 'number', defaultValue: 100 },
-  scales,
-  facet,
-  // `textSearchAdapter`'s spelling: unset until something writes it
-  searchIndex: types.union(
-    types.optional(types.undefined, undefined),
-    searchIndex,
-  ),
-})
+// closed, as every display's schema is, so the bag below shows that an
+// undeclared key is routed rather than refused
+const display = ConfigurationSchema(
+  'Display',
+  {
+    height: { type: 'number', defaultValue: 100 },
+    scales,
+    facet,
+    // `textSearchAdapter`'s spelling: unset until something writes it
+    searchIndex: types.union(
+      types.optional(types.undefined, undefined),
+      searchIndex,
+    ),
+  },
+  { closed: true },
+)
 
 const holder = types.model({ configuration: display })
 
