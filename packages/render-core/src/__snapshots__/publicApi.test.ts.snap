@@ -23,6 +23,7 @@ exports[`render-core public surface pins the subpath exports 1`] = `
   "./installUpload",
   "./instanceCache",
   "./instancePass",
+  "./linkFeet",
   "./marks",
   "./marks/backend",
   "./marks/colorFill",
