@@ -326,14 +326,14 @@ attaches, with its size in the tooltip.
 
 ## Bubbles, genes and walks on the drawing
 
-**Mark bubbles** in the track menu draws the graph's bubbles on every node
-layout. Each bubble is a halo along the bubble's nodes, coloured by its type,
-with a label naming the type, and the legend names each colour. The option
-starts off, because on a base-level cut every SNP's halo is a blob. The bubbles
-come from the bubble index beside an rGFA where there is one. Otherwise the
-graph derives them from the drawing's layering, which covers a GBZ cut, a plain
-GFA and the inside of an opened bubble. Click a label to open that bubble alone
-inside the track, with a button back. An opened bubble derives the bubbles
+**Show... → Show bubble halos** in the track menu draws the graph's bubbles on
+every node layout. Each bubble is a halo along the bubble's nodes, coloured by
+its type, with a label naming the type, and the legend names each colour. The
+option starts off, because on a base-level cut every SNP's halo is a blob. The
+bubbles come from the bubble index beside an rGFA where there is one. Otherwise
+the graph derives them from the drawing's layering, which covers a GBZ cut, a
+plain GFA and the inside of an opened bubble. Click a label to open that bubble
+alone inside the track, with a button back. An opened bubble derives the bubbles
 inside it, so a superbubble opens level by level.
 
 <Figure caption="The LPA window force-directed with its bubbles haloed and named, LPA pinned under the backbone with its exons along the reference nodes, and clicking a halo label opens its bubble." src="/img/pangenome/hprc_lpa_kiv2.png" />
@@ -350,8 +350,8 @@ more displays. **Node width** in the track menu's **Settings** draws a node
 thicker the more walks visit it, scaled by the square root of its depth against
 the mean, which is Bandage's rule. **Uniform** turns that off. In a bubble with
 a route over a kilobase, every route has a chip at the far point of its loop
-while **Mark bubbles** is on. The chip names the walks that take the route and
-gives the route's length. The track menu's **Walk** submenu highlights one walk.
+while the halos are on. The chip names the walks that take the route and gives
+the route's length. The track menu's **Haplotypes** submenu highlights one walk.
 Its nodes keep their colour, its links draw dark, and everything else fades, on
 the reference strip too, so the stretches of reference the walk skips read at
 their bp. A readout beside the legend compares the walk's length with the

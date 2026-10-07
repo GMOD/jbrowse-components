@@ -97,8 +97,8 @@ On the HPRC page, press **graph** on the HLA / MHC row. The launch opens four
 tracks: genes, bubbles, the allele inventory (one row per allele) and the graph.
 Hide the bubbles and the allele inventory in the track selector to leave the
 genes over the graph. Type `C4A` in the location box, pick the chr6 hit, and
-zoom out twice to take in _C4B_. Open the graph track's menu and pick **Layout →
-Force-directed layout**, which draws the graph by its shape.
+zoom out twice to take in _C4B_. The graph opens in the force-directed layout,
+which draws it by its shape.
 
 <Figure caption="The C4 locus as a force-directed graph under the hg38 genes for the same window, colored by reference position. The labels name a backbone segment, an allele, and a bubble whose two routes are the reference path and the dashed arc that skips one whole copy of the tandem C4-CYP21-TNX module." src="/img/pangenome/hprc_graph_anatomy.png" />
 

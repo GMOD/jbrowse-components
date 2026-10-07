@@ -82,10 +82,10 @@ so there is nothing to download by hand.
 _LPA_ contains a tandem array of kringle IV type 2 (KIV-2) copies, tied to
 lipoprotein(a) levels, a heart-disease risk factor (Schmidt et al. 2016). Open
 the [HPRC page](https://staging.genomes.jbrowse.org/pangenomes/hprc) and press
-**graph** on the LPA row. JBrowse opens on `chr6:160,525,000-160,655,000`. Pick
-**Layout → Force-directed layout** from the graph track's menu and tick **Mark
-bubbles**. The strip along the top of the track draws each reference segment at
-its position on the ruler, in the colour of its node below.
+**graph** on the LPA row. JBrowse opens on `chr6:160,525,000-160,655,000`. Tick
+**Show... → Show bubble halos** in the graph track's menu. The strip along the
+top of the track draws each reference segment at its position on the ruler, in
+the colour of its node below.
 
 <Figure caption="The LPA window with the RefSeq genes, UniProt's kringle domains and the HPRC bubbles above the force-directed graph track. The kringle array is the knot of loops in the middle, haloed and labelled as a repeat array, and LPA is pinned under the backbone with its exons along it." src="/img/pangenome/hprc_lpa_kiv2.png" />
 
@@ -101,8 +101,7 @@ one per haplotype as a gbz-base database. Type the array's window,
 `chr6:160,616,002-160,646,753`, put the rGFA graph track back to a row of
 segments with **Display types → Feature display**, and turn the gbz-base track
 on from the track selector. **Display types → Graph** in its track menu draws
-that same track as a graph of the walks, and **Layout → Force-directed layout**
-lays it out.
+that same track as a force-directed graph of the walks.
 
 **Haplotypes → The track's 8 assemblies** <!-- menu-path-ok --> is checked in
 the same menu: the track cuts for the eight HPRC assemblies the hosted config
@@ -112,18 +111,19 @@ draw them all.
 
 A node draws thicker the more walks visit it (as in Bandage), so the shared
 backbone is the thick line and copies on one haplotype are thin loops. Pick
-`HG00133` under **Walk**: its route stays dark while everything else fades, and
-a readout gives its length against the reference walk.
+`HG00133` under **Haplotypes**: its route stays dark while everything else
+fades, and a readout gives its length against the reference walk.
 
-<Figure caption="The eight-haplotype KIV-2 cut under the same window's genes, bubbles and rGFA segments, with HG00133 picked under Walk. The labelled loop is copies HG00133 walks and GRCh38 does not, its links drawn dark, and the readout states the walk's excess over GRCh38." src="/img/pangenome/graph_kiv2_walks.png" />
+<Figure caption="The eight-haplotype KIV-2 cut under the same window's genes, bubbles and rGFA segments, with HG00133 picked under Haplotypes. The labelled loop is copies HG00133 walks and GRCh38 does not, its links drawn dark, and the readout states the walk's excess over GRCh38." src="/img/pangenome/graph_kiv2_walks.png" />
 
 ## Every haplotype's KIV-2 array as a bar {#every-haplotypes-copies}
 
 Walk rows draw each walk as a bar, so every haplotype in the release fits in the
 track. In the gbz-base track's menu:
 
-- **Layout → Walk rows** and **Color → Uniform** turn each walk into a bar,
-  longest first, blue on GRCh38's path through the graph and purple off it
+- **Walk rows** under the **Layout** row and **Uniform** under the **Color** row
+  turn each walk into a bar, longest first, blue on GRCh38's path through the
+  graph and purple off it
 - **Haplotypes → Every haplotype in the graph** cuts the window again for the
   whole release
 
@@ -139,12 +139,12 @@ routes the rGFA holds there, and the bars run from about the one to about the
 other.
 
 To read one sample at full size, right-click its bar and pick **Show only** with
-its name, or pick names under **Samples → Choose samples...**, and **Samples →
-Every sample** brings the cohort back.
+its name. Under the **Layout** row, **Samples → Choose samples...** picks names,
+and **Samples → Every sample** brings the cohort back.
 
-**Group by… → superpopulation** in the same menu splits the bars into a section
-per superpopulation, from the samples table the track names, every section on
-one ruler and row height.
+**Group by... → superpopulation** under the **Layout** row splits the bars into
+a section per superpopulation, from the samples table the track names, every
+section on one ruler and row height.
 
 ## Telling KIV-2A from KIV-2B {#which-copy-is-which}
 
@@ -344,11 +344,11 @@ bcftools index -t sample.sorted.vcf.gz
 trgt merge --vcf *.sorted.vcf.gz --genome GRCh38.fa --output-type z --output merged.vcf.gz
 ```
 
-The session names the TRGT track as its `repeatTrackId`, so a **Repeat** entry
-joins **Walk** in the track menu. Pick the _ABCA7_ record: each walk gets a
-black tick at the allele TRGT called for it (paired by length), red where the
-two lie more than 10% apart. At full size, as in the next section, the bars also
-divide into motif-length units.
+The session names the TRGT track as its `repeatTrackId`, so the **Layout** row
+of the track menu gains a **Repeat** entry. Pick the _ABCA7_ record: each walk
+gets a black tick at the allele TRGT called for it (paired by length), red where
+the two lie more than 10% apart. At full size, as in the next section, the bars
+also divide into motif-length units.
 
 <Figure caption="The ABCA7 VNTR in walk rows, one bar per HPRC haplotype, longest first and packed to fit, with the TRGT record picked under Repeat and the catalogue track marking the VNTR on GRCh38. The black ticks tracing the bar ends are TRGT's calls agreeing with the walks; each red tick is a call more than 10% from its walk." src="/img/pangenome/hprc_abca7_repeat_units.png" />
 
@@ -356,10 +356,10 @@ divide into motif-length units.
 
 Each walk's bar carries a tick at the allele length TRGT called from reads, so a
 tick at the bar's end means reads and assembly agree. To compare seven samples,
-keep the _ABCA7_ record picked under **Repeat**, then in the graph track's menu
-choose **Samples → Choose samples...** and pick HG00099, HG03688, HG00741,
-HG02647, HG01943, HG02559 and HG04199 in that order. Their walks show in pairs,
-in the order picked, and fall into three groups:
+keep the _ABCA7_ record picked under **Repeat**, then under the **Layout** row
+of the graph track's menu choose **Samples → Choose samples...** and pick
+HG00099, HG03688, HG00741, HG02647, HG01943, HG02559 and HG04199 in that order.
+Their walks show in pairs, in the order picked, and fall into three groups:
 
 - HG00099, HG03688 and HG00741 tick at each bar's end: reads and assemblies
   agree.

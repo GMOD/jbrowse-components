@@ -575,10 +575,10 @@ segments as a row of blocks instead.
 
 Past the flagellar operon, K12 has an IS1 element (a short insertion sequence)
 the other four skip. Type `chr:1,978,100-1,979,700`, and the graph track draws
-that window. Pick **Layout → Force-directed layout** from its track menu to see
-the element's shape. A second copy of the segments track, colored by how many
-strains the `SM:Z:` tag lists for each segment, shows which segments those are;
-the pggb page gives
+that window. In its track menu, pick **Force-directed layout** under the
+**Layout** row to see the element's shape. A second copy of the segments track,
+colored by how many strains the `SM:Z:` tag lists for each segment, shows which
+segments those are; the pggb page gives
 [that track's config](/docs/tutorials/pangenome_ecoli#strains-per-segment-as-a-lane).
 Show the [MAF track](#whole-genome-alignment-maf-projection) above the graph
 too: the strains-per-segment track counts the strains, and the MAF's rows name
@@ -587,9 +587,9 @@ them.
 <Figure caption="1.6 kb of K12 past flhD, as tracks above and as the graph track below. The gene track names the IS1 transposase pair insA5 and insB5 in the shaded span, the strains-per-segment track paints that span as one strain where the rest of the window is all five, the four non-K12 MAF rows show it as a deletion, and in the graph it is the single long node the other four route around." src="/img/pangenome_cactus/graph_bubble.png" />
 
 The other four strains' route is a link from the node before the IS1 element to
-the node after it. **Show deletion edges** in the track menu draws that link
-dashed, labelled with the length of the node it skips. The link has no sequence,
-so its drawn length comes from the layout.
+the node after it. The graph draws that link dashed, labelled with the length of
+the node it skips, and **Show... → Show deletion edges** in the track menu hides
+it. The link has no sequence, so its drawn length comes from the layout.
 
 ## Comparing odgi viz's node-order axis with K12's coordinates
 

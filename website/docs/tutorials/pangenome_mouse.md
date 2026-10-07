@@ -129,8 +129,7 @@ the whole chromosome with the graph drawn as one node per bubble, a region where
 the strains' paths split and rejoin. Type `chr13:119,440,000-119,600,000`, and
 the graph track draws the segments there. Then:
 
-- in the graph track's menu, pick **Layout → Force-directed layout** and tick
-  **Mark bubbles**
+- in the graph track's menu, tick **Show... → Show bubble halos**
 - turn on the bubbles track in the track selector
 
 C57BL/6J has a multi-exon deletion at _Nnt_ (nicotinamide nucleotide
@@ -155,8 +154,8 @@ The portal page's **Loci** table shows that ranking. It recovers the vomeronasal
 receptor and Speer families and the immunoglobulin heavy chain locus. The rows
 above _Dock2_ are too wide for one window; its row is the densest bubble that
 fits in one, inside one intron at `chr11:34,516,044-34,560,497`. Click its
-**graph** link, then pick **Layout → Force-directed layout** from the graph
-track menu and tick **Mark bubbles**:
+**graph** link, then tick **Show... → Show bubble halos** in the graph track
+menu:
 
 <Figure caption="The Dock2 intron bubble, the densest in the mouse graph that fits in one window. The bubbles track is a single row, the allele inventory draws each alternative path at its size, and the graph carries one label for the whole bubble, with Dock2 pinned under the backbone. The coloured path is C57BL/6J, the reference, and each charcoal loop is sequence other strains have and the reference lacks." src="/img/pangenome/mouse_dock2.png" />
 

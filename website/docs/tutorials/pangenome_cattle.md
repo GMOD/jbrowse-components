@@ -222,10 +222,9 @@ The track config uses the other columns, a breed and a lineage per code:
 In the chr23 view the portal opened, type `chr23:27,508,000-27,536,000`, and the
 graph track draws the segments around _HSPA1A_. Turn on the callset and the
 allele inventory in the track selector. An insertion has no reference span to
-draw along, so in the graph track's menu:
-
-- pick **Layout → Force-directed layout**
-- pick **Bubble spread → Compress lengths**
+draw along, and the portal opens the graph force-directed, which draws it by its
+shape. Open **Settings** in the graph track's menu and set **Bubble spread** to
+**Compress lengths**.
 
 The figure shows all three tracks under the RefSeq genes.
 
@@ -294,7 +293,7 @@ trait to a 14.3 kb segment repeated in tandem upstream of _KIT_: white-headed
 breeds have extra copies, colour-headed breeds a deletion. The Hereford
 reference holds one collapsed copy. Open `chr6:70,080,000-70,180,000`, and put
 the graph track back on the reference's coordinates under the callset with
-**Layout → Anchored** in its menu.
+**Anchored** under the **Layout** row of its menu.
 
 <Figure caption="Upstream of KIT on ARS-UCD1.2: RefSeq genes, the callset and the graph track. The Simmental row has a distinct allele across the repeat and every other row has the deletion, which the graph draws as the dashed arc skipping the repeat." src="/img/pangenome/bovine_kit.png" />
 

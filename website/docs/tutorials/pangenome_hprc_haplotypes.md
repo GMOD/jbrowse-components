@@ -140,8 +140,8 @@ gives that span as a multiple of the window.
 <Figure caption="The amylase locus from the HPRC page's haplotypes launch with five lanes chosen, one per amylase structure, under the RefSeq genes. Each lane is drawn on the haplotype's contig under its CAT genes; a lane longer than the window gives its span as a multiple in its label." src="/img/multiway_synteny/hprc_amylase_lanes.png" />
 
 To read the lengths, take **Display types → Graph**, enter the five names in
-**Settings → Haplotypes**, then pick **Layout → Walk rows** and **Color →
-Uniform** to draw each haplotype's route as a bar.
+**Settings → Haplotypes**, then pick **Walk rows** under the **Layout** row and
+**Uniform** under the **Color** row to draw each haplotype's route as a bar.
 
 <Figure caption="The five haplotypes' walks across the amylase array in walk rows, longest first, under GRCh38's bar, each boxed with its own CAT genes so its AMY1 copies can be counted on the bar. Blue is on GRCh38's path through the graph and purple off it. Each readout gives the walk's length and its excess over GRCh38." src="/img/pangenome/hprc_amylase_walk_rows.png" />
 
