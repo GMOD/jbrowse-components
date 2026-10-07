@@ -70,7 +70,7 @@ test('a property a composed mixin contributes lands too', async () => {
 
 // The spec is the session: a color written as the object comes back as the
 // object, and the reader refuses the shapes a config cannot hold.
-test('color round-trips a session spec and refuses a stray key', async () => {
+test('color round-trips a session spec and names a stray key', async () => {
   const view = await open({
     views: ROWS,
     color: { field: 'gene_group', domain: ['B1', 'A1a'] },
@@ -81,11 +81,13 @@ test('color round-trips a session spec and refuses a stray key', async () => {
     field: 'gene_group',
     domain: ['B1', 'A1a'],
   })
-  await expect(
-    open({ views: ROWS, color: { fields: 'strand' } }),
-  ).rejects.toThrow(
-    'SyntenyColor takes value, field, scale, domain, range, scheme, reverse, domainMid, domainMin, domainMax, labels and title, not fields',
+  const warn = jest.spyOn(console, 'warn').mockImplementation(() => {})
+  const stray = await open({ views: ROWS, color: { fields: 'strand' } })
+  expect(getSnapshot(stray).color).toBeUndefined()
+  expect(warn).toHaveBeenCalledWith(
+    'SyntenyColor does not declare fields: loading without it',
   )
+  warn.mockRestore()
 })
 
 // launch links the genomes portal handed out hold the mode string on the view

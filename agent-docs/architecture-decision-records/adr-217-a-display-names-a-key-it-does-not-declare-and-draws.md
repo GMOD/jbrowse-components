@@ -7,7 +7,11 @@ summary: "A display given a config key it does not declare draws without it and 
 
 ## Status
 
-Accepted (2026-10-07). Supersedes the refusal and the registration check of
+Accepted (2026-10-07).
+[ADR-220](adr-220-a-closed-schema-warns-on-load-and-refuses-on-a-write.md)
+supersedes the `'warn'` value and the third decision bullet: `closed` is a
+boolean, a load warns and a write refuses, and a display is closed by
+construction. Supersedes the refusal and the registration check of
 [ADR-214](adr-214-a-display-refuses-a-key-it-does-not-declare.md).
 [ADR-133](adr-133-a-channel-objects-slots-are-each-valid-alone.md)'s closed
 channel objects are unchanged.

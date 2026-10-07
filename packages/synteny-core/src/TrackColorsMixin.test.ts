@@ -343,10 +343,13 @@ describe('the color object', () => {
     expect(() => view('strand')).toThrow('strand')
   })
 
-  it('refuses a key the object does not declare', () => {
-    expect(() => view({ fields: 'strand' })).toThrow(
-      'SyntenyColor takes value, field, scale, domain, range, scheme, reverse, domainMid, domainMin, domainMax, labels and title, not fields',
+  it('names a key the object does not declare, and loads without it', () => {
+    const warn = jest.spyOn(console, 'warn').mockImplementation(() => {})
+    expect(getSnapshot(view({ fields: 'strand' })).color).toBeUndefined()
+    expect(warn).toHaveBeenCalledWith(
+      'SyntenyColor does not declare fields: loading without it',
     )
+    warn.mockRestore()
   })
 
   it('keys a declared ramp, keeps it through a domain edit, and drops it on a new field', () => {

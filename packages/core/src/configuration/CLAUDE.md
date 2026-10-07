@@ -51,6 +51,10 @@ node not the snapshot, forwarding a callback slot raw, reference resolution.
 
 ## Schema composition
 
+- **A new write door wraps its `create` in `refusingUndeclaredKeys`.** A
+  `closed` schema names an undeclared key on a load and refuses it only inside
+  that scope, so a write path creating a schema outside it turns a typo into a
+  console line. ADR-220.
 - A subclass redeclaring a slot gets a **field-by-field merge**, so state only
   what differs — but keep `type`, which is what distinguishes a slot from a
   sub-schema. It is a spread, so turning a base field off means stating it.

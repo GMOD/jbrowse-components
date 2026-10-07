@@ -1,4 +1,4 @@
-import { getConf } from '@jbrowse/core/configuration'
+import { getConf, setConf } from '@jbrowse/core/configuration'
 
 import { getFeatureHeightMenuItem } from './menus/featureSize.ts'
 import {
@@ -468,8 +468,14 @@ describe('alignments colorBy', () => {
     expect(display.pinnedInsertSizeBand).toEqual({ lower: 150, upper: 600 })
   })
 
-  it('an undeclared key in the colour object is refused', () => {
-    expect(() => createDisplay({ color: { type: 'strand' } })).toThrow()
+  it('an undeclared key in the colour object is named, and a write of one refused', () => {
+    const { display } = createDisplay({ color: { type: 'strand' } })
+    expect(console.warn).toHaveBeenCalledWith(
+      expect.stringMatching(/Color does not declare type: loading without it$/),
+    )
+    expect(() => {
+      setConf(display, 'color', { type: 'strand' })
+    }).toThrow('not type')
   })
 
   it('pins the insert-size cut points from the domain', () => {

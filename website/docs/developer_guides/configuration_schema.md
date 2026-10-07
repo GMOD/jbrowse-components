@@ -98,9 +98,11 @@ export default BedGraphAdapter
 
 The name must match the `type` field in config JSON, and `explicitlyTyped: true`
 requires that field to be present. Each slot becomes an observable MST property.
-A display's schema also declares `closed: 'warn'`, or inherits it from
-`baseLinearDisplayConfigSchema`: a display given a key it does not declare draws
-without it and names the key on the console.
+A display's schema is `closed` without saying so, and an adapter's says
+`closed: true`: a config carrying a key the schema does not declare loads
+without it and names the key on the console, and a write of one through
+`setConf` throws. An adapter's `preProcessSnapshot` therefore strips the
+shorthand keys it consumed, which `fillLocations` does for `uri` and `baseUri`.
 
 The `Instance<typeof …>` export at the bottom is how the rest of the codebase
 gets a typed handle on the schema — it is the `CONF` in

@@ -839,39 +839,44 @@ test('a bar or point naming no y loads, draws nothing and says so', () => {
   expect(display.markView.visible).toEqual([false, true])
 })
 
-test('an encoding channel refuses a key it does not declare', () => {
-  expect(() =>
-    createTestEnvironment([
-      { mark: 'span', encoding: { color: { colour: 'strand' } } },
-    ]).createDisplay(),
-  ).toThrow(
-    'MarkColor takes value, field, scale, domain, domainMin, domainMax, domainQuantile, range, labels, scheme, reverse, domainMid, title, breaks, descending and missingLabel, not colour',
-  )
-  expect(() =>
-    createTestEnvironment([
+// the undeclared keys a config names on the console as it loads, off the
+// mock the test environment puts over `console.warn`
+function namedOnLoad(...args: Parameters<typeof createTestEnvironment>) {
+  createTestEnvironment(...args).createDisplay()
+  return (console.warn as jest.Mock).mock.calls
+    .map(([message]) => message as string)
+    .filter(message => message.includes('does not declare'))
+}
+
+test('a key an encoding channel does not declare is named as the config loads', () => {
+  expect(
+    namedOnLoad([{ mark: 'span', encoding: { color: { colour: 'strand' } } }]),
+  ).toEqual(['MarkColor does not declare colour: loading without it'])
+  expect(
+    namedOnLoad([
       { mark: 'point', encoding: { y: 'score', shape: { glyph: 'circle' } } },
-    ]).createDisplay(),
-  ).toThrow(
-    'MarkShape takes value, field, scale, range, domain, title, labels, breaks and missingLabel, not glyph',
-  )
-  expect(() =>
-    createTestEnvironment(
+    ]),
+  ).toEqual(['MarkShape does not declare glyph: loading without it'])
+  expect(
+    namedOnLoad(
       [{ mark: 'bar', encoding: { y: 'score' } }],
       REGION,
       'BedAdapter',
-      { scales: { y: { min: 0 } } },
-    ).createDisplay(),
-  ).toThrow(
-    'ValueScale takes type, domainMin, domainMax, zero, autoscaleGroup, symlogConstant, domainQuantile, grid, minimalTicks, title and rules, not min',
-  )
-  expect(() =>
-    createTestEnvironment(
+      {
+        scales: { y: { min: 0 } },
+      },
+    ),
+  ).toEqual(['ValueScale does not declare min: loading without it'])
+  expect(
+    namedOnLoad(
       [{ mark: 'bar', encoding: { y: 'score' } }],
       REGION,
       'BedAdapter',
-      { scales: { y: { rules: [{ value: 5, colour: 'red' }] } } },
-    ).createDisplay(),
-  ).toThrow('ValueScaleRule takes value, color and label, not colour')
+      {
+        scales: { y: { rules: [{ value: 5, colour: 'red' }] } },
+      },
+    ),
+  ).toEqual(['ValueScaleRule does not declare colour: loading without it'])
 })
 
 // Each of these loaded and painted something else: a scheme name inside a
@@ -952,39 +957,30 @@ test('a mark type the display does not draw is named as the problem, not the cha
   ).toThrow(/marks.0.mark is "area", and a mark is one of bar, point, rule/)
 })
 
-test('a mistyped key on a mark, a step or an op is refused where the config is read', () => {
-  expect(() =>
-    createTestEnvironment([
-      { mark: 'bar', encoding: { y: 'score' }, transforms: [] },
-    ]).createDisplay(),
-  ).toThrow(/Mark takes .* not transforms/)
-  expect(() =>
-    createTestEnvironment([
+test('a mistyped key on a mark, a step or an op is named as the config loads', () => {
+  expect(
+    namedOnLoad([{ mark: 'bar', encoding: { y: 'score' }, transforms: [] }]),
+  ).toEqual(['Mark does not declare transforms: loading without it'])
+  expect(
+    namedOnLoad([
       {
         mark: 'bar',
         encoding: { y: 'count' },
         transform: [{ type: 'aggregate', groupBy: ['type'] }],
       },
-    ]).createDisplay(),
-  ).toThrow('aggregate takes groupby, ops and type, not groupBy')
-  expect(() =>
-    createTestEnvironment([
+    ]),
+  ).toEqual(['aggregate does not declare groupBy: loading without it'])
+  expect(
+    namedOnLoad([
       {
         mark: 'bar',
         encoding: { y: 'score' },
         transform: [{ type: 'filter', expr: 'jexl:true', step: 50 }],
       },
-    ]).createDisplay(),
-  ).toThrow('filter takes expr and type, not step')
-  expect(() =>
-    createTestEnvironment([
-      { mark: 'bar', encoding: { y: 'score' }, transform: [{ step: 1000 }] },
-    ]).createDisplay(),
-  ).toThrow(
-    'a MarkTransform names its type, one of filter, formula, bin, aggregate, coverage, flatten, cells, pileup and mate, and names none',
-  )
-  expect(() =>
-    createTestEnvironment([
+    ]),
+  ).toEqual(['filter does not declare step: loading without it'])
+  expect(
+    namedOnLoad([
       {
         mark: 'bar',
         encoding: { y: 'mean_score' },
@@ -992,8 +988,18 @@ test('a mistyped key on a mark, a step or an op is refused where the config is r
           { type: 'aggregate', ops: [{ op: 'mean', fields: 'score' }] },
         ],
       },
+    ]),
+  ).toEqual(['MarkAggregateOp does not declare fields: loading without it'])
+})
+
+test('a transform step naming no type is refused where the config is read', () => {
+  expect(() =>
+    createTestEnvironment([
+      { mark: 'bar', encoding: { y: 'score' }, transform: [{ step: 1000 }] },
     ]).createDisplay(),
-  ).toThrow(/MarkAggregateOp takes .* not fields/)
+  ).toThrow(
+    'a MarkTransform names its type, one of filter, formula, bin, aggregate, coverage, flatten, cells, pileup and mate, and names none',
+  )
 })
 
 // A ramp spelled with the pair `domain` used to be how its ends were pinned,

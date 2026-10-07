@@ -77,7 +77,8 @@ function memberRefusal(key: string, member: AnyConfigurationSchemaType) {
  * member, and a `type` naming no member is refused in every build — where a
  * bare `types.union` would load it as its first member. Each member is an
  * `explicitlyTyped`, `closed` schema named by its key, so a key belonging to
- * another member is refused rather than dropped; one that is not throws here.
+ * another member is named on a load and refused on a write rather than
+ * dropped; one that is not throws here.
  */
 export function ConfigurationSchemaUnion<
   const MEMBERS extends Record<string, AnyConfigurationSchemaType>,

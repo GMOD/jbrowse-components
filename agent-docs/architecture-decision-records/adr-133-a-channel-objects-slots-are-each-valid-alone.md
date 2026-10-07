@@ -16,6 +16,9 @@ whole-object writers stand.
 the objects' `palette` and `ramp` as `range` and `scheme`, and reads a field's
 kind off `scale` alone, which retires the MarkColor exception below; the rule
 this record states stands.
+[ADR-220](adr-220-a-closed-schema-warns-on-load-and-refuses-on-a-write.md)
+keeps the `closed` refusal on a write and turns it into a console line on a
+load.
 
 ## Context
 
