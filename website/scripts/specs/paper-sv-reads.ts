@@ -147,10 +147,10 @@ const readEvidence = ({
             unit: 'chain',
             readConnections: 'arc',
             readConnectionsHeight: 60,
-            // rows tall enough for the mark over a read's overlapping segments
-            featureHeight: 3,
+            // rows tall enough to show each maps-back loop
+            featureHeight: connectorCurves ? 6 : 3,
             showBezierConnections: connectorCurves,
-            height: 195,
+            height: connectorCurves ? 345 : 195,
             facet: 'splitRead',
             showLegend: true,
           },
@@ -185,7 +185,7 @@ const readEvidence = ({
     bandLabel('PacBio: coverage', HIFI_COV_NAME, 36),
     bandLabel('PacBio: split-read arcs', HIFI_NAME, 38),
     bandLabel('PacBio: split reads', HIFI_NAME, 82),
-    bandLabel('PacBio: unsplit reads', HIFI_NAME, 158),
+    bandLabel('PacBio: unsplit reads', HIFI_NAME, connectorCurves ? 268 : 158),
     bandLabel('Illumina: coverage', ARCS_NAME, 44),
     bandLabel('Illumina: read-pair arcs', ARCS_NAME, 100),
     bandLabel('Illumina: read cloud', PAIRS_NAME, 40),
@@ -204,7 +204,7 @@ export const paperSvReadsSpecs: ScreenshotSpec[] = [
     coverageMax: 200,
     arcsHeight: 80,
     connectorCurves: true,
-    viewportHeight: 1145,
+    viewportHeight: 1295,
   }),
   readEvidence({
     name: 'paper/sv_read_evidence_inversion',

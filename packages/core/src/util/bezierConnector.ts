@@ -114,9 +114,6 @@ export function bezierConnectorPath({
   // and CUBIC_APEX_RATIO converts it to the control-point drop that puts the ink
   // there. Leave it out to bow up.
   dipPx,
-  // Height, in px, of the apex of a curve that bows up by a set amount, where
-  // the default bow would scale with the distance covered. Ignored with a dip.
-  bowApexPx,
 }: {
   x1: number
   y1: number
@@ -129,7 +126,6 @@ export function bezierConnectorPath({
   reversed2?: boolean
   maxHandlePx?: number
   dipPx?: number
-  bowApexPx?: number
 }) {
   const from = { x: x1, y: y1 }
   const to = { x: x2, y: y2 }
@@ -143,9 +139,7 @@ export function bezierConnectorPath({
   // endpoints in x'.
   const bow =
     dipPx === undefined
-      ? bowApexPx === undefined
-        ? bowHeight(from, to, budget)
-        : Math.min(bowApexPx, BEZIER_CONNECTOR_MAX_REACH_PX) / CUBIC_APEX_RATIO
+      ? bowHeight(from, to, budget)
       : -Math.min(dipPx, BEZIER_CONNECTOR_MAX_REACH_PX) / CUBIC_APEX_RATIO
   return cubicPath(
     from,

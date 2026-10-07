@@ -383,8 +383,8 @@ function connectorShape(
   const facesOneWay = c.isSplit
     ? screenStrand(c.s1, r1.reversed) === screenStrand(c.s2, r2.reversed)
     : c.isNormal
-  // A read that maps back over itself loops up over its own row, where a dip
-  // would run under the rows of other reads.
+  // A read that maps back over itself dips under its own row like any other
+  // unusual connection, by a set depth (`loopDipPx`).
   const loop = c.mapsBack && sameRow
   const plain =
     loop ||
@@ -405,10 +405,12 @@ function connectorShape(
   }
 }
 
-// A maps-back loop's apex above its row: four rows, so it clears the read's
-// own bar, within bounds that keep it visible on thin rows and local on tall ones.
-const LOOP_MIN_APEX_PX = 10
-const LOOP_MAX_APEX_PX = 28
+// How far a maps-back loop dips under its row: four rows, so it clears the
+// read's own bar, within bounds that keep it visible on thin rows and local on
+// tall ones. A fixed depth, where a discordant dip grows with the distance
+// spanned and would carry a long duplication's loop across every row below.
+const LOOP_MIN_DIP_PX = 10
+const LOOP_MAX_DIP_PX = 28
 const LOOP_STROKE_WIDTH_PX = 2
 // The casing under a loop's stroke: this much wider on each side.
 export const LOOP_CASING_PX = 1.5
@@ -524,9 +526,9 @@ export function computePileupBezierArcs(opts: Opts): PileupArc[] {
     scrollTop +
     readCenterDy
 
-  const loopApexPx = Math.min(
-    LOOP_MAX_APEX_PX,
-    Math.max(LOOP_MIN_APEX_PX, 4 * rowH),
+  const loopDipPx = Math.min(
+    LOOP_MAX_DIP_PX,
+    Math.max(LOOP_MIN_DIP_PX, 4 * rowH),
   )
   const arrowPx =
     featureHeight >= LOOP_ARROW_MIN_FEATURE_HEIGHT_PX
@@ -577,8 +579,7 @@ export function computePileupBezierArcs(opts: Opts): PileupArc[] {
           leadingEnd2: c.isSplit,
           reversed1: !!r1.reversed,
           reversed2: !!r2.reversed,
-          dipPx,
-          bowApexPx: loop ? loopApexPx : undefined,
+          dipPx: loop ? loopDipPx : dipPx,
         }) + (loop ? loopArrowhead(sx2, sy2, arrowPx, c.s2, !!r2.reversed) : '')
     const stroke = rgb255(
       linkedReadPalette[
