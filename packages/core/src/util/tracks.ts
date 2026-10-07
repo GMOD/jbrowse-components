@@ -1143,8 +1143,8 @@ export type TrackInit =
       // config node, `displaySnapshot` explicitly to the display node. Any
       // OTHER key on this object is treated as a display-snapshot prop, so the
       // common case sets display options inline with no nesting:
-      // `{ trackId, showDescriptions: false }` rather than
-      // `{ trackId, displaySnapshot: { showDescriptions: false } }`.
+      // `{ trackId, showLabels: 'name' }` rather than
+      // `{ trackId, displaySnapshot: { showLabels: 'name' } }`.
       trackSnapshot?: Record<string, unknown>
       displaySnapshot?: Record<string, unknown>
       [key: string]: unknown
@@ -1155,7 +1155,7 @@ export type TrackInit =
 // displaySnapshot) triple that `showTrackGeneric` expects. Display props written
 // inline on the track object (everything except trackId/trackSnapshot/
 // displaySnapshot) fold into the display snapshot, so a spec can write
-// `{ trackId, showDescriptions: false }` instead of nesting under
+// `{ trackId, showLabels: 'name' }` instead of nesting under
 // `displaySnapshot`. An explicit `displaySnapshot` still wins over an inline
 // key of the same name, and the older nested form keeps working unchanged.
 // `showTrackGeneric` then routes any inline key that is a real config slot (e.g.
