@@ -28,7 +28,43 @@ const GIANT_BMI_TRACK = {
   },
   displayDefaults: {
     height: 250,
-    color: { field: 'ld' },
+    marks: [
+      {
+        mark: 'point',
+        transform: [
+          { type: 'filter', expr: "jexl:feature.ld_role != 'index'" },
+        ],
+        encoding: {
+          y: 'score',
+          color: {
+            field: 'ld',
+            scale: 'threshold',
+            domain: [0.2, 0.4, 0.6, 0.8],
+            range: ['#357ebd', '#46b8da', '#5cb85c', '#eea236', '#d43f3a'],
+            title: 'r² to index SNP',
+            descending: true,
+            missingLabel: 'No LD data',
+          },
+        },
+      },
+      {
+        mark: 'point',
+        transform: [
+          { type: 'filter', expr: "jexl:feature.ld_role == 'index'" },
+        ],
+        encoding: {
+          y: 'score',
+          color: { value: '#c951c9' },
+          shape: {
+            field: 'ld_role',
+            domain: ['index'],
+            range: ['diamond'],
+            labels: ['Index SNP'],
+            title: '',
+          },
+        },
+      },
+    ],
   },
 }
 
