@@ -32,8 +32,11 @@ The files are region slices of public
 [ONT open data](https://labs.epi2me.io/dataindex/) on the `ont-open-data` S3
 bucket.
 
+Nothing to download: the track configs below load region slices we host, cut
+from these files.
+
 <details>
-<summary>Source files (no download needed)</summary>
+<summary>The files</summary>
 
 - the HP1 bedMethyl (per-CpG methylation fractions) from the
   `wf-human-variation` sup run on HG002, restricted to the SNRPN locus and to

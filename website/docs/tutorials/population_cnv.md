@@ -31,11 +31,14 @@ QuicK-mer2 copy-number estimates over the 30x 1000 Genomes panel, from the Kidd
 lab at the University of Michigan
 ([Shen and Kidd 2020](https://doi.org/10.3390/genes11020141)).
 
+The [build script](#reproduce-it-end-to-end) fetches these files, so there is
+nothing to download by hand.
+
 - the sample list across 26 populations, from the lab's UCSC track hub:
   https://raw.githubusercontent.com/KiddLab/kmer_1KG/master/kmer-1kg.trackDb.txt
 
 <details>
-<summary>Source files (no download needed)</summary>
+<summary>Read by URL (no download needed)</summary>
 
 - the per-sample bigWigs, one individual's copy number in 1 kb bins, re-hosted
   unmodified because the lab's download share is offline. Each file sits under

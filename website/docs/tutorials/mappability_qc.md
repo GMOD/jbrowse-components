@@ -30,6 +30,9 @@ The hosted tracks are files already wired into the
 from the 1000 Genomes high-coverage short-read release and its ONT long-read
 release ([Gustafson et al. 2024](https://doi.org/10.1101/gr.279273.124)).
 
+The [build script](#reproduce-it-end-to-end) fetches these files, so there is
+nothing to download by hand.
+
 - GM18501 ONT long reads aligned to GRCh38, counted here since the bucket serves
   no CORS headers and so cannot be loaded as a track:
   https://s3.amazonaws.com/1000g-ont/PROCESSED_DATA/ALIGNED_TO_HG38/MINIMAP2_ALIGNED_BAMS/GM18501-ONT-hg38-R9-LSK110-guppy-sup-5mC.phased.bam
@@ -37,7 +40,7 @@ release ([Gustafson et al. 2024](https://doi.org/10.1101/gr.279273.124)).
   https://s3.amazonaws.com/1000g-ont/PROCESSED_DATA/ALIGNED_TO_CHM13/MINIMAP2_ALIGNED_BAMS/GM18501-ONT-chm13-R9-LSK110-guppy-sup-5mC.phased.bam
 
 <details>
-<summary>Source files (no download needed)</summary>
+<summary>Read by URL (no download needed)</summary>
 
 - Umap k100 multi-read mappability:
   https://hgdownload.soe.ucsc.edu/gbdb/hg38/hoffmanMappability/k100.Umap.MultiTrackMappability.bw

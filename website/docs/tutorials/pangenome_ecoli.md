@@ -45,6 +45,9 @@ Debian/Ubuntu, and `datasets` and `bedGraphToBigWig` are each a
 Five _E. coli_ RefSeq assemblies, fetched by accession with the NCBI `datasets`
 CLI.
 
+The [build script](#reproduce-it-end-to-end) fetches these files, so there is
+nothing to download by hand.
+
 - K12:
   https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/005/845/GCF_000005845.2_ASM584v2/
 - Sakai:

@@ -42,6 +42,9 @@ The Dog10K consortium's public share
 ([Meadows et al. 2023](https://doi.org/10.1186/s13059-023-03023-7)), read
 directly over HTTP with no local copy of the 397 GB callset.
 
+The [build scripts](#reproduce-it-end-to-end) fetch these files, so there is
+nothing to download by hand.
+
 - the SNV/indel callset the gene is sliced from, 397 GB over 1,987 canids:
   https://kiddlabshare.med.umich.edu/dog10K/SNP_and_indel_calls_2021-10-17/AutoAndXPAR.SNPs.vqsr99.vcf.gz
 - the sample table, breed and category per animal:

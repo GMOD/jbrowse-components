@@ -29,6 +29,9 @@ by it, with a key listing each bin.
 ENCODE's ENTEx panel, four skeletal-muscle and four liver donors, quantified
 with RSEM against GENCODE v29.
 
+The [build script](#reproduce-it-end-to-end) fetches these files, so there is
+nothing to download by hand.
+
 - eight RSEM per-transcript quantification tables, the four muscle donors then
   the four liver donors:
   https://www.encodeproject.org/files/ENCFF353NZM/@@download/ENCFF353NZM.tsv,
@@ -43,7 +46,7 @@ with RSEM against GENCODE v29.
   https://ftp.ebi.ac.uk/pub/databases/gencode/Gencode_human/release_29/gencode.v29.annotation.gff3.gz
 
 <details>
-<summary>Source files (no download needed)</summary>
+<summary>Read by URL (no download needed)</summary>
 
 - the four coverage bigWigs the demo's track config loads, one donor per tissue,
   plus and minus strand:

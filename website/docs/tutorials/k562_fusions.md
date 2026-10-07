@@ -37,7 +37,10 @@ curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/
 
 Four PacBio Iso-Seq runs from [ENCODE](https://www.encodeproject.org/), two
 tables out of [DepMap](https://depmap.org/portal/)'s 24Q4 release, and the DNA
-breakpoints on hg19:
+breakpoints on hg19.
+
+The [build script](#reproduce-it-end-to-end) fetches these files, so there is
+nothing to download by hand.
 
 - K562 PacBio Iso-Seq, ENCODE `ENCFF433YKW`:
   https://www.encodeproject.org/files/ENCFF433YKW/@@download/ENCFF433YKW.bam

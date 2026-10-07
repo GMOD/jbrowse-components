@@ -35,6 +35,9 @@ table directly in JBrowse and:
 Seven RefSeq assemblies, one per species, each fetched by accession with the
 `datasets` CLI.
 
+The [build script](#reproduce-it-end-to-end) fetches these files, so there is
+nothing to download by hand.
+
 - grape:
   https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/030/704/535/GCF_030704535.1_ASM3070453v1/
 - peach:

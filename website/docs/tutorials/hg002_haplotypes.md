@@ -33,8 +33,11 @@ assembly, and the maternal-to-paternal chain the project publishes
 ([Hansen _et al._ 2026](https://doi.org/10.1016/j.cell.2026.06.016)), plus JHU
 Liftoff v0.6 gene models built on v1.1.
 
+Nothing to download: the track configs and the `curl` check below read these
+files by URL.
+
 <details>
-<summary>Source files (no download needed)</summary>
+<summary>The files</summary>
 
 - the diploid assembly, both haplotypes in one FASTA (e.g. `chr1_MATERNAL`,
   `chr1_PATERNAL`):

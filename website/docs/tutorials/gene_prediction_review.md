@@ -32,8 +32,11 @@ Tiberius predictions over GRCh38
 ([Gabriel et al. 2024](https://doi.org/10.1093/bioinformatics/btae685)), read
 against GENCODE 47 and the hg38 reference.
 
+Nothing to download: the track configs and commands below read these files by
+URL.
+
 <details>
-<summary>Source files (no download needed)</summary>
+<summary>The files</summary>
 
 - Tiberius gene predictions:
   https://jbrowse.org/genomes/GRCh38/tiberius_grch38.gff.gz

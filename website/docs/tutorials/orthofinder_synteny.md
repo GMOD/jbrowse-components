@@ -35,6 +35,9 @@ grasses.
 
 Each set takes its protein FASTA and GFF3 files from one Ensembl division.
 
+The [build script](#reproduce-it-end-to-end) fetches these files, so there is
+nothing to download by hand.
+
 - **`vertebrates`**, Ensembl release 113:
   https://ftp.ensembl.org/pub/release-113/
 - **`wheat`**, **`solanaceae`** and **`grasses`**, Ensembl Plants release 63:

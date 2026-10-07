@@ -31,6 +31,9 @@ marker genes.
 SnapATAC2's annotated release of the 10x 5k PBMC scATAC dataset, already
 clustered and cell-type-labeled by the SnapATAC2 pipeline.
 
+The [build script](#reproduce-it-end-to-end) fetches these files, so there is
+nothing to download by hand.
+
 - the annotated `AnnData` that `snap.datasets.pbmc5k(type="annotated_h5ad")`
   downloads and caches:
   https://scverse.org/SnapATAC2/api/_autosummary/snapatac2.datasets.pbmc5k.html

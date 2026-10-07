@@ -53,8 +53,11 @@ until JBrowse 5 ships. We welcome your [feedback](/contact).
 [HPRC release 2](https://doi.org/10.64898/2026.07.21.739710), with tabix index
 files cut from its graph that we host.
 
+Nothing to download: the HPRC page's launches read these files, and our index of
+the graph, by URL.
+
 <details>
-<summary>Source files (no download needed)</summary>
+<summary>The files</summary>
 
 - the structural-variant graph (`sv.gfa`) the index files are cut from:
   https://s3-us-west-2.amazonaws.com/human-pangenomics/pangenomes/freeze/release2/minigraph-cactus/v2.1/hprc-v2.1-mc-grch38/hprc-v2.1-mc-grch38.sv.gfa.gz

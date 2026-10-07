@@ -36,8 +36,10 @@ The assemblies are two GenArk genomes
 hub config holds the 2bit sequence, a chromAlias file, an NCBI RefSeq gene track
 and a Trix text index.
 
+Nothing to download: the agent fetches both sequences itself.
+
 <details>
-<summary>The files involved (no download needed)</summary>
+<summary>The files</summary>
 
 - _D. simulans_ sequence, which the agent downloads to align:
   https://hgdownload.soe.ucsc.edu/hubs/GCF/016/746/395/GCF_016746395.2/GCF_016746395.2.fa.gz

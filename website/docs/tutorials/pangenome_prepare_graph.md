@@ -40,6 +40,9 @@ The graph view is a beta plugin. We welcome your [feedback](/contact).
 [HPRC release 2](https://doi.org/10.64898/2026.07.21.739710)'s Minigraph-Cactus
 graph, which every HPRC page on this site reads.
 
+The [build scripts](#reproduce-it-end-to-end) fetch these files, so there is
+nothing to download by hand.
+
 - the SV-resolution rGFA:
   https://s3-us-west-2.amazonaws.com/human-pangenomics/pangenomes/freeze/release2/minigraph-cactus/v2.1/hprc-v2.1-mc-grch38/hprc-v2.1-mc-grch38.sv.gfa.gz
 - the base-level GFA:
@@ -48,7 +51,7 @@ graph, which every HPRC page on this site reads.
   https://s3-us-west-2.amazonaws.com/human-pangenomics/pangenomes/freeze/release2/minigraph-cactus/v2.1/hprc-v2.1-mc-grch38/hprc-v2.1-mc-grch38.gbz
 
 <details>
-<summary>Source files (no download needed)</summary>
+<summary>Read by URL (no download needed)</summary>
 
 - the finished files, for comparison: https://jbrowse.org/demos/hprc/README.txt
 

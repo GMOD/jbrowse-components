@@ -21,8 +21,10 @@ transcript, and Mol\* draws the structures.
 The links open a hosted hg38 config with NCBI RefSeq genes, and the protein3d
 plugin fetches the structures, annotations and mappings from these services.
 
+Nothing to download: the plugin fetches these files when a link opens.
+
 <details>
-<summary>Files the protein3d plugin fetches (no download needed)</summary>
+<summary>The files</summary>
 
 - the AlphaFold model of p53, UniProt P04637:
   https://alphafold.ebi.ac.uk/files/AF-P04637-F1-model_v6.cif

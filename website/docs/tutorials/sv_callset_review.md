@@ -31,11 +31,14 @@ The COLO829 somatic SV callset comes from the ONT open-data release's
 ([Valle-Inclán et al. 2022](https://doi.org/10.1016/j.xgen.2022.100139)),
 rehosted alongside the [cancer SV demo](/docs/tutorials/cancer_sv).
 
+The commands below read this file by URL, so there is nothing to download by
+hand.
+
 - the callset these commands fetch directly:
   https://jbrowse.org/demos/cancer_sv/COLO829.somatic-sv.vcf.gz
 
 <details>
-<summary>Source files (no download needed)</summary>
+<summary>Read by URL (no download needed)</summary>
 
 - the tumor reads the config's `COLO829_tumor_ont` track streams, Oxford
   Nanopore R10 from the ONT open-data release:

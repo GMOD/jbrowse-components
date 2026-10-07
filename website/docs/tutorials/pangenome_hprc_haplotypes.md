@@ -38,6 +38,9 @@ until JBrowse 5 ships. We welcome your [feedback](/contact).
 
 [HPRC release 2](https://doi.org/10.64898/2026.07.21.739710).
 
+The [build scripts](#reproduce-it-end-to-end) fetch these files, so there is
+nothing to download by hand.
+
 - the assemblies:
   https://raw.githubusercontent.com/human-pangenomics/hprc_intermediate_assembly/main/data_tables/assemblies_release2_v1.0.index.csv
 - the CAT gene annotation index, one GFF3 per haplotype:
@@ -46,7 +49,7 @@ until JBrowse 5 ships. We welcome your [feedback](/contact).
   https://s3-us-west-2.amazonaws.com/human-pangenomics/pangenomes/freeze/release2/impg/pafs/hprc465vsgrch38.aln.paf.gz
 
 <details>
-<summary>Source files (no download needed)</summary>
+<summary>Read by URL (no download needed)</summary>
 
 - the graph as a gbz-base database:
   https://s3-us-west-2.amazonaws.com/human-pangenomics/pangenomes/freeze/release2/minigraph-cactus/v2.1/hprc-v2.1-mc-grch38/hprc-v2.1-mc-grch38.gbz.db

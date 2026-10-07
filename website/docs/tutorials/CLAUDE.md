@@ -208,8 +208,19 @@ two places:
   file is where its URL lives. A rehosted file stays visible only where a
   command on the page reads it (`repeatmasker_classes`).
 
-A page with nothing left to list keeps the one-sentence citation, or drops the
-section (`genomes_basics`).
+**One sentence above the list says who fetches it**, because a list of URLs
+under a provenance heading does not tell a reader whether to start downloading:
+
+- above a visible list, "The [build script](#reproduce-it-end-to-end) fetches
+  these files, so there is nothing to download by hand."
+- on a page nobody downloads for, "Nothing to download: the track configs below
+  read these files by URL.", then the `<details>` with the summary "The files".
+  Name the real reader where it is not a track config: a plugin, an agent, a
+  command (`tp53_structures`, `agent_synteny`, `hg002_haplotypes`).
+
+A `<details>` under a visible list is summarised "Read by URL (no download
+needed)". A page with nothing to list at all drops the section
+(`genomes_basics`).
 
 **`## Where the data comes from` is a source list, one bullet per file**, and
 each bullet ends in the raw full URL rather than a link label, because the host

@@ -34,6 +34,9 @@ hub config, has a RepeatMasker track to try it on.
 The figures read UCSC's RepeatMasker track for hg38 and dm6, rehosted on
 jbrowse.org.
 
+The [build script](#reproduce-it-end-to-end) fetches these files, so there is
+nothing to download by hand.
+
 - hg38, read by the tabix command under
   [Checking the lanes against the file](#checking-the-lanes-against-the-file):
   https://jbrowse.org/ucsc/hg38/rmsk.bed.gz

@@ -47,6 +47,9 @@ six of those; bioconda packages `gfatools`, and `datasets` and
 Five _E. coli_ RefSeq assemblies, fetched by accession with the NCBI datasets
 CLI, K12 the `--reference` backbone the other four are aligned onto.
 
+The [build script](#reproduce-it-end-to-end) fetches these files, so there is
+nothing to download by hand.
+
 - K12:
   https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/005/845/GCF_000005845.2_ASM584v2/
 - Sakai:
@@ -63,7 +66,7 @@ CLI, K12 the `--reference` backbone the other four are aligned onto.
   https://ftp.sra.ebi.ac.uk/vol1/fastq/DRR063/DRR063408/DRR063408_2.fastq.gz
 
 <details>
-<summary>Source files (no download needed)</summary>
+<summary>Read by URL (no download needed)</summary>
 
 - the graph's segments, tabix-indexed, which the graph track below reads:
   https://jbrowse.org/demos/ecoli_pangenome/ecoli_cactus.segs.bed.gz

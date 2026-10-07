@@ -37,8 +37,8 @@ The five strains the [pangenome graph](/docs/tutorials/pangenome_ecoli) and
 [all-vs-all](/docs/tutorials/allvsall_synteny) pages build from are all here
 under the same accessions (MG1655 is the strain those pages call K12), so the
 three pages read one set of genomes three ways. The
-[build script](#reproduce-it-end-to-end) pins every accession; the anchor and
-the four Shigella are:
+[build script](#reproduce-it-end-to-end) pins and fetches every accession, so
+there is nothing to download by hand; the anchor and the four Shigella are:
 
 - K-12 MG1655:
   https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/005/845/GCF_000005845.2_ASM584v2/

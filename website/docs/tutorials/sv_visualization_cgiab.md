@@ -52,6 +52,9 @@ Building your own instance needs:
 HG008, the C-GIAB matched tumor/normal pair (NCBI BioProject PRJNA200694), is on
 the C-GIAB FTP. The assemblies are on NIST's S3 bucket.
 
+The [build script](#reproduce-it-end-to-end) fetches these files, so there is
+nothing to download by hand.
+
 The reference and the reads:
 
 - the C-GIAB reference build (GRCh38 with decoys and masked regions):

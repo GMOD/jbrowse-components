@@ -34,6 +34,9 @@ the pooled rows.
 experiment, which the build script streams and pools by cell type without
 writing the BAM to disk.
 
+The [build script](#reproduce-it-end-to-end) fetches these files, so there is
+nothing to download by hand.
+
 - the barcoded alignments, which the script reads by region over HTTPS:
   https://cf.10xgenomics.com/samples/cell-exp/3.0.2/5k_pbmc_v3/5k_pbmc_v3_possorted_genome_bam.bam
 - the filtered feature-barcode matrix the clustering runs on:

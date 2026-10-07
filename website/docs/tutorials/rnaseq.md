@@ -25,10 +25,17 @@ pipeline's junction table as a track.
 The hg19 alignments, gene models and junction table behind the figures, hosted
 on jbrowse.org's demo bucket.
 
+Nothing to download: the track configs below read these files by URL.
+
+<details>
+<summary>The files</summary>
+
 - the paired-end stranded RNA-seq alignments behind every short-read figure on
   this page, from the sample files listed at
   [RSeQC](https://rseqc.sourceforge.net/):
   https://s3.amazonaws.com/jbrowse.org/genomes/hg19/paired_end_rnaseq/Pairend_StrandSpecific_51mer_Human_hg19.bam
+
+</details>
 
 ## Loading hg19, the stranded reads and RefSeq genes
 

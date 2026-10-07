@@ -32,8 +32,10 @@ We ran two predictions over the _TAL1_ locus against
 tokens, following the AlphaGenome team's
 [worked example](https://www.alphagenomedocs.com/colabs/example_analysis_workflow.html).
 
+Nothing to download: the plugin reads both stored predictions by URL.
+
 <details>
-<summary>Source files (no download needed)</summary>
+<summary>The files</summary>
 
 - the reference prediction over chr1:46,700,048..47,748,623, all eleven output
   types, K562 and GM12878:

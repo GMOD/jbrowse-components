@@ -54,7 +54,10 @@ until JBrowse 5 ships. We welcome your [feedback](/contact).
 ## Where the data comes from
 
 [HPRC release 2](https://doi.org/10.64898/2026.07.21.739710) and PacBio's TRGT
-genotypes of 100 of its samples (Dolzhenko et al. 2024):
+genotypes of 100 of its samples (Dolzhenko et al. 2024).
+
+The [build script](#reproduce-it-end-to-end) fetches these files, so there is
+nothing to download by hand.
 
 - TRGT's genotypes over the Genome in a Bottle repeat catalogue, a TRGTdb:
   https://zenodo.org/records/8329210/files/adotto_hprc.tdb.tar
@@ -62,7 +65,7 @@ genotypes of 100 of its samples (Dolzhenko et al. 2024):
   https://zenodo.org/records/8329210/files/adotto_repeats.hg38.bed.gz
 
 <details>
-<summary>Source files (no download needed)</summary>
+<summary>Read by URL (no download needed)</summary>
 
 - our tabix index files cut from the release's rGFA graph, with the build
   recorded beside them: https://jbrowse.org/demos/hprc/README.txt

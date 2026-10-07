@@ -36,6 +36,9 @@ pipeline puts beside an ortholog can drive it.
 The genomes and the ortholog tables are the Dryad deposit behind Schultz et al.
 2023, released CC0.
 
+The [build script](#reproduce-it-end-to-end) fetches these files, so there is
+nothing to download by hand.
+
 - Both tarballs, `genomes.tar.gz` and `supplementary_information.tar.gz`:
   https://datadryad.org/dataset/doi:10.5061/dryad.dncjsxm47
 - The _Ephydatia_ assembly, which a script in the deposit fetches from the

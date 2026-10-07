@@ -20,8 +20,11 @@ The hosted hg38 config on genomes.jbrowse.org has the gene track the examples
 below launch from. The protein3d and msaview plugins fetch everything else live,
 per gene, from the services listed here.
 
+Nothing to download: the plugins fetch from these services when you launch a
+structure or an alignment.
+
 <details>
-<summary>Services the plugins fetch from (no download needed)</summary>
+<summary>The files</summary>
 
 - AlphaFold DB, where a launched structure comes from:
   https://alphafold.ebi.ac.uk/

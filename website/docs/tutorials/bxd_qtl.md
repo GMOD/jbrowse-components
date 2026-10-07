@@ -30,6 +30,9 @@ On Debian/Ubuntu, `apt install curl jq python3 tabix` covers it.
 BXD consensus genotypes and QTL scans from GeneNetwork
 ([Wang et al. 2016](https://doi.org/10.1038/ncomms10464)).
 
+The [build script](#reproduce-it-end-to-end) fetches these files, so there is
+nothing to download by hand.
+
 - the BXD consensus genotypes, 198 strains:
   https://gn1.genenetwork.org/genotypes/BXD.geno
 - the coat-color scan (trait 11280), from GeneNetwork's mapping API:

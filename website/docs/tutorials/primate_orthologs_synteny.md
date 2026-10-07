@@ -34,6 +34,9 @@ the annotation and sequence report for each genome, a few hundred megabytes for
 the eight. Human is GRCh38, so the window coordinates are the ones the rest of
 the ecosystem quotes.
 
+The [build script](#reproduce-it-end-to-end) fetches these files, so there is
+nothing to download by hand.
+
 - human, GRCh38.p14:
   https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/001/405/GCF_000001405.40_GRCh38.p14/
 - chimpanzee:

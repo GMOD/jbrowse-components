@@ -35,7 +35,10 @@ comes from [nodejs.org](https://nodejs.org/).
 
 All but the last file come from the ONT COLO829 open-data release and its
 `wf-somatic-variation` run; the last is the multi-platform truth set
-([Valle-Inclán et al. 2022](https://doi.org/10.1016/j.xgen.2022.100139)):
+([Valle-Inclán et al. 2022](https://doi.org/10.1016/j.xgen.2022.100139)).
+
+The [build script](#reproduce-it-end-to-end) fetches these files, so there is
+nothing to download by hand.
 
 - COLO829 tumor reads (ONT R10, haplotagged):
   https://ont-open-data.s3.amazonaws.com/colo829_2024.03/wf_somatic_variation/sup/COLO829_tumor.ht.cram

@@ -42,6 +42,9 @@ The Dog10K consortium's public phased reference panel
 ([Meadows et al. 2023](https://doi.org/10.1186/s13059-023-03023-7)), plus a
 canFam4 genetic map published separately.
 
+The [build script](#reproduce-it-end-to-end) fetches these files, so there is
+nothing to download by hand.
+
 - the phased reference panel of 1929 canids FLARE runs against:
   https://kiddlabshare.med.umich.edu/dog10K/phased-imputation-panel/AutoAndXPAR.Dog10K.phased.bcf
 - the sample table, breed and category labels the panels and targets are derived

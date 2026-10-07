@@ -40,6 +40,9 @@ TAIR10 for Columbia, and the chromosome-level assemblies of five more accessions
 from [Jiao and Schneeberger 2020](https://doi.org/10.1038/s41467-020-14779-y),
 the first three the ones a figure in the plotsr paper stacks.
 
+The [build script](#reproduce-it-end-to-end) fetches these files, so there is
+nothing to download by hand.
+
 - Col-0, GCF_000001735.4:
   https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/001/735/GCF_000001735.4_TAIR10.1/
 - Ler, GCA_902460285.1:

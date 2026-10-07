@@ -41,14 +41,15 @@ The reference is UCSC's mm39 and the strains are the Mouse Genomes Project
 assemblies as UCSC GenArk rehosts them. We host the graph as the index files
 below.
 
+Nothing to download: the track configs below read the index files by URL.
+
+<details>
+<summary>The files</summary>
+
 - mm39 (GRCm39):
   https://hgdownload.soe.ucsc.edu/goldenPath/mm39/bigZips/mm39.fa.gz
 - the eighteen strains, one GenArk folder per GenBank accession:
   https://hgdownload.soe.ucsc.edu/hubs/GCA/
-
-<details>
-<summary>Source files (no download needed)</summary>
-
 - segments, the graph's nodes at their reference coordinates:
   https://jbrowse.org/demos/mouse_pangenome/mouse-mm39-minigraph.segs.bed.gz
 - links, the edges between segments:

@@ -35,6 +35,9 @@ Three _H. pylori_ RefSeq assemblies and their genome hubs on genomes.jbrowse.org
 the sequence minimap2 aligns and a config holding the assembly and its NCBI
 RefSeq genes.
 
+The [build script](#reproduce-it-end-to-end) fetches these files, so there is
+nothing to download by hand.
+
 - 26695 GCF_000307795.1 sequence:
   https://hgdownload.soe.ucsc.edu/hubs/GCF/000/307/795/GCF_000307795.1/GCF_000307795.1.fa.gz
 - CHC155 GCF_025998455.1 sequence:

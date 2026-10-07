@@ -32,8 +32,11 @@ on for their identity.
 Deep in situ Hi-C for GM12878 and K562 from ENCODE, plus ENCODE's domain, loop
 and compartment calls over the same two matrices.
 
+Nothing to download: the track configs and the scan script below read these
+files by URL.
+
 <details>
-<summary>Source files (no download needed)</summary>
+<summary>The files</summary>
 
 - GM12878 in situ Hi-C (ENCSR410MDC):
   https://encode-public.s3.amazonaws.com/2021/10/28/6f0cc163-86c7-4a68-baac-65af90f5a90d/ENCFF053VBX.hic

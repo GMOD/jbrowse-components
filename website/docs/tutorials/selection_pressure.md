@@ -39,6 +39,9 @@ The assemblies are
 (rhesus macaque Mmul_10), with gene models and coding sequence from Ensembl
 release 116.
 
+The [build script](#reproduce-it-end-to-end) fetches these files, so there is
+nothing to download by hand.
+
 - human gene models:
   https://ftp.ensembl.org/pub/release-116/gff3/homo_sapiens/Homo_sapiens.GRCh38.116.gff3.gz
 - human coding sequence:

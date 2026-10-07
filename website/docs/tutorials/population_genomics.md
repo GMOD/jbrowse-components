@@ -43,6 +43,9 @@ five are on [bioconda](https://bioconda.github.io/) if you already run conda.
 The Drosophila Genetic Reference Panel, 205 inbred lines
 ([Mackay et al. 2012](https://doi.org/10.1038/nature10811)), lifted to dm6.
 
+The [build script](#reproduce-it-end-to-end) fetches these files, so there is
+nothing to download by hand.
+
 - the DGRP freeze-2 genotype calls:
   https://resources.aertslab.org/DGRP2/NCSU/final/dm6/DGRP2.source_NCSU.dm6.final.SNPs_only.vcf.gz
 - the `In(2L)t` inversion karyotype for each line, from DGRPool's phenotype

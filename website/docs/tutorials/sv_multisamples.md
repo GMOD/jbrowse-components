@@ -29,8 +29,10 @@ The page reads the 1000 Genomes 2022 high-coverage ensemble SV callset
 against CRAMs from three of the cohort's samples and QuicK-mer2 copy number for
 the whole cohort.
 
+Nothing to download: the track configs below read these files by URL.
+
 <details>
-<summary>Source files (no download needed)</summary>
+<summary>The files</summary>
 
 - the ensemble SV callset, 3202 samples. EBI publishes it with no mirror, so the
   demo reads a byte-for-byte copy on jbrowse.org[^ebi]:

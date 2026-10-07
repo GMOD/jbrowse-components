@@ -38,13 +38,16 @@ The graph view is a beta plugin. We welcome your [feedback](/contact).
 ## Where the data comes from
 
 The graph's index files, the callset and its sample table are hosted beside the
-graph, and OMIA supplies the curated causal variants:
+graph, and OMIA supplies the curated causal variants.
+
+The [OMIA build script](#the-celtic-polled-allele) fetches this dump itself, and
+the track configs below read the hosted files by URL.
 
 - OMIA's database dump, the source of the curated variant track:
   https://omia.org/static/omia.sql.gz
 
 <details>
-<summary>Source files (no download needed)</summary>
+<summary>Read by URL (no download needed)</summary>
 
 - the segment and link index:
   https://jbrowse.org/demos/bovine_pangenome/bovine-arsucd12-minigraph.segs.bed.gz

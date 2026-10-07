@@ -24,6 +24,9 @@ subtype shares line up.
 TCGA-BRCA open-access somatic mutation calls from the GDC
 ([TCGA 2012](https://doi.org/10.1038/nature11412)).
 
+The [build script](#reproduce-it-end-to-end) fetches these files, so there is
+nothing to download by hand.
+
 - primary-tumor **Masked Somatic Mutation** MAFs (mutation annotation format),
   queried and downloaded through the GDC API: https://api.gdc.cancer.gov/files
 - per-tumor clinical annotation, from harmonized case fields and each case's

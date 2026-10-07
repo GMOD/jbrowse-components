@@ -35,6 +35,9 @@ caller runs first.
 TAIR10 (RefSeq `GCF_000001735.4`) and one wild-type Col-0 WGBS run from the
 European Nucleotide Archive, `DRR029742` (paired-end 150 bp).
 
+The [build script](#reproduce-it-end-to-end) fetches these files, so there is
+nothing to download by hand.
+
 - the TAIR10 reference the reads align to, fetched by accession with the
   `datasets` CLI:
   https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/001/735/GCF_000001735.4_TAIR10.1/
