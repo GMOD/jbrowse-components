@@ -26,7 +26,7 @@ const sources = [
     .globSync('products/*/examples-site/src/examples/*.{ts,tsx}', { cwd: root })
     .sort(),
   ...fs
-    .globSync(`${BROWSER_TESTS}/{suites/*,probe-*}.ts`, { cwd: root })
+    .globSync(`${BROWSER_TESTS}/{suites/*,probe-*,*-probe}.ts`, { cwd: root })
     .sort(),
   ...fs.globSync(`${FIGURE_SPECS}*.ts`, { cwd: root }).sort(),
 ]
