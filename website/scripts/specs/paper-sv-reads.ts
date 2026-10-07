@@ -80,6 +80,7 @@ const readEvidence = ({
   connectorCurves,
   coverageMax,
   viewportHeight,
+  callArcs,
 }: {
   name: string
   loc: string
@@ -90,6 +91,8 @@ const readEvidence = ({
   // caps the Illumina coverage axis where a spike in view would flatten it
   coverageMax?: number
   viewportHeight: number
+  // each breakend pair of the calls as one arc, under its ID
+  callArcs?: boolean
 }): ScreenshotSpec => ({
   mode: 'url',
   name,
@@ -127,11 +130,35 @@ const readEvidence = ({
             geneGlyphMode: 'longestCoding',
             height: 60,
           },
-          {
-            trackId: CALLS,
-            type: 'LinearVariantDisplay',
-            height: 85,
-          },
+          callArcs
+            ? {
+                trackId: CALLS,
+                type: 'LinearMarkDisplay',
+                height: 85,
+                marks: [
+                  {
+                    mark: 'link',
+                    transform: [{ type: 'mate' }],
+                    encoding: {
+                      x2: { chrom: 'mate.refName', pos: 'mate.start' },
+                      size: 2,
+                    },
+                  },
+                  {
+                    mark: 'text',
+                    transform: [{ type: 'mate' }],
+                    encoding: {
+                      x2: { chrom: 'mate.refName', pos: 'mate.start' },
+                      text: 'name',
+                    },
+                  },
+                ],
+              }
+            : {
+                trackId: CALLS,
+                type: 'LinearVariantDisplay',
+                height: 85,
+              },
           // grouping splits coverage per group, so the whole-sample coverage
           // is a track of its own
           {
@@ -212,5 +239,13 @@ export const paperSvReadsSpecs: ScreenshotSpec[] = [
     arcsHeight: 110,
     connectorCurves: false,
     viewportHeight: 1175,
+  }),
+  readEvidence({
+    name: 'paper/sv_read_evidence_inversion_call_arcs',
+    loc: 'chr3:184,709,000-184,723,000',
+    arcsHeight: 110,
+    connectorCurves: false,
+    viewportHeight: 1175,
+    callArcs: true,
   }),
 ]
