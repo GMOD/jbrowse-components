@@ -276,7 +276,6 @@ function makeConfigurationSchemaModel<
   // narrower than `modelDefinition`, which also holds the identifier and the
   // sub-schemas, neither of which setSlot may write
   const slotKeys = new Set<string>()
-  const storesNull = new Set<string>()
   const featureFields = new Set<string>()
   const takesNoCallback = new Map<string, string>()
   for (const [slotName, slotDefinition] of Object.entries(schemaDefinition)) {
@@ -301,9 +300,6 @@ function makeConfigurationSchemaModel<
       slotKeys.add(slotName)
       try {
         modelDefinition[slotName] = ConfigSlot(slotDefinition)
-        if (modelDefinition[slotName].is(null)) {
-          storesNull.add(slotName)
-        }
         if (slotDefinition.type === 'featureField') {
           featureFields.add(slotName)
         } else if (!slotDefinition.contextVariable?.length) {
@@ -398,7 +394,6 @@ function makeConfigurationSchemaModel<
     name: modelName,
     definition: schemaDefinition,
     options,
-    storesNull,
     featureFields,
     takesNoCallback,
   }

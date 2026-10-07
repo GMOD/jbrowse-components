@@ -59,14 +59,13 @@ function refuseCallbacks(
 }
 
 // ADR-146's reset, on the snapshot path: the member keeps its key, so a
-// settings bag still resets it, and `create` reads `undefined` as the default
-function nullMembersAsUnset(
-  snapshot: Record<string, unknown>,
-  storesNull: ReadonlySet<string>,
-) {
+// settings bag still resets it, and `create` reads `undefined` as the default.
+// A frozen slot resets too, since its readers take the default's shape and
+// `setSlot` already resets it; storing the null put one past them.
+function nullMembersAsUnset(snapshot: Record<string, unknown>) {
   let out = snapshot
   for (const key in snapshot) {
-    if (snapshot[key] === null && !storesNull.has(key)) {
+    if (snapshot[key] === null) {
       out = out === snapshot ? { ...snapshot } : out
       out[key] = undefined
     }
@@ -160,8 +159,8 @@ export function applyRetiredSpellings(
  * arrives by (`create`, `applySnapshot`, `setSubschema`, a settings bag): a
  * bare string or number lifts into the `shorthand` slot taking its form, beside any
  * `shorthandWith` slots, and `null` into the empty object that clears it; a
- * `null` member reads as unset, except in a frozen-family slot, which stores
- * it; a `retired` spelling becomes the members that replaced it; a `closed`
+ * `null` member reads as unset; a `retired` spelling becomes the members that
+ * replaced it; a `closed`
  * schema refuses a key it does not declare, then the schema's
  * own `preProcessSnapshot` runs, and a `jexl:` callback in a slot declaring no
  * `contextVariable` is refused. A bare value the shorthand does not lift
@@ -179,10 +178,7 @@ export function preProcessSnapshotWith(
       ? {}
       : target !== undefined
         ? { ...shorthandWith, [target]: snapshot }
-        : nullMembersAsUnset(
-            snapshot as Record<string, unknown>,
-            schema.storesNull,
-          )
+        : nullMembersAsUnset(snapshot as Record<string, unknown>)
   const named = liftRetiredSpellings(schema, lifted)
   if (closed) {
     refuseUndeclaredKeys(schema, named)

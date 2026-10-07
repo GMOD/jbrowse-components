@@ -20,8 +20,6 @@ export interface ConfigurationSchemaMetadata {
    * i.e. with any `baseConfiguration`'s hooks already composed in
    */
   options: MergedConfigurationSchemaOptions<any, any>
-  /** the frozen-family slots, the only members a snapshot's `null` is stored in */
-  storesNull: ReadonlySet<string>
   /** the `featureField` slots, which the reader hands over as written */
   featureFields: ReadonlySet<string>
   /** the slots that refuse a `jexl:` string: every one but a callback and a featureField */

@@ -55,12 +55,13 @@ readers all tested truthiness or `??` already, so nothing downstream changed;
 three assertions moved from `null` to `undefined`, and `showOutline`'s tri-state
 (unset = auto, `true`/`false` = force) survives because it reads through `??`.
 
-**A snapshot can still carry a literal `null` into a frozen-family slot**, and
-this does not change that: `types.maybe(types.frozen())` accepts one, so
-`create({ densityAdapter: null })` still stores `null` where
-`create({})` leaves it unset. Both read as absent to every consumer of these ten
-— that is what made the retype safe — and the merge path is the only one whose
-spelling changed.
+**A snapshot carried a literal `null` into a frozen-family slot** until
+2026-10-07, since `types.maybe(types.frozen())` accepts one; the ten slots
+above read it as absent, but a `frozen` slot with an object default
+(`filterBy`, `rowGroups`, `modifications`) handed its readers a `null` they
+destructured. The snapshot path now resets a `null` member on every slot, as
+`setSlot` already did, so `create({ filterBy: null })` and `create({})` are
+the same config.
 
 **Omitting the key is a different thing, and still means what it meant.**
 `setSlot` is the *merge* path — a session spec naming three slots leaves the

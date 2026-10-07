@@ -933,10 +933,8 @@ describe('a null member on the create path', () => {
     })
   })
 
-  test('still stores a literal null in a frozen-family slot', () => {
-    expect(getSnapshot(Display.create({ sidecar: null }))).toEqual({
-      sidecar: null,
-    })
+  test('resets a frozen-family slot too, where it once stored the null', () => {
+    expect(getSnapshot(Display.create({ sidecar: null }))).toEqual({})
   })
 })
 
