@@ -54,7 +54,8 @@ jexl: genotypeCount(feature, 'het') > 0 // samples in a genotype class — ref, 
 <!-- JEXL_CATEGORY variant-functions END -->
 
 With those functions available, a track colors by allele frequency with no
-preprocessing:
+preprocessing. A `jexl:` expression as the `color` object's `field` computes the
+value, and a `threshold` scale bins it, with a key naming each bin:
 
 ```json addtrack
 {
@@ -63,7 +64,13 @@ preprocessing:
   "uri": "https://yourhost/file.vcf.gz",
   "assemblyNames": ["hg38"],
   "displayDefaults": {
-    "color": "jexl:maf(feature)<0.01?'#ccc':maf(feature)<0.05?'#74a9cf':'#045a8d'"
+    "color": {
+      "field": "jexl:maf(feature)",
+      "scale": "threshold",
+      "domain": ["0.01", "0.05"],
+      "range": ["#ccc", "#74a9cf", "#045a8d"],
+      "title": "Minor allele frequency"
+    }
   }
 }
 ```

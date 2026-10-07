@@ -4,13 +4,14 @@ description: Per-feature color callbacks using jexl or plugin code
 guide_category: Callbacks
 ---
 
-Set a track's `color` in `displayDefaults`, either as a plain CSS color or a
-`jexl:` expression. When the logic outgrows one jexl line, add a function to the
-jexl language with a small plugin and call it from your callback.
+Set a track's `color` in `displayDefaults` as a plain CSS color, an object that
+paints each value of a field with a key, or a `jexl:` expression. When the logic
+outgrows one jexl line, add a function to the jexl language with a small plugin
+and call it from your callback.
 
-The one-line forms (a solid color, a lookup table keyed on `feature.type`, a
-threshold, a gradient) are in the [cookbook](/docs/cookbook#colors). Past that,
-a plugin file registers a function and the callback calls it:
+The object forms (a color per `type`, chosen colors, a threshold, a gradient)
+are in the [cookbook](/docs/cookbook#colors). Past those, a plugin file
+registers a function and the callback calls it:
 
 ```json
 {
@@ -64,24 +65,25 @@ a callback is only needed to override that.
 
 ## Reading the type list off the file
 
-A lookup table keyed on `feature.type` is only as good as its keys, so read the
-types off the file. The `/^##FASTA/{exit}` stops before any inline sequence,
-whose lines have no `#` and would otherwise count as types:
+A `color` object with chosen colors per `type` is only as good as its `domain`,
+so read the types off the file. The `/^##FASTA/{exit}` stops before any inline
+sequence, whose lines have no `#` and would otherwise count as types:
 
 ```bash
 awk -F'\t' '/^##FASTA/{exit} !/^#/{print $3}' annotations.gff |
   sort | uniq -c | sort -rn
 ```
 
-Any type missing from the table falls through to `|| 'gray'`, so gray on screen
-is the signal to go back to that list. A worked case: the
+A type the `domain` does not list takes the next palette color and its own row
+in the key, so an unexpected row there is the signal to go back to that list. A
+worked case: the
 [EBI mobilome annotation pipeline](https://github.com/EBI-Metagenomics/mobilome-annotation-pipeline)
 writes a GFF whose column 3 holds mobile element types (published per genome
 under MGnify's
 [`mgnify_genomes`](https://ftp.ebi.ac.uk/pub/databases/metagenomics/mgnify_genomes/)
-as `<accession>_mobilome.gff`), so with no callback the whole mobilome paints
-one color. One table separates the element classes and greys the passenger CDSs
-back:
+as `<accession>_mobilome.gff`), so with no `color` the whole mobilome paints one
+color. One `color` object separates the element classes and greys the passenger
+CDSs back:
 
 ```json addtrack
 {
@@ -90,7 +92,37 @@ back:
   "uri": "MGYG000000001_mobilome.gff",
   "assemblyNames": ["MGYG000000001"],
   "displayDefaults": {
-    "color": "jexl:{prophage:'#8e44ad',viral_sequence:'#9b59b6',plasmid:'#2980b9',insertion_sequence:'#e67e22',terminal_inverted_repeat_element:'#d35400',inverted_repeat_element:'#d35400',integron:'#16a085',conjugative_integron:'#1abc9c',attC_site:'#0e6655',compositional_outlier:'#c0392b',direct_repeat:'#7f8c8d',CDS:'#bdc3c7'}[feature.type] || 'gray'"
+    "color": {
+      "field": "type",
+      "domain": [
+        "prophage",
+        "viral_sequence",
+        "plasmid",
+        "insertion_sequence",
+        "terminal_inverted_repeat_element",
+        "inverted_repeat_element",
+        "integron",
+        "conjugative_integron",
+        "attC_site",
+        "compositional_outlier",
+        "direct_repeat",
+        "CDS"
+      ],
+      "range": [
+        "#8e44ad",
+        "#9b59b6",
+        "#2980b9",
+        "#e67e22",
+        "#d35400",
+        "#d35400",
+        "#16a085",
+        "#1abc9c",
+        "#0e6655",
+        "#c0392b",
+        "#7f8c8d",
+        "#bdc3c7"
+      ]
+    }
   }
 }
 ```

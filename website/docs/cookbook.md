@@ -126,7 +126,7 @@ and a theme. Every recipe below changes one piece of it.
       "assemblyNames": ["volvox"],
       "adapter": { "type": "Gff3TabixAdapter", "uri": "volvox.sort.gff3.gz" },
       "displayDefaults": {
-        "color": "jexl:feature.strand==1?'tomato':feature.strand==-1?'cornflowerblue':'goldenrod'",
+        "color": { "field": "strand" },
         "height": 200,
         "mouseover": "jexl:feature.name"
       }
@@ -436,7 +436,9 @@ Past a handful of samples, generate `subadapters` from your samplesheet
 ## Variant tracks
 
 `color` and `filter` work as on a feature track, and VCF `INFO` fields are the
-usual thing to branch on:
+usual thing to branch on. The `svType` field reads a record's structural-variant
+class off its symbolic ALT or `INFO/SVTYPE`, and paints each class its own color
+under a key:
 
 ```json addtrack
 {
@@ -446,7 +448,7 @@ usual thing to branch on:
   "assemblyNames": ["volvox"],
   "adapter": { "type": "VcfTabixAdapter", "uri": "volvox.dup.vcf.gz" },
   "displayDefaults": {
-    "color": "jexl:{DEL:'red',INS:'blue',DUP:'green',INV:'orange'}[feature.INFO.SVTYPE[0]] || 'gray'",
+    "color": { "field": "svType" },
     "filter": ["jexl:feature.INFO.AF[0] > 0.05"]
   }
 }

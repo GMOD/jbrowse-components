@@ -126,7 +126,7 @@ it names itself.
     {
       "type": "LinearBasicDisplay",
       "height": 200,
-      "color": "jexl:feature.strand==1?'blue':'red'"
+      "color": { "field": "strand" }
     }
   ]
 }

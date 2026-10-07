@@ -141,9 +141,13 @@ config, set `color` in the track's `displayDefaults`; in a URL, in its
 
 ### How do I color features by an attribute (color callback)
 
-Set `color` to a [Jexl](https://github.com/TomFrost/Jexl) expression instead of
-a plain color — `"color": "jexl:feature.strand==-1?'red':'blue'"`. See
-[](/docs/config_guides/jexl), and
+Set `color` to an object naming the attribute, `"color": { "field": "type" }`,
+which paints each value its own color and draws a key saying which is which.
+[](/docs/cookbook#colors) has the chosen-color, binned and gradient forms. Logic
+no single field states takes a [Jexl](https://github.com/TomFrost/Jexl)
+expression,
+`"color": "jexl:feature.score > 500 && feature.type == 'exon' ? 'red' : 'grey'"`;
+see [](/docs/config_guides/jexl), and
 [](/docs/config_guides/customizing_feature_colors/) for adding a function of
 your own when an expression gets unwieldy.
 
