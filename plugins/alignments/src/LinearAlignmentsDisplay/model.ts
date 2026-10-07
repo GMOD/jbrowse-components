@@ -199,6 +199,7 @@ import type { ArcsByGroupResult } from '../features/arcs/compute.ts'
 import type { CoverageRegionFields } from '../features/coverage/types.ts'
 import type { BezierArcScope } from '../features/linkedReads/computeOverlay.ts'
 import type { LaneJunction } from '../features/sashimi/supportingReads.ts'
+import type { ArcCategory } from '../shaders/palettes.ts'
 import type {
   AlignmentsColorSetting,
   DeclaredReadLabels,
@@ -1206,8 +1207,8 @@ export default function stateModelFactory(
            * folds the rows the reads already key. Empty unless an overlay is on
            * with the legend shown.
            */
-          get arcLegendCategories(): Set<ReadColorCategory> {
-            const present = new Set<ReadColorCategory>()
+          get arcLegendCategories(): Set<ArcCategory> {
+            const present = new Set<ArcCategory>()
             if (self.showLegend && self.readConnections !== 'off') {
               // `colorSlots`, not a walk of `arcsByGroup`: that is only one of the
               // two halves the arcs are resolved into, and a lane whose every arc
@@ -1309,6 +1310,7 @@ export default function stateModelFactory(
               palette,
               this.arcsResult.interchromFromMatePair,
               this.declaredReadLabels.categories,
+              self.arcColorField,
             )
           },
 
@@ -2637,7 +2639,7 @@ export default function stateModelFactory(
         get arcCategoryLabel() {
           const { interchromFromMatePair } = self.arcsResult
           const { categories } = self.declaredReadLabels
-          return (c: ReadColorCategory) =>
+          return (c: ArcCategory) =>
             arcColorCategoryLabel(c, interchromFromMatePair, categories)
         },
       }))

@@ -119,10 +119,12 @@ export function splitInversion(
 // What a split-read junction between two segments of one read means, from the
 // segments' strands alone: a strand flip is an inversion junction, a co-linear
 // (both strands known and equal) join is a deletion / tandem-dup junction, and
-// an unknown strand on either side classifies as neither. Every path that
-// colors a junction spells this same three-way rule — the coverage-arc palette,
-// the linked-read connector palette, and the chain read-fill marker — so it
-// lives here and each maps the category to its own vocabulary.
+// an unknown strand on either side classifies as neither. The linked-read
+// connector palette and the chain read-fill marker both spell this three-way
+// rule, so it lives here and each maps the category to its own vocabulary. The
+// read-arc band starts from it and splits each kind in two by the direction the
+// read extends from the junction (`arcSplitCategory.ts` in the alignments
+// plugin).
 export type SplitJunctionKind = 'inversion' | 'deletion'
 
 export function splitJunctionKind(

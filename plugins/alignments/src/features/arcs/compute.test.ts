@@ -15,6 +15,10 @@ import { nextRefsToTable } from '../../shared/readNextRefs.ts'
 import {
   ARC_COLOR_INTERCHROM,
   ARC_COLOR_SHORT_INSERT,
+  COLOR_SPLIT_BACK,
+  COLOR_SPLIT_FORWARD,
+  COLOR_SPLIT_INV_LL,
+  COLOR_SPLIT_INV_RR,
   arcPaintRank,
 } from './arcColors.ts'
 import { arcsToRegionResult, groupArcsByRef } from './arcRegions.ts'
@@ -1694,7 +1698,7 @@ describe('computeArcsFromPileupData', () => {
     expect(result.lines).toEqual([])
   })
 
-  test('read cloud SA-tag arcs color by strand like arcs (inversion→7, same-strand→8)', () => {
+  test('read cloud SA-tag arcs color by junction class like arcs', () => {
     const mkSplit = (primaryStrand: number, saStrand: '+' | '-') =>
       makePileupData({
         readPositions: new Uint32Array([1000, 1500]),
@@ -1714,16 +1718,16 @@ describe('computeArcsFromPileupData', () => {
       drawInter: false,
       drawLongRange: true,
     }
-    // Same strand (+/+) → split-deletion slot 8 (yellow)
+    // Same strand, the second segment downstream of the first
     expect(
       computeArcsFromPileupData(new Map([[0, mkSplit(1, '+')]]), regions, opts)
         .arcs[0]!.colorType,
-    ).toBe(8)
-    // Opposite strand (+/-) → split-inversion slot 7 (magenta)
+    ).toBe(COLOR_SPLIT_FORWARD)
+    // Opposite strand, the read extending left from both feet
     expect(
       computeArcsFromPileupData(new Map([[0, mkSplit(1, '-')]]), regions, opts)
         .arcs[0]!.colorType,
-    ).toBe(7)
+    ).toBe(COLOR_SPLIT_INV_LL)
   })
 
   test('read cloud in-view split read (primary + supplementary entries) is dashed at the gap span', () => {
@@ -1764,17 +1768,17 @@ describe('computeArcsFromPileupData', () => {
     // of it (~850), and never collapsed to 0 by the supplementary's tlen.
     expect(inv[0]!.yBp).toBeGreaterThan(1400)
     expect(inv[0]!.yBp).toBeLessThan(1850)
-    // opposite strands → split-inversion slot 7 (magenta arc)
-    expect(inv[0]!.colorType).toBe(7)
+    // opposite strands, the read extending left from both feet
+    expect(inv[0]!.colorType).toBe(COLOR_SPLIT_INV_LL)
 
-    // same strands → split-deletion slot 8, still dashed split
+    // same strands, the second segment downstream: still dashed split
     const del = computeArcsFromPileupData(
       new Map([[0, mkInViewSplit(1, 1)]]),
       regions,
       opts,
     ).arcs
     expect(del[0]!.shapeType).toBe(ARC_SHAPE_FLAT_SPLIT)
-    expect(del[0]!.colorType).toBe(8)
+    expect(del[0]!.colorType).toBe(COLOR_SPLIT_FORWARD)
   })
 
   test('in-view split inversion connects a2↔b2, not a2↔b1', () => {
@@ -1946,11 +1950,11 @@ describe('computeArcsFromPileupData', () => {
           drawLongRange: true,
         },
       )
-      // no spurious same-strand (deletion, slot 8) self-arc
-      expect(arcs.every(a => a.colorType !== 8)).toBe(true)
-      // just the one fwd→rev inversion junction (slot 7), on the breakpoint
+      // no spurious same-strand self-arc
+      expect(arcs.every(a => a.colorType !== COLOR_SPLIT_FORWARD)).toBe(true)
+      // just the one fwd→rev inversion junction, on the breakpoint
       expect(arcs).toHaveLength(1)
-      expect(arcs[0]!.colorType).toBe(7)
+      expect(arcs[0]!.colorType).toBe(COLOR_SPLIT_INV_LL)
       expect([arcs[0]!.p1.bp, arcs[0]!.p2.bp]).toEqual([2000, 2200])
     },
   )
@@ -1984,7 +1988,7 @@ describe('computeArcsFromPileupData', () => {
       drawLongRange: true,
     })
     expect(arcs).toHaveLength(1)
-    expect(arcs[0]!.colorType).toBe(7)
+    expect(arcs[0]!.colorType).toBe(COLOR_SPLIT_INV_RR)
     expect([arcs[0]!.p1.bp, arcs[0]!.p2.bp]).toEqual([2001, 100])
   })
 
@@ -2071,10 +2075,10 @@ describe('computeArcsFromPileupData', () => {
       drawLongRange: true,
     })
     expect(arcs).toHaveLength(2)
-    // read1's fwd→rev split junction (a.end 1200 → b.end 3200), colored
-    // split-inversion (7) by its own strands — NOT the paired insert-size
+    // read1's fwd→rev split junction (a.end 1200 → b.end 3200), colored as
+    // an inversion junction by its own strands — NOT the paired insert-size
     // default (0) the global hasPaired branch would have produced.
-    expect(arcAt(arcs, 1200, 3200).colorType).toBe(7)
+    expect(arcAt(arcs, 1200, 3200).colorType).toBe(COLOR_SPLIT_INV_LL)
     // and the read1↔read2 mate link, still colored by pair semantics. Each
     // mate's own outer edge: fwd read1's start (1000), rev read2's end (5200).
     arcAt(arcs, 1000, 5200)
@@ -2111,11 +2115,11 @@ describe('computeArcsFromPileupData', () => {
       drawInter: false,
       drawLongRange: false,
     })
-    // Just the fwd→rev split-inversion junction (a.end 1200 → b.end 3200,
-    // slot 7), no mate link.
+    // Just the fwd→rev split-inversion junction (a.end 1200 → b.end 3200),
+    // no mate link.
     expect(arcs).toHaveLength(1)
     expect([arcs[0]!.p1.bp, arcs[0]!.p2.bp]).toEqual([1200, 3200])
-    expect(arcs[0]!.colorType).toBe(7)
+    expect(arcs[0]!.colorType).toBe(COLOR_SPLIT_INV_LL)
   })
 
   test('split read whose mate is off screen still draws the off-screen mate link', () => {
@@ -2321,8 +2325,8 @@ describe('computeArcsFromPileupData', () => {
     const loneArc = arcs.find(a => a.p1.bp === 1500)!
     // |30200 - 1500| / 2 ≈ 14350 > 10000 large-insert threshold
     expect(Math.abs((loneArc.p2.bp - loneArc.p1.bp) / 2)).toBeGreaterThan(10000)
-    // fwd→rev split junction → split-inversion slot 7, not long-insert 1
-    expect(loneArc.colorType).toBe(7)
+    // fwd→rev split junction → an inversion class, not long-insert 1
+    expect(loneArc.colorType).toBe(COLOR_SPLIT_INV_LL)
   })
 })
 
@@ -2876,12 +2880,13 @@ describe('arcsToRegionResult', () => {
 // categories; each returned category's swatch must equal the plotted mark's
 // color (see ARC_SLOT_CATEGORY / swatchPaletteKeys).
 describe('arcSlotCategory', () => {
-  test('split junctions map to the cloud-only categories', () => {
-    // COLOR_SPLIT_INVERSION = 7, COLOR_SPLIT_DELETION = 8
-    expect(arcSlotCategory(7, 'insertSizeAndOrientation')).toBe(
-      'splitInversion',
-    )
-    expect(arcSlotCategory(8, 'insertSizeAndOrientation')).toBe('splitDeletion')
+  test('split junctions map to the arc-only categories', () => {
+    const category = (slot: number) =>
+      arcSlotCategory(slot, 'insertSizeAndOrientation')
+    expect(category(COLOR_SPLIT_FORWARD)).toBe('splitForward')
+    expect(category(COLOR_SPLIT_BACK)).toBe('splitBack')
+    expect(category(COLOR_SPLIT_INV_LL)).toBe('splitInvLL')
+    expect(category(COLOR_SPLIT_INV_RR)).toBe('splitInvRR')
   })
   test('insert-size + orientation slots map to their read-fill categories', () => {
     expect(arcSlotCategory(1, 'insertSize')).toBe('longInsert')

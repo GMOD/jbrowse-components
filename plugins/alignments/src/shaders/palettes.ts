@@ -1,4 +1,13 @@
-import type { SwatchCategory } from '../LinearAlignmentsDisplay/colorUtils.ts'
+import {
+  ARC_SPLIT_PAIR_TWIN,
+  isArcSplitCategory,
+} from '../features/arcs/arcSplitCategory.ts'
+
+import type {
+  ReadColorCategory,
+  SwatchCategory,
+} from '../LinearAlignmentsDisplay/colorUtils.ts'
+import type { ArcSplitCategory } from '../features/arcs/arcSplitCategory.ts'
 import type { ArcColorField } from '../shared/types.ts'
 import type { ColorPalette } from './colors.ts'
 
@@ -15,6 +24,10 @@ import type { ColorPalette } from './colors.ts'
 // ARE `PAIR_DIRECTION_NUM`, which `features/linkedReads/compute.ts` exists to
 // keep true by construction.
 
+// What an arc slot can mean: a read category, or a split-junction class that
+// only an arc carries.
+export type ArcCategory = ReadColorCategory | ArcSplitCategory
+
 // Slot → meaning for the read-connection band's colour types, which
 // `buildArcBandFeeds` bakes into each connection's colour lane.
 //
@@ -27,9 +40,11 @@ export const ARC_SLOT_CATEGORY = [
   'pairLL',
   'pairRR',
   'pairRL',
-  'splitInversion',
-  'splitDeletion',
-] as const satisfies readonly SwatchCategory[]
+  'splitForward',
+  'splitBack',
+  'splitInvLL',
+  'splitInvRR',
+] as const satisfies readonly (SwatchCategory | ArcSplitCategory)[]
 
 // Slot → meaning for the linked-read connectors, matching LINKED_READ_COLOR_* in
 // features/linkedReads/compute.ts. Slot 0 is the unknown baseline: it takes the
@@ -60,7 +75,7 @@ export const LINKED_READ_SLOT_CATEGORY = [
 export function arcSlotCategory(
   slot: number,
   colorField: ArcColorField,
-): SwatchCategory {
+): SwatchCategory | ArcSplitCategory {
   const category = ARC_SLOT_CATEGORY[slot]
   return category === undefined || category === 'normalInsert'
     ? colorField === 'pairOrientation'
@@ -69,12 +84,32 @@ export function arcSlotCategory(
     : category
 }
 
+/**
+ * The colour an arc category paints. A split class takes its pair twin's,
+ * declared colours included, so it matches the pair bundle at its junction.
+ * Colouring by pair orientation paints a long-insert pair as LR, and a forward
+ * jump follows it there.
+ */
+export function arcCategoryColor(
+  c: ColorPalette,
+  category: ArcCategory,
+  colorField: ArcColorField,
+) {
+  return c.readCategoryColors[
+    isArcSplitCategory(category)
+      ? category === 'splitForward' && colorField === 'pairOrientation'
+        ? 'pairLR'
+        : ARC_SPLIT_PAIR_TWIN[category]
+      : category
+  ]
+}
+
 export function buildArcColorPalette(
   c: ColorPalette,
   colorField: ArcColorField,
 ) {
-  return ARC_SLOT_CATEGORY.map(
-    (_, slot) => c.readCategoryColors[arcSlotCategory(slot, colorField)],
+  return ARC_SLOT_CATEGORY.map((_, slot) =>
+    arcCategoryColor(c, arcSlotCategory(slot, colorField), colorField),
   )
 }
 

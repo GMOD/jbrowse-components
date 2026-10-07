@@ -170,8 +170,8 @@ how many there are, so the arcs count the support as well as locate it.
 Hover any arc for its classification. A read can have a grey LR fill and still
 have a colored arc: the read itself crosses the breakpoint, splits into a
 primary and a strand-flipped supplementary alignment, and the arc joining those
-takes the magenta split-read color. That is evidence from one molecule rather
-than from a pair.
+takes the color of the pair class that spans the same junction, green or navy at
+an inversion. That is evidence from one molecule rather than from a pair.
 
 ### SV channels
 
@@ -275,8 +275,10 @@ A long read spans the whole event, so it has what a short-read pair could only
 infer. At an inversion it splits into three alignments, the middle one on the
 opposite strand. With **View as pairs / link supplementary alignments** on,
 those segments chain onto one row: the inverted middle paints in the
-reverse-strand color between two forward-strand segments, and a magenta arc
-joins the two breakpoints.
+reverse-strand color between two forward-strand segments, and an arc joins each
+breakpoint pair: green at the junction LL pairs span, navy at the one RR pairs
+span. A split read across a deletion draws a red arc and one across a tandem
+duplication a teal arc, the colors of the pairs that span them.
 
 **Group by → Split read (SA tag)** splits the pileup into two sections: reads
 with a supplementary alignment, and the rest. Together the two sections give the
@@ -309,10 +311,10 @@ with COLO829's der(3).
 
 | SV type            | Read pairs                                 | Coverage                                                 | Clipping and arcs                                                                                               |
 | ------------------ | ------------------------------------------ | -------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------- |
-| Deletion           | red, insert larger than expected           | drops between the breakpoints, halves for a heterozygote | clipped reads at both edges, unusually long arcs                                                                |
+| Deletion           | red, insert larger than expected           | drops between the breakpoints, halves for a heterozygote | clipped reads at both edges, unusually long arcs, red split-read arcs                                           |
 | Insertion          | pink, insert smaller than expected         | unchanged                                                | clipped reads at one site, a purple insertion indicator, mates unmapped once the insertion outruns the fragment |
-| Inversion          | green LL and dark blue RR at the junctions | unchanged                                                | clipped reads at both breakpoints, magenta split-read arcs                                                      |
-| Tandem duplication | teal RL                                    | elevated over the duplicated segment                     | arcs pointing back upstream across the junction                                                                 |
+| Inversion          | green LL and dark blue RR at the junctions | unchanged                                                | clipped reads at both breakpoints, green and navy split-read arcs                                               |
+| Tandem duplication | teal RL                                    | elevated over the duplicated segment                     | teal split-read arcs jumping back upstream across the junction                                                  |
 | Translocation      | rust, mate on another chromosome           | unchanged                                                | a cluster of rust reads at one end, arcs drawn as verticals at the view edge                                    |
 
 Any one column has artifacts that produce it, and in segmental duplications and

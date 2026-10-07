@@ -20,6 +20,10 @@ Each overlay has **one table saying what a slot MEANS**, and the colour follows:
 (`readCategoryColorsOf`, built once per palette over `declaredReadCategoryColors`)
 → the colour `color` declares for the category.
 
+A split-read arc's four slots (`features/arcs/arcSplitCategory.ts`) are not read
+categories. `arcCategoryColor` resolves each through its pair twin's entry, so a
+colour declared for `pairRL` also moves the "jumps back" split arc.
+
 An override reaches the GPU uniforms, the Canvas2D fill, the key and the band
 together. **When adding a slot**, add it to the meaning table. Do not add a colour,
 and do not add a `case` to a classifier that already has a table.

@@ -26,7 +26,12 @@ import {
   categorySwatchColor,
   rgb255,
 } from '../LinearAlignmentsDisplay/colorUtils.ts'
+import {
+  ARC_SPLIT_LABELS,
+  isArcSplitCategory,
+} from '../features/arcs/arcSplitCategory.ts'
 import { sashimiArcColor } from '../features/sashimi/computeOverlay.ts'
+import { arcCategoryColor } from '../shaders/palettes.ts'
 import { OVERLAP_ALPHA } from '../shaders/slang/overlap.consts.generated.ts'
 import { colorFieldOf, isBakedScheme } from './alignmentsColor.ts'
 import { paintsModifications } from './colorSchemes.ts'
@@ -50,8 +55,14 @@ import type {
   SwatchCategory,
 } from '../LinearAlignmentsDisplay/colorUtils.ts'
 import type { ColorPalette, PaletteColorKey } from '../shaders/colors.ts'
+import type { ArcCategory } from '../shaders/palettes.ts'
 import type { DeclaredReadLabels } from './alignmentsColor.ts'
-import type { BaseLayer, ColorBy, ColorSchemeType } from './types.ts'
+import type {
+  ArcColorField,
+  BaseLayer,
+  ColorBy,
+  ColorSchemeType,
+} from './types.ts'
 import type { LegendItem, LegendSwatch } from '@jbrowse/core/ui'
 import type {
   CategoricalScale,
@@ -319,8 +330,9 @@ const CATEGORY_LEGEND: Record<SwatchCategory, string> = {
   // saying "(same strand)" in different colors is then not a collision but the
   // fact — one finding, two kinds of evidence.
   //
-  // The arcs and connector curves get `SPLIT_JUNCTION_LABELS` instead: a curve
-  // is drawn for split reads of either kind, so it cannot claim pairedness.
+  // The connector curves get `SPLIT_JUNCTION_LABELS` instead: a curve is drawn
+  // for split reads of either kind, so it cannot claim pairedness. A read arc
+  // knows more than strand and names its class from `ARC_SPLIT_LABELS`.
   splitInversion: 'Split paired-end read (inverted)',
   splitDeletion: 'Split paired-end read (same strand)',
   interchrom: CONNECTION_LABELS.interchrom,
@@ -721,14 +733,16 @@ function arcLabelOverrides(
  * hover and the swatch it sends the reader to say the same thing.
  */
 export function arcColorCategoryLabel(
-  category: ReadColorCategory,
+  category: ArcCategory,
   interchromFromMatePair: boolean,
   declared?: Partial<Record<ReadColorCategory, string>>,
 ) {
-  return readColorCategoryLabel(
-    category,
-    arcLabelOverrides(interchromFromMatePair, declared),
-  )
+  return isArcSplitCategory(category)
+    ? ARC_SPLIT_LABELS[category]
+    : readColorCategoryLabel(
+        category,
+        arcLabelOverrides(interchromFromMatePair, declared),
+      )
 }
 
 /**
@@ -738,16 +752,26 @@ export function arcColorCategoryLabel(
  * colors its heading names is worse than the repetition it avoids.
  */
 export function getArcLegendItems(
-  presentCategories: ReadonlySet<ReadColorCategory>,
+  presentCategories: ReadonlySet<ArcCategory>,
   palette: ColorPalette,
   interchromFromMatePair: boolean,
   declared?: Partial<Record<ReadColorCategory, string>>,
+  colorField: ArcColorField = 'insertSizeAndOrientation',
 ): LegendItem[] {
-  return bucketItems(
-    presentCategories,
-    palette,
-    arcLabelOverrides(interchromFromMatePair, declared),
-  )
+  const present = [...presentCategories]
+  return [
+    ...bucketItems(
+      new Set(present.filter(c => !isArcSplitCategory(c))),
+      palette,
+      arcLabelOverrides(interchromFromMatePair, declared),
+    ),
+    // Its own row beside the pair twin it shares a swatch with: the pair row's
+    // words describe mates, which a split read has none of.
+    ...present.filter(isArcSplitCategory).map(category => ({
+      color: rgb255(arcCategoryColor(palette, category, colorField)),
+      label: ARC_SPLIT_LABELS[category],
+    })),
+  ]
 }
 
 // The modification family's own key: the methylation views (fill-unmarked and

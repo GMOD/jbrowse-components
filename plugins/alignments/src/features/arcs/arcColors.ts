@@ -51,12 +51,13 @@ export const ARC_COLOR_INTERCHROM = 3
 const COLOR_PAIR_LL = 4
 const COLOR_PAIR_RR = 5
 export const COLOR_PAIR_RL = 6
-// Split-read inversion, EITHER strand-flip direction (rf/fr) → one magenta
-// slot, matching the read-fill + connector split-inversion color.
-export const COLOR_SPLIT_INVERSION = 7
-// Same-strand (co-linear) split — a deletion / tandem-dup junction — → the
-// supplementary yellow, matching the read-fill + connector deletion color.
-export const COLOR_SPLIT_DELETION = 8
+// A split-read junction, by which way the read extends from its two feet —
+// see `arcSplitCategory.ts`. Each takes the colour of the pair class that spans
+// the same junction.
+export const COLOR_SPLIT_FORWARD = 7
+export const COLOR_SPLIT_BACK = 8
+export const COLOR_SPLIT_INV_LL = 9
+export const COLOR_SPLIT_INV_RR = 10
 
 // Paint rank of an arc color slot: 0 for the baseline "nothing to see here"
 // slot, 1 for every slot that says something. Array order is paint order and
@@ -115,17 +116,30 @@ export function arcPaintOrder(a: ComputedArc, b: ComputedArc) {
   )
 }
 
-// This path's encoding of the shared junction classifier: magenta inversion /
-// yellow deletion, matching the split-read fill + connector colors; an
-// unknown-strand junction falls back to the default slot.
-export const SPLIT_KIND_COLOR = {
-  inversion: COLOR_SPLIT_INVERSION,
-  deletion: COLOR_SPLIT_DELETION,
-}
-
-function unpairedOrientationColor(p1Strand: number, p2Strand: number) {
-  const kind = splitJunctionKind(p1Strand, p2Strand)
-  return kind === undefined ? COLOR_DEFAULT : SPLIT_KIND_COLOR[kind]
+// A junction's class from the direction the read extends at its lower and its
+// higher foot. Same-strand segments always extend opposite ways and
+// opposite-strand segments the same way, so every junction with both strands
+// known lands in one of the four; an unknown strand keeps the default slot.
+//
+// Two feet on one base (a split insertion) have no lower foot, and ordering
+// them by arrival made a forward read "forward" and a reverse read over the
+// same junction "back" — two arcs, each with half the support. The left-
+// extending foot is the lower one there.
+function splitJunctionColor(arc: PendingArc) {
+  const kind = splitJunctionKind(arc.p1Strand, arc.p2Strand)
+  if (kind === undefined) {
+    return COLOR_DEFAULT
+  }
+  const p1IsLower =
+    arc.p1Bp === arc.p2Bp ? arc.p1Dir === -1 : arc.p1Bp < arc.p2Bp
+  const lowerDir = p1IsLower ? arc.p1Dir : arc.p2Dir
+  return kind === 'inversion'
+    ? lowerDir === -1
+      ? COLOR_SPLIT_INV_LL
+      : COLOR_SPLIT_INV_RR
+    : lowerDir === -1
+      ? COLOR_SPLIT_FORWARD
+      : COLOR_SPLIT_BACK
 }
 
 // undefined means "normal/LR or unknown orientation" — the caller decides the
@@ -177,9 +191,7 @@ export function getArcColorType(args: {
   // its inversion junctions correctly. Resolved before the insert class below
   // because that is a paired concept and a junction has no TLEN to classify.
   if (!hasPaired || arc.isSplit) {
-    return colorField === 'insertSize'
-      ? COLOR_DEFAULT
-      : unpairedOrientationColor(arc.p1Strand, arc.p2Strand)
+    return colorField === 'insertSize' ? COLOR_DEFAULT : splitJunctionColor(arc)
   }
   const orient = orientationColor(arc.pairOrientationNum)
   // TLEN, and only TLEN — the same field `readColorCategory` classifies, so an
