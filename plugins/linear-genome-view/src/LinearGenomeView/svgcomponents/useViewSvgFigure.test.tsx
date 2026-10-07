@@ -147,7 +147,7 @@ function initialize() {
         {
           explicitIdentifier: 'displayId',
           explicitlyTyped: true,
-          closed: true,
+          closed: 'warn',
         },
       )
       return new DisplayType({

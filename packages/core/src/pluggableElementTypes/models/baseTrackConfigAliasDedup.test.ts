@@ -39,7 +39,7 @@ function pluginManagerWithAliasedDisplay() {
           {
             explicitIdentifier: 'displayId',
             explicitlyTyped: true,
-            closed: true,
+            closed: 'warn',
           },
         ),
         // unused at runtime here; stub model avoids importing a full state model

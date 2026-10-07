@@ -25,7 +25,7 @@ class SubgraphDisplayPlugin extends Plugin {
         {
           explicitIdentifier: 'displayId',
           explicitlyTyped: true,
-          closed: true,
+          closed: 'warn',
         },
       )
       return new DisplayType({

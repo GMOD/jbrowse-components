@@ -95,7 +95,11 @@ function initialize() {
     const configSchema = ConfigurationSchema(
       'LinearBareDisplay',
       { height: { type: 'number', defaultValue: 100 } },
-      { explicitIdentifier: 'displayId', explicitlyTyped: true, closed: true },
+      {
+        explicitIdentifier: 'displayId',
+        explicitlyTyped: true,
+        closed: 'warn',
+      },
     )
     return new DisplayType({
       name: 'LinearBareDisplay',
@@ -2153,7 +2157,7 @@ describe('TrackInit with display configuration', () => {
         {
           explicitIdentifier: 'displayId',
           explicitlyTyped: true,
-          closed: true,
+          closed: 'warn',
         },
       )
       return new DisplayType({

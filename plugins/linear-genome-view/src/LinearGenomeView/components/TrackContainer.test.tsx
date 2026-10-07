@@ -238,7 +238,7 @@ class PreMixinDisplayPlugin extends Plugin {
         {
           explicitIdentifier: 'displayId',
           explicitlyTyped: true,
-          closed: true,
+          closed: 'warn',
         },
       )
       return new DisplayType({
@@ -337,7 +337,7 @@ class OffsetPreferringDisplayPlugin extends Plugin {
         {
           explicitIdentifier: 'displayId',
           explicitlyTyped: true,
-          closed: true,
+          closed: 'warn',
         },
       )
       return new DisplayType({
