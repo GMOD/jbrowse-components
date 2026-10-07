@@ -59,6 +59,7 @@ import { paperDrosophilaSpecs } from './specs/paper-drosophila.ts'
 import { paperEcoliSpecs } from './specs/paper-ecoli.ts'
 import { paperHprcWorkspaceSpecs } from './specs/paper-hprc-workspace.ts'
 import { paperSvReadsSpecs } from './specs/paper-sv-reads.ts'
+import { paperSvSpecs } from './specs/paper-sv.ts'
 import { popgenSpecs } from './specs/popgen.ts'
 import { proteinStructuresSpecs } from './specs/protein_structures.ts'
 import { qcSpecs } from './specs/qc.ts'
@@ -121,6 +122,7 @@ export const specs: ScreenshotSpec[] = [
   ...paperDrosophilaSpecs,
   ...paperSvReadsSpecs,
   ...paperEcoliSpecs,
+  ...paperSvSpecs,
   ...ecoliGraphSpecs,
   ...hprcGraphSpecs,
   ...mouseCattleGraphSpecs,
