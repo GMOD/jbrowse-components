@@ -50,6 +50,12 @@ cost is linear in lanes.
   cut there (`addAcrossHoles`), and so are a gene's exons, intron lines and hit
   boxes (`Lane.spansOf`, `frameSpans`). Gene records never open: their spacing
   is no deletion. An insertion opens nothing; its sequence draws as before.
+- **Two lanes join a group's placements only where one source row states the
+  pair** (`statedTogether`, `MultiWayPlacement.row`). A table folding its rows
+  by anchor gene hands over one group with several placements per lane, as
+  K-12's split wbbL has against each strain's two fragments, and every
+  placement joined every placement of the next lane until the mates named their
+  row. A source keeping no rows still joins them all.
 - **A lane draws no mark for sequence the anchor lacks.** The ribbon over an
   insertion fans open. A purple bar on every carrier lane plus a purple tint on
   the ribbon between carriers was tried and removed.
