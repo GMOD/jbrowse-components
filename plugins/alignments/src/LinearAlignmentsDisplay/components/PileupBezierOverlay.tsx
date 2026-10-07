@@ -3,7 +3,11 @@ import { useRef, useState } from 'react'
 import { ARC_HIT_SLOP_PX, hiddenSegmentsNote } from '@jbrowse/sv-core'
 import { observer } from 'mobx-react'
 
-import { bezierArcKey } from '../../features/linkedReads/computeOverlay.ts'
+import {
+  LOOP_CASING_COLOR,
+  LOOP_CASING_PX,
+  bezierArcKey,
+} from '../../features/linkedReads/computeOverlay.ts'
 import { SectionBandClip } from './PileupBezierArcsSvg.tsx'
 import {
   BEZIER_ARC_STROKE_OPACITY,
@@ -126,12 +130,23 @@ const PileupBezierOverlay = observer(function PileupBezierOverlay({
                   : arc.strokeWidth
               return (
                 <g key={arcId}>
+                  {arc.cased ? (
+                    <path
+                      d={arc.d}
+                      stroke={LOOP_CASING_COLOR}
+                      strokeWidth={strokeWidth + 2 * LOOP_CASING_PX}
+                      fill="none"
+                      style={{ pointerEvents: 'none' }}
+                    />
+                  ) : null}
                   <path
                     data-testid="pileup-bezier-arc"
                     d={arc.d}
                     stroke={arc.stroke}
                     strokeWidth={strokeWidth}
-                    strokeOpacity={isHovered ? 1 : BEZIER_ARC_STROKE_OPACITY}
+                    strokeOpacity={
+                      isHovered || arc.cased ? 1 : BEZIER_ARC_STROKE_OPACITY
+                    }
                     strokeDasharray={arc.dash}
                     fill="none"
                     // Inert, with the target path below answering instead:

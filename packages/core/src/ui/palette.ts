@@ -677,7 +677,7 @@ const skip = '#009a8a'
  * a charcoal span is the background showing through, i.e. a gap where the mark
  * should be.
  */
-const readOverlap = '#555555'
+const readOverlap = '#f2c500'
 /** #color theme-colors | Base modification (fwd) | Base modifications on the forward strand */
 const modificationFwd = '#c8c8c8'
 /** #color theme-colors | Base modification (rev) | Base modifications on the reverse strand */

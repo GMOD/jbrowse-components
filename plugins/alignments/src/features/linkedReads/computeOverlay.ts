@@ -77,6 +77,9 @@ export interface PileupArc {
   // for), and the loci for the hover to name (`hiddenSegmentsNote`).
   dash?: string
   hiddenSegmentsBetween?: string[]
+  // A maps-back loop lies over its own read's bar and its neighbours', so it
+  // draws at full strength over a light casing that lifts it off them.
+  cased?: boolean
 }
 
 // Stable React key / selection identity for a bezier arc, shared by the live
@@ -402,10 +405,14 @@ function connectorShape(
   }
 }
 
-// A maps-back loop's apex above its row: three rows, so it clears the read's
+// A maps-back loop's apex above its row: four rows, so it clears the read's
 // own bar, within bounds that keep it visible on thin rows and local on tall ones.
-const LOOP_MIN_APEX_PX = 6
-const LOOP_MAX_APEX_PX = 20
+const LOOP_MIN_APEX_PX = 10
+const LOOP_MAX_APEX_PX = 28
+const LOOP_STROKE_WIDTH_PX = 2
+// The casing under a loop's stroke: this much wider on each side.
+export const LOOP_CASING_PX = 1.5
+export const LOOP_CASING_COLOR = 'rgba(255,255,255,0.9)'
 // Rows thinner than this have no room for an arrowhead.
 const LOOP_ARROW_MIN_FEATURE_HEIGHT_PX = 5
 const LOOP_MAX_ARROW_PX = 8
@@ -519,7 +526,7 @@ export function computePileupBezierArcs(opts: Opts): PileupArc[] {
 
   const loopApexPx = Math.min(
     LOOP_MAX_APEX_PX,
-    Math.max(LOOP_MIN_APEX_PX, 3 * rowH),
+    Math.max(LOOP_MIN_APEX_PX, 4 * rowH),
   )
   const arrowPx =
     featureHeight >= LOOP_ARROW_MIN_FEATURE_HEIGHT_PX
@@ -583,7 +590,12 @@ export function computePileupBezierArcs(opts: Opts): PileupArc[] {
       d,
       stroke,
       label: connectionLabel(c.colorType, labels),
-      strokeWidth: straight ? LINKED_READ_LINE_WIDTH_PX : CURVE_STROKE_WIDTH_PX,
+      strokeWidth: straight
+        ? LINKED_READ_LINE_WIDTH_PX
+        : loop
+          ? LOOP_STROKE_WIDTH_PX
+          : CURVE_STROKE_WIDTH_PX,
+      cased: loop || undefined,
       // The id STRINGS, not the keys: these reach `selectFeatureById` and
       // `getFeatureInfoById`. One pair per drawn arc, not per read.
       id1: readIdAt(e1.data, e1.readIdx)!,

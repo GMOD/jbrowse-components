@@ -1,4 +1,8 @@
-import { bezierArcKey } from '../../features/linkedReads/computeOverlay.ts'
+import {
+  LOOP_CASING_COLOR,
+  LOOP_CASING_PX,
+  bezierArcKey,
+} from '../../features/linkedReads/computeOverlay.ts'
 import {
   BEZIER_ARC_STROKE_OPACITY,
   computePileupBezierArcsFromModel,
@@ -67,17 +71,26 @@ export default function PileupBezierArcsSvg({
           width={width}
         >
           {arcs.map(arc => (
-            <path
-              key={bezierArcKey(arc)}
-              d={arc.d}
-              stroke={arc.stroke}
-              strokeWidth={arc.strokeWidth}
-              strokeOpacity={BEZIER_ARC_STROKE_OPACITY}
-              // Exported dashed too: a junction across unfetched segments
-              // reads as a solid inversion in a figure exactly as on screen.
-              strokeDasharray={arc.dash}
-              fill="none"
-            />
+            <g key={bezierArcKey(arc)}>
+              {arc.cased ? (
+                <path
+                  d={arc.d}
+                  stroke={LOOP_CASING_COLOR}
+                  strokeWidth={arc.strokeWidth + 2 * LOOP_CASING_PX}
+                  fill="none"
+                />
+              ) : null}
+              <path
+                d={arc.d}
+                stroke={arc.stroke}
+                strokeWidth={arc.strokeWidth}
+                strokeOpacity={arc.cased ? 1 : BEZIER_ARC_STROKE_OPACITY}
+                // Exported dashed too: a junction across unfetched segments
+                // reads as a solid inversion in a figure exactly as on screen.
+                strokeDasharray={arc.dash}
+                fill="none"
+              />
+            </g>
           ))}
         </SectionBandClip>
       ))}
