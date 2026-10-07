@@ -52,7 +52,7 @@ function sessionExpectations(spec: SessionUrlSpec | EmbeddedSpec) {
             : assemblyFromSession(session),
         trackIds: trackIdsFromSession(session),
       }
-    : { views: 0 }
+    : { minViews: 0 }
 }
 
 // The marker held, every display painted, and nothing canceled or unpainted —
