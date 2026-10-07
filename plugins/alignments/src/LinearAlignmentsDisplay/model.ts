@@ -4366,6 +4366,13 @@ export default function stateModelFactory(
   )
 }
 
+// Re-exported off this module, which the `LinearAlignmentsDisplay/stateModel`
+// subpath names, because LGVSyntenyDisplay composes this factory and its
+// emitted `.d.ts` has to name every type the inferred model mentions. Without
+// this the ESM build reports TS2883 against the source path, which no package
+// can import.
+export type { ArcCategory } from '../shaders/palettes.ts'
+
 export type LinearAlignmentsDisplayStateModel = ReturnType<
   typeof stateModelFactory
 >
