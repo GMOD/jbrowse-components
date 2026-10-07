@@ -86,55 +86,15 @@ next deploy; and the beta-only retired spellings deleted (`linkedReads`,
 
 ## Verified defects
 
-Ranked by how a user hits them. Each is reproduced or read in code.
+Eleven of the twelve landed on 2026-10-07 (the log floor, wiggle's rows enum,
+a loose track's `displayDefaults`, the half-written namespace, jb2export's
+`marks.N.*` seed, the v4 pileup sort, the haplotype example, Manhattan's
+constant colour, a facet over a dropped field, the no-config sample config and
+the minors). Left, since it rides on call 2:
 
-- **A log y axis floors at 1 when the max exceeds 1**
-  (`packages/wiggle-core/src/scale.ts:159`): scores 0.01, 0.5, 100 give the
-  axis `[1, 128]`, and a pinned `domainMin: 0` becomes 1 with no rule firing.
-  The same mark's log colour ramp spans `[0.01, 100]` (`markColor.ts:176`).
-  Visual call: positive extent as the ramp does, plus a rule for a pinned end
-  at or below 0.
-- **Wiggle's `rows` field passes the schema and fails `create()`**:
-  `checkRowsField` refuses any field but `source`
-  (`plugins/wiggle/src/shared/checkRowsField.ts:20`) while the schema types
-  `Rows.field` as any field, so `jbrowse validate` says "looks good" and the
-  track fails to load. Fix: an enum on a wiggle `Rows` variant, delete the
-  check.
-- **A loose track's `displayDefaults` is never checked**
-  (`scripts/configJsonSchema.ts:1156`, `validateConfig.ts:670`), and that is
-  the `{trackId, uri}` form the docs promote.
-- **`applyDisplaySettings` writes half a namespace and reports it rejected**
-  (`getConf.ts:148-163`): `{scales:{y:{domainMin:5,type:'bogus'}}}` lands
-  `domainMin` and returns `failed: [scales]`. Fix: lift the merged namespace
-  before writing.
-- **jb2export `marks.N.*` on a Manhattan track drops the default mark list**
-  (`products/jbrowse-img/src/applyTrackOpts.ts:878` seeds from a snapshot
-  that strips a defaulted list; `plotOf` special-cases this). `marks.0.mark=bar`
-  yields `[{}]`.
-- **A v4 alignments session's `sortedBy` and `jexlFilters` are dropped
-  silently** (`plugins/alignments/src/LinearAlignmentsDisplay/retired.ts:106`
-  lists neither), undocumented in ADR-168 and `upgrading_v5.md`.
-- **The "one band per haplotype, each packed on its own" plot example packs
-  nothing** (`plugins/marks/src/LinearMarkDisplay/markPlot.ts:27`): rows
-  `[0,0,1,1]`; the facet needs `transform: [{type:'pileup'}]`.
-- **Manhattan's `#example` writes a constant colour as a field**
-  (`plugins/gwas/src/LinearManhattanDisplay/configSchemaFactory.ts:87`,
-  published at `website/docs/config/LinearManhattanDisplay.md:77`); the index
-  SNP paints grey and `field-spells-constant` warns.
-- **A facet on a field a display-level `aggregate` drops collapses silently**:
-  `unwritten-field` (`markProblems.ts:846`) checks mark channels only, not
-  `facet.field` or `rows.field`.
-- **The no-config landing page's sample config carries 13 undeclared keys**
-  (`products/jbrowse-web/src/components/NoConfigMessageSampleData.ts:165` →
-  `test_data/config_synteny_grape_peach.json`); `schemaValidate.test.ts:805`
-  walks only files named `config.json` and never `demos/`.
 - **LD and Hi-C colour refuse the bare-string shorthand** other colour objects
   take (`ldColorConfigSchema.ts:98`, `hicColorConfigSchema.ts:111` declare no
   `shorthand`; MAF's does).
-- **Minor**: a reference rule the axis cannot draw still widens it
-  (`plugins/marks/src/LinearMarkDisplay/model.ts:981`, `rules: [0]` on log);
-  "Sets marks" shown for `marks: null` on Manhattan (`plot.ts:197`); `line`
-  fires `mark-without-value` while the docs say bar, point or rule.
 
 ## Docs and in-repo configs behind the code
 
