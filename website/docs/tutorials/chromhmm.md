@@ -319,40 +319,32 @@ fibroblasts from different parts of the body:
     "name": "HOXA fibroblasts",
     "views": [
       {
-        "id": "hoxa_lgv",
         "type": "LinearGenomeView",
         "assembly": "hg19",
         "loc": "chr7:27,110,000-27,265,000",
         "tracks": [
           {
-            "type": "FeatureTrack",
-            "configuration": "roadmap_chromhmm_multirow_hg19",
-            "displays": [
-              {
-                "type": "LinearMultiRowFeatureDisplay",
-                "configuration": "roadmap_chromhmm_multirow_hg19-LinearMultiRowFeatureDisplay",
-                "rows": {
-                  "field": "cellType",
-                  "domain": [
-                    "NHLF Lung Fibroblast Primary Cells",
-                    "IMR90 fetal lung fibroblasts Cell Line",
-                    "Foreskin Fibroblast Primary Cells skin01",
-                    "Foreskin Fibroblast Primary Cells skin02",
-                    "H1 Cells",
-                    "H9 Cells"
-                  ],
-                  "kept": [
-                    "NHLF Lung Fibroblast Primary Cells",
-                    "IMR90 fetal lung fibroblasts Cell Line",
-                    "Foreskin Fibroblast Primary Cells skin01",
-                    "Foreskin Fibroblast Primary Cells skin02",
-                    "H1 Cells",
-                    "H9 Cells"
-                  ]
-                },
-                "height": 240
-              }
-            ]
+            "trackId": "roadmap_chromhmm_multirow_hg19",
+            "rows": {
+              "field": "cellType",
+              "domain": [
+                "NHLF Lung Fibroblast Primary Cells",
+                "IMR90 fetal lung fibroblasts Cell Line",
+                "Foreskin Fibroblast Primary Cells skin01",
+                "Foreskin Fibroblast Primary Cells skin02",
+                "H1 Cells",
+                "H9 Cells"
+              ],
+              "kept": [
+                "NHLF Lung Fibroblast Primary Cells",
+                "IMR90 fetal lung fibroblasts Cell Line",
+                "Foreskin Fibroblast Primary Cells skin01",
+                "Foreskin Fibroblast Primary Cells skin02",
+                "H1 Cells",
+                "H9 Cells"
+              ]
+            },
+            "height": 240
           }
         ]
       }
