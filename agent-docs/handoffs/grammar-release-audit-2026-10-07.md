@@ -1,6 +1,6 @@
 ---
 name: grammar-release-audit-2026-10-07
-description: Five parallel audits of the grammar-of-graphics surface before v5.0.0 (schema, vocabulary, mark pipeline, plot write paths, docs and in-repo configs), every finding re-verified against main. Colin approved the five shape calls on 2026-10-07; the defect list and all five calls (ADR-214 to ADR-219, ADR-217 superseding 214) have landed; the smaller renames (canvas `labels.name` to `text`, Manhattan `ld` to `r2`, LD `showLabels` enum), the two tag guards and the docs pass remain. Read before changing a display's grammar slots, the plot write paths or the JSON schema.
+description: Five parallel audits of the grammar-of-graphics surface before v5.0.0 (schema, vocabulary, mark pipeline, plot write paths, docs and in-repo configs), every finding re-verified against main. Colin approved the five shape calls on 2026-10-07; the defect list and all five calls (ADR-214 to ADR-219, ADR-217 superseding 214) have landed; Manhattan `ld` to `r2` and the LD `showLabels` enum have landed too; the canvas `labels.name` to `text` rename waits on a call after a review priced it, and the featureField defects that review found, the two tag guards and the docs pass remain. Read before changing a display's grammar slots, the plot write paths or the JSON schema.
 ---
 
 # Grammar-of-graphics release audit, 2026-10-07
@@ -36,12 +36,53 @@ vocabulary), ADR-218 (the alignments read filter is the `filter` slot, a typed
 `modifications` typed beside it as `AlignmentsModifications`) and ADR-219 (a
 multi-way lane order and choice are its `rows`, `LaneRows`).
 
-Smaller renames in the same class, each a `retired` entry if taken: canvas
-`labels.name` → `text` (the third meaning of `labels`,
-`plugins/canvas/src/LinearBasicDisplay/baseConfigSchema.ts:140`); LD
-`showLabels` boolean → the canvas enum; Manhattan's `ld` field → `r2`
-(`plugins/gwas/src/GWASAdapter/ldFields.ts:2`); `scales.y.type` versus
-`color.scale` naming one idea two ways (recorded, ADR-151).
+Smaller renames in the same class: Manhattan's LD join writes the statistic as
+the field `r2` (ADR-178, amended) and the LD display's `showLabels` is
+`none | name`, both landed on 2026-10-07; `scales.y.type` versus `color.scale`
+naming one idea two ways is recorded (ADR-151).
+
+**Canvas `labels.name` → `text` waits on Colin.** He approved it with
+"description keeps its own slot"; a review of the plan on 2026-10-07 found
+costs the audit had not priced, each re-read:
+
+- A top-level display slot named `description` is unreachable from a session
+  spec's track entry or a share link: `applyConfSettings` writes a key the
+  track declares to the track, and the track declares `description`
+  (`packages/core/src/pluggableElementTypes/models/baseTrackConfig.ts:214`).
+- `''` is how the worker's label config turns a label kind off
+  (`plugins/variants/src/LinearMultiSampleVariantDisplay/laneDisplayConfig.ts`),
+  where the multi-way `text` slot reads `''` as its name-else-ID default.
+- `showLabels` names the two lines `name` and `description`, so
+  `showLabels: "name"` would govern a slot called `text`.
+- jb2hubs writes display-level `labels.name` into its hosted configs
+  (`hubtools/src/featureDisplay.ts` in that repo), which older releases read,
+  so `labels` would stay a permanent second spelling.
+
+The narrower change that keeps the win is retyping `labels.name` and
+`labels.description` as `featureField`, so a bare string names a field as it
+does on `text` and `encoding.text`, with no rename.
+
+## featureField, as the same review found it
+
+The contract is `fieldReader`'s (`packages/core/src/util/fieldReader.ts`): a
+name, a dotted path or a `jexl:` expression. Eighteen slots declare the type,
+five of them through `colorChannelSlots`. Not every one honours it:
+
+- **Wiggle `y` reads a bare `feature.get`** (`plugins/wiggle/src/util.ts:193`),
+  so a dotted path or a `jexl:` there plots 0 everywhere in silence, against
+  `website/docs/config_guides/slot_types.md`'s promise for the type.
+- **No surface compiles a featureField's `jexl:`** (the JSON schema, `jbrowse
+  validate`, the editor, load), and a failing one differs by reader: canvas
+  `facet` throws the track (`collectRenderData.ts:30`), `rows` and
+  `clusterField` read `''` for every feature
+  (`packMultiRowFeatures.ts:217`), multi-way `text` logs and falls back to the
+  name (`MultiWaySyntenyDisplay/model.ts`, `geneTextOf`).
+- **`''` is per-slot**: off on a colour field, a facet and a mark's `text`, the
+  display's own default on multi-way `text` and `rows.field`; the slot-types
+  guide says nothing of it.
+- Reported, not re-read: `lengthField`, `canonicalTranscriptField` and the
+  transform steps' `field` are `string` slots that read a feature field by
+  their own rules.
 
 Two guards worth adding at the tag: a slot-path baseline from the 5.0.0
 `config.json` that `autogen --check` compares against, since the schema deploy
