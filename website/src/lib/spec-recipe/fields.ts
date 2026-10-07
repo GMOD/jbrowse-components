@@ -1364,6 +1364,14 @@ export const trackFields: Record<string, FieldRecipe> = {
         ? (value as { field?: unknown; domain?: unknown; kept?: unknown })
         : { field: value }
     const { field, domain, kept } = members
+    if (displayType === 'MultiWaySyntenyDisplay') {
+      return Array.isArray(kept)
+        ? {
+            path: `${TRACK_MENU} → Lanes → Choose lanes...`,
+            note: `Tick the ${kept.length} lane${kept.length === 1 ? '' : 's'} this figure draws.`,
+          }
+        : undefined
+    }
     const editor = displayType ? ROW_ARRANGEMENT_EDITORS[displayType] : undefined
     if (
       typeof field === 'string' &&
@@ -1520,15 +1528,6 @@ export const trackFields: Record<string, FieldRecipe> = {
     const label = syntenyColorLabel(syntenyColorField(value))
     return label && displayType === 'MultiWaySyntenyDisplay'
       ? { path: `${TRACK_MENU} → Color by... → Ribbons → ${label}` }
-      : undefined
-  },
-  laneFilter: (value, { displayType }) => {
-    const only = asRecord(value)?.only
-    return Array.isArray(only) && displayType === 'MultiWaySyntenyDisplay'
-      ? {
-          path: `${TRACK_MENU} → Lanes → Choose lanes...`,
-          note: `Tick the ${only.length} lane${only.length === 1 ? '' : 's'} this figure draws.`,
-        }
       : undefined
   },
   inlineLaneNames: (value, { displayType }) =>

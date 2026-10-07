@@ -1,9 +1,3 @@
-/** `except` lanes stay fetched; both lists compare through `keyOf`. */
-export interface LaneFilter {
-  only?: string[]
-  except?: string[]
-}
-
 /** `placed` is undefined where the fetch did not ask for the lane. */
 export interface LaneChoice {
   name: string
@@ -15,10 +9,11 @@ export interface LaneChoice {
 
 export interface LaneSelectionModel {
   laneUniverse: LaneChoice[]
-  laneFilter: LaneFilter | undefined
+  /** `rows.kept` as a choice: undefined while it names no lane */
+  laneChoice: readonly string[] | undefined
   configuredLanes: readonly string[]
   chooseLanes: (names: string[]) => void
-  setSelectedLanes: (names: string[] | undefined) => void
+  setSelectedLanes: (names: readonly string[] | undefined) => void
 }
 
 export function laneResetLabel(
@@ -35,62 +30,44 @@ type KeyOf = (name: string) => string
 const has = (names: readonly string[], key: string, keyOf: KeyOf) =>
   names.some(name => keyOf(name) === key)
 
-export function laneFilterOf(
-  only: readonly string[] | undefined,
-  except: readonly string[],
-): LaneFilter | undefined {
-  if (only === undefined && except.length === 0) {
-    return undefined
-  }
-  const filter: LaneFilter = {}
-  if (only !== undefined) {
-    filter.only = [...only]
-  }
-  if (except.length > 0) {
-    filter.except = [...except]
-  }
-  return filter
-}
-
-/** undefined means every lane */
+/** The lanes a choice leaves in force: `rows.kept`, else the track's lanes, else every lane (undefined). */
 export function lanesInForce(
-  filter: LaneFilter | undefined,
+  kept: readonly string[],
   configured: readonly string[],
 ): readonly string[] | undefined {
-  return filter?.only ?? (configured.length ? configured : undefined)
+  return kept.length ? kept : configured.length ? configured : undefined
 }
 
-export function hiddenLanesOf(
-  filter: LaneFilter | undefined,
-): readonly string[] {
-  return filter?.except ?? []
-}
-
+/** The hidden lanes with `name` among them; both lists compare through `keyOf`. */
 export function withLaneHidden(
-  filter: LaneFilter | undefined,
+  hidden: readonly string[],
   name: string,
   keyOf: KeyOf,
-): LaneFilter | undefined {
-  const except = hiddenLanesOf(filter)
-  return has(except, keyOf(name), keyOf)
-    ? filter
-    : laneFilterOf(filter?.only, [...except, name])
+): readonly string[] {
+  return has(hidden, keyOf(name), keyOf) ? hidden : [...hidden, name]
 }
 
+/** A show unhides the lane and, where a choice in force leaves it out, joins it to `kept`. */
 export function withLaneShown(
-  filter: LaneFilter | undefined,
-  configured: readonly string[],
+  {
+    kept,
+    hidden,
+    configured,
+  }: {
+    kept: readonly string[]
+    hidden: readonly string[]
+    configured: readonly string[]
+  },
   name: string,
   keyOf: KeyOf,
-): LaneFilter | undefined {
+): { kept: readonly string[]; hidden: readonly string[] } {
   const key = keyOf(name)
-  const except = hiddenLanesOf(filter).filter(n => keyOf(n) !== key)
-  const selection = lanesInForce(filter, configured)
-  const only =
-    selection && !has(selection, key, keyOf)
-      ? [...selection, name]
-      : filter?.only
-  return laneFilterOf(only, except)
+  const selection = lanesInForce(kept, configured)
+  return {
+    kept:
+      selection && !has(selection, key, keyOf) ? [...selection, name] : kept,
+    hidden: hidden.filter(n => keyOf(n) !== key),
+  }
 }
 
 /** undefined where the pick is the default the lanes come back to anyway */

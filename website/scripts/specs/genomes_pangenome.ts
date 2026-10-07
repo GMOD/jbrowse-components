@@ -110,8 +110,7 @@ export function portalLanesView({
       {
         trackId: 'hprc_v2_1_gbz_lanes',
         type: 'MultiWaySyntenyDisplay',
-        laneFilter: { only: lanes },
-        domain: lanes,
+        rows: { domain: lanes, kept: lanes },
         height: 51 * (lanes.length + 1),
       },
     ],

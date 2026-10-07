@@ -138,7 +138,7 @@ Two entries in the track config matter here:
   "displays": [
     {
       "type": "MultiWaySyntenyDisplay",
-      "domain": ["Ler", "Cvi", "Eri", "Kyo", "Sha"],
+      "rows": { "domain": ["Ler", "Cvi", "Eri", "Kyo", "Sha"] },
       "ribbonColor": {
         "field": "syri",
         "domain": ["SYN", "INV", "TRANS", "INVTR", "DUP", "INVDP"]

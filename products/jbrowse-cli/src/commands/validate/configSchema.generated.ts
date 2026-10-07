@@ -8333,6 +8333,116 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         }
       ]
     },
+    "LaneRows": {
+      "title": "LaneRows",
+      "anyOf": [
+        {
+          "description": "Shorthand for \`{ \\"field\\": ... }\`.",
+          "default": "assembly",
+          "const": "assembly",
+          "type": "string"
+        },
+        {
+          "title": "LaneRows",
+          "type": "object",
+          "x-closed": true,
+          "properties": {
+            "domain": {
+              "description": "the row order: the rows listed lead, in this order, and the rest keep the order they arrived in.",
+              "if": {
+                "type": "null"
+              },
+              "else": {
+                "anyOf": [
+                  {
+                    "type": "array",
+                    "items": {
+                      "anyOf": [
+                        {
+                          "type": "string"
+                        },
+                        {
+                          "type": "number"
+                        }
+                      ]
+                    }
+                  }
+                ]
+              }
+            },
+            "labels": {
+              "description": "a label drawn beside a row in place of its name, by name.",
+              "if": {
+                "type": "null"
+              },
+              "else": {
+                "type": "object",
+                "additionalProperties": {
+                  "type": "string"
+                }
+              }
+            },
+            "tree": {
+              "description": "the dendrogram beside the rows, as newick, written by a clustering run beside the order it produced.",
+              "if": {
+                "type": "null"
+              },
+              "else": {
+                "$ref": "#/$defs/PlainString"
+              }
+            },
+            "treeProvenance": {
+              "description": "what tree was computed from, the locus and the settings; unset for a tree that arrived as data. Any JSON value: the slot is \`frozen\`, so its shape is not checked here.",
+              "if": {
+                "type": "null"
+              },
+              "else": {
+                "not": {
+                  "$ref": "#/$defs/JexlString"
+                }
+              }
+            },
+            "kept": {
+              "description": "the rows shown, by name; empty, or naming no current row, shows every row.",
+              "if": {
+                "type": "null"
+              },
+              "else": {
+                "anyOf": [
+                  {
+                    "type": "array",
+                    "items": {
+                      "anyOf": [
+                        {
+                          "type": "string"
+                        },
+                        {
+                          "type": "number"
+                        }
+                      ]
+                    }
+                  }
+                ]
+              }
+            },
+            "field": {
+              "description": "assembly, the one field a lane can be.",
+              "default": "assembly",
+              "if": {
+                "type": "null"
+              },
+              "else": {
+                "const": "assembly"
+              }
+            }
+          },
+          "patternProperties": {
+            "^_+comment": {}
+          },
+          "additionalProperties": false
+        }
+      ]
+    },
     "RibbonColor": {
       "title": "RibbonColor",
       "anyOf": [
@@ -9947,16 +10057,12 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             ]
           }
         },
-        "domain": {
-          "description": "the lanes that stack first below the anchor, in order; the rest follow densest-first, so a ribbon chain through adjacent lanes is cut as late as possible. What the Lanes menu and a header drag write.",
+        "rows": {
           "if": {
             "type": "null"
           },
           "else": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
+            "$ref": "#/$defs/LaneRows"
           }
         },
         "ribbonColor": {
@@ -17438,8 +17544,15 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "utrColor": {
               "$ref": "#/$defs/MultiWaySyntenyDisplaySlots/properties/utrColor"
             },
-            "domain": {
-              "$ref": "#/$defs/MultiWaySyntenyDisplaySlots/properties/domain"
+            "rows": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/MultiWaySyntenyDisplaySlots/properties/rows"
+                },
+                {
+                  "$ref": "#/$defs/LinearMarkDisplaySlots/properties/rows"
+                }
+              ]
             },
             "ribbonColor": {
               "$ref": "#/$defs/MultiWaySyntenyDisplaySlots/properties/ribbonColor"
@@ -17479,9 +17592,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             },
             "transform": {
               "$ref": "#/$defs/LinearMarkDisplaySlots/properties/transform"
-            },
-            "rows": {
-              "$ref": "#/$defs/LinearMarkDisplaySlots/properties/rows"
             },
             "rowColor": {
               "$ref": "#/$defs/LinearMarkDisplaySlots/properties/rowColor"
@@ -21370,7 +21480,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
     "MultiWaySyntenyDisplayState": {
       "type": "object",
       "properties": {
-        "laneFilter": {},
+        "hiddenLaneNames": {},
         "frozenLanes": {},
         "heightPreConfig": {
           "deprecated": true,

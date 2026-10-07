@@ -391,8 +391,7 @@ function tnnt3StarSession() {
             {
               trackId: 'hg38_liftOver_multiway',
               type: 'MultiWaySyntenyDisplay',
-              laneFilter: { only: lanes },
-              domain: lanes,
+              rows: { domain: lanes, kept: lanes },
               ribbonColor: { field: 'strand' },
               height: (lanes.length + 1) * 60,
             },
@@ -426,8 +425,7 @@ function hostedStarSession(
             {
               trackId: `${db}_liftOver_multiway`,
               type: 'MultiWaySyntenyDisplay',
-              laneFilter: { only: lanes },
-              domain: lanes,
+              rows: { domain: lanes, kept: lanes },
               height: (lanes.length + 1) * 34,
               ...display,
             },
@@ -679,7 +677,7 @@ const GRASSES_RICE_LANES = sessionSpec(
           {
             trackId: 'grasses_orthogroups',
             type: 'MultiWaySyntenyDisplay',
-            domain: ['sorghum', 'brachypodium', 'setaria', 'maize'],
+            rows: { domain: ['sorghum', 'brachypodium', 'setaria', 'maize'] },
             height: 320,
           },
         ],

@@ -356,14 +356,16 @@ config, so name your own `trackId` instead):
           {
             "trackId": "grape_peach_cacao_blocks",
             "type": "MultiWaySyntenyDisplay",
-            "domain": [
-              "GCF_000346465.2",
-              "GCF_000208745.1",
-              "poplar",
-              "citrus",
-              "arabidopsis",
-              "tomato"
-            ],
+            "rows": {
+              "domain": [
+                "GCF_000346465.2",
+                "GCF_000208745.1",
+                "poplar",
+                "citrus",
+                "arabidopsis",
+                "tomato"
+              ]
+            },
             "height": 340
           }
         ]
@@ -391,8 +393,8 @@ table, labeled `no annotation`.
 
 ### Ordering the lanes
 
-- `domain` pins the lanes it names to the top; the rest follow densest-first, so
-  the order holds across a pan
+- `rows.domain` pins the lanes it names to the top; the rest follow
+  densest-first, so the order holds across a pan
 - With **Show... → Show ribbons across gaps** off, a sparse lane mid-stack cuts
   every chain running through it
 

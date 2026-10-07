@@ -128,8 +128,6 @@ import {
 } from './laneMotion.ts'
 import { lanePanelsForRegion } from './lanePanels.ts'
 import {
-  hiddenLanesOf,
-  laneFilterOf,
   lanesInForce,
   pickedLanes,
   withLaneHidden,
@@ -211,7 +209,7 @@ import type {
   LaneLayerSource,
 } from './laneLayers.ts'
 import type { LaneTransition } from './laneMotion.ts'
-import type { LaneChoice, LaneFilter } from './laneSelection.ts'
+import type { LaneChoice } from './laneSelection.ts'
 import type { Lane, LaneStack } from './laneStack.ts'
 import type {
   FetchRegion,
@@ -315,9 +313,10 @@ export function stateModelFactory(
         configuration: ConfigurationReference(configSchema),
         /**
          * #property
-         * undefined means `configuredLanes`, or every lane where there are none
+         * the lanes a reader hid from the lane menu, by assembly name; the
+         * lanes chosen are `rows.kept`
          */
-        laneFilter: types.frozen<LaneFilter | undefined>(),
+        hiddenLaneNames: types.frozen<readonly string[] | undefined>(),
         /** #property */
         frozenLanes: types.frozen<FrozenLanes | undefined>(),
       }),
@@ -502,14 +501,16 @@ export function stateModelFactory(
          * partial one with `mergeDomain` first
          */
         setDomain(domain: string[]) {
-          setConf(self, 'domain', domain)
+          setConf(self, ['rows', 'domain'], domain)
         },
         /**
          * #action
-         * undefined restores `configuredLanes`, or every lane
+         * writes `rows.kept`; undefined restores `configuredLanes`, or every
+         * lane
          */
-        setSelectedLanes(names: string[] | undefined) {
-          self.laneFilter = laneFilterOf(names, [])
+        setSelectedLanes(names: readonly string[] | undefined) {
+          setConf(self, ['rows', 'kept'], names ?? [])
+          self.hiddenLaneNames = undefined
         },
         /** #action */
         setBridgeSkippedLanes(flag: boolean) {
@@ -665,7 +666,15 @@ export function stateModelFactory(
       },
       /** #getter */
       get domain(): string[] {
-        return getConf(self, 'domain')
+        return getConf(self, ['rows', 'domain'])
+      },
+      /**
+       * #getter
+       * `rows.kept` as a choice: undefined while it names no lane
+       */
+      get laneChoice(): readonly string[] | undefined {
+        const kept: readonly string[] = getConf(self, ['rows', 'kept'])
+        return kept.length ? kept : undefined
       },
       /** #getter */
       get ribbonColorField(): string {
@@ -941,11 +950,11 @@ export function stateModelFactory(
        * undefined means every lane, and a hidden lane stays in force
        */
       get laneSelection(): readonly string[] | undefined {
-        return lanesInForce(self.laneFilter, self.configuredLanes)
+        return lanesInForce(self.laneChoice ?? [], self.configuredLanes)
       },
       /** #getter */
       get hiddenLanes(): readonly string[] {
-        return hiddenLanesOf(self.laneFilter)
+        return self.hiddenLaneNames ?? []
       },
     }))
     .views(self => ({
@@ -1156,24 +1165,31 @@ export function stateModelFactory(
       },
       /** #action */
       hideLane(assemblyName: string) {
-        self.laneFilter = withLaneHidden(
-          self.laneFilter,
+        self.hiddenLaneNames = withLaneHidden(
+          self.hiddenLanes,
           assemblyName,
           self.laneKey,
         )
       },
       /** #action */
       showLane(assemblyName: string) {
-        self.laneFilter = withLaneShown(
-          self.laneFilter,
-          self.configuredLanes,
+        const { kept, hidden } = withLaneShown(
+          {
+            kept: self.laneChoice ?? [],
+            hidden: self.hiddenLanes,
+            configured: self.configuredLanes,
+          },
           assemblyName,
           self.laneKey,
         )
+        if (kept !== (self.laneChoice ?? [])) {
+          setConf(self, ['rows', 'kept'], kept)
+        }
+        self.hiddenLaneNames = hidden.length ? hidden : undefined
       },
       /** #action */
       showHiddenLanes() {
-        self.laneFilter = laneFilterOf(self.laneFilter?.only, [])
+        self.hiddenLaneNames = undefined
       },
     }))
     .actions(self => ({

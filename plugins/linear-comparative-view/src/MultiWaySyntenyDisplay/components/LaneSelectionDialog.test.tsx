@@ -30,7 +30,7 @@ function renderDialog(drawn?: string[], configuredLanes: string[] = []) {
             ...lane,
             drawn: drawn?.includes(lane.name) ?? true,
           })),
-          laneFilter: drawn && { only: drawn },
+          laneChoice: drawn,
           configuredLanes,
           chooseLanes: names => {
             chosen.push(names)
@@ -100,7 +100,7 @@ test('a lane the fetch never asked for is not greyed as placing nothing', () => 
             { name: 'asked', placed: true, drawn: true },
             { name: 'unasked', placed: undefined, drawn: false },
           ],
-          laneFilter: { only: ['asked'] },
+          laneChoice: ['asked'],
           configuredLanes: [],
           chooseLanes: () => {},
           setSelectedLanes: () => {},

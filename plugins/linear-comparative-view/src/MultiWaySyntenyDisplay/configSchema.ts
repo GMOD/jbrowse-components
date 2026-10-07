@@ -6,6 +6,7 @@ import { lodModeSlot } from '@jbrowse/synteny-core'
 
 import { geneColorConfigSchema } from './geneColorConfigSchema.ts'
 import { laneLayerConfigSchema } from './laneLayerConfigSchema.ts'
+import { laneRowsConfigSchema } from './laneRowsConfigSchema.ts'
 import { ribbonColorConfigSchema } from './ribbonColorConfigSchema.ts'
 
 import type { Instance } from '@jbrowse/mobx-state-tree'
@@ -98,14 +99,11 @@ export function configSchemaFactory() {
       },
       ...lodModeSlot,
       /**
-       * #slot
+       * #slot rows
+       * The lane order and the lanes drawn, which the Lanes menu, a header
+       * drag and the lane picker write.
        */
-      domain: {
-        type: 'stringArray',
-        description:
-          'the lanes that stack first below the anchor, in order; the rest follow densest-first, so a ribbon chain through adjacent lanes is cut as late as possible. What the Lanes menu and a header drag write',
-        defaultValue: [],
-      },
+      rows: laneRowsConfigSchema,
       /**
        * #slot ribbonColor
        * `"rgba(130,130,130,0.3)"` paints every ribbon; `{ field: "strand" }`

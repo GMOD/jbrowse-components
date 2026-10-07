@@ -1,6 +1,4 @@
 import {
-  hiddenLanesOf,
-  laneFilterOf,
   lanesInForce,
   pickedLanes,
   withLaneHidden,
@@ -10,44 +8,39 @@ import {
 // a lowercase spelling stands in for an assembly alias
 const keyOf = (name: string) => name.toLowerCase()
 
-test('a filter that says nothing is undefined, and an empty except drops out', () => {
-  expect(laneFilterOf(undefined, [])).toBeUndefined()
-  expect(laneFilterOf(['a'], [])).toEqual({ only: ['a'] })
-  expect(laneFilterOf(undefined, ['b'])).toEqual({ except: ['b'] })
-  expect(laneFilterOf([], [])).toEqual({ only: [] })
+test('the lanes in force are rows.kept, else the configured lanes, else every lane', () => {
+  expect(lanesInForce([], [])).toBeUndefined()
+  expect(lanesInForce([], ['c'])).toEqual(['c'])
+  expect(lanesInForce(['a'], ['c'])).toEqual(['a'])
 })
 
-test('the lanes in force are the choice, else the configured lanes, else every lane', () => {
-  expect(lanesInForce(undefined, [])).toBeUndefined()
-  expect(lanesInForce(undefined, ['c'])).toEqual(['c'])
-  expect(lanesInForce({ only: ['a'] }, ['c'])).toEqual(['a'])
-  expect(lanesInForce({ except: ['a'] }, ['c'])).toEqual(['c'])
-})
-
-test('a hide appends to except under any choice and never rewrites it', () => {
-  expect(withLaneHidden(undefined, 'a', keyOf)).toEqual({ except: ['a'] })
-  expect(withLaneHidden({ only: ['a', 'b'] }, 'a', keyOf)).toEqual({
-    only: ['a', 'b'],
-    except: ['a'],
-  })
-  const twice = withLaneHidden({ except: ['a'] }, 'A', keyOf)
-  expect(twice).toEqual({ except: ['a'] })
-  expect(hiddenLanesOf(twice)).toEqual(['a'])
+test('a hide appends to the hidden lanes once, by key', () => {
+  expect(withLaneHidden([], 'a', keyOf)).toEqual(['a'])
+  const once = withLaneHidden(['a'], 'A', keyOf)
+  expect(once).toEqual(['a'])
 })
 
 test('a show unhides, and joins the lanes in force where they leave it out', () => {
-  expect(withLaneShown({ except: ['a'] }, [], 'A', keyOf)).toBeUndefined()
   expect(
-    withLaneShown({ only: ['a', 'b'], except: ['a'] }, [], 'a', keyOf),
-  ).toEqual({ only: ['a', 'b'] })
-  expect(withLaneShown({ only: ['b'] }, [], 'a', keyOf)).toEqual({
-    only: ['b', 'a'],
-  })
+    withLaneShown({ kept: [], hidden: ['a'], configured: [] }, 'A', keyOf),
+  ).toEqual({ kept: [], hidden: [] })
+  expect(
+    withLaneShown(
+      { kept: ['a', 'b'], hidden: ['a'], configured: [] },
+      'a',
+      keyOf,
+    ),
+  ).toEqual({ kept: ['a', 'b'], hidden: [] })
+  expect(
+    withLaneShown({ kept: ['b'], hidden: [], configured: [] }, 'a', keyOf),
+  ).toEqual({ kept: ['b', 'a'], hidden: [] })
   // the configured lanes are the choice in force when none is written
-  expect(withLaneShown(undefined, ['b'], 'a', keyOf)).toEqual({
-    only: ['b', 'a'],
-  })
-  expect(withLaneShown(undefined, [], 'a', keyOf)).toBeUndefined()
+  expect(
+    withLaneShown({ kept: [], hidden: [], configured: ['b'] }, 'a', keyOf),
+  ).toEqual({ kept: ['b', 'a'], hidden: [] })
+  expect(
+    withLaneShown({ kept: [], hidden: [], configured: [] }, 'a', keyOf),
+  ).toEqual({ kept: [], hidden: [] })
 })
 
 describe('the picker submit', () => {
@@ -80,38 +73,27 @@ describe('the picker submit', () => {
     expect(
       pickedLanes(
         {
-          picked: ['a'],
-          offered: ['a', 'b'],
-          inForce: ['a'],
-          configured: ['a'],
+          picked: ['a', 'b'],
+          offered: ['a', 'b', 'c'],
+          inForce: ['a', 'b'],
+          configured: ['a', 'b'],
         },
         keyOf,
       ),
     ).toBeUndefined()
-    expect(
-      pickedLanes(
-        {
-          picked: ['a', 'b'],
-          offered: ['a', 'b'],
-          inForce: ['a'],
-          configured: ['a'],
-        },
-        keyOf,
-      ),
-    ).toEqual(['a', 'b'])
   })
 
-  test('a lane in force that this window did not offer survives the pick', () => {
+  test('a lane in force but outside the window stays chosen', () => {
     expect(
       pickedLanes(
         {
           picked: ['a'],
           offered: ['a', 'b'],
-          inForce: ['a', 'far'],
+          inForce: ['a', 'z'],
           configured: [],
         },
         keyOf,
       ),
-    ).toEqual(['a', 'far'])
+    ).toEqual(['a', 'z'])
   })
 })

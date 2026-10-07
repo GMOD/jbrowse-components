@@ -54,9 +54,9 @@ which the `mate` object does not currently say.
 
 **HPRC at scale: lane selection.** Two haplotypes are a figure; 464 are not a
 lane stack. The selection half landed 2026-09-06 as display state and a dialog
-rather than as `TreeSidebarMixin`: `laneFilter` (a session property, so a
-shared session carries it; the track's own `assemblyNames` is what a hosted
-track opens on) narrows `rowAssemblies`, and for a source whose header declares
+rather than as `TreeSidebarMixin`: `rows.kept` (config since ADR-219, so a
+shared session and a share link carry it; the track's own `assemblyNames` is
+what a hosted track opens on) narrows `rowAssemblies`, and for a source whose header declares
 its lanes the selection also rides the fetch as `haplotypes`
 (`fetchLaneSelection`). The universe the picker offers is the
 header's `lanes` (an adapter declaring `adapterCapabilities: ['headerLanes']`
@@ -85,7 +85,7 @@ steps:
    cluster-by-identity ordering; rows at 1-2 px each, 464 or 4,000 of them; a
    click or a lasso yields a haplotype set.
 2. **This display as the locus reading** for that set: the set becomes
-   `laneFilter` (session state already), and — once the reader takes a
+   `rows.kept` (config already), and — once the reader takes a
    filter — the fetch.
 3. **The graph view** taking the same set: `haplotypes` on `GetSubgraph`
    (`HAPLOTYPE_WALKS_VISION.md:70-73`), Sample rows drawing the chosen set.

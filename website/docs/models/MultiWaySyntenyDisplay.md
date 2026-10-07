@@ -21,7 +21,7 @@ Members a composed model contributes are listed here too, so these tables are th
 | --- | --- | --- |
 | <span id="property-type">**type**</span><br><code>type: types.literal('MultiWaySyntenyDisplay')</code> |  | MultiWaySyntenyDisplay |
 | <span id="property-configuration">**configuration**</span><br><code>configuration: ConfigurationReference(configSchema)</code> |  | MultiWaySyntenyDisplay |
-| <span id="property-lanefilter">**laneFilter**</span><br><code>laneFilter: types.frozen&lt;LaneFilter &#124; undefined&gt;()</code> | undefined means `configuredLanes`, or every lane where there are none | MultiWaySyntenyDisplay |
+| <span id="property-hiddenlanenames">**hiddenLaneNames**</span><br><code>hiddenLaneNames: types.frozen&lt;readonly string[] &#124; undefined&gt;()</code> | the lanes a reader hid from the lane menu, by assembly name; the lanes chosen are `rows.kept` | MultiWaySyntenyDisplay |
 | <span id="property-frozenlanes">**frozenLanes**</span><br><code>frozenLanes: types.frozen&lt;FrozenLanes &#124; undefined&gt;()</code> |  | MultiWaySyntenyDisplay |
 | <span id="property-id">**id**</span><br><code>id: ElementId</code> |  | [BaseDisplay](../basedisplay#property-id) |
 
@@ -96,6 +96,7 @@ Members a composed model contributes are listed here too, so these tables are th
 | <span id="getter-featuresarenameless">**featuresAreNameless**</span><br><code>boolean</code> |  | MultiWaySyntenyDisplay |
 | <span id="getter-ribboncolor">**ribbonColor**</span><br><code>string</code> |  | MultiWaySyntenyDisplay |
 | <span id="getter-domain">**domain**</span><br><code>string[]</code> |  | MultiWaySyntenyDisplay |
+| <span id="getter-lanechoice">**laneChoice**</span><br><code>readonly string[] &#124; undefined</code> | `rows.kept` as a choice: undefined while it names no lane | MultiWaySyntenyDisplay |
 | <span id="getter-ribboncolorfield">**ribbonColorField**</span><br><code>string</code> |  | MultiWaySyntenyDisplay |
 | <span id="getter-ribboncolorattributes">**ribbonColorAttributes**</span><br><code>string[]</code> |  | MultiWaySyntenyDisplay |
 | <span id="getter-ribboncolordomain">**ribbonColorDomain**</span><br><code>string[]</code> |  | MultiWaySyntenyDisplay |
@@ -319,7 +320,7 @@ Members a composed model contributes are listed here too, so these tables are th
 | <span id="action-setlanelinks">**setLaneLinks**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>(fetched: ReadonlyMap&lt;string, HeldLaneLinks&gt;, specs: LaneFetchS…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>(fetched: ReadonlyMap&lt;string, HeldLaneLinks&gt;, specs: LaneFetchSpec[], anchor: string) =&gt; void</code></pre></dialog></span> |  | MultiWaySyntenyDisplay |
 | <span id="action-setlanegroups">**setLaneGroups**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>(fetched: ReadonlyMap&lt;string, HeldLaneGroups&gt;, specs: LaneFetch…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>(fetched: ReadonlyMap&lt;string, HeldLaneGroups&gt;, specs: LaneFetchSpec[], anchor: string) =&gt; void</code></pre></dialog></span> |  | MultiWaySyntenyDisplay |
 | <span id="action-setdomain">**setDomain**</span><br><code>(domain: string[]) =&gt; void</code> | takes the whole pinned order, empty meaning densest-first; merge a partial one with `mergeDomain` first | MultiWaySyntenyDisplay |
-| <span id="action-setselectedlanes">**setSelectedLanes**</span><br><code>(names: string[] &#124; undefined) =&gt; void</code> | undefined restores `configuredLanes`, or every lane | MultiWaySyntenyDisplay |
+| <span id="action-setselectedlanes">**setSelectedLanes**</span><br><code>(names: readonly string[] &#124; undefined) =&gt; void</code> | writes `rows.kept`; undefined restores `configuredLanes`, or every lane | MultiWaySyntenyDisplay |
 | <span id="action-setbridgeskippedlanes">**setBridgeSkippedLanes**</span><br><code>(flag: boolean) =&gt; void</code> |  | MultiWaySyntenyDisplay |
 | <span id="action-setribboncolorfield">**setRibbonColorField**</span><br><code>(field: string) =&gt; void</code> |  | MultiWaySyntenyDisplay |
 | <span id="action-setribboncolordomain">**setRibbonColorDomain**</span><br><code>(domain: string[]) =&gt; void</code> |  | MultiWaySyntenyDisplay |

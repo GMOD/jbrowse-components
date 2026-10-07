@@ -10,7 +10,6 @@ import {
   showSubMenuItems,
 } from './menus.ts'
 
-import type { LaneFilter } from './laneSelection.ts'
 import type { HeaderLane } from './menus.ts'
 import type { MenuItem } from '@jbrowse/core/ui'
 
@@ -116,7 +115,8 @@ function headerModel({
 
 function trackModel({
   universe = 3,
-  laneFilter,
+  laneChoice,
+  hiddenLanes = [],
   configuredLanes = [],
   domain = [],
   hasLegendKey = false,
@@ -124,7 +124,8 @@ function trackModel({
   geneSolidColor,
 }: {
   universe?: number
-  laneFilter?: LaneFilter
+  laneChoice?: readonly string[]
+  hiddenLanes?: readonly string[]
   configuredLanes?: string[]
   domain?: string[]
   hasLegendKey?: boolean
@@ -142,14 +143,14 @@ function trackModel({
       placed: true,
       drawn: true,
     })),
-    laneFilter,
+    laneChoice,
     configuredLanes,
-    hiddenLanes: laneFilter?.except ?? [],
+    hiddenLanes,
     showHiddenLanes: () => {
       calls.push('show hidden')
     },
     chooseLanes: () => {},
-    setSelectedLanes: (names: string[] | undefined) => {
+    setSelectedLanes: (names: readonly string[] | undefined) => {
       calls.push(`select ${names === undefined ? 'reset' : names.join(',')}`)
     },
     openLaneSelection: () => {
@@ -304,7 +305,7 @@ test('a constant gene colour ticks Solid color..., and Default takes it back', (
 test('Show offers the legend only when something is keyed, and the hidden lanes once there are some', () => {
   const { model, calls } = trackModel({
     hasLegendKey: true,
-    laneFilter: { except: ['peach', 'cacao'] },
+    hiddenLanes: ['peach', 'cacao'],
   })
   const show = showSubMenuItems(model)
   expect(labelsOf(show).slice(6)).toEqual([
@@ -377,7 +378,7 @@ test('the picker is offered once there are lanes to choose among, and a choice o
   }
   expect(labelsOf(lanesOf({ universe: 1 }).lanes)[0]).toBe('Reset lane order')
 
-  const { lanes, calls } = lanesOf({ laneFilter: { only: ['lane0'] } })
+  const { lanes, calls } = lanesOf({ laneChoice: ['lane0'] })
   expect(labelsOf(lanes).slice(0, 2)).toEqual([
     'Choose lanes...',
     'Show every lane (3)',
@@ -388,13 +389,12 @@ test('the picker is offered once there are lanes to choose among, and a choice o
 
   expect(
     labelsOf(
-      lanesOf({ laneFilter: { only: ['lane2'] }, configuredLanes: ['lane1'] })
-        .lanes,
+      lanesOf({ laneChoice: ['lane2'], configuredLanes: ['lane1'] }).lanes,
     )[1],
   ).toBe("Show the track's lanes (1)")
-  expect(
-    labelsOf(lanesOf({ laneFilter: { except: ['lane2'] } }).lanes)[1],
-  ).toBe('Reset lane order')
+  expect(labelsOf(lanesOf({ hiddenLanes: ['lane2'] }).lanes)[1]).toBe(
+    'Reset lane order',
+  )
 })
 
 test('a lane moves and hides through the display', () => {

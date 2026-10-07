@@ -670,7 +670,7 @@ test('re-anchoring under a lane selection keeps the outgoing anchor drawn', asyn
   expect(session.notifications.at(-1)?.message).toBe(
     'Re-anchored on volvox_random',
   )
-  expect(display.laneFilter).toEqual({ only: ['volvox_random', 'volvox'] })
+  expect(display.laneChoice).toEqual(['volvox_random', 'volvox'])
 })
 
 test('with every lane drawn, re-anchoring writes no selection', async () => {
@@ -680,7 +680,7 @@ test('with every lane drawn, re-anchoring writes no selection', async () => {
     await new Promise(resolve => setTimeout(resolve, 10))
   }
   expect(session.notifications).toHaveLength(1)
-  expect(display.laneFilter).toBeUndefined()
+  expect(display.laneChoice).toBeUndefined()
 })
 
 test('re-anchoring unhides the outgoing anchor', async () => {
@@ -693,7 +693,7 @@ test('re-anchoring unhides the outgoing anchor', async () => {
   expect(session.notifications.at(-1)?.message).toBe(
     'Re-anchored on volvox_random',
   )
-  expect(display.laneFilter).toBeUndefined()
+  expect(display.hiddenLanes).toEqual([])
 })
 
 test('a ribbon click holds its key until a click on empty canvas', () => {
@@ -1750,7 +1750,8 @@ test('hiding a lane leaves every other lane drawn, including ones placed later',
   ])
   expect(display.rowAssemblies).toEqual(['sample#1#b', 'sample#1#c'])
   display.showLane('sample#1#a')
-  expect(display.laneFilter).toBeUndefined()
+  expect(display.laneChoice).toBeUndefined()
+  expect(display.hiddenLanes).toEqual([])
 })
 
 test('hiding a lane on a graph track refetches nothing', () => {
@@ -1784,14 +1785,13 @@ test('hiding a lane under a picker choice keeps the choice and refetches nothing
   display.chooseLanes(['HG00097.1', 'HG00099.1'])
   const key = display.settingsFetchInputs
   display.hideLane('HG00097.1')
-  expect(display.laneFilter).toEqual({
-    only: ['HG00097.1', 'HG00099.1'],
-    except: ['HG00097.1'],
-  })
+  expect(display.laneChoice).toEqual(['HG00097.1', 'HG00099.1'])
+  expect(display.hiddenLanes).toEqual(['HG00097.1'])
   expect(display.rowAssemblies).toEqual(['HG00099.1'])
   expect(display.settingsFetchInputs).toEqual(key)
   display.showLane('HG00097.1')
-  expect(display.laneFilter).toEqual({ only: ['HG00097.1', 'HG00099.1'] })
+  expect(display.laneChoice).toEqual(['HG00097.1', 'HG00099.1'])
+  expect(display.hiddenLanes).toEqual([])
   expect(display.rowAssemblies).toEqual(['HG00097.1', 'HG00099.1'])
 })
 
@@ -1806,9 +1806,9 @@ describe('the picker submit', () => {
     display.setFeatures(lanes())
     display.hideLane('sample#1#a')
     display.chooseLanes(['volvox_random', 'sample#1#a'])
-    expect(display.laneFilter).toBeUndefined()
+    expect(display.laneChoice).toBeUndefined()
     display.chooseLanes(['sample#1#a'])
-    expect(display.laneFilter).toEqual({ only: ['sample#1#a'] })
+    expect(display.laneChoice).toEqual(['sample#1#a'])
   })
 
   test("over a track naming its lanes, every lane is written out and the track's own are no choice", () => {
@@ -1821,9 +1821,9 @@ describe('the picker submit', () => {
       value: { lanes: [{ name: 'HG00097.1' }, { name: 'HG00099.1' }] },
     })
     display.chooseLanes(['HG00097.1', 'HG00099.1'])
-    expect(display.laneFilter).toEqual({ only: ['HG00097.1', 'HG00099.1'] })
+    expect(display.laneChoice).toEqual(['HG00097.1', 'HG00099.1'])
     display.chooseLanes(['HG00097.1'])
-    expect(display.laneFilter).toBeUndefined()
+    expect(display.laneChoice).toBeUndefined()
   })
 
   test('a chosen lane this window does not place survives', () => {
@@ -1831,7 +1831,7 @@ describe('the picker submit', () => {
     display.setFeatures(lanes())
     display.setSelectedLanes(['volvox_random', 'far#1#away'])
     display.chooseLanes(['sample#1#a'])
-    expect(display.laneFilter).toEqual({ only: ['sample#1#a', 'far#1#away'] })
+    expect(display.laneChoice).toEqual(['sample#1#a', 'far#1#away'])
   })
 })
 
@@ -1876,21 +1876,17 @@ test('a lane selection narrows the stack and survives a refetch', () => {
   expect(display.rowAssemblies).toEqual(['volvox_random', 'sample#1#a'])
   display.setFeatures(window())
   expect(display.rowAssemblies).toEqual(['volvox_random', 'sample#1#a'])
-  expect(getSnapshot(display).laneFilter).toEqual({
-    only: ['sample#1#a', 'volvox_random'],
-  })
+  expect(display.laneChoice).toEqual(['sample#1#a', 'volvox_random'])
   display.setDomain(['sample#1#a'])
   expect(display.rowAssemblies).toEqual(['sample#1#a', 'volvox_random'])
   display.hideLane('volvox_random')
   expect(display.rowAssemblies).toEqual(['sample#1#a'])
-  expect(display.laneFilter).toEqual({
-    only: ['sample#1#a', 'volvox_random'],
-    except: ['volvox_random'],
-  })
+  expect(display.laneChoice).toEqual(['sample#1#a', 'volvox_random'])
+  expect(display.hiddenLanes).toEqual(['volvox_random'])
 
   display.setSelectedLanes(undefined)
   expect(display.laneSelection).toBeUndefined()
-  expect(getSnapshot(display).laneFilter).toBeUndefined()
+  expect(display.laneChoice).toBeUndefined()
 })
 
 test('a graph track opens on its own assemblies beside the anchor', () => {

@@ -1,6 +1,6 @@
 ---
 name: grammar-release-audit-2026-10-07
-description: Five parallel audits of the grammar-of-graphics surface before v5.0.0 (schema, vocabulary, mark pipeline, plot write paths, docs and in-repo configs), every finding re-verified against main. Colin approved the five shape calls on 2026-10-07; the defect list and the first three calls (ADR-214, ADR-215, ADR-216) have landed, and two calls (multi-way rows, typed frozen slots) plus the docs pass remain. Read before changing a display's grammar slots, the plot write paths or the JSON schema.
+description: Five parallel audits of the grammar-of-graphics surface before v5.0.0 (schema, vocabulary, mark pipeline, plot write paths, docs and in-repo configs), every finding re-verified against main. Colin approved the five shape calls on 2026-10-07; the defect list and all five calls (ADR-214 to ADR-219, ADR-217 superseding 214) have landed; the smaller renames (canvas `labels.name` to `text`, Manhattan `ld` to `r2`, LD `showLabels` enum), the two tag guards and the docs pass remain. Read before changing a display's grammar slots, the plot write paths or the JSON schema.
 ---
 
 # Grammar-of-graphics release audit, 2026-10-07
@@ -24,28 +24,17 @@ nobody has ruled on, a short defect list, and docs lagging the renames.
 
 ## Five calls that are breaking after 5.0.0
 
-Calls 1 to 3 landed on 2026-10-07 as ADR-214 (every display's schema is
-closed), ADR-215 (`rows` and every colour object write whole; `SampleRows` on
-the variant and MAF displays, the field shorthand on LD and Hi-C colour) and
-ADR-216 (the quantitative display's `mark` is `span` not `heatmap`, `y` not
-`scoreField`, one `size`, `mean` not `avg`, and `mark`, `interpolate`, `size`
-and `origin` in the plot vocabulary). Left:
-
-4. **Multi-way synteny orders lanes with a top-level `domain`**
-   (`plugins/linear-comparative-view/src/MultiWaySyntenyDisplay/configSchema.ts:103`)
-   and keeps the lane subset as session state (`laneFilter`, `model.ts:320`),
-   where every row display spells both as `rows: { domain, kept }` (ADR-157).
-   Used by `demos/arabidopsis_pangenome` and `test_data/syri`. 1 day.
-5. **Grammar-adjacent slots still `frozen`**: `filterBy`, `showOutline`,
-   `sortedBy` on the alignments and LGV synteny displays, `rowGroups` on
-   multi-row. The schema types them as any JSON, `filterBy` is in the plot
-   vocabulary, and `null` on any of them is stored rather than reset
-   (`snapshotPreprocess.ts:69`), so `normalizeFilterBy(null)` and
-   `compileRowGroups(null)` throw. Typing one after 5.0 refuses configs that
-   load today. Recommendation: closed sub-schemas for `filterBy` and
-   `rowGroups`, `showOutline` as `maybeBoolean`, `sortedBy` stays
-   `maybeFrozen`. `modifications` landed as `AlignmentsModifications` on
-   2026-10-07. 1 day.
+All five landed on 2026-10-07: ADR-214 as ADR-217 superseded it the same day
+(a display names a key it does not declare on the console and draws without
+it; the objects under it stay `closed` and refuse one), ADR-215 (`rows` and
+every colour object write whole; `SampleRows` on the variant and MAF displays,
+the field shorthand on LD and Hi-C colour), ADR-216 (the quantitative
+display's `mark` is `span` not `heatmap`, `y` not `scoreField`, one `size`,
+`mean` not `avg`, and `mark`, `interpolate`, `size` and `origin` in the plot
+vocabulary), ADR-218 (the alignments read filter is the `filter` slot, a typed
+`ReadFilter`; `rowGroups` a typed list; `showOutline` a `maybeBoolean`;
+`modifications` typed beside it as `AlignmentsModifications`) and ADR-219 (a
+multi-way lane order and choice are its `rows`, `LaneRows`).
 
 Smaller renames in the same class, each a `retired` entry if taken: canvas
 `labels.name` → `text` (the third meaning of `labels`,

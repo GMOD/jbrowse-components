@@ -349,7 +349,9 @@ under the rice gene track:
           {
             "trackId": "grasses_orthogroups",
             "type": "MultiWaySyntenyDisplay",
-            "domain": ["sorghum", "brachypodium", "setaria", "maize"],
+            "rows": {
+              "domain": ["sorghum", "brachypodium", "setaria", "maize"]
+            },
             "height": 320
           }
         ]

@@ -110,10 +110,10 @@ a drag back into `domain`.
 ## Multiway synteny
 
 `MultiWaySyntenyDisplay` draws one lane per assembly rather than one section per
-field value, so there is no `facet` — `domain` sits directly on the display and
-lists assembly names. It composes with `ribbonColor`, which paints each ribbon
-by a field of its own — here, the relative strand between the two lanes a ribbon
-joins:
+field value, so there is no `facet` — its `rows` is the lane arrangement, and
+`rows.domain` lists assembly names. It composes with `ribbonColor`, which paints
+each ribbon by a field of its own — here, the relative strand between the two
+lanes a ribbon joins:
 
 ```json addtrack
 {
@@ -155,7 +155,16 @@ joins:
     {
       "type": "MultiWaySyntenyDisplay",
       "displayId": "grape_peach_cacao_blocks-MultiWaySyntenyDisplay",
-      "domain": ["peach", "cacao", "poplar", "citrus", "arabidopsis", "tomato"],
+      "rows": {
+        "domain": [
+          "peach",
+          "cacao",
+          "poplar",
+          "citrus",
+          "arabidopsis",
+          "tomato"
+        ]
+      },
       "ribbonColor": { "field": "strand" }
     }
   ]

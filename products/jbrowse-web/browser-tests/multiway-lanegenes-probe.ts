@@ -74,14 +74,16 @@ try {
           {
             trackId: 'grape_peach_cacao_blocks',
             type: 'MultiWaySyntenyDisplay',
-            domain: [
-              'peach',
-              'cacao',
-              'poplar',
-              'citrus',
-              'arabidopsis',
-              'tomato',
-            ],
+            rows: {
+              domain: [
+                'peach',
+                'cacao',
+                'poplar',
+                'citrus',
+                'arabidopsis',
+                'tomato',
+              ],
+            },
             height: 340,
           },
         ],

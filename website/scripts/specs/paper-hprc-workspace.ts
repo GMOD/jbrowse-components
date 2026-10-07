@@ -76,16 +76,18 @@ const view = (
     {
       trackId: LANES_TRACK,
       type: 'MultiWaySyntenyDisplay',
-      domain: [
-        'HG00097.1',
-        'HG00099.1',
-        'HG00128.1',
-        'HG00133.1',
-        'HG01109.1',
-        'HG01123.1',
-        'HG01960.1',
-        'HG02055.1',
-      ],
+      rows: {
+        domain: [
+          'HG00097.1',
+          'HG00099.1',
+          'HG00128.1',
+          'HG00133.1',
+          'HG01109.1',
+          'HG01123.1',
+          'HG01960.1',
+          'HG02055.1',
+        ],
+      },
       height: lanesHeight,
       inlineLaneNames,
     },

@@ -4619,8 +4619,39 @@ export const configManifest: ConfigManifest = {
           "type": "LodMode"
         },
         {
-          "name": "domain",
-          "type": "string[]"
+          "name": "rows",
+          "type": "LaneRowsConfigurationSchema",
+          "subSlots": [
+            {
+              "name": "domain",
+              "type": "string[]",
+              "liftsNumbers": true
+            },
+            {
+              "name": "labels",
+              "type": "Map<string, string>"
+            },
+            {
+              "name": "tree",
+              "type": "(string | undefined)"
+            },
+            {
+              "name": "treeProvenance",
+              "type": "(frozen | undefined)"
+            },
+            {
+              "name": "kept",
+              "type": "string[]",
+              "liftsNumbers": true
+            },
+            {
+              "name": "field",
+              "type": "LaneRowsField"
+            }
+          ],
+          "shorthand": {
+            "string": "field"
+          }
         },
         {
           "name": "ribbonColor",
@@ -5005,7 +5036,7 @@ export const configManifest: ConfigManifest = {
         "id",
         "type",
         "configuration",
-        "laneFilter",
+        "hiddenLaneNames",
         "frozenLanes"
       ]
     },
