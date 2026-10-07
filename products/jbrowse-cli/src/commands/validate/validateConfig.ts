@@ -673,6 +673,23 @@ function trackTypeOf(node: Record<string, unknown>) {
   )
 }
 
+// The shorthand router hands a `displayDefaults` key only to the displays
+// whose slot takes its value (`collectDisplayOverrides`), so a categorical
+// colour on a FeatureTrack never reaches its quantitative display's `score`
+// presets. The same cut here, through each display's own schema branch.
+function displayDefaultsReaching(
+  display: string,
+  defaults: Record<string, unknown>,
+) {
+  return Object.fromEntries(
+    Object.entries(defaults).filter(
+      ([key, value]) =>
+        schemaProblems({ type: display, [key]: value }, `/$defs/${display}`)
+          .length === 0,
+    ),
+  )
+}
+
 function checkMarkDisplays(
   node: unknown,
   manifest: ConfigManifest,
@@ -696,7 +713,7 @@ function checkMarkDisplays(
       for (const display of displayDefaultsForTrackType(trackType, manifest)
         .displayTypes) {
         checkScaleSlots(
-          node.displayDefaults,
+          displayDefaultsReaching(display, node.displayDefaults),
           manifest.displays[display]?.slots ?? [],
           `${where}.displayDefaults`,
           report,

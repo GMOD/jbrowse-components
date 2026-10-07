@@ -516,6 +516,22 @@ describe('validateConfig', () => {
       ).toEqual(['threshold-cuts tracks[0].displayDefaults.color.domain'])
     })
 
+    it('checks displayDefaults only against the displays its value reaches', () => {
+      expect(
+        found({
+          type: 'FeatureTrack',
+          adapter: { type: 'BigBedAdapter', uri: 'rmsk.bb' },
+          displayDefaults: {
+            color: {
+              field: 'class',
+              domain: ['LINE', 'SINE'],
+              range: ['#1b9e77', '#d95f02'],
+            },
+          },
+        }),
+      ).toEqual([])
+    })
+
     it("checks a loose track's displayDefaults against the display its file implies", () => {
       const config = baseConfig()
       const { assemblyNames } = config.tracks[0]!

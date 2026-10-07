@@ -1,14 +1,14 @@
 ---
 name: grammar-release-audit-2026-10-07
-description: Five parallel audits of the grammar-of-graphics surface before v5.0.0 (schema, vocabulary, mark pipeline, plot write paths, docs and in-repo configs), every finding re-verified against main. Colin approved the five shape calls on 2026-10-07; the defect list and all five calls (ADR-214 to ADR-219, ADR-217 superseding 214) have landed; Manhattan `ld` to `r2` and the LD `showLabels` enum have landed too; the canvas `labels.name` to `text` rename waits on a call after a review priced it, and the featureField defects that review found, the two tag guards and the docs pass remain. Read before changing a display's grammar slots, the plot write paths or the JSON schema.
+description: Five parallel audits of the grammar-of-graphics surface before v5.0.0 (schema, vocabulary, mark pipeline, plot write paths, docs and in-repo configs), every finding re-verified against main. Colin approved the five shape calls on 2026-10-07; the defect list and all five calls (ADR-214 to ADR-219, ADR-217 superseding 214) have landed; Manhattan `ld` to `r2` and the LD `showLabels` enum have landed too; the canvas `labels.name` to `text` rename waits on a call after a review priced it, and the featureField defects that review found and the two tag guards remain, the docs pass having landed. Read before changing a display's grammar slots, the plot write paths or the JSON schema.
 ---
 
 # Grammar-of-graphics release audit, 2026-10-07
 
 Five Opus investigators ran read-only over main at `c21d633b1d`, one area each;
-every finding below was re-read or re-run by the coordinator. Nothing here is
-fixed yet. **Delete this file when the calls are made and the defects have
-landed or moved to `ideas/`.**
+every finding below was re-read or re-run by the coordinator; each section says
+what has landed since. **Delete this file when the calls are made and the
+defects have landed or moved to `ideas/`.**
 
 ## Direction, as the tree already decided it
 
@@ -97,41 +97,33 @@ bare-string shorthand, went with ADR-215.
 
 ## Docs and in-repo configs behind the code
 
-- `website/docs/config_guides/variant_track.md:209` teaches `LDDisplay`,
-  removed in `53bb2b9551`.
-- `mark_display.md:161` names `scales.y.autoscale` (now `domainQuantile`);
-  `:333` and `slot_types.md:124` say an unset axis `title` derives, where the
-  schema draws none (`valueScaleConfigSchema.ts:260`).
-- `user_guides/edit_plot.md:25-35` and `agents_live_model.md:193` omit
-  `unit`, `y`, LD and the chord display; `BaseDisplayModel.tsx:265` says a
-  sub-schema key "replaces the whole object" where namespaces merge; ADR-204
-  says LD declares no plot; ADR-120's frozen count is 67 against 69 today.
-- `tutorials/chromhmm.md:316` writes `rows` and `height` on a display
-  snapshot, which the app drops.
-- `automating.md:165` (from `packages/core/src/util/tracks.ts:1146`) shows
-  retired `showDescriptions`; `cli.md:283` lists `jexlFilters` for a flag
-  whose source says `filter`; jb2export's comparative `--colorBy`
-  (`products/jbrowse-img/src/main.ts:155`) names the v4 view key.
-- Guides teaching a jexl colour callback where a `color` object draws the
-  same picture with a key: `cookbook.md:129,164,449`, `variant_track.md:66`,
-  `tracks.md:129`, `faq.md:145`, `customizing_feature_colors.md:7,93`.
-- Configs: `demos/ecoli_pangenome` `showLabels: false` (4 tracks);
-  `test_data/config_demo.json` tracks 19, 20, 253 and `test_data/tcga_cnv`
-  carry `renderer.color1`/`renderer.labels`; `test_data/cfam2` and
-  `sars-cov2` sessions carry `heightPreConfig`;
-  `scripts/agent-demos/takes/synteny.md:108` teaches `colorBy`.
-- Undocumented grammar slots: multi-way `laneLayers` and `text`, the mark
-  display's `rowColor`, MAF's `rows`/`rowColor`/`y` in the config guide.
+The list landed on 2026-10-07. Two items stay as they were, on purpose: the
+cookbook recipe painting SNVs one colour and every other variant another keeps
+its jexl callback, since a feature colour object has no member for every other
+value, and
+jb2export's comparative `--colorBy` keeps its flag name by ADR-139 while
+writing the `color` object.
 
 ## Checker blind spots that let the above ship
 
 `check-config-blocks.ts:207` keeps errors only (an unregistered display type is
 a warning); display and `marks` fragments, JSON in tables, session fences,
 commented JSON and the generated `config/` pages are never validated; the CLI
-README is regenerated only on prepack. `jbrowse validate` also warns wrongly on
-a categorical `displayDefaults.color` on a FeatureTrack, because it checks the
-colour against the wiggle display's `'*': threshold` preset too
-(`cookbook.md:226`).
+README is regenerated only on prepack.
+
+TypeScript config literals had no checker: the examples sites' demos and the
+browser-test suites' and probes' `displaySnapshot` entries are neither
+`config.json` nor markdown, so ADR-216's `mark: 'heatmap'` broke
+`GeneDensityRing.tsx`, `SingleCellUmap.tsx` and `suites/bigwig.ts` at load
+with every gate green. `scripts/inTreeConfigLiterals.test.ts`, an ordinary
+`pnpm test` suite, now parses those files and checks each track literal
+against the generated JSON Schema's `Track`, and each session entry against
+its view's track-entry branch for the display the track opens as; a computed
+value is skipped. Its first run found `LocusZoomLD.tsx` writing a
+`displayDefaults.color` the Manhattan display no longer declares. Still
+unread: `website/scripts/specs/*.ts`, which needs nested synteny rows resolved
+to their own view first, and the hosted demo `build_circular_synteny.sh`
+writes.
 
 ## Settled, not findings
 
