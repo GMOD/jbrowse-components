@@ -144,7 +144,7 @@ function tagColorScaleOf({
 }: AnyColorByModel): TagColorScale {
   return colorBy.type === 'tag' &&
     typeof colorEncoding === 'object' &&
-    (colorEncoding.scale === 'linear' || colorEncoding.scale === 'log')
+    colorEncoding.scale === 'linear'
     ? 'linear'
     : 'categorical'
 }

@@ -36,15 +36,16 @@ and `origin` in the plot vocabulary). Left:
    and keeps the lane subset as session state (`laneFilter`, `model.ts:320`),
    where every row display spells both as `rows: { domain, kept }` (ADR-157).
    Used by `demos/arabidopsis_pangenome` and `test_data/syri`. 1 day.
-5. **Grammar-adjacent slots still `frozen`**: `filterBy`, `modifications`,
-   `showOutline`, `sortedBy` on the alignments and LGV synteny displays,
-   `rowGroups` on multi-row. The schema types them as any JSON, `filterBy` is
-   in the plot vocabulary, and `null` on any of them is stored rather than
-   reset (`snapshotPreprocess.ts:69`), so `normalizeFilterBy(null)` and
+5. **Grammar-adjacent slots still `frozen`**: `filterBy`, `showOutline`,
+   `sortedBy` on the alignments and LGV synteny displays, `rowGroups` on
+   multi-row. The schema types them as any JSON, `filterBy` is in the plot
+   vocabulary, and `null` on any of them is stored rather than reset
+   (`snapshotPreprocess.ts:69`), so `normalizeFilterBy(null)` and
    `compileRowGroups(null)` throw. Typing one after 5.0 refuses configs that
-   load today. Recommendation: closed sub-schemas for `filterBy`, `rowGroups`
-   and `modifications`, `showOutline` as `maybeBoolean`, `sortedBy` stays
-   `maybeFrozen`. 1 day.
+   load today. Recommendation: closed sub-schemas for `filterBy` and
+   `rowGroups`, `showOutline` as `maybeBoolean`, `sortedBy` stays
+   `maybeFrozen`. `modifications` landed as `AlignmentsModifications` on
+   2026-10-07. 1 day.
 
 Smaller renames in the same class, each a `retired` entry if taken: canvas
 `labels.name` → `text` (the third meaning of `labels`,
@@ -90,8 +91,7 @@ bare-string shorthand, went with ADR-215.
   `sars-cov2` sessions carry `heightPreConfig`;
   `scripts/agent-demos/takes/synteny.md:108` teaches `colorBy`.
 - Undocumented grammar slots: multi-way `laneLayers` and `text`, the mark
-  display's `rowColor`, MAF's `rows`/`rowColor`/`y` in the config guide,
-  alignments `unit`/`arcColor`/`facet` in the config guide.
+  display's `rowColor`, MAF's `rows`/`rowColor`/`y` in the config guide.
 
 ## Checker blind spots that let the above ship
 

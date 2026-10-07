@@ -34,13 +34,14 @@ export const alignmentsBaseColorConfigSchema = ConfigurationSchema(
      * #slot field
      */
     field: {
-      type: 'maybeStringEnum',
-      model: types.enumeration(
-        'AlignmentsBaseColorField',
-        Object.values(BASE_COLOR_FIELDS),
-      ),
+      type: 'stringEnum',
+      model: types.enumeration('AlignmentsBaseColorField', [
+        '',
+        ...Object.values(BASE_COLOR_FIELDS),
+      ]),
+      defaultValue: '',
       description:
-        'the per-base variable painted over the reads: modifications, bisulfite, baseQuality or base; unset draws none',
+        'the per-base variable painted over the reads: modifications, bisulfite, baseQuality or base; empty draws none',
     },
     /**
      * #slot scale

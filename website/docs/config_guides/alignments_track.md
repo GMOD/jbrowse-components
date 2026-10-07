@@ -35,6 +35,12 @@ index resolves automatically. Coloring, height, and filtering are slots on the
   modifications or base quality over them; the
   [cookbook](/docs/cookbook#alignments-tracks) has the coloring, grouping and
   flag-filter recipe
+- **[`unit`](/docs/config/linearalignmentsdisplay/#slot-unit) says what one row
+  stands for**, a read or a chain of a read with its mate and split segments;
+  [`facet`](/docs/config/linearalignmentsdisplay/#slot-facet) stacks one
+  labelled section per value of a read field (`pairOrientation`, `tags.HP`); and
+  [`arcColor`](/docs/config/linearalignmentsdisplay/#slot-arccolor) picks the
+  pair field the read-connection arcs paint when it is not the reads'
 
 [Applying display settings](/docs/tutorials/display_settings) opens a track in a
 given state from a link or an embedded view.
