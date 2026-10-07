@@ -110,8 +110,8 @@ const ScalebarRefNameLabels = observer(function ScalebarRefNameLabels({
   )
 })
 
-// Not an observer: `label` is plain data from the parent. The attribute tells
-// the scalebar's rubberband to leave a click here to this label's onClick.
+// The attribute tells the scalebar's rubberband to leave a click here to this
+// label's onClick.
 const RefLabel = observer(function RefLabel({
   model,
   label,

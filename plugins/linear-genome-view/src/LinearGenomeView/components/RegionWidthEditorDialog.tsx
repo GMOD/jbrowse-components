@@ -11,8 +11,6 @@ function format(n: number) {
   return toLocale(Math.floor(n))
 }
 
-// not an observer: the initial value is seeded once and the field is
-// user-edited thereafter, so it shouldn't reactively reset if bpPerPx changes
 const RegionWidthEditorDialog = observer(function RegionWidthEditorDialog({
   model,
   handleClose,

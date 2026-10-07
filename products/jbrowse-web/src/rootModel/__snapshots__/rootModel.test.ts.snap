@@ -78,7 +78,11 @@ exports[`adds menus 1`] = `
         "onClick": [Function],
       },
       {
-        "icon": [Function],
+        "icon": {
+          "$$typeof": Symbol(react.memo),
+          "compare": null,
+          "type": [Function],
+        },
         "label": "Open connection...",
         "onClick": [Function],
       },
@@ -131,7 +135,11 @@ exports[`adds menus 1`] = `
         "onClick": [Function],
       },
       {
-        "icon": [Function],
+        "icon": {
+          "$$typeof": Symbol(react.memo),
+          "compare": null,
+          "type": [Function],
+        },
         "label": "Assembly manager",
         "onClick": [Function],
       },
@@ -230,7 +238,11 @@ exports[`adds menus 2`] = `
         "onClick": [Function],
       },
       {
-        "icon": [Function],
+        "icon": {
+          "$$typeof": Symbol(react.memo),
+          "compare": null,
+          "type": [Function],
+        },
         "label": "Open connection...",
         "onClick": [Function],
       },
@@ -283,7 +295,11 @@ exports[`adds menus 2`] = `
         "onClick": [Function],
       },
       {
-        "icon": [Function],
+        "icon": {
+          "$$typeof": Symbol(react.memo),
+          "compare": null,
+          "type": [Function],
+        },
         "label": "Assembly manager",
         "onClick": [Function],
       },

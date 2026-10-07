@@ -63,8 +63,6 @@ function frameLabel(frame: number) {
   return frame > 0 ? `+${frame}` : `${frame}`
 }
 
-// Not an observer: `hover` is a plain resolved object, so there is nothing here
-// to track — SequenceHoverTooltip did the reading.
 const HoverContents = observer(function HoverContents({
   hover,
 }: {

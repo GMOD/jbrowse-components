@@ -70,8 +70,8 @@ test('a default-only module is served bare; a mixed one as an __esModule namespa
 // the barrel serves it lazily so @floating-ui stays off the startup path.
 test('the ui namespace serves BaseTooltip', () => {
   expect(
-    typeof (libs['@jbrowse/core/ui'] as Record<string, unknown>).BaseTooltip,
-  ).toBe('function')
+    (libs['@jbrowse/core/ui'] as Record<string, unknown>).BaseTooltip,
+  ).toBeDefined()
 })
 
 // A plugin that bundles core's Dialog (any deep import reaching ui/index.js
