@@ -707,14 +707,16 @@ const LGV_TRACK_ZOOM_SESSION = sessionSpec(
           {
             trackId: 'grape_peach_cacao_blocks',
             type: 'MultiWaySyntenyDisplay',
-            domain: [
-              'GCF_000346465.2',
-              'GCF_000208745.1',
-              'poplar',
-              'citrus',
-              'arabidopsis',
-              'tomato',
-            ],
+            rows: {
+              domain: [
+                'GCF_000346465.2',
+                'GCF_000208745.1',
+                'poplar',
+                'citrus',
+                'arabidopsis',
+                'tomato',
+              ],
+            },
             height: 340,
           },
         ],
@@ -1404,14 +1406,16 @@ export const syntenySpecs: ScreenshotSpec[] = [
               {
                 trackId: 'grape_peach_cacao_blocks',
                 type: 'MultiWaySyntenyDisplay',
-                domain: [
-                  'GCF_000346465.2',
-                  'GCF_000208745.1',
-                  'poplar',
-                  'citrus',
-                  'arabidopsis',
-                  'tomato',
-                ],
+                rows: {
+                  domain: [
+                    'GCF_000346465.2',
+                    'GCF_000208745.1',
+                    'poplar',
+                    'citrus',
+                    'arabidopsis',
+                    'tomato',
+                  ],
+                },
                 height: 340,
               },
             ],
@@ -1457,14 +1461,16 @@ export const syntenySpecs: ScreenshotSpec[] = [
               {
                 trackId: 'grape_peach_cacao_blocks',
                 type: 'MultiWaySyntenyDisplay',
-                domain: [
-                  'GCF_000346465.2',
-                  'GCF_000208745.1',
-                  'poplar',
-                  'citrus',
-                  'arabidopsis',
-                  'tomato',
-                ],
+                rows: {
+                  domain: [
+                    'GCF_000346465.2',
+                    'GCF_000208745.1',
+                    'poplar',
+                    'citrus',
+                    'arabidopsis',
+                    'tomato',
+                  ],
+                },
                 ribbonColor: { field: 'strand' },
                 height: 340,
               },
@@ -1554,7 +1560,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
               {
                 trackId: 'ecoli_ava',
                 type: 'MultiWaySyntenyDisplay',
-                domain: ['NCTC86', 'CFT073', 'Sakai', 'IAI39'],
+                rows: { domain: ['NCTC86', 'CFT073', 'Sakai', 'IAI39'] },
                 height: 340,
                 color: {
                   field:
@@ -1603,7 +1609,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
               {
                 trackId: 'vertebrates_orthogroups',
                 type: 'MultiWaySyntenyDisplay',
-                domain: ['chicken', 'frog', 'gar', 'zebrafish'],
+                rows: { domain: ['chicken', 'frog', 'gar', 'zebrafish'] },
                 height: 320,
               },
             ],
@@ -1650,7 +1656,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
               {
                 trackId: 'solanaceae_orthogroups',
                 type: 'MultiWaySyntenyDisplay',
-                domain: ['potato', 'pepper', 'tobacco', 'coffee'],
+                rows: { domain: ['potato', 'pepper', 'tobacco', 'coffee'] },
                 height: 320,
               },
             ],
@@ -1695,7 +1701,9 @@ export const syntenySpecs: ScreenshotSpec[] = [
               {
                 trackId: 'drosophila_orthogroups',
                 type: 'MultiWaySyntenyDisplay',
-                domain: ['simulans', 'yakuba', 'pseudoobscura', 'virilis'],
+                rows: {
+                  domain: ['simulans', 'yakuba', 'pseudoobscura', 'virilis'],
+                },
                 height: 320,
               },
             ],
@@ -5215,7 +5223,9 @@ function launchMenuStills(): ScreenshotSpec[] {
                 {
                   trackId: 'grape_peach_cacao_blocks',
                   type: 'MultiWaySyntenyDisplay',
-                  domain: ['GCF_000346465.2', 'GCF_000208745.1', 'poplar'],
+                  rows: {
+                    domain: ['GCF_000346465.2', 'GCF_000208745.1', 'poplar'],
+                  },
                   height: 260,
                 },
               ],

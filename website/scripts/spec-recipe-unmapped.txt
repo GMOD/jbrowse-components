@@ -12,7 +12,6 @@ connectedView
 contigThickness
 diagonalizeAnchorRow
 displayMode
-domain
 facet
 fadeThinAlignmentsMode
 filter
