@@ -34,8 +34,12 @@ hub config, has a RepeatMasker track to try it on.
 The figures read UCSC's RepeatMasker track for hg38 and dm6, rehosted on
 jbrowse.org.
 
-The [build script](#reproduce-it-end-to-end) takes these files from their URLs,
-so there is nothing to download by hand.
+Nothing to download: the track configs and the commands below read these files
+by URL. The [build script](#reproduce-it-end-to-end) takes a genome of your own,
+as its FASTA and RepeatMasker's `.out`.
+
+<details>
+<summary>The files</summary>
 
 - hg38, read by the tabix command under
   [Checking the lanes against the file](#checking-the-lanes-against-the-file):
@@ -43,6 +47,8 @@ so there is nothing to download by hand.
 - dm6, the file the diff under
   [Reproduce it end to end](#reproduce-it-end-to-end) checks a home-built
   conversion against: https://jbrowse.org/ucsc/dm6/rmsk.bed.gz
+
+</details>
 
 ## Where UCSC and GenArk hubs store the repeat class
 

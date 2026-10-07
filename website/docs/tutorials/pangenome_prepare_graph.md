@@ -40,19 +40,24 @@ The graph view is a beta plugin. We welcome your [feedback](/contact).
 [HPRC release 2](https://doi.org/10.64898/2026.07.21.739710)'s Minigraph-Cactus
 graph, which every HPRC page on this site reads.
 
-The [build scripts](#reproduce-it-end-to-end) take these files from their URLs,
-so there is nothing to download by hand.
+Download the SV-resolution rGFA before starting: `build_pangenome_graph.sh`
+takes the graph as a local file.
 
 - the SV-resolution rGFA:
   https://s3-us-west-2.amazonaws.com/human-pangenomics/pangenomes/freeze/release2/minigraph-cactus/v2.1/hprc-v2.1-mc-grch38/hprc-v2.1-mc-grch38.sv.gfa.gz
-- the base-level GFA:
-  https://s3-us-west-2.amazonaws.com/human-pangenomics/pangenomes/freeze/release2/minigraph-cactus/v2.1/hprc-v2.1-mc-grch38/hprc-v2.1-mc-grch38.gfa.gz
+
+`build_hprc_gbz_index.sh`, under
+[Reproduce it end to end](#reproduce-it-end-to-end), fetches the graph in vg's
+format and its gbz-base database itself.
+
 - the same graph in vg's format:
   https://s3-us-west-2.amazonaws.com/human-pangenomics/pangenomes/freeze/release2/minigraph-cactus/v2.1/hprc-v2.1-mc-grch38/hprc-v2.1-mc-grch38.gbz
 
 <details>
-<summary>Read by URL (no download needed)</summary>
+<summary>Other files (no download needed)</summary>
 
+- the base-level GFA:
+  https://s3-us-west-2.amazonaws.com/human-pangenomics/pangenomes/freeze/release2/minigraph-cactus/v2.1/hprc-v2.1-mc-grch38/hprc-v2.1-mc-grch38.gfa.gz
 - the finished files, for comparison: https://jbrowse.org/demos/hprc/README.txt
 
 </details>

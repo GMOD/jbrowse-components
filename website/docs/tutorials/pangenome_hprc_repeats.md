@@ -205,7 +205,7 @@ side:
 # the reference walk is PanSN GRCh38#0#chr6; the interval is the array
 npx --yes -p @gmod/gbz-base gbz-base-query \
   https://s3-us-west-2.amazonaws.com/human-pangenomics/pangenomes/freeze/release2/minigraph-cactus/v2.1/hprc-v2.1-mc-grch38/hprc-v2.1-mc-grch38.gbz.db \
-  --haplotype-index https://jbrowse.org/demos/hprc/hprc-v2.1-mc-grch38.haplotype-index.anchored.db \
+  --haplotype-index https://jbrowse.org/demos/hprc/hprc-v2.1-mc-grch38.haplotype-index.f3.db \
   --sample GRCh38 --contig chr6 --interval 160616002..160646753 \
   --context 1000 --snarls --haplotypes all --limit 100000 --resolve \
   --format gfa > cut.gfa
