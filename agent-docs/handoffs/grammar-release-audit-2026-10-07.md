@@ -25,7 +25,7 @@ nobody has ruled on, a short defect list, and docs lagging the renames.
 ## Five calls that are breaking after 5.0.0
 
 All five landed on 2026-10-07: ADR-214 as ADR-217 superseded it the same day
-and ADR-220 after it (a closed schema, display or channel object, names a
+and ADR-221 after it (a closed schema, display or channel object, names a
 key it does not declare on a load and refuses it on a write), ADR-215 (`rows` and
 every colour object write whole; `SampleRows` on the variant and MAF displays,
 the field shorthand on LD and Hi-C colour), ADR-216 (the quantitative

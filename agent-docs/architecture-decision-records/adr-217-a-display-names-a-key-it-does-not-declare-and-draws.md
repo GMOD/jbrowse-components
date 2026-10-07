@@ -8,7 +8,7 @@ summary: "A display given a config key it does not declare draws without it and 
 ## Status
 
 Accepted (2026-10-07).
-[ADR-220](adr-220-a-closed-schema-warns-on-load-and-refuses-on-a-write.md)
+[ADR-221](adr-221-a-closed-schema-warns-on-load-and-refuses-on-a-write.md)
 supersedes the `'warn'` value and the third decision bullet: `closed` is a
 boolean, a load warns and a write refuses, and a display is closed by
 construction. Supersedes the refusal and the registration check of

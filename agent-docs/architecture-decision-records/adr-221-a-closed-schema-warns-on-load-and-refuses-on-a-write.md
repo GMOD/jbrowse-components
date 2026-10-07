@@ -3,7 +3,7 @@ status: Accepted
 summary: "`closed` is a boolean and the door decides what an undeclared key meets: a config loading names the key on the console once, with the entry's own identifier, and loads without it; a write (`setConf`, a settings bag, a plot draft, the `displayDefaults` router) runs inside `refusingUndeclaredKeys` and refuses it at any depth. Displays, tracks and the in-tree adapters are closed, as the channel objects are. Supersedes ADR-217's `'warn'` value and its registering a display that declares nothing as open, and the load-time half of the refusal ADR-131 and ADR-133 gave the channel objects"
 ---
 
-# ADR-220: A closed schema warns on load and refuses on a write
+# ADR-221: A closed schema warns on load and refuses on a write
 
 ## Status
 
