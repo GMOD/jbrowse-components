@@ -100,7 +100,7 @@ export function cutNear(window: number | { start: number; end: number }) {
 }
 
 // Open a graph track's menu and pick the row at the end of `path`, e.g.
-// ['Layout', 'Force-directed layout']. A radio or checkbox row leaves its menu
+// ['Layout: Anchored', 'Force-directed layout']. A radio or checkbox row leaves its menu
 // standing, so a frame of the result wants `closeMenusAfter`.
 export function graphTrackMenu(
   trackId: string,

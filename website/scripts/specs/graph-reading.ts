@@ -134,7 +134,10 @@ const kiv2WalksSpec: ScreenshotSpec = {
   clicksChange: "lift HG00133's walk out of the graph",
   actions: [
     trackMenuIcon(GBZ_TRACK),
-    { type: 'hover', selector: '[data-testid="cascading-submenu-walk"]' },
+    {
+      type: 'hover',
+      selector: '[data-testid="cascading-submenu-haplotypes"]',
+    },
     { type: 'waitForSelector', selector: HG00133_ITEM },
     { type: 'click', selector: HG00133_ITEM },
     // a radio row leaves both menu levels standing
