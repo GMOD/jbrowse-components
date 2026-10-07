@@ -897,8 +897,18 @@ export function markProblems({
   const section = readable(facet?.transform ?? [])
   const display = readable(transform)
   const shared = [...display, ...section]
+  const madeBeforeSplit = split ? madeFields(display) : undefined
   const problems: MarkProblem[] = [
     ...stepProblems(transform),
+    ...(split && madeBeforeSplit && !madeBeforeSplit.has(split)
+      ? [
+          found(
+            'unwritten-field',
+            faceted ? 'facet.field' : 'rows.field',
+            `reads "${split}", which no step before it writes; they leave ${[...madeBeforeSplit].join(', ')}`,
+          ),
+        ]
+      : []),
     ...stepProblems(facet?.transform ?? [], 'facet.transform'),
     ...scaleEndProblems(scales?.y ?? {}).map(({ rule, slot, message }) =>
       found(rule, `scales.y.${slot}`, message),

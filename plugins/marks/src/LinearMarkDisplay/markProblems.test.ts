@@ -802,6 +802,24 @@ test('a ramp reads its ends, not a domain, and leaves an end open on any mark', 
   expect(found(text({ domainMin: 0, domainMax: 10 }))).toEqual([])
 })
 
+test('a facet or rows field the display steps leave unwritten is named', () => {
+  const steps = [
+    { type: 'bin', step: 100 },
+    { type: 'aggregate', ops: [{ op: 'count' }] },
+  ]
+  const bar = [{ mark: 'bar' }]
+  expect(found(bar, 'strand', steps)).toEqual([
+    'warning unwritten-field mark undefined facet.field',
+  ])
+  expect(found(bar, 'start', steps)).toEqual([])
+  expect(found(bar, undefined, steps, 'strand')).toEqual([
+    'warning unwritten-field mark undefined rows.field',
+  ])
+  expect(
+    found([{ mark: 'bar', encoding: { y: 'score' } }], 'strand', []),
+  ).toEqual([])
+})
+
 test("scales.y and a width read their ends by the colour ramp's one rule", () => {
   const bar = [{ mark: 'bar', encoding: { y: 'score' } }]
   const y = (ends: Record<string, number>) =>
