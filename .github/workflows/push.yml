@@ -38,11 +38,16 @@ env:
 # would serialize the whole pipeline behind one cold runner. (Job-level `if:`
 # can't read workflow `env`, so the expression is repeated verbatim.)
 
+# Every job carries a timeout a few times its longest recent run. Without one a
+# stalled step holds the run for GitHub's six-hour default, and on main, where a
+# superseded run is not cancelled, every later push queues behind it: an
+# `apt-get update` waiting on the package archive did exactly that.
 jobs:
   test:
     name: Test
     if: ${{ !contains(github.event.head_commit.message, '[update docs only]') }}
     runs-on: ubuntu-latest
+    timeout-minutes: 60
     steps:
       - run: sudo apt-get update && sudo apt-get -y install tabix
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
@@ -123,6 +128,7 @@ jobs:
     name: Test (no React Compiler)
     if: ${{ !contains(github.event.head_commit.message, '[update docs only]') }}
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     steps:
       - run: sudo apt-get update && sudo apt-get -y install tabix
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
@@ -150,6 +156,7 @@ jobs:
     name: Typecheck
     if: ${{ !contains(github.event.head_commit.message, '[update docs only]') }}
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
         with:
@@ -195,6 +202,7 @@ jobs:
     name: Lint
     if: ${{ !contains(github.event.head_commit.message, '[update docs only]') }}
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
         with:
@@ -255,6 +263,7 @@ jobs:
     name: Generated files up to date
     if: ${{ !contains(github.event.head_commit.message, '[update docs only]') }}
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
         with:
@@ -316,6 +325,7 @@ jobs:
     name: Figures moved
     if: ${{ !contains(github.event.head_commit.message, '[update docs only]') }}
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
         with:
@@ -358,6 +368,7 @@ jobs:
     name: Validate docs
     if: ${{ !contains(github.event.head_commit.message, '[update docs only]') }}
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
         with:
@@ -382,6 +393,7 @@ jobs:
     name: Shaders
     if: ${{ !contains(github.event.head_commit.message, '[update docs only]') }}
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     env:
       # build-shaders.ts probes for `naga` and validates when it is present.
       # Pinned so a naga release can't redden CI on an unchanged shader, and so
@@ -454,6 +466,7 @@ jobs:
     name: Format
     if: ${{ !contains(github.event.head_commit.message, '[update docs only]') }}
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
         with:
@@ -466,6 +479,7 @@ jobs:
     name: Typecheck infrastructure
     if: ${{ !contains(github.event.head_commit.message, '[update docs only]') }}
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
         with:
@@ -487,6 +501,7 @@ jobs:
     name: Test blat-proxy Lambda
     if: ${{ !contains(github.event.head_commit.message, '[update docs only]') }}
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
         with:
@@ -508,6 +523,7 @@ jobs:
     name: Spell check
     if: ${{ !contains(github.event.head_commit.message, '[update docs only]') }}
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
         with:
@@ -519,6 +535,7 @@ jobs:
     name: Build and pack artifacts
     if: ${{ !contains(github.event.head_commit.message, '[update docs only]') }}
     runs-on: ubuntu-latest
+    timeout-minutes: 45
     steps:
       - name: Install system dependencies
         run: |
@@ -564,6 +581,7 @@ jobs:
       ${{ !contains(github.event.head_commit.message, '[update docs only]') &&
       !startsWith(github.ref_name, 'dependabot/') }}
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
         with:
@@ -627,6 +645,7 @@ jobs:
     name: Smoke-test ${{ matrix.site }} examples-site
     if: ${{ !contains(github.event.head_commit.message, '[update docs only]') }}
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     strategy:
       fail-fast: false
       matrix:
@@ -729,6 +748,7 @@ jobs:
     name: Cross-backend render gate
     if: ${{ !contains(github.event.head_commit.message, '[update docs only]') }}
     runs-on: ubuntu-latest
+    timeout-minutes: 45
     steps:
       - run: sudo apt-get update && sudo apt-get -y install tabix
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
@@ -759,6 +779,7 @@ jobs:
     name: Build website
     if: ${{ !contains(github.event.head_commit.message, '[update docs only]') }}
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
         with:
@@ -799,6 +820,7 @@ jobs:
     needs: build_and_pack_artifacts
     if: ${{ !contains(github.event.head_commit.message, '[update docs only]') }}
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     permissions: {}
     steps:
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
@@ -829,6 +851,7 @@ jobs:
     needs: build_and_pack_artifacts
     if: ${{ !contains(github.event.head_commit.message, '[update docs only]') }}
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     permissions: {}
     steps:
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
@@ -859,6 +882,7 @@ jobs:
     needs: build_and_pack_artifacts
     if: ${{ !contains(github.event.head_commit.message, '[update docs only]') }}
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     permissions: {}
     steps:
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
@@ -886,6 +910,7 @@ jobs:
     needs: build_and_pack_artifacts
     if: ${{ !contains(github.event.head_commit.message, '[update docs only]') }}
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     permissions: {}
     steps:
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
@@ -916,6 +941,7 @@ jobs:
       ${{ !contains(github.event.head_commit.message, '[update docs only]') &&
       github.ref == 'refs/heads/main' }}
     runs-on: windows-latest
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
         with:
@@ -956,6 +982,7 @@ jobs:
     needs: [typecheck]
     if: ${{ !contains(github.event.head_commit.message, '[update docs only]') }}
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
         with:
@@ -994,6 +1021,7 @@ jobs:
     # push. Takes well under a minute.
     if: ${{ !contains(github.event.head_commit.message, '[update docs only]') }}
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
         with:
