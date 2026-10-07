@@ -1,9 +1,9 @@
 // Validates the track configs and session track entries written as TypeScript
 // object literals, which neither `jbrowse validate` (config.json files) nor
-// check-config-blocks (markdown fences) reads: the examples sites' demos and
-// the browser-test suites and probes. A renamed slot value or a closed schema
-// otherwise breaks these at load with every gate green, as ADR-216's
-// `mark: 'heatmap'` did. Each literal goes through the CLI's generated JSON
+// check-config-blocks (markdown fences) reads: the examples sites' demos, the
+// browser-test suites and probes, and the figure specs. A renamed slot value or
+// a closed schema otherwise breaks these at load with every gate green, as
+// ADR-216's `mark: 'heatmap'` did. Each literal goes through the CLI's generated JSON
 // Schema; a value the file computes stands as a placeholder whose problems are
 // dropped, so only what the source spells out is judged.
 
@@ -19,6 +19,7 @@ import { schemaProblems } from '../products/jbrowse-cli/src/commands/validate/sc
 const root = path.join(__dirname, '..')
 const BROWSER_TESTS = 'products/jbrowse-web/browser-tests'
 const BROWSER_TEST_CONFIG = 'test_data/volvox/config.json'
+const FIGURE_SPECS = 'website/scripts/specs/'
 
 const sources = [
   ...fs
@@ -27,6 +28,7 @@ const sources = [
   ...fs
     .globSync(`${BROWSER_TESTS}/{suites/*,probe-*}.ts`, { cwd: root })
     .sort(),
+  ...fs.globSync(`${FIGURE_SPECS}*.ts`, { cwd: root }).sort(),
 ]
 
 const COMPUTED = '<computed>'
@@ -152,6 +154,25 @@ function stringProp(node: ts.ObjectLiteralExpression, key: string) {
   return value && ts.isStringLiteralLike(value) ? value.text : undefined
 }
 
+// an element of `key: [...]`, or of a synteny view's `tracks: [[...]]` levels
+function inArrayOf(node: ts.Node, key: string): boolean {
+  const { parent } = node
+  return ts.isArrayLiteralExpression(parent)
+    ? inArrayOf(parent, key) ||
+        (ts.isPropertyAssignment(parent.parent) &&
+          keyOf(parent.parent.name) === key)
+    : false
+}
+
+// A composite view's `views` rows are each a LinearGenomeView: one with a
+// `type` is a built snapshot, one without is a recipe the parent opens as an LGV
+function viewOf(node: ts.ObjectLiteralExpression) {
+  return (
+    canonical(configManifest.views, stringProp(node, 'type')) ??
+    (inArrayOf(node, 'views') ? 'LinearGenomeView' : undefined)
+  )
+}
+
 function ancestors(node: ts.Node): ts.ObjectLiteralExpression[] {
   const parent = node.parent as ts.Node | undefined
   return parent
@@ -213,16 +234,9 @@ function isTrackConfig(props: Map<string, ts.Expression>) {
 // trackId, which a session spec folds onto the display
 function isSessionEntry(node: ts.ObjectLiteralExpression) {
   const props = properties(node)
-  const owner = ts.isArrayLiteralExpression(node.parent)
-    ? node.parent.parent
-    : undefined
   return (
     props.has('displaySnapshot') ||
-    (props.has('trackId') &&
-      props.size > 1 &&
-      !!owner &&
-      ts.isPropertyAssignment(owner) &&
-      keyOf(owner.name) === 'tracks')
+    (props.has('trackId') && props.size > 1 && inArrayOf(node, 'tracks'))
   )
 }
 
@@ -250,7 +264,9 @@ function problemsIn(file: string) {
   for (const node of tracks) {
     const holes: Holes = { computed: [], open: [] }
     const track = evaluate(node, '', holes) as Obj
-    fileTracks.set(track.trackId, track)
+    if (track.trackId !== COMPUTED) {
+      fileTracks.set(track.trackId, track)
+    }
     for (const p of schemaProblems(track, '/$defs/Track')) {
       if (written(p.where, holes)) {
         report.push(`${at(node)} ${p.where}: ${p.message}`)
@@ -268,10 +284,7 @@ function problemsIn(file: string) {
     if (entry.type !== undefined) {
       entry.type = canonical(configManifest.displays, entry.type) ?? entry.type
     }
-    const view =
-      ancestors(node)
-        .map(a => canonical(configManifest.views, stringProp(a, 'type')))
-        .find(Boolean) ?? 'LinearGenomeView'
+    const view = ancestors(node).map(viewOf).find(Boolean) ?? 'LinearGenomeView'
     const configPath =
       ancestors(node)
         .map(a => stringProp(a, 'config'))
@@ -318,6 +331,7 @@ test('every home holds literals the sweep checks', () => {
     'products/jbrowse-react-circular-genome-view/examples-site/',
     `${BROWSER_TESTS}/suites/`,
     `${BROWSER_TESTS}/probe-`,
+    FIGURE_SPECS,
   ]) {
     expect([home, checkedIn(home)]).not.toEqual([home, 0])
   }
