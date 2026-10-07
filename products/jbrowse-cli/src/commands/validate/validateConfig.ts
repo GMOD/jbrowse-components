@@ -3,9 +3,10 @@
 // cross-references a schema cannot express and the warnings for stale
 // spellings a migration still rewrites.
 //
-// Why a validator at all, given MST type-checks a config on load: MST models
-// ignore snapshot keys they do not declare, so a misspelt slot leaves the track
-// loading normally with the setting doing nothing.
+// Why a validator at all, given a display refuses a key it does not declare on
+// load: a track, an adapter or a session snapshot drops one in silence, so a
+// misspelt slot there leaves the track loading normally with the setting doing
+// nothing.
 //
 // Pure: no filesystem, no process exit. The command wrapper owns both.
 

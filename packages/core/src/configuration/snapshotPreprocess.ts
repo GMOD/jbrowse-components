@@ -18,16 +18,21 @@ export function listed(keys: readonly string[]) {
     : (keys[0] ?? 'nothing')
 }
 
-function refuseUndeclaredKeys(
-  { name, definition, options }: ConfigurationSchemaMetadata,
-  snapshot: unknown,
-) {
+function declaredKeys({ definition, options }: ConfigurationSchemaMetadata) {
   const id = options.explicitIdentifier
-  const declared = [
+  return [
     ...Object.keys(definition).filter(key => !isConstantEntry(definition[key])),
     ...(options.explicitlyTyped ? ['type'] : []),
     ...(id ? [id] : []),
   ]
+}
+
+function refuseUndeclaredKeys(
+  schema: ConfigurationSchemaMetadata,
+  snapshot: unknown,
+) {
+  const { name } = schema
+  const declared = declaredKeys(schema)
   const unknown =
     typeof snapshot === 'string'
       ? [JSON.stringify(snapshot)]
@@ -112,30 +117,34 @@ function underWritten(written: unknown, lifted: unknown): unknown {
  * by member inside an object, since writing the current name is the stronger
  * statement — so a retired flag lifting into `scales.y` lands beside a
  * `scales.y` the snapshot writes. The old key goes whether or not it carried a
- * value, so a `closed` schema never meets it. Where two retired names lift
- * onto one member — a slot the entry spelt directly and the same slot inside a
- * retired `renderer` — the one declared first wins.
+ * value, so a `closed` schema never meets it, and a member a lift produces
+ * that no slot takes goes with it: a v4 `renderer` block carried settings
+ * the display has no slot for, and they were dropped then too. Where two
+ * retired names lift onto one member — a slot the entry spelt directly and
+ * the same slot inside a retired `renderer` — the one declared first wins.
  */
 export function liftRetiredSpellings(
   schema: ConfigurationSchemaMetadata,
   snapshot: Record<string, unknown>,
 ) {
   const { retired } = schema.options
-  return retired && isOwnSnapshot(schema, snapshot)
-    ? applyRetiredSpellings(retired, snapshot)
-    : snapshot
+  if (!retired || !isOwnSnapshot(schema, snapshot)) {
+    return snapshot
+  }
+  const declared = new Set(declaredKeys(schema))
+  return applyRetiredSpellings(retired, snapshot, name => declared.has(name))
 }
 
 /**
- * `liftRetiredSpellings` over a map directly, for a schema whose own
- * `preProcessSnapshot` uncovers a retired name the pass above could not see —
- * one that arrives out of a legacy sub-config rather than off the entry.
+ * `liftRetiredSpellings` over a map directly, for a lift that uncovers a
+ * retired name one level down, as a v4 `renderer` block carries a `color1`.
  * Applying the same map twice costs nothing, since a lift deletes the name it
- * reads.
+ * reads. `takes` says which lifted members land; every one does unless given.
  */
 export function applyRetiredSpellings(
   retired: Record<string, RetiredSpelling>,
   snapshot: Record<string, unknown>,
+  takes: (name: string) => boolean = () => true,
 ) {
   const present = Object.keys(retired).filter(key => key in snapshot)
   if (present.length === 0) {
@@ -148,7 +157,9 @@ export function applyRetiredSpellings(
   for (const key of present.filter(key => snapshot[key] !== undefined)) {
     const lifted = retired[key]!(snapshot[key])
     for (const [name, value] of Object.entries(lifted)) {
-      out[name] = underWritten(out[name], value)
+      if (takes(name)) {
+        out[name] = underWritten(out[name], value)
+      }
     }
   }
   return out
@@ -160,15 +171,17 @@ export function applyRetiredSpellings(
  * bare string or number lifts into the `shorthand` slot taking its form, beside any
  * `shorthandWith` slots, and `null` into the empty object that clears it; a
  * `null` member reads as unset; a `retired` spelling becomes the members that
- * replaced it; a `closed`
- * schema refuses a key it does not declare, then the schema's
- * own `preProcessSnapshot` runs, and a `jexl:` callback in a slot declaring no
- * `contextVariable` is refused. A bare value the shorthand does not lift
- * passes through for MST to refuse.
+ * replaced it; the schema's own `preProcessSnapshot` runs, which is where a
+ * track folds `displayDefaults` into its displays; then a `closed` schema
+ * refuses a key it does not declare, unless the caller is a settings bag that
+ * routes an undeclared key itself (`routesUndeclared`), and a `jexl:` callback
+ * in a slot declaring no `contextVariable` is refused. A bare value the
+ * shorthand does not lift passes through for MST to refuse.
  */
 export function preProcessSnapshotWith(
   schema: ConfigurationSchemaMetadata,
   snapshot: unknown,
+  { routesUndeclared = false } = {},
 ): Record<string, unknown> {
   const { shorthandWith, closed, preProcessSnapshot } = schema.options
   const form = bareFormOf(snapshot)
@@ -180,10 +193,10 @@ export function preProcessSnapshotWith(
         ? { ...shorthandWith, [target]: snapshot }
         : nullMembersAsUnset(snapshot as Record<string, unknown>)
   const named = liftRetiredSpellings(schema, lifted)
-  if (closed) {
-    refuseUndeclaredKeys(schema, named)
-  }
   const processed = preProcessSnapshot ? preProcessSnapshot(named) : named
+  if (closed && !routesUndeclared && isOwnSnapshot(schema, processed)) {
+    refuseUndeclaredKeys(schema, processed)
+  }
   refuseCallbacks(schema, processed)
   return processed
 }

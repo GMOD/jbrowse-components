@@ -38,6 +38,7 @@ export function configSchemaFactory() {
        */
       explicitIdentifier: 'displayId',
       explicitlyTyped: true,
+      closed: true,
     },
   )
 }

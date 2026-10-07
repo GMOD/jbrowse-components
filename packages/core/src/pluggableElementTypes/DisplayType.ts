@@ -1,3 +1,4 @@
+import { getConfigurationSchemaMetadata } from '../configuration/schemaRegistry.ts'
 import LazyStateModelElement from './LazyStateModelElement.ts'
 
 import type { AnyConfigurationSchemaType } from '../configuration/index.ts'
@@ -101,6 +102,11 @@ export default class DisplayType extends LazyStateModelElement {
       ...stuff,
       aliases: stuff.retiredTypes?.map(r => r.type),
     })
+    if (!getConfigurationSchemaMetadata(stuff.configSchema)?.options.closed) {
+      throw new Error(
+        `${stuff.name}'s config schema is not closed: a display refuses a key it does not declare, so declare the schema with closed: true`,
+      )
+    }
     this.configSchema = stuff.configSchema
     this.ReactComponent = stuff.ReactComponent
     this.trackType = stuff.trackType

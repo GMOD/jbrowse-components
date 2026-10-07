@@ -109,3 +109,10 @@ combination: the JSON schema closes `displayDefaults` to the union of every
 declared display slot. The loose `{ trackId, uri }` track form leaves it open
 (`LooseTrack`'s `displayDefaults: { type: 'object' }`) and still admits a
 misspelling the loader drops.
+
+**Amended 2026-10-07 (ADR-214):** a member a lift produces that no slot takes
+is dropped rather than refused, since a display's schema is closed now and a v4
+`renderer` block carried props the display has no slot for, which were dropped
+then too. The canvas display's `renderer` lift moved from its
+`preProcessSnapshot` into `basicRetired`, where the manifest reads it as a
+declared retired spelling instead of probing for it.

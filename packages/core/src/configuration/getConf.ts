@@ -183,7 +183,9 @@ export function applyConfSettings(
 ): ConfSettingsReport {
   const conf = isConfigurationModel(target) ? target : target.configuration
   const meta = getConfigurationSchemaMetadata(conf)
-  const values = meta ? preProcessSnapshotWith(meta, settings) : settings
+  const values = meta
+    ? preProcessSnapshotWith(meta, settings, { routesUndeclared: true })
+    : settings
   const report: ConfSettingsReport = { applied: [], undeclared: {}, failed: [] }
   for (const [key, value] of Object.entries(values)) {
     const declared = Object.hasOwn(meta?.definition ?? {}, key)

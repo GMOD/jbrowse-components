@@ -8,9 +8,10 @@ import type { Problem } from './types.ts'
 const description =
   'Check a JBrowse configuration for errors, including the ones JBrowse itself accepts silently'
 
-const notes = `A config key JBrowse does not recognize is ignored rather than reported, so a
-misspelled slot leaves the track loading normally with the setting doing
-nothing. That is what this command is mainly for.
+const notes = `A display refuses a key it does not declare and fails to load; a track, an
+adapter or a session snapshot drops one in silence, so a misspelled slot there
+leaves the track loading normally with the setting doing nothing. This command
+reports both offline, before anyone opens the config.
 
 Two levels are reported:
 

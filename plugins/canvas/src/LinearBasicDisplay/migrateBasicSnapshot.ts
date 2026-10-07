@@ -7,30 +7,26 @@ function isRecord(x: unknown): x is Record<string, unknown> {
   return typeof x === 'object' && x !== null
 }
 
-function liftRendererProps(
-  snap: Record<string, unknown>,
-): Record<string, unknown> {
-  const { renderer, ...rest } = snap
+// A v4 `renderer` block's props become the display's own: `renderer.height`
+// was the feature body's height, now `featureHeight`, since lifting it by name
+// would set a v4 config's track height to ~10px; a v4 name one level down
+// (`renderer: { color1 }`) takes the same retired map; and a prop the display
+// has no slot for is dropped by the lift's own rule.
+function liftRenderer(renderer: unknown): Record<string, unknown> {
   if (!isRecord(renderer)) {
-    // `rest` already excludes `renderer`, so a stray `renderer: null` is
-    // dropped rather than carried into the snapshot.
-    return rest
+    return {}
   }
   const {
     type: _rendererType,
     height: rendererHeight,
     ...rendererProps
   } = renderer
-  // `renderer.height` was the feature body's height, now `featureHeight`;
-  // lifting it by name would set a v4 config's track height to ~10px. Snap
-  // props win, so renderer spreads first.
-  return {
+  return applyRetiredSpellings(basicRetired, {
     ...rendererProps,
     ...(rendererHeight !== undefined
       ? { featureHeight: rendererHeight }
       : undefined),
-    ...rest,
-  }
+  })
 }
 
 // The removed `reducedRepresentation` and `collapse` values map to `normal`
@@ -48,20 +44,21 @@ function normalizeDisplayMode(value: unknown) {
  * `color1` the entry spells has to beat a `color` the shorthand carries, and it
  * cannot while it is still spelt `color1` when the two merge.
  */
-export const basicRetired = {
+export const basicRetired: Record<
+  string,
+  (value: unknown) => Record<string, unknown>
+> = {
   color1: (color: unknown) => ({ color }),
   color2: (connectorColor: unknown) => ({ connectorColor }),
   color3: (utrColor: unknown) => ({ utrColor }),
   outline: (outlineColor: unknown) => ({ outlineColor }),
   // a second grow ceiling, dead at its default; `growMaxHeight` is the one
   maxHeight: () => ({}),
+  renderer: liftRenderer,
 }
 
 export function migrateBasicConfigSnapshot(snap: Record<string, unknown>) {
-  // `basicRetired` again, because the renderer lift above uncovers the same v4
-  // names one level down: `renderer: { color1 }` is a `color1` no earlier pass
-  // could see.
-  const result = applyRetiredSpellings(basicRetired, liftRendererProps(snap))
+  const result = { ...snap }
   // A unified-enum value already present wins over a stale `showDescriptions`
   // beside it, so a re-saved config is not rewritten.
   if (
