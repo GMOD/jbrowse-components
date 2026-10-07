@@ -59,13 +59,13 @@ function colorType(
 describe('split junction class', () => {
   const cases: [string, Segment, Segment, number][] = [
     [
-      'a deletion jumps forward',
+      'a deletion is deletion-type',
       [100, 200, 1],
       [500, 600, 1],
       COLOR_SPLIT_FORWARD,
     ],
     [
-      'a tandem duplication jumps back',
+      'a tandem duplication is duplication-type',
       [400, 600, 1],
       [100, 300, 1],
       COLOR_SPLIT_BACK,
@@ -139,7 +139,7 @@ describe('split class colour', () => {
 
   test('the hover names the split class, not its pair twin', () => {
     expect(arcColorCategoryLabel('splitBack', false)).toBe(
-      'Split alignment (jumps back)',
+      'Split read (duplication-type)',
     )
   })
 })

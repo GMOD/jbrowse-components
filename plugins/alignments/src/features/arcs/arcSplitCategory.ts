@@ -13,13 +13,15 @@ export const ARC_SPLIT_PAIR_TWIN = {
 
 export type ArcSplitCategory = keyof typeof ARC_SPLIT_PAIR_TWIN
 
-// What was measured, not the variant it suggests: a forward jump is a deletion
-// junction but also one side of a templated insertion.
+// The junction's type, as DELLY, LUMPY and samplot name it, and not a variant
+// call: a deletion-type junction is also one side of a templated insertion. The
+// inversion rows carry the pair code of their twin, as Manta ties INV3/INV5 to
+// LL/RR reads.
 export const ARC_SPLIT_LABELS: Record<ArcSplitCategory, string> = {
-  splitForward: 'Split alignment (jumps forward)',
-  splitBack: 'Split alignment (jumps back)',
-  splitInvLL: 'Split alignment (inverted, LL-type)',
-  splitInvRR: 'Split alignment (inverted, RR-type)',
+  splitForward: 'Split read (deletion-type)',
+  splitBack: 'Split read (duplication-type)',
+  splitInvLL: 'Split read (inversion, LL-type)',
+  splitInvRR: 'Split read (inversion, RR-type)',
 }
 
 export function isArcSplitCategory(
