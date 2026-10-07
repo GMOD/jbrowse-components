@@ -1,4 +1,7 @@
-import { readConfObject } from '@jbrowse/core/configuration'
+import {
+  readConfObject,
+  refusingUndeclaredKeys,
+} from '@jbrowse/core/configuration'
 
 import configSchema from './configSchema.ts'
 
@@ -42,10 +45,12 @@ test('the object carries the scale and the slots it reads', () => {
   ])
 })
 
-test('an undeclared key is refused by name', () => {
-  expect(() => create({ color: { field: 'score', pivot: 2 } })).toThrow(
-    'WiggleColor takes',
-  )
+test('a write refuses an undeclared key by name', () => {
+  expect(() =>
+    refusingUndeclaredKeys(() =>
+      create({ color: { field: 'score', pivot: 2 } }),
+    ),
+  ).toThrow('WiggleColor takes')
 })
 
 test('a scale the display does not paint is refused', () => {

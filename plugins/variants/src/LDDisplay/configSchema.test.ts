@@ -2,6 +2,7 @@ import {
   getConfigurationSchemaDefinition,
   plotOf,
   readConfObject,
+  refusingUndeclaredKeys,
 } from '@jbrowse/core/configuration'
 import { fieldScaleOf, presetOf } from '@jbrowse/core/util/colorScale'
 import { getSnapshot } from '@jbrowse/mobx-state-tree'
@@ -79,11 +80,13 @@ describe('color', () => {
     expect(() => make({ color: { field: 'score' } })).toThrow()
   })
 
-  test('refuses a member it does not declare', () => {
-    expect(() => make({ color: { domainQuantile: 0.95 } })).toThrow(
-      /domainQuantile/,
-    )
-    expect(() => make({ color: { value: 'red' } })).toThrow(/value/)
+  test('a write refuses a member it does not declare', () => {
+    expect(() =>
+      refusingUndeclaredKeys(() => make({ color: { domainQuantile: 0.95 } })),
+    ).toThrow(/domainQuantile/)
+    expect(() =>
+      refusingUndeclaredKeys(() => make({ color: { value: 'red' } })),
+    ).toThrow(/value/)
   })
 })
 

@@ -39,7 +39,9 @@ describe('the display config schema', () => {
       })
       expect(readConfObject(config, 'referenceDrawingMode')).toBe('skip')
       expect(warn).toHaveBeenCalledWith(
-        'LinearMultiSampleVariantDisplay does not declare showReferenceAlleles: loading without it',
+        expect.stringMatching(
+          /^LinearMultiSampleVariantDisplay ".*" does not declare showReferenceAlleles: loading without it$/,
+        ),
       )
       warn.mockRestore()
     })

@@ -2,6 +2,7 @@ import {
   getConfigurationSchemaDefinition,
   plotOf,
   readConfObject,
+  refusingUndeclaredKeys,
 } from '@jbrowse/core/configuration'
 import { fieldScaleOf } from '@jbrowse/core/util/colorScale'
 import { COLOR_SCHEMES } from '@jbrowse/core/util/colorSchemes'
@@ -72,8 +73,10 @@ describe('color', () => {
     expect(getSnapshot(conf)).toHaveProperty('color', { scheme: 'fall' })
   })
 
-  test('refuses a member it does not declare', () => {
-    expect(() => make({ color: { value: 'red' } })).toThrow(/value/)
+  test('a write refuses a member it does not declare', () => {
+    expect(() =>
+      refusingUndeclaredKeys(() => make({ color: { value: 'red' } })),
+    ).toThrow(/value/)
   })
 
   test('maps count and nothing else', () => {
