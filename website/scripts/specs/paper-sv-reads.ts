@@ -62,7 +62,7 @@ const bandLabel = (
   type: 'text',
   text,
   fontSize: 16,
-  anchor: { text: trackLabel, alignX: 'left', alignY: 'bottom', dx: -8, dy },
+  anchor: { text: trackLabel, alignX: 'left', alignY: 'bottom', dx: 8, dy },
 })
 
 const HIFI_NAME = 'HG008-T PacBio HiFi'
@@ -73,12 +73,14 @@ const readEvidence = ({
   name,
   loc,
   pairsHeight,
+  arcsHeight,
   cloud,
   viewportHeight,
 }: {
   name: string
   loc: string
   pairsHeight: number
+  arcsHeight: number
   cloud: boolean
   viewportHeight: number
 }): ScreenshotSpec => ({
@@ -125,8 +127,8 @@ const readEvidence = ({
             showPileup: false,
             readConnections: 'arc',
             drawProperPairArcs: false,
-            readConnectionsHeight: 70,
-            height: 140,
+            readConnectionsHeight: arcsHeight,
+            height: arcsHeight + 70,
           },
           {
             ...illuminaPairs,
@@ -153,9 +155,10 @@ const readEvidence = ({
     bandLabel('PacBio: split-read arcs', HIFI_NAME, 88),
     bandLabel('PacBio: split reads', HIFI_NAME, 138),
     bandLabel('PacBio: unsplit reads', HIFI_NAME, 215),
-    bandLabel('Illumina: read-pair arcs', ARCS_NAME, 84),
+    bandLabel('Illumina: coverage', ARCS_NAME, 44),
+    bandLabel('Illumina: read-pair arcs', ARCS_NAME, 100),
     ...(cloud ? [bandLabel('Illumina: read cloud', PAIRS_NAME, 60)] : []),
-    bandLabel('Illumina: discordant pairs', PAIRS_NAME, cloud ? 190 : 60),
+    bandLabel('Illumina: discordant pairs', PAIRS_NAME, cloud ? 205 : 70),
   ],
   hideSelectors: [APP_BAR],
   readyText: 'discordant pairs',
@@ -169,14 +172,16 @@ export const paperSvReadsSpecs: ScreenshotSpec[] = [
     name: 'paper/sv_read_evidence',
     loc: 'chr17:31,951,500-32,016,000',
     pairsHeight: 240,
+    arcsHeight: 80,
     cloud: true,
-    viewportHeight: 1123,
+    viewportHeight: 1133,
   }),
   readEvidence({
     name: 'paper/sv_read_evidence_inversion',
     loc: 'chr3:184,709,000-184,723,000',
     pairsHeight: 350,
+    arcsHeight: 110,
     cloud: false,
-    viewportHeight: 1206,
+    viewportHeight: 1246,
   }),
 ]
