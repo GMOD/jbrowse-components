@@ -80,8 +80,10 @@ test('the old cross hatch and tick flags land on the scale, beside a scale the c
 })
 
 describe('the slots v4 declared on the display', () => {
-  const y = (snap: Record<string, unknown>, slot: string) =>
-    readConfObject(create(snap), ['scales', 'y', slot])
+  const y = (
+    snap: Record<string, unknown>,
+    slot: 'domainMin' | 'domainMax' | 'type' | 'domainQuantile',
+  ) => readConfObject(create(snap), ['scales', 'y', slot])
 
   test('a fixed range and a log scale reach scales.y, with no warning', () => {
     const warn = jest.spyOn(console, 'warn').mockImplementation(() => {})
