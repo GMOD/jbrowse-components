@@ -199,33 +199,17 @@ gets its own palette color:
 
 ## Linkage disequilibrium (LD) display
 
-JBrowse draws a triangular heatmap of pairwise r² (or D') between variants,
-computed live from a VCF's genotypes or read from a PLINK file. Point it at a
-single population panel: r² is a correlation across the samples in the file, so
-a pooled multi-population callset averages the block away.
+JBrowse draws a triangular heatmap of pairwise r² (or D') between variants, read
+from a table PLINK writes. Compute it over a single population panel: r² is a
+correlation across the samples in the file, so a pooled multi-population callset
+averages the block away.
 
 <Figure src="/img/ld/lct_haploblock.png" caption="An LD triangle of pairwise r² at the human lactase locus (LCT/MCM6), over the haplotype matrix it summarises. Red is a pair of SNPs almost always inherited together, and the block over the highlighted gene is one long haplotype."/>
 
-**Computed from a VCF.** Add an `LDDisplay` to a normal `VariantTrack`. The raw
-genotypes are present, so the filters (minor allele frequency, HWE, call rate,
-jexl) and signed LD are available:
-
-```json addtrack
-{
-  "type": "VariantTrack",
-  "trackId": "variants_ld",
-  "name": "Variants with LD",
-  "uri": "https://yourhost/variants.vcf.gz",
-  "assemblyNames": ["hg38"],
-  "displays": [{ "type": "LDDisplay" }]
-}
-```
-
-**Pre-computed with PLINK.** A standalone `LDTrack` serves a cohort too large to
-compute in the browser, or a fixed matrix to publish. `PlinkLDAdapter` reads a
-plain `.ld`; `PlinkLDTabixAdapter` reads a bgzipped, tabix-indexed `.ld.gz` and
-fetches only the visible region. PLINK data has only the final r²/D' values, so
-the filters and signed LD are absent here. The
+An `LDTrack` draws the table. `PlinkLDAdapter` reads a plain `.ld`;
+`PlinkLDTabixAdapter` reads a bgzipped, tabix-indexed `.ld.gz` and fetches only
+the visible region. Filtering by allele frequency, Hardy-Weinberg or call rate
+happens in `plink` when it writes the table. The
 [GWAS track guide](/docs/config_guides/gwas_track#preparing-the-ld-file) has the
 `plink` command, and the same file drives LD coloring on a GWAS track.
 
@@ -251,12 +235,11 @@ the same block, `r2` on a red ramp and `dprime` on a blue one unless
   the two to be at similar frequency, so it draws the sharper boundary. It shows
   whether one marker can stand in for another
 
-Thinning is plink's `--maf`, decided when the table is written rather than in
-the browser: it holds the dense callset down to the common, block-tagging
-variants. High enough it reaches the tagging variants themselves, and the block
-fades. Several haplotypes at one locus fragment the block too, since no single
-pair of biallelic markers tags them all, so a soft sweep reads patchier than its
-strength suggests.
+Thinning is plink's `--maf`, decided when the table is written: it holds the
+dense callset down to the common, block-tagging variants. High enough it reaches
+the tagging variants themselves, and the block fades. Several haplotypes at one
+locus fragment the block too, since no single pair of biallelic markers tags
+them all, so a soft sweep reads patchier than its strength suggests.
 
 ## See also
 
