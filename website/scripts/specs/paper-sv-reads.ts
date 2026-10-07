@@ -4,13 +4,14 @@
 // (SV_128) beside a 26.7 kb deletion (SV_129) in SUZ12, and a 2.4 kb inversion
 // on chr3 (SV_23, SV_25). One BAM mounts twice because a view shows a track
 // once and a display draws one connection mode. The long reads group by split
-// or not, so the chains that cross a junction sit under their arcs. The paired
-// track hides proper pairs for the same reason, and its coverage band with
-// them, since the filter runs ahead of coverage. The BAMs are slices of the
+// or not, so the chains that cross a junction sit under their arcs. The short
+// reads take two tracks: coverage and arcs over every pair, then the pairs
+// themselves with proper pairs hidden. That filter runs ahead of coverage, so
+// the filtered track cannot draw a true coverage band and hides it. The BAMs are slices of the
 // GIAB files, hosted because the GIAB FTP answers 503 to parallel renders.
 import { cgiabUrl } from '../screenshot-spec-helpers.ts'
 
-import type { ScreenshotSpec } from '../screenshot-spec-types.ts'
+import type { Annotation, ScreenshotSpec } from '../screenshot-spec-types.ts'
 
 const GRCH38 = 'GRCh38_GIABv3'
 const CGIAB = 'https://jbrowse.org/demos/cgiab'
@@ -18,7 +19,8 @@ const HIFI_BAM = `${CGIAB}/HG008-T_PacBio-HiFi-Revio_116x.sv_read_evidence_slice
 const ILLUMINA_BAM = `${CGIAB}/HG008-T_Illumina_195x.sv_read_evidence_slices.bam`
 const HIFI = 'hg008_t_hifi_chains'
 const ILLUMINA_ARCS = 'hg008_t_illumina_arcs'
-const ILLUMINA_CLOUD = 'hg008_t_illumina_cloud'
+const ILLUMINA_PAIRS = 'hg008_t_illumina_pairs'
+const APP_BAR = 'header.MuiAppBar-root'
 
 const bamTrack = (trackId: string, name: string, uri: string) => ({
   type: 'AlignmentsTrack',
@@ -50,6 +52,23 @@ const illuminaPairs = {
   color: { field: 'insertSizeAndOrientation' },
 }
 
+// What a band of a track is, hung from the track's own label as the
+// translocation figure's are (`cgiab-junction.ts`).
+const bandLabel = (
+  text: string,
+  trackLabel: string,
+  dy: number,
+): Annotation => ({
+  type: 'text',
+  text,
+  fontSize: 19,
+  anchor: { text: trackLabel, alignX: 'left', alignY: 'bottom', dx: -8, dy },
+})
+
+const HIFI_NAME = 'HG008-T PacBio HiFi'
+const ARCS_NAME = 'HG008-T Illumina: coverage and read arcs'
+const PAIRS_NAME = 'HG008-T Illumina: discordant pairs'
+
 const readEvidence = ({
   name,
   loc,
@@ -67,13 +86,9 @@ const readEvidence = ({
   name,
   url: cgiabUrl({
     sessionTracks: [
-      bamTrack(HIFI, 'HG008-T PacBio HiFi: chains and read arcs', HIFI_BAM),
-      bamTrack(
-        ILLUMINA_ARCS,
-        'HG008-T Illumina: discordant pairs and read arcs',
-        ILLUMINA_BAM,
-      ),
-      bamTrack(ILLUMINA_CLOUD, 'HG008-T Illumina: read cloud', ILLUMINA_BAM),
+      bamTrack(HIFI, HIFI_NAME, HIFI_BAM),
+      bamTrack(ILLUMINA_ARCS, ARCS_NAME, ILLUMINA_BAM),
+      bamTrack(ILLUMINA_PAIRS, PAIRS_NAME, ILLUMINA_BAM),
     ],
     views: [
       {
@@ -107,10 +122,19 @@ const readEvidence = ({
           {
             ...illuminaPairs,
             trackId: ILLUMINA_ARCS,
-            unit: 'chain',
+            showPileup: false,
             readConnections: 'arc',
             drawProperPairArcs: false,
-            readConnectionsHeight: 110,
+            readConnectionsHeight: 150,
+            height: 235,
+            showLegend: true,
+          },
+          {
+            ...illuminaPairs,
+            trackId: ILLUMINA_PAIRS,
+            unit: 'chain',
+            readConnections: cloud ? 'cloud' : 'off',
+            readConnectionsHeight: 150,
             featureHeight: 1,
             filterBy: {
               flagInclude: 0,
@@ -119,24 +143,21 @@ const readEvidence = ({
             },
             showCoverage: false,
             height: pairsHeight,
-            showLegend: true,
           },
-          ...(cloud
-            ? [
-                {
-                  ...illuminaPairs,
-                  trackId: ILLUMINA_CLOUD,
-                  showPileup: false,
-                  readConnections: 'cloud',
-                  readConnectionsHeight: 170,
-                  height: 235,
-                },
-              ]
-            : []),
         ],
       },
     ],
   }),
+  annotations: [
+    bandLabel('SV calls', 'draft benchmark somatic SVs', 52),
+    bandLabel('split-read arcs', HIFI_NAME, 88),
+    bandLabel('split reads', HIFI_NAME, 138),
+    bandLabel('unsplit reads', HIFI_NAME, 215),
+    bandLabel('read-pair arcs', ARCS_NAME, 100),
+    ...(cloud ? [bandLabel('read cloud', PAIRS_NAME, 60)] : []),
+    bandLabel('discordant pairs', PAIRS_NAME, cloud ? 190 : 60),
+  ],
+  hideSelectors: [APP_BAR],
   readyText: 'discordant pairs',
   readyTimeout: 300000,
   viewportWidth: 1500,
@@ -147,15 +168,15 @@ export const paperSvReadsSpecs: ScreenshotSpec[] = [
   readEvidence({
     name: 'paper/sv_read_evidence',
     loc: 'chr17:31,955,000-32,012,000',
-    pairsHeight: 215,
+    pairsHeight: 240,
     cloud: true,
-    viewportHeight: 1212,
+    viewportHeight: 1218,
   }),
   readEvidence({
     name: 'paper/sv_read_evidence_inversion',
     loc: 'chr3:184,709,000-184,723,000',
-    pairsHeight: 440,
+    pairsHeight: 350,
     cloud: false,
-    viewportHeight: 1165,
+    viewportHeight: 1301,
   }),
 ]
