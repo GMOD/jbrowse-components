@@ -1,7 +1,7 @@
 import { PAIR_DIRECTION_NUM, splitJunctionKind } from '@jbrowse/alignments-core'
 
 import { ARC_SLOT_CATEGORY } from '../../shaders/palettes.ts'
-import { classifyInsertSize } from '../../shared/insertSizeStats.ts'
+import { pairCategory } from '../../shared/pairCategory.ts'
 
 import type { InsertSizeBand } from '../../shared/insertSizeStats.ts'
 import type { ArcColorField } from '../../shared/types.ts'
@@ -42,15 +42,11 @@ export function isConcordantFRPair(
 
 // Color-slot indices into the arc palette (`ARC_SLOT_CATEGORY`).
 export const COLOR_DEFAULT = 0
-export const COLOR_LONG_INSERT = 1
-export const ARC_COLOR_SHORT_INSERT = 2
-const COLOR_SHORT_INSERT = ARC_COLOR_SHORT_INSERT
+export const COLOR_LONG_INSERT = ARC_SLOT_CATEGORY.indexOf('longInsert')
+export const ARC_COLOR_SHORT_INSERT = ARC_SLOT_CATEGORY.indexOf('shortInsert')
 // The only colour an interchromosomal arc or tick takes: insert size and
 // pair orientation mean nothing across two references.
 export const ARC_COLOR_INTERCHROM = 3
-const COLOR_PAIR_LL = 4
-const COLOR_PAIR_RR = 5
-export const COLOR_PAIR_RL = 6
 // A split-read junction, by which way the read extends from its two feet —
 // see `arcSplitCategory.ts`. Each takes the colour of the pair class that spans
 // the same junction.
@@ -142,33 +138,12 @@ function splitJunctionColor(arc: PendingArc) {
       : COLOR_SPLIT_BACK
 }
 
-// undefined means "normal/LR or unknown orientation" — the caller decides the
-// fallback (plain default vs. defer to insert size).
-function orientationColor(pairOrientationNum: number) {
-  switch (pairOrientationNum) {
-    case PAIR_DIRECTION_NUM.RL:
-      return COLOR_PAIR_RL
-    case PAIR_DIRECTION_NUM.RR:
-      return COLOR_PAIR_RR
-    case PAIR_DIRECTION_NUM.LL:
-      return COLOR_PAIR_LL
-    default:
-      return undefined
-  }
-}
-
-// Map the shared insert-size class onto this palette's arc color slots. The
-// threshold rule (including the unset-TLEN guard) lives in classifyInsertSize,
-// shared with the read-fill path (colorUtils.ts).
-const insertClassArcColor = {
-  long: COLOR_LONG_INSERT,
-  short: COLOR_SHORT_INSERT,
-  normal: COLOR_DEFAULT,
-}
-
-function insertSizeColor(tlen: number, stats: InsertSizeBand | undefined) {
-  return insertClassArcColor[classifyInsertSize(Math.abs(tlen), stats)]
-}
+// The palette slot a pair category paints in. `pairLR` and `nonSplit` have no
+// slot of their own and land on the baseline, which `arcSlotCategory` names
+// per colouring mode.
+const ARC_SLOT_OF_CATEGORY = new Map<string, number>(
+  ARC_SLOT_CATEGORY.map((category, slot) => [category, slot]),
+)
 
 // Same-chromosome color classifier (interchromosomal ticks are colored
 // separately, always COLOR_INTERCHROM). Read cloud shares this so its
@@ -193,34 +168,18 @@ export function getArcColorType(args: {
   if (!hasPaired || arc.isSplit) {
     return colorField === 'insertSize' ? COLOR_DEFAULT : splitJunctionColor(arc)
   }
-  const orient = orientationColor(arc.pairOrientationNum)
-  // TLEN, and only TLEN — the same field `readColorCategory` classifies, so an
-  // arc and the reads under it cannot key the same pair two different ways.
-  //
-  // This used to override the TLEN class with the pair's drawn SPAN: a pair
-  // whose mates sat more than LARGE_INSERT_THRESHOLD apart painted long-insert
-  // whatever TLEN said, on the ground that a discordant pair often carries an
-  // unreliable or 0 TLEN and the distance is the more trustworthy signal. The
-  // signal is real, but the read fills never had the rule, so the two disagreed
-  // on exactly the pairs it existed to catch: `classifyInsertSize` sorts TLEN 0
-  // into `normal` (0 is neither > upper nor inside (0, lower)), so those arcs
-  // went red over reads that stayed grey. That is what shipped in a figure.
-  //
-  // The span was also a moving target in a way TLEN is not: half of the test
-  // was `absrad >= longRangeThreshold`, a median+MAD outlier cut over the arcs
-  // IN VIEW, so an arc's color depended on what else was on screen and changed
+  // TLEN, and only TLEN, through the function `readColorCategory` classifies
+  // with, so an arc and the reads under it cannot key the same pair two
+  // different ways. This used to override the TLEN class with the pair's drawn
+  // SPAN, which the read fills never had: `classifyInsertSize` sorts TLEN 0
+  // into `normal`, so those arcs went red over reads that stayed grey, and the
+  // span's outlier cut ran over the arcs IN VIEW, so an arc's colour changed
   // as you panned.
-  const insert = insertSizeColor(arc.tlen, arc.stats)
-  switch (colorField) {
-    case 'insertSize':
-      return insert
-    case 'pairOrientation':
-      return orient ?? COLOR_DEFAULT
-    // Short-insert pairs always paint pink, even with abnormal orientation;
-    // otherwise orientation wins, falling back to long-/normal-insert.
-    case 'insertSizeAndOrientation':
-      return insert === COLOR_SHORT_INSERT ? insert : (orient ?? insert)
-  }
+  return (
+    ARC_SLOT_OF_CATEGORY.get(
+      pairCategory(colorField, arc.pairOrientationNum, arc.tlen, arc.stats),
+    ) ?? COLOR_DEFAULT
+  )
 }
 
 /** A colour type's palette slot, the last slot for one past the palette. */

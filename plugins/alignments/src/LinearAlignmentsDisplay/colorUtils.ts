@@ -26,7 +26,7 @@ import {
   RC_UNMAPPED_MATE,
 } from '../shaders/slang/read.consts.generated.ts'
 import { COLOR_SCHEMES, isDataFillScheme } from '../shared/colorSchemes.ts'
-import { classifyInsertSize } from '../shared/insertSizeStats.ts'
+import { pairCategory } from '../shared/pairCategory.ts'
 import { MAPQ_CSS } from '../shared/qualityRamps.ts'
 import {
   CHAIN_SPLIT_DELETION,
@@ -93,42 +93,6 @@ export type ReadColorCategory =
 
 function strandCategory(strand: number): ReadColorCategory {
   return strand < 0 ? 'revStrand' : 'fwdStrand'
-}
-
-const pairOrientationCategories: Record<number, ReadColorCategory> = {
-  1: 'pairLR',
-  2: 'pairRL',
-  3: 'pairRR',
-  4: 'pairLL',
-}
-
-// po=0 means no computed pair orientation. Under the pairOrientation scheme the
-// chained-supplementary (split) branch runs first, so a read that falls through
-// to here is a non-split read (long single reads, or a pair with no orientation)
-// — grey, distinct from the strand-colored split segments.
-function pairOrientationCategory(po: number): ReadColorCategory {
-  return pairOrientationCategories[po] ?? 'nonSplit'
-}
-
-// Map the shared insert-size class onto the render/legend category vocabulary.
-// The threshold rule (including the unset-TLEN guard) lives in classifyInsertSize
-// so this and the arc path (arcs/arcColors.ts) share one source. The shader
-// used to re-apply those thresholds; it now receives the resulting category,
-// so this naming has no GPU twin to stay in step with.
-const insertClassCategory: Record<
-  ReturnType<typeof classifyInsertSize>,
-  ReadColorCategory
-> = {
-  long: 'longInsert',
-  short: 'shortInsert',
-  normal: 'normalInsert',
-}
-
-function insertSizeCategory(
-  insertSize: number,
-  stats: InsertSizeBand | undefined,
-): ReadColorCategory {
-  return insertClassCategory[classifyInsertSize(insertSize, stats)]
 }
 
 export interface ChainFramingSettings {
@@ -377,9 +341,6 @@ function schemeCategory(
     case 'mappingQuality':
       return data.readMapqs[i] === MAPQ_UNAVAILABLE ? 'mapqUnavailable' : 'mapq'
 
-    case 'insertSize':
-      return insertSizeCategory(data.readInsertSizes[i]!, data.insertSizeStats)
-
     // Fragment strand inferred from the first mate, through the shared rule
     // `firstOfPairStrandKey` (groupFeatures.ts) also calls — so the color a read
     // paints and the section it groups into agree by construction rather than by
@@ -387,28 +348,18 @@ function schemeCategory(
     case 'firstOfPairStrand':
       return strandCategory(firstOfPairStrand(strand, flags))
 
-    case 'pairOrientation': {
-      // A split alignment normally shows strand coloring instead, via the
-      // chained-supplementary branch above; a read reaching here with no pair
-      // orientation is either a non-split read or a split one whose framing the
-      // user turned off, and grey is the right answer for both.
-      return pairOrientationCategory(data.readPairOrientations[i]!)
-    }
-
-    // Short-insert pairs always show pink, even with abnormal orientation;
-    // otherwise orientation wins, falling back to long-/normal-insert.
-    case 'insertSizeAndOrientation': {
-      const insert = insertSizeCategory(
+    // The pair fields classify through the one function the arcs read too. A
+    // read reaching here with no pair orientation is a non-split read or a
+    // split one whose framing is off, and grey is the right answer for both.
+    case 'insertSize':
+    case 'pairOrientation':
+    case 'insertSizeAndOrientation':
+      return pairCategory(
+        shaderScheme,
+        data.readPairOrientations[i]!,
         data.readInsertSizes[i]!,
         data.insertSizeStats,
       )
-      const po = data.readPairOrientations[i]!
-      return insert === 'shortInsert'
-        ? insert
-        : po === 2 || po === 3 || po === 4
-          ? pairOrientationCategory(po)
-          : insert
-    }
 
     // The read's own strand decides which of the two modification hues it
     // paints; `strand` is already resolved above, so this asks the same field

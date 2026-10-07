@@ -1,19 +1,17 @@
 import { getArcColorType } from '../features/arcs/arcColors.ts'
 import { arcSlotCategory } from '../shaders/palettes.ts'
 import { ARC_COLOR_FIELDS } from '../shared/arcColorOptions.ts'
-import { readColorCategory } from './colorUtils.ts'
+import { readColorCategory, swatchPaletteKeys } from './colorUtils.ts'
 
 import type { ArcColorField } from '../shared/types.ts'
 
-// The arc overlay and the read fills classify a pair INDEPENDENTLY —
-// `getArcColorType` on one side, `readColorCategory` on the other — and the
-// model folds the arc key into the read key whenever the two schemes are
-// twins, which renders an arc bucket as a plain read swatch and drops the
-// curve mark. That fold is an assertion that the two classifiers agree, and
-// nothing held them to it: a figure shipped with red arcs over grey reads.
-//
-// This file is the missing half. Both sides now classify TLEN and nothing else,
-// so the agreement is total and this pins it that way.
+// The arc overlay and the read fills classify a pair through one function
+// (`pairCategory`), and the model folds the arc key into the read key whenever
+// the two schemes are twins, which renders an arc bucket as a plain read swatch
+// and drops the curve mark. This pins what the fold assumes: the arc side's
+// own gates (`hasPaired`, `isSplit`) and its category-to-slot fold leave a
+// paired arc keyed as the reads under it are. A figure once shipped with red
+// arcs over grey reads when the two sides classified separately.
 
 const stats = { upper: 600, lower: 100 }
 
@@ -92,17 +90,42 @@ describe('arc and read color classifiers', () => {
     },
   )
 
-  // TLEN 0 is the case the two classifiers used to split on, and the reason a
-  // figure shipped with red arcs over grey reads. `classifyInsertSize` sorts it
-  // into `normal` (0 is neither > upper nor inside (0, lower)), so the reads
-  // painted it as an ordinary pair; the arcs measured the mates' drawn distance
-  // instead and painted it long-insert. The arcs read TLEN now, so an
-  // information-unavailable pair is `normal` on both sides rather than red on
-  // one of them.
+  // The second mate of a pair carries the negative TLEN. The reads used to
+  // hand it to the classifier unsigned-as-is, so one mate of a long-insert
+  // pair painted normal while the arc over both painted long.
+  test('agree on a negative TLEN', () => {
+    for (const colorField of ARC_COLOR_FIELDS) {
+      for (const tlen of INSERT_SIZES) {
+        expect(arcCategory(colorField, 1, -tlen)).toBe(
+          readCategory(colorField, 1, -tlen),
+        )
+      }
+    }
+    expect(readCategory('insertSize', 1, -5000)).toBe('longInsert')
+  })
+
+  // TLEN 0 is SAM's "information unavailable": `classifyInsertSize` sorts it
+  // into `normal`, so an unavailable pair is `normal` on both sides rather
+  // than red on one of them.
   test('agree on TLEN 0, however far apart the mates are drawn', () => {
     for (const colorField of ARC_COLOR_FIELDS) {
       expect(arcCategory(colorField, 1, 0)).toBe(readCategory(colorField, 1, 0))
     }
+  })
+
+  // The arc palette has no `nonSplit` slot, so a pair with no orientation
+  // folds onto the baseline, which the pairOrientation key names `pairLR`;
+  // the two categories share a swatch, so the picture agrees.
+  test('a pair with no orientation paints the same swatch on both sides', () => {
+    for (const colorField of ARC_COLOR_FIELDS) {
+      const arc = arcCategory(colorField, 0, 300)
+      const read = readCategory(colorField, 0, 300)
+      expect(swatchPaletteKeys[arc as keyof typeof swatchPaletteKeys]).toBe(
+        swatchPaletteKeys[read as keyof typeof swatchPaletteKeys],
+      )
+    }
+    expect(readCategory('pairOrientation', 0, 300)).toBe('nonSplit')
+    expect(arcCategory('pairOrientation', 0, 300)).toBe('pairLR')
   })
 
   // `pairOrientation` mode has no insert-size vocabulary at all on the read side,
