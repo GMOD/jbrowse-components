@@ -251,6 +251,56 @@
       ]
     },
     {
+      "type": "SyntenyTrack",
+      "trackId": "hprc_v2_1_pif_lanes",
+      "name": "HPRC release 2 haplotypes vs GRCh38, eight haplotypes unpacked from the graph",
+      "assemblyNames": [
+        "hg38",
+        "HG01109.1",
+        "HG01123.1",
+        "HG01960.1",
+        "HG02055.1",
+        "HG00097.1",
+        "HG00099.1",
+        "HG00128.1",
+        "HG00133.1"
+      ],
+      "adapter": {
+        "type": "MultiGenomeIndexedPAFAdapter",
+        "uri": "https://jbrowse.org/demos/hprc_multiway/hprc_multiway_gfa.pif.gz",
+        "csi": true,
+        "assemblyNames": [
+          "hg38",
+          "HG01109.1",
+          "HG01123.1",
+          "HG01960.1",
+          "HG02055.1",
+          "HG00097.1",
+          "HG00099.1",
+          "HG00128.1",
+          "HG00133.1"
+        ],
+        "assemblyNameToPanSN": {
+          "hg38": "GRCh38#0",
+          "HG01109.1": "HG01109#1",
+          "HG01123.1": "HG01123#1",
+          "HG01960.1": "HG01960#1",
+          "HG02055.1": "HG02055#1",
+          "HG00097.1": "HG00097#1",
+          "HG00099.1": "HG00099#1",
+          "HG00128.1": "HG00128#1",
+          "HG00133.1": "HG00133#1"
+        }
+      },
+      "displays": [
+        {
+          "type": "MultiWaySyntenyDisplay",
+          "displayId": "hprc_v2_1_pif_lanes-MultiWaySyntenyDisplay",
+          "height": 310
+        }
+      ]
+    },
+    {
       "type": "GraphTrack",
       "trackId": "hprc_v2_1_gbz_lanes",
       "name": "HPRC release 2.1 haplotypes vs GRCh38, read from the graph (gbz-base)",
