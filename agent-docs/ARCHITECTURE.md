@@ -261,7 +261,7 @@ is declared in `STATES_NO_RULES`.
   measurement. `mouseleave` cannot fire on an element unmounted under the
   cursor, so the tracker goes on publishing the position the pointer had when
   the banner went up, and the body reads it on its first render after Force load
-  or Retry — a crosshair where the cursor is not. `DisplayChromeBaseInner` runs
+  or Retry — a crosshair where the cursor is not. `DisplayChromeBase` runs
   `handleMouseLeave()` on the transition. See [terminal
   states](reference/DISPLAYCHROME.md#terminal-states-early-return-their-own-root).
 - Don't derive the export's terminal set separately from the loading overlay's.

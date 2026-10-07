@@ -87,10 +87,7 @@ export interface CanvasHandle {
 // `displayPhase`'s activity term is evaluated lazily (a thunk in
 // `computeDisplayPhase`) so that when a terminal flag is set this observer tracks
 // ONLY that flag — not the containing view's `visibleRegions` / `loadedRegions` —
-// avoiding needless re-renders while a banner is up. (This component carries
-// `'use no memo'`, so the react-compiler staleness that once made the terminal
-// branches sensitive to early-`return`-vs-ternary no longer applies; see the
-// directive below and `agent-docs/reference/COMPILER_TERNARY_FINDING.md`.)
+// avoiding needless re-renders while a banner is up.
 //
 // The body is a function so callers mount the canvas wherever it belongs. It
 // returns a named observer component (every display does) so observable reads
@@ -124,12 +121,6 @@ export interface CanvasHandle {
 // give the inner <canvas> a *static* selector (`hic_canvas`) for that lookup —
 // the readiness gate stays here on the chrome div, never duplicated as a
 // `canvasDrawn`/`rpcData` ternary on the canvas.
-// Must stay the `function Decl(){}; observer(Decl)` form (not inline
-// `observer(function(){})`) because the generic `<B>` only infers through
-// `observer` from a named declaration. That form IS compiled by
-// babel-plugin-react-compiler, so it carries `'use no memo'` below to opt out —
-// otherwise the compiler can memoize a MobX read on stable identity and drop an
-// update (see agent-docs/reference/COMPILER_TERNARY_FINDING.md).
 // Exported so `DisplayChrome` can bind `overlays` off it rather than restate it.
 // It restated the list by hand until 2026-08, and that is exactly how the handle
 // grew a `containerRef` no display ever read: declared here, copied there, and
@@ -149,7 +140,9 @@ export type DisplayChromeBaseProps<B> = {
   onPointerPosition?: (state?: MouseState) => void
 } & Omit<ComponentPropsWithRef<'div'>, 'children'>
 
-function DisplayChromeBaseInner<B extends RenderingBackend>({
+const DisplayChromeBase = observer(function DisplayChromeBase<
+  B extends RenderingBackend,
+>({
   model,
   factory,
   children,
@@ -159,11 +152,6 @@ function DisplayChromeBaseInner<B extends RenderingBackend>({
   onMouseLeave,
   ...chromeProps
 }: DisplayChromeBaseProps<B>) {
-  // eslint-plugin-react-compiler (react-compiler@19.1.0-rc.2) thinks this
-  // directive is unused, but the babel plugin (@1.0.0, the real build) DOES
-  // compile this fn — version skew. The directive is load-bearing; keep it.
-  // eslint-disable-next-line react-compiler/react-compiler
-  'use no memo'
   const { canvas, canvasRef, retry, canvasKey } = useRenderingBackend(
     factory,
     model,
@@ -294,13 +282,6 @@ function DisplayChromeBaseInner<B extends RenderingBackend>({
       {isAxisHost(model) ? <ChromeYAxis model={model} /> : null}
     </DisplayStatusChromeBase>
   )
-}
-
-// Deliberate, and the only one in the tree: the generic `<B>` infers through
-// `observer` only from a named declaration. See the comment on
-// DisplayChromeBaseInner and its `'use no memo'`, which is what keeps the
-// compiled form safe.
-// eslint-disable-next-line no-restricted-syntax
-const DisplayChromeBase = observer(DisplayChromeBaseInner)
+})
 
 export default DisplayChromeBase

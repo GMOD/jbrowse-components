@@ -1,4 +1,5 @@
 import { TrackOverlayPortal } from '@jbrowse/display-ui'
+import { observer } from 'mobx-react'
 
 import type { ReactNode } from 'react'
 
@@ -13,7 +14,7 @@ import type { ReactNode } from 'react'
  * That layer takes no pointer events, so the wrapper takes them back for the
  * banner's buttons.
  */
-export default function ReplacedDisplay({
+const ReplacedDisplay = observer(function ReplacedDisplay({
   model,
   phase,
   children,
@@ -33,4 +34,6 @@ export default function ReplacedDisplay({
       </TrackOverlayPortal>
     </div>
   )
-}
+})
+
+export default ReplacedDisplay

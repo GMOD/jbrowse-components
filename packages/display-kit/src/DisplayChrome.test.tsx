@@ -27,8 +27,8 @@ import type { Instance } from '@jbrowse/mobx-state-tree'
 // bug was a returned-but-never-committed subtree.
 //
 // That bug was `babel-plugin-react-compiler` memoizing a MobX read on stable
-// identity; `DisplayChromeBaseInner` now carries `'use no memo'`, so it is no
-// longer compiled and the ternary-vs-early-`return` sensitivity is gone (see
+// identity; `DisplayChromeBase` is an inline observer, which the compiler leaves
+// alone, so the ternary-vs-early-`return` sensitivity is gone (see
 // `agent-docs/reference/COMPILER_TERNARY_FINDING.md`). These tests still guard the runtime
 // commit behavior, plus rule 1b: the `displayPhase` loading term must stay a lazy
 // thunk so the observer doesn't track the churning `visibleRegions`/`loadedRegions`

@@ -169,6 +169,6 @@ look.
 The caller's `className`/`ref`/mouse handlers are absent in those states. The
 unmount fires `canvasRef(null)`, `backend.dispose()` and
 `stopRenderingBackend()`; force-load re-inits through the callback ref.
-`DisplayChromeBaseInner` carries `'use no memo'`, so the compiler cannot memoize
-a MobX read on `model`'s stable identity
+Every chrome component is an inline `observer`, which the compiler leaves alone,
+so none can memoize a MobX read on `model`'s stable identity
 ([COMPILER_TERNARY_FINDING.md](COMPILER_TERNARY_FINDING.md)).

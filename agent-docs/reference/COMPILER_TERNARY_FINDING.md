@@ -38,8 +38,10 @@ compiler's contract (don't mutate props/state), which MobX violates by design, s
   guards it, since catching it needs a real pan and zoom.
 - Setters and actions in hooks are safe: they memoize callback identity, not a value.
 
-`DisplayChromeBaseInner` carries `'use no memo'` and is the only compiled `observer`;
-`DisplayChrome.test.tsx` guards it. `DisplayContextMenu` passes
+No `observer` in the tree is compiled. A generic component is no exception:
+mobx-react's `observer` returns its argument's own type, so
+`observer(function Name<B>() {})` keeps `<B>` (`DisplayChromeBase`).
+`DisplayContextMenu` passes
 `menuItems={() => model.contextMenuItems()}` as a thunk so no render-time method read
 remains.
 

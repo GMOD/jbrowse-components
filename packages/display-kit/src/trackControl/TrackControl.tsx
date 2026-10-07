@@ -1,4 +1,5 @@
 import { useTrackControlOverride } from '@jbrowse/display-ui'
+import { observer } from 'mobx-react'
 
 import MuiTrackControl from './MuiTrackControl.tsx'
 
@@ -16,13 +17,10 @@ import type { TrackControlProps } from '@jbrowse/display-ui'
  * `TrackControl`, so Material UI stays in that display's chunk — it just stops
  * rendering. A display that wants it out of the module graph entirely renders a
  * `TrackControlComponent` of its own directly.
- *
- * Not an `observer` — it reads no observables, it only picks an implementation
- * and forwards. Callers that read model state build their props in their own
- * observer, the way `DisplayChrome` leaves observation to the components around
- * it.
  */
-export default function TrackControl(props: TrackControlProps) {
+const TrackControl = observer(function TrackControl(props: TrackControlProps) {
   const Control = useTrackControlOverride() ?? MuiTrackControl
   return <Control {...props} />
-}
+})
+
+export default TrackControl

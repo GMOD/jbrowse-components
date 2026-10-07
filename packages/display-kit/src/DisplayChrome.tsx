@@ -1,4 +1,5 @@
 import { useChromeOverlayOverride } from '@jbrowse/display-ui'
+import { observer } from 'mobx-react'
 
 import DisplayBackgroundProgress from './DisplayBackgroundProgress.tsx'
 import DisplayChromeBase from './DisplayChromeBase.tsx'
@@ -48,20 +49,14 @@ function useChromeOverlays() {
  * All the behavior lives in `DisplayChromeBase` — see that file for the
  * `displayPhase` contract, the subtree-replacing terminal states, and the
  * canvas dispose/re-init lifecycle.
- *
- * Not an `observer`: it reads no observables, it only picks an overlay set and
- * forwards. The generic `<B>` threads through to `DisplayChromeBase`, which is
- * the observer.
  */
-export default function DisplayChrome<B extends RenderingBackend>(
-  // The base's own props minus the one thing this file supplies. Restating the
-  // list here is how the render-prop handle grew a `containerRef` no display
-  // ever read: declared on `CanvasHandle`, copied into a second inline shape
-  // here, and then removable only in two places at once.
-  props: Omit<DisplayChromeBaseProps<B>, 'overlays'>,
-) {
+const DisplayChrome = observer(function DisplayChrome<
+  B extends RenderingBackend,
+>(props: Omit<DisplayChromeBaseProps<B>, 'overlays'>) {
   return <DisplayChromeBase {...props} overlays={useChromeOverlays()} />
-}
+})
+
+export default DisplayChrome
 
 /**
  * The same chrome for a display with **no rendering backend** — arc's own
@@ -73,12 +68,10 @@ export default function DisplayChrome<B extends RenderingBackend>(
  *
  * A backend-less display should render this rather than assembling banners
  * itself: doing it by hand is what let arc drift into showing no
- * background-progress chip. Not an `observer` — like `DisplayChrome` it only
- * picks an overlay set and forwards; the caller reading `model.displayPhase`
- * is the observer.
+ * background-progress chip.
  */
-export function DisplayStatusChrome(
+export const DisplayStatusChrome = observer(function DisplayStatusChrome(
   props: Omit<DisplayStatusChromeBaseProps, 'overlays'>,
 ) {
   return <DisplayStatusChromeBase {...props} overlays={useChromeOverlays()} />
-}
+})
