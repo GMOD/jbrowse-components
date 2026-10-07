@@ -1,17 +1,26 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
-import { rowsConfigSchema } from '@jbrowse/display-kit/rowsConfigSchema'
 import { trackHeightConfigSchemaFields } from '@jbrowse/display-kit/trackHeightConfigSchemaFields'
 import { types } from '@jbrowse/mobx-state-tree'
 
-import linearWiggleDisplayConfigSchema from '../LinearWiggleDisplay/configSchema.ts'
+import linearWiggleDisplayConfigSchema, {
+  quantitativeRowsConfigSchema,
+} from '../LinearWiggleDisplay/configSchema.ts'
 import { summaryScoreModeConfigSchemaFields } from '../shared/summaryScoreModeConfigSchemaFields.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 
 const rowPerSource = ConfigurationSchema(
   'Rows',
-  { field: { type: 'featureField', defaultValue: 'source' } },
-  { baseConfiguration: rowsConfigSchema },
+  {
+    field: {
+      type: 'stringEnum',
+      model: types.enumeration('QuantitativeRowsField', ['', 'source']),
+      defaultValue: 'source',
+      description:
+        'source for one row per subtrack, or empty for one plot every source shares',
+    },
+  },
+  { baseConfiguration: quantitativeRowsConfigSchema },
 )
 
 export const multiQuantitativeWiggleConfigSchema = ConfigurationSchema(

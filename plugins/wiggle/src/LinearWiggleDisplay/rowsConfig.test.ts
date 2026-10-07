@@ -1,6 +1,5 @@
 import { readConfObject } from '@jbrowse/core/configuration'
 
-import { checkRowsField } from '../shared/checkRowsField.ts'
 import configSchema from './configSchema.ts'
 
 const base = { type: 'LinearWiggleDisplay', displayId: 'test' }
@@ -19,19 +18,8 @@ test('no rows is the default, and every source shares one plot', () => {
   expect(readConfObject(configSchema.create(base), ['rows', 'field'])).toBe('')
 })
 
-test('rows on any other field are refused where the config is read', () => {
-  expect(() => configSchema.create({ ...base, rows: 'group' })).toThrow(
-    /puts "source" alone on rows/,
-  )
-})
-
-// A track's `displays` union runs every candidate schema's preprocessor over
-// every entry while it works out which display a snapshot is, so a refusal that
-// did not ask whose snapshot it had would reject the mark display's
-// `rows: 'HP'` from the schema it was never meant for.
-test("leaves another display type's rows alone", () => {
-  const foreign = { type: 'LinearMarkDisplay', rows: 'HP' }
-  expect(checkRowsField('LinearWiggleDisplay')(foreign)).toBe(foreign)
+test('rows on any other field are refused by the slot itself', () => {
+  expect(() => configSchema.create({ ...base, rows: 'group' })).toThrow(/group/)
 })
 
 test('the arrangement rides on rows, and there is no `domain` slot', () => {
