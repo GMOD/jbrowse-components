@@ -124,11 +124,11 @@ export default function configSchemaFactory(_pluginManager: PluginManager) {
       /**
        * #slot
        */
-      hideNonCanonicalJunctions: {
+      showNonCanonicalJunctions: {
         type: 'boolean',
         description:
-          'Hide sashimi arcs whose splice-site motif is none of GT-AG, GC-AG or AT-AC. Read off the reference under each junction, so it needs a sequence adapter; a junction whose motif could not be read stays',
-        defaultValue: false,
+          'Draw sashimi arcs whose splice-site motif is none of GT-AG, GC-AG or AT-AC. Off, the motif is read off the reference under each junction, so it needs a sequence adapter, and a junction whose motif could not be read stays',
+        defaultValue: true,
       },
       /**
        * #slot
@@ -245,11 +245,11 @@ export default function configSchemaFactory(_pluginManager: PluginManager) {
       /**
        * #slot
        */
-      showLowFreqMismatches: {
+      fadeLowFreqMismatches: {
         type: 'boolean',
-        defaultValue: false,
+        defaultValue: true,
         description:
-          'Draw sub-pixel mismatches, insertions and clip bars in the pileup at full opacity instead of fading the ones below the depth-dependent frequency threshold. Read through the `filterMismatchesByFrequency` getter, which is this in the polarity the renderers and hit-test take. Does not affect the coverage band (see runCoveragePipeline)',
+          'Fade the sub-pixel mismatches, insertions and clip bars in the pileup that fall below the depth-dependent frequency threshold; off draws them all at full opacity. Does not affect the coverage band (see runCoveragePipeline)',
         advanced: true,
       },
       /**
@@ -344,7 +344,7 @@ export default function configSchemaFactory(_pluginManager: PluginManager) {
         type: 'number',
         defaultValue: 0,
         description:
-          "Hide a coverage-band allele segment whose share of that position's depth is below this fraction, so the band stops painting a sliver for every sequencing error at high depth. 0 (the default) colors every mismatch. Distinct from `showLowFreqMismatches`, which turns OFF the pileup's fade of sub-pixel marks against a depth-dependent threshold; this is a flat allele-fraction floor on the band, and the grey depth bar still shows through where a segment is hidden",
+          "Hide a coverage-band allele segment whose share of that position's depth is below this fraction, so the band stops painting a sliver for every sequencing error at high depth. 0 (the default) colors every mismatch. Distinct from `fadeLowFreqMismatches`, the pileup's fade of sub-pixel marks against a depth-dependent threshold; this is a flat allele-fraction floor on the band, and the grey depth bar still shows through where a segment is hidden",
         advanced: true,
       },
       /**
@@ -383,7 +383,7 @@ export default function configSchemaFactory(_pluginManager: PluginManager) {
       /**
        * #slot
        */
-      drawInter: {
+      showInterchrom: {
         type: 'boolean',
         defaultValue: true,
         description: 'Draw inter-chromosomal read-connection arcs',
@@ -391,7 +391,7 @@ export default function configSchemaFactory(_pluginManager: PluginManager) {
       /**
        * #slot
        */
-      drawProperPairArcs: {
+      showProperPairArcs: {
         type: 'boolean',
         // "Concordant" here is `isConcordantPairRead`, the same rule the
         // `drawProperPairs` READ filter uses — that setting hides the reads,
@@ -404,7 +404,7 @@ export default function configSchemaFactory(_pluginManager: PluginManager) {
       /**
        * #slot
        */
-      drawModalPairsInCloud: {
+      showModalPairsInCloud: {
         type: 'boolean',
         defaultValue: false,
         description:
@@ -425,7 +425,7 @@ export default function configSchemaFactory(_pluginManager: PluginManager) {
       /**
        * #slot
        */
-      drawLongRange: {
+      showLongRange: {
         type: 'boolean',
         defaultValue: true,
         description: 'Draw long-range read-connection arcs',
@@ -529,11 +529,14 @@ export default function configSchemaFactory(_pluginManager: PluginManager) {
       explicitlyTyped: true,
       // v4's `colorBy` named a scheme and held the modification settings,
       // which are the `color` or `baseColor` object's field and the
-      // `modifications` slot now. The v5 betas spelled `unit` as
+      // `modifications` slot now, and its LinearReadArcsDisplay gated the two
+      // arc classes under the draw verb. The v5 betas spelled `unit` as
       // `linkedReads: 'off' | 'normal'`.
       // #region retired
       retired: {
         colorBy: colorSlotsOf,
+        drawInter: (v: unknown) => ({ showInterchrom: v }),
+        drawLongRange: (v: unknown) => ({ showLongRange: v }),
         linkedReads: (v: unknown) => ({
           unit: v === 'normal' ? 'chain' : 'read',
         }),

@@ -62,8 +62,8 @@ function loneMateAt(mateBp: number, tlen: number, readBp = 1000) {
 const CLOUD = {
   colorField: 'insertSizeAndOrientation' as const,
   cloud: true,
-  drawInter: false,
-  drawLongRange: true,
+  showInterchrom: false,
+  showLongRange: true,
 }
 
 function region(start: number, end: number, displayedRegionIndex = 0) {

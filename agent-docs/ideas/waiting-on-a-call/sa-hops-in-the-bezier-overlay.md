@@ -121,8 +121,8 @@ matters.
   lying on the row vanishes into it. `computePileupBezierArcs` bows a
   hidden-segment line whose ends share a row for that reason, and a one-ended
   hop's mark needs the same.
-- **Gate on the settings that exist**: `drawLongRange` ("Draw long-range
-  read-connection arcs") and `drawInter` ("Draw inter-chromosomal
+- **Gate on the settings that exist**: `showLongRange` ("Draw long-range
+  read-connection arcs") and `showInterchrom` ("Draw inter-chromosomal
   read-connection arcs"), combined by `emitsOffScreenPartner` — which exists
   because layering them as an AND once made unticking off-screen mates silently
   untick inter-chromosomal pairs.

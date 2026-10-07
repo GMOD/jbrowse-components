@@ -874,7 +874,7 @@ export const svSpecs: ScreenshotSpec[] = [
               facet: 'pairOrientation',
               readConnections: 'arc',
               readConnectionsDown: true,
-              drawProperPairArcs: false,
+              showProperPairArcs: false,
               // No `arcColor` or `color`, so the arcs paint
               // insertSizeAndOrientation, and the legend is what says what the
               // four bands' arc colors mean.
@@ -942,14 +942,14 @@ export const svSpecs: ScreenshotSpec[] = [
               readConnections: 'arc',
               // Each inversion-spanning read's two split junctions land on the
               // two breakpoints (~1.2 kb apart, on-screen) and color magenta.
-              // drawInter/drawLongRange OFF drop these reads' genuine
+              // showInterchrom/showLongRange OFF drop these reads' genuine
               // cross-chromosome (chr4/chrX/...) and far-flank supplementary
               // connectors, leaving just the clean local inversion arc. The band
               // only has to hold one dome ~1.2 kb wide, so it is kept shallow —
               // at 130 the arc was the tallest thing in the figure and the reads
               // it describes were pushed down to make room for it.
-              drawInter: false,
-              drawLongRange: false,
+              showInterchrom: false,
+              showLongRange: false,
               readConnectionsHeight: 60,
               // the "Not split" section runs out of rows well before the box
               // does, so the last ~180px of an 800px track was empty

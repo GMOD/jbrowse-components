@@ -23,8 +23,8 @@ interface SashimiModel {
   setSashimiArcsMode: (mode: SashimiArcsMode) => void
   minSashimiScore: number
   setMinSashimiScore: (score: number) => void
-  hideNonCanonicalJunctions: boolean
-  setHideNonCanonicalJunctions: (hide: boolean) => void
+  showNonCanonicalJunctions: boolean
+  setShowNonCanonicalJunctions: (hide: boolean) => void
 }
 
 // All sashimi (splice-junction arc) controls in one place. The labels,
@@ -76,9 +76,9 @@ export function getSashimiMenuItem(model: SashimiModel) {
           }),
           toggleItem(
             'Hide non-canonical junctions',
-            model.hideNonCanonicalJunctions,
+            !model.showNonCanonicalJunctions,
             hide => {
-              model.setHideNonCanonicalJunctions(hide)
+              model.setShowNonCanonicalJunctions(!hide)
             },
           ),
           {

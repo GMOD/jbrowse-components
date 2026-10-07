@@ -119,7 +119,7 @@ export function computePairingInfo(
 // siblings — "Show off-screen mate connections" is about a partner this view has
 // not loaded, "Show inter-chromosomal pairs" about one on another chromosome —
 // so either alone has to be able to produce a connection. They were layered
-// instead: `drawLongRange` gated EMISSION here and `drawInter` filtered the
+// instead: `showLongRange` gated EMISSION here and `showInterchrom` filtered the
 // result in `resolveArcs`, which is an AND wearing the costume of an OR.
 //
 // The case it broke is the ordinary one. A view showing a single chromosome
@@ -128,14 +128,14 @@ export function computePairingInfo(
 // while their own checkbox stayed on. Both slots default true, which is why it
 // survived — it takes turning one off to see the other stop working.
 //
-// `drawInter` still filters in `resolveArcs`, so the OR here cannot smuggle an
+// `showInterchrom` still filters in `resolveArcs`, so the OR here cannot smuggle an
 // interchromosomal connection past a user who turned it off; this only stops the
 // other gate from suppressing one first.
 export function emitsOffScreenPartner(
   ctx: ArcChainContext,
   interchromosomal: boolean,
 ) {
-  return ctx.drawLongRange || (ctx.drawInter && interchromosomal)
+  return ctx.showLongRange || (ctx.showInterchrom && interchromosomal)
 }
 
 function entrySeg(entry: ReadEntry): SegAln {
@@ -210,7 +210,7 @@ function saSegments(
 // `entries` arrives already deduped by readId and stripped of
 // secondary alignments — resolveReadGroup's partition owns both rules.
 // Takes the normalizer alone, not an `ArcChainContext`: the SA walk is how a
-// read's segments are DISCOVERED, so it always runs, and `drawLongRange` only
+// read's segments are DISCOVERED, so it always runs, and `showLongRange` only
 // decides which of the resulting junctions are drawn (`unpairedChainArcs`).
 export function unpairedReadChain(
   entries: ReadEntry[],
@@ -458,7 +458,7 @@ interface LanePendingArc {
 // mate partition, and the mate-link guard) with two arc-path substitutions:
 //
 //   - the SA-augmented per-mate chainer, which steps through an off-screen SA
-//     segment (gated by drawLongRange) so a 3rd, off-screen split segment still
+//     segment (gated by showLongRange) so a 3rd, off-screen split segment still
 //     gets its junctions instead of being skipped over. The bezier path chains
 //     only on-screen entries, so the SA walk lives here rather than leaking
 //     pseudo-entries into the shared skeleton;

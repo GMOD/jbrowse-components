@@ -20,21 +20,21 @@ function makeModel() {
     setReadConnectionsDown(v: boolean) {
       this.readConnectionsDown = v
     },
-    drawLongRange: true,
-    setDrawLongRange(v: boolean) {
-      this.drawLongRange = v
+    showLongRange: true,
+    setShowLongRange(v: boolean) {
+      this.showLongRange = v
     },
-    drawInter: true,
-    setDrawInter(v: boolean) {
-      this.drawInter = v
+    showInterchrom: true,
+    setShowInterchrom(v: boolean) {
+      this.showInterchrom = v
     },
     showBezierConnections: false,
     setShowBezierConnections(v: boolean) {
       this.showBezierConnections = v
     },
-    drawProperPairArcs: true,
-    setDrawProperPairArcs(v: boolean) {
-      this.drawProperPairArcs = v
+    showProperPairArcs: true,
+    setShowProperPairArcs(v: boolean) {
+      this.showProperPairArcs = v
     },
     minInterchromSupport: DEFAULT_MIN_INTERCHROM_SUPPORT,
     setMinInterchromSupport(v: number) {

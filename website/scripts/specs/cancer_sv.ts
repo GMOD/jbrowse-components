@@ -1570,7 +1570,7 @@ export const cancerSvSpecs: ScreenshotSpec[] = [
           readConnections: 'arc',
           // arcs whose other end is outside both windows were a fan of thin
           // lines leaving the frame
-          drawLongRange: false,
+          showLongRange: false,
           readConnectionsHeight: 90,
           ...SPLIT_READS,
         },

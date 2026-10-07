@@ -11,7 +11,7 @@ export interface SvChannelsSettings {
   showPileup: boolean
   facet: Facet | undefined
   readConnections: ReadConnectionsMode
-  drawProperPairArcs: boolean
+  showProperPairArcs: boolean
 }
 
 /**
@@ -49,7 +49,7 @@ export const SV_CHANNELS_ON: SvChannelsWrite = {
   showPileup: false,
   facet: { field: 'pairOrientation' },
   readConnections: 'arc',
-  drawProperPairArcs: false,
+  showProperPairArcs: false,
 }
 
 // Leaving the arrangement UNSETS what it can unset rather than asserting a
@@ -62,7 +62,7 @@ export const SV_CHANNELS_OFF: SvChannelsWrite = {
   showPileup: true,
   facet: undefined,
   readConnections: undefined,
-  drawProperPairArcs: true,
+  showProperPairArcs: true,
 }
 
 export function isSvChannelsActive(current: SvChannelsSettings) {
@@ -70,6 +70,6 @@ export function isSvChannelsActive(current: SvChannelsSettings) {
     current.showPileup === SV_CHANNELS_ON.showPileup &&
     current.facet?.field === SV_CHANNELS_ON.facet?.field &&
     current.readConnections === SV_CHANNELS_ON.readConnections &&
-    current.drawProperPairArcs === SV_CHANNELS_ON.drawProperPairArcs
+    current.showProperPairArcs === SV_CHANNELS_ON.showProperPairArcs
   )
 }

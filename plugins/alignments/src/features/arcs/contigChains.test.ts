@@ -70,7 +70,7 @@ function splitArcs(
       lanes.map(lane => ['', lane] as const),
       regions,
     ),
-    { drawLongRange: true, drawInter: true, canonicalRefName: r => r },
+    { showLongRange: true, showInterchrom: true, canonicalRefName: r => r },
   ).filter(arc => arc.isSplit)
 }
 

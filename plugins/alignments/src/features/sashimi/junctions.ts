@@ -99,7 +99,7 @@ function junctionStrand(fwd: number, rev: number, motif: number) {
 // non-canonical motif is evidence against it.
 export interface JunctionFilter {
   minSashimiScore: number
-  hideNonCanonicalJunctions: boolean
+  showNonCanonicalJunctions: boolean
 }
 
 // The sashimi slice of a worker result. Narrowed to what the merge reads so the
@@ -211,7 +211,7 @@ export function mergeJunctions(
   regions: Iterable<RegionJunctions>,
   filter: JunctionFilter,
 ) {
-  const { minSashimiScore, hideNonCanonicalJunctions } = filter
+  const { minSashimiScore, showNonCanonicalJunctions } = filter
   const out = new Map<string, MergedJunction>()
   for (const {
     key,
@@ -227,7 +227,7 @@ export function mergeJunctions(
     const motif = classifyEncodedSpliceMotif(donor, acceptor)
     if (
       count >= minSashimiScore &&
-      !(hideNonCanonicalJunctions && isNonCanonicalSpliceMotif(motif))
+      (showNonCanonicalJunctions || !isNonCanonicalSpliceMotif(motif))
     ) {
       out.set(key, {
         key,

@@ -148,7 +148,7 @@ export function groupArcsByRef(arcs: ComputedArc[], lines: ComputedLine[]) {
 //
 //
 // An arc reaching NO region is one whose every endpoint is off-screen — the
-// junction between two off-screen SA segments of one read, which `drawLongRange`
+// junction between two off-screen SA segments of one read, which `showLongRange`
 // admits and which used to be uploaded everywhere and clipped away everywhere.
 // It now reaches nothing, which also takes it out of `maxFlatArcSpanBp`: an arc
 // that cannot be drawn no longer sizes the read cloud's shared Y axis.

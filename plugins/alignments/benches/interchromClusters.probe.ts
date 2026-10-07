@@ -245,7 +245,7 @@ async function main() {
   // The seam count: pairs with both primary mates in the window whose outer
   // edges — the arc's two feet — fall either side of the midpoint. Each is one
   // mate-link arc; proper pairs are the bulk and are what
-  // `drawProperPairArcs: false` drops.
+  // `showProperPairArcs: false` drops.
   const mid = Math.floor((START + END) / 2)
   const byName = new Map<string, BamRecord[]>()
   for (const r of kept) {

@@ -1016,7 +1016,7 @@ export const uiSpecs: ScreenshotSpec[] = [
               // reviewer twice reported the arcs were not over the deletion.
               // They were right, and no setting fixes it. Counting every
               // in-window pair (both ends in frame, mate on chr1, >=1 kb apart
-              // -- exactly what `drawInter: false` + `drawLongRange: false`
+              // -- exactly what `showInterchrom: false` + `showLongRange: false`
               // leave drawable):
               //
               //   sample           spans RHD   RHD<->RHCE   other
@@ -1049,7 +1049,7 @@ export const uiSpecs: ScreenshotSpec[] = [
               // insert size and orientation mean nothing across refNames
               // (compute.ts, `if (p1Ref !== p2Ref)`) -- so 270 kb of segmental
               // duplication at 30x filled the band with a picket fence of them,
-              // and `drawInter: false` is what removes it. And `drawLongRange`
+              // and `showInterchrom: false` is what removes it. And `showLongRange`
               // draws an arc to a mate's RECORDED position outside the window
               // (`offScreenMateArcs`), which put the widest curves off-frame.
               // Turning both off is what left the two arcs counted above, i.e.

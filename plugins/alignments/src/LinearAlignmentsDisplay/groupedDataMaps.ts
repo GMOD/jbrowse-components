@@ -72,7 +72,7 @@ export function buildSashimiDownKeys(
 ) {
   const {
     minSashimiScore,
-    hideNonCanonicalJunctions,
+    showNonCanonicalJunctions,
     mode,
     refNameFor,
     hidden,
@@ -88,7 +88,7 @@ export function buildSashimiDownKeys(
     // collapsed-intron regions of one group still reserves the strip.
     const merged = mergeJunctions(regions, {
       minSashimiScore,
-      hideNonCanonicalJunctions,
+      showNonCanonicalJunctions,
     })
     out.set(key, downJunctionKeys(merged.values(), mode))
   }

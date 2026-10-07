@@ -102,7 +102,7 @@ function collapsedOpts(
     coverageHeight: 100,
     sashimiArcsHeight: 40,
     minSashimiScore: 0,
-    hideNonCanonicalJunctions: false,
+    showNonCanonicalJunctions: true,
     downJunctionKeys: new Set<string>(),
     ...overrides,
   }
@@ -115,7 +115,7 @@ function autoDownKeys(perRegion: PileupDataResult[]) {
   return downJunctionKeys(
     mergeJunctions(
       perRegion.map(data => ({ refName: 'chr1', data })),
-      { minSashimiScore: 0, hideNonCanonicalJunctions: false },
+      { minSashimiScore: 0, showNonCanonicalJunctions: true },
     ).values(),
     'auto',
   )

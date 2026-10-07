@@ -143,7 +143,7 @@ const projectOpts = {
   downJunctionKeys: NO_DOWN_KEYS,
 }
 
-const mergeOpts = { minSashimiScore: 2, hideNonCanonicalJunctions: false }
+const mergeOpts = { minSashimiScore: 2, showNonCanonicalJunctions: true }
 
 // ARM 1: whole — what shipped. Merges the visible regions, then projects.
 function frameWhole(

@@ -590,8 +590,8 @@ describe('FetchVisibleRegions autorun', () => {
     })
 
     const callsBefore = mockRpcCall.mock.calls.length
-    display.setDrawInter(false)
-    display.setDrawLongRange(false)
+    display.setShowInterchrom(false)
+    display.setShowLongRange(false)
     jest.advanceTimersByTime(800)
     await jest.runAllTimersAsync()
 

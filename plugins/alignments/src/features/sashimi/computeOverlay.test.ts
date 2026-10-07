@@ -55,7 +55,7 @@ const baseOpts = (
   coverageHeight: 100,
   sashimiArcsHeight: 40,
   minSashimiScore,
-  hideNonCanonicalJunctions: false,
+  showNonCanonicalJunctions: true,
   downJunctionKeys: down(),
 })
 

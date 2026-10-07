@@ -18,9 +18,9 @@ interface JunctionDetail {
 }
 type Spec = [number, number, number] | [number, number, number, JunctionDetail]
 
-const keep = (minSashimiScore = 0, hideNonCanonicalJunctions = false) => ({
+const keep = (minSashimiScore = 0, showNonCanonicalJunctions = true) => ({
   minSashimiScore,
-  hideNonCanonicalJunctions,
+  showNonCanonicalJunctions,
 })
 
 function dinucleotide(bases: string | undefined) {
@@ -111,12 +111,12 @@ describe('mergeJunctions', () => {
         [300, 700, 9],
       ]),
     ]
-    expect([...mergeJunctions(regions, keep(0, false)).keys()]).toEqual([
+    expect([...mergeJunctions(regions, keep(0, true)).keys()]).toEqual([
       'chr1:100:500',
       'chr1:200:900',
       'chr1:300:700',
     ])
-    expect([...mergeJunctions(regions, keep(0, true)).keys()]).toEqual([
+    expect([...mergeJunctions(regions, keep(0, false)).keys()]).toEqual([
       'chr1:200:900',
       'chr1:300:700',
     ])
@@ -136,9 +136,9 @@ describe('mergeJunctions', () => {
       [classified, unread],
       [unread, classified],
     ]) {
-      expect([...mergeJunctions(regions, keep(0, true)).keys()]).toEqual([])
+      expect([...mergeJunctions(regions, keep(0, false)).keys()]).toEqual([])
       // And with the filter off it is one junction carrying both answers.
-      expect([...mergeJunctions(regions, keep(0, false)).values()]).toEqual([
+      expect([...mergeJunctions(regions, keep(0, true)).values()]).toEqual([
         {
           key: 'chr1:100:1100',
           refName: 'chr1',

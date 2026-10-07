@@ -171,11 +171,11 @@ interface ArcInputs {
 
 // The two user gates plus the refName normalizer, in the one shape pending-arc
 // emission takes them. Both entry points build it, so neither can hand the
-// chainer a different `drawLongRange` from the other.
+// chainer a different `showLongRange` from the other.
 function arcChainContext(settings: ArcSettings): ArcChainContext {
   return {
-    drawLongRange: settings.drawLongRange,
-    drawInter: settings.drawInter,
+    showLongRange: settings.showLongRange,
+    showInterchrom: settings.showInterchrom,
     canonicalRefName: settings.canonicalRefName ?? (refName => refName),
   }
 }
@@ -249,9 +249,9 @@ function resolveArcs(
   const {
     colorField,
     cloud = false,
-    drawInter,
-    drawProperPairArcs = true,
-    drawModalPairsInCloud = false,
+    showInterchrom,
+    showProperPairArcs = true,
+    showModalPairsInCloud = false,
     minInterchromSupport = 1,
   } = settings
   const arcs: ComputedArc[] = []
@@ -488,7 +488,7 @@ function resolveArcs(
     // a curve — a same-chromosome cross-region arc crosses the same panel
     // divider — so the colour is now the ONLY channel carrying it.
     if (p1Ref !== p2Ref) {
-      // ONE gate over both marks, which is the point of hoisting it: `drawInter`
+      // ONE gate over both marks, which is the point of hoisting it: `showInterchrom`
       // used to sit inside the tick push, so an arc branch added beside it would
       // have inherited neither it nor the floor — "Show inter-chromosomal pairs:
       // off" still drawing arcs, and the floor bypassed for connections that now
@@ -499,7 +499,7 @@ function resolveArcs(
       // keeps every mark at the coordinate its own read put it at. Merging a
       // cluster would have to invent a position for it, which is the thing
       // `arcKey`'s exact-coordinate rule exists to refuse.
-      if (!drawInter) {
+      if (!showInterchrom) {
         continue
       }
       // The reads behind this connection, and the number both its marks are
@@ -588,7 +588,7 @@ function resolveArcs(
     // setting above still filters on top of it.
     if (
       cloud &&
-      !drawModalPairsInCloud &&
+      !showModalPairsInCloud &&
       !arc.isSplit &&
       isConcordantFRPair(arc.pairOrientationNum, arc.tlen, arc.stats)
     ) {
@@ -601,7 +601,7 @@ function resolveArcs(
     // pair renders as an arc. "Long range" is purely the *visual* result of
     // zoom — a far-apart arc collapses to near-vertical lines at its real
     // endpoints (the link mark), and zooming out to show the whole span restores
-    // the rounded arc. (drawLongRange only gates connections to mates that
+    // the rounded arc. (showLongRange only gates connections to mates that
     // aren't loaded in the current view; see `offScreenMateArcs`.)
     const colorType = getArcColorType({ arc, colorField, hasPaired })
     // The user's own suppression of the ordinary case, and the reason it is a
@@ -632,7 +632,7 @@ function resolveArcs(
     // A split junction has no pair to call proper and is never suppressed: it is
     // evidence whatever the reads around it are flagged.
     if (
-      !drawProperPairArcs &&
+      !showProperPairArcs &&
       !arc.isSplit &&
       arcPaintRank(colorType) === 0 &&
       isConcordantPairRead(arc.flags, arc.pairOrientationNum)
@@ -772,15 +772,15 @@ function resolveArcs(
  * The window is the library's fragment length (`stats.upper`), pooled across
  * lanes like the rest of `ArcScale`: too wide a window merges events on a 150
  * bp amplicon library, too narrow a one splits a 3 kb mate-pair library's
- * translocation into singletons. Skipped when `drawInter` is off, since every
+ * translocation into singletons. Skipped when `showInterchrom` is off, since every
  * reader sits in the branch that setting closes.
  */
 function interchromClusters(
   pendingArcs: PendingArc[],
   { stats }: ArcScale,
-  { drawInter }: ArcSettings,
+  { showInterchrom }: ArcSettings,
 ): InterchromClusters {
-  return drawInter
+  return showInterchrom
     ? clusteredInterchromSupport(
         pendingArcs,
         stats?.upper ?? DEFAULT_INTERCHROM_WINDOW_BP,

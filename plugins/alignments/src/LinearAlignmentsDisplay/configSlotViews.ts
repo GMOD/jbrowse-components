@@ -102,8 +102,8 @@ export function configSlotViews(self: ConfigSlotSelf) {
       return getConf(self, 'flipStrandLongReadChains')
     },
     /** #getter */
-    get drawInter(): boolean {
-      return getConf(self, 'drawInter')
+    get showInterchrom(): boolean {
+      return getConf(self, 'showInterchrom')
     },
     /**
      * #getter
@@ -111,15 +111,15 @@ export function configSlotViews(self: ConfigSlotSelf) {
      * concordant as `filterBy.properPairs`, which hides the reads themselves —
      * see `isConcordantPairRead`.
      */
-    get drawProperPairArcs(): boolean {
-      return getConf(self, 'drawProperPairArcs')
+    get showProperPairArcs(): boolean {
+      return getConf(self, 'showProperPairArcs')
     },
     /**
      * #getter
      * Whether the read cloud keeps the pairs of ordinary insert size.
      */
-    get drawModalPairsInCloud(): boolean {
-      return getConf(self, 'drawModalPairsInCloud')
+    get showModalPairsInCloud(): boolean {
+      return getConf(self, 'showModalPairsInCloud')
     },
     /**
      * #getter
@@ -132,8 +132,8 @@ export function configSlotViews(self: ConfigSlotSelf) {
       return getConf(self, 'minInterchromSupport')
     },
     /** #getter */
-    get drawLongRange(): boolean {
-      return getConf(self, 'drawLongRange')
+    get showLongRange(): boolean {
+      return getConf(self, 'showLongRange')
     },
     /** #getter */
     get readConnections(): ReadConnectionsMode {
@@ -311,14 +311,14 @@ export function configSlotViews(self: ConfigSlotSelf) {
      * Whether junctions with a non-canonical splice motif are dropped from
      * the sashimi arcs.
      */
-    get hideNonCanonicalJunctions(): boolean {
-      return getConf(self, 'hideNonCanonicalJunctions')
+    get showNonCanonicalJunctions(): boolean {
+      return getConf(self, 'showNonCanonicalJunctions')
     },
     /**
      * #getter
      */
-    get showLowFreqMismatches() {
-      return !!getConf(self, 'showLowFreqMismatches')
+    get fadeLowFreqMismatches(): boolean {
+      return getConf(self, 'fadeLowFreqMismatches')
     },
     /**
      * #getter

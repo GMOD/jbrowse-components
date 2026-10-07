@@ -1719,7 +1719,7 @@ export const alignmentsSpecs: ScreenshotSpec[] = [
       { suffix: 'all_junctions', display: {} },
       {
         suffix: 'canonical_only',
-        display: { hideNonCanonicalJunctions: true },
+        display: { showNonCanonicalJunctions: false },
       },
     ] as const
   ).map(({ suffix, display }) => ({

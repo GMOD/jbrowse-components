@@ -20,9 +20,9 @@ function makeModel() {
     },
     minSashimiScore: DEFAULT_MIN_SASHIMI_SCORE,
     setMinSashimiScore() {},
-    hideNonCanonicalJunctions: false,
-    setHideNonCanonicalJunctions(v: boolean) {
-      this.hideNonCanonicalJunctions = v
+    showNonCanonicalJunctions: true,
+    setShowNonCanonicalJunctions(v: boolean) {
+      this.showNonCanonicalJunctions = v
     },
   }
 }
@@ -115,7 +115,7 @@ describe('sashimi menu', () => {
       throw new Error('no non-canonical row')
     }
     row.onClick()
-    expect(model.hideNonCanonicalJunctions).toBe(true)
+    expect(model.showNonCanonicalJunctions).toBe(false)
   })
 
   test('placement submenu checks the active mode and switches on click', () => {

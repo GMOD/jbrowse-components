@@ -465,7 +465,7 @@ function downKeys(
 ) {
   return buildSashimiDownKeys(rpcDataMap, {
     minSashimiScore,
-    hideNonCanonicalJunctions: false,
+    showNonCanonicalJunctions: true,
     mode,
     refNameFor: () => 'chr1',
   })
@@ -582,7 +582,7 @@ test('buildSashimiDownKeys: a hidden lane is never named', () => {
   ])
   const keys = buildSashimiDownKeys(m, {
     minSashimiScore: 0,
-    hideNonCanonicalJunctions: false,
+    showNonCanonicalJunctions: true,
     mode: 'down',
     refNameFor: () => 'chr1',
     hidden: new Set(['self']),

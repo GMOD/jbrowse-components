@@ -80,7 +80,7 @@ the axis in would need a repack on every autoscale change.
 
 Baseline (normal-insert) arcs outnumber every categorized arc by over 100:1 and
 arc strokes are opaque, so paint order is an interest ranking (`arcPaintRank`,
-ticks under arcs in `ARC_PASSES`). `drawProperPairArcs` ("Show concordant-pair
+ticks under arcs in `ARC_PASSES`). `showProperPairArcs` ("Show concordant-pair
 arcs") off hides an arc only when the pair is proper (`isConcordantPairRead`,
 shared with the "Show proper pairs" read filter) **and** the arc paints the
 baseline slot. The flag alone would also hide proper-flagged pairs whose |TLEN|

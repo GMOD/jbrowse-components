@@ -42,8 +42,8 @@ const bamTrack = (trackId: string, name: string, uri: string) => ({
 
 const connections = {
   type: 'LinearAlignmentsDisplay',
-  drawInter: false,
-  drawLongRange: false,
+  showInterchrom: false,
+  showLongRange: false,
   coverageHeight: 60,
   forceLoad: true,
 }
@@ -165,7 +165,7 @@ const readEvidence = ({
             showPileup: false,
             showCoverage: false,
             readConnections: 'cloud',
-            drawModalPairsInCloud: true,
+            showModalPairsInCloud: true,
             readConnectionsHeight: 200,
             height: 215,
             showLegend: true,

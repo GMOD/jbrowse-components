@@ -19,7 +19,7 @@ function mockModel(initial: Partial<SvChannelsSettings> = {}) {
     // config, which is the half a resolved read cannot show.
     readConnections: 'off' as SvChannelsSettings['readConnections'],
     readConnectionsWritten: 'off' as string | undefined,
-    drawProperPairArcs: true,
+    showProperPairArcs: true,
     ...initial,
     colorBy: { type: 'modifications' as const },
     readConnectionsDown: false,
@@ -36,8 +36,8 @@ function mockModel(initial: Partial<SvChannelsSettings> = {}) {
     setReadConnectionsDown(down: boolean) {
       this.readConnectionsDown = down
     },
-    setDrawProperPairArcs(draw: boolean) {
-      this.drawProperPairArcs = draw
+    setShowProperPairArcs(draw: boolean) {
+      this.showProperPairArcs = draw
     },
   }
 }
@@ -48,7 +48,7 @@ test('the preset writes all four settings, not a subset', () => {
   expect(model.showPileup).toBe(false)
   expect(model.facet).toEqual({ field: 'pairOrientation' })
   expect(model.readConnections).toBe('arc')
-  expect(model.drawProperPairArcs).toBe(false)
+  expect(model.showProperPairArcs).toBe(false)
 })
 
 // Spelled out rather than compared against SV_CHANNELS_OFF: asserting a model
@@ -66,7 +66,7 @@ test('clicking the menu row turns the arrangement on, then back off', () => {
   expect(isSvChannelsActive(model)).toBe(false)
   expect(model.showPileup).toBe(true)
   expect(model.facet).toBeUndefined()
-  expect(model.drawProperPairArcs).toBe(true)
+  expect(model.showProperPairArcs).toBe(true)
 })
 
 // UNSET, not 'off', so the slot goes back to its schema default.
@@ -99,7 +99,7 @@ test.each([
   ['showPileup', { showPileup: true }],
   ['facet', { facet: { field: 'strand' } }],
   ['readConnections', { readConnections: 'cloud' as const }],
-  ['drawProperPairArcs', { drawProperPairArcs: true }],
+  ['showProperPairArcs', { showProperPairArcs: true }],
 ])('changing %s alone leaves the arrangement', (_name, override) => {
   const model = mockModel({ ...SV_CHANNELS_ON, ...override })
   expect(isSvChannelsActive(model)).toBe(false)

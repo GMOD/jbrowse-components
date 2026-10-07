@@ -15,7 +15,7 @@ export interface SvChannelsModel extends SvChannelsSettings {
   setShowPileup: (show: boolean) => void
   setFacet: (facet?: Facet) => void
   setReadConnections: (mode?: ReadConnectionsMode) => void
-  setDrawProperPairArcs: (draw: boolean) => void
+  setShowProperPairArcs: (draw: boolean) => void
 }
 
 export function applySvChannels(
@@ -25,7 +25,7 @@ export function applySvChannels(
   model.setShowPileup(settings.showPileup)
   model.setFacet(settings.facet)
   model.setReadConnections(settings.readConnections)
-  model.setDrawProperPairArcs(settings.drawProperPairArcs)
+  model.setShowProperPairArcs(settings.showProperPairArcs)
 }
 
 export function getSvChannelsMenuItem(model: SvChannelsModel) {

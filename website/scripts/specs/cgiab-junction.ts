@@ -46,7 +46,7 @@ const reads = {
   height: 200,
   forceLoad: true,
   // only connections with both ends on screen
-  drawLongRange: false,
+  showLongRange: false,
 }
 
 // A breakpoint is sub-pixel at every scale here, so each band is widened to a

@@ -28,7 +28,7 @@ on screen. Three things ride on that, each a silently wrong picture if missed:
   endpoint gap, which `arcsYDomainBp` maxes and the ruler prints as an insert
   size. Arc mode draws the arc unvalued (`arcCrossLink`), half as tall as its
   feet are apart, since it has no genomic radius.
-- **`drawInter` and `minInterchromSupport` gate both marks** from one hoisted
+- **`showInterchrom` and `minInterchromSupport` gate both marks** from one hoisted
   condition, so neither mark escapes the setting or the mismapping floor.
 - **The hover needs two refNames.** `formatArcTooltip` builds a range from the
   min and max of the two bp, which across chromosomes names one chromosome with a

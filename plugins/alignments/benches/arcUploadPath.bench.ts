@@ -13,7 +13,7 @@
 //
 // THE QUESTION. `GpuAlignmentsRenderer.syncRegion` memoizes per region, and the
 // memo used to have one narrow path: a recolor. An arc-only change — a
-// `minInterchromSupport` drag, `drawInter`, `arcColor` — allocates fresh band
+// `minInterchromSupport` drag, `showInterchrom`, `arcColor` — allocates fresh band
 // feeds over the
 // identical laid-out pileup, missed that path, and fell to the rebuild branch,
 // which wipes the region and repacks all thirteen pileup passes and five

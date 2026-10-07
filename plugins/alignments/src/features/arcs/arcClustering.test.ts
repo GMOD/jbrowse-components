@@ -93,8 +93,8 @@ const region = {
 function ticksAt(data: PileupDataResult, minInterchromSupport: number) {
   return computeArcsFromPileupData(new Map([[0, data]]), [region], {
     colorField: 'insertSize',
-    drawInter: true,
-    drawLongRange: true,
+    showInterchrom: true,
+    showLongRange: true,
     minInterchromSupport,
   }).lines.map(l => `${l.x.refName}:${l.x.bp} n=${l.support}`)
 }

@@ -721,11 +721,9 @@ export default function stateModelFactory(
           /**
            * #getter
            */
-          // The draw/hit-test sense of showLowFreqMismatches. Both the renderers
-          // and the hit-test pipeline take the filter in this polarity, so the
-          // negation lives here once rather than at each call site.
+          // The renderers' and the hit-test pipeline's name for the fade.
           get filterMismatchesByFrequency() {
-            return !self.showLowFreqMismatches
+            return self.fadeLowFreqMismatches
           },
 
           /**
@@ -1348,7 +1346,7 @@ export default function stateModelFactory(
           get sashimiDownKeysByGroup() {
             return buildSashimiDownKeys(self.rpcDataMap, {
               minSashimiScore: self.minSashimiScore,
-              hideNonCanonicalJunctions: self.hideNonCanonicalJunctions,
+              showNonCanonicalJunctions: self.showNonCanonicalJunctions,
               mode: self.sashimiArcsMode,
               refNameFor: i => self.loadedRegions.get(i)?.refName ?? `#${i}`,
               hidden: self.hiddenGroupKeys,
@@ -2023,10 +2021,10 @@ export default function stateModelFactory(
             const settings = {
               colorField: self.arcColorField,
               cloud: self.readConnections === 'cloud',
-              drawInter: self.drawInter,
-              drawLongRange: self.drawLongRange,
-              drawProperPairArcs: self.drawProperPairArcs,
-              drawModalPairsInCloud: self.drawModalPairsInCloud,
+              showInterchrom: self.showInterchrom,
+              showLongRange: self.showLongRange,
+              showProperPairArcs: self.showProperPairArcs,
+              showModalPairsInCloud: self.showModalPairsInCloud,
               minInterchromSupport: self.minInterchromSupport,
               // SA-tag / RNEXT refNames use the BAM's own naming, so a same-chr
               // split junction to an SA segment would otherwise be misclassified
@@ -2751,7 +2749,7 @@ export default function stateModelFactory(
             }
             const filter = {
               minSashimiScore: self.minSashimiScore,
-              hideNonCanonicalJunctions: self.hideNonCanonicalJunctions,
+              showNonCanonicalJunctions: self.showNonCanonicalJunctions,
             }
             const regions = junctionRegions.get()
             return self.renderSections.map(sec => ({
@@ -3141,7 +3139,7 @@ export default function stateModelFactory(
       }))
       .views(self => ({
         // Fields that invalidate the fetched data, every one worker-bound
-        // (filterBy, colorBy, …). Arc-only fields (arcColor, drawInter, drawLongRange) are
+        // (filterBy, colorBy, …). Arc-only fields (arcColor, showInterchrom, showLongRange) are
         // NOT here — `arcsResult` reads them and they do not require a
         // refetch. Non-tag sort changes are handled by the main-thread layout,
         // as is tag coloring (`readTagColors` is baked in `laidOutByGroup` from
@@ -3861,8 +3859,8 @@ export default function stateModelFactory(
           /**
            * #action
            */
-          setHideNonCanonicalJunctions(hide: boolean) {
-            setConf(self, 'hideNonCanonicalJunctions', hide)
+          setShowNonCanonicalJunctions(show: boolean) {
+            setConf(self, 'showNonCanonicalJunctions', show)
           },
 
           /**
@@ -3875,15 +3873,15 @@ export default function stateModelFactory(
           /**
            * #action
            */
-          setDrawInter(draw: boolean) {
-            setConf(self, 'drawInter', draw)
+          setShowInterchrom(draw: boolean) {
+            setConf(self, 'showInterchrom', draw)
           },
 
           /**
            * #action
            */
-          setDrawProperPairArcs(draw: boolean) {
-            setConf(self, 'drawProperPairArcs', draw)
+          setShowProperPairArcs(draw: boolean) {
+            setConf(self, 'showProperPairArcs', draw)
           },
 
           /**
@@ -3896,8 +3894,8 @@ export default function stateModelFactory(
           /**
            * #action
            */
-          setDrawLongRange(draw: boolean) {
-            setConf(self, 'drawLongRange', draw)
+          setShowLongRange(draw: boolean) {
+            setConf(self, 'showLongRange', draw)
           },
 
           /**

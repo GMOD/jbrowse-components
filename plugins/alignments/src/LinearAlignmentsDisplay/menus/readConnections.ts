@@ -23,12 +23,12 @@ interface ReadConnectionsModel {
   setReadConnections: (mode: ReadConnectionsMode) => void
   readConnectionsDown: boolean
   setReadConnectionsDown: (down: boolean) => void
-  drawLongRange: boolean
-  setDrawLongRange: (draw: boolean) => void
-  drawInter: boolean
-  setDrawInter: (draw: boolean) => void
-  drawProperPairArcs: boolean
-  setDrawProperPairArcs: (draw: boolean) => void
+  showLongRange: boolean
+  setShowLongRange: (draw: boolean) => void
+  showInterchrom: boolean
+  setShowInterchrom: (draw: boolean) => void
+  showProperPairArcs: boolean
+  setShowProperPairArcs: (draw: boolean) => void
   minInterchromSupport: number
   setMinInterchromSupport: (support: number) => void
   showBezierConnections: boolean
@@ -105,9 +105,9 @@ export function getReadConnectionsMenuItem(
         ),
         toggleItem(
           'Show concordant-pair arcs',
-          model.drawProperPairArcs,
+          model.showProperPairArcs,
           draw => {
-            model.setDrawProperPairArcs(draw)
+            model.setShowProperPairArcs(draw)
           },
           {
             helpText:
@@ -116,9 +116,9 @@ export function getReadConnectionsMenuItem(
         ),
         toggleItem(
           'Show off-screen mate connections',
-          model.drawLongRange,
+          model.showLongRange,
           draw => {
-            model.setDrawLongRange(draw)
+            model.setShowLongRange(draw)
           },
           {
             helpText:
@@ -127,9 +127,9 @@ export function getReadConnectionsMenuItem(
         ),
         toggleItem(
           'Show inter-chromosomal pairs',
-          model.drawInter,
+          model.showInterchrom,
           draw => {
-            model.setDrawInter(draw)
+            model.setShowInterchrom(draw)
           },
           {
             helpText:

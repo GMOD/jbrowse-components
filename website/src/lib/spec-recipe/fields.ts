@@ -883,7 +883,7 @@ const CANVAS_DISPLAYS = new Set(['LinearBasicDisplay', 'LinearVariantDisplay'])
 // LD heatmap. They share one menu-item helper, so they share the label.
 const SQUASH_TO_HEIGHT_DISPLAYS = new Set(['LinearHicDisplay', 'LDTrackDisplay'])
 
-// drawInter, drawLongRange, readConnectionsHeight and sortedBy are
+// showInterchrom, showLongRange, readConnectionsHeight and sortedBy are
 // declared by LinearAlignmentsDisplay and nothing else, so unlike the fields
 // above them the name settles the display on its own: an entry carrying one is
 // either that display or a spec naming a slot no display has. That is what lets
@@ -1431,14 +1431,14 @@ export const trackFields: Record<string, FieldRecipe> = {
                 : undefined,
           }
         : undefined,
-  drawLongRange: (value, { displayType }) =>
+  showLongRange: (value, { displayType }) =>
     typeof value === 'boolean' && isAlignmentsOnlyField(displayType)
       ? {
           path: `${BAND_OPTIONS} → Show off-screen mate connections (${value ? 'checked' : 'unchecked'})`,
           note: 'That submenu stays greyed out until an arc or read-cloud overlay is on.',
         }
       : undefined,
-  drawInter: (value, { displayType }) =>
+  showInterchrom: (value, { displayType }) =>
     typeof value === 'boolean' && isAlignmentsOnlyField(displayType)
       ? {
           path: `${BAND_OPTIONS} → Show inter-chromosomal pairs (${value ? 'checked' : 'unchecked'})`,
@@ -1734,14 +1734,18 @@ export const trackFields: Record<string, FieldRecipe> = {
   showSashimiLabels: checkbox('Sashimi arcs → Show labels'),
   // A peer of the two above, in the submenu the arcs own (menus/sashimi.ts),
   // and shown only while the arcs are.
-  hideNonCanonicalJunctions: checkbox(
-    'Sashimi arcs → Hide non-canonical junctions',
-    'Drops every arc whose intron does not begin and end with one of the six canonical dinucleotide pairs. At depth those are mostly alignment artefacts, and the support floor removes them only by also removing a real junction few reads carry.',
-  ),
+  // the slot says what draws; the row says what hides
+  showNonCanonicalJunctions: value =>
+    typeof value === 'boolean'
+      ? {
+          path: `${TRACK_MENU} → Sashimi arcs → Hide non-canonical junctions (${value ? 'unchecked' : 'checked'})`,
+          note: 'Checked, drops every arc whose intron does not begin and end with one of the six canonical dinucleotide pairs. At depth those are mostly alignment artefacts, and the support floor removes them only by also removing a real junction few reads carry.',
+        }
+      : undefined,
   readConnectionsDown: checkbox(
     'Read connections → Arc / read cloud band options → Draw arcs below coverage band',
   ),
-  drawProperPairArcs: checkbox(
+  showProperPairArcs: checkbox(
     'Read connections → Arc / read cloud band options → Show concordant-pair arcs',
     'Unchecked, the band keeps only the arcs that carry a category — an abnormal insert size or orientation, or a split junction — which on deep coverage is the difference between a readable band and a solid mass.',
   ),
