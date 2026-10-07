@@ -30,6 +30,8 @@ export type SyntenyGroupedMate = SyntenyMate & {
   orientation: number
   /** the mate gene's own strand, where the source has one */
   strand?: number
+  /** the source row stating this pair, where the source keeps one */
+  row?: number
 }
 
 // The `mates` of a feature fetched with `mateShape: 'grouped'`; undefined on

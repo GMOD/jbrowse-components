@@ -691,6 +691,7 @@ describe('mateShape: grouped', () => {
   }
   interface GroupedMateRecord extends MateRecord {
     orientation: number
+    row: number
   }
   const link = (
     anchor: string | undefined,
@@ -730,6 +731,18 @@ describe('mateShape: grouped', () => {
       [...new Set(pairwise.map(f => f.get('name')))].sort(),
     )
     expect(new Set(grouped.map(f => f.id())).size).toBe(grouped.length)
+    // each mate names the table row that states it, as its pairwise twin does
+    const rowOfLink = new Map(
+      pairwise.map(p => [
+        link(p.get('name'), p.get('mate') as MateRecord, p.get('strand')!),
+        p.get('syntenyId'),
+      ]),
+    )
+    for (const f of grouped) {
+      for (const m of f.get('mates') as GroupedMateRecord[]) {
+        expect(m.row).toBe(rowOfLink.get(link(f.get('name'), m, m.orientation)))
+      }
+    }
     for (const f of grouped) {
       expect(f.get('mate')).toBeUndefined()
       expect(typeof f.get('syntenyId')).toBe('number')

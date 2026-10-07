@@ -50,6 +50,8 @@ export interface MultiWayPlacement {
   start: number
   end: number
   name?: string
+  /** the source row stating the placement, where the source keeps one */
+  row?: number
 }
 
 /**
@@ -257,6 +259,7 @@ export function groupFeatures(features: Feature[]) {
           start: mate.start,
           end: mate.end,
           name: nameOf(mate.name),
+          row: mate.row,
           orientation: mate.orientation < 0 ? -1 : 1,
           feature,
         })
@@ -575,6 +578,7 @@ interface PlacementRun {
   max: number
   orientation: number
   name?: string
+  row?: number
   feature: Feature
 }
 
@@ -629,6 +633,7 @@ export function groupRunsOnRow(
     max,
     orientation: signed < 0 ? -1 : 1,
     name: names.size === 1 ? [...names][0] : undefined,
+    row: widest.row,
     feature: widest.feature,
   }))
 }
@@ -659,6 +664,7 @@ export function groupRunSpansOnRow(
         start: run.min,
         end: run.max,
         name: run.name,
+        row: run.row,
       },
       feature: run.feature,
     }

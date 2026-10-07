@@ -255,6 +255,8 @@ export interface GroupedMate {
   strand: number
   orientation: number
   name: string
+  /** the table row stating this pair, so two mates of one row are a stated pair */
+  row: number
 }
 
 // One anchor gene's rows folded together: where the anchor sits, which column
@@ -309,6 +311,7 @@ export function collectGroupedRows(
             strand: mate.strand,
             orientation: strand,
             name: mate.name,
+            row: rowNum,
           })
         }
       }

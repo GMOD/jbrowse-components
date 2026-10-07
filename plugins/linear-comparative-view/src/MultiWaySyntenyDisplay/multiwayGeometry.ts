@@ -177,6 +177,18 @@ export function anchorRuleY(upper: Lane, bandHeight: number) {
   return upper.bandTop + bandHeight
 }
 
+/**
+ * Two placements of one group a source row states as a pair. A table folding
+ * its rows by anchor gene puts both halves of a split gene in one group, and
+ * only the rows say which half of one lane is which half of the next.
+ */
+function statedTogether(
+  a: MultiWayPlacement | undefined,
+  b: MultiWayPlacement | undefined,
+) {
+  return a?.row === undefined || b?.row === undefined || a.row === b.row
+}
+
 function* lanePairs(lanes: Lane[], glyphHeight: number) {
   for (let row = 0; row + 1 < lanes.length; row++) {
     const upper = lanes[row]!
@@ -523,7 +535,10 @@ export function buildRibbonGeometry({
     const y1 = onAnchor ? anchorRuleY(pair.upper, stack.bandHeight) : pair.y1
     const ribbons = new RibbonBuilder()
     const bridges = new Map<number, RibbonBuilder>()
-    for (const [key, { group, spans, orientations }] of upper.placements) {
+    for (const [
+      key,
+      { group, spans, orientations, intervals },
+    ] of upper.placements) {
       let toRow = row + 1
       let far = lower.placements.get(key)
       const bridging =
@@ -548,7 +563,10 @@ export function buildRibbonGeometry({
         far.spans.length === 1
       spans.forEach((s1, i) => {
         far.spans.forEach((s2, j) => {
-          if (wideEnough(s1, s2, upper, farLane)) {
+          if (
+            statedTogether(intervals[i], far.intervals[j]) &&
+            wideEnough(s1, s2, upper, farLane)
+          ) {
             const record = far.features[j]!
             const target = targetOfGroup(key, group)
             const painted = colorOf(

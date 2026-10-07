@@ -866,6 +866,73 @@ describe('the ribbons', () => {
   })
 })
 
+describe('a gene a table states in two rows, one per half', () => {
+  // the anchor gene is whole; each mate lane carries it as two pieces, and the
+  // table gives a row to each piece
+  const halves = (rows: [number, number] | undefined) =>
+    new SimpleFeature({
+      uniqueId: 'split',
+      name: 'split',
+      refName: 'chr1',
+      start: 100,
+      end: 400,
+      strand: 1,
+      assemblyName: 'grape',
+      mates: ['peach', 'cacao'].flatMap(assemblyName =>
+        [1100, 1300].map((start, i) => ({
+          assemblyName,
+          refName: assemblyName === 'peach' ? 'Pp1' : 'Tc1',
+          start,
+          end: start + 100,
+          orientation: 1,
+          name: `half${i}`,
+          ...(rows ? { row: rows[i] } : {}),
+        })),
+      ),
+    })
+  const ribbonsBetweenMates = (rows: [number, number] | undefined) => {
+    const { cells } = buildRibbonGeometry({
+      stack: stack({
+        features: [halves(rows)],
+        assemblyNames: ['grape', 'peach', 'cacao'],
+      }),
+      laneLinks: undefined,
+      ribbonColor: 'grey',
+      drawCurves: false,
+      bridgeSkippedLanes: false,
+    })
+    const data = ribbonData(cells, 'ribbons:1')
+    return Array.from({ length: data.instanceCount }, (_, i) => [
+      data.bp1[i],
+      data.bp4[i],
+    ])
+  }
+
+  test('joins each half to the same half of the next lane', () => {
+    const ribbons = ribbonsBetweenMates([7, 8])
+    expect(ribbons).toHaveLength(2)
+    expect(ribbons.every(([top, bottom]) => top === bottom)).toBe(true)
+  })
+
+  test('joins every half to every half where the source keeps no rows', () => {
+    expect(ribbonsBetweenMates(undefined)).toHaveLength(4)
+  })
+
+  test('the anchor, which is whole, reaches both halves', () => {
+    const { cells } = buildRibbonGeometry({
+      stack: stack({
+        features: [halves([7, 8])],
+        assemblyNames: ['grape', 'peach', 'cacao'],
+      }),
+      laneLinks: undefined,
+      ribbonColor: 'grey',
+      drawCurves: false,
+      bridgeSkippedLanes: false,
+    })
+    expect(ribbonData(cells, 'ribbons:0').instanceCount).toBe(2)
+  })
+})
+
 describe('a source stating each lane against the anchor alone', () => {
   // peach draws at half the anchor's scale, so its px differ from the anchor's
   const s = stack({
