@@ -105,8 +105,10 @@ Once indexed, the graph loads as a `GraphTrack` that draws whatever window is on
 screen as a graph.
 [`build_pangenome_graph.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_pangenome_graph.sh)
 builds the index, the format decides which route it takes, and every step after
-that is the same. It needs `bgzip`, `tabix` and `python3`, plus
-[`gfatools`](https://github.com/lh3/gfatools) and GNU awk for an rGFA:
+that is the same. It needs
+[`gfa-to-tabix`](https://github.com/GMOD/gfa-to-tabix), `bgzip`, `tabix` and
+`python3`, plus [`gfatools`](https://github.com/lh3/gfatools) for an rGFA's
+bubbles:
 
 ```bash
 curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/build_pangenome_graph.sh

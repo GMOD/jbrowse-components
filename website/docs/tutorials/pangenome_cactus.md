@@ -31,15 +31,16 @@ The graph view is a beta plugin. We welcome your [feedback](/contact).
 - `node`, for the [JBrowse CLI](/docs/cli)
 - the GraphGenomeView plugin, for
   [drawing the graph as a graph](#opening-the-graph-in-the-graph-genome-view)
-- [`gfatools`](https://github.com/lh3/gfatools) and GNU awk, for
+- [`gfa-to-tabix`](https://github.com/GMOD/gfa-to-tabix) and
+  [`gfatools`](https://github.com/lh3/gfatools), for
   [indexing the graph](#indexing-the-graph)
 - for the [whole build](#reproduce-it-end-to-end): the NCBI
   [`datasets`](https://www.ncbi.nlm.nih.gov/datasets/docs/v2/download-and-install/)
   CLI, `bedGraphToBigWig` (UCSC kentUtils), `samtools`, `unzip` and `wget`
 
-On Debian/Ubuntu, `apt install samtools tabix unzip wget python3 gawk` covers
-six of those; bioconda packages `gfatools`, and `datasets` and
-`bedGraphToBigWig` are each a
+On Debian/Ubuntu, `apt install samtools tabix unzip wget python3` covers five of
+those; `cargo install gfa-to-tabix` installs `gfa-to-tabix`, bioconda packages
+`gfatools`, and `datasets` and `bedGraphToBigWig` are each a
 [single-binary download](https://hgdownload.soe.ucsc.edu/admin/exe/).
 
 ## Where the data comes from
@@ -524,7 +525,7 @@ indexes it with no further arguments:
 
 ```bash
 curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/build_pangenome_graph.sh
-# the rGFA route runs gfatools and GNU awk (gawk), so both have to be on PATH
+# the script runs gfa-to-tabix and gfatools, so both have to be on PATH
 bash build_pangenome_graph.sh mc/ecoli.sv.gfa.gz ecoli_cactus_sv
 ```
 

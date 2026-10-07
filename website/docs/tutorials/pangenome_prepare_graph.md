@@ -27,7 +27,9 @@ The graph view is a beta plugin. We welcome your [feedback](/contact).
 
 - [the GraphGenomeView plugin](#the-graphgenomeview-plugin)
 - htslib (`bgzip`, `tabix`), `bcftools`, `python3`, `sort`
-- [`gfatools`](https://github.com/lh3/gfatools) and GNU awk, for an rGFA
+- [`gfa-to-tabix`](https://github.com/GMOD/gfa-to-tabix), for the segment and
+  link indexes
+- [`gfatools`](https://github.com/lh3/gfatools), for an rGFA's bubbles
 - [`minigraph`](https://github.com/lh3/minigraph), for each assembly's path
   through the graph
 - [`vg`](https://github.com/vgteam/vg) 1.69.0+,
@@ -89,11 +91,16 @@ paste that `esmUrl` into **ESM build URL** and leave the rest empty.
 
 ## Indexing a graph with build_pangenome_graph.sh {#what-your-graph-can-produce}
 
-Fetch the script:
+Install [`gfa-to-tabix`](https://github.com/GMOD/gfa-to-tabix), which writes the
+segment and link indexes, and fetch the script:
 
 ```bash
+cargo install gfa-to-tabix
 curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/build_pangenome_graph.sh
 ```
+
+The `gfa-to-tabix` [releases](https://github.com/GMOD/gfa-to-tabix/releases)
+have binaries for Linux and macOS if you have no Rust toolchain.
 
 An **rGFA**, from minigraph or the minigraph stage of Minigraph-Cactus, needs an
 output prefix and the assembly name your config uses:
@@ -123,10 +130,9 @@ bcftools annotate --rename-chrs rename_chrs.tsv graph.snarls.vcf \
 bash build_pangenome_graph.sh graph.gfa out --reference K12 --assembly K12 --snarls graph.snarls.vcf.gz
 ```
 
-The rGFA route runs GNU awk, which is `brew install gawk` on macOS with `gnubin`
-first on `PATH`.[^awk] At human-chromosome scale, index the SV-resolution rGFA;
-a pggb graph's index does not finish there. An assembly graph from SPAdes or
-Flye has no reference to index against; open it in Bandage.
+At human-chromosome scale, index the SV-resolution rGFA; a pggb graph's index
+does not finish there. An assembly graph from SPAdes or Flye has no reference to
+index against; open it in Bandage.
 
 The command writes these files beside the prefix:
 
@@ -375,11 +381,8 @@ bash build_pangenome_graph.sh hprc-v2.1-mc-grch38.sv.gfa.gz hprc --assembly hg38
 ```
 
 [`build_pangenome_graph.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_pangenome_graph.sh)
-fetches and runs
-[`build_rgfa_tabix.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_rgfa_tabix.sh)
-or
-[`build_pggb_tabix.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_pggb_tabix.sh),
-then
+runs [`gfa-to-tabix`](https://github.com/GMOD/gfa-to-tabix) for the segments and
+links, then fetches and runs
 [`build_bubble_tier.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_bubble_tier.sh)
 and
 [`build_rgfa_alleles.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_rgfa_alleles.sh),
@@ -414,10 +417,6 @@ bash build_hprc_gbz_index.sh out
 
 - [HPRC release 2](https://doi.org/10.64898/2026.07.21.739710), the worked
   example here.
-
-[^awk]:
-    BSD awk, the macOS default, takes hours on a large table where GNU awk takes
-    minutes.
 
 [^gbz-cost]:
     Over HPRC's 464 haplotypes the companion is 5.1 GB, built in 35 minutes on

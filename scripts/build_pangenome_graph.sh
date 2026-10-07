@@ -5,8 +5,9 @@
 # tier a whole chromosome draws from, the allele inventory, and a config that
 # puts them on one graph track with the tier beside it.
 #
-# Requires: bgzip, tabix, sort, python3; gfatools and gawk (as `awk`) for an
-#           rGFA; a `vg deconstruct` snarl VCF for a plain GFA's bubbles
+# Requires: gfa-to-tabix (https://github.com/GMOD/gfa-to-tabix), bgzip, tabix,
+#           sort, python3; gfatools for an rGFA's bubbles; a `vg deconstruct`
+#           snarl VCF for a plain GFA's bubbles
 # Usage:    bash scripts/build_pangenome_graph.sh <graph.gfa[.gz]> <out-prefix> \
 #             [--reference SAMPLE] [--assembly NAME] [--snarls snarls.vcf.gz] [--tier N]
 #
@@ -33,8 +34,7 @@ set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 
-HELPERS=(build_rgfa_tabix.sh build_pggb_tabix.sh pggb_gfa_to_bed.py
-  build_bubble_tier.sh bubbles_to_tier_bed.py build_rgfa_alleles.sh
+HELPERS=(build_bubble_tier.sh bubbles_to_tier_bed.py build_rgfa_alleles.sh
   snarls_to_bubble_bed.py)
 for h in "${HELPERS[@]}"; do
   [ -f "$SCRIPT_DIR/$h" ] || curl -fsSL -o "$SCRIPT_DIR/$h" \
@@ -64,6 +64,12 @@ while [ $# -gt 0 ]; do
   esac
 done
 [ -s "$GRAPH" ] || { echo "no such graph: $GRAPH" >&2; exit 1; }
+command -v gfa-to-tabix >/dev/null || {
+  echo "gfa-to-tabix is not on PATH. Install it with" >&2
+  echo "  cargo install gfa-to-tabix" >&2
+  echo "or download a binary from https://github.com/GMOD/gfa-to-tabix/releases" >&2
+  exit 1
+}
 
 export LC_ALL=C
 
@@ -92,13 +98,13 @@ echo "== $ROUTE graph: $GRAPH"
 
 case "$ROUTE" in
   rgfa)
-    bash "$SCRIPT_DIR/build_rgfa_tabix.sh" "$GRAPH" "$PREFIX"
+    gfa | gfa-to-tabix - -o "$PREFIX"
     echo "== $PREFIX.bubbles.bed.gz"
     gfa | gfatools bubble - | sort -k1,1 -k2,2n | bgzip > "$PREFIX.bubbles.bed.gz"
     tabix -f -p bed "$PREFIX.bubbles.bed.gz"
     ;;
   paths)
-    bash "$SCRIPT_DIR/build_pggb_tabix.sh" "$GRAPH" "$PREFIX" ${REFERENCE:+"$REFERENCE"}
+    gfa | gfa-to-tabix - -o "$PREFIX" ${REFERENCE:+--reference "$REFERENCE"}
     if [ -n "$SNARLS" ]; then
       echo "== $PREFIX.bubbles.bed.gz, from the snarl VCF"
       python3 "$SCRIPT_DIR/snarls_to_bubble_bed.py" "$SNARLS" "$PREFIX.bubbles.bed"
