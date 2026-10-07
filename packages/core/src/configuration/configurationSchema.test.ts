@@ -17,6 +17,7 @@ import {
   getConfigurationSchemaMetadata,
   preProcessConfigSnapshot,
   readConfObject,
+  refusingUndeclaredKeys,
   requirementProblems,
 } from './index.ts'
 import { isConfigurationModel } from './schemaTypes.ts'
@@ -1731,10 +1732,23 @@ describe('a closed schema', () => {
   )
   const Display = ConfigurationSchema('ClosedDisplay', { color: Color })
 
-  test('refuses a key it does not declare, where MST would drop it', () => {
-    expect(() => Display.create({ color: { fieldName: 'x' } })).toThrow(
-      'ClosedColor takes value and field, not fieldName',
-    )
+  test('names a key it does not declare as a config loads, once', () => {
+    const warn = jest.spyOn(console, 'warn').mockImplementation(() => {})
+    const entry = { color: { fieldName: 'x' } }
+    expect(getSnapshot(Display.create(entry))).toEqual({})
+    Display.create(entry)
+    expect(warn.mock.calls).toEqual([
+      ['ClosedColor does not declare fieldName: loading without it'],
+    ])
+    warn.mockRestore()
+  })
+
+  test('refuses a key it does not declare on a write, at any depth', () => {
+    expect(() =>
+      refusingUndeclaredKeys(() =>
+        Display.create({ color: { fieldName: 'x' } }),
+      ),
+    ).toThrow('ClosedColor takes value and field, not fieldName')
     const node = Display.create({})
     expect(() =>
       node.setSubschema('color', { field: 'x', scale: 'a' }),
@@ -1757,6 +1771,20 @@ describe('a closed schema', () => {
     expect(getSnapshot(node)).toEqual({})
   })
 
+  test('refuses a bare value no shorthand lifts, on a load too', () => {
+    const Scales = ConfigurationSchema(
+      'ClosedScales',
+      { type: { type: 'string', defaultValue: 'linear' } },
+      { closed: true },
+    )
+    expect(() => Scales.create('log' as never)).toThrow(
+      'ClosedScales takes type, not "log"',
+    )
+    expect(() => Scales.create(5 as never)).toThrow(
+      'ClosedScales takes type, not 5',
+    )
+  })
+
   test('checks after the lift, so the shorthand still reads', () => {
     expect(getSnapshot(Display.create({ color: 'blue' }))).toEqual({
       color: { value: 'blue' },
@@ -1772,9 +1800,11 @@ describe('a closed schema', () => {
     expect(getSnapshot(Step.create({ type: 'ClosedStep', expr: 'x' }))).toEqual(
       { type: 'ClosedStep', expr: 'x' },
     )
-    expect(() => Step.create({ type: 'ClosedStep', bogus: 1 })).toThrow(
-      'ClosedStep takes expr and type, not bogus',
-    )
+    expect(() =>
+      refusingUndeclaredKeys(() =>
+        Step.create({ type: 'ClosedStep', bogus: 1 }),
+      ),
+    ).toThrow('ClosedStep takes expr and type, not bogus')
   })
 
   test('admits the identifier the options declare', () => {
@@ -1784,9 +1814,9 @@ describe('a closed schema', () => {
       { explicitIdentifier: 'stepId', closed: true },
     )
     expect(Explicit.create({ stepId: 's', expr: 'x' }).stepId).toBe('s')
-    expect(() => Explicit.create({ stepId: 's', id: 'i' })).toThrow(
-      'ClosedExplicit takes expr and stepId, not id',
-    )
+    expect(() =>
+      refusingUndeclaredKeys(() => Explicit.create({ stepId: 's', id: 'i' })),
+    ).toThrow('ClosedExplicit takes expr and stepId, not id')
   })
 })
 

@@ -126,7 +126,6 @@ function configSchemaF(_pluginManager: PluginManager) {
     {
       explicitIdentifier: 'displayId',
       explicitlyTyped: true,
-      closed: 'warn',
       retired,
       preProcessSnapshot: liftRendererStrokeSlots,
     },

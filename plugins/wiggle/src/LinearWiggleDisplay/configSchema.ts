@@ -208,7 +208,6 @@ const linearWiggleDisplayConfigSchema = ConfigurationSchema(
   },
   {
     explicitlyTyped: true,
-    closed: 'warn',
     explicitIdentifier: 'displayId',
     retired: {
       ...retiredAxisSpellings,

@@ -77,6 +77,7 @@ export {
   liftRetiredSpellings,
   preProcessConfigSnapshot,
   preProcessSnapshotWith,
+  refusingUndeclaredKeys,
 } from './snapshotPreprocess.ts'
 export { shorthandTargets, shorthandTargetsOf } from './schemaTypes.ts'
 export type { ShorthandForm } from './schemaTypes.ts'

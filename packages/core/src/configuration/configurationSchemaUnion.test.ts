@@ -105,15 +105,24 @@ test('the refusal holds in a production build, where MST checks no type', () => 
   })
 })
 
-test('a key belonging to another member is refused, not dropped', () => {
-  expect(() =>
-    Host.create({ transform: [{ type: 'filter', step: 50 }] }),
-  ).toThrow('filter takes expr and type, not step')
+test('a write refuses a key belonging to another member, and a load names it', () => {
+  const host = Host.create({})
+  expect(() => {
+    host.setSubschema('transform', [{ type: 'filter', step: 50 }])
+  }).toThrow('filter takes expr and type, not step')
   inProduction(() => {
-    expect(() =>
-      Host.create({ transform: [{ type: 'bin', expr: 'x' }] }),
-    ).toThrow('bin takes step, field and type, not expr')
+    expect(() => {
+      host.setSubschema('transform', [{ type: 'bin', expr: 'x' }])
+    }).toThrow('bin takes step, field and type, not expr')
   })
+  const warn = jest.spyOn(console, 'warn').mockImplementation(() => {})
+  expect(
+    getSnapshot(Host.create({ transform: [{ type: 'filter', step: 50 }] })),
+  ).toEqual({ transform: [{ type: 'filter' }] })
+  expect(warn.mock.calls).toEqual([
+    ['filter does not declare step: loading without it'],
+  ])
+  warn.mockRestore()
 })
 
 test('a whole-list write replaces, removes, appends and reorders, and each reloads', () => {

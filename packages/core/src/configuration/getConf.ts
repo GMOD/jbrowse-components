@@ -11,7 +11,10 @@ import {
   isConfigurationSchemaType,
   isConstantEntry,
 } from './schemaTypes.ts'
-import { preProcessSnapshotWith } from './snapshotPreprocess.ts'
+import {
+  preProcessSnapshotWith,
+  refusingUndeclaredKeys,
+} from './snapshotPreprocess.ts'
 
 import type {
   AnyConfigurationModel,
@@ -153,10 +156,13 @@ function writeConfMember(
   const member = conf[key]
   const namespace = isPlainObject(value) ? namespaceMetadata(member) : undefined
   if (namespace) {
-    const members = preProcessSnapshotWith(namespace, value)
     // refused as a whole before any member lands, so a bad member leaves the
     // namespace as it was rather than half written and reported as rejected
-    getType(member).create({ ...getSnapshot(member), ...members })
+    const members = refusingUndeclaredKeys(() => {
+      const lifted = preProcessSnapshotWith(namespace, value)
+      getType(member).create({ ...getSnapshot(member), ...lifted })
+      return lifted
+    })
     for (const [k, v] of Object.entries(members)) {
       writeConfMember(member, k, v)
     }

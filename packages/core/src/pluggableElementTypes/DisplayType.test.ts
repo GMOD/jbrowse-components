@@ -19,7 +19,7 @@ test('a display loads without a key it does not declare, and names it once', () 
   const schema = ConfigurationSchema(
     'ProbeDisplay',
     { height: { type: 'number', defaultValue: 100 } },
-    { explicitIdentifier: 'displayId', explicitlyTyped: true, closed: 'warn' },
+    { explicitIdentifier: 'displayId', explicitlyTyped: true },
   )
   displayType(schema)
   const warn = jest.spyOn(console, 'warn').mockImplementation(() => {})
@@ -27,18 +27,21 @@ test('a display loads without a key it does not declare, and names it once', () 
   expect(schema.create(entry).height).toBe(100)
   schema.create(entry)
   expect(warn.mock.calls).toEqual([
-    ['ProbeDisplay does not declare hieght: loading without it'],
+    ['ProbeDisplay "d" does not declare hieght: loading without it'],
   ])
   schema.create({ type: 'ProbeDisplay', displayId: 'd', height: 5 })
   expect(warn).toHaveBeenCalledTimes(1)
   warn.mockRestore()
 })
 
-test('a display whose schema says nothing about undeclared keys registers', () => {
+test('a display that opts out drops an undeclared key in silence', () => {
   const open = ConfigurationSchema(
-    'ProbeDisplay',
+    'OpenProbeDisplay',
     {},
-    { explicitIdentifier: 'displayId', explicitlyTyped: true },
+    { explicitIdentifier: 'displayId', explicitlyTyped: true, closed: false },
   )
-  expect(() => displayType(open)).not.toThrow()
+  const warn = jest.spyOn(console, 'warn').mockImplementation(() => {})
+  open.create({ type: 'OpenProbeDisplay', displayId: 'd', hieght: 5 })
+  expect(warn).not.toHaveBeenCalled()
+  warn.mockRestore()
 })

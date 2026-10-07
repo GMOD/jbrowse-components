@@ -16,6 +16,7 @@ import {
 import { readConfObject } from './readConfObject.ts'
 import { getConfigurationSchemaMetadata } from './schemaRegistry.ts'
 import { bareFormOf, shorthandTargets } from './schemaTypes.ts'
+import { refusingUndeclaredKeys } from './snapshotPreprocess.ts'
 
 import type { AnyConfigurationModel } from './types.ts'
 
@@ -175,10 +176,12 @@ export function liftPlot(
   draft: Plot,
 ): AnyConfigurationModel {
   checkKeys(draft, plotKeysOf(conf))
-  return getType(conf).create({
-    displayId: LIFT_ID,
-    ...structuredClone(merged(draft, plotOf(conf))),
-  }) as AnyConfigurationModel
+  return refusingUndeclaredKeys(() =>
+    getType(conf).create({
+      displayId: LIFT_ID,
+      ...structuredClone(merged(draft, plotOf(conf))),
+    }),
+  ) as AnyConfigurationModel
 }
 
 /**

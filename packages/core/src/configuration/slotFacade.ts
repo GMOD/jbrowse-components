@@ -12,7 +12,10 @@ import {
   isConfigurationSchemaType,
   isSlotDefinitionEntry,
 } from './schemaTypes.ts'
-import { preProcessSnapshotWith } from './snapshotPreprocess.ts'
+import {
+  preProcessSnapshotWith,
+  refusingUndeclaredKeys,
+} from './snapshotPreprocess.ts'
 
 import type PluginManager from '../PluginManager.ts'
 import type {
@@ -70,7 +73,7 @@ export function slotValueRefusal(
   try {
     const lifted = preProcessSnapshotWith(meta, { [key]: value })[key]
     if (subSchema) {
-      subSchema.create(lifted)
+      refusingUndeclaredKeys(() => subSchema.create(lifted))
     } else if (isSlotDefinitionEntry(entry) && !slotType?.is(lifted)) {
       return slotWriteRefusal(`${meta.name}.${key}`, entry.type, value)
     }

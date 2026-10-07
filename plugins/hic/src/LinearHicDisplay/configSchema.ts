@@ -69,7 +69,6 @@ const HicTrackConfigFactory = () => {
     },
     {
       explicitlyTyped: true,
-      closed: 'warn',
       /**
        * #identifier
        */

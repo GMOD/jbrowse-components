@@ -49,7 +49,6 @@ const baseLinearDisplayConfigSchema = ConfigurationSchema(
      * #identifier
      */
     explicitIdentifier: 'displayId',
-    closed: 'warn',
   },
 )
 

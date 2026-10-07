@@ -22,7 +22,10 @@ import {
   isSlotDefinitionEntry,
   shorthandTargetsOf,
 } from './schemaTypes.ts'
-import { preProcessSnapshotWith } from './snapshotPreprocess.ts'
+import {
+  preProcessSnapshotWith,
+  refusingUndeclaredKeys,
+} from './snapshotPreprocess.ts'
 
 import type PluginManager from '../PluginManager.ts'
 import type { IsAny } from '../util/types/isAny.ts'
@@ -97,14 +100,15 @@ export interface ConfigurationSchemaOptions<
   shorthandWith?: Record<string, unknown>
   /**
    * What a snapshot key the schema does not declare meets, where MST would
-   * drop it in silence: `true` refuses the snapshot, and `'warn'` names the
-   * key on the console and loads without it, which is what a display does so
-   * a config written for another version still draws. Checked after the
+   * drop it in silence: a config loading names the key on the console and
+   * loads without it, so a config written for another version still draws,
+   * and a write (`refusingUndeclaredKeys`) refuses it. Checked after the
    * `shorthand` lift and the schema's own `preProcessSnapshot`, on the same
    * paths, and only on the schema's own snapshot where a union runs every
-   * member over an entry.
+   * member over an entry. A display, the `explicitlyTyped` schema identified
+   * by `displayId`, is closed unless it says `false`.
    */
-  closed?: boolean | 'warn'
+  closed?: boolean
   /**
    * The spellings an older release used, by the name it used, each answering
    * the members that name's value becomes. Lifted
@@ -257,6 +261,9 @@ function preprocessConfigurationSchemaArguments(
       requires: requires.length ? requires : undefined,
     }
   }
+  if (options.explicitlyTyped && options.explicitIdentifier === 'displayId') {
+    options = { ...options, closed: options.closed ?? true }
+  }
   return { schemaDefinition, options }
 }
 
@@ -335,7 +342,9 @@ function makeConfigurationSchemaModel<
       // collection takes the whole list or map, and `null` resets it
       setSubschema(slotName: string, data: unknown) {
         if (collectionKeys.has(slotName)) {
-          self[slotName] = data ?? undefined
+          refusingUndeclaredKeys(() => {
+            self[slotName] = data ?? undefined
+          })
           return self[slotName]
         }
         if (!subSchemaKeys.has(slotName)) {
@@ -343,7 +352,7 @@ function makeConfigurationSchemaModel<
         }
         const newSchema = isStateTreeNode(data)
           ? data
-          : modelDefinition[slotName].create(data)
+          : refusingUndeclaredKeys(() => modelDefinition[slotName].create(data))
         self[slotName] = newSchema
         return newSchema
       },

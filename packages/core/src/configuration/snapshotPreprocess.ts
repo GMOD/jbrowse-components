@@ -29,28 +29,52 @@ function declaredKeys({ definition, options }: ConfigurationSchemaMetadata) {
 
 const warned = new Set<string>()
 
+let writes = 0
+
+/**
+ * #api core/configuration
+ * Runs `write` as a write: a `closed` schema created inside it refuses a key
+ * it does not declare, at any depth, where a config loading only names the
+ * key on the console. `setConf`, a settings bag and a plot draft write this
+ * way, so a typo in an edit is an error and a config written for another
+ * version still draws.
+ */
+export function refusingUndeclaredKeys<T>(write: () => T) {
+  writes++
+  try {
+    return write()
+  } finally {
+    writes--
+  }
+}
+
 function checkUndeclaredKeys(
   schema: ConfigurationSchemaMetadata,
   snapshot: unknown,
 ) {
-  const { name } = schema
+  const { name, options } = schema
   const declared = declaredKeys(schema)
-  const unknown =
-    typeof snapshot === 'string'
-      ? [JSON.stringify(snapshot)]
-      : Object.keys(snapshot ?? {}).filter(
-          key => !declared.includes(key) && !COMMENT_KEY.test(key),
-        )
+  const bare = snapshot !== undefined && typeof snapshot !== 'object'
+  const unknown = bare
+    ? [JSON.stringify(snapshot)]
+    : Object.keys(snapshot ?? {}).filter(
+        key => !declared.includes(key) && !COMMENT_KEY.test(key),
+      )
   if (unknown.length > 0) {
-    if (schema.options.closed !== 'warn') {
+    if (bare || writes > 0) {
       throw new Error(
         `${name} takes ${listed(declared)}, not ${unknown.join(', ')}`,
       )
     }
-    const message = `${name} does not declare ${listed(unknown)}: loading without it`
-    if (!warned.has(message)) {
-      warned.add(message)
-      console.warn(message)
+    const key = `${name} ${unknown.join(' ')}`
+    if (!warned.has(key)) {
+      warned.add(key)
+      const id = (snapshot as Record<string, unknown>)[
+        options.explicitIdentifier ?? ''
+      ]
+      console.warn(
+        `${name}${typeof id === 'string' ? ` "${id}"` : ''} does not declare ${listed(unknown)}: loading without it`,
+      )
     }
   }
 }
@@ -182,11 +206,11 @@ export function applyRetiredSpellings(
  * `null` member reads as unset; a `retired` spelling becomes the members that
  * replaced it; the schema's own `preProcessSnapshot` runs, which is where a
  * track folds `displayDefaults` into its displays; then a `closed` schema
- * refuses a key it does not declare, or names it on the console where it is
- * `'warn'`, unless the caller is a settings bag that routes an undeclared key
- * itself (`routesUndeclared`), and a `jexl:` callback
- * in a slot declaring no `contextVariable` is refused. A bare value the
- * shorthand does not lift passes through for MST to refuse.
+ * names a key it does not declare on the console, or refuses it inside
+ * `refusingUndeclaredKeys`, unless the caller is a settings bag that routes
+ * an undeclared key itself (`routesUndeclared`); it refuses a bare value no
+ * shorthand lifted on every door, and so is a `jexl:` callback in a slot
+ * declaring no `contextVariable`.
  */
 export function preProcessSnapshotWith(
   schema: ConfigurationSchemaMetadata,
@@ -213,13 +237,14 @@ export function preProcessSnapshotWith(
 
 /**
  * #api core/configuration
- * A snapshot as `type` admits it: the same lift and checks `type.create`
- * applies, so a dialog or a validator refuses exactly what a config file
- * cannot hold. Throws what the schema's `preProcessSnapshot` throws.
+ * A snapshot as a write to `type` admits it: the lift and checks `setConf`
+ * applies, so a dialog or a validator refuses what an edit cannot hold, an
+ * undeclared key included. Throws what the schema's `preProcessSnapshot`
+ * throws.
  */
 export function preProcessConfigSnapshot(type: IAnyType, snapshot: unknown) {
   const schema = getConfigurationSchemaMetadata(type)
   return schema
-    ? preProcessSnapshotWith(schema, snapshot)
+    ? refusingUndeclaredKeys(() => preProcessSnapshotWith(schema, snapshot))
     : (snapshot as Record<string, unknown>)
 }
