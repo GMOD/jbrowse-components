@@ -1198,21 +1198,6 @@ export const alignmentsSpecs: ScreenshotSpec[] = [
               uri: 'https://jbrowse.org/genomes/GRCh38/methylation/human_chr20_mod_call_5mC_5hmC_CG.cram.crai',
               locationType: 'UriLocation',
             },
-            sequenceAdapter: {
-              type: 'BgzipFastaAdapter',
-              fastaLocation: {
-                uri: 'https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz',
-                locationType: 'UriLocation',
-              },
-              faiLocation: {
-                uri: 'https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz.fai',
-                locationType: 'UriLocation',
-              },
-              gziLocation: {
-                uri: 'https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz.gzi',
-                locationType: 'UriLocation',
-              },
-            },
           },
         },
       ],
