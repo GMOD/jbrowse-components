@@ -504,6 +504,7 @@ export default [
   '@jbrowse/render-core/installUpload',
   '@jbrowse/render-core/instanceCache',
   '@jbrowse/render-core/instancePass',
+  '@jbrowse/render-core/linkFeet',
   '@jbrowse/render-core/marks',
   '@jbrowse/render-core/marks/backend',
   '@jbrowse/render-core/marks/colorFill',

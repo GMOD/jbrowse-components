@@ -5103,6 +5103,15 @@
       ],
       "worker": "real"
     },
+    "@jbrowse/render-core/linkFeet": {
+      "package": "@jbrowse/render-core",
+      "names": [
+        "LINK_FOOT_FORWARD",
+        "LINK_FOOT_REVERSE",
+        "linkFeet"
+      ],
+      "worker": "real"
+    },
     "@jbrowse/render-core/marks": {
       "package": "@jbrowse/render-core",
       "names": [
