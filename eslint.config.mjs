@@ -1,3 +1,5 @@
+import { existsSync, readFileSync, readdirSync } from 'node:fs'
+
 import eslintReact from '@eslint-react/eslint-plugin'
 import eslintPluginAstro from 'eslint-plugin-astro'
 import { importX } from 'eslint-plugin-import-x'
@@ -74,6 +76,40 @@ const noNamedObserver = {
   message:
     'Write `observer(function Name() {…})` inline. babel-plugin-react-compiler does not compile an inline observer, but it DOES compile the `function Name(){}; observer(Name)` form, and a compiled MobX render can serve a stale read.',
 }
+// A plain component re-renders for no MobX read, so a model property added to
+// one later goes stale with nothing failing. `DisplayStatusChromeBase` was
+// "deliberately not an observer" until a height read landed in it and the
+// display container stopped following a track resize.
+const SVG_EXPORT_COMPONENT = '^(Svg|SVG)|Svg(Body|Layer|Frame|Figure)?$'
+const unobservedComponentMessage =
+  'Wrap the component: `observer(function Name() {…})`. A plain component never re-renders for a MobX read, so a model property read here goes stale silently. The one exception is a component a frozen SVG figure draws, since an observer there re-renders itself against the live model and tears the figure: name it Svg…, or say `// eslint-disable-next-line no-restricted-syntax -- drawn inside a frozen SVG figure`.'
+const unobservedComponents = [
+  {
+    selector: `FunctionDeclaration[id.name=/^[A-Z]/]:not([id.name=/${SVG_EXPORT_COMPONENT}/]):has(JSXElement, JSXFragment)`,
+    message: unobservedComponentMessage,
+  },
+  {
+    selector: `VariableDeclarator[id.name=/^[A-Z]/]:not([id.name=/${SVG_EXPORT_COMPONENT}/]) > :matches(ArrowFunctionExpression, FunctionExpression):has(JSXElement, JSXFragment)`,
+    message: unobservedComponentMessage,
+  },
+  {
+    selector:
+      'VariableDeclarator[id.name=/^[A-Z]/] > CallExpression[callee.name=/^(memo|forwardRef)$/]',
+    message:
+      'Wrap the component in `observer`, which memoizes as `memo` does and also tracks MobX reads: `observer(function Name() {…})`, or `observer(forwardRef(…))`.',
+  },
+]
+// A package with no mobx-react dependency has no `observer` to wrap with.
+const packagesWithoutMobxReact = ['packages', 'plugins', 'products'].flatMap(
+  top =>
+    readdirSync(`${import.meta.dirname}/${top}`).flatMap(name => {
+      const manifest = `${import.meta.dirname}/${top}/${name}/package.json`
+      return existsSync(manifest) &&
+        !readFileSync(manifest, 'utf8').includes('"mobx-react"')
+        ? [`${top}/${name}/**`]
+        : []
+    }),
+)
 const noSetSlot = {
   selector: 'CallExpression[callee.property.name=/^(setSlot|setSubschema)$/]',
   message:
@@ -828,6 +864,30 @@ export default defineConfig(
     ignores: ['**/*.test.{ts,tsx}', '**/tests/**', '**/browser-tests/**'],
     rules: {
       'no-restricted-syntax': ['error', ...sourceRestrictedSyntax],
+    },
+  },
+  // `plugins/**/renderSvg.tsx` re-lists the source set further down and so
+  // drops these selectors, which is the exemption those files want.
+  {
+    files: [
+      'packages/*/src/**/*.tsx',
+      'plugins/*/src/**/*.tsx',
+      'products/*/src/**/*.tsx',
+    ],
+    ignores: [
+      '**/*.test.{ts,tsx}',
+      '**/tests/**',
+      '**/browser-tests/**',
+      '**/svgcomponents/**',
+      'packages/core/src/svg/**',
+      ...packagesWithoutMobxReact,
+    ],
+    rules: {
+      'no-restricted-syntax': [
+        'error',
+        ...sourceRestrictedSyntax,
+        ...unobservedComponents,
+      ],
     },
   },
   // The installers, which are what `attachRenderingBackend` exists for. The

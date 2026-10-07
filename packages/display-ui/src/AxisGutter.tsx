@@ -11,6 +11,7 @@ import type { YAxis } from './valueScale.ts'
  * place a spine differently. The scale's caption is `AxisCaption`'s, drawn once
  * for the scale and not per band.
  */
+// eslint-disable-next-line no-restricted-syntax -- drawn inside a frozen SVG figure
 export default function AxisGutter({ axis }: { axis: YAxis }) {
   const right = axis.side === 'right'
   return (

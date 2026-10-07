@@ -34,6 +34,7 @@ export type PaintLayerOpts = SvgRasterCanvasOpts & {
  * canvas is blank means reading its pixels back — and it does not need one: a
  * fully transparent PNG is a couple of hundred bytes.
  */
+// eslint-disable-next-line no-restricted-syntax -- drawn inside a frozen SVG figure
 export function PaintLayer({
   width,
   height,

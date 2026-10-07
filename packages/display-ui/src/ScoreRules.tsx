@@ -27,6 +27,7 @@ function labelY(y: number, offsetY: number) {
 
 // Bare marks, no wrapping <svg>, so the on-screen overlay and the SVG export
 // draw the same elements from the same y. Same split as CrossHatchLines.
+// eslint-disable-next-line no-restricted-syntax -- drawn inside a frozen SVG figure
 export function ScoreRuleLines({
   marks,
   width,

@@ -51,7 +51,10 @@ so a `<text>` that writes the theme's family overrides it; measure in
 **A live figure (`useViewSvgFigure`) freezes against one snapshot.** An export
 draws plain components that read the model once, never an on-screen observer:
 an observer follows the view, so a pan slides its labels across layers drawn
-before it.
+before it. Lint requires `observer` on every other component, and exempts these
+by name (`Svg…`), by home (`svgcomponents/`, `renderSvg.tsx`, core's `svg/`) or,
+for a piece the screen shares, by an inline
+`-- drawn inside a frozen SVG figure`.
 
 **A figure carries the pinned highlight only, never a hover or a selection**:
 both say where the reader's pointer was. A body that hands live render params to

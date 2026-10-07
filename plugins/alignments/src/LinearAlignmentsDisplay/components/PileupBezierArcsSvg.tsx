@@ -12,6 +12,7 @@ import type React from 'react'
 // Clips a section's connectors to its own pileup band, in the overlay's screen
 // coordinates. A nested viewport rather than a clipPath, so neither the overlay
 // nor the export has an id to mint.
+// eslint-disable-next-line no-restricted-syntax -- drawn inside a frozen SVG figure
 export function SectionBandClip({
   clipTop,
   clipBottom,

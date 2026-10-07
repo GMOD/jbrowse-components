@@ -21,6 +21,7 @@ import type { GroupChipSection } from './GroupLabelChips.tsx'
 const MEDIUM_WEIGHT_WIDTH_FACTOR = 1.05
 
 // The on-screen pill without its buttons, which are interactive-only.
+// eslint-disable-next-line no-restricted-syntax -- drawn inside a frozen SVG figure
 export default function GroupLabelBox({
   x,
   y,
@@ -75,6 +76,7 @@ export default function GroupLabelBox({
  * an exported stack ran together, the chip being the only other mark of where
  * one group ends.
  */
+// eslint-disable-next-line no-restricted-syntax -- drawn inside a frozen SVG figure
 export function GroupLabelBoxes({
   sections,
   left,

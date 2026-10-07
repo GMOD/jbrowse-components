@@ -76,6 +76,7 @@ function fitEntries(entries: ColorLegendEntry[], maxHeight: number) {
   return shown
 }
 
+// eslint-disable-next-line no-restricted-syntax -- drawn inside a frozen SVG figure
 function GradientRow({
   entry,
   width,

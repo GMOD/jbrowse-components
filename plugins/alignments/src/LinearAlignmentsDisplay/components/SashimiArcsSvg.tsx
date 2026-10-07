@@ -13,6 +13,7 @@ import type { LinearAlignmentsDisplayModel } from './useAlignmentsBase.ts'
 // One side's arcs at its sub-band's top, clipped to the same box the screen
 // clips (`sashimiSideBand`). Paths first, labels second, so a count is never
 // buried under a neighbouring arc's stroke.
+// eslint-disable-next-line no-restricted-syntax -- drawn inside a frozen SVG figure
 function SashimiSide({
   arcs,
   top,

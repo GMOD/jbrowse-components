@@ -38,6 +38,7 @@ function fitCaption(caption: string, room: number) {
  * and the export both draw through this, so the two cannot place a caption
  * differently.
  */
+// eslint-disable-next-line no-restricted-syntax -- drawn inside a frozen SVG figure
 export default function AxisCaption({
   axis,
   bandTops,

@@ -30,7 +30,8 @@ compiler's contract (don't mutate props/state), which MobX violates by design, s
 ## What is compiled
 
 - Inline `observer(function(){})` and `observer(()=>…)` are not compiled. Always write
-  observers this way.
+  observers this way, and lint makes every component one, bar those a frozen SVG
+  figure draws ([SVG_EXPORT.md](SVG_EXPORT.md)).
 - `function Decl(){}; observer(Decl)` is compiled. Avoid it, or add `'use no memo'`.
 - `use`-prefixed functions are hooks and are compiled, even when every caller is an inline
   observer. A hook wrapping a model method (`useOverlayState` over `getTrackOverlayData()`)

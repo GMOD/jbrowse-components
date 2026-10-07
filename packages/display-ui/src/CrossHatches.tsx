@@ -7,6 +7,7 @@ import type { YScaleTicks } from './yScaleTicks.ts'
 // Bare <line> set for the Y-scale tick guide lines, no wrapping <svg>. Shared by
 // the absolutely-positioned on-screen CrossHatches overlay and the flat SVG
 // export, so the two can't drift. `offsetY` is the band's top.
+// eslint-disable-next-line no-restricted-syntax -- drawn inside a frozen SVG figure
 export function CrossHatchLines({
   ticks,
   width,

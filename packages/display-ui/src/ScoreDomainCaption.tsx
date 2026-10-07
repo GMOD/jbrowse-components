@@ -14,6 +14,7 @@ import { SCORE_CAPTION_HEIGHT } from './yAxisConstants.ts'
  * `canvasWidth` at the top of the display, led by the scale's `caption` where
  * it has one, which has no gutter to sit in here.
  */
+// eslint-disable-next-line no-restricted-syntax -- drawn inside a frozen SVG figure
 export default function ScoreDomainCaption({
   domain,
   scaleType,

@@ -11,6 +11,7 @@ import type { SashimiArc } from '../../features/sashimi/computeOverlay.ts'
 // The read count at each arc's apex, shared by the overlay and the export, as a
 // pass of its own after the paths so a heavy arc's stroke cannot bury a lighter
 // one's count. The halo is the surface colour, so it reads in either theme.
+// eslint-disable-next-line no-restricted-syntax -- drawn inside a frozen SVG figure
 export default function SashimiArcLabels({
   arcs,
   show,

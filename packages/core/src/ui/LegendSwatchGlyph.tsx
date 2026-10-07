@@ -34,6 +34,7 @@ function glyphPathData(shape: ShapeName, size: number, x: number, y: number) {
 //
 // The shape fills the `size` box from (x, y) so a caller can lay swatches out on
 // a fixed pitch.
+// eslint-disable-next-line no-restricted-syntax -- drawn inside a frozen SVG figure
 export function LegendSwatchGlyph({
   swatch,
   size,

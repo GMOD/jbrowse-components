@@ -5,19 +5,12 @@ import { clampStrokeInsideAxis } from './yScaleTicks.ts'
 
 import type { YScaleTicks } from './yScaleTicks.ts'
 
-// Not an `observer`, and deliberately: there is nothing here to observe. Every
-// caller already reads `model.ticks` inside its own observer and hands the
-// resolved plain object down, and `usePalette` is a React context, not MobX.
-// Wrapping it anyway allocated a Reaction per instance — multi-wiggle renders
-// one per sample row, on screen as well as in export — and, per CLAUDE.md, put
-// the component out of `babel-plugin-react-compiler`'s reach, so it got neither
-// the MobX tracking it doesn't need nor the memoization it does. Its sibling
-// `CrossHatchLines`, consuming the same ticks, is already plain.
 // Half the vertical space a 10px label needs, halo included: digits reach about
 // 3.6px above the centered baseline and the 2.5px-wide background stroke another
 // 1.25px past that.
 const LABEL_HALF_HEIGHT_PX = 5
 
+// eslint-disable-next-line no-restricted-syntax -- drawn inside a frozen SVG figure
 export default function YScaleBar({
   ticks,
   orientation,

@@ -10,6 +10,7 @@ import type { LDDisplayModel } from '../model.ts'
  * unlabeled: its position on the axis already locates it. Plain, so the SVG
  * export draws it from coords it read once.
  */
+// eslint-disable-next-line no-restricted-syntax -- drawn inside a frozen SVG figure
 export function ConnectorLabels({ coords }: { coords: ConnectorCoord[] }) {
   const palette = usePalette()
   return coords.map(({ gx, label }, i) =>

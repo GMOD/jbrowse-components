@@ -44,6 +44,7 @@ const StyleThemeContext = createContext<JBrowseStyleTheme | undefined>(
  * `theme` that sets `spacing` or `typography` reaches `makeStyles` and Material
  * UI alike.
  */
+// eslint-disable-next-line no-restricted-syntax -- drawn inside a frozen SVG figure
 export function StyleThemeProvider({
   theme,
   children,

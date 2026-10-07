@@ -40,6 +40,7 @@ function tickLen(tick: Tick) {
 // centered text in an SVG sized to the plot is otherwise clipped at both ends,
 // and the read-vs-ref dotplot's synthetic assembly name (a read name plus an
 // `_assembly_<timestamp>` uniquifier) routinely runs past it. Full name on hover.
+// eslint-disable-next-line no-restricted-syntax -- drawn inside a frozen SVG figure
 function AxisTitle({
   title,
   availablePx,

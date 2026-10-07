@@ -31,6 +31,7 @@ import { getStrokeProps } from '@jbrowse/core/util'
  */
 export const MIN_SEPARATOR_ROW_PX = 4
 
+// eslint-disable-next-line no-restricted-syntax -- drawn inside a frozen SVG figure
 export function RowSeparatorLines({
   numRows,
   rowHeight,
