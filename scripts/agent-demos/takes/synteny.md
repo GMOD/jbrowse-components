@@ -105,7 +105,7 @@ config; the merge is shorter and keeps the text index and aliases the hosted
 configs already resolved.
 
 **Turn two** is a `DotplotView` with the same two assemblies and the same track,
-`colorBy: 'strand'` so reverse alignments have their own color, and
+`color: { field: 'strand' }` so reverse alignments have their own color, and
 `autoDiagonalize: true` so the mauritiana axis follows the simulans one. The
 layout is one `loadSessionSpec` with both views and
 
