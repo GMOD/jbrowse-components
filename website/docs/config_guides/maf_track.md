@@ -188,6 +188,35 @@ doc quotes the bytes per base measured on HPRC's published alignment:
 [`BgzipMafAdapter`](/docs/config/bgzipmafadapter/#slot-summaryadapter),
 [`BgzipTaffyAdapter`](/docs/config/bgziptaffyadapter/#slot-summaryadapter).
 
+## Species rows
+
+Three display settings work over the species rows.
+[`rows`](/docs/config/linearmafdisplay/#slot-rows) arranges them: its `domain`
+lists species to lead, and the guide tree rotates to that order where its
+topology allows. [`rowColor`](/docs/config/linearmafdisplay/#slot-rowcolor)
+paints the bar beside each species label, over the colour its `samples` entry
+gives. [`y`](/docs/config/linearmafdisplay/#slot-y) set to `identity` draws each
+row as a bar chart of its identity to the reference in place of a band of cells:
+
+```json addtrack
+{
+  "type": "MafTrack",
+  "trackId": "volvox_maf_identity",
+  "name": "MAF multiple alignment (identity bars)",
+  "assemblyNames": ["volvox"],
+  "adapter": {
+    "type": "MafTabixAdapter",
+    "uri": "volvox.maf.bed.gz",
+    "samples": ["volvox", "simvolvox", "microvolvox"]
+  },
+  "displayDefaults": {
+    "rows": { "domain": ["microvolvox"] },
+    "rowColor": { "domain": ["microvolvox"], "range": ["#f28e2b"] },
+    "y": "identity"
+  }
+}
+```
+
 ## CDS frames
 
 `annotationAdapter` on the MAF adapter points at a UCSC `mafFrames` file (a

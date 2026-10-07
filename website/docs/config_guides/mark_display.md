@@ -674,6 +674,11 @@ shift+wheel resizes them. `0`, the default, fits them to the plot again, which
 is what **Row height → Squeeze to fit view** writes. The menu's Normal and
 Compact presets also set every span's `rowProportion`, so the rows stand apart.
 
+The display's [`rowColor`](/docs/config/linearmarkdisplay/#slot-rowcolor) paints
+the bar beside each row's label and leaves the marks their own colour.
+`{ "domain": ["tumor"], "range": ["#e15759"] }` pairs a row's value with a
+colour, the form **Edit colors/arrangement...** writes.
+
 `facet` and `rows` both split the features on a field, and differ in what a
 value gets: a facet section is as deep as its packing and wears a chip, where a
 row is one row. Beside a facet the facet draws: on the same field that is the
