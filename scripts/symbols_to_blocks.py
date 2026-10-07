@@ -41,11 +41,11 @@ genome carrying both is a paralog pair (narH and narY) and they stay apart.
 **A symbol carried by several genes becomes several rows.** A link is one gene
 to one gene, so a genome with two copies of a symbol has no single correct cell,
 and taking the first copy hides the duplication. `--pick expand` (the default)
-emits one row per copy, index-paired across columns, so a symbol costs rows
-equal to its largest copy count rather than their product; each copy then draws
-its own ribbon. A symbol with more than `--max-copies` genes in a column is a
+emits one row per copy, index-paired across columns in each gene's own reading
+direction, so a symbol costs rows equal to its largest copy count rather than
+their product; each copy then draws its own ribbon. A symbol with more than `--max-copies` genes in a column is a
 gene family rather than a duplication and empties that cell. `--pick first`
-takes the first copy in file order, and `--pick single` empties any multi-copy
+takes the first copy along the gene, and `--pick single` empties any multi-copy
 cell for a strictly one-to-one table. `orthogroups_to_blocks.py` spells the same
 three over OrthoFinder's cells.
 
@@ -130,6 +130,18 @@ def label_genes(genes):
             label = f'{base}-{n}'
         taken.add(label)
         g['label'] = label
+
+
+def reading_order(genes):
+    """One symbol's genes in one genome, first to last along the gene.
+
+    Copies are paired across genomes by index, and a chromosome deposited the
+    other way round lists them in the opposite order, so two halves of a split
+    gene would pair first with last. Genes all on the minus strand read from
+    the high coordinate down.
+    """
+    ordered = sorted(genes, key=lambda g: (g['ref'], g['start']))
+    return ordered[::-1] if {g['strand'] for g in genes} == {'-'} else ordered
 
 
 def symbol_rows(copies, pick, max_copies, counts=None):
@@ -239,10 +251,14 @@ def main(argv):
 
     by_symbol = {}
     for name, genes in columns.items():
-        table = {}
+        carriers = {}
         for g in genes:
             if g['key'] is not None:
-                table.setdefault(g['key'], []).append(g['label'])
+                carriers.setdefault(g['key'], []).append(g)
+        table = {
+            key: [g['label'] for g in reading_order(carried)]
+            for key, carried in carriers.items()
+        }
         by_symbol[name] = table
         dup = sum(1 for labels in table.values() if len(labels) > 1)
         print(f'{name}: {len(genes)} genes, {len(table)} distinct symbols, {dup} with copies', file=sys.stderr)

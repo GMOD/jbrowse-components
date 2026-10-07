@@ -1482,6 +1482,16 @@ check("a repeated anchor symbol keeps both of its copies",
       [["h1", "c1", "."], ["h1b", "c1", "."]])
 check("single empties a multi-copy cell rather than choosing",
       sy.symbol_rows(sdup, "single", 4), [["h1", ".", "g1"]])
+# copies pair by index, so each genome lists its own in the gene's reading
+# direction: a chromosome deposited the other way round would pair the two
+# halves of a split gene first with last
+halves = lambda strand: [
+    {"ref": "c", "start": 10, "strand": strand, "label": "w"},
+    {"ref": "c", "start": 50, "strand": strand, "label": "w-2"},
+]
+check("a minus-strand symbol's copies read from the high coordinate down",
+      [[g["label"] for g in sy.reading_order(halves(s))] for s in "+-"],
+      [["w", "w-2"], ["w-2", "w"]])
 check("first takes the first copy in file order",
       sy.symbol_rows(sdup, "first", 4), [["h1", "c1a", "g1"]])
 check("a symbol past --max-copies is a gene family and empties its cell",
