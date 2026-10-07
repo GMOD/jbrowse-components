@@ -38,6 +38,7 @@
         {
           "type": "LinearBasicDisplay",
           "displayId": "genes.gff-LinearBasicDisplay",
+          "height": 190,
           "displayMode": "compact",
           "filter": ["jexl:feature.type=='gene'"]
         }
@@ -88,7 +89,6 @@
               {
                 "id": "sQ_OGf5MaHOn9X6f62mO7",
                 "type": "LinearBasicDisplay",
-                "heightPreConfig": 190,
                 "configuration": "genes.gff-LinearBasicDisplay"
               }
             ]

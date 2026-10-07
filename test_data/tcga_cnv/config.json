@@ -84,18 +84,9 @@
         "type": "BigBedAdapter",
         "uri": "https://ftp.ncbi.nlm.nih.gov/refseq/MANE/trackhub/data/release_1.4/MANE.GRCh38.v1.4.refseq.bb"
       },
-      "displays": [
-        {
-          "type": "LinearBasicDisplay",
-          "displayId": "MANE.GRCh38.v1.4.refseq-LinearBasicDisplay",
-          "renderer": {
-            "type": "SvgFeatureRenderer",
-            "labels": {
-              "description": "jexl:get(feature,'geneSymbol')"
-            }
-          }
-        }
-      ]
+      "displayDefaults": {
+        "labels": { "description": "jexl:feature.geneSymbol" }
+      }
     }
   ]
 }

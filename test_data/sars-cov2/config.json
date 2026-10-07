@@ -44,6 +44,7 @@
         {
           "type": "LinearBasicDisplay",
           "displayId": "sequence-LinearBasicDisplay",
+          "height": 280,
           "filter": ["jexl:feature.type=='gene'"]
         }
       ]
@@ -122,7 +123,6 @@
               {
                 "id": "muum41iFNmp6WSBj8oPNm",
                 "type": "LinearBasicDisplay",
-                "heightPreConfig": 280,
                 "configuration": "sequence-LinearBasicDisplay"
               }
             ]
