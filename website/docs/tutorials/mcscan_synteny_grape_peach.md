@@ -45,8 +45,8 @@ comes from [nodejs.org](https://nodejs.org/).
 Grape ([Jaillon et al. 2007](https://doi.org/10.1038/nature06148)) and peach
 genomes and gene annotations, Ensembl Plants release 58.
 
-The [build script](#reproduce-it-end-to-end) fetches these files, so there is
-nothing to download by hand.
+The [build script](#reproduce-it-end-to-end) takes these files from their URLs,
+so there is nothing to download by hand.
 
 - grape (Vitis_vinifera, PN40024.v4) genome and CDS FASTA:
   http://ftp.ensemblgenomes.org/pub/plants/release-58/fasta/vitis_vinifera/

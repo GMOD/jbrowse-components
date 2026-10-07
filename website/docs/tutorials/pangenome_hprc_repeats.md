@@ -56,8 +56,8 @@ until JBrowse 5 ships. We welcome your [feedback](/contact).
 [HPRC release 2](https://doi.org/10.64898/2026.07.21.739710) and PacBio's TRGT
 genotypes of 100 of its samples (Dolzhenko et al. 2024).
 
-The [build script](#reproduce-it-end-to-end) fetches these files, so there is
-nothing to download by hand.
+The [build script](#reproduce-it-end-to-end) takes these files from their URLs,
+so there is nothing to download by hand.
 
 - TRGT's genotypes over the Genome in a Bottle repeat catalogue, a TRGTdb:
   https://zenodo.org/records/8329210/files/adotto_hprc.tdb.tar

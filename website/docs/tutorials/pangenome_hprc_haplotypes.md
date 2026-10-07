@@ -38,8 +38,8 @@ until JBrowse 5 ships. We welcome your [feedback](/contact).
 
 [HPRC release 2](https://doi.org/10.64898/2026.07.21.739710).
 
-The [build scripts](#reproduce-it-end-to-end) fetch these files, so there is
-nothing to download by hand.
+The [build scripts](#reproduce-it-end-to-end) take these files from their URLs,
+so there is nothing to download by hand.
 
 - the assemblies:
   https://raw.githubusercontent.com/human-pangenomics/hprc_intermediate_assembly/main/data_tables/assemblies_release2_v1.0.index.csv

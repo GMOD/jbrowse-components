@@ -47,8 +47,8 @@ six of those; bioconda packages `gfatools`, and `datasets` and
 Five _E. coli_ RefSeq assemblies, fetched by accession with the NCBI datasets
 CLI, K12 the `--reference` backbone the other four are aligned onto.
 
-The [build script](#reproduce-it-end-to-end) fetches these files, so there is
-nothing to download by hand.
+The [build script](#reproduce-it-end-to-end) takes these files from their URLs,
+so there is nothing to download by hand.
 
 - K12:
   https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/005/845/GCF_000005845.2_ASM584v2/

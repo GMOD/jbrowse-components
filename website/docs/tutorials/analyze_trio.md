@@ -35,8 +35,8 @@ single download from its
 the Kinh-Vietnamese trio HG02024 (child), HG02026 (father) and HG02025 (mother),
 chr1 only.
 
-The [build script](#reproduce-it-end-to-end) fetches these files, so there is
-nothing to download by hand.
+The [build script](#reproduce-it-end-to-end) takes these files from their URLs,
+so there is nothing to download by hand.
 
 - the phased trio VCF:
   https://hgdownload.soe.ucsc.edu/gbdb/hg38/1000Genomes/trio/HG02024_VN049_KHV/HG02024_VN049_KHVTrio.chr1.vcf.gz

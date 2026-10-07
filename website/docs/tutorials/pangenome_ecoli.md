@@ -45,8 +45,10 @@ Debian/Ubuntu, and `datasets` and `bedGraphToBigWig` are each a
 Five _E. coli_ RefSeq assemblies, fetched by accession with the NCBI `datasets`
 CLI.
 
-The [build script](#reproduce-it-end-to-end) fetches these files, so there is
-nothing to download by hand.
+The [build script](#reproduce-it-end-to-end) takes the five assemblies from
+NCBI. The nanopore reads are the one file to download by hand, with the `curl`
+under
+[Testing the CPZ-55 depth trough with nanopore reads](#testing-the-cpz-55-depth-trough-with-nanopore-reads).
 
 - K12:
   https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/005/845/GCF_000005845.2_ASM584v2/

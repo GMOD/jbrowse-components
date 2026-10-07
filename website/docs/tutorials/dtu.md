@@ -29,8 +29,8 @@ by it, with a key listing each bin.
 ENCODE's ENTEx panel, four skeletal-muscle and four liver donors, quantified
 with RSEM against GENCODE v29.
 
-The [build script](#reproduce-it-end-to-end) fetches these files, so there is
-nothing to download by hand.
+The [build script](#reproduce-it-end-to-end) takes these files from their URLs,
+so there is nothing to download by hand.
 
 - eight RSEM per-transcript quantification tables, the four muscle donors then
   the four liver donors:

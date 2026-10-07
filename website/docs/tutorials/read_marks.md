@@ -34,8 +34,8 @@ The mark display is experimental, and its config shape may change.
 ([Byrska-Bishop et al. 2022](https://doi.org/10.1016/j.cell.2022.08.004)),
 GRCh38.
 
-The [build script](#reproduce-it-end-to-end) fetches these files, so there is
-nothing to download by hand.
+The [build script](#reproduce-it-end-to-end) takes these files from their URLs,
+so there is nothing to download by hand.
 
 - NA12878's 30x CRAM, index beside it:
   https://s3.amazonaws.com/1000genomes/1000G_2504_high_coverage/data/ERR3239334/NA12878.final.cram

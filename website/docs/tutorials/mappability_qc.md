@@ -30,8 +30,8 @@ The hosted tracks are files already wired into the
 from the 1000 Genomes high-coverage short-read release and its ONT long-read
 release ([Gustafson et al. 2024](https://doi.org/10.1101/gr.279273.124)).
 
-The [build script](#reproduce-it-end-to-end) fetches these files, so there is
-nothing to download by hand.
+The [build script](#reproduce-it-end-to-end) takes these files from their URLs,
+so there is nothing to download by hand.
 
 - GM18501 ONT long reads aligned to GRCh38, counted here since the bucket serves
   no CORS headers and so cannot be loaded as a track:

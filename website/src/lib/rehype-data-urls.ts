@@ -36,8 +36,8 @@ function isH2(node: RootContent) {
   return isElement(node) && node.tagName === 'h2'
 }
 
-function shortenLinks(node: Element) {
-  let count = 0
+function bareLinks(node: Element, collapsed = false) {
+  const links: { link: Element; href: string; collapsed: boolean }[] = []
   for (const child of node.children) {
     if (!isElement(child)) {
       continue
@@ -49,13 +49,12 @@ function shortenLinks(node: Element) {
       /^https?:\/\//.test(href) &&
       getText(child) === href
     ) {
-      child.children = [span('url-short', shorten(href)), span('url-full', href)]
-      count++
+      links.push({ link: child, href, collapsed })
     } else {
-      count += shortenLinks(child)
+      links.push(...bareLinks(child, collapsed || child.tagName === 'details'))
     }
   }
-  return count
+  return links
 }
 
 // The checkbox toggles the full URLs by CSS alone (`~` siblings), with no script
@@ -80,8 +79,12 @@ const rehypeDataUrls: Plugin<[], Root> = () => (tree, file) => {
     properties: { className: ['data-urls'] },
     children: children.slice(start + 1, end) as Element['children'],
   }
-  if (shortenLinks(section) === 0) {
+  const links = bareLinks(section)
+  if (links.every(l => l.collapsed)) {
     return
+  }
+  for (const { link, href } of links) {
+    link.children = [span('url-short', shorten(href)), span('url-full', href)]
   }
   const toggle: Element[] = [
     {

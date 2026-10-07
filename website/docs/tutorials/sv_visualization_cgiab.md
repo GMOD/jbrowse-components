@@ -52,8 +52,8 @@ Building your own instance needs:
 HG008, the C-GIAB matched tumor/normal pair (NCBI BioProject PRJNA200694), is on
 the C-GIAB FTP. The assemblies are on NIST's S3 bucket.
 
-The [build script](#reproduce-it-end-to-end) fetches these files, so there is
-nothing to download by hand.
+The [build script](#reproduce-it-end-to-end) takes these files from their URLs,
+so there is nothing to download by hand.
 
 The reference and the reads:
 
@@ -86,7 +86,7 @@ The assemblies:
 
 - the T2T tumor assembly, v3.2:
   https://nist-giab.s3.us-east-1.amazonaws.com/giab_tumor-normal/analysis/HG008/NIST_asm_dev/HG008T_v3.2/HG008T_v3.2.fasta.gz
-- the matched normal assembly, v6.3:
+- the matched normal assembly, v6.3, which the build script leaves out:
   https://nist-giab.s3.us-east-1.amazonaws.com/giab_tumor-normal/analysis/HG008/NIST_asm_dev/HG008N_v6.3/HG008N_v6.3.fasta.gz
 
 ## HG008, a pancreatic tumor and its matched normal

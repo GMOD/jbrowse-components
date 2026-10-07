@@ -31,8 +31,8 @@ an indexed PAF and rehosted beside the hub configs
 [genomes.jbrowse.org](https://genomes.jbrowse.org) serves, and eight UCSC genome
 hubs, whose assembly entry and NCBI RefSeq gene track each lane takes verbatim.
 
-The [build script](#reproduce-it-end-to-end) fetches these files, so there is
-nothing to download by hand.
+The [build script](#reproduce-it-end-to-end) takes these files from their URLs,
+so there is nothing to download by hand.
 
 - UCSC's liftOver folder for hg38, one `hg38To<Genome>.over.chain.gz` per
   genome: https://hgdownload.soe.ucsc.edu/goldenPath/hg38/liftOver/

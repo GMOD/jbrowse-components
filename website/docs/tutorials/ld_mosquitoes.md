@@ -30,8 +30,8 @@ it.
 Ag1000G phase 2 AR1
 ([Anopheles gambiae 1000 Genomes Consortium 2020](https://doi.org/10.1101/gr.262790.120)).
 
-The [build script](#reproduce-it-end-to-end) fetches these files, so there is
-nothing to download by hand.
+The [build script](#reproduce-it-end-to-end) takes these files from their URLs,
+so there is nothing to download by hand.
 
 - the phased haplotypes and their sample list for chromosome arm 2L, which the
   commands subset to one population at a time:

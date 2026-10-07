@@ -40,8 +40,8 @@ Two Dog10K structural-variant callsets from Schall & Kidd
 ([2025](https://doi.org/10.1093/gbe/evaf173)), read directly over HTTP, plus
 supporting UCSC and OMIA tracks and two sequenced retrocopies from GenBank.
 
-The [build scripts](#reproduce-it-end-to-end) fetch these files, so there is
-nothing to download by hand.
+The [build scripts](#reproduce-it-end-to-end) take these files from their URLs,
+so there is nothing to download by hand.
 
 - the Zenodo Paragraph callset, 5.9 GB, with the _NHEJ1_ deletion and the
   _RNASE1_ insertion:

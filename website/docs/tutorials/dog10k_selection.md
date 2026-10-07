@@ -44,8 +44,8 @@ The Dog10K consortium's public share
 ([Meadows et al. 2023](https://doi.org/10.1186/s13059-023-03023-7)), read
 directly over HTTP with no local copy of either callset.
 
-The [build script](#reproduce-it-end-to-end) fetches these files, so there is
-nothing to download by hand.
+The [build script](#reproduce-it-end-to-end) takes these files from their URLs,
+so there is nothing to download by hand.
 
 - the phased imputation panel, scored window by window for the Fst scan:
   https://kiddlabshare.med.umich.edu/dog10K/phased-imputation-panel/AutoAndXPAR.Dog10K.phased.bcf

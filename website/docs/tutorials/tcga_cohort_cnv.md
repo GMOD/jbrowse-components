@@ -24,8 +24,8 @@ TCGA-BRCA, from the GDC's open-access **Masked Copy Number Segment** files
 (Affymetrix SNP 6.0, harmonized to GRCh38), so no dbGaP application or token is
 needed.
 
-The [build script](#reproduce-it-end-to-end) fetches these files, so there is
-nothing to download by hand.
+The [build script](#reproduce-it-end-to-end) takes these files from their URLs,
+so there is nothing to download by hand.
 
 - primary-tumor segment calls for 1104 tumors, queried and downloaded through
   the GDC API: https://api.gdc.cancer.gov/files

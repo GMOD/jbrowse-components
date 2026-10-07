@@ -35,8 +35,8 @@ The figures read UCSC's hg38 annotation tables, rehosted by
 [genomes.jbrowse.org's hg38](https://genomes.jbrowse.org/ucsc/hg38/) with a
 density sidecar beside each file.
 
-The [build script](#reproduce-it-end-to-end) fetches these files, so there is
-nothing to download by hand.
+The [build script](#reproduce-it-end-to-end) takes these files from their URLs,
+so there is nothing to download by hand.
 
 - RefSeq curated genes, UCSC's `ncbiRefSeqCurated` table as GFF3:
   https://jbrowse.org/ucsc/hg38/ncbiRefSeqCurated.gff.gz

@@ -55,3 +55,13 @@ test('a section with no bare URL gets no toggle', () => {
     run(page([link('https://example.org/a/b', 'named')])),
   ).not.toContain('show-full-urls')
 })
+
+test('a section whose only bare URLs sit in a collapsed list keeps them whole', () => {
+  const tree = page([])
+  tree.children[1] = el('details', [
+    el('ul', [el('li', [link('https://example.org/data/hg38/genes.gff.gz')])]),
+  ])
+  const out = run(tree)
+  expect(out).not.toContain('show-full-urls')
+  expect(out).toContain('"value":"https://example.org/data/hg38/genes.gff.gz"')
+})

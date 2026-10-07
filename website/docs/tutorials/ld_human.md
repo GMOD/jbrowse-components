@@ -39,8 +39,8 @@ With that view we:
 ([Byrska-Bishop et al. 2022](https://doi.org/10.1016/j.cell.2022.08.004)),
 called natively on GRCh38.
 
-The [build scripts](#reproduce-it-end-to-end) fetch these files, so there is
-nothing to download by hand.
+The [build scripts](#reproduce-it-end-to-end) take these files from their URLs,
+so there is nothing to download by hand.
 
 - phased chromosome 2:
   https://ftp.1000genomes.ebi.ac.uk/vol1/ftp/data_collections/1000G_2504_high_coverage/working/20220422_3202_phased_SNV_INDEL_SV/1kGP_high_coverage_Illumina.chr2.filtered.SNV_INDEL_SV_phased_panel.vcf.gz
