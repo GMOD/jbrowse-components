@@ -148,6 +148,37 @@ Declined on 2026-09-30: track- or view-level facets, and a free y per section.
   ADR-114's 3.11x and ADR-118's 4.23x blamed the per-row `Feature` that
   ADR-191 removed for typed sources, so re-measure both before citing them.
 
+## What the 2026-10-07 release audit checked and found agreeing
+
+Five read-only audits ran over the vocabulary, the JSON schema, the mark
+pipeline, the plot write paths and the docs before v5.0.0, and their findings
+landed as ADR-214 to ADR-220. What they checked and found in order is as much
+the result, since it is what a later audit need not redo:
+
+- Every colour object carries ADR-151's members, and `scale: 'none'` means the
+  same on each: paint `value`, keep the field.
+- `fieldPresets` names agree across displays: `strand`, `identity`, `mapq`,
+  `count`, `r2`, `dprime`.
+- Every shorthand has its schema branch, and a `null` reset agrees across the
+  write paths on a typed slot.
+- Each display's `plotExamples` round-tripped through `plot`, `applyPlot`, a
+  session delta and a reload unchanged, 47 examples on 14 displays that day.
+- The CLI's copy of the mark rule list is byte-identical to the live one, and
+  `pnpm autogen` holds it there.
+- SVG export shares the Canvas2D painters, so no mark lacks a twin.
+- A new mark, step type, scale kind, colour member or display type is additive
+  in the JSON schema: its `if/then` dispatch passes a type it does not know.
+- `displayDefaults` expand into the display config, so `plot` and "Reset track
+  settings" see them.
+- Alignments `layoutOrder` and `sortedBy` are not a second spelling of
+  `rows.domain`, since pileup rows have no keys; `displayMode`, `lodMode`,
+  `conservationMode` and `heightMode` are layout or fetch modes, not marks.
+
+Two docs the audit left on a jexl callback or a flag name, on purpose: the
+cookbook's whole-config recipe paints SNVs one colour and every other variant
+another, which a colour object has no member for, and jb2export's comparative
+`--colorBy` keeps the menu's verb (ADR-139) while writing the `color` object.
+
 ## Where a proposal lands
 
 A new channel or scale kind is the encoder's (`markEncodingTypes.ts`) and needs a
