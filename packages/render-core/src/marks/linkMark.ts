@@ -74,15 +74,7 @@ export interface LinkChannels extends ColorChannel, RowChannel {
   count: number
 }
 
-export const LINK_FOOT_FORWARD = 1
-export const LINK_FOOT_REVERSE = 2
-
-/** The `feet` lane's value for a tick at each foot, by genomic direction. */
-export function linkFeet(xDir: number, x2Dir: number) {
-  const bits = (d: number) =>
-    d > 0 ? LINK_FOOT_FORWARD : d < 0 ? LINK_FOOT_REVERSE : 0
-  return bits(xDir) | (bits(x2Dir) << 2)
-}
+export { LINK_FOOT_FORWARD, LINK_FOOT_REVERSE, linkFeet } from '../linkFeet.ts'
 
 /**
  * One displayed region as a foot places through it: the canvas px of an

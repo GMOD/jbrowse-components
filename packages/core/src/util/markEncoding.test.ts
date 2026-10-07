@@ -1,3 +1,4 @@
+import { linkFeet } from '@jbrowse/render-core/linkFeet'
 import {
   RAMP_NOT_A_NUMBER_COLOR,
   RAMP_NO_VALUE_BITS,
@@ -1133,6 +1134,26 @@ test('a locus x2 reads its position and files its sequence in the refName dictio
   // the record with no mate has no position and is a skipped feature
   expect(out.skipped).toBe(1)
   expect(out.skippedPosition).toBe(1)
+})
+
+test('a locus x2 packs the arm each end keeps into the feet lane', () => {
+  const ends = [
+    feature(0, {
+      mateDirection: -1,
+      mate: { refName: 'chr1', start: 5000, mateDirection: 1 },
+    }),
+    feature(1, {
+      mateDirection: 1,
+      mate: { refName: 'chr7', start: 300, mateDirection: 1 },
+    }),
+    feature(2, { mate: { refName: 'chr1', start: 20 } }),
+  ]
+  const x2 = { chrom: 'mate.refName', pos: 'mate.start' }
+  const out = encodeFeatures(ends, { x2 }, ['x2Ref'])
+  expect([...out.feet!]).toEqual([linkFeet(-1, 1), linkFeet(1, 1), 0])
+  expect(encodedChannelTransferables(out)).toContain(out.feet!.buffer)
+  // no record states a direction, so there is no lane
+  expect(encodeFeatures(paired, { x2 }, ['x2Ref']).feet).toBeUndefined()
 })
 
 test('a plain x2 files every feature under its own sequence when the lane is asked for', () => {

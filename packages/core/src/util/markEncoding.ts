@@ -1,3 +1,4 @@
+import { linkFeet } from '@jbrowse/render-core/linkFeet'
 import {
   makeScoreNormalizer,
   rampMidNorm,
@@ -208,6 +209,32 @@ function numberChannelReader(
   }
   const read = channelReader(table, ref, jexl)
   return i => numericValue(read(i))
+}
+
+// A far end stated as `mate.start` carries its direction as
+// `mate.mateDirection`, beside the record's own.
+function feetLane(
+  table: FeatureTable,
+  farPos: FieldRef,
+  count: number,
+  rowAt: (k: number) => number,
+  jexl: JexlInstance | undefined,
+) {
+  const dot = farPos.lastIndexOf('.')
+  const farDirection = `${farPos.slice(0, dot)}.mateDirection`
+  if (dot === -1 || isJexl(farPos)) {
+    return undefined
+  }
+  const own = numberChannelReader(table, 'mateDirection', jexl)
+  const far = numberChannelReader(table, farDirection, jexl)
+  const feet = new Uint8Array(count)
+  let any = false
+  for (let k = 0; k < count; k++) {
+    const r = rowAt(k)
+    feet[k] = linkFeet(own(r), far(r))
+    any ||= feet[k] !== 0
+  }
+  return any ? feet : undefined
 }
 
 function isShapeName(shape: string): shape is ShapeName {
@@ -677,6 +704,10 @@ export function encodeFeatures<L extends LaneName>(
       x2Ref[k] = ref
     }
   }
+  const feet =
+    x2Ref && x2Locus
+      ? feetLane(table, x2Locus.pos, count, rowAt, jexl)
+      : undefined
 
   const sizeRef: SizeRef | undefined =
     has('size') &&
@@ -981,6 +1012,9 @@ export function encodeFeatures<L extends LaneName>(
     encoded.x2Ref = x2Ref
     encoded.x2RefNames = x2RefNames
   }
+  if (feet) {
+    encoded.feet = feet
+  }
   if (sizeScale) {
     encoded.sizeScale = sizeScale
   }
@@ -1211,6 +1245,7 @@ export function encodedChannelTransferables(c: EncodedChannels) {
     c.glyph,
     c.size,
     c.x2Ref,
+    c.feet,
   ]) {
     if (lane) {
       buffers.add(lane.buffer)

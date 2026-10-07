@@ -378,6 +378,13 @@ export interface EncodedChannels {
    */
   x2Ref?: Uint32Array
   x2RefNames?: string[]
+  /**
+   * Which arm each end's junction keeps, as render-core's `linkFeet` packs
+   * the two directions: the record's own `mateDirection` and the one beside
+   * a {@link LocusRef} `x2`'s position. Filled with `x2Ref`, and absent where
+   * no record states a direction.
+   */
+  feet?: Uint8Array
   /** The finite `y` extremes, `Infinity`/`-Infinity` when nothing plotted. */
   yMin: number
   yMax: number

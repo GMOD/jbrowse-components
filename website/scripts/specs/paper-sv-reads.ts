@@ -67,6 +67,24 @@ const bandLabel = (
   anchor: { text: trackLabel, alignX: 'left', alignY: 'bottom', dx: 8, dy },
 })
 
+const callsTrack = (trackId: string, name: string) => ({
+  type: 'VariantTrack',
+  trackId,
+  name,
+  assemblyNames: [GRCH38],
+  adapter: {
+    type: 'VcfTabixAdapter',
+    vcfGzLocation: { uri: CALLS_VCF, locationType: 'UriLocation' },
+    index: {
+      indexType: 'TBI',
+      location: { uri: `${CALLS_VCF}.tbi`, locationType: 'UriLocation' },
+    },
+  },
+})
+
+const CALLS_NAME = 'HG008-T V0.5 draft benchmark somatic SVs'
+const CALL_ARCS = 'hg008t_benchmark_sv_arcs'
+const CALL_ARCS_NAME = 'HG008-T benchmark SV junctions'
 const HIFI_COV = 'hg008_t_hifi_coverage'
 const HIFI_COV_NAME = 'HG008-T PacBio HiFi: coverage'
 const HIFI_NAME = 'HG008-T PacBio HiFi: reads and arcs'
@@ -91,27 +109,15 @@ const readEvidence = ({
   // caps the Illumina coverage axis where a spike in view would flatten it
   coverageMax?: number
   viewportHeight: number
-  // each breakend pair of the calls as one arc, under its ID
+  // a second mount of the calls, each breakend pair as one arc
   callArcs?: boolean
 }): ScreenshotSpec => ({
   mode: 'url',
   name,
   url: cgiabUrl({
     sessionTracks: [
-      {
-        type: 'VariantTrack',
-        trackId: CALLS,
-        name: 'HG008-T V0.5 draft benchmark somatic SVs',
-        assemblyNames: [GRCH38],
-        adapter: {
-          type: 'VcfTabixAdapter',
-          vcfGzLocation: { uri: CALLS_VCF, locationType: 'UriLocation' },
-          index: {
-            indexType: 'TBI',
-            location: { uri: `${CALLS_VCF}.tbi`, locationType: 'UriLocation' },
-          },
-        },
-      },
+      callsTrack(CALLS, CALLS_NAME),
+      ...(callArcs ? [callsTrack(CALL_ARCS, CALL_ARCS_NAME)] : []),
       bamTrack(HIFI_COV, HIFI_COV_NAME, HIFI_BAM),
       bamTrack(HIFI, HIFI_NAME, HIFI_BAM),
       bamTrack(ILLUMINA_ARCS, ARCS_NAME, ILLUMINA_BAM),
@@ -130,35 +136,30 @@ const readEvidence = ({
             geneGlyphMode: 'longestCoding',
             height: 60,
           },
-          callArcs
-            ? {
-                trackId: CALLS,
-                type: 'LinearMarkDisplay',
-                height: 85,
-                marks: [
-                  {
-                    mark: 'link',
-                    transform: [{ type: 'mate' }],
-                    encoding: {
-                      x2: { chrom: 'mate.refName', pos: 'mate.start' },
-                      size: 2,
+          {
+            trackId: CALLS,
+            type: 'LinearVariantDisplay',
+            height: 85,
+          },
+          ...(callArcs
+            ? [
+                {
+                  trackId: CALL_ARCS,
+                  type: 'LinearMarkDisplay',
+                  height: 70,
+                  marks: [
+                    {
+                      mark: 'link',
+                      transform: [{ type: 'mate' }],
+                      encoding: {
+                        x2: { chrom: 'mate.refName', pos: 'mate.start' },
+                        size: 2,
+                      },
                     },
-                  },
-                  {
-                    mark: 'text',
-                    transform: [{ type: 'mate' }],
-                    encoding: {
-                      x2: { chrom: 'mate.refName', pos: 'mate.start' },
-                      text: 'name',
-                    },
-                  },
-                ],
-              }
-            : {
-                trackId: CALLS,
-                type: 'LinearVariantDisplay',
-                height: 85,
-              },
+                  ],
+                },
+              ]
+            : []),
           // grouping splits coverage per group, so the whole-sample coverage
           // is a track of its own
           {
@@ -209,6 +210,7 @@ const readEvidence = ({
   }),
   annotations: [
     bandLabel('SV calls', 'draft benchmark somatic SVs', 52),
+    ...(callArcs ? [bandLabel('SV call arcs', CALL_ARCS_NAME, 36)] : []),
     bandLabel('PacBio: coverage', HIFI_COV_NAME, 36),
     bandLabel('PacBio: split-read arcs', HIFI_NAME, 38),
     bandLabel('PacBio: split reads', HIFI_NAME, 82),
@@ -245,7 +247,7 @@ export const paperSvReadsSpecs: ScreenshotSpec[] = [
     loc: 'chr3:184,709,000-184,723,000',
     arcsHeight: 110,
     connectorCurves: false,
-    viewportHeight: 1175,
+    viewportHeight: 1250,
     callArcs: true,
   }),
 ]
