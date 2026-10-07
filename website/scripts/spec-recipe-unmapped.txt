@@ -13,7 +13,6 @@ contigThickness
 diagonalizeAnchorRow
 displayMode
 domain
-drawModalPairsInCloud
 facet
 fadeThinAlignmentsMode
 filter
@@ -38,6 +37,7 @@ showAlignment
 showBranchLength
 showGridlines
 showLegend
+showModalPairsInCloud
 showProteinTracks
 showVariantLane
 sideBySide

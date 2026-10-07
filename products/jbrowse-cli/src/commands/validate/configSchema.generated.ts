@@ -6049,7 +6049,9 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "anyOf": [
         {
           "description": "Shorthand for \`{ \\"field\\": ... }\`.",
+          "default": "",
           "enum": [
+            "",
             "baseQuality",
             "base",
             "modifications",
@@ -6063,12 +6065,14 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "x-closed": true,
           "properties": {
             "field": {
-              "description": "the per-base variable painted over the reads: modifications, bisulfite, baseQuality or base; unset draws none.",
+              "description": "the per-base variable painted over the reads: modifications, bisulfite, baseQuality or base; empty draws none.",
+              "default": "",
               "if": {
                 "type": "null"
               },
               "else": {
                 "enum": [
+                  "",
                   "baseQuality",
                   "base",
                   "modifications",
@@ -6092,6 +6096,74 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "additionalProperties": false
         }
       ]
+    },
+    "AlignmentsModifications": {
+      "title": "AlignmentsModifications",
+      "type": "object",
+      "x-closed": true,
+      "properties": {
+        "threshold": {
+          "description": "hide a call whose probability is under this percent in the by-type view; the two-colour view cuts at 50 and the methylation fill paints every cytosine.",
+          "default": 10,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "number"
+          }
+        },
+        "twoColor": {
+          "description": "paint the unmodified side blue as well as the modified side its colour, under modifications and bisulfite alike.",
+          "default": false,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "boolean"
+          }
+        },
+        "fillUnmarked": {
+          "description": "paint every cytosine in the context as methylated or unmethylated, the ones the basecaller left implicit included; the methylation view.",
+          "default": false,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "boolean"
+          }
+        },
+        "cytosineContext": {
+          "description": "which cytosines the methylation fill and bisulfite paint: CG, CHG, CHH or all.",
+          "default": "CG",
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "enum": [
+              "CG",
+              "CHG",
+              "CHH",
+              "all"
+            ]
+          }
+        },
+        "shownModifications": {
+          "description": "the modification type codes drawn (m, h, a, ...); empty draws every type the reads carry.",
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "patternProperties": {
+        "^_+comment": {}
+      },
+      "additionalProperties": false
     },
     "ValueScaleRule": {
       "title": "ValueScaleRule",
@@ -6447,9 +6519,9 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "type": "boolean"
           }
         },
-        "hideNonCanonicalJunctions": {
-          "description": "Hide sashimi arcs whose splice-site motif is none of GT-AG, GC-AG or AT-AC. Read off the reference under each junction, so it needs a sequence adapter; a junction whose motif could not be read stays.",
-          "default": false,
+        "showNonCanonicalJunctions": {
+          "description": "Draw sashimi arcs whose splice-site motif is none of GT-AG, GC-AG or AT-AC. Off, the motif is read off the reference under each junction, so it needs a sequence adapter, and a junction whose motif could not be read stays.",
+          "default": true,
           "if": {
             "type": "null"
           },
@@ -6484,14 +6556,11 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           }
         },
         "modifications": {
-          "description": "Settings of the modifications and bisulfite color fields. Any JSON value: the slot is \`frozen\`, so its shape is not checked here.",
           "if": {
             "type": "null"
           },
           "else": {
-            "not": {
-              "$ref": "#/$defs/JexlString"
-            }
+            "$ref": "#/$defs/AlignmentsModifications"
           }
         },
         "filterBy": {
@@ -6545,9 +6614,9 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "type": "boolean"
           }
         },
-        "showLowFreqMismatches": {
-          "description": "Draw sub-pixel mismatches, insertions and clip bars in the pileup at full opacity instead of fading the ones below the depth-dependent frequency threshold. Read through the \`filterMismatchesByFrequency\` getter, which is this in the polarity the renderers and hit-test take. Does not affect the coverage band (see runCoveragePipeline).",
-          "default": false,
+        "fadeLowFreqMismatches": {
+          "description": "Fade the sub-pixel mismatches, insertions and clip bars in the pileup that fall below the depth-dependent frequency threshold; off draws them all at full opacity. Does not affect the coverage band (see runCoveragePipeline).",
+          "default": true,
           "if": {
             "type": "null"
           },
@@ -6655,7 +6724,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           }
         },
         "coverageSnpMinFrequency": {
-          "description": "Hide a coverage-band allele segment whose share of that position's depth is below this fraction, so the band stops painting a sliver for every sequencing error at high depth. 0 (the default) colors every mismatch. Distinct from \`showLowFreqMismatches\`, which turns OFF the pileup's fade of sub-pixel marks against a depth-dependent threshold; this is a flat allele-fraction floor on the band, and the grey depth bar still shows through where a segment is hidden.",
+          "description": "Hide a coverage-band allele segment whose share of that position's depth is below this fraction, so the band stops painting a sliver for every sequencing error at high depth. 0 (the default) colors every mismatch. Distinct from \`fadeLowFreqMismatches\`, the pileup's fade of sub-pixel marks against a depth-dependent threshold; this is a flat allele-fraction floor on the band, and the grey depth bar still shows through where a segment is hidden.",
           "default": 0,
           "if": {
             "type": "null"
@@ -6694,17 +6763,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "type": "boolean"
           }
         },
-        "colorSupplementaryChains": {
-          "description": "Paint every chain carrying a supplementary segment a flat supplementary color, paired or not.",
-          "default": false,
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "type": "boolean"
-          }
-        },
-        "drawInter": {
+        "showInterchrom": {
           "description": "Draw inter-chromosomal read-connection arcs.",
           "default": true,
           "if": {
@@ -6714,7 +6773,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "type": "boolean"
           }
         },
-        "drawProperPairArcs": {
+        "showProperPairArcs": {
           "description": "Draw arcs for ordinary concordant pairs. Uncheck to leave only the arcs that carry a category (abnormal insert size or orientation, split junctions), which on deep coverage is the difference between a readable band and a solid mass.",
           "default": true,
           "if": {
@@ -6724,7 +6783,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "type": "boolean"
           }
         },
-        "drawModalPairsInCloud": {
+        "showModalPairsInCloud": {
           "description": "Keep the pairs of ordinary insert size in the read cloud, as the band the abnormal pairs are read against.",
           "default": false,
           "if": {
@@ -6744,7 +6803,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "type": "number"
           }
         },
-        "drawLongRange": {
+        "showLongRange": {
           "description": "Draw long-range read-connection arcs.",
           "default": true,
           "if": {
@@ -6851,6 +6910,14 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           }
         },
         "colorBy": {
+          "deprecated": true,
+          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+        },
+        "drawInter": {
+          "deprecated": true,
+          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+        },
+        "drawLongRange": {
           "deprecated": true,
           "description": "Legacy key: a migration rewrites it into current slots when the config loads."
         },
@@ -7540,9 +7607,9 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "type": "boolean"
           }
         },
-        "hideNonCanonicalJunctions": {
-          "description": "Hide sashimi arcs whose splice-site motif is none of GT-AG, GC-AG or AT-AC. Read off the reference under each junction, so it needs a sequence adapter; a junction whose motif could not be read stays.",
-          "default": false,
+        "showNonCanonicalJunctions": {
+          "description": "Draw sashimi arcs whose splice-site motif is none of GT-AG, GC-AG or AT-AC. Off, the motif is read off the reference under each junction, so it needs a sequence adapter, and a junction whose motif could not be read stays.",
+          "default": true,
           "if": {
             "type": "null"
           },
@@ -7577,14 +7644,11 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           }
         },
         "modifications": {
-          "description": "Settings of the modifications and bisulfite color fields. Any JSON value: the slot is \`frozen\`, so its shape is not checked here.",
           "if": {
             "type": "null"
           },
           "else": {
-            "not": {
-              "$ref": "#/$defs/JexlString"
-            }
+            "$ref": "#/$defs/AlignmentsModifications"
           }
         },
         "filterBy": {
@@ -7638,9 +7702,9 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "type": "boolean"
           }
         },
-        "showLowFreqMismatches": {
-          "description": "Draw sub-pixel mismatches, insertions and clip bars in the pileup at full opacity instead of fading the ones below the depth-dependent frequency threshold. Read through the \`filterMismatchesByFrequency\` getter, which is this in the polarity the renderers and hit-test take. Does not affect the coverage band (see runCoveragePipeline).",
-          "default": false,
+        "fadeLowFreqMismatches": {
+          "description": "Fade the sub-pixel mismatches, insertions and clip bars in the pileup that fall below the depth-dependent frequency threshold; off draws them all at full opacity. Does not affect the coverage band (see runCoveragePipeline).",
+          "default": true,
           "if": {
             "type": "null"
           },
@@ -7748,7 +7812,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           }
         },
         "coverageSnpMinFrequency": {
-          "description": "Hide a coverage-band allele segment whose share of that position's depth is below this fraction, so the band stops painting a sliver for every sequencing error at high depth. 0 (the default) colors every mismatch. Distinct from \`showLowFreqMismatches\`, which turns OFF the pileup's fade of sub-pixel marks against a depth-dependent threshold; this is a flat allele-fraction floor on the band, and the grey depth bar still shows through where a segment is hidden.",
+          "description": "Hide a coverage-band allele segment whose share of that position's depth is below this fraction, so the band stops painting a sliver for every sequencing error at high depth. 0 (the default) colors every mismatch. Distinct from \`fadeLowFreqMismatches\`, the pileup's fade of sub-pixel marks against a depth-dependent threshold; this is a flat allele-fraction floor on the band, and the grey depth bar still shows through where a segment is hidden.",
           "default": 0,
           "if": {
             "type": "null"
@@ -7787,17 +7851,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "type": "boolean"
           }
         },
-        "colorSupplementaryChains": {
-          "description": "Paint every chain carrying a supplementary segment a flat supplementary color, paired or not.",
-          "default": false,
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "type": "boolean"
-          }
-        },
-        "drawInter": {
+        "showInterchrom": {
           "description": "Draw inter-chromosomal read-connection arcs.",
           "default": true,
           "if": {
@@ -7807,7 +7861,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "type": "boolean"
           }
         },
-        "drawProperPairArcs": {
+        "showProperPairArcs": {
           "description": "Draw arcs for ordinary concordant pairs. Uncheck to leave only the arcs that carry a category (abnormal insert size or orientation, split junctions), which on deep coverage is the difference between a readable band and a solid mass.",
           "default": true,
           "if": {
@@ -7817,7 +7871,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "type": "boolean"
           }
         },
-        "drawModalPairsInCloud": {
+        "showModalPairsInCloud": {
           "description": "Keep the pairs of ordinary insert size in the read cloud, as the band the abnormal pairs are read against.",
           "default": false,
           "if": {
@@ -7837,7 +7891,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "type": "number"
           }
         },
-        "drawLongRange": {
+        "showLongRange": {
           "description": "Draw long-range read-connection arcs.",
           "default": true,
           "if": {
@@ -7968,6 +8022,14 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           }
         },
         "colorBy": {
+          "deprecated": true,
+          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+        },
+        "drawInter": {
+          "deprecated": true,
+          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+        },
+        "drawLongRange": {
           "deprecated": true,
           "description": "Legacy key: a migration rewrites it into current slots when the config loads."
         },
@@ -14276,8 +14338,8 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "showSashimiLabels": {
               "$ref": "#/$defs/LinearAlignmentsDisplaySlots/properties/showSashimiLabels"
             },
-            "hideNonCanonicalJunctions": {
-              "$ref": "#/$defs/LinearAlignmentsDisplaySlots/properties/hideNonCanonicalJunctions"
+            "showNonCanonicalJunctions": {
+              "$ref": "#/$defs/LinearAlignmentsDisplaySlots/properties/showNonCanonicalJunctions"
             },
             "maxHeight": {
               "$ref": "#/$defs/LinearAlignmentsDisplaySlots/properties/maxHeight"
@@ -14320,8 +14382,8 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "mismatchAlpha": {
               "$ref": "#/$defs/LinearAlignmentsDisplaySlots/properties/mismatchAlpha"
             },
-            "showLowFreqMismatches": {
-              "$ref": "#/$defs/LinearAlignmentsDisplaySlots/properties/showLowFreqMismatches"
+            "fadeLowFreqMismatches": {
+              "$ref": "#/$defs/LinearAlignmentsDisplaySlots/properties/fadeLowFreqMismatches"
             },
             "showLegend": {
               "anyOf": [
@@ -14369,23 +14431,20 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "flipStrandLongReadChains": {
               "$ref": "#/$defs/LinearAlignmentsDisplaySlots/properties/flipStrandLongReadChains"
             },
-            "colorSupplementaryChains": {
-              "$ref": "#/$defs/LinearAlignmentsDisplaySlots/properties/colorSupplementaryChains"
+            "showInterchrom": {
+              "$ref": "#/$defs/LinearAlignmentsDisplaySlots/properties/showInterchrom"
             },
-            "drawInter": {
-              "$ref": "#/$defs/LinearAlignmentsDisplaySlots/properties/drawInter"
+            "showProperPairArcs": {
+              "$ref": "#/$defs/LinearAlignmentsDisplaySlots/properties/showProperPairArcs"
             },
-            "drawProperPairArcs": {
-              "$ref": "#/$defs/LinearAlignmentsDisplaySlots/properties/drawProperPairArcs"
-            },
-            "drawModalPairsInCloud": {
-              "$ref": "#/$defs/LinearAlignmentsDisplaySlots/properties/drawModalPairsInCloud"
+            "showModalPairsInCloud": {
+              "$ref": "#/$defs/LinearAlignmentsDisplaySlots/properties/showModalPairsInCloud"
             },
             "minInterchromSupport": {
               "$ref": "#/$defs/LinearAlignmentsDisplaySlots/properties/minInterchromSupport"
             },
-            "drawLongRange": {
-              "$ref": "#/$defs/LinearAlignmentsDisplaySlots/properties/drawLongRange"
+            "showLongRange": {
+              "$ref": "#/$defs/LinearAlignmentsDisplaySlots/properties/showLongRange"
             },
             "arcColor": {
               "$ref": "#/$defs/LinearAlignmentsDisplaySlots/properties/arcColor"
@@ -14416,6 +14475,12 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             },
             "colorBy": {
               "$ref": "#/$defs/LinearAlignmentsDisplaySlots/properties/colorBy"
+            },
+            "drawInter": {
+              "$ref": "#/$defs/LinearAlignmentsDisplaySlots/properties/drawInter"
+            },
+            "drawLongRange": {
+              "$ref": "#/$defs/LinearAlignmentsDisplaySlots/properties/drawLongRange"
             },
             "linkedReads": {
               "$ref": "#/$defs/LinearAlignmentsDisplaySlots/properties/linkedReads"
@@ -17033,8 +17098,8 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "showSashimiLabels": {
               "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/showSashimiLabels"
             },
-            "hideNonCanonicalJunctions": {
-              "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/hideNonCanonicalJunctions"
+            "showNonCanonicalJunctions": {
+              "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/showNonCanonicalJunctions"
             },
             "maxHeight": {
               "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/maxHeight"
@@ -17084,8 +17149,8 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "mismatchAlpha": {
               "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/mismatchAlpha"
             },
-            "showLowFreqMismatches": {
-              "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/showLowFreqMismatches"
+            "fadeLowFreqMismatches": {
+              "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/fadeLowFreqMismatches"
             },
             "showLegend": {
               "anyOf": [
@@ -17136,23 +17201,20 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "flipStrandLongReadChains": {
               "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/flipStrandLongReadChains"
             },
-            "colorSupplementaryChains": {
-              "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/colorSupplementaryChains"
+            "showInterchrom": {
+              "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/showInterchrom"
             },
-            "drawInter": {
-              "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/drawInter"
+            "showProperPairArcs": {
+              "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/showProperPairArcs"
             },
-            "drawProperPairArcs": {
-              "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/drawProperPairArcs"
-            },
-            "drawModalPairsInCloud": {
-              "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/drawModalPairsInCloud"
+            "showModalPairsInCloud": {
+              "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/showModalPairsInCloud"
             },
             "minInterchromSupport": {
               "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/minInterchromSupport"
             },
-            "drawLongRange": {
-              "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/drawLongRange"
+            "showLongRange": {
+              "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/showLongRange"
             },
             "arcColor": {
               "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/arcColor"
@@ -17196,6 +17258,12 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             },
             "colorBy": {
               "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/colorBy"
+            },
+            "drawInter": {
+              "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/drawInter"
+            },
+            "drawLongRange": {
+              "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/drawLongRange"
             },
             "linkedReads": {
               "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/linkedReads"

@@ -3431,7 +3431,7 @@ export const configManifest: ConfigManifest = {
           "type": "boolean"
         },
         {
-          "name": "hideNonCanonicalJunctions",
+          "name": "showNonCanonicalJunctions",
           "type": "boolean"
         },
         {
@@ -3551,7 +3551,7 @@ export const configManifest: ConfigManifest = {
           "subSlots": [
             {
               "name": "field",
-              "type": "(AlignmentsBaseColorField | undefined)"
+              "type": "AlignmentsBaseColorField"
             },
             {
               "name": "scale",
@@ -3564,7 +3564,29 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "modifications",
-          "type": "frozen"
+          "type": "AlignmentsModificationsConfigurationSchema",
+          "subSlots": [
+            {
+              "name": "threshold",
+              "type": "number"
+            },
+            {
+              "name": "twoColor",
+              "type": "boolean"
+            },
+            {
+              "name": "fillUnmarked",
+              "type": "boolean"
+            },
+            {
+              "name": "cytosineContext",
+              "type": "CytosineContext"
+            },
+            {
+              "name": "shownModifications",
+              "type": "string[]"
+            }
+          ]
         },
         {
           "name": "filterBy",
@@ -3670,7 +3692,7 @@ export const configManifest: ConfigManifest = {
           "type": "boolean"
         },
         {
-          "name": "showLowFreqMismatches",
+          "name": "fadeLowFreqMismatches",
           "type": "boolean"
         },
         {
@@ -3726,19 +3748,15 @@ export const configManifest: ConfigManifest = {
           "type": "boolean"
         },
         {
-          "name": "colorSupplementaryChains",
+          "name": "showInterchrom",
           "type": "boolean"
         },
         {
-          "name": "drawInter",
+          "name": "showProperPairArcs",
           "type": "boolean"
         },
         {
-          "name": "drawProperPairArcs",
-          "type": "boolean"
-        },
-        {
-          "name": "drawModalPairsInCloud",
+          "name": "showModalPairsInCloud",
           "type": "boolean"
         },
         {
@@ -3746,7 +3764,7 @@ export const configManifest: ConfigManifest = {
           "type": "number"
         },
         {
-          "name": "drawLongRange",
+          "name": "showLongRange",
           "type": "boolean"
         },
         {
@@ -3797,6 +3815,8 @@ export const configManifest: ConfigManifest = {
       ],
       "legacyKeys": [
         "colorBy",
+        "drawInter",
+        "drawLongRange",
         "linkedReads"
       ],
       "aliases": [
@@ -4017,7 +4037,7 @@ export const configManifest: ConfigManifest = {
           "type": "boolean"
         },
         {
-          "name": "hideNonCanonicalJunctions",
+          "name": "showNonCanonicalJunctions",
           "type": "boolean"
         },
         {
@@ -4138,7 +4158,7 @@ export const configManifest: ConfigManifest = {
           "subSlots": [
             {
               "name": "field",
-              "type": "(AlignmentsBaseColorField | undefined)"
+              "type": "AlignmentsBaseColorField"
             },
             {
               "name": "scale",
@@ -4151,7 +4171,29 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "modifications",
-          "type": "frozen"
+          "type": "AlignmentsModificationsConfigurationSchema",
+          "subSlots": [
+            {
+              "name": "threshold",
+              "type": "number"
+            },
+            {
+              "name": "twoColor",
+              "type": "boolean"
+            },
+            {
+              "name": "fillUnmarked",
+              "type": "boolean"
+            },
+            {
+              "name": "cytosineContext",
+              "type": "CytosineContext"
+            },
+            {
+              "name": "shownModifications",
+              "type": "string[]"
+            }
+          ]
         },
         {
           "name": "filterBy",
@@ -4257,7 +4299,7 @@ export const configManifest: ConfigManifest = {
           "type": "boolean"
         },
         {
-          "name": "showLowFreqMismatches",
+          "name": "fadeLowFreqMismatches",
           "type": "boolean"
         },
         {
@@ -4313,19 +4355,15 @@ export const configManifest: ConfigManifest = {
           "type": "boolean"
         },
         {
-          "name": "colorSupplementaryChains",
+          "name": "showInterchrom",
           "type": "boolean"
         },
         {
-          "name": "drawInter",
+          "name": "showProperPairArcs",
           "type": "boolean"
         },
         {
-          "name": "drawProperPairArcs",
-          "type": "boolean"
-        },
-        {
-          "name": "drawModalPairsInCloud",
+          "name": "showModalPairsInCloud",
           "type": "boolean"
         },
         {
@@ -4333,7 +4371,7 @@ export const configManifest: ConfigManifest = {
           "type": "number"
         },
         {
-          "name": "drawLongRange",
+          "name": "showLongRange",
           "type": "boolean"
         },
         {
@@ -4392,6 +4430,8 @@ export const configManifest: ConfigManifest = {
       ],
       "legacyKeys": [
         "colorBy",
+        "drawInter",
+        "drawLongRange",
         "linkedReads"
       ],
       "stateModelProps": [

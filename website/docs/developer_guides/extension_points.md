@@ -975,6 +975,8 @@ config schema's `retired`:
 ```typescript
 retired: {
   colorBy: colorSlotsOf,
+  drawInter: (v: unknown) => ({ showInterchrom: v }),
+  drawLongRange: (v: unknown) => ({ showLongRange: v }),
   linkedReads: (v: unknown) => ({
     unit: v === 'normal' ? 'chain' : 'read',
   }),
