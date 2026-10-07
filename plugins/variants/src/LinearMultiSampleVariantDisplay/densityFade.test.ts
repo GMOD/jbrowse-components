@@ -31,6 +31,29 @@ test('a record shares pixels with neighbours its 2 px floor reaches', () => {
   expect(alpha[2]).toBe(1)
 })
 
+// 20 SNPs on one pixel, under a deletion 1,000 px long
+const snpsUnderDeletion = Uint32Array.from([
+  ...Array.from({ length: 20 }, () => [5000, 5001]).flat(),
+  0,
+  10000,
+])
+
+test('a record longer than a cell draws at full strength over a crowd of short ones', () => {
+  const alpha = recordDensityAlpha(snpsUnderDeletion, 10)!
+  expect(alpha[20]).toBe(1)
+})
+
+test('a long record does not thin the short records it spans', () => {
+  const alpha = recordDensityAlpha(snpsUnderDeletion, 10)!
+  expect(composite(alpha[0]!, 20)).toBeCloseTo(DENSE_OPACITY)
+})
+
+test('long records overlapping each other share no pixel to fade', () => {
+  expect(
+    recordDensityAlpha(Uint32Array.from([0, 10000, 2000, 12000]), 10),
+  ).toBe(undefined)
+})
+
 test('a faded cell keeps its colour and scales its alpha', () => {
   const colors = Uint32Array.from([0xff123456, 0x80abcdef])
   const out = fadeCellColors(colors, [0, 1], 2, Float32Array.from([0.5, 1]))

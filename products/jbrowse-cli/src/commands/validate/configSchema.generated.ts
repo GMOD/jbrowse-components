@@ -12030,6 +12030,34 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "deprecated": true,
           "description": "Legacy key: a migration rewrites it into current slots when the config loads."
         },
+        "scaleType": {
+          "deprecated": true,
+          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+        },
+        "autoscale": {
+          "deprecated": true,
+          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+        },
+        "minScore": {
+          "deprecated": true,
+          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+        },
+        "maxScore": {
+          "deprecated": true,
+          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+        },
+        "numStdDev": {
+          "deprecated": true,
+          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+        },
+        "inverted": {
+          "deprecated": true,
+          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+        },
+        "renderers": {
+          "deprecated": true,
+          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+        },
         "defaultRendering": {
           "deprecated": true,
           "description": "Legacy key: a migration rewrites it into current slots when the config loads."
@@ -14347,6 +14375,27 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
                 }
               ]
             },
+            "scaleType": {
+              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/scaleType"
+            },
+            "autoscale": {
+              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/autoscale"
+            },
+            "minScore": {
+              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/minScore"
+            },
+            "maxScore": {
+              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/maxScore"
+            },
+            "numStdDev": {
+              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/numStdDev"
+            },
+            "inverted": {
+              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/inverted"
+            },
+            "renderers": {
+              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/renderers"
+            },
             "defaultRendering": {
               "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/defaultRendering"
             },
@@ -15969,6 +16018,27 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
                 }
               ]
             },
+            "scaleType": {
+              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/scaleType"
+            },
+            "autoscale": {
+              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/autoscale"
+            },
+            "minScore": {
+              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/minScore"
+            },
+            "maxScore": {
+              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/maxScore"
+            },
+            "numStdDev": {
+              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/numStdDev"
+            },
+            "inverted": {
+              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/inverted"
+            },
+            "renderers": {
+              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/renderers"
+            },
             "defaultRendering": {
               "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/defaultRendering"
             },
@@ -16316,6 +16386,27 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
                 }
               ]
             },
+            "scaleType": {
+              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/scaleType"
+            },
+            "autoscale": {
+              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/autoscale"
+            },
+            "minScore": {
+              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/minScore"
+            },
+            "maxScore": {
+              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/maxScore"
+            },
+            "numStdDev": {
+              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/numStdDev"
+            },
+            "inverted": {
+              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/inverted"
+            },
+            "renderers": {
+              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/renderers"
+            },
             "defaultRendering": {
               "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/defaultRendering"
             },
@@ -16578,6 +16669,27 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             },
             "minimalTicks": {
               "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/minimalTicks"
+            },
+            "scaleType": {
+              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/scaleType"
+            },
+            "autoscale": {
+              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/autoscale"
+            },
+            "minScore": {
+              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/minScore"
+            },
+            "maxScore": {
+              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/maxScore"
+            },
+            "numStdDev": {
+              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/numStdDev"
+            },
+            "inverted": {
+              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/inverted"
+            },
+            "renderers": {
+              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/renderers"
             },
             "defaultRendering": {
               "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/defaultRendering"

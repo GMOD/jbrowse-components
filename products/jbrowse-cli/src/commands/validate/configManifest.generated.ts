@@ -5908,6 +5908,13 @@ export const configManifest: ConfigManifest = {
       "legacyKeys": [
         "displayCrossHatches",
         "minimalTicks",
+        "scaleType",
+        "autoscale",
+        "minScore",
+        "maxScore",
+        "numStdDev",
+        "inverted",
+        "renderers",
         "defaultRendering",
         "lineWidth"
       ],

@@ -167,12 +167,13 @@ test('a constant reads nothing, and a jexl callback is read in the worker', () =
   expect(display.rpcProps().color).toBe("jexl:'#123456'")
 })
 
-test('records that share pixels paint their cells faded, keeping the hue', () => {
+// two SNPs on one base, shorter than the 2 px a cell draws
+test('records too short to see that share pixels paint their cells faded, keeping the hue', () => {
   const { display } = createTestEnvironment().createDisplay()
   display.setSources(SAMPLES.map(name => ({ name })))
   const index = new Flatbush(2, 16, Uint32Array)
-  index.add(100, 0, 200, 1)
-  index.add(150, 1, 250, 2)
+  index.add(100, 0, 101, 1)
+  index.add(100, 1, 101, 2)
   index.finish()
   const data = cellData({ field: '' })
   const region = data.perRegionCellData[0]!
@@ -180,7 +181,7 @@ test('records that share pixels paint their cells faded, keeping the hue', () =>
     ...data,
     simplifiedFeatures: [
       ...data.simplifiedFeatures,
-      { id: 'v1', data: { start: 150, end: 250, refName: 'ctgA', name: 'v1' } },
+      { id: 'v1', data: { start: 100, end: 101, refName: 'ctgA', name: 'v1' } },
     ],
     perRegionCellData: {
       0: {
@@ -192,10 +193,10 @@ test('records that share pixels paint their cells faded, keeping the hue', () =>
         numCells: 6,
         featureColorValues: Uint32Array.of(0, 0),
         featureInfo: [
-          featureInfoOf('v0', { length: 100 }),
-          featureInfoOf('v1', { length: 100 }),
+          featureInfoOf('v0', { length: 1 }),
+          featureInfoOf('v1', { length: 1 }),
         ],
-        featurePositions: Uint32Array.from([100, 200, 150, 250]),
+        featurePositions: Uint32Array.from([100, 101, 100, 101]),
         featureIndexData: index.data,
         featureInsertedBp: Int32Array.from([0, 0]),
       },

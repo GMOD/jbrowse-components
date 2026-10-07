@@ -49,10 +49,13 @@ below are relative to `plugins/variants/src/`.
   "insertion" is its shape and width. A purple marker made a variant read as an
   insertion only at the zooms where the marker outgrew its cell.
 - **A cell's alpha does depend on zoom, where records share pixels**
-  (`LinearMultiSampleVariantDisplay/densityFade.ts`). At genomic positions each record draws at
-  `1 - 0.1 ** (1 / n)`, `n` the most records over any pixel it covers, so a
-  row's pixel reaches 90% opacity when every record under it is alt and less
-  when a share are. Without it every pixel of a 2 Mb HPRC window held some alt
+  (`LinearMultiSampleVariantDisplay/densityFade.ts`). At genomic positions each
+  record shorter than the 2 px a cell draws is drawn at `1 - 0.1 ** (1 / n)`,
+  `n` the most such records over any pixel it covers, so a row's pixel reaches
+  90% opacity when every record under it is alt and less when a share are. A
+  record longer than a cell covers its pixels alone and draws at full strength:
+  counted with the SNPs it spans, an 86 kb HLA-DRB deletion faded out along its
+  whole length. Without it every pixel of a 2 Mb HPRC window held some alt
   record and the rows drew a solid wall; with it the haplotype blocks show.
 
 ## One composition rule: `fill = shade(hue(variant, cell), dosage)`
