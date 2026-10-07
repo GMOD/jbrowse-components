@@ -26,14 +26,14 @@ function createMockFeature(name: string, id = 'feat-1') {
   } as any
 }
 
-describe('getFeatureName', () => {
-  function featureWith(values: Record<string, unknown>) {
-    return {
-      get: (key: string) => values[key],
-      id: () => 'x',
-    } as any
-  }
+function featureWith(values: Record<string, unknown>) {
+  return {
+    get: (key: string) => values[key],
+    id: () => 'x',
+  } as any
+}
 
+describe('getFeatureName', () => {
   it('joins a multi-valued (array) name into a string', () => {
     expect(getFeatureName(featureWith({ name: ['BRCA1', 'alias2'] }))).toBe(
       'BRCA1,alias2',
@@ -55,28 +55,61 @@ describe('readFeatureLabels', () => {
   const feature = createMockFeature('GENE')
   const jexl = createJexlInstance()
 
+  const labelled = (labels: { name?: string; description?: string }) =>
+    mockDisplayConfig({ labels: { name: '', description: '', ...labels } })
+
   it('joins a multi-valued (array) description into a single string', () => {
     // RefSeq GFFs with unescaped commas in a description get parsed into an
     // array of values; the label must still be a string.
-    const config = mockDisplayConfig()
-    config.labels.description = [
-      'microRNAs are short',
-      ' which are cleaved',
-    ] as unknown as string
-    const { description } = readFeatureLabels(config, feature, jexl)
-    expect(description).toBe('microRNAs are short, which are cleaved')
-  })
-
-  it('passes a plain string description through', () => {
-    const config = mockDisplayConfig()
-    config.labels.description = 'A gene'
-    expect(readFeatureLabels(config, feature, jexl).description).toBe('A gene')
-  })
-
-  it('returns undefined for an empty description', () => {
+    const note = ['microRNAs are short', ' which are cleaved']
     expect(
-      readFeatureLabels(mockDisplayConfig(), feature, jexl).description,
+      readFeatureLabels(
+        labelled({ description: 'note' }),
+        featureWith({ note }),
+        jexl,
+      ).description,
+    ).toBe('microRNAs are short, which are cleaved')
+  })
+
+  it('reads a plain string as the field of that name', () => {
+    const gene = featureWith({ gene_name: 'BRCA1', note: 'A gene' })
+    expect(
+      readFeatureLabels(
+        labelled({ name: 'gene_name', description: 'note' }),
+        gene,
+        jexl,
+      ),
+    ).toEqual({ name: 'BRCA1', description: 'A gene' })
+  })
+
+  it('reads a dotted path into a structured field', () => {
+    const variant = featureWith({ INFO: { SVTYPE: ['DEL'] } })
+    expect(
+      readFeatureLabels(labelled({ name: 'INFO.SVTYPE' }), variant, jexl).name,
+    ).toBe('DEL')
+  })
+
+  it('draws no label for a field the feature lacks', () => {
+    expect(
+      readFeatureLabels(labelled({ name: 'gene_name' }), feature, jexl).name,
     ).toBe(undefined)
+  })
+
+  it('draws no label for an empty field, the off spelling', () => {
+    expect(readFeatureLabels(mockDisplayConfig(), feature, jexl)).toEqual({
+      name: undefined,
+      description: undefined,
+    })
+  })
+
+  it('draws no label for an expression that does not compile or throws', () => {
+    expect(
+      readFeatureLabels(
+        labelled({ name: 'jexl:get(feature,', description: 'jexl:nope(1)' }),
+        feature,
+        jexl,
+      ),
+    ).toEqual({ name: undefined, description: undefined })
   })
 
   it('evaluates a jexl labels.name against the feature', () => {
@@ -156,6 +189,14 @@ describe('reservesBelowLabelRow', () => {
         jexl,
       ),
     ).toBe(false)
+  })
+
+  it('reads a plain field with no jexl instance, as a layout test calls it', () => {
+    expect(
+      ask(productOnly('nsp5'), 'below', 'ProcessedTranscript', {
+        labels: { name: 'product' },
+      }),
+    ).toBe(true)
   })
 
   it('reserves for a named transcript child in "below" mode', () => {

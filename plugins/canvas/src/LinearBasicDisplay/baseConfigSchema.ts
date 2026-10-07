@@ -142,22 +142,22 @@ export default function baseConfigSchemaFactory(_pluginManager: PluginManager) {
          * #slot labels.name
          */
         name: {
-          type: 'string',
-          description: 'the primary name of the feature to show',
+          type: 'featureField',
+          description:
+            "the field each feature's name label reads, such as `gene_name`, or a `jexl:` expression over `feature`; the default reads the name, else the ID, and an empty value draws no name",
           defaultValue: `jexl:get(feature,'name') || get(feature,'id')`,
-          contextVariable: ['feature'],
         },
         /**
          * #slot labels.description
          */
         description: {
-          type: 'string',
-          description: 'the text description to show',
+          type: 'featureField',
+          description:
+            "the field each feature's description line reads, such as `note`, or a `jexl:` expression over `feature`; the default reads `note`, else `description`, else `function`, and an empty value draws no description",
           // `function` is the only human-readable text on structural features
           // that carry no note; read via get() since it is a reserved word in
           // the grammar.
           defaultValue: `jexl:get(feature,'note') || get(feature,'description') || get(feature,'function')`,
-          contextVariable: ['feature'],
         },
       }),
     },

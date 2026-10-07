@@ -176,6 +176,16 @@ describe('a featureField slot', () => {
       }),
     ).toThrow(/featureField/)
   })
+
+  test('defaults to a jexl: expression, the value it also takes', () => {
+    const config = makeConfig({
+      type: 'featureField',
+      defaultValue: expression,
+    })
+    expect(readConfObject(config, 'slot')).toBe(expression)
+    config.setSlot('slot', 'gene_name')
+    expect(readConfObject(config, 'slot')).toBe('gene_name')
+  })
 })
 
 describe('a color slot', () => {

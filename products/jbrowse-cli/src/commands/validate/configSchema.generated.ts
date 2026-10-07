@@ -4948,23 +4948,23 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "type": "object",
       "properties": {
         "name": {
-          "description": "the primary name of the feature to show.",
+          "description": "the field each feature's name label reads, such as \`gene_name\`, or a \`jexl:\` expression over \`feature\`; the default reads the name, else the ID, and an empty value draws no name.",
           "default": "jexl:get(feature,'name') || get(feature,'id')",
           "if": {
             "type": "null"
           },
           "else": {
-            "$ref": "#/$defs/StringOrJexl"
+            "$ref": "#/$defs/FeatureField"
           }
         },
         "description": {
-          "description": "the text description to show.",
+          "description": "the field each feature's description line reads, such as \`note\`, or a \`jexl:\` expression over \`feature\`; the default reads \`note\`, else \`description\`, else \`function\`, and an empty value draws no description.",
           "default": "jexl:get(feature,'note') || get(feature,'description') || get(feature,'function')",
           "if": {
             "type": "null"
           },
           "else": {
-            "$ref": "#/$defs/StringOrJexl"
+            "$ref": "#/$defs/FeatureField"
           }
         }
       },

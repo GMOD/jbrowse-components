@@ -1,6 +1,6 @@
+import { fieldReader } from '@jbrowse/core/util/fieldReader'
 import { valueText } from '@jbrowse/core/util/groupKeys'
 
-import { readConfigValueSafe } from './renderConfig.ts'
 import { hasVisibleText } from './util.ts'
 
 import type { DisplayConfig } from './renderConfig.ts'
@@ -17,34 +17,65 @@ export function getFeatureName(feature: Feature): string | undefined {
   return toLabelString(feature.get('name')) ?? toLabelString(feature.get('id'))
 }
 
-// The labels.name/labels.description defaults ARE jexl, so a plugin-registered
-// jexl function only resolves when the caller passes the worker
-// pluginManager's jexl instance.
-function readFeatureLabel(
-  config: DisplayConfig,
-  feature: Feature,
-  which: 'name' | 'description',
-  jexl: JexlInstance,
-) {
-  return toLabelString(
-    readConfigValueSafe<unknown>(
-      config,
-      ['labels', which],
-      feature,
-      jexl,
-      undefined,
-    ),
-  )
+type LabelReader = (feature: Feature) => string | undefined
+
+const noLabel: LabelReader = () => undefined
+
+// An empty field is a label line switched off. An expression that does not
+// compile, or that throws on a feature, draws no label rather than failing the
+// render. The defaults are jexl, so a plugin-registered function resolves only
+// against the worker pluginManager's instance.
+function labelReader(ref: string, jexl: JexlInstance | undefined): LabelReader {
+  if (!ref) {
+    return noLabel
+  }
+  try {
+    const read = fieldReader(ref, jexl)
+    return feature => {
+      try {
+        return toLabelString(read(feature))
+      } catch {
+        return undefined
+      }
+    }
+  } catch {
+    return noLabel
+  }
 }
 
-// Subfeature label paths render a single name line, so evaluating the
-// description slot too would waste a jexl eval per feature.
+interface LabelReaders {
+  jexl: JexlInstance | undefined
+  name: LabelReader
+  description: LabelReader
+}
+
+// One pair per config object, which is one per render: the layout pass and the
+// collect pass both read labels, off the same config, and neither compiles a
+// field per feature.
+const readersByConfig = new WeakMap<DisplayConfig, LabelReaders>()
+
+function labelReaders(config: DisplayConfig, jexl: JexlInstance | undefined) {
+  const known = readersByConfig.get(config)
+  if (known && known.jexl === jexl) {
+    return known
+  }
+  const readers = {
+    jexl,
+    name: labelReader(config.labels.name, jexl),
+    description: labelReader(config.labels.description, jexl),
+  }
+  readersByConfig.set(config, readers)
+  return readers
+}
+
+// Subfeature label paths render a single name line, so the description is not
+// read for them.
 export function readFeatureName(
   config: DisplayConfig,
   feature: Feature,
-  jexl: JexlInstance,
+  jexl: JexlInstance | undefined,
 ) {
-  return readFeatureLabel(config, feature, 'name', jexl)
+  return labelReaders(config, jexl).name(feature)
 }
 
 export function readFeatureLabels(
@@ -52,10 +83,8 @@ export function readFeatureLabels(
   feature: Feature,
   jexl: JexlInstance,
 ): { name: string | undefined; description: string | undefined } {
-  return {
-    name: readFeatureLabel(config, feature, 'name', jexl),
-    description: readFeatureLabel(config, feature, 'description', jexl),
-  }
+  const { name, description } = labelReaders(config, jexl)
+  return { name: name(feature), description: description(feature) }
 }
 
 // Does this glyph's emitter register the feature ITSELF as a labeled
@@ -121,8 +150,5 @@ export function subfeatureLabelText(
   config: DisplayConfig,
   jexl: JexlInstance | undefined,
 ) {
-  return (
-    (jexl ? readFeatureName(config, feature, jexl) : undefined) ??
-    getFeatureName(feature)
-  )
+  return readFeatureName(config, feature, jexl) ?? getFeatureName(feature)
 }

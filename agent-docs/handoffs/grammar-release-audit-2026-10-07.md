@@ -1,6 +1,6 @@
 ---
 name: grammar-release-audit-2026-10-07
-description: Five parallel audits of the grammar-of-graphics surface before v5.0.0 (schema, vocabulary, mark pipeline, plot write paths, docs and in-repo configs), every finding re-verified against main. Colin approved the five shape calls on 2026-10-07; the defect list and all five calls (ADR-214 to ADR-219, ADR-217 superseding 214) have landed; Manhattan `ld` to `r2` and the LD `showLabels` enum have landed too; the canvas `labels.name` to `text` rename waits on a call after a review priced it, and the featureField defects that review found and the two tag guards remain, the docs pass having landed. Read before changing a display's grammar slots, the plot write paths or the JSON schema.
+description: Five parallel audits of the grammar-of-graphics surface before v5.0.0 (schema, vocabulary, mark pipeline, plot write paths, docs and in-repo configs), every finding re-verified against main. Colin approved the five shape calls on 2026-10-07; the defect list and all five calls (ADR-214 to ADR-219, ADR-217 superseding 214) have landed; Manhattan `ld` to `r2` and the LD `showLabels` enum have landed too; the canvas labels became featureFields in place of the `text` rename (ADR-220); the featureField defects a review found and the two tag guards remain, the docs pass having landed. Read before changing a display's grammar slots, the plot write paths or the JSON schema.
 ---
 
 # Grammar-of-graphics release audit, 2026-10-07
@@ -41,26 +41,10 @@ the field `r2` (ADR-178, amended) and the LD display's `showLabels` is
 `none | name`, both landed on 2026-10-07; `scales.y.type` versus `color.scale`
 naming one idea two ways is recorded (ADR-151).
 
-**Canvas `labels.name` → `text` waits on Colin.** He approved it with
-"description keeps its own slot"; a review of the plan on 2026-10-07 found
-costs the audit had not priced, each re-read:
-
-- A top-level display slot named `description` is unreachable from a session
-  spec's track entry or a share link: `applyConfSettings` writes a key the
-  track declares to the track, and the track declares `description`
-  (`packages/core/src/pluggableElementTypes/models/baseTrackConfig.ts:214`).
-- `''` is how the worker's label config turns a label kind off
-  (`plugins/variants/src/LinearMultiSampleVariantDisplay/laneDisplayConfig.ts`),
-  where the multi-way `text` slot reads `''` as its name-else-ID default.
-- `showLabels` names the two lines `name` and `description`, so
-  `showLabels: "name"` would govern a slot called `text`.
-- jb2hubs writes display-level `labels.name` into its hosted configs
-  (`hubtools/src/featureDisplay.ts` in that repo), which older releases read,
-  so `labels` would stay a permanent second spelling.
-
-The narrower change that keeps the win is retyping `labels.name` and
-`labels.description` as `featureField`, so a bare string names a field as it
-does on `text` and `encoding.text`, with no rename.
+Canvas `labels.name` → `text` was declined for the costs a review found, and
+`labels.name` and `labels.description` became `featureField` slots instead, so
+a plain string names a field as it does on `text` and `encoding.text`
+(ADR-220).
 
 ## featureField, as the same review found it
 

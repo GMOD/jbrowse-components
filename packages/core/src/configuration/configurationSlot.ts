@@ -245,7 +245,7 @@ export default function ConfigSlot(definition: ConfigSlotDefinition) {
       'a "featureField" slot names a field the display reads per feature, and its jexl: expression is evaluated there, never called with a contextVariable. If this slot overrides a base callback slot, state \'contextVariable: undefined\'.',
     )
   }
-  if (!callback && isJexl(defaultValue)) {
+  if (!callback && type !== 'featureField' && isJexl(defaultValue)) {
     throw new Error(
       `the defaultValue ${JSON.stringify(defaultValue)} is a jexl: callback, so the slot declares the contextVariable names it reads`,
     )

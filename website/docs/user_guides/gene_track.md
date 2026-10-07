@@ -238,8 +238,9 @@ the track's `labels.name` reads it:
 }
 ```
 
-See the [jexl configuration guide](/docs/config_guides/jexl) for the expression
-syntax.
+A label reading one attribute names it bare, `"name": "product"`; the expression
+above adds the fallbacks for the features that carry no product. See the
+[jexl configuration guide](/docs/config_guides/jexl) for the expression syntax.
 
 <Figure caption="The enterovirus D (GCF_000861205.1) ORF1 polyprotein. The CDS is cleaved into its mature peptides (VP0, VP1–VP4, the 2A–2C and 3A–3D proteins), each on a separate row in a distinct color; hovering a region shows its product name." src="/img/gene_track_mature_peptides.png" />
 

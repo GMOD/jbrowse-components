@@ -269,8 +269,10 @@ off the file and moving an outgrown callback into a plugin.
 
 ## Labels, tooltips & details {#labels-tooltips-details}
 
-[`showLabels`](/docs/config/linearcanvasbasedisplay/#slot-showlabels) pins which
-text is drawn at every zoom, and `mouseover` is rendered as HTML:
+`labels.name` and `labels.description` each name the feature field a label line
+reads, such as `"note"`, or take a `jexl:` expression where the label wants a
+fallback. [`showLabels`](/docs/config/linearcanvasbasedisplay/#slot-showlabels)
+pins which lines are drawn at every zoom, and `mouseover` is rendered as HTML:
 
 ```json addtrack
 {
@@ -282,7 +284,7 @@ text is drawn at every zoom, and `mouseover` is rendered as HTML:
   "displayDefaults": {
     "labels": {
       "name": "jexl:feature.name || feature.id",
-      "description": "jexl:feature.note || feature.description || ''"
+      "description": "note"
     },
     "showLabels": "nameAndDescription",
     "mouseover": "jexl:`${feature.name} [${feature.type}] ${feature.start}-${feature.end}`"

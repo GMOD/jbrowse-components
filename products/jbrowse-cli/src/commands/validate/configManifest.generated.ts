@@ -3041,11 +3041,11 @@ export const configManifest: ConfigManifest = {
           "subSlots": [
             {
               "name": "name",
-              "type": "(JexlString | string)"
+              "type": "string"
             },
             {
               "name": "description",
-              "type": "(JexlString | string)"
+              "type": "string"
             }
           ]
         },
@@ -5254,11 +5254,11 @@ export const configManifest: ConfigManifest = {
           "subSlots": [
             {
               "name": "name",
-              "type": "(JexlString | string)"
+              "type": "string"
             },
             {
               "name": "description",
-              "type": "(JexlString | string)"
+              "type": "string"
             }
           ]
         }
