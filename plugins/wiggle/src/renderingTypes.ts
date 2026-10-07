@@ -12,13 +12,16 @@ export const WIGGLE_RENDERINGS = [
 
 export type WiggleRendering = (typeof WIGGLE_RENDERINGS)[number][0]
 
-/** What a quantitative plot draws each score as, the mark display's words. */
-export const WIGGLE_MARKS = ['bar', 'point', 'line', 'span'] as const
+/**
+ * What a quantitative plot draws each score as, the mark display's words. The
+ * `defineMark` list that draws them is `WIGGLE_MARKS` in `shared/wiggleMarks.ts`.
+ */
+export const WIGGLE_MARK_NAMES = ['bar', 'point', 'line', 'span'] as const
 
 /** A point's diameter and a line's width in px while `size` is unset. */
 export const DEFAULT_POINT_SIZE_PX = 2
 export const DEFAULT_LINE_WIDTH_PX = 1
-export type WiggleMark = (typeof WIGGLE_MARKS)[number]
+export type WiggleMark = (typeof WIGGLE_MARK_NAMES)[number]
 
 /** How a line joins its scores: held across each bin, or centre to centre. */
 export const LINE_INTERPOLATIONS = ['step', 'linear'] as const

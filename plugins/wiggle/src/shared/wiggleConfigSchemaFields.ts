@@ -41,7 +41,6 @@ export const wiggleConfigSchemaFields = {
     type: 'maybeNumber',
     description:
       "the mark's size in px, the display's constant for what the mark display spells encoding.size: a point's diameter, 2 while unset, or a line's width, 1 while unset",
-    advanced: true,
   },
   maxGapMultiple: {
     type: 'number',

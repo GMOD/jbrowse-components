@@ -6,7 +6,7 @@ import type { SourceInfo, WiggleFeatureArrays } from '@jbrowse/wiggle-core'
 
 export {
   LINE_INTERPOLATIONS,
-  WIGGLE_MARKS,
+  WIGGLE_MARK_NAMES,
   WIGGLE_RENDERINGS,
   markOf,
   renderingOf,

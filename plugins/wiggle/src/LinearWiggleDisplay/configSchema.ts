@@ -15,7 +15,7 @@ import {
   wiggleConfigSchemaFields,
   wiggleValueScale,
 } from '../shared/wiggleConfigSchemaFields.ts'
-import { LINE_INTERPOLATIONS, WIGGLE_MARKS, markOf } from '../util.ts'
+import { LINE_INTERPOLATIONS, WIGGLE_MARK_NAMES, markOf } from '../util.ts'
 
 /**
  * #config LinearWiggleDisplay
@@ -106,7 +106,7 @@ const linearWiggleDisplayConfigSchema = ConfigurationSchema(
      */
     mark: {
       type: 'stringEnum',
-      model: types.enumeration('WiggleMark', [...WIGGLE_MARKS]),
+      model: types.enumeration('WiggleMark', [...WIGGLE_MARK_NAMES]),
       defaultValue: 'bar',
       description: 'bar, point, line or span',
     },
