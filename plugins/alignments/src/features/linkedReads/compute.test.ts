@@ -20,8 +20,10 @@ import {
   LINKED_READ_COLOR_PAIR_RL,
   LINKED_READ_COLOR_PAIR_RR,
   LINKED_READ_COLOR_SPLIT_INV,
+  LINKED_READ_COLOR_MAPS_BACK,
   LINKED_READ_COLOR_SPLIT_NORMAL,
   classifyPair,
+  connectionLabel,
   groupReadsByName,
 } from './compute.ts'
 import { resolveConnectors } from './computeOverlay.ts'
@@ -325,7 +327,45 @@ describe('classifyPair — split long reads', () => {
     expect(c.bp2).toBe(300) // e2 fwd: read-leading (5') edge = start
   })
 
-  it('both rev, read order e1→e2 → SPLIT_NORMAL, strand-flipped edges', () => {
+  it('a forward read whose next segment starts back upstream maps back', () => {
+    // a tandem duplication of [200, 600]: the read reaches 600, then resumes at 200
+    const data = makeData({
+      names: ['r', 'r'],
+      flags: [0, SAM_FLAG_SUPPLEMENTARY],
+      strands: [1, 1],
+      positions: [
+        [300, 600],
+        [200, 500],
+      ],
+      orientations: [0, 0],
+      ys: [0, 0],
+    })
+    const c = classifyPair(makeEntry(data, 0), makeEntry(data, 1), true)
+    expect([c.bp1, c.bp2]).toEqual([600, 200])
+    expect(c.mapsBack).toBe(true)
+    expect(c.colorType).toBe(LINKED_READ_COLOR_MAPS_BACK)
+    expect(c.isNormal).toBe(false)
+    expect(connectionLabel(c.colorType)).toBe('Split read (duplication-type)')
+  })
+
+  it('two segments meeting on one base skip nothing and map back over nothing', () => {
+    const data = makeData({
+      names: ['r', 'r'],
+      flags: [0, SAM_FLAG_SUPPLEMENTARY],
+      strands: [1, 1],
+      positions: [
+        [100, 200],
+        [200, 300],
+      ],
+      orientations: [0, 0],
+      ys: [0, 0],
+    })
+    const c = classifyPair(makeEntry(data, 0), makeEntry(data, 1), true)
+    expect(c.mapsBack).toBe(false)
+    expect(c.colorType).toBe(LINKED_READ_COLOR_SPLIT_NORMAL)
+  })
+
+  it('both rev, e1 left of e2 in read order → maps back, strand-flipped edges', () => {
     const data = makeData({
       names: ['r', 'r'],
       flags: [0, SAM_FLAG_SUPPLEMENTARY],
@@ -339,8 +379,10 @@ describe('classifyPair — split long reads', () => {
     })
     const c = classifyPair(makeEntry(data, 0), makeEntry(data, 1), true)
     expect(c.isSplit).toBe(true)
-    expect(c.colorType).toBe(LINKED_READ_COLOR_SPLIT_NORMAL)
-    expect(c.isNormal).toBe(true)
+    // a reverse read runs leftward, so a next segment to the right is behind it
+    expect(c.mapsBack).toBe(true)
+    expect(c.colorType).toBe(LINKED_READ_COLOR_MAPS_BACK)
+    expect(c.isNormal).toBe(false)
     expect(c.bp1).toBe(100) // e1 rev: read-trailing (3') edge = start
     expect(c.bp2).toBe(400) // e2 rev: read-leading (5') edge = end
   })

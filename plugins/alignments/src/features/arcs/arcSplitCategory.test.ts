@@ -116,25 +116,23 @@ describe('split class colour', () => {
       pairLL: [0.2, 0.3, 0.4],
       pairLR: [0.3, 0.4, 0.5],
       longInsert: [0.4, 0.5, 0.6],
+      splitDeletion: [0.5, 0.6, 0.7],
     },
   })
 
   test('a class takes its pair twin colour, a declared one included', () => {
-    expect(
-      arcCategoryColor(declared, 'splitBack', 'insertSizeAndOrientation'),
-    ).toEqual(declared.readCategoryColors.pairRL)
-    expect(
-      arcCategoryColor(declared, 'splitInvLL', 'insertSizeAndOrientation'),
-    ).toEqual(declared.readCategoryColors.pairLL)
+    expect(arcCategoryColor(declared, 'splitBack')).toEqual(
+      declared.readCategoryColors.pairRL,
+    )
+    expect(arcCategoryColor(declared, 'splitInvLL')).toEqual(
+      declared.readCategoryColors.pairLL,
+    )
   })
 
-  test('a forward jump follows a long-insert pair in each mode', () => {
-    expect(
-      arcCategoryColor(declared, 'splitForward', 'insertSizeAndOrientation'),
-    ).toEqual(declared.readCategoryColors.longInsert)
-    expect(
-      arcCategoryColor(declared, 'splitForward', 'pairOrientation'),
-    ).toEqual(declared.readCategoryColors.pairLR)
+  test('a deletion-type split keeps the split-read colour', () => {
+    expect(arcCategoryColor(declared, 'splitForward')).toEqual(
+      declared.readCategoryColors.splitDeletion,
+    )
   })
 
   test('the hover names the split class, not its pair twin', () => {

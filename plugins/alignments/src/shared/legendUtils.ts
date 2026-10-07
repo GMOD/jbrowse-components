@@ -56,16 +56,10 @@ import type {
   ReadColorCategory,
   SwatchCategory,
 } from '../LinearAlignmentsDisplay/colorUtils.ts'
-import type { ArcSplitCategory } from '../features/arcs/arcSplitCategory.ts'
 import type { ColorPalette, PaletteColorKey } from '../shaders/colors.ts'
 import type { ArcCategory } from '../shaders/palettes.ts'
 import type { DeclaredReadLabels } from './alignmentsColor.ts'
-import type {
-  ArcColorField,
-  BaseLayer,
-  ColorBy,
-  ColorSchemeType,
-} from './types.ts'
+import type { BaseLayer, ColorBy, ColorSchemeType } from './types.ts'
 import type { LegendItem, LegendSwatch } from '@jbrowse/core/ui'
 import type {
   CategoricalScale,
@@ -159,7 +153,9 @@ function legendKey(i: Pick<LegendItem, 'color' | 'label'>) {
 // row the user renamed or recoloured keeps the split row beside it.
 function oneRowPerSplitTwin(items: LegendItem[]) {
   let rows = items
-  for (const split of Object.keys(ARC_SPLIT_LABELS) as ArcSplitCategory[]) {
+  for (const split of Object.keys(
+    ARC_SPLIT_MERGED_LABELS,
+  ) as (keyof typeof ARC_SPLIT_MERGED_LABELS)[]) {
     const splitRow = rows.find(r => r.label === ARC_SPLIT_LABELS[split])
     const pairRow = rows.find(
       r => r.label === CATEGORY_LEGEND[ARC_SPLIT_PAIR_TWIN[split]],
@@ -787,7 +783,6 @@ export function getArcLegendItems(
   palette: ColorPalette,
   interchromFromMatePair: boolean,
   declared?: Partial<Record<ReadColorCategory, string>>,
-  colorField: ArcColorField = 'insertSizeAndOrientation',
 ): LegendItem[] {
   const present = [...presentCategories]
   return [
@@ -799,7 +794,7 @@ export function getArcLegendItems(
     // Its own row beside the pair twin it shares a swatch with: the pair row's
     // words describe mates, which a split read has none of.
     ...present.filter(isArcSplitCategory).map(category => ({
-      color: rgb255(arcCategoryColor(palette, category, colorField)),
+      color: rgb255(arcCategoryColor(palette, category)),
       label: ARC_SPLIT_LABELS[category],
     })),
   ]

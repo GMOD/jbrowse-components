@@ -1309,7 +1309,6 @@ export default function stateModelFactory(
               palette,
               this.arcsResult.interchromFromMatePair,
               this.declaredReadLabels.categories,
-              self.arcColorField,
             )
           },
 

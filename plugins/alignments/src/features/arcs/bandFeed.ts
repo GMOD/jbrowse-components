@@ -7,7 +7,7 @@ import { GLYPH_SQUARE } from '@jbrowse/render-core/shaders/pointMarkConsts'
 
 import { buildArcColorPalette } from '../../shaders/palettes.ts'
 import { ARC_COLOR_INTERCHROM, arcColorSlot } from './arcColors.ts'
-import { ARC_SHAPE_FLAT_SPLIT, isFlatArcShape } from './shapes.ts'
+import { isFlatArcShape } from './shapes.ts'
 
 import type { ColorPalette } from '../../shaders/colors.ts'
 import type { ArcColorField } from '../../shared/types.ts'
@@ -242,16 +242,11 @@ export function buildArcBandFeeds({
   ) => {
     const l = lanesOf(own)
     const color = colorOf(colorType, shapeType)
-    const split = shapeType === ARC_SHAPE_FLAT_SPLIT
     const target = clipped
-      ? split
-        ? l.clippedDashed
-        : l.clippedLinks
-      : split
-        ? l.dashed
-        : colorType === ARC_COLOR_INTERCHROM
-          ? l.crossLinks
-          : l.links
+      ? l.clippedLinks
+      : colorType === ARC_COLOR_INTERCHROM
+        ? l.crossLinks
+        : l.links
     target.push(x, x2, x2Region, yBp, support, color, feet, hit)
     if (isFlatArcShape(shapeType)) {
       const square = palette[arcColorSlot(colorType)]!

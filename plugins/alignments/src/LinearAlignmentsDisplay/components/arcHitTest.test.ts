@@ -147,11 +147,11 @@ describe('a band of ticks and no arcs', () => {
   })
 })
 
-test('a split-read connector in the read cloud highlights with its dash', () => {
+test('a split-read connector in the read cloud highlights solid, as it draws', () => {
   const found = hover(150, 150, {
     cloud: true,
     arcs: [arc(100, 200, { shapeType: ARC_SHAPE_FLAT_SPLIT, yBp: 2 })],
   })
   expect(found?.hit.kind).toBe('arc')
-  expect(found!.highlight.dash).toBe('3 3')
+  expect(found!.highlight.dash).toBeUndefined()
 })

@@ -1,7 +1,9 @@
 // What a same-chromosome split-read arc is, by which way the read extends from
 // each foot (`PendingArc.p1Dir`/`p2Dir`). A pair across the same junction falls
-// in the same four classes, so each split class paints the colour of its pair
-// twin and the two kinds of evidence agree at a junction. These key arcs only:
+// in the same four classes. The deletion-type split paints the split-read gold;
+// the other three paint their pair twin's colour, so a duplication-type
+// junction and the two ends of an inversion read the same in both kinds of
+// evidence. These key arcs only:
 // a read fill belongs to a segment, which can sit between two junctions of
 // different classes, and stays strand-only (`splitDeletion`/`splitInversion`).
 export const ARC_SPLIT_PAIR_TWIN = {
@@ -26,8 +28,10 @@ export const ARC_SPLIT_LABELS: Record<ArcSplitCategory, string> = {
 
 // The one row a split class and its pair twin share when a key holds both: they
 // paint one colour, and two rows of one colour read as two meanings.
-export const ARC_SPLIT_MERGED_LABELS: Record<ArcSplitCategory, string> = {
-  splitForward: 'Long insert or deletion-type split',
+export const ARC_SPLIT_MERGED_LABELS: Record<
+  Exclude<ArcSplitCategory, 'splitForward'>,
+  string
+> = {
   splitBack: 'RL pair or duplication-type split',
   splitInvLL: 'LL pair or inversion split',
   splitInvRR: 'RR pair or inversion split',

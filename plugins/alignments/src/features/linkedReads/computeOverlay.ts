@@ -14,7 +14,9 @@ import { buildLinkedReadColorPalette } from '../../shaders/palettes.ts'
 import { linkedReadColorSlot } from '../../shaders/slang/alignmentsUniforms.js.generated.ts'
 import { LINKED_READ_LINE_WIDTH_PX } from '../../shaders/slang/linkedReadLine.consts.generated.ts'
 import {
+  LINKED_READ_COLOR_MAPS_BACK,
   connectionLabel,
+  connectorPaletteSlot,
   isGpuLinkedReadLine,
   iterLinkedPairs,
   linkedReadLinesByRegion,
@@ -137,9 +139,15 @@ export function bezierConnectionLegendItems(
   const palette = buildLinkedReadColorPalette(colors)
   const byColor = new Map<string, LegendItem>()
   for (const colorType of [...colorTypes].sort((a, b) => a - b)) {
-    const color = rgb255(palette[linkedReadColorSlot(colorType)]!)
-    if (!byColor.has(color)) {
-      byColor.set(color, {
+    const color = rgb255(
+      palette[linkedReadColorSlot(connectorPaletteSlot(colorType))]!,
+    )
+    // A maps-back split keeps a row beside the RL pairs it shares a colour
+    // with, whose label describes mates.
+    const key =
+      colorType === LINKED_READ_COLOR_MAPS_BACK ? `${color} split` : color
+    if (!byColor.has(key)) {
+      byColor.set(key, {
         color,
         label: connectionLabel(colorType, declared),
       })
@@ -372,11 +380,16 @@ function connectorShape(
   const facesOneWay = c.isSplit
     ? screenStrand(c.s1, r1.reversed) === screenStrand(c.s2, r2.reversed)
     : c.isNormal
+  // A read that maps back over itself loops up over its own row, where a dip
+  // would run under the rows of other reads.
+  const loop = c.mapsBack && sameRow
   const plain =
-    facesOneWay && !(sameRow && crossesOwnAlignment(pair, displayedRegions))
+    loop ||
+    (facesOneWay && !(sameRow && crossesOwnAlignment(pair, displayedRegions)))
   return {
     hidden,
-    straight: plain && !(hidden && sameRow),
+    loop,
+    straight: plain && !loop && !(hidden && sameRow),
     // The endpoint bps, not their screen xs, so one event holds its depth
     // while the reader zooms; no span at all for an interchromosomal pair.
     // Undefined for a plain connection, which is a line or bows up.
@@ -387,6 +400,31 @@ function connectorShape(
           r1.refName === r2.refName ? Math.abs(c.bp2 - c.bp1) : undefined,
         ),
   }
+}
+
+// A maps-back loop's apex above its row: two rows, so it clears the read's own
+// bar, within bounds that keep it visible on thin rows and local on tall ones.
+const LOOP_MIN_APEX_PX = 4
+const LOOP_MAX_APEX_PX = 12
+// Rows thinner than this have no room for an arrowhead.
+const LOOP_ARROW_MIN_FEATURE_HEIGHT_PX = 5
+const LOOP_MAX_ARROW_PX = 8
+
+// An open chevron where a loop lands on the start of the next segment, pointing
+// the way the read continues. Part of the path, so the live overlay and the SVG
+// export draw it alike.
+function loopArrowhead(
+  x: number,
+  y: number,
+  size: number,
+  strand: number,
+  reversed: boolean,
+) {
+  if (size === 0) {
+    return ''
+  }
+  const back = (reversed ? -strand : strand) * -size
+  return ` M ${x + back} ${y - size} L ${x} ${y} L ${x + back} ${y + size}`
 }
 
 // Clearance under the deepest apex for the stroke, which a hover thickens.
@@ -479,6 +517,15 @@ export function computePileupBezierArcs(opts: Opts): PileupArc[] {
     scrollTop +
     readCenterDy
 
+  const loopApexPx = Math.min(
+    LOOP_MAX_APEX_PX,
+    Math.max(LOOP_MIN_APEX_PX, 2 * rowH),
+  )
+  const arrowPx =
+    featureHeight >= LOOP_ARROW_MIN_FEATURE_HEIGHT_PX
+      ? Math.min(featureHeight, LOOP_MAX_ARROW_PX) / 2
+      : 0
+
   const result: PileupArc[] = []
 
   for (const pair of pairs) {
@@ -504,7 +551,7 @@ export function computePileupBezierArcs(opts: Opts): PileupArc[] {
       continue
     }
 
-    const { straight, hidden, dipPx } = connectorShape(
+    const { straight, hidden, loop, dipPx } = connectorShape(
       pair,
       r1,
       r2,
@@ -524,8 +571,13 @@ export function computePileupBezierArcs(opts: Opts): PileupArc[] {
           reversed1: !!r1.reversed,
           reversed2: !!r2.reversed,
           dipPx,
-        })
-    const stroke = rgb255(linkedReadPalette[linkedReadColorSlot(c.colorType)]!)
+          bowApexPx: loop ? loopApexPx : undefined,
+        }) + (loop ? loopArrowhead(sx2, sy2, arrowPx, c.s2, !!r2.reversed) : '')
+    const stroke = rgb255(
+      linkedReadPalette[
+        linkedReadColorSlot(connectorPaletteSlot(c.colorType))
+      ]!,
+    )
 
     result.push({
       d,

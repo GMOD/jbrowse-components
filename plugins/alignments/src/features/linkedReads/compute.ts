@@ -42,10 +42,25 @@ export const LINKED_READ_COLOR_INTERCHROM = LINKED_READ_COLOR_PAIR_LL + 3
 // breakpoint split view through CONNECTION_LABELS. Slot 0 takes LR's swatch, but
 // calling it LR would assert an orientation nothing measured.
 // `declared` is `color.labels` by bucket, as the read key names it.
+// A split junction that maps back over its own read. Not a palette slot: the
+// overlay alone draws it, in the colour of the RL pairs that span such a
+// junction (`connectorPaletteSlot`), under the arc band's name for the class.
+export const LINKED_READ_COLOR_MAPS_BACK = LINKED_READ_COLOR_INTERCHROM + 1
+const MAPS_BACK_LABEL = 'Split read (duplication-type)'
+
+export function connectorPaletteSlot(colorType: number) {
+  return colorType === LINKED_READ_COLOR_MAPS_BACK
+    ? LINKED_READ_COLOR_PAIR_RL
+    : colorType
+}
+
 export function connectionLabel(
   colorType: number,
   declared: Partial<Record<SwatchCategory, string>> = {},
 ) {
+  if (colorType === LINKED_READ_COLOR_MAPS_BACK) {
+    return MAPS_BACK_LABEL
+  }
   const category = LINKED_READ_SLOT_CATEGORY[colorType]
   return category === undefined || colorType === LINKED_READ_COLOR_PAIR_UNKNOWN
     ? CONNECTION_LABELS.readPair
@@ -115,6 +130,9 @@ export interface ClassifiedPair {
   s1: number
   s2: number
   isNormal: boolean
+  // A same-strand split whose next segment starts back upstream of where the
+  // last one ended, so the read covers the stretch between twice.
+  mapsBack: boolean
   colorType: number
   // A split-read junction (drives the fold-back of the second endpoint's bezier
   // handle) vs a paired mate link. Same `isSplit` the resolver assigns; carried
@@ -131,13 +149,24 @@ export function classifyPair(
   isSplit: boolean,
 ): ClassifiedPair {
   const { kind, bp1, s1, bp2, s2 } = classifyConnection({ e1, e2, isSplit })
+  // The rule the arc band classes a junction by (`splitJunctionColor`): the read
+  // extends right from its lower foot and left from its higher one. A split's
+  // first foot is a trailing edge and its second a leading one, so the read
+  // extends against s1 from the first and along s2 from the second. Two feet
+  // on one base are a forward jump.
+  const mapsBack =
+    kind === 'splitDeletion' &&
+    e1.displayedRegionIndex === e2.displayedRegionIndex &&
+    bp1 !== bp2 &&
+    (bp1 < bp2 ? s1 === -1 : s1 === 1)
   return {
     bp1,
     bp2,
     s1,
     s2,
-    isNormal: !isAbnormalConnection(kind),
-    colorType: LINKED_READ_SLOT[kind],
+    isNormal: !mapsBack && !isAbnormalConnection(kind),
+    mapsBack,
+    colorType: mapsBack ? LINKED_READ_COLOR_MAPS_BACK : LINKED_READ_SLOT[kind],
     isSplit,
   }
 }

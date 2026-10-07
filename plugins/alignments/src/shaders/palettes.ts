@@ -85,20 +85,17 @@ export function arcSlotCategory(
 }
 
 /**
- * The colour an arc category paints. A split class takes its pair twin's,
- * declared colours included, so it matches the pair bundle at its junction.
- * Colouring by pair orientation paints a long-insert pair as LR, and a forward
- * jump follows it there.
+ * The colour an arc category paints. A deletion-type split keeps the split-read
+ * gold of the read fills, so gold over the red of long-insert pairs shows both
+ * kinds of evidence at a deletion. The other three take their pair twin's
+ * colour, declared colours included: nothing else tells a duplication-type
+ * junction from a deletion-type one, or the two ends of an inversion apart.
  */
-export function arcCategoryColor(
-  c: ColorPalette,
-  category: ArcCategory,
-  colorField: ArcColorField,
-) {
+export function arcCategoryColor(c: ColorPalette, category: ArcCategory) {
   return c.readCategoryColors[
     isArcSplitCategory(category)
-      ? category === 'splitForward' && colorField === 'pairOrientation'
-        ? 'pairLR'
+      ? category === 'splitForward'
+        ? 'splitDeletion'
         : ARC_SPLIT_PAIR_TWIN[category]
       : category
   ]
@@ -109,7 +106,7 @@ export function buildArcColorPalette(
   colorField: ArcColorField,
 ) {
   return ARC_SLOT_CATEGORY.map((_, slot) =>
-    arcCategoryColor(c, arcSlotCategory(slot, colorField), colorField),
+    arcCategoryColor(c, arcSlotCategory(slot, colorField)),
   )
 }
 

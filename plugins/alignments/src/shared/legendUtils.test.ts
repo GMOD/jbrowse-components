@@ -997,25 +997,33 @@ describe('getAlignmentsColorScales', () => {
   })
 
   test('a split arc row joins the pair row it shares a colour with', () => {
-    const split = { color: 'red', label: 'Split read (deletion-type)' }
+    const split = { color: 'red', label: 'Split read (duplication-type)' }
     expect(
       shown(
         getAlignmentsColorScales(
-          model([{ color: 'red', label: 'Long insert' }], [split]),
+          model([{ color: 'red', label: 'RL - Mates point outward' }], [split]),
         ),
       ),
-    ).toEqual([['Read and arc colors', ['Long insert or deletion-type split']]])
+    ).toEqual([['Read and arc colors', ['RL pair or duplication-type split']]])
     // alone, or beside a pair row of another colour, it keeps its own row
     expect(shown(getAlignmentsColorScales(model([], [split])))).toEqual([
-      ['Arc colors', ['Split read (deletion-type)']],
+      ['Arc colors', ['Split read (duplication-type)']],
     ])
     expect(
       shown(
         getAlignmentsColorScales(
-          model([], [{ color: 'blue', label: 'Long insert' }, split]),
+          model(
+            [],
+            [{ color: 'blue', label: 'RL - Mates point outward' }, split],
+          ),
         ),
       ),
-    ).toEqual([['Arc colors', ['Long insert', 'Split read (deletion-type)']]])
+    ).toEqual([
+      [
+        'Arc colors',
+        ['RL - Mates point outward', 'Split read (duplication-type)'],
+      ],
+    ])
   })
 
   test('merges reads and arcs into one list when they share a color', () => {

@@ -111,32 +111,32 @@ test('the near foot is the one in the region, whichever end the worker put first
   ]).toEqual([5100, 3000, 1])
 })
 
-test('a clipped read cloud bar keeps its dash and squares at both mates', () => {
+test('a clipped read cloud bar keeps squares at both mates, a split one drawn solid like a pair', () => {
   const f = feeds([
     arc(500, 8000, ARC_SHAPE_FLAT),
     arc(600, 9000, ARC_SHAPE_FLAT_SPLIT),
   ])
   const { clippedLinks, clippedDashed, markers } = f.get(0)!
-  expect([...clippedLinks.x]).toEqual([500])
-  expect([...clippedDashed.x]).toEqual([600])
+  expect([...clippedLinks.x]).toEqual([500, 600])
+  expect([...clippedDashed.x]).toEqual([])
   expect([...markers.x]).toEqual([500, 8000, 600, 9000])
 })
 
-test('a read cloud bar takes its category colour at the cloud alpha, squares at each mate, a split one dashed', () => {
+test('a read cloud bar takes its category colour at the cloud alpha, squares at each mate, a split one solid', () => {
   const f = feeds([
     arc(100, 400, ARC_SHAPE_FLAT),
     arc(200, 300, ARC_SHAPE_FLAT_SPLIT),
   ])
   const { links, dashed, markers, markerHits } = f.get(0)!
-  expect([...links.x]).toEqual([100])
-  expect([...dashed.x]).toEqual([200])
+  expect([...links.x]).toEqual([100, 200])
+  expect([...dashed.x]).toEqual([])
   expect((links.color as Uint32Array)[0]).toBe(
     withAbgrAlpha(
       slotColor(COLOR_LONG_INSERT),
       Math.round(CLOUD_LINE_ALPHA * 255),
     ),
   )
-  expect([...links.y!]).toEqual([300])
+  expect([...links.y!]).toEqual([300, 300])
   expect([...markers.x]).toEqual([100, 400, 200, 300])
   expect([...markers.x2]).toEqual([...markers.x])
   expect((markers.color as Uint32Array)[0]).toBe(slotColor(COLOR_LONG_INSERT))
