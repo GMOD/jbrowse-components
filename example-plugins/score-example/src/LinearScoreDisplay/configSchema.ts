@@ -34,7 +34,7 @@ export const configSchema = ConfigurationSchema(
       description: 'feature attribute used as the score',
     },
   },
-  { explicitIdentifier: 'displayId', explicitlyTyped: true, closed: 'warn' },
+  { explicitIdentifier: 'displayId', explicitlyTyped: true },
 )
 
 export type LinearScoreDisplayConfigModel = typeof configSchema

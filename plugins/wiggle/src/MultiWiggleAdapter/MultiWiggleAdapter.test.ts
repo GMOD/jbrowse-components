@@ -1151,7 +1151,7 @@ test("a subadapter's row metadata stays off the config its adapter is created fr
       getAdapterType: () => ({ configSchema: bigWigConfigSchema }),
     } as unknown as PluginManager,
   )
-  expect(await adapter.getSources()).toEqual([
+  expect(await adapter.getSources([])).toEqual([
     expect.objectContaining({
       name: 'Alpha',
       group: 'Islet',

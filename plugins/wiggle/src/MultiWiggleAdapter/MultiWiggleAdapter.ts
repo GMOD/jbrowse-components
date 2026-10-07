@@ -138,9 +138,9 @@ export default class MultiWiggleAdapter
 
     const entries = await Promise.all(
       subConfs.map(async (conf: AdapterConfig) => {
-        const schema = this.pluginManager?.getAdapterType(
-          conf.type,
-        ).configSchema
+        const schema = conf.type
+          ? this.pluginManager?.getAdapterType(conf.type).configSchema
+          : undefined
         const dataAdapter = (
           await getSubAdapter(schema ? declaredSnapshot(schema, conf) : conf)
         ).dataAdapter as BaseFeatureDataAdapter
