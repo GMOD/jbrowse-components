@@ -2,8 +2,9 @@
 // repo syncs from figures.lock. Two HG008-T benchmark loci in the read
 // connection modes the paper's Method lists: a 13.3 kb tandem duplication
 // (SV_128) beside a 26.7 kb deletion (SV_129) in SUZ12, and a 2.4 kb inversion
-// on chr3 (SV_23, SV_25). One BAM mounts twice because a view shows a track
-// once and a display draws one connection mode. The long reads group by split
+// on chr3 (SV_23, SV_25). The calls mount twice, as the variant display's
+// records and as one arc per pair of ends. One BAM mounts twice because a view
+// shows a track once and a display draws one connection mode. The long reads group by split
 // or not, so the chains that cross a junction sit under their arcs. Grouping
 // splits coverage per group, so the long-read coverage is a track of its own.
 // The short reads take two tracks, read arcs and the read cloud, each with the
@@ -98,7 +99,6 @@ const readEvidence = ({
   connectorCurves,
   coverageMax,
   viewportHeight,
-  callArcs,
 }: {
   name: string
   loc: string
@@ -109,15 +109,13 @@ const readEvidence = ({
   // caps the Illumina coverage axis where a spike in view would flatten it
   coverageMax?: number
   viewportHeight: number
-  // a second mount of the calls, each breakend pair as one arc
-  callArcs?: boolean
 }): ScreenshotSpec => ({
   mode: 'url',
   name,
   url: cgiabUrl({
     sessionTracks: [
       callsTrack(CALLS, CALLS_NAME),
-      ...(callArcs ? [callsTrack(CALL_ARCS, CALL_ARCS_NAME)] : []),
+      callsTrack(CALL_ARCS, CALL_ARCS_NAME),
       bamTrack(HIFI_COV, HIFI_COV_NAME, HIFI_BAM),
       bamTrack(HIFI, HIFI_NAME, HIFI_BAM),
       bamTrack(ILLUMINA_ARCS, ARCS_NAME, ILLUMINA_BAM),
@@ -141,25 +139,21 @@ const readEvidence = ({
             type: 'LinearVariantDisplay',
             height: 85,
           },
-          ...(callArcs
-            ? [
-                {
-                  trackId: CALL_ARCS,
-                  type: 'LinearMarkDisplay',
-                  height: 70,
-                  marks: [
-                    {
-                      mark: 'link',
-                      transform: [{ type: 'mate' }],
-                      encoding: {
-                        x2: { chrom: 'mate.refName', pos: 'mate.start' },
-                        size: 2,
-                      },
-                    },
-                  ],
+          {
+            trackId: CALL_ARCS,
+            type: 'LinearMarkDisplay',
+            height: 70,
+            marks: [
+              {
+                mark: 'link',
+                transform: [{ type: 'mate' }],
+                encoding: {
+                  x2: { chrom: 'mate.refName', pos: 'mate.start' },
+                  size: 2,
                 },
-              ]
-            : []),
+              },
+            ],
+          },
           // grouping splits coverage per group, so the whole-sample coverage
           // is a track of its own
           {
@@ -210,7 +204,7 @@ const readEvidence = ({
   }),
   annotations: [
     bandLabel('SV calls', 'draft benchmark somatic SVs', 52),
-    ...(callArcs ? [bandLabel('SV call arcs', CALL_ARCS_NAME, 36)] : []),
+    bandLabel('SV call arcs', CALL_ARCS_NAME, 36),
     bandLabel('PacBio: coverage', HIFI_COV_NAME, 36),
     bandLabel('PacBio: split-read arcs', HIFI_NAME, 38),
     bandLabel('PacBio: split reads', HIFI_NAME, 82),
@@ -233,21 +227,13 @@ export const paperSvReadsSpecs: ScreenshotSpec[] = [
     coverageMax: 200,
     arcsHeight: 80,
     connectorCurves: true,
-    viewportHeight: 1295,
+    viewportHeight: 1386,
   }),
   readEvidence({
     name: 'paper/sv_read_evidence_inversion',
     loc: 'chr3:184,709,000-184,723,000',
     arcsHeight: 110,
     connectorCurves: false,
-    viewportHeight: 1175,
-  }),
-  readEvidence({
-    name: 'paper/sv_read_evidence_inversion_call_arcs',
-    loc: 'chr3:184,709,000-184,723,000',
-    arcsHeight: 110,
-    connectorCurves: false,
     viewportHeight: 1266,
-    callArcs: true,
   }),
 ]
