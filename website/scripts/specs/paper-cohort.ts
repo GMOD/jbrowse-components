@@ -51,6 +51,24 @@ const panelLabel = (trackId: string, text: string): Annotation => ({
   },
 })
 
+// Right of the 114 kb deletion, where every track is clear of calls
+const trackBlurb = (
+  trackId: string,
+  fracY: number,
+  text: string,
+): Annotation => ({
+  type: 'text',
+  text,
+  textAlign: 'start',
+  fontSize: 18,
+  anchor: {
+    trackId,
+    loc: 'chr3:162,915,000',
+    fracY,
+    alignX: 'left',
+  },
+})
+
 export const paperCohortSpecs: ScreenshotSpec[] = [
   {
     mode: 'url',
@@ -128,6 +146,22 @@ export const paperCohortSpecs: ScreenshotSpec[] = [
     annotations: [
       panelLabel(SV_TRACK.trackId, 'a'),
       panelLabel('cnv_1000g_zarr', 'b'),
+      trackBlurb(
+        SV_TRACK.trackId,
+        0.55,
+        '1000 Genomes\nshort-read deletion calls',
+      ),
+      trackBlurb(
+        HGSVC3_SV_TRACK.trackId,
+        0.75,
+        'HGSVC long-read assembly calls',
+      ),
+      trackBlurb('cnv_1000g_zarr', 0.55, '1000 Genomes\ncopy number'),
+      trackBlurb(
+        'hprc_minigraph_segments',
+        0.3,
+        'HPRC release 2.1\npangenome graph',
+      ),
     ],
   },
 ]
