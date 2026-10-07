@@ -1,9 +1,9 @@
 #!/usr/bin/env node
 import { parseArgs } from './args.ts'
-import { captureJBrowse } from './capture.ts'
+import { captureBatch, captureJBrowse } from './capture.ts'
 import { resolveAgainstConfig } from './catalog.ts'
 import { listHubAssemblies, listHubTracks, trackName } from './hub.ts'
-import { readAnnotations, readJson, readSpec } from './jsonArgs.ts'
+import { readAnnotations, readBatch, readJson, readSpec } from './jsonArgs.ts'
 import { PUBLIC_INSTANCE, jbrowseUrl } from './url.ts'
 import { version } from './version.ts'
 
@@ -13,6 +13,7 @@ const HELP = `jb2capture — screenshot a live JBrowse 2 view, once it has finis
 
 USAGE
   jb2capture [flags] --out <file.png>    open a view, wait for it, screenshot it
+  jb2capture batch <json|path|-> [flags] screenshot many views from one browser
   jb2capture url [flags]                 print the URL instead of launching a browser
   jb2capture list [hub] [filter]         list hosted assemblies, or one's trackIds
 
@@ -49,6 +50,16 @@ WAITING
 
   Either fails the run rather than writing a frame that is not the picture.
 
+BATCH
+  The manifest is a JSON array with one object per image. Each names its "out"
+  and may set hub, config, assembly, loc, tracks, spec, session, width, height,
+  dpr, fullPage and annotations; the flags above are the defaults for what an
+  object leaves out. Every image gets a page of its own in one shared browser.
+  A failed image is reported and the rest carry on; the exit code is 1 if any
+  failed.
+
+  --concurrency <n>     pages open at once (default 4)
+
 OTHER
   --headed              run with a visible browser window
   --verbose             print browser console output and uncaught errors
@@ -63,6 +74,10 @@ EXAMPLES
 
   ## find the trackIds first
   jb2capture list hg38 conservation
+
+  ## one image per locus, from one browser
+  jb2capture batch '[{"loc":"BRCA1","out":"brca1.png"},{"loc":"TP53","out":"tp53.png"}]' \\
+    --hub hg38 --track hg38-ncbiRefSeqCurated
 
   ## your own config, two loci side by side
   jb2capture --config https://example.org/config.json --assembly mydata \\
@@ -79,6 +94,77 @@ function urlOptions(args: ParsedArgs) {
     spec: args.spec ? readSpec(args.spec) : undefined,
     session: args.session ? readJson('session', args.session) : undefined,
     instance: args.instance,
+  }
+}
+
+async function runBatch(args: ParsedArgs) {
+  const [manifest, ...extra] = args.positionals
+  if (!manifest || extra.length) {
+    throw new Error('`jb2capture batch` takes one manifest: JSON, a path or -')
+  }
+  const defaults = {
+    ...urlOptions(args),
+    width: args.width,
+    height: args.height,
+    dpr: args.dpr,
+    fullPage: args.fullPage,
+    annotations: args.annotations
+      ? readAnnotations(args.annotations)
+      : undefined,
+    timeout: args.timeout,
+    allowUnsettled: args.allowUnsettled,
+    onConsole: args.verbose
+      ? (text: string) => {
+          console.error(`  [page] ${text}`)
+        }
+      : undefined,
+  }
+  const captures = readBatch(manifest).map(
+    ({ spec, session, annotations, ...entry }) => ({
+      ...defaults,
+      // an entry that says what to open replaces the default session whole
+      ...(spec || session ? { spec: undefined, session: undefined } : {}),
+      ...entry,
+      ...(spec
+        ? { spec: typeof spec === 'string' ? readSpec(spec) : spec }
+        : {}),
+      ...(session
+        ? {
+            session:
+              typeof session === 'string'
+                ? readJson('session', session)
+                : session,
+          }
+        : {}),
+      ...(annotations
+        ? {
+            annotations:
+              typeof annotations === 'string'
+                ? readAnnotations(annotations)
+                : annotations,
+          }
+        : {}),
+    }),
+  )
+  const start = performance.now()
+  const results = await captureBatch(captures, {
+    headless: !args.headed,
+    concurrency: args.concurrency,
+    onResult: (result, index) => {
+      const label = `[${index + 1}/${captures.length}] ${result.out} ${(result.ms / 1000).toFixed(1)}s`
+      if (result.ok) {
+        console.log(`wrote ${label}`)
+      } else {
+        console.error(`FAILED ${label}: ${result.error.message}`)
+      }
+    },
+  })
+  const failed = results.filter(r => !r.ok).length
+  console.log(
+    `wrote ${results.length - failed}/${results.length} images in ${((performance.now() - start) / 1000).toFixed(1)}s`,
+  )
+  if (failed) {
+    process.exitCode = 1
   }
 }
 
@@ -127,6 +213,10 @@ async function main() {
   }
   if (args.command === 'list') {
     await runList(args.positionals)
+    return
+  }
+  if (args.command === 'batch') {
+    await runBatch(args)
     return
   }
   if (args.command === 'url') {

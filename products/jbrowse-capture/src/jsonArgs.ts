@@ -15,7 +15,7 @@ function parseJson(flag: string, value: string): unknown {
     )
   } catch (error) {
     throw new Error(
-      `--${flag}: ${error instanceof Error ? error.message : error}`,
+      `${flag.includes(' ') ? flag : `--${flag}`}: ${error instanceof Error ? error.message : error}`,
       { cause: error },
     )
   }
@@ -41,4 +41,36 @@ export function readAnnotations(value: string): Annotation[] {
 export function readSpec(value: string): object {
   const spec = readJson('spec', value)
   return 'type' in spec && !('views' in spec) ? { views: [spec] } : spec
+}
+
+export interface BatchEntry {
+  out: string
+  hub?: string
+  config?: string
+  assembly?: string
+  loc?: string
+  tracks?: string[]
+  /** A session spec inline, or a path to one. */
+  spec?: object | string
+  /** A session saved with File → Export session inline, or a path to one. */
+  session?: object | string
+  width?: number
+  height?: number
+  dpr?: number
+  fullPage?: boolean
+  /** Callouts inline, or a path to them. */
+  annotations?: Annotation[] | string
+}
+
+export function readBatch(value: string): BatchEntry[] {
+  const parsed = parseJson('batch manifest', value)
+  if (!Array.isArray(parsed)) {
+    throw new Error('the batch manifest must be a JSON array of captures')
+  }
+  for (const [i, entry] of parsed.entries()) {
+    if (typeof entry?.out !== 'string') {
+      throw new Error(`batch capture ${i} has no "out" image path`)
+    }
+  }
+  return parsed as BatchEntry[]
 }

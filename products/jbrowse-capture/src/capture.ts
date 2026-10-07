@@ -39,15 +39,7 @@ export interface OpenResult extends ReadyReport {
   url: string
 }
 
-/**
- * Launch a browser, open a JBrowse session, and wait until it has rendered.
- * The caller owns the returned browser and must close it. The assembly and
- * tracks asked for become the session gate's expectations unless `trackIds`
- * names others.
- */
-export async function openJBrowse(
-  options: OpenOptions = {},
-): Promise<OpenResult> {
+async function prepareOpen(options: OpenOptions) {
   const {
     width = 1400,
     height = 900,
@@ -77,10 +69,34 @@ export async function openJBrowse(
     ? sessionAssembly &&
       (await canonicalSessionAssembly(urlOptions, sessionAssembly))
     : (assembly ?? hub)
-  const browser = await launchBrowser({ headless, executablePath, args })
+  return {
+    url,
+    viewport: { width, height, deviceScaleFactor: dpr },
+    onConsole,
+    timeout,
+    ready: {
+      ...options,
+      assembly: expectedAssembly,
+      trackIds: trackIds ?? (opens ? trackIdsFromSession(opens) : tracks),
+    },
+  }
+}
+
+async function openPage(
+  browser: Browser,
+  {
+    url,
+    viewport,
+    onConsole,
+    timeout,
+    ready,
+  }: Awaited<ReturnType<typeof prepareOpen>>,
+) {
+  // a window each: a tab behind another stops painting, and a batch has
+  // several pages open
+  const page = await browser.newPage({ type: 'window' })
   try {
-    const page = await browser.newPage()
-    await page.setViewport({ width, height, deviceScaleFactor: dpr })
+    await page.setViewport(viewport)
     if (onConsole) {
       page.on('console', msg => {
         const text = msg.text()
@@ -109,17 +125,33 @@ export async function openJBrowse(
       waitUntil: 'domcontentloaded',
       timeout,
     })
-    if (response && !response.ok()) {
+    // 304: a page after the first in a batch comes from the shared cache
+    if (response && !response.ok() && response.status() !== 304) {
       throw new Error(
         `${url} answered HTTP ${response.status()}. Check --instance.`,
       )
     }
-    const report = await waitForJBrowseReady(page, {
-      ...options,
-      assembly: expectedAssembly,
-      trackIds: trackIds ?? (opens ? trackIdsFromSession(opens) : tracks),
-    })
-    return { browser, page, url, ...report }
+    const report = await waitForJBrowseReady(page, ready)
+    return { page, url, ...report }
+  } catch (error) {
+    await page.close().catch(() => {})
+    throw error
+  }
+}
+
+/**
+ * Launch a browser, open a JBrowse session, and wait until it has rendered.
+ * The caller owns the returned browser and must close it. The assembly and
+ * tracks asked for become the session gate's expectations unless `trackIds`
+ * names others.
+ */
+export async function openJBrowse(
+  options: OpenOptions = {},
+): Promise<OpenResult> {
+  const prepared = await prepareOpen(options)
+  const browser = await launchBrowser(options)
+  try {
+    return { browser, ...(await openPage(browser, prepared)) }
   } catch (error) {
     await browser.close().catch(() => {})
     throw error
@@ -150,14 +182,7 @@ export interface CaptureResult extends ReadyReport {
   image: Uint8Array
 }
 
-/**
- * Open a JBrowse session, wait for it to render, screenshot it, and close the
- * browser.
- */
-export async function captureJBrowse(
-  options: CaptureOptions = {},
-): Promise<CaptureResult> {
-  const { out, fullPage = false, annotations, ...openOptions } = options
+function assertCapturable({ out, annotations }: CaptureOptions) {
   if (annotations) {
     assertValidAnnotations(annotations)
   }
@@ -165,24 +190,122 @@ export async function captureJBrowse(
     assertImagePath(out)
     mkdirSync(dirname(out), { recursive: true })
   }
-  const { browser, page, url, ...opened } = await openJBrowse(openOptions)
+}
+
+async function shoot(
+  page: Page,
+  opened: ReadyReport,
+  { out, fullPage = false, annotations, ...openOptions }: CaptureOptions,
+) {
+  let report = opened
+  const overflow = fullPage ? await page.evaluate(sessionOverflowInPage) : 0
+  const viewport = page.viewport()
+  if (viewport && overflow > 0) {
+    await page.setViewport({
+      ...viewport,
+      height: viewport.height + overflow,
+    })
+    report = await waitForFrame(page, openOptions)
+  }
+  if (annotations?.length) {
+    await drawAnnotations(page, annotations)
+  }
+  const image = await page.screenshot({ path: out })
+  return { image, ...report }
+}
+
+/**
+ * Open a JBrowse session, wait for it to render, screenshot it, and close the
+ * browser.
+ */
+export async function captureJBrowse(
+  options: CaptureOptions = {},
+): Promise<CaptureResult> {
+  assertCapturable(options)
+  const { browser, page, url, ...opened } = await openJBrowse(options)
   try {
-    let report: ReadyReport = opened
-    const overflow = fullPage ? await page.evaluate(sessionOverflowInPage) : 0
-    const viewport = page.viewport()
-    if (viewport && overflow > 0) {
-      await page.setViewport({
-        ...viewport,
-        height: viewport.height + overflow,
-      })
-      report = await waitForFrame(page, openOptions)
-    }
-    if (annotations?.length) {
-      await drawAnnotations(page, annotations)
-    }
-    const image = await page.screenshot({ path: out })
-    return { url, image, ...report }
+    return { url, ...(await shoot(page, opened, options)) }
   } finally {
     await browser.close().catch(() => {})
   }
+}
+
+export interface BatchOptions extends LaunchOptions {
+  /** Pages open at once. Default 4. */
+  concurrency?: number
+  /** Called as each capture finishes, in completion order. */
+  onResult?: (result: BatchResult, index: number) => void
+}
+
+export type BatchResult = { out?: string; ms: number } & (
+  | ({ ok: true } & CaptureResult)
+  | { ok: false; error: Error }
+)
+
+/**
+ * Screenshot many sessions from one browser, each on a page of its own that is
+ * closed after its screenshot. A failed capture is reported in its result and
+ * the rest carry on; a browser that died is relaunched for the captures left.
+ * Results come back in the order of `captures`.
+ */
+export async function captureBatch(
+  captures: CaptureOptions[],
+  { concurrency = 4, onResult, ...launch }: BatchOptions = {},
+): Promise<BatchResult[]> {
+  for (const capture of captures) {
+    assertCapturable(capture)
+  }
+  const results: BatchResult[] = []
+  let browser: Promise<Browser> | undefined
+  // chained, so workers that find no live browser share one launch
+  const liveBrowser = () => {
+    const launched = () => launchBrowser(launch)
+    browser = browser
+      ? browser.then(b => (b.connected ? b : launched()), launched)
+      : launched()
+    return browser
+  }
+  let next = 0
+  const worker = async () => {
+    while (next < captures.length) {
+      const index = next++
+      const capture = captures[index]!
+      const start = performance.now()
+      let result: BatchResult
+      let page: Page | undefined
+      try {
+        const prepared = await prepareOpen(capture)
+        const opened = await openPage(await liveBrowser(), prepared)
+        page = opened.page
+        const { url } = opened
+        result = {
+          ok: true,
+          out: capture.out,
+          url,
+          ...(await shoot(page, opened, capture)),
+          ms: performance.now() - start,
+        }
+      } catch (error) {
+        result = {
+          ok: false,
+          out: capture.out,
+          error: error instanceof Error ? error : new Error(String(error)),
+          ms: performance.now() - start,
+        }
+      } finally {
+        await page?.close().catch(() => {})
+      }
+      results[index] = result
+      onResult?.(result, index)
+    }
+  }
+  try {
+    await Promise.all(
+      Array.from({ length: Math.min(concurrency, captures.length) }, worker),
+    )
+  } finally {
+    const launched = await browser?.catch(() => undefined)
+    await launched?.close().catch(() => {})
+  }
+  return results
 }

@@ -155,3 +155,20 @@ test('tracks is a fresh array each time', () => {
   first.push('mutated')
   expect(parseArgs([]).tracks).toEqual([])
 })
+
+test('batch takes its manifest as a positional and the capture flags as defaults', () => {
+  const args = parseArgs(['batch', 'captures.json', '--hub', 'hg38'])
+  expect(args.command).toBe('batch')
+  expect(args.positionals).toEqual(['captures.json'])
+  expect(args.hub).toBe('hg38')
+  expect(parseArgs(['batch', '-', '--concurrency', '8']).concurrency).toBe(8)
+})
+
+test('an image path belongs to a batch entry, and concurrency to a batch', () => {
+  expect(() => parseArgs(['batch', 'captures.json', '-o', 'x.png'])).toThrow(
+    '-o does not apply to `jb2capture batch`',
+  )
+  expect(() => parseArgs(['--concurrency', '2', '-o', 'x.png'])).toThrow(
+    '--concurrency applies only to `jb2capture batch`',
+  )
+})

@@ -3,7 +3,7 @@ import { parseArgs as parseNodeArgs } from 'node:util'
 import type { ParseArgsOptionsConfig } from 'node:util'
 
 export interface ParsedArgs {
-  command: 'capture' | 'url' | 'list'
+  command: 'capture' | 'batch' | 'url' | 'list'
   hub?: string
   config?: string
   assembly?: string
@@ -17,6 +17,7 @@ export interface ParsedArgs {
   height?: number
   dpr?: number
   timeout?: number
+  concurrency?: number
   fullPage: boolean
   annotations?: string
   headed: boolean
@@ -24,7 +25,7 @@ export interface ParsedArgs {
   help: boolean
   version: boolean
   allowUnsettled: boolean
-  /** `list`'s hub and filter. Empty for the other commands. */
+  /** `list`'s hub and filter, or `batch`'s manifest. Empty for the other commands. */
   positionals: string[]
 }
 
@@ -44,6 +45,7 @@ const OPTIONS = {
   height: { type: 'string' },
   dpr: { type: 'string' },
   timeout: { type: 'string' },
+  concurrency: { type: 'string' },
   fullPage: { type: 'boolean', default: false },
   annotations: { type: 'string' },
   headed: { type: 'boolean', default: false },
@@ -57,7 +59,11 @@ type Flag = keyof typeof OPTIONS
 
 const EVERY_COMMAND: Flag[] = ['help', 'version']
 
-const SUBCOMMAND_FLAGS: Record<'url' | 'list', Set<string>> = {
+const SUBCOMMAND_FLAGS: Record<ParsedArgs['command'], Set<string>> = {
+  capture: new Set(
+    (Object.keys(OPTIONS) as Flag[]).filter(f => f !== 'concurrency'),
+  ),
+  batch: new Set((Object.keys(OPTIONS) as Flag[]).filter(f => f !== 'out')),
   url: new Set<Flag>([
     'hub',
     'config',
@@ -106,23 +112,21 @@ function positive(name: string, raw: string | undefined) {
  */
 export function parseArgs(argv: string[]): ParsedArgs {
   const [first, ...afterCommand] = argv
-  const command = first === 'list' || first === 'url' ? first : 'capture'
+  const command =
+    first === 'list' || first === 'url' || first === 'batch' ? first : 'capture'
   const { values, positionals, tokens } = parseNodeArgs({
     args: command === 'capture' ? argv : afterCommand,
     options: OPTIONS,
-    allowPositionals: command === 'list',
+    allowPositionals: command === 'list' || command === 'batch',
     tokens: true,
   })
-  if (command !== 'capture') {
-    for (const token of tokens) {
-      if (
-        token.kind === 'option' &&
-        !SUBCOMMAND_FLAGS[command].has(token.name)
-      ) {
-        throw new Error(
-          `${token.rawName} does not apply to \`jb2capture ${command}\``,
-        )
-      }
+  for (const token of tokens) {
+    if (token.kind === 'option' && !SUBCOMMAND_FLAGS[command].has(token.name)) {
+      throw new Error(
+        command === 'capture'
+          ? `${token.rawName} applies only to \`jb2capture batch\``
+          : `${token.rawName} does not apply to \`jb2capture ${command}\``,
+      )
     }
   }
   const fromStdin = (['spec', 'session', 'annotations'] as const).filter(
@@ -133,7 +137,7 @@ export function parseArgs(argv: string[]): ParsedArgs {
       `${fromStdin.map(f => `--${f}`).join(' and ')} cannot both read stdin (-)`,
     )
   }
-  const { track, width, height, dpr, timeout, ...rest } = values
+  const { track, width, height, dpr, timeout, concurrency, ...rest } = values
   return {
     ...rest,
     command,
@@ -143,6 +147,7 @@ export function parseArgs(argv: string[]): ParsedArgs {
     height: positiveInt('height', height),
     dpr: positive('dpr', dpr),
     timeout: positive('timeout', timeout),
+    concurrency: positiveInt('concurrency', concurrency),
     positionals,
   }
 }

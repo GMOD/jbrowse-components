@@ -1,4 +1,4 @@
-export { captureJBrowse, openJBrowse } from './capture.ts'
+export { captureBatch, captureJBrowse, openJBrowse } from './capture.ts'
 export { clearAnnotations, drawAnnotations } from './annotations.ts'
 export { delay } from './poll.ts'
 export { waitForFrame, waitForJBrowseReady } from './ready.ts'
@@ -31,6 +31,8 @@ export {
 export type { Annotation, AnnotationAnchor } from './annotationOverlay.ts'
 export type { LaunchOptions } from './browser.ts'
 export type {
+  BatchOptions,
+  BatchResult,
   CaptureOptions,
   CaptureResult,
   OpenOptions,

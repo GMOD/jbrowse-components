@@ -217,6 +217,37 @@ picture with the callout missing or parked in a corner.
 In a script, pass the same array as `annotations` to `captureJBrowse`, or call
 `drawAnnotations(page, annotations)` on the page `openJBrowse` returns.
 
+## Many screenshots from one browser
+
+`jb2capture batch` takes a JSON array with one object per image and draws them
+all from one browser. Each image gets a window of its own, closed after its
+screenshot, so no session state passes from one image to the next.
+
+```bash
+jb2capture batch captures.json --hub hg38 --track hg38-ncbiRefSeqCurated
+```
+
+```json
+[
+  { "loc": "BRCA1", "out": "brca1.png" },
+  { "loc": "TP53", "out": "tp53.png", "tracks": ["hg38-clinvarMain"] }
+]
+```
+
+An object names its `out` and may set `hub`, `config`, `assembly`, `loc`,
+`tracks`, `spec`, `session`, `width`, `height`, `dpr`, `fullPage` and
+`annotations`. The command-line flags are the defaults for what an object leaves
+out. `--concurrency` sets how many windows are open at once (default 4).
+
+Each image is reported on a line of its own with the time it took. A failed
+image is reported and the rest carry on, a browser that died is relaunched for
+the images left, and the exit code is 1 if any image failed. Chrome flags and
+`--headed` apply to the whole batch, so images that need different ones go in
+separate batches.
+
+In a script, `captureBatch(captures, { concurrency })` takes an array of
+`captureJBrowse` options and returns one result per capture, in order.
+
 ## CLI
 
 `jb2capture --help` for the full list. Also:
