@@ -27,6 +27,8 @@ const view = (
   layoutMode: 'auto' | 'force',
   lanesHeight: number,
   genesHeight: number,
+  paneHeight = 600,
+  inlineLaneNames = false,
 ) => ({
   type: 'LinearGenomeView',
   assembly: 'hg38',
@@ -53,10 +55,11 @@ const view = (
         'HG02055.1',
       ],
       height: lanesHeight,
+      inlineLaneNames,
     },
     graphTrack(SEGMENTS_TRACK, {
       layoutMode,
-      paneHeight: 600,
+      paneHeight,
       colorScheme: 'reference-position',
     }),
   ],
@@ -69,9 +72,13 @@ const session = (
   layoutMode: 'auto' | 'force',
   lanesHeight = 460,
   genesHeight = 70,
+  paneHeight = 600,
+  inlineLaneNames = false,
 ) =>
   sessionSpec(CONFIG, {
-    views: [view(layoutMode, lanesHeight, genesHeight)],
+    views: [
+      view(layoutMode, lanesHeight, genesHeight, paneHeight, inlineLaneNames),
+    ],
   })
 
 // The gbz read is a chain of range requests against two hosted files, and the
@@ -95,8 +102,8 @@ const callouts: Annotation[] = [
     leader: true,
     fontSize: 20,
     anchor: { graphNode: DELETION_NODE },
-    dx: 60,
-    dy: -120,
+    dx: -230,
+    dy: 95,
   },
 ]
 
@@ -120,9 +127,9 @@ export const paperHprcWorkspaceSpecs: ScreenshotSpec[] = [
   {
     mode: 'url',
     name: 'paper/hprc_lanes_graph_stacked_force',
-    url: session('force', 460, 50),
+    url: session('force', 280, 50, 380, true),
     viewportWidth: 1500,
-    viewportHeight: 1410,
+    viewportHeight: 1010,
     ...gates,
     annotations: callouts,
   },
