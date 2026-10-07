@@ -188,6 +188,16 @@ describe('a settings bag', () => {
     )
   })
 
+  test('a namespace with one bad member writes none of them', () => {
+    const { configuration } = model()
+    const report = applyConfSettings(configuration, {
+      scales: { y: { domainMin: 5, type: 'bogus' } },
+    })
+    expect(report.applied).toEqual([])
+    expect(report.failed.map(f => f.key)).toEqual(['scales'])
+    expect(readConfObject(configuration, ['scales', 'y'])).toEqual({})
+  })
+
   test("runs the config's lift over the bag, and a namespace's over its part", () => {
     const lifted = ConfigurationSchema(
       'Lifted',

@@ -1,4 +1,4 @@
-import { getType, isStateTreeNode } from '@jbrowse/mobx-state-tree'
+import { getSnapshot, getType, isStateTreeNode } from '@jbrowse/mobx-state-tree'
 
 import { isPlainObject } from '../util/objectUtils.ts'
 import { readConfObject } from './readConfObject.ts'
@@ -153,9 +153,11 @@ function writeConfMember(
   const member = conf[key]
   const namespace = isPlainObject(value) ? namespaceMetadata(member) : undefined
   if (namespace) {
-    for (const [k, v] of Object.entries(
-      preProcessSnapshotWith(namespace, value),
-    )) {
+    const members = preProcessSnapshotWith(namespace, value)
+    // refused as a whole before any member lands, so a bad member leaves the
+    // namespace as it was rather than half written and reported as rejected
+    getType(member).create({ ...getSnapshot(member), ...members })
+    for (const [k, v] of Object.entries(members)) {
       writeConfMember(member, k, v)
     }
   } else {
