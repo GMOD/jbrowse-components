@@ -28,6 +28,8 @@ import {
 } from '../LinearAlignmentsDisplay/colorUtils.ts'
 import {
   ARC_SPLIT_LABELS,
+  ARC_SPLIT_MERGED_LABELS,
+  ARC_SPLIT_PAIR_TWIN,
   isArcSplitCategory,
 } from '../features/arcs/arcSplitCategory.ts'
 import { sashimiArcColor } from '../features/sashimi/computeOverlay.ts'
@@ -54,6 +56,7 @@ import type {
   ReadColorCategory,
   SwatchCategory,
 } from '../LinearAlignmentsDisplay/colorUtils.ts'
+import type { ArcSplitCategory } from '../features/arcs/arcSplitCategory.ts'
 import type { ColorPalette, PaletteColorKey } from '../shaders/colors.ts'
 import type { ArcCategory } from '../shaders/palettes.ts'
 import type { DeclaredReadLabels } from './alignmentsColor.ts'
@@ -151,6 +154,31 @@ function legendKey(i: Pick<LegendItem, 'color' | 'label'>) {
 // field alone let a connection row repeat a swatch verbatim as long as it
 // matched the arc's half of the merge rather than the reads'. A color-less row
 // keys as itself, since nothing it could collide with has a color either.
+// A split-read arc row joins its pair twin's row where both are keyed in one
+// colour, under a label naming both. Matched on the default labels, so a pair
+// row the user renamed or recoloured keeps the split row beside it.
+function oneRowPerSplitTwin(items: LegendItem[]) {
+  let rows = items
+  for (const split of Object.keys(ARC_SPLIT_LABELS) as ArcSplitCategory[]) {
+    const splitRow = rows.find(r => r.label === ARC_SPLIT_LABELS[split])
+    const pairRow = rows.find(
+      r => r.label === CATEGORY_LEGEND[ARC_SPLIT_PAIR_TWIN[split]],
+    )
+    if (
+      splitRow?.color !== undefined &&
+      pairRow &&
+      legendSwatches(pairRow).some(s => s.color === splitRow.color)
+    ) {
+      rows = rows
+        .filter(r => r !== splitRow)
+        .map(r =>
+          r === pairRow ? { ...r, label: ARC_SPLIT_MERGED_LABELS[split] } : r,
+        )
+    }
+  }
+  return rows
+}
+
 function rowKeys(item: LegendItem) {
   const swatches = legendSwatches(item)
   return swatches.length === 0
@@ -246,9 +274,13 @@ export function getAlignmentsColorScales(model: {
     title: model.arcLegendTitle,
     items: merge ? [] : arcs,
   }
+  // Keyed before the fold below, so a connection row of a folded pair row's own
+  // wording stays dropped.
   const keyed = new Set(
     [...readSection.items, ...arcSection.items].flatMap(rowKeys),
   )
+  readSection.items = oneRowPerSplitTwin(readSection.items)
+  arcSection.items = oneRowPerSplitTwin(arcSection.items)
   return [
     ...ramps.map(r =>
       r.id === READS_RAMP_ID && colorTitle !== undefined

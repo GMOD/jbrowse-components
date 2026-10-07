@@ -2,6 +2,7 @@ import { measureText } from '@jbrowse/core/util'
 
 import { READ_COLOR_CATEGORY_BY_INDEX } from '../LinearAlignmentsDisplay/colorUtils.ts'
 import { makeTestPalette } from '../LinearAlignmentsDisplay/testUtils.ts'
+import { ARC_SPLIT_MERGED_LABELS } from '../features/arcs/arcSplitCategory.ts'
 import { bezierConnectionLegendItems } from '../features/linkedReads/computeOverlay.ts'
 import { LINKED_READ_SLOT_CATEGORY } from '../shaders/palettes.ts'
 import { COLOR_SCHEMES, isModificationScheme } from './colorSchemes.ts'
@@ -103,6 +104,9 @@ function everyLabel() {
     ...getArcLegendItems(ALL, makeTestPalette(), true),
   ]) {
     out.add(item.label)
+  }
+  for (const label of Object.values(ARC_SPLIT_MERGED_LABELS)) {
+    out.add(label)
   }
   // …and the connection curves', which is a third table again
   // (`connectionLabel`, whose neutral fallback no other builder produces).

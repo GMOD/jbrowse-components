@@ -996,6 +996,28 @@ describe('getAlignmentsColorScales', () => {
     expect(entries(scales[1]).map(e => e.label)).toEqual(['Supplementary'])
   })
 
+  test('a split arc row joins the pair row it shares a colour with', () => {
+    const split = { color: 'red', label: 'Split read (deletion-type)' }
+    expect(
+      shown(
+        getAlignmentsColorScales(
+          model([{ color: 'red', label: 'Long insert' }], [split]),
+        ),
+      ),
+    ).toEqual([['Read and arc colors', ['Long insert or deletion-type split']]])
+    // alone, or beside a pair row of another colour, it keeps its own row
+    expect(shown(getAlignmentsColorScales(model([], [split])))).toEqual([
+      ['Arc colors', ['Split read (deletion-type)']],
+    ])
+    expect(
+      shown(
+        getAlignmentsColorScales(
+          model([], [{ color: 'blue', label: 'Long insert' }, split]),
+        ),
+      ),
+    ).toEqual([['Arc colors', ['Long insert', 'Split read (deletion-type)']]])
+  })
+
   test('merges reads and arcs into one list when they share a color', () => {
     expect(
       shown(
