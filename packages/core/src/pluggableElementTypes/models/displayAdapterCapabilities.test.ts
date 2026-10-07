@@ -36,7 +36,7 @@ function display(
         {
           explicitIdentifier: 'displayId',
           explicitlyTyped: true,
-          closed: 'warn',
+          closed: true,
         },
       ),
       stateModel: types.model(name, {}),
