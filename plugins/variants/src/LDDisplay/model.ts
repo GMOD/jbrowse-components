@@ -140,7 +140,7 @@ export default function stateModelFactory(configSchema: LDDisplayConfigSchema) {
        * #action
        */
       setShowLabels(show: boolean) {
-        setConf(self, 'showLabels', show)
+        setConf(self, 'showLabels', show ? 'name' : 'none')
       },
       /**
        * #action
@@ -188,7 +188,7 @@ export default function stateModelFactory(configSchema: LDDisplayConfigSchema) {
        * #getter
        */
       get showLabels(): boolean {
-        return getConf(self, 'showLabels')
+        return getConf(self, 'showLabels') !== 'none'
       },
       /**
        * #getter

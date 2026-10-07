@@ -5624,7 +5624,7 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "showLabels",
-          "type": "boolean"
+          "type": "LDShowLabels"
         },
         {
           "name": "tickHeight",
@@ -5638,6 +5638,12 @@ export const configManifest: ConfigManifest = {
       "legacyKeys": [
         "ldMetric"
       ],
+      "legacyValues": {
+        "showLabels": [
+          true,
+          false
+        ]
+      },
       "stateModelProps": [
         "id",
         "type",

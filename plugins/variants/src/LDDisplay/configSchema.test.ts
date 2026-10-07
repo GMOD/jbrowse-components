@@ -87,6 +87,24 @@ describe('color', () => {
   })
 })
 
+describe('showLabels', () => {
+  test('takes the two label modes the display draws, and none unset', () => {
+    expect(readConfObject(make(), 'showLabels')).toBe('none')
+    expect(readConfObject(make({ showLabels: 'name' }), 'showLabels')).toBe(
+      'name',
+    )
+    expect(() => make({ showLabels: 'auto' })).toThrow()
+  })
+
+  // a boolean on LDTrackDisplay through v4.3.0
+  test.each([
+    [true, 'name'],
+    [false, 'none'],
+  ])('lifts the v4 %s to %s', (v4, mode) => {
+    expect(readConfObject(make({ showLabels: v4 }), 'showLabels')).toBe(mode)
+  })
+})
+
 // `ldMetric` shipped on LDTrackDisplay from v4.1.1 to v4.3.0.
 describe('the v4 ldMetric', () => {
   test('lifts into color.field', () => {

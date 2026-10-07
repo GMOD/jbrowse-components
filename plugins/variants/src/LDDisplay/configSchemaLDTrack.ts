@@ -90,9 +90,11 @@ export default function ldTrackDisplayConfigSchema() {
        * #slot
        */
       showLabels: {
-        type: 'boolean',
-        defaultValue: false,
-        description: 'show variant labels above the tick marks',
+        type: 'stringEnum',
+        model: types.enumeration('LDShowLabels', ['none', 'name']),
+        defaultValue: 'none',
+        description:
+          '`name` draws each variant name above its tick mark and `none` draws no labels, two of the modes the feature display gives its own `showLabels`',
         advanced: true,
       },
       /**
@@ -127,6 +129,11 @@ export default function ldTrackDisplayConfigSchema() {
       retired: {
         ldMetric: field => ({ color: { field } }),
       },
+      // v4 spelt the label mode as a boolean
+      preProcessSnapshot: snap =>
+        typeof snap.showLabels === 'boolean'
+          ? { ...snap, showLabels: snap.showLabels ? 'name' : 'none' }
+          : snap,
     },
   )
 }

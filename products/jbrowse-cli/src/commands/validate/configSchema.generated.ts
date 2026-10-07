@@ -11336,13 +11336,28 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           }
         },
         "showLabels": {
-          "description": "show variant labels above the tick marks.",
-          "default": false,
+          "description": "\`name\` draws each variant name above its tick mark and \`none\` draws no labels, two of the modes the feature display gives its own \`showLabels\`.",
+          "default": "none",
           "if": {
             "type": "null"
           },
           "else": {
-            "type": "boolean"
+            "anyOf": [
+              {
+                "enum": [
+                  "none",
+                  "name"
+                ]
+              },
+              {
+                "enum": [
+                  true,
+                  false
+                ],
+                "deprecated": true,
+                "description": "Legacy spellings a migration rewrites when the config loads."
+              }
+            ]
           }
         },
         "tickHeight": {
