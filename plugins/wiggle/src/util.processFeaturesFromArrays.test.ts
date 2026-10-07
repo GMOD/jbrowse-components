@@ -1,3 +1,4 @@
+import createJexlInstance from '@jbrowse/core/util/jexl'
 import SimpleFeature from '@jbrowse/core/util/simpleFeature'
 import {
   SCALE_TYPE_LINEAR,
@@ -165,6 +166,29 @@ describe('processFeaturesFromArrays', () => {
     ]
     expect(Array.from(featuresToRaw(features).scores)).toEqual([5, 7])
     expect(Array.from(featuresToRaw(features, 'fst').scores)).toEqual([0.25, 0])
+  })
+
+  // `y` is a featureField, so it reads what a mark's encoding.y reads
+  test('featuresToRaw plots a dotted path and a jexl expression', () => {
+    const features = [
+      feature({ start: 0, end: 10, score: 5, INFO: { DP: 3 } }, 0),
+      feature({ start: 10, end: 20, score: 7 }, 1),
+    ]
+    expect(Array.from(featuresToRaw(features, 'INFO.DP').scores)).toEqual([
+      3, 0,
+    ])
+    expect(
+      Array.from(
+        featuresToRaw(features, 'jexl:feature.score * 2', createJexlInstance())
+          .scores,
+      ),
+    ).toEqual([10, 14])
+  })
+
+  test('featuresToRaw refuses an expression that does not compile', () => {
+    expect(() =>
+      featuresToRaw([], 'jexl:feature.score *', createJexlInstance()),
+    ).toThrow(/Unexpected end of expression/)
   })
 
   // The hand-written loop this replaced stored a NaN for a non-numeric score;

@@ -1,6 +1,6 @@
 ---
 name: grammar-release-audit-2026-10-07
-description: Five parallel audits of the grammar-of-graphics surface before v5.0.0 (schema, vocabulary, mark pipeline, plot write paths, docs and in-repo configs), every finding re-verified against main. Colin approved the five shape calls on 2026-10-07; the defect list and all five calls (ADR-214 to ADR-219, ADR-217 superseding 214) have landed; Manhattan `ld` to `r2` and the LD `showLabels` enum have landed too; the canvas labels became featureFields in place of the `text` rename (ADR-220); the featureField defects a review found and the two tag guards remain, the docs pass having landed. Read before changing a display's grammar slots, the plot write paths or the JSON schema.
+description: Five parallel audits of the grammar-of-graphics surface before v5.0.0 (schema, vocabulary, mark pipeline, plot write paths, docs and in-repo configs), every finding re-verified against main. Colin approved the five shape calls on 2026-10-07; the defect list and all five calls (ADR-214 to ADR-219, ADR-217 superseding 214) have landed; Manhattan `ld` to `r2` and the LD `showLabels` enum have landed too; the canvas labels became featureFields in place of the `text` rename (ADR-220) and the featureField defects a review found are fixed; the two tag guards remain, the docs pass having landed. Read before changing a display's grammar slots, the plot write paths or the JSON schema.
 ---
 
 # Grammar-of-graphics release audit, 2026-10-07
@@ -46,27 +46,13 @@ Canvas `labels.name` → `text` was declined for the costs a review found, and
 a plain string names a field as it does on `text` and `encoding.text`
 (ADR-220).
 
-## featureField, as the same review found it
-
-The contract is `fieldReader`'s (`packages/core/src/util/fieldReader.ts`): a
-name, a dotted path or a `jexl:` expression. Eighteen slots declare the type,
-five of them through `colorChannelSlots`. Not every one honours it:
-
-- **Wiggle `y` reads a bare `feature.get`** (`plugins/wiggle/src/util.ts:193`),
-  so a dotted path or a `jexl:` there plots 0 everywhere in silence, against
-  `website/docs/config_guides/slot_types.md`'s promise for the type.
-- **No surface compiles a featureField's `jexl:`** (the JSON schema, `jbrowse
-  validate`, the editor, load), and a failing one differs by reader: canvas
-  `facet` throws the track (`collectRenderData.ts:30`), `rows` and
-  `clusterField` read `''` for every feature
-  (`packMultiRowFeatures.ts:217`), multi-way `text` logs and falls back to the
-  name (`MultiWaySyntenyDisplay/model.ts`, `geneTextOf`).
-- **`''` is per-slot**: off on a colour field, a facet and a mark's `text`, the
-  display's own default on multi-way `text` and `rows.field`; the slot-types
-  guide says nothing of it.
-- Reported, not re-read: `lengthField`, `canonicalTranscriptField` and the
-  transform steps' `field` are `string` slots that read a feature field by
-  their own rules.
+The same review found three defects under the `featureField` type, landed on
+2026-10-07: the quantitative display's `y` reads a dotted path or a `jexl:`
+expression where it plotted 0, `rows.field` and `clusterField` throw on an
+expression that does not compile as a facet does, and the slot-types guide
+says what an empty value does. Checking an expression where it is written is
+parked in
+`ideas/waiting-on-a-call/a-featurefield-expression-is-checked-where-it-is-written.md`.
 
 Two guards worth adding at the tag: a slot-path baseline from the 5.0.0
 `config.json` that `autogen --check` compares against, since the schema deploy

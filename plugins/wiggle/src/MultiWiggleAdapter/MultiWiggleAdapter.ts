@@ -306,10 +306,12 @@ export default class MultiWiggleAdapter
         source,
         raws: await namingSource(
           source,
-          fetchRegionRaws(dataAdapter, regions, {
-            ...opts,
-            statusCallback: slot(),
-          }),
+          fetchRegionRaws(
+            dataAdapter,
+            regions,
+            { ...opts, statusCallback: slot() },
+            this.pluginManager?.jexl,
+          ),
         ),
       }),
     )

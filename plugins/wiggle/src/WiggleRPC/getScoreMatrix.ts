@@ -54,10 +54,9 @@ export async function getScoreMatrix({
   }
 
   const valuesBySource = new Map(
-    (await fetchSourceRaws(dataAdapter, regions, args)).map(p => [
-      p.source,
-      p.raws,
-    ]),
+    (await fetchSourceRaws(dataAdapter, regions, args, pluginManager.jexl)).map(
+      p => [p.source, p.raws],
+    ),
   )
 
   // One sums and one counts array reused across sources, not one per row: each

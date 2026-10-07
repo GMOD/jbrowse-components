@@ -7,6 +7,7 @@ import type { MultiSourceFetchOpts } from './multiSourceAdapter.ts'
 import type { RawFeatureArrays } from './util.ts'
 import type { WiggleAdapterOptions } from './wiggleAdapterOptions.ts'
 import type { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
+import type { JexlInstance } from '@jbrowse/core/util/jexlStrings'
 import type { AugmentedRegion as Region } from '@jbrowse/core/util/types'
 
 // Coalesced multi-region fast path (BigWig): one bbi pass over all regions,
@@ -35,11 +36,13 @@ function hasFeatureArrays(
 
 // One RawFeatureArrays per region, aligned to input order. Adapters that
 // coalesce (BigWig) serve every region in a single pass; the others fall back
-// to a per-region loop, and non-array adapters to plain features.
+// to a per-region loop, and non-array adapters to plain features, whose
+// `scoreField` may be a `jexl:` expression the worker's instance evaluates.
 export function fetchRegionRaws(
   adapter: BaseFeatureDataAdapter,
   regions: Region[],
   opts: WiggleAdapterOptions,
+  jexl?: JexlInstance,
 ): Promise<RawFeatureArrays[]> {
   return hasFeatureArraysMulti(adapter)
     ? adapter.getFeatureArraysMulti(regions, opts)
@@ -51,7 +54,7 @@ export function fetchRegionRaws(
           regions.map(region =>
             adapter
               .getFeaturesArray(region, opts)
-              .then(features => featuresToRaw(features, opts.scoreField)),
+              .then(features => featuresToRaw(features, opts.scoreField, jexl)),
           ),
         )
 }
@@ -65,6 +68,7 @@ export async function fetchSourceRaws(
   adapter: BaseFeatureDataAdapter,
   regions: Region[],
   opts: MultiSourceFetchOpts,
+  jexl?: JexlInstance,
 ): Promise<{ source: string; raws: RawFeatureArrays[] }[]> {
   if (isMultiSource(adapter)) {
     return adapter.getMultiSourceFeatureArraysMulti(regions, opts)
@@ -87,7 +91,7 @@ export async function fetchSourceRaws(
   return [...sources].map(source => ({
     source,
     raws: groupsPerRegion.map(groups =>
-      featuresToRaw(groups.get(source) ?? [], opts.scoreField),
+      featuresToRaw(groups.get(source) ?? [], opts.scoreField, jexl),
     ),
   }))
 }

@@ -1,7 +1,9 @@
+import { fieldReader, isPlainFieldRef } from '@jbrowse/core/util/fieldReader'
 import { encodeFeatures, featureIndexAt } from '@jbrowse/core/util/markEncoding'
 import { MIN_FILL_WIDTH_PX } from '@jbrowse/wiggle-core/renderingBackendTypes'
 
 import type { Feature } from '@jbrowse/core/util'
+import type { JexlInstance } from '@jbrowse/core/util/jexlStrings'
 import type { SourceInfo, WiggleFeatureArrays } from '@jbrowse/wiggle-core'
 
 export {
@@ -187,12 +189,16 @@ function summaryChannels(
 export function featuresToRaw(
   features: readonly Feature[],
   scoreField = 'score',
+  jexl?: JexlInstance,
 ): RawFeatureArrays {
-  const encoded = encodeFeatures(
-    features,
-    { y: f => Number(f.get(scoreField) ?? 0) },
-    ['y'],
-  )
+  // a plain name keeps the direct call; a path or an expression pays for
+  // its reader
+  const read = isPlainFieldRef(scoreField)
+    ? (f: Feature) => f.get(scoreField)
+    : fieldReader(scoreField, jexl)
+  const encoded = encodeFeatures(features, { y: f => Number(read(f) ?? 0) }, [
+    'y',
+  ])
   const { x, x2, y, count } = encoded
   return {
     starts: x,

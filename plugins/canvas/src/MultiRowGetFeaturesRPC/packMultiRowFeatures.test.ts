@@ -23,6 +23,19 @@ function feat(
   })
 }
 
+// a silent '' put every feature in one unnamed row
+test('a rows field that does not compile throws rather than reading empty', () => {
+  expect(() =>
+    packMultiRowFeatures({
+      features: [feat({ start: 0, end: 50, sample: 'mom' })],
+      rowsField: 'jexl:feature.sample +',
+      lengthField: '',
+      colorConfig: { value: 'goldenrod', field: '' },
+      jexl: createJexlInstance(),
+    }),
+  ).toThrow(/Unexpected end of expression/)
+})
+
 const features = [
   feat({ start: 0, end: 50, sample: 'mom', itemRgb: '227,26,28' }),
   feat({ start: 0, end: 30, sample: 'offspring01', itemRgb: '31,120,180' }),

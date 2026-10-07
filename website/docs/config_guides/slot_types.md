@@ -22,7 +22,10 @@ A field the display reads off each feature: a name (`gene_biotype`), a dotted
 path into a structured field (`INFO.SVTYPE`, a read's `tags.HP`), or a
 [`jexl:` expression](/docs/config_guides/jexl) over `feature` that derives one
 (`"jexl:feature.end - feature.start"`). The display evaluates the expression
-once per feature, the way it reads a named field.
+once per feature, the way it reads a named field. The empty string names no
+field, and each slot's own text says what it then does: a colour or facet
+`field` left empty is off, a label left empty draws nothing, and `rows.field`
+falls back to the display's default.
 
 ## stringArray
 

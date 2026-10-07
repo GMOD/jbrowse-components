@@ -54,7 +54,7 @@ export const facetConfigSchema = ConfigurationSchema(
       type: 'featureField',
       defaultValue: '',
       description:
-        'feature field (or jexl expression) to group by, one labelled section per value; `strand` for one per strand',
+        'feature field (or jexl expression) to group by, one labelled section per value; `strand` for one per strand, and empty for no sections',
     },
     /**
      * #slot domain

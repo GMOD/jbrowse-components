@@ -209,15 +209,11 @@ export function resolveRowsField(
  * name, a dotted path or a `jexl:` expression. Both the row a feature paints
  * in and the value it clusters on come through here — were the two to drift,
  * the cluster order would describe rows the painting never drew. An
- * expression that fails reads ''.
+ * expression that does not compile throws here, as a facet's does, and a
+ * feature it fails on reads ''.
  */
 export function makeFeatureValueResolver(field: string, jexl: JexlInstance) {
-  let read: (feature: Feature) => unknown
-  try {
-    read = fieldReader(field, jexl)
-  } catch {
-    return () => ''
-  }
+  const read = fieldReader(field, jexl)
   return (feature: Feature) => {
     try {
       return valueText(read(feature))

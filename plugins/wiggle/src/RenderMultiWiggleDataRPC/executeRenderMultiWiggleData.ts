@@ -94,7 +94,7 @@ export async function executeRenderMultiWiggleData({
     statusCallback,
     () =>
       Promise.all([
-        fetchSourceRaws(dataAdapter, regions, opts),
+        fetchSourceRaws(dataAdapter, regions, opts, pluginManager.jexl),
         dataAdapter.getZoomRange(opts),
         dataAdapter.getValueDomain(opts),
       ]),
