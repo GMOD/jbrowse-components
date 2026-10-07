@@ -56,6 +56,8 @@ export interface TypeEntry {
    * correctly, so these are reported as stale rather than wrong.
    */
   legacyKeys?: string[]
+  /** The legacy keys whose value is read by nothing, and lands in no slot. */
+  droppedKeys?: string[]
   /**
    * Per enum slot, values the current enum no longer spells but that this
    * schema's preProcessSnapshot still rewrites (`showLabels: false`). A config

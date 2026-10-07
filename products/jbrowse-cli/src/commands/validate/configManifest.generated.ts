@@ -50,6 +50,9 @@ export const configManifest: ConfigManifest = {
       "legacyKeys": [
         "sequenceAdapter"
       ],
+      "droppedKeys": [
+        "sequenceAdapter"
+      ],
       "shorthandKeys": [
         "uri",
         "baseUri"
@@ -89,6 +92,9 @@ export const configManifest: ConfigManifest = {
         }
       ],
       "legacyKeys": [
+        "sequenceAdapter"
+      ],
+      "droppedKeys": [
         "sequenceAdapter"
       ],
       "shorthandKeys": [
@@ -138,6 +144,9 @@ export const configManifest: ConfigManifest = {
         }
       ],
       "legacyKeys": [
+        "sequenceAdapter"
+      ],
+      "droppedKeys": [
         "sequenceAdapter"
       ],
       "shorthandKeys": []
@@ -1245,6 +1254,9 @@ export const configManifest: ConfigManifest = {
       "legacyKeys": [
         "resolutionMultiplier"
       ],
+      "droppedKeys": [
+        "resolutionMultiplier"
+      ],
       "shorthandKeys": [
         "uri",
         "baseUri"
@@ -1798,6 +1810,9 @@ export const configManifest: ConfigManifest = {
       "legacyKeys": [
         "rpcDriverName"
       ],
+      "droppedKeys": [
+        "rpcDriverName"
+      ],
       "displayTypes": [
         "LinearBasicDisplay",
         "LinearMultiRowFeatureDisplay",
@@ -1906,6 +1921,9 @@ export const configManifest: ConfigManifest = {
       "legacyKeys": [
         "rpcDriverName"
       ],
+      "droppedKeys": [
+        "rpcDriverName"
+      ],
       "displayTypes": [
         "LinearAlignmentsDisplay",
         "LinearMarkDisplay"
@@ -1961,6 +1979,9 @@ export const configManifest: ConfigManifest = {
         }
       ],
       "legacyKeys": [
+        "rpcDriverName"
+      ],
+      "droppedKeys": [
         "rpcDriverName"
       ],
       "displayTypes": [
@@ -2065,6 +2086,9 @@ export const configManifest: ConfigManifest = {
         }
       ],
       "legacyKeys": [
+        "rpcDriverName"
+      ],
+      "droppedKeys": [
         "rpcDriverName"
       ],
       "displayTypes": [
@@ -2174,6 +2198,9 @@ export const configManifest: ConfigManifest = {
       "legacyKeys": [
         "rpcDriverName"
       ],
+      "droppedKeys": [
+        "rpcDriverName"
+      ],
       "displayTypes": [
         "LDTrackDisplay"
       ]
@@ -2276,6 +2303,9 @@ export const configManifest: ConfigManifest = {
         }
       ],
       "legacyKeys": [
+        "rpcDriverName"
+      ],
+      "droppedKeys": [
         "rpcDriverName"
       ],
       "displayTypes": [
@@ -2383,6 +2413,9 @@ export const configManifest: ConfigManifest = {
       "legacyKeys": [
         "rpcDriverName"
       ],
+      "droppedKeys": [
+        "rpcDriverName"
+      ],
       "displayTypes": [
         "LinearWiggleDisplay",
         "LinearMarkDisplay"
@@ -2488,6 +2521,9 @@ export const configManifest: ConfigManifest = {
       "legacyKeys": [
         "rpcDriverName"
       ],
+      "droppedKeys": [
+        "rpcDriverName"
+      ],
       "displayTypes": [
         "LinearWiggleDisplay"
       ]
@@ -2590,6 +2626,9 @@ export const configManifest: ConfigManifest = {
         }
       ],
       "legacyKeys": [
+        "rpcDriverName"
+      ],
+      "droppedKeys": [
         "rpcDriverName"
       ],
       "displayTypes": [
@@ -2697,6 +2736,9 @@ export const configManifest: ConfigManifest = {
       "legacyKeys": [
         "rpcDriverName"
       ],
+      "droppedKeys": [
+        "rpcDriverName"
+      ],
       "displayTypes": [
         "LinearHicDisplay"
       ]
@@ -2799,6 +2841,9 @@ export const configManifest: ConfigManifest = {
         }
       ],
       "legacyKeys": [
+        "rpcDriverName"
+      ],
+      "droppedKeys": [
         "rpcDriverName"
       ],
       "displayTypes": [
@@ -2908,6 +2953,9 @@ export const configManifest: ConfigManifest = {
         }
       ],
       "legacyKeys": [
+        "rpcDriverName"
+      ],
+      "droppedKeys": [
         "rpcDriverName"
       ],
       "displayTypes": [
@@ -3159,6 +3207,9 @@ export const configManifest: ConfigManifest = {
         "renderer",
         "jexlFilters",
         "showDescriptions"
+      ],
+      "droppedKeys": [
+        "maxHeight"
       ],
       "legacyValues": {
         "showLabels": [
@@ -5321,6 +5372,9 @@ export const configManifest: ConfigManifest = {
         "jexlFilters",
         "showDescriptions"
       ],
+      "droppedKeys": [
+        "maxHeight"
+      ],
       "legacyValues": {
         "showLabels": [
           true,
@@ -5971,6 +6025,10 @@ export const configManifest: ConfigManifest = {
         "renderers",
         "defaultRendering",
         "lineWidth"
+      ],
+      "droppedKeys": [
+        "numStdDev",
+        "inverted"
       ],
       "legacyValues": {
         "summaryScoreMode": [

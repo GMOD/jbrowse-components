@@ -79,11 +79,12 @@ const SELF_SUPPLIED: Record<string, string> = {
     '`sequenceAdapter` is set by hand. JBrowse takes the sequence from the assembly the track is displayed against, so this is only needed to read some OTHER sequence — and it pins the track to that source even when the assembly changes. Delete it unless that is what you meant',
 }
 
-// A legacy key whose value goes nowhere, where a migration rewrites the rest:
-// what a config written before v4 carries on its BAM and CRAM adapters.
+// What replaced a dropped legacy key, where there is something to say: a
+// config written before v4 carries a `sequenceAdapter` on its BAM and CRAM
+// adapters.
 const DROPPED: Record<string, string> = {
   sequenceAdapter:
-    '`sequenceAdapter` is a legacy key. JBrowse takes the sequence from the assembly the track is displayed against, so the one written here is never read — the config loads, and the key can be deleted',
+    'JBrowse takes the sequence from the assembly the track is displayed against. ',
 }
 
 // The warnings a slot table carries: a legacy key or value a migration
@@ -93,6 +94,7 @@ function warnSlots(
   entry: {
     slots: SlotEntry[]
     legacyKeys?: string[]
+    droppedKeys?: string[]
     legacyValues?: Record<string, unknown[]>
   },
   where: string,
@@ -110,8 +112,9 @@ function warnSlots(
     } else if (!declared.has(key) && entry.legacyKeys?.includes(key)) {
       report.warn(
         `${where}.${key}`,
-        DROPPED[key] ??
-          `"${key}" is a legacy key that a migration rewrites into current slots — the config loads, but check the settings inside it landed`,
+        entry.droppedKeys?.includes(key)
+          ? `"${key}" is a legacy key that is never read. ${DROPPED[key] ?? ''}The config loads, and the key can be deleted`
+          : `"${key}" is a legacy key that a migration rewrites into current slots — the config loads, but check the settings inside it landed`,
       )
     }
   }

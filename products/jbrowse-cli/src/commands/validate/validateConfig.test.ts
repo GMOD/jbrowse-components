@@ -90,6 +90,20 @@ describe('validateConfig', () => {
     expect(warning?.message).toContain('is never read')
   })
 
+  it('says a legacy key nothing reads can be deleted, not that it was rewritten', () => {
+    const config = baseConfig()
+    // @ts-expect-error a slot every track declared in v4
+    config.tracks[0]!.rpcDriverName = 'MainThreadRpcDriver'
+    expect(errorsOf(config)).toEqual([])
+    expect(warningsOf(config)).toEqual([
+      expect.objectContaining({
+        where: 'tracks[0].rpcDriverName',
+        message:
+          '"rpcDriverName" is a legacy key that is never read. The config loads, and the key can be deleted',
+      }),
+    ])
+  })
+
   // A GC track needs nothing but its type now, which is the shape the warning
   // above is steering authors towards.
   it('accepts a GC content track with no sequenceAdapter at all', () => {

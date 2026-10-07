@@ -325,6 +325,18 @@ function shorthandKeysOf(adapterType) {
   return found
 }
 
+// The retired spellings whose lift reads no value and answers no member: the
+// config loads and the setting goes nowhere, where every other retired key
+// lands in a current slot.
+function droppedKeysOf(configSchema) {
+  const retired =
+    getConfigurationSchemaMetadata(configSchema)?.options.retired ?? {}
+  return Object.keys(retired).filter(
+    key =>
+      retired[key].length === 0 && Object.keys(retired[key]()).length === 0,
+  )
+}
+
 // A probe hands a schema keys it does not declare, each of which a closed one
 // names on the console.
 function unwarned(probe) {
@@ -565,6 +577,7 @@ function collect(group, getType) {
       adapterProblems.push(\`\${name}'s config schema is not closed\`)
     }
     const legacyKeys = unwarned(() => legacyKeysOf(entry.configSchema, slots))
+    const droppedKeys = droppedKeysOf(entry.configSchema)
     const probed = unwarned(() => legacyValuesOf(entry.configSchema, slots))
     const retiredValues = group === 'display' ? retiredTypeValuesOf(entry) : {}
     const legacyValues = Object.fromEntries(
@@ -578,6 +591,7 @@ function collect(group, getType) {
     out[name] = {
       slots,
       ...(legacyKeys.length ? { legacyKeys } : {}),
+      ...(droppedKeys.length ? { droppedKeys } : {}),
       ...(Object.keys(legacyValues).length ? { legacyValues } : {}),
       ...(group === 'adapter' || group === 'text search adapter'
         ? { shorthandKeys: shorthandKeysOf(entry) }
