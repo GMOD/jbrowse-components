@@ -38,7 +38,7 @@ const HGSVC3_SV_TRACK = {
 const OUTER_DELETION_SORT_POINT = 'chr3:162,880,000'
 
 // Beside the track's name, where the window has no deletion calls
-const panelLabel = (trackId: string, text: string): Annotation => ({
+const panelLabel = (trackId: string, text: string, dy = 8): Annotation => ({
   type: 'text',
   text,
   fontSize: 20,
@@ -47,7 +47,7 @@ const panelLabel = (trackId: string, text: string): Annotation => ({
     loc: 'chr3:162,750,500',
     fracY: 0,
     alignX: 'left',
-    dy: 8,
+    dy,
   },
 })
 
@@ -146,6 +146,8 @@ export const paperCohortSpecs: ScreenshotSpec[] = [
     annotations: [
       panelLabel(SV_TRACK.trackId, 'a'),
       panelLabel('cnv_1000g_zarr', 'b'),
+      // Below the graph's reference strip
+      panelLabel('hprc_minigraph_segments', 'c', 48),
       trackBlurb(
         SV_TRACK.trackId,
         0.55,
