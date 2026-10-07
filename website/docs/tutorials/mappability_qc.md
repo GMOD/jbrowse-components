@@ -30,6 +30,15 @@ The hosted tracks are files already wired into the
 from the 1000 Genomes high-coverage short-read release and its ONT long-read
 release ([Gustafson et al. 2024](https://doi.org/10.1101/gr.279273.124)).
 
+- GM18501 ONT long reads aligned to GRCh38, counted here since the bucket serves
+  no CORS headers and so cannot be loaded as a track:
+  https://s3.amazonaws.com/1000g-ont/PROCESSED_DATA/ALIGNED_TO_HG38/MINIMAP2_ALIGNED_BAMS/GM18501-ONT-hg38-R9-LSK110-guppy-sup-5mC.phased.bam
+- the same sample aligned to T2T-CHM13:
+  https://s3.amazonaws.com/1000g-ont/PROCESSED_DATA/ALIGNED_TO_CHM13/MINIMAP2_ALIGNED_BAMS/GM18501-ONT-chm13-R9-LSK110-guppy-sup-5mC.phased.bam
+
+<details>
+<summary>Source files (no download needed)</summary>
+
 - Umap k100 multi-read mappability:
   https://hgdownload.soe.ucsc.edu/gbdb/hg38/hoffmanMappability/k100.Umap.MultiTrackMappability.bw
 - gnomAD v3 mean genome coverage:
@@ -48,13 +57,8 @@ release ([Gustafson et al. 2024](https://doi.org/10.1101/gr.279273.124)).
   https://hgdownload.soe.ucsc.edu/gbdb/hg38/lrSv/1kgOnt.bb
 - NA12878 at 30x, GRCh38, the read track added to the session:
   https://s3.amazonaws.com/1000genomes/1000G_2504_high_coverage/data/ERR3239334/NA12878.final.cram
-- UCSC's hg38-to-CHM13 liftOver chain set:
-  https://jbrowse.org/ucsc/hg38/liftOver/hg38ToHs1.over.pif.gz
-- GM18501 ONT long reads aligned to GRCh38, counted here since the bucket serves
-  no CORS headers and so cannot be loaded as a track:
-  https://s3.amazonaws.com/1000g-ont/PROCESSED_DATA/ALIGNED_TO_HG38/MINIMAP2_ALIGNED_BAMS/GM18501-ONT-hg38-R9-LSK110-guppy-sup-5mC.phased.bam
-- the same sample aligned to T2T-CHM13:
-  https://s3.amazonaws.com/1000g-ont/PROCESSED_DATA/ALIGNED_TO_CHM13/MINIMAP2_ALIGNED_BAMS/GM18501-ONT-chm13-R9-LSK110-guppy-sup-5mC.phased.bam
+
+</details>
 
 ## SMN1 and SMN2: a near-identical gene duplication
 

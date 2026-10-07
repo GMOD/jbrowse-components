@@ -29,12 +29,6 @@ on jbrowse.org's demo bucket.
   this page, from the sample files listed at
   [RSeQC](https://rseqc.sourceforge.net/):
   https://s3.amazonaws.com/jbrowse.org/genomes/hg19/paired_end_rnaseq/Pairend_StrandSpecific_51mer_Human_hg19.bam
-- the long-read IsoSeq alignments:
-  https://s3.amazonaws.com/jbrowse.org/genomes/hg19/alzheimers_isoseq/hq_isoforms.fasta.bam
-- the NCBI RefSeq gene models drawn under every figure:
-  https://s3.amazonaws.com/jbrowse.org/genomes/hg19/ncbi_refseq/GRCh37_latest_genomic.sort.gff.gz
-- the regtools junction table built from the stranded alignments, which the
-  junction track loads: https://jbrowse.org/demos/rnaseq/rnaseq_junctions.bed.gz
 
 ## Loading hg19, the stranded reads and RefSeq genes
 

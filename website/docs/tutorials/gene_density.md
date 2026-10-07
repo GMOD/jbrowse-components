@@ -41,15 +41,6 @@ density sidecar beside each file.
   https://jbrowse.org/ucsc/hg38/rmsk.bed.gz
 - reference lengths, for the bigWig header:
   https://hgdownload.soe.ucsc.edu/goldenPath/hg38/bigZips/hg38.chrom.sizes
-- the sequence:
-  https://hgdownload.soe.ucsc.edu/goldenPath/hg38/bigZips/hg38.2bit
-- the genes the figures open, with `.tbi` and `.density.bw` beside it:
-  https://jbrowse.org/demos/gene_density/genes.gff.gz
-- the Alu copies cut from the RepeatMasker table, likewise:
-  https://jbrowse.org/demos/gene_density/Alu.bed.gz
-- the L1 copies: https://jbrowse.org/demos/gene_density/L1.bed.gz
-- the simple repeats, the control:
-  https://jbrowse.org/demos/gene_density/Simple_repeat.bed.gz
 
 ## Loading hg38
 

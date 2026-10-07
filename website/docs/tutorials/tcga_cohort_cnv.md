@@ -28,16 +28,9 @@ needed.
   the GDC API: https://api.gdc.cancer.gov/files
 - per-tumor clinical annotation, from harmonized case fields and each case's
   clinical XML: https://api.gdc.cancer.gov/cases
-- the segment stack, rehosted so the figures and their live links load without
-  the GDC round trip: https://jbrowse.org/demos/tcga/tcga_brca_cnv.bed.gz
-- the cohort recurrence track and the same split by clinical group:
-  https://jbrowse.org/demos/tcga/tcga_brca_cnv_recurrence.bedGraph.gz and
-  https://jbrowse.org/demos/tcga/tcga_brca_cnv_recurrence_by_subtype.bedGraph.gz
-- the clinical table the stack is grouped by:
-  https://jbrowse.org/demos/tcga/tcga_brca_clinical.tsv
 
 The build script copies the hg38 reference and the MANE gene track from the
-hosted UCSC hub config, https://jbrowse.org/ucsc/hg38/config.json, so it
+[hosted UCSC hg38 hub](https://genomes.jbrowse.org/ucsc/hg38/)'s config, so it
 downloads no reference; the assembly fence below loads GRCh38 from jbrowse.org
 instead.
 

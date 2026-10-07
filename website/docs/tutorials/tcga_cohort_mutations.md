@@ -28,16 +28,10 @@ TCGA-BRCA open-access somatic mutation calls from the GDC
   queried and downloaded through the GDC API: https://api.gdc.cancer.gov/files
 - per-tumor clinical annotation, from harmonized case fields and each case's
   clinical XML: https://api.gdc.cancer.gov/cases
-- the cohort VCF, rehosted so the figures and their live links load without a
-  GDC query: https://jbrowse.org/demos/tcga/tcga_brca_mutations.vcf.gz
-- the recurrence track split by clinical group:
-  https://jbrowse.org/demos/tcga/tcga_brca_mutation_recurrence_by_subtype.bedGraph.gz
-- the clinical table with per-tumor histology, receptor status and stage:
-  https://jbrowse.org/demos/tcga/tcga_brca_clinical.tsv
 
 The build script copies the hg38 reference and the MANE gene track from the
-hosted UCSC hub config, https://jbrowse.org/ucsc/hg38/config.json; that MANE
-track is the gene lane the collapse-introns step below right-clicks.
+[hosted UCSC hg38 hub](https://genomes.jbrowse.org/ucsc/hg38/)'s config; that
+MANE track is the gene lane the collapse-introns step below right-clicks.
 
 ## The cohort VCF and the clinical table {#what-the-two-files-hold}
 

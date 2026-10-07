@@ -32,6 +32,9 @@ The files are region slices of public
 [ONT open data](https://labs.epi2me.io/dataindex/) on the `ont-open-data` S3
 bucket.
 
+<details>
+<summary>Source files (no download needed)</summary>
+
 - the HP1 bedMethyl (per-CpG methylation fractions) from the
   `wf-human-variation` sup run on HG002, restricted to the SNRPN locus and to
   `m` (5mC) rows:
@@ -42,12 +45,8 @@ bucket.
   haplotagged with `whatshap haplotag` against the phased SNP calls from that
   same `wf-human-variation` run:
   https://ont-open-data.s3.amazonaws.com/giab_2023.05/analysis/hg002/sup/PAO83395.pass.cram
-- the HP1 slice the figures load, rehosted on jbrowse.org:
-  https://jbrowse.org/demos/methylation/HG002_SNRPN_hp1.modkit.bed.gz
-- the HP2 slice beside it:
-  https://jbrowse.org/demos/methylation/HG002_SNRPN_hp2.modkit.bed.gz
-- the haplotagged read slice beside it:
-  https://jbrowse.org/demos/methylation/HG002_SNRPN_5mC_haplotagged.bam
+
+</details>
 
 ## Two parental alleles at the SNRPN imprinting center
 

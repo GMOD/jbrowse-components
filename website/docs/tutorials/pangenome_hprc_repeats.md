@@ -56,6 +56,14 @@ until JBrowse 5 ships. We welcome your [feedback](/contact).
 [HPRC release 2](https://doi.org/10.64898/2026.07.21.739710) and PacBio's TRGT
 genotypes of 100 of its samples (Dolzhenko et al. 2024):
 
+- TRGT's genotypes over the Genome in a Bottle repeat catalogue, a TRGTdb:
+  https://zenodo.org/records/8329210/files/adotto_hprc.tdb.tar
+- the catalogue itself:
+  https://zenodo.org/records/8329210/files/adotto_repeats.hg38.bed.gz
+
+<details>
+<summary>Source files (no download needed)</summary>
+
 - our tabix index files cut from the release's rGFA graph, with the build
   recorded beside them: https://jbrowse.org/demos/hprc/README.txt
 - the release 2.1 gbz-base database, one walk per haplotype, read by range
@@ -63,12 +71,8 @@ genotypes of 100 of its samples (Dolzhenko et al. 2024):
   https://s3-us-west-2.amazonaws.com/human-pangenomics/pangenomes/freeze/release2/minigraph-cactus/v2.1/hprc-v2.1-mc-grch38/hprc-v2.1-mc-grch38.gbz.db
 - our companion index naming that database's haplotypes:
   https://jbrowse.org/demos/hprc/hprc-v2.1-mc-grch38.haplotype-index.f3.db
-- TRGT's genotypes over the Genome in a Bottle repeat catalogue, a TRGTdb:
-  https://zenodo.org/records/8329210/files/adotto_hprc.tdb.tar
-- the catalogue itself:
-  https://zenodo.org/records/8329210/files/adotto_repeats.hg38.bed.gz
-- the _ABCA7_ record of those genotypes, as a TRGT VCF:
-  https://jbrowse.org/demos/hprc/hprc_abca7_trgt.vcf.gz
+
+</details>
 
 ## Reading the LPA kringle repeat as a graph
 

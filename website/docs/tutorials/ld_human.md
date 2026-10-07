@@ -47,18 +47,6 @@ called natively on GRCh38.
 - populations and superpopulations, narrowed to that unrelated set for
   `panel.samples` (EUR) and `rest.samples` (everything else):
   https://ftp.1000genomes.ebi.ac.uk/vol1/ftp/data_collections/1000G_2504_high_coverage/20130606_g1k_3202_samples_ped_population.txt
-- the two r² tables, one per cohort, as PLINK wrote them:
-  https://jbrowse.org/demos/popgen/lct_1kg38_chr2_eur.ld.gz and
-  https://jbrowse.org/demos/popgen/lct_1kg38_chr2_pooled.ld.gz
-- the EUR slice they were computed from, rehosted:
-  https://jbrowse.org/demos/popgen/lct_1kg38_chr2_eur_wide.vcf.gz
-- the six-population slice the haplotype matrix reads:
-  https://jbrowse.org/demos/popgen/lct_1kg38_chr2_6pop.vcf.gz
-- the per-variant Fst track, built below:
-  https://jbrowse.org/demos/popgen/lct_1kg38_chr2_fst_eur_vs_rest.bw
-- one bigWig of allele frequency per population, built below:
-  https://jbrowse.org/demos/popgen/lct_1kg38_chr2_af_CEU.bw, and the same name
-  ending in FIN, PJL, TSI, YRI and CHB
 
 The gene, ClinVar and recombination tracks come from the hosted UCSC hg38
 [hub](/docs/user_guides/hub_url).

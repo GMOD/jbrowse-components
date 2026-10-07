@@ -32,12 +32,17 @@ Tiberius predictions over GRCh38
 ([Gabriel et al. 2024](https://doi.org/10.1093/bioinformatics/btae685)), read
 against GENCODE 47 and the hg38 reference.
 
+<details>
+<summary>Source files (no download needed)</summary>
+
 - Tiberius gene predictions:
   https://jbrowse.org/genomes/GRCh38/tiberius_grch38.gff.gz
 - GENCODE 47 comprehensive annotation:
   https://jbrowse.org/genomes/GRCh38/gencode/gencode.v47.chr_patch_hapl_scaff.annotation.sorted.gff3.gz
 - hg38 reference sequence:
   https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz
+
+</details>
 
 ## A Tiberius model that merges IL17REL and TTLL8
 

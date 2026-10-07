@@ -53,17 +53,17 @@ until JBrowse 5 ships. We welcome your [feedback](/contact).
 [HPRC release 2](https://doi.org/10.64898/2026.07.21.739710), with tabix index
 files cut from its graph that we host.
 
+<details>
+<summary>Source files (no download needed)</summary>
+
 - the structural-variant graph (`sv.gfa`) the index files are cut from:
   https://s3-us-west-2.amazonaws.com/human-pangenomics/pangenomes/freeze/release2/minigraph-cactus/v2.1/hprc-v2.1-mc-grch38/hprc-v2.1-mc-grch38.sv.gfa.gz
-- the index files, with the exact build recorded beside them:
-  https://jbrowse.org/demos/hprc/README.txt
-- the config every launch on the HPRC page opens, which declares every release 2
-  haplotype as an assembly with its CAT gene annotation:
-  https://jbrowse.org/pangenome/hprc-grch38/config.json
 - the phased VCF, one record per allele, 462 haplotypes:
   https://s3-us-west-2.amazonaws.com/human-pangenomics/pangenomes/freeze/release2/minigraph-cactus/v2.1/hprc-v2.1-mc-grch38/hprc-v2.1-mc-grch38.pgbi.vcf.gz
 - the multiple alignment of every haplotype against GRCh38:
   https://s3-us-west-2.amazonaws.com/human-pangenomics/pangenomes/freeze/release2/minigraph-cactus/v2.1/hprc-v2.1-mc-grch38/hprc-v2.1-mc-grch38.full.maf.gz
+
+</details>
 
 ## Launching tracks from the HPRC page
 

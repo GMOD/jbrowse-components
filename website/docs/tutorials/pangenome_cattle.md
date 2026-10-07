@@ -40,6 +40,12 @@ The graph view is a beta plugin. We welcome your [feedback](/contact).
 The graph's index files, the callset and its sample table are hosted beside the
 graph, and OMIA supplies the curated causal variants:
 
+- OMIA's database dump, the source of the curated variant track:
+  https://omia.org/static/omia.sql.gz
+
+<details>
+<summary>Source files (no download needed)</summary>
+
 - the segment and link index:
   https://jbrowse.org/demos/bovine_pangenome/bovine-arsucd12-minigraph.segs.bed.gz
   and
@@ -52,12 +58,8 @@ graph, and OMIA supplies the curated causal variants:
   https://jbrowse.org/demos/bovine_pangenome/bovine-arsucd12-minigraph.tier10000.segs.bed.gz
   and
   https://jbrowse.org/demos/bovine_pangenome/bovine-arsucd12-minigraph.tier10000.links.bed.gz
-- the deconstructed callset:
-  https://jbrowse.org/demos/bovine_pangenome/bovine-arsucd12-minigraph.vcf.gz
-- the breed and lineage of each assembly in the callset:
-  https://jbrowse.org/demos/bovine_pangenome/bovine-arsucd12-minigraph.samples.tsv
-- OMIA's database dump, the source of the curated variant track:
-  https://omia.org/static/omia.sql.gz
+
+</details>
 
 [Hosting your own graph](/docs/tutorials/pangenome_prepare_graph) describes each
 file and how to produce it.

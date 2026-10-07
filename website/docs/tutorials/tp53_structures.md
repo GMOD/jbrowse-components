@@ -21,8 +21,9 @@ transcript, and Mol\* draws the structures.
 The links open a hosted hg38 config with NCBI RefSeq genes, and the protein3d
 plugin fetches the structures, annotations and mappings from these services.
 
-- hg38 with NCBI RefSeq:
-  https://jbrowse.org/code/jb2/main/test_data/protein3d_config.json
+<details>
+<summary>Files the protein3d plugin fetches (no download needed)</summary>
+
 - the AlphaFold model of p53, UniProt P04637:
   https://alphafold.ebi.ac.uk/files/AF-P04637-F1-model_v6.cif
 - the p53 core domain bound to DNA, PDB 1TUP:
@@ -35,6 +36,8 @@ plugin fetches the structures, annotations and mappings from these services.
   https://rest.uniprot.org/uniprotkb/P04637.gff
 - SIFTS, which maps where each crystal's residues sit in the UniProt sequence:
   https://www.ebi.ac.uk/pdbe/api/mappings/uniprot/1tup
+
+</details>
 
 ## Opening three TP53 structures mapped to one transcript
 

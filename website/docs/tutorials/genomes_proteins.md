@@ -20,7 +20,9 @@ The hosted hg38 config on genomes.jbrowse.org has the gene track the examples
 below launch from. The protein3d and msaview plugins fetch everything else live,
 per gene, from the services listed here.
 
-- hg38: https://jbrowse.org/ucsc/hg38/config.json
+<details>
+<summary>Services the plugins fetch from (no download needed)</summary>
+
 - AlphaFold DB, where a launched structure comes from:
   https://alphafold.ebi.ac.uk/
 - UniProt, the isoform mapping and the projected Domains, Chains, Mutations and
@@ -29,6 +31,8 @@ per gene, from the services listed here.
   https://www.ncbi.nlm.nih.gov/datasets/docs/v2/reference-docs/rest-api/
 - NCBI's Conserved Domain Database, the alignment's overlay:
   https://www.ncbi.nlm.nih.gov/Structure/cdd/cdd.shtml
+
+</details>
 
 ## Launching a structure
 

@@ -29,6 +29,9 @@ The page reads the 1000 Genomes 2022 high-coverage ensemble SV callset
 against CRAMs from three of the cohort's samples and QuicK-mer2 copy number for
 the whole cohort.
 
+<details>
+<summary>Source files (no download needed)</summary>
+
 - the ensemble SV callset, 3202 samples. EBI publishes it with no mirror, so the
   demo reads a byte-for-byte copy on jbrowse.org[^ebi]:
   https://jbrowse.org/demos/1000g/1KGP_3202.Illumina_ensemble_callset.freeze_V1.vcf.gz
@@ -44,6 +47,8 @@ the whole cohort.
   [copy-number tutorial](/docs/tutorials/population_cnv) also reads. A directory
   of chunks that 404s at its root, and the adapter takes it as its `uri`:
   https://jbrowse.org/demos/1000g/qm2_cn_1kb.zarr
+
+</details>
 
 ## The RHD deletion in the 1000 Genomes SV callset
 

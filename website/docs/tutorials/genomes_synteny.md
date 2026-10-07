@@ -13,20 +13,6 @@ genome, so you can turn one on in a linear genome view and launch a two-panel
 linear synteny view from any chain block. We compare hg38 against T2T-CHM13
 (hs1) at _TNNT3_, a locus the two lay out differently.
 
-## Where the data comes from
-
-genomes.jbrowse.org hosts a config per genome, each with UCSC's pairwise
-liftOver chains to the others.
-
-- hg38: https://jbrowse.org/ucsc/hg38/config.json
-- Human (hs1, T2T-CHM13): https://jbrowse.org/ucsc/hs1/config.json
-- Chimp (panTro6), for
-  [Launching hg38 against chimp](#launching-hg38-against-chimp-at-an-fto-intron):
-  https://jbrowse.org/ucsc/panTro6/config.json
-- hg38's staging config, which adds the multi-way track for
-  [Stacking many genomes under hg38](#many-genomes-at-once):
-  https://jbrowse.org/ucsc/hg38/config-staging.json
-
 ## Opening a liftOver track
 
 Open [hg38 on genomes.jbrowse.org](https://genomes.jbrowse.org), find **Pairwise

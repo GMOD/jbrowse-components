@@ -49,11 +49,6 @@ Seven RefSeq assemblies, one per species, each fetched by accession with the
   https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/036/512/215/GCF_036512215.1_SLM_r2.1/
 - citrus:
   https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/493/195/GCF_000493195.1_Citrus_clementina_v1.0/
-- the grape, peach and cacao hub configs on genomes.jbrowse.org:
-  https://jbrowse.org/hubs/genark/GCF/030/704/535/GCF_030704535.1/config.json
-  for grape, and peach and cacao at the same path under their accessions
-- the finished `.blocks` table, BEDs and config, rehosted:
-  https://jbrowse.org/demos/grape_peach_cacao/config.json
 
 ## What a `.blocks` file is
 

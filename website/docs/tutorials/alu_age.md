@@ -35,14 +35,8 @@ Alu rows cut out:
 
 - RepeatMasker, UCSC's `rmsk` table as BED with a column header:
   https://jbrowse.org/ucsc/hg38/rmsk.bed.gz
-- the Alu rows the figures open, with `.tbi` and `.density.bw` beside it:
-  https://jbrowse.org/demos/gene_density/Alu.bed.gz
-- the per-megabase counts and shares, with `.tbi` beside it:
-  https://jbrowse.org/code/jb2/main/test_data/alu_age/Alu.young_share.bed.gz
 - reference lengths, for the sidecar's bigWig header:
   https://hgdownload.soe.ucsc.edu/goldenPath/hg38/bigZips/hg38.chrom.sizes
-- the sequence:
-  https://hgdownload.soe.ucsc.edu/goldenPath/hg38/bigZips/hg38.2bit
 
 ## Plotting each Alu copy's divergence at one locus
 

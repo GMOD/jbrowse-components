@@ -46,9 +46,13 @@ graph, which every HPRC page on this site reads.
   https://s3-us-west-2.amazonaws.com/human-pangenomics/pangenomes/freeze/release2/minigraph-cactus/v2.1/hprc-v2.1-mc-grch38/hprc-v2.1-mc-grch38.gfa.gz
 - the same graph in vg's format:
   https://s3-us-west-2.amazonaws.com/human-pangenomics/pangenomes/freeze/release2/minigraph-cactus/v2.1/hprc-v2.1-mc-grch38/hprc-v2.1-mc-grch38.gbz
+
+<details>
+<summary>Source files (no download needed)</summary>
+
 - the finished files, for comparison: https://jbrowse.org/demos/hprc/README.txt
-- the config the HPRC page opens:
-  https://jbrowse.org/pangenome/hprc-grch38/config.json
+
+</details>
 
 ## The GraphGenomeView plugin
 

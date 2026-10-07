@@ -48,12 +48,6 @@ CLI.
 - IAI39:
   https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/026/345/GCF_000026345.1_ASM2634v1/
 
-- the all-vs-all PAF, rehosted:
-  https://jbrowse.org/demos/ecoli_pangenome/all_vs_all.paf.gz
-- the K-12 gene track, rehosted, with the other four beside it under their
-  strain names: https://jbrowse.org/demos/ecoli_pangenome/K12.gff.gz
-- the finished config: https://jbrowse.org/demos/ecoli_pangenome/config.json
-
 ## Producing an all-vs-all PAF
 
 The mapping step of [PGGB](https://github.com/pangenome/pggb), the PanGenome

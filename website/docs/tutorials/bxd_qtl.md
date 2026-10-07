@@ -36,8 +36,6 @@ BXD consensus genotypes and QTL scans from GeneNetwork
   https://genenetwork.org/api/v_pre1/mapping?db=BXDPublish&method=gemma&trait_id=11280
 - the coat-color scores per strain, from GeneNetwork's sample-data API:
   https://genenetwork.org/api/v_pre1/sample_data/BXDPublish/11280
-- the chromosome painting, rehosted for the track config:
-  https://jbrowse.org/demos/bxd/bxd_painting.bed.gz
 
 ## The BXD strains and the two tracks built from them
 

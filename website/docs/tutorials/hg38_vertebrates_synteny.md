@@ -31,12 +31,11 @@ an indexed PAF and rehosted beside the hub configs
 [genomes.jbrowse.org](https://genomes.jbrowse.org) serves, and eight UCSC genome
 hubs, whose assembly entry and NCBI RefSeq gene track each lane takes verbatim.
 
-**The chains**
-
 - UCSC's liftOver folder for hg38, one `hg38To<Genome>.over.chain.gz` per
   genome: https://hgdownload.soe.ucsc.edu/goldenPath/hg38/liftOver/
 
-**The same chains as indexed alignments**
+<details>
+<summary>The same chains as indexed alignments (no download needed)</summary>
 
 - chimpanzee, [panTro6](https://genomes.jbrowse.org/ucsc/panTro6/):
   https://jbrowse.org/ucsc/hg38/liftOver/hg38ToPanTro6.over.pif.gz
@@ -55,13 +54,7 @@ hubs, whose assembly entry and NCBI RefSeq gene track each lane takes verbatim.
 - cow, [bosTau9](https://genomes.jbrowse.org/ucsc/bosTau9/):
   https://jbrowse.org/ucsc/hg38/liftOver/hg38ToBosTau9.over.pif.gz
 
-**The hub configs**
-
-- hg38: https://jbrowse.org/ucsc/hg38/config.json
-- every other genome at the same path under its UCSC name, panTro6 for one:
-  https://jbrowse.org/ucsc/panTro6/config.json
-- the finished config, the eight hub entries and the composed track together:
-  https://jbrowse.org/demos/hg38_vertebrates/config.json
+</details>
 
 ## LiftOver chains as one indexed alignment per genome
 

@@ -32,6 +32,9 @@ on for their identity.
 Deep in situ Hi-C for GM12878 and K562 from ENCODE, plus ENCODE's domain, loop
 and compartment calls over the same two matrices.
 
+<details>
+<summary>Source files (no download needed)</summary>
+
 - GM12878 in situ Hi-C (ENCSR410MDC):
   https://encode-public.s3.amazonaws.com/2021/10/28/6f0cc163-86c7-4a68-baac-65af90f5a90d/ENCFF053VBX.hic
 - K562 in situ Hi-C (ENCSR545YBD):
@@ -44,6 +47,8 @@ and compartment calls over the same two matrices.
   https://encode-public.s3.amazonaws.com/2021/10/28/5b488af0-df49-4b9b-9feb-8ad671b7eaef/ENCFF661LPK.bigWig
 - K562 compartment eigenvector:
   https://encode-public.s3.amazonaws.com/2021/10/28/1180b7b2-99fd-429a-bfe1-f76cc8aa751a/ENCFF699RSL.bigWig
+
+</details>
 
 ## Reading a Hi-C contact map: the triangle, domains and loops
 
@@ -186,7 +191,7 @@ except the junction bin, where the order inverts.
 
 **Normalization.** Matrix balancing divides out per-bin coverage differences,
 and an amplified fusion is such a difference, so balancing hides it. Re-run the
-scan with `NORM=INTER_SCALE` and *ABL1*×*BCR* drops off the top of the table.
+scan with `NORM=INTER_SCALE` and _ABL1_×_BCR_ drops off the top of the table.
 Balanced matrices suit domains and loops and raw counts suit rearrangements, so
 both Hi-C tracks here set
 [`selectedNormalization`](/docs/config/linearhicdisplay/#slot-selectednormalization)

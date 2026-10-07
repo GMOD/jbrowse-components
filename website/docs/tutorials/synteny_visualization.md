@@ -37,19 +37,10 @@ RefSeq genes.
 
 - 26695 GCF_000307795.1 sequence:
   https://hgdownload.soe.ucsc.edu/hubs/GCF/000/307/795/GCF_000307795.1/GCF_000307795.1.fa.gz
-- 26695 hub config:
-  https://jbrowse.org/hubs/genark/GCF/000/307/795/GCF_000307795.1/config.json
 - CHC155 GCF_025998455.1 sequence:
   https://hgdownload.soe.ucsc.edu/hubs/GCF/025/998/455/GCF_025998455.1/GCF_025998455.1.fa.gz
-- CHC155 hub config:
-  https://jbrowse.org/hubs/genark/GCF/025/998/455/GCF_025998455.1/config.json
 - J99 GCF_000982695.1 sequence:
   https://hgdownload.soe.ucsc.edu/hubs/GCF/000/982/695/GCF_000982695.1/GCF_000982695.1.fa.gz
-- J99 hub config:
-  https://jbrowse.org/hubs/genark/GCF/000/982/695/GCF_000982695.1/config.json
-- the alignments, indexed and rehosted beside the merged config the figures
-  open: https://jbrowse.org/demos/hpylori/26695_vs_j99.pif.gz and
-  https://jbrowse.org/demos/hpylori/config.json
 
 ## Aligning the assemblies
 

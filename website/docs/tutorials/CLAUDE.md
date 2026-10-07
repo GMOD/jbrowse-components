@@ -194,9 +194,22 @@ A tutorial with real requirements puts `## Prerequisites` under the opening
 paragraph: a bulleted list, optionally one short paragraph on installing what
 apt has no package for. Nothing else. The intro goes under its own `##` heading.
 
-**Collapse a source list the reader never downloads** in a `<details>` whose
-summary says so ("no download needed"). Say nothing extra where the reader does
-download; the visible list is the instruction.
+**The visible list under `## Where the data comes from` is the download list**:
+only files the page's commands or its build script fetch. A reader takes every
+visible bullet as something to get before starting, so each other URL has one of
+two places:
+
+- **A source nobody downloads goes in a `<details>`** whose summary says so ("no
+  download needed"): a third-party file a track reads by URL, the upstream
+  release a hosted slice was cut from, a service a plugin queries.
+- **Our own outputs and configs are cut**: a genomes.jbrowse.org hub
+  `config.json`, a demo's finished config, a rehosted result the page's track
+  config already loads. Link the hub's page in the prose; the fence that loads a
+  file is where its URL lives. A rehosted file stays visible only where a
+  command on the page reads it (`repeatmasker_classes`).
+
+A page with nothing left to list keeps the one-sentence citation, or drops the
+section (`genomes_basics`).
 
 **`## Where the data comes from` is a source list, one bullet per file**, and
 each bullet ends in the raw full URL rather than a link label, because the host

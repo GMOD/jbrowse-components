@@ -33,6 +33,9 @@ assembly, and the maternal-to-paternal chain the project publishes
 ([Hansen _et al._ 2026](https://doi.org/10.1016/j.cell.2026.06.016)), plus JHU
 Liftoff v0.6 gene models built on v1.1.
 
+<details>
+<summary>Source files (no download needed)</summary>
+
 - the diploid assembly, both haplotypes in one FASTA (e.g. `chr1_MATERNAL`,
   `chr1_PATERNAL`):
   https://s3-us-west-2.amazonaws.com/human-pangenomics/T2T/HG002/assemblies/hg002v1.2.fasta.gz
@@ -41,6 +44,8 @@ Liftoff v0.6 gene models built on v1.1.
 - the JHU Liftoff v0.6 gene models, maternal haplotype (the paternal file sits
   beside it, `PAT` in place of `MAT`):
   https://s3-us-west-2.amazonaws.com/human-pangenomics/T2T/HG002/assemblies/annotation/JHULiftoff/v0.6/hg002v1.1.MAT.loff.v0.6.gff.gz
+
+</details>
 
 ## Loading the assembly and the alignment
 

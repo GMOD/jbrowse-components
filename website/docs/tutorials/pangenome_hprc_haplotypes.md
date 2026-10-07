@@ -38,18 +38,22 @@ until JBrowse 5 ships. We welcome your [feedback](/contact).
 
 [HPRC release 2](https://doi.org/10.64898/2026.07.21.739710).
 
-- the graph as a gbz-base database:
-  https://s3-us-west-2.amazonaws.com/human-pangenomics/pangenomes/freeze/release2/minigraph-cactus/v2.1/hprc-v2.1-mc-grch38/hprc-v2.1-mc-grch38.gbz.db
-- our index naming its haplotypes:
-  https://jbrowse.org/demos/hprc/hprc-v2.1-mc-grch38.haplotype-index.f3.db
 - the assemblies:
   https://raw.githubusercontent.com/human-pangenomics/hprc_intermediate_assembly/main/data_tables/assemblies_release2_v1.0.index.csv
 - the CAT gene annotation index, one GFF3 per haplotype:
   https://raw.githubusercontent.com/human-pangenomics/hprc_intermediate_assembly/main/data_tables/annotation/cat/cat_genes_hprc_r2_v1.3.index.csv
 - the release's all-vs-GRCh38 alignment, sliced for the inversion figure:
   https://s3-us-west-2.amazonaws.com/human-pangenomics/pangenomes/freeze/release2/impg/pafs/hprc465vsgrch38.aln.paf.gz
+
+<details>
+<summary>Source files (no download needed)</summary>
+
+- the graph as a gbz-base database:
+  https://s3-us-west-2.amazonaws.com/human-pangenomics/pangenomes/freeze/release2/minigraph-cactus/v2.1/hprc-v2.1-mc-grch38/hprc-v2.1-mc-grch38.gbz.db
 - our bubble projections of the graph, with the exact build recorded beside
   them: https://jbrowse.org/demos/hprc/README.txt
+
+</details>
 
 ## Configuring the haplotype lanes track
 

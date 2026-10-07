@@ -35,24 +35,18 @@ UCSC's hg38-to-mm39 liftOver chain (Kent et al. 2003), the RefSeq curated gene
 sets of both genomes from genomes.jbrowse.org's copies of the UCSC hubs, and the
 density bigWig the build script makes of them.
 
-- the chain:
-  https://hgdownload.soe.ucsc.edu/goldenPath/hg38/liftOver/hg38ToMm39.over.chain.gz
-- the same chain as an indexed PAF, every row, which the ribbons draw from and
-  the last section queries:
-  https://jbrowse.org/ucsc/hg38/liftOver/hg38ToMm39.over.pif.gz
-- the hub configs the two assemblies are taken from, those of the
-  [hg38](https://genomes.jbrowse.org/ucsc/hg38/) and
-  [mm39](https://genomes.jbrowse.org/ucsc/mm39/) pages:
-  https://jbrowse.org/ucsc/hg38/config.json and
-  https://jbrowse.org/ucsc/mm39/config.json
 - RefSeq curated genes, hg38:
   https://jbrowse.org/ucsc/hg38/ncbiRefSeqCurated.gff.gz
 - RefSeq curated genes, mm39:
   https://jbrowse.org/ucsc/mm39/ncbiRefSeqCurated.gff.gz
-- both genomes' gene density in one bigWig, the ring:
-  https://jbrowse.org/demos/circular_synteny/hg38ToMm39.genes.gff.density.bw
-- the finished config, both assemblies and the four tracks:
-  https://jbrowse.org/demos/circular_synteny/config.json
+
+<details>
+<summary>Source files (no download needed)</summary>
+
+- the chain:
+  https://hgdownload.soe.ucsc.edu/goldenPath/hg38/liftOver/hg38ToMm39.over.chain.gz
+
+</details>
 
 ## What a two-genome synteny circle shows
 

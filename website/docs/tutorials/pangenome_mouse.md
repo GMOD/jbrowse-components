@@ -45,6 +45,10 @@ below.
   https://hgdownload.soe.ucsc.edu/goldenPath/mm39/bigZips/mm39.fa.gz
 - the eighteen strains, one GenArk folder per GenBank accession:
   https://hgdownload.soe.ucsc.edu/hubs/GCA/
+
+<details>
+<summary>Source files (no download needed)</summary>
+
 - segments, the graph's nodes at their reference coordinates:
   https://jbrowse.org/demos/mouse_pangenome/mouse-mm39-minigraph.segs.bed.gz
 - links, the edges between segments:
@@ -57,6 +61,8 @@ below.
   https://jbrowse.org/demos/mouse_pangenome/mouse-mm39-minigraph.tier10000.segs.bed.gz
   and
   https://jbrowse.org/demos/mouse_pangenome/mouse-mm39-minigraph.tier10000.links.bed.gz
+
+</details>
 
 [Hosting your own graph](/docs/tutorials/pangenome_prepare_graph) describes what
 each file holds.

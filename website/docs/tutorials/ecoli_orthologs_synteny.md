@@ -50,8 +50,6 @@ the four Shigella are:
   https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/012/025/GCF_000012025.1_ASM1202v1/
 - Shigella sonnei 53G:
   https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/283/715/GCF_000283715.1_ASM28371v1/
-- the finished table: https://jbrowse.org/demos/ecoli_orthologs/ecoli.blocks.gz
-- the finished config: https://jbrowse.org/demos/ecoli_orthologs/config.json
 
 ## A join on the gene symbols
 

@@ -33,6 +33,10 @@ lab at the University of Michigan
 
 - the sample list across 26 populations, from the lab's UCSC track hub:
   https://raw.githubusercontent.com/KiddLab/kmer_1KG/master/kmer-1kg.trackDb.txt
+
+<details>
+<summary>Source files (no download needed)</summary>
+
 - the per-sample bigWigs, one individual's copy number in 1 kb bins, re-hosted
   unmodified because the lab's download share is offline. Each file sits under
   its population, so HG00551 and HG00553 are
@@ -43,6 +47,8 @@ lab at the University of Michigan
   [whole panel](#a-zarr-store-for-the-whole-panel). The store is a directory of
   chunks that 404s at its root, and the URL is what an adapter takes as `uri`:
   https://jbrowse.org/demos/1000g/qm2_cn_1kb.zarr
+
+</details>
 
 ## QuicK-mer2 k-mer copy-number estimates
 

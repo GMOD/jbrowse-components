@@ -61,10 +61,16 @@ CLI, K12 the `--reference` backbone the other four are aligned onto.
   https://ftp.sra.ebi.ac.uk/vol1/fastq/DRR063/DRR063408/DRR063408_1.fastq.gz
 - KTa004 short reads, reverse mate:
   https://ftp.sra.ebi.ac.uk/vol1/fastq/DRR063/DRR063408/DRR063408_2.fastq.gz
+
+<details>
+<summary>Source files (no download needed)</summary>
+
 - the graph's segments, tabix-indexed, which the graph track below reads:
   https://jbrowse.org/demos/ecoli_pangenome/ecoli_cactus.segs.bed.gz
 - the graph's links:
   https://jbrowse.org/demos/ecoli_pangenome/ecoli_cactus.links.bed.gz
+
+</details>
 
 ## The Minigraph-Cactus pipeline
 

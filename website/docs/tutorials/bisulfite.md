@@ -38,9 +38,6 @@ European Nucleotide Archive, `DRR029742` (paired-end 150 bp).
 - the TAIR10 reference the reads align to, fetched by accession with the
   `datasets` CLI:
   https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/001/735/GCF_000001735.4_TAIR10.1/
-- TAIR10's genome hub config on genomes.jbrowse.org, whose assembly entry and
-  NCBI RefSeq gene track the view takes verbatim:
-  https://jbrowse.org/hubs/genark/GCF/000/001/735/GCF_000001735.4/config.json
 - the WGBS run's paired-end reads:
   https://ftp.sra.ebi.ac.uk/vol1/fastq/DRR029/DRR029742/
 

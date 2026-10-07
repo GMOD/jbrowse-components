@@ -33,13 +33,17 @@ rehosted alongside the [cancer SV demo](/docs/tutorials/cancer_sv).
 
 - the callset these commands fetch directly:
   https://jbrowse.org/demos/cancer_sv/COLO829.somatic-sv.vcf.gz
-- the config the batch renders read tracks from:
-  https://jbrowse.org/demos/cancer_sv/config.json
+
+<details>
+<summary>Source files (no download needed)</summary>
+
 - the tumor reads the config's `COLO829_tumor_ont` track streams, Oxford
   Nanopore R10 from the ONT open-data release:
   https://ont-open-data.s3.amazonaws.com/colo829_2024.03/wf_somatic_variation/sup/COLO829_tumor.ht.cram
 - the matched normal the config's `COLO829BL_normal_ont` track streams:
   https://ont-open-data.s3.amazonaws.com/colo829_2024.03/basecalls/colo829bl/sup/PAU59807.d052sup4305mCG_5hmCGvHg38.bam
+
+</details>
 
 ## COLO829, a tumor callset with a matched normal
 

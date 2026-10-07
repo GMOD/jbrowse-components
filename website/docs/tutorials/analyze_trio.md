@@ -40,8 +40,6 @@ chr1 only.
 - the GRCh38 PLINK genetic map hap-ibd needs, the `no_chr_in_chrom_field`
   variant, since the trio VCF calls its chromosome `1` rather than `chr1`:
   https://bochet.gcc.biostat.washington.edu/beagle/genetic_maps/plink.GRCh38.map.zip
-- the hg38 reference sequence the reproduce script's own JBrowse instance opens
-  on, rehosted: https://jbrowse.org/genomes/GRCh38/fasta/GRCh38.fa.gz
 
 ## Loading the hg38 assembly
 

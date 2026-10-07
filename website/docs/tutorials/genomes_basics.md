@@ -13,18 +13,6 @@ genomes.jbrowse.org hosts a ready-made JBrowse config for every UCSC genome,
 with that genome's UCSC track catalog. We open hg38, find _TP53_, and turn on
 its conservation, regulation and variant tracks from the catalog.
 
-## Where the data comes from
-
-genomes.jbrowse.org's hosted hg38 config, and the one GenArk assembly this page
-opens for comparison.
-
-- hg38: https://jbrowse.org/ucsc/hg38/config.json
-- the 100-way phyloP conservation bigWig, read by locus over TP53:
-  https://hgdownload.soe.ucsc.edu/goldenPath/hg38/phyloP100way/hg38.phyloP100way.bw
-- axolotl (Mex_15411), the GenArk assembly in
-  [Searching TP53 on a GenArk genome](#searching-tp53-on-a-genark-genome-the-axolotl):
-  https://jbrowse.org/hubs/genark/GCF/040/938/575/GCF_040938575.1/config.json
-
 ## Opening a genome
 
 [genomes.jbrowse.org](https://genomes.jbrowse.org) hosts a JBrowse 2 instance

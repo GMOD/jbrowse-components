@@ -43,13 +43,6 @@ and a Trix text index.
   https://hgdownload.soe.ucsc.edu/hubs/GCF/016/746/395/GCF_016746395.2/GCF_016746395.2.fa.gz
 - _D. mauritiana_ sequence, which the agent downloads to align:
   https://hgdownload.soe.ucsc.edu/hubs/GCF/004/382/145/GCF_004382145.1/GCF_004382145.1.fa.gz
-- _D. simulans_ JBrowse config from genomes.jbrowse.org:
-  https://jbrowse.org/hubs/genark/GCF/016/746/395/GCF_016746395.2/config.json
-- _D. mauritiana_ JBrowse config from genomes.jbrowse.org:
-  https://jbrowse.org/hubs/genark/GCF/004/382/145/GCF_004382145.1/config.json
-- the alignment the figures below open, already indexed, beside its merged
-  config: https://jbrowse.org/demos/fly_agent_synteny/sim_vs_mau.pif.gz and
-  https://jbrowse.org/demos/fly_agent_synteny/config.json
 
 </details>
 

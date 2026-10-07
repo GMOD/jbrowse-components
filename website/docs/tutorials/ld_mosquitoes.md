@@ -42,12 +42,6 @@ Ag1000G phase 2 AR1
   chromosome has, which each mosquito's karyotype is scored from
   ([Love et al. 2019](https://doi.org/10.1534/g3.119.400445)):
   https://raw.githubusercontent.com/rrlove/compkaryo/master/compkaryo/targets/2La_targets.txt
-- the finished `CMgam` LD table, rehosted:
-  https://jbrowse.org/demos/popgen/ag1000g_2L_CMgam.vcor.gz
-- the 2La genotypes per mosquito:
-  https://jbrowse.org/demos/popgen/ag1000g_2La_CMgam.vcf.gz
-- the karyotype table the sample track is grouped by:
-  https://jbrowse.org/demos/popgen/ag1000g_2La_CMgam_samples.tsv
 
 ## Loading the AgamP4 assembly and genes
 

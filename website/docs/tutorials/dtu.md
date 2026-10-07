@@ -39,17 +39,20 @@ with RSEM against GENCODE v29.
   https://www.encodeproject.org/files/ENCFF641ADT/@@download/ENCFF641ADT.tsv,
   https://www.encodeproject.org/files/ENCFF392VYD/@@download/ENCFF392VYD.tsv,
   https://www.encodeproject.org/files/ENCFF383KWZ/@@download/ENCFF383KWZ.tsv
+- the GENCODE v29 annotation those quantifications were made against:
+  https://ftp.ebi.ac.uk/pub/databases/gencode/Gencode_human/release_29/gencode.v29.annotation.gff3.gz
+
+<details>
+<summary>Source files (no download needed)</summary>
+
 - the four coverage bigWigs the demo's track config loads, one donor per tissue,
   plus and minus strand:
   https://www.encodeproject.org/files/ENCFF007ZBY/@@download/ENCFF007ZBY.bigWig,
   https://www.encodeproject.org/files/ENCFF518WGP/@@download/ENCFF518WGP.bigWig,
   https://www.encodeproject.org/files/ENCFF565QRM/@@download/ENCFF565QRM.bigWig,
   https://www.encodeproject.org/files/ENCFF253OSP/@@download/ENCFF253OSP.bigWig
-- the GENCODE v29 annotation those quantifications were made against:
-  https://ftp.ebi.ac.uk/pub/databases/gencode/Gencode_human/release_29/gencode.v29.annotation.gff3.gz
-- the finished GFF3 with satuRn's statistics written in, rehosted so the track
-  configuration below loads without the build:
-  https://jbrowse.org/demos/dtu/dtu_muscle_vs_liver.gff3.gz
+
+</details>
 
 ## Building the GFF3
 

@@ -36,14 +36,10 @@ GRCh38:
 
 - NA12878's 30x CRAM, index beside it:
   https://s3.amazonaws.com/1000genomes/1000G_2504_high_coverage/data/ERR3239334/NA12878.final.cram
-- its chromosome 20 pairs with an insert over 1 kb, cut out below and rehosted:
-  https://jbrowse.org/demos/read_marks/NA12878.chr20.discordant_pairs.bed.gz
 - the release's structural-variant callset:
   https://ftp.1000genomes.ebi.ac.uk/vol1/ftp/data_collections/1000G_2504_high_coverage/working/20210124.SV_Illumina_Integration/1KGP_3202.gatksv_svtools_novelins.freeze_V3.wAF.vcf.gz
 - UCSC's GRCh38 cytoband table, rehosted:
   https://jbrowse.org/genomes/GRCh38/cytoBand.txt
-- a hosted config with the reference, RefSeq genes and every track below:
-  https://jbrowse.org/demos/read_marks/config.json
 
 ## Loading hg38
 

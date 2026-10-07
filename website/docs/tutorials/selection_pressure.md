@@ -47,8 +47,6 @@ release 116.
   https://ftp.ensembl.org/pub/release-116/gff3/macaca_mulatta/Macaca_mulatta.Mmul_10.116.gff3.gz
 - rhesus macaque coding sequence:
   https://ftp.ensembl.org/pub/release-116/fasta/macaca_mulatta/cds/Macaca_mulatta.Mmul_10.cds.all.fa.gz
-- the finished blocks table, BEDs and config:
-  https://jbrowse.org/demos/primate_selection/config.json
 
 ## What dN/dS says
 

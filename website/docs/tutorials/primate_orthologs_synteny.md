@@ -50,13 +50,6 @@ the ecosystem quotes.
   https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/028/878/055/GCF_028878055.3_NHGRI_mSymSyn1-v2.1_pri/
 - rhesus macaque, T2T-MMU8v2.0:
   https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/049/350/105/GCF_049350105.2_T2T-MMU8v2.0/
-- the hub config for each genome on genomes.jbrowse.org, whose assembly entry
-  and NCBI RefSeq gene track each lane takes verbatim:
-  https://jbrowse.org/ucsc/hg38/config.json for human, and for chimpanzee
-  https://jbrowse.org/hubs/genark/GCF/028/858/775/GCF_028858775.2/config.json,
-  the other ape and macaque hubs at the same path under their accessions
-- the finished table, BEDs and config:
-  https://jbrowse.org/demos/primate_orthologs/config.json
 
 ## An ortholog table joined on gene names
 

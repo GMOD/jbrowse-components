@@ -39,9 +39,15 @@ epigenomes.
   https://egg2.wustl.edu/roadmap/data/byFileType/metadata/EID_metadata.tab
 - the state colors, since the Roadmap segmentations themselves have none:
   https://egg2.wustl.edu/roadmap/data/byFileType/chromhmmSegmentations/ChmmModels/coreMarks/jointModel/final/colormap_15_coreMarks.tab
+
+<details>
+<summary>Source files (no download needed)</summary>
+
 - both merged files, rehosted as bigBeds so the tracks below load without the
   build: https://jbrowse.org/demos/chromhmm/wgEncodeBroadHmm.multirow.bb and
   https://jbrowse.org/demos/chromhmm/roadmap_15state_127epigenomes.bb
+
+</details>
 
 ## Many cell types in one track
 

@@ -32,17 +32,17 @@ We ran two predictions over the _TAL1_ locus against
 tokens, following the AlphaGenome team's
 [worked example](https://www.alphagenomedocs.com/colabs/example_analysis_workflow.html).
 
+<details>
+<summary>Source files (no download needed)</summary>
+
 - the reference prediction over chr1:46,700,048..47,748,623, all eleven output
   types, K562 and GM12878:
   https://0t0e9nn6bj.execute-api.us-east-2.amazonaws.com/Prod/api/predict/demo-tal1-interval
 - the variant prediction, the same window scored for the Jurkat insertion
   upstream of _TAL1_ in CD34+ common myeloid progenitors:
   https://0t0e9nn6bj.execute-api.us-east-2.amazonaws.com/Prod/api/predict/demo-tal1-variant-cd34
-- the oncogenic _TAL1_ variants: https://jbrowse.org/demos/alphagenome_test.bed
-- hg38's NCBI RefSeq annotation:
-  https://jbrowse.org/genomes/GRCh38/ncbi_refseq/GCA_000001405.15_GRCh38_full_analysis_set.refseq_annotation.sorted.gff.gz
-- the hg38 sequence:
-  https://hgdownload.soe.ucsc.edu/goldenPath/hg38/bigZips/hg38.2bit
+
+</details>
 
 ## Predicted assays from sequence
 
