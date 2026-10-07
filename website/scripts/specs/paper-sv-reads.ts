@@ -61,7 +61,7 @@ const bandLabel = (
 ): Annotation => ({
   type: 'text',
   text,
-  fontSize: 19,
+  fontSize: 16,
   anchor: { text: trackLabel, alignX: 'left', alignY: 'bottom', dx: -8, dy },
 })
 
@@ -125,9 +125,8 @@ const readEvidence = ({
             showPileup: false,
             readConnections: 'arc',
             drawProperPairArcs: false,
-            readConnectionsHeight: 150,
-            height: 235,
-            showLegend: true,
+            readConnectionsHeight: 70,
+            height: 140,
           },
           {
             ...illuminaPairs,
@@ -143,6 +142,7 @@ const readEvidence = ({
             },
             showCoverage: false,
             height: pairsHeight,
+            showLegend: true,
           },
         ],
       },
@@ -150,12 +150,12 @@ const readEvidence = ({
   }),
   annotations: [
     bandLabel('SV calls', 'draft benchmark somatic SVs', 52),
-    bandLabel('split-read arcs', HIFI_NAME, 88),
-    bandLabel('split reads', HIFI_NAME, 138),
-    bandLabel('unsplit reads', HIFI_NAME, 215),
-    bandLabel('read-pair arcs', ARCS_NAME, 100),
-    ...(cloud ? [bandLabel('read cloud', PAIRS_NAME, 60)] : []),
-    bandLabel('discordant pairs', PAIRS_NAME, cloud ? 190 : 60),
+    bandLabel('PacBio: split-read arcs', HIFI_NAME, 88),
+    bandLabel('PacBio: split reads', HIFI_NAME, 138),
+    bandLabel('PacBio: unsplit reads', HIFI_NAME, 215),
+    bandLabel('Illumina: read-pair arcs', ARCS_NAME, 84),
+    ...(cloud ? [bandLabel('Illumina: read cloud', PAIRS_NAME, 60)] : []),
+    bandLabel('Illumina: discordant pairs', PAIRS_NAME, cloud ? 190 : 60),
   ],
   hideSelectors: [APP_BAR],
   readyText: 'discordant pairs',
@@ -167,16 +167,16 @@ const readEvidence = ({
 export const paperSvReadsSpecs: ScreenshotSpec[] = [
   readEvidence({
     name: 'paper/sv_read_evidence',
-    loc: 'chr17:31,955,000-32,012,000',
+    loc: 'chr17:31,951,500-32,016,000',
     pairsHeight: 240,
     cloud: true,
-    viewportHeight: 1218,
+    viewportHeight: 1123,
   }),
   readEvidence({
     name: 'paper/sv_read_evidence_inversion',
     loc: 'chr3:184,709,000-184,723,000',
     pairsHeight: 350,
     cloud: false,
-    viewportHeight: 1301,
+    viewportHeight: 1206,
   }),
 ]
