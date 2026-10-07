@@ -11012,6 +11012,122 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       },
       "unevaluatedProperties": false
     },
+    "QuantitativeRows": {
+      "title": "QuantitativeRows",
+      "anyOf": [
+        {
+          "description": "Shorthand for \`{ \\"field\\": ... }\`.",
+          "default": "",
+          "enum": [
+            "",
+            "source"
+          ],
+          "type": "string"
+        },
+        {
+          "title": "QuantitativeRows",
+          "type": "object",
+          "x-closed": true,
+          "properties": {
+            "domain": {
+              "description": "the row order: the rows listed lead, in this order, and the rest keep the order they arrived in.",
+              "if": {
+                "type": "null"
+              },
+              "else": {
+                "anyOf": [
+                  {
+                    "type": "array",
+                    "items": {
+                      "anyOf": [
+                        {
+                          "type": "string"
+                        },
+                        {
+                          "type": "number"
+                        }
+                      ]
+                    }
+                  }
+                ]
+              }
+            },
+            "labels": {
+              "description": "a label drawn beside a row in place of its name, by name.",
+              "if": {
+                "type": "null"
+              },
+              "else": {
+                "type": "object",
+                "additionalProperties": {
+                  "type": "string"
+                }
+              }
+            },
+            "tree": {
+              "description": "the dendrogram beside the rows, as newick, written by a clustering run beside the order it produced.",
+              "if": {
+                "type": "null"
+              },
+              "else": {
+                "$ref": "#/$defs/PlainString"
+              }
+            },
+            "treeProvenance": {
+              "description": "what tree was computed from, the locus and the settings; unset for a tree that arrived as data. Any JSON value: the slot is \`frozen\`, so its shape is not checked here.",
+              "if": {
+                "type": "null"
+              },
+              "else": {
+                "not": {
+                  "$ref": "#/$defs/JexlString"
+                }
+              }
+            },
+            "kept": {
+              "description": "the rows shown, by name; empty, or naming no current row, shows every row.",
+              "if": {
+                "type": "null"
+              },
+              "else": {
+                "anyOf": [
+                  {
+                    "type": "array",
+                    "items": {
+                      "anyOf": [
+                        {
+                          "type": "string"
+                        },
+                        {
+                          "type": "number"
+                        }
+                      ]
+                    }
+                  }
+                ]
+              }
+            },
+            "field": {
+              "description": "source for one row per subtrack, or empty for one plot every source shares.",
+              "default": "",
+              "if": {
+                "type": "null"
+              },
+              "else": {
+                "enum": [
+                  "",
+                  "source"
+                ]
+              }
+            }
+          },
+          "patternProperties": {
+            "^_+comment": {}
+          },
+          "additionalProperties": false
+        }
+      ]
+    },
     "WiggleColor": {
       "title": "WiggleColor",
       "anyOf": [
@@ -11348,7 +11464,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "type": "null"
           },
           "else": {
-            "$ref": "#/$defs/Rows"
+            "$ref": "#/$defs/QuantitativeRows"
           }
         },
         "rowColor": {
@@ -20639,6 +20755,10 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "description": "Legacy display-instance key: a migration lifts it onto the setting that replaced it."
         },
         "hideMismatchesSetting": {
+          "deprecated": true,
+          "description": "Legacy display-instance key: a migration lifts it onto the setting that replaced it."
+        },
+        "sortedBy": {
           "deprecated": true,
           "description": "Legacy display-instance key: a migration lifts it onto the setting that replaced it."
         },

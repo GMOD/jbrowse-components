@@ -5475,7 +5475,7 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "rows",
-          "type": "RowsConfigurationSchema",
+          "type": "QuantitativeRowsConfigurationSchema",
           "subSlots": [
             {
               "name": "domain",
@@ -5501,7 +5501,7 @@ export const configManifest: ConfigManifest = {
             },
             {
               "name": "field",
-              "type": "string"
+              "type": "QuantitativeRowsField"
             }
           ],
           "shorthand": {
@@ -7739,6 +7739,7 @@ export const configManifest: ConfigManifest = {
       "filterBy",
       "filterBySetting",
       "hideMismatchesSetting",
+      "sortedBy",
       "trackMaxHeight"
     ],
     "LinearVariantDisplay": [
