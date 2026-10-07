@@ -38,7 +38,7 @@ function makeSource(
 describe('findSourceHit', () => {
   test('returns the feature interval at bp', () => {
     const source = makeSource([{ start: 100, end: 500, score: 7 }])
-    const result = findSourceHit(source, 250, 'chr1', 'avg')
+    const result = findSourceHit(source, 250, 'chr1', 'mean')
     expect(result).toEqual({
       refName: 'chr1',
       start: 100,
@@ -49,12 +49,12 @@ describe('findSourceHit', () => {
 
   test('returns undefined when bp falls in a gap before any feature', () => {
     const source = makeSource([{ start: 200, end: 300, score: 5 }])
-    expect(findSourceHit(source, 50, 'chr1', 'avg')).toBeUndefined()
+    expect(findSourceHit(source, 50, 'chr1', 'mean')).toBeUndefined()
   })
 
   test('returns undefined when bp falls in a gap after the last feature', () => {
     const source = makeSource([{ start: 0, end: 100, score: 5 }])
-    expect(findSourceHit(source, 200, 'chr1', 'avg')).toBeUndefined()
+    expect(findSourceHit(source, 200, 'chr1', 'mean')).toBeUndefined()
   })
 
   test('returns undefined when bp falls between two non-adjacent features', () => {
@@ -62,7 +62,7 @@ describe('findSourceHit', () => {
       { start: 0, end: 100, score: 5 },
       { start: 200, end: 300, score: 6 },
     ])
-    expect(findSourceHit(source, 150, 'chr1', 'avg')).toBeUndefined()
+    expect(findSourceHit(source, 150, 'chr1', 'mean')).toBeUndefined()
   })
 
   test('attaches summary fields in non-avg mode when min/max differ from score', () => {
@@ -82,7 +82,7 @@ describe('findSourceHit', () => {
     const source = makeSource([
       { start: 0, end: 100, score: 5, min: 1, max: 9 },
     ])
-    const result = findSourceHit(source, 50, 'chr1', 'avg')
+    const result = findSourceHit(source, 50, 'chr1', 'mean')
     expect(result).toEqual({
       refName: 'chr1',
       start: 0,
@@ -106,7 +106,7 @@ describe('findSourceHit', () => {
 
   test('returns undefined for empty data', () => {
     const source = makeSource([])
-    expect(findSourceHit(source, 50, 'chr1', 'avg')).toBeUndefined()
+    expect(findSourceHit(source, 50, 'chr1', 'mean')).toBeUndefined()
   })
 
   test('picks the correct feature when multiple are present', () => {
@@ -115,8 +115,8 @@ describe('findSourceHit', () => {
       { start: 100, end: 200, score: 2 },
       { start: 200, end: 300, score: 3 },
     ])
-    expect(findSourceHit(source, 50, 'chr1', 'avg')?.rows[0]?.score).toBe(1)
-    expect(findSourceHit(source, 150, 'chr1', 'avg')?.rows[0]?.score).toBe(2)
-    expect(findSourceHit(source, 250, 'chr1', 'avg')?.rows[0]?.score).toBe(3)
+    expect(findSourceHit(source, 50, 'chr1', 'mean')?.rows[0]?.score).toBe(1)
+    expect(findSourceHit(source, 150, 'chr1', 'mean')?.rows[0]?.score).toBe(2)
+    expect(findSourceHit(source, 250, 'chr1', 'mean')?.rows[0]?.score).toBe(3)
   })
 })

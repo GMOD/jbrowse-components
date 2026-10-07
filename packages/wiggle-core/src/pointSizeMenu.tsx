@@ -1,8 +1,6 @@
-import { getSlotDefinition } from '@jbrowse/core/configuration'
 import { makeSizeMenu } from '@jbrowse/core/ui'
 import ScatterPlotIcon from '@mui/icons-material/ScatterPlot'
 
-import type { ConfigModelForFields } from '@jbrowse/core/configuration'
 import type { MenuItem } from '@jbrowse/core/ui'
 
 /** Where a display keeps its point size: the value shown, its default, and the write. */
@@ -13,21 +11,16 @@ export interface PointSizeAccess {
 }
 
 /**
- * The point size a display holding `WiggleScoreConfigMixin`'s `size` slot
- * shows and writes.
+ * The point size a display holding a `size` slot shows and writes, against
+ * the diameter it draws while the slot is unset.
  */
-export function pointSizeAccess(self: {
-  size: number
-  setSize: (n?: number) => void
-  configuration: ConfigModelForFields<{
-    size: { type: 'number'; defaultValue: number }
-  }>
-}): PointSizeAccess {
+export function pointSizeAccess(
+  self: { size: number; setSize: (n?: number) => void },
+  defaultValue: number,
+): PointSizeAccess {
   return {
     value: () => self.size,
-    defaultValue: Number(
-      getSlotDefinition(self.configuration, 'size').defaultValue,
-    ),
+    defaultValue,
     set: n => {
       self.setSize(n)
     },

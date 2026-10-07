@@ -81,7 +81,7 @@ export const bigwigSpecs: ScreenshotSpec[] = [
             },
             {
               trackId: 'wiggle_mode_density',
-              mark: 'heatmap',
+              mark: 'span',
               height: 60,
             },
             {
@@ -320,7 +320,7 @@ export const bigwigSpecs: ScreenshotSpec[] = [
           // plot the per-bin average rather than the default whiskers
           // (min/max/avg) — at whole-genome zoom the avg score reads the
           // copy-number level cleanly without the noise band
-          summaryScoreMode: 'avg',
+          summaryScoreMode: 'mean',
         },
       ],
     }),
@@ -567,7 +567,7 @@ export const bigwigSpecs: ScreenshotSpec[] = [
           // one colored density strip per individual, off the track type's own
           // `rows: 'source'` seed; `mark` is a config slot, so
           // this flat key routes into the display's configOverrides
-          mark: 'heatmap',
+          mark: 'span',
           // copy number: most cells sit at the diploid baseline (~2), so the
           // default 99th-percentile clip clamps the amplifications near 2.2.
           // A domainQuantile of 1 uses the true region max so the gains

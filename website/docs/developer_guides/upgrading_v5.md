@@ -339,7 +339,7 @@ workflow rather than in what they draw. `rows: 'source'` puts each source on a
 row of its own, with the tree sidebar, clustering, the row-order sort and the
 row labels, and `rows: ''` draws every source in one shared plot. A
 `MultiQuantitativeTrack` defaults its display to `rows: 'source'`,
-`summaryScoreMode: 'avg'` and `height: 200`, so a multi track that names no
+`summaryScoreMode: 'mean'` and `height: 200`, so a multi track that names no
 display setting still opens as a stack of rows.
 
 `defaultRendering` is now `mark`, in the mark display's words: `xyplot` loads as

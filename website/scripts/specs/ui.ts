@@ -393,7 +393,7 @@ const rhdPanel = sessionSpec('test_data/1000g_cnv/config.json', {
         {
           trackId: 'cnv_1000g_zarr',
           type: 'LinearWiggleDisplay',
-          mark: 'heatmap',
+          mark: 'span',
           // pinned rather than autoscaled, and symmetric about the diploid
           // origin, for the reasons cnv1000g's CN_HEATMAP_SETTINGS gives:
           // copy number is an absolute quantity and a diverging ramp only

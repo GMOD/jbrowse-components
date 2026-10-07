@@ -1,4 +1,4 @@
-import { getSlotDefinition } from '@jbrowse/core/configuration'
+import { readConfObject } from '@jbrowse/core/configuration'
 import { makeSizeMenu } from '@jbrowse/core/ui'
 import { makeRadioSubMenu, radioItems } from '@jbrowse/core/ui/menuItems'
 import {
@@ -9,6 +9,7 @@ import {
 import LineWeightIcon from '@mui/icons-material/LineWeight'
 import ShowChartIcon from '@mui/icons-material/ShowChart'
 
+import { DEFAULT_POINT_SIZE_PX } from '../renderingTypes.ts'
 import {
   RESOLUTION_MAX,
   RESOLUTION_MIN,
@@ -96,7 +97,7 @@ export function makePointSizeMenuItems(
   return makePointSizeSubMenu({
     label: 'Scatter point size',
     applies: isScatterMode(self.renderingType),
-    ...pointSizeAccess(self),
+    ...pointSizeAccess(self, DEFAULT_POINT_SIZE_PX),
   })
 }
 
@@ -104,9 +105,7 @@ export function makeLineWidthMenuItems(self: {
   renderingType: string
   lineWidth: number
   setLineWidth: (n?: number) => void
-  configuration: ConfigModelForFields<{
-    lineWidth: { type: 'number'; defaultValue: number }
-  }>
+  configuration: ConfigModelForFields<{ size: { type: 'maybeNumber' } }>
 }): MenuItem[] {
   return isLineMode(self.renderingType)
     ? [
@@ -124,8 +123,7 @@ export function makeLineWidthMenuItems(self: {
               step: 1,
               getValue: () => self.lineWidth,
               isDefault:
-                self.lineWidth ===
-                getSlotDefinition(self.configuration, 'lineWidth').defaultValue,
+                readConfObject(self.configuration, 'size') === undefined,
               onChange: n => {
                 self.setLineWidth(n)
               },
@@ -188,7 +186,7 @@ export function makeResolutionSubMenu(self: WithResolution): MenuItem[] {
 const SUMMARY_SCORE_MODES = [
   { value: 'min', label: 'Minimum' },
   { value: 'max', label: 'Maximum' },
-  { value: 'avg', label: 'Average' },
+  { value: 'mean', label: 'Average' },
   { value: 'whiskers', label: 'Whiskers' },
 ]
 

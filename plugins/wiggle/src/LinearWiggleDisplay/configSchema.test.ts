@@ -61,7 +61,7 @@ test("v4's rendering names load as the mark they draw, and an unknown one is ref
   }
   expect(read('xyplot')).toEqual(['bar', 'step'])
   expect(read('scatter')).toEqual(['point', 'step'])
-  expect(read('density')).toEqual(['heatmap', 'step'])
+  expect(read('density')).toEqual(['span', 'step'])
   expect(read('line')).toEqual(['line', 'step'])
   expect(read('linecenter')).toEqual(['line', 'linear'])
   expect(() => create({ defaultRendering: 'multirowarea' })).toThrow()

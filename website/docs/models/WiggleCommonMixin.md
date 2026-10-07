@@ -31,7 +31,8 @@ Members a composed model contributes are listed here too, so these tables are th
 | <span id="getter-resolution">**resolution**</span><br><code>number</code> | Points per pixel the fetch asks for, clamped to what the Resolution menu offers: the slot is reachable from a track config, which runs no setter, and `0` there divides by zero inside the adapter. | WiggleCommonMixin |
 | <span id="getter-rpcdatamap">**rpcDataMap**</span><br><code>ReadonlyMap&lt;number, WiggleDataResult&gt;</code> | The fetched scores, keyed by displayedRegionIndex — the foundation's per-region store, narrowed. | WiggleCommonMixin |
 | <span id="getter-origin">**origin**</span><br><code>number</code> | The value bars grow from, which a colour scale also reads where its own domain says nothing. | WiggleCommonMixin |
-| <span id="getter-linewidth">**lineWidth**</span><br><code>number</code> |  | WiggleCommonMixin |
+| <span id="getter-linewidth">**lineWidth**</span><br><code>number</code> | A line's width, the `size` slot or 1 px while unset. | WiggleCommonMixin |
+| <span id="getter-size">**size**</span><br><code>number</code> | A point's diameter, the `size` slot or 2 px while unset. | WiggleCommonMixin |
 | <span id="getter-maxgapmultiple">**maxGapMultiple**</span><br><code>number</code> | Interpolated-line gap threshold, as a multiple of the track's own mean point spacing (see gapBreakLimit). 0 keeps one connected line. | WiggleCommonMixin |
 | <span id="getter-summaryscoremode">**summaryScoreMode**</span><br><code>string</code> |  | WiggleCommonMixin |
 | <span id="getter-renderingtype">**renderingType**</span><br><code>"density" &#124; "line" &#124; "linecenter" &#124; "scatter" &#124; "xyplot"</code> |  | WiggleCommonMixin |
@@ -42,8 +43,7 @@ Members a composed model contributes are listed here too, so these tables are th
 | <span id="getter-autoscalerange">**autoscaleRange**</span><br><code>[number, number] &#124; undefined</code> | What the sources visible in the settled blocks span, under the autoscale mode. `undefined` until the view and the data are ready, which is not the `[0, 1]` a caller falls back to — see `visibleStatsRange`. | WiggleCommonMixin |
 | <span id="getter-domain">**domain**</span><br><code>[number, number] &#124; undefined</code> |  | WiggleCommonMixin |
 | <span id="getter-defaultscoredomain">**defaultScoreDomain**</span><br><code>[number &#124; undefined, number &#124; undefined]</code> | The bounds the adapter declares its values lie in, where it declares any (`getValueDomain`): a GC content track's [0, 1], so its axis reads alike at every locus. Config bounds still win. | WiggleCommonMixin |
-| <span id="getter-scorefield">**scoreField**</span><br><code>string</code> | <span data-pagefind-ignore>The feature field the worker plots on the score axis, `score` by default. A fetch input: every composing display carries it in its `rpcProps()`, since the field is read where the features are.</span> | [ScoreFieldConfigMixin](../scorefieldconfigmixin#getter-scorefield) |
-| <span id="getter-size">**size**</span><br><code>number</code> |  | [WiggleScoreConfigMixin](../wigglescoreconfigmixin#getter-size) |
+| <span id="getter-scorefield">**scoreField**</span><br><code>string</code> | <span data-pagefind-ignore>The feature field the worker plots on the value axis, the `y` slot, `score` by default. A fetch input: every composing display carries it in its `rpcProps()`, since the field is read where the features are.</span> | [ScoreFieldConfigMixin](../scorefieldconfigmixin#getter-scorefield) |
 | <span id="getter-isdensitymode">**isDensityMode**</span><br><code>boolean</code> | <span data-pagefind-ignore>Whether score maps to color instead of height; a display overrides it.</span> | [WiggleScoreConfigMixin](../wigglescoreconfigmixin#getter-isdensitymode) |
 | <span id="getter-axisreacheszero">**axisReachesZero**</span><br><code>boolean</code> | <span data-pagefind-ignore>A density row maps score to colour and has no axis to start at 0, so its domain spans the values whatever `scales.y.zero` says.</span> | [WiggleScoreConfigMixin](../wigglescoreconfigmixin#getter-axisreacheszero) |
 | <span id="getter-scaletype">**scaleType**</span><br><code>string</code> |  | [ScoreScaleMixin](../scorescalemixin#getter-scaletype) |
@@ -79,7 +79,7 @@ Members a composed model contributes are listed here too, so these tables are th
 | <span id="action-setrenderingtype">**setRenderingType**</span><br><code>(type: string) =&gt; void</code> |  | WiggleCommonMixin |
 | <span id="action-setsummaryscoremode">**setSummaryScoreMode**</span><br><code>(val: string) =&gt; void</code> |  | WiggleCommonMixin |
 | <span id="action-setlinewidth">**setLineWidth**</span><br><code>(val?: number &#124; undefined) =&gt; void</code> |  | WiggleCommonMixin |
-| <span id="action-setsize">**setSize**</span><br><code>(val?: number &#124; undefined) =&gt; void</code> |  | [WiggleScoreConfigMixin](../wigglescoreconfigmixin#action-setsize) |
+| <span id="action-setsize">**setSize**</span><br><code>(val?: number &#124; undefined) =&gt; void</code> |  | WiggleCommonMixin |
 | <span id="action-setscaletype">**setScaleType**</span><br><code>(scaleType: string) =&gt; void</code> |  | [ScoreScaleMixin](../scorescalemixin#action-setscaletype) |
 | <span id="action-setscalezero">**setScaleZero**</span><br><code>(zero: boolean) =&gt; void</code> |  | [ScoreScaleMixin](../scorescalemixin#action-setscalezero) |
 | <span id="action-setdomainquantile">**setDomainQuantile**</span><br><code>(quantile: number) =&gt; void</code> |  | [ScoreScaleMixin](../scorescalemixin#action-setdomainquantile) |

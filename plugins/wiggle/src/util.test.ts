@@ -59,33 +59,33 @@ describe('computeAutoscaleDomain', () => {
   test('returns min/max for local autoscale', () => {
     const data = makeFeatureArrays([2, 5, 8])
     const entries = [{ data, visStart: 0, visEnd: 300 }]
-    const result = computeAutoscaleDomain(1, 'avg', entries, true)
+    const result = computeAutoscaleDomain(1, 'mean', entries, true)
     expect(result).toEqual([2, 8])
   })
 
   test('returns undefined for empty entries', () => {
-    const result = computeAutoscaleDomain(1, 'avg', [], true)
+    const result = computeAutoscaleDomain(1, 'mean', [], true)
     expect(result).toBeUndefined()
   })
 
   test('filters features outside visible range', () => {
     const data = makeFeatureArrays([1, 100, 5])
     const entries = [{ data, visStart: 0, visEnd: 100 }]
-    const result = computeAutoscaleDomain(1, 'avg', entries, true)
+    const result = computeAutoscaleDomain(1, 'mean', entries, true)
     expect(result).toEqual([1, 1])
   })
 
   test('handles negative scores', () => {
     const data = makeFeatureArrays([-10, -2, 5])
     const entries = [{ data, visStart: 0, visEnd: 300 }]
-    const result = computeAutoscaleDomain(1, 'avg', entries, true)
+    const result = computeAutoscaleDomain(1, 'mean', entries, true)
     expect(result).toEqual([-10, 5])
   })
 
   test('handles single feature', () => {
     const data = makeFeatureArrays([42])
     const entries = [{ data, visStart: 0, visEnd: 100 }]
-    const result = computeAutoscaleDomain(1, 'avg', entries, true)
+    const result = computeAutoscaleDomain(1, 'mean', entries, true)
     expect(result).toEqual([42, 42])
   })
 
@@ -110,8 +110,8 @@ describe('computeAutoscaleDomain', () => {
     scores.push(1000)
     const data = makeFeatureArrays(scores)
     const entries = [{ data, visStart: 0, visEnd: 100 * scores.length }]
-    const local = computeAutoscaleDomain(1, 'avg', entries, true)
-    const pct = computeAutoscaleDomain(0.99, 'avg', entries, true)
+    const local = computeAutoscaleDomain(1, 'mean', entries, true)
+    const pct = computeAutoscaleDomain(0.99, 'mean', entries, true)
     expect(local).toEqual([1, 1000])
     expect(pct![0]).toBe(1)
     expect(pct![1]).toBeLessThan(1000)
@@ -120,7 +120,7 @@ describe('computeAutoscaleDomain', () => {
   test('a clipped domain keeps all-positive data off 0, and a linear axis adds it', () => {
     const data = makeFeatureArrays([2, 5, 8])
     const entries = [{ data, visStart: 0, visEnd: 300 }]
-    const result = computeAutoscaleDomain(0.99, 'avg', entries, true)!
+    const result = computeAutoscaleDomain(0.99, 'mean', entries, true)!
     expect(result).toEqual([2, 8])
     const bounds = [undefined, undefined] as const
     expect(
@@ -141,7 +141,7 @@ describe('computeAutoscaleDomain', () => {
     const scores = [...Array.from({ length: 95 }, () => 3), -1, -2, -3, -4, -5]
     const data = makeFeatureArrays(scores)
     const entries = [{ data, visStart: 0, visEnd: 100 * scores.length }]
-    const result = computeAutoscaleDomain(0.99, 'avg', entries, true)
+    const result = computeAutoscaleDomain(0.99, 'mean', entries, true)
     expect(result![0]).toBeLessThan(0)
     expect(result![0]).toBeLessThanOrEqual(-4)
     expect(result![1]).toBeGreaterThan(0)
@@ -171,7 +171,7 @@ describe('computeAutoscaleDomain', () => {
       { data: data1, visStart: 0, visEnd: 200 },
       { data: data2, visStart: 0, visEnd: 200 },
     ]
-    const result = computeAutoscaleDomain(1, 'avg', entries, true)
+    const result = computeAutoscaleDomain(1, 'mean', entries, true)
     expect(result).toEqual([2, 10])
   })
 })

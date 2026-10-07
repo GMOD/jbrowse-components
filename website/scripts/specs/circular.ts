@@ -24,8 +24,8 @@ const LIFTOVER = 'hg38ToMm39_liftover'
 const DENSITY_RING = {
   trackId: 'hg38ToMm39_gene_density',
   type: 'LinearWiggleDisplay',
-  mark: 'heatmap',
-  summaryScoreMode: 'avg',
+  mark: 'span',
+  summaryScoreMode: 'mean',
   color: {
     field: 'score',
     scale: 'threshold',

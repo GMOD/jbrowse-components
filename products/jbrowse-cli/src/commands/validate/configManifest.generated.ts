@@ -5613,7 +5613,7 @@ export const configManifest: ConfigManifest = {
           }
         },
         {
-          "name": "scoreField",
+          "name": "y",
           "type": "string"
         },
         {
@@ -5626,11 +5626,7 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "size",
-          "type": "number"
-        },
-        {
-          "name": "lineWidth",
-          "type": "number"
+          "type": "(number | undefined)"
         },
         {
           "name": "maxGapMultiple",
@@ -5741,7 +5737,8 @@ export const configManifest: ConfigManifest = {
       "legacyKeys": [
         "displayCrossHatches",
         "minimalTicks",
-        "defaultRendering"
+        "defaultRendering",
+        "lineWidth"
       ],
       "aliases": [
         "MultiLinearWiggleDisplay",

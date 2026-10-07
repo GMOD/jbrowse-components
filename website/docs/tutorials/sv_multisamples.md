@@ -128,7 +128,7 @@ builds a store from your own BigWigs:
     "uri": "https://jbrowse.org/demos/1000g/qm2_cn_1kb.zarr"
   },
   "displayDefaults": {
-    "mark": "heatmap",
+    "mark": "span",
     "origin": 2,
     "scales": { "y": { "domainMin": 0, "domainMax": 4 } },
     "color": {

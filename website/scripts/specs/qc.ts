@@ -327,7 +327,7 @@ export const qcSpecs: ScreenshotSpec[] = [
           tracks: [
             geneTrack(60, true),
             mappabilityTrack,
-            gnomadCoverageTrack(90, 'avg'),
+            gnomadCoverageTrack(90, 'mean'),
             {
               trackId: 'na12878_qc_reads',
               type: 'LinearAlignmentsDisplay',
@@ -421,7 +421,7 @@ export const qcSpecs: ScreenshotSpec[] = [
             // into 2 kb pixels keeps it.
             // 100, from 120: the lane is read as a plateau against its flanks,
             // and the step is the same step at either height
-            gnomadCoverageTrack(100, 'avg'),
+            gnomadCoverageTrack(100, 'mean'),
             // ONE flagged-region lane, where this had two (reviewer: "we are
             // mixing gnomad coverage, giab problematic regions, encode
             // problematic regions, 1000g nanopore, etc. kind of too many
@@ -528,7 +528,7 @@ export const qcSpecs: ScreenshotSpec[] = [
           highlight: SMN_HIGHLIGHT,
           tracks: [
             { ...geneTrack(60, true), displayMode: 'compact' },
-            gnomadCoverageTrack(90, 'avg'),
+            gnomadCoverageTrack(90, 'mean'),
             {
               trackId: 'hg38-alllowmapandsegdupregions',
               type: 'LinearBasicDisplay',

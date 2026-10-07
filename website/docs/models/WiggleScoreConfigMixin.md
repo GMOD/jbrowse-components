@@ -7,9 +7,9 @@ sidebar_label: Mixin -> WiggleScoreConfigMixin
 Auto-generated @jbrowse/mobx-state-tree API for the current JBrowse release — see [pluggable elements](/docs/developer_guide/) for concepts. Built into JBrowse core. [View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/wiggle-core/src/WiggleScoreConfigMixin.ts).
 
 The score-plot config every display with a score axis shares: the axis
-and its guides (`ScoreScaleMixin`) and the scatter point size. A
-display plotting one configured field composes `ScoreFieldConfigMixin`,
-which adds `scoreField`.
+and its guides (`ScoreScaleMixin`). A display plotting one configured
+field composes `ScoreFieldConfigMixin`,
+which adds the `y` slot.
 
 Members a composed model contributes are listed here too, so these tables are the whole surface.
 
@@ -25,7 +25,6 @@ Members a composed model contributes are listed here too, so these tables are th
 <!-- prettier-ignore -->
 | Member | Description | Defined by |
 | --- | --- | --- |
-| <span id="getter-size">**size**</span><br><code>number</code> |  | WiggleScoreConfigMixin |
 | <span id="getter-isdensitymode">**isDensityMode**</span><br><code>boolean</code> | Whether score maps to color instead of height; a display overrides it. | WiggleScoreConfigMixin |
 | <span id="getter-axisreacheszero">**axisReachesZero**</span><br><code>boolean</code> | A density row maps score to colour and has no axis to start at 0, so its domain spans the values whatever `scales.y.zero` says. | WiggleScoreConfigMixin |
 | <span id="getter-scaletype">**scaleType**</span><br><code>string</code> |  | [ScoreScaleMixin](../scorescalemixin#getter-scaletype) |
@@ -56,7 +55,6 @@ Members a composed model contributes are listed here too, so these tables are th
 <!-- prettier-ignore -->
 | Member | Description | Defined by |
 | --- | --- | --- |
-| <span id="action-setsize">**setSize**</span><br><code>(val?: number &#124; undefined) =&gt; void</code> |  | WiggleScoreConfigMixin |
 | <span id="action-setscaletype">**setScaleType**</span><br><code>(scaleType: string) =&gt; void</code> |  | [ScoreScaleMixin](../scorescalemixin#action-setscaletype) |
 | <span id="action-setscalezero">**setScaleZero**</span><br><code>(zero: boolean) =&gt; void</code> |  | [ScoreScaleMixin](../scorescalemixin#action-setscalezero) |
 | <span id="action-setdomainquantile">**setDomainQuantile**</span><br><code>(quantile: number) =&gt; void</code> |  | [ScoreScaleMixin](../scorescalemixin#action-setdomainquantile) |

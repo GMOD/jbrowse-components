@@ -156,7 +156,7 @@ describe('convertTrackConfig', () => {
       }),
       dataRoot,
     )
-    expect(result.displays?.[0]?.mark).toBe('heatmap')
+    expect(result.displays?.[0]?.mark).toBe('span')
   })
 
   it('returns unsupported conf for VCFTribble', () => {

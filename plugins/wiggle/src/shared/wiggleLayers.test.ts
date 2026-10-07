@@ -72,7 +72,7 @@ describe('makeSummaryLayers', () => {
   })
 
   test.each([
-    ['avg', scores],
+    ['mean', scores],
     ['min', minScores],
     ['max', maxScores],
   ] as const)('a %s line is one layer over every bin', (mode, expected) => {
@@ -156,7 +156,7 @@ describe('makeSummaryLayers', () => {
     const [layer] = makeSummaryLayers({
       data: noSummaryData,
       ...base,
-      summaryScoreMode: 'avg',
+      summaryScoreMode: 'mean',
       pivot: 4,
       origin: 0,
       cuts: [4, 6],

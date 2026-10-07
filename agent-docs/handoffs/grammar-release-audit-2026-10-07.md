@@ -1,6 +1,6 @@
 ---
 name: grammar-release-audit-2026-10-07
-description: Five parallel audits of the grammar-of-graphics surface before v5.0.0 (schema, vocabulary, mark pipeline, plot write paths, docs and in-repo configs), every finding re-verified against main. Colin approved the five shape calls on 2026-10-07; the defect list and the first two calls (ADR-214, ADR-215) have landed, and three calls (wiggle as one mark, multi-way rows, typed frozen slots) plus the docs pass remain. Read before changing a display's grammar slots, the plot write paths or the JSON schema.
+description: Five parallel audits of the grammar-of-graphics surface before v5.0.0 (schema, vocabulary, mark pipeline, plot write paths, docs and in-repo configs), every finding re-verified against main. Colin approved the five shape calls on 2026-10-07; the defect list and the first three calls (ADR-214, ADR-215, ADR-216) have landed, and two calls (multi-way rows, typed frozen slots) plus the docs pass remain. Read before changing a display's grammar slots, the plot write paths or the JSON schema.
 ---
 
 # Grammar-of-graphics release audit, 2026-10-07
@@ -24,22 +24,13 @@ nobody has ruled on, a short defect list, and docs lagging the renames.
 
 ## Five calls that are breaking after 5.0.0
 
-Calls 1 and 2 landed on 2026-10-07 as ADR-214 (every display's schema is
-closed) and ADR-215 (`rows` and every colour object write whole; `SampleRows`
-on the variant and MAF displays, the field shorthand on LD and Hi-C colour).
-Left:
+Calls 1 to 3 landed on 2026-10-07 as ADR-214 (every display's schema is
+closed), ADR-215 (`rows` and every colour object write whole; `SampleRows` on
+the variant and MAF displays, the field shorthand on LD and Hi-C colour) and
+ADR-216 (the quantitative display's `mark` is `span` not `heatmap`, `y` not
+`scoreField`, one `size`, `mean` not `avg`, and `mark`, `interpolate`, `size`
+and `origin` in the plot vocabulary). Left:
 
-3. **Wiggle spells a mark its own way.** `mark: bar|point|line|heatmap`,
-   `scoreField`, `size` plus `lineWidth`, `summaryScoreMode: avg`
-   (`plugins/wiggle/src/LinearWiggleDisplay/configSchema.ts:108`,
-   `packages/wiggle-core/src/scoreFieldConfigSchemaFields.ts:6`,
-   `plugins/wiggle/src/shared/wiggleConfigSchemaFields.ts:40,47`) against the
-   mark display's `marks[].mark` (`span`, not `heatmap`), `encoding.y`, one
-   `encoding.size` and `mean`. None of `mark`, `interpolate`, `size`, `origin`
-   is in `PLOT_VOCABULARY`, so Edit plot and the agent API cannot change a
-   wiggle's plot type (`liftPlot` throws). Reopens ADR-174's `heatmap`.
-   Recommendation: `y`, `size`, `span`, `mean`, and the four slots into the
-   vocabulary, retired map for the old names. 1-2 days.
 4. **Multi-way synteny orders lanes with a top-level `domain`**
    (`plugins/linear-comparative-view/src/MultiWaySyntenyDisplay/configSchema.ts:103`)
    and keeps the lane subset as session state (`laneFilter`, `model.ts:320`),

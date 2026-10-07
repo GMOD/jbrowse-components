@@ -379,7 +379,7 @@ pass every `jexl:` expression, on variant tracks too:
 A string in `color` paints every bar; left alone, a wiggle cuts at its `origin`
 and paints the two sides apart.
 [`mark`](/docs/config/linearwiggledisplay/#slot-mark) picks `bar`, `line`,
-`point`, or `heatmap`.
+`point`, or `span`.
 
 ```json addtrack
 {

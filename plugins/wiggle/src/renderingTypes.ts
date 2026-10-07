@@ -12,8 +12,12 @@ export const WIGGLE_RENDERINGS = [
 
 export type WiggleRendering = (typeof WIGGLE_RENDERINGS)[number][0]
 
-/** What a quantitative plot draws each score as, in Vega-Lite's words. */
-export const WIGGLE_MARKS = ['bar', 'point', 'line', 'heatmap'] as const
+/** What a quantitative plot draws each score as, the mark display's words. */
+export const WIGGLE_MARKS = ['bar', 'point', 'line', 'span'] as const
+
+/** A point's diameter and a line's width in px while `size` is unset. */
+export const DEFAULT_POINT_SIZE_PX = 2
+export const DEFAULT_LINE_WIDTH_PX = 1
 export type WiggleMark = (typeof WIGGLE_MARKS)[number]
 
 /** How a line joins its scores: held across each bin, or centre to centre. */
@@ -29,7 +33,7 @@ export function renderingOf(
     case 'point': {
       return 'scatter'
     }
-    case 'heatmap': {
+    case 'span': {
       return 'density'
     }
     case 'line': {
@@ -53,7 +57,7 @@ export function markOf(
       return { mark: 'point' }
     }
     case 'density': {
-      return { mark: 'heatmap' }
+      return { mark: 'span' }
     }
     case 'line': {
       return { mark: 'line', interpolate: 'step' }

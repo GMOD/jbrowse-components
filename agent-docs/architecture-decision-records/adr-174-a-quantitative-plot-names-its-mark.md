@@ -38,3 +38,6 @@ typo stays loud.
   or `heatmap`.
 - The internal rendering names stay, since renaming them reaches every shader
   and some 200 lines of tests for no reader.
+
+**Amended 2026-10-07 (ADR-216):** `heatmap` is `span`, the mark display's word
+for the same picture, and v4's `density` reads as one.

@@ -32,23 +32,23 @@ describe('outlier fence', () => {
   const spiked = [entry([...new Array(99).fill(2), 50])]
 
   it('keeps a rare gain the baseline leaves room for', () => {
-    expect(computeAutoscaleDomain(0.99, 'avg', copyNumber, true)).toEqual([
+    expect(computeAutoscaleDomain(0.99, 'mean', copyNumber, true)).toEqual([
       2, 3,
     ])
   })
 
   it('fences a spike at twice the axis the rest need, 0 included', () => {
-    expect(computeAutoscaleDomain(0.99, 'avg', spiked, true)).toEqual([2, 4])
+    expect(computeAutoscaleDomain(0.99, 'mean', spiked, true)).toEqual([2, 4])
   })
 
   // Off 0, the quantile ends' own span sets the fence; ends that meet span
   // their own size.
   it('fences off 0 at the span of the quantile ends', () => {
-    expect(computeAutoscaleDomain(0.99, 'avg', spiked, false)).toEqual([2, 4])
+    expect(computeAutoscaleDomain(0.99, 'mean', spiked, false)).toEqual([2, 4])
     expect(
       computeAutoscaleDomain(
         0.99,
-        'avg',
+        'mean',
         [entry([100, ...new Array(97).fill(105), 110, 500])],
         false,
       ),
@@ -56,7 +56,7 @@ describe('outlier fence', () => {
   })
 
   it('a quantile of 1 does not clip', () => {
-    expect(computeAutoscaleDomain(1, 'avg', copyNumber, true)).toEqual([2, 3])
+    expect(computeAutoscaleDomain(1, 'mean', copyNumber, true)).toEqual([2, 3])
   })
 
   it('only counts features overlapping the visible window', () => {
@@ -64,7 +64,7 @@ describe('outlier fence', () => {
     expect(
       computeAutoscaleDomain(
         1,
-        'avg',
+        'mean',
         [entry([2, 2, 2, 3, 5], { visStart: 3, visEnd: 5 })],
         true,
       ),
@@ -109,7 +109,7 @@ describe('visible-window clipping matches a full scan', () => {
     expect(
       computeAutoscaleDomain(
         1,
-        'avg',
+        'mean',
         [wideEntry(scores, { visStart: 35, visEnd: 60 })],
         true,
       ),
@@ -121,7 +121,7 @@ describe('visible-window clipping matches a full scan', () => {
     expect(
       computeAutoscaleDomain(
         1,
-        'avg',
+        'mean',
         [wideEntry(scores, { visStart: 10, visEnd: 35 })],
         true,
       ),
@@ -132,7 +132,7 @@ describe('visible-window clipping matches a full scan', () => {
     expect(
       computeAutoscaleDomain(
         1,
-        'avg',
+        'mean',
         [wideEntry(scores, { visStart: 30, visEnd: 40 })],
         true,
       ),
@@ -152,7 +152,7 @@ describe('visible-window clipping matches a full scan', () => {
         const visEnd = visStart + width
         const clipped = computeAutoscaleDomain(
           1,
-          'avg',
+          'mean',
           [wideEntry(random, { visStart, visEnd })],
           true,
         )
@@ -177,13 +177,18 @@ describe('visible-window clipping matches a full scan', () => {
 describe('non-finite scores', () => {
   it('scales to the real scores around a NaN', () => {
     expect(
-      computeAutoscaleDomain(1, 'avg', [entry([2, Number.NaN, 5, 3])], true),
+      computeAutoscaleDomain(1, 'mean', [entry([2, Number.NaN, 5, 3])], true),
     ).toEqual([2, 5])
   })
 
   it('has no domain when every score is NaN', () => {
     expect(
-      computeAutoscaleDomain(1, 'avg', [entry([Number.NaN, Number.NaN])], true),
+      computeAutoscaleDomain(
+        1,
+        'mean',
+        [entry([Number.NaN, Number.NaN])],
+        true,
+      ),
     ).toBeUndefined()
   })
 })
@@ -194,20 +199,20 @@ describe('non-finite scores', () => {
 describe('one-signed windows', () => {
   it('an all-negative window keeps a negative top', () => {
     expect(
-      computeAutoscaleDomain(0.99, 'avg', [entry([-4, -3, -2, -1])], true)![1],
+      computeAutoscaleDomain(0.99, 'mean', [entry([-4, -3, -2, -1])], true)![1],
     ).toBeLessThan(0)
   })
 
   it('empty bins lower no top', () => {
     expect(
-      computeAutoscaleDomain(0.99, 'avg', [entry([0, 0, 0, 5, 5, 5])], true),
+      computeAutoscaleDomain(0.99, 'mean', [entry([0, 0, 0, 5, 5, 5])], true),
     ).toEqual([0, 5])
   })
 
   it('empty bins beside negatives keep the top at 0, where the extremes put it', () => {
     const scores = [...new Array(90).fill(0), -1, -2, -3, -1, -2, -3]
-    expect(computeAutoscaleDomain(0.99, 'avg', [entry(scores)], true)).toEqual([
-      -3, 0,
-    ])
+    expect(computeAutoscaleDomain(0.99, 'mean', [entry(scores)], true)).toEqual(
+      [-3, 0],
+    )
   })
 })

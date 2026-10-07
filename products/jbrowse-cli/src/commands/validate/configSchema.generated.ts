@@ -11487,7 +11487,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "type": "object",
       "properties": {
         "mark": {
-          "description": "bar, point, line or heatmap.",
+          "description": "bar, point, line or span.",
           "default": "bar",
           "if": {
             "type": "null"
@@ -11497,7 +11497,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               "bar",
               "point",
               "line",
-              "heatmap"
+              "span"
             ]
           }
         },
@@ -11548,14 +11548,14 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "$ref": "#/$defs/WiggleColor"
           }
         },
-        "scoreField": {
-          "description": "Feature field plotted on the score axis, read natively off each feature. The default \`score\` is the field every adapter serves — including the value a BED adapter's \`scoreColumn\` rewrote it to — so an explicit name here reaches a raw column the adapter left alone (a BED extra column, a GFF attribute) and takes precedence over that adapter-tier rewrite. The Manhattan plot skips a feature with no finite value in the field; the wiggle renderings plot it at 0.",
+        "y": {
+          "description": "the feature field plotted on the value axis, read natively off each feature, as a mark's encoding.y names one. The default \`score\` is the field every adapter serves, including the value a BED adapter's \`scoreColumn\` rewrote it to; an explicit name reaches a raw column the adapter left alone (a BED extra column, a GFF attribute). A feature with no finite value in the field plots at 0.",
           "default": "score",
           "if": {
             "type": "null"
           },
           "else": {
-            "$ref": "#/$defs/PlainString"
+            "$ref": "#/$defs/FeatureField"
           }
         },
         "resolution": {
@@ -11579,18 +11579,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           }
         },
         "size": {
-          "description": "Point diameter in px for the point mark, the display's constant for what the mark display spells encoding.size.",
-          "default": 2,
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "type": "number"
-          }
-        },
-        "lineWidth": {
-          "description": "Line thickness in px for line rendering. Defaults to 1.",
-          "default": 1,
+          "description": "the mark's size in px, the display's constant for what the mark display spells encoding.size: a point's diameter, 2 while unset, or a line's width, 1 while unset.",
           "if": {
             "type": "null"
           },
@@ -11627,7 +11616,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           }
         },
         "summaryScoreMode": {
-          "description": "choose whether to use max/min/average or whiskers which combines all three into the same rendering.",
+          "description": "which summary of a bin is drawn: max, min, mean, or whiskers, which draws all three.",
           "default": "whiskers",
           "if": {
             "type": "null"
@@ -11636,7 +11625,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "enum": [
               "max",
               "min",
-              "avg",
+              "mean",
               "whiskers"
             ]
           }
@@ -11700,6 +11689,10 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "description": "Legacy key: a migration rewrites it into current slots when the config loads."
         },
         "defaultRendering": {
+          "deprecated": true,
+          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+        },
+        "lineWidth": {
           "deprecated": true,
           "description": "Legacy key: a migration rewrites it into current slots when the config loads."
         }
@@ -13940,8 +13933,8 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "interpolate": {
               "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/interpolate"
             },
-            "scoreField": {
-              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/scoreField"
+            "y": {
+              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/y"
             },
             "resolution": {
               "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/resolution"
@@ -13961,9 +13954,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             },
             "size": {
               "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/size"
-            },
-            "lineWidth": {
-              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/lineWidth"
             },
             "maxGapMultiple": {
               "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/maxGapMultiple"
@@ -14012,6 +14002,9 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             },
             "defaultRendering": {
               "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/defaultRendering"
+            },
+            "lineWidth": {
+              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/lineWidth"
             },
             "marks": {
               "anyOf": [
@@ -15511,8 +15504,8 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "color": {
               "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/color"
             },
-            "scoreField": {
-              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/scoreField"
+            "y": {
+              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/y"
             },
             "resolution": {
               "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/resolution"
@@ -15529,9 +15522,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             },
             "size": {
               "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/size"
-            },
-            "lineWidth": {
-              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/lineWidth"
             },
             "maxGapMultiple": {
               "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/maxGapMultiple"
@@ -15624,6 +15614,9 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             },
             "defaultRendering": {
               "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/defaultRendering"
+            },
+            "lineWidth": {
+              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/lineWidth"
             },
             "fetchSizeLimit": {
               "$ref": "#/$defs/LinearMarkDisplaySlots/properties/fetchSizeLimit"
@@ -15858,8 +15851,8 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "color": {
               "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/color"
             },
-            "scoreField": {
-              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/scoreField"
+            "y": {
+              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/y"
             },
             "resolution": {
               "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/resolution"
@@ -15876,9 +15869,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             },
             "size": {
               "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/size"
-            },
-            "lineWidth": {
-              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/lineWidth"
             },
             "maxGapMultiple": {
               "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/maxGapMultiple"
@@ -15971,6 +15961,9 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             },
             "defaultRendering": {
               "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/defaultRendering"
+            },
+            "lineWidth": {
+              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/lineWidth"
             },
             "fetchSizeLimit": {
               "$ref": "#/$defs/LinearMarkDisplaySlots/properties/fetchSizeLimit"
@@ -16184,8 +16177,8 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "color": {
               "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/color"
             },
-            "scoreField": {
-              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/scoreField"
+            "y": {
+              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/y"
             },
             "resolution": {
               "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/resolution"
@@ -16195,9 +16188,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             },
             "size": {
               "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/size"
-            },
-            "lineWidth": {
-              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/lineWidth"
             },
             "maxGapMultiple": {
               "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/maxGapMultiple"
@@ -16234,6 +16224,9 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             },
             "defaultRendering": {
               "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/defaultRendering"
+            },
+            "lineWidth": {
+              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/lineWidth"
             }
           },
           "patternProperties": {

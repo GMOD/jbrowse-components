@@ -35,7 +35,7 @@ three are [`LinearWiggleDisplay`](/docs/config/linearwiggledisplay) slots and
 all three go through `displayDefaults`.
 
 [`mark`](/docs/config/linearwiggledisplay/#slot-mark) picks `bar`, `point`,
-`line` or `heatmap`, what a signal is drawn as; `rows` says how many rows there
+`line` or `span`, what a signal is drawn as; `rows` says how many rows there
 are, so the two can be set independently.
 
 A line's [`interpolate`](/docs/config/linearwiggledisplay/#slot-interpolate) is
@@ -98,12 +98,11 @@ lists them with their config pages.
 ## Any numeric column of a feature file
 
 The wiggle display also draws on a `FeatureTrack`: name it in the track's
-`displays`, and
-[`scoreField`](/docs/config/linearwiggledisplay/#slot-scorefield) picks the
-column it plots. The default `score` reads the BED score column, or whatever the
-adapter's `scoreColumn` rewrote it to; an explicit field name reaches a raw
-column of the file instead, so a BED with a `coverage` column plots as a signal
-without a conversion to bedGraph:
+`displays`, and [`y`](/docs/config/linearwiggledisplay/#slot-y) picks the column
+it plots, as a mark's `encoding.y` does. The default `score` reads the BED score
+column, or whatever the adapter's `scoreColumn` rewrote it to; an explicit field
+name reaches a raw column of the file instead, so a BED with a `coverage` column
+plots as a signal without a conversion to bedGraph:
 
 ```json addtrack
 {
@@ -115,7 +114,7 @@ without a conversion to bedGraph:
     "type": "BedTabixAdapter",
     "uri": "https://yourhost/coverage.bed.gz"
   },
-  "displays": [{ "type": "LinearWiggleDisplay", "scoreField": "coverage" }]
+  "displays": [{ "type": "LinearWiggleDisplay", "y": "coverage" }]
 }
 ```
 
@@ -150,7 +149,7 @@ per-subtrack `color`, `group`, and `source`.
 ```
 
 The track type defaults its display to `rows: "source"`,
-`summaryScoreMode: "avg"` and a 200px height, so it opens as one row per source
+`summaryScoreMode: "mean"` and a 200px height, so it opens as one row per source
 without saying so. `rows: ""` puts every source back in one shared plot box, and
 `rows: { "field": "source", "domain": […] }` names the sources that lead the row
 order. The same object takes `labels`, a label per source by name, and

@@ -51,7 +51,7 @@ const baseGpuProps: WiggleGpuProps = {
   perSource: false,
   wiggleColor: baseColor,
   origin: 0,
-  effectiveSummaryScoreMode: 'avg',
+  effectiveSummaryScoreMode: 'mean',
   renderingType: 'xyplot',
   maxGapMultiple: DEFAULT_GAP_BREAK_MULTIPLE,
 }
@@ -60,7 +60,7 @@ describe('buildSourceRenderData summaryScoreMode (bicolor, no solid color)', () 
   test('avg mode is one layer coloured by sign per instance', () => {
     const out = buildSourceRenderData(makeData(), {
       ...baseGpuProps,
-      effectiveSummaryScoreMode: 'avg',
+      effectiveSummaryScoreMode: 'mean',
     })
     expect(out).toHaveLength(1)
     expect(out[0]!.featureScores).toEqual(new Float32Array([5, -5]))
@@ -181,7 +181,7 @@ describe('buildSourceRenderData summaryScoreMode (bicolor, no solid color)', () 
   // coloured by pivot side when drawn: the worker's avg split would leave the
   // positive line chording across every negative stretch.
   test.each([
-    ['avg', [5, -5]],
+    ['mean', [5, -5]],
     ['min', [2, -8]],
     ['max', [9, -1]],
   ] as const)(
@@ -224,12 +224,12 @@ describe('buildSourceRenderData summaryScoreMode (bicolor, no solid color)', () 
 
   // density has no whiskers variant. The model resolves that before this ever
   // sees it (`effectiveSummaryScoreMode`, covered in densityMode.test.ts), so
-  // what arrives here is 'avg' — and density is the one mode that still needs
+  // what arrives here is 'mean' — and density is the one mode that still needs
   // solid-colour layers, `drawDensity` building one gradient per layer.
   test('density + avg splits into solid pos/neg layers', () => {
     const out = buildSourceRenderData(makeData(), {
       ...baseGpuProps,
-      effectiveSummaryScoreMode: 'avg',
+      effectiveSummaryScoreMode: 'mean',
       renderingType: 'density',
     })
     expect(out).toHaveLength(2)
@@ -242,7 +242,7 @@ describe('buildSourceRenderData pos/neg coloring', () => {
   test('faceted: the two sides of the pivot pack distinct colors', () => {
     const [layer] = buildSourceRenderData(makeData(), {
       ...baseGpuProps,
-      effectiveSummaryScoreMode: 'avg',
+      effectiveSummaryScoreMode: 'mean',
     })
     const [above, below] = layer!.colorsAbgr!
     expect(above).not.toBe(below)
@@ -260,7 +260,7 @@ describe('buildSourceRenderData pos/neg coloring', () => {
       },
       {
         ...baseGpuProps,
-        effectiveSummaryScoreMode: 'avg',
+        effectiveSummaryScoreMode: 'mean',
         sources: [
           { name: 'default', color: '#00ff00' },
           { name: 'b', color: '#ff00ff' },
@@ -278,7 +278,7 @@ describe('buildSourceRenderData pos/neg coloring', () => {
   test('a lone source keeps both pivot colours unfaceted', () => {
     const [layer] = buildSourceRenderData(makeData(), {
       ...baseGpuProps,
-      effectiveSummaryScoreMode: 'avg',
+      effectiveSummaryScoreMode: 'mean',
       rowLayout: false,
     })
     const [above, below] = layer!.colorsAbgr!
@@ -305,7 +305,7 @@ describe('buildSourceRenderData source list', () => {
   test('a source missing from the payload keeps its row index', () => {
     const out = buildSourceRenderData(makeData(), {
       ...baseGpuProps,
-      effectiveSummaryScoreMode: 'avg',
+      effectiveSummaryScoreMode: 'mean',
       sources: [{ name: 'absent' }, { name: 'default' }],
     })
     expect(out.map(s => s.rowIndex)).toEqual([1])

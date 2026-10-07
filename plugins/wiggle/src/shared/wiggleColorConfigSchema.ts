@@ -48,7 +48,7 @@ export const WIGGLE_FIELD_PRESETS = {
  * ```js
  * {
  *   type: 'LinearWiggleDisplay',
- *   mark: 'heatmap',
+ *   mark: 'span',
  *   color: { field: 'score', scale: 'linear', scheme: 'viridis' },
  * }
  * ```

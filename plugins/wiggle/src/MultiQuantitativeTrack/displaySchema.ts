@@ -27,7 +27,7 @@ export const multiQuantitativeWiggleConfigSchema = ConfigurationSchema(
   {
     rows: rowPerSource,
     ...trackHeightConfigSchemaFields({ defaultHeight: 200 }),
-    ...summaryScoreModeConfigSchemaFields({ defaultMode: 'avg' }),
+    ...summaryScoreModeConfigSchemaFields({ defaultMode: 'mean' }),
   },
   { baseConfiguration: linearWiggleDisplayConfigSchema },
 )

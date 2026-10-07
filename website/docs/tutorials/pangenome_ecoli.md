@@ -450,7 +450,7 @@ column is a stretch that strain lacks:
       }
     ]
   },
-  "displayDefaults": { "mark": "heatmap" }
+  "displayDefaults": { "mark": "span" }
 }
 ```
 

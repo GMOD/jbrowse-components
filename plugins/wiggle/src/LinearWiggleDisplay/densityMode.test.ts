@@ -44,12 +44,12 @@ it('scales a density domain to the averages it actually paints', () => {
   // color ramp — and the score legend printing it — describing a range nothing
   // on screen reaches
   display.setRenderingType('density')
-  expect(display.effectiveSummaryScoreMode).toBe('avg')
+  expect(display.effectiveSummaryScoreMode).toBe('mean')
   expect(display.domain).toEqual([1, 2])
 
   // and the render path is handed the same resolved mode, so it cannot draw a
   // presentation the domain and the score legend were not scaled for
-  expect(display.gpuProps().effectiveSummaryScoreMode).toBe('avg')
+  expect(display.gpuProps().effectiveSummaryScoreMode).toBe('mean')
 })
 
 it('stops drawing cross hatches in density mode', () => {
@@ -74,7 +74,7 @@ it("writes the plot type as the mark and the line's interpolation it draws", () 
   expect(display.configuration.interpolate).toBe('linear')
   expect(display.renderingType).toBe('linecenter')
   display.setRenderingType('density')
-  expect(display.configuration.mark).toBe('heatmap')
+  expect(display.configuration.mark).toBe('span')
   expect(display.renderingType).toBe('density')
   display.setRenderingType('line')
   expect(display.configuration.interpolate).toBe('step')

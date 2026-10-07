@@ -269,7 +269,7 @@ points at a store with the same layout, built by the reproduce script below:
     "uri": "percell.zarr"
   },
   "displayDefaults": {
-    "mark": "heatmap",
+    "mark": "span",
     "scales": { "y": { "domainMin": 0, "domainMax": 2 } },
     "height": 420
   }

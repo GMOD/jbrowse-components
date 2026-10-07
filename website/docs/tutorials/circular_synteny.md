@@ -295,8 +295,8 @@ strip whose colour is the average over each pixel's bins:
   "uri": "https://jbrowse.org/demos/circular_synteny/hg38ToMm39.genes.gff.density.bw",
   "assemblyNames": ["hg38", "mm39"],
   "displayDefaults": {
-    "mark": "heatmap",
-    "summaryScoreMode": "avg",
+    "mark": "span",
+    "summaryScoreMode": "mean",
     "color": {
       "field": "score",
       "scale": "threshold",
@@ -351,8 +351,8 @@ before the synteny track:
           {
             "trackId": "hg38ToMm39_gene_density",
             "type": "LinearWiggleDisplay",
-            "mark": "heatmap",
-            "summaryScoreMode": "avg",
+            "mark": "span",
+            "summaryScoreMode": "mean",
             "color": {
               "field": "score",
               "scale": "threshold",

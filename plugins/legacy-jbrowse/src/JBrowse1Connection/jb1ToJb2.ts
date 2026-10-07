@@ -103,7 +103,7 @@ const NO_ADAPTER: Record<string, string> = {
  */
 function wiggleDisplays(jb1TrackConfig: Track, jb2TrackConfig: Jb2Track) {
   const mark = jb1TrackConfig.type?.endsWith('Density')
-    ? 'heatmap'
+    ? 'span'
     : jb1TrackConfig.type?.endsWith('XYPlot')
       ? 'bar'
       : undefined

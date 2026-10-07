@@ -52,7 +52,7 @@
           "type": "LinearWiggleDisplay",
           "displayId": "synthetic_tiers_line_avg-LinearWiggleDisplay",
           "mark": "line",
-          "summaryScoreMode": "avg"
+          "summaryScoreMode": "mean"
         }
       ]
     },
@@ -94,7 +94,7 @@
           "type": "LinearWiggleDisplay",
           "displayId": "synthetic_tiers_xyplot_avg-LinearWiggleDisplay",
           "mark": "bar",
-          "summaryScoreMode": "avg"
+          "summaryScoreMode": "mean"
         }
       ]
     },

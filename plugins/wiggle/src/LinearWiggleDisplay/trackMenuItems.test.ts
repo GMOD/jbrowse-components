@@ -211,7 +211,7 @@ describe('the wiggle display track menu', () => {
     )
 
     // whiskers has no density presentation, so offering it would check a mode
-    // neither the plot nor the score domain uses — 'avg' is what both do
+    // neither the plot nor the score domain uses — 'mean' is what both do
     expect(labels(modes)).toEqual(['Minimum', 'Maximum', 'Average'])
     expect(
       modes

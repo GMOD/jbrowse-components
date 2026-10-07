@@ -196,7 +196,7 @@
         ]
       },
       "displayDefaults": {
-        "mark": "heatmap",
+        "mark": "span",
         "origin": 2,
         "scales": { "y": { "domainMin": 0, "domainMax": 4 } },
         "color": {
@@ -3635,7 +3635,7 @@
         {
           "type": "LinearWiggleDisplay",
           "displayId": "hg19.100way.phyloP100way_density",
-          "mark": "heatmap"
+          "mark": "span"
         }
       ]
     },

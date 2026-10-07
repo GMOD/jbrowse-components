@@ -26,15 +26,15 @@ test('both hosts check the slot names their mixin reads', () => {
   expect([scoreConfigPin, scoreFieldPin, reads, writes]).toHaveLength(4)
 })
 
-// `LinearMarkDisplay` composes the base against a schema with no `scoreField`,
+// `LinearMarkDisplay` composes the base against a schema with no `y` slot,
 // where the read would answer `undefined` with no diagnostic anywhere.
-test('the score-config host cannot reach scoreField', () => {
+test('the score-config host cannot reach y', () => {
   const score = {} as WiggleScoreConfigHost
   const field = {} as ScoreFieldConfigHost
   const reads = () => [
-    getConf(field, 'scoreField'),
+    getConf(field, 'y'),
     // @ts-expect-error
-    getConf(score, 'scoreField'),
+    getConf(score, 'y'),
   ]
   expect([reads]).toHaveLength(1)
 })

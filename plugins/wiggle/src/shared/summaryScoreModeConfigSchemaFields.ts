@@ -1,6 +1,6 @@
 import { types } from '@jbrowse/mobx-state-tree'
 
-export const SUMMARY_SCORE_MODES = ['max', 'min', 'avg', 'whiskers'] as const
+export const SUMMARY_SCORE_MODES = ['max', 'min', 'mean', 'whiskers'] as const
 
 // Three schemas declare this slot and each wants a different default —
 // the wiggle display whiskers, a MultiQuantitativeTrack avg through its
@@ -11,7 +11,7 @@ export const SUMMARY_SCORE_MODES = ['max', 'min', 'avg', 'whiskers'] as const
 export function summaryScoreModeConfigSchemaFields({
   defaultMode,
   description:
-    prose = 'choose whether to use max/min/average or whiskers which combines all three into the same rendering',
+    prose = 'which summary of a bin is drawn: max, min, mean, or whiskers, which draws all three',
 }: {
   defaultMode: (typeof SUMMARY_SCORE_MODES)[number]
   description?: string

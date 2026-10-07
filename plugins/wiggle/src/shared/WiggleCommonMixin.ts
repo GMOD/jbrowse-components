@@ -8,7 +8,12 @@ import {
   widenRangeToRules,
 } from '@jbrowse/wiggle-core'
 
-import { markOf, renderingOf } from '../renderingTypes.ts'
+import {
+  DEFAULT_LINE_WIDTH_PX,
+  DEFAULT_POINT_SIZE_PX,
+  markOf,
+  renderingOf,
+} from '../renderingTypes.ts'
 import { wiggleFeatureWidgetData } from './wiggleHitTest.ts'
 
 import type { WiggleRendering } from '../renderingTypes.ts'
@@ -109,9 +114,17 @@ export function WiggleCommonMixin() {
       },
       /**
        * #getter
+       * A line's width, the `size` slot or 1 px while unset.
        */
       get lineWidth(): number {
-        return getConf(confNode(self), 'lineWidth')
+        return getConf(confNode(self), 'size') ?? DEFAULT_LINE_WIDTH_PX
+      },
+      /**
+       * #getter
+       * A point's diameter, the `size` slot or 2 px while unset.
+       */
+      get size(): number {
+        return getConf(confNode(self), 'size') ?? DEFAULT_POINT_SIZE_PX
       },
       /**
        * #getter
@@ -162,7 +175,7 @@ export function WiggleCommonMixin() {
        */
       get effectiveSummaryScoreMode() {
         return self.isDensityMode && this.summaryScoreMode === 'whiskers'
-          ? 'avg'
+          ? 'mean'
           : this.summaryScoreMode
       },
     }))
@@ -304,7 +317,13 @@ export function WiggleCommonMixin() {
        * #action
        */
       setLineWidth(val?: number) {
-        setConf(confNode(self), 'lineWidth', val)
+        setConf(confNode(self), 'size', val)
+      },
+      /**
+       * #action
+       */
+      setSize(val?: number) {
+        setConf(confNode(self), 'size', val)
       },
     }))
 }

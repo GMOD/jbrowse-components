@@ -98,7 +98,7 @@ follows the `kidd_lab_cnv/<population>/<sample>.qm2.CN.1k.bw` pattern above:
     ]
   },
   "displayDefaults": {
-    "mark": "heatmap",
+    "mark": "span",
     "origin": 2,
     "scales": { "y": { "domainMin": 0, "domainMax": 4 } },
     "color": {
@@ -285,7 +285,7 @@ With the plugin loaded, a track points the adapter at the store:
     "uri": "https://jbrowse.org/demos/1000g/qm2_cn_1kb.zarr"
   },
   "displayDefaults": {
-    "mark": "heatmap",
+    "mark": "span",
     "origin": 2,
     "scales": { "y": { "domainMin": 0, "domainMax": 4 } },
     "color": {

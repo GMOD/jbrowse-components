@@ -443,7 +443,7 @@ async function reload({ root, pluginManager }: ReturnType<typeof setup>) {
 }
 
 test.each([
-  [{}, { rows: 'source', height: 200, summaryScoreMode: 'avg' }],
+  [{}, { rows: 'source', height: 200, summaryScoreMode: 'mean' }],
   [
     { rows: '', height: 100, summaryScoreMode: 'whiskers' },
     { rows: '', height: 100, summaryScoreMode: 'whiskers' },

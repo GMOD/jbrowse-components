@@ -6,13 +6,12 @@ import {
 import { legendMixinSlots } from '@jbrowse/display-kit/LegendMixin'
 import { wiggleCommonExtraSlots } from '@jbrowse/plugin-wiggle'
 
-import { wiggleScoreConfigExtraSlots } from '../../../../packages/wiggle-core/src/WiggleScoreConfigMixin.ts'
 import corePlugins from '../corePlugins.ts'
 
-// `LegendMixin`, `WiggleCommonMixin` and `WiggleScoreConfigMixin` each reach a
+// `LegendMixin` and `WiggleCommonMixin` each reach a
 // slot no shared field table can hold, because the composing schemas disagree
 // about the part that is genuinely per display — `showLegend`'s default,
-// `mark`'s enum, `size`'s point diameter. They agree about the
+// `mark`'s enum. They agree about the
 // TYPE, which is all the mixin's host cast needs, so each mixin restates that
 // much beside itself. This is the comparison that keeps the restatement
 // honest; it lives in jbrowse-web for the same reason as
@@ -63,10 +62,6 @@ describe.each([
   [
     'wiggleCommonExtraSlots',
     wiggleCommonExtraSlots as Record<string, { type: string }>,
-  ],
-  [
-    'wiggleScoreConfigExtraSlots',
-    wiggleScoreConfigExtraSlots as Record<string, { type: string }>,
   ],
 ])('%s matches every real declaration', (_table, restated) => {
   for (const [slotName, shape] of Object.entries(restated)) {

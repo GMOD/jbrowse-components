@@ -28,6 +28,9 @@ import type { AnyConfigurationModel } from './types.ts'
  */
 export const PLOT_VOCABULARY: Readonly<Record<string, string>> = {
   marks: 'the marks drawn in order, each a mark and an encoding',
+  mark: 'what each value is drawn as: a bar, a point, a line or a span',
+  interpolate:
+    'how a line joins its values: held across each bin, or centre to centre',
   transform: 'the steps run over the features before any mark',
   unit: 'what one row stands for: a read or a chain, a sample or a haplotype',
   facet: 'one section per value of a field',
@@ -39,7 +42,9 @@ export const PLOT_VOCABULARY: Readonly<Record<string, string>> = {
   ribbonColor: 'the colour of the ribbons between lanes',
   laneLayers: 'the layers drawn over each lane',
   scales: 'the axes, scales.y the value axis',
-  y: "what each row's bar height carries",
+  y: 'the field plotted on the value axis',
+  size: "a point's diameter or a line's width, in px",
+  origin: 'the value bars grow from',
   filter: 'the jexl: expressions a feature has to pass',
   filterBy: 'the read flags and tags a read has to pass',
 }

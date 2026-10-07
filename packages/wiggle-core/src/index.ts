@@ -95,16 +95,13 @@ export type {
 export { ScoreAxisMixin } from './ScoreAxisMixin.ts'
 export { ScoreScaleMixin } from './ScoreScaleMixin.ts'
 export type { ScoreScaleHost } from './ScoreScaleMixin.ts'
-export {
-  WiggleScoreConfigMixin,
-  wiggleScoreConfigExtraSlots,
-} from './WiggleScoreConfigMixin.ts'
+export { WiggleScoreConfigMixin } from './WiggleScoreConfigMixin.ts'
 export type { WiggleScoreConfigHost } from './WiggleScoreConfigMixin.ts'
 export { ScoreFieldConfigMixin } from './ScoreFieldConfigMixin.ts'
 export {
   DEFAULT_SCORE_FIELD,
-  scoreFieldConfigSchemaFields,
-} from './scoreFieldConfigSchemaFields.ts'
+  yFieldConfigSchemaFields,
+} from './yFieldConfigSchemaFields.ts'
 
 export {
   MAX_WIGGLE_CUTS,

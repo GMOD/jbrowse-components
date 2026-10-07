@@ -163,7 +163,7 @@ function makeModel(
         rampLut: null,
         rampMid: undefined,
       },
-      effectiveSummaryScoreMode: 'avg',
+      effectiveSummaryScoreMode: 'mean',
       renderingType: 'xyplot',
       isDensityMode: false,
       maxGapMultiple: 0,

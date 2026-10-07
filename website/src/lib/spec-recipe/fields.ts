@@ -970,7 +970,7 @@ const SNP_FREQUENCY_ROWS: Record<string, string> = {
 const SUMMARY_SCORE_MODES: Record<string, string> = {
   min: 'Minimum',
   max: 'Maximum',
-  avg: 'Average',
+  mean: 'Average',
   whiskers: 'Whiskers',
 }
 

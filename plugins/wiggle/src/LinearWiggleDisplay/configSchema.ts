@@ -100,7 +100,7 @@ const linearWiggleDisplayConfigSchema = ConfigurationSchema(
      * ```json
      * {
      *   "type": "LinearWiggleDisplay",
-     *   "mark": "heatmap"
+     *   "mark": "span"
      * }
      * ```
      */
@@ -108,7 +108,7 @@ const linearWiggleDisplayConfigSchema = ConfigurationSchema(
       type: 'stringEnum',
       model: types.enumeration('WiggleMark', [...WIGGLE_MARKS]),
       defaultValue: 'bar',
-      description: 'bar, point, line or heatmap',
+      description: 'bar, point, line or span',
     },
     /**
      * #slot interpolate
@@ -213,7 +213,13 @@ const linearWiggleDisplayConfigSchema = ConfigurationSchema(
       ...retiredAxisSpellings,
       defaultRendering: rendering =>
         markOf(String(rendering)) ?? { mark: rendering },
+      lineWidth: size => ({ size }),
     },
+    // v4 named the mean summary `avg`
+    preProcessSnapshot: snap =>
+      snap.summaryScoreMode === 'avg'
+        ? { ...snap, summaryScoreMode: 'mean' }
+        : snap,
   },
 )
 

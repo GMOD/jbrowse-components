@@ -460,7 +460,7 @@ export const pangenomeSpecs: ScreenshotSpec[] = [
               // almost everywhere and drew each absence as a hairline slit;
               // density spends colour on it instead, so an accessory stretch is
               // a white column and a partial one is pale blue.
-              mark: 'heatmap',
+              mark: 'span',
               // 4 strains at 60px a row, enough for the accessory dips to read
               // without the stack dominating the frame
               height: 240,

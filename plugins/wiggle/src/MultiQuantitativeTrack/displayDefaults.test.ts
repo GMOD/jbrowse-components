@@ -77,7 +77,7 @@ test('a MultiQuantitativeTrack reads a row per source, averaged, 200px', () => {
   expect(slots).toEqual({
     rows: 'source',
     height: 200,
-    summaryScoreMode: 'avg',
+    summaryScoreMode: 'mean',
   })
   expect(getSnapshot(track).displays).toEqual([
     { type: 'LinearWiggleDisplay', displayId: 't-LinearWiggleDisplay' },

@@ -71,7 +71,7 @@ const LADDER_TRACK = pageTrack('tutorials/population_cnv.md', 'pur_cnv_ladder')
 // which the legend's own bar shows.
 export const CN_HEATMAP_SETTINGS = {
   type: 'LinearWiggleDisplay',
-  mark: 'heatmap',
+  mark: 'span',
   origin: 2,
   scales: { y: { domainMin: 0, domainMax: 4 } },
   color: {

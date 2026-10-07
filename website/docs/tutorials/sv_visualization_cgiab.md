@@ -781,7 +781,7 @@ outputs for each sample's CRAM; swap in yours:
   },
   "displayDefaults": {
     "mark": "bar",
-    "summaryScoreMode": "avg",
+    "summaryScoreMode": "mean",
     "scales": { "y": { "domainMin": 0, "domainMax": 80, "grid": false } },
     "height": 280
   }

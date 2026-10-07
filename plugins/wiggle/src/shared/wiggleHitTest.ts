@@ -36,7 +36,7 @@ export function findFeatureAtBp(
 
 // Spread-friendly helper: returns `{ summary, minScore, maxScore }` when the
 // feature is a real summary (min/max diverge from score) and the user isn't
-// asking for plain 'avg'. Otherwise returns `{}` so the tooltip omits those
+// asking for plain 'mean'. Otherwise returns `{}` so the tooltip omits those
 // fields.
 function summaryFields(
   score: number,
@@ -44,7 +44,7 @@ function summaryFields(
   maxScore: number | undefined,
   summaryScoreMode: string,
 ): { summary: true; minScore: number; maxScore: number } | { summary?: false } {
-  return summaryScoreMode !== 'avg' &&
+  return summaryScoreMode !== 'mean' &&
     minScore !== undefined &&
     maxScore !== undefined &&
     (minScore !== score || maxScore !== score)

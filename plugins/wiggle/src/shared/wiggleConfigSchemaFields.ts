@@ -2,7 +2,7 @@ import { DEFAULT_CLIP_QUANTILE } from '@jbrowse/core/util/quantileExtent'
 import {
   DEFAULT_GAP_BREAK_MULTIPLE,
   scalesSchema,
-  scoreFieldConfigSchemaFields,
+  yFieldConfigSchemaFields,
   valueScaleSchema,
 } from '@jbrowse/wiggle-core'
 
@@ -21,7 +21,7 @@ export function wiggleValueScale() {
 }
 
 export const wiggleConfigSchemaFields = {
-  ...scoreFieldConfigSchemaFields,
+  ...yFieldConfigSchemaFields,
   /**
    * #slot
    */
@@ -38,16 +38,9 @@ export const wiggleConfigSchemaFields = {
       "The value bars grow from, and the cut a threshold color scale with an empty domain uses. The same slot, with the same meaning, as the mark display's origin",
   },
   size: {
-    type: 'number',
-    defaultValue: 2,
+    type: 'maybeNumber',
     description:
-      "Point diameter in px for the point mark, the display's constant for what the mark display spells encoding.size",
-    advanced: true,
-  },
-  lineWidth: {
-    type: 'number',
-    defaultValue: 1,
-    description: 'Line thickness in px for line rendering. Defaults to 1',
+      "the mark's size in px, the display's constant for what the mark display spells encoding.size: a point's diameter, 2 while unset, or a line's width, 1 while unset",
     advanced: true,
   },
   maxGapMultiple: {
