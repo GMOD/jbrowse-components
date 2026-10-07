@@ -19,7 +19,13 @@
 # bubble by rGFA tags, so a plain GFA gets its bubbles from --snarls instead.
 #
 # Produces, beside <out-prefix>:
-#   .segs.bed.gz .links.bed.gz     one row per segment, one per link endpoint
+#   .segs.bed.gz .links.bed.gz     the graph track's pair: every segment and
+#                                  link filed under the reference interval its
+#                                  bubble hangs from (gfa-to-tabix's anchored
+#                                  layout), so one query per file cuts a region
+#   .contig.segs/links.bed.gz      the same rows under each segment's own
+#                                  coordinate, which the allele inventory reads
+#                                  and a lane on a non-reference assembly needs
 #   .bubbles.bed.gz                where the graph varies
 #   .tier<N>.segs/links.bed.gz     one node per bubble with content over N bp
 #   .alleles.bed.gz                what the variation is, one CIGAR per allele
@@ -64,8 +70,8 @@ while [ $# -gt 0 ]; do
   esac
 done
 [ -s "$GRAPH" ] || { echo "no such graph: $GRAPH" >&2; exit 1; }
-command -v gfa-to-tabix >/dev/null || {
-  echo "gfa-to-tabix is not on PATH. Install it with" >&2
+command -v gfa-to-tabix >/dev/null && gfa-to-tabix --help | grep -q -- --layout || {
+  echo "gfa-to-tabix 0.2.0 or later is not on PATH. Install it with" >&2
   echo "  cargo install gfa-to-tabix" >&2
   echo "or download a binary from https://github.com/GMOD/gfa-to-tabix/releases" >&2
   exit 1
@@ -99,12 +105,14 @@ echo "== $ROUTE graph: $GRAPH"
 case "$ROUTE" in
   rgfa)
     gfa | gfa-to-tabix - -o "$PREFIX"
+    gfa | gfa-to-tabix - --layout contig -o "$PREFIX.contig"
     echo "== $PREFIX.bubbles.bed.gz"
     gfa | gfatools bubble - | sort -k1,1 -k2,2n | bgzip > "$PREFIX.bubbles.bed.gz"
     tabix -f -p bed "$PREFIX.bubbles.bed.gz"
     ;;
   paths)
     gfa | gfa-to-tabix - -o "$PREFIX" ${REFERENCE:+--reference "$REFERENCE"}
+    gfa | gfa-to-tabix - --layout contig -o "$PREFIX.contig" ${REFERENCE:+--reference "$REFERENCE"}
     if [ -n "$SNARLS" ]; then
       echo "== $PREFIX.bubbles.bed.gz, from the snarl VCF"
       python3 "$SCRIPT_DIR/snarls_to_bubble_bed.py" "$SNARLS" "$PREFIX.bubbles.bed"
@@ -129,7 +137,9 @@ if [ -s "$PREFIX.bubbles.bed.gz" ]; then
   bash "$SCRIPT_DIR/build_bubble_tier.sh" "$PREFIX.bubbles.bed.gz" "$PREFIX.tier$TIER" "$TIER"
 fi
 
-bash "$SCRIPT_DIR/build_rgfa_alleles.sh" "$PREFIX"
+bash "$SCRIPT_DIR/build_rgfa_alleles.sh" "$PREFIX.contig"
+mv "$PREFIX.contig.alleles.bed.gz" "$PREFIX.alleles.bed.gz"
+mv "$PREFIX.contig.alleles.bed.gz.tbi" "$PREFIX.alleles.bed.gz.tbi"
 
 # A node draws about ten pixels wide at the zoom the fine tier hands over to
 # the coarse one, so the handover is the mean backbone segment length over ten
