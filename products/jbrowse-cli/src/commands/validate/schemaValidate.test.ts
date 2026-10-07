@@ -167,6 +167,18 @@ describe('the schema', () => {
     expect(error?.message).toContain('did you mean "bamLocation"')
   })
 
+  it('says a display warns and loads without an undeclared slot', () => {
+    const config = baseConfig()
+    config.tracks[0]!.displays = [
+      { type: 'LinearAlignmentsDisplay', scoreField: 'score' },
+    ]
+    const [error] = schemaProblems(config)
+    expect(error?.where).toBe('tracks[0].displays[0].scoreField')
+    expect(error?.message).toMatch(
+      /^unknown slot "scoreField" — LinearAlignmentsDisplay takes .*warns on the console and loads without it/,
+    )
+  })
+
   it('reports a wrong slot type', () => {
     const config = baseConfig()
     config.tracks[0]!.displays = [
@@ -321,7 +333,7 @@ describe('the schema', () => {
     config.tracks[0]!.displays = [
       {
         type: 'LinearAlignmentsDisplay',
-        modifications: { twoColor: true, anything: [1, { deep: true }] },
+        sortedBy: { type: 'tag', anything: [1, { deep: true }] },
       },
     ]
     config.tracks[0]!.metadata = 'a string where an object is usual'

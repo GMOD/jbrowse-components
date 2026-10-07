@@ -5409,6 +5409,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
     "LinearBasicDisplay": {
       "title": "LinearBasicDisplay",
       "type": "object",
+      "x-closed": "warn",
       "allOf": [
         {
           "$ref": "#/$defs/LinearBasicDisplaySlots"
@@ -5865,6 +5866,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
     "LinearMultiRowFeatureDisplay": {
       "title": "LinearMultiRowFeatureDisplay",
       "type": "object",
+      "x-closed": "warn",
       "allOf": [
         {
           "$ref": "#/$defs/LinearMultiRowFeatureDisplaySlots"
@@ -7085,6 +7087,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
     "LinearAlignmentsDisplay": {
       "title": "LinearAlignmentsDisplay",
       "type": "object",
+      "x-closed": "warn",
       "allOf": [
         {
           "$ref": "#/$defs/LinearAlignmentsDisplaySlots"
@@ -7316,6 +7319,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
     "ChordVariantDisplay": {
       "title": "ChordVariantDisplay",
       "type": "object",
+      "x-closed": "warn",
       "allOf": [
         {
           "$ref": "#/$defs/ChordVariantDisplaySlots"
@@ -7375,6 +7379,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
     "ChordSyntenyDisplay": {
       "title": "ChordSyntenyDisplay",
       "type": "object",
+      "x-closed": "warn",
       "allOf": [
         {
           "$ref": "#/$defs/ChordSyntenyDisplaySlots"
@@ -7403,6 +7408,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
     "DotplotDisplay": {
       "title": "DotplotDisplay",
       "type": "object",
+      "x-closed": "warn",
       "allOf": [
         {
           "$ref": "#/$defs/DotplotDisplaySlots"
@@ -7431,6 +7437,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
     "LinearSyntenyDisplay": {
       "title": "LinearSyntenyDisplay",
       "type": "object",
+      "x-closed": "warn",
       "allOf": [
         {
           "$ref": "#/$defs/LinearSyntenyDisplaySlots"
@@ -8192,6 +8199,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
     "LGVSyntenyDisplay": {
       "title": "LGVSyntenyDisplay",
       "type": "object",
+      "x-closed": "warn",
       "allOf": [
         {
           "$ref": "#/$defs/LGVSyntenyDisplaySlots"
@@ -10191,6 +10199,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
     "MultiWaySyntenyDisplay": {
       "title": "MultiWaySyntenyDisplay",
       "type": "object",
+      "x-closed": "warn",
       "allOf": [
         {
           "$ref": "#/$defs/MultiWaySyntenyDisplaySlots"
@@ -10279,6 +10288,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
     "LinearReferenceSequenceDisplay": {
       "title": "LinearReferenceSequenceDisplay",
       "type": "object",
+      "x-closed": "warn",
       "allOf": [
         {
           "$ref": "#/$defs/LinearReferenceSequenceDisplaySlots"
@@ -10579,6 +10589,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
     "LinearVariantDisplay": {
       "title": "LinearVariantDisplay",
       "type": "object",
+      "x-closed": "warn",
       "allOf": [
         {
           "$ref": "#/$defs/LinearVariantDisplaySlots"
@@ -11133,6 +11144,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
     "LinearMultiSampleVariantDisplay": {
       "title": "LinearMultiSampleVariantDisplay",
       "type": "object",
+      "x-closed": "warn",
       "allOf": [
         {
           "$ref": "#/$defs/LinearMultiSampleVariantDisplaySlots"
@@ -11364,6 +11376,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
     "LDTrackDisplay": {
       "title": "LDTrackDisplay",
       "type": "object",
+      "x-closed": "warn",
       "allOf": [
         {
           "$ref": "#/$defs/LDTrackDisplaySlots"
@@ -12030,6 +12043,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
     "LinearWiggleDisplay": {
       "title": "LinearWiggleDisplay",
       "type": "object",
+      "x-closed": "warn",
       "allOf": [
         {
           "$ref": "#/$defs/LinearWiggleDisplaySlots"
@@ -12498,6 +12512,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
     "LinearMafDisplay": {
       "title": "LinearMafDisplay",
       "type": "object",
+      "x-closed": "warn",
       "allOf": [
         {
           "$ref": "#/$defs/LinearMafDisplaySlots"
@@ -12702,6 +12717,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
     "LinearHicDisplay": {
       "title": "LinearHicDisplay",
       "type": "object",
+      "x-closed": "warn",
       "allOf": [
         {
           "$ref": "#/$defs/LinearHicDisplaySlots"
@@ -13150,6 +13166,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
     "LinearManhattanDisplay": {
       "title": "LinearManhattanDisplay",
       "type": "object",
+      "x-closed": "warn",
       "allOf": [
         {
           "$ref": "#/$defs/LinearManhattanDisplaySlots"
@@ -13391,6 +13408,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
     "LinearMarkDisplay": {
       "title": "LinearMarkDisplay",
       "type": "object",
+      "x-closed": "warn",
       "allOf": [
         {
           "$ref": "#/$defs/LinearMarkDisplaySlots"

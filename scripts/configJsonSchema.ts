@@ -195,8 +195,9 @@ function cssColorForms(names: readonly string[]) {
 // the one slot path the branch requires, which the CLI validator reports at.
 const REQUIREMENT = 'x-requirement'
 
-// The annotation on a `closed` schema's object: JBrowse refuses a key it does
-// not declare where every other schema drops one, and the validator says which.
+// The annotation carrying a schema's `closed` option: `true` refuses a key it
+// does not declare, `'warn'` names it and loads without it, and every other
+// schema drops one in silence. The validator says which.
 const CLOSED = 'x-closed'
 
 const COMMENT_KEYS = { '^_+comment': {} }
@@ -817,7 +818,7 @@ export function buildConfigJsonSchema(deps: Deps): JsonSchema {
     }
     const object = closed(properties, [], {
       ...requirements(meta),
-      ...(meta.options.closed === true ? { [CLOSED]: true } : {}),
+      ...(meta.options.closed ? { [CLOSED]: meta.options.closed } : {}),
     })
     const base = defName ?? name
     // titled as its def is, since a key the object refuses is reported
@@ -916,7 +917,9 @@ export function buildConfigJsonSchema(deps: Deps): JsonSchema {
       }
       defs[entry.name] = {
         title: entry.name,
-        ...composed([`${entry.name}Slots`], identity, ['type']),
+        ...composed([`${entry.name}Slots`], identity, ['type'], {
+          ...(meta.options.closed ? { [CLOSED]: meta.options.closed } : {}),
+        }),
       }
     }
   }

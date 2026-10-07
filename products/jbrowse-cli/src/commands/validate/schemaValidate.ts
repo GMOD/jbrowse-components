@@ -222,6 +222,9 @@ function unknownKeyMessage(
   if (schema['x-closed'] === true) {
     return `unknown slot "${key}"${guess} — ${title} takes ${listed(accepted)}, and JBrowse refuses to load it rather than drop a key it does not declare`
   }
+  if (schema['x-closed'] === 'warn') {
+    return `unknown slot "${key}"${guess} — ${title} takes ${listed(accepted)}; JBrowse warns on the console and loads without it, so this setting does nothing`
+  }
   return `unknown slot "${key}"${guess} — JBrowse ignores keys it does not declare, so this setting silently does nothing`
 }
 

@@ -5246,6 +5246,7 @@
     "LinearBasicDisplay": {
       "title": "LinearBasicDisplay",
       "type": "object",
+      "x-closed": "warn",
       "allOf": [
         {
           "$ref": "#/$defs/LinearBasicDisplaySlots"
@@ -5693,6 +5694,7 @@
     "LinearMultiRowFeatureDisplay": {
       "title": "LinearMultiRowFeatureDisplay",
       "type": "object",
+      "x-closed": "warn",
       "allOf": [
         {
           "$ref": "#/$defs/LinearMultiRowFeatureDisplaySlots"
@@ -6856,6 +6858,7 @@
     "LinearAlignmentsDisplay": {
       "title": "LinearAlignmentsDisplay",
       "type": "object",
+      "x-closed": "warn",
       "allOf": [
         {
           "$ref": "#/$defs/LinearAlignmentsDisplaySlots"
@@ -7081,6 +7084,7 @@
     "ChordVariantDisplay": {
       "title": "ChordVariantDisplay",
       "type": "object",
+      "x-closed": "warn",
       "allOf": [
         {
           "$ref": "#/$defs/ChordVariantDisplaySlots"
@@ -7138,6 +7142,7 @@
     "ChordSyntenyDisplay": {
       "title": "ChordSyntenyDisplay",
       "type": "object",
+      "x-closed": "warn",
       "allOf": [
         {
           "$ref": "#/$defs/ChordSyntenyDisplaySlots"
@@ -7164,6 +7169,7 @@
     "DotplotDisplay": {
       "title": "DotplotDisplay",
       "type": "object",
+      "x-closed": "warn",
       "allOf": [
         {
           "$ref": "#/$defs/DotplotDisplaySlots"
@@ -7190,6 +7196,7 @@
     "LinearSyntenyDisplay": {
       "title": "LinearSyntenyDisplay",
       "type": "object",
+      "x-closed": "warn",
       "allOf": [
         {
           "$ref": "#/$defs/LinearSyntenyDisplaySlots"
@@ -7917,6 +7924,7 @@
     "LGVSyntenyDisplay": {
       "title": "LGVSyntenyDisplay",
       "type": "object",
+      "x-closed": "warn",
       "allOf": [
         {
           "$ref": "#/$defs/LGVSyntenyDisplaySlots"
@@ -9836,6 +9844,7 @@
     "MultiWaySyntenyDisplay": {
       "title": "MultiWaySyntenyDisplay",
       "type": "object",
+      "x-closed": "warn",
       "allOf": [
         {
           "$ref": "#/$defs/MultiWaySyntenyDisplaySlots"
@@ -9922,6 +9931,7 @@
     "LinearReferenceSequenceDisplay": {
       "title": "LinearReferenceSequenceDisplay",
       "type": "object",
+      "x-closed": "warn",
       "allOf": [
         {
           "$ref": "#/$defs/LinearReferenceSequenceDisplaySlots"
@@ -10201,6 +10211,7 @@
     "LinearVariantDisplay": {
       "title": "LinearVariantDisplay",
       "type": "object",
+      "x-closed": "warn",
       "allOf": [
         {
           "$ref": "#/$defs/LinearVariantDisplaySlots"
@@ -10740,6 +10751,7 @@
     "LinearMultiSampleVariantDisplay": {
       "title": "LinearMultiSampleVariantDisplay",
       "type": "object",
+      "x-closed": "warn",
       "allOf": [
         {
           "$ref": "#/$defs/LinearMultiSampleVariantDisplaySlots"
@@ -10960,6 +10972,7 @@
     "LDTrackDisplay": {
       "title": "LDTrackDisplay",
       "type": "object",
+      "x-closed": "warn",
       "allOf": [
         {
           "$ref": "#/$defs/LDTrackDisplaySlots"
@@ -11595,6 +11608,7 @@
     "LinearWiggleDisplay": {
       "title": "LinearWiggleDisplay",
       "type": "object",
+      "x-closed": "warn",
       "allOf": [
         {
           "$ref": "#/$defs/LinearWiggleDisplaySlots"
@@ -12046,6 +12060,7 @@
     "LinearMafDisplay": {
       "title": "LinearMafDisplay",
       "type": "object",
+      "x-closed": "warn",
       "allOf": [
         {
           "$ref": "#/$defs/LinearMafDisplaySlots"
@@ -12245,6 +12260,7 @@
     "LinearHicDisplay": {
       "title": "LinearHicDisplay",
       "type": "object",
+      "x-closed": "warn",
       "allOf": [
         {
           "$ref": "#/$defs/LinearHicDisplaySlots"
@@ -12683,6 +12699,7 @@
     "LinearManhattanDisplay": {
       "title": "LinearManhattanDisplay",
       "type": "object",
+      "x-closed": "warn",
       "allOf": [
         {
           "$ref": "#/$defs/LinearManhattanDisplaySlots"
@@ -12918,6 +12935,7 @@
     "LinearMarkDisplay": {
       "title": "LinearMarkDisplay",
       "type": "object",
+      "x-closed": "warn",
       "allOf": [
         {
           "$ref": "#/$defs/LinearMarkDisplaySlots"
