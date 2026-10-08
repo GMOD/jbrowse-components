@@ -90,13 +90,13 @@ export function installPerRegionFetchAutoruns(self: PerRegionFetchHost) {
 
   // The other half of the same doctrine: the trigger reads below guarantee
   // `reload()` re-RUNS the fetch autorun, not that the run reaches a fetch. The
-  // global family has had this since arc shipped a dead Retry; this family is
+  // global family has had this since a display there shipped a dead Retry; this family is
   // three times the size and had nothing.
   const noteFetchAutorunRun = makeRetryContractCheck(self)
 
   // Clear loaded data whenever the displayed-regions list changes, through the
-  // same `onDisplayedRegionsChange` helper the two displays outside this family
-  // (LD, arc) use — one spelling of the trigger, so this family's clear can't
+  // same `onDisplayedRegionsChange` helper the displays outside this family
+  // use — one spelling of the trigger, so this family's clear can't
   // come to mean something different from theirs. Fires once at mount as a
   // harmless no-op (nothing loaded yet).
   //

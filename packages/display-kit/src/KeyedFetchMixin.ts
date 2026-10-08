@@ -56,7 +56,7 @@ export default function KeyedFetchMixin() {
        * `commitFetchResult`, so a display cannot stamp data it did not fetch,
        * and cleared by `reload` for the overlay's sake rather than the
        * refetch's (the skeleton's reload epoch is what overrides its gate).
-       * The data itself stays display-owned: arc keeps stale arcs on screen
+       * The data itself stays display-owned: LD keeps the stale triangle on screen
        * under the loading overlay, HiC the stale matrix, synteny the stale
        * ribbons.
        */

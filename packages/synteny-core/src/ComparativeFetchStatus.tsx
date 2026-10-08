@@ -1,9 +1,7 @@
-// deep subpaths, never the `@jbrowse/core/ui` barrel: one named import of it
-// lands FileSelector, FatalErrorDialog, the cascading-menu stack and
-// PluginManager in whatever chunk reaches this, and a comparative display's
-// first load reaches it. Same rule the LGV overlay bindings carry.
-import LoadingOverlay from '@jbrowse/core/ui/LoadingOverlay'
+// deep subpaths, never the `@jbrowse/core/ui` barrel, which a comparative
+// display's first load would otherwise pull whole
 import ProgressChip from '@jbrowse/core/ui/ProgressChip'
+import DisplayLoadingOverlay from '@jbrowse/display-kit/DisplayLoadingOverlay'
 import { useChromeOverlayOverride } from '@jbrowse/display-ui'
 import { observer } from 'mobx-react'
 
@@ -31,40 +29,11 @@ export interface ComparativeStatusModel {
   reload: () => void
 }
 
-// JBrowse's own look, and the only reason this module reaches Material UI.
-// Module scope so the identities are stable across renders.
-//
-// These are the same two entries `DisplayChromeOverlays` already declares, bound
-// here rather than imported from `plugin-linear-genome-view`'s bindings, which a
-// package cannot depend on. Thin enough that the duplication is the adapter and
-// not the behaviour — everything either one does is in core's components.
+// JBrowse's own look. `Loading` is the LGV chrome's binding. The chip is bound
+// here because it anchors itself: no chrome owns a corner for it to sit in.
 const muiStatus: Pick<DisplayChromeOverlays, 'Loading' | 'BackgroundProgress'> =
   {
-    Loading: observer(function Loading({ model, visible, immediate }) {
-      return (
-        <LoadingOverlay
-          statusMessage={model.statusMessage}
-          progress={model.statusProgress}
-          isVisible={visible}
-          immediate={immediate}
-          // The cancel and the retry. This binding passed neither for as long
-          // as it existed, which is what made these the only two displays with
-          // no way to stop a slow load — the component supported both the whole
-          // time. Guarded because the props here are typed against
-          // `DisplayLoadingOverlayModel`, where they are optional and undefined
-          // means "draw no button"; `ComparativeStatusModel` requires all
-          // three, so both comparative displays always pass them. Same three
-          // lines as the LGV set's `DisplayLoadingOverlay`.
-          canceled={model.fetchCanceled}
-          onCancel={
-            model.cancelFetchByUser
-              ? () => model.cancelFetchByUser?.()
-              : undefined
-          }
-          onRetry={model.reload ? () => model.reload?.() : undefined}
-        />
-      )
-    }),
+    Loading: DisplayLoadingOverlay,
     BackgroundProgress: observer(function BackgroundProgress({
       model,
       visible,
