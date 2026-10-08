@@ -30,8 +30,8 @@ const dataDir = join(scriptDir, '..', 'nextstrain-demos-data')
 
 const S3_BASE = 'https://jbrowse.org/demos/nextstrain'
 
-// each entry becomes src/examples/<file>.json, consumed by a matching
-// <name>.tsx / <slug>.astro page. `assembly` is the JBrowse assembly + refName;
+// each entry becomes src/examples/<file>.json, which NextstrainPathogens.tsx
+// offers in its picker. `assembly` is the JBrowse assembly + refName;
 // `slug` is the hosting subdir under s3://jbrowse.org/demos/nextstrain/. `url`
 // is the auspice v2 dataset. `ref` is only needed when the dataset has no
 // published root-sequence sidecar (zika, measles).

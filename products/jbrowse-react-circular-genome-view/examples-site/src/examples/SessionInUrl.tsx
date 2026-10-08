@@ -2,7 +2,7 @@ import { useState } from 'react'
 
 import {
   JBrowseCircularGenomeView,
-  createViewState,
+  createViewStateAsync,
   decodeSession,
   encodeSession,
   useCreateViewState,
@@ -10,12 +10,7 @@ import {
 
 const assembly = {
   name: 'volvox',
-  sequence: {
-    adapter: {
-      type: 'TwoBitAdapter',
-      uri: 'https://jbrowse.org/genomes/volvox/volvox.2bit',
-    },
-  },
+  uri: 'https://jbrowse.org/genomes/volvox/volvox.2bit',
 }
 
 const tracks = [
@@ -27,6 +22,13 @@ const tracks = [
   },
 ]
 
+function readSessionParam() {
+  return (
+    new URLSearchParams(window.location.hash.slice(1)).get('session') ??
+    undefined
+  )
+}
+
 function writeSessionParam(value: string) {
   const params = new URLSearchParams(window.location.hash.slice(1))
   params.set('session', value)
@@ -34,13 +36,11 @@ function writeSessionParam(value: string) {
 }
 
 async function build(report: (status: string) => void) {
-  const param = new URLSearchParams(window.location.hash.slice(1)).get(
-    'session',
-  )
+  const param = readSessionParam()
   if (param) {
     try {
       const session = await decodeSession(param)
-      const engine = await createViewState({ assembly, tracks, session })
+      const engine = await createViewStateAsync({ assembly, tracks, session })
       report(`restored "${session.name}" from the URL`)
       return engine
     } catch (e) {
@@ -48,7 +48,7 @@ async function build(report: (status: string) => void) {
       report(`could not restore the session in the URL: ${e}`)
     }
   }
-  return createViewState({ assembly, tracks })
+  return createViewStateAsync({ assembly, tracks })
 }
 
 export default function SessionInUrl() {

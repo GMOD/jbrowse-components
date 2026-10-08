@@ -1,5 +1,6 @@
 import Plugin from '@jbrowse/core/Plugin'
 import { extendViewType } from '@jbrowse/core/pluggableElementTypes'
+import { getSession } from '@jbrowse/core/util'
 import { JBrowse } from '@jbrowse/react-app2'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
@@ -24,21 +25,23 @@ class HighlightRegionPlugin extends Plugin {
   install(pluginManager: PluginManager) {
     extendViewType(pluginManager, 'LinearGenomeView', stateModel =>
       stateModel.extend(self => {
-        const superItems = self.rubberBandMenuItems
+        const superRubberBandMenuItems = self.rubberBandMenuItems
         return {
           views: {
             rubberBandMenuItems() {
               return [
-                ...superItems(),
+                ...superRubberBandMenuItems(),
                 {
-                  label: 'Console log selected region',
+                  label: 'Highlight selected region',
                   onClick: () => {
                     const { leftOffset, rightOffset } = self
-                    console.log(
-                      JSON.stringify(
-                        self.getSelectedRegions(leftOffset, rightOffset),
-                      ),
-                    )
+                    const session = getSession(self)
+                    for (const region of self.getSelectedRegions(
+                      leftOffset,
+                      rightOffset,
+                    )) {
+                      session.addHighlight(region)
+                    }
                   },
                 },
               ]
@@ -52,7 +55,6 @@ class HighlightRegionPlugin extends Plugin {
   configure() {}
 }
 
-// #region usePlugin
 export default function EmbeddedPlugin() {
   return (
     <JBrowse
@@ -70,4 +72,3 @@ export default function EmbeddedPlugin() {
     />
   )
 }
-// #endregion

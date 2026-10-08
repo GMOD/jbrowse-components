@@ -35,6 +35,13 @@ const config = {
   },
 }
 
+function readSessionParam() {
+  return (
+    new URLSearchParams(window.location.hash.slice(1)).get('session') ??
+    undefined
+  )
+}
+
 function writeSessionParam(value: string) {
   const params = new URLSearchParams(window.location.hash.slice(1))
   params.set('session', value)
@@ -42,9 +49,7 @@ function writeSessionParam(value: string) {
 }
 
 async function build(report: (status: string) => void) {
-  const param = new URLSearchParams(window.location.hash.slice(1)).get(
-    'session',
-  )
+  const param = readSessionParam()
   if (param) {
     try {
       const session = await decodeSession(param)
@@ -61,20 +66,20 @@ async function build(report: (status: string) => void) {
 
 export default function SessionInUrl() {
   const [status, setStatus] = useState('')
-  const viewState = useCreateViewState(() => build(setStatus))
+  const state = useCreateViewState(() => build(setStatus))
 
-  return viewState ? (
+  return state ? (
     <div>
       <div style={{ padding: 8, fontSize: 13, background: '#8881' }}>
         {status || 'navigate or open a track, then save from the app toolbar'}
       </div>
       <JBrowseApp
-        viewState={viewState}
+        viewState={state}
         headerButtons={
           <button
             type="button"
             onClick={() => {
-              void encodeSession(viewState)
+              void encodeSession(state)
                 .then(encoded => {
                   writeSessionParam(encoded)
                   setStatus(

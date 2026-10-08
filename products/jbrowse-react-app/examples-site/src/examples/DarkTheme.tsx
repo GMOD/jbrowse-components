@@ -19,7 +19,15 @@ export default function DarkTheme() {
     <JBrowse
       assemblies={assemblies}
       tracks={tracks}
-      configuration={{ theme: { palette: { mode: 'dark' } } }}
+      configuration={{
+        theme: {
+          palette: {
+            mode: 'dark',
+            primary: { main: '#333' },
+            secondary: { main: '#444' },
+          },
+        },
+      }}
       views={[
         {
           type: 'LinearGenomeView',

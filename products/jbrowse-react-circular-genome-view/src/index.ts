@@ -3,6 +3,9 @@ export { default as CircularGenomeView } from './CircularGenomeView/index.ts'
 export type { CircularGenomeViewProps } from './CircularGenomeView/index.ts'
 export { default as createModel } from './createModel/index.ts'
 export { default as createViewState } from './createViewState.ts'
+// the name the linear and app products give their async constructor; here the
+// one constructor is already async, so both names are the same function
+export { default as createViewStateAsync } from './createViewState.ts'
 export type {
   AsyncViewStateOptions,
   ViewStateOptions,
@@ -22,7 +25,23 @@ export { useCreateViewState } from './useCreateViewState.ts'
 export { destroyViewState } from './destroyViewState.ts'
 export { default as loadPlugins } from './loadPlugins.ts'
 // serialize the live session to a URL-safe string and back, for hosts that keep
-// view state in the address bar
-export { decodeSession, encodeSession } from './sessionUrl.ts'
+// view state in the address bar; getSessionSnapshot is the plain-JSON twin
+export {
+  decodeSession,
+  encodeSession,
+  getSessionSnapshot,
+} from './sessionUrl.ts'
+// pin the page to one rendering backend, jbrowse-web's `?renderer=` for a host
+// with no URL of ours; page-wide, and read by canvases mounted after the call
+export { setGpuOverride } from '@jbrowse/render-core/gpuDevice'
+export type { GpuOverride } from '@jbrowse/render-core/gpuDevice'
 export type { ViewModel } from './createModel/createModel.ts'
-export type { PluginInput, SessionSnapshot } from '@jbrowse/product-core'
+// the assembly vocabulary is product-core's, shared with the other two products
+export { resolveAssemblies } from '@jbrowse/product-core'
+export type {
+  AssemblyInput,
+  LocalFileInput,
+  PluginInput,
+  ResolvedAssemblies,
+  SessionSnapshot,
+} from '@jbrowse/product-core'

@@ -179,7 +179,7 @@ export const pages: ExamplePage[] = [
       },
       {
         slug: 'reads-as-marks',
-        title: 'The same reads, declared as marks',
+        title: 'Haplotagged reads, declared as marks',
         description:
           'A formula, a facet and a span mark over haplotagged reads.',
       },

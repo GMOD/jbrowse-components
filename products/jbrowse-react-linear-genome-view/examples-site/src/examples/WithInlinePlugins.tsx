@@ -1,5 +1,6 @@
 import Plugin from '@jbrowse/core/Plugin'
 import { extendViewType } from '@jbrowse/core/pluggableElementTypes'
+import { getSession } from '@jbrowse/core/util'
 import {
   JBrowseLinearGenomeView,
   useCreateViewState,
@@ -20,12 +21,16 @@ class HighlightRegionPlugin extends Plugin {
               return [
                 ...superRubberBandMenuItems(),
                 {
-                  label: 'Console log selected region',
+                  label: 'Highlight selected region',
                   onClick: () => {
                     const { leftOffset, rightOffset } = self
-                    console.log(
-                      self.getSelectedRegions(leftOffset, rightOffset),
-                    )
+                    const session = getSession(self)
+                    for (const region of self.getSelectedRegions(
+                      leftOffset,
+                      rightOffset,
+                    )) {
+                      session.addHighlight(region)
+                    }
                   },
                 },
               ]
