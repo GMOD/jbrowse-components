@@ -1886,8 +1886,8 @@ importers:
         specifier: ^5.0.11
         version: 5.0.11
       '@gmod/twobit':
-        specifier: ^6.0.12
-        version: 6.0.12
+        specifier: ^6.0.13
+        version: 6.0.13
       '@jbrowse/core':
         specifier: workspace:^
         version: link:../../packages/core
@@ -4825,8 +4825,8 @@ packages:
   '@gmod/trix@3.0.22':
     resolution: {integrity: sha512-cOf2r20K2LecQCZ6Am4H17S6GNAU0g5FZJ4t6EU6IiKGpmYclDWjGVNvDnsERJgjOfvkp4HzHJxQ37WnuKK8Sg==}
 
-  '@gmod/twobit@6.0.12':
-    resolution: {integrity: sha512-LMU7dSVSidFaK9SPLoXsbNEq//87IA0nZD9pkssqXfjQ5Jr4tl2ueYS4LbhONk7t6JbQBKNJuzmMKGken/KXhw==}
+  '@gmod/twobit@6.0.13':
+    resolution: {integrity: sha512-VKr9IRpr4umrA7bGFhCYCF1ZK8jqjXsa9wT9wEeq+4ZJXF8RzKkAVG1aPpT/PTAyJItw+j6oG+kgwq4dNP37CQ==}
 
   '@gmod/ucsc-hub@2.0.13':
     resolution: {integrity: sha512-rqIFTGvDA5j8HYtLDXVX9u3ryJAW3r53Wjpp1YS6bxpEpRD0nTG7tZ1Vz3Mo43rhLq8VufnsZrxog98RODmr5w==}
@@ -12998,7 +12998,7 @@ snapshots:
 
   '@gmod/trix@3.0.22': {}
 
-  '@gmod/twobit@6.0.12':
+  '@gmod/twobit@6.0.13':
     dependencies:
       generic-filehandle2: 2.5.0
 

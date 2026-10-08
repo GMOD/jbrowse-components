@@ -1,6 +1,6 @@
 ---
 name: gc-in-every-multiway-star
-description: jb2hubs writes a GC lane layer into every hosted multiway star from each genome's gc5Base bigWig, about 1 MB a lane cold. Not GCContentAdapter over the 2bit, whose name index costs a scaffold-level lane 118 MB.
+description: jb2hubs writes a GC lane layer into every hosted multiway star, computed from the sequence by GCContentAdapter. A chromosome-level lane reads 2.4-2.9 MB of 2bit cold; a scaffold-level lane adds its name index, 9.5 MB for bisBis1 since @gmod/twobit 6.0.13.
 ---
 
 # GC in every multiway star
@@ -11,21 +11,19 @@ described lane is a temporary assembly (`reference/MULTIWAY_SYNTENY_DISPLAY.md`
 §"Settled invariants"). On hg38's hosted star at TP53 all nine lanes draw their
 own genome's GC.
 
-## The source is the bigWig, not the sequence
+## The source is the sequence
 
 A lane layer takes either `tracks`, one catalog track per lane, or an adapter
 computing from the sequence (`laneLayerConfigSchema.ts`). The builder writes
-`tracks`, naming each genome's `gc5Base` bigWig: about 1 MB a lane cold at
-TP53, whatever the assembly's shape.
+`{ type: 'GCContentAdapter' }`, which draws a better band than `gc5Base` and
+needs no per-genome track.
 
-`GCContentAdapter` over the 2bit is the wrong source for a hosted star. A
-chromosome-level lane reads 2.4-2.9 MB, mostly its chromosome's soft-mask
-block list, and a scaffold-level lane pays for the 2bit's name index on any
-sequence read: 118 MB for bisBis1's 315k scaffolds under `@gmod/twobit`
-6.0.12. A later twobit release shrinks that index read, and the star still
-does not depend on it.
-
-A genome whose hub carries no `gc5Base` gets no GC band.
+Cold at TP53 a chromosome-level lane reads 2.4-2.9 MB of 2bit, mostly its
+chromosome's soft-mask block list, against about 1 MB for a `gc5Base` bigWig.
+A scaffold-level lane also reads the 2bit's whole name index on its first
+sequence read: 9.5 MB for bisBis1's 450,182 scaffolds under `@gmod/twobit`
+6.0.13, measured 2026-10-08 against UCSC's hosted file, down from 117 MB under
+6.0.12.
 
 ## The builder
 
