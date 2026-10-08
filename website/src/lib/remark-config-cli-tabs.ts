@@ -99,8 +99,8 @@ function bash(value: string) {
   return { type: 'code', lang: 'bash', value } satisfies Code
 }
 
-function desktopTab(nodes: RootContent[]): Tab {
-  return { kind: 'desktop', label: 'JBrowse Desktop', nodes }
+function desktopTab(nodes: RootContent[], label = 'JBrowse Desktop'): Tab {
+  return { kind: 'desktop', label, nodes }
 }
 
 // Links rather than the URL as text: once its JSON is percent-encoded the URL
@@ -216,7 +216,7 @@ const TAGS: TagEntry[] = [
       }
       return [
         cliTab(config, json),
-        desktopTab(desktopTrackNodes(config, json)),
+        desktopTab(desktopTrackNodes(config, json), 'In the app'),
         ...(links && 'webUrl' in links ? [liveTab('track', links.webUrl, links.desktopUrl)] : []),
       ]
     },

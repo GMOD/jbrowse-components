@@ -7,14 +7,21 @@
 //
 // Tracks need no refusal: "Add track from pasted JSON"
 // (plugins/data-management/src/AddTrackWidget/components/PasteConfigWorkflow.tsx)
-// takes any track config verbatim, in Desktop and in a web session alike. A
-// graph track has a form of its own in the GraphGenomeView plugin, and the tab
-// walks that instead, since a config pasted as JSON is the one route a reader
-// cannot adapt to their own file without reading the adapter's docs.
+// takes any track config verbatim, in Desktop and in a web session alike. It is
+// the fallback, because a pasted config is the one route a reader cannot adapt
+// to their own file without reading the adapter's docs. A graph track has a form
+// of its own in the GraphGenomeView plugin, and the tab walks that. Any other
+// track walks the default add-track form (DefaultAddTrackWorkflow.tsx) exactly
+// when the form has an input for every key the config carries.
 import { addRelativeUris } from '../../../packages/core/src/util/addRelativeUris.ts'
 import { aliasesUri } from './derive-add-assembly.ts'
+import { deriveAddTrackArgs } from './derive-add-track.ts'
 import { asRecord, nonEmpty } from './derive-cli-command.ts'
-import { expandTrackShorthand } from './infer-track.ts'
+import {
+  expandTrackShorthand,
+  guessAdapterType,
+  syntenyAdapterTypes,
+} from './infer-track.ts'
 
 import type { Code, List, Paragraph, PhrasingContent, RootContent } from 'mdast'
 
@@ -60,6 +67,13 @@ export const DESKTOP_UI_LABELS = {
   fromUrl: 'Open from a URL',
   openTrack: 'File → Open track...',
   pasteJson: 'Add track from pasted JSON',
+  addFromFile: 'Add a track from file or URL',
+  mainFile: 'Main file',
+  indexFile: 'Index file',
+  next: 'Next',
+  trackName: 'Track name',
+  assembly: 'Assembly',
+  add: 'Add',
   syntenyView: 'Add → Linear synteny view',
   quickStart: 'Quick start',
   launch: 'Launch',
@@ -186,10 +200,7 @@ function graphFormNodes(
   return [
     raw('<div class="desktop-steps">'),
     paragraph([
-      text(
-        'In JBrowse Desktop, or in any running JBrowse Web session, open a view on this track’s assembly, then ',
-      ),
-      strong(DESKTOP_UI_LABELS.openTrack),
+      ...openTrackIntro(),
       text(', choose '),
       strong(GRAPH_FORM_LABELS.workflow),
       text(', and fill in:'),
@@ -208,22 +219,97 @@ function graphFormNodes(
   ]
 }
 
+function openTrackIntro() {
+  return [
+    text(
+      'In JBrowse Desktop, or in any running JBrowse Web session, open a view on this track’s assembly, then ',
+    ),
+    strong(DESKTOP_UI_LABELS.openTrack),
+  ]
+}
+
+// The flags deriveAddTrackArgs can emit that the form has an input for. The
+// form has none for a category, display defaults or a BED pair, and no way to
+// name an adapter or track type other than the ones it infers from the file
+// name, so a config needing any of those keeps the pasted JSON.
+const FORM_FLAGS = new Set([
+  '--trackId',
+  '--name',
+  '--assemblyNames',
+  '--indexFile',
+  '--load',
+])
+
+// Adapters whose add-track form shows a picker of its own: the synteny
+// adapters ask for an assembly pair, and GWAS for its score column.
+const PICKER_ADAPTERS = new Set([...syntenyAdapterTypes, 'GWASAdapter'])
+
+function formNodes(config: Record<string, unknown>): RootContent[] | undefined {
+  const args = deriveAddTrackArgs(config)
+  if (!args) {
+    return undefined
+  }
+  const [, file = '', ...rest] = args
+  const flags = new Map<string, string>()
+  for (let i = 0; i < rest.length; i += 2) {
+    flags.set(rest[i]!, rest[i + 1]!)
+  }
+  const name = flags.get('--name')
+  const assembly = flags.get('--assemblyNames')
+  const adapterType = guessAdapterType(file)
+  if (
+    !name ||
+    !assembly ||
+    assembly.includes(',') ||
+    !adapterType ||
+    PICKER_ADAPTERS.has(adapterType) ||
+    [...flags.keys()].some(flag => !FORM_FLAGS.has(flag))
+  ) {
+    return undefined
+  }
+  const index = flags.get('--indexFile')
+  return [
+    raw('<div class="desktop-steps">'),
+    paragraph([
+      ...openTrackIntro(),
+      text(' and, in '),
+      strong(DESKTOP_UI_LABELS.addFromFile),
+      text(', enter:'),
+    ]),
+    bullets([
+      field(DESKTOP_UI_LABELS.mainFile, file),
+      ...(index ? [field(DESKTOP_UI_LABELS.indexFile, index)] : []),
+    ]),
+    paragraph([
+      text('Click '),
+      strong(DESKTOP_UI_LABELS.next),
+      text(
+        '. JBrowse reads the adapter and track type off the file name. Then fill in:',
+      ),
+    ]),
+    bullets([
+      field(DESKTOP_UI_LABELS.trackName, name),
+      field(DESKTOP_UI_LABELS.assembly, assembly),
+    ]),
+    paragraph([text('Click '), strong(DESKTOP_UI_LABELS.add), text('.')]),
+    ...relativeUriNote(config),
+    raw('</div>'),
+  ]
+}
+
 export function desktopTrackNodes(
   config: Record<string, unknown>,
   json: string,
 ): RootContent[] {
   const track = expandTrackShorthand(config)
-  const form = graphFormNodes(track)
+  const form = graphFormNodes(track) ?? formNodes(config)
   if (form) {
     return form
   }
   return [
     raw('<div class="desktop-steps">'),
     paragraph([
-      text(
-        'In JBrowse Desktop, or in any running JBrowse Web session, open a view on this track’s assembly, then ',
-      ),
-      strong(DESKTOP_UI_LABELS.openTrack),
+      ...openTrackIntro(),
       text(', choose '),
       strong(DESKTOP_UI_LABELS.pasteJson),
       text(', and paste:'),

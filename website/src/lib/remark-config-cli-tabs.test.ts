@@ -139,6 +139,17 @@ test('a fence nested in a list item still renders', () => {
   expect(flatten(tree)).toContain('data-tab-kind="desktop"')
 })
 
+test('the track tab is labelled for the app and the assembly tab for Desktop', () => {
+  expect(render('addtrack').html).toContain('>In the app</label>')
+  expect(render('addtrack').html).not.toContain('>JBrowse Desktop</label>')
+  expect(
+    render('addassembly', {
+      name: 'hg38',
+      uri: 'https://example.com/hg38.fa.gz',
+    }).html,
+  ).toContain('>JBrowse Desktop</label>')
+})
+
 test('a whole-track shorthand fence gets the add-track tab and its synteny note', () => {
   const { html } = render('addtrack', {
     trackId: 'grape_peach',

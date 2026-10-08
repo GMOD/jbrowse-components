@@ -111,6 +111,114 @@ test('a graph track with hand-set displays falls back to the paste box', () => {
   )
 })
 
+const SIMPLE_TRACK = {
+  type: 'FeatureTrack',
+  trackId: 'genes',
+  name: 'Genes',
+  assemblyNames: ['hg38'],
+  adapter: {
+    type: 'Gff3TabixAdapter',
+    uri: 'https://example.com/genes.gff3.gz',
+  },
+}
+
+function trackSteps(config: Record<string, unknown>) {
+  return flatten(desktopTrackNodes(config, JSON.stringify(config)))
+}
+
+test('a one-file track walks the add-track form', () => {
+  expect(trackSteps(SIMPLE_TRACK)).toMatchInlineSnapshot(`
+    "<div class="desktop-steps">
+    In JBrowse Desktop, or in any running JBrowse Web session, open a view on this track’s assembly, then File → Open track... and, in Add a track from file or URL, enter:
+    Main file: https://example.com/genes.gff3.gz
+    Click Next. JBrowse reads the adapter and track type off the file name. Then fill in:
+    Track name: GenesAssembly: hg38
+    Click Add.
+    </div>"
+  `)
+})
+
+test('an index the config names goes in the Index file box', () => {
+  const out = trackSteps({
+    trackId: 'reads',
+    uri: 'https://example.com/reads.cram',
+    index: 'https://example.com/reads.cram.crai',
+    assemblyNames: ['hg38'],
+  })
+  expect(out).toContain('Main file: https://example.com/reads.cram')
+  expect(out).toContain('Index file: https://example.com/reads.cram.crai')
+  expect(out).not.toContain('Add track from pasted JSON')
+})
+
+// Each of these carries something the form has no input for, or names an
+// adapter or track type other than the one the form infers from the file name.
+test.each([
+  ['a display', { displays: [{ type: 'LinearBasicDisplay', displayId: 'd' }] }],
+  ['display defaults', { displayDefaults: { height: 80 } }],
+  ['a category', { category: ['Annotation'] }],
+  ['a track type the file name does not imply', { type: 'VariantTrack' }],
+  [
+    'an adapter the file name does not imply',
+    { adapter: { type: 'BedTabixAdapter', uri: 'https://x/genes.gff3.gz' } },
+  ],
+  [
+    'an adapter with an index slot',
+    {
+      adapter: {
+        type: 'Gff3TabixAdapter',
+        uri: 'https://x/genes.gff3.gz',
+        index: { location: { uri: 'https://x/genes.gff3.gz.csi' } },
+      },
+    },
+  ],
+  [
+    'an adapter with several files',
+    {
+      adapter: {
+        type: 'MCScanAnchorsAdapter',
+        uri: 'https://x/a.anchors',
+        bed1: 'https://x/a.bed',
+        bed2: 'https://x/b.bed',
+      },
+    },
+  ],
+  ['two assemblies', { assemblyNames: ['grape', 'peach'] }],
+  [
+    'an adapter whose form asks for more',
+    {
+      type: 'GWASTrack',
+      adapter: { type: 'GWASAdapter', uri: 'https://x/pvals.txt.gz' },
+    },
+  ],
+  ['a file name no format claims', { adapter: { type: 'X', uri: 'genes.xyz' } }],
+])('%s keeps the pasted JSON', (_name, extra) => {
+  const out = trackSteps({ ...SIMPLE_TRACK, ...extra })
+  expect(out).toContain('Add track from pasted JSON')
+  expect(out).not.toContain('Add a track from file or URL')
+})
+
+test('a synteny track keeps the pasted JSON and its view note', () => {
+  const out = trackSteps({
+    type: 'SyntenyTrack',
+    trackId: 'grape_peach',
+    assemblyNames: ['grape', 'peach'],
+    adapter: { type: 'PAFAdapter', uri: 'https://x/grape_peach.paf' },
+  })
+  expect(out).toContain('Add track from pasted JSON')
+  expect(out).toContain('Quick start')
+})
+
+test('a relative uri on the form route is named as the file to replace', () => {
+  const out = trackSteps({
+    ...SIMPLE_TRACK,
+    adapter: { type: 'Gff3TabixAdapter', uri: 'genes.gff3.gz' },
+  })
+  expect(out).toContain('Add a track from file or URL')
+  expect(out).toContain(
+    'genes.gff3.gz is relative to a config.json. Replace it with its URL or its path on this computer.',
+  )
+})
+
 test('a relative track uri is named as the file to replace before pasting', () => {
   const config = {
     type: 'FeatureTrack',
