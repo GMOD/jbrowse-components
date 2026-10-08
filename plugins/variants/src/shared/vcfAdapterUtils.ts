@@ -45,18 +45,27 @@ export async function streamVcfFeatures(
   observer.complete()
 }
 
+/**
+ * Append the lines overlapping each region, a line spanning two of them once.
+ */
 export async function appendVcfLines(
   lines: string[],
   vcf: TabixIndexedFile,
-  { refName, start, end }: { refName: string; start: number; end: number },
+  regions: { refName: string; start: number; end: number }[],
   opts?: BaseOptions,
 ) {
-  await updateStatus('Exporting variants', opts?.statusCallback, () =>
-    vcf.getLines(refName, start, end, {
-      lineCallback: (line: string) => {
-        lines.push(line)
-      },
-      ...opts,
-    }),
-  )
+  const seen = new Set<number>()
+  for (const { refName, start, end } of regions) {
+    await updateStatus('Exporting variants', opts?.statusCallback, () =>
+      vcf.getLines(refName, start, end, {
+        lineCallback: (line, fileOffset) => {
+          if (!seen.has(fileOffset)) {
+            seen.add(fileOffset)
+            lines.push(line)
+          }
+        },
+        ...opts,
+      }),
+    )
+  }
 }

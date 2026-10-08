@@ -193,3 +193,10 @@ test('a named .csi is read as a CSI whatever the indexType slot says', async () 
   )
   expect(features.length).toBeGreaterThan(0)
 })
+
+test('a record spanning two exported regions is exported once', async () => {
+  const adapter = makeAdapter()
+  const once = await adapter.getExportData([region], 'vcf')
+  const twice = await adapter.getExportData([region, region], 'vcf')
+  expect(twice).toBe(once)
+})

@@ -109,20 +109,17 @@ export default class VcfAdapter extends BaseFeatureDataAdapter<VcfAdapterConfig>
     const { header, featureMap, parser } = await this.setup(opts)
     const exportLines: string[] = [header]
 
-    for (const region of regions) {
-      const { refName, start, end } = region
-      const lines = featureMap[refName]
-      if (lines) {
-        for (const line of lines) {
-          // match getFeatures: a variant belongs to the region when its full
-          // span overlaps it, not just its POS, so a deletion that starts
-          // before the region is still exported
-          const variant = parser.parseLine(line)
-          const featureStart = variant.POS - 1
-          const featureEnd = getEnd(variant, featureStart)
-          if (featureStart < end && featureEnd > start) {
-            exportLines.push(line)
-          }
+    for (const [refName, refRegions] of Map.groupBy(regions, r => r.refName)) {
+      for (const line of featureMap[refName] ?? []) {
+        // match getFeatures: a variant belongs to a region its full span
+        // overlaps, so a deletion that starts before one is still exported
+        const variant = parser.parseLine(line)
+        const featureStart = variant.POS - 1
+        const featureEnd = getEnd(variant, featureStart)
+        if (
+          refRegions.some(r => featureStart < r.end && featureEnd > r.start)
+        ) {
+          exportLines.push(line)
         }
       }
     }

@@ -83,9 +83,7 @@ export default class VcfTabixAdapter extends BaseFeatureDataAdapter<VcfTabixAdap
     const { vcf, header } = await this.configure(opts)
     const exportLines: string[] = header.split('\n').filter(Boolean)
 
-    for (const region of regions) {
-      await appendVcfLines(exportLines, vcf, region, opts)
-    }
+    await appendVcfLines(exportLines, vcf, regions, opts)
 
     return exportLines.join('\n')
   }

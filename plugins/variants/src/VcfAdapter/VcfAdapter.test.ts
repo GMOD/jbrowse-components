@@ -162,3 +162,27 @@ test('a matching samplesTsv still yields the metadata columns', async () => {
   ])
   expect((await adapter.getSourcesAndWarnings()).warnings).toEqual([])
 })
+
+test('a record spanning two exported regions is exported once', async () => {
+  const adapter = new Adapter(
+    configSchema.create({
+      vcfLocation: {
+        localPath: require.resolve('./test_data/overlap.vcf'),
+        locationType: 'LocalPathLocation',
+      },
+    }),
+  )
+  const region = { assemblyName: 'volvox', refName: 'ctgA' }
+  const exported = await adapter.getExportData(
+    [
+      { ...region, start: 2000, end: 2500 },
+      { ...region, start: 3000, end: 3500 },
+    ],
+    'vcf',
+  )
+  const ids = exported!
+    .split('\n')
+    .filter(line => line && !line.startsWith('#'))
+    .map(line => line.split('\t')[2])
+  expect(ids).toEqual(['del1'])
+})
