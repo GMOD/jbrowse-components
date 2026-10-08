@@ -11,6 +11,7 @@ import {
   outputName,
   parseBedpe,
   recordArgv,
+  recordHighlight,
   recordLocs,
 } from './batch.ts'
 import { batchRefusedOptions, DEFAULT_WIDTH } from './options.ts'
@@ -73,6 +74,7 @@ interface RowResult {
   file: string
   status: RecordStatus
   links?: string
+  nonref?: string
   error?: string
 }
 
@@ -263,13 +265,21 @@ export async function runBatch(opts: BatchOpts) {
     ? renderInWorkers(planned, opts.respawn, jobs, report)
     : renderRows(planned, opts, report))
 
-  // a reused image keeps the count the run that drew it reported
-  const links = opts.resume ? priorLinks(outDir) : new Map<string, string>()
-  for (const { file, links: counted } of results.values()) {
-    if (counted !== undefined) {
-      links.set(file, counted)
-    }
-  }
+  // a reused image keeps the counts the run that drew it reported
+  const counts = Object.fromEntries(
+    COUNT_COLUMNS.map(column => {
+      const byFile = opts.resume
+        ? priorColumn(outDir, column)
+        : new Map<string, string>()
+      for (const result of results.values()) {
+        const counted = result[column]
+        if (counted !== undefined) {
+          byFile.set(result.file, counted)
+        }
+      }
+      return [column, byFile]
+    }),
+  ) as Record<CountColumn, Map<string, string>>
   const status = planned.map(
     ({ file }) => results.get(file)?.status ?? 'failed',
   )
@@ -279,7 +289,7 @@ export async function runBatch(opts: BatchOpts) {
     .map(r => ({ name: r!.file, error: r!.error }))
   const done = status.filter(st => st === 'ok').length
   if (opts.manifest) {
-    writeManifest(outDir, planned, status, links)
+    writeManifest(outDir, planned, status, counts)
   }
   // The reused count is named, or a fully-resumed run reports "wrote 0/400" and
   // reads as a run in which nothing worked.
@@ -380,11 +390,23 @@ async function renderRows(
               argv: [...argv, ...recordArgv(rec, flank)],
               loc: undefined,
             }
-          : { ...shared, mode: 'linear', argv, loc: locs[0], sortAt: rec.sort },
+          : {
+              ...shared,
+              mode: 'linear',
+              argv,
+              loc: locs[0],
+              sortAt: rec.sort,
+              highlight: recordHighlight(rec),
+            },
         configObject && structuredClone(configObject),
       )
       writeRendered(rendered.svg, out, width)
-      report({ file, status: 'ok', links: rendered.links?.join(',') ?? '' })
+      report({
+        file,
+        status: 'ok',
+        links: rendered.links?.join(',') ?? '',
+        nonref: rendered.nonref?.join(',') ?? '',
+      })
     } catch (error) {
       report({
         file,
@@ -407,31 +429,36 @@ async function renderRows(
 // on `event` lists the event's image above its records'. `links` is the reads
 // with pieces in more than one panel, per alignments track: what a reviewer
 // reads as a fan of curves, as a number a queue can be sorted on. Empty for an
-// image of one panel.
+// image of one panel. `nonref` is `count/depth` per alignments track: the reads
+// differing from the reference at the column a record's pileup is sorted at,
+// over the reads spanning it. Empty for a record with no such column.
+const COUNT_COLUMNS = ['links', 'nonref'] as const
+type CountColumn = (typeof COUNT_COLUMNS)[number]
+
 const MANIFEST_COLUMNS = [
   'file',
   'locs',
   'name',
   'line',
   'event',
-  'links',
+  ...COUNT_COLUMNS,
   'status',
 ]
 
-function priorLinks(outDir: string) {
+function priorColumn(outDir: string, column: CountColumn) {
   const file = path.join(outDir, 'manifest.tsv')
   const [head = '', ...rows] = fs.existsSync(file)
     ? fs.readFileSync(file, 'utf8').split('\n')
     : []
   const columns = head.split('\t')
   const fileAt = columns.indexOf('file')
-  const linksAt = columns.indexOf('links')
+  const countAt = columns.indexOf(column)
   return new Map(
-    fileAt === -1 || linksAt === -1
+    fileAt === -1 || countAt === -1
       ? []
       : rows.map(row => {
           const f = row.split('\t')
-          return [f[fileAt] ?? '', f[linksAt] ?? ''] as const
+          return [f[fileAt] ?? '', f[countAt] ?? ''] as const
         }),
   )
 }
@@ -441,7 +468,7 @@ function writeManifest(
   planned: PlannedRow[],
   // index-aligned with `planned`: the loop pushes exactly one per record
   status: RecordStatus[],
-  links: Map<string, string>,
+  counts: Record<CountColumn, Map<string, string>>,
 ) {
   const rows = planned.map(({ rec, file, locs }, i) =>
     [
@@ -450,7 +477,7 @@ function writeManifest(
       rec.name ?? '',
       rec.line ?? '',
       rec.event ?? '',
-      links.get(file) ?? '',
+      ...COUNT_COLUMNS.map(column => counts[column].get(file) ?? ''),
       status[i],
     ].join('\t'),
   )

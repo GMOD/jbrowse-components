@@ -536,7 +536,7 @@ export const batchOptionDefs: OptionDef[] = [
   {
     name: 'manifest',
     description:
-      'Also write manifest.tsv to --outDir: one row per image with its file, loci, name, line in the input, EVENT, the reads joining its panels and status',
+      'Also write manifest.tsv to --outDir: one row per image with its file, loci, name, line in the input, EVENT, the reads joining its panels, the reads differing from the reference at its variant and status',
     default: false,
   },
   {
@@ -603,8 +603,11 @@ export function buildBatchHelp(scriptName: string) {
     'than --flank reaches. Where a single-panel record spells out its alleles,',
     'every alignments track with no sort: of its own is sorted at the variant:',
     'an SNV at its base, a deletion at its first deleted base, an insertion at',
-    'the base after it. The module graph loads once for the whole callset, so this is',
-    `much faster than a shell loop over "${scriptName} breakpoint".`,
+    'the base after it. A band marks the bases the record changes, and the',
+    'manifest counts the reads differing from the reference there.',
+    '',
+    'The module graph loads once for the whole callset, so this is much faster',
+    `than a shell loop over "${scriptName} breakpoint".`,
     '',
     'Options:',
     ...formatOpts(defs, pad),

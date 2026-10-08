@@ -46,6 +46,7 @@ import type { Config, OpenTrack, Opts, Track } from './types.ts'
 import type { ViewSnapshotInput } from '@jbrowse/core/PluginManager'
 import type { SnackbarMessage } from '@jbrowse/core/ui/SnackbarModel'
 import type { SettleableView } from '@jbrowse/core/util/whenViewSettled'
+import type { LinearAlignmentsDisplayModel } from '@jbrowse/plugin-alignments'
 import type { BreakpointViewModel } from '@jbrowse/plugin-breakpoint-split-view'
 import type {
   CircularViewCommands,
@@ -156,13 +157,16 @@ interface ModeContext {
 }
 
 /**
- * An image and what can be counted off it. `links` is a breakpoint view's
- * reads with pieces in more than one panel, per alignments track in track
- * order: the molecules its connectors are drawn for.
+ * An image and what can be counted off it, per alignments track in track
+ * order. `links` is a breakpoint view's reads with pieces in more than one
+ * panel: the molecules its connectors are drawn for. `nonref` is a linear
+ * view's reads differing from the reference at `sortAt`, over the reads
+ * spanning it: what the coverage band stacks at that column.
  */
 export interface Rendered {
   svg: string
   links?: number[]
+  nonref?: string[]
 }
 
 type ModeRenderer = (ctx: ModeContext) => Promise<string | Rendered>
@@ -501,6 +505,7 @@ const renderLinear: ModeRenderer = async ctx => {
     trackLabels,
     refseq,
     sortAt,
+    highlight,
   } = opts
 
   const { session } = model
@@ -555,6 +560,9 @@ const renderLinear: ModeRenderer = async ctx => {
   if (refseq) {
     await view.launchTrack(sequenceTrackId(data.assembly))
   }
+  if (highlight) {
+    session.addHighlight({ ...highlight, assemblyName: data.assembly.name })
+  }
 
   // Hosted trackIds from --track (present in a --hub/--config config) go first,
   // so they land above the file-type (--bam/--gffgz/--hic/...) tracks readData
@@ -574,11 +582,22 @@ const renderLinear: ModeRenderer = async ctx => {
     )
   }
 
-  return renderLinearToSvg(view, {
+  const svg = await renderLinearToSvg(view, {
     ...baseSvgOpts(opts),
     showGridlines,
     trackLabels,
   })
+  return {
+    svg,
+    nonref: sortAt
+      ? view.tracks.flatMap(track => {
+          const at = (
+            track.displays[0] as Partial<LinearAlignmentsDisplayModel>
+          ).nonReferenceAt?.(sortAt)
+          return at ? [`${at.count}/${at.depth}`] : []
+        })
+      : undefined,
+  }
 }
 
 const renderDotplot: ModeRenderer = async ctx => {

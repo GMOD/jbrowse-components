@@ -29,12 +29,16 @@ import { MAPQ_UNAVAILABLE, getOrCreate } from '../../shared/util.ts'
 import { READ_COLOR_CATEGORY_BY_INDEX } from '../colorUtils.ts'
 import { accumulateLength, toLengthStats } from './lengthStats.ts'
 
-import type { PileupDataResult } from '../../RenderAlignmentDataRPC/types'
+import type {
+  PileupDataResult,
+  WorkerPileupData,
+} from '../../RenderAlignmentDataRPC/types'
 import type { PartnerLocus } from '../../features/arcs/arcTypes.ts'
 import type { ArcHit, TickHit } from '../../features/arcs/bandFeed.ts'
 import type { ModificationHitResult } from '../../features/modification/hitTest.ts'
 import type { CigarHitResult } from '../../shared/hitTestTypes.ts'
 import type { InsertSizeBand } from '../../shared/insertSizeStats.ts'
+import type { VariantSortColumn } from '../../shared/variantSortColumn.ts'
 import type { ReadColorCategory } from '../colorUtils.ts'
 import type { LengthAccumulator } from './lengthStats.ts'
 import type {
@@ -386,7 +390,7 @@ function mostCommon(counts: Map<string, number>) {
 
 // Per-type (insertion / softclip / hardclip) length stats for the interbase
 // events at exactly `position`, plus the commonest sequence of each type.
-function collectInterbaseStats(position: number, data: PileupDataResult) {
+function collectInterbaseStats(position: number, data: WorkerPileupData) {
   const {
     interbasePositions,
     interbaseLengths,
@@ -503,7 +507,7 @@ function deletionSpanIndex(gapPositions: Uint32Array, gapTypes: Uint8Array) {
 // Length stats for the deletions (gapTypes 0, as opposed to skips) spanning
 // `position`. Same statistic as the interbase tally above, through the same
 // accumulator, so the two can't compute it differently.
-function collectDeletionStats(position: number, data: PileupDataResult) {
+function collectDeletionStats(position: number, data: WorkerPileupData) {
   const { gapPositions, gapTypes } = data
   const { starts, ends, maxEndSoFar } = deletionSpanIndex(
     gapPositions,
@@ -581,6 +585,39 @@ export function getCoverageBin(
     snps,
     deletions,
     modifications,
+  }
+}
+
+/**
+ * The loaded reads differing from the reference at a variant's sort column,
+ * over the reads spanning it: the mismatches and deletions the coverage band
+ * stacks at a base, or the insertions it flags ahead of one. Undefined where
+ * `data` does not reach the column.
+ */
+export function nonReferenceAt(
+  { type, pos }: VariantSortColumn,
+  data: WorkerPileupData,
+) {
+  const { coverageDepths, coverageStartPos } = data
+  const idx = pos - coverageStartPos
+  if (idx < 0 || idx >= coverageDepths.length) {
+    return undefined
+  }
+  if (type === 'insertion') {
+    return {
+      count: collectInterbaseStats(pos, data).insertion?.count ?? 0,
+      depth: interbaseDepthAt(coverageDepths, coverageStartPos, pos),
+    }
+  }
+  // a read deleted at the base is in neither the depth nor the mismatches
+  const deleted = collectDeletionStats(pos, data)?.count ?? 0
+  let mismatched = 0
+  for (const { count } of Object.values(countSnpsAtPosition(pos, data))) {
+    mismatched += count
+  }
+  return {
+    count: mismatched + deleted,
+    depth: (coverageDepths[idx] ?? 0) + deleted,
   }
 }
 

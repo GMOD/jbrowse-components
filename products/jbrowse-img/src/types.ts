@@ -33,6 +33,8 @@ export interface Opts {
   loc?: string
   // batch's per-record pileup sort, for an alignments track stating none
   sortAt?: VariantSortColumn
+  // a band over a linear view's tracks, 0-based half-open
+  highlight?: { refName: string; start: number; end: number }
   width?: number
   session?: string
   assembly?: string

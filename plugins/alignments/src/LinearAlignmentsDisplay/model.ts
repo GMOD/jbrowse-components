@@ -127,6 +127,7 @@ import {
 import { SASHIMI_FEATURE_ID_PREFIX } from './components/sashimiArcs.ts'
 import { selectedSashimiHighlight } from './components/sashimiHitTest.ts'
 import { bandScreenTop } from './components/sectionScreen.ts'
+import { nonReferenceAt } from './components/tooltipUtils.ts'
 import { configSlotViews } from './configSlotViews.ts'
 import { colorSchemeIndexFor } from './constants.ts'
 import {
@@ -217,6 +218,7 @@ import type {
   SortedBy,
   TagColorScale,
 } from '../shared/types'
+import type { VariantSortColumn } from '../shared/variantSortColumn.ts'
 import type { NumericExtent } from './bakedColorScale.ts'
 import type { ReadColorCategory } from './colorUtils.ts'
 import type { ArcHighlight } from './components/arcHitTest.ts'
@@ -564,6 +566,28 @@ export default function stateModelFactory(
               }
             }
             return out
+          },
+
+          /**
+           * #method
+           * The loaded reads differing from the reference at a variant's sort
+           * column, over the reads spanning it. Undefined until a fetch
+           * reaching the column lands.
+           */
+          nonReferenceAt(column: VariantSortColumn) {
+            let total: { count: number; depth: number } | undefined
+            for (const { groups } of self.rpcDataMap.values()) {
+              for (const { data } of groups) {
+                const at = nonReferenceAt(column, data)
+                if (at) {
+                  total = {
+                    count: (total?.count ?? 0) + at.count,
+                    depth: (total?.depth ?? 0) + at.depth,
+                  }
+                }
+              }
+            }
+            return total
           },
 
           /**

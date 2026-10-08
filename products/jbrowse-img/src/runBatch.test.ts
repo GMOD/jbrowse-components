@@ -143,9 +143,9 @@ describe('runBatch', () => {
       .readFileSync(path.join(dir, 'out', 'manifest.tsv'), 'utf8')
       .trim()
       .split('\n')
-    expect(rows[0]).toBe('file\tlocs\tname\tline\tevent\tlinks\tstatus')
+    expect(rows[0]).toBe('file\tlocs\tname\tline\tevent\tlinks\tnonref\tstatus')
     expect(rows[1]).toBe(
-      '1_chr1_1000-chr5_2000_SV_1.svg\tchr1:501-1501 chr5:1501-2501\tSV_1\t1\t\t\tfailed',
+      '1_chr1_1000-chr5_2000_SV_1.svg\tchr1:501-1501 chr5:1501-2501\tSV_1\t1\t\t\t\tfailed',
     )
     expect(rows[2]).toMatch(/\tok$/)
   })
@@ -189,7 +189,7 @@ describe('runBatch', () => {
       .trim()
       .split('\n')
     expect(rows[1]).toBe(
-      '1_chr1_4999_ins1.svg\tchr1:4400-5600\tins1\t3\t\t\tok',
+      '1_chr1_4999_ins1.svg\tchr1:4400-5600\tins1\t3\t\t\t\tok',
     )
   })
 
@@ -243,6 +243,37 @@ describe('runBatch', () => {
     ])
   })
 
+  it('sorts and marks a small variant’s panel, and reports who differs there', async () => {
+    const vcf = path.join(dir, 'snvs.vcf')
+    fs.writeFileSync(
+      vcf,
+      [
+        '##fileformat=VCFv4.2',
+        '#CHROM\tPOS\tID\tREF\tALT\tQUAL\tFILTER\tINFO',
+        'chr1\t5000\t.\tACGT\tA\t.\tPASS\tDP=30',
+      ].join('\n'),
+    )
+    mockRenderRegion.mockResolvedValueOnce({
+      svg: '<svg/>',
+      nonref: ['12/30', '0/28'],
+    })
+    await runBatch({
+      vcf,
+      outDir: path.join(dir, 'out'),
+      format: 'svg',
+      manifest: true,
+      progress: steps().progress,
+    })
+    expect(mockRenderRegion.mock.calls[0]![0]).toMatchObject({
+      mode: 'linear',
+      loc: 'chr1:4950-5053',
+      sortAt: { type: 'basePair', pos: 5000 },
+      highlight: { refName: 'chr1', start: 5000, end: 5003 },
+    })
+    const rows = manifestRows()
+    expect(rows[1]![rows[0]!.indexOf('nonref')]).toBe('12/30,0/28')
+  })
+
   function eventVcf() {
     const vcf = path.join(dir, 'events.vcf')
     fs.writeFileSync(
@@ -290,7 +321,7 @@ describe('runBatch', () => {
       .trim()
       .split('\n')
     expect(rows.at(-1)).toBe(
-      'event_1_der3.svg\tchr3:24400-26000 chr10:57400-58800 chr12:71400-72800\tder3\t\tder3\t\tok',
+      'event_1_der3.svg\tchr3:24400-26000 chr10:57400-58800 chr12:71400-72800\tder3\t\tder3\t\t\tok',
     )
     expect(rows.filter(r => r.includes('bp7'))).toHaveLength(1)
   })

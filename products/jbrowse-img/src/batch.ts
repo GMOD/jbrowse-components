@@ -179,6 +179,21 @@ export function eventOutputName(
   return `${`event_${num}_${rec.name}`.replaceAll(/[^\w.-]+/g, '-')}.${ext}`
 }
 
+/**
+ * The reference bases a record spelling out its alleles changes, from its sort
+ * column to the end of its REF: the band that marks the call on its image.
+ */
+export function recordHighlight(rec: BatchRecord) {
+  const [locus] = rec.loci
+  return rec.sort && locus
+    ? {
+        refName: locus.refName,
+        start: rec.sort.pos,
+        end: Math.max(rec.sort.pos + 1, locus.end),
+      }
+    : undefined
+}
+
 /** The argv entries one record contributes: a `--loc` per panel. */
 export function recordArgv(rec: BatchRecord, flank?: number): Entry[] {
   return recordLocs(rec, flank).map(loc => ['loc', [loc]])
