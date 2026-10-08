@@ -12,12 +12,11 @@ import type { ViewModel } from '@jbrowse/react-linear-genome-view2'
 const queries = ['chr13', 'gene15876', 'TP53', 'BRC', 'zzzznotagene']
 
 const SearchBox = observer(function SearchBox({
-  session,
+  view,
 }: {
-  session: ViewModel['session']
+  view: ViewModel['session']['view']
 }) {
-  const box = useLocationBox(session.view)
-  const queued = session.queueOfDialogs.length
+  const box = useLocationBox(view)
   return (
     <div style={{ display: 'grid', gap: 6, paddingBottom: 8 }}>
       <form
@@ -56,20 +55,6 @@ const SearchBox = observer(function SearchBox({
           {box.error instanceof Error ? box.error.message : String(box.error)}
         </span>
       ) : null}
-      {queued ? (
-        <div role="status" data-testid="queued-dialog-notice">
-          {queued} dialog{queued > 1 ? 's' : ''} queued, and this page renders
-          none.{' '}
-          <button
-            type="button"
-            onClick={() => {
-              session.removeActiveDialog()
-            }}
-          >
-            Dismiss
-          </button>
-        </div>
-      ) : null}
     </div>
   )
 })
@@ -82,7 +67,6 @@ const SearchByName = observer(function SearchByName() {
       refNameAliases: {
         uri: 'https://jbrowse.org/genomes/GRCh38/hg38_aliases.txt',
       },
-      geneticCodes: { chrM: 2 },
     },
     tracks: [
       {
@@ -102,7 +86,7 @@ const SearchByName = observer(function SearchByName() {
   })
   return state ? (
     <EmbedProvider session={state.session}>
-      <SearchBox session={state.session} />
+      <SearchBox view={state.session.view} />
       <TrackStack view={state.session.view} />
     </EmbedProvider>
   ) : null

@@ -23,6 +23,7 @@ import type React from 'react'
 
 export { Legend } from './legend.tsx'
 export { LocationBox, useLocationBox } from './location.tsx'
+export { Notifications } from './notifications.tsx'
 export { EmbedProvider } from './provider.tsx'
 export { Highlights, RegionSeams, Scalebar } from './regions.tsx'
 export { NavButton, Toolbar } from './toolbar.tsx'

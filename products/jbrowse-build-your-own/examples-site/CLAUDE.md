@@ -8,9 +8,15 @@ An example imports only published packages: `@jbrowse/react-linear-genome-view2`
 plus the others that doc names. The mounting, status and chrome blocks every
 page needs come from `@jbrowse/display-ui/embed` (`EmbedProvider`, `Track`,
 `TrackStack`, `ViewStatus`, `Scalebar`, `RegionSeams`, `Highlights`,
-`LocationBox`, `TrackToggle`, `ResizeHandle`, `Legend`, `Toolbar`, `NavButton`),
-so an example file is its engine options, its own controls and nothing else. No
-comments in example files.
+`LocationBox`, `TrackToggle`, `ResizeHandle`, `Legend`, `Toolbar`, `NavButton`,
+`Notifications`), so an example file is its engine options, its own controls and
+nothing else. No comments in example files, bar a one-line pointer at an option
+a reader would not otherwise find (`geneticCodes` in `StackOfTracks`).
+
+`EmbedProvider` mounts `Notifications`, which draws `session.snackbarMessages`
+and a line per queued dialog, so a page owes no error plumbing of its own:
+`notifyError` and a failed `NavButton`, `TrackToggle` or `launchTrack` all land
+there. `loading-and-errors` passes `notifications={false}` and draws its own.
 
 ## `check-duplication.mjs` holds the copy-paste rule up from both sides
 

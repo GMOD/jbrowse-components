@@ -1,7 +1,9 @@
 import { usePalette } from '@jbrowse/core/ui/PaletteContext'
 import { highlightKey } from '@jbrowse/core/util/highlights'
+import { getSession } from '@jbrowse/core/util/mstUtils'
 import { observer } from 'mobx-react'
 
+import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
 import type React from 'react'
 
 export interface RegionSeamsView {
@@ -30,7 +32,7 @@ export interface ScalebarView {
   }
 }
 
-export interface HighlightsView {
+export interface HighlightsView extends IStateTreeNode {
   highlights: readonly {
     assemblyName?: string
     refName: string
@@ -93,6 +95,10 @@ export const Highlights = observer(function Highlights({
   view: HighlightsView
 }) {
   const palette = usePalette()
+  const { highlightsVisible, highlightLabelsVisible } = getSession(view)
+  if (!highlightsVisible) {
+    return null
+  }
   return view.highlights.map((highlight, i) => {
     const coords = view.getHighlightCoords(highlight)
     return coords ? (
@@ -113,7 +119,7 @@ export const Highlights = observer(function Highlights({
             `color-mix(in srgb, ${palette.highlight.main} 20%, transparent)`,
         }}
       >
-        {highlight.label ? (
+        {highlight.label && highlightLabelsVisible ? (
           <span
             style={{
               position: 'absolute',

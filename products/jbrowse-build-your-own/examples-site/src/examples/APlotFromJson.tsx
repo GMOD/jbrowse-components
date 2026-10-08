@@ -60,7 +60,6 @@ const APlotFromJson = observer(function APlotFromJson() {
       refNameAliases: {
         uri: 'https://jbrowse.org/genomes/GRCh38/hg38_aliases.txt',
       },
-      geneticCodes: { chrM: 2 },
     },
     tracks: [
       aluTrack('alu_age', 'Every Alu copy', [lineage]),
@@ -78,6 +77,7 @@ const APlotFromJson = observer(function APlotFromJson() {
     return null
   }
   const { view } = state.session
+  const shown = view.tracks[0]?.configuration.trackId
   return (
     <EmbedProvider session={state.session}>
       <Toolbar>
@@ -87,7 +87,7 @@ const APlotFromJson = observer(function APlotFromJson() {
         <TrackToggle view={view} trackId="alu_young">
           AluY only
         </TrackToggle>
-        <Legend view={view} trackId="alu_age" />
+        {shown ? <Legend view={view} trackId={shown} /> : null}
       </Toolbar>
       <TrackStack view={view}>
         <Scalebar view={view} />

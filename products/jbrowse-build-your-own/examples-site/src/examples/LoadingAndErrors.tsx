@@ -101,7 +101,7 @@ const Browser = observer(function Browser({
   const { session } = state
   const { view } = session
   return (
-    <EmbedProvider session={session}>
+    <EmbedProvider session={session} notifications={false}>
       <button
         type="button"
         style={{ marginBottom: 8 }}

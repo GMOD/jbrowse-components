@@ -54,7 +54,6 @@ const TrackLabels = observer(function TrackLabels() {
       refNameAliases: {
         uri: 'https://jbrowse.org/genomes/GRCh38/hg38_aliases.txt',
       },
-      geneticCodes: { chrM: 2 },
     },
     tracks: [
       {

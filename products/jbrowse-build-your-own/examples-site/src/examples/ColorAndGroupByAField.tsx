@@ -16,7 +16,7 @@ const domains: Record<string, string[]> = {
   gene_biotype: ['protein_coding', 'lncRNA', 'pseudogene'],
 }
 
-function FieldSelect({
+const FieldSelect = observer(function FieldSelect({
   label,
   value,
   onChange,
@@ -43,7 +43,7 @@ function FieldSelect({
       </select>
     </label>
   )
-}
+})
 
 const Channels = observer(function Channels({
   view,
@@ -89,7 +89,6 @@ const ColorAndGroupByAField = observer(function ColorAndGroupByAField() {
       refNameAliases: {
         uri: 'https://jbrowse.org/genomes/GRCh38/hg38_aliases.txt',
       },
-      geneticCodes: { chrM: 2 },
     },
     tracks: [
       {

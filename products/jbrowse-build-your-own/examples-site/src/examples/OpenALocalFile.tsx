@@ -1,6 +1,7 @@
 import { useState } from 'react'
 
 import { refNameMismatchMessage } from '@jbrowse/core/assemblyManager/assembly'
+import { indexCandidateNames } from '@jbrowse/core/util/indexCandidates'
 import {
   UNKNOWN,
   UNSUPPORTED,
@@ -33,9 +34,11 @@ function register(file: File) {
 
 function openFiles(session: Session, files: File[]) {
   const { view } = session
-  const isIndex = (f: File) => /\.(bai|csi|tbi|crai|fai|gzi)$/i.test(f.name)
-  for (const data of files.filter(f => !isIndex(f))) {
-    const index = files.find(f => isIndex(f) && f.name.startsWith(data.name))
+  const indexOf = (data: File) =>
+    files.find(f => indexCandidateNames(data.name).includes(f.name))
+  const indexes = new Set(files.map(indexOf))
+  for (const data of files.filter(f => !indexes.has(f))) {
+    const index = indexOf(data)
     const location = register(data)
     const adapter = guessAdapter(
       location,
@@ -156,7 +159,6 @@ const OpenALocalFile = observer(function OpenALocalFile() {
       refNameAliases: {
         uri: 'https://jbrowse.org/genomes/GRCh38/hg38_aliases.txt',
       },
-      geneticCodes: { chrM: 2 },
     },
     tracks: [
       {

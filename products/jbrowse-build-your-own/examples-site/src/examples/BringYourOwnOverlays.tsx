@@ -23,7 +23,7 @@ const pill: React.CSSProperties = {
   boxShadow: 'inset 0 0 0 1.5px #3a7ca5',
 }
 
-function Pill({
+const Pill = observer(function Pill({
   children,
   action,
 }: {
@@ -56,7 +56,7 @@ function Pill({
       </div>
     </div>
   )
-}
+})
 
 const MyErrorBar = observer(function MyErrorBar({
   model,
@@ -75,7 +75,9 @@ const MyErrorBar = observer(function MyErrorBar({
           },
         }}
       >
-        {model.error instanceof Error ? model.error.message : 'Failed'}
+        {model.error instanceof Error
+          ? model.error.message
+          : String(model.error)}
       </Pill>
     </div>
   ) : null
@@ -128,7 +130,6 @@ const BringYourOwnOverlays = observer(function BringYourOwnOverlays() {
       refNameAliases: {
         uri: 'https://jbrowse.org/genomes/GRCh38/hg38_aliases.txt',
       },
-      geneticCodes: { chrM: 2 },
     },
     tracks: [
       {

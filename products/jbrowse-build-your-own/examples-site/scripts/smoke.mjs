@@ -526,7 +526,7 @@ async function aTableRowMovesTheView(page, slug) {
     return []
   }
   await page.evaluate(() => {
-    document.querySelectorAll('tbody tr')[1]?.click()
+    document.querySelectorAll('tbody tr')[1]?.querySelector('button')?.click()
   })
   try {
     await page.waitForFunction(
@@ -544,7 +544,7 @@ async function aTableRowMovesTheView(page, slug) {
     return []
   } catch {
     return [
-      'clicking the SV_20 row did not select it, mark it and move the view to chr3:139.97 Mb',
+      'clicking the SV_20 button did not select it, mark it and move the view to chr3:139.97 Mb',
     ]
   }
 }

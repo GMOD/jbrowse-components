@@ -11,6 +11,7 @@ const StackOfTracks = observer(function StackOfTracks() {
       refNameAliases: {
         uri: 'https://jbrowse.org/genomes/GRCh38/hg38_aliases.txt',
       },
+      // NCBI translation table per sequence, where it isn't the standard 1
       geneticCodes: { chrM: 2 },
     },
     tracks: [

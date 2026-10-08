@@ -1,4 +1,5 @@
-import { render, screen } from '@testing-library/react'
+import { types } from '@jbrowse/mobx-state-tree'
+import { act, render, screen } from '@testing-library/react'
 
 import { Highlights, RegionSeams, Scalebar } from './regions.tsx'
 
@@ -87,29 +88,72 @@ test('a scalebar draws the caption a flipped row reports', () => {
   expect(screen.getByTestId('scalebar').textContent).toBe('chr17[rev]')
 })
 
+const FakeView = types.model({}).views(() => ({
+  get highlights() {
+    return [
+      { refName: 'chr17', start: 100, end: 200, label: 'BRCA1' },
+      { refName: 'chr17', start: 300, end: 301, color: 'orange' },
+      { refName: 'chrZ', start: 1, end: 2, label: 'off screen' },
+    ]
+  },
+  getHighlightCoords({
+    refName,
+    start,
+    end,
+  }: {
+    refName: string
+    start: number
+    end: number
+  }) {
+    return refName === 'chr17'
+      ? { left: start, width: Math.max(end - start, 3) }
+      : undefined
+  },
+}))
+
+const FakeSession = types
+  .model({
+    views: types.array(FakeView),
+    highlightsVisible: true,
+    highlightLabelsVisible: true,
+  })
+  .volatile(() => ({ rpcManager: {}, configuration: {} }))
+  .actions(self => ({
+    setHighlightsVisible(arg: boolean) {
+      self.highlightsVisible = arg
+    },
+    setHighlightLabelsVisible(arg: boolean) {
+      self.highlightLabelsVisible = arg
+    },
+  }))
+
+function bandsOf() {
+  return screen
+    .queryAllByTestId('highlight-band')
+    .map(b => [b.style.transform, b.style.width, b.textContent])
+}
+
 test('a band per highlight the view can place, each with its label drawn', () => {
-  render(
-    <Highlights
-      view={{
-        highlights: [
-          { refName: 'chr17', start: 100, end: 200, label: 'BRCA1' },
-          { refName: 'chr17', start: 300, end: 301, color: 'orange' },
-          { refName: 'chrZ', start: 1, end: 2, label: 'off screen' },
-        ],
-        getHighlightCoords: ({ refName, start, end }) =>
-          refName === 'chr17'
-            ? { left: start, width: Math.max(end - start, 3) }
-            : undefined,
-      }}
-    />,
-  )
-  const bands = screen.getAllByTestId('highlight-band')
-  expect(
-    bands.map(b => [b.style.transform, b.style.width, b.textContent]),
-  ).toEqual([
+  const session = FakeSession.create({ views: [{}] })
+  render(<Highlights view={session.views[0]!} />)
+  expect(bandsOf()).toEqual([
     ['translateX(100px)', '100px', 'BRCA1'],
     ['translateX(300px)', '3px', ''],
   ])
+  const bands = screen.getAllByTestId('highlight-band')
   expect(bands[1]!.style.background).toBe('orange')
   expect(bands[0]!.style.pointerEvents).toBe('none')
+})
+
+test("the session's two highlight switches hide the labels, then the bands", () => {
+  const session = FakeSession.create({ views: [{}] })
+  render(<Highlights view={session.views[0]!} />)
+  act(() => {
+    session.setHighlightLabelsVisible(false)
+  })
+  expect(bandsOf().map(b => b[2])).toEqual(['', ''])
+  act(() => {
+    session.setHighlightsVisible(false)
+  })
+  expect(bandsOf()).toEqual([])
 })

@@ -1,6 +1,7 @@
 import {
   EmbedProvider,
   Highlights,
+  NavButton,
   Scalebar,
   TrackStack,
 } from '@jbrowse/display-ui/embed'
@@ -38,7 +39,18 @@ const calls = [
     start: 114353243,
     end: 114353244,
   },
-]
+] as const
+
+type Call = (typeof calls)[number]
+
+function highlightOf({ id, refName, start, end }: Call) {
+  return { assemblyName: 'hg38', refName, start, end, label: id }
+}
+
+function locOf({ refName, start, end }: Call) {
+  const pad = Math.max(5000, end - start)
+  return `${refName}:${start - pad}..${end + pad}`
+}
 
 const cell: React.CSSProperties = { padding: '2px 10px', textAlign: 'left' }
 
@@ -47,10 +59,7 @@ const Calls = observer(function Calls({
   session,
 }: {
   view: LinearGenomeViewModel
-  session: Pick<
-    AbstractSessionModel,
-    'highlights' | 'setHighlights' | 'notifyError'
-  >
+  session: Pick<AbstractSessionModel, 'highlights' | 'setHighlights'>
 }) {
   const shown = session.highlights[0]?.label
   return (
@@ -71,47 +80,39 @@ const Calls = observer(function Calls({
         </tr>
       </thead>
       <tbody>
-        {calls.map(
-          ({ id, type, gene, alleleFraction, refName, start, end }) => {
-            const pad = Math.max(5000, end - start)
-            return (
-              <tr
-                key={id}
-                aria-selected={shown === id}
-                style={{
-                  cursor: 'pointer',
-                  background:
-                    shown === id
-                      ? 'color-mix(in srgb, CanvasText 12%, transparent)'
-                      : undefined,
-                }}
+        {calls.map(call => (
+          <tr
+            key={call.id}
+            aria-selected={shown === call.id}
+            style={{
+              background:
+                shown === call.id
+                  ? 'color-mix(in srgb, CanvasText 12%, transparent)'
+                  : undefined,
+            }}
+          >
+            <td style={cell}>
+              <NavButton
+                view={view}
+                loc={locOf(call)}
                 onClick={() => {
-                  session.setHighlights([
-                    { assemblyName: 'hg38', refName, start, end, label: id },
-                  ])
-                  view
-                    .navToLocString(`${refName}:${start - pad}..${end + pad}`)
-                    .catch((e: unknown) => {
-                      session.notifyError(`${e}`, e)
-                    })
+                  session.setHighlights([highlightOf(call)])
                 }}
               >
-                {[id, type, gene, alleleFraction].map(text => (
-                  <td key={text} style={cell}>
-                    {text}
-                  </td>
-                ))}
-              </tr>
-            )
-          },
-        )}
+                {call.id}
+              </NavButton>
+            </td>
+            <td style={cell}>{call.type}</td>
+            <td style={cell}>{call.gene}</td>
+            <td style={cell}>{call.alleleFraction}</td>
+          </tr>
+        ))}
       </tbody>
     </table>
   )
 })
 
 const ATableOfCalls = observer(function ATableOfCalls() {
-  const [first] = calls
   const state = useCreateViewState({
     assembly: {
       name: 'hg38',
@@ -119,7 +120,6 @@ const ATableOfCalls = observer(function ATableOfCalls() {
       refNameAliases: {
         uri: 'https://jbrowse.org/genomes/GRCh38/hg38_aliases.txt',
       },
-      geneticCodes: { chrM: 2 },
     },
     tracks: [
       {
@@ -137,17 +137,9 @@ const ATableOfCalls = observer(function ATableOfCalls() {
       },
     ],
     view: {
-      loc: 'chr9:21,932,000..21,993,000',
+      loc: locOf(calls[0]),
       tracks: ['hg38_genes', 'hg008_tumor_hifi'],
-      highlight: [
-        {
-          assemblyName: 'hg38',
-          refName: first!.refName,
-          start: first!.start,
-          end: first!.end,
-          label: first!.id,
-        },
-      ],
+      highlight: [highlightOf(calls[0])],
     },
   })
   if (!state) {

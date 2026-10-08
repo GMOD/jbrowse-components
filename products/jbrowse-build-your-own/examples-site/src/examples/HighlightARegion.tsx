@@ -53,7 +53,6 @@ const HighlightARegion = observer(function HighlightARegion() {
       refNameAliases: {
         uri: 'https://jbrowse.org/genomes/GRCh38/hg38_aliases.txt',
       },
-      geneticCodes: { chrM: 2 },
     },
     tracks: [
       {
@@ -102,7 +101,7 @@ const HighlightARegion = observer(function HighlightARegion() {
         </label>
       </Toolbar>
       <TrackStack view={view}>
-        {session.highlightsVisible ? <Highlights view={view} /> : null}
+        <Highlights view={view} />
       </TrackStack>
     </EmbedProvider>
   )

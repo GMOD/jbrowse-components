@@ -9,7 +9,11 @@ import { observer } from 'mobx-react'
 
 import type { ViewModel } from '@jbrowse/react-linear-genome-view2'
 
-function SearchPanel({ session }: { session: ViewModel['session'] }) {
+const SearchPanel = observer(function SearchPanel({
+  session,
+}: {
+  session: ViewModel['session']
+}) {
   const [query, setQuery] = useState('BRCA1')
   const debounced = useDebounce(query.trim(), 300)
   const { data, error, isLoading } = useFetch(
@@ -92,7 +96,7 @@ function SearchPanel({ session }: { session: ViewModel['session'] }) {
       )}
     </div>
   )
-}
+})
 
 const SearchResultsDropdown = observer(function SearchResultsDropdown() {
   const state = useCreateViewState({
@@ -102,7 +106,6 @@ const SearchResultsDropdown = observer(function SearchResultsDropdown() {
       refNameAliases: {
         uri: 'https://jbrowse.org/genomes/GRCh38/hg38_aliases.txt',
       },
-      geneticCodes: { chrM: 2 },
     },
     tracks: [
       {

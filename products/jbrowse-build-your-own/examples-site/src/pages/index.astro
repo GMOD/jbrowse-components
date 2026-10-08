@@ -1,5 +1,5 @@
 ---
-import Scalebar from '../examples/Scalebar.tsx'
+import ScalebarAndGridlines from '../examples/ScalebarAndGridlines.tsx'
 import { examples } from '../examples.ts'
 import Gallery from '../layouts/Gallery.astro'
 import Shell from '../layouts/Shell.astro'
@@ -26,7 +26,7 @@ import {
   </p>
 
   <div class="demo reserved" style={`min-height:${demoHeights[landingDemo]}px`}>
-    <Scalebar client:only="react" />
+    <ScalebarAndGridlines client:only="react" />
   </div>
 
   <Gallery examples={examples} />
