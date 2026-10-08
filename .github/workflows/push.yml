@@ -619,8 +619,9 @@ jobs:
       #
       # static/ is content-hashed, so browsers may keep it without re-checking;
       # with no Cache-Control they revalidate every chunk on every visit.
-      # index.html goes up after the chunks it names, and old chunks are deleted
-      # only after that.
+      # index.html goes up after the chunks it names. Old chunks stay for 30
+      # days so tabs on the previous build can still lazy-load them; the prune
+      # drops only chunks that are both absent from this build and that old.
       - name: Deploy to S3
         run: |
           cd products/jbrowse-web/build
@@ -631,7 +632,14 @@ jobs:
           aws s3 sync --delete --exclude="*.map" --exclude="static/*" --exclude=index.html --exclude=config.json . $DEST
           aws s3 cp --cache-control no-cache config.json $DEST/config.json
           aws s3 cp --cache-control no-cache index.html $DEST/index.html
-          aws s3 sync --delete --exclude="*.map" --cache-control "$IMMUTABLE" static $DEST/static
+          PREFIX=code/jb2/${REF_NAME}/static/
+          CUTOFF=$(date -u -d '30 days ago' +%Y-%m-%dT%H:%M:%SZ)
+          find static -type f ! -name '*.map' | sed "s|^|$PREFIX|" | sort > current.txt
+          aws s3api list-objects-v2 --bucket jbrowse.org --prefix "$PREFIX" \
+            --query "Contents[?LastModified<'$CUTOFF'].Key" --output text | tr '\t' '\n' | sort > old.txt
+          comm -13 current.txt old.txt | grep -v "^None$" | grep . | while read -r key; do
+            aws s3 rm "s3://jbrowse.org/$key"
+          done || true
           aws cloudfront create-invalidation --distribution-id ${{ env.CLOUDFRONT_DISTRIBUTION_ID }} --paths "/code/jb2/${REF_NAME}/*"
 
   # Builds each Astro examples-site with Vite/Rollup (whose strict ESM surfaces
