@@ -102,9 +102,13 @@ export default class SplitVcfTabixAdapter extends BaseFeatureDataAdapter<SplitVc
     return setup(opts)
   }
 
-  // every file in the map shares one header, so any of them answers for it
+  // every file in the map shares one header, so any of them answers for it,
+  // an open one first
   private async anyContig(opts?: BaseOptions) {
-    const [refName] = Object.keys(this.locationMap())
+    const [refName] = [
+      ...this.setups.keys(),
+      ...Object.keys(this.locationMap()),
+    ]
     const contig =
       refName === undefined ? undefined : await this.configure(refName, opts)
     if (!contig) {
