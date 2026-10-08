@@ -21,7 +21,13 @@ import {
 } from './adapterSessionRefcount.ts'
 import { clearAdapterCache, getAdapter } from './dataAdapterCache.ts'
 
-class TestAdapter extends BaseAdapter {}
+let freed: string[] = []
+
+class TestAdapter extends BaseAdapter {
+  freeResources() {
+    freed.push(this.getConf('path'))
+  }
+}
 
 function setup() {
   const pluginManager = new PluginManager()
@@ -49,6 +55,28 @@ function setup() {
 
 beforeEach(() => {
   clearAdapterCache()
+  freed = []
+})
+
+test('an evicted adapter is told to free what it holds, once, and not before', async () => {
+  const { pluginManager, rpcManager } = setup()
+  const conf = { type: 'TestAdapter', adapterId: 'adapterA', path: 'a.bam' }
+
+  retainAdapterSession(rpcManager, 'one')
+  retainAdapterSession(rpcManager, 'two')
+  await getAdapter(pluginManager, 'one', conf)
+  await getAdapter(pluginManager, 'two', conf)
+
+  // another session still reads it
+  await releaseAdapterSession(rpcManager, 'one')
+  expect(freed).toEqual([])
+
+  await releaseAdapterSession(rpcManager, 'two')
+  expect(freed).toEqual(['a.bam'])
+
+  // the cache no longer holds it, so a second free has nothing to tell
+  await releaseAdapterSession(rpcManager, 'two')
+  expect(freed).toEqual(['a.bam'])
 })
 
 test('the last track closing evicts the adapter for real', async () => {

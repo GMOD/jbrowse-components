@@ -43,3 +43,37 @@ test('a CRAM and a BAM report into the one shared budget, in bytes', async () =>
   // holds, so the budget is what binds from the second file on
   expect(cram.cram.featureCache.maxSize).toBe(1024 * 1024 * 1024)
 })
+
+// What a dropped file would otherwise keep for the three minutes its idle sweep
+// takes: dataAdapterCache tells an evicted adapter to free, and these are the
+// calls the BAM and CRAM adapters answer with.
+test("clearing a file's feature cache hands its bytes back to the budget", async () => {
+  const cramPath = require.resolve('../../test_data/volvox-sorted.cram')
+  const bamPath = require.resolve('../../test_data/volvox-sorted.bam')
+  const cram = new IndexedCramFile({
+    cramFilehandle: new LocalFile(cramPath),
+    index: new CraiIndex({ filehandle: new LocalFile(`${cramPath}.crai`) }),
+    fetchReferenceSequence: async (
+      _seqId: number,
+      start: number,
+      end: number,
+    ) => 'A'.repeat(end - start),
+    checkSequenceMD5: false,
+    useSliceWorkerPool: false,
+    cacheBudget: decompressedBytesBudget,
+  })
+  const bam = new BamFile({
+    bamFilehandle: new LocalFile(bamPath),
+    baiFilehandle: new LocalFile(`${bamPath}.bai`),
+    cacheBudget: decompressedBytesBudget,
+  })
+  const before = decompressedBytesBudget.total
+  await bam.getHeader()
+  await cram.getRecordsForRange(0, 0, 50000)
+  await bam.getRecordsForRange('ctgA', 0, 50000)
+  expect(decompressedBytesBudget.total).toBeGreaterThan(before)
+
+  cram.clearFeatureCache()
+  bam.clearFeatureCache()
+  expect(decompressedBytesBudget.total).toBe(before)
+})

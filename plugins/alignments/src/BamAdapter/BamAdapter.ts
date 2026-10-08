@@ -33,6 +33,10 @@ export abstract class BamAdapterBase<
 
   protected abstract configure(): { bam: BamFile<BamSlightlyLazyFeature> }
 
+  freeResources() {
+    this.configureResult?.bam.clearFeatureCache()
+  }
+
   /**
    * Whether a query on this file has ever turned up a read with no MD tag, and
    * so whether the next query should fetch reference bases speculatively rather

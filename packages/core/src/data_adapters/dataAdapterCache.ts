@@ -167,20 +167,22 @@ export type getSubAdapterType = (
  * other session still claims. Reached from the CoreFreeResources RPC when the
  * last track using an adapter config closes.
  *
- * Deleting the key is the whole reclamation: the cache is the only strong
- * reference to an adapter, so once it goes the instance and everything it holds
- * — a whole parsed GFF3, a BAM chunk cache — become unreachable and are
- * collected normally. There is nothing to free by hand.
+ * Deleting the key makes the instance unreachable from here, and for most
+ * adapters that is the whole reclamation: a parsed GFF3 goes with it.
  *
- * "Collected normally" is not the same as "collected now", and for the indexed
- * adapters it is not even soon. @gmod/bam, @gmod/cram and @gmod/tabix each hold
- * their parsed chunks in a SharedReadCache that sweeps itself on a setInterval,
- * and a pending timer is a GC root — so the instance stays reachable through its
- * own sweep timer until that sweep empties the cache and stops itself, three
- * minutes later. Measured: closing a panned alignments track reclaims nothing at
- * the time it happens, and the worker falls from 296 MB to 7 MB four minutes on.
- * Deleting the key is still the only thing to do here; just don't read a heap
- * immediately after a close and conclude this did nothing.
+ * The indexed adapters are the exception, which is why an evicted adapter is
+ * also told so (`freeResources`). @gmod/bam, @gmod/cram and @gmod/tabix each
+ * hold their parsed chunks in a SharedReadCache that sweeps itself on a
+ * setInterval, and a pending timer is a GC root, so a cache nobody clears stays
+ * reachable through its own sweep timer until that sweep empties it, three
+ * minutes later. Closing one panned alignments track that way costs nothing
+ * that matters: the worker falls from 296 MB to 7 MB four minutes on. A run
+ * that opens and closes a track per image does not have four minutes.
+ * `jb2export batch` drew a callset from CRAM slices of long reads at about a
+ * record every two seconds, each record's adapters leaving a decoded slice
+ * behind, and two of its four processes reached the 4 GB heap limit 135 s in
+ * with the shared budget reporting 3,100 MB held against its 1,024 MB limit:
+ * the budget leaves every cache its last entry, and there were 54 caches.
  *
  * The refcount is what makes this safe to call on any track close: an adapter
  * pulled in as a sub-adapter carries its parent's sessionId (getSubAdapter
@@ -198,6 +200,7 @@ export async function freeAdapterResources(args: { sessionId?: string }) {
       cacheEntry.sessionIds.delete(sessionId)
       if (cacheEntry.sessionIds.size === 0) {
         delete adapterCache[cacheKey]
+        cacheEntry.dataAdapter.freeResources()
       }
     } catch (e) {
       console.error(

@@ -144,6 +144,10 @@ export default class CramAdapter extends BaseSamAdapter<CramAdapterConfig> {
     return this.configureResult
   }
 
+  freeResources() {
+    this.configureResult?.cram.clearFeatureCache()
+  }
+
   async getHeader(opts?: BaseOptions) {
     const { cram } = this.configure()
     return cram.cram.getHeaderText({ signal: opts?.signal })
