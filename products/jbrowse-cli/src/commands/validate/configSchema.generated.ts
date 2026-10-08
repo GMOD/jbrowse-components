@@ -5609,7 +5609,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               }
             },
             "kept": {
-              "description": "the rows shown, by name; empty, or naming no current row, shows every row.",
+              "description": "the rows shown, by name; empty shows every row, and so does naming no current row where the track lists its rows.",
               "if": {
                 "type": "null"
               },
@@ -8706,7 +8706,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               }
             },
             "kept": {
-              "description": "the rows shown, by name; empty, or naming no current row, shows every row.",
+              "description": "the rows shown, by name; empty shows every row, and so does naming no current row where the track lists its rows.",
               "if": {
                 "type": "null"
               },
@@ -10996,7 +10996,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               }
             },
             "kept": {
-              "description": "the rows shown, by name; empty, or naming no current row, shows every row.",
+              "description": "the rows shown, by name; empty shows every row, and so does naming no current row where the track lists its rows.",
               "if": {
                 "type": "null"
               },
@@ -11917,7 +11917,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               }
             },
             "kept": {
-              "description": "the rows shown, by name; empty, or naming no current row, shows every row.",
+              "description": "the rows shown, by name; empty shows every row, and so does naming no current row where the track lists its rows.",
               "if": {
                 "type": "null"
               },
