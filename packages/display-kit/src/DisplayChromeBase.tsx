@@ -203,18 +203,22 @@ const DisplayChromeBase = observer(function DisplayChromeBase<
   const drawn = model.painted
   return (
     <div
-      {...overChrome({
-        ...divProps,
-        // composed, never replacing: maf's drag-selection binds its own
-        onMouseMove: event => {
+      {...overChrome(divProps)}
+      // Composed with the caller's, and outside `overChrome`: a move over a
+      // portalled overlay is the only event that says the pointer left the
+      // canvas for one, since React fires no `mouseleave` for a React child.
+      onMouseMove={event => {
+        if (event.currentTarget.contains(event.target as Node)) {
           handleMouseMove(event)
           onMouseMove?.(event)
-        },
-        onMouseLeave: event => {
+        } else {
           handleMouseLeave()
-          onMouseLeave?.(event)
-        },
-      })}
+        }
+      }}
+      onMouseLeave={event => {
+        handleMouseLeave()
+        onMouseLeave?.(event)
+      }}
       // The chrome owns the box: the overlays, guides and the display's own
       // content are all absolutely positioned, so without the height the
       // container collapses and takes no pointer events.

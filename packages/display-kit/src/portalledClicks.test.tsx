@@ -1,8 +1,11 @@
+import { PointerLayer } from '@jbrowse/display-ui'
 import { fireEvent, render } from '@testing-library/react'
 import { createPortal } from 'react-dom'
 
 import DisplayChrome from './DisplayChrome.tsx'
 import { TestChromeModel, stubFactory } from './chromeTestModel.ts'
+
+import type { MouseState } from '@jbrowse/core/ui/useMouseTracking'
 
 // A REACT EVENT DOES NOT STOP AT A PORTAL. Everything a display floats above
 // itself -- the context menu, the colour legend, the track control -- is
@@ -87,4 +90,45 @@ test('leaving the page from a portalled overlay still clears the hover', () => {
 
   fireEvent.mouseOut(getByText('Dismiss'), { relatedTarget: null })
   expect(leave).toHaveBeenCalledTimes(1)
+})
+
+// React fires no `mouseleave` on the chrome for a pointer crossing onto a
+// portalled overlay, the overlay being its React child, so the move over it is
+// the only signal the hover has ended.
+test('moving onto a portalled overlay drops the tracked pointer', () => {
+  const frame = jest
+    .spyOn(globalThis, 'requestAnimationFrame')
+    .mockImplementation((cb: FrameRequestCallback) => {
+      cb(0)
+      return 1
+    })
+  const model = TestChromeModel.create({})
+  const positions: (MouseState | undefined)[] = []
+  const { getByText, getByTestId } = render(
+    <DisplayChrome
+      model={model}
+      factory={stubFactory}
+      testid="probe-display"
+      onPointerPosition={state => positions.push(state)}
+    >
+      {({ canvasRef, mouseTracker }) => (
+        <>
+          <canvas data-testid="probe-canvas" ref={canvasRef} />
+          <PointerLayer mouseTracker={mouseTracker}>
+            {state => (
+              <div data-testid="pointer">{state ? 'tracked' : 'none'}</div>
+            )}
+          </PointerLayer>
+          {OVERLAY}
+        </>
+      )}
+    </DisplayChrome>,
+  )
+  fireEvent.mouseMove(getByTestId('probe-canvas'), { clientX: 10, clientY: 10 })
+  expect(getByTestId('pointer').textContent).toBe('tracked')
+
+  fireEvent.mouseMove(getByText('Dismiss'), { clientX: 500, clientY: 10 })
+  expect(getByTestId('pointer').textContent).toBe('none')
+  expect(positions.at(-1)).toBeUndefined()
+  frame.mockRestore()
 })

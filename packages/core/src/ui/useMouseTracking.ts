@@ -129,10 +129,10 @@ export function useMouseTracking(onMove?: (state?: MouseState) => void) {
   /**
    * Drop the published position and tell `onMove` the pointer is gone.
    *
-   * Bound as the container's `onMouseLeave` — and called directly for the two
-   * cases `mouseleave` cannot report: the container being *removed* rather than
-   * left, and a portalled menu closing over it. `DisplayChromeBase` makes both
-   * calls, the second by publishing this on `ClearTrackedPointerProvider`.
+   * Bound as the container's `onMouseLeave`, and called directly for the three
+   * cases `mouseleave` cannot report: the container being removed, a portalled
+   * menu closing over it, and the pointer moving onto a portalled overlay.
+   * `DisplayChromeBase` makes all three calls.
    * Identity-stable for both.
    */
   const handleMouseLeave = useCallback(() => {
@@ -145,18 +145,6 @@ export function useMouseTracking(onMove?: (state?: MouseState) => void) {
   }, [store])
 
   const handleMouseMove = (event: React.MouseEvent) => {
-    // An overlay portaled out of the container still *bubbles* its React events
-    // here, even though its DOM node is not a descendant — so the coordinate
-    // would be measured against a box the pointer isn't in. HiC guarded this by
-    // hand (its resolution dropdown and legend portal); it is a hazard for any
-    // display with a portaled overlay, and several have one, so the guard lives
-    // here and applies to all of them. Treated as a leave: the pointer is over
-    // something else, and the guides should drop rather than freeze.
-    const { target } = event
-    if (target instanceof Node && !event.currentTarget.contains(target)) {
-      handleMouseLeave()
-      return
-    }
     if (rafRef.current) {
       cancelAnimationFrame(rafRef.current)
     }

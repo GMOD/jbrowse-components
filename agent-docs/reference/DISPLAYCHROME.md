@@ -52,6 +52,12 @@ of cursor movement. The chrome exposes `mouseTracker`.
   component that draws the cursor-following thing (display-ui's `PointerLayer`).
   Pass the tracker down, never the position. Only a drag's anchors may live in
   React state (maf's rubberband corners).
+- **Hover that should end when the pointer leaves goes through
+  `onPointerPosition`.** It gets `undefined` for the three exits `mouseleave`
+  cannot report: a banner replacing the container, a context menu closing, and
+  the pointer crossing onto a portalled overlay (legend, corner chip, error
+  bar), which is still the chrome's React child. A hover written from the
+  caller's own `onMouseMove` freezes over those.
 - **The two families answer hover during a load differently on purpose.** A
   per-region display keeps hit-testing its loaded blocks; a global display
   replaces its whole frame and answers no hit while `isLoadingOrCanceled`. A new
