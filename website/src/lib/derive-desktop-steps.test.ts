@@ -24,6 +24,7 @@ test('a bgzipped fasta names the two index files the form asks for', () => {
     ),
   ).toMatchInlineSnapshot(`
     "<div class="desktop-steps">
+    hg38 is one of the genomes JBrowse Desktop hosts, with gene tracks already set up: on the start screen click Show all available genomes and pick it. To load the files of this config instead:
     In JBrowse Desktop, Open new genome on the start screen (or File → Open genome... in a session), then Open from a URL and paste, one per line:
     https://example.com/hg38.fa.gz
     https://example.com/hg38.fa.gz.fai
@@ -50,6 +51,34 @@ test('a refName aliases file becomes a More options field', () => {
       }),
     ),
   ).toContain('refName aliases (under More options): volvox.chromAliases.txt')
+})
+
+test('cytobands written as a bare url become a More options field', () => {
+  expect(
+    flatten(
+      desktopAssemblyNodes({
+        name: 'volvox',
+        uri: 'volvox.2bit',
+        cytobands: 'https://example.com/cytoBand.txt',
+      }),
+    ),
+  ).toContain(
+    'cytobands (under More options): https://example.com/cytoBand.txt',
+  )
+})
+
+test('a genome Desktop hosts is offered from its list first', () => {
+  const hosted = flatten(
+    desktopAssemblyNodes({
+      name: 'hg38',
+      uri: 'https://example.com/hg38.2bit',
+    }),
+  )
+  expect(hosted).toContain('Show all available genomes and pick it')
+  expect(hosted).toContain('Open new genome')
+  expect(
+    flatten(desktopAssemblyNodes({ name: 'volvox', uri: 'volvox.2bit' })),
+  ).not.toContain('Show all available genomes')
 })
 
 // Refused rather than shown with the unexpressible slot dropped: a reader who
@@ -190,7 +219,10 @@ test.each([
       adapter: { type: 'GWASAdapter', uri: 'https://x/pvals.txt.gz' },
     },
   ],
-  ['a file name no format claims', { adapter: { type: 'X', uri: 'genes.xyz' } }],
+  [
+    'a file name no format claims',
+    { adapter: { type: 'X', uri: 'genes.xyz' } },
+  ],
 ])('%s keeps the pasted JSON', (_name, extra) => {
   const out = trackSteps({ ...SIMPLE_TRACK, ...extra })
   expect(out).toContain('Add track from pasted JSON')
@@ -261,9 +293,7 @@ test('a synteny track goes on from the paste to the synteny view', () => {
   expect(flatten(desktopTrackNodes(synteny, '{}'))).toContain(
     'open Add → Linear synteny view, pick the track under Quick start',
   )
-  expect(flatten(desktopTrackNodes(feature, '{}'))).not.toContain(
-    'Quick start',
-  )
+  expect(flatten(desktopTrackNodes(feature, '{}'))).not.toContain('Quick start')
 })
 
 test('absolute uris and local paths need no replacing', () => {

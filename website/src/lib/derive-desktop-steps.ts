@@ -14,6 +14,7 @@
 // track walks the default add-track form (DefaultAddTrackWorkflow.tsx) exactly
 // when the form has an input for every key the config carries.
 import { addRelativeUris } from '../../../packages/core/src/util/addRelativeUris.ts'
+import { defaultConfigUrl } from './default-configs.ts'
 import { aliasesUri } from './derive-add-assembly.ts'
 import { deriveAddTrackArgs } from './derive-add-track.ts'
 import { asRecord, nonEmpty } from './derive-cli-command.ts'
@@ -64,6 +65,7 @@ function bullets(items: PhrasingContent[][]) {
 export const DESKTOP_UI_LABELS = {
   openGenome: 'Open new genome',
   openGenomeMenu: 'File → Open genome...',
+  allGenomes: 'Show all available genomes',
   fromUrl: 'Open from a URL',
   openTrack: 'File → Open track...',
   pasteJson: 'Add track from pasted JSON',
@@ -345,9 +347,12 @@ const SIDECAR_EXTENSIONS: [RegExp, string[]][] = [
   [/\.chrom\.sizes$/i, []],
 ]
 
-// `cytobands` as the form writes it (a CytobandAdapter over one file) or as the
-// uri shorthand; a custom adapter has no field and refuses the whole tab.
+// `cytobands` as the form writes it (a CytobandAdapter over one file), as the
+// uri shorthand or as a bare string; a custom adapter has no field and refuses the whole tab.
 function cytobandsUri(cytobands: unknown) {
+  if (typeof cytobands === 'string') {
+    return nonEmpty(cytobands)
+  }
   const slot = asRecord(cytobands)
   const adapter = asRecord(slot.adapter)
   return (
@@ -416,6 +421,18 @@ export function desktopAssemblyNodes(
   return resolved
     ? [
         raw('<div class="desktop-steps">'),
+        ...(defaultConfigUrl(resolved.assemblyName)
+          ? [
+              paragraph([
+                inline(resolved.assemblyName),
+                text(
+                  ' is one of the genomes JBrowse Desktop hosts, with gene tracks already set up: on the start screen click ',
+                ),
+                strong(DESKTOP_UI_LABELS.allGenomes),
+                text(' and pick it. To load the files of this config instead:'),
+              ]),
+            ]
+          : []),
         paragraph([
           text('In JBrowse Desktop, '),
           strong(DESKTOP_UI_LABELS.openGenome),
