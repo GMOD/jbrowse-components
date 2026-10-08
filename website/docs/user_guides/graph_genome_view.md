@@ -408,10 +408,16 @@ segments, so it does not pull in the backbone on either side of the window.
 <Figure caption="The paa island cut from the same graph track twice, each under the lanes of its own linear view. Left, at Graph context None, each of the two boxed nodes has an unlinked end. Right, at 1 hop, the red ring marks the interior nodes the extra queries fetched, which link the two into a bubble." src="/img/pangenome/graph_context.png" links="None=pangenome/graph_context_none,1 hop=pangenome/graph_context_hop1" />
 
 A **2 hops** setting handles a graph with alleles nested inside alleles. On this
-window 1 hop already closes the cut, while HPRC's amylase window keeps growing
-at 2. The setting stops at two, because hops only grow a neighbourhood. An exact
-slice comes from a bubble decomposition: cut one with
-`gfatools view -R <region> -r 1` and open it as a [file](#route-2-a-gfa-file).
+window 1 hop already closes the cut. The setting stops at two, because hops only
+grow a neighbourhood: in HPRC's graph, half of the off-reference segments sit
+three or more links from the backbone.
+
+An exact cut comes from an index in the anchored layout, which
+[`gfa-to-tabix`](https://github.com/GMOD/gfa-to-tabix) writes by default and the
+HPRC track reads. It files each allele under the reference interval its bubble
+hangs from, so one query returns every bubble under the region whole, and
+**Graph context** changes nothing there. The E. coli index in the figure above
+is in the older layout, where each segment is filed under its own coordinate.
 
 ## Color schemes and matching a linear track {#colors-that-mean-the-same-thing-in-both-panels}
 
