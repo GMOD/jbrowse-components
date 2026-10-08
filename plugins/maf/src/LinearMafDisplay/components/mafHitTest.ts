@@ -27,6 +27,7 @@ export interface MafHitTestModel {
   }
   scrollTop: number
   rowsTopOffset: number
+  rowsHeight: number
   effectiveRowHeight: number
   rowProportion: number
   rowHoverInfo: (
@@ -114,9 +115,20 @@ function rowIndexUnder(model: RowGeometry, mouseY: number) {
 /**
  * Half-open `[startRow, endRow)` row range a vertical px span covers — the
  * drag-selection rectangle's rows, ready to `slice` the sample list with.
+ * Only the part of the span over the rows viewport counts, so a drag inside
+ * the bands covers no row.
  */
-export function rowSpanAtY(model: RowGeometry, y0: number, y1: number) {
-  return rowSpanAt(y0, y1, rowStackOf(model))
+export function rowSpanAtY(
+  model: RowGeometry & Pick<MafHitTestModel, 'rowsHeight'>,
+  y0: number,
+  y1: number,
+) {
+  const top = model.rowsTopOffset
+  const lo = Math.max(Math.min(y0, y1), top)
+  const hi = Math.min(Math.max(y0, y1), top + model.rowsHeight - 1)
+  return lo <= hi
+    ? rowSpanAt(lo, hi, rowStackOf(model))
+    : { startRow: 0, endRow: 0 }
 }
 
 /** A projected cursor with its row hover already resolved. */

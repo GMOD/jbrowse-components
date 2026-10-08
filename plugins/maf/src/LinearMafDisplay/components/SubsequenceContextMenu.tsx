@@ -51,6 +51,10 @@ const SubsequenceContextMenu = observer(function SubsequenceContextMenu({
   // download, so both are off past its floor — the same override the track
   // menu's own subsequence entry and the two band toggles carry.
   const zoomHint = coarseTierActive ? ZOOM_IN_FOR_BAND : undefined
+  const { startRow, endRow } = contextCoord
+    ? rowSpanAtY(model, contextCoord.startY, contextCoord.endY)
+    : { startRow: 0, endRow: 0 }
+  const selectedRows = samples.slice(startRow, endRow)
   const openRows = (rows: typeof samples) => {
     if (contextCoord) {
       openSubsequenceWidget(
@@ -86,13 +90,13 @@ const SubsequenceContextMenu = observer(function SubsequenceContextMenu({
               {
                 label: 'Selected rows',
                 onClick: () => {
-                  const { startRow, endRow } = contextCoord
-                    ? rowSpanAtY(model, contextCoord.startY, contextCoord.endY)
-                    : { startRow: 0, endRow: 0 }
-                  openRows(samples.slice(startRow, endRow))
+                  openRows(selectedRows)
                 },
               },
-              zoomHint,
+              zoomHint ??
+                (selectedRows.length
+                  ? undefined
+                  : 'the selection covers no row'),
             ),
           ],
         },

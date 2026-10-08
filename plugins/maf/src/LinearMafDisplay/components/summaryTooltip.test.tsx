@@ -90,7 +90,7 @@ describe('the summary tier tooltip', () => {
     expect(
       rows(
         <MafAlignmentTooltipContents
-          p1={{ refName: 'chr1', coord: 1000 }}
+          selection={{ refName: 'chr1', start: 999, end: 1234 }}
           p2={p2}
           summary={bar()}
         />,
