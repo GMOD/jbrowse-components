@@ -25,7 +25,7 @@ import LinearGenomeViewPlugin, {
 } from '@jbrowse/plugin-linear-genome-view'
 
 import { configSchemaFactory } from './configSchemaFactory.ts'
-import { manhattanFixture } from './manhattanFixture.ts'
+import { manhattanFixture } from './manhattan.fixture.ts'
 import { stateModelFactory } from './stateModelFactory.ts'
 
 import type { LinearManhattanDisplayModel } from './stateModelFactory.ts'

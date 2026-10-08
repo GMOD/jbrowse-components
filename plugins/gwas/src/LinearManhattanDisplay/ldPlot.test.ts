@@ -8,7 +8,7 @@ import { getSnapshot } from '@jbrowse/mobx-state-tree'
 
 import { INDEX_SNP_MISSING } from '../GWASAdapter/ldJoin.ts'
 import { LD_COLOR, LD_INDEX_COLOR, LD_MARKS, MANHATTAN_MARK } from './ldPlot.ts'
-import { manhattanFixture } from './manhattanFixture.ts'
+import { manhattanFixture } from './manhattan.fixture.ts'
 import { createTestEnvironment } from './testEnv.ts'
 
 import type { LinearManhattanDisplayModel } from './stateModelFactory.ts'
