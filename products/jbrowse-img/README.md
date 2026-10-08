@@ -1648,7 +1648,7 @@ Options:
   --vcf             VCF (plain or bgzipped) of variants to render, one image per record
   --bedpe           BEDPE to render, one image per row; the format for anything a VCF cannot express (a LINX TSV reshaped by awk)
   --outDir          Directory to write the images to [default: jb2export-batch]
-  --flank           bp of context around each breakend [default: 500]
+  --flank           bp of context around each locus [default: 50 for a variant whose alleles are under 50 bp, 500 otherwise]
   --limit           Render only the first N rows
   --format          Output format: png, svg, or pdf [default: png]
   --passOnly        Skip VCF records whose FILTER is neither PASS nor "." [default: false]
@@ -1662,7 +1662,7 @@ Examples:
       A contact sheet of every junction in a callset
   jb2export batch --vcf calls.vcf.gz --hub hg38 --bam tumor.bam --limit 20
       The first 20, to check the framing before committing to the whole run
-  jb2export batch --vcf snvs.vcf.gz --hub hg38 --bam tumor.bam --flank 40 --passOnly
+  jb2export batch --vcf snvs.vcf.gz --hub hg38 --bam tumor.bam --passOnly
       Small variants at base resolution, carriers of each sorted to the top
   jb2export batch --bedpe linx_links.bedpe --hub hg38 --bam tumor.bam
       The same from a BEDPE, for a caller whose output is not a VCF
@@ -1671,7 +1671,7 @@ The ALT grammar is parsed by @gmod/vcf, so inserted sequence at the
 junction and upper-cased mate contigs are handled; reciprocal breakend
 pairs collapse, so each junction is queued once.
 
-Every track is drawn as if given force:true, since a window is only --flank
+Every track is drawn as if given force:true, since a window is only a flank
 wide and a "Region too large" panel cannot be clicked through on an image;
 force:false on a track restores its size limit.
 
