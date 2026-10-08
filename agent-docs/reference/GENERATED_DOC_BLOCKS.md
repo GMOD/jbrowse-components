@@ -22,7 +22,7 @@ writes fails `pnpm autogen --check`, as does a generated table no doc renders.
 
 Five markers bracket something other than a table and are not in the index:
 `<!-- include: path#region -->` and `<!-- jb2export: name -->` fill the code
-fence under them, `<!--m:ref-->` follows a quoted measurement,
+fence under them, an `m:` comment follows a quoted measurement,
 `<!-- INJECT_X START -->` is the jbrowse-img README's own, and
 `<!-- API_DOCS_START -->` is a package README's API section.
 

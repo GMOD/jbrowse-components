@@ -265,8 +265,8 @@ with one getter:
  * #getter
  * Opt into RegionTooLargeMixin's byte gate: `fetchNeeded` passes
  * `resolvedByteLimit()` to `RenderAlignmentData`, whose first await is
- * the index estimate — so an over-budget region is refused before a
- * single read is downloaded.
+ * the index estimate, so an over-budget region is refused before a read
+ * downloads.
  */
 get gateEnabled() {
   return true
