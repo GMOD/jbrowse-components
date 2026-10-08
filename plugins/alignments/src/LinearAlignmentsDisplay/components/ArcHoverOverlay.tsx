@@ -1,3 +1,5 @@
+import { Fragment } from 'react'
+
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { observer } from 'mobx-react'
 
@@ -22,13 +24,14 @@ const useStyles = makeStyles()(theme => ({
   },
 }))
 
-// Which read-connection arc the tooltip is talking about.
+// Which read-connection arc or splice junction the tooltip is talking about,
+// and which junction is selected.
 //
 // The tooltip can say "heaviest of several here", which invites exactly this
 // question — and even over a lone arc, naming a junction with nothing marking it
-// is a claim the reader has to take on trust. Sashimi and the linked-read bezier
-// overlay already thicken their hovered path; they are SVG with per-path
-// handlers, so they get it for free. Arcs are canvas, so this is the equivalent.
+// is a claim the reader has to take on trust. The linked-read bezier overlay
+// thickens its hovered path; it is SVG with per-path handlers, so it gets that
+// for free. Arcs are canvas, so this is the equivalent.
 //
 // An overlay rather than a canvas pass because the canvas is repaint-tier: the
 // hovered arc changes on nearly every mousemove, and on the Canvas2D fallback a
@@ -40,30 +43,39 @@ const ArcHoverOverlay = observer(function ArcHoverOverlay({
   model: LinearAlignmentsDisplayModel
 }) {
   const { classes } = useStyles()
-  const highlight = model.hoveredArcHighlight
-  if (!highlight) {
+  const highlights = [
+    { key: 'selected', highlight: model.selectedSashimiHighlight },
+    { key: 'hover', highlight: model.hoveredArcHighlight },
+  ].flatMap(h => (h.highlight ? [{ ...h, highlight: h.highlight }] : []))
+  if (highlights.length === 0) {
     return null
   }
-  const { d, clip, lineWidth, dash } = highlight
-  const clipId = `arc-hover-clip-${model.id}`
   return (
     <svg className={classes.svg} height={model.height}>
-      <defs>
-        <clipPath id={clipId}>
-          {/* The block's scissor, both axes — the rect the renderers cut the
-              arc pass to. Was `x=0 width="100%"`, which clipped the half of a
-              far arc that leaves through the band ceiling and let through the
-              half that leaves through the block's side. */}
-          <rect {...clip} />
-        </clipPath>
-      </defs>
-      <path
-        className={classes.path}
-        d={d}
-        strokeWidth={lineWidth + 3}
-        strokeDasharray={dash}
-        clipPath={`url(#${clipId})`}
-      />
+      {highlights.map(({ key, highlight: { d, clip, lineWidth, dash } }) => {
+        const clipId = `arc-${key}-clip-${model.id}`
+        return (
+          <Fragment key={key}>
+            <defs>
+              <clipPath id={clipId}>
+                {/* The block's scissor, both axes — the rect the renderers cut
+                    the arc pass to. Was `x=0 width="100%"`, which clipped the
+                    half of a far arc that leaves through the band ceiling and
+                    let through the half that leaves through the block's
+                    side. */}
+                <rect {...clip} />
+              </clipPath>
+            </defs>
+            <path
+              className={classes.path}
+              d={d}
+              strokeWidth={lineWidth + 3}
+              strokeDasharray={dash}
+              clipPath={`url(#${clipId})`}
+            />
+          </Fragment>
+        )
+      })}
     </svg>
   )
 })

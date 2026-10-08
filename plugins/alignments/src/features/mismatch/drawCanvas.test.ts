@@ -45,6 +45,7 @@ function baseState(overrides: Partial<RenderState> = {}): RenderState {
     coverageScaleType: 0 as const,
     coverageSymlogConstant: 1,
     coverageSnpMinFrequency: 0,
+    sashimiArcsHeight: 0,
     showMismatches: true,
     filterMismatchesByFrequency: false,
     mismatchAlpha: false,

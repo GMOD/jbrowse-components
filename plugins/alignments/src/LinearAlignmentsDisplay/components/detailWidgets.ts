@@ -114,31 +114,31 @@ export function openCoverageWidget(
 
 export function openSashimiWidget(
   model: IAnyStateTreeNode,
-  arc: {
+  junction: {
     start: number
     end: number
     refName: string
-    score: number
+    count: number
     strand: number
     motif: number
   },
   groupKey: string,
 ) {
   openFeatureWidget(model, {
-    uniqueId: sashimiFeatureId(groupKey, arc),
+    uniqueId: sashimiFeatureId(groupKey, junction),
     // Named like its siblings (openIndicatorWidget, openCigarWidget) so the
     // widget has a heading; without one it opened titled by nothing, leaving the
     // bare `type: 'skip'` to explain what had been clicked.
     name: 'Splice junction',
     type: 'skip',
-    refName: arc.refName,
-    start: arc.start,
-    end: arc.end,
-    score: arc.score,
-    strand: arc.strand,
-    ...(spliceMotifLabel(arc.motif) === undefined
+    refName: junction.refName,
+    start: junction.start,
+    end: junction.end,
+    score: junction.count,
+    strand: junction.strand,
+    ...(spliceMotifLabel(junction.motif) === undefined
       ? {}
-      : { splice_motif: spliceMotifLabel(arc.motif) }),
+      : { splice_motif: spliceMotifLabel(junction.motif) }),
   })
 }
 

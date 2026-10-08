@@ -113,6 +113,7 @@ export function makeTestRenderState(
     coverageScaleType: 0 as const,
     coverageSymlogConstant: 1,
     coverageSnpMinFrequency: 0,
+    sashimiArcsHeight: 0,
     showMismatches: false,
     filterMismatchesByFrequency: false,
     mismatchAlpha: false,

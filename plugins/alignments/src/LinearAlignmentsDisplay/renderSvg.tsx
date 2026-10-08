@@ -6,7 +6,7 @@ import { renderDisplaySvg } from '@jbrowse/display-kit/renderDisplaySvg'
 
 import { getMismatchContrastMap } from '../shared/util.ts'
 import PileupBezierArcsSvg from './components/PileupBezierArcsSvg.tsx'
-import SashimiArcsSvg from './components/SashimiArcsSvg.tsx'
+import SashimiLabelsSvg from './components/SashimiLabelsSvg.tsx'
 import { drawAlignmentLabels } from './components/drawAlignmentLabels.ts'
 import { bandScreenTop } from './components/sectionScreen.ts'
 import { drawAlignmentsToCtx } from './renderers/Canvas2DAlignmentsRenderer.ts'
@@ -71,9 +71,9 @@ function AlignmentsSvgBody({
   const labels = model.visibleLabels
   const contrastMap = getMismatchContrastMap(model.showModifications, palette)
 
-  // Sashimi and linked-read bezier arcs stay vector SVG by design (low arc
-  // count + native hover in the on-screen overlay); these export components
-  // share their geometry helpers with the overlays so the paths can't drift.
+  // The sashimi count labels and the linked-read bezier arcs are vector SVG on
+  // screen too; these export components share their geometry helpers with the
+  // overlays so the two can't drift.
   return (
     <>
       <PaintLayer
@@ -97,7 +97,7 @@ function AlignmentsSvgBody({
       />
       {overlays ? (
         <>
-          <SashimiArcsSvg model={model} width={canvasWidth} />
+          <SashimiLabelsSvg model={model} />
           <PileupBezierArcsSvg
             model={model}
             view={model.view}

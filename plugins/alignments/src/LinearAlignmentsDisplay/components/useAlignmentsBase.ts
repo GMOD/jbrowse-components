@@ -6,16 +6,19 @@ import { regionAtPixel } from '@jbrowse/render-core/canvas2dUtils'
 
 import { arcSlotCategory } from '../../shaders/palettes.ts'
 import { snpBaseFromCigar } from '../../shared/hitTestTypes.ts'
+import { sashimiBandsOf } from '../renderers/sashimiMarks.ts'
 import { resolveArcBandHover } from './arcHitTest.ts'
 import {
   openCigarWidget,
   openCoverageWidget,
   openIndicatorWidget,
   openModificationWidget,
+  openSashimiWidget,
 } from './detailWidgets.ts'
 import { findSectionAtY } from './findSectionAtY.ts'
 import { contextMenuTargetForHit, performHitTest } from './hitTestPipeline.ts'
 import { PAN_DRAGGING } from './panState.ts'
+import { resolveSashimiHover } from './sashimiHitTest.ts'
 import { onPileupBand } from './sectionScreen.ts'
 import {
   formatArcLineTooltip,
@@ -25,12 +28,14 @@ import {
   formatIndicatorTooltip,
   formatModificationTooltip,
   formatReadTooltip,
+  formatSashimiTooltip,
 } from './tooltipUtils.ts'
 
 import type { ResolvedBlock } from '../../shared/hitTestTypes.ts'
 import type { LinearAlignmentsDisplayModel } from '../model.ts'
 import type { ArcMarkHit } from './arcHitTest.ts'
 import type { MarkHitResult } from './hitTestPipeline.ts'
+import type { SashimiMarkHit } from './sashimiHitTest.ts'
 import type React from 'react'
 
 export type { LinearAlignmentsDisplayModel }
@@ -79,8 +84,12 @@ export function useAlignmentsBase(model: LinearAlignmentsDisplayModel) {
     // is discarded whenever an arc has one. `resolved` still comes first — the
     // context menu wants the block whatever is under the cursor — but it is a
     // region lookup and a map get, not the pipeline.
+    //
+    // A splice junction outranks both by the same argument: its mark paints
+    // last.
     const arc = picked
-      ? resolveArcHover(canvasX, canvasY, picked.section)
+      ? (resolveSashimiHit(canvasX, canvasY, picked.section) ??
+        resolveArcHover(canvasX, canvasY, picked.section))
       : undefined
     // No section under the cursor, or no fetched block at that x, is a miss.
     // Answering it here is what lets performHitTest take a definite block and
@@ -140,6 +149,42 @@ export function useAlignmentsBase(model: LinearAlignmentsDisplayModel) {
           blockWidth: r.screenEndPx - r.screenStartPx,
           refName: r.refName,
           reversed: r.reversed ?? false,
+        }
+      : undefined
+  }
+
+  // The splice junction under the cursor in the hovered section, asked of the
+  // sashimi marks.
+  function resolveSashimiHit(
+    canvasX: number,
+    canvasY: number,
+    section: LinearAlignmentsDisplayModel['renderSections'][number],
+  ): SashimiMarkHit | undefined {
+    const feeds = model.sashimiFeedsByGroup.get(section.groupKey)
+    if (!feeds || feeds.size === 0) {
+      return undefined
+    }
+    const { renderState } = model
+    const sec =
+      renderState.sections[
+        model.renderSections.findIndex(s => s.groupKey === section.groupKey)
+      ]
+    const hover = sec
+      ? resolveSashimiHover(
+          canvasX,
+          canvasY,
+          feeds,
+          { ...renderState, sashimi: sashimiBandsOf(renderState, sec) },
+          model.renderBlocks,
+        )
+      : undefined
+    return hover
+      ? {
+          type: 'sashimi',
+          tooltip: formatSashimiTooltip(hover.junction),
+          highlight: hover.highlight,
+          junction: hover.junction,
+          groupKey: section.groupKey,
         }
       : undefined
   }
@@ -314,6 +359,17 @@ export function useAlignmentsBase(model: LinearAlignmentsDisplayModel) {
 
   function hoverStateForResult(result: MarkHitResult): HoverState {
     switch (result.type) {
+      case 'sashimi': {
+        const { refName, start, end } = result.junction
+        return {
+          overCigarItem: true,
+          featureIdUnderMouse: undefined,
+          mouseoverExtraInformation: result.tooltip,
+          hoveredArcHighlight: result.highlight,
+          hoveredJunction: { groupKey: result.groupKey, refName, start, end },
+          highlightedChainReadIds: [],
+        }
+      }
       case 'arc':
         return {
           // FALSE, unlike every other tooltip branch: `overCigarItem` is the
@@ -433,6 +489,9 @@ export function useAlignmentsBase(model: LinearAlignmentsDisplayModel) {
       // (`computeArcBand` gives it top 0), so the click opened the coverage bin
       // widget for the column while the tooltip said "Read connection".
       case 'arc':
+        return
+      case 'sashimi':
+        openSashimiWidget(model, result.junction, result.groupKey)
         return
       case 'indicator':
         openIndicatorWidget(

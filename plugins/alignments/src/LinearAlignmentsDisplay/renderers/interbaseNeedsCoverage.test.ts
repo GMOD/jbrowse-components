@@ -79,6 +79,7 @@ function sources(): AlignmentsSources {
       {
         groupKey: '',
         arcFeeds: new Map(),
+        sashimiFeeds: new Map(),
         laidOutPileupMap: new Map([
           [
             0,

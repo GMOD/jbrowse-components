@@ -7,6 +7,7 @@ import { planMarks } from '@jbrowse/render-core/marks'
 import { canvasWideBlock } from '@jbrowse/render-core/renderBlock'
 import { Canvas2DRenderingBackendBase } from '@jbrowse/render-core/renderingBackendBase'
 
+import { SASHIMI_SIDES } from '../../features/sashimi/bandFeed.ts'
 import {
   ARC_CLIPPED_MARKS,
   ARC_LINK_MARKS,
@@ -19,9 +20,11 @@ import {
 } from './coverageMarks.ts'
 import { PILEUP_MARKS } from './pileupMarks.ts'
 import { sectionRegionKey, sectionRenderState } from './rendererTypes.ts'
+import { SASHIMI_MARKS, sashimiBandsOf } from './sashimiMarks.ts'
 
 import type { PileupDataResult } from '../../RenderAlignmentDataRPC/types.ts'
 import type { ArcBandFeed } from '../../features/arcs/bandFeed.ts'
+import type { SashimiBandFeed } from '../../features/sashimi/bandFeed.ts'
 import type { AlignmentsCoverageRegion } from './coverageMarks.ts'
 import type {
   AlignmentsRenderingBackend,
@@ -40,10 +43,11 @@ export interface Canvas2DRegion {
   coverage: AlignmentsCoverageRegion
 }
 
-/** What the Canvas2D painter draws from: each key's region and each section's connections. */
+/** What the Canvas2D painter draws from: each key's region and each section's connections and junctions. */
 export interface Canvas2DRegionMap {
   regions: ReadonlyMap<number, Canvas2DRegion>
   sectionFeeds: readonly ReadonlyMap<number, ArcBandFeed>[]
+  sashimiFeeds: readonly ReadonlyMap<number, SashimiBandFeed>[]
 }
 
 /**
@@ -64,7 +68,10 @@ export function buildAlignmentsRegionMap(
         coverage: coverageRegionOf(data),
       })
     }
-    for (const regionIdx of section.arcFeeds.keys()) {
+    for (const regionIdx of [
+      ...section.arcFeeds.keys(),
+      ...section.sashimiFeeds.keys(),
+    ]) {
       if (!section.laidOutPileupMap.has(regionIdx)) {
         regions.set(sectionRegionKey(s, regionIdx), {
           pileup: undefined,
@@ -84,6 +91,7 @@ export function buildAlignmentsRegionMap(
   return {
     regions,
     sectionFeeds: sources.sections.map(section => section.arcFeeds),
+    sashimiFeeds: sources.sections.map(section => section.sashimiFeeds),
   }
 }
 
@@ -106,6 +114,12 @@ export function drawAlignmentsToCtx(
   )
 }
 
+const NO_REGIONS: Canvas2DRegionMap = {
+  regions: new Map(),
+  sectionFeeds: [],
+  sashimiFeeds: [],
+}
+
 /**
  * On-screen Canvas2D backend. Thin shell: `sync` rebuilds the regions map
  * via the same pure `buildAlignmentsRegionMap` the SVG path uses; on-screen
@@ -116,7 +130,7 @@ export class Canvas2DAlignmentsRenderer
   extends Canvas2DRenderingBackendBase
   implements AlignmentsRenderingBackend
 {
-  private regions: Canvas2DRegionMap = { regions: new Map(), sectionFeeds: [] }
+  private regions: Canvas2DRegionMap = NO_REGIONS
 
   constructor(canvas: HTMLCanvasElement) {
     super(canvas)
@@ -134,7 +148,7 @@ export class Canvas2DAlignmentsRenderer
   }
 
   dispose() {
-    this.regions = { regions: new Map(), sectionFeeds: [] }
+    this.regions = NO_REGIONS
   }
 }
 
@@ -151,7 +165,7 @@ export class Canvas2DAlignmentsRenderer
  */
 export function drawAlignmentBlocks(
   ctx: Ctx2D,
-  { regions, sectionFeeds }: Canvas2DRegionMap,
+  { regions, sectionFeeds, sashimiFeeds }: Canvas2DRegionMap,
   blocks: RenderBlock[],
   state: RenderState,
 ) {
@@ -250,7 +264,44 @@ export function drawAlignmentBlocks(
     },
   )
   paintArcBands(ctx, sectionFeeds, blocks, state)
+  paintSashimiBands(ctx, sashimiFeeds, state)
   return painted
+}
+
+// Each section's splice junctions over everything, in the GPU's order: each
+// side's mark over the whole canvas from every region's feed, clipped to the
+// side's band.
+function paintSashimiBands(
+  ctx: Ctx2D,
+  sashimiFeeds: readonly ReadonlyMap<number, SashimiBandFeed>[],
+  state: RenderState,
+) {
+  const { canvasWidth } = state
+  state.sections.forEach((sec, s) => {
+    const feeds = sashimiFeeds[s]
+    if (!feeds || feeds.size === 0) {
+      return
+    }
+    const bandState = {
+      ...sectionRenderState(state, sec),
+      sashimi: sashimiBandsOf(state, sec),
+    }
+    SASHIMI_SIDES.forEach((side, m) => {
+      const band = bandState.sashimi[side]
+      if (band) {
+        withClip(ctx, 0, band.clipTop, canvasWidth, band.clipHeight, () => {
+          for (const [regionIdx, feed] of feeds) {
+            SASHIMI_MARKS[m]!.paintBlock(
+              ctx,
+              feed,
+              canvasWideBlock(regionIdx, canvasWidth),
+              bandState,
+            )
+          }
+        })
+      }
+    })
+  })
 }
 
 // Each section's read connections after every block, in the GPU's order: each

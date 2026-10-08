@@ -73,6 +73,7 @@ function frameUniforms() {
         groupKey: '',
         laidOutPileupMap: new Map([[0, makePileupDataResult({})]]),
         arcFeeds: new Map(),
+        sashimiFeeds: new Map(),
       },
     ],
     densityRegions: new Map(),

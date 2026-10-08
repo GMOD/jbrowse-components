@@ -9,30 +9,28 @@ import {
 import type { WorkerPileupData } from '../RenderAlignmentDataRPC/types.ts'
 import type { LinearAlignmentsDisplayModel } from './components/useAlignmentsBase.ts'
 
-// A pan re-projects sashimi arcs and does NOT re-merge their junctions, and this
-// file counts both halves rather than asserting the shape that is supposed to
-// produce them.
+// A pan neither re-merges the sashimi junctions nor rebuilds the feed their
+// marks draw from, and this file counts both rather than asserting the shape
+// that is supposed to produce them.
 //
 // HOW THE COUNT WORKS. An OBSERVED MobX computed hands back its cached value
-// until something it read changes, and every evaluation of these two builds a
-// fresh array. So the number of distinct identities seen across a gesture IS the
+// until something it read changes, and every evaluation of these builds a
+// fresh value. So the number of distinct identities seen across a gesture IS the
 // number of evaluations, exactly — no spy, no mock, no instrumentation in the
 // code under test. The `autorun` is what makes them observed; unobserved, MST
 // getters recompute on every read and the count would be the number of reads.
 //
 // THE SABOTAGE THIS CATCHES is the shape the code had: reading
 // `view.visibleRegions` (a fresh array of fresh objects per frame) inside the
-// merge, whether directly or by folding the merge back into
-// `sashimiArcSections`. Either takes the junction count to one per frame and
-// fails the first expectation. Dropping `compareStructural` off the model's
-// `junctionRegions` computed does the same, which is the narrower sabotage: the
-// getter still exists and still looks split.
+// merge. That takes the junction count to one per frame and fails the first
+// expectation. Dropping `compareStructural` off the model's `junctionRegions`
+// computed does the same, which is the narrower sabotage: the getter still
+// exists and still looks split.
 
 const FRAMES = 20
 
-// Two junctions inside the span the pan keeps on screen, so the arc count never
-// changes for a reason other than the projection — the off-screen cull dropping
-// one mid-gesture would make the second expectation mean something else.
+// Two junctions inside the span the pan keeps on screen, so the label count
+// never changes for a reason other than the projection.
 function seedJunctions(display: LinearAlignmentsDisplayModel) {
   const data: WorkerPileupData = {
     ...makeEmptyPileupData(),
@@ -74,42 +72,73 @@ function panningDisplay() {
   return { view, display }
 }
 
-test('a pan re-projects the arcs and re-merges nothing', () => {
+test('a pan re-merges nothing and rebuilds no feed', () => {
   const { view, display } = panningDisplay()
   seedJunctions(display)
 
   const merges = identityCounter<unknown>()
-  const projections = identityCounter<unknown>()
+  const feeds = identityCounter<unknown>()
+  const labels = identityCounter<unknown>()
   const stop = autorun(() => {
     merges.note(display.sashimiJunctionSections)
-    projections.note(display.sashimiArcSections)
+    feeds.note(display.sashimiFeedsByGroup)
+    labels.note(display.sashimiLabelSections)
   })
 
   for (let i = 1; i <= FRAMES; i++) {
     view.setNewView(10, i * 7)
     merges.note(display.sashimiJunctionSections)
-    projections.note(display.sashimiArcSections)
+    feeds.note(display.sashimiFeedsByGroup)
+    labels.note(display.sashimiLabelSections)
   }
   stop()
 
-  // The whole point: one merge for the gesture, one projection per frame.
+  // The whole point: one merge and one feed for the gesture. The arcs are
+  // placed through the view's region table, a uniform, so a fresh feed would be
+  // a re-upload per pan frame. With the count labels off nothing reads the pan.
   expect(merges.count).toBe(1)
-  expect(projections.count).toBe(FRAMES + 1)
+  expect(feeds.count).toBe(1)
+  expect(labels.count).toBe(1)
 
-  // …and the projection is doing something, so the first expectation cannot
+  // …and the feed is carrying something, so the expectations above cannot
   // pass by the pipeline being empty or the pan being a no-op.
-  const [section] = display.sashimiArcSections
-  expect(section!.up.length).toBe(2)
+  expect(display.sashimiFeedsByGroup.get('')!.get(0)!.up.count).toBe(2)
   expect(display.sashimiJunctionSections[0]!.junctions).toHaveLength(2)
+})
+
+// The count labels are the one part still in the DOM, so they are the one part
+// a pan re-projects, and only while they are shown.
+test('with count labels on, a pan re-projects the labels alone', () => {
+  const { view, display } = panningDisplay()
+  display.setShowSashimiLabels(true)
+  seedJunctions(display)
+
+  const feeds = identityCounter<unknown>()
+  const labels = identityCounter<unknown>()
+  const stop = autorun(() => {
+    feeds.note(display.sashimiFeedsByGroup)
+    labels.note(display.sashimiLabelSections)
+  })
+  for (let i = 1; i <= FRAMES; i++) {
+    view.setNewView(10, i * 7)
+    feeds.note(display.sashimiFeedsByGroup)
+    labels.note(display.sashimiLabelSections)
+  }
+  stop()
+
+  expect(feeds.count).toBe(1)
+  expect(labels.count).toBe(FRAMES + 1)
+  expect(display.sashimiLabelSections[0]!.up.length).toBe(2)
 })
 
 // The DNA case, which is most alignments tracks: `showSashimiArcs` resolves on
 // wherever coverage draws, so every one of them evaluates this pipeline, and a
-// track whose reads carry no skip gap has nothing for it to project. One shared
-// empty array is what lets `SashimiArcsOverlay`'s observer stop on `===` instead
-// of reconciling a list of empty sections per frame.
+// track whose reads carry no skip gap has nothing for it to draw. One shared
+// empty array is what lets `SashimiLabelsOverlay`'s observer stop on `===`
+// instead of reconciling a list of empty sections per frame.
 test('a track with no junctions hands the overlay the same empty array', () => {
   const { view, display } = panningDisplay()
+  display.setShowSashimiLabels(true)
   display.setRpcData(
     0,
     {
@@ -120,16 +149,16 @@ test('a track with no junctions hands the overlay the same empty array', () => {
 
   const projections = identityCounter<unknown>()
   const stop = autorun(() => {
-    projections.note(display.sashimiArcSections)
+    projections.note(display.sashimiLabelSections)
   })
   for (let i = 1; i <= FRAMES; i++) {
     view.setNewView(10, i * 7)
-    projections.note(display.sashimiArcSections)
+    projections.note(display.sashimiLabelSections)
   }
   stop()
 
   expect(projections.count).toBe(1)
-  expect(display.sashimiArcSections).toHaveLength(0)
+  expect(display.sashimiLabelSections).toHaveLength(0)
 })
 
 // The band's feeds are placed through the view's region table, a uniform, so

@@ -244,8 +244,8 @@ test('census: gene track, label zoom', async () => {
 // on costs something for nothing: every alignments track evaluates the sashimi
 // pipeline now, and reads with no skip gap give it nothing to draw.
 //
-// `SashimiArcsOverlay` re-rendered on every frame of every gesture here,
-// because `sashimiArcSections` rebuilt a fresh list of empty sections each time
+// The sashimi overlay re-rendered on every frame of every gesture here, because
+// its sections rebuilt a fresh list of empty ones each time
 // `view.visibleRegions` did. Zero is the whole band of headroom this one gets:
 // with no junction in the file there is no frame on which the overlay has
 // anything to say, and the counting window opens after first paint so the mount
@@ -258,23 +258,22 @@ test('census: alignments over DNA, no junctions to draw', async () => {
     startBpPerPx: 5,
     painted: 'pileup-display',
   })
-  expect(counts.get('SashimiArcsOverlay') ?? 0).toBe(0)
+  expect(counts.get('SashimiLabelsOverlay') ?? 0).toBe(0)
 }, 90000)
 
-// Spliced reads, where the overlay DOES owe a frame — every arc's `d` is a
-// function of the pan. What this arm is for is the per-arc DOM rate, which is
-// the input to whether sashimi should leave SVG for the canvas/GPU arc stack:
-// one `<path>` per arc gets one `attr:d` per frame, so `attr:d @ pileup-display`
-// divided by the arc count is a rate that a bigger dataset multiplies. Volvox's
-// junction counts are small (13 distinct in spliced.bam, 11 over the default
-// score floor) — read the RATE here, not the total.
+// Spliced reads. The arcs are link marks (ADR-222), placed through the view's
+// region table, so a zoom writes a uniform and no arc owes the DOM a frame.
+// Before that each arc was a `<path>` patched one `attr:d` per frame, a rate a
+// bigger dataset multiplied. The count labels are off by default, and they are
+// the only part of sashimi left in the DOM.
 test('census: spliced alignments, sashimi arcs drawn', async () => {
-  await census({
+  const { counts } = await census({
     label: 'spliced',
     trackIds: ['spliced'],
     startBpPerPx: 5,
     painted: 'pileup-display',
   })
+  expect(counts.get('SashimiLabelsOverlay') ?? 0).toBe(0)
 }, 90000)
 
 // Arcs are link marks on the mark display: GPU instances placed through a

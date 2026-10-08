@@ -174,12 +174,20 @@ test('group draws per-section sashimi arcs', async () => {
       // is below the default minSashimiScore of 2. Asserting each section by
       // key (rather than just "some section has arcs") is what pins arcs to the
       // group whose reads produced them.
-      expect(display.sashimiArcSections.length).toBe(2)
-      const [forward, reverse] = display.sashimiArcSections
+      expect(display.sashimiJunctionSections.length).toBe(2)
+      const [forward, reverse] = display.sashimiJunctionSections
       expect(forward!.groupKey).toBe('1')
       expect(reverse!.groupKey).toBe('-1')
-      expect(forward!.up.length + forward!.down.length).toBe(0)
-      expect(reverse!.up.length + reverse!.down.length).toBeGreaterThan(0)
+      expect(forward!.junctions.length).toBe(0)
+      expect(reverse!.junctions.length).toBeGreaterThan(0)
+      // and each lane's marks are fed its own junctions
+      const drawn = (key: string) =>
+        [...(display.sashimiFeedsByGroup.get(key)?.values() ?? [])].reduce(
+          (n, feed) => n + feed.up.count + feed.down.count,
+          0,
+        )
+      expect(drawn('1')).toBe(0)
+      expect(drawn('-1')).toBe(reverse!.junctions.length)
     },
     { timeout: 30000 },
   )
@@ -203,18 +211,17 @@ test('lowering the sashimi score reveals a group-specific junction', async () =>
   display.setShowSashimiArcs(true)
   display.setFacet({ field: 'strand' })
   await waitFor(() => {
-    expect(display.sashimiArcSections.length).toBe(2)
+    expect(display.sashimiJunctionSections.length).toBe(2)
   }, delay)
 
   display.setMinSashimiScore(0)
 
   await waitFor(() => {
-    const forward = display.sashimiArcSections[0]!
+    const forward = display.sashimiJunctionSections[0]!
     expect(forward.groupKey).toBe('1')
     // exactly one junction on this strand, supported by exactly one read.
-    const arcs = [...forward.up, ...forward.down]
-    expect(arcs.length).toBe(1)
-    expect(arcs[0]!.score).toBe(1)
+    expect(forward.junctions.length).toBe(1)
+    expect(forward.junctions[0]!.count).toBe(1)
   }, delay)
 }, 90000)
 

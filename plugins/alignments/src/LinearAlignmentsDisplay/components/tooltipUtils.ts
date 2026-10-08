@@ -610,23 +610,22 @@ export function formatModificationTooltip(
   return { type: 'modification', ...hit, refName, snpBase }
 }
 
-// Takes the junction fields of a computed SashimiArc (there is no sashimi hit
-// test — the arcs are SVG paths with their own mouse handlers, so the overlay
-// hands its own arc straight over).
-export function formatSashimiTooltip(arc: {
+// The hover of a junction the sashimi marks' hit test found
+// (`resolveSashimiHover`).
+export function formatSashimiTooltip(junction: {
   start: number
   end: number
-  score: number
+  count: number
   strand: number
   refName: string
   motif: number
 }): SashimiTooltipPayload {
-  const { start, end, score, strand, refName, motif } = arc
+  const { start, end, count, strand, refName, motif } = junction
   return {
     type: 'sashimi',
     start,
     end,
-    score,
+    score: count,
     strand: strand === 1 ? '+' : strand === -1 ? '-' : 'unknown',
     refName,
     motif: spliceMotifLabel(motif),

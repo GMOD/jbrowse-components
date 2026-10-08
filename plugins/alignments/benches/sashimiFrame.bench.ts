@@ -8,7 +8,13 @@
 // The harness rules — interleave, min-of-rounds, run a control, check identity
 // before believing timing — are in `agent-docs/reference/BENCHMARKING.md`.
 //
-// THE QUESTION. `sashimiArcSections` reads `view.visibleRegions` and
+// SINCE THIS WAS MEASURED the arcs became link marks (ADR-222): their feed is
+// in bp and a pan writes a uniform, so the frame owes this projection only for
+// the count labels, and only while `showSashimiLabels` is on. The arms below
+// now time that label projection; the published table is the arc projection
+// it replaced.
+//
+// THE QUESTION. `sashimiArcSections` read `view.visibleRegions` and
 // `makeBpToScreenX(view)`, so it invalidates on every pan and zoom frame, and
 // inside it `mergeJunctions` rebuilds a string-keyed Map with one object per
 // junction from scratch. The merge answers to loaded data and two filter
@@ -18,8 +24,8 @@
 // ARMS. Each is a whole frame's worth for ONE lane, written out longhand — a
 // shared driver goes polymorphic and puts the control off 1.00.
 //
-//   whole    what shipped: `mergeJunctions` then `projectSashimiArcs`
-//   project  what a frame owes: `projectSashimiArcs` off a merge held elsewhere
+//   whole    what shipped: `mergeJunctions` then `projectSashimiLabels`
+//   project  what a frame owes: `projectSashimiLabels` off a merge held elsewhere
 //   control  a second, separately-declared driver over the same two calls
 //
 // THE FIXTURE is real: 651 distinct junctions with their true read support
@@ -40,7 +46,7 @@
 // agent-docs/reference/INTERACTION_PERF.md. Short version, one lane at 651
 // junctions: the merge is a small part of the frame and the frame is small.
 import {
-  projectSashimiArcs,
+  projectSashimiLabels,
   visibleRegionJunctions,
 } from '../src/features/sashimi/computeOverlay.ts'
 import { mergeJunctions } from '../src/features/sashimi/junctions.ts'
@@ -48,8 +54,8 @@ import { encodeDinucleotide } from '../src/features/sashimi/motif.ts'
 
 import type { WorkerPileupData } from '../src/RenderAlignmentDataRPC/types.ts'
 import type {
-  SashimiArc,
-  SashimiArcsBySide,
+  SashimiLabel,
+  SashimiLabelsBySide,
 } from '../src/features/sashimi/computeOverlay.ts'
 import type {
   MergedJunction,
@@ -150,7 +156,7 @@ function frameWhole(
   rpcDataMap: ReadonlyMap<number, WorkerPileupData>,
   visibleRegions: { refName: string; displayedRegionIndex: number }[],
 ) {
-  return projectSashimiArcs(
+  return projectSashimiLabels(
     mergeJunctions(
       visibleRegionJunctions(rpcDataMap, visibleRegions),
       mergeOpts,
@@ -161,7 +167,7 @@ function frameWhole(
 
 // ARM 2: project — what a frame owes once the merge is memoized off the pan.
 function frameProject(merged: MergedJunction[]) {
-  return projectSashimiArcs(merged, projectOpts)
+  return projectSashimiLabels(merged, projectOpts)
 }
 
 // ARM 3: control — a second, separately-declared driver over the same call as
@@ -171,7 +177,7 @@ function frameControl(
   rpcDataMap: ReadonlyMap<number, WorkerPileupData>,
   visibleRegions: { refName: string; displayedRegionIndex: number }[],
 ) {
-  return projectSashimiArcs(
+  return projectSashimiLabels(
     mergeJunctions(
       visibleRegionJunctions(rpcDataMap, visibleRegions),
       mergeOpts,
@@ -187,18 +193,18 @@ function time(fn: () => unknown) {
   return performance.now() - t0
 }
 
-function firstDifference(sa: SashimiArcsBySide, sb: SashimiArcsBySide) {
-  const a: SashimiArc[] = [...sa.up, ...sa.down]
-  const b: SashimiArc[] = [...sb.up, ...sb.down]
+function firstDifference(sa: SashimiLabelsBySide, sb: SashimiLabelsBySide) {
+  const a: SashimiLabel[] = [...sa.up, ...sa.down]
+  const b: SashimiLabel[] = [...sb.up, ...sb.down]
   if (a.length !== b.length) {
     return `length ${a.length} vs ${b.length}`
   }
   for (let i = 0; i < a.length; i++) {
     const x = a[i]!
     const y = b[i]!
-    for (const k of Object.keys(x) as (keyof SashimiArc)[]) {
+    for (const k of Object.keys(x) as (keyof SashimiLabel)[]) {
       if (x[k] !== y[k]) {
-        return `arc ${i} field ${k}: ${String(x[k])} vs ${String(y[k])}`
+        return `label ${i} field ${k}: ${String(x[k])} vs ${String(y[k])}`
       }
     }
   }
@@ -251,7 +257,7 @@ async function main() {
   const ms = (v: number) => v.toFixed(4).padStart(9)
   console.log(
     `sashimi frame, ${junctions.length} junctions x ${COPIES} region cop${COPIES === 1 ? 'y' : 'ies'}, ` +
-      `${merged.length} merged, ${outWhole.up.length + outWhole.down.length} arcs drawn, min of ${ROUNDS} rotated rounds\n` +
+      `${merged.length} merged, ${outWhole.up.length + outWhole.down.length} labels placed, min of ${ROUNDS} rotated rounds\n` +
       `  whole (was)   ${ms(best.whole)} ms\n` +
       `  project (is)  ${ms(best.project)} ms   ${x(best.project)}   ` +
       `output ${diffProject ? `DIFFERS — ${diffProject}` : 'identical'}\n` +

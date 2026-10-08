@@ -8,6 +8,7 @@ import { READ_OUTLINE_MIN_HEIGHT_PX } from '../../shaders/slang/read.consts.gene
 import type { PileupDataResult } from '../../RenderAlignmentDataRPC/types.ts'
 import type { ArcBandFeed } from '../../features/arcs/bandFeed.ts'
 import type { CoverageRegionFields } from '../../features/coverage/types.ts'
+import type { SashimiBandFeed } from '../../features/sashimi/bandFeed.ts'
 import type { ColorPalette } from '../../shaders/colors.ts'
 import type { ReadConnectionsMode } from '../constants.ts'
 import type { LinkRegion } from '@jbrowse/render-core/marks'
@@ -48,6 +49,7 @@ export interface RenderState {
   // mismatch. Nothing to do with `filterMismatchesByFrequency`, which is the
   // PILEUP's depth-dependent fade.
   coverageSnpMinFrequency: number
+  sashimiArcsHeight: number
   showMismatches: boolean
   filterMismatchesByFrequency: boolean
   // Fade mismatch bases by their per-base Phred quality (advanced setting).
@@ -118,6 +120,9 @@ export interface SectionRender {
   // are off / this section reserves none. Ungrouped is sticky (not scrolled);
   // grouped scrolls with its section, matching coverage.
   arcBand?: ArcBand
+  // Screen-space top of the strip this section reserved for its down-bound
+  // splice junctions, undefined where it reserved none.
+  sashimiBandTop?: number
 }
 
 // HAL/region key namespacing: section 0 keys equal the raw displayedRegionIndex
@@ -147,6 +152,8 @@ export interface SectionSource {
   laidOutPileupMap: ReadonlyMap<number, PileupDataResult>
   // This group's read connections by region index. Empty when they are off.
   arcFeeds: ReadonlyMap<number, ArcBandFeed>
+  // This group's splice junctions by region index. Empty when they are off.
+  sashimiFeeds: ReadonlyMap<number, SashimiBandFeed>
 }
 
 export interface AlignmentsSources {

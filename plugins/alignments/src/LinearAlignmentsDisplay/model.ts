@@ -70,6 +70,7 @@ import {
   bezierDipReservePx,
   resolveConnectorsByGroup,
 } from '../features/linkedReads/computeOverlay.ts'
+import { buildSashimiBandFeeds } from '../features/sashimi/bandFeed.ts'
 import { visibleRegionJunctions } from '../features/sashimi/computeOverlay.ts'
 import { mergeJunctions } from '../features/sashimi/junctions.ts'
 import { junctionSupportingReadSlots } from '../features/sashimi/supportingReads.ts'
@@ -126,6 +127,8 @@ import {
   readsToLight,
   slotsOfIds,
 } from './components/readHighlightInk.ts'
+import { SASHIMI_FEATURE_ID_PREFIX } from './components/sashimiArcs.ts'
+import { selectedSashimiHighlight } from './components/sashimiHitTest.ts'
 import { bandScreenTop } from './components/sectionScreen.ts'
 import { configSlotViews } from './configSlotViews.ts'
 import { colorSchemeIndexFor } from './constants.ts'
@@ -173,7 +176,7 @@ import {
   getSortByMenuItem,
 } from './menus/index.ts'
 import { migrateAlignmentsSnapshot } from './migrateAlignmentsSnapshot.ts'
-import { computeSashimiArcSections } from './overlaySections.ts'
+import { computeSashimiLabelSections } from './overlaySections.ts'
 import {
   NO_QUALITY_SPAN,
   baseQualitySpanAcrossGroups,
@@ -181,6 +184,7 @@ import {
 } from './qualitySpans.ts'
 import { chainReadIdsAt, findRead, readInfo } from './readLookup.ts'
 import { shouldDrawOverlaps } from './renderers/rendererTypes.ts'
+import { sashimiBandsOf } from './renderers/sashimiMarks.ts'
 import { fetchFeatureDetails, fetchFeaturesForRegion } from './rpcCalls.ts'
 import {
   belowCoverageBandsGeometry,
@@ -199,6 +203,7 @@ import type { ArcBandFeed } from '../features/arcs/bandFeed.ts'
 import type { ArcsByGroupResult } from '../features/arcs/compute.ts'
 import type { CoverageRegionFields } from '../features/coverage/types.ts'
 import type { BezierArcScope } from '../features/linkedReads/computeOverlay.ts'
+import type { SashimiBandFeed } from '../features/sashimi/bandFeed.ts'
 import type { LaneJunction } from '../features/sashimi/supportingReads.ts'
 import type { ArcCategory } from '../shaders/palettes.ts'
 import type {
@@ -220,7 +225,7 @@ import type { NumericExtent } from './bakedColorScale.ts'
 import type { ReadColorCategory } from './colorUtils.ts'
 import type { ArcHighlight } from './components/arcHitTest.ts'
 import type { ContextMenuHit } from './components/hitTestPipeline.ts'
-import type { SashimiArcSection } from './components/sashimiArcs.ts'
+import type { SashimiLabelSection } from './components/sashimiArcs.ts'
 import type { ScrollModel } from './components/sectionScreen.ts'
 import type { TooltipPayload } from './components/tooltipUtils.ts'
 import type { LinearAlignmentsDisplayConfigSchema } from './configSchema'
@@ -273,9 +278,10 @@ const NO_GROUP_HEIGHT_OVERRIDES: ReadonlyMap<string, number> = new Map()
 
 // One frozen empty array, so the common no-arcs frame invalidates no observer.
 // Frozen so no caller's in-place `.sort()` corrupts the singleton.
-const NO_SASHIMI_ARC_SECTIONS = Object.freeze(
+const NO_SASHIMI_LABEL_SECTIONS = Object.freeze(
   [],
-) as readonly SashimiArcSection[]
+) as readonly SashimiLabelSection[]
+const NO_SASHIMI_FEEDS: ReadonlyMap<number, SashimiBandFeed> = new Map()
 const NO_LINK_REGIONS: readonly LinkRegion[] = []
 const NO_ARC_FEEDS: ReadonlyMap<number, ArcBandFeed> = new Map()
 
@@ -1097,7 +1103,7 @@ export default function stateModelFactory(
            * #getter
            * Per group, which junctions draw in the strip below coverage (by
            * `junctionKey`): the one sashimi side decision, read by
-           * `sashimiDownArcLanes` to reserve the strip and `sashimiArcSections`
+           * `sashimiDownArcLanes` to reserve the strip and `sashimiFeedsByGroup`
            * to place each arc. refNames come from `loadedRegions`, keeping this
            * a tier-1 (fetch) derivation. A region not yet loaded gets a unique
            * key, so regions not proven to share a chromosome never pool onto
@@ -1953,43 +1959,6 @@ export default function stateModelFactory(
 
         /**
          * #getter
-         * Per-section upload input in stacking order: each section's laid-out
-         * region map and arc feed, keyed by group. Both renderers pair uploaded
-         * section `s` with drawn section `s` by INDEX, so this list and
-         * `renderState.sections` both derive from `renderSections` and share
-         * its length and order.
-         */
-        get sourceSections(): SectionSource[] {
-          return this.sourceSectionsWith(self.arcFeedsByGroup)
-        },
-
-        /**
-         * #method
-         * `sourceSections` with the connections coloured from `colors`, for
-         * the SVG export's theme.
-         */
-        sourceSectionsIn(colors: ColorPalette): SectionSource[] {
-          return this.sourceSectionsWith(self.arcFeedsByGroupIn(colors))
-        },
-
-        /**
-         * #method
-         * The laid-out sections with each lane's read connections, which
-         * join here rather than on the lane: they are coloured, and the
-         * layout must not read the palette.
-         */
-        sourceSectionsWith(
-          feeds: ReadonlyMap<string, ReadonlyMap<number, ArcBandFeed>>,
-        ): SectionSource[] {
-          return this.renderSections.map(({ groupKey, laidOutPileupMap }) => ({
-            groupKey,
-            laidOutPileupMap,
-            arcFeeds: feeds.get(groupKey) ?? NO_ARC_FEEDS,
-          }))
-        },
-
-        /**
-         * #getter
          * The pairs the bezier overlay draws, placed on each drawn section's
          * pileup band.
          */
@@ -2329,9 +2298,9 @@ export default function stateModelFactory(
           /**
            * #getter
            * The junctions each lane draws, merged and filtered, in stacking
-           * order — the half of the sashimi overlay a gesture does NOT owe: it
-           * reads loaded data, the on-screen region set and the junction
-           * filters, while `sashimiArcSections` reads the pan. Not a lane
+           * order. A gesture owes none of it: it reads loaded data, the on-screen
+           * region set and the junction filters, and only the count labels
+           * (`sashimiLabelSections`) read the pan. Not a lane
            * field: a lane feeds the LAYOUT, which the on-screen region set must
            * never reach.
            */
@@ -2361,25 +2330,106 @@ export default function stateModelFactory(
 
           /**
            * #getter
-           * Per-section sashimi arcs in stacking order, which the overlay and
-           * the SVG export both map over; ungrouped is the single-section case.
-           * A computed (tier 3, like `connectorsByGroup`): it depends on
-           * pan/zoom but not `scrollTop`, so scrolling a grouped track replays
-           * the cache. Returns the same empty array when no lane has a
-           * junction, so the overlay's observer stops.
+           * Per-section junction count labels in stacking order, which the
+           * overlay and the SVG export both map over. It depends on pan/zoom
+           * but not `scrollTop`, so scrolling a grouped track replays the
+           * cache, and it is the same empty array while the labels are off, so
+           * the overlay's observer stops.
            */
-          get sashimiArcSections(): readonly SashimiArcSection[] {
-            const sections = this.sashimiJunctionSections
+          get sashimiLabelSections(): readonly SashimiLabelSection[] {
+            const sections = self.showSashimiLabels
+              ? this.sashimiJunctionSections
+              : []
             if (!sections.some(sec => sec.junctions.length > 0)) {
-              return NO_SASHIMI_ARC_SECTIONS
+              return NO_SASHIMI_LABEL_SECTIONS
             }
             const view = self.view
-            return computeSashimiArcSections({
+            return computeSashimiLabelSections({
               sections,
               bpToScreenX: makeBpToScreenX(view),
               viewWidthPx: view.width,
               ...self.bandHeights,
             })
+          },
+
+          /**
+           * #getter
+           * The sashimi marks' input, per group and region
+           * (`buildSashimiBandFeeds`). In bp, so a pan or zoom rebuilds
+           * nothing.
+           */
+          get sashimiFeedsByGroup() {
+            return this.sashimiFeedsByGroupIn(self.colorPalette)
+          },
+
+          /**
+           * #method
+           * `sashimiFeedsByGroup` coloured from `colors`, which the SVG export
+           * passes to draw in its own theme.
+           */
+          sashimiFeedsByGroupIn(colors: ColorPalette) {
+            const displayed = self.displayedRegionInfos
+            return new Map(
+              this.sashimiJunctionSections.map(sec => [
+                sec.groupKey,
+                buildSashimiBandFeeds({
+                  junctions: sec.junctions,
+                  downJunctionKeys: sec.sashimiDownKeys,
+                  displayed,
+                  colors,
+                }),
+              ]),
+            )
+          },
+
+          /**
+           * #getter
+           * Per-section upload input in stacking order: each section's laid-out
+           * region map with its arc and sashimi feeds, keyed by group. Both renderers pair uploaded
+           * section `s` with drawn section `s` by INDEX, so this list and
+           * `renderState.sections` both derive from `renderSections` and share
+           * its length and order.
+           */
+          get sourceSections(): SectionSource[] {
+            return this.sourceSectionsWith(
+              self.arcFeedsByGroup,
+              this.sashimiFeedsByGroup,
+            )
+          },
+
+          /**
+           * #method
+           * `sourceSections` with the connections coloured from `colors`, for
+           * the SVG export's theme.
+           */
+          sourceSectionsIn(colors: ColorPalette): SectionSource[] {
+            return this.sourceSectionsWith(
+              self.arcFeedsByGroupIn(colors),
+              this.sashimiFeedsByGroupIn(colors),
+            )
+          },
+
+          /**
+           * #method
+           * The laid-out sections with each lane's read connections and splice
+           * junctions, which join here rather than on the lane: both are coloured, and the
+           * layout must not read the palette.
+           */
+          sourceSectionsWith(
+            feeds: ReadonlyMap<string, ReadonlyMap<number, ArcBandFeed>>,
+            sashimiFeeds: ReadonlyMap<
+              string,
+              ReadonlyMap<number, SashimiBandFeed>
+            >,
+          ): SectionSource[] {
+            return self.renderSections.map(
+              ({ groupKey, laidOutPileupMap }) => ({
+                groupKey,
+                laidOutPileupMap,
+                arcFeeds: feeds.get(groupKey) ?? NO_ARC_FEEDS,
+                sashimiFeeds: sashimiFeeds.get(groupKey) ?? NO_SASHIMI_FEEDS,
+              }),
+            )
           },
 
           /**
@@ -2510,6 +2560,7 @@ export default function stateModelFactory(
               self.symlogConstant,
             ),
             coverageSnpMinFrequency: self.coverageSnpMinFrequency,
+            sashimiArcsHeight: self.bandHeights.sashimiArcsHeight,
             showMismatches: self.showMismatches,
             filterMismatchesByFrequency: self.fadeLowFreqMismatches,
             mismatchAlpha: self.mismatchAlpha,
@@ -2542,12 +2593,45 @@ export default function stateModelFactory(
         /**
          * #getter
          * The view's displayed regions as the band's connections place their
-         * feet (`viewRegionTable`); empty while the band is off.
+         * feet (`viewRegionTable`), and the splice junctions theirs; empty while
+         * both are off.
          */
         get linkRegions(): readonly LinkRegion[] {
-          return self.readConnections === 'off' || !self.view.initialized
+          return (self.readConnections === 'off' && !self.showSashimiArcs) ||
+            !self.view.initialized
             ? NO_LINK_REGIONS
             : viewRegionTable(self.view)
+        },
+
+        /**
+         * #getter
+         * The selected splice junction's ink, for the overlay that outlines
+         * it. Reads the pan, and only while a junction is selected.
+         */
+        get selectedSashimiHighlight(): ArcHighlight | undefined {
+          const id = self.selectedFeatureId
+          if (!id?.startsWith(SASHIMI_FEATURE_ID_PREFIX)) {
+            return undefined
+          }
+          const state = this.renderState
+          for (const [s, sec] of state.sections.entries()) {
+            const groupKey = self.renderSections[s]?.groupKey
+            const feeds =
+              groupKey === undefined
+                ? undefined
+                : self.sashimiFeedsByGroup.get(groupKey)
+            const highlight =
+              feeds && groupKey !== undefined
+                ? selectedSashimiHighlight(id, groupKey, feeds, {
+                    ...state,
+                    sashimi: sashimiBandsOf(state, sec),
+                  })
+                : undefined
+            if (highlight) {
+              return highlight
+            }
+          }
+          return undefined
         },
 
         /**

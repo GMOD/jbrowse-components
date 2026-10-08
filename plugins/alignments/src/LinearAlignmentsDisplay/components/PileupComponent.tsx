@@ -12,7 +12,7 @@ import ArcHoverOverlay from './ArcHoverOverlay.tsx'
 import GroupLabelsOverlay from './GroupLabelsOverlay.tsx'
 import PileupBezierOverlay from './PileupBezierOverlay.tsx'
 import PileupTruncationRule from './PileupTruncationRule.tsx'
-import SashimiArcsOverlay from './SashimiArcsOverlay.tsx'
+import SashimiLabelsOverlay from './SashimiLabelsOverlay.tsx'
 import VisibleLabelsOverlay from './VisibleLabelsOverlay.tsx'
 import { bandScreenTop, contentScreenY, sectionKey } from './sectionScreen.ts'
 import { useAlignmentsBase } from './useAlignmentsBase.ts'
@@ -86,7 +86,7 @@ const PileupBody = observer(function PileupBody({
       <GroupLabelsOverlay model={model} />
       <PileupTruncationRule model={model} />
 
-      <SashimiArcsOverlay model={model} />
+      <SashimiLabelsOverlay model={model} />
       <PileupBezierOverlay model={model} />
       <ArcHoverOverlay model={model} />
 

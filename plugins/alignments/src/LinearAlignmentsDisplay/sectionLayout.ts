@@ -378,6 +378,7 @@ export function buildSectionRenders(
         // Coverage + arc band are sticky in ungrouped mode (only the pileup
         // scrolls), so the arc band keeps its content-space top.
         arcBand: sec ? arcBandAt(sec, sec.arcBandTop) : undefined,
+        sashimiBandTop: sec?.hasSashimiBand ? sec.sashimiBandTop : undefined,
       },
     ]
   }
@@ -390,5 +391,8 @@ export function buildSectionRenders(
     pileupClipHeight: sec.pileupHeight,
     // The whole section scrolls as a unit, so the arc band scrolls too.
     arcBand: arcBandAt(sec, sec.arcBandTop - scrollTop),
+    sashimiBandTop: sec.hasSashimiBand
+      ? sec.sashimiBandTop - scrollTop
+      : undefined,
   }))
 }

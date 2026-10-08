@@ -95,7 +95,7 @@ export type { ArcCategory } from './shaders/palettes.ts'
 export type { ArcHighlight } from './LinearAlignmentsDisplay/components/arcHitTest.ts'
 export type { VisibleLabel } from './LinearAlignmentsDisplay/components/computeVisibleLabels.ts'
 export type { ContextMenuHit } from './LinearAlignmentsDisplay/components/hitTestPipeline.ts'
-export type { SashimiArcSection } from './LinearAlignmentsDisplay/components/sashimiArcs.ts'
+export type { SashimiLabelSection } from './LinearAlignmentsDisplay/components/sashimiArcs.ts'
 export type { ScrollModel } from './LinearAlignmentsDisplay/components/sectionScreen.ts'
 export type { TooltipPayload } from './LinearAlignmentsDisplay/components/tooltipUtils.ts'
 export type {

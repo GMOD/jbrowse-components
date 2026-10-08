@@ -35,6 +35,7 @@ import type {
 import type { PileupMark } from '../renderers/pileupMarks.ts'
 import type { RenderState } from '../renderers/rendererTypes.ts'
 import type { ArcMarkHit } from './arcHitTest.ts'
+import type { SashimiMarkHit } from './sashimiHitTest.ts'
 import type { RenderBlock } from '@jbrowse/render-core/renderBlock'
 
 export type HitTestResult =
@@ -60,12 +61,13 @@ export type HitTestResult =
     }
   | { type: 'none' }
 
-// What a GESTURE resolves to: the pileup's answer, or the arc band's, which
-// outranks it (see `ArcMarkHit`). `performHitTest` never returns the arc
-// variant — arcs are a different feed and deliberately not in this pipeline —
-// but every consumer of a gesture's result switches over both, which is what
-// makes declining to act through an arc a thing the compiler asks for.
-export type MarkHitResult = HitTestResult | ArcMarkHit
+// What a GESTURE resolves to: the pileup's answer, or the arc band's or a
+// splice junction's, which outrank it (see `ArcMarkHit`). `performHitTest`
+// never returns those variants — they are different feeds and deliberately not
+// in this pipeline — but every consumer of a gesture's result switches over
+// all three, which is what makes declining to act through an arc a thing the
+// compiler asks for.
+export type MarkHitResult = HitTestResult | ArcMarkHit | SashimiMarkHit
 
 // Above ~50kbp visible region (2000px / 50000bp = 25), per-base detail is
 // too zoomed out to be meaningful.
@@ -123,7 +125,11 @@ export function contextMenuTargetForHit(
   result: MarkHitResult,
   canvasX: number,
 ): ContextMenuTarget | undefined {
-  if (result.type === 'none' || result.type === 'arc') {
+  if (
+    result.type === 'none' ||
+    result.type === 'arc' ||
+    result.type === 'sashimi'
+  ) {
     return undefined
   }
   const block = result.resolved

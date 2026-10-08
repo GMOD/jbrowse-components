@@ -99,6 +99,7 @@ function sources(): AlignmentsSources {
     sections: [
       {
         groupKey: '',
+        sashimiFeeds: new Map(),
         arcFeeds: buildArcBandFeeds({
           colorField: 'insertSizeAndOrientation',
           byRegion: new Map([[0, oneArc()]]),

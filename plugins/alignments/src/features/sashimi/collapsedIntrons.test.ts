@@ -95,6 +95,12 @@ function collapsedOpts(
       displayedRegionIndex: i,
     })),
     bpToScreenX: projectionOver(regions),
+    displayed: regions.map((r, displayedRegionIndex) => ({
+      refName: 'chr1',
+      start: r.start,
+      end: r.end,
+      displayedRegionIndex,
+    })),
     // Wider than the regions above project to (three 400bp windows, so 1200px),
     // so the off-screen cull never fires — these tests are about the merge and
     // the piecewise projection.
@@ -173,10 +179,12 @@ test('a collapsed intron leaves its junction a narrow arc, not a zero-width spik
   // endpoints would project to the same x.
   const arcs = computeSashimiArcs(collapsedOpts([junctions([ADJACENT_A])]))
   const [arc] = arcs
-  expect(arc!.d).not.toContain('NaN')
+  // Its feet lie in two displayed regions, which the mark places each through
+  // its own.
+  expect([arc!.regionIndex, arc!.endRegionIndex]).toEqual([0, 1])
   // 1200 is 300bp into region 0; 2000 is 100bp into region 1, which starts at
   // screen 400 -> a 200px span, the two paddings.
-  expect(arc!.labelX).toBe(400)
+  expect(arc!.label!.x).toBe(400)
 })
 
 test('an exon-skipping junction draws wider and taller than the introns it spans', () => {
@@ -186,10 +194,9 @@ test('an exon-skipping junction draws wider and taller than the introns it spans
   const byStart = new Map(arcs.map(a => [`${a.start}-${a.end}`, a]))
   const skip = byStart.get('1200-3000')!
   const adjacent = byStart.get('1200-2000')!
-  // up-mode: a taller arc rises further, so its apex labelY is smaller. Height
-  // scales on GENOMIC span, which collapsing does not change, so the nesting
-  // order survives the projection.
-  expect(skip.labelY).toBeLessThan(adjacent.labelY)
+  // Height scales on GENOMIC span, which collapsing does not change, so the
+  // nesting order survives the projection.
+  expect(skip.y).toBeGreaterThan(adjacent.y)
 })
 
 test('a junction reaching into a collapsed intron is dropped, not clamped', () => {
@@ -204,18 +211,12 @@ test('a junction reaching into a collapsed intron is dropped, not clamped', () =
 
 test('a flipped (minus-strand) gene keeps arcs in screen order', () => {
   // `flip` reverses the region list and marks each region reversed, so screen x
-  // runs against genomic coordinate. `screenSpan` normalizes each arc, so
-  // left <= right still holds and the cubic is well formed.
+  // runs against genomic coordinate. The feed is in bp and the mark orders
+  // each arc's feet on screen, so both junctions still draw.
   const arcs = computeSashimiArcs(
     collapsedOpts([junctions([ADJACENT_A, EXON_SKIP])], FLIPPED_EXONS),
   )
-  for (const arc of arcs) {
-    const [, left, , right] = /M (\S+) (\S+) C .*, (\S+) (\S+)$/.exec(arc.d)!
-    expect(Number(left)).toBeLessThanOrEqual(Number(right))
-  }
-  // and the wider (exon-skipping) junction is still the wider arc on screen
-  const spans = new Map(arcs.map(a => [a.end - a.start, a.labelX]))
-  expect(spans.size).toBe(2)
+  expect(new Set(arcs.map(a => a.end - a.start)).size).toBe(2)
 })
 
 test('flipped regions still split a crossing pair across bands in auto mode', () => {
@@ -238,11 +239,9 @@ test('flipped regions still split a crossing pair across bands in auto mode', ()
 })
 
 test('a junction the layout never reserved for is drawn up, not into the pileup', () => {
-  // The down sub-band renders at `sashimiArcsHeight` whether or not the layout
-  // reserved it, so an arc placed down without a strip paints over the pileup.
   // Sides come from the layout's own set, so the only junctions that go down are
-  // ones it reserved for — an unlisted junction takes the side that needs no
-  // strip.
+  // ones it reserved a strip for — an unlisted junction takes the side that
+  // needs no strip.
   const arcs = computeSashimiArcs(
     collapsedOpts([junctions([ADJACENT_A])], EXONS, {
       downJunctionKeys: new Set(['chr1:9999:99999']),
@@ -308,6 +307,7 @@ test('a refName displayed twice anchors arcs to its first occurrence', () => {
   expect(arcs).toHaveLength(1)
   // 700 resolves in region 0 (x 700), not its second painting inside region 1;
   // 1200 exists only in region 1, at 1000 + (1200 - 500) = 1700.
-  expect(arcs[0]!.d).toMatch(/^M 700 \S+ C 700 \S+, 1700 \S+, 1700 \S+$/)
-  expect(arcs[0]!.labelX).toBe(1200)
+  expect(arcs[0]!.regionIndex).toBe(0)
+  expect(arcs[0]!.endRegionIndex).toBe(1)
+  expect(arcs[0]!.label!.x).toBe(1200)
 })

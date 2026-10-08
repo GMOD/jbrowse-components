@@ -51,11 +51,13 @@ function twoSections(): AlignmentsSources {
         groupKey: 'split',
         laidOutPileupMap: new Map([[0, laneWithCoverage(24)]]),
         arcFeeds: new Map(),
+        sashimiFeeds: new Map(),
       },
       {
         groupKey: 'unsplit',
         laidOutPileupMap: new Map([[0, laneWithCoverage(8)]]),
         arcFeeds: new Map(),
+        sashimiFeeds: new Map(),
       },
     ],
     densityRegions: new Map(),
