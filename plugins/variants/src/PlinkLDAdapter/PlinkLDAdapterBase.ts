@@ -3,8 +3,6 @@ import {
   cachedSetup,
 } from '@jbrowse/core/data_adapters/BaseAdapter'
 
-import { filterRecordsInRegion } from './filterRecordsInRegion.ts'
-
 import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { NoAssemblyRegion } from '@jbrowse/core/util/types'
 import type {
@@ -18,8 +16,7 @@ import type {
  * payload differs — the plain adapter parses the whole file into an array, the
  * tabix one holds an index handle — so subclasses supply `loadConfig` and the
  * differing record queries (`getRefNames`, `getLDRecords`). Everything here (the
- * `cachedSetup` memo, `getHeader`, `getLDRecordsInRegion`) is byte-for-byte
- * identical between them.
+ * `cachedSetup` memo, `getHeader`) is identical between them.
  */
 export abstract class PlinkLDAdapterBase<
   Config extends { header: PlinkLDHeader },
@@ -48,23 +45,9 @@ export abstract class PlinkLDAdapterBase<
 
   public abstract getRefNames(opts?: BaseOptions): Promise<string[]>
 
-  /**
-   * Get LD records where the first SNP (A) falls within the query region.
-   * Caller should additionally filter for snpB being in region if needed.
-   */
+  /** LD records whose first SNP (A) falls within the query region. */
   public abstract getLDRecords(
     query: NoAssemblyRegion,
     opts?: BaseOptions,
   ): Promise<PlinkLDRecord[]>
-
-  /**
-   * Get LD records where BOTH SNPs fall within the query region.
-   * This is what's needed for the LD triangle display.
-   */
-  public async getLDRecordsInRegion(
-    query: NoAssemblyRegion,
-    opts: BaseOptions = {},
-  ): Promise<PlinkLDRecord[]> {
-    return filterRecordsInRegion(await this.getLDRecords(query, opts), query)
-  }
 }

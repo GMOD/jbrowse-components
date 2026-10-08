@@ -32,10 +32,6 @@ export class SleLDAdapter extends BaseAdapter {
     )
   }
 
-  async getLDRecordsInRegion() {
-    return []
-  }
-
   async getHeader() {
     return header
   }

@@ -243,3 +243,14 @@ test('columnX agrees with the x half of cellToScreen', () => {
     expect(display.columnX(column)).toBeCloseTo(display.cellToScreen(u, u).x, 9)
   }
 })
+
+test('the focal SNP is the one clicked where two share a position', () => {
+  const { display } = loadedDisplay()
+  const snps = display.snps.map((snp, i) => ({
+    ...snp,
+    start: i < 2 ? 0 : snp.start,
+  }))
+  display.setRpcData({ ...display.rpcData!, snps })
+  display.setFocalSnp(snps[1])
+  expect(display.focalSnpIndex).toBe(1)
+})

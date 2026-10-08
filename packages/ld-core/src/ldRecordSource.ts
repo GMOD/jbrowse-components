@@ -11,11 +11,6 @@ export interface LDRecordSource {
     query: { refName: string; start: number; end: number },
     opts?: object,
   ): Promise<PlinkLDRecord[]>
-  // Pairs with BOTH SNPs inside the region (for the LD triangle display).
-  getLDRecordsInRegion(
-    query: { refName: string; start: number; end: number },
-    opts?: object,
-  ): Promise<PlinkLDRecord[]>
   // Resolved column layout — `dprimeIdx >= 0` iff the file carries a D' column.
   getHeader(opts?: object): Promise<PlinkLDHeader>
 }
@@ -30,8 +25,6 @@ export function isLDRecordSource(adapter: unknown): adapter is LDRecordSource {
     adapter !== null &&
     'getLDRecords' in adapter &&
     typeof adapter.getLDRecords === 'function' &&
-    'getLDRecordsInRegion' in adapter &&
-    typeof adapter.getLDRecordsInRegion === 'function' &&
     'getHeader' in adapter &&
     typeof adapter.getHeader === 'function'
   )

@@ -3,7 +3,7 @@ import { openLocation } from '@jbrowse/core/util/io'
 import { parsePlinkLDLine, resolvePlinkLDHeader } from '@jbrowse/ld-core'
 
 import { PlinkLDAdapterBase } from './PlinkLDAdapterBase.ts'
-import { bpInRegion } from './filterRecordsInRegion.ts'
+import { bpInRegion } from './bpInRegion.ts'
 
 import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { NoAssemblyRegion } from '@jbrowse/core/util/types'

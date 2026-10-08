@@ -71,6 +71,10 @@ function upperBoundFloat32(arr: Float32Array, val: number) {
   return lo
 }
 
+function snpKey({ refName, start, id = '' }: LDSnp) {
+  return `${refName}:${start}:${id}`
+}
+
 /**
  * #stateModel LDTrackDisplay
  * #displayFoundation GlobalFetchMixin
@@ -101,8 +105,8 @@ export default function stateModelFactory(configSchema: LDDisplayConfigSchema) {
     .volatile(() => ({
       /**
        * #volatile
-       * Locus (`refName:start`) of the SNP whose row and column are
-       * emphasized. A locus rather than an index, so it survives a refetch.
+       * Key (`refName:start:id`) of the SNP whose row and column are
+       * emphasized. A key rather than an index, so it survives a refetch.
        */
       focalSnpLocus: undefined as string | undefined,
     }))
@@ -111,7 +115,7 @@ export default function stateModelFactory(configSchema: LDDisplayConfigSchema) {
        * #action
        */
       setFocalSnp(snp: LDSnp | undefined) {
-        self.focalSnpLocus = snp ? `${snp.refName}:${snp.start}` : undefined
+        self.focalSnpLocus = snp ? snpKey(snp) : undefined
       },
       /**
        * #action
@@ -275,7 +279,7 @@ export default function stateModelFactory(configSchema: LDDisplayConfigSchema) {
         const locus = self.focalSnpLocus
         return locus === undefined
           ? -1
-          : this.snps.findIndex(s => `${s.refName}:${s.start}` === locus)
+          : this.snps.findIndex(s => snpKey(s) === locus)
       },
     }))
     .views(self => ({

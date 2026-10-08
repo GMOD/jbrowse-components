@@ -1,7 +1,7 @@
 import { getAdapter } from '@jbrowse/core/data_adapters/dataAdapterCache'
 import { LD_NOT_COMPUTED, isLDRecordSource } from '@jbrowse/ld-core'
 
-import { bpInRegion } from '../PlinkLDAdapter/filterRecordsInRegion.ts'
+import { bpInRegion } from '../PlinkLDAdapter/bpInRegion.ts'
 import { bandCellCount, bandPairIndex, resolveBand } from './ldBand.ts'
 
 import type { LDMatrixResult, LDMetric, LDSnp } from './ldTypes.ts'
@@ -115,7 +115,9 @@ export async function getLDMatrixFromPlink({
   const metric = resolveMetric(ldMetric, { hasR2, hasDprime })
 
   // A pair is fetched by the region its A side is in and kept where its B
-  // side is in any displayed region, so a pair spanning two blocks loads.
+  // side is in any displayed region, so a pair spanning two blocks loads. The
+  // A side is checked here because a tabix index built on other columns
+  // returns pairs whose A is outside the query.
   const allRecords: PlinkLDRecord[] = []
   for (const region of regions) {
     const records = await dataAdapter.getLDRecords(
@@ -124,6 +126,7 @@ export async function getLDMatrixFromPlink({
     )
     for (const r of records) {
       if (
+        bpInRegion(r.bpA, region) &&
         regions.some(
           other => other.refName === r.chrB && bpInRegion(r.bpB, other),
         )

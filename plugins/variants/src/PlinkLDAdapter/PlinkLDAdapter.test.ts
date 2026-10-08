@@ -38,15 +38,10 @@ test('getHeader reports no D column for an R2-only file', async () => {
   expect((await adapter.getHeader()).dprimeIdx).toBe(-1)
 })
 
-// getLDRecords keeps every pair whose A-side is in the region; the triangle
-// display needs both endpoints in view, so getLDRecordsInRegion drops pairs
-// reaching outside it (rsC at 1500, rsD at 2000).
-test('getLDRecordsInRegion requires both SNPs in the region', async () => {
+test('getLDRecords keeps every pair whose A side is in the region', async () => {
   const adapter = makeAdapter('./test_data/example.ld')
   const query = { refName: '1', start: 0, end: 1300 }
   expect(await adapter.getLDRecords(query)).toHaveLength(4)
-  const inRegion = await adapter.getLDRecordsInRegion(query)
-  expect(inRegion.map(r => r.snpB).sort()).toEqual(['rsB', 'rsLEAD'])
 })
 
 // LocusZoom hosts headerless PLINK .ld files; the default column order is
