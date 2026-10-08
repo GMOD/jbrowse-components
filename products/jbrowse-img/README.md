@@ -1619,8 +1619,11 @@ Usage: jb2export batch --vcf <file> [options]
 Renders one image per record. A junction is a breakpoint split view: both
 loci stacked, with the reads that leave one panel and arrive in the other
 drawn between them. A record that fits one window is a single panel: an
-insertion, a single breakend, or two ends closer together than --flank
-reaches. The module graph loads once for the whole callset, so this is
+insertion, a single breakend, an SNV or indel, or two ends closer together
+than --flank reaches. Where a single-panel record spells out its alleles,
+every alignments track with no sort: of its own is sorted at the variant:
+an SNV at its base, a deletion at its first deleted base, an insertion at
+the base after it. The module graph loads once for the whole callset, so this is
 much faster than a shell loop over "jb2export breakpoint".
 
 Options:
@@ -1642,7 +1645,7 @@ Options:
   --showGridlines   Show genomic coordinate gridlines in the output [default: false]
   --trackLabels     Track label position: offset, overlapping, left, or hidden
   --refseq          Show the reference sequence track [default: false]
-  --vcf             VCF (plain or bgzipped) of structural variants to render, one image per record
+  --vcf             VCF (plain or bgzipped) of variants to render, one image per record
   --bedpe           BEDPE to render, one image per row; the format for anything a VCF cannot express (a LINX TSV reshaped by awk)
   --outDir          Directory to write the images to [default: jb2export-batch]
   --flank           bp of context around each breakend [default: 500]
@@ -1659,6 +1662,8 @@ Examples:
       A contact sheet of every junction in a callset
   jb2export batch --vcf calls.vcf.gz --hub hg38 --bam tumor.bam --limit 20
       The first 20, to check the framing before committing to the whole run
+  jb2export batch --vcf snvs.vcf.gz --hub hg38 --bam tumor.bam --flank 40 --passOnly
+      Small variants at base resolution, carriers of each sorted to the top
   jb2export batch --bedpe linx_links.bedpe --hub hg38 --bam tumor.bam
       The same from a BEDPE, for a caller whose output is not a VCF
 
