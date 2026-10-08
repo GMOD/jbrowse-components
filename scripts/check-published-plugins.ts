@@ -79,6 +79,9 @@ import { build } from 'esbuild'
 
 import reExportsList from '../packages/core/src/ReExports/list.ts'
 import { loudOnMissingModule } from '../packages/core/src/ReExports/registry.ts'
+import { hostReads, unservedReads } from './pluginHostReads.ts'
+
+import type { AbiManifest } from './pluginHostReads.ts'
 
 const STORE = 'https://jbrowse.org/plugin-store/v2/plugins.json'
 
@@ -212,35 +215,34 @@ function evaluateInWorkerRealm(
   }
 }
 
-// An ES module plugin's entry and every chunk it reaches, joined: esbuild's
+// An ES module plugin's entry and every chunk it reaches, by url: esbuild's
 // code splitting puts each host lookup in whichever chunk reads it, and the
 // entry alone would hide the view a menu item lazy-loads.
-async function esmSource(url: string) {
-  const seen = new Set<string>()
-  const texts: string[] = []
+async function esmSources(url: string) {
+  const sources = new Map<string, string>()
   const queue = [url]
   while (queue.length > 0) {
     const next = queue.pop()!
-    if (seen.has(next)) {
+    if (sources.has(next)) {
       continue
     }
-    seen.add(next)
     const r = await fetch(next)
     if (!r.ok) {
       throw new Error(`HTTP ${r.status} fetching ${next}`)
     }
     const text = await r.text()
-    texts.push(text)
+    sources.set(next, text)
     for (const m of text.matchAll(
       /(?:\bfrom|\bimport\s*\(?)\s*["'](\.{1,2}\/[^"']+)["']/g,
     )) {
       queue.push(new URL(m[1]!, next).href)
     }
   }
-  return texts.join('\n')
+  return sources
 }
 
 const removed = removedNames()
+const manifest = read('reExports.generated.json') as AbiManifest
 const served = new Set(reExportsList)
 const worker = await workerExports()
 const res = await fetch(STORE)
@@ -254,6 +256,11 @@ const report: {
   ranges: string[]
   breaks: string[]
 }[] = []
+// What each ES module plugin reads off the host, committed so that
+// check-plugin-reads.ts can refuse a removal offline. A UMD bundle has no
+// entry: rollup's positional factory is not traced, and the 4.3.0 removals
+// above are what can break one.
+const pluginReads: Record<string, string[]> = {}
 
 for (const p of plugins) {
   const url = p.url ?? p.umdUrl ?? p.versions?.at(-1)?.url
@@ -267,6 +274,7 @@ for (const p of plugins) {
     continue
   }
   let src: string
+  let esm: Map<string, string> | undefined
   if (url) {
     const r = await fetch(url)
     if (!r.ok) {
@@ -280,7 +288,8 @@ for (const p of plugins) {
     src = await r.text()
   } else {
     try {
-      src = await esmSource(esmUrl!)
+      esm = await esmSources(esmUrl!)
+      src = [...esm.values()].join('\n')
     } catch (e) {
       report.push({
         plugin: p.name,
@@ -300,13 +309,25 @@ for (const p of plugins) {
       breaks.push(`module ${name}`)
     }
   }
-  for (const [alias, mod] of Object.entries(hostAliases(src))) {
-    for (const name of removed[mod] ?? []) {
-      const used = new RegExp(
-        `[(,\\s.]${alias.replaceAll('$', '\\$')}\\.${name}\\b`,
-      )
-      if (used.test(src)) {
-        breaks.push(`${mod}#${name}`)
+  if (esm) {
+    // Against everything this build serves, not the 4.3.0 removals: a v5
+    // plugin reads display-kit and render-core, which 4.3.0 never had.
+    const reads = hostReads(esm, esmUrl!)
+    pluginReads[p.name] = reads
+    breaks.push(
+      ...unservedReads(reads, manifest).filter(r =>
+        served.has(r.slice(0, r.lastIndexOf('#'))),
+      ),
+    )
+  } else {
+    for (const [alias, mod] of Object.entries(hostAliases(src))) {
+      for (const name of removed[mod] ?? []) {
+        const used = new RegExp(
+          `[(,\\s.]${alias.replaceAll('$', '\\$')}\\.${name}\\b`,
+        )
+        if (used.test(src)) {
+          breaks.push(`${mod}#${name}`)
+        }
       }
     }
   }
@@ -327,6 +348,15 @@ for (const p of plugins) {
 // that carry meaning: a version bump on a plugin that still breaks the same way
 // is not news, and putting it in here would make the weekly run cry wolf.
 const BASELINE = 'packages/core/src/ReExports/publishedPluginBreaks.json'
+const READS = 'packages/core/src/ReExports/publishedPluginReads.json'
+const readsShape = () =>
+  `${JSON.stringify(
+    Object.fromEntries(
+      Object.entries(pluginReads).sort(([a], [b]) => a.localeCompare(b)),
+    ),
+    null,
+    2,
+  )}\n`
 
 // The website's plugin-store page is prerendered from a committed copy of this
 // same manifest, so nothing about a docs build touches the network. Nothing
@@ -393,13 +423,44 @@ function checkSiteList() {
   return false
 }
 
+// A plugin release moves what it reads, and the offline gate only knows the
+// committed copy, so a stale one is a removal nobody is stopped from making.
+function checkReads() {
+  const committed = fs.existsSync(READS)
+    ? (JSON.parse(fs.readFileSync(READS, 'utf8')) as Record<string, string[]>)
+    : {}
+  let same = true
+  for (const plugin of new Set([
+    ...Object.keys(committed),
+    ...Object.keys(pluginReads),
+  ])) {
+    const was = new Set(committed[plugin])
+    const now = new Set(pluginReads[plugin])
+    const added = [...now].filter(r => !was.has(r))
+    const dropped = [...was].filter(r => !now.has(r))
+    if (added.length > 0 || dropped.length > 0) {
+      if (same) {
+        console.error(`${READS} is out of date:`)
+      }
+      same = false
+      console.error(
+        `  ${plugin}: ${[...added.map(r => `+${r}`), ...dropped.map(r => `-${r}`)].join(', ')}`,
+      )
+    }
+  }
+  return same
+}
+
 if (process.argv.includes('--write')) {
   fs.writeFileSync(BASELINE, baselineShape())
   console.log(`wrote ${BASELINE}`)
+  fs.writeFileSync(READS, readsShape())
+  console.log(`wrote ${READS}`)
   fs.writeFileSync(SITE_LIST, siteShape())
   console.log(`wrote ${SITE_LIST}`)
 } else if (process.argv.includes('--check')) {
-  const siteOk = checkSiteList()
+  const readsOk = checkReads()
+  const siteOk = checkSiteList() && readsOk
   const fresh = baselineShape()
   const committed = fs.existsSync(BASELINE)
     ? fs.readFileSync(BASELINE, 'utf8')

@@ -55,6 +55,11 @@ Steps 1-3 and 5 are yours; step 4 is CI running unattended off the tag.
    that file. Refresh it with `pnpm check-published-plugins --write` and say in
    the commit message which plugin moved.
 
+   The same `--write` refreshes `publishedPluginReads.json`, the names each ES
+   module plugin reads. `pnpm autogen --check` refuses to drop one of those
+   names on every push, so a stale list is the gap: refresh it after a store
+   plugin releases.
+
    **If a package is publishing for the first time**, grep the docs for the
    sentence that says it isn't. Nothing else catches this: the manifests are
    already correct — every non-private package ships on the tag, since

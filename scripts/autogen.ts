@@ -107,6 +107,14 @@ const GENERATORS: Generator[] = [
     needs: ['core exports'],
   },
   {
+    // Writes nothing: the manifest above still serves every name
+    // publishedPluginReads.json says a store plugin's shipped bundle reads.
+    name: 'published plugin reads',
+    argv: rootScript('check-plugin-reads.ts'),
+    independent: true,
+    needs: ['runtime re-exports'],
+  },
+  {
     // scripts/registryBundleSizes.json — what each realm's generated registry
     // evaluates on load, which is the number ADR-128's worker split rests on.
     name: 'registry bundle sizes',

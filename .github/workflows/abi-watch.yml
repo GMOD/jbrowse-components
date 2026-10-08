@@ -13,6 +13,11 @@
 # an author rebuilds, the store gains an entry — which is precisely what a
 # schedule is for and a gate is not.
 #
+# The offline half does ride the PR path: `--write` commits what each ES module
+# plugin reads to publishedPluginReads.json, and `pnpm autogen --check` fails on
+# a removal of one of those names. This run reports when that list has gone
+# stale.
+#
 # `--check` compares against the committed baseline, so this is quiet until the
 # answer changes. Until it existed, the number lived in prose: the v5.0.0
 # announcement said "one of the fourteen breaks against this build" and nothing

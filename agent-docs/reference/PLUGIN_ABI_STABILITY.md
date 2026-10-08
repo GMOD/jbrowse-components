@@ -30,6 +30,14 @@ stability policy; RFC-001 deferred one.
 **A baseline per surface was tried and dropped.** Maintaining one per refactor
 costs more than the removals it catches. Only `preservedExports` survives.
 
+**What the store plugins read is checked instead.**
+`packages/core/src/ReExports/publishedPluginReads.json` lists every
+`module#name` an ES module store plugin's shipped bundle takes off the host, and
+`pnpm autogen --check` fails when `reExports.generated.json` stops serving one
+(`scripts/check-plugin-reads.ts`). `pnpm check-published-plugins --write`
+refreshes the list from the store, so a plugin published since the last refresh
+is not covered, and neither is a UMD bundle or a plugin outside the store.
+
 **The signature is as public as the name.** A required second argument breaks
 a duck-typed caller as deleting the member does, so add plugin-facing
 parameters optional, never required. The converse breaks subclasses: removing
