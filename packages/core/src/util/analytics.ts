@@ -5,12 +5,18 @@ import {
 
 import { readConfObject } from '../configuration/index.ts'
 import { isElectron, rIC } from '../util/index.ts'
+import {
+  createSessionActivity,
+  describeSession,
+  tallyTypes,
+} from './sessionActivity.ts'
 import { getConfAssemblyNamesOrNone } from './tracks.ts'
 
 import type {
   AnyConfigurationModel,
   TrackConfigEntry,
 } from '../configuration/index.ts'
+import type { ActivitySession } from './sessionActivity.ts'
 
 declare global {
   interface Window {
@@ -27,11 +33,56 @@ interface AnalyticsRootModel {
     assemblies: unknown[]
     plugins?: { name?: string }[]
   }
-  session?: {
-    sessionTracks: { type: string }[]
-    views: unknown[]
-  }
+  session?: ActivitySession
   version: string
+}
+
+const analyticsUrl = 'https://analytics.jbrowse.org/api/v1'
+
+// Ties a page load's end reports to its start report. It lives in memory only,
+// so a reload gets a new one and nothing follows a user from load to load.
+let pageLoadId: string | undefined
+function getPageLoadId() {
+  pageLoadId ??=
+    typeof crypto.randomUUID === 'function'
+      ? crypto.randomUUID()
+      : `${Date.now().toString(36)}-${Math.random().toString(36).slice(2)}`
+  return pageLoadId
+}
+
+// Names only, and only JBrowse's own: says whether a load was a link to a
+// location or a set of tracks without saying which.
+const knownUrlParams = [
+  'assembly',
+  'config',
+  'highlight',
+  'loc',
+  'nav',
+  'session',
+  'sessionName',
+  'sessionTracks',
+  'tracklist',
+  'tracks',
+]
+function urlParamNames() {
+  const params = new URLSearchParams(window.location.search)
+  return knownUrlParams.filter(name => params.has(name)).join(',')
+}
+
+function sessionTrackTypeCounts(session: ActivitySession | undefined) {
+  const counts: Record<string, number> = {}
+  for (const track of session?.sessionTracks ?? []) {
+    const key = `sessionTrack-types-${track.type}`
+    counts[key] = (counts[key] ?? 0) + 1
+  }
+  return counts
+}
+
+async function send(stats: AnalyticsObj, init?: RequestInit) {
+  const qs = new URLSearchParams(
+    Object.entries(stats).map(([key, value]) => [key, String(value)]),
+  ).toString()
+  await fetch(`${analyticsUrl}?${qs}`, init)
 }
 
 // only doAnalytics reads the configuration, for the disableAnalytics slot
@@ -49,8 +100,6 @@ export async function writeAWSAnalytics(
   sessionQuery?: string | null,
 ) {
   try {
-    const url = 'https://analytics.jbrowse.org/api/v1'
-
     const multiAssemblyTracks = rootModel.jbrowse.tracks.filter(
       track => getConfAssemblyNamesOrNone(track).length > 1,
     ).length
@@ -71,9 +120,12 @@ export async function writeAWSAnalytics(
 
     const { jbrowse: config, session, version: ver } = rootModel
     const { tracks, assemblies, plugins } = config
+    const shape = describeSession(session)
 
     // stats to be recorded in db
     const stats: AnalyticsObj = {
+      event: 'start',
+      sid: getPageLoadId(),
       ver,
       'plugins-count': plugins?.length ?? 0,
       'plugin-names': plugins?.map(p => p.name).join(','),
@@ -81,6 +133,9 @@ export async function writeAWSAnalytics(
       'tracks-count': tracks.length,
       'session-tracks-count': session?.sessionTracks.length ?? 0,
       'open-views': session?.views.length ?? 0,
+      'view-types': tallyTypes(shape.viewTypes),
+      'open-track-types': tallyTypes(shape.trackTypes),
+      'url-params': urlParamNames(),
       'synteny-tracks-count': multiAssemblyTracks,
 
       // No `saved-sessions-count`: it counted localStorage keys matching
@@ -116,19 +171,9 @@ export async function writeAWSAnalytics(
       trackTypeCounts[key] = (trackTypeCounts[key] ?? 0) + 1
     }
 
-    const sessionTrackTypeCounts: Record<string, number> = {}
-    for (const track of session?.sessionTracks ?? []) {
-      const key = `sessionTrack-types-${track.type}`
-      sessionTrackTypeCounts[key] = (sessionTrackTypeCounts[key] ?? 0) + 1
-    }
+    Object.assign(stats, trackTypeCounts, sessionTrackTypeCounts(session))
 
-    Object.assign(stats, trackTypeCounts, sessionTrackTypeCounts)
-
-    const qs = new URLSearchParams(
-      Object.entries(stats).map(([key, value]) => [key, String(value)]),
-    ).toString()
-
-    await fetch(`${url}?${qs}`)
+    await send(stats)
   } catch (e) {
     console.warn('Failed to write analytics to AWS.', e)
   }
@@ -176,6 +221,87 @@ export async function writeGAAnalytics(
   }
 }
 
+// What the page load's sessions held while in use, for the end report.
+const activity = createSessionActivity()
+let latestRootModel: AnalyticsRootModel | undefined
+let endReportsInstalled = false
+let endReportsSent = 0
+let lastEndSignature: string | undefined
+let visibleMs = 0
+let visibleSince: number | undefined
+let visibleMsAtLastEnd = 0
+
+const maxEndReports = 10
+const resendAfterVisibleMs = 60_000
+
+// The end report says what a session came to hold: the view, track and widget
+// types open when the tab was hidden and those opened at any point before.
+// A tab is hidden many times before it closes and the close itself is not
+// reliably observable, so each hide sends one, numbered by `seq`, when the
+// session changed or another minute was spent on the page. The last one for a
+// `sid` is the session's end.
+export async function writeAWSSessionEnd() {
+  try {
+    if (!activity.watching || endReportsSent >= maxEndReports) {
+      return
+    }
+    const seen = activity.stats()
+    const signature = JSON.stringify(seen)
+    if (
+      signature === lastEndSignature &&
+      visibleMs - visibleMsAtLastEnd < resendAfterVisibleMs
+    ) {
+      return
+    }
+    lastEndSignature = signature
+    visibleMsAtLastEnd = visibleMs
+    endReportsSent += 1
+
+    const stats: AnalyticsObj = {
+      event: 'end',
+      sid: getPageLoadId(),
+      seq: endReportsSent,
+      duration: Math.round(performance.now() / 1000),
+      'visible-time': Math.round(visibleMs / 1000),
+      ...seen,
+      electron: isElectron,
+      jb2: true,
+    }
+    try {
+      const { session, version } = latestRootModel ?? {}
+      stats.ver = version
+      stats['session-tracks-count'] = session?.sessionTracks.length ?? 0
+      Object.assign(stats, sessionTrackTypeCounts(session))
+    } catch {
+      // root model left its state tree; the accumulated types still go out
+    }
+    // keepalive lets the request outlive the page it was sent from
+    await send(stats, { keepalive: true })
+  } catch (e) {
+    console.warn('Failed to write analytics to AWS.', e)
+  }
+}
+
+function installEndReports() {
+  if (!endReportsInstalled) {
+    endReportsInstalled = true
+    if (document.visibilityState === 'visible') {
+      visibleSince = performance.now()
+    }
+    document.addEventListener('visibilitychange', () => {
+      if (document.visibilityState === 'hidden') {
+        if (visibleSince !== undefined) {
+          visibleMs += performance.now() - visibleSince
+          visibleSince = undefined
+        }
+        void writeAWSSessionEnd()
+      } else {
+        visibleSince = performance.now()
+      }
+    })
+  }
+}
+
 // One pageview per page load, not per pluginManager. jbrowse-web rebuilds the
 // whole pluginManager (and rootModel) whenever plugins change, and StrictMode
 // builds it twice on mount — without this guard each rebuild re-pings AWS and
@@ -188,11 +314,19 @@ export function doAnalytics(
   initialTimestamp: number,
   initialSessionQuery: string | null | undefined,
 ) {
-  if (
-    rootModel &&
-    !analyticsSent &&
-    !readConfObject(rootModel.jbrowse.configuration, 'disableAnalytics')
-  ) {
+  if (!rootModel) {
+    return
+  }
+  // a config that opts out stops the end reports too, whichever config or
+  // session started them
+  if (readConfObject(rootModel.jbrowse.configuration, 'disableAnalytics')) {
+    activity.stop()
+    return
+  }
+  latestRootModel = rootModel
+  activity.watch(() => rootModel.session)
+  installEndReports()
+  if (!analyticsSent) {
     analyticsSent = true
     // writeGAAnalytics injects Google's scripts and writeAWSAnalytics probes
     // graphics capabilities, hundreds of ms of main-thread work together. Idle

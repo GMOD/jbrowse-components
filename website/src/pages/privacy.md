@@ -12,7 +12,14 @@ description:
 When jbrowse-web or jbrowse-desktop loads, it sends an anonymous usage report to
 Google Analytics and to a JBrowse analytics endpoint. The report holds the
 JBrowse version, load time, screen size, the renderer in use, counts of tracks,
-assemblies and open views, and track type and plugin names.
+assemblies and open views, track, view and plugin type names, and which of
+JBrowse's own URL parameters were present (their names, not their values).
+
+When you leave the tab, it sends a shorter report to the JBrowse analytics
+endpoint: how long the page was open, and which types of view, track and side
+panel were opened while you used it. A random ID made fresh on every page load
+ties that report to the first one. The ID is never stored, so it does not link
+one visit to the next.
 
 JBrowse never sends file URLs, track names or your data. The browser reads your
 data files directly, and they never pass through a JBrowse server. Embedded
@@ -32,6 +39,11 @@ This website (jbrowse.org/jb2) uses Google Analytics to count page visits, but
 only after you click OK on its banner. Google Analytics sets cookies and records
 the pages you view, your approximate location, browser and device type, and the
 site that referred you. Clearing this site's data brings the banner back.
+
+Our web host keeps standard access logs for jbrowse.org and genomes.jbrowse.org:
+the address, time, file requested and browser of each request. We reduce them to
+counts of page visits and of the genomes and file types opened, and the logs
+themselves are deleted after 400 days.
 
 To opt out in the apps, set `disableAnalytics: true` in your config
 ([details](/docs/config_guides/disable_analytics)). On Windows, the JBrowse
