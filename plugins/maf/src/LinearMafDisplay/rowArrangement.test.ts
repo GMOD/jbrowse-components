@@ -431,12 +431,40 @@ describe('a focus naming no current species', () => {
   it('shows every row on a track that lists its species', () => {
     const display = focused(true)
     expect(rowNames(display)).toEqual(['hg38', 'mm10'])
-    expect(display.subtreeFilterSet).toEqual(['rn6'])
+    expect(display.rowFocusKey).toEqual(['rn6'])
   })
 
   it('shows no row on a track that discovers its species', () => {
     const display = focused(false)
     expect(rowNames(display)).toEqual([])
-    expect(display.subtreeFilterSet).toEqual(['rn6'])
+    expect(display.rowFocusKey).toEqual(['rn6'])
+  })
+})
+
+// The worker ships a row when the focus names it or the sample it copies
+// (`isRowVisible`), so a focus on a copy alone leaves its sample's row out.
+describe('a focus naming a copy row', () => {
+  it.each([true, false])('draws the rows the worker ships (listed: %s)', l => {
+    const { display } = createMafTestEnvironment({
+      displayConfig: { rows: { kept: ['hg38~2', 'mm10'] } },
+    }).createDisplay()
+    display.setSamples({
+      samples: ['hg38', 'hg38~2', 'mm10', 'rn6'].map(sample),
+      treeNewick: undefined,
+      samplesCanonical: l,
+    })
+    expect(rowNames(display)).toEqual(['hg38~2', 'mm10'])
+  })
+
+  it('a focus on the sample keeps its copies', () => {
+    const { display } = createMafTestEnvironment({
+      displayConfig: { rows: { kept: ['hg38'] } },
+    }).createDisplay()
+    display.setSamples({
+      samples: ['hg38', 'hg38~2', 'mm10'].map(sample),
+      treeNewick: undefined,
+      samplesCanonical: true,
+    })
+    expect(rowNames(display)).toEqual(['hg38', 'hg38~2'])
   })
 })

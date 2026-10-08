@@ -51,7 +51,7 @@ const useStyles = makeStyles()(theme => ({
 }))
 
 /**
- * The chip `StaleTreeHint` and `SubtreeFilterHint` both draw: a line of text
+ * The chip `StaleTreeHint` and `RowFocusHint` both draw: a line of text
  * tucked into the top-left of the tree gutter, `SIDEBAR_HINT_LINE_PX` tall.
  *
  * One component rather than two copies because the two share a gutter — a

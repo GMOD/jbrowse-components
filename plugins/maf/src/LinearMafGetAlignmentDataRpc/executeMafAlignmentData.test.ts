@@ -59,7 +59,7 @@ function payload<T>(result: T | RegionTooLargeResult) {
 
 async function run(
   features: Feature[],
-  subtreeFilter?: string[],
+  rowFocus?: string[],
   samples: { id: string; label: string }[] = [],
 ) {
   mockLoadAdapter.mockResolvedValue({
@@ -76,7 +76,7 @@ async function run(
       regions: [{ refName: 'chr1', start: 0, end: 100, assemblyName: 'hg38' }],
       adapterConfig: {},
       sessionId: 'session-1',
-      subtreeFilter,
+      rowFocus,
     },
   })
   return payload(unwrapRpcResult(result))

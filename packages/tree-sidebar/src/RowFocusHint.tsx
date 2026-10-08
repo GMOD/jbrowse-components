@@ -19,7 +19,7 @@ import type { TreeSidebarModel } from './types.ts'
  * row, so it covers no row's label: clicking it clears the focus, so it has no
  * dismissal that would leave the subset showing.
  */
-export const SubtreeFilterHint = observer(function SubtreeFilterHint({
+export const RowFocusHint = observer(function RowFocusHint({
   model,
   rowsTop = 0,
 }: {
@@ -29,7 +29,7 @@ export const SubtreeFilterHint = observer(function SubtreeFilterHint({
   return (
     <SidebarHintChip
       top={rowsTop - model.rowFocusLineHeight}
-      testId="subtree_filter_hint"
+      testId="row_focus_hint"
       hint={
         model.rowFocus
           ? {

@@ -21,7 +21,7 @@ export {
   RowSeparatorLines,
 } from './RowSeparatorLines.tsx'
 export { StaleTreeHint } from './StaleTreeHint.tsx'
-export { SubtreeFilterHint } from './SubtreeFilterHint.tsx'
+export { RowFocusHint } from './RowFocusHint.tsx'
 export { focusRows } from './focusRows.ts'
 export {
   clusterProvenanceFromRegions,
@@ -48,11 +48,11 @@ export {
 } from './rowSortColumn.ts'
 export type { LoadedRegionSpan } from './rowSortColumn.ts'
 export {
-  applySubtreeFilter,
+  treeOfLeaves,
   buildClusteredLayout,
   buildTree,
   clusteredCladeLayout,
-  filterRowsBySubtree,
+  rowsNamed,
   getLeafNames,
   keptRows,
   parseClusterOrder,
@@ -95,7 +95,7 @@ export { ContextMenuMixin } from '@jbrowse/display-kit/ContextMenuMixin'
 export { DisplayContextMenu } from '@jbrowse/display-kit/DisplayContextMenu'
 export {
   TREE_SIDEBAR_LABEL,
-  clearSubtreeFilterMenuItems,
+  clearRowFocusMenuItems,
   clusterProvenanceMenuItems,
   clusteringMenuItem,
   resetRowOrderMenuItems,

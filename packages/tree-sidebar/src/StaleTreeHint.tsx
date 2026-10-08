@@ -36,7 +36,7 @@ export const StaleTreeHint = observer(function StaleTreeHint({
   // `rowsTopOffset`), so it sits at the head of the sidebar rather than up in
   // whatever the display reserves above its rows — the variants matrix display's
   // connector zone is user-draggable, so at 0 the hint floated arbitrarily far
-  // above the rows it is talking about. Same contract as `SubtreeFilterHint`,
+  // above the rows it is talking about. Same contract as `RowFocusHint`,
   // its sibling in that gutter.
   top?: number
 }) {

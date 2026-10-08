@@ -135,7 +135,7 @@ export function treeSidebarShowMenuItems(
   return [showTreeSidebarMenuItem(self), treeBranchLengthMenuItem(self)]
 }
 
-interface SubtreeFilterMenuModel {
+interface RowFocusMenuModel {
   rowFocus?: readonly string[]
   setRowFocus: (arg?: readonly string[]) => void
 }
@@ -147,9 +147,7 @@ interface SubtreeFilterMenuModel {
 // and the tree's own context menu is gone with the tree. Returned as a list so
 // the one label and the one gate are single-sourced across the clustering
 // submenu and any display that has no clustering submenu to put it in.
-export function clearSubtreeFilterMenuItems(
-  self: SubtreeFilterMenuModel,
-): MenuItem[] {
+export function clearRowFocusMenuItems(self: RowFocusMenuModel): MenuItem[] {
   return self.rowFocus?.length
     ? [
         {
@@ -252,7 +250,7 @@ export function clusterProvenanceMenuItems(
 }
 
 interface ClusteringMenuModel
-  extends ClusterProvenanceMenuModel, SubtreeFilterMenuModel {}
+  extends ClusterProvenanceMenuModel, RowFocusMenuModel {}
 
 // A run row the display has already disabled passes through with its own text:
 // the reason it states is the more specific one — rows still loading, a
@@ -300,7 +298,7 @@ export function clusteringMenuItem(
     subMenu: [
       withRowCountGate(runItem, rowCount),
       ...clusterProvenanceMenuItems(self),
-      ...clearSubtreeFilterMenuItems(self),
+      ...clearRowFocusMenuItems(self),
     ],
   }
 }

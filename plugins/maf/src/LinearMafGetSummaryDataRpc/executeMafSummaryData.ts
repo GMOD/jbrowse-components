@@ -12,7 +12,7 @@ export interface LinearMafGetSummaryDataArgs extends BaseMafRpcArgs {
   // The display's focus, as a SET — same contract as the detail path's
   // arg of the same name. Records for species outside it are dropped here
   // rather than shipped and discarded by the client's `rowIndexBySrc` lookup.
-  subtreeFilter?: string[]
+  rowFocus?: string[]
 }
 
 export interface LinearMafGetSummaryDataResult {
@@ -61,7 +61,7 @@ export async function executeMafSummaryData({
     sessionId,
     signal,
     statusCallback,
-    subtreeFilter,
+    rowFocus,
     byteLimit,
   } = args
   const region = regions[0]!
@@ -97,7 +97,7 @@ export async function executeMafSummaryData({
   // the sidebar tree and "clear filter" still see every genome — so discovery
   // reads every record's `src`, before the filter, as the alignment path
   // discovers from every block row before narrowing `blocks`.
-  const visible = visibleSamples(subtreeFilter, configSamples)
+  const visible = visibleSamples(rowFocus, configSamples)
   const records: MafSummaryRecord[] = []
   // Insertion-ordered, so a discovered row set has a stable order.
   const discovered = new Set<string>()

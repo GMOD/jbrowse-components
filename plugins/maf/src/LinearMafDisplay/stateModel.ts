@@ -46,10 +46,9 @@ import {
   ContextMenuMixin,
   RowHeightMixin,
   TreeSidebarMixin,
-  applySubtreeFilter,
-  filterRowsBySubtree,
+  treeOfLeaves,
+  rowsNamed,
   getLeafNames,
-  keptRows,
   resetRowOrderMenuItems,
   setupTreeSidebarAutoruns,
   sortRowsAtColumn,
@@ -234,16 +233,16 @@ function withKnownCopies(
 }
 
 /**
- * A discovery track's focus applied as given, with a copy row kept when its
- * sample is named.
+ * The rows a focus names, as the worker's `isRowVisible` reads it: a row is
+ * kept by its own name or by the sample it copies.
  */
-function focusRows(
+function rowsNamedOrCopied(
   rows: MafSource[],
   focus: readonly string[] | undefined,
   alias: RowAlias | undefined,
 ) {
   if (!alias || !focus?.length) {
-    return filterRowsBySubtree(rows, focus)
+    return rowsNamed(rows, focus)
   }
   const named = new Set(focus)
   return rows.filter(r => named.has(r.name) || named.has(alias(r.name) ?? ''))
@@ -845,15 +844,16 @@ export default function stateModelFactory(
          * #getter
          * `editableSources` narrowed to the focus as the worker's
          * `visibleSamples` narrows: on a track that lists its species, a focus
-         * naming none of them shows every row (`keptRows`); on one that
-         * discovers them it applies as given, so a focus naming no species the
-         * blocks hold draws no rows.
+         * naming none of them shows every row; on one that discovers them it
+         * applies as given, so a focus naming no species the blocks hold draws
+         * no rows. Not the mixin's `keptRows`, whose alias rule keeps a sample
+         * row for its copy: here both are rows, and the worker ships only the
+         * named one.
          */
         get clusterableSources(): MafSource[] {
           const { editableSources, rowFocus, rowAlias } = self
-          return self.speciesListed
-            ? keptRows(editableSources, rowFocus, rowAlias)
-            : focusRows(editableSources, rowFocus, rowAlias)
+          const named = rowsNamedOrCopied(editableSources, rowFocus, rowAlias)
+          return self.speciesListed && !named.length ? editableSources : named
         },
       }))
       .views(self => ({
@@ -913,7 +913,7 @@ export default function stateModelFactory(
          * string and an MST node's serialization is not this module's to depend
          * on.
          */
-        get subtreeFilterSet(): string[] | undefined {
+        get rowFocusKey(): string[] | undefined {
           const filter = self.rowFocus
           return filter?.length ? [...filter].sort() : undefined
         },
@@ -1390,7 +1390,7 @@ export default function stateModelFactory(
          */
         get treeRoot() {
           return self.root && !self.showReferenceRow
-            ? applySubtreeFilter(
+            ? treeOfLeaves(
                 self.root,
                 self.sources.map(s => s.name),
               )
@@ -1616,7 +1616,7 @@ export default function stateModelFactory(
          * (`singleFetchPerRegion.test.ts`).
          */
         rpcProps() {
-          return { subtreeFilter: self.subtreeFilterSet }
+          return { rowFocus: self.rowFocusKey }
         },
       }))
       .views(self => ({

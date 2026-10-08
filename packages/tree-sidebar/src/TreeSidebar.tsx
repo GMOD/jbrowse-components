@@ -8,8 +8,8 @@ import { containingLgv } from '@jbrowse/plugin-linear-genome-view'
 import { Menu, MenuItem } from '@mui/material'
 import { observer } from 'mobx-react'
 
+import { RowFocusHint } from './RowFocusHint.tsx'
 import { StaleTreeHint } from './StaleTreeHint.tsx'
-import { SubtreeFilterHint } from './SubtreeFilterHint.tsx'
 import { getLeafNames, subtreeCoversEveryRow } from './clusterUtils.ts'
 import { focusRows } from './focusRows.ts'
 import { pickTreeNode } from './spatialIndex.ts'
@@ -220,7 +220,7 @@ const TreeSidebar = observer(function TreeSidebar({
       <TrackOverlayPortal>
         <GutterLayer top={top}>
           <StaleTreeHint model={model} top={innerTop} />
-          <SubtreeFilterHint model={model} rowsTop={innerTop} />
+          <RowFocusHint model={model} rowsTop={innerTop} />
         </GutterLayer>
       </TrackOverlayPortal>
     )
@@ -249,7 +249,7 @@ const TreeSidebar = observer(function TreeSidebar({
             }}
           />
           <StaleTreeHint model={model} top={innerTop} />
-          <SubtreeFilterHint model={model} rowsTop={innerTop} />
+          <RowFocusHint model={model} rowsTop={innerTop} />
           {/* the ref callbacks are the model's own actions, which are stable per
               instance — wrapping them in useCallback([model]) bought nothing */}
           <canvas

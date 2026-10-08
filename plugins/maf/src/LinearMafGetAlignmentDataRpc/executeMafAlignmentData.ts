@@ -18,7 +18,7 @@ export interface LinearMafGetAlignmentDataArgs extends BaseMafRpcArgs {
   // emitted nor counted in coverage/identity, so a focused clade ships (and
   // scores) only the genomes it draws. No order travels with it: rows name
   // their species and the client places them (see `placeMafRegionData`).
-  subtreeFilter?: string[]
+  rowFocus?: string[]
 }
 
 export interface LinearMafGetAlignmentDataResult {
@@ -68,7 +68,7 @@ export async function executeMafAlignmentData({
     regions,
     adapterConfig,
     sessionId,
-    subtreeFilter,
+    rowFocus,
     byteLimit,
     signal,
     statusCallback,
@@ -108,7 +108,7 @@ export async function executeMafAlignmentData({
   // **1.18x slower** and **491 MB against 263 MB** of peak RSS on 20000 blocks
   // of 8 columns; agent-docs reference/MAF_LARGE_BLOCKS.md has the table and
   // the profile behind it.
-  const visible = visibleSamples(subtreeFilter, configSamples)
+  const visible = visibleSamples(rowFocus, configSamples)
   const sink = new MafRegionSink(visible)
   await adapter.readBlocks(region, sink, args)
   const { refSampleId } = sink

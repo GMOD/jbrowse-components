@@ -79,7 +79,7 @@ is a hide-set chosen from a chip. They stay two members because a show-set hides
 a row discovered later and a hide-set shows one, and each is right for its
 level. Both sit inside their object, so a field change drops them the way
 `HiddenGroupsMixin` does today. A `kept` naming no current row resolves to every
-row, where `filterRowsBySubtree` returns none and blanks the display. MAF's fetch
+row, where `rowsNamed` returns none and blanks the display. MAF's fetch
 key reads `rows.kept` alone, since resolving it against the species a fetch
 reports would key on a fetch result; the worker resolves a focus naming none of
 the species it lists to every species.

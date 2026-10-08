@@ -51,7 +51,7 @@ export interface FetchInputsHost extends IStateTreeNode {
  * A fetch input as a value that cannot change behind the stamp.
  *
  * The stamp outlives the fetch that wrote it, so a field holding a live
- * collection — MAF's `subtreeFilter: self.subtreeFilterSet`, a display handing
+ * collection — MAF's `rowFocus: self.rowFocusKey`, a display handing
  * over an MST array — is mutated in place inside every stamp, and the
  * staleness compare then reads the current state against itself and says
  * nothing moved.

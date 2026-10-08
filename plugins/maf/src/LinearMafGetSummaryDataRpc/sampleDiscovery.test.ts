@@ -41,10 +41,10 @@ function payload<T>(result: T | RegionTooLargeResult) {
 
 async function run({
   samples,
-  subtreeFilter,
+  rowFocus,
 }: {
   samples: Sample[]
-  subtreeFilter?: string[]
+  rowFocus?: string[]
 }) {
   mockLoadMafSamplesAdapter.mockResolvedValue({
     adapter: { getSummaryFeatures: () => of(...RECORDS) },
@@ -60,7 +60,7 @@ async function run({
         regions: [
           { refName: 'ctgA', start: 0, end: 1000, assemblyName: 'volvox' },
         ],
-        subtreeFilter,
+        rowFocus,
       },
     }),
   )
@@ -88,7 +88,7 @@ describe('the summary RPC names the species its own records carry', () => {
   })
 
   it('discovers over the whole file, not just the visible subtree', async () => {
-    const out = await run({ samples: [], subtreeFilter: ['simvolvox'] })
+    const out = await run({ samples: [], rowFocus: ['simvolvox'] })
     // the sidebar tree and "clear filter" need every genome, so discovery runs
     // before the filter — exactly as the alignment path discovers from every
     // block row before narrowing `blocks`

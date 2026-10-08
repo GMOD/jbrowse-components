@@ -8,7 +8,7 @@ import { compareStructural } from 'mobx'
 
 import { arrangeRows, bandRows, orderRowsByDomain } from './arrangeRows.ts'
 import {
-  applySubtreeFilter,
+  treeOfLeaves,
   buildTree,
   computeClusterHierarchy,
   getLeafNames,
@@ -835,7 +835,7 @@ export function TreeSidebarMixin<S extends RowSource = RowSource>() {
        */
       get root() {
         return self.parsedTree
-          ? applySubtreeFilter(self.parsedTree, self.rowFocus)
+          ? treeOfLeaves(self.parsedTree, self.rowFocus)
           : undefined
       },
       /**

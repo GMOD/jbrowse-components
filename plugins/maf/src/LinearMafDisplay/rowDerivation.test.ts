@@ -90,7 +90,7 @@ function derived(display: Display) {
     rowTree: display.rowTree,
     treeLeaves: display.root && getLeafNames(display.root),
     treeDrawn: display.hierarchy !== undefined,
-    subtreeFilterSet: display.subtreeFilterSet,
+    rowFocusKey: display.rowFocusKey,
     rpcProps: display.rpcProps(),
     rowArrangementIsCustom: display.rowArrangementIsCustom,
   }

@@ -114,7 +114,7 @@ describe('fetchInputs', () => {
   // state against itself.
   it('stamps a live collection by value, so a later mutation does not follow it', () => {
     const live = observable.array(['a'])
-    const settings = settingsOver(() => ({ subtreeFilter: live }))
+    const settings = settingsOver(() => ({ rowFocus: live }))
     const dispose = observed(settings)
     const stamped = settings.get()
     runInAction(() => {

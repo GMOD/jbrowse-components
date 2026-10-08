@@ -38,10 +38,11 @@ export interface GetCellDataArgs extends BaseVariantRpcArgs, GatedFetchArgs {
   // canonical row list (see `buildCanonicalRows`), names it in `rowNames`, and
   // the client places those names against the rows it draws. Sent sorted so a
   // reorder, a regroup, or a clustering run leaves the cache key untouched and
-  // re-uploads instead of re-downloading the VCF. `undefined` means "every
-  // sample the data has", which is the common case; an explicit list is a
-  // row focus (`rows.kept`), which genuinely changes what has to be computed.
-  // Mirrors maf's `subtreeFilter`.
+  // re-uploads instead of re-downloading the VCF. The display sends the
+  // adapter's samples under its focus (`sourcesBase`), every one of them
+  // while no focus is set, already resolved from haplotype rows to sample
+  // names; `undefined` is the sample listing not landed yet. Not MAF's
+  // `rowFocus`, which is the raw focus the worker resolves.
   sampleFilter?: string[]
   unit: VariantUnit
   referenceDrawingMode?: string

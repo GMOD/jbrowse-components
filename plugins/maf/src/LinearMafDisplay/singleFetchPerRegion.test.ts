@@ -230,7 +230,7 @@ describe('LinearMafDisplay alignment fetch count', () => {
     // ...and the payload itself carries the sorted set, so the bytes sent and
     // the key they are cached under are the one expression
     const last = alignmentCalls(mockRpcCall).at(-1)
-    expect(last?.[2].subtreeFilter).toEqual(['hg38', 'mm10'])
+    expect(last?.[2].rowFocus).toEqual(['hg38', 'mm10'])
 
     // a genuine membership change still invalidates
     display.setRowFocus(['hg38'])
@@ -348,7 +348,7 @@ describe('LinearMafDisplay row placement', () => {
     await settle(display)
 
     const [first] = alignmentCalls(mockRpcCall)
-    expect(first![2].subtreeFilter).toEqual(['hg38'])
+    expect(first![2].rowFocus).toEqual(['hg38'])
     expect(display.sources.map((s: { name: string }) => s.name)).toEqual([
       'hg38',
     ])
@@ -371,7 +371,7 @@ describe('LinearMafDisplay row placement', () => {
     await settle(display)
 
     expect(alignmentCalls(mockRpcCall)).toHaveLength(1)
-    expect(alignmentCalls(mockRpcCall)[0]![2].subtreeFilter).toEqual(['rn6'])
+    expect(alignmentCalls(mockRpcCall)[0]![2].rowFocus).toEqual(['rn6'])
     expect(display.sources.map((s: { name: string }) => s.name)).toEqual([
       'hg38',
       'mm10',

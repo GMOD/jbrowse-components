@@ -1,9 +1,9 @@
 import {
-  applySubtreeFilter,
+  treeOfLeaves,
   buildClusteredLayout,
   clusteredCladeLayout,
   computeClusterHierarchy,
-  filterRowsBySubtree,
+  rowsNamed,
   getLeafNames,
   parseClusterTree,
   pruneNewickToLeaves,
@@ -234,23 +234,23 @@ test('pruneNewickToLeaves drops merge heights when collapsing a unary node', () 
   expect(leaves(laid).map(l => l.y)).toEqual([80, 80])
 })
 
-test('filterRowsBySubtree returns the input array itself when unfiltered', () => {
+test('rowsNamed returns the input array itself when unfiltered', () => {
   const rows = [{ name: 'mom' }, { name: 'dad' }, { name: 'kid' }]
-  expect(filterRowsBySubtree(rows, undefined)).toBe(rows)
-  expect(filterRowsBySubtree(rows, [])).toBe(rows)
+  expect(rowsNamed(rows, undefined)).toBe(rows)
+  expect(rowsNamed(rows, [])).toBe(rows)
 })
 
-test('filterRowsBySubtree keeps row order, not filter order', () => {
+test('rowsNamed keeps row order, not filter order', () => {
   const rows = [{ name: 'mom' }, { name: 'dad' }, { name: 'kid' }]
-  expect(filterRowsBySubtree(rows, ['kid', 'mom'])).toEqual([
+  expect(rowsNamed(rows, ['kid', 'mom'])).toEqual([
     { name: 'mom' },
     { name: 'kid' },
   ])
 })
 
-test('filterRowsBySubtree ignores filter names no row has', () => {
+test('rowsNamed ignores filter names no row has', () => {
   const rows = [{ name: 'mom' }, { name: 'dad' }]
-  expect(filterRowsBySubtree(rows, ['dad', 'ghost'])).toEqual([{ name: 'dad' }])
+  expect(rowsNamed(rows, ['dad', 'ghost'])).toEqual([{ name: 'dad' }])
 })
 
 // The tree is positioned by spacing its own leaves evenly across the row axis
@@ -371,7 +371,7 @@ describe('computeClusterHierarchy', () => {
   })
 })
 
-// Both halves of applySubtreeFilter used to recurse once per node, so focusing a
+// Both halves of treeOfLeaves used to recurse once per node, so focusing a
 // clade on a single-linkage dendrogram threw RangeError past about 5000 tips —
 // and `subtreeFilter` is persisted, so a shared session carrying one threw on
 // load and never recovered. The rest of this package went iterative for exactly
@@ -390,19 +390,19 @@ describe('a caterpillar deeper than the call stack', () => {
   test('focusing a monophyletic clade descends into it', () => {
     const root = hierarchy<NewickNode>(caterpillar(), d => d.children)
     // every leaf below the second-deepest internal node: l0 and l1
-    const filtered = applySubtreeFilter(root, ['l0', 'l1'])
+    const filtered = treeOfLeaves(root, ['l0', 'l1'])
     expect(getLeafNames(filtered)).toEqual(['l0', 'l1'])
   })
 
   test('a scattered leaf set prunes to those leaves', () => {
     const root = hierarchy<NewickNode>(caterpillar(), d => d.children)
     const keep = ['l0', 'l500', 'l9000', `l${DEPTH - 1}`]
-    const filtered = applySubtreeFilter(root, keep)
+    const filtered = treeOfLeaves(root, keep)
     expect(getLeafNames(filtered).sort()).toEqual([...keep].sort())
   })
 
   test('a filter naming nothing present leaves the tree alone', () => {
     const root = hierarchy<NewickNode>(caterpillar(), d => d.children)
-    expect(getLeafNames(applySubtreeFilter(root, ['nope']))).toHaveLength(DEPTH)
+    expect(getLeafNames(treeOfLeaves(root, ['nope']))).toHaveLength(DEPTH)
   })
 })

@@ -105,7 +105,7 @@ describe('TreeSidebar', () => {
       },
       85,
     )
-    const chip = getByTestId('subtree_filter_hint')
+    const chip = getByTestId('row_focus_hint')
     expect(renderedTop(chip)).toBe(85)
     expect(renderedTop(chip) + SIDEBAR_HINT_LINE_PX).toBe(
       renderedTop(getByTestId('tree_sidebar_dendrogram')),

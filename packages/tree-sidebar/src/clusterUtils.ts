@@ -67,8 +67,8 @@ function findSubtree<T extends ClusterNodeData>(
 }
 
 // Parse a Newick string and build a hierarchy, without applying a filter.
-// Kept separate from applySubtreeFilter so MST can cache them independently —
-// changing the subtree filter re-runs only the traversal, not the parser.
+// Kept separate from treeOfLeaves so MST can cache them independently —
+// changing the focus re-runs only the traversal, not the parser.
 //
 // `domain` rotates the tree towards a declared leaf order
 // (`rotateNewickByDomain`); empty leaves it as written.
@@ -145,19 +145,19 @@ export function pruneNewickToLeaves(
   return pruned.get(node)
 }
 
-// Narrow a tree to the active subtree filter. A filter that names exactly one
+// Narrow a tree to the leaves named. A list that names exactly one
 // clade's leaves descends into that clade (the monophyletic case, e.g. clicking
 // an internal node); any other leaf set is pruned to those leaves with the
-// topology preserved. Returns the original root when no filter is given or no
+// topology preserved. Returns the original root when none are named or no
 // kept leaf remains.
-export function applySubtreeFilter(
+export function treeOfLeaves(
   root: HierarchyNode<ClusterNodeData>,
-  subtreeFilter: readonly string[] | undefined,
+  names: readonly string[] | undefined,
 ): HierarchyNode<ClusterNodeData> {
-  if (!subtreeFilter?.length) {
+  if (!names?.length) {
     return root
   }
-  const filterSet = new Set(subtreeFilter)
+  const filterSet = new Set(names)
   const monophyletic = findSubtree(root, filterSet)
   if (monophyletic) {
     return monophyletic
@@ -170,12 +170,12 @@ export function applySubtreeFilter(
   return pruned ? hierarchy<ClusterNodeData>(pruned, d => d.children) : root
 }
 
-export function parseClusterTree(newick: string, subtreeFilter?: string[]) {
-  return applySubtreeFilter(buildTree(newick), subtreeFilter)
+export function parseClusterTree(newick: string, names?: string[]) {
+  return treeOfLeaves(buildTree(newick), names)
 }
 
-// The row-side half of applySubtreeFilter: narrow a display's rows to the same
-// filter the tree was narrowed to, so the dendrogram's leaves and the rows drawn
+// The row-side half of treeOfLeaves: narrow a display's rows to the same
+// names the tree was narrowed to, so the dendrogram's leaves and the rows drawn
 // beside it can't disagree about who survived. Every tree-sidebar consumer
 // (multi-wiggle, multi-row features, MAF, multi-sample variants) needs this, and
 // two rules are easy to get wrong per-plugin, so they live here:
@@ -189,11 +189,11 @@ export function parseClusterTree(newick: string, subtreeFilter?: string[]) {
 //
 // Returns the input array by reference when no filter is set, so callers can
 // short-circuit on identity.
-export function filterRowsBySubtree<T extends { name: string }>(
+export function rowsNamed<T extends { name: string }>(
   rows: T[],
-  subtreeFilter: readonly string[] | undefined,
+  names: readonly string[] | undefined,
 ): T[] {
-  const filterSet = subtreeFilter?.length ? new Set(subtreeFilter) : undefined
+  const filterSet = names?.length ? new Set(names) : undefined
   return filterSet ? rows.filter(r => filterSet.has(r.name)) : rows
 }
 
@@ -202,7 +202,7 @@ export function filterRowsBySubtree<T extends { name: string }>(
  * naming no current row keeps every row rather than none, so a stale focus
  * — one saved against rows that have since been renamed — never blanks the
  * display. Synthesis keyed to a row's place among every row runs before
- * this, for the reason {@link filterRowsBySubtree} states.
+ * this, for the reason {@link rowsNamed} states.
  *
  * With `rowAlias`, a name keeps every row answering to it, so a sample's name
  * keeps its haplotypes; and a row that is its own alias (a sample not yet
@@ -216,7 +216,7 @@ export function keptRows<T extends { name: string }>(
   rowAlias?: RowAlias,
 ): T[] {
   if (!rowAlias) {
-    const focused = filterRowsBySubtree(rows, kept)
+    const focused = rowsNamed(rows, kept)
     return focused.length ? focused : rows
   }
   if (!kept?.length) {
@@ -251,7 +251,7 @@ export function keptRows<T extends { name: string }>(
 // me everything" gesture — which is exactly the click that must not go through,
 // because applying that filter leaves the rows where they are while making
 // "Clear subtree filter" appear as though something had changed. On MAF it is
-// worse than cosmetic: `subtreeFilter` is a fetch argument and therefore an
+// worse than cosmetic: `rowFocus` is a fetch argument and therefore an
 // `rpcProps()` cache key, so a full-set filter drops every loaded region and
 // re-downloads byte-identical rows.
 //
@@ -496,7 +496,7 @@ export function validateClusterOrder(
  * every display that clusters its rows.
  *
  * `rows` is the row set the run CLUSTERED, and it is what the order indexes:
- * the same array whose names went to the worker. Under an active subtree filter
+ * the same array whose names went to the worker. Under an active row focus
  * that is the focused clade, so a run resolves the structure WITHIN it rather
  * than handing back the whole-cohort tree — both the more useful answer and the
  * only one `computeClusterHierarchy` will draw, since it refuses a tree whose

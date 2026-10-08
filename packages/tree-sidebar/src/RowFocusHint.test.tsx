@@ -1,6 +1,6 @@
 import { fireEvent, render } from '@testing-library/react'
 
-import { SubtreeFilterHint } from './SubtreeFilterHint.tsx'
+import { RowFocusHint } from './RowFocusHint.tsx'
 
 import type { TreeSidebarModel } from './types.ts'
 
@@ -24,7 +24,7 @@ function model(subtreeFilter?: string[]) {
 
 test('says how many rows the focus left, and clears it on a click', () => {
   const m = model(['a', 'b', 'c'])
-  const { getByText } = render(<SubtreeFilterHint model={m} />)
+  const { getByText } = render(<RowFocusHint model={m} />)
   fireEvent.click(getByText('Showing 3 rows'))
   expect(m.setRowFocus).toHaveBeenCalledWith(undefined)
   // the rows re-lay-out from y=0, so the old offset would strand them
@@ -32,6 +32,6 @@ test('says how many rows the focus left, and clears it on a click', () => {
 })
 
 test('draws nothing while every row is shown', () => {
-  const { container } = render(<SubtreeFilterHint model={model()} />)
+  const { container } = render(<RowFocusHint model={model()} />)
   expect(container.firstChild).toBeNull()
 })

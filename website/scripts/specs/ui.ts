@@ -2388,7 +2388,7 @@ export const uiSpecs: ScreenshotSpec[] = [
     readyText: 'ChromHMM',
     readyTimeout: 120000,
     viewportHeight: 620,
-    hideSelectors: ['[data-testid="subtree_filter_hint"]'],
+    hideSelectors: ['[data-testid="row_focus_hint"]'],
   },
 
   // The nine-cell ENCODE Broad HMM track over HOXA, the window its build script

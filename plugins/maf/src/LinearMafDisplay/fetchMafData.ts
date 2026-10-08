@@ -28,7 +28,7 @@ interface MafFetchSelf extends FetchEachRegionModel {
   // also what `rpcProps()` returns, so the payload and the cache key it is
   // stored under are one expression. See the getter for why the sort is
   // load-bearing.
-  subtreeFilterSet: string[] | undefined
+  rowFocusKey: string[] | undefined
   // what the summary tier reads the frames for; the detail tier always does
   annotationsActive: boolean
   annotationAdapterConfig: Record<string, unknown> | undefined
@@ -330,7 +330,7 @@ export function fetchMafAlignmentData(
           // Row set, not row order: the worker ships only these genomes and
           // scores coverage over them. Placement is the client's (see
           // `placeMafRegionData`), so nothing order-dependent is sent.
-          subtreeFilter: self.subtreeFilterSet,
+          rowFocus: self.rowFocusKey,
         }),
       ),
     commit: batch => {
@@ -391,7 +391,7 @@ export async function fetchMafSummaryData(
         // clade already re-reads — a summary fetch that ignored the focus
         // would re-download byte-identical rows and then drop the same ones
         // client-side.
-        subtreeFilter: self.subtreeFilterSet,
+        rowFocus: self.rowFocusKey,
       }),
   )
   if (isRegionRefused(batch)) {

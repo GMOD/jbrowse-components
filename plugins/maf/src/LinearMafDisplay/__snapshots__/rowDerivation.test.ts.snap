@@ -20,9 +20,10 @@ exports[`a cluster run lands its tree with provenance, and a reset restores the 
     },
   ],
   "rowArrangementIsCustom": true,
+  "rowFocusKey": undefined,
   "rowTree": "(mm10,(hg38,panTro4));",
   "rpcProps": {
-    "subtreeFilter": undefined,
+    "rowFocus": undefined,
   },
   "sources": [
     {
@@ -41,7 +42,6 @@ exports[`a cluster run lands its tree with provenance, and a reset restores the 
       "rowColor": undefined,
     },
   ],
-  "subtreeFilterSet": undefined,
   "treeDrawn": true,
   "treeLeaves": [
     "mm10",
@@ -84,9 +84,10 @@ exports[`a cluster run lands its tree with provenance, and a reset restores the 
     },
   ],
   "rowArrangementIsCustom": false,
+  "rowFocusKey": undefined,
   "rowTree": "((hg38,panTro4),mm10);",
   "rpcProps": {
-    "subtreeFilter": undefined,
+    "rowFocus": undefined,
   },
   "sources": [
     {
@@ -105,7 +106,6 @@ exports[`a cluster run lands its tree with provenance, and a reset restores the 
       "rowColor": "#0000aa",
     },
   ],
-  "subtreeFilterSet": undefined,
   "treeDrawn": true,
   "treeLeaves": [
     "hg38",
@@ -135,9 +135,10 @@ exports[`a cluster run rotates towards the declared order 1`] = `
     },
   ],
   "rowArrangementIsCustom": true,
+  "rowFocusKey": undefined,
   "rowTree": "((panTro4,hg38),mm10);",
   "rpcProps": {
-    "subtreeFilter": undefined,
+    "rowFocus": undefined,
   },
   "sources": [
     {
@@ -156,7 +157,6 @@ exports[`a cluster run rotates towards the declared order 1`] = `
       "rowColor": "#0000aa",
     },
   ],
-  "subtreeFilterSet": undefined,
   "treeDrawn": true,
   "treeLeaves": [
     "panTro4",
@@ -186,9 +186,10 @@ exports[`a declared order leads with no tree 1`] = `
     },
   ],
   "rowArrangementIsCustom": false,
+  "rowFocusKey": undefined,
   "rowTree": undefined,
   "rpcProps": {
-    "subtreeFilter": undefined,
+    "rowFocus": undefined,
   },
   "sources": [
     {
@@ -207,7 +208,6 @@ exports[`a declared order leads with no tree 1`] = `
       "rowColor": "#aa0000",
     },
   ],
-  "subtreeFilterSet": undefined,
   "treeDrawn": false,
   "treeLeaves": undefined,
 }
@@ -233,9 +233,10 @@ exports[`a declared order rotates a supplied tree 1`] = `
     },
   ],
   "rowArrangementIsCustom": false,
+  "rowFocusKey": undefined,
   "rowTree": "((hg38,panTro4),mm10);",
   "rpcProps": {
-    "subtreeFilter": undefined,
+    "rowFocus": undefined,
   },
   "sources": [
     {
@@ -254,7 +255,6 @@ exports[`a declared order rotates a supplied tree 1`] = `
       "rowColor": undefined,
     },
   ],
-  "subtreeFilterSet": undefined,
   "treeDrawn": true,
   "treeLeaves": [
     "mm10",
@@ -284,9 +284,10 @@ exports[`a declared order rotates a supplied tree 2`] = `
     },
   ],
   "rowArrangementIsCustom": false,
+  "rowFocusKey": undefined,
   "rowTree": "((hg38,panTro4),mm10);",
   "rpcProps": {
-    "subtreeFilter": undefined,
+    "rowFocus": undefined,
   },
   "sources": [
     {
@@ -305,7 +306,6 @@ exports[`a declared order rotates a supplied tree 2`] = `
       "rowColor": "#0000aa",
     },
   ],
-  "subtreeFilterSet": undefined,
   "treeDrawn": true,
   "treeLeaves": [
     "panTro4",
@@ -335,9 +335,10 @@ exports[`a dialog recolour over an adapter colour, in place 1`] = `
     },
   ],
   "rowArrangementIsCustom": true,
+  "rowFocusKey": undefined,
   "rowTree": undefined,
   "rpcProps": {
-    "subtreeFilter": undefined,
+    "rowFocus": undefined,
   },
   "sources": [
     {
@@ -356,7 +357,6 @@ exports[`a dialog recolour over an adapter colour, in place 1`] = `
       "rowColor": "#0000aa",
     },
   ],
-  "subtreeFilterSet": undefined,
   "treeDrawn": false,
   "treeLeaves": undefined,
 }
@@ -382,9 +382,10 @@ exports[`a dialog reorder to a rotation keeps the supplied tree beside a relabel
     },
   ],
   "rowArrangementIsCustom": true,
+  "rowFocusKey": undefined,
   "rowTree": "((hg38,panTro4),mm10);",
   "rpcProps": {
-    "subtreeFilter": undefined,
+    "rowFocus": undefined,
   },
   "sources": [
     {
@@ -403,7 +404,6 @@ exports[`a dialog reorder to a rotation keeps the supplied tree beside a relabel
       "rowColor": "#123456",
     },
   ],
-  "subtreeFilterSet": undefined,
   "treeDrawn": true,
   "treeLeaves": [
     "mm10",
@@ -433,9 +433,10 @@ exports[`a dialog reorder to a rotation keeps the supplied tree beside a relabel
     },
   ],
   "rowArrangementIsCustom": false,
+  "rowFocusKey": undefined,
   "rowTree": "((hg38,panTro4),mm10);",
   "rpcProps": {
-    "subtreeFilter": undefined,
+    "rowFocus": undefined,
   },
   "sources": [
     {
@@ -454,7 +455,6 @@ exports[`a dialog reorder to a rotation keeps the supplied tree beside a relabel
       "rowColor": "#0000aa",
     },
   ],
-  "subtreeFilterSet": undefined,
   "treeDrawn": true,
   "treeLeaves": [
     "hg38",
@@ -489,9 +489,10 @@ exports[`a discovered row joins after a reorder 1`] = `
     },
   ],
   "rowArrangementIsCustom": true,
+  "rowFocusKey": undefined,
   "rowTree": undefined,
   "rpcProps": {
-    "subtreeFilter": undefined,
+    "rowFocus": undefined,
   },
   "sources": [
     {
@@ -515,7 +516,6 @@ exports[`a discovered row joins after a reorder 1`] = `
       "rowColor": undefined,
     },
   ],
-  "subtreeFilterSet": undefined,
   "treeDrawn": false,
   "treeLeaves": undefined,
 }
@@ -541,9 +541,13 @@ exports[`a focus narrows the rows and the fetch key 1`] = `
     },
   ],
   "rowArrangementIsCustom": false,
+  "rowFocusKey": [
+    "hg38",
+    "panTro4",
+  ],
   "rowTree": "((hg38,panTro4),mm10);",
   "rpcProps": {
-    "subtreeFilter": [
+    "rowFocus": [
       "hg38",
       "panTro4",
     ],
@@ -559,10 +563,6 @@ exports[`a focus narrows the rows and the fetch key 1`] = `
       "name": "panTro4",
       "rowColor": undefined,
     },
-  ],
-  "subtreeFilterSet": [
-    "hg38",
-    "panTro4",
   ],
   "treeDrawn": true,
   "treeLeaves": [
@@ -592,9 +592,13 @@ exports[`a focus narrows the rows and the fetch key 2`] = `
     },
   ],
   "rowArrangementIsCustom": false,
+  "rowFocusKey": [
+    "hg38",
+    "mm10",
+  ],
   "rowTree": "((hg38,panTro4),mm10);",
   "rpcProps": {
-    "subtreeFilter": [
+    "rowFocus": [
       "hg38",
       "mm10",
     ],
@@ -610,10 +614,6 @@ exports[`a focus narrows the rows and the fetch key 2`] = `
       "name": "mm10",
       "rowColor": "#0000aa",
     },
-  ],
-  "subtreeFilterSet": [
-    "hg38",
-    "mm10",
   ],
   "treeDrawn": true,
   "treeLeaves": [
@@ -643,9 +643,10 @@ exports[`a focus narrows the rows and the fetch key 3`] = `
     },
   ],
   "rowArrangementIsCustom": false,
+  "rowFocusKey": undefined,
   "rowTree": "((hg38,panTro4),mm10);",
   "rpcProps": {
-    "subtreeFilter": undefined,
+    "rowFocus": undefined,
   },
   "sources": [
     {
@@ -664,7 +665,6 @@ exports[`a focus narrows the rows and the fetch key 3`] = `
       "rowColor": "#0000aa",
     },
   ],
-  "subtreeFilterSet": undefined,
   "treeDrawn": true,
   "treeLeaves": [
     "hg38",
@@ -694,9 +694,13 @@ exports[`a focused cluster run keeps the hidden row after the clade 1`] = `
     },
   ],
   "rowArrangementIsCustom": true,
+  "rowFocusKey": [
+    "hg38",
+    "panTro4",
+  ],
   "rowTree": "(panTro4,hg38);",
   "rpcProps": {
-    "subtreeFilter": [
+    "rowFocus": [
       "hg38",
       "panTro4",
     ],
@@ -712,10 +716,6 @@ exports[`a focused cluster run keeps the hidden row after the clade 1`] = `
       "name": "hg38",
       "rowColor": "#aa0000",
     },
-  ],
-  "subtreeFilterSet": [
-    "hg38",
-    "panTro4",
   ],
   "treeDrawn": true,
   "treeLeaves": [
@@ -745,9 +745,10 @@ exports[`a focused cluster run keeps the hidden row after the clade 2`] = `
     },
   ],
   "rowArrangementIsCustom": true,
+  "rowFocusKey": undefined,
   "rowTree": "(panTro4,hg38);",
   "rpcProps": {
-    "subtreeFilter": undefined,
+    "rowFocus": undefined,
   },
   "sources": [
     {
@@ -766,7 +767,6 @@ exports[`a focused cluster run keeps the hidden row after the clade 2`] = `
       "rowColor": "#0000aa",
     },
   ],
-  "subtreeFilterSet": undefined,
   "treeDrawn": false,
   "treeLeaves": [
     "panTro4",
@@ -795,9 +795,10 @@ exports[`a reorder no rotation of the supplied tree produces drops it, and a res
     },
   ],
   "rowArrangementIsCustom": true,
+  "rowFocusKey": undefined,
   "rowTree": undefined,
   "rpcProps": {
-    "subtreeFilter": undefined,
+    "rowFocus": undefined,
   },
   "sources": [
     {
@@ -816,7 +817,6 @@ exports[`a reorder no rotation of the supplied tree produces drops it, and a res
       "rowColor": undefined,
     },
   ],
-  "subtreeFilterSet": undefined,
   "treeDrawn": false,
   "treeLeaves": undefined,
 }
@@ -842,9 +842,10 @@ exports[`a reorder no rotation of the supplied tree produces drops it, and a res
     },
   ],
   "rowArrangementIsCustom": false,
+  "rowFocusKey": undefined,
   "rowTree": "((hg38,panTro4),mm10);",
   "rpcProps": {
-    "subtreeFilter": undefined,
+    "rowFocus": undefined,
   },
   "sources": [
     {
@@ -863,7 +864,6 @@ exports[`a reorder no rotation of the supplied tree produces drops it, and a res
       "rowColor": undefined,
     },
   ],
-  "subtreeFilterSet": undefined,
   "treeDrawn": true,
   "treeLeaves": [
     "mm10",
@@ -893,9 +893,10 @@ exports[`a supplied guide tree leads the rows 1`] = `
     },
   ],
   "rowArrangementIsCustom": false,
+  "rowFocusKey": undefined,
   "rowTree": "((hg38,panTro4),mm10);",
   "rpcProps": {
-    "subtreeFilter": undefined,
+    "rowFocus": undefined,
   },
   "sources": [
     {
@@ -914,7 +915,6 @@ exports[`a supplied guide tree leads the rows 1`] = `
       "rowColor": "#0000aa",
     },
   ],
-  "subtreeFilterSet": undefined,
   "treeDrawn": true,
   "treeLeaves": [
     "hg38",
@@ -944,9 +944,10 @@ exports[`adapter labels and colours are the rows own 1`] = `
     },
   ],
   "rowArrangementIsCustom": false,
+  "rowFocusKey": undefined,
   "rowTree": undefined,
   "rpcProps": {
-    "subtreeFilter": undefined,
+    "rowFocus": undefined,
   },
   "sources": [
     {
@@ -965,7 +966,6 @@ exports[`adapter labels and colours are the rows own 1`] = `
       "rowColor": "#0000aa",
     },
   ],
-  "subtreeFilterSet": undefined,
   "treeDrawn": false,
   "treeLeaves": undefined,
 }
@@ -991,9 +991,10 @@ exports[`hiding the reference row prunes it from the rows and the tree 1`] = `
     },
   ],
   "rowArrangementIsCustom": false,
+  "rowFocusKey": undefined,
   "rowTree": "((hg38,panTro4),mm10);",
   "rpcProps": {
-    "subtreeFilter": undefined,
+    "rowFocus": undefined,
   },
   "sources": [
     {
@@ -1007,7 +1008,6 @@ exports[`hiding the reference row prunes it from the rows and the tree 1`] = `
       "rowColor": "#0000aa",
     },
   ],
-  "subtreeFilterSet": undefined,
   "treeDrawn": true,
   "treeLeaves": [
     "hg38",
@@ -1037,9 +1037,13 @@ exports[`hiding the reference row prunes it from the rows and the tree 2`] = `
     },
   ],
   "rowArrangementIsCustom": false,
+  "rowFocusKey": [
+    "hg38",
+    "panTro4",
+  ],
   "rowTree": "((hg38,panTro4),mm10);",
   "rpcProps": {
-    "subtreeFilter": [
+    "rowFocus": [
       "hg38",
       "panTro4",
     ],
@@ -1050,10 +1054,6 @@ exports[`hiding the reference row prunes it from the rows and the tree 2`] = `
       "name": "panTro4",
       "rowColor": undefined,
     },
-  ],
-  "subtreeFilterSet": [
-    "hg38",
-    "panTro4",
   ],
   "treeDrawn": true,
   "treeLeaves": [
@@ -1083,9 +1083,10 @@ exports[`sort at a column orders the rows by base and drops the supplied tree 1`
     },
   ],
   "rowArrangementIsCustom": true,
+  "rowFocusKey": undefined,
   "rowTree": undefined,
   "rpcProps": {
-    "subtreeFilter": undefined,
+    "rowFocus": undefined,
   },
   "sources": [
     {
@@ -1104,7 +1105,6 @@ exports[`sort at a column orders the rows by base and drops the supplied tree 1`
       "rowColor": "#aa0000",
     },
   ],
-  "subtreeFilterSet": undefined,
   "treeDrawn": false,
   "treeLeaves": undefined,
 }
