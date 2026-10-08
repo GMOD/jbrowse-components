@@ -5625,6 +5625,7 @@
     "@jbrowse/render-core/shaders/linkMark": {
       "package": "@jbrowse/render-core",
       "names": [
+        "linkApexHeld",
         "linkApexPx",
         "linkBaseYPx",
         "linkFootDir",
