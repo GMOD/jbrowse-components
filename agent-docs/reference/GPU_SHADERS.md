@@ -45,7 +45,7 @@ WebGPU browser.
 **GPU canvases (HAL-managed):** uniforms are in CSS pixels and the HAL sets the
 backing store to `css × dpr`. Do not scale by `devicePixelRatio`.
 
-**2D overlay canvases** (`VisibleLabelsOverlay` and the like): the caller owns
+**2D overlay canvases** (`MafRowOverlays` and the like): the caller owns
 DPR. Set `canvas.width = w * dpr`, call `ctx.scale(dpr, dpr)`, and put CSS
 `width`/`height` in the style, as `prepareCanvas`
 (`packages/render-core/src/canvas2dUtils.ts`) does. Skipping this blurs on Retina.

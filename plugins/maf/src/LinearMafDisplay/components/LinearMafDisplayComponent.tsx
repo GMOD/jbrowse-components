@@ -16,18 +16,12 @@ import { observer } from 'mobx-react'
 
 import { MAF_MARKS } from '../../LinearMafRenderer/mafMarks.ts'
 import { openInsertionWidgetOnClick } from '../openInsertionWidget.ts'
-import AnnotationOverlay from './AnnotationOverlay.tsx'
-import CodonTranslationOverlay from './CodonTranslationOverlay.tsx'
-import DeletionsOverlay from './DeletionsOverlay.tsx'
 import DragSelectionRect from './DragSelectionRect.tsx'
-import EmptyLinesOverlay from './EmptyLinesOverlay.tsx'
-import InsertionsOverlay from './InsertionsOverlay.tsx'
-import InversionsOverlay from './InversionsOverlay.tsx'
 import MAFTooltip from './MAFTooltip.tsx'
 import MafBandHandles from './MafBandHandles.tsx'
 import MafBandLabels from './MafBandLabels.tsx'
+import MafRowOverlays from './MafRowOverlays.tsx'
 import SubsequenceContextMenu from './SubsequenceContextMenu.tsx'
-import VisibleLabelsOverlay from './VisibleLabelsOverlay.tsx'
 import { mafPointerAt, resolveMafPointerHit } from './mafHitTest.ts'
 import { useDragSelection } from './useDragSelection.ts'
 
@@ -137,7 +131,7 @@ const MafBody = observer(function MafBody({
   drag: ReturnType<typeof useDragSelection>
   mouseTracker: MouseTracker
 }) {
-  const { rowsHeight, rowsTopOffset, colorPalette } = model
+  const { rowsHeight, rowsTopOffset } = model
   const [resizeActive, setResizeActive] = useState(false)
   // the canvas box, not the viewport: must equal renderState.canvasWidth, and
   // every overlay below is positioned in the same space — see canvasWidthPx
@@ -202,45 +196,7 @@ const MafBody = observer(function MafBody({
         testIdPrefix="maf"
         cursor={overInsertion ? 'pointer' : undefined}
       >
-        <EmptyLinesOverlay
-          segments={model.visibleEmptyLines}
-          width={width}
-          height={rowsHeight}
-          palette={colorPalette}
-        />
-        <AnnotationOverlay
-          markers={model.visibleFrames}
-          width={width}
-          height={rowsHeight}
-        />
-        <InsertionsOverlay
-          payloads={model.encodedUpload}
-          renderBlocks={model.renderBlocks}
-          renderState={model.renderState}
-          width={width}
-          height={rowsHeight}
-        />
-        <DeletionsOverlay
-          markers={model.visibleDeletions}
-          width={width}
-          height={rowsHeight}
-          palette={colorPalette}
-        />
-        <VisibleLabelsOverlay
-          labels={model.visibleLabels}
-          width={width}
-          height={rowsHeight}
-        />
-        <CodonTranslationOverlay
-          glyphs={model.visibleCodonGlyphs}
-          width={width}
-          height={rowsHeight}
-        />
-        <InversionsOverlay
-          markers={model.visibleInversions}
-          width={width}
-          height={rowsHeight}
-        />
+        <MafRowOverlays model={model} width={width} height={rowsHeight} />
       </RowsPanel>
       {pointer && !contextCoord && !resizeActive ? (
         <div style={{ position: 'relative' }}>

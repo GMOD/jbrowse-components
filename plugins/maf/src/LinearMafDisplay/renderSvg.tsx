@@ -1,11 +1,9 @@
 /* eslint-disable react-refresh/only-export-components */
 import React from 'react'
 
-import { paintInsertionLabels } from '@jbrowse/alignments-core'
 import { SvgClipRect } from '@jbrowse/core/svg/SvgExport'
 import { svgNodeId } from '@jbrowse/core/svg/svgId'
 import { usePalette } from '@jbrowse/core/ui/PaletteContext'
-import { colorLongreadInv } from '@jbrowse/core/ui/palette'
 import MarkSvgLayer from '@jbrowse/display-kit/MarkSvgLayer'
 import { renderDisplaySvg } from '@jbrowse/display-kit/renderDisplaySvg'
 import { SvgTreeSidebar } from '@jbrowse/tree-sidebar'
@@ -17,17 +15,10 @@ import {
   MAF_ROWS_MARKS,
   mafInsertionParams,
 } from '../LinearMafRenderer/mafMarks.ts'
-import { drawMafAnnotations } from '../LinearMafRenderer/rendering/annotations.ts'
-import { drawMafCodons } from '../LinearMafRenderer/rendering/codons.ts'
-import { drawMafDeletionLabels } from '../LinearMafRenderer/rendering/deletions.ts'
-import { drawMafEmptyLines } from '../LinearMafRenderer/rendering/emptyLines.ts'
-import { drawInversions } from '../LinearMafRenderer/rendering/inversions.ts'
-import { drawMafLabels } from '../LinearMafRenderer/rendering/labels.ts'
 import {
-  getMafLabelColors,
-  getFrameColors,
-  getMafColorPalette,
-} from '../LinearMafRenderer/util.ts'
+  getMafOverlayTheme,
+  paintMafRowOverlays,
+} from '../LinearMafRenderer/rendering/rowOverlays.ts'
 import { SvgMafBandLabels } from './components/MafBandLabels.tsx'
 import { visibleRowRange } from './components/visibleRegionGeometry.ts'
 import { cullMafRows, encodeMafRows } from './encodeMafRows.ts'
@@ -61,7 +52,8 @@ function MafSvgBody({
     conservationDisplayHeight,
     scrollTop,
   } = model
-  const colorPalette = getMafColorPalette(palette)
+  const theme = getMafOverlayTheme(palette)
+  const colorPalette = theme.colors
   // Each band paints into its own layer translated to that band's origin, so
   // the rows painter sees its band at offset 0, not the display's stack.
   const svgState = {
@@ -70,7 +62,6 @@ function MafSvgBody({
     rowsHeight,
     palette: colorPalette,
   }
-  const labelColors = getMafLabelColors(palette)
   const encodeProps = model.rowsEncodePropsIn(colorPalette)
   const shownRows = visibleRowRange(effectiveRowHeight, scrollTop, rowsHeight)
   const svgRows = new Map(
@@ -142,23 +133,25 @@ function MafSvgBody({
               if (!overlays) {
                 return
               }
-              drawMafEmptyLines(ctx, model.visibleEmptyLines, colorPalette)
-              drawMafAnnotations(
+              paintMafRowOverlays(
                 ctx,
-                model.visibleFrames,
-                getFrameColors(palette),
+                {
+                  emptyLines: model.visibleEmptyLines,
+                  frames: model.visibleFrames,
+                  insertions: {
+                    blocks: renderBlocks,
+                    channelsOf: block =>
+                      svgRows.get(block.displayedRegionIndex)?.insertions,
+                    frame: framed,
+                    params: mafInsertionParams(framed),
+                  },
+                  deletions: model.visibleDeletions,
+                  labels: model.visibleLabels,
+                  codonGlyphs: model.visibleCodonGlyphs,
+                  inversions: model.visibleInversions,
+                },
+                theme,
               )
-              paintInsertionLabels(
-                ctx,
-                renderBlocks,
-                block => svgRows.get(block.displayedRegionIndex)?.insertions,
-                framed,
-                mafInsertionParams(framed),
-              )
-              drawMafDeletionLabels(ctx, model.visibleDeletions, colorPalette)
-              drawMafLabels(ctx, model.visibleLabels, labelColors)
-              drawMafCodons(ctx, model.visibleCodonGlyphs, palette.text.primary)
-              drawInversions(ctx, model.visibleInversions, colorLongreadInv)
             }}
           />
         </SvgClipRect>
