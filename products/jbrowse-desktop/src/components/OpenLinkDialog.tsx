@@ -7,12 +7,13 @@ import { observer } from 'mobx-react'
 
 import { useIpcAction } from './StartScreen/dialogs/useIpcAction.ts'
 
-// Opens a JBrowse Web link as a Desktop session — either a figure link carrying
-// a `&session=spec-…`, or the `&assembly=`/`&loc=` URL shorthand. Both name a
-// config and describe a session, which is everything Desktop needs to load it
-// itself. Anything else — an unreachable config, a session kind only the
-// originating instance can decrypt — surfaces as the dialog's own error rather
-// than a half-built session.
+// Opens a JBrowse Web link as a Desktop session: a figure link carrying a
+// `&session=spec-…`, the `&assembly=`/`&loc=` URL shorthand, or a link that
+// carries its whole session (`encoded-`/`json-`). Each names a config and
+// describes a session, which is everything Desktop needs to load it itself.
+// Anything else — an unreachable config, a session kind only the originating
+// instance can decrypt — surfaces as the dialog's own error rather than a
+// half-built session.
 const OpenLinkDialog = observer(function OpenLinkDialog({
   onSubmit,
   onClose,

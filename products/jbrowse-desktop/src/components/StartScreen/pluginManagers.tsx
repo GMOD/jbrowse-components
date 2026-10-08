@@ -18,7 +18,7 @@ import { invokeIpc } from '../../ipc.ts'
 import JBrowseRootModelFactory from '../../rootModel/rootModel.ts'
 import sessionModelFactory from '../../sessionModel/sessionModel.ts'
 import { completeConfig } from './configInputs.ts'
-import { fetchConfig } from './fetchConfig.ts'
+import { fetchConfig, trustPlugins } from './fetchConfig.ts'
 import {
   getGlobalPlugins,
   globalPluginReadErrorMessage,
@@ -247,6 +247,7 @@ export async function openSpecLink(link: string) {
     // no defaultSession to invent: loadSessionSpec replaces the session this
     // builds with the one the spec describes, and names it from the link
     createPluginManager: launchSnapshot,
+    trustPlugins,
   })
 }
 

@@ -1,4 +1,7 @@
-import { parseSessionSpecUrl } from './parseSessionSpecUrl.ts'
+import {
+  parseInlineSessionUrl,
+  parseSessionSpecUrl,
+} from './parseSessionSpecUrl.ts'
 
 const SPEC = { views: [{ type: 'LinearGenomeView', assembly: 'volvox' }] }
 const encoded = `spec-${encodeURIComponent(JSON.stringify(SPEC))}`
@@ -391,4 +394,36 @@ describe('the loc/assembly shorthand', () => {
       parseSessionSpecUrl(`${base}?config=x.json&tracks=alignments`),
     ).toThrow(/no session in it/)
   })
+})
+
+test('a link carrying its whole session yields it undecoded, with its config', () => {
+  expect(
+    parseInlineSessionUrl(
+      'https://jbrowse.org/code/jb2/main/#config=%2Fucsc%2Fhg38%2Fconfig.json&session=encoded-abc123',
+    ),
+  ).toEqual({
+    configUrl: 'https://jbrowse.org/ucsc/hg38/config.json',
+    session: 'encoded-abc123',
+  })
+})
+
+test('the same link wrapped as jbrowse:// reads the same', () => {
+  const web =
+    'https://jbrowse.org/code/jb2/main/?config=test_data/volvox/config.json&session=json-%7B%7D'
+  expect(
+    parseInlineSessionUrl(`jbrowse://open?url=${encodeURIComponent(web)}`),
+  ).toEqual(parseInlineSessionUrl(web))
+})
+
+test('spec, share and session-less links carry no inline session', () => {
+  for (const session of ['spec-%7B%7D', 'share-abc', 'local-abc']) {
+    expect(
+      parseInlineSessionUrl(
+        `https://jbrowse.org/code/jb2/main/?session=${session}`,
+      ),
+    ).toBeUndefined()
+  }
+  expect(
+    parseInlineSessionUrl('https://jbrowse.org/code/jb2/main/?loc=ctgA:1-10'),
+  ).toBeUndefined()
 })

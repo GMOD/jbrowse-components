@@ -186,6 +186,40 @@ function readSessionTracks(params: URLSearchParams) {
   return parsed as Record<string, unknown>[]
 }
 
+export interface ParsedInlineSession {
+  configUrl: string
+  /** the `session=` value as it is in the link, prefix included, undecoded */
+  session: string
+}
+
+/**
+ * The session a link carries whole (`session=encoded-…` or `json-…`), with the
+ * config it applies to — or undefined for any other link.
+ *
+ * A link with no `config=` means the instance's own `config.json`, as it does
+ * to the JBrowse Web page the link points at. A snapshot names assemblies and
+ * tracks by id and holds none of them, so there is always a config to fetch.
+ */
+export function parseInlineSessionUrl(
+  input: string,
+): ParsedInlineSession | undefined {
+  let url: URL
+  try {
+    url = unwrapProtocolUrl(new URL(input.trim()))
+  } catch {
+    return undefined
+  }
+  const params = readAllQueryParams(url)
+  const session = params.get('session')
+  return session && /^(encoded|json)-/.test(session)
+    ? {
+        configUrl: new URL(params.get('config') ?? 'config.json', url.href)
+          .href,
+        session,
+      }
+    : undefined
+}
+
 export function parseSessionSpecUrl(input: string): ParsedSessionSpec {
   let url: URL
   try {

@@ -15,8 +15,14 @@ export {
   loadSessionSpec,
   viewTypeProblem,
 } from './loadSessionSpec.ts'
-export { parseSessionSpecUrl } from './parseSessionSpecUrl.ts'
+export {
+  parseInlineSessionUrl,
+  parseSessionSpecUrl,
+} from './parseSessionSpecUrl.ts'
 
 export type { LgvUrlInit } from './lgvUrlInit.ts'
-export type { ParsedSessionSpec } from './parseSessionSpecUrl.ts'
+export type {
+  ParsedInlineSession,
+  ParsedSessionSpec,
+} from './parseSessionSpecUrl.ts'
 export type { LayoutNode, ViewSpec } from './types.ts'

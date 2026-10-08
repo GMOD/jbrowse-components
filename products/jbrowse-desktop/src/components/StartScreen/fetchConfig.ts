@@ -6,6 +6,7 @@ import { invokeIpc } from '../../ipc.ts'
 import { assertPluginsTrusted } from './assertPluginsTrusted.ts'
 
 import type { JBrowseConfig } from './types.ts'
+import type { PluginDefinition } from '@jbrowse/core/pluginDefinitions'
 
 // Kept out of util.tsx so it does not drag in the root model: this is a leaf
 // that fetches and vets, and the security gate below is easier to trust — and
@@ -32,9 +33,17 @@ export async function fetchConfig(url: string) {
     ...cfg.configuration,
     sourceConfigUrl: url,
   }
-  await assertPluginsTrusted(cfg.plugins, {
-    checkPlugins,
-    confirm: plugins => invokeIpc('confirmUntrustedPlugins', plugins),
-  })
+  await trustPlugins(cfg.plugins)
   return cfg
+}
+
+/**
+ * The one trust prompt for plugins that arrive from outside: a remote config's,
+ * and those a link's own session asks for.
+ */
+export async function trustPlugins(plugins: PluginDefinition[] | undefined) {
+  await assertPluginsTrusted(plugins, {
+    checkPlugins,
+    confirm: untrusted => invokeIpc('confirmUntrustedPlugins', untrusted),
+  })
 }
