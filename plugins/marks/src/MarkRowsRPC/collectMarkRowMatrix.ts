@@ -51,6 +51,7 @@ export async function collectMarkRowMatrix({
     facet,
     bpPerPx,
     layer,
+    regionOpts,
     signal,
     statusCallback,
   } = args
@@ -62,8 +63,9 @@ export async function collectMarkRowMatrix({
     statusCallback,
     () =>
       Promise.all(
-        regions.map(region =>
+        regions.map((region, i) =>
           dataAdapter.getFeatureTable(region, {
+            ...regionOpts?.[i],
             bpPerPx,
             statusCallback: slot(),
             signal,

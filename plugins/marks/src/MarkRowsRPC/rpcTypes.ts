@@ -22,6 +22,9 @@ export interface MarkRowMatrixArgs {
   bpPerPx: number
   // the mark whose values fill each row
   layer: LayerRequest
+  // the adapter options each region's fetch carries, as the display's own
+  // does, so the matrix reads the features the plot draws
+  regionOpts?: (object | undefined)[]
 }
 
 export interface MarkClusterRowsResult {

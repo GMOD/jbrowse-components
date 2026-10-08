@@ -35,9 +35,9 @@ const MarkClusterDialog = observer(function MarkClusterDialog({
       }
       matrixKey={rowMatrixKey(model)}
       run={args => runMarkClustering({ model, ...args })}
-      fetchMatrix={({ rpcManager, sessionId, regions, ...handles }) =>
+      fetchMatrix={async ({ rpcManager, sessionId, regions, ...handles }) =>
         rpcManager.call(sessionId, 'MarkGetRowMatrix', {
-          ...markRowMatrixArgs(model, regions),
+          ...(await markRowMatrixArgs(model, regions, handles.signal)),
           ...handles,
         })
       }

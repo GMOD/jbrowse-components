@@ -25,20 +25,29 @@ export interface MarkClusterModel extends ClusterRunModel<RowSource> {
   layerRequests: LayerRequest[]
   host: { bpPerPx: number }
   rpcProps: () => { transform: TransformStep[]; facet?: FacetSpec }
+  adapterOptions: object | undefined
+  resolveAdapterOptions: (
+    options: object,
+    region: Region,
+    signal: AbortSignal,
+  ) => Promise<object | undefined>
 }
 
 export interface MarkClusterDialogModel
   extends IStateTreeNode, MarkClusterModel {}
 
 /**
- * The matrix request: the display's own split and steps over `regions`, and
- * the first mark standing at a value, one matrix row per row clustered.
+ * The matrix request: the display's own split, steps and adapter options over
+ * `regions`, and the first mark standing at a value, one matrix row per row
+ * clustered.
  */
-export function markRowMatrixArgs(
+export async function markRowMatrixArgs(
   model: MarkClusterModel,
   regions: Region[],
-): MarkRowMatrixArgs {
+  signal: AbortSignal,
+): Promise<MarkRowMatrixArgs> {
   const { transform, facet } = model.rpcProps()
+  const options = model.adapterOptions
   const layer = model.layerRequests[model.valueMarkIndex]
   if (!facet || !layer) {
     throw new Error(
@@ -53,6 +62,15 @@ export function markRowMatrixArgs(
     facet,
     bpPerPx: model.host.bpPerPx,
     layer,
+    ...(options
+      ? {
+          regionOpts: await Promise.all(
+            regions.map(region =>
+              model.resolveAdapterOptions(options, region, signal),
+            ),
+          ),
+        }
+      : {}),
   }
 }
 
@@ -84,7 +102,7 @@ export async function runMarkClustering({
   signal: AbortSignal
   statusCallback: (status: RpcStatus) => void
 }) {
-  const args = markRowMatrixArgs(model, regions)
+  const args = await markRowMatrixArgs(model, regions, signal)
   await applyClusterRun({
     model,
     rows: model.clusterableSources,

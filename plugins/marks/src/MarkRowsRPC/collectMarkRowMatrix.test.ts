@@ -156,3 +156,17 @@ test('1 bp calls cluster on their values in a window of wide columns', async () 
   expect(Math.abs(leaves.indexOf('early1') - leaves.indexOf('early2'))).toBe(1)
   expect(Math.abs(leaves.indexOf('late1') - leaves.indexOf('late2'))).toBe(1)
 })
+
+// A display whose adapter joins a second file under a fetch option draws
+// features the matrix would otherwise read without the joined fields.
+test("each region's fetch carries the adapter options the display resolved for it", async () => {
+  const getFeatureTable = stubAdapter([[], []])
+  await matrix({
+    regions: [region(0, 10), region(100, 110, 'ctgB')],
+    regionOpts: [{ ld: { start: 5, refName: 'A' } }, undefined],
+  })
+  expect(getFeatureTable.mock.calls.map(([, opts]) => opts)).toEqual([
+    expect.objectContaining({ ld: { start: 5, refName: 'A' }, bpPerPx: 2.5 }),
+    expect.not.objectContaining({ ld: expect.anything() }),
+  ])
+})
