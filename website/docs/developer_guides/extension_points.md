@@ -543,7 +543,7 @@ late for a lazy element.
 For the two common cases use `extendViewType` / `extendDisplayType`, which check
 the `group` and look the name up in a registry:
 
-<!-- include: products/jbrowse-react-linear-genome-view/examples-site/src/examples/WithDisableZoomAndSideScroll.tsx#extend -->
+<!-- include: products/jbrowse-react-linear-genome-view/examples-site/src/examples/DisableZoomAndSideScroll.tsx#extend -->
 
 ```tsx
 extendViewType(pluginManager, 'LinearGenomeView', stateModel =>

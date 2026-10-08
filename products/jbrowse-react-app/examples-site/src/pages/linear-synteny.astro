@@ -1,0 +1,9 @@
+---
+import Demo from '../examples/LinearSynteny.tsx'
+import code from '../examples/LinearSynteny.tsx?raw'
+import ExamplePage from '../layouts/ExamplePage.astro'
+---
+
+<ExamplePage slug="linear-synteny" code={code}>
+  <Demo client:only="react" />
+</ExamplePage>

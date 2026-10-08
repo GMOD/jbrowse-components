@@ -7,9 +7,9 @@
   "session-in-url": 445,
   "show-track": 433,
   "volvox": 408,
-  "with-dark-theme": 408,
-  "with-inline-plugin": 408,
-  "with-track-shorthand": 408,
-  "with-web-worker": 408,
+  "dark-theme": 408,
+  "inline-plugin": 408,
+  "track-shorthand": 408,
+  "web-worker": 408,
   "without-react": 445
 }

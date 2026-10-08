@@ -1,0 +1,9 @@
+---
+import Demo from '../examples/ShadowDom.tsx'
+import code from '../examples/ShadowDom.tsx?raw'
+import ExamplePage from '../layouts/ExamplePage.astro'
+---
+
+<ExamplePage slug="shadow-dom" code={code}>
+  <Demo client:only="react" />
+</ExamplePage>

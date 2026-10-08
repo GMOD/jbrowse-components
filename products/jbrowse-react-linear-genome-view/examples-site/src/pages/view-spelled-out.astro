@@ -1,0 +1,9 @@
+---
+import Demo from '../examples/ViewSpelledOut.tsx'
+import code from '../examples/ViewSpelledOut.tsx?raw'
+import ExamplePage from '../layouts/ExamplePage.astro'
+---
+
+<ExamplePage slug="view-spelled-out" code={code}>
+  <Demo client:only="react" />
+</ExamplePage>

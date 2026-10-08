@@ -1,16 +1,9 @@
 ---
-import SvgFigure from '../examples/SvgFigure.tsx'
-import SvgFigureCode from '../examples/SvgFigure.tsx?raw'
-import { getPage, section } from '../examples.ts'
-import Layout from '../layouts/ExampleLayout.astro'
-import Section from '../layouts/ExampleSection.astro'
-
-const page = getPage('svg-figures')
-const sec = section(page, 'svg-figure')
+import Demo from '../examples/SvgFigures.tsx'
+import code from '../examples/SvgFigures.tsx?raw'
+import ExamplePage from '../layouts/ExamplePage.astro'
 ---
 
-<Layout page={page}>
-  <Section {...sec} code={SvgFigureCode}>
-    <SvgFigure client:only="react" />
-  </Section>
-</Layout>
+<ExamplePage slug="svg-figures" code={code}>
+  <Demo client:only="react" />
+</ExamplePage>

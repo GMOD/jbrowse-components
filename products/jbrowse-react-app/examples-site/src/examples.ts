@@ -1,9 +1,8 @@
-import { findPage, flattenExamples } from './exampleModel.ts'
+import { findPage } from './exampleModel.ts'
 
 import type { ExamplePage } from './exampleModel.ts'
 
-export type { ExamplePage, ExampleSection } from './exampleModel.ts'
-export { section } from './exampleModel.ts'
+export type { ExamplePage } from './exampleModel.ts'
 
 export const pages: ExamplePage[] = [
   {
@@ -11,169 +10,131 @@ export const pages: ExamplePage[] = [
     title: 'Basic example',
     description: 'The whole app, one assembly, one track.',
     group: 'Getting started',
-    sections: [{ slug: 'basic-example', title: 'Basic example' }],
   },
   {
-    slug: 'with-track-shorthand',
+    slug: 'track-shorthand',
     title: 'Tracks as an id and a uri',
     description: 'The extension picks the track type and the adapter.',
     group: 'Getting started',
-    sections: [
-      { slug: 'with-track-shorthand', title: 'Tracks as an id and a uri' },
-    ],
   },
   {
-    slug: 'customizing-the-app',
-    title: 'Customizing the app',
-    description: 'Theme, sizing and the web worker.',
+    slug: 'import-config-json',
+    title: 'Import a config.json',
+    description: 'Bundled at build time.',
     group: 'Getting started',
-    sections: [
-      {
-        slug: 'dark-theme',
-        title: 'Dark theme',
-        description: 'palette.mode: dark.',
-      },
-      {
-        slug: 'fit-to-container',
-        title: 'Fit the app to a container',
-        description: 'The --jbrowse-app-height CSS variable.',
-      },
-      {
-        slug: 'with-web-worker',
-        title: 'Web worker RPC',
-        description: 'Move parsing and rendering off the main thread.',
-      },
-    ],
   },
   {
-    slug: 'sessions',
-    title: 'Sessions',
-    description: 'Read the open views, share them as a link, open several.',
+    slug: 'fetch-config-json',
+    title: 'Fetch a config.json',
+    description: 'Fetched at runtime.',
     group: 'Getting started',
-    sections: [
-      {
-        slug: 'observe-session',
-        title: 'Observe the session',
-        description: 'An observer reading the open views.',
-      },
-      {
-        slug: 'session-in-url',
-        title: 'Put the session in the URL',
-        description: 'encodeSession / decodeSession, for a sharable link.',
-      },
-      {
-        slug: 'multi-view-session',
-        title: 'Multiple views in one session',
-        description: 'A circular overview above a linear detail view.',
-      },
-    ],
   },
-
   {
-    slug: 'loading-config',
-    title: 'Loading configuration',
+    slug: 'dark-theme',
+    title: 'Dark theme',
+    description: 'palette.mode: dark.',
+    group: 'Customizing',
+  },
+  {
+    slug: 'fit-to-container',
+    title: 'Fit the app to a container',
+    description: 'The --jbrowse-app-height CSS variable.',
+    group: 'Customizing',
+  },
+  {
+    slug: 'web-worker',
+    title: 'Web worker',
+    description: 'Move parsing and rendering off the main thread.',
+    group: 'Customizing',
+  },
+  {
+    slug: 'inline-plugin',
+    title: 'Inline plugin',
+    description: 'A Plugin class from your own source.',
+    group: 'Customizing',
+  },
+  {
+    slug: 'external-plugin',
+    title: 'External plugin',
+    description: 'loadPlugins fetches a bundle at runtime.',
+    group: 'Customizing',
+  },
+  {
+    slug: 'observe-session',
+    title: 'Observe the session',
+    description: 'An observer reading the open views.',
+    group: 'Sessions and control',
+  },
+  {
+    slug: 'session-in-url',
+    title: 'Put the session in the URL',
+    description: 'encodeSession / decodeSession, for a sharable link.',
+    group: 'Sessions and control',
+  },
+  {
+    slug: 'multi-view-session',
+    title: 'Multiple views in one session',
+    description: 'A circular overview above a linear detail view.',
+    group: 'Sessions and control',
+  },
+  {
+    slug: 'add-tracks-programmatically',
+    title: 'Add tracks programmatically',
+    description: 'addTrackConf, then launchTrack.',
+    group: 'Sessions and control',
+  },
+  {
+    slug: 'launch-view',
+    title: 'Launch a view imperatively',
+    description: 'session.launchView, from your own button.',
+    group: 'Sessions and control',
+  },
+  {
+    slug: 'without-react',
+    title: 'Without React',
     description:
-      'Import or fetch a config.json, or add tracks and views later.',
-    group: 'Getting started',
-    sections: [
-      {
-        slug: 'with-import-config-json',
-        title: 'Import a config.json',
-        description: 'Bundled at build time.',
-      },
-      {
-        slug: 'with-fetch-config-json',
-        title: 'Fetch a config.json',
-        description: 'Fetched at runtime.',
-      },
-      {
-        slug: 'add-tracks-programmatically',
-        title: 'Add tracks programmatically',
-        description: 'addTrackConf, then launchTrack.',
-      },
-      {
-        slug: 'with-launch-linear-genome-view',
-        title: 'Launch a view imperatively',
-        description: 'session.launchView, from your own button.',
-      },
-    ],
+      'createApp mounts into an element and hands back a controller.',
+    group: 'Sessions and control',
   },
   {
-    slug: 'plugins',
-    title: 'Plugins',
-    description: 'Plugins defined inline or loaded from a URL.',
-    group: 'Getting started',
-    sections: [
-      {
-        slug: 'embedded-plugin',
-        title: 'Embedded (inline) plugin',
-        description: 'A Plugin class from your own source.',
-      },
-      {
-        slug: 'with-external-plugin',
-        title: 'External plugin',
-        description: 'loadPlugins fetches a bundle at runtime.',
-      },
-    ],
-  },
-
-  {
-    slug: 'comparative-views',
-    title: 'Comparative views',
-    description: 'Synteny and dotplot views.',
+    slug: 'linear-synteny',
+    title: 'Linear synteny view',
+    description: 'Two assemblies and a PAF.',
     group: 'View types',
-    sections: [
-      {
-        slug: 'synteny-example',
-        title: 'Linear synteny view',
-        description: 'Two assemblies and a PAF.',
-      },
-      {
-        slug: 'dotplot-example',
-        title: 'Dotplot view',
-        description: 'A self-vs-self volvox dotplot.',
-      },
-      {
-        slug: 'create-app-synteny',
-        title: 'Synteny via the imperative mount',
-        description: 'createApp, the mount non-React hosts wrap.',
-      },
-      {
-        slug: 'multiway-synteny-example',
-        title: 'Multi-way linear synteny view',
-        description: 'Four E. coli strains from one all-vs-all PAF.',
-      },
-    ],
   },
   {
-    slug: 'structural-variant-views',
-    title: 'Structural variant views',
-    description: 'Breakpoint split and SV inspector views.',
+    slug: 'dotplot',
+    title: 'Dotplot view',
+    description: 'A self-vs-self volvox dotplot.',
     group: 'View types',
-    sections: [
-      {
-        slug: 'breakpoint-split-example',
-        title: 'Breakpoint split view',
-        description: 'One structural variant across two regions.',
-      },
-      {
-        slug: 'sv-inspector-example',
-        title: 'SV inspector',
-        description: 'A spreadsheet paired with a circular view.',
-      },
-    ],
   },
-
+  {
+    slug: 'multiway-synteny',
+    title: 'Multi-way linear synteny view',
+    description: 'Four E. coli strains from one all-vs-all PAF.',
+    group: 'View types',
+  },
+  {
+    slug: 'breakpoint-split',
+    title: 'Breakpoint split view',
+    description: 'One structural variant across two regions.',
+    group: 'View types',
+  },
+  {
+    slug: 'sv-inspector',
+    title: 'SV inspector',
+    description: 'A spreadsheet paired with a circular view.',
+    group: 'View types',
+  },
   {
     slug: 'human-demo',
     title: 'Human demo (hg38)',
     description:
       'Genes, repeats, exome reads, variants and conservation on hg38.',
     group: 'Real-world demos',
-    sections: [{ slug: 'human-demo', title: 'Human demo (hg38)' }],
   },
 ]
 
-export const examples = flattenExamples(pages)
-
-export const getPage = (slug: string) => findPage(pages, slug)
+export function getPage(slug: string) {
+  return findPage(pages, slug)
+}

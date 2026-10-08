@@ -1,16 +1,9 @@
 ---
-import MethylationByHaplotype from '../examples/MethylationByHaplotype.tsx'
-import MethylationByHaplotypeCode from '../examples/MethylationByHaplotype.tsx?raw'
-import { getPage, section } from '../examples.ts'
-import Layout from '../layouts/ExampleLayout.astro'
-import Section from '../layouts/ExampleSection.astro'
-
-const page = getPage('methylation-by-haplotype')
-const sec = section(page, 'methylation-by-haplotype')
+import Demo from '../examples/MethylationByHaplotype.tsx'
+import code from '../examples/MethylationByHaplotype.tsx?raw'
+import ExamplePage from '../layouts/ExamplePage.astro'
 ---
 
-<Layout page={page}>
-  <Section {...sec} code={MethylationByHaplotypeCode}>
-    <MethylationByHaplotype client:only="react" />
-  </Section>
-</Layout>
+<ExamplePage slug="methylation-by-haplotype" code={code}>
+  <Demo client:only="react" />
+</ExamplePage>

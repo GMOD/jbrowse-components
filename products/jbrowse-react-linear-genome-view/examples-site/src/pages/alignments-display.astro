@@ -1,0 +1,9 @@
+---
+import Demo from '../examples/AlignmentsDisplay.tsx'
+import code from '../examples/AlignmentsDisplay.tsx?raw'
+import ExamplePage from '../layouts/ExamplePage.astro'
+---
+
+<ExamplePage slug="alignments-display" code={code}>
+  <Demo client:only="react" />
+</ExamplePage>

@@ -2,88 +2,72 @@ import fs from 'node:fs'
 import os from 'node:os'
 import path from 'node:path'
 
-import {
-  findBrokenInboundLinks,
-  findCrowdedPages,
-  findPageDrift,
-  sectionsRenderedBy,
-} from './docLinks.ts'
+import { findBrokenInboundLinks, findPageDrift } from './docLinks.ts'
 
-test('a page past four sections is reported, and four is not', () => {
-  const page = (slug: string, n: number) => ({
-    slug,
-    sections: Array.from({ length: n }, (_, i) => ({ slug: `${slug}-${i}` })),
-  })
-  expect(findCrowdedPages([page('four', 4), page('five', 5)])).toEqual([
-    { slug: 'five', sections: 5, limit: 4 },
-  ])
-})
-
-test('a page file renders the sections its Section tags name, in order', () => {
-  const source = [
-    "const dark = section(page, 'with-dark-theme')",
-    "const custom = section(page, 'with-custom-theme')",
-    '<Section {...custom} code={a}><A /></Section>',
-    '<Section {...dark} code={b}><B /></Section>',
-    '<Section slug="shadow-dom" code={c}><C /></Section>',
-  ].join('\n')
-  expect(sectionsRenderedBy(source)).toEqual([
-    'with-custom-theme',
-    'with-dark-theme',
-    'shadow-dom',
-  ])
-})
-
-function tmpPages(files: Record<string, string>) {
-  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'pages-'))
+function tmpDir(files: Record<string, string>) {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'doclinks-'))
   for (const [name, text] of Object.entries(files)) {
     fs.writeFileSync(path.join(dir, name), text)
   }
   return dir
 }
 
-test('a page whose file and examples.ts disagree is reported, both ways', () => {
-  const pagesDir = tmpPages({
+const page = (slug: string, example: string) =>
+  `import Demo from '../examples/${example}.tsx'\n<ExamplePage slug="${slug}" />`
+
+test('a page, its file and its example that disagree are reported', () => {
+  const pagesDir = tmpDir({
     'index.astro': '',
-    'one.astro': '<Section slug="b" code={x} /><Section slug="a" code={y} />',
-    'stray.astro': '<Section slug="s" code={x} />',
+    'dark-theme.astro': page('dark-theme', 'DarkTheme'),
+    'web-worker.astro': page('web-worker', 'WithWebWorker'),
+    'stray.astro': page('stray', 'Stray'),
+  })
+  const examplesDir = tmpDir({
+    'DarkTheme.tsx': '',
+    'WithWebWorker.tsx': '',
+    'data.json': '',
   })
   expect(
     findPageDrift({
       pagesDir,
+      examplesDir,
       pages: [
-        { slug: 'one', sections: [{ slug: 'a' }, { slug: 'b' }] },
-        { slug: 'missing', sections: [{ slug: 'm' }] },
+        { slug: 'dark-theme' },
+        { slug: 'web-worker' },
+        { slug: 'missing' },
       ],
     }),
   ).toEqual([
     {
-      what: 'one',
-      reason: 'examples.ts lists [a, b], the page renders [b, a]',
+      what: 'web-worker',
+      reason: 'the page file does not mount WebWorker.tsx',
     },
+    { what: 'web-worker', reason: 'no src/examples/WebWorker.tsx' },
     { what: 'missing', reason: 'no page file' },
     { what: 'stray', reason: 'page file not in examples.ts' },
+    { what: 'WithWebWorker.tsx', reason: 'example file with no page' },
   ])
 })
 
-test('a website link into the site resolves by its base, page and section', () => {
-  const dir = tmpPages({
+test('a website link into the site resolves by its base and page', () => {
+  const dir = tmpDir({
     'doc.md': [
-      '[ok](https://jbrowse.org/storybook/lgv/plugins/#inline)',
-      '[ok, no slash](https://jbrowse.org/storybook/lgv/plugins#inline)',
+      '[ok](https://jbrowse.org/storybook/lgv/inline-plugin/)',
+      '[ok, no slash](https://jbrowse.org/storybook/lgv/inline-plugin)',
+      '[ok, own anchor](https://jbrowse.org/storybook/lgv/inline-plugin/#inline-plugin)',
       '[landing](https://jbrowse.org/storybook/lgv/)',
       '[other site](https://jbrowse.org/storybook/app/nowhere/)',
-      '[gone page](https://jbrowse.org/storybook/lgv/with-external-plugin/)',
-      '[gone section](https://jbrowse.org/storybook/lgv/plugins/#worker)',
+      '[gone page](https://jbrowse.org/storybook/lgv/plugins/)',
+      '[gone anchor](https://jbrowse.org/storybook/lgv/inline-plugin/#worker)',
     ].join('\n'),
   })
   const broken = findBrokenInboundLinks({
     files: [path.join(dir, 'doc.md')],
     base: '/storybook/lgv',
-    pages: [{ slug: 'plugins', sections: [{ slug: 'inline' }] }],
+    pages: [{ slug: 'inline-plugin' }],
   })
   expect(broken.map(b => b.reason)).toEqual([
-    'no page "with-external-plugin"',
-    'page "plugins" has no section "worker"',
+    'no page "plugins"',
+    'page "inline-plugin" has no anchor "worker"',
   ])
 })

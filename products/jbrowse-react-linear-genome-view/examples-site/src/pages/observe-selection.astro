@@ -1,0 +1,9 @@
+---
+import Demo from '../examples/ObserveSelection.tsx'
+import code from '../examples/ObserveSelection.tsx?raw'
+import ExamplePage from '../layouts/ExamplePage.astro'
+---
+
+<ExamplePage slug="observe-selection" code={code}>
+  <Demo client:only="react" />
+</ExamplePage>

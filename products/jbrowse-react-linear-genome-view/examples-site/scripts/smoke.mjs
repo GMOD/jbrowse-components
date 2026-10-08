@@ -15,24 +15,23 @@ import {
 } from '@jbrowse/browser-test-utils'
 
 import config from '../astro.config.mjs'
-import { examples } from '../src/examples.ts'
+import { pages } from '../src/examples.ts'
 
 const here = path.dirname(fileURLToPath(import.meta.url))
 
 const checks = {
-  plugins: page => checkPluginTookEffect(page, 'JBrowsePluginUCSC'),
-  'session-setup': checkSessionUrlRoundTrip,
+  'external-plugin': page => checkPluginTookEffect(page, 'JBrowsePluginUCSC'),
+  'session-in-url': checkSessionUrlRoundTrip,
 }
 
 const failures = await smokeExamplesSite({
   distDir: path.join(here, '..', 'dist'),
   // single source of truth for the base path is astro.config.mjs
   base: config.base,
-  slugs: ['', ...examples.filter(e => !e.skipSmoke).map(e => e.slug)],
-  // the web-worker example (a section on the plugins page) must actually spawn
-  // an RPC worker — guards the Rollup circular-dependency TDZ that webpack
-  // tolerates.
-  workerSlug: 'plugins',
+  slugs: ['', ...pages.filter(e => !e.skipSmoke).map(e => e.slug)],
+  // the web-worker example must actually spawn an RPC worker — guards the
+  // Rollup circular-dependency TDZ that webpack tolerates.
+  workerSlug: 'web-worker',
   check: async (page, slug) => [
     ...(await checkDemoHeights(page)),
     ...(await checkDemoAboveFold(page)),

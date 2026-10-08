@@ -64,9 +64,9 @@ do. An embedded component runs the same pool once the page hands it a
 `makeWorkerInstance` factory; without one it runs every step in the box on the
 UI thread, so a deep BAM stalls whatever else the page is drawing. Constructing
 a worker is bundler-specific, so the factory is the host's to write — the
-[web worker example](https://jbrowse.org/storybook/lgv/plugins#with-web-worker)
-has the Vite and the webpack spelling, and passing one is the whole switch, with
-no config slot to set.
+[web worker example](https://jbrowse.org/storybook/lgv/web-worker/) has the Vite
+and the webpack spelling, and passing one is the whole switch, with no config
+slot to set.
 
 ## Where wasm sits
 

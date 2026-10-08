@@ -5,8 +5,8 @@ export const componentLabel = 'Build Your Own'
 export const mainMaxWidth = '1400px'
 export const demoFillHeight = false
 
-// the section the landing page runs, by the slug `demoHeights` is keyed on
-export const landingDemo = 'scalebar'
+// the page the landing page runs, by its slug
+export const landingDemo = 'scalebar-and-gridlines'
 
 // What each demo settles at, in px. Every demo here is `client:only`, so the
 // server sends an empty `<div class="demo">` — `astro-island` is
@@ -27,9 +27,6 @@ export const landingDemo = 'scalebar'
 // while one that is too large only leaves space inside the demo's own border.
 // `drive-it-from-your-app` is the one here — 253px wide, 286px once its control
 // row wraps, so 286 is what it reserves.
-//
-// Keyed by **section** slug, not page slug, so a demo keeps its reservation
-// when it moves onto a shared page.
 //
 // A demo whose height depends on its *data* — anything in a fit-height mode —
 // cannot be pinned this way at all. Reserve the common case and accept the

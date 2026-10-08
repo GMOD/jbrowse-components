@@ -19,7 +19,7 @@ The most common use is a hierarchical track selector panel. Set
 `tracklist: true` in `view`, here on the managed `<LinearGenomeView>` component,
 whose `view` prop is its whole declarative input:
 
-<!-- include: products/jbrowse-react-linear-genome-view/examples-site/src/examples/WithInitAdvanced.tsx -->
+<!-- include: products/jbrowse-react-linear-genome-view/examples-site/src/examples/ViewSpelledOut.tsx -->
 
 ```tsx
 import { LinearGenomeView } from '@jbrowse/react-linear-genome-view2'
@@ -70,7 +70,7 @@ export default function WithInitAdvanced() {
 
 Opening a widget from your own code means holding the engine, so it needs the
 `useCreateViewState` form — the same object either way, see
-[useCreateViewState](https://jbrowse.org/storybook/lgv/setting-up-the-view#use-create-view-state).
+[useCreateViewState](https://jbrowse.org/storybook/lgv/use-create-view-state/).
 
 Every drawer action is on the session, so they read
 `state.session.setDrawerPosition('left')` and so on:
@@ -184,7 +184,7 @@ only fetched when it first opens.
 ## Storybook example
 
 See the `WithDrawerWidget` example:
-https://jbrowse.org/storybook/lgv/default-session/#with-drawer-widget
+https://jbrowse.org/storybook/lgv/drawer-widget/
 
 ## See also
 

@@ -12,7 +12,7 @@ import {
 } from '@jbrowse/browser-test-utils'
 
 import config from '../astro.config.mjs'
-import { examples } from '../src/examples.ts'
+import { pages } from '../src/examples.ts'
 
 const here = path.dirname(fileURLToPath(import.meta.url))
 
@@ -60,9 +60,13 @@ const MUI_BUDGET = {
   'multiple-tracks': 3,
   'removing-material-ui': 0,
   'loading-and-errors': 0,
-  'scalebar-and-labels': 0,
-  'controlling-the-view': 0,
-  // At rest this page shows a pileup colored `normal`, which has no key — so
+  'scalebar-and-gridlines': 0,
+  'track-labels': 0,
+  'drive-it-from-your-app': 0,
+  'every-chromosome': 0,
+  'your-own-feature-details': 0,
+  'your-own-track-selector': 0,
+  // At rest this page shows a pileup coloured `normal`, which has no key — so
   // this zero is the ordinary one and says nothing about the legend. The legend
   // is a separate check (`legendIsPlainAndAboveTheSeams`), because it has to be
   // driven and because a census that only ever runs before the thing appears is
@@ -73,11 +77,12 @@ const MUI_BUDGET = {
   'genome-by-name': 0,
   'a-table-of-calls': 0,
   'search-by-name': 0,
+  'your-own-search-results': 0,
   'local-files': 0,
   'highlight-a-region': 0,
   'dark-mode': 0,
   'session-in-url': 0,
-  'web-workers': 0,
+  'web-worker': 0,
   // measured, not chosen -- see the note below the budget
   synteny: 0,
   'gene-lanes': 0,
@@ -418,7 +423,7 @@ async function highlightSurvivesAOneBaseRegion(page, slug) {
 // re-measured first, `behavior: 'instant'` pinned rather than left to the page
 // (see `clicksReachTheTrack` for what a smooth scroll does to a coordinate).
 async function dragToZoomFramesTheSpan(page, slug) {
-  if (slug !== 'scalebar-and-labels') {
+  if (slug !== 'scalebar-and-gridlines') {
     return []
   }
   // The row names itself. It used to be picked out of the page's
@@ -955,46 +960,45 @@ async function viewStatusStatesAreDrawn(page, slug) {
 // here for: the trix files are hosted rather than in this repo, so the demo can
 // stop working without a line of it changing.
 //
-// Scoped to the first `<section>` by id, because the second one's result rows
-// are also buttons and several of them contain the word BRCA1. Exact text
-// match on the button for the same reason — a substring match would find
-// `BRCA1P1` for a click aimed at `BRCA1`, which is a different one of the four
-// paths.
+// Exact text match on the button — a substring match would find `BRCA1P1` for
+// a click aimed at `BRCA1`, which is a different one of the four paths.
 async function searchByNameResolvesNames(page, slug) {
-  if (slug !== 'search-by-name') {
-    return []
-  }
   const out = []
-
-  // No interaction for this one: the dropdown's box starts on `BRCA1`, so a
-  // populated list is the evidence that `fetchResults` reached the hosted index
-  // and parsed it. Both columns are checked — `BRCA1P1` (a prefix hit, not the
-  // typed query itself) proves the query matched, `genes` proves the row was
-  // decoded rather than guessed.
-  try {
-    await page.waitForFunction(
-      () => {
-        const t =
+  if (slug === 'your-own-search-results') {
+    // No interaction for this one: the dropdown's box starts on `BRCA1`, so a
+    // populated list is the evidence that `fetchResults` reached the hosted index
+    // and parsed it. Both columns are checked — `BRCA1P1` (a prefix hit, not the
+    // typed query itself) proves the query matched, `genes` proves the row was
+    // decoded rather than guessed.
+    try {
+      await page.waitForFunction(
+        () => {
+          const t =
+            document.querySelector('[data-testid="search-results"]')
+              ?.innerText ?? ''
+          return t.includes('BRCA1P1') && t.includes('genes')
+        },
+        { timeout: 30000 },
+      )
+    } catch {
+      const listed = await page.evaluate(
+        () =>
           document.querySelector('[data-testid="search-results"]')?.innerText ??
-          ''
-        return t.includes('BRCA1P1') && t.includes('genes')
-      },
-      { timeout: 30000 },
-    )
-  } catch {
-    const listed = await page.evaluate(
-      () =>
-        document.querySelector('[data-testid="search-results"]')?.innerText ??
-        '(no result list rendered)',
-    )
-    out.push(
-      'the dropdown searched for BRCA1 and did not list BRCA1P1 from ' +
-        `genes — fetchResults or the hosted trix index is not ` +
-        `answering. List read:\n${listed}`,
-    )
+          '(no result list rendered)',
+      )
+      out.push(
+        'the dropdown searched for BRCA1 and did not list BRCA1P1 from ' +
+          `genes — fetchResults or the hosted trix index is not ` +
+          `answering. List read:\n${listed}`,
+      )
+    }
+    return out
+  }
+  if (slug !== 'search-by-name') {
+    return out
   }
 
-  const clickInFirstSection = async label =>
+  const clickButton = async label =>
     page.evaluate(t => {
       const el = [
         ...(document
@@ -1010,7 +1014,7 @@ async function searchByNameResolvesNames(page, slug) {
   // `BRC` and not `TP53` — TP53 prefixes twenty features and is exactly one of
   // them, so the exact pass wins and it navigates, which is the neighbouring
   // button and the distinction the page is about.
-  if (await clickInFirstSection('BRC')) {
+  if (await clickButton('BRC')) {
     try {
       await page.waitForFunction(
         () => !!document.querySelector('[data-testid="queued-dialog-notice"]'),
@@ -1024,12 +1028,12 @@ async function searchByNameResolvesNames(page, slug) {
       )
     }
   } else {
-    out.push('no exact "BRC" button in the first section')
+    out.push('no exact "BRC" button')
   }
 
   // Clear it before the next click, or the TP53 check below reads BRC's
   // notice and reports the opposite of what happened.
-  await clickInFirstSection('Dismiss')
+  await clickButton('Dismiss')
   await page.waitForFunction(
     () => !document.querySelector('[data-testid="queued-dialog-notice"]'),
     { timeout: 5000 },
@@ -1039,7 +1043,7 @@ async function searchByNameResolvesNames(page, slug) {
   // match" rather than "several hits": TP53 is ambiguous by prefix (twenty
   // `TP53*` relatives) and still must not ask. Losing the exact-first pass
   // would make this queue a dialog.
-  if (await clickInFirstSection('TP53')) {
+  if (await clickButton('TP53')) {
     await new Promise(r => setTimeout(r, 3000))
     const queued = await page.evaluate(
       () => !!document.querySelector('[data-testid="queued-dialog-notice"]'),
@@ -1052,12 +1056,12 @@ async function searchByNameResolvesNames(page, slug) {
       )
     }
   } else {
-    out.push('no exact "TP53" button in the first section')
+    out.push('no exact "TP53" button')
   }
 
   // And the other absence: a plain word with no hits is a typed throw the page
   // renders as prose, not an error.
-  if (await clickInFirstSection('zzzznotagene')) {
+  if (await clickButton('zzzznotagene')) {
     try {
       await page.waitForFunction(
         () =>
@@ -1073,7 +1077,7 @@ async function searchByNameResolvesNames(page, slug) {
       )
     }
   } else {
-    out.push('no exact "zzzznotagene" button in the first section')
+    out.push('no exact "zzzznotagene" button')
   }
 
   return out
@@ -1085,12 +1089,12 @@ const failures = await smokeExamplesSite({
   base: config.base,
   // '' first: the landing page runs a live demo, so it gets the same census as
   // any example page rather than being the one page nothing loads
-  slugs: ['', ...examples.filter(e => !e.skipSmoke).map(e => e.slug)],
+  slugs: ['', ...pages.filter(e => !e.skipSmoke).map(e => e.slug)],
   // The one page that passes `makeWorkerInstance`. Every other demo here runs
   // main-thread RPC, so this slug is the site's only guard on the Rollup
   // circular-dependency TDZ that webpack tolerates and Vite does not — and the
   // page's own claim is that a worker spawns, which loading it cannot show.
-  workerSlug: 'web-workers',
+  workerSlug: 'web-worker',
   // installed before each page's own scripts, so `muiBudget` can hold the
   // census to what ever rendered rather than to what survived the load
   recordFromLoad: recordMuiFromLoad,

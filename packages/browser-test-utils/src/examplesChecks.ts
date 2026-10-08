@@ -34,8 +34,7 @@ const SHORTEST_FRACTION = 0.5
  *
  * Measured with each box's own reservation neutralised, and read off the
  * element rather than re-importing the table, so this checks what the page
- * actually shipped and covers a page stacking several demos without having to
- * know which section is which.
+ * actually shipped.
  *
  * A `.fill` box is skipped: that site fixes its demo height in CSS, so it owns
  * its space already and has nothing to reserve.
@@ -634,9 +633,8 @@ export async function checkTextContrast(
  *
  * This is the whole premise of the page order — heading, then demo, then the
  * prose annotating it — and it is a property nothing else checks. It regresses
- * the same quiet way every time: someone adds a paragraph to a lead, or a
- * fourth section to a page's "On this page" card, and the demo slides under the
- * fold on a laptop while every existing check stays green, because the page
+ * the same quiet way every time: someone adds a paragraph to a lead and the
+ * demo slides under the fold on a laptop while every existing check stays green, because the page
  * still builds and the island still mounts.
  *
  * Geometry only, so it does not care whether the demo actually drew: the box

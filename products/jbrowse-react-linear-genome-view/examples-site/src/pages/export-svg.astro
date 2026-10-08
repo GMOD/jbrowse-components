@@ -1,0 +1,9 @@
+---
+import Demo from '../examples/ExportSvg.tsx'
+import code from '../examples/ExportSvg.tsx?raw'
+import ExamplePage from '../layouts/ExamplePage.astro'
+---
+
+<ExamplePage slug="export-svg" code={code}>
+  <Demo client:only="react" />
+</ExamplePage>

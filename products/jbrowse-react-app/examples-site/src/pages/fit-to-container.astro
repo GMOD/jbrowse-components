@@ -1,0 +1,9 @@
+---
+import Demo from '../examples/FitToContainer.tsx'
+import code from '../examples/FitToContainer.tsx?raw'
+import ExamplePage from '../layouts/ExamplePage.astro'
+---
+
+<ExamplePage slug="fit-to-container" code={code}>
+  <Demo client:only="react" />
+</ExamplePage>

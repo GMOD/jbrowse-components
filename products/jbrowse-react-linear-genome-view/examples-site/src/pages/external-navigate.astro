@@ -1,0 +1,9 @@
+---
+import Demo from '../examples/ExternalNavigate.tsx'
+import code from '../examples/ExternalNavigate.tsx?raw'
+import ExamplePage from '../layouts/ExamplePage.astro'
+---
+
+<ExamplePage slug="external-navigate" code={code}>
+  <Demo client:only="react" />
+</ExamplePage>

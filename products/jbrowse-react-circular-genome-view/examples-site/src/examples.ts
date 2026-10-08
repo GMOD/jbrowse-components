@@ -1,67 +1,51 @@
-import { findPage, flattenExamples } from './exampleModel.ts'
+import { findPage } from './exampleModel.ts'
 
 import type { ExamplePage } from './exampleModel.ts'
 
-export type { ExamplePage, ExampleSection } from './exampleModel.ts'
-export { section } from './exampleModel.ts'
+export type { ExamplePage } from './exampleModel.ts'
 
 export const pages: ExamplePage[] = [
   {
     slug: 'volvox',
     title: 'Volvox structural variants',
-    description: 'A structural-variant VCF on the volvox assembly.',
+    description: 'assembly, tracks and view as props.',
     group: 'Getting started',
-    sections: [
-      {
-        slug: 'volvox',
-        title: 'Volvox structural variants',
-        description: 'assembly, tracks and view as props.',
-      },
-      {
-        slug: 'with-track-shorthand',
-        title: 'The same view, in shorthand',
-        description: 'The extension picks the track type and the adapter.',
-      },
-    ],
+  },
+  {
+    slug: 'track-shorthand',
+    title: 'Tracks as an id and a uri',
+    description: 'The extension picks the track type and the adapter.',
+    group: 'Getting started',
   },
   {
     slug: 'show-track',
     title: 'Show and hide a track',
     description: 'Toggle a track from your own button.',
     group: 'Getting started',
-    sections: [{ slug: 'show-track', title: 'Show and hide a track' }],
   },
   {
     slug: 'session-in-url',
     title: 'Put the session in the URL',
     description: 'encodeSession and decodeSession, for a sharable link.',
     group: 'Getting started',
-    sections: [{ slug: 'session-in-url', title: 'Put the session in the URL' }],
   },
   {
-    slug: 'theming',
+    slug: 'dark-theme',
     title: 'Dark theme',
     description: 'A Material UI palette, through configuration.theme.',
     group: 'Getting started',
-    sections: [{ slug: 'with-dark-theme', title: 'Dark theme' }],
   },
   {
-    slug: 'plugins',
-    title: 'Plugins & the web worker',
-    description: 'A plugin from your own source, and RPC off the main thread.',
+    slug: 'inline-plugin',
+    title: 'Inline plugin',
+    description: 'A Plugin subclass that adds a view menu item.',
     group: 'Getting started',
-    sections: [
-      {
-        slug: 'with-inline-plugin',
-        title: 'Inline plugin',
-        description: 'A Plugin subclass that adds a view menu item.',
-      },
-      {
-        slug: 'with-web-worker',
-        title: 'Web worker RPC',
-        description: 'Move data parsing off the main thread.',
-      },
-    ],
+  },
+  {
+    slug: 'web-worker',
+    title: 'Web worker',
+    description: 'Move data parsing off the main thread.',
+    group: 'Getting started',
   },
   {
     slug: 'without-react',
@@ -69,49 +53,39 @@ export const pages: ExamplePage[] = [
     description:
       'createCircularGenomeView mounts into an element and hands back a controller.',
     group: 'Getting started',
-    sections: [{ slug: 'without-react', title: 'An element and a controller' }],
   },
   {
     slug: 'human',
     title: 'Human structural variants (hg19)',
     description: 'HG002 PacBio breakend structural variants on hg19.',
     group: 'Real-world demos',
-    sections: [{ slug: 'human', title: 'Human structural variants (hg19)' }],
   },
   {
     slug: 'circular-synteny',
     title: 'Human and mouse on one circle',
     description: 'Two genomes on one circle, their liftOver chain as ribbons.',
     group: 'Real-world demos',
-    sections: [
-      { slug: 'circular-synteny', title: 'Human and mouse on one circle' },
-    ],
   },
   {
     slug: 'oat-homoeologs',
     title: 'Oat subgenomes on one circle',
     description: "A hexaploid's homoeolog blocks between its own chromosomes.",
     group: 'Real-world demos',
-    sections: [
-      { slug: 'oat-homoeologs', title: 'Oat subgenomes on one circle' },
-    ],
   },
   {
     slug: 'gene-density-ring',
     title: 'Gene density as a ring',
-    description: 'A bigWig drawn as a ring inside the two-genome ideogram.',
+    description: 'A bigWig of gene density drawn as a ring.',
     group: 'Real-world demos',
-    sections: [
-      { slug: 'gene-density-ring', title: 'Gene density as a ring' },
-      {
-        slug: 'gene-density-marks',
-        title: 'The same ring, declared as marks',
-        description: 'A LinearMarkDisplay bar mark, its color a viridis ramp.',
-      },
-    ],
+  },
+  {
+    slug: 'gene-density-marks',
+    title: 'Gene density, declared as marks',
+    description: 'A LinearMarkDisplay bar mark, its colour a viridis ramp.',
+    group: 'Real-world demos',
   },
 ]
 
-export const examples = flattenExamples(pages)
-
-export const getPage = (slug: string) => findPage(pages, slug)
+export function getPage(slug: string) {
+  return findPage(pages, slug)
+}

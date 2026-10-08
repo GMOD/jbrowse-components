@@ -1,0 +1,9 @@
+---
+import Demo from '../examples/SessionPersistence.tsx'
+import code from '../examples/SessionPersistence.tsx?raw'
+import ExamplePage from '../layouts/ExamplePage.astro'
+---
+
+<ExamplePage slug="session-persistence" code={code}>
+  <Demo client:only="react" />
+</ExamplePage>

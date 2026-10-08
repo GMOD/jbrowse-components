@@ -1,0 +1,9 @@
+---
+import Demo from '../examples/MultiSampleVariants.tsx'
+import code from '../examples/MultiSampleVariants.tsx?raw'
+import ExamplePage from '../layouts/ExamplePage.astro'
+---
+
+<ExamplePage slug="multi-sample-variants" code={code}>
+  <Demo client:only="react" />
+</ExamplePage>

@@ -218,7 +218,7 @@ components (`@jbrowse/react-app2` or `@jbrowse/react-linear-genome-view2`) have
 no config.json, so they take the class directly — declared in the same file, and
 passed in `plugins`:
 
-<!-- include: products/jbrowse-react-app/examples-site/src/examples/EmbeddedPlugin.tsx#usePlugin -->
+<!-- include: products/jbrowse-react-app/examples-site/src/examples/InlinePlugin.tsx#usePlugin -->
 
 ```tsx
 export default function EmbeddedPlugin() {
@@ -243,7 +243,7 @@ export default function EmbeddedPlugin() {
 `createViewState({ config, plugins: [MyPlugin] })` takes the same array. To
 fetch a published plugin at runtime instead, `loadPlugins` returns records to
 pass through unchanged — see
-[With external plugin](https://jbrowse.org/storybook/app/plugins/#with-external-plugin).
+[With external plugin](https://jbrowse.org/storybook/app/external-plugin/).
 
 ## See also
 

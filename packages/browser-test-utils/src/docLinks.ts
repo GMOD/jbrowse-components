@@ -147,22 +147,17 @@ export interface BrokenCrossLink {
 }
 
 // Scan content files for the site-internal cross-links the example docs use to
-// point at each other (`../<page-slug>/#<section-slug>`) and return the ones
-// that no longer resolve. These break silently whenever a page is renamed or a
-// section is moved between pages, which the outbound jbrowse.org check can't
-// see. `pages` is the site's own examples.ts page list.
+// point at each other (`../<slug>/`) and return the ones that no longer
+// resolve. These break silently whenever a page is renamed, which the outbound
+// jbrowse.org check can't see. `pages` is the site's own examples.ts page list.
 export function findBrokenCrossLinks({
   contentDirs,
   pages,
 }: {
   contentDirs: string[]
-  pages: { slug: string; sections: { slug: string }[] }[]
+  pages: { slug: string }[]
 }): BrokenCrossLink[] {
   const pageSlugs = new Set(pages.map(p => p.slug))
-  // a section anchor is only valid on the page that actually holds it
-  const sectionsByPage = new Map(
-    pages.map(p => [p.slug, new Set(p.sections.map(s => s.slug))]),
-  )
   const broken: BrokenCrossLink[] = []
   // anchored on markdown `](…)` / html `href="…"` so it can't fire on the
   // `../examples/Foo.tsx` import specifiers in .astro page files
@@ -179,54 +174,65 @@ export function findBrokenCrossLinks({
         continue
       }
       const url = match.replace(/^(\]\(|href=")/, '')
-      if (!pageSlugs.has(page)) {
-        broken.push({ file, url, reason: `no page "${page}"` })
-      } else if (anchor && !sectionsByPage.get(page)?.has(anchor)) {
-        broken.push({
-          file,
-          url,
-          reason: `page "${page}" has no section "${anchor}"`,
-        })
+      const reason = brokenPageLink(pageSlugs, page, anchor)
+      if (reason) {
+        broken.push({ file, url, reason })
       }
     }
   }
   return broken
 }
 
-export function sectionsRenderedBy(pageSource: string): string[] {
-  const vars = new Map(
-    [...pageSource.matchAll(/const (\w+) = section\(page, '([^']+)'\)/g)].map(
-      m => [m[1], m[2]],
-    ),
-  )
-  return [
-    ...pageSource.matchAll(/<Section\s+(?:\{\.\.\.(\w+)\}|slug="([^"]+)")/g),
-  ].map(m => m[2] ?? vars.get(m[1]) ?? `{...${m[1]}}`)
+// a page holds one demo, whose anchor is the page's own slug
+function brokenPageLink(pageSlugs: Set<string>, page: string, anchor?: string) {
+  return !pageSlugs.has(page)
+    ? `no page "${page}"`
+    : anchor && anchor !== page
+      ? `page "${page}" has no anchor "${anchor}"`
+      : undefined
 }
 
-// examples.ts lists each page's sections for the sidebar and the page TOC, and
-// the page file renders them; the two are written by hand side by side
+export function pascalCase(slug: string) {
+  return slug
+    .split('-')
+    .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+    .join('')
+}
+
+// A page is three hand-written things that have to agree: its examples.ts
+// entry, src/pages/<slug>.astro, and src/examples/<PascalCase slug>.tsx
 export function findPageDrift({
   pagesDir,
+  examplesDir,
   pages,
 }: {
   pagesDir: string
-  pages: { slug: string; sections: { slug: string }[] }[]
+  examplesDir: string
+  pages: { slug: string }[]
 }): { what: string; reason: string }[] {
   const drift: { what: string; reason: string }[] = []
   for (const p of pages) {
     const file = path.join(pagesDir, `${p.slug}.astro`)
+    const example = `${pascalCase(p.slug)}.tsx`
     if (!fs.existsSync(file)) {
       drift.push({ what: p.slug, reason: 'no page file' })
       continue
     }
-    const rendered = sectionsRenderedBy(fs.readFileSync(file, 'utf8'))
-    const listed = p.sections.map(s => s.slug)
-    if (rendered.join(',') !== listed.join(',')) {
+    const source = fs.readFileSync(file, 'utf8')
+    if (!source.includes(`slug="${p.slug}"`)) {
       drift.push({
         what: p.slug,
-        reason: `examples.ts lists [${listed.join(', ')}], the page renders [${rendered.join(', ')}]`,
+        reason: `the page file does not say slug="${p.slug}"`,
       })
+    }
+    if (!source.includes(`'../examples/${example}'`)) {
+      drift.push({
+        what: p.slug,
+        reason: `the page file does not mount ${example}`,
+      })
+    }
+    if (!fs.existsSync(path.join(examplesDir, example))) {
+      drift.push({ what: p.slug, reason: `no src/examples/${example}` })
     }
   }
   const slugs = new Set(pages.map(p => p.slug))
@@ -236,12 +242,18 @@ export function findPageDrift({
       drift.push({ what: slug, reason: 'page file not in examples.ts' })
     }
   }
+  const examples = new Set(pages.map(p => `${pascalCase(p.slug)}.tsx`))
+  for (const f of fs.readdirSync(examplesDir)) {
+    if (f.endsWith('.tsx') && !examples.has(f)) {
+      drift.push({ what: f, reason: 'example file with no page' })
+    }
+  }
   return drift
 }
 
 // Links from the website docs and package READMEs into this site, by its
-// published base (`https://jbrowse.org/storybook/lgv/<page>/#<section>`), which
-// no crawl of either side follows
+// published base (`https://jbrowse.org/storybook/lgv/<slug>/`), which no crawl
+// of either side follows
 export function findBrokenInboundLinks({
   files,
   base,
@@ -249,11 +261,9 @@ export function findBrokenInboundLinks({
 }: {
   files: string[]
   base: string
-  pages: { slug: string; sections: { slug: string }[] }[]
+  pages: { slug: string }[]
 }): BrokenCrossLink[] {
-  const sectionsByPage = new Map(
-    pages.map(p => [p.slug, new Set(p.sections.map(s => s.slug))]),
-  )
+  const pageSlugs = new Set(pages.map(p => p.slug))
   const escaped = base.replaceAll(/[.*+?^${}()|[\]\\/]/g, '\\$&')
   const linkRe = new RegExp(
     `https://jbrowse\\.org${escaped}/([A-Za-z0-9-]+)/?(?:#([A-Za-z0-9-]+))?`,
@@ -263,35 +273,29 @@ export function findBrokenInboundLinks({
   for (const file of files) {
     for (const m of fs.readFileSync(file, 'utf8').matchAll(linkRe)) {
       const [url, page, anchor] = m
-      const sections = sectionsByPage.get(page!)
-      if (!sections) {
-        broken.push({ file, url, reason: `no page "${page}"` })
-      } else if (anchor && !sections.has(anchor)) {
-        broken.push({
-          file,
-          url,
-          reason: `page "${page}" has no section "${anchor}"`,
-        })
+      const reason = brokenPageLink(pageSlugs, page!, anchor)
+      if (reason) {
+        broken.push({ file, url, reason })
       }
     }
   }
   return broken
 }
 
-// A section's `src/docs/<section-slug>.md` is optional: the demo and its source
-// are the page, and a doc exists only for what they cannot show. An orphan, a
-// doc whose section was renamed, stops rendering and is reported.
+// `src/docs/<slug>.md` is optional: the demo and its source are the page, and a
+// doc exists only for what they cannot show. An orphan, a doc whose page was
+// renamed, stops rendering and is reported.
 export function findOrphanDocs({
   docsDir,
   pages,
 }: {
   docsDir: string
-  pages: { slug: string; sections: { slug: string }[] }[]
+  pages: { slug: string }[]
 }): string[] {
-  const sections = new Set(pages.flatMap(p => p.sections.map(s => s.slug)))
+  const slugs = new Set(pages.map(p => p.slug))
   return listMarkdown(docsDir)
     .map(f => f.replace(/\.md$/, ''))
-    .filter(d => !sections.has(d))
+    .filter(d => !slugs.has(d))
 }
 
 // An examples-site page is a live demo plus its own source, which do the
@@ -350,8 +354,8 @@ function splitByLimit(
 }
 
 // The same cap over the prose written directly in `src/pages/*.astro`, which is
-// almost entirely the landing page — the example pages are imports and
-// `<Section>` tags. It needs its own pass because `findLongDocs` only ever saw
+// almost entirely the landing page — an example page is two imports and one
+// `<ExamplePage>` tag. It needs its own pass because `findLongDocs` only ever saw
 // `src/docs/*.md`, and a landing page is where a reader starts: LGV's had grown
 // to 289 words of install-and-bundler notes restating `website/docs` while the
 // docs beside it were held to 300, because nothing counted it.
@@ -384,43 +388,24 @@ export function findLongPages({
   return splitByLimit(sized, maxWords, longWords)
 }
 
-// Page and section descriptions render as a single line on a gallery card or in
-// the "On this page" card, so a description that runs to three clauses is
-// already the wrong shape for where it appears.
+// A description renders as a single line on a gallery card and under the page
+// title, so one that runs to three clauses is the wrong shape for where it
+// appears.
 export function findLongDescriptions({
   pages,
   maxChars = DEFAULT_MAX_DESCRIPTION_CHARS,
 }: {
-  pages: {
-    slug: string
-    description?: string
-    sections: { slug: string; description?: string }[]
-  }[]
+  pages: { slug: string; description?: string }[]
   maxChars?: number
 }): LongProse[] {
-  const all = pages.flatMap(p => [
-    { what: `page "${p.slug}"`, text: p.description },
-    ...p.sections.map(s => ({
-      what: `section "${s.slug}"`,
-      text: s.description,
-    })),
-  ])
-  return all
-    .filter(d => (d.text?.length ?? 0) > maxChars)
-    .map(d => ({ what: d.what, size: d.text!.length, limit: maxChars }))
-    .sort((a, b) => b.size - a.size)
-}
-
-// every section hydrates a whole engine on load
-export const MAX_SECTIONS_PER_PAGE = 4
-
-export function findCrowdedPages(
-  pages: { slug: string; sections: unknown[] }[],
-  max = MAX_SECTIONS_PER_PAGE,
-) {
   return pages
-    .filter(p => p.sections.length > max)
-    .map(p => ({ slug: p.slug, sections: p.sections.length, limit: max }))
+    .filter(p => (p.description?.length ?? 0) > maxChars)
+    .map(p => ({
+      what: `page "${p.slug}"`,
+      size: p.description!.length,
+      limit: maxChars,
+    }))
+    .sort((a, b) => b.size - a.size)
 }
 
 export interface DocSuggestion {
@@ -539,11 +524,7 @@ export function runExamplesSiteChecks({
 }: {
   // the examples-site directory, i.e. the one holding src/ and scripts/
   root: string
-  pages: {
-    slug: string
-    description?: string
-    sections: { slug: string; description?: string }[]
-  }[]
+  pages: { slug: string; description?: string }[]
   referenceDir: string
   // the site's astro `base`, and the files outside it that link in by it
   base: string
@@ -569,14 +550,18 @@ export function runExamplesSiteChecks({
     log(`BROKEN ${b.url}  (${b.reason})\n       in ${rel(b.file)}`)
   }
 
-  const drift = findPageDrift({ pagesDir, pages })
+  const drift = findPageDrift({
+    pagesDir,
+    examplesDir: path.join(src, 'examples'),
+    pages,
+  })
   for (const d of drift) {
     log(`PAGE DRIFT ${d.what}  (${d.reason})`)
   }
 
   const orphans = findOrphanDocs({ docsDir, pages })
   for (const o of orphans) {
-    log(`ORPHAN src/docs/${o}.md  (no section with that slug renders it)`)
+    log(`ORPHAN src/docs/${o}.md  (no page with that slug renders it)`)
   }
 
   const { over: longDocs, long: gettingLong } = findLongDocs({ docsDir })
@@ -592,11 +577,6 @@ export function runExamplesSiteChecks({
   const longDescriptions = findLongDescriptions({ pages })
   for (const d of longDescriptions) {
     log(`TOO LONG description of ${d.what}  ${d.size} chars (max ${d.limit})`)
-  }
-
-  const crowded = findCrowdedPages(pages)
-  for (const c of crowded) {
-    log(`TOO MANY SECTIONS page "${c.slug}"  ${c.sections} (max ${c.limit})`)
   }
 
   const suggestions = suggestDocLinks({
@@ -648,7 +628,7 @@ export function runExamplesSiteChecks({
   log(
     `\n${broken.length + brokenCross.length} broken link(s), ` +
       `${orphans.length} orphan(s), ${drift.length} drifted page(s), ` +
-      `${tooLong} over-long prose, ${crowded.length} crowded page(s), ` +
+      `${tooLong} over-long prose, ` +
       `${engines.length} engine(s) in an initializer, ` +
       `${suggestions.length} suggestion(s)`,
   )
@@ -658,7 +638,6 @@ export function runExamplesSiteChecks({
     orphans.length +
     drift.length +
     tooLong +
-    crowded.length +
     engines.length
   )
 }

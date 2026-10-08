@@ -1,0 +1,9 @@
+---
+import Demo from '../examples/EveryChromosome.tsx'
+import code from '../examples/EveryChromosome.tsx?raw'
+import ExamplePage from '../layouts/ExamplePage.astro'
+---
+
+<ExamplePage slug="every-chromosome" code={code}>
+  <Demo client:only="react" />
+</ExamplePage>

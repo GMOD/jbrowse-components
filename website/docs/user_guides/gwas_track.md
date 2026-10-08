@@ -13,7 +13,7 @@ coloring to show linkage to an index SNP.
 <Figure caption="A GWAS track rendered as a Manhattan plot: each point is a variant, plotted by genomic position (X) and -log₁₀(p-value) (Y), so association peaks rise above the background." src="/img/gwas/manhattan.png" />
 
 For a genome-wide example, the embedded
-[Pan-UKB GWAS example](https://jbrowse.org/storybook/lgv/pan-ukb-gwas) browses
+[Pan-UKB GWAS example](https://jbrowse.org/storybook/lgv/pan-ukb-gwas/) browses
 the full Pan-UK Biobank catalog of ~7,200 phenotypes, loading each trait's
 summary statistics straight from the Pan-UKBB public S3 bucket.
 
@@ -58,7 +58,7 @@ chosen).
 <Figure caption="LD coloring at the STAT4 locus: the lead SNP is the diamond, and surrounding points shade by their r² to it, so the association signal and its linked variants stand out from the background." src="/img/gwas/locuszoom_ld.png" />
 
 The embedded
-[LocusZoom-style LD example](https://jbrowse.org/storybook/lgv/locus-zoom-ld)
+[LocusZoom-style LD example](https://jbrowse.org/storybook/lgv/locus-zoom-ld/)
 shows this r² coloring running live in a React app.
 
 The LD triangle is a separate feature: it draws r² between every pair of nearby

@@ -1,15 +1,9 @@
 ---
-import Example from '../examples/NextstrainPathogens.tsx'
+import Demo from '../examples/NextstrainPathogens.tsx'
 import code from '../examples/NextstrainPathogens.tsx?raw'
-import { getPage } from '../examples.ts'
-import Layout from '../layouts/ExampleLayout.astro'
-import Section from '../layouts/ExampleSection.astro'
-
-const page = getPage('nextstrain-pathogens')
+import ExamplePage from '../layouts/ExamplePage.astro'
 ---
 
-<Layout page={page}>
-  <Section slug="nextstrain-pathogens" code={code}>
-    <Example client:only="react" />
-  </Section>
-</Layout>
+<ExamplePage slug="nextstrain-pathogens" code={code}>
+  <Demo client:only="react" />
+</ExamplePage>

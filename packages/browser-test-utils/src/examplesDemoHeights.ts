@@ -32,7 +32,7 @@ export interface DemoHeightOptions {
   distDir: string
   // the site's Astro `base`, e.g. '/storybook/byo'
   base: string
-  // example slugs to load; each page's demos are keyed by their section id
+  // page slugs to load; each page's demo is keyed by that slug
   slugs: string[]
   // ms to settle on a page that publishes no `[data-app-phase]`
   settleMs?: number
@@ -40,7 +40,7 @@ export interface DemoHeightOptions {
   log?: (message: string) => void
 }
 
-// Every demo box on the page, keyed by the id of the section it belongs to, with
+// Every demo box on the page, keyed by the id of the section holding it, with
 // its own reservation neutralised so this measures the content rather than the
 // number already committed. A `.demo` outside a section is skipped: that is a
 // landing page running one of the examples a second time, which takes its

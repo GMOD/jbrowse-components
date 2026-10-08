@@ -1,6 +1,6 @@
 ---
 import ScalebarAndGridlines from '../examples/ScalebarAndGridlines.tsx'
-import { examples } from '../examples.ts'
+import { pages } from '../examples.ts'
 import Gallery from '../layouts/Gallery.astro'
 import Shell from '../layouts/Shell.astro'
 import {
@@ -14,7 +14,7 @@ import {
 <Shell
   title="Build your own"
   componentLabel={componentLabel}
-  examples={examples}
+  examples={pages}
   mainMaxWidth={mainMaxWidth}
 >
   <h1>Build your own genome browser</h1>
@@ -29,5 +29,5 @@ import {
     <ScalebarAndGridlines client:only="react" />
   </div>
 
-  <Gallery examples={examples} />
+  <Gallery examples={pages} />
 </Shell>

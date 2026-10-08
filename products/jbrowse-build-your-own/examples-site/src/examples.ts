@@ -1,9 +1,8 @@
-import { findPage, flattenExamples } from './exampleModel.ts'
+import { findPage } from './exampleModel.ts'
 
 import type { ExamplePage } from './exampleModel.ts'
 
-export type { ExamplePage, ExampleSection } from './exampleModel.ts'
-export { section } from './exampleModel.ts'
+export type { ExamplePage } from './exampleModel.ts'
 
 export const pages: ExamplePage[] = [
   {
@@ -11,7 +10,6 @@ export const pages: ExamplePage[] = [
     title: 'Ultraminimal',
     description: 'One track. Drag to pan, ctrl or cmd + wheel to zoom.',
     group: 'Basics',
-    sections: [{ slug: 'one-track', title: 'One track' }],
   },
   {
     slug: 'multiple-tracks',
@@ -19,9 +17,6 @@ export const pages: ExamplePage[] = [
     description:
       'A wiggle, genes and reads, with the stock Material UI chrome.',
     group: 'Basics',
-    sections: [
-      { slug: 'a-stack-of-tracks', title: 'A wiggle, some genes, and reads' },
-    ],
   },
   {
     slug: 'genome-by-name',
@@ -29,210 +24,130 @@ export const pages: ExamplePage[] = [
     description:
       'jbrowseHub fetches a genome, its tracks and its gene search by name.',
     group: 'Basics',
-    sections: [
-      {
-        slug: 'genome-by-name',
-        title: 'jbrowseHub, a gene as the location, your file on top',
-      },
-    ],
   },
   {
     slug: 'removing-material-ui',
     title: 'Removing Material UI',
     description: "Draw a track's loading and error states yourself.",
-    group: 'Your own UI',
-    sections: [
-      {
-        slug: 'bring-your-own-overlays',
-        title: 'Plain loading, error and corner controls',
-      },
-    ],
+    group: 'Your own chrome',
   },
   {
     slug: 'loading-and-errors',
     title: 'Loading and error states',
     description:
       "The view's loading, error and no-location states, and its notifications.",
-    group: 'Your own UI',
-    sections: [
-      {
-        slug: 'loading-and-errors',
-        title: 'Loading, failing, and waiting for a location',
-      },
-    ],
+    group: 'Your own chrome',
   },
   {
-    slug: 'scalebar-and-labels',
-    title: 'Scalebar and track labels',
-    description:
-      'A scalebar with gridlines and drag-to-zoom, and labels with resize bars.',
-    group: 'Your own UI',
-    sections: [
-      {
-        slug: 'scalebar',
-        title: 'Scalebar, gridlines and drag to zoom',
-        description:
-          'Drag across the scalebar to zoom, and hover to read the base under the pointer.',
-      },
-      {
-        slug: 'track-labels',
-        title: 'Track labels and resize bars',
-        description: 'Drag a bar to resize its track.',
-      },
-    ],
+    slug: 'scalebar-and-gridlines',
+    title: 'Scalebar and gridlines',
+    description: 'Drag across the scalebar to zoom, hover to read the base.',
+    group: 'Your own chrome',
   },
   {
-    slug: 'controlling-the-view',
+    slug: 'track-labels',
+    title: 'Track labels and resize bars',
+    description: 'Labels beside the tracks, and a bar to resize each.',
+    group: 'Your own chrome',
+  },
+  {
+    slug: 'dark-mode',
+    title: 'Dark mode',
+    description: "Your app's light or dark state, passed to the engine.",
+    group: 'Your own chrome',
+  },
+  {
+    slug: 'drive-it-from-your-app',
     title: 'Controlling the view',
     description:
-      'Navigate, zoom and toggle tracks from your own UI, and read clicks back.',
-    group: 'Your own UI',
-    sections: [
-      {
-        slug: 'drive-it-from-your-app',
-        title: 'A location box, zoom buttons and a track list',
-        description: 'Your toolbar calling the view model.',
-      },
-      {
-        slug: 'every-chromosome',
-        title: 'The whole genome at once',
-        description: 'The same view with 24 regions.',
-      },
-      {
-        slug: 'your-own-feature-details',
-        title: 'Feature details on click',
-        description: 'Your panel reading session.selection.',
-      },
-      {
-        slug: 'your-own-track-selector',
-        title: 'A track selector sidebar',
-        description: 'Categories and checkboxes from session.tracks.',
-      },
-    ],
+      'A location box, zoom buttons and track toggles calling the view.',
+    group: 'Your own controls',
+  },
+  {
+    slug: 'your-own-feature-details',
+    title: 'Feature details on click',
+    description: 'Your panel reading session.selection.',
+    group: 'Your own controls',
+  },
+  {
+    slug: 'your-own-track-selector',
+    title: 'A track selector sidebar',
+    description: 'Categories and checkboxes from session.tracks.',
+    group: 'Your own controls',
   },
   {
     slug: 'a-table-of-calls',
     title: 'A table that drives the view',
     description: 'Click a structural variant call to open and mark it.',
-    group: 'Your own UI',
-    sections: [
-      {
-        slug: 'a-table-of-calls',
-        title: 'Three tumor calls, and the reads under each',
-      },
-    ],
+    group: 'Your own controls',
   },
   {
     slug: 'search-by-name',
     title: 'Searching by name',
-    description: 'Gene names in a location box, and your own list of hits.',
-    group: 'Your own UI',
-    sections: [
-      {
-        slug: 'search-by-name',
-        title: 'A name instead of a locstring',
-        description: 'navToLocString with a text index.',
-      },
-      {
-        slug: 'your-own-search-results',
-        title: 'Your own list of hits',
-        description: 'fetchResults without navigating.',
-      },
-    ],
+    description: 'Gene names in a location box, through a text index.',
+    group: 'Your own controls',
+  },
+  {
+    slug: 'your-own-search-results',
+    title: 'Your own list of hits',
+    description: 'fetchResults without navigating.',
+    group: 'Your own controls',
   },
   {
     slug: 'track-settings',
     title: 'Track settings',
     description: 'A Color by menu, a legend toggle and a read-height slider.',
-    group: 'Your own UI',
-    sections: [
-      {
-        slug: 'color-by-from-your-own-ui',
-        title: 'A Color by menu, and the legend it raises',
-      },
-    ],
-  },
-  {
-    slug: 'color-and-group-by-a-field',
-    title: 'Coloring and grouping by a field',
-    description:
-      'Any attribute as a color or a row group, with a key you place.',
-    group: 'Your own UI',
-    sections: [
-      {
-        slug: 'color-and-group-by-a-field',
-        title: 'Genes colored and grouped by an attribute',
-      },
-    ],
-  },
-  {
-    slug: 'a-plot-from-json',
-    title: 'A plot declared in JSON',
-    description: 'Alu copies as bars: height is age, color is lineage.',
-    group: 'Your own UI',
-    sections: [
-      {
-        slug: 'a-plot-from-json',
-        title: 'A BED column as bar height, another as color',
-      },
-    ],
-  },
-  {
-    slug: 'local-files',
-    title: 'Local files',
-    description: 'Open files from disk with your own picker.',
-    group: 'Your own UI',
-    sections: [
-      {
-        slug: 'open-a-local-file',
-        title: 'A file picker, and a file from another genome',
-      },
-    ],
+    group: 'Your own controls',
   },
   {
     slug: 'highlight-a-region',
     title: 'Highlighting a region',
     description:
       'Mark the region a link points at, and keep it marked while panning.',
-    group: 'Your own UI',
-    sections: [
-      {
-        slug: 'highlight-a-region',
-        title: 'Bands your app places',
-      },
-    ],
+    group: 'Your own controls',
   },
   {
-    slug: 'dark-mode',
-    title: 'Dark mode',
-    description: "Your app's light or dark state, passed to the engine.",
-    group: 'Your own UI',
-    sections: [{ slug: 'dark-mode', title: 'A mode your app holds' }],
+    slug: 'local-files',
+    title: 'Local files',
+    description: 'Open files from disk with your own picker.',
+    group: 'Your own controls',
+  },
+  {
+    slug: 'every-chromosome',
+    title: 'The whole genome at once',
+    description: 'One view with 24 regions.',
+    group: 'Your own plots',
+  },
+  {
+    slug: 'color-and-group-by-a-field',
+    title: 'Coloring and grouping by a field',
+    description:
+      'Any attribute as a color or a row group, with a key you place.',
+    group: 'Your own plots',
+  },
+  {
+    slug: 'a-plot-from-json',
+    title: 'A plot declared in JSON',
+    description: 'Alu copies as bars: height is age, color is lineage.',
+    group: 'Your own plots',
   },
   {
     slug: 'session-in-url',
     title: 'Session in the URL',
     description: 'Save the view to a link and restore it on load.',
     group: 'Going further',
-    sections: [
-      { slug: 'session-in-url', title: 'A link that reopens the view' },
-    ],
   },
   {
-    slug: 'web-workers',
-    title: 'Web workers',
+    slug: 'web-worker',
+    title: 'Web worker',
     description: 'Fetch and parse off the main thread with one option.',
     group: 'Going further',
-    sections: [{ slug: 'run-it-in-a-worker', title: 'One option, one worker' }],
   },
   {
     slug: 'synteny',
     title: 'Comparing two genomes',
     description: 'Human and mouse at BRCA1, joined by synteny ribbons.',
     group: 'Going further',
-    sections: [
-      { slug: 'synteny-ribbons', title: 'Two linear views and a ribbon band' },
-    ],
   },
   {
     slug: 'gene-lanes',
@@ -240,20 +155,14 @@ export const pages: ExamplePage[] = [
     description:
       'Twelve E. coli genomes under one view, joined on gene symbol.',
     group: 'Going further',
-    sections: [
-      { slug: 'gene-lanes', title: 'A lane per genome, and a key above them' },
-    ],
   },
   {
     slug: 'svg-figures',
     title: 'SVG figures',
     description: 'An SVG figure of the view, redrawn as the reader navigates.',
     group: 'Going further',
-    sections: [{ slug: 'svg-figure', title: 'A figure that follows the view' }],
   },
 ]
-
-export const examples = flattenExamples(pages)
 
 export function getPage(slug: string) {
   return findPage(pages, slug)

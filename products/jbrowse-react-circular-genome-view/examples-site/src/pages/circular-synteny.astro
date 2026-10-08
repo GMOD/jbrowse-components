@@ -1,15 +1,9 @@
 ---
-import Example from '../examples/CircularSynteny.tsx'
+import Demo from '../examples/CircularSynteny.tsx'
 import code from '../examples/CircularSynteny.tsx?raw'
-import { getPage } from '../examples.ts'
-import Layout from '../layouts/ExampleLayout.astro'
-import Section from '../layouts/ExampleSection.astro'
-
-const page = getPage('circular-synteny')
+import ExamplePage from '../layouts/ExamplePage.astro'
 ---
 
-<Layout page={page}>
-  <Section slug="circular-synteny" code={code}>
-    <Example client:only="react" />
-  </Section>
-</Layout>
+<ExamplePage slug="circular-synteny" code={code}>
+  <Demo client:only="react" />
+</ExamplePage>

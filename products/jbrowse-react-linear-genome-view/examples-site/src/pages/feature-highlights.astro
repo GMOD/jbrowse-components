@@ -1,0 +1,9 @@
+---
+import Demo from '../examples/FeatureHighlights.tsx'
+import code from '../examples/FeatureHighlights.tsx?raw'
+import ExamplePage from '../layouts/ExamplePage.astro'
+---
+
+<ExamplePage slug="feature-highlights" code={code}>
+  <Demo client:only="react" />
+</ExamplePage>

@@ -1,0 +1,9 @@
+---
+import Demo from '../examples/TwoViews.tsx'
+import code from '../examples/TwoViews.tsx?raw'
+import ExamplePage from '../layouts/ExamplePage.astro'
+---
+
+<ExamplePage slug="two-views" code={code}>
+  <Demo client:only="react" />
+</ExamplePage>

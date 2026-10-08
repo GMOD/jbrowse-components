@@ -1,0 +1,9 @@
+---
+import Demo from '../examples/GroupByTag.tsx'
+import code from '../examples/GroupByTag.tsx?raw'
+import ExamplePage from '../layouts/ExamplePage.astro'
+---
+
+<ExamplePage slug="group-by-tag" code={code}>
+  <Demo client:only="react" />
+</ExamplePage>

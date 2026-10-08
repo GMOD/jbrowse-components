@@ -1,0 +1,9 @@
+---
+import Demo from '../examples/ErrorHandler.tsx'
+import code from '../examples/ErrorHandler.tsx?raw'
+import ExamplePage from '../layouts/ExamplePage.astro'
+---
+
+<ExamplePage slug="error-handler" code={code}>
+  <Demo client:only="react" />
+</ExamplePage>

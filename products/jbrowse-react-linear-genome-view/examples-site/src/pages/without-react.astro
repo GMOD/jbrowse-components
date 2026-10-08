@@ -1,16 +1,9 @@
 ---
-import WithoutReact from '../examples/WithoutReact.tsx'
-import WithoutReactCode from '../examples/WithoutReact.tsx?raw'
-import { getPage, section } from '../examples.ts'
-import Layout from '../layouts/ExampleLayout.astro'
-import Section from '../layouts/ExampleSection.astro'
-
-const page = getPage('without-react')
-const sec = section(page, 'without-react')
+import Demo from '../examples/WithoutReact.tsx'
+import code from '../examples/WithoutReact.tsx?raw'
+import ExamplePage from '../layouts/ExamplePage.astro'
 ---
 
-<Layout page={page}>
-  <Section {...sec} code={WithoutReactCode}>
-    <WithoutReact client:only="react" />
-  </Section>
-</Layout>
+<ExamplePage slug="without-react" code={code}>
+  <Demo client:only="react" />
+</ExamplePage>

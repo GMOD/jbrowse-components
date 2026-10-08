@@ -1,0 +1,65 @@
+---
+import { Code } from 'astro:components'
+
+import Shell from './Shell.astro'
+import { getPage, pages } from '~site/examples.ts'
+import {
+  componentLabel,
+  demoFillHeight,
+  demoHeights,
+  mainMaxWidth,
+} from '~site/siteMeta.ts'
+
+import type { MarkdownInstance } from 'astro'
+
+// One example page: the live demo (slotted in, so its React island hydrates in
+// the page file), then src/docs/<slug>.md, then the demo's own source. The demo
+// comes first because it is the argument and the prose annotates it.
+interface Props {
+  slug: string
+  code: string
+}
+
+const { slug, code } = Astro.props
+const page = getPage(slug)
+const sourceLines = code.trimEnd().split('\n').length
+
+// held before the island mounts, so the prose below does not slide down
+const reserved = demoHeights[slug]
+
+const docs = import.meta.glob<MarkdownInstance<Record<string, unknown>>>(
+  '~site/docs/*.md',
+)
+const loader = Object.entries(docs).find(([path]) =>
+  path.endsWith(`/docs/${slug}.md`),
+)?.[1]
+const doc = loader ? await loader() : undefined
+const Doc = doc?.Content
+---
+
+<Shell
+  title={page.title}
+  componentLabel={componentLabel}
+  examples={pages}
+  mainMaxWidth={mainMaxWidth}
+>
+  <h1>{page.title}</h1>
+  <p class="lead">{page.description}</p>
+  <section id={slug} class="example-section">
+    <div
+      class:list={['demo', { fill: demoFillHeight, reserved: !!reserved }]}
+      style={reserved ? `min-height:${reserved}px` : undefined}
+    >
+      <slot />
+    </div>
+    {Doc && (
+      <div class="doc">
+        <Doc />
+      </div>
+    )}
+    <details class="source" open>
+      <summary>View source — {sourceLines} lines</summary>
+      <Code code={code} lang="tsx" />
+    </details>
+  </section>
+</Shell>

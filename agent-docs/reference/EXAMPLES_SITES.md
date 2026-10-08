@@ -33,10 +33,20 @@ display node is the usual case: MST drops it and the demo renders wrong with no
 error (ARCHITECTURE.md "Where a display's state lives"). A generated fixture's
 generator validates before writing (`gen-nextstrain-demos.mjs`).
 
+## One demo, one page, one name
+
+A page is one live demo at one URL, and its slug names everything: the
+`examples.ts` entry, `src/pages/<slug>.astro`, `src/examples/<PascalCase
+slug>.tsx` and the optional `src/docs/<slug>.md`. Adding one is those files and
+nothing else; `pnpm check-links` reports a page whose pieces disagree and an
+example file no page mounts. The same demo takes the same slug on every site
+(`dark-theme`, `web-worker`, `session-in-url`, `inline-plugin`,
+`without-react`), so a link ports by swapping the site prefix.
+
 ## Shared layouts reach their site through `~site`
 
-The layouts, `exampleModel.ts` and the gallery live in `examples-site-shared/`
-and are symlinked into each site. A shared file imports its site's own modules
+The layouts (`Shell`, `ExamplePage`, `Gallery`) and `exampleModel.ts` live in
+`examples-site-shared/` and are symlinked into each site. A shared file imports its site's own modules
 as `~site/...` (`siteMeta.ts`, `examples.ts`, `docs/*.md`), never by a relative
 path: `astro check` resolves a relative import from the symlink's directory and
 vite from the file's real path, so only an alias, declared in both

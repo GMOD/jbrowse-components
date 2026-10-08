@@ -1,0 +1,9 @@
+---
+import Demo from '../examples/InternetAccounts.tsx'
+import code from '../examples/InternetAccounts.tsx?raw'
+import ExamplePage from '../layouts/ExamplePage.astro'
+---
+
+<ExamplePage slug="internet-accounts" code={code}>
+  <Demo client:only="react" />
+</ExamplePage>

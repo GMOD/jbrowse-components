@@ -6,7 +6,7 @@
 //
 // The trimmed output is too large to track in git, so it's hosted at
 // s3://jbrowse.org/demos/panukbb/panukbPhenotypes.json (fetched by
-// PanUKBGWAS.tsx) instead of living in public/. After running this script,
+// PanUkbGwas.tsx) instead of living in public/. After running this script,
 // upload the result from the repo root with:
 //   DEPLOY_DEMO_ALLOW_UNTRACKED=1 scripts/deploy-demo.sh \
 //     panukbPhenotypes.json panukbb/panukbPhenotypes.json

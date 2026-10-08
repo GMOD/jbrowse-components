@@ -1,0 +1,9 @@
+---
+import Demo from '../examples/AddTracksProgrammatically.tsx'
+import code from '../examples/AddTracksProgrammatically.tsx?raw'
+import ExamplePage from '../layouts/ExamplePage.astro'
+---
+
+<ExamplePage slug="add-tracks-programmatically" code={code}>
+  <Demo client:only="react" />
+</ExamplePage>

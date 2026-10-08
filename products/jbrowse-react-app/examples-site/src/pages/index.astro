@@ -1,6 +1,7 @@
 ---
-import { examples } from '../examples.ts'
+import { pages } from '../examples.ts'
 import Example from '../examples/HumanDemo.tsx'
+import Gallery from '../layouts/Gallery.astro'
 import Shell from '../layouts/Shell.astro'
 import { componentLabel, mainMaxWidth, demoFillHeight } from '../siteMeta.ts'
 ---
@@ -8,7 +9,7 @@ import { componentLabel, mainMaxWidth, demoFillHeight } from '../siteMeta.ts'
 <Shell
   title="Getting started"
   componentLabel={componentLabel}
-  examples={examples}
+  examples={pages}
   mainMaxWidth={mainMaxWidth}
 >
   <h1>JBrowse React App</h1>
@@ -19,4 +20,6 @@ import { componentLabel, mainMaxWidth, demoFillHeight } from '../siteMeta.ts'
   <div class:list={['demo', { fill: demoFillHeight }]}>
     <Example client:only="react" />
   </div>
+
+  <Gallery examples={pages} />
 </Shell>

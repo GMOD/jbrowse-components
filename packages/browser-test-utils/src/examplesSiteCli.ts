@@ -18,8 +18,9 @@ import { measureDemoHeights } from './examplesDemoHeights.ts'
 // holding them that way.
 
 interface ExamplesModule {
-  pages: Parameters<typeof runExamplesSiteChecks>[0]['pages']
-  examples: { slug: string; skipSmoke?: boolean }[]
+  pages: (Parameters<typeof runExamplesSiteChecks>[0]['pages'][number] & {
+    skipSmoke?: boolean
+  })[]
 }
 
 function siteRoot(scriptUrl: string) {
@@ -41,10 +42,10 @@ async function loadAstroConfig(site: string): Promise<{ base: string }> {
 
 /**
  * Validate + suggest links in an examples-site. Fails (returns 1) on a link to a
- * generated doc page that no longer exists, on a `../<page>/#<section>`
- * cross-link or a website/README link into the site whose page or section is
- * gone (these break silently on a rename), on a doc no section renders, on a
- * page file whose sections differ from examples.ts, and on prose past its cap.
+ * generated doc page that no longer exists, on a `../<slug>/` cross-link or a
+ * website/README link into the site whose page is gone (these break silently
+ * on a rename), on a doc no page renders, on a page whose file or example
+ * disagrees with examples.ts, and on prose past its cap.
  * Advisory output: reference links still worth adding, and prose getting long.
  */
 export async function checkExamplesSiteDocLinks(
@@ -107,7 +108,7 @@ export async function writeExamplesSiteDemoHeights(
   log: (message: string) => void = console.log,
 ) {
   const site = siteRoot(scriptUrl)
-  const { examples } = await loadExamples(site)
+  const { pages } = await loadExamples(site)
   const config = await loadAstroConfig(site)
   const outFile = path.join(site, 'demoHeights.json')
 
@@ -118,7 +119,7 @@ export async function writeExamplesSiteDemoHeights(
     // running one of these examples a second time, and it reserves that
     // example's figure rather than a duplicate of its own that could drift away
     // from it
-    slugs: examples.filter(e => !e.skipSmoke).map(e => e.slug),
+    slugs: pages.filter(e => !e.skipSmoke).map(e => e.slug),
     log,
   })
 

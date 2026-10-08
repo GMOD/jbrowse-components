@@ -16,12 +16,13 @@ import {
 } from '@jbrowse/browser-test-utils'
 
 import config from '../astro.config.mjs'
-import { examples } from '../src/examples.ts'
+import { pages } from '../src/examples.ts'
 
 const here = path.dirname(fileURLToPath(import.meta.url))
 
 const checks = {
   'gene-density-ring': checkRingsPainted,
+  'gene-density-marks': checkRingsPainted,
   'session-in-url': checkSessionUrlRoundTrip,
   'show-track': checkTrackToggles,
 }
@@ -30,8 +31,8 @@ const failures = await smokeExamplesSite({
   distDir: path.join(here, '..', 'dist'),
   // single source of truth for the base path is astro.config.mjs
   base: config.base,
-  slugs: ['', ...examples.filter(e => !e.skipSmoke).map(e => e.slug)],
-  workerSlug: 'plugins',
+  slugs: ['', ...pages.filter(e => !e.skipSmoke).map(e => e.slug)],
+  workerSlug: 'web-worker',
   check: async (page, slug) => [
     ...(await checkDemoHeights(page)),
     ...(await checkDemoAboveFold(page)),

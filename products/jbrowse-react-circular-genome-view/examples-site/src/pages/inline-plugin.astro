@@ -1,0 +1,9 @@
+---
+import Demo from '../examples/InlinePlugin.tsx'
+import code from '../examples/InlinePlugin.tsx?raw'
+import ExamplePage from '../layouts/ExamplePage.astro'
+---
+
+<ExamplePage slug="inline-plugin" code={code}>
+  <Demo client:only="react" />
+</ExamplePage>

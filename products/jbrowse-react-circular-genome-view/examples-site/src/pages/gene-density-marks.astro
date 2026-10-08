@@ -1,0 +1,9 @@
+---
+import Demo from '../examples/GeneDensityMarks.tsx'
+import code from '../examples/GeneDensityMarks.tsx?raw'
+import ExamplePage from '../layouts/ExamplePage.astro'
+---
+
+<ExamplePage slug="gene-density-marks" code={code}>
+  <Demo client:only="react" />
+</ExamplePage>

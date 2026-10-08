@@ -1,15 +1,9 @@
 ---
-import Example from '../examples/SessionInUrl.tsx'
+import Demo from '../examples/SessionInUrl.tsx'
 import code from '../examples/SessionInUrl.tsx?raw'
-import { getPage } from '../examples.ts'
-import Layout from '../layouts/ExampleLayout.astro'
-import Section from '../layouts/ExampleSection.astro'
-
-const page = getPage('session-in-url')
+import ExamplePage from '../layouts/ExamplePage.astro'
 ---
 
-<Layout page={page}>
-  <Section slug="session-in-url" code={code}>
-    <Example client:only="react" />
-  </Section>
-</Layout>
+<ExamplePage slug="session-in-url" code={code}>
+  <Demo client:only="react" />
+</ExamplePage>

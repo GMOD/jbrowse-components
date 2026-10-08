@@ -134,7 +134,10 @@ if [ -n "$whole" ]; then
     xargs -0 "$oxfmt" --no-error-on-unmatched-pattern --write
   printf '%s' "$whole" | tr '\n' '\0' | xargs -0 git add --
 
-  astro=$(printf '%s' "$whole" | grep '\.astro$' || true)
+  # prettier refuses a symlink it is handed by name, and the examples sites'
+  # shared layouts are symlinks
+  astro=$(printf '%s' "$whole" | grep '\.astro$' |
+    while IFS= read -r f; do [ -L "$f" ] || printf '%s\n' "$f"; done || true)
   if [ -n "$astro" ] && [ -x "$root/node_modules/.bin/prettier" ]; then
     printf '%s' "$astro" | tr '\n' '\0' |
       xargs -0 "$root/node_modules/.bin/prettier" --write --

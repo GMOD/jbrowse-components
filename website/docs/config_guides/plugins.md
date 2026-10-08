@@ -36,7 +36,7 @@ yourself is named by its url.
   the plugin class) for a UMD build, which is looked up by that name once its
   script has run. An ESM build has its own, and a store entry supplies one.
 - **Embedded components load plugins inline**; see the
-  [inline plugins example](https://jbrowse.org/storybook/lgv/plugins/#with-inline-plugins).
+  [inline plugins example](https://jbrowse.org/storybook/lgv/inline-plugin/).
 
 ## Naming a build directly
 

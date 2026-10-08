@@ -1,15 +1,9 @@
 ---
-import Example from '../examples/PanUKBGWAS.tsx'
-import code from '../examples/PanUKBGWAS.tsx?raw'
-import { getPage } from '../examples.ts'
-import Layout from '../layouts/ExampleLayout.astro'
-import Section from '../layouts/ExampleSection.astro'
-
-const page = getPage('pan-ukb-gwas')
+import Demo from '../examples/PanUkbGwas.tsx'
+import code from '../examples/PanUkbGwas.tsx?raw'
+import ExamplePage from '../layouts/ExamplePage.astro'
 ---
 
-<Layout page={page}>
-  <Section slug="pan-ukb-gwas" code={code}>
-    <Example client:only="react" />
-  </Section>
-</Layout>
+<ExamplePage slug="pan-ukb-gwas" code={code}>
+  <Demo client:only="react" />
+</ExamplePage>

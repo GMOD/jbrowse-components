@@ -55,7 +55,7 @@ export async function indexFileList(flags: TextIndexFlags): Promise<void> {
     })
 
     console.log(
-      'Successfully created index for these files. See https://jbrowse.org/storybook/lgv/with-aggregate-text-searching/ for info about usage',
+      'Successfully created index for these files. See https://jbrowse.org/storybook/lgv/aggregate-text-search/ for info about usage',
     )
   }
 }

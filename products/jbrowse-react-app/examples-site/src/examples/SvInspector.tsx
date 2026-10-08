@@ -1,0 +1,23 @@
+import { JBrowse } from '@jbrowse/react-app2'
+
+const base = 'https://jbrowse.org/code/jb2/main/test_data/volvox'
+
+const assemblies = [
+  { name: 'volvox', uri: 'https://jbrowse.org/genomes/volvox/volvox.2bit' },
+]
+
+export default function SvInspector() {
+  return (
+    <JBrowse
+      assemblies={assemblies}
+      tracks={[]}
+      views={[
+        {
+          type: 'SvInspectorView',
+          assembly: 'volvox',
+          uri: `${base}/volvox.dup.vcf.gz`,
+        },
+      ]}
+    />
+  )
+}

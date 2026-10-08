@@ -1,0 +1,9 @@
+---
+import Demo from '../examples/FixedHeight.tsx'
+import code from '../examples/FixedHeight.tsx?raw'
+import ExamplePage from '../layouts/ExamplePage.astro'
+---
+
+<ExamplePage slug="fixed-height" code={code}>
+  <Demo client:only="react" />
+</ExamplePage>

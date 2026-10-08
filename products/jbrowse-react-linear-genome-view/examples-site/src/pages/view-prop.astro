@@ -1,0 +1,9 @@
+---
+import Demo from '../examples/ViewProp.tsx'
+import code from '../examples/ViewProp.tsx?raw'
+import ExamplePage from '../layouts/ExamplePage.astro'
+---
+
+<ExamplePage slug="view-prop" code={code}>
+  <Demo client:only="react" />
+</ExamplePage>

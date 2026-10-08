@@ -1,15 +1,9 @@
 ---
-import Example from '../examples/Human.tsx'
+import Demo from '../examples/Human.tsx'
 import code from '../examples/Human.tsx?raw'
-import { getPage } from '../examples.ts'
-import Layout from '../layouts/ExampleLayout.astro'
-import Section from '../layouts/ExampleSection.astro'
-
-const page = getPage('human')
+import ExamplePage from '../layouts/ExamplePage.astro'
 ---
 
-<Layout page={page}>
-  <Section slug="human" code={code}>
-    <Example client:only="react" />
-  </Section>
-</Layout>
+<ExamplePage slug="human" code={code}>
+  <Demo client:only="react" />
+</ExamplePage>

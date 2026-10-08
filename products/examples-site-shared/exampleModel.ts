@@ -1,74 +1,23 @@
-// Shared example model for every product's examples-site (app / lgv / cgv).
-// Each site symlinks src/exampleModel.ts to this file. It has no relative
-// imports, so — unlike Shell/Gallery — it works fine symlinked: each site's
-// examples.ts imports these types + helpers and only defines its own `pages`.
+// Shared by every product's examples-site through a symlink at
+// src/exampleModel.ts, so it has no relative imports.
 
-// A section is one live demo: it maps to src/examples/<Component>.tsx (imported
-// directly by each page) and an optional src/docs/<slug>.md prose file.
-export interface ExampleSection {
-  slug: string
-  title: string
-  // one line rendered under the section's entry in a multi-section page's "On
-  // this page" card. Omit it on single-section pages, where the page-level
-  // description already says the same thing and no card is drawn.
-  description?: string
-}
-
-// A page is one sidebar entry / one URL. Most pages hold a single section, but
-// closely-related demos can be grouped onto one page (several sections) to keep
-// the sidebar short. Each section keeps its own slug, so its doc/source and any
-// `../<slug>/#<slug>` cross-links still resolve.
+// One live demo at one URL: src/pages/<slug>.astro mounts
+// src/examples/<PascalCase slug>.tsx, and src/docs/<slug>.md is its optional
+// prose.
 export interface ExamplePage {
   slug: string
   title: string
   description: string
   group: string
-  // exclude from the examples-site smoke test (scripts/smoke.mjs). The page
-  // still ships and works in a real browser; it's only skipped in CI's headless
-  // software-WebGL (swiftshader), where some renders crash the renderer.
+  // skipped by scripts/smoke.mjs and the demo-heights generator: the page ships
+  // and works in a real browser, but crashes CI's software WebGL
   skipSmoke?: boolean
-  sections: ExampleSection[]
 }
 
-// look up a page by slug — used by every page file to fetch its own ExamplePage
-// off the flat `pages` list. Throws (rather than a silent `!`) so a renamed or
-// mistyped slug fails loudly at build time. Each site's examples.ts wraps this
-// as a bound `getPage(slug)` over its own `pages`.
 export function findPage(pages: ExamplePage[], slug: string): ExamplePage {
   const found = pages.find(p => p.slug === slug)
   if (!found) {
     throw new Error(`no page "${slug}"`)
   }
   return found
-}
-
-// look up a section by slug within a page — used by multi-section pages to pass
-// each section's title/description into <ExampleSection> type-safely
-export function section(page: ExamplePage, slug: string): ExampleSection {
-  const found = page.sections.find(s => s.slug === slug)
-  if (!found) {
-    throw new Error(`no section "${slug}" on page "${page.slug}"`)
-  }
-  return found
-}
-
-// flat, one-entry-per-page list for the shared Shell sidebar + Gallery grid and
-// the build smoke test, which need {slug, title, description, group} (plus
-// skipSmoke, honored by every site's smoke script and by the shared
-// demo-heights generator).
-//
-// `sections` rides along for the sidebar, which nests them under the page you
-// are currently on — see Shell.astro. It carries only what a nav link needs, so
-// a section `description` (page-TOC prose) stays out of the shell's props.
-export function flattenExamples(pages: ExamplePage[]) {
-  return pages.map(
-    ({ slug, title, description, group, skipSmoke, sections }) => ({
-      slug,
-      title,
-      description,
-      group,
-      skipSmoke,
-      sections: sections.map(s => ({ slug: s.slug, title: s.title })),
-    }),
-  )
 }

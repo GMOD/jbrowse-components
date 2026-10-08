@@ -1,16 +1,9 @@
 ---
-import GeneLanes from '../examples/GeneLanes.tsx'
-import GeneLanesCode from '../examples/GeneLanes.tsx?raw'
-import { getPage, section } from '../examples.ts'
-import Layout from '../layouts/ExampleLayout.astro'
-import Section from '../layouts/ExampleSection.astro'
-
-const page = getPage('gene-lanes')
-const sec = section(page, 'gene-lanes')
+import Demo from '../examples/GeneLanes.tsx'
+import code from '../examples/GeneLanes.tsx?raw'
+import ExamplePage from '../layouts/ExamplePage.astro'
 ---
 
-<Layout page={page}>
-  <Section {...sec} code={GeneLanesCode}>
-    <GeneLanes client:only="react" />
-  </Section>
-</Layout>
+<ExamplePage slug="gene-lanes" code={code}>
+  <Demo client:only="react" />
+</ExamplePage>

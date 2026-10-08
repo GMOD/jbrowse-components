@@ -1,0 +1,9 @@
+---
+import Demo from '../examples/ReadsAsMarks.tsx'
+import code from '../examples/ReadsAsMarks.tsx?raw'
+import ExamplePage from '../layouts/ExamplePage.astro'
+---
+
+<ExamplePage slug="reads-as-marks" code={code}>
+  <Demo client:only="react" />
+</ExamplePage>

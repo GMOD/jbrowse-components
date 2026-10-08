@@ -1,6 +1,6 @@
 ---
 import Example from '../examples/Human.tsx'
-import { examples } from '../examples.ts'
+import { pages } from '../examples.ts'
 import Gallery from '../layouts/Gallery.astro'
 import Shell from '../layouts/Shell.astro'
 import {
@@ -16,7 +16,7 @@ const reserved = demoHeights[landingDemo]
 <Shell
   title="Examples"
   componentLabel={componentLabel}
-  examples={examples}
+  examples={pages}
   mainMaxWidth={mainMaxWidth}
 >
   <h1>JBrowse Circular Genome View</h1>
@@ -29,5 +29,5 @@ const reserved = demoHeights[landingDemo]
     <Example client:only="react" />
   </div>
 
-  <Gallery examples={examples} />
+  <Gallery examples={pages} />
 </Shell>
