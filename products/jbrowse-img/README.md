@@ -1625,8 +1625,9 @@ every alignments track with no sort: of its own is sorted at the variant:
 an SNV at its base, a deletion at its first deleted base, an insertion at
 the base after it. A band marks the bases the record changes, and the
 manifest counts the reads differing from the reference there. Such a track
-also grows to hold its whole pileup, up to its growMaxHeight, so rows are
-the same height on every image; a height: or heightMode: of its own wins.
+also grows to hold its pileup, up to 250 px, so rows are the same height on
+every image and a deep pileup stops there with its carriers on top; a
+height:, heightMode: or growMaxHeight= of its own wins.
 
 The module graph loads once for the whole callset, so this is much faster
 than a shell loop over "jb2export breakpoint".
