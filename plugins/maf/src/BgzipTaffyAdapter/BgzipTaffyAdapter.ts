@@ -3,7 +3,8 @@ import { cachedSetup } from '@jbrowse/core/data_adapters/BaseAdapter'
 import { openLocation } from '@jbrowse/core/util/io'
 
 import { MafAdapterBase } from '../util/MafAdapterBase.ts'
-import { taiBlockFeatures } from '../util/taiBlockFeatures.ts'
+import { mafBlockFeatures } from '../util/mafFeatureSink.ts'
+import { readTaiBlocks, wholeLines } from '../util/taiBlocks.ts'
 import { readTaiIndex, taiRegionByteSize } from '../util/taiSlice.ts'
 import {
   filterFirstLineInstructions,
@@ -17,10 +18,12 @@ import {
   parseCoordinatesAndEstablishBlock,
 } from './tafParsing.ts'
 
+import type { MafBlockSink } from '../util/mafBlockSink.ts'
 import type { SourceResolver } from '../util/parseAssemblyName.ts'
+import type { TaiBlockFeature } from '../util/taiBlocks.ts'
 import type { TaiIndex } from '../util/taiSlice.ts'
 import type { BgzipTaffyAdapterConfig } from './configSchema.ts'
-import type { AlignmentBlock, TafFeature } from './tafParsing.ts'
+import type { AlignmentBlock } from './tafParsing.ts'
 import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { Region } from '@jbrowse/core/util'
 
@@ -54,7 +57,7 @@ export default class BgzipTaffyAdapter extends MafAdapterBase<BgzipTaffyAdapterC
     buffer: Uint8Array,
     runLengthEncodeBases: boolean,
     resolve: SourceResolver,
-  ): Generator<TafFeature> {
+  ): Generator<TaiBlockFeature> {
     const buildFeature = (block: AlignmentBlock, cols: string[]) => {
       finalizeBlock(block, cols, this.decoder)
       return blockToFeature(block, resolve)
@@ -64,23 +67,12 @@ export default class BgzipTaffyAdapter extends MafAdapterBase<BgzipTaffyAdapterC
     let columns: string[] = []
     let isFirstCoordLine = true
 
-    const text = this.decoder.decode(buffer)
-    // A slice that does not end on a newline had its last line cut by the byte
-    // range, and that line cannot be trusted: a coordinate line cut before its
-    // ` ; ` looks like a plain bases line and gets fed to `parseBasesColumn` as
-    // one, so the trailing block ends up short a column or holding a fragment
-    // of a coordinate string. Both put a wrong sequence at real coordinates.
-    // `parseMafBlocks` guards the same way — the two readers share the problem
-    // because they share the read.
-    const endsClean = text.endsWith('\n')
-    const lines = text.split('\n')
+    // A cut coordinate line is the one `wholeLines` has to drop here: cut
+    // before its ` ; ` it looks like a plain bases line and reaches
+    // `parseBasesColumn` as one.
+    const { lines, endsClean } = wholeLines(this.decoder.decode(buffer))
 
-    for (const [i, line] of lines.entries()) {
-      // The final element of a split is '' when the text ended with a newline,
-      // so an unterminated last line is exactly the non-empty final element.
-      if (i === lines.length - 1 && !endsClean && line !== '') {
-        break
-      }
+    for (const line of lines) {
       const trimmedLine = line.trim()
       if (!trimmedLine || trimmedLine.startsWith('#')) {
         continue
@@ -190,14 +182,22 @@ export default class BgzipTaffyAdapter extends MafAdapterBase<BgzipTaffyAdapterC
   }
 
   getFeatures(query: Region, opts?: BaseOptions) {
-    return taiBlockFeatures({
+    return mafBlockFeatures(
+      query.refName,
+      sink => this.readBlocks(query, sink, opts),
+      opts?.signal,
+    )
+  }
+
+  override readBlocks(query: Region, sink: MafBlockSink, opts?: BaseOptions) {
+    return readTaiBlocks({
       configure: this.configure,
       sampleIds: o => this.sampleIds(o),
       location: this.getConf('tafGzLocation'),
       pluginManager: this.pluginManager,
       query,
+      sink,
       opts,
-      // Streamed from a generator — no caching, immediately GC eligible.
       parse: (slice, { runLengthEncodeBases }, resolve) =>
         this.parseTafBlocksStreaming(slice, runLengthEncodeBases, resolve),
     })

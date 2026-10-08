@@ -1,10 +1,12 @@
 import { cachedSetup } from '@jbrowse/core/data_adapters/BaseAdapter'
 
 import { MafAdapterBase } from '../util/MafAdapterBase.ts'
-import { taiBlockFeatures } from '../util/taiBlockFeatures.ts'
+import { mafBlockFeatures } from '../util/mafFeatureSink.ts'
+import { readTaiBlocks } from '../util/taiBlocks.ts'
 import { readTaiIndex, taiRegionByteSize } from '../util/taiSlice.ts'
 import { parseMafBlocks } from './mafParsing.ts'
 
+import type { MafBlockSink } from '../util/mafBlockSink.ts'
 import type { BgzipMafAdapterConfig } from './configSchema.ts'
 import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { Region } from '@jbrowse/core/util'
@@ -22,7 +24,7 @@ import type { Region } from '@jbrowse/core/util'
  * The index, the block arithmetic and the read around it are
  * `BgzipTaffyAdapter`'s, unchanged: a `.tai` describes bgzf virtual offsets
  * against reference coordinates and does not care which text format sits
- * inside. Only the body parse differs, so `taiBlockFeatures` is everything but
+ * inside. Only the body parse differs, so `readTaiBlocks` is everything but
  * that. Measured against HPRC's own index, a 10 kb locus resolves to a ~924 KB
  * read out of the 53 GB file.
  */
@@ -46,12 +48,21 @@ export default class BgzipMafAdapter extends MafAdapterBase<BgzipMafAdapterConfi
   }
 
   getFeatures(query: Region, opts?: BaseOptions) {
-    return taiBlockFeatures({
+    return mafBlockFeatures(
+      query.refName,
+      sink => this.readBlocks(query, sink, opts),
+      opts?.signal,
+    )
+  }
+
+  override readBlocks(query: Region, sink: MafBlockSink, opts?: BaseOptions) {
+    return readTaiBlocks({
       configure: this.configure,
       sampleIds: o => this.sampleIds(o),
       location: this.getConf('mafGzLocation'),
       pluginManager: this.pluginManager,
       query,
+      sink,
       opts,
       parse: (slice, _setup, resolve) =>
         parseMafBlocks(this.decoder.decode(slice), resolve),

@@ -2,13 +2,14 @@ import { isRegionRefused } from '@jbrowse/core/rpc/byteBudget'
 import { unwrapRpcResult } from '@jbrowse/core/util/librpc'
 import { of } from 'rxjs'
 
-import { MafAdapterBase } from '../util/MafAdapterBase.ts'
+import { featureBlocks } from '../util/mafBlockSink.ts'
 import { executeMafAlignmentData } from './executeMafAlignmentData.ts'
 
 import type { AlignmentRecord, EmptyRecord } from '../types.ts'
+import type { MafBlockSink } from '../util/mafBlockSink.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { RegionTooLargeResult } from '@jbrowse/core/rpc/byteBudget'
-import type { Feature } from '@jbrowse/core/util'
+import type { Feature, Region } from '@jbrowse/core/util'
 
 // The RPC packs each block into the arena as its feature arrives, instead of
 // buffering the region and sizing the arena from exact counts. What that
@@ -64,8 +65,8 @@ async function run(
 ) {
   mockLoadAdapter.mockResolvedValue({
     adapter: {
-      getFeatures: () => of(...features),
-      readBlocks: MafAdapterBase.prototype.readBlocks,
+      readBlocks: (_region: Region, sink: MafBlockSink) =>
+        featureBlocks(of(...features), sink),
     },
     samples,
     treeNewick: undefined,

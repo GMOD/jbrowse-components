@@ -20,6 +20,7 @@ import {
   legacyIdentityMatrix,
   legacyMafTabixFeatures,
 } from '../util/legacyMafParse.fixture.ts'
+import { featureBlocks } from '../util/mafBlockSink.ts'
 import { makeSourceResolver } from '../util/parseAssemblyName.ts'
 import { readIdentityMatrix } from './buildIdentityMatrix.ts'
 
@@ -72,8 +73,8 @@ const sLines = (b: BedBlock) =>
 type Read = (r: Region) => Observable<Feature>
 
 // The same blocks through each of the three reads, MAF-tabix's and bigMaf's
-// parse into the sink and BgzipMafAdapter's MafFeatures through the default
-// `readBlocks`, each beside the MafFeatures clustering read before.
+// parse into the sink and a bgzip MAF's parsed stanzas through `featureBlocks`,
+// each beside the MafFeatures clustering read before.
 function adaptersOver(blocks: BedBlock[]): [MafAdapterBase, Read][] {
   const bed = subAdapter(blocks, b => b.entries)
   const tabix = new MafTabixAdapter(
@@ -104,17 +105,15 @@ function adaptersOver(blocks: BedBlock[]): [MafAdapterBase, Read][] {
         b.empties,
       ),
   )
+  const parsedOver: Read = r =>
+    from(parsed.filter(f => f.get('start') < r.end && f.get('end') > r.start))
   jest
-    .spyOn(bgzip, 'getFeatures')
-    .mockImplementation((r: Region) =>
-      from(
-        parsed.filter(f => f.get('start') < r.end && f.get('end') > r.start),
-      ),
-    )
+    .spyOn(bgzip, 'readBlocks')
+    .mockImplementation((r, sink) => featureBlocks(parsedOver(r), sink))
   return [
     [tabix, r => legacyMafTabixFeatures(bed, r)],
     [bigMaf, r => legacyBigMafFeatures(bigBed, r)],
-    [bgzip, r => bgzip.getFeatures(r)],
+    [bgzip, parsedOver],
   ]
 }
 

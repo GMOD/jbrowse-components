@@ -8,7 +8,6 @@ import {
   loadMafSummaryAdapter,
   mafSummaryFeatures,
 } from './loadMafSummaryAdapter.ts'
-import { featureBlocks } from './mafBlockSink.ts'
 import { MafTableSink } from './mafFeatureTable.ts'
 
 import type { MafBlockSink } from './mafBlockSink.ts'
@@ -68,14 +67,12 @@ export abstract class MafAdapterBase<
     }
   }
 
-  /**
-   * The region's blocks into `sink`, by default off `getFeatures`. An adapter
-   * whose parse can hand each sequence over as a range of its line overrides
-   * this and builds no `MafFeature`.
-   */
-  readBlocks(query: Region, sink: MafBlockSink, opts?: BaseOptions) {
-    return featureBlocks(this.getFeatures(query, opts), sink)
-  }
+  /** The region's blocks into `sink`: each adapter's one parse. */
+  abstract readBlocks(
+    query: Region,
+    sink: MafBlockSink,
+    opts?: BaseOptions,
+  ): Promise<void>
 
   override async getFeatureTable(query: Region, opts?: BaseOptions) {
     const sink = new MafTableSink(query.refName)

@@ -1,6 +1,6 @@
 ---
 status: Accepted
-summary: "A MAF adapter reads a region's blocks into a sink, readBlocks, which by default files each MafFeature and which MafTabixAdapter and BigMafAdapter override to parse straight into it: every sequence a range of the line they parsed, no record, dictionary or MafFeature per block. The MAF display's worker RPC packs through MafRegionSink and getFeatureTable through MafTableSink, and RecordSlots keeps the rows in the order a MafFeature's alignments record lists them, so the packed wire and the table's ids and hover JSON are unchanged. Over 20,000 blocks of 8 columns, the shape real files have, the MAF display's worker takes 0.80x its time from a MAF-tabix file and the mark display's span 0.78x; over wide blocks and 470 species, where coverage and the cells walk dominate, both are level"
+summary: "A MAF adapter reads a region's blocks into a sink, readBlocks, which MafTabixAdapter and BigMafAdapter parse straight into: every sequence a range of the line they parsed, no record, dictionary or MafFeature per block. The MAF display's worker RPC packs through MafRegionSink and getFeatureTable through MafTableSink, and RecordSlots keeps the rows in the order a MafFeature's alignments record lists them, so the packed wire and the table's ids and hover JSON are unchanged. Over 20,000 blocks of 8 columns, the shape real files have, the MAF display's worker takes 0.80x its time from a MAF-tabix file and the mark display's span 0.78x; over wide blocks and 470 species, where coverage and the cells walk dominate, both are level"
 ---
 
 # ADR-195: A MAF adapter parses its blocks into the packer
@@ -28,11 +28,11 @@ block is a few columns and every cost is per row.
 
 - **`MafAdapterBase.readBlocks(query, sink, opts)`** writes a region's blocks
   into a `MafBlockSink` (`plugins/maf/src/util/mafBlockSink.ts`): a block, its
-  rows, its empties, each sequence as `text[from..to)`. By default it files
-  each `MafFeature` of `getFeatures`, which is what `BgzipMafAdapter` and
-  `BgzipTaffyAdapter` still do: the first turns a `-` reference block over by
-  reverse-complementing its strings, and the second builds each row out of
-  column lines.
+  rows, its empties, each sequence as `text[from..to)`. `BgzipMafAdapter` and
+  `BgzipTaffyAdapter` hand it each parsed block's records through
+  `readTaiBlocks`, a whole string per row and no `MafFeature`: the first turns
+  a `-` reference block over by reverse-complementing its strings, and the
+  second builds each row out of column lines.
 - **`MafTabixAdapter` and `BigMafAdapter` override it.** `MafTabixBlockReader`
   scans the alignment column as `scanMafTabixEntry` does and hands the sink
   ranges of the column; `BigMafBlockReader` runs `applyMafLine`, whose rows

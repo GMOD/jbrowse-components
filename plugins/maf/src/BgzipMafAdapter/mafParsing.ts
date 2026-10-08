@@ -1,9 +1,10 @@
 import { flipBlockToForwardStrand } from '../util/forwardStrandBlock.ts'
 import { MafStanzaRows, applyMafLine } from '../util/mafLines.ts'
+import { wholeLines } from '../util/taiBlocks.ts'
 
 import type { EmptyRecord } from '../types.ts'
 import type { SourceResolver } from '../util/parseAssemblyName.ts'
-import type { TaiBlockFeature } from '../util/taiBlockFeatures.ts'
+import type { TaiBlockFeature } from '../util/taiBlocks.ts'
 
 /** A parsed MAF block: the shared `.tai` block shape, plus MAF's `e` lines. */
 export interface MafBlockFeature extends TaiBlockFeature {
@@ -33,11 +34,7 @@ export function* parseMafBlocks(
   text: string,
   resolve: SourceResolver,
 ): Generator<MafBlockFeature> {
-  // A slice that does not end on a newline had its last line truncated by the
-  // byte range; that line cannot be trusted, and neither can the block holding
-  // it.
-  const endsClean = text.endsWith('\n')
-  const lines = text.split('\n')
+  const { lines, endsClean } = wholeLines(text)
 
   let rows = new MafStanzaRows()
   let refSrc: string | undefined
@@ -92,13 +89,7 @@ export function* parseMafBlocks(
     return done
   }
 
-  for (const [i, raw] of lines.entries()) {
-    const isLast = i === lines.length - 1
-    // The final element of a split is '' when the text ended with a newline, so
-    // an unterminated last line is exactly the non-empty final element.
-    if (isLast && !endsClean && raw !== '') {
-      break
-    }
+  for (const raw of lines) {
     const line = raw.trimEnd()
     if (line === '') {
       const done = flush()

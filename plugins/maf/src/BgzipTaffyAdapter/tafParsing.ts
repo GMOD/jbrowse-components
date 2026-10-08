@@ -5,7 +5,7 @@ import { freeRowId } from '../util/sampleCopies.ts'
 
 import type { AlignmentRecord } from '../types.ts'
 import type { SourceResolver } from '../util/parseAssemblyName.ts'
-import type { TaiBlockFeature } from '../util/taiBlockFeatures.ts'
+import type { TaiBlockFeature } from '../util/taiBlocks.ts'
 import type { RowInstruction } from './rowInstructions.ts'
 
 // Represents a row in the alignment (like Alignment_Row in C)
@@ -23,12 +23,6 @@ export interface AlignmentBlock {
   rows: RowState[]
   columnNumber: number
 }
-
-/**
- * A parsed TAF block, which is the shared `.tai` block shape exactly — TAF has
- * no `e` line, so it never carries `empties`.
- */
-export type TafFeature = TaiBlockFeature
 
 /**
  * Decode RLE-encoded bases ("A 3 T 2" → "AAATT") or pass through plain bases.
@@ -207,14 +201,14 @@ export function finalizeBlock(
 }
 
 /**
- * Build a TafFeature from a finalized block, dropping rows the caller's
+ * Build a TaiBlockFeature from a finalized block, dropping rows the caller's
  * `makeSourceResolver` doesn't resolve. Reference row (`row0`) determines
  * the feature's genomic span; alignments are keyed by assembly name.
  */
 export function blockToFeature(
   block: AlignmentBlock,
   resolve: SourceResolver,
-): TafFeature | undefined {
+): TaiBlockFeature | undefined {
   if (block.rows.length === 0 || block.columnNumber === 0) {
     return undefined
   }
