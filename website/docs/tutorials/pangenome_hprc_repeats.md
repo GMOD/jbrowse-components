@@ -88,11 +88,11 @@ so there is nothing to download by hand.
 
 _LPA_ contains a tandem array of kringle IV type 2 (KIV-2) copies, tied to
 lipoprotein(a) levels, a heart-disease risk factor (Schmidt et al. 2016). Open
-the [HPRC page](https://staging.genomes.jbrowse.org/pangenomes/hprc) and press
-**graph** on the LPA row. JBrowse opens on `chr6:160,525,000-160,655,000`. Tick
-**Show... → Show bubble halos** in the graph track's menu. The strip along the
-top of the track draws each reference segment at its position on the ruler, in
-the color of its node below.
+the [HPRC page](https://staging.genomes.jbrowse.org/pangenomes/hprc), click the
+**LPA** example and press **Graph**. JBrowse opens on
+`chr6:160,525,000-160,655,000`. Tick **Show... → Show bubble halos** in the
+graph track's menu. The strip along the top of the track draws each reference
+segment at its position on the ruler, in the color of its node below.
 
 <Figure caption="The LPA window with the RefSeq genes, UniProt's kringle domains and the HPRC bubbles above the force-directed graph track. The kringle array is the knot of loops in the middle, haloed and labelled as a repeat array, and LPA is pinned under the backbone with its exons along it." src="/img/pangenome/hprc_lpa_kiv2.png" />
 
@@ -425,8 +425,8 @@ A gene array varies the same way a tandem repeat does, in whole gene copies. We
 draw the salivary amylase array as the haplotype lanes of
 [part 2](/docs/tutorials/pangenome_hprc_haplotypes):
 
-- On the [HPRC page](https://staging.genomes.jbrowse.org/pangenomes/hprc), press
-  **haplotypes** on the AMY1 row.
+- On the [HPRC page](https://staging.genomes.jbrowse.org/pangenomes/hprc), click
+  the **AMY1** example and press **Haplotypes**.
 - Choose `HG01361.1`, `HG00133.2`, `HG00133.1`, `NA18608.2` and `HG00232.1`
   under **Lanes → Choose lanes...**.
 

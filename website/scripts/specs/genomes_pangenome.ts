@@ -8,14 +8,16 @@ import type { ScreenshotSpec } from '../screenshot-spec-types.ts'
 // ~/src/jb2hubs/website/src/components/pangenomeLinks.ts), so re-copy it when
 // that repo moves a window or a launch prop.
 const HPRC_PAGE = 'https://staging.genomes.jbrowse.org/pangenomes/hprc'
+// The page's HLA / MHC example is a link to this url.
+const HPRC_MHC_ANSWER = `${HPRC_PAGE}?region=${encodeURIComponent('chr6:32,510,001-32,600,000')}`
 export const PORTAL_CONFIG = encodeURIComponent(
   'https://jbrowse.org/pangenome/hprc-grch38/config.json',
 )
 
 const MHC_WINDOW = { refName: 'chr6', start: 32510000, end: 32600000 }
 
-// The HLA / MHC row's graph link, the first link in the Loci table's first row.
-const MHC_GRAPH_LINK = 'tbody tr:first-child td:last-child a'
+// The Graph launch, the first link in the answer's list.
+const MHC_GRAPH_LINK = 'section[aria-live] li:first-child a'
 
 // `loc` and `layoutMode` move the launched session the way the tutorial's
 // reader moves it after the launch.
@@ -52,8 +54,8 @@ export function portalGraphLaunch({
   })
 }
 
-// The haplotypes launch's window and lanes at three loci: CFH is the page's own
-// panel for the locus (public/pangenome-hprc/panels.json in jb2hubs),
+// The haplotypes launch's window and lanes at three loci: CFH is the panel the
+// page's CFH / CFHR example answers with (its Lane table),
 // amylase and GSTT1 the lanes the HPRC tutorials choose there. GSTT1's
 // lanes are in the order "Order lanes by structure" writes: four that match
 // GRCh38's chr22, then six carrying the GSTT1 insertion.
@@ -118,14 +120,14 @@ export function portalHaplotypeLanes(locus: { loc: string; lanes: string[] }) {
 }
 
 export const genomesPangenomeSpecs: ScreenshotSpec[] = [
-  // Ends on the SMN1/SMN2 row, so the two rows with no graph launch are in
-  // frame under the ones that have all five.
+  // The answer arrives after the page: its section holds the launches and the
+  // structural forms read from the sidecar.
   {
     mode: 'url',
     name: 'pangenome/genomes_hprc_loci',
     noSession: true,
-    url: HPRC_PAGE,
-    readyText: 'Whole chromosome',
+    url: HPRC_MHC_ANSWER,
+    readySelector: MHC_GRAPH_LINK,
     viewportWidth: 1100,
     viewportHeight: 996,
     liveLabel: 'Open the HPRC page',

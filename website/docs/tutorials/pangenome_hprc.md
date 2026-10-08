@@ -71,18 +71,34 @@ the graph, by URL.
 
 ## Launching tracks from the HPRC page
 
-Open the [HPRC page](https://staging.genomes.jbrowse.org/pangenomes/hprc). Each
-row of its **Loci** table ends in launches: **graph**, **variants**,
-**haplotypes**, **BandageJS** and **gene hub**. **BandageJS** draws the row's
-haplotypes in [BandageJS](https://jbrowse.org/demos/bandagejs/).
+Open the [HPRC page](https://staging.genomes.jbrowse.org/pangenomes/hprc). It
+has one **Gene or region** box, with a row of **Examples** under it. Click an
+example, or type a gene symbol or a region such as `chr6:32,510,001-32,600,000`
+and press **Show**. The page answers with that window's launches, each with a
+line on what it draws:
 
-<Figure caption="The HPRC page: the whole-chromosome links, then the head of the Loci table, where each row ends in its launches. The RHD / RHCE and SMN1 / SMN2 rows have no graph launch. The boxed link is the HLA / MHC graph launch." src="/img/pangenome/genomes_hprc_loci.png" />
+- **Graph**: the region drawn as a graph
+- **Variants**: the structural variants each haplotype carries
+- **Haplotypes**: one lane per structural form, commonest first
+- **BandageJS**: the same haplotypes in
+  [BandageJS](https://jbrowse.org/demos/bandagejs/)
+
+Under the launches, a sentence counts the structural forms the 464 haplotypes
+fall into in the window, and a **Lane / Haplotypes / Share** table names the
+haplotype that stands for each form and how many share it. Those are the lanes
+**Haplotypes** and **BandageJS** open. A window over 150 kb offers the graph
+alone.
+
+<Figure caption="The HPRC page answering its HLA / MHC example: the Gene or region box and its examples, then the window's launches and the structural forms its haplotypes carry. The boxed link is the Graph launch." src="/img/pangenome/genomes_hprc_loci.png" />
+
+The graph merges the near-identical copies at RHD / RHCE, SMN1 / SMN2 and CYP2D6
+onto one path, so those examples offer no **Graph** launch.
 
 ## Overview of chr1 with one node per variant region {#a-chromosome-and-back}
 
-Press **chr1** among the **Whole chromosome** links above the Loci table. Zoomed
-out past the graph adapter's `coarse` level, JBrowse draws one node per bubble,
-so the whole chromosome fits. A curve of segments per bubble (how many pieces of
+Press **chr1** among the **Whole chromosomes** links under the box. Zoomed out
+past the graph adapter's `coarse` level, JBrowse draws one node per bubble, so
+the whole chromosome fits. A curve of segments per bubble (how many pieces of
 sequence each bubble holds) shows how much the haplotypes disagree at each
 locus.
 
@@ -93,9 +109,9 @@ overview and writes the `coarse` slot.
 
 ## The C4 locus as a graph
 
-Press **graph** on the HLA / MHC row of the HPRC page. The launch opens four
-tracks: genes, bubbles, the allele inventory (one row per allele) and the graph,
-in the force-directed layout. Then:
+Click the **HLA / MHC** example on the HPRC page, then **Graph**. The launch
+opens four tracks: genes, bubbles, the allele inventory (one row per allele) and
+the graph, in the force-directed layout. Then:
 
 - Hide the bubbles and the allele inventory in the track selector, leaving the
   genes over the graph.

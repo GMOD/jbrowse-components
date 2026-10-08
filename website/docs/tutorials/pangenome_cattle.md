@@ -107,7 +107,7 @@ writes the tabix-indexed segments and links and the overview.
 
 ## Overview of chr23 with one node per variant region
 
-Click **chr23** on the **Whole chromosome** line of the
+Click **chr23** on the **Whole chromosomes** line of the
 [portal page](https://staging.genomes.jbrowse.org/pangenomes/bovine). The whole
 chromosome opens with the graph drawn as one node per bubble, a stretch where
 the assemblies' paths split and rejoin.

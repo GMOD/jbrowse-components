@@ -60,7 +60,7 @@ so there is nothing to download by hand.
 ## Configuring the haplotype lanes track
 
 One track draws the lanes, reading the release's gbz-base database (the graph
-stored as SQLite) directly. The HPRC page's **haplotypes** launch adds it, and
+stored as SQLite) directly. The HPRC page's **Haplotypes** launch adds it, and
 the config below is the one to adapt for your own graph:
 
 - **A lane** is one haplotype's walk, its route through the graph.
@@ -100,8 +100,8 @@ the config below is the one to adapt for your own graph:
 ## CFH: haplotypes missing two genes
 
 Open the [HPRC page](https://staging.genomes.jbrowse.org/pangenomes/hprc) and
-press **haplotypes** on the CFH / CFHR row, the complement factor H gene
-cluster. A lane missing _CFHR3_ and _CFHR1_ (Hughes et al. 2006), such as
+click the **CFH / CFHR** example, the complement factor H gene cluster, then
+**Haplotypes**. A lane missing _CFHR3_ and _CFHR1_ (Hughes et al. 2006), such as
 HG00253's second haplotype, breaks across both genes.
 
 <Figure caption="The CFH cluster from the haplotypes launch: RefSeq genes over one lane per structural configuration, each lane a haplotype's contig read from the graph, under its CAT genes. HG00253's second haplotype lacks CFHR3 and CFHR1, and its lane breaks across both." src="/img/pangenome/hprc_gbz_cfhr_lanes.png" />
@@ -109,7 +109,7 @@ HG00253's second haplotype, breaks across both genes.
 ## GSTT1: a gene GRCh38's chromosome lacks
 
 GRCh38's chromosome 22 carries the common _GSTT1_ deletion, so the gene sits on
-an alternate contig and no chr22 track draws it. From any **haplotypes** launch,
+an alternate contig and no chr22 track draws it. From any **Haplotypes** launch,
 we'll move to `chr22:23,950,001-24,060,000`, choose `HG00128.2`, `HG01960.1`,
 `HG00146.2`, `HG01109.1`, `HG00099.1`, `HG00232.1`, `HG00133.1`, `HG00126.2`,
 `HG00146.1` and `HG00097.1` under **Lanes → Choose lanes...**, and then:
@@ -128,7 +128,7 @@ we'll move to `chr22:23,950,001-24,060,000`, choose `HG00128.2`, `HG01960.1`,
 An inversion keeps the same sequence and reverses it, so no lane changes length.
 _FLNA_ and _EMD_ sit between two inverted repeats on Xq28, and the block between
 them is inverted on many X chromosomes (Small et al. 1997). From any
-**haplotypes** launch, we'll move to `chrX:154,320,001-154,410,000`, choose
+**Haplotypes** launch, we'll move to `chrX:154,320,001-154,410,000`, choose
 `HG00097.1`, `HG00099.1`, `HG00099.2` and `HG01978.1` under **Lanes → Choose
 lanes...**, and then:
 

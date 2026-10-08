@@ -123,7 +123,7 @@ The bubbles track reads the same build's bubble index:
 
 ## Nnt: a C57BL/6J deletion that appears as an insertion
 
-Click **chr13** on the **Whole chromosome** line of the
+Click **chr13** on the **Whole chromosomes** line of the
 [portal page](https://staging.genomes.jbrowse.org/pangenomes/mouse), which opens
 the whole chromosome with the graph drawn as one node per bubble. Type
 `chr13:119,440,000-119,600,000`, and the graph track draws the segments there.
@@ -142,15 +142,16 @@ path, is the strain with the deletion.
 ## Ranking the graph's bubbles to find Dock2 {#finding-the-loci}
 
 The whole-chromosome overview records how many segments each bubble holds. The
-portal page's **Loci** table ranks bubbles by that count and names each by the
-reference annotation;
+portal page's **Most variable** examples, under its **Gene or region** box, are
+the highest-ranked bubbles that overlap a gene, each named by the reference
+annotation;
 [`generatePangenomeLoci.ts`](https://github.com/GMOD/jb2hubs/blob/main/website/generatePangenomeLoci.ts)
-in the genomes.jbrowse.org repo computes it. The ranking recovers the
+in the genomes.jbrowse.org repo computes the ranking. It recovers the
 vomeronasal receptor and Speer families and the immunoglobulin heavy chain
-locus. The rows above _Dock2_ are too wide for one window; its row is the
+locus. The examples before _Dock2_ are too wide for one window; _Dock2_ is the
 densest bubble that fits in one, inside one intron at
-`chr11:34,516,044-34,560,497`. Click its **graph** link, then tick this entry in
-the graph track menu:
+`chr11:34,516,045-34,560,497`. Click **Dock2**, then **Graph**, and tick this
+entry in the graph track menu:
 
 **Show... → Show bubble halos**
 
