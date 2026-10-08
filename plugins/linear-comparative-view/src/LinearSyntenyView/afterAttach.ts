@@ -143,10 +143,12 @@ async function navRowToLoc(
   self: LinearSyntenyViewModel,
   view: LinearGenomeViewModel,
   loc: string,
-  assembly: string,
+  viewInit: SyntenyLaunch['views'][number],
 ) {
   try {
-    await view.navToLocString(loc, assembly)
+    await view.navToLocString(loc, viewInit.assembly, viewInit.grow, {
+      showHitTrack: viewInit.showHitTrack ?? !viewInit.tracks?.length,
+    })
   } catch (e) {
     console.error(e)
     const session = getSession(self)
@@ -171,7 +173,7 @@ function placeRow(
   viewInit: SyntenyLaunch['views'][number],
 ) {
   if (viewInit.loc) {
-    return navRowToLoc(self, view, viewInit.loc, viewInit.assembly)
+    return navRowToLoc(self, view, viewInit.loc, viewInit)
   }
   if (viewInit.displayedRegionNames?.length) {
     view.fitAllRegions()
