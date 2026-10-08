@@ -6708,7 +6708,7 @@
           }
         },
         "layoutOrder": {
-          "description": "Pileup row order where no sort applies: by start (position), widest first (length), spliced reads first (spliced), or reads aligned in pieces first (split).",
+          "description": "Pileup row order where no sort applies: by start (position), widest first (length), spliced reads first (spliced), or reads aligned in pieces or across a deletion of 50 bp or more first (split).",
           "default": "position",
           "if": {
             "type": "null"
