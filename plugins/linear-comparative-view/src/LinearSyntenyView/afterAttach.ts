@@ -286,6 +286,24 @@ function applyLevelHeights(self: LinearSyntenyViewModel, init: SyntenyLaunch) {
   }
 }
 
+// Rows placed on a locus share the coarsest placed row's scale, so every locus
+// stays in view; the ceiling would zoom a gene launch out to whole contigs.
+function applyLaunchScale(self: LinearSyntenyViewModel, init: SyntenyLaunch) {
+  const placed = self.views.filter(
+    (v, i) => v.initialized && init.views[i]?.loc,
+  )
+  if (placed.length) {
+    const bpPerPx = Math.max(...placed.map(v => v.bpPerPx))
+    for (const view of self.views) {
+      if (view.initialized) {
+        view.zoomTo(bpPerPx)
+      }
+    }
+  } else {
+    self.applySharedScale()
+  }
+}
+
 async function applyInit(
   self: LinearSyntenyViewModel,
   blob: LaunchInput<LinearSyntenyViewCommands>,
@@ -335,9 +353,7 @@ async function applyInit(
   // A plain session restore runs none of this, and its rows keep the scale they
   // were saved at.
   if (self.sameScale) {
-    // the ceiling, not the regions: the rows were just placed by
-    // `views[].loc` above, and "show all regions" would throw those away
-    self.applySharedScale()
+    applyLaunchScale(self, init)
   }
 }
 

@@ -188,6 +188,24 @@ test('both spellings re-fit, and the nested one says it is deprecated', async ()
   expect(nested.views[0]!.bpPerPx).toBeCloseTo(nested.views[1]!.bpPerPx)
 })
 
+// A row placed on a locus keeps the locus: the shared scale is the coarsest
+// placed row's, not the ceiling, which drew a gene launch at chromosome scale.
+test('rows placed on loci share the coarsest locus scale', async () => {
+  const view = await launch({
+    sameScale: true,
+    views: [
+      { assembly: 'small', loc: 'ctgA:5001-5400' },
+      { assembly: 'large', loc: 'ctgA:50001-51000' },
+    ],
+  })
+  const [small, large] = view.views
+
+  expect(large!.bpPerPx).toBeCloseTo(1000 / 800)
+  expect(small!.bpPerPx).toBeCloseTo(large!.bpPerPx)
+  expect(large!.visibleLocStrings).toBe('ctgA:50,001..51,000')
+  expect(small!.visibleLocStrings).toBe('ctgA:4,701..5,700')
+})
+
 // The replay runs only where a launch blob does. Restoring a saved session
 // means the rows are already where the user left them, and re-zooming them onto
 // the shared scale would throw that away on every reload.
