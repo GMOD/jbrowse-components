@@ -177,7 +177,17 @@ export const cookbookSpecs: ScreenshotSpec[] = [
             {
               trackId: 'rmsk_hg38_ucsc',
               type: 'LinearMultiRowFeatureDisplay',
-              rows: 'repClass',
+              rows: {
+                field: 'repClass',
+                domain: [
+                  'SINE',
+                  'LINE',
+                  'LTR',
+                  'DNA',
+                  'Simple_repeat',
+                  'Low_complexity',
+                ],
+              },
               rowColor: {
                 domain: [
                   'SINE',

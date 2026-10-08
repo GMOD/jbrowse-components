@@ -82,12 +82,12 @@ features have, `repFamily` among them. <!-- menu-path-ok -->
 
 <Figure caption="Top: UCSC RepeatMasker over a 17q21 window, colored by repClass, every class in one packed row. Bottom: the same track and window with one row per repClass. SINE fills the window and LINE comes in clusters. The empty LTR? row comes from a repeat just past the window's right edge." src="/img/cookbook_color_by_type_two_ways.png"/>
 
-## Pinning row colors in a track config
+## Pinning row order and colors in a track config
 
-A track config can open the track in the partitioned view. `rowColor` pairs a
-class with a color, so a class keeps its color as the window's class list
-changes. This config sets no `rows.domain`, so the rows sort by class name, as
-in the figure; a `rows.domain` listing classes puts them first, in that order.
+A track config can open the track in the partitioned view. Two settings keep the
+rows stable as the window's class list changes: `rows.domain` lists the classes
+that come first, in order, and `rowColor` pairs a class with a color. A class
+`rows.domain` leaves out follows the listed ones.
 
 ```json addtrack
 {
@@ -99,7 +99,17 @@ in the figure; a `rows.domain` listing classes puts them first, in that order.
   "displays": [
     {
       "type": "LinearMultiRowFeatureDisplay",
-      "rows": "repClass",
+      "rows": {
+        "field": "repClass",
+        "domain": [
+          "SINE",
+          "LINE",
+          "LTR",
+          "DNA",
+          "Simple_repeat",
+          "Low_complexity"
+        ]
+      },
       "rowColor": {
         "domain": [
           "SINE",
