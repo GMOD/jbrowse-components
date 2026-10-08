@@ -3889,7 +3889,7 @@
       "type": "FeatureTrack",
       "trackId": "dbsuper",
       "name": "dbSUPER adipose enhancers",
-      "assemblyNames": ["hg38"],
+      "assemblyNames": ["hg19"],
       "adapter": {
         "type": "BedTabixAdapter",
         "bedGzLocation": {
