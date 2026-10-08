@@ -1805,7 +1805,8 @@ Make JBrowse follow the host's light/dark state — the whole of it, in one moun
 
 `mode` is optional. Left out, JBrowse follows the page's declared `color-scheme`
 — so a host whose dark-mode toggle sets it, as most do, mounts this with a
-session and nothing else — and the OS preference where the page declares none.
+session and nothing else. A page that declares `light dark` follows the OS, and
+a page that declares nothing stays light.
 
 A component rather than a documented pair of calls because the pair has a half
 that can be left out with nothing to show for it. `PaletteProvider` is the name
