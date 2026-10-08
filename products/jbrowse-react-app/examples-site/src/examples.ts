@@ -72,6 +72,12 @@ export const pages: ExamplePage[] = [
     group: 'Sessions and control',
   },
   {
+    slug: 'session-persistence',
+    title: 'Persist & restore the session',
+    description: 'onSnapshot out, session back in.',
+    group: 'Sessions and control',
+  },
+  {
     slug: 'multi-view-session',
     title: 'Multiple views in one session',
     description: 'A circular overview above a linear detail view.',

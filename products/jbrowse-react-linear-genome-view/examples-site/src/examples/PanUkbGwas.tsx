@@ -54,7 +54,6 @@ function popOptions(p: Phenotype) {
 
 const assembly = {
   name: 'hg38',
-  aliases: ['GRCh38'],
   uri: 'https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz',
   refNameAliases: {
     uri: 'https://jbrowse.org/genomes/GRCh38/hg38_aliases.txt',

@@ -198,13 +198,12 @@ const dataPromise = Promise.all([
 ])
 
 const assembly = {
-  name: 'GRCh38',
-  aliases: ['hg38'],
-  uri: 'https://jbrowse.org/genomes/GRCh38/fasta/GRCh38.fa.gz',
+  name: 'hg38',
+  uri: 'https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz',
   refNameAliases: {
     uri: 'https://jbrowse.org/genomes/GRCh38/hg38_aliases.txt',
   },
-  geneticCodes: { MT: 2 },
+  geneticCodes: { chrM: 2 },
 }
 
 function tracks(cells: Cells) {
@@ -213,7 +212,7 @@ function tracks(cells: Cells) {
       type: 'FeatureTrack',
       trackId: 'hg38_refseq_curated',
       name: 'NCBI RefSeq genes',
-      assemblyNames: ['GRCh38'],
+      assemblyNames: ['hg38'],
       adapter: {
         type: 'Gff3TabixAdapter',
         uri: 'https://jbrowse.org/ucsc/hg38/ncbiRefSeqCurated.gff.gz',
@@ -225,7 +224,7 @@ function tracks(cells: Cells) {
       type: 'MultiQuantitativeTrack',
       trackId: TRACK_ID,
       name: 'scRNA pseudobulk by cell type',
-      assemblyNames: ['GRCh38'],
+      assemblyNames: ['hg38'],
       adapter: {
         type: 'MultiWiggleAdapter',
         subadapters: cells.cellTypes.map(type => ({
@@ -242,7 +241,7 @@ function tracks(cells: Cells) {
       type: 'MultiQuantitativeTrack',
       trackId: PER_CELL_TRACK_ID,
       name: 'Per-cell coverage (marker loci)',
-      assemblyNames: ['GRCh38'],
+      assemblyNames: ['hg38'],
       adapter: {
         type: 'MultiWiggleZarrAdapter',
         uri: `${BASE}/percell.zarr`,
@@ -266,8 +265,8 @@ function Demo() {
       name: 'scRNA pseudobulk',
       view: {
         type: 'LinearGenomeView',
-        assembly: 'GRCh38',
-        loc: '11:60,453,846-60,472,752',
+        assembly: 'hg38',
+        loc: 'chr11:60,453,846-60,472,752',
         tracks: ['hg38_refseq_curated', TRACK_ID, PER_CELL_TRACK_ID],
       },
     },
