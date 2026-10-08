@@ -133,10 +133,7 @@ import type { StrandConsensus } from './components/computeVisibleInversions.ts'
 import type { HoverBp } from './components/findRowHover.ts'
 import type { RowSpan } from './components/findRowSpan.ts'
 import type { MafRowGeometryParams } from './components/visibleRegionGeometry.ts'
-import type {
-  LinearMafDisplayConfig,
-  LinearMafDisplayConfigModel,
-} from './configSchema.ts'
+import type { LinearMafDisplayConfigModel } from './configSchema.ts'
 import type { ConservationMode } from './conservationModes.ts'
 import type {
   IdentityEncoding,
@@ -171,12 +168,6 @@ import type {
 import type { YAxis } from '@jbrowse/wiggle-core'
 
 /**
- * One species row. `RowSource` is the shared vocabulary every display with a
- * dendrogram sidebar draws rows by; this adds the two navigation fields only
- * MAF has. The adapter's `samples[].color` is the row's own `color`, which
- * its label bar shows unless a `rowColor` entry sets another.
- */
-/**
  * The row under the pointer, which the display publishes as its
  * `hoveredFeature` so another display in the view can tell which sample the
  * pointer is on
@@ -185,6 +176,12 @@ export interface MafRowHover {
   name: string
 }
 
+/**
+ * One species row. `RowSource` is the shared vocabulary every display with a
+ * dendrogram sidebar draws rows by; this adds the two navigation fields only
+ * MAF has. The adapter's `samples[].color` is the row's own `color`, which
+ * its label bar shows unless a `rowColor` entry sets another.
+ */
 export interface MafSource extends RowSource {
   /** assembly this row's genome is loaded as, when it is navigable */
   assemblyName?: string
@@ -703,17 +700,6 @@ export default function stateModelFactory(
          */
         setShowReferenceRow(arg: boolean) {
           setConf(self, 'showReferenceRow', arg)
-        },
-      }))
-      .views(self => ({
-        /**
-         * #getter
-         * the config typed off the concrete schema; `ConfigurationReference`
-         * erases `self.configuration` to `any`, so direct reads route through this
-         * to stay typed (same move as `BaseAdapter<CONF>`)
-         */
-        get conf(): LinearMafDisplayConfig {
-          return self.configuration
         },
       }))
       .views(self => ({
