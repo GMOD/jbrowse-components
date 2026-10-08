@@ -16,18 +16,18 @@ const recipe = buildRecipe(
   )}`,
 )!
 
-test('Web steps open the genome through config.json, Desktop steps through the start screen', () => {
+test('one genome step covers Desktop and Web', () => {
   expect(recipe.steps[0]?.title).toContain('JBrowse Desktop start screen')
-  expect(recipe.webSteps[0]?.title).toContain('`jbrowse add-assembly`')
-  expect(recipe.webSteps[0]?.example).toBe(recipe.steps[0]?.example)
-  expect(recipe.webSteps.slice(1)).toEqual(recipe.steps.slice(1))
+  expect(recipe.steps[0]?.title).toContain('`jbrowse add-assembly`')
 })
 
-test('the dialog has a Desktop and a Web tab, each with its own steps', () => {
+test('the dialog has one Steps tab, and the Desktop fallback sits by the buttons', () => {
   const html = recipeDialogHtml(recipe, 'd')
-  expect(html).toContain('data-tab-kind="desktop"')
-  expect(html).toContain('data-tab-kind="web"')
-  expect(html.match(/<ol class="spec-steps">/g)).toHaveLength(2)
+  expect(html.match(/<ol class="spec-steps">/g)).toHaveLength(1)
+  expect(html).not.toContain('data-tab-kind="web"')
+  expect(html.indexOf('Desktop link does nothing?')).toBeLessThan(
+    html.indexOf('class="spec-tabs"'),
+  )
 })
 
 test('the dialog opens the view first, then the tabs that rebuild it', () => {

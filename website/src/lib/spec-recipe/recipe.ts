@@ -43,8 +43,6 @@ export interface RecipeStep {
   // the steps taken inside this one: a track's settings under the step that
   // adds it, a row's or a pane's steps under its name
   substeps?: RecipeStep[]
-  // the step as JBrowse Web takes it, where that differs from Desktop
-  web?: { title: string }
   // this step is what opens its view (see FieldStep.opensView)
   opensView?: boolean
 }
@@ -61,7 +59,6 @@ export interface Recipe {
   configUrl: string
   specJson: string
   steps: RecipeStep[]
-  webSteps: RecipeStep[]
   // absent when a view needs a plugin the widget cannot load from the config
   python?: string
   // the `npx @jbrowse/capture` invocation that rebuilds this figure, for an
@@ -303,11 +300,7 @@ function importFormSteps(
   if (assemblies.length) {
     steps.push({
       title:
-        'Open your genomes: on the JBrowse Desktop start screen click **Open new genome** (or **Show all available genomes** to pick a hosted one), then **File → Open genome...** for each of the rest.',
-      web: {
-        title:
-          "Put your genomes in your JBrowse Web's `config.json`: run `jbrowse add-assembly` once for each.",
-      },
+        'Open your genomes: on the JBrowse Desktop start screen click **Open new genome** (or **Show all available genomes** to pick a hosted one), then **File → Open genome...** for each of the rest. For JBrowse Web, run `jbrowse add-assembly` once for each to put them in your `config.json`.',
       example: form.assemblies(assemblies),
     })
   }
@@ -434,11 +427,7 @@ function viewSteps(
     const kind = assembly ? fileKind(assembly.adapterType) : undefined
     steps.push({
       title:
-        'Open your genome: on the JBrowse Desktop start screen click **Open new genome** (or **Show all available genomes** to pick a hosted one).',
-      web: {
-        title:
-          "Put your genome in your JBrowse Web's `config.json`: `jbrowse add-assembly` adds it.",
-      },
+        'Open your genome: on the JBrowse Desktop start screen click **Open new genome** (or **Show all available genomes** to pick a hosted one). For JBrowse Web, `jbrowse add-assembly` puts it in your `config.json`.',
       example: `This figure uses ${view.assembly}${kind ? `, loaded from ${kind}` : ''}.`,
     })
   }
@@ -547,14 +536,6 @@ export function withSessionName(
   return rewritten.href
 }
 
-function forWeb(steps: RecipeStep[]): RecipeStep[] {
-  return steps.map(({ web, substeps, ...step }) => ({
-    ...step,
-    ...web,
-    ...(substeps ? { substeps: forWeb(substeps) } : {}),
-  }))
-}
-
 export function buildRecipe(
   liveUrl: string,
   // the screenshot-spec name of the figure this link belongs to, when it has
@@ -603,7 +584,6 @@ export function buildRecipe(
     configUrl,
     specJson,
     steps,
-    webSteps: forWeb(steps),
     python: plugin ? undefined : pythonSnippet(configUrl, spec),
     agent: { frames: [captureFrame(decoded, figureName)], notes: [] },
     img: plugin ? undefined : imgRecipe(spec, configUrl, frame?.width),

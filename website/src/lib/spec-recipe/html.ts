@@ -57,13 +57,28 @@ function renderStep(step: RecipeStep): string {
 
 function ownDataSteps(steps: RecipeStep[], unmapped: string[]): string {
   return [
-    note('<strong>With your own data</strong>, the steps behind the figure:'),
+    note(
+      '<strong>From scratch with your own data</strong>, the steps behind the figure:',
+    ),
     `<ol class="spec-steps">${steps.map(renderStep).join('')}</ol>`,
     unmapped.length
       ? note(
           'Some settings have no written step yet — see the <strong>Spec</strong> tab.',
         )
       : '',
+  ].join('')
+}
+
+// The Desktop link is a jbrowse:// url, which does nothing without a Desktop
+// that registers the protocol.
+function desktopFallback(recipe: Recipe): string {
+  return [
+    '<details class="spec-fallback"><summary>Desktop link does nothing?</summary>',
+    note(
+      `It needs <strong>${DESKTOP_LINK_MIN_VERSION}+</strong>. Or paste this link into Desktop's <strong>Open JBrowse Web link...</strong> (start screen, or <strong>File → Session</strong>):`,
+    ),
+    copyableBlock(recipe.desktopWebUrl, 'spec-json', 'spec-url'),
+    '</details>',
   ].join('')
 }
 
@@ -91,35 +106,16 @@ function assembliesNote(assemblies: string[]): string {
 function panels(recipe: Recipe, inlineOpens = false): Panel[] {
   return [
     {
-      label: 'Desktop',
+      label: 'Steps',
       kind: 'desktop',
       body: [
         inlineOpens
-          ? `<p class="spec-open"><a href="${escapeAttr(recipe.desktopUrl)}">Open this view in JBrowse Desktop ↗</a></p>`
+          ? `<p class="spec-open"><a href="${escapeAttr(recipe.liveUrl)}" target="_blank" rel="noopener">Open this view in JBrowse Web ↗</a> · <a href="${escapeAttr(recipe.desktopUrl)}">Open this view in JBrowse Desktop ↗</a></p>${desktopFallback(recipe)}`
           : '',
         note(
-          `Opening in Desktop needs <strong>${DESKTOP_LINK_MIN_VERSION}+</strong>, and saves the view as a reopenable session.`,
+          'The short route: open the view in JBrowse Web, where <strong>File → Open track...</strong> adds your own files beside its hosted genome and tracks.',
         ),
-        '<details class="spec-fallback"><summary>Nothing happens?</summary>',
-        note(
-          "Paste this link into Desktop's <strong>Open JBrowse Web link...</strong> (start screen, or <strong>File → Session</strong>):",
-        ),
-        copyableBlock(recipe.desktopWebUrl, 'spec-json', 'spec-url'),
-        '</details>',
         ownDataSteps(recipe.steps, recipe.unmapped),
-      ].join(''),
-    },
-    {
-      label: 'Web',
-      kind: 'web',
-      body: [
-        inlineOpens
-          ? `<p class="spec-open"><a href="${escapeAttr(recipe.liveUrl)}" target="_blank" rel="noopener">Open this view in JBrowse Web ↗</a></p>`
-          : '',
-        note(
-          'Its genome and tracks are hosted, so <strong>File → Open track...</strong> there adds your own files beside them.',
-        ),
-        ownDataSteps(recipe.webSteps, recipe.unmapped),
       ].join(''),
     },
     ...(recipe.cli
@@ -197,7 +193,7 @@ function agentPanel({ frames, stack, notes }: AgentRecipe): Panel {
     kind: 'agent',
     body: [
       note(
-        'Hand this to a coding agent. It rebuilds the figure above headlessly, and the session file is then the thing to edit — swap an adapter <code>uri</code> for your own file and rerun.',
+        'Hand this to a coding agent. It rebuilds the figure above headlessly, and the session file is then the thing to edit: change the location or a track\'s settings, or add your own track under <code>sessionTracks</code>, and rerun.',
       ),
       ...(frames.length > 1
         ? [
@@ -256,6 +252,7 @@ function opensHtml(recipe: Recipe, slow: boolean): string {
     `<a class="spec-open-btn spec-open-primary" href="${escapeAttr(recipe.liveUrl)}" target="_blank" rel="noopener">Open in JBrowse Web ↗</a>`,
     `<a class="spec-open-btn" href="${escapeAttr(recipe.desktopUrl)}">Open in JBrowse Desktop ↗</a>`,
     '</div>',
+    desktopFallback(recipe),
     slow
       ? '<p class="spec-rebuild-lead">This session loads a large dataset and takes a while to open.</p>'
       : '',

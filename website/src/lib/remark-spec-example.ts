@@ -1,6 +1,10 @@
 import { visit } from 'unist-util-visit'
 
+import { toProtocolUrl } from '../../../products/jbrowse-desktop/electron/launchTarget.ts'
 import { CODE_BASE, retargetCodeBase } from './code-base.ts'
+import { escapeAttr } from './inline-html.ts'
+import { DESKTOP_LINK_MIN_VERSION } from './spec-recipe/html.ts'
+import { withSessionName } from './spec-recipe/recipe.ts'
 
 import type { Code, Root } from 'mdast'
 import type { Plugin } from 'unified'
@@ -67,7 +71,7 @@ const remarkSpecExample: Plugin<[], Root> = () => {
         node.meta = null
         parent.children.splice(index + 1, 0, {
           type: 'html',
-          value: `<p><a href="${url}" target="_blank" rel="noopener noreferrer">Try this example live ↗</a></p>`,
+          value: `<p><a href="${escapeAttr(url)}" target="_blank" rel="noopener noreferrer">Try this example live ↗</a> · <a href="${escapeAttr(toProtocolUrl(withSessionName(url, undefined)))}">Open it in JBrowse Desktop ↗</a> (${DESKTOP_LINK_MIN_VERSION}+)</p>`,
         })
       }
     })

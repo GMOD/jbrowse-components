@@ -84,6 +84,9 @@
   .spec-fallback {
     margin: 0 0 0.75rem;
   }
+  .spec-opens + .spec-fallback {
+    margin: 0.5rem 0 0;
+  }
   .spec-fallback summary {
     cursor: pointer;
     color: var(--color-text-muted);
