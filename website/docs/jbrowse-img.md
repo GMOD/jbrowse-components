@@ -1643,7 +1643,8 @@ Where a record on one contig spells out its alleles, or is a symbolic
 <DEL> or <INS>, the manifest also counts the reads with the ALT at its
 variant: an SNV at its base, a deletion at its first deleted base, an
 insertion at the base after it, and an insertion of 50 bases or more
-wherever in the window the aligner placed it. In an image of one window
+wherever in the window the aligner placed it. A deletion of 50 bases or
+more is a gap of half its length or more. In an image of one window
 every alignments track with no sort: of its own is sorted there and a
 band marks the bases the record changes. Such a track also grows to hold
 its pileup, up to 250 px, so rows are the same height on every image and
