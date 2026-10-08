@@ -81,6 +81,33 @@ describe('cullMafRows', () => {
     expect([...culled.insertions!.x]).toEqual([1500, 2150])
   })
 
+  it('keeps the conservation bars a block can show, whatever rows scrolled out', () => {
+    const culled = cullMafRows(
+      {
+        cells: EMPTY_MAF_CELLS,
+        conservation: {
+          x: Uint32Array.from([0, 1500, 3000]),
+          x2: Uint32Array.from([900, 1600, 3100]),
+          row: new Uint32Array(3),
+          y: Float32Array.from([0.25, 0.5, 0.75]),
+          color: Uint32Array.from([1, 2, 3]),
+          count: 3,
+        },
+      },
+      [BLOCK],
+      100,
+      { firstRow: 4, endRow: 6 },
+    )
+    expect(culled.conservation).toEqual({
+      x: Uint32Array.from([1500]),
+      x2: Uint32Array.from([1600]),
+      row: new Uint32Array(1),
+      y: Float32Array.from([0.5]),
+      color: Uint32Array.from([2]),
+      count: 1,
+    })
+  })
+
   it('keeps nothing for a region no block shows', () => {
     const culled = cullMafRows({ cells: EMPTY_MAF_CELLS, summary }, [], 100, {
       firstRow: 0,

@@ -25,6 +25,7 @@ import { encodeSummarySpans } from './components/summarySpans.ts'
 import type {
   MafCoverageRegion,
   MafGpuProps,
+  MafIdentityBars,
   MafRegionData,
   MafRowsPayload,
 } from '../LinearMafRenderer/mafRenderingBackendTypes.ts'
@@ -224,7 +225,8 @@ function pickInsertions(
 
 /**
  * `payload` less the instances no block of its region can show: rows scrolled
- * out of `rows`, and spans outside every block's painted bp range. What the
+ * out of `rows`, and spans outside every block's painted bp range. The
+ * conservation band sits above the rows, so only the bp range culls it. What the
  * SVG export paints, since a vector layer emits a `<rect>` for every fill
  * whether or not a clip then hides it.
  */
@@ -255,13 +257,12 @@ export function cullMafRows(
     }
     return kept
   }
-  const shown = (spans: SpanChannels) => {
+  const shown = (spans: SpanChannels, band = false) => {
     const kept: number[] = []
     for (let i = 0; i < spans.count; i++) {
       const row = spans.row[i]!
       if (
-        row >= rows.firstRow &&
-        row < rows.endRow &&
+        (band || (row >= rows.firstRow && row < rows.endRow)) &&
         ranges.some(r => r.overlaps(spans.x[i]!, spans.x2[i]!))
       ) {
         kept.push(i)
@@ -269,6 +270,10 @@ export function cullMafRows(
     }
     return kept
   }
+  const pickBars = (bars: MafIdentityBars, kept: readonly number[]) => ({
+    ...pickSpans(bars, kept),
+    y: Float32Array.from(kept, i => bars.y[i]!),
+  })
   const {
     cells,
     sourceChrom,
@@ -282,19 +287,15 @@ export function cullMafRows(
   } = payload
   const insertionsKept = insertions && shownInsertions(insertions)
   const summaryKept = summary && shown(summary)
-  const barsKept = identityBars && shown(identityBars)
   return {
     codons,
     codonCells: codonCells && pickSpans(codonCells, shown(codonCells)),
-    conservation,
+    conservation:
+      conservation && pickBars(conservation, shown(conservation, true)),
     cells: pickSpans(cells, shown(cells)),
     sourceChrom: sourceChrom && pickSpans(sourceChrom, shown(sourceChrom)),
     identity: identity && pickSpans(identity, shown(identity)),
-    identityBars: identityBars &&
-      barsKept && {
-        ...pickSpans(identityBars, barsKept),
-        y: Float32Array.from(barsKept, i => identityBars.y[i]!),
-      },
+    identityBars: identityBars && pickBars(identityBars, shown(identityBars)),
     summary: summary &&
       summaryKept && {
         ...pickSpans(summary, summaryKept),
