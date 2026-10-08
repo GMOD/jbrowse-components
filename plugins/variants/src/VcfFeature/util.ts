@@ -68,7 +68,7 @@ export function getEnd(variant: Variant, start: number) {
         return n ? start + 1 + Math.abs(n) : undefined
       }).filter(v => v !== undefined)
       if (ends.length > 0) {
-        return max(ends)
+        return Math.max(max(ends), start + REF.length)
       }
     }
   }

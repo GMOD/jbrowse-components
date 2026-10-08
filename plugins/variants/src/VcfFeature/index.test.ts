@@ -363,3 +363,10 @@ test('makeSimpleAltString - ref 10+ chars shown as bp count', () => {
     'ref(10bp)/ref(10bp)',
   )
 })
+
+test('a record with a sequence ALT beside a symbolic one spans its REF', () => {
+  const f = createFeature(
+    'chr1\t100\t.\tACGTACGT\tA,<INS>\t29\tPASS\tSVLEN=.,300',
+  )
+  expect(f.get('end')).toEqual(107)
+})
