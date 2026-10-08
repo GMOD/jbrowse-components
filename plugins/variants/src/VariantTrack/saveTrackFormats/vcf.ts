@@ -20,20 +20,28 @@ const VCF_HEADER = [
   '#CHROM\tPOS\tID\tREF\tALT\tQUAL\tFILTER\tINFO',
 ]
 
+// @gmod/vcf percent-decodes an INFO value, so the characters that delimit the
+// column are encoded again on the way out
+function infoValue(value: unknown) {
+  return value === undefined || value === null || value === ''
+    ? '.'
+    : `${value}`.replaceAll(
+        /[%;=,\s]/g,
+        c => `%${c.charCodeAt(0).toString(16).toUpperCase().padStart(2, '0')}`,
+      )
+}
+
 function generateINFO(feature: Feature) {
   const info = feature.get('INFO') as Record<string, unknown> | undefined
-  if (!info) {
-    return '.'
-  }
-  const parts = Object.entries(info).map(([key, value]) => {
-    if (value === true) {
-      return key
-    }
-    if (Array.isArray(value)) {
-      return `${key}=${value.join(',')}`
-    }
-    return `${key}=${value}`
-  })
+  const parts = Object.entries(info ?? {}).flatMap(([key, value]) =>
+    value === true
+      ? [key]
+      : value === false || value === undefined || value === null
+        ? []
+        : [
+            `${key}=${(Array.isArray(value) ? value : [value]).map(infoValue).join(',')}`,
+          ],
+  )
   return parts.length ? parts.join(';') : '.'
 }
 

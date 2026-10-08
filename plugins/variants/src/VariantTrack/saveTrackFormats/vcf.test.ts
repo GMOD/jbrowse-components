@@ -1,4 +1,5 @@
 import VcfParser from '@gmod/vcf'
+import { SimpleFeature } from '@jbrowse/core/util'
 
 import VcfFeature from '../../VcfFeature/index.ts'
 import { stringifyVCF } from './vcf.ts'
@@ -89,4 +90,31 @@ test('single and missing FILTER are unchanged', () => {
 // the missing-value dot.
 test('a QUAL of 0 is kept rather than written as missing', () => {
   expect(fields(records('chr1\t1\t.\tA\tT\t0\tPASS\t.')[0]!)[5]).toBe('0')
+})
+
+function infoOf(INFO: Record<string, unknown>) {
+  const feature = new SimpleFeature({
+    uniqueId: 'a',
+    refName: 'chr1',
+    start: 0,
+    end: 1,
+    INFO,
+  })
+  return fields(
+    stringifyVCF({ features: [feature] })
+      .split('\n')
+      .at(-1)!,
+  )[7]
+}
+
+test('a missing INFO value is a dot', () => {
+  expect(infoOf({ AC: [1, undefined], AF: [undefined] })).toBe('AC=1,.;AF=.')
+})
+
+test('an unset INFO key is left out', () => {
+  expect(infoOf({ A: undefined, B: false, C: 1 })).toBe('C=1')
+})
+
+test('an INFO value keeps the characters that delimit the column', () => {
+  expect(infoOf({ NOTE: ['a;b=c,d e%'] })).toBe('NOTE=a%3Bb%3Dc%2Cd%20e%25')
 })
