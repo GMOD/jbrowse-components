@@ -935,6 +935,7 @@ export const svSpecs: ScreenshotSpec[] = [
             '1KGP_3202.Illumina_ensemble_callset.freeze_V1.vcf',
             {
               trackId: 'HG00151_ONT_1000g',
+              type: 'LinearAlignmentsDisplay',
               // link supplementary alignments: chains each long read's split
               // segments, so the reverse-strand core paints its flipped-strand
               // color inline between the forward flanks.

@@ -493,6 +493,7 @@ export const alignmentsSpecs: ScreenshotSpec[] = [
       tracks: [
         {
           trackId: 'hsv1_genes',
+          type: 'LinearBasicDisplay',
           // The NCBI GFF3's first record is the whole 108 kb long-unique region
           // as one feature, which packs above the genes and takes the lane the
           // two labels need. Filtering it out leaves UL21 and UL22 on one row,

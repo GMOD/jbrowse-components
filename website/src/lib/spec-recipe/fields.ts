@@ -1,3 +1,4 @@
+import { rowLabels } from '../../../../plugins/linear-genome-view/src/MultiLevelRubberband/rowLabel.ts'
 import { COMPACTNESS_PRESETS } from '../../../../plugins/alignments/src/LinearAlignmentsDisplay/menus/compactnessPresets.ts'
 import {
   COLOR_FIELDS,
@@ -439,6 +440,15 @@ function colorStep(
   if (displayType === 'LinearMafDisplay') {
     return mafColorStep(value)
   }
+  if (displayType === 'MultiWaySyntenyDisplay') {
+    const geneColor = asRecord(value)
+    return asList(geneColor?.domain) || asList(geneColor?.range)
+      ? {
+          path: `${TRACK_MENU} → Advanced → Edit plot...`,
+          note: 'The Color by... radios paint a gene by cluster, name or strand. A field expression with its own domain and range is the color object, which Edit plot takes as text.',
+        }
+      : undefined
+  }
   if (displayType === 'ChordVariantDisplay') {
     return typeof value === 'string'
       ? {
@@ -580,16 +590,28 @@ function constantColorStep(
 }
 
 // The multi-sample variant displays' row tint: a sample attribute, named from
-// one menu row over whichever metadata columns the track carries.
+// one menu row over whichever metadata columns the track carries. A row-keyed
+// `domain` and `range` is each row's own swatch in the arrangement dialog.
 function rowColorStep(
   value: unknown,
   { displayType }: FieldContext,
 ): FieldStep | undefined {
   const attribute = asString(value)
-  return attribute && displayType && MULTI_SAMPLE_VARIANT_DISPLAYS.has(displayType)
+  if (
+    attribute &&
+    displayType &&
+    MULTI_SAMPLE_VARIANT_DISPLAYS.has(displayType)
+  ) {
+    return {
+      path: `${TRACK_MENU} → Color by... → Samples → ${capitalizeFirst(attribute)}`,
+      note: `The Samples section lists whichever metadata columns your samples carry, so "${attribute}" appears only if yours have it.`,
+    }
+  }
+  const editor = displayType ? ROW_ARRANGEMENT_EDITORS[displayType] : undefined
+  return editor && asList(asRecord(value)?.domain)
     ? {
-        path: `${TRACK_MENU} → Color by... → Samples → ${capitalizeFirst(attribute)}`,
-        note: `The Samples section lists whichever metadata columns your samples carry, so "${attribute}" appears only if yours have it.`,
+        path: `${TRACK_MENU} → ${editor}`,
+        note: 'The grid in that dialog has a Color column: set a color on each row you want tinted.',
       }
     : undefined
 }
@@ -627,6 +649,14 @@ function facetStep(
   }
   if (!field) {
     return undefined
+  }
+  if (displayType === 'LinearMultiRowFeatureDisplay') {
+    return {
+      path: `${TRACK_MENU} → Group by... → ${field}`,
+      note: `The submenu lists the attributes the loaded rows carry.${
+        ordered ? ' This figure also fixes the band order, which the config sets.' : ''
+      }`,
+    }
   }
   if (displayType && MULTI_SAMPLE_VARIANT_DISPLAYS.has(displayType)) {
     return {
@@ -859,14 +889,24 @@ const SHOW_SUBMENU_DISPLAYS = new Set([
   'LGVSyntenyDisplay',
 ])
 
-// The Hi-C display has the same 'Show...' submenu spelled the same way and the
-// same 'Show legend' row at the top of it (LinearHicDisplay/trackMenuItems.ts),
-// but none of the read-oriented rows beside it — so it joins the legend alone
-// rather than the set above, which also answers showCoverage and
-// collapseGroupRows.
+// Every display whose 'Show...' submenu builds its row with `legendCheckboxItem`
+// (display-kit's LegendMixin), so the label is the same on all of them. The
+// displays beyond the set above have none of its read-oriented rows, so they
+// join the legend alone rather than that set, which also answers showCoverage
+// and collapseGroupRows.
 const SHOW_LEGEND_DISPLAYS = new Set([
   ...SHOW_SUBMENU_DISPLAYS,
   'LinearHicDisplay',
+  'LDTrackDisplay',
+  'LinearBasicDisplay',
+  'LinearVariantDisplay',
+  'LinearMultiRowFeatureDisplay',
+  'LinearMultiSampleVariantDisplay',
+  'LinearMafDisplay',
+  'LinearWiggleDisplay',
+  'LinearMarkDisplay',
+  'LinearManhattanDisplay',
+  'MultiWaySyntenyDisplay',
 ])
 
 // The displays composing LinearCanvasBaseDisplay, so they share its whole track
@@ -892,9 +932,19 @@ function isAlignmentsOnlyField(displayType: string | undefined) {
   return displayType === undefined || displayType === 'LinearAlignmentsDisplay'
 }
 
+// Only the canvas base declares `displayMode`, so as with the alignments-only
+// fields the name settles the display when the entry named none.
+function isCanvasOnlyField(displayType: string | undefined) {
+  return displayType === undefined || CANVAS_DISPLAYS.has(displayType)
+}
+
 function isHicOnlyField(displayType: string | undefined) {
   return displayType === undefined || displayType === 'LinearHicDisplay'
 }
+
+// The mark display and the Manhattan display built on it share the plot
+// editor, which sits directly in the track menu.
+const MARK_DISPLAYS = new Set(['LinearMarkDisplay', 'LinearManhattanDisplay'])
 
 const READ_CONNECTIONS_MENU = `${TRACK_MENU} → Read connections`
 const BAND_OPTIONS = `${READ_CONNECTIONS_MENU} → Arc / read cloud band options`
@@ -951,6 +1001,7 @@ const SASHIMI_PLACEMENT: Record<string, string> = {
 // group in getReadConnectionsMenuItem
 // (plugins/alignments/src/LinearAlignmentsDisplay/menus/readConnections.ts)
 const READ_CONNECTIONS: Record<string, string> = {
+  off: 'None',
   arc: 'Read arcs',
   cloud: 'Read cloud',
 }
@@ -1357,7 +1408,8 @@ export const trackFields: Record<string, FieldRecipe> = {
   // disabled row it cannot write (rowsFieldMenuItems in the display's
   // trackMenuItems.ts). Otherwise the arrangement: a focus is the rows left
   // ticked in the display's arrangement dialog, and an order the rows dragged
-  // there.
+  // there. The multi-way display orders and picks its lanes from its Lanes
+  // submenu, and the quantitative display's field is its layout.
   rows: (value, { displayType }) => {
     const members =
       typeof value === 'object' && value !== null
@@ -1365,12 +1417,22 @@ export const trackFields: Record<string, FieldRecipe> = {
         : { field: value }
     const { field, domain, kept } = members
     if (displayType === 'MultiWaySyntenyDisplay') {
-      return Array.isArray(kept)
-        ? {
-            path: `${TRACK_MENU} → Lanes → Choose lanes...`,
-            note: `Tick the ${kept.length} lane${kept.length === 1 ? '' : 's'} this figure draws.`,
-          }
-        : undefined
+      const order = asList(domain)
+      const steps = [
+        order
+          ? {
+              path: `${TRACK_MENU} → Lanes → Lane menus`,
+              note: `Open a lane's submenu and choose Move up or Move down, or drag the lane's name in the left gutter. This figure's order, top to bottom: ${order.join(', ')}.`,
+            }
+          : undefined,
+        Array.isArray(kept)
+          ? {
+              path: `${TRACK_MENU} → Lanes → Choose lanes...`,
+              note: `Tick the ${kept.length} lane${kept.length === 1 ? '' : 's'} this figure draws.`,
+            }
+          : undefined,
+      ].filter(step => step !== undefined)
+      return steps.length ? steps : undefined
     }
     const editor = displayType ? ROW_ARRANGEMENT_EDITORS[displayType] : undefined
     if (
@@ -1384,18 +1446,27 @@ export const trackFields: Record<string, FieldRecipe> = {
         note: 'The list is built from the attributes the loaded features carry, so a track whose data has not loaded yet offers nothing.',
       }
     }
-    if (editor && Array.isArray(kept)) {
-      return {
-        path: `${TRACK_MENU} → ${editor} → untick the rows you do not want`,
-        note: `This figure keeps ${kept.length} row${kept.length === 1 ? '' : 's'}. The dendrogram is pruned to match, so it stays the tree of what is drawn.`,
-      }
-    }
-    return editor && Array.isArray(domain)
-      ? {
-          path: `${TRACK_MENU} → ${editor} → drag the rows into order`,
-          note: `The same dialog renames a row and recolors it, so a figure's ${domain.length} rows carry their order, any labels it shows, and any color it picked.`,
-        }
-      : undefined
+    const layout =
+      displayType === 'LinearWiggleDisplay' && typeof field === 'string'
+        ? {
+            path: `${TRACK_MENU} → Plot type → ${field ? 'Multi-row' : 'Overlapping'}`,
+            note: 'Each group holds the same plots, so the layout and the plot are one click: choose the plot inside the group. A track with one source lists the plots with no group.',
+          }
+        : undefined
+    const arrangement =
+      editor && Array.isArray(kept)
+        ? {
+            path: `${TRACK_MENU} → ${editor} → untick the rows you do not want`,
+            note: `This figure keeps ${kept.length} row${kept.length === 1 ? '' : 's'}. The dendrogram is pruned to match, so it stays the tree of what is drawn.`,
+          }
+        : editor && Array.isArray(domain)
+          ? {
+              path: `${TRACK_MENU} → ${editor} → drag the rows into order`,
+              note: `The same dialog renames a row and recolors it, so a figure's ${domain.length} rows carry their order, any labels it shows, and any color it picked.`,
+            }
+          : undefined
+    const steps = [layout, arrangement].filter(step => step !== undefined)
+    return steps.length ? steps : undefined
   },
   showRowLabels: (value, { displayType }) =>
     typeof value === 'boolean' && displayType === 'LinearWiggleDisplay'
@@ -1404,6 +1475,24 @@ export const trackFields: Record<string, FieldRecipe> = {
           note: value
             ? undefined
             : 'The labels only become worth turning off once the rows are too short to carry text, which is where they fall back to a bare column of colour swatches.',
+        }
+      : undefined,
+  showBranchLength: (value, { displayType }) =>
+    typeof value === 'boolean' &&
+    displayType &&
+    TREE_SIDEBAR_DISPLAYS.has(displayType)
+      ? {
+          path: `${TRACK_MENU} → Show... → Tree branch lengths (${checked(value)})`,
+          note: 'Checked, tree nodes sit at their branch lengths, as a dendrogram; unchecked, they space evenly by topology. The item is disabled until the tree is showing and carries branch lengths.',
+        }
+      : undefined,
+  showVariantLane: (value, { displayType }) =>
+    typeof value === 'boolean' &&
+    displayType &&
+    MULTI_SAMPLE_VARIANT_DISPLAYS.has(displayType)
+      ? {
+          path: `${TRACK_MENU} → Show... → Show variant lane (${checked(value)})`,
+          note: 'Draws the variants at their genomic positions in a lane above the genotype rows. Offered only while "Show as genotype matrix" is unchecked.',
         }
       : undefined,
   featureHighlights: (value, { displayType, noun }) =>
@@ -1422,6 +1511,15 @@ export const trackFields: Record<string, FieldRecipe> = {
           note: 'The features-per-pixel ceiling above which the track asks before drawing. Nothing sets it from a menu, so it is raised on the config.',
         }
       : undefined,
+  marks: (value, { displayType }) => {
+    const types = asList(value)?.flatMap(mark => asString(asRecord(mark)?.mark) ?? [])
+    return types?.length && displayType && MARK_DISPLAYS.has(displayType)
+      ? {
+          path: `${TRACK_MENU} → Edit plot... → Add mark`,
+          note: `This figure draws ${[...new Set(types)].join(' and ')} marks. The form picks a mark's type and maps its channels to fields.`,
+        }
+      : undefined
+  },
   unit: (value, { displayType }) =>
     (value === 'read' || value === 'chain') &&
     isAlignmentsOnlyField(displayType)
@@ -1651,7 +1749,7 @@ export const trackFields: Record<string, FieldRecipe> = {
       return undefined
     }
     const label = DISPLAY_MODES[value]
-    return label && displayType && CANVAS_DISPLAYS.has(displayType)
+    return label && isCanvasOnlyField(displayType)
       ? { path: `${TRACK_MENU} → Feature height → ${label}` }
       : undefined
   },
@@ -1900,6 +1998,25 @@ function settingsPath(viewType: string | undefined, row: string) {
     : undefined
 }
 
+// The circular view holds the comparative views' rows directly in its view menu
+// rather than behind a settings button.
+function syntenyRowPath(viewType: string | undefined, row: string) {
+  return viewType === 'CircularView'
+    ? `View menu → ${row}`
+    : settingsPath(viewType, row)
+}
+
+// Where the color radios sit in each view that paints synteny.
+function colorMenuPath(viewType: string | undefined) {
+  return viewType === 'CircularView'
+    ? 'View menu → Color by...'
+    : viewType === 'LinearSyntenyView'
+      ? 'Synteny view header → palette button'
+      : viewType === 'DotplotView'
+        ? 'Dotplot header → palette button'
+        : undefined
+}
+
 export const viewFields: Record<string, FieldRecipe> = {
   // the constant has the slider; of the fields, only identity has a toggle
   opacity: (value, { viewType }) => {
@@ -1933,13 +2050,16 @@ export const viewFields: Record<string, FieldRecipe> = {
         }
       : undefined
   },
-  // A view's own height, which both of these give a drag bar for rather than a
-  // menu entry (CircularView's ResizeHandle, the SvInspectorView's between its
-  // panes). ProteinView also takes one but is a third-party plugin, so it is
-  // left reported with the rest of its fields.
+  // A view's own height, which these give a drag bar for rather than a menu
+  // entry (the ResizeHandle under CircularView and DotplotView, the
+  // SvInspectorView's between its panes). ProteinView also takes one but is a
+  // third-party plugin, so it is left reported with the rest of its fields.
+  // BreakpointSplitView stores one and has no handle for it.
   height: (value, { viewType }) =>
     typeof value === 'number' &&
-    (viewType === 'CircularView' || viewType === 'SvInspectorView')
+    (viewType === 'CircularView' ||
+      viewType === 'DotplotView' ||
+      viewType === 'SvInspectorView')
       ? {
           path: `Drag the bar at the bottom edge of the view to resize it (${value}px here).`,
         }
@@ -1951,7 +2071,7 @@ export const viewFields: Record<string, FieldRecipe> = {
         }
       : undefined,
   minAlignmentLength: (value, { viewType }) => {
-    const path = settingsPath(viewType, 'Min length')
+    const path = syntenyRowPath(viewType, 'Min length')
     return typeof value === 'number' && path
       ? {
           path: `${path} → drag to ${value.toLocaleString('en-US')}bp`,
@@ -2010,21 +2130,73 @@ export const viewFields: Record<string, FieldRecipe> = {
   color: (value, { viewType }) => {
     const mode = syntenyColorField(value)
     const label = syntenyColorLabel(mode)
-    // Both comparative views carry the same palette button; only the header it
-    // sits in differs.
-    const header =
-      viewType === 'LinearSyntenyView'
-        ? 'Synteny view header'
-        : viewType === 'DotplotView'
-          ? 'Dotplot header'
-          : undefined
-    return label && header
+    const menu = colorMenuPath(viewType)
+    return label && menu
       ? {
-          path: `${header} → palette button → ${label}`,
+          path: `${menu} → ${label}`,
           note:
-            mode === 'reference'
-              ? 'The palette button\'s tooltip reads "Color by: ...". Reference is offered only in a stacked view of three or more genomes, where there is a shared reference to trace.'
-              : 'The palette button\'s tooltip reads "Color by: ...".',
+            viewType === 'CircularView'
+              ? undefined
+              : mode === 'reference'
+                ? 'The palette button\'s tooltip reads "Color by: ...". Reference is offered only in a stacked view of three or more genomes, where there is a shared reference to trace.'
+                : 'The palette button\'s tooltip reads "Color by: ...".',
+        }
+      : undefined
+  },
+  hideUnlabelled: (value, { viewType }) => {
+    const menu = colorMenuPath(viewType)
+    return typeof value === 'boolean' && menu
+      ? {
+          path: `${menu} → Hide unlabelled rows (${checked(value)})`,
+          note: 'Offered while a text column paints the color. Checked, the alignments that column leaves unlabelled are not drawn.',
+        }
+      : undefined
+  },
+  showLegend: (value, { viewType }) =>
+    typeof value === 'boolean' && viewType === 'CircularView'
+      ? {
+          path: `View menu → Show legend (${checked(value)})`,
+          note: 'Offered once the view has a track.',
+        }
+      : undefined,
+  showGridlines: (value, { viewType }) => {
+    if (typeof value !== 'boolean') {
+      return undefined
+    }
+    const path = settingsPath(viewType, 'Gridlines')
+    return viewType === 'LinearGenomeView'
+      ? { path: `View menu → Show... → Show guidelines (${checked(value)})` }
+      : viewType === 'DotplotView' && path
+        ? { path: `${path} (${checked(value)})` }
+        : undefined
+  },
+  lineWidth: (value, { viewType }) => {
+    const path = settingsPath(viewType, 'Line width')
+    return typeof value === 'number' && viewType === 'DotplotView' && path
+      ? {
+          path: `${path} → drag to ${value}px`,
+          note: 'Wider makes a sparse plot legible; narrower keeps a dense one from filling in.',
+        }
+      : undefined
+  },
+  // The anchor row is a select inside the Re-order chromosomes dialog, which
+  // lists the rows by assembly name and offers itself with three or more.
+  diagonalizeAnchorRow: (value, { viewType, settings }) => {
+    const menu = viewType ? DIAGONALIZE_MENUS[viewType] : undefined
+    const rows = Array.isArray(settings?.views) ? settings.views : []
+    const row =
+      typeof value === 'number' && viewType === 'LinearSyntenyView'
+        ? rowLabels(
+            rows.map(r => {
+              const assembly = asString(asRecord(r)?.assembly)
+              return { assemblyNames: assembly ? [assembly] : [] }
+            }),
+          )[value]
+        : undefined
+    return menu && row
+      ? {
+          path: `${menu.path} → Row to keep as it is → ${row}`,
+          note: 'The other rows reorder to match their neighbour nearer this one, which keeps its own chromosome order.',
         }
       : undefined
   },
