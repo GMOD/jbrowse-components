@@ -18,10 +18,8 @@ interface MaxHeightModel {
 }
 
 // The pileup row cap: how tall the stack may grow before reads are dropped.
-// Sizing, so it belongs to this menu — it used to sit in "Show...", where it was
-// the one action among a dozen checkboxes and the only reason that menu needed a
-// divider. Still exported because it's the same helper on both displays.
-export function getMaxHeightMenuItem(model: MaxHeightModel) {
+// Sizing, so it belongs to this menu.
+function getMaxHeightMenuItem(model: MaxHeightModel) {
   return {
     label: 'Set max layout height...',
     onClick: () => {

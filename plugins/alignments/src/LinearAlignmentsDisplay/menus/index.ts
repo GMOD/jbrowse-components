@@ -10,7 +10,6 @@ export {
   NORMAL_PITCH,
   featureSpacingForHeight,
   getFeatureHeightMenuItem,
-  getMaxHeightMenuItem,
 } from './featureSize.ts'
 export { getFiltersMenuItems } from './filters.ts'
 export {

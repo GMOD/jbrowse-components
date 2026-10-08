@@ -74,12 +74,6 @@ const CoverageHoverBar = observer(function CoverageHoverBar({
   ) : null
 })
 
-function formatLocation(refName?: string, position?: number) {
-  return position === undefined
-    ? refName || ''
-    : formatBandLocation(refName, position)
-}
-
 const SimpleTooltipContents = observer(function SimpleTooltipContents({
   message,
 }: {
@@ -227,7 +221,7 @@ const AlignmentsTooltip = observer(function AlignmentsTooltip({
                 that may be megabases away — the distance is reported instead. */}
             {unplacedPartnerBp !== undefined ? (
               <>
-                <div>Location: {formatLocation(refName, start)}</div>
+                <div>Location: {formatBandLocation(refName, start)}</div>
                 <div>
                   Partner is {toLocale(unplacedPartnerBp)} bp away, outside the
                   loaded regions
@@ -240,8 +234,8 @@ const AlignmentsTooltip = observer(function AlignmentsTooltip({
               </>
             ) : (
               <div>
-                Location: {formatLocation(refName, start)} ↔{' '}
-                {formatLocation(endRefName, end)}
+                Location: {formatBandLocation(refName, start)} ↔{' '}
+                {formatBandLocation(endRefName, end)}
               </div>
             )}
             {/* The count `resolveArcs` folded into this arc, which is what its
@@ -272,7 +266,7 @@ const AlignmentsTooltip = observer(function AlignmentsTooltip({
             <div>
               <strong>Translocation breakpoint</strong>
             </div>
-            <div>Location: {formatLocation(refName, position)}</div>
+            <div>Location: {formatBandLocation(refName, position)}</div>
             {/* The one thing the mark itself cannot show. A tick is a bare
                 vertical at a locus: without this the reader can see THAT the
                 reads here have mates elsewhere and not where elsewhere is.
@@ -300,7 +294,7 @@ const AlignmentsTooltip = observer(function AlignmentsTooltip({
                 Reads land at:
                 {shownLoci.map(locus => (
                   <div key={`${locus.refName}:${locus.bp}`}>
-                    {formatLocation(locus.refName, locus.bp)} (
+                    {formatBandLocation(locus.refName, locus.bp)} (
                     {supportLabel(locus.support).replace('Supported by ', '')})
                   </div>
                 ))}
@@ -320,7 +314,7 @@ const AlignmentsTooltip = observer(function AlignmentsTooltip({
           <div className={classes.tooltipContent}>
             <table>
               <caption>
-                Modification - {formatLocation(refName, position)}
+                Modification - {formatBandLocation(refName, position)}
               </caption>
               <tbody>
                 <tr>

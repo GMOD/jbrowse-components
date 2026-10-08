@@ -24,7 +24,7 @@ export function openIndicatorWidget(
   model: IAnyStateTreeNode,
   indicatorHit: IndicatorHitResult,
   refName: string,
-  blockRpcData: PileupDataResult | undefined,
+  blockRpcData: PileupDataResult,
 ) {
   // Same interbase-only bin the hover tooltip reads, so a hoverable bar is
   // exactly a clickable one — the depth/SNP tallies play no part here.
@@ -89,7 +89,7 @@ export function openCoverageWidget(
   model: IAnyStateTreeNode,
   position: number,
   refName: string,
-  blockRpcData: PileupDataResult | undefined,
+  blockRpcData: PileupDataResult,
 ) {
   // Coverage widget omits interbase — those are reached by clicking the
   // interbase histogram bars (openIndicatorWidget).

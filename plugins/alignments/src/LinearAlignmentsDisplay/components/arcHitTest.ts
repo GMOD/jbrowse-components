@@ -48,20 +48,20 @@ export interface ArcBandHover {
   highlight: ArcHighlight
 }
 
-function hitsOf(feed: ArcBandFeed, mark: number) {
-  return [
-    feed.tickHits,
-    feed.linkHits,
-    feed.crossLinkHits,
-    feed.dashedHits,
-    feed.clippedLinkHits,
-    feed.clippedDashedHits,
-    feed.markerHits,
-  ][mark]!
-}
+// Each band mark's channels and hit list on the feed, in `ARC_BAND_MARKS`
+// order.
+const ARC_BAND_FIELDS = [
+  { channels: 'ticks', hits: 'tickHits' },
+  { channels: 'links', hits: 'linkHits' },
+  { channels: 'crossLinks', hits: 'crossLinkHits' },
+  { channels: 'dashed', hits: 'dashedHits' },
+  { channels: 'clippedLinks', hits: 'clippedLinkHits' },
+  { channels: 'clippedDashed', hits: 'clippedDashedHits' },
+  { channels: 'markers', hits: 'markerHits' },
+] as const
 
-function countOf(feed: ArcBandFeed, mark: number) {
-  return hitsOf(feed, mark).length
+function hitsOf(feed: ArcBandFeed, mark: number) {
+  return feed[ARC_BAND_FIELDS[mark]!.hits]
 }
 
 function sliceLink(c: LinkChannels, i: number): LinkChannels {
@@ -90,21 +90,13 @@ function slicePoint(c: PointChannels, i: number): PointChannels {
   }
 }
 
-// The feed holding instance `i` of mark `mark` alone, so a mark's painter
-// traces that one connection.
+// The feed with mark `mark` cut down to its instance `i`, so that mark's
+// painter traces the one connection.
 function oneInstance(feed: ArcBandFeed, mark: number, i: number): ArcBandFeed {
-  const none = { ...feed.links, count: 0 }
-  return {
-    ...feed,
-    ticks: mark === 0 ? sliceLink(feed.ticks, i) : none,
-    links: mark === 1 ? sliceLink(feed.links, i) : none,
-    crossLinks: mark === 2 ? sliceLink(feed.crossLinks, i) : none,
-    dashed: mark === 3 ? sliceLink(feed.dashed, i) : none,
-    clippedLinks: mark === 4 ? sliceLink(feed.clippedLinks, i) : none,
-    clippedDashed: mark === 5 ? sliceLink(feed.clippedDashed, i) : none,
-    markers:
-      mark === 6 ? slicePoint(feed.markers, i) : { ...feed.markers, count: 0 },
-  }
+  const key = ARC_BAND_FIELDS[mark]!.channels
+  return key === 'markers'
+    ? { ...feed, markers: slicePoint(feed.markers, i) }
+    : { ...feed, [key]: sliceLink(feed[key], i) }
 }
 
 /**
@@ -138,7 +130,7 @@ export function resolveArcBandHover(
     {
       radiusPx: ARC_HIT_SLOP_PX,
       regionKeys: feeds.keys(),
-      candidates: (feed, mark) => backToFront(0, countOf(feed, mark)),
+      candidates: (feed, mark) => backToFront(0, hitsOf(feed, mark).length),
     },
   )
   const hit = found && hitsOf(found.region, found.mark)[found.index]

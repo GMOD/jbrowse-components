@@ -83,13 +83,6 @@ interface UploadedRegion {
   density: ArrayBuffer | undefined
 }
 
-// Per-region data not tracked by the HAL: the coverage band's region, so the
-// coverage marks' params read the peaks off it; the buffers themselves are
-// references the model already holds.
-type RegionMeta = AlignmentsCoverageRegion
-
-type LocalRegion = RegionMeta
-
 /**
  * The pileup band's passes, in `PILEUP_MARKS` order — each mark's own, which
  * is also its upload, because an `InstancePass` carries the packer that fills
@@ -125,7 +118,7 @@ export class GpuAlignmentsRenderer
   // it — the HAL's ring slot is aligned to the largest struct any pass here
   // declares, which is still this plugin's `Uniforms`.
   private uCoverage = new ArrayBuffer(COVERAGE_BAND_UNIFORMS_SIZE_BYTES)
-  private regions = new Map<number, LocalRegion>()
+  private regions = new Map<number, AlignmentsCoverageRegion>()
   // Upload memo, written only by `sync`. Lives on the renderer rather than in a
   // model-side `createRegionUploadSync` because this backend is whole-map synced
   // (one `upload('sources', …)` call owns every section), and because the renderer is

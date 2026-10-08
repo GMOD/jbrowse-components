@@ -207,7 +207,7 @@ describe('read tooltip location', () => {
     expect(tip).not.toContain('255')
   })
 
-  it('formats a feature label 1-based, with the strand only when asked', () => {
+  it('formats a feature label 1-based', () => {
     const info = {
       id: 'f1',
       name: 'readA',
@@ -216,9 +216,6 @@ describe('read tooltip location', () => {
       strand: -1,
       refName: 'chr1',
     }
-    expect(formatFeatureLabel(info, { showStrand: true })).toBe(
-      'readA chr1:1,001-1,100 (-)',
-    )
     expect(formatFeatureLabel(info)).toBe('readA chr1:1,001-1,100')
   })
 

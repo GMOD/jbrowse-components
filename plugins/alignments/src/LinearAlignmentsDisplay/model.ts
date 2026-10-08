@@ -720,14 +720,6 @@ export default function stateModelFactory(
 
           /**
            * #getter
-           */
-          // The renderers' and the hit-test pipeline's name for the fade.
-          get filterMismatchesByFrequency() {
-            return self.fadeLowFreqMismatches
-          },
-
-          /**
-           * #getter
            * The single read of the `sortedBy` slot, so the RPC args and the menu
            * checkmarks cannot disagree about which sort is active.
            *
@@ -2944,7 +2936,7 @@ export default function stateModelFactory(
             ),
             coverageSnpMinFrequency: self.coverageSnpMinFrequency,
             showMismatches: self.showMismatches,
-            filterMismatchesByFrequency: self.filterMismatchesByFrequency,
+            filterMismatchesByFrequency: self.fadeLowFreqMismatches,
             mismatchAlpha: self.mismatchAlpha,
             showSoftClipping: self.showSoftClipping,
             showInterbaseIndicators: self.showInterbaseIndicators,

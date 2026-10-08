@@ -62,18 +62,18 @@ export type CoverageBin = CoverageRowsBin
 export interface IndicatorTooltipPayload {
   type: 'indicator'
   bin: InterbaseBin
-  refName?: string
+  refName: string
 }
 
 export interface CoverageTooltipPayload {
   type: 'coverage'
   bin: CoverageBin
-  refName?: string
+  refName: string
 }
 
 export interface ModificationTooltipPayload extends ModificationHitResult {
   type: 'modification'
-  refName?: string
+  refName: string
   snpBase?: string
 }
 
@@ -525,11 +525,8 @@ function collectDeletionStats(position: number, data: PileupDataResult) {
 // neither should appear.
 export function getInterbaseBin(
   position: number,
-  blockRpcData: PileupDataResult | undefined,
+  blockRpcData: PileupDataResult,
 ): InterbaseBin | undefined {
-  if (!blockRpcData) {
-    return undefined
-  }
   const interbase = collectInterbaseStats(position, blockRpcData)
   if (Object.keys(interbase).length === 0) {
     return undefined
@@ -549,11 +546,8 @@ export function getInterbaseBin(
 
 export function getCoverageBin(
   position: number,
-  blockRpcData: PileupDataResult | undefined,
+  blockRpcData: PileupDataResult,
 ): CoverageBin | undefined {
-  if (!blockRpcData) {
-    return undefined
-  }
   const binIdx = Math.floor(position - blockRpcData.coverageStartPos)
   const depth = blockRpcData.coverageDepths[binIdx] ?? 0
   const hasStrandDepths = blockRpcData.coverageFwdDepths.length > 0
@@ -590,8 +584,8 @@ export function getCoverageBin(
 
 export function formatIndicatorTooltip(
   position: number,
-  blockRpcData: PileupDataResult | undefined,
-  refName: string | undefined,
+  blockRpcData: PileupDataResult,
+  refName: string,
 ): IndicatorTooltipPayload | undefined {
   const bin = getInterbaseBin(position, blockRpcData)
   return bin ? { type: 'indicator', bin, refName } : undefined
@@ -599,8 +593,8 @@ export function formatIndicatorTooltip(
 
 export function formatCoverageTooltip(
   position: number,
-  blockRpcData: PileupDataResult | undefined,
-  refName: string | undefined,
+  blockRpcData: PileupDataResult,
+  refName: string,
 ): CoverageTooltipPayload | undefined {
   const bin = getCoverageBin(position, blockRpcData)
   return bin ? { type: 'coverage', bin, refName } : undefined
@@ -608,7 +602,7 @@ export function formatCoverageTooltip(
 
 export function formatModificationTooltip(
   hit: ModificationHitResult,
-  refName: string | undefined,
+  refName: string,
   snpBase?: string,
 ): ModificationTooltipPayload {
   return { type: 'modification', ...hit, refName, snpBase }
@@ -741,12 +735,7 @@ export interface TooltipFeatureInfo {
 }
 
 // "name chr1:1,001-1,100" for one read, for the bezier overlay's two-endpoint
-// tooltip. The strand is opt-in and that overlay omits it: the curve's own color
-// already encodes orientation, and two strands in one line reads as noise.
-export function formatFeatureLabel(
-  info: TooltipFeatureInfo,
-  { showStrand = false } = {},
-) {
-  const label = `${info.name || info.id} ${formatLocationRange(info.refName, info.start, info.end)}`
-  return showStrand ? `${label} (${info.strand === -1 ? '-' : '+'})` : label
+// tooltip. No strand: the curve's own color already encodes orientation.
+export function formatFeatureLabel(info: TooltipFeatureInfo) {
+  return `${info.name || info.id} ${formatLocationRange(info.refName, info.start, info.end)}`
 }
