@@ -357,6 +357,19 @@ export const pages: ExamplePage[] = [
   },
 
   {
+    slug: 'methylation-by-haplotype',
+    title: 'Methylation by haplotype',
+    description:
+      'Nanopore reads at SNRPN: one haplotype methylated, the other not.',
+    group: 'Real-world demos',
+    sections: [
+      {
+        slug: 'methylation-by-haplotype',
+        title: 'Reads grouped by HP, colored by 5mC',
+      },
+    ],
+  },
+  {
     slug: 'nextstrain-pathogens',
     title: 'Nextstrain pathogens',
     description: 'Genes, diversity and genotypes for five viral genomes.',
