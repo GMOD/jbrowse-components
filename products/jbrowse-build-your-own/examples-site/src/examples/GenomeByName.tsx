@@ -1,6 +1,7 @@
 import {
   EmbedProvider,
   LocationBox,
+  Toolbar,
   TrackStack,
   TrackToggle,
 } from '@jbrowse/display-ui/embed'
@@ -35,23 +36,14 @@ const GenomeByName = observer(function GenomeByName() {
   const { view } = state.session
   return (
     <EmbedProvider session={state.session}>
-      <div
-        style={{
-          display: 'flex',
-          flexWrap: 'wrap',
-          alignItems: 'center',
-          gap: 12,
-          paddingBottom: 8,
-          fontSize: '0.85rem',
-        }}
-      >
+      <Toolbar>
         <LocationBox view={view} />
         {hubTracks.map(({ id, label }) => (
           <TrackToggle key={id} view={view} trackId={id}>
             {label}
           </TrackToggle>
         ))}
-      </div>
+      </Toolbar>
       <TrackStack view={view} />
     </EmbedProvider>
   )

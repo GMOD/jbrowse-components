@@ -1,7 +1,9 @@
 import {
   EmbedProvider,
   LocationBox,
+  NavButton,
   RegionSeams,
+  Toolbar,
   TrackStack,
   TrackToggle,
 } from '@jbrowse/display-ui/embed'
@@ -29,22 +31,13 @@ const bookmarks = [
   },
 ]
 
-const Toolbar = observer(function Toolbar({
+const Controls = observer(function Controls({
   view,
 }: {
   view: LinearGenomeViewModel
 }) {
   return (
-    <div
-      style={{
-        display: 'flex',
-        flexWrap: 'wrap',
-        alignItems: 'center',
-        gap: 12,
-        paddingBottom: 8,
-        fontSize: '0.85rem',
-      }}
-    >
+    <Toolbar>
       <LocationBox view={view} />
       <span>
         <button
@@ -67,24 +60,16 @@ const Toolbar = observer(function Toolbar({
         </button>
       </span>
       {bookmarks.map(({ label, loc }) => (
-        <button
-          key={label}
-          type="button"
-          onClick={() => {
-            view.navToLocString(loc).catch((e: unknown) => {
-              console.error(e)
-            })
-          }}
-        >
+        <NavButton key={label} view={view} loc={loc}>
           {label}
-        </button>
+        </NavButton>
       ))}
       {catalogue.map(({ id, label }) => (
         <TrackToggle key={id} view={view} trackId={id}>
           {label}
         </TrackToggle>
       ))}
-    </div>
+    </Toolbar>
   )
 })
 
@@ -130,7 +115,7 @@ const DriveItFromYourApp = observer(function DriveItFromYourApp() {
   const { session } = state
   return (
     <EmbedProvider session={session}>
-      <Toolbar view={session.view} />
+      <Controls view={session.view} />
       <TrackStack view={session.view}>
         <RegionSeams view={session.view} />
       </TrackStack>

@@ -1,6 +1,7 @@
 import {
   EmbedProvider,
   RegionSeams,
+  Toolbar,
   TrackStack,
 } from '@jbrowse/display-ui/embed'
 import { pickColorOptions } from '@jbrowse/plugin-alignments'
@@ -28,15 +29,7 @@ const Settings = observer(function Settings({
   display: LinearAlignmentsDisplayModel
 }) {
   return (
-    <div
-      style={{
-        display: 'flex',
-        flexWrap: 'wrap',
-        gap: 16,
-        paddingBottom: 8,
-        fontSize: '0.85rem',
-      }}
-    >
+    <Toolbar>
       <label>
         Color by{' '}
         <select
@@ -78,7 +71,7 @@ const Settings = observer(function Settings({
         />{' '}
         {display.featureHeight}px
       </label>
-    </div>
+    </Toolbar>
   )
 })
 

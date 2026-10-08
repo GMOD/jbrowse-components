@@ -1,6 +1,6 @@
 import { useState } from 'react'
 
-import { EmbedProvider, TrackStack } from '@jbrowse/display-ui/embed'
+import { EmbedProvider, Toolbar, TrackStack } from '@jbrowse/display-ui/embed'
 import { useCreateViewState } from '@jbrowse/react-linear-genome-view2'
 import { observer } from 'mobx-react'
 
@@ -135,15 +135,7 @@ const LoadingAndErrors = observer(function LoadingAndErrors() {
   const [scenario, setScenario] = useState<Scenario>('hg38 (2bit), which loads')
   return (
     <div>
-      <div
-        style={{
-          display: 'flex',
-          flexWrap: 'wrap',
-          gap: 14,
-          paddingBottom: 8,
-          fontSize: '0.85rem',
-        }}
-      >
+      <Toolbar>
         Load
         {Object.keys(scenarios).map(name => (
           <label key={name}>
@@ -158,7 +150,7 @@ const LoadingAndErrors = observer(function LoadingAndErrors() {
             {name}
           </label>
         ))}
-      </div>
+      </Toolbar>
       <Browser key={scenario} scenario={scenario} />
     </div>
   )

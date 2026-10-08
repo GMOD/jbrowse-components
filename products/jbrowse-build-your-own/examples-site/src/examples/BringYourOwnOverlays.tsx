@@ -2,7 +2,7 @@ import { useState } from 'react'
 
 import { SessionPaletteProvider } from '@jbrowse/core/ui/PaletteContext'
 import { DisplayUIProvider, plainChromeOverlays } from '@jbrowse/display-ui'
-import { TrackStack } from '@jbrowse/display-ui/embed'
+import { Toolbar, TrackStack } from '@jbrowse/display-ui/embed'
 import { useCreateViewState } from '@jbrowse/react-linear-genome-view2'
 import { observer } from 'mobx-react'
 
@@ -167,15 +167,7 @@ const BringYourOwnOverlays = observer(function BringYourOwnOverlays() {
   )
   return (
     <div>
-      <div
-        style={{
-          display: 'flex',
-          flexWrap: 'wrap',
-          gap: 14,
-          paddingBottom: 8,
-          fontSize: '0.85rem',
-        }}
-      >
+      <Toolbar>
         Draw the status states with
         {Object.keys(sets).map(name => (
           <label key={name}>
@@ -190,7 +182,7 @@ const BringYourOwnOverlays = observer(function BringYourOwnOverlays() {
             {name}
           </label>
         ))}
-      </div>
+      </Toolbar>
       {overlays ? (
         <DisplayUIProvider overlays={overlays}>{stack}</DisplayUIProvider>
       ) : (

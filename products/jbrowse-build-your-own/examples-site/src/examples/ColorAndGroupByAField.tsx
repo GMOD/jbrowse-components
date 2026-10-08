@@ -1,4 +1,9 @@
-import { EmbedProvider, Legend, TrackStack } from '@jbrowse/display-ui/embed'
+import {
+  EmbedProvider,
+  Legend,
+  Toolbar,
+  TrackStack,
+} from '@jbrowse/display-ui/embed'
 import { useCreateViewState } from '@jbrowse/react-linear-genome-view2'
 import { observer } from 'mobx-react'
 
@@ -52,16 +57,7 @@ const Channels = observer(function Channels({
     return null
   }
   return (
-    <div
-      style={{
-        display: 'flex',
-        flexWrap: 'wrap',
-        alignItems: 'center',
-        gap: 16,
-        paddingBottom: 8,
-        fontSize: '0.85rem',
-      }}
-    >
+    <Toolbar>
       <FieldSelect
         label="Color by"
         value={display.colorField?.field}
@@ -81,7 +77,7 @@ const Channels = observer(function Channels({
         }}
       />
       <Legend view={view} trackId="genes" />
-    </div>
+    </Toolbar>
   )
 })
 

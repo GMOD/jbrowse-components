@@ -1,5 +1,4 @@
-import { SessionPaletteProvider } from '@jbrowse/core/ui/PaletteContext'
-import { TrackStack } from '@jbrowse/display-ui/embed'
+import { EmbedProvider, TrackStack } from '@jbrowse/display-ui/embed'
 import { useCreateViewState } from '@jbrowse/react-linear-genome-view2'
 import { observer } from 'mobx-react'
 
@@ -27,9 +26,9 @@ const OneTrack = observer(function OneTrack() {
     },
   })
   return state ? (
-    <SessionPaletteProvider session={state.session}>
+    <EmbedProvider session={state.session}>
       <TrackStack view={state.session.view} />
-    </SessionPaletteProvider>
+    </EmbedProvider>
   ) : null
 })
 

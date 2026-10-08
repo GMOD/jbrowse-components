@@ -47,7 +47,10 @@ const Calls = observer(function Calls({
   session,
 }: {
   view: LinearGenomeViewModel
-  session: Pick<AbstractSessionModel, 'highlights' | 'setHighlights'>
+  session: Pick<
+    AbstractSessionModel,
+    'highlights' | 'setHighlights' | 'notifyError'
+  >
 }) {
   const shown = session.highlights[0]?.label
   return (
@@ -89,7 +92,7 @@ const Calls = observer(function Calls({
                   view
                     .navToLocString(`${refName}:${start - pad}..${end + pad}`)
                     .catch((e: unknown) => {
-                      console.error(e)
+                      session.notifyError(`${e}`, e)
                     })
                 }}
               >

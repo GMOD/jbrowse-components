@@ -1,6 +1,8 @@
 import {
   EmbedProvider,
   Highlights,
+  NavButton,
+  Toolbar,
   TrackStack,
 } from '@jbrowse/display-ui/embed'
 import { useCreateViewState } from '@jbrowse/react-linear-genome-view2'
@@ -75,28 +77,18 @@ const HighlightARegion = observer(function HighlightARegion() {
   const { view } = session
   return (
     <EmbedProvider session={session}>
-      <div
-        style={{
-          display: 'flex',
-          flexWrap: 'wrap',
-          gap: 6,
-          paddingBottom: 8,
-          fontSize: '0.85rem',
-        }}
-      >
+      <Toolbar>
         {hits.map(({ label, loc, highlight }) => (
-          <button
+          <NavButton
             key={label}
-            type="button"
+            view={view}
+            loc={loc}
             onClick={() => {
               session.setHighlights([highlight])
-              view.navToLocString(loc).catch((e: unknown) => {
-                console.error(e)
-              })
             }}
           >
             {label}
-          </button>
+          </NavButton>
         ))}
         <label>
           <input
@@ -108,7 +100,7 @@ const HighlightARegion = observer(function HighlightARegion() {
           />
           Show highlights
         </label>
-      </div>
+      </Toolbar>
       <TrackStack view={view}>
         {session.highlightsVisible ? <Highlights view={view} /> : null}
       </TrackStack>

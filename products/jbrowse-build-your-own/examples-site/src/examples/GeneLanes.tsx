@@ -2,7 +2,9 @@ import {
   EmbedProvider,
   Legend,
   LocationBox,
+  NavButton,
   Scalebar,
+  Toolbar,
   TrackStack,
 } from '@jbrowse/display-ui/embed'
 import { useCreateViewState } from '@jbrowse/react-app2'
@@ -34,31 +36,14 @@ const loci = [
 
 const Loci = observer(function Loci({ view }: { view: LinearGenomeViewModel }) {
   return (
-    <div
-      style={{
-        display: 'flex',
-        flexWrap: 'wrap',
-        alignItems: 'center',
-        gap: 8,
-        paddingBottom: 8,
-        fontSize: '0.85rem',
-      }}
-    >
+    <Toolbar>
       <LocationBox view={view} />
       {loci.map(({ label, loc }) => (
-        <button
-          key={label}
-          type="button"
-          onClick={() => {
-            view.navToLocString(loc).catch((e: unknown) => {
-              console.error(e)
-            })
-          }}
-        >
+        <NavButton key={label} view={view} loc={loc}>
           {label}
-        </button>
+        </NavButton>
       ))}
-    </div>
+    </Toolbar>
   )
 })
 

@@ -69,7 +69,7 @@ function SearchPanel({ session }: { session: ViewModel['session'] }) {
                           trackId ? view.launchTrack(trackId) : undefined,
                         )
                         .catch((e: unknown) => {
-                          console.error(e)
+                          session.notifyError(`${e}`, e)
                         })
                     }
                   }}

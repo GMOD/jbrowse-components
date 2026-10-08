@@ -2,6 +2,7 @@ import {
   EmbedProvider,
   Legend,
   Scalebar,
+  Toolbar,
   TrackStack,
   TrackToggle,
 } from '@jbrowse/display-ui/embed'
@@ -79,16 +80,7 @@ const APlotFromJson = observer(function APlotFromJson() {
   const { view } = state.session
   return (
     <EmbedProvider session={state.session}>
-      <div
-        style={{
-          display: 'flex',
-          flexWrap: 'wrap',
-          alignItems: 'center',
-          gap: 12,
-          paddingBottom: 6,
-          fontSize: '0.85rem',
-        }}
-      >
+      <Toolbar>
         <TrackToggle view={view} trackId="alu_age">
           Every Alu copy
         </TrackToggle>
@@ -96,7 +88,7 @@ const APlotFromJson = observer(function APlotFromJson() {
           AluY only
         </TrackToggle>
         <Legend view={view} trackId="alu_age" />
-      </div>
+      </Toolbar>
       <TrackStack view={view}>
         <Scalebar view={view} />
       </TrackStack>
