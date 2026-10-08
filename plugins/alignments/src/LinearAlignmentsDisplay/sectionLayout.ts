@@ -4,7 +4,6 @@ import { computeArcBand } from './renderers/rendererTypes.ts'
 
 import type { ReadConnectionsMode } from './constants.ts'
 import type { ArcBand, SectionRender } from './renderers/rendererTypes.ts'
-import type { Band } from '@jbrowse/core/util/bandLayout'
 
 // This display's band order, stated once: what a section reserves above its
 // pileup, top to bottom. Both the pooled geometry and the per-section stacking
@@ -273,56 +272,37 @@ export function computeStackedSections(
   groups: SectionGroupInput[],
   opts: SectionBandOpts,
 ): SectionsLayout {
-  const showCoverage = opts.showCoverage ?? true
-  const readConnections = opts.readConnections ?? 'off'
-  // Loop-invariant: the heights are display-global, so the coverage band is one
-  // spec and one resolved reserve for every section — and that number is what
-  // places the arcs, rather than a pair `computeArcBand` re-combines.
-  const coverage: Band = {
-    active: showCoverage,
-    height: opts.coverageHeight,
+  const settings: BelowCoverageBandsSettings = {
+    showCoverage: opts.showCoverage ?? true,
+    coverageHeight: opts.coverageHeight,
+    readConnections: opts.readConnections ?? 'off',
+    readConnectionsDown: opts.readConnectionsDown ?? false,
+    readConnectionsHeight: opts.readConnectionsHeight ?? 0,
+    showSashimiArcs: opts.showSashimiArcs ?? false,
+    sashimiArcsHeight: opts.sashimiArcsHeight ?? 0,
   }
   const arcBand = computeArcBand({
-    coverageReservedPx: reservedPx(coverage),
+    ...settings,
+    coverageReservedPx: reservedPx({
+      active: settings.showCoverage,
+      height: settings.coverageHeight,
+    }),
     coverageYOffset: opts.coverageYOffset ?? 0,
-    readConnections,
-    readConnectionsDown: opts.readConnectionsDown,
-    readConnectionsHeight: opts.readConnectionsHeight,
   })
-  // The settings half of each strip's reserve rule, constant across sections;
-  // the data half (`g.hasArcs` / `g.hasSashimiDownArcs`) varies per lane.
-  const reservesArcs = reservesArcsBand({
-    readConnections,
-    readConnectionsDown: opts.readConnectionsDown,
-    showCoverage,
-  })
-  const showSashimiArcs = opts.showSashimiArcs ?? false
 
   let top = 0
   const sections = groups.map(g => {
-    const hasArcsBand = reservesArcs && g.hasArcs
-    const hasSashimiBand = reservesSashimiBand({
-      showSashimiArcs,
-      showCoverage,
+    const bands = belowCoverageBandsGeometry({
+      ...settings,
+      hasArcs: g.hasArcs,
       hasSashimiDownArcs: g.hasSashimiDownArcs,
-    })
-    const stack = stackBands(BAND_ORDER, {
-      coverage,
-      arcs: {
-        active: hasArcsBand,
-        height: opts.readConnectionsHeight ?? 0,
-      },
-      sashimi: {
-        active: hasSashimiBand,
-        height: opts.sashimiArcsHeight ?? 0,
-      },
     })
     // Up-mode arcs overlay coverage and reserve nothing, so an arc-less lane
     // still drops its draw band — nothing paints there either way, and a zero
     // height is what tells the renderers to skip the pass.
     const band = g.hasArcs ? arcBand : undefined
     const coverageTop = top
-    const pileupTop = coverageTop + stack.bottom
+    const pileupTop = coverageTop + bands.bottom
     const rowsHeight = g.maxY * opts.rowHeight
     const pileupHeight =
       g.minPileupHeight !== undefined && rowsHeight > 0
@@ -341,15 +321,15 @@ export function computeStackedSections(
       groupKey: g.key,
       label: g.label,
       coverageTop,
-      coverageHeight: stack.reserved.coverage,
+      coverageHeight: bands.coverageHeight,
       // Draw band, relative to this section's coverage top — matches
       // computeArcBand so Stage 3 renderers reproduce the ungrouped band.
-      arcBandTop: coverageTop + (band?.top ?? stack.top.arcs),
+      arcBandTop: coverageTop + (band?.top ?? bands.arcsBandTop),
       arcBandHeight: band?.height ?? 0,
-      hasArcsBand,
+      hasArcsBand: bands.hasArcsBand,
       arcDown: band?.down ?? false,
-      sashimiBandTop: coverageTop + stack.top.sashimi,
-      hasSashimiBand,
+      sashimiBandTop: coverageTop + bands.sashimiBandTop,
+      hasSashimiBand: bands.hasSashimiBand,
       pileupTop,
       pileupHeight,
       dipReserve,
