@@ -27178,6 +27178,10 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "description": "A session: the views to open, written as launch arguments (\`assembly\`, \`loc\`, \`tracks\`) rather than as state snapshots.",
       "type": "object",
       "properties": {
+        "useWorkspaces": {
+          "deprecated": true,
+          "description": "Legacy key the session's own preProcessSnapshot converts."
+        },
         "id": {
           "type": "string"
         },

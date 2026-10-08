@@ -390,6 +390,12 @@ describe('the schema', () => {
     expect(schemaProblems(alignments)).toEqual([])
   })
 
+  it('accepts the useWorkspaces a v4 session carries', () => {
+    const config = baseConfig()
+    Object.assign(config.defaultSession, { useWorkspaces: false })
+    expect(schemaProblems(config)).toEqual([])
+  })
+
   it('accepts the sequenceAdapter a pre-v4 CRAM config carries', () => {
     const config = baseConfig()
     config.tracks[0]!.adapter = {

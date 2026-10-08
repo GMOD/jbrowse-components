@@ -100,8 +100,11 @@ as it is from the app. A stable release freezes the config slot paths and enum
 members its schema admits into `scripts/configSlotPaths.v<major>.txt`
 (amended 2026-10-08), and `pnpm autogen --check` fails while the schema lacks
 one, so within a major a slot leaves only through its schema's `retired` map.
-`scripts/check-config-slot-paths.ts` is the check; the session half of the
-schema stays outside it. At a major bump the generator
+`scripts/check-config-slot-paths.ts` is the check. Of the session half it
+freezes what an author writes by hand: the session's own keys, and each view's
+launch keys with its `passThrough` spellings. View and display state stay
+outside it, since the app writes those and they changed 96 times in the four
+weeks before the check landed. At a major bump the generator
 writes the new segment and the old file stays committed as it last was —
 `rclone sync` deletes what `dist/` does not carry, so keeping an old URL alive
 means keeping its file in the tree. Every whole-config fence in the docs opens

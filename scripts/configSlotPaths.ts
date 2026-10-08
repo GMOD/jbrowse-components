@@ -4,6 +4,10 @@
 // deprecated property or branch of the schema, so it keeps its line; a slot
 // deleted without a `retired` entry loses it, which is what
 // check-config-slot-paths.ts refuses.
+//
+// The session half is the keys an author writes by hand: the session's own,
+// and each view's launch keys with the legacy spellings it still converts.
+// View and display state stay out, since the app writes those.
 type JsonSchema = Record<string, unknown>
 
 const SESSION_KEYS = new Set(['defaultSession', 'preConfiguredSessions'])
@@ -81,4 +85,27 @@ export function slotPaths(schema: JsonSchema) {
     }
   }
   return [...paths].sort()
+}
+
+interface ViewKeys {
+  launchKeys: string[]
+  passThrough?: string[]
+}
+
+export function sessionKeyPaths(
+  schema: JsonSchema,
+  views: Record<string, ViewKeys>,
+) {
+  const defs = isSchema(schema.$defs) ? schema.$defs : {}
+  const session = isSchema(defs.Session) ? defs.Session.properties : undefined
+  return [
+    ...Object.keys(isSchema(session) ? session : {}).map(
+      key => `Session.${key}`,
+    ),
+    ...Object.entries(views).flatMap(([view, keys]) =>
+      [...keys.launchKeys, ...(keys.passThrough ?? [])].map(
+        key => `${view}.${key}`,
+      ),
+    ),
+  ].sort()
 }

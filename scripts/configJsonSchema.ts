@@ -201,6 +201,10 @@ const REQUIREMENT = 'x-requirement'
 // validator says which.
 const CLOSED = 'x-closed'
 
+// Session keys an older release wrote and a session model still reads off the
+// snapshot: `useWorkspaces: false` drops the layout (WorkspaceLayout/model.ts).
+const LEGACY_SESSION_KEYS = ['useWorkspaces']
+
 const COMMENT_KEYS = { '^_+comment': {} }
 const FROZEN_NOTE =
   'Any JSON value: the slot is `frozen`, so its shape is not checked here.'
@@ -1479,11 +1483,23 @@ export function buildConfigJsonSchema(deps: Deps): JsonSchema {
     temporaryAssemblies: { type: 'array', items: ref('Assembly') },
     sessionConnections: { type: 'array', items: ref('Connection') },
   }
-  const sessionProperties = Object.fromEntries(
-    Object.entries(unwrap(deps.sessionModel).type.properties ?? {}).map(
-      ([k, v]) => [k, SESSION_OVERRIDES[k] ?? mstSchema(v, 4)],
+  const sessionProperties = {
+    ...Object.fromEntries(
+      LEGACY_SESSION_KEYS.map(key => [
+        key,
+        {
+          deprecated: true,
+          description:
+            "Legacy key the session's own preProcessSnapshot converts.",
+        },
+      ]),
     ),
-  )
+    ...Object.fromEntries(
+      Object.entries(unwrap(deps.sessionModel).type.properties ?? {}).map(
+        ([k, v]) => [k, SESSION_OVERRIDES[k] ?? mstSchema(v, 4)],
+      ),
+    ),
+  }
   defs.Session = {
     title: 'Session',
     description:

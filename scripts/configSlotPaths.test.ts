@@ -1,9 +1,10 @@
+import { configManifest } from '../products/jbrowse-cli/src/commands/validate/configManifest.generated.ts'
 /**
  * @jest-environment node
  */
 /* eslint-disable unicorn/no-thenable -- `if`/`then` are JSON Schema keywords */
 import { configJsonSchema } from '../products/jbrowse-cli/src/commands/validate/configSchema.generated.ts'
-import { slotPaths } from './configSlotPaths.ts'
+import { sessionKeyPaths, slotPaths } from './configSlotPaths.ts'
 
 const ref = (name: string) => ({ $ref: `#/$defs/${name}` })
 
@@ -73,4 +74,23 @@ test('the published schema lists a nested slot, a retired key and an enum member
   expect(paths).toContain('LinearWiggleDisplay.mark=bar')
   expect(paths).toContain('config.configuration')
   expect([...paths].filter(path => path.includes('defaultSession'))).toEqual([])
+})
+
+test('the session half lists session keys, launch keys and the legacy spellings of both', () => {
+  expect(
+    sessionKeyPaths(
+      { $defs: { Session: { properties: { views: {}, name: {} } } } },
+      { DemoView: { launchKeys: ['loc'], passThrough: ['bpPerPx'] } },
+    ),
+  ).toEqual([
+    'DemoView.bpPerPx',
+    'DemoView.loc',
+    'Session.name',
+    'Session.views',
+  ])
+
+  const paths = sessionKeyPaths(configJsonSchema, configManifest.views)
+  expect(paths).toContain('Session.useWorkspaces')
+  expect(paths).toContain('LinearGenomeView.loc')
+  expect(paths).not.toContain('LinearGenomeView.hideHeader')
 })

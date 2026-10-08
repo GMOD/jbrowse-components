@@ -1,5 +1,5 @@
-// Fails when the config JSON schema no longer admits a slot path or an enum
-// member a release shipped. The schema URL is one per major and the website
+// Fails when the config JSON schema no longer admits a slot path, an enum
+// member, a session key or a view launch key a release shipped. The schema URL is one per major and the website
 // deploy republishes it from main, so a slot deleted or renamed without a
 // `retired` entry leaves the schema every config of that major validates
 // against, and the app loads that config without the setting.
@@ -11,7 +11,8 @@
 import { existsSync, readFileSync, writeFileSync } from 'node:fs'
 import { join, relative } from 'node:path'
 
-import { slotPaths } from './configSlotPaths.ts'
+import { configManifest } from '../products/jbrowse-cli/src/commands/validate/configManifest.generated.ts'
+import { sessionKeyPaths, slotPaths } from './configSlotPaths.ts'
 
 const root = join(import.meta.dirname, '..')
 const { version } = JSON.parse(
@@ -21,7 +22,11 @@ const major = version.split('.')[0]
 const schemaPath = join(root, `website/static/schema/v${major}/config.json`)
 const baselinePath = join(root, `scripts/configSlotPaths.v${major}.txt`)
 
-const current = slotPaths(JSON.parse(readFileSync(schemaPath, 'utf8')))
+const schema = JSON.parse(readFileSync(schemaPath, 'utf8'))
+const current = [
+  ...slotPaths(schema),
+  ...sessionKeyPaths(schema, configManifest.views),
+]
 const baseline = existsSync(baselinePath)
   ? readFileSync(baselinePath, 'utf8').split('\n').filter(Boolean)
   : []
@@ -43,7 +48,7 @@ if (missing.length) {
       `${relative(root, schemaPath)} no longer admits ${missing.length} path(s) a v${major} release shipped:`,
       ...missing.map(path => `  - ${path}`),
       '',
-      "Name each on its schema's `retired` map, with the lift that carries the old value to today's slots, and keep a removed enum value as a legacy value. Then `pnpm autogen`.",
+      "Name a config slot on its schema's `retired` map, with the lift that carries the old value to today's slots, and keep a removed enum value as a legacy value. A view launch key moves to the view's `passThrough`, and a session key to LEGACY_SESSION_KEYS in scripts/configJsonSchema.ts. Then `pnpm autogen`.",
     ].join('\n'),
   )
   process.exit(1)
