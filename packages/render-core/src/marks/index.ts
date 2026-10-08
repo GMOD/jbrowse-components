@@ -10,6 +10,7 @@ export { spanMark } from './spanMark.ts'
 export { lineCenterMark, lineMarkOf, lineStepMark } from './lineMark.ts'
 export {
   linkApex,
+  linkLabelAnchor,
   linkFeet,
   linkMark,
   LINK_ELSEWHERE,

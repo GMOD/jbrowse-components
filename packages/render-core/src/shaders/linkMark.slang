@@ -320,7 +320,6 @@ LinkVertex curveVertex(LinkInstance inst, LinkEnv e, uint seg, float side) {
       // more, so every segment is spent on screen.
       v.kind = KIND_CIRCLE;
       float rx = v.radii.x;
-      float ry = max(v.radii.y, 1e-6);
       bool fromRight = u.canvasWidth * 0.5 - ends.x > rx;
       float footX = fromRight ? ends.y : ends.x;
       float margin = e.hw + 2.0;
@@ -328,16 +327,7 @@ LinkVertex curveVertex(LinkInstance inst, LinkEnv e, uint seg, float side) {
       float farD = fromRight ? footX + margin : u.canvasWidth + margin - footX;
       float u0 = farDomeParam(nearD, rx);
       float step = (max(farDomeParam(farD, rx), u0) - u0) / float(u.curveSegments);
-      float su = u0 + float(seg) * step;
-      // The dome leaves its foot upright and is level within a px, so the
-      // foot's normal is its first chord's.
-      float un = max(su, 0.5 * step);
-      float2 normal = normalize(float2(
-        -ry * (1.0 - 2.0 * un * un), 2.0 * rx * un * sqrt(1.0 - un * un)));
-      // A chord cuts inside the curve by its sagitta, which the pad takes on.
-      float2 p = float2(2.0 * rx * su * su, 2.0 * ry * su * sqrt(1.0 - su * su))
-        + normal * side * (e.hw + 0.5 * rx * step * step);
-      v.local = -p;
+      v.local = -farDomeHullPoint(u0 + float(seg) * step, step, rx, v.radii.y, pad);
       origin = float2(footX, e.baseY);
       legDir = fromRight ? 1.0 : -1.0;
     } else if (linkIsFar(pairHalf, u.canvasWidth)) {

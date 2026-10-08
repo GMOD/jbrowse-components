@@ -1,6 +1,6 @@
 import {
   defineMark,
-  linkApex,
+  linkLabelAnchor,
   linkMark,
   withPassId,
 } from '@jbrowse/render-core/marks'
@@ -123,10 +123,10 @@ export interface SashimiLabel {
 const HITS = { up: 'upHits', down: 'downHits' } as const
 
 /**
- * The count labels of every section, each at the apex its mark draws
- * (`linkApex`), so a label cannot stand where no arc does: an arc too narrow
- * on screen for its count gets none, nor does one whose apex is off the
- * canvas or whose dome the band clips to its legs.
+ * The count labels of every section, each where its mark says a label stands
+ * (`linkLabelAnchor`): the apex, or over the middle of the stretch in view for
+ * a junction the view sits inside. An arc too narrow on screen for its count
+ * gets none, nor does one with nothing on the canvas.
  */
 export function sashimiLabels(
   state: RenderState,
@@ -148,7 +148,7 @@ export function sashimiLabels(
           const hits = feed[HITS[side]]
           for (let i = 0; i < hits.length; i++) {
             const { key, count } = hits[i]!
-            const apex = linkApex(feed[side], block, state, params, i)
+            const apex = linkLabelAnchor(feed[side], block, state, params, i)
             if (
               apex &&
               2 * apex.halfWidth >= sashimiLabelSpanPx(count) &&

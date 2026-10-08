@@ -10,6 +10,9 @@ import { aaHalfPx, edgeCoverage } from './antialias.js.generated.ts'
 import {
   distToWideCirclePx,
   ellipseHullPoint,
+  farDomeDistancePx,
+  farDomeHullPoint,
+  farDomeParam,
   wideCircleHullPoint,
   wideCircleLeg,
   wideCircleLegStep,
@@ -242,6 +245,90 @@ test.each([
     }
   },
 )
+
+// A far dome in the frame of the foot nearer the canvas, inward and up, over
+// the stretch a canvas `canvasPx` wide shows with that foot at `footX`, as
+// `linkMark.slang` steps it. Ink is every point the fragment paints on the
+// canvas, the half stroke under the baseline included.
+function worstOnFarDome(
+  rx: number,
+  ry: number,
+  footX: number,
+  canvasPx: number,
+  dpr: number,
+  lineWidthPx: number,
+  segs: number,
+) {
+  const half = strokeHalfPx(dpr, lineWidthPx)
+  const pad = half + aaHalfPx(dpr)
+  const margin = pad + 2
+  const u0 = farDomeParam(-margin - footX, rx)
+  const step = (farDomeParam(canvasPx + margin - footX, rx) - u0) / segs
+  const pairs: (readonly [Pt, Pt])[] = []
+  for (let seg = 0; seg <= segs; seg++) {
+    const u = u0 + seg * step
+    pairs.push([
+      farDomeHullPoint(u, step, rx, ry, -pad),
+      farDomeHullPoint(u, step, rx, ry, pad),
+    ])
+  }
+  const chord = [4 * rx * (step / 2), 2 * ry] as const
+  const from = farDomeParam(-footX, rx)
+  const to = farDomeParam(canvasPx - footX, rx)
+  const samples = alongNormals(
+    4000,
+    pad,
+    t => {
+      const u = from + t * (to - from)
+      const w = Math.sqrt(1 - u * u)
+      const nx = -ry * (1 - 2 * u * u)
+      const ny = 2 * rx * u * w
+      const g = Math.hypot(nx, ny) || 1
+      return [
+        [2 * rx * u * u, 2 * ry * u * w],
+        [nx / g, ny / g],
+      ]
+    },
+    // on the canvas, and ahead of the foot's butt end, which is square to
+    // the dome's first chord
+    p =>
+      p[0] >= Math.max(-footX, 0) &&
+      p[0] <= canvasPx - footX &&
+      p[0] * chord[0] + p[1] * chord[1] >= 0,
+  )
+  return worstUncovered(coverIndex(stripTriangles(pairs)), samples, p =>
+    edgeCoverage(half - farDomeDistancePx(p[0], p[1], rx, ry), dpr),
+  )
+}
+
+test.each([
+  [2500, 40],
+  [2500, 300],
+  [35_000, 27],
+  [1_000_000, 40],
+  [10_000_000, 90],
+] as const)('a far %sx%s dome covers its ink across the canvas', (rx, ry) => {
+  const canvasPx = 1400
+  // the foot on the canvas, just off it, deep inside the pair, and the apex
+  // on the canvas with the stretch running past it
+  for (const footX of [200, 700, -40, -0.4 * rx, canvasPx / 2 - rx]) {
+    for (const dpr of [1, 2]) {
+      for (const lineWidthPx of [1, 6]) {
+        expect(
+          worstOnFarDome(
+            rx,
+            ry,
+            footX,
+            canvasPx,
+            dpr,
+            lineWidthPx,
+            LINK_CURVE_SEGMENTS,
+          ),
+        ).toBeLessThan(EXACT)
+      }
+    }
+  }
+})
 
 // A collapsed band (`arcAvailH` floors at 0) hands the dome ry 0, where the
 // foot's two normals are exactly opposed.

@@ -7,7 +7,7 @@
 // The fragment ramps its alpha to zero at `halfWidth + aaHalfPx`, so the hull
 // has to cover everything nearer the curve than that. Both flanks of a hull
 // sampled from the offset curve fall short of it at a clamped dome's feet.
-//! js-export: distToWideCirclePx, legSweepAngle, wideCircleLeg, wideCircleLegStep, ellipseHullPoint, wideCircleHullPoint, farDomeParam, farDomeDistancePx
+//! js-export: distToWideCirclePx, legSweepAngle, wideCircleLeg, wideCircleLegStep, ellipseHullPoint, wideCircleHullPoint, farDomeParam, farDomeHullPoint, farDomeDistancePx
 //! js-skip: nearCircleDistancePx — a float32 remedy with no float64 caller. The hit tests' copy of this file's solve (marks/ellipseDistance.ts) holds the ellipse at every aspect, so nothing outside the shader has an approximation to want.
 //! js-skip: farDomeDistSq — a step of farDomeDistancePx's solve, which its twin carries; nothing outside it wants one step
 //! js-skip: farDomeStep — a step of farDomeDistancePx's solve, so it inherits farDomeDistSq's reason exactly
@@ -176,6 +176,36 @@ public float distToWideCircle(float2 legLocal, float r) {
 // the apex.
 public float farDomeParam(float dPx, float rxPx) {
   return sqrt(clamp(dPx / (2.0 * max(rxPx, 1e-6)), 0.0, 0.84));
+}
+
+// One vertex of a far dome's strip in the frame `farDomeDistancePx` measures
+// in, inward of a foot and up: the dome's point at `u`, `padPx` along its own
+// normal, positive on the outer flank. `stepU` is the strip's step in u. The
+// dome leaves its foot upright and is level within a px, so the foot's normal
+// is its first chord's, and a chord cuts inside the curve by its sagitta,
+// which the pad takes on.
+//
+// A flat dome turns tighter than the pad at its foot (radius ry^2 / rx), where
+// the inner offset folds and its chords cut the ink. There the inner flank is
+// the dome moved a pad inward and a pad down instead: the dome rises as it
+// runs inward, so that copy clears the pad around every point of it, and it is
+// as concave as the dome, so its chords clear it too. The foot's own vertex
+// stays under the foot, where the strip's end crosses it.
+public float2 farDomeHullPoint(float u, float stepU, float rxPx, float ryPx, float padPx) {
+  float ry = max(ryPx, 1e-6);
+  float un = max(u, 0.5 * stepU);
+  float nx = -ry * (1.0 - 2.0 * un * un);
+  float ny = 2.0 * rxPx * un * sqrt(1.0 - un * un);
+  float lenSq = max(nx * nx + ny * ny, 1e-20);
+  float reach = padPx + sign(padPx) * 0.5 * rxPx * stepU * stepU;
+  float along = reach / sqrt(lenSq);
+  float d = 2.0 * rxPx * u * u;
+  float h = 2.0 * ry * u * sqrt(1.0 - u * u);
+  // the radius of curvature, against twice the pad
+  bool folded = padPx < 0.0 && u * u < 0.5
+    && lenSq * sqrt(lenSq) < -2.0 * reach * rxPx * ry;
+  return float2(folded ? (u > 0.0 ? d - reach : d) : d + nx * along,
+                folded ? h + reach : h + ny * along);
 }
 
 // A far dome's point in the frame of one of its feet, by u = sin(b / 2) for the

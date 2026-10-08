@@ -233,6 +233,19 @@ describe('sashimiLabels', () => {
     expect(far!.y).toBeCloseTo(upApexY(8800))
   })
 
+  it('labels a junction the view sits inside, off its middle, on the stretch in view', () => {
+    // scrolled 1000px in: the arc runs from px -900 to px 7900, its apex at
+    // px 3500, past the 1000px canvas
+    const scrolled = {
+      displayed: FORWARD.displayed,
+      linkRegions: [{ anchorPx: -1000, anchorBp: 0, signedPxPerBp: 1 }],
+    }
+    const [inside] = labelsOf([junction(100, 8900, 9)], [], scrolled)
+    expect(inside).toMatchObject({ x: 500, count: 9 })
+    expect(inside!.y).toBeGreaterThan(upApexY(8800))
+    expect(inside!.y).toBeLessThan(UP_BASELINE)
+  })
+
   it('labels nothing in a band with no height', () => {
     const { feeds, state } = scene([junction(100, 300)])
     expect(sashimiLabels({ ...state, coverageHeight: 4 }, [feeds])).toEqual([])

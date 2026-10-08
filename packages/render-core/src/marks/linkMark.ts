@@ -435,6 +435,20 @@ export interface LinkApex {
   inward: 1 | -1
 }
 
+function apexOf(g: LinkFrame): LinkApex | undefined {
+  if (g.kind === KIND_NONE || g.kind === KIND_CIRCLE) {
+    return undefined
+  }
+  return {
+    x: (g.xPx + g.x2Px) / 2,
+    y: yAt(g, g.ry),
+    rise: g.ry,
+    halfWidth: g.kind === KIND_ELLIPSE ? g.rx : 0,
+    strokePx: g.strokePx,
+    inward: g.reverse ? -1 : 1,
+  }
+}
+
 /**
  * Instance `i`'s apex, undefined where it draws none on the band: no curve
  * at all, or a far pair's circle, which the band clips to its legs.
@@ -448,17 +462,36 @@ export function linkApex(
 ): LinkApex | undefined {
   const g = linkFrame(block, frame, params)
   placeCurve(c, g, i)
-  if (g.kind === KIND_NONE || g.kind === KIND_CIRCLE) {
-    return undefined
+  return apexOf(g)
+}
+
+/**
+ * Where a label of instance `i` stands: its apex, or for a far dome whose
+ * apex is off the canvas, the dome's point over the middle of the stretch the
+ * canvas shows, so a view inside the pair still carries the label. `rise` is
+ * the curve's height there.
+ */
+export function linkLabelAnchor(
+  c: LinkChannels,
+  block: RenderBlock,
+  frame: MarkFrame,
+  params: LinkParams,
+  i: number,
+): LinkApex | undefined {
+  const g = linkFrame(block, frame, params)
+  placeCurve(c, g, i)
+  const apex = apexOf(g)
+  if (!apex || g.kind !== KIND_ELLIPSE || !linkIsFar(g.rx, g.screenW)) {
+    return apex
   }
-  return {
-    x: (g.xPx + g.x2Px) / 2,
-    y: yAt(g, g.ry),
-    rise: g.ry,
-    halfWidth: g.kind === KIND_ELLIPSE ? g.rx : 0,
-    strokePx: g.strokePx,
-    inward: g.reverse ? -1 : 1,
+  const from = Math.max(apex.x - g.rx, 0)
+  const to = Math.min(apex.x + g.rx, g.screenW)
+  if (to <= from || (apex.x >= 0 && apex.x <= g.screenW)) {
+    return apex
   }
+  const x = (from + to) / 2
+  const rise = g.ry * Math.sqrt(Math.max(1 - ((x - apex.x) / g.rx) ** 2, 0))
+  return { ...apex, x, y: yAt(g, rise), rise }
 }
 
 function sizeLane(c: LinkChannels) {

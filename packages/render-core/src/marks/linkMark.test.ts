@@ -14,6 +14,7 @@ import {
   LINK_FOOT_FORWARD,
   LINK_FOOT_REVERSE,
   linkApex,
+  linkLabelAnchor,
   linkFeet,
   linkMark,
 } from './linkMark.ts'
@@ -249,6 +250,35 @@ test('a far dome whose scale holds its apex keeps it, so a view inside the pair 
     y: 40,
     halfWidth: 4000,
   })
+})
+
+test('a label on a far dome stands on the stretch in view when the apex is not', () => {
+  // the same 8000 px pair on the 2000 px view, which shows its left quarter
+  const c = channels([{ x: 100, x2: 5000 + 7100, region: 1, y: 6 }], {
+    y: true,
+  })
+  const valued: LinkParams = { ...params, valued: true }
+  const anchor = linkLabelAnchor(c, block, frame, valued, 0)!
+  // midway from the foot at px 100 to the view's right edge
+  expect(anchor.x).toBe(1050)
+  expect(anchor.halfWidth).toBe(4000)
+  expect(anchor.rise).toBeCloseTo(60 * Math.sqrt(1 - (3050 / 4000) ** 2))
+  expect(
+    linkMark.hitNearest!(c, block, frame, valued, anchor.x, anchor.y, [0], 9),
+  ).toMatchObject({ index: 0, distSq: 0 })
+  // an apex in view is where the label stands, far or near
+  const centred = channels([{ x: 0, x2: 7000, y: 6 }], { y: true })
+  const scrolled = {
+    ...valued,
+    regions: [{ anchorPx: -2500, anchorBp: 0, signedPxPerBp: 1 }],
+  }
+  expect(linkLabelAnchor(centred, block, frame, scrolled, 0)).toEqual(
+    linkApex(centred, block, frame, scrolled, 0),
+  )
+  const near = channels([{ x: 100, x2: 200 }])
+  expect(linkLabelAnchor(near, block, frame, params, 0)).toEqual(
+    linkApex(near, block, frame, params, 0),
+  )
 })
 
 test('a far dome off the top of its scale is the circle its band clips to legs', () => {

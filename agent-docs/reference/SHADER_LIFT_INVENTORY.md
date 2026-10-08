@@ -14,8 +14,8 @@ Read [ADR-051](../architecture-decision-records/adr-051-shader-js-codegen-is-sca
 in the export set and what deliberately does not. This file says what the
 tree currently looks like against that standard.
 
-Scanned 48 shaders with entry points. 137 functions
-are inside the emitter's subset, of which **106 are exported**.
+Scanned 48 shaders with entry points. 138 functions
+are inside the emitter's subset, of which **107 are exported**.
 
 ## Candidates
 
@@ -120,7 +120,8 @@ is no longer shared with anything.
 | `edgeCoverage` | tests only — `arcHull.test.ts`, `buttSegmentCoverage.test.ts`, `dotplotCapsulePad.test.ts`, `sdEllipse.test.ts` |
 | `ellipseHullPoint` | tests only — `arcHull.test.ts` |
 | `extendToMinWidthPx` | tests only — `densityMinWidth.test.ts`, `hpmathParity.test.ts`, `markParity.test.ts`, `rectSpanParity.test.ts` |
-| `farDomeDistancePx` | tests only — `farDome.test.ts` |
+| `farDomeDistancePx` | tests only — `arcHull.test.ts`, `farDome.test.ts` |
+| `farDomeHullPoint` | tests only — `arcHull.test.ts` |
 | `frequencyAlpha` | tests only — `alphaShaderParity.test.ts` |
 | `glyphExpand` | tests only — `pointGlyphPad.test.ts` |
 | `isTileKind` | tests only — `syntenyShaderParity.test.ts` |

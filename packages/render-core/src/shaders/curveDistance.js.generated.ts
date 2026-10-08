@@ -106,6 +106,49 @@ export function farDomeParam(dPx: number, rxPx: number): number {
   return Math.sqrt(_clamp((dPx / (2.0 * _max(rxPx, 9.99999997475242708e-07))), 0.0, 0.8399999737739563))
 }
 
+export function farDomeHullPoint(u: number, stepU: number, rxPx: number, ryPx: number, padPx: number): [number, number] {
+  let _t0 = _max(ryPx, 9.99999997475242708e-07)
+  let _t1 = _max(u, (0.5 * stepU))
+  let nx = (-_t0 * (1.0 - ((2.0 * _t1) * _t1)))
+  let _t2 = (2.0 * rxPx)
+  let ny = ((_t2 * _t1) * Math.sqrt((1.0 - (_t1 * _t1))))
+  let _t3 = _max(((nx * nx) + (ny * ny)), 9.99999968265522539e-21)
+  let reach = (padPx + (((((((Math.sign(padPx)) | 0)) * 0.5) * rxPx) * stepU) * stepU))
+  let _t4 = Math.sqrt(_t3)
+  let along = (reach / _t4)
+  let d = ((_t2 * u) * u)
+  let _t5 = (u * u)
+  let h = (((2.0 * _t0) * u) * Math.sqrt((1.0 - _t5)))
+  let folded: boolean
+  if ((padPx < 0.0)) {
+    folded = (_t5 < 0.5)
+  } else {
+    folded = false
+  }
+  if (folded) {
+    folded = ((_t3 * _t4) < (((-2.0 * reach) * rxPx) * _t0))
+  } else {
+    folded = false
+  }
+  let _t6: number
+  if (folded) {
+    if ((u > 0.0)) {
+      _t6 = (d - reach)
+    } else {
+      _t6 = d
+    }
+  } else {
+    _t6 = (d + (nx * along))
+  }
+  let _t7: number
+  if (folded) {
+    _t7 = (h + reach)
+  } else {
+    _t7 = (h + (ny * along))
+  }
+  return [_t6, _t7]
+}
+
 function farDomeDistSq(u: number, dPx: number, hPx: number, rx: number, ry: number): number {
   let ox = ((((2.0 * rx) * u) * u) - dPx)
   let oy = ((((2.0 * ry) * u) * Math.sqrt(_max((1.0 - (u * u)), 0.0))) - hPx)
