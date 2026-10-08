@@ -16,7 +16,7 @@ import { observer } from 'mobx-react'
 import { buildBaseCssMap } from '../../features/mismatch/baseColors.ts'
 import { getModificationCallName } from '../../shared/modificationData.ts'
 import { getCigarTypeLabel } from '../../shared/types.ts'
-import { supportLabel } from './tooltipUtils.ts'
+import { readCount, supportLabel } from './tooltipUtils.ts'
 
 import type { ColorPalette } from '../../shaders/colors.ts'
 import type { TooltipPayload } from './tooltipUtils.ts'
@@ -295,7 +295,7 @@ const AlignmentsTooltip = observer(function AlignmentsTooltip({
                 {shownLoci.map(locus => (
                   <div key={`${locus.refName}:${locus.bp}`}>
                     {formatBandLocation(locus.refName, locus.bp)} (
-                    {supportLabel(locus.support).replace('Supported by ', '')})
+                    {readCount(locus.support)})
                   </div>
                 ))}
                 {moreLoci > 0 ? <div>and {moreLoci} more</div> : null}

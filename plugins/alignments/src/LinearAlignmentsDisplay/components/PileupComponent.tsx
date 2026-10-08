@@ -218,6 +218,7 @@ const ConnectionBandResizeHandles = observer(
     model: LinearAlignmentsDisplayModel
   }) {
     const { height, scrollModel: scroll, renderSections } = model
+    const scope = model.isGrouped ? ' of every group' : ''
     return (
       <>
         {renderSections.map((section, i) => {
@@ -236,7 +237,7 @@ const ConnectionBandResizeHandles = observer(
                       model.readConnectionsHeight + dy,
                     )
                   }}
-                  title="Drag to resize the arcs area of every group"
+                  title={`Drag to resize the arcs area${scope}`}
                 />
               ) : null}
 
@@ -255,7 +256,7 @@ const ConnectionBandResizeHandles = observer(
                   onDrag={dy => {
                     model.setSashimiArcsHeight(model.sashimiArcsHeight + dy)
                   }}
-                  title="Drag to resize the sashimi arcs area of every group"
+                  title={`Drag to resize the sashimi arcs area${scope}`}
                 />
               ) : null}
             </Fragment>

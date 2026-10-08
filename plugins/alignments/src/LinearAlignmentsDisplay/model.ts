@@ -2094,7 +2094,7 @@ export default function stateModelFactory(
          * stack as one.
          */
         get isGrouped() {
-          return self.groupOrder.length > 1
+          return this.lanes.length > 1
         },
 
         /**

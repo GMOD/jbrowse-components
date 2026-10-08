@@ -46,17 +46,20 @@ interface ReadsModel extends CollapseGroupRowsModel, HiddenGroupsModel {
 // checkboxes. Anything new here should be a checkbox, or it belongs in another
 // menu.
 function softClippingItem(model: ReadsModel) {
-  const label = 'Show soft clipping'
-  const onToggle = () => {
-    model.setShowSoftClipping(!model.showSoftClipping)
-  }
-  return model.unit === 'chain'
-    ? toggleItem(label, model.showSoftClipping, onToggle, {
-        disabled: true,
-        disabledHelpText:
-          'Chain layout does not expand soft clips — uncheck "View as pairs / link supplementary alignments" first',
-      })
-    : toggleItem(label, model.showSoftClipping, onToggle)
+  return toggleItem(
+    'Show soft clipping',
+    model.showSoftClipping,
+    value => {
+      model.setShowSoftClipping(value)
+    },
+    model.unit === 'chain'
+      ? {
+          disabled: true,
+          disabledHelpText:
+            'Chain layout does not expand soft clips — uncheck "View as pairs / link supplementary alignments" first',
+        }
+      : undefined,
+  )
 }
 
 export function getReadsMenuItems(model: ReadsModel) {

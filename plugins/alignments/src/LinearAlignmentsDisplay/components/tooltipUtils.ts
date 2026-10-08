@@ -159,10 +159,12 @@ export interface ArcLineTooltipPayload {
 
 // "Supported by 1 read" / "Supported by 12 reads". Singular at 1 so a lone
 // connection does not read as a suspiciously weak junction.
+export function readCount(support: number) {
+  return support === 1 ? '1 read' : `${toLocale(support)} reads`
+}
+
 export function supportLabel(support: number) {
-  return support === 1
-    ? 'Supported by 1 read'
-    : `Supported by ${toLocale(support)} reads`
+  return `Supported by ${readCount(support)}`
 }
 
 // HTML/plain strings come from formatReadTooltip / formatCigarTooltip;
