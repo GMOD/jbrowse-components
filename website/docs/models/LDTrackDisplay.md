@@ -27,7 +27,7 @@ Members a composed model contributes are listed here too, so these tables are th
 <!-- prettier-ignore -->
 | Member | Description | Defined by |
 | --- | --- | --- |
-| <span id="volatile-focalsnplocus">**focalSnpLocus**</span><br><code>focalSnpLocus: undefined as string &#124; undefined</code> | Locus (`refName:start`) of the SNP whose row and column are emphasized. A locus rather than an index, so it survives a refetch. | LDTrackDisplay |
+| <span id="volatile-focalsnplocus">**focalSnpLocus**</span><br><code>focalSnpLocus: undefined as string &#124; undefined</code> | Key (`refName:start:id`) of the SNP whose row and column are emphasized. A key rather than an index, so it survives a refetch. | LDTrackDisplay |
 | <span id="volatile-error">**error**</span><br><code>error: undefined as unknown</code> |  | [BaseDisplay](../basedisplay#volatile-error) |
 | <span id="volatile-statusmessage">**statusMessage**</span><br><code>statusMessage: undefined as string &#124; undefined</code> |  | [BaseDisplay](../basedisplay#volatile-statusmessage) |
 | <span id="volatile-statusprogress">**statusProgress**</span><br><code>statusProgress: undefined as number &#124; undefined</code> | <span data-pagefind-ignore>determinate progress fraction [0,1] for the current status, or undefined when the in-flight phase is indeterminate. Set alongside `statusMessage` by `setStatusMessage`; a display that never shows a bar simply leaves it undefined.</span> | [BaseDisplay](../basedisplay#volatile-statusprogress) |
