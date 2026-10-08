@@ -195,7 +195,11 @@ describe('parseVcfJunctions', () => {
     // no spelled-out allele to read base by base, so a junction's flank stands
     expect(records.map(r => recordFlank(r))).toEqual([500, 500, 500])
     expect(records.map(r => [r.sort, r.carried])).toEqual([
-      [{ type: 'basePair', pos: 1000 }, { base: '*' }],
+      // a deletion of SV size is a gap of half its length or more
+      [
+        { type: 'basePair', pos: 1000 },
+        { base: '*', minDeletion: 36 },
+      ],
       [
         { type: 'insertion', pos: 3000 },
         { minInsertion: 174, anywhere: true },
@@ -204,7 +208,7 @@ describe('parseVcfJunctions', () => {
     ])
     // an SV-sized insertion is counted across its window, a small one in place
     expect(records.map(r => recordAllele(r))).toEqual([
-      { base: '*' },
+      { base: '*', minDeletion: 36 },
       { minInsertion: 174, within: 500 },
       undefined,
     ])

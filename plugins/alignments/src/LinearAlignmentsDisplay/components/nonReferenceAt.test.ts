@@ -87,6 +87,22 @@ test('given the allele, counts the reads with that base and no other', () => {
   expect(at('C', 101)).toEqual({ count: 0, depth: 10 })
 })
 
+test("given a deletion's least length, counts the gaps that long and keeps every gap in the depth", () => {
+  // a read missing three bases at the first base of a 2 kb deletion does not
+  // carry the deletion
+  const data = pileup({
+    gapPositions: Uint32Array.from([101, 104, 101, 2101]),
+  })
+  const at = (minDeletion?: number) =>
+    nonReferenceAt({ type: 'basePair', pos: 101 }, data, {
+      base: '*',
+      minDeletion,
+    })
+  expect(at()).toEqual({ count: 2, depth: 10 })
+  expect(at(1000)).toEqual({ count: 1, depth: 10 })
+  expect(at(2001)).toEqual({ count: 0, depth: 10 })
+})
+
 test('given an insertion allele, counts each read with one long enough, near enough', () => {
   // two reads with the 300-base insertion 40 bases off the caller's position,
   // one of them with a second piece of it, and a one-base insertion on it

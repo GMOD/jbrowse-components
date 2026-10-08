@@ -442,7 +442,8 @@ async function renderRows(
 // queue can be sorted on. Empty for an image of one window. `alt` is
 // `count/depth` per alignments track: the reads with the record's ALT at its
 // column, over the reads spanning it. An insertion of 50 bases or more is
-// counted within the flank, wherever the aligner put it. Empty for a record
+// counted within the flank, wherever the aligner put it, and a deletion of
+// that size as a gap of half its length or more. Empty for a record
 // with no such column and for one on several contigs. `spec` is the view as a
 // session spec opens it, JSON: its rows and the `--track` tracks as drawn.
 const REPORTED_COLUMNS = ['links', 'alt', 'spec'] as const

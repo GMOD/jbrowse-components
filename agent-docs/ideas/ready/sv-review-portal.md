@@ -166,6 +166,12 @@ two did not. A record on one contig now has both columns whatever its windows,
 and a card prints `3 split + 4 gapped of 56 reads`. COLO829 `d_78` reads 4 of
 56, the caller's `AD` of 4.
 
+**A deletion of 50 bp or more is a gap of half its length or more.** Counted as
+any gap over its first deleted base, nine COLO829 deletions of 2.6 kb to 70 Mb
+moved to "supporting reads in a control too" on one to five normal reads each
+missing a few bases there: `r_4`, 26 split reads in the tumor and none in the
+normal, among them.
+
 **A record one panel holds has a count of its own.** `batch` sorts a linear
 view's pileup at a record's variant, and the manifest's `alt` column is the
 reads with the record's ALT at that column over the reads spanning it, per

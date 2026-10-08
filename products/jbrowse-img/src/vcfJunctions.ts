@@ -127,10 +127,14 @@ function symbolicCall(
 }
 
 // An insertion is counted at half its length or more, and one of
-// structural-variant size wherever it sits in the image
-function carriedCall({ carried }: VariantCall): CarriedCall {
+// structural-variant size wherever it sits in the image. A deletion of that
+// size is counted at half its length or more too: a few bases missing at its
+// first base are in any deep pileup.
+function carriedCall({ carried }: VariantCall, deleted: number): CarriedCall {
   return 'base' in carried
-    ? carried
+    ? carried.base === '*' && deleted >= SMALL_VARIANT_BP
+      ? { ...carried, minDeletion: Math.ceil(deleted / 2) }
+      : carried
     : {
         minInsertion: Math.max(1, Math.ceil(carried.inserted / 2)),
         anywhere: carried.inserted >= SMALL_VARIANT_BP,
@@ -203,11 +207,17 @@ export function parseVcfJunctions(
         Number.isFinite(inserted) ? Math.abs(inserted) : undefined,
       )
     const sort = call?.column
+    const end = infoField(info, 'END')
+    const svlen = Number(infoField(info, 'SVLEN'))
+    const deleted = spelled
+      ? ref.length - 1
+      : Number.isFinite(svlen)
+        ? Math.abs(svlen)
+        : Number(end) - pos
     if (!svtype && !sort) {
       skipped.push(`line ${lineNo}: no SVTYPE, and no ALT spelling out bases`)
       continue
     }
-    const end = infoField(info, 'END')
     const mate: Endpoint | undefined =
       svtype === 'BND'
         ? alt
@@ -223,7 +233,9 @@ export function parseVcfJunctions(
       own: [chrom, pos],
       span: svtype ? 1 : ref.length,
       line: lineNo,
-      ...(call ? { sort: call.column, carried: carriedCall(call) } : {}),
+      ...(call
+        ? { sort: call.column, carried: carriedCall(call, deleted) }
+        : {}),
       // a symbolic allele spells out no bases, and keeps a junction's flank
       ...(spelled
         ? {

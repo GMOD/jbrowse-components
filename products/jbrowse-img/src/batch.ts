@@ -39,10 +39,12 @@ export interface BatchRecord {
  * A base, `*` for a deleted one, or an insertion of at least `minInsertion`
  * bases: half the ALT's own, because a long read's copy of an insertion is
  * rarely the caller's length to the base. `anywhere` counts that insertion
- * wherever it sits in the image, for one of structural-variant size.
+ * wherever it sits in the image, for one of structural-variant size. A
+ * deletion of that size is likewise a gap of at least `minDeletion` bases,
+ * half its own.
  */
 export type CarriedCall =
-  | { base: string }
+  | { base: string; minDeletion?: number }
   | { minInsertion: number; anywhere: boolean }
 
 /** A record's `carried`, as the count is asked for at its flank */

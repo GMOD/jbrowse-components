@@ -508,7 +508,11 @@ function deletionSpanIndex(gapPositions: Uint32Array, gapTypes: Uint8Array) {
 // Length stats for the deletions (gapTypes 0, as opposed to skips) spanning
 // `position`. Same statistic as the interbase tally above, through the same
 // accumulator, so the two can't compute it differently.
-function collectDeletionStats(position: number, data: WorkerPileupData) {
+function collectDeletionStats(
+  position: number,
+  data: WorkerPileupData,
+  minLength = 0,
+) {
   const { gapPositions, gapTypes } = data
   const { starts, ends, maxEndSoFar } = deletionSpanIndex(
     gapPositions,
@@ -519,7 +523,7 @@ function collectDeletionStats(position: number, data: WorkerPileupData) {
     if (maxEndSoFar[k]! <= position) {
       break
     }
-    if (ends[k]! > position) {
+    if (ends[k]! > position && ends[k]! - starts[k]! >= minLength) {
       acc = accumulateLength(acc, ends[k]! - starts[k]!)
     }
   }
@@ -643,7 +647,12 @@ export function nonReferenceAt(
   const snps = countSnpsAtPosition(pos, data)
   let count = deleted
   if (allele && 'base' in allele) {
-    count = allele.base === '*' ? deleted : (snps[allele.base]?.count ?? 0)
+    count =
+      allele.base === '*'
+        ? allele.minDeletion
+          ? (collectDeletionStats(pos, data, allele.minDeletion)?.count ?? 0)
+          : deleted
+        : (snps[allele.base]?.count ?? 0)
   } else {
     for (const snp of Object.values(snps)) {
       count += snp.count
