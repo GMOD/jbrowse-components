@@ -1,0 +1,152 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: JBrowse analytics archive (Firehose to a private S3 bucket)
+
+Parameters:
+  LambdaRoleName:
+    Type: String
+    Default: jbrowse-analytics-role-s1vhhrne
+    Description:
+      Execution role of the existing jbrowse-analytics Lambda, which gains
+      permission to write to the delivery streams
+
+Resources:
+  ArchiveBucket:
+    Type: AWS::S3::Bucket
+    DeletionPolicy: Retain
+    UpdateReplacePolicy: Retain
+    Properties:
+      BucketName: !Sub jbrowse-analytics-${AWS::AccountId}
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true
+        BlockPublicPolicy: true
+        IgnorePublicAcls: true
+        RestrictPublicBuckets: true
+      BucketEncryption:
+        ServerSideEncryptionConfiguration:
+          - ServerSideEncryptionByDefault:
+              SSEAlgorithm: AES256
+      VersioningConfiguration:
+        Status: Enabled
+      LifecycleConfiguration:
+        Rules:
+          - Id: AbortIncompleteUploads
+            Status: Enabled
+            AbortIncompleteMultipartUpload:
+              DaysAfterInitiation: 7
+
+  DeliveryLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: /aws/kinesisfirehose/jbrowse-analytics
+      RetentionInDays: 90
+
+  Jb1LogStream:
+    Type: AWS::Logs::LogStream
+    Properties:
+      LogGroupName: !Ref DeliveryLogGroup
+      LogStreamName: jb1
+
+  Jb2LogStream:
+    Type: AWS::Logs::LogStream
+    Properties:
+      LogGroupName: !Ref DeliveryLogGroup
+      LogStreamName: jb2
+
+  DeliveryRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: firehose.amazonaws.com
+            Action: sts:AssumeRole
+            Condition:
+              StringEquals:
+                sts:ExternalId: !Ref AWS::AccountId
+      Policies:
+        - PolicyName: deliver-to-archive
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - s3:AbortMultipartUpload
+                  - s3:GetBucketLocation
+                  - s3:GetObject
+                  - s3:ListBucket
+                  - s3:ListBucketMultipartUploads
+                  - s3:PutObject
+                Resource:
+                  - !GetAtt ArchiveBucket.Arn
+                  - !Sub ${ArchiveBucket.Arn}/*
+              - Effect: Allow
+                Action: logs:PutLogEvents
+                Resource: !GetAtt DeliveryLogGroup.Arn
+
+  Jb1Stream:
+    Type: AWS::KinesisFirehose::DeliveryStream
+    DependsOn: Jb1LogStream
+    Properties:
+      DeliveryStreamName: jbrowse-analytics-jb1
+      DeliveryStreamType: DirectPut
+      ExtendedS3DestinationConfiguration:
+        BucketARN: !GetAtt ArchiveBucket.Arn
+        RoleARN: !GetAtt DeliveryRole.Arn
+        Prefix: events/jb1/!{timestamp:yyyy}/!{timestamp:MM}/!{timestamp:dd}/
+        ErrorOutputPrefix: errors/jb1/!{firehose:error-output-type}/!{timestamp:yyyy}/!{timestamp:MM}/!{timestamp:dd}/
+        CompressionFormat: GZIP
+        FileExtension: .json.gz
+        BufferingHints:
+          IntervalInSeconds: 900
+          SizeInMBs: 64
+        CloudWatchLoggingOptions:
+          Enabled: true
+          LogGroupName: !Ref DeliveryLogGroup
+          LogStreamName: !Ref Jb1LogStream
+
+  Jb2Stream:
+    Type: AWS::KinesisFirehose::DeliveryStream
+    DependsOn: Jb2LogStream
+    Properties:
+      DeliveryStreamName: jbrowse-analytics-jb2
+      DeliveryStreamType: DirectPut
+      ExtendedS3DestinationConfiguration:
+        BucketARN: !GetAtt ArchiveBucket.Arn
+        RoleARN: !GetAtt DeliveryRole.Arn
+        Prefix: events/jb2/!{timestamp:yyyy}/!{timestamp:MM}/!{timestamp:dd}/
+        ErrorOutputPrefix: errors/jb2/!{firehose:error-output-type}/!{timestamp:yyyy}/!{timestamp:MM}/!{timestamp:dd}/
+        CompressionFormat: GZIP
+        FileExtension: .json.gz
+        BufferingHints:
+          IntervalInSeconds: 900
+          SizeInMBs: 64
+        CloudWatchLoggingOptions:
+          Enabled: true
+          LogGroupName: !Ref DeliveryLogGroup
+          LogStreamName: !Ref Jb2LogStream
+
+  LambdaWritePolicy:
+    Type: AWS::IAM::ManagedPolicy
+    Properties:
+      Description:
+        Lets the jbrowse-analytics Lambda write to the delivery streams
+      Roles:
+        - !Ref LambdaRoleName
+      PolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Action: firehose:PutRecord
+            Resource:
+              - !GetAtt Jb1Stream.Arn
+              - !GetAtt Jb2Stream.Arn
+
+Outputs:
+  ArchiveBucket:
+    Value: !Ref ArchiveBucket
+  Jb1Stream:
+    Value: !Ref Jb1Stream
+  Jb2Stream:
+    Value: !Ref Jb2Stream
