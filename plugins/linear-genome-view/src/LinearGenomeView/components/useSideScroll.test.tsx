@@ -6,6 +6,7 @@ import {
   FloatingLegend,
 } from '@jbrowse/display-ui'
 import { act, fireEvent, render } from '@testing-library/react'
+import { createPortal } from 'react-dom'
 
 import { useSideScroll } from './useSideScroll.ts'
 
@@ -229,6 +230,30 @@ test('a pan selects no text, and text is selectable again after', () => {
   expect(selectStart()).toBe(true)
   pointer('pointerup', { clientX: 100 })
   expect(selectStart()).toBe(false)
+})
+
+// React bubbles a portal's events to its React parent, so a press in a dialog
+// a track opened arrives here from outside the container. Taking it as a pan
+// blocked text selection in the dialog and scrolled the view behind it.
+test('a press in a portal is not a pan', () => {
+  const model = fakeView()
+  const { getByTestId } = render(
+    <Harness model={model}>
+      {createPortal(<div data-testid="dialog">stack trace</div>, document.body)}
+    </Harness>,
+  )
+  const dialog = getByTestId('dialog')
+
+  dragFrom(dialog)
+
+  expect(model.horizontalScroll).not.toHaveBeenCalled()
+  act(() => {
+    fireEvent.pointerDown(dialog, { button: 0, clientX: 100 })
+  })
+  expect(
+    dialog.dispatchEvent(new Event('selectstart', { cancelable: true })),
+  ).toBe(true)
+  pointer('pointerup', { clientX: 100 })
 })
 
 // A track's own pointer handlers read the pan off the container: no hover

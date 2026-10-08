@@ -77,9 +77,11 @@ export function useSideScroll(model: LinearGenomeViewModel) {
     }
     // a draggable element, a control that claimed the press (resize handles,
     // the scalebar, a legend), or a button: `closest`, since the press usually
-    // lands on a child of the control
+    // lands on a child of the control. `contains` rejects a press in a portal
+    // (a dialog a track opened), which React bubbles here from outside the host
     const target = event.target as HTMLElement
     if (
+      !host.contains(target) ||
       target.draggable ||
       target.closest('[data-gesture-owner]') ||
       target.closest('button')

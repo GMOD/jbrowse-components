@@ -203,7 +203,7 @@ const TrackContainer = observer(function TrackContainer({
         <ErrorBoundary
           key={display.id}
           FallbackComponent={e => (
-            <div className={classes.crashBanner}>
+            <div className={classes.crashBanner} data-gesture-owner="true">
               <ErrorBanner error={e.error} onReset={e.resetErrorBoundary} />
             </div>
           )}
