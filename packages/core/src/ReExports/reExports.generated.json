@@ -2545,6 +2545,7 @@
       "names": [
         "doAnalytics",
         "writeAWSAnalytics",
+        "writeAWSSessionEnd",
         "writeGAAnalytics"
       ],
       "worker": "real"
