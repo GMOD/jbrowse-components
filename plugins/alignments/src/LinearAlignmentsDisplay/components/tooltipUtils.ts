@@ -40,10 +40,10 @@ import type { CigarHitResult } from '../../shared/hitTestTypes.ts'
 import type { InsertSizeBand } from '../../shared/insertSizeStats.ts'
 import type { ReadColorCategory } from '../colorUtils.ts'
 import type { LengthAccumulator } from './lengthStats.ts'
-import type { VariantSortColumn } from '@jbrowse/alignments-core'
 import type {
   CoverageRowsBin,
   CoverageTooltipBin,
+  VariantSortColumn,
 } from '@jbrowse/alignments-core'
 
 // The interbase slice of a coverage position — what the interbase histogram bars
