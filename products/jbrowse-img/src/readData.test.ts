@@ -1,6 +1,7 @@
 import fs from 'node:fs'
 import os from 'node:os'
 import path from 'node:path'
+import { pathToFileURL } from 'node:url'
 
 import { readData } from './readData.ts'
 
@@ -16,8 +17,51 @@ test('a config assembly written as { name, uri } gets its sequence track', () =>
     expect(assembly.sequence).toEqual({
       type: 'ReferenceSequenceTrack',
       trackId: 'volvox-ReferenceSequenceTrack',
-      adapter: { uri: 'volvox.fa' },
+      adapter: {
+        uri: 'volvox.fa',
+        baseUri: pathToFileURL(`${tmpDir}${path.sep}`).href,
+      },
     })
+  } finally {
+    fs.rmSync(tmpDir, { recursive: true, force: true })
+  }
+})
+
+test('a uri relative to a --config file is a file beside it', () => {
+  const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'readData-relative-'))
+  const configFile = path.join(tmpDir, 'config.json')
+  fs.writeFileSync(
+    configFile,
+    JSON.stringify({
+      assemblies: [{ name: 'vv', uri: 'vv.fa' }],
+      tracks: [
+        {
+          trackId: 'reads',
+          type: 'AlignmentsTrack',
+          assemblyNames: ['vv'],
+          adapter: {
+            type: 'BamAdapter',
+            bamLocation: { uri: 'reads/t.bam' },
+            index: { location: { uri: 'https://example.org/t.bam.bai' } },
+          },
+        },
+      ],
+    }),
+  )
+  try {
+    const { tracks } = readData({ config: configFile })
+    const { bamLocation, index } = tracks[0]!.adapter as {
+      bamLocation: { uri: string; baseUri: string }
+      index: { location: { uri: string; baseUri: string } }
+    }
+    const base = pathToFileURL(`${tmpDir}${path.sep}`).href
+    expect(new URL(bamLocation.uri, bamLocation.baseUri).href).toBe(
+      `${base}reads/t.bam`,
+    )
+    // a uri that names its own host keeps it
+    expect(new URL(index.location.uri, index.location.baseUri).href).toBe(
+      'https://example.org/t.bam.bai',
+    )
   } finally {
     fs.rmSync(tmpDir, { recursive: true, force: true })
   }

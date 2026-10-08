@@ -1,6 +1,8 @@
 import path from 'node:path'
+import { pathToFileURL } from 'node:url'
 
 import { expandAssemblySequence } from '@jbrowse/core/assemblyManager/assemblyConfigSchema'
+import { addRelativeUris } from '@jbrowse/core/util/addRelativeUris'
 
 import { buildComparative, hasComparativeArgs } from './comparativeArgs.ts'
 import {
@@ -116,7 +118,9 @@ function uniqueTrackId(used: Set<string>, base: string) {
 // `configObject` is a config already fetched off the network (from --hub or a
 // URL --config, see resolveHub.ts); when present it stands in for the local
 // --config file read. Its adapters use remote `uri`s, so no localPath rewriting
-// applies.
+// applies. A --config file is the other way about: a `uri` in it relative to
+// the file, as a config a web server hosts beside its data writes them, is a
+// file beside it.
 export function readData(
   {
     assembly: asm,
@@ -152,7 +156,9 @@ export function readData(
     : undefined
 
   if (config && !configObject) {
-    resolveLocalPaths(configData, baseDirOf(config))
+    const baseDir = baseDirOf(config)
+    resolveLocalPaths(configData, baseDir)
+    addRelativeUris(configData, pathToFileURL(`${baseDir}${path.sep}`))
   }
 
   // the session.json can be a raw session or a json file with a "session"
