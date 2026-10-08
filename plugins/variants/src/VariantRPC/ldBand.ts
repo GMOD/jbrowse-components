@@ -16,8 +16,6 @@
  * it would make the common case worse to make the rare case tidier.
  */
 
-import { bandedCellCount } from '@jbrowse/ld-core'
-
 /** First `j` stored in row `i`. */
 export function bandRowFirstColumn(i: number, k: number) {
   return i > k ? i - k : 0
@@ -38,19 +36,10 @@ export function bandRowStart(i: number, k: number) {
   return (m * (m - 1)) / 2 + (i - m) * k
 }
 
-/**
- * Total cells stored for `n` SNPs at window `k` — algebraically `bandRowStart`
- * at `n`, and asserted against it in `ldBand.test.ts`.
- *
- * Re-exported from the generated twin of `ldUniforms.slang` rather than written
- * here, because this is the one function in the family the kernel also computes:
- * it decides how many cells the dispatch writes, and a host that disagreed would
- * size its buffer differently from the shader filling it. `//! js-export`
- * (adr-051) generates both spellings from the one source. The rest of the family is
- * CPU-only — the shader decodes with `decodeBanded` instead, which returns a
- * uint2 and so is outside the emitter's scalar subset.
- */
-export const bandCellCount = bandedCellCount
+/** Total cells stored for `n` SNPs at window `k`. */
+export function bandCellCount(n: number, k: number) {
+  return n < 2 ? 0 : bandRowStart(n, k)
+}
 
 /**
  * The window actually used for `n` SNPs. `maxVariantSeparation` is the config

@@ -15,7 +15,7 @@ in the export set and what deliberately does not. This file says what the
 tree currently looks like against that standard.
 
 Scanned 48 shaders with entry points. 132 functions
-are inside the emitter's subset, of which **104 are exported**.
+are inside the emitter's subset, of which **103 are exported**.
 
 ## Candidates
 

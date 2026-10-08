@@ -4,24 +4,6 @@
 // Scalar twins of ldUniforms.slang, transliterated from slangc's WGSL so
 // the Canvas2D and SVG paths run the shader's own math. See adr-051.
 
-function _min(a: number, b: number) {
-  return b < a || Number.isNaN(a) ? b : a
-}
-
 export function ldValueComputed(v: number): boolean {
   return (v > -1.5)
-}
-
-export function bandedCellCount(numSnps: number, band: number): number {
-  let _t0: boolean
-  if ((numSnps < 2)) {
-    _t0 = true
-  } else {
-    _t0 = (band == 0)
-  }
-  if (_t0) {
-    return 0
-  }
-  let _t1 = _min(numSnps, band)
-  return ((Math.trunc(((Math.imul(_t1, ((_t1 - 1) >>> 0))) >>> 0) / 2) + ((Math.imul(((numSnps - _t1) >>> 0), band)) >>> 0)) >>> 0)
 }

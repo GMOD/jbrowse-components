@@ -2,7 +2,7 @@
 // uniform-grid). The genomic variant ignores `uniformW`; keeping the struct
 // identical lets both shaders share a single UBO byte layout so the renderer
 // writes one uniform buffer per frame regardless of which pass draws.
-//! js-export: ldValueComputed, bandedCellCount
+//! js-export: ldValueComputed
 //! js-export-out: packages/ld-core/src/ldStats.generated.ts
 module ldUniforms;
 
@@ -74,18 +74,6 @@ public uint2 decodeTriangular(uint idx) {
   while ((i + 1u) * i / 2u <= idx) { i += 1u; }
   uint j = idx - i * (i - 1u) / 2u;
   return uint2(i, j);
-}
-
-// Cells stored for `numSnps` at window `band` — the TS `bandCellCount`, which
-// is `bandRowStart(numSnps, band)`. Guarded at the small end because `m - 1u`
-// would wrap in uint arithmetic where the TS twin merely goes negative and
-// multiplies to zero.
-public uint bandedCellCount(uint numSnps, uint band) {
-  if (numSnps < 2u || band == 0u) {
-    return 0u;
-  }
-  uint m = min(numSnps, band);
-  return m * (m - 1u) / 2u + (numSnps - m) * band;
 }
 
 // Decode a flat BANDED index into (i, j), i > j, where row i holds only its

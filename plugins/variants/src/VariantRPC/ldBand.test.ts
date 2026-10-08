@@ -90,18 +90,6 @@ describe('the banded layout', () => {
   })
 })
 
-// bandCellCount is the shader's own function (js-exported from
-// ldUniforms.slang); bandRowStart is CPU-only. They are the same formula, so
-// this is what keeps the hand-written half of the family tied to the generated
-// half rather than merely agreeing today.
-test('the generated cell count is bandRowStart at n', () => {
-  for (const n of [0, 1, 2, 3, 5, 8, 17, 64, 129, 1000]) {
-    for (const k of [1, 2, 3, 7, 16, 63, 200, 5000]) {
-      expect(bandCellCount(n, k)).toBe(n < 2 ? 0 : bandRowStart(n, k))
-    }
-  }
-})
-
 describe('resolveBand', () => {
   test('0 means the full triangle', () => {
     expect(resolveBand(100, 0)).toBe(99)
@@ -139,19 +127,9 @@ describe('the band is what makes the cost linear', () => {
     expect(full).toBeLessThan(4.01)
   })
 
-  // bandCellCount is the SHADER's function, so it counts in uint32 and wraps
-  // exactly where the kernel would. That is the honest answer — a host counting
-  // in float64 would disagree with the dispatch filling the buffer — but it
-  // means the count holds only while the `m*(m-1)` term fits u32, i.e. up to
-  // m = 65,536. What matters is WHICH side that binds: `m` is `min(n, k)`, so
-  // a banded matrix is limited by its WINDOW and an unbanded one by n. The band
-  // is what keeps you inside u32, not what risks it.
-  test('the count is uint32, and the band is the safe side of that', () => {
-    // Unbanded: exact to n = 65,537, wrapping at the next SNP.
+  test('the count is exact past 2^31, where a banded one stays small', () => {
     expect(bandCellCount(65_537, 65_536)).toBe(2_147_516_416)
-    expect(bandCellCount(65_538, 65_537)).toBe(98_305)
-    // Banded: a 500-window stays exact into the millions of SNPs, far past
-    // anything the fetch or the GPU output buffer would ever admit.
+    expect(bandCellCount(65_538, 65_537)).toBe(2_147_581_953)
     expect(bandCellCount(1_000_000, 500)).toBe(499_874_750)
     expect(bandCellCount(8_000_000, 500)).toBe(3_999_874_750)
   })
