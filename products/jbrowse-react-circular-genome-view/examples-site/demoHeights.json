@@ -1,15 +1,15 @@
 {
   "circular-synteny": 708,
+  "dark-theme": 408,
   "gene-density-marks": 708,
   "gene-density-ring": 708,
   "human": 408,
+  "inline-plugin": 408,
   "oat-homoeologs": 708,
   "session-in-url": 445,
   "show-track": 433,
-  "volvox": 408,
-  "dark-theme": 408,
-  "inline-plugin": 408,
   "track-shorthand": 408,
+  "volvox": 408,
   "web-worker": 408,
   "without-react": 445
 }
