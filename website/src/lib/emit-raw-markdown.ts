@@ -4,6 +4,7 @@ import path from 'node:path'
 import { absolutizeMarkdownLinks } from './absolutize-markdown-links.ts'
 import { retargetCodeBaseInMarkdown } from './code-base.ts'
 import { docId, slugFilename } from './doc-slug.ts'
+import { plainReferenceMarkdown } from './plain-reference-markdown.ts'
 import { tutorialBetaNotice } from './tutorial-beta-notice.ts'
 
 // Writes each doc's raw Markdown to `dist/docs/<slug>.md` (introduction ->
@@ -55,7 +56,10 @@ export async function emitRawMarkdown({
       tutorialBetaNotice && slug.startsWith('tutorials/')
         ? `${tutorialBetaNotice}\n\n`
         : ''
-    const md = `# ${title}\n\n${retargetCodeBaseInMarkdown(absolutizeMarkdownLinks(notice + body.trimStart(), origin))}\n`
+    const text = /^(config|models)\//.test(rel)
+      ? plainReferenceMarkdown(body)
+      : body
+    const md = `# ${title}\n\n${retargetCodeBaseInMarkdown(absolutizeMarkdownLinks(notice + text.trimStart(), origin))}\n`
     const out = path.join(distDir, 'docs', `${slug}.md`)
     await fs.mkdir(path.dirname(out), { recursive: true })
     await fs.writeFile(out, md)
