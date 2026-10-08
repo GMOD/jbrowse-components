@@ -128,8 +128,10 @@ describe('an LD join asked for through the fetch options', () => {
       sessionId: 's',
       adapterConfig: SLE_ADAPTER,
     })
-    const fetch = (start: number, region = SLE_REGION) =>
-      dataAdapter.getFeaturesArray(region, { ld: { start, refName: '2' } })
+    const fetch = (start: number, region = SLE_REGION) => {
+      const opts: GWASFetchOptions = { ld: { start, refName: '2' } }
+      return dataAdapter.getFeaturesArray(region, opts)
+    }
     await fetch(SLE_INDEX_START)
     const panned = await fetch(SLE_INDEX_START, {
       ...SLE_REGION,

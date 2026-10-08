@@ -32,7 +32,6 @@ const HIT_REGION = {
 // by the second mark, and every other point by the first.
 function makeResult({ region, opts }: FetchArgs) {
   const hit = HITS[region.refName]!
-  const index = opts?.ld?.index
   const drawn = manhattanFixture({
     x: [hit.pos],
     y: [hit.score],
@@ -40,10 +39,7 @@ function makeResult({ region, opts }: FetchArgs) {
   })
   const none = manhattanFixture({ x: [], y: [], flatbush: false })
   return {
-    layers:
-      index && 'start' in index && index.start === hit.pos
-        ? [none, drawn]
-        : [drawn, none],
+    layers: opts?.ld?.start === hit.pos ? [none, drawn] : [drawn, none],
   }
 }
 
