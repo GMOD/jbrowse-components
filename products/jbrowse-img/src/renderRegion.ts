@@ -590,10 +590,15 @@ const renderLinear: ModeRenderer = async ctx => {
     svg,
     alt: sortAt
       ? view.tracks.flatMap(track => {
-          const at = (
-            track.displays[0] as Partial<LinearAlignmentsDisplayModel>
-          ).nonReferenceAt?.(sortAt, opts.sortAllele)
-          return at ? [`${at.count}/${at.depth}`] : []
+          const display = track.displays[0] as
+            | Partial<LinearAlignmentsDisplayModel>
+            | undefined
+          // An alignments track with no read at the column still takes its
+          // place: dropped, the next track's count would read as this one's.
+          const at = display?.nonReferenceAt?.(sortAt, opts.sortAllele)
+          return display && 'nonReferenceAt' in display
+            ? [`${at?.count ?? 0}/${at?.depth ?? 0}`]
+            : []
         })
       : undefined,
   }
