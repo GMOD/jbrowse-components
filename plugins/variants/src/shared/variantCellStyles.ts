@@ -18,21 +18,18 @@ import type { Feature } from '@jbrowse/core/util'
 
 /**
  * Everything a cell loop needs to emit one cell: the packed color plus the two
- * facts the buckets and the insertion pass key off. `null` is "this genotype
- * paints nothing here" — the same answer `getPhasedColor` / `getAlleleColor`
- * spell as `''`.
+ * facts the buckets and the insertion pass key off. `null` means the genotype
+ * paints nothing here (`''` from `getPhasedColor` / `getAlleleColor`).
  */
 export interface VariantCellStyle {
   abgr: number
   isRef: boolean
   isAlt: boolean
-  // 0-255 alt dosage; 0 for ref and no-call. Gates the insertion marker and
-  // shades it, so a het bar draws paler than a hom one (see `altDosageByte`).
+  // 0-255 alt dosage; 0 for ref and no-call. Gates and shades the insertion
+  // marker (see `altDosageByte`).
   altDosage: number
-  // Which value of the cell-color scale this cell paints, as a `CELL_*` index.
-  // The cell loops OR `1 << category` into one mask as they emit, so the legend
-  // lists what is in the fetched cell data rather than what the site could in
-  // principle carry.
+  // a `CELL_*` index; the cell loops OR `1 << category` into the mask the
+  // legend lists
   category: number
 }
 
@@ -42,10 +39,8 @@ export const CELL_ALT_SECONDARY = 2
 export const CELL_NO_CALL = 3
 export const CELL_UNPHASED = 4
 
-// One haplotype's cell, classified from the ALLELE rather than from the color
-// that allele produced, because the color is not a safe proxy for it: reading
-// `isRef`/`isAlt` back off the string flagged every no-call alt-carrying once
-// one mode blended its no-call to a hex (see `altDosageByte`).
+// Classified from the ALLELE, never the color: a mode that blends its no-call
+// to a hex would read as alt-carrying (see `altDosageByte`).
 function styleForAllele(
   color: string,
   allele: string | undefined,
@@ -60,9 +55,8 @@ function styleForAllele(
     abgr: getCachedABGR(color),
     isRef,
     isAlt,
-    // Per HAPLOTYPE here, not per sample: a phased row either carries the allele
-    // or does not, and zygosity is already readable as the pattern across a
-    // sample's rows. So a drawn marker is always full strength in this mode.
+    // per haplotype, so a drawn marker is full strength; the rows carry the
+    // zygosity
     altDosage: isAlt ? 255 : 0,
     category: isRef
       ? CELL_REF
@@ -78,10 +72,9 @@ function styleForAllele(
  * One genotype's style in allele-count (dosage) mode, the same at every site,
  * so `makeSiteStyler` memoizes it per genotype code for the whole fetch.
  *
- * `altDosage` (and so `isAlt`) comes from the genotype, not from the color: this
- * mode's dosage shades are colord output, so none of them is string-equal to a
- * `NO_CALL_COLOR` / `REFERENCE_COLOR` constant. `isRef` can stay on the color
- * because `getAlleleColor` returns that constant by identity for an
+ * `altDosage` (and so `isAlt`) comes from the genotype, since the dosage shades
+ * are colord output and equal no color constant. `isRef` reads the color
+ * because `getAlleleColor` returns `REFERENCE_COLOR` by identity for an
  * all-reference call.
  */
 function buildAlleleCountStyle(
@@ -105,20 +98,14 @@ function buildAlleleCountStyle(
 }
 
 /**
- * One genotype's style at one site for every haplotype row, in phased mode.
+ * One genotype's style at one site for every haplotype row, in phased mode,
+ * indexed by `HP` so the per-cell loop is two array reads. An unphased-but-called
+ * or no-call genotype paints the same cell on every row, so those fill the
+ * whole array.
  *
- * Indexed by `HP`, so the per-cell loop is two array reads. A
- * genotype that is unphased-but-called, or a no-call, paints the same cell on
- * every haplotype row, so those fill the whole array — the mode decision is
- * made once per genotype instead of once per cell.
- *
- * `numHaplotypes` is the row count the sources ask for (max HP + 1). A sample
- * with fewer alleles than that keeps `null` at the haplotype it doesn't have —
- * mixed ploidy is routine, and drawing there would claim a haplotype the sample
- * does not carry (see `getPhasedColor`).
- *
- * Not used when coloring by phase set: PS is per-(feature, sample), so that
- * path has nothing site-wide to memoize and stays on the per-cell call.
+ * A sample with fewer alleles than `numHaplotypes` (max HP + 1) keeps `null` at
+ * the haplotypes it lacks, since drawing there would claim a haplotype it does
+ * not carry (see `getPhasedColor`). Phase-set coloring skips this table.
  */
 function buildPhasedStyles(
   genotype: string,
@@ -143,10 +130,9 @@ function buildPhasedStyles(
   return out
 }
 
-// The two fills a genotype that isn't phased-or-haploid paints, whichever
-// haplotype row it lands on. Shared, immutable and resolved once: a missing
-// unphased call (`./.`, `.`) is a no-call, not unphased data, so it draws as
-// no-call rather than the black "Unphased" fill.
+// The two fills of a genotype that isn't phased-or-haploid, shared and
+// immutable. A missing unphased call (`./.`, `.`) is a no-call, not the black
+// "Unphased" fill.
 const NO_CALL_STYLE: VariantCellStyle = {
   abgr: getCachedABGR(NO_CALL_COLOR),
   isRef: false,
@@ -167,19 +153,14 @@ function uncalledStyle(genotype: string) {
 }
 
 /**
- * The phased cell style when coloring by phase set, which is the one mode with
- * nothing site-wide to memoize: PS is a per-(feature, sample) FORMAT field, so
- * `buildPhasedStyles`' per-genotype table cannot answer for it and the color has
- * to be resolved per cell. `isRef`/`isAlt` come from the ALLELE, never from the
- * color: reading them back off the color string shipped a bug once the
- * allele-count path started blending its no-call shade to a hex (see
- * `altDosageByte`).
+ * The phased cell style when coloring by phase set. PS is a per-(feature,
+ * sample) FORMAT field, so `buildPhasedStyles`' per-genotype table cannot answer
+ * and the color resolves per cell. `isRef`/`isAlt` come from the ALLELE, never
+ * the color (see `altDosageByte`).
  *
- * A factory owning one scratch style, the same shape `makePhaseSetReader` uses
- * for the PS values themselves: this runs once per cell, so returning a fresh
- * object would be an allocation per cell on the worker's hottest loop. The
- * result is therefore valid only until the next call — every caller reads it
- * straight into its cell arrays.
+ * A factory owning one scratch style, as `makePhaseSetReader` does: this runs on
+ * the worker's hottest loop, where a fresh object per cell allocates. The
+ * result is valid only until the next call.
  */
 function makePhaseSetStyler() {
   const scratch: VariantCellStyle = {
@@ -216,8 +197,6 @@ function makePhaseSetStyler() {
     scratch.abgr = getCachedABGR(color)
     scratch.isRef = isRef
     scratch.isAlt = isAlt
-    // per haplotype in this mode, so a drawn marker is full strength; the rows
-    // carry the zygosity
     scratch.altDosage = isAlt ? 255 : 0
     scratch.category = isRef
       ? CELL_REF
@@ -231,10 +210,8 @@ function makePhaseSetStyler() {
 }
 
 /**
- * The haplotype-row count the phased cell loops build style tables for: one
- * past the highest `HP` any source asks for. A source with no `HP` at all
- * contributes nothing and reads back `undefined` from the table, i.e. paints
- * nothing — the same answer the per-cell `getPhasedColor` gave it.
+ * One past the highest `HP` any source asks for. A source with no `HP` reads
+ * back `undefined` from the table and paints nothing.
  */
 function countHaplotypes(sources: { HP?: number }[]) {
   let maxHp = -1
@@ -251,10 +228,9 @@ function countHaplotypes(sources: { HP?: number }[]) {
  * Each row's cell style at one site, for both cell loops: bind a site with
  * `site`, then read row `j` with `styleAt(j)`, where `null` paints nothing.
  *
- * The per-genotype memos are indexed by genotype code. The phased one is
- * cleared per site, since its entries bake in that site's most frequent alt,
- * and only for the codes the site used. Phase-set coloring is the one per-cell
- * path, because PS is per (site, sample).
+ * The per-genotype memos are indexed by genotype code. The phased one clears
+ * per site, for the codes the site used, since its entries bake in that site's
+ * most frequent alt.
  *
  * `styleAt` may return `makePhaseSetStyler`'s scratch, so a caller reads the
  * style into its cell arrays before the next call.
@@ -268,7 +244,6 @@ export function makeSiteStyler({
   colorByPhaseSet,
 }: {
   sources: ProcessedSource[]
-  // The canonical sample order the site's genotype codes are aligned to
   sampleNames: string[]
   // `genotypeDict[code - 1]` is a code's genotype; code 0 is "no genotype"
   genotypeDict: readonly string[]
@@ -306,8 +281,8 @@ export function makeSiteStyler({
         phasedStyles[touchedCodes[t]!] = undefined
       }
       touchedCodes.length = 0
-      // `read` answers false for a feature that cannot report FORMAT ranges,
-      // which then paints by allele
+      // `read` is false for a feature that cannot report FORMAT ranges, which
+      // paints by allele
       byPhaseSet =
         phased &&
         colorByPhaseSet === true &&

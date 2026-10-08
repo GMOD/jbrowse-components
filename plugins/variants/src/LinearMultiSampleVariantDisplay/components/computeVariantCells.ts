@@ -21,39 +21,31 @@ export interface VariantCellData extends CellHueValues {
   cellRowIndices: Uint32Array
   cellColors: Uint32Array
   // Fraction of the cell's genotype that is non-reference, as a 0-255 byte (see
-  // `altDosageByte`). Reference and no-call cells are 0: the insertion mark
-  // widens only the haplotypes that actually have the extra sequence, and
-  // widening a reference cell would claim every sample carries it. Above zero it
-  // also shades the marker, so a het draws paler than a hom.
+  // `altDosageByte`). Reference and no-call cells are 0, so the insertion mark
+  // widens only haplotypes that carry the extra sequence. Above zero it also
+  // shades the marker, so a het draws paler than a hom.
   cellAltDosage: Uint8Array
   cellFeatureIndices: Uint32Array
   numCells: number
-  // Where the non-reference bucket starts in the cell arrays (see the two-bucket
-  // reorder below). The hit-test binary-searches each bucket, so it needs the
-  // boundary; 0 when reference cells are skipped entirely.
+  // where the non-reference bucket starts; the hit-test binary-searches each
+  // bucket. 0 when reference cells are skipped
   refCellCount: number
-  // The records, in the order the cells index them: the columns layout's
-  // column order, the genomic layout's paint order.
+  // in the order the cells index them: column order in the columns layout,
+  // paint order in the genomic layout
   featureInfo: VariantFeatureInfo[]
-  // Absolute genomic (start, end) interleaved per feature. Every cell of one
-  // variant shares this span, so the hit-test and the hover highlight read it
-  // here rather than through a cell.
+  // Absolute genomic (start, end) interleaved per feature; every cell of a
+  // variant shares the span
   featurePositions: Uint32Array
-  // Spatial index over `featurePositions` — numFeatures intervals, not
-  // numFeatures x numSamples cells. See variantCellLookup.ts for why the
-  // per-cell index it replaced was redundant.
+  // spatial index over `featurePositions`, one interval per feature rather than
+  // per cell (variantCellLookup.ts)
   featureIndexData: ArrayBuffer
-  // bp this record inserts relative to the reference, per feature. 0 for SNPs
-  // and deletions, which the cell's own reference span already draws correctly.
-  // This is the one thing a cell's width cannot express: an insertion consumes
-  // ~no reference, so a 65 kb and a 1 bp one are both drawn at the 2px floor
-  // without it. Multiallelic records report their longest ALT, matching
-  // `getAlleleLength` and the `alleleLength()` jexl the docs already teach; a
-  // decomposed pangenome callset is biallelic, so there it is exact.
+  // bp this record inserts relative to the reference, per feature; 0 for SNPs
+  // and deletions. A cell's width cannot express it, since an insertion
+  // consumes ~no reference. Multiallelic records report their longest ALT,
+  // matching `getAlleleLength` and the `alleleLength()` jexl.
   featureInsertedBp: Int32Array
-  // `1 << CELL_*` for every cell-color category this pass actually painted. The
-  // legend is built from it, so an entry means "in the fetched cell data"
-  // rather than "the site could carry one".
+  // `1 << CELL_*` for every cell-color category this pass painted; the legend
+  // lists exactly these
   paintedCategories: number
 }
 
@@ -73,23 +65,17 @@ export function computeVariantCells({
   sources: ProcessedSource[]
   unit: VariantUnit
   referenceDrawingMode: string
-  // What the alt cells' hue reads off a variant, once per feature.
+  // what the alt cells' hue reads off a variant, once per feature
   hueValue?: (feature: Feature) => string | undefined
-  // Color phased alt cells by their FORMAT PS (phase set) instead of by allele.
-  // Explicit rather than inferred from the presence of PS: the implicit trigger
-  // silently swapped the alt-allele colors the legend was describing, with no
-  // way to switch back.
+  // Explicit, never inferred from the presence of PS: an implicit trigger
+  // swaps the alt-allele colors the legend describes
   colorByPhaseSet?: boolean
-  // featureId -> interned genotype codes, aligned to the canonical sample order
-  // and resolved once for every filtered variant by `analyzeVariants` (which
-  // returns this map for exactly that reason) so the per-cell loop never
-  // re-parses a feature's genotype block. Prepopulated for every entry of
-  // `filteredVariants` — a sites-only VCF gets an all-zero row, not undefined.
+  // Interned genotype codes aligned to the canonical sample order, from
+  // `analyzeVariants`. Holds every entry of `filteredVariants`; a sites-only VCF
+  // gets an all-zero row, not undefined.
   featureGenotypeCodes: ReadonlyMap<string, Uint32Array>
-  // The strings those codes resolve against: `genotypeDict[code - 1]`, with 0
-  // meaning the sample has no genotype at this site.
+  // `genotypeDict[code - 1]`; code 0 means no genotype at this site
   genotypeDict: readonly string[]
-  // The canonical sample order the code arrays are aligned to.
   sampleNames: string[]
   report?: ProgressReporter
 }): VariantCellData {
@@ -104,13 +90,10 @@ export function computeVariantCells({
   const numSources = sources.length
   const numFeatures = filteredVariants.length
   const maxCells = numFeatures * numSources
-  // One buffer set, written from both ends: reference cells forward from 0,
-  // non-reference backward from the end. That lands the two paint buckets in a
-  // single allocation instead of filling a scratch set and copying it into a
-  // second one — which, once the per-cell spatial index went away, was the
-  // largest transient left in the worker. The backward half lands reversed and
-  // is flipped back below; that flip is what preserves the stable
-  // (featureIndex, rowIndex) ordering `findCellIndex` binary-searches.
+  // One buffer set written from both ends: reference cells forward from 0,
+  // non-reference backward from the end, so the two paint buckets share one
+  // allocation. The backward half lands reversed and is flipped below to keep
+  // the (featureIndex, rowIndex) ordering `findCellIndex` binary-searches.
   const rowIndices = new Uint32Array(maxCells)
   const colors = new Uint32Array(maxCells)
   const altDosage = new Uint8Array(maxCells)
@@ -123,9 +106,8 @@ export function computeVariantCells({
 
   let paintedCategories = 0
   let altPainted = false
-  // Write cursors for the two buckets. `refEnd` grows up from 0, `nonRefStart`
-  // shrinks down from maxCells, so they can never collide before the buffer is
-  // full: every genotype contributes at most one cell.
+  // The cursors cannot collide before the buffer is full: every genotype
+  // contributes at most one cell.
   let refEnd = 0
   let nonRefStart = maxCells
 
@@ -143,9 +125,6 @@ export function computeVariantCells({
     featureIndices[ci] = featureIdx
   }
 
-  // Exchange two cells across every parallel array. Defined once (not per
-  // iteration), and it only reads the captured buffers, so the reversal below
-  // stays allocation-free.
   function swapCells(a: number, b: number) {
     const r = rowIndices[a]!
     rowIndices[a] = rowIndices[b]!
@@ -167,9 +146,6 @@ export function computeVariantCells({
     const featureId = feature.id()
     const start = feature.get('start')
     const end = feature.get('end')
-    // This variant's genotypes, resolved once: the codes shipped in
-    // `featureInfo` below, and the ones the styler reads. Prepopulated by
-    // `analyzeVariants` for every filtered variant.
     const codes = featureGenotypeCodes.get(featureId)!
     styler.site(feature, codes, mostFrequentAlt)
     altPainted = false
@@ -192,11 +168,8 @@ export function computeVariantCells({
     const inserted = getInsertedBp(feature)
     featureInfo.push({
       featureId,
-      // A monomorphic record spells ALT '.', which @gmod/vcf parses to
-      // undefined. It still ships (its alleles are called, just all reference)
-      // and draws a reference cell, so normalize here: `alt` is a non-optional
-      // contract and every tooltip / feature-widget consumer reads it
-      // unguarded.
+      // a monomorphic record's ALT '.' parses to undefined, and consumers read
+      // `alt` unguarded
       alt: (feature.get('ALT') as string[] | undefined) ?? [],
       ref: feature.get('REF') as string,
       name: feature.get('name')!,
@@ -212,20 +185,15 @@ export function computeVariantCells({
     featureIdx++
   }
 
-  // The backward-written bucket sits reversed at [nonRefStart, maxCells): cells
-  // appended c1..cN landed as cN..c1. Flip it in place so *within each bucket*
-  // the cells are again sorted by (featureIndex, rowIndex) — the invariant the
-  // hit-test binary-searches instead of carrying a per-cell spatial index (see
-  // variantCellLookup.ts). Anything that reorders cells (a different paint
-  // order, a per-cell sort) has to preserve it or rework that lookup.
+  // Flip the reversed backward bucket so each bucket is again sorted by
+  // (featureIndex, rowIndex), the invariant the hit-test binary-searches
+  // (variantCellLookup.ts). Any reordering of cells has to preserve it.
   for (let lo = nonRefStart, hi = maxCells - 1; lo < hi; lo++, hi--) {
     swapCells(lo, hi)
   }
 
-  // Ref cells first (when drawn), then non-ref, so alt paints over ref. Close
-  // the gap that skipped genotypes left between the two cursors; a no-op in the
-  // dense case (every sample genotyped at every site, reference cells drawn),
-  // where they already meet.
+  // Ref cells first, then non-ref, so alt paints over ref. Closes the gap that
+  // skipped genotypes leave between the cursors.
   const refCellCount = refEnd
   const numCells = refCellCount + (maxCells - nonRefStart)
   if (nonRefStart !== refCellCount) {
@@ -235,28 +203,17 @@ export function computeVariantCells({
     featureIndices.copyWithin(refCellCount, nonRefStart, maxCells)
   }
 
-  // Trim to the used prefix. `slice` copies, so it is skipped when nothing was
-  // skipped and the buffers are already exact — which is precisely the case
-  // that costs memory, a fully-genotyped VCF filling every cell.
+  // `slice` copies, so skip it when the buffers are already exact, which is the
+  // fully-genotyped case that costs the most memory
   const trim = numCells !== maxCells
 
-  // One interval per *feature*, not per cell. Every cell of a variant shares its
-  // x-extent, so a per-cell index stored numSamples identical copies of each
-  // interval to answer a question with only numFeatures distinct answers — and
-  // at 21.3 bytes/cell (box + tree nodes + index array) it was the largest thing
-  // in the payload by itself, more than every other per-cell array combined:
-  // 61 MB for 1000 variants x 3000 samples, against 33 KB here. The row half of
-  // the old 2-D query is now arithmetic on the cursor Y, and "is there a cell at
-  // (feature, row)" is a binary search over the bucket ordering above.
-  //
-  // Uint32Array rather than the Float64Array default: genomic positions come
-  // straight out of `featurePositions`, so it's the exact domain and no
-  // narrowing. `Flatbush.from` reads the element type back off the header on the
-  // client. Query bounds may still be fractional or negative; those are compared
-  // as plain numbers, never stored.
-  //
-  // Flatbush requires at least one add() per the constructor-declared count, so
-  // the empty case gets a single degenerate entry hit-testing will never match.
+  // One interval per feature, not per cell: every cell of a variant shares its
+  // x-extent. The row half of a hit is arithmetic on the cursor Y, and "is there
+  // a cell at (feature, row)" is a binary search over the bucket ordering.
+  // Uint32Array rather than the Float64Array default, the exact domain of
+  // `featurePositions`; `Flatbush.from` reads the element type off the header.
+  // Flatbush requires one add() per declared count, so the empty case gets a
+  // degenerate entry hit-testing never matches.
   const featureIndex = new Flatbush(Math.max(numFeatures, 1), 16, Uint32Array)
   if (numFeatures > 0) {
     for (let i = 0; i < numFeatures; i++) {

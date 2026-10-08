@@ -5,8 +5,7 @@ import { solidColorItem } from '@jbrowse/display-kit/colorByMenu'
 import { featureColorEncoding } from '@jbrowse/display-kit/colorConfigSchema'
 import { types } from '@jbrowse/mobx-state-tree'
 // the subpath, not the barrel: the barrel is eager, and a value edge from it
-// into the canvas base display model would undo that display's lazy loading.
-// This module is itself only reached through LinearVariantDisplay's own loader.
+// into the canvas base display model would undo that display's lazy loading
 import linearCanvasBaseDisplayStateModelFactory from '@jbrowse/plugin-canvas/LinearBasicDisplay/baseStateModel'
 
 import { VARIANT_FEATURE_WIDGET } from '../shared/constants.ts'
@@ -125,9 +124,7 @@ export default function stateModelFactory(
         /**
          * #method
          * The shared feature menu plus, on a breakend record, the row that
-         * opens the split view for it. Super-captured rather than replaced, so
-         * every generic row (details, zoom to, highlight, show/hide, copy)
-         * stays where a reader already learned it.
+         * opens the split view for it.
          */
         contextMenuItems(): MenuItem[] {
           return [...superContextMenuItems(), ...breakendMenuItems(self)]
@@ -137,12 +134,10 @@ export default function stateModelFactory(
     .views(self => ({
       /**
        * #getter
-       * Renames the shared canvas vocabulary for this display: every menu row,
-       * chip and indicator that names what the track holds reads this, so a
-       * variant track says "Variant height", "Hide this variant", "Showing 3
-       * variants" instead of inheriting the gene-oriented "feature". The
-       * per-hit noun in the context menu still comes from the annotation's own
-       * type where it has one.
+       * Names what the track holds in every menu row, chip and indicator, so
+       * a variant track says "Variant height" and "Showing 3 variants" rather
+       * than "feature". The context menu's per-hit noun still comes from the
+       * annotation's own type where it has one.
        */
       get featureNoun() {
         return 'variant'
@@ -194,19 +189,13 @@ export default function stateModelFactory(
     .views(self => ({
       /**
        * #method
+       * The Color by entries without the base's Strand radio, plus one-click
+       * consequence impact (SnpEff ANN / VEP CSQ) and SV type presets.
        */
-      // Variants have no UTRs and no strand, so drop the base's "Strand" radio
-      // and open the solid-color dialog without the gene-oriented UTR row. Add
-      // one-click "consequence impact" (SnpEff ANN / VEP CSQ) and "SV type"
-      // presets. The inherited colorMenuItems() wraps these in the same "Color
-      // by..." entry.
-      //
-      // Its own block, after the two getters it reads, so it reaches them
-      // through `self`. This is a documented extension seam, and a subclass
-      // super-captures a seam by destructuring it — at which point `this` is
-      // undefined and the method throws. Same rule and same reason as
-      // `isGeneLike`'s (pluginFacingDisplayApi.test.ts); a getter is safe with
-      // `this` because it is always read through a receiver, a method is not.
+      // Its own block after the getters it reads, through `self`, never
+      // `this`: a subclass super-captures this extension seam by destructuring,
+      // which leaves `this` undefined (as `isGeneLike`,
+      // pluginFacingDisplayApi.test.ts).
       colorBySubMenuItems() {
         const preset = self.colorsByConsequenceImpact || self.colorsBySvType
         return [
@@ -260,11 +249,11 @@ export default function stateModelFactory(
       return {
         /**
          * #action
+         * The base display's filter dialog, seeded with the VCF vocabulary
+         * (`VARIANT_FILTER_EXAMPLES`).
          */
-        // Same dialog as the base display's, seeded with the VCF vocabulary
-        // instead of the GFF one — see VARIANT_FILTER_EXAMPLES. Overridden
-        // rather than parameterized on the base because the two multi-sample
-        // displays and LD want the same list and none of them descends from it.
+        // Overridden rather than parameterized on the base: the other variant
+        // displays want the same list and none descends from it.
         openFilterDialog() {
           getDialogHost(self).queueDialog(handleClose => [
             JexlFilterDialog,

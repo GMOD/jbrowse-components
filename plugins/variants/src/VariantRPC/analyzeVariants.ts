@@ -30,29 +30,22 @@ export interface SimplifiedVariantFeature {
   }
 }
 
-// How many distinct genotypes one site is expected to carry. A biallelic site
-// has four ('0|0', '0|1', '1|0', '1|1') plus the no-call spellings; past this
-// the scan simply stops memoizing and pays the dict Map, so the number sizes
-// the fast path rather than bounding correctness.
+// Distinct genotypes one site memoizes; past this the scan pays the dict Map,
+// so the number sizes the fast path and does not bound correctness.
 const SITE_GENOTYPE_MEMO_SIZE = 32
 
-// The whole genotype as one int, or 0 when it doesn't fit. Four characters is
-// the width that matters: it holds every genotype a diploid biallelic-to-
-// 9-allele callset spells, which is nearly every cell of nearly every VCF. No
-// ASCII character is 0, so the zero padding of a shorter genotype cannot look
-// like a longer one, and 0 is free to mean "didn't pack".
-//
-// Exported for the test that pins exactly that: distinct genotypes must not
-// collide, and everything past four characters must decline.
+// The whole genotype as one int, or 0 when it doesn't fit. No ASCII character
+// is 0, so a shorter genotype's zero padding cannot look like a longer one, and
+// 0 means "didn't pack". Exported for the test that pins that distinct
+// genotypes never collide and everything past four characters declines.
 export function packGenotypeKey(str: string, start: number, end: number) {
   const len = end - start
   if (len === 0 || len > 4) {
     return 0
   }
-  // `seen` accumulates the raw code units so one test at the end can reject a
-  // non-ASCII character. It has to be rejected rather than truncated: a code
-  // unit above 0xFF would spill out of its byte and could land on the key of a
-  // different genotype, which is a silently wrong cell rather than a slow one.
+  // `seen` collects the raw code units to reject a non-ASCII character rather
+  // than truncate it: a unit above 0xFF would spill out of its byte onto the
+  // key of a different genotype, a silently wrong cell.
   const c0 = str.charCodeAt(start)
   let key = c0
   let seen = c0
@@ -74,7 +67,6 @@ export function packGenotypeKey(str: string, start: number, end: number) {
   return (seen & 0xff80) === 0 ? key : 0
 }
 
-// The most alleles any of a sample's genotypes carried
 function accumulatePloidy(
   samplePloidy: Record<string, number>,
   key: string,
@@ -87,50 +79,32 @@ function accumulatePloidy(
 }
 
 export interface AnalyzedVariants {
-  // The features the filters kept, each with its most frequent alt allele
   filteredVariants: FilteredVariant[]
   samplePloidy: Record<string, number>
-  // Whether any called genotype is one the phased painter treats as phased or
-  // haploid data — `isPhasedOrHaploid` in shared/getPhasedColor.ts, i.e. it
-  // carries no `/`. Not "any `|`": a pangenome callset is haploid per assembly
-  // path and `vg deconstruct` writes bare `0`/`1`/`23`, so no `|` appears
-  // anywhere in a file phased mode renders correctly. This is what gates the
-  // menu entry, so the gate matches the painter.
-  //
-  // The one place it is narrower than the per-genotype predicate is an uncalled
-  // genotype: `.` and `.|.` carry no `/` but are no data, so they count toward
-  // neither this nor the legend's "Unphased" entry, which the paint loops raise
-  // only for a cell they actually drew black. A bare `.` is how plenty of files
-  // spell a missing diploid call, and treating that as haploid evidence would
-  // offer the mode on any unphased callset with a hole in it.
+  // Whether any called genotype is phased or haploid data per
+  // `isPhasedOrHaploid` in shared/getPhasedColor.ts, i.e. carries no `/`. Not
+  // "any `|`": pangenome callsets are haploid per assembly path and write bare
+  // `0`/`1`, so the gate has to match the painter. An uncalled genotype (`.`,
+  // `.|.`) counts toward neither this nor the legend's "Unphased" entry, since
+  // a bare `.` is how many files spell a missing diploid call.
   hasPhasedOrHaploid: boolean
   hasConsequence: boolean
   hasPhaseSet: boolean
-  // Whether any visible record has a structural class, which gates the "Color
-  // by...→SV type" entry.
   hasSvType: boolean
-  // The interned genotype payload, built here rather than in a later pass: per
-  // feature a Uint32Array of codes aligned to `sampleNames` (0 = no genotype),
-  // resolving against the shared `genotypeDict`. See shared/genotypeCodec.ts.
+  // per feature, codes aligned to `sampleNames` (0 = no genotype) against
+  // `genotypeDict`; see shared/genotypeCodec.ts
   featureGenotypeCodes: Map<string, Uint32Array>
   genotypeDict: string[]
   sampleNames: string[]
 }
 
 // Canonical sample order for the code arrays: the union of every header sample
-// list in the fetch, in first-seen order. Read per feature rather than from the
-// first one because SplitVcfTabixAdapter opens a different file, and so a
-// different header, per refName. The array is identity-stable per parser, so
-// this walks each distinct header once, not once per variant — tracked as a set
-// of identities rather than just the previous one, because
-// `getFeaturesInMultipleRegions` merges the per-region streams and a view
-// spanning two contigs hands back their features interleaved.
-//
-// Empty for an adapter whose features carry no header sample list at all; that
-// path takes its order from the genotype records instead, after the pass.
-//
-// Exported for the clustering matrix builders, which need the same union for
-// the same reason and used to take feature 0's header alone.
+// list in the fetch, in first-seen order, because SplitVcfTabixAdapter has a
+// different header per refName. A set of header identities, not just the
+// previous one, because `getFeaturesInMultipleRegions` interleaves the features
+// of a view spanning two contigs. Empty when no feature carries a header list;
+// that path takes its order from the genotype records after the pass.
+// Exported for the clustering matrix builders.
 export function collectSampleNames(features: Feature[]) {
   const sampleNames: string[] = []
   const seen = new Set<string>()
@@ -154,20 +128,12 @@ export function collectSampleNames(features: Feature[]) {
  * Where each slot of one feature's own header lands in the canonical order, or
  * `undefined` when the two already agree position for position.
  *
- * `processGenotypes` documents `sampleIdx` as "the 0-based position in the
- * header sample list" — the header of the file THAT feature came from. The
- * canonical order is a union across every header in the fetch, so the two are
- * the same list only while every header agrees with the union. That is the case
- * for every adapter with one header, which is every adapter but
- * SplitVcfTabixAdapter, and for split files that all share a sample list.
- *
- * The union exists for split files whose headers disagree: two files that order
- * their samples differently, or where one omits a sample another has (a chrY
- * file called on the male subset, say). There union position and header position
- * diverge after the first difference, and indexing the union by `sampleIdx`
- * files each genotype, and each sample's ploidy, against a neighbouring sample,
- * which then draws the wrong sample's calls. `undefined` for the agreeing case
- * keeps the hot callback's read count unchanged there.
+ * `processGenotypes` reports `sampleIdx` against the header of the file that
+ * feature came from, while the canonical order is the union across the fetch.
+ * They differ only for split files whose headers disagree (a different sample
+ * order, or a sample one file omits); indexing the union by `sampleIdx` there
+ * files each genotype and ploidy against a neighbouring sample. `undefined`
+ * keeps the hot callback's read count unchanged in the agreeing case.
  */
 export function buildHeaderRemap(
   names: string[] | undefined,
@@ -190,8 +156,7 @@ export function buildHeaderRemap(
 
 /**
  * `buildHeaderRemap` for each feature of a fetch, rebuilt only when the header
- * changes: a header array is identity-stable per parser, so that is once per
- * file.
+ * array changes, which is once per file.
  */
 export function makeHeaderRemapper(columnByName: Map<string, number>) {
   let lastNames: string[] | undefined
@@ -207,22 +172,17 @@ export function makeHeaderRemapper(columnByName: Map<string, number>) {
 }
 
 /**
- * The one pass over a fetch's genotypes: the feature filters, and everything
- * the cell loops and the legend need — per-sample ploidy, the legend
- * flags and each kept feature's interned genotype codes.
+ * The one pass over a fetch's genotypes: the feature filters, per-sample
+ * ploidy, the legend flags and each kept feature's interned genotype codes.
  *
  * `processGenotypes` reports each genotype as a range into the line, and a
- * site carries a handful of distinct genotypes across thousands of samples, so
- * a per-site memo of the ranges already seen answers almost every sample
- * without materializing its substring. The memo also counts how many samples
- * carry each entry, which is all the MAF and missingness filters need: their
- * allele counts come from each distinct genotype once, weighted by its count,
- * rather than from a second scan of every line.
+ * site carries few distinct genotypes across thousands of samples, so a
+ * per-site memo of ranges already seen answers most samples without
+ * materializing a substring. The memo also counts samples per entry, so the
+ * MAF and missingness filters weigh each distinct genotype once.
  *
- * With a MAF or missingness threshold set, `getFilteredVariants`' cheaper
- * count drops the sites it rejects first: the analysis costs more per cell than
- * the count does, and a threshold typically keeps a small fraction of a
- * window. Ploidy folds in from the sites the analysis walks.
+ * With a MAF or missingness threshold set, `getFilteredVariants`' cheaper count
+ * drops rejected sites before the analysis walks the rest.
  */
 export function analyzeVariants({
   features,
@@ -243,8 +203,6 @@ export function analyzeVariants({
   let hasPhaseSet = false
   let hasSvType = false
 
-  // With a threshold set, a cheaper counting pass drops what it rejects before
-  // the analysis walks the rest; unset, the analysis is the only pass.
   const passing =
     minorAlleleFrequencyFilter > 0 || maxMissingnessFilter < 1
       ? getFilteredVariants({
@@ -265,14 +223,9 @@ export function analyzeVariants({
   const sampleIndexByName = buildSampleIndex(sampleNames)
   const headerRemapOf = makeHeaderRemapper(sampleIndexByName)
 
-  // Per-site memo of the genotype ranges already seen, as parallel arrays so
-  // the scan allocates nothing. A hit reuses the interned code and the
-  // classification, so the char walk runs once per (site, distinct genotype)
-  // rather than once per cell, and bumps the entry's sample count.
-  //
-  // `memoKey` is what a probe compares: a genotype of four characters or fewer
-  // packs whole into one int (`packGenotypeKey`), and a longer one keys 0 and
-  // falls back to the range compare.
+  // Per-site memo of genotype ranges already seen, as parallel arrays so the
+  // scan allocates nothing. `memoKey` is the packed genotype
+  // (`packGenotypeKey`); a longer genotype keys 0 and compares by range.
   const memoKey = new Int32Array(SITE_GENOTYPE_MEMO_SIZE)
   const memoStart = new Int32Array(SITE_GENOTYPE_MEMO_SIZE)
   const memoLen = new Int32Array(SITE_GENOTYPE_MEMO_SIZE)
@@ -280,16 +233,14 @@ export function analyzeVariants({
   const memoPloidy = new Int32Array(SITE_GENOTYPE_MEMO_SIZE)
   const memoCount = new Int32Array(SITE_GENOTYPE_MEMO_SIZE)
 
-  // Per-sample ploidy, indexed by canonical column and folded into
-  // `samplePloidy` once after the pass. Ploidy 0 means the column was never
-  // reported, which keeps a sample with no genotype out of `samplePloidy`.
+  // Ploidy 0 means the column was never reported, which keeps a sample with no
+  // genotype out of `samplePloidy`.
   const ploidyByColumn = new Int32Array(numSamples)
 
-  // Records to intern once the canonical order is known; only ever populated on
-  // the no-header-sample-list path below.
+  // only populated on the no-header-sample-list path
   const pendingRecords: [string, Record<string, string>][] = []
 
-  // A dropped site's codes, zeroed for the next site to fill
+  // a dropped site's codes, zeroed for the next site to fill
   let spareCodes: Uint32Array | undefined
 
   for (let featureIdx = 0; featureIdx < passing.length; featureIdx++) {
@@ -303,8 +254,8 @@ export function analyzeVariants({
       const siteCodes = spareCodes ?? new Uint32Array(numSamples)
       spareCodes = undefined
       codes = siteCodes
-      // `sampleIdx` counts against this feature's own header; `codes` and
-      // `sampleNames` are the canonical union (see `buildHeaderRemap`).
+      // `sampleIdx` counts against the feature's own header, `codes` against
+      // the canonical union (see `buildHeaderRemap`)
       const remap = headerRemapOf(feature)
       // genotypes past a full memo are counted as they come
       const overflow = newAlleleBuckets()
@@ -376,8 +327,8 @@ export function analyzeVariants({
           ploidyByColumn[column] = ploidy
         }
 
-        // An empty range is a sample whose colon-separated FORMAT fields stop
-        // before GT: code 0, "no genotype", counted as one no-call allele.
+        // an empty range is a sample whose FORMAT fields stop before GT: code
+        // 0, counted as one no-call allele
         const code =
           len === 0
             ? 0
@@ -466,10 +417,8 @@ export function analyzeVariants({
     }
   }
 
-  // Fold the column-indexed ploidy into `samplePloidy`, through the same merge
-  // the record path uses so a fetch mixing the two agrees. Runs before the
-  // record block below, which reads `samplePloidy`'s keys to extend the
-  // canonical order.
+  // Runs before the record block below, which reads `samplePloidy`'s keys to
+  // extend the canonical order.
   for (let column = 0; column < numSamples; column++) {
     const ploidy = ploidyByColumn[column]!
     if (ploidy > 0) {
@@ -478,8 +427,7 @@ export function analyzeVariants({
   }
 
   if (pendingRecords.length > 0) {
-    // Record-backed adapters: the sample universe is whatever the records
-    // mention, in first-seen order.
+    // record-backed adapters: the samples are whatever the records mention
     for (const key in samplePloidy) {
       if (!sampleIndexByName.has(key)) {
         sampleIndexByName.set(key, sampleNames.length)
@@ -517,10 +465,6 @@ export function analyzeVariants({
   }
 }
 
-/**
- * The positional fields the main thread needs of each kept variant, in the
- * order it lists them.
- */
 export function simplifyFeatures(
   filteredVariants: FilteredVariant[],
 ): SimplifiedVariantFeature[] {
@@ -535,9 +479,8 @@ export function simplifyFeatures(
   }))
 }
 
-// Position of each source's sample in the canonical `sampleNames` order, or -1
-// for a source the payload carries no genotypes for. Resolved once per fetch so
-// the cell loops index a typed array instead of hashing a sample name per cell.
+// -1 for a source the payload carries no genotypes for; the cell loops index
+// this typed array rather than hashing a sample name per cell
 export function buildSourceSampleIndices(
   sources: { sampleName: string }[],
   sampleNames: string[],

@@ -262,8 +262,8 @@ export default function stateModelFactory(configSchema: LDDisplayConfigSchema) {
       /**
        * #getter
        * The pair window the loaded matrix was computed at, or undefined for
-       * the whole triangle. The status bar names it: a pair past it is not
-       * drawn, which reads the same as no linkage on a light background.
+       * the whole triangle. The status bar names it, since a pair past it is
+       * not drawn and reads as no linkage.
        */
       get loadedLDWindow(): number | undefined {
         const data = self.rpcData
@@ -285,10 +285,9 @@ export default function stateModelFactory(configSchema: LDDisplayConfigSchema) {
     .views(self => ({
       /**
        * #getter
-       * The `color` object as it paints, under the preset of the metric the
-       * loaded values are, so a file serving the other column, and a stale
-       * triangle during a metric switch's refetch, keep the hue they have.
-       * Both presets name a scheme, so the encoding always carries one.
+       * The `color` object under the preset of the loaded metric, so a stale
+       * triangle during a metric switch keeps its hue. Both presets name a
+       * scheme, so the encoding always carries one.
        */
       get colorEncoding(): ContinuousRef & { scheme: ColorSchemeName } {
         return matrixColorEncodingOf(
@@ -301,9 +300,9 @@ export default function stateModelFactory(configSchema: LDDisplayConfigSchema) {
       },
       /**
        * #getter
-       * What the `color` object says that cannot paint as written, as the
-       * corner indicator lists it: the same lines `plotProblems` and
-       * `jbrowse validate` report.
+       * What the `color` object says that cannot paint as written; the corner
+       * indicator lists the same lines `plotProblems` and `jbrowse validate`
+       * report.
        */
       get notices(): string[] {
         return colorNotices(
@@ -340,9 +339,9 @@ export default function stateModelFactory(configSchema: LDDisplayConfigSchema) {
     .views(self => ({
       /**
        * #getter
-       * The ramp's 256 entries: the GPU's texture, the Canvas2D fill and the
-       * legend read this one table. It reads `colorScheme` and `colorReverse`
-       * rather than the encoding, so a domain edit re-uploads no texture.
+       * The ramp's 256 entries, read by the GPU texture, the Canvas2D fill and
+       * the legend. Reads `colorScheme` and `colorReverse` rather than the
+       * encoding, so a domain edit re-uploads no texture.
        */
       get colorRamp(): Uint8Array {
         return rampLutOf({
@@ -405,8 +404,8 @@ export default function stateModelFactory(configSchema: LDDisplayConfigSchema) {
       /**
        * #method
        * Viewport x of a fractional column index: `i + 0.5` is column i's apex.
-       * Through the payload's own column width, so it follows the live
-       * transform through a zoom's refetch.
+       * Uses the payload's own column width, so it follows the live transform
+       * through a zoom's refetch.
        */
       columnX(column: number) {
         const { viewScale, viewOffsetX } = self.viewTransform
