@@ -231,7 +231,7 @@
     {
       "type": "SyntenyTrack",
       "trackId": "hprc_multiway",
-      "name": "HPRC haplotypes vs GRCh38 (hg38 + 8 haplotypes, unpacked from the release 2 GFA)",
+      "name": "HPRC haplotypes vs GRCh38 (hg38 + 8 haplotypes, unpacked from the v2.1 GFA)",
       "assemblyNames": [
         "hg38",
         "HG01109.1",

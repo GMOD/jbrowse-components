@@ -33,7 +33,7 @@ const PIF_ASSEMBLIES = ['hg38', ...HAPLOTYPES]
 const LANES_PIF_TRACK = {
   type: 'SyntenyTrack',
   trackId: LANES_TRACK,
-  name: 'HPRC haplotypes vs GRCh38 (hg38 + 8 haplotypes, unpacked from the release 2 GFA)',
+  name: 'HPRC haplotypes vs GRCh38 (hg38 + 8 haplotypes, unpacked from the v2.1 GFA)',
   assemblyNames: PIF_ASSEMBLIES,
   adapter: {
     type: 'MultiGenomeIndexedPAFAdapter',
