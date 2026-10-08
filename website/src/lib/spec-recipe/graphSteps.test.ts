@@ -41,7 +41,7 @@ test("a graph track's pane settings are track menu steps", () => {
     expect.arrayContaining([
       'Track menu → Layout → Force-directed layout',
       'Track menu → Color → Reference position',
-      'Track menu → Mark bubbles (unchecked)',
+      'Track menu → Show... → Show bubble halos (unchecked)',
       'Track menu → Settings → Bubble spread → Open bubbles',
     ]),
   )
@@ -62,7 +62,7 @@ test('the same names on a standalone view name its toolbar', () => {
   expect(titles).toEqual(
     expect.arrayContaining([
       'Graph view toolbar → Layout → Force-directed layout',
-      'Graph view menu → Show deletion edges (checked)',
+      'Graph view menu → Show... → Show deletion edges (checked)',
     ]),
   )
 })

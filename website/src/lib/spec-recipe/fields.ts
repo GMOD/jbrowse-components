@@ -1172,12 +1172,14 @@ export const GRAPH_LABELS: Record<string, string[]> = {
   'the track menu': [
     'Layout',
     'Color',
-    'Walk',
-    'Mark bubbles',
+    'Haplotypes',
+    'Show...',
+    'Show bubble halos',
     'Show deletion edges',
-    'Genes on the backbone',
+    'Show genes on the backbone',
     'Settings',
   ],
+  'the view toolbar': ['Highlight haplotypes...'],
   'the settings dialog itself': [
     'Graph context',
     'Layout quality',
@@ -1220,14 +1222,14 @@ const graphSettingsField =
       : undefined
   }
 
-// A checkbox the track menu carries itself, which the standalone view keeps
-// under `onView`.
+// A checkbox of the Show... submenu, which the track menu and the standalone
+// view's menu both carry.
 const graphCheckbox =
-  (label: string, onView: (context: FieldContext) => string): FieldRecipe =>
+  (label: string): FieldRecipe =>
   (value, context) =>
     typeof value === 'boolean'
       ? {
-          path: `${isGraphTrack(context) ? TRACK_MENU : onView(context)} → ${label} (${value ? 'checked' : 'unchecked'})`,
+          path: `${graphSurface(context, 'Graph view menu')} → Show... → ${label} (${value ? 'checked' : 'unchecked'})`,
         }
       : undefined
 
@@ -1290,17 +1292,17 @@ const graphFields: Record<string, FieldRecipe> = {
       return undefined
     }
     const menu = isGraphTrack(context)
-      ? `${TRACK_MENU} → Walk`
-      : 'Graph view toolbar → Walks'
+      ? `${TRACK_MENU} → Haplotypes`
+      : 'Graph view toolbar → Highlight haplotypes...'
     const walks = value.map(layer => (layer as { walk: string }).walk)
     return {
       path: `${menu} → ${walks.join(', ')}`,
-      note: "Lifts each walk out of the drawing as a lane of its own and fades the rest. The Walk menu's Colour item sets what a lane's colour follows and its palette. The menu names each walk by the shortest part of its name that tells it apart.",
+      note: "Lifts each walk out of the drawing as a lane of its own and fades the rest. Color highlighted... in the Haplotypes menu sets what a lane's colour follows and its palette. The menu names each walk by the shortest part of its name that tells it apart.",
     }
   },
-  showBubbles: graphCheckbox('Mark bubbles', graphSettings),
-  showGenes: graphCheckbox('Genes on the backbone', graphSettings),
-  showDeletionEdges: graphCheckbox('Show deletion edges', () => 'Graph view menu'),
+  showBubbles: graphCheckbox('Show bubble halos'),
+  showGenes: graphCheckbox('Show genes on the backbone'),
+  showDeletionEdges: graphCheckbox('Show deletion edges'),
 }
 
 // A graph track entry states the pane's settings under `pane`, which

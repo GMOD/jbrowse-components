@@ -343,9 +343,9 @@ inside it, so a superbubble opens level by level.
 The graph draws the session's gene track onto the backbone. Exons are dark
 stretches along their reference nodes, and each gene's name is pinned under the
 backbone at the gene's midpoint. An allele has no reference coordinates and
-shows no exon. **Genes on the backbone** in the track menu turns the genes off,
-and **Gene track** in its **Settings** picks the track when the assembly has
-more than one.
+shows no exon. **Show... → Show genes on the backbone** in the track menu turns
+the genes off, and **Gene track** in its **Settings** picks the track when the
+assembly has more than one.
 
 A graph with walks, such as a GBZ cut or a GFA with P or W lines, supports three
 more displays. **Node width** in the track menu's **Settings** draws a node
