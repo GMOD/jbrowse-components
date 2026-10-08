@@ -965,8 +965,8 @@ importers:
         specifier: ^2.3.1
         version: 2.3.1
       '@gmod/tabix':
-        specifier: ^3.9.1
-        version: 3.9.1
+        specifier: ^3.10.0
+        version: 3.10.0
       '@gmod/trix':
         specifier: ^3.0.22
         version: 3.0.22
@@ -1162,8 +1162,8 @@ importers:
   plugins/comparative-adapters:
     dependencies:
       '@gmod/tabix':
-        specifier: ^3.9.1
-        version: 3.9.1
+        specifier: ^3.10.0
+        version: 3.10.0
       '@jbrowse/cigar-utils':
         specifier: workspace:^
         version: link:../../packages/cigar-utils
@@ -1358,8 +1358,8 @@ importers:
   plugins/gff3:
     dependencies:
       '@gmod/tabix':
-        specifier: ^3.9.1
-        version: 3.9.1
+        specifier: ^3.10.0
+        version: 3.10.0
       '@jbrowse/core':
         specifier: workspace:^
         version: link:../../packages/core
@@ -1421,8 +1421,8 @@ importers:
   plugins/gtf:
     dependencies:
       '@gmod/tabix':
-        specifier: ^3.9.1
-        version: 3.9.1
+        specifier: ^3.10.0
+        version: 3.10.0
       '@jbrowse/core':
         specifier: workspace:^
         version: link:../../packages/core
@@ -2049,8 +2049,8 @@ importers:
   plugins/variants:
     dependencies:
       '@gmod/tabix':
-        specifier: ^3.9.1
-        version: 3.9.1
+        specifier: ^3.10.0
+        version: 3.10.0
       '@gmod/vcf':
         specifier: ^7.2.0
         version: 7.2.0
@@ -4819,8 +4819,8 @@ packages:
   '@gmod/shared-read-cache@1.7.2':
     resolution: {integrity: sha512-N71dzJHYYSEAZYQCl38QGZ8cx468lFZE9VdS29N2DhRbKMf/X7Qb+cJsuIt1MeVDmpvKui5wDiNILgkQREpwlw==}
 
-  '@gmod/tabix@3.9.1':
-    resolution: {integrity: sha512-RaiSL3O4eclLOYaoHkkqdpr0EfhwmmGPj5xdbmsNNItdVlpnEM4lJ1dRzl26nFYVodEJSv+Krqr/5hWxMy1Q6w==}
+  '@gmod/tabix@3.10.0':
+    resolution: {integrity: sha512-PG35zxVN0jKSlOrDH0EM2dD2N08og+tzjaungFvvQM11B9+vZWxZcGGNdWObvRUH+689u4cCuSgslFtpvvRfzg==}
 
   '@gmod/trix@3.0.22':
     resolution: {integrity: sha512-cOf2r20K2LecQCZ6Am4H17S6GNAU0g5FZJ4t6EU6IiKGpmYclDWjGVNvDnsERJgjOfvkp4HzHJxQ37WnuKK8Sg==}
@@ -8146,6 +8146,7 @@ packages:
 
   gff-nostream@5.6.0:
     resolution: {integrity: sha512-b+Sjs/OqhRqsaD2obaVxghQ68s6kKJQ9E4K+D/3enIjTzkRZ7v9PvMoQ89HcGPMULHWrbVVPNHFPE9xMbCKl1g==}
+    deprecated: Renamed to @gmod/gff-nostream
 
   github-from-package@0.0.0:
     resolution: {integrity: sha512-SyHy3T1v2NUXn29OsWdxmK6RwHD+vkj3v8en8AOBZ1wBQ/hCAQ5bAQTD02kW4W9tUp/3Qh6J8r9EvntiyCmOOw==}
@@ -12989,7 +12990,7 @@ snapshots:
 
   '@gmod/shared-read-cache@1.7.2': {}
 
-  '@gmod/tabix@3.9.1':
+  '@gmod/tabix@3.10.0':
     dependencies:
       '@gmod/bgzf-filehandle': 6.7.0
       '@gmod/shared-read-cache': 1.7.2

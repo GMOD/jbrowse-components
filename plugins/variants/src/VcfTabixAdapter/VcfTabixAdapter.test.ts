@@ -131,3 +131,35 @@ describe('an abandoned setup', () => {
     expect(reads.every(signal => signal?.aborted)).toBe(true)
   })
 })
+
+// @gmod/tabix reads a record's span as htslib does, so the lines it returns
+// cover the span `getEnd` gives the feature
+describe('a symbolic record with no usable END', () => {
+  const vcfGz = require.resolve('./test_data/sv_svlen.vcf.gz')
+  const names = async (start: number, end: number) => {
+    const adapter = new Adapter(
+      configSchema.create({
+        vcfGzLocation: { localPath: vcfGz, locationType: 'LocalPathLocation' },
+        index: {
+          indexType: 'TBI',
+          location: {
+            localPath: `${vcfGz}.tbi`,
+            locationType: 'LocalPathLocation',
+          },
+        },
+      }),
+    )
+    const features = await firstValueFrom(
+      adapter.getFeatures({ refName: 'chr1', start, end }).pipe(toArray()),
+    )
+    return features.map(f => f.get('name'))
+  }
+
+  test('a <DEL> with SVLEN alone is fetched from inside its span', async () => {
+    expect(await names(3000, 4000)).toEqual(['delsvlen'])
+  })
+
+  test('an END before POS does not hide the record at its POS', async () => {
+    expect(await names(1199, 1200)).toEqual(['delsvlen', 'insbadend'])
+  })
+})
