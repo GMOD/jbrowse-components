@@ -8,6 +8,7 @@
 // names, and at runtime reads each off `JBrowseExports`. What this writes:
 //
 //   packages/core/src/ReExports/list.ts                 every key a plugin may externalize
+//   packages/core/src/ReExports/names.generated.ts      the export names behind each key
 //   packages/core/src/ReExports/coreModules.generated.ts        the @jbrowse/core half, main thread
 //   packages/core/src/ReExports/coreWorkerModules.generated.ts  the same keys in the RPC worker
 //   packages/core/src/ReExports/frameworkWorkerModules.generated.ts
@@ -557,6 +558,18 @@ ${list.map(k => `  ${q(k)},`).join('\n')}
 ]
 `
 
+const namesFile = `${HEADER(
+  'The export names each key in list.ts carries, so a plugin build can bind every import to a name this @jbrowse/core serves and fail on one it does not. A framework key with no names is served whole.',
+)}
+const names: Record<string, string[]> = {
+${[...framework, ...servedModules]
+  .map(m => `  ${q(m.key)}: [${m.names.map(q).join(', ')}],`)
+  .join('\n')}
+}
+
+export default names
+`
+
 const manifest = {
   framework: Object.fromEntries(framework.map(m => [m.key, m.names])),
   modules: Object.fromEntries(
@@ -582,6 +595,10 @@ const manifest = {
 
 const generated = [
   { path: path.join(CORE_REEXPORTS, 'list.ts'), content: listFile },
+  {
+    path: path.join(CORE_REEXPORTS, 'names.generated.ts'),
+    content: namesFile,
+  },
   {
     path: coreMain,
     content: emitMap(
