@@ -36,6 +36,12 @@ export interface Opts {
   loc?: string
   // batch's per-record pileup sort, for an alignments track stating none
   sortAt?: VariantSortColumn
+  /**
+   * `loc` is a junction's two ends on one contig, side by side in one row:
+   * alignments tracks draw their read arcs and lay split reads out first, and
+   * the reads joining the two regions are counted
+   */
+  joined?: boolean
   /** what a read with the variant's ALT has at `sortAt`; counted alone */
   sortAllele?: VariantAllele
   // a band over a linear view's tracks, 0-based half-open

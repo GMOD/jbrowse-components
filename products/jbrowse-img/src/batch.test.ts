@@ -4,6 +4,7 @@ import {
   outputName,
   parseBedpe,
   recordArgv,
+  drawsAsOneRow,
   recordLocs,
 } from './batch.ts'
 
@@ -76,6 +77,38 @@ describe('parseBedpe', () => {
       bedpe('chr1\t1000\t1001\tchr5\t2000\t2001\t.'),
     )
     expect(records[0]!.name).toBeUndefined()
+  })
+})
+
+describe('drawsAsOneRow', () => {
+  const at = (refName: string, start: number) => ({
+    refName,
+    start,
+    end: start + 1,
+  })
+
+  it('is two ends on one contig, read left to right', () => {
+    // a breakend naming its upstream mate: the windows still run in genome order
+    const rec = { loci: [at('chr1', 90000), at('chr1', 20000)] }
+    const locs = recordLocs(rec, 600)
+    expect(locs).toEqual(['chr1:19401-20601', 'chr1:89401-90601'])
+    expect(drawsAsOneRow(rec, locs)).toBe(true)
+  })
+
+  it('is not ends on two contigs, an event, or ends one window holds', () => {
+    const across = { loci: [at('chr1', 90000), at('chr5', 20000)] }
+    expect(drawsAsOneRow(across, recordLocs(across, 600))).toBe(false)
+    // file order stands across contigs: the record's own end first
+    expect(recordLocs(across, 600)).toEqual([
+      'chr1:89401-90601',
+      'chr5:19401-20601',
+    ])
+    const event = {
+      loci: [at('chr1', 1000), at('chr1', 20000), at('chr1', 90000)],
+    }
+    expect(drawsAsOneRow(event, recordLocs(event, 600))).toBe(false)
+    const near = { loci: [at('chr1', 20000), at('chr1', 20500)] }
+    expect(drawsAsOneRow(near, recordLocs(near, 600))).toBe(false)
   })
 })
 

@@ -51,6 +51,9 @@ hand.
 ## Rendering every tumor junction with jb2export batch
 
 A breakpoint split view shows the two loci a junction joins as two panels.
+`batch` draws one for a junction between two chromosomes; a deletion,
+duplication or inversion, whose two ends are on one chromosome, is one row with
+both ends side by side under the arc of the reads joining them.
 `jb2export batch` renders one such view per record:
 
 ```bash
@@ -105,7 +108,9 @@ options check the framing and manage a long run:
   panels' loci, name, `EVENT`, whether it rendered, `line` (the record's line in
   the VCF, which joins a row back to any column of the callset) and `links`, the
   count of split reads (reads aligned in pieces to different places) with pieces
-  in more than one panel
+  in more than one panel, or in both windows of a record drawn as one row. A
+  record one window holds has `alt` instead: the reads with its ALT over the
+  reads covering it, `17/41`, one pair per alignments track
 - `--passOnly` drops records the caller filtered out. `--limit` takes the first
   N in file order, so on an unfiltered callset the two go together
 - `--jobs` sets how many processes render, each about a gigabyte. The default is

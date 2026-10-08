@@ -151,7 +151,24 @@ export function recordLocs(rec: BatchRecord, flankOpt?: number) {
       windows.push({ refName, start: lo, end: hi })
     }
   }
+  // two ends on one contig read left to right, whichever the record names
+  // first: a breakend's mate may be the upstream one
+  if (windows.every(w => w.refName === windows[0]?.refName)) {
+    windows.sort((a, b) => a.start - b.start)
+  }
   return windows.map(w => `${w.refName}:${w.start + 1}-${w.end}`)
+}
+
+/**
+ * Whether a record's windows draw as one row: two ends on one contig, side by
+ * side in a linear view under the arc that joins them. Ends on two contigs, and
+ * an event's three or more loci, stack as a breakpoint view's panels.
+ */
+export function drawsAsOneRow(rec: BatchRecord, locs: string[]) {
+  return (
+    locs.length === 2 &&
+    rec.loci.every(locus => locus.refName === rec.loci[0]?.refName)
+  )
 }
 
 /**

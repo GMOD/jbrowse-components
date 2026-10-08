@@ -6,6 +6,7 @@ import readline from 'node:readline'
 import zlib from 'node:zlib'
 
 import {
+  drawsAsOneRow,
   eventOutputName,
   eventRecords,
   outputName,
@@ -152,8 +153,9 @@ function forceLoaded(tracks: Entry[] | undefined) {
 }
 
 /**
- * Render every record of a callset, one image per row: a breakpoint split view
- * where the record's loci need two panels, a linear view where they fit one.
+ * Render every record of a callset, one image per row: a linear view where the
+ * record's loci fit one window or are two ends on one contig, side by side, and
+ * a breakpoint split view where they are on two contigs or are an event's.
  *
  * Keeps going after a failed row and reports the failures at the end. A callset
  * always has a row whose refName the assembly does not have, or whose window is
@@ -384,22 +386,30 @@ async function renderRows(
         trackList: forceLoaded(opts.trackList),
       }
       const rendered = await renderRegionReport(
-        locs.length > 1
+        drawsAsOneRow(rec, locs)
           ? {
-              ...shared,
-              mode: 'breakpoint',
-              argv: [...argv, ...recordArgv(rec, flank)],
-              loc: undefined,
-            }
-          : {
               ...shared,
               mode: 'linear',
               argv,
-              loc: locs[0],
-              sortAt: rec.sort,
-              sortAllele: recordAllele(rec, flank),
-              highlight: recordHighlight(rec),
-            },
+              loc: locs.join(' '),
+              joined: true,
+            }
+          : locs.length > 1
+            ? {
+                ...shared,
+                mode: 'breakpoint',
+                argv: [...argv, ...recordArgv(rec, flank)],
+                loc: undefined,
+              }
+            : {
+                ...shared,
+                mode: 'linear',
+                argv,
+                loc: locs[0],
+                sortAt: rec.sort,
+                sortAllele: recordAllele(rec, flank),
+                highlight: recordHighlight(rec),
+              },
         configObject && structuredClone(configObject),
       )
       writeRendered(rendered.svg, out, width)
@@ -429,9 +439,9 @@ async function renderRows(
 // every column the file holds. `locs` is one locus per panel, space separated.
 // An event's row has no line and its label as both name and event, so filtering
 // on `event` lists the event's image above its records'. `links` is the reads
-// with pieces in more than one panel, per alignments track: what a reviewer
-// reads as a fan of curves, as a number a queue can be sorted on. Empty for an
-// image of one panel. `alt` is `count/depth` per alignments track: the reads
+// with pieces in more than one panel, or in both windows of a one-row record,
+// per alignments track: what a reviewer reads as a fan of curves or an arc, as
+// a number a queue can be sorted on. Empty for an image of one window. `alt` is `count/depth` per alignments track: the reads
 // with the record's ALT at the column its pileup is sorted at, over the reads
 // spanning it. An insertion of 50 bases or more is counted within the flank,
 // wherever the aligner put it. Empty for a record with no such column.

@@ -31,6 +31,7 @@ import {
   syntenyInit,
   syntenyViewKnobs,
 } from './comparativeInit.ts'
+import { readsJoiningRegions } from './joinedReads.ts'
 import { syntenyTrackTypes } from './makeConfigs.ts'
 import { modeDescriptors, subcommandForViewType } from './modes.ts'
 import { DEFAULT_FONT_FAMILY, DEFAULT_WIDTH } from './options.ts'
@@ -158,8 +159,9 @@ interface ModeContext {
 
 /**
  * An image and what can be counted off it, per alignments track in track
- * order. `links` is a breakpoint view's reads with pieces in more than one
- * panel: the molecules its connectors are drawn for. `alt` is a linear view's
+ * order. `links` is the reads with pieces in more than one panel of a
+ * breakpoint view, or in both regions of a `joined` linear one: the molecules
+ * its connectors or arcs are drawn for. `alt` is a linear view's
  * reads carrying `sortAllele` at `sortAt`, over the reads spanning it.
  */
 export interface Rendered {
@@ -505,6 +507,7 @@ const renderLinear: ModeRenderer = async ctx => {
     refseq,
     sortAt,
     highlight,
+    joined,
   } = opts
 
   const { session } = model
@@ -578,6 +581,7 @@ const renderLinear: ModeRenderer = async ctx => {
       trackCategory(model.session, trackId, opts),
       opts,
       sortAt,
+      joined,
     )
   }
 
@@ -588,6 +592,16 @@ const renderLinear: ModeRenderer = async ctx => {
   })
   return {
     svg,
+    links: joined
+      ? view.tracks.flatMap(track => {
+          const display = track.displays[0] as
+            | Partial<LinearAlignmentsDisplayModel>
+            | undefined
+          return display?.crossRegionArcsByGroup
+            ? [readsJoiningRegions(display.crossRegionArcsByGroup)]
+            : []
+        })
+      : undefined,
     alt: sortAt
       ? view.tracks.flatMap(track => {
           const display = track.displays[0] as

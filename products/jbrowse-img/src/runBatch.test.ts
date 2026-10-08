@@ -160,6 +160,7 @@ describe('runBatch', () => {
         'chr1\t5000\tins1\tN\t<INS>\t.\tPASS\tSVTYPE=INS',
         'chr1\t9000\tdel1\tN\t<DEL>\t.\tPASS\tSVTYPE=DEL;END=9172',
         'chr1\t20000\ttra1\tN\tN[chr5:700[\t.\tPASS\tSVTYPE=BND',
+        'chr1\t30000\tdel2\tN\t<DEL>\t.\tPASS\tSVTYPE=DEL;END=63588',
       ].join('\n'),
     )
     await runBatch({
@@ -172,12 +173,21 @@ describe('runBatch', () => {
       progress: steps().progress,
     })
     const calls = mockRenderRegion.mock.calls.map(
-      c => c[0] as { mode: string; loc?: string; argv: [string, string[]][] },
+      c =>
+        c[0] as {
+          mode: string
+          loc?: string
+          joined?: boolean
+          argv: [string, string[]][]
+        },
     )
-    expect(calls.map(c => [c.mode, c.loc])).toEqual([
-      ['linear', 'chr1:4400-5600'],
-      ['linear', 'chr1:8400-9772'],
-      ['breakpoint', undefined],
+    // Two ends on one contig are one row of a linear view, joined; only ends on
+    // two contigs stack as a breakpoint view's panels.
+    expect(calls.map(c => [c.mode, c.loc, c.joined])).toEqual([
+      ['linear', 'chr1:4400-5600', undefined],
+      ['linear', 'chr1:8400-9772', undefined],
+      ['breakpoint', undefined, undefined],
+      ['linear', 'chr1:29400-30600 chr1:62988-64188', true],
     ])
     expect(calls[0]!.argv).toEqual([])
     expect(calls[2]!.argv).toEqual([

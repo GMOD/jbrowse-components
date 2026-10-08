@@ -22,9 +22,12 @@ means a card draws an allele only where a tool outside JBrowse built one.
 
 One record of the callset, which is one row of `jb2export batch --manifest`:
 
-- **Evidence row**: one image, tumor above normal at each of the record's loci, split alignments
-  with curved connectors for a junction, the plain pileup for a record one
-  window holds. `batch` already picks between the two. On COLO829 that is 82
+- **Evidence row**: one image, tumor above normal. Colin, 2026-10-08: a simple
+  deletion is not a stacked split view. `batch` draws two ends on one contig as
+  one row, both windows side by side in a linear view with each track's read
+  arcs on and its split reads first; a junction between two contigs, and an
+  event, as a breakpoint split view with curved connectors; and a record one
+  window holds as the plain pileup. On COLO829 that is 82
   two-panel images and 53 one-panel ones, 11 of them records naming a single
   locus.
 - **Allele row**, where a contig exists: the contig against the reference, see

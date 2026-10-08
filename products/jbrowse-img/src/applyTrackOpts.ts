@@ -279,6 +279,7 @@ interface DisplaySnapshot {
     tag?: string
   }
   readConnections?: 'off' | 'arc' | 'cloud'
+  layoutOrder?: string
   readConnectionsDown?: boolean
   showSashimiArcs?: boolean
   sashimiArcsMode?: 'up' | 'down' | 'auto'
@@ -793,8 +794,15 @@ export async function applyDisplayOpts(
   category: Category,
   opts: string[],
   sortAt?: VariantSortColumn,
+  joined = false,
 ) {
   const { snap, sort, displayType } = buildDisplaySnapshot(category, opts)
+  // A junction's two ends in one row: the arc over them is the call, and the
+  // reads it is drawn for take the top rows. A track saying otherwise keeps it.
+  if (joined && category === 'alignments') {
+    snap.readConnections ??= 'arc'
+    snap.layoutOrder ??= 'split'
+  }
 
   // Resolve the center-line sort against the view (the pivot is the genomic
   // position under the view center) and bake it into the snapshot. The view only

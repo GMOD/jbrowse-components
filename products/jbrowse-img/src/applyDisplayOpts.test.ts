@@ -67,6 +67,32 @@ test('filterBy is kept out of the snapshot showTrack replaces slots from', async
   expect(calls[0]).toEqual({ height: 400 })
 })
 
+describe("batch's one-row junction", () => {
+  it('draws an alignments track’s read arcs, split reads first, unless the track says otherwise', async () => {
+    const snapOf = async (modifiers: string[], category = 'alignments') => {
+      const { view, calls } = fakeView()
+      await applyDisplayOpts(
+        view,
+        't',
+        category as 'alignments',
+        modifiers,
+        undefined,
+        true,
+      )
+      return calls[0]
+    }
+    expect(await snapOf([])).toEqual({
+      readConnections: 'arc',
+      layoutOrder: 'split',
+    })
+    expect(await snapOf(['arcs:off', 'layoutOrder=position'])).toEqual({
+      readConnections: 'off',
+      layoutOrder: 'position',
+    })
+    expect(await snapOf([], 'feature')).toEqual({})
+  })
+})
+
 describe("batch's per-record sort", () => {
   const sortAt = { type: 'insertion', pos: 3000 } as const
   const center = { refName: 'chr3', assemblyName: 'hg38', offset: 2960 }
