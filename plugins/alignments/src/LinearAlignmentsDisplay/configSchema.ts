@@ -270,14 +270,15 @@ export default function configSchemaFactory(_pluginManager: PluginManager) {
        * widest features in the lowest rows, so large alignments cluster at the
        * top rather than interleaving with small ones (LGVSyntenyDisplay's
        * default); `spliced` does the same for reads whose CIGAR carries a skip,
-       * for RNA-seq.
+       * for RNA-seq, and `split` for reads aligned in pieces, which are the
+       * ones crossing a breakpoint.
        */
       layoutOrder: {
         type: 'stringEnum',
         model: types.enumeration('LayoutOrder', [...LAYOUT_ORDERS]),
         defaultValue: 'position',
         description:
-          'Pileup row order where no sort applies: by start (position), widest first (length), or spliced reads first (spliced)',
+          'Pileup row order where no sort applies: by start (position), widest first (length), spliced reads first (spliced), or reads aligned in pieces first (split)',
       },
       /**
        * #slot

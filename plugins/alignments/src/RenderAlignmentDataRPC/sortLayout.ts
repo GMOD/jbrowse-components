@@ -474,16 +474,49 @@ function readSplicedFlags(data: WorkerPileupData, numReads: number) {
   return spliced
 }
 
-// Spliced reads take the lowest rows, each class in canonical order — so on
+// 1 for every read aligned in pieces, which is one carrying an SA tag: the
+// primary and each supplementary alike. The array is absent when no read of the
+// group has one.
+function readSplitFlags(data: WorkerPileupData, numReads: number) {
+  const { readSuppAlignments } = data
+  const split = new Uint8Array(numReads)
+  if (readSuppAlignments) {
+    for (let i = 0; i < numReads; i++) {
+      if (readSuppAlignments[i]) {
+        split[i] = 1
+      }
+    }
+  }
+  return split
+}
+
+// The reads an order lifts ahead of the rest, or undefined for an order that
+// lifts no class: spliced reads, or reads aligned in pieces.
+function liftedFlags(
+  layoutOrder: LayoutOrder,
+  data: WorkerPileupData,
+  numReads: number,
+) {
+  return layoutOrder === 'spliced'
+    ? readSplicedFlags(data, numReads)
+    : layoutOrder === 'split'
+      ? readSplitFlags(data, numReads)
+      : undefined
+}
+
+// The lifted reads take the lowest rows, each class in canonical order — so on
 // RNA-seq the junction-spanning reads sit together at the top instead of
-// interleaving with the unspliced majority. Not start-monotone, so the caller
-// takes the row-scan path.
-function buildSplicedFirstOrder(data: WorkerPileupData, numReads: number) {
+// interleaving with the unspliced majority, and at a breakpoint the reads that
+// cross it do. Not start-monotone, so the caller takes the row-scan path.
+function buildLiftedFirstOrder(
+  data: WorkerPileupData,
+  numReads: number,
+  lifted: Uint8Array,
+) {
   const { readPositions, readKeys } = data
-  const spliced = readSplicedFlags(data, numReads)
   return Array.from({ length: numReads }, (_, i) => i).sort(
     (a, b) =>
-      spliced[b]! - spliced[a]! ||
+      lifted[b]! - lifted[a]! ||
       compareReadsCanonically(readPositions, readKeys, a, b),
   )
 }
@@ -601,14 +634,14 @@ export function computeLayout(
   // is exactly the tie that made layout depend on arrival order, so it has to be
   // resolved by read identity rather than left to the emit order. Still
   // start-monotone, so the interval-partitioning fast path below applies.
-  const order =
-    layoutOrder === 'spliced'
-      ? buildSplicedFirstOrder(data, numReads)
-      : layoutOrder === 'length'
-        ? buildLargeFirstOrder(data, ext!, numReads)
-        : showSoftClipping
-          ? buildSoftclipOrder(data, ext!, numReads)
-          : buildCanonicalOrder(data, numReads)
+  const lifted = liftedFlags(layoutOrder, data, numReads)
+  const order = lifted
+    ? buildLiftedFirstOrder(data, numReads, lifted)
+    : layoutOrder === 'length'
+      ? buildLargeFirstOrder(data, ext!, numReads)
+      : showSoftClipping
+        ? buildSoftclipOrder(data, ext!, numReads)
+        : buildCanonicalOrder(data, numReads)
 
   if (layoutOrder === 'position' && numReads >= LAYOUT_HEAP_MIN_READS) {
     const fast = partitionStartSorted(data, order, ext, maxRows, readYs)
@@ -821,19 +854,19 @@ export function computeMultiRegionLayout({
   // order and is canonicalized below.
   const extents = new Map<ReadKey, ReadExtent>()
   const orderedIds: ReadKey[] = []
-  // A read is spliced if any region's copy of it carries a skip.
-  const splicedIds = new Set<ReadKey>()
+  // A read is lifted if any region's copy of it is: one carrying a skip, or
+  // an SA tag.
+  const liftedIds = new Set<ReadKey>()
   for (const [idx, data] of entries) {
     const numReads = data.readKeys.length
     const exp = showSoftClipping ? buildSoftclipExpansions(data) : undefined
     const ext = buildReadExtents(data, exp, numReads)
     const refName = regions?.get(idx)?.refName
-    const spliced =
-      layoutOrder === 'spliced' ? readSplicedFlags(data, numReads) : undefined
+    const lifted = liftedFlags(layoutOrder, data, numReads)
     for (let i = 0; i < numReads; i++) {
       const id = data.readKeys[i]!
-      if (spliced?.[i]) {
-        splicedIds.add(id)
+      if (lifted?.[i]) {
+        liftedIds.add(id)
       }
       const start = ext.starts[i]!
       const end = ext.ends[i]!
@@ -901,16 +934,16 @@ export function computeMultiRegionLayout({
   }
 
   // The layout order applies only when no explicit position sort took effect
-  // (that sort wins). Spliced-first partitions the deduped ids; largest-first
-  // sorts them by unioned on-screen extent, descending.
+  // (that sort wins). Spliced-first and split-first partition the deduped ids;
+  // largest-first sorts them by unioned on-screen extent, descending.
   if (!sortApplied && layoutOrder !== 'position') {
     placementOrder = [...orderedIds].sort((a, b) => {
       const ea = extents.get(a)!
       const eb = extents.get(b)!
       return (
-        (layoutOrder === 'spliced'
-          ? Number(splicedIds.has(b)) - Number(splicedIds.has(a))
-          : compareByExtentDesc(ea.start, ea.end, eb.start, eb.end)) ||
+        (layoutOrder === 'length'
+          ? compareByExtentDesc(ea.start, ea.end, eb.start, eb.end)
+          : Number(liftedIds.has(b)) - Number(liftedIds.has(a))) ||
         compareIdsCanonically(a, b)
       )
     })

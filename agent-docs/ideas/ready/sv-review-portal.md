@@ -307,8 +307,11 @@ the page is for the subset a filter leaves.
   is the open bug a mixed-size region set hits.
 - **A two-panel card is taller than a window.** Two loci of two tracks at
   `height:240` is an 1100 by 1183 image, so the page scales each image to the
-  window and a click restores it. A shorter track cuts off the rows the split
-  reads sit in.
+  window and a click restores it. A shorter track used to cut off the rows the
+  split reads sit in; a breakpoint panel now lays its pileup out split reads
+  first (`layoutOrder: split`), so at `height:150` the reads the connectors join
+  fill the rows shown and the same card is about 820 px. An event of four loci
+  is still twice that.
 - **Capture readiness.** Software-rasterised Chromium over several panels of
   deep long reads is slow, which is why `jb2export` is the renderer and
   `@jbrowse/capture` the opt-in.

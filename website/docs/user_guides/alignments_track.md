@@ -27,9 +27,13 @@ up.
 
 The track menu's **Sort by...** groups reads the same way against the _center
 line_ (a 1bp indicator at the middle of the view), and also sorts by strand,
-mapping quality, or any BAM tag. **Sort by... → Longest reads first** and **Sort
-by... → Spliced reads first** order the whole layout instead, putting the widest
-reads, or the reads with a reference skip (`N`) in the CIGAR, at the top.
+mapping quality, or any BAM tag. Three more order the whole layout instead:
+
+- **Sort by... → Longest reads first** puts the widest reads at the top.
+- **Sort by... → Spliced reads first** puts the reads with a reference skip
+  (`N`) in the CIGAR there.
+- **Sort by... → Split reads first** puts the reads aligned in pieces there, the
+  ones with an `SA` tag, which at a breakpoint are the reads crossing it.
 
 ## Color by
 

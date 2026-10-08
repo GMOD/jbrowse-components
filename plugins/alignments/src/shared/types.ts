@@ -244,8 +244,8 @@ export interface SortedBy {
 }
 
 // The pileup's row order where no `sortedBy` column sort applies: by start,
-// widest first, or spliced reads first.
-export const LAYOUT_ORDERS = ['position', 'length', 'spliced'] as const
+// widest first, spliced reads first, or reads aligned in pieces first.
+export const LAYOUT_ORDERS = ['position', 'length', 'spliced', 'split'] as const
 export type LayoutOrder = (typeof LAYOUT_ORDERS)[number]
 
 // Bit flags stored in the Uint8Array `readChainHasSupp`, describing how a read's

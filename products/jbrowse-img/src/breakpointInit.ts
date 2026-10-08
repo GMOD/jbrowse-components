@@ -81,10 +81,8 @@ export function breakpointTracks(
   categoryOf: CategoryOf = () => 'other',
 ): TrackInit[] {
   return [...showTracks, ...(openTracks ?? [])].map(({ trackId, opts }) => {
-    const { snap, sort, displayType } = buildDisplaySnapshot(
-      categoryOf(trackId, opts),
-      opts,
-    )
+    const category = categoryOf(trackId, opts)
+    const { snap, sort, displayType } = buildDisplaySnapshot(category, opts)
     if (sort) {
       // The center-line sort is resolved against a view's centerLineInfo, and
       // there is no single view here — one panel per --loc, each at its own
@@ -96,6 +94,10 @@ export function breakpointTracks(
     }
     return {
       trackId,
+      // The reads the connectors are drawn for take the top rows, so a pileup
+      // deeper than its track cuts off the ones that cross nothing. Ahead of
+      // the snapshot, so a `layoutOrder=position` of the track's own wins.
+      ...(category === 'alignments' ? { layoutOrder: 'split' } : {}),
       ...snap,
       ...(displayType ? { type: displayType } : {}),
     }

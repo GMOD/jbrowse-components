@@ -382,6 +382,46 @@ describe("computeLayout layoutOrder 'spliced'", () => {
   })
 })
 
+describe("computeLayout layoutOrder 'split'", () => {
+  // A read aligned whole starts before one aligned in pieces that overlaps it.
+  // Start order gives the whole read row 0; split-first gives it to the read
+  // carrying an SA tag, which is the one a breakpoint's connector is drawn for.
+  const data = (readSuppAlignments?: string[]) => ({
+    ...makePileupData({
+      regionStart: 0,
+      reads: [
+        { start: 0, end: 50 }, // id0 whole
+        { start: 10, end: 200 }, // id1 split
+        { start: 300, end: 350 }, // id2 whole, clear of both
+      ],
+    }),
+    readSuppAlignments,
+  })
+  const split = ['', 'chr5,100,+,50M150S,60,0;', '']
+
+  test('default order places the earlier whole read first', () => {
+    expect([...computeLayout(data(split)).readYs]).toEqual([0, 1, 0])
+  })
+
+  test('split-first gives the split read the lowest row', () => {
+    const { readYs, maxY } = computeLayout(
+      data(split),
+      false,
+      undefined,
+      'split',
+    )
+    expect([...readYs]).toEqual([1, 0, 0])
+    expect(maxY).toBe(2)
+  })
+
+  test('with no split read in the group, the order is by start', () => {
+    // the worker ships no SA array at all when no read carries the tag
+    expect([
+      ...computeLayout(data(), false, undefined, 'split').readYs,
+    ]).toEqual([0, 1, 0])
+  })
+})
+
 // Above LAYOUT_HEAP_MIN_READS, computeLayout switches from the placeRect
 // row-scan to the interval-partitioning heaps. The two paths must produce an
 // identical first-fit-lowest-row layout. The small-input tests above pin the
@@ -1098,6 +1138,33 @@ describe('computeMultiRegionLayout', () => {
         [1, r2],
       ],
       layoutOrder: 'spliced',
+    })
+    expect(rowMap.get('id0')).toBe(0)
+    expect(rowMap.get('id1')).toBe(1)
+  })
+
+  test("layoutOrder 'split' partitions on any region's copy of the read", () => {
+    // id0 spans both regions and only region 2's copy carries the SA tag
+    const r1 = makePileupData({
+      regionStart: 0,
+      reads: [
+        { start: 5, end: 100 }, // id0, split in r2
+        { start: 0, end: 20 }, // id1 whole, earlier start
+      ],
+    })
+    const r2 = {
+      ...makePileupData({
+        regionStart: 100,
+        reads: [{ start: 100, end: 200 }], // id0 again
+      }),
+      readSuppAlignments: ['chr5,100,+,50M150S,60,0;'],
+    }
+    const { rowMap } = computeMultiRegionLayout({
+      entries: [
+        [0, r1],
+        [1, r2],
+      ],
+      layoutOrder: 'split',
     })
     expect(rowMap.get('id0')).toBe(0)
     expect(rowMap.get('id1')).toBe(1)

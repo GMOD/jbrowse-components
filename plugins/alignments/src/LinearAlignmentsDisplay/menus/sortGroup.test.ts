@@ -35,6 +35,7 @@ const LABELS = [
   'Start location',
   'Longest reads first',
   'Spliced reads first',
+  'Split reads first',
   'Read strand',
   'Base pair',
   'Tag...',
@@ -55,6 +56,7 @@ describe('sort menu radio selection', () => {
   test.each([
     ['length', 'Longest reads first'],
     ['spliced', 'Spliced reads first'],
+    ['split', 'Split reads first'],
   ] as const)('layoutOrder %s selects "%s"', (layoutOrder, label) => {
     expect(checkedLabel(makeModel({ layoutOrder }))).toEqual([label])
   })
@@ -88,6 +90,7 @@ describe('sort menu radio selection', () => {
       makeModel(),
       makeModel({ layoutOrder: 'length' }),
       makeModel({ layoutOrder: 'spliced' }),
+      makeModel({ layoutOrder: 'split' }),
       makeModel({ sortedBy: sorted('strand') }),
       makeModel({ sortedBy: sorted('basePair') }),
       makeModel({ sortedBy: sorted('tag') }),
@@ -146,6 +149,7 @@ describe('sort menu keeps the two ordering slots mutually exclusive', () => {
     ['Start location', 'position'],
     ['Longest reads first', 'length'],
     ['Spliced reads first', 'spliced'],
+    ['Split reads first', 'split'],
   ])('%s is one setLayoutOrder(%s) write', (label, order) => {
     const model = makeModel({ layoutOrder: 'length' })
     radio(model, label).onClick()

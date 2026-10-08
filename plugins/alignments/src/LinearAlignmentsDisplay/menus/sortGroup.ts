@@ -56,6 +56,7 @@ const ALL_SORT_MODES: SortMode[] = [
   'position',
   'length',
   'spliced',
+  'split',
   'strand',
   'basePair',
   'tag',
@@ -121,6 +122,9 @@ export function getSortByMenuItem(
     }),
     spliced: radio('spliced', `Spliced ${noun}s first`, () => {
       model.setLayoutOrder('spliced')
+    }),
+    split: radio('split', `Split ${noun}s first`, () => {
+      model.setLayoutOrder('split')
     }),
     strand: radio('strand', `${capitalizeFirst(noun)} strand`, () => {
       model.setSortedBy('strand')
