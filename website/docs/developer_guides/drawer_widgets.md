@@ -24,7 +24,7 @@ whose `view` prop is its whole declarative input:
 ```tsx
 import { LinearGenomeView } from '@jbrowse/react-linear-genome-view2'
 
-export default function WithInitAdvanced() {
+export default function ViewSpelledOut() {
   return (
     <LinearGenomeView
       assembly={{

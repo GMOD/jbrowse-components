@@ -221,7 +221,7 @@ passed in `plugins`:
 <!-- include: products/jbrowse-react-app/examples-site/src/examples/InlinePlugin.tsx#usePlugin -->
 
 ```tsx
-export default function EmbeddedPlugin() {
+export default function InlinePlugin() {
   return (
     <JBrowse
       assemblies={assemblies}
