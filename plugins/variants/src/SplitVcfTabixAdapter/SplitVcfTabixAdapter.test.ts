@@ -78,19 +78,68 @@ test('getExportData round-trips header plus overlapping variant lines', async ()
   expect(await adapter.getExportData([region], 'gff3')).toBeUndefined()
 })
 
-// `vcfGzLocationMap` is a frozen slot, so nothing validates its keys at load.
-// The usual mistake is keying it in the other refName convention from the
-// assembly, and both paths below used to surface that as a bare
-// "Cannot read properties of undefined (reading 'uri')" naming neither the
-// contig nor the slot.
-test('a contig missing from the location map names itself and the alternatives', async () => {
+// a chr1-22 split set has no file for chrX, which is no variants there
+test('a contig missing from the location map has no features', async () => {
+  const adapter = makeAdapter()
+  const missing = { ...region, refName: 'chrA' }
+  expect(
+    await firstValueFrom(adapter.getFeatures(missing).pipe(toArray())),
+  ).toEqual([])
+  expect(await adapter.getRegionByteSize([missing])).toBe(0)
+  const exported = await adapter.getExportData([missing], 'vcf')
+  expect(exported!.split('\n').every(l => l.startsWith('#'))).toBe(true)
+})
+
+test('the header answers getHeader and getMetadata', async () => {
+  const adapter = makeAdapter()
+  expect(await adapter.getHeader()).toMatch(/^##fileformat/)
+  expect(await adapter.getMetadata()).toHaveProperty('INFO')
+})
+
+test('a derived index resolves against the config like its vcf', async () => {
+  const requested: string[] = []
+  const fetchSpy = jest
+    .spyOn(globalThis, 'fetch')
+    .mockImplementation(async input => {
+      requested.push(`${input}`)
+      throw new Error('offline')
+    })
+  const adapter = new Adapter(
+    configSchema.create({
+      vcfGzLocationMap: {
+        ctgA: {
+          uri: 'ctgA.vcf.gz',
+          baseUri: 'https://example.com/data/c.json',
+        },
+      },
+    }),
+  )
   await expect(
-    firstValueFrom(
-      makeAdapter()
-        .getFeatures({ ...region, refName: 'chrA' })
-        .pipe(toArray()),
-    ),
-  ).rejects.toThrow(/no vcfGzLocationMap entry for "chrA".*ctgA/s)
+    firstValueFrom(adapter.getFeatures(region).pipe(toArray())),
+  ).rejects.toThrow()
+  fetchSpy.mockRestore()
+  expect(requested).toContain('https://example.com/data/ctgA.vcf.gz.tbi')
+})
+
+// the slot answers only for the indexes this adapter derives
+test('a named .tbi is read as a TBI whatever the indexType slot says', async () => {
+  const vcfGz =
+    require.resolve('../VcfTabixAdapter/test_data/volvox.filtered.vcf.gz')
+  const adapter = new Adapter(
+    configSchema.create({
+      vcfGzLocationMap: {
+        ctgA: { localPath: vcfGz, locationType: 'LocalPathLocation' },
+      },
+      indexLocationMap: {
+        ctgA: { localPath: `${vcfGz}.tbi`, locationType: 'LocalPathLocation' },
+      },
+      indexType: 'CSI',
+    }),
+  )
+  const features = await firstValueFrom(
+    adapter.getFeatures(region).pipe(toArray()),
+  )
+  expect(features.length).toBeGreaterThan(0)
 })
 
 test('an empty location map is reported rather than read as undefined', async () => {

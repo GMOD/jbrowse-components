@@ -1,152 +1,154 @@
 import { TabixIndexedFile } from '@gmod/tabix'
 import VcfParser from '@gmod/vcf'
 import { indexSuffix, isCsiLocation } from '@jbrowse/core/configuration'
-import { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
-import { updateStatus } from '@jbrowse/core/util'
+import {
+  BaseFeatureDataAdapter,
+  cachedSetup,
+} from '@jbrowse/core/data_adapters/BaseAdapter'
 import { sharedBgzfWorkerPool } from '@jbrowse/core/util/bgzfWorkerPool'
 import { decompressedBytesBudget } from '@jbrowse/core/util/cacheBudgets'
 import { openLocation, openTabixIndexFilehandle } from '@jbrowse/core/util/io'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 import { getSamplesTsvSources } from '@jbrowse/core/util/samplesTsv'
 
-import { streamVcfFeatures } from '../shared/vcfAdapterUtils.ts'
+import { appendVcfLines, streamVcfFeatures } from '../shared/vcfAdapterUtils.ts'
 
 import type { SplitVcfTabixAdapterConfig } from './configSchema.ts'
 import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { Feature, Region } from '@jbrowse/core/util'
 import type { FileLocation, NoAssemblyRegion } from '@jbrowse/core/util/types'
 
+interface ContigFile {
+  vcf: TabixIndexedFile
+  parser: VcfParser
+  header: string
+}
+
+function namedIndexType(location: FileLocation, fallback: 'TBI' | 'CSI') {
+  const name =
+    'uri' in location
+      ? location.uri
+      : 'localPath' in location
+        ? location.localPath
+        : ''
+  return isCsiLocation(location)
+    ? 'CSI'
+    : /\.tbi$/i.test(name.split(/[?#]/)[0]!)
+      ? 'TBI'
+      : fallback
+}
+
 export default class SplitVcfTabixAdapter extends BaseFeatureDataAdapter<SplitVcfTabixAdapterConfig> {
   public static capabilities = ['getFeatures', 'getRefNames', 'exportData']
 
-  private configuredByRef = new Map<
+  private setups = new Map<
     string,
-    Promise<{ vcf: TabixIndexedFile; parser: VcfParser }>
+    (opts?: BaseOptions) => Promise<ContigFile>
   >()
 
-  // refNames whose per-contig index has finished downloading; gates the status
-  // label so pan/zoom re-entry into configure() doesn't re-flash "Downloading
-  // index" for a contig already loaded
-  private readyRefs = new Set<string>()
-
-  // Which contigs this adapter has a file for. `vcfGzLocationMap` is a frozen
-  // slot, so nothing validates its shape at load (the keys are whatever the
-  // config author typed) and every read has to treat a miss as a real outcome —
-  // hence the `| undefined` the frozen slot's own `any` would otherwise hide.
+  // `vcfGzLocationMap` is a frozen slot, so nothing validates its keys at load
   private locationMap(): Record<string, FileLocation | undefined> {
     return this.getConf('vcfGzLocationMap')
   }
 
-  private configureOnce(refName: string) {
-    if (!this.configuredByRef.has(refName)) {
-      const indexType = this.getConf('indexType')
-      const locationMap = this.locationMap()
-      const vcfGzLocation = locationMap[refName]
-      // Named, rather than left to fail as `undefined.uri` two lines down. The
-      // usual cause is a map keyed in the other refName convention from the
-      // assembly ('1' against a 'chr'-prefixed one, or the reverse), which
-      // aliasing resolves everywhere else — so the bare TypeError named neither
-      // the contig, the adapter, nor the slot to go fix.
-      if (!vcfGzLocation) {
-        throw new Error(
-          `SplitVcfTabixAdapter has no vcfGzLocationMap entry for "${refName}". Available: ${
-            Object.keys(locationMap).join(', ') || '(none)'
-          }`,
-        )
-      }
-      // The `.tbi`/`.csi` sibling can only be derived for a uri location: a
-      // localPath or blob has no name to append to, and the old fallback built
-      // the literal string "undefined.tbi" out of one and failed much later,
-      // inside tabix, as a fetch error naming a path nobody wrote.
-      const indexLocation: FileLocation | undefined =
-        this.getConf('indexLocationMap')[refName] ??
-        ('uri' in vcfGzLocation
-          ? { uri: `${vcfGzLocation.uri}${indexSuffix(indexType)}` }
-          : undefined)
-      if (!indexLocation) {
-        throw new Error(
-          `SplitVcfTabixAdapter needs an indexLocationMap entry for "${refName}": its vcfGzLocationMap entry is not a uri, so the index location cannot be derived from it`,
-        )
-      }
-      // An index the map names says which kind it is, so the slot only has to
-      // answer for the ones it derives. That also lets one map mix the two.
-      const entryIndexType = isCsiLocation(indexLocation) ? 'CSI' : indexType
-      const vcf = new TabixIndexedFile({
-        filehandle: openLocation(vcfGzLocation, this.pluginManager),
-        ...openTabixIndexFilehandle(
-          indexLocation,
-          entryIndexType,
-          this.pluginManager,
-        ),
-        chunkCacheBudget: decompressedBytesBudget,
-        bgzfWorkerPool: sharedBgzfWorkerPool(),
-      })
-      this.configuredByRef.set(
-        refName,
-        vcf
-          .getHeader()
-          .then(header => {
-            this.readyRefs.add(refName)
-            return {
-              vcf,
-              parser: new VcfParser({ header }),
-            }
-          })
-          .catch((e: unknown) => {
-            this.configuredByRef.delete(refName)
-            throw e
-          }),
+  private openContig(refName: string, vcfGzLocation: FileLocation) {
+    const indexType = this.getConf('indexType')
+    const named: FileLocation | undefined =
+      this.getConf('indexLocationMap')[refName]
+    const derived =
+      'uri' in vcfGzLocation
+        ? {
+            locationType: 'UriLocation' as const,
+            uri: `${vcfGzLocation.uri}${indexSuffix(indexType)}`,
+            baseUri: vcfGzLocation.baseUri,
+          }
+        : undefined
+    const indexLocation = named ?? derived
+    if (!indexLocation) {
+      throw new Error(
+        `SplitVcfTabixAdapter needs an indexLocationMap entry for "${refName}": its vcfGzLocationMap entry is not a uri, so the index location cannot be derived from it`,
       )
     }
-    return this.configuredByRef.get(refName)!
+    return new TabixIndexedFile({
+      filehandle: openLocation(vcfGzLocation, this.pluginManager),
+      ...openTabixIndexFilehandle(
+        indexLocation,
+        named ? namedIndexType(named, indexType) : indexType,
+        this.pluginManager,
+      ),
+      chunkCacheBudget: decompressedBytesBudget,
+      bgzfWorkerPool: sharedBgzfWorkerPool(),
+    })
   }
 
-  // Show "Downloading index" only while a contig's index is genuinely
-  // downloading. Once loaded, callers await the cached promise silently rather
-  // than re-flashing the label on pan/zoom.
+  /** The contig's file, or undefined for a contig the map has no file for. */
   async configure(refName: string, opts?: BaseOptions) {
-    return this.readyRefs.has(refName)
-      ? this.configureOnce(refName)
-      : updateStatus('Downloading index', opts?.statusCallback, () =>
-          this.configureOnce(refName),
-        )
+    const vcfGzLocation = this.locationMap()[refName]
+    if (!vcfGzLocation) {
+      return undefined
+    }
+    let setup = this.setups.get(refName)
+    if (!setup) {
+      setup = cachedSetup({
+        label: 'Downloading index',
+        setup: async ({ signal }) => {
+          const vcf = this.openContig(refName, vcfGzLocation)
+          const header = await vcf.getHeader({ signal })
+          return { vcf, parser: new VcfParser({ header }), header }
+        },
+      })
+      this.setups.set(refName, setup)
+    }
+    return setup(opts)
+  }
+
+  // every file in the map shares one header, so any of them answers for it
+  private async anyContig(opts?: BaseOptions) {
+    const [refName] = Object.keys(this.locationMap())
+    const contig =
+      refName === undefined ? undefined : await this.configure(refName, opts)
+    if (!contig) {
+      throw new Error('SplitVcfTabixAdapter has an empty vcfGzLocationMap')
+    }
+    return contig
   }
 
   public async getRefNames() {
     return Object.keys(this.locationMap())
   }
 
-  // Index-only compressed-byte estimate (no feature download). Each refName is
-  // a separate file, so regions are grouped by refName and estimated against
-  // their own index — used to short-circuit an over-budget region before
-  // pulling every line (see executeRenderFeatureData).
+  async getHeader(opts?: BaseOptions) {
+    return (await this.anyContig(opts)).header
+  }
+
+  async getMetadata(opts?: BaseOptions) {
+    return (await this.anyContig(opts)).parser.getMetadata()
+  }
+
   async getRegionByteSize(regions: Region[], opts?: BaseOptions) {
-    const byRef = new Map<string, Region[]>()
-    for (const region of regions) {
-      const list = byRef.get(region.refName)
-      if (list) {
-        list.push(region)
-      } else {
-        byRef.set(region.refName, [region])
-      }
-    }
     let total = 0
-    for (const [refName, refRegions] of byRef) {
-      const { vcf } = await this.configure(refName, opts)
-      total += await vcf.bytesForRegions(refRegions, opts)
+    for (const [refName, refRegions] of Map.groupBy(regions, r => r.refName)) {
+      const contig = await this.configure(refName, opts)
+      if (contig) {
+        total += await contig.vcf.bytesForRegions(refRegions, opts)
+      }
     }
     return total
   }
 
   public getFeatures(query: NoAssemblyRegion, opts: BaseOptions = {}) {
     return ObservableCreate<Feature>(async observer => {
-      const { vcf, parser } = await this.configure(query.refName, opts)
-      await streamVcfFeatures(
-        { vcf, parser, idPrefix: `${this.id}-${query.refName}` },
-        query,
-        opts,
-        observer,
-      )
+      const contig = await this.configure(query.refName, opts)
+      if (contig) {
+        await streamVcfFeatures(
+          { ...contig, idPrefix: `${this.id}-${query.refName}` },
+          query,
+          opts,
+          observer,
+        )
+      } else {
+        observer.complete()
+      }
     }, opts.signal)
   }
 
@@ -158,42 +160,21 @@ export default class SplitVcfTabixAdapter extends BaseFeatureDataAdapter<SplitVc
     if (formatType !== 'vcf') {
       return undefined
     }
-
-    const exportLines: string[] = []
-    let headerWritten = false
+    const { header } = await this.anyContig(opts)
+    const exportLines = header.split('\n').filter(Boolean)
     for (const region of regions) {
-      const { vcf } = await this.configure(region.refName, opts)
-      if (!headerWritten) {
-        exportLines.push(...(await vcf.getHeader()).split('\n').filter(Boolean))
-        headerWritten = true
+      const contig = await this.configure(region.refName, opts)
+      if (contig) {
+        await appendVcfLines(exportLines, contig.vcf, region, opts)
       }
-      await updateStatus('Exporting variants', opts?.statusCallback, () =>
-        vcf.getLines(region.refName, region.start, region.end, {
-          lineCallback: (line: string) => {
-            exportLines.push(line)
-          },
-          ...opts,
-        }),
-      )
     }
-
     return exportLines.join('\n')
   }
 
-  // The sample list is the VCF header's, and every file in the map shares it, so
-  // any one of them answers. Unlike getFeatures this is not reached through
-  // getRefNames — the multi-sample displays call it once per adapter — so an
-  // empty map arrives here first, and `configure(undefined!)` turned that into
-  // the same anonymous `undefined.uri` TypeError.
-  //
   // See VcfTabixAdapter: `getSources` is the base-class contract, this is the
   // one that keeps the samples-metadata warnings.
   async getSourcesAndWarnings(opts?: BaseOptions) {
-    const [refName] = Object.keys(this.locationMap())
-    if (refName === undefined) {
-      throw new Error('SplitVcfTabixAdapter has an empty vcfGzLocationMap')
-    }
-    const { parser } = await this.configure(refName, opts)
+    const { parser } = await this.anyContig(opts)
     return getSamplesTsvSources({
       location: this.getConf('samplesTsvLocation'),
       names: parser.samples,

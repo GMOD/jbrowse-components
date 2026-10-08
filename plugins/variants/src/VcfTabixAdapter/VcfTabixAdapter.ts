@@ -4,14 +4,14 @@ import {
   BaseFeatureDataAdapter,
   cachedSetup,
 } from '@jbrowse/core/data_adapters/BaseAdapter'
-import { downloadStatus, updateStatus } from '@jbrowse/core/util'
+import { downloadStatus } from '@jbrowse/core/util'
 import { sharedBgzfWorkerPool } from '@jbrowse/core/util/bgzfWorkerPool'
 import { decompressedBytesBudget } from '@jbrowse/core/util/cacheBudgets'
 import { openLocation, openTabixIndexFilehandle } from '@jbrowse/core/util/io'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 import { getSamplesTsvSources } from '@jbrowse/core/util/samplesTsv'
 
-import { streamVcfFeatures } from '../shared/vcfAdapterUtils.ts'
+import { appendVcfLines, streamVcfFeatures } from '../shared/vcfAdapterUtils.ts'
 
 import type { VcfTabixAdapterConfig } from './configSchema.ts'
 import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
@@ -84,14 +84,7 @@ export default class VcfTabixAdapter extends BaseFeatureDataAdapter<VcfTabixAdap
     const exportLines: string[] = header.split('\n').filter(Boolean)
 
     for (const region of regions) {
-      await updateStatus('Exporting variants', opts?.statusCallback, () =>
-        vcf.getLines(region.refName, region.start, region.end, {
-          lineCallback: (line: string) => {
-            exportLines.push(line)
-          },
-          ...opts,
-        }),
-      )
+      await appendVcfLines(exportLines, vcf, region, opts)
     }
 
     return exportLines.join('\n')

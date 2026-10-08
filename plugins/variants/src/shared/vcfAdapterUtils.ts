@@ -1,4 +1,4 @@
-import { downloadStatus } from '@jbrowse/core/util'
+import { downloadStatus, updateStatus } from '@jbrowse/core/util'
 
 import VcfFeature from '../VcfFeature/index.ts'
 
@@ -43,4 +43,20 @@ export async function streamVcfFeatures(
       }),
   )
   observer.complete()
+}
+
+export async function appendVcfLines(
+  lines: string[],
+  vcf: TabixIndexedFile,
+  { refName, start, end }: { refName: string; start: number; end: number },
+  opts?: BaseOptions,
+) {
+  await updateStatus('Exporting variants', opts?.statusCallback, () =>
+    vcf.getLines(refName, start, end, {
+      lineCallback: (line: string) => {
+        lines.push(line)
+      },
+      ...opts,
+    }),
+  )
 }
