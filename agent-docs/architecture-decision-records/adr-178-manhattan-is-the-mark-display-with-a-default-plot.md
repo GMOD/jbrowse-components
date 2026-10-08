@@ -101,6 +101,12 @@ transforms or Edit plot.
 - **Inferring the LD join from the encodings** (`ld_role` shape entries, the
   colour lanes) for the missing-index notice: it held only for plots shaped
   like `LD_MARKS`. The adapter reports through `BaseOptions.notices` instead.
+- **An index SNP named by its id** (amended 2026-10-08: `indexSnp` took a SNP
+  id beside a `chr:bp`). Both writers, the top hit and the right-click, place
+  the index, so an id reached it only from a hand-written session. An id has no
+  position to anchor the LD window, so the read fell back to the fetched region
+  and found no row naming the index once the view panned off it. `indexSnp` is
+  a `chr:bp`, and one that is not joins nothing.
 - **The auto index following the top visible SNP under a row focus**: a focus
   would refetch every region, undoing the row table's one-upload promise.
 - **A conditional colour on the encoding** (Vega-Lite's `condition`) for the
