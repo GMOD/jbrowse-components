@@ -162,15 +162,10 @@ test('census: mixed tracks, base-ish zoom', async () => {
   // rounds a gesture legitimately triggers, which are the nondeterministic
   // part.
   //
-  // The two bounds are not the same distance under what they catch. The array
-  // read puts `ScorePlotBody` (the wiggle and GC tracks' body) at 38 against a
-  // bound of 20, and `MultiWiggleBody` at 19 — so `FRAMES` would have passed the
-  // sabotage on the multi-wiggle side by one render. Both bodies sit at 0
-  // without it, so the multi bound is the tighter of the two by measurement
-  // rather than by symmetry.
+  // The array read puts `ScorePlotBody` (the wiggle, GC and mark displays'
+  // body) at 38 against a bound of 20.
   const perGesture = (name: string) => counts.get(name) ?? 0
   expect(perGesture('ScorePlotBody')).toBeLessThan(FRAMES)
-  expect(perGesture('MultiWiggleBody')).toBeLessThan(FRAMES / 4)
 }, 90000)
 
 // The same gesture at twice the track count. Every per-frame cost this file

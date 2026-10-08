@@ -185,7 +185,7 @@ export default function stateModelFactory(
       StoredHoverMixin<WiggleHoveredFeature>(),
       LegendMixin(),
       TreeSidebarMixin<Source>(),
-      ContextMenuMixin<ContextMenuAnchor & WiggleContextInfo>(),
+      ContextMenuMixin<ContextMenuAnchor & { hit: WiggleContextInfo }>(),
       types.model({
         /**
          * #property
@@ -918,7 +918,7 @@ export default function stateModelFactory(
        * `closeContextMenu` runs first when an item is clicked.
        */
       contextMenuItems(): MenuItem[] {
-        const info = self.contextMenuInfo
+        const info = self.contextMenuInfo?.hit
         if (!info) {
           return []
         }

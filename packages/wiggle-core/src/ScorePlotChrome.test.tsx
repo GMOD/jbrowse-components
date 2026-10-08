@@ -94,3 +94,24 @@ test('without a context menu a right-click stays the browser menu', () => {
   expect(notPrevented).toBe(true)
   expect(findHit).not.toHaveBeenCalled()
 })
+
+test('a context hit of its own opens the menu where the hover hit is absent', () => {
+  const model = makeModel()
+  const { getByTestId } = render(
+    <ScorePlotChrome
+      model={model}
+      marks={[]}
+      testid="score-plot"
+      findHit={() => undefined}
+      findContextHit={(x, y) => ({ x, y })}
+      tooltip={() => null}
+      contextMenu={model}
+    />,
+  )
+  fireEvent.contextMenu(getByTestId('score-plot'), { clientX: 10, clientY: 30 })
+  expect(model.openContextMenu).toHaveBeenCalledWith({
+    clientX: 10,
+    clientY: 30,
+    hit: { x: 10, y: 30 - YSCALEBAR_LABEL_OFFSET },
+  })
+})

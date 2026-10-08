@@ -65,8 +65,7 @@ test('sorts the rows by their score at the clicked column', () => {
   display.openContextMenu({
     clientX: 0,
     clientY: 0,
-    refName: 'ctgA',
-    bp: 50,
+    hit: { refName: 'ctgA', bp: 50 },
   })
 
   click(display.contextMenuItems(), 'Sort rows by score here')
@@ -81,8 +80,7 @@ test('acts on the column the menu was opened over, not the one it is closed from
   display.openContextMenu({
     clientX: 0,
     clientY: 0,
-    refName: 'ctgA',
-    bp: 50,
+    hit: { refName: 'ctgA', bp: 50 },
   })
   const items = display.contextMenuItems()
   display.closeContextMenu()
@@ -101,8 +99,7 @@ test('keeps a per-source color across the reorder', () => {
   display.openContextMenu({
     clientX: 0,
     clientY: 0,
-    refName: 'ctgA',
-    bp: 50,
+    hit: { refName: 'ctgA', bp: 50 },
   })
 
   click(display.contextMenuItems(), 'Sort rows by score here')
@@ -118,8 +115,7 @@ test('offers the reset only once an order has been written', () => {
   display.openContextMenu({
     clientX: 0,
     clientY: 0,
-    refName: 'ctgA',
-    bp: 50,
+    hit: { refName: 'ctgA', bp: 50 },
   })
   expect(labels(display.contextMenuItems())).toEqual([
     'Sort rows by score here',
@@ -140,8 +136,7 @@ test('drops the sort where the sources share one plot and there is no row axis',
   display.openContextMenu({
     clientX: 0,
     clientY: 0,
-    refName: 'ctgA',
-    bp: 50,
+    hit: { refName: 'ctgA', bp: 50 },
   })
 
   expect(labels(display.contextMenuItems())).toEqual([])
@@ -152,8 +147,7 @@ test('does nothing when the clicked region has since been discarded', () => {
   display.openContextMenu({
     clientX: 0,
     clientY: 0,
-    refName: 'ctgA',
-    bp: 50,
+    hit: { refName: 'ctgA', bp: 50 },
   })
   const items = display.contextMenuItems()
   display.dropLoadedRegion(0)
@@ -197,9 +191,7 @@ describe('the rows about the clicked bin', () => {
     display.openContextMenu({
       clientX: 0,
       clientY: 0,
-      refName: 'ctgA',
-      bp: 50,
-      feature: binAt50,
+      hit: { refName: 'ctgA', bp: 50, feature: binAt50 },
     })
 
     expect(labels(display.contextMenuItems())).toEqual([
@@ -216,9 +208,7 @@ describe('the rows about the clicked bin', () => {
     display.openContextMenu({
       clientX: 0,
       clientY: 0,
-      refName: 'ctgA',
-      bp: 50,
-      feature: binAt50,
+      hit: { refName: 'ctgA', bp: 50, feature: binAt50 },
     })
 
     expect(labels(display.contextMenuItems())).toEqual([
@@ -232,8 +222,7 @@ describe('the rows about the clicked bin', () => {
     display.openContextMenu({
       clientX: 0,
       clientY: 0,
-      refName: 'ctgA',
-      bp: 50,
+      hit: { refName: 'ctgA', bp: 50 },
     })
 
     expect(labels(display.contextMenuItems())).toEqual([
@@ -255,9 +244,7 @@ describe('the rows about the clicked bin', () => {
     display.openContextMenu({
       clientX: 0,
       clientY: 0,
-      refName: 'ctgA',
-      bp: 50,
-      feature: binAt50,
+      hit: { refName: 'ctgA', bp: 50, feature: binAt50 },
     })
 
     click(display.contextMenuItems(), 'Copy location')

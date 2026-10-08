@@ -35,8 +35,8 @@ interface ContextMenuView {
   closeContextMenu: () => void
 }
 
-export interface ScorePlotContextMenuHost<Hit> extends ContextMenuView {
-  openContextMenu: (info: ContextMenuAnchor & { hit: Hit }) => void
+export interface ScorePlotContextMenuHost<ContextHit> extends ContextMenuView {
+  openContextMenu: (info: ContextMenuAnchor & { hit: ContextHit }) => void
   clearHoveredFeature: () => void
 }
 
@@ -57,17 +57,21 @@ export type ScorePlotChromeModel<
  * canvas in the axis plot box, hover and click resolved through `findHit`, the
  * pointer-following `tooltip`, and the right-click menu where `contextMenu`
  * names the model that owns it. `findHit` takes y from the plot's own top.
+ * `findContextHit` is for a display whose menu is about something other than
+ * the hovered record (the wiggle's column, which exists where no bin does).
  */
 export const ScorePlotChrome = observer(function ScorePlotChrome<
   Hit,
   TRegion,
   TState extends FrameDimensions,
+  ContextHit = Hit,
 >({
   model,
   marks,
   testid,
   plotGeometry,
   findHit,
+  findContextHit,
   tooltip,
   overlay,
   indicators,
@@ -78,10 +82,11 @@ export const ScorePlotChrome = observer(function ScorePlotChrome<
   testid: string
   plotGeometry?: PlotBox
   findHit: (x: number, y: number) => Hit | undefined
+  findContextHit?: (x: number, y: number) => ContextHit | undefined
   tooltip: (mouseState: MouseState | undefined) => ReactNode
   overlay?: (plotGeometry: PlotBox) => ReactNode
   indicators?: () => ReactNode
-  contextMenu?: ScorePlotContextMenuHost<Hit>
+  contextMenu?: ScorePlotContextMenuHost<ContextHit>
 }) {
   const { height, canvasWidthPx: width } = model
   const box = plotGeometry ?? axisPlotBox(height)
@@ -110,7 +115,9 @@ export const ScorePlotChrome = observer(function ScorePlotChrome<
         contextMenu
           ? event => {
               const { x, y } = eventPoint(event)
-              const hit = hitAt(x, y)
+              const hit = findContextHit
+                ? findContextHit(x, y - box.yTop)
+                : (hitAt(x, y) as ContextHit | undefined)
               openContextMenuFromEvent(
                 contextMenu,
                 event,

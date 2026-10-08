@@ -1,133 +1,31 @@
-import { useCallback } from 'react'
-
-import { eventPoint } from '@jbrowse/core/util/eventPoint'
-import { ConfigProblemsCorner } from '@jbrowse/display-kit/ConfigProblemsIndicator'
-import DisplayChrome from '@jbrowse/display-kit/DisplayChrome'
-import { openContextMenuFromEvent } from '@jbrowse/display-kit/DisplayContextMenu'
-import { PointerLayer } from '@jbrowse/display-ui'
+import ConfigProblemsIndicator from '@jbrowse/display-kit/ConfigProblemsIndicator'
 import {
-  DisplayContextMenu,
   DisplayCrosshairs,
   TreeSidebar,
   treeSidebarOffset,
 } from '@jbrowse/tree-sidebar'
+import { ScorePlotChrome } from '@jbrowse/wiggle-core/ScorePlotChrome'
 import { observer } from 'mobx-react'
 
-import { WiggleRenderer } from '../../shared/WiggleRenderer.ts'
 import WiggleTooltip from '../../shared/WiggleTooltip.tsx'
-import { wiggleMouseHandlers } from '../../shared/wiggleMouseHandlers.ts'
+import { WIGGLE_MARKS } from '../../shared/wiggleMarks.ts'
 import WiggleRowLabels from '../WiggleRowLabels.tsx'
 import WiggleRowSeparators from '../WiggleRowSeparators.tsx'
 import WiggleHint from './WiggleHint.tsx'
 import { findWiggleContextHit, findWiggleHit } from './findHit.ts'
 
 import type { WiggleDisplayModel } from './wiggleDisplayTypes.ts'
-import type { MouseTracker } from '@jbrowse/core/ui'
-import type React from 'react'
 
 export type { WiggleDisplayModel } from './wiggleDisplayTypes.ts'
 
-const WiggleComponent = observer(function WiggleComponent({
+const WiggleOverlay = observer(function WiggleOverlay({
   model,
 }: {
   model: WiggleDisplayModel
 }) {
-  const totalWidth = model.canvasWidthPx
-  const height = model.height
-
-  const computeHit = useCallback(
-    (offsetX: number, offsetY: number) =>
-      findWiggleHit(model, model.host.visibleRegions, offsetX, offsetY),
-    [model],
-  )
-
-  const { onPointerPosition, onClick } = wiggleMouseHandlers(model, computeHit)
-
-  // Resolved from the click, like `onClick` above, rather than from the hover a
-  // previous frame recorded — the viewport moves under a stationary cursor. An
-  // overlay rendering with no row order written and no bin under the pointer
-  // has no items, which is the case `openContextMenuFromEvent`'s empty-menu
-  // close exists for.
-  function onContextMenu(event: React.MouseEvent) {
-    const regions = model.host.visibleRegions
-    const { x, y } = eventPoint(event)
-    const hit = findWiggleContextHit(model, regions, x)
-    openContextMenuFromEvent(
-      model,
-      event,
-      hit
-        ? {
-            clientX: event.clientX,
-            clientY: event.clientY,
-            ...hit,
-            // the column the sort ranks at and the record under the pointer are
-            // two different answers to one click: the sort needs every row's
-            // score at `bp`, the feature items need the one row `y` picked
-            feature: findWiggleHit(model, regions, x, y),
-          }
-        : undefined,
-    )
-  }
-
-  return (
-    <DisplayChrome
-      model={model}
-      factory={WiggleRenderer}
-      testid="wiggle-display"
-      style={{
-        width: totalWidth,
-        whiteSpace: 'nowrap',
-        textAlign: 'left',
-      }}
-      onPointerPosition={onPointerPosition}
-      onClick={onClick}
-      onContextMenu={onContextMenu}
-    >
-      {({ canvasRef, mouseTracker }) => (
-        <WiggleBody
-          model={model}
-          canvasRef={canvasRef}
-          totalWidth={totalWidth}
-          height={height}
-          mouseTracker={mouseTracker}
-        />
-      )}
-    </DisplayChrome>
-  )
-})
-
-const WiggleBody = observer(function WiggleBody({
-  model,
-  canvasRef,
-  totalWidth,
-  height,
-  mouseTracker,
-}: {
-  model: WiggleDisplayModel
-  canvasRef: (node: HTMLCanvasElement | null) => void
-  totalWidth: number
-  height: number
-  mouseTracker: MouseTracker
-}) {
-  const { yTop, plotHeight } = model.plotGeometry
-  const labelOffset = treeSidebarOffset(model)
-
+  const { height, canvasWidthPx: width } = model
   return (
     <>
-      <div>
-        <canvas
-          ref={canvasRef}
-          style={{
-            width: totalWidth,
-            // the box `valueScales` stacks its per-row bands in
-            height: plotHeight,
-            position: 'absolute',
-            left: 0,
-            top: yTop,
-          }}
-        />
-      </div>
-
       <svg
         style={{
           position: 'absolute',
@@ -136,46 +34,72 @@ const WiggleBody = observer(function WiggleBody({
           pointerEvents: 'none',
           overflow: 'hidden',
           height,
-          width: totalWidth,
+          width,
         }}
       >
         <g transform={`translate(0,${model.rowsTopOffset})`}>
-          <WiggleRowLabels model={model} labelOffset={labelOffset} />
-          <WiggleRowSeparators model={model} width={totalWidth} />
+          <WiggleRowLabels
+            model={model}
+            labelOffset={treeSidebarOffset(model)}
+          />
+          <WiggleRowSeparators model={model} width={width} />
         </g>
       </svg>
-
       <TreeSidebar model={model} />
-
       {/* inline hint when the plot would otherwise be a silent blank */}
       <WiggleHint model={model} />
-      <ConfigProblemsCorner model={model} />
-
-      {/* the full crosshair, not just a genomic guide: cursor y picks the row
-          being read in multi-row mode and a score level in overlay mode, and
-          both are hard to eyeball across a tall stack of plots.
-
-          Drawn for the pointer, not for a hit, the way the multi-row feature
-          and variant displays draw theirs: the row guide's whole job is to say
-          which row the cursor is on, and a row with no bin at that base is
-          exactly where it is needed. `DisplayCrosshairs` drops the genomic
-          guide over the sidebar itself. */}
-      <PointerLayer mouseTracker={mouseTracker}>
-        {mouseState => (
-          <>
-            {mouseState ? (
-              <DisplayCrosshairs
-                model={model}
-                mouseX={mouseState.x}
-                mouseY={mouseState.y}
-              />
-            ) : null}
-            <WiggleTooltip model={model} mouseState={mouseState} />
-          </>
-        )}
-      </PointerLayer>
-      <DisplayContextMenu model={model} />
     </>
+  )
+})
+
+const WiggleComponent = observer(function WiggleComponent({
+  model,
+}: {
+  model: WiggleDisplayModel
+}) {
+  // `findWiggleHit` takes y from the display's top, the chrome hands it from
+  // the plot's
+  const hitAt = (x: number, y: number) =>
+    findWiggleHit(
+      model,
+      model.host.visibleRegions,
+      x,
+      y + model.plotGeometry.yTop,
+    )
+  return (
+    <ScorePlotChrome
+      model={model}
+      marks={WIGGLE_MARKS}
+      testid="wiggle-display"
+      plotGeometry={model.plotGeometry}
+      findHit={hitAt}
+      // The column the sort ranks at and the record under the pointer are two
+      // answers to one click: the sort needs every row's score at `bp`, the
+      // feature items the one row `y` picked. A column exists where no bin
+      // does, so the menu cannot be built from the hover hit.
+      findContextHit={(x, y) => {
+        const column = findWiggleContextHit(model, model.host.visibleRegions, x)
+        return column ? { ...column, feature: hitAt(x, y) } : undefined
+      }}
+      contextMenu={model}
+      overlay={() => <WiggleOverlay model={model} />}
+      // The full crosshair, drawn for the pointer and not for a hit: the row
+      // guide says which row the cursor is on, and a row with no bin at that
+      // base is where it is needed.
+      tooltip={mouseState => (
+        <>
+          {mouseState ? (
+            <DisplayCrosshairs
+              model={model}
+              mouseX={mouseState.x}
+              mouseY={mouseState.y}
+            />
+          ) : null}
+          <WiggleTooltip model={model} mouseState={mouseState} />
+        </>
+      )}
+      indicators={() => <ConfigProblemsIndicator notices={model.notices} />}
+    />
   )
 })
 

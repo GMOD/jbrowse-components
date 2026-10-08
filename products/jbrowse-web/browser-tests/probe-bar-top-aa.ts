@@ -16,7 +16,7 @@
 //
 // The sample count is a per-display property (`RenderingBackendOptions.
 // sampleCount`), so the 1-sample arms are `sampleCount: 1` in
-// `plugins/wiggle/src/shared/WiggleRenderer.ts`'s `createRenderingBackend` call.
+// `packages/wiggle-core/src/ScorePlotChrome.tsx`'s `createMarkBackend` call.
 // Flip it, rebuild, capture, and put it back — which display drops to 1 is a
 // look-at-the-pixels decision, not something a probe leaves behind.
 //
