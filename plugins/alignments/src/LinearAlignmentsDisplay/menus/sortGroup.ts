@@ -29,8 +29,8 @@ interface SortByModel {
 }
 
 // One ordering at a time, so a single radio group. Most modes write a `sortedBy`
-// type; "Start location", "Longest reads first" and "Spliced reads first" are
-// the `layoutOrder` slot, folded in as peer radios because they compete for the
+// type; "Start location", "Longest reads first", "Spliced reads first" and
+// "Split reads first" are the `layoutOrder` slot, folded in as peer radios because they compete for the
 // same ordering. "Start location" is the unsorted default, so it doubles as the
 // reset — no separate "Clear".
 //

@@ -1595,9 +1595,14 @@ export const trackFields: Record<string, FieldRecipe> = {
           path: `${TRACK_MENU} → Sort by... → Spliced reads first`,
           note: 'Gives every read whose CIGAR carries a skip the lowest rows, so the junction-spanning reads sit together at the top of a deep pileup. One ordering at a time: this and the sort modes are one radio group.',
         }
-      : value === 'length' && isAlignmentsOnlyField(displayType)
-        ? { path: `${TRACK_MENU} → Sort by... → Longest reads first` }
-        : undefined,
+      : value === 'split' && isAlignmentsOnlyField(displayType)
+        ? {
+            path: `${TRACK_MENU} → Sort by... → Split reads first`,
+            note: 'Gives the reads aligned in pieces, and the reads carrying a deletion of 50 bp or more, the lowest rows, so the reads crossing a breakpoint sit together at the top of a deep pileup.',
+          }
+        : value === 'length' && isAlignmentsOnlyField(displayType)
+          ? { path: `${TRACK_MENU} → Sort by... → Longest reads first` }
+          : undefined,
   showLegend: (value, { displayType }) =>
     typeof value === 'boolean' &&
     displayType &&
