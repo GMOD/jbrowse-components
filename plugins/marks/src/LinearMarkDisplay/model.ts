@@ -226,6 +226,7 @@ function storedRegionData(result: EncodedLayersResult): MarkRegionData {
     facet: result.facet,
     zoomRange: result.zoomRange,
     notices: result.notices,
+    facts: result.facts,
   }
 }
 

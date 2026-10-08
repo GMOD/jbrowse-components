@@ -47,7 +47,15 @@ export async function layerFeatures(
     statusCallback,
   } = args
   const notices: string[] = []
-  const fetchOpts = { ...opts, bpPerPx, statusCallback, signal, notices }
+  const facts: Record<string, unknown> = {}
+  const fetchOpts = {
+    ...opts,
+    bpPerPx,
+    statusCallback,
+    signal,
+    notices,
+    facts,
+  }
   const [fetched, zoomRange] = await updateStatus(
     'Downloading features',
     statusCallback,
@@ -71,5 +79,5 @@ export async function layerFeatures(
     },
     jexl,
   )
-  return { layers, sections, zoomRange, notices }
+  return { layers, sections, zoomRange, notices, facts }
 }

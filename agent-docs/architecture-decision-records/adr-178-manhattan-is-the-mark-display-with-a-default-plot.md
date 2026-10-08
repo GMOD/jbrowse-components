@@ -42,6 +42,20 @@ transforms or Edit plot.
   missing-index warning is the adapter's: a fetch's `notices` ride the encoded
   result to the mark model's `dataNotices` and the corner notice, so the model
   infers nothing about the join from how the points are encoded.
+- **The top hit is the adapter's, read off the file** (amended 2026-10-08).
+  `GWASAdapter` reports each region's highest-scoring SNP in the fetch's
+  `facts`, a channel beside `notices` that rides the encoded result to the
+  region's stored data, and `topSnp` is the best of them. It is read before
+  the join and before every step of the plot, which is the only place nothing
+  the plot does can move it: LocusZoom.js picks its LD reference the same way,
+  the highest `log_pvalue` of the association data. The model first read the
+  top hit off the points the LD-reading marks drew, which the join's own
+  `ld_role` filter changes. A plot with the partner mark and no index twin,
+  one deletion in Edit plot away from the shipped plot, adopted a SNP, lost it
+  to the filter, adopted the runner-up and got the first back, refetching each
+  way without end; a plot whose only LD mark plots `r2` drew nothing before a
+  join and so never found an index to join. An index SNP a display `filter`
+  hides still colours its partners, and a pin overrides it.
 - **A plot that names an LD field joins LD.** `joinsLd` is an `ldAdapter` plus
   a mark whose encoding names `r2` or `ld_role`. LocusZoom's plot is two
   points, each behind a `filter` on `ld_role`: every SNP but the index by a
@@ -101,6 +115,9 @@ transforms or Edit plot.
 - **Inferring the LD join from the encodings** (`ld_role` shape entries, the
   colour lanes) for the missing-index notice: it held only for plots shaped
   like `LD_MARKS`. The adapter reports through `BaseOptions.notices` instead.
+- **The top hit read after the plot's shared steps**, to follow a display
+  `filter`: a display-level filter on `ld_role` would reopen the refetch loop
+  the adapter's report closes.
 - **An index SNP named by its id** (amended 2026-10-08: `indexSnp` took a SNP
   id beside a `chr:bp`). Both writers, the top hit and the right-click, place
   the index, so an id reached it only from a hand-written session. An id has no

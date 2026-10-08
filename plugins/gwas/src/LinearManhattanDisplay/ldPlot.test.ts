@@ -8,7 +8,7 @@ import { getSnapshot } from '@jbrowse/mobx-state-tree'
 
 import { INDEX_SNP_MISSING } from '../GWASAdapter/ldJoin.ts'
 import { LD_COLOR, LD_INDEX_COLOR, LD_MARKS, MANHATTAN_MARK } from './ldPlot.ts'
-import { manhattanFixture } from './manhattan.fixture.ts'
+import { manhattanFixture, topHitFacts } from './manhattan.fixture.ts'
 import { createTestEnvironment } from './testEnv.ts'
 
 import type { LinearManhattanDisplayModel } from './stateModelFactory.ts'
@@ -405,6 +405,7 @@ test('the top hit reads every loaded row, focused out or not', () => {
         { key: 'p1', firstRow: 0, rowCount: 1 },
         { key: 'p2', firstRow: 1, rowCount: 1 },
       ],
+      facts: topHitFacts(500, 9),
     },
     REGION,
   )

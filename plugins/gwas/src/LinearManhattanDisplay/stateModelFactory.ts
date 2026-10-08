@@ -8,6 +8,7 @@ import { getSnapshot, types } from '@jbrowse/mobx-state-tree'
 import { stateModelFactory as markStateModelFactory } from '@jbrowse/plugin-marks/LinearMarkDisplay/stateModel'
 import { namedAutorun } from '@jbrowse/render-core/namedReactions'
 
+import { readTopHit } from '../GWASAdapter/topHit.ts'
 import { ldJoinFor } from './ldJoinResolver.ts'
 import {
   colorsByLd,
@@ -112,69 +113,31 @@ export function stateModelFactory(
       get ldColorable(): boolean {
         return self.conf.marks.some(m => colorsByLd(m, self.sharedSteps))
       },
-      /**
-       * #getter
-       * The marks drawing at this zoom that name an LD field and plot each
-       * SNP's own `y` at its own position, whose points the top hit reads.
-       */
-      get ldMarkIndexes(): number[] {
-        const { visible } = self.markView
-        const requests = self.layerRequests
-        return self.conf.marks.flatMap((m, i) =>
-          visible[i] &&
-          readsLd(m) &&
-          requests[i]!.lanes.includes('y') &&
-          placesEachSnp(m, self.sharedSteps)
-            ? [i]
-            : [],
-        )
-      },
     }))
     .views(self => ({
       /**
        * #getter
-       * The highest-scoring loaded SNP of the LD marks as a 1-based `chr:bp`,
-       * the index the join follows while none is pinned.
+       * The highest-scoring loaded SNP as a 1-based `chr:bp`, the index the
+       * join follows while none is pinned. `GWASAdapter` reports each region's
+       * top hit off the file, so no filter, zoom gate or mark of the plot
+       * moves it.
        *
        * A tie goes to the lowest region index, then the lowest position,
-       * never to arrival order or to the mark a SNP is drawn in. Ties at the
-       * top are routine — `negLog10` clamps every underflowed p of 0 to the
-       * same ~323.3 — and adopting the index refetches and moves it into the
-       * index mark, so a tie broken either way would flip between the tied
-       * SNPs and never paint (`ldAutoIndex.test.ts`).
+       * never to arrival order: adopting the index refetches, so a tie broken
+       * by arrival would flip between the tied SNPs and never paint
+       * (`ldAutoIndex.test.ts`).
        */
       get topSnp(): string | undefined {
-        const marks = self.ldMarkIndexes
-        let bestScore = -Infinity
-        let bestPos = 0
-        let bestIdx = -1
+        let best: { score: number; start: number; idx: number } | undefined
         const indexes = [...self.rpcDataMap.keys()].sort((a, b) => a - b)
         for (const idx of indexes) {
-          const { layers } = self.rpcDataMap.get(idx)!
-          for (const mark of marks) {
-            const layer = layers[mark]
-            const y = layer?.y
-            if (layer && y) {
-              for (let i = 0; i < layer.count; i++) {
-                const score = y[i]!
-                const pos = layer.x[i]!
-                if (
-                  score > bestScore ||
-                  (score === bestScore && idx === bestIdx && pos < bestPos)
-                ) {
-                  bestScore = score
-                  bestPos = pos
-                  bestIdx = idx
-                }
-              }
-            }
+          const hit = readTopHit(self.rpcDataMap.get(idx)!.facts)
+          if (hit && (!best || hit.score > best.score)) {
+            best = { ...hit, idx }
           }
         }
-        const refName =
-          bestIdx === -1
-            ? undefined
-            : self.host.displayedRegions[bestIdx]?.refName
-        return refName ? `${refName}:${bestPos + 1}` : undefined
+        const refName = best && self.host.displayedRegions[best.idx]?.refName
+        return refName ? `${refName}:${best!.start + 1}` : undefined
       },
       /**
        * #getter

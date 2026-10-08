@@ -2,11 +2,12 @@ import { readConfObject } from '@jbrowse/core/configuration'
 import { SimpleFeature, updateStatus } from '@jbrowse/core/util'
 import { isLDRecordSource } from '@jbrowse/ld-core'
 import { BedTabixAdapter } from '@jbrowse/plugin-bed'
-import { defer, forkJoin, map, mergeMap, toArray } from 'rxjs'
+import { defer, forkJoin, mergeMap, of, toArray } from 'rxjs'
 
 import { LD_FIELD, LD_ROLE_FIELD } from './ldFields.ts'
 import { INDEX_SNP_MISSING, ldOf, ldToIndex } from './ldJoin.ts'
 import { getScoreTransform } from './scoreTransforms.ts'
+import { TOP_HIT_FACT, topHitOf } from './topHit.ts'
 
 import type { GWASAdapterConfig } from './configSchema.ts'
 import type { GWASFetchOptions, LdJoin, LdToIndex } from './ldJoin.ts'
@@ -67,26 +68,29 @@ export default class GWASAdapter extends BedTabixAdapter {
       : f
   }
 
+  // The top hit is read here, before the join and every step of the plot, so
+  // nothing a plot filters or draws moves the index the join follows.
   getFeatures(region: Region, opts: GWASFetchOptions = {}) {
-    const features = super.getFeatures(region, opts)
-    const { ld } = opts
-    if (!ld) {
-      return this.scoreTransform
-        ? features.pipe(map(f => this.rewritten(f)))
-        : features
-    }
+    const { ld, facts } = opts
     return forkJoin([
-      defer(() => this.ldToIndex(ld, opts)),
-      features.pipe(toArray()),
+      ld ? defer(() => this.ldToIndex(ld, opts)) : of(undefined),
+      super.getFeatures(region, opts).pipe(toArray()),
     ]).pipe(
       mergeMap(([lookup, loaded]) => {
-        const found = loaded.map(f => lookup && ldOf(f, lookup, ld))
+        const found = loaded.map(f =>
+          ld && lookup ? ldOf(f, lookup, ld) : undefined,
+        )
         const indexHeld = found.some(l => l?.role === 'index')
         const partnered = found.some(l => l?.role === 'partner')
         if (indexHeld && !partnered) {
           opts.notices?.push(INDEX_SNP_MISSING)
         }
-        return loaded.map((f, i) => this.rewritten(f, found[i]))
+        const features = loaded.map((f, i) => this.rewritten(f, found[i]))
+        const top = facts && topHitOf(features)
+        if (top) {
+          facts[TOP_HIT_FACT] = top
+        }
+        return features
       }),
     )
   }

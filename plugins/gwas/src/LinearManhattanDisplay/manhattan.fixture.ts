@@ -1,5 +1,7 @@
 import { hitIndexOf } from '@jbrowse/core/util/markEncoding'
 
+import { TOP_HIT_FACT } from '../GWASAdapter/topHit.ts'
+
 import type { EncodedChannels } from '@jbrowse/core/util/markEncoding'
 
 /**
@@ -50,4 +52,9 @@ export function manhattanFixture({
       flatbush && count > 0 ? hitIndexOf(xs, x2s, ys).data : undefined,
     ...rest,
   }
+}
+
+/** A region's top hit as `GWASAdapter` reports it in a fetch's `facts`. */
+export function topHitFacts(start: number, score: number) {
+  return { [TOP_HIT_FACT]: { start, score } }
 }

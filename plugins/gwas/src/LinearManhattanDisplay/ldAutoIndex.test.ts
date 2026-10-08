@@ -1,8 +1,8 @@
 import { waitFor } from '@testing-library/react'
 import { when } from 'mobx'
 
-import { LD_MARKS } from './ldPlot.ts'
-import { manhattanFixture } from './manhattan.fixture.ts'
+import { LD_COLOR, LD_MARKS } from './ldPlot.ts'
+import { manhattanFixture, topHitFacts } from './manhattan.fixture.ts'
 import { createTestEnvironment } from './testEnv.ts'
 
 import type { LdJoin } from '../GWASAdapter/ldJoin.ts'
@@ -21,15 +21,10 @@ const HITS: Record<string, { pos: number; score: number }> = {
   ctgB: { pos: 500, score: 9 },
 }
 const TOP_SNP = 'ctgB:501'
-const HIT_REGION = {
-  refName: 'ctgA',
-  start: 0,
-  end: 1000,
-  assemblyName: 'volvox',
-}
 
 // As the worker splits LD_MARKS: the hit the join names as the index is drawn
-// by the second mark, and every other point by the first.
+// by the second mark, and every other point by the first. The adapter reports
+// the region's top hit whichever mark draws it.
 function makeResult({ region, opts }: FetchArgs) {
   const hit = HITS[region.refName]!
   const drawn = manhattanFixture({
@@ -40,6 +35,7 @@ function makeResult({ region, opts }: FetchArgs) {
   const none = manhattanFixture({ x: [], y: [], flatbush: false })
   return {
     layers: opts?.ld?.start === hit.pos ? [none, drawn] : [drawn, none],
+    facts: topHitFacts(hit.pos, hit.score),
   }
 }
 
@@ -142,6 +138,7 @@ describe('LinearManhattanDisplay LD auto-index', () => {
     }
     const tied = (pos: number) => ({
       layers: [manhattanFixture({ x: [pos], y: [9], flatbush: false })],
+      facts: topHitFacts(pos, 9),
     })
 
     const first = createDisplay().display
@@ -155,78 +152,88 @@ describe('LinearManhattanDisplay LD auto-index', () => {
     expect(second.topSnp).toBe('ctgA:101')
   })
 
-  // Adopting either of two tied SNPs moves it into the index mark, so a tie
-  // broken by mark order would hand the index back and forth.
-  it('breaks a score tie in one region by position, not by the mark drawing it', () => {
-    const { display } = createTestEnvironment({
-      marks: LD_MARKS,
-    }).createDisplay()
-    const at = (pos: number) =>
-      manhattanFixture({ x: [pos], y: [9], flatbush: false })
-    display.setRpcData(0, { layers: [at(500), at(100)] }, HIT_REGION)
-    expect(display.topSnp).toBe('ctgA:101')
-    display.setRpcData(0, { layers: [at(100), at(500)] }, HIT_REGION)
-    expect(display.topSnp).toBe('ctgA:101')
-  })
-
-  it('reads no top hit off an LD mark that plots no y', () => {
-    const { display } = createTestEnvironment({
+  // The top hit used to be read off the points the LD marks drew, which the
+  // join's own `ld_role` filter changes: with the index twin deleted in Edit
+  // plot or gated off by zoom, adopting a SNP filtered it out, the runner-up
+  // became the top hit, and adopting that one brought the first back, a
+  // refetch each way and no end to it.
+  it('settles where the plot draws every SNP but the index', async () => {
+    const { createDisplay, mockRpcCall } = createTestEnvironment({
       marks: [
-        { mark: 'span', encoding: { color: { field: 'r2' } } },
-        ...LD_MARKS,
+        {
+          mark: 'point',
+          transform: [
+            { type: 'filter', expr: "jexl:feature.ld_role != 'index'" },
+          ],
+          encoding: { y: 'score', color: LD_COLOR },
+        },
       ],
-    }).createDisplay()
-    const at = (pos: number, score: number) =>
-      manhattanFixture({ x: [pos], y: [score], flatbush: false })
-    display.setRpcData(
-      0,
-      { layers: [at(100, 50), at(500, 9), at(700, 3)] },
-      HIT_REGION,
+    })
+    const ctgB = [
+      { pos: 500, score: 9 },
+      { pos: 600, score: 8 },
+    ]
+    mockRpcCall.mockImplementation(
+      (_sessionId: string, _method: string, { region, opts }: FetchArgs) => {
+        const drawn =
+          region.refName === 'ctgB'
+            ? ctgB.filter(h => h.pos !== opts?.ld?.start)
+            : [{ pos: 100, score: 3 }]
+        return Promise.resolve({
+          layers: [
+            manhattanFixture({
+              x: drawn.map(h => h.pos),
+              y: drawn.map(h => h.score),
+              flatbush: false,
+            }),
+          ],
+          facts:
+            region.refName === 'ctgB'
+              ? topHitFacts(500, 9)
+              : topHitFacts(100, 3),
+        })
+      },
     )
-    expect(display.ldMarkIndexes).toEqual([1, 2])
-    expect(display.topSnp).toBe('ctgA:501')
+    const { display } = createDisplay()
+
+    await settle(8)
+    await waitFor(() => {
+      expect(display.indexSnp).toBe(TOP_SNP)
+    })
+    expect(mockRpcCall).toHaveBeenCalledTimes(4)
+    await settle(8)
+    expect(display.indexSnp).toBe(TOP_SNP)
+    expect(mockRpcCall).toHaveBeenCalledTimes(4)
   })
 
-  it.each([
-    [
-      'aggregated bins',
-      {
-        mark: 'bar',
-        transform: [
-          { type: 'bin', step: 1000 },
-          { type: 'aggregate', ops: [{ op: 'max', field: 'r2', as: 'r2' }] },
-        ],
-        encoding: { y: 'r2' },
+  // A plot whose only LD mark plots `r2` draws nothing until a join writes
+  // the field, so an index read off drawn points never arrived to join one.
+  it('adopts an index for a plot that draws nothing before the join', async () => {
+    const { createDisplay, mockRpcCall } = createTestEnvironment({
+      marks: [{ mark: 'point', encoding: { y: 'r2' } }],
+    })
+    mockRpcCall.mockImplementation(
+      (_sessionId: string, _method: string, { region, opts }: FetchArgs) => {
+        const hit = HITS[region.refName]!
+        return Promise.resolve({
+          layers: [
+            manhattanFixture({
+              x: opts?.ld ? [hit.pos] : [],
+              y: opts?.ld ? [1] : [],
+              flatbush: false,
+            }),
+          ],
+          facts: topHitFacts(hit.pos, hit.score),
+        })
       },
-    ],
-    [
-      'SNPs snapped to their bin',
-      {
-        mark: 'point',
-        transform: [{ type: 'bin', step: 1000 }],
-        encoding: { y: 'score', color: { field: 'r2' } },
-      },
-    ],
-    [
-      'SNPs placed by another field',
-      {
-        mark: 'point',
-        encoding: { x: 'pos', y: 'score', color: { field: 'r2' } },
-      },
-    ],
-  ])('reads no top hit off an LD mark whose points are %s', (_, mark) => {
-    const { display } = createTestEnvironment({
-      marks: [mark, ...LD_MARKS],
-    }).createDisplay()
-    const at = (pos: number, score: number) =>
-      manhattanFixture({ x: [pos], y: [score], flatbush: false })
-    display.setRpcData(
-      0,
-      { layers: [at(0, 50), at(500, 9), at(700, 3)] },
-      HIT_REGION,
     )
-    expect(display.ldMarkIndexes).toEqual([1, 2])
-    expect(display.topSnp).toBe('ctgA:501')
+    const { display } = createDisplay()
+
+    await settle(8)
+    await waitFor(() => {
+      expect(display.indexSnp).toBe(TOP_SNP)
+    })
+    expect(mockRpcCall).toHaveBeenCalledTimes(4)
   })
 
   // Regression (empty SVG/PNG export): `awaitSvgReady` samples `svgReady` once

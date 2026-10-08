@@ -432,6 +432,8 @@ export interface EncodedLayersResult {
   zoomRange?: ZoomRange
   /** What the adapter said about this answer that the features cannot show. */
   notices?: string[]
+  /** What the adapter read off the features, under names of its own. */
+  facts?: Record<string, unknown>
 }
 
 /**

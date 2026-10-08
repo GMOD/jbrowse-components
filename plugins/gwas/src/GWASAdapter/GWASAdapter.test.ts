@@ -13,6 +13,7 @@ import {
   SleLDAdapter,
   slePluginManager,
 } from './sle.fixture.ts'
+import { readTopHit } from './topHit.ts'
 
 import type { GWASFetchOptions, LdJoin } from './ldJoin.ts'
 import type { Feature } from '@jbrowse/core/util'
@@ -142,5 +143,19 @@ describe('an LD join asked for through the fetch options', () => {
     await fetch(SLE_INDEX_START + 1)
     expect(read).toHaveBeenCalledTimes(2)
     read.mockRestore()
+  })
+
+  // The index the join follows is read off the file, so the join it leads to
+  // cannot move it.
+  it('reports the same top hit with and without a join', async () => {
+    const reported = async (opts: GWASFetchOptions) => {
+      const facts: Record<string, unknown> = {}
+      const features = await sle({ ...opts, facts })
+      return { top: readTopHit(facts)!, features }
+    }
+    const { top, features } = await reported({})
+    expect(top.score).toBe(Math.max(...features.map(f => f.get('score')!)))
+    const joined = await reported({ ld: { start: top.start, refName: '2' } })
+    expect(joined.top).toEqual(top)
   })
 })

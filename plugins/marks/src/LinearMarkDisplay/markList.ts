@@ -98,6 +98,8 @@ export interface MarkRegionData {
   zoomRange?: ZoomRange
   /** What the adapter said about the region that the plot cannot show. */
   notices?: string[]
+  /** What the adapter read off the region's features, under names of its own. */
+  facts?: Record<string, unknown>
 }
 
 export interface MarkRenderState extends MarkFrame {

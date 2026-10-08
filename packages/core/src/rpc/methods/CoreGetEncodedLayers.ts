@@ -55,6 +55,7 @@ export default class CoreGetEncodedLayers extends RpcMethodTypeWithRenameRegion<
       sections,
       zoomRange,
       notices,
+      facts,
     } = await layerFeatures(dataAdapter, args, jexl)
     const layers = requested.map((request, i) => {
       const { table, row } = layered[i]!
@@ -79,6 +80,7 @@ export default class CoreGetEncodedLayers extends RpcMethodTypeWithRenameRegion<
       bytes,
       zoomRange,
       ...(notices.length > 0 ? { notices } : {}),
+      ...(Object.keys(facts).length > 0 ? { facts } : {}),
     }
     return rpcResult(
       result,

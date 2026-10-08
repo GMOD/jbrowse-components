@@ -184,10 +184,9 @@ The key cannot see it coming, nothing having moved yet, so `dataCurrent` said
 "current" for the doomed data, `awaitSvgReady` samples once, and the export
 painted the emptied map — a Manhattan lane with the LD legend and no points,
 exit 0. Fill the hook with the condition the autorun writes under, and gate it
-on the WRITE, not on whether the feature is visibly doing anything:
-`color: { field: 'r2' }` with no `ldAdapter` draws no colours but still writes
-the index, and gating on the visible half left exactly the same empty export
-behind.
+on the WRITE, not on whether the feature is visibly doing anything: a gate on
+the visible half leaves the same empty export behind wherever the write
+happens without it.
 
 **A dependent fetch of the display's own.** Multi-way synteny fetches lane genes
 and lane links off the lane frames its ortholog fetch produced, so the signature
