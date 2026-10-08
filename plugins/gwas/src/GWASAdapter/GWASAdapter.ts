@@ -25,11 +25,7 @@ export default class GWASAdapter extends BedTabixAdapter {
     )
   }
 
-  private async ldToIndex(
-    region: Region,
-    join: LdJoin,
-    opts: GWASFetchOptions,
-  ) {
+  private async ldToIndex(join: LdJoin, opts: GWASFetchOptions) {
     const config: Record<string, unknown> | undefined =
       readConfObject(this.config, 'ldAdapter') ?? undefined
     if (!config || !this.getSubAdapter) {
@@ -42,7 +38,7 @@ export default class GWASAdapter extends BedTabixAdapter {
       )
     }
     return updateStatus('Downloading LD data', opts.statusCallback, () =>
-      ldToIndex(dataAdapter, region, join, opts),
+      ldToIndex(dataAdapter, join, opts),
     )
   }
 
@@ -68,7 +64,7 @@ export default class GWASAdapter extends BedTabixAdapter {
         : features
     }
     return forkJoin([
-      defer(() => this.ldToIndex(region, ld, opts)),
+      defer(() => this.ldToIndex(ld, opts)),
       features.pipe(toArray()),
     ]).pipe(
       mergeMap(([lookup, loaded]) => {

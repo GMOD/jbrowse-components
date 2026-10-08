@@ -72,7 +72,7 @@ describe('an LD join asked for through the fetch options', () => {
 
   it("writes each SNP its r² to the index, read from the adapter's ldAdapter", async () => {
     const features = await sle({
-      ld: { index: { start: SLE_INDEX_START }, refName: '2' },
+      ld: { start: SLE_INDEX_START, refName: '2' },
     })
     const index = named(features, 'rs4274624')
     const partner = named(features, 'rs193239665')
@@ -91,7 +91,7 @@ describe('an LD join asked for through the fetch options', () => {
   it('joins only the index where the LD file is asked under another name', async () => {
     const warn = jest.spyOn(console, 'warn').mockImplementation(() => {})
     const features = await sle({
-      ld: { index: { start: SLE_INDEX_START }, refName: 'chr2' },
+      ld: { start: SLE_INDEX_START, refName: 'chr2' },
     })
     expect(features.filter(f => f.get('r2') !== undefined)).toEqual([
       named(features, 'rs4274624'),
@@ -107,13 +107,13 @@ describe('an LD join asked for through the fetch options', () => {
       return notices
     }
     expect(
-      await noticesOf({ index: { start: SLE_INDEX_START }, refName: 'chr2' }),
+      await noticesOf({ start: SLE_INDEX_START, refName: 'chr2' }),
     ).toEqual([INDEX_SNP_MISSING])
+    expect(await noticesOf({ start: SLE_INDEX_START, refName: '2' })).toEqual(
+      [],
+    )
     expect(
-      await noticesOf({ index: { start: SLE_INDEX_START }, refName: '2' }),
-    ).toEqual([])
-    expect(
-      await noticesOf({ index: { name: 'rsNOPE' }, refName: '2' }),
+      await noticesOf({ start: SLE_INDEX_START + 1, refName: '2' }),
     ).toEqual([])
     warn.mockRestore()
   })

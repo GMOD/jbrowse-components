@@ -1,15 +1,15 @@
 import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
-import type { Feature, Region } from '@jbrowse/core/util'
+import type { Feature } from '@jbrowse/core/util'
 import type { LDRecordSource } from '@jbrowse/ld-core'
 
 /**
- * The LD join a fetch asks `GWASAdapter` for. The caller resolves both names:
- * the index SNP against the view's contig, and `refName` against the
- * `ldAdapter`'s file, which may spell the contig otherwise than the GWAS file.
+ * The LD join a fetch asks `GWASAdapter` for. The caller resolves both members
+ * against the queried contig, since the `ldAdapter`'s file may spell it
+ * otherwise than the GWAS file.
  */
 export interface LdJoin {
-  /** The index SNP: its id, or its 0-based start on the queried contig. */
-  index: { name: string } | { start: number }
+  /** The index SNP's 0-based start on the queried contig. */
+  start: number
   /** The queried contig as the `ldAdapter`'s file names it. */
   refName: string
 }
@@ -41,20 +41,17 @@ export interface LdToIndex {
 }
 
 /**
- * Where to read the `.ld` file. A placed index anchors the window, because an
- * index over the file finds a row by its A side, so a window without the index
- * returns no row naming it: on `test_data/gwas/SLE.ld` a 200 kb pan off the
- * index took 1212 partners to 0. A bare id has no position until a record
- * names it, so the region is the only window there is.
+ * Where to read the `.ld` file: around the index, not the fetched region,
+ * because an index over the file finds a row by its A side, so a window
+ * without the index returns no row naming it. On `test_data/gwas/SLE.ld` a
+ * 200 kb pan off the index took 1212 partners to 0.
  */
-function ldWindow(region: Region, { index, refName }: LdJoin) {
-  return 'start' in index
-    ? {
-        refName,
-        start: Math.max(0, index.start - LD_WINDOW_BP),
-        end: index.start + 1 + LD_WINDOW_BP,
-      }
-    : { refName, start: region.start, end: region.end }
+function ldWindow({ start, refName }: LdJoin) {
+  return {
+    refName,
+    start: Math.max(0, start - LD_WINDOW_BP),
+    end: start + 1 + LD_WINDOW_BP,
+  }
 }
 
 /**
@@ -64,16 +61,13 @@ function ldWindow(region: Region, { index, refName }: LdJoin) {
  */
 export async function ldToIndex(
   source: Pick<LDRecordSource, 'getLDRecords'>,
-  region: Region,
   join: LdJoin,
   opts?: BaseOptions,
 ): Promise<LdToIndex> {
-  const { index, refName } = join
-  const isIndex = (snp: string, chr: string, bp: number) =>
-    'start' in index
-      ? chr === refName && bp - 1 === index.start
-      : isNamedSnp(snp) && snp === index.name
-  const query = ldWindow(region, join)
+  const { start, refName } = join
+  const isIndex = (chr: string, bp: number) =>
+    chr === refName && bp - 1 === start
+  const query = ldWindow(join)
   const records = await source.getLDRecords(query, opts)
   const byName = new Map<string, number>()
   const byStart = new Map<number, number>()
@@ -82,8 +76,8 @@ export async function ldToIndex(
     if (r2 === undefined) {
       continue
     }
-    const aIsIndex = isIndex(snpA, chrA, bpA)
-    if (aIsIndex !== isIndex(snpB, chrB, bpB)) {
+    const aIsIndex = isIndex(chrA, bpA)
+    if (aIsIndex !== isIndex(chrB, bpB)) {
       found = true
       const snp = aIsIndex ? snpB : snpA
       if (isNamedSnp(snp)) {
@@ -110,14 +104,15 @@ export async function ldToIndex(
 export function ldOf(
   feature: Feature,
   ld: LdToIndex,
-  { index }: LdJoin,
+  join: LdJoin,
 ): { r2: number; role: 'index' | 'partner' } | undefined {
   const name: unknown = feature.get('name')
   const start = feature.get('start')
-  const named = isNamedSnp(name)
-  if ('start' in index ? start === index.start : named && name === index.name) {
+  if (start === join.start) {
     return { r2: 1, role: 'index' }
   }
-  const r2 = (named ? ld.byName.get(name) : undefined) ?? ld.byStart.get(start)
+  const r2 =
+    (isNamedSnp(name) ? ld.byName.get(name) : undefined) ??
+    ld.byStart.get(start)
   return r2 === undefined ? undefined : { r2, role: 'partner' }
 }

@@ -44,7 +44,7 @@ describe('a point reads back as its whole GWAS record', () => {
     adapterConfig: SLE_ADAPTER,
     region: SLE_REGION,
     layers: display.layerRequests,
-    opts: { ld: { index: { start: SLE_INDEX_START }, refName: '2' } },
+    opts: { ld: { start: SLE_INDEX_START, refName: '2' } },
   }
 
   async function drawnAt(mark: number, start: number) {
@@ -209,17 +209,15 @@ describe('the LD join a fetch asks for', () => {
   it("names a placed index by its start and the region's contig in the LD file's spelling", async () => {
     const { opts } = await fetchedOpts('chrA:501', LD_MARKS)
     expect(opts).toEqual([
-      { ld: { index: { start: 500 }, refName: 'LD_ctgA' } },
+      { ld: { start: 500, refName: 'LD_ctgA' } },
       undefined,
     ])
   })
 
-  it('names an index known only by id, on every region', async () => {
-    const { opts } = await fetchedOpts('rs1', LD_MARKS)
-    expect(opts).toEqual([
-      { ld: { index: { name: 'rs1' }, refName: 'LD_ctgA' } },
-      { ld: { index: { name: 'rs1' }, refName: 'LD_ctgB' } },
-    ])
+  it('joins nothing to an index that is no chr:bp', async () => {
+    const { opts, names } = await fetchedOpts('rs1', LD_MARKS)
+    expect(opts).toEqual([undefined, undefined])
+    expect(names).not.toHaveBeenCalled()
   })
 
   // Resolving the LD file's names reads its refNames, which for the in-memory

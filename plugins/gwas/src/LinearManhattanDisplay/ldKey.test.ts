@@ -28,7 +28,7 @@ async function ldColoredOverSle() {
       adapterConfig: SLE_ADAPTER,
       region: SLE_REGION,
       layers: display.layerRequests,
-      opts: { ld: { index: { start: SLE_INDEX_START }, refName: '2' } },
+      opts: { ld: { start: SLE_INDEX_START, refName: '2' } },
     })) as { value: EncodedLayersResult }
   display.setRpcData(0, value, REGION)
   return display

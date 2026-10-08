@@ -9,10 +9,10 @@ import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
 
 /**
  * The LD join one region's fetch asks the adapter for, resolved on the main
- * thread, where the aliases are: whether a placed index sits on the region's
- * contig, and that contig as the LD file spells it. Resolving the LD file's
- * names reads its refNames, which for the in-memory PLINK adapter parses the
- * whole `.ld` file, so only a plot that reads the join calls this.
+ * thread, where the aliases are, or undefined where the index SNP sits on
+ * another contig or names no `chr:bp`. Resolving the LD file's names reads its
+ * refNames, which for the in-memory PLINK adapter parses the whole `.ld` file,
+ * so only a plot that reads the join calls this.
  */
 export async function ldJoinFor(
   self: IStateTreeNode,
@@ -22,11 +22,10 @@ export async function ldJoinFor(
   signal: AbortSignal,
 ): Promise<LdJoin | undefined> {
   const locus = parseChrBp(indexSnp)
-  const placed = locus && {
-    refName: canonicalizeViewRefName(self, locus.refName),
-    start: locus.bp - 1,
-  }
-  if (placed && placed.refName !== region.refName) {
+  if (
+    !locus ||
+    canonicalizeViewRefName(self, locus.refName) !== region.refName
+  ) {
     return undefined
   }
   const names = await getSession(self).assemblyManager.getRefNameMapForAdapter(
@@ -35,7 +34,7 @@ export async function ldJoinFor(
     { sessionId: getRpcSessionId(self), signal },
   )
   return {
-    index: placed ? { start: placed.start } : { name: indexSnp },
+    start: locus.bp - 1,
     refName: names[region.refName] ?? region.refName,
   }
 }

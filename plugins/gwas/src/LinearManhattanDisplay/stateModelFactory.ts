@@ -51,9 +51,8 @@ export function stateModelFactory(
         configuration: ConfigurationReference(configSchema),
         /**
          * #property
-         * The index SNP the LD join reads r² to: a SNP id or a 1-based
-         * `chr:bp`. It follows the highest-scoring loaded SNP until the user
-         * pins one.
+         * The index SNP the LD join reads r² to, as a 1-based `chr:bp`. It
+         * follows the highest-scoring loaded SNP until the user pins one.
          */
         indexSnp: types.maybe(types.string),
         /**

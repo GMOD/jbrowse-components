@@ -50,14 +50,12 @@ function feat(p: { name?: string; start: number }) {
   })
 }
 
-const region = { refName: '1', start: 0, end: 1000, assemblyName: 'hg38' }
-
 async function joined(
   records: PlinkLDRecord[],
   join: LdJoin,
   features: SimpleFeature[],
 ) {
-  const ld = await ldToIndex(source(join.refName, records), region, join)
+  const ld = await ldToIndex(source(join.refName, records), join)
   return features.map(f => {
     const out = ldOf(f, ld, join)
     return [out?.r2, out?.role]
@@ -71,7 +69,7 @@ test('the index reads r² 1 and each partner its own, either orientation', async
         rec({ snpA: 'rsIndex', bpA: 100, snpB: 'rsB', bpB: 200, r2: 0.8 }),
         rec({ snpA: 'rsC', bpA: 300, snpB: 'rsIndex', bpB: 100, r2: 0.4 }),
       ],
-      { index: { name: 'rsIndex' }, refName: 'chr1' },
+      { start: 99, refName: 'chr1' },
       [
         feat({ name: 'rsIndex', start: 99 }),
         feat({ name: 'rsB', start: 199 }),
@@ -94,7 +92,7 @@ test('a placed index joins across an LD file that names the contig otherwise', a
   expect(
     await joined(
       [rec({ snpA: 'rsIndex', bpA: 100, snpB: 'rsB', bpB: 200, r2: 0.8 })],
-      { index: { start: 99 }, refName: 'chr1' },
+      { start: 99, refName: 'chr1' },
       [feat({ start: 99 }), feat({ start: 199 })],
     ),
   ).toEqual([
@@ -115,8 +113,7 @@ test('a partner on another contig joins by its id and never by position', async 
         r2: 0.3,
       }),
     ]),
-    region,
-    { index: { name: 'rsIndex' }, refName: 'chr1' },
+    { start: 99, refName: 'chr1' },
   )
   expect([...ld.byName]).toEqual([['rsTrans', 0.3]])
   expect(ld.byStart.size).toBe(0)
@@ -132,7 +129,7 @@ test('an unnamed partner keeps its own r² under its position', async () => {
         rec({ snpA: 'rsIndex', bpA: 100, snpB: '.', bpB: 200, r2: 0.9 }),
         rec({ snpA: 'rsIndex', bpA: 100, snpB: '.', bpB: 300, r2: 0.1 }),
       ],
-      { index: { start: 99 }, refName: 'chr1' },
+      { start: 99, refName: 'chr1' },
       [
         feat({ name: '.', start: 199 }),
         feat({ name: '.', start: 299 }),
@@ -153,8 +150,7 @@ test('a pair with the index on both sides, or no r², joins nothing', async () =
       rec({ snpA: 'rsIndex', bpA: 100, snpB: 'rsIndex', bpB: 100, r2: 1 }),
       rec({ snpA: 'rsIndex', bpA: 100, snpB: 'rsB', bpB: 200, r2: undefined }),
     ]),
-    region,
-    { index: { name: 'rsIndex' }, refName: 'chr1' },
+    { start: 99, refName: 'chr1' },
   )
   expect(ld.byName.size + ld.byStart.size).toBe(0)
   expect(warn).toHaveBeenCalledWith(
@@ -164,8 +160,8 @@ test('a pair with the index on both sides, or no r², joins nothing', async () =
 })
 
 // The shape test_data/gwas/SLE.ld has: every row carries the index as its A
-// side, so a window without the index finds no row naming it.
-describe('a region panned away from a placed index', () => {
+// side, so only a window holding the index finds a row naming it.
+describe('the window the LD file is read over', () => {
   const INDEX_START = 191_958_655
   const records = [191_794_580, 192_010_000].map((bpB, i) =>
     rec({
@@ -178,46 +174,32 @@ describe('a region panned away from a placed index', () => {
       r2: 0.5,
     }),
   )
-  const panned = {
-    refName: '2',
-    start: 191_990_000,
-    end: 192_320_000,
-    assemblyName: 'hg19',
-  }
 
-  it('reads the window around the index, not the region', async () => {
-    const ld = await ldToIndex(source('2', records), panned, {
-      index: { start: INDEX_START },
-      refName: '2',
-    })
+  it('surrounds the index', async () => {
+    const src = source('2', records)
+    const ld = await ldToIndex(src, { start: INDEX_START, refName: '2' })
+    expect(src.queries).toEqual([
+      {
+        refName: '2',
+        start: INDEX_START - LD_WINDOW_BP,
+        end: INDEX_START + 1 + LD_WINDOW_BP,
+      },
+    ])
     expect(ld.byStart.get(192_009_999)).toBe(0.5)
   })
 
-  it('finds nothing once the index sits past the window', async () => {
-    const ld = await ldToIndex(source('2', records), panned, {
-      index: { start: INDEX_START + 2 * LD_WINDOW_BP },
+  it('finds nothing once the index sits past it', async () => {
+    const ld = await ldToIndex(source('2', records), {
+      start: INDEX_START + 2 * LD_WINDOW_BP,
       refName: '2',
     })
     expect(ld.byStart.size).toBe(0)
-  })
-
-  it('reads the region itself for an index known only by id', async () => {
-    const src = source('2', records)
-    await ldToIndex(src, panned, { index: { name: 'rsIndex' }, refName: '2' })
-    expect(src.queries).toEqual([
-      { refName: '2', start: panned.start, end: panned.end },
-    ])
   })
 })
 
 test('the LD read carries the fetch options, so an abort reaches it', async () => {
   const getLDRecords = jest.fn().mockResolvedValue([])
   const opts = { signal: new AbortController().signal }
-  await ldToIndex(
-    { getLDRecords },
-    region,
-    { index: { start: 99 }, refName: 'chr1' },
-    opts,
-  )
+  await ldToIndex({ getLDRecords }, { start: 99, refName: 'chr1' }, opts)
   expect(getLDRecords).toHaveBeenCalledWith(expect.anything(), opts)
 })
