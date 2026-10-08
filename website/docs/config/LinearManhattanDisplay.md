@@ -121,7 +121,7 @@ _See the **Config slots** section below for all available configuration fields._
 The Manhattan plot: the default display of a GWAS track, and one a
 FeatureTrack can switch to. It is the mark display with a point per feature
 at its `score` as its default plot, so every mark, scale, facet and row
-setting applies, and a plot whose encoding names `ld` or `ld_role` joins
+setting applies, and a plot whose encoding names `r2` or `ld_role` joins
 each SNP's r² to the index SNP from the `GWASAdapter`'s `ldAdapter`.
 
 ## Related links
