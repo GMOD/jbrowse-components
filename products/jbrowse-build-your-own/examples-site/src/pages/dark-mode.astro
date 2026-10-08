@@ -1,0 +1,16 @@
+---
+import DarkMode from '../examples/DarkMode.tsx'
+import DarkModeCode from '../examples/DarkMode.tsx?raw'
+import { getPage, section } from '../examples.ts'
+import Layout from '../layouts/ExampleLayout.astro'
+import Section from '../layouts/ExampleSection.astro'
+
+const page = getPage('dark-mode')
+const sec = section(page, 'dark-mode')
+---
+
+<Layout page={page}>
+  <Section {...sec} code={DarkModeCode}>
+    <DarkMode client:only="react" />
+  </Section>
+</Layout>

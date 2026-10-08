@@ -1,0 +1,16 @@
+---
+import SessionInUrl from '../examples/SessionInUrl.tsx'
+import SessionInUrlCode from '../examples/SessionInUrl.tsx?raw'
+import { getPage, section } from '../examples.ts'
+import Layout from '../layouts/ExampleLayout.astro'
+import Section from '../layouts/ExampleSection.astro'
+
+const page = getPage('session-in-url')
+const sec = section(page, 'session-in-url')
+---
+
+<Layout page={page}>
+  <Section {...sec} code={SessionInUrlCode}>
+    <SessionInUrl client:only="react" />
+  </Section>
+</Layout>

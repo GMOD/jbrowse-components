@@ -75,6 +75,8 @@ const MUI_BUDGET = {
   'search-by-name': 0,
   'local-files': 0,
   'highlight-a-region': 0,
+  'dark-mode': 0,
+  'session-in-url': 0,
   'web-workers': 0,
   // measured, not chosen -- see the note below the budget
   synteny: 0,

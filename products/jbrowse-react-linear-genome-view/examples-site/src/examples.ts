@@ -347,6 +347,14 @@ export const pages: ExamplePage[] = [
       },
     ],
   },
+  {
+    slug: 'without-react',
+    title: 'Without React',
+    description:
+      'createLinearGenomeView mounts into an element and hands back a controller.',
+    group: 'Sessions & integration',
+    sections: [{ slug: 'without-react', title: 'An element and a controller' }],
+  },
 
   {
     slug: 'nextstrain-pathogens',

@@ -203,6 +203,22 @@ export const pages: ExamplePage[] = [
     ],
   },
   {
+    slug: 'dark-mode',
+    title: 'Dark mode',
+    description: "Your app's light or dark state, passed to the engine.",
+    group: 'Your own UI',
+    sections: [{ slug: 'dark-mode', title: 'A mode your app holds' }],
+  },
+  {
+    slug: 'session-in-url',
+    title: 'Session in the URL',
+    description: 'Save the view to a link and restore it on load.',
+    group: 'Going further',
+    sections: [
+      { slug: 'session-in-url', title: 'A link that reopens the view' },
+    ],
+  },
+  {
     slug: 'web-workers',
     title: 'Web workers',
     description: 'Fetch and parse off the main thread with one option.',

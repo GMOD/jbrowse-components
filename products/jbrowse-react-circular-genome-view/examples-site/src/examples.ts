@@ -64,6 +64,14 @@ export const pages: ExamplePage[] = [
     ],
   },
   {
+    slug: 'without-react',
+    title: 'Without React',
+    description:
+      'createCircularGenomeView mounts into an element and hands back a controller.',
+    group: 'Getting started',
+    sections: [{ slug: 'without-react', title: 'An element and a controller' }],
+  },
+  {
     slug: 'human',
     title: 'Human structural variants (hg19)',
     description: 'HG002 PacBio breakend structural variants on hg19.',
