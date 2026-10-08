@@ -254,9 +254,7 @@ import type { LinkRegion } from '@jbrowse/render-core/marks'
 import type { ValueScale } from '@jbrowse/wiggle-core'
 import type { IComputedValue } from 'mobx'
 
-// lazy so this eager state model does not pull the tooltip's @floating-ui
-// dependency onto the startup path; the consumer renders it inside a Suspense
-// boundary (AlignmentsDisplayComponent)
+// Lazy so the eager state model keeps @floating-ui off the startup path.
 const AlignmentsTooltip = lazy(
   () => import('./components/AlignmentsTooltip.tsx'),
 )
@@ -264,25 +262,17 @@ const AlignmentsTooltip = lazy(
 export { ColorScheme } from './constants.ts'
 export type { AlignmentLane }
 
-// Screen-px geometry of one section's coverage band, named by the hover
-// volatile and by the action that writes it.
 export interface HoverCoverageBand {
   topOffset: number
   coverageHeight: number
 }
 
-// One identity for "no lane sizes itself", so `groupHeightOverrides` doesn't
-// hand the layout a fresh map per evaluation.
+// One identity, so `groupHeightOverrides` hands the layout no fresh map per
+// read.
 const NO_GROUP_HEIGHT_OVERRIDES: ReadonlyMap<string, number> = new Map()
 
-// A computed that rebuilds `[]` is not free: it invalidates every observer
-// downstream on every frame of every gesture, for a list the overlay is about to
-// `return null` on. So the per-frame sashimi geometry hands back ONE empty
-// array, the common case since `showSashimiArcs` defaults on while DNA reads
-// carry no skip gap.
-// Frozen, like `NO_PADDING_SPANS` next door: a singleton handed out of a public
-// getter is one in-place `.sort()` away from being corrupted for the session,
-// and `projectSashimiArcs` one layer down already sorts.
+// One frozen empty array, so the common no-arcs frame invalidates no observer.
+// Frozen so no caller's in-place `.sort()` corrupts the singleton.
 const NO_SASHIMI_ARC_SECTIONS = Object.freeze(
   [],
 ) as readonly SashimiArcSection[]
@@ -290,10 +280,8 @@ const NO_LINK_REGIONS: readonly LinkRegion[] = []
 const NO_ARC_FEEDS: ReadonlyMap<number, ArcBandFeed> = new Map()
 
 /**
- * What a right-click on the pileup resolved: the anchor, the whole hit (block,
- * column, mark) and the read under it when there was one. `contextMenuFeature`
- * stays outside — it arrives an RPC later, and the `addDisplayMenuItems`
- * extension points read it by name.
+ * What a right-click on the pileup resolved: the anchor, the hit and the read
+ * under it. `contextMenuFeature` stays outside because it arrives an RPC later.
  */
 export interface AlignmentsContextMenuInfo extends ContextMenuAnchor {
   hit?: ContextMenuHit
@@ -378,23 +366,11 @@ export default function stateModelFactory(
         TrackHeightMixin(),
         HeightModeMixin(),
         MultiRegionDisplayMixin(),
-        // Where the byte gate refuses the reads, the coverage band draws the
-        // adapter's density sidecar instead of the banner — see
-        // `densityCoverageRegions`.
         DensityTierMixin(),
-        // The coverage band's score axis, shared with the wiggle family so the
-        // Coverage axis row and its drawer widget consume this model directly.
         ScoreScaleMixin(),
         LegendMixin(),
         ContextMenuMixin<AlignmentsContextMenuInfo>(),
         HiddenGroupsMixin(),
-        // Track-menu settings are config slots (read via getConf, written via
-        // setConf) so an edit survives hide/retick and a config
-        // default can be set declaratively. The plain MST fields below are the
-        // remaining toggles. Each setting also has a refetch/relayout/render
-        // blast radius documented in
-        // `agent-docs/reference/LINEAR_ALIGNMENTS_DISPLAY.md` §"Which getter
-        // decides what a setting invalidates".
         types.model({
           /**
            * #property
@@ -409,7 +385,7 @@ export default function stateModelFactory(
       .preProcessSnapshot((snap: Record<string, unknown> | undefined) =>
         migrateAlignmentsSnapshot(snap),
       )
-      // Track-menu toggles resolved from config slots — see `configSlotViews`.
+      // Config-slot toggles live in `configSlotViews`.
       .views(configSlotViews)
       .views(self => ({
         /**
@@ -437,27 +413,23 @@ export default function stateModelFactory(
           contextMenuFeature: undefined as Feature | undefined,
           /**
            * #volatile
-           * Group keys whose pileup is collapsed to just its coverage band
-           * (in-track grouping). Keyed by group key so it survives re-fetches;
-           * volatile so it resets on reload, and dropped with the mixin's
-           * `hiddenGroups` when `groupKeySpace` moves.
+           * Group keys whose pileup is collapsed to its coverage band. Dropped
+           * with the mixin's `hiddenGroups` when `groupKeySpace` moves.
            */
           collapsedGroups: observable.set<string>(),
           /**
            * #volatile
-           * Per-group pileup height override in px (in-track grouping). Keyed by
-           * group key, volatile like `collapsedGroups` and dropped alongside it
-           * on a key-space change; absent keys fall back to the display-wide
-           * `maxHeight`. Lets a dense section be shrunk independently.
+           * Per-group pileup height override in px, keyed by group key and
+           * dropped with `collapsedGroups`. Absent keys fall back to the
+           * display-wide `maxHeight`.
            */
           groupMaxHeightOverrides: observable.map<string, number>(),
           /**
            * #volatile
-           * Cache of the current fitted read height in px, kept in sync by the
-           * afterAttach autorun while `fitHeightToDisplay` is on. A volatile (not a
-           * getter) because the fit height derives from late layout getters that
-           * the early `featureHeight` getter can't reference — the autorun bridges
-           * that ordering. 0 until first computed / when nothing fits.
+           * Fitted read pitch in px, written by the afterAttach autorun while
+           * `fitHeightToDisplay` is on; 0 until computed. A volatile rather
+           * than a getter because it breaks the cycle between `featureHeight`
+           * and the layout.
            */
           fittedHeightPx: 0,
           /**
@@ -479,19 +451,16 @@ export default function stateModelFactory(
           overCigarItem: false,
           /**
            * #volatile
-           * Screen-px coverage band of the section currently under a
-           * coverage/indicator hover. Drives the tooltip's vertical hover bar so
-           * it lands on the hovered group's coverage band, not always the top
-           * one. `undefined` when not hovering coverage.
+           * Screen-px coverage band of the section under a coverage/indicator
+           * hover; the tooltip's vertical hover bar lands on it. `undefined`
+           * when not hovering.
            */
           hoverCoverageBand: undefined as HoverCoverageBand | undefined,
           /**
            * #volatile
-           * The read-connection arc under the cursor, as the ink to draw over
-           * it — `ArcHoverOverlay`'s whole input. A SNAPSHOT, resolved at the
-           * mousemove that found the arc, exactly like the tooltip it appears
-           * with: both describe where the cursor was, and both refresh on the
-           * next move. `undefined` when not on an arc.
+           * The read-connection arc under the cursor, as the ink
+           * `ArcHoverOverlay` draws. A snapshot from the mousemove that found
+           * the arc, like its tooltip.
            */
           hoveredArcHighlight: undefined as ArcHighlight | undefined,
         }
@@ -499,10 +468,8 @@ export default function stateModelFactory(
       .views(self => ({
         /**
          * #getter
-         * Region index → grouped worker result, the foundation's per-region
-         * store narrowed. Ungrouped fetches store a single group (key '');
-         * grouping stores N. Every reader iterates `.groups`, so the ungrouped
-         * path is the one-group case.
+         * Region index → grouped worker result. Ungrouped fetches store one
+         * group (key '').
          */
         get rpcDataMap(): ReadonlyMap<number, GroupedAlignmentsResult> {
           return self.regionPayloads as ReadonlyMap<
@@ -511,9 +478,6 @@ export default function stateModelFactory(
           >
         },
       }))
-      // Named getters for frequently-tested conditions so the inline boolean
-      // expression doesn't have to be re-derived (and re-explained) at each
-      // call site.
       .views(self => ({
         /**
          * #getter
@@ -523,12 +487,9 @@ export default function stateModelFactory(
         },
         /**
          * #getter
-         * Whether to draw the straight-line pass connecting normal read-pairs
-         * in pileup layout. Only meaningful when bezier connections are on AND
-         * we are in pileup mode — chain layout has its own connecting-line pass
-         * that already covers normal pairs WITHIN a region. Neither pass reaches
-         * across one (both are per region, one buffer each); that is
-         * `bezierArcScope`'s `crossRegion`.
+         * Whether the straight-line pass connects normal read pairs. Chain
+         * layout has its own pass for them. Neither pass reaches across
+         * regions; that is `bezierArcScope`'s `crossRegion`.
          */
         get showLinkedReadLines() {
           return self.showBezierConnections && self.unit !== 'chain'
@@ -536,16 +497,9 @@ export default function stateModelFactory(
 
         /**
          * #getter
-         * What the SVG connection overlay is responsible for drawing — see
-         * `BezierArcScope`. Chain mode claims `crossRegion` even with the curved
-         * connectors unticked, because it is the only pass that can join a
-         * chain's two ends when they land in different displayed regions; the
-         * per-region connecting line covers everything else.
-         *
-         * One getter rather than a check at each of the four consumers (the live
-         * overlay, the SVG export, the legend, and the pair enumeration itself),
-         * since a scope they disagreed on would draw a curve the key doesn't
-         * name, or the reverse.
+         * What the SVG connection overlay draws — see `BezierArcScope`. Chain
+         * mode claims `crossRegion` even with the curved connectors off: only
+         * that pass joins a chain's ends across displayed regions.
          */
         get bezierArcScope(): BezierArcScope {
           return self.showBezierConnections
@@ -555,10 +509,6 @@ export default function stateModelFactory(
               : 'none'
         },
       }))
-      // The coverage band's value scale (`scales.y` and its setters) is
-      // `ScoreScaleMixin`, composed above — the same one the wiggle family
-      // composes, so the Coverage axis row and its widget take this model
-      // with no adapter shim and the two can't drift.
       .views(self => {
         let rowCaps: IComputedValue<ReadonlyMap<string, RowCap>> | undefined
         let fitCap: IComputedValue<RowCap> | undefined
@@ -593,31 +543,10 @@ export default function stateModelFactory(
 
           /**
            * #getter
-           * Modification type code -> painted color, for every type the reads of
-           * the LOADED regions declare — outside the modifications layer, the
-           * first `MOD_TYPE_SAMPLE_READS` of each fetch, which is enough for the
-           * menu to know a modBAM when it sees one. This is what the data
-           * CONTAINS; what is
-           * actually drawn is filtered separately by isModificationTypeVisible
-           * and by `presentModifications`, so don't rename this back to
-           * "visible".
-           *
-           * Derived rather than accumulated, which is the whole point: it used to
-           * be a volatile map that `setRpcData` added to and nothing ever
-           * cleared, so it grew for the life of the tab and answered for every
-           * locus the user had ever visited. The legend was narrowed off it after
-           * the fact; the menu was not, and offered 6mA on a region carrying
-           * none.
-           *
-           * Off `rpcDataMap` rather than the laid-out map, on purpose. This one
-           * is about what the DATA holds — a type belonging to a hidden group is
-           * still a type the user can reveal — and the menu is what asks. The
-           * legend, which must not name a color no visible read paints, asks
-           * `presentModifications` instead.
-           *
-           * Cheap despite running per fetch: the MM parse reports a handful of
-           * type codes per group, so this is O(regions x groups) over arrays of
-           * ~1-3 strings, and MobX memoizes it against `rpcDataMap`.
+           * Modification type code -> painted color, for every type the loaded
+           * reads declare. Off `rpcDataMap`, not the laid-out map, so a hidden
+           * group's types stay offered; the legend asks `presentModifications`
+           * instead.
            */
           get detectedModifications(): ReadonlyMap<string, string> {
             const out = new Map<string, string>()
@@ -635,22 +564,9 @@ export default function stateModelFactory(
 
           /**
            * #getter
-           * Whether the MM/ML header parse has an answer for what is on screen —
-           * a fetch has landed, so an empty `detectedModifications` means "these
-           * reads carry none" rather than "nothing has arrived yet". The
-           * modifications menu shows "Loading modifications..." until this turns
-           * true, and offers the submenu after.
-           *
-           * Derived, like the map it qualifies. It was a volatile flag that
-           * `fetchNeeded` set true and nothing ever set back, so it outlived the
-           * data it described: after `clearAllRpcData` it still claimed
-           * an answer for reads that were no longer loaded, and the menu skipped
-           * "Loading modifications..." while the replacing fetch was in flight.
-           * Reading the data is what the flag was always trying to say.
-           *
-           * The header parse runs in every scheme (over a sample of each fetch
-           * outside the modifications layer), so arrival of any fetch really
-           * does settle this.
+           * Whether a fetch has landed, so an empty `detectedModifications`
+           * means these reads carry none. The modifications menu shows "Loading
+           * modifications..." until it turns true.
            */
           get modificationsReady() {
             return self.rpcDataMap.size > 0
@@ -665,10 +581,8 @@ export default function stateModelFactory(
 
           /**
            * #getter
-           * True when fit-to-display mode is on AND a pitch has been computed
-           * (`fittedHeightPx > 0`, i.e. there are rows and room to fit them). The
-           * single gate both size getters read, so it's obvious they either both
-           * split the fitted pitch or both fall back to config — never a mix.
+           * Fit-to-display mode is on and a pitch has been computed
+           * (`fittedHeightPx > 0`). Both size getters read this gate.
            */
           get isFitting(): boolean {
             return self.fitHeightToDisplay && self.fittedHeightPx > 0
@@ -676,14 +590,10 @@ export default function stateModelFactory(
 
           /**
            * #getter
+           * The read body height: the fitted pitch minus `featureSpacing` in
+           * fit mode, else `configuredFeatureHeight`, which is what editors
+           * that write the size read.
            */
-          // featureHeight is the one "compactness" slot; featureSpacing is
-          // derived from it, never stored. In
-          // fit-to-height mode featureHeight instead splits the autorun-cached fit
-          // pitch (`fittedHeightPx` = pileupSpace/rows) into a read body plus the
-          // derived spacing, so every read-height consumer sees the fitted values
-          // without threading a separate getter. body + spacing === pitch by
-          // construction (body is the pitch minus the spacing).
           get featureHeight(): number {
             return this.isFitting
               ? self.fittedHeightPx - this.featureSpacing
@@ -692,12 +602,10 @@ export default function stateModelFactory(
 
           /**
            * #getter
+           * Derived from the read height, never stored: a 1px gap once there is
+           * room (pitch/height > 3), else flush. One rule covers the fixed
+           * presets and the fit squeeze.
            */
-          // Spacing is a pure function of the read height, not an independent
-          // setting: a 1px gap once there's room for it (pitch/height > 3, leaving
-          // a >2px body), else flush. This one rule drives both the fixed-mode
-          // presets (7->1, 3->0, 1->0) and the fit-mode squeeze, so the two paths
-          // can't disagree.
           get featureSpacing(): number {
             return featureSpacingForHeight(
               this.isFitting
@@ -708,40 +616,20 @@ export default function stateModelFactory(
 
           /**
            * #getter
+           * The per-row pitch: read body plus derived gap. Every "row N sits at
+           * N*pitch" computation reads it.
            */
-          // The per-row pitch: the read body plus its derived gap. The single
-          // source for every "row N sits at N*pitch" computation (layout caps,
-          // section stacking, hit-test row math). When fitting this equals
-          // `fittedHeightPx` by construction (body = pitch - spacing); the getter
-          // keeps callers from re-deriving it and conflating pitch with body.
           get rowHeight(): number {
             return this.featureHeight + this.featureSpacing
           },
 
           /**
            * #getter
-           * The single read of the `sortedBy` slot, so the RPC args and the menu
-           * checkmarks cannot disagree about which sort is active.
-           *
-           * The refName is normalized here because this slot has two provenances
-           * and only one of them is safe. `setSortedByAtPosition` (the center-line
-           * "Sort by..." menu) writes a refName taken off the view's own region,
-           * canonical by construction; a config or session spec writes whatever
-           * the author typed. `sortLayout` gates the sort on
-           * `commonRefName === sortedBy.refName` against the loaded regions, so an
-           * aliased spec (`chr1` where the assembly is canonicalized `1`) leaves
-           * the reads unsorted with the menu still showing the sort as active.
-           *
-           * A sort names a genomic COLUMN — a refName AND a position — so a slot
-           * carrying neither half is no sort rather than a broken one, and this
-           * getter's `SortedBy` says both are there. The slot is `frozen`, so a
-           * config or session spec can put anything in it, and the two halves
-           * fail differently: a missing refName reaches
-           * `canonicalizeViewRefName`, which lower-cases what it is handed, so it
-           * threw a TypeError out of a getter the fetch autorun and the render
-           * both read — the whole track replaced by an error over a typo in a
-           * spec. A missing `pos` merely compares false against every read and
-           * sorts nothing, which is the same answer this now gives explicitly.
+           * The single read of the `sortedBy` slot. Normalizes the refName,
+           * since a spec can write an alias (`chr1` for `1`) that
+           * `sortLayout`'s gate would never match. A slot missing `refName` or
+           * `pos` reads as no sort; a missing refName would throw in
+           * `canonicalizeViewRefName`.
            */
           get sortedBy(): SortedBy | undefined {
             const sortedBy = getConf(self, 'sortedBy') as SortedBy | undefined
@@ -758,8 +646,8 @@ export default function stateModelFactory(
           /**
            * #getter
            * The facet the fetch partitions by. Chain mode turns a per-read
-           * dimension into ungrouped without changing the slot, so the slot alone
-           * does not determine which sections come back.
+           * dimension into ungrouped without changing the slot, so the slot
+           * alone does not determine which sections come back.
            */
           get effectiveFacet() {
             return facetForUnit(self.facet, self.unit)
@@ -768,8 +656,8 @@ export default function stateModelFactory(
           /**
            * #getter
            * Identity of the key space the fetched group keys live in, and so of
-           * every collection this model keys by group key — see `groupKeySpaceOf`
-           * for why a key alone cannot name its grouping.
+           * every collection this model keys by group key — see
+           * `groupKeySpaceOf`.
            */
           get groupKeySpace() {
             return groupKeySpaceOf(this.effectiveFacet)
@@ -777,16 +665,10 @@ export default function stateModelFactory(
 
           /**
            * #getter
-           * Offset the track label above the visualization when grouping, so the
-           * stacked group sections aren't hidden behind an overlapping label.
-           *
-           * Asks whether the grouping will be HONORED, not merely whether it is set:
-           * chain mode drops a per-read dimension (`facetForUnit`), and reserving
-           * label room for sections that then never get drawn leaves dead space above
-           * the plot. Unlike `showsGroupLabels` this can't read the fetched sections —
-           * the track label is positioned before any data arrives, and flipping once
-           * it lands would jump the layout — but the degradation is decidable from the
-           * two settings alone, so no data is needed.
+           * Whether the grouping will be HONORED, decidable from settings alone
+           * since chain mode drops a per-read dimension (`facetForUnit`).
+           * Positions the track label, which is placed before data arrives and
+           * must not jump afterwards.
            */
           get prefersOffset() {
             return this.effectiveFacet !== undefined
@@ -794,16 +676,10 @@ export default function stateModelFactory(
 
           /**
            * #getter
-           * Whether each group draws as a single row, its overlap depth carried by
-           * the tint layer rather than by stacking — "is the collapse IN EFFECT".
-           * Reads `canCollapseGroupRows` rather than the slot alone, because the
-           * slot can be a track-config default (LGVSyntenyDisplay sets one) that
-           * either of that getter's conditions leaves inert: ungrouped it would
-           * flatten the whole pileup onto one row, and chain mode lays true stacks
-           * whatever the slot says (`collapsesRows`). Chain mode is reachable with
-           * the slot already ticked and drops the menu row that would untick it,
-           * so the two have to agree — the label chip words its height button off
-           * this getter.
+           * Whether each group draws as one row, overlap depth carried by the
+           * tint layer — the collapse IN EFFECT. Reads `canCollapseGroupRows`,
+           * not the slot alone: a config default can be ticked where collapsing
+           * is inert.
            */
           get collapseGroupRows(): boolean {
             return (
@@ -813,12 +689,10 @@ export default function stateModelFactory(
 
           /**
            * #getter
-           * Whether collapsing can take effect at all, and so whether the
-           * "Show..." menu offers the toggle: the grouping has to be honored, and
-           * chain mode never collapses (`collapsesRows`) because a chain row is a
-           * chain and one row would drop the connecting lines the mode exists for.
-           * The menu omits the row rather than showing it disabled, since a click
-           * would write a slot no getter reads.
+           * Whether collapsing can take effect, so whether the "Show..." menu
+           * offers the toggle. Chain mode never collapses (`collapsesRows`).
+           * The menu omits the row rather than disabling it: a click would
+           * write a slot no getter reads.
            */
           get canCollapseGroupRows() {
             return this.prefersOffset && self.unit !== 'chain'
@@ -826,18 +700,10 @@ export default function stateModelFactory(
 
           /**
            * #getter
-           * Why an explicit read ordering cannot take effect, or `undefined` when
-           * it can — one value carrying both the gate and the copy that names the
-           * switch, so a surface cannot grey a control out without saying which
-           * setting brings it back, and the two reasons cannot get out of step
-           * with the condition that produced them.
-           *
-           * There has to be a pileup to order, and chain layout is handed neither
-           * `sortedBy` nor `layoutOrder` (`buildLaidOutChainMap` takes
-           * neither) because its rows are chains, ordered by chain distance.
-           * Without this a chain-mode sort was a silent no-op, and the tag mode
-           * additionally refetched the region to extract `sortTagValues` (it is in
-           * `rpcProps`) that nothing reads.
+           * Why an explicit read ordering cannot take effect, or `undefined`:
+           * one value carries both the gate and the copy naming the switch that
+           * brings it back. Chain layout takes neither `sortedBy` nor
+           * `layoutOrder`; its rows are chains.
            */
           get sortReadsBlockedReason(): string | undefined {
             return self.unit === 'chain'
@@ -849,11 +715,9 @@ export default function stateModelFactory(
 
           /**
            * #getter
-           * Whether an explicit read ordering can take effect, and so whether the
-           * ordering controls are live. The sibling of `canCollapseGroupRows`, and
-           * read by both surfaces that can set an ordering — the track menu's
-           * "Sort by..." and the context menu's position-anchored sorts — so the
-           * two can't answer it differently.
+           * Whether an explicit read ordering can take effect. The track menu's
+           * "Sort by..." and the context menu's position-anchored sorts both
+           * read it.
            */
           get canSortReads() {
             return this.sortReadsBlockedReason === undefined
@@ -861,16 +725,10 @@ export default function stateModelFactory(
 
           /**
            * #getter
-           * Whether a single group's pileup height can be set on its own, and so
-           * whether the two surfaces that write `groupMaxHeightOverrides` are
-           * offered: the label chip's expand/fit button and the per-group drag
-           * handles. Both write the same volatile, so they answer this together —
-           * the chip used to be offered where the handle was hidden.
-           *
-           * Nothing to size with the pileup hidden, and in fit mode an override is
-           * a lane opting out of the fit the mode just computed: the extra rows
-           * overflow the display it was sized to fill. The truncation notice
-           * (`ceilingClipped`) steps aside in fit mode for the same reason.
+           * Whether a single group's pileup height can be set on its own,
+           * offered by the label chip's expand/fit button and the per-group
+           * drag handles. Fit mode refuses: an override there opts a lane out
+           * of the fit and overflows the display.
            */
           get canSizeGroupHeights() {
             return self.showPileup && !self.fitHeightToDisplay
@@ -878,20 +736,10 @@ export default function stateModelFactory(
 
           /**
            * #getter
-           * The per-lane pileup-height overrides IN EFFECT, which is not the set
-           * banked. Fit derives one read pitch from every lane's FULL row count
-           * (`fittedReadPitch`), so a lane the layout still caps at its own
-           * override shows fewer rows than the pitch was solved for and leaves
-           * exactly that much of the display blank — the one thing the mode
-           * promises not to do.
-           *
-           * `setHeightMode` drops the overrides on the explicit switch, but the
-           * resolved mode also moves without it (a track reset), and there
-           * `canSizeGroupHeights` had already taken away both
-           * surfaces that could clear one — leaving the lane clipped by a cap
-           * the lane reports as `clippedBy: 'override'`, which fires no affordance.
-           * Inert rather than dropped, so returning to fixed restores what the
-           * user set.
+           * The per-lane height overrides IN EFFECT, not the set banked. Fit
+           * solves one pitch from every lane's full row count, so fit mode
+           * ignores the overrides without dropping them; returning to fixed
+           * restores them.
            */
           get groupHeightOverrides(): ReadonlyMap<string, number> {
             return self.fitHeightToDisplay
@@ -908,12 +756,9 @@ export default function stateModelFactory(
 
           /**
            * #getter
-           * `CoarseTierMixin`'s hook: the band the tier's bins are drawn in.
-           * "Show coverage" off collapses it to nothing, so with it off the
-           * reads are fetched and drawn as they always were. The pileup, the
-           * axis and the fetch all read `coarseTierStandsIn`, which conjoins
-           * this with the tier's verdict and a measured view, so the band and
-           * the reads never both go missing.
+           * `CoarseTierMixin`'s hook: the band the tier's bins draw in. The
+           * pileup, axis and fetch read `coarseTierStandsIn`, which conjoins
+           * this with the tier's verdict.
            */
           get coarseTierHasSomewhereToDraw(): boolean {
             return self.showCoverage
@@ -921,15 +766,10 @@ export default function stateModelFactory(
 
           /**
            * #getter
-           * The density tier's bins as the coverage band's own per-region payload
-           * — one entry per region holding bins, empty while the tier is off.
-           * Both backends and the SVG export read this one map, so the band that
-           * draws read depth draws features per bin with no second renderer.
-           *
-           * Its dependencies are `coarseTier` and the DEBOUNCED zoom, and both
-           * halves are deliberate: the bins are cached by zoom bucket, and the
-           * repack is a per-region allocation, so it must not land on anything
-           * that moves per frame of a pan.
+           * The density tier's bins as the coverage band's per-region payload,
+           * empty while the tier is off. Both backends and the SVG export read
+           * this map. Depends on `coarseTier` and the DEBOUNCED zoom, so a pan
+           * frame never repacks.
            */
           get densityCoverageRegions(): ReadonlyMap<
             number,
@@ -937,8 +777,6 @@ export default function stateModelFactory(
           > {
             const regions = new Map<number, CoverageRegionFields>()
             const { view } = self
-            // `coarseTierStandsIn` carries the measured view, so the second
-            // check this used to make here is the mixin's now
             if (self.coarseTierStandsIn) {
               const binSize = densityBinSize(view.coarseBpPerPx)
               for (const [displayedRegionIndex, bins] of self.coarseTier) {
@@ -953,10 +791,9 @@ export default function stateModelFactory(
 
           /**
            * #getter
-           * The tallest bin across every region the tier holds, 0 while it holds
-           * none. One domain for all of them, for the reason `coverageDomain`
-           * spans every shown group: bands the eye compares have to share a
-           * scale.
+           * The tallest bin across every region the tier holds, 0 while it
+           * holds none. One domain for all regions, so the bands the eye
+           * compares share a scale.
            */
           get densityDepthMax() {
             let max = 0
@@ -970,13 +807,9 @@ export default function stateModelFactory(
 
           /**
            * #getter
-           * The depth every SHOWN group spans (each block contributes one entry
-           * per group's coverage): a shared scale is what makes stacked
-           * sections visually comparable, and ungrouped is the one-group case.
-           * Hidden lanes are excluded — sizing the visible lanes' axis against
-           * a lane the user hid is exactly the comparability this scale exists
-           * to give. Undefined while the density tier stands in, whose count
-           * per bin is no depth a group could share.
+           * The depth every SHOWN group spans, so stacked sections share a
+           * scale; hidden lanes are excluded. Undefined while the density tier
+           * stands in, whose per-bin count is no depth a group could share.
            */
           get autoscaleRange(): [number, number] | undefined {
             const hidden = self.hiddenGroupKeys
@@ -1016,10 +849,9 @@ export default function stateModelFactory(
           /**
            * #getter
            * The autoscaled depth domain. While the density tier stands in, the
-           * axis is the bins' own, a count of features per bin: its own scale,
-           * which the depth bounds `scales.y` pins do not reach. Undefined
-           * until some region holds one so the depth-scaled layers stay gated
-           * on the same `hasCoverageScale` question they always were.
+           * axis is the bins' own count per bin, which the depth bounds
+           * `scales.y` pins do not reach. Undefined until some region holds
+           * one.
            */
           get coverageDomain(): [number, number] | undefined {
             return self.coarseTierStandsIn
@@ -1036,14 +868,10 @@ export default function stateModelFactory(
 
           /**
            * #getter
-           * The domain the coverage band draws against — `coverageDomain` with a
-           * log scale's floor pulled up to one read (see `coverageDepthDomain`).
-           *
-           * **This, not `coverageDomain`, is what every consumer reads**: the
-           * y-axis ticks and both renderers' normalizers. `coverageDomain[0]` used
-           * to be read by none of them, so a `minScore` bound was resolved into it
-           * and then thrown away — the menu reported a manual range in force while
-           * the picture was identical.
+           * The domain the coverage band draws against: `coverageDomain` with a
+           * log scale's floor pulled up to one read (see
+           * `coverageDepthDomain`). Every consumer reads this one — the y-axis
+           * ticks and both renderers' normalizers.
            */
           get coverageDepthDomain() {
             return this.coverageDomain
@@ -1053,12 +881,10 @@ export default function stateModelFactory(
 
           /**
            * #getter
-           * The coverage band's own ladder: octaves against the shader's band
-           * box (`computeCoverageTicks`), which `valueScales` hands the chrome
-           * in place of the ladder the mixin would derive. The raw
-           * `scales.y.symlogConstant`, which the producer resolves from the
-           * same domain `renderState` does, so the labels sit on the bars
-           * rather than on a second symlog curve.
+           * The coverage band's own ladder (`computeCoverageTicks`), which
+           * `valueScales` hands the chrome in place of the mixin's. Takes the
+           * raw `scales.y.symlogConstant`, resolved from the same domain as
+           * `renderState`, so the labels sit on the bars.
            */
           get coverageTicks() {
             return this.coverageDepthDomain
@@ -1074,27 +900,16 @@ export default function stateModelFactory(
 
           /**
            * #getter
-           * Read-color buckets actually present across the rendered reads, the
-           * single input that lets the legend list only relevant swatches (see
-           * legendUtils). Reads the same baked categories the renderer paints, so
-           * the two can't disagree. Empty while the legend is hidden so the
-           * O(reads) scan is skipped; MobX memoizes it against `laidOutByGroup`,
-           * which already folds in the scheme and the classification opts.
+           * Read-color buckets present across the rendered reads, so the legend
+           * lists only relevant swatches. Empty while the legend is hidden,
+           * skipping the O(reads) scan.
            */
           get colorLegendCategories(): Set<ReadColorCategory> {
             const present = new Set<ReadColorCategory>()
             if (self.showLegend) {
-              // Reads the BAKED categories off the laid-out groups, not a second
-              // classification pass over `rpcDataMap`. Scanning the raw map was
-              // subtly wrong: `readTagColors` is empty until the main thread bakes
-              // it, and the `noTagValue` bucket is decided from that array — so
-              // under a tag scheme the legend listed "Tag" for reads the renderer
-              // was painting with the no-value neutral, and never listed
-              // "No tag value" at all.
-              //
-              // Indices first, mapped once at the end: the category set is a
-              // dozen entries where the index arrays are per read, so the lookup
-              // runs a dozen times rather than once per read.
+              // Baked categories off the laid-out groups, not a second
+              // classification of `rpcDataMap`: `readTagColors` is empty until
+              // the main thread bakes it.
               for (const idx of collectAcrossGroups(
                 this.laidOutByGroup,
                 d => d.readColorCategories,
@@ -1107,18 +922,11 @@ export default function stateModelFactory(
 
           /**
            * #getter
-           * The per-read values the CPU-baked schemes actually painted in the
-           * rendered reads — tag values, or mate refNames under chromosome
-           * painting. It is the whole swatch list for those schemes, since their
-           * color is a pure function of the value (`bakedValueColor`) and needs
-           * no discovered-value table. Only values in the rendered reads appear,
-           * so the legend drops swatches for a chromosome the user has navigated
-           * away from.
-           *
-           * `undefined` for schemes with no such values, and the legend then
-           * does not filter. The empty set means the scheme has values and none
-           * are on screen. Gated on showLegend like the category scan, because
-           * it is O(reads).
+           * The per-read values the CPU-baked schemes painted in the rendered
+           * reads (tag values, or mate refNames under chromosome painting).
+           * `undefined` for other schemes, and the legend then does not filter;
+           * the empty set means none are on screen. Gated on showLegend:
+           * O(reads).
            */
           get presentTagValues(): ReadonlySet<string> | undefined {
             if (!self.showLegend || !isBakedScheme(self.colorBy)) {
@@ -1132,19 +940,11 @@ export default function stateModelFactory(
 
           /**
            * #getter
-           * The modification types drawn in the rendered reads, the counterpart
-           * of `presentTagValues`. `detectedModifications` is what the loaded
-           * reads carry, hidden lanes included, so a legend keyed on it would
-           * name a colour no visible read paints.
-           *
-           * Read from `modificationTypes`, which the worker builds from the drawn
-           * marks, not from the MM/ML parse, so it matches what is on screen. The
-           * two sets differ for bisulfite (no tags to parse, every mark carrying
-           * 'm'), so the legend's bisulfite branch runs before this filter.
-           *
-           * `undefined` outside the modification schemes, and the legend then
-           * does not filter; the empty set means the scheme is on and no marks
-           * are drawn. Gated on showLegend like the other two scans.
+           * The modification types drawn in the rendered reads. Read from
+           * `modificationTypes`, which the worker builds from the drawn marks;
+           * `detectedModifications` includes hidden lanes. The legend's
+           * bisulfite branch runs before this filter, since the two differ
+           * there. `undefined` outside the modification schemes.
            */
           get presentModifications(): ReadonlySet<string> | undefined {
             if (!self.showLegend || !paintsModifications(self.baseLayer)) {
@@ -1158,9 +958,9 @@ export default function stateModelFactory(
 
           /**
            * #getter
+           * Derived from the session theme, so headless SVG export and RPC have
+           * it without a mounted component.
            */
-          // Derived from the session theme so it's always available — including
-          // headless SVG export and RPC, where no component mounts to seed it.
           get colorPalette(): ColorPalette {
             return this.colorPaletteIn(getPaletteHost(self).palette)
           },
@@ -1190,23 +990,16 @@ export default function stateModelFactory(
 
           /**
            * #getter
-           * The arc color slots actually plotted, mapped to legend buckets —
-           * curved paired-end arcs and the read cloud's flat lines and endpoint
-           * squares alike, since both paint `arcColorField`, which follows the
-           * reads only where they paint a pair field (a track colored by strand
-           * still draws insert-size-colored arcs); `getAlignmentsColorScales`
-           * folds the rows the reads already key. Empty unless an overlay is on
-           * with the legend shown.
+           * The arc color slots plotted, mapped to legend buckets, for curved
+           * arcs and the read cloud alike: both paint `arcColorField`, which
+           * follows the reads only where they paint a pair field. Empty unless
+           * an overlay is on with the legend shown.
            */
           get arcLegendCategories(): Set<ArcCategory> {
             const present = new Set<ArcCategory>()
             if (self.showLegend && self.readConnections !== 'off') {
-              // `colorSlots`, not a walk of `arcsByGroup`: that is only one of the
-              // two halves the arcs are resolved into, and a lane whose every arc
-              // crosses a seam would key no swatch at all for colours it draws.
-              // The pass that holds both halves answers this — see
-              // `ArcsByGroupResult`, which also says why it is computed after
-              // regionization rather than before.
+              // `colorSlots`, not a walk of `arcsByGroup`, which holds only one
+              // of the two halves arcs resolve into; see `ArcsByGroupResult`.
               for (const slot of this.arcsResult.colorSlots) {
                 present.add(arcSlotCategory(slot, self.arcColorField))
               }
@@ -1216,24 +1009,10 @@ export default function stateModelFactory(
 
           /**
            * #getter
-           * Which overlap mark the reader is looking at, for the legend row that
-           * names it — undefined when there is none to name. The two layouts that
-           * put more than one feature on a row are drawn differently and the row
-           * differs with them: chain mode fills the span with a neutral that is no
-           * read category, collapsed rows tint what is underneath (overlap.slang).
-           *
-           * Two conditions, and the second is the one the other swatches already
-           * apply to themselves. The pass has to be DRAWING (`shouldDrawOverlaps`,
-           * shared with both renderers rather than restated here, so a legend row
-           * can't outlive the ink), and some region has to hold an actual
-           * interval. Without the second, a paired track in chain mode whose mates
-           * happen not to overlap anywhere in view gets a row explaining a mark
-           * that isn't on screen — the same failure `presentCategories` and
-           * `presentTagValues` exist to prevent, and it would be the common case
-           * on long-insert libraries.
-           *
-           * O(regions), not O(reads): the layout already reduced each region's
-           * overlaps to one array, so this reads a length per region.
+           * Which overlap mark the legend row names, undefined when none. The
+           * row needs the pass to be DRAWING (`shouldDrawOverlaps`, shared with
+           * both renderers) and some region to hold an interval, so no row
+           * explains an off-screen mark. O(regions).
            */
           get overlapLegendKind(): 'chain' | 'collapsed' | undefined {
             if (
@@ -1291,9 +1070,8 @@ export default function stateModelFactory(
 
           /**
            * #method
-           * Key for the paired-end arc / read-cloud colors, empty when no overlay
-           * is drawn. `getAlignmentsColorScales` folds the rows the reads already
-           * key.
+           * Key for the paired-end arc / read-cloud colors, empty when no
+           * overlay is drawn.
            */
           arcLegendItems(palette: ColorPalette) {
             return getArcLegendItems(
@@ -1306,8 +1084,8 @@ export default function stateModelFactory(
 
           /**
            * #getter
-           * Heading for the overlay's own color key, named after the overlay the
-           * reader is looking at: flat read-cloud lines are not arcs.
+           * Heading for the overlay's own color key, named after the overlay
+           * the reader is looking at: flat read-cloud lines are not arcs.
            */
           get arcLegendTitle() {
             return self.readConnections === 'cloud'
@@ -1318,21 +1096,12 @@ export default function stateModelFactory(
           /**
            * #getter
            * Per group, which junctions draw in the strip below coverage (by
-           * `junctionKey`). The single sashimi side decision: `sashimiDownArcLanes`
-           * reads it to reserve the strip and `sashimiArcSections` reads it to
-           * place each arc, so the space reserved and the arcs drawn into it can't
-           * disagree. Memoized because the 'auto' assignment is O(junctions²) per
-           * lane.
-           *
-           * refNames come from `loadedRegions` — keyed by displayedRegionIndex
-           * like `rpcDataMap` and updated by the fetch, not by pan — so this stays
-           * a tier-1 (fetch) derivation and the pileup doesn't re-lay-out as the
-           * user scrolls. A region whose entry hasn't landed yet (the fetch sets
-           * `rpcDataMap` and `loadedRegions` in separate actions, so one reaction
-           * cycle sees the first without the second) falls back to a key unique to
-           * that region rather than a shared '': two regions we can't yet prove
-           * share a chromosome must not pool onto one bp number line, which is the
-           * whole reason the refName is in the key.
+           * `junctionKey`): the one sashimi side decision, read by
+           * `sashimiDownArcLanes` to reserve the strip and `sashimiArcSections`
+           * to place each arc. refNames come from `loadedRegions`, keeping this
+           * a tier-1 (fetch) derivation. A region not yet loaded gets a unique
+           * key, so regions not proven to share a chromosome never pool onto
+           * one bp line.
            */
           get sashimiDownKeysByGroup() {
             return buildSashimiDownKeys(self.rpcDataMap, {
@@ -1346,9 +1115,8 @@ export default function stateModelFactory(
 
           /**
            * #getter
-           * Group keys whose junctions land in the strip below coverage, i.e. the
-           * lanes that strip is reserved for. `belowCoverageBandsInput` only needs
-           * whether any lane wants the strip, `sections` needs which.
+           * Group keys whose junctions land in the strip below coverage, i.e.
+           * the lanes that strip is reserved for.
            */
           get sashimiDownArcLanes() {
             const out = new Set<string>()
@@ -1363,10 +1131,9 @@ export default function stateModelFactory(
           /**
            * #getter
            * The ceiling of the three bands stacked over the pileup, which the
-           * resize handles drag against and `bandHeights` draws within, so a
-           * handle never banks px the band cannot show. It leaves the pileup a
-           * row where there is one. Off `fitTargetHeight`, the raw slot, since
-           * `height` derives from the layout these heights feed in grow mode.
+           * resize handles drag against and `bandHeights` draws within. Leaves
+           * the pileup a row. Reads `fitTargetHeight`, not `height`, which
+           * derives from the layout these heights feed in grow mode.
            */
           get resizableBandBounds() {
             const pileupReservePx = self.showPileup ? MIN_BAND_HEIGHT : 0
@@ -1398,13 +1165,12 @@ export default function stateModelFactory(
               ),
             }
           },
+
           /**
            * #getter
-           * The settings half of the below-coverage band geometry — whether each
-           * strip MAY be reserved and how tall it is, with neither data half
-           * answered. Its two consumers answer those differently: the pooled
-           * `belowCoverageBandsInput` asks once for the whole stack, the fit
-           * budget once per lane.
+           * The settings half of the below-coverage band geometry: whether each
+           * strip MAY be reserved and how tall, with neither data half
+           * answered.
            */
           get belowCoverageBandsSettings(): BelowCoverageBandsSettings {
             return {
@@ -1418,12 +1184,10 @@ export default function stateModelFactory(
 
           /**
            * #getter
-           * Inputs to `belowCoverageBandsGeometry` — the settings above, plus
-           * whether ANY lane has arcs or a sashimi junction bound for its strip.
-           * Both data halves are pooled over the lanes, which
-           * `computeStackedSections` asks per lane: the geometry here is the one
-           * ungrouped answer, and there the lanes agree with it because there is
-           * only the one. The grouped stack's own total is `totalBandOverhead`.
+           * Inputs to `belowCoverageBandsGeometry`: the settings above plus
+           * whether ANY lane has arcs or a sashimi junction bound for its
+           * strip. Pooled over the lanes, so it is the ungrouped answer; the
+           * grouped stack's total is `totalBandOverhead`.
            */
           get belowCoverageBandsInput() {
             return {
@@ -1436,11 +1200,9 @@ export default function stateModelFactory(
           /**
            * #getter
            * The height the below-coverage strips take from the fit-to-viewport
-           * row budget over the whole stack: the bands reserved in every lane,
-           * summed the way `computeStackedSections` reserves them.
-           *
-           * `groupOrder` and the two lane sets are all fetch-tier, so this is
-           * known before layout and the layout can read it without a cycle.
+           * row budget: the bands reserved in every lane, summed as
+           * `computeStackedSections` reserves them. Fetch-tier inputs only, so
+           * the layout reads it without a cycle.
            */
           get totalBandOverhead() {
             return totalBelowCoverageOverhead(
@@ -1453,12 +1215,9 @@ export default function stateModelFactory(
 
           /**
            * #getter
-           * The height overrides as the row caps they impose, keyed by lane — the
-           * layout's input. A height drag writes a px per frame, but a band's px
-           * only becomes a different LAYOUT at a row boundary, and past the lane's
-           * own content it never does, since there the extra px pad the band. So
-           * this keeps its identity while the caps compare equal, and a drag frame
-           * that moves no cap relays no read and re-bakes no colour.
+           * The height overrides as row caps, keyed by lane — the layout's
+           * input. Keeps its identity while the caps compare equal, so a drag
+           * frame that moves no cap relays no read and re-bakes no colour.
            */
           get groupRowCaps(): ReadonlyMap<string, RowCap> {
             rowCaps ??= stableIdentityComputed(() =>
@@ -1469,17 +1228,13 @@ export default function stateModelFactory(
 
           /**
            * #getter
-           * The cap a lane on the shared fit budget lays out to: its slice of the
-           * viewport when grouped, the display-wide ceiling when not, with the
-           * policy that set it, which a clipped lane reports as its `clippedBy`.
-           * Stable across a resize drag for the reason `groupRowCaps` is: the
-           * track height and band overhead behind it move a px at a time, this a
-           * row at a time.
-           *
-           * Grow fits rows to the grow ceiling (content grows the track up to it,
-           * then scrolls); fixed/fit fit to the drag-resizable slot. Both read
-           * config slots, never the reactive `height` getter, so grow's
-           * height, grownHeight, layout chain can't cycle.
+           * The cap a lane on the shared fit budget lays out to: its slice of
+           * the viewport when grouped, the display-wide ceiling when not, with
+           * the policy that set it (a clipped lane reports it as `clippedBy`).
+           * Keeps its identity like `groupRowCaps`: its inputs move a px at a
+           * time, it moves a row at a time. Grow mode fits to the grow ceiling,
+           * fixed/fit to the drag-resizable slot; both read config slots, never
+           * the `height` getter, so grow's height → layout chain cannot cycle.
            */
           get fitDefaultCap(): RowCap {
             fitCap ??= stableIdentityComputed(() => this.resolvedFitDefaultCap)
@@ -1491,10 +1246,7 @@ export default function stateModelFactory(
            * `fitDefaultCap` recomputed, without the identity it keeps.
            */
           get resolvedFitDefaultCap(): RowCap {
-            // The lane list the layout itself walks (`groupLayoutContext.order`),
-            // so "grouped" and the visible count are the same questions it used to
-            // ask inside — a collapsed lane costs band overhead but claims no
-            // pileup rows, so collapsing one frees its slice for the rest.
+            // A collapsed lane costs band overhead but claims no pileup rows.
             const { order } = this.groupLayoutContext
             return resolveFitDefaultCap({
               grouped: order.length > 1,
@@ -1525,12 +1277,9 @@ export default function stateModelFactory(
 
           /**
            * #getter
-           * The `maxHeight` ceiling in rows. Fitting, the pitch it divides is
-           * `fittedHeightPx`, which a drag moves a fraction of a px per frame, and
-           * the quotient crosses an integer nearly as often; clamping to the rows
-           * the pileup needs makes the two agree whenever the ceiling does not
-           * bind, which is what keeps the layout from re-placing every row per
-           * drag frame.
+           * The `maxHeight` ceiling in rows. While fitting it is clamped to the
+           * rows the pileup needs, so the quotient holds steady across drag
+           * frames and the layout does not re-place every row.
            */
           get fitCeilingRows(): number {
             const ceiling = maxRowsFor(self.maxHeight, this.rowHeight)
@@ -1539,24 +1288,16 @@ export default function stateModelFactory(
 
           /**
            * #getter
-           * Per-group laid-out data: group key → (region index → laid-out data).
-           * Each group lays out independently (own `maxRows` cap) so a dense group
-           * can't starve the rest. When grouped, the default cap fits all sections
-           * into the viewport (`fitGroupMaxRows`) so the stack doesn't tower and
-           * need scrolling; a per-group height drag / expand still overrides it.
-           *
-           * Rows only — the per-read color arrays are baked one computed later, in
-           * `laidOutByGroup`.
+           * Per-group laid-out data: group key → (region index → laid-out
+           * data). Each group lays out independently under its own cap, so a
+           * dense group cannot starve the rest. Rows only; the per-read color
+           * arrays bake one computed later, in `laidOutByGroup`.
            */
           get laidOutByGroupUncolored() {
             return layoutGroupsToViewport(this.groupLayoutContext, {
               collapsedKeys: self.collapsedGroups,
-              // The caps arrive resolved, and neither the track height, the row
-              // pitch nor the band overhead they came from is read here: those
-              // move a px per drag frame while the caps move a row at a time, so
-              // reading them re-placed every row and re-baked every color to
-              // arrive at arrays that were already correct (`fitDefaultCap`,
-              // `fitCeilingRows`, `groupRowCaps`).
+              // Reads only the resolved caps, not the track height, row pitch
+              // or band overhead behind them, which move a px per drag frame.
               maxRows: this.fitCeilingRows,
               defaultCap: this.fitDefaultCap,
               overrideCaps: this.groupRowCaps,
@@ -1583,8 +1324,7 @@ export default function stateModelFactory(
           /**
            * #getter
            * The laid-out data with every chain's strand frame settled — see
-           * `applyChainStrandFrames`, which says why the two passes are here and
-           * not in the colour bake below.
+           * `applyChainStrandFrames`.
            */
           get laidOutByGroupFramed() {
             return applyChainStrandFrames(
@@ -1596,19 +1336,12 @@ export default function stateModelFactory(
 
           /**
            * #getter
-           * Per-group laid-out data with the per-read color arrays baked on;
-           * consumers read `laidOutByGroup`, which spreads the connector lines
-           * over it, and `laidOutByGroupUncolored` is its layout half.
-           *
-           * The split keeps recoloring off the layout path. Nothing in
-           * `readColorContext` can move a read's row, so a color-scheme change
-           * should not re-run the placement pass, every per-feature Y remap and
-           * the modification Flatbush just to change two per-read arrays. The
-           * layout computed stays memoized across a recolor, and because the
-           * overlay spreads its input, `readYs` keeps its identity too. The GPU
-           * renderer's upload memo checks `readYs` to rewrite only the read pass. Tag colors are baked here rather than in
-           * the worker so tag coloring stays a main-thread tier-2 setting (see
-           * readTagColors).
+           * Per-group laid-out data with the per-read color arrays baked on.
+           * Nothing in `readColorContext` moves a read's row, so a recolor
+           * keeps the layout memoized and `readYs` keeps its identity: the GPU
+           * upload memo checks `readYs` to rewrite only the read pass. Tag
+           * colors bake here, not in the worker, so tag coloring stays a
+           * main-thread tier-2 setting.
            */
           get laidOutByGroupColored() {
             return applyReadColorsByGroup(
@@ -1634,9 +1367,8 @@ export default function stateModelFactory(
            * #getter
            * Every read connector per group, from one walk of its reads: the
            * straight-line pass's records and the pairs the bezier overlay
-           * draws. Read off the layout tier, so a band resize, a group-height
-           * drag or a recolor reuses them, and a curved-connector toggle
-           * re-walks the reads without laying them out again.
+           * draws. Reads the layout tier, so a band resize, height drag or
+           * recolor reuses them.
            */
           get connectorsByGroup() {
             return resolveConnectorsByGroup(
@@ -1658,10 +1390,9 @@ export default function stateModelFactory(
 
           /**
            * #getter
-           * The layout mechanics (grouping, sort, soft-clip) shared by the viewport
-           * fit pass and any ad-hoc layout — e.g. `fittedFeatureHeight`, which lays
-           * every group out uncapped to count rows. Kept apart from the fit policy
-           * (row caps), which varies per call, and from the color inputs, which
+           * The layout mechanics (grouping, sort, soft-clip) shared by the
+           * viewport fit pass and ad-hoc layouts such as `fittedFeatureHeight`.
+           * Excludes the fit policy (row caps) and the color inputs, which
            * invalidate a later tier.
            */
           get groupLayoutContext() {
@@ -1679,8 +1410,8 @@ export default function stateModelFactory(
 
           /**
            * #getter
-           * The per-read color bake's inputs — see `laidOutByGroup` for why they
-           * are not part of `groupLayoutContext`.
+           * The per-read color bake's inputs, kept out of `groupLayoutContext`
+           * so a recolor never relays.
            */
           get readColorContext() {
             return {
@@ -1775,15 +1506,12 @@ export default function stateModelFactory(
 
           /**
            * #getter
-           * Where a mate's reference sits in this assembly's own chromosome order,
-           * for chromosome painting — the same `Assembly.getRefNamePosition` the
-           * comparative displays paint by, so a contig takes one color in a
-           * pileup and in a synteny view beside it. From the ASSEMBLY rather than
-           * the reads on screen, or a color would change with what else was in
-           * view.
-           *
-           * Undefined under every other scheme and until the assembly initializes,
-           * where the fallback is the right answer rather than a failure.
+           * Where a mate's reference sits in this assembly's own chromosome
+           * order, for chromosome painting — the same
+           * `Assembly.getRefNamePosition` the comparative displays paint by.
+           * From the ASSEMBLY, not the reads on screen, so a color never
+           * changes with what else is in view. Undefined under every other
+           * scheme and until the assembly initializes.
            */
           get paintedRefNamePosition() {
             const assembly =
@@ -1808,9 +1536,9 @@ export default function stateModelFactory(
 
           /**
            * #getter
-           * Group keys + labels in stacking order; a single entry (key '') when
-           * ungrouped. Derived straight from the fetched `rpcDataMap` (not from the
-           * layout pass), so group identity/order stays stable across relayouts.
+           * Group keys + labels in stacking order; one entry (key '') when
+           * ungrouped. Derived from the fetched `rpcDataMap`, not the layout
+           * pass, so group identity and order stay stable across relayouts.
            */
           get groupOrder() {
             const facet = this.effectiveFacet
@@ -1823,15 +1551,11 @@ export default function stateModelFactory(
 
           /**
            * #getter
-           * Whether the stacked section labels + dividers are drawn. Deliberately
-           * NOT `isGrouped`: grouping that happens to yield one section (a region
-           * with reads on one strand, a tag with a single value) still reserves the
-           * label offset (`prefersOffset`) and still wants its section named and
-           * collapsible — otherwise it reads as an ungrouped track with mysterious
-           * blank space above it. `isGrouped` stays about the scroll model (>1
-           * section scrolls coverage with its section), which one section doesn't
-           * change. Reads the fetched sections rather than `facet` — see
-           * `hasNamedGroups` for why the setting is the wrong signal.
+           * Whether the stacked section labels and dividers are drawn. Not
+           * `isGrouped`: grouping that yields one section still reserves the
+           * label offset (`prefersOffset`) and wants its section named and
+           * collapsible. Reads the fetched sections, not `facet` — see
+           * `hasNamedGroups`.
            */
           get showsGroupLabels() {
             return hasNamedGroups(this.groupOrder)
@@ -1847,14 +1571,11 @@ export default function stateModelFactory(
 
           /**
            * #getter
-           * Raw (un-laid-out) data regrouped as group key → (region idx → data),
-           * insertion-ordered so the first key is the primary group. The arc
-           * compute and the per-section sashimi overlay both read one group's raw
-           * map from here; ungrouped is the single key `''`.
-           *
-           * Hidden lanes are already gone, like `groupOrder` — so a walk of every
-           * entry here is a walk of every DRAWN lane, and no consumer has to
-           * re-apply `hiddenGroupKeys`. See `buildRawDataByGroup`.
+           * Raw (un-laid-out) data regrouped as group key → (region idx →
+           * data), insertion-ordered so the first key is the primary group;
+           * ungrouped is the single key `''`. Hidden lanes are already gone,
+           * like `groupOrder`, so a walk of every entry is a walk of every
+           * DRAWN lane. See `buildRawDataByGroup`.
            */
           get rawDataByGroup() {
             return buildRawDataByGroup(
@@ -1893,11 +1614,9 @@ export default function stateModelFactory(
           /**
            * #getter
            * Chain name → the ids of the READS in it; empty outside chain mode.
-           * The two id spaces are easy to confuse: `chainNames` (the key here)
-           * is a chain's own identity, `readIds` (the values) are the reads',
-           * and every consumer resolves the values through `readIdToIndex` /
-           * `readIdIndexMap`. Hence the names carried downstream —
-           * `highlightedChainReadIds`, `selectedChainReadIds`.
+           * The key is a chain's own identity and the values are read ids,
+           * which consumers resolve through `readIdToIndex` / `readIdIndexMap`
+           * (hence `highlightedChainReadIds`, `selectedChainReadIds`).
            */
           get readIdsByChainName(): ReadonlyMap<string, string[]> {
             const chained = this.chainAttachment
@@ -1906,11 +1625,9 @@ export default function stateModelFactory(
 
           /**
            * #getter
-           * The fetched regions as `{refName,start,end,displayedRegionIndex}` —
+           * The fetched regions as `{refName,start,end,displayedRegionIndex}`,
            * the shape every per-read region scan takes (`computeArcsByGroup`).
-           * Regions whose fetch hasn't landed are dropped,
-           * so a scan never has to test for a missing entry, and the list is
-           * memoized once rather than rebuilt by each consumer.
+           * Regions whose fetch has not landed are dropped.
            */
           get loadedRegionInfos() {
             return [...self.loadedRegions.entries()]
@@ -1925,20 +1642,12 @@ export default function stateModelFactory(
 
           /**
            * #getter
-           * The VIEW's displayed regions in the same shape, which is a different
-           * list from `loadedRegionInfos` and answers a different question: not
-           * "where did reads come from" but "where can a coordinate be drawn".
-           *
-           * The arc partition (`CrossRegionArc`) keys on this one, because its
-           * criterion is whether `view.bpToPx` can project both feet and that
-           * projector reads `displayedRegions`. Keying it on the fetched list
-           * leaves the original bug alive for a displayed-but-unfetched partner —
-           * see `ArcRegions`.
-           *
-           * `displayedRegions` changes on NAVIGATION and not on pan, so
-           * `arcsByGroup` keeps the invalidation tier `loadedRegions`' own comment
-           * exists to protect: panning within the fetched window still replays the
-           * memo.
+           * The VIEW's displayed regions in the same shape: not "where did
+           * reads come from" but "where can a coordinate be drawn". The arc
+           * partition (`CrossRegionArc`) keys on this list, since `view.bpToPx`
+           * projects through `displayedRegions` (see `ArcRegions`).
+           * `displayedRegions` changes on navigation, not on pan, so
+           * `arcsByGroup` keeps its fetch invalidation tier.
            */
           get displayedRegionInfos() {
             const view = self.host
@@ -1954,14 +1663,11 @@ export default function stateModelFactory(
 
           /**
            * #getter
-           * Normalizer for a refName that arrives in the BAM's own spelling (an SA
-           * tag's or RNEXT's `chr1`) rather than the assembly-canonical one a
-           * fetched read carries (`1`). Undefined when no assembly is resolved
-           * (`loadedAssembly`), where the consumers fall back to identity.
-           *
-           * Shared rather than resolved per consumer because each needs it for the
-           * same reason: without it a same-chromosome split junction reads as
-           * inter-chromosomal.
+           * Normalizer for a refName in the BAM's own spelling (an SA tag's or
+           * RNEXT's `chr1`) rather than the assembly-canonical one a fetched
+           * read carries (`1`). Undefined when no assembly is resolved, where
+           * consumers fall back to identity. Without it a same-chromosome split
+           * junction reads as inter-chromosomal.
            */
           get canonicalRefName() {
             const assembly = self.loadedAssembly
@@ -1972,37 +1678,12 @@ export default function stateModelFactory(
 
           /**
            * #getter
-           * THE arc resolution, whole: both halves of what this fetch's reads say,
-           * from one pass. Read it through `arcsByGroup` (the arcs inside one
-           * region) or `crossRegionArcsByGroup` (the arcs joining two), which
-           * are its two faces and are documented there.
-           *
-           * One getter rather than two, because the split between them is a single
-           * decision taken per connection inside `resolveArcs` — see
-           * `CrossRegionArc`. Two getters resolving independently would each have
-           * to re-derive it, and "which half is this arc in" would stop having one
-           * answer.
-           *
-           * The heavy connection-resolution pass runs once per group (arcs are
-           * pre-grouped by refName so each region lookup is O(1)); ungrouped is the
-           * single-group case. Empty when read-connections are off, so the off-path
-           * skips the per-read region scan entirely.
-           *
-           * `computeArcsByGroup` owns the whole fan-out rather than a loop here,
-           * because the pooled arc scale (`poolArcScale`: whether the read set is
-           * paired at all, and the fragment-length clustering window) describes
-           * the fetch, not a lane — the rule this model follows for
-           * `arcsYDomainBp`. Computing it needs every group's arcs in hand, which
-           * a per-group loop can't provide.
-           *
-           * Hidden lanes never reach it, because `rawDataByGroup` has already
-           * dropped them. They must be skipped, not just left unread: the
-           * per-section consumers look this up by an already-filtered `groupOrder`
-           * key, but the cross-group scans (`arcsYDomainBp`, `arcLegendCategories`)
-           * walk every entry — so a hidden lane's arcs would size the read-cloud Y
-           * axis the visible lanes share and key legend swatches for arcs nothing
-           * draws, and its reads would shift `poolArcScale` for everyone. Skipping
-           * also saves the whole per-read arc pass over a lane no section renders.
+           * THE arc resolution: both halves from one pass, read through
+           * `arcsByGroup` (arcs inside one region) or `crossRegionArcsByGroup`
+           * (arcs joining two). `computeArcsByGroup` owns the whole fan-out
+           * because the pooled arc scale (`poolArcScale`) describes the fetch,
+           * not a lane. Hidden lanes must stay out: the cross-group scans
+           * (`arcsYDomainBp`, `arcLegendCategories`) walk every entry.
            */
           get arcsResult(): ArcsByGroupResult {
             if (self.readConnections === 'off' || self.rpcDataMap.size === 0) {
@@ -2023,9 +1704,6 @@ export default function stateModelFactory(
               showProperPairArcs: self.showProperPairArcs,
               showModalPairsInCloud: self.showModalPairsInCloud,
               minInterchromSupport: self.minInterchromSupport,
-              // SA-tag / RNEXT refNames use the BAM's own naming, so a same-chr
-              // split junction to an SA segment would otherwise be misclassified
-              // inter-chromosomal. Undefined = no aliasing (identity).
               canonicalRefName: this.canonicalRefName,
             }
             return computeArcsByGroup(
@@ -2058,7 +1736,8 @@ export default function stateModelFactory(
 
           /**
            * #getter
-           * The band's marks' input, per group and region (`buildArcBandFeeds`).
+           * The band's marks' input, per group and region
+           * (`buildArcBandFeeds`).
            */
           get arcFeedsByGroup() {
             return this.arcFeedsByGroupIn(this.colorPalette)
@@ -2115,8 +1794,8 @@ export default function stateModelFactory(
         /**
          * #getter
          * Contrast colours for the mismatch/softclip/per-base letters, off the
-         * session palette like `colorPalette`. SVG export calls
-         * `getMismatchContrastMap` with its own export palette instead.
+         * session palette. SVG export calls `getMismatchContrastMap` with its
+         * own palette.
          */
         get mismatchContrastMap(): Record<string, string> {
           return getMismatchContrastMap(
@@ -2152,9 +1831,9 @@ export default function stateModelFactory(
          * `readArraysByGroup`.
          */
         get layoutReady() {
-          // the too-large term isn't redundant: clearAllRpcData deliberately
-          // leaves the gate alone, so a zoom-out into the banner can strand the
-          // previous region's data in rpcDataMap with no pileup on screen
+          // The too-large term is not redundant: `clearAllRpcData` leaves the
+          // gate alone, so a zoom-out into the banner can strand data in
+          // `rpcDataMap`.
           return !self.regionTooLarge && self.rpcDataMap.size > 0
         },
       }))
@@ -2169,11 +1848,10 @@ export default function stateModelFactory(
       .views(self => ({
         /**
          * #getter
-         * Geometry of the bands stacked below coverage in arcs-down mode, top to
-         * bottom: coverage → paired-end arcs → sashimi. Single source of truth so
-         * the layout height, the renderers, and the three resize handles can't
-         * drift apart. `arcsBandTop`/`sashimiBandTop` are each band's top edge;
-         * `bottom` is where the pileup begins (== coverageDisplayHeight).
+         * Geometry of the bands stacked below coverage in arcs-down mode:
+         * coverage → paired-end arcs → sashimi. `arcsBandTop`/`sashimiBandTop`
+         * are each band's top edge; `bottom` is where the pileup begins (==
+         * coverageDisplayHeight).
          */
         get belowCoverageBands() {
           return belowCoverageBandsGeometry(self.belowCoverageBandsInput)
@@ -2189,37 +1867,13 @@ export default function stateModelFactory(
       .views(self => ({
         /**
          * #getter
-         * The stacked lanes, in stacking order: one `AlignmentLane` per drawn
-         * group, ungrouped being the one-lane case.
-         *
-         * The one place a lane's key is resolved to its data: the raw map, the
-         * laid-out map, the two arc feeds, the sashimi sides and the
-         * collapse/override volatiles. Consumers read the lane instead of
-         * indexing each keyed collection with a bare string and a `?? empty`
-         * fallback for a key that cannot be missing.
-         *
-         * Every field is read from the computed that defines it, so the
-         * fetch/layout/recolor tiers upstream are unchanged and this getter
-         * holds no state.
-         *
-         * Empty while the density tier is shown, so no features are drawn
-         * anywhere. Every overlay (the sashimi and bezier arcs, the read labels,
-         * the group chips) walks `renderSections`, so a track forced to
-         * `density` over data it already holds would otherwise draw them over
-         * the band. `drawnLanes` turns the empty list into the synthetic no-data
-         * lane, the same lane a refused fetch produces.
+         * The stacked lanes in stacking order, one `AlignmentLane` per drawn
+         * group; ungrouped is the one-lane case. The one place a lane's key
+         * resolves to its data. Empty while the density tier is shown: every
+         * overlay walks `renderSections`, and `drawnLanes` turns the empty list
+         * into the synthetic no-data lane.
          */
         get lanes(): AlignmentLane[] {
-          // Both below-coverage strips are reserved per lane: grouping routinely
-          // leaves lanes with nothing bound for one (the 'Not split' lane of a
-          // split-read grouping has no arc), and those carried an empty strip.
-          // Empty when read-connections are off, so this costs nothing there.
-          //
-          // The two arc feeds come through their own named getters, which is
-          // where the reason they ARE two lists lives, and the band-reservation
-          // question is asked of the pass holding both halves
-          // (`inkGroupKeys`) — this directory's `hasArcBandInk`-not-`numArcs`
-          // rule met one level up.
           return self.coarseTierStandsIn
             ? []
             : buildLanes({
@@ -2237,11 +1891,10 @@ export default function stateModelFactory(
 
         /**
          * #getter
-         * The lanes actually laid out, or the one SYNTHETIC lane. `sections` has
-         * to produce a section before any fetch lands — and a grouped fetch over
-         * an empty region partitions to zero lanes — so the section pipeline is
-         * never handed an empty list. Every collection on it is empty by
-         * construction, `maxY` included.
+         * The lanes laid out, or the one SYNTHETIC no-data lane: `sections`
+         * must produce a section before any fetch lands, and a grouped fetch
+         * over an empty region partitions to zero lanes. Every collection on it
+         * is empty.
          */
         get drawnLanes(): AlignmentLane[] {
           return drawnLanesOf(this.lanes)
@@ -2249,8 +1902,8 @@ export default function stateModelFactory(
 
         /**
          * #method
-         * One lane by group key, for the per-key questions a component asks with
-         * a `groupKey` in hand. `undefined` for a key that isn't drawn.
+         * One lane by group key, for the per-key questions a component asks
+         * with a `groupKey` in hand. `undefined` for a key that isn't drawn.
          */
         laneFor(key: string) {
           return this.lanes.find(l => l.groupKey === key)
@@ -2258,24 +1911,17 @@ export default function stateModelFactory(
 
         /**
          * #getter
-         * Single source of all vertical band geometry, one entry per lane.
-         * `computeStackedSections` reproduces the prior ungrouped reserved layout
-         * exactly for its single-section (N==1) case, so ungrouped is not a
-         * special branch here — it is the one-lane call, over `drawnLanes` so a
-         * display with no data still has a section. The sticky-coverage-vs-scroll
-         * distinction lives downstream in `buildSectionRenders`, keyed off section
-         * count.
+         * All vertical band geometry, one entry per lane; ungrouped is the
+         * one-lane call. Runs over `drawnLanes` so a display with no data still
+         * has a section. The sticky-coverage-vs-scroll distinction lives
+         * downstream in `buildSectionRenders`.
          */
         get sections(): SectionsLayout {
           return computeStackedSections(toSectionGroupInputs(this.drawnLanes), {
             ...self.belowCoverageBandsSettings,
             coverageYOffset: YSCALEBAR_LABEL_OFFSET,
             rowHeight: self.rowHeight,
-            // Only when the chips are actually drawn — an ungrouped display
-            // reserves nothing, so its geometry is untouched.
             minSectionHeight: self.showsGroupLabels ? GROUP_LABEL_HEIGHT : 0,
-            // Not in fit mode, whose rows already fill the display: a reserve
-            // there would be the scroll that mode exists to avoid.
             dipReservePx: self.fitHeightToDisplay
               ? undefined
               : (groupKey, pileupHeight) => {
@@ -2296,17 +1942,10 @@ export default function stateModelFactory(
 
         /**
          * #getter
-         * Every lane paired with its band geometry, in stacking order: the list
-         * the overlays, the hit-test pipeline and both renderers all walk.
-         *
-         * The pairing is by INDEX and that is structural, not a coincidence —
-         * `computeStackedSections` emits one section per lane in order, and both
-         * lists come from `drawnLanes`. Deriving the two from different sources is
-         * what used to let them disagree whenever a section was synthesized.
-         *
-         * Carrying the lane's own collections here is what retires the by-key
-         * lookup every downstream pass used to do (`?? new Map()` for a key that
-         * structurally cannot be missing, spelled once per consumer).
+         * Every lane paired with its band geometry in stacking order: the list
+         * the overlays, the hit-test pipeline and both renderers walk. The
+         * pairing is by INDEX, structural since `computeStackedSections` emits
+         * one section per lane in order from `drawnLanes`.
          */
         get renderSections() {
           return zipLaneSections(this.drawnLanes, this.sections.sections)
@@ -2314,18 +1953,11 @@ export default function stateModelFactory(
 
         /**
          * #getter
-         * Per-section upload input, in stacking order: each section's laid-out
-         * region map + arc feed, keyed by group so the renderers can namespace HAL
-         * region keys per section.
-         *
-         * Both renderers pair the uploaded section `s` with the drawn section `s`
-         * by INDEX (`sectionRegionKey(s, regionIdx)`), so this list and
-         * `renderState.sections` must have the same length and order. Both now
-         * derive from `renderSections`, making that structural — deriving this one
-         * from `groupOrder` instead let the two disagree whenever the section
-         * pipeline synthesized its no-data lane (0 uploaded vs 1 drawn), which
-         * happens on an empty grouped fetch. That mismatch was benign only because
-         * the per-section region lookup missed and the draw skipped.
+         * Per-section upload input in stacking order: each section's laid-out
+         * region map and arc feed, keyed by group. Both renderers pair uploaded
+         * section `s` with drawn section `s` by INDEX, so this list and
+         * `renderState.sections` both derive from `renderSections` and share
+         * its length and order.
          */
         get sourceSections(): SectionSource[] {
           return this.sourceSectionsWith(self.arcFeedsByGroup)
@@ -2429,10 +2061,8 @@ export default function stateModelFactory(
         /**
          * #getter
          * What one row of this pileup is called, for UI text built from the
-         * model alone (the group-label chips). The menu builders take the same
-         * word as a call-site `noun` option. Subclasses that aren't showing
-         * reads override it — LGVSyntenyDisplay draws PAF blocks, so its chips
-         * must not offer to "show all reads".
+         * model alone (the group-label chips). Overridable: LGVSyntenyDisplay
+         * draws PAF blocks, so its chips must not offer to "show all reads".
          */
         get featureNoun() {
           return 'read'
@@ -2441,8 +2071,7 @@ export default function stateModelFactory(
         /**
          * #getter
          * Everything the right-click's hit test resolved — the block, the
-         * clicked column, and whichever mark answered — as one value, so a
-         * consumer can't read a block without its hit. See `ContextMenuHit`.
+         * clicked column and whichever mark answered. See `ContextMenuHit`.
          */
         get contextMenuHit() {
           return self.contextMenuInfo?.hit
@@ -2450,10 +2079,9 @@ export default function stateModelFactory(
 
         /**
          * #getter
-         * The read id under a right-click, known synchronously (the hit test
-         * carries it) unlike `contextMenuFeature`, which lands after an RPC. A
-         * menu item that can act from the id alone reads this, so it doesn't
-         * blink into existence a fetch later.
+         * The read id under a right-click, known synchronously unlike
+         * `contextMenuFeature`, which lands after an RPC. A menu item that can
+         * act from the id alone reads this.
          */
         get contextMenuFeatureId() {
           return self.contextMenuInfo?.featureId
@@ -2462,8 +2090,8 @@ export default function stateModelFactory(
         /**
          * #getter
          * True when reads are stacked into >1 group section. Drives the scroll
-         * model: ungrouped keeps coverage sticky (only the pileup scrolls);
-         * grouped scrolls the whole coverage+pileup stack as one.
+         * model: ungrouped keeps coverage sticky; grouped scrolls the whole
+         * stack as one.
          */
         get isGrouped() {
           return self.groupOrder.length > 1
@@ -2472,9 +2100,7 @@ export default function stateModelFactory(
         /**
          * #getter
          * The scroll-projection inputs (`sectionScreen.ts`) every overlay needs
-         * to map a content-space Y into screen space. Built once here so the
-         * label / resize-handle / coverage-axis overlays don't each re-assemble
-         * `{ isGrouped, scrollTop, canvasHeight }` inline.
+         * to map a content-space Y into screen space.
          */
         get scrollModel(): ScrollModel {
           return {
@@ -2487,9 +2113,8 @@ export default function stateModelFactory(
         /**
          * #getter
          * The coverage band held out of the scroll: ungrouped keeps it sticky
-         * above the pileup, grouped scrolls the whole stack so nothing is held
-         * back. Subtracted from both the viewport and the content, so both ends
-         * of the scroll extent exclude the same band.
+         * above the pileup, grouped scrolls the whole stack. Subtracted from
+         * both the viewport and the content.
          */
         get stickyBandHeight() {
           return this.isGrouped ? 0 : self.coverageDisplayHeight
@@ -2519,18 +2144,12 @@ export default function stateModelFactory(
         /**
          * #getter
          * HeightModeMixin's grow hook: the full laid-out content height
-         * (coverage + pileup + arcs), before the `growMaxHeight` cap. Independent
-         * of `self.height`: in grow mode `laidOutByGroup` fits to
-         * `growMaxHeight` (not the reactive `height`), and `featureHeight` is the
-         * configured value (not the fitted pitch). The mixin's `height` can
-         * therefore return it without a cycle. `grownHeight`, the `height`
-         * override and the grow-aware `resizeHeight` all come from the mixin.
-         *
-         * With no layout (reads not loaded, or the too-large banner shown) the
-         * content height is unknown, and the track keeps its current height.
-         * Using the bare coverage band instead would collapse a grow track
-         * loaded at 250 px to the band and grow it again once the reads loaded,
-         * and would squeeze the banner into the band's height.
+         * (coverage + pileup + arcs), before the `growMaxHeight` cap.
+         * Independent of `self.height`: in grow mode `laidOutByGroup` fits to
+         * `growMaxHeight` and `featureHeight` is the configured value, so the
+         * mixin's `height` can return it without a cycle. With no layout (reads
+         * not loaded, or the too-large banner shown) the track keeps its
+         * current height.
          */
         get growTargetHeight() {
           return self.layoutReady
@@ -2568,11 +2187,10 @@ export default function stateModelFactory(
         /**
          * #method
          * Content-space Y of a group's pileup relative to the reserved
-         * below-coverage height, i.e. how far a read's row shifts because its
-         * group is stacked below the others. 0 for the ungrouped/first section,
-         * except when that lane drops its arc band (`hasArcs` false), where it
-         * goes slightly negative — callers add `coverageDisplayHeight` back, so
-         * the sum is the section's real `pileupTop` either way.
+         * below-coverage height: how far a read's row shifts because its group
+         * is stacked below the others. Callers add `coverageDisplayHeight`
+         * back. Slightly negative for a lane that drops its arc band (`hasArcs`
+         * false).
          */
         groupPileupOffset(groupKey: string) {
           const section = this.renderSections.find(s => s.groupKey === groupKey)
@@ -2583,10 +2201,9 @@ export default function stateModelFactory(
 
         /**
          * #method
-         * Read ids sharing a chain with the read at `index` in `rpcData` — the
-         * read's own included, since it is a member of its chain. Empty when the
-         * read isn't part of a chain. Shared by hover-highlight and click-select
-         * so the two paths can't drift.
+         * Read ids sharing a chain with the read at `index` in `rpcData`, the
+         * read's own included. Empty when the read is in no chain. Shared by
+         * hover-highlight and click-select.
          */
         readIdsSharingChain(rpcData: ChainedPileupData, index: number) {
           return chainReadIdsAt(rpcData, index, self.readIdsByChainName)
@@ -2632,9 +2249,8 @@ export default function stateModelFactory(
         /**
          * #getter
          * Names one read color bucket for the hover, with the active scheme's
-         * rewording already applied — the same `readCategoryLabelOverrides` the
-         * legend box uses, so the tooltip and the swatch it sends the reader to
-         * cannot say different things about one color.
+         * rewording applied — the same `readCategoryLabelOverrides` the legend
+         * uses, so the tooltip and its swatch agree.
          */
         get readCategoryLabel() {
           const overrides = readCategoryLabelOverrides(
@@ -2674,10 +2290,9 @@ export default function stateModelFactory(
         /**
          * #method
          * Layout rect of one read of `readArraysByGroup`. Y is relative to the
-         * pileup's own top, since the caller adds `coverageDisplayHeight`
-         * itself, so a grouped read only needs its section's stacking offset on
-         * top of its row. A read past the row cap sits on the cap's overflow
-         * row.
+         * pileup's own top (callers add `coverageDisplayHeight`), so a grouped
+         * read needs only its section's stacking offset on top of its row. A
+         * read past the row cap sits on the cap's overflow row.
          */
         readLayoutRecord(
           groupKey: string,
@@ -2698,16 +2313,9 @@ export default function stateModelFactory(
         },
       }))
       .views(self => {
-        // WHICH REGIONS ARE ON SCREEN, as a value a pan frame can compare equal.
-        //
-        // `view.visibleRegions` rebuilds a fresh array of fresh objects on every
-        // pan and zoom frame, and the junction merge below reads two fields of
-        // it: which displayed regions are on screen, and what each is called.
-        // Both change only when a region enters or leaves the viewport. Without
-        // the structural comparer MobX sees a new array every frame and the
-        // merge re-runs to reach the same answer — which is the shape the view's
-        // own `contentRightEdgePx` documents, in its scalar form, and
-        // `MultiLinearWiggleDisplay`'s `discoveredRows` in this one.
+        // The regions on screen as a value a pan frame compares equal:
+        // `view.visibleRegions` rebuilds fresh objects every frame, and the
+        // merge only needs which regions are on screen and what each is called.
         const junctionRegions = stableIdentityComputed(() => {
           const view = self.view
           return view.initialized
@@ -2721,23 +2329,11 @@ export default function stateModelFactory(
           /**
            * #getter
            * The junctions each lane draws, merged and filtered, in stacking
-           * order — the half of the sashimi overlay a gesture does NOT owe.
-           *
-           * Split off `sashimiArcSections` because the two halves answer to
-           * different clocks. This one reads loaded data, the region set on
-           * screen and the two junction filters; the projection reads the pan.
-           * Folded together, a gesture re-merged every frame for an answer the
-           * previous frame already had — most of the frame's sashimi cost at
-           * real RNA-seq junction counts, and more of it the more displayed
-           * regions a gene is drawn across
-           * (agent-docs/reference/INTERACTION_PERF.md).
-           *
-           * NOT a lane field, which is where the rest of a lane's per-key data
-           * lives: a lane feeds the LAYOUT, and the region set on screen must
-           * never reach that or the pileup re-lays-out on every pan. The side
-           * assignment is the tier-1 twin that can and does ride the lane
-           * (`sashimiDownKeys`), merged over the LOADED regions for exactly that
-           * reason — see `junctions.ts` on why the two region sets differ.
+           * order — the half of the sashimi overlay a gesture does NOT owe: it
+           * reads loaded data, the on-screen region set and the junction
+           * filters, while `sashimiArcSections` reads the pan. Not a lane
+           * field: a lane feeds the LAYOUT, which the on-screen region set must
+           * never reach.
            */
           get sashimiJunctionSections() {
             const view = self.view
@@ -2765,22 +2361,12 @@ export default function stateModelFactory(
 
           /**
            * #getter
-           * Per-section sashimi arcs, in stacking order. The overlay and the SVG
-           * export both map over this, so it is the single source for sashimi
-           * geometry and neither path can drift; ungrouped is the single-section
-           * case (sticky band below sticky coverage). Empty when sashimi is off.
-           *
-           * A computed on purpose (tier 3 — mirrors `connectorsByGroup`): the
-           * arc math depends on the view's pan/zoom but NOT on scrollTop, so
-           * MobX replays the cache while the user scrolls a grouped track.
-           * Computing it in the overlay's render instead re-ran the O(n^2)
-           * 'auto' side assignment for every section on every scroll frame.
-           *
-           * Empty — the SAME empty, so the overlay's observer stops rather than
-           * re-rendering a list of nulls — when no lane has a junction to draw.
-           * That is the DNA case, which is most tracks: `showSashimiArcs`
-           * defaults on, so every alignments track evaluates this, and one that
-           * merges nothing has nothing to project.
+           * Per-section sashimi arcs in stacking order, which the overlay and
+           * the SVG export both map over; ungrouped is the single-section case.
+           * A computed (tier 3, like `connectorsByGroup`): it depends on
+           * pan/zoom but not `scrollTop`, so scrolling a grouped track replays
+           * the cache. Returns the same empty array when no lane has a
+           * junction, so the overlay's observer stops.
            */
           get sashimiArcSections(): readonly SashimiArcSection[] {
             const sections = this.sashimiJunctionSections
@@ -2791,10 +2377,6 @@ export default function stateModelFactory(
             return computeSashimiArcSections({
               sections,
               bpToScreenX: makeBpToScreenX(view),
-              // Safe past the `view.initialized` gate in
-              // `sashimiJunctionSections`, which is the same thing that makes
-              // the hosts' own `view.width` read safe — and which the empty
-              // result above has already passed through.
               viewWidthPx: view.width,
               ...self.bandHeights,
             })
@@ -2882,16 +2464,11 @@ export default function stateModelFactory(
         /**
          * #getter
          * The read height that makes every uncollapsed group's reads fill the
-         * display without scrolling — the fractional pitch, the 1px floor and the
-         * Normal-pitch cap all being `fittedReadPitch`'s.
-         *
-         * The uncapped row count is taken against a fixed `maxHeight`-row cap,
-         * independent of the current `featureHeight`, so the fit autorun that
-         * writes `featureHeight` can't feed back into this. `fitTargetHeight` is
-         * the slot, NOT the reactive `height` getter — the same anti-cycle rule
-         * `laidOutByGroup` follows. Fit mode only, where the two are equal, but
-         * the slot can never chain back through
-         * height->grownHeight->layout->featureHeight if this ever moves.
+         * display without scrolling (`fittedReadPitch`). The uncapped row count
+         * uses a fixed `maxHeight`-row cap, independent of `featureHeight`, so
+         * the fit autorun that writes `featureHeight` cannot feed back into it.
+         * Reads `fitTargetHeight`, not the reactive `height` getter — the
+         * anti-cycle rule `laidOutByGroup` follows.
          */
         get fittedFeatureHeight() {
           return fittedReadPitch({
@@ -2901,12 +2478,10 @@ export default function stateModelFactory(
           })
         },
 
-        // Only the tag NAME is sent to the worker (to extract per-read
-        // sortTagValues). Wrapping as its own getter means rpcProps only
-        // re-notifies when the tag itself changes — not when sort
-        // position or sort type flips between non-tag flavors.
         /**
          * #getter
+         * Only the tag NAME goes to the worker, so `rpcProps` re-notifies when
+         * the tag changes, not when the sort position or a non-tag type flips.
          */
         get sortTag() {
           return self.sortedBy?.type === 'tag' ? self.sortedBy.tag : undefined
@@ -2926,9 +2501,9 @@ export default function stateModelFactory(
             coverageMinDepth: self.coverageDepthDomain?.[0],
             coverageMaxDepth: self.coverageDepthDomain?.[1],
             coverageScaleType: self.coverageScaleType,
-            // Resolved here rather than in a getter: the raw slot means "derive
-            // from the domain", and this is the one place the resolved domain
-            // is in hand. Every backend then normalizes with this one number.
+            // The raw slot means "derive from the domain"; resolved here, where
+            // the domain is in hand, so every backend normalizes with one
+            // number.
             coverageSymlogConstant: resolveSymlogConstant(
               self.coverageDepthDomain?.[0] ?? 0,
               self.coverageDepthDomain?.[1] ?? 0,
@@ -2950,8 +2525,8 @@ export default function stateModelFactory(
               scrollTop: self.scrollTop,
               canvasHeight: self.height,
             }),
-            // the mixin's resolved canvas box — see `canvasWidthPx` for why
-            // this is not `view.width` and what SVG export does instead
+            // The mixin's resolved canvas box, not `view.width` — see
+            // `canvasWidthPx`.
             canvasWidth: self.canvasWidthPx,
             canvasHeight: self.height,
             colors: palette,
@@ -2978,9 +2553,9 @@ export default function stateModelFactory(
         /**
          * #getter
          * The boxes of the hovered read or chain, for the chrome's highlight.
-         * Deliberately NOT part of `renderState`: the hovered id changes on
-         * nearly every mousemove, and routing it through the canvas would
-         * repaint the whole pileup each move.
+         * Not in `renderState`: the hovered id changes on nearly every
+         * mousemove, and routing it through the canvas would repaint the whole
+         * pileup.
          */
         get hoverInk(): HighlightRect[] {
           const junction = self.hoveredJunction
@@ -3001,9 +2576,9 @@ export default function stateModelFactory(
         /**
          * #getter
          * The boxes of the selected read, or of every read in the selected
-         * chain, for the chrome's highlight — the same walk as `hoverInk`, so
-         * a click repaints the guide's divs and not the canvas, and the box
-         * is not in the SVG export, as no display's selection is.
+         * chain — the same walk as `hoverInk`, so a click repaints the guide's
+         * divs, not the canvas. Not in the SVG export, as no display's
+         * selection is.
          */
         get selectionInk(): HighlightRect[] {
           const { ids, strong } = readsToLight({
@@ -3016,10 +2591,9 @@ export default function stateModelFactory(
 
         /**
          * #method
-         * The boxes the named reads painted, clipped to their sections.
-         * Reading `readIdIndexMap` forces its (per-read) build over the whole
-         * fetched dataset — deferred until something is actually hovered or
-         * selected so it stays off the initial-render path.
+         * The boxes the named reads painted, clipped to their sections. Reading
+         * `readIdIndexMap` builds over the whole fetched dataset, so it waits
+         * until something is hovered or selected.
          */
         readInk(ids: readonly string[], strong: boolean): HighlightRect[] {
           return ids.length > 0
@@ -3045,24 +2619,20 @@ export default function stateModelFactory(
             : []
         },
 
-        // Floored at 1000bp to avoid near-zero division when all pairs are concordant.
         /**
          * #getter
+         * Floored at 1000bp, so an all-concordant set never divides by near
+         * zero.
          */
         get arcsYDomainBp() {
           if (self.readConnections !== 'cloud') {
             return undefined
           }
-          // Maxed across every group and both halves by `computeArcsByGroup`, so
-          // all sections share one Y-domain (the same comparability trick
-          // coverage uses with coverageMaxDepth) and an arc that moved to the
-          // overlay still sizes the axis it is plotted on. Ungrouped has one
-          // group, so this reduces to the prior single-group max.
-          //
-          // The largest INSERT SIZE, not the largest drawn Y — the insert-size
-          // scale in `valueScales` labels its top tick with this number, so a
-          // domain carrying the cloud's ±8% jitter printed a template length no
-          // read has.
+          // Maxed across every group and both halves by `computeArcsByGroup`,
+          // so all sections share one Y-domain. The largest INSERT SIZE, not
+          // the largest drawn Y: the insert-size scale in `valueScales` labels
+          // its top tick with this number, and the cloud's ±8% jitter would
+          // print a template length no read has.
           return Math.max(1000, self.arcsResult.maxFlatArcSpanBp)
         },
 
@@ -3081,12 +2651,10 @@ export default function stateModelFactory(
          * The scales the chrome places the axes from. Coverage rules one band
          * per section, on the right wherever the group label chips take the
          * left edge. While the density tier stands in, its scale counts
-         * features per bin, so it keeps the unit-free guides of `scales.y`
-         * and is captioned with its unit instead of the depth title and
-         * rules. The read cloud's insert-size scale rules the arc band of
-         * every section that reserves one, on the side its axis had in each
-         * mode, captioned TLEN. Each band is projected to screen through the
-         * section's own scroll; the chrome drops the ones off screen.
+         * features per bin and keeps the unit-free guides of `scales.y`. The
+         * read cloud's insert-size scale rules each section's arc band,
+         * captioned TLEN. Each band projects through its section's own scroll;
+         * the chrome drops the off-screen ones.
          */
         get valueScales(): ValueScale[] {
           const { scrollModel: scroll, renderSections } = self
@@ -3135,61 +2703,47 @@ export default function stateModelFactory(
         },
       }))
       .views(self => ({
-        // Fields that invalidate the fetched data, every one worker-bound
-        // (filterBy, colorBy, …). Arc-only fields (arcColor, showInterchrom, showLongRange) are
-        // NOT here — `arcsResult` reads them and they do not require a
-        // refetch. Non-tag sort changes are handled by the main-thread layout,
-        // as is tag coloring (`readTagColors` is baked in `laidOutByGroup` from
-        // the per-read value strings the worker already ships, so no
-        // discovered-value state exists to put here and re-create the
-        // discover→assign→refetch loop with).
-        //
-        // Lives in its own views block, after every field it reads, so it can
-        // read them off `self`: a subclass overriding it captures the base as a
-        // bare function, which would lose a `this`.
         /**
          * #method
+         * Fields that invalidate the fetched data, every one worker-bound.
+         * Arc-only fields (`arcColor`, `showInterchrom`, `showLongRange`) are
+         * NOT here: `arcsResult` reads them and they need no refetch. Non-tag
+         * sort changes and tag coloring (`readTagColors`, baked in
+         * `laidOutByGroup`) stay main-thread. Its own views block, after every
+         * field it reads, so it reads them off `self`: a subclass override
+         * captures the base as a bare function, which would lose a `this`.
          */
         rpcProps() {
           return {
             filterBy: self.readFilter,
-            // Only the part the worker reads, so switching between the schemes
-            // the shader decides on its own (strand, mapq, insert size, pair
-            // orientation …) leaves these props identical and repaints from the
-            // data already in memory instead of refetching the region.
+            // Only the part the worker reads, so switching between
+            // shader-decided schemes leaves these props identical and repaints
+            // without a refetch.
             colorBy: workerColorBy(self.colorBy),
             baseLayer: self.baseLayer,
             // Chain layout reads neither the sort tag nor soft-clipped bases,
-            // so chain mode sends neither: "Show soft clipping" stays a live
-            // checkbox there, and a `sortedBy` carried in from before the mode
-            // was entered would otherwise refetch for data nothing reads. The
-            // facet keeps a chain whole only when there is a facet, so the
-            // mode toggle over ungrouped data leaves these props equal.
+            // so chain mode sends neither and "Show soft clipping" stays live
+            // there.
             sortTag: self.unit === 'chain' ? undefined : self.sortTag,
             facet: workerFacet(self.effectiveFacet, self.unit),
             showSoftClipping:
               self.unit === 'chain' ? false : self.showSoftClipping,
-            // showCoverage is here (not just renderState) because the worker
-            // skips the entire coverage-band pipeline — including the per-bp GPU
-            // depth buffer that overflows the device limit at whole-chromosome
-            // scale — when the band is off. So toggling it refetches. The
-            // pileup's low-frequency fade is unaffected (see runCoveragePipeline).
+            // The worker skips the whole coverage-band pipeline, including the
+            // per-bp GPU depth buffer that overflows the device limit at
+            // chromosome scale, when the band is off.
             showCoverage: self.showCoverage,
-            // `readConnections` is deliberately NOT here: the per-read SA tag
-            // walk it could gate also feeds linked reads and the curved
-            // connectors, which have settings of their own
-            // (`extractFeatureArrays` has the measurements). So connections
-            // stay a draw setting that repaints from data already in memory.
+            // `readConnections` is not here: the SA tag walk it could gate also
+            // feeds linked reads and the curved connectors (see
+            // `extractFeatureArrays`).
           }
         },
 
         /**
          * #getter
-         * Overridable hook (default undefined, "whatever the adapter picks"):
-         * the detail tier a fetch issued now asks a tiered adapter for, off the
-         * settled zoom. `LGVSyntenyDisplay` resolves it for the tiered PIF
-         * adapters. In `zoomFetchArgs` rather than `rpcProps`, for the reason
-         * `perBaseBinBp` below is.
+         * Overridable hook (default undefined: whatever the adapter picks): the
+         * detail tier a fetch issued now asks a tiered adapter for, off the
+         * settled zoom. `LGVSyntenyDisplay` resolves it for tiered PIF
+         * adapters. In `zoomFetchArgs`, not `rpcProps`, like `perBaseBinBp`.
          */
         get lodTier(): LodTier | undefined {
           return undefined
@@ -3209,21 +2763,10 @@ export default function stateModelFactory(
          * #getter
          * Genomic bp one per-base cell stands for in the worker's extract: the
          * foundation's `settledSubPixelBinBp`, and `1` in every color mode that
-         * does not paint a wall of them.
-         *
-         * Per-base quality and per-base lettering emit one entry per aligned
-         * base of EVERY read, so their extract grows with bases x depth where
-         * every other pass grows with events — a force-loaded region at the byte
-         * gate's ceiling builds millions of them in the worker before anything
-         * is packed. Sampling one base per sub-pixel window bounds that by the
-         * VIEWPORT rather than by the region, and costs nothing visible:
-         * `subPixelBinBp` is 1 at every zoom where a base is still a pixel wide,
-         * and above that the samples are half a pixel apart while the cells they
-         * paint floor to a whole one, so the wall stays unbroken.
-         *
-         * Not an `rpcProps` field — see `perBaseBinBp` on the RPC args for why a
-         * zoom-swinging value belongs at the call site, and `zoomFetchArgs`
-         * below for what invalidates on it instead.
+         * does not paint a wall of them. Per-base quality and lettering emit an
+         * entry per aligned base of EVERY read, so sampling one base per
+         * sub-pixel window bounds the extract by the VIEWPORT, not the region.
+         * Not an `rpcProps` field — see `zoomFetchArgs`.
          */
         get perBaseBinBp() {
           return paintsEveryBase(self.baseLayer) ? self.settledSubPixelBinBp : 1
@@ -3231,25 +2774,11 @@ export default function stateModelFactory(
 
         /**
          * #getter
-         * The same bin off the LIVE zoom, and read by `dataSuperseded` alone.
-         *
-         * The debounced bin cannot answer "is the held data sampled finely
-         * enough for what is on screen": it is the value the held data was
-         * fetched under, so for the whole 500ms the debounce takes to catch up
-         * the two agree by construction and a supersession test built on it can
-         * only ever say no. That is half the window `dataSuperseded` exists to
-         * cover — the debounce half, where the picture is already several
-         * octaves coarser than the zoom it is drawn at — and it is the half an
-         * export lands in, since a reader zooms and then reaches for the menu.
-         *
-         * It stays out of `zoomFetchArgs`, which drives the refetch, and the
-         * reason is not that a live key would flip more often — the
-         * quantization means it flips per octave either way, and wiggle keys on
-         * live `bpPerPx` outright (ADR-008). It is that `FetchVisibleRegions`
-         * runs on the leading edge, so a live key makes a fast multi-octave
-         * gesture issue a refetch at each octave it passes through, and this is
-         * the pipeline whose extract is the OOM the per-base bin exists to
-         * bound. Latest-wins cancels the RPC, not worker work already running.
+         * The same bin off the LIVE zoom, read by `dataSuperseded` alone. The
+         * debounced bin is what the held data was fetched under, so it cannot
+         * say whether that data is sampled finely enough. Kept out of
+         * `zoomFetchArgs` because `FetchVisibleRegions` runs on the leading
+         * edge: a live key would refetch at every octave a fast gesture passes.
          */
         get livePerBaseBinBp() {
           const view = self.view
@@ -3288,14 +2817,10 @@ export default function stateModelFactory(
          * #method
          * `MultiRegionDisplayMixin`'s per-region content axis: the zoom-derived
          * worker arguments, which the fetch spreads into its RPC and the
-         * foundation stamps beside every region it loads. Only the per-base
-         * bin and the detail tier move it, so for a read track in every other
-         * color mode a zoom never refetches on its account; a bin or tier flip
-         * refetches the regions on screen and leaves the rest of the held data
-         * alone, which is the whole reason neither is in `rpcProps`.
-         *
-         * Its own views block, after the getters it reads, for the reason
-         * `rpcProps` has one.
+         * foundation stamps beside every region it loads. Only the per-base bin
+         * and the detail tier move it, so a zoom refetches the regions on
+         * screen only when one flips; neither is in `rpcProps`. Its own views
+         * block, after the getters it reads, like `rpcProps`.
          */
         zoomFetchArgs() {
           return { perBaseBinBp: self.perBaseBinBp, lodMode: self.lodTier }
@@ -3304,24 +2829,14 @@ export default function stateModelFactory(
       .views(self => ({
         /**
          * #getter
-         * `MultiRegionDisplayMixin`'s supersession hook: the settled per-base bin
-         * or detail tier has not moved yet, but the live zoom has already left
-         * it, so the clear is inevitable and not yet committed.
-         *
-         * **Only the debounce half is here.** Once the settled bin moves, the
-         * stamp a region was fetched under stops matching `fetchInputs` and
-         * the foundation's own `isCacheValid` term in `dataCurrent` covers it —
-         * this display carried that compare privately until the foundation took
-         * it. What no key can state is the window before the debounce catches
-         * up: the stamp IS the settled bin, so the two agree by construction
-         * while the wall on screen is already several octaves coarser than the
-         * zoom it is drawn at. That is the half an export lands in, since a
-         * reader zooms and then reaches for the menu.
-         *
-         * A value compare, never a second derivation of `zoomFetchArgs`.
-         * Restating the args on the live side would latch this true the day
-         * they grow a field, and a latched supersession is an export that hangs
-         * to `awaitSvgReady`'s timeout rather than one that fails.
+         * `MultiRegionDisplayMixin`'s supersession hook: the settled per-base
+         * bin or detail tier has not moved yet, but the live zoom has left it,
+         * so the clear is inevitable and not yet committed. Only the debounce
+         * half is here: once the settled bin moves, the stamp stops matching
+         * `fetchInputs` and the foundation's `isCacheValid` covers it. A value
+         * compare, never a second derivation of `zoomFetchArgs`: restated args
+         * would latch this true the day they grow a field, and a latched
+         * supersession hangs an export until `awaitSvgReady` times out.
          */
         get dataSuperseded(): boolean {
           return (
@@ -3397,12 +2912,10 @@ export default function stateModelFactory(
 
           /**
            * #action
-           * What a cursor leaving a read or a connector calls. `setHoverState`
-           * refuses writes while the right-click menu pins the hover to its own
-           * read, so the leave has to refuse them too — otherwise crossing an
-           * arc with the menu open wipes the pin the enter side declined to
-           * overwrite. `clearMouseoverState` is the unconditional form, for
-           * `closeContextMenu`, which is releasing that pin.
+           * What a cursor leaving a read or connector calls. `setHoverState`
+           * refuses writes while the right-click menu pins the hover, so the
+           * leave refuses them too. `clearMouseoverState` is the unconditional
+           * form, for `closeContextMenu`.
            */
           clearHoverUnlessPinned() {
             if (!self.contextMenuInfo) {
@@ -3533,22 +3046,17 @@ export default function stateModelFactory(
           setSortedBy(type: string, tag?: string) {
             const view = self.view
             const { centerLineInfo } = view
-            // Every type routed here needs the position. `partitionBySort`
-            // ranks by membership at `sortPos` whatever the type is, and
-            // `sortOverlappingByIndex` only ever orders the reads that ranked
-            // — strand included. There is no sort this action can reach that
-            // lays out sensibly without a center line.
-            // The sort anchors on the column under the center line, so reveal
-            // it either way: the user sees where the pileup is ordered, or what
-            // the warning below asks them to move.
+            // Every sort type here anchors on the position (`partitionBySort`
+            // ranks by membership at `sortPos`), so reveal the center line
+            // either way.
             view.setShowCenterLine(true)
             if (centerLineInfo && !centerLineInfo.oob) {
               setSortSlot({
                 type,
-                // `offset` counts bp INTO the region; the worker compares this
-                // against absolute `readPositions`, and on a reversed region
-                // the base drawn here is mirrored. `basePaintedAt` is the pivot
-                // the context-menu sort already goes through.
+                // `offset` counts bp INTO the region, the worker compares
+                // absolute `readPositions`, and a reversed region mirrors the
+                // base drawn here: go through `basePaintedAt`, as the
+                // context-menu sort does.
                 pos: basePaintedAt(centerLineInfo, centerLineInfo.offset),
                 refName: centerLineInfo.refName,
                 tag,
@@ -3563,9 +3071,8 @@ export default function stateModelFactory(
 
           /**
            * #action
-           * Commit a sort, the one place the `sortedBy` slot is written. It
-           * also resets `layoutOrder`, since the two are one radio group and
-           * exactly one holds state.
+           * Commit a sort, the one place the `sortedBy` slot is written. Also
+           * resets `layoutOrder`: the two are one radio group.
            */
           setSortedByAtPosition: setSortSlot,
 
@@ -3581,16 +3088,12 @@ export default function stateModelFactory(
 
           /**
            * #action
-           * Writes the `facet` object; undefined is ungrouped. A tier-1
-           * refetch setting (in `rpcProps`) — the worker re-partitions the
-           * fetch into N sections. Resets the Y scroll since the stacked
-           * content height changes.
-           *
-           * Doesn't drop the per-lane state: `HiddenGroupsMixin`'s key-space
-           * reset does that for this write and for the ones no action of this
-           * display makes. A grouping named without a domain keeps the
-           * current one while the key space holds, so a re-pick from the menu
-           * is not a reorder; a reorder is this action with a new domain.
+           * Writes the `facet` object; undefined is ungrouped. A tier-1 refetch
+           * setting (in `rpcProps`). Resets the Y scroll since the stacked
+           * content height changes. `HiddenGroupsMixin`'s key-space reset drops
+           * the per-lane state. A grouping named without a domain keeps the
+           * current one while the key space holds, so a re-pick is not a
+           * reorder.
            */
           setFacet(facet?: Facet) {
             setConf(self, 'facet', carryGroupDomain(facet, self.facet) ?? {})
@@ -3599,10 +3102,9 @@ export default function stateModelFactory(
 
           /**
            * #action
-           * Draw each group as one row (overlap depth shows as tint shading)
-           * rather than as its own stack. Clears the per-group height overrides:
-           * an override means "this lane opted out of the collapse", which is
-           * meaningless once every lane is a stack again.
+           * Draw each group as one row, overlap depth shown as tint. Clears the
+           * per-group height overrides: an override opts a lane out of the
+           * collapse, which means nothing once every lane is a stack again.
            */
           setCollapseGroupRows(flag: boolean) {
             setConf(self, 'collapseGroupRows', flag)
@@ -3612,10 +3114,9 @@ export default function stateModelFactory(
 
           /**
            * #action
-           * Expand a fit-to-viewport group back to the full `maxHeight` cap (show
-           * all its reads), or, if it already carries a height override (from
-           * expand or a drag), drop the override to return it to the fit budget.
-           * Expanding makes the stack overflow the viewport, which engages the
+           * Expand a fit-to-viewport group to the full `maxHeight` cap, or, if
+           * it already carries an override, drop it to return the group to the
+           * fit budget. Expanding overflows the viewport, which engages the
            * pileup scroll. Pairs with `groupHeightOverrides`.
            */
           toggleGroupExpanded(key: string) {
@@ -3629,20 +3130,11 @@ export default function stateModelFactory(
           /**
            * #action
            * Drag a stacked group's pileup band taller/shorter by `dy` px. The
-           * override caps how many rows that group lays out and pads the band
-           * where the rows fall short of it, so the drag runs in both directions.
-           * The continuous-accumulation policy (seed once, floor at a row) lives
-           * in the pure `nextGroupHeightOverride`; this action just gathers the
-           * group's live state and commits the result. Pairs with
-           * `groupHeightOverrides` / `toggleGroupExpanded`.
+           * override caps the group's rows and pads the band where the rows
+           * fall short, so the drag runs in both directions. The accumulation
+           * policy lives in the pure `nextGroupHeightOverride`.
            */
           resizeGroupHeight(key: string, dy: number) {
-            // One lookup: a `renderSections` entry is its lane plus its band
-            // geometry, so the drawn height comes off the same object rather
-            // than out of two collections found by the same key. A key that
-            // isn't drawn has no band to resize — the handle only exists per
-            // drawn section — and the two zero-ish fallbacks this replaces let a
-            // shrink-drag bank a one-row override on it.
             const section = self.renderSections.find(s => s.groupKey === key)
             if (!section) {
               return
@@ -3660,11 +3152,9 @@ export default function stateModelFactory(
 
           /**
            * #action
-           * Set the per-read pixel size. The track-sizing mode is a mostly
-           * independent axis (changed via setHeightMode): grow keeps growing at
-           * the new size. Fit is the exception — it derives the size, so a chosen
-           * size would be dormant; picking one drops back to fixed so the pick
-           * takes effect.
+           * Set the per-read pixel size. Grow keeps growing at the new size.
+           * Fit derives the size, so a chosen size would be dormant: picking
+           * one drops back to fixed.
            */
           setFeatureHeight(height?: number) {
             if (self.fitHeightToDisplay) {
@@ -3685,25 +3175,17 @@ export default function stateModelFactory(
           /**
            * #action
            * The two pieces of transient state a uniform fit/grow contradicts
-           * that HeightModeMixin can't know about. The slot write and the scroll
-           * reset are its `setHeightMode`, captured as super above.
+           * that HeightModeMixin can't know about. The slot write and the
+           * scroll reset are its `setHeightMode`, captured as super above.
            */
           setHeightMode(mode: HeightMode) {
             superSetHeightMode(mode)
-            // Per-group height overrides are a drag opting one lane out of a
-            // uniform fit/grow, so they go with the mode flip.
             if (mode !== 'fixed') {
               self.groupMaxHeightOverrides.clear()
             }
-            // Seed the fitted pitch in the SAME transaction as the mode flip, so
-            // the first render already draws reads at the fit height. Otherwise
-            // `fittedHeightPx` stays stale (isFitting false → reads paint at the
-            // configured height) until the AlignmentsFitHeight autorun ticks a
-            // step later, and the display visibly snaps configured->fitted. The
-            // autorun still keeps it fresh as the display resizes / data loads /
-            // groups collapse, and covers cascade-driven fit entry (no
-            // setHeightMode call) — this only removes the one-step lag on the
-            // direct action.
+            // Seed the fitted pitch in the same transaction, so the first
+            // render draws reads at the fit height instead of snapping from the
+            // configured one when the autorun ticks.
             if (mode === 'fit') {
               self.fittedHeightPx = self.fittedFeatureHeight
             }
@@ -3711,9 +3193,9 @@ export default function stateModelFactory(
 
           /**
            * #action
-           * Cache the fitted read height so the `featureHeight`/`featureSpacing`
-           * getters can split it into a body + derived gap. Written only by the
-           * driving autorun.
+           * Caches the fitted read height; `featureHeight`/`featureSpacing`
+           * split it into a body and a derived gap. Written only by the driving
+           * autorun.
            */
           setFittedHeightPx(px: number) {
             self.fittedHeightPx = px
@@ -3745,10 +3227,9 @@ export default function stateModelFactory(
 
           /**
            * #action
+           * Orientation of the below-coverage band, shared by read-connection
+           * arcs and sashimi arcs.
            */
-          // Shared below-coverage band orientation for both read-connection
-          // arcs and sashimi arcs. Single source of truth — there is no
-          // per-feature direction to keep in sync.
           setReadConnectionsDown(down: boolean) {
             setConf(self, 'readConnectionsDown', down)
           },
@@ -3905,9 +3386,8 @@ export default function stateModelFactory(
 
           /**
            * #action
-           * A new unit restacks the whole pileup, so the scroll offset names
-           * nothing after the flip, and the `scrollableHeight` clamp only
-           * catches the half of that where the new stack is shorter.
+           * A new unit restacks the whole pileup, so the scroll resets: the
+           * `scrollableHeight` clamp catches only a shorter stack.
            */
           setUnit(unit: AlignmentsUnit) {
             const prev = self.unit
@@ -3917,11 +3397,10 @@ export default function stateModelFactory(
             }
             self.scrollTop = 0
             clearMouseoverState()
-            // The toggle swaps the plain fill and the SV-signal fill, and
-            // touches no other colour: a first-of-pair strand picked for an
-            // RNA-seq pileup survives a trip through pairs. A plain fill under
-            // a per-base layer is the backdrop its marks read against, so
-            // neither direction swaps there.
+            // The toggle swaps the plain fill and the SV-signal fill only: a
+            // first-of-pair strand picked for RNA-seq survives a trip through
+            // pairs. Under a per-base layer the plain fill is the backdrop its
+            // marks read against, so neither direction swaps.
             const [from, to] =
               unit === 'read'
                 ? (['insertSizeAndOrientation', 'normal'] as const)
@@ -3934,16 +3413,14 @@ export default function stateModelFactory(
               )
             }
             // No refetch: chain identity is joined on the main thread
-            // (`chainAttachment`), so the layout tier recomputes through MobX.
-            // A facet in effect is the exception, since it changes the unit
-            // the worker keeps whole (`workerFacet`).
+            // (`chainAttachment`). A facet in effect refetches, since it
+            // changes the unit the worker keeps whole (`workerFacet`).
           },
 
           /**
            * #action
            * Toggle the paired-read connection overlay. A main-thread tier-2/4
-           * setting (read by the layout and `renderState`), not in
-           * `rpcProps` — toggling it never refetches.
+           * setting, not in `rpcProps`: toggling never refetches.
            */
           setShowBezierConnections(flag: boolean) {
             setConf(self, 'showBezierConnections', flag)
@@ -3951,13 +3428,11 @@ export default function stateModelFactory(
 
           /**
            * #action
-           * The whole hover state in one action, so no branch of the pileup's
-           * mousemove handler can leave a field stale. Refused while the
-           * right-click menu is open: `openContextMenu` pins the hover to the
-           * read the menu acts on, and a frame queued before the click would
-           * otherwise land on top of that pin. `highlightedChainReadIds` is
-           * a chain's reads in chain mode, and outside it the two ends of a
-           * hovered connector.
+           * The whole hover state in one action, so no branch of the mousemove
+           * handler leaves a field stale. Refused while the right-click menu is
+           * open, since `openContextMenu` pins the hover to the read the menu
+           * acts on. `highlightedChainReadIds` is a chain's reads in chain
+           * mode, and outside it the two ends of a hovered connector.
            */
           setHoverState(state: {
             overCigarItem: boolean
@@ -3965,8 +3440,7 @@ export default function stateModelFactory(
             mouseoverExtraInformation: TooltipPayload | undefined
             hoverCoverageBand?: HoverCoverageBand
             // Optional and ALWAYS assigned, like `hoverCoverageBand`: a branch
-            // with no arc to name clears the highlight by not mentioning one,
-            // which is the property this single action exists to give.
+            // with no arc clears the highlight by not mentioning one.
             hoveredArcHighlight?: ArcHighlight
             hoveredJunction?: LaneJunction
             highlightedChainReadIds: string[]
@@ -3980,11 +3454,9 @@ export default function stateModelFactory(
             self.hoverCoverageBand = state.hoverCoverageBand
             self.hoveredArcHighlight = state.hoveredArcHighlight
             self.hoveredJunction = state.hoveredJunction
-            // Write only on a real change. Assigning an equal array still
-            // replaces the MST node, which invalidates `hoverInk` — an
-            // O(reads) rebuild — so dragging the cursor along one chain would
-            // recompute every box on every mousemove. MobX already skips the
-            // no-op writes above, since those are primitives.
+            // Write only on a real change: assigning an equal array replaces
+            // the MST node and invalidates `hoverInk`, an O(reads) rebuild per
+            // mousemove along a chain.
             if (
               !sameStrings(
                 self.highlightedChainReadIds,
@@ -4005,11 +3477,8 @@ export default function stateModelFactory(
           /**
            * #action
            * Close the right-click menu and release the hover it pinned.
-           * `openContextMenu` boxes the read the menu acts on and
            * `setHoverState` refuses writes while the menu is up, so this is the
-           * only place the pin comes off — without it the box outlives the menu
-           * until the cursor next crosses the pileup, which it need not do at
-           * all when the item clicked opened a drawer widget.
+           * only place the pin comes off.
            */
           closeContextMenu() {
             superCloseContextMenu()
@@ -4033,9 +3502,9 @@ export default function stateModelFactory(
          */
         startRenderingBackend(backend: AlignmentsRenderingBackend) {
           installUpload(self, backend, {
-            // A fresh object every run, so every run reaches the renderer: it
-            // holds the memo of what it last sent (GPU_DISPLAY_LIFECYCLE.md, the
-            // whole-map sync), and this layer's diff has nothing to add to it.
+            // A fresh object every run, so every run reaches the renderer,
+            // which holds the memo of what it last sent
+            // (GPU_DISPLAY_LIFECYCLE.md, the whole-map sync).
             cells: () =>
               oneCell('sources', {
                 sections: self.sourceSections,
@@ -4043,12 +3512,9 @@ export default function stateModelFactory(
               }),
             // `hasRegionData` is the per-REGION store, not a group's laid-out
             // map: a grouped fetch over a region with no reads partitions to
-            // zero groups, so the first group's map is empty even though the
-            // fetch is done — gating on that left the loading overlay up
-            // forever (and hung any test waiting on first paint).
-            //
-            // With the band standing in nothing reaches the store, so first
-            // paint waits on the band's own read instead.
+            // zero groups, and gating on the map would leave the loading
+            // overlay up forever. With the band standing in, first paint waits
+            // on the band's own read.
             render: b =>
               (
                 self.coarseTierStandsIn
@@ -4062,23 +3528,11 @@ export default function stateModelFactory(
       }))
       .actions(self => {
         const superOpenContextMenu = self.openContextMenu
-        // The one place a feature is resolved from an id. Menu items are offered
-        // from the id alone (which the hit test knows synchronously) and land
-        // here on click; opening the menu pre-warms `contextMenuFeature` through
-        // the same call, so a click is normally already resolved.
-        //
-        // `onMiss` is passed at every call because an empty result means
-        // different things to the two callers: the id came from the hit test, so
-        // nothing coming back means the lookup itself failed (data evicted under
-        // it, or a tier whose ids don't compare). A user-initiated item must say
-        // so — silently doing nothing is the worst answer to a click — while the
-        // speculative pre-warm stays quiet, since the user asked for nothing and
-        // the menu just doesn't grow its feature items.
-        //
-        // This is `withFeatureDetails` bound to this display's own fetch: what
-        // the pileup adds is only the read's region, resolved off the read
-        // itself rather than a displayed-region index (see fetchFeatureDetails).
-        // The three outcomes and what each does are the shared function's.
+        // The one place a feature is resolved from an id: menu items are
+        // offered from the id alone and land here on click, and opening the
+        // menu pre-warms `contextMenuFeature` through the same call. `onMiss`
+        // is passed at every call because a user-initiated item must say the
+        // lookup failed, while the speculative pre-warm stays quiet.
         async function withFeature(
           featureId: string,
           onFeat: (feat: Feature) => void,
@@ -4091,9 +3545,6 @@ export default function stateModelFactory(
             onMiss,
           )
         }
-        // The default `withFeatureDetails` would apply anyway; named here
-        // because the pre-warm below passes the OTHER answer, and a bare
-        // omission would not read as a decision.
         function notifyMiss() {
           notifyFeatureDetailsMiss(self)
         }
@@ -4125,39 +3576,29 @@ export default function stateModelFactory(
           /**
            * #action
            * Open the right-click menu over a hit. The block, the clicked column
-           * and the mark that was hit arrive as one `ContextMenuHit`, so a
-           * consumer cannot read a block without its hit (a split state that
-           * made position sorts do nothing). The read feature is reset now and,
-           * when the hit carries one, populated by an async RPC fetch, so
-           * opening the menu for a hit and its read is a single call and a
-           * repositioned menu can't inherit the prior read's items.
-           *
-           * Opening also clears the hover. The tooltip closes, but the
-           * highlight box stays as a pin on the menu's read, which requires
-           * clearing and then re-drawing the box in that order; this action
-           * does both so call sites don't have to.
+           * and the mark hit arrive as one `ContextMenuHit`, so a consumer
+           * cannot read a block without its hit. Resets the read feature and,
+           * when the hit carries one, fills it by async RPC, so a repositioned
+           * menu cannot inherit the prior read's items. Also clears the hover,
+           * then re-pins the highlight box on the menu's read, in that order.
            */
           openContextMenu(info: AlignmentsContextMenuInfo) {
             self.clearMouseoverState()
             superOpenContextMenu(info)
             self.contextMenuFeature = undefined
             // Pin the hover to the menu's target read so its highlight box
-            // (`hoverInk`, keyed on featureIdUnderMouse) stays on while the
-            // menu is open — the clear above dropped the tooltip, so this
-            // re-boxes just the read the menu acts on. Undefined for
-            // coverage/indicator hits, which have no read to box.
+            // (`hoverInk`) stays on while the menu is open; undefined for
+            // coverage/indicator hits.
             self.featureIdUnderMouse = info.featureId
             const { featureId } = info
             if (featureId !== undefined) {
               void withFeature(
                 featureId,
                 feat => {
-                  // Only if the menu is still open over the read this fetch was
-                  // for. A second right-click repositions the menu without
-                  // closing it, and two lookups are then in flight: if the first
-                  // resolves last it would otherwise publish the previous read's
-                  // feature under the current read's menu, and the items built
-                  // from it would act on the wrong read.
+                  // Only if the menu is still open over this read: a second
+                  // right-click repositions the menu without closing it, and a
+                  // first lookup resolving last would publish the previous
+                  // read's feature.
                   if (self.contextMenuFeatureId === featureId) {
                     self.setContextMenuFeature(feat)
                   }
@@ -4188,8 +3629,8 @@ export default function stateModelFactory(
          * #getter
          * Opt into RegionTooLargeMixin's byte gate: `fetchNeeded` passes
          * `resolvedByteLimit()` to `RenderAlignmentData`, whose first await is
-         * the index estimate — so an over-budget region is refused before a
-         * single read is downloaded.
+         * the index estimate, so an over-budget region is refused before a read
+         * downloads.
          */
         get gateEnabled() {
           return true
@@ -4225,9 +3666,6 @@ export default function stateModelFactory(
               },
             }),
             ...editPlotMenuItems(self),
-            // The gate and the copy naming the switch are one value
-            // (`sortReadsBlockedReason`), so this cannot grey the menu out
-            // without saying what brings it back.
             getSortByMenuItem(self, {
               disabledHelpText: self.sortReadsBlockedReason,
             }),
@@ -4255,7 +3693,7 @@ export default function stateModelFactory(
          */
         contextMenuItems() {
           // Same gate as the track menu's "Sort by...": these write the same
-          // slot, so they can't be offered where it is ignored.
+          // slot.
           return getContextMenuItems(self, { sort: self.canSortReads })
         },
       }))
@@ -4270,35 +3708,21 @@ export default function stateModelFactory(
 
         /**
          * #action
-         * Fills `BaseDisplay`'s hover-clear hook, which the fetch
-         * foundation's reaction calls on every viewport change.
-         *
-         * The pileup is a sticky canvas, so a pan, a zoom or an internal
-         * scroll under a stationary cursor fires no mousemove and no
-         * mouseleave, and the highlight box and tooltip go on naming the read
-         * that *was* there.
+         * Fills `BaseDisplay`'s hover-clear hook, which the fetch foundation's
+         * reaction calls on every viewport change. A pan, zoom or internal
+         * scroll under a stationary cursor fires no mousemove or mouseleave, so
+         * the highlight and tooltip would keep naming the read that was there.
          */
         clearHoveredFeature() {
           self.clearMouseoverState()
         },
 
         afterAttach() {
-          // Keep the fitted-height cache in sync while in "fit to display height"
-          // mode — re-fits as the display resizes, data loads, or groups collapse.
-          // `fittedFeatureHeight` ignores featureHeight, so caching it (which the
-          // featureHeight getter then reads) can't loop. In its own trailing
-          // actions block so `self.setFittedHeightPx` (an earlier block) is typed.
-          //
-          // Why this stays an autorun (unlike grow mode, which is a pure reactive
-          // `height` getter): fit's output is `featureHeight`, an EARLY getter that
-          // `laidOutByGroup`/`sections` depend on, but its fitted value is computed
-          // from the LATE `fittedFeatureHeight` (which reads `self.height`, the
-          // group layout, and the coverage band — all defined after featureHeight).
-          // That forward dependency can't be a direct getter read without a big
-          // model reorder; the volatile `fittedHeightPx` bridges it, and this
-          // autorun fills it. Grow has no such gap — its `height` output is
-          // consumed late — so it needed no bridge. Don't "simplify" this to a
-          // getter.
+          // Fills `fittedHeightPx` while fitting. An autorun, not a getter:
+          // `fittedFeatureHeight` reads late layout getters that the EARLY
+          // `featureHeight` cannot reference, and the volatile bridges that
+          // ordering. `fittedFeatureHeight` ignores `featureHeight`, so the
+          // write cannot loop.
           addDisposer(
             self,
             autorun(
@@ -4311,12 +3735,9 @@ export default function stateModelFactory(
             ),
           )
 
-          // Scroll back to the top on a real region-list change (chromosome
-          // navigation), not on the same-region refetch a zoom or a settings
-          // write issues — the old display-data clear used to zero the scroll
-          // for both, so changing a filter or a tag color yanked the reader off
-          // the row they were reading. The canvas displays split it the same way
-          // and for the same reason.
+          // Scroll to the top on a real region-list change (chromosome
+          // navigation), not on the same-region refetch a zoom or settings
+          // write issues.
           onDisplayedRegionsChange(
             self,
             () => {
@@ -4329,11 +3750,8 @@ export default function stateModelFactory(
   )
 }
 
-// Re-exported off this module, which the `LinearAlignmentsDisplay/stateModel`
-// subpath names, because LGVSyntenyDisplay composes this factory and its
-// emitted `.d.ts` has to name every type the inferred model mentions. Without
-// this the ESM build reports TS2883 against the source path, which no package
-// can import.
+// Re-exported so LGVSyntenyDisplay's emitted .d.ts can name every type the
+// inferred model mentions; without it the ESM build reports TS2883.
 export type { ArcCategory } from '../shaders/palettes.ts'
 
 export type LinearAlignmentsDisplayStateModel = ReturnType<
