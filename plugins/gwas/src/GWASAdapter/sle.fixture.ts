@@ -24,7 +24,7 @@ const records = rest.flatMap(line => parsePlinkLDLine(line, header) ?? [])
 
 // test_data/gwas/SLE.ld read whole, in the part PlinkLDAdapter plays, which
 // lives in plugins/variants out of this plugin's reach
-class SleLDAdapter extends BaseAdapter {
+export class SleLDAdapter extends BaseAdapter {
   async getLDRecords(query: { refName: string; start: number; end: number }) {
     return records.filter(
       (r: PlinkLDRecord) =>

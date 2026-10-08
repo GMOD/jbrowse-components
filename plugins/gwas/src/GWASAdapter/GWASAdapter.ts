@@ -9,7 +9,7 @@ import { INDEX_SNP_MISSING, ldOf, ldToIndex } from './ldJoin.ts'
 import { getScoreTransform } from './scoreTransforms.ts'
 
 import type { GWASAdapterConfig } from './configSchema.ts'
-import type { GWASFetchOptions, LdJoin } from './ldJoin.ts'
+import type { GWASFetchOptions, LdJoin, LdToIndex } from './ldJoin.ts'
 import type { Feature, Region } from '@jbrowse/core/util'
 
 export default class GWASAdapter extends BedTabixAdapter {
@@ -25,7 +25,15 @@ export default class GWASAdapter extends BedTabixAdapter {
     )
   }
 
+  // The window is the index's, not the fetched region's, so every fetch
+  // under one index reads the same rows.
+  private ldLookup: { key: string; lookup: LdToIndex } | undefined
+
   private async ldToIndex(join: LdJoin, opts: GWASFetchOptions) {
+    const key = `${join.refName}:${join.start}`
+    if (this.ldLookup?.key === key) {
+      return this.ldLookup.lookup
+    }
     const config: Record<string, unknown> | undefined =
       readConfObject(this.config, 'ldAdapter') ?? undefined
     if (!config || !this.getSubAdapter) {
@@ -37,9 +45,13 @@ export default class GWASAdapter extends BedTabixAdapter {
         `Adapter type "${config.type}" cannot supply LD records for coloring`,
       )
     }
-    return updateStatus('Downloading LD data', opts.statusCallback, () =>
-      ldToIndex(dataAdapter, join, opts),
+    const lookup = await updateStatus(
+      'Downloading LD data',
+      opts.statusCallback,
+      () => ldToIndex(dataAdapter, join, opts),
     )
+    this.ldLookup = { key, lookup }
+    return lookup
   }
 
   private rewritten(f: Feature, ld?: ReturnType<typeof ldOf>) {

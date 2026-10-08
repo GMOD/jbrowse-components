@@ -10,6 +10,7 @@ import {
   SLE_ADAPTER,
   SLE_INDEX_START,
   SLE_REGION,
+  SleLDAdapter,
   slePluginManager,
 } from './sle.fixture.ts'
 
@@ -116,5 +117,28 @@ describe('an LD join asked for through the fetch options', () => {
       await noticesOf({ start: SLE_INDEX_START + 1, refName: '2' }),
     ).toEqual([])
     warn.mockRestore()
+  })
+
+  // The window follows the index, so a pan under one index reads the same
+  // rows of the LD file.
+  it('reads the LD file once per index SNP', async () => {
+    const read = jest.spyOn(SleLDAdapter.prototype, 'getLDRecords')
+    const dataAdapter = await getFeatureAdapterOrThrow({
+      pluginManager: slePluginManager(),
+      sessionId: 's',
+      adapterConfig: SLE_ADAPTER,
+    })
+    const fetch = (start: number, region = SLE_REGION) =>
+      dataAdapter.getFeaturesArray(region, { ld: { start, refName: '2' } })
+    await fetch(SLE_INDEX_START)
+    const panned = await fetch(SLE_INDEX_START, {
+      ...SLE_REGION,
+      start: SLE_REGION.start + 100_000,
+    })
+    expect(read).toHaveBeenCalledTimes(1)
+    expect(panned.some(f => f.get('ld_role') === 'partner')).toBe(true)
+    await fetch(SLE_INDEX_START + 1)
+    expect(read).toHaveBeenCalledTimes(2)
+    read.mockRestore()
   })
 })
