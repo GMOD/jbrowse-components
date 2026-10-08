@@ -98,7 +98,43 @@ afterEach(() => {
   Reflect.deleteProperty(window, 'matchMedia')
 })
 
-test('no mode follows prefers-color-scheme, and its changes', () => {
+function declareColorScheme(value: string) {
+  document.documentElement.style.setProperty('color-scheme', value)
+}
+
+afterEach(() => {
+  document.documentElement.style.removeProperty('color-scheme')
+})
+
+test('a page declaring no scheme stays light under a dark OS', () => {
+  installMatchMedia(true)
+  const { session, modes } = fakeSession()
+  render(
+    <SessionPaletteProvider session={session}>
+      <ReadsPalette />
+    </SessionPaletteProvider>,
+  )
+  expect(modes).toEqual(['light'])
+})
+
+test('the color-scheme meta tag stands in for an undeclared property', () => {
+  installMatchMedia(true)
+  const meta = document.createElement('meta')
+  meta.name = 'color-scheme'
+  meta.content = 'light dark'
+  document.head.append(meta)
+  const { session, modes } = fakeSession()
+  render(
+    <SessionPaletteProvider session={session}>
+      <ReadsPalette />
+    </SessionPaletteProvider>,
+  )
+  meta.remove()
+  expect(modes).toEqual(['dark'])
+})
+
+test('a page declaring both schemes follows prefers-color-scheme, and its changes', () => {
+  declareColorScheme('light dark')
   const media = installMatchMedia(true)
   const { session, modes } = fakeSession()
   render(
@@ -119,8 +155,7 @@ test('no mode follows prefers-color-scheme, and its changes', () => {
 test("no mode follows the page's declared color-scheme over the OS preference", async () => {
   installMatchMedia(false)
   const { session, modes } = fakeSession()
-  const root = document.documentElement
-  root.style.setProperty('color-scheme', 'dark')
+  declareColorScheme('dark')
   render(
     <SessionPaletteProvider session={session}>
       <ReadsPalette />
@@ -129,11 +164,10 @@ test("no mode follows the page's declared color-scheme over the OS preference", 
   expect(modes).toEqual(['dark'])
 
   await act(async () => {
-    root.style.setProperty('color-scheme', 'light dark')
+    declareColorScheme('light dark')
     await Promise.resolve()
   })
   expect(modes).toEqual(['dark', 'light'])
-  root.style.removeProperty('color-scheme')
 })
 
 test('an explicit mode ignores the media query and subscribes to nothing', () => {

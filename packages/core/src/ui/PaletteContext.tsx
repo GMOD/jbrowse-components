@@ -97,19 +97,37 @@ function subscribeToColorScheme(onChange: () => void) {
   }
 }
 
-// The page's declared `color-scheme`, as the browser resolves it for form
-// controls: a page that declares only one of light or dark gets that one, and
-// one that declares both, or neither, gets the OS preference.
-function readColorScheme(): 'light' | 'dark' {
-  const declared = getComputedStyle(document.documentElement)
-    .getPropertyValue('color-scheme')
+function schemesNamedIn(value: string) {
+  return value
     .split(/\s+/)
     .filter((word): word is 'light' | 'dark' =>
       ['light', 'dark'].includes(word),
     )
-  return declared.length === 1
-    ? declared[0]!
-    : prefersDarkColorScheme()
+}
+
+// The page's `color-scheme`, as the browser resolves it for form controls and
+// the canvas: a page that names one of light or dark gets that one, a page that
+// names both gets the OS preference, and a page that names neither is light
+// whatever the OS says. The `<meta name="color-scheme">` tag stands in where no
+// stylesheet sets the property, since the computed value does not reflect it.
+function readColorScheme(): 'light' | 'dark' {
+  const computed = schemesNamedIn(
+    getComputedStyle(document.documentElement).getPropertyValue('color-scheme'),
+  )
+  const declared = new Set(
+    computed.length > 0
+      ? computed
+      : schemesNamedIn(
+          document
+            .querySelector('meta[name="color-scheme"]')
+            ?.getAttribute('content') ?? '',
+        ),
+  )
+  return declared.size === 2
+    ? prefersDarkColorScheme()
+      ? 'dark'
+      : 'light'
+    : declared.has('dark')
       ? 'dark'
       : 'light'
 }
@@ -139,9 +157,11 @@ export interface ThemeModeSession {
  * follow its dark mode mounts {@link SessionPaletteProvider}, which is this
  * hook and the provider in one.
  *
- * Pass no mode and JBrowse follows the page: its declared CSS `color-scheme`
- * when that names one of light or dark, the OS preference otherwise, tracking
- * both. A host whose mode lives somewhere a stylesheet cannot see passes it.
+ * Pass no mode and JBrowse follows the page's CSS `color-scheme`: light or dark
+ * where the page names one, the OS preference where it names both, and light
+ * where it names neither, so a page with no dark styling never gets a dark
+ * JBrowse from a dark OS. A host whose mode lives somewhere a stylesheet cannot
+ * see passes it.
  *
  * **Both halves are load-bearing, which is why the pairing is published as a
  * component.** The palette is what *React* draws with; the config `theme` slot
@@ -179,8 +199,8 @@ export function useSessionPalette(
  *
  * `mode` is optional. Left out, JBrowse follows the page's declared
  * `color-scheme` — so a host whose dark-mode toggle sets it, as most do, mounts
- * this with a session and nothing else — and the OS preference where the page
- * declares none.
+ * this with a session and nothing else. A page that declares `light dark`
+ * follows the OS, and a page that declares nothing stays light.
  *
  * A component rather than a documented pair of calls because the pair has a
  * half that can be left out with nothing to show for it. `PaletteProvider` is
