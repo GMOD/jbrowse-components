@@ -22,7 +22,8 @@
   "main": "src/index.ts",
   "exports": {
     ".": "./src/index.ts",
-    "./CoverageTooltipTables": "./src/CoverageTooltipTables.tsx"
+    "./CoverageTooltipTables": "./src/CoverageTooltipTables.tsx",
+    "./variantSortColumn": "./src/variantSortColumn.ts"
   },
   "files": [
     "esm"
@@ -53,7 +54,8 @@
     "types": "esm/index.d.ts",
     "exports": {
       ".": "./esm/index.js",
-      "./CoverageTooltipTables": "./esm/CoverageTooltipTables.js"
+      "./CoverageTooltipTables": "./esm/CoverageTooltipTables.js",
+      "./variantSortColumn": "./esm/variantSortColumn.js"
     }
   },
   "sideEffects": false

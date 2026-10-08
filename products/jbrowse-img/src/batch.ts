@@ -1,5 +1,5 @@
 import type { Entry } from './parseArgv.ts'
-import type { VariantSortColumn } from '@jbrowse/plugin-alignments/variantSortColumn'
+import type { VariantSortColumn } from '@jbrowse/alignments-core/variantSortColumn'
 
 // Batch rendering: one image per record of a callset, so reviewing it is a
 // directory of pictures rather than N trips through the browser. BEDPE is the

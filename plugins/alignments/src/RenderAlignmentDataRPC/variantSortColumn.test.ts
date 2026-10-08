@@ -1,11 +1,12 @@
-import { computeSortedLayout } from '../RenderAlignmentDataRPC/sortLayout.ts'
-import { baseWorkerPileupData } from '../RenderAlignmentDataRPC/testPileupData.ts'
-import { GAP_DELETION } from '../shaders/slang/gap.consts.generated.ts'
-import { INTERBASE_INSERTION } from './types.ts'
-import { variantSortColumn } from './variantSortColumn.ts'
+import { variantSortColumn } from '@jbrowse/alignments-core'
 
-import type { WorkerPileupData } from '../RenderAlignmentDataRPC/types.ts'
-import type { SortedBy } from './types.ts'
+import { GAP_DELETION } from '../shaders/slang/gap.consts.generated.ts'
+import { INTERBASE_INSERTION } from '../shared/types.ts'
+import { computeSortedLayout } from './sortLayout.ts'
+import { baseWorkerPileupData } from './testPileupData.ts'
+
+import type { SortedBy } from '../shared/types.ts'
+import type { WorkerPileupData } from './types.ts'
 
 test.each([
   ['SNV', 'G', ['A'], { type: 'basePair', pos: 100 }],

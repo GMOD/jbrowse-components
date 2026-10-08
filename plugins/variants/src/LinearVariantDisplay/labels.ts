@@ -5,3 +5,5 @@
 // alignments display's item and the dialog's own title, since all three open
 // the same dialog.
 export const SPLIT_VIEW_MENU_LABEL = 'Open breakpoint split view'
+
+export const SORT_READS_MENU_LABEL = 'Sort reads at this variant'

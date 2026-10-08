@@ -21,6 +21,7 @@ import { VARIANT_FILTER_EXAMPLES } from '../shared/variantFilterExamples.ts'
 import { variantFilterFields } from '../shared/variantFilterFields.ts'
 import { breakendMenuItems } from './breakendMenu.ts'
 import { presetColorOf } from './presetColor.ts'
+import { sortReadsMenuItems } from './sortReadsMenu.ts'
 
 import type { LinearVariantDisplayConfigModel } from './configSchema.ts'
 import type { MenuItem } from '@jbrowse/core/ui'
@@ -124,10 +125,15 @@ export default function stateModelFactory(
         /**
          * #method
          * The shared feature menu plus, on a breakend record, the row that
-         * opens the split view for it.
+         * opens the split view for it, and beside a pileup the row that sorts
+         * its reads at the variant.
          */
         contextMenuItems(): MenuItem[] {
-          return [...superContextMenuItems(), ...breakendMenuItems(self)]
+          return [
+            ...superContextMenuItems(),
+            ...breakendMenuItems(self),
+            ...sortReadsMenuItems(self),
+          ]
         },
       }
     })

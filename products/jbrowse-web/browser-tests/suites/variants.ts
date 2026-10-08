@@ -433,6 +433,94 @@ const suite: TestSuite = {
         )
       },
     },
+    {
+      // volvox_filtered_vcf's first record is T>C at ctgA:277, and the BAM
+      // names the contig as the view does, so the sort is at 0-based 276
+      name: 'right-clicking a variant sorts the reads beside it at that variant',
+      fn: async page => {
+        await navigateWithSessionSpec(page, {
+          views: [
+            {
+              type: 'LinearGenomeView',
+              assembly: 'volvox',
+              loc: 'ctgA:227-327',
+              tracks: ['volvox_filtered_vcf', 'volvox_bam'],
+            },
+          ],
+        })
+        await waitForDataLoaded(page)
+        const selector = '[data-display-id^="volvox_filtered_vcf"]'
+        await page.waitForSelector(selector)
+        const box = await boxOf(page, selector)
+        const x = await page.evaluate(() => {
+          const view = (
+            window as unknown as {
+              JBrowseSession: {
+                views: {
+                  bpToPx: (arg: object) => { offsetPx: number }
+                  offsetPx: number
+                }[]
+              }
+            }
+          ).JBrowseSession.views[0]!
+          return (
+            view.bpToPx({ refName: 'ctgA', coord: 276.5 }).offsetPx -
+            view.offsetPx
+          )
+        })
+        let opened = false
+        for (const dy of [6, 10, 14, 18]) {
+          await page.mouse.click(box.x + x, box.y + dy, { button: 'right' })
+          await delay(800)
+          opened = await page.evaluate(() =>
+            document.body.textContent.includes('Sort reads at this variant'),
+          )
+          if (opened) {
+            break
+          }
+          await page.keyboard.press('Escape')
+          await delay(300)
+        }
+        assert(
+          opened,
+          'the variant menu offered no "Sort reads at this variant"',
+        )
+        await page.evaluate(() => {
+          const item = [...document.querySelectorAll('[role="menuitem"]')].find(
+            m => m.textContent === 'Sort reads at this variant',
+          ) as HTMLElement
+          item.click()
+        })
+        await page.waitForFunction(
+          () => {
+            const { views } = (
+              window as unknown as {
+                JBrowseSession: {
+                  views: {
+                    tracks: {
+                      displays: {
+                        sortedBy?: {
+                          type: string
+                          pos: number
+                          refName: string
+                        }
+                      }[]
+                    }[]
+                  }[]
+                }
+              }
+            ).JBrowseSession
+            const sortedBy = views[0]!.tracks[1]!.displays[0]!.sortedBy
+            return (
+              sortedBy?.type === 'basePair' &&
+              sortedBy.pos === 276 &&
+              sortedBy.refName === 'ctgA'
+            )
+          },
+          { timeout: 15000 },
+        )
+      },
+    },
   ],
 }
 

@@ -19,8 +19,7 @@
   "main": "src/index.ts",
   "exports": {
     ".": "./src/index.ts",
-    "./LinearAlignmentsDisplay/stateModel": "./src/LinearAlignmentsDisplay/model.ts",
-    "./variantSortColumn": "./src/shared/variantSortColumn.ts"
+    "./LinearAlignmentsDisplay/stateModel": "./src/LinearAlignmentsDisplay/model.ts"
   },
   "files": [
     "esm"
@@ -70,8 +69,7 @@
     "types": "esm/index.d.ts",
     "exports": {
       ".": "./esm/index.js",
-      "./LinearAlignmentsDisplay/stateModel": "./esm/LinearAlignmentsDisplay/model.js",
-      "./variantSortColumn": "./esm/shared/variantSortColumn.js"
+      "./LinearAlignmentsDisplay/stateModel": "./esm/LinearAlignmentsDisplay/model.js"
     }
   },
   "sideEffects": false

@@ -20,6 +20,7 @@ import {
 import { trackMatches, trackName } from './trackFields.ts'
 
 import type { AssertNever, AssertTrue, Covers, Track } from './types.ts'
+import type { VariantSortColumn } from '@jbrowse/alignments-core/variantSortColumn'
 import type { HeightMode } from '@jbrowse/display-kit/heightMode'
 import type {
   COMPACTNESS_PRESETS,
@@ -27,7 +28,6 @@ import type {
   LinearAlignmentsDisplayModel,
   ReadCategoryKey,
 } from '@jbrowse/plugin-alignments'
-import type { VariantSortColumn } from '@jbrowse/plugin-alignments/variantSortColumn'
 import type { LinearBasicDisplayModel } from '@jbrowse/plugin-canvas'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 import type {

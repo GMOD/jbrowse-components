@@ -1,8 +1,8 @@
 import { parseBreakend } from '@gmod/vcf'
-import { variantSortColumn } from '@jbrowse/plugin-alignments/variantSortColumn'
+import { variantSortColumn } from '@jbrowse/alignments-core/variantSortColumn'
 
 import type { BatchRecord, Locus } from './batch.ts'
-import type { VariantSortColumn } from '@jbrowse/plugin-alignments/variantSortColumn'
+import type { VariantSortColumn } from '@jbrowse/alignments-core/variantSortColumn'
 
 // A VCF's records, for `batch` to render. The ALT bracket grammar is
 // `@gmod/vcf`'s `parseBreakend`: a regex over the bracket drops the 28 of 66

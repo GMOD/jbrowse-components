@@ -1,7 +1,7 @@
 import type { ViewMode } from './modes.ts'
 import type { themeModes, themeNames } from './options.ts'
 import type { Entry } from './parseArgv.ts'
-import type { VariantSortColumn } from '@jbrowse/plugin-alignments/variantSortColumn'
+import type { VariantSortColumn } from '@jbrowse/alignments-core/variantSortColumn'
 import type { CigarMode } from '@jbrowse/plugin-linear-comparative-view'
 import type { TrackLabelMode } from '@jbrowse/plugin-linear-genome-view'
 

@@ -2482,6 +2482,9 @@ importers:
       '@gmod/vcf':
         specifier: ^7.2.0
         version: 7.2.0
+      '@jbrowse/alignments-core':
+        specifier: workspace:^
+        version: link:../../packages/alignments-core
       '@jbrowse/cigar-utils':
         specifier: workspace:^
         version: link:../../packages/cigar-utils

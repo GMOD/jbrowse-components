@@ -218,7 +218,6 @@ import type {
   SortedBy,
   TagColorScale,
 } from '../shared/types'
-import type { VariantSortColumn } from '../shared/variantSortColumn.ts'
 import type { NumericExtent } from './bakedColorScale.ts'
 import type { ReadColorCategory } from './colorUtils.ts'
 import type { ArcHighlight } from './components/arcHitTest.ts'
@@ -243,6 +242,7 @@ import type {
   BelowCoverageBandsSettings,
   SectionsLayout,
 } from './sectionLayout.ts'
+import type { VariantSortColumn } from '@jbrowse/alignments-core'
 import type { LodTier } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { ContextMenuAnchor, MenuItem } from '@jbrowse/core/ui'
 import type { ColorScale } from '@jbrowse/core/ui/colorScale'
