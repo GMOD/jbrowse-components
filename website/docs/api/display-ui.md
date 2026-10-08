@@ -116,7 +116,7 @@ prop and imports no toolkit. See
 
 ```js
 // type signature
-({ overlays, trackControl, children, }: { overlays?: Partial<…> | undefined; trackControl?: TrackControlComponent | undefined; children: ReactNode; }) => Element
+({ overlays, trackControl, children, }: { overlays?: Partial<DisplayChromeOverlays> | undefined; trackControl?: TrackControlComponent | undefined; children: ReactNode; }) => Element
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/display-ui/src/DisplayUIProvider.tsx)
@@ -249,7 +249,7 @@ this without the cloning, for a host writing its own markup.
 
 ```js
 // type signature
-({ title, placement, children, }: { title: ReactNode; placement?: TooltipPlacement | undefined; children: ReactElement<…>; }) => Element
+({ title, placement, children, }: { title: ReactNode; placement?: TooltipPlacement | undefined; children: ReactElement<TriggerProps, string | JSXElementConstructor<any>>; }) => Element
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/display-ui/src/tooltip/Tooltip.tsx)

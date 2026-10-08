@@ -108,7 +108,7 @@ dotplot point and a circle's ribbon draw at densities of their own.
 
 ```js
 // type signature
-(view: SyntenyColorsModel) => { trackColors: IKeyValueMap<…>; hideUnlabelled: boolean; minAlignmentLength: number; color?: ModelSnapshotType<Record<string, any>> | undefined; }
+(view: SyntenyColorsModel) => { trackColors: IKeyValueMap<string>; hideUnlabelled: boolean; minAlignmentLength: number; color?: ModelSnapshotType<Record<string, any>> | undefined; }
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/synteny-core/src/SyntenyColorsMixin.ts)
@@ -153,7 +153,7 @@ key (a color per sequence name) is a note row saying so. `title` is
 
 ```js
 // type signature
-(field: string, {…}?: {…} & { alpha?: number | undefined; title?: string | undefined; }) => ColorScale[]
+(field: string, { alpha, title, ...opts }?: { pointBased?: boolean | undefined; cigarOps?: number | undefined; trackChips?: ColorChip[] | undefined; attributeRanges?: Record<string, AttributeRange> | undefined; hideUnlabelled?: boolean | undefined; missingColor?: string | undefined; labels?: readonly string[] | undefined; ramp?: DeclaredRamp | undefined; } & { alpha?: number | undefined; title?: string | undefined; }) => ColorScale[]
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/synteny-core/src/colorLegend.ts)
@@ -209,7 +209,7 @@ lists a text column's values index.
 
 ```js
 // type signature
-({…}: { setting: SyntenyOpacitySnapshot; attributes: Record<…>; viewRanges: Record<…>; fetchRanges: Record<…>; }) => ((index: number) => number) | undefined
+({ setting, attributes, viewRanges, fetchRanges, }: { setting: SyntenyOpacitySnapshot; attributes: Record<string, Float32Array<ArrayBufferLike>>; viewRanges: Record<string, AttributeRange>; fetchRanges: Record<string, AttributeRange>; }) => ((index: number) => number) | undefined
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/synteny-core/src/opacityChannel.ts)
@@ -424,7 +424,7 @@ Undefined for any other field, and while that assembly loads.
 
 ```js
 // type signature
-(field: string, [queryAssembly, targetAssembly]: readonly (string | undefined)[], assemblyManager: { get: (name: string) => {…} | undefined; }) => RefNamePosition | undefined
+(field: string, [queryAssembly, targetAssembly]: readonly (string | undefined)[], assemblyManager: { get: (name: string) => { getRefNamePosition: RefNamePosition; } | undefined; }) => RefNamePosition | undefined
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/synteny-core/src/colorFunctions.ts)

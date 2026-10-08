@@ -22,7 +22,7 @@ Members a composed model contributes are listed here too, so these tables are th
 <!-- prettier-ignore -->
 | Member | Description |
 | --- | --- |
-| <span id="getter-connections">**connections**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>(ConfigNodeProps&lt;…&gt; &amp; ConfigNodeActions &amp; ConfigNodeBrand&lt;...&gt;)…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>(ConfigNodeProps&lt;…&gt; &amp; ConfigNodeActions &amp; ConfigNodeBrand&lt;...&gt;)[]</code></pre></dialog></span> | list of config connections and session connections |
+| <span id="getter-connections">**connections**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>(ConfigNodeProps&lt;…&gt; &amp; ConfigNodeActions &amp; ConfigNodeBrand&lt;Confi…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>(ConfigNodeProps&lt;…&gt; &amp; ConfigNodeActions &amp; ConfigNodeBrand&lt;ConfigurationSchemaType&lt;{ readonly name: { type: "string"; } &amp; { defaultValue: string; }; readonly assemblyNames: { type: "stringArray"; } &amp; { defaultValue: unknown; }; connectionId: { type: "string"; } &amp; { defaultValue: string; }; type: { type: "string"; } &amp; { defaultValue: string; }; }, ConfigurationSchemaOptions&lt;undefined, "connectionId", true, ConfigurationSchemaRequirement&lt;Partial&lt;Record&lt;string, string[]&gt;&gt;, string&gt;, any&gt;&gt;&gt;)[]</code></pre></dialog></span> | list of config connections and session connections |
 
 ## Actions
 

@@ -410,7 +410,9 @@ describe('sortUnionMembers', () => {
   })
 
   test('does not split on a pipe inside a literal', () => {
-    expect(sortUnionMembers('"a|b"')).toBe('"a|b"')
+    expect(sortUnionMembers('(x: "b|a" | "a") => void')).toBe(
+      '(x: "a" | "b|a") => void',
+    )
   })
 })
 
@@ -423,28 +425,28 @@ describe('elideSignature', () => {
 
   test('collapses generic arguments from the inside out', () => {
     const sig = `IConfigurationReference<ConfigurationSchemaType<{ readonly featureHeight: { readonly type: "maybeNumber"; readonly description: "${'x'.repeat(200)}" } }>>`
-    expect(elideSignature(sig)).toBe(
+    expect(elideSignature(sig, 180)).toBe(
       'IConfigurationReference<ConfigurationSchemaType<…>>',
     )
   })
 
   test('collapses only as far as it has to, keeping the outer shape', () => {
     const sig = `(config: ModelInstanceTypeProps<Record<string, ${'a'.repeat(200)}>>) => void`
-    expect(elideSignature(sig)).toBe(
+    expect(elideSignature(sig, 180)).toBe(
       '(config: ModelInstanceTypeProps<Record<…>>) => void',
     )
   })
 
   test('does not mistake the > of => for a closing bracket', () => {
     const sig = `Array<(cb: ${'b'.repeat(200)}) => void>`
-    expect(elideSignature(sig)).toBe('Array<…>')
+    expect(elideSignature(sig, 180)).toBe('Array<…>')
   })
 
   test('drops trailing alternatives of a long union with no generics', () => {
     const sig = ['Alpha', 'Beta', 'Gamma', 'Delta']
       .map(n => n.repeat(20))
       .join(' | ')
-    const out = elideSignature(sig)
+    const out = elideSignature(sig, 180)
     expect(out.endsWith(' | …')).toBe(true)
     expect(out.startsWith('Alpha'.repeat(20))).toBe(true)
   })
@@ -453,13 +455,28 @@ describe('elideSignature', () => {
     const sig = `(entries: string[], id: string, strand: number | undefined, readName: string | undefined, normalize?: boolean | undefined) => { refName: string; start: number; ${'x'.repeat(100)}: number }[]`
     // the union inside a parameter is not a top-level union, so the return type
     // survives — truncating by width used to eat it
-    expect(elideSignature(sig)).toBe(
+    expect(elideSignature(sig, 180)).toBe(
       '(entries: string[], id: string, strand: number | undefined, readName: string | undefined, normalize?: boolean | undefined) => {…}[]',
     )
   })
 
   test('leaves a type it cannot shorten structurally alone', () => {
     expect(elideSignature('z'.repeat(300))).toBe('z'.repeat(300))
+  })
+
+  test('keeps a type-parameter list, whose names the parameters use', () => {
+    const sig = `<CONFMODEL extends ${'A'.repeat(200)}>(target: CONFMODEL) => void`
+    expect(elideSignature(sig, 180)).toBe(sig)
+  })
+
+  test('keeps a group that is the whole type', () => {
+    const sig = `{ a: ${'x'.repeat(200)} }`
+    expect(elideSignature(sig, 180)).toBe(sig)
+  })
+
+  test('reads past a bracket inside a string literal', () => {
+    const sig = `(a: "<" | ">", b: Map<string, ${'x'.repeat(200)}>) => void`
+    expect(elideSignature(sig, 180)).toBe('(a: "<" | ">", b: Map<…>) => void')
   })
 })
 

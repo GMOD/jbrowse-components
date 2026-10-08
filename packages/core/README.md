@@ -241,7 +241,7 @@ caller keeps it for as long as the colors should hold.
 
 ```js
 // type signature
-(field: string, {…}?: {…}) => CategoricalField
+(field: string, { domain, range, labels, held, }?: { domain?: readonly string[] | undefined; range?: readonly string[] | undefined; labels?: readonly string[] | undefined; held?: HeldSlots | undefined; }) => CategoricalField
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/categoricalField.ts)
@@ -668,7 +668,7 @@ groups rows groups within a section.
 
 ```js
 // type signature
-(input: readonly Feature[] | FeatureTable, facet: FacetSpec, layers: readonly {…}[], jexl?: JexlInstance | undefined) => { ...; }
+(input: readonly Feature[] | FeatureTable, facet: FacetSpec, layers: readonly { transform?: readonly TransformStep[] | undefined; row?: string | undefined; }[], jexl?: JexlInstance | undefined) => { layers: FacetedLayer[]; sections: FacetSection[]; }
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/featureTransforms.ts)
@@ -826,7 +826,8 @@ Reads a configuration value from a track or display state model: exactly
 
 ```js
 // type signature
-{…}
+(model: { configuration: AnyConfigurationModel; }) => AnyConfigurationSnapshot
+<CONFMODEL extends AnyConfigurationModel, const SLOT extends ConfigurationSlotName<ConfigurationSchemaForModel<CONFMODEL>> | ConfigurationSlotPath<ConfigurationSchemaForModel<CONFMODEL>> = ConfigurationSlotName<ConfigurationSchemaForModel<CONFMODEL>>>(model: { configuration: CONFMODEL; }, slotPath: SLOT, args?: Record<string, unknown>) => SLOT extends string ? ConfigurationSlotValue<ConfigurationSchemaForModel<CONFMODEL>, SLOT> : ConfigurationSlotPathValue<ConfigurationSchemaForModel<CONFMODEL>, SLOT>
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/configuration/getConf.ts)
@@ -1101,7 +1102,7 @@ synchronous `addOrReplaceView` requires it loaded already.
 
 ```js
 // type signature
-(args: { session: AbstractViewContainer; typeName: string; initialState?: Record<string, unknown> | undefined; replacing?: AbstractViewModel | undefined; }) => Promise<...>
+(args: { session: AbstractViewContainer; typeName: string; initialState?: Record<string, unknown> | undefined; replacing?: AbstractViewModel | undefined; }) => Promise<AbstractViewModel>
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/mstUtils.ts)
@@ -1123,7 +1124,7 @@ steps that follow it read the rows already in section order.
 
 ```js
 // type signature
-(input: readonly Feature[] | FeatureTable, request: {…}, jexl?: JexlInstance | undefined) => { ...; }
+(input: readonly Feature[] | FeatureTable, request: { transform?: readonly TransformStep[] | undefined; facet?: FacetSpec | undefined; layers: readonly { transform?: readonly TransformStep[] | undefined; row?: string | undefined; }[]; }, jexl?: JexlInstance | undefined) => { layers: { table: FeatureTable; row: string | Uint32Array<ArrayBufferLike> | undefined; }[]; sections: FacetSection[] | undefined; }
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/featureTransforms.ts)
@@ -1337,7 +1338,7 @@ lengths needs; it defaults to the first place `alt` appears.
 
 ```js
 // type signature
-(feature: Feature, alt?: string | undefined, alleleIndex?: number) => {…} | undefined
+(feature: Feature, alt?: string | undefined, alleleIndex?: number) => { mateRefName: string; matePos: number; mateDirection?: number | undefined; joinDirection?: number | undefined; } | undefined
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/svAlt.ts)
@@ -1522,7 +1523,7 @@ widened domain with no table baked again.
 
 ```js
 // type signature
-(table: {…}, extent: [...]) => { ...; }
+(table: {…}, extent: [number, number]) => { kind: "ramp"; field: string; scale: "linear" | "log"; domain: [number, number]; pinned: [boolean, boolean]; domainMid?: number | undefined; range?: string[] | undefined; scheme?: "blues" | "cividis" | "fall" | "inferno" | "juicebox" | "magma" | "purpleorange" | "redblue" | "redgreyblue" | "reds" | "viridis" | undefined; reverse?: boolean | undefined; extent: [number, number]; quantile?: number | undefined; lut: Uint8Array<…>; missing?: boolean | undefined; notNumber?: boolean | undefined; }
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/markEncoding.ts)
@@ -1539,7 +1540,8 @@ as `getConfAssemblyNamesOrNone`.
 
 ```js
 // type signature
-{…}
+(confObject: AnyConfigurationModel) => AnyConfigurationSnapshot
+<CONFMODEL extends AnyConfigurationModel, const SLOT extends ConfigurationSlotName<ConfigurationSchemaForModel<CONFMODEL>> | ConfigurationSlotPath<ConfigurationSchemaForModel<CONFMODEL>> = ConfigurationSlotName<ConfigurationSchemaForModel<CONFMODEL>>>(confObject: CONFMODEL, slotPath?: SLOT, args?: Record<string, unknown>) => SLOT extends string ? ConfigurationSlotValue<ConfigurationSchemaForModel<CONFMODEL>, SLOT> : ConfigurationSlotPathValue<ConfigurationSchemaForModel<CONFMODEL>, SLOT>
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/configuration/readConfObject.ts)
@@ -1760,7 +1762,7 @@ steps made. A second click aborts the first.
 
 ```js
 // type signature
-(self: IStateTreeNode<IAnyType>, rotation: { begin(): ActiveFetch; cancel: () => void; dispose(): void; }, args: Omit<CoreGetEncodedLayersArgs, "byteLimit"> & { ...; }) => void
+(self: IStateTreeNode<IAnyType>, rotation: { begin(): ActiveFetch; cancel: () => void; dispose(): void; }, args: Omit<CoreGetEncodedLayersArgs, "byteLimit"> & { layer: number; featureIndex: number; }) => void
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/selectEncodedFeature.ts)
@@ -1839,7 +1841,7 @@ runtime; `null` or `undefined` resets the slot to its default (ADR-146).
 
 ```js
 // type signature
-<…>(target: CONFMODEL | { ...; }, slotPath: SLOT, value: unknown) => void
+<CONFMODEL extends AnyConfigurationModel, const SLOT extends ConfigurationSlotName<ConfigurationSchemaForModel<CONFMODEL>> | ConfigurationSlotPath<ConfigurationSchemaForModel<CONFMODEL>> = ConfigurationSlotName<ConfigurationSchemaForModel<CONFMODEL>>>(target: CONFMODEL | { configuration: CONFMODEL; }, slotPath: SLOT, value: unknown) => void
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/configuration/getConf.ts)
@@ -2041,7 +2043,7 @@ its interval.
 
 ```js
 // type signature
-(field: string, {…}?: { domain?: readonly string[] | undefined; range?: readonly string[] | undefined; labels?: readonly string[] | undefined; }) => CategoricalField
+(field: string, { domain, range, labels: names, }?: { domain?: readonly string[] | undefined; range?: readonly string[] | undefined; labels?: readonly string[] | undefined; }) => CategoricalField
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/thresholdScale.ts)
@@ -2069,7 +2071,7 @@ in the order `thresholdField` sorts them.
 
 ```js
 // type signature
-(cuts: readonly number[], range: readonly string[] | undefined, met: {…}, names?: readonly string[]) => {…}[]
+(cuts: readonly number[], range: readonly string[] | undefined, met: { missing?: boolean | undefined; notNumber?: boolean | undefined; }, names?: readonly string[]) => { value: string; label: string; color: string; missing?: true | undefined; }[]
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/thresholdScale.ts)

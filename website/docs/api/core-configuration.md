@@ -88,7 +88,8 @@ Reads a configuration value from a track or display state model: exactly
 
 ```js
 // type signature
-{…}
+(model: { configuration: AnyConfigurationModel; }) => AnyConfigurationSnapshot
+<CONFMODEL extends AnyConfigurationModel, const SLOT extends ConfigurationSlotName<ConfigurationSchemaForModel<CONFMODEL>> | ConfigurationSlotPath<ConfigurationSchemaForModel<CONFMODEL>> = ConfigurationSlotName<ConfigurationSchemaForModel<CONFMODEL>>>(model: { configuration: CONFMODEL; }, slotPath: SLOT, args?: Record<string, unknown>) => SLOT extends string ? ConfigurationSlotValue<ConfigurationSchemaForModel<CONFMODEL>, SLOT> : ConfigurationSlotPathValue<ConfigurationSchemaForModel<CONFMODEL>, SLOT>
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/configuration/getConf.ts)
@@ -233,7 +234,8 @@ default, such as `getConfAssemblyNamesOrNone`.
 
 ```js
 // type signature
-{…}
+(confObject: AnyConfigurationModel) => AnyConfigurationSnapshot
+<CONFMODEL extends AnyConfigurationModel, const SLOT extends ConfigurationSlotName<ConfigurationSchemaForModel<CONFMODEL>> | ConfigurationSlotPath<ConfigurationSchemaForModel<CONFMODEL>> = ConfigurationSlotName<ConfigurationSchemaForModel<CONFMODEL>>>(confObject: CONFMODEL, slotPath?: SLOT, args?: Record<string, unknown>) => SLOT extends string ? ConfigurationSlotValue<ConfigurationSchemaForModel<CONFMODEL>, SLOT> : ConfigurationSlotPathValue<ConfigurationSchemaForModel<CONFMODEL>, SLOT>
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/configuration/readConfObject.ts)
@@ -282,7 +284,7 @@ runtime; `null` or `undefined` resets the slot to its default (ADR-146).
 
 ```js
 // type signature
-<…>(target: CONFMODEL | { ...; }, slotPath: SLOT, value: unknown) => void
+<CONFMODEL extends AnyConfigurationModel, const SLOT extends ConfigurationSlotName<ConfigurationSchemaForModel<CONFMODEL>> | ConfigurationSlotPath<ConfigurationSchemaForModel<CONFMODEL>> = ConfigurationSlotName<ConfigurationSchemaForModel<CONFMODEL>>>(target: CONFMODEL | { configuration: CONFMODEL; }, slotPath: SLOT, value: unknown) => void
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/configuration/getConf.ts)

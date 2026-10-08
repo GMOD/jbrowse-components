@@ -15,7 +15,7 @@ cytosines in `context` are considered (default CpG); plants also use CHG/CHH.
 
 ```js
 // type signature
-({…}: ParsedModData, context?: CytosineContext) => { methBins: number[]; hydroxyMethBins: number[]; methProbs: number[]; hydroxyMethProbs: number[]; }
+({ modifications, probabilities, cigarOps, seq, fstrand, flen, window, }: ParsedModData, context?: CytosineContext) => { methBins: number[]; hydroxyMethBins: number[]; methProbs: number[]; hydroxyMethProbs: number[]; }
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/modifications-utils/src/getMethBins.ts)

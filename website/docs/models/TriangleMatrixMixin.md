@@ -6,7 +6,7 @@ sidebar_label: Mixin -> TriangleMatrixMixin
 
 Auto-generated @jbrowse/mobx-state-tree API for the current JBrowse release — see [pluggable elements](/docs/developer_guide/) for concepts. Built into JBrowse core. [View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/display-kit/src/TriangleMatrixMixin.ts).
 
-#crossCuttingMixin A matrix drawn as a triangle over the view's axis (Hi-C, LD): the fetched payload (`rpcData`), the canvas box (`canvasWidth`, `matrixHeight` under the `matrixTop` hook), the rotate-and-squash transform and its inverse (`cellToScreen`, `screenToCell`), the frame the marks read (`triangleFrame`), the one-cell region map and canvas-wide block the mark backend draws (`matrixRegions`, `matrixBlocks`), and the `squashToHeight` slot. Composes after `TrackHeightMixin`, `GlobalFetchMixin` and `LegendMixin`
+A matrix drawn as a triangle over the view's axis (Hi-C, LD): the fetched payload (`rpcData`), the canvas box (`canvasWidth`, `matrixHeight` under the `matrixTop` hook), the rotate-and-squash transform and its inverse (`cellToScreen`, `screenToCell`), the frame the marks read (`triangleFrame`), the one-cell region map and canvas-wide block the mark backend draws (`matrixRegions`, `matrixBlocks`), and the `squashToHeight` slot. Composes after `TrackHeightMixin`, `GlobalFetchMixin` and `LegendMixin`
 
 ## Volatiles
 

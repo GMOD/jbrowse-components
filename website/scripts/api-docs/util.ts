@@ -992,14 +992,37 @@ function typeSignature(
   decl: ts.Declaration,
 ) {
   const type = checker.getTypeOfSymbolAtLocation(symbol, decl)
+  const overloads = type.getCallSignatures()
+  // An overloaded function prints as one object type of call signatures, which
+  // elision then collapses whole. One arrow per line reads as what it is.
+  if (overloads.length > 1 && type.getProperties().length === 0) {
+    return overloads
+      .map(overload =>
+        shortenSignature(
+          checker.signatureToString(
+            overload,
+            decl,
+            ts.TypeFormatFlags.NoTruncation |
+              ts.TypeFormatFlags.WriteArrowStyleSignature,
+          ),
+        ),
+      )
+      .join('\n')
+  }
   const printed = checker.typeToString(type)
-  return elideSignature(
-    sortUnionMembers(
-      printed.endsWith('...')
-        ? checker.typeToString(type, undefined, ts.TypeFormatFlags.NoTruncation)
-        : printed,
-    ),
+  return shortenSignature(
+    TRUNCATED.test(printed)
+      ? checker.typeToString(type, undefined, ts.TypeFormatFlags.NoTruncation)
+      : printed,
   )
+}
+
+// The marks the checker leaves: a cut at the end, a count where it dropped
+// members from the middle of a nested type, and a nested group emptied whole.
+const TRUNCATED = /\.\.\.$|\.\.\. \d+ more \.\.\.|<\.\.\.>|\{ \.\.\.; \}/
+
+function shortenSignature(sig: string) {
+  return elideSignature(sortUnionMembers(sig))
 }
 
 // The checker prints a union in its own order, not ours, and that order moves
@@ -1024,20 +1047,19 @@ function typeSignature(
 //
 // Applied BEFORE eliding, so which alternatives elision drops off the end is
 // decided by the same stable order.
+const STRING_LITERAL = /"(?:[^"\\]|\\.)*"/g
 const STRING_LITERAL_UNION = /"(?:[^"\\]|\\.)*"(?:\s*\|\s*"(?:[^"\\]|\\.)*")+/g
 
 export function sortUnionMembers(sig: string) {
   return sig.replaceAll(STRING_LITERAL_UNION, run =>
-    run
-      .split('|')
-      .map(m => m.trim())
-      .sort()
-      .join(' | '),
+    run.match(STRING_LITERAL)!.sort().join(' | '),
   )
 }
 
-// Longer than this and a signature stops being read and starts being skipped.
-const MAX_SIGNATURE = 180
+// What a dialog or a fenced block still shows whole. The table cell cuts its
+// own preview much shorter (`codeCell`), so this bounds the full text a reader
+// opens, not the row.
+const MAX_SIGNATURE = 600
 
 // Collapse `<...>` / `{...}` groups from the inside out until the string fits,
 // in one left-to-right pass. A stack of partial results reaches every group in
@@ -1053,13 +1075,25 @@ const MAX_SIGNATURE = 180
 //
 // The `>` of a `=>` is not a bracket, and an `open` that never closes is not a
 // group: its text goes back verbatim.
+function closingQuote(sig: string, from: number) {
+  let i = from + 1
+  while (i < sig.length && sig[i] !== '"') {
+    i += sig[i] === '\\' ? 2 : 1
+  }
+  return Math.min(i, sig.length - 1)
+}
+
 function elideGroups(sig: string, open: string, close: string, max: number) {
   let length = sig.length
   const enclosing: string[] = []
   let out = ''
   for (let i = 0; i < sig.length; i++) {
     const c = sig[i]!
-    if (c === open) {
+    if (c === '"') {
+      const end = closingQuote(sig, i)
+      out += sig.slice(i, end + 1)
+      i = end
+    } else if (c === open) {
       enclosing.push(out)
       out = ''
     } else if (
@@ -1069,7 +1103,11 @@ function elideGroups(sig: string, open: string, close: string, max: number) {
     ) {
       const inner = out
       out = enclosing.pop()!
-      if (length > max) {
+      // `<T, U>(a: T) => U` binds the names its parameters use, and a group
+      // that is the whole type leaves nothing to read.
+      const isTypeParameterList = close === '>' && sig[i + 1] === '('
+      const isWholeType = out === '' && i === sig.length - 1
+      if (length > max && !isTypeParameterList && !isWholeType) {
         length -= inner.length - 1
         out += `${open}…${close}`
       } else {
@@ -1289,14 +1327,22 @@ function referencedSchemaDeclIds(checker: ts.TypeChecker, node: ts.Node) {
 // can't just look for a `types.*` call: a factory may build its model by chaining
 // `.views()/.actions()` onto ANOTHER factory's result and never mention `types`
 // itself (LinearBasicDisplay, WiggleCommonMixin, the OAuth accounts).
-//   - function-like: `function F() {…}` / `const F = () => …`
+//   - a function returning a call: `function F() { return Base().views(…) }`
 //   - a variable initialized from a call: `const M = someFactory(…)`
-//   - anything containing a literal `types.compose(…)` / `types.model(…)`
+//   - anything containing a literal `types.compose(…)` / `types.model(…)`, or
+//     a `.props()`/`.views()`/`.actions()` chain on a model held in a local
+//
+// A function is not enough by itself: a helper declared between the JSDoc and
+// the factory takes the tag just as a `const` does.
 //
 // Deliberately not `composedOf.length === 0`: a bare `types.model` composes
 // nothing legitimately, so an empty composedOf can't tell the two cases apart.
+const MODEL_CHAIN_METHODS = new Set(['props', 'volatile', 'views', 'actions'])
+
 function definesStateModel(node: ts.Node) {
-  if (factoryFunction(node)) {
+  const fn = factoryFunction(node)
+  const returned = fn && returnedExpression(fn)
+  if (returned && ts.isCallExpression(returned)) {
     return true
   }
   if (
@@ -1314,7 +1360,9 @@ function definesStateModel(node: ts.Node) {
     if (
       ts.isCallExpression(n) &&
       (isTypesMember(n.expression, 'compose') ||
-        isTypesMember(n.expression, 'model'))
+        isTypesMember(n.expression, 'model') ||
+        (ts.isPropertyAccessExpression(n.expression) &&
+          MODEL_CHAIN_METHODS.has(n.expression.name.text)))
     ) {
       found = true
       return
@@ -1645,6 +1693,11 @@ export interface Example {
   content: string
 }
 
+// Tags a marker-table generator reads off a #config/#stateModel comment, whose
+// line is no part of the page's prose. `#crossCuttingMixin` is not one: its
+// text is the mixin's summary and opens the page.
+const TABLE_TAGS = ['fileFormat', 'displayFoundation', 'displayFoundationDef']
+
 // Extracts the entity name, human-readable description, and optional example
 // usage from a comment body like:
 //   #stateModel LinearGenomeView
@@ -1712,19 +1765,11 @@ export function parseTaggedComment(
     } else if (startsWithTag(line, 'trackType')) {
       endGotcha()
       trackType = line.replace(/^.*?#trackType\s*/, '').trim() || undefined
-    } else if (startsWithTag(line, 'fileFormat')) {
-      // Consumed by generateFileTypeDocs (the format -> adapter tables in the
-      // file types guide). Dropped here so it doesn't leak into the config
-      // page's prose.
+    } else if (TABLE_TAGS.some(t => startsWithTag(line, t))) {
       endGotcha()
-    } else if (
-      startsWithTag(line, 'displayFoundation') ||
-      startsWithTag(line, 'displayFoundationDef')
-    ) {
-      // Consumed by generateDisplayFoundationDocs (the foundations table in the
-      // creating_display guide). Dropped here for the same reason as
-      // #fileFormat above.
+    } else if (startsWithTag(line, 'crossCuttingMixin')) {
       endGotcha()
+      docs.push(line.replace(/#crossCuttingMixin\s*/, ''))
     } else if (startsWithTag(line, 'gotcha')) {
       endGotcha()
       currentGotcha = [line.replace(/^.*?#gotcha\s*/, '')]

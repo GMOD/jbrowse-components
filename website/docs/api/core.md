@@ -112,7 +112,7 @@ hold.
 
 ```js
 // type signature
-(field: string, {…}?: {…}) => CategoricalField
+(field: string, { domain, range, labels, held, }?: { domain?: readonly string[] | undefined; range?: readonly string[] | undefined; labels?: readonly string[] | undefined; held?: HeldSlots | undefined; }) => CategoricalField
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/categoricalField.ts)
@@ -456,7 +456,7 @@ and one that groups rows groups within a section.
 
 ```js
 // type signature
-(input: readonly Feature[] | FeatureTable, facet: FacetSpec, layers: readonly {…}[], jexl?: JexlInstance | undefined) => { ...; }
+(input: readonly Feature[] | FeatureTable, facet: FacetSpec, layers: readonly { transform?: readonly TransformStep[] | undefined; row?: string | undefined; }[], jexl?: JexlInstance | undefined) => { layers: FacetedLayer[]; sections: FacetSection[]; }
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/featureTransforms.ts)
@@ -724,7 +724,7 @@ row, so the steps that follow it read the rows already in section order.
 
 ```js
 // type signature
-(input: readonly Feature[] | FeatureTable, request: {…}, jexl?: JexlInstance | undefined) => { ...; }
+(input: readonly Feature[] | FeatureTable, request: { transform?: readonly TransformStep[] | undefined; facet?: FacetSpec | undefined; layers: readonly { transform?: readonly TransformStep[] | undefined; row?: string | undefined; }[]; }, jexl?: JexlInstance | undefined) => { layers: { table: FeatureTable; row: string | Uint32Array<ArrayBufferLike> | undefined; }[]; sections: FacetSection[] | undefined; }
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/featureTransforms.ts)
@@ -911,7 +911,7 @@ several lengths needs; it defaults to the first place `alt` appears.
 
 ```js
 // type signature
-(feature: Feature, alt?: string | undefined, alleleIndex?: number) => {…} | undefined
+(feature: Feature, alt?: string | undefined, alleleIndex?: number) => { mateRefName: string; matePos: number; mateDirection?: number | undefined; joinDirection?: number | undefined; } | undefined
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/svAlt.ts)
@@ -1019,7 +1019,7 @@ follows the widened domain with no table baked again.
 
 ```js
 // type signature
-(table: {…}, extent: [...]) => { ...; }
+(table: {…}, extent: [number, number]) => { kind: "ramp"; field: string; scale: "linear" | "log"; domain: [number, number]; pinned: [boolean, boolean]; domainMid?: number | undefined; range?: string[] | undefined; scheme?: "blues" | "cividis" | "fall" | "inferno" | "juicebox" | "magma" | "purpleorange" | "redblue" | "redgreyblue" | "reds" | "viridis" | undefined; reverse?: boolean | undefined; extent: [number, number]; quantile?: number | undefined; lut: Uint8Array<…>; missing?: boolean | undefined; notNumber?: boolean | undefined; }
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/markEncoding.ts)
@@ -1169,7 +1169,7 @@ bin or run the steps made. A second click aborts the first.
 
 ```js
 // type signature
-(self: IStateTreeNode<IAnyType>, rotation: { begin(): ActiveFetch; cancel: () => void; dispose(): void; }, args: Omit<CoreGetEncodedLayersArgs, "byteLimit"> & { ...; }) => void
+(self: IStateTreeNode<IAnyType>, rotation: { begin(): ActiveFetch; cancel: () => void; dispose(): void; }, args: Omit<CoreGetEncodedLayersArgs, "byteLimit"> & { layer: number; featureIndex: number; }) => void
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/selectEncodedFeature.ts)
@@ -1415,7 +1415,7 @@ reader; a bin's key stays its interval.
 
 ```js
 // type signature
-(field: string, {…}?: { domain?: readonly string[] | undefined; range?: readonly string[] | undefined; labels?: readonly string[] | undefined; }) => CategoricalField
+(field: string, { domain, range, labels: names, }?: { domain?: readonly string[] | undefined; range?: readonly string[] | undefined; labels?: readonly string[] | undefined; }) => CategoricalField
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/thresholdScale.ts)
@@ -1444,7 +1444,7 @@ took one, in the order `thresholdField` sorts them.
 
 ```js
 // type signature
-(cuts: readonly number[], range: readonly string[] | undefined, met: {…}, names?: readonly string[]) => {…}[]
+(cuts: readonly number[], range: readonly string[] | undefined, met: { missing?: boolean | undefined; notNumber?: boolean | undefined; }, names?: readonly string[]) => { value: string; label: string; color: string; missing?: true | undefined; }[]
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/thresholdScale.ts)

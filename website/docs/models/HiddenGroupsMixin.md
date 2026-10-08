@@ -6,7 +6,7 @@ sidebar_label: Mixin -> HiddenGroupsMixin
 
 Auto-generated @jbrowse/mobx-state-tree API for the current JBrowse release — see [pluggable elements](/docs/developer_guide/) for concepts. Built into JBrowse core. [View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/display-kit/src/HiddenGroupsMixin.ts).
 
-#crossCuttingMixin The sections a reader hid from an in-track grouping's chips: the `hiddenGroups` set, `hideGroup` and `showAllGroups` over it, the `displayHiddenGroupKeys` hook a display hides a lane through on its own behalf, `hiddenGroupKeys` folding both, `groupStateKey` (with the `ownGroupState` hook) for a live figure to key on, and the `dropGroupState` reset that fires when the host's `groupKeySpace` moves
+The sections a reader hid from an in-track grouping's chips: the `hiddenGroups` set, `hideGroup` and `showAllGroups` over it, the `displayHiddenGroupKeys` hook a display hides a lane through on its own behalf, `hiddenGroupKeys` folding both, `groupStateKey` (with the `ownGroupState` hook) for a live figure to key on, and the `dropGroupState` reset that fires when the host's `groupKeySpace` moves
 
 A key names a section only within the grouping that issued it: `''` is both
 the ungrouped section and every dimension's catch-all, and two dimensions'

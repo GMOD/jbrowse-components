@@ -104,7 +104,7 @@ for `'min'`/`'max'`, otherwise the average score.
 
 ```js
 // type signature
-(data: { featureScores: Float32Array<…>; featureMinScores: Float32Array<ArrayBufferLike>; featureMaxScores: Float32Array<...>; }, summaryScoreMode: string) => Float32Array<...>
+(data: { featureScores: Float32Array<ArrayBufferLike>; featureMinScores: Float32Array<ArrayBufferLike>; featureMaxScores: Float32Array<ArrayBufferLike>; }, summaryScoreMode: string) => Float32Array<ArrayBufferLike>
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/wiggle-core/src/autoscale.ts)
@@ -125,7 +125,7 @@ domain means.
 
 ```js
 // type signature
-({…}: { scaleType: string; domain: readonly [number, number]; bounds: readonly [number | undefined, number | undefined]; zero: boolean; }) => [number, number]
+({ scaleType, domain, bounds, zero, }: { scaleType: string; domain: readonly [number, number]; bounds: readonly [number | undefined, number | undefined]; zero: boolean; }) => [number, number]
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/wiggle-core/src/scale.ts)
@@ -210,7 +210,7 @@ axis out differently, and the alignments coverage band does.
 
 ```js
 // type signature
-({…}: { rules: readonly ValueScaleRule[]; domain: [number, number] | undefined; box: { yTop: number; yBottom: number; }; normalize: (score: number) => number; }) => ScoreRuleMark[]
+({ rules, domain, box, normalize, }: { rules: readonly ValueScaleRule[]; domain: [number, number] | undefined; box: { yTop: number; yBottom: number; }; normalize: (score: number) => number; }) => ScoreRuleMark[]
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/wiggle-core/src/scoreRuleMarks.ts)

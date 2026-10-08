@@ -768,9 +768,42 @@ function unionNesting(name: string, slots: Item[]) {
 // scrolls past the example and lands mid-table, so the nesting — adapter slot,
 // display entry, or top-level track field — has to be stated at the table
 // itself; the reader who followed that link never sees anything above it.
-function slotNesting(name: string, category: string, isBase: boolean) {
+// The manifest table a sidebar category's types are registered in. A sub-schema
+// the sidebar files under a category (`RibbonColor` under Display, `BamIndex`
+// under Adapter) is in none of them, and is not a `type` a config can name.
+const REGISTERED_AS: Record<string, string> = {
+  Adapter: 'adapters',
+  Display: 'displays',
+  Track: 'tracks',
+  Connection: 'connections',
+}
+
+// `displayToTrackType` covers a display the manifest does not bundle, such as
+// an example plugin's.
+function isNamedType(
+  name: string,
+  category: string,
+  links: DisplayLinkContext,
+) {
+  const table = REGISTERED_AS[category]
+  return (
+    table === undefined ||
+    configManifest()[name]?.category === table ||
+    links.displayToTrackType.has(name)
+  )
+}
+
+function slotNesting(
+  name: string,
+  category: string,
+  isBase: boolean,
+  links: DisplayLinkContext,
+) {
   if (isBase) {
     return `\`${name}\` is a shared base schema, not a type you name in a config. Set these slots on one of the configs under **Extended by** above, each of which lists them as inherited and shows the shape in its own example.`
+  }
+  if (!isNamedType(name, category, links)) {
+    return ''
   }
   const shapes: Record<string, string> = {
     Adapter: `These slots go inside the track's \`adapter\`: \`"adapter": { "type": "${name}", ... }\`.`,
@@ -859,7 +892,7 @@ function renderConfig(
         [
           header.union
             ? unionNesting(header.name, slots)
-            : slotNesting(header.name, category, isBase),
+            : slotNesting(header.name, category, isBase, links),
           shorthandLine(header.name, category, isBase),
           `Slot types (\`fileLocation\`, \`frozen\`, ...) are explained in the [config slot types reference](${SLOT_TYPES_GUIDE}). Slots a base configuration contributes are listed here too, so this table is the whole surface.`,
         ]
@@ -1789,7 +1822,8 @@ export function renderAgentConfig(
           ? `A shared base schema, not a type you write: use one of ${(links.extendedBy.get(header.name) ?? []).join(', ')}.`
           : header.union
             ? unionNesting(header.name, slots).replaceAll('`', '')
-            : AGENT_SLOT_NESTING[category]?.(header.name),
+            : isNamedType(header.name, category, links) &&
+              AGENT_SLOT_NESTING[category]?.(header.name),
         shorthand.length > 0 &&
           `Shorthand: ${shorthand.join(', ')} may replace the location slot.`,
         trackType && trackType !== header.name && `Track type: ${trackType}.`,
