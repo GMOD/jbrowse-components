@@ -910,6 +910,11 @@ export async function applyDisplayOpts(
     }
   }
   writeMembers(view, trackId, opts)
+  return {
+    trackId,
+    ...displaySnap,
+    ...(displayType ? { type: displayType } : {}),
+  }
 }
 
 /**

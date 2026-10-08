@@ -50,11 +50,11 @@ hand.
 
 ## Rendering every tumor junction with jb2export batch
 
-A breakpoint split view shows the two loci a junction joins as two panels.
-`batch` draws one for a junction between two chromosomes; a deletion,
-duplication or inversion, whose two ends are on one chromosome, is one row with
-both ends side by side under the arc of the reads joining them.
-`jb2export batch` renders one such view per record:
+`jb2export batch` renders one image per record, a chromosome a row. A deletion,
+duplication or inversion has both ends on one chromosome, so it is one row: the
+two ends side by side under the arc of the reads joining them. A junction
+between two chromosomes is a breakpoint split view, one panel a chromosome, with
+the reads joining them drawn as curves:
 
 ```bash
 curl -fO https://jbrowse.org/demos/cancer_sv/COLO829.somatic-sv.vcf.gz
@@ -105,12 +105,16 @@ options check the framing and manage a long run:
 - `--resume` skips a row whose image is already in `--outDir`. A `--limit` run
   names its images as the whole run will, so the whole run picks them up
 - `--manifest` writes `manifest.tsv` beside the images, one row per image: file,
-  panels' loci, name, `EVENT`, whether it rendered, `line` (the record's line in
-  the VCF, which joins a row back to any column of the callset) and `links`, the
-  count of split reads (reads aligned in pieces to different places) with pieces
-  in more than one panel, or in both windows of a record drawn as one row. A
-  record one window holds has `alt` instead: the reads with its ALT over the
-  reads covering it, `17/41`, one pair per alignments track
+  loci, name, `EVENT`, whether it rendered, and `line` (the record's line in the
+  VCF, which joins a row back to any column of the callset). Three more columns
+  describe the image:
+  - `links` is the count of split reads (reads aligned in pieces to different
+    places) with pieces in more than one window
+  - `alt` is the reads with the record's ALT over the reads covering it,
+    `17/41`, one pair per alignments track, for a record on one chromosome whose
+    ALT says what a read carries: an SNV, an indel, a `<DEL>` or an `<INS>`
+  - `spec` is the view as a [session spec](/docs/urlparams#session-spec), which
+    opens the same windows and tracks in JBrowse
 - `--passOnly` drops records the caller filtered out. `--limit` takes the first
   N in file order, so on an unfiltered callset the two go together
 - `--jobs` sets how many processes render, each about a gigabyte. The default is
@@ -182,8 +186,8 @@ normal mark it as germline.
 Add `--manifest` to both `batch` runs. Sort `tumor/manifest.tsv` on `links` to
 put the calls no split read joins at the top; the same column in
 `normal/manifest.tsv` shows which calls the normal has too. A deletion short
-enough for one alignment to hold draws a gap through both panels and no curve,
-so it counts zero links although the reads support it.
+enough for one alignment to hold draws a gap through both windows and no arc, so
+its reads are in `alt` and its `links` is zero.
 
 ## Opening a call in the browser
 

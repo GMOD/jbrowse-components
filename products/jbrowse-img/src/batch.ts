@@ -1,4 +1,3 @@
-import type { Entry } from './parseArgv.ts'
 import type {
   VariantAllele,
   VariantSortColumn,
@@ -128,22 +127,26 @@ export function recordFlank(rec: BatchRecord, flank?: number) {
   )
 }
 
+// Past this a window is too narrow to read its pileup, and the row wraps
+const ROW_MAX_WINDOWS = 4
+
 /**
- * The window each panel opens on: every locus grown by the record's flank on
- * each side, in file order, with windows of one contig that overlap drawn as
- * the one span they cover. A breakend is one base, so the flank decides the
- * picture, and a deletion shorter than it would otherwise render the same
- * reads twice.
+ * The rows an image is drawn in, each the windows of one contig left to right.
+ * Every locus grows by the record's flank on each side, and windows of one
+ * contig that overlap draw as the one span they cover: a breakend is one base,
+ * so the flank decides the picture, and a deletion shorter than it would
+ * otherwise render the same reads twice. Contigs keep the order the record
+ * names them in, and a contig of more than four windows wraps.
  */
-export function recordLocs(rec: BatchRecord, flankOpt?: number) {
+export function recordRows(rec: BatchRecord, flankOpt?: number) {
   const flank = recordFlank(rec, flankOpt)
-  const windows: Locus[] = []
+  const byContig = new Map<string, Locus[]>()
   for (const { refName, start, end } of rec.loci) {
     const lo = Math.max(0, start - flank)
     const hi = end + flank
-    const overlapping = windows.find(
-      w => w.refName === refName && lo <= w.end && w.start <= hi,
-    )
+    const windows = byContig.get(refName) ?? []
+    byContig.set(refName, windows)
+    const overlapping = windows.find(w => lo <= w.end && w.start <= hi)
     if (overlapping) {
       overlapping.start = Math.min(overlapping.start, lo)
       overlapping.end = Math.max(overlapping.end, hi)
@@ -151,24 +154,16 @@ export function recordLocs(rec: BatchRecord, flankOpt?: number) {
       windows.push({ refName, start: lo, end: hi })
     }
   }
-  // two ends on one contig read left to right, whichever the record names
-  // first: a breakend's mate may be the upstream one
-  if (windows.every(w => w.refName === windows[0]?.refName)) {
-    windows.sort((a, b) => a.start - b.start)
-  }
-  return windows.map(w => `${w.refName}:${w.start + 1}-${w.end}`)
-}
-
-/**
- * Whether a record's windows draw as one row: two ends on one contig, side by
- * side in a linear view under the arc that joins them. Ends on two contigs, and
- * an event's three or more loci, stack as a breakpoint view's panels.
- */
-export function drawsAsOneRow(rec: BatchRecord, locs: string[]) {
-  return (
-    locs.length === 2 &&
-    rec.loci.every(locus => locus.refName === rec.loci[0]?.refName)
-  )
+  return [...byContig.values()].flatMap(windows => {
+    const locs = windows
+      .sort((a, b) => a.start - b.start)
+      .map(w => `${w.refName}:${w.start + 1}-${w.end}`)
+    return Array.from(
+      { length: Math.ceil(locs.length / ROW_MAX_WINDOWS) },
+      (_, row) =>
+        locs.slice(row * ROW_MAX_WINDOWS, (row + 1) * ROW_MAX_WINDOWS),
+    )
+  })
 }
 
 /**
@@ -226,8 +221,9 @@ export function eventOutputName(
 }
 
 /**
- * The reference bases a record spelling out its alleles changes, from its sort
- * column to the end of its REF: the band that marks the call on its image.
+ * The reference bases a record changes, from its sort column to the end of its
+ * REF or to its other end on the contig: the band that marks the call on an
+ * image of one window.
  */
 export function recordHighlight(rec: BatchRecord) {
   const [locus] = rec.loci
@@ -235,12 +231,10 @@ export function recordHighlight(rec: BatchRecord) {
     ? {
         refName: locus.refName,
         start: rec.sort.pos,
-        end: Math.max(rec.sort.pos + 1, locus.end),
+        end: Math.max(
+          rec.sort.pos + 1,
+          ...rec.loci.filter(l => l.refName === locus.refName).map(l => l.end),
+        ),
       }
     : undefined
-}
-
-/** The argv entries one record contributes: a `--loc` per panel. */
-export function recordArgv(rec: BatchRecord, flank?: number): Entry[] {
-  return recordLocs(rec, flank).map(loc => ['loc', [loc]])
 }

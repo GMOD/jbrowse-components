@@ -143,9 +143,11 @@ describe('runBatch', () => {
       .readFileSync(path.join(dir, 'out', 'manifest.tsv'), 'utf8')
       .trim()
       .split('\n')
-    expect(rows[0]).toBe('file\tlocs\tname\tline\tevent\tlinks\talt\tstatus')
+    expect(rows[0]).toBe(
+      'file\tlocs\tname\tline\tevent\tlinks\talt\tspec\tstatus',
+    )
     expect(rows[1]).toBe(
-      '1_chr1_1000-chr5_2000_SV_1.svg\tchr1:501-1501 chr5:1501-2501\tSV_1\t1\t\t\t\tfailed',
+      '1_chr1_1000-chr5_2000_SV_1.svg\tchr1:501-1501 chr5:1501-2501\tSV_1\t1\t\t\t\t\tfailed',
     )
     expect(rows[2]).toMatch(/\tok$/)
   })
@@ -163,6 +165,10 @@ describe('runBatch', () => {
         'chr1\t30000\tdel2\tN\t<DEL>\t.\tPASS\tSVTYPE=DEL;END=63588',
       ].join('\n'),
     )
+    mockRenderRegion.mockResolvedValue({
+      svg: '<svg/>',
+      spec: { type: 'LinearGenomeView', loc: 'chr1:1-2' },
+    })
     await runBatch({
       vcf,
       outDir: path.join(dir, 'out'),
@@ -178,17 +184,28 @@ describe('runBatch', () => {
           mode: string
           loc?: string
           joined?: boolean
+          sortAt?: { pos: number }
+          highlight?: object
           argv: [string, string[]][]
         },
     )
-    // Two ends on one contig are one row of a linear view, joined; only ends on
-    // two contigs stack as a breakpoint view's panels.
+    // Ends on one contig are one row of a linear view, joined; only ends on two
+    // contigs stack as a breakpoint view's panels.
     expect(calls.map(c => [c.mode, c.loc, c.joined])).toEqual([
-      ['linear', 'chr1:4400-5600', undefined],
-      ['linear', 'chr1:8400-9772', undefined],
+      ['linear', 'chr1:4400-5600', false],
+      ['linear', 'chr1:8400-9772', false],
       ['breakpoint', undefined, undefined],
       ['linear', 'chr1:29400-30600 chr1:62988-64188', true],
     ])
+    // a deletion of two windows is still counted at its first deleted base;
+    // the band over a call's bases is for the one window that holds them all
+    expect(calls[3]!.sortAt?.pos).toBe(30000)
+    expect(calls[3]!.highlight).toBeUndefined()
+    expect(calls[1]!.highlight).toEqual({
+      refName: 'chr1',
+      start: 9000,
+      end: 9172,
+    })
     expect(calls[0]!.argv).toEqual([])
     expect(calls[2]!.argv).toEqual([
       ['loc', ['chr1:19400-20600']],
@@ -199,7 +216,7 @@ describe('runBatch', () => {
       .trim()
       .split('\n')
     expect(rows[1]).toBe(
-      '1_chr1_4999_ins1.svg\tchr1:4400-5600\tins1\t3\t\t\t\tok',
+      '1_chr1_4999_ins1.svg\tchr1:4400-5600\tins1\t3\t\t\t\t{"type":"LinearGenomeView","loc":"chr1:1-2"}\tok',
     )
   })
 
@@ -333,9 +350,42 @@ describe('runBatch', () => {
       .trim()
       .split('\n')
     expect(rows.at(-1)).toBe(
-      'event_1_der3.svg\tchr3:24400-26000 chr10:57400-58800 chr12:71400-72800\tder3\t\tder3\t\t\tok',
+      'event_1_der3.svg\tchr3:24400-26000 chr10:57400-58800 chr12:71400-72800\tder3\t\tder3\t\t\t\tok',
     )
     expect(rows.filter(r => r.includes('bp7'))).toHaveLength(1)
+  })
+
+  it('draws an event on one contig as rows of a linear view, four windows a row at most', async () => {
+    const vcf = path.join(dir, 'one-contig.vcf')
+    fs.writeFileSync(
+      vcf,
+      [
+        '##fileformat=VCFv4.2',
+        '#CHROM\tPOS\tID\tREF\tALT\tQUAL\tFILTER\tINFO',
+        'chr3\t10000\ta\tN\tN[chr3:30000[\t.\tPASS\tSVTYPE=BND;EVENT=c1',
+        'chr3\t50000\tb\tN\tN[chr3:70000[\t.\tPASS\tSVTYPE=BND;EVENT=c1',
+        'chr3\t90000\tc\tN\tN[chr3:20000[\t.\tPASS\tSVTYPE=BND;EVENT=c1',
+      ].join('\n'),
+    )
+    await runBatch({
+      vcf,
+      outDir: path.join(dir, 'out'),
+      format: 'svg',
+      flank: 600,
+      progress: steps().progress,
+    })
+    const last = mockRenderRegion.mock.calls.at(-1)![0] as {
+      mode: string
+      argv: [string, string[]][]
+    }
+    expect(last.mode).toBe('breakpoint')
+    expect(last.argv).toEqual([
+      [
+        'loc',
+        ['chr3:9400-10600 chr3:19400-20600 chr3:29400-30600 chr3:49400-50600'],
+      ],
+      ['loc', ['chr3:69400-70600 chr3:89400-90600']],
+    ])
   })
 
   it('names a --limit run’s images as the whole run will, so --resume finds them', async () => {

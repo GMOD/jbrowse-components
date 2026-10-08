@@ -162,12 +162,15 @@ interface ModeContext {
  * order. `links` is the reads with pieces in more than one panel of a
  * breakpoint view, or in both regions of a `joined` linear one: the molecules
  * its connectors or arcs are drawn for. `alt` is a linear view's
- * reads carrying `sortAllele` at `sortAt`, over the reads spanning it.
+ * reads carrying `sortAllele` at `sortAt`, over the reads spanning it. `spec`
+ * is the view as a session spec opens it: its regions and the `--track` tracks
+ * as drawn, without the tracks a file flag made, which no hosted config has.
  */
 export interface Rendered {
   svg: string
   links?: number[]
   alt?: string[]
+  spec?: ViewSpec
 }
 
 type ModeRenderer = (ctx: ModeContext) => Promise<string | Rendered>
@@ -574,14 +577,19 @@ const renderLinear: ModeRenderer = async ctx => {
   // track as, so modifiers (height:, color:, …) route to the right display slots
   // whichever way the track got there.
   const toOpen = [...flagTracks, ...(data.openTracks ?? [])]
+  const opened = []
   for (const { trackId, opts } of toOpen) {
-    await applyDisplayOpts(
-      view,
-      trackId,
-      trackCategory(model.session, trackId, opts),
-      opts,
-      sortAt,
-      joined,
+    opened.push(
+      await applyDisplayOpts(
+        view,
+        trackId,
+        trackCategory(model.session, trackId, opts),
+        opts,
+        // the reads joining a row's windows take its top rows, and a column
+        // sort would put every read at the column above them
+        joined ? undefined : sortAt,
+        joined,
+      ),
     )
   }
 
@@ -592,6 +600,14 @@ const renderLinear: ModeRenderer = async ctx => {
   })
   return {
     svg,
+    spec: loc
+      ? {
+          type: 'LinearGenomeView',
+          assembly: data.assembly.name,
+          loc,
+          tracks: opened.slice(0, flagTracks.length),
+        }
+      : undefined,
     links: joined
       ? view.tracks.flatMap(track => {
           const display = track.displays[0] as
@@ -743,17 +759,22 @@ const renderCircular: ModeRenderer = async ctx => {
 const renderBreakpoint: ModeRenderer = async ctx => {
   const { data, opts, model } = ctx
   let flagTracks: OpenTrack[] = []
+  let spec: ViewSpec | undefined
   const view = await addLaunchView<BreakpointViewModel, 'BreakpointSplitView'>(
     ctx,
     'BreakpointSplitView',
     () => {
       const showTracks = resolvedShowTracks(opts.showTracks, data)
       flagTracks = [...showTracks, ...(data.openTracks ?? [])]
-      return {
-        views: breakpointInit(data, opts, showTracks, (trackId, modifiers) =>
+      const panels = (from: Config) =>
+        breakpointInit(from, opts, showTracks, (trackId, modifiers) =>
           trackCategory(model.session, trackId, modifiers),
-        ),
+        )
+      spec = {
+        type: 'BreakpointSplitView',
+        views: panels({ ...data, openTracks: undefined }),
       }
+      return { views: panels(data) }
     },
     spec => ({ views: breakpointPanelsFromSpec(spec) }),
   )
@@ -772,13 +793,15 @@ const renderBreakpoint: ModeRenderer = async ctx => {
   })
   return {
     svg,
+    spec,
     links: [...view.overlayMatches.values()].flatMap(match =>
       match.kind === 'alignment'
         ? [
             match.chains.filter(({ connections }) =>
               connections.some(
                 ({ e1, e2 }) =>
-                  e1.level !== e2.level &&
+                  (e1.level !== e2.level ||
+                    e1.displayedRegionIndex !== e2.displayedRegionIndex) &&
                   match.layouts.has(e1) &&
                   match.layouts.has(e2),
               ),

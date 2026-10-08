@@ -6,15 +6,13 @@ import readline from 'node:readline'
 import zlib from 'node:zlib'
 
 import {
-  drawsAsOneRow,
   eventOutputName,
   eventRecords,
   outputName,
   parseBedpe,
   recordAllele,
-  recordArgv,
   recordHighlight,
-  recordLocs,
+  recordRows,
 } from './batch.ts'
 import { batchRefusedOptions, DEFAULT_WIDTH } from './options.ts'
 import { createProgress } from './progress.ts'
@@ -68,7 +66,8 @@ export interface BatchOpts extends Opts {
 interface PlannedRow {
   rec: BatchRecord
   file: string
-  locs: string[]
+  /** the image's rows, each the windows of one contig */
+  rows: string[][]
 }
 
 /** How one row ended: what a worker reports to the run that started it */
@@ -77,6 +76,7 @@ interface RowResult {
   status: RecordStatus
   links?: string
   alt?: string
+  spec?: string
   error?: string
 }
 
@@ -153,9 +153,9 @@ function forceLoaded(tracks: Entry[] | undefined) {
 }
 
 /**
- * Render every record of a callset, one image per row: a linear view where the
- * record's loci fit one window or are two ends on one contig, side by side, and
- * a breakpoint split view where they are on two contigs or are an event's.
+ * Render every record of a callset, one image each, a contig a row: a linear
+ * view where the record's loci are on one contig, its windows side by side, and
+ * a breakpoint split view of one panel a contig where they are on several.
  *
  * Keeps going after a failed row and reports the failures at the end. A callset
  * always has a row whose refName the assembly does not have, or whose window is
@@ -189,11 +189,11 @@ export async function runBatch(opts: BatchOpts) {
       `Warning: skipped ${skipped.length} record(s), e.g. ${skipped[0]}`,
     )
   }
-  // An event whose loci fit two panels is the picture its records already draw:
-  // GRIDSS files each breakpoint's two mates under one EVENT, and an inversion's
-  // two junctions share their loci.
+  // An event whose loci fit two windows is the picture its records already
+  // draw: GRIDSS files each breakpoint's two mates under one EVENT, and an
+  // inversion's two junctions share their loci.
   const events = eventRecords(records, refNames).filter(
-    e => recordLocs(e, flank).length > 2,
+    e => recordRows(e, flank).flat().length > 2,
   )
   // Named and located up front, so `--dryRun` and the manifest report the rows
   // the loop renders. The index pads to the whole callset, so a `--limit` run
@@ -209,7 +209,7 @@ export async function runBatch(opts: BatchOpts) {
     })),
   ]
     .slice(0, limit)
-    .map(row => ({ ...row, locs: recordLocs(row.rec, flank) }))
+    .map(row => ({ ...row, rows: recordRows(row.rec, flank) }))
   if (planned.length === 0) {
     // Which of the two emptied it: the file having nothing usable in it is a
     // different problem from `--limit 0`, and blaming the file for the flag sends
@@ -222,8 +222,8 @@ export async function runBatch(opts: BatchOpts) {
   }
 
   if (dryRun) {
-    for (const { file, locs } of planned) {
-      console.log([file, ...locs].join('\t'))
+    for (const { file, rows } of planned) {
+      console.log([file, ...rows.flat()].join('\t'))
     }
     return { done: 0, failures: [], skipped }
   }
@@ -270,7 +270,7 @@ export async function runBatch(opts: BatchOpts) {
 
   // a reused image keeps the counts the run that drew it reported
   const counts = Object.fromEntries(
-    COUNT_COLUMNS.map(column => {
+    REPORTED_COLUMNS.map(column => {
       const byFile = opts.resume
         ? priorColumn(outDir, column)
         : new Map<string, string>()
@@ -282,7 +282,7 @@ export async function runBatch(opts: BatchOpts) {
       }
       return [column, byFile]
     }),
-  ) as Record<CountColumn, Map<string, string>>
+  ) as Record<ReportedColumn, Map<string, string>>
   const status = planned.map(
     ({ file }) => results.get(file)?.status ?? 'failed',
   )
@@ -368,7 +368,7 @@ async function renderRows(
   const { setupEnv } = await import('./setupEnv.ts')
   setupEnv()
   const { renderRegionReport } = await import('./renderRegion.ts')
-  for (const { rec, file, locs } of rows) {
+  for (const { rec, file, rows: windows } of rows) {
     const out = path.join(outDir, file)
     if (opts.resume && fs.existsSync(out)) {
       report({ file, status: 'exists' })
@@ -385,31 +385,28 @@ async function renderRows(
         showTracks: forceLoaded(opts.showTracks),
         trackList: forceLoaded(opts.trackList),
       }
+      const [only = [], ...more] = windows
       const rendered = await renderRegionReport(
-        drawsAsOneRow(rec, locs)
+        more.length === 0
           ? {
               ...shared,
               mode: 'linear',
               argv,
-              loc: locs.join(' '),
-              joined: true,
+              loc: only.join(' '),
+              joined: only.length > 1,
+              sortAt: rec.sort,
+              sortAllele: recordAllele(rec, flank),
+              highlight: only.length === 1 ? recordHighlight(rec) : undefined,
             }
-          : locs.length > 1
-            ? {
-                ...shared,
-                mode: 'breakpoint',
-                argv: [...argv, ...recordArgv(rec, flank)],
-                loc: undefined,
-              }
-            : {
-                ...shared,
-                mode: 'linear',
-                argv,
-                loc: locs[0],
-                sortAt: rec.sort,
-                sortAllele: recordAllele(rec, flank),
-                highlight: recordHighlight(rec),
-              },
+          : {
+              ...shared,
+              mode: 'breakpoint',
+              argv: [
+                ...argv,
+                ...windows.map((row): Entry => ['loc', [row.join(' ')]]),
+              ],
+              loc: undefined,
+            },
         configObject && structuredClone(configObject),
       )
       writeRendered(rendered.svg, out, width)
@@ -418,6 +415,7 @@ async function renderRows(
         status: 'ok',
         links: rendered.links?.join(',') ?? '',
         alt: rendered.alt?.join(',') ?? '',
+        spec: rendered.spec ? JSON.stringify(rendered.spec) : '',
       })
     } catch (error) {
       report({
@@ -436,17 +434,19 @@ async function renderRows(
 // true until a --limit or a --passOnly differs between them.
 //
 // `line` is the record's line in the input, the key that joins a row back to
-// every column the file holds. `locs` is one locus per panel, space separated.
+// every column the file holds. `locs` is one locus per window, space separated.
 // An event's row has no line and its label as both name and event, so filtering
 // on `event` lists the event's image above its records'. `links` is the reads
-// with pieces in more than one panel, or in both windows of a one-row record,
-// per alignments track: what a reviewer reads as a fan of curves or an arc, as
-// a number a queue can be sorted on. Empty for an image of one window. `alt` is `count/depth` per alignments track: the reads
-// with the record's ALT at the column its pileup is sorted at, over the reads
-// spanning it. An insertion of 50 bases or more is counted within the flank,
-// wherever the aligner put it. Empty for a record with no such column.
-const COUNT_COLUMNS = ['links', 'alt'] as const
-type CountColumn = (typeof COUNT_COLUMNS)[number]
+// behind the connectors and arcs joining an image's windows, per alignments
+// track: what a reviewer reads as a fan of curves or an arc, as a number a
+// queue can be sorted on. Empty for an image of one window. `alt` is
+// `count/depth` per alignments track: the reads with the record's ALT at its
+// column, over the reads spanning it. An insertion of 50 bases or more is
+// counted within the flank, wherever the aligner put it. Empty for a record
+// with no such column and for one on several contigs. `spec` is the view as a
+// session spec opens it, JSON: its rows and the `--track` tracks as drawn.
+const REPORTED_COLUMNS = ['links', 'alt', 'spec'] as const
+type ReportedColumn = (typeof REPORTED_COLUMNS)[number]
 
 const MANIFEST_COLUMNS = [
   'file',
@@ -454,11 +454,11 @@ const MANIFEST_COLUMNS = [
   'name',
   'line',
   'event',
-  ...COUNT_COLUMNS,
+  ...REPORTED_COLUMNS,
   'status',
 ]
 
-function priorColumn(outDir: string, column: CountColumn) {
+function priorColumn(outDir: string, column: ReportedColumn) {
   const file = path.join(outDir, 'manifest.tsv')
   const [head = '', ...rows] = fs.existsSync(file)
     ? fs.readFileSync(file, 'utf8').split('\n')
@@ -481,16 +481,16 @@ function writeManifest(
   planned: PlannedRow[],
   // index-aligned with `planned`: the loop pushes exactly one per record
   status: RecordStatus[],
-  counts: Record<CountColumn, Map<string, string>>,
+  counts: Record<ReportedColumn, Map<string, string>>,
 ) {
-  const rows = planned.map(({ rec, file, locs }, i) =>
+  const rows = planned.map(({ rec, file, rows: windows }, i) =>
     [
       file,
-      locs.join(' '),
+      windows.flat().join(' '),
       rec.name ?? '',
       rec.line ?? '',
       rec.event ?? '',
-      ...COUNT_COLUMNS.map(column => counts[column].get(file) ?? ''),
+      ...REPORTED_COLUMNS.map(column => counts[column].get(file) ?? ''),
       status[i],
     ].join('\t'),
   )
