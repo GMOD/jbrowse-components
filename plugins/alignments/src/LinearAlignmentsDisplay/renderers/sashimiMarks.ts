@@ -1,8 +1,20 @@
-import { defineMark, linkMark, withPassId } from '@jbrowse/render-core/marks'
+import {
+  defineMark,
+  linkApex,
+  linkMark,
+  withPassId,
+} from '@jbrowse/render-core/marks'
+import { canvasWideBlock } from '@jbrowse/render-core/renderBlock'
 import { YSCALEBAR_LABEL_OFFSET } from '@jbrowse/wiggle-core/constants'
 
-import { SASHIMI_MAX_STROKE_PX } from '../../features/sashimi/bandFeed.ts'
-import { SASHIMI_APEX_CLEARANCE_PX } from '../../features/sashimi/computeOverlay.ts'
+import {
+  SASHIMI_MAX_STROKE_PX,
+  SASHIMI_SIDES,
+} from '../../features/sashimi/bandFeed.ts'
+import {
+  SASHIMI_APEX_CLEARANCE_PX,
+  sashimiLabelSpanPx,
+} from '../../features/sashimi/computeOverlay.ts'
 
 import type {
   SashimiBandFeed,
@@ -99,3 +111,56 @@ export const SASHIMI_MARKS: Mark<SashimiBandFeed, SashimiBandState>[] = [
   sideMark('up'),
   sideMark('down'),
 ]
+
+/** A junction's read count, at its arc's apex in canvas px. */
+export interface SashimiLabel {
+  key: string
+  x: number
+  y: number
+  count: number
+}
+
+const HITS = { up: 'upHits', down: 'downHits' } as const
+
+/**
+ * The count labels of every section, each at the apex its mark draws
+ * (`linkApex`), so a label cannot stand where no arc does: an arc too narrow
+ * on screen for its count gets none, nor does one whose apex is off the
+ * canvas or whose dome the band clips to its legs.
+ */
+export function sashimiLabels(
+  state: RenderState,
+  sectionFeeds: readonly (ReadonlyMap<number, SashimiBandFeed> | undefined)[],
+): SashimiLabel[] {
+  const labels: SashimiLabel[] = []
+  state.sections.forEach((sec, s) => {
+    const feeds = sectionFeeds[s]
+    if (!feeds || feeds.size === 0) {
+      return
+    }
+    const bands = sashimiBandsOf(state, sec)
+    for (const side of SASHIMI_SIDES) {
+      const band = bands[side]
+      if (band) {
+        const params = sideParams(band, state, side === 'down')
+        for (const [regionIdx, feed] of feeds) {
+          const block = canvasWideBlock(regionIdx, state.canvasWidth)
+          const hits = feed[HITS[side]]
+          for (let i = 0; i < hits.length; i++) {
+            const { key, count } = hits[i]!
+            const apex = linkApex(feed[side], block, state, params, i)
+            if (
+              apex &&
+              2 * apex.halfWidth >= sashimiLabelSpanPx(count) &&
+              apex.x >= 0 &&
+              apex.x <= state.canvasWidth
+            ) {
+              labels.push({ key: `${s}:${key}`, x: apex.x, y: apex.y, count })
+            }
+          }
+        }
+      }
+    }
+  })
+  return labels
+}

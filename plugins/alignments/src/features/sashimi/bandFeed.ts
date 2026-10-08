@@ -83,15 +83,25 @@ function feedOf(up: SideLanes, down: SideLanes): SashimiBandFeed {
 
 export const EMPTY_SASHIMI_BAND_FEED = feedOf(new SideLanes(), new SideLanes())
 
-function regionHolding(
-  displayed: readonly RegionInfo[],
-  refName: string,
-  bp: number,
-) {
-  return displayed.find(
-    r => r.refName === refName && bp >= r.start && bp <= r.end,
-  )?.displayedRegionIndex
+// The first displayed region holding `bp`, as `bpToPx` resolves a refName the
+// view shows twice. Indexed by refName, so a view of thousands of scaffolds
+// costs a junction the regions of its own.
+function regionFinder(displayed: readonly RegionInfo[]) {
+  const byRefName = new Map<string, RegionInfo[]>()
+  for (const region of displayed) {
+    const regions = byRefName.get(region.refName)
+    if (regions) {
+      regions.push(region)
+    } else {
+      byRefName.set(region.refName, [region])
+    }
+  }
+  return (refName: string, bp: number) =>
+    byRefName.get(refName)?.find(r => bp >= r.start && bp <= r.end)
+      ?.displayedRegionIndex
 }
+
+const none = () => undefined
 
 export type SashimiColors = Pick<
   PaletteColors,
@@ -132,9 +142,10 @@ export function buildSashimiBandFeeds({
   colors,
 }: SashimiBandFeedInput): Map<number, SashimiBandFeed> {
   const lanes = new Map<number, { up: SideLanes; down: SideLanes }>()
+  const regionHolding = junctions.length > 0 ? regionFinder(displayed) : none
   for (const j of [...junctions].sort((a, b) => a.count - b.count)) {
-    const own = regionHolding(displayed, j.refName, j.start)
-    const far = regionHolding(displayed, j.refName, j.end)
+    const own = regionHolding(j.refName, j.start)
+    const far = regionHolding(j.refName, j.end)
     if (own !== undefined && far !== undefined) {
       let region = lanes.get(own)
       if (!region) {

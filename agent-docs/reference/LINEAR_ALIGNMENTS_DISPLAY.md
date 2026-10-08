@@ -213,8 +213,12 @@ an `onClick` gets nothing, `closeContextMenu` ran first.
 - On-screen and SVG export share `drawAlignmentBlocks`, sashimi arcs included:
   they are link marks (`SASHIMI_MARKS`, ADR-222) fed in bp, so a pan rebuilds
   nothing. The sashimi count labels and the linked-read bezier arcs stay SVG
-  overlays, each sharing one geometry source with the export.
-  `sashimiLabelSections` depends on pan/zoom but **not** `scrollTop`.
+  overlays, each sharing one geometry source with the export. The labels are
+  placed by the marks (`sashimiLabels`, through `linkApex`), never by a second
+  spelling of the band geometry.
+- **Ask `drawsSashimi`, not `showSashimiArcs`, before reading the pan for
+  sashimi.** The setting is on by default on every track with coverage, and a
+  track of unspliced reads must not rebuild `renderState` per frame for it.
 - **A per-block pass cannot join two displayed regions**, since it maps bp
   through its own block. The read-connection band's links do, drawing over the
   whole canvas through the view's region table (ADR-170). The per-read bezier

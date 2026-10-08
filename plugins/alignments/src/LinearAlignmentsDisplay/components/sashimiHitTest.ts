@@ -5,11 +5,10 @@ import {
   recordPath,
 } from '@jbrowse/render-core/marks'
 import { canvasWideBlock } from '@jbrowse/render-core/renderBlock'
-import { ARC_HIT_SLOP_PX } from '@jbrowse/sv-core'
 
 import { SASHIMI_SIDES } from '../../features/sashimi/bandFeed.ts'
 import { SASHIMI_MARKS } from '../renderers/sashimiMarks.ts'
-import { sashimiFeatureId } from './sashimiArcs.ts'
+import { SASHIMI_FEATURE_ID_PREFIX } from './sashimiArcs.ts'
 
 import type {
   SashimiBandFeed,
@@ -21,6 +20,11 @@ import type { ArcHighlight } from './arcHitTest.ts'
 import type { TooltipPayload } from './tooltipUtils.ts'
 import type { LinkChannels } from '@jbrowse/render-core/marks'
 import type { RenderBlock } from '@jbrowse/render-core/renderBlock'
+
+// How far off a junction's stroke the cursor still answers for it. Tighter
+// than the read connections' slop, since an up arc lies over the coverage
+// histogram and every px it takes is a px the histogram's own hover loses.
+const SASHIMI_HIT_SLOP_PX = 2
 
 /**
  * A splice junction as a gesture consumes it, a variant of the union the
@@ -105,20 +109,20 @@ export function resolveSashimiHover(
   yPx: number,
   feeds: ReadonlyMap<number, SashimiBandFeed>,
   state: SashimiBandState,
-  blocks: readonly RenderBlock[],
 ): SashimiHover | undefined {
   if (feeds.size === 0) {
     return undefined
   }
   const found = nearestMarkHit(
     SASHIMI_MARKS,
-    blocks,
+    // both marks span the view, so they are asked over `regionKeys` alone
+    [],
     i => feeds.get(i),
     state,
     xPx,
     yPx,
     {
-      radiusPx: ARC_HIT_SLOP_PX,
+      radiusPx: SASHIMI_HIT_SLOP_PX,
       regionKeys: feeds.keys(),
       candidates: (feed, mark) =>
         inBand(state, SASHIMI_SIDES[mark]!, yPx)
@@ -161,11 +165,14 @@ export function selectedSashimiHighlight(
   feeds: ReadonlyMap<number, SashimiBandFeed>,
   state: SashimiBandState,
 ): ArcHighlight | undefined {
+  const prefix = `${SASHIMI_FEATURE_ID_PREFIX}${groupKey}-`
+  if (!featureId.startsWith(prefix)) {
+    return undefined
+  }
+  const key = featureId.slice(prefix.length)
   for (const [regionIdx, feed] of feeds) {
     for (const side of SASHIMI_SIDES) {
-      const index = feed[HITS[side]].findIndex(
-        j => sashimiFeatureId(groupKey, j) === featureId,
-      )
+      const index = feed[HITS[side]].findIndex(j => j.key === key)
       if (index !== -1) {
         return sashimiHighlight(
           feed,

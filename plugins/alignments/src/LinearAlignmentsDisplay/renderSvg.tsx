@@ -6,10 +6,11 @@ import { renderDisplaySvg } from '@jbrowse/display-kit/renderDisplaySvg'
 
 import { getMismatchContrastMap } from '../shared/util.ts'
 import PileupBezierArcsSvg from './components/PileupBezierArcsSvg.tsx'
-import SashimiLabelsSvg from './components/SashimiLabelsSvg.tsx'
+import SashimiLabels from './components/SashimiLabels.tsx'
 import { drawAlignmentLabels } from './components/drawAlignmentLabels.ts'
 import { bandScreenTop } from './components/sectionScreen.ts'
 import { drawAlignmentsToCtx } from './renderers/Canvas2DAlignmentsRenderer.ts'
+import { sashimiLabels } from './renderers/sashimiMarks.ts'
 
 import type { LinearAlignmentsDisplayModel } from './model.ts'
 import type { LgvSvgBodyProps } from '@jbrowse/display-kit/renderDisplaySvg'
@@ -69,11 +70,18 @@ function AlignmentsSvgBody({
     colors: model.colorPaletteIn(palette),
   }
   const labels = model.visibleLabels
+  const sections = model.sourceSectionsIn(state.colors)
+  const sashimiCounts = model.showSashimiLabels
+    ? sashimiLabels(
+        state,
+        sections.map(sec => sec.sashimiFeeds),
+      )
+    : []
   const contrastMap = getMismatchContrastMap(model.showModifications, palette)
 
   // The sashimi count labels and the linked-read bezier arcs are vector SVG on
-  // screen too; these export components share their geometry helpers with the
-  // overlays so the two can't drift.
+  // screen too, and each shares its geometry with the overlay so the two can't
+  // drift.
   return (
     <>
       <PaintLayer
@@ -84,7 +92,7 @@ function AlignmentsSvgBody({
           drawAlignmentsToCtx(
             ctx,
             {
-              sections: model.sourceSectionsIn(state.colors),
+              sections,
               densityRegions: model.densityCoverageRegions,
             },
             renderBlocks,
@@ -97,7 +105,7 @@ function AlignmentsSvgBody({
       />
       {overlays ? (
         <>
-          <SashimiLabelsSvg model={model} />
+          <SashimiLabels labels={sashimiCounts} />
           <PileupBezierArcsSvg
             model={model}
             view={model.view}

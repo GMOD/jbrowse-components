@@ -170,13 +170,10 @@ export function useAlignmentsBase(model: LinearAlignmentsDisplayModel) {
         model.renderSections.findIndex(s => s.groupKey === section.groupKey)
       ]
     const hover = sec
-      ? resolveSashimiHover(
-          canvasX,
-          canvasY,
-          feeds,
-          { ...renderState, sashimi: sashimiBandsOf(renderState, sec) },
-          model.renderBlocks,
-        )
+      ? resolveSashimiHover(canvasX, canvasY, feeds, {
+          ...renderState,
+          sashimi: sashimiBandsOf(renderState, sec),
+        })
       : undefined
     return hover
       ? {
@@ -276,6 +273,16 @@ export function useAlignmentsBase(model: LinearAlignmentsDisplayModel) {
     // has already gone and re-light the tooltip we are clearing here
     hover.cancel()
     model.clearHoverUnlessPinned()
+  }
+
+  // A press may start a pan, and a junction or a connection hovered through
+  // one would keep its highlight path where the cursor was while the arcs move
+  // under it, and re-ink the junction's supporting reads on every frame.
+  function handleMouseDown() {
+    if (model.hoveredJunction || model.hoveredArcHighlight) {
+      hover.cancel()
+      model.clearHoverUnlessPinned()
+    }
   }
 
   function handleContextMenu(e: React.MouseEvent) {
@@ -533,6 +540,7 @@ export function useAlignmentsBase(model: LinearAlignmentsDisplayModel) {
     width,
     contrastMap,
     handleMouseLeave,
+    handleMouseDown,
     handleContextMenu,
     handleCanvasMouseMove,
     handleClick,

@@ -45,6 +45,7 @@ const PileupBody = observer(function PileupBody({
     width,
     contrastMap,
     handleMouseLeave,
+    handleMouseDown,
     handleContextMenu,
     handleCanvasMouseMove,
     handleClick,
@@ -79,6 +80,7 @@ const PileupBody = observer(function PileupBody({
         height={height}
         handleCanvasMouseMove={handleCanvasMouseMove}
         handleMouseLeave={handleMouseLeave}
+        handleMouseDown={handleMouseDown}
         handleClick={handleClick}
         handleContextMenu={handleContextMenu}
       />
@@ -324,6 +326,7 @@ const PileupCanvas = observer(function PileupCanvas({
   height,
   handleCanvasMouseMove,
   handleMouseLeave,
+  handleMouseDown,
   handleClick,
   handleContextMenu,
 }: {
@@ -334,6 +337,7 @@ const PileupCanvas = observer(function PileupCanvas({
   height: number
   handleCanvasMouseMove: (e: React.MouseEvent) => void
   handleMouseLeave: () => void
+  handleMouseDown: () => void
   handleClick: (e: React.MouseEvent) => void
   handleContextMenu: (e: React.MouseEvent) => void
 }) {
@@ -354,6 +358,7 @@ const PileupCanvas = observer(function PileupCanvas({
       }}
       onMouseMove={handleCanvasMouseMove}
       onMouseLeave={handleMouseLeave}
+      onMouseDown={handleMouseDown}
       onClick={handleClick}
       onContextMenu={handleContextMenu}
     />

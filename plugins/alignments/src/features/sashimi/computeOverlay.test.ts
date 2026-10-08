@@ -9,10 +9,10 @@ import {
 import { makePileupDataResult } from '../../RenderAlignmentDataRPC/testPileupData.ts'
 import { SASHIMI_APEX_CLEARANCE_PX, sashimiArcColor } from './computeOverlay.ts'
 import { junctionKey } from './junctions.ts'
-import { computeSashimiArcs } from './testSashimiArcs.ts'
+import { computeSashimiArcs } from './sashimiArcs.fixture.ts'
 
 import type { PileupDataResult } from '../../RenderAlignmentDataRPC/types.ts'
-import type { ComputeSashimiArcsOpts } from './testSashimiArcs.ts'
+import type { ComputeSashimiArcsOpts } from './sashimiArcs.fixture.ts'
 
 // Minimal PileupDataResult with only the sashimi fields computeSashimiArcs reads.
 function makeData(counts: number[]): PileupDataResult {
@@ -48,7 +48,6 @@ const baseOpts = (
 ): ComputeSashimiArcsOpts => ({
   rpcDataMap: new Map([[0, rpcData]]),
   visibleRegions: [{ refName: 'chr1', displayedRegionIndex: 0 }],
-  bpToScreenX: (_refName: string, bp: number) => bp,
   // Wider than anything these fixtures project to, so the off-screen cull never
   // fires — every test below is about geometry, and the cull has its own.
   viewWidthPx: 10_000,
@@ -108,8 +107,8 @@ test('wider junctions get taller arcs (span-scaled nesting)', () => {
 // The tallest arc a band can hold: a 100kb junction (>= SPAN_REF_MAX_BP) pins
 // MAX_ARC_FRAC, and sending it down puts its label at the apex in a band-local
 // space whose baseline is 0, so the numbers below read directly against the
-// 40px strip. `bpToScreenX` is the identity, so its label sits past the test's
-// default box.
+// 40px strip. The test region draws 1px per bp, so its label sits past the
+// test's default box.
 const deepestDownArc = () => {
   const data = makePileupDataResult({
     sashimiX1: new Uint32Array([100]),
@@ -362,7 +361,7 @@ describe('a count label whose apex is outside the box is culled', () => {
       sashimiAcceptors: new Uint8Array([0]),
     })
 
-  // `bpToScreenX` is the identity here, so a bp IS a screen x.
+  // the test region draws 1px per bp from x 0, so a bp IS a screen x
   const labelled = (x1: number, x2: number, viewWidthPx: number) => {
     const data = junction(x1, x2)
     return computeSashimiArcs({

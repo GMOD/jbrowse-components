@@ -1,10 +1,10 @@
 import { makePileupDataResult } from '../../RenderAlignmentDataRPC/testPileupData.ts'
 import { downJunctionKeys, mergeJunctions } from './junctions.ts'
 import { encodeDinucleotide, spliceMotifLabel } from './motif.ts'
-import { computeSashimiArcs } from './testSashimiArcs.ts'
+import { computeSashimiArcs } from './sashimiArcs.fixture.ts'
 
 import type { PileupDataResult } from '../../RenderAlignmentDataRPC/types.ts'
-import type { ComputeSashimiArcsOpts } from './testSashimiArcs.ts'
+import type { ComputeSashimiArcsOpts } from './sashimiArcs.fixture.ts'
 
 // Collapsed introns (plugins/canvas CollapseIntronsDialog) are the one routine
 // way a single refName becomes many displayedRegions: each exon is padded by a
@@ -20,25 +20,6 @@ interface TestRegion {
   start: number
   end: number
   reversed?: boolean
-}
-
-// Faithful stand-in for `makeBpToScreenX` -> `Base1DUtils.bpToPx`: walk the
-// regions in order accumulating their widths, take the FIRST region whose
-// [start, end] inclusively contains the coordinate, and offset within it from
-// the correct edge. A coordinate in a collapsed intron is in no region at all,
-// so it comes back undefined and the whole arc is dropped — there is no pixel
-// on screen for it to hang from.
-function projectionOver(regions: TestRegion[]) {
-  return (_refName: string, bp: number) => {
-    let bpSoFar = 0
-    for (const r of regions) {
-      if (bp >= r.start && bp <= r.end) {
-        return bpSoFar + (r.reversed ? r.end - bp : bp - r.start)
-      }
-      bpSoFar += r.end - r.start
-    }
-    return undefined
-  }
 }
 
 // Three exons of one gene, padded by 100bp each, as CollapseIntronsDialog emits
@@ -94,11 +75,11 @@ function collapsedOpts(
       refName: 'chr1',
       displayedRegionIndex: i,
     })),
-    bpToScreenX: projectionOver(regions),
     displayed: regions.map((r, displayedRegionIndex) => ({
       refName: 'chr1',
       start: r.start,
       end: r.end,
+      reversed: r.reversed,
       displayedRegionIndex,
     })),
     // Wider than the regions above project to (three 400bp windows, so 1200px),
@@ -299,11 +280,7 @@ test('a refName displayed twice anchors arcs to its first occurrence', () => {
     { start: 500, end: 1500 },
   ]
   const data = junctions([[700, 1200, 5]])
-  const arcs = computeSashimiArcs(
-    collapsedOpts([data, data], overlapping, {
-      bpToScreenX: projectionOver(overlapping),
-    }),
-  )
+  const arcs = computeSashimiArcs(collapsedOpts([data, data], overlapping))
   expect(arcs).toHaveLength(1)
   // 700 resolves in region 0 (x 700), not its second painting inside region 1;
   // 1200 exists only in region 1, at 1000 + (1200 - 500) = 1700.

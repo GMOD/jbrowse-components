@@ -5,12 +5,16 @@ import {
   SASHIMI_LABEL_HALO_WIDTH,
 } from '../../features/sashimi/computeOverlay.ts'
 
-import type { SashimiLabel } from '../../features/sashimi/computeOverlay.ts'
+import type { SashimiLabel } from '../renderers/sashimiMarks.ts'
 
 // The read count at each arc's apex, shared by the overlay and the export. The
 // halo is the surface color, so it reads in either theme.
 // eslint-disable-next-line no-restricted-syntax -- drawn inside a frozen SVG figure
-export default function SashimiLabels({ labels }: { labels: SashimiLabel[] }) {
+export default function SashimiLabels({
+  labels,
+}: {
+  labels: readonly SashimiLabel[]
+}) {
   const palette = usePalette()
   return labels.map(label => (
     <text

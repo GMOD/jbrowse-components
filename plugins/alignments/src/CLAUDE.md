@@ -72,8 +72,8 @@ modification stacks) and `indicator/` (the hit type).
 `sashimi/` is a band of its own, as `arcs/` is: its compute stages and
 `bandFeed.ts`, which hands render-core's link mark the junctions as channels
 (`renderers/sashimiMarks.ts`, ADR-222). Its count labels are the one DOM layer
-left (`computeOverlay.ts`). `alignedBaseWalk.ts` is a bare shared walk, not a
-directory at all.
+left, placed by `sashimiLabels` at the apex the mark reports.
+`alignedBaseWalk.ts` is a bare shared walk, not a directory at all.
 
 The `clip` layer draws soft AND hard clips from one shader, so `features/clip/`
 owns both emitters and there is no `hardclip/`. `features/softclipBases/` is the

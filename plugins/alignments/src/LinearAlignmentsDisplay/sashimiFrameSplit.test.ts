@@ -82,14 +82,14 @@ test('a pan re-merges nothing and rebuilds no feed', () => {
   const stop = autorun(() => {
     merges.note(display.sashimiJunctionSections)
     feeds.note(display.sashimiFeedsByGroup)
-    labels.note(display.sashimiLabelSections)
+    labels.note(display.sashimiLabels)
   })
 
   for (let i = 1; i <= FRAMES; i++) {
     view.setNewView(10, i * 7)
     merges.note(display.sashimiJunctionSections)
     feeds.note(display.sashimiFeedsByGroup)
-    labels.note(display.sashimiLabelSections)
+    labels.note(display.sashimiLabels)
   }
   stop()
 
@@ -117,18 +117,18 @@ test('with count labels on, a pan re-projects the labels alone', () => {
   const labels = identityCounter<unknown>()
   const stop = autorun(() => {
     feeds.note(display.sashimiFeedsByGroup)
-    labels.note(display.sashimiLabelSections)
+    labels.note(display.sashimiLabels)
   })
   for (let i = 1; i <= FRAMES; i++) {
     view.setNewView(10, i * 7)
     feeds.note(display.sashimiFeedsByGroup)
-    labels.note(display.sashimiLabelSections)
+    labels.note(display.sashimiLabels)
   }
   stop()
 
   expect(feeds.count).toBe(1)
   expect(labels.count).toBe(FRAMES + 1)
-  expect(display.sashimiLabelSections[0]!.up.length).toBe(2)
+  expect(display.sashimiLabels).toHaveLength(2)
 })
 
 // The DNA case, which is most alignments tracks: `showSashimiArcs` resolves on
@@ -148,17 +148,25 @@ test('a track with no junctions hands the overlay the same empty array', () => {
   )
 
   const projections = identityCounter<unknown>()
+  const states = identityCounter<unknown>()
   const stop = autorun(() => {
-    projections.note(display.sashimiLabelSections)
+    projections.note(display.sashimiLabels)
+    states.note(display.renderState)
   })
   for (let i = 1; i <= FRAMES; i++) {
     view.setNewView(10, i * 7)
-    projections.note(display.sashimiLabelSections)
+    projections.note(display.sashimiLabels)
+    states.note(display.renderState)
   }
   stop()
 
   expect(projections.count).toBe(1)
-  expect(display.sashimiLabelSections).toHaveLength(0)
+  // The marks place their feet through the view's region table, which reads
+  // the pan. A track with no junction asks for no table, so the pan leaves its
+  // render state the same object: gating the table on the SETTING, which is on
+  // by default, rebuilt it on every frame of every alignments track.
+  expect(states.count).toBe(1)
+  expect(display.sashimiLabels).toHaveLength(0)
 })
 
 // The band's feeds are placed through the view's region table, a uniform, so

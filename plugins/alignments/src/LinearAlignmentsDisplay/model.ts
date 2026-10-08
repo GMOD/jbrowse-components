@@ -117,10 +117,7 @@ import {
   READ_COLOR_CATEGORY_BY_INDEX,
   framesUnpairedChainStrand,
 } from './colorUtils.ts'
-import {
-  buildColorPaletteFromPalette,
-  makeBpToScreenX,
-} from './components/alignmentComponentUtils.ts'
+import { buildColorPaletteFromPalette } from './components/alignmentComponentUtils.ts'
 import { computeVisibleLabels } from './components/computeVisibleLabels.ts'
 import {
   readHighlightInk,
@@ -176,7 +173,6 @@ import {
   getSortByMenuItem,
 } from './menus/index.ts'
 import { migrateAlignmentsSnapshot } from './migrateAlignmentsSnapshot.ts'
-import { computeSashimiLabelSections } from './overlaySections.ts'
 import {
   NO_QUALITY_SPAN,
   baseQualitySpanAcrossGroups,
@@ -184,7 +180,7 @@ import {
 } from './qualitySpans.ts'
 import { chainReadIdsAt, findRead, readInfo } from './readLookup.ts'
 import { shouldDrawOverlaps } from './renderers/rendererTypes.ts'
-import { sashimiBandsOf } from './renderers/sashimiMarks.ts'
+import { sashimiBandsOf, sashimiLabels } from './renderers/sashimiMarks.ts'
 import { fetchFeatureDetails, fetchFeaturesForRegion } from './rpcCalls.ts'
 import {
   belowCoverageBandsGeometry,
@@ -225,7 +221,6 @@ import type { NumericExtent } from './bakedColorScale.ts'
 import type { ReadColorCategory } from './colorUtils.ts'
 import type { ArcHighlight } from './components/arcHitTest.ts'
 import type { ContextMenuHit } from './components/hitTestPipeline.ts'
-import type { SashimiLabelSection } from './components/sashimiArcs.ts'
 import type { ScrollModel } from './components/sectionScreen.ts'
 import type { TooltipPayload } from './components/tooltipUtils.ts'
 import type { LinearAlignmentsDisplayConfigSchema } from './configSchema'
@@ -241,6 +236,7 @@ import type {
   AlignmentsRenderingBackend,
   SectionSource,
 } from './renderers/rendererTypes.ts'
+import type { SashimiLabel } from './renderers/sashimiMarks.ts'
 import type {
   BelowCoverageBandsSettings,
   SectionsLayout,
@@ -278,9 +274,11 @@ const NO_GROUP_HEIGHT_OVERRIDES: ReadonlyMap<string, number> = new Map()
 
 // One frozen empty array, so the common no-arcs frame invalidates no observer.
 // Frozen so no caller's in-place `.sort()` corrupts the singleton.
-const NO_SASHIMI_LABEL_SECTIONS = Object.freeze(
-  [],
-) as readonly SashimiLabelSection[]
+const NO_SASHIMI_LABELS = Object.freeze([]) as readonly SashimiLabel[]
+const NO_SASHIMI_FEEDS_BY_GROUP: ReadonlyMap<
+  string,
+  ReadonlyMap<number, SashimiBandFeed>
+> = new Map()
 const NO_SASHIMI_FEEDS: ReadonlyMap<number, SashimiBandFeed> = new Map()
 const NO_LINK_REGIONS: readonly LinkRegion[] = []
 const NO_ARC_FEEDS: ReadonlyMap<number, ArcBandFeed> = new Map()
@@ -2300,7 +2298,7 @@ export default function stateModelFactory(
            * The junctions each lane draws, merged and filtered, in stacking
            * order. A gesture owes none of it: it reads loaded data, the on-screen
            * region set and the junction filters, and only the count labels
-           * (`sashimiLabelSections`) read the pan. Not a lane
+           * (`sashimiLabels`) read the pan. Not a lane
            * field: a lane feeds the LAYOUT, which the on-screen region set must
            * never reach.
            */
@@ -2317,8 +2315,6 @@ export default function stateModelFactory(
             return self.renderSections.map(sec => ({
               groupKey: sec.groupKey,
               sashimiDownKeys: sec.sashimiDownKeys,
-              coverageTop: sec.coverageTop,
-              sashimiBandTop: sec.sashimiBandTop,
               junctions: [
                 ...mergeJunctions(
                   visibleRegionJunctions(sec.rawPileupMap, regions),
@@ -2330,26 +2326,14 @@ export default function stateModelFactory(
 
           /**
            * #getter
-           * Per-section junction count labels in stacking order, which the
-           * overlay and the SVG export both map over. It depends on pan/zoom
-           * but not `scrollTop`, so scrolling a grouped track replays the
-           * cache, and it is the same empty array while the labels are off, so
-           * the overlay's observer stops.
+           * Whether any lane has a junction to draw. What the view's region
+           * table and the count labels wait on, so a track of unspliced reads
+           * pays for neither.
            */
-          get sashimiLabelSections(): readonly SashimiLabelSection[] {
-            const sections = self.showSashimiLabels
-              ? this.sashimiJunctionSections
-              : []
-            if (!sections.some(sec => sec.junctions.length > 0)) {
-              return NO_SASHIMI_LABEL_SECTIONS
-            }
-            const view = self.view
-            return computeSashimiLabelSections({
-              sections,
-              bpToScreenX: makeBpToScreenX(view),
-              viewWidthPx: view.width,
-              ...self.bandHeights,
-            })
+          get drawsSashimi() {
+            return this.sashimiJunctionSections.some(
+              sec => sec.junctions.length > 0,
+            )
           },
 
           /**
@@ -2368,6 +2352,9 @@ export default function stateModelFactory(
            * passes to draw in its own theme.
            */
           sashimiFeedsByGroupIn(colors: ColorPalette) {
+            if (!this.drawsSashimi) {
+              return NO_SASHIMI_FEEDS_BY_GROUP
+            }
             const displayed = self.displayedRegionInfos
             return new Map(
               this.sashimiJunctionSections.map(sec => [
@@ -2594,13 +2581,30 @@ export default function stateModelFactory(
          * #getter
          * The view's displayed regions as the band's connections place their
          * feet (`viewRegionTable`), and the splice junctions theirs; empty while
-         * both are off.
+         * the band is off and no lane has a junction, so a pan leaves
+         * `renderState` alone on a track that draws neither.
          */
         get linkRegions(): readonly LinkRegion[] {
-          return (self.readConnections === 'off' && !self.showSashimiArcs) ||
+          return (self.readConnections === 'off' && !self.drawsSashimi) ||
             !self.view.initialized
             ? NO_LINK_REGIONS
             : viewRegionTable(self.view)
+        },
+
+        /**
+         * #getter
+         * The junction read counts, each at its arc's apex (`sashimiLabels`).
+         * The one part of sashimi that reads the pan, and only while the
+         * labels are shown; the same empty array otherwise, so the overlay's
+         * observer stops.
+         */
+        get sashimiLabels(): readonly SashimiLabel[] {
+          return self.showSashimiLabels && self.drawsSashimi
+            ? sashimiLabels(
+                this.renderState,
+                self.sourceSections.map(sec => sec.sashimiFeeds),
+              )
+            : NO_SASHIMI_LABELS
         },
 
         /**

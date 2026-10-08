@@ -7,10 +7,10 @@ Layout stays main-thread per
 
 **A getter here that computes rather than reads belongs in a sibling module**,
 with the getter left as the memoized adapter — `groupedDataMaps.ts`,
-`groupLayout.ts`, `lanes.ts`, `overlaySections.ts`, `readLookup.ts`,
-`sectionLayout.ts`. That is what lets each pass be unit-tested without booting
-an MST tree, and it is why model.ts is a chain of thin getters rather than a
-chain of algorithms. The MST rule constrains the composed TYPES, not every view.
+`groupLayout.ts`, `lanes.ts`, `readLookup.ts`, `sectionLayout.ts`. That is what
+lets each pass be unit-tested without booting an MST tree, and it is why
+model.ts is a chain of thin getters rather than a chain of algorithms. The MST
+rule constrains the composed TYPES, not every view.
 
 **A getter that reads nothing but `configuration` belongs in
 `configSlotViews.ts`**, which the chain composes as one
