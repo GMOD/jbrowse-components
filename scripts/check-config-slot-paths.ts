@@ -7,7 +7,8 @@
 // `scripts/release.ts` runs `--freeze` on a stable release, which adds the
 // release's paths to the major's baseline. Until a major has a stable release
 // there is no baseline and nothing to check. A deliberate break deletes its
-// baseline lines by hand, where a reviewer sees them.
+// baseline lines by hand, where a reviewer sees them. `--baseline <file>`
+// names another baseline, for the test.
 import { existsSync, readFileSync, writeFileSync } from 'node:fs'
 import { join, relative } from 'node:path'
 
@@ -20,7 +21,11 @@ const { version } = JSON.parse(
 ) as { version: string }
 const major = version.split('.')[0]
 const schemaPath = join(root, `website/static/schema/v${major}/config.json`)
-const baselinePath = join(root, `scripts/configSlotPaths.v${major}.txt`)
+const override = process.argv.indexOf('--baseline')
+const baselinePath =
+  override === -1
+    ? join(root, `scripts/configSlotPaths.v${major}.txt`)
+    : process.argv[override + 1]!
 
 const schema = JSON.parse(readFileSync(schemaPath, 'utf8'))
 const current = [
