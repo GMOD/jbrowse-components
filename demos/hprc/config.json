@@ -251,6 +251,77 @@
       ]
     },
     {
+      "type": "GraphTrack",
+      "trackId": "hprc_v2_1_chr22_walks",
+      "name": "HPRC v2.1 haplotype walks (chr22 only)",
+      "assemblyNames": [
+        "hg38",
+        "HG00097.1",
+        "HG00099.1",
+        "HG00128.1",
+        "HG00133.1",
+        "HG01109.1",
+        "HG01123.1",
+        "HG01960.1",
+        "HG02055.1"
+      ],
+      "adapter": {
+        "type": "RgfaTabixAdapter",
+        "segmentsLocation": {
+          "uri": "https://jbrowse.org/demos/hprc/hprc-v2.1-mc-grch38.chr22.nodes.bed.gz",
+          "locationType": "UriLocation"
+        },
+        "segmentsIndex": {
+          "indexType": "TBI",
+          "location": {
+            "uri": "https://jbrowse.org/demos/hprc/hprc-v2.1-mc-grch38.chr22.nodes.bed.gz.tbi",
+            "locationType": "UriLocation"
+          }
+        },
+        "linksLocation": {
+          "uri": "https://jbrowse.org/demos/hprc/hprc-v2.1-mc-grch38.chr22.links.bed.gz",
+          "locationType": "UriLocation"
+        },
+        "linksIndex": {
+          "indexType": "TBI",
+          "location": {
+            "uri": "https://jbrowse.org/demos/hprc/hprc-v2.1-mc-grch38.chr22.links.bed.gz.tbi",
+            "locationType": "UriLocation"
+          }
+        },
+        "walksLocation": {
+          "uri": "https://jbrowse.org/demos/hprc/hprc-v2.1-mc-grch38.chr22.walks.bed.gz",
+          "locationType": "UriLocation"
+        },
+        "walksIndex": {
+          "indexType": "TBI",
+          "location": {
+            "uri": "https://jbrowse.org/demos/hprc/hprc-v2.1-mc-grch38.chr22.walks.bed.gz.tbi",
+            "locationType": "UriLocation"
+          }
+        },
+        "walkChunk": 65536,
+        "walkStepBudget": 4000000,
+        "assemblyNameToPanSN": {
+          "hg38": "GRCh38",
+          "HG00097.1": "HG00097#1",
+          "HG00099.1": "HG00099#1",
+          "HG00128.1": "HG00128#1",
+          "HG00133.1": "HG00133#1",
+          "HG01109.1": "HG01109#1",
+          "HG01123.1": "HG01123#1",
+          "HG01960.1": "HG01960#1",
+          "HG02055.1": "HG02055#1"
+        }
+      },
+      "displays": [
+        {
+          "type": "LinearGraphDisplay",
+          "displayId": "hprc_v2_1_chr22_walks-LinearGraphDisplay"
+        }
+      ]
+    },
+    {
       "type": "SyntenyTrack",
       "trackId": "hprc_v2_1_pif_lanes",
       "name": "HPRC release 2 haplotypes vs GRCh38, eight haplotypes unpacked from the graph",

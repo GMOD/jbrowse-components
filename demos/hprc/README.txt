@@ -187,6 +187,39 @@ of the 129,611 bubbles sit at that value, where it means "more than I can
 count", not a measurement.
 
 
+chr22 haplotype walks
+---------------------
+
+  hprc-v2.1-mc-grch38.chr22.walks.bed.gz{,.tbi}
+  hprc-v2.1-mc-grch38.chr22.nodes.bed.gz{,.tbi}
+  hprc-v2.1-mc-grch38.chr22.links.bed.gz{,.tbi}
+
+  Every haplotype's path through chr22 of the base-level v2.1 graph, cut into
+  pieces filed under 64 kb chunks of GRCh38 and of CHM13, beside the nodes and
+  links those pieces visit, filed under the same chunks. A graph track reads
+  one range of each file per window and decodes only the haplotypes it is
+  asked for. 517,889 walk rows, 8,153,703 node rows, 11,104,274 link rows; 36
+  of the 1,131 paths visit no GRCh38 node and have no row on it.
+
+  The source is HPRC's hprc-v2.1-mc-grch38.gbz (5,492,627,216 bytes), beside
+  the gbz.db in the release directory above. gbz2layout
+  (github.com/ScottMastro/gbz2layout) copied out chr22's component and
+  renumbered its 3,122,495 nodes from 1, so these ids match neither the GBZ
+  nor the gbz.db:
+
+    gbz2layout hprc-v2.1-mc-grch38.gbz --chromosome chr22 \
+      --export-gbz chr22.v2.gbz
+    vg convert -f chr22.v2.gbz > chr22.W.gfa              # vg 1.69.0
+    gfa-to-tabix chr22.W.gfa --walks --refs GRCh38,CHM13 \
+      --chunk 65536 --cap 8192 -o chr22                   # gfa-to-tabix 0.3.0
+
+  The upload renamed the six outputs to the hprc-v2.1-mc-grch38.chr22 prefix.
+  Built 2026-10-08; the released gfa-to-tabix 0.3.0 rebuilds them byte for
+  byte. The track names all three files and their indexes in walksLocation,
+  segmentsLocation and linksLocation, since the uri shorthand expands only
+  .segs and .links.
+
+
 repeat_density/ - per-class RepeatMasker density
 ------------------------------------------------
 
