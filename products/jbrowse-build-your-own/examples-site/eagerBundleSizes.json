@@ -1,78 +1,86 @@
 {
   "index": {
     "chunks": 264,
-    "gzipKb": 462
+    "gzipKb": 463
   },
   "a-plot-from-json": {
-    "chunks": 265,
-    "gzipKb": 462
+    "chunks": 266,
+    "gzipKb": 463
   },
   "a-table-of-calls": {
     "chunks": 264,
-    "gzipKb": 462
+    "gzipKb": 463
   },
   "color-and-group-by-a-field": {
-    "chunks": 264,
-    "gzipKb": 461
+    "chunks": 265,
+    "gzipKb": 462
   },
   "controlling-the-view": {
-    "chunks": 268,
-    "gzipKb": 466
+    "chunks": 269,
+    "gzipKb": 467
   },
-  "gene-lanes": {
-    "chunks": 346,
-    "gzipKb": 585
-  },
-  "genome-by-name": {
-    "chunks": 264,
-    "gzipKb": 461
-  },
-  "highlight-a-region": {
+  "dark-mode": {
     "chunks": 264,
     "gzipKb": 462
   },
+  "gene-lanes": {
+    "chunks": 347,
+    "gzipKb": 586
+  },
+  "genome-by-name": {
+    "chunks": 265,
+    "gzipKb": 462
+  },
+  "highlight-a-region": {
+    "chunks": 265,
+    "gzipKb": 463
+  },
   "loading-and-errors": {
-    "chunks": 263,
-    "gzipKb": 461
+    "chunks": 264,
+    "gzipKb": 462
   },
   "local-files": {
     "chunks": 263,
-    "gzipKb": 461
+    "gzipKb": 462
   },
   "multiple-tracks": {
     "chunks": 255,
     "gzipKb": 454
   },
   "removing-material-ui": {
-    "chunks": 262,
-    "gzipKb": 461
+    "chunks": 263,
+    "gzipKb": 462
   },
   "scalebar-and-labels": {
     "chunks": 265,
-    "gzipKb": 463
+    "gzipKb": 464
   },
   "search-by-name": {
     "chunks": 266,
+    "gzipKb": 464
+  },
+  "session-in-url": {
+    "chunks": 265,
     "gzipKb": 463
   },
   "svg-figures": {
     "chunks": 269,
-    "gzipKb": 468
+    "gzipKb": 469
   },
   "synteny": {
     "chunks": 373,
     "gzipKb": 625
   },
   "track-settings": {
-    "chunks": 264,
-    "gzipKb": 462
+    "chunks": 265,
+    "gzipKb": 463
   },
   "ultraminimal": {
-    "chunks": 255,
-    "gzipKb": 453
+    "chunks": 263,
+    "gzipKb": 461
   },
   "web-workers": {
     "chunks": 263,
-    "gzipKb": 460
+    "gzipKb": 461
   }
 }

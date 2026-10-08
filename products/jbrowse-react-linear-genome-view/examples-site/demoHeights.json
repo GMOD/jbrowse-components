@@ -6,6 +6,7 @@
   "genome-by-name": 512,
   "horizontally-flip": 446,
   "locus-zoom-ld": 573,
+  "methylation-by-haplotype": 623,
   "observe-selection": 291,
   "observe-visible": 581,
   "one-linear-genome-view": 234,
@@ -41,5 +42,6 @@
   "with-track-shorthand": 512,
   "with-two-linear-genome-views": 288,
   "with-web-worker": 234,
-  "with-wiggle-track": 284
+  "with-wiggle-track": 284,
+  "without-react": 271
 }

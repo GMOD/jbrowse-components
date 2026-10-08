@@ -10,5 +10,6 @@
   "with-dark-theme": 408,
   "with-inline-plugin": 408,
   "with-track-shorthand": 408,
-  "with-web-worker": 408
+  "with-web-worker": 408,
+  "without-react": 445
 }
