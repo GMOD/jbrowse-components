@@ -423,6 +423,18 @@ describe('phase-set legend section', () => {
     ).toBeUndefined()
   })
 
+  test('keys a secondary alt painted with no phase set', () => {
+    const [section] = getVariantColorScales({
+      ...base,
+      unit: 'haplotype',
+      color: PHASE_SET,
+      hasSecondaryAlt: true,
+    })
+    expect(entriesOf(section)!.map(i => i.label)).toContain(
+      'Other alt allele, no phase set',
+    )
+  })
+
   test('falls back to the genotype legend outside phased mode', () => {
     // Only the phased cell loop reads PS, so in allele-count mode the cells are
     // genotype-colored and the legend must describe that, not phase sets.

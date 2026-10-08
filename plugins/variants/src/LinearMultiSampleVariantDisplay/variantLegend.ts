@@ -266,6 +266,9 @@ function getCellColorScale(
       entries: [
         entry('Reference', REFERENCE_COLOR),
         entry('Alt allele (hue identifies the phase set)'),
+        ...(inputs.hasSecondaryAlt
+          ? [entry('Other alt allele, no phase set', SECONDARY_ALT_COLOR)]
+          : []),
         ...(inputs.hasUnphased ? [entry('Unphased', UNPHASED_COLOR)] : []),
         ...(inputs.hasNoCall ? [entry('No call', NO_CALL_COLOR)] : []),
       ],

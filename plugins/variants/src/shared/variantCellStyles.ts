@@ -219,7 +219,13 @@ function makePhaseSetStyler() {
     // per haplotype in this mode, so a drawn marker is full strength; the rows
     // carry the zygosity
     scratch.altDosage = isAlt ? 255 : 0
-    scratch.category = isRef ? CELL_REF : isAlt ? CELL_ALT : CELL_NO_CALL
+    scratch.category = isRef
+      ? CELL_REF
+      : !isAlt
+        ? CELL_NO_CALL
+        : phaseSet === undefined && allele !== mostFrequentAlt
+          ? CELL_ALT_SECONDARY
+          : CELL_ALT
     return scratch
   }
 }

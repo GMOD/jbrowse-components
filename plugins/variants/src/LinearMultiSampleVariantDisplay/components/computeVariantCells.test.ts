@@ -8,6 +8,7 @@ import {
   decodeGenotype,
   internGenotype,
 } from '../../shared/genotypeCodec.ts'
+import { CELL_ALT_SECONDARY } from '../../shared/variantCellStyles.ts'
 import {
   paintCellColors,
   paintFeatureColors,
@@ -1025,6 +1026,29 @@ test('phase-set coloring still files reference cells in the reference bucket', (
     1, 2, 3,
   ])
   expect(result.cellRowIndices[result.refCellCount]).toBe(0)
+})
+
+test('phase-set coloring files a secondary alt with no phase set as one', () => {
+  const sources: ProcessedSource[] = [
+    { name: 'S1 HP0', sampleName: 'S1', HP: 0 },
+    { name: 'S1 HP1', sampleName: 'S1', HP: 1 },
+  ]
+  const run = (sample: string) => {
+    const feature = vcfFeature(
+      `1\t101\tv1\tG\tA,C\t60\tPASS\t.\tGT:PS\t${sample}`,
+      ['S1'],
+    )
+    return computeVariantCells({
+      filteredVariants: [{ feature, mostFrequentAlt: '1' }],
+      sources,
+      unit: 'haplotype',
+      referenceDrawingMode: 'draw',
+      colorByPhaseSet: true,
+      ...genotypeArgs([feature]),
+    }).paintedCategories
+  }
+  expect(run('1|2:.') & (1 << CELL_ALT_SECONDARY)).not.toBe(0)
+  expect(run('1|2:77') & (1 << CELL_ALT_SECONDARY)).toBe(0)
 })
 
 // `referenceDrawingMode: 'skip'` has to reach the phase-set path too, or the
