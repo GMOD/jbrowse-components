@@ -48,7 +48,7 @@ function model(
     effectiveRowHeight: 10,
     rowProportion: 1,
     rowHoverInfo: () => undefined,
-    rpcDataMap: { get: () => undefined },
+    detailOnScreen: { get: () => undefined },
     view: {
       id: 'view1',
       width: WIDTH,

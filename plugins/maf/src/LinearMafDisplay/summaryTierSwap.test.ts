@@ -173,6 +173,26 @@ describe('the summary bars stand in until the alignment lands', () => {
     expect(summaryBars(display)).toHaveLength(2)
   })
 
+  it('reads no cached alignment for hover, sort or navigation on the tier', () => {
+    const { display, view } = env().createDisplay()
+    seedSources(display)
+    seedSummary(display, view.displayedRegions)
+    seedAlignment(display)
+    const hover = () =>
+      display.rowHoverInfo(0, { gposFrac: 102.5, baseBp: 102 }, 1, 1)
+
+    view.zoomTo(1)
+    expect(display.detailOnScreen.size).toBe(1)
+    expect(hover()).toMatchObject({ kind: 'cell' })
+
+    view.zoomTo(100)
+    expect(display.coarseTierActive).toBe(true)
+    expect(display.detailOnScreen.size).toBe(0)
+    expect(hover()).toBeUndefined()
+    expect(display.sortRowsByBaseAt('ctgA', 102)).toBe(false)
+    expect(display.visibleEmptyLines).toEqual([])
+  })
+
   // A track with no summary file has nothing to stand in with, and must not
   // start paying for the check.
   it('stays empty when no summary has ever been fetched', () => {

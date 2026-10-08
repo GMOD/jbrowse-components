@@ -18,7 +18,7 @@ export type MafSyntenyHost = AbstractViewContainer & AssemblyHost & TrackCatalog
 /** The slice of the display the launch reads: the fetched blocks and the view. */
 export interface MafSyntenyLaunchModel {
   id: string
-  rpcDataMap: { get: (index: number) => MafRegionData | undefined }
+  detailOnScreen: { get: (index: number) => MafRegionData | undefined }
   view: {
     assemblyNames: string[]
     tracks: {
@@ -62,7 +62,7 @@ export async function launchMafRowSynteny({
   endBp: number
 }) {
   const refAssembly = model.view.assemblyNames[0]
-  const region = model.rpcDataMap.get(regionIndex)
+  const region = model.detailOnScreen.get(regionIndex)
   if (refAssembly === undefined || !region) {
     throw new Error('No alignment loaded under the selection')
   }

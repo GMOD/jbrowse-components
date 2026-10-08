@@ -252,6 +252,8 @@ function focusRows(
   return rows.filter(r => named.has(r.name) || named.has(alias(r.name) ?? ''))
 }
 
+const NO_DETAIL: ReadonlyMap<number, MafRegionData> = new Map()
+
 function categoricalScale(
   id: string,
   title: string,
@@ -1133,6 +1135,17 @@ export default function stateModelFactory(
       .views(self => ({
         /**
          * #getter
+         * `rpcDataMap` while the detail tier draws, and nothing on the summary
+         * tier: `CoarseTierMixin` keeps the detail store under the tier, so
+         * whatever marks, hovers or navigates by the alignment reads this.
+         */
+        get detailOnScreen(): ReadonlyMap<number, MafRegionData> {
+          return self.coarseTierActive ? NO_DETAIL : self.rpcDataMap
+        },
+      }))
+      .views(self => ({
+        /**
+         * #getter
          * Per-region CDS frame rows (UCSC `mafFrames`) for the annotation
          * overlay, from whichever tier's payload carries them. The tier on
          * screen is checked first, since its frames were read over the span it
@@ -1490,7 +1503,7 @@ export default function stateModelFactory(
             self,
             refName,
             pos,
-            index => self.rpcDataMap.get(index),
+            index => self.detailOnScreen.get(index),
             // `sources` is the drawn list, which is what the block's
             // `rowIndex` names — `sortRowsAtColumn` hands over the editable
             // one, the list being written back as the order
@@ -1802,7 +1815,7 @@ export default function stateModelFactory(
           // A track whose samples name no genome — every multiz — never reaches
           // the blocks at all.
           const region = assemblyNames.size
-            ? self.rpcDataMap.get(displayedRegionIndex)
+            ? self.detailOnScreen.get(displayedRegionIndex)
             : undefined
           const spans = region
             ? findRowSpans(
@@ -1956,7 +1969,7 @@ export default function stateModelFactory(
         // The block-overlay helpers all take this same bundle.
         const overlayParams = () => ({
           view: self.host,
-          rpcDataMap: self.rpcDataMap,
+          rpcDataMap: self.detailOnScreen,
           ...self.rowGeometry(),
         })
         return {
@@ -2131,7 +2144,7 @@ export default function stateModelFactory(
           const { sources } = self
           const region =
             rowIndex >= 0 && rowIndex < sources.length
-              ? self.rpcDataMap.get(displayedRegionIndex)
+              ? self.detailOnScreen.get(displayedRegionIndex)
               : undefined
           const hit = region
             ? findRowHoverAtBp(
@@ -2194,7 +2207,7 @@ export default function stateModelFactory(
           return self.rowsVisible && !self.resizing && self.basesRenderingActive
             ? computeVisibleLabels({
                 view: self.host,
-                rpcDataMap: self.rpcDataMap,
+                rpcDataMap: self.detailOnScreen,
                 ...self.rowGeometry(),
                 showAllLetters: self.showAllLetters,
                 showAsUpperCase: self.showAsUpperCase,
@@ -2211,7 +2224,7 @@ export default function stateModelFactory(
           return self.rowsVisible && self.basesRenderingActive
             ? computeVisibleDeletions({
                 view: self.host,
-                rpcDataMap: self.rpcDataMap,
+                rpcDataMap: self.detailOnScreen,
                 ...self.rowGeometry(),
               })
             : []

@@ -117,8 +117,8 @@ const MAFTooltip = observer(function MAFTooltip({
   const codon = onRow
     ? model.codonHoverInfo(p2.index, baseBp, rowIndex)
     : undefined
-  // The zoom-out tier resolves nothing above: `hover` and `codon` both read
-  // `rpcDataMap`, which the summary fetch clears. Hit-test the drawn bars
+  // The zoom-out tier resolves nothing above: `hover` and `codon` read the
+  // detail on screen, and the tier has none. Hit-test the drawn bars
   // instead, so a summary row is identifiable by pointing at it — which is the
   // only way to identify one, since the sidebar labels are the first thing to
   // go as the row height falls.
