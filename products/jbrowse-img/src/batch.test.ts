@@ -84,6 +84,26 @@ describe('recordLocs / recordArgv', () => {
     expect(recordLocs(ROW, 100)).toEqual(['chr1:901-1101', 'chr5:1901-2101'])
   })
 
+  it('reads a short variant base by base and a junction at 500 bp', () => {
+    const at = { loci: [{ refName: 'chr1', start: 1000, end: 1001 }] }
+    expect(recordLocs({ ...at, alleleLength: 1 })).toEqual(['chr1:951-1051'])
+    expect(recordLocs({ ...at, alleleLength: 49 })).toEqual(['chr1:951-1051'])
+    expect(recordLocs({ ...at, alleleLength: 50 })).toEqual(['chr1:501-1501'])
+    expect(recordLocs(at)).toEqual(['chr1:501-1501'])
+  })
+
+  it('takes a stated flank over the record’s own', () => {
+    expect(
+      recordLocs(
+        {
+          loci: [{ refName: 'chr1', start: 1000, end: 1001 }],
+          alleleLength: 1,
+        },
+        200,
+      ),
+    ).toEqual(['chr1:801-1201'])
+  })
+
   it('clamps at the start of a chromosome', () => {
     expect(
       recordLocs({ loci: [{ refName: 'chr1', start: 10, end: 11 }] }, 500),

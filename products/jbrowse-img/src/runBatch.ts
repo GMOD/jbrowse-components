@@ -36,6 +36,7 @@ export interface BatchOpts extends Opts {
   /** VCF (optionally bgzipped) of junctions; mutually exclusive with `bedpe` */
   vcf?: string
   outDir: string
+  /** bp of context around each locus; the default is `recordFlank`'s */
   flank?: number
   limit?: number
   format?: BatchFormat
@@ -138,7 +139,7 @@ function readJunctions(opts: BatchOpts) {
 // A track whose index estimates too many bytes draws "Region too large to
 // render" until someone presses Force load, which nobody can on a PNG: beside a
 // drawn tumor panel, a gated normal reads as a locus with no supporting reads.
-// A batch window is --flank wide, so loading it is bounded. Ahead of the
+// A batch window is a flank wide, so loading it is bounded. Ahead of the
 // track's own modifiers, so a `force:false` still wins.
 function forceLoaded(tracks: Entry[] | undefined) {
   return tracks?.map(([key, [first, ...rest]]): Entry => [
@@ -158,7 +159,7 @@ function forceLoaded(tracks: Entry[] | undefined) {
  * reflects it, so a script can tell a clean run from a partial one.
  */
 export async function runBatch(opts: BatchOpts) {
-  const { outDir, flank = 500, limit, format = 'png', dryRun } = opts
+  const { outDir, flank, limit, format = 'png', dryRun } = opts
   // A batch draws the view its junction file describes, so a flag that FIXES the
   // view cannot also be honored — `renderBreakpoint` prefers a spec over the
   // per-record panels, and `addLaunchView` adopts a session's view of the same
@@ -229,7 +230,6 @@ export async function runBatch(opts: BatchOpts) {
     await renderRows(
       planned.filter((_, i) => i % shard.of === shard.index),
       opts,
-      flank,
       result => {
         process.stdout.write(`${JSON.stringify(result)}\n`)
       },
@@ -261,7 +261,7 @@ export async function runBatch(opts: BatchOpts) {
   )
   await (jobs > 1 && opts.respawn
     ? renderInWorkers(planned, opts.respawn, jobs, report)
-    : renderRows(planned, opts, flank, report))
+    : renderRows(planned, opts, report))
 
   // a reused image keeps the count the run that drew it reported
   const links = opts.resume ? priorLinks(outDir) : new Map<string, string>()
@@ -341,10 +341,9 @@ function renderInWorkers(
 async function renderRows(
   rows: PlannedRow[],
   opts: BatchOpts,
-  flank: number,
   report: (result: RowResult) => void,
 ) {
-  const { outDir } = opts
+  const { outDir, flank } = opts
   // Fetched ONCE for the whole run, where it used to be once per record: a
   // --hub or a URL --config is a network round trip, and re-resolving it per
   // junction is the cost this subcommand exists to avoid. Copied per record

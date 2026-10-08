@@ -513,8 +513,8 @@ export const batchOptionDefs: OptionDef[] = [
   },
   {
     name: 'flank',
-    description: 'bp of context around each breakend',
-    default: '500',
+    description: 'bp of context around each locus',
+    default: '50 for a variant whose alleles are under 50 bp, 500 otherwise',
   },
   { name: 'limit', description: 'Render only the first N rows' },
   {
@@ -620,7 +620,7 @@ export function buildBatchHelp(scriptName: string) {
         'The first 20, to check the framing before committing to the whole run',
       ],
       [
-        'batch --vcf snvs.vcf.gz --hub hg38 --bam tumor.bam --flank 40 --passOnly',
+        'batch --vcf snvs.vcf.gz --hub hg38 --bam tumor.bam --passOnly',
         'Small variants at base resolution, carriers of each sorted to the top',
       ],
       [
@@ -633,7 +633,7 @@ export function buildBatchHelp(scriptName: string) {
     'junction and upper-cased mate contigs are handled; reciprocal breakend',
     'pairs collapse, so each junction is queued once.',
     '',
-    'Every track is drawn as if given force:true, since a window is only --flank',
+    'Every track is drawn as if given force:true, since a window is only a flank',
     'wide and a "Region too large" panel cannot be clicked through on an image;',
     'force:false on a track restores its size limit.',
     '',

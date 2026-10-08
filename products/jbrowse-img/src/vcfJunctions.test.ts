@@ -163,16 +163,19 @@ describe('parseVcfJunctions', () => {
         line: 5,
         name: 'snv',
         sort: { type: 'basePair', pos: 999 },
+        alleleLength: 1,
       },
       {
         loci: [{ refName: 'chr3', start: 1999, end: 2003 }],
         line: 6,
         sort: { type: 'basePair', pos: 2000 },
+        alleleLength: 4,
       },
       {
         loci: [{ refName: 'chr3', start: 2999, end: 3000 }],
         line: 7,
         sort: { type: 'insertion', pos: 3000 },
+        alleleLength: 3,
       },
     ])
   })
@@ -201,6 +204,7 @@ describe('parseVcfJunctions', () => {
         { refName: 'chr3', start: 1899, end: 1900 },
       ],
       sort: { type: 'basePair', pos: 1000 },
+      alleleLength: 901,
     })
   })
 

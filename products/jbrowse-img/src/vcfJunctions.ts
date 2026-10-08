@@ -37,6 +37,7 @@ interface VcfRecord {
   /** REF's length: the reference bases the record's own locus covers */
   span: number
   sort?: VariantSortColumn
+  alleleLength?: number
   mate?: Endpoint
   id?: string
   event?: string
@@ -158,7 +159,8 @@ export function parseVcfJunctions(
       continue
     }
     const svtype = infoField(info, 'SVTYPE')
-    const sort = variantSortColumn(pos - 1, ref, alt?.split(',') ?? [])
+    const alts = alt?.split(',') ?? []
+    const sort = variantSortColumn(pos - 1, ref, alts)
     if (!svtype && !sort) {
       skipped.push(`line ${lineNo}: no SVTYPE, and no ALT spelling out bases`)
       continue
@@ -179,7 +181,15 @@ export function parseVcfJunctions(
       own: [chrom, pos],
       span: svtype ? 1 : ref.length,
       line: lineNo,
-      ...(sort ? { sort } : {}),
+      ...(sort
+        ? {
+            sort,
+            alleleLength: Math.max(
+              ref.length,
+              ...alts.filter(a => /^[ACGTN]+$/i.test(a)).map(a => a.length),
+            ),
+          }
+        : {}),
       ...(mate && !mateIsOwn ? { mate } : {}),
       ...(id && id !== '.' ? { id } : {}),
       ...(event ? { event } : {}),
@@ -206,12 +216,12 @@ export function parseVcfJunctions(
       ...(r.mate ? { mate: canonical(r.mate) } : {}),
     })),
     tolerance,
-  ).map(({ own, span, sort, mate, id, event, line }) => ({
+  ).map(({ own, span, sort, alleleLength, mate, id, event, line }) => ({
     loci: mate
       ? [locus(own), locus(mate)]
       : [{ ...locus(own), end: own[1] - 1 + span }],
     line,
-    ...(sort ? { sort } : {}),
+    ...(sort ? { sort, alleleLength } : {}),
     ...(id ? { name: id } : {}),
     ...(event ? { event } : {}),
   }))

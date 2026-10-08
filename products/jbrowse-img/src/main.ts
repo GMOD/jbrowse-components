@@ -175,7 +175,7 @@ async function main() {
         bedpe: getString(rest, 'bedpe'),
         vcf: getString(rest, 'vcf'),
         outDir: getString(rest, 'outDir') ?? 'jb2export-batch',
-        flank: getOptionalCount(rest, 'flank') ?? 500,
+        flank: getOptionalCount(rest, 'flank'),
         limit: getOptionalCount(rest, 'limit'),
         format: getFormat(rest) ?? 'png',
         passOnly: getBoolean(rest, 'passOnly'),

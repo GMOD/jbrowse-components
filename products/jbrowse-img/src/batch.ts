@@ -27,6 +27,8 @@ export interface BatchRecord {
   event?: string
   /** the pileup column a record spelling out its alleles is sorted at */
   sort?: VariantSortColumn
+  /** the longest of that record's REF and ALTs, in bases */
+  alleleLength?: number
 }
 
 function parseLocus(refName?: string, start?: string, end?: string) {
@@ -80,13 +82,32 @@ export function parseBedpe(text: string) {
   return { records, skipped }
 }
 
+// The size below which callers file an indel as a small variant
+const SMALL_VARIANT_BP = 50
+
 /**
- * The window each panel opens on: every locus grown by `flank` on each side, in
- * file order, with windows of one contig that overlap drawn as the one span
- * they cover. A breakend is one base, so the flank decides the picture, and a
- * deletion shorter than it would otherwise render the same reads twice.
+ * `--flank`, or the context the record is read at: 50 bp for a variant whose
+ * alleles are short enough to read base by base, 500 bp for a junction, where
+ * what matters is the reads leaving it.
  */
-export function recordLocs(rec: BatchRecord, flank: number) {
+export function recordFlank(rec: BatchRecord, flank?: number) {
+  return (
+    flank ??
+    (rec.alleleLength !== undefined && rec.alleleLength < SMALL_VARIANT_BP
+      ? 50
+      : 500)
+  )
+}
+
+/**
+ * The window each panel opens on: every locus grown by the record's flank on
+ * each side, in file order, with windows of one contig that overlap drawn as
+ * the one span they cover. A breakend is one base, so the flank decides the
+ * picture, and a deletion shorter than it would otherwise render the same
+ * reads twice.
+ */
+export function recordLocs(rec: BatchRecord, flankOpt?: number) {
+  const flank = recordFlank(rec, flankOpt)
   const windows: Locus[] = []
   for (const { refName, start, end } of rec.loci) {
     const lo = Math.max(0, start - flank)
@@ -159,6 +180,6 @@ export function eventOutputName(
 }
 
 /** The argv entries one record contributes: a `--loc` per panel. */
-export function recordArgv(rec: BatchRecord, flank: number): Entry[] {
+export function recordArgv(rec: BatchRecord, flank?: number): Entry[] {
   return recordLocs(rec, flank).map(loc => ['loc', [loc]])
 }
