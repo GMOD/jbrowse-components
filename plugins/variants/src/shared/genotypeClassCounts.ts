@@ -8,11 +8,11 @@ import type { Feature } from '@jbrowse/core/util'
  * its docs transliterates. `ref`/`alt` and `hom`/`het` each partition the called
  * samples; `mis` is the rest.
  */
-export const GENOTYPE_CLASSES = ['ref', 'alt', 'hom', 'het', 'mis'] as const
+const GENOTYPE_CLASSES = ['ref', 'alt', 'hom', 'het', 'mis'] as const
 
-export type GenotypeClass = (typeof GENOTYPE_CLASSES)[number]
+type GenotypeClass = (typeof GENOTYPE_CLASSES)[number]
 
-export type GenotypeClassCounts = Record<GenotypeClass, number>
+type GenotypeClassCounts = Record<GenotypeClass, number>
 
 // A no-call allele is skipped rather than condemning the whole genotype: `mis`
 // is a genotype stating no allele at all, so a half-called './1' is counted for

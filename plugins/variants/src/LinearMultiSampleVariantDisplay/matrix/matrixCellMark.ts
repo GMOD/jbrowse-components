@@ -19,7 +19,7 @@ export interface MatrixCellChannels {
   count: number
 }
 
-export interface MatrixCellParams {
+interface MatrixCellParams {
   /** How many columns the canvas width is divided into; the payload's. */
   numFeatures: number
   /** CSS px per row; the painted height floors at 1 (`drawnCellHeightPx`). */

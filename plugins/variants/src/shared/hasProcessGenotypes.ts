@@ -5,7 +5,7 @@ export interface VCFFeatureLike extends Feature {
   processGenotypes(cb: GenotypeCallback): void
 }
 
-export interface FormatFieldFeatureLike extends Feature {
+interface FormatFieldFeatureLike extends Feature {
   processFormatFields(keys: string[], cb: FormatFieldsCallback): void
 }
 

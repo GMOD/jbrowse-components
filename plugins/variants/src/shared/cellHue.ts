@@ -120,7 +120,7 @@ export function sameHueRead(a: CellHueRead, b: CellHueRead) {
 }
 
 /** What the cell loops read off each variant, resolved once per fetch. */
-export interface CellHueReader {
+interface CellHueReader {
   value?: (feature: Feature) => string | undefined
   /** Phase-set hues, read per haplotype by the phased loop. */
   byPhaseSet?: boolean

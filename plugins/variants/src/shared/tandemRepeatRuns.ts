@@ -1,3 +1,5 @@
+import { parseFiniteNumber } from '../VcfFeature/util.ts'
+
 // A VCF 4.5 <CNV:TR> allele's runs: RN says how many RUS/RUL/RUC/RB entries
 // each allele takes, and RUB holds one entry per copy of every run. RUNAME,
 // outside the spec, names each run's unit beside its RUS.
@@ -11,11 +13,7 @@ export function numbers(value: unknown) {
   const raw: unknown[] = Array.isArray(value)
     ? value
     : String(value ?? '').split(',')
-  return raw.map(one => {
-    const n =
-      one === '' || one === null || one === undefined ? NaN : Number(one)
-    return Number.isFinite(n) ? n : undefined
-  })
+  return raw.map(one => parseFiniteNumber(one))
 }
 
 export function strings(value: unknown) {

@@ -3,7 +3,7 @@ import { rowsUnderPointer } from '@jbrowse/core/util/rowStackGeometry'
 import { drawnCellHeightPx } from './shaders/variantMatrix.js.generated.ts'
 
 /** What the cursor projection reads off the display under the columns layout. */
-export interface MatrixHitGeometry {
+interface MatrixHitGeometry {
   /** the pitch the canvas and the connector lines lay columns out on */
   columnWidth: number
   effectiveRowHeight: number

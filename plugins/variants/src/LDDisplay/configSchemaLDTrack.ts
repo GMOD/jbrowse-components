@@ -6,8 +6,6 @@ import { types } from '@jbrowse/mobx-state-tree'
 
 import { ldColorConfigSchema } from './ldColorConfigSchema.ts'
 
-import type { Instance } from '@jbrowse/mobx-state-tree'
-
 /**
  * #config LDTrackDisplay
  * #category display
@@ -159,4 +157,3 @@ export default function ldTrackDisplayConfigSchema() {
 export type LDDisplayConfigSchema = ReturnType<
   typeof ldTrackDisplayConfigSchema
 >
-export type LDDisplayConfigModel = Instance<LDDisplayConfigSchema>

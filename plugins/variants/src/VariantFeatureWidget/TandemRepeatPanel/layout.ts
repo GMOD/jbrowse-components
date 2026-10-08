@@ -4,7 +4,7 @@ import type { RepeatAllele, RepeatUnit } from './tandemRepeat.ts'
 // cannot allocate a box per copy
 const MAX_COPIES = 50_000
 
-export interface CopyBox {
+interface CopyBox {
   // bp from the allele's left end
   start: number
   bp: number
@@ -45,7 +45,7 @@ export function copiesOf(allele: RepeatAllele, units: RepeatUnit[]) {
   return boxes
 }
 
-export interface CopyRun extends CopyBox {
+interface CopyRun extends CopyBox {
   first: number
   count: number
   narrow: boolean
@@ -72,7 +72,7 @@ export function mergeNarrowCopies(
   return runs
 }
 
-export const ROW_PX = 22
+const ROW_PX = 22
 export const BAR_PX = 12
 const ROWS_MAX_PX = 30 * ROW_PX
 const LABEL_MIN_PX = 11
@@ -89,7 +89,7 @@ export function rowLayout(rows: number) {
   }
 }
 
-export function copyCount(allele: RepeatAllele) {
+function copyCount(allele: RepeatAllele) {
   return allele.runs?.reduce((sum, run) => sum + run.count, 0)
 }
 

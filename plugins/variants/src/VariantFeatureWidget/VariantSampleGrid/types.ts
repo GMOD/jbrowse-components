@@ -1,4 +1,4 @@
-export interface FrequencyTableEntry {
+interface FrequencyTableEntry {
   count: number
   GT: string
   genotype: string

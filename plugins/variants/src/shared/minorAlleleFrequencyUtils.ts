@@ -9,7 +9,7 @@ import { hasProcessGenotypes } from './hasProcessGenotypes.ts'
 import type SerializableFilterChain from '@jbrowse/core/pluggableElementTypes/renderers/util/serializableFilterChain'
 import type { Feature, ProgressReporter } from '@jbrowse/core/util'
 
-export interface AlleleSummary {
+interface AlleleSummary {
   // Frequency of the second-most-common allele among *called* alleles (the VCF
   // AN definition). No-call '.' is not an allele: it is excluded from both the
   // minor-allele candidacy and the denominator — counted as one, a site whose
@@ -17,9 +17,7 @@ export interface AlleleSummary {
   // fraction here instead. Missingness is its own metric below.
   minorAlleleFrequency: number
   // Fraction of all alleles that are no-call ('.'); high on sparse multi-sample
-  // panels where many samples lack a genotype at a site. This is the complement
-  // of the LD display's `callRateFilter` (call rate === 1 - missingness); the
-  // two display families expose the same concept under different names.
+  // panels where many samples lack a genotype at a site.
   missingness: number
   // Most common non-ref allele index. It only ever selects "primary alt" vs
   // "other alt" coloring (getAlleleColor / getPhasedColor), so a site carrying
@@ -115,7 +113,7 @@ export function featureMissingness(feature: Feature) {
   return counts ? calculateMissingnessFrequency(counts) : 0
 }
 
-export interface SiteThresholds {
+interface SiteThresholds {
   minorAlleleFrequencyFilter: number
   /** 1 or undefined keeps every site */
   maxMissingnessFilter?: number

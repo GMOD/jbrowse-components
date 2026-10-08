@@ -14,7 +14,7 @@ import type { VCFFeatureSerialized } from '../types.ts'
 // <CNV:TR> record's runs. A sample's GT picks its alleles.
 
 // `count` copies of one unit, which indexes TandemRepeat.units
-export interface RepeatRun {
+interface RepeatRun {
   unit: number
   count: number
   bp: number
@@ -147,7 +147,7 @@ function sampleAlleles(
   return { haplotypes: out, counts, calledAlleles }
 }
 
-export function formatPercent(count: number, total: number) {
+function formatPercent(count: number, total: number) {
   const pct = (count / total) * 100
   return `${pct >= 10 ? pct.toFixed(0) : pct.toPrecision(2)}%`
 }

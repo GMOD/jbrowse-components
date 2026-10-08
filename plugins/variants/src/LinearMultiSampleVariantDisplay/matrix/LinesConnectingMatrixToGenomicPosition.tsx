@@ -9,7 +9,7 @@ import type {
 } from '../../shared/ConnectorLines.tsx'
 
 // The matrix adds the crosshair column to what the shared overlay needs.
-export interface MatrixConnectorLinesModel extends ConnectorLinesModel {
+interface MatrixConnectorLinesModel extends ConnectorLinesModel {
   connectorLineAtScreenX: (screenX: number) => ConnectorCoord | undefined
 }
 

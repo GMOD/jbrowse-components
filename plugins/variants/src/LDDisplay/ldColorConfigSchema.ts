@@ -5,7 +5,7 @@ import { types } from '@jbrowse/mobx-state-tree'
 import type { LDMetric } from '../VariantRPC/ldTypes.ts'
 import type { FieldPreset } from '@jbrowse/display-kit/colorConfigSchema'
 
-export const LD_COLOR_SCALES = ['linear'] as const
+const LD_COLOR_SCALES = ['linear'] as const
 
 /** Each metric's ramp and key title while the config leaves them unwritten. */
 export const LD_FIELD_PRESETS = {

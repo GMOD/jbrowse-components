@@ -4,8 +4,6 @@ import configSchema, { normalizeSnapshot } from './configSchema.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 
-export { default as configSchema } from './configSchema.ts'
-
 export default function VcfTabixAdapterF(pluginManager: PluginManager) {
   pluginManager.addAdapterType(
     () =>

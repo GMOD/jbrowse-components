@@ -14,7 +14,7 @@ export interface HitRegion {
   screenEndPx: number
 }
 
-export interface VariantHitQuery {
+interface VariantHitQuery {
   // Genomic position (absolute bp) under the cursor within this region.
   genomicPos: number
   // Rows whose drawn cell covers the cursor: `rowNearest` is the row the cursor

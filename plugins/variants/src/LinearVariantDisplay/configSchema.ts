@@ -2,7 +2,6 @@ import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import { linearCanvasBaseDisplayConfigSchemaFactory } from '@jbrowse/plugin-canvas'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
-import type { Instance } from '@jbrowse/mobx-state-tree'
 
 /**
  * #config LinearVariantDisplay
@@ -60,5 +59,3 @@ export default function configSchemaF(pluginManager: PluginManager) {
 }
 
 export type LinearVariantDisplayConfigModel = ReturnType<typeof configSchemaF>
-export type LinearVariantDisplayConfig =
-  Instance<LinearVariantDisplayConfigModel>

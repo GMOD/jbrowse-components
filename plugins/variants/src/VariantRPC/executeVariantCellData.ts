@@ -25,8 +25,6 @@ import type PluginManager from '@jbrowse/core/PluginManager'
 import type { RpcExecuteArgs } from '@jbrowse/core/rpc/RpcRegistry'
 import type { Region } from '@jbrowse/core/util'
 
-export type { SimplifiedVariantFeature }
-
 // What the paint loops reported, as the three legend booleans, merged over
 // every payload of the fetch.
 function paintedLegendFlags(passes: { paintedCategories: number }[]) {
@@ -75,7 +73,7 @@ function recordsByBlock({
   )
 }
 
-export interface CellDataBase {
+interface CellDataBase {
   samplePloidy: Record<string, number>
   // Names the worker's row list, aligned to the `cellRowIndices` the cell arrays
   // carry: `rowNames[cellRowIndices[i]]` is the row cell `i` belongs to. The

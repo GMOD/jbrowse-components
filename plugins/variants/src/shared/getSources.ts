@@ -14,7 +14,7 @@ export function resolveSampleName(source: Source) {
 // is resolved rather than optional. Consumers that index *by* haplotype (the
 // phased genotype-matrix rows) get that from the type instead of restating a
 // ploidy fallback of their own.
-export type HaplotypeSource = ProcessedSource & { HP: number }
+type HaplotypeSource = ProcessedSource & { HP: number }
 
 const HAPLOTYPE_ROW_NAME = /^(.*) HP(\d+)$/
 

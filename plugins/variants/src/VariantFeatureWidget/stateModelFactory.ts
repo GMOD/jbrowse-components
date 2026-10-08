@@ -28,7 +28,5 @@ export function stateModelFactory(pluginManager: PluginManager) {
   )
 }
 
-export type VariantFeatureWidgetStateModel = ReturnType<
-  typeof stateModelFactory
->
+type VariantFeatureWidgetStateModel = ReturnType<typeof stateModelFactory>
 export type VariantFeatureWidgetModel = Instance<VariantFeatureWidgetStateModel>

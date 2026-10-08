@@ -60,7 +60,6 @@ function makeOneCell(overrides?: Partial<LDUploadData>): LDUploadData {
     numCells: 1,
     band: 1_000_000,
     uniformW: 10,
-    metric: 'r2',
     ...overrides,
   }
 }
@@ -433,7 +432,6 @@ describe('drawLDBlocks over a real band', () => {
         numCells,
         band,
         uniformW: CELL,
-        metric: 'r2',
       },
       makeRenderState({
         viewScale: 1,
@@ -504,7 +502,6 @@ describe('drawLDBlocks over a cell nothing computed', () => {
         numCells: ldValues.length,
         band: BAND,
         uniformW: CELL,
-        metric: 'r2',
       },
       makeRenderState({
         viewScale: 1,

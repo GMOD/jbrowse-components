@@ -17,7 +17,7 @@ import type { VCFFeatureLike } from './hasProcessGenotypes.ts'
 const SLASH = 47
 const PIPE = 124
 
-export interface AlleleBuckets {
+interface AlleleBuckets {
   count0: number
   count1: number
   count2: number

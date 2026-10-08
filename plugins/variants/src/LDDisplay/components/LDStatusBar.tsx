@@ -6,7 +6,7 @@ import type { LDDisplayModel } from '../model.ts'
 
 // Structural, so the text is assertable without building a display — the same
 // arrangement `buildLDTrackMenuItems` uses for the track menu's shape.
-export interface LDStatusSelf {
+interface LDStatusSelf {
   loadedLDWindow: number | undefined
 }
 

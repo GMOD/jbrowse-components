@@ -1,8 +1,8 @@
 /**
  * The value a banded `ldValues` cell carries when no estimator ever ran on that
- * pair. Every metric lands in [-1, 1], so -2 is a value no kernel and no CPU
- * path can produce, and `ldValueComputed` — the generated twin the two shaders
- * test with — is what both renderers ask before painting.
+ * pair. Every metric lands in [0, 1], so -2 is a value no estimator can
+ * produce, and `ldValueComputed` — the generated twin the two shaders test
+ * with — is what both renderers ask before painting.
  *
  * A cell needs it whenever the drawn layout and the computed layout disagree
  * about which pairs exist. `applyDisplayOrder` is the case: reordering the SNP

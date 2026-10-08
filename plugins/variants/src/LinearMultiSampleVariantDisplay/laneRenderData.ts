@@ -18,7 +18,7 @@ export interface LaneSourceData {
 }
 
 /** The region bounds the lane lays a block out in. */
-export interface LaneRegion {
+interface LaneRegion {
   displayedRegionIndex: number
   assemblyName: string
   refName: string

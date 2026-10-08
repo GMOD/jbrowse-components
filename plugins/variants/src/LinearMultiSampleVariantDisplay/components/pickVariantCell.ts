@@ -19,7 +19,7 @@ export interface PickCellData extends CellLookupData, VariantUploadData {
   featureInsertedBp: Int32Array
 }
 
-export interface PickedCell {
+interface PickedCell {
   cellIndex: number
   featureIndex: number
   // Screen row, so it indexes `model.sources` and positions the hover highlight

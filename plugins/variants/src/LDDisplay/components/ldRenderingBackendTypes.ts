@@ -10,7 +10,6 @@ export type LDUploadData = Pick<
   | 'numCells'
   | 'band'
   | 'uniformW'
-  | 'metric'
   | 'positions'
   | 'cellSizes'
 >
