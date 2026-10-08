@@ -202,6 +202,10 @@ export function scanSpecKeys(corpus: SourceCorpus): Scan {
   return scan
 }
 
+// Everything the walk below matches spells one of these, and two thirds of the
+// sources spell none: parsing those was most of a `markers.ts` run.
+const SCANNED = /LaunchView-|ViewInit|\binterface\s|#launchKeys|#valueList/
+
 function walkSpecKeys(corpus: SourceCorpus): Scan {
   const buckets: TaggedBucket[] = []
   const interfaces = new Map<string, SpecKey[]>()
@@ -211,6 +215,9 @@ function walkSpecKeys(corpus: SourceCorpus): Scan {
   const omitted = new Map<string, Set<string>>()
 
   for (const file of corpus.files) {
+    if (!SCANNED.test(corpus.read(file))) {
+      continue
+    }
     const source = corpus.parse(file)
     const text = source.getFullText()
     const walk = (node: ts.Node) => {

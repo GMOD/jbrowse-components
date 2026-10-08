@@ -2673,6 +2673,51 @@ export function markerBlocksInDocs() {
   return found
 }
 
+// The other spelling, `spliceGeneratedBlock`'s. A `MEASUREMENT <id>` block
+// counts under `MEASUREMENT`, as a grouped marker does under its base name.
+const GENERATED_BLOCK = /^<!-- BEGIN GENERATED (.+?) -->$/gm
+
+export function generatedBlocksInDocs() {
+  const found = new Map<string, Set<string>>()
+  for (const file of [...markerDocs(), ...listDocs('website/diagrams')]) {
+    // A fence quoting the convention is a doc about a block, not one.
+    const prose = readDoc(file).replaceAll(/^```[\s\S]*?^```/gm, '')
+    for (const [, name] of prose.matchAll(GENERATED_BLOCK)) {
+      const marker = name!.startsWith('MEASUREMENT ') ? 'MEASUREMENT' : name!
+      const docs = found.get(marker)
+      if (docs) {
+        docs.add(file)
+      } else {
+        found.set(marker, new Set([file]))
+      }
+    }
+  }
+  return found
+}
+
+// A `BEGIN GENERATED` block is spliced by a standalone generator in its own
+// process, so no run here wrote it and `markersWritten` cannot vouch for it.
+// What can: the generator spells the block's name as a string. A block whose
+// name no script under website/scripts spells keeps whatever was committed,
+// which is what renaming or deleting its generator leaves behind.
+function generatedBlocksNobodyWrites() {
+  const scripts = fs
+    .readdirSync('website/scripts')
+    .filter(isTsSource)
+    .map(name => fs.readFileSync(`website/scripts/${name}`, 'utf8'))
+  return [...generatedBlocksInDocs()]
+    .filter(
+      ([marker]) =>
+        !scripts.some(
+          text => text.includes(`'${marker}'`) || text.includes(`\`${marker} `),
+        ),
+    )
+    .map(
+      ([marker, docs]) =>
+        `  ${marker} — ${[...docs].join(', ')} carries a \`<!-- BEGIN GENERATED ${marker} -->\` pair, but no script in website/scripts names it. The block keeps whatever was committed.`,
+    )
+}
+
 // Both halves of "a generated table and the doc that renders it still know
 // about each other", which nothing checked. Either direction is silent and
 // permanent, and both are one rename away:
@@ -2706,6 +2751,7 @@ export function assertMarkersAndDocsAgree({ both = true } = {}) {
               `  ${marker} — ${[...inDocs.get(marker)!].join(', ')} carries the pair, but no generator writes it. The block keeps whatever was committed.`,
           )
       : []),
+    ...generatedBlocksNobodyWrites(),
   ]
   if (problems.length > 0) {
     throw new Error(
