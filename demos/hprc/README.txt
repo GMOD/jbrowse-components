@@ -187,39 +187,39 @@ of the 129,611 bubbles sit at that value, where it means "more than I can
 count", not a measurement.
 
 
-chr22 haplotype walks
----------------------
+Haplotype walks
+---------------
 
-  hprc-v2.1-mc-grch38.chr22.walks.bed.gz{,.tbi}
-  hprc-v2.1-mc-grch38.chr22.nodes.bed.gz{,.tbi}
-  hprc-v2.1-mc-grch38.chr22.links.bed.gz{,.tbi}
+  hprc-v2.1-mc-grch38.walks.bed.gz{,.tbi}     9,456,947,318 bytes
+  hprc-v2.1-mc-grch38.nodes.bed.gz{,.tbi}     3,305,457,973
+  hprc-v2.1-mc-grch38.links.bed.gz{,.tbi}     5,487,697,154
 
-  Every haplotype's path through chr22 of the base-level v2.1 graph, cut into
-  pieces filed under 64 kb chunks of GRCh38 and of CHM13, beside the nodes and
-  links those pieces visit, filed under the same chunks. A graph track reads
-  one range of each file per window and decodes only the haplotypes it is
-  asked for. The walk file's header names the two references and the 462
-  other haplotypes. 523,002 walk rows, 6,715,833 node rows, 9,698,657 link
-  rows; 36 of the 1,131 paths visit no GRCh38 node and have no row on it.
+  Every haplotype's path through the base-level v2.1 graph, cut into pieces
+  filed under 64 kb chunks of GRCh38 and of CHM13, beside the nodes and links
+  those pieces visit, filed under the same chunks. A graph track reads one
+  range of each file per window and decodes only the haplotypes it is asked
+  for. The walk file's header names the two references and the 462 other
+  haplotypes. 76,904,935 walk rows, 280,362,503 node rows, 387,049,122 link
+  rows. GRCh38 files 20,026,734 pieces from 51,452 paths; 1,698 paths visit
+  no GRCh38 node and have no row on it (3,736 on CHM13).
 
-  The source is HPRC's hprc-v2.1-mc-grch38.gbz (5,492,627,216 bytes), beside
-  the gbz.db in the release directory above. gbz2layout
-  (github.com/ScottMastro/gbz2layout) copied out chr22's component and
-  renumbered its 3,122,495 nodes from 1, so these ids match neither the GBZ
-  nor the gbz.db:
+  Built 2026-10-08 from HPRC's hprc-v2.1-mc-grch38.gbz (5,492,627,216 bytes,
+  the release directory above), so node ids match the GBZ and the gbz.db:
 
-    gbz2layout hprc-v2.1-mc-grch38.gbz --chromosome chr22 \
-      --export-gbz chr22.v2.gbz
-    vg convert -f chr22.v2.gbz | pigz > chr22.W.gfa.gz    # vg 1.69.0
-    gfa-to-tabix chr22.W.gfa.gz --walks --refs GRCh38,CHM13 \
-      --chunk 65536 --cap 8192 -o chr22                   # gfa-to-tabix 0.4.0
+    vg convert -f hprc-v2.1-mc-grch38.gbz | pigz > hprc-v2.1-mc-grch38.W.gfa.gz
+                                                       # vg 1.76.1, 17 min, 90 GB
+    gfa-to-tabix hprc-v2.1-mc-grch38.W.gfa.gz --walks --refs GRCh38,CHM13 \
+      --chunk 65536 --cap 8192 -o hprc-v2.1-mc-grch38   # gfa-to-tabix 0.4.0,
+                                                       # 44 min, 16 GB RSS
 
-  The upload renamed the six outputs to the hprc-v2.1-mc-grch38.chr22 prefix.
-  Built 2026-10-08 with the released gfa-to-tabix 0.4.0, whose --settle
-  defaults to 0: a piece ends wherever a walk's reference steps move to
-  another chunk, however short the run there. The track names all three files
-  and their indexes in walksLocation, segmentsLocation and linksLocation,
-  since the uri shorthand expands only .segs and .links.
+  --settle is 0.4.0's default, 0: a piece ends wherever a walk's reference
+  steps move to another chunk. The track's walksUri names the three files by
+  this prefix, and defaultHaplotypes names the lanes it draws unless the
+  haplotype menu says otherwise.
+
+  The chr22-only files from the earlier build stay hosted for the jb2bench
+  trace that measured them (hprc-v2.1-mc-grch38.chr22.{walks,nodes,links};
+  ids renumbered from 1 by gbz2layout, so they match no other file here).
 
 
 repeat_density/ - per-class RepeatMasker density
