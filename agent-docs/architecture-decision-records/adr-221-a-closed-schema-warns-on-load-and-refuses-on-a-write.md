@@ -68,7 +68,15 @@ adapter dropped it in silence. Three reviews of that state found:
   and had `jbrowse add-track` fill it until v4.0.0. Those load without a
   console line, and `jbrowse validate` warns that the key is never read. On an
   adapter that never declared one, a `sequenceAdapter` is named like any other
-  undeclared key, and the validator reports it as an error.
+  undeclared key, and the validator reports it as an error. A sweep of 39
+  release tags' slot lists, CLI output, docs and test data then found about
+  forty more such keys over sixteen schemas, each now `retired` on its schema,
+  lifted where a current slot takes the value (`fitToHeight` to
+  `squashToHeight`, a v4 coverage display's `minScore` to `scales.y.domainMin`)
+  and dropped otherwise; `LegacyConfigKeysLoadSilently.test.ts` loads one
+  config per schema and is the list. The v1-v4 base display's keys are one
+  shared map, declared on the base and spread by the displays standing apart
+  from it, which is why a retired name a schema still declares is left alone.
 
 ## Consequences
 
