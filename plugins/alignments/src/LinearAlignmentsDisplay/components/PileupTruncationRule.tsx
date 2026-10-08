@@ -72,7 +72,7 @@ const useStyles = makeStyles()(theme => ({
     // asks for, and the two agreed with each other while the screen agreed with
     // neither.
     fontSize: 10,
-    lineHeight: CAPTION_LINE_PX,
+    lineHeight: `${CAPTION_LINE_PX}px`,
     padding: '0 3px',
     color: theme.palette.text.secondary,
     background: theme.palette.background.paper,

@@ -109,3 +109,12 @@ test('nothing in it is clickable', () => {
     expect(caption.tagName).toBe('DIV')
   }
 })
+
+// A bare number is a multiple of the font size, which made the caption's paper
+// box ten lines tall over the lane below.
+test('the caption is one line tall', () => {
+  renderRule()
+  for (const caption of screen.getAllByText(CAPTION)) {
+    expect(getComputedStyle(caption).lineHeight).toBe('12px')
+  }
+})
