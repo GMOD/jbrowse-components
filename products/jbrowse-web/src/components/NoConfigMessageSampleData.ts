@@ -26,10 +26,6 @@ export const sampleConfigs: readonly SampleLink[] = [
     label: 'Dog (NCBI)',
   },
   {
-    config: 'test_data/wormbase/config.json',
-    label: 'Wormbase',
-  },
-  {
     config: 'test_data/breakpoint/config.json',
     label: 'Breakpoint',
   },
