@@ -282,3 +282,31 @@ test('a merged insertion marker hovers as the longest insertion it draws', () =>
     sequence: 'c',
   })
 })
+
+test('an insertion anchored at a block end hovers from past the block', () => {
+  const r = region([
+    {
+      startBp: 100,
+      endBp: 102,
+      refSeqBytes: enc.encode('AA--'),
+      rows: [
+        {
+          rowIndex: 0,
+          alignmentBytes: enc.encode('aacc'),
+          chr: 'chrX',
+          srcStart: 100,
+          strand: 1,
+        },
+      ],
+      empties: [],
+    },
+  ])
+  const insertion = { kind: 'insertion', length: 2, sequence: 'cc' }
+  expect(findRowHoverAtBp(r, at(101.95), 0, false, 0.1, 1, 20)).toMatchObject(
+    insertion,
+  )
+  expect(findRowHoverAtBp(r, at(102.05), 0, false, 0.1, 1, 20)).toMatchObject(
+    insertion,
+  )
+  expect(findRowHoverAtBp(r, at(104), 0, false, 0.1, 1, 20)).toBeUndefined()
+})

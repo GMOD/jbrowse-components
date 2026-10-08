@@ -332,6 +332,21 @@ export function findRowHoverAtBp(
   rowBandPx: number,
 ): RowHit | undefined {
   const { gposFrac, baseBp: targetBp } = bp
+  const insertion =
+    insertionBinBp === undefined
+      ? undefined
+      : insertionHitInRow(
+          region,
+          rowIndex,
+          gposFrac,
+          bpPerPx,
+          rowBandPx,
+          insertionBinBp,
+          showAsUpperCase,
+        )
+  if (insertion) {
+    return insertion
+  }
   const i = blockIndexAtBp(region.blocks, targetBp)
   if (i === -1) {
     return undefined
@@ -340,17 +355,6 @@ export function findRowHoverAtBp(
   const row = block.rows.find(r => r.rowIndex === rowIndex)
   if (row) {
     return (
-      (insertionBinBp !== undefined
-        ? insertionHitInRow(
-            region,
-            rowIndex,
-            gposFrac,
-            bpPerPx,
-            rowBandPx,
-            insertionBinBp,
-            showAsUpperCase,
-          )
-        : undefined) ??
       cellHitInRow(block, row, targetBp, showAsUpperCase) ??
       deletionHitInRow(
         block,
