@@ -820,6 +820,16 @@ export async function applyDisplayOpts(
       }
     }
   }
+  // One row height on every card of a run, and every read where the display's
+  // grow ceiling allows it. A track stating either height keeps it.
+  if (
+    sortAt &&
+    category === 'alignments' &&
+    snap.heightMode === undefined &&
+    snap.height === undefined
+  ) {
+    snap.heightMode = 'grow'
+  }
 
   // `filterBy` is the one slot a modifier EDITS rather than states, so it can't
   // ride in on the snapshot: the slot is `frozen`, and showTrack writes a frozen

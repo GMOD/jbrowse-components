@@ -87,13 +87,31 @@ describe("batch's per-record sort", () => {
     await applyDisplayOpts(view, 't', 'alignments', [], sortAt)
     expect(calls[0]).toEqual({
       sortedBy: { ...sortAt, refName: 'chr3', assemblyName: 'hg38' },
+      heightMode: 'grow',
     })
+  })
+
+  it('grows the track to its pileup unless the track states a height', async () => {
+    for (const [modifier, expected] of [
+      ['height:300', { height: 300 }],
+      ['heightMode:fit', { heightMode: 'fit' }],
+    ] as const) {
+      const { view, calls } = sortableView()
+      await applyDisplayOpts(view, 't', 'alignments', [modifier], sortAt)
+      expect(calls[0]).toEqual({
+        ...expected,
+        sortedBy: { ...sortAt, refName: 'chr3', assemblyName: 'hg38' },
+      })
+    }
   })
 
   it('yields to a sort the track states', async () => {
     const { view, calls } = sortableView()
     await applyDisplayOpts(view, 't', 'alignments', ['sort:strand'], sortAt)
-    expect(calls[0]).toMatchObject({ sortedBy: { type: 'strand' } })
+    expect(calls[0]).toMatchObject({
+      sortedBy: { type: 'strand' },
+      heightMode: 'grow',
+    })
   })
 
   it('leaves a track of another kind alone', async () => {
