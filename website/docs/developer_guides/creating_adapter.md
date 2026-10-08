@@ -314,6 +314,10 @@ export interface BaseOptions {
   // cannot show — an index SNP no LD record names, say — appended here and
   // carried back on the fetch's result to the display's corner notice.
   notices?: string[]
+  // What the adapter read off the features it answers with that a reader needs
+  // beside them — a GWAS region's top hit, say — written here under a name of
+  // the adapter's own and carried back on the fetch's result.
+  facts?: Record<string, unknown>
   headers?: Record<string, string>
   // Which side of a pairing to answer getRefNames for; single-assembly
   // adapters ignore it.
