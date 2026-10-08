@@ -25,9 +25,16 @@
 # demos/<path>, commit, then deploy. DEPLOY_DEMO_ALLOW_UNTRACKED=1 overrides,
 # for a one-off asset that genuinely has no repo copy.
 #
-# Usage: scripts/deploy-demo.sh <local-file> <demos-relative-path>
+# A DIRECTORY uploads whole, with one invalidation over its prefix: a built
+# page and the images beside it (a review portal is an index.html and one PNG
+# per record) is one deploy, where a file at a time is an invalidation per image.
+# Nothing under the prefix is deleted, so a file the new build no longer names
+# stays reachable by its own URL.
+#
+# Usage: scripts/deploy-demo.sh <local-file-or-dir> <demos-relative-path>
 #   scripts/deploy-demo.sh demos/grape_peach_cacao/config.json grape_peach_cacao/config.json
 #   scripts/deploy-demo.sh grape_peach_cacao/config.json    # same, path inferred
+#   scripts/deploy-demo.sh ~/portal colo829_review          # a directory
 set -euo pipefail
 
 if [ "$#" -lt 1 ] || [ "$#" -gt 2 ]; then
@@ -60,6 +67,23 @@ if [ -f "$tracked" ] && ! cmp -s "$local_file" "$tracked"; then
 fi
 
 distribution_id="E13LGELJOT4GQO" # jbrowse.org / www.jbrowse.org
+
+if [ -d "$local_file" ]; then
+  prefix="demos/${demo_path%/}"
+  if [ -e "$repo_root/$prefix" ]; then
+    echo "refusing: $prefix is checked in, so deploy its files one at a time" >&2
+    exit 1
+  fi
+  echo "Uploading $local_file/ -> s3://jbrowse.org/$prefix/"
+  aws s3 sync "$local_file" "s3://jbrowse.org/$prefix/" --only-show-errors
+  echo "Invalidating CloudFront /$prefix/*"
+  aws cloudfront create-invalidation \
+    --distribution-id "$distribution_id" \
+    --paths "/$prefix/*" \
+    --query 'Invalidation.{Id:Id,Status:Status}' \
+    --output table
+  exit 0
+fi
 s3_key="demos/${demo_path}"
 
 content_type=""

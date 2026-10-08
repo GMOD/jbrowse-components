@@ -154,6 +154,37 @@ means reading a CIGAR for a gap over an interval, which is genotyping and a
 caller's job. The count stays what the picture draws, and the page says "split
 read" wherever it prints one.
 
+**A record one panel holds has a count of its own.** `batch` sorts a linear
+view's pileup at a record's variant, and the manifest's `nonref` column is what
+the coverage band stacks there: per alignments track, the reads differing from
+the reference at the column over the reads spanning it. The portal reads it as
+each lane's count, so the support filter covers one-panel records too.
+
+Three refinements of that count were measured on 2026-10-08 against the callers'
+own depths and are not built on main. Commit
+`eaac6f6b1e`, unlanded, holds them as a `carriers` column, and the
+hosted portals below were rendered from it.
+
+- **The ALT alone, not any difference.** Over COLO829's 238 somatic coding
+  variants on nanopore reads, any mismatch at the column put a read in the
+  matched normal on 145; the ALT base alone does on 60, and the tumor count is
+  within a quarter or three reads of ClairS's `AD` on 216.
+- **A symbolic `<DEL>` or `<INS>` has no sort column**, so COLO829's 51
+  one-panel SV records get no count. Sorting a `<DEL>` at the base after its
+  anchor counts its gap, and agrees with nanomonsv to the read: `d_43` 46 of 48
+  both ways, `d_75` 9 of 38, `d_29` 21 of 64.
+- **An insertion counted at the caller's exact position read 0 on 24 of 35**,
+  where nanomonsv has 3 to 37 supporting reads: its POS sits tens of bases from
+  where minimap2 placed the insertion. Counting an insertion of 50 bases or more
+  anywhere within the flank, at half the call's length or longer, leaves 10 at
+  zero and 42 of the 51 within a quarter or three reads of the caller. The
+  window is also what two over-count on: `i_240` reads 32 of 35 in the tumor and
+  42 of 48 in the normal against the caller's 3 and 0, because a germline
+  insertion of the same size class is in view.
+
+Depth is every read drawn, so a collapsed repeat reads 1,028 where the caller,
+filtering, has 498.
+
 Mappability is the one input still missing:
 `mappability_qc.md` §"the number behind it" gives the command over the UCSC Umap
 k100 bigWig, including the trap that a zero-mappability span emits no interval,
@@ -182,6 +213,21 @@ A card also prints what the VCF holds beyond the SV columns: the sample's
 `FORMAT` numbers, every `INFO` key with the header's description, and the genes
 and effect of the top SnpEff `ANN` or VEP `CSQ` annotation. The queue sorts on
 size, split reads or any `FORMAT` number, and lists as a table.
+
+## Callsets it has been run on
+
+- **COLO829 SVs** (nanomonsv, ONT): https://jbrowse.org/demos/colo829_review/.
+- **HG008-T SVs** (C-GIAB V0.5 draft benchmark, PacBio HiFi from NCBI):
+  https://jbrowse.org/demos/hg008_review/. 171 records and 10 `EVENT` cards of
+  three to ten loci. Its first build failed on an event card having no `FILTER`,
+  and its ten-locus row pushed the table's later columns out of the window.
+  NCBI answers four parallel jobs with HTTP 503 on 77 of 181 rows; `--jobs 2`
+  with `--resume` drew all 181 in three passes.
+- **COLO829 somatic coding variants** (ClairS through wf-somatic-variation,
+  SnpEff and ClinVar annotated): 238 PASS records of HIGH or MODERATE impact or
+  with a ClinVar entry, https://jbrowse.org/demos/colo829_snv_review/. _BRAF_
+  V600E (the record's `p.Val640Glu`, on the longer transcript) and the _TERT_
+  promoter's c.-124C>T are both in it. Rendered at `--flank 75`.
 
 ## What a whole callset costs
 
