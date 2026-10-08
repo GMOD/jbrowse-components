@@ -46,14 +46,14 @@ const DEFAULT_READ_CONNECTIONS_LINE_WIDTH = 1
 
 // Everything about pairing/connecting reads lives here (arcs, read cloud, linked
 // reads, bezier). Proper-pair / singleton visibility is a per-read-category
-// toggle, so it sits in "Show..." (see reads.ts), not here. The arc/cloud band
+// toggle, so it sits in "Filter by..." (see reads.ts), not here. The arc/cloud band
 // options are always present but greyed out (disabled submenu + disabledHelpText)
 // until an overlay is active, so the settings are discoverable instead of
 // vanishing.
 //
 // The SV-channel row sits here too, under the overlay radio it builds on.
 // It spent a day at the top of the track menu, where it was the one bare
-// checkbox in a column of submenus; three of the five settings it writes are
+// checkbox in a column of submenus; two of the four settings it writes are
 // this menu's own, and the reader watching "Read arcs" select as they turn it
 // on is what says how the row and the switches relate.
 export function getReadConnectionsMenuItem(

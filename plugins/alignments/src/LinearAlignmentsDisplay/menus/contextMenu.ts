@@ -111,7 +111,7 @@ function setTagFilter(self: FilterModel, tag: string, value: string) {
 // Cigar and coverage-indicator hits build the identical two-item submenu: sort
 // the pileup by what's under the cursor, or open its details widget. `block` is
 // captured once by getHitMenuItems and closed over by the onClicks because
-// closeContextMenu nulls self.contextMenuBlock before they fire.
+// closeContextMenu clears the hit before they fire.
 //
 // `sort` false collapses the pair to the bare details item — for a display whose
 // sort menu doesn't offer the position-anchored modes (LGVSyntenyDisplay), where

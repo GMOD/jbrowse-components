@@ -27,7 +27,7 @@ export const SV_CHANNELS_LABEL = 'SV channels (pairs by orientation)'
 
 // One band per pair orientation, each with its own coverage and its own arcs,
 // concordant pairs left out. Every setting is reachable from the other menus;
-// the preset exists because five of them spread across four menus is not an
+// the preset exists because four of them spread across three menus is not an
 // arrangement anyone finds by looking.
 //
 // `colorBy` is deliberately NOT among them, though the arrangement wrote it

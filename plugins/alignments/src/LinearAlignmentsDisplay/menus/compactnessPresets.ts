@@ -1,6 +1,6 @@
 // The fixed read-height vocabulary, kept in a leaf module with no UI imports so
 // it can be read by things that must not pull in React — the menu itself
-// (featureSize.tsx, which re-exports these), and the website's figure recipes,
+// (featureSize.ts, which re-exports these), and the website's figure recipes,
 // which name a figure's featureHeight by its preset label.
 
 // Single source of truth for the fixed read-height presets — one height each
