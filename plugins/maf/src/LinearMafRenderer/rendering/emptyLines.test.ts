@@ -43,6 +43,23 @@ test('I/n status draws a double line', () => {
   expect(calls[0]!.y).toBeLessThan(calls[1]!.y)
 })
 
+test.each([1, 2, 3])(
+  'I status draws one line inside a %ipx row that cannot hold two',
+  h => {
+    const { ctx, calls } = makeCtx()
+    drawMafEmptyLines(ctx, [{ ...seg('I'), h }], palette)
+    expect(calls).toHaveLength(1)
+    expect(calls[0]!.y).toBeGreaterThanOrEqual(10)
+    expect(calls[0]!.y + calls[0]!.h).toBeLessThanOrEqual(10 + h)
+  },
+)
+
+test('I status keeps both lines inside a 4px row', () => {
+  const { ctx, calls } = makeCtx()
+  drawMafEmptyLines(ctx, [{ ...seg('I'), h: 4 }], palette)
+  expect(calls.map(c => c.y)).toEqual([11, 13])
+})
+
 test('M status fills a pale bar over the whole band', () => {
   const { ctx, calls } = makeCtx()
   drawMafEmptyLines(ctx, [seg('M')], palette)

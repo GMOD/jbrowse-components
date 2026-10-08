@@ -5,7 +5,8 @@ import type { Ctx2D } from '@jbrowse/core/util/paintLayer'
 /**
  * Draw MAF `e`-line (bridged/empty) rows, matching UCSC conventions:
  * - `C` contiguous: a single center line
- * - `I` / `n` intervening bases: a double line
+ * - `I` / `n` intervening bases: a double line, or one where the row cannot
+ *   hold two
  * - `M` missing data: a pale fill bar
  */
 export function drawMafEmptyLines(
@@ -24,8 +25,12 @@ export function drawMafEmptyLines(
         ctx.fillRect(s.x, mid, s.width, 1)
       } else {
         const gap = Math.max(1, Math.min(2, Math.floor(s.h / 4)))
-        ctx.fillRect(s.x, mid - gap, s.width, 1)
-        ctx.fillRect(s.x, mid + gap, s.width, 1)
+        if (mid - gap >= s.rowTop && mid + gap + 1 <= s.rowTop + s.h) {
+          ctx.fillRect(s.x, mid - gap, s.width, 1)
+          ctx.fillRect(s.x, mid + gap, s.width, 1)
+        } else {
+          ctx.fillRect(s.x, Math.floor(s.rowTop + s.h / 2), s.width, 1)
+        }
       }
     }
   }
