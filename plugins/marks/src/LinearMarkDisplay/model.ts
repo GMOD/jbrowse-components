@@ -2073,7 +2073,7 @@ export type {
 } from './markList.ts'
 export type { MarkPlot, MarkPlotSettings } from './markPlot.ts'
 export type { MarkProblem } from './markProblems.ts'
-export type { PlotFields } from './scanPlotFields.ts'
+export type { JoinedPlotFields, PlotFields } from './scanPlotFields.ts'
 export type { StepChannels } from './stepChannels.ts'
 
 export type LinearMarkDisplayStateModel = ReturnType<typeof stateModelFactory>
