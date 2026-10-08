@@ -27,12 +27,12 @@ test('a row per source defaults to the pos/neg pair about the origin', () => {
   })
 })
 
-test('one source in a shared plot keeps the pair, several take a colour each', () => {
+test('one source in a shared plot keeps the pair, several take a color each', () => {
   expect(makeDisplay(['a'], false).rowPaletteDeals).toBe(false)
   expect(makeDisplay(['a', 'b'], false).rowPaletteDeals).toBe(true)
 })
 
-test('a written colour wins over the layout, whatever it is', () => {
+test('a written color wins over the layout, whatever it is', () => {
   const display = makeDisplay(['a', 'b'], false)
   display.setColor('green')
   expect(display.rowPaletteDeals).toBe(false)
@@ -42,7 +42,7 @@ test('a written colour wins over the layout, whatever it is', () => {
 // The circular view's key reads this member off whatever display a ring is
 // (`CircularLegendSource`), so a rename here empties the key rather than
 // failing a build there.
-test('the circular key reads the colour the plot paints', () => {
+test('the circular key reads the color the plot paints', () => {
   const display = makeDisplay(['a'], true)
   expect(display.legendColor).toBe(WIGGLE_POS_COLOR_DEFAULT)
   display.setColor('green')
@@ -91,9 +91,9 @@ test('the plot reads back what was written', () => {
   expect(display.plot.color).toBe('green')
 })
 
-// A subtrack's colour is `rowColor`'s, so `source` is no colour field and
-// `categorical` no colour scale here.
-test('the colour reads score alone and refuses any other field or a categorical scale', () => {
+// A subtrack's color is `rowColor`'s, so `source` is no color field and
+// `categorical` no color scale here.
+test('the color reads score alone and refuses any other field or a categorical scale', () => {
   const display = makeDisplay(['a'], true)
   for (const color of [
     { field: 'pvalue', scale: 'threshold' },
@@ -143,7 +143,7 @@ test('a threshold paints a band per cut, sorted as every threshold scale sorts t
   ])
 })
 
-test('a threshold cut moves the colour, and the bars still grow from the origin', () => {
+test('a threshold cut moves the color, and the bars still grow from the origin', () => {
   const display = makeDisplay(['a'], true)
   display.setColor({ field: 'score', scale: 'threshold', domain: ['2'] })
   const state = makeWiggleRenderState(display, {
@@ -216,7 +216,7 @@ test.each(['xyplot', 'scatter'])(
 test.each([
   ['the default pair', undefined],
   ['a threshold', { field: 'score', scale: 'threshold', domain: ['2'] }],
-  ['a solid colour', 'green'],
+  ['a solid color', 'green'],
 ] as const)('%s on xyplot draws no gradient key', (_name, color) => {
   const display = scoredDisplay([{ name: 'a' }])
   if (color !== undefined) {
@@ -227,7 +227,7 @@ test.each([
   expect(display.scoreGradientPaints).toBe(false)
 })
 
-test('a colour per source on xyplot draws no gradient key', () => {
+test('a color per source on xyplot draws no gradient key', () => {
   const display = scoredDisplay([{ name: 'a' }, { name: 'b' }])
   display.setRowLayout(false)
   expect(display.rowPaletteDeals).toBe(true)
@@ -235,19 +235,19 @@ test('a colour per source on xyplot draws no gradient key', () => {
   expect(scoreKey(display)).toBeUndefined()
 })
 
-test('density keeps its key: the fade is keyed until a row brings its own colour', () => {
+test('density keeps its key: the fade is keyed until a row brings its own color', () => {
   const display = scoredDisplay([{ name: 'a' }])
   display.setRenderingType('density')
   expect(scoreKey(display)?.kind).toBe('ramp')
   expect(display.valueScales).toEqual([])
-  const coloured = scoredDisplay([{ name: 'a', color: '#ff0000' }])
-  coloured.setRenderingType('density')
-  expect(scoreKey(coloured)).toBeUndefined()
+  const colored = scoredDisplay([{ name: 'a', color: '#ff0000' }])
+  colored.setRenderingType('density')
+  expect(scoreKey(colored)).toBeUndefined()
 })
 
-// The gradient's one table ignores a row's own colour, so the key still
-// describes every row, and the row's colour stays on its label bar.
-test('a gradient keys its ramp over rows with their own colours, which keep their label bars', () => {
+// The gradient's one table ignores a row's own color, so the key still
+// describes every row, and the row's color stays on its label bar.
+test('a gradient keys its ramp over rows with their own colors, which keep their label bars', () => {
   const display = scoredDisplay([
     { name: 'a', color: '#ff0000' },
     { name: 'b', color: '#0000ff' },
@@ -268,11 +268,11 @@ test('a gradient on a line keys nothing and says why', () => {
   expect(scoreKey(display)).toBeUndefined()
   expect(display.scoreGradientPaints).toBe(false)
   expect(display.notices).toEqual([
-    'color.scale: a gradient colours bars, points and density; a line paints its two end colours',
+    'color.scale: a gradient colors bars, points and density; a line paints its two end colors',
   ])
 })
 
-test("the corner notice reads scales.y's ends by the colour ramp's rule", () => {
+test("the corner notice reads scales.y's ends by the color ramp's rule", () => {
   const { display } = createTestEnvironment({
     displayConfig: { scales: { y: { domainQuantile: 99 } } },
   }).createDisplay()

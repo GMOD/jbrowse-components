@@ -8,9 +8,9 @@ export interface Source {
   // `name` stays the stable identity used for hit-testing and genotype lookup.
   label?: string
   sampleName?: string
-  // the samplesTsv's own colour for the sample
+  // the samplesTsv's own color for the sample
   color?: string
-  // the resolved colour the row's label bar draws
+  // the resolved color the row's label bar draws
   rowColor?: string
   group?: string
   HP?: number

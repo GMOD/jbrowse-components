@@ -78,7 +78,7 @@ The heatmap's ramp runs from 0 to 100% identity, and
 [`color`](/docs/config/mafcolor) can move it. Close relatives all sit near its
 blue end, so `color: { field: "identity", domainMin: 0.7 }` spreads the ramp
 over 70 to 100%, where they differ; `scheme`, `reverse` and `domainMid` change
-the ramp itself. The source-chromosome colours below take a `range`, one colour
+the ramp itself. The source-chromosome colors below take a `range`, one color
 per rank.
 
 The heatmap and the X-Y plot draw only while you are zoomed out past base level,
@@ -222,7 +222,7 @@ track is configured with a Newick guide tree.
 
 - **Show... → Show tree** toggles the dendrogram and **Show row labels** the
   species names, and **Tree branch lengths** draws the tree to scale.
-- **Edit row arrangement...** reorders, relabels and recolours rows. The
+- **Edit row arrangement...** reorders, relabels and recolors rows. The
   display's [`rows`](/docs/config/linearmafdisplay/#slot-rows) setting holds the
   arrangement, so it survives unticking the track and an undo takes it back. Its
   `domain` is the order: with a guide tree it rotates the tree rather than

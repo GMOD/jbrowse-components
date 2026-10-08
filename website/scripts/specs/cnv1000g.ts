@@ -25,7 +25,7 @@ const CCL3L1_WINDOW = 'chr17:36,080,000-36,270,000'
 // than as the finding. 1.5 Mb overshot the other way: the block was a fifth of
 // the frame with four times its own width of white on either side.
 //
-// 700 kb is measured off the frame rather than picked -- the coloured columns
+// 700 kb is measured off the frame rather than picked -- the colored columns
 // run chr17:36,193,000-36,457,000, so the block is a bit over a third of this
 // window and the flat diploid flanks are the rest. Centred on the block, which
 // the 1.5 Mb window was not.
@@ -235,7 +235,7 @@ export const cnv1000gSpecs: ScreenshotSpec[] = [
           // of colors. unclear if it is helpful to show them ... might consider
           // removing color sidebar"). At 0.35 px a row the labels carry no text
           // and `SvgRowLabels` falls back to a column of swatches; the store's
-          // per-sample colour is the individual's population, and clustering
+          // per-sample color is the individual's population, and clustering
           // reorders the rows by copy-number profile, so the column is 26 hues
           // interleaved at random -- a grouping the picture is not sorted by.
           //
@@ -261,7 +261,7 @@ export const cnv1000gSpecs: ScreenshotSpec[] = [
     //
     // Neither line is checkable against the picture and both are the reason it
     // is worth drawing, which is exactly what a callout is for. No copy-number
-    // range in it: the ladder figure above shows the range, and the colour bar
+    // range in it: the ladder figure above shows the range, and the color bar
     // in this frame's own top right carries the scale.
     //
     // In the RIGHT FLANK, anchored to a LOCUS just past the block's right edge
@@ -281,7 +281,7 @@ export const cnv1000gSpecs: ScreenshotSpec[] = [
     //
     // Neither line is checkable against the picture and both are the reason it
     // is worth drawing, which is what a callout is for. No copy-number range in
-    // it: the ladder figure above shows the range, and this frame's own colour
+    // it: the ladder figure above shows the range, and this frame's own color
     // bar carries the scale.
     annotations: [
       {

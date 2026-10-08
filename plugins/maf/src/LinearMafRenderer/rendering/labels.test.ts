@@ -33,7 +33,7 @@ test.each(['light', 'dark'] as const)(
   },
 )
 
-test('a letter over a match cell takes the neutral text colour', () => {
+test('a letter over a match cell takes the neutral text color', () => {
   const { fill, palette } = fillOf(
     { x: 0, y: 0, text: 'A', lowerBase: 'a', onBase: false },
     'light',

@@ -51,7 +51,7 @@ sequence-property triage metrics (`gcPercent`, `hasPolyT`), not an off-target
 score.
 
 **GWAS to a fine-mapped locus.** `GWASTrack` plus `PlinkLDAdapter` /
-`PlinkLDTabixAdapter` with LocusZoom-style r² colouring and right-click
+`PlinkLDTabixAdapter` with LocusZoom-style r² coloring and right-click
 re-anchoring of the index SNP. Only a user guide covers it; distinct from
 `ld_human.md`, which teaches the triangle at a kb-scale sweep.
 

@@ -213,7 +213,7 @@ export const pangenomeCactusSpecs: ScreenshotSpec[] = [
   },
 
   // Projection 1: all-vs-all synteny (halSynteny from the HAL). The five strains
-  // stacked K12 -> IAI39, one halSynteny ribbon per adjacent pair, coloured by
+  // stacked K12 -> IAI39, one halSynteny ribbon per adjacent pair, colored by
   // strand: the top three bands are red throughout, and IAI39's inversions are
   // the blue ribbons crossing the bottom one.
   {

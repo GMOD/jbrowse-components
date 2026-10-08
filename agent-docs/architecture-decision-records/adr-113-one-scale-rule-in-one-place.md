@@ -1,6 +1,6 @@
 ---
 status: Accepted
-summary: "A scale is declared on the channel it scales and resolved wherever it is cheapest, and both halves of that rule now hold: `encoding.y` carries `{ field, scale, domain }` and `ScoreScaleMixin` resolves it rather than owning a second copy, so the score menu edits the declaration; and a quantitative colour ramp resolves on the main thread against a domain unioned over the loaded regions, read by the shapes as a uniform plus the shared LUT, so an unpinned ramp agrees across regions and a pan uploads no instance bytes. The ramp rides the existing colour lane reinterpreted, not a new one; `span` keeps the worker-resolved colour, and a bin width that follows the zoom stays declined here (taken in ADR-117)"
+summary: "A scale is declared on the channel it scales and resolved wherever it is cheapest, and both halves of that rule now hold: `encoding.y` carries `{ field, scale, domain }` and `ScoreScaleMixin` resolves it rather than owning a second copy, so the score menu edits the declaration; and a quantitative color ramp resolves on the main thread against a domain unioned over the loaded regions, read by the shapes as a uniform plus the shared LUT, so an unpinned ramp agrees across regions and a pan uploads no instance bytes. The ramp rides the existing color lane reinterpreted, not a new one; `span` keeps the worker-resolved color, and a bin width that follows the zoom stays declined here (taken in ADR-117)"
 ---
 
 # ADR-113: One scale rule, in one place
@@ -8,15 +8,15 @@ summary: "A scale is declared on the channel it scales and resolved wherever it 
 ## Status
 
 Superseded by [ADR-141](adr-141-one-y-scale-the-displays.md) for §"`encoding.y`
-carries the value scale"; the colour-ramp half stands. Where this record spells
-the colour channel `palette | ramp` and pins a ramp with `domain`, the channel
+carries the value scale"; the color-ramp half stands. Where this record spells
+the color channel `palette | ramp` and pins a ramp with `domain`, the channel
 says `range`, `scheme`, `domainMin` and `domainMax` since
 [ADR-151](adr-151-a-channels-scale-is-spelt-as-scales-y-spells-one.md).
 
 Accepted (2026-09-10). Closes the two seams
 [GRAMMAR_OF_GRAPHICS.md](../reference/GRAMMAR_OF_GRAPHICS.md) named — "the
 scale lives in two places" and "a scale table is per fetched region" — the
-first for the mark display, the second for the quantitative colour channel.
+first for the mark display, the second for the quantitative color channel.
 Amends [ADR-107](adr-107-the-quantitative-class-is-authored-in-config.md)'s
 consequence that "a ramp table is per region without a `domain`", and rests on
 [ADR-095](adr-095-a-shape-composes-a-scale-at-compile-time.md)'s compile-time
@@ -26,19 +26,19 @@ scale/anchor split, neither of which is reopened.
 
 ## Context
 
-A config reader met two spellings of the same idea. A colour scale sat on the
+A config reader met two spellings of the same idea. A color scale sat on the
 channel — `{ field, scale, domain, palette | ramp }` under `encoding.color` —
 and the value scale did not: `encoding.y` was a bare field name and the axis
 it was read through lived four levels away, as `minScore`, `maxScore` and
 `scaleType` on the display. Nothing said so at either site, and a reader who
 found `scale` under `color` had no reason to think the y channel had one.
 
-The second seam was where a scale resolves. A categorical colour resolves in
+The second seam was where a scale resolves. A categorical color resolves in
 the worker and travels packed with the instance, which is right: the value
-decides the colour and the colour is data. A quantitative one did the same and
+decides the color and the color is data. A quantitative one did the same and
 should not have, because its domain is not a property of the region — it is
 the extremes of every region loaded, and it moves when the next one arrives.
-Each region resolved its own table, so the same value painted two colours in
+Each region resolved its own table, so the same value painted two colors in
 two blocks of one view and the legend could only show one of them. That is the
 problem the y axis had already solved: `valueScale.slang` reads a domain
 uniform, so an autoscale that moves costs one 64-byte write and no buffer
@@ -94,11 +94,11 @@ on a degenerate domain and that difference is a pinned cross-backend value
 (ADR-097). `computeYTicks` already took a `scaleType`, so the axis and the
 shader now read one declaration.
 
-### A quantitative colour ramp resolves on the main thread
+### A quantitative color ramp resolves on the main thread
 
 `LaneName` gains `colorValue`. A caller that names it and declares a
-`linear`/`log` colour gets the **raw values** and the region's own `extent`,
-and no packed colours; a caller that names only `color` gets today's
+`linear`/`log` color gets the **raw values** and the region's own `extent`,
+and no packed colors; a caller that names only `color` gets today's
 worker-resolved lane. Which side of the wire a ramp resolves on is the
 caller's lane choice, which is the tree's existing "a lane is filled because a
 shape reads it" rule pointed at a scale.
@@ -112,7 +112,7 @@ bound through `defineMark`'s `texture` hook, the mechanism ADR-095 built and
 shapes compose for it, and it calls `scoreScale`'s `normalizeScore`, so a
 ramp's domain is read exactly as the axis reads y's.
 
-**The ramp rides the colour lane, reinterpreted.** One 4-byte instance slot
+**The ramp rides the color lane, reinterpreted.** One 4-byte instance slot
 carries either the packed ABGR or the value's float32 bits, and `rampMode`
 says which: `colorBits` views the encoder's `Float32Array` as the `Uint32Array`
 the attribute declares, and the shader's `asfloat` undoes it. So a ramp costs
@@ -123,7 +123,7 @@ they bake: `paintColors` resolves the values against the domain once and
 memoizes the packed array on the payload, keyed by the domain, the scale type
 and the LUT's identity. A repaint at an unchanged domain — every pan, hover
 and height drag — walks no values and the painters' fill batching still sees
-runs of one colour.
+runs of one color.
 
 The legend reads the unioned domain, and a pinned `domain` still pins: the
 table says `pinned`, and a pinned ramp is every region's whatever they hold.
@@ -224,17 +224,17 @@ table says `pinned`, and a pinned ramp is every region's whatever they hold.
 
 ### Amended 2026-09-28: `span` reads the scale too
 
-The wiggle port's density heatmap is a span coloured by its value, so `span`
+The wiggle port's density heatmap is a span colored by its value, so `span`
 gained the arm this ADR left it without: its shader reads `markScaleColor`
 over the same ramp and threshold uniforms as `bar`, its packer writes
 `colorBits` and its painter bakes `paintColors`, and the mark display resolves
 a span's ramp on the main thread as it resolves the others'. `rowRect`'s
-shared instance struct is untouched, since the value rides the colour slot
+shared instance struct is untouched, since the value rides the color slot
 reinterpreted. `text` alone keeps the worker-resolved lane, and
 `unpinned-span-ramp` is `unpinned-text-ramp`.
 
 ### Amended 2026-09-30: `text` reads it too
 
-Since [ADR-202](adr-202-every-mark-colour-resolves-on-the-main-thread.md) a
+Since [ADR-202](adr-202-every-mark-color-resolves-on-the-main-thread.md) a
 text mark's ramp resolves on the main thread over the domain the display
 unions, as every other mark's does, and `unpinned-text-ramp` is gone.

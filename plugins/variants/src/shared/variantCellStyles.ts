@@ -38,7 +38,7 @@ const CELL_ALT = 1
 export const CELL_ALT_SECONDARY = 2
 export const CELL_NO_CALL = 3
 export const CELL_UNPHASED = 4
-// an alt in its plain hue under phase-set colouring, its call naming no PS
+// an alt in its plain hue under phase-set coloring, its call naming no PS
 export const CELL_ALT_NO_PHASE_SET = 5
 
 // Classified from the ALLELE, never the color: a mode that blends its no-call

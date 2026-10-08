@@ -84,10 +84,10 @@ test('and the band is still reserved for it', () => {
   expect(display.renderSections[0]!.arcBandHeight).toBeGreaterThan(0)
 })
 
-test('and its colour still keys a legend swatch', () => {
+test('and its color still keys a legend swatch', () => {
   // The same failure one level over, and the second of the two the split broke
   // at once: `arcLegendCategories` walked `arcsByGroup`, so a lane whose every
-  // arc crossed a seam painted colours the key did not name.
+  // arc crossed a seam painted colors the key did not name.
   const display = twoRegionDisplay()
   display.setShowLegend(true)
   expect(display.arcLegendCategories.size).toBeGreaterThan(0)

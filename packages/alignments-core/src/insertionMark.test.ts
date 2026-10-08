@@ -285,7 +285,7 @@ function labels(
   return texts
 }
 
-test('a large count reads against its box in the contrast colour, not a fixed white', () => {
+test('a large count reads against its box in the contrast color, not a fixed white', () => {
   expect(labels(channels([{ x: 50, length: 30 }]))).toEqual([
     { text: '30', x: 500, y: 10, fill: '#fff', align: 'center' },
   ])

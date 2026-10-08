@@ -364,7 +364,7 @@ const STAR_LINK = 'a[href*="_liftOver_multiway"]'
 
 // The session STAR_LINK carries (starUrl in jb2hubs
 // website/src/components/multiSyntenyDrilldown.ts), cut with Lanes → Choose
-// lanes to eight genomes from chimp to platypus, ribbons coloured by strand.
+// lanes to eight genomes from chimp to platypus, ribbons colored by strand.
 // The full link opens 26 lanes, 34 px each, which drew as a grey wall. These
 // eight are all drawn forward but platypus, so a blue ribbon is an inversion
 // against hg38 and not a contig the assembly happened to store reversed.
@@ -1435,7 +1435,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
   // Same lanes, same domain, with ribbonColor added: relative strand between
   // the two lanes each ribbon joins, which needs no attribute beyond what
   // every synteny block already carries. Demonstrates `domain` (order) and
-  // `ribbonColor` (a colour channel) together, which the config docs describe
+  // `ribbonColor` (a color channel) together, which the config docs describe
   // separately but no figure had shown combined.
   {
     mode: 'url',
@@ -1533,7 +1533,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
   // graph-depth wiggle. Each lane colors its own GFF's island genes (feaR,
   // feaB, tynA, paaZ-paaY) red by name, so presence is red in a lane and
   // absence is none: CFT073, Sakai and IAI39 annotate none of them. The name
-  // test is the colour's `field`, so the key names the two classes.
+  // test is the color's `field`, so the key names the two classes.
   {
     mode: 'url',
     name: 'multiway_synteny/ecoli_island_lanes',
@@ -2204,13 +2204,13 @@ export const syntenySpecs: ScreenshotSpec[] = [
     viewportHeight: 660,
   },
 
-  // selection_pressure.md: the one figure here where the COLOUR is the result
+  // selection_pressure.md: the one figure here where the COLOR is the result
   // rather than the decoration. Human against rhesus macaque at the lysozyme
-  // locus on chr12, every ribbon an ortholog pair coloured by dN/dS.
+  // locus on chr12, every ribbon an ortholog pair colored by dN/dS.
   //
   // The locus was chosen on two measurements, not on the picture. It is
   // collinear between the two species, so the ribbons run parallel and a
-  // colour difference is the only thing that varies; and LYZ comes out above 1
+  // color difference is the only thing that varies; and LYZ comes out above 1
   // with a dS near the genome-wide median, which is what makes it a measured
   // signal rather than the artefact that fills the top of an unfiltered
   // ranking (there, every leader has a dS an order of magnitude below the
@@ -2282,7 +2282,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
     readyTimeout: 300000,
     // 640 left 60 css px of blank under the bottom row, per the run's report
     viewportHeight: 580,
-    // WHAT THE COLOUR MEANS, on the drawing (reviewer: "add red text box
+    // WHAT THE COLOR MEANS, on the drawing (reviewer: "add red text box
     // pointing at the synteny ribbon explaining why this finding is
     // interesting"). It was in the caption only, so the frame's content was a
     // row of blue ribbons with one orange one and nothing saying that the
@@ -2338,11 +2338,11 @@ export const syntenySpecs: ScreenshotSpec[] = [
     ],
   },
 
-  // homoeolog_synteny.md: hexaploid oat against itself, coloured by dS. A and D
+  // homoeolog_synteny.md: hexaploid oat against itself, colored by dS. A and D
   // descend from closely related diploids and C from a more distant one, so
   // A-D anchors sit lower on the ramp than A-C and C-D (medians 0.07 against
   // 0.12, off oat.homoeologs.blocks.gz through oat.bed.gz). Pinned 0 to 0.25,
-  // about every pair type's 90th percentile, so a cell's colour is a dS rather
+  // about every pair type's 90th percentile, so a cell's color is a dS rather
   // than a position among the values in view.
   //
   // The anchors are computed, not curated: Compara's oat assembly is neither
@@ -2988,7 +2988,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
   // the MIDDLE bundle leaves the RIGHT-HAND END of 5D -- the one real
   // misreading risk here, since that apex sits a few px from the 6D tick label
   // and 6D contributes 18 links to the whole chromosome. Middle rather than a
-  // colour word: field 'query' indexes the palette by the assembly's region
+  // color word: field 'query' indexes the palette by the assembly's region
   // order, so the 2026-08-28 chrom.sizes rebuild repainted all three bundles
   // without moving any of them.
   {
@@ -3089,7 +3089,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
   {
     mode: 'url',
     name: 'multiway_synteny/ecoli_pangenome',
-    // the default colour, not `{ field: 'query' }`: these are single-chromosome strains, so
+    // the default color, not `{ field: 'query' }`: these are single-chromosome strains, so
     // per-query-name coloring paints everything one near-uniform color and adds
     // no signal (query-name coloring is only useful with multiple
     // chromosomes). Default red ribbons read cleaner here.
@@ -4479,7 +4479,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
   // again. That is paid for in the PARTS rather than by stacking them: both are
   // 900 px wide now, which puts the composite at 1800x822. The panels lose no
   // content by it — each row is the same 12.6 kb window either way, and what
-  // both halves are read for is which gene carries which colour, not the ruler.
+  // both halves are read for is which gene carries which color, not the ruler.
   //
   // Both parts stay their own specs, so each still has its own live link under
   // the figure.
@@ -4854,14 +4854,14 @@ export const syntenySpecs: ScreenshotSpec[] = [
   //    repeat content that IS the scatter is ~a fifth as much of it.
   //  - `color: { field: 'strand' }`, which is the one encoding a dotplot cannot spare an
   //    axis for. A palindrome arm meets its partner inverted, so the crossings
-  //    the plot draws as an X are the minus-strand colour and the collinear
+  //    the plot draws as an X are the minus-strand color and the collinear
   //    self-match running the length of the panel is the plus-strand one.
   //  - `drawCurves` with `cigarMode: 'matches'` (the menu's "Transparent
   //    indels"). Bezier edges leave and arrive perpendicular to their panels, so
   //    the two arms pinch at the palindrome's own centre and flare against the
   //    panel edges rather than crossing as one hard X; the indels inside each
   //    arm are left as gaps in the fill instead of being drawn in their own
-  //    colour over it.
+  //    color over it.
   //
   // Both panels frame the same interval, so every ribbon has both corners in
   // frame -- the off-frame-corner failure that made `cancer_sv/derivative_inserts`
@@ -4904,10 +4904,10 @@ export const syntenySpecs: ScreenshotSpec[] = [
     readySelector: displayPainted('synteny_canvas'),
     // 21 MB PIF plus the hs1 chrom.sizes, both remote
     readyTimeout: 180000,
-    // WHAT THE TWO COLOURS ARE, and nothing else (review: "reduce wordiness.
+    // WHAT THE TWO COLORS ARE, and nothing else (review: "reduce wordiness.
     // just say, palindrome, is a full match (red) and inverted match (blue)").
     // It was four lines answering an older round's "is this an alignment
-    // artifact?", and that answer is now the caption's job. The colours are the
+    // artifact?", and that answer is now the caption's job. The colors are the
     // display's own strand palette rather than the note's red/blue, so the pill
     // names the ones on screen.
     //
@@ -4918,7 +4918,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
     // FAR LEFT, deliberately. There is no empty space in this part -- the band
     // is ribbon edge to edge -- so the pill has to sit on it, and the far left
     // is where it costs least: the flare there is two flat horizontal bands,
-    // one per strand, carrying nothing but the colours the pill is naming. The
+    // one per strand, carrying nothing but the colors the pill is naming. The
     // crossing at the palindrome's centre, which is the whole shape, stays
     // clear. Anchored to the synteny canvas rather than to a coordinate,
     // because a synteny band is not a track and has no locus anchor.

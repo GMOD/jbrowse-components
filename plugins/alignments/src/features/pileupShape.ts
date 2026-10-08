@@ -67,9 +67,9 @@ import type { ShaderModule } from '@jbrowse/render-core/slangPass'
  * each of their marks is a slice of it — and softclip beating hardclip at one
  * position is that layout talking, not scan order.
  *
- * `keys` is the per-instance value the colour comes from — a base byte, a
+ * `keys` is the per-instance value the color comes from — a base byte, a
  * quality score, a packed ABGR — read by the packer and the painter alike, and
- * undefined for a mark that draws one colour.
+ * undefined for a mark that draws one color.
  */
 export interface PileupChannels {
   positions: ArrayLike<number>
@@ -210,15 +210,15 @@ const CLIP_BAR_WIDTH_PX = 1
 const CLIP_HIT_TOLERANCE_PX = 3
 const CLIP_HIT_MIN_TOLERANCE_BP = 0.5
 
-// Where a mark's colour comes from. `palette` indexes the two tables by the
+// Where a mark's color comes from. `palette` indexes the two tables by the
 // instance's key; `packedAbgr` formats the worker's own u32 per RUN, since that
 // palette is a per-read choice rather than a small table.
 export const Paint = { palette: 0, packedAbgr: 1 } as const
 export type PaintRule = (typeof Paint)[keyof typeof Paint]
 
 /**
- * The colours ONE draw call paints with, resolved per block from the state.
- * Colour is data for the same reason the fades are: a closure here is a call
+ * The colors ONE draw call paints with, resolved per block from the state.
+ * Color is data for the same reason the fades are: a closure here is a call
  * per instance in the hot loop, and it measured as most of the paint — 54 ms of
  * a mismatch layer's 66, on 100K instances.
  *
@@ -226,7 +226,7 @@ export type PaintRule = (typeof Paint)[keyof typeof Paint]
  * a whole string built once, where a genuinely faded mark is `rgbaPrefix255`'s
  * head rejoined with its own alpha — one number converted per instance instead
  * of four. `channels.keys` indexes both; under `Paint.packedAbgr` it IS the
- * colour.
+ * color.
  */
 export interface PaintTables {
   rule: PaintRule

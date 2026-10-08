@@ -222,8 +222,8 @@ const suite: TestSuite = {
 
     // rowColor:'population' + samplesTsvLocation end to end: the sample-metadata
     // TSV must parse, reach the display's sources, and drive the palette so
-    // same-population rows share a colour and different populations differ.
-    // The colour is `rowColor`, which tree-sidebar draws a row's label bar in.
+    // same-population rows share a color and different populations differ.
+    // The color is `rowColor`, which tree-sidebar draws a row's label bar in.
     {
       name: 'rowColor population colors sample rows from samplesTsv metadata',
       fn: async page => {

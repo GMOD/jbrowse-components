@@ -10,7 +10,7 @@ export interface HighlightRect extends InkRect {
 /**
  * How a host's hover reads: a shade over the ink (`featureHover`, the pileup
  * and the mark display), a wash with a border for a display whose cell
- * colours are the data (`hoverBoxStyle`), or a ring around a glyph.
+ * colors are the data (`hoverBoxStyle`), or a ring around a glyph.
  */
 export type HighlightStyle = 'shade' | 'box' | 'ring'
 

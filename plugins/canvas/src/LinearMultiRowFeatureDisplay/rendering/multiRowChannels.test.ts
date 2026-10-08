@@ -54,7 +54,7 @@ function inputs(keyed: string[], opts?: { hiddenColors?: Set<number> }) {
   }
 }
 
-test('each feature carries its row key and its baked colour', () => {
+test('each feature carries its row key and its baked color', () => {
   const buffer = buildMultiRowChannels(region, inputs(['dadHP1', 'momHP0']))
   expect(decode(buffer)).toEqual([
     { startBp: 10, endBp: 15, key: 1, color: 0xff0000ff },

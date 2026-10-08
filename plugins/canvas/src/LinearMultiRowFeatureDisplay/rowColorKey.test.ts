@@ -47,7 +47,7 @@ const rowColorKey = (display: ReturnType<typeof makeDisplay>) =>
   display.legendSpec.sections.find(s => s.id === 'rowColor')?.items ?? []
 
 // dog60 and up match no rule, so they carry no group and take no entry.
-it('keys the group colours at any row height', () => {
+it('keys the group colors at any row height', () => {
   for (const height of [640, 60_000]) {
     expect(rowColorKey(makeDisplay(80, height))).toEqual([
       { value: 'Village dog', label: 'Village dog', color: '#e41a1c' },

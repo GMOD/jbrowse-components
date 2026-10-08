@@ -1,6 +1,6 @@
 ---
 status: Accepted
-summary: "Every display's grammar settings are one object, its `plot`: the slots from one vocabulary (`PLOT_VOCABULARY`: marks, transform, facet, rows, rowColor, color, baseColor, arcColor, ribbonColor, laneLayers, scales, filter, filterBy) that its config declares, read off the config snapshot with defaults left off and a shorthand folded back. `BaseDisplay` carries `plotKeys`, `plot`, `liftPlot`, `plotProblems`, `plotWrites` and `applyPlot`, which writes each setting whose lifted value moved, whole; the config schema is the only parser and refuses a key outside the plot before anything is written. display-kit's `PlotDialog` is the one text box, under Advanced → \"Edit plot...\" in every display's track menu and behind the colour and grouping dialogs' buttons, with the display type's `plotExamples` as buttons and links to its config reference and the guide. `ChannelSpec`, its parser and dialog, and the mark display's `MarkPlot` box go. The runtime `filterSetting` override goes too: the `filter` slot is the one filter, \"Clear all filters\" writes back what the track's config declares, and a v4 `jexlFiltersSetting` is retired state lifted into it"
+summary: "Every display's grammar settings are one object, its `plot`: the slots from one vocabulary (`PLOT_VOCABULARY`: marks, transform, facet, rows, rowColor, color, baseColor, arcColor, ribbonColor, laneLayers, scales, filter, filterBy) that its config declares, read off the config snapshot with defaults left off and a shorthand folded back. `BaseDisplay` carries `plotKeys`, `plot`, `liftPlot`, `plotProblems`, `plotWrites` and `applyPlot`, which writes each setting whose lifted value moved, whole; the config schema is the only parser and refuses a key outside the plot before anything is written. display-kit's `PlotDialog` is the one text box, under Advanced → \"Edit plot...\" in every display's track menu and behind the color and grouping dialogs' buttons, with the display type's `plotExamples` as buttons and links to its config reference and the guide. `ChannelSpec`, its parser and dialog, and the mark display's `MarkPlot` box go. The runtime `filterSetting` override goes too: the `filter` slot is the one filter, \"Clear all filters\" writes back what the track's config declares, and a v4 `jexlFiltersSetting` is retired state lifted into it"
 ---
 
 # ADR-204: Every display edits its grammar settings as one plot
@@ -11,7 +11,7 @@ Accepted (2026-10-01). Step 1 of the grammar-unity handoff's order of work.
 Supersedes the JSON-box halves of
 [ADR-131](adr-131-a-categorical-channel-is-one-config-object.md) (`parseChannelSpec`
 over `preProcessConfigSnapshot`) and
-[ADR-144](adr-144-one-colour-object-on-the-quantitative-display.md)'s amended
+[ADR-144](adr-144-one-color-object-on-the-quantitative-display.md)'s amended
 "the box is the escape".
 
 Amended 2026-10-07: LD declares a plot since `86fa244e40` (2026-10-04), when
@@ -68,7 +68,7 @@ nothing while the dialog's override stood.
 - **One box, under Advanced.** display-kit's `PlotDialog` is the text box,
   and `editPlotMenuItems` an Advanced submenu holding "Edit plot...", at
   priority -999 so it sits just above "Display types" wherever a display
-  places it. The Group by, Color by attribute and colour/arrangement dialogs
+  places it. The Group by, Color by attribute and color/arrangement dialogs
   keep a button that opens the box on their unapplied draft, and the mark
   display's form calls it "Edit as text...".
 - **A display type declares its examples** (`DisplayType.plotExamples`), which
@@ -109,7 +109,7 @@ nothing while the dialog's override stood.
 
 - **The `ChannelSpec` parser kept and widened.** It restated the schema's
   checks per channel and fell behind them (a `rows` field the wiggle schema
-  refuses, a colour member a display does not declare); the lift refuses the
+  refuses, a color member a display does not declare); the lift refuses the
   same things in the schema's words.
 - **The row added once in `BaseTrackModel.trackMenuItems`.** That assembly
   lives in core, which cannot open a display-kit dialog, and the Advanced

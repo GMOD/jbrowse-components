@@ -15,7 +15,7 @@
 // Both rims fade over one device pixel of radius, measured per fragment, which
 // is why this pass declares `coverage: analytic`. The strip lands premultiplied
 // (a canvas source is copied that way on both HALs), so the sample is returned
-// as premultiplied colour.
+// as premultiplied color.
 //! targets: wgsl, glsl
 //! blend: premultiplied
 //! coverage: analytic

@@ -1,4 +1,4 @@
-// What a modBAM costs when it is NOT coloured by modifications.
+// What a modBAM costs when it is NOT colored by modifications.
 //
 //   node --expose-gc plugins/alignments/benches/modMenuScan.bench.ts --only=200x
 //
@@ -7,8 +7,8 @@
 //
 // The harness rules are in agent-docs/reference/BENCHMARKING.md.
 //
-// THE QUESTION. Opening a modBAM does not mean colouring by modifications —
-// the track opens in normal colouring and the reads carry MM/ML regardless. But
+// THE QUESTION. Opening a modBAM does not mean coloring by modifications —
+// the track opens in normal coloring and the reads carry MM/ML regardless. But
 // `extractModifications` ran its whole per-read pipeline on every render
 // anyway, because two things downstream want to know WHICH modification types
 // the data carries: `detectedModifications` (what the menu offers) and
@@ -44,7 +44,7 @@
 // "should this be gated" is the absolute 127 ms, per render, for a menu.
 //
 // See modExtract.bench.ts for the sibling number on the drawing path, which is
-// what still runs when the track IS coloured by modifications.
+// what still runs when the track IS colored by modifications.
 //
 // Written out longhand. Do NOT refactor the arms into one driver parameterized
 // by a flag — see BENCHMARKING.md's polymorphism trap.

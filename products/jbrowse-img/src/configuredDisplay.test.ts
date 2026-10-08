@@ -262,7 +262,7 @@ describe('a jexl: value in a path write', () => {
   }, 60000)
 })
 
-describe('a jexl: colour field', () => {
+describe('a jexl: color field', () => {
   test('exports the track', async () => {
     const svg = await exportTrack(
       configWith({

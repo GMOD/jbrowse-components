@@ -61,7 +61,7 @@ describe('a point reads back as its whole GWAS record', () => {
             layer: mark,
             featureIndex: featureIndexAt(layer, i),
           })) as SimpleFeatureSerialized)
-    // the colour resolves on the main thread, off what the worker read
+    // the color resolves on the main thread, off what the worker read
     display.setRpcData(0, encoded.value, DISPLAY_REGION)
     const drawn = display.rpcDataMap.get(0)!.layers[mark]!
     return { glyph: layer.glyph![i], color: colorAt(drawn, i), feature }

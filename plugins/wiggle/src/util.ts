@@ -25,7 +25,7 @@ export {
 } from './colorDefaults.ts'
 
 // A row of the wiggle display: the metadata its adapter reported, and the
-// row's resolved colour.
+// row's resolved color.
 export interface Source extends SourceInfo {
   rowColor?: string
 }

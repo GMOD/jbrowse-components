@@ -130,8 +130,8 @@ cannot is layout, tiering, fetch shape and per-display meaning.
   `fillText` measurement is why the emit is DOM.
 - **Scales as a slot on `defineMark`.** ADR-097 measured the refusal; the y
   scale is shared at the shader level and the anchor is per consumer. The
-  colour scale a display resolves is declared one level up, on the display, as
-  `colorScales` ([ADR-108](adr-108-a-display-declares-its-colour-scales.md)).
+  color scale a display resolves is declared one level up, on the display, as
+  `colorScales` ([ADR-108](adr-108-a-display-declares-its-color-scales.md)).
 - **Layout.** Placement stays imperative and per display, as ADR-095 records.
 
 ## Consequences

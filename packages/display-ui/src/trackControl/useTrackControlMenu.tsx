@@ -27,7 +27,7 @@ import type { CSSProperties } from 'react'
 //     in a plain one was trading working keyboard operation for a look — the
 //     one thing the seam must not cost them.
 //
-// `style` on `menuProps` carries **position only**. Sizing, colour and border
+// `style` on `menuProps` carries **position only**. Sizing, color and border
 // are the caller's, and merging is `{...menuProps.style, ...yours}`.
 
 export interface TrackControlMenu {

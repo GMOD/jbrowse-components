@@ -71,7 +71,7 @@ export function placeCopyRows<T extends { name: string }>(rows: readonly T[]) {
 
 /**
  * The rows for `samples` with each discovered copy row placed after its
- * sample, labelled and coloured as it. A copy of a sample `samples` does not
+ * sample, labelled and colored as it. A copy of a sample `samples` does not
  * list joins the end.
  */
 export function withCopyRows(

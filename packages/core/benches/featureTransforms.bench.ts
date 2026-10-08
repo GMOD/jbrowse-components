@@ -6,7 +6,7 @@
 //
 // Ten arms over one synthetic feature list, interleaved round-robin, min
 // across rounds (agent-docs/reference/BENCHMARKING.md). Every arm ends in the
-// same native encode (`y`, a constant colour, no index) over whatever the
+// same native encode (`y`, a constant color, no index) over whatever the
 // steps answered, so a row is "the steps plus the encode of their output":
 //
 //   none         the encode alone, over the raw list

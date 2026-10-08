@@ -1,7 +1,7 @@
 // The step line (RENDERING_TYPE_LINE): three square-capped quads per bin over
 // its bar top. `wiggleLineCenter.slang` draws the interpolated line, and both
 // import `wiggleCommon` for the uniform block, the row's score math and the
-// band colour, so the two line renderings place and colour a score alike.
+// band color, so the two line renderings place and color a score alike.
 //
 // They are separate modules because a module reflects exactly one instance
 // struct, and each reads a different neighbour: the step line the previous and
@@ -35,7 +35,7 @@ struct VsOut {
   float4 position : SV_Position;
   nointerpolation float4 color    : COLOR0;
   nointerpolation float4 negColor : COLOR1;
-  // the y range the fragment's colour is read in: a rise's own span, or a
+  // the y range the fragment's color is read in: a rise's own span, or a
   // level run's score placed unclamped
   nointerpolation float2 centerLine : TEXCOORD0;
   // each cut's y in the row

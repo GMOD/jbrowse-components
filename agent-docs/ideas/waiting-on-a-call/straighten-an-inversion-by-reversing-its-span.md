@@ -22,7 +22,7 @@ bot   [ C ][  INV  ][ A ]     bot   [ A ][ INV< ][ C ]
 ```
 
 The inversion stays visible through two existing cues: the reversed region's
-scalebar reads right to left, and colour-by-strand reads the record's strand
+scalebar reads right to left, and color-by-strand reads the record's strand
 rather than the drawn twist. Nothing else on screen moves, because the reversed
 span occupies the pixels it did before.
 

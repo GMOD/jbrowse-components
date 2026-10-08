@@ -17,7 +17,7 @@ const BASE_KEYS = ['A', 'C', 'G', 'T', 'N', 'gap'] as const
 /**
  * Each field's one scale and what it reads while the config leaves a member
  * unwritten. The bases and the codons list no `range`, so they paint the
- * theme's colours.
+ * theme's colors.
  */
 export const MAF_FIELD_PRESETS = {
   mismatch: {
@@ -56,7 +56,7 @@ export const MAF_FIELD_PRESETS = {
 /**
  * #config MafColor
  * #category display
- * The MAF display's `color`: what colours each species row's aligned cells.
+ * The MAF display's `color`: what colors each species row's aligned cells.
  * `mismatch` paints a base only where it differs from the reference,
  * `base` every base, `identity` the mean identity to the reference along a
  * ramp, `chromosome` each block by the rank of its source chromosome within
@@ -64,7 +64,7 @@ export const MAF_FIELD_PRESETS = {
  * `annotationAdapter`. A string is the field. Each field has one scale:
  * `identity` runs from `domainMin` 0 to `domainMax` 1 along the
  * `redgreyblue` scheme, and the others are categorical. The bases and the
- * codons paint the theme's colours. The slots are the shared colour object's,
+ * codons paint the theme's colors. The slots are the shared color object's,
  * so `jbrowse validate` and "Edit plot..." judge them as they judge any other
  * display's.
  *
@@ -93,7 +93,7 @@ export const mafColorConfigSchema = ConfigurationSchema(
       model: types.enumeration('MafColorField', [...MAF_COLOR_FIELDS]),
       defaultValue: 'mismatch',
       description:
-        'what colours a cell: mismatch, base, identity, chromosome or codon',
+        'what colors a cell: mismatch, base, identity, chromosome or codon',
     },
     /**
      * #slot domain
@@ -111,7 +111,7 @@ export const mafColorConfigSchema = ConfigurationSchema(
       type: 'colorArray',
       defaultValue: [],
       description:
-        "CSS colours: under chromosome one per rank from the main source chromosome, the last painting every rank past it; under identity the ramp's stops, winning over scheme; the bases and the codons paint the theme's colours",
+        "CSS colors: under chromosome one per rank from the main source chromosome, the last painting every rank past it; under identity the ramp's stops, winning over scheme; the bases and the codons paint the theme's colors",
     },
     /**
      * #slot labels
@@ -137,7 +137,7 @@ export const mafColorConfigSchema = ConfigurationSchema(
       type: 'maybeStringEnum',
       model: types.enumeration('ColorScheme', [...COLOR_SCHEMES]),
       description:
-        "the named ramp identity runs along; unset is redgreyblue, and range's colours, where it lists any, win over it",
+        "the named ramp identity runs along; unset is redgreyblue, and range's colors, where it lists any, win over it",
     },
     /**
      * #slot reverse
@@ -146,7 +146,7 @@ export const mafColorConfigSchema = ConfigurationSchema(
       type: 'boolean',
       defaultValue: false,
       description:
-        'turns the identity ramp round, so its last colour paints the low end',
+        'turns the identity ramp round, so its last color paints the low end',
     },
     /**
      * #slot domainMin
@@ -169,7 +169,7 @@ export const mafColorConfigSchema = ConfigurationSchema(
     domainMid: {
       type: 'maybeNumber',
       description:
-        "the value the ramp's middle stop sits at, so a diverging ramp centres somewhere other than the middle of the domain, both sides on one scale: the farther end of the domain reaches its end colour and equal distances from the middle take equal colours; unset, the stops are evenly spaced across it",
+        "the value the ramp's middle stop sits at, so a diverging ramp centres somewhere other than the middle of the domain, both sides on one scale: the farther end of the domain reaches its end color and equal distances from the middle take equal colors; unset, the stops are evenly spaced across it",
     },
   },
   {

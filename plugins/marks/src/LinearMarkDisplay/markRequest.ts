@@ -78,7 +78,7 @@ export function encodingOf(
     // between linear and log would refetch every region to no effect.
     y: reads('y') && y ? y : undefined,
     row: (reads('row') && row) || undefined,
-    // The display paints every colour but a `jexl:` callback off what the
+    // The display paints every color but a `jexl:` callback off what the
     // worker reads (`markColor.ts`), so an edit to one refetches nothing.
     color: wireColorOf(markColorOf(mark, filled)),
     ...(reads('shape') ? { shape: shapeEncoding } : {}),

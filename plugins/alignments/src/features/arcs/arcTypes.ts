@@ -165,7 +165,7 @@ export interface CrossRegionArc extends ComputedArc {
   // orientation: outward feet are a deletion-type junction, inward a
   // duplication-type, parallel an inversion, and that grammar is the only thing
   // left saying it once `ARC_COLOR_INTERCHROM` has overwritten an
-  // interchromosomal arc's colour. `buildArcBandFeeds` is the one consumer and
+  // interchromosomal arc's color. `buildArcBandFeeds` is the one consumer and
   // says which arcs draw them.
   //
   // THE ARM, not "this segment's own aligned body", and the difference is what
@@ -270,7 +270,7 @@ export interface PairedPendingArc extends PendingArcEndpoints {
   flags: number
   // The insert-size band of the region `tlen` came from, which is the band
   // the read under the arc is filled by. Each region's fetch samples its own,
-  // so one pooled band coloured an arc by whichever region loaded first.
+  // so one pooled band colored an arc by whichever region loaded first.
   stats: InsertSizeBand | undefined
 }
 

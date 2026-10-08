@@ -4,7 +4,7 @@ import { buildDisplaySnapshot } from './applyTrackOpts.ts'
 // snapshot (passed to showTrack), instead of a sequence of setter actions.
 
 describe('alignments modifiers', () => {
-  test('a facet or colour field is the slot write the display spells', () => {
+  test('a facet or color field is the slot write the display spells', () => {
     expect(buildDisplaySnapshot('alignments', ['facet=tags.HP']).snap).toEqual({
       facet: 'tags.HP',
     })
@@ -393,7 +393,7 @@ describe('color routing', () => {
     })
   })
 
-  test('baseColor draws over the reads, so it combines with a read colour', () => {
+  test('baseColor draws over the reads, so it combines with a read color', () => {
     expect(
       buildDisplaySnapshot('alignments', [
         'color:mapq',
@@ -441,7 +441,7 @@ describe('color routing', () => {
     })
   })
 
-  test('anything else on alignments is a CSS colour for every read', () => {
+  test('anything else on alignments is a CSS color for every read', () => {
     expect(buildDisplaySnapshot('alignments', ['color:purple']).snap).toEqual({
       color: 'purple',
     })
@@ -473,7 +473,7 @@ describe('color routing', () => {
     const { snap } = buildDisplaySnapshot('hic', ['color:viridis'])
     expect(snap.color).toEqual({ scheme: 'viridis' })
     expect(() => buildDisplaySnapshot('hic', ['color:red'])).toThrow(
-      /Invalid color value "red"\. Expected a colour scheme: viridis, /,
+      /Invalid color value "red"\. Expected a color scheme: viridis, /,
     )
   })
 })

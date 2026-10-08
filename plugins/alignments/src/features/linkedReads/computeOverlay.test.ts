@@ -1007,7 +1007,7 @@ describe('enumerateBezierPairs — crossRegion scope', () => {
 
   // A fusion onto a minus-strand partner, viewed with that partner's region
   // flipped: both segments point right on screen, so the molecule reads
-  // straight across the seam and keeps its inverted colour.
+  // straight across the seam and keeps its inverted color.
   it('draws an inverted split straight when one partner region is flipped', () => {
     const inverted = makeData({
       names: ['r'],

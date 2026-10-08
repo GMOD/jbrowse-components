@@ -30,7 +30,7 @@ export type NumericExtent = readonly [number, number]
 
 interface CategoricalBakedScale {
   kind: 'categorical'
-  /** false while a value's colour is its own function and the config says nothing */
+  /** false while a value's color is its own function and the config says nothing */
   declared: boolean
   domain: readonly string[]
   color: (value: string) => string
@@ -138,10 +138,10 @@ function withoutNoValue(
 
 /**
  * The scale the tag, attribute and mate-reference fields bake through, read
- * off the resolved `color`. With nothing declared a value's colour is a
+ * off the resolved `color`. With nothing declared a value's color is a
  * function of the value alone (`bakedValueColor`); a `domain` or `range` hands
- * the listed values their colours in order, over the same tag palette. `''`
- * in `domain` names a read with no value, which the category table colours
+ * the listed values their colors in order, over the same tag palette. `''`
+ * in `domain` names a read with no value, which the category table colors
  * (`declaredReadCategoryColors`), so it and its `range` entry leave the list.
  * A linear or threshold scale reads a tag or attribute, and waits unread
  * beside a mate reference, whose values are sequence names.

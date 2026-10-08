@@ -79,7 +79,7 @@ test('one section is one address however the ranking interleaves it', () => {
   const split: SearchableDoc[] = [
     {
       topic: 'live-model',
-      text: '# Guide\n\n## Reading data\n\nthe color setting and the reads it colours\nthe color list\n',
+      text: '# Guide\n\n## Reading data\n\nthe color setting and the reads it colors\nthe color list\n',
     },
     {
       topic: 'config:BamAdapter',

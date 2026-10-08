@@ -37,8 +37,7 @@ view. Every change redraws the track as you make it, and **Reset to defaults**
 returns to what the track's configuration says. The row's label names a pinned
 end and a non-linear scale, such as **Y axis (190 – auto, log)...**, so the
 setting shows without opening it. On an alignments track the row is **Coverage
-axis...**, and on a density plot, which maps score to colour, **Score
-range...**.
+axis...**, and on a density plot, which maps score to color, **Score range...**.
 
 - **Scale** - linear, log or symlog; symlog admits zero and negative scores.
 - **Min** and **Max** pin either end of the axis
@@ -63,7 +62,7 @@ range...**.
   ([`scales.y.autoscaleGroup`](/docs/config/valuescale/#slot-scalesyautoscalegroup)).
   A coverage band, a mark display and a Manhattan plot take the same group.
 - **Grid lines** rule the plot at every tick, and **Reference lines** draw a
-  dashed line at each value you add, each with an optional label and colour.
+  dashed line at each value you add, each with an optional label and color.
 
 Include 0 and Clip extreme outliers move only an end left empty, so both grey
 out once Min and Max are both set; Include 0 also greys out on a log axis, which
@@ -85,17 +84,17 @@ A narrow peak fades out across a whole chromosome when averaged over a wide bin.
 
 ### Colors
 
-**Edit colors/arrangement...** opens the plot's two colours on one line: one
+**Edit colors/arrangement...** opens the plot's two colors on one line: one
 above the baseline, one below, and both the same for a flat plot. Setting them
-is the whole colour story for a single signal, and a track with subtracks gets
+is the whole color story for a single signal, and a track with subtracks gets
 the list beneath them, where **Color rows by → Each row** picks a subtrack's
-colour in the list, and on overlapping plots hands every other subtrack a
-palette entry of its own.
+color in the list, and on overlapping plots hands every other subtrack a palette
+entry of its own.
 
 **Edit plot...**, in that dialog, is the escape for what the line does not
 offer: a ramp (`{ "field": "score", "scale": "linear", "scheme": "viridis" }`),
-the colours a heatmap fades through, and a threshold naming several cut points,
-a colour per band. The
+the colors a heatmap fades through, and a threshold naming several cut points, a
+color per band. The
 [quantitative track configuration](/docs/config_guides/quantitative_track#colors)
 guide writes the same object into a config file.
 
@@ -110,7 +109,7 @@ to choose and lists the five styles on their own.
 
 <Figure caption="The track menu lists the available plot types." src="/img/multiwig/multi_renderer_types.png" />
 
-Each row keeps the colour its subtrack was configured with. Sources sharing one
+Each row keeps the color its subtrack was configured with. Sources sharing one
 plot box take a palette entry each instead, so the overlaid plots can be told
 apart.
 

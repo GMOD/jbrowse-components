@@ -335,7 +335,7 @@ describe('the wiggle mark list', () => {
   // against the visible data on every pan, and because the score stays in the
   // instance buffer and the domain stays a uniform, that pan costs one uniform
   // block per drawn block and zero buffer bytes. The failure this pins against
-  // is a CPU-side colour resolve into the instance lane, which would re-pack
+  // is a CPU-side color resolve into the instance lane, which would re-pack
   // and re-upload the whole buffer whenever the domain moved.
   it('a pan that moves the autoscale domain uploads zero buffer bytes', () => {
     const hal = new MockHal(WIGGLE_MARKS.map(m => m.pass))
@@ -372,7 +372,7 @@ describe('the wiggle mark list', () => {
     expect(writes.at(-1)!.args[0]).toBe(UNIFORMS_SIZE_BYTES)
   })
 
-  it('writes each cut and the colour of each band between two of them', () => {
+  it('writes each cut and the color of each band between two of them', () => {
     const hal = new MockHal(WIGGLE_MARKS.map(m => m.pass))
     const backend = new GpuMarkBackend(hal, WIGGLE_MARKS)
     const source = makeSource({ renderingType: RENDERING_TYPE_LINE })
@@ -405,8 +405,8 @@ describe('the wiggle mark list', () => {
   // a gradient on bars, points or density is a uniform flag and one 256×1 LUT
   // upload to the pass that draws — no new shader, no buffer byte. The LUT
   // bytes are the cached table Canvas2D indexes too (densityColorParity.test.ts
-  // holds the colour parity). An autoscale pan re-colours every bar, and must
-  // still cost one uniform write: the failure this pins is a colour baked into
+  // holds the color parity). An autoscale pan re-colors every bar, and must
+  // still cost one uniform write: the failure this pins is a color baked into
   // the instance lane from the domain.
   describe.each([
     ['density', RENDERING_TYPE_DENSITY],
@@ -480,7 +480,7 @@ describe('the wiggle mark list', () => {
     })
   })
 
-  it('a line leaves the gradient flag off: its colour still parts in two', () => {
+  it('a line leaves the gradient flag off: its color still parts in two', () => {
     const hal = new MockHal(WIGGLE_MARKS.map(m => m.pass))
     const backend = new GpuMarkBackend(hal, WIGGLE_MARKS)
     const source = makeSource({ renderingType: RENDERING_TYPE_LINE })

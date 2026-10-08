@@ -16,7 +16,7 @@ const useStyles = makeStyles()(theme => ({
 }))
 
 /**
- * The display's own colour, on one line above the rows: the two colours its
+ * The display's own color, on one line above the rows: the two colors its
  * plot is drawn in, either side of where it parts. One line rather than a panel
  * because the rows below are what a reader opens this dialog for.
  */
@@ -30,7 +30,7 @@ const PlotColorRow = observer(function PlotColorRow({
   above: string
   below: string
   editable: boolean
-  /** What paints instead, where two colours cannot say the picture. */
+  /** What paints instead, where two colors cannot say the picture. */
   reason?: string
   onChange: (next: { above: string; below: string }) => void
 }) {

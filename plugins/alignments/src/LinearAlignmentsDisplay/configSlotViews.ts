@@ -180,7 +180,7 @@ export function configSlotViews(self: ConfigSlotSelf) {
     /**
      * #getter
      * `colorSetting` as it paints, through the one resolver every display's
-     * colour object goes through.
+     * color object goes through.
      */
     get colorEncoding(): AlignmentsColorEncoding {
       return alignmentsColorEncoding(this.colorSetting)
@@ -188,7 +188,7 @@ export function configSlotViews(self: ConfigSlotSelf) {
     /**
      * #getter
      * `color.labels` as written, read apart from `colorSetting`, which every
-     * colour tier keys on, so renaming a key entry re-bakes no read.
+     * color tier keys on, so renaming a key entry re-bakes no read.
      */
     get colorLabels(): readonly string[] {
       return getConf(self, ['color', 'labels'])
@@ -225,7 +225,7 @@ export function configSlotViews(self: ConfigSlotSelf) {
      * #getter
      * The short/long cut points `color.domain` pins under an insert-size
      * field, undefined while the sampled band decides. Compared by value, so
-     * a colour write that leaves the cut points alone relayouts nothing.
+     * a color write that leaves the cut points alone relayouts nothing.
      */
     get pinnedInsertSizeBand() {
       return insertSizeBand.get()

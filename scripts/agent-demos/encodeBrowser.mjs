@@ -80,7 +80,7 @@ const head = [
   'WrapStyle: 2',
   '',
   '[V4+ Styles]',
-  'Format: Name, Fontname, Fontsize, PrimaryColour, OutlineColour, BackColour, Bold, BorderStyle, Outline, Shadow, Alignment, MarginL, MarginR, MarginV, Encoding',
+  'Format: Name, Fontname, Fontsize, PrimaryColor, OutlineColor, BackColor, Bold, BorderStyle, Outline, Shadow, Alignment, MarginL, MarginR, MarginV, Encoding',
   'Style: Q,Helvetica Neue,34,&H00FFFFFF,&H00000000,&H00000000,1,1,0,0,7,0,0,0,1',
   'Style: A,Helvetica Neue,34,&H00F7A27A,&H00000000,&H00000000,1,1,0,0,7,0,0,0,1',
   'Style: S,Menlo,24,&H00B8A38F,&H00000000,&H00000000,0,1,0,0,7,0,0,0,1',

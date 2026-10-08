@@ -234,7 +234,7 @@ describe('the dotplot mark list', () => {
 // by `GpuPerRegionRenderingBackend.upload` — so the fast path has to live
 // inside it.
 describe('the dotplot recolor path', () => {
-  test('a colour-only change uploads once and repacks no coordinate lane', () => {
+  test('a color-only change uploads once and repacks no coordinate lane', () => {
     const hal = new MockHal(PASSES)
     const backend = new GpuMarkBackend(hal, DOTPLOT_MARKS)
     const uploads = jest.spyOn(hal, 'uploadBuffer')
@@ -249,7 +249,7 @@ describe('the dotplot recolor path', () => {
     backend.upload(0, { ...geom, colors: new Uint32Array([0x0000ff80]) })
 
     expect(uploads).toHaveBeenCalledTimes(2)
-    // The same packed ArrayBuffer, patched in its colour lane — which is what
+    // The same packed ArrayBuffer, patched in its color lane — which is what
     // says the interleave did not run a second time.
     expect(uploads.mock.calls[1]![2]).toBe(uploads.mock.calls[0]![2])
     const stored = hal.getBuffer(0, 'line')!
@@ -308,7 +308,7 @@ describe('the dotplot painter', () => {
   // Segments are counted by lineTo, not by stroke: same-color runs are batched
   // into one path, so stroke count tracks color runs while every segment still
   // gets drawn.
-  test('draws every segment of every display, batching colour runs', () => {
+  test('draws every segment of every display, batching color runs', () => {
     const { ctx, strokes } = paint(
       new Map([
         [0, makeSegments(3)],
@@ -320,7 +320,7 @@ describe('the dotplot painter', () => {
     expect(strokes).toHaveLength(2)
   })
 
-  test('flushes the path on a colour change', () => {
+  test('flushes the path on a color change', () => {
     const colors = new Uint32Array([
       0xff0000ff, 0xff0000ff, 0xff0000ff, 0xff00ff00, 0xff00ff00,
     ])
@@ -351,7 +351,7 @@ describe('the dotplot painter', () => {
     expect(ctx.moveTo).toHaveBeenCalledWith(190, 20)
   })
 
-  test('sets strokeStyle from the packed colour', () => {
+  test('sets strokeStyle from the packed color', () => {
     const { strokes } = paint(
       new Map([[0, makeGeometry({ colors: new Uint32Array([0xccbf4080]) })]]),
     )

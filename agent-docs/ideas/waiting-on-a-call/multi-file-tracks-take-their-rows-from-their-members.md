@@ -98,9 +98,9 @@ BigWig assumptions:
   index before the first paint.
 - `getRegionByteSize` sums the members that estimate, as
   `MultiWiggleAdapter`'s does; `getZoomRange` intersects.
-- `listRowSources` lists every member with its label, colour and attributes,
+- `listRowSources` lists every member with its label, color and attributes,
   plus a `warnings` member, which `RowSourceListing` lacks
-  (`rowSources.ts`). Today's listing strips everything but label and colour
+  (`rowSources.ts`). Today's listing strips everything but label and color
   (`MultiWiggleAdapter.ts:369-375`), so a samples-TSV column never reaches
   `rowColor` or `facet`, and the table's warnings are dropped
   (`:362-364`).
@@ -220,7 +220,7 @@ likeliest per-sample peak files, match no regex in
 `add-track-core/src/formats.ts` and need one.
 
 `MultiWiggleAddTrackWorkflow` and `CreateMultiWiggleExtension` go, and with
-them the pasted-JSON subadapter form: rename is in the table, colour is
+them the pasted-JSON subadapter form: rename is in the table, color is
 `rowColor` (ADR-160), and a hand-written subadapter list is a config file.
 
 `jbrowse text-index` indexes by adapter type (`indexableAdapters`,

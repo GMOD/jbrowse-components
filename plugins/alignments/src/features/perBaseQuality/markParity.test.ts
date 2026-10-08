@@ -121,7 +121,7 @@ describe.each([false, true])('reversed: %s', reversed => {
     }
   })
 
-  test('the colour is one ramp, not two', () => {
+  test('the color is one ramp, not two', () => {
     const fills = painted(reversed)
     for (const [i, instance] of packed().entries()) {
       expect(fills[i]!.css).toBe(instance.css)

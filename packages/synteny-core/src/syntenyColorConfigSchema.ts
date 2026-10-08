@@ -13,7 +13,7 @@ import {
 import type { ColorSetting } from '@jbrowse/display-kit/colorConfigSchema'
 
 /**
- * `scale` on a synteny colour object is the set/map switch alone: a field's
+ * `scale` on a synteny color object is the set/map switch alone: a field's
  * type is read off the fetched values, a span for numbers and a label list
  * for text.
  */
@@ -34,14 +34,14 @@ export const SYNTENY_VIEW_FIELDS = [
   'track',
 ] as const
 
-/** A synteny colour object as its snapshot holds it. */
+/** A synteny color object as its snapshot holds it. */
 export interface SyntenyColorSnapshot extends Partial<ColorSetting> {}
 
 /**
  * #config SyntenyColor
  * #category view
  * The linear synteny and dotplot views' `color` setting, which every track
- * in the view paints with: one colour for every alignment, or a field each
+ * in the view paints with: one color for every alignment, or a field each
  * alignment carries — its strand, the sequence at either end, the anchor
  * assembly's, the track it came from, a measurement on its preset ramp
  * (`identity`, `mapq`, `dnds`), or a column the tracks declare in
@@ -75,9 +75,9 @@ export const syntenyColorConfigSchema = ConfigurationSchema(
   {
     /**
      * #slot value
-     * The colour of every alignment under the `none` scale, in place of the
+     * The color of every alignment under the `none` scale, in place of the
      * view's default scheme: the match block of a synteny ribbon, whose
-     * insertions and deletions keep their colours, or a dotplot point.
+     * insertions and deletions keep their colors, or a dotplot point.
      * Writing `color: "grey"` lands here. Unset, the default scheme paints.
      */
     value: {
@@ -90,17 +90,17 @@ export const syntenyColorConfigSchema = ConfigurationSchema(
       scaleName: 'SyntenyColorScale',
       fieldType: 'string',
       field:
-        'what colours an alignment: strand paints forward and reverse; query and target one colour per sequence on that side, reference one per chromosome of the anchor assembly across a stack, track one per overlaid track (pinned under Track colors); identity, mapq and dnds paint the preset ramps; any other name is a column the tracks declare in attributeColumns, a ramp over the values seen for numbers and one colour per label for text (or the colour a color column put beside it)',
+        'what colors an alignment: strand paints forward and reverse; query and target one color per sequence on that side, reference one per chromosome of the anchor assembly across a stack, track one per overlaid track (pinned under Track colors); identity, mapq and dnds paint the preset ramps; any other name is a column the tracks declare in attributeColumns, a ramp over the values seen for numbers and one color per label for text (or the color a color column put beside it)',
       scale:
         'none paints value and keeps the field for a switch back; unset, a field paints',
     }),
     ...colorDomainSlot({
       domain:
-        "a text column's labels that take the palette first, in order, and lead the key, the rest following sorted; a label left out takes a colour no listed label or label met before it paints, the first time the view meets it, and keeps it",
+        "a text column's labels that take the palette first, in order, and lead the key, the rest following sorted; a label left out takes a color no listed label or label met before it paints, the first time the view meets it, and keeps it",
     }),
     ...colorRangeSlot({
       range:
-        "CSS colours a text column's labels take, in domain order, continuing into the default palette past its end; with no domain, each label takes one of them by its name; on a ramp (identity, mapq, dnds or a numeric column), its stops, evenly spaced, in place of the field's own",
+        "CSS colors a text column's labels take, in domain order, continuing into the default palette past its end; with no domain, each label takes one of them by its name; on a ramp (identity, mapq, dnds or a numeric column), its stops, evenly spaced, in place of the field's own",
     }),
     ...colorRampSlots,
     ...colorDomainEndsSlots,

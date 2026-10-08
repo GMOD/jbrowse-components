@@ -98,7 +98,7 @@ map is keyed by**:
   together, or a returning region with an identical payload skips an upload onto
   destroyed buffers.
 - **The one sub-region exception is the recolor.** `readYs` identity means "same
-  layout run", so same bytes except the two per-read colour arrays rewrites the
-  read pass alone. This needs the model to bake colour in its own computed
+  layout run", so same bytes except the two per-read color arrays rewrites the
+  read pass alone. This needs the model to bake color in its own computed
   downstream of layout (`laidOutByGroupUncolored` → `laidOutByGroupFramed` →
   `laidOutByGroup`).

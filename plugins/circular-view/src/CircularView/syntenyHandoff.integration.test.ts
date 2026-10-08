@@ -89,9 +89,9 @@ test('a linear view of each genome takes that genome’s rings and chord tracks'
 }, 40000)
 
 // the linear view opens on the chromosomes the circle shows, each row with
-// its genome's tracks, the ribbons between them, in the circle's colour; and
+// its genome's tracks, the ribbons between them, in the circle's color; and
 // back again
-test('the circle and the linear synteny view open each other with their colour', async () => {
+test('the circle and the linear synteny view open each other with their color', async () => {
   const session = sessionWithTracks()
   const view = await circle(session, {
     displayedRegionNames: { A: ['a1'] },
@@ -130,7 +130,7 @@ test('the circle and the linear synteny view open each other with their colour',
   expect(back.colorField).toBe('strand')
 }, 60000)
 
-test('the dotplot opens a circle of its two genomes with its colour', async () => {
+test('the dotplot opens a circle of its two genomes with its color', async () => {
   const session = sessionWithTracks()
   const dotplot = await session.launchView('DotplotView', {
     views: [{ assembly: 'A' }, { assembly: 'B' }],
@@ -148,7 +148,7 @@ test('the dotplot opens a circle of its two genomes with its colour', async () =
   expect(view.colorField).toBe('target')
 }, 60000)
 
-test('a dotplot on its default colour opens a circle by chromosome', async () => {
+test('a dotplot on its default color opens a circle by chromosome', async () => {
   const session = sessionWithTracks()
   const dotplot = await session.launchView('DotplotView', {
     views: [{ assembly: 'A' }, { assembly: 'B' }],

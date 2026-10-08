@@ -7,11 +7,11 @@ summary: "`bicolorPivot` split stayed in the worker until 2026-09-19, when the s
 
 ## Status
 
-Superseded 2026-09-19. The split is gone: the main thread colours each instance
+Superseded 2026-09-19. The split is gone: the main thread colors each instance
 by its side of the pivot, `bicolorPivot` and `useBicolor` are `gpuProps` alone,
 and `WiggleFeatureArrays` carries no `pos*`/`neg*` arrays. The General rule
 below is unchanged, and this decision's own rule is what named the exit —
-`origin` is a uniform, and both line shaders already coloured by side off it.
+`origin` is a uniform, and both line shaders already colored by side off it.
 The measurements are in
 `ideas/ready/wiggle-instance-records-carry-per-row-constants.md` §4: the split cost
 the worker 57-85ms per region at 1000 signed sources and doubled what a region
@@ -90,14 +90,14 @@ arrival" is not only what the rejected branch would have cost — it is what
 `installUpload` does today whenever `gpuProps()` identity moves
 (`packages/render-core/src/installUpload.ts:195-198`: `p !== lastProps` clears
 `encodedFrom`, so every cached region re-encodes). Most of what moves it —
-colour, plot type, summary score mode, re-sort — does **not** refetch, so that
+color, plot type, summary score mode, re-sort — does **not** refetch, so that
 path has no network cost to make it visible.
 
 Two consequences for anyone applying this ADR's rule:
 
 - **`bicolorPivot` was in `gpuProps()` as well as `rpcProps()`**, and the second
   copy was not a violation of this decision — the encoder needed the same
-  threshold because the whiskers bands were coloured main-thread, and the SVG
+  threshold because the whiskers bands were colored main-thread, and the SVG
   export calls `buildSourceRenderData(data, gpuProps)` directly. Since the
   supersession it is the only copy.
 - **The mirror-image proposal meets the same accounting from the other side.**

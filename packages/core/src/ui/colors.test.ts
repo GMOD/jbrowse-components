@@ -150,14 +150,14 @@ describe('categoricalColorScale', () => {
 })
 
 describe('a dealt scale', () => {
-  it('paints the values the hash puts on one colour each its own', () => {
+  it('paints the values the hash puts on one color each its own', () => {
     const hashed = categoricalColorScale(undefined)
     expect(new Set(['protein_coding', 'snRNA', 'TEC'].map(hashed)).size).toBe(1)
     const dealt = categoricalColorScale(undefined, [], new Map())
     expect(new Set(['protein_coding', 'snRNA', 'TEC'].map(dealt)).size).toBe(3)
   })
 
-  it('keeps a value its hashed colour while no value met before has it', () => {
+  it('keeps a value its hashed color while no value met before has it', () => {
     const dealt = categoricalColorScale(undefined, [], new Map())
     const hashed = categoricalColorScale(undefined)
     const met: string[] = []
@@ -175,7 +175,7 @@ describe('a dealt scale', () => {
     expect(kept).toBeGreaterThan(5)
   })
 
-  it('deals 30 values 30 colours none of which read alike', () => {
+  it('deals 30 values 30 colors none of which read alike', () => {
     const dealt = categoricalColorScale(undefined, [], new Map())
     const colors = BIOTYPES.map(dealt)
     for (const [i, a] of colors.entries()) {
@@ -194,7 +194,7 @@ describe('a dealt scale', () => {
     expect(BIOTYPES.slice(0, 5).map(later)).toEqual(before)
   })
 
-  it('keeps a listed value its range colour and deals the rest around it', () => {
+  it('keeps a listed value its range color and deals the rest around it', () => {
     const dealt = categoricalColorScale(['lncRNA'], ['#e41a1c'], new Map())
     expect(dealt('lncRNA')).toBe('#e41a1c')
     const others = ['protein_coding', 'snRNA', 'TEC'].map(dealt)
@@ -242,7 +242,7 @@ describe('paletteFromSpec', () => {
     expect(paletteFromSpec('relit')).toHaveLength(27)
   })
 
-  it('reads a comma-separated colour list, functions included', () => {
+  it('reads a comma-separated color list, functions included', () => {
     expect(paletteFromSpec('#f00, rgb(0, 128, 0),steelblue')).toEqual([
       '#f00',
       'rgb(0, 128, 0)',

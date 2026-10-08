@@ -51,7 +51,7 @@ public static const uint NO_PREV_START = 0xffffffffu;
 // naming its TS twin — which is the arrangement adr-051 exists to retire.
 public static const float MIN_FILL_WIDTH_PX = 1.5;
 
-// The most cuts a threshold colour parts a plot at; the uniform block holds
+// The most cuts a threshold color parts a plot at; the uniform block holds
 // this many.
 public static const int MAX_WIGGLE_CUTS = 8;
 
@@ -85,7 +85,7 @@ public struct Uniforms {
   public float  lineWidth;
   // The score xyplot bars grow from.
   public float  origin;
-  // The score the colour parts at: the line and band colour sides and the
+  // The score the color parts at: the line and band color sides and the
   // density fade's white. A threshold's cut, else `origin`.
   public float  pivot;
   // Where a gradient's middle stop sits, as a normalized score:
@@ -108,17 +108,17 @@ public struct Uniforms {
   // without differentiating it (antialias.slang §"Analytic"). The xyplot bar's
   // horizontal cuts and the center line's capsule both read it.
   public float  devicePixelRatio;
-  // 1 = a gradient: density, xyplot and scatter colour through the bound
-  // 256×1 colorRamp LUT texture, 0 = the instance colour (density's white
-  // fade off it). The LUT cannot encode multiwiggle's PER-ROW track colours,
+  // 1 = a gradient: density, xyplot and scatter color through the bound
+  // 256×1 colorRamp LUT texture, 0 = the instance color (density's white
+  // fade off it). The LUT cannot encode multiwiggle's PER-ROW track colors,
   // so it is the alternative a config names.
   public int    rampLut;
   // How many of `cuts` are in use, at least 1: the pivot.
   public int    numCuts;
-  // The scores the colour changes at, ascending, four to a vector.
+  // The scores the color changes at, ascending, four to a vector.
   public float4 cuts[MAX_WIGGLE_CUTS / 4];
-  // The colour of each band between two cuts. The band below the first cut
-  // and the one past the last are the instance's own colours, since a source
+  // The color of each band between two cuts. The band below the first cut
+  // and the one past the last are the instance's own colors, since a source
   // can bring its own.
   public float4 innerColor[MAX_WIGGLE_CUTS - 1];
 };
@@ -138,12 +138,12 @@ public float cutScore(int i, Uniforms u) {
   return u.cuts[i / 4][i % 4];
 }
 
-// A value's y in the row for the colour test, placed UNCLAMPED, where
+// A value's y in the row for the color test, placed UNCLAMPED, where
 // `rowScoreToYPx` clamps it to draw: the cuts go through it, and so does the
-// line a line rendering is coloured along. Clamped, a cut outside the domain
+// line a line rendering is colored along. Clamped, a cut outside the domain
 // landed on the row edge out-of-domain scores are clamped onto too, and a
 // score past the domain took the side of that edge rather than its own — a
-// peak of 20 under a cut at 15 on a [0, 10] plot coloured as under it, which
+// peak of 20 under a cut at 15 on a [0, 10] plot colored as under it, which
 // the xyplot, comparing raw scores, never did.
 public float rowColorYPx(float value, float rowTop, float rowHeight, Uniforms u) {
   float norm = normalizeScoreUnclamped(value, u.domainYMin, u.domainYMax, u.scaleType, u.symlogConstant);
@@ -166,8 +166,8 @@ public float cutYAt(int i, float4 cutYsLo, float4 cutYsHi) {
   return i < 4 ? cutYsLo[i] : cutYsHi[i - 4];
 }
 
-// A line's colour follows the band its centre line is in, not the pixel's, so
-// a line lying on a cut stays one colour. Screen y grows downward, so a score
+// A line's color follows the band its centre line is in, not the pixel's, so
+// a line lying on a cut stays one color. Screen y grows downward, so a score
 // at or past a cut is at or above that cut's y.
 public float4 bandColorAt(float centerLineYPx, float4 cutYsLo, float4 cutYsHi, Uniforms u, float4 posColor, float4 negColor) {
   int band = 0;

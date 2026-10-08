@@ -5,8 +5,8 @@ import type { MarkType } from './markVocabulary.ts'
 export type MarkChannel = 'y' | 'row' | 'color' | 'shape' | 'text' | 'size'
 
 /**
- * A lane the worker fills: a channel, a quantitative colour's raw values, a
- * categorical colour's keys, the point painter's code for a `shape`, the
+ * A lane the worker fills: a channel, a quantitative color's raw values, a
+ * categorical color's keys, the point painter's code for a `shape`, the
  * sequence a far `x2` lies on, or the hit index.
  */
 export type MarkLane =
@@ -121,7 +121,7 @@ export function hitsByIndex(type: MarkType) {
 }
 
 /**
- * The lanes a mark asks the worker to fill: its type's channels, the colour
+ * The lanes a mark asks the worker to fill: its type's channels, the color
  * lanes `colorLanesOf` chose for its declaration, and the hit index where the
  * mark answers a hover through one.
  */

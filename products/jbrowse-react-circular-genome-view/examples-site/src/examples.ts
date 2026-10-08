@@ -106,7 +106,7 @@ export const pages: ExamplePage[] = [
       {
         slug: 'gene-density-marks',
         title: 'The same ring, declared as marks',
-        description: 'A LinearMarkDisplay bar mark, its colour a viridis ramp.',
+        description: 'A LinearMarkDisplay bar mark, its color a viridis ramp.',
       },
     ],
   },

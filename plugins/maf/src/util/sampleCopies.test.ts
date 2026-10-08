@@ -206,7 +206,7 @@ test('a focus on a sample ships its copy rows', async () => {
   expect([...sink.packer.finishBlocks().sampleIds].toSorted()).toEqual(COPY_IDS)
 })
 
-test('withCopyRows puts copies after their sample in its colour', () => {
+test('withCopyRows puts copies after their sample in its color', () => {
   const rows = withCopyRows(
     [
       { id: 'GRCh38', label: 'GRCh38' },

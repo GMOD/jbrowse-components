@@ -797,11 +797,11 @@ what the track's config or a named modifier gave the setting, in whatever order
 the modifiers come:
 
 ```bash
-## a numeric tag on a colour ramp
+## a numeric tag on a color ramp
 jb2export --fasta ref.fa --bam reads.bam color.field=tags.NM color.scale=linear \
   color.range=white,darkred --loc chr1:1-10000 --out out.svg
 
-## haplotype in two declared colours, methylation over it, a log coverage axis
+## haplotype in two declared colors, methylation over it, a log coverage axis
 jb2export --fasta ref.fa --bam reads.bam color.field=tags.HP color.domain=1,2 \
   color.range=#d9c9a3,#b7c4b1 baseColor:methylation scales.y.type=log \
   --loc chr1:1-10000 --out out.svg
@@ -809,8 +809,8 @@ jb2export --fasta ref.fa --bam reads.bam color.field=tags.HP color.domain=1,2 \
 
 - `true` and `false` are booleans and a number is a number
 - a comma makes a list, and a trailing comma a list of one: `color.range=tan,`
-- a digit segment indexes a list, so `color.range.0=tan` changes the first
-  colour of a range and `marks.1.encoding.color.value=red` the second mark of a
+- a digit segment indexes a list, so `color.range.0=tan` changes the first color
+  of a range and `marks.1.encoding.color.value=red` the second mark of a
   declared plot, where `color.range=tan,teal` says what the whole range is. An
   index has to be one the list already reaches, so fill `0` before `1`. A list
   written from nothing reads better as one JSON modifier than as a path per
@@ -858,7 +858,7 @@ jb2export --fasta ref.fa --gffgz genes.gff.gz display:marks height:160 \
 **A path changes one mark of a list, where the JSON states the list whole.** So
 a track whose config already declares the plot takes
 `marks.1.encoding.color.value=red` to repaint its second mark and leave the rest
-alone, the way `color.domain=` edits one member of a colour object — and
+alone, the way `color.domain=` edits one member of a color object — and
 `marks.2` before anything has written `marks.0` and `marks.1` is an error rather
 than a list with holes in it.
 

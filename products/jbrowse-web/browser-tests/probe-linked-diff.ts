@@ -2,7 +2,7 @@
 // Throwaway: WHERE and HOW do the two backends differ on one snapshot pair?
 // The drift percentage says how much; this says whether it is edges (a
 // sub-pixel placement difference, small deltas hugging glyph boundaries) or
-// fills (a colour difference, large deltas across a glyph's interior).
+// fills (a color difference, large deltas across a glyph's interior).
 import fs from 'node:fs'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
@@ -46,7 +46,7 @@ for (let y = 0; y < a.height; y++) {
 console.log(
   `${differing} differing px of ${a.width * a.height} (${((differing / (a.width * a.height)) * 100).toFixed(2)}%)`,
 )
-console.log('\nmost common colour pairs:')
+console.log('\nmost common color pairs:')
 for (const [k, n] of [...deltas].sort((x, y) => y[1] - x[1]).slice(0, 12)) {
   console.log(`  ${String(n).padStart(6)}  ${k}`)
 }

@@ -8,8 +8,8 @@ summary: "A display declares the value scales it places its y through — `value
 ## Status
 
 Accepted (2026-09-09). The y-axis counterpart of
-[ADR-108](adr-108-a-display-declares-its-colour-scales.md), which made the
-legend a guide derived from declared colour scales; this makes the axis a guide
+[ADR-108](adr-108-a-display-declares-its-color-scales.md), which made the
+legend a guide derived from declared color scales; this makes the axis a guide
 derived from a declared value scale.
 [ADR-097](adr-097-the-y-channel-shares-its-scale-and-not-its-anchor.md)'s split
 is untouched: the shader's anchor stays each shape's own, and what is shared
@@ -59,7 +59,7 @@ content edge.
   - `bandTops` — the screen y of each band the scale rules, for a display
     that stacks the same plot: the multi-wiggle's rows, a grouped alignments
     track's coverage band per group, each projected through the display's own
-    scroll. One at 0 by default; `[]` for a scale the display maps to colour
+    scroll. One at 0 by default; `[]` for a scale the display maps to color
     rather than to y.
   - `side` and `left` — which of the band's edges the display's own panels
     leave clear for a gutter. `right` where a group label chip takes the
@@ -68,7 +68,7 @@ content edge.
     axis had before this ADR — left under `readConnectionsDown`, right above
     the coverage band — which is inherited, not derived.
   - `caption` — what the scale measures (`TLEN`), the counterpart of a
-    colour scale's `field`: the legend titles from that, the axis from this.
+    color scale's `field`: the legend titles from that, the axis from this.
 
   The mixin resolves them to `axes: YAxis[]` — each scale with its domain and
   ticks resolved — which is what the chrome reads (`isAxisHost`). A display
@@ -120,7 +120,7 @@ Migrated, and every one of them lost its placement sites: `LinearWiggleDisplay`
 (no scale under density, whose key is the chrome's ramp),
 `LinearManhattanDisplay`, `LinearMarkDisplay`, `MultiLinearWiggleDisplay` (one
 scale, a band per row, `left` past the dendrogram, no band under density rows
-in their own colours so the chrome captions the domain), `LinearAlignmentsDisplay`
+in their own colors so the chrome captions the domain), `LinearAlignmentsDisplay`
 (coverage: a band per section, right beside group chips; insert size: a band
 per section reserving an arc band, on the side each mode's axis had, captioned
 `TLEN`) and `LinearMafDisplay` (coverage and conservation, one band each).

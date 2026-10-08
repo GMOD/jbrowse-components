@@ -305,7 +305,7 @@ tolerance ball for "did this figure move".
     difference reads as compartment switching everywhere.
   - **Subcompartment cluster numbers are arbitrary labels**, not the published
     A1/A2/B1/B2/B3 naming, so a number means nothing alone and two files only
-    compare because the same pipeline gave the same colours.
+    compare because the same pipeline gave the same colors.
     `hic/compartment_switch` therefore requires BOTH the cluster id and the
     eigenvector sign to differ before calling a region switched: a renumbering
     moves ids without moving the eigenvector. Note the slice run matters —
@@ -317,7 +317,7 @@ tolerance ball for "did this figure move".
     subcompartment BED has no tabix index (use `BedAdapter`, it is ~150kB) and
     its last three columns are cluster metadata, not block fields — so
     positionally the cluster count becomes `blockCount` and every feature grows
-    phantom subfeatures. Its colour column is also spelled `itemRGB`, which is
+    phantom subfeatures. Its color column is also spelled `itemRGB`, which is
     not the name JBrowse looks for, and the header is not consulted anyway
     because a second comment line follows the column line (same last-header-line
     rule as the juicer BEDPE above). Explicit `columnNames` fixes both.
@@ -366,7 +366,7 @@ tolerance ball for "did this figure move".
   context for. The mirror-image trap is `geneGlyphMode: 'all'` on a grow track,
   where it is not a lane setting but a lane SIZE (one gene with ~25 transcripts
   took `qc/smn_vs_t2t`'s hg38 lane past 400 px and pushed the band off frame).
-- **A link mark filters with a `filter` step**, and colour still works as one:
+- **A link mark filters with a `filter` step**, and color still works as one:
   `color: "jexl:get(feature,'observed')>200?'#8b1a1a':'rgba(0,0,0,0)'"` draws
   the weak calls fully transparent.
 - **A raw matrix cannot argue for compartments, so don't spend a lane on it.**
@@ -472,7 +472,7 @@ tolerance ball for "did this figure move".
   (the hover crosshair draws) but nothing opens, so a spec gated on
   `waitForText: 'Sort by genotype'` times out against a fully-rendered matrix.
   One lane alone works every time. Not fixed — the workaround is a capture per
-  colouring plus `mode: 'compose'`.
+  coloring plus `mode: 'compose'`.
 - **That sort right-click is flaky even with one lane.** The same spec succeeded
   at `height: 400` / `y: 450` and failed at `height: 340` / `y: 400`. Re-run
   before re-designing a sort spec.
@@ -774,7 +774,7 @@ clicks each menu-bearing modal's backdrop, loops, and **throws if a menu is
 still open**; that was the whole of the two launch-out specs' one-in-six
 flakiness.
 
-**Which colour scheme a graph figure uses is settled, so it does not get
+**Which color scheme a graph figure uses is settled, so it does not get
 relitigated: a graph shown beside a linear view uses reference-position, a graph
 shown alone or whose subject is rank keeps stable-rank.** The linear segments
 lane in a paired figure carries the matching `referencePositionColor` over the

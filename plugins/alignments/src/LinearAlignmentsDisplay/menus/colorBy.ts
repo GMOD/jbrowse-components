@@ -79,7 +79,7 @@ interface ColorByMenuOptions {
     own: ArcColorField | ''
     setField: (field: ArcColorField | '') => void
   }
-  // The split-read strand framing colours how chained supplementary alignments
+  // The split-read strand framing colors how chained supplementary alignments
   // are drawn, so it belongs with the color scheme rather than in the "Show..."
   // visibility menu. Read only by `readColorCategory`'s chain branch, hence
   // `unit`: without a chain there is nothing chained to recolor and the row
@@ -241,9 +241,9 @@ function arcColorItem(
 
 // Greyed out rather than hidden while chain mode is off, matching the
 // read-connection band options: the setting stays discoverable, and the
-// tooltip names the one switch that makes it live. A flat colour marking every
+// tooltip names the one switch that makes it live. A flat color marking every
 // split chain, whatever the scheme, was a hue override and went; "Group by
-// split reads" beside a strand colour is that picture.
+// split reads" beside a strand color is that picture.
 function supplementaryItem(
   supp: NonNullable<ColorByMenuOptions['supplementaryColoring']>,
 ): MenuItem {

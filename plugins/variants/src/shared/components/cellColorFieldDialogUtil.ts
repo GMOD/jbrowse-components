@@ -1,6 +1,6 @@
 import type { JexlFilterField } from '@jbrowse/core/ui/JexlFilterDialog'
 
-/** The field ref a picker entry colours by: a path, or a variant function. */
+/** The field ref a picker entry colors by: a path, or a variant function. */
 export function fieldRefOf(field: JexlFilterField) {
   return 'path' in field ? field.path.join('.') : `jexl:${field.call}(feature)`
 }

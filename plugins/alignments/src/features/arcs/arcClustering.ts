@@ -9,7 +9,7 @@ import type { PendingArc } from './arcTypes.ts'
 // coalesce on an exact `arcKey`, interchromosomal ones cluster inside a
 // fragment-length window. `ComputedArc.support` carries why they differ.
 
-// The identity of a drawn arc: two endpoints, a colour, a shape, the Y it plots
+// The identity of a drawn arc: two endpoints, a color, a shape, the Y it plots
 // at and the span it reports. Two connections agreeing on all six produce the
 // same pixels AND the same hover, which is what makes them summable.
 //
@@ -68,7 +68,7 @@ export function arcKey(a: {
   // very channel this key exists to feed. Measured over the HG02768 inverted
   // duplication (1:39,658,200-39,661,800): the junction at 39,658,994 /
   // 39,660,047 resolved as TWO arcs, support 7 and support 4, drawn on top of
-  // each other in the same opaque colour — so its stroke width reported 7 reads
+  // each other in the same opaque color — so its stroke width reported 7 reads
   // (or 4, whichever painted last) at a junction 11 reads support. Which of the
   // two you saw depended on nothing the reader can see.
   const swap = a.p1Ref === a.p2Ref ? a.p2Bp < a.p1Bp : a.p2Ref < a.p1Ref

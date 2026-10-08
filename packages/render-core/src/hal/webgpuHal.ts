@@ -178,7 +178,7 @@ export class WebGPUHal extends GpuHalBase<RegionPassBuffer> implements GpuHal {
   // the whole point of the knob.
   private sampleCount: SampleCount
 
-  // The multisampled colour attachment, resolved into the canvas texture at the
+  // The multisampled color attachment, resolved into the canvas texture at the
   // end of the frame. Null for the life of the HAL when `sampleCount` is 1.
   private msaaTexture: GPUTexture | null = null
   private msaaView: GPUTextureView | null = null
@@ -526,7 +526,7 @@ export class WebGPUHal extends GpuHalBase<RegionPassBuffer> implements GpuHal {
     const existing = byName.get(binding.name)
     if (existing) {
       // Same hazard as a buffer, and no longer a hypothetical one: every
-      // `uploadTexture` in tree is a colour ramp, and since the ramp became a
+      // `uploadTexture` in tree is a color ramp, and since the ramp became a
       // `defineMark` `texture` they are all written by `GpuMarkBackend`'s
       // `bindRamp` from inside `drawRegion` — mid-frame, between an encoded
       // draw and its submit. The deferral is what makes replacing one there

@@ -15,7 +15,7 @@ its gnomAD tracks (`missenseConstrained`, `pliByGene`, `gnomad_v2.1_sv.sites`)
 are hg19 only, so the constraint half and the ClinVar half cannot sit in one
 hg38 view off it. `tutorials/mappability_qc.md` is the worked example of a
 hub-backed page, and `specs/ld.ts`, `specs/popgen.ts` and `specs/qc.ts` show
-the spec form. Consequence-impact colouring already has specs
+the spec form. Consequence-impact coloring already has specs
 (`variants/consequence_impact_1000g`).
 
 Pick one variant whose interpretation is uncontroversial and readable off the

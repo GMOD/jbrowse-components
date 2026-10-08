@@ -46,7 +46,7 @@ async function loadedDotplotDisplay() {
 // The rpcProps/gpuProps split: positions come from the fetch + zoom, colors are
 // a separate main-thread pass. Palette changes are the common interaction, and
 // rebuilding positions for one re-walks every CIGAR of every feature.
-test('a colour change recolors without rebuilding geometry', async () => {
+test('a color change recolors without rebuilding geometry', async () => {
   const { view, display } = await loadedDotplotDisplay()
   const positions = display.instanceData
   const colorsBefore = Uint32Array.from(display.geometry.colors)

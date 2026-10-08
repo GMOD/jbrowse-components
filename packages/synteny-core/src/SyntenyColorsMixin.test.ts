@@ -56,7 +56,7 @@ test('the identity fade runs from the current opacity, and back', () => {
   expect(getSnapshot(v).opacity).toBeUndefined()
 })
 
-test('a drag recolours nothing, under the constant or a field', () => {
+test('a drag recolors nothing, under the constant or a field', () => {
   const v = view()
   let fades = 0
   const dispose = autorun(() => {

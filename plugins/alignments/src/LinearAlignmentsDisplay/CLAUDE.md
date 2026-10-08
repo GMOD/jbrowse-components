@@ -28,7 +28,7 @@ Each is a section of
 which has the why — read that section before changing what it covers.
 
 - Which getter decides what a setting invalidates
-- A split segment's colour is framed by the chains on screen
+- A split segment's color is framed by the chains on screen
 - A lane, not a group key
 - Six grouping questions, and they are not one object
 - Four row caps, and only two are an affordance

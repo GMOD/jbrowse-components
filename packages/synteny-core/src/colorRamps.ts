@@ -41,7 +41,7 @@ const RD_YL_BU_R: readonly ColorRampStop[] = [
 export const DNDS_MAX = 2
 
 /**
- * A continuous colour field: which feature attribute it paints, the ramp's
+ * A continuous color field: which feature attribute it paints, the ramp's
  * stops, and the domain a raw value is read against.
  *
  * A value rather than a switch arm, so the field list does not grow by one

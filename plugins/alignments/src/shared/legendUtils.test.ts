@@ -172,7 +172,7 @@ describe('getReadDisplayLegendItems', () => {
   })
 
   // The two per-base schemes must never reach that reframing: a fwd/rev bucket
-  // beside their "Read" row keys colours the marks cover. Classified for real
+  // beside their "Read" row keys colors the marks cover. Classified for real
   // rather than from a hand-written set, since the classifier is the half that
   // used to produce them.
   test.each(['perBaseQuality', 'perBaseLetter'] as const)(
@@ -312,7 +312,7 @@ describe('getReadDisplayLegendItems', () => {
     expect(tagLabels({ type: 'tag', tag: 'HP' })).toEqual([])
   })
 
-  test('a facet on the colour field orders the key as the sections stack', () => {
+  test('a facet on the color field orders the key as the sections stack', () => {
     const labelsIn = (order?: (a: string, b: string) => number) =>
       legendFor({ type: 'tag', tag: 'HP' }, ['tag'], {
         presentTagValues: new Set(['1', '2', '']),
@@ -358,7 +358,7 @@ describe('getReadDisplayLegendItems', () => {
   // The swatch resolves through the same `bakedValueColor` the paint path runs
   // per read, so it is the color drawn rather than a second table agreeing with
   // it. There used to be that second table (`colorTagMap`).
-  test('a declared scale keys its own order, ramp and bins in the painted colours', () => {
+  test('a declared scale keys its own order, ramp and bins in the painted colors', () => {
     const declared: AlignmentsColorSetting = {
       value: undefined,
       field: 'tags.HP',
@@ -434,7 +434,7 @@ describe('getReadDisplayLegendItems', () => {
     ])
   })
 
-  test('a translucent ramp paints the reads and the key the same opaque colours', () => {
+  test('a translucent ramp paints the reads and the key the same opaque colors', () => {
     const NM: ColorBy = { type: 'tag', tag: 'NM' }
     const ramp = bakedColorScale(
       NM,
@@ -480,7 +480,7 @@ describe('getReadDisplayLegendItems', () => {
     ])
   })
 
-  // The reads take their colour from the same position (`refNameColor`), so the
+  // The reads take their color from the same position (`refNameColor`), so the
   // swatch column reads down the karyotype instead of putting chr10 above chr2.
   test('chromosome painting lists mate refNames in assembly order', () => {
     const order = new Map([
@@ -607,7 +607,7 @@ describe('getReadDisplayLegendItems', () => {
     expect(tagLabels({ type: 'tag', tag: 'HP' })).toEqual([])
   })
 
-  test('mapping quality lists no rows of its own beside its colour bar', () => {
+  test('mapping quality lists no rows of its own beside its color bar', () => {
     expect(labels('mappingQuality', [])).toEqual([])
   })
 
@@ -904,7 +904,7 @@ describe('colorRampScales', () => {
   }
   const bar = (scale: RampScale) => legendSpecOf([scale]).sections[0]!.items[0]!
 
-  test('mapping quality keys a colour bar from the MAPQ table the reads paint', () => {
+  test('mapping quality keys a color bar from the MAPQ table the reads paint', () => {
     const [mapq, ...rest] = colorRampScales({
       ...noExtents,
       colorBy: { type: 'mappingQuality' },
@@ -921,7 +921,7 @@ describe('colorRampScales', () => {
     })
   })
 
-  test('base quality keys a colour bar from the table the cells paint, ahead of the read fill', () => {
+  test('base quality keys a color bar from the table the cells paint, ahead of the read fill', () => {
     const [baseQuality, mapq] = colorRampScales({
       ...noExtents,
       colorBy: { type: 'mappingQuality' },
@@ -945,7 +945,7 @@ describe('colorRampScales', () => {
     })
   })
 
-  test('the plain fill and a letter layer key no colour bar', () => {
+  test('the plain fill and a letter layer key no color bar', () => {
     expect(
       colorRampScales({
         ...noExtents,
@@ -996,7 +996,7 @@ describe('getAlignmentsColorScales', () => {
     expect(entries(scales[1]).map(e => e.label)).toEqual(['Supplementary'])
   })
 
-  test('a split arc row joins the pair row it shares a colour with', () => {
+  test('a split arc row joins the pair row it shares a color with', () => {
     const split = { color: 'red', label: 'Split read (duplication-type)' }
     expect(
       shown(
@@ -1005,7 +1005,7 @@ describe('getAlignmentsColorScales', () => {
         ),
       ),
     ).toEqual([['Read and arc colors', ['RL pair or duplication-type split']]])
-    // alone, or beside a pair row of another colour, it keeps its own row
+    // alone, or beside a pair row of another color, it keeps its own row
     expect(shown(getAlignmentsColorScales(model([], [split])))).toEqual([
       ['Arc colors', ['Split read (duplication-type)']],
     ])
@@ -1057,9 +1057,9 @@ describe('getAlignmentsColorScales', () => {
   })
 
   // The palette paints one grey for a read with no HP value and for a normal
-  // arc. Folding by colour keyed the normal arcs "No HP value"; each meaning
+  // arc. Folding by color keyed the normal arcs "No HP value"; each meaning
   // keeps its row, in the one merged box.
-  test('a colour two buckets share keeps a row per meaning', () => {
+  test('a color two buckets share keeps a row per meaning', () => {
     const [[title, labels]] = shown(
       getAlignmentsColorScales(
         model(
@@ -1246,7 +1246,7 @@ describe('getAlignmentsColorScales', () => {
 })
 
 // The row that names the overlap mark. Its shape is the argument: chain mode
-// paints ONE colour that is no read category, collapsed rows tint whatever is
+// paints ONE color that is no read category, collapsed rows tint whatever is
 // underneath. What the cases below are really pinning is that the swatch is
 // SHARED with the ink rather than derived from it — the form this replaced
 // computed "the LR grey darkened by OVERLAP_ALPHA" and so kept describing a
@@ -1268,7 +1268,7 @@ describe('the overlap row', () => {
     expect(items().some(i => /overlap/i.test(i.label))).toBe(false)
   })
 
-  test('chain mode names the colour the pass fills with', () => {
+  test('chain mode names the color the pass fills with', () => {
     const row = items('chain').at(-1)!
     expect(row).toEqual({
       color: 'rgb(51,51,51)',
@@ -1279,7 +1279,7 @@ describe('the overlap row', () => {
   test('collapsed rows name a modifier, in two swatches', () => {
     const row = items('collapsed').at(-1)!
     expect(row.color).toBeUndefined()
-    // the read colour, then that colour 0.4 of the way to `colorOverlapTint` —
+    // the read color, then that color 0.4 of the way to `colorOverlapTint` —
     // the pass's own tint, not black, and opaque because a legend swatch is one
     // `fill` for the SVG export too
     expect(row.swatches).toEqual([
@@ -1289,7 +1289,7 @@ describe('the overlap row', () => {
     expect(row.label).toBe('Overlapping reads (tint = depth)')
   })
 
-  test('sits last, after the colours it modifies', () => {
+  test('sits last, after the colors it modifies', () => {
     expect(items('chain')).toHaveLength(items().length + 1)
   })
 })
@@ -1303,7 +1303,7 @@ describe('the fill view keys the types drawn beside the methylation states', () 
     ['a', 'rgb(51,0,111)'],
   ])
 
-  test('a non-cytosine type is keyed after them, in its by-type colour', () => {
+  test('a non-cytosine type is keyed after them, in its by-type color', () => {
     const items = legendFor(
       { type: 'modifications', modifications: { fillUnmarked: true } },
       [],
@@ -1314,7 +1314,7 @@ describe('the fill view keys the types drawn beside the methylation states', () 
       '6mA',
       'Unmodified',
     ])
-    // the mark's own colour: extractModifications packs a 6mA call through
+    // the mark's own color: extractModifications packs a 6mA call through
     // getColorForModification, which is where this swatch comes from too
     expect(items.find(i => i.label === '6mA')?.color).toBe('rgb(51,0,111)')
   })
@@ -1322,7 +1322,7 @@ describe('the fill view keys the types drawn beside the methylation states', () 
   // The blue swatch covers both walks in this mode, so it cannot be named for
   // the cytosine one: extract.ts draws the non-cytosine remainder two-color, and
   // a 6mA call under the threshold is painted the same blue over an ADENINE.
-  // "Unmethylated" over those is a wrong statement about a drawn colour.
+  // "Unmethylated" over those is a wrong statement about a drawn color.
   test('the blue swatch is Unmodified once a non-cytosine type is drawn', () => {
     const labels = (detected: Map<string, string>) =>
       legendFor(

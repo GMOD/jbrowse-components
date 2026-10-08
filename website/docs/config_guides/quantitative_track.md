@@ -6,7 +6,7 @@ guide_category: Track types
 
 A `QuantitativeTrack` shows a single BigWig or bedGraph signal; a
 `MultiQuantitativeTrack` holds several of them in one display. Both draw through
-`LinearWiggleDisplay`, so the scale, colour and layout settings below apply to
+`LinearWiggleDisplay`, so the scale, color and layout settings below apply to
 either, through `displayDefaults`.
 
 ```json addtrack
@@ -28,7 +28,7 @@ either, through `displayDefaults`.
 
 ## Display options
 
-The axis is one object, [`scales.y`](/docs/config/valuescale), the colour is one
+The axis is one object, [`scales.y`](/docs/config/valuescale), the color is one
 object, [`color`](/docs/config/linearwiggledisplay/#slot-color), and
 [`rows`](/docs/config/linearwiggledisplay/#slot-rows) decides the layout; all
 three are [`LinearWiggleDisplay`](/docs/config/linearwiggledisplay) slots and
@@ -76,22 +76,22 @@ scale it reads through:
 
 | the picture                         | the value                                                                              |
 | ----------------------------------- | -------------------------------------------------------------------------------------- |
-| one solid colour                    | `"#8b0000"`                                                                            |
-| a colour each side of a cut         | `{ "field": "score", "scale": "threshold", "domain": [5], "range": ["#aaa", "#f00"] }` |
+| one solid color                     | `"#8b0000"`                                                                            |
+| a color each side of a cut          | `{ "field": "score", "scale": "threshold", "domain": [5], "range": ["#aaa", "#f00"] }` |
 | a ramp, which density fades through | `{ "field": "score", "scale": "linear", "scheme": "viridis" }`                         |
 
 A threshold with an empty `domain` cuts at
 [`origin`](/docs/config/linearwiggledisplay/#slot-origin), the value the bars
 also grow from. A ramp takes a named `scheme` or a `range` of CSS stops, runs
 straight across the y domain unless `domainMid` places its middle stop, and with
-one colour runs from white to it. The
+one color runs from white to it. The
 [cookbook](/docs/cookbook#quantitative-wiggle-tracks) has worked recipes.
 
-`color` reads `score` alone. A colour per source is the row's:
+`color` reads `score` alone. A color per source is the row's:
 [`rowColor`](/docs/config/linearwiggledisplay/#slot-rowcolor) names each
-source's colour as `domain`/`range` pairs, and several sources sharing one plot
-box with no `color` set take palette colours by name unprompted, except under
-`span`, where the score ramp is the whole colour.
+source's color as `domain`/`range` pairs, and several sources sharing one plot
+box with no `color` set take palette colors by name unprompted, except under
+`span`, where the score ramp is the whole color.
 
 ## Adapters
 
@@ -161,7 +161,7 @@ order. The same object takes `labels`, a label per source by name, and
 [`rowColor`](/docs/config/linearwiggledisplay/#slot-rowcolor) gives a source a
 color of its own. **Edit colors/arrangement...** in the track menu writes both,
 as settings a reader can undo or reset, and choosing Each row there also writes
-the `color` below, since a colour per subtrack is the two together.
+the `color` below, since a color per subtrack is the two together.
 
 ### The subadapters form
 

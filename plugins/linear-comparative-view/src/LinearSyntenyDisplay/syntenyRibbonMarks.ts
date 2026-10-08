@@ -66,7 +66,7 @@ export interface SyntenyRibbonParams {
  * opaque literals (`colorUtils.ts` warns against a non-opaque one). Those land
  * on the same pixel only when the destination IS `ground`, since
  * base-over-ground is `rgb*shade + ground*(1 - shade)`, the pre-blend byte for
- * byte. Over any other backdrop the indel stays blended toward a colour that is
+ * byte. Over any other backdrop the indel stays blended toward a color that is
  * not there while the base beside it composites over the real one, so every
  * indel wedge reads as a hole punched in the band. `shadeFill` in
  * syntenyTypes.slang is the GPU spelling of the same thing, and
@@ -84,7 +84,7 @@ export interface SyntenyRibbonParams {
  * off-screen-mate strip invisible: near-white marks at 0.35 alpha on white.
  *
  * What is STILL a light-ground assumption is the ribbon palettes themselves —
- * `defaultCigarColors` and the categorical ramps are fixed colours picked for a
+ * `defaultCigarColors` and the categorical ramps are fixed colors picked for a
  * white band, and at the 0.25 default alpha they are near invisible on a dark
  * one. Passing the ground through lets a band be dark; tuning the palettes is a
  * separate follow-up, in the `colorPairLRDark` mould.

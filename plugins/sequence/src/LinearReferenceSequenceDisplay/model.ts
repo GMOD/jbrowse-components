@@ -175,7 +175,7 @@ export function modelFactory(
       },
       /**
        * #getter
-       * Theme-derived fill and text colour for every cell this display paints
+       * Theme-derived fill and text color for every cell this display paints
        */
       get colorPalette(): ColorPalette {
         return this.colorPaletteIn(getPaletteHost(self).palette)

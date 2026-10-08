@@ -210,7 +210,7 @@ describe('colorForValue', () => {
     })
   })
 
-  test('undefined returns to the features own colour', () => {
+  test('undefined returns to the features own color', () => {
     expect(colorForValue({ value: 'red', field: '' }, undefined)).toEqual({
       field: '',
     })
@@ -245,7 +245,7 @@ describe('dealRowColors', () => {
     ).toEqual({ b: '#00f' })
   })
 
-  it('gives every unlisted value an unknown colour', () => {
+  it('gives every unlisted value an unknown color', () => {
     expect(
       deal(['a', 'b', 'c'], {
         domain: ['b'],
@@ -263,7 +263,7 @@ describe('dealRowColors', () => {
     })
   })
 
-  it('pairs a listed value with its range colour, which takes no turn', () => {
+  it('pairs a listed value with its range color, which takes no turn', () => {
     expect(deal(['a', 'b', 'c'], { domain: ['b'], range: ['#00f'] })).toEqual({
       a: p0,
       b: '#00f',

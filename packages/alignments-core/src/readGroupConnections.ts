@@ -102,7 +102,7 @@ export function strandOf(e: MinEntry) {
 // The entry types on this path deliberately carry no refName (the bezier
 // overlay's comment says why), so this array is how a connection asks the
 // question at all — and it is the same array the read fill's `interchrom`
-// bucket reads, which is what keeps a translocation one colour across the two
+// bucket reads, which is what keeps a translocation one color across the two
 // vocabularies instead of two.
 export function interchromOf(e: MinEntry) {
   return e.data.readInterchrom[e.readIdx] === 1
@@ -312,7 +312,7 @@ export function primaryOf<E extends MinEntry>(segs: E[]) {
 // arc band reads the fetched array, which carries no such correction, and the
 // bezier overlay the laid-out one, which carries it in chain mode alone — so the
 // resolver applies the rule itself, or the same reads at the same locus would
-// colour differently depending on a layout setting.
+// color differently depending on a layout setting.
 //
 // Lives here, beside the resolver that chose the two entries, because the arc
 // band and the bezier overlay each need it and a second copy is how the two came

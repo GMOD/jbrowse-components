@@ -75,7 +75,7 @@ export interface BaseMenuItem {
    *
    * An **element**, so a module that sets it drags React and whatever it renders
    * into its own graph. Reach for it only when the content is genuinely
-   * arbitrary — synteny's and wiggle's colour swatches are what it exists for.
+   * arbitrary — synteny's and wiggle's color swatches are what it exists for.
    */
   endAdornment?: React.ReactNode
 }

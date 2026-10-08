@@ -80,7 +80,7 @@ describe('classifyBindings', () => {
     ])
   })
 
-  // The bar mark's shape: the vertex stage resolves the colour through the
+  // The bar mark's shape: the vertex stage resolves the color through the
   // ramp, the fragment stage only reads the uniform. Each entry point's own
   // `used` flags are what the layout's visibility is built from.
   test('names the stages that read each binding', () => {

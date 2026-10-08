@@ -22,7 +22,7 @@ right as of that date; the gaps that let them drift are still open.
   display snapshot in a session fence, where the app drops both.
 - **The generated `config/` pages.** Each `#example` block in a schema's
   docstring is published and unread; the Manhattan example wrote a constant
-  colour as a field there.
+  color as a field there.
 - **The CLI README**, regenerated only on prepack, so
   `generate-cli-doc --check` passes over stale text between releases.
 - **What a build script writes.** `scripts/build_circular_synteny.sh` and its

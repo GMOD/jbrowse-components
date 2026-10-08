@@ -65,7 +65,7 @@ test('a row with no CIGAR stays one', () => {
 })
 
 // Everything that is a property of the alignment rather than of an end rides
-// along: the colour-by channels read these by name off the feature.
+// along: the color-by channels read these by name off the feature.
 test('the per-alignment attributes and the id ride along', () => {
   const f = flipSyntenyFeature(alignment())!
   expect(f.get('identity')).toBe(0.98)

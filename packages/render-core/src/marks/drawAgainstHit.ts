@@ -25,7 +25,7 @@ const IDENTITY: Ctm = [1, 0, 0, 1, 0, 0]
 /**
  * A `MarkContext2D` that records every rect a painter fills, in paint order and
  * in CANVAS coordinates — `fillRect` and path `rect` alike, so a shape that
- * batches by colour records the same list as one that fills per instance. A
+ * batches by color records the same list as one that fills per instance. A
  * path traced with `moveTo`/`lineTo`/`bezierCurveTo` and filled records its
  * bounding box, the extent a shape whose hit test answers a polygon's box
  * (the variant inversion triangle) is checked against; a curve contributes its control
@@ -34,9 +34,9 @@ const IDENTITY: Ctm = [1, 0, 0, 1, 0, 0]
  * A **stroked** path records one rect per `moveTo`/`lineTo` edge, each the
  * edge's bounding box widened by half the current `lineWidth` — the extent a
  * round cap reaches on all four sides. Per edge rather than per `stroke()`,
- * because a painter that batches a colour run into one path (dotplot's) would
+ * because a painter that batches a color run into one path (dotplot's) would
  * otherwise record the run's hull as a single instance. `fillStyle` on such a
- * record is the `strokeStyle` it went down in; the field is the colour of the
+ * record is the `strokeStyle` it went down in; the field is the color of the
  * ink either way.
  *
  * `save`/`restore` bracket the transform and the styles the way a real context
@@ -372,7 +372,7 @@ function hitViolations(
  * **What the painter drew for instance `i` has to be attributed to `i`,** and
  * there are two ways to get that. A mark whose every instance is one `fillRect`
  * gets it positionally, which is the default and needs nothing. A mark that
- * batches a colour run into one path (`point`'s glyphs), or that skips an
+ * batches a color run into one path (`point`'s glyphs), or that skips an
  * instance the view has scrolled past (`cell`'s off-canvas rows), cannot be read
  * that way at all — the batch has fewer rects than instances, or the wrong ones.
  * `sliceOne` is the way in for those: hand back one instance's channels and the

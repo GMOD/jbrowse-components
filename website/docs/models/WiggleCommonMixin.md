@@ -28,7 +28,7 @@ Each section ends with the members a composed model contributes, linked to the p
 | --- | --- |
 | <span id="getter-resolution">**resolution**</span><br><code>number</code> | Points per pixel the fetch asks for, clamped to what the Resolution menu offers: the slot is reachable from a track config, which runs no setter, and `0` there divides by zero inside the adapter. |
 | <span id="getter-rpcdatamap">**rpcDataMap**</span><br><code>ReadonlyMap&lt;number, WiggleDataResult&gt;</code> | The fetched scores, keyed by displayedRegionIndex — the foundation's per-region store, narrowed. |
-| <span id="getter-origin">**origin**</span><br><code>number</code> | The value bars grow from, which a colour scale also reads where its own domain says nothing. |
+| <span id="getter-origin">**origin**</span><br><code>number</code> | The value bars grow from, which a color scale also reads where its own domain says nothing. |
 | <span id="getter-linewidth">**lineWidth**</span><br><code>number</code> | A line's width, the `size` slot or 1 px while unset. |
 | <span id="getter-size">**size**</span><br><code>number</code> | A point's diameter, the `size` slot or 2 px while unset. |
 | <span id="getter-maxgapmultiple">**maxGapMultiple**</span><br><code>number</code> | Interpolated-line gap threshold, as a multiple of the track's own mean point spacing (see gapBreakLimit). 0 keeps one connected line. |

@@ -23,7 +23,7 @@ function make(snap: Record<string, unknown> = {}) {
 }
 
 describe('color', () => {
-  test('a bare string names the field, as every colour object reads one', () => {
+  test('a bare string names the field, as every color object reads one', () => {
     expect(readConfObject(make({ color: 'count' }), ['color', 'field'])).toBe(
       'count',
     )
@@ -49,7 +49,7 @@ describe('color', () => {
     expect(plotOf(make({ color }))).toEqual({ color })
   })
 
-  test('a default colour reads back as no plot', () => {
+  test('a default color reads back as no plot', () => {
     expect(plotOf(make())).toEqual({})
   })
 

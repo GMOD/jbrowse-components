@@ -22,7 +22,7 @@ kind: measurement
 - **`hardRowLimit` stays in the layouts.** Its throw is unreachable from the
   canvas plugin's inputs but is the only bound on `bitmap` growth for a rect of
   enormous height.
-- **No branded type for the two colour-channel families.** `getRed…` (0xRRGGBBAA)
+- **No branded type for the two color-channel families.** `getRed…` (0xRRGGBBAA)
   and `abgrRed…` (ABGR u32) share `(c: number) => number`, so the wrong pair
   silently swaps R and B. A brand fails because ABGR values are read from
   `Uint32Array`s, where indexing yields `number` and every read would need the

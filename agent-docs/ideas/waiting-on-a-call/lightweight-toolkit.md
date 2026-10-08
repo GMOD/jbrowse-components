@@ -43,7 +43,7 @@ Walk it as someone who has never seen this codebase:
    `display.RenderingComponent`. Four hops, none guessable, and `activeDisplay`
    raises a question about inactive ones that nothing answers.
 3. That component must sit inside a `TrackOverlaySlot` and a `contain: strict`
-   box or its corner controls, colour key, loading scrim and error bar render
+   box or its corner controls, color key, loading scrim and error bar render
    inside the display's own stacking context. **Fourteen of JBrowse's own
    fifteen copies got this wrong**, character-identically, for months.
 4. `view.ready` is false in two states, so `ready ? <Track/> : null` shows an
@@ -52,7 +52,7 @@ Walk it as someone who has never seen this codebase:
 5. Nothing announces that width has to be pushed into the model. Without
    `useWidthSetter` the view draws nothing and reports nothing.
 6. Theming needs `SessionPaletteProvider`. Mount `PaletteProvider` instead —
-   the discoverable name, and the one an LLM will reach for — and React colours
+   the discoverable name, and the one an LLM will reach for — and React colors
    correctly while the worker goes on baking feature labels in the old mode.
 
 **All six fail silently.** That is the property that matters for the reader this

@@ -168,7 +168,7 @@ export default function configSchemaFactory(_pluginManager: PluginManager) {
       baseColor: alignmentsBaseColorConfigSchema,
       /**
        * #slot modifications
-       * What the `modifications` and `bisulfite` colour fields draw:
+       * What the `modifications` and `bisulfite` color fields draw:
        * `threshold` (percent, default 10), `twoColor`, `fillUnmarked`,
        * `cytosineContext` and `shownModifications`.
        */
@@ -370,7 +370,7 @@ export default function configSchemaFactory(_pluginManager: PluginManager) {
         // primary. It now frames every chain against the orientation the chains
         // on screen agree on (`consensusChainStrandFrames`) — the slot name is
         // kept because sessions and configs in the wild carry it, and it still
-        // answers the same question: is a split segment coloured by its own
+        // answers the same question: is a split segment colored by its own
         // mapping strand, or relative to the rest of its molecule.
         description:
           'Color split segments relative to the predominant orientation of the reads on screen, rather than by their own mapping strand',
@@ -427,7 +427,7 @@ export default function configSchemaFactory(_pluginManager: PluginManager) {
       },
       /**
        * #slot arcColor
-       * What colours the read-connection arcs and the read cloud:
+       * What colors the read-connection arcs and the read cloud:
        * `"pairOrientation"` paints them by pair orientation whatever the reads
        * show, and `""` takes the reads' `color` field where an arc paints it.
        */

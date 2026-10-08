@@ -557,10 +557,10 @@ print('over the element the collection medians %.2f copies; %d of %d dogs '
       % (statistics.median(over), sum(v >= 2.5 for v in over), len(over),
          100 * sum(v >= 2.5 for v in over) / len(over)))
 
-# The display's identity colour names this palette in its `domain` and `labels`,
-# because the BED carries a colour per feature and nothing to key a category
+# The display's identity color names this palette in its `domain` and `labels`,
+# because the BED carries a color per feature and nothing to key a category
 # off. Nothing checks the two agree, and they have drifted before (the painting
-# was recoloured and the key was not), so print the block to paste rather than
+# was recolored and the key was not), so print the block to paste rather than
 # leaving it to be remembered.
 print()
 print('color for the copy-number displays, paste into the track config:')

@@ -50,7 +50,7 @@ export type StoredLayer = HitIndexed<EncodedChannels> &
 
 type ChannelLane = Exclude<LaneName, 'index'> | 'x2Region'
 
-// Colour is checked apart from these, since either of two lanes carries it.
+// Color is checked apart from these, since either of two lanes carries it.
 const MARK_VALUE_LANES = {
   bar: ['y'],
   point: ['y', 'glyph'],
@@ -108,9 +108,9 @@ export interface MarkRenderState extends MarkFrame {
   scaleTypeY: MarkValueScaleType
   /** `scales.y.symlogConstant` resolved against `domainY`, as the axis resolves it. */
   symlogConstantY: number
-  /** Mark `i`'s colour scale, a ramp or a threshold, undefined where its colour is neither. */
+  /** Mark `i`'s color scale, a ramp or a threshold, undefined where its color is neither. */
   colorScales: (MarkColorScale | undefined)[]
-  /** Whether mark `i`'s colour field is its plotted `y`, which a line's threshold colours along. */
+  /** Whether mark `i`'s color field is its plotted `y`, which a line's threshold colors along. */
   colorsFromY: boolean[]
   bpPerPx: number
   origin: number
@@ -170,8 +170,8 @@ export interface MarkEntry {
  */
 export interface TextMarkEntry extends MarkEntry {
   /**
-   * Whether the config writes the mark's colour, or leaves it at the mark
-   * default. Left at the default, a label prints in the surface's text colour.
+   * Whether the config writes the mark's color, or leaves it at the mark
+   * default. Left at the default, a label prints in the surface's text color.
    */
   ownColor: boolean
 }

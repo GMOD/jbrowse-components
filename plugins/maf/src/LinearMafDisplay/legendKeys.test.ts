@@ -40,7 +40,7 @@ describe('each row rendering keys itself from what it paints', () => {
 
     // At base level a cell is one base, which matches or not: only the ramp's
     // two ends are drawn, so the ramp would key a middle nothing shows.
-    it('keys the base-level heatmap with the two colours it draws', () => {
+    it('keys the base-level heatmap with the two colors it draws', () => {
       const scale = identityColorScale('heatmap', true)
       expect(scale.kind).toBe('categorical')
       if (scale.kind === 'categorical') {

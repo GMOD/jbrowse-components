@@ -104,7 +104,7 @@ export const paletteColors = {
  * The wide qualitative palette: every scheme above, in order, deduped and with
  * the neutrals dropped. ~40 entries.
  *
- * A feature's categorical colour deals from it; a row's deals from
+ * A feature's categorical color deals from it; a row's deals from
  * `rowPaletteColorAt`, which re-lights tableau10 rather than reaching for
  * another scheme's hues.
  *
@@ -426,7 +426,7 @@ const PALETTE_LAP_TONES = [
   { lightnessShift: 0.18, chromaScale: 0.8 },
 ]
 
-// The colour at `position` in `hexes`, each lap past the end re-lit.
+// The color at `position` in `hexes`, each lap past the end re-lit.
 function lapColorAt(hexes: readonly string[], position: number) {
   const hex = hexes[position % hexes.length]!
   const lap =
@@ -444,7 +444,7 @@ export function refNamePaletteColorAt(position: number) {
 const rowColorHexes = tableau10.filter(hex => !NEUTRALS.has(hex))
 
 /**
- * The colour the row palette deals the row or value at `position`: tableau10
+ * The color the row palette deals the row or value at `position`: tableau10
  * less its grey, then re-lit laps of it, as a karyotype's are.
  */
 export function rowPaletteColorAt(position: number) {
@@ -484,7 +484,7 @@ const okabeIto = [
   '#d55e00',
   '#cc79a7',
 ]
-// Paul Tol, "Colour Schemes", SRON/EPS/TN/09-002 (2021), the bright scheme
+// Paul Tol, "Color Schemes", SRON/EPS/TN/09-002 (2021), the bright scheme
 const tolBright = [
   '#4477aa',
   '#ee6677',
@@ -493,7 +493,7 @@ const tolBright = [
   '#66ccee',
   '#aa3377',
 ]
-// Paul Tol, "Colour Schemes", SRON/EPS/TN/09-002 (2021), the muted scheme
+// Paul Tol, "Color Schemes", SRON/EPS/TN/09-002 (2021), the muted scheme
 const tolMuted = [
   '#cc6677',
   '#332288',
@@ -548,7 +548,7 @@ const namedPalettes: Readonly<Record<string, () => readonly string[]>> = {
 
 /**
  * A palette named in `namedPalettes`, or a comma-separated list of CSS
- * colours; undefined, with a warning, for anything else.
+ * colors; undefined, with a warning, for anything else.
  */
 export function paletteFromSpec(spec: unknown): readonly string[] | undefined {
   if (typeof spec !== 'string' || spec === '') {
@@ -562,7 +562,7 @@ export function paletteFromSpec(spec: unknown): readonly string[] | undefined {
     return colors
   }
   console.warn(
-    `palette "${spec}" is neither one of ${Object.keys(namedPalettes).join(', ')} nor a comma-separated list of CSS colours`,
+    `palette "${spec}" is neither one of ${Object.keys(namedPalettes).join(', ')} nor a comma-separated list of CSS colors`,
   )
   return undefined
 }

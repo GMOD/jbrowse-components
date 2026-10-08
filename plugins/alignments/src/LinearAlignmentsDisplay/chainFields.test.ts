@@ -303,7 +303,7 @@ describe('a chain split across two displayed regions', () => {
   })
 
   // "View split alignment regions" opens one window per segment, and with the
-  // supplementary colouring off the pair-orientation scheme reads this array.
+  // supplementary coloring off the pair-orientation scheme reads this array.
   test('a supplementary takes the orientation of a primary in another region', () => {
     const primarySide = region([
       { id: 'p', name: 'pair', flags: READ1, pairOrientation: 4 },

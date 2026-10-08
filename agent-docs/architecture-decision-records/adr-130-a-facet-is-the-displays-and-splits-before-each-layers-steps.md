@@ -70,9 +70,9 @@ drawn.
 - No migration from `marks[].facet`.
 - A hide toggle filters each faceted layer and rebuilds its hit index, an
   O(n log n) pass per layer per region on a click.
-- A glyph key over a different field than the colour's drops a value when its
+- A glyph key over a different field than the color's drops a value when its
   glyph is no longer drawn, which is exact only while no two values share a
-  glyph; the colour key is keyed by the colour, as the feature display's is.
+  glyph; the color key is keyed by the color, as the feature display's is.
 
 ## Rejected alternatives
 
@@ -80,7 +80,7 @@ drawn.
   still have one chip row between them, and a mark without a facet still has
   no section to draw in.
 - **Encode each section separately and join them in the worker.** Exact
-  per-section tables, but a `span`'s colour ramp resolves in the worker, so
+  per-section tables, but a `span`'s color ramp resolves in the worker, so
   each section would take its own ramp domain; one encode per mark keeps the
   region's.
 - **Park hidden instances on a far row.** The hit index, the key and the axis

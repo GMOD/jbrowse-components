@@ -457,7 +457,7 @@ describe('validateConfig', () => {
 
   // Which rules apply is the display's own default scale, read off its
   // schema's fieldPresets through the manifest.
-  describe('a colour object its display cannot paint as written', () => {
+  describe('a color object its display cannot paint as written', () => {
     const where = 'tracks[0].displays[0].color'
     const onTrack = (track: Record<string, unknown>) => {
       const config = baseConfig()
@@ -516,7 +516,7 @@ describe('validateConfig', () => {
       ).toEqual([`threshold-cuts ${where}.domain`])
     })
 
-    it("checks a feature track's threshold colour", () => {
+    it("checks a feature track's threshold color", () => {
       const track = {
         type: 'FeatureTrack',
         adapter: { type: 'Gff3TabixAdapter', uri: 'x.gff3.gz' },
@@ -580,7 +580,7 @@ describe('validateConfig', () => {
       ).toEqual(['threshold-cuts tracks[0].displayDefaults.color.domain'])
     })
 
-    it("checks scales.y's ends by the colour ramp's rule, once on a mark display", () => {
+    it("checks scales.y's ends by the color ramp's rule, once on a mark display", () => {
       const scales = { y: { domainMin: 10, domainMax: 1, domainQuantile: 99 } }
       const at = 'tracks[0].displays[0].scales.y'
       expect(
@@ -647,7 +647,7 @@ describe('validateConfig', () => {
       ).toEqual([])
     })
 
-    it('reads no slot the colour object does not declare', () => {
+    it('reads no slot the color object does not declare', () => {
       expect(
         found({
           type: 'QuantitativeTrack',

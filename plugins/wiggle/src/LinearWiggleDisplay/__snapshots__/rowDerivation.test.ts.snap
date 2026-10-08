@@ -1,6 +1,6 @@
 // Jest Snapshot v1, https://jestjs.io/docs/snapshot-testing
 
-exports[`overlay: adapter colours paint the plot 1`] = `
+exports[`overlay: adapter colors paint the plot 1`] = `
 {
   "effectiveColor": {
     "domain": [],
@@ -340,7 +340,7 @@ exports[`rows, density: identity moves to the label tint 1`] = `
 }
 `;
 
-exports[`rows, line: dialog edits reorder, recolour the plot and relabel 1`] = `
+exports[`rows, line: dialog edits reorder, recolor the plot and relabel 1`] = `
 {
   "effectiveColor": {
     "domain": [],
@@ -398,7 +398,7 @@ exports[`rows, line: dialog edits reorder, recolour the plot and relabel 1`] = `
 }
 `;
 
-exports[`rows, line: dialog edits reorder, recolour the plot and relabel 2`] = `
+exports[`rows, line: dialog edits reorder, recolor the plot and relabel 2`] = `
 {
   "effectiveColor": {
     "domain": [],
@@ -456,7 +456,7 @@ exports[`rows, line: dialog edits reorder, recolour the plot and relabel 2`] = `
 }
 `;
 
-exports[`rows, line: the adapter colour, else the plot colour 1`] = `
+exports[`rows, line: the adapter color, else the plot color 1`] = `
 {
   "effectiveColor": {
     "domain": [],
@@ -514,7 +514,7 @@ exports[`rows, line: the adapter colour, else the plot colour 1`] = `
 }
 `;
 
-exports[`rows: a focus hides rows without recolouring the kept ones 1`] = `
+exports[`rows: a focus hides rows without recoloring the kept ones 1`] = `
 {
   "effectiveColor": {
     "domain": [],

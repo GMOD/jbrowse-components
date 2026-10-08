@@ -12,7 +12,7 @@ import type { LinkedReadLinesUploadData } from './types.ts'
  * — so the generated `INSTANCE_OFFSET_*` tables are a contract it can drift
  * from silently. A lane written into the wrong TYPED ARRAY is the way it goes:
  * the word index is the same, so nothing is out of bounds and every line still
- * draws, in whatever colour the float bits of an index decode to.
+ * draws, in whatever color the float bits of an index decode to.
  */
 
 const DATA: LinkedReadLinesUploadData = {

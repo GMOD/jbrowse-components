@@ -167,8 +167,8 @@ menu reorders a facet written this way.
 ## Color by CDS
 
 **Show... → Show CDS reading frame colors**, in the linear genome view's
-hamburger menu, tints each CDS segment by the frame it is read in, so one colour
-is one frame across the view. Frame is constant within a segment, so a colour
+hamburger menu, tints each CDS segment by the frame it is read in, so one color
+is one frame across the view. Frame is constant within a segment, so a color
 change across a junction is a frame shift. The setting applies to every gene
 track in the view, and JBrowse remembers it across sessions.
 

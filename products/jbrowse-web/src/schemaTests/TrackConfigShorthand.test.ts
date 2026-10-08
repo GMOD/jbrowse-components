@@ -49,7 +49,7 @@ test('displayDefaults shorthand color lands on the LinearBasicDisplay', () => {
   ).toBe('#6a3d9a')
 })
 
-test('one track-wide colour reaches every variant display', () => {
+test('one track-wide color reaches every variant display', () => {
   const conf = hydrateTrack('volvox_filtered_vcf_shorthand')
   expect(
     readConfObject(display(conf, 'LinearVariantDisplay'), ['color', 'value']),
@@ -57,8 +57,8 @@ test('one track-wide colour reaches every variant display', () => {
   expect(
     readConfObject(display(conf, 'ChordVariantDisplay'), ['color', 'value']),
   ).toBe('#1f78b4')
-  // the multi-sample displays' cell colour is a colour object too, so a
-  // track-wide colour paints their alt cells
+  // the multi-sample displays' cell color is a color object too, so a
+  // track-wide color paints their alt cells
   expect(
     readConfObject(display(conf, 'LinearMultiSampleVariantDisplay'), [
       'color',
@@ -67,9 +67,9 @@ test('one track-wide colour reaches every variant display', () => {
   ).toBe('#1f78b4')
 })
 
-// Every variant display reads a field of its colour, so one track-wide setting
-// colours the single-variant marks, the genotype cells and the chords alike.
-test('a variant colour field reaches every variant display', () => {
+// Every variant display reads a field of its color, so one track-wide setting
+// colors the single-variant marks, the genotype cells and the chords alike.
+test('a variant color field reaches every variant display', () => {
   const pluginManager = makePluginManager()
   const conf = pluginManager.getTrackType('VariantTrack').configSchema.create(
     {
@@ -114,14 +114,14 @@ function colorOf(conf: { displays: AnyConfigurationModel[] }, type: string) {
 // like any other to the routing and reaches the feature display, where it
 // paints a field the features lack (ADR-135).
 test.each(['type', 'r2'])(
-  'a colour field %s reaches the displays whose colour is an object',
+  'a color field %s reaches the displays whose color is an object',
   field => {
     const conf = hydrateFeatureTrack({ color: { field } })
     expect(colorOf(conf, 'LinearBasicDisplay')).toEqual({ field })
   },
 )
 
-test('a dormant field under scale none reaches the colour object as written', () => {
+test('a dormant field under scale none reaches the color object as written', () => {
   const conf = hydrateFeatureTrack({ color: { field: 'type', scale: 'none' } })
   expect(colorOf(conf, 'LinearBasicDisplay')).toEqual({
     field: 'type',
@@ -129,7 +129,7 @@ test('a dormant field under scale none reaches the colour object as written', ()
   })
 })
 
-test('a colour no display takes fails the load, naming every reason', () => {
+test('a color no display takes fails the load, naming every reason', () => {
   expect(() => hydrateFeatureTrack({ color: { scale: 'ordinal' } })).toThrow(
     /no display of a FeatureTrack takes displayDefaults\.color \(LinearBasicDisplay: /,
   )

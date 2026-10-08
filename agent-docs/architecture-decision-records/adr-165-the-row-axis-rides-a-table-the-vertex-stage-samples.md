@@ -1,6 +1,6 @@
 ---
 status: Accepted
-summary: "A `span` instance's `row` lane is a stable row KEY, and the pass binds a two-plane RGBA8 row table the vertex stage samples — key to drawn slot or hidden, and a colour override — so a reorder, focus, hide or recolour uploads one small texture and no instance bytes, the way a y domain rides a uniform. `buildRowTable` writes the texels where the shader's lifted twins put them, `RowKeys` assigns each row name a key at its first arrival and never moves it, the painter, the ink and the hit test read the same table, and a pass binding no table draws `row` as the slot. The multi-row feature display adopts it: its encode runs once per region arrival, a category toggle is the one thing that still re-encodes, and the gated volvox fixture keeps a focus. Stage 2 gives a render pass a second sampler and the mark display the table under `rows`, keyed at arrival, a facet still offsetting its rows. Measured: a reorder at 1000 rows and 500k features moves from 10.7 ms and 7.8 MB per region to 0.22 ms and 7.8 KB; a heavy focus costs a frame what the unfocused draw costs (6.6 vs 6.9 ms at 500k instances on an Intel UHD 630), against 0.7 ms compacted, which is the alternative recorded"
+summary: "A `span` instance's `row` lane is a stable row KEY, and the pass binds a two-plane RGBA8 row table the vertex stage samples — key to drawn slot or hidden, and a color override — so a reorder, focus, hide or recolor uploads one small texture and no instance bytes, the way a y domain rides a uniform. `buildRowTable` writes the texels where the shader's lifted twins put them, `RowKeys` assigns each row name a key at its first arrival and never moves it, the painter, the ink and the hit test read the same table, and a pass binding no table draws `row` as the slot. The multi-row feature display adopts it: its encode runs once per region arrival, a category toggle is the one thing that still re-encodes, and the gated volvox fixture keeps a focus. Stage 2 gives a render pass a second sampler and the mark display the table under `rows`, keyed at arrival, a facet still offsetting its rows. Measured: a reorder at 1000 rows and 500k features moves from 10.7 ms and 7.8 MB per region to 0.22 ms and 7.8 KB; a heavy focus costs a frame what the unfocused draw costs (6.6 vs 6.9 ms at 500k instances on an Intel UHD 630), against 0.7 ms compacted, which is the alternative recorded"
 ---
 
 # ADR-165: The row axis rides a table the vertex stage samples
@@ -14,8 +14,8 @@ multi-row feature display driving it. Applies rule 3 of
 how far to take it" — generality resolves before the loop, and a domain rides a uniform — to the
 row axis, and closes §3 of
 [wiggle-instance-records-carry-per-row-constants](../ideas/ready/wiggle-instance-records-carry-per-row-constants.md)
-for the span pass. Builds on ADR-113 (a span's colour is packed in the worker)
-and ADR-157/160 (the rows and their colours are one config object each).
+for the span pass. Builds on ADR-113 (a span's color is packed in the worker)
+and ADR-157/160 (the rows and their colors are one config object each).
 
 Stage 2 (2026-09-26): the mark display adopted the table under `rows`. Each
 region's `row` lanes are keyed once as it arrives (`LinearMarkDisplay/rowTable.ts`),
@@ -29,8 +29,8 @@ carry no key.
 
 ## Context
 
-Every row display baked the drawn row slot, and often the row colour, into its
-per-instance records, so a reorder, a focus, a hide or a recolour re-packed
+Every row display baked the drawn row slot, and often the row color, into its
+per-instance records, so a reorder, a focus, a hide or a recolor re-packed
 whole regions: the mark display's `facetRegion` rewrote and filtered every
 lane per region, and the multi-row feature display re-encoded on
 `rowIndexByValue` and `rowColorsByIndex`. Measured before this change on a
@@ -42,7 +42,7 @@ shared box at load 30 (`plugins/canvas/benches/rowTableRepack.bench.ts`,
 | ---------------------------- | ---------------------- | -------------- | ---------------- |
 | multi-row reorder            | 1.7 ms, 781 KiB        | 2.6 ms, 781 KiB | 10.7 ms, 7.8 MiB |
 | multi-row focus (half kept)  | 0.9 ms, 391 KiB        | 1.3 ms, 391 KiB | 7.1 ms, 3.9 MiB  |
-| multi-row recolour (one row) | 1.6 ms, 781 KiB        | 1.8 ms, 781 KiB | 10.2 ms, 7.8 MiB |
+| multi-row recolor (one row) | 1.6 ms, 781 KiB        | 1.8 ms, 781 KiB | 10.2 ms, 7.8 MiB |
 | mark display reorder (bars)  | 1.1 ms, 977 KiB        | 1.1 ms, 977 KiB | 19.5 ms, 9.5 MiB |
 | mark display focus           | 1.2 ms, 488 KiB        | 1.2 ms, 488 KiB | 17.2 ms, 4.8 MiB |
 | mark display reorder, table  | 0.03 ms, 0.8 KiB       | 0.23 ms, 7.8 KiB | 0.26 ms, 7.8 KiB |
@@ -79,16 +79,16 @@ render path.
 **A `span` instance's `row` lane is a key, and the pass binds a row table.**
 `packages/render-core/src/shaders/rowTable.slang` is the module:
 `rowTableLookup(table, key, keys, own)` answers a `RowPlacement` — hidden, the
-drawn slot, and the colour — through two `SampleLevel` reads at texel centres,
+drawn slot, and the color — through two `SampleLevel` reads at texel centres,
 never `Load`, which this slangc emits as invalid WGSL. The texture is RGBA8 in
 two planes, one texel per key, keys wrapped onto further rows past
 `ROW_TABLE_MAX_WIDTH` (2048, WebGL2's guaranteed floor). The slot plane holds
 the slot's low 24 bits in rgb and alpha 255 where the key is drawn, 0 where it
-is hidden; the colour plane below it holds the override with straight alpha,
-alpha 0 meaning the instance keeps its own colour, on both backends. A key at
+is hidden; the color plane below it holds the override with straight alpha,
+alpha 0 meaning the instance keeps its own color, on both backends. A key at
 or past `keys` is hidden. `rowTableKeys` is −1 on a pass binding no table,
 and the lookup then answers the identity — `row` as the slot, the instance's
-colour — so every other span consumer draws as it did. A hidden instance's six
+color — so every other span consumer draws as it did. A hidden instance's six
 vertices collapse onto one point off clip space, the fold `read.slang` uses
 for a capless read.
 
@@ -111,30 +111,30 @@ samples `nearest`, so the read-back is the byte the builder wrote.
 
 **`RowKeys` assigns a name its key at first arrival and never moves it.** A
 region encoded against the registry stays valid as later regions add names;
-the table alone follows the reader's order, focus and colours. Keys are per
+the table alone follows the reader's order, focus and colors. Keys are per
 display, held in a `.views` closure beside the encode memo.
 
 **The multi-row feature display drives it.** `buildMultiRowChannels` takes
 `{ rowKeys, overriddenRows, hiddenColors }` and writes each feature's key and
-baked colour once per region arrival, bucketing the hit test's channel
-indices by key; `rowTable` is a computed off the drawn order, the row colours
-by slot and the names seen, rebuilt on a reorder, focus, recolour or a new
+baked color once per region arrival, bucketing the hit test's channel
+indices by key; `rowTable` is a computed off the drawn order, the row colors
+by slot and the names seen, rebuilt on a reorder, focus, recolor or a new
 name; `renderState` carries it and the mark's params lens hands it to the
 shape. The hit test walks the drawn rows under the pointer, names each row's
 key through the registry, and answers a hit's `rowName` off the key. A
 category toggle still re-encodes, since which features the buffer holds
 changes. A row painting an override is exempt from the category hide, so the
 first override a row takes while a category is hidden re-encodes too; a change
-to an override's colour does not, and while no category is hidden the encode
+to an override's color does not, and while no category is hidden the encode
 reads no rows at all. `hiddenColors` and the override set are identity-stable
-in name and colour order, since the structural comparer walks a Set in
+in name and color order, since the structural comparer walks a Set in
 insertion order and a reorder would move it. The overlay that draws indel
 glyphs, the sort at a column and the legend keep reading drawn row space
 through `featurePaintInputs`; `hiddenByCategory` is the one spelling of the
 exemption they and the encode share.
 
 **The mark display stays as it is** in stage 1. Its `rows` draw bars and points, whose
-one sampler is the colour ramp, and a mixed mark list would keep
+one sampler is the color ramp, and a mixed mark list would keep
 `facetRegion` rewriting the bar lanes on every reorder, so no gate there could
 pass. Its transport — a second texture binding in both HALs, or the ramp and
 the table in one texture — is stage 2's decision. The bench of its cost today
@@ -167,7 +167,7 @@ below.
 
 ## Consequences
 
-- A reorder, focus or recolour on the multi-row display is one texture upload
+- A reorder, focus or recolor on the multi-row display is one texture upload
   of `2 × keys` texels and zero instance uploads
   (`rowTableUploadSchedule.test.ts` on the mechanism,
   `featurePaintInputs.test.ts` on the display, the work census's
@@ -190,7 +190,7 @@ below.
   `//! js-export` of `rowTable.slang` their Canvas2D twins call, and the
   `mark-rows-arranged-{bars,points,links}` scenes frame one mark each: a
   points-only break read 0.03% in a scene the bars shared, 10.5% on its own.
-- The multi-row encode keys nothing on the order or the colours any more:
+- The multi-row encode keys nothing on the order or the colors any more:
   `encodeInputs` replaces `featurePaintInputs` as the memo's inputs, and
   `MultiRowRenderState` carries `rowTable`. The overlay and the sort still
   read drawn row space. Net change: +437/−206 lines over ten files of the
@@ -228,7 +228,7 @@ below.
 ## Rejected alternatives
 
 - **Compacting the buffer on a focus while the table carries order and
-  colour.** Measured above: 0.7 ms a frame against 6.6 at 500k instances on
+  color.** Measured above: 0.7 ms a frame against 6.6 at 500k instances on
   an integrated GPU, at the price of a re-encode and re-upload of every region
   on each focus and a second place a hidden row is decided. Revisit with a
   workload that pans a focused view at that scale, or with a HAL draw taking

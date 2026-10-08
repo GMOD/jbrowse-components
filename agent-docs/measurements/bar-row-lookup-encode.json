@@ -5,7 +5,7 @@
   "source": {
     "kind": "bench",
     "repro": "node --max-old-space-size=14000 packages/core/benches/tablePipeline.bench.ts --base=8fe6fc71a4 --rounds=7 --features=1000000 --json",
-    "notes": "On ada (load average 10-11). main at 8fe6fc71a4 (base, and control: main extracted a second time) is the table pipeline of ADR-193, whose bar asks the worker for the hit index; the working tree's bar asks for none. A million synthetic features encoded as bars with y and a constant colour. Interleaved round-robin with the order rotated, MIN across rounds, lanes other than the index checked equal before timing. The row index a hover builds on the main thread is not in these times; bar-row-lookup prices it over a BigWig."
+    "notes": "On ada (load average 10-11). main at 8fe6fc71a4 (base, and control: main extracted a second time) is the table pipeline of ADR-193, whose bar asks the worker for the hit index; the working tree's bar asks for none. A million synthetic features encoded as bars with y and a constant color. Interleaved round-robin with the order rotated, MIN across rounds, lanes other than the index checked equal before timing. The row index a hover builds on the main thread is not in these times; bar-row-lookup prices it over a BigWig."
   },
   "columns": [
     {
@@ -53,7 +53,7 @@
   "rows": [
     {
       "values": {
-        "scenario": "encode, y and a colour",
+        "scenario": "encode, y and a color",
         "baseMs": 157.8,
         "controlMs": 170.6,
         "headMs": 37.9

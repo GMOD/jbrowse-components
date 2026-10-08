@@ -8,10 +8,10 @@ export type { MultiRowRegionData } from '../../MultiRowGetFeaturesRPC/rpcTypes.t
 
 /**
  * What the encode reads: the keys the instances carry, the hidden categories'
- * colours and the colour field's palette. The drawn row and the row colour
- * are the row table's, so a reorder, focus or recolour re-encodes nothing.
- * A row colour paints only while every block's own colour is the default,
- * which no legend lists, so a hide never reaches a row-coloured block.
+ * colors and the color field's palette. The drawn row and the row color
+ * are the row table's, so a reorder, focus or recolor re-encodes nothing.
+ * A row color paints only while every block's own color is the default,
+ * which no legend lists, so a hide never reaches a row-colored block.
  */
 export interface MultiRowEncodeInputs {
   rowKeys: RowKeys

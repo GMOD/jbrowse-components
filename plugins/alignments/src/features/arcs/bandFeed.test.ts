@@ -122,7 +122,7 @@ test('a clipped read cloud bar keeps squares at both mates, a split one drawn so
   expect([...markers.x]).toEqual([500, 8000, 600, 9000])
 })
 
-test('a read cloud bar takes its category colour at the cloud alpha, squares at each mate, a split one solid', () => {
+test('a read cloud bar takes its category color at the cloud alpha, squares at each mate, a split one solid', () => {
   const f = feeds([
     arc(100, 400, ARC_SHAPE_FLAT),
     arc(200, 300, ARC_SHAPE_FLAT_SPLIT),
@@ -143,7 +143,7 @@ test('a read cloud bar takes its category colour at the cloud alpha, squares at 
   expect(markerHits[0]).toBe(f.get(0)!.linkHits[0])
 })
 
-test('ticks are stems in the interchromosomal colour, a mark of their own', () => {
+test('ticks are stems in the interchromosomal color, a mark of their own', () => {
   const f = feeds(
     [arc(100, 400)],
     [],

@@ -38,7 +38,7 @@ export function configSchemaFactory() {
        */
       explicitIdentifier: 'displayId',
       explicitlyTyped: true,
-      // v4's renderer block held the colours and thresholds the view paints
+      // v4's renderer block held the colors and thresholds the view paints
       // with now
       retired: { renderer: () => ({}) },
     },

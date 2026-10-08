@@ -23,9 +23,9 @@ path into a structured field (`INFO.SVTYPE`, a read's `tags.HP`), or a
 [`jexl:` expression](/docs/config_guides/jexl) over `feature` that derives one
 (`"jexl:feature.end - feature.start"`). The display evaluates the expression
 once per feature, the way it reads a named field. The empty string names no
-field, and each slot's own text says what it then does: a colour or facet
-`field` left empty is off, a label left empty draws nothing, and `rows.field`
-falls back to the display's default.
+field, and each slot's own text says what it then does: a color or facet `field`
+left empty is off, a label left empty draws nothing, and `rows.field` falls back
+to the display's default.
 
 ## stringArray
 
@@ -102,7 +102,7 @@ accept a [`jexl:` callback](/docs/config_guides/jexl) for
 
 ## colorArray
 
-A list of CSS colors, e.g. a colour scale's `range`. An entry that is not a
+A list of CSS colors, e.g. a color scale's `range`. An entry that is not a
 color, the empty string included, fails the load and names the slot.
 
 ## frozen
@@ -124,7 +124,7 @@ the prefix accepts, plus one more state: **unset**.
 A slot left unset holds no value of its own, which lets the display decide what
 to do from the data in front of it — a state distinct from any value the slot
 could hold, including one that looks like the display's usual choice. A
-`maybeString` left unset is therefore not the empty string: a colour key's
+`maybeString` left unset is therefore not the empty string: a color key's
 `title` keeps the display's own heading while unset, and `""` is a key with no
 heading.
 

@@ -78,12 +78,12 @@ async function launch(
 }
 
 describe('a two-genome circle', () => {
-  test('opens coloured by the first genome’s chromosomes', async () => {
+  test('opens colored by the first genome’s chromosomes', async () => {
     const { circle } = await launch({})
     expect(circle.colorField).toBe('query')
   }, 40000)
 
-  test('keeps a colour its launch chose', async () => {
+  test('keeps a color its launch chose', async () => {
     const { circle } = await launch({ color: { field: 'strand' } })
     expect(circle.colorField).toBe('strand')
     const constant = await launch({ color: 'grey' })
@@ -147,7 +147,7 @@ describe('the thin fade', () => {
 })
 
 // The chords and the key read one declared ramp: identity 0.5 sits on the
-// pinned bottom, so it takes the range's first colour, and the key's bar
+// pinned bottom, so it takes the range's first color, and the key's bar
 // starts there.
 test('a declared ramp reaches the chords and the key', async () => {
   const { circle, display } = await launch({
@@ -167,8 +167,8 @@ test('a declared ramp reaches the chords and the key', async () => {
 }, 40000)
 
 // A twist on the circle is against arcs whose direction nothing draws, so the
-// colour is the only strand cue.
-test('strand keys its two colours', async () => {
+// color is the only strand cue.
+test('strand keys its two colors', async () => {
   const { circle } = await launch({ color: { field: 'strand' } })
   expect(
     circle.legendSpec.sections.flatMap(s => s.items.map(item => item.label)),

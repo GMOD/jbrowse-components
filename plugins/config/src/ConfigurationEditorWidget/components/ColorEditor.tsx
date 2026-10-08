@@ -28,7 +28,7 @@ const useStyles = makeStyles()({
 // in the field and reaches the slot once it does; leaving the field drops an
 // unparsed draft. "Unset" is reachable through the slot's reset button, which
 // is where every other slot type puts it. Only a slot declaring a
-// `contextVariable` takes a `jexl:` callback, which an entry of a colour list
+// `contextVariable` takes a `jexl:` callback, which an entry of a color list
 // never does.
 /** #slotEditor text field beside a swatch that opens a color picker */
 const ColorEditor = observer(function ColorEditor({

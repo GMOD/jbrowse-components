@@ -87,7 +87,7 @@ test('a wedge on a dark band stays dark', () => {
   expect(Math.max(r, g)).toBeLessThan(40)
 })
 
-// The marks and their label halo are the same two colours the band is made of,
+// The marks and their label halo are the same two colors the band is made of,
 // so a band that moves takes them with it. Read off `getContrastText`, which is
 // what keeps a light-mode grey from being asked to show up on #121212.
 test('the off-screen-mate strip follows the ground it is drawn on', () => {

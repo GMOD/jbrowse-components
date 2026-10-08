@@ -8,8 +8,8 @@ summary: "A shape declares its ink — the box each instance paints — and rend
 ## Status
 
 Accepted (2026-09-09). The third guide derived from a declaration, after the
-legend from declared colour scales
-([ADR-108](adr-108-a-display-declares-its-colour-scales.md)) and the axis from
+legend from declared color scales
+([ADR-108](adr-108-a-display-declares-its-color-scales.md)) and the axis from
 a declared value scale
 ([ADR-109](adr-109-a-display-declares-its-value-scale.md)). Amends
 [ADR-106](adr-106-a-display-declares-its-marks.md): `MarkShape` gains `ink`,

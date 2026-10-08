@@ -92,7 +92,7 @@ describe('a declared range on a preset field', () => {
     range: ['#d95f02'],
   })
 
-  test('paints RR its colour and leaves LR at its default on every backend', () => {
+  test('paints RR its color and leaves LR at its default on every backend', () => {
     expect(everyPathPaints(palette, 'pairRR')).toEqual(
       new Array(3).fill('rgb(217,95,2)'),
     )
@@ -113,7 +113,7 @@ describe('a declared range on a preset field', () => {
     expect(baseline('insertSize')).toBe(categorySwatchColor('pairLR', DEFAULT))
   })
 
-  test('the key names RR in the declared colour and LR in its default', () => {
+  test('the key names RR in the declared color and LR in its default', () => {
     const items = getReadDisplayLegendItems({
       colorBy: { type: 'pairOrientation' },
       palette,
@@ -139,7 +139,7 @@ describe('the five levels that share the neutral default', () => {
   ]
   const neutral = categorySwatchColor('pairLR', DEFAULT)
 
-  test('share one default colour', () => {
+  test('share one default color', () => {
     for (const [, category] of LEVELS) {
       expect(categorySwatchColor(category, DEFAULT)).toBe(neutral)
     }
@@ -155,7 +155,7 @@ describe('the five levels that share the neutral default', () => {
     }
   })
 
-  test('a threshold range over insert size colours the three bins', () => {
+  test('a threshold range over insert size colors the three bins', () => {
     const palette = paletteFor({
       field: 'insertSize',
       range: ['#000000', '#888888', '#ffffff'],
@@ -185,7 +185,7 @@ describe('a domain that names no level says so', () => {
     expect(
       notices({ field: 'insertSize', domain: ['normal'], range: ['#1b9e77'] }),
     ).toContain(
-      'color.domain: names a level of insertSize (short, normal, long), which a threshold scale reads as a cut point; scale: "categorical" colours the levels',
+      'color.domain: names a level of insertSize (short, normal, long), which a threshold scale reads as a cut point; scale: "categorical" colors the levels',
     )
   })
 
@@ -217,7 +217,7 @@ test('nothing declared, or a range over an open field, leaves the defaults', () 
   ).toEqual(DEFAULT.readCategoryColors)
 })
 
-describe('color.value fills the reads no field colours', () => {
+describe('color.value fills the reads no field colors', () => {
   const STEEL = 'rgb(70,130,180)'
   const neutral = categorySwatchColor('pairLR', DEFAULT)
 
@@ -250,7 +250,7 @@ describe('color.value fills the reads no field colours', () => {
     expect([rgb255(curves[0]!), rgb255(curves[1]!)]).toEqual([neutral, neutral])
   })
 
-  test("a declared '' level colours the no-value read over value", () => {
+  test("a declared '' level colors the no-value read over value", () => {
     const palette = paletteFor({
       value: 'steelblue',
       field: 'tags.HP',

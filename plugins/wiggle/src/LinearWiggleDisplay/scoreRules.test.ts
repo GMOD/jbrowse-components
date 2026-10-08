@@ -121,8 +121,8 @@ function menuLabels(display: { trackMenuItems: () => MenuItem[] }) {
     .flatMap(item => ('label' in item ? [item.label] : []))
 }
 
-// Density maps the score to colour under one ramp, and to a row's own
-// colour where the source brings one: neither has a band for a rule to cross,
+// Density maps the score to color under one ramp, and to a row's own
+// color where the source brings one: neither has a band for a rule to cross,
 // so the axis widget offers no reference lines, and the row names a range.
 it('offers the reference lines only where the rules draw', () => {
   const display = makeDisplay()
@@ -133,16 +133,16 @@ it('offers the reference lines only where the rules draw', () => {
   expect(display.scoreRulesDrawn).toBe(false)
   expect(menuLabels(display)).toContain('Score range...')
 
-  const coloured = makeDisplay(
+  const colored = makeDisplay(
     TWO_RULES,
     {},
     {
       sources: [{ ...source('a', 30), color: 'red' }],
     },
   )
-  coloured.setRenderingType('density')
-  expect(coloured.valueScales[0]!.bandTops).toEqual([])
-  expect(coloured.scoreRulesDrawn).toBe(false)
+  colored.setRenderingType('density')
+  expect(colored.valueScales[0]!.bandTops).toEqual([])
+  expect(colored.scoreRulesDrawn).toBe(false)
 })
 
 // Density spends the domain on its color ramp instead of on height, so lifting

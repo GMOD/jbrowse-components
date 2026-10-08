@@ -16,10 +16,10 @@ import { normalizeScore } from '../shaders/scoreScale.js.generated.ts'
 import type { MarkColorScale, MarkRamp, MarkThreshold } from './types.ts'
 
 /**
- * A colour channel as a shape reads it: `color`, the packed ABGR the worker
+ * A color channel as a shape reads it: `color`, the packed ABGR the worker
  * resolved — one per instance, or one number for all of them — or
  * `colorValue`, the raw values a frame's {@link MarkColorScale} turns into
- * colours here. A shape reading a scale declares both optional and asks
+ * colors here. A shape reading a scale declares both optional and asks
  * {@link colorBits} for the GPU and {@link paintColors} for Canvas2D.
  */
 export interface ColorChannel {
@@ -39,7 +39,7 @@ interface RampBake {
 
 const NO_COLORS = new Uint32Array(0)
 
-/** Whether a colour scale is a threshold rather than a ramp. */
+/** Whether a color scale is a threshold rather than a ramp. */
 export function isThreshold(scale: MarkColorScale): scale is MarkThreshold {
   return 'cuts' in scale
 }
@@ -76,8 +76,8 @@ function quad(values: readonly number[], from: number): Rgba {
 }
 
 /**
- * `markColor.slang`'s uniforms for a frame's colour scale, or for none: the
- * mode, a ramp's domain and middle, and a threshold's cuts and band colours.
+ * `markColor.slang`'s uniforms for a frame's color scale, or for none: the
+ * mode, a ramp's domain and middle, and a threshold's cuts and band colors.
  * Every valued shape's uniform block carries the set.
  */
 export function rampUniforms(scale: MarkColorScale | undefined) {
@@ -117,8 +117,8 @@ export function rampUniforms(scale: MarkColorScale | undefined) {
 /**
  * The 4-byte instance lane, for the packer. Under a scale it is the value's
  * float32 bits viewed as the `uint` the attribute declares — the reinterpret
- * `markColor.slang`'s `asfloat` undoes, and the reason a quantitative colour
- * adds no lane. A constant colour fills a lane for the pack alone, which the
+ * `markColor.slang`'s `asfloat` undoes, and the reason a quantitative color
+ * adds no lane. A constant color fills a lane for the pack alone, which the
  * payload never holds.
  */
 export function colorBits(c: ColorChannel, count: number): ArrayLike<number> {
@@ -190,12 +190,12 @@ function sameScale(a: MarkColorScale, b: MarkColorScale) {
 }
 
 /**
- * The packed colours a painter fills with. Under a scale the values are baked
+ * The packed colors a painter fills with. Under a scale the values are baked
  * against it once and kept on the payload, so a repaint at an unchanged scale
  * — every pan and every hover — walks no values and the painters' fill
- * batching still sees runs of one colour. The bake reruns when the domain, the
- * scale type, the ramp's bytes or a threshold's cuts or colours move. A
- * constant colour expands once and is kept the same way.
+ * batching still sees runs of one color. The bake reruns when the domain, the
+ * scale type, the ramp's bytes or a threshold's cuts or colors move. A
+ * constant color expands once and is kept the same way.
  */
 export function paintColors(
   c: ColorChannel,

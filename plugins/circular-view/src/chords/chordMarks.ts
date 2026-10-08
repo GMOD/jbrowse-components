@@ -27,7 +27,7 @@ export interface ChordStageParams extends ChordStage {
   /** the circle's centre in the canvas's CSS px frame */
   centerX: number
   centerY: number
-  /** the alpha every instance draws at, over its colour's own */
+  /** the alpha every instance draws at, over its color's own */
   alpha: number
   strokeWidthPx: number
   /** the least alpha the thin fade leaves a ribbon; 1 is no fade */
@@ -63,9 +63,9 @@ function writeStage(
   })
 }
 
-// one css colour per packed colour and alpha byte, per paint: its alpha times
+// one css color per packed color and alpha byte, per paint: its alpha times
 // the display's and the instance's, rounded to the byte the canvas keeps, so a
-// fade that differs per instance still makes no more than 256 per colour
+// fade that differs per instance still makes no more than 256 per color
 function colorCache(alpha: number) {
   const cache = new Map<number, string>()
   return (abgr: number, instanceAlpha = 1) => {

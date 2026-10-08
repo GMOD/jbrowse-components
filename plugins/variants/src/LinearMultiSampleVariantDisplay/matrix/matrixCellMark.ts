@@ -68,7 +68,7 @@ export const matrixCellMark: MarkShape<MatrixCellChannels, MatrixCellParams> = {
     // third of the pixel it shares with ten reference cells and blends away,
     // while the GPU paints the same variant across the whole
     // `drawnCellHeightPx` band and it survives. Measured on the 1000 Genomes
-    // phase 3 matrix: the export kept 41% of the strongly-coloured variant
+    // phase 3 matrix: the export kept 41% of the strongly-colored variant
     // pixels the screen showed. So a sub-pixel row takes the shader's floor
     // and its exact anchor, and a normal row keeps the seam overdraw.
     const setFill = makeAbgrFill(ctx)

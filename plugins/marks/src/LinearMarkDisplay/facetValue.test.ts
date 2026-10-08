@@ -11,7 +11,7 @@ const READS = features([
   { start: 200, end: 300, strand: -1 },
 ])
 
-test('a faceted coverage colours each section by the field it was split on', () => {
+test('a faceted coverage colors each section by the field it was split on', () => {
   const { display } = createTestEnvironment({
     facet: 'strand',
     marks: [
@@ -36,7 +36,7 @@ test('a faceted coverage colours each section by the field it was split on', () 
   ])
 })
 
-test('a coverage under rows colours each row by the field it was split on', () => {
+test('a coverage under rows colors each row by the field it was split on', () => {
   const { display } = createTestEnvironment({
     rows: 'strand',
     marks: [

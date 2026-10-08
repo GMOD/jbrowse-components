@@ -81,7 +81,7 @@ describe('the chain-strand consensus reaches across grouping lanes', () => {
 
   const out = applyChainStrandFrames(byGroup, true, true)
 
-  it('paints one insert colour across both lanes', () => {
+  it('paints one insert color across both lanes', () => {
     expect(fills(out, 'HP:1', 1)).toEqual([FWD, FWD, FWD])
     expect(fills(out, 'HP:2', 1)).toEqual([REV, REV])
   })
@@ -94,7 +94,7 @@ describe('the chain-strand consensus reaches across grouping lanes', () => {
     expect(fills(unframed, 'HP:2', 1)).toEqual([FWD, FWD])
   })
 
-  it('makes each arm of the foldback one colour across both lanes', () => {
+  it('makes each arm of the foldback one color across both lanes', () => {
     const framed = (key: string) => {
       const { readChainHasSupp, readStrands } = out.get(key)!.get(0)!
       return [...readStrands].map(

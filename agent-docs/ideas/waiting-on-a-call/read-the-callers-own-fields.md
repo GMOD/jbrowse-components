@@ -19,7 +19,7 @@ deletion and a breakpoint caller's junction-backed one look identical, and a
 reader comparing the two callsets in `sv_visualization_cgiab` cannot tell which
 kind of evidence a bar stands on.
 
-- A `D` record draws as a copy-number bar in the `CNV` colour, with no
+- A `D` record draws as a copy-number bar in the `CNV` color, with no
   breakend feet and no split-view launch, since it names no junction.
 - A `J` or `DJ` record keeps the junction glyph and the launch.
 - The feature detail prints the claim in words above the raw field.

@@ -11,7 +11,7 @@ const stacked = (n: number) =>
 // opacity of k overlapping cells each drawn at alpha a
 const composite = (a: number, k: number) => 1 - (1 - a) ** k
 
-test('records that never share a pixel keep their colours', () => {
+test('records that never share a pixel keep their colors', () => {
   expect(recordDensityAlpha(Uint32Array.from([0, 10, 100, 110]), 1)).toBe(
     undefined,
   )
@@ -54,7 +54,7 @@ test('long records overlapping each other share no pixel to fade', () => {
   ).toBe(undefined)
 })
 
-test('a faded cell keeps its colour and scales its alpha', () => {
+test('a faded cell keeps its color and scales its alpha', () => {
   const colors = Uint32Array.from([0xff123456, 0x80abcdef])
   const out = fadeCellColors(colors, [0, 1], 2, Float32Array.from([0.5, 1]))
   expect(out[0]).toBe(0x80123456)

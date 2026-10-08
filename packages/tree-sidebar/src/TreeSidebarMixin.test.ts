@@ -320,7 +320,7 @@ const GROUPED: TestRow[] = [
 ]
 
 // A display over `rows`, sharing one panel where `shared` is set and its row
-// colours painting its marks unless `paintsMarks` is false.
+// colors painting its marks unless `paintsMarks` is false.
 function makeRowDisplay(
   configuration: Record<string, unknown> = {},
   {
@@ -380,7 +380,7 @@ describe('resolvedRowColors', () => {
     { name: 'd', color: '#0d0d0d' },
   ]
 
-  it('takes a pair over the own colour, and the own colour over the palette', () => {
+  it('takes a pair over the own color, and the own color over the palette', () => {
     const display = makeRowDisplay(
       { rowColor: { domain: ['d'], range: ['#00f'] } },
       { rows: OWN, shared: true },
@@ -393,7 +393,7 @@ describe('resolvedRowColors', () => {
     })
   })
 
-  it('deals no name a turn to a row carrying its own colour', () => {
+  it('deals no name a turn to a row carrying its own color', () => {
     const display = makeRowDisplay({}, { rows: OWN, shared: true })
     expect(Object.fromEntries(display.dealtRowColors)).toEqual({
       a: p(0),
@@ -401,7 +401,7 @@ describe('resolvedRowColors', () => {
     })
   })
 
-  it('gives a row only its pair or its own colour where no panel is shared', () => {
+  it('gives a row only its pair or its own color where no panel is shared', () => {
     const display = makeRowDisplay(
       { rowColor: { domain: ['a'], range: ['#00f'] } },
       { rows: OWN },
@@ -413,7 +413,7 @@ describe('resolvedRowColors', () => {
     })
   })
 
-  it("takes an attribute's colour over the own colour", () => {
+  it("takes an attribute's color over the own color", () => {
     const display = makeRowDisplay(
       { rowColor: 'group' },
       { rows: [{ name: 'a', group: 'x', color: '#0a0a0a' }, { name: 'b' }] },
@@ -422,7 +422,7 @@ describe('resolvedRowColors', () => {
   })
 
   // A row with no value is missing, not a category, as ggplot's `na.value`:
-  // the deal and `unknown` pass it by, and it keeps its own colour.
+  // the deal and `unknown` pass it by, and it keeps its own color.
   describe('a row with no value of the attribute', () => {
     const SPARSE: TestRow[] = [
       { name: 'a', group: 'x' },
@@ -432,7 +432,7 @@ describe('resolvedRowColors', () => {
       { name: 'e', group: 'y' },
     ]
 
-    it('takes no palette turn, and keeps its own colour', () => {
+    it('takes no palette turn, and keeps its own color', () => {
       for (const shared of [false, true]) {
         const display = makeRowDisplay(
           { rowColor: 'group' },
@@ -446,7 +446,7 @@ describe('resolvedRowColors', () => {
       }
     })
 
-    it('takes no unknown colour', () => {
+    it('takes no unknown color', () => {
       const display = makeRowDisplay(
         {
           rowColor: { field: 'group', domain: [], range: [], unknown: '#ccc' },
@@ -460,7 +460,7 @@ describe('resolvedRowColors', () => {
       })
     })
 
-    it("takes the colour a pair names '' by", () => {
+    it("takes the color a pair names '' by", () => {
       const display = makeRowDisplay(
         { rowColor: { field: 'group', domain: [''], range: ['#eee'] } },
         { rows: SPARSE },
@@ -481,7 +481,7 @@ describe('resolvedRowColors', () => {
     )
   })
 
-  it('paints an unknown colour on the unlisted rows without their own, shared panel or not', () => {
+  it('paints an unknown color on the unlisted rows without their own, shared panel or not', () => {
     for (const shared of [false, true]) {
       const display = makeRowDisplay(
         { rowColor: { domain: ['a'], range: ['#00f'], unknown: '#ccc' } },
@@ -511,7 +511,7 @@ describe('resolvedRowColors', () => {
 })
 
 // The palette deals the rowColor field's values over the base arrangement,
-// the listed values taking their range colour.
+// the listed values taking their range color.
 describe('the row palette', () => {
   const makePalette = (configuration: Record<string, unknown> = {}) =>
     makeRowDisplay(configuration, { shared: true })
@@ -558,11 +558,11 @@ describe('the row palette', () => {
 
 // The dialog shows one `rowColor` object and submits it; the rows carry only
 // their order and labels.
-describe('a dialog submit of the row colours', () => {
+describe('a dialog submit of the row colors', () => {
   const makeGrouped = (configuration: Record<string, unknown> = {}) =>
     makeRowDisplay(configuration, { shared: true })
 
-  it('reads no colour off the rows', () => {
+  it('reads no color off the rows', () => {
     const display = makeGrouped({ rowColor: 'group' })
     const before = colorsOf(display)
     const [a, b, c] = display.editableSources
@@ -608,7 +608,7 @@ describe('a dialog submit of the row colours', () => {
     expect(colorsOf(display)).toEqual({ b: '#abcdef' })
   })
 
-  it('gives every value an unknown colour the pairs leave out', () => {
+  it('gives every value an unknown color the pairs leave out', () => {
     const display = makeGrouped({
       rowColor: { domain: ['b'], range: ['#00f'], unknown: '#ccc' },
     })
@@ -628,7 +628,7 @@ describe('a dialog submit of the row colours', () => {
     expect(colorsOf(display)).toEqual({ b: '#123456' })
   })
 
-  it('None colours no row', () => {
+  it('None colors no row', () => {
     const display = makeGrouped({
       rowColor: { domain: ['b'], range: ['#00f'] },
     })
@@ -641,7 +641,7 @@ describe('a dialog submit of the row colours', () => {
     expect(display.resolvedRowColors.size).toBe(0)
   })
 
-  it("a submit with no colour object keeps an attribute's unknown: ''", () => {
+  it("a submit with no color object keeps an attribute's unknown: ''", () => {
     const listed = {
       field: 'group',
       domain: ['y'],
@@ -654,7 +654,7 @@ describe('a dialog submit of the row colours', () => {
     expect(display.rowColorChoice).toBe('group')
   })
 
-  it("a submit with no colour object keeps unknown: '#ccc'", () => {
+  it("a submit with no color object keeps unknown: '#ccc'", () => {
     const display = makeGrouped({
       rowColor: { domain: ['b'], range: ['#00f'], unknown: '#ccc' },
     })
@@ -690,7 +690,7 @@ describe('a dialog submit of the row colours', () => {
     expect(display.resolvedRowColors.size).toBe(3)
   })
 
-  it('counts a value recolour as custom, and a reset keeps the color by', () => {
+  it('counts a value recolor as custom, and a reset keeps the color by', () => {
     const display = makeGrouped()
     display.applyRowEdits(display.editableSources, { field: 'group' })
     expect(display.rowStylingIsCustom).toBe(false)

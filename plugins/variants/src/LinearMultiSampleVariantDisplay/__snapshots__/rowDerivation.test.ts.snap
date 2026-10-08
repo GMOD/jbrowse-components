@@ -938,7 +938,7 @@ exports[`allele count a focused cluster run keeps the hidden rows after the clad
 }
 `;
 
-exports[`allele count a rowColor attribute tints every row over its own colour 1`] = `
+exports[`allele count a rowColor attribute tints every row over its own color 1`] = `
 {
   "editableSources": [
     {
@@ -1287,7 +1287,7 @@ exports[`allele count a switch to phased mode resets the arrangement 2`] = `
 }
 `;
 
-exports[`allele count dialog edits relabel, recolour and reorder, and a reset returns 1`] = `
+exports[`allele count dialog edits relabel, recolor and reorder, and a reset returns 1`] = `
 {
   "editableSources": [
     {
@@ -1378,7 +1378,7 @@ exports[`allele count dialog edits relabel, recolour and reorder, and a reset re
 }
 `;
 
-exports[`allele count dialog edits relabel, recolour and reorder, and a reset returns 2`] = `
+exports[`allele count dialog edits relabel, recolor and reorder, and a reset returns 2`] = `
 {
   "editableSources": [
     {
@@ -1469,7 +1469,7 @@ exports[`allele count dialog edits relabel, recolour and reorder, and a reset re
 }
 `;
 
-exports[`allele count samplesTsv colours and labels are the rows own 1`] = `
+exports[`allele count samplesTsv colors and labels are the rows own 1`] = `
 {
   "editableSources": [
     {

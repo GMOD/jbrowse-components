@@ -7,7 +7,7 @@ import { defineMark } from './types.ts'
 import type { RowTable } from './rowTable.ts'
 import type { SpanChannels } from './spanMark.ts'
 
-// A reorder, focus, hide or recolour is one table upload and no instance
+// A reorder, focus, hide or recolor is one table upload and no instance
 // bytes: the buffer packed at arrival carries keys, and the table alone moves.
 
 interface State {
@@ -49,7 +49,7 @@ const block = {
 const listed = buildRowTable(Uint32Array.of(0, 1, 2))
 const reordered = buildRowTable(Uint32Array.of(2, 0, 1))
 const focused = buildRowTable(Uint32Array.of(0, HIDDEN_ROW, 1))
-const recoloured = buildRowTable(
+const recolored = buildRowTable(
   Uint32Array.of(0, 1, 2),
   Uint32Array.of(0xff123456, 0, 0),
 )
@@ -72,9 +72,9 @@ function frames(...tables: (RowTable | undefined)[]) {
   }
 }
 
-test('a reorder, a focus and a recolour each upload the table once and no instance bytes', () => {
+test('a reorder, a focus and a recolor each upload the table once and no instance bytes', () => {
   expect(
-    frames(listed, listed, reordered, reordered, focused, recoloured),
+    frames(listed, listed, reordered, reordered, focused, recolored),
   ).toEqual({
     buffers: 1,
     // the ramp sampler nothing names binds the inert table once

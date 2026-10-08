@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 #
 # Build the primate selection-pressure view: human against rhesus macaque, every
-# ortholog pair coloured by dN/dS.
+# ortholog pair colored by dN/dS.
 #
 # dN/dS is a property of a PAIR of genes rather than of a position on one
 # genome, which is why it belongs on a synteny link. Below 1 amino acid changes
@@ -15,7 +15,7 @@
 #
 # The session opens the lysozyme neighbourhood on human chromosome 12. That
 # locus is collinear between the two species, so the ribbons run parallel and
-# colour is the only thing that varies, and LYZ comes out above 1 while YEATS4
+# color is the only thing that varies, and LYZ comes out above 1 while YEATS4
 # eleven kilobases away comes out at the bottom of the ramp. Adaptive evolution
 # of primate lysozyme is one of the older results in molecular evolution.
 #
@@ -181,7 +181,7 @@ fi
 # Liftover recruits extra pairs near an established block rather than by
 # chaining, and the pairs it adds have a median dS several times that of the
 # chained ones: they are paralogs, not orthologs. Invisible in a count, fatal in
-# a figure whose colour IS divergence.
+# a figure whose color IS divergence.
 if [ ! -f pairs.tsv ]; then
   awk '!/^#/ && NF >= 2 {print $1 "\t" $2}' human.rhesus.anchors > pairs.tsv.part
   mv pairs.tsv.part pairs.tsv
@@ -216,7 +216,7 @@ fi
 
 gzip -kf primate.blocks human.bed rhesus.bed
 
-# ── Gene tracks, so a ribbon's colour has a gene name beside it ──────────────
+# ── Gene tracks, so a ribbon's color has a gene name beside it ──────────────
 # Cut to the same primary transcripts as the BED, which is what keeps a 100 MB
 # annotation down to a few MB and makes the track name exactly what the ribbons
 # connect.
@@ -358,7 +358,7 @@ cat > session.json <<'JSON'
   "views": [
     {
       "type": "LinearSyntenyView",
-      "displayName": "Human vs rhesus macaque orthologs, coloured by dN/dS",
+      "displayName": "Human vs rhesus macaque orthologs, colored by dN/dS",
       "views": [
         {
           "assembly": "human",

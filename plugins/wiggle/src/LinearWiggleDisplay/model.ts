@@ -212,7 +212,7 @@ export default function stateModelFactory(
       /**
        * #getter
        * The `color` object as written, `value` undefined while nothing names
-       * a colour and the layout decides (`effectiveColor`).
+       * a color and the layout decides (`effectiveColor`).
        */
       get colorSetting(): ColorSetting {
         const { color } = self.configuration
@@ -280,7 +280,7 @@ export default function stateModelFactory(
       /**
        * #getter
        * `TreeSidebarMixin`'s hook: whether several plots share one box, where
-       * only colour tells the sources apart. A lone plot has nothing to be
+       * only color tells the sources apart. A lone plot has nothing to be
        * told apart from and is the pos/neg picture a quantitative track has
        * always drawn.
        */
@@ -289,7 +289,7 @@ export default function stateModelFactory(
       },
       /**
        * #getter
-       * `TreeSidebarMixin`'s hook: the row colour key over a shared panel
+       * `TreeSidebarMixin`'s hook: the row color key over a shared panel
        * lists subtracks.
        */
       get rowNoun(): string {
@@ -298,7 +298,7 @@ export default function stateModelFactory(
 
       /**
        * #getter
-       * The colour actually painted: what the config says, else the pos/neg
+       * The color actually painted: what the config says, else the pos/neg
        * pair about the `origin`.
        */
       get effectiveColor(): ColorSetting {
@@ -308,7 +308,7 @@ export default function stateModelFactory(
       /**
        * #getter
        * `effectiveColor` as it paints, through the one resolver every
-       * display's colour object goes through.
+       * display's color object goes through.
        */
       get colorEncoding() {
         return wiggleColorEncoding(this.effectiveColor)
@@ -324,10 +324,10 @@ export default function stateModelFactory(
 
       /**
        * #getter
-       * Whether colour is spent on the score, so a row's colour shows only on
+       * Whether color is spent on the score, so a row's color shows only on
        * its label bar: density always, where the white fade counts, and
-       * bars or points under a declared `linear` colour. Lines part
-       * in two colours even then.
+       * bars or points under a declared `linear` color. Lines part
+       * in two colors even then.
        */
       get scoreGradientPaints() {
         return (
@@ -352,14 +352,14 @@ export default function stateModelFactory(
           isLineMode(self.renderingType)
           ? [
               ...notices,
-              'color.scale: a gradient colours bars, points and density; a line paints its two end colours',
+              'color.scale: a gradient colors bars, points and density; a line paints its two end colors',
             ]
           : notices
       },
 
       /**
        * #getter
-       * The one colour the circular view's key names this track by
+       * The one color the circular view's key names this track by
        * (`CircularLegendSource`), which a ring of this display answers where
        * it draws no ramp. The positive side, which is the whole plot wherever
        * nothing parts.
@@ -370,8 +370,8 @@ export default function stateModelFactory(
 
       /**
        * #getter
-       * `TreeSidebarMixin`'s hook: a subtrack's colour paints its plot while
-       * nothing else colours it: no score gradient, and no declared `color`.
+       * `TreeSidebarMixin`'s hook: a subtrack's color paints its plot while
+       * nothing else colors it: no score gradient, and no declared `color`.
        */
       get rowColorPaintsMarks(): boolean {
         const { value, field } = self.colorSetting
@@ -391,10 +391,10 @@ export default function stateModelFactory(
     .views(self => ({
       /**
        * #getter
-       * Each source and the colour its marks paint in (`markColorOf`), which
+       * Each source and the color its marks paint in (`markColorOf`), which
        * the encoder and the tooltip read. Where the palette deals the shared
-       * panel and some row took a colour, a row left without one paints
-       * `UNCOLORED_ROW` grey rather than the plot colour, which reads as one
+       * panel and some row took a color, a row left without one paints
+       * `UNCOLORED_ROW` grey rather than the plot color, which reads as one
        * of the dealt.
        */
       get markSources(): { name: string; color?: string }[] {
@@ -415,7 +415,7 @@ export default function stateModelFactory(
        * rule of `scales.y.rules` even where the visible data does not.
        *
        * Empty in density, where no rule is drawn: the domain is spent on the
-       * colour ramp there, so widening it stretches the ramp over a range
+       * color ramp there, so widening it stretches the ramp over a range
        * nothing on screen reaches.
        */
       get scoreRuleValues() {
@@ -495,10 +495,10 @@ export default function stateModelFactory(
 
       /**
        * #getter
-       * Whether one ramp describes the colour of every row: wherever a score
+       * Whether one ramp describes the color of every row: wherever a score
        * gradient paints, since a declared gradient's one table ignores the
-       * rows' own colours. Density's white fade does not: a source with its
-       * own colour fades to it (see buildSourceRenderData), so a single bar
+       * rows' own colors. Density's white fade does not: a source with its
+       * own color fades to it (see buildSourceRenderData), so a single bar
        * would describe none of them.
        */
       get scoreRampApplies() {
@@ -524,7 +524,7 @@ export default function stateModelFactory(
        * #getter
        * The one scale every row shares, ruling a band per row stacked down the
        * track, past the dendrogram where one is shown. Density rows each in
-       * their own colour map the scale to colour rather than to y, so they
+       * their own color map the scale to color rather than to y, so they
        * rule no band and the chrome captions the domain instead; under the
        * one ramp the ramp is the key and carries the domain itself.
        */
@@ -576,9 +576,9 @@ export default function stateModelFactory(
        * source by its position here, so a filter or a reorder re-uploads
        * bytes already in hand.
        *
-       * The colour rides here and not in `rpcProps`: the worker ships one set
-       * of score arrays and the main thread colours each instance by its side
-       * of the cut, so a new colour re-encodes and refetches nothing.
+       * The color rides here and not in `rpcProps`: the worker ships one set
+       * of score arrays and the main thread colors each instance by its side
+       * of the cut, so a new color re-encodes and refetches nothing.
        */
       gpuProps() {
         return {
@@ -637,8 +637,8 @@ export default function stateModelFactory(
       /**
        * #getter
        * `LegendMixin`'s hook: the score ramp or threshold key, then the row
-       * colour key, except in a shared panel painting the score gradient,
-       * where no row colour shows.
+       * color key, except in a shared panel painting the score gradient,
+       * where no row color shows.
        */
       get colorScales(): ColorScale[] {
         const { title } = self.colorSetting
@@ -697,7 +697,7 @@ export default function stateModelFactory(
 
       /**
        * #action
-       * The whole colour object at once, since a scale and the slots it reads
+       * The whole color object at once, since a scale and the slots it reads
        * are one setting; `undefined` returns to the layout's own picture.
        */
       setColor(color?: Partial<ColorSetting> | string) {
@@ -727,7 +727,7 @@ export default function stateModelFactory(
 
       /**
        * #action
-       * The arrangement dialog's "Edit plot..." button: the colour object and
+       * The arrangement dialog's "Edit plot..." button: the color object and
        * the rows beside it as text, the escape for a ramp, several cut points
        * or a typed row order, none of which the dialog's own controls offer.
        */
@@ -828,7 +828,7 @@ export default function stateModelFactory(
       return {
         /**
          * #method
-         * The base display's problems, the colour judged as it paints, so a
+         * The base display's problems, the color judged as it paints, so a
          * `color` naming no field is read as the `score` threshold it draws.
          */
         plotProblems(draft: Plot): string[] {
@@ -894,7 +894,7 @@ export default function stateModelFactory(
           ...makePointSizeMenuItems(self),
           ...makeLineWidthMenuItems(self),
           // `ready: true`: a swatch waits for no row list, and a gate would grey
-          // out the only colour route on a plain BigWig until a fetch lands
+          // out the only color route on a plain BigWig until a fetch lands
           rowArrangementMenuItem(self, {
             ready: true,
             onOpen: () => {

@@ -73,7 +73,7 @@ function paintedValues(
 
 /**
  * A FeatureColor object read as the displays painting it read it: the scale
- * each field paints through, the colour a value the worker shipped paints,
+ * each field paints through, the color a value the worker shipped paints,
  * the key's title, and what its slots say together that it cannot paint. The
  * canvas feature and multi-row displays compose it.
  */
@@ -144,7 +144,7 @@ export function featureColorViews(self: FeatureColorHost) {
     /**
      * #getter
      * `colorSettings` as it paints, through the one resolver every display's
-     * colour object goes through: `color.value`, or a field through its
+     * color object goes through: `color.value`, or a field through its
      * scale, `score` a ramp and any other field categorical while `scale` is
      * unset.
      */
@@ -281,7 +281,7 @@ export function featureColorViews(self: FeatureColorHost) {
     /**
      * #method
      * The key a ramp paints, under the caller's scale `id`: the bar over its
-     * domain, and a row apiece for the values the ramp has no colour for. Both
+     * domain, and a row apiece for the values the ramp has no color for. Both
      * displays composing this built it from the same three getters, so the
      * derivation is here rather than twice over.
      */

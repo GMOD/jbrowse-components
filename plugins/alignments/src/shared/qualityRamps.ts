@@ -11,7 +11,7 @@ export const MAPQ_RAMP_MAX = 60
 export const BASE_QUALITY_RAMP_MAX = 40
 
 /**
- * One packed ABGR colour per 8-bit score, entry `i` the cividis table's colour
+ * One packed ABGR color per 8-bit score, entry `i` the cividis table's color
  * at `min(i, max) / max`, indexed as `stopsFromRampLut` reads the key's stops.
  */
 export function qualityRampAbgr(max: number) {
@@ -31,7 +31,7 @@ export const MAPQ_ABGR = qualityRampAbgr(MAPQ_RAMP_MAX)
 
 export const MAPQ_CSS = Array.from(MAPQ_ABGR, abgrToCssRgba)
 
-/** A quality ramp's colour bar, over `[0, max]`, marking an end `extent` runs past. */
+/** A quality ramp's color bar, over `[0, max]`, marking an end `extent` runs past. */
 export function qualityRampScale(
   id: string,
   title: string,

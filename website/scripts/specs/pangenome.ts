@@ -227,7 +227,7 @@ export const pangenomeSpecs: ScreenshotSpec[] = [
   // "not a interesting figure, needs rethinking." What it was for is now two
   // figures that each carry a whole claim on their own: pggb_untangle_dotplot
   // (a descending run IS an inversion, two marks sharing an x ARE one span
-  // reached twice) and pggb_untangle_rows (one lane per strain, coloured by
+  // reached twice) and pggb_untangle_rows (one lane per strain, colored by
   // orientation, with three flat strains as the control).
 
   // Projection 1c: the same untangle file as one lane per strain on the K12
@@ -458,7 +458,7 @@ export const pangenomeSpecs: ScreenshotSpec[] = [
               // pav is a presence fraction per window, so at 4.6 Mb in 1000 px
               // the XY rendering spent a row's height on a quantity that is 1
               // almost everywhere and drew each absence as a hairline slit;
-              // density spends colour on it instead, so an accessory stretch is
+              // density spends color on it instead, so an accessory stretch is
               // a white column and a partial one is pale blue.
               mark: 'span',
               // 4 strains at 60px a row, enough for the accessory dips to read

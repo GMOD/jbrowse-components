@@ -11,7 +11,7 @@ import { createMafTestEnvironment, stageDetailRegion } from './testEnv.ts'
 import type { MafBlock } from '../LinearMafRenderer/mafRenderingBackendTypes.ts'
 import type { RowRendering } from './rowRenderings.ts'
 
-// The bytes and keys every MAF colour painted before the colour object took
+// The bytes and keys every MAF color painted before the color object took
 // them over, pinned so the defaults stay what they were.
 
 const IDENTITY_ABGR_HEX =
@@ -191,7 +191,7 @@ describe('each field keys as it did', () => {
     ])
   })
 
-  test('the X-Y plot keys its one bar colour', () => {
+  test('the X-Y plot keys its one bar color', () => {
     expect(keyOf('xyplot', 16)).toEqual([
       {
         kind: 'categorical',

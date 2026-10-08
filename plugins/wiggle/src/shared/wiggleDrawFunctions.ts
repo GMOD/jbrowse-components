@@ -55,19 +55,19 @@ export interface RowDraw {
   origin: number
   // The lowest cut, and the white of the two-sided density fade.
   pivot: number
-  // Where a line's and band's colour changes, ascending, `pivot` first, and
-  // the colour of each band between two of them.
+  // Where a line's and band's color changes, ascending, `pivot` first, and
+  // the color of each band between two of them.
   cuts: number[]
   innerColors: [number, number, number][]
-  // A gradient's table: bars, points and density colour through it, matching
-  // the LUT texture the GPU samples, and the row's own colour goes unused.
+  // A gradient's table: bars, points and density color through it, matching
+  // the LUT texture the GPU samples, and the row's own color goes unused.
   rampLut: Uint8Array | null
   // The score at the gradient's middle stop.
   rampMid: number | undefined
 }
 
-// Every painter honours a layer's per-instance colours, or Canvas2D and the
-// SVG export diverge from the shader. A band holds one packed value per colour
+// Every painter honours a layer's per-instance colors, or Canvas2D and the
+// SVG export diverge from the shader. A band holds one packed value per color
 // band, so switching fill only on a change batches the features into runs.
 // `-1` can't collide with a u32 ABGR value.
 const NO_COLOR = -1
@@ -88,7 +88,7 @@ function makeScoreToY(
 }
 
 // `wiggleCommon.slang`'s `rowColorYPx`: a cut, and the line a line rendering
-// is coloured along, placed unclamped, so a value the domain excludes keeps its
+// is colored along, placed unclamped, so a value the domain excludes keeps its
 // side of every cut rather than taking the row edge's.
 function makeColorToY(
   rowHeight: number,
@@ -243,7 +243,7 @@ export function drawDensity(
 
 // The part of the segment from y0 to y1, as a fraction of it, inside the band
 // top < y <= bottom; undefined where it misses. A band owns its lower edge,
-// so a line lying on a cut takes the colour above it, as the shader does.
+// so a line lying on a cut takes the color above it, as the shader does.
 function bandSpan(y0: number, y1: number, top: number, bottom: number) {
   if (y0 === y1) {
     return top < y0 && y0 <= bottom ? ([0, 1] as const) : undefined
@@ -258,8 +258,8 @@ function bandSpan(y0: number, y1: number, top: number, bottom: number) {
 }
 
 // Keeps the part of each segment inside one band, cut where it crosses the
-// band's edges, so a line stroked once per band changes colour where the
-// shader's does. A point's colour y is where the band test reads it and its y
+// band's edges, so a line stroked once per band changes color where the
+// shader's does. A point's color y is where the band test reads it and its y
 // where it draws, which part where the drawn y is clamped to the row.
 class BandPen {
   private x = 0
@@ -470,7 +470,7 @@ export function drawLineCenter({
 const BAND_BINS_PER_POLYGON = 1000
 
 // One polygon per run, broken where the line over it breaks. Each cut's clip
-// sits on a device pixel so neighbouring colours meet without a seam.
+// sits on a device pixel so neighbouring colors meet without a seam.
 export function drawWhiskerBand({
   ctx,
   source,

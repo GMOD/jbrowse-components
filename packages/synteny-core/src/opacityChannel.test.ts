@@ -139,8 +139,8 @@ test('a text column takes the opacity its label is listed with, opaque unlisted'
   expect(fade(3)).toBe(1)
 })
 
-// the slider scales a field's range at both ends, which has to recolour nothing
-test('a range scaled alike at both ends hands the colour pass the same fade', () => {
+// the slider scales a field's range at both ends, which has to recolor nothing
+test('a range scaled alike at both ends hands the color pass the same fade', () => {
   expect(opacityFadeOf({ field: 'identity', range: ['0.1', '0.5'] })).toEqual(
     opacityFadeOf({ field: 'identity', range: ['0.2', '1'] }),
   )
@@ -153,7 +153,7 @@ test('a text column with no range keeps every label at the new level', () => {
   expect(opacityRangeAt(setting, 0.6, ranges)).toEqual(['0.6', '0.6'])
 })
 
-describe('the colour pass', () => {
+describe('the color pass', () => {
   const data: ColorFunctionInputs = {
     strands: new Int8Array([1, 1]),
     refNameDict: [],
@@ -164,7 +164,7 @@ describe('the colour pass', () => {
     attributeRanges: {},
   }
 
-  test('fades each colour by its share, whatever the colour field', () => {
+  test('fades each color by its share, whatever the color field', () => {
     const color = createComparativeColorFunction({
       field: 'strand',
       data,
@@ -177,7 +177,7 @@ describe('the colour pass', () => {
     expect(abgrAlpha(color(1))).toBe(255)
   })
 
-  test("multiplies the colour's own alpha rather than replacing it", () => {
+  test("multiplies the color's own alpha rather than replacing it", () => {
     expect(abgrAlpha(fadedColor(packAbgr(0, 0, 0, 128), 0.5))).toBe(64)
     expect(abgrAlpha(fadedColor(packAbgr(0, 0, 0, 0), 0.5))).toBe(0)
   })

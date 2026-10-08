@@ -81,7 +81,7 @@
 <polygon fill="none" stroke="black" stroke-width="2" points="721,-179.5 525,-179.5 525,-120.5 721,-120.5 721,-179.5"/>
 <text xml:space="preserve" text-anchor="middle" x="623" y="-166" font-family="monospace" font-size="10.00">encodeFeatures</text>
 <text xml:space="preserve" text-anchor="middle" x="623" y="-153.25" font-family="monospace" font-size="10.00">field &#45;&gt; channel, one loop</text>
-<text xml:space="preserve" text-anchor="middle" x="623" y="-140.5" font-family="monospace" font-size="10.00">colour + shape scales resolved</text>
+<text xml:space="preserve" text-anchor="middle" x="623" y="-140.5" font-family="monospace" font-size="10.00">color + shape scales resolved</text>
 <text xml:space="preserve" text-anchor="middle" x="623" y="-127.75" font-family="monospace" font-size="10.00">in the worker, per region</text>
 </g>
 <!-- scale&#45;&gt;encode -->

@@ -20,7 +20,7 @@ slot (default `0` = off = today's path unchanged); when set, a genotype with
 chosen over continuous dimming because it reuses the existing no-call rendering
 end-to-end (no shader/legend work). The `color` hue resolves on the main
 thread ([ADR-203](../../architecture-decision-records/adr-203-the-variant-cells-hue-resolves-on-the-main-thread.md)), so a masked cell has to reach it as a no-call rather
-than as a colour the repaint would overwrite. It's a
+than as a color the repaint would overwrite. It's a
 **fetch input** (belongs in `rpcProps()`), threaded through
 `VariantRPC/executeVariantCellData.ts` into `computeVariantCells.ts`, with a
 menu entry (presets GQ ≥ 20/≥ 30 + custom dialog) cloned from
@@ -39,7 +39,7 @@ hets**, and **Mendelian-error sites**. Aligns with the existing trio-crossover w
 Large but high-value; start by defining the pedigree metadata shape (columns in
 `samplesTsv`, or a dedicated pedigree file) and a per-site classification the
 worker ships as values and the main thread paints, as
-[ADR-202](../../architecture-decision-records/adr-202-every-mark-colour-resolves-on-the-main-thread.md) has every colour resolve, rather than a new render pass.
+[ADR-202](../../architecture-decision-records/adr-202-every-mark-color-resolves-on-the-main-thread.md) has every color resolve, rather than a new render pass.
 
 **Filter & sort samples by metadata attribute.** Since 2026-08-25 a `colorBy`
 group's legend swatch focuses that group (`focusLegendEntry`, over `rows.kept`),
@@ -57,7 +57,7 @@ rather than the row order. Per (row, column), compute the id of the set of rows
 identical over a window around that column and paint it with a stable hash color, rows
 staying in whatever order they are in — a crossover then reads as a color change
 mid-row. The block id is a per-cell value the worker ships beside the cells and
-the main thread paints as a colour mode ([ADR-203](../../architecture-decision-records/adr-203-the-variant-cells-hue-resolves-on-the-main-thread.md)), not new render
+the main thread paints as a color mode ([ADR-203](../../architecture-decision-records/adr-203-the-variant-cells-hue-resolves-on-the-main-thread.md)), not new render
 infrastructure.
 
 Three things separate this from HaploBlocker, whose equivalent plot reads as confetti:

@@ -131,11 +131,11 @@ export default function configSchemaF() {
       /**
        * #slot color
        * Each block's fill, the FeatureColor object: a CSS color or `jexl:`
-       * callback in `value`, or a field whose values each take a colour
+       * callback in `value`, or a field whose values each take a color
        * through a scale, with a key. Unset, a feature's own itemRgb paints it
-       * if it has one, else each row takes a colour from a categorical
-       * palette. `scale: 'identity'` keeps each feature's own colour and
-       * names the `domain` colours in the key, which is how a file's itemRgb
+       * if it has one, else each row takes a color from a categorical
+       * palette. `scale: 'identity'` keeps each feature's own color and
+       * names the `domain` colors in the key, which is how a file's itemRgb
        * states get their names.
        *
        * #example
@@ -163,9 +163,9 @@ export default function configSchemaF() {
       color: colorConfigSchema,
       /**
        * #slot rowColor
-       * A colour per row, by value, as `domain`/`range` pairs: the bar beside
+       * A color per row, by value, as `domain`/`range` pairs: the bar beside
        * the row's label, and the row's blocks while no `color` or itemRgb
-       * colours them. The arrangement dialog writes it.
+       * colors them. The arrangement dialog writes it.
        *
        * #example
        * ```js
@@ -206,8 +206,8 @@ export default function configSchemaF() {
        * An array of `{ match, group }` tagging each row with the `group` of
        * the first entry whose regex its name matches, an attribute like any
        * other: `facet: 'group'` stacks the groups in bands, and
-       * `rowColor: { field: 'group' }` colours them. A row no entry matches
-       * has no group, and takes no colour from the deal.
+       * `rowColor: { field: 'group' }` colors them. A row no entry matches
+       * has no group, and takes no color from the deal.
        *
        * #example
        * ```js

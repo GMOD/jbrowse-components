@@ -4,7 +4,7 @@
 //
 // The `span` mark draws exactly this for MAF (run-merged per-base cells) and
 // the multi-row feature painter (features are already intervals), and wiggle
-// density composes the same rect over a colour of its own.
+// density composes the same rect over a color of its own.
 //
 // Row placement comes from uniforms rather than the instance data, so a
 // rowHeight / rowProportion change re-renders without a refetch.
@@ -116,9 +116,9 @@ public RowBand rowBandPx(float rowHeight, float rowProportion) {
 }
 
 // The shape's geometry alone — row band, hp clip-x span, min-width widening —
-// so a consumer whose colour is not a per-instance packed value (wiggle
+// so a consumer whose color is not a per-instance packed value (wiggle
 // density: a per-instance score through a uniform scale) composes the same
-// rect without routing a resolved colour through the instance buffer.
+// rect without routing a resolved color through the instance buffer.
 // `rowIndex` is float here because the row transform is float arithmetic;
 // each caller converts at its own boundary (`RowRectInstance` stores uint,
 // wiggle's fill record stores float).

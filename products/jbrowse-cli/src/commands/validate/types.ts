@@ -4,7 +4,7 @@
 // generator and the validator agree on a contract, and a generator change that
 // drops a field is a type error rather than a silent behaviour change.
 
-/** One field's defaults in a colour object's `fieldPresets`. */
+/** One field's defaults in a color object's `fieldPresets`. */
 export interface FieldPresetEntry {
   scale: string
   [member: string]: unknown
@@ -29,12 +29,12 @@ export interface SlotEntry {
    */
   shorthand?: Partial<Record<'string' | 'number', string>>
   /**
-   * A colour object: each field's defaults, `*` for any other field — the
+   * A color object: each field's defaults, `*` for any other field — the
    * scale while `scale` is unset and the members it reads while unwritten
    * (the schema's `fieldPresets` option).
    */
   fieldPresets?: Readonly<Record<string, FieldPresetEntry>>
-  /** A colour object's `field` while a config leaves it unwritten (Hi-C's `count`). */
+  /** A color object's `field` while a config leaves it unwritten (Hi-C's `count`). */
   fieldDefault?: string
   /** A `stringArray` slot whose schema reads a bare string as a list of one. */
   liftsString?: true

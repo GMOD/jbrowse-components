@@ -34,7 +34,7 @@ const DELETION_LABEL_MIN_PX = 30
  * deletion's line and length, from the signed bp deltas the `lengthField` slot
  * packs. The markers themselves are the insertion mark's, on either backend.
  * The walk is the encode the blocks were drawn from, placed through the row
- * table, so a glyph sits on its block whatever hid, moved or recoloured it.
+ * table, so a glyph sits on its block whatever hid, moved or recolored it.
  */
 export function drawMultiRowIndelGlyphs(
   ctx: Ctx2D,

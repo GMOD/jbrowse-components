@@ -73,10 +73,10 @@ export type { LegendItem } from '@jbrowse/core/ui'
 // One row per meaning, and a row's label is its meaning. An arc row joins the
 // read row carrying its label — "LR - Normal pair orientation" is one bucket in
 // both vocabularies — and brings its swatch along where the arcs paint that
-// bucket in another colour, so the box still names every colour drawn. A
-// same-coloured arc row naming something else keeps a row of its own: the
+// bucket in another color, so the box still names every color drawn. A
+// same-colored arc row naming something else keeps a row of its own: the
 // palette paints `colorPairLR` for five buckets (`pairLR`, `normalInsert`,
-// `noTagValue`, `nonSplit`, `mapqUnavailable`), so folding by colour keyed
+// `noTagValue`, `nonSplit`, `mapqUnavailable`), so folding by color keyed
 // normal arcs as "No HP value" or "MAPQ unavailable (255)".
 //
 // TWO lists, not one concatenation: only the arcs are ever folded, since two
@@ -149,8 +149,8 @@ function legendKey(i: Pick<LegendItem, 'color' | 'label'>) {
 // matched the arc's half of the merge rather than the reads'. A color-less row
 // keys as itself, since nothing it could collide with has a color either.
 // A split-read arc row joins its pair twin's row where both are keyed in one
-// colour, under a label naming both. Matched on the default labels, so a pair
-// row the user renamed or recoloured keeps the split row beside it.
+// color, under a label naming both. Matched on the default labels, so a pair
+// row the user renamed or recolored keeps the split row beside it.
 function oneRowPerSplitTwin(items: LegendItem[]) {
   let rows = items
   for (const split of Object.keys(
@@ -198,7 +198,7 @@ function scaleOf(
 }
 
 /**
- * The display's color vocabularies as its color scales: the colour bars, the
+ * The display's color vocabularies as its color scales: the color bars, the
  * read fills, the paired-end arc / read-cloud colors, and the linked-read
  * connection curves.
  * `LegendMixin`'s `colorScales` lists them, so the on-screen key and the SVG
@@ -212,7 +212,7 @@ function scaleOf(
  * both fully and the same four swatches appear under two headings, or subtract
  * the shared ones and "Arc colors" lists three colors for arcs that are drawn in
  * seven. Merged, every bucket appears exactly once, which is also the most
- * compact form; a colour two buckets share appears once per bucket
+ * compact form; a color two buckets share appears once per bucket
  * (`oneRowPerMeaning`).
  *
  * They stay separate only when the two genuinely disagree (reads by
@@ -231,7 +231,7 @@ function scaleOf(
  * earns its row.
  *
  * `colorTitle` is `color.title` as written, unset keeping the display's own
- * heading and `''` drawing none. It heads the read fill's colour bar when the
+ * heading and `''` drawing none. It heads the read fill's color bar when the
  * fill is a ramp, since the read rows beside a bar are the buckets every
  * scheme paints, and otherwise the read rows, standing in for "Read" when
  * they merge with the arcs.
@@ -295,7 +295,7 @@ export function getAlignmentsColorScales(model: {
 }
 
 // Transcript strand, from the XS/TS tag or the splice motif — not the read's
-// alignment strand, which a read-colour row may key in the same hue.
+// alignment strand, which a read-color row may key in the same hue.
 const SASHIMI_STRAND_LABELS = [
   [1, 'Forward transcript strand'],
   [-1, 'Reverse transcript strand'],
@@ -318,7 +318,7 @@ export function sashimiLegendItems(
 // is the order, the same way `FACET_DIMENSIONS`' is its menu order. The
 // swatch color is resolved from the live palette (categorySwatchColor), so
 // wording is the only thing the legend hard-codes. Categories absent from
-// `SwatchCategory` are keyed by `schemeLegend` ('plain', 'tag') or by a colour
+// `SwatchCategory` are keyed by `schemeLegend` ('plain', 'tag') or by a color
 // bar (`colorRampScales`, 'mapq') instead.
 //
 // A `Record<SwatchCategory, …>` and not an array. `colorUtils` calls this pair
@@ -439,7 +439,7 @@ export function readColorCategoryLabel(
 // The frame is the orientation the chains on screen agree on
 // (`consensusChainStrandFrames`), not each chain's own primary, which is why the
 // labels say neither. On a foldback the primary is arbitrary — the same molecule
-// gets either colour depending on which arm the aligner flagged — so a label
+// gets either color depending on which arm the aligner flagged — so a label
 // naming it would have been wrong on exactly the data this branch exists for.
 //
 // That makes this the same measurement as `splitInversion`/`splitDeletion`
@@ -551,14 +551,14 @@ function methylationLegend(
     ),
     // The fill view is not cytosine-only, and this used to assume it was. The
     // cytosine walk claims 5mC/5hmC; every OTHER type the read declares is
-    // drawn here too, by the MM/ML paint in its by-type palette colour (a
+    // drawn here too, by the MM/ML paint in its by-type palette color (a
     // Fiber-seq read's 6mA — see extractModifications). Keying only the two
     // states above left those marks unexplained, which is the same defect this
     // family already fixed once for two-color's blue.
     //
-    // The colour comes from `keyed`, which resolves it through
+    // The color comes from `keyed`, which resolves it through
     // `getColorForModification` — the function the extractor packs the mark
-    // with — so the swatch is the drawn colour by construction rather than by a
+    // with — so the swatch is the drawn color by construction rather than by a
     // second table.
     ...[...keyed]
       .filter(([type]) => !METHYLATION_STATES.some(s => s.type === type))
@@ -595,7 +595,7 @@ function modificationRank(type: string) {
 // region's RPC resolved first — the same instability `bakedValueLegend` sorts
 // against, and it swapped two rows between renders of one view.
 //
-// The order is `modificationData`'s own, which is where the name and the colour
+// The order is `modificationData`'s own, which is where the name and the color
 // beside it already come from, so a 5mC/5hmC track keeps the reading order it
 // has today rather than gaining an alphabetical one. A code absent from that
 // table sorts last, by code, since there is nothing else to rank it by.
@@ -756,7 +756,7 @@ function arcLabelOverrides(
 }
 
 /**
- * The name one arc colour bucket goes by, in the arc key's wording, so an arc
+ * The name one arc color bucket goes by, in the arc key's wording, so an arc
  * hover and the swatch it sends the reader to say the same thing.
  */
 export function arcColorCategoryLabel(
@@ -916,7 +916,7 @@ export function bakedRampScale(
 type Extent = readonly [number, number] | undefined
 
 /**
- * The colour bars: the per-base layer's first, as its rows are, then the read
+ * The color bars: the per-base layer's first, as its rows are, then the read
  * fill's. Each extent is the loaded values' span, which marks an end they run
  * past.
  */
@@ -971,7 +971,7 @@ function valueCompare(values: string[]) {
 }
 
 // Chromosome painting lists in the assembly's own chromosome order — the order
-// the reads are coloured in (`refNameColor` hands the palette out by position),
+// the reads are colored in (`refNameColor` hands the palette out by position),
 // so the swatch column reads down the karyotype. A name the assembly cannot
 // place, and every name while it is still loading, falls back to the rule above
 // and sorts after the placed ones.
@@ -1028,7 +1028,7 @@ type SchemeLegendArgs = Pick<
 > & { palette: ColorPalette }
 
 // The per-base layer's own rows: the base vocabulary, the modification types
-// drawn, or the one flat bucket beside the quality ramp's colour bar.
+// drawn, or the one flat bucket beside the quality ramp's color bar.
 function baseLayerLegend({
   baseLayer,
   palette,
@@ -1075,7 +1075,7 @@ function schemeLegend({
   // which isn't a CATEGORY_LEGEND bucket, so without an explicit entry its
   // legend would be empty and "Show legend" would render nothing.
   //
-  // A `tag` scheme with no tag chosen yet paints that same flat colour
+  // A `tag` scheme with no tag chosen yet paints that same flat color
   // (`categoryColor`'s tag branch, with nothing baked to look up), so it keys
   // the same row rather than an empty box.
   if (
@@ -1111,7 +1111,7 @@ function schemeLegend({
       labels?.values,
     )
   }
-  // Mapping quality is a colour bar (`colorRampScales`); it and the strand /
+  // Mapping quality is a color bar (`colorRampScales`); it and the strand /
   // insert-size / orientation schemes add only the buckets that occurred.
   return []
 }
@@ -1146,12 +1146,12 @@ interface ReadDisplayLegendArgs {
   // The display's `paintedRefNamePosition`, so a chromosome-painting swatch is
   // drawn by the same rule the reads are — hand the palette out by assembly
   // position, hash only where the order is unknown. Omitting it here is how the
-  // box would key a colour no read paints.
+  // box would key a color no read paints.
   refNamePosition?: RefNamePosition
   // The display's `bakedColorScale`: the scale the bake paints a tag, attribute
-  // or mate reference through, so a swatch is the painted colour.
+  // or mate reference through, so a swatch is the painted color.
   bakedScale?: BakedColorScale
-  // Where the facet reads the colour's field, the key lists in its order.
+  // Where the facet reads the color's field, the key lists in its order.
   sectionOrder?: (a: string, b: string) => number
   // Some drawn base carries no quality score.
   baseQualityUnavailable?: boolean
@@ -1168,7 +1168,7 @@ interface ReadDisplayLegendArgs {
  * `presentModifications` because that map only ever grows. Tag /
  * chromosome-painting swatches are `presentTagValues` itself, colored through
  * the same pure function the reads are painted with; mapping and per-base
- * quality are colour bars (`colorRampScales`) and key only their unavailable
+ * quality are color bars (`colorRampScales`) and key only their unavailable
  * buckets here.
  */
 export function getReadDisplayLegendItems({

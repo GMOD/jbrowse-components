@@ -17,7 +17,7 @@
 // `control` the ref extracted a second time into its own directory, `head`
 // the working tree. Each arm's driver is its own function literal, so no call
 // site is shared between arms. Before timing, every scenario's lanes are
-// compared across the arms: count, x, x2, y, row and colour, as sorted tuples
+// compared across the arms: count, x, x2, y, row and color, as sorted tuples
 // since a step may hand its rows on in another order.
 import { rmSync } from 'node:fs'
 import { join } from 'node:path'
@@ -279,7 +279,7 @@ const SPAN_BY_ROW: LaneName[] = ['row', 'color']
 
 const scenarios: Scenario[] = [
   {
-    name: 'encode, y and a colour',
+    name: 'encode, y and a color',
     get input() {
       return syntheticInputs().flat
     },
@@ -289,7 +289,7 @@ const scenarios: Scenario[] = [
     headLanes: BAR,
   },
   {
-    name: 'encode, categorical colour',
+    name: 'encode, categorical color',
     get input() {
       return syntheticInputs().flat
     },

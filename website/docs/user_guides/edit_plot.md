@@ -1,17 +1,17 @@
 ---
 title: Editing a track's plot as text
 description:
-  Advanced → Edit plot... in a track's menu shows the track's colour, grouping,
+  Advanced → Edit plot... in a track's menu shows the track's color, grouping,
   rows, axis scales and filters as text, the way a config file writes them, with
   worked examples and a check of what you type
 guide_category: General usage
 ---
 
-Every track whose display has colour, grouping, rows, axis or filter settings
-has **Advanced → Edit plot...** in its track menu. It opens those settings as
-text, in the shape a config file writes them, so anything the menus and dialogs
-cannot express (a ramp, several threshold cuts, a typed section order, a filter
-expression) can be written directly. The Group by, Color by attribute and colour
+Every track whose display has color, grouping, rows, axis or filter settings has
+**Advanced → Edit plot...** in its track menu. It opens those settings as text,
+in the shape a config file writes them, so anything the menus and dialogs cannot
+express (a ramp, several threshold cuts, a typed section order, a filter
+expression) can be written directly. The Group by, Color by attribute and color
 dialogs also open it from a button, filled in with the choice you have made
 there but not yet applied.
 
@@ -51,7 +51,7 @@ it changes before applying it. For a feature track:
 { "facet": "strand", "color": { "field": "type" } }
 ```
 
-stacks one section per strand and colours each feature by its type.
+stacks one section per strand and colors each feature by its type.
 
 ## Writing and applying
 
@@ -60,7 +60,7 @@ stacks one section per strand and colours each feature by its type.
   default.
 - `null` resets a setting.
 - A string is a setting's one-value form, such as a facet's field or a constant
-  colour.
+  color.
 
 The line under the text says which settings applying would set or reset, and
 Apply is disabled while the text is something the track's config would refuse,

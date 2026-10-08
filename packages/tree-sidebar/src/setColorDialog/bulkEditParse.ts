@@ -115,7 +115,7 @@ function unsetBlanks(patch: Record<string, string>) {
 
 // Join parsed rows (by name) onto the dialog's rows. A row the paste does not
 // name is kept unchanged; replace=true starts a matched row from {} so only
-// pasted fields survive, which the submit reads as a label or colour cleared.
+// pasted fields survive, which the submit reads as a label or color cleared.
 export function mergeParsedRows<S extends { name: string }>(
   currLayout: S[],
   byName: ParsedRows,

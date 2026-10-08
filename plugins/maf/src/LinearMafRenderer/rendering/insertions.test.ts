@@ -74,7 +74,7 @@ test('each insertion is interbase at the reference base after its run, on its ro
   })
 })
 
-test('a re-encode in another colour walks the region once', () => {
+test('a re-encode in another color walks the region once', () => {
   const data = region('A--A', ['AGGA'])
   const a = mafInsertionChannels(data, PURPLE, 1)
   const b = mafInsertionChannels(data, 0xff00ff00, 1)

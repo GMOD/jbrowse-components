@@ -43,7 +43,7 @@ function paint(
 }
 
 describe.each(['light', 'dark'] as const)('in the %s theme', mode => {
-  it('fills each base the colour the display fills it', () => {
+  it('fills each base the color the display fills it', () => {
     const { palette, cells } = paint('AcgTNX', true, mode)
     const { colorForBase, unknownBaseColor } = getMafColorPalette(palette)
     expect(cells).toEqual([
@@ -56,13 +56,13 @@ describe.each(['light', 'dark'] as const)('in the %s theme', mode => {
     ])
   })
 
-  it('letters a filled base the colour the display letters it', () => {
+  it('letters a filled base the color the display letters it', () => {
     const { palette, letters } = paint('ANX', true, mode)
     const { forBase, unknownBase } = getMafLabelColors(palette)
     expect(letters).toEqual([forBase.a, forBase.n, unknownBase])
   })
 
-  it('letters an unfilled base in its fill colour', () => {
+  it('letters an unfilled base in its fill color', () => {
     const { palette, letters } = paint('ANX', false, mode)
     const { colorForBase, unknownBaseColor } = getMafColorPalette(palette)
     expect(letters).toEqual([colorForBase.a, colorForBase.n, unknownBaseColor])

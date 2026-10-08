@@ -134,7 +134,7 @@ describe('a categorical column', () => {
 
   // The accumulation stays first-seen and the domain applies at the read, so
   // clearing it gives back the order the fetches found. The first-seen order
-  // rides beside the sorted one, since it is what deals the colours.
+  // rides beside the sorted one, since it is what deals the colors.
   it('reads its labels in the declared order, and gives them back when it is cleared', () => {
     const view = viewWith([])
     view.observeAttributeRanges({
@@ -189,7 +189,7 @@ describe('a categorical column', () => {
   })
 })
 
-// A text column's range colours its labels, its labels rename them in the key
+// A text column's range colors its labels, its labels rename them in the key
 // and its title heads the key. None of them reorders what the fetches found.
 describe("a text column's range, labels and title", () => {
   const view = (color: Record<string, unknown>) =>
@@ -237,7 +237,7 @@ describe("a text column's range, labels and title", () => {
     expect(titleOf('')).toBe('')
   })
 
-  it('recolours nothing when only the title or labels change', () => {
+  it('recolors nothing when only the title or labels change', () => {
     const v = view({ domain: ['A1a'], range: ['#ff0000'] })
     v.observeAttributeRanges(seen)
     const reads: unknown[] = []
@@ -273,10 +273,10 @@ describe("a text column's range, labels and title", () => {
   })
 })
 
-// A whole-genome dotplot is mostly dots with no slope, so its strand colour is
+// A whole-genome dotplot is mostly dots with no slope, so its strand color is
 // the only strand cue on screen and gets the key a ribbon's twist makes
 // unnecessary.
-test('strand keys its two colours on points, and nothing on ribbons', () => {
+test('strand keys its two colors on points, and nothing on ribbons', () => {
   const on = (surface: 'points' | 'ribbons') =>
     TrackColorsMixin()
       .views(() => ({
@@ -316,7 +316,7 @@ test('the track legend lists a track on several levels once', () => {
 })
 
 // The view's `color` is one SyntenyColor object: a field the view reads as a
-// mode of its own, a measurement preset, a declared column, or a colour.
+// mode of its own, a measurement preset, a declared column, or a color.
 describe('the color object', () => {
   const view = (color: unknown) => TrackColorsMixin().create({ color } as never)
 
@@ -332,14 +332,14 @@ describe('the color object', () => {
     expect(view({ field: 'gene_group' }).colorField).toBe('gene_group')
   })
 
-  it('lifts a colour string into value, which the default mode paints', () => {
+  it('lifts a color string into value, which the default mode paints', () => {
     const v = view('grey')
     expect(v.colorField).toBe('')
     expect(v.colorValue).toBe('grey')
     expect(getSnapshot(v).color).toEqual({ value: 'grey' })
   })
 
-  it('refuses a mode string where a colour goes, naming the value', () => {
+  it('refuses a mode string where a color goes, naming the value', () => {
     expect(() => view('strand')).toThrow('strand')
   })
 

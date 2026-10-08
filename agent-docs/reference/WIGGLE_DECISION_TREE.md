@@ -1,6 +1,6 @@
 ---
 name: wiggle-decision-tree
-description: What a quantitative track decides — the score domain, the shape that draws it and the shape's colour — as three decision graphs, each resolved in one place. Read before touching autoscale, a plot type or the quantitative colour model.
+description: What a quantitative track decides — the score domain, the shape that draws it and the shape's color — as three decision graphs, each resolved in one place. Read before touching autoscale, a plot type or the quantitative color model.
 audience: internal
 kind: spec
 ---
@@ -12,7 +12,7 @@ bottom:
 
 - **the domain** — what score range the axis covers.
 - **the shape** — which plot type, laid out how, drawing which layers.
-- **the colour** — which channel carries identity, and what an unset one means.
+- **the color** — which channel carries identity, and what an unset one means.
 
 Each is resolved once and read by everything downstream, including the parts
 that are not the picture: the axis ticks, the tooltip, the legend and the menu
@@ -32,7 +32,7 @@ plugins draw a wiggle-shaped axis against it.
   both from one scalar.
 - `domainQuantile` at 1 takes the visible extremes; below it each end is
   clipped to that quantile of the values on its side of 0 (`quantileExtent`,
-  the rule a colour ramp's `domainQuantile` reads too), and a linear or symlog
+  the rule a color ramp's `domainQuantile` reads too), and a linear or symlog
   axis then reaches 0 while `scales.y.zero` is on; a density row, which has
   no axis, spans its values either way.
 - The domain is then widened to reach any score a rule is drawn at, and clamped
@@ -56,42 +56,42 @@ Config bounds are still checked first.
   three summary bands under whiskers, one under min/max or mean.
 - Nested filled bars and density split into solid layers drawn back to front,
   largest magnitude first. Everything else keeps one band with per-instance
-  colours.
+  colors.
 - A line plot is one continuous line through every bin in every summary
-  mode, coloured by which side of the origin the line is on, so it changes
-  colour where it crosses rather than per bin. Whiskers adds a translucent
+  mode, colored by which side of the origin the line is on, so it changes
+  color where it crosses rather than per bin. Whiskers adds a translucent
   min-to-max band under it, stepped or interpolated like the line.
 - The pass, the buffer, the rendering-type uniform and the Canvas2D painter are
   **all read off the encoded layers**, never off live model state.
 - Gaps and bar width are settled last, and both backends share the width floor.
 
-## The colour
+## The color
 
-![What a quantitative track's colour resolves to](diagrams/wiggle-colour.svg)
+![What a quantitative track's color resolves to](diagrams/wiggle-color.svg)
 
 `color` is one object — a CSS string, or `{ field, scale, domain, range,
-scheme }` over `score` — and a subtrack's colour is `rowColor`'s:
+scheme }` over `score` — and a subtrack's color is `rowColor`'s:
 
 | the layout | an unset `color` means | the marks paint | the palette deals |
 | --- | --- | --- | --- |
-| shared: several sources in one box | the threshold pair, each source painting its row colour on both sides | `rowColor` | by name |
+| shared: several sources in one box | the threshold pair, each source painting its row color on both sides | `rowColor` | by name |
 | row: a row per source, or a lone plot | the threshold pair about the `origin` | `rowColor` | by an attribute only |
 | density, either of the above | the **score ramp** | the row's own `color` (overlay: `rowColor`) | by an attribute only |
 
 A row's `rowColor` draws its label bar in every layout that has row labels.
 
 - `colorEncoding` resolves the object through display-kit's `colorEncodingOf`,
-  as every display's colour does, and `resolveWiggleColor` turns that into
+  as every display's color does, and `resolveWiggleColor` turns that into
   `{ posColor, negColor, pivot, rampLut }`, which with gpuProps' `perSource`
   is the whole of what the encoder and both backends read: the pair every mode
   partitions by, the value they part at, the density LUT, and whether a source
-  paints its own colour on both sides.
+  paints its own color on both sides.
 - **In density, `color` is a scale, not an identity**, so the marks fade to
-  the row's own colour and its `rowColor` shows only on the label bar, which the
+  the row's own color and its `rowColor` shows only on the label bar, which the
   ramp ignores.
-- The colour key follows the scale, so which channel it reads and what an unset
+- The color key follows the scale, so which channel it reads and what an unset
   one falls back to come from the same table.
-- One cursor hands out every palette entry, the colour's `range` and then the
+- One cursor hands out every palette entry, the color's `range` and then the
   default palette: groups first, then ungrouped rows, those its `domain` lists
   ahead of the rest.
 
@@ -108,12 +108,12 @@ A row's `rowColor` draws its label bar in every layout that has row labels.
   has not. Drawing the previous plot for one frame is the correct stale; reading
   live state instead read past the end of a buffer on the GPU and drew chords
   across every hole on Canvas2D.
-- **A colour put on a density row replaces the scale it is read by.** A
+- **A color put on a density row replaces the scale it is read by.** A
   copy-number heatmap grouped by population came out one hue per population with
   a shared blue for losses, encoding nothing.
 - **The palette used to be two independent sequences**, so a track mixing
   grouped and ungrouped subadapters gave the same entry to the first group and
-  the first ungrouped row — one colour for two things, in the plot and in the
+  the first ungrouped row — one color for two things, in the plot and in the
   legend naming it.
 - **Density is offered in a shared box rather than refused.** Overlapping
   filled densities are unreadable, and the nine plot-crossed-with-layout names
@@ -140,7 +140,7 @@ object.
 **A channel's meaning is a property of the mode, and so is its fallback.**
 Consumers that branch on a raw boolean get the channel right and the *fallback*
 wrong, which reads as a legend of identical swatches naming groups that are on
-screen in four colours. Passing a named mode makes the impossible combination
+screen in four colors. Passing a named mode makes the impossible combination
 unrepresentable and keeps the fallback beside the channel.
 
 **Keep a hand-written twin as an oracle when you cannot retire it.** The

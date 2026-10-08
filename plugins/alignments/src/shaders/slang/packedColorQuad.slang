@@ -16,7 +16,7 @@ import hpmath;
 
 
 public static const uint VERTS_PER_INSTANCE = 6u;
-// read.slang's RC_PLAIN: a cell packed 0 has no colour of its own and paints
+// read.slang's RC_PLAIN: a cell packed 0 has no color of its own and paints
 // the plain read fill.
 public static const uint PLAIN_READ_CATEGORY = 0u;
 [[vk::binding(1, 0)]] ConstantBuffer<Uniforms> u;

@@ -146,7 +146,7 @@ function buildVotes(segs: Seg[], numChains: number, numBuckets: number) {
  * ambiguity — it is deleting the read's own orientation and replacing it with
  * the crowd's. Without the freeze every lone segment is absorbed into whatever
  * surrounds it, which erases exactly the inverted supplementary at a breakpoint
- * that this colouring exists to show. Frozen chains still VOTE: they are usually
+ * that this coloring exists to show. Frozen chains still VOTE: they are usually
  * what tells a bucket which way it points.
  */
 function solveFrames(
@@ -197,7 +197,7 @@ function solveFrames(
  * read happened to start, and the frame flips with it. Measured on the COLO829
  * chr3 foldback in the `cancer_sv` tutorial, over the 33 split molecules in the
  * figure's three windows: 19 reads' primary ends at one arm's junction and 14 at
- * the other's, and that split predicts the painted colour with no exceptions —
+ * the other's, and that split predicts the painted color with no exceptions —
  * chr10 came out 14 forward / 19 reverse, chr12 18 / 11, i.e. a coin flip. It is
  * not the sequencing direction; `strand * primaryStrand` already cancels that
  * correctly, and both classes hold a mix of forward and reverse primaries.
@@ -209,7 +209,7 @@ function solveFrames(
  * windows to 100%, flipping 14 of the 33.
  *
  * What it deliberately cannot do is collapse a set that genuinely disagrees. A
- * frame is one sign per chain, so a real inversion still paints two colours —
+ * frame is one sign per chain, so a real inversion still paints two colors —
  * which is the point, and is why the chr3 window keeps its red/blue split (each
  * molecule contributes one segment of each arm) while chr10 and chr12 go
  * uniform.

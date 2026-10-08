@@ -112,7 +112,7 @@ export interface ReadColorBy extends ColorBy {
   modifications?: undefined
 }
 
-/** How a read tag colours: a colour per value, or a gradient over its numbers. */
+/** How a read tag colors: a color per value, or a gradient over its numbers. */
 export type TagColorScale = 'categorical' | 'linear'
 
 /** The per-base layer: the display's `baseColor` object as a scheme. */
@@ -252,7 +252,7 @@ export type LayoutOrder = (typeof LAYOUT_ORDERS)[number]
 // chain is split. Built by `attachChainFields` from every displayed region,
 // reframed by `consensusChainStrandFrames`, and consumed by exactly ONE reader:
 // `readColorCategory` (colorUtils), which bakes it into `readColorCategories`
-// once per recolour. Every fill path — GPU, Canvas2D, SVG export, legend — then
+// once per recolor. Every fill path — GPU, Canvas2D, SVG export, legend — then
 // reads that baked category and never this.
 //
 // FLAGS, NOT A 0-4 ENUM: the byte answers two unrelated questions asked of

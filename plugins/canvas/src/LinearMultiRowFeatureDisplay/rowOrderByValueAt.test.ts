@@ -187,9 +187,9 @@ test('sizes the blocks by the rows on screen, not the rows being ordered', () =>
   ).toEqual(['d', 'e', 'a', 'b', 'c'])
 })
 
-// The worker bakes one colour for all three, and the field paints two, so the
+// The worker bakes one color for all three, and the field paints two, so the
 // column groups by what the field painted.
-test('orders by the colour the colour field paints, not the baked one', () => {
+test('orders by the color the color field paints, not the baked one', () => {
   const names = ['A', 'B', 'C']
   const fielded: EncodableRegion = {
     ...region(

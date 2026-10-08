@@ -110,7 +110,7 @@ Each section ends with the members a composed model contributes, linked to the p
 | <span id="getter-layerpx">**layerPx**</span><br><code>number</code> |  |
 | <span id="getter-genecolorsettings">**geneColorSettings**</span><br><code>GeneColorSettings</code> |  |
 | <span id="getter-genecolorencoding">**geneColorEncoding**</span><br><code>string &#124; FieldColorEncoding &#124; undefined</code> |  |
-| <span id="getter-genecolorslots">**geneColorSlots**</span><br><code>HeldSlots &#124; undefined</code> | The slots a categorical gene colour deals its values into. |
+| <span id="getter-genecolorslots">**geneColorSlots**</span><br><code>HeldSlots &#124; undefined</code> | The slots a categorical gene color deals its values into. |
 | <span id="getter-genecolorfield">**geneColorField**</span><br><code>string</code> | `''` while `color.value` paints |
 | <span id="getter-genesolidcolor">**geneSolidColor**</span><br><code>string &#124; undefined</code> | the constant `color.value` holds, undefined for none or a `jexl:` one |
 | <span id="getter-boxcolors">**boxColors**</span><br><code>GeneColors</code> |  |
@@ -186,9 +186,9 @@ Each section ends with the members a composed model contributes, linked to the p
 | <span id="getter-legendright">**legendRight**</span><br><code>number</code> |  |
 | <span id="getter-lanelayerplacements">**laneLayerPlacements**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>{ specLane: string; held: HeldLaneLayer; row: number; top: numb…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>{ specLane: string; held: HeldLaneLayer; row: number; top: number; height: number; segments: { start: number; end: number; px: Span; }[]; }[]</code></pre></dialog></span> | each payload's region placed in its lane's own frame; a payload whose lane or contig no longer draws is left out |
 | <span id="getter-lanelayerdomains">**laneLayerDomains**</span><br><code>([number, number] &#124; undefined)[]</code> | undefined for a layer no drawn lane holds values for yet |
-| <span id="getter-lanelayercolors">**laneLayerColors**</span><br><code>ColorSource[][]</code> | where each lane layer's marks take their colour from, one per mark, read as the mark display reads its own |
+| <span id="getter-lanelayercolors">**laneLayerColors**</span><br><code>ColorSource[][]</code> | where each lane layer's marks take their color from, one per mark, read as the mark display reads its own |
 | <span id="getter-selectedglyphhits">**selectedGlyphHits**</span><br><code>GlyphHit[][]</code> | the selected feature's glyph hits per row, which a pan leaves alone |
-| <span id="getter-lanelayercolorscales">**laneLayerColorScales**</span><br><code>(MarkColorScale &#124; undefined)[][]</code> | the ramp or threshold each lane layer's bars paint numbers through, one per mark and undefined for a mark coloured another way; a ramp's domain covers the values of every drawn lane, as `laneLayerDomains` does for y, so one value takes one colour in all of them |
+| <span id="getter-lanelayercolorscales">**laneLayerColorScales**</span><br><code>(MarkColorScale &#124; undefined)[][]</code> | the ramp or threshold each lane layer's bars paint numbers through, one per mark and undefined for a mark colored another way; a ramp's domain covers the values of every drawn lane, as `laneLayerDomains` does for y, so one value takes one color in all of them |
 | <span id="getter-lanelayertitles">**laneLayerTitles**</span><br><code>{ key: string; text: string; top: number; }[]</code> |  |
 | <span id="getter-lanelayercells">**laneLayerCells**</span><br><code>{ cells: Map&lt;string, MultiWayCell&gt;; layers: BarLayer[]; }</code> |  |
 | <span id="getter-namedcells">**namedCells**</span><br><code>ReadonlyMap&lt;string, MultiWayCell&gt;</code> |  |
@@ -245,7 +245,7 @@ Each section ends with the members a composed model contributes, linked to the p
 | <span id="method-lanedecisionsat">**laneDecisionsAt**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>(origin: number, previous: ReadonlyMap&lt;string, LaneDecision &#124; u…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>(origin: number, previous: ReadonlyMap&lt;string, LaneDecision &#124; undefined&gt;, frozen: ReadonlyMap&lt;string, LaneDecision&gt;) =&gt; Map&lt;string, LaneDecision &#124; undefined&gt;</code></pre></dialog></span> | in the px space anchored at `origin`; a lane in `frozen` keeps its own |
 | <span id="method-bandcellon">**bandCellOn**</span><br><code>(page: string) =&gt; MultiWayCell</code> |  |
 | <span id="method-lanegenelabels">**laneGeneLabels**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>(fontFamily: string &#124; undefined, pinnedGroups?: ReadonlySet&lt;str…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>(fontFamily: string &#124; undefined, pinnedGroups?: ReadonlySet&lt;string&gt;, width?: number) =&gt; PlacedLaneLabel[]</code></pre></dialog></span> | placed in the stack's px |
-| <span id="method-coloredlayersof">**coloredLayersOf**</span><br><code>(held: HeldLaneLayer) =&gt; EncodedChannels[]</code> | a held payload's layers, each coloured as its mark declares |
+| <span id="method-coloredlayersof">**coloredLayersOf**</span><br><code>(held: HeldLaneLayer) =&gt; EncodedChannels[]</code> | a held payload's layers, each colored as its mark declares |
 | <span id="method-pickribbonat">**pickRibbonAt**</span><br><code>(x: number, y: number) =&gt; SyntenyPickResult &#124; undefined</code> | `x` and `y` are container-relative; the topmost ribbon wins |
 | <span id="method-slidablelaneat">**slidableLaneAt**</span><br><code>(y: number) =&gt; string &#124; undefined</code> | `y` is container-relative; undefined unless the lanes are frozen |
 | <span id="method-hittest">**hitTest**</span><br><code>(x: number, y: number) =&gt; HoverTarget &#124; undefined</code> | `x` and `y` are container-relative |
@@ -301,7 +301,7 @@ Each section ends with the members a composed model contributes, linked to the p
 | <span id="action-endanimation">**endAnimation**</span><br><code>() =&gt; void</code> |  |
 | <span id="action-setgenecolorby">**setGeneColorBy**</span><br><code>(field: string) =&gt; void</code> | `''` paints by `color.value` |
 | <span id="action-setgenesolidcolor">**setGeneSolidColor**</span><br><code>(color: string &#124; undefined) =&gt; void</code> |  |
-| <span id="action-pickdefaultgenecolor">**pickDefaultGeneColor**</span><br><code>() =&gt; void</code> | Color by's Default: no field and no constant, so the config's own colour paints, a `jexl:` expression included |
+| <span id="action-pickdefaultgenecolor">**pickDefaultGeneColor**</span><br><code>() =&gt; void</code> | Color by's Default: no field and no constant, so the config's own color paints, a `jexl:` expression included |
 | <span id="action-pickgenesolidcolor">**pickGeneSolidColor**</span><br><code>() =&gt; void</code> | Color by's Solid color...: paints the constant kept beside a field, where there is one, and opens the picker |
 | <span id="action-selectfeature">**selectFeature**</span><br><code>(feature: Feature) =&gt; void</code> |  |
 | <span id="action-openinnewview">**openInNewView**</span><br><code>(assemblyName: string, loc: string) =&gt; void</code> |  |

@@ -53,7 +53,7 @@ test('finds PS wherever FORMAT puts it', () => {
 })
 
 // The three spellings of "this sample has no phase set here". All three have to
-// come back undefined, because `getPhasedColor` reads undefined as "colour this
+// come back undefined, because `getPhasedColor` reads undefined as "color this
 // cell by its allele instead" — the fallback the `samples` path got for free by
 // parsing '.' to undefined.
 test('an absent, empty, or dot PS is no phase set, not phase set zero', () => {
@@ -132,7 +132,7 @@ test('a sample without PS at this site does not inherit the previous site', () =
 // SplitVcfTabixAdapter opens one file per refName, so a view spanning two
 // contigs whose headers disagree hands both to one reader. Without the remap
 // every phase set after the first difference lands on a neighbouring sample:
-// the cells stay coloured, and each one is coloured by somebody else's phase
+// the cells stay colored, and each one is colored by somebody else's phase
 // block.
 //
 // This is the fixture shape the genotype pass shipped a bug for want of, so it

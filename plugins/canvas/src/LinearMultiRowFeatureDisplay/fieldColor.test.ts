@@ -60,7 +60,7 @@ test('the worker ships each feature its field value, and each value its row', ()
   expect(pack('').colorValues).toBeUndefined()
 })
 
-describe('a colour field on the multi-row display', () => {
+describe('a color field on the multi-row display', () => {
   function display() {
     const env = createTestEnvironment({
       displayConfig: { rows: 'sample', color: THRESHOLD },
@@ -83,7 +83,7 @@ describe('a colour field on the multi-row display', () => {
     held()
   })
 
-  it('keys the bins by their labels, under the colour title', () => {
+  it('keys the bins by their labels, under the color title', () => {
     const d = display()
     const [section] = d.legendSpec.sections
     expect(section?.title).toBe('Copy number')
@@ -102,7 +102,7 @@ describe('a colour field on the multi-row display', () => {
     expect(count).toBe(3)
   })
 
-  it('sends the worker the field alone, so a recolour is no refetch', () => {
+  it('sends the worker the field alone, so a recolor is no refetch', () => {
     const d = display()
     const before = d.rpcProps()
     setConf(d, ['color', 'range'], ['black', 'grey', 'white'])
@@ -111,13 +111,13 @@ describe('a colour field on the multi-row display', () => {
     expect(before.colorConfig).toEqual({ value: undefined, field: 'segmean' })
   })
 
-  it('clusters on the field the colour names', () => {
+  it('clusters on the field the color names', () => {
     expect(display().effectiveClusterField).toBe('segmean')
   })
 
   // `score` and `strand` name no row, so the row menu leaves them out, but a
   // ramp over the score is what the picture is about.
-  it('clusters on score where the colour names it', () => {
+  it('clusters on score where the color names it', () => {
     const d = createTestEnvironment({
       displayConfig: { rows: 'sample', color: { field: 'score' } },
     }).createDisplay().display
@@ -144,7 +144,7 @@ describe('a colour field on the multi-row display', () => {
 // `features-gaps` are the ids the legend dismisses and re-keys by, and the
 // derivation they come from is shared with the feature display, which asks for
 // `color`.
-describe('a ramp colour on the multi-row display', () => {
+describe('a ramp color on the multi-row display', () => {
   const RAMP = {
     field: 'segmean',
     scale: 'linear',
@@ -176,7 +176,7 @@ describe('a ramp colour on the multi-row display', () => {
     })
   })
 
-  it('keys no itemRgb colour, since the ramp paints over every one', () => {
+  it('keys no itemRgb color, since the ramp paints over every one', () => {
     const features = [
       { start: 0, end: 50, name: 'stateA', itemRgb: '255,0,0', score: 1 },
       { start: 100, end: 150, name: 'stateB', itemRgb: '0,0,255', score: 9 },

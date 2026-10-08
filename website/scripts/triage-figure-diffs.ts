@@ -107,7 +107,7 @@ const ROW_SCALE = 2
 // The ratio this script ranks on is "of the difference that exists, how much
 // does the slide explain", and rows with no difference to explain are not part
 // of that question. They are also most of the figure — a slide is invisible in
-// the middle of a solid band, since one row of a uniform colour is
+// the middle of a solid band, since one row of a uniform color is
 // interchangeable with the row 8px above it. Counting them put ~0 in both
 // halves of the ratio and every figure scored 100%.
 const DIFFERING_FLOOR = 1
@@ -203,7 +203,7 @@ async function rowSignature(input: Buffer | string): Promise<RowImage> {
       data: new Uint8Array(data.buffer, data.byteOffset, data.length),
     }
   }
-  // grayscale() should give one channel; if a colour profile keeps three, take
+  // grayscale() should give one channel; if a color profile keeps three, take
   // the first rather than failing
   const out = new Uint8Array(SIGNATURE_WIDTH * rows)
   for (let i = 0; i < out.length; i++) {

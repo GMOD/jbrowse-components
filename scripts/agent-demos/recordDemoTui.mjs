@@ -365,7 +365,7 @@ PlayResX: 1920
 PlayResY: 1080
 
 [V4+ Styles]
-Format: Name, Fontname, Fontsize, PrimaryColour, OutlineColour, BackColour, Bold, BorderStyle, Outline, Shadow, Alignment, MarginL, MarginR, MarginV, Encoding
+Format: Name, Fontname, Fontsize, PrimaryColor, OutlineColor, BackColor, Bold, BorderStyle, Outline, Shadow, Alignment, MarginL, MarginR, MarginV, Encoding
 Style: Narr, DejaVu Sans, 36, &H00FFFFFF, &H20000000, &H00000000, 1, 3, 8, 0, 2, 80, 80, 24, 1
 
 [Events]

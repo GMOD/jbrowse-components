@@ -2,7 +2,7 @@ import { from, getAlpha, getBlue, getGreen, getRed, newColor } from './index.ts'
 
 // `from`'s doc comment said "e.g. 0x599eff" while its body read `0xRRGGBBAA`,
 // which is the shape of mistake nothing here could catch: every one of these
-// returns a plausible colour. So the layout is asserted rather than described,
+// returns a plausible color. So the layout is asserted rather than described,
 // on both the number the old comment invited and the one the body actually
 // wants.
 //
@@ -24,7 +24,7 @@ describe('from reads 0xRRGGBBAA, with alpha in the low byte', () => {
 
   // The case the old comment named. Every channel lands one byte down and the
   // blue becomes the alpha, so a 24-bit CSS hex passed here is a different
-  // colour at a different opacity, never an error.
+  // color at a different opacity, never an error.
   it('shifts a 24-bit hex down a byte rather than assuming opaque', () => {
     expect(channels(from(0x599eff))).toEqual([0x00, 0x59, 0x9e, 0xff])
     expect(from(0x599eff)).not.toBe(newColor(0x59, 0x9e, 0xff, 0xff))

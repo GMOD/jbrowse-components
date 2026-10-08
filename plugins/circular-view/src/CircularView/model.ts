@@ -119,7 +119,7 @@ const twoPi = 2 * Math.PI
 const DEFAULT_RIBBON_ALPHA = 0.45
 
 // a track is a synteny track here by what it draws: one ribbon display makes
-// it one for the reorder and for the colour settings alike
+// it one for the reorder and for the color settings alike
 function isRibbonDisplay(display: { type: string }) {
   return display.type === 'ChordSyntenyDisplay'
 }
@@ -695,7 +695,7 @@ function stateModelFactory(pluginManager: PluginManager) {
       },
       /**
        * #method
-       * the tracks drawing ribbons, which the view's colour settings paint
+       * the tracks drawing ribbons, which the view's color settings paint
        */
       syntenyTracks(): ComparativeTrackModel[] {
         return self.tracks.filter(track => track.displays.some(isRibbonDisplay))
@@ -749,7 +749,7 @@ function stateModelFactory(pluginManager: PluginManager) {
       /**
        * #getter
        * the genome whose ideogram a ribbon track paints by what aligns to it
-       * from the first, rather than in its own chromosomes' colours
+       * from the first, rather than in its own chromosomes' colors
        */
       get paintedAssemblyName() {
         return this.chordSyntenyDisplays.find(
@@ -1438,7 +1438,7 @@ function stateModelFactory(pluginManager: PluginManager) {
        * #action
        * a linear synteny view of this circle's genomes, a row each over the
        * chromosomes the circle shows with the tracks it shows for that genome,
-       * its ribbon tracks between them, reordered, in this view's colour and
+       * its ribbon tracks between them, reordered, in this view's color and
        * length filter. A self-alignment opens the genome against itself
        */
       openInLinearSyntenyView() {

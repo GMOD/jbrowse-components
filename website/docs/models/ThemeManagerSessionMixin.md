@@ -21,7 +21,7 @@ Auto-generated from the @jbrowse/mobx-state-tree model in the source — see the
 | Member | Description |
 | --- | --- |
 | <span id="getter-themename">**themeName**</span><br><code>string</code> | Which palette is in effect. A stored name whose theme an admin has since dropped reads as `default` without the stored value being touched, so it comes back if the plugin supplying it loads again. |
-| <span id="getter-thememode">**themeMode**</span><br><code>ThemeModeSelection</code> | Light, dark, or following the OS — the axis the palette is drawn along, and what the mode picker shows. `effectiveThemeMode` is the one to read for a colour decision. |
+| <span id="getter-thememode">**themeMode**</span><br><code>ThemeModeSelection</code> | Light, dark, or following the OS — the axis the palette is drawn along, and what the mode picker shows. `effectiveThemeMode` is the one to read for a color decision. |
 | <span id="getter-selectedthememode">**selectedThemeMode**</span><br><code>PaletteMode</code> | Light or dark as the reader chose it, `system` resolved against the OS or the toolbar's hold. What a file leaves the session in, since Dark Reader never touches the file. |
 | <span id="getter-effectivethememode">**effectiveThemeMode**</span><br><code>PaletteMode</code> | `selectedThemeMode`, but dark while Dark Reader darkens the page. |
 | <span id="getter-themeisdark">**themeIsDark**</span><br><code>boolean</code> | Whether what is drawn right now is dark. Read off the resolved palette rather than the mode, so a palette pinned to one mode — an `extraThemes` entry declaring `mode: 'dark'` — answers for itself. |

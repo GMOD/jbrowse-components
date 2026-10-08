@@ -34,7 +34,7 @@ function rowColors(display: ReturnType<typeof makeDisplay>) {
 const TABLEAU = [0, 1, 2].map(rowPaletteColorAt)
 
 describe('an overlay of several subtracks deals tableau10 by name', () => {
-  it('deals each subtrack a colour, painted on both sides of the cut', () => {
+  it('deals each subtrack a color, painted on both sides of the cut', () => {
     const display = makeDisplay({ rows: false })
     expect(display.sharesPanel).toBe(true)
     expect(display.rowPaletteDeals).toBe(true)
@@ -43,7 +43,7 @@ describe('an overlay of several subtracks deals tableau10 by name', () => {
     expect(display.rowColorChoice).toBe('name')
   })
 
-  it('deals nothing under None, every subtrack in the plot colour', () => {
+  it('deals nothing under None, every subtrack in the plot color', () => {
     const display = makeDisplay({
       rows: false,
       displayConfig: { rowColor: { unknown: '' } },
@@ -62,8 +62,8 @@ describe('an overlay of several subtracks deals tableau10 by name', () => {
     expect(rowColors(display)).toEqual(['#cccccc', '#123456', '#cccccc'])
   })
 
-  // A declared colour paints the plot, so nothing deals over it.
-  it('deals nothing over a declared colour', () => {
+  // A declared color paints the plot, so nothing deals over it.
+  it('deals nothing over a declared color', () => {
     const display = makeDisplay({
       rows: false,
       displayConfig: { color: 'darkgreen' },
@@ -89,17 +89,17 @@ it('a lone subtrack keeps the pos/neg pair', () => {
   expect(rowColors(display)).toEqual([undefined])
 })
 
-// Each subtrack has a row of its own, so each draws in the plot colour unless
+// Each subtrack has a row of its own, so each draws in the plot color unless
 // rowColor or the file gives it one.
 describe('a row per subtrack deals no palette', () => {
-  it('draws every row in the plot colour', () => {
+  it('draws every row in the plot color', () => {
     const display = makeDisplay()
     expect(display.rowPaletteDeals).toBe(false)
     expect(rowColors(display)).toEqual([undefined, undefined, undefined])
     expect(display.rowColorChoice).toBe('')
   })
 
-  it('paints a row rowColor or the file gives a colour', () => {
+  it('paints a row rowColor or the file gives a color', () => {
     const display = makeDisplay({
       names: [],
       displayConfig: { rowColor: { domain: ['b'], range: ['#123456'] } },
@@ -118,7 +118,7 @@ describe('a row per subtrack deals no palette', () => {
     expect(rowColors(display)).toEqual([undefined, '#123456', '#0c0c0c'])
   })
 
-  it('plots a colour set on one subtrack, the rest unchanged', () => {
+  it('plots a color set on one subtrack, the rest unchanged', () => {
     const display = makeDisplay()
     display.applyRowEdits(display.editableSources, {
       domain: ['b'],
@@ -129,8 +129,8 @@ describe('a row per subtrack deals no palette', () => {
   })
 })
 
-// A drag passes no colour object, so the config's own stands.
-it('a reorder writes no colour', () => {
+// A drag passes no color object, so the config's own stands.
+it('a reorder writes no color', () => {
   const display = makeDisplay({ rows: false })
   display.applyRowEdits([...display.editableSources].reverse())
   expect(display.rowStylingIsCustom).toBe(false)

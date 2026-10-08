@@ -56,7 +56,7 @@ export function thresholdIndex(
 
 /**
  * #api
- * The colour of each interval, in order: the declared palette, and the
+ * The color of each interval, in order: the declared palette, and the
  * default categorical palette where it runs out.
  */
 export function thresholdPalette(

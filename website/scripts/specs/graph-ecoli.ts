@@ -714,7 +714,7 @@ function pggbLocusSession(
 // sides"). Without that, the difference is stated only as a node count in a
 // header over two FMMM tangles that share no visible landmark, so the reader has
 // nothing to compare. Boxed on their ids rather than their positions, so the two
-// layouts can put them wherever they like, and one colour per node so the pair
+// layouts can put them wherever they like, and one color per node so the pair
 // is legible ACROSS the composite rather than only within a half:
 //
 // - s2093 (43 bp, blue) and s2095 (558 bp, orange) are where one CFT073 detour
@@ -743,7 +743,7 @@ function graphContextPartSpecs(): ScreenshotSpec[] {
   const DETOUR_ENTRY = 's2093+'
   const DETOUR_EXIT = 's2095+'
   const DETOUR_INTERIOR = 's2094+'
-  // One colour per node, the same colour in both halves, which is what makes the
+  // One color per node, the same color in both halves, which is what makes the
   // composite readable as one picture: the blue box is s2093 on the left and
   // s2093 on the right, and the reader can see that without reading a caption.
   // All three boxed one red was a figure where the left 43 bp box and the right
@@ -848,7 +848,7 @@ function graphContextPartSpecs(): ScreenshotSpec[] {
         anchor: { graphNode },
         strokeWidth: 3,
         color,
-        // a wash the node's own colour cannot be mistaken for, so the pairing
+        // a wash the node's own color cannot be mistaken for, so the pairing
         // survives being read at thumbnail size, where a 3px outline does not
         fillOpacity: 0.1,
         // clear of the node's own "43 bp" / "558 bp" label, which the graph
@@ -1132,7 +1132,7 @@ export const ecoliGraphSpecs: ScreenshotSpec[] = [
         // use full naming"). It is: `SM:Z:`, a GFA optional tag in the same
         // TYPE:VALUE form SAM uses, holding the haplotypes that walk the
         // segment. RgfaTabixAdapter puts it on the feature as `samples` and
-        // `sampleCount`, and the colour is a jexl expression over `sampleCount` --
+        // `sampleCount`, and the color is a jexl expression over `sampleCount` --
         // an ordinary FeatureTrack and LinearBasicDisplay with a `color` and a
         // `legend`, NOT a custom display type, which is the other half of the
         // note and is what the tutorial's config fence shows.
@@ -1593,7 +1593,7 @@ export const ecoliGraphSpecs: ScreenshotSpec[] = [
   // direction is in each half's own view header rather than in a callout, see
   // the `displayName`s.
   //
-  // The two halves are coloured differently on purpose and the caption says so:
+  // The two halves are colored differently on purpose and the caption says so:
   // stable rank on the left, because the question there is WHOSE sequence the
   // arm is, and the reference-position ramp on the right, because the question
   // there is WHERE the segments are.

@@ -21,7 +21,7 @@ each region's cells with a span and a glyph per cell and its records keyed by
 id in `featureGenotypeMap` beside a `featureIdList`; `mode: 'matrix'` carried
 one flat set of cells with float column indices and positional `featureData`.
 Two cell loops built them, each with its own two-ended bucket writer, and a
-dozen getters on the main thread forked on `mode`: colours, placement, the
+dozen getters on the main thread forked on `mode`: colors, placement, the
 upload map, the painted domain, the lane's records and the anchored sort each
 had a regular arm and a matrix arm. `matrixRegions` already presented the
 matrix to its backend as region 0.
@@ -41,10 +41,10 @@ matrix to its backend as region 0.
   records in the order the cells index them, each with its `featureId`;
   `featurePositions`, `featureInsertedBp`, `featureColorValues` and the
   spatial index sit beside it. The per-cell arrays are a cell's own facts:
-  row, colour, dosage, record index. The `cell` mark's per-instance span and
+  row, color, dosage, record index. The `cell` mark's per-instance span and
   glyph are dealt from the records on the main thread (`cellGlyphs`,
   `regionCellGlyphs`), off the payload alone, so neither a reorder nor a
-  recolour redoes them.
+  recolor redoes them.
 - **The main thread reads one map.** `placedRegionRows` places,
   `regionCellColors` paints, `paintedRegionRows` joins them and is what the
   columns upload; `perRegionCellMap` adds the glyph attributes and the

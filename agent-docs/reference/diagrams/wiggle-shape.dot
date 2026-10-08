@@ -21,15 +21,15 @@ digraph wiggle_shape {
   plot -> summary
   summary -> range [label=" any mode, line plots"]
   summary -> bands [label=" whiskers, min, max, mean\l (density resolves to mean)"]
-  range [label="one line through every bin,\ncoloured by the origin side it is on;\nwhiskers adds a translucent\nmin-max band under it"]
-  bands [label="one band under mean, min and max,\nthree under whiskers; each value\ncoloured by its own sign\nagainst the origin"]
+  range [label="one line through every bin,\ncolored by the origin side it is on;\nwhiskers adds a translucent\nmin-max band under it"]
+  bands [label="one band under mean, min and max,\nthree under whiskers; each value\ncolored by its own sign\nagainst the origin"]
 
   nests [label="density, or filled bars\nthat nest"]
   bands -> nests
   nests -> split [label=" yes"]
   nests -> whole [label=" no"]
   split [label="solid layers, back to front,\nlargest magnitude first"]
-  whole [label="one band, per-instance colours"]
+  whole [label="one band, per-instance colors"]
 
   encoded [label="encoded layers\nthe pass, the buffer, the rendering-type\nuniform and the Canvas2D painter\nare all read from these", style=bold]
   split -> encoded  whole -> encoded  range -> encoded

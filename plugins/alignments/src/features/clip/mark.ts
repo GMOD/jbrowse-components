@@ -56,7 +56,7 @@ function packClips(c: PileupChannels) {
 
 // The worker lays interbases out as (insertions, softclips, hardclips), so the
 // clips are the array's tail, and the type byte it ships beside each entry is
-// what the packer's kind and the painter's colour read.
+// what the packer's kind and the painter's color read.
 export function clipChannels(data: InterbaseUploadData): PileupChannels {
   const { insEnd, hcEnd } = interbaseRangeEnds(data)
   return pileupChannels({
@@ -105,7 +105,7 @@ export function clipHit(data: InterbaseUploadData, i: number): CigarHitResult {
 }
 
 // A 256-entry table indexed by the interbase type byte, the two clip kinds
-// filled and everything else the soft colour — the same fallback clip.slang's
+// filled and everything else the soft color — the same fallback clip.slang's
 // `kind` branch takes for a byte that is not the hard kind. Memoized on the
 // palette, since the painter asks per block.
 function clipTable(soft: string, hard: string) {
@@ -140,7 +140,7 @@ function clipTables(state: RenderState) {
 /**
  * One clip bar: a 1px marker at the alignment edge where a read's soft or hard
  * clip begins, on its pileup row. One shader, one instance buffer and one mark
- * with a per-instance kind, two colours on the canvas — and two hit scans,
+ * with a per-instance kind, two colors on the canvas — and two hit scans,
  * which are the caller's candidate sets (`clipsOfKind`).
  *
  * Sub-pixel frequency fade, clip.slang's. The hit gate is the same one the

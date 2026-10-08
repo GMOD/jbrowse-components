@@ -145,7 +145,7 @@ const ColorDisplay = ConfigurationSchema(
   { explicitIdentifier: 'displayId' },
 )
 
-test("a lifted plot's colour is judged under its schema's presets and defaults, its jexl: value unevaluated, and scales.y by its ends", () => {
+test("a lifted plot's color is judged under its schema's presets and defaults, its jexl: value unevaluated, and scales.y by its ends", () => {
   const conf = ColorDisplay.create({ displayId: 'd' })
   expect(schemaPlotProblems(conf)).toEqual([])
   expect(

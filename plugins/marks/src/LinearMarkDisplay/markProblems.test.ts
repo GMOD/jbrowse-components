@@ -184,7 +184,7 @@ test('a channel the mark does not read waits unread', () => {
   expect(
     found([{ mark: 'bar', encoding: { y: 'score', text: 'id' } }]),
   ).toEqual(['warning unread-channel mark 0 encoding.text'])
-  // a text mark reads y, row, colour and text, and stands with or without a y
+  // a text mark reads y, row, color and text, and stands with or without a y
   expect(
     found([{ mark: 'text', encoding: { y: 'score', text: 'name' } }]),
   ).toEqual([])
@@ -680,7 +680,7 @@ test('a cut that is no number counts toward no cut-count, as it paints no band',
   )
 })
 
-test('a threshold naming no cut is told it paints one colour', () => {
+test('a threshold naming no cut is told it paints one color', () => {
   const noCuts = {
     mark: 'point',
     encoding: { y: 'score', color: { field: 'pip', scale: 'threshold' } },
@@ -698,7 +698,7 @@ test('a threshold naming no cut is told it paints one colour', () => {
   ).toEqual([])
 })
 
-test('a threshold range with other than one colour per interval is named', () => {
+test('a threshold range with other than one color per interval is named', () => {
   const colors = (range: string[]) => [
     {
       mark: 'point',
@@ -716,7 +716,7 @@ test('a threshold range with other than one colour per interval is named', () =>
   expect(found(colors(['red', 'orange', 'blue', 'green']))).toHaveLength(1)
 })
 
-test('labels name the domain values of a categorical colour', () => {
+test('labels name the domain values of a categorical color', () => {
   const labelled = (color: Record<string, unknown>) => [
     {
       mark: 'bar',
@@ -745,7 +745,7 @@ test('labels name the domain values of a shape, and a constant shape names none'
   expect(found(shaped({ value: 'diamond' }))).toEqual([])
 })
 
-test('a field spelling a colour or a shape is a constant written bare', () => {
+test('a field spelling a color or a shape is a constant written bare', () => {
   const encoded = (encoding: Record<string, unknown>) => [
     { mark: 'point', encoding: { y: 'score', ...encoding } },
   ]
@@ -820,7 +820,7 @@ test('a facet or rows field the display steps leave unwritten is named', () => {
   ).toEqual([])
 })
 
-test("scales.y and a width read their ends by the colour ramp's one rule", () => {
+test("scales.y and a width read their ends by the color ramp's one rule", () => {
   const bar = [{ mark: 'bar', encoding: { y: 'score' } }]
   const y = (ends: Record<string, number>) =>
     found(bar, undefined, undefined, undefined, { y: ends })
@@ -944,7 +944,7 @@ test("a shape's labels over a field with an order of its own name that order", (
   ).toEqual([])
 })
 
-test('a field spelling a colour in any CSS syntax is a constant written bare', () => {
+test('a field spelling a color in any CSS syntax is a constant written bare', () => {
   for (const color of [
     'hwb(0 0% 0%)',
     'oklch(0.6 0.2 30)',

@@ -19,7 +19,7 @@ field read through it, and the Y axis panel's Min and Max write there
 [ADR-142](../architecture-decision-records/adr-142-one-value-scale-object.md)).
 The scale never crosses the wire: shipping it would key the fetch on the axis.
 
-**Colour resolves in exactly one place per cardinality**, and the legend reads the
+**Color resolves in exactly one place per cardinality**, and the legend reads the
 same table ([rendering-decisions](RENDERING_DECISIONS.md)).
 
 - **Which kind comes from `scale` alone**, never from the data or another member:

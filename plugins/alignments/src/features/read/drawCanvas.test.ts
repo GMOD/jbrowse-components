@@ -332,7 +332,7 @@ describe('the read outline height gate', () => {
   //
   // Default block width (10 px/bp), so the read is 400 px wide and the per-read
   // width half of the gate is never the thing under test — the 0.05 px/bp the
-  // colour tests use puts this read at exactly 2 px, which the width gate
+  // color tests use puts this read at exactly 2 px, which the width gate
   // rejects on its own.
   const outlined = (featureHeight: number) =>
     draw([wideFwd], { showOutline: true, featureHeight }).includes(

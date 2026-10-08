@@ -1,6 +1,6 @@
 ---
 status: Accepted
-summary: "The circular view's chords and ribbons are marks on the GPU ladder, drawn through the circle's polar stage. A chord is a link from `x` to `x2`; a ribbon is the dotplot's alignment segment, a span `x1`..`x2` against its mate's `y1`..`y2` with the strand saying which ends pair. Each foot is a position on the unrolled genome axis and a count of slice gaps, so its angle is affine in the two and the scale and the rotation are uniforms: a zoom or a rotation redraws and uploads nothing. One `defineMark` list gives WebGPU, WebGL2 and a Canvas2D rung that traces the same angles; the hit test is geometric, a ribbon's nonzero winding and a chord's distance from its curve, with no pick canvas. Measured in headed Chrome on an Intel UHD 630: the 66,994-ribbon oat circle rotates at 43 ms a frame and recolours in about 120 ms, where a Canvas2D layer took 3-6 s per repaint. Replaces the Canvas2D layer this ADR first recorded the same day"
+summary: "The circular view's chords and ribbons are marks on the GPU ladder, drawn through the circle's polar stage. A chord is a link from `x` to `x2`; a ribbon is the dotplot's alignment segment, a span `x1`..`x2` against its mate's `y1`..`y2` with the strand saying which ends pair. Each foot is a position on the unrolled genome axis and a count of slice gaps, so its angle is affine in the two and the scale and the rotation are uniforms: a zoom or a rotation redraws and uploads nothing. One `defineMark` list gives WebGPU, WebGL2 and a Canvas2D rung that traces the same angles; the hit test is geometric, a ribbon's nonzero winding and a chord's distance from its curve, with no pick canvas. Measured in headed Chrome on an Intel UHD 630: the 66,994-ribbon oat circle rotates at 43 ms a frame and recolors in about 120 ms, where a Canvas2D layer took 3-6 s per repaint. Replaces the Canvas2D layer this ADR first recorded the same day"
 ---
 
 # ADR-177: A chord is a mark under the circle's polar stage
@@ -23,17 +23,17 @@ hairball"**: the circle takes the linear synteny view's two fades through
 ends for pointing but draws at their true width over the drawn width, never
 under 0.15 (`ribbonThinFade` in `chordStage.slang`), decided by ADR-083's latch
 over the ribbons' spans; the Identity fade is the linear view's toggle. A
-launch that puts two genomes on the circle colours by the first genome's
-chromosomes unless it names a colour, and reorders unless it says
-`autoDiagonalize: false`. The launch writes both defaults, because the colour
-config cannot tell "never chosen" from "chose the one colour".
+launch that puts two genomes on the circle colors by the first genome's
+chromosomes unless it names a color, and reorders unless it says
+`autoDiagonalize: false`. The launch writes both defaults, because the color
+config cannot tell "never chosen" from "chose the one color".
 
 ## Context
 
 Every chord and ribbon was a `<path>` with its own observer component. Measured
 on a dev server at commit 022a493c1e, headless Chrome: 5,264 liftOver ribbons
-blocked the main thread for 3-4 s to commit and 1.7 s to recolour, and the
-dotplot tutorial's 66,994 oat homoeolog anchors took 227 s to recolour inside a
+blocked the main thread for 3-4 s to commit and 1.7 s to recolor, and the
+dotplot tutorial's 66,994 oat homoeolog anchors took 227 s to recolor inside a
 348 s mount. The dotplot's menu offers "Open in circular synteny view", so the
 stall was one click from a hosted page.
 
@@ -41,7 +41,7 @@ A Canvas2D layer of the same shapes cut that to seconds and no further. Filling
 the oat circle's 66,994 ribbons costs 1.8-1.9 s on SwiftShader, 2.4-2.8 s on an
 Intel UHD 630 through ANGLE, and 4.8-5.9 s in a headed default Chrome, while
 building the paths costs 80-180 ms: the time is the rasteriser's, so caching
-paths or batching colours buys nothing. A pick canvas painted the shapes a
+paths or batching colors buys nothing. A pick canvas painted the shapes a
 second time on every change, and a zoom painted twice per frame. The layer's
 premise, that "the circle's counts are within what a 2D canvas fills in a
 frame", holds for the tutorial's 487 ribbons (5 ms) and fails for anchor sets
@@ -61,7 +61,7 @@ SVG side uses.
 `x` → `x2`. A ribbon is the alignment the dotplot draws as a segment: its span
 `x1`..`x2` and its mate's `y1`..`y2`, each in genomic order, with a `strand`
 lane saying which ends pair, so a forward alignment joins start to start and a
-reverse one twists. Colour is a packed ABGR lane carrying the SV inspector's
+reverse one twists. Color is a packed ABGR lane carrying the SV inspector's
 dimming in its alpha; the display's opacity and bow are params.
 
 **The polar stage is uniforms.** A foot is a position on the unrolled genome
@@ -72,7 +72,7 @@ slice layout restated, so the scale and the rotation are three uniforms. The
 view's `chordAxis` is rebuilt only when the regions or their elision change
 (`elisionMask`, a string, so a zoom that elides nothing new propagates
 nothing); each display resolves its features' feet once per fetch
-(`ribbonFeet`, `chordFeet`) and fills its lanes per recolour. A zoom or a
+(`ribbonFeet`, `chordFeet`) and fills its lanes per recolor. A zoom or a
 rotation writes the frame and no buffer.
 
 **The geometry is a strip, the coverage is measured.** A ribbon instance is one
@@ -109,7 +109,7 @@ shape as a path with its label as its title.
 Headed Chrome, Intel UHD 630, WebGL2 (this machine's WebGPU is blocklisted),
 dev server:
 
-| circle | ribbons | first paint | recolour | rotation frame | hover |
+| circle | ribbons | first paint | recolor | rotation frame | hover |
 | --- | ---: | ---: | ---: | ---: | ---: |
 | oat homoeologs, 21 chromosomes | 66,994 | 2.9 s | 104-146 ms | 43-46 ms | 16-24 ms |
 | hg38/mm39 liftOver, 20 + 20, 100 kb and over | 487 | 4.6 s | ~120 ms | 17-21 ms | 0.3 ms |

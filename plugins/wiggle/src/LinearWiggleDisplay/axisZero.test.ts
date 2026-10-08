@@ -42,8 +42,8 @@ test('the score menu toggle writes the slot', () => {
   expect(display.domain).toEqual([30, 60])
 })
 
-// A density row maps score to colour: there is no axis for 0 to be the
-// bottom of, so the ramp spends its colour on the values whatever the slot
+// A density row maps score to color: there is no axis for 0 to be the
+// bottom of, so the ramp spends its color on the values whatever the slot
 // says.
 test('a density plot spans its values whatever zero says', () => {
   const display = makeDisplay()

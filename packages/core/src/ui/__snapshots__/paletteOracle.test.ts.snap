@@ -8,7 +8,7 @@ exports[`darkMinimal builds the same chrome 1`] = `
 }
 `;
 
-exports[`darkMinimal resolves the same colours 1`] = `
+exports[`darkMinimal resolves the same colors 1`] = `
 {
   "accent": "rgba(255, 255, 255, 0.7)",
   "action": {
@@ -268,7 +268,7 @@ exports[`darkStock builds the same chrome 1`] = `
 }
 `;
 
-exports[`darkStock resolves the same colours 1`] = `
+exports[`darkStock resolves the same colors 1`] = `
 {
   "accent": "rgba(255, 255, 255, 0.7)",
   "action": {
@@ -520,7 +520,7 @@ exports[`darkStock resolves the same colours 1`] = `
 }
 `;
 
-exports[`default + a bare mode resolves the same colours 1`] = `
+exports[`default + a bare mode resolves the same colors 1`] = `
 {
   "accent": "rgba(255, 255, 255, 0.7)",
   "action": {
@@ -772,7 +772,7 @@ exports[`default + a bare mode resolves the same colours 1`] = `
 }
 `;
 
-exports[`default + a config background resolves the same colours 1`] = `
+exports[`default + a config background resolves the same colors 1`] = `
 {
   "accent": "#0D233F",
   "action": {
@@ -1024,7 +1024,7 @@ exports[`default + a config background resolves the same colours 1`] = `
 }
 `;
 
-exports[`default + a config brand resolves the same colours 1`] = `
+exports[`default + a config brand resolves the same colors 1`] = `
 {
   "accent": "#8b0000",
   "action": {
@@ -1276,7 +1276,7 @@ exports[`default + a config brand resolves the same colours 1`] = `
 }
 `;
 
-exports[`default + a config brand, dark resolves the same colours 1`] = `
+exports[`default + a config brand, dark resolves the same colors 1`] = `
 {
   "accent": "rgba(255, 255, 255, 0.7)",
   "action": {
@@ -1536,7 +1536,7 @@ exports[`default builds the same chrome 1`] = `
 }
 `;
 
-exports[`default resolves the same colours 1`] = `
+exports[`default resolves the same colors 1`] = `
 {
   "accent": "#0D233F",
   "action": {
@@ -1796,7 +1796,7 @@ exports[`lightMinimal builds the same chrome 1`] = `
 }
 `;
 
-exports[`lightMinimal resolves the same colours 1`] = `
+exports[`lightMinimal resolves the same colors 1`] = `
 {
   "accent": "#212121",
   "action": {
@@ -2056,7 +2056,7 @@ exports[`lightStock builds the same chrome 1`] = `
 }
 `;
 
-exports[`lightStock resolves the same colours 1`] = `
+exports[`lightStock resolves the same colors 1`] = `
 {
   "accent": "#0D233F",
   "action": {
@@ -2316,7 +2316,7 @@ exports[`minimal builds the same chrome 1`] = `
 }
 `;
 
-exports[`minimal resolves the same colours 1`] = `
+exports[`minimal resolves the same colors 1`] = `
 {
   "accent": "#212121",
   "action": {
@@ -2576,7 +2576,7 @@ exports[`stock builds the same chrome 1`] = `
 }
 `;
 
-exports[`stock resolves the same colours 1`] = `
+exports[`stock resolves the same colors 1`] = `
 {
   "accent": "#0D233F",
   "action": {

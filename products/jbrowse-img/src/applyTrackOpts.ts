@@ -51,7 +51,7 @@ function readFilterSnapOf(r: BuildResult): ReadFilterSnapshot {
 }
 
 // What `color:` names on an alignments track: a read field fills the reads and
-// anything else is a CSS colour. A per-base field is `baseColor:`'s.
+// anything else is a CSS color. A per-base field is `baseColor:`'s.
 const ALIGNMENTS_COLOR_FIELDS = new Set([
   'strand',
   'firstOfPairStrand',
@@ -73,7 +73,7 @@ const BASE_COLORS = [
 ] as const
 const BASE_COLOR_NAMES: ReadonlySet<string> = new Set(BASE_COLORS)
 
-// `color:` names a field on the colour object a JSON modifier may already have
+// `color:` names a field on the color object a JSON modifier may already have
 // started, so it merges rather than replaces.
 function mergeColor(r: BuildResult, patch: Partial<ColorObject>) {
   r.snap.color = {
@@ -682,11 +682,7 @@ const modifiers: Record<string, Modifier> = {
         }
       } else if (category === 'hic') {
         if (!(COLOR_SCHEMES as readonly string[]).includes(value)) {
-          invalid(
-            'color',
-            value,
-            `a colour scheme: ${COLOR_SCHEMES.join(', ')}`,
-          )
+          invalid('color', value, `a color scheme: ${COLOR_SCHEMES.join(', ')}`)
         }
         mergeColor(r, { scheme: value })
       } else if (
@@ -884,7 +880,7 @@ export async function applyDisplayOpts(
  * Write a track's `color.field=…` modifiers onto what its display in `view`
  * already has, after every other modifier, so a member write keeps the rest
  * of the setting whatever order the command line gives them in. A display
- * replaces a colour or facet object whole, the way a session spec writes one,
+ * replaces a color or facet object whole, the way a session spec writes one,
  * which is why these cannot ride in on the launch snapshot.
  */
 export function writeMembers(

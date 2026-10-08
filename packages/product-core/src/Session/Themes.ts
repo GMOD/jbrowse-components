@@ -123,7 +123,7 @@ export function ThemeManagerSessionMixin(_pluginManager: PluginManager) {
          * #getter
          * Light, dark, or following the OS — the axis the palette is drawn
          * along, and what the mode picker shows. `effectiveThemeMode` is the
-         * one to read for a colour decision.
+         * one to read for a color decision.
          */
         get themeMode(): ThemeModeSelection {
           return self.sessionThemeMode

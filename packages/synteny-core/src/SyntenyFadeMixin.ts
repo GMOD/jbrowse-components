@@ -10,7 +10,7 @@ export type FadeThinMode = 'auto' | 'on' | 'off'
 /**
  * #stateModel SyntenyFadeMixin
  *
- * The fade a view drawing synteny ribbons offers whatever the colour mode: a
+ * The fade a view drawing synteny ribbons offers whatever the color mode: a
  * sub-pixel alignment by its on-screen width, so a dense whole-genome picture
  * keeps its density instead of saturating. A fade by the data is the
  * `opacity` object's (`SyntenyColorsMixin`). The linear synteny view and the

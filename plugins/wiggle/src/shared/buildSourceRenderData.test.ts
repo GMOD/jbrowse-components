@@ -57,7 +57,7 @@ const baseGpuProps: WiggleGpuProps = {
 }
 
 describe('buildSourceRenderData summaryScoreMode (bicolor, no solid color)', () => {
-  test('avg mode is one layer coloured by sign per instance', () => {
+  test('avg mode is one layer colored by sign per instance', () => {
     const out = buildSourceRenderData(makeData(), {
       ...baseGpuProps,
       effectiveSummaryScoreMode: 'mean',
@@ -129,10 +129,10 @@ describe('buildSourceRenderData summaryScoreMode (bicolor, no solid color)', () 
     expect(out.map(l => !!l.band)).toEqual([true, true, false, false])
   })
 
-  // Sources sharing one plot are painted one colour each, so a band has one
-  // colour too. Two of them, because a lone plot in the box is the pos/neg
+  // Sources sharing one plot are painted one color each, so a band has one
+  // color too. Two of them, because a lone plot in the box is the pos/neg
   // bicolor plot a single-source quantitative track has always drawn.
-  test('a band over a shared plot takes the source colour on both sides of the pivot', () => {
+  test('a band over a shared plot takes the source color on both sides of the pivot', () => {
     const [band] = buildSourceRenderData(
       {
         sources: [
@@ -178,7 +178,7 @@ describe('buildSourceRenderData summaryScoreMode (bicolor, no solid color)', () 
   )
 
   // A line plot is one continuous line through every bin whatever the mode,
-  // coloured by pivot side when drawn: the worker's avg split would leave the
+  // colored by pivot side when drawn: the worker's avg split would leave the
   // positive line chording across every negative stretch.
   test.each([
     ['mean', [5, -5]],
@@ -225,7 +225,7 @@ describe('buildSourceRenderData summaryScoreMode (bicolor, no solid color)', () 
   // density has no whiskers variant. The model resolves that before this ever
   // sees it (`effectiveSummaryScoreMode`, covered in densityMode.test.ts), so
   // what arrives here is 'mean' — and density is the one mode that still needs
-  // solid-colour layers, `drawDensity` building one gradient per layer.
+  // solid-color layers, `drawDensity` building one gradient per layer.
   test('density + avg splits into solid pos/neg layers', () => {
     const out = buildSourceRenderData(makeData(), {
       ...baseGpuProps,
@@ -249,7 +249,7 @@ describe('buildSourceRenderData pos/neg coloring', () => {
   })
 
   // Unfaceted, every source collapses onto row 0, and several of them take the
-  // source's pos colour on the neg side so an overlaid plot stays one colour.
+  // source's pos color on the neg side so an overlaid plot stays one color.
   test('a shared plot: one color on both sides of the pivot, on row 0', () => {
     const layers = buildSourceRenderData(
       {
@@ -274,8 +274,8 @@ describe('buildSourceRenderData pos/neg coloring', () => {
   })
 
   // A lone plot in the box is the classic pos/neg picture, whatever the facet
-  // says: there is nothing for its colour to tell it apart from.
-  test('a lone source keeps both pivot colours unfaceted', () => {
+  // says: there is nothing for its color to tell it apart from.
+  test('a lone source keeps both pivot colors unfaceted', () => {
     const [layer] = buildSourceRenderData(makeData(), {
       ...baseGpuProps,
       effectiveSummaryScoreMode: 'mean',

@@ -208,7 +208,7 @@ test('of two bars under the cursor, the one drawn over the other answers', () =>
   expect(hit?.instance).toBe(2)
 })
 
-test('a constant colour answers a hover as the one number the layer holds', () => {
+test('a constant color answers a hover as the one number the layer holds', () => {
   const layer: StoredLayer = {
     count: 2,
     skipped: 0,

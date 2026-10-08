@@ -89,7 +89,7 @@ test('stopsFromRampLut reads the entries sampleColorRamp defines, exactly', () =
 
 // ggplot2's gradient2: the middle stop at `mid`, and both sides on one scale,
 // so the farther end reaches its end stop, the nearer stops short of its own,
-// and two values equally far from the middle take mirrored colours. Every
+// and two values equally far from the middle take mirrored colors. Every
 // reader of a straight table places a value through this one rule.
 test('rampMidT puts the middle stop at mid, both sides on one scale', () => {
   expect(rampMidT(0.25, 0.25)).toBe(0.5)

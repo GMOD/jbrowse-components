@@ -150,7 +150,7 @@ function createCandidateValueCounter(candidates: string[]) {
   }
 }
 
-// The colour field's value per feature, the main thread's to paint: each
+// The color field's value per feature, the main thread's to paint: each
 // feature's one-based index into `values`, and each value with the partition
 // row it lands in.
 function createColorValueCollector(field: string, jexl: JexlInstance) {

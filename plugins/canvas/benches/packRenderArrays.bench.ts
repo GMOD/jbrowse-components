@@ -17,8 +17,8 @@
 //
 // The question the numbers answer is whether the packer is worth re-expressing
 // as the shared encoder. `encode` is a floor, not a like-for-like: it fills x,
-// x2, y, colour and one integer lane per family and leaves height, strand,
-// direction, widthBp, the colour class, the label rows, the child ordinal and
+// x2, y, color and one integer lane per family and leaves height, strand,
+// direction, widthBp, the color class, the label rows, the child ordinal and
 // the density fade unwritten, so the real port costs more than the row says.
 // ADR-114 has the decision.
 import { performance } from 'node:perf_hooks'

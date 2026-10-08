@@ -15,7 +15,7 @@ tree has a value scale for y and none for x.
 flat line at `y = |TLEN|` (`ARC_SHAPE_FLAT` and `plotsOnInsertSizeAxis` in
 `plugins/alignments/src/features/arcs/shapes.ts`), and
 `computePairedInsertSizeStats` sorts an `Int32Array` of every insert in the
-window for the median and MAD its colouring classifies against. Wiggle,
+window for the median and MAD its coloring classifies against. Wiggle,
 Manhattan and the mark display each put a declared field on y through
 `scales.y` (ADR-142), and `ScoreAxisMixin` derives the ticks, the title and the
 reference lines from that one object.

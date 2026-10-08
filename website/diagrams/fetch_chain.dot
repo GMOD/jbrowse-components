@@ -41,7 +41,7 @@
 //                               was a cluster drawn around that single question,
 //                               which is a label with a border.
 //
-// That leaves ONE cluster, and it now means something a fill colour could not
+// That leaves ONE cluster, and it now means something a fill color could not
 // say on its own: everything inside it is the display's to write.
 //
 // `increment fetchGeneration` looks like the same case and is not. Dropping it

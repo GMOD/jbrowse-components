@@ -18,7 +18,7 @@ import {
 /**
  * #config AlignmentsColor
  * #category display
- * The alignments displays' `color` setting: one colour for every read, or a
+ * The alignments displays' `color` setting: one color for every read, or a
  * field each read carries. A read dimension paints its own vocabulary
  * (`strand`, `firstOfPairStrand`, `pairOrientation`, `insertSize`,
  * `insertSizeAndOrientation`, `mateRefName`) or ramp (`mapq`), `tags.XX` reads
@@ -62,21 +62,21 @@ export const alignmentsColorConfigSchema = ConfigurationSchema(
      * #slot value
      * The fill of every read while no field paints, and of a read carrying no
      * value under a tag or attribute, or no mate under `mateRefName`. Arcs and
-     * pair orientations keep the theme's colours. Writing `color: "steelblue"`
-     * lands here. Unset, the theme's read colour.
+     * pair orientations keep the theme's colors. Writing `color: "steelblue"`
+     * lands here. Unset, the theme's read color.
      */
     value: {
       type: 'maybeColor',
-      description: 'CSS colour of a read no field paints',
+      description: 'CSS color of a read no field paints',
     },
     ...colorChannelSlots({
       scales: ALIGNMENTS_COLOR_SCALES,
       scaleName: 'AlignmentsColorScale',
       fieldType: 'string',
       field:
-        'what colours a read: strand, firstOfPairStrand, pairOrientation, insertSize, insertSizeAndOrientation, mateRefName and mapq paint their own vocabulary or ramp; tags.XX reads a SAM tag and any other name a feature attribute',
+        'what colors a read: strand, firstOfPairStrand, pairOrientation, insertSize, insertSizeAndOrientation, mateRefName and mapq paint their own vocabulary or ramp; tags.XX reads a SAM tag and any other name a feature attribute',
       scale:
-        'none paints value and keeps the field for a switch back; categorical a range colour per value; linear a ramp over a numeric tag or attribute between domainMin and domainMax; threshold the bins domain cuts; unset, threshold over insertSize and insertSizeAndOrientation and categorical over any other field',
+        'none paints value and keeps the field for a switch back; categorical a range color per value; linear a ramp over a numeric tag or attribute between domainMin and domainMax; threshold the bins domain cuts; unset, threshold over insertSize and insertSizeAndOrientation and categorical over any other field',
     }),
     ...colorDomainSlot({
       domain:
@@ -86,13 +86,13 @@ export const alignmentsColorConfigSchema = ConfigurationSchema(
     ...colorDomainQuantileSlot,
     ...colorRangeSlot({
       range:
-        "CSS colours a categorical scale hands its domain in order, or with no domain a preset field's levels in their own order, a threshold scale its bins, or a linear scale's stops, evenly spaced; a level left out keeps its default; empty is the field's own colours, the tag palette or viridis",
+        "CSS colors a categorical scale hands its domain in order, or with no domain a preset field's levels in their own order, a threshold scale its bins, or a linear scale's stops, evenly spaced; a level left out keeps its default; empty is the field's own colors, the tag palette or viridis",
     }),
     ...colorRampSlots,
     /**
      * #slot labels
      * What the key, the hovers and the arc key name each level or value
-     * `range` colours, in the same order: `labels: ["Maternal", "Paternal"]`
+     * `range` colors, in the same order: `labels: ["Maternal", "Paternal"]`
      * beside `domain: ["1", "2"]` on `tags.HP`.
      */
     labels: {

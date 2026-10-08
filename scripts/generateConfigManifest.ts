@@ -160,7 +160,7 @@ function slotsOf(type) {
       // sub-schema's shorthand slot taking it or a string into a list of one,
       // and numbers carried as strings.
       shorthand: Object.keys(targets).length > 0 ? targets : undefined,
-      // a colour object's defaults by field, which the validator's colour
+      // a color object's defaults by field, which the validator's color
       // rules read the object with
       fieldPresets: subOptions?.fieldPresets,
       fieldDefault: subOptions?.fieldPresets
@@ -627,7 +627,7 @@ const manifest = {
   // Legacy display-instance keys the session migration still lifts into the
   // config, keyed by display type ('*' = any), read off the DisplayTypes the
   // migration reads, so the two cannot disagree about what is stale versus dead.
-  // The synteny displays' v4.3.0 colour, opacity and length filter move onto
+  // The synteny displays' v4.3.0 color, opacity and length filter move onto
   // the view instead, read off the view's own lift.
   migratedDisplayKeys: (() => {
     const migrated = migratedDisplayInstanceKeys(pm)

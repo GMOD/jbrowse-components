@@ -39,7 +39,7 @@ export interface BarChannels extends ColorChannel, RowChannel {
 }
 
 export interface BarParams extends RowParams, MarkValueScale {
-  /** The quantitative colour scale, for a bar whose colour is a ramp or a threshold. */
+  /** The quantitative color scale, for a bar whose color is a ramp or a threshold. */
   colorScale?: MarkColorScale
   /** The value bars grow from; a bar below it hangs down. */
   origin: number

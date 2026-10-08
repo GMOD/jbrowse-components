@@ -1,6 +1,6 @@
 ---
 status: Accepted
-summary: "An adapter lists its rows through one method, `listRowSources`: the feature field the names are values of, the sources in the adapter's order with label and colour, and a guide tree as Newick where the adapter ships one. A multi-BigWig lists `source`, a MAF `alignments`. The mark display takes the listing for `rows` on that field, or on the key a `flatten` over that field wrote, so a MAF's species rows stand in tree order with every species present, and the guide tree draws beside them through `TreeSidebarMixin`'s `guideTreeNewick` hook, lifted from the MAF display: shown while some rotation of it lists `rows.domain` in order, hidden by a reorder no rotation produces, never written to `rows.tree`"
+summary: "An adapter lists its rows through one method, `listRowSources`: the feature field the names are values of, the sources in the adapter's order with label and color, and a guide tree as Newick where the adapter ships one. A multi-BigWig lists `source`, a MAF `alignments`. The mark display takes the listing for `rows` on that field, or on the key a `flatten` over that field wrote, so a MAF's species rows stand in tree order with every species present, and the guide tree draws beside them through `TreeSidebarMixin`'s `guideTreeNewick` hook, lifted from the MAF display: shown while some rotation of it lists `rows.domain` in order, hidden by a reorder no rotation produces, never written to `rows.tree`"
 ---
 
 # ADR-189: An adapter lists its rows, and a guide tree draws through the mixin

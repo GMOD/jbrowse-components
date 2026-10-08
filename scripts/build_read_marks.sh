@@ -5,7 +5,7 @@
 #
 # One alignment file becomes two mark-display tracks. The reads themselves,
 # drawn by a display that plots a read's fields: depth as a coverage step,
-# each pair's insert size as a point, the reads stacked and coloured by that
+# each pair's insert size as a point, the reads stacked and colored by that
 # insert. And a BED of every pair whose insert exceeds 1 kb, cut out of the
 # same file with samtools, which the display bins and counts along the whole
 # chromosome where the reads are too many to fetch.

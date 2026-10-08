@@ -87,7 +87,7 @@ const MAX_IDENTITY_LUTS = 16
 const identityLuts = new Map<string, Uint32Array>()
 
 /**
- * The ramp's packed colour at each hundredth of identity, the same array for
+ * The ramp's packed color at each hundredth of identity, the same array for
  * the same ramp, so a declaration read again re-encodes nothing. The domain
  * and the middle are `continuousColorScale`'s; the stops are sampled at each
  * hundredth rather than read off its 256-entry table, whose rounding would
@@ -124,7 +124,7 @@ const XYPLOT_BAR_ABGR = cssColorToABGR(XYPLOT_BAR_RGB)
 
 /**
  * The key for whichever identity plot draws: the ramp, the X-Y plot's one bar
- * colour with its height named, or the ramp's two ends where each cell is one
+ * color with its height named, or the ramp's two ends where each cell is one
  * base, which matches or not, so the ramp's middle is never drawn.
  */
 export function identityColorScale(
@@ -315,7 +315,7 @@ export function buildIdentityRuns(
   }
 }
 
-/** The identity heatmap: each run's cells in its ramp colour. */
+/** The identity heatmap: each run's cells in its ramp color. */
 export function identitySpans(
   runs: MafIdentityRuns,
   lut = identityLut(),
@@ -331,7 +331,7 @@ export function identitySpans(
 
 /**
  * The X-Y plot: a bar per run as tall as its identity, on the ramp or in the
- * plot's one colour.
+ * plot's one color.
  */
 export function identityBars(
   runs: MafIdentityRuns,

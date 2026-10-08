@@ -5,7 +5,7 @@ import { getStr, measureGridWidth } from '@jbrowse/core/util'
 import type { GridColDef } from '@mui/x-data-grid'
 
 /**
- * Each Row's picks, which the swatch column edits: the colours picked by row
+ * Each Row's picks, which the swatch column edits: the colors picked by row
  * name, and what a pick writes.
  */
 export interface EachRowPicks {

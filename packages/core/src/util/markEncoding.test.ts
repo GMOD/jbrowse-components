@@ -36,7 +36,7 @@ const ALL: LaneName[] = ['y', 'color', 'glyph', 'row', 'index']
 
 function colorLane(color: Uint32Array | number | undefined) {
   if (!(color instanceof Uint32Array)) {
-    throw new Error(`expected a colour lane, got ${color}`)
+    throw new Error(`expected a color lane, got ${color}`)
   }
   return color
 }
@@ -290,7 +290,7 @@ test('an open end never crosses a pinned one', () => {
   )
 })
 
-test('scheme names the ramp, and range, where it lists colours, wins over it', () => {
+test('scheme names the ramp, and range, where it lists colors, wins over it', () => {
   const viridis = blackToWhite({ range: undefined, scheme: 'viridis' })
   const unset = blackToWhite({ range: undefined })
   expect([...colorLane(viridis.color)]).toEqual([...colorLane(unset.color)])
@@ -339,7 +339,7 @@ test('a jexl: field ref is the escape for a derived channel', () => {
   expect([...r.y]).toEqual([20, 80, 50])
 })
 
-test('a constant colour ships as one number, a jexl colour as a lane', () => {
+test('a constant color ships as one number, a jexl color as a lane', () => {
   const constant = encodeFeatures(features, { color: 'red' }, ALL, { jexl })
   expect(constant.color).toBe(cssColorToABGR('red'))
   expect(colorAt(constant, 2)).toBe(cssColorToABGR('red'))
@@ -365,7 +365,7 @@ test('a constant colour ships as one number, a jexl colour as a lane', () => {
   expect(perFeature.scale).toBeUndefined()
 })
 
-test('a scaled colour stays a lane even where every feature takes one colour', () => {
+test('a scaled color stays a lane even where every feature takes one color', () => {
   const same = features.map((_, i) => feature(i, { type: 'gene', score: 10 }))
   const categorical = encodeFeatures(
     same,
@@ -391,7 +391,7 @@ test('a scaled colour stays a lane even where every feature takes one colour', (
   }
 })
 
-test('an unpinned categorical scale colours by value, so two regions agree, and names the missing row', () => {
+test('an unpinned categorical scale colors by value, so two regions agree, and names the missing row', () => {
   const r = encodeFeatures(
     features,
     { color: { field: 'type', scale: 'categorical' } },
@@ -432,7 +432,7 @@ test('an unpinned categorical scale colours by value, so two regions agree, and 
   expect(colorLane(other.color)[1]).toBe(cssColorToABGR(NO_CATEGORY_COLOR))
 })
 
-test('a categorical domain pins the order and a palette the colours', () => {
+test('a categorical domain pins the order and a palette the colors', () => {
   const r = encodeFeatures(
     features,
     {
@@ -459,7 +459,7 @@ test('a categorical domain pins the order and a palette the colours', () => {
   })
 })
 
-test('strand brings its own order and colours where the encoding names none', () => {
+test('strand brings its own order and colors where the encoding names none', () => {
   const r = encodeFeatures(
     features,
     { color: { field: 'strand', scale: 'categorical' } },
@@ -620,7 +620,7 @@ test('a pinned ramp domain with no range steps at its value', () => {
   expect(colorLane(r.color)[2]).toBe(cssColorToABGR('black'))
 })
 
-test('the colorValue lane ships the raw values and the region extent instead of colours', () => {
+test('the colorValue lane ships the raw values and the region extent instead of colors', () => {
   const r = encodeFeatures(
     features,
     { color: { field: 'score', scale: 'linear', range: ['black', 'white'] } },
@@ -659,7 +659,7 @@ const THRESHOLD = {
   range: THRESHOLD_PALETTE,
 }
 
-test('a threshold colour packs one palette entry per interval for a caller naming the colour lane alone', () => {
+test('a threshold color packs one palette entry per interval for a caller naming the color lane alone', () => {
   const palette = THRESHOLD_PALETTE
   const r = encodeFeatures(features, { color: THRESHOLD }, ALL, { jexl })
   expect(r.colorValue).toBeUndefined()
@@ -685,7 +685,7 @@ test('a threshold colour packs one palette entry per interval for a caller namin
   })
 })
 
-test('a threshold colour ships its raw values to a caller that resolves it, marking the keyless cases as a ramp does', () => {
+test('a threshold color ships its raw values to a caller that resolves it, marking the keyless cases as a ramp does', () => {
   const r = encodeFeatures(
     features,
     { color: THRESHOLD },
@@ -712,7 +712,7 @@ test('a threshold colour ships its raw values to a caller that resolves it, mark
   })
 })
 
-test('a quantitative colour over the plotted field is the y lane itself, so it costs no lane', () => {
+test('a quantitative color over the plotted field is the y lane itself, so it costs no lane', () => {
   const plotted = features.slice(0, 3)
   for (const color of [
     THRESHOLD,
@@ -773,7 +773,7 @@ test('a threshold domain written as strings cuts at the numbers it names', () =>
   expect(r.scale).toMatchObject({ kind: 'threshold', domain: [20] })
 })
 
-test('a categorical colour resolves in the worker whatever lanes are named', () => {
+test('a categorical color resolves in the worker whatever lanes are named', () => {
   const r = encodeFeatures(
     features,
     { color: { field: 'strand', scale: 'categorical' } },
@@ -929,7 +929,7 @@ test('a range longer than its domain gives every unlisted value its spare shapes
   expect(shapeOf.get('exon')).toBe('circle')
 })
 
-test('colour and shape scales over different fields resolve side by side', () => {
+test('color and shape scales over different fields resolve side by side', () => {
   const r = encodeFeatures(
     features,
     {
@@ -1191,7 +1191,7 @@ test('the size and x2Ref lanes ride the transfer list', () => {
 })
 
 // A bar, point or link mark's ramp resolves on the GPU or in the Canvas2D bake,
-// a span's in the worker through `continuousColorScale`: one value, one colour.
+// a span's in the worker through `continuousColorScale`: one value, one color.
 test('every ramp path paints no value, and text that is no number, one grey each', () => {
   const { colorOf } = continuousColorScale(
     { field: 'score', scale: 'linear' },
@@ -1206,8 +1206,8 @@ test('every ramp path paints no value, and text that is no number, one grey each
 // The encoder resolves a threshold in its own walk, a bin index per feature
 // rather than a key through the categorical path, so it is held to the
 // thresholdField the feature display, the variant cells and every threshold key
-// read: one value, one colour, whichever of them paints it.
-test("the encoder's threshold paints each value as thresholdField colours it", () => {
+// read: one value, one color, whichever of them paints it.
+test("the encoder's threshold paints each value as thresholdField colors it", () => {
   const domain = ['0.5', '2']
   const range = ['#111111', '#222222']
   const values: unknown[] = [

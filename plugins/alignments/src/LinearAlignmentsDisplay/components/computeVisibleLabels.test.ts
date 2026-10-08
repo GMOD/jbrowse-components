@@ -380,7 +380,7 @@ test('the (S<len>) summary still renders when no per-base clip data', () => {
 // `showMismatches` gated the whole pass, and only three of the five layers it
 // labels answer to it: `clip` is unconditional in PILEUP_MARKS and
 // `softclipBases` is gated on `showSoftClipping`. So the bars and the
-// base-coloured cells went on drawing with mismatches off while their text
+// base-colored cells went on drawing with mismatches off while their text
 // disappeared.
 describe('mismatches off leaves the layers that do not share that gate', () => {
   const softclipInterbase = {

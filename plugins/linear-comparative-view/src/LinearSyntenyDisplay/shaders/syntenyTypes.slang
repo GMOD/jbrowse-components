@@ -158,7 +158,7 @@ public struct Uniforms {
   // The band's ground: whatever both backends just cleared the canvas to, as
   // linear 0-1 rgb. shadeFill pre-blends an indel against it and writes opaque,
   // which agrees with the base ribbon composited beside it only if the
-  // destination really is this colour — `syntenyGroundClear` is the
+  // destination really is this color — `syntenyGroundClear` is the
   // whole argument, and `writeSyntenyUniforms` is what keeps the two in step.
   public float3 ground;
   // Ink for what is drawn ONTO the band rather than composited into it: the
@@ -403,11 +403,11 @@ FillEdges fillEdges(float4 c, float s, float sd, float dydt) {
 // not make up for it. Below 0.35 the max is inert, so the low display alphas a
 // whole-genome view actually uses are untouched.
 //
-// Composited for a tomato ribbon, the default strand colour, over white: at the
+// Composited for a tomato ribbon, the default strand color, over white: at the
 // 0.25 default hovering gives (255,216,209) -> (228,190,183), and at 1.0
 // (255,99,71) -> (178,69,50), which is the strongest cue of any setting rather
 // than the weakest as was once feared. The weak point is displayAlpha EXACTLY
-// 0.35, where hovering lands on the same colour as hovering at 0.25 because both
+// 0.35, where hovering lands on the same color as hovering at 0.25 because both
 // clamp here: the un-hovered ribbon has already reached the alpha the boost
 // would take it to, so only hoverDarken is left and the red channel moves
 // 27/255. Still visible, and a narrow band, so it is left alone, but that is the
@@ -463,7 +463,7 @@ float4 shadeFill(float4 color, float featureId, float coverage, float kind,
 static const float STROKE_HALF_PX = 0.5;
 public static const float STROKE_PERP_PX = 1.0;
 // Exported so the Canvas2D twin strokes its clicked outline at the same weight
-// off the same number. Both now take the colour from `u.ink` / getContrastText,
+// off the same number. Both now take the color from `u.ink` / getContrastText,
 // so only the alpha was left to drift.
 public static const float STROKE_ALPHA = 0.4;
 

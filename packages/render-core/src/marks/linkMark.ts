@@ -100,7 +100,7 @@ export interface LinkSizeScale {
 export type LinkShape = 'dome' | 'arc' | 'line'
 
 export interface LinkParams extends RowParams, MarkValueScale {
-  /** The quantitative colour scale, for a link whose colour is a ramp or a threshold. */
+  /** The quantitative color scale, for a link whose color is a ramp or a threshold. */
   colorScale?: MarkColorScale
   /** The view's displayed regions, indexed as `x2Region` and the block's own index are. */
   regions: readonly LinkRegion[]

@@ -59,8 +59,8 @@ function paintedColors(display: ReturnType<typeof loaded>) {
   return [...color.subarray(0, count)]
 }
 
-describe('an identity colour over a file that colours its own features', () => {
-  it("paints every block the file's itemRgb, as an unset colour does", () => {
+describe('an identity color over a file that colors its own features', () => {
+  it("paints every block the file's itemRgb, as an unset color does", () => {
     const identity = paintedColors(loaded(CHROMHMM))
     expect(identity).toEqual(paintedColors(loaded()))
     expect(new Set(identity)).toEqual(
@@ -72,7 +72,7 @@ describe('an identity colour over a file that colours its own features', () => {
     )
   })
 
-  it('names each colour in the key by its label, in domain order', () => {
+  it('names each color in the key by its label, in domain order', () => {
     const [section] = loaded(CHROMHMM).legendSpec.sections
     expect(section?.items.map(i => [i.label, i.color])).toEqual([
       ['1 Active TSS', 'rgba(255,0,0,1)'],

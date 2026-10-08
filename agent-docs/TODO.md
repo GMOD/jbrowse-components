@@ -58,7 +58,7 @@ re-number when it stops.
 Ordered. Checks owed on code that landed in the v5 window went first, where a
 wrong answer means something already shipped broken, and the cross-backend gate
 carried three of them. All three have closed, and twice the closing run found
-something: the per-base colour scenes failed on their first run (2026-08-27),
+something: the per-base color scenes failed on their first run (2026-08-27),
 and the mark display's eight scenes found two fractional-pixel drifts nothing
 on jsdom could see (2026-09-11). The third, the AA ramp prediction, never
 produced its number — it needed a before/after on sites that then got redrawn

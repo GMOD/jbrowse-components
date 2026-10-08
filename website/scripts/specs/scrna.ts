@@ -152,8 +152,8 @@ export const scrnaSpecs: ScreenshotSpec[] = [
         },
       ],
     }),
-    // NO COLOR KEY HERE: the per-cell rows take their colours by name, and the
-    // app keys a row colour only by an attribute or in a shared panel, so the
+    // NO COLOR KEY HERE: the per-cell rows take their colors by name, and the
+    // app keys a row color only by an attribute or in a shared panel, so the
     // 0.14 px rows' label bars are the only thing naming the cell types.
     //
     // The pseudobulk lane above stays multi-row (review: "i do not like the

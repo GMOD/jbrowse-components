@@ -300,7 +300,7 @@
       "name": "TandemRepeat",
       "packageName": "jbrowse-plugin-tandem-repeat",
       "authors": ["Colin Diesh"],
-      "description": "A tandem repeat's alleles, one bar per haplotype with each copy coloured by its repeat unit, from VCF 4.5 <CNV:TR> records",
+      "description": "A tandem repeat's alleles, one bar per haplotype with each copy colored by its repeat unit, from VCF 4.5 <CNV:TR> records",
       "location": "https://github.com/GMOD/jbrowse-plugin-tandem-repeat",
       "tags": ["bring-your-own-data", "variants", "view"],
       "license": "MIT",

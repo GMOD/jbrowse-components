@@ -521,7 +521,7 @@ export const cancerSvSpecs: ScreenshotSpec[] = [
         // TWO PIXELS A ROW, not the one every other cancer_sv pileup takes: the
         // pileups are 259 and 129 rows, so at 1px they are 388px of a frame
         // that has to reach the chain's height beside it and the rest is blank
-        // page. At 2px they fill it and the clipping is a wall of colour rather
+        // page. At 2px they fill it and the clipping is a wall of color rather
         // than a hairline. Each height is that pileup as drawn plus its own
         // coverage lane, measured off the render — 580/300 left 128 and 90 px of
         // white inside the two track boxes, which no size report catches because
@@ -676,7 +676,7 @@ export const cancerSvSpecs: ScreenshotSpec[] = [
                 { trackId: TRUTH_SET, displayMode: 'collapsed', height: 30 },
                 // The same molecules against hg38, split reads only, one row
                 // per molecule across the three windows. Grey reads: the only
-                // colours left are the connectors, which the legend names.
+                // colors left are the connectors, which the legend names.
                 {
                   trackId: TUMOUR,
                   ...DEEP_ONT,
@@ -808,9 +808,9 @@ export const cancerSvSpecs: ScreenshotSpec[] = [
                 //
                 // NO SOFT CLIPPING, though it is the obvious thing to reach
                 // for here and was tried: a clipped ONT tail is drawn base by
-                // base as mismatch colour, and at 800 bp across the frame the
+                // base as mismatch color, and at 800 bp across the frame the
                 // tails of every split read fill the whole chr3 window with
-                // rainbow hash -- the same "mismatch-coloured hash that reads
+                // rainbow hash -- the same "mismatch-colored hash that reads
                 // as data and is not" the reference-sequence lanes were
                 // removed for. Off, every read simply STOPS on the junction
                 // and the pileup's right edge is a straight line at
@@ -867,7 +867,7 @@ export const cancerSvSpecs: ScreenshotSpec[] = [
                   //
                   // `flipStrandLongReadChains` is the switch that classifier is
                   // gated on, so turning it off lets the reads fall through to
-                  // the scheme's own fill. What the figure loses is a colour
+                  // the scheme's own fill. What the figure loses is a color
                   // saying "this segment flipped at the junction", and what it
                   // keeps is where each row STOPS and where the same molecule
                   // picks up again -- which the row ends and the connectors
@@ -1016,7 +1016,7 @@ export const cancerSvSpecs: ScreenshotSpec[] = [
                   // served worst: these reads are realigned to the reconstructed
                   // allele, where the fold-back has been straightened out, so
                   // every segment agrees with its frame and the lane painted one
-                  // colour whatever the scheme said. It was spending a colour
+                  // color whatever the scheme said. It was spending a color
                   // channel to say nothing.
                   flipStrandLongReadChains: false,
                   // THE DEPTH CLAIM, which the tutorial makes in prose ("depth
@@ -1353,9 +1353,9 @@ export const cancerSvSpecs: ScreenshotSpec[] = [
   // the search box was uncontrolled DataGrid state and a filtered SV inspector
   // could only be reached by typing into a live app.
   //
-  // No stroke-colour expression here, unlike the old circles: the SV inspector
+  // No stroke-color expression here, unlike the old circles: the SV inspector
   // builds its own chord track (featuresCircularTrackConfiguration) and that
-  // snapshot has no colour slot to set. Support is not lost by dropping it --
+  // snapshot has no color slot to set. Support is not lost by dropping it --
   // JunctionReadCount is a column in the table, which states 182 and 154 against
   // the single digits below rather than encoding the same thing as red.
   //
@@ -1526,11 +1526,11 @@ export const cancerSvSpecs: ScreenshotSpec[] = [
           filterBy: { split: 'only' },
           unit: 'chain',
           // THE LEGEND, WHICH IS THE ANSWER TO "unclear why the reads are
-          // red/pink on the left but not on the right" (review). The colours
+          // red/pink on the left but not on the right" (review). The colors
           // are not a scheme this spec picked, which is why nothing in the spec
           // explained them: colorBy here is `normal`, and under CHAIN layout an
           // unpaired long read whose chain carries a supplementary alignment is
-          // coloured by that segment's strand relative to the chain's primary
+          // colored by that segment's strand relative to the chain's primary
           // instead (`readColorCategory`, the `isChain && hasSupp && !isPaired`
           // branch). So the frame holds three categories and the legend names
           // all three: `Split segment (same strand)`, `Split segment (inverted)`
@@ -1554,7 +1554,7 @@ export const cancerSvSpecs: ScreenshotSpec[] = [
           // `Reads` is left to the molecules whose other segment is in neither
           // window.
           // `showLegend` is opt-in per track and off by default, so a figure
-          // that leans on those colours has to ask for it.
+          // that leans on those colors has to ask for it.
           showLegend: true,
           showBezierConnections: true,
           // THE JUNCTION'S TOTAL, beside the per-molecule fan (review: "please
@@ -1748,7 +1748,7 @@ export const cancerSvSpecs: ScreenshotSpec[] = [
           // which is exactly what a frame comparing two junctions wants.
           readConnectionsHeight: 90,
           // The key for the arcs and the read fills alike (review: "also need
-          // legend"). It is data-driven -- the display lists the colour slots
+          // legend"). It is data-driven -- the display lists the color slots
           // actually present -- so the inter-chromosomal row appears here
           // because this frame's arcs are inter-chromosomal, and it is the row
           // that needed a name: a reader meeting a brown curve across a region
@@ -1759,7 +1759,7 @@ export const cancerSvSpecs: ScreenshotSpec[] = [
       ],
     }),
     // and one pill naming them, in the empty strip on the chr9 side of the
-    // join. A coloured line crossing a panel divider is only obviously a
+    // join. A colored line crossing a panel divider is only obviously a
     // connection to someone who already knows the display draws them.
     //
     // THE SECOND PILL ANSWERS THE MIDDLE PANEL (review: "this is confusing

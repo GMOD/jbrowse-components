@@ -46,7 +46,7 @@ const colorsOf = (display: {
   resolvedRowColors: ReadonlyMap<string, string>
 }) => Object.fromEntries(display.resolvedRowColors)
 
-test("one reset returns a value recolour to the base's grey", () => {
+test("one reset returns a value recolor to the base's grey", () => {
   const display = makeDisplay({ rowColor: { field: 'group', unknown: '#ccc' } })
   expect(display.rowStylingIsCustom).toBe(false)
   display.applyRowEdits(display.editableSources, {
@@ -65,7 +65,7 @@ test("one reset returns a value recolour to the base's grey", () => {
   expect(display.rowStylingIsCustom).toBe(false)
 })
 
-test('a colour by picked over name pairs survives a reset', () => {
+test('a color by picked over name pairs survives a reset', () => {
   const display = makeDisplay({
     rowColor: { domain: ['a'], range: ['#f00'] },
   })
@@ -77,7 +77,7 @@ test('a colour by picked over name pairs survives a reset', () => {
   expect(display.rowColorChoice).toBe('group')
 })
 
-test("a row recoloured under name resets to the base's pairs", () => {
+test("a row recolored under name resets to the base's pairs", () => {
   const display = makeDisplay({
     rowColor: { domain: ['a'], range: ['#f00'] },
   })

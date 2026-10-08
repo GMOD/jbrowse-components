@@ -1834,7 +1834,7 @@ with tempfile.TemporaryDirectory() as d:
                     "--bed-dir", d, "--species", "A", "B",
                     "--attributes", "gene_group", "color", "break_FET"],
                    check=True, capture_output=True)
-    check("break_FET passes through beside the group and its colour",
+    check("break_FET passes through beside the group and its color",
           open(out).read().splitlines(),
           ["a1\tb1\tM\t#C23D51\t0.001", "a2\tb2\tM\t#C23D51\t0.4"])
 

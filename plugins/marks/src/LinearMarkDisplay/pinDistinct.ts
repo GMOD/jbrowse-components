@@ -2,8 +2,8 @@ import type { MarkLegendSection } from './legend.ts'
 
 /**
  * A shape key whose unlisted values hash onto one shape: which values share
- * one, and the domain that would give each its own. Colours need no such key,
- * since a categorical colour deals each value its own (ADR-205).
+ * one, and the domain that would give each its own. Colors need no such key,
+ * since a categorical color deals each value its own (ADR-205).
  */
 export interface SharedKey {
   markIndexes: number[]

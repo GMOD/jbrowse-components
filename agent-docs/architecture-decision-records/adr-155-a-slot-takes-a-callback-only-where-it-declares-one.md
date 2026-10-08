@@ -22,10 +22,10 @@ jobs under one prefix, and neither was checked:
   where every name is `undefined`, and handed back the fallout as the setting.
   `jexl:-log10(score)` in GWASAdapter's `scoreTransform` plotted every raw
   p-value behind a console warning.
-- **A derived field**, which the display evaluates per feature. A colour's or a
+- **A derived field**, which the display evaluates per feature. A color's or a
   facet's `field` holding `jexl:…` was evaluated by the reader first, with no
   feature: a `jexl:` facet field threw out of every canvas fetch reaction, and a
-  `jexl:` Manhattan colour field threw at display creation.
+  `jexl:` Manhattan color field threw at display creation.
 
 ## Decision
 
@@ -42,13 +42,13 @@ construction, because nothing calls it with one. The field references are
 `featureField`: `facet.field`, the mark encoding's `x`, `x2`, `y` and `row`, a
 mark glyph's `field`, `partitionField`, `clusterField`, and the `field` of
 FeatureColor, ManhattanColor and MarkColor. The wiggle, alignments, synteny and
-ribbon colours' `field` names one of the display's own dimensions and stays a
+ribbon colors' `field` names one of the display's own dimensions and stays a
 plain string, through `colorChannelSlots`' required `fieldType`.
 
 **Every surface refuses the same thing.** The slot's MST type, the snapshot
 preprocessor (for builds where MST's type check is off, which is every product
 but web), `setSlot` and `slotValueRefusal` through `slotWriteRefusal`, the
-colour editor, the JSON Schema (`PlainString` and `not: JexlString`) and
+color editor, the JSON Schema (`PlainString` and `not: JexlString`) and
 `jbrowse validate`'s explanation of it.
 
 ## Consequences
@@ -58,9 +58,9 @@ colour editor, the JSON Schema (`PlainString` and `not: JexlString`) and
 - GWASAdapter reads `scoreTransform` raw and declares `score`; the multi-sample
   variant displays' `featureColor` declares `feature`.
 - The volvox repeat wiggle tracks lost `jexl:repeatColor(feature)`, a function
-  the volvox plugin no longer registers, on a display that colours per signal.
+  the volvox plugin no longer registers, on a display that colors per signal.
 - A `jexl:` entry in a `stringArray` slot loads (`colorArray` and
-  `stringEnumArray` refuse one as not a colour or not a member). ~~`jexlFilters`
+  `stringEnumArray` refuse one as not a color or not a member). ~~`jexlFilters`
   entries are expressions, and `configuredJexlFilters` reads one the same with
   or without the prefix.~~ (amended below) In a `groupby` or `pileup.fields`, the worker's
   transform throws, pointing at a `formula` step, and in a mark's own

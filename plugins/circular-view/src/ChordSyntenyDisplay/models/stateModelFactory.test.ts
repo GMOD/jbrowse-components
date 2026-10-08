@@ -155,9 +155,9 @@ test('reload() rewakes the fetch after an error', async () => {
 }, 20000)
 
 // query paints the first genome's end and target the second, each in its
-// chromosome's ideogram colour, so a ribbon matches the arc it leaves; every
+// chromosome's ideogram color, so a ribbon matches the arc it leaves; every
 // mode paints at the view's alpha
-// a ribbon paints its colour opaque and every ribbon draws at one opacity, so
+// a ribbon paints its color opaque and every ribbon draws at one opacity, so
 // an opacity drag repaints none of them
 test("the view's color paints each ribbon, at the view's alpha", async () => {
   const { session, view, display } = await setup(['volvox', 'volvox2'])
@@ -181,7 +181,7 @@ test("the view's color paints each ribbon, at the view's alpha", async () => {
 }, 20000)
 
 // a hidden row would still take the pointer through its transparent fill
-test('a ribbon its colour paints transparent is not drawn', async () => {
+test('a ribbon its color paints transparent is not drawn', async () => {
   const { view, display } = await setup(['volvox', 'volvox2'])
   expect(display.drawnFeatures).toHaveLength(1)
   applySnapshot(view.color, { value: 'rgba(0,0,0,0)' })
@@ -216,7 +216,7 @@ test('an alignment across two assemblies is one ribbon', async () => {
 }, 20000)
 
 // the ideogram of the genome the ribbons land on says where each stretch came
-// from: a ribbon from volvox ctgA paints volvox2 ctgB in ctgA's colour
+// from: a ribbon from volvox ctgA paints volvox2 ctgB in ctgA's color
 test("the second genome's ideogram is painted by the first genome's chromosomes", async () => {
   const { session, view } = await setup(['volvox', 'volvox2'])
   expect(view.paintedAssemblyName).toBe('volvox2')
@@ -236,7 +236,7 @@ test("the second genome's ideogram is painted by the first genome's chromosomes"
   expect(view.ideogramPaint.size).toBe(1)
 }, 20000)
 
-test('a genome aligned to itself keeps its own colours', async () => {
+test('a genome aligned to itself keeps its own colors', async () => {
   const { view } = await setup(['volvox', 'volvox'])
   expect(view.paintedAssemblyName).toBeUndefined()
   expect(view.ideogramPaint.size).toBe(0)

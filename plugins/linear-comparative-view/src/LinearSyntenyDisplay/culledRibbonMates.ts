@@ -40,7 +40,7 @@ export interface CulledMateFeatureLanes {
 // the adapter's untrimmed coordinates: a CIGAR-clipped block draws from
 // corners the projection loop moved. A feature whose instances all fell off
 // screen keeps its sentinel span (`starts` above `ends`), which the layout's
-// x test drops. Given the per-instance colours, a feature whose ribbon is
+// x test drops. Given the per-instance colors, a feature whose ribbon is
 // painted transparent is dropped whole, marks and tallies alike, since the band
 // shows nothing of it to account for.
 export function culledRibbonMateData(

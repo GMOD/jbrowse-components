@@ -23,8 +23,8 @@ const BORDER_ABGR = cssColorToABGR(BORDER_COLOR)
 
 // What each fill reaches past its edge toward the next cell painted, closing the
 // hairline two antialiased fillRects leave where abutting cells of different
-// colours meet on a fractional pixel; the next cell then paints over it, so the
-// overdraw goes left on a reversed block. Same-coloured neighbours are painted
+// colors meet on a fractional pixel; the next cell then paints over it, so the
+// overdraw goes left on a reversed block. Same-colored neighbours are painted
 // as one run. The GPU tiles exactly and needs neither.
 const SEAM_PX = 0.4
 

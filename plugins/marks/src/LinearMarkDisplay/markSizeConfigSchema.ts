@@ -6,11 +6,11 @@ import { SIZE_SCALES } from './markVocabulary.ts'
 /**
  * #config MarkSize
  * #category display
- * A mark's size in px, as `color` is its colour: a point's diameter, a rule's
+ * A mark's size in px, as `color` is its color: a point's diameter, a rule's
  * thickness or a link's stroke. A number is the constant every instance
  * takes, and lands in `value`; a string is a feature field, and lands in
  * `field`, which a link reads through a linear or log scale into a px range,
- * so a score becomes a width the way a ramp makes it a colour.
+ * so a score becomes a width the way a ramp makes it a color.
  *
  * #example
  * ```js

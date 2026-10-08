@@ -165,7 +165,7 @@ const suite: TestSuite = {
       displayTestId: 'wiggle-display',
     }),
     lgvSnapshotTest({
-      name: 'MultiBigWig overlay with adapter colours',
+      name: 'MultiBigWig overlay with adapter colors',
       snapshot: 'bigwig-multibigwig-overlay-colors',
       loc: 'ctgA:1-4000',
       tracks: ['mytrack'],

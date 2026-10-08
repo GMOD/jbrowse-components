@@ -19,7 +19,7 @@ export interface ValueScaleRule {
 /**
  * #api
  * A value scale a display places its y through, declared so the chrome can
- * derive the axis from it — the score axis's counterpart to a colour scale.
+ * derive the axis from it — the score axis's counterpart to a color scale.
  *
  * `domain` is the resolved `[min, max]`; `height` the band it rules and
  * `offset` the inset of the plot box inside that band (`axisPlotBox(height,
@@ -33,12 +33,12 @@ export interface ValueScaleRule {
  * the display stacks the same plot: the multi-wiggle's rows, a grouped
  * alignments track's coverage band per group, each projected through the
  * display's own scroll; the chrome drops the ones off screen. `[]` is a scale
- * the display maps to colour rather than to y (density rows each in their own
- * colour), which gets the `[min, max]` caption and no axis, as a scale whose
+ * the display maps to color rather than to y (density rows each in their own
+ * color), which gets the `[min, max]` caption and no axis, as a scale whose
  * bands are too short for one does. `side` and `left` are which of the band's
  * edges the display's own panels leave clear for a gutter: `right` where a
  * group label chip takes the left, `left: n` where a dendrogram takes the
- * first `n` px. `caption` is what the scale measures (`TLEN`), as a colour
+ * first `n` px. `caption` is what the scale measures (`TLEN`), as a color
  * scale's `field` is; the chrome draws it once for the scale, beside the
  * bands on screen, however many it rules. `rules` are the reference lines the
  * scale declares and `grid` a line at every tick, both drawn across every

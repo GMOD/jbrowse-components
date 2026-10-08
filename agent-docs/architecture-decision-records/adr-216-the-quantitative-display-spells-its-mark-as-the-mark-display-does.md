@@ -15,7 +15,7 @@ Accepted (2026-10-07). Settles call 3 of the 2026-10-07 grammar audit. Amends
 
 ADR-174 gave the quantitative display `mark` and `interpolate` "in the mark
 display's and Vega-Lite's words", and three of its words were still its own.
-`heatmap` named what the mark display draws as a `span` under a colour scale
+`heatmap` named what the mark display draws as a `span` under a color scale
 (ADR-113's amendment), so `marks: [{ mark: 'heatmap' }]` was refused where
 `mark: 'heatmap'` loaded. `scoreField` named what every mark spells
 `encoding.y`, and ADR-178 had already removed it from Manhattan for that

@@ -41,7 +41,7 @@ import type { MarkColorScale } from '@jbrowse/render-core/marks'
 const RAMP_STOPS = 8
 
 /**
- * The one colour a mark paints every instance: the default blue where none is
+ * The one color a mark paints every instance: the default blue where none is
  * written, and none under a jexl callback or a scale.
  */
 export function constantColorOf(mark: MarkConfig): string | undefined {
@@ -99,7 +99,7 @@ export function keySettingOf(
 
 // Values past which a numeric field drawn as categories has stopped being a
 // vocabulary. A numeric field genuinely used as one — a rank, a copy number, a
-// tier — has a handful of values; past eight the author meant a colour scale,
+// tier — has a handful of values; past eight the author meant a color scale,
 // and the hint stands in for the key where `legendIsReadable` drops it.
 const NUMERIC_KEY_HINT_ROWS = 8
 
@@ -112,7 +112,7 @@ export type ScaledChannel = 'color' | 'shape'
  * What a mark's channel says of its key beyond the table the worker resolved,
  * as ggplot2's scale arguments do: the heading, the name of each domain value
  * or threshold interval, which values it lists and in what order, what it
- * calls a value's absence, and for a shape the one colour its mark paints,
+ * calls a value's absence, and for a shape the one color its mark paints,
  * which ggplot2 draws a layer's key glyphs in. All of it is the config's, so
  * renaming a key row refetches nothing.
  */
@@ -147,7 +147,7 @@ const CHANNELS: {
   channel: ScaledChannel
   tableOf: (layer: StoredLayer) => ScaleTable | undefined
 }[] = [
-  // a region still holding an earlier declaration's data adds no colour key:
+  // a region still holding an earlier declaration's data adds no color key:
   // its table is its own, not the mark's. Shape resolves in the worker and has
   // no such hold, so a region not yet refetched keys its old field's shapes.
   { channel: 'color', tableOf: l => (l.heldColor ? undefined : l.scale) },
@@ -224,7 +224,7 @@ function union(current: ScaleTable, next: ScaleTable) {
   }
 }
 
-// What a section is keyed on: the declaration that assigns a value its colour
+// What a section is keyed on: the declaration that assigns a value its color
 // or shape, and the key settings over it, so two marks sharing both share the
 // key. A ramp with an open end stays the mark's, its domain being the uniform
 // that mark's shaders read off its own loaded values.
@@ -273,7 +273,7 @@ function sectionKey(markIndex: number, scale: ScaleTable, key: MarkKeySetting) {
 
 /**
  * The keys the loaded regions carry, one per scale, in the order of the first
- * mark drawing through each with colour before shape. A categorical or
+ * mark drawing through each with color before shape. A categorical or
  * threshold table is the union over regions and over the marks declaring it
  * alike, in the field's order; a key's entry is the same in every region. A
  * ramp's domain takes each pinned end as the config wrote it and each open one
@@ -334,21 +334,21 @@ export function buildMarkLegend(
   )
 }
 
-// A shape table over the same field a categorical colour reads, on marks
-// that colour also keys: the two keys would list the same values twice, so
-// the colour key draws the shape as its swatch, under the colour's title, and
+// A shape table over the same field a categorical color reads, on marks
+// that color also keys: the two keys would list the same values twice, so
+// the color key draws the shape as its swatch, under the color's title, and
 // the shape key is folded away.
 function shapeOverSameField(
   sections: MarkLegendSection[],
-  colour: MarkLegendSection,
+  color: MarkLegendSection,
 ) {
-  const field = colour.scale.kind === 'categorical' && colour.scale.field
+  const field = color.scale.kind === 'categorical' && color.scale.field
   const shape = sections.find(
     s =>
       s.channel === 'shape' &&
       s.scale.kind === 'shape' &&
       s.scale.field === field &&
-      s.markIndexes.every(i => colour.markIndexes.includes(i)),
+      s.markIndexes.every(i => color.markIndexes.includes(i)),
   )
   return shape?.scale.kind === 'shape' ? shape : undefined
 }
@@ -441,8 +441,8 @@ function thresholdRows(
   )
 }
 
-// A colour row names every value painted in its colour, so it draws each
-// shape those values take, in the colour.
+// A color row names every value painted in its color, so it draws each
+// shape those values take, in the color.
 function shapeSwatches(shape: ShapeScaleTable) {
   const shapeOf = new Map(shape.entries.map(e => [e.value, e.shape]))
   return ({
@@ -459,12 +459,12 @@ function shapeSwatches(shape: ShapeScaleTable) {
 
 /**
  * The keys as the color scales `LegendMixin` derives the legend from. A
- * categorical colour's key is the one every colour channel derives
- * (`derivedColorScale`), a row per colour. A shape table is a categorical
- * scale whose swatches are the shapes, drawn in the one colour its mark
- * paints, or in the text colour where that colour is a scale, which the shape
- * key does not describe — unless the colour key is over the same field, when
- * it carries both, each swatch a value's shape in its colour.
+ * categorical color's key is the one every color channel derives
+ * (`derivedColorScale`), a row per color. A shape table is a categorical
+ * scale whose swatches are the shapes, drawn in the one color its mark
+ * paints, or in the text color where that color is a scale, which the shape
+ * key does not describe — unless the color key is over the same field, when
+ * it carries both, each swatch a value's shape in its color.
  */
 export function markColorScales(
   sections: MarkLegendSection[],
@@ -555,7 +555,7 @@ export function markColorScales(
   })
 }
 
-/** The colour key of one mark, if its colour is a scale. */
+/** The color key of one mark, if its color is a scale. */
 export function colorSection(sections: MarkLegendSection[], markIndex: number) {
   return sections.find(
     s => s.channel === 'color' && s.markIndexes.includes(markIndex),
@@ -563,9 +563,9 @@ export function colorSection(sections: MarkLegendSection[], markIndex: number) {
 }
 
 /**
- * The scale a mark's shapes paint through, off its colour key's table: a ramp
+ * The scale a mark's shapes paint through, off its color key's table: a ramp
  * over the domain the key unioned across the regions, `domainMid` the value
- * its middle stop sits at, or a threshold's cuts and the packed colour of each
+ * its middle stop sits at, or a threshold's cuts and the packed color of each
  * interval.
  */
 export function paintScaleOf(
@@ -631,7 +631,7 @@ function keyLabel(
  * The categories a shape names in a shape key, each as the key names it:
  * three shapes over any number of values, so a shape the range handed out
  * twice names both, the way a key derived from the painting lists every value
- * drawn in one colour.
+ * drawn in one color.
  */
 export function shapeLabel(
   section: MarkLegendSection | undefined,
@@ -649,8 +649,8 @@ export function shapeLabel(
 }
 
 /**
- * The interval or categories a packed colour names, as its key names them, if
- * its table has any. An instance carries its colour and not its value, so two
+ * The interval or categories a packed color names, as its key names them, if
+ * its table has any. An instance carries its color and not its value, so two
  * values hashed onto one palette entry are both named, as {@link shapeLabel}
  * names a shared shape; a threshold's rows are read back off its palette and
  * its two greys.

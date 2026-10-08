@@ -522,7 +522,7 @@ describe('a mark with a ramp texture', () => {
   })
 
   // `pointMark` and `barMark` carry a sampler for the displays that ramp, and
-  // a mark of a constant colour names no texture on the same shape.
+  // a mark of a constant color names no texture on the same shape.
   test('a textured pass whose mark names no texture still binds the inert table', () => {
     const untextured = defineMark({
       shape: {

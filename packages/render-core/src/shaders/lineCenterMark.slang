@@ -7,7 +7,7 @@
 //
 // Premultiplied MAX blend, so overlapping segments and caps union instead of
 // accumulating into dark seams under src-over. Max is inexact where lines of
-// different colours cross.
+// different colors cross.
 //
 // The band is the instance's `row`, read through the bound row table as
 // `barMark` reads it.
@@ -49,7 +49,7 @@ struct VsOut {
   // segment's half-length, for the capsule SDF
   float2 localPos : TEXCOORD0;
   nointerpolation float segHalfLen : TEXCOORD1;
-  // the colour line's y at the segment centre and its rise per px along, so
+  // the color line's y at the segment centre and its rise per px along, so
   // the fragment reads the value under itself
   nointerpolation float2 colorLine : TEXCOORD2;
   nointerpolation float4 cutYsLo : TEXCOORD3;
@@ -126,6 +126,6 @@ float4 fs_main(VsOut v) : SV_Target {
   float along = clamp(v.localPos.x, -v.segHalfLen, v.segHalfLen);
   float4 color = lineFragmentColor(
     v.colorLine.x + v.colorLine.y * along, v.cutYsLo, v.cutYsHi, v.color, v.colorAlongY, u);
-  // premultiplied, so same-colour overlaps union under the max blend
+  // premultiplied, so same-color overlaps union under the max blend
   return float4(color.rgb * alpha, color.a * alpha);
 }

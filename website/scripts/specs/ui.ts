@@ -423,13 +423,13 @@ const rhdPanel = sessionSpec('test_data/1000g_cnv/config.json', {
           // enough for the four rows the 26 records pack into plus their
           // name/type labels; at 130 the last row was under the lane's fold
           height: 170,
-          // ONE COLOUR (reviewer: "dont use all the colors on the vcf, it
+          // ONE COLOR (reviewer: "dont use all the colors on the vcf, it
           // is confusing and distracting"). This lane used the `svTypeColor`
           // jexl the SV-type cell preset is built on, which paints six
           // classes over 26 overlapping records -- and every record already
           // carries its class IN its own label (`<DEL> 70.1Kbp`), so the
-          // colour was a second, weaker copy of text that was already
-          // there. The class-coloured version of this idea is multisv_svtype
+          // color was a second, weaker copy of text that was already
+          // there. The class-colored version of this idea is multisv_svtype
           // in the multi-variant guide, on a window whose classes are the
           // subject. Dropping the jexl also drops the floating key this
           // spec used to have to hide by selector.
@@ -859,15 +859,15 @@ export const uiSpecs: ScreenshotSpec[] = [
   // asked for ("change this to one figure where the regular
   // linearvariantdisplay and the multisamplevariantdisplay of same data was
   // visible, then user can see which sv is which"). It was two captures
-  // composed -- the same matrix coloured by genotype and then by SV class --
+  // composed -- the same matrix colored by genotype and then by SV class --
   // and the second was doing the "which SV is which" job badly: a matrix cell
   // says a sample carries SOMETHING here, and with 26 overlapping records in
-  // this window a colour change is only visible where two calls differ in their
+  // this window a color change is only visible where two calls differ in their
   // carriers. The ordinary display separates them by construction, one row per
   // non-overlapping set, and labels each with its id and size (HGSV_1821 <DEL>
   // 70.1Kbp), so a column in the matrix reads off a named record.
   //
-  // The SV-type CELL colouring the second half used to carry is not lost: it is
+  // The SV-type CELL coloring the second half used to carry is not lost: it is
   // multisv_svtype in the multi-variant user guide, on a window whose classes
   // are the subject rather than a second copy of this one.
   //

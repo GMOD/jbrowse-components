@@ -38,7 +38,7 @@ export interface MafGPURenderState {
   scrollTop: number
   /**
    * Full theme-derived color set (base palette + match/gap/mismatch/unknown/
-   * insertion). The row marks resolve their colours at encode time, so what
+   * insertion). The row marks resolve their colors at encode time, so what
    * reads this is the overlay and export layers drawn beside them — the
    * deletion labels and the empty lines.
    */
@@ -260,7 +260,7 @@ export interface MafRegionData {
 // round-trip through the worker.
 export interface MafGpuProps {
   palette: MafColorPalette
-  /** a matching base paints its own colour rather than the match colour */
+  /** a matching base paints its own color rather than the match color */
   colorMatches: boolean
   /**
    * Genomic bp per emitted cell — `1` for the exact per-base encode, a larger
@@ -285,7 +285,7 @@ export interface MafGpuProps {
  */
 export interface MafRowsPayload {
   cells: SpanChannels
-  /** Each row's aligned blocks coloured by source-chromosome rank. */
+  /** Each row's aligned blocks colored by source-chromosome rank. */
   sourceChrom?: SpanChannels
   /** The summary tier's per-species presence bars. */
   summary?: MafSummarySpans

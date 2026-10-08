@@ -88,9 +88,9 @@ const coloredLayers = new WeakMap<
 >()
 
 /**
- * A lane layer's payload coloured as its mark declares, as the mark display
- * colours its regions, so a colour edit recolours what is held and fetches
- * nothing. Kept per payload and colour, so the bar cell built on it is reused
+ * A lane layer's payload colored as its mark declares, as the mark display
+ * colors its regions, so a color edit recolors what is held and fetches
+ * nothing. Kept per payload and color, so the bar cell built on it is reused
  * and uploads nothing new.
  */
 export function coloredLaneLayer(
@@ -120,7 +120,7 @@ const barCells = new WeakMap<
 
 /**
  * One cell per payload, keyed on what it uploads. `x` stands for the payload,
- * since every recolouring of one payload shares it; its colour lanes, the y
+ * since every recoloring of one payload shares it; its color lanes, the y
  * domain it is squished into and the ramp's lookup table then say whether
  * anything uploaded moved. The ramp's domain and a threshold's cuts ride the
  * bar layer the pass reads per block, so a settle, a landing that widens the
@@ -129,7 +129,7 @@ const barCells = new WeakMap<
  * Every layer's bars share one pass, so two layers on different ramps swap its
  * ramp texture within a frame, a new texture each time; the mark display's
  * pass per mark (`withPassId`) avoids that. Accepted unmeasured while two
- * ramp-coloured layers are rare.
+ * ramp-colored layers are rare.
  */
 export function barCellOf(
   channels: EncodedChannels,

@@ -11,14 +11,14 @@ export interface VisibleLabel {
   y: number
   text: string
   lowerBase: string
-  /** the cell under the letter paints its base's colour, not the match colour */
+  /** the cell under the letter paints its base's color, not the match color */
   onBase: boolean
 }
 
 interface ComputeVisibleLabelsParams extends MafOverlayParams {
   showAllLetters: boolean
   showAsUpperCase: boolean
-  /** a matching base's cell paints its own colour */
+  /** a matching base's cell paints its own color */
   colorMatches: boolean
 }
 

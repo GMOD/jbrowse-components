@@ -37,8 +37,8 @@
 //                          reads BigWigAdapter's two-field BigWigFeature
 //                          cursor, which no arm here builds
 //     columns              encodeColumns over the same columns -> the same pack
-//     features-jexl        `features` with a jexl: colour
-//     columns-cursor-jexl  `columns` with the same colour through one reused
+//     features-jexl        `features` with a jexl: color
+//     columns-cursor-jexl  `columns` with the same color through one reused
 //                          RowCursor
 //   pileup — 200,000 reads, ADR-118's fixture and its five arms rerun here
 //     rather than quoted, plus:
@@ -667,7 +667,7 @@ function runEncodeScenario(fixture: SourceColumns[]) {
     (columnsJexlOut.encoded[0]!.color as Uint32Array).slice(0, 1000),
   )
   console.log(
-    `identity: ${differences.length} difference(s); the jexl colour answered ` +
+    `identity: ${differences.length} difference(s); the jexl color answered ` +
       `${distinct.size} distinct value(s) over the first 1,000 rows`,
   )
 

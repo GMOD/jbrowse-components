@@ -57,14 +57,14 @@ struct Uniforms {
   int    valueScaleType;
   // Already resolved from the domain (`resolveSymlogConstant`); read by symlog alone.
   float  valueSymlogConstant;
-  // `markColor`'s: 0 packs the instance's colour, 1 and 2 read its slot as a
+  // `markColor`'s: 0 packs the instance's color, 1 and 2 read its slot as a
   // value through the ramp below.
   int    rampMode;
   float  rampMin;
   float  rampMax;
   float  rampMidNorm;
   // `markColor`'s threshold: how many cuts are in use, the cuts four to a
-  // vector, and the colour of each interval between them.
+  // vector, and the color of each interval between them.
   int    colorCutCount;
   float4 colorCuts[2];
   float4 colorBands[MAX_COLOR_BANDS];

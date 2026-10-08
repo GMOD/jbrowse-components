@@ -10,7 +10,7 @@ function displayWith(color: unknown, annotationAdapter: unknown = null) {
   }).createDisplay()
 }
 
-describe('the colour encoding is the field through its preset', () => {
+describe('the color encoding is the field through its preset', () => {
   test.each([
     [
       'mismatch',
@@ -116,7 +116,7 @@ describe('the key reads the encoding', () => {
   })
 })
 
-describe('a Row coloring pick writes through the colour object', () => {
+describe('a Row coloring pick writes through the color object', () => {
   test("a new field drops the old field's members", () => {
     const { display } = displayWith({ field: 'chromosome', range: ['red'] })
     display.setRowRendering('identity')
@@ -162,7 +162,7 @@ describe('notices', () => {
   test('a range on a field painting the theme says it goes unread', () => {
     const { display } = displayWith({ field: 'base', range: ['red'] })
     expect(display.notices).toEqual([
-      "color.range: base paints the theme's colours and reads no range",
+      "color.range: base paints the theme's colors and reads no range",
     ])
     setConf(display, 'color', { field: 'chromosome', range: ['red'] })
     expect(display.notices).toEqual([])

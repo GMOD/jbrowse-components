@@ -186,8 +186,8 @@ function regionColor(
   )
 }
 
-// A slice's stretch of the ideogram: its chromosome's colour, or on a genome
-// a ribbon track paints, a neutral band under the colours of the first
+// A slice's stretch of the ideogram: its chromosome's color, or on a genome
+// a ribbon track paints, a neutral band under the colors of the first
 // genome's chromosomes that align to it
 const IdeogramBand = observer(function IdeogramBand({
   model,

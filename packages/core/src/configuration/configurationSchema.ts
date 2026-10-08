@@ -123,7 +123,7 @@ export interface ConfigurationSchemaOptions<
    */
   retired?: Record<string, RetiredSpelling>
   /**
-   * A colour object's defaults by `field`, `*` for any other: the scale while
+   * A color object's defaults by `field`, `*` for any other: the scale while
    * `scale` is unset, and the members that scale reads while unwritten.
    */
   fieldPresets?: Readonly<Record<string, { readonly scale: string }>>

@@ -36,7 +36,7 @@ async function ldColoredOverSle() {
 
 // The worker's own tables over the SLE statistics, nine of whose SNPs the LD
 // file does not name.
-test('LD colouring keys the r² bins and the index SNP as a pink diamond, and names no value "(no value)"', async () => {
+test('LD coloring keys the r² bins and the index SNP as a pink diamond, and names no value "(no value)"', async () => {
   const display = await ldColoredOverSle()
   const keys = display.colorScales.map(s => ({
     title: s.title,

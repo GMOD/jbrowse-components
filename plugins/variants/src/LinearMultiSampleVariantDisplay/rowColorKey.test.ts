@@ -16,7 +16,7 @@ function rowColorKey(d: ReturnType<typeof display>) {
   return d.legendSpec.sections.find(s => s.id === 'rowColor')
 }
 
-test('keys the population colours beside the genotypes, the blank group unlisted', () => {
+test('keys the population colors beside the genotypes, the blank group unlisted', () => {
   const d = display()
   expect(d.legendSpec.sections.map(s => s.id)).toEqual([
     'genotypes',

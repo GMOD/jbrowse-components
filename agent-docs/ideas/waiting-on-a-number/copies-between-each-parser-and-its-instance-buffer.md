@@ -38,4 +38,4 @@ per-primitive objects and BED's second object, wiggle's interleave, VCF's
 per-variant objects. The mark display over a BigWig reading bbi's view by
 index, rather than an object per row, is the rule-1 form of ADR-152's column
 encoder, and ADR-152's two lane fixes (no `featureIndex` when nothing
-reorders, a constant colour as a scalar) still gate wiggle itself.
+reorders, a constant color as a scalar) still gate wiggle itself.

@@ -316,7 +316,7 @@ export type VariantLayoutBackend =
  * ## How the rows are arranged
  *
  * The arrangement is config: `rows` holds the order, the labels, the cluster
- * tree with its provenance and the focus, and `rowColor` the colours, each by
+ * tree with its provenance and the focus, and `rowColor` the colors, each by
  * row name at the mode's granularity — a sample in allele-count mode, a
  * haplotype (`"<sample> HP<n>"`) in phased mode, where a sample name stands
  * for its haplotypes. A drag, the arrangement dialog, "Sort rows by genotype here" and
@@ -333,11 +333,11 @@ export type VariantLayoutBackend =
  *    arranged order,
  * 5. the result is `sources`, each row's `rowColor` its label bar.
  *
- * **The `rowColor` palette wins over a colour the row already carried**, a
+ * **The `rowColor` palette wins over a color the row already carried**, a
  * `samplesTsv` `color` column: a channel bound to a variable beats a per-row
- * constant, so "Color by… → (none)" is what hands the row back its own colour.
- * `rowColor` holds one field's values, so a dialog colour set under the palette
- * turns every row's colour into a `name` pair.
+ * constant, so "Color by… → (none)" is what hands the row back its own color.
+ * `rowColor` holds one field's values, so a dialog color set under the palette
+ * turns every row's color into a `name` pair.
  *
  * **The `facet` bands win over a tree**: a band draws the clade of the tree
  * whose leaves are exactly its rows in order, and a clustering run under bands
@@ -544,7 +544,7 @@ export function stateModelFactory(
         },
         /**
          * #getter
-         * Whether phase-set colouring painted an alt cell whose call names no
+         * Whether phase-set coloring painted an alt cell whose call names no
          * phase set, which keys that cell's plain hue.
          */
         get hasAltWithoutPhaseSet() {
@@ -727,8 +727,8 @@ export function stateModelFactory(
         },
         /**
          * #getter
-         * What the alt cells' hue paints: undefined for the genotype colours,
-         * a CSS colour or `jexl:` callback, or a field through its categorical
+         * What the alt cells' hue paints: undefined for the genotype colors,
+         * a CSS color or `jexl:` callback, or a field through its categorical
          * or threshold scale (`shared/cellHue.ts`).
          */
         get colorEncoding() {
@@ -737,7 +737,7 @@ export function stateModelFactory(
         /**
          * #getter
          * The field the alt cells paint by, '' while they paint the genotype
-         * colours or a constant.
+         * colors or a constant.
          */
         get colorField(): string {
           return cellHueField(this.colorEncoding) ?? ''
@@ -896,7 +896,7 @@ export function stateModelFactory(
           },
           /**
            * #action
-           * Paint the alt cells by a field, or by the genotype colours with
+           * Paint the alt cells by a field, or by the genotype colors with
            * `''`, which keeps the field under `scale: 'none'` for the way
            * back. A fetch input only where it names a different field.
            */
@@ -1032,7 +1032,7 @@ export function stateModelFactory(
         /**
          * #getter
          * `TreeSidebarMixin`'s hook: never, since the cells paint by genotype
-         * and a row's colour shows only on its label bar.
+         * and a row's color shows only on its label bar.
          */
         get rowColorPaintsMarks(): boolean {
           return false
@@ -1057,7 +1057,7 @@ export function stateModelFactory(
          * #getter
          * `TreeSidebarMixin`'s hook: the adapter's samples as rows, each
          * answering to its sample name, a samplesTsv `color` column the row's
-         * own colour.
+         * own color.
          */
         get discoveredRows(): ProcessedSource[] {
           return (self.adapterSamples ?? []).map(source => ({
@@ -1197,7 +1197,7 @@ export function stateModelFactory(
         },
         /**
          * #getter
-         * Whether the held payload's colour values were read for the current
+         * Whether the held payload's color values were read for the current
          * `color`; one read for another paints as though it read none.
          */
         get cellHueValuesRead() {
@@ -1614,9 +1614,9 @@ export function stateModelFactory(
         },
         /**
          * #getter
-         * Each fetched region's cell colours through the current `color`,
+         * Each fetched region's cell colors through the current `color`,
          * faded where records share pixels. Apart from the rows, so a reorder
-         * repaints nothing, and a recolour re-places nothing and refetches
+         * repaints nothing, and a recolor re-places nothing and refetches
          * nothing.
          */
         get regionCellColors() {
@@ -1642,7 +1642,7 @@ export function stateModelFactory(
         },
         /**
          * #getter
-         * Each fetched region's lane colours, which neither shading nor the
+         * Each fetched region's lane colors, which neither shading nor the
          * phased mode moves.
          */
         get regionFeatureColors() {
@@ -1662,7 +1662,7 @@ export function stateModelFactory(
         /**
          * #getter
          * Each fetched region with its rows placed on screen. A computed apart
-         * from the colours, so a recolour leaves it standing.
+         * from the colors, so a recolor leaves it standing.
          */
         get placedRegionRows() {
           const { cellData, rowRemap } = self
@@ -1683,7 +1683,7 @@ export function stateModelFactory(
          * Each fetched region's cells as the `cell` mark's own attributes:
          * the record's span and glyph, which the payload carries once per
          * record, dealt to each of its cells. Off `cellData` alone, since
-         * neither a reorder nor a recolour moves a cell's span.
+         * neither a reorder nor a recolor moves a cell's span.
          */
         get regionCellGlyphs() {
           const { cellData } = self
@@ -1701,7 +1701,7 @@ export function stateModelFactory(
          * #getter
          * Each fetched region placed (`placedRegionRows`) and painted
          * (`regionCellColors`), the cells both layouts draw. A reorder or a
-         * recolour changes an entry's identity and `installUpload` re-uploads
+         * recolor changes an entry's identity and `installUpload` re-uploads
          * with no RPC. A computed, because the overlay draws in an effect where
          * nothing is tracked.
          */
@@ -1913,7 +1913,7 @@ export function stateModelFactory(
         },
         /**
          * #getter
-         * A wash and a border: the cell colours are the data.
+         * A wash and a border: the cell colors are the data.
          */
         get highlightStyle(): HighlightStyle {
           return 'box'
@@ -2242,7 +2242,7 @@ export function stateModelFactory(
         /**
          * #getter
          * `LegendMixin`'s hook: the cell coloring, the insertion marker where
-         * one is drawn, and the row colour key. Whether the marker is keyed
+         * one is drawn, and the row color key. Whether the marker is keyed
          * is `drawsInsertionMarkers`' answer, the painter's own test on the
          * painter's own blocks.
          */

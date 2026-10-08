@@ -106,7 +106,7 @@ export function WiggleCommonMixin() {
     .views(self => ({
       /**
        * #getter
-       * The value bars grow from, which a colour scale also reads where its
+       * The value bars grow from, which a color scale also reads where its
        * own domain says nothing.
        */
       get origin(): number {

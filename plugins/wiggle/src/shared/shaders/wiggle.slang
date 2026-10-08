@@ -15,10 +15,10 @@
 // and tens of MB of a 1000-source multiwiggle's single per-region allocation.
 //
 // Under a gradient (`u.rampLut`) a bar or point takes the colorRamp LUT's
-// colour at its score, as wiggleDensity.slang does: the vertex stage places the
+// color at its score, as wiggleDensity.slang does: the vertex stage places the
 // flat ramp position and the fragment samples, since the HALs bind textures to
 // the fragment stage. The domain stays a uniform, so an autoscale pan
-// re-colours without touching the instance buffer.
+// re-colors without touching the instance buffer.
 //! targets: wgsl, glsl
 
 import antialias;
@@ -50,7 +50,7 @@ struct VsOut {
   // -of-two-ramps form is written up.
   float2 barInkPx : TEXCOORD1;
   nointerpolation float rampT : COLOR1;
-  // 1 on the clip strip, whose colour is its own rather than the ramp's.
+  // 1 on the clip strip, whose color is its own rather than the ramp's.
   nointerpolation float strip : COLOR2;
 };
 

@@ -44,13 +44,13 @@ function listLabel(channel: EditChannel, scale: string, member: ListMember) {
     ? 'shapes'
     : channel === 'size'
       ? 'px at low, high'
-      : 'colours'
+      : 'colors'
 }
 
-// Which lists a scale reads: a categorical or threshold colour its values or
-// cuts, their colours and their names; a shape its values, shapes and names;
+// Which lists a scale reads: a categorical or threshold color its values or
+// cuts, their colors and their names; a shape its values, shapes and names;
 // a categorical key the values it lists; a width ramp its two px ends; a
-// colour ramp its stops.
+// color ramp its stops.
 function listsOf(channel: EditChannel, scale: string): ListMember[] {
   if (channel === 'size') {
     return ['range']
@@ -119,7 +119,7 @@ const ListField = observer(function ListField({
 /**
  * The scale a channel's field is read through, beside the field itself: the
  * kind; for a categorical or threshold scale its values or cut points, their
- * colours and their names in the key; for a ramp the stops it samples, the
+ * colors and their names in the key; for a ramp the stops it samples, the
  * ends that pin it, its middle and how an open end follows the data; and the
  * key's title. A list is comma-separated text, and emptying one returns it to
  * the display's default.

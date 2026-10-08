@@ -1,7 +1,7 @@
 /* eslint-disable no-console */
 // Does the per-base sub-pixel bin change the picture?
 //
-// `subPixelBinBp` makes the two per-base colour modes sample one aligned base
+// `subPixelBinBp` makes the two per-base color modes sample one aligned base
 // per sub-pixel window instead of every base, which took a 1 Mb pacbio pileup's
 // worker extract from 30.5M entries to 59.6k
 // (agent-docs/measurements/per-base-wall-bin.json). The claim that buys it is

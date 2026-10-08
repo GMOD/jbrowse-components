@@ -59,7 +59,7 @@ because `MarkShape` already names render-core's painter/shader/hit triple.
 - `@jbrowse/core/util/glyphNames` is `shapeNames`, and `LegendSwatch.glyph`
   is `shape`; both were served only by v5 betas. `LegendSwatchGlyph` keeps its
   name: it draws a swatch that may be a glyph.
-- The config object is `MarkShape`, as the colour one is `MarkColor`; the
+- The config object is `MarkShape`, as the color one is `MarkColor`; the
   render-core interface of the same name is internal and never reaches a
   config or an error message.
 - The measurement rows `jexl-glyph` and `scale-glyph` keep their ids, which
@@ -72,10 +72,10 @@ because `MarkShape` already names render-core's painter/shader/hit triple.
 Altair read every bare string on a channel; a constant is `{ value }`. They
 read it as the constant before, so one `encoding` block mixed the two
 readings (`{ y: 'score', color: 'steelblue' }`), and Altair's
-`color: 'type'` failed to load as not a colour. A display-level `color`
+`color: 'type'` failed to load as not a color. A display-level `color`
 outside `encoding` keeps its constant shorthand, as Vega-Lite's `mark.color`
 does. The rule `field-spells-constant` reports a field that spells a CSS
-colour or a shape name, so an old config says what to write instead of
+color or a shape name, so an old config says what to write instead of
 painting every feature the no-value grey. No migration: the mark display
 shipped only in v5 betas.
 

@@ -41,7 +41,7 @@ node scripts/flip-review.ts answered multiway_synteny/grape_peach_cacao_gene_ort
   "All three windows run past the array, and the pill leads to it rather than sitting over it."
 
 node scripts/flip-review.ts answered multisv_svtype \
-  "Copy number is teal. Pink was the obvious set1 spare and would have been worse: a het insertion shades from purple to magenta, which is the colour the reader would have matched it to."
+  "Copy number is teal. Pink was the obvious set1 spare and would have been worse: a het insertion shades from purple to magenta, which is the color the reader would have matched it to."
 
 node scripts/flip-review.ts answered sv_cgiab/cnv_depth_baf \
   "The GRCh38_GIABv3 assembly in the hosted cgiab config carries UCSC hg38 cytobands now, so the ideogram bands the arms, and a cytoband track draws them in the view as well. NOT RE-RENDERED: the page crashed the renderer here, so this figure is the sweep's."
@@ -50,7 +50,7 @@ node scripts/flip-review.ts answered pangenome/rgfa_subgraph_launch \
   "The reference-position legend names the span's length beside its two ends, and every bubble label is the short notation now: 135 bp del, 49 bp del, 12 kb ref to 8.6-13 kb with 9 alleles. Published as plugin c14f18b."
 
 node scripts/flip-review.ts answered pangenome/rgfa_launch_out_menu \
-  "The graph is coloured by reference position and the segments track it carries into the launched K12 panel is painted in the same ramp, so the same rainbow is in both frames."
+  "The graph is colored by reference position and the segments track it carries into the launched K12 panel is painted in the same ramp, so the same rainbow is in both frames."
 
 node scripts/flip-review.ts answered pangenome/rgfa_hover_sync \
   "The pane is capped at 420 px and the bubble halos and gene overlay are off, which is what was covering the hues; the gene lane above still names the genes."
@@ -79,7 +79,7 @@ node scripts/flip-review.ts answered synteny_offscreen_mates \
   "One frame instead of two. The pair differed by a strip a few pixels tall, so the marks are on and a pill names them: peach alignments whose grape end is on another chromosome."
 
 node scripts/flip-review.ts answered circular_synteny/rings \
-  "Built in now: Show legend on the circular view menu draws a key naming each ring, chord and ribbon track beside the colour or density ramp it draws in, and the SVG export draws the same key. The overlay is gone from all three circular figures, and this figure's density ring is orange so the ring and the ribbons no longer share one blue."
+  "Built in now: Show legend on the circular view menu draws a key naming each ring, chord and ribbon track beside the color or density ramp it draws in, and the SVG export draws the same key. The overlay is gone from all three circular figures, and this figure's density ring is orange so the ring and the ribbons no longer share one blue."
 
 node scripts/flip-review.ts answered circular_view/coverage_ring_chords \
   "The same built-in key, off the tracks themselves."
@@ -106,7 +106,7 @@ node scripts/flip-review.ts answered maf_summary_hprc_chromosome \
   "Kept, with the reference it was missing: the assembly carries cytobands now, so the gap that runs clear across every row sits under the ideogram's centromere. The black is the summary tier's own shading, since human haplotypes score at the top of the scale, and absence is what the figure is of."
 
 node scripts/flip-review.ts answered mark_display/facet \
-  "Brainstorm, nothing built. Mismatches fit the same grammar as soon as something emits one feature per mismatch: a transform on the alignments adapter, beside the coverage transform the circular guide already names, would hand the mark display a feature per mismatch carrying base, quality and strand. Then colour by base, facet by base and plot quality are the channels that already exist, and the work is the transform rather than the view. Without it the display can only draw one mark per read, which is the read-level view this figure has."
+  "Brainstorm, nothing built. Mismatches fit the same grammar as soon as something emits one feature per mismatch: a transform on the alignments adapter, beside the coverage transform the circular guide already names, would hand the mark display a feature per mismatch carrying base, quality and strand. Then color by base, facet by base and plot quality are the channels that already exist, and the work is the transform rather than the view. Without it the display can only draw one mark per read, which is the read-level view this figure has."
 
 node scripts/flip-review.ts answered mark_display/plot_field \
   "Answered, nothing built. Two JSON routes exist already: Share, then the settings icon and Plaintext JSON, prints the session JSON a reader can paste back, and jb.applyChannelSpec takes a channel spec for an agent. A paste box in this dialog would be a third spelling of the same state, so if you want one the place for it is the display's own settings dialog, where it would cover every channel rather than this dialog's three fields."

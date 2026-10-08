@@ -34,7 +34,7 @@ function hueTable(data: CellHueValues, hue: CellHue, valuesRead: boolean) {
   return { hues, valueHue }
 }
 
-/** Each variant's lane colour: its hue at full dose, the alt hue by default. */
+/** Each variant's lane color: its hue at full dose, the alt hue by default. */
 export function paintFeatureColors(
   data: CellHueValues,
   hue: CellHue,
@@ -51,10 +51,10 @@ export function paintFeatureColors(
 }
 
 /**
- * Each cell's colour, painted from the values the worker read so a recolour
+ * Each cell's color, painted from the values the worker read so a recolor
  * refetches nothing. Only alt cells change, through
  * `fill = shade(hue, dosage)`: in allele-count mode every one, in phased mode
- * those a hue paints, the rest keeping the worker's allele colours. With no
+ * those a hue paints, the rest keeping the worker's allele colors. With no
  * hue and shading on, the default, the worker's array comes back as it is.
  */
 export function paintCellColors(

@@ -1,6 +1,6 @@
 ---
 name: rendering-decisions
-description: The decision sequence every track type runs — too-large gate, fetch tier, layout, height, backend ladder, layer lists, overlays — plus a table of what a row and a colour mean per plugin. Read first to learn what the program does when drawing a track.
+description: The decision sequence every track type runs — too-large gate, fetch tier, layout, height, backend ladder, layer lists, overlays — plus a table of what a row and a color mean per plugin. Read first to learn what the program does when drawing a track.
 audience: internal
 kind: spec
 ---
@@ -8,7 +8,7 @@ kind: spec
 # What the program decides when it draws a track
 
 Every display runs the same sequence. What differs between plugins is what a
-**row** means, what a **colour** means, and which extra decision sits inside one
+**row** means, what a **color** means, and which extra decision sits inside one
 of these steps — not the shape of the sequence itself.
 
 ![The decision sequence every display runs](diagrams/rendering-pipeline.svg)
@@ -28,7 +28,7 @@ re-downloads; leave a data-affecting one out and the display paints stale bytes.
 
 **The worker reads, filters, classifies and packs.** Filtering and
 classification happen where the full record already is, and what comes back is
-typed arrays — positions as **absolute genomic uint32**, colours already
+typed arrays — positions as **absolute genomic uint32**, colors already
 resolved to packed values wherever the classification can be made there. The
 main thread does not re-parse.
 
@@ -53,21 +53,21 @@ gate belongs to the draw, never to the upload.
 **Overlays go on top in React**, and the **hit test** mirrors the draw: the same
 gates, read back through the same layout.
 
-## What a row and a colour mean, per plugin
+## What a row and a color mean, per plugin
 
-| track type | a row is | a colour means | resolved in | map |
+| track type | a row is | a color means | resolved in | map |
 | --- | --- | --- | --- | --- |
 | alignments | a read, or a chain of reads | a category per read, from an ordered precedence ladder | the worker, into a byte array | [alignments-decision-tree](ALIGNMENTS_DECISION_TREE.md) |
-| variants | a record, a sample, or a haplotype | the genotype at that cell, or one override that replaces it | the worker, into packed colours | [variants-decision-tree](VARIANTS_DECISION_TREE.md) |
+| variants | a record, a sample, or a haplotype | the genotype at that cell, or one override that replaces it | the worker, into packed colors | [variants-decision-tree](VARIANTS_DECISION_TREE.md) |
 | quantitative | a source | identity, or a score ramp — depending on the mode | the main thread, per layer | [wiggle-decision-tree](WIGGLE_DECISION_TREE.md) |
-| annotations | a packed layout row | the feature's own colour, or the file's | the worker, per box | [feature-track-decision-tree](FEATURE_TRACK_DECISION_TREE.md) |
+| annotations | a packed layout row | the feature's own color, or the file's | the worker, per box | [feature-track-decision-tree](FEATURE_TRACK_DECISION_TREE.md) |
 | comparative | an alignment between two genomes | a mode over the pair: strand, chromosome, or a measured channel | the main thread, from worker geometry | [synteny-decision-tree](SYNTENY_DECISION_TREE.md) |
 | multiple alignment | a genome aligned against the reference | one of five renderings of that genome's row — the aligned base, an identity mean, a codon change, a source chromosome | the main thread, from one category cascade | [maf-decision-tree](MAF_DECISION_TREE.md) |
 | contact matrix | not a row — one cell is a binned pair of loci | a raw count against a saturation point | the fragment shader, and its lifted twin for Canvas2D and SVG | [hic-decision-tree](HIC_DECISION_TREE.md) |
 
-Two things that read as coincidences and are not. **Every plugin resolves colour
+Two things that read as coincidences and are not. **Every plugin resolves color
 in exactly one place and has its legend read the same answer** — a legend built
-from a second copy of the rules lists colours nothing painted. And **every
+from a second copy of the rules lists colors nothing painted. And **every
 plugin's extra decision sits inside one of the steps above**: the alignments
 precedence ladder is part of "classify", the wiggle domain is part of "layout",
 the annotation fit ladder is part of "height", the MAF tier swap is part of "did
@@ -90,10 +90,10 @@ inputs belong to the request. Otherwise a visual switch invalidates data nobody
 changed.
 
 **Classify from the datum, and carry the classification.** Never recover "what
-kind of thing is this" from the colour it was painted; carry the category beside
-the colour.
+kind of thing is this" from the color it was painted; carry the category beside
+the color.
 
-**One list, exhaustively answered.** Marks, layers and colour schemes live in
+**One list, exhaustively answered.** Marks, layers and color schemes live in
 ordered id lists with a per-consumer record over the same ids, so adding a
 member fails the build until every consumer — GPU pass, Canvas2D painter, hit
 test, legend, menu — has answered for it. See

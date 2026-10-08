@@ -1,5 +1,5 @@
 /**
- * What colour a MAF cell is, as a packed ABGR int, for the one walk both
+ * What color a MAF cell is, as a packed ABGR int, for the one walk both
  * backends draw from (`buildMafChannels`). `RESOLVE_PACKED_SKIP` for a
  * reference insertion column, which the insertion pass renders.
  */
@@ -20,13 +20,13 @@ const UPPER_C = 67
 export interface MafCellColorConfig {
   /** A/C/G/T/N → hex, derived from `theme.palette.bases`. */
   colorForBase: Record<string, string>
-  /** The colour of a base matching the reference, unless `colorMatches`. */
+  /** The color of a base matching the reference, unless `colorMatches`. */
   matchColor: string
   /** Color for alignment-gap cells (alnByte === '-' or ' '). */
   gapColor: string
   /** Fallback when the base isn't in `colorForBase`. */
   unknownBaseColor: string
-  /** A matching base paints its own colour, as a mismatch does. */
+  /** A matching base paints its own color, as a mismatch does. */
   colorMatches: boolean
 }
 
@@ -64,7 +64,7 @@ export function classifyCell(
  */
 export interface MafCellPackedColors {
   /**
-   * Indexed by lowercase ASCII byte, pre-filled with the unknown-base colour so
+   * Indexed by lowercase ASCII byte, pre-filled with the unknown-base color so
    * a miss needs no branch.
    */
   packedByLowerByte: Uint32Array

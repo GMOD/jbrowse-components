@@ -37,6 +37,6 @@ export function clampByte(n: number) {
   // against NaN is false, and an unclamped NaN shifts to 0 anyway — silently,
   // one channel at a time. `jexl:alpha(color, get(feature,'opacity'))` on a
   // non-numeric attribute is the reachable one, and it drew the feature at
-  // alpha 0 instead of reaching the invalid-colour sentinel.
+  // alpha 0 instead of reaching the invalid-color sentinel.
   return n > 0 ? (n > 255 ? 255 : n) : 0
 }

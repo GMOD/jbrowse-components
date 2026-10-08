@@ -49,7 +49,7 @@ function verdictOf(
 /**
  * Route each shorthand `displayDefaults: {...}` setting to the display types
  * whose member of that name takes its value: `color: 'red'` reaches every
- * display with a colour, `color: { field: 'type' }` only those whose colour
+ * display with a color, `color: { field: 'type' }` only those whose color
  * maps a field, and a spelling a display retired reaches that display as the
  * members it became. `reached` names the displays each key went to. A key no
  * display knows is an `unknownKeys` entry, and one every display that knows it

@@ -1,6 +1,6 @@
 ---
 status: Accepted
-summary: "A row display's arrangement (the row order, per-row labels, the cluster tree with its provenance and the clade focus) is its `rows` config object, `field | { field, domain, labels, tree, treeProvenance, kept }` from display-kit, which every product edits as a session delta, so undo, reset and a share link reach it and it survives unticking the track. Every arrangement writer flushes to the session at once (`persistConfigurationNow`), so a clustering run is one undo step, and Reset row order returns each member to what the config.json declares rather than to empty. The quantitative display moves first: `facet: 'source'` is `rows: 'source'`, and `rowColor: { domain, range }` holds the colour a reader sets on a subtrack, painted on the row's identity channel for the mode. `TreeSidebarMixin` is the config-backed arrangement. The multi-sample variant displays move second, onto the field-less `RowArrangement` their rows being the samples, with names at the rendering mode's granularity and `rowColor: field | { field, domain, range }`. The multi-row feature display moves third: `rows.field` is the attribute it partitions on, and `rowColor: { domain, range }` is the one map of row colours, the config's and the dialog's. MAF moves fourth, onto the field-less `RowArrangement`, its adapter's guide tree drawn while some rotation of it lists `rows.domain` and never written to `rows.tree`, and `rowColor: { domain, range }` its label tints. `TreeSidebarMixin` then holds the row colours, the dialog's submit and the row derivation the four displays each carried, over hooks each supplies, and `LayoutTreeSidebarMixin` goes. The mark display moves fifth: `rows.field` on bar and point marks is the worker's one facet split laid out one row per value, `rowColor` its label tint, and `facet` keeps the labelled sections. Supersedes ADR-143's `facet` as the quantitative display's layout. No migration for configs; ADR-168 moves a session's arrangement into `rows`"
+summary: "A row display's arrangement (the row order, per-row labels, the cluster tree with its provenance and the clade focus) is its `rows` config object, `field | { field, domain, labels, tree, treeProvenance, kept }` from display-kit, which every product edits as a session delta, so undo, reset and a share link reach it and it survives unticking the track. Every arrangement writer flushes to the session at once (`persistConfigurationNow`), so a clustering run is one undo step, and Reset row order returns each member to what the config.json declares rather than to empty. The quantitative display moves first: `facet: 'source'` is `rows: 'source'`, and `rowColor: { domain, range }` holds the color a reader sets on a subtrack, painted on the row's identity channel for the mode. `TreeSidebarMixin` is the config-backed arrangement. The multi-sample variant displays move second, onto the field-less `RowArrangement` their rows being the samples, with names at the rendering mode's granularity and `rowColor: field | { field, domain, range }`. The multi-row feature display moves third: `rows.field` is the attribute it partitions on, and `rowColor: { domain, range }` is the one map of row colors, the config's and the dialog's. MAF moves fourth, onto the field-less `RowArrangement`, its adapter's guide tree drawn while some rotation of it lists `rows.domain` and never written to `rows.tree`, and `rowColor: { domain, range }` its label tints. `TreeSidebarMixin` then holds the row colors, the dialog's submit and the row derivation the four displays each carried, over hooks each supplies, and `LayoutTreeSidebarMixin` goes. The mark display moves fifth: `rows.field` on bar and point marks is the worker's one facet split laid out one row per value, `rowColor` its label tint, and `facet` keeps the labelled sections. Supersedes ADR-143's `facet` as the quantitative display's layout. No migration for configs; ADR-168 moves a session's arrangement into `rows`"
 ---
 
 # ADR-157: A row display's arrangement is the `rows` config object, written as session deltas
@@ -25,7 +25,7 @@ operational docs.
 
 The tree-sidebar displays kept a reader's arrangement in display state:
 `layout` (the rows in order, each a whole record carrying its label and
-colours), `clusterTree`, `clusterProvenance` and `subtreeFilter`, all MST props
+colors), `clusterTree`, `clusterProvenance` and `subtreeFilter`, all MST props
 on the display instance. The declared order sat apart from it in config —
 `facet.domain` on the quantitative display, a `domain` slot on the others — so
 one row order had two stores, a seed and a runtime copy written over it.
@@ -136,18 +136,18 @@ there. The model's `facet`, `isFaceted` and `setFaceted` are
 `rowLayout`. `setRowLayout` writes the field alone, so the arrangement survives
 a trip through the shared plot.
 
-**`rowColor` holds a reader's colour for a subtrack.**
+**`rowColor` holds a reader's color for a subtrack.**
 `rowColor: { domain, range }` (`RowColor`, closed) pairs subtrack names
-with CSS colours. Each lands on the row's identity channel for the mode, ahead
-of the adapter's colour and the palette: `color`, the plot, or `labelColor`, the
+with CSS colors. Each lands on the row's identity channel for the mode, ahead
+of the adapter's color and the palette: `color`, the plot, or `labelColor`, the
 tint beside the label, wherever a score gradient paints (density, and bars or
-points under a `linear` or `log` colour). The arrangement dialog's Track color
+points under a `linear` or `log` color). The arrangement dialog's Track color
 and Label color columns are one Color column editing that channel. Its submit
-writes the order and labels to `rows` and the colours to `rowColor` over the
+writes the order and labels to `rows` and the colors to `rowColor` over the
 entries the config holds, and the bulk editor no longer writes `group`, an
 adapter attribute with no config home. The
 `color: { field: 'source' }` overlay palette, the legend and the dealer are
-unchanged; converging row colour is the design's step 4.
+unchanged; converging row color is the design's step 4.
 
 **The multi-sample variant displays move second.** Their rows are the samples,
 so `rows` there is display-kit's `RowArrangement`, the five members with no
@@ -163,9 +163,9 @@ lands. `rowColor` is `field | { field, domain, range }` (`VariantRowColor`):
 the field is the samplesTsv attribute whose palette tints every row, as the
 string was, ~~and the pairs hold the dialog's per-row tints, which the palette
 still beats~~ and since
-[ADR-160](adr-160-a-rows-colour-is-one-categorical-channel-on-the-row-axis.md)
+[ADR-160](adr-160-a-rows-color-is-one-categorical-channel-on-the-row-axis.md)
 the dialog's per-row tints are the entries of `field: "name"`, one keyspace per
-object, so a tint set under the attribute palette turns every row's colour into
+object, so a tint set under the attribute palette turns every row's color into
 one.
 
 **The multi-row feature display moves third.** Its rows are the values of a
@@ -174,15 +174,15 @@ feature attribute, so `rows` is the field-keyed `Rows` wiggle declares.
 the data, a `jexl:` expression derives one, and the display reads it raw into
 the fetch, since a resolving read evaluates the expression against no feature
 (ADR-066). `setRowsField` writes it and clears the legend's hidden categories;
-the arrangement and the row colours stay, since a name keyed on another field
+the arrangement and the row colors stay, since a name keyed on another field
 matches nothing and comes back with the field. The rows the config
 does not list still sort, digits by magnitude, since discovered values arrive
 in no order of their own. `rowColor: { domain, range }` (`RowColor`)
 holds what `sampleColorMap` and the dialog's per-row `color` held: one map, so
-the dialog shows the config's colours and writes its own beside them. An entry
+the dialog shows the config's colors and writes its own beside them. An entry
 paints the row's blocks; a row without one takes the palette where no `color`
 slot and no `itemRgb` paint, dealt over the rows in the config.json's declared
-order, so no arrangement recolours a row. The dialog stores a label only where
+order, so no arrangement recolors a row. The dialog stores a label only where
 it differs from the derived `(no <field>)` label. It has no Edit as JSON box, so no `setRowsSpec`.
 
 **MAF moves fourth.** Its rows are the species, so `rows` is the field-less
@@ -203,7 +203,7 @@ from the blocks, and `sources` narrows the same way (`keptRows`,
 `filterRowsBySubtree`), so the key reads no fetch result and the rows drawn are
 the rows shipped.
 `rowColor: { domain, range }` (`RowColor`) holds the label tint a reader sets,
-over the adapter's `samples[].color`, and the arrangement dialog's colour column
+over the adapter's `samples[].color`, and the arrangement dialog's color column
 edits that tint, where it had edited a `color` no renderer read.
 
 **The mark display moves fifth.** Its rows are a field's values, so `rows`
@@ -216,9 +216,9 @@ unchanged, so `rows: 'source'` draws what `facet: 'source'` drew
 (`rowDerivation.test.ts`). `discoveredRows` are the keys the loaded regions'
 section tables name, sorted as sections are, and under `rows: 'source'` every
 source an adapter lists without reading a region (a multi-BigWig's files, one
-`MarkGetRowSources` call per adapter config) with its label and colour, so a
+`MarkGetRowSources` call per adapter config) with its label and color, so a
 file with nothing in the window keeps its row as on the quantitative display; `identityChannel` is
-`labelColor`, since each mark paints the plot in its own colour; and a
+`labelColor`, since each mark paints the plot in its own color; and a
 clustering run compares the values the first drawing bar or point stands at,
 binned in the worker by the quantitative display's rule, a column per pixel
 averaging every instance over it and a narrower one counted in the column it
@@ -246,7 +246,7 @@ the row axis; a facet is for bands holding more than one row.
 one with no rows. The box writes only the channels it changed, and `rows`
 through the display's `setRowsSpec` — the field, then the order as a reorder
 writes it — so the labels, the focus and a tree the order still describes
-survive an edit to the colour beside them.
+survive an edit to the color beside them.
 
 **A session spec writes the arrangement as config.** A quantitative track
 entry's `rows` is a config slot, so it lands on the display config, and like any
@@ -295,9 +295,9 @@ one-shot trigger that clears itself.
   does not declare.
 - On the multi-row feature display a reorder or a dialog submit sees only the
   rows the loaded regions hold, and the names and entries it did not see stand
-  behind them, so a declared order or colour map keeps the rows a window has
+  behind them, so a declared order or color map keeps the rows a window has
   not revealed. The arrangement dialog's bulk editor keeps only labels and
-  colours, where `layout` kept any column pasted into it.
+  colors, where `layout` kept any column pasted into it.
 - MAF's guide tree draws while some rotation of it lists `rows.domain`'s
   species in that order, whoever wrote the domain, so a track the session owns,
   a relabel-only submit and a partial order written in the session keep it, and
@@ -319,7 +319,7 @@ one-shot trigger that clears itself.
   cap, which one such track takes 2–4 % of; a share link deflates it 2–3×.
 - A track the session owns has its `sessionTracks` entry as its base
   (ADR-158), so its palette is dealt over the `rows.domain` it was added with,
-  and "Reset row order" returns to the arrangement and colours it was added
+  and "Reset row order" returns to the arrangement and colors it was added
   with, as a config.json track returns to its declared ones.
 
 ## Rejected alternatives
@@ -331,7 +331,7 @@ one-shot trigger that clears itself.
   two undo steps, and a second view clustering the same track leaves the first
   view's dendrogram describing rows it no longer has.
 - **A `layout` config slot carrying whole row records.** The order, the labels
-  and the colours each have a home: `rows.domain`, `rows.labels` and a colour
+  and the colors each have a home: `rows.domain`, `rows.labels` and a color
   object.
 - **Keeping `facet` for the quantitative display's rows.** `facet` names
   labelled bands on every other display, so wiggle's rows would have left no

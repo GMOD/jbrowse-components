@@ -9,7 +9,7 @@ Auto-generated from the @jbrowse/mobx-state-tree model in the source — see the
 
 ## Example usage
 
-A `HicTrack` whose display pins the colour scale's top, so two tracks set
+A `HicTrack` whose display pins the color scale's top, so two tracks set
 alike share one scale, and runs one binsize coarser than the zoom picks:
 
 ```js
@@ -90,7 +90,7 @@ Each section ends with the members a composed model contributes, linked to the p
 | <span id="getter-selectednormalization">**selectedNormalization**</span><br><code>string</code> |  |
 | <span id="getter-hasresolutions">**hasResolutions**</span><br><code>boolean</code> | Whether the binsize list has arrived; every resolution control gates on it. |
 | <span id="getter-activenormalization">**activeNormalization**</span><br><code>string</code> | The normalization to request: the selection where the file has it, else the next best it does. A getter, so a file lacking the selection never marks the track edited. |
-| <span id="getter-colordomain">**colorDomain**</span><br><code>[number, number]</code> | The domain the counts are coloured over, as every ramp spans one: a pinned end holds, and an open one follows the loaded counts from 0, the top at their `colorQuantile` below 1, else their maximum. |
+| <span id="getter-colordomain">**colorDomain**</span><br><code>[number, number]</code> | The domain the counts are colored over, as every ramp spans one: a pinned end holds, and an open one follows the loaded counts from 0, the top at their `colorQuantile` below 1, else their maximum. |
 | <span id="getter-awaitingprerequisite">**awaitingPrerequisite**</span><br><code>boolean</code> | Retry is two-stage: the contact fetch declines until the header it needs lands, and the header's arrival wakes it. `infoFetchFailure.test.ts` pins it. |
 | <span id="getter-showresolutionbox">**showResolutionBox**</span><br><code>boolean</code> | Whether the resolution box is up; the chrome starts the key below it. |
 | <span id="getter-legendtop">**legendTop**</span><br><code>number</code> |  |

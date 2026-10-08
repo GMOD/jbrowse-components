@@ -48,7 +48,7 @@ NG86 saturates at both ends, and neither end is written:
   reading the method can produce and also its least supported, resting on the
   absence of a synonymous change rather than on any count. JBrowse paints
   neither, because `dnDsRatio` wants `ds > 0`, so writing them would put rows in
-  the table that silently never take a colour. They are counted and reported
+  the table that silently never take a color. They are counted and reported
   instead.
 
 Every pair is an independent alignment, so the run is spread over the cores by

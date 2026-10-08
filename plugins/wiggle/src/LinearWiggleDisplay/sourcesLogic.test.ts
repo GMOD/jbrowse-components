@@ -15,7 +15,7 @@ const sources: Source[] = [
 ]
 
 describe('markColorOf', () => {
-  it("paints each row's resolved colour while the row colour paints the marks", () => {
+  it("paints each row's resolved color while the row color paints the marks", () => {
     expect(sources.map(s => markColorOf(s, true))).toEqual([
       '#a0a0a0',
       '#0000ff',
@@ -23,7 +23,7 @@ describe('markColorOf', () => {
     ])
   })
 
-  it('paints the row its own colour otherwise', () => {
+  it('paints the row its own color otherwise', () => {
     expect(sources.map(s => markColorOf(s, false))).toEqual([
       '#0a0a0a',
       undefined,

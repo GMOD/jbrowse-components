@@ -46,7 +46,7 @@ export function pileupUniformViews(scratch: ArrayBuffer): PileupUniformViews {
 // pass reads by name (`u.colorBaseA` in snpCoverage, `u.colorInsertion` in
 // insertion). The indexed palettes are separate and written below.
 //
-// EVERY ENTRY IS A MARK, none a read fill: a read's colour is its RC_* category
+// EVERY ENTRY IS A MARK, none a read fill: a read's color is its RC_* category
 // and reaches the GPU through `readCategoryColor` (see alignmentsUniforms.slang).
 export const PALETTE_UNIFORM_FIELDS = {
   colorBaseA: 'colorBaseA',
@@ -68,7 +68,7 @@ function packRgb(rgb: RGBColor) {
   return normalizedRgbToABGR(rgb[0], rgb[1], rgb[2])
 }
 
-// Resolved to UBO word indices once at module load: the colour VALUES are read
+// Resolved to UBO word indices once at module load: the color VALUES are read
 // per frame from the palette, only the indices are constant.
 const PALETTE_UBO_SLOTS: readonly (readonly [number, PaletteColorKey])[] =
   Object.entries(PALETTE_UNIFORM_FIELDS).map(
@@ -107,7 +107,7 @@ function writePaletteSlots(
 }
 
 /**
- * The colour half of the struct, which is frame-constant: every input is
+ * The color half of the struct, which is frame-constant: every input is
  * display-wide, so the renderer writes it once ahead of the block loop.
  *
  * Two representations on purpose. The NAMED colors are packed ABGR u32, one
@@ -127,7 +127,7 @@ export function writePileupPalette(
   // Driven by the SHADER's slot count, not the palette's, so a palette that
   // fell out of step leaves an undefined behind here rather than silently
   // painting stale colors in the slots it didn't reach; paletteUboParity.test.ts
-  // holds each slot to its category's colour. Resolved against `c`, the themed
+  // holds each slot to its category's color. Resolved against `c`, the themed
   // palette, as the read-connection band's feeds are.
   writePaletteSlots(
     f32,

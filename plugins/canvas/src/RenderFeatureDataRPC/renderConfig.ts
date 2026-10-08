@@ -48,7 +48,7 @@ export const THEME_DERIVED_COLOR = '#f0f'
 
 export type WorkerColor = Pick<ColorSetting, 'value' | 'field'>
 
-/** The share of a colour object the worker reads: its value, and its field. */
+/** The share of a color object the worker reads: its value, and its field. */
 export function workerColorOf({
   value,
   field,

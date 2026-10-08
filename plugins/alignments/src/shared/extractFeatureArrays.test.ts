@@ -217,7 +217,7 @@ describe('an intron that only touches a region edge', () => {
   })
 })
 
-// A pileup not coloured by modifications reads MM off a sample of its reads,
+// A pileup not colored by modifications reads MM off a sample of its reads,
 // since the menu wants only which types exist; the layer reads every read
 describe('modification type detection', () => {
   const reads = (n: number, mmAt: number) =>
@@ -246,7 +246,7 @@ describe('modification type detection', () => {
       perBaseBinBp: 1,
     }).detectedModifications
 
-  test('a type within the sample is found in any colour mode', () => {
+  test('a type within the sample is found in any color mode', () => {
     expect([...detected(reads(10, 3))]).toEqual(['m'])
   })
 

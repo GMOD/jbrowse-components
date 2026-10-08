@@ -7,7 +7,7 @@ import { toRgb } from './colors.ts'
 import type { ColorPalette } from './colors.ts'
 
 // The plugin's neutral overlays: marks that deliberately carry no category, so
-// "neutral" is the theme's foreground and not a colour of their own.
+// "neutral" is the theme's foreground and not a color of their own.
 // `flatConnectorTheme.test.ts` made this argument for the read cloud's flat
 // connector; these two were the marks it did not reach, and both were still
 // spelling neutral as a literal black in BOTH renderers — invisible in review
@@ -30,7 +30,7 @@ const dark = buildColorPaletteFromPalette(
 )
 
 describe.each(KEYS)('%s follows the theme', key => {
-  // The property is not "it is some particular colour" but that the mark
+  // The property is not "it is some particular color" but that the mark
   // contrasts with the track under it, so a theme retuning `text.primary` stays
   // free to move it.
   it('is dark on a light background and light on a dark one', () => {
@@ -42,7 +42,7 @@ describe.each(KEYS)('%s follows the theme', key => {
   // whose RGB is the black that was hard-coded, and `toRgb` drops the alpha in
   // favour of each mark's own (CONNECTING_LINE_ALPHA, OVERLAP_ALPHA). So this
   // changes dark mode and nothing else.
-  it('leaves light mode on the exact colour it already painted', () => {
+  it('leaves light mode on the exact color it already painted', () => {
     expect(light[key]).toEqual([0, 0, 0])
   })
 

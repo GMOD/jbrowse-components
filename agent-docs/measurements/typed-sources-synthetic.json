@@ -53,7 +53,7 @@
   "rows": [
     {
       "values": {
-        "scenario": "encode, y and a colour",
+        "scenario": "encode, y and a color",
         "baseMs": 147.7,
         "controlMs": 156.2,
         "headMs": 146.5
@@ -61,7 +61,7 @@
     },
     {
       "values": {
-        "scenario": "encode, categorical colour",
+        "scenario": "encode, categorical color",
         "baseMs": 49.1,
         "controlMs": 42.1,
         "headMs": 46.7

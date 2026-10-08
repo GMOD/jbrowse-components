@@ -38,9 +38,9 @@ export interface PointChannels extends ColorChannel, RowChannel {
   count: number
 }
 
-/** What the point and rule shapes share: a value scale, rows and a colour scale. */
+/** What the point and rule shapes share: a value scale, rows and a color scale. */
 export interface ValuedMarkParams extends RowParams, MarkValueScale {
-  /** The quantitative colour scale, for a mark whose colour is a ramp or a threshold. */
+  /** The quantitative color scale, for a mark whose color is a ramp or a threshold. */
   colorScale?: MarkColorScale
   /**
    * How far inside the plot the value range ends, so a mark at a domain

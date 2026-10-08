@@ -163,7 +163,7 @@ describe('hic track menu shape', () => {
   })
 })
 
-describe('hic colour rows on a display', () => {
+describe('hic color rows on a display', () => {
   const { createDisplay } = createTestEnvironment()
 
   function click(display: LinearHicDisplayModel, prefix: string) {

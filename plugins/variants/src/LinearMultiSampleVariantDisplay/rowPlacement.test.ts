@@ -44,8 +44,8 @@ function regularCellData(rowNames: string[]): CellDataResult {
     sampleNames: SAMPLES,
     perRegionCellData: {
       0: {
-        // worker row r gets a cell whose colour encodes r, so a mis-placement
-        // is visible as the wrong colour on a row rather than just a wrong index
+        // worker row r gets a cell whose color encodes r, so a mis-placement
+        // is visible as the wrong color on a row rather than just a wrong index
         cellRowIndices: Uint32Array.from(rowNames.map((_, r) => r)),
         cellColors: Uint32Array.from(rowNames.map((_, r) => 0xff0000 + r)),
         cellAltDosage: new Uint8Array(numCells).fill(1),
@@ -65,7 +65,7 @@ function regularCellData(rowNames: string[]): CellDataResult {
   }
 }
 
-// worker row -> screen row, read off the placed cells' colours
+// worker row -> screen row, read off the placed cells' colors
 function placement(display: { perRegionCellMap: Map<number, unknown> }) {
   const region = display.perRegionCellMap.get(0) as
     | { cellRowIndices: Uint32Array; cellColors: Uint32Array; numCells: number }

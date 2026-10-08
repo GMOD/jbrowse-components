@@ -18,7 +18,7 @@ import type { ReactNode, RefObject } from 'react'
 //
 // Side by side answers "what changed" only for a change big enough to find
 // twice; a figure whose row packing moved by a few pixels, or whose one bar
-// recoloured, reads as identical in two columns 700px apart. Stacked, the eye is
+// recolored, reads as identical in two columns 700px apart. Stacked, the eye is
 // looking at one picture and the difference is the thing that moves. Three ways
 // of doing that share one stage: fade (onion), a draggable divider (swipe), and
 // difference blending (diff) — they differ only in what the CSS does with
@@ -442,7 +442,7 @@ function CompareBar({
           <CmpBtn
             on={amp}
             label="⊕ amplify"
-            title="Multiply the difference 8× — a one-shade recolour is otherwise indistinguishable from black"
+            title="Multiply the difference 8× — a one-shade recolor is otherwise indistinguishable from black"
             onClick={() => {
               onAmp(!amp)
             }}

@@ -527,8 +527,8 @@ jb add-track-json untangle_track.json --update --out "$APP"
 
 # projection 1c: the same untangle file as one lane per strain on REF's axis.
 # `rows` gives each strain its own row and the BED's own itemRgb colors
-# each block by orientation, so the colour paints as the file says and the
-# identity scale only names the two colours, since the category lives only in the
+# each block by orientation, so the color paints as the file says and the
+# identity scale only names the two colors, since the category lives only in the
 # color.
 cp ecoli_pggb_untangle_rows.bed.gz ecoli_pggb_untangle_rows.bed.gz.tbi "$APP/"
 cat > untangle_rows_track.json <<JSON

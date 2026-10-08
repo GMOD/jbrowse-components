@@ -977,7 +977,7 @@ function cmpSide(a: AlignedSide, b: AlignedSide) {
  * than expected ... plotted twice from all-vs-all").
  *
  * Drawing both is not more information — it is the same statement in two
- * coordinates — and it makes a band's colour a function of how the file was
+ * coordinates — and it makes a band's color a function of how the file was
  * generated rather than of what aligned. So one of each pair is dropped, by
  * coincidence on both spans rather than by direction: a file holding only one
  * direction per pair (minimap2 `-X`, or a curated PAF) has no pairs to drop and

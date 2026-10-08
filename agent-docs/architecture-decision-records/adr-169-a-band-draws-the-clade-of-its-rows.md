@@ -12,8 +12,8 @@ Accepted (2026-09-25). Step 5 of
 on Colin's answers to calls 6, 7 and 8 of the row-model handoff. Builds on
 [ADR-157](adr-157-a-row-displays-arrangement-is-the-rows-config-object.md),
 whose `rows.tree` this gives a second shape, and
-[ADR-160](adr-160-a-rows-colour-is-one-categorical-channel-on-the-row-axis.md),
-whose dealer deals over the unbanded rows, so a band recolours nothing.
+[ADR-160](adr-160-a-rows-color-is-one-categorical-channel-on-the-row-axis.md),
+whose dealer deals over the unbanded rows, so a band recolors nothing.
 [packages/tree-sidebar/CLAUDE.md](../../packages/tree-sidebar/CLAUDE.md)
 §"A tree per band" is the operational doc.
 
@@ -82,7 +82,7 @@ export draws what the screen does. It has no hide control.
   `facet: 'group'`, as `test_data/volvox`'s `volvox_mouse_inheritance_rows`
   and the Roadmap figure now do; the Roadmap figure's band order is the
   facet's `domain` rather than a re-sorted `rowGroups`.
-- The variant colour key lists its values in the band order while the facet and
+- The variant color key lists its values in the band order while the facet and
   `rowColor` read one attribute (`rowColorKeyOrder`), now whether or not a tree
   is drawn.
 - A run under bands costs less than one over the cohort: 2,504 samples in 26
@@ -99,6 +99,6 @@ export draws what the screen does. It has no hide control.
   a clustered cohort then does nothing a reader can see.
 - **Chips over the data**, as the section displays label a facet. A 1000
   Genomes matrix by population is 26 chips over the cells; the margin already
-  holds the tint strip the band's colour is read from.
+  holds the tint strip the band's color is read from.
 - **Each band's dendrogram stretched to the full gutter**. Branch lengths would
   not compare across bands.

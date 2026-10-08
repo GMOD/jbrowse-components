@@ -236,10 +236,10 @@ Rscript dtu.R
 # column. Each transcript's numbers go on its own row and nowhere else; the
 # exon/CDS/UTR rows pass through untouched and paint their transcript's value.
 # `dif_called` is `dif` on the transcripts the test called and absent on the
-# rest, so the track's threshold colour paints an uncalled one the no-value grey.
+# rest, so the track's threshold color paints an uncalled one the no-value grey.
 #
 # Keys are written lowercase because gff-nostream lowercases them on the way in:
-# a colour field named `dIF` reads nothing and paints every transcript grey.
+# a color field named `dIF` reads nothing and paints every transcript grey.
 python3 - <<'PY'
 import csv
 import gzip

@@ -41,7 +41,7 @@ test('a missing quality packs 0, which the shader paints as the plain read fill'
   )
 })
 
-test('the packed table and the CSS table are one colour per score', () => {
+test('the packed table and the CSS table are one color per score', () => {
   const css = qualityPaintCss('rgb(0,0,0)')
   for (let score = 0; score < BASE_QUALITY_UNAVAILABLE; score++) {
     const c = qualityAbgr[score]!

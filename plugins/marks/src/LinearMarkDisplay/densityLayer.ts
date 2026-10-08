@@ -15,7 +15,7 @@ const EMPTY: StoredLayer = {
 
 /**
  * One region's density read as the layer a value mark draws: the sidecar's
- * own intervals as `x`/`x2` and its levels as `y`, one packed colour for all,
+ * own intervals as `x`/`x2` and its levels as `y`, one packed color for all,
  * a circle for the point's shape, and the Flatbush the hover reads where the
  * mark answers through one. The sidecar's rows are what a wiggle track would
  * draw of the same bigWig at the same bp/px — the zoom level the adapter

@@ -110,7 +110,7 @@ function buildInventory() {
   // the exact type (`/docs/config/linearhicdisplay/#slot-colorscheme`), so a
   // value can be resolved against the schema the reader is being sent to rather
   // than against the union — which matters because a slot is not one type
-  // everywhere: `scale` is one enumeration on a colour object and another on
+  // everywhere: `scale` is one enumeration on a color object and another on
   // a size.
   const enumByAnchor = new Map<string, Set<string>>()
   // every slot name and schema name, lowercased — a backticked token matching

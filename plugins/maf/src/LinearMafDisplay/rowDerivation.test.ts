@@ -9,7 +9,7 @@ import type { MafSource, LinearMafDisplayModel } from './stateModel.ts'
 
 type Display = LinearMafDisplayModel
 
-// Adapter samples as a `samples` config supplies them: a label and a colour
+// Adapter samples as a `samples` config supplies them: a label and a color
 // are the row's own. Canonical order is the guide tree's leaf order.
 const SAMPLES = [
   { id: 'hg38', label: 'Human', color: '#aa0000' },
@@ -96,7 +96,7 @@ function derived(display: Display) {
   }
 }
 
-test('adapter labels and colours are the rows own', () => {
+test('adapter labels and colors are the rows own', () => {
   expect(derived(loaded())).toMatchSnapshot()
 })
 
@@ -178,7 +178,7 @@ test('hiding the reference row prunes it from the rows and the tree', () => {
   expect(derived(display)).toMatchSnapshot()
 })
 
-test('a dialog reorder to a rotation keeps the supplied tree beside a relabel and a recolour, and a reset returns', () => {
+test('a dialog reorder to a rotation keeps the supplied tree beside a relabel and a recolor, and a reset returns', () => {
   const display = loaded({ tree: true })
   const [hg38, panTro4, mm10] = display.editableSources
   display.applyRowEdits([{ ...mm10!, label: 'House mouse' }, hg38!, panTro4!], {
@@ -190,7 +190,7 @@ test('a dialog reorder to a rotation keeps the supplied tree beside a relabel an
   expect(derived(display)).toMatchSnapshot()
 })
 
-test('a dialog recolour over an adapter colour, in place', () => {
+test('a dialog recolor over an adapter color, in place', () => {
   const display = loaded()
   display.applyRowEdits(display.editableSources, {
     domain: ['hg38'],

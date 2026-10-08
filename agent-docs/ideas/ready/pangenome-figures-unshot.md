@@ -31,7 +31,7 @@ the release-2 files, and why CHM13 is the only donor worth loading.
 - **Allele frequency on the graph-versus-callset figure.** `hprc_graph_vs_callset`
   (`website/scripts/specs/graph-hprc.ts`) reads `pgbi.vcf.gz`, whose records
   have no `AF`, so a frequency comes from the genotypes. Joined onto the allele
-  inventory it would let both panels colour by frequency: one 100 kb insertion
+  inventory it would let both panels color by frequency: one 100 kb insertion
   is on 41% of 462 haplotypes, another on 0.2%.
 - **What the insertion is** (the WashU MEI BED, 10 MB, one file, hg38). The graph
   says 315 bp of novel sequence attaches here; this says `AluY`, intact, and lists

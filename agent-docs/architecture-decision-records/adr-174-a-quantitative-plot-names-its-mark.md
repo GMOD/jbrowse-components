@@ -15,7 +15,7 @@ the heat strip.
 The wiggle display spelt its geom `defaultRendering: xyplot | density | line |
 linecenter | scatter`, a mode-era slot beside a mark display that says
 `mark: 'bar' | 'point'` for the same bars and points. `density` named a strip
-coloured by score, where the density tier and a mark's `source: 'density'`
+colored by score, where the density tier and a mark's `source: 'density'`
 mean a count of features per bin; MAF's row menu called the same geom
 "Identity heatmap". Two lines were two renderings where Vega-Lite has one line
 and an `interpolate`.

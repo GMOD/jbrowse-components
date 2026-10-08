@@ -142,7 +142,7 @@ export function spanRectWidthPx(
 }
 
 // colorType: 1=insertion 2=softclip 3=hardclip, with anything else taking the
-// insertion colour. Mirrors covClipKindColor() in coverageBand.slang, which both
+// insertion color. Mirrors covClipKindColor() in coverageBand.slang, which both
 // the indicator triangles and the interbase histogram read — they had a copy of
 // the lut and its fallback each, and nothing emits an out-of-range kind today,
 // so the two spellings disagreeing would have been invisible.

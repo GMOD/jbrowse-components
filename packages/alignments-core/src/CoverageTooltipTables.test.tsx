@@ -117,7 +117,7 @@ describe('the coverage table', () => {
     expect(out.slice(3).map(r => r.split('|')[1])).toEqual(['G', 'C', 'T'])
   })
 
-  it('swatches an allele row with the colour the display hands it', () => {
+  it('swatches an allele row with the color the display hands it', () => {
     const b = bin({ snps: { C: { count: 3, fwd: 2, rev: 1 } } })
     expect(swatchOf(b, 'C')).toBe('rgb(0,0,255)')
     // Nothing names the reference base, so that row has no swatch

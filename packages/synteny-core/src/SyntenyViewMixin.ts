@@ -11,7 +11,7 @@ import type { LegendSpec } from '@jbrowse/core/ui/legendSpec'
  * #stateModel SyntenyViewMixin
  *
  * What the linear synteny and dotplot views share beyond `SyntenyColorsMixin`:
- * the level-of-detail tier every track draws at, and a colour key the reader
+ * the level-of-detail tier every track draws at, and a color key the reader
  * closes per mode.
  */
 export function SyntenyViewMixin({

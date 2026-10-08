@@ -33,7 +33,7 @@ import { MANHATTAN_MARK } from './ldPlot.ts'
  * ```
  *
  * #example
- * LocusZoom-style colouring in two marks: every other point by its r² to
+ * LocusZoom-style coloring in two marks: every other point by its r² to
  * the index SNP in five bins, then the index alone as a pink diamond over
  * them, the key listing the bins highest first and the index as its own row.
  * The LD data is a second source on `GWASAdapter`, so it nests under
@@ -99,7 +99,7 @@ import { MANHATTAN_MARK } from './ldPlot.ts'
  *
  * #example
  * A selection scan as a plain `FeatureTrack`: a point per window at its
- * `fst` column, coloured by its `population` column:
+ * `fst` column, colored by its `population` column:
  * ```js
  * {
  *   type: 'FeatureTrack',

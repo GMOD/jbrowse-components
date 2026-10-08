@@ -334,7 +334,7 @@ const HPRC_BUBBLE_SCORE_SESSION_TRACK = {
 
 // The ideogram as a lane, on the same axis as the bubbles. The Giemsa stain is
 // column 5 of UCSC's cytoBand BED and lands on `gieStain` positionally
-// (`chr1 125100000 143200000 q12 gvar`); uncoloured the lane is one gold bar
+// (`chr1 125100000 143200000 q12 gvar`); uncolored the lane is one gold bar
 // the length of the chromosome, and with the stain it is the ideogram, where
 // acen (the centromere) and gvar (1q12) are the two bands that are not grey.
 function cytobandLane() {
@@ -1363,7 +1363,7 @@ export const hprcGraphSpecs: ScreenshotSpec[] = [
   // with nothing to check their own output against.
   //
   // The two BED indexes as an ordinary FeatureTrack lane, over a reference
-  // window, carrying the page's own `addtrack` fence's colour jexl so the
+  // window, carrying the page's own `addtrack` fence's color jexl so the
   // figure is that fence's output rather than a prettier variant of it.
   //
   // EVERYTHING IN THIS FRAME IS BLUE, and deliberately. An rGFA tags an

@@ -442,7 +442,7 @@ const suite: TestSuite = {
             localStorage.removeItem('svg-rasterize')
           }),
         )
-        // `colorInterchrom` (#af4d19), the one colour an interchromosomal
+        // `colorInterchrom` (#af4d19), the one color an interchromosomal
         // connection takes, so no other stroke in the export is counted.
         const arcCount = (
           svg.match(/<path [^>]*stroke="rgb\(175,77,25\)"/g) ?? []

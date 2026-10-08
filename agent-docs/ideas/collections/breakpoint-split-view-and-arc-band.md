@@ -126,11 +126,11 @@ click above, which builds the hit plumbing this reads.
 **View as pairs on by default in the panels: declined (2026-10-04).** The split
 view already draws every evidence curve between panels, and inside any panel
 whose display does not link its own reads. Chain layout on by default would
-swap those coloured intra-panel curves for the chain's grey hairline, make
+swap those colored intra-panel curves for the chain's grey hairline, make
 "Show intra-view links" a no-op for reads, grey out sort and soft clipping,
 and relayout on every landing, for mates on one row, which the view never
 draws as evidence. A fresh track from `openDefaultTracks` is the one place a
-default could honestly live, through `setUnit` so the colour swap comes with
+default could honestly live, through `setUnit` so the color swap comes with
 it.
 
 **The variant widget's link follows no chain.** `LaunchBreakendPanel.tsx`

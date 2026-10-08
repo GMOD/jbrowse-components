@@ -13,7 +13,7 @@ Accepted (2026-09-28). The second step putting a MafTrack on the mark display
 
 ## Context
 
-The MAF display's base view is one run per stretch of same-coloured cells per
+The MAF display's base view is one run per stretch of same-colored cells per
 species row, which `buildMafChannels` walks on the main thread off the
 block's reference text and each row's aligned text. With the species rows on
 the mark display, nothing turned a row's `seq` into drawable runs: a span
@@ -56,7 +56,7 @@ one consumer.
 
 ## Consequences
 
-- A `span` coloured by `state` over `rows: "species"` is the MAF display's
+- A `span` colored by `state` over `rows: "species"` is the MAF display's
   mismatch view, and a `text` over `base` at base zoom its letters. The
   `marks_maf_cells` track in the volvox marks config and the
   `mark-maf-cells` scene draw both.

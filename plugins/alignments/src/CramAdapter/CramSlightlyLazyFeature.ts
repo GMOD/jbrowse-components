@@ -163,7 +163,7 @@ export default class CramSlightlyLazyFeature
   // for why only the packing lives on this side.
   //
   // Genuinely lazy, and off the render path entirely: nothing builds it unless a
-  // consumer asks for the packed form (per-base colouring, the details panel).
+  // consumer asks for the packed form (per-base coloring, the details panel).
   // That is the difference between CRAM and BAM here — BAM's packed CIGAR is the
   // on-disk layout and `@gmod/bam` hands out a zero-copy view of it, so the
   // `NUMERIC_CIGAR` hint really is free there. CRAM has no CIGAR at all, so

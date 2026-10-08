@@ -179,7 +179,7 @@ export interface ArcBandFeedInput {
   /** The view's displayed regions, which a far foot resolves against. */
   displayed: readonly RegionInfo[]
   colors: ColorPalette
-  /** The field the band colours by, which names its baseline slot. */
+  /** The field the band colors by, which names its baseline slot. */
   colorField: ArcColorField
 }
 

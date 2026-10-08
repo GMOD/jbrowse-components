@@ -61,19 +61,19 @@ C_ORANGE <- "#eb6834"
 
 p <- ggplot(med, aes(y = label)) +
   geom_segment(
-    aes(x = 0, xend = s, yend = label, colour = released),
+    aes(x = 0, xend = s, yend = label, color = released),
     linewidth = 0.9, lineend = "round"
   ) +
   geom_point(
     data = d, aes(x = s, y = as.numeric(label) - 0.24),
-    colour = MUTED, alpha = 0.6, size = 1.1
+    color = MUTED, alpha = 0.6, size = 1.1
   ) +
-  geom_point(aes(x = s, colour = released), size = 2.6) +
+  geom_point(aes(x = s, color = released), size = 2.6) +
   geom_text(
     aes(x = s, label = text),
-    hjust = 0, nudge_x = 0.15, size = 3, colour = INK2
+    hjust = 0, nudge_x = 0.15, size = 3, color = INK2
   ) +
-  scale_colour_manual(values = c(`TRUE` = C_BLUE, `FALSE` = C_ORANGE), guide = "none") +
+  scale_color_manual(values = c(`TRUE` = C_BLUE, `FALSE` = C_ORANGE), guide = "none") +
   scale_x_continuous(
     limits = c(0, ceiling(max(d$s)) + 1.3), breaks = seq(0, ceiling(max(d$s))),
     expand = expansion(mult = c(0, 0.01)), labels = function(x) paste0(x, " s")
@@ -95,16 +95,16 @@ p <- ggplot(med, aes(y = label)) +
   ) +
   theme_minimal(base_size = 11) +
   theme(
-    plot.background = element_rect(fill = SURFACE, colour = NA),
+    plot.background = element_rect(fill = SURFACE, color = NA),
     panel.grid.major.y = element_blank(),
     panel.grid.minor = element_blank(),
-    panel.grid.major.x = element_line(colour = GRID, linewidth = 0.4),
-    axis.text.y = element_text(colour = INK, hjust = 0),
-    axis.text.x = element_text(colour = INK2),
-    strip.text = element_text(colour = INK, face = "bold", hjust = 0, size = 11),
-    plot.title = element_text(colour = INK, face = "bold", size = 14),
-    plot.subtitle = element_text(colour = INK2, size = 10, margin = margin(b = 10)),
-    plot.caption = element_text(colour = MUTED, size = 8, hjust = 0, lineheight = 1.15),
+    panel.grid.major.x = element_line(color = GRID, linewidth = 0.4),
+    axis.text.y = element_text(color = INK, hjust = 0),
+    axis.text.x = element_text(color = INK2),
+    strip.text = element_text(color = INK, face = "bold", hjust = 0, size = 11),
+    plot.title = element_text(color = INK, face = "bold", size = 14),
+    plot.subtitle = element_text(color = INK2, size = 10, margin = margin(b = 10)),
+    plot.caption = element_text(color = MUTED, size = 8, hjust = 0, lineheight = 1.15),
     plot.title.position = "plot",
     plot.caption.position = "plot",
     panel.spacing.x = unit(1.4, "lines"),

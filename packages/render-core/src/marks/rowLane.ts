@@ -19,7 +19,7 @@ export interface RowParams {
   rowOffsetPx?: number
   /**
    * The table `row` is read through as a key: its drawn slot, hidden, or a
-   * colour override. Absent, `row` is the slot.
+   * color override. Absent, `row` is the slot.
    */
   rowTable?: RowTable
 }
@@ -70,7 +70,7 @@ export function rowSlot(
   return keySlot(rowKey(row, i), table)
 }
 
-/** Instance `i`'s key's colour override, undefined where it keeps its own. */
+/** Instance `i`'s key's color override, undefined where it keeps its own. */
 export function rowColorOverride(
   row: Uint32Array | undefined,
   i: number,
@@ -81,7 +81,7 @@ export function rowColorOverride(
   return override >>> 24 === 0 ? undefined : override
 }
 
-/** The colour instance `i` is drawn in: its key's override, else `color`. */
+/** The color instance `i` is drawn in: its key's override, else `color`. */
 export function rowColor(
   color: number,
   row: Uint32Array | undefined,

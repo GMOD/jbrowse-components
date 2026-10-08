@@ -162,7 +162,7 @@ export default function JexlF(/* config?: any*/) {
     // BAM features expose a targeted `getTag` that walks the tag block and
     // decodes only the requested tag; `get('tags')` decodes every tag on the
     // read (a Record allocation plus NM/AS/ms/de/… — often ~10 per read) to
-    // answer one, and this runs per feature on colour/label callbacks like
+    // answer one, and this runs per feature on color/label callbacks like
     // `jexl:getTag(feature,'HP')`. Same duck-typing as
     // `@jbrowse/modifications-utils`' getTag(), which core cannot import (that
     // package depends on core). Unwrap first: on a jexlFeatureProxy every

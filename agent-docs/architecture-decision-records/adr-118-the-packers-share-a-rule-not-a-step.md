@@ -51,11 +51,11 @@ same rule with inputs the step lacks, or (c) something else.
 | `plugins/alignments/src/LinearAlignmentsDisplay/collapsedLayout.ts` | 62–80 | row 0 for everything; there is no placement pass | (c) |
 | `plugins/variants/src/LinearMultiSampleVariantDisplay/placeVariantRows.ts` | 32–49 | a permutation from worker row to screen row — a row is a sample | (c) |
 | `plugins/canvas/src/MultiRowGetFeaturesRPC/packMultiRowFeatures.ts` | 202–296 | a row is a partition value, interned in first-seen order | (c) |
-| `plugins/alignments/src/features/sashimi/junctions.ts` | 256–339 | greedy two-colouring into an up band and a down band, heaviest junction first, per refName | (c) |
+| `plugins/alignments/src/features/sashimi/junctions.ts` | 256–339 | greedy two-coloring into an up band and a down band, heaviest junction first, per refName | (c) |
 | `plugins/arc/src/shared/arcLayout.ts` `layOutArcs` | 132–184 | no lane assignment at all: arcs overlap and the height is a jexl slot | (c) |
 | `plugins/linear-comparative-view/src/MultiWaySyntenyDisplay/laneStack.ts` | 22–73 | a lane is a genome and the height is divided between them; dotplot places by 2D coordinate | (c) |
 | `packages/wiggle-core/src/autoscale.ts` | 253–300 | a 1024-bucket histogram of *values* for the autoscale quantiles; positional binning is the adapter's (ADR-107) | (c) |
-| `plugins/gwas/src/LinearManhattanDisplay/ldBins.ts` | 15–60 | r² thresholds bucketed to colours — a scale, not a transform. **Manhattan has no positional binning**; every record is an instance | (c) |
+| `plugins/gwas/src/LinearManhattanDisplay/ldBins.ts` | 15–60 | r² thresholds bucketed to colors — a scale, not a transform. **Manhattan has no positional binning**; every record is an instance | (c) |
 | `packages/display-kit/src/DensityTierMixin.ts`, `BaseFeatureDataAdapter.getFeatureDensity` | 42–118, 199–229 | reads a sidecar's precomputed bins and copies them into typed arrays; nothing bins | (c) |
 
 One (a), and it is one path of one function.

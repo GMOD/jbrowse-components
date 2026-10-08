@@ -88,7 +88,7 @@ test.each([
 )
 
 // The modBAM read-base pileup is the mod-coverage bar's denominator and
-// nothing else, so no other colouring and no band-less fetch pays for it
+// nothing else, so no other coloring and no band-less fetch pays for it
 test.each([
   [MODIFICATIONS, true, 1],
   [MODIFICATIONS, false, 0],

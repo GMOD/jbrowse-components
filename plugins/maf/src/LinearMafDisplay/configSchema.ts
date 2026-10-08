@@ -114,7 +114,7 @@ export default function configSchemaF() {
       },
       /**
        * #slot color
-       * What colours the aligned cells; see [MafColor](../mafcolor).
+       * What colors the aligned cells; see [MafColor](../mafcolor).
        *
        * #example
        * ```js
@@ -126,7 +126,7 @@ export default function configSchemaF() {
        * #slot
        * Unset, each row is one band of cells. `identity` draws each row as a
        * bar chart of its identity to the reference, the bars painted by
-       * `color` where it is `identity` and in one colour otherwise.
+       * `color` where it is `identity` and in one color otherwise.
        */
       y: {
         type: 'maybeStringEnum',
@@ -170,8 +170,8 @@ export default function configSchemaF() {
       rows: sampleRowsConfigSchema,
       /**
        * #slot rowColor
-       * A colour per species row, drawn as the bar beside its label, over the
-       * colour the adapter's `samples` entry gives it.
+       * A color per species row, drawn as the bar beside its label, over the
+       * color the adapter's `samples` entry gives it.
        *
        * #example
        * ```js

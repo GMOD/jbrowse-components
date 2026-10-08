@@ -83,7 +83,7 @@ export function findRowHit(
 export interface WiggleHitModel {
   effectiveRowHeight: number
   rowsTopOffset: number
-  // each visible source and the colour its marks paint in
+  // each visible source and the color its marks paint in
   markSources: VisibleSource[]
   rpcDataMap: ReadonlyMap<number, WiggleDataResult>
   // the resolved mode, never the raw `summaryScoreMode` slot: density draws

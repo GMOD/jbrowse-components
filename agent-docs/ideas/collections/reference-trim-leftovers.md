@@ -41,7 +41,7 @@ has been re-checked since the cut.
   Workers inherit Node access; try the `contextIsolation` flip on the real app.
 - **R export** (R_EXPORT): bisulfite C→T needs a reference walk;
   `shownModifications` filtering; phased-HP PS hue flattens to the secondary
-  colour; the multi-wiggle pos/neg split and group/cluster tree order; CI does
+  color; the multi-wiggle pos/neg split and group/cluster tree order; CI does
   not install R and Bioconductor, so `rScriptRun.test.ts` skips on every run.
 - **Figure capture** (FIGURE_CAPTURE): about 10 full-canvas GPU passes per
   figure on large multi-region views; whether hardware GL should default on or

@@ -142,7 +142,7 @@ test('the ramp texture follows only the scheme and its direction', () => {
   dispose()
 })
 
-test('a v4 track whose display spells ldMetric loads its colour', () => {
+test('a v4 track whose display spells ldMetric loads its color', () => {
   const { display } = createTestEnvironment({
     displayConfig: { ldMetric: 'dprime' },
   }).createDisplay()

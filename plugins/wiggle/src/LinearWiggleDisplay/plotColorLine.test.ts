@@ -43,7 +43,7 @@ function lineOf(display: ReturnType<typeof makeDisplay>) {
 }
 
 // The whole contract in one call: read the line, write it back unchanged, and
-// the colours the plot paints have not moved.
+// the colors the plot paints have not moved.
 function roundTrips(display: ReturnType<typeof makeDisplay>) {
   const before = lineOf(display)
   display.setColor(plotColorEdit(display.colorSetting, before))
@@ -60,7 +60,7 @@ describe('what the line reads out', () => {
     })
   })
 
-  it('shows one colour twice for a constant, which is what a flat plot is', () => {
+  it('shows one color twice for a constant, which is what a flat plot is', () => {
     expect(lineOf(makeDisplay({ color: '#C8B414' }))).toEqual({
       above: '#C8B414',
       below: '#C8B414',
@@ -86,7 +86,7 @@ describe('what the line reads out', () => {
   })
 
   // The cut follows the origin until a domain names one, so the line has to
-  // say where the colour actually changes rather than print a zero.
+  // say where the color actually changes rather than print a zero.
   it('names the origin as the cut where the domain declares none', () => {
     expect(lineOf(makeDisplay({ origin: 2 })).cut).toBe(2)
     expect(
@@ -100,7 +100,7 @@ describe('what the line reads out', () => {
   })
 
   // Density reads the same pair as the two ends of its white fade, so the line
-  // is the whole colour story there too — it is not a gradient.
+  // is the whole color story there too — it is not a gradient.
   it('still edits in density, where the pair is the fade\u2019s two ends', () => {
     const display = makeDisplay({
       renderingType: 'density',
@@ -131,7 +131,7 @@ describe('what the line declines to edit, and why', () => {
     })
   })
 
-  it('hides itself where a colour per subtrack paints', () => {
+  it('hides itself where a color per subtrack paints', () => {
     const display = makeDisplay({ rows: false })
 
     expect(display.rowPaletteDeals).toBe(true)
@@ -153,13 +153,13 @@ describe('what the line declines to edit, and why', () => {
     expect(display.wiggleColor.cuts).toHaveLength(3)
     expect(lineOf(display)).toMatchObject({
       mode: 'read',
-      reason: '3 cuts, a colour each',
+      reason: '3 cuts, a color each',
     })
   })
 })
 
 describe('what a swatch writes', () => {
-  it('writes the string form where both sides are one colour', () => {
+  it('writes the string form where both sides are one color', () => {
     const display = makeDisplay()
 
     expect(

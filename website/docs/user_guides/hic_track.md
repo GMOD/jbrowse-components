@@ -58,7 +58,7 @@ ramp that is dark at its low end would scatter dark specks across the sparse
 long-range half of the matrix. So viridis, magma, inferno and cividis run light
 to dark unless [`color.reverse`](/docs/config/hiccolor/#slot-reverse) says
 otherwise, whether picked from the menu or named in a config. These are the
-ramps every colour scale in JBrowse names, so a config spells one as
+ramps every color scale in JBrowse names, so a config spells one as
 [`color.scheme`](/docs/config/hiccolor/#slot-scheme).
 
 **Color scheme → Emphasize faint contacts (95th percentile)** decides what the

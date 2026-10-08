@@ -1,4 +1,4 @@
-// Sampling a 256×1 colour-ramp LUT texture by a [0,1] scalar — the mechanism
+// Sampling a 256×1 color-ramp LUT texture by a [0,1] scalar — the mechanism
 // HiC's contact map and both LD heatmap variants reached independently, down to
 // the binding slot, and wiggle density's third spelling. The module owns ONLY
 // the sampling: each consumer keeps its own scale (`mapHicCount`, LD's signed
@@ -27,7 +27,7 @@ module colorRampLut;
 // Where a normalized value `t` reads the ramp when its middle stop sits at
 // `mid`: both sides of the middle on one scale, the farther end reaching its
 // end stop and the nearer stopping short, so equal distances from the middle
-// take equal colours — ggplot2's `rescale_mid`. A `mid` of 0.5 reads `t`
+// take equal colors — ggplot2's `rescale_mid`. A `mid` of 0.5 reads `t`
 // itself, exactly, so a ramp with no middle declared reads its table as it
 // always did, and a moving domain moves one uniform and no table.
 public float rampMidT(float t, float mid) {
@@ -40,12 +40,12 @@ public float rampMidT(float t, float mid) {
 // and sampled by another is a half-shade of drift at every entry.
 public static const float RAMP_LUT_ENTRIES = 256.0;
 
-// The colour at `t` in [0, 1], straight (non-premultiplied) alpha. Sampled at
+// The color at `t` in [0, 1], straight (non-premultiplied) alpha. Sampled at
 // the texture's vertical center, mip level 0 — the ramp has no other row and no
 // other level.
 //
 // `t` is remapped into texel space rather than passed through. The builder
-// defines entry i as the colour at `i / (N - 1)`, while a linear-filtered
+// defines entry i as the color at `i / (N - 1)`, while a linear-filtered
 // texture puts entry i's center at `(i + 0.5) / N`, so sampling at `t` returns
 // a blend of two neighbours at every entry but the ends — half a step off the
 // table the Canvas2D and SVG twins index. `clamp` lands an out-of-range scalar
@@ -55,7 +55,7 @@ public float4 rampColor(Sampler2D<float4> ramp, float t) {
   return ramp.SampleLevel(float2(u, 0.5), 0.0);
 }
 
-// The same sample with its colour multiplied through its alpha, for a fragment
+// The same sample with its color multiplied through its alpha, for a fragment
 // returned under `//! blend: premultiplied`. Alpha itself is unchanged, so a
 // consumer's own alpha test (HiC's MIN_VISIBLE_ALPHA discard) reads the same
 // number either side of this call.

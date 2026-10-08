@@ -37,7 +37,7 @@ const ColorSwatch = observer(function ColorSwatch({
 /**
  * The depth, allele, deletion and modification breakdown at one band
  * position. `unit` names what is counted ("Reads", "Samples"); `swatchFor`
- * colours an allele row the way the display's SNP slices are drawn, and
+ * colors an allele row the way the display's SNP slices are drawn, and
  * leaving it out drops the swatch column; `children` land under the table.
  */
 export const CoverageTooltipTable = observer(function CoverageTooltipTable({

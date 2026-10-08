@@ -37,7 +37,7 @@ test('a box title shows even as the only section', () => {
   ])
 })
 
-// A colour object's `title: ""` is how a key asks for no heading, and the live
+// A color object's `title: ""` is how a key asks for no heading, and the live
 // legend draws none for it, so the export draws no blank row either.
 test('an empty box or section title draws no heading row', () => {
   expect(

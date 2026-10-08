@@ -71,7 +71,7 @@
     "views": [
       {
         "type": "LinearSyntenyView",
-        "displayName": "Human vs rhesus macaque orthologs, coloured by dN/dS",
+        "displayName": "Human vs rhesus macaque orthologs, colored by dN/dS",
         "views": [
           {
             "assembly": "human",

@@ -124,7 +124,7 @@ function altEntries(hue: string, inputs: VariantLegendInputs) {
 // The genotype scale: the constant alt hue or a plain CSS color from `color`,
 // plus, in phased mode, the fill for an alt other than the site's most
 // frequent. An override paints every alt, so that entry never keys beside one,
-// even while the flags are still the previous colouring's.
+// even while the flags are still the previous coloring's.
 export function getGenotypeEntries(
   inputs: VariantLegendInputs,
   altColorOverride?: string,
@@ -184,10 +184,10 @@ function swatchEntries(
   ]
 }
 
-// A record field's rows are the key every colour channel derives
+// A record field's rows are the key every color channel derives
 // (`derivedColorScale`) from the values painted, each drawn at het and hom
 // dosage where lightness carries it. The absent-data rows follow whatever that
-// key says, and their colours count toward its one-colour test, so a lone
+// key says, and their colors count toward its one-color test, so a lone
 // field row beside the reference grey still keys.
 function recordFieldScale(
   field: CategoricalField,
@@ -308,7 +308,7 @@ export function getVariantColorScales({
   ...inputs
 }: VariantLegendInputs & {
   // The alt cells' hue as the display resolved its `color`; undefined for the
-  // genotype colours.
+  // genotype colors.
   color: ColorEncoding | undefined
   // The slots a categorical `color` deals its values into (`heldColorSlots`).
   colorSlots?: HeldSlots

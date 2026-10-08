@@ -42,7 +42,7 @@ test('an empty threshold domain cuts at the origin, in the wiggle defaults', () 
   })
 })
 
-test('each cut after the first adds a band, painted by the next range colour', () => {
+test('each cut after the first adds a band, painted by the next range color', () => {
   const out = resolved(
     color({
       field: 'score',
@@ -125,7 +125,7 @@ test('reverse turns a ramp and its ends round', () => {
   ])
 })
 
-test("a line under a scheme parts in the scheme's own end colours", () => {
+test("a line under a scheme parts in the scheme's own end colors", () => {
   const out = resolved(
     color({ field: 'score', scale: 'linear', scheme: 'viridis' }),
     0,
@@ -160,7 +160,7 @@ test('CSS stops build one cached LUT, and domainMid moves the pivot', () => {
   expect(out.rampLut).not.toBeNull()
 })
 
-test('one CSS stop is a ramp from white to that colour, whatever the origin', () => {
+test('one CSS stop is a ramp from white to that color, whatever the origin', () => {
   const written = color({ field: 'score', scale: 'linear', range: ['red'] })
   const out = resolved(written, 3)
   expect(out.rampLut).toBe(rampLutOf({ range: ['white', 'red'] }))

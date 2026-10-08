@@ -42,7 +42,7 @@ export interface InterbaseUploadData {
   interbaseLengths: Uint32Array
   interbaseFrequencies: Uint8Array
   // 1=insertion, 2=softclip, 3=hardclip (`INTERBASE_*`), the byte the clip
-  // mark's kind and colour read.
+  // mark's kind and color read.
   interbaseTypes: Uint8Array
   numInsertions: number
   numSoftclips: number

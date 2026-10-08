@@ -8,8 +8,8 @@ import type { MarkDisplayModel } from './markDisplayTypes.ts'
 
 /**
  * The text marks' labels over the plot, as DOM text: one element per label
- * the shared placement keeps, in the instance's colour with a halo in the
- * surface colour, and no pointer events, so a hover reaches the canvas under
+ * the shared placement keeps, in the instance's color with a halo in the
+ * surface color, and no pointer events, so a hover reaches the canvas under
  * it. Its own observer, so a pan re-places the labels and nothing else.
  */
 const MarkTextLayer = observer(function MarkTextLayer({

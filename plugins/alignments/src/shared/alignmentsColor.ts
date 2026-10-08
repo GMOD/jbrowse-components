@@ -191,7 +191,7 @@ export function bodyColorScheme(
     : colorBy.type
 }
 
-/** Whether the main thread bakes a colour per read from a value the worker ships. */
+/** Whether the main thread bakes a color per read from a value the worker ships. */
 export function isBakedScheme(colorBy: ColorBy) {
   return (
     colorBy.type === 'mateRefName' ||
@@ -216,7 +216,7 @@ const NO_VALUE_LEVEL: ReadColorLevel = ['', 'noTagValue']
 
 /**
  * Each read scheme's levels, by the value a `domain` names them with, in the
- * order a `range` beside no `domain` colours them. `''` is a read with no
+ * order a `range` beside no `domain` colors them. `''` is a read with no
  * value for the field.
  */
 const READ_COLOR_LEVELS: Record<
@@ -294,7 +294,7 @@ function levelNotices(encoding: AlignmentsColorEncoding): string[] {
       levels.includes(value),
     )
       ? [
-          `color.domain: names a level of ${encoding.field} (${named}), which a threshold scale reads as a cut point; scale: "categorical" colours the levels`,
+          `color.domain: names a level of ${encoding.field} (${named}), which a threshold scale reads as a cut point; scale: "categorical" colors the levels`,
         ]
       : []
   }
@@ -349,8 +349,8 @@ const VALUE_FILLED: readonly ReadColorCategory[] = [
 ]
 
 /**
- * The read category colours the `color` object sets over the palette's:
- * `value` fills a read no field colours and one its tag or mate scheme found
+ * The read category colors the `color` object sets over the palette's:
+ * `value` fills a read no field colors and one its tag or mate scheme found
  * no value for, and `declaredReadCategoryColors` goes over that.
  */
 export function writtenReadCategoryColors(
@@ -365,8 +365,8 @@ export function writtenReadCategoryColors(
 }
 
 /**
- * The read category colours the `color` object declares, over the palette's
- * defaults: `range[i]` colours the i-th of `declaredLevels`. A level left out
+ * The read category colors the `color` object declares, over the palette's
+ * defaults: `range[i]` colors the i-th of `declaredLevels`. A level left out
  * keeps its default.
  */
 export function declaredReadCategoryColors(
@@ -397,7 +397,7 @@ export interface DeclaredReadLabels {
 
 /**
  * `color.labels` against the levels and values it names, in the order
- * `range` colours them: `labels[i]` names the i-th of `declaredLevels`, and
+ * `range` colors them: `labels[i]` names the i-th of `declaredLevels`, and
  * under a baked scheme the i-th `domain` value, or a threshold's i-th bin.
  * Read apart from the encoding, so a renamed key entry re-bakes no read.
  */

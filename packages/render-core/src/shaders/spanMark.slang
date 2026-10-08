@@ -1,16 +1,16 @@
-// The `span` mark shape: one instance is a coloured rectangle spanning
+// The `span` mark shape: one instance is a colored rectangle spanning
 // [x, x2) in absolute genomic coords, on the row band given by the `row`
 // channel. The geometry — row band, hp clip-x span, min-width widening — is
 // `rowRect`'s; this is the entry point that makes it a pass a mark can draw.
 //
 // `row` is read through the bound row table (`rowTable`): a key resolved to
-// its drawn slot and colour, or collapsed to a zero-area quad off clip space
+// its drawn slot and color, or collapsed to a zero-area quad off clip space
 // where the table hides it. A pass binding no table (`rowTableKeys` −1) draws
 // `row` as the slot, which is what every consumer did before the table.
 //
-// The colour slot is `markColor`'s: a packed ABGR, or under a ramp or a
+// The color slot is `markColor`'s: a packed ABGR, or under a ramp or a
 // threshold the value's bits resolved here through the uniforms, which is
-// what makes a span coloured by a field a heatmap whose domain moves as a
+// what makes a span colored by a field a heatmap whose domain moves as a
 // uniform.
 //! targets: wgsl, glsl
 //! instance-writer
@@ -32,7 +32,7 @@ struct SpanMarkUniforms {
   float  rowProportion;
   float  scrollTop;
   int    rowTableKeys;
-  // `markColor`'s: 0 packs the instance's colour, 1 and 2 read its slot as a
+  // `markColor`'s: 0 packs the instance's color, 1 and 2 read its slot as a
   // value through the ramp, 3 through the threshold below.
   int    rampMode;
   float  rampMin;

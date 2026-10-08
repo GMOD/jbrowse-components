@@ -40,7 +40,7 @@ export interface MafRowOverlays {
   inversions: InversionMarker[]
 }
 
-/** The overlays' colours in one theme, resolved once per theme. */
+/** The overlays' colors in one theme, resolved once per theme. */
 export function getMafOverlayTheme(palette: JBrowsePalette) {
   return {
     colors: getMafColorPalette(palette),

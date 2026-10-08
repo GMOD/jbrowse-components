@@ -31,7 +31,7 @@ export const MIN_BINNED_BP_PER_PX = 4
  * FALSE under blending, which both alignments backends use: a pixel
  * covered by N overlapping cells reports roughly their mean, and dropping to
  * N/binBp of them changes that statistic from a mean to a single draw. Measured
- * in `measurements/per-base-bin-appearance.json` — on a narrow colour ramp
+ * in `measurements/per-base-bin-appearance.json` — on a narrow color ramp
  * (`perBaseQuality`) a single draw is close enough to the mean to be invisible,
  * and on four separated hues (`perBaseLetter`) it is not: the wall goes from
  * muddy olive to vivid stripes, and the share of saturated pixels nearly

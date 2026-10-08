@@ -84,7 +84,7 @@ so the ribbons and the linear displays read a mate through one function.
 Every synteny-shaped import is behind the lazily-loaded state model, so
 `jbrowse-react-circular-genome-view` — which ships no synteny plugin and so can
 never open a `SyntenyTrack` — pays for the eager config schema and nothing
-else. The strand colours are a `jexl:` literal in that schema's `color`
+else. The strand colors are a `jexl:` literal in that schema's `color`
 default rather than the imported `colorSchemes.strand`, for the same reason.
 
 ### An end resolves against its own assembly

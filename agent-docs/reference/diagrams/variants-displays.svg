@@ -35,7 +35,7 @@
 <polygon fill="none" stroke="black" points="680.5,-76.25 484.5,-76.25 484.5,-30 680.5,-30 680.5,-76.25"/>
 <text xml:space="preserve" text-anchor="middle" x="582.5" y="-62.75" font-family="monospace" font-size="10.00">LinearVariantDisplay</text>
 <text xml:space="preserve" text-anchor="middle" x="582.5" y="-50" font-family="monospace" font-size="10.00">row = record</text>
-<text xml:space="preserve" text-anchor="middle" x="582.5" y="-37.25" font-family="monospace" font-size="10.00">colour = the `color` jexl slot</text>
+<text xml:space="preserve" text-anchor="middle" x="582.5" y="-37.25" font-family="monospace" font-size="10.00">color = the `color` jexl slot</text>
 </g>
 <!-- genotypes&#45;&gt;single -->
 <g id="edge2" class="edge">

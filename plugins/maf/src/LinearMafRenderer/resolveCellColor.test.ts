@@ -35,7 +35,7 @@ const byte = (c: string) => c.charCodeAt(0)
 // lookup masks `& 0x7f` because its table is 128 entries, so a high byte folds
 // onto a letter, and the range where that is the only thing keeping the two
 // together is the range a 7-bit sweep excludes.
-test('the packed colour table agrees with the cascade over every byte pair', () => {
+test('the packed color table agrees with the cascade over every byte pair', () => {
   const disagreements: string[] = []
   for (const colorMatches of [false, true]) {
     const packed = packMafCellColorConfig({ ...cfg, colorMatches })
@@ -63,7 +63,7 @@ test('reference insertion (ref dash) is skipped', () => {
   ).toBe(RESOLVE_PACKED_SKIP)
 })
 
-test('a match paints the match colour, or its own base under colorMatches', () => {
+test('a match paints the match color, or its own base under colorMatches', () => {
   const at = (colorMatches: boolean) =>
     resolveCellPacked(
       byte('A'),

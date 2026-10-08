@@ -61,7 +61,7 @@ shows what each does to the picture:
 BEDPE loop calls load as a `VariantTrack` with a
 [mark display](/docs/config_guides/mark_display) drawing one `link` per call: a
 `mate` step reads each record's other end, `x2` names the fields holding it,
-`size` is the stroke in pixels and `color` the stroke colour. A `filter` step
+`size` is the stroke in pixels and `color` the stroke color. A `filter` step
 keeps the high-scoring calls, drawn here in dark red as thin arcs:
 
 ```json addtrack

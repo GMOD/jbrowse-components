@@ -121,7 +121,7 @@ describe("computeSyntenyColors under the 'track' field", () => {
 
 // "Hide unlabelled" paints a ribbon at zero alpha, and the identity fade wrote
 // its own alpha over every ribbon, so the hidden ones came back at 30% or more.
-test('a ribbon the colour mode hides stays hidden under the identity fade', () => {
+test('a ribbon the color mode hides stays hidden under the identity fade', () => {
   const group = { labels: ['A'], colors: {} }
   const colors = computeSyntenyColors({
     groundColor: '#fff',
@@ -153,7 +153,7 @@ test('a ribbon the colour mode hides stays hidden under the identity fade', () =
   expect(abgrAlpha(colors[1]!)).toBe(0)
 })
 
-// A coloured-CIGAR ribbon draws its indels as instances of their own, painted
+// A colored-CIGAR ribbon draws its indels as instances of their own, painted
 // from the indel palette, so hiding the ribbon left its insertions standing.
 test("a hidden ribbon's indels are hidden with it", () => {
   const group = { labels: ['A'], colors: {} }
@@ -221,7 +221,7 @@ describe('the location-marker toggle', () => {
   })
 
   // The tick is the ruler continued through the ribbons, so it contrasts with
-  // the BAND — which is a colour the renderers cleared to, not the page's. Black
+  // the BAND — which is a color the renderers cleared to, not the page's. Black
   // on a white band is the value this has always had; a dark band gets the
   // inverse rather than a tick nothing can see.
   test('on: the ink follows the band, not the palette it came from', () => {

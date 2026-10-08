@@ -73,7 +73,7 @@ function binColor(score: number) {
 }
 
 // Every GPU rasteriser resolves a flat opaque quad the same way: a sample takes
-// the colour of the last quad covering it. Only the coverage rule is modelled —
+// the color of the last quad covering it. Only the coverage rule is modelled —
 // the widening is the shader's own `extendToMinWidthPx`.
 function gpuRow(
   b: Bins,
@@ -217,7 +217,7 @@ function downsample(row: Float64Array, factor: number) {
 }
 
 // Ink, the density analogue of MAF_LARGE_BLOCKS' chroma: the ramp runs white
-// to the track colour, so max-min over the channels is how much colour the row
+// to the track color, so max-min over the channels is how much color the row
 // carries.
 function ink(row: Float64Array) {
   let total = 0

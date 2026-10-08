@@ -82,7 +82,7 @@
 <title>range</title>
 <polygon fill="none" stroke="black" points="343,-495.75 105,-495.75 105,-436.75 343,-436.75 343,-495.75"/>
 <text xml:space="preserve" text-anchor="middle" x="224" y="-482.25" font-family="monospace" font-size="10.00">one line through every bin,</text>
-<text xml:space="preserve" text-anchor="middle" x="224" y="-469.5" font-family="monospace" font-size="10.00">coloured by the origin side it is on;</text>
+<text xml:space="preserve" text-anchor="middle" x="224" y="-469.5" font-family="monospace" font-size="10.00">colored by the origin side it is on;</text>
 <text xml:space="preserve" text-anchor="middle" x="224" y="-456.75" font-family="monospace" font-size="10.00">whiskers adds a translucent</text>
 <text xml:space="preserve" text-anchor="middle" x="224" y="-444" font-family="monospace" font-size="10.00">min&#45;max band under it</text>
 </g>
@@ -99,7 +99,7 @@
 <polygon fill="none" stroke="black" points="509,-572.75 295,-572.75 295,-513.75 509,-513.75 509,-572.75"/>
 <text xml:space="preserve" text-anchor="middle" x="402" y="-559.25" font-family="monospace" font-size="10.00">one band under mean, min and max,</text>
 <text xml:space="preserve" text-anchor="middle" x="402" y="-546.5" font-family="monospace" font-size="10.00">three under whiskers; each value</text>
-<text xml:space="preserve" text-anchor="middle" x="402" y="-533.75" font-family="monospace" font-size="10.00">coloured by its own sign</text>
+<text xml:space="preserve" text-anchor="middle" x="402" y="-533.75" font-family="monospace" font-size="10.00">colored by its own sign</text>
 <text xml:space="preserve" text-anchor="middle" x="402" y="-521" font-family="monospace" font-size="10.00">against the origin</text>
 </g>
 <!-- summary&#45;&gt;bands -->
@@ -135,7 +135,7 @@
 <g id="node12" class="node">
 <title>whole</title>
 <polygon fill="none" stroke="black" points="648,-298.5 452,-298.5 452,-262.5 648,-262.5 648,-298.5"/>
-<text xml:space="preserve" text-anchor="middle" x="550" y="-277.38" font-family="monospace" font-size="10.00">one band, per&#45;instance colours</text>
+<text xml:space="preserve" text-anchor="middle" x="550" y="-277.38" font-family="monospace" font-size="10.00">one band, per&#45;instance colors</text>
 </g>
 <!-- nests&#45;&gt;whole -->
 <g id="edge13" class="edge">

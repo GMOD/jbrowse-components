@@ -165,7 +165,7 @@ export function colorByFallbackNote(field: string) {
     : 'Distinct color per sequence'
 }
 
-// Legend spec for a colour field: a gradient ramp for a measurement or numeric
+// Legend spec for a color field: a gradient ramp for a measurement or numeric
 // column, labeled chips for the structural fields and a text column. Returns
 // undefined for the per-name fields (query/target/reference), which have no
 // fixed legend. `pointBased` is true for the dotplot (flat points, no CIGAR);

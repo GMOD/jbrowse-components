@@ -1,4 +1,4 @@
-// What does a row reorder, a focus or a recolour cost the multi-row display
+// What does a row reorder, a focus or a recolor cost the multi-row display
 // per loaded region, on the main thread, and how many bytes does each gesture
 // upload — as the display ran it before the row table, and through the table?
 //
@@ -14,17 +14,17 @@
 // `rows` partition values. The first three arms are the whole main-thread cost
 // of one gesture for that region as the display ran it before the table
 // (kept here as `repackRegion`, the encode that baked the drawn row and the
-// row colour into every instance) and the pack the upload then runs
+// row color into every instance) and the pack the upload then runs
 // (`spanMark.pass.pack`); the table arms are the same gestures through
 // `buildRowTable`, which is the whole cost, since no region re-encodes:
 //
 //   reorder          the rows permuted
 //   reorder-control  the same call through a second driver, the harness's floor
 //   focus            half the rows kept, so half the features drop out
-//   recolour         one row's colour override changed
+//   recolor         one row's color override changed
 //   table-reorder    the table for the permuted rows
 //   table-focus      the table with half the rows hidden
-//   table-recolour   the table with one row's override changed
+//   table-recolor   the table with one row's override changed
 //
 // Beside each time, the bytes the gesture uploads: instance bytes for the
 // region on the re-pack arms, the table texture on the table arms. Identity
@@ -107,7 +107,7 @@ function region(): MultiRowRegionData {
 const data = region()
 const names = data.rowValues
 
-// Every row carries a palette colour, the display's default configuration.
+// Every row carries a palette color, the display's default configuration.
 const colors = names.map((_, r) => PALETTE[r % PALETTE.length]!)
 
 interface RepackInputs {
@@ -115,7 +115,7 @@ interface RepackInputs {
   rowColorsByIndex: readonly (number | undefined)[]
 }
 
-// The encode the table retired: the drawn row and the row colour baked into
+// The encode the table retired: the drawn row and the row color baked into
 // every instance, a row outside the order dropped.
 function repackRegion(
   {
@@ -171,11 +171,11 @@ function focusInputs() {
   }
 }
 let tint = 0
-function recolourInputs() {
+function recolorInputs() {
   tint += 1
-  const recoloured = colors.slice()
-  recoloured[0] = 0xff000000 | (tint & 0xffffff)
-  return { rowIndexByValue: orderOf(names), rowColorsByIndex: recoloured }
+  const recolored = colors.slice()
+  recolored[0] = 0xff000000 | (tint & 0xffffff)
+  return { rowIndexByValue: orderOf(names), rowColorsByIndex: recolored }
 }
 
 // The table for the same gesture: the keys never move, the table follows.
@@ -207,8 +207,8 @@ const reorderControl = () => {
 const focus = () => {
   bytes = spanMark.pass.pack(repackRegion(data, focusInputs())).byteLength
 }
-const recolour = () => {
-  bytes = spanMark.pass.pack(repackRegion(data, recolourInputs())).byteLength
+const recolor = () => {
+  bytes = spanMark.pass.pack(repackRegion(data, recolorInputs())).byteLength
 }
 const tableReorder = () => {
   bytes = tableOf(reorderInputs()).texture.bytes.byteLength
@@ -216,18 +216,18 @@ const tableReorder = () => {
 const tableFocus = () => {
   bytes = tableOf(focusInputs()).texture.bytes.byteLength
 }
-const tableRecolour = () => {
-  bytes = tableOf(recolourInputs()).texture.bytes.byteLength
+const tableRecolor = () => {
+  bytes = tableOf(recolorInputs()).texture.bytes.byteLength
 }
 
 const ARMS = [
   { name: 'reorder', run: reorder },
   { name: 'reorder-control', run: reorderControl },
   { name: 'focus', run: focus },
-  { name: 'recolour', run: recolour },
+  { name: 'recolor', run: recolor },
   { name: 'table-reorder', run: tableReorder },
   { name: 'table-focus', run: tableFocus },
-  { name: 'table-recolour', run: tableRecolour },
+  { name: 'table-recolor', run: tableRecolor },
 ]
 
 // identity: the painter through the table puts down the re-pack's rects
@@ -257,7 +257,7 @@ function rectsOf(channels: SpanChannels, rowTable?: SpanParams['rowTable']) {
 for (const [gesture, inputs] of [
   ['reorder', { rowIndexByValue: orderOf(shuffled), rowColorsByIndex: colors }],
   ['focus', { rowIndexByValue: orderOf(kept), rowColorsByIndex: colors }],
-  ['recolour', recolourInputs()],
+  ['recolor', recolorInputs()],
 ] as const) {
   const repacked = rectsOf(repackRegion(data, inputs))
   const tabled = rectsOf(keyed, tableOf(inputs))

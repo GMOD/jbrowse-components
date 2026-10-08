@@ -174,7 +174,7 @@ main {
   max-width: 1500px;
   margin: 0 auto;
 }
-/* The status stripe is always 5px and only its COLOUR says which status, because
+/* The status stripe is always 5px and only its COLOR says which status, because
    a border is layout: growing it 1px → 5px on a verdict takes 4px off the
    content width, the image well reflows into it, and the card gets shorter —
    see `main` for what a card that shrinks mid-press does to a click. A verdict

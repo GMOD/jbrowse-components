@@ -65,7 +65,7 @@ describe('parseRowsByName', () => {
   })
 
   // A leading tab is an empty first cell, not padding: trimming it shifted every
-  // column left, so the row was filed under the colour or dropped entirely.
+  // column left, so the row was filed under the color or dropped entirely.
   it('keeps an empty leading cell in a TSV row', () => {
     expect(parseRowsByName('group\tname\tcolor\n\tHG1\t#f00')).toEqual(
       new Map([['HG1', { group: '', name: 'HG1', color: '#f00' }]]),

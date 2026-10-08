@@ -81,9 +81,9 @@ function crossoverHalves(loc: string, crossover: string) {
   }
 }
 
-// Colour-code the two sides of a crossover: the left-colour frame wraps the
+// Color-code the two sides of a crossover: the left-color frame wraps the
 // parental copy matched left of the breakpoint plus the matching left half of
-// the child row; the right-colour frame wraps the copy matched right of it plus
+// the child row; the right-color frame wraps the copy matched right of it plus
 // the child's right half; each lightly tinted. A neutral box marks the painting
 // step and an arrow drops from it to the crossover point on the child row.
 //
@@ -391,14 +391,14 @@ export const trioSpecs: ScreenshotSpec[] = [
   // its stable name) so the sidebar reads Child/Mother/Father hapN, matching the
   // hap-ibd painting's own row names.
   //
-  // The callouts make the crossover concrete by colour-coding the two segments
+  // The callouts make the crossover concrete by color-coding the two segments
   // with a translucent frame each (maternal greens/oranges, paternal
   // yellows/purples). Left of the breakpoint the child's inherited haplotype
-  // matches one parental copy: the left-colour frame wraps both that parental
+  // matches one parental copy: the left-color frame wraps both that parental
   // row's left half and the matching left half of the child row. Right of the
-  // breakpoint it matches the other parental copy, wrapped in the right-colour
+  // breakpoint it matches the other parental copy, wrapped in the right-color
   // frame. The child row therefore carries the two tinted blocks abutting exactly
-  // at the crossover, each colour linking the child segment to the specific
+  // at the crossover, each color linking the child segment to the specific
   // parental haplotype it was copied from.
   ...(
     [
@@ -417,7 +417,7 @@ export const trioSpecs: ScreenshotSpec[] = [
           rightSource: 'Father hap1',
           palette: TRIO_PATERNAL_COLORS,
           paintingTopRow: 0,
-          // name the frame colour, not the painting colour: the painting's
+          // name the frame color, not the painting color: the painting's
           // blue clashed with the blue variant track (reviewer)
           leftText:
             'Left of the crossover (yellow frame), Child hap1 matches Father hap2',
@@ -439,7 +439,7 @@ export const trioSpecs: ScreenshotSpec[] = [
           rightSource: 'Mother hap1',
           palette: TRIO_MATERNAL_COLORS,
           paintingTopRow: 0,
-          // name the frame colour, not the painting colour: the painting's
+          // name the frame color, not the painting color: the painting's
           // red/pink clashed with the blue variant track (reviewer)
           leftText:
             'Left of the crossover (green frame), Child hap2 matches Mother hap2',

@@ -92,7 +92,7 @@ test('a band keeps its rows in their arranged order, so a sort survives', () => 
   expect(drawn(display)).toEqual(['CLUPb', 'CLUPa', 'COLLy', 'COLLx'])
 })
 
-test('a recoloured row stays in its band', () => {
+test('a recolored row stays in its band', () => {
   const display = banded(['COLL000001', 'CLUPGR000001', 'CLUPRU000001'], {
     rowGroups: [WOLF],
     rowColor: { domain: ['CLUPGR000001'], range: ['rebeccapurple'] },
@@ -113,7 +113,7 @@ test('each row carries its rowGroups group from expandedRows on', () => {
 
 // The ungrouped rows have no value, which is missing rather than a category,
 // so the deal passes them by.
-test('facet group bands, and rowColor by group colours every group but none', () => {
+test('facet group bands, and rowColor by group colors every group but none', () => {
   const display = banded(
     [
       'VILLCN000001',

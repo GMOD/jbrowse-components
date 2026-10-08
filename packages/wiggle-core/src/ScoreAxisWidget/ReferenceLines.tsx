@@ -38,7 +38,7 @@ function ruleOf(row: Row): ValueScaleRule {
 
 /**
  * `scales.y.rules`, one row per line: its value on the plot's own scale, its
- * label and its colour, an empty colour taking the display's. The lines
+ * label and its color, an empty color taking the display's. The lines
  * redraw as soon as every row reads; a half-typed row waits.
  */
 export default observer(function ReferenceLines({

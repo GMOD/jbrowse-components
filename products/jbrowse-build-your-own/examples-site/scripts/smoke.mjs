@@ -62,7 +62,7 @@ const MUI_BUDGET = {
   'loading-and-errors': 0,
   'scalebar-and-labels': 0,
   'controlling-the-view': 0,
-  // At rest this page shows a pileup coloured `normal`, which has no key — so
+  // At rest this page shows a pileup colored `normal`, which has no key — so
   // this zero is the ordinary one and says nothing about the legend. The legend
   // is a separate check (`legendIsPlainAndAboveTheSeams`), because it has to be
   // driven and because a census that only ever runs before the thing appears is
@@ -84,9 +84,9 @@ const MUI_BUDGET = {
   // Two renderings of the same two tracks on one page -- the canvas stack behind
   // `DisplayUIProvider`, and the SVG figure under it -- and the figure's half of
   // this zero is free rather than installed: an SVG body draws no chrome, and the
-  // one thing it draws that a display would (a colour key) is vector. The page
+  // one thing it draws that a display would (a color key) is vector. The page
   // does mount a Material `ThemeProvider`, which is what JBrowse's SVG chrome
-  // reads its colours from; a provider is not an element, and this number is what
+  // reads its colors from; a provider is not an element, and this number is what
   // says so.
   'svg-figures': 0,
 }
@@ -482,12 +482,12 @@ async function dragToZoomFramesTheSpan(page, slug) {
   return out
 }
 
-// The floating colour legend, which is the one piece of display chrome behind
+// The floating color legend, which is the one piece of display chrome behind
 // NEITHER bring-your-own seam: a display renders `FloatingLegend` directly, so
 // no provider redirects it and this site's whole claim rests on what that file
 // happens to import. It was two Material `IconButton`s and a `Link` until
 // 2026-08, and the census scored every page zero throughout — because a legend
-// only exists once something picks a colouring that has a key, and until this
+// only exists once something picks a coloring that has a key, and until this
 // page nothing here ever did.
 //
 // So the census is re-run with one on screen. Three assertions, and the middle
@@ -626,7 +626,7 @@ async function legendIsPlainAndAboveTheSeams(page, slug) {
   )
   if (found.length > 0) {
     out.push(
-      `the colour legend renders ${found.length} Material UI element(s), and ` +
+      `the color legend renders ${found.length} Material UI element(s), and ` +
         'no provider can swap them — a host that mounted DisplayUIProvider to ' +
         `avoid exactly this gets them anyway:\n${found.map(f => `           - ${f}`).join('\n')}`,
     )
@@ -675,7 +675,7 @@ async function legendIsPlainAndAboveTheSeams(page, slug) {
 // The generalisation of the check above, to every page and every piece of
 // floating chrome rather than to the one page that happens to raise a legend.
 //
-// A display floats its chrome — the bottom-right controls, the colour key, the
+// A display floats its chrome — the bottom-right controls, the color key, the
 // loading scrim, the error bar — out of its `contain: strict` sandbox through
 // `TrackOverlayPortal`, and the host mounts the node it lands in
 // (`TrackOverlaySlot`). Leave the slot out and the portal falls back to
@@ -1125,7 +1125,7 @@ const failures = await smokeExamplesSite({
     // Toggles the theme to dark and back, so it goes before everything below,
     // which clicks. It is also the check with the most to say on this site
     // specifically: these demos may not use the shell's custom properties, so
-    // they style themselves with CSS system colours, which is the thing that
+    // they style themselves with CSS system colors, which is the thing that
     // silently stops tracking the page when the theme plumbing is wrong.
     ...(await checkTextContrast(page)),
     ...(await clicksReachTheTrack(page)),

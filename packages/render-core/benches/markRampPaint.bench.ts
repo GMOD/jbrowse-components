@@ -1,4 +1,4 @@
-// What does resolving a quantitative colour ramp on the main thread cost the
+// What does resolving a quantitative color ramp on the main thread cost the
 // Canvas2D fallback, per repaint?
 //
 //   node packages/render-core/benches/markRampPaint.bench.ts
@@ -8,7 +8,7 @@
 // control, an identity check before any timing is believed — are in
 // agent-docs/reference/BENCHMARKING.md.
 //
-// THE QUESTION. ADR-113 moved a `linear`/`log` colour scale out of the worker:
+// THE QUESTION. ADR-113 moved a `linear`/`log` color scale out of the worker:
 // the payload carries the raw values and the shape resolves them against a
 // domain unioned over the loaded regions. On the GPU backends that is a
 // uniform and a 1 KB LUT, so a repaint costs nothing. The Canvas2D fallback —
@@ -17,7 +17,7 @@
 //
 // FOUR ARMS, each one full `barMark.paintBlock` over one region's bars:
 //
-//   packed      the worker-resolved colour lane, what shipped before — one
+//   packed      the worker-resolved color lane, what shipped before — one
 //               `Uint32Array` read per instance
 //   baked       the ramp with the domain unchanged since the last repaint,
 //               which is every pan, every hover and every height drag: the
@@ -155,7 +155,7 @@ const ARMS = [
   { name: 'perPaint', run: perPaint },
 ]
 
-// identity: the bake and the worker's own resolution answer the same colours
+// identity: the bake and the worker's own resolution answer the same colors
 const bakedOnce = channels(true)
 barMark.paintBlock(ctx, bakedOnce, block, frame, { ...base, colorScale: ramp })
 const bakedColors = bakedOnce.rampBake!.colors

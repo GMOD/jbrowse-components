@@ -30,7 +30,7 @@ test.each([
   },
 )
 
-test('a colour that paints as written has no notice', () => {
+test('a color that paints as written has no notice', () => {
   const { display } = createTestEnvironment().createDisplay()
   expect(display.notices).toEqual([])
   render(<VariantDisplayComponent model={display} />)

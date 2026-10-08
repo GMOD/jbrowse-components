@@ -6,7 +6,7 @@
 // blob revisions over 156 commits since 2025-12-01. Those are undeltifiable
 // binaries git keeps forever: 0.12 GiB of a 1.63 GiB pack, growing ~0.17 GiB/yr.
 // It is a fifth of the figure problem (website/scripts/figure-store.ts) and it
-// arrives the same way — one arc-colour change moved six of them in an
+// arrives the same way — one arc-color change moved six of them in an
 // afternoon.
 //
 // The addressing, the manifest grammar and the hash are

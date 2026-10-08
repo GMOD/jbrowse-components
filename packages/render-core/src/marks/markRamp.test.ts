@@ -71,7 +71,7 @@ const params: BarParams = {
   colorScale: ramp,
 }
 
-test('the colour lane carries the value bits, so a ramp adds no instance byte', () => {
+test('the color lane carries the value bits, so a ramp adds no instance byte', () => {
   const c = bars([0, 50, 100])
   const bits = colorBits(c, c.count)
   expect(bits.length).toBe(3)
@@ -81,7 +81,7 @@ test('the colour lane carries the value bits, so a ramp adds no instance byte', 
   expect(barMark.pass.pack(c).byteLength).toBe(3 * INSTANCE_STRIDE_BYTES)
 })
 
-test('a packed colour lane is passed through untouched', () => {
+test('a packed color lane is passed through untouched', () => {
   const c: BarChannels = {
     ...bars([0, 100]),
     colorValue: undefined,
@@ -91,7 +91,7 @@ test('a packed colour lane is passed through untouched', () => {
   expect([...(paintColors(c, 2, undefined) as Uint32Array)]).toEqual([1, 2])
 })
 
-test('a constant colour packs and paints the bytes a lane of it gave', () => {
+test('a constant color packs and paints the bytes a lane of it gave', () => {
   const red = 0xff0000ff
   const lane: BarChannels = {
     ...bars([0, 50, 100]),
@@ -110,15 +110,15 @@ test('a constant colour packs and paints the bytes a lane of it gave', () => {
   ])
 })
 
-test('a constant colour expands once for Canvas2D and never for the pack', () => {
+test('a constant color expands once for Canvas2D and never for the pack', () => {
   const c: BarChannels = { ...bars([0, 100]), colorValue: undefined, color: 7 }
   colorBits(c, 2)
   expect(c.constantBake).toBeUndefined()
   const first = paintColors(c, 2, undefined)
   expect(paintColors(c, 2, undefined)).toBe(first)
   expect(c.constantBake).toBe(first)
-  const recoloured = paintColors({ ...c, color: 9 }, 2, undefined)
-  expect(Array.from(recoloured)).toEqual([9, 9])
+  const recolored = paintColors({ ...c, color: 9 }, 2, undefined)
+  expect(Array.from(recolored)).toEqual([9, 9])
   const longer: BarChannels = { ...c, count: 3 }
   expect(Array.from(paintColors(longer, 3, undefined))).toEqual([7, 7, 7])
 })
@@ -241,7 +241,7 @@ const threshold: MarkThreshold = {
   colors: Uint32Array.of(RED, GREEN, BLUE),
 }
 
-test('a threshold reaches the shader as its cuts, four to a vector, and a colour per interval', () => {
+test('a threshold reaches the shader as its cuts, four to a vector, and a color per interval', () => {
   const u = rampUniforms(threshold)
   expect(u.rampMode).toBe(3)
   expect(u.colorCutCount).toBe(2)
@@ -257,7 +257,7 @@ test('a threshold reaches the shader as its cuts, four to a vector, and a colour
   expect(u.colorBands[3]).toEqual([0, 0, 0, 0])
 })
 
-test('the threshold bake paints each value the colour of its interval, as the shader does', () => {
+test('the threshold bake paints each value the color of its interval, as the shader does', () => {
   const c = bars([10, 20, 25, 30, 40, Infinity, -Infinity])
   const colors = paintColors(c, 7, threshold) as Uint32Array
   expect([...colors]).toEqual([RED, GREEN, GREEN, BLUE, BLUE, BLUE, RED])
@@ -298,7 +298,7 @@ test('a declared middle moves where the bake reads the straight table', () => {
   expect(widened[1]! & 255).toBe(128)
 })
 
-test('the painter fills the baked colours, batching a run of one', () => {
+test('the painter fills the baked colors, batching a run of one', () => {
   const { ctx, calls } = mockCtx()
   barMark.paintBlock(ctx, bars([100, 100, 0]), block, frame, params)
   const grey = (v: number) =>

@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 #
 # One chromosome of the ten Wheat 10+ Genome assemblies aligned to Chinese
-# Spring with minimap2, for a lane stack whose ribbons are coloured by percent
+# Spring with minimap2, for a lane stack whose ribbons are colored by percent
 # identity: the chromosome alignment and the measure Walkowiak et al. 2020
 # (Fig. 2, track iii) found alien introgressions with.
 #
@@ -79,7 +79,7 @@ while IFS=$'\t' read -r name _ _ prefix; do
       for (s = 0; s < length(seq); s += size)
         printf ">%s:%d\n%s\n", name, s, substr(seq, s + 1, size)
     }' "$name.$CHROM.fa" >"$name.pieces.fa"
-  # --eqx writes the =/X CIGAR the identity colour is computed from; the awk
+  # --eqx writes the =/X CIGAR the identity color is computed from; the awk
   #   keeps primary alignments, so a repeat copied elsewhere cannot stand in
   #   for the locus, puts each piece back at its offset on the whole
   #   chromosome and gives both names the PanSN prefix of their assembly

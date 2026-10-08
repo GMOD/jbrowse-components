@@ -111,7 +111,7 @@ export function pluginCheckout(name: string) {
 }
 
 // The libraries a plugin's labels come from besides its own `src/`, each
-// checked out beside this repo: graphgenomeviewer's layout and colour names
+// checked out beside this repo: graphgenomeviewer's layout and color names
 // live in bandage-core.
 const PLUGIN_LIBRARIES: Record<string, string[]> = {
   graphgenomeviewer: ['bandage-core'],

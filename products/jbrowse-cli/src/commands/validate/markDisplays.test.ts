@@ -260,7 +260,7 @@ describe('a marks list in a config file', () => {
     ).toEqual([])
   })
 
-  it('names a colour, shape, text or row field the steps leave out', () => {
+  it('names a color, shape, text or row field the steps leave out', () => {
     expect(found([{ ...COVERAGE, encoding: { color: 'name' } }])).toEqual([
       `warning unwritten-field ${DISPLAY}.marks[0].encoding.color.field`,
     ])
@@ -592,7 +592,7 @@ describe('a marks list in a config file', () => {
     ])
   })
 
-  it('warns on a colour written as a field', () => {
+  it('warns on a color written as a field', () => {
     expect(
       found([{ mark: 'bar', encoding: { y: 'score', color: 'steelblue' } }]),
     ).toEqual([

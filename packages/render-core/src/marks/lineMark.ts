@@ -57,12 +57,12 @@ export interface LineChannels extends ColorChannel, RowChannel {
 }
 
 export interface LineParams extends RowParams, MarkValueScale {
-  /** The quantitative colour scale, for a line whose colour is a ramp or a threshold. */
+  /** The quantitative color scale, for a line whose color is a ramp or a threshold. */
   colorScale?: MarkColorScale
   /**
-   * Whether the colour field is the plotted `y`. Only then does a threshold's
-   * cut sit on the y scale, so the line changes colour where it crosses one;
-   * otherwise each instance takes its own value's colour.
+   * Whether the color field is the plotted `y`. Only then does a threshold's
+   * cut sit on the y scale, so the line changes color where it crosses one;
+   * otherwise each instance takes its own value's color.
    */
   colorFromY?: boolean
   /** The value a step drops to across a gap. */
@@ -210,9 +210,9 @@ function valueYPx(g: LineFrame, value: number, slot: number) {
   )
 }
 
-// A value's y in the band for the colour test, placed UNCLAMPED where
+// A value's y in the band for the color test, placed UNCLAMPED where
 // `valueYPx` clamps it to draw: the cuts go through it, and so does the line a
-// threshold colours along, as the shader's `lineColorYPx` does.
+// threshold colors along, as the shader's `lineColorYPx` does.
 function colorYPx(g: LineFrame, value: number, slot: number) {
   const norm = normalizeScoreUnclamped(
     value,
@@ -226,22 +226,22 @@ function colorYPx(g: LineFrame, value: number, slot: number) {
 
 /**
  * What the two tracers hand a pen: the polyline's points, each with the y its
- * colour is read at where that differs from the y it is drawn at, and the
+ * color is read at where that differs from the y it is drawn at, and the
  * instance the next points belong to.
  */
 interface LinePen {
   instance(i: number): void
   moveTo(x: number, y: number, colorY?: number): void
   lineTo(x: number, y: number, colorY?: number): void
-  /** Reads the next segment's colour from `colorY` without moving the pen. */
+  /** Reads the next segment's color from `colorY` without moving the pen. */
   recolor(colorY: number): void
   endRun(): void
   end(): void
 }
 
-// One colour per instance: a change ends the stroke batch and reopens it from
-// the pen, so a segment carries the colour of the instance it belongs to, as
-// the shader's per-instance colour does.
+// One color per instance: a change ends the stroke batch and reopens it from
+// the pen, so a segment carries the color of the instance it belongs to, as
+// the shader's per-instance color does.
 class InstancePen implements LinePen {
   private lastAbgr = -1
   private x = 0
@@ -295,7 +295,7 @@ class InstancePen implements LinePen {
 
 // The part of the segment from y0 to y1, as a fraction of it, inside the band
 // top < y <= bottom; undefined where it misses. A band owns its lower edge,
-// so a line lying on a cut takes the colour above it, as the shader does.
+// so a line lying on a cut takes the color above it, as the shader does.
 function bandSpan(y0: number, y1: number, top: number, bottom: number) {
   if (y0 === y1) {
     return top < y0 && y0 <= bottom ? ([0, 1] as const) : undefined
@@ -310,8 +310,8 @@ function bandSpan(y0: number, y1: number, top: number, bottom: number) {
 }
 
 // Keeps the part of each segment inside one threshold band, cut where it
-// crosses the band's edges, so a line stroked once per band changes colour
-// where the shader's fragments do. A point's colour y is where the band test
+// crosses the band's edges, so a line stroked once per band changes color
+// where the shader's fragments do. A point's color y is where the band test
 // reads it and its y where it draws, which part where the drawn y is clamped.
 class BandPen implements LinePen {
   private x = 0
@@ -374,8 +374,8 @@ class BandPen implements LinePen {
 
 // The step polyline over `indices`, in order: a rise from the origin, the top
 // across the span, the step at each joint and a drop to the origin at a gap.
-// A rise is coloured along the y it is drawn at, a level run by its value's
-// colour y, as the shader reads them.
+// A rise is colored along the y it is drawn at, a level run by its value's
+// color y, as the shader reads them.
 function traceStep(
   pen: LinePen,
   c: LineChannels,
@@ -450,7 +450,7 @@ type Trace = (pen: LinePen, indices: Iterable<number>) => void
 
 // Along y, the line is stroked once per band per row, each pass keeping the
 // parts of the polyline inside its band; otherwise once, in each instance's
-// own colour. A row the table recolours takes its override either way.
+// own color. A row the table recolors takes its override either way.
 function paintLine(
   ctx: MarkContext2D,
   c: LineChannels,

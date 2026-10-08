@@ -35,6 +35,6 @@ means a PSO**, and **our uniform "ring buffer" does not wrap**.
 | **Frustum culling** | "cull" — CPU-side over a 1D bp interval; there is no frustum and no camera | `syntenyTypes.slang`, `syntenyFetchWindow.ts` |
 | **Spatial index / BVH** | Flatbush (packed Hilbert R-tree) — **picking and hit-testing only**, never draw culling | `packages/core/src/util/flatbush/` |
 | **Scene graph** | the MST view → track → display tree; we never call it that | `ARCHITECTURE.md` §"Display stacks" |
-| **Render graph / frame graph** | none: one render pass, one colour attachment, no offscreen target, and ordering is a static z-ordered mark list | `PILEUP_MARKS`, `RegionRegistry` |
+| **Render graph / frame graph** | none: one render pass, one color attachment, no offscreen target, and ordering is a static z-ordered mark list | `PILEUP_MARKS`, `RegionRegistry` |
 | **Indirect drawing** | none: the instance count is `byteLength / instanceStride` of a CPU-packed buffer, so no GPU readback exists to remove. A pass whose instances a compute kernel produces would reopen it | `InstancePass` |
 | **Buffer pooling / sub-allocation** | none — one `GPUBuffer` per `(regionKey, passId)` | [GPU_HAL.md](GPU_HAL.md) §"What this architecture deliberately does not have" |

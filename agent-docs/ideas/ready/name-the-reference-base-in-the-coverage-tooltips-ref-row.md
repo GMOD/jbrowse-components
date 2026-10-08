@@ -11,7 +11,7 @@ all is still unread.
 
 That row reports a count — depth minus the alts — and cannot say `Ref (G)`,
 because the reference base is not on the main thread. `extractFeatureArrays`
-takes `regionSequence` but reads it only under bisulfite colouring
+takes `regionSequence` but reads it only under bisulfite coloring
 (`colorBy?.type === 'bisulfite'`, verified 2026-08-26), so nothing else in the
 pileup ever sees it.
 

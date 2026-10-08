@@ -157,7 +157,7 @@ Canvas2D-vs-GPU parity gate cannot catch the strand case.
   instance blows the inlining budget there — `reference/GRAMMAR_OF_GRAPHICS.md`
   §"Where a proposal lands" is the record of the design, and
   `benches/placeWalkers.bench.ts` holds each port to the painter it retired.
-- **A pass that samples a colour ramp declares it in `textures` on
+- **A pass that samples a color ramp declares it in `textures` on
   `defineMark`**, keyed by the sampler that reads it, rather than uploading one
   itself: the backend binds each sampler's texture once per pass, re-uploads
   only when its identity moves, and binds an inert table for a sampler nothing

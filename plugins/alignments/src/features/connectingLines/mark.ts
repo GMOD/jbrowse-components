@@ -46,7 +46,7 @@ function packConnectingLines(data: ConnectingLinesUploadData) {
  * floor either, so this painter strokes the true span and the two stay twinned
  * without one.
  *
- * `CONNECTING_LINE_ALPHA` and the colour come off the shader's exported
+ * `CONNECTING_LINE_ALPHA` and the color come off the shader's exported
  * constant and `colorConnectingLine` on both sides: a hairline joining two mates
  * carries no category, so it wants the theme's foreground, and both renderers
  * once spelled that as a literal black — the background in dark mode.

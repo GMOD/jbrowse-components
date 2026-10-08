@@ -440,7 +440,7 @@ describe('sorting by genotype keeps what the arrangement put on the rows', () =>
     // hom-alt leads, no-call last — so the order really did change
     expect(rowNames(display)).toEqual(['S2', 'S1', 'S0'])
     expect(display.sources.every(s => s.rowColor)).toBe(true)
-    // ...and each row kept ITS colour, not merely some colour
+    // ...and each row kept ITS color, not merely some color
     for (const s of display.sources) {
       expect(s.rowColor).toBe(before.get(s.name))
     }

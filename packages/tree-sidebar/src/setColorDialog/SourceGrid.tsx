@@ -35,7 +35,7 @@ export default observer(function SourceGrid<S extends { name: string }>({
 }: {
   rows: S[]
   onChange: (arg: S[]) => void
-  // The colour each row shows, by name.
+  // The color each row shows, by name.
   colors: ReadonlyMap<string, string>
   // Under Each row, where a row's swatch is its pick.
   eachRow?: EachRowPicks

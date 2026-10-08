@@ -212,7 +212,7 @@ describe('rows', () => {
 describe('rowColor config object', () => {
   const configSchema = configSchemaFactory()
 
-  it('colours by the rows themselves by default', () => {
+  it('colors by the rows themselves by default', () => {
     const config = configSchema.create({
       type: 'LinearMultiSampleVariantDisplay',
       displayId: 'test-colorby-1',

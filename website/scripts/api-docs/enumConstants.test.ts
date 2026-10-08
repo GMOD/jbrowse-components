@@ -224,7 +224,7 @@ describe('slotFieldConstantPairs', () => {
     expect(slotFieldConstantPairs('AMBIG_FIELDS_T8')).toBeUndefined()
   })
 
-  // The arc displays' colour object shares its field slots as a table of
+  // The arc displays' color object shares its field slots as a table of
   // display-kit factory calls, so the table has no literal slot of its own.
   test('a table of factory calls resolves through them, with the call arguments substituted', () => {
     buildEnumConstantIndex([

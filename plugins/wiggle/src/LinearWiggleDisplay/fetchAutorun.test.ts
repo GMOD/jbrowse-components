@@ -302,7 +302,7 @@ function makeSignedWiggleData(): WiggleDataResult {
 }
 
 // The row list `gpuProps` encodes through is the display's own, discovered
-// from the loaded regions, so the payload has to be staged before the colours
+// from the loaded regions, so the payload has to be staged before the colors
 // can be read off it.
 function loadedWithSignedData() {
   const { createDisplay } = createTestEnvironment()
@@ -313,7 +313,7 @@ function loadedWithSignedData() {
 
 // Regression: a solid green track came back green above the pivot and the
 // negColor slot's red below it, because `useBicolor: false` only reached the
-// path that drew one colour.
+// path that drew one color.
 describe('LinearWiggleDisplay solid color', () => {
   // Bands are still tinted by magnitude (lighten/darken), so the assertion is
   // on hue: a green-family color has equal red and blue channels, red does not.
@@ -344,11 +344,11 @@ describe('LinearWiggleDisplay solid color', () => {
   )
 
   // Density is the case the hue assertion above cannot make: both sides fade
-  // from white towards the one colour, so the claim here is only that one
-  // colour comes out, not which. The split around the origin is where a second
-  // colour got in.
+  // from white towards the one color, so the claim here is only that one
+  // color comes out, not which. The split around the origin is where a second
+  // color got in.
   test.each(['mean', 'min', 'max'])(
-    'density under a constant colour stays one color in %s mode',
+    'density under a constant color stays one color in %s mode',
     mode => {
       const display = loadedWithSignedData()
       display.setColor('green')

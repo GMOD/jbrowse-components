@@ -178,7 +178,7 @@ function apexOver(
  * apex of the curve a link mark draws on the same two feet in the same row
  * (`labelTopAtApex`), left out where that curve has no apex on the band, and
  * in the middle of its row band where no link draws one. It prints in the
- * mark's colour, or in `defaultColor` where the config leaves it at the mark
+ * mark's color, or in `defaultColor` where the config leaves it at the mark
  * default. Labels are kept left to right, and one whose glyphs would meet a
  * kept label's halo or leave the plot is left out, so the labels read as
  * ggplot2's `check_overlap` leaves them for data in screen order. One rule for

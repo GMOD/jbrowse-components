@@ -555,7 +555,7 @@ describe('findMarkHit', () => {
   })
 })
 
-test("the legend unions categorical tables across regions, keeping the first colour, and lists them in the field's order", () => {
+test("the legend unions categorical tables across regions, keeping the first color, and lists them in the field's order", () => {
   const regionA: MarkRegionData = {
     layers: [
       layer([1], [1], [RED], {

@@ -25,7 +25,7 @@ embedded products' `openTracks` and every track an agent builds through the jb
 API land in `sessionTracks`, and `updateTrackConfiguration` edited that entry in
 place. Such a track had no delta, no changes table and no "Reset track
 settings", and `baseTrackConfig` answered undefined. Reset row order there
-cleared the arrangement and colours the track was added with, and the
+cleared the arrangement and colors the track was added with, and the
 multi-row palette, dealt over the base's `rows.domain`, ignored the order it
 was added with. A track an agent builds is exactly the one that arrives with
 an arrangement.

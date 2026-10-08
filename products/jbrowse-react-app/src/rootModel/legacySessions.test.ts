@@ -213,7 +213,7 @@ test('a v4 read-arcs display on a config.json track keeps drawing arcs', async (
   expect(getConf(display, 'showCoverage')).toBe(false)
 })
 
-test('a v4 multi-wiggle display opens as rows, in its order and colours', async () => {
+test('a v4 multi-wiggle display opens as rows, in its order and colors', async () => {
   const { display, notifications } = await load(
     v4Session('MultiQuantitativeTrack', 'multi', {
       type: 'MultiLinearWiggleDisplay',
@@ -389,7 +389,7 @@ test("a hosted config's overlaid multi-wiggle opens overlaid", async () => {
   expect(display.renderingType).toBe('xyplot')
 })
 
-test('a v4 wiggle display keeps the scale and colours a reader set', async () => {
+test('a v4 wiggle display keeps the scale and colors a reader set', async () => {
   const { display } = await load(
     v4Session('QuantitativeTrack', 'bw', {
       type: 'LinearWiggleDisplay',

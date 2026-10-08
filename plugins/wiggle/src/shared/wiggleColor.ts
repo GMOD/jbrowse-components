@@ -18,7 +18,7 @@ function lutColor(lut: Uint8Array, entry: number) {
 }
 
 /**
- * The colour object as the encoder and both backends take it: the pair every
+ * The color object as the encoder and both backends take it: the pair every
  * mode already partitions by, the value they part at, and the density LUT.
  * One shape for every encoding, so a rendering asks what to paint rather than
  * which spelling the config used.
@@ -30,9 +30,9 @@ export interface ResolvedWiggleColor {
   negColor: string
   /** The lowest cut, and where the density fade is white. */
   pivot: number
-  /** Where the colour changes, ascending, `pivot` first; at most `MAX_WIGGLE_CUTS`. */
+  /** Where the color changes, ascending, `pivot` first; at most `MAX_WIGGLE_CUTS`. */
   cuts: number[]
-  /** The colours between `negColor` and `posColor`, one per band between two cuts. */
+  /** The colors between `negColor` and `posColor`, one per band between two cuts. */
   innerColors: string[]
   /** A ramp's 256 entries, or null for the white fade off `posColor`/`negColor`. */
   rampLut: Uint8Array | null
@@ -40,7 +40,7 @@ export interface ResolvedWiggleColor {
   rampMid: number | undefined
 }
 
-/** A wiggle colour as it paints. Unset beside `score`, the scale is the bicolor cut. */
+/** A wiggle color as it paints. Unset beside `score`, the scale is the bicolor cut. */
 export function wiggleColorEncoding(color: ColorSetting) {
   return colorEncodingOf(color, WIGGLE_FIELD_PRESETS)
 }

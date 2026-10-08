@@ -43,9 +43,9 @@ function darkenColor(
 // once alongside which layers there are at all.
 export type WiggleLayer = Omit<SourceRenderData, 'rowIndex' | 'renderingType'>
 
-// Each feature takes the colour of the band between two cuts its score is
+// Each feature takes the color of the band between two cuts its score is
 // in, with the tint `summaryBands` gives its side of the pivot. Undefined
-// where every band comes out one colour, so both backends read the layer's.
+// where every band comes out one color, so both backends read the layer's.
 function bandColorsAbgr(
   bandScores: Float32Array,
   numFeatures: number,
@@ -67,8 +67,8 @@ function bandColorsAbgr(
 }
 
 /**
- * Where the colour changes, ascending, and the colour of each band: one more
- * colour than cuts, the lowest band first.
+ * Where the color changes, ascending, and the color of each band: one more
+ * color than cuts, the lowest band first.
  */
 export interface ColorBands {
   cuts: number[]
@@ -213,8 +213,8 @@ function stackSides(
 // (avg, whiskers, or a single min/max band), colored by each value's sign vs
 // the pivot so signed data (e.g. phyloP) reads as pos/neg. Line plots take
 // `lineLayers` instead. `summaryBands` decides which bands there are and this
-// decides how each becomes layers. Under a gradient both backends colour bars
-// and points from the ramp, so outside density the layers carry no colour at
+// decides how each becomes layers. Under a gradient both backends color bars
+// and points from the ramp, so outside density the layers carry no color at
 // all: filled bands still split at the origin for their painting order.
 export function makeSummaryLayers({
   data,
@@ -295,7 +295,7 @@ export function makeSummaryLayers({
   }
   if (isFilled && bands.length > 1) {
     // The sides are the ones bars grow into from the origin, which sets the
-    // painting order; each bar still takes its colour from its side of the
+    // painting order; each bar still takes its color from its side of the
     // pivot, which is the same side unless a threshold cuts elsewhere.
     const sides = bands.map(b => {
       const { pos, neg } = whiskerBandSides(

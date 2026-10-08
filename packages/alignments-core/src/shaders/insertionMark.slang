@@ -5,8 +5,8 @@
 //
 // A marker standing on a reference span draws only where it outgrows that
 // span (`insertionMarkerDraws`). `row` is read through the bound row table
-// for its slot and visibility; the bar keeps its own colour, since an
-// insertion's colour is not the row's.
+// for its slot and visibility; the bar keeps its own color, since an
+// insertion's color is not the row's.
 //! targets: wgsl, glsl
 //! blend: premultiplied
 //! instance-writer

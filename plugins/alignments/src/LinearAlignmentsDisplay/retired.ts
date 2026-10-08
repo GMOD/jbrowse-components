@@ -101,7 +101,7 @@ export function colorSlotsOf(value: unknown): DisplayEntry {
   }
 }
 
-// v4's `renderers` block held the pileup renderer's own settings. Its colour
+// v4's `renderers` block held the pileup renderer's own settings. Its color
 // was a callback into the plugin's jexl functions, which went (ADR-163).
 function rendererSlotsOf(renderers: unknown): DisplayEntry {
   const pileup = isObject(renderers) ? renderers.PileupRenderer : undefined

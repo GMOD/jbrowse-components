@@ -1,6 +1,6 @@
 ---
 name: wiggle-display
-description: How the wiggle display lays out rows, sizes bars, handles gaps, summary modes, bands and colour. Read before touching plugins/wiggle.
+description: How the wiggle display lays out rows, sizes bars, handles gaps, summary modes, bands and color. Read before touching plugins/wiggle.
 kind: spec
 ---
 
@@ -37,9 +37,9 @@ Canvas2D's in-order source-over does.
 
 `wiggleCommon.slang` holds what they must agree on: the uniform struct, the fill
 record, `rowScoreToYPx` (where a score lands in its row, for both lines and the
-band) and `bandColorAt`, the colour of the band between two cuts a line is in,
+band) and `bandColorAt`, the color of the band between two cuts a line is in,
 are shared, the **binding is not**, and each re-imports `colorPack`/`hpmath`.
-The gradient's colour parity across GPU / Canvas2D / SVG, for density, bars and
+The gradient's color parity across GPU / Canvas2D / SVG, for density, bars and
 points, is swept by `densityColorParity.test.ts`; its autoscale-pan cost (one
 uniform write, zero buffer bytes, zero texture uploads) is pinned per rendering
 in `wiggleMarks.test.ts`. The `fill` and `density` passes each bind the LUT
@@ -84,24 +84,24 @@ box and the export's clip translate. Wiggle-core's `ScorePlotChrome` and
 `ScorePlotSvgFrame` take it as a prop defaulting to the single-plot box, which
 is what the Manhattan and mark displays (no such getter) draw in.
 
-**`color` maps `score` alone; a subtrack's colour is `rowColor`'s.** Unset,
+**`color` maps `score` alone; a subtrack's color is `rowColor`'s.** Unset,
 `effectiveColor` is the threshold pair a quantitative track has always drawn.
 Several sources sharing one plot box (`sharesPanel`) are told apart by the row
-palette instead, which deals each one a tableau10 colour by name while
+palette instead, which deals each one a tableau10 color by name while
 `rowColorPaintsMarks`, and `perSource` then paints each on both sides of the
-cut. `colorEncoding` resolves the colour through display-kit's
-`colorEncodingOf`, the one resolver every display's colour object goes through,
+cut. `colorEncoding` resolves the color through display-kit's
+`colorEncodingOf`, the one resolver every display's color object goes through,
 and `resolveWiggleColor` turns that into
 `{ posColor, negColor, pivot, rampLut, rampMid }`, which is the whole
-of what the layers and both backends read. `pivot` is where the colour parts and
+of what the layers and both backends read. `pivot` is where the color parts and
 never where bars grow from: the render state carries both, bars read `origin`,
 and the lines, band and density fade read `pivot`. A gradient (`rampLut`, from
-`linear`, through the y scale's type) colours each bar, point and density cell
+`linear`, through the y scale's type) colors each bar, point and density cell
 by its score's position, `rampMid`, the config's `domainMid`, on its middle
 stop, and never reads `origin`; the white fade, a threshold's density, measures
 distance from `pivot`. The lines alone still part under a gradient, at
-`domainMid ?? origin` in its two end colours, with a corner notice saying so.
-The gradient follows the y domain and y scale, so the colour declares no
+`domainMid ?? origin` in its two end colors, with a corner notice saying so.
+The gradient follows the y domain and y scale, so the color declares no
 `domainMin`/`domainMax` and no `log`. `score` is the one field the schema
 admits, and `threshold`, `linear` and `none` its scales, since a two-sided plot
 has nothing to paint a cut over subtrack names with; `resolveWiggleColor`'s
@@ -174,7 +174,7 @@ flattening any domain under 1 — the floor is the domain's own min.
 
 **Both halves live in render-core, not here** — `src/shaders/scoreScale.slang`
 and `src/scoreScale.ts` beside it, which wiggle-core re-exports. The coverage
-band, the mark shapes and core's worker-resolved colour ramp normalize through
+band, the mark shapes and core's worker-resolved color ramp normalize through
 the same three branches. **A domain with no range is a step for all of them**: a
 score above the min draws at the top, anything else on the baseline.
 `wiggleCommon` keeps `scoreToY`, the plot-box wrapper, and `js-skip`s it — the
@@ -219,8 +219,8 @@ autoscale domain, menu radio, tooltip and `gpuProps` all read it. **`rpcProps`
 carries the raw slot** — the effective one moves with the rendering type, so
 switching to density would re-download every region.
 
-**No colour setting is a fetch key.** `color` and `origin` are `gpuProps` alone:
-the worker ships one set of score arrays and the main thread colours each
+**No color setting is a fetch key.** `color` and `origin` are `gpuProps` alone:
+the worker ships one set of score arrays and the main thread colors each
 instance by its side of the cut, so moving the cut re-encodes and refetches
 nothing. ADR-016, which put the split in the worker, is superseded;
 `ideas/ready/wiggle-instance-records-carry-per-row-constants.md` §4 has what the
@@ -232,54 +232,54 @@ split cost.
 magnitude first — the opposite order on each side of the origin, which a single
 band order can't express. Filled bars split at the origin they grow from and
 carry `colorsAbgr` for the pivot where a threshold cuts elsewhere; density
-splits at the pivot. Under a gradient bars and points carry no colour lane and
-no whiskers tint: the ramp is the whole colour. Density needs it because
+splits at the pivot. Under a gradient bars and points carry no color lane and
+no whiskers tint: the ramp is the whole color. Density needs it because
 `drawDensity` builds one gradient per layer, and it is the only mode that
 reaches the split with a single band (`mean`). Everything else keeps each band
-whole and carries `colorsAbgr`, one packed colour per instance — or none at all
-where both sides of the pivot come out the same colour, which is what a
-solid-colour track is.
+whole and carries `colorsAbgr`, one packed color per instance — or none at all
+where both sides of the pivot come out the same color, which is what a
+solid-color track is.
 
-## A line plot is one line, coloured by the band between two cuts it is in
+## A line plot is one line, colored by the band between two cuts it is in
 
 Every summary mode on `line`/`linecenter` draws one layer through all the bins
-(`lineLayers`), with no per-instance colour lane. **Colour comes from the band
+(`lineLayers`), with no per-instance color lane. **Color comes from the band
 the line is in, not the bin**: the shader tests each fragment's centre-line y
 against the cut heights its vertex placed (`bandColorAt`), and Canvas2D strokes
 once per band through `BandPen`. Centre line rather than pixel, so capsules
 overlapping at a joint agree under max blend unless the joint lies within half a
-line width of a cut; per-bin colours blended every colour-changing joint to
+line width of a cut; per-bin colors blended every color-changing joint to
 magenta. Whiskers adds a `band` layer under the line, split the same way.
 
-## The colour key follows the scale
+## The color key follows the scale
 
 The ramp wherever `scoreGradientPaints` — density, and bars or points under
 `linear` — a row per source for `categorical`, a row per interval for a
 `threshold` whose cut the config declared, and none for a string. A threshold
 cutting at the `origin` draws none either: the axis already shows where the
 origin is. Density's white fade is keyed only while no row brings its own
-colour; a declared gradient ignores row colours, so it is keyed regardless, and
+color; a declared gradient ignores row colors, so it is keyed regardless, and
 only density gives the ramp the axis's place.
 
-**The row colours are keyed by tree-sidebar's one row colour key**
+**The row colors are keyed by tree-sidebar's one row color key**
 (`rowColorScales`, TREE_SIDEBAR.md): an overlay of several subtracks keys each by
 name, a row per subtrack keys only an attribute such as `group`, and an overlay
-painting a score gradient keys none, since no row colour shows there.
+painting a score gradient keys none, since no row color shows there.
 
-**`scoreGradientPaints` leaves a row's colour on its label bar only**, and the
+**`scoreGradientPaints` leaves a row's color on its label bar only**, and the
 plot's per-row fade end is the row's own `color`, which nothing in the UI
 reaches. The arrangement dialog's one swatch column edits `rowColor` whatever
 paints the plot.
 
-## The whole colour UI is one menu row
+## The whole color UI is one menu row
 
-`Edit colors/arrangement...` is the only colour row the menu has, on every
+`Edit colors/arrangement...` is the only color row the menu has, on every
 quantitative track, and it is not gated on the subtracks — a swatch waits for no
-row list, and on a plain BigWig this is the only colour route there is. One
+row list, and on a plain BigWig this is the only color route there is. One
 source has nothing to arrange, so `showRows` drops the row choice, the grid and
-the bulk editor and the dialog is the plot's two colours and the buttons.
+the bulk editor and the dialog is the plot's two colors and the buttons.
 
-**Those two colours are `plotColorLine` over the resolved pair**, offered on one
+**Those two colors are `plotColorLine` over the resolved pair**, offered on one
 line above the rows and written back through `plotColorEdit`. Read off
 `wiggleColor`, so an unset `color` shows what the layout paints; written whole,
 because a channel replaces its setting. Three rules it turns on:
@@ -288,7 +288,7 @@ because a channel replaces its setting. Three rules it turns on:
   `origin` every config that had been following it, and nine shipped threshold
   figures declare a range and no domain.
 - **Two swatches only edit where they can say the whole picture.** A ramp or a
-  threshold past one cut reads out beside the reason; a colour per subtrack
+  threshold past one cut reads out beside the reason; a color per subtrack
   hides the line, since the grid below is already that control.
   `plotColorLine.test.ts` round-trips every shape a shipped config holds.
 - **`Edit plot...` in the dialog is the escape**, on the display's `plot` — a
@@ -297,10 +297,10 @@ because a channel replaces its setting. Three rules it turns on:
 **The palette deals by name only over a shared box.** `sharesPanel` is an
 overlay of several subtracks, and `rowColorPaintsMarks` holds while no gradient
 and no declared `color` paints the plot, so a lone BigWig keeps the red below
-its baseline and a row per subtrack draws each in the plot colour unless
+its baseline and a row per subtrack draws each in the plot color unless
 `rowColor` or the file gives it one.
 
-**A reader's colour for a row is `rowColor`, and its label is `rows.labels`.**
+**A reader's color for a row is `rowColor`, and its label is `rows.labels`.**
 `TreeSidebarMixin` arranges them over `discoveredRows`, stamps each row's
 resolved `rowColor` and writes the dialog's submit. `group` has no config home,
 so a `group` pasted into the bulk editor is not kept.
@@ -309,15 +309,15 @@ so a `group` pasted into the bulk editor is not kept.
 where `marksTakeRowColor` — `rowColorPaintsMarks`, or one shared box, which has
 no label bar to carry it — and its own `color` otherwise, which the density fade
 ends on (`markColorOf`). The encoder and the tooltip read `markSources`; the
-label bar reads `rowColor` always, so a colour set on a row stays on its bar
+label bar reads `rowColor` always, so a color set on a row stays on its bar
 when a gradient starts painting rather than going into the ramp. A `group`
-colours nothing until `rowColor` names it.
+colors nothing until `rowColor` names it.
 
-**A row left uncoloured beside dealt ones paints grey** (`UNCOLORED_ROW`,
+**A row left uncolored beside dealt ones paints grey** (`UNCOLORED_ROW`,
 `#999`, ggplot's `na.value`): where the palette deals the shared box and some
-row took a colour, a subtrack with no value of the `rowColor` field would
-otherwise paint the plot colour, which reads as palette colour 0. Rows of their
-own keep the plot colour, since nothing beside them is dealt.
+row took a color, a subtrack with no value of the `rowColor` field would
+otherwise paint the plot color, which reads as palette color 0. Rows of their
+own keep the plot color, since nothing beside them is dealt.
 
 ## The shipped arrays are aliased — read, never write
 

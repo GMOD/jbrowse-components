@@ -150,9 +150,9 @@ async function clusterRun(display: Display, tree: string) {
   return partition
 }
 
-// Each row has a lane of its own, so no palette deals the rows a colour, and
-// an unpaired row paints the default block colour.
-test('the rows sort, digits by magnitude, none dealt a colour', () => {
+// Each row has a lane of its own, so no palette deals the rows a color, and
+// an unpaired row paints the default block color.
+test('the rows sort, digits by magnitude, none dealt a color', () => {
   expect(derived(loaded({}))).toMatchSnapshot()
 })
 
@@ -165,11 +165,11 @@ test('a declared order leads and the rest sort', () => {
   expect(derived(loaded({ domain: ['s10', 'mom'] }))).toMatchSnapshot()
 })
 
-test('a colour entry paints its row, the rest the default colour', () => {
+test('a color entry paints its row, the rest the default color', () => {
   expect(derived(loaded({ colors: { mom: '#123456' } }))).toMatchSnapshot()
 })
 
-test('a color slot paints the blocks, so a colour entry paints none', () => {
+test('a color slot paints the blocks, so a color entry paints none', () => {
   const display = loaded({ colors: { dad: '#00ff00' } }, { color: 'steelblue' })
   expect(derived(display)).toMatchSnapshot()
 })
@@ -213,7 +213,7 @@ test('a run under the bands clusters each apart', async () => {
   expect(display.hierarchy?.children).toHaveLength(2)
 })
 
-test("a row's colour entry reaches its label bar, and a group alone colours nothing", () => {
+test("a row's color entry reaches its label bar, and a group alone colors nothing", () => {
   const display = loaded(
     { colors: { s2: '#123456' } },
     { rowGroups: [ROW_GROUPS[1]] },
@@ -221,7 +221,7 @@ test("a row's colour entry reaches its label bar, and a group alone colours noth
   expect(derived(display)).toMatchSnapshot()
 })
 
-test('a focus hides rows without recolouring the kept ones', () => {
+test('a focus hides rows without recoloring the kept ones', () => {
   const display = loaded(
     {},
     {
@@ -244,7 +244,7 @@ test('a legend click focuses the group it names', () => {
   expect(display.sources.map(s => s.name)).toEqual(['dad', 'mom'])
 })
 
-test('dialog edits reorder, relabel and recolour, and a reset returns to the seed', () => {
+test('dialog edits reorder, relabel and recolor, and a reset returns to the seed', () => {
   const display = loaded(
     { domain: ['s10'] },
     {},
@@ -274,7 +274,7 @@ test('a cluster run lands its tree turned towards the seed, and a reorder drops 
   expect(derived(display)).toMatchSnapshot()
 })
 
-test('sort at a column orders rows by the colour painted there', () => {
+test('sort at a column orders rows by the color painted there', () => {
   const display = loaded({}, {}, regionData([...FAMILY, UNANSWERED]))
   expect(display.sortRowsByValueAt('ctgA', 100)).toBe(true)
   expect(derived(display)).toMatchSnapshot()

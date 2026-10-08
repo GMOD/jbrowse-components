@@ -29,7 +29,7 @@ test.each(MAF_COLOR_FIELDS)(
   },
 )
 
-test('a default colour reads back as no plot', () => {
+test('a default color reads back as no plot', () => {
   expect(plotOf(make())).toEqual({})
 })
 

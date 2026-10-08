@@ -28,7 +28,7 @@ function byGroup(display: ReturnType<typeof makeDisplay>) {
 const rowColorKey = (display: ReturnType<typeof makeDisplay>) =>
   display.legendSpec.sections.find(s => s.id === 'rowColor')?.items ?? []
 
-it('keys each overlaid subtrack under its label in its palette colour', () => {
+it('keys each overlaid subtrack under its label in its palette color', () => {
   const display = makeDisplay(GROUPED)
   expect(display.legendSpec.title).toBe('Subtrack')
   expect(rowColorKey(display)).toEqual([
@@ -39,7 +39,7 @@ it('keys each overlaid subtrack under its label in its palette colour', () => {
   ])
 })
 
-it('keys nothing by name on stacked rows, and the groups once coloured by them', () => {
+it('keys nothing by name on stacked rows, and the groups once colored by them', () => {
   const display = makeDisplay(GROUPED, { rows: true })
   expect(rowColorKey(display)).toEqual([])
   byGroup(display)
@@ -59,8 +59,8 @@ it('focuses the subtracks a key entry lists', () => {
   expect(display.sources.map(s => s.name)).toEqual(['a', 'c'])
 })
 
-describe('a subtrack with no value of the colour field', () => {
-  it('paints grey in an overlay beside the coloured ones', () => {
+describe('a subtrack with no value of the color field', () => {
+  it('paints grey in an overlay beside the colored ones', () => {
     const display = makeDisplay(GROUPED)
     byGroup(display)
     expect(display.markSources.map(s => s.color)).toEqual([
@@ -71,7 +71,7 @@ describe('a subtrack with no value of the colour field', () => {
     ])
   })
 
-  it('keeps the plot colour on stacked rows', () => {
+  it('keeps the plot color on stacked rows', () => {
     const display = makeDisplay(GROUPED, { rows: true })
     byGroup(display)
     expect(display.markSources.at(-1)!.color).toBeUndefined()

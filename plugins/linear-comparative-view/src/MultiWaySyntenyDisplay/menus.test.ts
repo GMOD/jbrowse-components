@@ -288,7 +288,7 @@ test('the gene modes name a configured field, with no pin under it', () => {
   ])
 })
 
-test('a constant gene colour ticks Solid color..., and Default takes it back', () => {
+test('a constant gene color ticks Solid color..., and Default takes it back', () => {
   const { model, calls } = trackModel({ geneSolidColor: 'teal' })
   const genes = genesOf(model)
   const checked = (label: string) => {

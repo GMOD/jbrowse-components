@@ -80,14 +80,14 @@ static const float CHEVRON_DIRLESS_MIN_WIDTH_PX = 30.0;
 static const float PAIR_MIN_SPAN_PX = 10.0;
 
 // The read outline, which is not a stroke: the outermost READ_OUTLINE_PX of the
-// glyph is repainted at READ_OUTLINE_SHADE of its own fill. No second colour, no
+// glyph is repainted at READ_OUTLINE_SHADE of its own fill. No second color, no
 // geometry, and it can never leave the read.
 //
 // Exported because `features/read/mark.ts` has to reproduce it with a
 // stroke, and the three numbers were stated twice with three different answers:
 // it stroked `rgba(0,0,0,0.3)` at width 0.5 CENTRED on the boundary, against
 // this 1 px band inside it, and gated on width alone where this gates on both
-// axes. Only the colour happened to agree, and by coincidence of algebra —
+// axes. Only the color happened to agree, and by coincidence of algebra —
 // compositing black at `1 - shade` over a fill IS `fill * shade`, so the same
 // rule had been written once as a multiply and once as a composite. See
 // agent-docs/reference/CROSS_BACKEND_GATE.md for the 1.99% that found it.
@@ -96,7 +96,7 @@ static const float PAIR_MIN_SPAN_PX = 10.0;
 // down, and it is the number the two fixes together are answerable for. That
 // spelling was 0.5 px at alpha 0.3 — 0.15 px·alpha per edge — while this band
 // was 1 px at 0.3, twice as much. Nobody chose that; the two were written apart
-// and only ever compared on colour. Conserving the ink and putting all of it
+// and only ever compared on color. Conserving the ink and putting all of it
 // inside the glyph is 1 px at alpha 0.15, so 0.85.
 //
 // It reads lighter than 0.7 without reading hazier, which is the whole point:
@@ -210,8 +210,8 @@ bool showChevron(bool chainMode, float pxPerBp, float featHeight,
       && (!dirMoot || featWPx > CHEVRON_DIRLESS_MIN_WIDTH_PX);
 }
 
-// RC_MAPQ and RC_TAG resolve per read, so `packReadSegments` packs their colour
-// into `fillColor`; an unset tag colour falls back to RC_TAG's own palette slot.
+// RC_MAPQ and RC_TAG resolve per read, so `packReadSegments` packs their color
+// into `fillColor`; an unset tag color falls back to RC_TAG's own palette slot.
 float3 getReadColor(Instance inst, Uniforms u) {
   uint cat = inst.colorCategory;
   if ((cat == RC_MAPQ || cat == RC_TAG) && inst.fillColor != 0u) {

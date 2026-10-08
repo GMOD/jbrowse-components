@@ -31,7 +31,7 @@ const CssColorType = types.refinement(
   notAColor,
 )
 
-// a colour list's entry has no "none" to spell
+// a color list's entry has no "none" to spell
 const CssColorEntryType = types.refinement(
   'CssColorEntry',
   types.string,
@@ -68,7 +68,7 @@ const slotTypes = {
   integer: { model: types.integer, fallbackDefault: 1 },
   number: { model: types.number, fallbackDefault: 1 },
   // a `maybe*` type's unset is `undefined`, the one value no config spells:
-  // "decide from the data", as an auto-fitted height or a BED itemRgb colour
+  // "decide from the data", as an auto-fitted height or a BED itemRgb color
   maybeNumber: { model: types.maybe(types.number) },
   maybeBoolean: { model: types.maybe(types.boolean) },
   maybeColor: { model: types.maybe(CssColorType) },

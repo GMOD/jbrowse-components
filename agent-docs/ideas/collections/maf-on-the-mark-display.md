@@ -30,11 +30,11 @@ the MAF display.
    conservation.
 4. A coarse tier serving per-row records from `summaryAdapter`, where
    `DensityTierMixin` serves one row of bins from `densityAdapter`.
-5. Per-base `text` gated by row height and coloured against its cell.
+5. Per-base `text` gated by row height and colored against its cell.
 6. **An `insertion` mark type** over alignments-core's `insertionMark`:
    entries in `MARK_TYPES`/`MARK_SPECS` and the `jbrowse validate` copy, a lens
    from the `size` lane (where `cells`' `length` rides) to the mark's
-   `length`, a colour scale on the mark (it packs ABGR only), a hit rule for a
+   `length`, a color scale on the mark (it packs ABGR only), a hit rule for a
    zero-width interval, which `rows` never answers, and a call to
    `paintInsertionLabels` from the text layer. Today `cells` emits each
    insertion as an interbase feature a span paints as a `minWidthPx` sliver.
@@ -48,7 +48,7 @@ the MAF display.
 ## What ports today with no new mark
 
 - The summary presence bars as a FeatureTrack over the summary file:
-  `rows: "src"` and a `span` with a colour scale over `score`, as a separate
+  `rows: "src"` and a `span` with a color scale over `score`, as a separate
   track rather than the in-display zoom swap.
 - The CDS frame strip as a FeatureTrack over the `mafFrames` bigBed.
 - The identity-yields-at-base-level switch as a `minBpPerPx`/`maxBpPerPx`

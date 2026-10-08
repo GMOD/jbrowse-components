@@ -276,7 +276,7 @@ main {
 .cards:empty {
   display: none;
 }
-/* The status stripe is always 5px and only its COLOUR says which status, because
+/* The status stripe is always 5px and only its COLOR says which status, because
    a border is layout: growing it 1px → 5px on a verdict takes 4px off the
    content width, the two figure columns reflow into it, and the card gets
    shorter. Same rule as the header — a verdict paints, it does not resize. */
@@ -568,7 +568,7 @@ main {
 /* Difference: black wherever the two agree, so the only lit pixels are the
    change. It is the one mode that answers "did ANYTHING move" without the eye
    having to find it — and the one that needs amplifying, since a one-shade
-   recolour differences to a value indistinguishable from black. */
+   recolor differences to a value indistinguishable from black. */
 .cmpstage.diff {
   background: #000;
 }

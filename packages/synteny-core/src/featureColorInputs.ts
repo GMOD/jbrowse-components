@@ -11,7 +11,7 @@ import type { Feature } from '@jbrowse/core/util'
  * #api
  * The lanes `createComparativeColorFunction` reads, built from features a
  * display holds on the main thread rather than from a worker's payload. `ends`
- * answers a feature's two refNames in the order the colour modes read them:
+ * answers a feature's two refNames in the order the color modes read them:
  * `query` paints by the first and `target` by the second.
  */
 export function featureColorInputs(

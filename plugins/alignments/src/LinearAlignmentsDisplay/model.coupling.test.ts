@@ -165,7 +165,7 @@ describe('alignments display cross-feature coupling', () => {
 // the scheme changed, and — a second rule patching the first — NOT clear it
 // when the radio already showing was re-picked, since that refetches nothing
 // and an emptied map left the legend blank until the next pan. Both rules went
-// with the map, the value's colour being a pure function of the value
+// with the map, the value's color being a pure function of the value
 // (`colorTagUtils.test.ts` pins that, including the one thing that is not: the
 // scheme picks which function runs). What has to survive is that re-picking the
 // scheme in use is still inert.
@@ -190,7 +190,7 @@ describe('setColorBy', () => {
 })
 
 describe('keySectionOrder', () => {
-  test('a facet on the colour field hands the key its section order', () => {
+  test('a facet on the color field hands the key its section order', () => {
     const display = createDisplay()
     display.setColorBy({ type: 'tag', tag: 'HP' })
     expect(display.keySectionOrder).toBeUndefined()
@@ -794,7 +794,7 @@ describe('curved connectors', () => {
     dispose()
   })
 
-  test('a curved-connector toggle keeps the layout and the colours', () => {
+  test('a curved-connector toggle keeps the layout and the colors', () => {
     const display = connectorDisplay()
     const dispose = autorun(() => display.laidOutByGroup)
     const layout = display.laidOutByGroupFramed
@@ -818,7 +818,7 @@ describe('curved connectors', () => {
     ])
   })
 
-  test("the key names the straight lines' colour as well as the curves'", () => {
+  test("the key names the straight lines' color as well as the curves'", () => {
     const display = connectorDisplay()
     display.setShowLegend(true)
     expect([...display.connectionColorTypes].sort()).toEqual([
@@ -1401,7 +1401,7 @@ describe('upload tiers: what a settings change does to the laid-out payloads', (
     expect(after.readTagColors[0]).toBe(0xff0000ff)
   })
 
-  test('a colour write that leaves a pinned insert-size band alone keeps the layout', () => {
+  test('a color write that leaves a pinned insert-size band alone keeps the layout', () => {
     const pinned = { field: 'insertSize', domain: ['150', '600'] }
     const display = displayWithOneRead(pinned)
     const beforeLayout = display.laidOutByGroupUncolored
@@ -1476,7 +1476,7 @@ describe('modification detection follows the loaded regions', () => {
     display.setRpcData(0, withMods('m'), region(0))
     expect(display.modificationsReady).toBe(true)
     expect(display.detectedModificationTypes).toEqual(['m'])
-    // the colour the legend and the marks both resolve from the type code
+    // the color the legend and the marks both resolve from the type code
     expect(display.detectedModifications.get('m')).toBe('rgb(255,0,0)')
   })
 

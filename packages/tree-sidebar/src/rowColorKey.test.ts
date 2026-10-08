@@ -75,7 +75,7 @@ const entriesOf = (display: ReturnType<typeof makeDisplay>) =>
     color,
   }))
 
-describe('when the row colour key shows', () => {
+describe('when the row color key shows', () => {
   it('shows by an attribute on stacked rows, titled by the field', () => {
     const display = makeDisplay({ rowColor: 'group' })
     expect(display.rowColorScales[0]).toMatchObject({
@@ -121,7 +121,7 @@ describe('the entries', () => {
     expect(entriesOf(display).map(e => e.value)).toEqual(['y', 'x'])
   })
 
-  it('list "(no value)" last where a pair colours the rows with none', () => {
+  it('list "(no value)" last where a pair colors the rows with none', () => {
     const display = makeDisplay({
       rowColor: { field: 'group', domain: [''], range: ['#eee'] },
     })
@@ -133,7 +133,7 @@ describe('the entries', () => {
     ])
   })
 
-  it('list "(no value)" in a row\'s own colour where no pair colours it', () => {
+  it('list "(no value)" in a row\'s own color where no pair colors it', () => {
     const display = makeDisplay(
       { rowColor: 'group' },
       {
@@ -150,12 +150,12 @@ describe('the entries', () => {
     })
   })
 
-  it('give an uncoloured row with no value no entry', () => {
+  it('give an uncolored row with no value no entry', () => {
     const display = makeDisplay({ rowColor: 'group' })
     expect(entriesOf(display).map(e => e.value)).toEqual(['x', 'y'])
   })
 
-  it(`stop at ${MAX_LEGEND_ITEMS}, then one colourless "+N more"`, () => {
+  it(`stop at ${MAX_LEGEND_ITEMS}, then one colorless "+N more"`, () => {
     const rows = Array.from({ length: 25 }, (_, i) => ({
       name: `r${i}`,
       group: `g${i}`,
@@ -167,7 +167,7 @@ describe('the entries', () => {
     expect(entries.at(-1)).toEqual({ value: '', label: '+5 more' })
   })
 
-  it('end in one "Other" in the unknown colour', () => {
+  it('end in one "Other" in the unknown color', () => {
     const display = makeDisplay({
       rowColor: {
         field: 'group',
@@ -213,7 +213,7 @@ describe('a click on an entry', () => {
     expect(display.rowFocus).toEqual(['b'])
   })
 
-  it('on Other focuses the rows that took the unknown colour', () => {
+  it('on Other focuses the rows that took the unknown color', () => {
     const display = makeDisplay({
       rowColor: {
         field: 'group',

@@ -13,7 +13,7 @@ import {
 import type { AlignmentsSources } from './rendererTypes.ts'
 
 /**
- * The five per-base colours reach the GPU as UBO slots and Canvas2D as a CSS
+ * The five per-base colors reach the GPU as UBO slots and Canvas2D as a CSS
  * table, and both resolve through `effectiveBaseColors` — but only the CPU side of
  * that is unit-tested (`features/mismatch/baseColors.test.ts`). What is left is
  * the projection: five named uniform slots, filled from five named fields, in a
@@ -36,7 +36,7 @@ const BASE_SLOTS = [
 function renderState(showModifications: boolean) {
   return makeTestRenderState({
     showModifications,
-    // Five DISTINCT base colours, so a transposed slot shows as a mismatch
+    // Five DISTINCT base colors, so a transposed slot shows as a mismatch
     // rather than as two equal greys.
     colors: makeTestPalette({
       colorBaseA: [1, 0, 0],
@@ -94,7 +94,7 @@ function canvasBaseColors(showModifications: boolean) {
   )
 }
 
-test('each GPU base slot carries the colour Canvas2D gives that base', () => {
+test('each GPU base slot carries the color Canvas2D gives that base', () => {
   expect(gpuBaseSlots(false)).toEqual(canvasBaseColors(false))
 })
 
@@ -103,7 +103,7 @@ test('and still does under show-modifications, where all five mute', () => {
   expect(gpu).toEqual(canvasBaseColors(true))
   // Guards the guard: five equal greys would satisfy the comparison above even
   // if the slots were transposed, so the unmuted case is the one carrying the
-  // transposition check — assert it really is five distinct colours there.
+  // transposition check — assert it really is five distinct colors there.
   expect(new Set(Object.values(gpuBaseSlots(false))).size).toBeGreaterThan(1)
   expect(new Set(Object.values(gpu)).size).toBe(1)
 })

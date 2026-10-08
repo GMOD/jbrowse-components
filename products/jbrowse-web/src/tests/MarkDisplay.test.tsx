@@ -73,7 +73,7 @@ beforeEach(() => {
 
 const timeout = 20000
 
-test('bars from a BED score column, coloured by name, with the key on screen', async () => {
+test('bars from a BED score column, colored by name, with the key on screen', async () => {
   const { view, findByTestId } = await createView(
     markTrackConfig('mark_bars', [
       {
@@ -90,7 +90,7 @@ test('bars from a BED score column, coloured by name, with the key on screen', a
 
   const el = await findDisplayPainted('mark-display', { timeout })
   expect(el.dataset.displayId).toBe('mark_bars-marks')
-  // by name, not strand: every volvox-bed12 feature is on +, and a one-colour
+  // by name, not strand: every volvox-bed12 feature is on +, and a one-color
   // key is one legendIsReadable drops
   const legend = await findByTestId('floating-legend', {}, { timeout })
   await waitFor(() => {
@@ -131,7 +131,7 @@ test('the SVG export paints the same bars and carries the key under its title', 
     { timeout },
   )
   const svg = getSavedSvg()
-  // the painter's bars: score 1000 tops the domain, so each is the full plot height, in the palette colour the worker packed
+  // the painter's bars: score 1000 tops the domain, so each is the full plot height, in the palette color the worker packed
   expect(svg).toContain('height="140" fill="rgb(255,0,0)"')
   // the key, off the same table
   expect(svg).toContain('data-testid="color-legend"')
@@ -139,7 +139,7 @@ test('the SVG export paints the same bars and carries the key under its title', 
   expect(svg).toContain('>EDEN.2<')
 }, 40000)
 
-test('points over the same file with a jexl colour', async () => {
+test('points over the same file with a jexl color', async () => {
   const { view, findByTestId } = await createView(
     markTrackConfig('mark_points', [
       {

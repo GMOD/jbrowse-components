@@ -1,4 +1,4 @@
-/** A stretch of a chromosome and the colour it is painted, in its own coordinates. */
+/** A stretch of a chromosome and the color it is painted, in its own coordinates. */
 export interface PaintRun {
   start: number
   end: number
@@ -7,9 +7,9 @@ export interface PaintRun {
 
 /**
  * A region's ideogram painted by what aligns to it, one run per stretch of
- * bins that share a colour. Each bin of `bpPerBin` takes the colour covering
+ * bins that share a color. Each bin of `bpPerBin` takes the color covering
  * most of its bases, and a bin nothing covers is left out, so the runs are as
- * many as the colour changes along the region at that resolution however many
+ * many as the color changes along the region at that resolution however many
  * spans went in.
  */
 export function paintRuns(

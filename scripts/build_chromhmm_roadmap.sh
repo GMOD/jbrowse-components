@@ -142,7 +142,7 @@ Path('roworder.json').write_text(json.dumps(labels, indent=2))
 
 # One `rowGroups` entry per GROUP, which tags each row with its tissue, and a
 # `rowColor` by group pairing each tissue with Roadmap's own group COLOR. The
-# display draws that colour as each row's label bar and keys it, so the tissue
+# display draws that color as each row's label bar and keys it, so the tissue
 # a row belongs to is on screen at a row height far too short to write its
 # name -- which is the axis the clustering never saw, and therefore the one
 # worth reading down the blocks it finds.
@@ -228,9 +228,9 @@ tabix -f -p bed roadmap.multirow.bed.gz
 cp roadmap.multirow.bed.gz roadmap.multirow.bed.gz.tbi "$APP"/
 
 # ── config.json: hg19 + the multi-row Roadmap track ──────────────────────────
-# The colour is an identity scale whose `labels` name the file's own itemRgb
-# colours, because the Roadmap state names are mnemonics (`12_EnhBiv`,
-# `14_ReprPCWk`) and the key would otherwise show them as they are. The colours,
+# The color is an identity scale whose `labels` name the file's own itemRgb
+# colors, because the Roadmap state names are mnemonics (`12_EnhBiv`,
+# `14_ReprPCWk`) and the key would otherwise show them as they are. The colors,
 # the labels and the row domain are generated from the tables above, so none
 # can drift from what the file holds.
 python3 - <<'PY'
@@ -332,7 +332,7 @@ config = {
     },
 }
 Path('jbrowse2/config.json').write_text(json.dumps(config, indent=2))
-print(f'wrote jbrowse2/config.json with {len(row_order)} rows and {len(states)} named colours')
+print(f'wrote jbrowse2/config.json with {len(row_order)} rows and {len(states)} named colors')
 PY
 
 echo

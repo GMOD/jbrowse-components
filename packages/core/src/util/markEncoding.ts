@@ -95,7 +95,7 @@ export const DEFAULT_SIZE_RANGE_PX: [number, number] = [1, 6]
 
 /**
  * #api
- * The misconfiguration grey packed as the encoder paints it: a `jexl:` colour
+ * The misconfiguration grey packed as the encoder paints it: a `jexl:` color
  * that answered no string, a ramp value that is no number, text a threshold
  * cannot read.
  */
@@ -802,11 +802,11 @@ export function encodeFeatures<L extends LaneName>(
       : undefined
   const thresholdEncoding =
     declaredScale?.scale === 'threshold' ? declaredScale : undefined
-  // Which side of the wire a quantitative colour resolves on is the caller's
+  // Which side of the wire a quantitative color resolves on is the caller's
   // lane choice: a mark that reads the scale itself names `colorValue` and
   // gets the raw values, so a ramp's domain unions over the regions and a
   // threshold's cuts move as uniforms. Anything else names `color` and the
-  // encoder resolves per region. A colour over the field `y` plots is the `y`
+  // encoder resolves per region. A color over the field `y` plots is the `y`
   // lane itself, aliased rather than copied.
   const quantitative = rampEncoding ?? thresholdEncoding
   const colorReadsY =
@@ -883,7 +883,7 @@ export function encodeFeatures<L extends LaneName>(
   } else if (scaled && quantitative) {
     // The raw values, where they are kept: a ramp's always, a threshold's
     // where the caller resolves it; the encoder resolves a threshold into
-    // packed colours only for a caller naming `color` alone.
+    // packed colors only for a caller naming `color` alone.
     const values =
       colorValue ?? (rampEncoding ? new Float32Array(count) : undefined)
     const read = channelReader(table, quantitative.field, jexl)
@@ -993,7 +993,7 @@ export function encodeFeatures<L extends LaneName>(
     encoded.color = color
   }
   if (colorValue) {
-    // the y view itself where the colour reads y, so a reader can tell
+    // the y view itself where the color reads y, so a reader can tell
     encoded.colorValue = colorValue
   }
   if (colorKey) {
@@ -1084,12 +1084,12 @@ function rampScale(
 
 /**
  * #api
- * A continuous colour scale over `extent`, the values it met: the domain its
+ * A continuous color scale over `extent`, the values it met: the domain its
  * declared ends and the extent make, the straight table its stops bake to and
- * where its middle stop sits, and the packed colour a value paints through
+ * where its middle stop sits, and the packed color a value paints through
  * them: an infinity the end on its side, as a threshold places it, and NaN,
  * text that is no number, the misconfiguration grey. The encoder and every
- * display painting a ramp itself read it, so a value takes one colour whoever
+ * display painting a ramp itself read it, so a value takes one color whoever
  * paints it.
  */
 export function continuousColorScale(
@@ -1157,7 +1157,7 @@ function keysAreNumeric(entries: readonly { value: string }[]) {
 // extents passes over.
 /**
  * #api
- * A CSS colour or `jexl:` colour expression as a per-feature packed ABGR —
+ * A CSS color or `jexl:` color expression as a per-feature packed ABGR —
  * the unscaled arm of {@link ColorEncoding}, on its own for a display that
  * carries a plain `color` slot.
  */
@@ -1167,7 +1167,7 @@ export function colorEvaluator(
 ): (feature: Feature) => number {
   if (isJexl(color)) {
     const expr = jexlExpression(color, jexl)
-    // A jexl colour answers from a handful of strings over a million
+    // A jexl color answers from a handful of strings over a million
     // features; parsing each answer once is a third of the arm's cost
     // (packages/core/benches/encodeFeatures.bench.ts).
     const packed = new Map<string, number>()
@@ -1218,8 +1218,8 @@ export function featureIndexAt(
 
 /**
  * #api
- * The packed colour instance `i` of `channels` paints: `color[i]`, or `color`
- * itself where the colour is a constant and so shipped as one number.
+ * The packed color instance `i` of `channels` paints: `color[i]`, or `color`
+ * itself where the color is a constant and so shipped as one number.
  */
 export function colorAt(channels: Pick<EncodedChannels, 'color'>, i: number) {
   const { color } = channels

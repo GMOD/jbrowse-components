@@ -164,7 +164,7 @@ test('a threshold key lists every interval, and the two keyless rows once a regi
   ).toBeUndefined()
 })
 
-test('a colour two values hashed onto names both of them on hover', () => {
+test('a color two values hashed onto names both of them on hover', () => {
   const shared: ColorScaleTable = {
     kind: 'categorical',
     field: 'biotype',
@@ -205,7 +205,7 @@ function keyRows(scales: ColorScale[]) {
 
 // alu_age's two fossil monomers share a grey, and the key listed two grey
 // rows a reader could not tell apart.
-test('two values sharing a colour are one row naming both', () => {
+test('two values sharing a color are one row naming both', () => {
   expect(
     keyRows(markColorScales(buildMarkLegend([region(lineages())]))),
   ).toEqual([
@@ -215,7 +215,7 @@ test('two values sharing a colour are one row naming both', () => {
   ])
 })
 
-test('a key painting one colour says nothing and is not drawn', () => {
+test('a key painting one color says nothing and is not drawn', () => {
   expect(markColorScales(buildMarkLegend([region(table(['1']))]))).toEqual([])
 })
 
@@ -238,7 +238,7 @@ function withShapes(
   return { layers: [{ ...layer!, shapeScale }] }
 }
 
-test("a shared colour's row draws each shape its values take, in the colour", () => {
+test("a shared color's row draws each shape its values take, in the color", () => {
   const loaded = withShapes(
     lineages(),
     shapes([
@@ -258,7 +258,7 @@ test("a shared colour's row draws each shape its values take, in the colour", ()
   ])
 })
 
-test('a colour key with nothing to say leaves the shape key over its field standing', () => {
+test('a color key with nothing to say leaves the shape key over its field standing', () => {
   const scales = markColorScales(
     buildMarkLegend([
       withShapes(
@@ -344,11 +344,11 @@ test('a pinned floor holds across the union, and the open ceiling widens to it',
 })
 
 test('two threshold marks over one field and cuts keep a key each when their ranges differ', () => {
-  const recoloured: ColorScaleTable = {
+  const recolored: ColorScaleTable = {
     ...thresholdTable(),
     range: ['#111112', '#222223', '#333334'],
   }
-  const sections = buildMarkLegend([region(thresholdTable(), recoloured)])
+  const sections = buildMarkLegend([region(thresholdTable(), recolored)])
   expect(sections).toHaveLength(2)
   expect(categoryLabel(sections[1], cssColorToABGR('#222223'))).toBe(
     '0.1 – 0.5',
@@ -432,7 +432,7 @@ test('an unpinned diverging ramp unioned over two regions keeps its middle stop 
   for (const channel of white!) {
     expect(channel).toBeGreaterThanOrEqual(254)
   }
-  // equal distances either side of the middle take mirrored colours, and only
+  // equal distances either side of the middle take mirrored colors, and only
   // the farther end reaches its end stop
   expect(below).toEqual([...above!].reverse())
   expect(below![2]).toBe(255)
@@ -464,7 +464,7 @@ function keyTitle(written: string | undefined, loaded: MarkRegionData) {
 
 // Unset derives, text is the text, and the empty string is a key the author
 // wants bare, the three states `scales.y.title` has.
-test('a colour key is titled with its field until title names it, and "" leaves it bare', () => {
+test('a color key is titled with its field until title names it, and "" leaves it bare', () => {
   const scores = region(table(['1', '2']))
   expect(keyTitle(undefined, scores)).toBe('score')
   expect(keyTitle('Mapping quality', scores)).toBe('Mapping quality')
@@ -502,9 +502,9 @@ test('two marks over one declaration share a key only under one title', () => {
   expect(keys(i => (i === 0 ? 'MAPQ' : undefined))).toEqual(['MAPQ', 'score'])
 })
 
-// The names are the config's, never the worker's: a colour crosses the wire
+// The names are the config's, never the worker's: a color crosses the wire
 // without its `labels`, so renaming a row refetches nothing.
-test('a key and a hover name a domain value by the label the colour lists for it', () => {
+test('a key and a hover name a domain value by the label the color lists for it', () => {
   const labelled: ColorScaleTable = {
     kind: 'categorical',
     field: 'type',
@@ -625,7 +625,7 @@ test('a hover names the no-value row as the key does', () => {
   ).toBe('untested')
 })
 
-test('a categorical colour key lists its breaks in their order', () => {
+test('a categorical color key lists its breaks in their order', () => {
   expect(
     rowLabels(
       markColorScales(
@@ -638,7 +638,7 @@ test('a categorical colour key lists its breaks in their order', () => {
 })
 
 // As ggplot2 draws a layer's key glyphs in the layer's fixed aesthetics.
-test('a shape key draws its shapes in the one colour its mark paints, and in the text colour otherwise', () => {
+test('a shape key draws its shapes in the one color its mark paints, and in the text color otherwise', () => {
   const [layer] = shapeRegion([['index', 'diamond']]).layers
   const twoMarks = { layers: [layer!, layer!] }
   const swatches = (colors: (string | undefined)[]) =>

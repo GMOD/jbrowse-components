@@ -1,6 +1,6 @@
 // PROTOTYPES, measured by instanceBuffer.bench.ts and drawn by no shader. Each
 // packs the fields the production record carries minus the ones a per-row
-// colour table would make redundant, so the bench can price bytes and encode
+// color table would make redundant, so the bench can price bytes and encode
 // time before anyone writes the Slang.
 //
 // They write literal word offsets where production reads the generated offset
@@ -10,9 +10,9 @@
 // against a production arm mixes the record size with that, so price the
 // record's time with offsets written the same way on both sides.
 //
-// Row word: `row << 1 | side`, side 1 below the pivot. Every colour a
+// Row word: `row << 1 | side`, side 1 below the pivot. Every color a
 // production record carries is `table[row][side]` in the cases the bench
-// checks, which is what lets the colour leave the instance.
+// checks, which is what lets the color leave the instance.
 import {
   cssColorToNormalizedRgb,
   normalizedRgbToABGR,
@@ -34,10 +34,10 @@ function countOf(sources: SourceRenderData[], band: boolean) {
   return total
 }
 
-// What a colour change would upload instead of re-encoding every region: two
+// What a color change would upload instead of re-encoding every region: two
 // ABGR words per row, 8 bytes a row, straight off gpuProps — the same rule
-// buildSourceRenderData applies per layer (a source's own colour above the
-// pivot, the shared negColor below it, the pos colour on both sides where
+// buildSourceRenderData applies per layer (a source's own color above the
+// pivot, the shared negColor below it, the pos color on both sides where
 // several sources share one plot).
 export function buildRowColorTable(gpuProps: WiggleGpuProps) {
   const { sources, wiggleColor, perSource } = gpuProps
@@ -81,7 +81,7 @@ export function packFill16(sources: SourceRenderData[], pivot: number) {
   return buf
 }
 
-// step line, colour table, 24 bytes: startEnd, score, prevScore, nextScore,
+// step line, color table, 24 bytes: startEnd, score, prevScore, nextScore,
 // row word.
 export function packStepLine24(sources: SourceRenderData[]) {
   const buf = new ArrayBuffer(countOf(sources, false) * 24)
@@ -114,7 +114,7 @@ export function packStepLine24(sources: SourceRenderData[]) {
   return buf
 }
 
-// center line, colour table, 28 bytes: startEnd, score, prevStartEnd,
+// center line, color table, 28 bytes: startEnd, score, prevStartEnd,
 // prevScoreLine, row word.
 export function packCenterLine28(sources: SourceRenderData[]) {
   const buf = new ArrayBuffer(countOf(sources, false) * 28)
@@ -146,7 +146,7 @@ export function packCenterLine28(sources: SourceRenderData[]) {
   return buf
 }
 
-// whiskers band, colour table, 36 bytes: the production record less posColor
+// whiskers band, color table, 36 bytes: the production record less posColor
 // and negColor. Last source first, as production packs it.
 export function packBand36(sources: SourceRenderData[]) {
   const buf = new ArrayBuffer(countOf(sources, true) * 36)

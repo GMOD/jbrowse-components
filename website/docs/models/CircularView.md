@@ -126,7 +126,7 @@ Each section ends with the members a composed model contributes, linked to the p
 | <span id="getter-assemblynames">**assemblyNames**</span><br><code>string[]</code> |  |
 | <span id="getter-chordsyntenydisplays">**chordSyntenyDisplays**</span><br><code>ChordSyntenyDisplaySelf[]</code> | the ribbon displays of `syntenyTracks()`; a chromosome reorder reads its alignments from these |
 | <span id="getter-candiagonalize">**canDiagonalize**</span><br><code>boolean</code> | Whether a chromosome reorder has anything to do: a ribbon track to take alignments from, and exactly the two genomes a mirrored layout is defined for. One is a self-alignment, with no second arc to reorder; three or more have no layout in which every pair reads as a band. |
-| <span id="getter-paintedassemblyname">**paintedAssemblyName**</span><br><code>string &#124; undefined</code> | the genome whose ideogram a ribbon track paints by what aligns to it from the first, rather than in its own chromosomes' colours |
+| <span id="getter-paintedassemblyname">**paintedAssemblyName**</span><br><code>string &#124; undefined</code> | the genome whose ideogram a ribbon track paints by what aligns to it from the first, rather than in its own chromosomes' colors |
 | <span id="getter-ideogrampaint">**ideogramPaint**</span><br><code>ReadonlyMap&lt;string, PaintRun[]&gt;</code> | that genome's paint, by slice key |
 | <span id="getter-launchassemblynames">**launchAssemblyNames**</span><br><code>string[]</code> | The assemblies a pending launch names, which the gates below wait on before `displayedRegions` exist. A blob carrying only tracks names none, and waiting on one nobody named never ends. |
 | <span id="getter-initialized">**initialized**</span><br><code>boolean</code> |  |
@@ -167,7 +167,7 @@ Each section ends with the members a composed model contributes, linked to the p
 <!-- prettier-ignore -->
 | Member | Description |
 | --- | --- |
-| <span id="method-syntenytracks">**syntenyTracks**</span><br><code>() =&gt; ComparativeTrackModel[]</code> | the tracks drawing ribbons, which the view's colour settings paint |
+| <span id="method-syntenytracks">**syntenyTracks**</span><br><code>() =&gt; ComparativeTrackModel[]</code> | the tracks drawing ribbons, which the view's color settings paint |
 | <span id="method-loadedattributeranges">**loadedAttributeRanges**</span><br><code>() =&gt; Record&lt;string, AttributeRange&gt;[]</code> | each ribbon display's attribute spans, over the alignments it holds |
 | <span id="method-legendcigarops">**legendCigarOps**</span><br><code>() =&gt; number</code> | a ribbon draws no indel blocks, so the key lists none |
 | <span id="method-shapeshowsstrand">**shapeShowsStrand**</span><br><code>() =&gt; boolean</code> | a ribbon twists against its two arcs' directions, and nothing on the circle shows which way an arc runs |
@@ -212,7 +212,7 @@ Each section ends with the members a composed model contributes, linked to the p
 | <span id="action-hidetrack">**hideTrack**</span><br><code>(trackId: string) =&gt; boolean</code> |  |
 | <span id="action-openexportdialog">**openExportDialog**</span><br><code>() =&gt; void</code> |  |
 | <span id="action-openreorderchromosomesdialog">**openReorderChromosomesDialog**</span><br><code>() =&gt; void</code> |  |
-| <span id="action-openinlinearsyntenyview">**openInLinearSyntenyView**</span><br><code>() =&gt; void</code> | a linear synteny view of this circle's genomes, a row each over the chromosomes the circle shows with the tracks it shows for that genome, its ribbon tracks between them, reordered, in this view's colour and length filter. A self-alignment opens the genome against itself |
+| <span id="action-openinlinearsyntenyview">**openInLinearSyntenyView**</span><br><code>() =&gt; void</code> | a linear synteny view of this circle's genomes, a row each over the chromosomes the circle shows with the tracks it shows for that genome, its ribbon tracks between them, reordered, in this view's color and length filter. A self-alignment opens the genome against itself |
 | <span id="action-autodiagonalize">**autoDiagonalize**</span><br><code>() =&gt; Promise&lt;void&gt;</code> | The init-time reorder, behind the "Reordering chromosomes" screen `withDiagonalizeProgress` drives. |
 | <span id="action-exportsvg">**exportSvg**</span><br><code>(opts?: ViewExportSvgOptions) =&gt; Promise&lt;string&gt;</code> | renders the view to SVG markup, which it returns; saves it through FileSaver unless `save: false` |
 | <span id="action-launchtrack">**launchTrack**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>(trackId: string, initialSnapshot?: any, displayInitialSnapshot…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>(trackId: string, initialSnapshot?: any, displayInitialSnapshot?: any) =&gt; Promise&lt;any&gt;</code></pre></dialog></span> | showTrack for a track whose display state model may be lazily loaded: loads it, then shows |

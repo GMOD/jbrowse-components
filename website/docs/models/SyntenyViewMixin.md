@@ -1,14 +1,14 @@
 ---
 id: syntenyviewmixin
 title: SyntenyViewMixin
-description: "What the linear synteny and dotplot views share beyond SyntenyColorsMixin: the level-of-detail tier every track draws at, and a colour key the reader closes per mode."
+description: "What the linear synteny and dotplot views share beyond SyntenyColorsMixin: the level-of-detail tier every track draws at, and a color key the reader closes per mode."
 sidebar_label: Mixin -> SyntenyViewMixin
 ---
 
 Auto-generated from the @jbrowse/mobx-state-tree model in the source — see the [developer guide](/docs/developer_guide/) for concepts. Built into JBrowse core. [View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/synteny-core/src/SyntenyViewMixin.ts).
 
 What the linear synteny and dotplot views share beyond `SyntenyColorsMixin`:
-the level-of-detail tier every track draws at, and a colour key the reader
+the level-of-detail tier every track draws at, and a color key the reader
 closes per mode.
 
 Each section ends with the members a composed model contributes, linked to the page that documents them.

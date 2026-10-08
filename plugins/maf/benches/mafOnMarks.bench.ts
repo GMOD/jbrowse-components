@@ -56,8 +56,8 @@
 //                    `binnedMeanColumns`
 //
 // Checks run before any timing. The column cells must equal the Feature
-// steps' run for run (extent, row, colour, the `base` a text mark reads) with
-// the same colour key; the row lookup must answer what the hit index answers
+// steps' run for run (extent, row, color, the `base` a text mark reads) with
+// the same color key; the row lookup must answer what the hit index answers
 // at random hovers; the column identity and the declared one must equal bases
 // matched over bases compared per species and bin, counted straight off the
 // text with no reference `N` compared, and the MAF display's runs must hold
@@ -566,7 +566,7 @@ function tuplesOf(
 }
 
 // The column cells against the Feature steps, run for run: extent, row,
-// colour, and the base a text mark would read.
+// color, and the base a text mark would read.
 function checkCells(features: readonly Feature[]) {
   const shared = runTransforms(features, SHARED, jexl)
   const { layers } = facetLayers(shared, FACET, [{}], jexl)
@@ -601,7 +601,7 @@ function checkCells(features: readonly Feature[]) {
   const want2 = JSON.stringify(want.scale)
   const got2 = JSON.stringify(got.scale)
   if (want2 !== got2) {
-    throw new Error(`the colour keys differ: ${want2} vs ${got2}`)
+    throw new Error(`the color keys differ: ${want2} vs ${got2}`)
   }
 }
 

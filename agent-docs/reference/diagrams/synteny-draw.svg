@@ -51,20 +51,20 @@
 <polygon fill="black" stroke="black" points="607.5,-582.79 615.06,-575.37 604.52,-576.46 607.5,-582.79"/>
 <text xml:space="preserve" text-anchor="middle" x="586.11" y="-595.45" font-family="Times,serif" font-size="14.00"> off</text>
 </g>
-<!-- coloured -->
+<!-- colored -->
 <g id="node6" class="node">
-<title>coloured</title>
+<title>colored</title>
 <polygon fill="none" stroke="black" points="262,-574.25 0,-574.25 0,-528 262,-528 262,-574.25"/>
 <text xml:space="preserve" text-anchor="middle" x="131" y="-560.75" font-family="monospace" font-size="10.00">the full&#45;span ribbon carries the matches,</text>
 <text xml:space="preserve" text-anchor="middle" x="131" y="-548" font-family="monospace" font-size="10.00">and each indel is painted over it</text>
-<text xml:space="preserve" text-anchor="middle" x="131" y="-535.25" font-family="monospace" font-size="10.00">in its operation&#39;s colour</text>
+<text xml:space="preserve" text-anchor="middle" x="131" y="-535.25" font-family="monospace" font-size="10.00">in its operation&#39;s color</text>
 </g>
-<!-- cigarmode&#45;&gt;coloured -->
+<!-- cigarmode&#45;&gt;colored -->
 <g id="edge4" class="edge">
-<title>cigarmode&#45;&gt;coloured</title>
+<title>cigarmode&#45;&gt;colored</title>
 <path fill="none" stroke="black" d="M423.61,-632.88C374.64,-619.36 289.46,-595.86 223.6,-577.68"/>
 <polygon fill="black" stroke="black" points="224.81,-574.39 214.24,-575.1 222.95,-581.13 224.81,-574.39"/>
-<text xml:space="preserve" text-anchor="middle" x="370.24" y="-595.45" font-family="Times,serif" font-size="14.00"> coloured indels</text>
+<text xml:space="preserve" text-anchor="middle" x="370.24" y="-595.45" font-family="Times,serif" font-size="14.00"> colored indels</text>
 </g>
 <!-- transparent -->
 <g id="node7" class="node">
@@ -142,9 +142,9 @@
 <path fill="none" stroke="black" d="M592.2,-527.6C559.78,-517.43 521.29,-505.36 487.67,-494.81"/>
 <polygon fill="black" stroke="black" points="488.97,-491.55 478.39,-491.9 486.88,-498.23 488.97,-491.55"/>
 </g>
-<!-- coloured&#45;&gt;marks -->
+<!-- colored&#45;&gt;marks -->
 <g id="edge8" class="edge">
-<title>coloured&#45;&gt;marks</title>
+<title>colored&#45;&gt;marks</title>
 <path fill="none" stroke="black" d="M206.96,-527.6C241.41,-517.39 282.33,-505.25 318,-494.67"/>
 <polygon fill="black" stroke="black" points="318.85,-498.07 327.44,-491.87 316.86,-491.36 318.85,-498.07"/>
 </g>
@@ -154,16 +154,16 @@
 <path fill="none" stroke="black" d="M405,-527.92C405,-520.11 405,-511.13 405,-502.58"/>
 <polygon fill="black" stroke="black" points="408.5,-502.85 405,-492.85 401.5,-502.85 408.5,-502.85"/>
 </g>
-<!-- colours -->
+<!-- colors -->
 <g id="node9" class="node">
-<title>colours</title>
+<title>colors</title>
 <polygon fill="none" stroke="black" points="512,-407.75 298,-407.75 298,-371.75 512,-371.75 512,-407.75"/>
-<text xml:space="preserve" text-anchor="middle" x="405" y="-393" font-family="monospace" font-size="10.00">colours packed on the main thread</text>
+<text xml:space="preserve" text-anchor="middle" x="405" y="-393" font-family="monospace" font-size="10.00">colors packed on the main thread</text>
 <text xml:space="preserve" text-anchor="middle" x="405" y="-380.25" font-family="monospace" font-size="10.00">and uploaded beside the geometry</text>
 </g>
-<!-- marks&#45;&gt;colours -->
+<!-- marks&#45;&gt;colors -->
 <g id="edge10" class="edge">
-<title>marks&#45;&gt;colours</title>
+<title>marks&#45;&gt;colors</title>
 <path fill="none" stroke="black" d="M405,-444.45C405,-436.67 405,-427.83 405,-419.61"/>
 <polygon fill="black" stroke="black" points="408.5,-419.7 405,-409.7 401.5,-419.7 408.5,-419.7"/>
 </g>
@@ -172,13 +172,13 @@
 <title>params</title>
 <polygon fill="none" stroke="black" points="527,-334.75 283,-334.75 283,-275.75 527,-275.75 527,-334.75"/>
 <text xml:space="preserve" text-anchor="middle" x="405" y="-321.25" font-family="monospace" font-size="10.00">frame parameters, never baked into the</text>
-<text xml:space="preserve" text-anchor="middle" x="405" y="-308.5" font-family="monospace" font-size="10.00">colours: opacity, thin&#45;alignment fade,</text>
+<text xml:space="preserve" text-anchor="middle" x="405" y="-308.5" font-family="monospace" font-size="10.00">colors: opacity, thin&#45;alignment fade,</text>
 <text xml:space="preserve" text-anchor="middle" x="405" y="-295.75" font-family="monospace" font-size="10.00">minimum length, curved or straight,</text>
 <text xml:space="preserve" text-anchor="middle" x="405" y="-283" font-family="monospace" font-size="10.00">the hovered and clicked feature</text>
 </g>
-<!-- colours&#45;&gt;params -->
+<!-- colors&#45;&gt;params -->
 <g id="edge11" class="edge">
-<title>colours&#45;&gt;params</title>
+<title>colors&#45;&gt;params</title>
 <path fill="none" stroke="black" d="M405,-371.25C405,-363.95 405,-355.15 405,-346.4"/>
 <polygon fill="black" stroke="black" points="408.5,-346.6 405,-336.6 401.5,-346.6 408.5,-346.6"/>
 </g>

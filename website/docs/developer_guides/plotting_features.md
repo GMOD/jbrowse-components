@@ -434,7 +434,7 @@ The example's `scoreMark` is its own, because a box grown from the bottom to a
 value is none of the shared shapes. Most displays are one of them, and name it
 in place of `scoreMark` with nothing else to write:
 
-- **`spanMark`** — a coloured rectangle from `x` to `x2` on the band of `row`:
+- **`spanMark`** — a colored rectangle from `x` to `x2` on the band of `row`:
   features laid into rows, MAF's alignment cells, anything that is a box on a
   row.
 - **`pointMark`** — a glyph at the middle of `x` to `x2` on a `domain` of `y`: a
@@ -449,8 +449,8 @@ scale and the diameter.
 
 `ScoreRenderState` must include `canvasWidth` and `canvasHeight` (the
 `FrameDimensions` the backend needs to size the backing store); add whatever
-else the shape's `params` read. A shape takes packed colours and the display
-resolves them, so the colour is stored here as the number the shader's uniform
+else the shape's `params` read. A shape takes packed colors and the display
+resolves them, so the color is stored here as the number the shader's uniform
 takes, resolved once in the model:
 
 <!-- include: example-plugins/score-example/src/LinearScoreDisplay/scoreMarks.ts#render-state -->

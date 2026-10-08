@@ -44,8 +44,8 @@ below are relative to `plugins/variants/src/`.
   one query row through `rowUnmap`.
 - **`color` is the single cell-coloring axis** (`shared/cellHue.ts`). A preset
   (`impact`, `phaseSet`) and a record field (`svType` among them) are both
-  fields of it, and a record with no value keeps the alt hue. Colour never
-  depends on zoom: the insertion marker is the cell's own colour widened, and
+  fields of it, and a record with no value keeps the alt hue. Color never
+  depends on zoom: the insertion marker is the cell's own color widened, and
   "insertion" is its shape and width. A purple marker made a variant read as an
   insertion only at the zooms where the marker outgrew its cell.
 - **A cell's alpha does depend on zoom, where records share pixels**
@@ -64,7 +64,7 @@ below are relative to `plugins/variants/src/`.
 Each channel carries one variable through one scale.
 
 - **`hue` is the mode's per-variant nominal** — the constant alt hue by default,
-  an impact tier, an SV class, a phase-set hue, a plain CSS colour, or, in
+  an impact tier, an SV class, a phase-set hue, a plain CSS color, or, in
   phased mode, the per-haplotype allele identity. Which alt a sample carries is
   not on it in allele-count mode; the matrix's per-alt columns and phased mode
   carry that.
@@ -73,27 +73,27 @@ Each channel carries one variable through one scale.
   genotype is the no-call category, never a blend into it. `altDosageByte` is
   the same number for the insertion marker.
 - **One ramp for every mode**, bounded by a fixed pale ceiling so a het in a
-  class colour still reads as that class. Full dosage is the hue itself, which
-  is also what makes a legend swatch and a hom cell the same colour. The
+  class color still reads as that class. Full dosage is the hue itself, which
+  is also what makes a legend swatch and a hom cell the same color. The
   `shadeByDosage` slot turns it off.
 - **The main thread paints the hue and the shade (ADR-203).** The worker reads
   what the hue needs off each variant (`cellHueOf`'s `read`: a field's value as
-  text, or a `jexl:` callback's colour) and ships it beside each cell's
+  text, or a `jexl:` callback's color) and ships it beside each cell's
   `altDosageByte`; `LinearMultiSampleVariantDisplay/paintCells.ts` repaints the alt cells and the lane
-  from them, each colour map a computed apart from row placement. So the dosage
+  from them, each color map a computed apart from row placement. So the dosage
   is the byte, in the cells and the key's het swatch (`HET_DOSAGE`) alike. A
   phase-set hue is per cell and stays the worker's.
 - **A scale's domain has no gaps**: a record with no structural class files
   under the SV key's `''`, which core's vocabulary names `SNV/indel`, and an
   unannotated record is `UNANNOTATED_IMPACT`. Without those the mode was class
-  colours beside the default blue, i.e. two scales at once.
-- **The absent-data colours are off every wheel.** The phase-set hue band is
+  colors beside the default blue, i.e. two scales at once.
+- **The absent-data colors are off every wheel.** The phase-set hue band is
   saturation/lightness the no-call yellow is not on, or a phase set paints a
-  called haplotype the "missing" colour.
+  called haplotype the "missing" color.
 - **Cross-mode identity**: INS takes `palette.insertion`, and the phased allele
-  colours come from a palette the SV scale does not touch — red cannot mean
+  colors come from a palette the SV scale does not touch — red cannot mean
   "deletion" in one mode and "secondary alt" in another.
-- **The lane's record colour is `hue(variant)`**, not a constant of its own. A
+- **The lane's record color is `hue(variant)`**, not a constant of its own. A
   goldenrod mark over blue cells was a hue standing for nothing.
 
 ## The legend lists what was painted
@@ -154,7 +154,7 @@ by `altDosageByte`, the dosage the cells paint.
 
 **`rows` (`SampleRows`: `sample` is its one field, since the rows are the
 samples) holds the order, labels, tree, provenance and focus; `rowColor` holds the tints**, display-kit's
-`RowColor`: a samplesTsv attribute whose values each take a palette colour, or
+`RowColor`: a samplesTsv attribute whose values each take a palette color, or
 `name`, the default, whose entries are the tints set row by row. Both are
 config, written by a drag, the arrangement dialog, "Sort rows by genotype here"
 and a clustering run, and every product writes them as session deltas (ADR-157).
@@ -185,10 +185,10 @@ settings change triggers rather than folding back to samples. `samplePloidy`
 keeps its identity while each fetch reports the same ploidies, so a region
 arrival re-derives no row.
 
-**A row's colour is its `rowColor`**, the label bar tree-sidebar's
+**A row's color is its `rowColor`**, the label bar tree-sidebar's
 `RowLabelsOverlay` and `SvgRowLabels` draw — the cells are colored by genotype,
 so `rowColorPaintsMarks` is false and the bar is the only place it shows. The
-tooltip swatch reads it too, and tree-sidebar's row colour key
+tooltip swatch reads it too, and tree-sidebar's row color key
 (`rowColorScales`) keys it by an attribute, after the genotype key; by `name` the
 labels are the key. A `samplesTsv` `color` column
 is the row's own `color`, which `resolvedRowColors` falls back to.
@@ -196,17 +196,17 @@ is the row's own `color`, which `resolvedRowColors` falls back to.
 **An attribute in `rowColor.field` beats a `samplesTsv` `color` column**: a
 channel bound to a variable beats a per-row constant. `TreeSidebarMixin` deals
 the attribute's values first seen first over the base arrangement, so a focus
-or the phased expansion recolours nothing, and `rowColorPaintsMarks` is false,
+or the phased expansion recolors nothing, and `rowColorPaintsMarks` is false,
 since the cells paint by genotype. `setRowColorField` is the mixin's
-`setRowColorChoice`: a pick starts from the colours the current object or the
+`setRowColorChoice`: a pick starts from the colors the current object or the
 config gives that choice (`startingRowColor`), and '' is None,
 `{ field: 'name' }`. The menu's Samples group offers None and the attributes
 and ticks the dialog's choice (`rowColorChoice`), Each row included; the dialog
-picks a value's colour under an attribute and a sample's under Each row
+picks a value's color under an attribute and a sample's under Each row
 (ADR-209). A reset returns `rowColor` by tree-sidebar's `rowColorResetTarget`,
 which keeps the choice, so a Color by survives it and a mode switch. The
 missing-attribute warning reads the mixin's `rowColorAttribute`.
-The flip ADR-160 names puts the row's own colour ahead of the palette here too.
+The flip ADR-160 names puts the row's own color ahead of the palette here too.
 
 **The `facet` bands win over a cluster tree** (tree-sidebar's "A tree per
 band"): `rowBanding` is the `facet`, each band draws the clade of exactly its

@@ -11,7 +11,7 @@ import type { TagColorScale } from '../../shared/types.ts'
 // Collects one read tag name for whatever the caller does with it: color by it,
 // or sort by it at the center line or at a clicked column. `initialTag` is the
 // tag in use, so reopening tweaks the setting rather than resetting it. A
-// caller passing `colorScale` also asks how the tag colours.
+// caller passing `colorScale` also asks how the tag colors.
 const TagDialog = observer(function TagDialog({
   title,
   prompt,

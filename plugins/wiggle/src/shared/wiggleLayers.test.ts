@@ -122,7 +122,7 @@ describe('makeSummaryLayers', () => {
     ])
   })
 
-  test('filled bands stack by the origin and colour by the pivot', () => {
+  test('filled bands stack by the origin and color by the pivot', () => {
     // origin 0, pivot 6: every value grows up from 0, so there is one stack
     // max..avg..min, and each bar takes pos or neg by its side of 6.
     const result = makeSummaryLayers({
@@ -151,7 +151,7 @@ describe('makeSummaryLayers', () => {
     ])
   })
 
-  test('each bar takes the colour of the band between two cuts it falls in', () => {
+  test('each bar takes the color of the band between two cuts it falls in', () => {
     const inner: [number, number, number] = [0.5, 0.5, 0.5]
     const [layer] = makeSummaryLayers({
       data: noSummaryData,
@@ -278,7 +278,7 @@ describe('makeSummaryLayers', () => {
     expect(red(min!.colorsAbgr?.[0])).toBeGreaterThan(red(max!.colorsAbgr?.[0]))
   })
 
-  // pivot 6 with origin 0: without a gradient these bars part by colour at 6
+  // pivot 6 with origin 0: without a gradient these bars part by color at 6
   // and the whiskers bands tint.
   const gradientLayers = (renderingType: WiggleRenderingType) =>
     makeSummaryLayers({
@@ -290,7 +290,7 @@ describe('makeSummaryLayers', () => {
       gradient: true,
     })
 
-  test('gradient bars stack by the origin and carry no colour of their own', () => {
+  test('gradient bars stack by the origin and carry no color of their own', () => {
     const result = gradientLayers(RENDERING_TYPE_XYPLOT)
     expect(result.map(l => l.featureScores)).toEqual([
       maxScores,

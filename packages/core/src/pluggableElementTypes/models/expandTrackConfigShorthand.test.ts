@@ -20,8 +20,8 @@ const ScaledColor = ConfigurationSchema(
   { shorthand: 'value', closed: true },
 )
 
-// Three displays of one track: two declare `color`, one as a plain colour
-// slot and one as an object with a scale, and the third names its colour
+// Three displays of one track: two declare `color`, one as a plain color
+// slot and one as an object with a scale, and the third names its color
 // `baseColor`.
 const displaySchemas = new Map<string, AnyConfigurationSchemaType>([
   [

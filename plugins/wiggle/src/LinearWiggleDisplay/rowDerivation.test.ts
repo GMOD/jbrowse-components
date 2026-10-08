@@ -29,7 +29,7 @@ const GROUPED: SourceInfo[] = [
   { name: 'Grain4' },
 ]
 
-const COLOURED: SourceInfo[] = [
+const COLORED: SourceInfo[] = [
   { name: 'Grain1', color: '#f00' },
   { name: 'Grain2', color: '#f60' },
   { name: 'Grain3', color: '#fa0' },
@@ -73,13 +73,13 @@ function derived(display: LinearWiggleDisplayModel) {
   }
 }
 
-test('overlay: adapter colours paint the plot', async () => {
-  const display = await loaded(COLOURED, { defaultRendering: 'line' })
+test('overlay: adapter colors paint the plot', async () => {
+  const display = await loaded(COLORED, { defaultRendering: 'line' })
   expect(derived(display)).toMatchSnapshot()
 })
 
 // Several subtracks share the box, so the palette deals tableau10 by name; a
-// group is an attribute and colours nothing until rowColor names it.
+// group is an attribute and colors nothing until rowColor names it.
 test('overlay: tableau10 by name, grouped or not', async () => {
   const display = await loaded(GROUPED, {})
   expect(derived(display)).toMatchSnapshot()
@@ -92,9 +92,9 @@ test("overlay: rowColor's spare range leads the palette", async () => {
   expect(derived(display)).toMatchSnapshot()
 })
 
-// Each subtrack has a row of its own, so it draws in the plot colour unless
+// Each subtrack has a row of its own, so it draws in the plot color unless
 // rowColor or the file gives it one.
-test('rows, line: the adapter colour, else the plot colour', async () => {
+test('rows, line: the adapter color, else the plot color', async () => {
   const display = await loaded(GROUPED, {
     ...rowsPerSource(),
     defaultRendering: 'line',
@@ -110,7 +110,7 @@ test('rows, density: identity moves to the label tint', async () => {
   expect(derived(display)).toMatchSnapshot()
 })
 
-// A colour by an attribute is the reader's choice, so its colour leads a
+// A color by an attribute is the reader's choice, so its color leads a
 // subtrack's own, which leads the palette only under `name`. A subtrack with no
 // group is missing a value rather than in a category, so the deal skips it.
 test('rows colored by an attribute take its values colors over their own', async () => {
@@ -148,7 +148,7 @@ test('rows: the declared order leads and the rest keep adapter order', async () 
   expect(derived(display)).toMatchSnapshot()
 })
 
-test('rows: a focus hides rows without recolouring the kept ones', async () => {
+test('rows: a focus hides rows without recoloring the kept ones', async () => {
   const display = await loaded(GROUPED, {
     ...rowsPerSource(),
     rowColor: 'group',
@@ -174,7 +174,7 @@ test('rows: a legend click focuses the group it names', async () => {
   expect(display.sources.map(s => s.name)).toEqual(['Grain1', 'Grain2'])
 })
 
-test('rows, line: dialog edits reorder, recolour the plot and relabel', async () => {
+test('rows, line: dialog edits reorder, recolor the plot and relabel', async () => {
   const display = await loaded(GROUPED, {
     ...rowsPerSource(),
     defaultRendering: 'line',
@@ -225,7 +225,7 @@ test('rows: a run lands its tree, a reorder drops it, a reset returns to the see
   expect(derived(display)).toMatchSnapshot()
 })
 
-// In one shared box there is no label to tint, so a colour set in the dialog
+// In one shared box there is no label to tint, so a color set in the dialog
 // goes to the plot whatever the gradient, as it did before the port.
 test('overlay, density: a dialog edit paints the plot', async () => {
   const display = await loaded(GROUPED, { defaultRendering: 'density' })
@@ -274,8 +274,8 @@ test('rows: the plot box writes rows whole', async () => {
   expect(display.rowArrangementIsCustom).toBe(false)
 })
 
-// A reorder alone writes the config's own colour pairs back in their order,
-// so it leaves no styling delta and offers no reset for a recolour.
+// A reorder alone writes the config's own color pairs back in their order,
+// so it leaves no styling delta and offers no reset for a recolor.
 test('rows: a reorder keeps the declared rowColor as it was', async () => {
   const display = await loaded(GROUPED, {
     ...rowsPerSource(),

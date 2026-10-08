@@ -51,7 +51,7 @@ export interface CategoricalField {
 
 /**
  * #api
- * What a key names each of `keys`, from a colour object's `labels`: one each in
+ * What a key names each of `keys`, from a color object's `labels`: one each in
  * order, an empty or missing entry leaving that key its own name. Every key
  * that takes `labels` reads them through this, so a config means one thing by
  * them everywhere.
@@ -94,7 +94,7 @@ export function categoricalField(
   } = {},
 ): CategoricalField {
   // a field with a vocabulary of its own reads it on every channel, a facet's
-  // sections as well as a colour's key
+  // sections as well as a color's key
   const vocabulary = universalPresetOf(field)
   const ownOrder = vocabulary?.domain ?? []
   const order = domain.length > 0 ? domain : ownOrder
@@ -128,7 +128,7 @@ export function categoricalField(
 
 /**
  * #api
- * Deals `keys` their colours in `field.compare` order, so the colours a set
+ * Deals `keys` their colors in `field.compare` order, so the colors a set
  * of keys first seen together takes do not depend on the order they arrive
  * in. A no-op for a field that deals nothing.
  */

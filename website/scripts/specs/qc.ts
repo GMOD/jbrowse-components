@@ -212,7 +212,7 @@ const panel = (loc: string) => ({
       // row gap that pairs with a small height is derived, not set here (see
       // featureSpacingForHeight), the same as cancer_sv's SUPER_COMPACT.
       // Nothing in this figure is read one read at a time: the claim is the
-      // colour of the whole block.
+      // color of the whole block.
       featureHeight: 2,
       height: 300,
       // 100 kb of a 30x CRAM is past the byte gate, and a capture has nobody to
@@ -245,10 +245,10 @@ export const qcSpecs: ScreenshotSpec[] = [
     // heuristics disagreeing by more than either's slack, so this is set from
     // the render.
     viewportHeight: 790,
-    // One label per panel, saying what its colour is (review: "unclear what we
+    // One label per panel, saying what its color is (review: "unclear what we
     // are showing ... need red text annotations if possible"). The legend gives
-    // the colours a name and the caption gives the lanes theirs; what neither
-    // says is why a wall of one colour is the whole result.
+    // the colors a name and the caption gives the lanes theirs; what neither
+    // says is why a wall of one color is the whole result.
     //
     // Over the pileup rather than beside it: at 30 kb every lane above it is
     // carrying signal, and a pileup is the one place on the frame where 400x50px
@@ -307,7 +307,7 @@ export const qcSpecs: ScreenshotSpec[] = [
   //
   // What is left is the comparison the compose made across a seam, made instead
   // across the x axis of one picture: a dark-blue pileup, the edge, and a
-  // multi-coloured one, over a coverage lane that steps up at the same place.
+  // multi-colored one, over a coverage lane that steps up at the same place.
   {
     mode: 'url',
     // RENAMED from qc/smn_vs_control (reviewer: "the naming 'vs_control' is
@@ -347,8 +347,8 @@ export const qcSpecs: ScreenshotSpec[] = [
               // somebody chose, and it survives the window being moved.
               scales: { y: { domainQuantile: 0.99 } },
               // 260, from 380 (review: "make it render even more compressed").
-              // The lane is read as a colour FIELD -- red where nothing can be
-              // placed uniquely, multi-coloured where the reads recover -- and
+              // The lane is read as a color FIELD -- red where nothing can be
+              // placed uniquely, multi-colored where the reads recover -- and
               // the field is the same field in two thirds of the height, because
               // what comes off is the BOTTOM of the pack.
               //
@@ -659,7 +659,7 @@ export const qcSpecs: ScreenshotSpec[] = [
             // transparent cigar indels and showcurves"). Straight ribbons over
             // this block are three quadrilaterals that each span most of the
             // frame's width at both ends, so they overlap almost everywhere and
-            // the band is a wash of blended colour with no edge to follow. A
+            // the band is a wash of blended color with no edge to follow. A
             // curve pinches in the middle, so each ribbon has a waist the other
             // two do not share and the crossing reads as a crossing.
             drawCurves: true,
@@ -668,7 +668,7 @@ export const qcSpecs: ScreenshotSpec[] = [
             // chain that genuinely align are separated from the parts that only
             // sit between them. The previous 'off' drew each chain as one solid
             // slab hull, which is what made the band opaque; 'full' is the other
-            // extreme and was rejected earlier for being a hairball of coloured
+            // extreme and was rejected earlier for being a hairball of colored
             // slivers over a segmental duplication. This is the middle setting
             // and the one the review asked for.
             cigarMode: 'matches',

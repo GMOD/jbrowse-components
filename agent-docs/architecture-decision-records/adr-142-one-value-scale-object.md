@@ -202,18 +202,18 @@ The members table above carries which display takes which.
   facet exemption went too. A faceted track drew no rule because each display
   placed its rules in the whole-track box; placed per scale in the band's own
   box, a rule is drawn in every row. Density still draws none and widens to
-  none, its domain being a colour ramp's.
+  none, its domain being a color ramp's.
 - **Manhattan's `significanceLine` is a rule too.** The slot made one line in
   one red out of a number, beside a list that makes any number of lines. As
   `scales.y.rules` a scan read against two thresholds, suggestive and
   genome-wide, names both, and the Reference lines row in the score menu
   replaced its own dialog.
 - **A rule's `color` is a `maybeColor`, unset by default.** Each display once
-  named the colour its rules default to, while the chrome already painted a rule
+  named the color its rules default to, while the chrome already painted a rule
   naming none in its own grey; the slot default defeated that fallback, and it
   let a display assign a meaning to every line an author drew — Manhattan's red
   said "significance" even of a suggestive line. Unset, a rule draws in the one
-  colour the chrome rules every plot in, and a red threshold is its author's
+  color the chrome rules every plot in, and a red threshold is its author's
   claim, written in the config.
 - **`title` is the `caption` ADR-109 gave `ValueScale`, in three states.** It
   is a `maybeString` slot, a slot type this change adds beside `maybeNumber`

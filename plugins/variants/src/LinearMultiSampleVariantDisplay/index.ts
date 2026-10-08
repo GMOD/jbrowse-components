@@ -34,7 +34,7 @@ export default function LinearMultiSampleVariantDisplayF(
       plotExamples: MULTI_SAMPLE_VARIANT_PLOT_EXAMPLES,
       ReactComponent: VariantDisplayComponent,
       // A v4 layout copied the colorBy palette into its rows, so its
-      // colours stay behind and the palette keeps painting them. Its
+      // colors stay behind and the palette keeps painting them. Its
       // `jexlFilters` and `renderingModeSetting` land as the config's own
       // retired spellings, which the schema's `retired` then lifts.
       retiredState: {

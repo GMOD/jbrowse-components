@@ -5,7 +5,7 @@ import type { ArcColorField } from './arcColorOptions.ts'
 import type { InsertSizeBand } from './insertSizeStats.ts'
 
 /**
- * The one classification of a pair under the three pair colour fields, read
+ * The one classification of a pair under the three pair color fields, read
  * by the read fill (`schemeCategory`) and the read-connection arcs
  * (`getArcColorType`) alike, so an arc and the reads under it cannot key the
  * same pair two different ways. Both sides hand it the pair's orientation
@@ -48,7 +48,7 @@ const ABNORMAL_ORIENTATION: Record<number, ReadColorCategory> = {
 }
 
 // 0 means no computed pair orientation: a non-split read with no mate to
-// orient against, grey rather than a strand or orientation colour.
+// orient against, grey rather than a strand or orientation color.
 export function pairOrientationCategory(
   pairOrientationNum: number,
 ): ReadColorCategory {

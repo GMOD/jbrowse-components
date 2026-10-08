@@ -20,12 +20,12 @@ however deep the pileup gets.** Every default below looked fine at 30x and washe
 out at 300x. When adding a threshold to this plugin, ask what it does when the
 sample is 10x larger.
 
-## Insert-size colouring: the band needed a floor
+## Insert-size coloring: the band needed a floor
 
 `getInsertSizeStats` is median ± 3·1.4826·MAD. On the 200 kb window that paints
 ~1% of records long-insert, 81% of them in the library's own right tail, with no
 deletion present. `widenBandToEventScale` (`shared/insertSizeStats.ts`) floors the
-band to 2x / 0.5x the typical fragment: the colour means an event comparable in
+band to 2x / 0.5x the typical fragment: the color means an event comparable in
 size to the fragment, which is scale-free across library types. The floor is a
 `max`, so a shallow pileup keeps the tighter raw band.
 
@@ -51,7 +51,7 @@ deletion would cluster tightly at its own size. Support there is a density filte
 that grows more aggressive where coverage is deepest; the insert-size floor
 already controls that family.
 
-## The coverage band's SNP colours
+## The coverage band's SNP colors
 
 At 300x a 1% sequencing error rate is three reads at every position, so an
 un-floored band carries a permanent sliver of every base. The pileup always faded
@@ -68,10 +68,10 @@ at draw time), and `MINIMUM_INDICATOR_READ_DEPTH` + `INDICATOR_THRESHOLD` (an
 absolute depth floor, then a flat fraction, for the interbase indicator
 triangle). **Below the depth floor no indicator triangle is emitted**, whatever
 the evidence. And the pileup ramp can zero a heterozygote at low depth while the
-band, floored at 0, still colours it — which is the argument for keeping the
+band, floored at 0, still colors it — which is the argument for keeping the
 band's floor at 0.
 
-**On a log axis the coloured fraction is the allele proportion, not a count off
+**On a log axis the colored fraction is the allele proportion, not a count off
 the y-axis.** The segments are linear slices of a log-scaled bar
 (`coverageSnp.slang`), so a 50% allele is half the bar whatever the scale. Baking
 the axis in would need a repack on every autoscale change.

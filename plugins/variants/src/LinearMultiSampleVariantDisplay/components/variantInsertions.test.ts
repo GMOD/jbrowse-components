@@ -160,9 +160,9 @@ test('a SNP or a deletion carries no marker', () => {
   ).toBe(0)
 })
 
-// The count sits in the bar, so it takes whichever text colour clears the
+// The count sits in the bar, so it takes whichever text color clears the
 // bar: core's `getContrastText`, the rule every other display's labels use.
-test('labels the marker with the bp count in the colour that clears it', () => {
+test('labels the marker with the bp count in the color that clears it', () => {
   expect(draw(data()).texts).toEqual([
     { text: String(INSERTED), x: 105, y: 10, fill: '#fff' },
   ])

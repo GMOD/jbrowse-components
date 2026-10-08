@@ -81,8 +81,8 @@ test('a refName takes its assembly position, not a hash of its name', () => {
   expect(at('chr12')).toBe(refNamePaletteColorAt(11))
 
   // The bug this rule replaced, stated as the property it broke: category10
-  // hashes all four of these onto ONE colour, so from a chr1 view a
-  // translocation to chr12, chr21 or chrY painted the colour of the reads
+  // hashes all four of these onto ONE color, so from a chr1 view a
+  // translocation to chr12, chr21 or chrY painted the color of the reads
   // around it. Held against `getQueryColor` rather than a literal, so it is
   // still the old rule being described and not a copied hex.
   const hashed = [...positions.keys()].map(getQueryColor)
@@ -91,7 +91,7 @@ test('a refName takes its assembly position, not a hash of its name', () => {
 })
 
 // The order is not always available — an assembly still loading, or a scaffold
-// the assembly does not list. A stable arbitrary colour beats no colour, so the
+// the assembly does not list. A stable arbitrary color beats no color, so the
 // hash stays as the fallback and every other property here still holds over it.
 test('a refName with no known position falls back to a stable color', () => {
   const unplaced = (name: string) =>

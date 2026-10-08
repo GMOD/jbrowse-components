@@ -65,7 +65,7 @@ The track menu's **Color by...** offers several schemes.
 - **Per-base quality** colors every base by Phred score on the same cividis
   ramp, dark blue at 0 to yellow at 40 and above, the quickest way to tell a
   variant from a run of low-confidence calls. A CRAM read stored without quality
-  scores draws its bases in the plain read colour.
+  scores draws its bases in the plain read color.
 - **Per-base lettering** draws every aligned base in its nucleotide color, not
   just the mismatches.
 
@@ -351,13 +351,13 @@ off, and dragging the track taller re-fits the arcs.
 
 An arc whose ends are in different displayed regions spans them, so a second
 region either side of a breakpoint shows the connection as one curve.
-Interchromosomal arcs draw in one colour, since insert size and orientation mean
+Interchromosomal arcs draw in one color, since insert size and orientation mean
 nothing across chromosomes.
 
-**Color by... → Arc color** picks what colours the arcs and the read cloud:
+**Color by... → Arc color** picks what colors the arcs and the read cloud:
 insert size, pair orientation, or both. **Same as reads**, the default, takes
-the read colour when the reads are coloured by one of those three, and paints
-insert size and orientation under any other read colour. The
+the read color when the reads are colored by one of those three, and paints
+insert size and orientation under any other read color. The
 [`arcColor`](/docs/config/linearalignmentsdisplay/#slot-arccolor) slot holds the
 choice, `""` meaning same as reads.
 
@@ -368,8 +368,8 @@ connection draws at
 Arcs coalesce only on exactly equal endpoints.
 
 Hovering an arc reports its location, the distance between the ends, the
-supporting read count and its colour bucket. In read-cloud mode it also gives
-the insert size.
+supporting read count and its color bucket. In read-cloud mode it also gives the
+insert size.
 
 <Figure caption="Choosing 'Read arcs' from the Read connections submenu; the arcs draw alongside the coverage panel." src="/img/alignments/select_arc_display.png" />
 

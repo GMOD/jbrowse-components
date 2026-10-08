@@ -39,7 +39,7 @@ test('the arrangement rides on rows, and there is no `domain` slot', () => {
   expect('domain' in config).toBe(false)
 })
 
-test('rowColor pairs each named subtrack with its colour', () => {
+test('rowColor pairs each named subtrack with its color', () => {
   const config = configSchema.create({
     ...base,
     rowColor: { domain: ['a', 'b'], range: ['#f00', '#0f0'] },

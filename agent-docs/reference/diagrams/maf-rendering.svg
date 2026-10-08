@@ -126,7 +126,7 @@
 <title>rowsColor</title>
 <polygon fill="none" stroke="black" stroke-width="2" points="393.83,-192.25 245.83,-192.25 245.83,-156.25 393.83,-156.25 393.83,-192.25"/>
 <text xml:space="preserve" text-anchor="middle" x="319.83" y="-177.5" font-family="monospace" font-size="10.00">rowsColor</text>
-<text xml:space="preserve" text-anchor="middle" x="319.83" y="-164.75" font-family="monospace" font-size="10.00">what colours the cells</text>
+<text xml:space="preserve" text-anchor="middle" x="319.83" y="-164.75" font-family="monospace" font-size="10.00">what colors the cells</text>
 </g>
 <!-- fallback&#45;&gt;rowsColor -->
 <g id="edge7" class="edge">

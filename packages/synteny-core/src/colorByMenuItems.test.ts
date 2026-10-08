@@ -137,7 +137,7 @@ test('each surface gets its own help text where the mode reads differently there
   expect(helpOf('points', 1)).toBe(helpOf('ribbons', 1))
 })
 
-// Each label takes a colour of its own as it arrives, so there is nothing to pin
+// Each label takes a color of its own as it arrives, so there is nothing to pin
 test('a text column offers its unlabelled toggle and no pin', () => {
   const rows = colorByMenuItems(
     target({

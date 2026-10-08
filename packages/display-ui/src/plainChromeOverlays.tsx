@@ -54,9 +54,9 @@ const overlayBox: React.CSSProperties = {
   zIndex: 1,
 }
 
-// Nearly opaque on purpose. These sit over a canvas whose colours are not known
+// Nearly opaque on purpose. These sit over a canvas whose colors are not known
 // here, and a translucent chip over dense data was measurably hard to read.
-// `Canvas`/`CanvasText` are the CSS system colours, so this tracks the host's
+// `Canvas`/`CanvasText` are the CSS system colors, so this tracks the host's
 // light/dark mode without needing a theme object.
 const chip: React.CSSProperties = {
   pointerEvents: 'auto',
@@ -376,8 +376,8 @@ const PlainBackgroundProgress = observer(function PlainBackgroundProgress({
  *
  * `DisplayUIProvider` installs this by default, so mount that rather than
  * naming this — reach for it directly only to wrap a state or to build a
- * context value by hand. Colours come from `currentColor` and the CSS system
- * colours, so the host's own cascade drives them in both light and dark.
+ * context value by hand. Colors come from `currentColor` and the CSS system
+ * colors, so the host's own cascade drives them in both light and dark.
  *
  * The `data-testid` values it renders are a contract four of JBrowse's test
  * systems key on, so a replacement set that keeps them can be driven by those

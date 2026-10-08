@@ -73,8 +73,8 @@ export function computeVisibleAnnotations(
   // A quarter of the drawn band, floored at 2px but never more than half of it:
   // `h` itself floors at the shader's MIN_DRAWN_ROW_PX, so on a deep alignment
   // the 2px minimum alone was taller than the band and spanned the rows either
-  // side, and capping at `h` merely replaced the row's own colouring with the
-  // frame colour. Half is what keeps this a band ON the row rather than instead
+  // side, and capping at `h` merely replaced the row's own coloring with the
+  // frame color. Half is what keeps this a band ON the row rather than instead
   // of it.
   const stripH = Math.min(h / 2, Math.max(2, Math.round(h * 0.25)))
   const stripOffset = offset + h - stripH

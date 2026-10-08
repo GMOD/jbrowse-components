@@ -80,7 +80,7 @@ test('what each row step recomputes', async () => {
       },
     },
     {
-      name: 'recolour',
+      name: 'recolor',
       run: () => {
         const [first] = display.editableSources
         display.applyRowEdits(display.editableSources, {

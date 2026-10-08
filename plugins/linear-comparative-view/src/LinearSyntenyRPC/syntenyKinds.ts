@@ -7,7 +7,7 @@ import {
 // Per-instance kind tag. Determines how the color for an instance is derived
 // from the parent feature's strand/refName/featureIdx and the view's current `color`
 // scheme. Emitted by the worker once during geometry build; colors are
-// recomputed on the main thread whenever the colour changes, so a color-scheme
+// recomputed on the main thread whenever the color changes, so a color-scheme
 // toggle never triggers an RPC refetch.
 //
 // The shaders only ever test BASE-vs-CIGAR (`isCigarKind`, i.e. kind >= the
@@ -30,8 +30,8 @@ export const KIND_CIGAR_I = KIND_CIGAR_MIN + 1
 export const KIND_CIGAR_D = KIND_CIGAR_MIN + 2
 export const KIND_CIGAR_N = KIND_CIGAR_MIN + 3
 
-// the kinds painted in their feature's own colour, so one transparent there is
-// a ribbon the colour mode hides
+// the kinds painted in their feature's own color, so one transparent there is
+// a ribbon the color mode hides
 export function paintsFeatureColor(kind: number) {
   return kind === KIND_BASE || kind === KIND_BASE_TILE
 }

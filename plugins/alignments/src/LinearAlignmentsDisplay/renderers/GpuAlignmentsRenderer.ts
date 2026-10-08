@@ -80,7 +80,7 @@ interface UploadedRegion {
   tagColors: Uint32Array | undefined
   colorCategories: Uint8Array | undefined
   // The straight-line pass's records, which spread over the laid-out data
-  // after the colour bake (`attachLinkedReadLinesByGroup`), so a
+  // after the color bake (`attachLinkedReadLinesByGroup`), so a
   // curved-connector toggle changes them within one layout run.
   lines: Uint32Array | undefined
   arcs: ArcBandFeed | undefined
@@ -320,7 +320,7 @@ export class GpuAlignmentsRenderer
     }
   }
 
-  // The colour half of the UBO is frame-constant — every input is display-wide
+  // The color half of the UBO is frame-constant — every input is display-wide
   // (`sectionRenderState` overrides two Y offsets and nothing else) — so it is
   // written once ahead of the block loop rather than up to 120 times a frame
   // at MAX_GROUPS. The palette slots and the per-section ones are disjoint by

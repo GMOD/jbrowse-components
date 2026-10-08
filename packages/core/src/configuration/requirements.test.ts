@@ -31,10 +31,10 @@ const Mark = ConfigurationSchema(
         message: 'a bar or point names a y',
       },
       {
-        id: 'density-colour',
+        id: 'density-color',
         when: { mark: ['span'], source: ['density'] },
         slots: ['encoding.color'],
-        message: 'a density span names a colour',
+        message: 'a density span names a color',
       },
     ],
   },
@@ -59,9 +59,9 @@ test('every when slot has to hold a listed value', () => {
     requirementProblems(Mark, { mark: 'span', source: 'density' }),
   ).toEqual([
     {
-      id: 'density-colour',
+      id: 'density-color',
       slot: 'encoding.color',
-      message: 'a density span names a colour',
+      message: 'a density span names a color',
     },
   ])
   expect(requirementProblems(Mark, { mark: 'span' })).toEqual([])

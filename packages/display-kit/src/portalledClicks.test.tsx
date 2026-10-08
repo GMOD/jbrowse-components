@@ -8,7 +8,7 @@ import { TestChromeModel, stubFactory } from './chromeTestModel.ts'
 import type { MouseState } from '@jbrowse/core/ui/useMouseTracking'
 
 // A REACT EVENT DOES NOT STOP AT A PORTAL. Everything a display floats above
-// itself -- the context menu, the colour legend, the track control -- is
+// itself -- the context menu, the color legend, the track control -- is
 // portalled to another DOM node while staying a React CHILD of the chrome, and
 // React bubbles by the component tree. So those events reached the chrome's
 // handlers, which on a hit-testing display mean "what feature is under this

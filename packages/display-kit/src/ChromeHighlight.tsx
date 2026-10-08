@@ -32,7 +32,7 @@ function hoverStyle(
   }
 }
 
-/** How a list's stroked ink reads: its colour, drawn this much wider than the ink. */
+/** How a list's stroked ink reads: its color, drawn this much wider than the ink. */
 interface StrokeStyle {
   color: string
   widenPx: number

@@ -1,4 +1,4 @@
-// The score → [0,1] normalizer every score-scaled mark is placed and coloured
+// The score → [0,1] normalizer every score-scaled mark is placed and colored
 // by — wiggle, the coverage band, the bar and point shapes, their ramps — and
 // the scale-type vocabulary its branches switch on. `makeScoreNormalizer`
 // (render-core's scoreScale.ts) is its loop-hoisted twin.

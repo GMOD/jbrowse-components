@@ -26,7 +26,7 @@ const PALETTE = ['#111111', '#222222', '#333333']
 const AUTO = 'Automatic — click to set a custom color'
 
 // A deal of each value of the setting's field: its listed values take their
-// range colour, the rest `unknown`, or the palette in first-seen order where
+// range color, the rest `unknown`, or the palette in first-seen order where
 // it deals, as `dealtValueColors` does.
 function previewOf(rows: Src[], paletteDeals: boolean) {
   return (snapshot: RowColorSnapshot) => {
@@ -173,7 +173,7 @@ test('Submit warns first when it would invalidate a loaded cluster tree', () => 
   expect(handleClose).toHaveBeenCalled()
 })
 
-test('the grid shows one colour column', () => {
+test('the grid shows one color column', () => {
   setup(fakeModel())
   expect(
     screen.getByRole('columnheader', { name: 'Color' }),
@@ -181,7 +181,7 @@ test('the grid shows one colour column', () => {
 })
 
 describe('Each row', () => {
-  test("picks a row's colour in the row list", () => {
+  test("picks a row's color in the row list", () => {
     const model = fakeModel()
     setup(model)
     expect(pressed('Each row')).toBe('true')
@@ -196,7 +196,7 @@ describe('Each row', () => {
     })
   })
 
-  test('Clear row colors drops the picks and keeps the Other colour', () => {
+  test('Clear row colors drops the picks and keeps the Other color', () => {
     const model = fakeModel({
       rowColorSetting: {
         field: 'name',
@@ -213,7 +213,7 @@ describe('Each row', () => {
     expect(submitted(model)[1]).toEqual({ field: 'name', unknown: '#cccccc' })
   })
 
-  test('Other none leaves the rows no pick names uncoloured', () => {
+  test('Other none leaves the rows no pick names uncolored', () => {
     const model = fakeModel()
     setup(model)
 
@@ -229,9 +229,9 @@ describe('Each row', () => {
     })
   })
 
-  // Stacked rows take no palette colour by name, so Auto already colours no
+  // Stacked rows take no palette color by name, so Auto already colors no
   // other row and the swatch offers no None beside it.
-  test('a stacked display offers it, and a pick colours that row alone', () => {
+  test('a stacked display offers it, and a pick colors that row alone', () => {
     const model = fakeModel({ rowPaletteDeals: false })
     setup(model)
     expect(pressed('None')).toBe('true')
@@ -250,7 +250,7 @@ describe('Each row', () => {
     })
   })
 
-  test('a pasted colour column lands as picks', () => {
+  test('a pasted color column lands as picks', () => {
     const model = fakeModel({ rowPaletteDeals: false })
     setup(model)
 
@@ -270,9 +270,9 @@ describe('Each row', () => {
   })
 })
 
-// The pasted colour column is Each row's whole pick set, so a blanked cell
+// The pasted color column is Each row's whole pick set, so a blanked cell
 // drops that pick.
-test('a pasted colour column replaces the picks', () => {
+test('a pasted color column replaces the picks', () => {
   const model = fakeModel({
     rowColorSetting: { field: 'name', domain: ['a'], range: ['#f00'] },
     rowPaletteDeals: false,
@@ -320,7 +320,7 @@ describe('colored by an attribute', () => {
     expect(screen.queryByText('Clear row colors')).toBeNull()
   })
 
-  test('an untouched Submit writes no colour object', () => {
+  test('an untouched Submit writes no color object', () => {
     const model = byGroup()
     setup(model)
 
@@ -328,7 +328,7 @@ describe('colored by an attribute', () => {
     expect(submitted(model)[1]).toBeUndefined()
   })
 
-  test('a value recolour writes the attribute and its colors', () => {
+  test('a value recolor writes the attribute and its colors', () => {
     const model = byGroup()
     setup(model)
 
@@ -355,7 +355,7 @@ describe('colored by an attribute', () => {
     expect(submitted(model)[1]).toEqual({ field: 'group' })
   })
 
-  test('None colours nothing', () => {
+  test('None colors nothing', () => {
     const model = byGroup()
     setup(model)
 
@@ -365,7 +365,7 @@ describe('colored by an attribute', () => {
     expect(submitted(model)[1]).toEqual({ field: 'name', unknown: '' })
   })
 
-  test('Clear keeps the Other colour the config sets', () => {
+  test('Clear keeps the Other color the config sets', () => {
     const model = fakeModel({
       editableSources: GROUPED,
       rowColorFields: ['group'],
@@ -386,7 +386,7 @@ describe('colored by an attribute', () => {
 })
 
 describe('None', () => {
-  test('offers no Other swatch, and the rows show their own colours', () => {
+  test('offers no Other swatch, and the rows show their own colors', () => {
     setup(
       fakeModel({
         editableSources: [{ name: 'a', color: '#00ff00' }, { name: 'b' }],
@@ -416,9 +416,9 @@ describe('None', () => {
   })
 })
 
-// A choice starts from the colours it has now, else the config's, so picking
+// A choice starts from the colors it has now, else the config's, so picking
 // the config's attribute back after None is the config again.
-describe('the colours a choice starts from', () => {
+describe('the colors a choice starts from', () => {
   const overBase = () =>
     fakeModel({
       editableSources: GROUPED,
@@ -432,7 +432,7 @@ describe('the colours a choice starts from', () => {
       },
     })
 
-  test("are the config's for the attribute it colours by", () => {
+  test("are the config's for the attribute it colors by", () => {
     const model = overBase()
     setup(model)
 
@@ -506,7 +506,7 @@ test('no spurious warning after Clear custom settings drops the tree', () => {
   expect(model.applyRowEdits).toHaveBeenCalled()
 })
 
-// The display's own colour, on one line above the rows, held here and written
+// The display's own color, on one line above the rows, held here and written
 // in submit().
 describe('the plot color line', () => {
   const PLOT = {
@@ -515,7 +515,7 @@ describe('the plot color line', () => {
     mode: 'edit' as const,
   }
 
-  test('an untouched line writes no colour, and Cancel writes nothing at all', () => {
+  test('an untouched line writes no color, and Cancel writes nothing at all', () => {
     const model = fakeModel()
     const onSubmit = jest.fn()
     render(
@@ -537,7 +537,7 @@ describe('the plot color line', () => {
     expect(onSubmit).not.toHaveBeenCalled()
   })
 
-  test('a picture two colours cannot say reads out beside its reason', () => {
+  test('a picture two colors cannot say reads out beside its reason', () => {
     render(
       <SetColorDialog
         model={fakeModel()}
@@ -575,8 +575,8 @@ describe('the plot color line', () => {
   })
 })
 
-// One row has nothing to arrange, so the dialog is the plot colour and the
-// buttons — the whole colour UI a single-source track needs.
+// One row has nothing to arrange, so the dialog is the plot color and the
+// buttons — the whole color UI a single-source track needs.
 test('showRows false drops the row choice, the grid and the bulk editor', () => {
   render(
     <SetColorDialog
@@ -633,7 +633,7 @@ describe('the Other rows swatch on a stacked display', () => {
     })
   })
 
-  test('recolours the grey', () => {
+  test('recolors the grey', () => {
     const model = grey()
     setup(model)
 
@@ -648,7 +648,7 @@ describe('the Other rows swatch on a stacked display', () => {
     })
   })
 
-  test('Auto returns the other rows to their own colours', () => {
+  test('Auto returns the other rows to their own colors', () => {
     const model = grey()
     setup(model)
 
@@ -663,7 +663,7 @@ describe('the Other rows swatch on a stacked display', () => {
   })
 })
 
-test('an attribute lists Other values with the rows no pair names, and colours them', () => {
+test('an attribute lists Other values with the rows no pair names, and colors them', () => {
   const model = fakeModel({
     editableSources: GROUPED,
     rowColorFields: ['group'],
@@ -744,9 +744,9 @@ describe('the Other values swatch', () => {
     expect(submitted(model)[1]).toEqual({ field: 'name' })
   })
 
-  // Under Auto each unpaired value lists its own palette colour, so only a set
-  // Other colour has rows to count.
-  test('counts its rows only while it holds a colour or None', () => {
+  // Under Auto each unpaired value lists its own palette color, so only a set
+  // Other color has rows to count.
+  test('counts its rows only while it holds a color or None', () => {
     setup(byGroupPair())
     expect(screen.queryByTestId('other-count')).toBeNull()
     fireEvent.click(screen.getByRole('button', { name: 'Other values: none' }))
@@ -762,7 +762,7 @@ describe('the Other values swatch', () => {
     expect(otherCount()).toBe('0 rows')
   })
 
-  test('Clear custom settings drops a colour set on it', () => {
+  test('Clear custom settings drops a color set on it', () => {
     const model = byGroupPair()
     setup(model)
 
@@ -778,7 +778,7 @@ describe('the Other values swatch', () => {
     expect(submitted(model)[1]).toBeUndefined()
   })
 
-  test('None leaves the values no pair names uncoloured', () => {
+  test('None leaves the values no pair names uncolored', () => {
     const model = byGroupPair()
     setup(model)
 

@@ -328,7 +328,7 @@ function resolveUnion(s: ChainSummary): ChainUnion {
 }
 
 // Split bits are per MATE, so both segments of a split mate stand out and the
-// normal partner keeps its pair colour; ORed onto the chain's bits, the two
+// normal partner keeps its pair color; ORed onto the chain's bits, the two
 // describing different units.
 function readFill(u: ChainUnion, flags: number) {
   return (

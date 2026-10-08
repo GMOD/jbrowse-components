@@ -142,7 +142,7 @@ function draw(reversed: boolean, n: number, binBp = 1, aln?: string) {
 const PX_PER_BP = BLOCK_WIDTH / (END - START)
 const SEAM = GAP_STROKE_OFFSET
 
-// MAF paints one rect per run of same-coloured reference bases, so it needs the
+// MAF paints one rect per run of same-colored reference bases, so it needs the
 // same reversed-block pivot as the alignments pileup: `makeBpMapper(bp)` is a
 // span's LEFT edge forward but its RIGHT edge reversed, and filling rightward
 // from there covers the neighbouring bases.
@@ -222,12 +222,12 @@ describe('the MAF rows mark, binned cells', () => {
   })
 })
 
-// Same-colour neighbours are one rect. The match tone is translucent, so a rect
+// Same-color neighbours are one rect. The match tone is translucent, so a rect
 // per cell — each padded by the seam — stacked it more than twice deep at
 // sub-pixel cell pitch and the Canvas2D rows band came out darker than the
 // GPU's, which merges runs into one quad.
 describe('the MAF rows mark, runs', () => {
-  test('a run of one colour is one rect, padded once', () => {
+  test('a run of one color is one rect, padded once', () => {
     const rects = draw(false, 5, 1, 'AAAAA')
     expect(rects).toHaveLength(1)
     expect(rects[0]!.x).toBeCloseTo(0)
@@ -241,7 +241,7 @@ describe('the MAF rows mark, runs', () => {
     expect(rects[0]!.w).toBeCloseTo(5 * PX_PER_BP + SEAM)
   })
 
-  test('a colour change ends the run', () => {
+  test('a color change ends the run', () => {
     const rects = draw(false, 5, 1, 'AACAA')
     expect(rects.map(r => r.x)).toEqual([0, 2 * PX_PER_BP, 3 * PX_PER_BP])
     expect(rects[0]!.w).toBeCloseTo(2 * PX_PER_BP + SEAM)

@@ -1045,10 +1045,10 @@ describe('marks colored by the contig they name', () => {
     expect(fills.map(f => f.style)).toEqual(['color:chr2', 'color:chr7'])
   })
 
-  // A colour's rank is its longest alignment anywhere in the lane, so a weak
+  // A color's rank is its longest alignment anywhere in the lane, so a weak
   // mark of the strongest contig is painted over a longer mark of another.
   // The pointer names what is on top.
-  test('the pointer names the colour painted on top, not a longer mark under it', () => {
+  test('the pointer names the color painted on top, not a longer mark under it', () => {
     const lane = {
       ...params,
       datasets: [
@@ -1067,7 +1067,7 @@ describe('marks colored by the contig they name', () => {
     expect(offscreenMateAt(lane, 30, 3)?.refName).toBe('chr2')
   })
 
-  test('at every pixel the hit names the colour painted last there', () => {
+  test('at every pixel the hit names the color painted last there', () => {
     const contigs = ['chrA', 'chrB', 'chrC', 'chrD']
     const spans: [number, number][] = []
     const names: string[] = []
@@ -1108,10 +1108,10 @@ describe('marks colored by the contig they name', () => {
     expect(fills.map(f => f.style)).toEqual(['color:chr7', 'red'])
   })
 
-  // A palette colours contigs of both assemblies, so a colour can name a contig
+  // A palette colors contigs of both assemblies, so a color can name a contig
   // in each strip. Ranked across both, the other strip's long alignment put a
-  // weak colour over a stronger one here, and the pointer named the stronger.
-  test('a colour both strips use is ranked by its own strip', () => {
+  // weak color over a stronger one here, and the pointer named the stronger.
+  test('a color both strips use is ranked by its own strip', () => {
     const colorFor = (refName: string) =>
       refName === 'chrB' ? 'color:B' : 'color:X'
     const top = {

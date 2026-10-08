@@ -45,7 +45,7 @@ function gridPath(
 }
 
 // Mounted only under `hasVisibleRegions`. Drawn in `bandPalette` in either mode,
-// because the plot paints synteny's colour schemes, whose default point is
+// because the plot paints synteny's color schemes, whose default point is
 // black and whose strand blue and ramp ends are dark.
 const RegionGrid = observer(function RegionGrid({
   model,

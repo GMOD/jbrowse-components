@@ -5,7 +5,7 @@ import {
   SECONDARY_ALT_COLOR,
 } from './constants.ts'
 
-// The colour preset field for the phase set. A FORMAT value, per (feature,
+// The color preset field for the phase set. A FORMAT value, per (feature,
 // sample), so the worker hands the cell loops a flag rather than a per-variant
 // resolver.
 export const PHASE_SET_FIELD = 'phaseSet'

@@ -225,7 +225,7 @@ export const featuresSpecs: ScreenshotSpec[] = [
   // tinted by its reading frame, joining the amino acids that are drawn at this
   // zoom either way, lined up to the reference codons above.
   //
-  // ONE FRAME COLOUR, which is correct and is why the guide's prose does not ask
+  // ONE FRAME COLOR, which is correct and is why the guide's prose does not ask
   // this figure to show a phase change. The window is inside BRCA1's exon 11
   // (chr17:41,243,451-41,246,877, 3426 bp), frame is constant within a CDS
   // segment, and the nearest junction is 550 bp away. There is no window that

@@ -230,7 +230,7 @@ describe('sequence cell geometry on a reversed block', () => {
     }
   })
 
-  test('the painter fills a run of same-coloured cells as one rect', () => {
+  test('the painter fills a run of same-colored cells as one rect', () => {
     const { ctx, calls } = recordingContext()
     const cells = encodeSequenceCells(
       { seq: 'AAAC', start: START, geneticCodeId: 1 },

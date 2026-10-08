@@ -1,0 +1,39 @@
+digraph maf_cell_color {
+  rankdir=TB
+  node [shape=box fontname=monospace fontsize=10]
+  { node [shape=diamond] refDash; alnGap; match; colorMatches }
+
+  cell [label="one (reference byte, aligned byte) pair"]
+  refDash [label="reference is a gap"]
+  cell -> refDash
+  refDash -> skip [label=" yes"]
+  skip [label="Skip"]
+
+  alnGap [label="aligned byte is a gap"]
+  refDash -> alnGap [label=" no"]
+  alnGap -> gap [label=" yes"]
+  gap [label="Gap"]
+
+  match [label="case-folded equal"]
+  alnGap -> match [label=" no"]
+  colorMatches [label="color is base"]
+  match -> colorMatches [label=" equal"]
+  colorMatches -> matchCat [label=" no"]
+  matchCat [label="Match"]
+
+  colorMatches -> baseCat [label=" yes"]
+  match -> baseCat [label=" differs"]
+  baseCat [label="Base"]
+
+  category [label="a CellCategory, not a color", style=bold]
+  skip -> category  gap -> category  matchCat -> category  baseCat -> category
+
+  css [label="CSS strings\nfor Canvas2D"]
+  packed [label="packed ABGR\nfor the instance buffer"]
+  category -> css  category -> packed
+
+  table [label="packedByRefAln:\nthe cascade, memoized over\nits whole input domain", style=bold]
+  packed -> table
+  sentinel [label="the skip case stays outside it"]
+  table -> sentinel
+}

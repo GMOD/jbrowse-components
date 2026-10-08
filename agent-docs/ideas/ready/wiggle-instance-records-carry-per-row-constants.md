@@ -1,6 +1,6 @@
 ---
 name: wiggle-instance-records-carry-per-row-constants
-description: Measured 2026-09-17 at 1000 sources on real BigWigs. The 256MB buffer ceiling only bites in a BigWig's raw section, where bbi returns up to 9 features a pixel, so synthetic zoom tiers below the first real one were the biggest lever (7.8x fewer features on an FST scan) and landed as ADR-129. Summary tiers already stay under 2 a pixel, so per-pixel decimation buys nothing there. The step-line and center-line records are split (2026-09-17, 44 to 32 and 36 bytes), but the prototype's 40% faster encode came from literal word offsets, not the smaller record. A per-row colour texture shrinks every record by 4-8 bytes and turns a recolour into an 8KB upload, but the density LUT slot is taken and `Sampler2D.Load` emits broken WGSL. A positive-only specialisation isn't worth building, and ADR-016's split costs 57-85ms and doubles the wire bytes on signed data.
+description: Measured 2026-09-17 at 1000 sources on real BigWigs. The 256MB buffer ceiling only bites in a BigWig's raw section, where bbi returns up to 9 features a pixel, so synthetic zoom tiers below the first real one were the biggest lever (7.8x fewer features on an FST scan) and landed as ADR-129. Summary tiers already stay under 2 a pixel, so per-pixel decimation buys nothing there. The step-line and center-line records are split (2026-09-17, 44 to 32 and 36 bytes), but the prototype's 40% faster encode came from literal word offsets, not the smaller record. A per-row color texture shrinks every record by 4-8 bytes and turns a recolor into an 8KB upload, but the density LUT slot is taken and `Sampler2D.Load` emits broken WGSL. A positive-only specialisation isn't worth building, and ADR-016's split costs 57-85ms and doubles the wire bytes on signed data.
 ---
 
 # Wiggle instance records carry per-row constants
@@ -20,7 +20,7 @@ the way.
 arrays through `processFeaturesFromArrays`, `buildSourceRenderData` and the
 production packers. The prototype packers in `prototypePackers.ts` run beside
 it, and no shader draws them. Before it prints any time, the bench checks every
-prototype field against the production buffer, colours included, through a
+prototype field against the production buffer, colors included, through a
 per-row table built from `gpuProps`. `runInstanceBufferScenarios.sh` runs the
 six scenarios below. `benches/results/*.json` holds the re-run after #2 landed,
 with production step and center arms. The raw output behind the tables below
@@ -74,7 +74,7 @@ commit's 4,300-at-1Mb was therefore raw-section data or a wider canvas.
 | phyloP tier 40, 79 bp/px | 55.2 | 44.1 | 121.4 | 88.3 | 66.2 | 99.3 | 77.3 | 121.4 | 99.3 |
 | scRNA 1Mb, tier 1216 | 14.6 | 11.6 | 32.0 | 23.3 | 17.5 | 26.2 | 20.4 | 32.0 | 26.2 |
 
-\* needs the per-row colour table. Bold means over the floor: today the FST
+\* needs the per-row color table. Bold means over the floor: today the FST
 scan cannot draw even xyplot at 1000 sources.
 
 Pack time in ms, MIN of 15. The control arm calls the baseline through a
@@ -123,7 +123,7 @@ bases its bin covers, not the whole bin.
 the step line on 32 bytes and `wiggleLineCenter.slang` the center line on 36,
 with a buffer of its own instead of borrowing the step line's through
 `bufferOf`. `rowScoreToYPx` and `pivotSideColor` moved into `wiggleCommon`, so
-both lines and the band still place and colour a score through one function.
+both lines and the band still place and color a score through one function.
 
 **Bytes, exact:** step 44 → 32 (-27%), center 44 → 36 (-18%), as predicted.
 The per-source ceiling moves from 6,100 features to 8,388 (step) or 7,456
@@ -155,15 +155,15 @@ packers address the record, not how big it is, and it applies to all four
 packers. The generated `packInstances` already writes literals but takes one
 array per field. Unmeasured.
 
-### 3. A per-row colour table (texture), and shader-side sign colouring
+### 3. A per-row color table (texture), and shader-side sign coloring
 
 **Gain in bytes:** fill 20 → 16, step 32 → 24, center 36 → 28, band 44 → 36,
 counted on top of #2. Fill cannot reach 12, because `rowIndex` stays per
 instance: 1000 sources in one draw call have no other way to name their row.
 The prototype packs `row << 1 | side` into one word.
 
-**Gain in interaction:** colour is in `gpuProps` (`sources[].color` and the
-resolved `wiggleColor` pair), so a colour change today re-encodes every loaded
+**Gain in interaction:** color is in `gpuProps` (`sources[].color` and the
+resolved `wiggleColor` pair), so a color change today re-encodes every loaded
 region. That costs 45-250ms of fill or 60-500ms of line per region at 1000
 sources, per the tables above. A table makes it one 8,000-byte texture upload.
 A sort or subtrack toggle still re-encodes unless the instance carries the
@@ -177,7 +177,7 @@ cost then moves to hidden sources staying in the buffer.
 - **Density is not free.** Its ramp LUT holds the slot, and it draws off the
   fill pass's buffer (`bufferOf: fill`), so removing `color` from the fill
   record removes it from density too. Density then needs the ramp and the row
-  table in one texture (row 0 the ramp, row 1 the colours), or multi-texture
+  table in one texture (row 0 the ramp, row 1 the colors), or multi-texture
   support in both HALs.
 - The WebGPU bind group layout shows each binding to the stages the shader's
   reflected table says read it (`bindGroupLayoutEntries`, `deviceGpuCache.ts`),
@@ -191,7 +191,7 @@ cost then moves to hidden sources staying in the buffer.
 - The texture's max dimension is ≥8192 on WebGPU. WebGL2 guarantees 2048, so
   the row table wraps keys onto further rows past `ROW_TABLE_MAX_WIDTH`.
 - **The table exists.** `packages/render-core/src/marks/rowTable.ts` and
-  `shaders/rowTable.slang` are the two-plane key → slot, hidden, colour
+  `shaders/rowTable.slang` are the two-plane key → slot, hidden, color
   texture the span pass reads and the multi-row feature display drives
   (ADR-165). Wiggle's fill and density passes take it once a second
   texture binding lands in both HALs, or the ramp and the table share one
@@ -200,7 +200,7 @@ cost then moves to hidden sources staying in the buffer.
 
 **What kills the uniform-array version:** WebGL2 guarantees a
 `MAX_UNIFORM_BLOCK_SIZE` of only 16,384 bytes, and std140 pads each array
-element to 16. Two colours per row in a `uvec4` then cap out near 1,000 rows,
+element to 16. Two colors per row in a `uvec4` then cap out near 1,000 rows,
 and wiggle's shared block already takes 80. On WebGPU the uniform
 ring is `MAX_UNIFORM_SLOTS` (2048) x the largest block any pass binds, rewritten
 per block per frame, so a 16KB block costs ~33MB of ring per HAL. Spec limits,
@@ -208,22 +208,22 @@ not measured on hardware.
 
 **Pairs with #4.** Once the shader picks `table[row][score >= origin]`, the
 avg-path pos/neg split has no GPU consumer left. The line and band shaders
-already colour by side.
+already color by side.
 
 **Cost and risk:** medium. The table, its shader module, the shape-side
 binding and the Canvas2D reading of it landed with the span pass
 (ADR-165); what is left here is four wiggle shaders reading it, density's
 second texture, and the painters reading the table where they read
 `source.color`. Whiskers scatter's per-instance tints (`colorsAbgr`) need a
-band index in the row word, or they keep a colour lane.
+band index in the row word, or they keep a color lane.
 
 ### 4. ADR-016, re-measured: don't move the split, delete it — landed
 
 **Landed 2026-09-19.** The worker no longer partitions, the six `pos*`/`neg*`
-fields are off `WiggleFeatureArrays`, and the colour settings left `rpcProps`
+fields are off `WiggleFeatureArrays`, and the color settings left `rpcProps`
 for `gpuProps` alone. ADR-144 then folded the six spellings this section
 measured into one `color` object and renamed the pivot `origin`; the arms below
-kept the names they were run under. The main thread colours by sign per instance
+kept the names they were run under. The main thread colors by sign per instance
 through `bandColorsAbgr`, which the whiskers bands already used, so every mode
 now partitions the same way and density keeps the solid layers `drawDensity`
 needs. The measurements below are what the deletion was taken on; they stand.
@@ -237,10 +237,10 @@ identical.
 
 Moving it into `buildSourceRenderData` as the parked idea proposes puts those
 57-85ms on the main thread per region arrival. Under `createEncodeMemo` the
-split also re-runs on every `gpuProps` change (colour, sort, plot type) unless
+split also re-runs on every `gpuProps` change (color, sort, plot type) unless
 it gets its own memo. ADR-016's rule already names the better exit: work
 "expressible as a uniform". `origin` is already a uniform, so with #3 the GPU
-colours by sign and the split disappears instead of moving, and a change to the
+colors by sign and the split disappears instead of moving, and a change to the
 cut costs no refetch and no re-encode.
 **Unmeasured risk:** Canvas2D xyplot would then switch `fillStyle` by sign
 inside one layer. On phyloP-like data (47% negative) that means roughly one
@@ -257,10 +257,10 @@ Canvas2D-only lazy split is the fallback.
   `negColor`, and #3 removes that for every track, not just positive ones.
 - **GPU fragment:** one compare and select in `pivotSideColor`. Not measured,
   since node has no GPU. Nothing suggests it shows.
-- **Canvas2D:** with default colours `strokeBySide` walks a positive track
+- **Canvas2D:** with default colors `strokeBySide` walks a positive track
   twice. Against a no-op context, the empty second walk costs about as much JS
   as the first: +20ms per 100 rows (scRNA), +35ms per 30 rows (FST). Real
-  painting through node-canvas moved within ±3% of the single-colour arm
+  painting through node-canvas moved within ±3% of the single-color arm
   (922/913, 1507/1447, 697/688ms), because stroking dominates. Chrome may weigh
   it differently. Skipping the `below` pass for a layer with no score under the
   pivot costs a few lines, for a gain that stays small.
@@ -276,7 +276,7 @@ An agent read the packers, and only the first row was spot-checked by hand
 | variant matrix `CellInstance` | 12 | featureIndex per column | 33% |
 | synteny ribbon (4 pipelines) | 32 | alignmentLength, color per feature (+ featureId, kind) | 25-50% |
 | Manhattan `PointMarkInstance` | 24 | row always 0, glyph default outside LD | 33% |
-| MAF / multi-row `RowRectInstance` | 16 | row (and row colour when set) | 25-50% |
+| MAF / multi-row `RowRectInstance` | 16 | row (and row color when set) | 25-50% |
 | dotplot | 20 | color per feature | 20% |
 | alignments `gap` / `clip` | 20 / 16 | gapType constant per buffer; kind in two runs | 20-25% |
 | pileup read | 44 | tagColor 0 when unused; six small fields in 4-byte words | 9% (+~40% by packing) |
@@ -289,8 +289,8 @@ which works but is the same HAL work as #3.
 
 #1, #2 and #4 have landed (#1 as ADR-129, #4 as the split's deletion). #3 is
 what is left, and it now stands alone rather than pairing with #4: the deletion
-leans on the per-instance colour lane a per-row colour table would take away,
-so the table has to arrive with shader-side sign colouring for the xyplot and
+leans on the per-instance color lane a per-row color table would take away,
+so the table has to arrive with shader-side sign coloring for the xyplot and
 scatter families, not only for the lines. Settle density's texture first.
 
 ## 2026-09-19: #3 is also what the mark grammar needs
@@ -299,7 +299,7 @@ scatter families, not only for the lines. Settle density's texture first.
 against this file's own path and found the time free and the bytes not: an
 `EncodedChannels` retains 20 bytes a feature where `processFeaturesFromArrays`
 retains 12, four of them a `featureIndex` that is the identity permutation and
-four a per-instance colour lane. #3's per-row colour table is the second of
+four a per-instance color lane. #3's per-row color table is the second of
 those met from the GPU side, so the two proposals now share a condition rather
 than sitting in different subsystems, and the FST-raw scenario this file
 measured is the one the verdict's `multi-wiggle` row is shaped after.

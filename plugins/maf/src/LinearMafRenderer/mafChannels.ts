@@ -12,7 +12,7 @@ import type { SpanChannels } from '@jbrowse/render-core/marks'
 
 /**
  * What a region encodes to while the rows are drawn somewhere else — the
- * identity plot, the codon view, colour-by-chromosome. Shared rather than
+ * identity plot, the codon view, color-by-chromosome. Shared rather than
  * allocated per region: nothing writes to it, and an empty pack is how a pass
  * releases its GPU buffer.
  */
@@ -27,7 +27,7 @@ export const EMPTY_MAF_CELLS: SpanChannels = {
 export interface BuildChannelsArgs {
   blocks: MafBlock[]
   palette: MafColorPalette
-  /** a matching base paints its own colour rather than the match colour */
+  /** a matching base paints its own color rather than the match color */
   colorMatches: boolean
   /**
    * Genomic bp per emitted cell. `1` encodes every base; larger values decimate

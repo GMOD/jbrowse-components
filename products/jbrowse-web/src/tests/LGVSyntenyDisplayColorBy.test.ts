@@ -101,7 +101,7 @@ test('drops the read-oriented schemes it inherits from the alignments model', as
   expect(labels).not.toContain('Modifications')
 })
 
-test('colours by strand until a config says otherwise', async () => {
+test('colors by strand until a config says otherwise', async () => {
   expect((await syntenyDisplay()).colorBy).toEqual({ type: 'strand' })
 })
 

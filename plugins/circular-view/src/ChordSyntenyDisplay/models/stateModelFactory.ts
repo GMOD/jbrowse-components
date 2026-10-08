@@ -149,7 +149,7 @@ const stateModelFactory = (configSchema: ChordSyntenyDisplayConfigModel) => {
       },
       /**
        * #getter
-       * the span or label list each colour channel covers over the held
+       * the span or label list each color channel covers over the held
        * alignments, which the view's ramps and key scale to
        */
       get attributeRanges(): Record<string, AttributeRange> {
@@ -157,7 +157,7 @@ const stateModelFactory = (configSchema: ChordSyntenyDisplayConfigModel) => {
       },
       /**
        * #getter
-       * the colour channels the view's modes can paint: the preset
+       * the color channels the view's modes can paint: the preset
        * measurements and the columns the adapter declares
        */
       get channelNames() {
@@ -182,8 +182,8 @@ const stateModelFactory = (configSchema: ChordSyntenyDisplayConfigModel) => {
       },
       /**
        * #getter
-       * each alignment's packed colour under the view's `color`, by feature
-       * id. A chromosome mode paints the ideogram colour of the chromosome it
+       * each alignment's packed color under the view's `color`, by feature
+       * id. A chromosome mode paints the ideogram color of the chromosome it
        * joins, so a ribbon matches the arc it leaves; a label the view hides
        * paints at zero alpha
        */
@@ -232,7 +232,7 @@ const stateModelFactory = (configSchema: ChordSyntenyDisplayConfigModel) => {
       /**
        * #getter
        * the fill opacity every resting ribbon draws at, the view's
-       * `opacityLevel`; a ribbon's own colour alpha (a `color.value`'s, an
+       * `opacityLevel`; a ribbon's own color alpha (a `color.value`'s, an
        * `opacity` field's fade) rides its lane
        */
       get ribbonOpacity() {
@@ -242,7 +242,7 @@ const stateModelFactory = (configSchema: ChordSyntenyDisplayConfigModel) => {
        * #getter
        * what the ribbons draw: the held alignments at least the view's
        * `minAlignmentLength` long on their own side, less those the view's
-       * colour hides
+       * color hides
        */
       get drawnFeatures(): Feature[] | undefined {
         const min = self.view.minAlignmentLength
@@ -264,7 +264,7 @@ const stateModelFactory = (configSchema: ChordSyntenyDisplayConfigModel) => {
        * #getter
        * every held alignment's feet on the circle's unrolled axis, by the
        * feature's place in `features`: rebuilt by a fetch or a change to the
-       * regions, never by a recolour, a zoom or a rotation
+       * regions, never by a recolor, a zoom or a rotation
        */
       get ribbonFeet() {
         const features = self.features ?? []
@@ -305,8 +305,8 @@ const stateModelFactory = (configSchema: ChordSyntenyDisplayConfigModel) => {
       },
       /**
        * #getter
-       * the drawn alignments as the ribbon mark's lanes, each in its colour
-       * at that colour's own alpha
+       * the drawn alignments as the ribbon mark's lanes, each in its color
+       * at that color's own alpha
        */
       get ribbonLanes(): RibbonLanes {
         const feet = this.ribbonFeet
@@ -364,7 +364,7 @@ const stateModelFactory = (configSchema: ChordSyntenyDisplayConfigModel) => {
       /**
        * #getter
        * the painted genome's ideogram, by slice key: each stretch in the
-       * colour of the first genome's chromosome that the drawn ribbons over it
+       * color of the first genome's chromosome that the drawn ribbons over it
        * mostly come from, one bin per CSS px
        */
       get ideogramPaint(): ReadonlyMap<string, PaintRun[]> {
@@ -501,7 +501,7 @@ const stateModelFactory = (configSchema: ChordSyntenyDisplayConfigModel) => {
       },
       /**
        * #getter
-       * the ribbon fill the circle's key shows: the one colour every ribbon
+       * the ribbon fill the circle's key shows: the one color every ribbon
        * paints when the view's mode keys nothing of its own
        */
       get legendColor(): string | undefined {

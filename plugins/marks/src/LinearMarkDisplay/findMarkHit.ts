@@ -36,13 +36,13 @@ export interface MarkHitInfo {
   bp: number
   /** The plotted value, or undefined for a mark with no `y`. */
   y: number | undefined
-  /** The packed colour the worker resolved for this instance, if its mark reads one. */
+  /** The packed color the worker resolved for this instance, if its mark reads one. */
   color: number | undefined
-  /** The raw value of a ramp colour channel, where the display resolves it. */
+  /** The raw value of a ramp color channel, where the display resolves it. */
   colorValue: number | undefined
   /**
    * Whether the instance's region still holds an earlier `color`
-   * declaration's data (`HeldColor`), whose colour no key names.
+   * declaration's data (`HeldColor`), whose color no key names.
    */
   heldColor?: boolean
   /** The point painter's code for the instance's shape, if its mark reads one. */

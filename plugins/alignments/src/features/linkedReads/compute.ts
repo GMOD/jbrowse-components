@@ -43,7 +43,7 @@ export const LINKED_READ_COLOR_INTERCHROM = LINKED_READ_COLOR_PAIR_LL + 3
 // calling it LR would assert an orientation nothing measured.
 // `declared` is `color.labels` by bucket, as the read key names it.
 // A split junction that maps back over its own read. Not a palette slot: the
-// overlay alone draws it, in the colour of the RL pairs that span such a
+// overlay alone draws it, in the color of the RL pairs that span such a
 // junction (`connectorPaletteSlot`), under the arc band's name for the class.
 export const LINKED_READ_COLOR_MAPS_BACK = LINKED_READ_COLOR_INTERCHROM + 1
 const MAPS_BACK_LABEL = 'Split read (duplication-type)'

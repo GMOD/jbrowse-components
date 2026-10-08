@@ -1,15 +1,15 @@
 // The row axis resolved on the GPU. An instance carries a stable row KEY in its
 // `row` lane, and the pass binds a table mapping each key to the slot it is
-// drawn on, or to hidden, with an optional colour override — so a reorder, a
-// focus, a hide or a recolour uploads this table and no instance bytes, the
+// drawn on, or to hidden, with an optional color override — so a reorder, a
+// focus, a hide or a recolor uploads this table and no instance bytes, the
 // property a y domain already has as a uniform (GRAMMAR_OF_GRAPHICS.md, rule 3).
 //
 // The table is an RGBA8 texture of two planes, one texel per key, keys wrapped
 // onto rows of ROW_TABLE_MAX_WIDTH past it (the WebGL2 floor on a texture
 // dimension). The slot plane holds the slot's low 24 bits in rgb and 255 in
-// alpha where the key is drawn, 0 where it is hidden; the colour plane below it
+// alpha where the key is drawn, 0 where it is hidden; the color plane below it
 // holds the override, straight alpha, and alpha 0 where the instance keeps its
-// own colour. `marks/rowTable.ts` writes it through the texel twins exported
+// own color. `marks/rowTable.ts` writes it through the texel twins exported
 // here, and is the painter's and hit test's reading of the same bytes.
 //
 // Sampled at texel centres with `SampleLevel`, never `Load`: this slangc emits
@@ -51,7 +51,7 @@ public uint rowTableTexelX(uint key, uint keys) {
   return key % rowTableWidth(keys);
 }
 
-// The key's row in the slot plane; the colour plane's is one plane height on.
+// The key's row in the slot plane; the color plane's is one plane height on.
 public uint rowTableTexelY(uint key, uint keys) {
   return key / rowTableWidth(keys);
 }
@@ -66,8 +66,8 @@ uint byteOf(float channel) {
   return uint(channel * 255.0 + 0.5);
 }
 
-// The key's placement: its slot and colour through the table of `keys` keys,
-// or the identity — its `row` as the slot, its own colour — where `keys` is
+// The key's placement: its slot and color through the table of `keys` keys,
+// or the identity — its `row` as the slot, its own color — where `keys` is
 // negative, which is what a pass with no table binds.
 public RowPlacement rowTableLookup(
   Sampler2D<float4> table, uint key, int keys, float4 own

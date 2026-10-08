@@ -23,7 +23,7 @@ The Hi-C display's `color`: a bin's contact count through a `linear` or
 counts, saturating at their `domainQuantile`, the 95th percentile by
 default, or at their maximum at a quantile of 1; setting it gives every
 zoom, and every track that sets the same number, one scale. The slots are
-the shared colour object's, so `jbrowse validate` and "Edit plot..." judge
+the shared color object's, so `jbrowse validate` and "Edit plot..." judge
 them as they judge any other display's.
 
 ## Config slots
@@ -37,6 +37,6 @@ Slot types (`fileLocation`, `frozen`, ...) are explained in the [config slot typ
 | <span id="slot-scheme">**scheme**</span><br>[`stringEnum`](/docs/config_guides/slot_types#stringenum) (viridis, magma, inferno, cividis, juicebox, fall, reds, blues, redblue, purpleorange, redgreyblue) = <code>'juicebox'</code> | the named ramp counts run across; juicebox fades from transparent to red |
 | <span id="slot-reverse">**reverse**</span><br>[`maybeBoolean`](/docs/config_guides/slot_types#the-maybe-types) | Unset turns round a scheme dark at its low end, since an unpainted bin is the page behind the matrix. |
 | <span id="slot-domainmin">**domainMin**</span><br>[`maybeNumber`](/docs/config_guides/slot_types#the-maybe-types) | the bottom of the scale; unset is 0 |
-| <span id="slot-domainquantile">**domainQuantile**</span><br>[`number`](/docs/config_guides/slot_types#number) = <code>0.95</code> | What an unset `domainMax` follows: the loaded counts' quantile, `0.95` so faint off-diagonal contacts read, or at `1` their maximum. The track menu's "Emphasize faint contacts" toggles it. The same word every colour ramp and `scales.y` take. |
+| <span id="slot-domainquantile">**domainQuantile**</span><br>[`number`](/docs/config_guides/slot_types#number) = <code>0.95</code> | What an unset `domainMax` follows: the loaded counts' quantile, `0.95` so faint off-diagonal contacts read, or at `1` their maximum. The track menu's "Emphasize faint contacts" toggles it. The same word every color ramp and `scales.y` take. |
 | <span id="slot-scale">**scale**</span><br>[`maybeStringEnum`](/docs/config_guides/slot_types#the-maybe-types) (linear, log) | linear, or log2 of the count, which lifts sparse long-range bins off the floor; unset is linear |
 | <span id="slot-domainmax">**domainMax**</span><br>[`maybeNumber`](/docs/config_guides/slot_types#the-maybe-types) | the top of a linear or log scale's domain; unset follows the loaded values |

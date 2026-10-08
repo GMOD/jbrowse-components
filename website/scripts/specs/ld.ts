@@ -866,7 +866,7 @@ export const ldSpecs: ScreenshotSpec[] = [
     // rendering: depth is half the drawn width, so a 1250 px capture would put
     // 2La's apex at 272 and buy ~50 px a panel -- and it walks both floating
     // legends into things. At 1250 the Cameroon karyotype legend clears its own
-    // colour bands by 27 px where it now clears them by 55, and each LD panel's
+    // color bands by 27 px where it now clears them by 55, and each LD panel's
     // r² ramp, which the callout beside it currently misses by 3 px, would be
     // under that callout. Worth doing only together with re-anchoring both
     // callouts, which is a bigger change than the 100 px it returns.
@@ -938,7 +938,7 @@ export const ldSpecs: ScreenshotSpec[] = [
   // thing, on the same locus as the triangle above: one row per haplotype, one
   // column per variant.
   //
-  // ORDERING IS WHAT MAKES THE BLOCK APPEAR, not colour and not row count. A
+  // ORDERING IS WHAT MAKES THE BLOCK APPEAR, not color and not row count. A
   // block is a set of alleles travelling together, and which of them is the ALT
   // allele varies site to site, so a matrix of common variants in adapter order
   // is a plaid at ANY row count — measured, and the real reason the first

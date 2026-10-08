@@ -100,7 +100,7 @@ describe('identity', () => {
     ])
   })
 
-  test('the key spans the written domain in the colours it paints', () => {
+  test('the key spans the written domain in the colors it paints', () => {
     const display = displayWith({ field: 'identity', domainMin: 0.7 })
     expect(display.colorScales[0]).toMatchObject({
       kind: 'ramp',
@@ -127,7 +127,7 @@ describe('identity', () => {
     dispose()
   })
 
-  test('the SVG export encodes through the same colours', () => {
+  test('the SVG export encodes through the same colors', () => {
     const display = displayWith({ field: 'identity', domainMin: 0.7 })
     expect(display.rowsEncodePropsIn(display.colorPalette).identityColors).toBe(
       display.identityColors,
@@ -163,7 +163,7 @@ describe('chromosome', () => {
     })
   })
 
-  test('renaming the key keeps the rank colours', () => {
+  test('renaming the key keeps the rank colors', () => {
     const display = chromosomeDisplay({ range: ['red', 'blue'] })
     const before = display.sourceChromColors
     setConf(display, 'color', {

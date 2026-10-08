@@ -13,8 +13,8 @@ The composition step the census was run to justify was declined on measurement,
 and it was declined.
 
 It is the y-axis counterpart to
-[ADR-094](adr-094-colour-cardinality-is-one-channel-not-four-shapes.md), which
-ran the same census on colour, and it reaches the same shape of answer on
+[ADR-094](adr-094-color-cardinality-is-one-channel-not-four-shapes.md), which
+ran the same census on color, and it reaches the same shape of answer on
 different evidence: one half of the encoding factors and the other must not.
 [ADR-095](adr-095-a-shape-composes-a-scale-at-compile-time.md) is where the
 scale half actually landed — this file states the rule that landing left
@@ -46,7 +46,7 @@ consumer any factoring could pull:
 
 | Shader | Why it is not this channel |
 | --- | --- |
-| `wiggleDensity.slang` | the scalar is real and goes through the same scale, but it feeds **colour**; y is a row index through `rowRectClipPos` |
+| `wiggleDensity.slang` | the scalar is real and goes through the same scale, but it feeds **color**; y is a row index through `rowRectClipPos` |
 | `hic.slang`, `ldGenomic.slang` / `ldUniform.slang` | y is positional — a 45° rotation of two coordinates through `diagonalCellToClip`, with no scalar in it |
 | `dotplot.slang` | y is a second genomic axis (`u.bpPerPxVInv`, `u.panPxV`), an hpmath projection like x |
 | `rowRect`'s consumers — `multiRow`, `maf`, `variant`, `variantMatrix` | y is a row index and a band height, never a value |
@@ -54,7 +54,7 @@ consumer any factoring could pull:
 Every row of the first table varies the same two things — which scale carries the
 scalar to `[0,1]`, and what the resulting fraction is anchored against — while
 the mark's geometry is a separate question each already answers through the shape
-library. That is the same split ADR-094 found on colour, where the ramp half
+library. That is the same split ADR-094 found on color, where the ramp half
 factored and the three scales did not.
 
 The CPU sides mirror the shader sides one for one, and each pairs a normalizer

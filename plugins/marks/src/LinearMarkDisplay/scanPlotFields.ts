@@ -48,7 +48,7 @@ export interface PlotFields {
   numeric: string[]
   /** Numeric fields fewer than half the scanned features carry. */
   sparse?: string[]
-  /** Text fields few enough values apart that a colour key can name them. */
+  /** Text fields few enough values apart that a color key can name them. */
   categorical: string[]
   /**
    * The field giving a row each: `source` where a multi-source adapter lists
@@ -104,7 +104,7 @@ function isNumericDatum(v: unknown) {
 
 /**
  * The fields a sample of features carry, each numeric only where every value
- * seen for it read as a finite number and sparse where most features lack it, and a text field only where a colour
+ * seen for it read as a finite number and sparse where most features lack it, and a text field only where a color
  * key could name its values. `source` is a facet only where the adapter lists
  * more than one source, since a GFF3 record's `source` column is not a file,
  * and a multi-BigWig answers each file's features in one run, so a sample

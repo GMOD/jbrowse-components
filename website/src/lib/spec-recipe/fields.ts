@@ -205,7 +205,7 @@ function alignmentsColorStep(value: unknown): FieldStep | undefined {
   return {
     path: colorBy.tag ? `${path} → enter tag "${colorBy.tag}"` : path,
     note: declared
-      ? "This figure also declares the colour scale's domain, range or scale, which only the config sets."
+      ? "This figure also declares the color scale's domain, range or scale, which only the config sets."
       : undefined,
   }
 }
@@ -231,7 +231,7 @@ const baseColorStep: FieldRecipe = value => {
   }
 }
 
-// A track entry with no display type still says its colour is the alignments
+// A track entry with no display type still says its color is the alignments
 // displays' when the field is one only they paint; `strand` reads the same on
 // the feature display's menu.
 function namesAlignmentsColor(value: unknown) {
@@ -269,7 +269,7 @@ const modificationsStep: FieldRecipe = value => {
       ? [
           {
             path: `${TRACK_MENU} → Color by... → Bisulfite / EM-seq → ${context.label}`,
-            note: 'Under the bisulfite colour field only.',
+            note: 'Under the bisulfite color field only.',
           },
         ]
       : []),
@@ -323,7 +323,7 @@ function alignmentsFacetStep(value: unknown): FieldStep | undefined {
     : undefined
 }
 
-// The synteny view's colour control is a palette button in the view header
+// The synteny view's color control is a palette button in the view header
 // (ColorBySelector), not a menu entry, and its radios come from COLOR_MODES,
 // imported. Note the neighbouring `colorByShortLabel` in the same package looks
 // like the same table and is not: it titles the floating legend, where these
@@ -335,9 +335,9 @@ const SYNTENY_COLOR_MODES: Record<string, string> = Object.fromEntries(
   ]),
 )
 
-// A synteny colour object (the views' `color`, the multi-way display's
+// A synteny color object (the views' `color`, the multi-way display's
 // `ribbonColor`) as the field the Color by radios carry, `''` for Default. A
-// colour paints through no radio, whether it is spelled as the string
+// color paints through no radio, whether it is spelled as the string
 // shorthand or as `value` on the object, so both map to nothing.
 function syntenyColorField(value: unknown) {
   const color = asRecord(value)
@@ -474,7 +474,7 @@ function colorStep(
   if (displayType === 'LinearWiggleDisplay') {
     const editor = `${TRACK_MENU} → ${ROW_ARRANGEMENT_EDITORS.LinearWiggleDisplay}`
     // Two swatches say a constant and a two-sided cut. A ramp, several cuts or
-    // a colour per source is more than they can express, and Edit plot is
+    // a color per source is more than they can express, and Edit plot is
     // where the whole object goes.
     return !scale ||
       (scale.field === 'score' &&
@@ -482,11 +482,11 @@ function colorStep(
         (asList(scale.domain) ?? []).length <= 1)
       ? {
           path: `${editor} → the plot color swatches`,
-          note: 'The two colours the plot is drawn in, above and below the baseline; both the same paints a flat plot.',
+          note: 'The two colors the plot is drawn in, above and below the baseline; both the same paints a flat plot.',
         }
       : {
           path: `${TRACK_MENU} → Advanced → Edit plot...`,
-          note: 'More than two swatches can say, so Edit plot writes the whole colour object.',
+          note: 'More than two swatches can say, so Edit plot writes the whole color object.',
         }
   }
   if (scale) {
@@ -747,8 +747,8 @@ const ROW_ARRANGEMENT_EDITORS: Record<string, string> = {
   LinearMafDisplay: 'Edit colors/arrangement...',
   LinearMultiRowFeatureDisplay: 'Edit colors/arrangement...',
   LinearMultiSampleVariantDisplay: 'Edit colors/arrangement...',
-  // On the quantitative display this is the only colour row there is: the
-  // plot's own two colours ride above the rows, and the channel-spec box is a
+  // On the quantitative display this is the only color row there is: the
+  // plot's own two colors ride above the rows, and the channel-spec box is a
   // button inside rather than a row of its own.
   LinearWiggleDisplay: 'Edit colors/arrangement...',
 }
@@ -826,7 +826,7 @@ const scalesStep: FieldRecipe = (value, { displayType }) => {
     Array.isArray(y.rules) && y.rules.length
       ? {
           path: `${axis} → Reference lines`,
-          note: `${ruleValues(y.rules)}, on the same scale as the plot. Each row takes a value, a label and a colour; removing every row removes every line.`,
+          note: `${ruleValues(y.rules)}, on the same scale as the plot. Each row takes a value, a label and a color; removing every row removes every line.`,
         }
       : undefined,
   ].filter(step => step !== undefined)
@@ -1297,7 +1297,7 @@ const graphFields: Record<string, FieldRecipe> = {
     const walks = value.map(layer => (layer as { walk: string }).walk)
     return {
       path: `${menu} → ${walks.join(', ')}`,
-      note: "Lifts each walk out of the drawing as a lane of its own and fades the rest. Color highlighted... in the Haplotypes menu sets what a lane's colour follows and its palette. The menu names each walk by the shortest part of its name that tells it apart.",
+      note: "Lifts each walk out of the drawing as a lane of its own and fades the rest. Color highlighted... in the Haplotypes menu sets what a lane's color follows and its palette. The menu names each walk by the shortest part of its name that tells it apart.",
     }
   },
   showBubbles: graphCheckbox('Show bubble halos'),
@@ -1476,7 +1476,7 @@ export const trackFields: Record<string, FieldRecipe> = {
           path: `${TRACK_MENU} → Show... → Show row labels (${value ? 'checked' : 'unchecked'})`,
           note: value
             ? undefined
-            : 'The labels only become worth turning off once the rows are too short to carry text, which is where they fall back to a bare column of colour swatches.',
+            : 'The labels only become worth turning off once the rows are too short to carry text, which is where they fall back to a bare column of color swatches.',
         }
       : undefined,
   showBranchLength: (value, { displayType }) =>
@@ -1567,7 +1567,7 @@ export const trackFields: Record<string, FieldRecipe> = {
     typeof value === 'boolean' && isAlignmentsOnlyField(displayType)
       ? {
           path: `${TRACK_MENU} → Color by... → Supplementary / split reads → Color supplementary alignments by consensus strand (${value ? 'checked' : 'unchecked'})`,
-          note: 'Greyed out until "Read connections → View as pairs / link supplementary alignments" is on. It is what classifies a long read\'s segments against the orientation the chains on screen agree on, so unchecking it drops the red/blue split-segment colouring and the legend rows that go with it.',
+          note: 'Greyed out until "Read connections → View as pairs / link supplementary alignments" is on. It is what classifies a long read\'s segments against the orientation the chains on screen agree on, so unchecking it drops the red/blue split-segment coloring and the legend rows that go with it.',
         }
       : undefined,
   arcColor: (value, { displayType }) => {
@@ -1693,7 +1693,7 @@ export const trackFields: Record<string, FieldRecipe> = {
     typeof value === 'number' && displayType === 'LinearWiggleDisplay'
       ? {
           path: `${TRACK_MENU} → Settings → origin`,
-          note: 'The value the bars grow from, which a threshold colour with no domain of its own also cuts at. No menu row writes it.',
+          note: 'The value the bars grow from, which a threshold color with no domain of its own also cuts at. No menu row writes it.',
         }
       : undefined,
   size: (value, { displayType }) => {

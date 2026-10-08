@@ -30,7 +30,7 @@ function centerMapper(block: RenderBlock) {
 
 /**
  * The base and amino-acid letters over the cells the marks paint, in each
- * cell's contrast colour. Painted only once a base is wide enough to read
+ * cell's contrast color. Painted only once a base is wide enough to read
  * (`showLetters`), and only over the visible part of each block.
  */
 export function drawSequenceLetters(

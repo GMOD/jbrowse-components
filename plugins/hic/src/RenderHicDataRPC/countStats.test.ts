@@ -74,7 +74,7 @@ describe('hic count statistics', () => {
   })
 
   // A typed-array sort puts NaN last, so scoring off the raw counts made a
-  // single non-finite value the max. NaN then becomes the colour domain's
+  // single non-finite value the max. NaN then becomes the color domain's
   // top, every bin's color maps to NaN and the legend disappears. Both non-finites are reachable from a real file: NaN is
   // the .hic dense-block "no value" marker, which only the dense parse path
   // filters, and a tiny normalization divisor yields Infinity.

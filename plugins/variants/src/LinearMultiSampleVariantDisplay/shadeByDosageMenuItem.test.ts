@@ -42,7 +42,7 @@ test('the dosage ramp sits under Additional coloring, below the cell fills', () 
   )
 })
 
-test('a constant cell colour ticks Solid color..., and Genotype clears it', () => {
+test('a constant cell color ticks Solid color..., and Genotype clears it', () => {
   const { display } = createTestEnvironment().createDisplay()
   const ticked = () =>
     colorByRows(display)

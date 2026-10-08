@@ -67,7 +67,7 @@ more files needs a written reason it is the reader's own to write.
 Fourteen of fifteen `TrackRow` blocks mounted the rendering component in a bare
 `contain: strict` box — the display's own stacking context — so the overlay
 portal found no host node, fell back to rendering inline, and buried every
-display's corner controls, colour key, loading scrim and error bar. All fourteen
+display's corner controls, color key, loading scrim and error bar. All fourteen
 were character-identical, so the drift half stayed green. The fifteenth hit the
 bug, worked around it, and renamed its block, which is what kept the other
 fourteen from reading as anomalous.

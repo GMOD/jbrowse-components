@@ -14,7 +14,7 @@
 // swapped out, which is what the two pages claim about the code: the GPU guide
 // says its plugin "builds the same plugin without the shader, so moving up
 // later adds files rather than changing them". So the lanes are named the same
-// way, in the same order, in the same colours, and rpcDataMap and renderState
+// way, in the same order, in the same colors, and rpcDataMap and renderState
 // are drawn the same. A reader arriving at the GPU page should recognise this
 // picture with buffers added, rather than meet a second diagram of one system.
 //

@@ -35,12 +35,12 @@ function arcCategory(
         p2Ref: 'chr1',
         p2Bp: 1000,
         p2Strand: -1,
-        // an FR pair's feet, which colouring never consults either
+        // an FR pair's feet, which coloring never consults either
         p1Dir: 1,
         p2Dir: -1,
         pairOrientationNum,
         tlen,
-        // carried for the concordant-arc filter, which colouring never consults
+        // carried for the concordant-arc filter, which coloring never consults
         flags: 0,
         stats,
       },

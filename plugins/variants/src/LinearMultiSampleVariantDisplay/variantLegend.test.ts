@@ -102,7 +102,7 @@ describe('getGenotypeEntries', () => {
 })
 
 describe('getVariantColorScales', () => {
-  it('only the genotype section under the default colour', () => {
+  it('only the genotype section under the default color', () => {
     const sections = getVariantColorScales({
       ...inputs(),
       color: undefined,
@@ -267,7 +267,7 @@ describe('getVariantColorScales', () => {
     expect(labels).toHaveLength(23)
   })
 
-  it('names two values sharing a colour on one row, drawn at het and hom dosage', () => {
+  it('names two values sharing a color on one row, drawn at het and hom dosage', () => {
     const [section] = getVariantColorScales({
       ...inputs({ paintedDomain: ['b', 'a', 'c'], hasNoCall: true }),
       color: {
@@ -312,7 +312,7 @@ describe('getVariantColorScales', () => {
       })[0],
     )!.map(i => [i.label, i.color && cssColorToABGR(i.color)])
 
-  it('keys the painted SV classes in class order, in their class colours', () => {
+  it('keys the painted SV classes in class order, in their class colors', () => {
     expect(
       svKey({ paintedDomain: ['OTHER', 'DEL'], shadeByDosage: false }),
     ).toEqual([

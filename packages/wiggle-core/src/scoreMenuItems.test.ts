@@ -94,7 +94,7 @@ describe('scoreRulesDrawn', () => {
       }))
       .create({ configuration: {} })
 
-  it('is false where the one scale is mapped to colour', () => {
+  it('is false where the one scale is mapped to color', () => {
     expect(ruled([]).scoreRulesDrawn).toBe(false)
   })
 

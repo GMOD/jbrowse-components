@@ -328,7 +328,7 @@ export default function stateModelFactory(configSchema: LDDisplayConfigSchema) {
       },
       /**
        * #getter
-       * The domain the statistic is coloured over: each pinned end holds, and
+       * The domain the statistic is colored over: each pinned end holds, and
        * an open one is the statistic's own 0 or 1.
        */
       get colorDomain(): [number, number] {

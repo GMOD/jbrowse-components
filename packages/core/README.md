@@ -261,7 +261,7 @@ a key off the colors of the keys met before it.
 ### CategoricalRef
 
 A field bound to a categorical scale: each distinct value takes one entry of the
-channel's `range` — a colour for `color`, a shape name for `shape`. Every value
+channel's `range` — a color for `color`, a shape name for `shape`. Every value
 derives its entry from itself (an integer takes the slot it names, anything else
 hashes in), so every region agrees on a value it shares with another at the cost
 of an occasional collision. A `domain` spends the range deliberately: the listed
@@ -340,16 +340,15 @@ Codes into a list of labels, one per row.
 
 ### COLOR_SCHEMES
 
-The named ramps a continuous colour scale's `scheme` takes, each one a stop
-table in `colorRamp.ts` that every ramp baker reads, so no display can name a
-scheme nothing bakes. `viridis`, `magma`, `inferno` and `cividis` are
-matplotlib's perceptual ramps, dark at the low end; `juicebox` fades from
-transparent to red, as Juicebox paints contacts; `fall` runs white through
-yellow and red to black, as HiGlass does; `reds` and `blues` are ColorBrewer's,
-from white; `redblue` and `purpleorange` diverge through white, ColorBrewer's
-RdBu and PuOr; `redgreyblue` diverges through a grey middle, which stays visible
-on a white page where a white middle would not, as the MAF display's identity
-ramp paints it.
+The named ramps a continuous color scale's `scheme` takes, each one a stop table
+in `colorRamp.ts` that every ramp baker reads, so no display can name a scheme
+nothing bakes. `viridis`, `magma`, `inferno` and `cividis` are matplotlib's
+perceptual ramps, dark at the low end; `juicebox` fades from transparent to red,
+as Juicebox paints contacts; `fall` runs white through yellow and red to black,
+as HiGlass does; `reds` and `blues` are ColorBrewer's, from white; `redblue` and
+`purpleorange` diverge through white, ColorBrewer's RdBu and PuOr; `redgreyblue`
+diverges through a grey middle, which stays visible on a white page where a
+white middle would not, as the MAF display's identity ramp paints it.
 
 ```js
 // type signature
@@ -372,8 +371,8 @@ readonly[
 
 ### colorAt
 
-The packed colour instance `i` of `channels` paints: `color[i]`, or `color`
-itself where the colour is a constant and so shipped as one number.
+The packed color instance `i` of `channels` paints: `color[i]`, or `color`
+itself where the color is a constant and so shipped as one number.
 
 ```js
 // type signature
@@ -384,7 +383,7 @@ itself where the colour is a constant and so shipped as one number.
 
 ### ColorEncoding
 
-How a mark's `color` channel resolves. A CSS colour or a `jexl:` expression
+How a mark's `color` channel resolves. A CSS color or a `jexl:` expression
 returning one paints per feature with no scale; the object forms bind a field to
 a scale, which a legend can describe, and share the config's member names.
 
@@ -392,7 +391,7 @@ a scale, which a legend can describe, and share the config's member names.
 
 ### colorEvaluator
 
-A CSS colour or `jexl:` colour expression as a per-feature packed ABGR — the
+A CSS color or `jexl:` color expression as a per-feature packed ABGR — the
 unscaled arm of ColorEncoding, on its own for a display that carries a plain
 `color` slot.
 
@@ -405,9 +404,9 @@ unscaled arm of ColorEncoding, on its own for a display that carries a plain
 
 ### colorRampStops
 
-The stops a continuous colour scale samples: `range`'s CSS colours where it
-lists any, else the named `scheme`, viridis while that is unset, turned round
-under `reverse`.
+The stops a continuous color scale samples: `range`'s CSS colors where it lists
+any, else the named `scheme`, viridis while that is unset, turned round under
+`reverse`.
 
 ```js
 // type signature
@@ -418,8 +417,8 @@ under `reverse`.
 
 ### ColorScaleTable
 
-The scale a colour channel was resolved through, as the legend reads it — the
-same table the colours in the payload came from, so the key cannot disagree with
+The scale a color channel was resolved through, as the legend reads it — the
+same table the colors in the payload came from, so the key cannot disagree with
 the painting.
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/markEncodingTypes.ts)
@@ -471,12 +470,12 @@ a write rather than dropped; one that is not throws here.
 
 ### continuousColorScale
 
-A continuous colour scale over `extent`, the values it met: the domain its
+A continuous color scale over `extent`, the values it met: the domain its
 declared ends and the extent make, the straight table its stops bake to and
-where its middle stop sits, and the packed colour a value paints through them:
-an infinity the end on its side, as a threshold places it, and NaN, text that is
-no number, the misconfiguration grey. The encoder and every display painting a
-ramp itself read it, so a value takes one colour whoever paints it.
+where its middle stop sits, and the packed color a value paints through them: an
+infinity the end on its side, as a threshold places it, and NaN, text that is no
+number, the misconfiguration grey. The encoder and every display painting a ramp
+itself read it, so a value takes one color whoever paints it.
 
 ```js
 // type signature
@@ -489,8 +488,8 @@ ramp itself read it, so a value takes one colour whoever paints it.
 
 A numeric field read through a linear or log scale into a ramp. Each end of the
 domain is pinned by `domainMin` or `domainMax`, or is the region's own extreme
-where unset, so pinning both keeps colours consistent across a whole view. The
-ramp is `range`'s CSS colours, evenly spaced, where it lists any, else the named
+where unset, so pinning both keeps colors consistent across a whole view. The
+ramp is `range`'s CSS colors, evenly spaced, where it lists any, else the named
 `scheme`; `reverse` turns it round.
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/markEncodingTypes.ts)
@@ -519,9 +518,9 @@ siblings do, juicebox, fall, reds and blues do not.
 
 ### dealKeyColors
 
-Deals `keys` their colours in `field.compare` order, so the colours a set of
-keys first seen together takes do not depend on the order they arrive in. A
-no-op for a field that deals nothing.
+Deals `keys` their colors in `field.compare` order, so the colors a set of keys
+first seen together takes do not depend on the order they arrive in. A no-op for
+a field that deals nothing.
 
 ```js
 // type signature
@@ -1073,7 +1072,7 @@ for the target, so it names no side.
 
 ### keyNames
 
-What a key names each of `keys`, from a colour object's `labels`: one each in
+What a key names each of `keys`, from a color object's `labels`: one each in
 order, an empty or missing entry leaving that key its own name. Every key that
 takes `labels` reads them through this, so a config means one thing by them
 everywhere.
@@ -1156,7 +1155,7 @@ name, the name of each entry.
 ### ListedRowSource
 
 One row an adapter lists: `name` is a value of the listing's field, and `label`
-and `color` are what the adapter names and colours that row with.
+and `color` are what the adapter names and colors that row with.
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/data_adapters/BaseAdapter/rowSources.ts)
 
@@ -1239,7 +1238,7 @@ ends answer once.
 
 ### MISCONFIGURED_ABGR
 
-The misconfiguration grey packed as the encoder paints it: a `jexl:` colour that
+The misconfiguration grey packed as the encoder paints it: a `jexl:` color that
 answered no string, a ramp value that is no number, text a threshold cannot
 read.
 
@@ -1440,13 +1439,13 @@ What the open ends of a scale follow over `values[0, count)`: at a `quantile` of
 values on its side of 0, so one spike takes neither the axis nor the ramp, and a
 sparse tail of the other sign keeps its own end. An axis that starts at 0 adds
 it itself. Under 0.5 reads as 0.5, where the ends meet rather than cross.
-`scales.y.domainQuantile` and a colour's `domainQuantile` both name it.
+`scales.y.domainQuantile` and a color's `domainQuantile` both name it.
 `[Infinity, -Infinity]` where nothing is finite.
 
 Nearest rank keeps ties: where one value holds the rank, as on a segmented
-copy-number track, a ramp clipped below 1 paints nearly every value one colour.
-A value axis fences instead (fenceOutliers); a ramp takes the same fence once a
-colour default below 1 meets tied data.
+copy-number track, a ramp clipped below 1 paints nearly every value one color. A
+value axis fences instead (fenceOutliers); a ramp takes the same fence once a
+color default below 1 meets tied data.
 
 ```js
 // type signature
@@ -1470,13 +1469,13 @@ of them sit at or below, so a handful of values clips at their maximum. Permutes
 
 ### RampDeclaration
 
-A continuous colour scale's ramp as a config declares it.
+A continuous color scale's ramp as a config declares it.
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/colorRamp.ts)
 
 ### rampDomain
 
-The domain a continuous colour scale spans: each end `min` or `max` pins, else
+The domain a continuous color scale spans: each end `min` or `max` pins, else
 the extent's, ascending, since a span has no direction and `reverse` is the
 ramp's. An open end stops at a pinned one rather than crossing it, and an extent
 holding no value (`[Infinity, -Infinity]`) spans [0, 1].
@@ -1653,7 +1652,7 @@ files, a MAF its species.
 ### RowSourceListing
 
 Every row an adapter has, in its own order, whatever the loaded regions hold, so
-a row display gives a row with nothing in view its place, label and colour.
+a row display gives a row with nothing in view its place, label and color.
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/data_adapters/BaseAdapter/rowSources.ts)
 
@@ -1745,7 +1744,7 @@ met there would floor the domain at 1 and fold a domain below 1 flat.
 
 ### ScaleTable
 
-The table behind a channel a key is drawn from: a colour's, whose `kind` names
+The table behind a channel a key is drawn from: a color's, whose `kind` names
 the scale it resolved through, or a shape's. A `size` channel's (SizeScaleTable)
 draws no key and stands outside.
 
@@ -1885,7 +1884,7 @@ binds the field to a scale.
 A numeric field read through a linear or log scale into a width in CSS px:
 `range` is the px at each end of the domain (1 to 6 unset), and each end of the
 domain is pinned by `domainMin` or `domainMax` or follows the loaded regions'
-extremes where unset, as a colour ramp's does. A feature holding no number takes
+extremes where unset, as a color ramp's does. A feature holding no number takes
 the range's first px.
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/markEncodingTypes.ts)
@@ -2090,7 +2089,7 @@ What a threshold scale's bins are called in a key, one label per palette entry:
 
 ### thresholdPalette
 
-The colour of each interval, in order: the declared palette, and the default
+The color of each interval, in order: the declared palette, and the default
 categorical palette where it runs out.
 
 ```js
@@ -2103,7 +2102,7 @@ categorical palette where it runs out.
 ### ThresholdRef
 
 A numeric field cut into intervals: `domain` is the ascending cut points and
-`range` holds one colour more, so a value paints the entry for the number of cut
+`range` holds one color more, so a value paints the entry for the number of cut
 points it is at or past. A value that is not a number belongs to no interval.
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/markEncodingTypes.ts)

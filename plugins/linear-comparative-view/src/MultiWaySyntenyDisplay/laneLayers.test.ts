@@ -338,9 +338,9 @@ describe('a template layer', () => {
     expect(reads(display).map(read => read.lane)).toEqual(['volvox'])
   })
 
-  // The worker reads no colour a lane layer's mark declares, so the bars take
+  // The worker reads no color a lane layer's mark declares, so the bars take
   // it from the display's stamp, and an edit repaints what is held.
-  test("a layer's bars paint its mark's colour, and a recolour refetches nothing", async () => {
+  test("a layer's bars paint its mark's color, and a recolor refetches nothing", async () => {
     const scores = [1, 2, 3].map(
       i =>
         new SimpleFeature({
@@ -382,7 +382,7 @@ describe('a template layer', () => {
     expect(new Set(barColors())).toEqual(new Set([cssColorToABGR('green')]))
   })
 
-  test("a layer's ramp or threshold colour reaches its bars, one scale across the lanes", async () => {
+  test("a layer's ramp or threshold color reaches its bars, one scale across the lanes", async () => {
     const scores = [1, 2, 3].map(
       i =>
         new SimpleFeature({
@@ -460,9 +460,9 @@ describe('a template layer', () => {
     }
   })
 
-  // A colour on a new field refetches every lane; until it lands, each lane
+  // A color on a new field refetches every lane; until it lands, each lane
   // paints the values it holds through a ramp over them.
-  test('a lane holding the numbers of an earlier colour paints them while the refetch is on the way', async () => {
+  test('a lane holding the numbers of an earlier color paints them while the refetch is on the way', async () => {
     const scores = [1, 2, 3].map(
       i =>
         new SimpleFeature({

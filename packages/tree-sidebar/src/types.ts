@@ -25,10 +25,10 @@ export interface RowSource {
   name: string
   /** Displayed instead of `name` when the adapter config supplied one. */
   label?: string
-  /** The row's own colour, an attribute the file gave it. */
+  /** The row's own color, an attribute the file gave it. */
   color?: string
   /**
-   * The row's resolved colour (`resolvedRowColors`), which the label bar
+   * The row's resolved color (`resolvedRowColors`), which the label bar
    * draws and the arrangement dialog's swatch edits.
    */
   rowColor?: string

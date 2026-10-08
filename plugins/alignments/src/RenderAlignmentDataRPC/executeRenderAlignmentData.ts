@@ -50,7 +50,7 @@ interface GroupContext {
   showCoverage: boolean
   // Which modification coverage the band stacks: modBAM calls over a read-base
   // pileup, or bisulfite's C->T-derived methylation level. Undefined outside the
-  // modification colour modes.
+  // modification color modes.
   modCoverage: ModCoverageKind | undefined
   // The region's reference bases, for the junctions' splice motifs. Fetched
   // once for the whole fetch and only when some group carries a skip gap.

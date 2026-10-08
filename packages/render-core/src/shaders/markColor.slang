@@ -1,21 +1,21 @@
-// How a mark shape's colour channel resolves: a packed ABGR the worker already
-// decided, or a raw value the frame's colour scale turns into one here.
+// How a mark shape's color channel resolves: a packed ABGR the worker already
+// decided, or a raw value the frame's color scale turns into one here.
 //
 // The two arms are the two places a scale can resolve, and the choice is the
 // channel's cardinality rather than the shape's (ADR-094). A categorical or
-// constant colour is data and travels packed with the instance; a quantitative
+// constant color is data and travels packed with the instance; a quantitative
 // one is a value through a scale that moves with the loaded regions or with an
 // edit, so it rides uniforms — a domain pair and a 256-entry LUT for a ramp,
-// up to MAX_COLOR_CUTS cut points and a colour per interval for a threshold —
+// up to MAX_COLOR_CUTS cut points and a color per interval for a threshold —
 // and a pan that widens the domain or an edit that moves a cut uploads no
 // instance bytes, the property `valueScale` already gives y.
 //
-// The value arrives in the instance's colour slot, reinterpreted: one 4-byte
-// lane carries either the packed colour or the value's float32 bits, and
+// The value arrives in the instance's color slot, reinterpreted: one 4-byte
+// lane carries either the packed color or the value's float32 bits, and
 // `rampMode` says which. The packer's side of that is `colorBits`
 // (marks/markRamp.ts), which views the encoder's `Float32Array` as the
-// `Uint32Array` the attribute is declared as, so a quantitative colour adds no
-// lane to an instance and costs no bytes; a colour over the plotted value
+// `Uint32Array` the attribute is declared as, so a quantitative color adds no
+// lane to an instance and costs no bytes; a color over the plotted value
 // itself is the `y` lane's bits, so it costs no lane in the payload either.
 //
 // `normalizeScore` is `scoreScale`'s, so a ramp's domain is read exactly as the
@@ -72,8 +72,8 @@ public int thresholdBand(float value, int cutCount, float4 cutsLo, float4 cutsHi
 
 // The interval a fragment at `yPx` is in, given each cut's y in the band:
 // screen y grows downward, so a value at or past a cut is at or above that
-// cut's y. A line reads its colour this way, so a rise across a cut changes
-// colour at the cut.
+// cut's y. A line reads its color this way, so a rise across a cut changes
+// color at the cut.
 public int thresholdBandAtYPx(float yPx, int cutCount, float4 cutYsLo, float4 cutYsHi) {
   int band = 0;
   for (int i = 0; i < cutCount; i++) {

@@ -123,7 +123,7 @@ export function ScoreScaleMixin() {
       /**
        * #getter
        * What `scales.y`'s ends say together that the axis cannot draw as
-       * written, as corner-notice lines, by the rule a colour ramp's ends
+       * written, as corner-notice lines, by the rule a color ramp's ends
        * answer to. The mark display reports them through its rule list.
        */
       get valueScaleNotices(): string[] {
@@ -172,8 +172,8 @@ export function ScoreScaleMixin() {
        * #getter
        * Whether this display draws `scales.y.rules`, which is whether the
        * Y axis panel offers Include 0 and the reference lines: a scale it places y through
-       * rules a band for them to cross, which a density plot's colour-mapped
-       * rows and a colour ramp do not.
+       * rules a band for them to cross, which a density plot's color-mapped
+       * rows and a color ramp do not.
        */
       get scoreRulesDrawn(): boolean {
         return self.valueScales.some(rulesABand)

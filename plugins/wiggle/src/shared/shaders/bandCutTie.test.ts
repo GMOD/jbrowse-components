@@ -11,7 +11,7 @@ import {
 
 import type { ScaleTypeCode } from '@jbrowse/render-core/scoreScale'
 
-// A line plot colours by the band its centre line is in, and `bandColorAt`
+// A line plot colors by the band its centre line is in, and `bandColorAt`
 // decides that with `centerLineYPx <= cutY`. So a bin scoring EXACTLY a
 // threshold's cut sits on the boundary, and which side it lands on is an exact
 // float equality: the score's y and the cut's y are two evaluations of

@@ -40,7 +40,7 @@ function nearestSnpFrequencyOption(fraction: number) {
 }
 
 // Two rows for the band: its axis, in the shared drawer widget, and its
-// allele-fraction floor, which is about what the bars are coloured with
+// allele-fraction floor, which is about what the bars are colored with
 // rather than the scale. The on/off toggle lives in the "Show..." menu (see
 // reads.ts).
 //

@@ -50,7 +50,7 @@ const suite: TestSuite = {
         await plotItem.click()
         await delay(500)
 
-        // the colour is one object written as JSON; a string is the constant
+        // the color is one object written as JSON; a string is the constant
         const plotField = await findByTestId(page, 'plot-json', 10000)
         await plotField.click({ count: 3 })
         await page.keyboard.down('Control')

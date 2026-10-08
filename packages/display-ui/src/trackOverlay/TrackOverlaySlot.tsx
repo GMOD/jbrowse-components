@@ -12,7 +12,7 @@ import { TrackOverlayContext } from './TrackOverlayContext.ts'
  * A display's React tree is sealed in a `contain: strict` sandbox — that is what
  * isolates its paint, and dropping it is measured and rejected (ADR-058). A
  * stacking context comes with the isolation, so floating chrome a display draws
- * (a colour key, hi-c's overlay panel, maf's row labels) cannot out-z-index
+ * (a color key, hi-c's overlay panel, maf's row labels) cannot out-z-index
  * anything painted over the track stack from outside. The escape is a node
  * mounted *beside* the sandbox rather than inside it, published through
  * `TrackOverlayContext`; this component is that node, its context and the paint

@@ -115,7 +115,7 @@ test('a score most features lack is offered but draws no default plot', () => {
   expect(defaultPlot(fields)?.marks).toBeUndefined()
 })
 
-test("a GFF3 record's source column is a colour field, not a facet", () => {
+test("a GFF3 record's source column is a color field, not a facet", () => {
   const fields = scanPlotFields(
     features([
       { score: 5, source: 'est' },
@@ -147,7 +147,7 @@ test('a structured field offers its members by the path a channel reads', () => 
   expect(fields.categorical).toEqual(['INFO.IMPRECISE', 'INFO.SVTYPE'])
 })
 
-test('a text field with more values than a colour key names is no colour choice', () => {
+test('a text field with more values than a color key names is no color choice', () => {
   const fields = scanPlotFields(
     features(
       Array.from({ length: 30 }, (_, i) => ({

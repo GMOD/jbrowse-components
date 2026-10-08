@@ -91,7 +91,7 @@ test('a ready display places both ends of its chords', async () => {
   expect(display.sliceFor(undefined, 'ctgB')?.region.refName).toBe('ctgB')
 }, 20000)
 
-test('a constant colour keys as one row, a field as the values it paints', async () => {
+test('a constant color keys as one row, a field as the values it paints', async () => {
   const { display } = await setup(undefined, [
     {
       uniqueId: 'sv2',

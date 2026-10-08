@@ -14,7 +14,7 @@ const gcWiggleConfigSchema = ConfigurationSchema(
     ...summaryScoreModeConfigSchemaFields({
       defaultMode: 'mean',
       description:
-        "a GC window has one score and no min/max to draw, so 'mean'; 'whiskers' would force one colour on every bin and draw a negative skew as positive",
+        "a GC window has one score and no min/max to draw, so 'mean'; 'whiskers' would force one color on every bin and draw a negative skew as positive",
     }),
   },
   { baseConfiguration: linearWiggleDisplayConfigSchema },

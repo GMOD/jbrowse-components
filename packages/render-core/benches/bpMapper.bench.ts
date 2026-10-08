@@ -9,7 +9,7 @@
 //
 // A paint walks 8 blocks of 62,500 spans and makes 1M mapper calls. `span` is a
 // span painter's loop over `makeBpMapper`: both edges, the 1px floor,
-// `spanLeft`, a fillStyle per colour run and a fillRect on a counting context.
+// `spanLeft`, a fillStyle per color run and a fillRect on a counting context.
 // `cell` fills both edges' base cells through `makeCellLeftMapper`.
 // `alternating` reverses every other block, on every call warmup included.
 //

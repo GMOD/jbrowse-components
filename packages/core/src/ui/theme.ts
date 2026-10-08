@@ -43,9 +43,9 @@ type FramesOptions = FrameTuple<PaletteColorOptions>
 declare module '@mui/material/styles' {
   interface Palette extends StringColors {
     /**
-     * The primary colour where it marks something on the page's own ground,
+     * The primary color where it marks something on the page's own ground,
      * such as a checked box or a selected row. `primary.main` in light mode,
-     * and the secondary text colour in dark mode, where a midnight primary
+     * and the secondary text color in dark mode, where a midnight primary
      * vanishes
      */
     accent: string
@@ -216,7 +216,7 @@ const baseThemeOptions: ThemeOptions = {
   components: {
     MuiAppBar: {
       // JBrowse's header keeps its brand in dark mode; MUI's default is to
-      // flatten it to the paper colour. A property of the app rather than of
+      // flatten it to the paper color. A property of the app rather than of
       // one palette — it used to sit on `darkStock` alone, so the theme a
       // reader reaches by picking Dark over the default palette lost the
       // header the old dark theme had. MUI reads this only in dark mode.

@@ -822,7 +822,7 @@ function noticesOf(marks: unknown[], display: Record<string, unknown> = {}) {
 }
 
 // The encoder reads a missing y as 0 for every feature, so a bar with only a
-// colour was an empty track with no message, and then a track that would not
+// color was an empty track with no message, and then a track that would not
 // load. It loads, draws nothing for that mark, and says so.
 test('a bar or point naming no y loads, draws nothing and says so', () => {
   expect(
@@ -880,7 +880,7 @@ test('a key an encoding channel does not declare is named as the config loads', 
 })
 
 // Each of these loaded and painted something else: a scheme name inside a
-// list of colour stops painted the invalid-colour sentinel, and a shape range
+// list of color stops painted the invalid-color sentinel, and a shape range
 // or value naming no shape drew a circle under a key saying otherwise, or made
 // the worker throw for every mark.
 test.each([
@@ -897,7 +897,7 @@ test.each([
   [undefined, { field: 'svtype', range: ['star', 'triangle-down'] }, '"star"'],
   [undefined, { value: 'triangl' }, '"triangl"'],
 ])(
-  'a colour %j or shape %j naming nothing the display paints fails the load',
+  'a color %j or shape %j naming nothing the display paints fails the load',
   (color, shape, message) => {
     expect(() =>
       createTestEnvironment([
@@ -916,7 +916,7 @@ test.each([
 
 // Every mark's ramp resolves on the display over the extent the regions
 // union, a text's as a span's, so an open end says nothing.
-test('an unpinned colour ramp says nothing, on a text or a span', () => {
+test('an unpinned color ramp says nothing, on a text or a span', () => {
   const ramp = { field: 'score', scale: 'linear', range: ['white', 'red'] }
   expect(
     noticesOf([{ mark: 'text', encoding: { text: 'name', color: ramp } }]),
@@ -1005,7 +1005,7 @@ test('a transform step naming no type is refused where the config is read', () =
 // A ramp spelled with the pair `domain` used to be how its ends were pinned,
 // so a config written that way loads, paints over each region's extremes, and
 // says the domain is not what a ramp reads.
-test('a colour ramp pins the end it names, and a domain beside it is named as unread', () => {
+test('a color ramp pins the end it names, and a domain beside it is named as unread', () => {
   const { display } = createTestEnvironment([
     {
       mark: 'bar',
@@ -1025,7 +1025,7 @@ test('a colour ramp pins the end it names, and a domain beside it is named as un
       /^mark 0 encoding.color.domain: a linear or log scale reads no domain/,
     ),
   ])
-  // a colour over the plotted field is the display's own, not a fetch input
+  // a color over the plotted field is the display's own, not a fetch input
   expect(display.encodings[0]!.color).toBe(DEFAULT_MARK_COLOR)
   expect(display.markColors[0]).toMatchObject({
     kind: 'numbers',
@@ -1561,7 +1561,7 @@ test('the legend reads the scale table the worker resolved', () => {
   expect(display.showLegend).toBe(true)
 })
 
-test("the colour's title heads its key, and a write retitles it without a fetch", () => {
+test("the color's title heads its key, and a write retitles it without a fetch", () => {
   const { createDisplay } = createTestEnvironment([
     {
       mark: 'point',
@@ -1590,7 +1590,7 @@ test("the colour's title heads its key, and a write retitles it without a fetch"
 
 // Two marks over one field through one declaration paint a value alike, so
 // two keys listing the same rows said it twice.
-test('two marks colouring by one field through one range share a key', () => {
+test('two marks coloring by one field through one range share a key', () => {
   const strandTable = (
     entries: { value: string; color: number }[],
     range?: string[],
@@ -1659,9 +1659,9 @@ test('two marks colouring by one field through one range share a key', () => {
   ])
 })
 
-// Colour and shape over one field listed the same values twice under one
+// Color and shape over one field listed the same values twice under one
 // title, and on a short display the second key ran past the bottom edge.
-test('a shape scale over the field the colour classifies folds into one key', () => {
+test('a shape scale over the field the color classifies folds into one key', () => {
   const { createDisplay } = createTestEnvironment([
     {
       mark: 'point',
@@ -1727,7 +1727,7 @@ test('a shape scale over the field the colour classifies folds into one key', ()
   ])
 })
 
-test("a shape scale reaches the worker beside the colour, and its key draws the shapes in the mark's colour", () => {
+test("a shape scale reaches the worker beside the color, and its key draws the shapes in the mark's color", () => {
   const { createDisplay } = createTestEnvironment([
     {
       mark: 'point',
@@ -3157,9 +3157,9 @@ test('a mark every loaded feature skipped is a notice, as a mistyped field is', 
   expect(display.notices).toEqual([])
 })
 
-// The worker reads the colour's field alone, so the names reach the key and
+// The worker reads the color's field alone, so the names reach the key and
 // the hover from the config, and renaming a row refetches nothing.
-test('a colour s labels name its key rows and its hover without crossing the wire', () => {
+test('a color s labels name its key rows and its hover without crossing the wire', () => {
   const { display } = createTestEnvironment([
     {
       mark: 'point',
@@ -3203,7 +3203,7 @@ test('a colour s labels name its key rows and its hover without crossing the wir
   ])
 })
 
-test('a colour on score paints a ramp, as the feature display s does', () => {
+test('a color on score paints a ramp, as the feature display s does', () => {
   const { display } = createTestEnvironment([
     { mark: 'point', encoding: { y: 'score', color: { field: 'score' } } },
     { mark: 'point', encoding: { y: 'score', color: { field: 'svtype' } } },
@@ -3217,7 +3217,7 @@ test('a colour on score paints a ramp, as the feature display s does', () => {
   })
 })
 
-test('a shape key draws its glyphs in the default blue where no colour is written', () => {
+test('a shape key draws its glyphs in the default blue where no color is written', () => {
   const { display } = createTestEnvironment([
     { mark: 'point', encoding: { y: 'score', shape: { field: 'svtype' } } },
     {
@@ -3250,7 +3250,7 @@ test('a shape key draws its glyphs in the default blue where no colour is writte
   ).toEqual(['#0068d1', 'red'])
 })
 
-test('a mark s size and colour default by its type, and a text mark knows whether its colour is written', () => {
+test('a mark s size and color default by its type, and a text mark knows whether its color is written', () => {
   const { display } = createTestEnvironment([
     { mark: 'point' },
     { mark: 'rule', encoding: { y: 'score' } },

@@ -8,7 +8,7 @@ import { WebGPUHal } from './webgpuHal.ts'
 // slots than it holds. The draws encoded before a growth bind the outgrown
 // buffer, so what is under test is that it still receives the slots those
 // draws read before the submit, and is released after it. The link pass
-// samples a colour ramp, so its bind group is a textured one, which a new ring
+// samples a color ramp, so its bind group is a textured one, which a new ring
 // rebuilds on the pass's next draw.
 
 const UNIFORM = 64

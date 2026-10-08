@@ -15,7 +15,7 @@ const LD_DOMAIN = ['0.2', '0.4', '0.6', '0.8']
 const LD_PALETTE = ['#357ebd', '#46b8da', '#5cb85c', '#eea236', '#d43f3a']
 
 /**
- * A partner's colour: its r² to the index SNP in LocusZoom's bins, the key
+ * A partner's color: its r² to the index SNP in LocusZoom's bins, the key
  * listing them highest first as LocusZoom does.
  */
 export const LD_COLOR = {
@@ -31,7 +31,7 @@ export const LD_COLOR = {
 /** A Manhattan plot's one mark: a point per feature at its `score`. */
 export const MANHATTAN_MARK = { mark: 'point', encoding: { y: 'score' } }
 
-/** The index SNP's colour, apart from every r² bin. */
+/** The index SNP's color, apart from every r² bin. */
 export const LD_INDEX_COLOR = '#c951c9'
 
 const LD_PARTNERS_FILTER = {
@@ -53,7 +53,7 @@ const LD_INDEX_SHAPE = {
 }
 
 /**
- * Every point but the index SNP, coloured by its r² to it. A SNP the join
+ * Every point but the index SNP, colored by its r² to it. A SNP the join
  * left out has no `ld_role`, so the filter keeps it, grey as "No LD data".
  */
 const LD_PARTNERS_MARK = {
@@ -63,7 +63,7 @@ const LD_PARTNERS_MARK = {
 }
 
 /**
- * The index SNP alone, drawn over the rest as a diamond in its own colour,
+ * The index SNP alone, drawn over the rest as a diamond in its own color,
  * with its own key row.
  */
 const LD_INDEX_MARK = {
@@ -83,7 +83,7 @@ const LD_FIELDS = new Set<unknown>([LD_FIELD, LD_ROLE_FIELD])
 
 /**
  * Whether a mark's encoding names a field the LD join writes, which is what
- * makes a fetch join the `ldAdapter`: a `y`, a `text`, or the field a colour,
+ * makes a fetch join the `ldAdapter`: a `y`, a `text`, or the field a color,
  * shape or size scale reads.
  */
 export function readsLd({ encoding }: MarkConfig) {
@@ -125,7 +125,7 @@ const LD_FIELD_IN_EXPR = new RegExp(
  * Whether anything in a plot's worker request names a field the LD join
  * writes: a field reference that is one, or a `jexl:` expression holding one
  * as a word, in any encoding, step, filter or facet. Wider than `readsLd`,
- * which answers for the marks LD colouring writes and strips.
+ * which answers for the marks LD coloring writes and strips.
  */
 export function namesLd(request: unknown): boolean {
   return typeof request === 'string'
@@ -137,7 +137,7 @@ export function namesLd(request: unknown): boolean {
       : false
 }
 
-/** Whether LD colouring pairs this mark: a point mark placing each SNP. */
+/** Whether LD coloring pairs this mark: a point mark placing each SNP. */
 export function colorsByLd(
   mark: MarkConfig,
   sharedSteps: readonly MarkTransformStepConfig[],
@@ -170,9 +170,9 @@ function indexTwinOf(mark: MarkSnapshot): MarkSnapshot {
 }
 
 /**
- * The plot coloured by r² to the index SNP, or undefined where no mark
+ * The plot colored by r² to the index SNP, or undefined where no mark
  * `colorsByLd`. Each such mark becomes its partners — every point but the
- * index, coloured by r², its own constant or callback colour kept beside the
+ * index, colored by r², its own constant or callback color kept beside the
  * scale for the way back — and, after the last of them, its index twin: the
  * index alone as a pink diamond, drawn over every point. Every other member
  * and every other mark stays.
@@ -227,10 +227,10 @@ function withoutLdScales(mark: MarkSnapshot): MarkSnapshot {
 }
 
 /**
- * The plot with LD colouring taken off, or undefined where nothing is left,
+ * The plot with LD coloring taken off, or undefined where nothing is left,
  * which is the default plot. The index twins go, as does a mark plotting an LD
  * field as its `y` or `text`; every other mark loses the partner filter and
- * any colour, shape or size scale over an LD field, a colour keeping the value
+ * any color, shape or size scale over an LD field, a color keeping the value
  * it held beside the r² scale. No mark is left reading LD.
  */
 export function withoutLd(

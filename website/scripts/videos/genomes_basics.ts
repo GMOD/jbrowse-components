@@ -32,7 +32,7 @@ const WORDMARK = '[aria-label="JBrowse"]'
 export const genomesBasicsVideos: VideoSpec[] = [
   // The REDRAW, which genomes_basics.md asserts and pictures nowhere: "the
   // track redraws with the records that pass all of them", and then "the
-  // loss-of-function filter leaves a track drawn in one colour". The figure
+  // loss-of-function filter leaves a track drawn in one color". The figure
   // beside it (gnomad_filter_menu) stops at the dialog with the row filled
   // in, and the three frames that used to show the lane before and after
   // were deleted on review as too much page for a difference living in a sixth
@@ -108,7 +108,7 @@ export const genomesBasicsVideos: VideoSpec[] = [
       // counts. Off it before the redraw is on camera.
       { type: 'hover', selector: WORDMARK, hold: 0 },
       { type: 'waitForAppSettled', timeout: 120000 },
-      // What the page asserts: the same lane, in one colour, with everything
+      // What the page asserts: the same lane, in one color, with everything
       // that is not predicted loss-of-function gone — and legible per record,
       // since the density that was suppressing the labels went with it.
       //

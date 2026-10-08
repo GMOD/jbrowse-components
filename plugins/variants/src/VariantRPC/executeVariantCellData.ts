@@ -92,7 +92,7 @@ interface CellDataBase {
   // means one is in the fetched cell data rather than that the data could
   // produce one. Merged across every fetched region, which at genomic
   // positions is wider than the viewport. A secondary alt counts whether or not
-  // a `color` hue repaints it; the key lists it under the genotype colours
+  // a `color` hue repaints it; the key lists it under the genotype colors
   // alone.
   hasSecondaryAlt: boolean
   hasAltWithoutPhaseSet: boolean

@@ -50,7 +50,7 @@ public struct Uniforms {
   public float featHeight;
   public float featSpacing;
 
-  // The coverage band's geometry, depth axis and colours are not here: it is
+  // The coverage band's geometry, depth axis and colors are not here: it is
   // drawn off render-core's `CoverageBandUniforms`, which the MAF display
   // writes too, and the read-connection band off the link and point marks'.
   // This struct carries only what the pileup and overlay passes read.
@@ -70,7 +70,7 @@ public struct Uniforms {
   // Color palette — each uint is a packed ABGR value (1 byte per channel,
   // alpha in the high byte). Unpack with `unpackRGBA(u.colorX).xyz`.
   //
-  // A NAMED SLOT IS A MARK'S COLOUR; a read fill's comes from
+  // A NAMED SLOT IS A MARK'S COLOR; a read fill's comes from
   // `readCategoryColor` below. That split is the whole point of the RC_*
   // refactor, and until this block was trimmed it was only half true: the
   // sixteen slots the vanished `cat == RC_X` chain used to read (colorFwd,
@@ -78,7 +78,7 @@ public struct Uniforms {
   // per region per track per frame, with nothing left to read them. A slot no
   // shader names cannot be caught by a parity test either — `paletteUboParity`
   // walks this table, so it only ever proved the dead slots held the right dead
-  // colour. Add a slot here only for a mark that paints it by name.
+  // color. Add a slot here only for a mark that paints it by name.
   public uint colorBaseA;
   public uint colorBaseC;
   public uint colorBaseG;
@@ -101,7 +101,7 @@ public struct Uniforms {
   public uint colorOverlapTint;
   // The chain-layout overlap span (overlap.slang). Same argument as the flat
   // connector above and the opposite conclusion about WHICH neutral: two
-  // segments of one molecule cover that span, so no read colour is right there,
+  // segments of one molecule cover that span, so no read color is right there,
   // but unlike a hairline over the track background this is an opaque fill
   // between two read fills, so it takes its own theme slot (`readOverlap`)
   // rather than the foreground.
@@ -212,8 +212,8 @@ public float pileupRowCenterPx(float row, Uniforms u) {
   return pileupRowTopPx(row, u) + u.featHeight * 0.5;
 }
 
-// Which palette slot a linked-read connector's colour type reads: a clamp,
-// not a wrap, so an out-of-range slot resolves to the last colour on every
+// Which palette slot a linked-read connector's color type reads: a clamp,
+// not a wrap, so an out-of-range slot resolves to the last color on every
 // backend rather than to a different real one.
 public uint linkedReadColorSlot(uint idx) {
   return min(idx, LINKED_READ_COLOR_SLOTS - 1u);

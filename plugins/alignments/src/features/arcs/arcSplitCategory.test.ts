@@ -102,14 +102,14 @@ describe('split junction class', () => {
     )
   })
 
-  test('colouring by insert size leaves a junction uncoloured', () => {
+  test('coloring by insert size leaves a junction uncolored', () => {
     expect(
       colorType(junction([100, 200, 1], [500, 600, 1]), 'insertSize'),
     ).toBe(COLOR_DEFAULT)
   })
 })
 
-describe('split class colour', () => {
+describe('split class color', () => {
   const declared = makeTestPalette({
     readCategoryColors: {
       pairRL: [0.1, 0.2, 0.3],
@@ -120,7 +120,7 @@ describe('split class colour', () => {
     },
   })
 
-  test('a class takes its pair twin colour, a declared one included', () => {
+  test('a class takes its pair twin color, a declared one included', () => {
     expect(arcCategoryColor(declared, 'splitBack')).toEqual(
       declared.readCategoryColors.pairRL,
     )
@@ -129,7 +129,7 @@ describe('split class colour', () => {
     )
   })
 
-  test('a deletion-type split keeps the split-read colour', () => {
+  test('a deletion-type split keeps the split-read color', () => {
     expect(arcCategoryColor(declared, 'splitForward')).toEqual(
       declared.readCategoryColors.splitDeletion,
     )

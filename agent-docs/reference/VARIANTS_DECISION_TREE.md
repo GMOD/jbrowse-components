@@ -1,6 +1,6 @@
 ---
 name: variants-decision-tree
-description: What a variant track decides — the display a VCF lands in, what Color by resolves to, a genotype cell's colour, and the draw sequence from filters to overlays — as four decision graphs. Read before touching a colour mode or a cell loop.
+description: What a variant track decides — the display a VCF lands in, what Color by resolves to, a genotype cell's color, and the draw sequence from filters to overlays — as four decision graphs. Read before touching a color mode or a cell loop.
 audience: internal
 kind: spec
 ---
@@ -8,7 +8,7 @@ kind: spec
 # The variants decision tree
 
 Four decisions, in this order: **which display** the data lands in, **what the
-"Color by" slot resolves to**, **what colour each genotype cell takes**, and
+"Color by" slot resolves to**, **what color each genotype cell takes**, and
 **the draw sequence** that puts them on screen. Each is resolved in one place;
 the rest of the plugin reads the answer.
 
@@ -21,14 +21,14 @@ that bite while editing are `plugins/variants/src/CLAUDE.md`.
 ![Which variant display a VCF lands in](diagrams/variants-displays.svg)
 
 - **`LinearVariantDisplay`** draws the records themselves, one layout row each,
-  coloured through the standard `color` jexl slot.
+  colored through the standard `color` jexl slot.
 - **`LinearMultiSampleVariantDisplay`** draws one row per sample — or per
   haplotype in phased mode. Under `variantLayout: 'genomic'` each record's cells
   sit at its genomic span, with the variant lane and the insertion glyphs; under
   `'columns'` the records are laid out by feature *index* at equal widths, each
   column tied back to its locus with a connector line.
 - **`LDTrackDisplay`** (on an `LDTrack`, reading a plink file) is a different
-  subject: a cell is a pair of sites, coloured by r² or D' through a 256-entry
+  subject: a cell is a pair of sites, colored by r² or D' through a 256-entry
   ramp.
 
 Columns answer "what is the genotype pattern"; genomic positions answer "where
@@ -38,24 +38,24 @@ span cannot express.
 
 ## What "Color by" resolves to
 
-![How the color object resolves](diagrams/variants-colour-by.svg)
+![How the color object resolves](diagrams/variants-color-by.svg)
 
-One colour object holds every answer, resolved **once per record** in the
+One color object holds every answer, resolved **once per record** in the
 worker (`shared/cellHue.ts`). Three of its fields are presets the record does
 not carry as such: impact, SV type, whose palette is dealt over the types
-present in the window, and phase set, whose colour is per (record, sample) so
+present in the window, and phase set, whose color is per (record, sample) so
 only the cell loops can read it. Any other field is read off the record. The hue
 never reaches a reference or no-call cell.
 
-## What colour a cell takes
+## What color a cell takes
 
-![The genotype cell colour ladder](diagrams/variants-cell-colour.svg)
+![The genotype cell color ladder](diagrams/variants-cell-color.svg)
 
 `plugins/variants/src/shared/variantCellStyles.ts` is the only implementation.
 The GPU path, the Canvas2D path, the SVG export and the legend all read the
-packed colours it produces.
+packed colors it produces.
 
-- **Phased mode**: a row is one haplotype. Phase-set colouring wins on an alt
+- **Phased mode**: a row is one haplotype. Phase-set coloring wins on an alt
   where it is on and the sample has a PS; otherwise the allele on that haplotype
   picks the fill — reference, no-call, or an alt, which takes the override if
   one resolved, else the alt hue for the site's most frequent alt and the
@@ -69,7 +69,7 @@ packed colours it produces.
 - **Reference cells** are drawn or skipped by `referenceDrawingMode`. Skipped,
   the row background stands in for them.
 - **Every branch classifies from the allele**, and carries `isRef` / `isAlt` /
-  dosage beside the colour rather than recovering them from it.
+  dosage beside the color rather than recovering them from it.
 
 ## The draw sequence
 
@@ -97,7 +97,7 @@ packed colours it produces.
   phantom "other alt" on a haplotype a diploid sample does not carry.
 - **The override is alt-only.** Applying it to a no-call painted a missing
   genotype as though it carried the variant. Its shade is bounded by a pale
-  ceiling (`shared/cellFill.ts`), so a het in a class colour still reads as that
+  ceiling (`shared/cellFill.ts`), so a het in a class color still reads as that
   class.
 - **Which alt is carried is on the hue in phased mode only.** Allele-count mode
   paints `1/2` as a full dose of the one alt hue; a haplotype carries one allele,
@@ -112,17 +112,17 @@ packed colours it produces.
 
 ## What transfers
 
-**Classify from the datum, never from the colour it produced.** `isRef` /
-`isAlt` come from the allele. Recovering them from the returned colour worked
-only while every colour function returned the same constants by identity — the
-moment one blended a no-call through a colour library and returned a hex, every
+**Classify from the datum, never from the color it produced.** `isRef` /
+`isAlt` come from the allele. Recovering them from the returned color worked
+only while every color function returned the same constants by identity — the
+moment one blended a no-call through a color library and returned a hex, every
 no-call in that mode was flagged alt-carrying and drew an insertion marker on a
 row the file calls missing. A rendering is a lossy projection of a
 classification, so the classification travels beside it.
 
 **Memoize at the cardinality of the answer, and put every input in the key.** A
 site with thousands of samples carries a handful of distinct genotype strings,
-so colours resolve per distinct genotype per site rather than per cell. The memo
+so colors resolve per distinct genotype per site rather than per cell. The memo
 this replaced keyed on a template literal — an allocation per cell to save a
 lookup — and left one input (`drawRef`) out of the key, so a cache shared across
 two modes could answer from the wrong one.

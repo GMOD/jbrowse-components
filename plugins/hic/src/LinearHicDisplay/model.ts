@@ -88,7 +88,7 @@ interface HicFileInfo {
  * The Hi-C contact matrix as a triangle over the view.
  *
  * #example
- * A `HicTrack` whose display pins the colour scale's top, so two tracks set
+ * A `HicTrack` whose display pins the color scale's top, so two tracks set
  * alike share one scale, and runs one binsize coarser than the zoom picks:
  * ```js
  * {
@@ -282,7 +282,7 @@ export default function stateModelFactory(configSchema: HicTrackConfigModel) {
       },
       /**
        * #getter
-       * The domain the counts are coloured over, as every ramp spans one: a
+       * The domain the counts are colored over, as every ramp spans one: a
        * pinned end holds, and an open one follows the loaded counts from 0,
        * the top at their `colorQuantile` below 1, else their maximum.
        */

@@ -279,7 +279,7 @@ describe('the depth bin under the cursor', () => {
     ).toBe(1000)
   })
 
-  // The snap must not name a segment the band declined to colour, and the
+  // The snap must not name a segment the band declined to color, and the
   // band hides one allele at a time: four 10% alleles pool to 40% and clear
   // a 30% floor while the band paints nothing there.
   it("honours the band's allele floor, per allele", () => {

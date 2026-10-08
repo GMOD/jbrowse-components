@@ -2,12 +2,12 @@
 // the previous bin's midpoint to this one's. `wiggleLine.slang` draws the step
 // line on a record of its own, since a module reflects one instance struct and
 // the two read different neighbours; both import `wiggleCommon` for the
-// uniform block, the row's score math and the band colour.
+// uniform block, the row's score math and the band color.
 //
 // Premultiplied MAX blend, so overlapping segments and caps union instead of
 // accumulating into dark seams under src-over. The lines draw first into a
 // target cleared to transparent black and the whiskers band goes behind them
-// afterwards. Max is still inexact where overlaid lines of different colours
+// afterwards. Max is still inexact where overlaid lines of different colors
 // cross, and at a joint within half a line width of a cut, whose capsules
 // can pick different sides.
 //! targets: wgsl, glsl
@@ -38,7 +38,7 @@ struct VsOut {
   float4 position : SV_Position;
   nointerpolation float4 color    : COLOR0;
   nointerpolation float4 negColor : COLOR1;
-  // the colour line's y at the segment centre and its rise per px along, so
+  // the color line's y at the segment centre and its rise per px along, so
   // the fragment reads the value under itself
   nointerpolation float2 centerLine : TEXCOORD2;
   // each cut's y in the row
@@ -125,6 +125,6 @@ float4 fs_main(VsOut fragIn) : SV_Target {
     u,
     fragIn.color,
     fragIn.negColor);
-  // PREMULTIPLIED, so same-colour overlaps union (max) rather than accumulate
+  // PREMULTIPLIED, so same-color overlaps union (max) rather than accumulate
   return float4(color.rgb * alpha, alpha);
 }

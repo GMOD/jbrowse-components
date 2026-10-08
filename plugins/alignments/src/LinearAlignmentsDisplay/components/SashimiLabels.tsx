@@ -8,7 +8,7 @@ import {
 import type { SashimiLabel } from '../../features/sashimi/computeOverlay.ts'
 
 // The read count at each arc's apex, shared by the overlay and the export. The
-// halo is the surface colour, so it reads in either theme.
+// halo is the surface color, so it reads in either theme.
 // eslint-disable-next-line no-restricted-syntax -- drawn inside a frozen SVG figure
 export default function SashimiLabels({ labels }: { labels: SashimiLabel[] }) {
   const palette = usePalette()

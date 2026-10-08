@@ -24,7 +24,7 @@ export interface VertexAttributeLayout {
  * 4" — standard sample patterns are defined for no other count), so this is the
  * API's constraint rather than a policy of ours, and 2 is not an option to add.
  *
- * At 4 the HAL allocates a multisampled colour attachment the size of the
+ * At 4 the HAL allocates a multisampled color attachment the size of the
  * canvas and resolves it into the canvas texture; at 1 it allocates **nothing**
  * and draws straight into the canvas texture. The bytes are canvas area x dpr²
  * x samples x 4, unrelated to how much data the display holds, which is why

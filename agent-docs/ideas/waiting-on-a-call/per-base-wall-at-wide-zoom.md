@@ -1,6 +1,6 @@
 ---
 name: per-base-wall-at-wide-zoom
-description: The sub-pixel bin that bounded the per-base wall changed what `perBaseLetter` looks like — vivid stripes where the pre-bin blend was muddy olive — and left the 1bp cell exactly one octave of headroom, so a fast multi-octave zoom-in stripes the wall until the refetch lands. The per-window histogram was measured and declined, because the honest aggregate over a 16-512 bp window is one mud colour; a zoom threshold is the answer to the first, and a per-instance span the bin wide is the answer to the second and the enabling step for run-merged cells. Read before changing `subPixelBinBp`, `pileupCellX` or `pileupCellWidth`.
+description: The sub-pixel bin that bounded the per-base wall changed what `perBaseLetter` looks like — vivid stripes where the pre-bin blend was muddy olive — and left the 1bp cell exactly one octave of headroom, so a fast multi-octave zoom-in stripes the wall until the refetch lands. The per-window histogram was measured and declined, because the honest aggregate over a 16-512 bp window is one mud color; a zoom threshold is the answer to the first, and a per-instance span the bin wide is the answer to the second and the enabling step for run-merged cells. Read before changing `subPixelBinBp`, `pileupCellX` or `pileupCellWidth`.
 audience: internal
 ---
 
@@ -23,7 +23,7 @@ the span, which answers the second.
 blending 2.4 of them land in the same place — the measurement says visually
 equivalent at every zoom captured. `perBaseLetter` is four widely separated
 hues, so the same change takes the wall from muddy olive to vivid stripes and
-nearly doubles the saturated share. A vivid base colour where the honest answer
+nearly doubles the saturated share. A vivid base color where the honest answer
 is "mixed" is exactly what
 [MAF_LARGE_BLOCKS.md](../../reference/MAF_LARGE_BLOCKS.md) argues against for tiling cells,
 in as many words.
@@ -47,7 +47,7 @@ pre-bin blend made deterministic. Measured on 2026-09-17 over the pacbio HG002
 fixture's per-base extract, node only, arms interleaved and one bin per
 process; the bench was not kept, so these are the numbers and the method.
 
-- **The honest aggregate is one colour.** Real DNA over a 16-512 bp window is
+- **The honest aggregate is one color.** Real DNA over a 16-512 bp window is
   near-uniform ACGT: the full-visit histogram's mean window purity is 0.32 at
   binBp 512 and 0.43 at 16, and under 0.3% of windows pass 0.9 at any bin. A
   deterministic blend therefore paints the same mud in every cell, which is the
@@ -71,7 +71,7 @@ process; the bench was not kept, so these are the numbers and the method.
   cross-backend disagreement in
   [CROSS_BACKEND_GATE.md](../../reference/CROSS_BACKEND_GATE.md) is geometry — a
   snapped left edge against a fractional one plus half a px — that a
-  deterministic colour leaves where it is.
+  deterministic color leaves where it is.
 
 So the third candidate answers question one, and the purity numbers are its
 argument: a mode that switches itself off is honest where a mud band is not.
@@ -133,5 +133,5 @@ passing through.
 these two go, that gap is why the bin shipped believing a claim nothing could
 have failed. Closing it with two gate scenes was built, measured and declined
 the same day — on the cost of carrying an 18% override, not on the finding —
-so the gap stands deliberately; gating the two per-base colour modes against
+so the gap stands deliberately; gating the two per-base color modes against
 the other backend was declined.

@@ -162,7 +162,7 @@ test('the index SNP is a fetch input only while the plot joins LD', () => {
   expect(ld.rpcProps().opts).toEqual({ ld: 'ctgA:101' })
 })
 
-test("LD colouring makes the default plot LocusZoom's, as the add-track workflow writes it, and the transform stays", () => {
+test("LD coloring makes the default plot LocusZoom's, as the add-track workflow writes it, and the transform stays", () => {
   const { display } = createTestEnvironment().createDisplay()
   const transform = [{ type: 'filter', expr: "jexl:get(feature,'score') > 1" }]
   display.applyDisplaySettings({ transform })
@@ -240,7 +240,7 @@ test.each([
     ],
   ],
   [
-    'a constant colour',
+    'a constant color',
     [{ mark: 'point', encoding: { y: 'score', color: { value: 'green' } } }],
   ],
   [
@@ -257,7 +257,7 @@ test.each([
       { ...MANHATTAN_MARK, maxBpPerPx: 1000 },
     ],
   ],
-])('a round trip through LD colouring keeps %s', (_, marks) => {
+])('a round trip through LD coloring keeps %s', (_, marks) => {
   const { display } = createTestEnvironment({ marks }).createDisplay()
   const before = getSnapshot(display.conf)
   const colored = display.joinsLd
@@ -270,7 +270,7 @@ test.each([
   )
 })
 
-test('LD colouring leaves every other mark and member where it was', () => {
+test('LD coloring leaves every other mark and member where it was', () => {
   const { display } = createTestEnvironment({
     marks: [
       {
@@ -413,7 +413,7 @@ test('right-click offers LD to a SNP only on a mark that places each SNP', () =>
   expect(offered(1)).toBe(true)
 })
 
-test('right-clicking a point colours by LD to it and pins it', () => {
+test('right-clicking a point colors by LD to it and pins it', () => {
   const { display } = createTestEnvironment().createDisplay()
   display.colorByLdToHit({ refName: 'ctgA', start: 499 })
   expect(display.joinsLd).toBe(true)

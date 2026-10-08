@@ -56,7 +56,7 @@ function isFieldTint(colorClass: number) {
  * palette's life however many regions and re-encodes ask for them. `field`
  * is the field it paints, which a region's values have to name to be painted
  * by it. `deal` sees each region's values before any is painted, so a scale
- * dealing colours on first sight deals them in an order of its own.
+ * dealing colors on first sight deals them in an order of its own.
  */
 export function createFieldPalette(
   field: string,

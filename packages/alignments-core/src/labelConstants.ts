@@ -51,7 +51,7 @@ const BASE_N_COLOR = '#795548'
 // nothing else. This was a `CigarOpDrawColors` carrying `mismatch`, `deletion`
 // and `insertion` as well — a shape neither consumer could fill honestly, so
 // `buildCigarOpDrawColors` wrote `''` into two of them and computed a deletion
-// colour for a draw that has no deletions, and MAF spread the defaults in
+// color for a draw that has no deletions, and MAF spread the defaults in
 // purely to satisfy the type.
 export interface SnpBaseColors {
   baseA: string

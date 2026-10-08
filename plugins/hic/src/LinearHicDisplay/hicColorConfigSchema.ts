@@ -9,7 +9,7 @@ export const HIC_COLOR_SCALES = ['linear', 'log'] as const
 
 export type HicColorScale = (typeof HIC_COLOR_SCALES)[number]
 
-/** A bin's contact count, the one thing Hi-C's colour maps. */
+/** A bin's contact count, the one thing Hi-C's color maps. */
 export const HIC_COLOR_FIELD = 'count'
 
 /** `count` runs along a linear ramp while `scale` is unset. */
@@ -27,7 +27,7 @@ export const DEFAULT_HIC_COLOR_SCHEME: ColorSchemeName = 'juicebox'
  * counts, saturating at their `domainQuantile`, the 95th percentile by
  * default, or at their maximum at a quantile of 1; setting it gives every
  * zoom, and every track that sets the same number, one scale. The slots are
- * the shared colour object's, so `jbrowse validate` and "Edit plot..." judge
+ * the shared color object's, so `jbrowse validate` and "Edit plot..." judge
  * them as they judge any other display's.
  *
  * #example
@@ -81,7 +81,7 @@ export const hicColorConfigSchema = ConfigurationSchema(
      * #slot domainQuantile
      * What an unset `domainMax` follows: the loaded counts' quantile, `0.95`
      * so faint off-diagonal contacts read, or at `1` their maximum. The track
-     * menu's "Emphasize faint contacts" toggles it. The same word every colour
+     * menu's "Emphasize faint contacts" toggles it. The same word every color
      * ramp and `scales.y` take.
      */
     domainQuantile: {

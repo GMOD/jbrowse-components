@@ -71,7 +71,7 @@ function lutRgb(t: number) {
   return [lut[o], lut[o + 1], lut[o + 2]]
 }
 
-test('the GPU fill and the Canvas2D fill are one colour at every MAPQ', () => {
+test('the GPU fill and the Canvas2D fill are one color at every MAPQ', () => {
   for (let mapq = 0; mapq < 255; mapq++) {
     const { category, fillColor } = gpuFill(mapq)
     expect(category).toBe(RC_MAPQ)

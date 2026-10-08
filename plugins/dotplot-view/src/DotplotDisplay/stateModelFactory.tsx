@@ -163,7 +163,7 @@ export function stateModelFactory(configSchema: DotplotDisplayConfigSchema) {
       /**
        * #getter
        * Main-thread-computed per-segment colors — the gpuProps half of the
-       * rpcProps/gpuProps split. A colour change recomputes this alone,
+       * rpcProps/gpuProps split. A color change recomputes this alone,
        * without re-walking a single CIGAR.
        *
        * The opacity level is NOT read here. It rides the shader's `alpha`

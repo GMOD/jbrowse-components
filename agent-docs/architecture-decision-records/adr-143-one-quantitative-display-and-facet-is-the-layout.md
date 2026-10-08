@@ -12,7 +12,7 @@ Accepted (2026-09-19). Follows
 [ADR-142](adr-142-one-value-scale-object.md). Extends
 [ADR-130](adr-130-a-facet-is-the-displays-and-splits-before-each-layers-steps.md)
 and [ADR-131](adr-131-a-categorical-channel-is-one-config-object.md)'s `facet`
-object to the quantitative display; ADR-016's pos/neg colour split is already
+object to the quantitative display; ADR-016's pos/neg color split is already
 superseded and untouched here.
 [ADR-157](adr-157-a-row-displays-arrangement-is-the-rows-config-object.md)
 supersedes the `facet` half: the layout is `rows: 'source'`, and the row order
@@ -34,7 +34,7 @@ are unreadable. A config author who wrote `xyplot` on a multi track got a
 `SINGLE_TO_MULTI_RENDERING` remap, registered twice — once as the schema's
 `preProcessSnapshot` and once as a `Core-preProcessTrackConfig` handler, because
 `types.union` dispatch tests the raw snapshot and the schema's own preprocessor
-never runs. Beside that: a second RPC, a second component, a second colour
+never runs. Beside that: a second RPC, a second component, a second color
 dialog, a second config page, a second state-model page and a second user guide.
 
 The layout bit was also in the wrong place. Switching a cohort track from XY to
@@ -47,7 +47,7 @@ click. Nothing about a rendering decides how many rows there are.
 **One display, `LinearWiggleDisplay`**, registered against both
 `QuantitativeTrack` and `MultiQuantitativeTrack`. The multi model is the one
 that survives, generalised to one source; the single display's `color` /
-`useBicolor` solid-colour override and its `scoreRules` move onto it.
+`useBicolor` solid-color override and its `scoreRules` move onto it.
 
 **`facet` decides the layout**, from display-kit's `facetConfigSchema` — the
 same object the feature, mark, alignments and multi-sample variant displays
@@ -81,10 +81,10 @@ against other defaults cannot hold the single-source values (ADR-172). The
 display's own defaults stay the single-source picture, which is what a
 `QuantitativeTrack` naming no display setting has always drawn.
 
-**A lone plot in the box is not the shared-plot colour mode.** `rowColorMode`
+**A lone plot in the box is not the shared-plot color mode.** `rowColorMode`
 asks whether several sources share one plot rather than whether the facet is
 off: overlaid sources take a palette entry each and paint both sides of the
-pivot in it, so the plot reads as one colour per source, while one source is the
+pivot in it, so the plot reads as one color per source, while one source is the
 pos/neg bicolor plot a quantitative track has always drawn. The same question
 sizes the plot box: one row takes the `YSCALEBAR_LABEL_OFFSET` gutter so its end
 labels are not clipped, a stack of rows gives it up.
@@ -132,7 +132,7 @@ multi-region pass. Only an adapter carrying several sources in one file
   which reads all four sidebar slots through `getConf` — so a narrower schema
   needs a second model, the split this ADR rejected. The slots are dead for any
   single-source quantitative track, not for gccontent in particular.
-- One display page, one state-model page, one user guide and one colour dialog
+- One display page, one state-model page, one user guide and one color dialog
   fewer, and `plugins/wiggle/package.json` loses the
   `MultiLinearWiggleDisplay/*` subpaths (ADR-128).
 

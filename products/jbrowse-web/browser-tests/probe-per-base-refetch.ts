@@ -1,6 +1,6 @@
 /* eslint-disable no-console */
 // Count `RenderAlignmentData` RPC calls over scripted zoom and pan gestures,
-// per colour mode, on a real BAM — the measure-first entry the per-base
+// per color mode, on a real BAM — the measure-first entry the per-base
 // sub-pixel bin left open (agent-docs/measurements/per-base-zoom-refetch.json).
 //
 // The count is taken by wrapping `rpcManager.call` in the page, so nothing in

@@ -15,7 +15,7 @@ const SetColorDialog = lazy(() => import('./setColorDialog/SetColorDialog.tsx'))
  * over `model`: the drag-reorder, relabel and recolor grid every tree-sidebar
  * consumer shares. `ready` is "has the row list arrived", since the dialog over
  * an empty list can only report the same thing after the user clicks. A
- * display whose dialog carries more than the rows, as wiggle's plot colours
+ * display whose dialog carries more than the rows, as wiggle's plot colors
  * do, passes its own `onOpen`.
  */
 export function rowArrangementMenuItem<S extends RowSource>(

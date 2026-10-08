@@ -45,7 +45,7 @@
 // Chrome's GPU process.
 //
 // Beside the timing, `wedge1` and `wedge8` are each read back and compared
-// against `warp` over the ring, as the fraction of ring pixels whose colour
+// against `warp` over the ring, as the fraction of ring pixels whose color
 // differs and the mean absolute difference on those — which is the arc
 // exactness question (b) in ADR-119, measured rather than argued.
 

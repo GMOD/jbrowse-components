@@ -158,7 +158,7 @@ test('a raw p-value column bakes scoreTransform into the adapter', () => {
   })
 })
 
-test('with LD: adds a LinearManhattanDisplay coloured by LD to the index SNP', () => {
+test('with LD: adds a LinearManhattanDisplay colored by LD to the index SNP', () => {
   const cfg = buildGwasTrackConfig({
     trackId: 't1',
     trackName: 'GWAS',

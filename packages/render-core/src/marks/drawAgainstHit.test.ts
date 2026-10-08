@@ -233,7 +233,7 @@ test.each<[string, Partial<RuleParams>]>([
 })
 
 // Every glyph kind, one of them over 20 bp, which stands at its centre. The
-// painter batches a colour run into one path, so nothing here is attributable
+// painter batches a color run into one path, so nothing here is attributable
 // positionally and the whole arm rests on `sliceOne`.
 //
 // Two diameters: 2 takes `appendGlyph`'s crisp-square branch

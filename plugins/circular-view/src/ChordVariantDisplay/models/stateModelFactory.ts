@@ -193,8 +193,8 @@ const stateModelFactory = (configSchema: ChordVariantDisplayConfigModel) => {
       },
       /**
        * #getter
-       * each drawn record's colour: its field's value through the scale, or
-       * the `value` the colour object answers for it
+       * each drawn record's color: its field's value through the scale, or
+       * the `value` the color object answers for it
        */
       get chordStrokes(): Map<Feature, string> {
         const features = self.drawnFeatures ?? []
@@ -245,7 +245,7 @@ const stateModelFactory = (configSchema: ChordVariantDisplayConfigModel) => {
       },
       /**
        * #getter
-       * the drawn records as the chord mark's lanes, each in its colour with
+       * the drawn records as the chord mark's lanes, each in its color with
        * the alpha the SV inspector's dimming leaves it
        */
       get chordLanes(): ChordLanes {
@@ -358,7 +358,7 @@ const stateModelFactory = (configSchema: ChordVariantDisplayConfigModel) => {
       },
       /**
        * #getter
-       * `opacity`, over each chord's colour's own alpha
+       * `opacity`, over each chord's color's own alpha
        */
       get shapeAlpha(): number {
         return getConf(self, 'opacity')

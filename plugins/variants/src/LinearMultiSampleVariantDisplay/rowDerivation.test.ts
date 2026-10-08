@@ -134,11 +134,11 @@ function derived(display: Display) {
 const names = (display: Display) => display.sources.map(s => s.name)
 
 describe('allele count', () => {
-  test('samplesTsv colours and labels are the rows own', () => {
+  test('samplesTsv colors and labels are the rows own', () => {
     expect(derived(loaded())).toMatchSnapshot()
   })
 
-  test('a rowColor attribute tints every row over its own colour', () => {
+  test('a rowColor attribute tints every row over its own color', () => {
     expect(derived(loaded({ rowColor: 'population' }))).toMatchSnapshot()
   })
 
@@ -162,7 +162,7 @@ describe('allele count', () => {
     expect(derived(display)).toMatchSnapshot()
   })
 
-  test('dialog edits relabel, recolour and reorder, and a reset returns', () => {
+  test('dialog edits relabel, recolor and reorder, and a reset returns', () => {
     const display = loaded()
     const [s0, s1, s2, s3] = display.editableSources
     display.applyRowEdits([{ ...s2!, label: 'Two' }, s0!, s3!, s1!], {
@@ -174,9 +174,9 @@ describe('allele count', () => {
     expect(derived(display)).toMatchSnapshot()
   })
 
-  // Under a colour by population the dialog edits a population's colour, and
+  // Under a color by population the dialog edits a population's color, and
   // the rows' own swatches are not read: the Color by and its legend stay.
-  test("a dialog recolours a population's rows, and keeps the Color by", () => {
+  test("a dialog recolors a population's rows, and keeps the Color by", () => {
     const display = loaded({ rowColor: 'population' })
     const [s0, s1, ...rest] = display.editableSources
     display.applyRowEdits([s0!, { ...s1!, rowColor: '#123456' }, ...rest])

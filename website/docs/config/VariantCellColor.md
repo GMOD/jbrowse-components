@@ -1,7 +1,7 @@
 ---
 id: variantcellcolor
 title: VariantCellColor
-description: "The multi-sample variant display's color setting: the hue of every alt-carrying genotype cell, which shadeByDosage then lightens for a heterozygote. Unset, the cells paint the genotype colours. A…"
+description: "The multi-sample variant display's color setting: the hue of every alt-carrying genotype cell, which shadeByDosage then lightens for a heterozygote. Unset, the cells paint the genotype colors. A…"
 sidebar_label: Display -> VariantCellColor
 ---
 
@@ -29,9 +29,9 @@ _See the **Config slots** section below for all available configuration fields._
 
 The multi-sample variant display's `color` setting: the hue of every
 alt-carrying genotype cell, which `shadeByDosage` then lightens for a
-heterozygote. Unset, the cells paint the genotype colours. A CSS colour or
+heterozygote. Unset, the cells paint the genotype colors. A CSS color or
 `jexl:` callback in `value` paints every alt cell of a variant; a `field`
-gives each of its values a colour with a key. Three fields are presets:
+gives each of its values a color with a key. Three fields are presets:
 `impact`, the most severe SnpEff/VEP consequence tier; `svType`, the
 structural-variant class; `phaseSet`, the FORMAT PS block, in phased mode.
 Any other field is read off the record — `INFO.CLNSIG`, `QUAL`, or a
@@ -45,10 +45,10 @@ Slot types (`fileLocation`, `frozen`, ...) are explained in the [config slot typ
 <!-- prettier-ignore -->
 | Slot | Description |
 | --- | --- |
-| <span id="slot-value">**value**</span><br>[`maybeColor`](/docs/config_guides/slot_types#the-maybe-types) | A CSS colour, or a jexl callback over `feature` returning one, for every alt cell of the variant. Unset, the cells paint the genotype colours.<br>_callback args:_ `feature` |
-| <span id="slot-field">**field**</span><br>[`featureField`](/docs/config_guides/slot_types#featurefield) = <code>''</code> | impact, the most severe SnpEff/VEP consequence tier; svType, the structural-variant class; phaseSet, the FORMAT PS block in phased mode; or any record field, INFO.CLNSIG say, or a jexl expression over feature, whose values each paint one range colour with a key. A record with no value keeps the default alt colour |
-| <span id="slot-scale">**scale**</span><br>[`maybeStringEnum`](/docs/config_guides/slot_types#the-maybe-types) | none paints value and keeps the field for a switch back; categorical a range colour per value of field; threshold a range colour per interval between the cut points in domain; unset follows field |
+| <span id="slot-value">**value**</span><br>[`maybeColor`](/docs/config_guides/slot_types#the-maybe-types) | A CSS color, or a jexl callback over `feature` returning one, for every alt cell of the variant. Unset, the cells paint the genotype colors.<br>_callback args:_ `feature` |
+| <span id="slot-field">**field**</span><br>[`featureField`](/docs/config_guides/slot_types#featurefield) = <code>''</code> | impact, the most severe SnpEff/VEP consequence tier; svType, the structural-variant class; phaseSet, the FORMAT PS block in phased mode; or any record field, INFO.CLNSIG say, or a jexl expression over feature, whose values each paint one range color with a key. A record with no value keeps the default alt color |
+| <span id="slot-scale">**scale**</span><br>[`maybeStringEnum`](/docs/config_guides/slot_types#the-maybe-types) | none paints value and keeps the field for a switch back; categorical a range color per value of field; threshold a range color per interval between the cut points in domain; unset follows field |
 | <span id="slot-domain">**domain**</span><br>[`stringArray`](/docs/config_guides/slot_types#stringarray) = <code>[]</code> | the values that take the range first, in order; under threshold, the ascending cut points, a value on a cut taking the interval above it |
-| <span id="slot-range">**range**</span><br>[`colorArray`](/docs/config_guides/slot_types#colorarray) = <code>[]</code> | CSS colours the domain takes, in order, continuing into the default palette past its end; under threshold one per interval, one more than the cuts |
+| <span id="slot-range">**range**</span><br>[`colorArray`](/docs/config_guides/slot_types#colorarray) = <code>[]</code> | CSS colors the domain takes, in order, continuing into the default palette past its end; under threshold one per interval, one more than the cuts |
 | <span id="slot-labels">**labels**</span><br>[`stringArray`](/docs/config_guides/slot_types#stringarray) = <code>[]</code> | what the key names each domain value, one each in order, or under threshold each interval from the lowest; one past the list keeps its own name |
 | <span id="slot-title">**title**</span><br>[`maybeString`](/docs/config_guides/slot_types#the-maybe-types) | key title; unset keeps the display's own heading, "" draws none |

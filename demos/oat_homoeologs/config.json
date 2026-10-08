@@ -40,7 +40,7 @@
     "views": [
       {
         "type": "DotplotView",
-        "displayName": "Hexaploid oat against itself, coloured by dN/dS",
+        "displayName": "Hexaploid oat against itself, colored by dN/dS",
         "views": [
           {
             "assembly": "oat"

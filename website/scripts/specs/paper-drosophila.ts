@@ -1,5 +1,5 @@
 // The JBrowse 2 v5 paper's Figure 3a, which the paper repo syncs from
-// figures.lock: five Drosophila species as collinear ortholog blocks, coloured
+// figures.lock: five Drosophila species as collinear ortholog blocks, colored
 // by Muller element. The caption names the elements, so the key is hidden.
 import { displayPainted } from '@jbrowse/browser-test-utils'
 

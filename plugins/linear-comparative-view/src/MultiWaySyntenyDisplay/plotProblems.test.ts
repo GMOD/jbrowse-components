@@ -1,6 +1,6 @@
 import { createDisplay } from './testEnv.ts'
 
-test("the gene colour's threshold cuts are judged as every colour object's are", () => {
+test("the gene color's threshold cuts are judged as every color object's are", () => {
   expect(
     createDisplay().plotProblems({
       color: { field: 'score', scale: 'threshold', domain: ['5', '1'] },
@@ -18,11 +18,11 @@ test("the gene colour's threshold cuts are judged as every colour object's are",
       },
     }),
   ).toEqual([
-    'color.range: 2 threshold cuts make 3 intervals, one colour each, and range lists 1: a missing colour comes from the default palette and an extra one is never read',
+    'color.range: 2 threshold cuts make 3 intervals, one color each, and range lists 1: a missing color comes from the default palette and an extra one is never read',
   ])
 })
 
-test("the ribbon colour's labels are judged under its own setting", () => {
+test("the ribbon color's labels are judged under its own setting", () => {
   expect(
     createDisplay().plotProblems({
       ribbonColor: { field: 'group', domain: ['core'], labels: ['a', 'b'] },

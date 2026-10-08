@@ -25,7 +25,7 @@ import type { ScreenshotSpec } from '../screenshot-spec-types.ts'
 // viewed region downloads despite the file's size. hgdownload is also the
 // slowest host any of these figures touch, hence the raised ready timeouts.
 //
-// The cCRE, gnomAD and phyloP tracks carry no colour key. A key belongs in the
+// The cCRE, gnomAD and phyloP tracks carry no color key. A key belongs in the
 // jb2hubs output, not a spec's override, and that output has to keep loading
 // in older releases.
 
@@ -92,7 +92,7 @@ const AXOLOTL_ASSEMBLY = 'GCF_040938575.1'
 //   so this is a click rather than a dead end; the hub still wants to open on
 //   the right one. jb2hubs ALREADY
 //   writes the right display (hubtools' repeatClassDisplay, jexl partition,
-//   cookbook colours, fixed row order); it is gated behind RMSK_MULTIROW_DISPLAY
+//   cookbook colors, fixed row order); it is gated behind RMSK_MULTIROW_DISPLAY
 //   because the display type landed after v4.3.0, which is what
 //   jbrowse.org/code/jb2/latest serves and so what the live site runs. That
 //   repo's CLAUDE.md has the part that is easy to get wrong: a release opens the
@@ -126,7 +126,7 @@ const GNOMAD_TRACK_ID = 'hg38-gnomadExomesVariantsV4_1'
 // NOT the ENCODE4 organ averages the hub also carries, which are the tracks
 // UCSC calls "Layered": at 55 and 64 sources one shared plot box is a muddy
 // silhouette where no source is separable, and a density row each is no
-// better, because each source carries its own colour and 60 hues at two pixels
+// better, because each source carries its own color and 60 hues at two pixels
 // a row is a pastel blur. Seven rows is the count at which a per-row plot is
 // legible and the legend can name every row.
 //

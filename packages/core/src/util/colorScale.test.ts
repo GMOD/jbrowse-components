@@ -54,7 +54,7 @@ test("a written domain takes none of a categorical preset's range or labels", ()
   })
 })
 
-test('a preset stays out of a colour painting through another scale, or none', () => {
+test('a preset stays out of a color painting through another scale, or none', () => {
   const linear = { field: 'r2', scale: 'linear', domain: [] }
   expect(withPreset(linear, LD)).toBe(linear)
   const none = { field: 'r2', scale: 'none' }
@@ -78,7 +78,7 @@ const rules = (
   scale = 'categorical',
 ) => colorProblems(color, { '*': { scale } }).map(p => p.rule)
 
-test('a colour with no field, or a field under none, says nothing', () => {
+test('a color with no field, or a field under none, says nothing', () => {
   expect(rules({ domain: ['b', 'a'], range: ['red'] }, 'threshold')).toEqual([])
   expect(
     rules({ field: 'x', scale: 'none', domain: ['2', '1'] }, 'threshold'),
@@ -95,7 +95,7 @@ test('threshold cuts must ascend and be numbers', () => {
   ])
 })
 
-test('a threshold range has one colour per interval, one more than its cuts', () => {
+test('a threshold range has one color per interval, one more than its cuts', () => {
   const range = (colors: string[]) =>
     rules({ field: 'x', scale: 'threshold', domain: [1, 2], range: colors })
   expect(range([])).toEqual([])
@@ -137,7 +137,7 @@ test('a notice line names the setting and the slot', () => {
   ).toMatch(/^color\.domain: a linear or log scale reads no domain/)
 })
 
-test('an identity scale names one colour per label, with or without a field', () => {
+test('an identity scale names one color per label, with or without a field', () => {
   const identity = { scale: 'identity', domain: ['red', 'blue'] }
   expect(rules({ ...identity, labels: ['a', 'b'] })).toEqual([])
   expect(rules({ ...identity, field: 'x', labels: ['a', 'b'] })).toEqual([])

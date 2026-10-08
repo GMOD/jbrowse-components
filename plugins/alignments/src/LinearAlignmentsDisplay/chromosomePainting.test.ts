@@ -8,14 +8,14 @@ import { bootAlignmentsDisplay } from './testUtils.ts'
 import type { GroupedAlignmentsResult } from '../RenderAlignmentDataRPC/types.ts'
 
 // Chromosome painting resolves a mate reference against the ASSEMBLY's own
-// chromosome order, which is what stops two chromosomes sharing a colour. The
+// chromosome order, which is what stops two chromosomes sharing a color. The
 // rule and its fallback are `refNameColor`'s (core) and the bake's; what only a
 // booted display can say is that the display hands the order over AT ALL, and
 // that it canonicalizes the name first.
 //
 // Both halves fail silently. A display that passes no order, and a display whose
 // probe misses because it compared a file's `12` against a canonical `chr12`,
-// both land on the same hash fallback — a real colour, plausible on screen, and
+// both land on the same hash fallback — a real color, plausible on screen, and
 // the one this scheme was moved off. So the fixture deliberately spells the
 // assembly and the file differently, which is the ordinary case for a
 // GRCh37-style BAM read against an hg38-style assembly.
@@ -52,7 +52,7 @@ function createDisplay() {
     },
   }
   // Two reads on the region's own contig, whose mates sit on the two
-  // chromosomes the OLD hash put on one colour.
+  // chromosomes the OLD hash put on one color.
   const data: GroupedAlignmentsResult = {
     groups: [
       {

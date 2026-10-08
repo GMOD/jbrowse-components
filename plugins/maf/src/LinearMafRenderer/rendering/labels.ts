@@ -5,8 +5,8 @@ import type { MafLabelColors } from '../util.ts'
 import type { Ctx2D } from '@jbrowse/core/util/paintLayer'
 
 /**
- * Each letter in the colour that reads against its cell: the contrast of its
- * base's colour, or `neutral` over a match cell.
+ * Each letter in the color that reads against its cell: the contrast of its
+ * base's color, or `neutral` over a match cell.
  */
 export function drawMafLabels(
   ctx: Ctx2D,

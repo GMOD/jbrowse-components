@@ -229,7 +229,7 @@ interface LineRecord {
 }
 
 // Each prototype field is [production word, prototype word, view]; the
-// prototype's row word stands in for the production colours and row.
+// prototype's row word stands in for the production colors and row.
 function checkLine(
   what: string,
   base: ArrayBuffer,

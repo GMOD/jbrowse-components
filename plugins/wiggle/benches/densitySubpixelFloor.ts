@@ -13,7 +13,7 @@
 // MAF's device-px one did, so the supersampled arm is the UNFLOORED geometry
 // rather than the shipped rule.
 //
-// The GPU arms model one rule — a sample takes the colour of the last quad
+// The GPU arms model one rule — a sample takes the color of the last quad
 // covering it — because the quads are flat and opaque. `densityMinWidth.test.ts`
 // pins the property the arms are here to price; a real-GPU capture would only
 // re-take these same numbers.

@@ -253,12 +253,12 @@ export interface OffscreenMateSpan {
   mateCumBp?: OffscreenMateLocus
 }
 
-// The contig whose colour is painted over the others at the point, and the
+// The contig whose color is painted over the others at the point, and the
 // union of that contig's alignments under it, since a mark is a column of
-// them. `fillMarks` paints a lane's colours weakest first by the longest
-// alignment each holds, so the colour on top is the one with the strongest
-// such alignment among those under the point; within one colour, the longest
-// alignment under the point decides. An uncoloured lane is one colour.
+// them. `fillMarks` paints a lane's colors weakest first by the longest
+// alignment each holds, so the color on top is the one with the strongest
+// such alignment among those under the point; within one color, the longest
+// alignment under the point decides. An uncolored lane is one color.
 export function offscreenMateAt(
   lane: OffscreenMateLane,
   x: number,
@@ -268,16 +268,16 @@ export function offscreenMateAt(
   if (!strip || !pointerOnStrip(strip, y)) {
     return undefined
   }
-  const colourOf = markColourIndexer(lane)
+  const colorOf = markColorIndexer(lane)
   const strongest = [0]
-  // sparse: a colour with no mark under the point has a hole
+  // sparse: a color with no mark under the point has a hole
   const under: ({ bp: number; refName: string } | undefined)[] = []
   const spans = new Map<string, OffscreenMateLocus>()
   const drawn = new Map<string, OffscreenMateLocus>()
   forEachMark(lane, (data, d, i, mx, w) => {
     let c = 0
-    if (colourOf) {
-      c = colourOf(d, data.mateRefNameIds[i]!)
+    if (colorOf) {
+      c = colorOf(d, data.mateRefNameIds[i]!)
       strongest[c] = Math.max(strongest[c] ?? 0, data.lengths[i]!)
     }
     if (x >= mx && x <= mx + w) {
@@ -294,7 +294,7 @@ export function offscreenMateAt(
       }
     }
   })
-  // colours are numbered in first-seen order, which is the order the paint's
+  // colors are numbered in first-seen order, which is the order the paint's
   // stable sort breaks a tie in, so `>=` lands on the one painted later
   let top: string | undefined
   let topStrongest = -Infinity
@@ -309,24 +309,24 @@ export function offscreenMateAt(
     : undefined
 }
 
-// A small integer per colour a lane paints, resolved once per (dataset,
+// A small integer per color a lane paints, resolved once per (dataset,
 // contig id) and numbered in the order the marks first meet it. None for an
-// uncoloured lane, which is one colour.
-function markColourIndexer(lane: OffscreenMateLane) {
+// uncolored lane, which is one color.
+function markColorIndexer(lane: OffscreenMateLane) {
   const colorFor = lane.markColorFor
   if (!colorFor) {
     return undefined
   }
-  const byColour = new Map<string, number>()
+  const byColor = new Map<string, number>()
   const byId = lane.datasets.map(d =>
     new Int32Array(d.mateRefNameDict.length).fill(-1),
   )
   return (d: number, id: number) => {
     let c = byId[d]![id]!
     if (c === -1) {
-      const colour = colorFor(lane.datasets[d]!.mateRefNameDict[id]!)
-      c = byColour.get(colour) ?? byColour.size
-      byColour.set(colour, c)
+      const color = colorFor(lane.datasets[d]!.mateRefNameDict[id]!)
+      c = byColor.get(color) ?? byColor.size
+      byColor.set(color, c)
       byId[d]![id] = c
     }
     return c

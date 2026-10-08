@@ -320,7 +320,7 @@ describe('readColorCategory', () => {
   })
 
   // Unticking the framing is the only escape hatch under a geometry scheme, and
-  // it used to leave the reads strand-coloured anyway.
+  // it used to leave the reads strand-colored anyway.
   test('unframed, a geometry scheme paints its own bucket, not the strand', () => {
     const supp = makeData({ chainHasSupp: SUPP_REV, flags: 0, strand: 1 })
     expect(readColorCategory(0, supp, 'normal', framedOpts)).toBe('revStrand')

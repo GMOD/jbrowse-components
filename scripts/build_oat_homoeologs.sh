@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 #
 # Build the oat homoeolog dotplot: hexaploid oat against itself, every link
-# coloured by the selection pressure between the two copies.
+# colored by the selection pressure between the two copies.
 #
 # Oat (Avena sativa) is an allohexaploid carrying three subgenomes, A, C and D,
 # so nearly every gene exists three times. The copies of one ancestral gene
@@ -210,7 +210,7 @@ fi
 # this genome the pairs it adds are a different population: their median dS is
 # several times that of the chained ones, which is the ancient grass duplication
 # and gene families rather than the subgenomes. Mixing the two would be
-# invisible in a count and fatal in a figure whose COLOUR is divergence.
+# invisible in a count and fatal in a figure whose COLOR is divergence.
 #
 # A self-comparison also chains each subgenome's own tandem and segmental
 # duplicates, which are paralogs rather than homoeologs. A homoeolog pair is one
@@ -263,7 +263,7 @@ fi
 # The pair table the adapter loads: the two transcript ids, then dN, dS, the
 # synonymous substitution count and the Fisher p.
 # A pair with no measurement is dropped rather than written, since it would
-# otherwise draw with no colour, indistinguishable from one whose ratio happens
+# otherwise draw with no color, indistinguishable from one whose ratio happens
 # to sit at the ramp's bottom.
 if [ ! -f oat.homoeologs.blocks ]; then
   cp oat.kaks.tsv oat.homoeologs.blocks.part
@@ -309,7 +309,7 @@ print(f"\n  dN/dS median {statistics.median(ratios):.3f}, "
       f"quartiles {ratios[len(ratios) // 4]:.3f} and "
       f"{ratios[3 * len(ratios) // 4]:.3f}")
 print(f"  {above} pairs ({above * 100 / len(ratios):.2f}%) above 1, "
-      f"which is the ramp's pivot and the only warm colour in the plot")
+      f"which is the ramp's pivot and the only warm color in the plot")
 
 # The mosaic. A link between two chromosomes of the same homoeologous group
 # (1A-1C, 1A-1D, 1C-1D) is the collinear case; anything else is a segment that
@@ -367,7 +367,7 @@ cat > session.json <<'JSON'
   "views": [
     {
       "type": "DotplotView",
-      "displayName": "Hexaploid oat against itself, coloured by dN/dS",
+      "displayName": "Hexaploid oat against itself, colored by dN/dS",
       "views": [{ "assembly": "oat" }, { "assembly": "oat" }],
       "tracks": ["oat_homoeologs"],
       "color": { "field": "dnds" }
@@ -379,6 +379,6 @@ jb set-default-session --session session.json --out "$APP"
 
 echo
 echo "Built $APP/config.json: the oat assembly, one homoeolog track, and a"
-echo "dotplot session coloured by dN/dS."
+echo "dotplot session colored by dN/dS."
 echo "Serve it and open in a browser, e.g.:"
 echo "  npx serve $(pwd)/$APP"

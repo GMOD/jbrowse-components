@@ -74,7 +74,7 @@ Each section ends with the members a composed model contributes, linked to the p
 | <span id="getter-showreverse">**showReverse**</span><br><code>boolean</code> |  |
 | <span id="getter-showtranslation">**showTranslation**</span><br><code>boolean</code> |  |
 | <span id="getter-sequencetype">**sequenceType**</span><br><code>string</code> |  |
-| <span id="getter-colorpalette">**colorPalette**</span><br><code>ColorPalette</code> | Theme-derived fill and text colour for every cell this display paints |
+| <span id="getter-colorpalette">**colorPalette**</span><br><code>ColorPalette</code> | Theme-derived fill and text color for every cell this display paints |
 | <span id="getter-isdna">**isDna**</span><br><code>boolean</code> | the reverse-complement and translation rows are DNA-only |
 | <span id="getter-effectiveshowreverse">**effectiveShowReverse**</span><br><code>boolean</code> |  |
 | <span id="getter-effectiveshowtranslation">**effectiveShowTranslation**</span><br><code>boolean</code> |  |

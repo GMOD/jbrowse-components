@@ -118,7 +118,7 @@ cascade teaches a reader nothing new about the app.
   `url` and the generator serves the jbrowse-web build. Gap 9.
 - **`scrna_pseudobulk.md`** — delegates its one UI workflow to
   `scatac_pseudobulk` in its own words, and the only thing on it that MOVES (the
-  UMAP filtering the rows, a gene selection recolouring the cells) lives in the
+  UMAP filtering the rows, a gene selection recoloring the cells) lives in the
   react-LGV examples site. Also under an open merge question with its sibling.
 
 **The page has to be restructured first.** Filming a page whose sections are

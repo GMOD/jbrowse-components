@@ -1,11 +1,11 @@
 /**
- * Where a mark's colour is worked out (ADR-202).
+ * Where a mark's color is worked out (ADR-202).
  *
  * The worker holds the features, so it reads from each one only the raw data
- * a colour needs: a category's key, or a number. This module, on the main
- * thread, turns that data into colours through the config. An edit that only
- * changes how data maps to colour — a constant, a palette, a domain, a
- * threshold's cuts, a ramp's ends — then recolours what is already loaded and
+ * a color needs: a category's key, or a number. This module, on the main
+ * thread, turns that data into colors through the config. An edit that only
+ * changes how data maps to color — a constant, a palette, a domain, a
+ * threshold's cuts, a ramp's ends — then recolors what is already loaded and
  * fetches nothing.
  *
  * For example, `color: { field: 'type', scale: 'categorical' }` asks the worker
@@ -51,15 +51,15 @@ import type {
 } from '@jbrowse/core/util/markEncoding'
 import type { MarkColorScale } from '@jbrowse/render-core/marks'
 
-/** A colour over a number: a ramp, or a threshold's bands. */
+/** A color over a number: a ramp, or a threshold's bands. */
 export type ValueColor = ContinuousRef | ThresholdRef
 
-/** How a mark's colour is worked out: one of four ways. */
+/** How a mark's color is worked out: one of four ways. */
 export type ColorSource =
-  /** One colour for every feature; the worker reads nothing for it. */
+  /** One color for every feature; the worker reads nothing for it. */
   | { kind: 'constant'; color: number }
   /**
-   * A colour per category; the worker sends each feature's category as an
+   * A color per category; the worker sends each feature's category as an
    * index into the categories it met, and each is painted here through the
    * config's `domain` and `range`, dealt into `held` (`heldColorSlots`).
    */
@@ -73,11 +73,11 @@ export type ColorSource =
    * they are the `y` values the mark already plots (`fromY`).
    */
   | { kind: 'numbers'; encoding: ValueColor; fromY: boolean }
-  /** A `jexl:` expression the worker evaluates per feature into a colour. */
+  /** A `jexl:` expression the worker evaluates per feature into a color. */
   | { kind: 'expression'; encoding: string }
 
 /**
- * `owner` is the display holding the mark, whose track's categorical colours
+ * `owner` is the display holding the mark, whose track's categorical colors
  * deal into one set of slots; a caller that only asks the worker leaves it
  * out.
  */
@@ -112,9 +112,9 @@ export function markColorOf(
 }
 
 /**
- * What the colour asks the worker to read: a `jexl:` expression whole, a
+ * What the color asks the worker to read: a `jexl:` expression whole, a
  * scale's field alone, and `DEFAULT_MARK_COLOR` where it reads nothing, which
- * the encoder ignores with no colour lane to fill. A number field is asked
+ * the encoder ignores with no color lane to fill. A number field is asked
  * for as a threshold with no cuts: that reads the numbers and flags missing
  * ones without building a ramp, whose cached lookup table would be copied on
  * every fetch.
@@ -134,7 +134,7 @@ export function wireColorOf(color: ColorSource): ColorEncoding {
   }
 }
 
-/** The lanes the worker fills for the colour. */
+/** The lanes the worker fills for the color. */
 export function colorLanesOf(color: ColorSource): MarkLane[] {
   switch (color.kind) {
     case 'constant':
@@ -199,7 +199,7 @@ function numberScaleTable(
 // Each feature's category key, looked up in the worker's list of the keys it
 // met, painted through the config's domain and range, the list reordered to
 // the config's domain for the legend. Keys of another field, or with no
-// categorical config, take the field's own default colours.
+// categorical config, take the field's own default colors.
 function colorByKeys<L extends EncodedChannels>(
   layer: L,
   keys: Uint32Array,
@@ -249,21 +249,21 @@ function colorByKeys<L extends EncodedChannels>(
 const DEFAULT_ABGR = cssColorToABGR(DEFAULT_MARK_COLOR)
 
 /**
- * Set on a layer coloured from data the worker read for an earlier `color`
+ * Set on a layer colored from data the worker read for an earlier `color`
  * declaration: a region its refetch has not reached yet, or never will while
  * it stays off screen. It paints from what it holds, keys through their
- * field's default colours and numbers through a linear ramp over themselves,
- * and stays out of the legend and the hover's colour row, so the mark's scale
+ * field's default colors and numbers through a linear ramp over themselves,
+ * and stays out of the legend and the hover's color row, so the mark's scale
  * and key come only from regions read for the declaration as it now stands.
  */
 export interface HeldColor {
   heldColor?: boolean
 }
 
-// Colours a layer the worker read for an earlier `color` declaration from
+// Colors a layer the worker read for an earlier `color` declaration from
 // what it holds, and flags it `heldColor`: keys in their field's default
-// colours, numbers through a linear ramp over themselves, and the default
-// colour where it holds no colour data. Packed colours, an expression's or
+// colors, numbers through a linear ramp over themselves, and the default
+// color where it holds no color data. Packed colors, an expression's or
 // the density tier's single one, stay as they came and unflagged: they carry
 // no table for the key or the scale to take.
 function colorAsHeld<L extends EncodedChannels>(layer: L): L {
@@ -289,9 +289,9 @@ function colorAsHeld<L extends EncodedChannels>(layer: L): L {
 
 /**
  * The scale a layer paints through: the mark's, for a layer read for the
- * colour as it now stands; its own table, for one still holding an earlier
+ * color as it now stands; its own table, for one still holding an earlier
  * declaration's data (`heldColor`); and none for a layer painting packed
- * colours, a constant or a lane of them, which it paints as they are.
+ * colors, a constant or a lane of them, which it paints as they are.
  */
 export function layerColorScale(
   layer: (EncodedChannels & HeldColor) | undefined,
@@ -305,8 +305,8 @@ export function layerColorScale(
 }
 
 /**
- * One layer, as the worker sent it, with its colour worked out from `color`:
- * the colour lane and scale table the painters, the legend and the hover read.
+ * One layer, as the worker sent it, with its color worked out from `color`:
+ * the color lane and scale table the painters, the legend and the hover read.
  * Exported for multi-way synteny's lane layers, which hold layers outside a
  * region.
  */
@@ -358,9 +358,9 @@ export function withMarkColor<L extends EncodedChannels>(
 }
 
 /**
- * Every layer of a region coloured as `withMarkColor` colours one,
+ * Every layer of a region colored as `withMarkColor` colors one,
  * and the region itself where nothing changed. The display runs this once per
- * region and per set of colours, before anything else reads the region.
+ * region and per set of colors, before anything else reads the region.
  */
 export function withMarkColors(
   region: MarkRegionData,

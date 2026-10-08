@@ -117,7 +117,7 @@ describe('uniforms', () => {
 
   // The min-width floor divides by the width clip space spans, which is the
   // block column and not the canvas
-  test('carries the block column width, the frame, the domain and the colour', () => {
+  test('carries the block column width, the frame, the domain and the color', () => {
     const { f32, u32 } = uniformsFor({
       ...block,
       screenStartPx: 400,

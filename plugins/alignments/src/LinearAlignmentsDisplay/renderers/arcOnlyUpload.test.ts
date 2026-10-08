@@ -155,7 +155,7 @@ describe('a band switched off leaves nothing drawable', () => {
   })
 })
 
-// The straight-line records spread over the laid-out data after the colour
+// The straight-line records spread over the laid-out data after the color
 // bake, so a curved-connector toggle lands inside one layout run.
 describe('a connector-only change uploads only the line pass', () => {
   const withLine = (data: PileupDataResult) => ({

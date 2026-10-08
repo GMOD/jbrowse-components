@@ -18,7 +18,7 @@ const suite: TestSuite = {
   name: 'Mark Display',
   tests: [
     lgvSnapshotTest({
-      name: 'bars from a BED score column, coloured by a categorical scale, with the key and axis',
+      name: 'bars from a BED score column, colored by a categorical scale, with the key and axis',
       snapshot: 'mark-bars',
       loc: 'ctgA:1-20000',
       tracks: ['marks_bars'],
@@ -35,8 +35,8 @@ const suite: TestSuite = {
       config,
       displayTestId,
     }),
-    // A threshold over the plotted value colours each fragment by the value
-    // under it, so a rise across the cut changes colour at the axis: the
+    // A threshold over the plotted value colors each fragment by the value
+    // under it, so a rise across the cut changes color at the axis: the
     // step's flat quads and the linear line's capsules both read it.
     ...(
       [
@@ -53,7 +53,7 @@ const suite: TestSuite = {
         displayTestId,
       }),
     ),
-    // A span coloured by its value is a heatmap: the ramp resolves in the
+    // A span colored by its value is a heatmap: the ramp resolves in the
     // shader off the value lane, a diverging range white at 0.
     lgvSnapshotTest({
       name: 'a heatmap over a positive and negative BigWig, white at 0',
@@ -106,10 +106,10 @@ const suite: TestSuite = {
       config,
       displayTestId,
     }),
-    // The main-thread ramp: raw values on the colour lane, the LUT bound as a
+    // The main-thread ramp: raw values on the color lane, the LUT bound as a
     // texture, and the Canvas2D painter baking the same domain.
     lgvSnapshotTest({
-      name: 'a quantitative ramp coloured by the value it plots',
+      name: 'a quantitative ramp colored by the value it plots',
       snapshot: 'mark-ramp',
       loc: 'ctgA:1-5000',
       tracks: ['marks_ramp'],
@@ -179,11 +179,11 @@ const suite: TestSuite = {
     }),
     // A MAF block is one feature with an `alignments` record per species; a
     // flatten with `key` fans it out into a row each (ADR-186), and a span
-    // coloured by `chr` is the MAF display's colour-by-source-chromosome.
+    // colored by `chr` is the MAF display's color-by-source-chromosome.
     // The adapter lists the species in tree order with the guide tree
     // beside them (ADR-189).
     lgvSnapshotTest({
-      name: 'a MAF fanned out into a row per species in tree order, each span coloured by its source chromosome',
+      name: 'a MAF fanned out into a row per species in tree order, each span colored by its source chromosome',
       snapshot: 'mark-maf-species-rows',
       loc: 'ctgA:1-2000',
       tracks: ['marks_maf'],
@@ -192,7 +192,7 @@ const suite: TestSuite = {
       readySelector: '[data-testid="mark-row-labels"]',
     }),
     // A cells step behind the flatten replaces each species row with its
-    // runs against the reference (ADR-187): the span colours the state, an
+    // runs against the reference (ADR-187): the span colors the state, an
     // insertion paints as a sliver at its anchor, and the text prints each
     // mismatched or inserted base at base zoom.
     lgvSnapshotTest({

@@ -98,7 +98,7 @@ describe('a connection the view can place only one end of', () => {
   })
 
   // The collapse moves both feet onto one coordinate, so keying the cluster on
-  // what the mark DRAWS between asks "same foot, same colour?" — and at any real
+  // what the mark DRAWS between asks "same foot, same color?" — and at any real
   // depth every read stacked on that outer edge answers yes. They coalesced into
   // one mark whose stroke width counted them all and whose `spanBp` was
   // whichever arrived first, so the hover read "Supported by 2 reads" over a

@@ -30,7 +30,7 @@ const NO_INSERTIONS: MultiRowInsertions = {
  * One insertion-mark instance per drawn block whose `lengthField` delta is a
  * gain: centred on the block, since the allele replaces that whole span and
  * has no boundary to sit at, on the block's row key, in `insertionAbgr`, the
- * theme's `insertion` the pileup paints. `under` is the block's own colour,
+ * theme's `insertion` the pileup paints. `under` is the block's own color,
  * which a count reads against where the block is wider than its marker.
  */
 export function multiRowInsertionChannels(

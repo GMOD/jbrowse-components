@@ -44,15 +44,15 @@ const useStyles = makeStyles()(theme => ({
 export interface ValueColor {
   value: string
   count: number
-  /** As dealt: a pair's where `paired`, else the Other colour or the palette's. */
+  /** As dealt: a pair's where `paired`, else the Other color or the palette's. */
   color: string | undefined
   paired: boolean
 }
 
 /**
- * The `unknown` swatch: the colour every row or value with no pair of its own
+ * The `unknown` swatch: the color every row or value with no pair of its own
  * takes; `''` for none from this setting; or undefined for automatic, the
- * palette where it deals and the row's own colour otherwise.
+ * palette where it deals and the row's own color otherwise.
  */
 export interface OtherColor {
   color: string | undefined
@@ -63,7 +63,7 @@ function rowCount(count: number) {
   return `${count.toLocaleString()} ${count === 1 ? 'row' : 'rows'}`
 }
 
-// The swatch picks a colour; Auto and None are the two states it cannot show,
+// The swatch picks a color; Auto and None are the two states it cannot show,
 // pressed while they hold. None is offered only where it differs from Auto.
 const OtherControls = observer(function OtherControls({
   other,
@@ -128,9 +128,9 @@ const OtherControls = observer(function OtherControls({
 })
 
 /**
- * What the rows are coloured by, above the rows: nothing, each row its own
- * colour, picked in the row list, or an attribute, whose values are listed
- * with their colours to pick. Either way the rest take the Other colour.
+ * What the rows are colored by, above the rows: nothing, each row its own
+ * color, picked in the row list, or an attribute, whose values are listed
+ * with their colors to pick. Either way the rest take the Other color.
  */
 const RowColorPanel = observer(function RowColorPanel({
   fields,
@@ -145,9 +145,9 @@ const RowColorPanel = observer(function RowColorPanel({
   fields: readonly string[]
   choice: string
   values: ValueColor[]
-  // Undefined under None, which colours nothing.
+  // Undefined under None, which colors nothing.
   other?: OtherColor
-  // Whether Each row deals a palette colour to the rows with none picked, so
+  // Whether Each row deals a palette color to the rows with none picked, so
   // its Other None differs from Auto.
   dealsByRow: boolean
   onChoice: (choice: string) => void

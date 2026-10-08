@@ -61,7 +61,7 @@ const WIDEST_MARKER_PX = textWidthForNumber(Number.MAX_SAFE_INTEGER)
 
 /**
  * How identity draws, where it does: the heatmap's cells, or the X-Y plot's
- * bars in one colour or on the heatmap's ramp.
+ * bars in one color or on the heatmap's ramp.
  */
 export type IdentityEncoding = 'heatmap' | 'bars' | 'rampBars'
 
@@ -70,12 +70,12 @@ export interface MafRowsEncodeProps {
   /** The rows are drawn base by base (`basesRenderingActive`). */
   basesActive: boolean
   identity: IdentityEncoding | undefined
-  /** the identity ramp's packed colour at each hundredth (`identityLut`) */
+  /** the identity ramp's packed color at each hundredth (`identityLut`) */
   identityColors: Uint32Array
   gpu: MafGpuProps
   /** The rows' source-chromosome ranks, while the rows are colored by them. */
   sourceChromRanks: ReadonlyMap<number, ReadonlyMap<string, number>> | undefined
-  /** each rank's packed colour (`sourceChromRankColors`) */
+  /** each rank's packed color (`sourceChromRankColors`) */
   sourceChromColors: readonly number[]
   rowIndexBySrc: ReadonlyMap<string, number>
   /**
@@ -118,7 +118,7 @@ function codonFills(fill: Record<string, string | undefined>): CodonFills {
  * encodes: the others' channels are empty or absent, which packs nothing and
  * releases the pass's GPU buffer.
  *
- * Main thread on purpose: an edit to colour or row order re-encodes without a
+ * Main thread on purpose: an edit to color or row order re-encodes without a
  * refetch. A fetch costs about 5 ms over 26 species and 62-94 ms over 470
  * (`plugins/maf/benches/mafEncodeRows.bench.ts`), a one-off
  * pause at fetch landing judged not worth a worker split.

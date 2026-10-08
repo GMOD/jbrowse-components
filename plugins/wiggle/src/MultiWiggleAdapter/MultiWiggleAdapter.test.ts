@@ -608,7 +608,7 @@ describe('MultiWiggleAdapter.getSources', () => {
 })
 
 describe('MultiWiggleAdapter.listRowSources', () => {
-  it('lists each subtrack as a source row with its own label and colour', async () => {
+  it('lists each subtrack as a source row with its own label and color', async () => {
     const adapter = new MultiWiggleAdapter(configSchema.create({}))
     adapter.getAdapters = jest.fn().mockResolvedValue([
       { source: 'k1', color: '#f00', group: 'g', dataAdapter: stubDataAdapter },
@@ -1133,7 +1133,7 @@ describe('MultiWiggleAdapter with samplesTsvLocation', () => {
     expect(warnings[0]).toContain('1 of the 3 samples in the subtrack list')
   })
 
-  it('lists the rows in the table order with its colours', async () => {
+  it('lists the rows in the table order with its colors', async () => {
     const { adapter } = adapterWithTsv()
     expect(await adapter.listRowSources()).toEqual({
       field: 'source',

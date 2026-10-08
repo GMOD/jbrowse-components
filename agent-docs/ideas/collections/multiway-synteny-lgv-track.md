@@ -143,7 +143,7 @@ need at zero runtime cost for a fixed locus and set
 reader chooses; then the companion's reference-anchored samples plus a per-path
 walk (`HAPLOTYPE_WALKS_VISION.md:54-73`), which is the only route to "eight
 lanes out of four thousand read eight haplotypes' worth of data". Add
-`identity` to the reader's records so the identity colour mode stops being dead
+`identity` to the reader's records so the identity color mode stops being dead
 on a GBZ lane (`GBZ_HANDOFF.md:288-293`). And measure the reader's `align()`
 against [`gfa_to_pairwise_paf.py`](https://github.com/cmdcolin/gfa-to-pairwise-paf) on the E. coli oracle: the two emit different
 CIGARs for the same walks by design (`50I50D` against `50X`,

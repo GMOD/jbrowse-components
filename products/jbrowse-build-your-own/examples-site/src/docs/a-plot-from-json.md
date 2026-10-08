@@ -1,4 +1,4 @@
-Read as ggplot2: `bar` is `geom_col()`, `encoding.y` is `aes(y)`, the colour's
+Read as ggplot2: `bar` is `geom_col()`, `encoding.y` is `aes(y)`, the color's
 `domain` and `range` are `scale_fill_manual()`, and the `formula` step is
 `mutate()`. The
 [mark display guide](https://jbrowse.org/jb2/docs/config_guides/mark_display/)

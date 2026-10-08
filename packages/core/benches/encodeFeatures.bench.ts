@@ -8,16 +8,16 @@
 // across rounds (agent-docs/reference/BENCHMARKING.md). The first nine ask
 // for the point shape's lanes and the hit index:
 //
-//   native      y: 'score', a constant colour — the encoder's own loop and
+//   native      y: 'score', a constant color — the encoder's own loop and
 //               `feature.get` per channel
 //   control     the same encoding declared a second time, so the harness's
 //               resolution is on the table beside the ratios
 //   jexl-y      y: 'jexl:feature.score' — one jexl evaluation per feature
-//   jexl-color  y native, colour a jexl ternary — one evaluation per feature
-//               plus the CSS colour parse its answer costs
-//   scale-color y native, colour a categorical scale over strand — the
+//   jexl-color  y native, color a jexl ternary — one evaluation per feature
+//               plus the CSS color parse its answer costs
+//   scale-color y native, color a categorical scale over strand — the
 //               field read, the value's table lookup and a pass after the walk
-//   ramp-color  y native, colour a linear ramp the WORKER resolves — the
+//   ramp-color  y native, color a linear ramp the WORKER resolves — the
 //               field read plus a LUT index per feature
 //   ramp-value  the same ramp with the `colorValue` lane named, so the walk
 //               keeps the raw values and the display resolves the scale

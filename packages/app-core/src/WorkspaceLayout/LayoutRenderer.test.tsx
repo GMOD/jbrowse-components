@@ -317,7 +317,7 @@ test('the tab list does not grow, so the panel actions stay beside the tabs', ()
   expect(style.flexShrink).toBe('1')
 })
 
-test('a tab is coloured by both its panel and its selection', () => {
+test('a tab is colored by both its panel and its selection', () => {
   const session = TestSession.create({ name: 't' })
   const p1 = session.panels[0]!.id
   const firstTab = session.tabs[0]!.id

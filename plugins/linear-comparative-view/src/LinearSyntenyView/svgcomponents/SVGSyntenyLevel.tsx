@@ -40,12 +40,12 @@ export default function SVGSyntenyLevel({
     <g transform={`translate(${exportMargin + trackLabelOffset} 0)`}>
       <SvgClipRect id={clipId} width={width} height={levelHeight}>
         {/* The band's ground, which on screen is the renderers' own clear
-          (`syntenyGroundClear` says why it is a known colour and
+          (`syntenyGroundClear` says why it is a known color and
           what depends on it) and here is nothing at all: `renderSvg` paints
           ribbons through `drawSyntenyTrack` without clearing, and the only
           other background in the file is `SVGExportRoot`'s full-bleed themed
           `background.default`. So the export used to disagree with the screen
-          about the one colour all of this is calibrated against — it put
+          about the one color all of this is calibrated against — it put
           ground-blended indel wedges, contrast ink and off-screen mate marks
           onto whatever `background.default` happened to be. */}
         <rect width={width} height={levelHeight} fill={groundColor} />

@@ -24,7 +24,7 @@ adapter dropped it in silence. Three reviews of that state found:
 - **The version argument ADR-217 made for displays holds for the objects under
   them.** A member a 5.x minor adds to `color`, `rows`, `facet` or `scales.y`
   threw on a 5.0 app and cost the whole track. ADR-151 had already added
-  `scheme` and `range` to the colour objects.
+  `scheme` and `range` to the color objects.
 - **The refusal does its work on a write.** The Edit plot dialog parses a draft
   by creating the display's schema, the `displayDefaults` router picks a
   display by whether its sub-schema takes the value, and a settings bag checks

@@ -14,18 +14,18 @@ whose other findings closed with the legacy keys retired.
 A track's `displayDefaults: { color: { field: 'type', scheem: 'tableau' } }`
 fails the track's load: `collectDisplayOverrides`
 (`packages/core/src/pluggableElementTypes/models/expandTrackConfigShorthand.ts`)
-asks each display's colour schema whether it takes the value, the closed
+asks each display's color schema whether it takes the value, the closed
 `MarkColor` refuses the misspelt member inside `refusingUndeclaredKeys`, and a
 value every candidate refuses is a `refused` entry the track preprocessor
 throws on
 ([ADR-134](../../architecture-decision-records/adr-134-displaydefaults-routes-a-value-to-the-displays-that-take-it.md)).
-The same object written on a `displays` entry loads: the colour schema names
+The same object written on a `displays` entry loads: the color schema names
 `scheem` on the console and draws with the field.
 
 ## Why the refusal stays
 
 The router leans on the throw. `color: { field: 'type' }` has to reach the
-displays whose colour maps a field and skip the ones whose colour is a plain
+displays whose color maps a field and skip the ones whose color is a plain
 value, and the only thing that tells them apart is which schema refuses the
 object. Making every undeclared member a warning inside the router would send
 a value to displays that cannot draw it, and warn on configs that are right.

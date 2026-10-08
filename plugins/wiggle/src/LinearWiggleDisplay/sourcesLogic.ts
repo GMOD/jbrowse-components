@@ -13,7 +13,7 @@ import type { WiggleDataResult } from '@jbrowse/wiggle-core'
  *
  * The feature arrays are dropped here and every other attribute kept: what a
  * row IS survives a refetch, and a samples table's columns are what the
- * sidebar colours and bands the rows by.
+ * sidebar colors and bands the rows by.
  */
 export function sourcesFromRegionData(
   rpcDataMap: ReadonlyMap<number, WiggleDataResult>,
@@ -47,13 +47,13 @@ export function sourceWarnings(
 }
 
 /**
- * The grey a source with no colour paints in beside dealt ones in one panel,
- * as ggplot's `na.value`: the default plot colour would read as a dealt one.
+ * The grey a source with no color paints in beside dealt ones in one panel,
+ * as ggplot's `na.value`: the default plot color would read as a dealt one.
  */
 export const UNCOLORED_ROW = '#999'
 
 /**
- * The colour a source's marks paint in: its resolved `rowColor` where
+ * The color a source's marks paint in: its resolved `rowColor` where
  * `marksTakeRowColor`, else its own `color`, which a density row fades to.
  */
 export function markColorOf(

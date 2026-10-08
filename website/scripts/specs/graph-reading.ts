@@ -165,7 +165,7 @@ const kiv2WalksSpec: ScreenshotSpec = {
   ],
 }
 
-// One colour scheme: `uniform` paints the GRCh38 bar the blue the legend gives
+// One color scheme: `uniform` paints the GRCh38 bar the blue the legend gives
 // shared sequence, where the reference-position ramp made it the one rainbow
 // row. The linear view is all of LPA, so the array reads as a stretch of it.
 const kiv2WalkRowsSpec: ScreenshotSpec = {

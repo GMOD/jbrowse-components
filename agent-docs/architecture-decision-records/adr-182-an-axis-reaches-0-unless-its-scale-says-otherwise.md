@@ -1,6 +1,6 @@
 ---
 status: Accepted
-summary: "A linear or symlog value axis reaches 0 whatever the loaded values span, and `scales.y.zero`, Vega-Lite's, on by default, is where that is written: off, the axis spans the values. The rule leaves the hidden line in `getNiceDomain` for a slot, a Score-menu checkbox (Start axis at 0) and the config docs. A density plot, which maps score to colour and rules no band, spans its values either way, and a flat window widens by its value. ggplot2's rule, bars reach 0 and the rest span their data, was put to Colin and declined"
+summary: "A linear or symlog value axis reaches 0 whatever the loaded values span, and `scales.y.zero`, Vega-Lite's, on by default, is where that is written: off, the axis spans the values. The rule leaves the hidden line in `getNiceDomain` for a slot, a Score-menu checkbox (Start axis at 0) and the config docs. A density plot, which maps score to color and rules no band, spans its values either way, and a flat window widens by its value. ggplot2's rule, bars reach 0 and the rest span their data, was put to Colin and declined"
 ---
 
 # ADR-182: An axis reaches 0 unless its scale says otherwise
@@ -29,7 +29,7 @@ moved the quantile off 0 and noted that the axis would have to add it itself.
 Three answers were put to Colin. ggplot2's: a bar reaches its baseline because
 the baseline is part of the bar, so bars keep 0 and points, lines and rules
 span their data. IGV's: every signal axis starts at 0. Vega-Lite's: a `zero`
-property, on by default for a positional scale and off for colour.
+property, on by default for a positional scale and off for color.
 
 ## Decision
 
@@ -41,9 +41,9 @@ caller states it, so the rule lives in the slot and nowhere hidden.
 
 **The Score menu offers it as Start axis at 0**, beside Clip outliers, where
 the display's scale rules a band. A density plot rules none: it maps score to
-colour, so its ramp spans the values whatever the slot says
+color, so its ramp spans the values whatever the slot says
 (`axisReachesZero` in `WiggleScoreConfigMixin`), which also answers the
-leftover from ADR-179's probe, where a GC heatmap spent its colour on 0 to 30
+leftover from ADR-179's probe, where a GC heatmap spent its color on 0 to 30
 that no value reached.
 
 **A flat window widens.** One value in view used to
@@ -75,5 +75,5 @@ always 0, and that is a different statement from the axis reaching 0.
   a rule nothing exposes, and a reader wanting the other picture has only a
   pinned bound, which stops following the data.
 - **A density plot reading the slot too.** There is no axis for 0 to be the
-  bottom of, and the slot's help text would have to explain why a colour ramp
+  bottom of, and the slot's help text would have to explain why a color ramp
   starts where it does.

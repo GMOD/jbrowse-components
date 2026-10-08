@@ -23,9 +23,9 @@ export interface VariantInsertionData {
 
 /**
  * One insertion-mark instance per alt-carrying cell of a record that inserts
- * sequence: the record's reference span, the cell's row and colour, and the
+ * sequence: the record's reference span, the cell's row and color, and the
  * inserted bp. Widening a reference or no-call cell would claim that haplotype
- * has the sequence, so those carry none. The marker is the cell's own colour,
+ * has the sequence, so those carry none. The marker is the cell's own color,
  * widened: "this is an insertion" is its shape and width alone.
  */
 export function variantInsertionChannels(

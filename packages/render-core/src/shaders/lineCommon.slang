@@ -34,19 +34,19 @@ public struct Uniforms {
   public int    valueScaleType;
   // Already resolved from the domain (`resolveSymlogConstant`); read by symlog alone.
   public float  valueSymlogConstant;
-  // `markColor`'s: 0 packs the instance's colour, 1 and 2 read its slot as a
+  // `markColor`'s: 0 packs the instance's color, 1 and 2 read its slot as a
   // value through the ramp.
   public int    rampMode;
   public float  rampMin;
   public float  rampMax;
   public float  rampMidNorm;
   // `markColor`'s threshold: how many cuts are in use, the cuts four to a
-  // vector, and the colour of each interval between them.
+  // vector, and the color of each interval between them.
   public int    colorCutCount;
   public float4 colorCuts[2];
   public float4 colorBands[MAX_COLOR_BANDS];
-  // 1 where the colour field is the plotted `y`, so a threshold's cuts sit on
-  // the y scale and the line changes colour where it crosses one.
+  // 1 where the color field is the plotted `y`, so a threshold's cuts sit on
+  // the y scale and the line changes color where it crosses one.
   public int    colorFromY;
   // CSS px per row band; the canvas height where every instance is on row 0.
   public float  rowHeight;
@@ -73,9 +73,9 @@ public float lineValueYPx(float value, float bandTop, Uniforms u) {
   return bandTop + valueToYPxScaled(value, u.domainMin, u.domainMax, u.rowBandPx, u.valueScaleType, u.valueSymlogConstant);
 }
 
-// A value's y in the band for the colour test, placed UNCLAMPED where
+// A value's y in the band for the color test, placed UNCLAMPED where
 // `lineValueYPx` clamps it to draw: the cuts go through it, and so does the
-// line a threshold colours along. Clamped, a cut outside the domain landed on
+// line a threshold colors along. Clamped, a cut outside the domain landed on
 // the band edge out-of-domain values are clamped onto too, and a value past
 // the domain took the side of that edge rather than its own.
 public float lineColorYPx(float value, float bandTop, Uniforms u) {
@@ -96,14 +96,14 @@ public float4 lineCutYsPx(int from, float bandTop, Uniforms u) {
   return ys;
 }
 
-// Whether a line reads its colour along y: under a threshold over the plotted
-// value, on a row the table does not recolour. The painter asks it too.
+// Whether a line reads its color along y: under a threshold over the plotted
+// value, on a row the table does not recolor. The painter asks it too.
 public bool lineColorAlongY(int rampMode, int colorFromY, bool overridden) {
   return rampMode == RAMP_THRESHOLD && colorFromY != 0 && !overridden;
 }
 
-// A line fragment's colour: along y, the interval the colour y it is read at
-// falls in; otherwise the colour its vertex resolved.
+// A line fragment's color: along y, the interval the color y it is read at
+// falls in; otherwise the color its vertex resolved.
 public float4 lineFragmentColor(float colorYPx, float4 cutYsLo, float4 cutYsHi, float4 own, float alongY, Uniforms u) {
   if (alongY < 0.5) {
     return own;

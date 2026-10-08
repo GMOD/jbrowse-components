@@ -278,7 +278,7 @@ axes mean something different in each:
 the same room as the kilobase segment beside it, and a bubble draws as a lens.
 **Walk rows** needs a graph with walks, and draws each haplotype's route as a
 bar. **Tube map** and **Tube map on reference** need P or W lines, and draw each
-path as a coloured tube through boxed nodes.
+path as a colored tube through boxed nodes.
 
 The track opens in **Anchored**, whose x is the view's own coordinate, so the
 graph lines up under the other tracks and pans and zooms with them. **Ordered**
@@ -286,7 +286,7 @@ and **Force-directed layout** give x another meaning, so the track draws them in
 coordinates of their own, fitted to it, the way a variant matrix does, and adds
 **Zoom in**, **Zoom out** and **Zoom to fit** to its menu; moving the view still
 cuts the new window. A strip along the top of such a track draws each reference
-segment at its bp in the view, in the colour its node has below, so under the
+segment at its bp in the view, in the color its node has below, so under the
 **Reference position** scheme a hue on the strip finds its node in the drawing.
 A triangle at either end of the strip marks reference the graph draws past that
 edge of the window, and **Reference strip at bp** in the track menu turns the
@@ -329,8 +329,8 @@ attaches, with its size in the tooltip.
 ## Bubbles, genes and walks on the drawing
 
 **Show... → Show bubble halos** in the track menu draws the graph's bubbles on
-every node layout. Each bubble is a halo along the bubble's nodes, coloured by
-its type, with a label naming the type, and the legend names each colour. The
+every node layout. Each bubble is a halo along the bubble's nodes, colored by
+its type, with a label naming the type, and the legend names each color. The
 option starts off, because on a base-level cut every SNP's halo is a blob. The
 bubbles come from the bubble index beside an rGFA where there is one. Otherwise
 the graph derives them from the drawing's layering, which covers a GBZ cut, a
@@ -354,7 +354,7 @@ the mean, which is Bandage's rule. **Uniform** turns that off. In a bubble with
 a route over a kilobase, every route has a chip at the far point of its loop
 while the halos are on. The chip names the walks that take the route and gives
 the route's length. The track menu's **Haplotypes** submenu highlights one walk.
-Its nodes keep their colour, its links draw dark, and everything else fades, on
+Its nodes keep their color, its links draw dark, and everything else fades, on
 the reference strip too, so the stretches of reference the walk skips read at
 their bp. A readout beside the legend compares the walk's length with the
 reference walk's.

@@ -51,7 +51,7 @@ import type {
 } from './arcTypes.ts'
 import type { ArcsUploadData } from './types.ts'
 
-// NOTHING IS RE-EXPORTED FROM HERE. The types live in `arcTypes.ts`, colour
+// NOTHING IS RE-EXPORTED FROM HERE. The types live in `arcTypes.ts`, color
 // classification in `arcColors.ts`, region partitioning in `arcRegions.ts`, read
 // grouping in `arcChains.ts`; every consumer imports the module that DEFINES
 // what it wants, so the render path does not pull in two thousand lines of read
@@ -209,11 +209,11 @@ function poolArcScale(inputs: ArcScale[]): ArcScale {
   }
 }
 
-// Colour + shape one group's resolved connections against the pooled scale,
+// Color + shape one group's resolved connections against the pooled scale,
 // COALESCING connections that would draw as the same arc.
 //
 // Every read spanning a junction used to contribute its own instance, and arc
-// colours are opaque with no alpha, so N identical arcs were pixel-identical to
+// colors are opaque with no alpha, so N identical arcs were pixel-identical to
 // one: the picture said "a junction is here" and could not say how many reads
 // said so. Measured on the HG002 chr12 fold-back, a 24 kb window: 89
 // connections over 38 distinct arcs, the busiest drawn 27 times, and a 6-read
@@ -396,7 +396,7 @@ function resolveArcs(
     clusterSupport?: number,
     // WHAT THIS CONNECTION JOINS, when that is no longer what it DRAWS between.
     // An unplaced mark has both feet collapsed onto its on-screen end, so keying
-    // off the drawn feet asks "same foot, same colour?" — and every read at that
+    // off the drawn feet asks "same foot, same color?" — and every read at that
     // outer edge answers yes however far away its own partner is. They then
     // coalesce into one mark whose `support` counts them all and whose `spanBp`
     // is whichever arrived first, so the hover says "Supported by 2 reads" over
@@ -478,15 +478,15 @@ function resolveArcs(
     const p1RegionIndex = regionIndexOf(displayedRegions, p1Ref, p1Bp)
     const p2RegionIndex = regionIndexOf(displayedRegions, p2Ref, p2Bp)
     // Interchromosomal. Always painted the single dedicated interchromosomal
-    // colour: insert size, long-range distance and pair orientation are all
+    // color: insert size, long-range distance and pair orientation are all
     // meaningless across refs (a cross-chromosome "pair orientation" is
-    // arbitrary), so colouring by them just produces visual noise — one uniform
-    // colour regardless of colorField, and regardless of whether the evidence
+    // arbitrary), so coloring by them just produces visual noise — one uniform
+    // color regardless of colorField, and regardless of whether the evidence
     // is a split read or a mate pair. As a TICK that was because the mark
-    // carries no colour of its own. As an ARC the reason is stronger: "crosses
+    // carries no color of its own. As an ARC the reason is stronger: "crosses
     // chromosomes" used to be readable from the mark itself, and it is not from
     // a curve — a same-chromosome cross-region arc crosses the same panel
-    // divider — so the colour is now the ONLY channel carrying it.
+    // divider — so the color is now the ONLY channel carrying it.
     if (p1Ref !== p2Ref) {
       // ONE gate over both marks, which is the point of hoisting it: `showInterchrom`
       // used to sit inside the tick push, so an arc branch added beside it would
@@ -617,7 +617,7 @@ function resolveArcs(
     // `isConcordantPairRead` is the READ filter's rule, shared verbatim, so
     // "Show proper pairs" and this hide the same pairs — one the reads, the
     // other their arcs. But that rule reads the aligner's verdict, and the arc's
-    // COLOUR can disagree with it: a pair flagged proper whose |TLEN| falls
+    // COLOR can disagree with it: a pair flagged proper whose |TLEN| falls
     // below the insert band paints short-insert. Hiding it would take a pink arc
     // off the screen under a setting about ordinary pairs, which reads as a bug
     // — measured, it was 42 of the 48 short-insert arcs in that window.
@@ -830,7 +830,7 @@ export function computeArcsFromPileupData(
  * All three are computed AFTER regionization, which is the other half of the
  * same rule. An arc reaching no displayed region at all is dropped by
  * `arcTouchesRegion`, so keying a swatch off the pre-regionization set would
- * name a colour nothing draws.
+ * name a color nothing draws.
  */
 export interface ArcsByGroupResult {
   byGroup: Map<string, Map<number, ArcsUploadData>>
@@ -844,7 +844,7 @@ export interface ArcsByGroupResult {
   // crosses a seam — two windows either side of a breakpoint, the view read
   // connections exist for — has ink in the overlay only, and must still reserve.
   inkGroupKeys: Set<string>
-  // The arc colour slots actually drawn, across every lane. The legend maps them
+  // The arc color slots actually drawn, across every lane. The legend maps them
   // through `arcSlotCategory`, which needs a setting this pass doesn't
   // have, so the slots stay raw here.
   colorSlots: Set<number>
@@ -937,8 +937,8 @@ export function computeArcsByGroup(
       for (const ct of data.arcColorTypes) {
         colorSlots.add(ct)
       }
-      // A tick carries no colour type — every one of them is
-      // ARC_COLOR_INTERCHROM — so their presence, not a scan of their colours,
+      // A tick carries no color type — every one of them is
+      // ARC_COLOR_INTERCHROM — so their presence, not a scan of their colors,
       // is what keys the swatch.
       if (data.numArcLines > 0) {
         colorSlots.add(ARC_COLOR_INTERCHROM)

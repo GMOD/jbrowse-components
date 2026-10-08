@@ -910,7 +910,7 @@ describe('the y axis', () => {
 
   // Below COMPACT_AXIS_HEIGHT the labels would overlap, so the scale is
   // captioned once at the top-right instead — and the hatches go with the
-  // axis. A scale ruling no band (density rows each in their own colour) is
+  // axis. A scale ruling no band (density rows each in their own color) is
   // captioned the same way.
   test('a scale too short for an axis is captioned, hatches and all', async () => {
     const { container, findByTestId } = renderChrome(

@@ -82,7 +82,7 @@ import type { RenderBlock } from '@jbrowse/render-core/renderBlock'
 
 /**
  * What every feature-glyph shape takes beside the frame: the rows-area scroll
- * and the region's outline colour, which reaches the rect shader as a uniform
+ * and the region's outline color, which reaches the rect shader as a uniform
  * and the painter as a stroke.
  */
 export interface FeatureGlyphParams {
@@ -211,7 +211,7 @@ function canvasEdgesOf(block: RenderBlock, frame: MarkFrame) {
     : undefined
 }
 
-// The fade goes into the colour's alpha, since SvgCanvas has no `globalAlpha`,
+// The fade goes into the color's alpha, since SvgCanvas has no `globalAlpha`,
 // and into the run's key.
 function makeRectFill(ctx: MarkContext2D) {
   let last: number | undefined

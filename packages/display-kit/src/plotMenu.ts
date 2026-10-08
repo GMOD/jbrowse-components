@@ -39,7 +39,7 @@ export function editPlotMenuItems(display: PlotDisplay): MenuItem[] {
               label: 'Edit plot...',
               icon: DataObjectIcon,
               helpText:
-                "This track's colour, grouping, rows, scales and filters as text, as a config file writes them",
+                "This track's color, grouping, rows, scales and filters as text, as a config file writes them",
               onClick: () => {
                 openPlotDialog(display)
               },

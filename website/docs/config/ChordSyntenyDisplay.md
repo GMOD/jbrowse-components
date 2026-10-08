@@ -11,7 +11,7 @@ Auto-generated from the config schema in the source — see the [config guide](/
 
 The circular-view display for a `SyntenyTrack`: each alignment is a ribbon
 between the span it covers on one side and the span its mate covers on the
-other. What a ribbon's colour says is the circular view's `color`, as in
+other. What a ribbon's color says is the circular view's `color`, as in
 the linear synteny view, with its `alpha` and `minAlignmentLength`; these
 slots are the hovered and selected fills:
 

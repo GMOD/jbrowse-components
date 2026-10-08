@@ -37,7 +37,7 @@ test('a configured facet writes no order and is not a custom row order', () => {
 
 // The palette is a pure function of the attribute, so persisting it would buy
 // nothing and cost every session a row table it had to carry.
-test('the config after setColorBy carries no palette colours', () => {
+test('the config after setColorBy carries no palette colors', () => {
   const display = colored()
   expect(getSnapshot(display.configuration).rows).toBeUndefined()
   expect(getSnapshot(display.configuration).rowColor).toEqual({
@@ -64,7 +64,7 @@ test('a second color-by still writes no order', () => {
   expect(display.rowArrangementIsCustom).toBe(false)
 })
 
-// The menu's None writes the dialog's, so a colour by and back is the config
+// The menu's None writes the dialog's, so a color by and back is the config
 // it started from, with no reset to offer.
 test('None after a color-by is the config it started from', () => {
   const display = colored()
@@ -74,7 +74,7 @@ test('None after a color-by is the config it started from', () => {
   expect(getSnapshot(display.configuration).rowColor).toBeUndefined()
 })
 
-// What the rows are coloured by is the reader's view, as every Color by is:
+// What the rows are colored by is the reader's view, as every Color by is:
 // None over a configured one offers no reset, and picking it again is the
 // config's own object.
 test('None over a configured color-by is no custom arrangement', () => {

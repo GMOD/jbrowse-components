@@ -13,7 +13,7 @@ import type {
 /**
  * The insertion markers over the cells: each on its cell's band, drawn where
  * it outgrows the cell's MIN_CELL_PX floor, outlined against the neighbouring
- * cells it reaches across, which are often the same colour.
+ * cells it reaches across, which are often the same color.
  */
 export function variantInsertionParams(s: VariantRenderState) {
   return {

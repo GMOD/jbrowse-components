@@ -20,7 +20,7 @@ digraph maf_rendering {
   keep [label="the field"]
   mismatch [label="mismatch"]
 
-  rowsColor [label="rowsColor\nwhat colours the cells", style=bold]
+  rowsColor [label="rowsColor\nwhat colors the cells", style=bold]
   fallback -> rowsColor  keep -> rowsColor  mismatch -> rowsColor
 
   y [label="y set, off the summary tier,\nidentity not yielding at base level"]

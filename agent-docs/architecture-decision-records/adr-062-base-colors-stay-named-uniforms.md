@@ -15,7 +15,7 @@ is not.
 
 ## Context
 
-Two shader colour selections were converted to uniform-block arrays and both
+Two shader color selections were converted to uniform-block arrays and both
 were wins:
 
 - `read.slang`'s 17-arm `cat == RC_X` chain became `u.readCategoryColor[cat]`,

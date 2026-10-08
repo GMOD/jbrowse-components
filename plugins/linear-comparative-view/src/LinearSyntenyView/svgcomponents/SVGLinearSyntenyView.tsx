@@ -47,7 +47,7 @@ export async function renderToSvg(
   const { views, levels } = model
 
   // Clearance between a row and whatever sits above it. A row starts with its
-  // assembly label, and the ribbon band above it is a solid block of colour, so
+  // assembly label, and the ribbon band above it is a solid block of color, so
   // without this the label's ascenders begin on the band's last pixel and the
   // name reads as part of the ribbons. The first row keeps the flush top edge
   // that every export's assembly label hangs from.

@@ -13,7 +13,7 @@
 // is `lineCenterMark.slang`, whose capsules union under a max blend.
 //
 // The band is the instance's `row`, read through the bound row table as
-// `barMark` reads it: a key resolved to its slot and colour, or dropped off
+// `barMark` reads it: a key resolved to its slot and color, or dropped off
 // clip space where the table hides it. A pass binding none (`rowTableKeys` −1)
 // draws `row` as the band.
 //! targets: wgsl, glsl
@@ -48,7 +48,7 @@ struct LineStepInstance {
 struct VsOut {
   float4 position : SV_Position;
   nointerpolation float4 color : COLOR0;
-  // the y range the fragment's colour is read in: a rise's own span, or a
+  // the y range the fragment's color is read in: a rise's own span, or a
   // level run's value placed unclamped
   nointerpolation float2 colorLine : TEXCOORD0;
   nointerpolation float4 cutYsLo : TEXCOORD1;
@@ -118,10 +118,10 @@ VsOut vs_main(LineStepInstance inst, uint vid : SV_VertexID) {
 
 // The quads stay flat fills: a feature's three quads overlap at the joints so
 // corners fill with no gaps, and per-fragment coverage on an edge two quads
-// both cover would double-blend there. Under a threshold the colour is read at
-// the fragment's own y along a rise, so a step across a cut changes colour at
+// both cover would double-blend there. Under a threshold the color is read at
+// the fragment's own y along a rise, so a step across a cut changes color at
 // the cut, and at the value's y along a level run so a thick line lying on a
-// cut stays one colour.
+// cut stays one color.
 [shader("fragment")]
 float4 fs_main(VsOut v) : SV_Target {
   return lineFragmentColor(

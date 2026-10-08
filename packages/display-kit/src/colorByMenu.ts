@@ -11,7 +11,7 @@ const COLOR_SCHEME_OPTIONS = COLOR_SCHEMES.map(
 )
 
 /**
- * One colour object's block of a Color by menu: the rows picking what it
+ * One color object's block of a Color by menu: the rows picking what it
  * paints, exactly one ticked. `header` names the block where the menu holds
  * more than one.
  */
@@ -21,9 +21,9 @@ export interface ColorByBlock {
 }
 
 /**
- * A track's Color by menu, laid out as the alignments display's: each colour
+ * A track's Color by menu, laid out as the alignments display's: each color
  * object's block in turn, then under "Additional coloring" the rows that
- * adjust the colouring without picking what paints.
+ * adjust the coloring without picking what paints.
  */
 export function colorByMenuItem({
   blocks,
@@ -46,7 +46,7 @@ export function colorByMenuItem({
 }
 
 /**
- * The fill block's constant colour, ticked while it paints, so the block's
+ * The fill block's constant color, ticked while it paints, so the block's
  * tick always names what paints.
  */
 export function solidColorItem(checked: boolean, onClick: () => void) {

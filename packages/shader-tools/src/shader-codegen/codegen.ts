@@ -111,7 +111,7 @@ function tsFieldType(t: UniformFieldType): string {
  * The fix is always the same, so name it here rather than making someone
  * bisect a segfault: declare the array as `float4[N]`. A vector element needs no
  * wrapper, lowers correctly, and occupies the same 16 bytes std140 was padding
- * the scalar to — so one packed colour per element buys nothing. Four to a
+ * the scalar to — so one packed color per element buys nothing. Four to a
  * `uint4` element does, and compiles; colorPack.slang carries when that is
  * worth reaching for.
  */
@@ -657,7 +657,7 @@ function writerParams(attrs: readonly InstanceAttr[]) {
  *
  * `packInstances` covers the case where the caller has one flat array per field
  * and knows the instance count up front. Two encoders in the tree have neither:
- * maf merges runs of same-coloured cells so the count is not known until the
+ * maf merges runs of same-colored cells so the count is not known until the
  * walk ends, and multi-row features skips whatever a hidden legend category
  * filters out. Both had written this class by hand against their own shader's
  * offsets — maf's spelled `push(startBp, endBp, rowIndex, color)` with the four
@@ -1152,7 +1152,7 @@ export function emitInterface(inputs: CodegenInputs) {
         `${baseName}.slang declares a combined sampler ('${unfiltered.name}') ` +
           `and no '//! texture-filter: nearest | linear' covering it is in ` +
           `scope. The filter is a correctness choice with no safe default: a ` +
-          `colour ramp is 'linear' so a sample lands between two entries, and ` +
+          `color ramp is 'linear' so a sample lands between two entries, and ` +
           `a lookup table whose texels are data is 'nearest', where a blend of ` +
           `two texels decodes to a value neither one holds. Declare it here, ` +
           `or name the sampler in the module whose math demands it — every ` +

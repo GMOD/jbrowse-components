@@ -710,7 +710,7 @@ describe('emitInterface textures', () => {
     ).toThrow(/declares a combined sampler .* no '\/\/! texture-filter/)
   })
 
-  // A colour ramp and a row table in one pass: each on its own unit, each
+  // A color ramp and a row table in one pass: each on its own unit, each
   // read through the filter its own module's math needs.
   test('numbers each sampler its own unit, under its own filter', () => {
     const out = emitInterface({

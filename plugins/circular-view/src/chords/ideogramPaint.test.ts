@@ -2,7 +2,7 @@ import { paintRuns } from './ideogramPaint.ts'
 
 const region = { start: 1000, end: 2000 }
 
-test('each bin takes the colour covering most of it', () => {
+test('each bin takes the color covering most of it', () => {
   const runs = paintRuns(
     [
       { start: 1000, end: 1160, color: 'red' },
@@ -34,9 +34,9 @@ test('a span past the region is painted only where it overlaps', () => {
   expect(runs).toEqual([{ start: 1000, end: 2000, color: 'red' }])
 })
 
-// the runs are as many as the colour changes at the bin's resolution, however
+// the runs are as many as the color changes at the bin's resolution, however
 // many spans went in
-test('a thousand spans of one colour are one run', () => {
+test('a thousand spans of one color are one run', () => {
   const spans = Array.from({ length: 1000 }, (_, i) => ({
     start: 1000 + i,
     end: 1001 + i,

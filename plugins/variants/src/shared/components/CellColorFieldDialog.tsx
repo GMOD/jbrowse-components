@@ -83,7 +83,7 @@ const CellColorFieldDialog = observer(function CellColorFieldDialog({
     >
       <Typography variant="body2" gutterBottom>
         Each value of the field gives the variant&apos;s alt cells one palette
-        colour, with a key. Cut points turn a number into ranges instead.
+        color, with a key. Cut points turn a number into ranges instead.
       </Typography>
       <Autocomplete
         freeSolo
@@ -136,7 +136,7 @@ const CellColorFieldDialog = observer(function CellColorFieldDialog({
             ? 'Numbers separated by commas'
             : parsed.length
               ? `${parsed.length + 1} ranges`
-              : 'Blank gives each value its own colour'
+              : 'Blank gives each value its own color'
         }
         onChange={event => {
           setCuts(event.target.value)

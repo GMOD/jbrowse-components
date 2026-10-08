@@ -560,7 +560,7 @@ export async function selectAffected(
     // exports none, the specs of the sibling modules that import it.
     //
     // That second case is a SHARED module inside specs/ (graph-fixtures.ts is
-    // the one today: the graph figures' ready gates, their colour ramp and the
+    // the one today: the graph figures' ready gates, their color ramp and the
     // fixture configs both organisms load). It owns no spec of its own, so
     // without this it selected nothing at all — which is the worst answer a
     // narrowing tool can give, since "nothing to re-render" is indistinguishable

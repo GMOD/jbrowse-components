@@ -1,6 +1,6 @@
 ---
 status: Accepted
-summary: "The quantitative class of track — a feature file's field plotted on a score axis, coloured by another field — is authored in config: a display type may attach to several track types, every score-axis display takes one `scoreField`, Manhattan colours by a field with a worker-shipped category table, and `LinearMarkDisplay` draws `marks: [{ shape, encoding }]` over any feature adapter through one core RPC that evaluates a declared encoding once in the worker. Reopens ADR-095's authoring rung for this class only; field access stays native, jexl is the per-channel escape, measured"
+summary: "The quantitative class of track — a feature file's field plotted on a score axis, colored by another field — is authored in config: a display type may attach to several track types, every score-axis display takes one `scoreField`, Manhattan colors by a field with a worker-shipped category table, and `LinearMarkDisplay` draws `marks: [{ shape, encoding }]` over any feature adapter through one core RPC that evaluates a declared encoding once in the worker. Reopens ADR-095's authoring rung for this class only; field access stays native, jexl is the per-channel escape, measured"
 ---
 
 # ADR-107: The quantitative class is authored in config
@@ -26,13 +26,13 @@ display; Manhattan read `score` off any feature adapter; and wiggle fell back to
 plain `FeatureTrack` over `BedTabixAdapter` with `displays: [{ type:
 'LinearManhattanDisplay' }]` or `[{ type: 'LinearWiggleDisplay' }]` loaded and
 painted from config in a jbrowse-web test. What was missing was the vocabulary
-to say it on purpose: which field, which colour, which mark.
+to say it on purpose: which field, which color, which mark.
 
 The cost that decides the mechanism is per-feature evaluation.
 `plugins/gwas/src/GWASAdapter/scoreTransforms.ts` had measured jexl at ~0.34M
 values/s against ~390M native; `packages/core/benches/encodeFeatures.bench.ts`
 measured the encoder at 237 ns/feature native, 355 ns with a `jexl:` y (1.50x)
-and 405 ns with a `jexl:` colour (1.71x, from 2.35x once the CSS parse was
+and 405 ns with a `jexl:` color (1.71x, from 2.35x once the CSS parse was
 cached per distinct string) over a million synthetic features. Field names are
 therefore the unit, and jexl the escape a channel opts into.
 
@@ -48,12 +48,12 @@ Four moves, one class:
   default `score`, on both wiggle displays and Manhattan, read natively in the
   worker and carried in `rpcProps`. The default reads what the adapter served,
   a `scoreColumn` rewrite included; an explicit name reaches the raw column.
-- **Manhattan colours by a field.** `colorBy` gains `'field'` beside `'normal'`
+- **Manhattan colors by a field.** `colorBy` gains `'field'` beside `'normal'`
   and `'ld'`, with a `colorField` slot (one `color: { field }` object since
-  ADR-131); the worker packs the colour per instance
+  ADR-131); the worker packs the color per instance
   and ships the value table with the payload (the encoder's categorical
   `ScaleTable`, since 2026-09-09), and `categoricalValueColor`
-  derives the colour from the value (integers walk the palette from 1, anything
+  derives the color from the value (integers walk the palette from 1, anything
   else hashes) so regions agree without a round trip. Its legend toggle is
   `showLegend` through `LegendMixin` like every other display's.
 - **A declared encoding, evaluated once in the worker, and a display that draws
@@ -62,7 +62,7 @@ Four moves, one class:
   expression, `color` alternatively to a constant or a `{ field, scale }` where
   the scale is `categorical` (palette, optional `domain` order) or
   `linear`/`log` (a ramp, optional `domain`). A scale belongs to a channel
-  rather than to colour: `glyph` takes the same categorical form with a
+  rather than to color: `glyph` takes the same categorical form with a
   `range` of glyph names, resolved through the one categorical arm, and ships
   its own table for the legend (2026-09-09; the scale is a fraction of the
   jexl ternary's cost, `MARK_ENCODING.md` §"The jexl channel, measured").
@@ -96,7 +96,7 @@ and per-display meaning). Each rung is a real consumer of the one below.
   is `products/jbrowse-web/src/tests/MarkDisplay.test.tsx`.
 - Two worker packers were spellings of `encodeFeatures`, and both sit on it
   since 2026-09-09: the encoder takes a reader function in any channel's
-  place, Manhattan hands it the colouring mode's colour and glyph readers and
+  place, Manhattan hands it the coloring mode's color and glyph readers and
   reads LD's r² over `featureIndex` afterwards, and the example is the bare
   `{ y: scoreColumn }` call with the display owning the domain.
   `reference/MARK_ENCODING.md` §"A reader in a channel's place" has the
@@ -105,8 +105,8 @@ and per-display meaning). Each rung is a real consumer of the one below.
   are wiggle's job, and a `bar` over them would draw the bins twice.
 - A ramp table is per region without a `domain`, and a config that wants one
   legend across regions pins it. A categorical table without a `domain`
-  derives each colour from the value (2026-09-09, the rule Manhattan's field
-  colouring already had), so regions agree either way. Documented at the slot.
+  derives each color from the value (2026-09-09, the rule Manhattan's field
+  coloring already had), so regions agree either way. Documented at the slot.
 - `applyDisplaySettings` / `setSlot` cannot write an array-of-sub-schema slot,
   so the point form is covered from config rather than from a menu row.
 

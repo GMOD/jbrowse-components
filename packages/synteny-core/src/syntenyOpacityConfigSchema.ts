@@ -29,7 +29,7 @@ export interface SyntenyOpacitySnapshot {
 /**
  * #config SyntenyOpacity
  * #category view
- * The synteny views' `opacity` setting, as `color` is their colour: one
+ * The synteny views' `opacity` setting, as `color` is their color: one
  * opacity for every alignment, or a field each alignment carries read into
  * opacities. A number is the constant and lands in `value`; a string is the
  * field and lands in `field`. Under a field, `range` holds the opacities

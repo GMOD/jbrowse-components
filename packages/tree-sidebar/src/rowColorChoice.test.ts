@@ -37,13 +37,13 @@ describe('liftRowColor', () => {
 })
 
 describe('rowColorChoiceOf', () => {
-  it('is None for a name setting that colours no row', () => {
+  it('is None for a name setting that colors no row', () => {
     expect(rowColorChoiceOf(lift({}), false)).toBe('')
     expect(rowColorChoiceOf(lift({ unknown: '' }), false)).toBe('')
     expect(rowColorChoiceOf(lift({ unknown: '' }), true)).toBe('')
   })
 
-  it('is Each row where a pick, an Other colour or the palette colours a row', () => {
+  it('is Each row where a pick, an Other color or the palette colors a row', () => {
     expect(rowColorChoiceOf(lift({}), true)).toBe('name')
     expect(rowColorChoiceOf(lift({ unknown: '#ccc' }), false)).toBe('name')
     expect(
@@ -99,7 +99,7 @@ describe('startingRowColor', () => {
   })
   const tissue = lift({ field: 'tissue', domain: ['t'], range: ['#f00'] })
 
-  it('None colours no row', () => {
+  it('None colors no row', () => {
     expect(rowColorMembers(startingRowColor('', [grey], false))).toEqual({
       field: 'name',
     })
@@ -114,7 +114,7 @@ describe('startingRowColor', () => {
     expect(startingRowColor('tissue', [grey, tissue], false)).toBe(tissue)
   })
 
-  it('starts any other choice with no colour of its own', () => {
+  it('starts any other choice with no color of its own', () => {
     expect(rowColorMembers(startingRowColor('pop', [grey], false))).toEqual({
       field: 'pop',
     })
@@ -160,7 +160,7 @@ describe('rowColorResetTarget', () => {
     ).toEqual(grouped)
   })
 
-  it('clears the colours of a choice the base does not make', () => {
+  it('clears the colors of a choice the base does not make', () => {
     const base = { field: 'group', unknown: '#ccc' }
     expect(
       settled({ field: 'tissue', domain: ['t'], range: ['#abc'] }, base),

@@ -19,7 +19,7 @@ export const COMPACT_AXIS_HEIGHT = 30
 
 /**
  * Whether a scale places anything by y, which is whether its rules draw: it
- * rules at least one band, where `[]` is a scale mapped to colour instead.
+ * rules at least one band, where `[]` is a scale mapped to color instead.
  */
 export function rulesABand(scale: Pick<ValueScale, 'bandTops'>) {
   return (scale.bandTops?.length ?? 1) > 0

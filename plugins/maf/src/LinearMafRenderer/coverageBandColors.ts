@@ -6,9 +6,9 @@ import type { CoverageBandColors } from '@jbrowse/render-core/coverageBand'
 /**
  * The coverage band's palette slots, packed the way the shared band takes
  * them. Resolved from the render state like every other layer, which is what
- * lets the SVG export colour the band from the export-chosen theme.
+ * lets the SVG export color the band from the export-chosen theme.
  *
- * All three interbase kinds take the insertion colour: a MAF alignment has no
+ * All three interbase kinds take the insertion color: a MAF alignment has no
  * clipping, so the softclip/hardclip slots exist only because the shared band
  * declares them.
  */

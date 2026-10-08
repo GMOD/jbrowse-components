@@ -23,7 +23,7 @@ audit.
 
 ## Context
 
-A mark's `encoding`, a colour object, `scales.y`, `facet` and `rows` each
+A mark's `encoding`, a color object, `scales.y`, `facet` and `rows` each
 refused a key they did not declare (`closed: true`), while no display schema
 did: `{ type: 'LinearMarkDisplay', totallyBogus: 1 }` loaded and kept nothing
 but its type and id. Two readers hit the consequence in one audit. A misspelt

@@ -511,8 +511,8 @@ export default function stateModelFactory(
         },
         /**
          * #getter
-         * The identity ramp's packed colour at each hundredth, the default
-         * ramp unless `color` is identity. One array per ramp, so a colour
+         * The identity ramp's packed color at each hundredth, the default
+         * ramp unless `color` is identity. One array per ramp, so a color
          * edit that leaves the ramp alone re-encodes nothing.
          */
         get identityColors(): Uint32Array {
@@ -525,7 +525,7 @@ export default function stateModelFactory(
         },
         /**
          * #getter
-         * Each source chromosome rank's packed colour, `color.range`'s while
+         * Each source chromosome rank's packed color, `color.range`'s while
          * `color` is chromosome. One array per range, as `identityColors`.
          */
         get sourceChromColors(): readonly number[] {
@@ -802,7 +802,7 @@ export default function stateModelFactory(
         /**
          * #getter
          * `TreeSidebarMixin`'s hook: none, since a species row carries no
-         * attribute to colour it by.
+         * attribute to color it by.
          */
         get rowColorFields(): readonly string[] {
           return []
@@ -810,7 +810,7 @@ export default function stateModelFactory(
         /**
          * #getter
          * `TreeSidebarMixin`'s hook: a copy row answers to its sample, so an
-         * order, label, colour or focus written against the sample reaches its
+         * order, label, color or focus written against the sample reaches its
          * copies. None while no row is a copy.
          */
         get rowAlias(): RowAlias | undefined {
@@ -1681,7 +1681,7 @@ export default function stateModelFactory(
         /**
          * #getter
          * The coverage band's palette slots, packed. Its own getter so the
-         * pack — which parses nine CSS colours — is memoized against the
+         * pack — which parses nine CSS colors — is memoized against the
          * palette rather than re-run inside `renderState`, which every scroll
          * frame invalidates.
          */
@@ -2017,7 +2017,7 @@ export default function stateModelFactory(
               colorField === 'mismatch' ||
               colorField === 'codon')
               ? [
-                  `color.range: ${colorField} paints the theme's colours and reads no range`,
+                  `color.range: ${colorField} paints the theme's colors and reads no range`,
                 ]
               : []),
           ]
@@ -2025,7 +2025,7 @@ export default function stateModelFactory(
         /**
          * #getter
          * The Row coloring radio's tick: the X-Y plot where `y` is identity,
-         * else the colour field, codon falling back to the bases where no
+         * else the color field, codon falling back to the bases where no
          * frames file can define a reading frame. Zoom-independent, so the
          * tick never moves under the user as they zoom.
          */
@@ -2048,7 +2048,7 @@ export default function stateModelFactory(
       .views(self => ({
         /**
          * #getter
-         * What colours the cells now: the colour field, or the mismatches
+         * What colors the cells now: the color field, or the mismatches
          * where it cannot draw. The summary tier carries no bases, codons only
          * exist at base level with a frames file, and identity yields at base
          * level (`identityYields`).
@@ -2101,7 +2101,7 @@ export default function stateModelFactory(
         /**
          * #getter
          * How identity draws now: the heatmap's cells, the X-Y plot's bars in
-         * one colour, or its bars on the ramp where `color` is identity too.
+         * one color, or its bars on the ramp where `color` is identity too.
          */
         get identityEncoding(): IdentityEncoding | undefined {
           return self.rowsY === 'identity'
@@ -2176,7 +2176,7 @@ export default function stateModelFactory(
       .actions(self => ({
         /**
          * #action
-         * Write a Row coloring pick: its colour field and bar height.
+         * Write a Row coloring pick: its color field and bar height.
          */
         setRowRendering(rendering: RowRendering) {
           const { color, y } = rowRenderingSettings(rendering)
@@ -2204,7 +2204,7 @@ export default function stateModelFactory(
         /**
          * #getter
          * Positioned deletion runs, labelled with their length where it fits.
-         * Only the bases paint the gap cells the count is coloured against.
+         * Only the bases paint the gap cells the count is colored against.
          */
         get visibleDeletions() {
           return self.rowsVisible && self.basesRenderingActive
@@ -2343,7 +2343,7 @@ export default function stateModelFactory(
          * #getter
          * `LegendMixin`'s hook: the key for whatever `activeRowRendering` is
          * painting, or none where the rendering needs no key (plain bases),
-         * then the CDS frame key while the strip is drawn, then the row colour
+         * then the CDS frame key while the strip is drawn, then the row color
          * key.
          *
          * A dispatch, not a description: each key is built by the module that
@@ -2427,9 +2427,9 @@ export default function stateModelFactory(
          * #getter
          * Whether this display HAS a color key, as opposed to whether one is
          * drawn right now — which is the question "Show legend" is offered on.
-         * The bases key nothing, since they paint the theme's base colours;
+         * The bases key nothing, since they paint the theme's base colors;
          * every other rendering keys what it paints, the CDS strip keys
-         * itself over whichever won, and a row colour keys itself.
+         * itself over whichever won, and a row color keys itself.
          *
          * Overrides `LegendMixin`'s, which reads the scales: those decline on
          * an uninitialized view and on a rank the data has not reported yet, so
@@ -2545,7 +2545,7 @@ export default function stateModelFactory(
            * Every loaded region's upload payload — the rows band's `span`
            * channels beside the coverage band's buffers — keyed by
            * displayedRegionIndex. Held here rather than in the upload's setup
-           * thunk so a theme or colour change
+           * thunk so a theme or color change
            * re-encode without an RPC roundtrip and the memo outlives a
            * context-loss recovery.
            */

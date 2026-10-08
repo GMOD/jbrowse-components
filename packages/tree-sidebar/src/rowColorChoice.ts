@@ -41,7 +41,7 @@ function spareRange({ domain, range }: RowColorSetting) {
 }
 
 /**
- * Whether `a` and `b` pair the same values with the same colours and deal the
+ * Whether `a` and `b` pair the same values with the same colors and deal the
  * same spare `range` entries.
  */
 export function samePairs(a: RowColorSetting, b: RowColorSetting) {
@@ -81,7 +81,7 @@ export function withPair(
 
 /**
  * What the dialog and a menu show `setting` as: its field, `name` for Each
- * row, or '' for None where it colours no row: `name` with no pair and an
+ * row, or '' for None where it colors no row: `name` with no pair and an
  * `unknown` of '', or unset where no palette deals (`paletteDeals`).
  */
 export function rowColorChoiceOf(
@@ -106,10 +106,10 @@ export function rowColorChoiceLabel(choice: string) {
 }
 
 /**
- * The `rowColor` object a choice starts from: None's, which colours no row;
+ * The `rowColor` object a choice starts from: None's, which colors no row;
  * else the first of `from` showing that choice, the current object then the
- * config's, so a reader's colours stand and a config's return; else the
- * field with no colour of its own.
+ * config's, so a reader's colors stand and a config's return; else the
+ * field with no color of its own.
  */
 export function startingRowColor(
   choice: string,
@@ -126,7 +126,7 @@ export function startingRowColor(
 /**
  * What "Reset row order" returns the `rowColor` object to, or undefined while
  * `live` already shows it: the object `live`'s choice starts from in `base`,
- * and nothing under None, which has no colour to return. A reset recolours
+ * and nothing under None, which has no color to return. A reset recolors
  * and never changes the choice, as no other Color by is undone by a reset,
  * and the target is never itself custom, so one reset is the whole way back.
  * Pairs compare as a set.

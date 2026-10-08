@@ -11,20 +11,20 @@ digraph synteny_draw {
   plain [label="one full-span ribbon:\nfour corners in bp, relative to each\naxis' fetch-time origin"]
 
   cigarmode [label="CIGAR display mode"]
-  cigarmode -> coloured    [label=" coloured indels"]
+  cigarmode -> colored    [label=" colored indels"]
   cigarmode -> transparent [label=" transparent indels"]
   cigarmode -> plain       [label=" off"]
-  coloured    [label="the full-span ribbon carries the matches,\nand each indel is painted over it\nin its operation's colour"]
+  colored    [label="the full-span ribbon carries the matches,\nand each indel is painted over it\nin its operation's color"]
   transparent [label="no full-span ribbon: one tile per match\nsegment, indels left see-through.\nA tile fades by its own width"]
 
   marks [label="location markers, and a mark per\nalignment whose mate is off this level\n— clicking one takes the row to that locus"]
-  plain -> marks  coloured -> marks  transparent -> marks
+  plain -> marks  colored -> marks  transparent -> marks
 
-  colours [label="colours packed on the main thread\nand uploaded beside the geometry"]
-  marks -> colours
+  colors [label="colors packed on the main thread\nand uploaded beside the geometry"]
+  marks -> colors
 
-  params [label="frame parameters, never baked into the\ncolours: opacity, thin-alignment fade,\nminimum length, curved or straight,\nthe hovered and clicked feature"]
-  colours -> params -> backend
+  params [label="frame parameters, never baked into the\ncolors: opacity, thin-alignment fade,\nminimum length, curved or straight,\nthe hovered and clicked feature"]
+  colors -> params -> backend
 
   backend [label="one shared canvas per level,\nkeyed per track"]
   backend -> gpu [label=" WebGPU, else WebGL2"]

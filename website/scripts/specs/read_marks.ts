@@ -65,7 +65,7 @@ export const readMarksSpecs: ScreenshotSpec[] = [
   readsSpec('read_marks/depth', DELETION, [['na12878_read_depth', 160]]),
   // The same window with the depth above and each pair's insert size below on
   // a track of its own: a band of pairs near 4.3 kb sits over the dip, in the
-  // colour of a full mapping quality.
+  // color of a full mapping quality.
   {
     ...readsSpec('read_marks/insert_size', DELETION, [
       ['na12878_read_depth', 120],

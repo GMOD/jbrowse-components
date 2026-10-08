@@ -77,12 +77,12 @@ The spelling is grammar-of-graphics vocabulary and costs nothing at runtime:
 | --- | --- | --- |
 | observation unit | a read, or a chain (mates and split segments, one QNAME) | `unit` slot, RPC `facet.unit` |
 | facet | the field the sections stack by, and its domain | `facet` slot, RPC `facet`, `Facet` type |
-| colour channel | the read fill | `color` slot, resolved as `colorBy` |
+| color channel | the read fill | `color` slot, resolved as `colorBy` |
 
 **`unit`, not `group`.** ggplot2's `group` aesthetic and Vega-Lite's `detail`
 channel join observations into one line, which is the connecting line's role
 here. A chain is more than that: the layout packs it (a row is a chain), the
-hit test boxes it, and the split-read colour describes it, which is tidy
+hit test boxes it, and the split-read color describes it, which is tidy
 data's observational unit with reads nested in it. Neither grammar has a flag
 keeping a group whole across facets; each would facet on a group-level
 variable computed first, which is what the chain's representative read and a

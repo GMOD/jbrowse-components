@@ -222,11 +222,11 @@ describe('multi-row track menu', () => {
     expect(labels(subMenuOf(withLegend, 'Show...'))).toContain('Show legend')
   })
 
-  // The row colour key is drawn under the same `showLegend` slot but is not a
+  // The row color key is drawn under the same `showLegend` slot but is not a
   // category vocabulary, so it contributes no "Categories" submenu — and its
   // ordinary track has an empty colorLegend, so gating "Show legend" on
   // colorLegend alone makes the legend's own "x" a one-way door.
-  it('offers "Show legend" for the row colour key with no color key at all', () => {
+  it('offers "Show legend" for the row color key with no color key at all', () => {
     const items = buildMultiRowTrackMenuItems(
       makeSelf({
         colorLegend: [],

@@ -96,7 +96,7 @@ export function buildColorLegend(
   )
 }
 
-// No region need be read when every row paints its own colour.
+// No region need be read when every row paints its own color.
 function everyRowOverridden(rowColorsByIndex: readonly (number | undefined)[]) {
   return (
     rowColorsByIndex.length > 0 && rowColorsByIndex.every(c => c !== undefined)
@@ -104,10 +104,10 @@ function everyRowOverridden(rowColorsByIndex: readonly (number | undefined)[]) {
 }
 
 /**
- * The key the colour field's scale derives from the values the worker found,
+ * The key the color field's scale derives from the values the worker found,
  * each painted through `field`, as every derived key runs it: one row per
- * colour naming every value painted in it, in the field's order, and every bin
- * of a threshold once anything painted. A row painting its own colour paints
+ * color naming every value painted in it, in the field's order, and every bin
+ * of a threshold once anything painted. A row painting its own color paints
  * none of these, so its values stay out.
  */
 export function buildFieldColorLegend(

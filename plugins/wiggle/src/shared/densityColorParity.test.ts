@@ -31,7 +31,7 @@ import type { ScaleTypeCode } from '@jbrowse/render-core/scoreScale'
 import type { WiggleRenderingType } from '@jbrowse/wiggle-core'
 
 // Gate C of agent-docs/architecture-decision-records/adr-095-a-shape-composes-a-scale-at-compile-time.md: both backends land on
-// the same density colour, swept across every scale type. The GPU path is
+// the same density color, swept across every scale type. The GPU path is
 // wiggleDensity.slang's vertex stage —
 //
 //   lerp(white, trackColor, densityGradientT(
@@ -304,7 +304,7 @@ describe.each(CASES)(
   },
 )
 
-test('a score above a degenerate domain is the track colour on both backends', () => {
+test('a score above a degenerate domain is the track color on both backends', () => {
   const canvasFn = makeDensityRgbStringFn(5, 5, SCALE_TYPE_LINEAR, 0, 0, 255)
   const gpu = (score: number) =>
     gpuDensityChannels(score, 5, 5, SCALE_TYPE_LINEAR, 1, 0, [0, 0, 255])
@@ -315,7 +315,7 @@ test('a score above a degenerate domain is the track colour on both backends', (
 })
 
 // The named-ramp gauge (agent-docs/architecture-decision-records/adr-095-a-shape-composes-a-scale-at-compile-time.md): a named
-// ramp on a density track colours both backends through ONE 256-entry LUT —
+// ramp on a density track colors both backends through ONE 256-entry LUT —
 // the same bytes the GPU uploads as the density pass's texture and the
 // Canvas2D/SVG painter indexes as a fillStyle LUT — with each side landing
 // within one bucket of the other, and exactly together at the pivot end.
@@ -576,7 +576,7 @@ describe('bars and points under a gradient', () => {
       ])
     })
 
-    test('without a gradient every instance paints the layer colour', () => {
+    test('without a gradient every instance paints the layer color', () => {
       const fills = paintedFills(renderingType, scores, domainY, undefined)
       expect(new Set(fills)).toEqual(new Set(['rgb(128,128,128)']))
     })

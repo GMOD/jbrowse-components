@@ -76,9 +76,9 @@ const host = (self: object) => self as TreeSidebarHost
 type ArrangementMember = (typeof ROW_ARRANGEMENT_MEMBERS)[number]
 type Arrangement = Partial<Record<ArrangementMember, unknown>>
 
-// A row's name, label and colours are what a row colour is set on, never what
+// A row's name, label and colors are what a row color is set on, never what
 // one is set by.
-const NOT_COLOUR_FIELDS = new Set<string>([
+const NOT_COLOR_FIELDS = new Set<string>([
   ...IDENTITY_FIELDS,
   'id',
   'label',
@@ -186,7 +186,7 @@ export interface ClusterRun {
 /**
  * #stateModel TreeSidebarMixin
  * #category display
- * #crossCuttingMixin Row set with a dendrogram sidebar, its arrangement the display's `rows` config object and its row colours the `rowColor` object, each written as a session edit to the track's config so undo, reset and a share link reach it and it survives unticking the track. Brings the sidebar toggles, the `runClustering` / `clusterRegion` and `sortRowsBy` declarative launch specs `setupTreeSidebarAutoruns` consumes, the row arrangement every shared consumer goes through, the rows derived from it (`editableSources`, `clusterableSources`) with the arrangement dialog's `applyRowEdits`, the `root` getter, and the tree-hover and canvas-ref volatiles the shared sidebar draws through. A display supplies `discoveredRows`, and `guideTreeNewick` where its adapter carries a tree, and overrides the hooks its rows need
+ * #crossCuttingMixin Row set with a dendrogram sidebar, its arrangement the display's `rows` config object and its row colors the `rowColor` object, each written as a session edit to the track's config so undo, reset and a share link reach it and it survives unticking the track. Brings the sidebar toggles, the `runClustering` / `clusterRegion` and `sortRowsBy` declarative launch specs `setupTreeSidebarAutoruns` consumes, the row arrangement every shared consumer goes through, the rows derived from it (`editableSources`, `clusterableSources`) with the arrangement dialog's `applyRowEdits`, the `root` getter, and the tree-hover and canvas-ref volatiles the shared sidebar draws through. A display supplies `discoveredRows`, and `guideTreeNewick` where its adapter carries a tree, and overrides the hooks its rows need
  *
  * The rows are derived in stages, each a computed of its own: the display's
  * `discoveredRows`, then `expandedRows` (`expandRows`: a variant display's
@@ -195,9 +195,9 @@ export interface ClusterRun {
  * `clusterableSources`, narrowed to the focus, then `bandedSources`, stacked
  * in the bands `rowBanding` names.
  *
- * A row's colour is `resolvedRowColors`: its `rowColor` entry (a `name` pair,
- * or the colour `dealtRowColors` deals its attribute value), else its own
- * `color`, else the row palette's colour by name where `rowPaletteDeals`. The
+ * A row's color is `resolvedRowColors`: its `rowColor` entry (a `name` pair,
+ * or the color `dealtRowColors` deals its attribute value), else its own
+ * `color`, else the row palette's color by name where `rowPaletteDeals`. The
  * sidebar draws it as a bar beside the row's label, and a display paints its
  * marks in it where `rowColorPaintsMarks`. Its key is `rowColorScales`, and a
  * click on an entry focuses that entry's rows (`focusLegendEntry`).
@@ -205,7 +205,7 @@ export interface ClusterRun {
  * Every arrangement write reaches the session at once rather than after the
  * track's 400 ms save, so a clustering run is one undo step and undoable the
  * moment its tree appears. "Reset row order" returns each member, and
- * `rowColor` where it sets a row a colour, to what the config.json declares,
+ * `rowColor` where it sets a row a color, to what the config.json declares,
  * or what a track the session owns was added with, and never touches
  * `rows.field`.
  */
@@ -315,8 +315,8 @@ export function TreeSidebarMixin<S extends RowSource = RowSource>() {
       },
       /**
        * #getter
-       * The `rowColor` object: the row attribute whose values take colours,
-       * `name` where it names none, and the values given a colour of their
+       * The `rowColor` object: the row attribute whose values take colors,
+       * `name` where it names none, and the values given a color of their
        * own.
        */
       get rowColorSetting(): RowColorSetting {
@@ -338,7 +338,7 @@ export function TreeSidebarMixin<S extends RowSource = RowSource>() {
       /**
        * #getter
        * The `rows.domain` this display's base declares: the base arrangement
-       * a row palette deals over, so no reorder recolours a row.
+       * a row palette deals over, so no reorder recolors a row.
        */
       get baseRowDomain(): readonly string[] {
         const base = (baseDisplayConfig(self).rows ?? {}) as {
@@ -371,7 +371,7 @@ export function TreeSidebarMixin<S extends RowSource = RowSource>() {
        * Overridable hook: the name a row also answers to, for a display whose
        * rows stand for something named by another name (a variant display's
        * haplotype rows, each answering to its sample). An order, a label, a
-       * colour and a focus written against the alias reach every row answering
+       * color and a focus written against the alias reach every row answering
        * to it. None by default.
        */
       get rowAlias(): RowAlias | undefined {
@@ -518,22 +518,22 @@ export function TreeSidebarMixin<S extends RowSource = RowSource>() {
       /**
        * #getter
        * Overridable hook: whether the rows share one panel, so nothing but
-       * colour tells them apart. False by default.
+       * color tells them apart. False by default.
        */
       get sharesPanel(): boolean {
         return false
       },
       /**
        * #getter
-       * Overridable hook: whether a row's colour paints its data marks, which
-       * holds while nothing else colours them. True by default.
+       * Overridable hook: whether a row's color paints its data marks, which
+       * holds while nothing else colors them. True by default.
        */
       get rowColorPaintsMarks(): boolean {
         return true
       },
       /**
        * #getter
-       * Overridable hook: what one row is called, which titles the row colour
+       * Overridable hook: what one row is called, which titles the row color
        * key where it lists the rows by name in a shared panel. "Row" by
        * default, which only a display of its own that shares a panel would
        * show; a wiggle overlay's rows are subtracks.
@@ -551,12 +551,12 @@ export function TreeSidebarMixin<S extends RowSource = RowSource>() {
       },
       /**
        * #getter
-       * Overridable hook: the row attributes a reader can colour the rows by,
+       * Overridable hook: the row attributes a reader can color the rows by,
        * offered beside None and Each row. By default every attribute a row
-       * carries but its name, label and colours.
+       * carries but its name, label and colors.
        */
       get rowColorFields(): readonly string[] {
-        return extraColumns(self.expandedRows, NOT_COLOUR_FIELDS)
+        return extraColumns(self.expandedRows, NOT_COLOR_FIELDS)
       },
       /**
        * #getter
@@ -579,8 +579,8 @@ export function TreeSidebarMixin<S extends RowSource = RowSource>() {
     .views(self => ({
       /**
        * #getter
-       * Whether the palette deals each row a colour by name: only where the
-       * rows share one panel and their colour paints the marks.
+       * Whether the palette deals each row a color by name: only where the
+       * rows share one panel and their color paints the marks.
        */
       get rowPaletteDeals(): boolean {
         return self.sharesPanel && self.rowColorPaintsMarks
@@ -588,7 +588,7 @@ export function TreeSidebarMixin<S extends RowSource = RowSource>() {
       /**
        * #getter
        * The rows the palette deals over: `expandedRows` in the base
-       * arrangement, so no reorder, focus or relabel recolours a row.
+       * arrangement, so no reorder, focus or relabel recolors a row.
        */
       get rowColorDealRows(): readonly S[] {
         return orderRowsByDomain(
@@ -601,7 +601,7 @@ export function TreeSidebarMixin<S extends RowSource = RowSource>() {
     .views(self => ({
       /**
        * #method
-       * The colour each value takes under `setting` (`dealtValueColors`),
+       * The color each value takes under `setting` (`dealtValueColors`),
        * which the arrangement dialog shows before it writes the setting.
        */
       dealtRowColorsFor(
@@ -617,10 +617,10 @@ export function TreeSidebarMixin<S extends RowSource = RowSource>() {
     .views(self => ({
       /**
        * #getter
-       * Whether `rowColor` gives its field's values colours the config does
-       * not, so "Reset row order" is offered for a recolour too: whether
+       * Whether `rowColor` gives its field's values colors the config does
+       * not, so "Reset row order" is offered for a recolor too: whether
        * `rowColorResetTarget` has anything to write. What the rows are
-       * coloured by is no arrangement, so picking it is never custom.
+       * colored by is no arrangement, so picking it is never custom.
        */
       get rowStylingIsCustom(): boolean {
         return (
@@ -633,8 +633,8 @@ export function TreeSidebarMixin<S extends RowSource = RowSource>() {
       },
       /**
        * #getter
-       * What the rows are coloured by, as the arrangement dialog and a menu
-       * offer it: '' for none dealt, `name` for a palette colour each, or an
+       * What the rows are colored by, as the arrangement dialog and a menu
+       * offer it: '' for none dealt, `name` for a palette color each, or an
        * attribute.
        */
       get rowColorChoice(): string {
@@ -654,7 +654,7 @@ export function TreeSidebarMixin<S extends RowSource = RowSource>() {
       },
       /**
        * #getter
-       * The attribute the rows are coloured by, or '' by `name`.
+       * The attribute the rows are colored by, or '' by `name`.
        */
       get rowColorAttribute(): string {
         const { field } = self.rowColorSetting
@@ -662,7 +662,7 @@ export function TreeSidebarMixin<S extends RowSource = RowSource>() {
       },
       /**
        * #getter
-       * The colour each value of the config's `rowColor` field takes, listed
+       * The color each value of the config's `rowColor` field takes, listed
        * pairs first and then in the order dealt.
        */
       get dealtRowColors(): ReadonlyMap<string, string> {
@@ -672,7 +672,7 @@ export function TreeSidebarMixin<S extends RowSource = RowSource>() {
     .views(self => ({
       /**
        * #getter
-       * The attributes a reader can colour the rows by: `rowColorFields`, and
+       * The attributes a reader can color the rows by: `rowColorFields`, and
        * the current one where the rows lack it, so it still shows as chosen.
        */
       get rowColorAttributesOffered(): readonly string[] {
@@ -685,9 +685,9 @@ export function TreeSidebarMixin<S extends RowSource = RowSource>() {
       },
       /**
        * #getter
-       * Each row's colour, by name: its `rowColor` entry, else its own
+       * Each row's color, by name: its `rowColor` entry, else its own
        * `color`, else the palette's where `rowPaletteDeals`. The one answer
-       * every display paints a row's colour from.
+       * every display paints a row's color from.
        */
       get resolvedRowColors(): ReadonlyMap<string, string> {
         return resolveRowColors(
@@ -720,7 +720,7 @@ export function TreeSidebarMixin<S extends RowSource = RowSource>() {
        * The rows in the reader's arrangement, each with its resolved
        * `rowColor`, and with no focus or band: the list the arrangement dialog
        * edits, so a submit writes back only what the reader chose.
-       * `expandedRows` itself while nothing is arranged or coloured.
+       * `expandedRows` itself while nothing is arranged or colored.
        */
       get editableSources(): S[] {
         return withRowColors(
@@ -734,7 +734,7 @@ export function TreeSidebarMixin<S extends RowSource = RowSource>() {
       },
       /**
        * #getter
-       * What the row colour key and its focus read of the colours.
+       * What the row color key and its focus read of the colors.
        */
       get rowColorKeyInputs(): RowColorKeyInputs {
         const setting = self.rowColorSetting
@@ -749,10 +749,10 @@ export function TreeSidebarMixin<S extends RowSource = RowSource>() {
     .views(self => ({
       /**
        * #getter
-       * The row colour key, which every display spreads into its
+       * The row color key, which every display spreads into its
        * `colorScales`: one scale titled by the `rowColor` field, or none
        * where it has no entries. Its entries (`rowColorKeyEntries`) show
-       * where the labels cannot name the colours: by an attribute, or by
+       * where the labels cannot name the colors: by an attribute, or by
        * name in a shared panel. By name on stacked rows the labels are the
        * key.
        */
@@ -1120,7 +1120,7 @@ export function TreeSidebarMixin<S extends RowSource = RowSource>() {
          * #action
          * Return every arrangement member — order, labels, tree, provenance
          * and focus — to what the config declares, leaving `rows.field`, and
-         * the `rowColor` colours to `rowColorResetTarget`: the config's for
+         * the `rowColor` colors to `rowColorResetTarget`: the config's for
          * the choice, which stays.
          */
         resetRowArrangement() {
@@ -1140,7 +1140,7 @@ export function TreeSidebarMixin<S extends RowSource = RowSource>() {
         },
         /**
          * #action
-         * Colour the rows by `choice`, as a menu picks it: '' for None,
+         * Color the rows by `choice`, as a menu picks it: '' for None,
          * `name` for Each row, or an attribute, starting from `rowColorFor`.
          * A pick of the current choice writes nothing.
          */
@@ -1155,8 +1155,8 @@ export function TreeSidebarMixin<S extends RowSource = RowSource>() {
     .actions(self => ({
       /**
        * #action
-       * `LegendHost`'s hook: a click on a row colour key entry narrows the
-       * rows to those it lists. Every other scale's entries name colours, not
+       * `LegendHost`'s hook: a click on a row color key entry narrows the
+       * rows to those it lists. Every other scale's entries name colors, not
        * rows, and stay inert.
        */
       focusLegendEntry(scaleId: string, value: string) {

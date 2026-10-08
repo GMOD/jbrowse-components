@@ -1,7 +1,7 @@
 ---
 id: syntenyopacity
 title: SyntenyOpacity
-description: "The synteny views' opacity setting, as color is their colour: one opacity for every alignment, or a field each alignment carries read into opacities. A number is the constant and lands in…"
+description: "The synteny views' opacity setting, as color is their color: one opacity for every alignment, or a field each alignment carries read into opacities. A number is the constant and lands in value;…"
 sidebar_label: View -> SyntenyOpacity
 ---
 
@@ -31,7 +31,7 @@ Auto-generated from the config schema in the source — see the [config guide](/
 
 _See the **Config slots** section below for all available configuration fields._
 
-The synteny views' `opacity` setting, as `color` is their colour: one
+The synteny views' `opacity` setting, as `color` is their color: one
 opacity for every alignment, or a field each alignment carries read into
 opacities. A number is the constant and lands in `value`; a string is the
 field and lands in `field`. Under a field, `range` holds the opacities

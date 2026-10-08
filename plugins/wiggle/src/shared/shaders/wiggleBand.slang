@@ -106,7 +106,7 @@ float bandCoverage(float insideTopPx, float insideBottomPx) {
 }
 
 // Each band between two cuts covers the part of the ink its cut lines bound,
-// so an edge lying on a cut splits cleanly between the two colours.
+// so an edge lying on a cut splits cleanly between the two colors.
 [shader("fragment")]
 float4 fs_main(VsOut fragIn) : SV_Target {
   float y = fragIn.yPx;

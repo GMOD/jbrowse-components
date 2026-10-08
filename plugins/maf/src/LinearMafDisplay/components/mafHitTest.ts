@@ -86,7 +86,7 @@ function rowStackOf(model: RowGeometry) {
 }
 
 /**
- * The row whose colour the pixel carries, which is not always the row whose
+ * The row whose color the pixel carries, which is not always the row whose
  * slot the pixel centre falls in.
  *
  * Both painters put a row's band at `rowBandOffsetPx` inside its slot and floor

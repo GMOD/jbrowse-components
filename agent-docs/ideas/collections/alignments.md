@@ -41,7 +41,7 @@ worse than the current explicit setting.
 
 **Strand-split allele bars in the coverage band.** `mismatchStrands` already
 ships and `countSnpsAtPosition` already reads it — the tooltip's Strands column
-is built from it — so splitting each coloured segment fwd/rev, or flagging an
+is built from it — so splitting each colored segment fwd/rev, or flagging an
 allele whose strand ratio is extreme, is a compute-side change with no new
 payload. Strand bias is one of the two things a reviewer checks a candidate SNV
 for, and the band is where they are looking when they check it. What is
@@ -56,7 +56,7 @@ already answers "is there a real SNP in this bp range" against the local depth �
 it exists for the hover tooltip at wide bpPerPx — so wiring it to a menu item and
 a keyboard shortcut gives variant-to-variant navigation off data already on the
 main thread. Its threshold is the caller's, so this should read the same
-`coverageSnpMinFrequency` the band's colours now do rather than inventing a
+`coverageSnpMinFrequency` the band's colors now do rather than inventing a
 second notion of significant. Bounded by the fetched region, which is the honest
 limit and worth saying in the UI: "next in view", not "next in the genome".
 
@@ -129,7 +129,7 @@ only at the end of that, and `MAX_GROUPS = 40` is still worth keeping as a
 cardinality sanity check on `tag`, which is the one dimension the data decides.
 
 **Intern `readTagValues` the way `readNextRefs` was interned.** Both CPU-baked
-colour schemes (`tag`, `mateRefName`) ship `readTagValues: string[]` — one string
+color schemes (`tag`, `mateRefName`) ship `readTagValues: string[]` — one string
 per read across the RPC boundary — and it is the shape this plugin has already
 measured and deleted once, one field over. `shared/readNextRefs.ts` records the
 number for the identical array: **153,677 strings holding one distinct value,
@@ -175,8 +175,8 @@ waits on a feature request rather than on any code.
 
 **Differential transcript usage** — two ways in, and they are different
 products. A table join reads per-transcript counts from a spreadsheet and
-colours a transcript track from a column, which is the SV inspector's shape
-applied to gene models. A numeric ramp skips the table and colours from a score
+colors a transcript track from a column, which is the SV inspector's shape
+applied to gene models. A numeric ramp skips the table and colors from a score
 already on the feature. The join answers the real question and needs a whole
 UI; the ramp is cheap and answers a narrower one. Picking between them is the
 first move, and neither is started.

@@ -42,7 +42,7 @@ export type SyntenyCell =
 export interface SyntenyRenderState extends FrameDimensions {
   overdrawPx: number
   /**
-   * What the frame clears to, and the colour every fill is calibrated against —
+   * What the frame clears to, and the color every fill is calibrated against —
    * the page theme's `background.paper`. The band's, not a track's: the frame is
    * painted with an empty `perTrack` too, which is the one frame where it is the
    * only thing drawn. `syntenyGroundClear` carries why an indel wedge and the

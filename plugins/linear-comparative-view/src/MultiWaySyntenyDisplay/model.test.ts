@@ -495,13 +495,13 @@ test('Solid color... paints the kept constant and opens the picker; Default drop
   expect(display.geneColorSettings.color).toMatchObject({ field: 'name' })
 })
 
-test('a jexl gene colour is no constant', () => {
+test('a jexl gene color is no constant', () => {
   const display = createDisplay()
   setConf(display, ['color', 'value'], "jexl:'red'")
   expect(display.geneSolidColor).toBeUndefined()
 })
 
-test('gene names the hash puts on one colour each take their own', () => {
+test('gene names the hash puts on one color each take their own', () => {
   const display = createDisplay()
   anchorGenes(display, [
     namedGene('g1', 'protein_coding', 100, 300),
@@ -514,7 +514,7 @@ test('gene names the hash puts on one colour each take their own', () => {
   expect(new Set(fills).size).toBe(3)
 })
 
-test('a ribbon colour pick keeps the ramp the config declares', () => {
+test('a ribbon color pick keeps the ramp the config declares', () => {
   const display = createDisplay()
   setConf(display, 'ribbonColor', {
     field: 'identity',
@@ -1621,7 +1621,7 @@ describe('two lanes sharing an insertion the anchor lacks', () => {
     )
     return display
   }
-  test('the lanes draw no mark for it, and their pair link crosses it in one colour', () => {
+  test('the lanes draw no mark for it, and their pair link crosses it in one color', () => {
     const display = setUp()
     const glyphs = display.laneCells.cells.get(glyphsKey(1))
     expect(glyphs?.kind === 'glyphs' && glyphs.data.rectColors.length).toBe(0)

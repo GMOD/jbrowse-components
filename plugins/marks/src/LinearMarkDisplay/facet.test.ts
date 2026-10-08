@@ -55,7 +55,7 @@ test('a hidden section leaves every lane, size and x2Ref included', () => {
   expect([...out.x2Ref!]).toEqual([1, 1])
 })
 
-test('a hidden section keeps a constant colour as one number', () => {
+test('a hidden section keeps a constant color as one number', () => {
   const out = hideFirstSection({ ...linkLayer(), color: 0xff0000ff })
   expect(out.count).toBe(2)
   expect(out.color).toBe(0xff0000ff)

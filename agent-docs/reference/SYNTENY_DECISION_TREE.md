@@ -1,6 +1,6 @@
 ---
 name: synteny-decision-tree
-description: What a comparative track decides — the drawing surface, a fetch's request at this zoom, an alignment's colour, and how a ribbon is built and picked — as four decision graphs. Read before touching a level-of-detail tier, colour mode, ribbon geometry or the pick index.
+description: What a comparative track decides — the drawing surface, a fetch's request at this zoom, an alignment's color, and how a ribbon is built and picked — as four decision graphs. Read before touching a level-of-detail tier, color mode, ribbon geometry or the pick index.
 audience: internal
 kind: spec
 ---
@@ -10,7 +10,7 @@ kind: spec
 A comparative track is the one track type whose data is about **two** coordinate
 systems, and every decision below follows from that. Four of them: **which
 surface** draws the alignments, **what a fetch asks for** at this zoom, **what
-colour** an alignment takes, and **how a ribbon is built, painted and picked**.
+color** an alignment takes, and **how a ribbon is built, painted and picked**.
 
 Depth: [synteny-lod](SYNTENY_LOD.md) for the tiers and for what
 the pick index can and cannot discriminate, [shared-canvas-views](SHARED_CANVAS_VIEWS.md)
@@ -26,10 +26,10 @@ for why these displays own their fetch and share a container's canvas.
   or a line per alignment.
 - **`LGVSyntenyDisplay`** shows the same track inside one ordinary linear view —
   and does it by **reusing the alignments display's own React component**, so a
-  synteny feature there rows and colours like a read, with menu items for
+  synteny feature there rows and colors like a read, with menu items for
   linking out to a comparative view.
 
-The first two share their fetch, colour and geometry machinery
+The first two share their fetch, color and geometry machinery
 (`packages/synteny-core`); the third is an alignments display wearing a synteny
 adapter.
 
@@ -50,17 +50,17 @@ adapter.
   them **on the main thread, in a getter that feeds the key** — `auto` is a
   preference, and the two are separate types so the resolution cannot drift back
   into the adapter.
-- **`colorBy` is not in the key.** Colours are recomputed on the main thread from
+- **`colorBy` is not in the key.** Colors are recomputed on the main thread from
   the geometry already in hand.
 
-## What colour an alignment takes
+## What color an alignment takes
 
-![How a synteny colour mode resolves](diagrams/synteny-colour.svg)
+![How a synteny color mode resolves](diagrams/synteny-color.svg)
 
 One module serves both views. The modes are a closed list plus one open arm:
 
-- **default** paints matches in the match colour (and the dotplot's flat point
-  colour); **strand** splits forward from reverse.
+- **default** paints matches in the match color (and the dotplot's flat point
+  color); **strand** splits forward from reverse.
 - **query / target / reference** paint by chromosome, from the assembly's
   palette **handed out by position** in the chromosome order.
 - **identity, mean identity, mapping quality, dN/dS** are named ramps because
@@ -68,10 +68,10 @@ One module serves both views. The modes are a closed list plus one open arm:
   mapping quality tops out at 60, dN/dS is read against 1.
 - **`attribute:<name>`** is the open arm — any numeric column the track declares,
   over the range the fetched features actually cover.
-- A feature with no value on the channel takes the **missing-data colour**, never
+- A feature with no value on the channel takes the **missing-data color**, never
   the bottom of the ramp.
 
-CIGAR sub-instances keep their operation colours, and every colour here is fully
+CIGAR sub-instances keep their operation colors, and every color here is fully
 opaque: plot-wide opacity is a frame parameter.
 
 ## How a ribbon is built, painted and picked
@@ -82,7 +82,7 @@ opaque: plot-wide opacity is a frame parameter.
   origin**, which keeps them small enough for a single float per corner; the
   shader turns them into screen X with the pan offset of the frame.
 - CIGAR detail is emitted only when the alignment is a couple of pixels wide and
-  the fine tier is loaded, and then the display mode decides its shape: coloured
+  the fine tier is loaded, and then the display mode decides its shape: colored
   indels painted over a full-span ribbon, or match tiles with the indels left
   see-through, or no CIGAR at all.
 - Markers and off-screen-mate marks are emitted with the geometry. A mark stands
@@ -108,10 +108,10 @@ opaque: plot-wide opacity is a frame parameter.
 - **Identity is never recomputed from the CIGAR.** An M-style CIGAR folds
   mismatches into matches, so a recompute reports near-zero divergence for a
   divergent alignment.
-- **Chromosome colours are handed out, not hashed.** Hashing collided — rice's
+- **Chromosome colors are handed out, not hashed.** Hashing collided — rice's
   twelve chromosomes landed in nine buckets — and the two views had drifted onto
   different schemes while each carried a comment saying they could not.
-- **Opacity is a frame parameter, never baked into the colour bytes.** Baked, an
+- **Opacity is a frame parameter, never baked into the color bytes.** Baked, an
   opacity drag recomputed and re-uploaded every instance once a frame.
 - **Turning markers off paints them to nothing** rather than removing them,
   which keeps the toggle out of the fetch key.
@@ -141,13 +141,13 @@ consumer actually needs — here, that the worker's pixel-sized culls stay valid
 within a 2x zoom-in.
 
 **Separate the bytes that are data from the parameters that are frame state.**
-Geometry comes from the fetch, colours are recomputed on the main thread from
+Geometry comes from the fetch, colors are recomputed on the main thread from
 that geometry, and opacity, fades and the hovered id are per-frame uniforms.
-Three layers, each invalidated by a different thing, so a colour change
+Three layers, each invalidated by a different thing, so a color change
 re-uploads without a refetch and an opacity drag does neither.
 
 **Hand out palette entries by position; do not hash into a palette.** A hash
-gives two members of the same set one colour, silently, and only at the sizes
+gives two members of the same set one color, silently, and only at the sizes
 nobody tests. If the caller knows the ordering — and it usually does — the
 palette is an array index.
 

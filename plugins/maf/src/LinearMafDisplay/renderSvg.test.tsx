@@ -74,7 +74,7 @@ test('a dismissed color key stays out of the export', async () => {
   expect(draw(await renderSvg(display, {}))).not.toContain('color-legend')
 })
 
-// A score-0 summary bar is the match colour at alpha 64/255.
+// A score-0 summary bar is the match color at alpha 64/255.
 const SUMMARY_FILL_OPACITY = `fill-opacity="${64 / 255}"`
 
 function summaryTierDisplay() {

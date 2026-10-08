@@ -107,7 +107,7 @@ export {
 // equally light and equally colorful, so it cannot be one more hue.
 export const NO_CATEGORY_COLOR = '#afafaf'
 
-// What a colour declaration paints where it reads nothing it can colour, so a
+// What a color declaration paints where it reads nothing it can color, so a
 // misconfiguration surfaces rather than passing for the no-category grey.
 export const MISCONFIGURED_COLOR = '#808080'
 
@@ -228,7 +228,7 @@ export function relight(
  * once per feature, and what a reader saw was every unlabelled feature in one
  * strong color: a large fake category, drawn over the real ones. Grey says the
  * only true thing about a feature with no value for the attribute you asked to
- * colour by.
+ * color by.
  *
  * @param str - The string to generate a color from
  * @returns A CSS hex color string

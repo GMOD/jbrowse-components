@@ -1,6 +1,6 @@
 // Everything the pangenome graph figures share, whichever organism they draw:
 // the fixture configs and the switches that repoint them at a local build, the
-// ready gates, the graph track entry, and the reference-position colour ramp.
+// ready gates, the graph track entry, and the reference-position color ramp.
 //
 // This was the preamble of specs/graph.ts, which held both organisms in 5,524
 // lines and is now specs/graph-ecoli.ts and specs/graph-hprc.ts. Of the 124
@@ -50,7 +50,7 @@ const HOSTED_DEMO = 'https://jbrowse.org/demos/ecoli_pangenome'
 // deterministic, so no graph spec needs a raised diffThreshold: FMMM seeded its
 // initial placement from clock() until the plugin fixed the seed, and the ~2%
 // of pixels that moved on every regen was enough to hide a real change (an
-// orange recolour shipped as goldenrod in three figures under that threshold).
+// orange recolor shipped as goldenrod in three figures under that threshold).
 //
 // Every fixture names the plugin's unversioned npm url
 // (test_data/graphgenomeview/README.md), so a plugin publish moves these
@@ -78,7 +78,7 @@ export const graphCutDrawn = (tier: 'fine' | 'coarse') =>
 
 // A graph track's display entry, its props flat (plugin 4.0.7; a 4.0 `pane`
 // still loads). What it states wins over the display config's layout and
-// colour. `paneHeight`, the standalone view's ceiling, is the track's `height`
+// color. `paneHeight`, the standalone view's ceiling, is the track's `height`
 // here; unstated, the track is the config's 300 px.
 export const graphTrack = (trackId: string, props: Record<string, unknown>) => {
   const { paneHeight, ...rest } = props

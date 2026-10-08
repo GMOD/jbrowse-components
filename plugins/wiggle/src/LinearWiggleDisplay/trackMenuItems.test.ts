@@ -166,10 +166,10 @@ describe('the wiggle display track menu', () => {
     expect(session.queuedDialogs[0]![1]).toMatchObject({ model: display })
   })
 
-  // The one colour row, whatever the track: with subtracks the dialog is the
-  // grid, and with one it is the plot's two colours, which the menu used to
+  // The one color row, whatever the track: with subtracks the dialog is the
+  // grid, and with one it is the plot's two colors, which the menu used to
   // reach only through a JSON box.
-  it('offers the one colour row on every track, and offers it live', () => {
+  it('offers the one color row on every track, and offers it live', () => {
     for (const display of [
       makeDisplay().display,
       makeDisplay({ sources: ['a'], faceted: false }).display,
@@ -183,7 +183,7 @@ describe('the wiggle display track menu', () => {
     }
   })
 
-  // A swatch waits for no row list, and this is the only colour route a plain
+  // A swatch waits for no row list, and this is the only color route a plain
   // BigWig has — gating it on the rows greyed it out until a fetch landed.
   it('offers it before any subtrack has arrived', () => {
     const { createDisplay } = createTestEnvironment()
@@ -239,9 +239,9 @@ describe('the wiggle display track menu', () => {
   })
 })
 
-// Edit plot... holds the colour among the other plot settings, so one row in
-// the menu says colour.
-it('names colour once in the menu', () => {
+// Edit plot... holds the color among the other plot settings, so one row in
+// the menu says color.
+it('names color once in the menu', () => {
   for (const faceted of [true, false]) {
     const said = labels(
       makeDisplay({ faceted }).display.trackMenuItems(),

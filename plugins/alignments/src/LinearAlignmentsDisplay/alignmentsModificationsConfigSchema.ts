@@ -18,7 +18,7 @@ const CYTOSINE_CONTEXTS = [
  * #category display
  * The alignments displays' `modifications` setting: what the `modifications`
  * and `bisulfite` fields of [AlignmentsBaseColor](../alignmentsbasecolor)
- * draw. The by-type view paints each MM/ML call its type's colour above
+ * draw. The by-type view paints each MM/ML call its type's color above
  * `threshold`; `twoColor` paints the unmodified side blue as well, and
  * `fillUnmarked` paints every cytosine in `cytosineContext` whether the
  * basecaller listed it or not, which is the methylation view.
@@ -49,7 +49,7 @@ export const alignmentsModificationsConfigSchema = ConfigurationSchema(
       type: 'number',
       defaultValue: 10,
       description:
-        'hide a call whose probability is under this percent in the by-type view; the two-colour view cuts at 50 and the methylation fill paints every cytosine',
+        'hide a call whose probability is under this percent in the by-type view; the two-color view cuts at 50 and the methylation fill paints every cytosine',
     },
     /**
      * #slot
@@ -58,7 +58,7 @@ export const alignmentsModificationsConfigSchema = ConfigurationSchema(
       type: 'boolean',
       defaultValue: false,
       description:
-        'paint the unmodified side blue as well as the modified side its colour, under modifications and bisulfite alike',
+        'paint the unmodified side blue as well as the modified side its color, under modifications and bisulfite alike',
     },
     /**
      * #slot

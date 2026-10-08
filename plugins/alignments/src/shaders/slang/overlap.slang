@@ -9,7 +9,7 @@
 // a point — which is exactly what the pileup cannot show on its own, since the
 // two segments paint over each other and leave a clean edge at whichever one
 // drew last. So the span is filled with a theme neutral (`u.colorOverlap`) that
-// is no read category: "both segments are here, neither colour is the answer".
+// is no read category: "both segments are here, neither color is the answer".
 // Tinting instead was the older behaviour and says the opposite — on a foldback
 // the arms are opposite-strand red and blue, and a 40% wash over whichever drew
 // last reads as a stronger version of that one arm.

@@ -21,7 +21,7 @@ export type EditChannel = 'x' | 'x2' | MarkChannel
 /**
  * A mark as a draft holds it. Only `encoding` differs from {@link
  * MarkSnapshot}, and it has to: that type is the shape the schema answers
- * with, where a constant colour has already lifted to `{ value: 'red' }`,
+ * with, where a constant color has already lifted to `{ value: 'red' }`,
  * while a form writes the spelling a config file writes.
  */
 export interface DraftMark extends Omit<MarkSnapshot, 'encoding'> {
@@ -81,20 +81,20 @@ export type ScaleMember = (typeof SCALE_MEMBERS)[number]
 
 /**
  * The list members a control holds as comma-separated text: a categorical
- * scale's values in order or a threshold's cut points, the colours or shapes
+ * scale's values in order or a threshold's cut points, the colors or shapes
  * handed to them, the key's name for each, and the values the key lists.
  */
 export const LIST_MEMBERS = ['domain', 'range', 'labels', 'breaks'] as const
 export type ListMember = (typeof LIST_MEMBERS)[number]
 
-/** The ends a ramp is pinned by, which a width ramp shares with a colour one. */
+/** The ends a ramp is pinned by, which a width ramp shares with a color one. */
 export const RAMP_ENDS = ['domainMin', 'domainMax'] as const
 
 export function isRamp(scale: unknown) {
   return scale === 'linear' || scale === 'log'
 }
 
-/** The members a ramp of this channel paints: a colour's stops, and the ends. */
+/** The members a ramp of this channel paints: a color's stops, and the ends. */
 function rampMembers(channel: EditChannel): readonly ScaleMember[] {
   return channel === 'color'
     ? SCALE_MEMBERS.filter(
@@ -105,7 +105,7 @@ function rampMembers(channel: EditChannel): readonly ScaleMember[] {
 
 /**
  * The scale kinds a channel offers, off the vocabulary its own schema
- * declares: every colour scale for `color`, `categorical` alone for `shape`,
+ * declares: every color scale for `color`, `categorical` alone for `shape`,
  * and a width's two ramps for `size`. `none` is the constant, which the field
  * picker above already means.
  */
@@ -325,7 +325,7 @@ function readsNumbers(scale: unknown) {
 }
 
 /**
- * Whether a colour or shape value spells a constant: a CSS colour or a shape
+ * Whether a color or shape value spells a constant: a CSS color or a shape
  * name. A `jexl:` expression is a field, as a config file reads one inside
  * `encoding`; a constant callback is the JSON box's `{ value }`.
  */
@@ -340,7 +340,7 @@ function spellsConstant(channel: 'color' | 'shape', value: string) {
 /**
  * The mark with one channel written to `value`, an empty one clearing it.
  *
- * A colour or shape value is a field unless it spells a constant, and a field
+ * A color or shape value is a field unless it spells a constant, and a field
  * the scan found is a field whatever it spells. A field edit keeps the scale
  * it is read through and that scale's members; only a field the scan types
  * the other way — a number under `categorical`, text under a ramp — takes the
@@ -398,8 +398,8 @@ export function withChannel(
     : { ...mark, encoding: { ...mark.encoding, [channel]: value } }
 }
 
-// A size typed as a number is the constant px, as a colour typed as a colour
-// is the constant colour.
+// A size typed as a number is the constant px, as a color typed as a color
+// is the constant color.
 function spellsNumber(value: string) {
   return value.trim() !== '' && Number.isFinite(Number(value))
 }

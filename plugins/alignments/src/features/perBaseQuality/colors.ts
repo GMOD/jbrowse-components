@@ -7,7 +7,7 @@ import {
 
 // A BAM record with no QUAL has no scores at all; a CRAM one decodes as 255 at
 // every base. It packs as 0, which `packedColorQuad.slang` paints as the plain
-// read fill, so it follows the theme and the read colour setting.
+// read fill, so it follows the theme and the read color setting.
 export const BASE_QUALITY_UNAVAILABLE = 255
 
 export const qualityAbgr = qualityRampAbgr(BASE_QUALITY_RAMP_MAX)

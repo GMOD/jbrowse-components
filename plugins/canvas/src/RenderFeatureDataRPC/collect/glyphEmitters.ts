@@ -46,7 +46,7 @@ import type {
 } from './renderContext.ts'
 import type { Feature } from '@jbrowse/core/util'
 
-// Codons tinted from the colour the box would have painted, or the box itself
+// Codons tinted from the color the box would have painted, or the box itself
 // (one per part) when nothing translated.
 function emitCodonsOrBoxes(
   aminoAcids: AggregatedAminoAcid[] | undefined,

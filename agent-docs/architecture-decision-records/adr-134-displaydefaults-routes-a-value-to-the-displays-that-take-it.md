@@ -19,12 +19,12 @@ adds a display, and a retired lift that throws refuses the value.
 track declaring a slot by that name. Three of a FeatureTrack's five displays
 declare `color` in different shapes: `LinearBasicDisplay`'s FeatureColor
 object, `LinearManhattanDisplay`'s ManhattanColor object with a scale, and the
-arc and multi-row displays' plain colour. `color: { scale: 'ld' }` reached the
+arc and multi-row displays' plain color. `color: { scale: 'ld' }` reached the
 feature display, whose object has no `scale`, and `color: { field }` reached
 the arc display's plain slot; either failed the track's load. ADR-120 had
 found the same collision on `displayMode`, where the arc display's vocabulary
 is `arcs | semicircles`. ADR-131 removed the `facet` collision by converging
-the shapes, which the colour objects cannot do: `ld` means nothing on a gene
+the shapes, which the color objects cannot do: `ld` means nothing on a gene
 track.
 
 ## Decision
@@ -45,7 +45,7 @@ over the displays declaring it, where it was the `allOf` of their slot tables.
 
 ## Consequences
 
-- `color: 'red'` still reaches every display with a colour; `color: { field }`
+- `color: 'red'` still reaches every display with a color; `color: { field }`
   reaches the feature and Manhattan displays; `color: { scale: 'ld' }` the
   Manhattan display alone. `TrackConfigShorthand.test.ts` pins the two
   objects and the refusal on a FeatureTrack.
@@ -61,18 +61,18 @@ over the displays declaring it, where it was the `allOf` of their slot tables.
 
 ## Rejected alternatives
 
-- **One colour vocabulary across the four colour objects**, so every display
+- **One color vocabulary across the four color objects**, so every display
   takes every value. `ld` is a GWAS scale and the ribbon schemes are synteny
   schemes; a shared vocabulary gives FeatureColor scales it cannot paint, and
   the arc display's plain `color` would still refuse an object. MarkColor and
   MarkGlyph do share the rules
   ([ADR-133](adr-133-a-channel-objects-slots-are-each-valid-alone.md)).
   Superseded by
-  [ADR-135](adr-135-the-colour-objects-share-one-shape-and-a-preset-is-a-field.md):
+  [ADR-135](adr-135-the-color-objects-share-one-shape-and-a-preset-is-a-field.md):
   `ld` and the ribbon schemes are fields, the four objects share one shape
   and one `scale` vocabulary, and each display declares the members it paints.
 - **Routing only to slots built from shared definitions** (display-kit's
-  colour object, the base `height`), so a plugin display's own `color` never
+  color object, the base `height`), so a plugin display's own `color` never
   receives a shorthand value. Every key only one display declares (`mark`,
   `scales`, `labels`, `origin`) would need marking, against a plugin risk no
   live case shows: a value a display's schema refuses is already skipped.

@@ -20,7 +20,7 @@ import type { AlignmentsSources, RenderState } from './rendererTypes.ts'
  * The coverage band writes its OWN uniform struct — render-core's
  * `CoverageBandUniforms`, shared with the MAF display — rather than a slice of
  * this plugin's `Uniforms`. Which means `paletteUboParity.test.ts` no longer
- * reaches the band's four colour slots and `fillFrameUniforms` no longer holds
+ * reaches the band's four color slots and `fillFrameUniforms` no longer holds
  * its geometry, so this is where both are pinned.
  *
  * It has to be checked off the BAND's own draw. Two structs are staged per
@@ -29,7 +29,7 @@ import type { AlignmentsSources, RenderState } from './rendererTypes.ts'
  * whatever the pileup put at that word, which is a plausible number.
  */
 
-// One distinct colour per palette key, so a transposition between two band
+// One distinct color per palette key, so a transposition between two band
 // slots cannot pass by both happening to agree.
 function distinctPalette() {
   const overrides: Record<string, RGBColor> = {}
@@ -121,7 +121,7 @@ const packed = (key: PaletteColorKey) => {
   return normalizedRgbToABGR(rgb[0], rgb[1], rgb[2])
 }
 
-// Each band colour slot against the palette entry it must carry. The base slots
+// Each band color slot against the palette entry it must carry. The base slots
 // are excluded here and pinned by `baseColorParity.test.ts` instead, since
 // `effectiveBaseColors` — not the raw palette — is what fills them.
 const BAND_COLOR_SLOTS = {
@@ -143,7 +143,7 @@ describe('the coverage band UBO', () => {
     },
   )
 
-  test('every band colour slot is a distinct colour, so a transposition would show', () => {
+  test('every band color slot is a distinct color, so a transposition would show', () => {
     const slots = Object.values(UNIFORM_OFFSET_U32).map(o => u32[o])
     expect(new Set(slots).size).toBe(slots.length)
   })
@@ -189,8 +189,8 @@ describe('the coverage band UBO', () => {
     )
     expect(degenerate[UNIFORM_OFFSET_F32.regionMaxDepth]).toBe(40)
     expect(degenerate[UNIFORM_OFFSET_F32.depthDomainMax]).toBe(0)
-    // the float slots by name, not the whole buffer — a packed ABGR colour read
-    // back through `f32` is a NaN bit pattern for most colours
+    // the float slots by name, not the whole buffer — a packed ABGR color read
+    // back through `f32` is a NaN bit pattern for most colors
     expect(
       Object.entries(UNIFORM_OFFSET_F32)
         .filter(([, offset]) => !Number.isFinite(degenerate[offset]))

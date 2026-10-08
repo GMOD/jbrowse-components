@@ -66,10 +66,10 @@
 // mismatch-shaped fixture of 100K cells, half faded to a random alpha, in
 // headless Chrome on software raster with a control at 0.99x, one fillStyle
 // for the whole paint read 0.49x of the production spelling, the faded alpha
-// quantized to 1/255 and its string memoized per (colour, step) 0.83x,
+// quantized to 1/255 and its string memoized per (color, step) 0.83x,
 // skipping a write of the style already set 0.84x, and the instances ordered
-// by colour then step 0.56x. node-canvas read 0.88x and 0.52x for the
-// memoized and single-style arms at 1M. Ordering by colour in the worker is
+// by color then step 0.56x. node-canvas read 0.88x and 0.52x for the
+// memoized and single-style arms at 1M. Ordering by color in the worker is
 // out regardless: the mismatch arrays are position-sorted for
 // `positionIndex.ts` and `coverageDownsampling.ts` to binary-search.
 

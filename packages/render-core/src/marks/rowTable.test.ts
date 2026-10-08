@@ -37,7 +37,7 @@ function decodeColor([r, g, b, a]: number[]) {
   return (r! | (g! << 8) | (b! << 16) | (a! << 24)) >>> 0
 }
 
-test('each key texel holds its slot, hidden as alpha 0, and its colour override', () => {
+test('each key texel holds its slot, hidden as alpha 0, and its color override', () => {
   const table = buildRowTable(
     Uint32Array.of(2, HIDDEN_ROW, 0, 0x123456),
     Uint32Array.of(NO_ROW_COLOR, 0xff0000ff, 0x80112233, NO_ROW_COLOR),
@@ -93,12 +93,12 @@ test('an empty table is one texel per plane', () => {
   })
 })
 
-test('a slot the 24 bits cannot hold, or a colour lane of another length, is refused', () => {
+test('a slot the 24 bits cannot hold, or a color lane of another length, is refused', () => {
   expect(() => buildRowTable(Uint32Array.of(0x1000000))).toThrow(
     /slot 16777216/,
   )
   expect(() => buildRowTable(Uint32Array.of(0, 1), Uint32Array.of(0))).toThrow(
-    /2 slots but 1 colours/,
+    /2 slots but 1 colors/,
   )
 })
 

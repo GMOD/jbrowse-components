@@ -22,7 +22,7 @@ const rowsBand = (s: MafGPURenderState) => ({
 })
 
 /**
- * The rows band, as a declaration: one `span` mark per run of same-coloured
+ * The rows band, as a declaration: one `span` mark per run of same-colored
  * cells, its channels already encoded by `buildMafChannels`, clipped to the
  * rows viewport under the band stack.
  *
@@ -39,7 +39,7 @@ export const MAF_ROW_MARK = defineMark({
     rowProportion: s.rowProportion,
     // MAF does not floor. Its cells tile the row, so a sub-pixel cell is read
     // as part of the run around it, and widening one to a whole pixel paints
-    // ink the alignment does not contain: measured at 2.3x the colour of a
+    // ink the alignment does not contain: measured at 2.3x the color of a
     // supersampled ground truth, against 1.05x for no floor
     // (agent-docs/reference/MAF_LARGE_BLOCKS.md).
     minWidthPx: 0,

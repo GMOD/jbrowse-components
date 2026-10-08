@@ -142,7 +142,7 @@ function frameMenuItems(self: MafMenuSelf): MenuItem[] {
 }
 
 /**
- * What the rows are coloured by, as one radio over `color` and `y`. The
+ * What the rows are colored by, as one radio over `color` and `y`. The
  * codon and identity options can tick a rendering that yields at the current
  * zoom; the tick stays on the setting, and the hint and the toggle below say
  * why the rows show bases instead.

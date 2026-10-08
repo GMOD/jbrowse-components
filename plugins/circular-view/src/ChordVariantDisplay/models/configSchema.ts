@@ -11,7 +11,7 @@ const STROKE_SLOTS = {
   strokeColorHover: 'colorHover',
 } as const
 
-// v4 spelt the chord colours `strokeColor*`, on the display or inside its
+// v4 spelt the chord colors `strokeColor*`, on the display or inside its
 // `renderer`, and session tracks in share links still carry both.
 const retired = Object.fromEntries(
   Object.entries(STROKE_SLOTS).map(([old, name]) => [
@@ -24,7 +24,7 @@ const retired = Object.fromEntries(
  * The same names inside a `renderer`, which is not declared retired: the track
  * config's legacy-renderer lift hoists a renderer's props onto the entry, and
  * consuming `renderer` before that lift would drop every renderer prop that is
- * not a colour. Read here instead, where that lift has already run, so an entry
+ * not a color. Read here instead, where that lift has already run, so an entry
  * created straight from a v4 snapshot still finds them. `retired` runs first,
  * so the display's own spelling wins.
  */
@@ -48,7 +48,7 @@ function liftRendererStrokeSlots(snap: Record<string, unknown>) {
  * #example
  * The circular-view display for a `VariantTrack` of structural variants;
  * translocations are drawn as chords across the circle. `color` is the
- * chord's resting colour, a constant or a field of the record with a key, and
+ * chord's resting color, a constant or a field of the record with a key, and
  * `colorHover` and `colorSelected` its hovered and selected ones:
  * ```js
  * {
@@ -89,9 +89,9 @@ function configSchemaF(_pluginManager: PluginManager) {
       },
       /**
        * #slot color
-       * The line colour of each resting chord: a CSS colour or `jexl:`
+       * The line color of each resting chord: a CSS color or `jexl:`
        * callback, or a field of the record, `svType` say, whose values each
-       * take a colour with a key on the circle.
+       * take a color with a key on the circle.
        */
       color: chordColorConfigSchema,
       /**
@@ -100,7 +100,7 @@ function configSchemaF(_pluginManager: PluginManager) {
       opacity: {
         type: 'number',
         description:
-          "the alpha every resting chord draws at, over its colour's own",
+          "the alpha every resting chord draws at, over its color's own",
         defaultValue: 1,
       },
       /**

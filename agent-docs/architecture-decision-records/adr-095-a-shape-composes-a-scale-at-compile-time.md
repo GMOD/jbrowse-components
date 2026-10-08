@@ -8,7 +8,7 @@ summary: "Encoding-level composition is adopted: a display's shader composes a s
 ## Status
 
 Accepted (2026-08-29). This ADR records the composition work that acted on
-[ADR-094](adr-094-colour-cardinality-is-one-channel-not-four-shapes.md)'s rule —
+[ADR-094](adr-094-color-cardinality-is-one-channel-not-four-shapes.md)'s rule —
 the plan ran as `ideas/a-shape-composes-a-scale.md` during 2026-08-28/29 and is
 closed; this file is its record. The library itself is documented in
 [reference/SHADER_JS_CODEGEN.md](../reference/SHADER_JS_CODEGEN.md), which
@@ -27,7 +27,7 @@ ADR-151 spelling, needed the one rule. LD's stays its own.
 `packages/render-core/src/shaders/` held a shape module (`rowRect.slang`, two
 consumers) and a scale module (`scoreScale.slang`, real consumers through
 `wiggleCommon.slang` and `coverageBand.slang`), and nothing composed them.
-ADR-094's census found five shaders spelling a scaled colour channel five ways —
+ADR-094's census found five shaders spelling a scaled color channel five ways —
 the cardinality was one channel, but the tree had chosen "a new shader per ramp"
 four times.
 
@@ -94,16 +94,16 @@ their definition.
   branches rather than keeping dead structure.
 - **Gate C — both backends and the export land on the same ramp entry.**
   `densityColorParity.test.ts` sweeps 8 domain/scale/origin cases × 3 track
-  colours × 10 scores: the GPU chain lands within one LUT bucket of the
+  colors × 10 scores: the GPU chain lands within one LUT bucket of the
   Canvas2D factory, the pivot is white exactly on both backends, and the far
-  domain end is the track colour exactly on the GPU side. This is the gate the
+  domain end is the track color exactly on the GPU side. This is the gate the
   tree's history demands — the GPU/Canvas2D/SVG seam is where composition has
   actually broken here (ADR-051's "drawn and exported are one boundary").
 - **The named-ramp gauge — a named ramp without a new shader.** Viridis on a
   density track is the `densityColorRamp` config slot: one uniform flag plus
   one 1024-byte LUT upload through the shared path, zero new shaders. The
   per-row default (`lerp(white, inst.color.rgb, t)`, which one LUT cannot
-  encode — multiwiggle colours per row) stays the default beside it, so the LUT
+  encode — multiwiggle colors per row) stays the default beside it, so the LUT
   is an alternative a config names, not a replacement. All three renderers and
   the legends read one cached table (`densityRampLut`, `stopsFromRampLut`,
   `VIRIDIS_STOPS` in `@jbrowse/core/util/colorRamp`).
@@ -164,7 +164,7 @@ What each landing lets the manuscript claim:
 | --- | --- |
 | ADR-094 | encodings are orthogonal to shapes — stated over five shaders, not one |
 | the density composition | a shape and a scale compose, and the composition keeps a pan at one uniform write |
-| the ramp module | one ramp mechanism across quantitative, contact-matrix and LD colouring, each keeping its own scale |
+| the ramp module | one ramp mechanism across quantitative, contact-matrix and LD coloring, each keeping its own scale |
 | the point stop + the capsule | a shape library with four shapes and a stated admission rule that has declined an entry |
 
 The density-composition row is the one that distinguishes a shape library from

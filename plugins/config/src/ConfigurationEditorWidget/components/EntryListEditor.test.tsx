@@ -7,7 +7,7 @@ import type { SlotFacade } from '@jbrowse/core/configuration'
 function listSlot(overrides: Partial<SlotFacade>) {
   return {
     name: 'range',
-    description: 'the colours, in order',
+    description: 'the colors, in order',
     contextVariable: [],
     defaultValue: [],
     modified: true,
@@ -20,14 +20,14 @@ function listSlot(overrides: Partial<SlotFacade>) {
 describe('a colorArray slot', () => {
   const slot = (value: string[]) => listSlot({ type: 'colorArray', value })
 
-  test('edits each entry as a colour, writing the whole list', () => {
+  test('edits each entry as a color, writing the whole list', () => {
     const s = slot(['white', 'red'])
     const { getByDisplayValue } = render(<SlotEditor slot={s} />)
     fireEvent.change(getByDisplayValue('red'), { target: { value: 'navy' } })
     expect(s.set).toHaveBeenCalledWith(['white', 'navy'])
   })
 
-  test('holds an entry that is not a colour as a draft, and a jexl one too', () => {
+  test('holds an entry that is not a color as a draft, and a jexl one too', () => {
     const s = slot(['white', 'red'])
     const { getByDisplayValue, getByText } = render(<SlotEditor slot={s} />)
     const field = getByDisplayValue('red')

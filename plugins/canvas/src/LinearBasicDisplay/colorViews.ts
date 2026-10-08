@@ -54,7 +54,7 @@ export function colorViews(self: ColorHost) {
     /**
      * #getter
      * The Color by radio that is ticked: a field, else a constant, else the
-     * track's own colour.
+     * track's own color.
      */
     get colorByMode(): 'default' | 'solid' | 'strand' | 'attribute' {
       const field = self.colorFieldName

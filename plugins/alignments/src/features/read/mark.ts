@@ -116,7 +116,7 @@ export function packReadSegments(data: ReadMarkRegion): ArrayBuffer {
 // The outline read.slang draws, reproduced with a stroke. The shader repaints
 // the outermost READ_OUTLINE_PX of the glyph at READ_OUTLINE_SHADE of its own
 // fill; compositing black at `1 - shade` over that fill is the same operation,
-// which is how these two spellings came to agree on colour while disagreeing on
+// which is how these two spellings came to agree on color while disagreeing on
 // everything else. Derived from the shader's number rather than restating it,
 // so a change to the shade reaches both.
 //
@@ -351,9 +351,9 @@ function drawReads(
 
 /**
  * The read body: one "home plate" pentagon or rect per exon segment, in the
- * category colour the classification pass decided, outlined when the row is
+ * category color the classification pass decided, outlined when the row is
  * tall enough. A hand-tuned glyph rather than a `pileupShape` — its instance
- * is a segment, its colour a per-read function of the scheme — and its ink is
+ * is a segment, its color a per-read function of the scheme — and its ink is
  * the segment's box with the arrowhead it caps. The display answers a hover
  * with the READ (`hitTestFeature`) and lights it as its segments' boxes, so
  * the hit test this shape's ink implies is not the one it uses.

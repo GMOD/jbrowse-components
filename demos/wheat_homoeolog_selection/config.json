@@ -40,7 +40,7 @@
     "views": [
       {
         "type": "LinearSyntenyView",
-        "displayName": "Bread wheat against itself, coloured by dN/dS",
+        "displayName": "Bread wheat against itself, colored by dN/dS",
         "views": [
           {
             "assembly": "wheat"

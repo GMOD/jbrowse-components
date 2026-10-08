@@ -200,8 +200,8 @@ export function readColorCategory(
 // against its own mate's primary is an inversion or a deletion junction, which
 // `attachChainFields` already resolved into CHAIN_SPLIT_*, and an unpaired
 // read has no mate to frame against, so the strand flip is the whole story. A
-// flat colour over every split chain, whatever the scheme, was a third rule
-// and went: a `splitRead` facet beside a strand colour draws that picture.
+// flat color over every split chain, whatever the scheme, was a third rule
+// and went: a `splitRead` facet beside a strand color draws that picture.
 function overrideCategory(
   i: number,
   data: ReadColorData,
@@ -227,12 +227,12 @@ function overrideCategory(
   // Long-read (unpaired) supplementary chains frame each segment's strand
   // against the chain's frame: a segment agreeing with it is forward-red and one
   // that flipped at the split junction goes reverse-blue, so an inversion reads
-  // as a colour flip rather than as something to look up.
+  // as a color flip rather than as something to look up.
   //
   // The frame itself is NOT this file's to decide, and used to be — it was the
   // chain's own primary strand, which a foldback makes arbitrary (both arms are
   // candidates for "longest alignment", so the flag lands on whichever the read
-  // happened to cover more of, and the colours flip with it). It is now settled
+  // happened to cover more of, and the colors flip with it). It is now settled
   // across chains by `consensusChainStrandFrames`, which rewrites this same
   // marker before the bake. Read the marker; don't re-derive a frame here, and
   // don't re-derive whether to frame either: `framesChainStrand` is the
@@ -416,9 +416,9 @@ export function getReadColor(
   )
 }
 
-// The default colour of each fixed-swatch category, a palette key. Keys repeat
+// The default color of each fixed-swatch category, a palette key. Keys repeat
 // where categories share a default; the categories stay distinct, so each one
-// takes a declared colour on its own. `plain`, `mapq` and `tag` resolve per
+// takes a declared color on its own. `plain`, `mapq` and `tag` resolve per
 // read and have no swatch.
 export const swatchPaletteKeys = {
   fwdStrand: 'colorFwdStrand',
@@ -444,7 +444,7 @@ export const swatchPaletteKeys = {
 export type SwatchCategory = keyof typeof swatchPaletteKeys
 
 // Every category's default, the ones with no swatch included, which take the
-// neutral fill where no per-read colour reaches them.
+// neutral fill where no per-read color reaches them.
 export const readCategoryPaletteKeys = {
   ...swatchPaletteKeys,
   plain: 'colorPairLR',
@@ -452,7 +452,7 @@ export const readCategoryPaletteKeys = {
   tag: 'colorPairLR',
 } satisfies Record<ReadColorCategory, PaletteColorKey>
 
-// What each category paints: the colour `declared` for it, else its default
+// What each category paints: the color `declared` for it, else its default
 // among `colors`.
 export function readCategoryColorsOf(
   colors: PaletteColors,

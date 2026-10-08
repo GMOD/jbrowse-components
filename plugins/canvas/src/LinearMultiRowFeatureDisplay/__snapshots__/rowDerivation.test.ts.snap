@@ -141,7 +141,7 @@ exports[`a cluster run lands its tree turned towards the seed, and a reorder dro
 }
 `;
 
-exports[`a color slot paints the blocks, so a colour entry paints none 1`] = `
+exports[`a color slot paints the blocks, so a color entry paints none 1`] = `
 {
   "editableSources": [
     {
@@ -200,7 +200,7 @@ exports[`a color slot paints the blocks, so a colour entry paints none 1`] = `
 }
 `;
 
-exports[`a colour entry paints its row, the rest the default colour 1`] = `
+exports[`a color entry paints its row, the rest the default color 1`] = `
 {
   "editableSources": [
     {
@@ -318,7 +318,7 @@ exports[`a declared order leads and the rest sort 1`] = `
 }
 `;
 
-exports[`a focus hides rows without recolouring the kept ones 1`] = `
+exports[`a focus hides rows without recoloring the kept ones 1`] = `
 {
   "editableSources": [
     {
@@ -417,7 +417,7 @@ exports[`a repartition keeps the arrangement, idle under rows it does not name 1
 }
 `;
 
-exports[`a row's colour entry reaches its label bar, and a group alone colours nothing 1`] = `
+exports[`a row's color entry reaches its label bar, and a group alone colors nothing 1`] = `
 {
   "editableSources": [
     {
@@ -552,7 +552,7 @@ exports[`a run under the bands clusters each apart 1`] = `
 }
 `;
 
-exports[`dialog edits reorder, relabel and recolour, and a reset returns to the seed 1`] = `
+exports[`dialog edits reorder, relabel and recolor, and a reset returns to the seed 1`] = `
 {
   "editableSources": [
     {
@@ -622,7 +622,7 @@ exports[`dialog edits reorder, relabel and recolour, and a reset returns to the 
 }
 `;
 
-exports[`dialog edits reorder, relabel and recolour, and a reset returns to the seed 2`] = `
+exports[`dialog edits reorder, relabel and recolor, and a reset returns to the seed 2`] = `
 {
   "editableSources": [
     {
@@ -838,7 +838,7 @@ exports[`rowGroups tag the rows and facet group bands them, keyed under short ro
 }
 `;
 
-exports[`sort at a column orders rows by the colour painted there 1`] = `
+exports[`sort at a column orders rows by the color painted there 1`] = `
 {
   "editableSources": [
     {
@@ -984,7 +984,7 @@ exports[`the bands win over a whole-cohort tree holding no clade of either 1`] =
 }
 `;
 
-exports[`the rows sort, digits by magnitude, none dealt a colour 1`] = `
+exports[`the rows sort, digits by magnitude, none dealt a color 1`] = `
 {
   "editableSources": [
     {

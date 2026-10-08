@@ -202,7 +202,7 @@ export function paintsEveryBase(layer: BaseLayer | undefined) {
   return layer !== undefined && isPerBaseScheme(layer.type)
 }
 
-const PER_READ_COLOUR_PATHS = new Set<ShaderScheme>([
+const PER_READ_COLOR_PATHS = new Set<ShaderScheme>([
   'mappingQuality',
   'tag',
   'modifications',
@@ -216,7 +216,7 @@ const PER_READ_COLOUR_PATHS = new Set<ShaderScheme>([
 // `isModificationScheme` is.
 export function isDataFillScheme(type: ColorSchemeType) {
   const { perBase, shaderScheme } = COLOR_SCHEMES[type]
-  return perBase === true || PER_READ_COLOUR_PATHS.has(shaderScheme)
+  return perBase === true || PER_READ_COLOR_PATHS.has(shaderScheme)
 }
 
 // The part of `colorBy` the RPC worker actually reads, for `rpcProps`. A scheme

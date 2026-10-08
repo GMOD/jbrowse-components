@@ -1,6 +1,6 @@
 ---
 status: Accepted
-summary: "An unpinned end of a value scale or a colour ramp follows one number, `domainQuantile`: at 1 the loaded values' extremes, below it that quantile of the values on each end's side of 0, through one exact rule (`quantileExtent`, a nearest-rank quickselect). It replaces `scales.y.autoscale` with `numStdDev` and `numQuantile`, and the ramps' `autoscale` with `numQuantile`; `localsd`, the mean-plus-sigma mode, is gone. The wiggle plot starts at 0.99 and the Hi-C colour at 0.95; everything else at 1. Amended 2026-09-26: the coverage band starts at 0.99 too, and on 2026-09-27 returns to 1, since the quantile cut plain coverage in most views and missed any pile-up wider than 1% of them. The Score menu's Autoscale type radio is a Clip outliers checkbox. Amended 2026-09-27: below 1 each end clips its own tail, and 0 is the axis's to add"
+summary: "An unpinned end of a value scale or a color ramp follows one number, `domainQuantile`: at 1 the loaded values' extremes, below it that quantile of the values on each end's side of 0, through one exact rule (`quantileExtent`, a nearest-rank quickselect). It replaces `scales.y.autoscale` with `numStdDev` and `numQuantile`, and the ramps' `autoscale` with `numQuantile`; `localsd`, the mean-plus-sigma mode, is gone. The wiggle plot starts at 0.99 and the Hi-C color at 0.95; everything else at 1. Amended 2026-09-26: the coverage band starts at 0.99 too, and on 2026-09-27 returns to 1, since the quantile cut plain coverage in most views and missed any pile-up wider than 1% of them. The Score menu's Autoscale type radio is a Clip outliers checkbox. Amended 2026-09-27: below 1 each end clips its own tail, and 0 is the axis's to add"
 ---
 
 # ADR-179: An open scale end follows one quantile
@@ -18,8 +18,8 @@ below 1, `scales.y`'s quantile fences the extremes rather than replacing them.
 
 `scales.y` chose what an unpinned end follows through an enum and two numbers:
 `autoscale: local | localsd | localpercentile`, `numStdDev` for the second and
-`numQuantile` for the third. [ADR-175](adr-175-a-colour-ramps-open-end-follows-the-data-as-y-does.md)
-had just given the colour ramps the same pair less `localsd`. Two spellings of
+`numQuantile` for the third. [ADR-175](adr-175-a-color-ramps-open-end-follows-the-data-as-y-does.md)
+had just given the color ramps the same pair less `localsd`. Two spellings of
 one policy, three slots for one number, and a mode no grammar has: `localsd`
 is a mean-plus-sigma band that assumes a bell around the mean, on data
 (coverage, copy number, conservation) that is one-sided and spiky, which is
@@ -39,7 +39,7 @@ that starts that way reads as broken.
 ## Decision
 
 **One number, `domainQuantile`, beside `domainMin`, `domainMax` and
-`domainMid`**, on `scales.y` and on every colour ramp (FeatureColor,
+`domainMid`**, on `scales.y` and on every color ramp (FeatureColor,
 MarkColor, AlignmentsColor, HicColor). `1` follows the loaded values'
 extremes; below it each sign's magnitudes are clipped at that quantile,
 anchored at 0, so a sparse minority tail stays visible and all-positive data
@@ -62,7 +62,7 @@ spellings (`scales.y.autoscale`, `numQuantile`, the ramps' `autoscale`) lift to
 nothing and fail loudly, since every one of those objects is `closed`; Hi-C's
 retired `useColorPercentile` checkbox lands on `domainQuantile`.
 
-**Defaults stay the display's**: the wiggle plot at 0.99 and the Hi-C colour at
+**Defaults stay the display's**: the wiggle plot at 0.99 and the Hi-C color at
 0.95, the coverage band, the mark display and the other ramps at 1. The Score
 menu offers **Clip outliers**, a checkbox that writes the display's declared
 quantile where that is below 1 and 0.99 otherwise, and 1 to turn it off;
@@ -107,14 +107,14 @@ until a ChIP BigWig is captured both ways. Colin agreed on 2026-09-27.
 
 Below 1, each open end clips its own tail among the values on its side of 0:
 data with both signs clips each sign as before, and data with one sign clips
-both of its ends. Before, one-signed data took 0 as its near end, so a colour
+both of its ends. Before, one-signed data took 0 as its near end, so a color
 ramp over MAPQ, GC or QUAL at 0.99 ran from 0, a log ramp over values below 1
-painted one colour, and 1 to 0.999 jumped the bottom to 0. A linear or symlog
+painted one color, and 1 to 0.999 jumped the bottom to 0. A linear or symlog
 axis still starts at 0, since `getNiceDomain` adds it (`scales.y.zero` since
 [ADR-182](adr-182-an-axis-reaches-0-unless-its-scale-says-otherwise.md)), and
 the coverage band and Hi-C pin it themselves, so no default picture moves.
 Vega-Lite keeps 0 on its own `zero` property, on for x and y and off for
-colour. seaborn's
+color. seaborn's
 two-tailed quantile over all values was rejected: it erased a 0.5% deletion
 tail in the probe. A quantile under 0.5 reads as 0.5, where the ends meet.
 Colin delegated the call on 2026-09-27.

@@ -17,7 +17,7 @@ import type { MenuItem } from './MenuTypes.ts'
  *   layout-affecting, and reachable only from the pinned feature's own
  *   right-click menu, so a pin left on another chromosome could not be reached);
  * - an undo derived from the state's ABSENCE, so it vanished with the thing it
- *   undid (the canvas colour key's "×" was a one-way door for the session);
+ *   undid (the canvas color key's "×" was a one-way door for the session);
  * - a count derived from a different predicate than the state's actual effect
  *   ("Filter by... (1)" for opening the filter dialog and pressing Submit).
  *

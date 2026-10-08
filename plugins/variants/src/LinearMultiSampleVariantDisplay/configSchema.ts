@@ -191,9 +191,9 @@ export default function configSchemaFactory() {
       /**
        * #slot color
        * The hue of every alt-carrying genotype cell: unset, the genotype
-       * colours; a CSS colour or `jexl:` callback; or a field, one of the
+       * colors; a CSS color or `jexl:` callback; or a field, one of the
        * `impact`, `svType` and `phaseSet` presets or any record field, whose
-       * values each take a colour with a key.
+       * values each take a color with a key.
        */
       color: cellColorConfigSchema,
       /**
@@ -244,7 +244,7 @@ export default function configSchemaFactory() {
       /**
        * #slot rowColor
        * The bar beside each row's label: a sample-metadata attribute whose
-       * palette colours every row, or under `name` the colours a reader set row
+       * palette colors every row, or under `name` the colors a reader set row
        * by row.
        */
       rowColor: rowColorConfigSchema,
@@ -339,7 +339,7 @@ export default function configSchemaFactory() {
       baseConfiguration: baseLinearDisplayConfigSchema,
       explicitlyTyped: true,
       // v4's two multi-sample displays spelt the sidebar labels and the
-      // reference-allele paint as booleans, named a colour scheme the
+      // reference-allele paint as booleans, named a color scheme the
       // `color` object has no member for, and carried the wiggle scale slots
       // the matrix never read.
       retired: {

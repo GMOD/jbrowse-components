@@ -8,7 +8,7 @@ export type SyntenyColorSurface = Exclude<ColorModeSurface, 'lanes'>
 
 /**
  * One radio of the Color by menu, keyed by the field it writes; `''` is the
- * default colour. A `structural` field is what an alignment is (its strand,
+ * default color. A `structural` field is what an alignment is (its strand,
  * its track, the sequence it lies on) and sits at the menu's top level; a
  * `value` is a measurement on a preset ramp, folded under "Color by value"
  * beside the columns a track declares.

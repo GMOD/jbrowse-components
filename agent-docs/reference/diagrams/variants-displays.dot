@@ -9,7 +9,7 @@ digraph variant_displays {
   genotypes -> single  [label=" no"]
   genotypes -> pattern [label=" yes"]
 
-  single [label="LinearVariantDisplay\nrow = record\ncolour = the `color` jexl slot"]
+  single [label="LinearVariantDisplay\nrow = record\ncolor = the `color` jexl slot"]
 
   pattern [label="lay columns out by\nfeature index"]
   pattern -> matrix  [label=" yes"]

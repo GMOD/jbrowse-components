@@ -56,7 +56,7 @@ import type { ColorRampStop } from '@jbrowse/core/util/colorRamp'
 // so "no data" cannot be misread as "the lowest value".
 export const MISSING_VALUE_COLOR = cssColorToABGR(NO_CATEGORY_COLOR)
 
-/** The ribbon colour while no field paints and the track names none: the match colour. */
+/** The ribbon color while no field paints and the track names none: the match color. */
 export const DEFAULT_RIBBON_COLOR = cssColorToABGR(
   colorSchemes.default.cigarColors.M,
 )
@@ -88,8 +88,8 @@ export function paletteColorAt(position: number) {
 export type RefNamePosition = (refName: string) => number | undefined
 
 /**
- * A chromosome's own colour, in place of the palette: the circular view paints
- * a ribbon in its chromosome's ideogram colour (`Assembly.getRefNameColor`), so
+ * A chromosome's own color, in place of the palette: the circular view paints
+ * a ribbon in its chromosome's ideogram color (`Assembly.getRefNameColor`), so
  * the ribbon matches the arc it leaves. Undefined falls back to the palette.
  */
 export type RefNameColor = (refName: string) => string | undefined
@@ -226,7 +226,7 @@ const dealtScales = new WeakMap<
 >()
 
 // The labels dealt in the order the view first saw them, each skipping the
-// colours dealt before it; the list only grows, so a label keeps its colour
+// colors dealt before it; the list only grows, so a label keeps its color
 // as others arrive.
 function dealtScale(mode: CategoricalMode) {
   const cached = dealtScales.get(mode.seen)
@@ -300,7 +300,7 @@ export interface ColorFunctionInputs {
 }
 
 /**
- * The colour `field` resolved to a packed-ABGR color per FEATURE index: `''`
+ * The color `field` resolved to a packed-ABGR color per FEATURE index: `''`
  * paints `defaultColor`, the structural fields what an alignment is, a preset
  * or column its ramp or label palette.
  *
@@ -310,7 +310,7 @@ export interface ColorFunctionInputs {
  * Everything above it is shared. 'reference' never arrives: each display
  * resolves it to query or target first (its `paintedField`).
  *
- * `opacity` fades each colour's alpha byte by its share of the opacity level,
+ * `opacity` fades each color's alpha byte by its share of the opacity level,
  * so every view that paints through here fades alike.
  */
 export function createComparativeColorFunction(
@@ -339,7 +339,7 @@ interface ComparativeColorArgs {
   // bucket. Only the display knows it — the assembly is a session fact, not
   // something in the feature data — so it is passed in rather than derived.
   namePosition?: RefNamePosition
-  // a chromosome's own colour, ahead of the palette `namePosition` indexes
+  // a chromosome's own color, ahead of the palette `namePosition` indexes
   nameColor?: RefNameColor
   // The domain a column's ramp scales to. A VIEW-level input, like
   // `namePosition` and for the same reason: a fetch's payload knows only the span

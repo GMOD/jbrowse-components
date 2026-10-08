@@ -48,7 +48,7 @@ each alignment came back twice — anchored on hg38 with its mate on mm39, and
 again the other way round — and the two features draw the same shape. A
 translucent fill chosen at one alpha painted at two.
 
-**The colour.** The default was the linear displays' strand palette, red forward
+**The color.** The default was the linear displays' strand palette, red forward
 and blue reverse. Every mammalian autosome carries inversions, so at
 whole-genome scale that is a red ribbon beside a blue one all the way round.
 
@@ -120,7 +120,7 @@ anchors by.
 schema still pulls none of synteny-core in with it. **The strand is already in
 the geometry** — a reverse alignment twists between its two ends, which is
 ADR-116's decision and the reason a ribbon beats a chord — so a per-strand
-palette spends the figure's whole colour budget restating the shape. The strand
+palette spends the figure's whole color budget restating the shape. The strand
 jexl is two lines in the schema's own `#example` for anyone who wants it.
 
 ## Alternatives rejected
@@ -139,11 +139,11 @@ jexl is two lines in the schema's own `#example` for anyone who wants it.
   `linear-comparative-view`, which a product carrying the circular view need not
   load. `runDiagonalize`'s own docstring says why each caller registers its own
   name.
-- **Colouring the ribbons by chromosome** (the Circos convention, and what
+- **Coloring the ribbons by chromosome** (the Circos convention, and what
   `colorBy: 'query'` does in a linear synteny view). It reads well and it is the
   obvious next step, but it is a `colorBy` machine the SVG ribbons do not have:
-  synteny-core's colour functions answer packed ABGR for a GPU renderer, and the
-  circular displays' colour is a `jexl:` config slot. Flat first, since flat is
+  synteny-core's color functions answer packed ABGR for a GPU renderer, and the
+  circular displays' color is a `jexl:` config slot. Flat first, since flat is
   what the figure needed; the palette is a display-model `colorBy` when someone
   wants it.
 - **Diagonalizing three or more genomes as a cascade**, each against the one

@@ -7,9 +7,9 @@ import type { SyntenyColorSnapshot } from './syntenyColorConfigSchema.ts'
 
 /**
  * #api
- * The field a synteny colour object paints by, or `''` while it paints its
+ * The field a synteny color object paints by, or `''` while it paints its
  * constant: `scale: 'none'`, or no field named. Read through the one resolver
- * every display's colour object goes through.
+ * every display's color object goes through.
  */
 export function paintedField({
   value,
@@ -23,7 +23,7 @@ export function paintedField({
 
 /**
  * #api
- * The colour object that paints by `field`, written over `current`: display-kit's
+ * The color object that paints by `field`, written over `current`: display-kit's
  * `colorForField`, the rule every display's Color by pick writes by.
  */
 export function syntenyColorFor(

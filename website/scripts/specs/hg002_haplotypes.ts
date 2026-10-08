@@ -79,7 +79,7 @@ function pageGeneTrack(hap: 'MAT' | 'PAT') {
 }
 
 // The page's "second track over the same GFF": the gene track under its own
-// trackId, whose name carries the colour key, so the figure needs no overlay to
+// trackId, whose name carries the color key, so the figure needs no overlay to
 // say what red and blue mean; see STRAND_COLOR.
 function landmarkTrack(hap: 'MAT' | 'PAT') {
   return {
@@ -98,9 +98,9 @@ function geneLane(hap: 'MAT' | 'PAT', extra: Record<string, unknown> = {}) {
     trackId: `hg002_genes_${hap.toLowerCase()}`,
     type: 'LinearBasicDisplay',
     geneGlyphMode: 'longestCoding',
-    // Same strand colouring as the landmark lane (review: "make the main gene
+    // Same strand coloring as the landmark lane (review: "make the main gene
     // track also color by strand"), so the two lanes on a panel are one
-    // vocabulary rather than a coloured lane above an orange one, and the
+    // vocabulary rather than a colored lane above an orange one, and the
     // landmark lane's name serves as the key for both.
     //
     // Worth saying what it does NOT do, since the obvious hope for it is wrong:
@@ -149,7 +149,7 @@ const LANDMARK_FILTER = `jexl:${LANDMARK_GENES.map(
   g => `get(feature,'gene_name')=='${g}'`,
 ).join('||')}`
 
-// STRAND AS COLOUR, NOT AS AN ARROWHEAD (review: "why doesnt gata4, blk have
+// STRAND AS COLOR, NOT AS AN ARROWHEAD (review: "why doesnt gata4, blk have
 // strand arrows?"). At 9 Mb across 1400 px a base is 6.4 kb, so GATA4's 83 kb
 // and BLK's 70 kb are 13 and 11 px of lane: a glyph that narrow is drawn as one
 // solid body with no intron line to hang an arrow off, while MSRA at 59 px has
@@ -160,7 +160,7 @@ const LANDMARK_FILTER = `jexl:${LANDMARK_GENES.map(
 // It also says more here than an arrow would. Every one of the eight flips
 // strand between the haplotypes, checked in the two GFFs rather than inferred
 // from the chain -- MSRA is + on MAT and - on PAT, GATA4 + and -, and so on
-// through all eight -- so the two lanes come out as each other's colour negative,
+// through all eight -- so the two lanes come out as each other's color negative,
 // which is the inversion stated a third way, beside the crossing ribbons and the
 // reversed name order.
 //

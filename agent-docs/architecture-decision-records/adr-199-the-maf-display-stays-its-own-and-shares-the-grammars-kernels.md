@@ -1,6 +1,6 @@
 ---
 status: Accepted
-summary: "The MAF display stays its own display type, and shares the grammar's concepts and kernels wherever the two compute the same thing. What it draws past the cells and the identity - the codon view, the summary tier, source-chromosome colour, the conservation band, the insertion and inversion glyphs, its hit tests and menus - is MAF's own and stays in it; its layers are already render-core marks and its config already speaks the mark vocabulary. Where the MAF display and the mark pipeline compute one statistic they converge on one implementation, the faster one: one parser per format (getFeatures rebuilt over readBlocks), one packed arena (MafWirePacker, shared since ADR-193), and one identity walk. The mark display keeps drawing MAF for a declared plot, and the capabilities it lacks against the MAF display are built when some track declares a need for them, not to replace it"
+summary: "The MAF display stays its own display type, and shares the grammar's concepts and kernels wherever the two compute the same thing. What it draws past the cells and the identity - the codon view, the summary tier, source-chromosome color, the conservation band, the insertion and inversion glyphs, its hit tests and menus - is MAF's own and stays in it; its layers are already render-core marks and its config already speaks the mark vocabulary. Where the MAF display and the mark pipeline compute one statistic they converge on one implementation, the faster one: one parser per format (getFeatures rebuilt over readBlocks), one packed arena (MafWirePacker, shared since ADR-193), and one identity walk. The mark display keeps drawing MAF for a declared plot, and the capabilities it lacks against the MAF display are built when some track declares a need for them, not to replace it"
 ---
 
 # ADR-199: The MAF display stays its own, and shares the grammar's kernels
@@ -9,7 +9,7 @@ summary: "The MAF display stays its own display type, and shares the grammar's c
 
 Accepted (2026-09-28), Colin's call after
 [ADR-190](adr-190-the-maf-display-stays-off-the-feature-steps.md) to
-[ADR-198](adr-198-a-constant-colour-rides-as-a-scalar.md) brought the mark
+[ADR-198](adr-198-a-constant-color-rides-as-a-scalar.md) brought the mark
 display's MAF span to
 1.06-1.26x<!--m:typed-sources-maf-display.typedVsMaf.range--> the MAF
 display's time: the MAF track has enough of its own that a display type of its
@@ -23,7 +23,7 @@ The MAF display owns no shader: `mafMarks.ts` declares render-core `span`,
 (`color: mismatch | base | identity | chromosome | codon`, `rows`, the tree
 sidebar). What is its own is about 13,700 lines of display, renderer and RPC:
 the codon view and its frames join, the zoom-out summary tier, the
-source-chromosome colour, the conservation band, the insertion and inversion
+source-chromosome color, the conservation band, the insertion and inversion
 glyphs, per-base letters, seven Canvas2D overlays, its hit tests, its menus
 (FASTA export, jumping to a species' genome, comparing against the reference,
 clustering) and its row and band geometry. The mark display draws the cells
@@ -65,5 +65,5 @@ ADR-197), and lacks the rest.
 - A MAF capability is built once where it is a statistic both paths compute,
   and in the MAF display where it is a MAF picture.
 - The MAF display's grammar is the mark display's where the concepts match:
-  its colour modes, its rows and its layers already are, and a new MAF setting
+  its color modes, its rows and its layers already are, and a new MAF setting
   takes the mark vocabulary's spelling where one exists.

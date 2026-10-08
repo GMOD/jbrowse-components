@@ -1,6 +1,6 @@
 ---
 name: feature-track-decision-tree
-description: What an annotation track decides — a feature's glyph, how much of it survives the vertical budget (the fit ladder), and a box's colour — as three decision graphs. Read before adding a glyph, touching the fit ladder or the label modes.
+description: What an annotation track decides — a feature's glyph, how much of it survives the vertical budget (the fit ladder), and a box's color — as three decision graphs. Read before adding a glyph, touching the fit ladder or the label modes.
 audience: internal
 kind: spec
 ---
@@ -11,7 +11,7 @@ The commonest track there is — a GFF, a BED, a gene set — and the one whose
 decisions are least visible, because most of them are about what to give up.
 
 Three decisions: **which glyph** a feature is drawn as, **how much of it
-survives** the vertical budget, and **what colour** a box takes.
+survives** the vertical budget, and **what color** a box takes.
 
 ## Which glyph
 
@@ -68,18 +68,18 @@ those name a meaning rather than a shape.
 model resolves into concrete booleans. Layout, the RPC, the SVG export and
 hit-testing read those, so the enum never crosses the worker boundary.
 
-## What colour a box takes
+## What color a box takes
 
-![How a feature box's colour is resolved](diagrams/feature-colour.svg)
+![How a feature box's color is resolved](diagrams/feature-color.svg)
 
 One rule: **an unset slot means nothing asked, so the file gets to speak; any
 set value wins.** Unset is `undefined` rather than a concrete default, so every
-real colour stays expressible. A UTR reads `utrColor` only when that slot is set
+real color stays expressible. A UTR reads `utrColor` only when that slot is set
 and otherwise falls through to `color`, which is what makes the rule hold for a
 whole transcript rather than for its coding part.
 
-Colour-by-frame is applied last, over whatever fill was resolved. Outlines,
-connectors and strand arrows take the theme's secondary text colour, alpha
+Color-by-frame is applied last, over whatever fill was resolved. Outlines,
+connectors and strand arrows take the theme's secondary text color, alpha
 included, unless a slot overrides them.
 
 ## Why the odd-looking branches are there
@@ -106,7 +106,7 @@ included, unless a slot overrides them.
   a gene shares its row with: a strand arrow is 8px of layout width the worker
   never sees, so two genes 4px apart in bp stacked anyway and a 145px track
   landed on `bodies` with every name gone (ADR-092).
-- **A UTR read as a separate colour broke its own rule**: with a `color` set on a
+- **A UTR read as a separate color broke its own rule**: with a `color` set on a
   BED12 track the exon took it and the UTR took the file's `itemRgb`, so the
   config beat the file at one end of a gene and lost at the other.
 

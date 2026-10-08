@@ -68,9 +68,9 @@ interface WiggleParams {
   cuts: number[]
   innerColors: [number, number, number][]
   rampMid: number | undefined
-  // A gradient's table, which bars, points and density colour through: the GPU
+  // A gradient's table, which bars, points and density color through: the GPU
   // samples these bytes as the pass's texture and Canvas2D indexes the same
-  // cached array. Never the instance buffer — the score→colour mapping moving
+  // cached array. Never the instance buffer — the score→color mapping moving
   // must not re-upload a byte. Null for lines, which still part in two.
   rampLut: Uint8Array | null
 }

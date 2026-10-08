@@ -9,7 +9,7 @@
  * cohort-sized track. Two rules follow, and each caller used to restate them:
  *
  * - **Ask at the pixel's centre.** Rasterization fills a pixel when its centre
- *   falls inside the rect, so the centre is the scanline the colour the reader
+ *   falls inside the rect, so the centre is the scanline the color the reader
  *   is pointing at was decided on. The top edge misses by `0.5 / rowHeight`
  *   rows — 5.4 of them on a 2,504-sample matrix at the default fit height.
  * - **Floor `mouseY` before adding `scrollTop`.** The canvas draws at

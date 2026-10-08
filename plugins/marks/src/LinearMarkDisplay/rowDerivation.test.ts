@@ -356,7 +356,7 @@ test('a listing over a field the rows are not on, directly or through a flatten,
   expect(byOtherKey.adapterSources).toBeUndefined()
 })
 
-test("under rows: 'source' every source the adapter lists has a row, with its label and colour", async () => {
+test("under rows: 'source' every source the adapter lists has a row, with its label and color", async () => {
   const display = await listingSources({ rows: 'source' })
   expect(
     display.editableSources.map(({ name, label, rowColor }) => ({

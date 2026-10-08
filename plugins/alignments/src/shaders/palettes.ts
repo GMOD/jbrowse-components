@@ -11,12 +11,12 @@ import type { ArcSplitCategory } from '../features/arcs/arcSplitCategory.ts'
 import type { ArcColorField } from '../shared/types.ts'
 import type { ColorPalette } from './colors.ts'
 
-// One table per overlay, saying what each slot MEANS. The colour follows from
+// One table per overlay, saying what each slot MEANS. The color follows from
 // the palette's `readCategoryColors`, the read fills' own table, so an overlay
-// slot and the read swatch of the same meaning cannot be two colours.
+// slot and the read swatch of the same meaning cannot be two colors.
 //
 // **Indexing `readCategoryColor` from the linked-read pass instead —
-// dropping its table — has been proposed and declined.** The colour is
+// dropping its table — has been proposed and declined.** The color is
 // already one derivation, so it retires an index space and nothing else:
 // `linkedReadColor` is in the pileup block and dropping it would reach a
 // 512-byte ring slot, the saving ARCHITECTURAL_LIMITS priced and parked — "the
@@ -28,10 +28,10 @@ import type { ColorPalette } from './colors.ts'
 // only an arc carries.
 export type ArcCategory = ReadColorCategory | ArcSplitCategory
 
-// Slot → meaning for the read-connection band's colour types, which
-// `buildArcBandFeeds` bakes into each connection's colour lane.
+// Slot → meaning for the read-connection band's color types, which
+// `buildArcBandFeeds` bakes into each connection's color lane.
 //
-// Slot 0 is the baseline, which `arcSlotCategory` reads per colouring mode.
+// Slot 0 is the baseline, which `arcSlotCategory` reads per coloring mode.
 export const ARC_SLOT_CATEGORY = [
   'normalInsert',
   'longInsert',
@@ -66,9 +66,9 @@ export const LINKED_READ_SLOT_CATEGORY = [
 ] as const satisfies readonly SwatchCategory[]
 
 /**
- * What an arc or read-cloud colour slot means. The baseline slot, and any slot
- * past the table, is the normal insert or, colouring by pair orientation, the
- * LR pair, so its label and its declared colour follow the mode; every other
+ * What an arc or read-cloud color slot means. The baseline slot, and any slot
+ * past the table, is the normal insert or, coloring by pair orientation, the
+ * LR pair, so its label and its declared color follow the mode; every other
  * slot means the same thing whatever the mode. The band's palette, its key and
  * its tooltip all read this.
  */
@@ -85,10 +85,10 @@ export function arcSlotCategory(
 }
 
 /**
- * The colour an arc category paints. A deletion-type split keeps the split-read
+ * The color an arc category paints. A deletion-type split keeps the split-read
  * gold of the read fills, so gold over the red of long-insert pairs shows both
  * kinds of evidence at a deletion. The other three take their pair twin's
- * colour, declared colours included: nothing else tells a duplication-type
+ * color, declared colors included: nothing else tells a duplication-type
  * junction from a deletion-type one, or the two ends of an inversion apart.
  */
 export function arcCategoryColor(c: ColorPalette, category: ArcCategory) {

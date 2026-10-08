@@ -97,7 +97,7 @@ const linearWiggleDisplayConfigSchema = ConfigurationSchema(
      * #slot mark
      * What each score is drawn as, in the mark display's words: `bar`, a bar
      * from the `origin` to the score; `point`, a point at it; `line`, a line
-     * through the scores; `span`, a strip whose colour is the score. The
+     * through the scores; `span`, a strip whose color is the score. The
      * track menu's Plot type writes it. v4's `defaultRendering` loads as its
      * `mark`: `xyplot` a bar, `scatter` a point, `density` a span, and
      * `line` and `linecenter` a line.
@@ -149,9 +149,9 @@ const linearWiggleDisplayConfigSchema = ConfigurationSchema(
     rows: quantitativeRowsConfigSchema,
     /**
      * #slot rowColor
-     * The colour a reader set on a named subtrack, as `domain`/`range` pairs:
+     * The color a reader set on a named subtrack, as `domain`/`range` pairs:
      * its plot, or under a score gradient the tint beside its label, ahead of
-     * the adapter's colour and the palette.
+     * the adapter's color and the palette.
      * #example
      * ```json
      * {
@@ -164,10 +164,10 @@ const linearWiggleDisplayConfigSchema = ConfigurationSchema(
     ...trackHeightConfigSchemaFields(),
     /**
      * #slot color
-     * One CSS colour, or `score` through a scale — `threshold` for the
+     * One CSS color, or `score` through a scale — `threshold` for the
      * bicolor plot, `linear` for the density ramp. Unset, it is the pos/neg
      * pair about the `origin`, and several sources in one plot box each
-     * paint their row colour.
+     * paint their row color.
      * #example
      * ```json
      * {
@@ -183,7 +183,7 @@ const linearWiggleDisplayConfigSchema = ConfigurationSchema(
      * The y scale the plot is drawn through: `type`, `domainMin`,
      * `domainMax`, `domainQuantile`, `symlogConstant`
      * and `rules`, the reference lines drawn across it. The density rendering
-     * draws no rule and does not widen to one: it spends colour on the score
+     * draws no rule and does not widen to one: it spends color on the score
      * and has no axis to rule.
      * #example
      * ```json

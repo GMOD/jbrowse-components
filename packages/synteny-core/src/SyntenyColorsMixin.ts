@@ -24,8 +24,8 @@ import type { Instance } from '@jbrowse/mobx-state-tree'
 /**
  * #stateModel SyntenyColorsMixin
  *
- * The colour settings every view drawing synteny tracks shares — the linear
- * synteny view, the dotplot and the circular view: `TrackColorsMixin`'s colour
+ * The color settings every view drawing synteny tracks shares — the linear
+ * synteny view, the dotplot and the circular view: `TrackColorsMixin`'s color
  * object and palette, the `opacity` object and the shortest alignment drawn,
  * over the tracks the view says it draws. A view supplies `syntenyTracks()`,
  * its opacity default and, optionally, the field it paints by until told
@@ -75,7 +75,7 @@ export function SyntenyColorsMixin({
     }))
     .views(self => {
       // structural, so a slider drag that scales a field's range alike at
-      // both ends hands the colour pass the same fade and recolours nothing
+      // both ends hands the color pass the same fade and recolors nothing
       const fade = stableIdentityComputed(() =>
         opacityFadeOf(readOpacity(self.opacity)),
       )
@@ -96,9 +96,9 @@ export function SyntenyColorsMixin({
         },
         /**
          * #getter
-         * What the colour pass fades each alignment by: the field's mapping with
+         * What the color pass fades each alignment by: the field's mapping with
          * its range as shares of `opacityLevel`, or undefined while `opacity`
-         * draws its constant, so the slider recolours nothing either way.
+         * draws its constant, so the slider recolors nothing either way.
          */
         get opacityFade(): SyntenyOpacitySnapshot | undefined {
           return fade.get()
@@ -135,7 +135,7 @@ export function SyntenyColorsMixin({
         /**
          * #method
          * The columns the tracks declare in their adapter's `attributeColumns`
-         * (the ortholog-table adapter's slot), one colour mode each.
+         * (the ortholog-table adapter's slot), one color mode each.
          */
         colorableAttributeNames() {
           return colorableColumns(
@@ -224,8 +224,8 @@ export interface SyntenyColorsModel extends Instance<
 /**
  * #api
  * What a view holding `SyntenyColorsMixin` hands the view it opens on the same
- * alignments: the colour it paints by, which a view on its default scheme
- * leaves to the new view's own, the pinned track colours, the unlabelled
+ * alignments: the color it paints by, which a view on its default scheme
+ * leaves to the new view's own, the pinned track colors, the unlabelled
  * filter and the length filter. Opacity stays each view's own default, since a
  * linear ribbon, a dotplot point and a circle's ribbon draw at densities of
  * their own.

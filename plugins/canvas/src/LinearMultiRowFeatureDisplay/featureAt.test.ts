@@ -356,9 +356,9 @@ describe('featureAt', () => {
       expect(display.featureAt(150, 75)?.id).toBe('b1')
     })
 
-    it('hides a feature on a row whose colour paints no block under itemRgb', () => {
-      // itemRgb paints the blocks, so a row's colour tints only its label and
-      // the baked colour of a hidden category hides the feature on every row.
+    it('hides a feature on a row whose color paints no block under itemRgb', () => {
+      // itemRgb paints the blocks, so a row's color tints only its label and
+      // the baked color of a hidden category hides the feature on every row.
       const { display } = twoRowDisplay(
         region(
           [

@@ -24,7 +24,7 @@ test('a later row answers to its name, and carries its label apart', () => {
   })
 })
 
-test('colors: false leaves the colours a copied palette put there', () => {
+test('colors: false leaves the colors a copied palette put there', () => {
   expect(
     liftRetiredRowState(
       { layout: [{ name: 'HG00096', color: '#e41a1c' }] },

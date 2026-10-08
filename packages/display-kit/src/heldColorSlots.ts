@@ -6,9 +6,9 @@ import type { HeldSlots } from '@jbrowse/core/ui/colors'
 import type { ColorEncoding } from '@jbrowse/core/util/markEncoding'
 
 /**
- * The slots a categorical colour deals its values into (ADR-205), kept by the
- * session and shared by every track colouring by the same field, domain and
- * range, so a gene symbol paints one colour down every panel and a colour
+ * The slots a categorical color deals its values into (ADR-205), kept by the
+ * session and shared by every track coloring by the same field, domain and
+ * range, so a gene symbol paints one color down every panel and a color
  * edit deals afresh. Undefined under any other scale.
  */
 export function heldColorSlots(

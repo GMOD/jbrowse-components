@@ -18,7 +18,7 @@ Three questions:
 
 - **the request** — which binsize, and which matrix balancing.
 - **the geometry** — where a contact lands, and how a cursor gets back to it.
-- **the colour** — what a raw count saturates against.
+- **the color** — what a raw count saturates against.
 
 The GPU lifecycle around all of it is
 [reference/GPU_DISPLAY_LIFECYCLE.md](GPU_DISPLAY_LIFECYCLE.md); the rotated-triangle
@@ -87,9 +87,9 @@ chromosome-absolute index cannot survive float32 — true of the index, false of
 what is actually stored, because the region offset cancels the large term before
 the cast. The hover index inverts what is there instead.
 
-## The colour
+## The color
 
-![How a contact count becomes a colour](diagrams/hic-colour.svg)
+![How a contact count becomes a color](diagrams/hic-color.svg)
 
 | setting | saturates at |
 | --- | --- |
@@ -109,7 +109,7 @@ every value into the first one and collapse the answer toward zero.
 
 **Both candidates are scored off the finite counts.** NaN is the dense-block "no
 value" marker and a tiny normalization divisor yields Infinity; either one
-reaching the saturation point turns every bin's colour into NaN and makes the
+reaching the saturation point turns every bin's color into NaN and makes the
 legend silently vanish.
 
 **The invisibility cutoff is a boundary between surfaces, not an optimization.**

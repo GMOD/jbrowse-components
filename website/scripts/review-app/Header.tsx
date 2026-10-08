@@ -278,7 +278,7 @@ export function Header({
         onClick={onClearSettled}
       />
       {/* Fixed label and no count, per the header rule above: `disabled` is the
-          whole of the in-flight state because it recolours without resizing, and
+          whole of the in-flight state because it recolors without resizing, and
           a spinner or a "Reloading…" would move every figure on the page the
           moment the request went out. */}
       <Tab

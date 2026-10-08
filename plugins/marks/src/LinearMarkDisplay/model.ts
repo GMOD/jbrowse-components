@@ -397,7 +397,7 @@ export function stateModelFactory(
         /**
          * #getter
          * Each mark as the text layer places it: the entry with whether it
-         * names a `y` and whether its colour is written, a constant or a
+         * names a `y` and whether its color is written, a constant or a
          * scale. Its own getter so a slot only a label reads never remakes
          * the mark list.
          */
@@ -502,8 +502,8 @@ export function stateModelFactory(
         },
         /**
          * #getter
-         * Where each mark's colour comes from (`markColor.ts`), read from the
-         * config alone, so editing a colour recolours the loaded regions
+         * Where each mark's color comes from (`markColor.ts`), read from the
+         * config alone, so editing a color recolors the loaded regions
          * rather than fetching them again.
          */
         get markColors(): ColorSource[] {
@@ -764,7 +764,7 @@ export function stateModelFactory(
           /**
            * #getter
            * `TreeSidebarMixin`'s hook: every row the adapter lists over the
-           * rows' field, in its order and with its label and colour, so a
+           * rows' field, in its order and with its label and color, so a
            * source with nothing in the loaded regions keeps its row; then the
            * other values the worker split the loaded regions on, in the order
            * the field's sections stack.
@@ -805,11 +805,11 @@ export function stateModelFactory(
             self.markView.visible,
           )
         })
-        // A fresh array per read would recolour every region on each read
+        // A fresh array per read would recolor every region on each read
         // nothing observes, so an equal one keeps the last one's identity.
         const sameColors = sameAsLast<ColorSource[]>()
-        // Each region is coloured here, first, so the rows, the sections, the
-        // legend and the painters all read its colours as if the worker had
+        // Each region is colored here, first, so the rows, the sections, the
+        // legend and the painters all read its colors as if the worker had
         // sent them.
         const colored = createEncodeMemo(
           () => self.featurePayloads,
@@ -1206,10 +1206,10 @@ export function stateModelFactory(
         },
         /**
          * #getter
-         * The colour scale each mark paints through where its colour is
+         * The color scale each mark paints through where its color is
          * quantitative: a ramp over the domain the legend already unioned
          * across the regions, its middle stop a value, or a threshold's cuts
-         * and the packed colour of each interval. Both ride uniforms, so a pan
+         * and the packed color of each interval. Both ride uniforms, so a pan
          * that widens a domain or an edit that moves a cut uploads no instance
          * bytes and no table.
          */
@@ -1224,7 +1224,7 @@ export function stateModelFactory(
          * Each link mark's size scale: its declared ends, the open ones the
          * least and greatest the regions draw, so a value strokes at one width
          * in every region; undefined for a mark whose size names no field.
-         * Over the drawn layers, as the colour ramp's domain is, so a hidden
+         * Over the drawn layers, as the color ramp's domain is, so a hidden
          * section leaves the stroke widths the way it leaves the key.
          */
         get sizeScales(): (LinkSizeScale | undefined)[] {
@@ -1246,7 +1246,7 @@ export function stateModelFactory(
             return domain && pinned && scale && range
               ? {
                   // The open ends follow the union, the pinned ones the
-                  // config, as a colour ramp's domain does.
+                  // config, as a color ramp's domain does.
                   domain: rampDomain(
                     pinned[0] ? domain[0] : undefined,
                     pinned[1] ? domain[1] : undefined,
@@ -1316,7 +1316,7 @@ export function stateModelFactory(
         /**
          * #getter
          * A ring around a point or a rule, since a wash over 4 px of ink is
-         * invisible and every hue may be the colour scale's; a shade over
+         * invisible and every hue may be the color scale's; a shade over
          * anything else.
          */
         get highlightStyle(): HighlightStyle {
@@ -1511,7 +1511,7 @@ export function stateModelFactory(
         },
         /**
          * #getter
-         * the colour keys the loaded regions carry, one per scale the marks
+         * the color keys the loaded regions carry, one per scale the marks
          * drawing at the view's zoom resolve through, each headed with its
          * channel's `title`
          */
@@ -1528,7 +1528,7 @@ export function stateModelFactory(
          * #getter
          * `LegendMixin`'s hook: the keys as color scales, so the chrome and the
          * export draw the legend off the tables the worker resolved, then the
-         * row colour key
+         * row color key
          */
         get colorScales() {
           return [

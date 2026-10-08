@@ -1,6 +1,6 @@
 ---
 name: maf-decision-tree
-description: What a multiple-alignment track decides — a fetch's tier, a row's rendering, an aligned base's colour and a species' placed row — as four decision graphs. Read before touching the summary threshold, a row rendering, the cell colour table or the height ladder.
+description: What a multiple-alignment track decides — a fetch's tier, a row's rendering, an aligned base's color and a species' placed row — as four decision graphs. Read before touching the summary threshold, a row rendering, the cell color table or the height ladder.
 audience: internal
 kind: spec
 ---
@@ -10,14 +10,14 @@ kind: spec
 A MAF track is a stack of per-species rows over one reference, and nearly every
 decision in it follows from that shape: a row is a *genome* rather than a
 feature, so the worker cannot know where it goes; the rows are the payload, so
-the payload is enormous; and the rows can be coloured by five fields, two of which cannot draw at every
+the payload is enormous; and the rows can be colored by five fields, two of which cannot draw at every
 zoom.
 
 Four questions:
 
 - **the tier** — which file a fetch reads, and what each gate is measuring.
-- **the rendering** — which colouring the rows are painting, on which surface.
-- **the cell** — what colour one aligned base takes.
+- **the rendering** — which coloring the rows are painting, on which surface.
+- **the cell** — what color one aligned base takes.
 - **the layout** — how a species becomes a placed row, and how tall it is.
 
 Where the worker's time goes, why long alignment blocks are expensive and why
@@ -58,7 +58,7 @@ not a key over the tier's name.
 
 ![Which rendering the per-sample rows are painting](diagrams/maf-rendering.svg)
 
-The display states what colours the rows as two channels: `color`, whose field
+The display states what colors the rows as two channels: `color`, whose field
 names the variable (mismatch, base, identity, chromosome, codon), and `y`, which
 puts identity on each row's bar height. They are independent, so identity bars
 can take the identity ramp. What is left to decide is what each channel can draw
@@ -79,14 +79,14 @@ answer while insertions paint.
 
 ## The cell
 
-![What colour one aligned base takes](diagrams/maf-cell-colour.svg)
+![What color one aligned base takes](diagrams/maf-cell-color.svg)
 
-The naive version is a branch cascade returning a colour, spelled once in each
+The naive version is a branch cascade returning a color, spelled once in each
 painter. Both halves of that are wrong here. Only `color: 'base'` paints a
-matching base in its own colour; every other field leaves matches in the match
+matching base in its own color; every other field leaves matches in the match
 tone.
 
-**The cascade returns a category, not a colour**, and each representation maps
+**The cascade returns a category, not a color**, and each representation maps
 from it — CSS strings for Canvas2D, packed integers for the instance buffer.
 Two painters that each spell out the decision drift, and the drift shows up as
 pixels differing between backends rather than as a failure.
@@ -100,7 +100,7 @@ the table only won on the frames that did not need it. The table has structure �
 every row is one shared row with two entries patched — and exploiting it turns
 the build into a memcpy.
 
-**The skip case stays outside the table.** A packed colour uses the full integer
+**The skip case stays outside the table.** A packed color uses the full integer
 range, so no value inside it can safely mean "don't draw".
 
 ## The layout

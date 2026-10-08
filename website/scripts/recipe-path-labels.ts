@@ -110,7 +110,7 @@ export const PATH_PROSE = new Set([
   // rows
   'drag the rows into order',
   'untick the rows you do not want',
-  // the arrangement dialog's one-line plot colour, above the rows
+  // the arrangement dialog's one-line plot color, above the rows
   'the plot color swatches',
 ])
 

@@ -37,7 +37,7 @@ export function WiggleScoreConfigMixin() {
     .views(self => ({
       /**
        * #getter
-       * A density row maps score to colour and has no axis to start at 0, so
+       * A density row maps score to color and has no axis to start at 0, so
        * its domain spans the values whatever `scales.y.zero` says.
        */
       get axisReachesZero(): boolean {

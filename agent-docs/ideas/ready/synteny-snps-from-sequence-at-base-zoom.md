@@ -31,7 +31,7 @@ Per-alignment walk:
 - minus strand walks the mate from `mateEnd` downward against the
   complement;
 - with `--eqx` or a `cs` tag the `=`/`X` positions are already in the fine
-  CIGAR, so sequence only supplies the base colour and the walk is over `X`
+  CIGAR, so sequence only supplies the base color and the walk is over `X`
   runs;
 - an M-only `cg` needs a full base compare across the window.
 

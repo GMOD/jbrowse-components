@@ -17,7 +17,7 @@ export interface RenderingBackendOptions<TRenderingBackend> {
    * that leans on MSAA holds its display at 4. Passing it overrides the
    * derivation in either direction.
    *
-   * The cost is one colour attachment the size of the canvas — an empty 600px
+   * The cost is one color attachment the size of the canvas — an empty 600px
    * track pays what a full one does, and eight ordinary tracks on a retina
    * panel hold 109.7 MiB nothing counts (ARCHITECTURAL_LIMITS.md §"The MSAA
    * target is the largest per-display allocation"); 1 allocates none. Whether a

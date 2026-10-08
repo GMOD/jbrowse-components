@@ -365,7 +365,7 @@ it.)
 
 A slot takes a callback in place of a plain value where it declares
 `contextVariable`, the arguments the callback reads; the calling code supplies
-them as the third argument to `readConfObject`. The mark display's colour object
+them as the third argument to `readConfObject`. The mark display's color object
 declares one on its `value`:
 
 <!-- include: plugins/marks/src/LinearMarkDisplay/markColorConfigSchema.ts#contextVariableSlot -->
@@ -373,24 +373,24 @@ declares one on its `value`:
 ```ts
 /**
  * #slot value
- * A CSS colour, or a jexl callback over `feature` returning one, for a
- * mark whose colour is not a scale. Unset, a mark paints in the default
- * blue, `#0068d1`, and a text mark prints in the page's text colour.
+ * A CSS color, or a jexl callback over `feature` returning one, for a
+ * mark whose color is not a scale. Unset, a mark paints in the default
+ * blue, `#0068d1`, and a text mark prints in the page's text color.
  */
 value: {
   type: 'maybeColor',
-  description: 'CSS colour or jexl callback; unset is the default blue',
+  description: 'CSS color or jexl callback; unset is the default blue',
   contextVariable: ['feature'],
 },
 ```
 
 The multi-way synteny display reads its gene `utrColor` that way, once per
-feature and memoized, and not at all when the slot holds a plain colour:
+feature and memoized, and not at all when the slot holds a plain color:
 
 <!-- include: plugins/linear-comparative-view/src/MultiWaySyntenyDisplay/geneColor.ts#contextVariableRead -->
 
 ```ts
-// the slot as written, not resolved: a jexl colour read without a feature
+// the slot as written, not resolved: a jexl color read without a feature
 // evaluates against an empty context and hands back the fallout (adr-066)
 const utrConstant = isJexl(utrColor)
   ? undefined
@@ -460,7 +460,7 @@ config, `setSlot`, the config editor and the generated JSON Schema each name the
 slot. A callback the code evaluates is one the schema says it takes, so a
 missing declaration shows up the first time a config writes one.
 
-A slot naming a field the display reads per feature, such as a colour or facet
+A slot naming a field the display reads per feature, such as a color or facet
 `field`, is a `featureField` rather than a callback. It takes a field name, a
 dotted path, or a `jexl:` expression deriving the value, and the display
 evaluates that expression per feature, so `readConfObject` and `getConf` hand it

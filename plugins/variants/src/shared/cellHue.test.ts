@@ -69,7 +69,7 @@ function key(encoding: ColorEncoding | undefined) {
 }
 
 describe('what the worker reads', () => {
-  test('nothing for the genotype colours or a constant', () => {
+  test('nothing for the genotype colors or a constant', () => {
     expect(read(undefined)).toBeUndefined()
     expect(read('#123456')).toBeUndefined()
     expect(reader('#123456')).toEqual({})
@@ -80,7 +80,7 @@ describe('what the worker reads', () => {
     expect(reader("jexl:'#abcdef'").value?.(variant({}))).toBe('#abcdef')
   })
 
-  test('a field without its scale, so recolouring it refetches nothing', () => {
+  test('a field without its scale, so recoloring it refetches nothing', () => {
     const categorical = read({
       field: 'INFO.AF',
       scale: 'categorical',
@@ -114,22 +114,22 @@ describe('what the worker reads', () => {
   })
 })
 
-test('a CSS colour paints every variant', () => {
+test('a CSS color paints every variant', () => {
   expect(hue('#123456')(variant({}))).toBe(abgr('#123456'))
 })
 
-test('a jexl callback paints the colour it returns', () => {
+test('a jexl callback paints the color it returns', () => {
   expect(hue("jexl:'#abcdef'")(variant({}))).toBe(abgr('#abcdef'))
 })
 
-test('the impact preset paints the consequence tier colours', () => {
+test('the impact preset paints the consequence tier colors', () => {
   const encoding = { field: IMPACT_FIELD, scale: 'categorical' as const }
   const v = variant({ ANN: ['T|missense_variant|MODERATE|G'] })
   expect(hue(encoding)(v)).toBe(abgr(getVariantImpactColor(v)))
   expect(key(encoding)(v)).toBe('MODERATE')
 })
 
-test('svType paints the class colours, and a record with no class the alt hue', () => {
+test('svType paints the class colors, and a record with no class the alt hue', () => {
   const encoding = { field: SV_TYPE_FIELD, scale: 'categorical' as const }
   const del = new SimpleFeature({
     uniqueId: 'd',
@@ -150,7 +150,7 @@ describe('a record field', () => {
     expect(key(clnsig)(variant({ CLNSIG: ['Pathogenic'] }))).toBe('Pathogenic')
   })
 
-  test('gives each value one colour, the same for every variant', () => {
+  test('gives each value one color, the same for every variant', () => {
     const color = hue(clnsig)
     const a = color(variant({ CLNSIG: ['Pathogenic'] }, 'a'))
     const b = color(variant({ CLNSIG: ['Pathogenic'] }, 'b'))

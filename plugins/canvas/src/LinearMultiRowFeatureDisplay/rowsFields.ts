@@ -72,7 +72,7 @@ export function rowsFieldCandidates(self: RowsFieldSlice) {
 }
 
 /**
- * The attributes the rows can cluster on: the row candidates, and the colour
+ * The attributes the rows can cluster on: the row candidates, and the color
  * field wherever a region shipped a value for it. `score` and `strand` name no
  * row, but a ramp over one is what the picture is about.
  */
@@ -185,7 +185,7 @@ export const AUTO_CLUSTER_FIELD = 'auto'
 const COLOR_ATTRIBUTE =
   /get\(\s*feature\s*,\s*['"]([^'"]+)['"]\s*\)|\bfeature\.([A-Za-z_]\w*)/
 
-// The field a colour names outright, else one its `jexl:` value reads.
+// The field a color names outright, else one its `jexl:` value reads.
 function colorAttribute({ value, field }: WorkerColor) {
   if (field && !isCallbackValue(field)) {
     return field

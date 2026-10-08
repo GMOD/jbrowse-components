@@ -8,8 +8,8 @@ import { SCORE_CAPTION_HEIGHT } from './yAxisConstants.ts'
 /**
  * The one-line `[min, max]` caption that stands in for a y axis where none can
  * be drawn — a scale whose bands are too short for tick labels, and a density
- * track whose rows each carry their own colour, so no single ramp describes
- * them. An axis stand-in rather than a key, which is why it is not a colour
+ * track whose rows each carry their own color, so no single ramp describes
+ * them. An axis stand-in rather than a key, which is why it is not a color
  * scale and draws whether or not the legend does. Right-aligned to
  * `canvasWidth` at the top of the display, led by the scale's `caption` where
  * it has one, which has no gutter to sit in here.

@@ -21,7 +21,7 @@ export type FieldRef = string
 /**
  * #api
  * A field bound to a categorical scale: each distinct value takes one entry
- * of the channel's `range` — a colour for `color`, a shape name for
+ * of the channel's `range` — a color for `color`, a shape name for
  * `shape`. Every value derives its entry from itself (an integer takes the
  * slot it names, anything else hashes in), so every region agrees on a value
  * it shares with another at the cost of an occasional collision. A `domain`
@@ -40,7 +40,7 @@ export interface CategoricalRef {
 /**
  * #api
  * A numeric field cut into intervals: `domain` is the ascending cut points
- * and `range` holds one colour more, so a value paints the entry for the
+ * and `range` holds one color more, so a value paints the entry for the
  * number of cut points it is at or past. A value that is not a number
  * belongs to no interval.
  */
@@ -57,8 +57,8 @@ export interface ThresholdRef {
  * #api
  * A numeric field read through a linear or log scale into a ramp. Each end of
  * the domain is pinned by `domainMin` or `domainMax`, or is the region's own
- * extreme where unset, so pinning both keeps colours consistent across a
- * whole view. The ramp is `range`'s CSS colours, evenly spaced, where it
+ * extreme where unset, so pinning both keeps colors consistent across a
+ * whole view. The ramp is `range`'s CSS colors, evenly spaced, where it
  * lists any, else the named `scheme`; `reverse` turns it round.
  */
 export interface ContinuousRef {
@@ -80,7 +80,7 @@ export interface ContinuousRef {
 
 /**
  * #api
- * How a mark's `color` channel resolves. A CSS colour or a `jexl:` expression
+ * How a mark's `color` channel resolves. A CSS color or a `jexl:` expression
  * returning one paints per feature with no scale; the object forms bind a
  * field to a scale, which a legend can describe, and share the config's
  * member names.
@@ -121,7 +121,7 @@ export interface LocusRef {
  * A numeric field read through a linear or log scale into a width in CSS px:
  * `range` is the px at each end of the domain (1 to 6 unset), and each end of
  * the domain is pinned by `domainMin` or `domainMax` or follows the loaded
- * regions' extremes where unset, as a colour ramp's does. A feature holding
+ * regions' extremes where unset, as a color ramp's does. A feature holding
  * no number takes the range's first px.
  */
 export interface SizeRef {
@@ -186,8 +186,8 @@ export type LaneName =
 
 /**
  * #api
- * The scale a colour channel was resolved through, as the legend reads it —
- * the same table the colours in the payload came from, so the key cannot
+ * The scale a color channel was resolved through, as the legend reads it —
+ * the same table the colors in the payload came from, so the key cannot
  * disagree with the painting.
  */
 export type ColorScaleTable =
@@ -195,7 +195,7 @@ export type ColorScaleTable =
       kind: 'categorical'
       field: string
       domain: string[]
-      /** The declared range, the other half of what assigns a key its colour. */
+      /** The declared range, the other half of what assigns a key its color. */
       range?: string[]
       /**
        * Whether every non-empty key met here parsed as a finite number: a
@@ -213,7 +213,7 @@ export type ColorScaleTable =
       /** The cut points, ascending, as numbers. */
       domain: number[]
       /**
-       * The declared interval colours, one more than the cuts; the default
+       * The declared interval colors, one more than the cuts; the default
        * palette fills what the declaration leaves.
        */
       range?: string[]
@@ -247,7 +247,7 @@ export type ColorScaleTable =
        */
       domainMid?: number
       /**
-       * The declared stops — `range`'s colours or the `scheme` — and
+       * The declared stops — `range`'s colors or the `scheme` — and
        * `reverse`, which with both ends pinned make up the whole declaration,
        * so marks declaring one ramp alike share a key on it.
        */
@@ -306,7 +306,7 @@ export interface SizeScaleTable {
 
 /**
  * #api
- * The table behind a channel a key is drawn from: a colour's, whose `kind`
+ * The table behind a channel a key is drawn from: a color's, whose `kind`
  * names the scale it resolved through, or a shape's. A `size` channel's
  * ({@link SizeScaleTable}) draws no key and stands outside.
  */
@@ -341,20 +341,20 @@ export interface EncodedChannels {
   y?: Float32Array
   /**
    * Each instance's packed ABGR, or one number every instance paints where
-   * the colour is a constant; {@link colorAt} reads either.
+   * the color is a constant; {@link colorAt} reads either.
    */
   color?: Uint32Array | number
   /**
-   * The raw values of a quantitative colour channel — a ramp's or a
+   * The raw values of a quantitative color channel — a ramp's or a
    * threshold's — for a caller that named the `colorValue` lane: the scale
    * then resolves on the main thread and in the shader, a ramp against a
    * domain unioned over the loaded regions (`scale.extent` is this region's
    * contribution) and a threshold against its cuts as uniforms. Where the
-   * colour reads the field `y` plots, this IS the `y` array, not a copy.
+   * color reads the field `y` plots, this IS the `y` array, not a copy.
    */
   colorValue?: Float32Array
   /**
-   * Each instance's index into `scale.entries` under a categorical colour, for
+   * Each instance's index into `scale.entries` under a categorical color, for
    * a caller that named the `colorKey` lane in place of `color`: the display
    * then paints each key through its own `domain` and `range`, which never
    * reach the worker.
@@ -390,7 +390,7 @@ export interface EncodedChannels {
   yMax: number
   /** A Flatbush over (x, y, x2, y), when `index` was asked for and `count` is not 0. */
   flatbushData?: ArrayBuffer
-  /** The colour channel's table, when `color` is a scale. */
+  /** The color channel's table, when `color` is a scale. */
   scale?: ColorScaleTable
   /** The shape channel's table, when `shape` is a scale. */
   shapeScale?: ShapeScaleTable

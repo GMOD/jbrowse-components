@@ -5,7 +5,7 @@ description: The 4x MSAA target exists because read-connection arcs looked pixel
 
 # Antialiasing arcs without MSAA
 
-`WebGPUHal` holds one 4x multisampled colour attachment per display, sized to
+`WebGPUHal` holds one 4x multisampled color attachment per display, sized to
 its canvas and not to its data
 ([reference/ARCHITECTURAL_LIMITS.md](../../reference/ARCHITECTURAL_LIMITS.md)
 §"The MSAA target is the largest per-display allocation"). On a retina panel that
@@ -228,7 +228,7 @@ would cost:
   is worked through.
 
 **`variant.slang` does not belong on any of those lists.** Its `SHAPE_RECT`
-branch, which is every ordinary genotype cell, returns the instance colour flat;
+branch, which is every ordinary genotype cell, returns the instance color flat;
 x is pixel-snapped (`snappedCellLeftPx`) but y is deliberately fractional, so
 both horizontal edges land mid-device-pixel. The inversion triangle is worse
 than unramped: `triSdfRight`'s `dLeft` is zero **on the quad's own right edge**,
@@ -274,7 +274,7 @@ deterministic under the HAL's 4x MSAA*. At 1x it is unchanged.
 
 - `wiggleDensity.slang` — a pass of its own, not a branch of `wiggle.slang` as
   this bullet used to say. Its cuts are row boundaries that tile and its datum
-  is the colour, so it is a refusal rather than a leftover.
+  is the color, so it is a refusal rather than a leftover.
 - `wiggle.slang` — the crisp small-point square only, since 2026-08-22, and it
   is pixel-snapped so it has nothing to smooth at a whole dpr. The bar's
   vertical cuts are the pass's real exposure and are in the list above.
@@ -367,7 +367,7 @@ Differences between the 4x and 1x captures, over the whole 2560x1800 page:
   between the coverage band and the pileup.
 - **wiggle — 3,683 pixels (0.080%) but a mean delta of 89 over them, max 171.**
   At 9x the mechanism is obvious: at 4x every bar's top edge carries a
-  one-device-pixel row of partially covered colour, and at 1x it does not. **A
+  one-device-pixel row of partially covered color, and at 1x it does not. **A
   wiggle bar's top edge is the datum**, so this is not only smoothness — the
   encoded value quantises to a whole device pixel (0.5 CSS px at dpr 2).
 
@@ -526,12 +526,12 @@ leaks background into a pixel that is fully covered. The root is older:
 already flags "adjacent segments of a continuous line" as the case where their
 independence assumption fails.
 
-**MSAA sidesteps it by keeping a distinct colour per sample**, so two cells'
+**MSAA sidesteps it by keeping a distinct color per sample**, so two cells'
 coverage is exclusive rather than multiplied — Kilgard & Bolz §3, and NVIDIA's
 [US9418437B2](https://patents.google.com/patent/US9418437B2/en) is blunt about
 both the requirement and the cost. The trap worth knowing: Vello's software MSAA
 reduces its per-sample mask to a scalar before blending, so it fixes
-*within-path* conflation only. Ours is hardware MSAA with per-sample colour, so
+*within-path* conflation only. Ours is hardware MSAA with per-sample color, so
 it fixes the *cross-primitive* case — which is precisely why the Hi-C grid tiles
 correctly today and why option 5 stays refused.
 
@@ -692,7 +692,7 @@ tree:
     real number, not the claim that the case cannot arise.
   - **Density, and the whole alignments coverage family, cannot take it.**
     Density's quad spans the row, so its cuts are row boundaries that tile, and
-    its datum is the colour rather than the edge. In the coverage band every mark
+    its datum is the color rather than the edge. In the coverage band every mark
     shares a horizontal edge with another: `coverageSnp`/`coverageMod` segments
     stack (`yOffset` accumulates, so each segment's top IS its neighbour's
     bottom), the topmost segment's top coincides with `coverageBar.slang`'s depth

@@ -143,7 +143,7 @@ test('draws nothing with no entries', () => {
   expect(container.querySelector('g')).toBeNull()
 })
 
-test('a shape swatch is the point shape drawn as a path, in the row colour', () => {
+test('a shape swatch is the point shape drawn as a path, in the row color', () => {
   const { container } = renderSvg(
     <SvgColorLegend
       canvasWidth={500}

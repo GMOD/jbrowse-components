@@ -24,7 +24,7 @@
 # and never reached ready inside 600 s; this is 2.7 MB and clusters in seconds.
 #
 # WHAT THE FIGURE THEN SHOWS, and why it needs no polarised or reordered file.
-# Raw ALT/REF colouring is NOT a haplotype block — a block is a set of alleles
+# Raw ALT/REF coloring is NOT a haplotype block — a block is a set of alleles
 # travelling together, and which of them is the ALT allele varies site to site,
 # so an unordered matrix of common variants is a plaid whatever the row count.
 # What makes the block appear is ORDERING: the display's own "cluster by
@@ -118,7 +118,7 @@ echo "subsample: $(wc -l < sub.samples) samples, $(( $(wc -l < sub.samples) * 2 
 
 # ── Slice ────────────────────────────────────────────────────────────────────
 # -S never reorders: the output keeps the callset's own sample order whatever
-# order the id list is in, so the population colours come from the samples
+# order the id list is in, so the population colors come from the samples
 # file at display time and not from this file.
 if [ ! -f "$OUT" ]; then
   bcftools view -S sub.samples --force-samples -Oz -o "$OUT" "$POOLED"

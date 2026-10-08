@@ -69,7 +69,7 @@ describe('multi-sample variant colorBy', () => {
   })
 
   // While a channel is bound to a variable it beats a per-row constant — the
-  // samplesTsv `color` column here, and equally a colour the arrangement
+  // samplesTsv `color` column here, and equally a color the arrangement
   // dialog wrote into `rowColor`.
   it('wins over a samplesTsv color column, and hands it back when cleared', () => {
     const model = makeModel()
@@ -140,7 +140,7 @@ test('the Samples menu ticks a configured attribute the samples lack', () => {
   expect(tissue && 'checked' in tissue && tissue.checked).toBe(true)
 })
 
-test('the Samples menu ticks Each row where the dialog picked sample colours', () => {
+test('the Samples menu ticks Each row where the dialog picked sample colors', () => {
   const { display } = createTestEnvironment({
     displayConfig: { rowColor: { domain: ['HG001'], range: ['#f00'] } },
   }).createDisplay()

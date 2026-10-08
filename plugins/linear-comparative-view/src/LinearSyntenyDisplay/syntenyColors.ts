@@ -29,10 +29,10 @@ import type {
 
 // Location-marker tick: the band's contrast ink at the alpha of the legacy
 // rgba(0,0,0,0.25) context lines. Renderers draw KIND_MARKER instances as 1px
-// lines using this packed alpha directly (no colour or global-alpha scaling).
+// lines using this packed alpha directly (no color or global-alpha scaling).
 //
-// Contrast-derived rather than either black or a theme text colour: the band is
-// an opaque KNOWN colour by construction (`syntenyGroundClear`), so a
+// Contrast-derived rather than either black or a theme text color: the band is
+// an opaque KNOWN color by construction (`syntenyGroundClear`), so a
 // tick has to be legible against THAT and not against the page. Reading
 // `text.secondary` while the band said something else is what shipped the
 // off-screen-mate strip invisible.
@@ -71,7 +71,7 @@ interface InstanceInputs {
 
 // Pure function: produce a fresh Uint32Array of packed ABGR colors from
 // per-instance descriptors plus per-feature data and the current color
-// scheme. Called on the main thread whenever the colour or featureData
+// scheme. Called on the main thread whenever the color or featureData
 // changes — no RPC round-trip.
 export function computeSyntenyColors({
   instanceData,
@@ -99,7 +99,7 @@ export function computeSyntenyColors({
   // the view's `opacity`, whose field fades each ribbon and its indels
   opacity?: SyntenyOpacitySnapshot
   // The location-marker toggle, which is a color decision rather than a fetch
-  // one — the geometry always carries the ticks. Independent of the colour: markers
+  // one — the geometry always carries the ticks. Independent of the color: markers
   // are the ruler continued through the ribbons, not data, so no scheme paints
   // them and none of them can hide them either.
   drawLocationMarkers?: boolean

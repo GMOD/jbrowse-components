@@ -68,7 +68,7 @@ function keyOf(
   }
 }
 
-describe('color.labels names the key rows range colours', () => {
+describe('color.labels names the key rows range colors', () => {
   test('a label names the preset level its domain entry names', () => {
     const { labels, hover } = keyOf(
       { field: 'pairOrientation', domain: ['RR', 'LL'] },
@@ -157,7 +157,7 @@ describe('color.labels names the key rows range colours', () => {
   })
 })
 
-describe('color.title heads the key the colour object draws', () => {
+describe('color.title heads the key the color object draws', () => {
   const model = (reads: LegendItem[], arcs: LegendItem[] = []) => ({
     legendItems: () => reads,
     arcLegendTitle: 'Arc colors',

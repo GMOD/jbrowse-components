@@ -76,8 +76,8 @@ function pickCellSolidColor(self: LinearMultiSampleVariantDisplayModel) {
   ])
 }
 
-// The rows' colour, as the arrangement dialog offers it: None and the
-// attributes, and Each row while it is the choice, since its colours are
+// The rows' color, as the arrangement dialog offers it: None and the
+// attributes, and Each row while it is the choice, since its colors are
 // picked in the dialog.
 function rowColorItems(self: LinearMultiSampleVariantDisplayModel): MenuItem[] {
   const current = self.rowColorChoice
@@ -229,8 +229,8 @@ export function variantTrackMenuItems(
         },
       ],
     },
-    // The cell fill and the sample metadata's row colour are independent
-    // colour objects, so each is a block of its own.
+    // The cell fill and the sample metadata's row color are independent
+    // color objects, so each is a block of its own.
     colorByMenuItem({
       blocks: [
         {

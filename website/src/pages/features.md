@@ -47,9 +47,9 @@ generated directly from the source. For visuals, browse the
   on-screen renderer, so a figure looks exactly like what you saw.
 - **Plots declared in config** - a
   [grammar of graphics](/docs/config_guides/mark_display) over any feature,
-  alignment or variant file: name a field for the y-axis, one for the colour,
-  and a transform to bin, count, stack or measure coverage, and the track draws
-  the plot with its axis and legend, no code
+  alignment or variant file: name a field for the y-axis, one for the color, and
+  a transform to bin, count, stack or measure coverage, and the track draws the
+  plot with its axis and legend, no code
 
 ## View types
 

@@ -145,7 +145,7 @@ const AlignmentsTooltip = observer(function AlignmentsTooltip({
     }
     case 'coverage': {
       // The 256-entry CSS table `buildBaseCssMap` builds for the mismatch
-      // draws, so a row's swatch is the colour of the bar segment above the
+      // draws, so a row's swatch is the color of the bar segment above the
       // cursor by construction rather than by a second spelling of the palette.
       const baseColors = buildBaseCssMap({
         colors: colorPalette,
@@ -213,7 +213,7 @@ const AlignmentsTooltip = observer(function AlignmentsTooltip({
                 between two chromosomes reads as a locstring naming the first
                 and a coordinate belonging to the second, and the distance below
                 it is a subtraction of two unrelated number lines — which is the
-                same reason `resolveArcs` refuses to colour these by insert size
+                same reason `resolveArcs` refuses to color these by insert size
                 or orientation. */}
             {/* An unplaced mark has ONE end. Its two feet are collapsed onto
                 the coordinate the view can place, so the range and the distance

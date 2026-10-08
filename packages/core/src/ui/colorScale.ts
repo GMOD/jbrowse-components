@@ -83,7 +83,7 @@ export interface RampScale {
   format?: (value: number) => string
   /**
    * The loaded values' extremes. An end of `domain` the data runs past prints
-   * `≤` or `≥`, since the ramp paints every value beyond it in its end colour.
+   * `≤` or `≥`, since the ramp paints every value beyond it in its end color.
    */
   extent?: readonly [number, number]
 }

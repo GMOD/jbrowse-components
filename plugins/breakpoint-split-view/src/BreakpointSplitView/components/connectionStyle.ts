@@ -55,7 +55,7 @@ export function useConnectionStyle() {
   })
 }
 
-// One row per colour: kinds that share a swatch share a row, their labels
+// One row per color: kinds that share a swatch share a row, their labels
 // joined.
 export function connectionKeyRows(kinds: ConnectionKind[]) {
   const rows = new Map<string, { kind: ConnectionKind; labels: string[] }>()

@@ -1,6 +1,6 @@
 ---
 status: Rejected
-summary: "No column encoder for wiggle yet: an `encodeColumns` over typed columns matches wiggle's hand packer in time (0.59-0.99x) and a row cursor runs `jexl:` channels at 0.26-0.40x the SimpleFeature path, but `EncodedChannels` retains 20 bytes a feature against wiggle's 12 — an identity `featureIndex` and a per-instance colour lane wiggle carries per source. It reopens once `EncodedChannels` can decline `featureIndex` and a constant colour rides as a scalar"
+summary: "No column encoder for wiggle yet: an `encodeColumns` over typed columns matches wiggle's hand packer in time (0.59-0.99x) and a row cursor runs `jexl:` channels at 0.26-0.40x the SimpleFeature path, but `EncodedChannels` retains 20 bytes a feature against wiggle's 12 — an identity `featureIndex` and a per-instance color lane wiggle carries per source. It reopens once `EncodedChannels` can decline `featureIndex` and a constant color rides as a scalar"
 ---
 
 # ADR-152: Wiggle stays off the column encoder until two lanes go
@@ -170,12 +170,12 @@ display state a worker step is never told, and a faster kernel does not tell it.
 The ADR's conclusion is unchanged; only its arithmetic moves.
 
 **ADR-127's premise is the one that survives intact, and it is the criterion
-that fired.** ADR-127 read the cost as the lens — "`x`, `x2`, a colour lane and
+that fired.** ADR-127 read the cost as the lens — "`x`, `x2`, a color lane and
 a row lane are 16 bytes a feature held per region beside the 40-byte record" —
 and predicted the shape would come free "for the day wiggle's payload is
 per-instance lanes". This bench is that day, and the day costs eight bytes a
 feature: four for `featureIndex`, which is the identity permutation whenever no
-feature is skipped, and four for a per-instance colour lane, which wiggle
+feature is skipped, and four for a per-instance color lane, which wiggle
 carries once per source. Speed was never ADR-127's kill and is not this one's
 either.
 
@@ -188,11 +188,11 @@ with `y2` are on, on four conditions the numbers name:
   encode over a table with no unplaceable row answers the identity permutation,
   and every consumer that reads it (Manhattan's r², wiggle's summary band) can
   index directly instead. Four of the eight bytes.
-- **A constant colour has to ride as a scalar, not a lane.** The other four, and
+- **A constant color has to ride as a scalar, not a lane.** The other four, and
   the same conclusion
   [wiggle-instance-records-carry-per-row-constants](../ideas/ready/wiggle-instance-records-carry-per-row-constants.md)
-  reached from the GPU side in its §3: a per-row colour table shrinks every
-  record and turns a recolour into one small upload. Met from the encoder side
+  reached from the GPU side in its §3: a per-row color table shrinks every
+  record and turns a recolor into one small upload. Met from the encoder side
   it also shrinks the payload the worker ships and `rpcDataMap` retains.
 - **A multi-wiggle encodes one layer per source, with the row as a per-layer
   constant.** The `multi-wiggle` row above is measured that way, which is the
@@ -216,14 +216,14 @@ ADR-127 already declined once.
 
 [ADR-193](adr-193-an-adapter-answers-the-mark-pipeline-its-typed-arrays.md)
 met the first: `featureIndex` is absent where it is the identity.
-[ADR-198](adr-198-a-constant-colour-rides-as-a-scalar.md) meets the second: a
-constant colour is one number on the layer, expanded for the GPU pack alone and
+[ADR-198](adr-198-a-constant-color-rides-as-a-scalar.md) meets the second: a
+constant color is one number on the layer, expanded for the GPU pack alone and
 once for Canvas2D, so a bar over a BigWig's raw rows holds
-12<!--m:scalar-colour-bigwig.raw.headBytes--> bytes a feature, wiggle's own.
+12<!--m:scalar-color-bigwig.raw.headBytes--> bytes a feature, wiggle's own.
 The time sits on the line over the same rows rather than under it: the table
-arm runs at 1.09x<!--m:scalar-colour-bigwig.raw.headVsWiggle--> wiggle there,
+arm runs at 1.09x<!--m:scalar-color-bigwig.raw.headVsWiggle--> wiggle there,
 and a quieter A/B read it level with the lane's 1.12x; what remains is the
 encode's copy of the positions and its admit pass over `y`. Two conditions remain: a multi-wiggle's `row` as a
-per-layer constant, the question ADR-198 answered for colour
+per-layer constant, the question ADR-198 answered for color
 ([wiggle-onto-bar-and-point](../ideas/ready/wiggle-onto-bar-and-point.md)),
 and a `pileup` kernel that sorts without a comparator.

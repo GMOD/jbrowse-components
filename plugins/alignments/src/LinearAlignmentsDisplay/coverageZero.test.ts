@@ -29,7 +29,7 @@ test('a pinned bottom stays pinned either way', () => {
   expect(display.minScoreBound).toBe(5)
 })
 
-test("the corner notice reads scales.y's ends by the colour ramp's rule", () => {
+test("the corner notice reads scales.y's ends by the color ramp's rule", () => {
   expect(
     createDisplay({ scales: { y: { domainMin: 50, domainMax: 5 } } }).notices,
   ).toEqual([

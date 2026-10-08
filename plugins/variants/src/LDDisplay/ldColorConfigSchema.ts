@@ -22,9 +22,9 @@ export const LD_VALUE_EXTENT = [0, 1] as const
  * The LD display's `color`: which statistic the cells are, `r2` or `dprime`,
  * through a linear scale onto a named `scheme`. An unset `scheme` is the
  * metric's own, reds for r² and blues for D'. The domain is the statistic's
- * 0 to 1 rather than the loaded values', so one r² paints one colour on every
+ * 0 to 1 rather than the loaded values', so one r² paints one color on every
  * track; `domainMin` and `domainMax` narrow it. The slots are the shared
- * colour object's, so `jbrowse validate` and "Edit plot..." judge them as they
+ * color object's, so `jbrowse validate` and "Edit plot..." judge them as they
  * judge any other display's.
  *
  * #example
@@ -76,7 +76,7 @@ export const ldColorConfigSchema = ConfigurationSchema(
     domainMin: {
       type: 'maybeNumber',
       description:
-        'the value the bottom colour paints, everything below it too; unset is 0',
+        'the value the bottom color paints, everything below it too; unset is 0',
     },
     /**
      * #slot domainMax
@@ -84,7 +84,7 @@ export const ldColorConfigSchema = ConfigurationSchema(
     domainMax: {
       type: 'maybeNumber',
       description:
-        'the value the top colour paints, everything above it too; unset is 1',
+        'the value the top color paints, everything above it too; unset is 1',
     },
     /**
      * #slot scale

@@ -72,23 +72,23 @@ export const MARK_RULES = {
   'span-density-source': 'warning',
   /** Threshold cuts that repeat, leaving an interval no value falls in. */
   'threshold-cuts': 'warning',
-  /** A threshold colour naming no cut, so every value paints one colour. */
+  /** A threshold color naming no cut, so every value paints one color. */
   'threshold-no-cuts': 'warning',
-  /** A threshold colour naming more cuts than it paints, so a value past the eighth takes the ninth colour. */
+  /** A threshold color naming more cuts than it paints, so a value past the eighth takes the ninth color. */
   'threshold-cut-count': 'warning',
-  /** A threshold `range` not one colour longer than its cuts. */
+  /** A threshold `range` not one color longer than its cuts. */
   'threshold-range': 'warning',
-  /** A `domain` on a linear or log colour, whose ends are `domainMin` and `domainMax`. */
+  /** A `domain` on a linear or log color, whose ends are `domainMin` and `domainMax`. */
   'ramp-domain': 'warning',
-  /** A scale's `domainMax` below its `domainMin`: a colour ramp's, a width's or `scales.y`'s. */
+  /** A scale's `domainMax` below its `domainMin`: a color ramp's, a width's or `scales.y`'s. */
   'domain-ends': 'warning',
-  /** A colour ramp's or `scales.y`'s `domainQuantile` outside 0.5 to 1, a percent among them. */
+  /** A color ramp's or `scales.y`'s `domainQuantile` outside 0.5 to 1, a percent among them. */
   'domain-quantile': 'warning',
   /** A log scale's `domainMin` at or below 0, which it cannot hold, so the end floors above it. */
   'log-floor': 'warning',
-  /** A colour's or a shape's `field` spelling a CSS colour or a shape name, which is a constant written `{ value }`. */
+  /** A color's or a shape's `field` spelling a CSS color or a shape name, which is a constant written `{ value }`. */
   'field-spells-constant': 'warning',
-  /** A colour's or a shape's `labels` naming values its `domain` does not list, or no categorical scale's. */
+  /** A color's or a shape's `labels` naming values its `domain` does not list, or no categorical scale's. */
   'labels-domain': 'warning',
   /** A `minBpPerPx` not below the mark's `maxBpPerPx`, so the mark never draws. */
   'empty-zoom-range': 'error',
@@ -295,9 +295,9 @@ function sizeFieldOf(size: SizeSnapshot | undefined) {
       : ''
 }
 
-// A shape's labels name its domain values in order, as a colour's do, and a
+// A shape's labels name its domain values in order, as a color's do, and a
 // constant shape names none.
-// What a reader writes as a colour, without the colour parser the rule list
+// What a reader writes as a color, without the color parser the rule list
 // cannot carry into `jbrowse validate`.
 function spellsColor(text: string) {
   return (
@@ -316,7 +316,7 @@ function fieldOf(channel: unknown) {
 }
 
 // Inside `encoding` a bare string is a field, so a constant written the way a
-// display-level colour takes one reads as a field no feature holds.
+// display-level color takes one reads as a field no feature holds.
 function constantAsFieldProblems(
   encoding: MarkSnapshot['encoding'],
 ): OwnProblem[] {
@@ -328,7 +328,7 @@ function constantAsFieldProblems(
           found(
             'field-spells-constant',
             'encoding.color.field',
-            `${JSON.stringify(color)} is a colour, and a string in encoding is a field: a constant colour is { "value": ${JSON.stringify(color)} }`,
+            `${JSON.stringify(color)} is a color, and a string in encoding is a field: a constant color is { "value": ${JSON.stringify(color)} }`,
           ),
         ]
       : []),
@@ -640,7 +640,7 @@ function stepProblems(steps: Steps, list = 'transform') {
 }
 
 // Each field a mark's channels read besides `y`, by the slot naming it: the
-// channels its type reads, a colour's or a shape's field where it is a scale,
+// channels its type reads, a color's or a shape's field where it is a scale,
 // a text's field as its default leaves it, and a link's size field.
 function channelFields(
   mark: MarkSnapshot,
@@ -788,7 +788,7 @@ function ownProblems(
       found(
         'threshold-no-cuts',
         'encoding.color.domain',
-        'a threshold names its cut points in domain, and with none every value paints the first colour',
+        'a threshold names its cut points in domain, and with none every value paints the first color',
       ),
     )
   }
@@ -800,7 +800,7 @@ function ownProblems(
       found(
         'threshold-cut-count',
         'encoding.color.domain',
-        `a threshold paints ${MAX_THRESHOLD_CUTS} cuts, and these ${cutCount} leave a value past the ${MAX_THRESHOLD_CUTS}th in the ${MAX_THRESHOLD_CUTS + 1}th colour`,
+        `a threshold paints ${MAX_THRESHOLD_CUTS} cuts, and these ${cutCount} leave a value past the ${MAX_THRESHOLD_CUTS}th in the ${MAX_THRESHOLD_CUTS + 1}th color`,
       ),
     )
   }

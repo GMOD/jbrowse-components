@@ -4,7 +4,7 @@ import { alpha, blend, darken, lighten, parse, toRGBA } from './index.ts'
 // wraps each channel and then carries the overflow into its neighbour, and
 // `set` masked rather than clamped. Both are local edits now, so these are the
 // cases that say the edits are still there — every one of them produced a
-// plausible wrong colour before, never a throw, so nothing else would notice.
+// plausible wrong color before, never a throw, so nothing else would notice.
 
 const RED = '#ff0000'
 
@@ -106,11 +106,11 @@ describe('hue is periodic, in every syntax that takes one', () => {
 })
 
 // Same class again: a wrong answer that looks like a right one. The whole string
-// has to be the colour, or the invalid-colour sentinel `colorBits.test.ts`
+// has to be the color, or the invalid-color sentinel `colorBits.test.ts`
 // asserts ("a broken config reads as magenta, never as a plausible wrong
-// colour") is unreachable for anything with a colour buried in it.
-describe('a colour is the whole string, not something found inside one', () => {
-  it('refuses a colour with anything around it', () => {
+// color") is unreachable for anything with a color buried in it.
+describe('a color is the whole string, not something found inside one', () => {
+  it('refuses a color with anything around it', () => {
     expect(() => parse('foo rgb(1,2,3) bar')).toThrow(/invalid CSS color/)
     expect(() => parse('rgb(1,2,3) rgb(4,5,6)')).toThrow(/invalid CSS color/)
     expect(() => parse('url(rgb(1,2,3))')).toThrow(/invalid CSS color/)

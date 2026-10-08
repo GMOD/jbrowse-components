@@ -184,7 +184,7 @@ export function slotSpreadPairs(
 // A slot table may itself spread one, and that is not a corner case: it is how
 // `wiggleConfigSchemaFields` is built out of `scoreAxisConfigSchemaFields`, so
 // a Manhattan plot can declare the score axis without the palette, and how the
-// arc displays' `ARC_COLOR_FIELD_SLOTS` is built out of display-kit's colour
+// arc displays' `ARC_COLOR_FIELD_SLOTS` is built out of display-kit's color
 // slot factories. Treating the spread as "not slot-shaped" rejected the whole
 // outer table, which took every wiggle slot off the config pages while the
 // schema still declared them — the same silent gap this index exists to close,

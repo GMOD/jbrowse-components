@@ -22,7 +22,7 @@ export interface MultiRowGetFeaturesArgs extends GatedFetchArgs {
 }
 
 /**
- * The colour field's distinct values in one region, as text, and each value a
+ * The color field's distinct values in one region, as text, and each value a
  * feature carries with the partition row it lands in (`rowIndex` indexes
  * `rowValues`), up to `MAX_LEGEND_CANDIDATES`.
  */
@@ -42,7 +42,7 @@ export interface MultiRowRegionData {
   featureStarts: Uint32Array
   featureEnds: Uint32Array
   featureColors: Uint32Array
-  // Length 0 when no colour field is named: each feature's one-based index
+  // Length 0 when no color field is named: each feature's one-based index
   // into `colorValues.values`, which the main thread paints through the scale
   // in `featureColors`' place.
   rectColorValues: Uint32Array

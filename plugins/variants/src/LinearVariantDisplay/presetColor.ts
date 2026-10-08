@@ -8,7 +8,7 @@ const PRESET_COLORS: Readonly<Record<string, string>> = {
 }
 
 /**
- * The jexl colour a preset field paints on this display, or undefined for
+ * The jexl color a preset field paints on this display, or undefined for
  * any other field, or one sitting under `scale: 'none'`. The canvas worker
  * reads a field off each feature, and a VCF record has no `impact` of its
  * own, so the display paints the preset through the jexl function that

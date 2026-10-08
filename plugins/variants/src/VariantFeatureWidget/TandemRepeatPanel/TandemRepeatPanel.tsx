@@ -85,7 +85,7 @@ const Legend = observer(function Legend({
         <div style={legendRow}>
           <span>
             {repeat.units.length - UNIT_COLORS.length} more units share these
-            colours
+            colors
           </span>
         </div>
       ) : null}

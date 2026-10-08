@@ -121,7 +121,7 @@ export function drawPlannedPasses(
 // its sampler unconditionally, and a textured pass missing a texture draws
 // nothing on either GPU HAL. A mark declaring no `texture` at all is the same case —
 // `pointMark` carries a sampler for the shapes that ramp, and a point of a
-// constant colour draws it without one.
+// constant color draws it without one.
 const INERT_RAMP = new Uint8Array(COLOR_RAMP_LUT_ENTRIES * 4)
 
 /**
@@ -311,7 +311,7 @@ export function createMarkBackend<TRegion, TState extends FrameDimensions>(
     /**
      * What the frame is cleared to, when transparent is the wrong answer. The
      * GPU side hands it to `beginFrame` and the Canvas2D side fills it after
-     * `prepareCanvas`, so both backends composite over the same colour — which
+     * `prepareCanvas`, so both backends composite over the same color — which
      * synteny needs, its indel wedges being pre-blended against the band's
      * ground rather than composited over it.
      */

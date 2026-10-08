@@ -64,7 +64,7 @@ describe('channelEdit', () => {
   })
 
   // The display answers a lifted snapshot, where `color: "red"` has already
-  // become `{ value: 'red' }` — so the commonest colour in the tree reaches
+  // become `{ value: 'red' }` — so the commonest color in the tree reaches
   // the picker through the constant slot, not as a string.
   it('reads a constant the schema lifted out of a shorthand', () => {
     expect(
@@ -73,7 +73,7 @@ describe('channelEdit', () => {
   })
 
   // The property that makes the form safe to open on a hand-written config.
-  it('holds a field whose scale pins ends and lists colours', () => {
+  it('holds a field whose scale pins ends and lists colors', () => {
     const ramp = {
       encoding: {
         color: { field: 'score', scale: 'linear', domainMin: 0, range: ['a'] },
@@ -100,7 +100,7 @@ describe('withChannel', () => {
     })
   })
 
-  it('gives a numeric colour field a linear scale and a text one categorical', () => {
+  it('gives a numeric color field a linear scale and a text one categorical', () => {
     expect(withChannel({}, 'color', 'score', FIELDS).encoding).toEqual({
       color: { field: 'score', scale: 'linear' },
     })
@@ -109,7 +109,7 @@ describe('withChannel', () => {
     })
   })
 
-  it('writes a value that spells a colour or a shape as the constant', () => {
+  it('writes a value that spells a color or a shape as the constant', () => {
     for (const color of ['red', '#f00', 'rgb(0,0,255)']) {
       expect(withChannel({}, 'color', color, FIELDS).encoding).toEqual({
         color: { value: color },
@@ -147,7 +147,7 @@ describe('withChannel', () => {
     })
   })
 
-  it('shows a colour under scale none as the constant it paints', () => {
+  it('shows a color under scale none as the constant it paints', () => {
     const mark = {
       mark: 'bar' as const,
       encoding: {
@@ -173,7 +173,7 @@ describe('withChannel', () => {
     })
   })
 
-  it('reads a scanned field as a field even where it spells a colour', () => {
+  it('reads a scanned field as a field even where it spells a color', () => {
     const fields = { numeric: [], categorical: ['tan'] }
     expect(withChannel({}, 'color', 'tan', fields).encoding).toEqual({
       color: { field: 'tan', scale: 'categorical' },
@@ -221,7 +221,7 @@ describe('withChannel', () => {
       })
     })
 
-    // `reads` passes through `red`, a CSS colour, on its way; written against
+    // `reads` passes through `red`, a CSS color, on its way; written against
     // the channel as the edit began, the ramp survives the detour.
     it('keeps the ramp through a constant typed on the way to a field', () => {
       const detour = withChannel(ramp, 'color', 'red', FIELDS)
@@ -465,7 +465,7 @@ describe('the scale beside a field', () => {
 })
 
 // MarkSize is closed and has no scheme or reverse, so a width ramp keeps its
-// ends across a kind change and nothing a colour ramp would.
+// ends across a kind change and nothing a color ramp would.
 describe('the scale beside a width', () => {
   const width = {
     mark: 'link' as const,
@@ -505,7 +505,7 @@ describe('the scale beside a width', () => {
 })
 
 // LocusZoom's key is written through the same members a config writes, so a
-// Manhattan plot coloured by LD opens in the form rather than the JSON box.
+// Manhattan plot colored by LD opens in the form rather than the JSON box.
 test('a channel shaping its key stays in the form, and each key member round-trips', () => {
   const mark: DraftMark = {
     mark: 'point',

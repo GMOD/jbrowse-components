@@ -5,7 +5,7 @@
 //
 // The question it exists to answer: `wiggle.slang`'s xyplot bar used to be a
 // flat fill whose edges were smoothed, if at all, by the HAL's 4x multisampled
-// colour attachment, and a bar's top edge is the datum. Four arms settle whether
+// color attachment, and a bar's top edge is the datum. Four arms settle whether
 // the fragment can do that work itself — the shader before and after, each at
 // both sample counts:
 //

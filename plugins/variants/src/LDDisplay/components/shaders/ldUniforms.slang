@@ -10,7 +10,7 @@ import colorRampLut;
 import diagonalGrid;
 import scoreScale;
 
-// `SCALE_TYPE_LINEAR` in scoreScale.ts: the one scale LD's colour takes.
+// `SCALE_TYPE_LINEAR` in scoreScale.ts: the one scale LD's color takes.
 static const int LD_COLOR_SCALE_LINEAR = 0;
 
 public struct Uniforms {

@@ -982,7 +982,7 @@ export default function stateModelFactory(
 
           /**
            * #method
-           * The read palette over `theme`, with the category colours
+           * The read palette over `theme`, with the category colors
            * `color` sets. SVG export passes its own theme.
            */
           colorPaletteIn(theme: JBrowsePalette): ColorPalette {
@@ -1043,7 +1043,7 @@ export default function stateModelFactory(
           /**
            * #getter
            * The sections' order, where the facet reads the field the reads are
-           * coloured by: a key over one field lists it as the sections stack.
+           * colored by: a key over one field lists it as the sections stack.
            */
           get keySectionOrder() {
             const facet = this.effectiveFacet
@@ -1223,7 +1223,7 @@ export default function stateModelFactory(
            * #getter
            * The height overrides as row caps, keyed by lane — the layout's
            * input. Keeps its identity while the caps compare equal, so a drag
-           * frame that moves no cap relays no read and re-bakes no colour.
+           * frame that moves no cap relays no read and re-bakes no color.
            */
           get groupRowCaps(): ReadonlyMap<string, RowCap> {
             rowCaps ??= stableIdentityComputed(() =>
@@ -1360,7 +1360,7 @@ export default function stateModelFactory(
            * #getter
            * `laidOutByGroupColored` with the straight-line pass's records
            * spread on, so a curved-connector toggle re-spreads the lines and
-           * keeps both the layout and the colours.
+           * keeps both the layout and the colors.
            */
           get laidOutByGroup() {
             return attachLinkedReadLinesByGroup(
@@ -1430,7 +1430,7 @@ export default function stateModelFactory(
 
           /**
            * #getter
-           * The span of a linear colour field over the loaded reads, which a
+           * The span of a linear color field over the loaded reads, which a
            * ramp's open ends stretch across: their extremes, or below a
            * `domainQuantile` of 1 that quantile of each sign. Undefined
            * while `domainMin` and `domainMax` both pin the ramp or another
@@ -1455,7 +1455,7 @@ export default function stateModelFactory(
 
           /**
            * #getter
-           * The span of a linear colour field over the loaded reads, pinned
+           * The span of a linear color field over the loaded reads, pinned
            * ends or not, which the key marks an end the reads run past by.
            */
           get tagValueExtent(): NumericExtent | undefined {
@@ -1751,7 +1751,7 @@ export default function stateModelFactory(
 
           /**
            * #method
-           * `arcFeedsByGroup` coloured from `colors`, which the SVG export
+           * `arcFeedsByGroup` colored from `colors`, which the SVG export
            * passes to draw in its own theme.
            */
           arcFeedsByGroupIn(colors: ColorPalette) {
@@ -1799,7 +1799,7 @@ export default function stateModelFactory(
 
         /**
          * #getter
-         * Contrast colours for the mismatch/softclip/per-base letters, off the
+         * Contrast colors for the mismatch/softclip/per-base letters, off the
          * session palette. SVG export calls `getMismatchContrastMap` with its
          * own palette.
          */
@@ -1983,7 +1983,7 @@ export default function stateModelFactory(
          * #getter
          * The connection types (LINKED_READ_COLOR_*) drawn in view, by the
          * overlay's curves and by the straight-line pass beside them, so the
-         * key lists every connector colour on screen. Empty while the legend is
+         * key lists every connector color on screen. Empty while the legend is
          * hidden so the scan is skipped.
          */
         get connectionColorTypes(): Set<number> {
@@ -2364,7 +2364,7 @@ export default function stateModelFactory(
 
           /**
            * #method
-           * `sashimiFeedsByGroup` coloured from `colors`, which the SVG export
+           * `sashimiFeedsByGroup` colored from `colors`, which the SVG export
            * passes to draw in its own theme.
            */
           sashimiFeedsByGroupIn(colors: ColorPalette) {
@@ -2399,7 +2399,7 @@ export default function stateModelFactory(
 
           /**
            * #method
-           * `sourceSections` with the connections coloured from `colors`, for
+           * `sourceSections` with the connections colored from `colors`, for
            * the SVG export's theme.
            */
           sourceSectionsIn(colors: ColorPalette): SectionSource[] {
@@ -2412,7 +2412,7 @@ export default function stateModelFactory(
           /**
            * #method
            * The laid-out sections with each lane's read connections and splice
-           * junctions, which join here rather than on the lane: both are coloured, and the
+           * junctions, which join here rather than on the lane: both are colored, and the
            * layout must not read the palette.
            */
           sourceSectionsWith(
@@ -3046,7 +3046,7 @@ export default function stateModelFactory(
            */
           setColorBy(colorBy: ReadColorBy) {
             // A re-pick of the scheme in use writes nothing: the write would
-            // replace the slot's arrays, and every colour tier keys on them.
+            // replace the slot's arrays, and every color tier keys on them.
             if (!compareStructural(colorBy, self.colorBy)) {
               setConf(
                 self,
@@ -3058,7 +3058,7 @@ export default function stateModelFactory(
 
           /**
            * #action
-           * Color by a read tag as categories, a colour per value, or on a
+           * Color by a read tag as categories, a color per value, or on a
            * gradient over its numeric values.
            */
           setColorByTag(tag: string, scale: TagColorScale) {

@@ -13,8 +13,8 @@ outright rather than keep its display types as presets.
 [MARK_ENCODING.md](../reference/MARK_ENCODING.md) and
 [mark_display.md](../../website/docs/config_guides/mark_display.md) §"Links"
 carry the operational description. Amends
-[ADR-108](adr-108-a-display-declares-its-colour-scales.md) and
-[ADR-153](adr-153-every-display-resolves-its-colour-through-one-function.md),
+[ADR-108](adr-108-a-display-declares-its-color-scales.md) and
+[ADR-153](adr-153-every-display-resolves-its-color-through-one-function.md),
 whose arc clauses describe displays that no longer exist.
 
 ## Context
@@ -119,7 +119,7 @@ the alignments band hit and worked around with a view-space DOM overlay:
   sashimi's limit too.
 - A link paints after every per-block mark, whatever its place in `marks`.
 - Dropped with the plugin: mate-direction ticks, the score-filter slider,
-  the display-mode menu, the hover recolour and the one-ended stem a plain
+  the display-mode menu, the hover recolor and the one-ended stem a plain
   SNV drew by accident. A link's hover highlight is its box, and its hit
   the curve's own.
 - `DisplayStatusChrome` keeps its entry point with no display rendering it
@@ -150,7 +150,7 @@ A v4.3.0 share link or config naming `LinearArcDisplay` or
 basic migration, and v4.3.0 shipped both types, so ADR-168's rule applies:
 they are `retiredTypes` on the mark display (`LinearMarkDisplay/retired.ts`).
 The arc display loads as one `link` mark, the paired one as a `link` over a
-`mate` step with `x2` at the mate. The v4 colour, thickness and label were
+`mate` step with `x2` at the mate. The v4 color, thickness and label were
 callbacks into the deleted jexl functions and are dropped.
 `legacySessions.test.ts` in react-app loads both through `setSession`.
 

@@ -28,7 +28,7 @@ which has the why — read that section before changing what it covers.
 - Three gap rules, one owner each
 - Effective vs raw `summaryScoreMode`
 - A band splits into solid layers only when the bars nest
-- A line plot is one line, coloured by the band between two cuts it is in
-- The colour key follows the scale
-- The whole colour UI is one menu row
+- A line plot is one line, colored by the band between two cuts it is in
+- The color key follows the scale
+- The whole color UI is one menu row
 - The shipped arrays are aliased — read, never write

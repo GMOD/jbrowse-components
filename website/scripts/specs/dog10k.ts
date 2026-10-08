@@ -359,7 +359,7 @@ const FST_AXIS_RULED = {
     y: {
       ...FST_AXIS.scales.y,
       // The red is the figure's own claim, not a meaning the display assigns:
-      // a rule naming no colour draws in the grey the chrome rules every plot
+      // a rule naming no color draws in the grey the chrome rules every plot
       // in.
       rules: [
         { value: 0.295, color: 'rgb(200,60,60)', label: '99.9th percentile' },
@@ -507,7 +507,7 @@ function fgf4SyntenySession(parent: string, retro: Record<string, string>) {
               // multisamplevariantdisplay as much as possible so that labels
               // still show"), and the floor is the app's own, not a taste:
               // `rowLabelsCarryText` draws a row's NAME at 6 px and a bare
-              // colour swatch below that (MIN_TEXT_ROW_HEIGHT), and this
+              // color swatch below that (MIN_TEXT_ROW_HEIGHT), and this
               // display is in fit-to-height mode, so its row height is
               // `(height - variant lane) / 55`. 370 = 55 x 6 + the 40 px lane,
               // which is the smallest height whose rows still name their breed.
@@ -1678,7 +1678,7 @@ export const dog10kSpecs: ScreenshotSpec[] = [
   //
   // Rendered at 220, 320 and 450 kb and measured rather than eyeballed, since
   // "the clustering fell apart" is the thing a wider window would break. Counting
-  // colour blocks down the size swatch (the row order's own summary: fewer, longer
+  // color blocks down the size swatch (the row order's own summary: fewer, longer
   // blocks means the clustering recovered the size classes better) gives 19
   // blocks at 220 kb, 21 at 320 kb and 18 at 450 kb, with the two longest blocks
   // covering 63%, 52% and 52% of painted rows.
@@ -1697,7 +1697,7 @@ export const dog10kSpecs: ScreenshotSpec[] = [
   // out"). It works and it is measurably better: clustering is region-scoped, so
   // over the whole 320 kb the estimator is fed as many undifferentiated columns
   // as separating ones. Running it over the 140 kb core instead and then
-  // navigating to the published window takes the row order from 22 colour
+  // navigating to the published window takes the row order from 22 color
   // blocks down the size swatch to 17, and the two longest blocks from 49% of
   // painted rows to 67% -- the same summary the window sweep above is scored
   // on, so the two are comparable.

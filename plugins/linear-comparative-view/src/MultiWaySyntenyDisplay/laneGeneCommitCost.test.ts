@@ -159,7 +159,7 @@ test("one lane's gene commit repacks that lane alone", async () => {
   stop()
 })
 
-test('a settle repacks every lane and evaluates no colour slot', async () => {
+test('a settle repacks every lane and evaluates no color slot', async () => {
   const { display, cells, stop } = await stackWithGenes()
   const before = glyphCellsOf(cells())
 
@@ -174,7 +174,7 @@ test('a settle repacks every lane and evaluates no colour slot', async () => {
   stop()
 })
 
-test('a colour setting repacks every lane', async () => {
+test('a color setting repacks every lane', async () => {
   const { display, cells, stop } = await stackWithGenes()
   const before = glyphCellsOf(cells())
 

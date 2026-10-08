@@ -37,7 +37,7 @@ test('a retired value in a constrained slot survives the display union', () => {
   )
 })
 
-test('a retired colour key becomes the slot that replaced it', () => {
+test('a retired color key becomes the slot that replaced it', () => {
   const conf = pluginManager()
     .getDisplayType('LinearBasicDisplay')
     .configSchema.create({ ...base, color1: 'red' })
@@ -66,7 +66,7 @@ function entryAgainstShorthand(
   )
 }
 
-test('a retired colour on the entry beats the shorthand’s current one', () => {
+test('a retired color on the entry beats the shorthand’s current one', () => {
   expect(
     entryAgainstShorthand({ color1: 'red' }, { color: 'blue' }),
   ).toMatchObject({ color: 'red' })

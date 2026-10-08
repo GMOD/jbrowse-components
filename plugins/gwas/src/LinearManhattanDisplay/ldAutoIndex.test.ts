@@ -95,7 +95,7 @@ describe('LinearManhattanDisplay LD auto-index', () => {
   // does, and that shape cannot see a toggle whose write fails to reach the
   // fetch — `setLdColoring` writes the marks, so it invalidates through
   // `settingsFetchInputs` rather than through anything the display holds.
-  it('adopts the index when the user turns LD colouring on', async () => {
+  it('adopts the index when the user turns LD coloring on', async () => {
     const { createDisplay, mockRpcCall } = createTestEnvironment()
     mockRpcCall.mockImplementation(
       (_sessionId: string, _method: string, args: FetchArgs) =>

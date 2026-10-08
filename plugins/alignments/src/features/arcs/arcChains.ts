@@ -37,7 +37,7 @@ import type {
 // Reads in, PENDING arcs out: grouping by QNAME, walking a read's SA segments
 // into a chain, and emitting one pending arc per junction or mate link.
 
-// Everything here works in genomic bp on records alone — no colour, no shape,
+// Everything here works in genomic bp on records alone — no color, no shape,
 // no region partitioning. `compute.ts` takes it from `collectPendingArcs`.
 
 // Bucket every fetched read by its QNAME so mates / split segments that share a
@@ -322,7 +322,7 @@ export function pairOuterBp(entry: ReadEntry) {
 // signature — draw INWARD feet, which the mark's grammar spells "duplication",
 // while a split read over the identical junction drew outward. On a translocation
 // with both kinds of support the two land within a fragment length of each other,
-// in one colour, pointing opposite ways. `arcBreakendFeet.test.ts` pins the two
+// in one color, pointing opposite ways. `arcBreakendFeet.test.ts` pins the two
 // families against each other rather than against a remembered ±1.
 export function pairOuterDir(entry: ReadEntry) {
   return readTrailingBodyDir(strandOf(entry))
@@ -491,7 +491,7 @@ export function collectPendingArcsByLane(
         return arcs.map(arc => ({ groupKey, arc }))
       },
       // The entry the orientation and TLEN are already read off, so the lane a
-      // mate link draws in is the one whose reads gave it its colour.
+      // mate link draws in is the one whose reads gave it its color.
       mateLink: (e1, e2) => ({
         groupKey: pairFieldEntry(e1, e2).groupKey,
         arc: mateLinkArc(e1, e2),

@@ -52,10 +52,10 @@ function channels(
   }
 }
 
-// A span under a colour scale carries the value, and the painter bakes it as
-// the shader resolves it: the interval's colour under a threshold, the LUT
+// A span under a color scale carries the value, and the painter bakes it as
+// the shader resolves it: the interval's color under a threshold, the LUT
 // entry under a ramp.
-test('a span coloured by a value paints through the frame s colour scale', () => {
+test('a span colored by a value paints through the frame s color scale', () => {
   const valued = (values: number[]): SpanChannels => ({
     x: Uint32Array.from(values.map((_, i) => i * 10)),
     x2: Uint32Array.from(values.map((_, i) => i * 10 + 10)),
@@ -87,7 +87,7 @@ test('a span coloured by a value paints through the frame s colour scale', () =>
   ])
 })
 
-test('paints one rect per instance at its row band, genomic span and colour', () => {
+test('paints one rect per instance at its row band, genomic span and color', () => {
   const { ctx, calls } = mockCtx()
   spanMark.paintBlock(
     ctx,
@@ -397,7 +397,7 @@ describe('span places each rect as the painter it retired did', () => {
 
 describe('a row table between the instance key and the band it draws on', () => {
   // keys 0..3: key 0 drawn on slot 2, key 1 hidden, key 2 on slot 0 in an
-  // override colour, key 3 on slot 1
+  // override color, key 3 on slot 1
   const table = buildRowTable(
     Uint32Array.of(2, HIDDEN_ROW, 0, 1),
     Uint32Array.of(NO_ROW_COLOR, NO_ROW_COLOR, 0xff00ff00, NO_ROW_COLOR),

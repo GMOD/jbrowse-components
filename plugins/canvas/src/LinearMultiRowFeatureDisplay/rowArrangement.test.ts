@@ -113,7 +113,7 @@ describe('repartitioning', () => {
     expect(display.rowsField).toBe('')
   })
 
-  // The arrangement and the row colours name rows by value, so under a new
+  // The arrangement and the row colors name rows by value, so under a new
   // partition they match nothing and come back with the field; the hidden
   // categories are the legend's and clear.
   it('keeps the arrangement across a repartition, idle until the field returns', () => {

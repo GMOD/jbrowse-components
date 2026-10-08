@@ -20,7 +20,7 @@ const CHROMOSOMES = [
 const LIFTOVER = 'hg38ToMm39_liftover'
 // gene density as a heat strip: the average over each pixel's bins, so a
 // megabase-per-pixel ring reads genes per bin rather than the bin maximum.
-// Orange, so the ring reads apart from the chromosome-coloured ribbons.
+// Orange, so the ring reads apart from the chromosome-colored ribbons.
 const DENSITY_RING = {
   trackId: 'hg38ToMm39_gene_density',
   type: 'LinearWiggleDisplay',
@@ -37,7 +37,7 @@ const DENSITY_RING = {
 // A two-genome circle opens with the mouse chromosomes laid out to follow the
 // human order and mirrored, which turns the ribbons from a bundle through the
 // middle into a band between the two arcs, and with each ribbon in its human
-// chromosome's colour.
+// chromosome's color.
 function circularSyntenyView(
   displayedRegionNames: string[],
   tracks: unknown[],
@@ -66,7 +66,7 @@ const circularSyntenyReady = {
 } as const
 
 // COLO829's tumour and its matched normal from one MultiQuantitativeTrack, the
-// two MinION coverage bigWigs named and coloured per subtrack. On rows they take
+// two MinION coverage bigWigs named and colored per subtrack. On rows they take
 // a band each inside the one ring, against an explicit domain so the two bands
 // share a scale and the comparison is the picture.
 const COLO829_COVERAGE = {
@@ -137,7 +137,7 @@ export const circularSpecs: ScreenshotSpec[] = [
   //
   // No legend. A ring is the display's canvas alone, so the row labels naming
   // each source never reach it, and the view's own key falls back to one swatch
-  // for the whole track — in the colour of whichever source it takes first. The
+  // for the whole track — in the color of whichever source it takes first. The
   // caption names the two bands instead.
   //
   // The row order is stated because an inner ring resamples the same strip and
@@ -201,9 +201,9 @@ export const circularSpecs: ScreenshotSpec[] = [
     ],
   },
 
-  // The same circle coloured by strand, with the key naming the two colours: a
-  // mouse chromosome antiparallel to its human partner is one colour along its
-  // whole bundle, so a ribbon of the other colour inside it is a local
+  // The same circle colored by strand, with the key naming the two colors: a
+  // mouse chromosome antiparallel to its human partner is one color along its
+  // whole bundle, so a ribbon of the other color inside it is a local
   // inversion.
   {
     mode: 'url',
@@ -249,7 +249,7 @@ export const circularSpecs: ScreenshotSpec[] = [
     viewportHeight: 900,
   },
 
-  // Hovering the widest X ribbon fills it in the hover colour, and the tooltip
+  // Hovering the widest X ribbon fills it in the hover color, and the tooltip
   // names its span in each genome.
   {
     mode: 'url',

@@ -255,7 +255,7 @@ Curated VNTRs
   only at exon 1's positions 14, 41 and 86, the sites that define KIV-2B, and
   --unit-names writes those names into RUNAME, a non-spec field beside RUS. The
   config loads jbrowse-plugin-tandem-repeat, whose Show repeat copies item on
-  the record draws each copy in its unit's colour.
+  the record draws each copy in its unit's color.
 
   hprc_samples.tsv is the samplesTsvLocation of both KIV-2 tracks and of the
   gbz-base graph track, whose walk rows Group by… splits: one row per

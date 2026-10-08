@@ -3,7 +3,7 @@
 //
 // MAIN-THREAD derived, not worker output: the worker emits the four fields
 // empty in every mode, and `attachLinkedReadLinesByGroup` fills them after the
-// colour bake from the one walk `resolveConnectors` makes — the lines embed
+// color bake from the one walk `resolveConnectors` makes — the lines embed
 // `readYs`, so they cannot exist before rows are placed. Always present, so
 // consumers can treat the fields as required.
 //

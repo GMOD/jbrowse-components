@@ -50,7 +50,7 @@ import type {
  * The `insertion` shape's channels: a marker centred on the midpoint of
  * `x[i]`..`x2[i]` (absolute bp; equal for an interbase insertion) on the band
  * of `row`, sized by `length` inserted bp, filled with packed ABGR `color`.
- * `under` is the packed colour of what each marker stands on, which a count
+ * `under` is the packed color of what each marker stands on, which a count
  * label reads against where the marker itself does not draw; absent, such a
  * marker draws no count.
  */
@@ -242,9 +242,9 @@ interface LabelContext2D {
 
 /**
  * The counts on one block's markers. A large insertion's count sits centred in
- * its box, in the text colour that clears the box (`getContrastText`), or on
+ * its box, in the text color that clears the box (`getContrastText`), or on
  * `under` where the span outgrew the marker; a small one zoomed in to base
- * level gets `(N)` beside its bar in the marker's colour. Nothing draws in a
+ * level gets `(N)` beside its bar in the marker's color. Nothing draws in a
  * band shorter than `MIN_HEIGHT_FOR_TEXT`, and the font is set only once a
  * label draws: touching canvas text flushes the document's pending style.
  */

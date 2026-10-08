@@ -19,7 +19,7 @@ import type { PileupChannels } from '../pileupShape.ts'
 import type { PerBaseQualityUploadData } from './types.ts'
 
 /**
- * packedColorQuad.slang's instance: a position, a row and the colour itself,
+ * packedColorQuad.slang's instance: a position, a row and the color itself,
  * resolved from `keys` through `colorOf` — the quality ramp for one mark, the
  * worker's own packed ABGR (the identity) for the other.
  */
@@ -46,16 +46,16 @@ export function packColorCells(
   return buf
 }
 
-// One aligned base, coloured by its Phred score: a `cell` mark on one pileup
+// One aligned base, colored by its Phred score: a `cell` mark on one pileup
 // row, drawn for every visible base of every read when `colorBy` is
 // per-base-quality. Same pivot as `MISMATCH_MARK` and the same reason for it,
 // with the seam fudge on, because this layer paints an unbroken wall.
 //
 // Opaque on both backends: `packedColorQuad.slang` has no fade of any kind and
-// the ramp packs alpha 255 into every entry. The score is carried in the COLOUR,
+// the ramp packs alpha 255 into every entry. The score is carried in the COLOR,
 // not in the alpha — a low-quality base goes dark rather than faint, which is the
 // whole point of the ramp. The ramp `qualityPaintCss` is built from is what the
-// packer reads, so the fill and the vertex buffer cannot carry different colours
+// packer reads, so the fill and the vertex buffer cannot carry different colors
 // for one score.
 //
 // Nothing hit-tests these cells: they cover the read body, and `hitTestFeature`

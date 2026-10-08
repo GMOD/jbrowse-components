@@ -88,8 +88,8 @@ describe('mateRefName (chromosome painting) colors', () => {
 
   // The bake is the only caller that can supply the assembly order, so it is
   // the one that has to pass it through — bakedValueColor's own test covers
-  // what the order then does to the colour. A pileup on hg38 without it puts
-  // chr1 and chr12 on one colour.
+  // what the order then does to the color. A pileup on hg38 without it puts
+  // chr1 and chr12 on one color.
   test('an assembly position reaches the resolver', () => {
     const at = new Map([
       ['chr1', 0],
@@ -144,9 +144,9 @@ describe('categorical tag colors', () => {
     expect([...build([''])]).toEqual([0])
   })
 
-  // '' names the no-value read, which the category table colours; the scale
+  // '' names the no-value read, which the category table colors; the scale
   // hands the other range entries to the values beside it.
-  test("'' in the domain leaves the scale with its colour", () => {
+  test("'' in the domain leaves the scale with its color", () => {
     const scale = scaleFor(TAG, {
       domain: ['', '1'],
       range: ['#ff0000', '#00ff00'],
@@ -200,7 +200,7 @@ describe('overlayReadTagColors', () => {
 describe('a declared scale', () => {
   const NM: ColorBy = { type: 'tag', tag: 'NM' }
 
-  test('a domain and range hand the listed values their colours in order', () => {
+  test('a domain and range hand the listed values their colors in order', () => {
     const scale = scaleFor(TAG, {
       domain: ['2', '1'],
       range: ['#ff0000', '#0000ff'],

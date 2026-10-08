@@ -67,7 +67,7 @@ export default function stateModelFactory(
       /**
        * #getter
        * The canvas resolver, with the `impact` preset field resolved to the
-       * jexl colour that computes it.
+       * jexl color that computes it.
        */
       get colorEncoding() {
         return (
@@ -101,7 +101,7 @@ export default function stateModelFactory(
       return {
         /**
          * #method
-         * The canvas payload with a preset field sent as the jexl colour it
+         * The canvas payload with a preset field sent as the jexl color it
          * resolves to, since the worker reads the raw `color` object.
          */
         rpcProps() {

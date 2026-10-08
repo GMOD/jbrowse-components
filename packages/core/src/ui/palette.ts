@@ -382,7 +382,7 @@ export const colorPairRR = '#5555bb'
 // the dullest (C* 20.4 against 34.6), which together is what "reads as a smudge"
 // means. Reported on `cancer_sv/k562_bcr_abl_split`: "the arcs for the
 // interchromosomal reads are very dark". The tell is a 2 px stroke — at that
-// weight it was the only colour in either scheme that disappeared, while as a
+// weight it was the only color in either scheme that disappeared, while as a
 // large flat read fill it was merely dull. This slot has to survive both.
 //
 // The fix is that unmappedMate left the warm family (see its own note), which
@@ -448,7 +448,7 @@ export const colorShortInsert = '#f582c0'
  * #color alignments-pair-orientation | Mate unmapped | Mate aligned nowhere
  * #color alignments-insert-size | Mate unmapped | Mate aligned nowhere
  */
-// A NON-COLOUR, at the dark end of the neutral scale on BOTH themes. It takes
+// A NON-COLOR, at the dark end of the neutral scale on BOTH themes. It takes
 // the first half of the `readOverlap` pattern and not the second, and that split
 // is the thing to understand here.
 //
@@ -489,7 +489,7 @@ export const colorShortInsert = '#f582c0'
 // has to survive, not a 40 px square.
 //
 // White was the previous dark value, and it reads as the loudest thing in a dark
-// pileup — louder than the coloured categories it is meant to be quieter than —
+// pileup — louder than the colored categories it is meant to be quieter than —
 // which is the "glaring near-white blocks" failure `colorPairLRDark` already
 // exists to avoid. Going dark also drops the one real cost white carried, dE 9.4
 // to `readOverlap`'s dark #e4e4e4 — which the note that shipped it called dE 7,
@@ -503,10 +503,10 @@ export const colorShortInsert = '#f582c0'
 //
 // IGV goes further than any of this: `setPairOrientation` requires
 // `mate.isMapped()`, so an unmapped mate falls through every branch and takes
-// the default read colour. Going that far loses the one thing the category is
+// the default read color. Going that far loses the one thing the category is
 // for — under insert size, tlen is 0 and would otherwise paint
 // `colorShortInsert`, a false claim — so it keeps a mark, and makes the mark a
-// non-colour.
+// non-color.
 export const colorUnmappedMate = '#000000'
 // See colorUnmappedMate: the same dark neutral, lifted off the #121212 ground by
 // the least that still reads as a read rather than as a hole.
@@ -845,10 +845,10 @@ export interface JBrowsePalette
   mode: 'light' | 'dark'
   primary: ColorQuad
   /**
-   * The primary colour where it marks something on the page's own ground,
+   * The primary color where it marks something on the page's own ground,
    * such as a checked box or a selected row. `primary.main` in light mode. In
    * dark mode a primary as deep as midnight vanishes against the background,
-   * so it is the secondary text colour, which the Material controls take there
+   * so it is the secondary text color, which the Material controls take there
    * too.
    */
   accent: string
@@ -1059,7 +1059,7 @@ export function resolvePalette(args: PaletteArgs = {}): JBrowsePalette {
     themeName === 'default' ? { ...preset, ...configTheme?.palette } : preset
 
   // A palette that declares a `mode` is pinned to it: an admin who registers a
-  // dark `extraThemes` entry picked its colours for dark, and the light half
+  // dark `extraThemes` entry picked its colors for dark, and the light half
   // they never wrote is not JBrowse's to invent. A `mode` in the config `theme`
   // slot is the opposite — the site's starting point for the one palette that
   // merges it — so a reader's own pick wins over that.

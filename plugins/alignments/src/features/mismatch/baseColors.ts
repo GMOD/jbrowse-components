@@ -19,7 +19,7 @@ type BaseColorState = Pick<RenderState, 'colors' | 'showModifications'>
  * **The one place that rule is written**, for either backend — every table and
  * palette below reads it, and so does `GpuAlignmentsRenderer.writeUniforms`,
  * which used to spell the mute again across five uniform writes under a comment
- * saying to keep them in step. A miss is a base painted its own colour on one
+ * saying to keep them in step. A miss is a base painted its own color on one
  * backend and grey on the other, in the one mode whose point is that bases
  * recede.
  */

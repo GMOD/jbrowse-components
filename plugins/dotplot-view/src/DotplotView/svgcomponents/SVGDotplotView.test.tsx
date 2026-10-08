@@ -181,9 +181,9 @@ test('the color legend is exported beside the plot, which the canvas widens for'
   expect(svgWidth(svg)).toBeGreaterThan(svgWidth(plain))
 }, 20000)
 
-// A strand-coloured figure used to export with nothing saying which of the two
-// colours is the inversion.
-test('a strand-coloured plot exports its two-colour key', async () => {
+// A strand-colored figure used to export with nothing saying which of the two
+// colors is the inversion.
+test('a strand-colored plot exports its two-color key', async () => {
   const { view } = await setup()
   view.setColorField('strand')
   const legend = legendContents(await renderToSvg(view, {}))

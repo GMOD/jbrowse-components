@@ -69,7 +69,7 @@ function colorRow(
     color === undefined ? undefined : { color: abgrToCssRgba(color) }
   const section = colorSection(sections, hit.markIndex)
   if (section?.scale.kind === 'threshold' && colorValue !== undefined) {
-    // the interval the value falls in, as the key names and colours it
+    // the interval the value falls in, as the key names and colors it
     const { scale } = section
     const rows = thresholdKeyEntries(scale.domain, scale.range, scale)
     const row = Number.isNaN(colorValue)
@@ -160,7 +160,7 @@ function rowRow(
 
 /**
  * Every channel the hovered mark encodes, each off the hovered instance: the
- * value channel, then colour, shape and the band, so a reader sees the fields
+ * value channel, then color, shape and the band, so a reader sees the fields
  * the plot was drawn from rather than the two it happens to print. A bin of
  * the density sidecar standing in is the sidecar's level, whatever field the
  * mark names.

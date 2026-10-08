@@ -16,7 +16,7 @@ import type { ModificationUploadData } from './types.ts'
 
 const identity = (packed: number) => packed
 
-// One base modification call: a `cell` mark on one pileup row, coloured by the
+// One base modification call: a `cell` mark on one pileup row, colored by the
 // ABGR the worker packed. Same pivot as `MISMATCH_MARK` and for the shader's own
 // reason — packedColorQuad.slang measures `pileupCellX`, the anchored cell span
 // mismatch.slang measures, because the two passes paint over each other and a
@@ -24,7 +24,7 @@ const identity = (packed: number) => packed
 // cell on the same base.
 //
 // Opaque on both backends: packedColorQuad.slang has no fade of any kind, and
-// the call's confidence is carried in the COLOUR the worker packed. Its hit test
+// the call's confidence is carried in the COLOR the worker packed. Its hit test
 // is NOT this shape's: `hitTestModification` is a Flatbush nearest-neighbour
 // query, which answers out of Hilbert order and picks by distance where every
 // mark scan walks rows backwards. That query answers to the mark's gate all the
@@ -43,7 +43,7 @@ export const MODIFICATION_MARK = defineMark({
     // Modifications are sparse along a read — one per CpG on a nanopore pileup
     // — so no seam fudge; the base WALLS are the layers that take it.
     contiguous: false,
-    // The worker's own packed colour, which is not a small table — 5mC, 5hmC
+    // The worker's own packed color, which is not a small table — 5mC, 5hmC
     // and the unmodified blue in per-read runs — so the painter reformats it
     // per run rather than per mark.
     paint: () => ({ rule: Paint.packedAbgr, opaqueCss: [], fadedCss: [] }),

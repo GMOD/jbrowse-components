@@ -238,8 +238,8 @@ single haplotype (`grape#1`):
 `MultiWaySyntenyDisplay` as well as with the two-way linear synteny view above —
 it draws one lane per assembly, each in its own local coordinate frame, with
 ribbons connecting orthologs between adjacent lanes rather than anchoring every
-assembly against one reference. Its lane order, colouring and the rest of its
-own config are
+assembly against one reference. Its lane order, coloring and the rest of its own
+config are
 [grouping and lane order](/docs/config_guides/grouping_and_ordering#multiway-synteny).
 
 ## Building a table for MCScanBlocksAdapter

@@ -5,7 +5,7 @@ export { cssColorToNormalizedRgb as toRgb } from '@jbrowse/core/util/colorBits'
 // RGB color as [r, g, b] where each is 0-1
 export type RGBColor = [number, number, number]
 
-// The themed colours the renderer names one by one
+// The themed colors the renderer names one by one
 export interface PaletteColors {
   colorFwdStrand: RGBColor
   colorRevStrand: RGBColor
@@ -63,8 +63,8 @@ export interface PaletteColors {
 
 export type PaletteColorKey = keyof PaletteColors
 
-// Color palette for the renderer: the named colours, and what each read
-// category paints, resolved once from the colour `color` declares for it or
+// Color palette for the renderer: the named colors, and what each read
+// category paints, resolved once from the color `color` declares for it or
 // its named default (`readCategoryColorsOf`). The GPU's `u.readCategoryColor`,
 // the Canvas2D fill, the key and the overlay palettes all index it.
 export interface ColorPalette extends PaletteColors {

@@ -16,7 +16,7 @@ import type { RenderState } from '../../LinearAlignmentsDisplay/renderers/render
 import type { SoftclipBasesUploadData } from './types.ts'
 
 // One clipped base of a read's unaligned tail: a `cell` mark on the read's own
-// pileup row. Shares mismatch.slang's geometry and colour lookup, so it shares
+// pileup row. Shares mismatch.slang's geometry and color lookup, so it shares
 // `MISMATCH_MARK`'s pivot too — with the wall's seam fudge, because a clipped
 // run is contiguous, and with neither of that shader's two fades.
 //

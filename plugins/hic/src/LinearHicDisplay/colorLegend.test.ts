@@ -35,7 +35,7 @@ function loaded() {
   return display
 }
 
-test('the key is one ramp over the colour domain, its two ends labelled', () => {
+test('the key is one ramp over the color domain, its two ends labelled', () => {
   const display = loaded()
   expect(display.legendSpec.sections).toEqual([
     {

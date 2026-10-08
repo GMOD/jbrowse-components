@@ -1,6 +1,6 @@
 ---
 status: Rejected
-summary: "A genotype frequency band above the multi-sample variant display's rows, stacking each variant's share of the drawn rows by genotype class in the cells' own colours, was built, landed and removed on 2026-10-03. Over every drawn row it restates the VCF's own `AF` and what the matrix's columns already show; the reading that tells a biological story is a frequency per group (population, case and control), which bcftools computes per sample-sheet group and a multi-wiggle track draws a row each, with no code in the variant display"
+summary: "A genotype frequency band above the multi-sample variant display's rows, stacking each variant's share of the drawn rows by genotype class in the cells' own colors, was built, landed and removed on 2026-10-03. Over every drawn row it restates the VCF's own `AF` and what the matrix's columns already show; the reading that tells a biological story is a frequency per group (population, case and control), which bcftools computes per sample-sheet group and a multi-wiggle track draws a row each, with no code in the variant display"
 ---
 
 # ADR-206: A row display summarizes its rows in a frequency band
@@ -21,7 +21,7 @@ the 2026-09-30 stacked-bar decline did not cover a share of a fixed set of rows.
 ## What was built
 
 A band directly on the rows, in both layouts, that counted each column's
-non-reference cells by class, dosage and painted colour, so every colour mode
+non-reference cells by class, dosage and painted color, so every color mode
 followed with no category table, with a hover naming the counts in the key's
 words, a 0–100% axis shared with MAF's conservation band, and its SVG export. It
 cost one class byte a cell on the wire and 35 ms per count over 3 million carrier

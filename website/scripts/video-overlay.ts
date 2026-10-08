@@ -164,7 +164,7 @@ export async function dragCursor(
 
 // An expanding red ring where a click is about to land, so the click is legible
 // on camera. Red because it is the one mark on screen that has to read as the
-// film's and not the app's, and nothing in JBrowse's chrome is that colour.
+// film's and not the app's, and nothing in JBrowse's chrome is that color.
 //
 // Fired before the real click rather than after: the click can navigate,
 // open a menu over the point, or start a fetch that blocks the main thread, and

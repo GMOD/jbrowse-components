@@ -12,11 +12,11 @@ test('the common host checks the slot names its mixin reads', () => {
   const common = {} as WiggleCommonHost
   const reads = () => [
     // @ts-expect-error
-    getConf(common, 'posColour'),
+    getConf(common, 'posColor'),
   ]
   const writes = () => {
     // @ts-expect-error
-    setConf(common, 'posColour', 'red')
+    setConf(common, 'posColor', 'red')
   }
   expect([wiggleCommonPin, reads, writes]).toHaveLength(3)
 })

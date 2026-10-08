@@ -19,7 +19,7 @@ test('a bare color is the constant', () => {
   expect(readConfObject(conf, ['color', 'field'])).toBeUndefined()
 })
 
-// A subtrack's colour is `rowColor`'s, so `source` is no colour field.
+// A subtrack's color is `rowColor`'s, so `source` is no color field.
 test('the field is score, and any other name is refused', () => {
   expect(
     readConfObject(create({ color: { field: 'score' } }), ['color', 'field']),
@@ -117,7 +117,7 @@ describe('the slots v4 declared on the display', () => {
     warn.mockRestore()
   })
 
-  test("a renderers block gives the display its renderer's colour", () => {
+  test("a renderers block gives the display its renderer's color", () => {
     const conf = create({
       renderers: { XYPlotRenderer: { color: 'purple', filled: false } },
     })

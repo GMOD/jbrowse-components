@@ -160,7 +160,7 @@ test('under a facet the band reads as the section chip rather than an index', as
   expect(box.textContent).not.toContain('row: 3')
 })
 
-test('a constant colour is a swatch with no field beside it', async () => {
+test('a constant color is a swatch with no field beside it', async () => {
   const box = await tooltip({
     hoveredFeature: { ...HIT, y: 5, color: 0xff0000ff },
     encodings: [{ y: 'score', color: 'red' }],

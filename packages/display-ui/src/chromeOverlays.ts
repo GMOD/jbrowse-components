@@ -119,7 +119,7 @@ export interface DisplayChromeOverlays {
    * itself to `bottom: 2; right: 2` of the same overlay layer, the controls
    * winning on z-index and the status text vanishing underneath. So render an
    * **in-flow** chip: no `position`, no `inset`, no corner offsets. Sizing and
-   * colours are yours; placement is not. See `bottomRightCorner.ts`.
+   * colors are yours; placement is not. See `bottomRightCorner.ts`.
    */
   BackgroundProgress: ComponentType<{
     model: DisplayBackgroundProgressModel

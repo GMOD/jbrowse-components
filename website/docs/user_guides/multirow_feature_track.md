@@ -168,7 +168,7 @@ counts what is hidden and offers **Show all categories** to put them back.
 `color.domain` sets the order those rows read in — the values it lists first,
 the rest sorted — the same word and rule `domain` orders the track's rows by.
 
-You can also pick a colour for single rows under **Color rows by → Each row** in
+You can also pick a color for single rows under **Color rows by → Each row** in
 **Edit colors/arrangement...**, which writes each as a `rowColor` entry and
 applies at render time, with no refetch.
 

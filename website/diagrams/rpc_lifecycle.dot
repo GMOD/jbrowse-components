@@ -12,7 +12,7 @@
 // to SAY "on the main thread", and the green fill used to be the only thing
 // distinguishing the caller's two nodes from the worker's.
 //
-// Colour is now redundant with the boxes and is kept anyway — it is what carries
+// Color is now redundant with the boxes and is kept anyway — it is what carries
 // the distinction into the thumbnail, where the cluster labels are unreadable.
 //
 // EVERY LABEL IS A NAME (review: "this looks a bit chaotic. wordiness needs to

@@ -70,7 +70,7 @@ describe('the color key', () => {
     expect(display.showLegend).toBe(true)
   })
 
-  it("names an identity scale's colours once anything is drawn", () => {
+  it("names an identity scale's colors once anything is drawn", () => {
     const { createDisplay } = createTestEnvironment()
     const { display } = createDisplay()
     setConf(display, 'color', {
@@ -217,13 +217,13 @@ describe('derived color key', () => {
     ])
   })
 
-  describe('colours dealt on first sight', () => {
+  describe('colors dealt on first sight', () => {
     const colorsOf = (display: ReturnType<typeof coloredDisplay>) =>
       new Map(
         display.legendSpec.sections[0]?.items.map(i => [i.label, i.color]),
       )
 
-    it('paints three values the hash puts on one colour three colours', () => {
+    it('paints three values the hash puts on one color three colors', () => {
       const display = coloredDisplay({ field: 'biotype' })
       display.setRpcData(
         0,
@@ -233,7 +233,7 @@ describe('derived color key', () => {
       expect(new Set(colorsOf(display).values()).size).toBe(3)
     })
 
-    it('keeps every colour shown as another region brings new values', () => {
+    it('keeps every color shown as another region brings new values', () => {
       const display = coloredDisplay({ field: 'biotype' })
       display.setRpcData(0, paintedData(['protein_coding', 'lncRNA']), ctgA)
       const before = colorsOf(display)
@@ -322,7 +322,7 @@ describe('derived color key', () => {
       ])
     })
 
-    it('notices a range that is not one colour per interval', () => {
+    it('notices a range that is not one color per interval', () => {
       expect(thresholdDisplay().notices).toEqual([])
       expect(thresholdDisplay(['#0000ff', '#ff0000']).notices).toEqual([
         expect.stringMatching(

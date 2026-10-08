@@ -108,7 +108,7 @@ export function classifyInsertSize(
 // 989..1142, which is the library's own right tail. The picture was one
 // unreadable red wash over ordinary sequence.
 //
-// A ratio is the right shape for the floor because it says what the colour is
+// A ratio is the right shape for the floor because it says what the color is
 // supposed to MEAN — this pair implies an event comparable in size to the
 // fragment itself — and because it is scale-free, so a 3 kb mate-pair library
 // gets a 6 kb threshold from the same constant a 570 bp library gets 1142 from.
@@ -117,7 +117,7 @@ export function classifyInsertSize(
 // another contig).
 //
 // The cost is real and worth stating: a deletion shorter than about one
-// fragment no longer separates from the tail by colour. At 341k inserts drawn
+// fragment no longer separates from the tail by color. At 341k inserts drawn
 // from a distribution that stops at 1141 it was never separable — the tail was
 // swamping it either way — but on a shallow pileup the raw band is tighter than
 // this floor and, being a max/min, is what survives. So sensitivity is given up
@@ -183,10 +183,10 @@ export function getInsertSizeStats(
 //
 // Deliberately NOT folded into `getInsertSizeStats`, which is the statistics and
 // stays that: `robustSpread` also serves callers that want a spread rather than
-// a colour rule, and the widening is a claim about what a colour should mean.
+// a color rule, and the widening is a claim about what a color should mean.
 // Keeping it separate is also what preserves the degenerate-band signal — a
 // sample with no spread returns `upper === lower`, which is
-// `computePairedInsertSizeStats`' cue to colour nothing, and a floor applied
+// `computePairedInsertSizeStats`' cue to color nothing, and a floor applied
 // before that check would hand it a wide band built on one distinct value.
 //
 // The centre is recovered as the band's own midpoint rather than threaded down

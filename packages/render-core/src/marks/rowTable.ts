@@ -10,18 +10,18 @@ import type { MarkTexels } from './types.ts'
 /** The `slot` a hidden key holds. */
 export const HIDDEN_ROW = 0xffffffff
 
-/** The `color` a key with no override holds: alpha 0, the instance's own colour. */
+/** The `color` a key with no override holds: alpha 0, the instance's own color. */
 export const NO_ROW_COLOR = 0
 
 const MAX_SLOT = 0xffffff
 
 /**
  * The row axis as a pass reads it: each key's drawn slot or `HIDDEN_ROW`, its
- * packed ABGR colour override or `NO_ROW_COLOR`, and the RGBA8 texture the
+ * packed ABGR color override or `NO_ROW_COLOR`, and the RGBA8 texture the
  * vertex stage samples for the same answers (`shaders/rowTable.slang` has the
  * layout). One object, so the shader, the painter, the ink and the hit test
  * cannot place a key differently. Immutable: a reorder, focus, hide or
- * recolour builds a new one, and the backend uploads on identity.
+ * recolor builds a new one, and the backend uploads on identity.
  */
 export interface RowTable {
   readonly keys: number
@@ -33,7 +33,7 @@ export interface RowTable {
 /**
  * The table for `slot[key]` and `color[key]`, both indexed by key: `slot` is
  * `HIDDEN_ROW` where the key draws nothing, `color` is `NO_ROW_COLOR` where the
- * instance keeps its own colour, an override alpha 0 being none. Both arrays
+ * instance keeps its own color, an override alpha 0 being none. Both arrays
  * are held, not copied. Each key's texel sits where the shader's own twins
  * put it.
  */
@@ -44,7 +44,7 @@ export function buildRowTable(
   const keys = slot.length
   if (color.length !== keys) {
     throw new Error(
-      `buildRowTable: ${keys} slots but ${color.length} colours; both are per key`,
+      `buildRowTable: ${keys} slots but ${color.length} colors; both are per key`,
     )
   }
   const width = rowTableWidth(keys)
@@ -85,7 +85,7 @@ export function buildRowTable(
  * The keys a display's rows carry across every region: a name's key is
  * assigned the first time it is asked for and never moves, so a region encoded
  * against the registry stays valid as later regions add names and the table
- * alone follows the reader's order, focus and colours. Grows only.
+ * alone follows the reader's order, focus and colors. Grows only.
  */
 export class RowKeys {
   private readonly index = new Map<string, number>()

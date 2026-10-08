@@ -94,7 +94,7 @@ interface Rect {
 }
 
 // Records the fill in effect at each bar, since one mark paints both kinds and
-// the colour is what tells them apart.
+// the color is what tells them apart.
 function recordingCtx() {
   const rects: (Rect & { fill: string })[] = []
   let fill = ''
@@ -196,7 +196,7 @@ describe.each([false, true])('reversed: %s', reversed => {
           // array and row 0, and neither clip mark owns it.
           expect(hit.index).toBeGreaterThanOrEqual(INS_END)
           // The kind is the slice the index fell in, so a bar's hit kind and its
-          // drawn colour cannot disagree.
+          // drawn color cannot disagree.
           expect(hit.type).toBe(hit.index < SC_END ? 'softclip' : 'hardclip')
           const rect = drawnRect(hit.index, reversed)
           expect(rect).toBeDefined()

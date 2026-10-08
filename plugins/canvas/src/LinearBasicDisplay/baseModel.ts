@@ -1535,7 +1535,7 @@ export default function baseStateModelFactory(
        * The key the color channel's scale derives from what the worker
        * painted, less the values only a hidden section painted, in the
        * sections' order where the facet reads the same field. An identity
-       * scale's key is its `domain` colours whole, once anything is drawn.
+       * scale's key is its `domain` colors whole, once anything is drawn.
        */
       get derivedColorScales(): ColorScale[] {
         const { colorKeyTitle } = self
@@ -1636,7 +1636,7 @@ export default function baseStateModelFactory(
       return {
         /**
          * #method
-         * The base display's problems, then a `jexl:` colour or filter that
+         * The base display's problems, then a `jexl:` color or filter that
          * does not compile.
          */
         plotProblems(draft: Plot): string[] {
@@ -1812,7 +1812,7 @@ export default function baseStateModelFactory(
       /**
        * #action
        * Color by's Default: no field and no constant, so the track's own
-       * colour paints, a `jexl:` expression included.
+       * color paints, a `jexl:` expression included.
        */
       pickDefaultColor() {
         const { colorSettings } = self

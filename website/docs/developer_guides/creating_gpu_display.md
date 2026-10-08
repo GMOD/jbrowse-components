@@ -73,7 +73,7 @@ functions only select fields and compute nothing.
 Three shapes are shared. A display that draws with one of them writes no shader,
 no painter and no hit test:
 
-- **`spanMark`** — a coloured rectangle from `x` to `x2` on the band of `row`.
+- **`spanMark`** — a colored rectangle from `x` to `x2` on the band of `row`.
   Features laid into rows, MAF's alignment cells, anything that is a box on a
   row.
 - **`pointMark`** — a glyph (disc, triangle, diamond) at the middle of `x` to
@@ -139,8 +139,8 @@ export type ScoreRegionData = Encoded<'y'>
 ```
 
 The model recomputes the render state cheaply every frame. The model resolves
-the colour once, to the packed form the shader's uniform takes. A shape takes
-packed colours and the display resolves them, so the uniform write and the
+the color once, to the packed form the shader's uniform takes. A shape takes
+packed colors and the display resolves them, so the uniform write and the
 painter receive the same number. The model also computes the domain. The encoder
 ships each region's score extremes, and the model folds them into the one
 `[min, max]` that places every region's boxes:
@@ -544,7 +544,7 @@ A shape can also define two optional members.
 `paintsBlock(block, frame, params)` is a draw predicate, and both backends and
 the hit test skip a block when it returns false. Use it for a setting that turns
 a layer off, or a marker that exists only at a canvas edge. `texture` on the
-mark declares a 256-entry colour ramp that the pass samples.
+mark declares a 256-entry color ramp that the pass samples.
 
 ## Step 4: The mark list
 
@@ -869,7 +869,7 @@ function ScoreSvgBody({
 ```
 
 The model's `renderSvg` action loads it lazily, so the export code is in no
-eager chunk. The score's colour comes from config, so `model.renderState` is
+eager chunk. The score's color comes from config, so `model.renderState` is
 already right for the export. A render state built from the theme is not: the
 export dialog picks its own, which the body reads with `usePalette()`.
 [](/docs/developer_guides/svg_export) has the pipeline and that rule.

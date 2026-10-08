@@ -1,6 +1,6 @@
 ---
 status: Accepted
-summary: "`LinearManhattanDisplay` is the mark display with a default plot: its schema takes `LinearMarkDisplay`'s as its base and redeclares `marks` as a list defaulting to a point per feature at its `score` (`markListSchema`, over a core change that keeps a collection slot's own default), and its model composes the mark model and adds only the LD join. A plot whose encoding names `r2` or `ld_role` joins r² to the index SNP; the join travels as the mark model's `adapterOptions` hook, a fetch input resolved per region by `resolveAdapterOptions`. LD colouring is written into the plot as two point marks, the partners by a threshold colour over `r2` and the index alone as a pink diamond over them, rather than implied by a field preset. `scoreField`, `color`, `size`, `ManhattanColor` and the hand-written point display go, with no retired spellings: the display shipped only in v5 betas. The byte gate stays off for Manhattan. The mark display gains a hover ring for points and three key members any plot may write, as ggplot2's scale arguments are: `breaks` (the values a key lists), `descending` (a threshold key highest first) and `missingLabel` (the no-value row's name), with `title` and `labels` on the shape key too; the LD plot's key is built from them, so it reads as LocusZoom's"
+summary: "`LinearManhattanDisplay` is the mark display with a default plot: its schema takes `LinearMarkDisplay`'s as its base and redeclares `marks` as a list defaulting to a point per feature at its `score` (`markListSchema`, over a core change that keeps a collection slot's own default), and its model composes the mark model and adds only the LD join. A plot whose encoding names `r2` or `ld_role` joins r² to the index SNP; the join travels as the mark model's `adapterOptions` hook, a fetch input resolved per region by `resolveAdapterOptions`. LD coloring is written into the plot as two point marks, the partners by a threshold color over `r2` and the index alone as a pink diamond over them, rather than implied by a field preset. `scoreField`, `color`, `size`, `ManhattanColor` and the hand-written point display go, with no retired spellings: the display shipped only in v5 betas. The byte gate stays off for Manhattan. The mark display gains a hover ring for points and three key members any plot may write, as ggplot2's scale arguments are: `breaks` (the values a key lists), `descending` (a threshold key highest first) and `missingLabel` (the no-value row's name), with `title` and `labels` on the shape key too; the LD plot's key is built from them, so it reads as LocusZoom's"
 ---
 
 # ADR-178: Manhattan is the mark display with a default plot
@@ -11,7 +11,7 @@ Accepted (2026-09-26). Colin chose "Manhattan → marks + LD" from the grammar
 round's options, then said the display needs no legacy spellings, since it is
 new in this repository. Amends
 [ADR-107](adr-107-the-quantitative-class-is-authored-in-config.md), which kept
-`scoreField` and a field colour on Manhattan beside the mark display: the
+`scoreField` and a field color on Manhattan beside the mark display: the
 display users reach for stays, and its plot is now the mark display's.
 
 ## Context
@@ -55,27 +55,27 @@ transforms or Edit plot.
   to the filter, adopted the runner-up and got the first back, refetching each
   way without end; a plot whose only LD mark plots `r2` drew nothing before a
   join and so never found an index to join. An index SNP a display `filter`
-  hides still colours its partners, and a pin overrides it.
+  hides still colors its partners, and a pin overrides it.
 - **A plot that names an LD field joins LD.** `joinsLd` is an `ldAdapter` plus
   a mark whose encoding names `r2` or `ld_role`. LocusZoom's plot is two
   points, each behind a `filter` on `ld_role`: every SNP but the index by a
-  threshold colour over `r2` in LocusZoom's bins, then the index alone on top,
+  threshold color over `r2` in LocusZoom's bins, then the index alone on top,
   a `#c951c9` diamond, so the plot says what it draws and Edit plot shows it.
   "Color by LD to index SNP" makes that pair of each point mark placing each
   SNP (`withLd`): the partner keeps its size, steps, zoom gates and shape, its
-  own constant or callback colour kept beside the r² scale, and every index
+  own constant or callback color kept beside the r² scale, and every index
   twin draws after the last partner; every other mark stays. Off strips
   exactly those pieces (`withoutLd`), so a round trip leaves the plot, and the
   session delta, as they were; a plot with no such point greys the item out.
   (Amended 2026-09-26: it replaced the whole plot, which reset the demos'
   7 and 8 px points and every Point size to 4 px on a round trip.) A first
-  version wrote the colour and shape onto every point mark, which painted the
+  version wrote the color and shape onto every point mark, which painted the
   index the red of r² 1 and wrote nothing on a plot of bars; the index twin
   and the greyed item are the answers to those two. (Amended 2026-10-07: the
   join wrote the statistic as the field `ld`; it writes `r2`, the name the LD
-  display's colour gives the same statistic. No retired spelling, as below.)
+  display's color gives the same statistic. No retired spelling, as below.)
 - **The join follows every name the worker reads** (amended 2026-10-08).
-  `joinsLd` first asked whether a mark's `y`, `text`, or colour, shape or size
+  `joinsLd` first asked whether a mark's `y`, `text`, or color, shape or size
   field was exactly `r2` or `ld_role`, so `y: 'jexl:feature.r2 * 10'` or a
   `filter` step on `feature.r2` ran no join and read a field no feature held,
   drawing nothing with no message. It now scans the mark model's
@@ -88,7 +88,7 @@ transforms or Edit plot.
   and Edit plot lists `r2` and `ld_role` through the mark model's
   `joinedPlotFields` hook, its field scan reading a 20 kb sample no join
   reliably reaches.
-- **No field preset for `r2`.** The previous colour object painted `{ field:
+- **No field preset for `r2`.** The previous color object painted `{ field:
   'ld' }` as the LocusZoom threshold through a preset only the model knew,
   while the rule list and Edit plot read every field as categorical.
 - **The byte gate stays off**, as it was: a genome-wide view of summary
@@ -97,10 +97,10 @@ transforms or Edit plot.
   Manhattan's did, and a key takes ggplot2's controls. `breaks` lists only the
   values it names, `descending` lists a threshold's intervals from the
   highest, `missingLabel` names the grey row, and the shape key gains the
-  `title` and `labels` the colour key has. They are read on the main thread
+  `title` and `labels` the color key has. They are read on the main thread
   when the key is built, so writing one refetches nothing.
 - **LocusZoom's key comes from those members**, not from Manhattan: the LD
-  colour descends and names its missing row "No LD data", and the LD shape
+  color descends and names its missing row "No LD data", and the LD shape
   lists only the index, as "Index SNP", under no heading. Colin chose this
   over a key Manhattan draws itself, which only Manhattan could have had, and
   over shipping the generic two keys.
@@ -112,8 +112,8 @@ transforms or Edit plot.
   file.
 - The r² key and the index SNP's row are two keys where the old legend was
   one. The index's swatch is its pink diamond, since any shape key of a mark
-  painted one colour draws its shapes in that colour, as ggplot2 draws a
-  layer's key glyphs; a mark coloured by a scale keeps the text colour.
+  painted one color draws its shapes in that color, as ggplot2 draws a
+  layer's key glyphs; a mark colored by a scale keeps the text color.
 - The insertion triangle is the SV-GWAS demo's own `shape` over `svtype`, no
   longer a Manhattan default applied to every file.
 - `jbrowse validate` runs the mark rules on any display whose manifest lists
@@ -124,16 +124,16 @@ transforms or Edit plot.
 - **Retired spellings for `scoreField`, `color` and `size`.** The display
   shipped only in betas. The lifts would also have needed three keys to merge
   into one list entry, which the retired-spelling pass cannot express.
-- **A model-level colour preset for `r2`.** Two answers to one field's scale:
+- **A model-level color preset for `r2`.** Two answers to one field's scale:
   the paint would have said threshold and the editor categorical.
 - **Inferring the LD join from the encodings** (`ld_role` shape entries, the
-  colour lanes) for the missing-index notice: it held only for plots shaped
+  color lanes) for the missing-index notice: it held only for plots shaped
   like `LD_MARKS`. The adapter reports through `BaseOptions.notices` instead.
 - **The top hit read after the plot's shared steps**, to follow a display
   `filter`: a display-level filter on `ld_role` would reopen the refetch loop
   the adapter's report closes.
 - **Joining whenever the track has an LD file and an index**: every default
-  plot would fetch twice and read the LD file to colour nothing.
+  plot would fetch twice and read the LD file to color nothing.
 - **An index SNP named by its id** (amended 2026-10-08: `indexSnp` took a SNP
   id beside a `chr:bp`). Both writers, the top hit and the right-click, place
   the index, so an id reached it only from a hand-written session. An id has no
@@ -142,15 +142,15 @@ transforms or Edit plot.
   a `chr:bp`, and one that is not joins nothing.
 - **The auto index following the top visible SNP under a row focus**: a focus
   would refetch every region, undoing the row table's one-upload promise.
-- **A conditional colour on the encoding** (Vega-Lite's `condition`) for the
+- **A conditional color on the encoding** (Vega-Lite's `condition`) for the
   pink index: layering with a `filter` step used pieces the grammar already
   had.
 - **Stashing the pre-LD plot and restoring it on untick**: a hidden second copy
-  of the plot, whose one advantage, the point's own colour, the `value` kept
+  of the plot, whose one advantage, the point's own color, the `value` kept
   beside the r² scale gives. A `colorByLd` flag deriving the drawn plot fails
   too: Edit plot would show a plot other than the one drawn, and 22 readers of
   `conf.marks` need live config nodes.
-- **Colouring a bar-only plot by LD**: no shipped config has one, and the item
+- **Coloring a bar-only plot by LD**: no shipped config has one, and the item
   greys out with a pointer to Edit plot instead.
 - **A notice for an LD plot whose marks all fail `placesEachSnp`**: only an
   Edit plot `bin` or `x` reaches it, and the adapter's missing-index notice

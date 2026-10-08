@@ -1,6 +1,6 @@
 ---
 status: Accepted
-summary: "The alignments read-connections band's four private shapes are the grammar's marks: the dome is `link` under `linkShape: 'dome'`, the read cloud's flat connector is `linkShape: 'line'` — GenomeSpy's fourth value, which ADR-163 skipped — the endpoint square is a `point` glyph, and the interchromosomal tick is the link's own stem. The view-scope region table lifts out of the mark display so any mark places a foot through it, which retires `CrossRegionArcsOverlay` and its SVG twin outright. `cloud` stops being a boolean: arc mode and the read cloud differ in mark shape, y scale and one filter. The connector takes its category colour, the feet stay on interchromosomal arcs by choice, and `readConnectionsDown` becomes the y scale's direction"
+summary: "The alignments read-connections band's four private shapes are the grammar's marks: the dome is `link` under `linkShape: 'dome'`, the read cloud's flat connector is `linkShape: 'line'` — GenomeSpy's fourth value, which ADR-163 skipped — the endpoint square is a `point` glyph, and the interchromosomal tick is the link's own stem. The view-scope region table lifts out of the mark display so any mark places a foot through it, which retires `CrossRegionArcsOverlay` and its SVG twin outright. `cloud` stops being a boolean: arc mode and the read cloud differ in mark shape, y scale and one filter. The connector takes its category color, the feet stay on interchromosomal arcs by choice, and `readConnectionsDown` becomes the y scale's direction"
 ---
 
 # ADR-170: The read-connections band is a marks list
@@ -9,7 +9,7 @@ summary: "The alignments read-connections band's four private shapes are the gra
 
 Accepted (2026-09-25), Colin's calls of 2026-09-25 on the second of the three
 decisions the arc band geometry round left, and his answers on the
-connector's colour and the breakend feet.
+connector's color and the breakend feet.
 [GRAMMAR_OF_GRAPHICS.md](../reference/GRAMMAR_OF_GRAPHICS.md) and
 [MARK_ENCODING.md](../reference/MARK_ENCODING.md) carry the operational
 description. Continues
@@ -51,8 +51,8 @@ every other shape in the band to reach the DOM overlay to cross a seam.
   declarations: the mark's shape, the y scale (a genomic radius on a linear
   axis, or `|TLEN|` on a log one) and a filter to discordant pairs. The setting
   picks which marks the band derives.
-- **The read cloud's connector takes its category colour.** The neutral line
-  under coloured endpoint squares was samplot's picture; one colour encoding
+- **The read cloud's connector takes its category color.** The neutral line
+  under colored endpoint squares was samplot's picture; one color encoding
   covers the link and the points, and the bar reads at the zooms where the
   squares are all that is drawn.
 - **Breakend feet stay on interchromosomal arcs.** They draw there today
@@ -99,7 +99,7 @@ Settled while building, each against the picture the band drew before:
   on the argument that a dome as wide as the screen gap reads as a short
   event; on a fusion framed with both breakpoints at the seam
   (`cancer_sv/k562_fusion_inspector_reads`) that drew every junction as a
-  band-deep trough, which review called a silly depth. The colour already says
+  band-deep trough, which review called a silly depth. The color already says
   the arc crosses chromosomes.
 - **The split-read connector is a second link mark** under `strokeDash`, not a
   per-instance lane, so it paints after the solid bars.
@@ -111,7 +111,7 @@ Settled while building, each against the picture the band drew before:
   one with neither foot in its region. A multi-locus view makes one at every
   window edge a pair straddles; drawn as the link's stem, the band's height,
   each read as a translocation tick. Only a tick is a stem.
-- **The read cloud's bars keep 0.7 alpha** under their category colour, so a
+- **The read cloud's bars keep 0.7 alpha** under their category color, so a
   dense cloud still reads as density.
 - **The arc debug overlay is retired** with the private geometry it traced; the
   link's painter, ink and hit are held to each other by render-core's sweeps.
@@ -128,7 +128,7 @@ Settled while building, each against the picture the band drew before:
   is for.
 - **Giving every arc its breakend feet.** Colin's call went the other way; a
   deletion and a duplication inside one region read their type from the arc's
-  colour, and the fan over a well-supported junction is already dense.
+  color, and the fan over a well-supported junction is already dense.
 - **`clampApex` and `arcHeightFactor` as link properties**, which is how
   GenomeSpy spells the apex rule our `dome` and `arc` fuse. The band's own
   dome peaked at 0.75 of the height its y rule gave; the link's dome is a

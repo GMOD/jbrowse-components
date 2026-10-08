@@ -3,7 +3,7 @@ import { observer } from 'mobx-react'
 import type { CSSProperties, ComponentPropsWithoutRef, ReactNode } from 'react'
 
 /**
- * Four offset shadows in the surface colour: a halo under a line of DOM text
+ * Four offset shadows in the surface color: a halo under a line of DOM text
  * that needs no measured stroke and reads the same over a mark and over the
  * background.
  */
@@ -24,7 +24,7 @@ export const TEXT_BASELINE_RATIO = 0.84
  * The canvas feature labels and the mark display's text marks emit through
  * this, so the typography of a floated label is one declaration; what places
  * each label is its display's own rule. `halo` draws {@link textHalo} under
- * the glyphs in that colour. Everything else a caller passes reaches the div:
+ * the glyphs in that color. Everything else a caller passes reaches the div:
  * a class for the pointer and the cursor, the data attributes a delegated
  * handler reads, a `title`.
  */
@@ -67,7 +67,7 @@ export const FloatingText = observer(function FloatingText({
 
 /**
  * The same line in an SVG export: two `<text>`s at the baseline `y`, a stroke
- * in the surface colour under the glyphs, since SVG paints stroke over fill
+ * in the surface color under the glyphs, since SVG paints stroke over fill
  * and a thick stroke beneath a second copy is how a halo is drawn there. Both
  * carry the size, because a `<text>` without one takes SVG's 16px default in a
  * saved file. An export leaves `fontFamily` out, so the label inherits the

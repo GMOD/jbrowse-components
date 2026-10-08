@@ -1,6 +1,6 @@
 ---
 status: Accepted
-summary: "The mark display's fourth mark is `text`, spelt as Vega-Lite and GenomeSpy spell it (`mark: 'text'`, `encoding.text`), and it is a layer and not a shape: the worker fills a `text` lane of strings beside the lanes it already fills, one pure rule (`placeTextMarks`) places every label over the middle of its span, just above its `y` or in the middle of its band, culls left to right and keeps the plot's edges, and the screen emits DOM text where the export emits `<text>`, both through display-ui's `FloatingText` and `SvgHaloText`, which the canvas feature labels and the arc labels' export now emit through as well. The GPU mark list skips the entry and every shape carries its `markIndex`, so the list may be shorter than `marks`. A text mark declares no ink and answers no hover; its colour is the theme's text colour where the config leaves it at the mark default; it folds its `y` into the one axis and asks for no `y` lane when it names none; it moves no point inset. Amends ADR-106's Text bullet and ADR-110's label clause. No migration"
+summary: "The mark display's fourth mark is `text`, spelt as Vega-Lite and GenomeSpy spell it (`mark: 'text'`, `encoding.text`), and it is a layer and not a shape: the worker fills a `text` lane of strings beside the lanes it already fills, one pure rule (`placeTextMarks`) places every label over the middle of its span, just above its `y` or in the middle of its band, culls left to right and keeps the plot's edges, and the screen emits DOM text where the export emits `<text>`, both through display-ui's `FloatingText` and `SvgHaloText`, which the canvas feature labels and the arc labels' export now emit through as well. The GPU mark list skips the entry and every shape carries its `markIndex`, so the list may be shorter than `marks`. A text mark declares no ink and answers no hover; its color is the theme's text color where the config leaves it at the mark default; it folds its `y` into the one axis and asks for no `y` lane when it names none; it moves no point inset. Amends ADR-106's Text bullet and ADR-110's label clause. No migration"
 ---
 
 # ADR-162: A text mark is a DOM layer placed by one rule
@@ -57,18 +57,18 @@ loop flushes style recalc, which is why ADR-106 kept labels off the mark layer.
   where no kept label's halo meets their glyphs and the plot holds them whole.
   Left to right is ggplot2's `check_overlap` for data in screen order. The
   screen emits a `FloatingText` per label with a text-shadow halo in the
-  surface colour; the export emits `SvgHaloText`, a stroke in the surface
-  colour under the glyphs; both are display-ui's, and the canvas feature
+  surface color; the export emits `SvgHaloText`, a stroke in the surface
+  color under the glyphs; both are display-ui's, and the canvas feature
   labels and the arc labels' export emit through them too, so a floated
   label's typography is one declaration. What each display places stays its
   own: canvas's `labelPositioning.ts` moves onto this rule only on a bench at
   parity, as the handoff said.
-- **The default colour is the theme's text colour.** A slot equal to its
+- **The default color is the theme's text color.** A slot equal to its
   default leaves the config snapshot, so `TextMarkEntry.ownColor` says whether the
-  config wrote the mark's colour; a text mark whose colour is unwritten prints
+  config wrote the mark's color; a text mark whose color is unwritten prints
   in `palette.text.primary`, the way ggplot2's `geom_text` and GenomeSpy's
   `text` print black, and a written constant, `jexl:` or scale wins. Every
-  other mark's unwritten colour stays the mark blue.
+  other mark's unwritten color stays the mark blue.
 - **A text mark moves nothing.** The point inset the axis and the points share
   is taken over the point marks drawing, with text marks beside them counted
   as neither bar nor point.
@@ -101,7 +101,7 @@ loop flushes style recalc, which is why ADR-106 kept labels off the mark layer.
   cost of a shape that draws nothing on two backends, which the cross-backend
   gate and `sweepMarkAgainstHit` would then hold to a painter that paints
   nothing.
-- **The mark blue as the default label colour.** A label that flips under a
+- **The mark blue as the default label color.** A label that flips under a
   bar of the same blue is a halo and nothing else, and blue on dark paper is
   the weakest pair in dark mode.
 - **Culling in instance order.** Instance order is genomic order, which a

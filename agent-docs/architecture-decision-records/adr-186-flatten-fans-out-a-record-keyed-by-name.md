@@ -51,13 +51,13 @@ reference axis.
 - **The mark display attaches to a MafTrack.** `rows: "species"` over
   `{ type: "flatten", field: "alignments", key: "species" }` gives one row
   per species from the features themselves, as `rows` over any other field
-  does, and a `span` coloured by `chr` is the MAF display's colour-by-source-
+  does, and a `span` colored by `chr` is the MAF display's color-by-source-
   chromosome mode.
 
 ## Consequences
 
 - A VCF's per-sample fields are reachable without a plugin: `flatten` over
-  `samples` with `key: "sample"`, then `rows: "sample"` and a colour over
+  `samples` with `key: "sample"`, then `rows: "sample"` and a color over
   `GT`.
 - A `MafFeature`'s hover through `CoreGetEncodedFeature` serialises the
   container with the entry, minus the field fanned out, as `get` answers it:

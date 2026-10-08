@@ -353,7 +353,7 @@ function stateModelFactory(configSchema: LinearSyntenyDisplayConfigSchema) {
        * per row, since culling is symmetric. Lazy by construction: with the
        * marks off nothing observes it. Both perspectives are one walk; whether
        * the lower row's is drawn is `laneData`'s question. With any ribbon
-       * hidden it reads the colours too, so a hidden ribbon leaves no mark.
+       * hidden it reads the colors too, so a hidden ribbon leaves no mark.
        */
       get culledRibbonMates() {
         const { featureData, instanceData } = self
@@ -516,7 +516,7 @@ function stateModelFactory(configSchema: LinearSyntenyDisplayConfigSchema) {
           // identical features. The worker emits the ticks unconditionally now
           // and `computedColors` paints them transparent when the toggle is off,
           // which makes the toggle a color-lane patch through
-          // `SYNTENY_INSTANCE_CACHE` — the same path a colour change takes to avoid an
+          // `SYNTENY_INSTANCE_CACHE` — the same path a color change takes to avoid an
           // RPC.
           view.drawCIGAR,
           view.drawCIGARMatchesOnly,
@@ -587,7 +587,7 @@ function stateModelFactory(configSchema: LinearSyntenyDisplayConfigSchema) {
        * #getter
        * Main-thread-computed per-instance colors. Recomputes whenever
        * the view's `color`, featureData, or instanceData descriptors change — this is
-       * the gpuProps half of the rpcProps/gpuProps split. Colour changes
+       * the gpuProps half of the rpcProps/gpuProps split. Color changes
        * flow through here without touching the RPC.
        *
        * `drawLocationMarkers` goes through the same color lane, so it stays out
@@ -699,7 +699,7 @@ function stateModelFactory(configSchema: LinearSyntenyDisplayConfigSchema) {
       /**
        * #getter
        * Instance data with main-thread-computed colors substituted in. The
-       * view's upload autorun reads this, so any colour change re-fires
+       * view's upload autorun reads this, so any color change re-fires
        * upload without an RPC round-trip.
        */
       get renderInstanceData() {

@@ -1,6 +1,6 @@
 ---
 status: Accepted
-summary: "Aligned bp is the one measure the off-screen mate strip decides by, because a mark's ink says nothing about its alignment: every mark is at least 1.5px wide however small the alignment under it. Label rows go to the stretches holding the most sequence, a pointer answers with the longest alignment under it, colours paint weakest-first, a name may overhang its stretch by half its width, and a contig draws no marks at all where the sequence it holds is worth under 4px of the band — a level-of-detail rule that lifts as the window widens. A pixel floor per ALIGNMENT was rejected on measurement: it drops 100% of the marks and 98% of the sequence on the demo the feature was built for"
+summary: "Aligned bp is the one measure the off-screen mate strip decides by, because a mark's ink says nothing about its alignment: every mark is at least 1.5px wide however small the alignment under it. Label rows go to the stretches holding the most sequence, a pointer answers with the longest alignment under it, colors paint weakest-first, a name may overhang its stretch by half its width, and a contig draws no marks at all where the sequence it holds is worth under 4px of the band — a level-of-detail rule that lifts as the window widens. A pixel floor per ALIGNMENT was rejected on measurement: it drops 100% of the marks and 98% of the sequence on the demo the feature was built for"
 ---
 
 # ADR-138: Aligned bp ranks and gates the off-screen mate marks
@@ -47,15 +47,15 @@ contest, summed over whatever is competing.**
   weighing every alignment in it. The lane interleave survives as the tie-break,
   so a short band still names both strips.
 - **A pointer answers with the longest alignment under it**, hover and click
-  alike, and colour groups paint weakest-first so the composite ends on the
+  alike, and color groups paint weakest-first so the composite ends on the
   contig the pointer would name.
 
-  *Amended 2026-09-20:* in a coloured strip that held only where the lane's
-  strongest mark sits. A colour ranks by its longest alignment anywhere in the
+  *Amended 2026-09-20:* in a colored strip that held only where the lane's
+  strongest mark sits. A color ranks by its longest alignment anywhere in the
   lane, so a weak mark of the strongest contig is painted over a longer mark of
   another, and the pointer named the one underneath. The pointer now names the
-  colour painted on top, and the longest alignment within it; an uncoloured
-  strip is one colour, so nothing changed there.
+  color painted on top, and the longest alignment within it; an uncolored
+  strip is one color, so nothing changed there.
 - **A name may overhang its stretch by up to half its own width**
   (`MIN_LABEL_COVERAGE`), clamped into the window, with the collision box the
   text box. A reader already reads a name by the marks under its centre: two
@@ -91,7 +91,7 @@ O(contigs) per pointer move.
   in x, and a band 18px tall has no label rows at all.
 - **Encoding weight in the mark itself**, taller or darker for longer. The marks
   are the background and the label is the finding (the strip is one path per
-  colour for exactly that reason), and a per-mark height reintroduces the
+  color for exactly that reason), and a per-mark height reintroduces the
   density saturation that the single path exists to avoid.
 
 ## Consequences

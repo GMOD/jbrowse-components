@@ -8,7 +8,7 @@ import { getInstanceCount } from '../LinearHicDisplay/components/shaders/hic.ifa
 /**
  * The maximum and the nearest-rank `quantile` of the finite counts. A NaN (the
  * `.hic` no-value marker) or an Infinity (a tiny normalization divisor) would
- * otherwise become the colour domain and paint every bin wrong. Both are 0
+ * otherwise become the color domain and paint every bin wrong. Both are 0
  * when nothing is finite.
  *
  * An explicit loop, not `filter(Number.isFinite)`, which measured ~25x

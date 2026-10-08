@@ -16,7 +16,7 @@ shared factory and every quantitative display declares one. Supersedes
 `encoding.y.resolve` decision; amends
 [ADR-124](adr-124-the-score-axis-autoscales-over-what-is-loaded.md)'s pin
 destination, which is now `scales.y` rather than the owning mark's declaration.
-ADR-113's other half — a quantitative colour ramp resolving on the main thread
+ADR-113's other half — a quantitative color ramp resolving on the main thread
 against a domain unioned over the loaded regions — is untouched, as is
 ADR-115's `pileup` step and its three track types.
 [MARK_ENCODING.md](../reference/MARK_ENCODING.md) and
@@ -74,7 +74,7 @@ both `maybeNumber`. An unset end autoscales over the loaded regions, which is
 what `encoding.y.domain`'s `""` sentinel meant. The spelling is Vega-Lite's
 `scale.domainMin`/`domainMax` rather than a `[min, null]` array, so the slot
 types stay `maybeNumber` and the JSON schema, the config docs and the config
-editor each see an end as a number. The colour ramp spells its ends the same
+editor each see an end as a number. The color ramp spells its ends the same
 way since [ADR-151](adr-151-a-channels-scale-is-spelt-as-scales-y-spells-one.md).
 
 **The score menu writes `scales.y` and nothing else.** Set min/max, Pin current
@@ -116,7 +116,7 @@ a score axis and no autoscale mode behind it.
 
 `displayCrossHatches`, `scatterPointSize` and `minimalTicks` stay as the mark
 display's own slots with their own getters, `showCrossHatches` being
-`displayCrossHatches` here — nothing on this display spends colour on the score
+`displayCrossHatches` here — nothing on this display spends color on the score
 instead of height, which is the distinction `WiggleScoreConfigMixin`'s
 `isDensityMode` drew.
 
@@ -183,4 +183,4 @@ and the browser suite's scene shows the coverage run zoomed out.
 - **`domain: [0, 100]` beside `domainMin` and `domainMax`**, a shorthand for
   pinning both ends. It saves one key and brings back two spellings of one pin
   with a precedence rule between them, the reason ADR-151 declined it for the
-  colour ramp (2026-10-04).
+  color ramp (2026-10-04).

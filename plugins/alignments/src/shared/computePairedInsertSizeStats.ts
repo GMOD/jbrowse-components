@@ -17,7 +17,7 @@ function isPrimaryProperPair(flags: number) {
 /**
  * Insert-size stats (robust median ± 3·1.4826·MAD, widened to the event scale
  * — see getInsertSizeStats and widenBandToEventScale) from primary proper-pair
- * reads only. This is the band anything COLOURS from, which is why the floor is
+ * reads only. This is the band anything COLORS from, which is why the floor is
  * applied here and not in the statistics. `insertSize` is
  * already `abs(template_length)`, so this is the
  * chain denominator (template length) too — pileup and chain share one scale.

@@ -1,7 +1,7 @@
 // Density (and multirowdensity — one code path, `rowIndex`/`numRows` are what
 // differ) as a composed shape: `rowRect`'s geometry, `scoreScale`'s normalizer,
-// wiggleCommon's inline white-to-track-colour ramp. One instance is a rect
-// filling its whole row over [startBp, endBp), coloured by its score through
+// wiggleCommon's inline white-to-track-color ramp. One instance is a rect
+// filling its whole row over [startBp, endBp), colored by its score through
 // the uniform domain — the score stays in the instance buffer and the domain
 // stays a uniform, so an autoscale move on pan is one uniform write, never a
 // buffer re-upload (ADR-094's load-bearing cardinality).
@@ -24,13 +24,13 @@
 // the pre-composition density branch let sub-pixel rows miss every pixel center
 // and drop out. Only reachable when numRows outgrows the canvas height.
 //
-// The default colour resolves in the vertex stage, as it always has: every
-// fragment of a density quad is one flat colour, so per-vertex is the cheaper
+// The default color resolves in the vertex stage, as it always has: every
+// fragment of a density quad is one flat color, so per-vertex is the cheaper
 // stage. The alternative named-ramp mode (`u.rampLut`) samples the
 // shared 256×1 LUT texture instead — the same colorRampLut module and binding
 // slot HiC and LD sample through — and that sample has to be the fragment's,
 // because the HALs bind textures with fragment-stage visibility only. The
-// vertex stage therefore carries both the resolved default colour and the ramp
+// vertex stage therefore carries both the resolved default color and the ramp
 // position `t`, and the fragment picks by the uniform; `t` is per-instance
 // flat, so the varying interpolates nothing.
 //! targets: wgsl, glsl

@@ -335,7 +335,7 @@ describe('a coverage hit', () => {
   })
 
   // Zoomed out, hitTestCoverage snaps to a significant SNP inside the bin — the
-  // column a reader pointing at a coloured bar means — so the sort anchors on
+  // column a reader pointing at a colored bar means — so the sort anchors on
   // the hit rather than on the raw cursor column.
   test('anchors on the snapped bin position, not the raw column', () => {
     const model = makeModel({ coverageHit, genomicPos: 512 })

@@ -7,7 +7,7 @@ import type { InsertSizeBand } from '../../shared/insertSizeStats.ts'
 import type { ArcColorField } from '../../shared/types.ts'
 import type { ComputedArc, PendingArc } from './arcTypes.ts'
 
-// Which colour slot an arc paints in, and the paint order that follows from it.
+// Which color slot an arc paints in, and the paint order that follows from it.
 // Split from `compute.ts`: classification is a pure function of a connection's
 // own fields, so it has no share in the chain building, clustering or region
 // partitioning the rest of the pass does.
@@ -44,11 +44,11 @@ export function isConcordantFRPair(
 export const COLOR_DEFAULT = 0
 export const COLOR_LONG_INSERT = ARC_SLOT_CATEGORY.indexOf('longInsert')
 export const ARC_COLOR_SHORT_INSERT = ARC_SLOT_CATEGORY.indexOf('shortInsert')
-// The only colour an interchromosomal arc or tick takes: insert size and
+// The only color an interchromosomal arc or tick takes: insert size and
 // pair orientation mean nothing across two references.
 export const ARC_COLOR_INTERCHROM = 3
 // A split-read junction, by which way the read extends from its two feet —
-// see `arcSplitCategory.ts`. Each takes the colour of the pair class that spans
+// see `arcSplitCategory.ts`. Each takes the color of the pair class that spans
 // the same junction.
 export const COLOR_SPLIT_FORWARD = 7
 export const COLOR_SPLIT_BACK = 8
@@ -140,7 +140,7 @@ function splitJunctionColor(arc: PendingArc) {
 
 // The palette slot a pair category paints in. `pairLR` and `nonSplit` have no
 // slot of their own and land on the baseline, which `arcSlotCategory` names
-// per colouring mode.
+// per coloring mode.
 const ARC_SLOT_OF_CATEGORY = new Map<string, number>(
   ARC_SLOT_CATEGORY.map((category, slot) => [category, slot]),
 )
@@ -173,7 +173,7 @@ export function getArcColorType(args: {
   // different ways. This used to override the TLEN class with the pair's drawn
   // SPAN, which the read fills never had: `classifyInsertSize` sorts TLEN 0
   // into `normal`, so those arcs went red over reads that stayed grey, and the
-  // span's outlier cut ran over the arcs IN VIEW, so an arc's colour changed
+  // span's outlier cut ran over the arcs IN VIEW, so an arc's color changed
   // as you panned.
   return (
     ARC_SLOT_OF_CATEGORY.get(
@@ -182,7 +182,7 @@ export function getArcColorType(args: {
   )
 }
 
-/** A colour type's palette slot, the last slot for one past the palette. */
+/** A color type's palette slot, the last slot for one past the palette. */
 export function arcColorSlot(colorType: number) {
   return Math.min(colorType, ARC_SLOT_CATEGORY.length - 1)
 }

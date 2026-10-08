@@ -12,7 +12,7 @@ Rejected (2026-10-04). Closes the row-table idea
 
 ## Context
 
-A multi-sample variant cell is (record, row, colour, dosage). Both layouts
+A multi-sample variant cell is (record, row, color, dosage). Both layouts
 upload each cell's screen row per instance: `placeVariantRows` rewrites it for
 every cell of a block on a sort, regroup or clustering run, and `installUpload`
 re-packs and re-uploads the block. The multi-row feature display and the shared

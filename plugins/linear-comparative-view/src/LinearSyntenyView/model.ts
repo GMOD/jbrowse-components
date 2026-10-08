@@ -1151,7 +1151,7 @@ export default function stateModelFactory(pluginManager: PluginManager) {
        * #action
        * a circular view of this view's two genomes with its synteny tracks
        * as ribbons, the second genome reordered to follow the first, and this
-       * view's colour and length filter
+       * view's color and length filter
        */
       openInCircularSyntenyView() {
         const assembly = [

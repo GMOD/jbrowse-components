@@ -438,7 +438,7 @@ export function createTestAlignmentsDisplay() {
       rpcManager: { call: () => Promise.resolve(makeEmptyAlignmentsResult()) },
       // `colorPalette` derives from the session's, so without it the harness
       // boots a display that throws the moment a test reads any getter
-      // resolving a colour — the cross-region arc geometry being the first.
+      // resolving a color — the cross-region arc geometry being the first.
       palette: resolvePalette(),
       assemblyManager: {
         get: (name: string) => (name === 'volvox' ? asm : undefined),

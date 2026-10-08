@@ -12,9 +12,9 @@ import {
 /**
  * #config MultiWayGeneColor
  * #category display
- * The multi-way synteny display's gene `color`: a CSS colour or `jexl:`
- * callback in `value`, or a field whose values each take a range colour, or
- * whose numbers each take the colour of the interval between cut points they
+ * The multi-way synteny display's gene `color`: a CSS color or `jexl:`
+ * callback in `value`, or a field whose values each take a range color, or
+ * whose numbers each take the color of the interval between cut points they
  * fall in, with a key. A string is the constant; the object binds the field.
  *
  * #example
@@ -27,12 +27,12 @@ export const geneColorConfigSchema = ConfigurationSchema(
   {
     /**
      * #slot value
-     * A CSS colour, or a jexl callback over `feature` returning one; unset,
+     * A CSS color, or a jexl callback over `feature` returning one; unset,
      * goldenrod.
      */
     value: {
       type: 'maybeColor',
-      description: 'CSS colour or jexl callback',
+      description: 'CSS color or jexl callback',
       contextVariable: ['feature'],
     },
     ...colorChannelSlots({
@@ -40,17 +40,17 @@ export const geneColorConfigSchema = ConfigurationSchema(
       scaleName: 'MultiWayGeneColorScale',
       fieldType: 'featureField',
       field:
-        'a feature field, or a jexl expression over feature, whose values each paint one range colour with a key; cluster paints a gene by the ortholog group it carries and a placement box by its own',
+        'a feature field, or a jexl expression over feature, whose values each paint one range color with a key; cluster paints a gene by the ortholog group it carries and a placement box by its own',
       scale:
-        'none paints value and keeps the field for a switch back; categorical a range colour per value of field; threshold a range colour per interval between the cut points in domain; unset follows field',
+        'none paints value and keeps the field for a switch back; categorical a range color per value of field; threshold a range color per interval between the cut points in domain; unset follows field',
     }),
     ...colorDomainSlot({
       domain:
-        'the values that take the range first, in order; a value left out takes a colour no listed value or value met before it paints, the first time the track shows it, and keeps it. Under threshold, the ascending cut points, a value on a cut taking the interval above it',
+        'the values that take the range first, in order; a value left out takes a color no listed value or value met before it paints, the first time the track shows it, and keeps it. Under threshold, the ascending cut points, a value on a cut taking the interval above it',
     }),
     ...colorRangeSlot({
       range:
-        'CSS colours the domain takes, in order, continuing into the default palette past its end; under threshold one per interval, one more than the cuts',
+        'CSS colors the domain takes, in order, continuing into the default palette past its end; under threshold one per interval, one more than the cuts',
     }),
     ...colorLabelsSlot,
     ...colorTitleSlot,

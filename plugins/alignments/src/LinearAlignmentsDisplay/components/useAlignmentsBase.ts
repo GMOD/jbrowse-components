@@ -233,7 +233,7 @@ export function useAlignmentsBase(model: LinearAlignmentsDisplayModel) {
     const refName = view.displayedRegions[hover.regionIndex]?.refName ?? ''
     const arc: ArcMarkHit = {
       type: 'arc',
-      // A tick reports what it points AT; an arc reports its span and colour
+      // A tick reports what it points AT; an arc reports its span and color
       // bucket. The two payloads are disjoint (see `ArcLineTooltipPayload`), so
       // the discriminant the hit already carries picks the formatter rather
       // than one formatter taking half-meaningless arguments.

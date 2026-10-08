@@ -33,14 +33,14 @@ import type { ColorPalette } from './colors.ts'
 
 // A pileup draws one meaning through three vocabularies — read fills, arc /
 // read-cloud overlays, linked-read connectors — and each used to carry its own
-// colour table, agreeing by comment. That is how the overlays came to be baked
+// color table, agreeing by comment. That is how the overlays came to be baked
 // from the module palette while the read fills resolved through the theme: in
 // the default light palette the divergence is invisible, and light is where
 // every figure is captured.
 //
-// The colour half of this file is now a TAUTOLOGY, and deliberately kept as one.
+// The color half of this file is now a TAUTOLOGY, and deliberately kept as one.
 // ARC_SLOT_CATEGORY / LINKED_READ_SLOT_CATEGORY say what a slot means and the
-// colour is resolved through `swatchPaletteKeys`, the read fills' own table, so
+// color is resolved through `swatchPaletteKeys`, the read fills' own table, so
 // there is one table and nothing left to reconcile. What these assertions still
 // buy is the wiring: they fail if any path goes back to a baked constant, or if
 // a slot is pointed at the wrong meaning.

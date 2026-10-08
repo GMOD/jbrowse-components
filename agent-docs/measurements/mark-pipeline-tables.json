@@ -5,7 +5,7 @@
   "source": {
     "kind": "bench",
     "repro": "node --max-old-space-size=14000 packages/core/benches/tablePipeline.bench.ts --rounds=7 --maf --json",
-    "notes": "The mark pipeline at main (base, and control: main extracted a second time) against the working tree (head), in one process, interleaved round-robin with the order rotated, MIN across rounds, lanes checked equal before timing. Every scenario but the last runs over a million synthetic features (start, end, score, strand, and a sample among 26): the steps, the facet where one is named, and the encode, as layerFeatures and CoreGetEncodedLayers run them. head runs a request through layerTables. The last row is the marks_maf_cells declaration (flatten over alignments keyed by species, cells, rows by species, a span coloured by state, with the hit index) over the synthetic MAF-tabix fixture at 470 species, 200 blocks of 250 columns, 5.5M runs. rows by sample and the MAF row ask for the hit index, which both sides build the same way."
+    "notes": "The mark pipeline at main (base, and control: main extracted a second time) against the working tree (head), in one process, interleaved round-robin with the order rotated, MIN across rounds, lanes checked equal before timing. Every scenario but the last runs over a million synthetic features (start, end, score, strand, and a sample among 26): the steps, the facet where one is named, and the encode, as layerFeatures and CoreGetEncodedLayers run them. head runs a request through layerTables. The last row is the marks_maf_cells declaration (flatten over alignments keyed by species, cells, rows by species, a span colored by state, with the hit index) over the synthetic MAF-tabix fixture at 470 species, 200 blocks of 250 columns, 5.5M runs. rows by sample and the MAF row ask for the hit index, which both sides build the same way."
   },
   "columns": [
     {
@@ -53,7 +53,7 @@
   "rows": [
     {
       "values": {
-        "scenario": "encode, y and a colour",
+        "scenario": "encode, y and a color",
         "baseMs": 317.9,
         "controlMs": 342.3,
         "headMs": 313
@@ -61,7 +61,7 @@
     },
     {
       "values": {
-        "scenario": "encode, categorical colour",
+        "scenario": "encode, categorical color",
         "baseMs": 134.1,
         "controlMs": 138.5,
         "headMs": 127.7

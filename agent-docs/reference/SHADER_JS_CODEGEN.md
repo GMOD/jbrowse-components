@@ -64,7 +64,7 @@ compiles and puts tens of KB in the always-loaded chunk
 
 **A `.slang` that fails to compile leaves its `.generated.ts` untouched**, so `tsc`
 and jest pass off the stale module. Grep the emitted WGSL for what you just wrote.
-The likeliest cause: a pass naming a packed colour uniform must `import
+The likeliest cause: a pass naming a packed color uniform must `import
 colorPack;` itself, since Slang does not re-export through an import.
 
 ## Bumping `SLANG_VERSION`

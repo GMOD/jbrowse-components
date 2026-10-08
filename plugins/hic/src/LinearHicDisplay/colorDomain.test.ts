@@ -56,7 +56,7 @@ test('with the percentile off an unset top is the largest count', () => {
   expect(maxLabel(display)).toBe('400')
 })
 
-test('the percentile is the colour domain quantile', () => {
+test('the percentile is the color domain quantile', () => {
   const display = loaded()
   expect(display.configuration.color.domainQuantile).toBe(0.95)
   expect(display.rpcProps().quantile).toBe(0.95)

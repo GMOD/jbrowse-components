@@ -18,7 +18,7 @@ import type { ReadColorOpts } from './colorUtils.ts'
 // relayout, no worker round trip.
 //
 // A PURE PER-READ BAKE, and nothing else. The frame pass that rewrites
-// `readChainHasSupp` reads neither the colour scheme nor the tag map, so it runs
+// `readChainHasSupp` reads neither the color scheme nor the tag map, so it runs
 // ahead of this in `applyChainStrandFrames` (groupLayout), memoized on what it
 // depends on.
 export function overlayReadColorCategories(

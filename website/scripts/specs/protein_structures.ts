@@ -7,8 +7,8 @@ import type { ScreenshotSpec } from '../screenshot-spec-types.ts'
 // core domain (1TUP) and the p53 peptide on MDM2 (1YCR), each mapped to the
 // same RefSeq transcript. `structures` on LaunchView-ProteinView builds the
 // session from one link, genome view left, protein view right. The mapped-chain
-// colour scheme paints the chain the transcript encodes and greys the rest;
-// protein3d releases before it coerce the name to the default chain colouring.
+// color scheme paints the chain the transcript encodes and greys the rest;
+// protein3d releases before it coerce the name to the default chain coloring.
 const R248_CODON = 'chr17:7,674,219-7,674,221'
 const GENES = 'hg38-ncbiRefSeq'
 
@@ -104,7 +104,7 @@ export const proteinStructuresSpecs: ScreenshotSpec[] = [
   },
   {
     // 1YCR alone, with its Mapped chain picker open. The p53 peptide, Chain B,
-    // is checked, so it is the one coloured chain on grey MDM2.
+    // is checked, so it is the one colored chain on grey MDM2.
     mode: 'url',
     name: 'protein/tp53_mapped_chain',
     url: tp53Session({

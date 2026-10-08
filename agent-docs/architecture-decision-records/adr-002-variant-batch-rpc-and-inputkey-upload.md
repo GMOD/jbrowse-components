@@ -98,7 +98,7 @@ executeVariantCellData
   └─ perRegionCellData computed per-region using the globals above
 ```
 
-`maxPloidy` determines how many rows are allocated per sample and what colour
+`maxPloidy` determines how many rows are allocated per sample and what color
 scale is used. If it were computed per-region and the regions disagreed, the UI
 would render inconsistently. The global pass must complete before any
 `VariantCellData` is finalised, which ties the results together into one

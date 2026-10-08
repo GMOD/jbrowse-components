@@ -60,7 +60,7 @@ function searchBucket(
  * "None was" is the load-bearing case, and why this reads the cell arrays rather
  * than re-deriving: a cell is absent when the sample has no genotype at the site,
  * *or* when its genotype is all-reference and `referenceDrawingMode` is 'skip'
- * (the worker's colour functions return '' and no cell is emitted). Answering
+ * (the worker's color functions return '' and no cell is emitted). Answering
  * from the same arrays the renderer draws from means the hit-test cannot disagree
  * with what is on screen — a predicate that restated the skip rule could.
  *

@@ -87,7 +87,7 @@ float snappedCellLeftPx(float x1Px, float x2Px, float widthPx) {
 // height, so the tip keeps one angle whatever the cell's width, and the rest
 // of a wide cell is solid. A tip spanning the whole width drew an 11 Mb
 // inversion in 2 px rows as a 900 px sliver whose antialiased edges read as a
-// fade from white at one breakpoint to full colour at the other
+// fade from white at one breakpoint to full color at the other
 // (popgen/in2lt_inversion). A cell no wider than it is tall is the same
 // triangle it was.
 //

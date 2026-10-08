@@ -128,7 +128,7 @@ describe('rowSlot and rowColor read a key through the table', () => {
   const row = Uint32Array.of(0, 1, 2, 3, 4)
   const all = [0, 1, 2, 3, 4]
 
-  test('without a table the key is the slot and the colour is the instance’s', () => {
+  test('without a table the key is the slot and the color is the instance’s', () => {
     expect(all.map(i => rowSlot(row, i, undefined))).toEqual(all)
     expect(rowSlot(undefined, 3, undefined)).toBe(0)
     expect(rowColor(RED, row, 2, undefined)).toBe(RED)

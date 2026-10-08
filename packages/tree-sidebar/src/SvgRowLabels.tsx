@@ -56,8 +56,8 @@ export function SvgRowLabels({
   const fontSize = rowLabelFontSize(rowHeight, text)
   const separator = alpha(palette.text.primary, 0.12)
   const textFits = rowLabelsCarryText(rowHeight)
-  // Without a colour there is nothing left once the text is gone, so a track
-  // whose rows carry no colour draws nothing rather than a bare stripe of the
+  // Without a color there is nothing left once the text is gone, so a track
+  // whose rows carry no color draws nothing rather than a bare stripe of the
   // default background.
   const runs = textFits ? [] : colorRuns(sources)
 

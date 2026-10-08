@@ -540,7 +540,7 @@ describe('the ribbon marks on the GPU', () => {
     expect(hal.callsOf('beginFrame').map(c => c.args)).toEqual([[1, 1, 1, 1]])
   })
 
-  test('a dark band clears to its own colour', () => {
+  test('a dark band clears to its own color', () => {
     const { hal } = gpuFrame(
       new Map(),
       makeState([], { groundColor: '#121212' }),

@@ -4812,7 +4812,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "x-closed": true,
           "properties": {
             "value": {
-              "description": "CSS colour or jexl callback.",
+              "description": "CSS color or jexl callback.",
               "if": {
                 "type": "null"
               },
@@ -4821,7 +4821,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               }
             },
             "field": {
-              "description": "a feature field, or a jexl expression over feature, whose values each paint one range colour with a key; a transcript and its parts paint the transcript's value, or its gene's where the transcript has none; strand paints forward tomato and reverse cornflowerblue unless domain or range says otherwise.",
+              "description": "a feature field, or a jexl expression over feature, whose values each paint one range color with a key; a transcript and its parts paint the transcript's value, or its gene's where the transcript has none; strand paints forward tomato and reverse cornflowerblue unless domain or range says otherwise.",
               "default": "",
               "if": {
                 "type": "null"
@@ -4831,7 +4831,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               }
             },
             "scale": {
-              "description": "none paints value and keeps the field for a switch back; categorical a range colour per value of field; threshold a range colour per interval between the cut points in domain; linear or log a colour along a ramp from domainMin to domainMax; identity paints each feature's own colour, as none does, and the key names the colours in domain; unset is linear for score and categorical for any other field.",
+              "description": "none paints value and keeps the field for a switch back; categorical a range color per value of field; threshold a range color per interval between the cut points in domain; linear or log a color along a ramp from domainMin to domainMax; identity paints each feature's own color, as none does, and the key names the colors in domain; unset is linear for score and categorical for any other field.",
               "if": {
                 "type": "null"
               },
@@ -4847,7 +4847,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               }
             },
             "domain": {
-              "description": "the values that take the range first, in order; a value left out takes a colour no listed value or value met before it paints, the first time the track shows it, and keeps it. Under threshold, the ascending cut points, a value on a cut taking the interval above it. Under identity, the CSS colours the key names, in order.",
+              "description": "the values that take the range first, in order; a value left out takes a color no listed value or value met before it paints, the first time the track shows it, and keeps it. Under threshold, the ascending cut points, a value on a cut taking the interval above it. Under identity, the CSS colors the key names, in order.",
               "if": {
                 "type": "null"
               },
@@ -4870,7 +4870,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               }
             },
             "range": {
-              "description": "CSS colours the domain takes, in order, continuing into the default palette past its end; under threshold one per interval, one more than the cuts; under linear or log the ramp's stops, winning over scheme.",
+              "description": "CSS colors the domain takes, in order, continuing into the default palette past its end; under threshold one per interval, one more than the cuts; under linear or log the ramp's stops, winning over scheme.",
               "if": {
                 "type": "null"
               },
@@ -4905,7 +4905,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               }
             },
             "scheme": {
-              "description": "a named ramp for a linear or log scale; range's colours, where it lists any, win over it.",
+              "description": "a named ramp for a linear or log scale; range's colors, where it lists any, win over it.",
               "if": {
                 "type": "null"
               },
@@ -4926,7 +4926,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               }
             },
             "reverse": {
-              "description": "turns a linear or log scale's ramp round, so its last colour paints the bottom of the domain.",
+              "description": "turns a linear or log scale's ramp round, so its last color paints the bottom of the domain.",
               "default": false,
               "if": {
                 "type": "null"
@@ -4936,7 +4936,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               }
             },
             "domainMid": {
-              "description": "the value the ramp's middle stop sits at, so a diverging ramp centres somewhere other than the middle of the domain, both sides on one scale: the farther end of the domain reaches its end colour and equal distances from the middle take equal colours; unset, the stops are evenly spaced across it.",
+              "description": "the value the ramp's middle stop sits at, so a diverging ramp centres somewhere other than the middle of the domain, both sides on one scale: the farther end of the domain reaches its end color and equal distances from the middle take equal colors; unset, the stops are evenly spaced across it.",
               "if": {
                 "type": "null"
               },
@@ -5664,7 +5664,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "x-closed": true,
           "properties": {
             "field": {
-              "description": "the row attribute whose values take the colours: name, the row itself, or an attribute the rows carry, such as a column of a multi-sample variant adapter's samplesTsvLocation, e.g. population, or a subtrack's group.",
+              "description": "the row attribute whose values take the colors: name, the row itself, or an attribute the rows carry, such as a column of a multi-sample variant adapter's samplesTsvLocation, e.g. population, or a subtrack's group.",
               "default": "name",
               "if": {
                 "type": "null"
@@ -5674,7 +5674,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               }
             },
             "domain": {
-              "description": "the field's values given a colour of their own, in order: under name, rows by name.",
+              "description": "the field's values given a color of their own, in order: under name, rows by name.",
               "if": {
                 "type": "null"
               },
@@ -5697,7 +5697,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               }
             },
             "range": {
-              "description": "the CSS colour each value in domain takes, in the same order.",
+              "description": "the CSS color each value in domain takes, in the same order.",
               "if": {
                 "type": "null"
               },
@@ -5709,7 +5709,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               }
             },
             "unknown": {
-              "description": "what a value domain does not list takes: unset the next palette colour where the display deals one, a colour that colour, \\"\\" none from this setting.",
+              "description": "what a value domain does not list takes: unset the next palette color where the display deals one, a color that color, \\"\\" none from this setting.",
               "if": {
                 "type": "null"
               },
@@ -6019,7 +6019,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "x-closed": true,
           "properties": {
             "value": {
-              "description": "CSS colour of a read no field paints.",
+              "description": "CSS color of a read no field paints.",
               "if": {
                 "type": "null"
               },
@@ -6028,7 +6028,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               }
             },
             "field": {
-              "description": "what colours a read: strand, firstOfPairStrand, pairOrientation, insertSize, insertSizeAndOrientation, mateRefName and mapq paint their own vocabulary or ramp; tags.XX reads a SAM tag and any other name a feature attribute.",
+              "description": "what colors a read: strand, firstOfPairStrand, pairOrientation, insertSize, insertSizeAndOrientation, mateRefName and mapq paint their own vocabulary or ramp; tags.XX reads a SAM tag and any other name a feature attribute.",
               "default": "",
               "if": {
                 "type": "null"
@@ -6038,7 +6038,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               }
             },
             "scale": {
-              "description": "none paints value and keeps the field for a switch back; categorical a range colour per value; linear a ramp over a numeric tag or attribute between domainMin and domainMax; threshold the bins domain cuts; unset, threshold over insertSize and insertSizeAndOrientation and categorical over any other field.",
+              "description": "none paints value and keeps the field for a switch back; categorical a range color per value; linear a ramp over a numeric tag or attribute between domainMin and domainMax; threshold the bins domain cuts; unset, threshold over insertSize and insertSizeAndOrientation and categorical over any other field.",
               "if": {
                 "type": "null"
               },
@@ -6103,7 +6103,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               }
             },
             "range": {
-              "description": "CSS colours a categorical scale hands its domain in order, or with no domain a preset field's levels in their own order, a threshold scale its bins, or a linear scale's stops, evenly spaced; a level left out keeps its default; empty is the field's own colours, the tag palette or viridis.",
+              "description": "CSS colors a categorical scale hands its domain in order, or with no domain a preset field's levels in their own order, a threshold scale its bins, or a linear scale's stops, evenly spaced; a level left out keeps its default; empty is the field's own colors, the tag palette or viridis.",
               "if": {
                 "type": "null"
               },
@@ -6115,7 +6115,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               }
             },
             "scheme": {
-              "description": "a named ramp for a linear or log scale; range's colours, where it lists any, win over it.",
+              "description": "a named ramp for a linear or log scale; range's colors, where it lists any, win over it.",
               "if": {
                 "type": "null"
               },
@@ -6136,7 +6136,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               }
             },
             "reverse": {
-              "description": "turns a linear or log scale's ramp round, so its last colour paints the bottom of the domain.",
+              "description": "turns a linear or log scale's ramp round, so its last color paints the bottom of the domain.",
               "default": false,
               "if": {
                 "type": "null"
@@ -6146,7 +6146,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               }
             },
             "domainMid": {
-              "description": "the value the ramp's middle stop sits at, so a diverging ramp centres somewhere other than the middle of the domain, both sides on one scale: the farther end of the domain reaches its end colour and equal distances from the middle take equal colours; unset, the stops are evenly spaced across it.",
+              "description": "the value the ramp's middle stop sits at, so a diverging ramp centres somewhere other than the middle of the domain, both sides on one scale: the farther end of the domain reaches its end color and equal distances from the middle take equal colors; unset, the stops are evenly spaced across it.",
               "if": {
                 "type": "null"
               },
@@ -6253,7 +6253,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "x-closed": true,
       "properties": {
         "threshold": {
-          "description": "hide a call whose probability is under this percent in the by-type view; the two-colour view cuts at 50 and the methylation fill paints every cytosine.",
+          "description": "hide a call whose probability is under this percent in the by-type view; the two-color view cuts at 50 and the methylation fill paints every cytosine.",
           "default": 10,
           "if": {
             "type": "null"
@@ -6263,7 +6263,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           }
         },
         "twoColor": {
-          "description": "paint the unmodified side blue as well as the modified side its colour, under modifications and bisulfite alike.",
+          "description": "paint the unmodified side blue as well as the modified side its color, under modifications and bisulfite alike.",
           "default": false,
           "if": {
             "type": "null"
@@ -6472,7 +6472,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               }
             },
             "color": {
-              "description": "line and label colour; unset is the chrome’s own.",
+              "description": "line and label color; unset is the chrome’s own.",
               "if": {
                 "type": "null"
               },
@@ -7331,7 +7331,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "x-closed": true,
           "properties": {
             "value": {
-              "description": "CSS colour or jexl callback for every chord.",
+              "description": "CSS color or jexl callback for every chord.",
               "default": "rgba(255,133,0,0.32)",
               "if": {
                 "type": "null"
@@ -7341,7 +7341,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               }
             },
             "field": {
-              "description": "a record field, svType say, or a jexl expression over feature, whose values each paint one range colour with a key.",
+              "description": "a record field, svType say, or a jexl expression over feature, whose values each paint one range color with a key.",
               "default": "",
               "if": {
                 "type": "null"
@@ -7351,7 +7351,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               }
             },
             "scale": {
-              "description": "none paints value and keeps the field for a switch back; categorical a range colour per value of field; threshold a range colour per interval between the cut points in domain; unset follows field.",
+              "description": "none paints value and keeps the field for a switch back; categorical a range color per value of field; threshold a range color per interval between the cut points in domain; unset follows field.",
               "if": {
                 "type": "null"
               },
@@ -7387,7 +7387,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               }
             },
             "range": {
-              "description": "CSS colours the domain takes, in order, continuing into the default palette past its end; under threshold one per interval, one more than the cuts.",
+              "description": "CSS colors the domain takes, in order, continuing into the default palette past its end; under threshold one per interval, one more than the cuts.",
               "if": {
                 "type": "null"
               },
@@ -7470,7 +7470,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           }
         },
         "opacity": {
-          "description": "the alpha every resting chord draws at, over its colour's own.",
+          "description": "the alpha every resting chord draws at, over its color's own.",
           "default": 1,
           "if": {
             "type": "null"
@@ -7688,7 +7688,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "x-closed": true,
           "properties": {
             "value": {
-              "description": "CSS colour of a read no field paints.",
+              "description": "CSS color of a read no field paints.",
               "if": {
                 "type": "null"
               },
@@ -7697,7 +7697,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               }
             },
             "field": {
-              "description": "what colours a read: strand, firstOfPairStrand, pairOrientation, insertSize, insertSizeAndOrientation, mateRefName and mapq paint their own vocabulary or ramp; tags.XX reads a SAM tag and any other name a feature attribute.",
+              "description": "what colors a read: strand, firstOfPairStrand, pairOrientation, insertSize, insertSizeAndOrientation, mateRefName and mapq paint their own vocabulary or ramp; tags.XX reads a SAM tag and any other name a feature attribute.",
               "default": "strand",
               "if": {
                 "type": "null"
@@ -7707,7 +7707,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               }
             },
             "scale": {
-              "description": "none paints value and keeps the field for a switch back; categorical a range colour per value; linear a ramp over a numeric tag or attribute between domainMin and domainMax; threshold the bins domain cuts; unset, threshold over insertSize and insertSizeAndOrientation and categorical over any other field.",
+              "description": "none paints value and keeps the field for a switch back; categorical a range color per value; linear a ramp over a numeric tag or attribute between domainMin and domainMax; threshold the bins domain cuts; unset, threshold over insertSize and insertSizeAndOrientation and categorical over any other field.",
               "if": {
                 "type": "null"
               },
@@ -7772,7 +7772,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               }
             },
             "range": {
-              "description": "CSS colours a categorical scale hands its domain in order, or with no domain a preset field's levels in their own order, a threshold scale its bins, or a linear scale's stops, evenly spaced; a level left out keeps its default; empty is the field's own colours, the tag palette or viridis.",
+              "description": "CSS colors a categorical scale hands its domain in order, or with no domain a preset field's levels in their own order, a threshold scale its bins, or a linear scale's stops, evenly spaced; a level left out keeps its default; empty is the field's own colors, the tag palette or viridis.",
               "if": {
                 "type": "null"
               },
@@ -7784,7 +7784,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               }
             },
             "scheme": {
-              "description": "a named ramp for a linear or log scale; range's colours, where it lists any, win over it.",
+              "description": "a named ramp for a linear or log scale; range's colors, where it lists any, win over it.",
               "if": {
                 "type": "null"
               },
@@ -7805,7 +7805,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               }
             },
             "reverse": {
-              "description": "turns a linear or log scale's ramp round, so its last colour paints the bottom of the domain.",
+              "description": "turns a linear or log scale's ramp round, so its last color paints the bottom of the domain.",
               "default": false,
               "if": {
                 "type": "null"
@@ -7815,7 +7815,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               }
             },
             "domainMid": {
-              "description": "the value the ramp's middle stop sits at, so a diverging ramp centres somewhere other than the middle of the domain, both sides on one scale: the farther end of the domain reaches its end colour and equal distances from the middle take equal colours; unset, the stops are evenly spaced across it.",
+              "description": "the value the ramp's middle stop sits at, so a diverging ramp centres somewhere other than the middle of the domain, both sides on one scale: the farther end of the domain reaches its end color and equal distances from the middle take equal colors; unset, the stops are evenly spaced across it.",
               "if": {
                 "type": "null"
               },
@@ -8530,7 +8530,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "x-closed": true,
           "properties": {
             "value": {
-              "description": "CSS colour or jexl callback.",
+              "description": "CSS color or jexl callback.",
               "if": {
                 "type": "null"
               },
@@ -8539,7 +8539,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               }
             },
             "field": {
-              "description": "a feature field, or a jexl expression over feature, whose values each paint one range colour with a key; cluster paints a gene by the ortholog group it carries and a placement box by its own.",
+              "description": "a feature field, or a jexl expression over feature, whose values each paint one range color with a key; cluster paints a gene by the ortholog group it carries and a placement box by its own.",
               "default": "",
               "if": {
                 "type": "null"
@@ -8549,7 +8549,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               }
             },
             "scale": {
-              "description": "none paints value and keeps the field for a switch back; categorical a range colour per value of field; threshold a range colour per interval between the cut points in domain; unset follows field.",
+              "description": "none paints value and keeps the field for a switch back; categorical a range color per value of field; threshold a range color per interval between the cut points in domain; unset follows field.",
               "if": {
                 "type": "null"
               },
@@ -8562,7 +8562,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               }
             },
             "domain": {
-              "description": "the values that take the range first, in order; a value left out takes a colour no listed value or value met before it paints, the first time the track shows it, and keeps it. Under threshold, the ascending cut points, a value on a cut taking the interval above it.",
+              "description": "the values that take the range first, in order; a value left out takes a color no listed value or value met before it paints, the first time the track shows it, and keeps it. Under threshold, the ascending cut points, a value on a cut taking the interval above it.",
               "if": {
                 "type": "null"
               },
@@ -8585,7 +8585,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               }
             },
             "range": {
-              "description": "CSS colours the domain takes, in order, continuing into the default palette past its end; under threshold one per interval, one more than the cuts.",
+              "description": "CSS colors the domain takes, in order, continuing into the default palette past its end; under threshold one per interval, one more than the cuts.",
               "if": {
                 "type": "null"
               },
@@ -8771,7 +8771,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               }
             },
             "field": {
-              "description": "what colours a ribbon: strand reads the relative strand between the two lanes the ribbon joins (the two placements' orientations multiplied out, not the drawn twist, so a flipped lane still shows its inversions); identity, mapq and dnds paint the synteny view's ramps; any other name is a column the table declares in attributeColumns, a ramp over the values seen for numbers and one colour per label for text (or the colour a color column put beside it).",
+              "description": "what colors a ribbon: strand reads the relative strand between the two lanes the ribbon joins (the two placements' orientations multiplied out, not the drawn twist, so a flipped lane still shows its inversions); identity, mapq and dnds paint the synteny view's ramps; any other name is a column the table declares in attributeColumns, a ramp over the values seen for numbers and one color per label for text (or the color a color column put beside it).",
               "default": "",
               "if": {
                 "type": "null"
@@ -8790,7 +8790,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               }
             },
             "domain": {
-              "description": "a text column's labels that take the palette first, in order, and lead the key, the rest following sorted; a label left out takes a colour no listed label or label met before it paints, the first time the view meets it, and keeps it.",
+              "description": "a text column's labels that take the palette first, in order, and lead the key, the rest following sorted; a label left out takes a color no listed label or label met before it paints, the first time the view meets it, and keeps it.",
               "if": {
                 "type": "null"
               },
@@ -8813,7 +8813,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               }
             },
             "range": {
-              "description": "CSS colours a text column's labels take, in domain order, continuing into the default palette past its end; with no domain, each label takes one of them by its name; on a ramp (identity, mapq, dnds or a numeric column), its stops, evenly spaced, in place of the field's own.",
+              "description": "CSS colors a text column's labels take, in domain order, continuing into the default palette past its end; with no domain, each label takes one of them by its name; on a ramp (identity, mapq, dnds or a numeric column), its stops, evenly spaced, in place of the field's own.",
               "if": {
                 "type": "null"
               },
@@ -8825,7 +8825,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               }
             },
             "scheme": {
-              "description": "a named ramp for a linear or log scale; range's colours, where it lists any, win over it.",
+              "description": "a named ramp for a linear or log scale; range's colors, where it lists any, win over it.",
               "if": {
                 "type": "null"
               },
@@ -8846,7 +8846,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               }
             },
             "reverse": {
-              "description": "turns a linear or log scale's ramp round, so its last colour paints the bottom of the domain.",
+              "description": "turns a linear or log scale's ramp round, so its last color paints the bottom of the domain.",
               "default": false,
               "if": {
                 "type": "null"
@@ -8856,7 +8856,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               }
             },
             "domainMid": {
-              "description": "the value the ramp's middle stop sits at, so a diverging ramp centres somewhere other than the middle of the domain, both sides on one scale: the farther end of the domain reaches its end colour and equal distances from the middle take equal colours; unset, the stops are evenly spaced across it.",
+              "description": "the value the ramp's middle stop sits at, so a diverging ramp centres somewhere other than the middle of the domain, both sides on one scale: the farther end of the domain reaches its end color and equal distances from the middle take equal colors; unset, the stops are evenly spaced across it.",
               "if": {
                 "type": "null"
               },
@@ -8979,7 +8979,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "x-closed": true,
           "properties": {
             "value": {
-              "description": "CSS colour or jexl callback; unset is the default blue.",
+              "description": "CSS color or jexl callback; unset is the default blue.",
               "if": {
                 "type": "null"
               },
@@ -8998,7 +8998,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               }
             },
             "scale": {
-              "description": "how field becomes a colour: categorical hands out range colours per distinct value; linear and log read the value between domainMin and domainMax into a ramp; threshold cuts the value at the domain and hands each interval a range colour; none paints value, keeping a field for a switch back; unset is linear for score and categorical for any other field.",
+              "description": "how field becomes a color: categorical hands out range colors per distinct value; linear and log read the value between domainMin and domainMax into a ramp; threshold cuts the value at the domain and hands each interval a range color; none paints value, keeping a field for a switch back; unset is linear for score and categorical for any other field.",
               "if": {
                 "type": "null"
               },
@@ -9013,7 +9013,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               }
             },
             "domain": {
-              "description": "for a categorical scale, the values in legend order, walking the range from the first entry and continuing into the default palette past its end (a value left out derives its colour from itself and never takes a listed value's, so every region agrees); for a threshold scale, the cut points in ascending order, a value taking the range entry for the number of them it is at or past, so range has one entry more than this; a linear or log scale reads domainMin and domainMax instead.",
+              "description": "for a categorical scale, the values in legend order, walking the range from the first entry and continuing into the default palette past its end (a value left out derives its color from itself and never takes a listed value's, so every region agrees); for a threshold scale, the cut points in ascending order, a value taking the range entry for the number of them it is at or past, so range has one entry more than this; a linear or log scale reads domainMin and domainMax instead.",
               "if": {
                 "type": "null"
               },
@@ -9064,7 +9064,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               }
             },
             "range": {
-              "description": "CSS colours a categorical scale hands its domain in order, a threshold scale its intervals, or a linear or log scale's ramp as evenly spaced stops; empty is the default palette, or the scheme.",
+              "description": "CSS colors a categorical scale hands its domain in order, a threshold scale its intervals, or a linear or log scale's ramp as evenly spaced stops; empty is the default palette, or the scheme.",
               "if": {
                 "type": "null"
               },
@@ -9099,7 +9099,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               }
             },
             "scheme": {
-              "description": "a named ramp for a linear or log scale; range's colours, where it lists any, win over it.",
+              "description": "a named ramp for a linear or log scale; range's colors, where it lists any, win over it.",
               "if": {
                 "type": "null"
               },
@@ -9120,7 +9120,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               }
             },
             "reverse": {
-              "description": "turns a linear or log scale's ramp round, so its last colour paints the bottom of the domain.",
+              "description": "turns a linear or log scale's ramp round, so its last color paints the bottom of the domain.",
               "default": false,
               "if": {
                 "type": "null"
@@ -9130,7 +9130,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               }
             },
             "domainMid": {
-              "description": "the value the ramp's middle stop sits at, so a diverging ramp centres somewhere other than the middle of the domain, both sides on one scale: the farther end of the domain reaches its end colour and equal distances from the middle take equal colours; unset, the stops are evenly spaced across it.",
+              "description": "the value the ramp's middle stop sits at, so a diverging ramp centres somewhere other than the middle of the domain, both sides on one scale: the farther end of the domain reaches its end color and equal distances from the middle take equal colors; unset, the stops are evenly spaced across it.",
               "if": {
                 "type": "null"
               },
@@ -11050,7 +11050,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "x-closed": true,
           "properties": {
             "value": {
-              "description": "CSS colour or jexl callback for every alt cell.",
+              "description": "CSS color or jexl callback for every alt cell.",
               "if": {
                 "type": "null"
               },
@@ -11059,7 +11059,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               }
             },
             "field": {
-              "description": "impact, the most severe SnpEff/VEP consequence tier; svType, the structural-variant class; phaseSet, the FORMAT PS block in phased mode; or any record field, INFO.CLNSIG say, or a jexl expression over feature, whose values each paint one range colour with a key. A record with no value keeps the default alt colour.",
+              "description": "impact, the most severe SnpEff/VEP consequence tier; svType, the structural-variant class; phaseSet, the FORMAT PS block in phased mode; or any record field, INFO.CLNSIG say, or a jexl expression over feature, whose values each paint one range color with a key. A record with no value keeps the default alt color.",
               "default": "",
               "if": {
                 "type": "null"
@@ -11069,7 +11069,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               }
             },
             "scale": {
-              "description": "none paints value and keeps the field for a switch back; categorical a range colour per value of field; threshold a range colour per interval between the cut points in domain; unset follows field.",
+              "description": "none paints value and keeps the field for a switch back; categorical a range color per value of field; threshold a range color per interval between the cut points in domain; unset follows field.",
               "if": {
                 "type": "null"
               },
@@ -11105,7 +11105,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               }
             },
             "range": {
-              "description": "CSS colours the domain takes, in order, continuing into the default palette past its end; under threshold one per interval, one more than the cuts.",
+              "description": "CSS colors the domain takes, in order, continuing into the default palette past its end; under threshold one per interval, one more than the cuts.",
               "if": {
                 "type": "null"
               },
@@ -11594,7 +11594,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               }
             },
             "domainMin": {
-              "description": "the value the bottom colour paints, everything below it too; unset is 0.",
+              "description": "the value the bottom color paints, everything below it too; unset is 0.",
               "if": {
                 "type": "null"
               },
@@ -11603,7 +11603,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               }
             },
             "domainMax": {
-              "description": "the value the top colour paints, everything above it too; unset is 1.",
+              "description": "the value the top color paints, everything above it too; unset is 1.",
               "if": {
                 "type": "null"
               },
@@ -11974,7 +11974,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "x-closed": true,
           "properties": {
             "value": {
-              "description": "CSS colour painting every bar.",
+              "description": "CSS color painting every bar.",
               "if": {
                 "type": "null"
               },
@@ -12028,7 +12028,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               }
             },
             "range": {
-              "description": "a threshold scale's colour for each band, lowest first, one more than the cuts, a missing middle band grey; a linear scale's stops, evenly spaced, one colour meaning white to it.",
+              "description": "a threshold scale's color for each band, lowest first, one more than the cuts, a missing middle band grey; a linear scale's stops, evenly spaced, one color meaning white to it.",
               "if": {
                 "type": "null"
               },
@@ -12040,7 +12040,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               }
             },
             "scheme": {
-              "description": "a named ramp for a linear or log scale; range's colours, where it lists any, win over it.",
+              "description": "a named ramp for a linear or log scale; range's colors, where it lists any, win over it.",
               "if": {
                 "type": "null"
               },
@@ -12061,7 +12061,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               }
             },
             "reverse": {
-              "description": "turns a linear or log scale's ramp round, so its last colour paints the bottom of the domain.",
+              "description": "turns a linear or log scale's ramp round, so its last color paints the bottom of the domain.",
               "default": false,
               "if": {
                 "type": "null"
@@ -12071,7 +12071,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               }
             },
             "domainMid": {
-              "description": "the value the ramp's middle stop sits at, so a diverging ramp centres somewhere other than the middle of the domain, both sides on one scale: the farther end of the domain reaches its end colour and equal distances from the middle take equal colours; unset, the stops are evenly spaced across it.",
+              "description": "the value the ramp's middle stop sits at, so a diverging ramp centres somewhere other than the middle of the domain, both sides on one scale: the farther end of the domain reaches its end color and equal distances from the middle take equal colors; unset, the stops are evenly spaced across it.",
               "if": {
                 "type": "null"
               },
@@ -12585,7 +12585,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "x-closed": true,
           "properties": {
             "field": {
-              "description": "what colours a cell: mismatch, base, identity, chromosome or codon.",
+              "description": "what colors a cell: mismatch, base, identity, chromosome or codon.",
               "default": "mismatch",
               "if": {
                 "type": "null"
@@ -12624,7 +12624,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               }
             },
             "range": {
-              "description": "CSS colours: under chromosome one per rank from the main source chromosome, the last painting every rank past it; under identity the ramp's stops, winning over scheme; the bases and the codons paint the theme's colours.",
+              "description": "CSS colors: under chromosome one per rank from the main source chromosome, the last painting every rank past it; under identity the ramp's stops, winning over scheme; the bases and the codons paint the theme's colors.",
               "if": {
                 "type": "null"
               },
@@ -12668,7 +12668,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               }
             },
             "scheme": {
-              "description": "the named ramp identity runs along; unset is redgreyblue, and range's colours, where it lists any, win over it.",
+              "description": "the named ramp identity runs along; unset is redgreyblue, and range's colors, where it lists any, win over it.",
               "if": {
                 "type": "null"
               },
@@ -12689,7 +12689,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               }
             },
             "reverse": {
-              "description": "turns the identity ramp round, so its last colour paints the low end.",
+              "description": "turns the identity ramp round, so its last color paints the low end.",
               "default": false,
               "if": {
                 "type": "null"
@@ -12717,7 +12717,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               }
             },
             "domainMid": {
-              "description": "the value the ramp's middle stop sits at, so a diverging ramp centres somewhere other than the middle of the domain, both sides on one scale: the farther end of the domain reaches its end colour and equal distances from the middle take equal colours; unset, the stops are evenly spaced across it.",
+              "description": "the value the ramp's middle stop sits at, so a diverging ramp centres somewhere other than the middle of the domain, both sides on one scale: the farther end of the domain reaches its end color and equal distances from the middle take equal colors; unset, the stops are evenly spaced across it.",
               "if": {
                 "type": "null"
               },
@@ -13654,7 +13654,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           }
         },
         "showLegend": {
-          "description": "draw the colour key.",
+          "description": "draw the color key.",
           "default": true,
           "if": {
             "type": "null"
@@ -13900,7 +13900,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           }
         },
         "showLegend": {
-          "description": "draw the colour key.",
+          "description": "draw the color key.",
           "default": true,
           "if": {
             "type": "null"
@@ -25171,7 +25171,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               }
             },
             "field": {
-              "description": "what colours an alignment: strand paints forward and reverse; query and target one colour per sequence on that side, reference one per chromosome of the anchor assembly across a stack, track one per overlaid track (pinned under Track colors); identity, mapq and dnds paint the preset ramps; any other name is a column the tracks declare in attributeColumns, a ramp over the values seen for numbers and one colour per label for text (or the colour a color column put beside it).",
+              "description": "what colors an alignment: strand paints forward and reverse; query and target one color per sequence on that side, reference one per chromosome of the anchor assembly across a stack, track one per overlaid track (pinned under Track colors); identity, mapq and dnds paint the preset ramps; any other name is a column the tracks declare in attributeColumns, a ramp over the values seen for numbers and one color per label for text (or the color a color column put beside it).",
               "default": "",
               "if": {
                 "type": "null"
@@ -25190,7 +25190,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               }
             },
             "domain": {
-              "description": "a text column's labels that take the palette first, in order, and lead the key, the rest following sorted; a label left out takes a colour no listed label or label met before it paints, the first time the view meets it, and keeps it.",
+              "description": "a text column's labels that take the palette first, in order, and lead the key, the rest following sorted; a label left out takes a color no listed label or label met before it paints, the first time the view meets it, and keeps it.",
               "if": {
                 "type": "null"
               },
@@ -25213,7 +25213,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               }
             },
             "range": {
-              "description": "CSS colours a text column's labels take, in domain order, continuing into the default palette past its end; with no domain, each label takes one of them by its name; on a ramp (identity, mapq, dnds or a numeric column), its stops, evenly spaced, in place of the field's own.",
+              "description": "CSS colors a text column's labels take, in domain order, continuing into the default palette past its end; with no domain, each label takes one of them by its name; on a ramp (identity, mapq, dnds or a numeric column), its stops, evenly spaced, in place of the field's own.",
               "if": {
                 "type": "null"
               },
@@ -25225,7 +25225,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               }
             },
             "scheme": {
-              "description": "a named ramp for a linear or log scale; range's colours, where it lists any, win over it.",
+              "description": "a named ramp for a linear or log scale; range's colors, where it lists any, win over it.",
               "if": {
                 "type": "null"
               },
@@ -25246,7 +25246,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               }
             },
             "reverse": {
-              "description": "turns a linear or log scale's ramp round, so its last colour paints the bottom of the domain.",
+              "description": "turns a linear or log scale's ramp round, so its last color paints the bottom of the domain.",
               "default": false,
               "if": {
                 "type": "null"
@@ -25256,7 +25256,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               }
             },
             "domainMid": {
-              "description": "the value the ramp's middle stop sits at, so a diverging ramp centres somewhere other than the middle of the domain, both sides on one scale: the farther end of the domain reaches its end colour and equal distances from the middle take equal colours; unset, the stops are evenly spaced across it.",
+              "description": "the value the ramp's middle stop sits at, so a diverging ramp centres somewhere other than the middle of the domain, both sides on one scale: the farther end of the domain reaches its end color and equal distances from the middle take equal colors; unset, the stops are evenly spaced across it.",
               "if": {
                 "type": "null"
               },

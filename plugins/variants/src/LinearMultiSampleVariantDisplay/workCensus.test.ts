@@ -114,7 +114,7 @@ test('what each row step recomputes, phased', async () => {
       },
     },
     {
-      name: 'recolour',
+      name: 'recolor',
       run: () => {
         const [first] = display.editableSources
         display.applyRowEdits(display.editableSources, {
@@ -160,7 +160,7 @@ test('what each row step recomputes, phased', async () => {
 // Under a Color by the palette is dealt over the samples, so a fetch that
 // re-expands the haplotypes, a reorder and a focus deal nothing again; only
 // the per-row lookup reruns.
-test('what each row step recomputes, phased and coloured by population', async () => {
+test('what each row step recomputes, phased and colored by population', async () => {
   const { display } = createTestEnvironment({
     displayConfig: { unit: 'haplotype', rowColor: 'population' },
   }).createDisplay()

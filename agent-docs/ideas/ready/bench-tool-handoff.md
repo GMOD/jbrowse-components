@@ -69,7 +69,7 @@ and `ReferenceSequenceTrack` FASTA only — the dbSNP track under a primer canno
 reach the GenBank at all. What the workflow wants is one record carrying every
 track on screen.
 
-**Feature colour has a tool-specific spelling** — SnapGene stores it in a
+**Feature color has a tool-specific spelling** — SnapGene stores it in a
 `/note` qualifier and ApE in `/ApEinfo_fwdcolor`. Reported, not verified here;
 check both against a real file before building either.
 

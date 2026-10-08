@@ -116,7 +116,7 @@ test('each row keeps its own windows', () => {
   )
 })
 
-test('the heatmap paints each run its ramp colour, and the bars stand at it', () => {
+test('the heatmap paints each run its ramp color, and the bars stand at it', () => {
   const r = buildIdentityRuns([block(100, 'ACGT', [[0, 'ACGA']])], 1)
   const spans = identitySpans(r)
   const bars = identityBars(r, false)

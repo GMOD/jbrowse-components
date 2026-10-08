@@ -322,9 +322,9 @@ const HG008_BICSEQ2_LANE = {
   height: 130,
 }
 
-// The benchmark CNV calls coloured by total copy number, with the subclonal
+// The benchmark CNV calls colored by total copy number, with the subclonal
 // lane's palette and key, so the page's two copy-number lanes read alike. The
-// hosted config's copy carries only the CN label; the colour rides here.
+// hosted config's copy carries only the CN label; the color rides here.
 const BENCHMARK_CNV_COLOR = {
   field: 'total_copy_number',
   scale: 'threshold',
@@ -733,7 +733,7 @@ export const svSpecs: ScreenshotSpec[] = [
               // minority LL/RR pairs read as bars rather than slivers -- and
               // 114 rows at that pitch is 1,140 px of pileup for a signal that
               // lives in the bottom fifth of it. At 3 the same rows are ~340,
-              // the discordant cluster is still coloured (1px would erase it,
+              // the discordant cluster is still colored (1px would erase it,
               // which is why this is Compact and not Super-compact), and the
               // whole figure fits a screen.
               //
@@ -787,7 +787,7 @@ export const svSpecs: ScreenshotSpec[] = [
     ],
     // ONE callout, and it is a LIST (review: "please simplify the red text
     // annotation even more, like a bulleted list, so it is immensely obvious").
-    // The paragraph form put the counterfactual and the colour key in the same
+    // The paragraph form put the counterfactual and the color key in the same
     // run of prose, so the reader had to parse a sentence to find each of the
     // three things the frame shows. Three bullets, one claim each, under the
     // word the call is named for -- which is where INVdup lives now that the
@@ -824,7 +824,7 @@ export const svSpecs: ScreenshotSpec[] = [
         // (`#color alignments-pair-orientation` on colorPairLL/colorPairRR,
         // rendered as a table in sv_visualization.md) and the schematic above
         // this figure carries them too, so a reader crossing from the guide to
-        // the pileup meets one name for each colour. Magenta is
+        // the pileup meets one name for each color. Magenta is
         // colorSplitReadInversion, whose condition is a supplementary segment
         // on the opposite strand to its primary -- SA is the tag that records
         // it, and "SA segment" is both shorter than the paraphrase and the term
@@ -957,10 +957,10 @@ export const svSpecs: ScreenshotSpec[] = [
               height: 620,
               coverageHeight: 70,
               color: { field: 'pairOrientation' },
-              // THE KEY TO THE COLOURS (reviewer: "show legend"). The figure's
+              // THE KEY TO THE COLORS (reviewer: "show legend"). The figure's
               // whole claim is a strand flip -- the reverse core painting a
-              // different colour between its forward flanks -- and the legend
-              // is the only thing on screen that says which colour is which
+              // different color between its forward flanks -- and the legend
+              // is the only thing on screen that says which color is which
               // strand. Same opt-in as inverted_duplication above, which shows
               // the short-read half of the same event.
               showLegend: true,
@@ -988,7 +988,7 @@ export const svSpecs: ScreenshotSpec[] = [
     //
     // 1400, down from 1800 (reviewer: "decrease width of browser"). The width
     // was spent on the 5.5 kb window, so a read's forward flank / reverse core
-    // / forward flank drew as three wide blocks — but the flip is a colour
+    // / forward flank drew as three wide blocks — but the flip is a color
     // change at a fixed pair of breakpoints, and the legend the same review
     // asked for is what names it, so the blocks do not have to be wide to be
     // read. The narrower frame also publishes at a larger scale on the page,

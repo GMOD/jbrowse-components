@@ -19,7 +19,7 @@ test('cut points parse commas or spaces, ascending', () => {
   expect(parseCuts('0.01, rare')).toBeUndefined()
 })
 
-test('cuts make a threshold, none a colour per value', () => {
+test('cuts make a threshold, none a color per value', () => {
   expect(cellColorOfField('INFO.CLNSIG', [])).toEqual({ field: 'INFO.CLNSIG' })
   expect(cellColorOfField('INFO.AF', [0.001, 0.01])).toEqual({
     field: 'INFO.AF',

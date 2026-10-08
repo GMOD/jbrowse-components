@@ -149,7 +149,7 @@ export interface Deps {
 // The forms `isCssColor` parses, as one alternation: JSON Schema patterns carry
 // no case flag, so each word is spelled letter by letter. A functional form
 // takes three to five arguments, each a number or `none`, and `color()` a
-// colour space before them, as `color-bits/parse.ts` does; a triple's
+// color space before them, as `color-bits/parse.ts` does; a triple's
 // components stop at 255, as the parser's do.
 function cssColorForms(names: readonly string[]) {
   const anyCase = (word: string) =>

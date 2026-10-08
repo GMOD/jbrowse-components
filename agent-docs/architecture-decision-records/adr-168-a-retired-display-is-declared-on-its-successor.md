@@ -87,12 +87,12 @@ an explicit id.
 - `LinearMultiSampleVariantDisplay`: `MultiLinearVariantDisplay`, and
   `LinearVariantMatrixDisplay` in columns; the arrangement, the sidebar and
   `jexlFilters`. A v4
-  layout's colours stay behind, since the colorBy palette wrote them.
+  layout's colors stay behind, since the colorBy palette wrote them.
 - `LinearWiggleDisplay`: `MultiLinearWiggleDisplay`, v4.3.0's rendering names
   and the `multixyplot` hosted jb2hubs configs carry folded into a plot and
   `rows` (amended 2026-09-26: the betas' other names went, and jb2hubs writes
   `xyplot` now); the v4 plot, scale,
-  autoscale, domain, colours, summary mode, cross-hatches and resolution; the
+  autoscale, domain, colors, summary mode, cross-hatches and resolution; the
   arrangement and the sidebar.
 - `LinearMafDisplay`: `treeAreaWidth` and `subtreeFilter`, which
   jbrowse-plugin-mafviewer wrote. Amended 2026-09-26: the multi-row display's
@@ -108,11 +108,11 @@ live display.
   `migratedDisplayInstanceKeys(pluginManager)` reads the declarations for
   `jbrowse validate`. The alignments migration lives in the alignments plugin.
 - A v4 session naming `MultiLinearWiggleDisplay` opens the track in its layout,
-  plot, order, labels and colours. A clustered v4 VCF opens with its order,
+  plot, order, labels and colors. A clustered v4 VCF opens with its order,
   tree and focus.
 - Still not carried: v4 wiggle `fill`, `minSize`, `invertedSetting` and
   `showSidebar`; an autoscale mode v5 dropped; a v4 variant row's hand-set
-  colour; the v4 variant settings besides the arrangement and filters, which
+  color; the v4 variant settings besides the arrangement and filters, which
   load at their defaults; a pileup's `jexlFilters`, since the alignments
   display filters by `filterBy` alone; and a `Start location` sort, which was
   the default order. A pileup's `Read strand`, `Base pair` and tag sort carries

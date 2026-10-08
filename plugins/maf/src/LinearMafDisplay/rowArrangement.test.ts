@@ -312,7 +312,7 @@ describe('the declared `rows.domain` seeds the row order', () => {
 // it "the row's color". It is the row's own `color`, and so its resolved
 // `rowColor`, which the label bar draws on screen and in the SVG export.
 describe('the configured per-sample color reaches the sidebar', () => {
-  it('lands as the row colour, and so on the label bar', () => {
+  it('lands as the row color, and so on the label bar', () => {
     const { display } = createMafTestEnvironment().createDisplay()
     display.setSamples({
       samples: [
@@ -338,7 +338,7 @@ describe('the configured per-sample color reaches the sidebar', () => {
   })
 })
 
-describe('rowColor tints a row over the adapter colour', () => {
+describe('rowColor tints a row over the adapter color', () => {
   const SAMPLES = [
     { id: 'hg38', label: 'Human', color: 'red' },
     { id: 'mm10', label: 'Mouse' },
@@ -359,13 +359,13 @@ describe('rowColor tints a row over the adapter colour', () => {
   const tints = (display: { sources: { rowColor?: string }[] }) =>
     display.sources.map(s => s.rowColor)
 
-  it('paints a declared entry ahead of the adapter colour', () => {
+  it('paints a declared entry ahead of the adapter color', () => {
     const display = tinted({ domain: ['hg38'], range: ['#00ff00'] })
     expect(tints(display)).toEqual(['#00ff00', undefined])
     expect(display.rowArrangementIsCustom).toBe(false)
   })
 
-  it('writes the colours submitted over the declared ones, and a reset returns', () => {
+  it('writes the colors submitted over the declared ones, and a reset returns', () => {
     const display = tinted({ domain: ['hg38'], range: ['#00ff00'] })
     display.applyRowEdits(display.editableSources, {
       domain: ['hg38', 'mm10'],
@@ -381,7 +381,7 @@ describe('rowColor tints a row over the adapter colour', () => {
     expect(display.rowArrangementIsCustom).toBe(false)
   })
 
-  it('offers a reset for a recolour alone', () => {
+  it('offers a reset for a recolor alone', () => {
     const display = tinted()
     setConf(display, ['rowColor', 'domain'], ['mm10'])
     setConf(display, ['rowColor', 'range'], ['#0000ff'])

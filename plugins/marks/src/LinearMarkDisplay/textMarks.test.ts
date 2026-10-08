@@ -114,7 +114,7 @@ function place(
   )
 }
 
-test('a label stands over the middle of its span, just above its value, in its colour', () => {
+test('a label stands over the middle of its span, just above its value, in its color', () => {
   const [label] = place(
     [entry('text')],
     [textLayer([[100, 300]], ['geneA'], { y: Float32Array.from([50]) })],
@@ -132,7 +132,7 @@ test('a label stands over the middle of its span, just above its value, in its c
   expect(label!.width).toBe(measureText('geneA', FONT.size, FONT.family))
 })
 
-test('a constant colour, one number for the layer, prints every label in it', () => {
+test('a constant color, one number for the layer, prints every label in it', () => {
   const labels = place(
     [entry('text')],
     [
@@ -152,7 +152,7 @@ test('a constant colour, one number for the layer, prints every label in it', ()
   ])
 })
 
-test('a mark whose colour the config leaves at the default prints in the text colour', () => {
+test('a mark whose color the config leaves at the default prints in the text color', () => {
   const [label] = place(
     [entry('text', { ownColor: false })],
     [textLayer([[100, 300]], ['geneA'], { y: Float32Array.from([50]) })],

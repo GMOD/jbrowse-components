@@ -23,7 +23,7 @@ d <- fromJSON(file.path(here, paste0(basename, ".json")))
 d$jsMB <- d$jsBytes / 1024 / 1024
 
 # Released versions (vX.Y.Z) sort by semver; any non-semver label (the local
-# build) is pinned to the right edge. Major release drives the colour band.
+# build) is pinned to the right edge. Major release drives the color band.
 semver <- grepl("^v\\d+\\.\\d+\\.\\d+$", d$version)
 key <- ifelse(semver,
   sprintf("%03d%03d%03d",

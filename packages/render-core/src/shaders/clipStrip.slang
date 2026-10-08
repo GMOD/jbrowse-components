@@ -10,7 +10,7 @@ module clipStrip;
 import scoreScale;
 
 public static const float CLIP_STRIP_PX = 2.0;
-// #c62828, packed ABGR as every instance colour is: a red a shade darker than
+// #c62828, packed ABGR as every instance color is: a red a shade darker than
 // the coverage band's hard-clip triangles, which stand just above the strip.
 public static const uint CLIP_STRIP_COLOR = 0xFF2828C6u;
 

@@ -1,6 +1,6 @@
 ---
 name: one-row-model-for-displays-that-stack-by-a-key
-description: The eight displays that stack features by a key — sections on the feature, mark and alignments displays, rows on wiggle, multi-row, the two multi-sample variant displays and MAF — converge on one row model with two config objects, `facet` for labelled bands and `rows` for one row per value. Arrangement, focus and hidden bands are config written as session deltas; one derivation builds every display's rows. Reviewed three times; the order of work and what each step replaces. Read before touching a row display's order, colour, grouping or tree.
+description: The eight displays that stack features by a key — sections on the feature, mark and alignments displays, rows on wiggle, multi-row, the two multi-sample variant displays and MAF — converge on one row model with two config objects, `facet` for labelled bands and `rows` for one row per value. Arrangement, focus and hidden bands are config written as session deltas; one derivation builds every display's rows. Reviewed three times; the order of work and what each step replaces. Read before touching a row display's order, color, grouping or tree.
 ---
 
 # One row model for displays that stack by a key
@@ -10,9 +10,9 @@ displays split features into labelled **sections** that each pack their own
 rows. Wiggle, multi-row, the two multi-sample variant displays and MAF draw one
 **row** per key, with the tree sidebar beside them. The drawing is already
 shared (`packages/tree-sidebar`, `GroupLabelChips`); the row model is not. Each
-display builds its own row list and spells key, order, colour, bands and hiding
+display builds its own row list and spells key, order, color, bands and hiding
 its own way — `facet` names sections on three displays, bands of rows on the
-variant displays and the rows themselves on wiggle, and row colour is written
+variant displays and the rows themselves on wiggle, and row color is written
 five ways with four palette rules.
 
 ## Two levels, two objects
@@ -101,8 +101,8 @@ their own, over one `arrangeRows` and the hooks a display supplies.
 - **Named consumers read named stages**: the arrangement dialog the expanded
   unfocused rows, clustering the focused rows, the fetch key the focused
   unexpanded rows, a legend focus and sort-at-column the ordered rows, rendering
-  `sources`. Colour deals over the unfocused rows, so a focus never
-  recolours.
+  `sources`. Color deals over the unfocused rows, so a focus never
+  recolors.
 - **A display supplies the discovered rows and its hooks.** Discovered rows stay
   a stable-identity getter over region payloads (wiggle, multi-row) or a volatile
   from a header fetch (variants, MAF).
@@ -114,11 +114,11 @@ Unlisted keys follow the key source: a declared list (a VCF header, subtracks,
 MAF samples, a tree) keeps its own order, and values discovered in features
 sort. Those are today's two rules, stated by their source.
 
-## Colour, after the rows
+## Color, after the rows
 
 Decided by
-[ADR-207](../../architecture-decision-records/adr-207-a-rows-colour-resolves-once-and-shows-beside-its-label.md):
-one resolution (entry, then the row's own colour, then a palette by name only in
+[ADR-207](../../architecture-decision-records/adr-207-a-rows-color-resolves-once-and-shows-beside-its-label.md):
+one resolution (entry, then the row's own color, then a palette by name only in
 a shared panel), a label bar in place of `colorRowLabels`, groups as an
 attribute, one key and one dialog.
 
@@ -130,12 +130,12 @@ attribute, one key and one dialog.
 3. **The row model, one display at a time**, gated on a zero image diff:
    ~~wiggle~~ (ADR-157), ~~the variant displays~~ (the hard case: two-point
    expansion, bands, tint; ADR-157), ~~multi-row~~ (ADR-157; `rowColor` holds
-   `sampleColorMap` and the dialog's colours as one map), ~~MAF~~ (ADR-157; the
+   `sampleColorMap` and the dialog's colors as one map), ~~MAF~~ (ADR-157; the
    guide tree stays data, drawn while some rotation of it lists `rows.domain`).
    `rows` replaces `layout`, `clusterTree`, `clusterProvenance` and
    `subtreeFilter`; `facet.hidden` replaces the volatile hide-set. ~~The
    changes table's array summary~~ (`86cadb9f94`). About 7–11 days.
-4. ~~**Colour**: the `rowColor` object and one dealer~~ (ADR-160), ~~then one
+4. ~~**Color**: the `rowColor` object and one dealer~~ (ADR-160), ~~then one
    resolution, the palette and the precedence~~ (ADR-207).
 5. ~~**A tree per band**, ComplexHeatmap's `row_split` with `cluster_rows`, which
    retires "a band yields to a tree"~~ (ADR-169, `ba2c68e31d`…`ccc131d14f`).
@@ -160,4 +160,4 @@ attribute, one key and one dialog.
   avoidance, so two of four sources can share a hue where wiggle's dealer never
   repeats below nine.
 - **A `layout` config slot** carrying whole row records: order, labels and
-  colours each have a home in the two objects and the colour object.
+  colors each have a home in the two objects and the color object.

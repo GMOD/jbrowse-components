@@ -16,7 +16,7 @@ test('a value files under its string, a list joined, and nothing under the empty
   expect(key(null)).toBe('')
 })
 
-test('a feature with no strand is unstranded, so it shares the 0 section and colour', () => {
+test('a feature with no strand is unstranded, so it shares the 0 section and color', () => {
   const strand = categoricalField('strand')
   expect(strand.key(undefined)).toBe('0')
   expect(strand.key(0)).toBe('0')
@@ -41,7 +41,7 @@ test('strand names its values and paints red and blue, and yields each to one wr
   expect(repainted.domain).toEqual(['1', '-1', '0'])
 })
 
-test("a declared order leaves strand's colours on their own values", () => {
+test("a declared order leaves strand's colors on their own values", () => {
   for (const domain of [['-1'], ['-1', '1'], ['0', '-1', '1']]) {
     const strand = categoricalField('strand', { domain })
     expect(strand.color('1')).toBe('tomato')
@@ -50,7 +50,7 @@ test("a declared order leaves strand's colours on their own values", () => {
   }
 })
 
-test('svType paints each class its one colour and files a non-SV record under the empty key', () => {
+test('svType paints each class its one color and files a non-SV record under the empty key', () => {
   const sv = categoricalField('svType')
   expect(sv.color('DEL')).toBe('#e41a1c')
   expect(sv.color('DUP')).toBe('#377eb8')
@@ -83,7 +83,7 @@ test('the empty key sorts after every value and paints the no-category grey', ()
   expect(field.color('')).toBe(NO_CATEGORY_COLOR)
 })
 
-test("a key's colour depends on the key and the declaration alone", () => {
+test("a key's color depends on the key and the declaration alone", () => {
   const a = categoricalField('biotype', { domain: ['x'] })
   const b = categoricalField('biotype', { domain: ['x'] })
   expect(a.color('y')).toBe(b.color('y'))
@@ -114,20 +114,20 @@ test("strand's labels pair with strand's own order while no domain is written", 
   expect(strand.label('0')).toBe('No strand')
 })
 
-test('a written domain keeps each strand its own colour', () => {
+test('a written domain keeps each strand its own color', () => {
   const own = categoricalField('strand')
   const reordered = categoricalField('strand', { domain: ['-1', '1'] })
   expect(reordered.color('-1')).toBe(own.color('-1'))
   expect(reordered.label('-1')).toBe('Reverse strand')
 })
 
-test('three biotypes the hash puts on one colour paint three colours', () => {
+test('three biotypes the hash puts on one color paint three colors', () => {
   const field = categoricalField('biotype', { held: new Map() })
   const colors = ['protein_coding', 'snRNA', 'TEC'].map(field.color)
   expect(new Set(colors).size).toBe(3)
 })
 
-test('keys met together take the same colours whatever order they arrive in', () => {
+test('keys met together take the same colors whatever order they arrive in', () => {
   const keys = ['TEC', 'snRNA', 'lncRNA', 'protein_coding', 'miRNA']
   const a = categoricalField('biotype', { held: new Map() })
   const b = categoricalField('biotype', { held: new Map() })

@@ -178,7 +178,7 @@ describe('classifyPair — paired reads', () => {
   // `refId < mateRefId` for a cross-reference pair, so the code arrives
   // populated and plausible, and an LR one drew the connector as a normal
   // straight line labelled "LR - Normal pair orientation".
-  it('an inter-chromosomal mate link takes its own colour, not an orientation', () => {
+  it('an inter-chromosomal mate link takes its own color, not an orientation', () => {
     const data = makeData({
       names: ['r', 'r'],
       flags: [SAM_FLAG_PAIRED, SAM_FLAG_PAIRED],
@@ -202,7 +202,7 @@ describe('classifyPair — paired reads', () => {
   // segments' strands, which stays true whichever chromosomes they sit on. The
   // read really did cross that junction, and `splitJunctionKind` never consults
   // a refName — so the fusion figures, which are single-end Iso-Seq and split
-  // junctions throughout, keep their colours.
+  // junctions throughout, keep their colors.
   it('leaves an inter-chromosomal SPLIT junction on its strand rule', () => {
     const data = makeData({
       names: ['r', 'r'],
@@ -230,7 +230,7 @@ describe('classifyPair — paired reads', () => {
 // the record's own reverse bit and its own position, so that supplementary
 // reports LR for a pair its primaries both call RL.
 //
-// This costs the overlay more than a colour: `isNormal` also decides
+// This costs the overlay more than a color: `isNormal` also decides
 // curve-vs-straight, and `isBezierArcPair` drops a within-region normal pair
 // entirely — so the discordant connection was handed to the plain-line pass and
 // never drawn as a curve at all.
@@ -291,7 +291,7 @@ describe('classifyPair sources pair fields from a primary, not a supplementary',
   })
 
   it('leaves a split junction alone — it has no pair fields to source', () => {
-    // Both segments of one read: `isSplit` colours by the two strands, so the
+    // Both segments of one read: `isSplit` colors by the two strands, so the
     // orientation array is not consulted at either end.
     const c = classifyPair(
       makeEntry(splitMateOffScreenPrimary, 0),

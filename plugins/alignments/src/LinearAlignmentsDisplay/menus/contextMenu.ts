@@ -372,7 +372,7 @@ export function getHitMenuItems(
     // Anchored on the hit's own position rather than the raw cursor column,
     // matching the widget the details item opens: zoomed out past 1bp/px
     // `hitTestCoverage` snaps to a significant SNP inside the bin, which is the
-    // column a reader pointing at a coloured bar means.
+    // column a reader pointing at a colored bar means.
     if (coverageHit) {
       items.push(
         sortAndDetailsSubMenu({

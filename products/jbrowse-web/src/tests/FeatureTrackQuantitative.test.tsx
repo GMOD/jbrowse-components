@@ -86,7 +86,7 @@ test('a Manhattan y naming no column says so in the corner', async () => {
   expect(display.skippedFeatures.skipped).toBe(display.skippedFeatures.total)
 }, 30000)
 
-test('a Manhattan coloured by chromosome keys each contig', async () => {
+test('a Manhattan colored by chromosome keys each contig', async () => {
   const base = volvoxConfigWithTracks(['volvox_gwas'])
   const { view, findByTestId } = await createView({
     ...base,

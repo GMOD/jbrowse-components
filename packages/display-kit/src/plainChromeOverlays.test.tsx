@@ -225,7 +225,7 @@ describe('DisplayChromeOverlayProvider', () => {
     ))
 
     const overlay = await findByTestId('loading-overlay')
-    // the plain scrim styles itself inline from CSS system colours; the MUI one
+    // the plain scrim styles itself inline from CSS system colors; the MUI one
     // renders an emotion class instead, so this tells the two sets apart
     expect(overlay.className).toBe('')
   })

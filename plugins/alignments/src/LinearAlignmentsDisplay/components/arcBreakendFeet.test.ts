@@ -29,7 +29,7 @@ import type { ArcBandFeed } from '../../features/arcs/bandFeed.ts'
 // outside it with the read's body pointing back at the junction. Taking each
 // read's own direction at both made an FR pair draw its feet inward — the
 // grammar's "duplication" — while a split read over the identical junction drew
-// them outward, in one colour, within a fragment length of each other.
+// them outward, in one color, within a fragment length of each other.
 //
 // Every case reads the DIRECTIONS off the painted feet rather than the
 // coordinates: the arc's own placement is `crossRegionArcs.test.ts`' subject.
@@ -178,8 +178,8 @@ test('a forward read with a reverse mate draws its feet outward', () => {
 test('and two forward reads draw them parallel', () => {
   // The same-orientation (LL) junction — the shape that distinguishes an
   // inversion-flavoured join from a deletion-flavoured one, and the reason the
-  // mark exists at all: the interchromosomal colour slot has overwritten the
-  // orientation colour, so nothing else in the band says these two are not an
+  // mark exists at all: the interchromosomal color slot has overwritten the
+  // orientation color, so nothing else in the band says these two are not an
   // ordinary pair.
   //
   // Parallel is the case that survives getting the ray backwards, since negating
@@ -256,7 +256,7 @@ test('a reversed displayed region mirrors the foot in it and only that one', () 
 
 test('a SAME-CHROMOSOME cross-region arc draws none', () => {
   // The control, and the reason the family is the gate. This arc crosses the
-  // same kind of seam and differs only in that its colour still carries its
+  // same kind of seam and differs only in that its color still carries its
   // orientation. Feet here too would appear and disappear as a reader pans the
   // identical junction across a seam; interchromosomal arcs cannot, since two
   // refNames never share a region.

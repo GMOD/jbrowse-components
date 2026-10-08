@@ -3,7 +3,7 @@ import type { BaseOptions } from './types.ts'
 /**
  * #api
  * One row an adapter lists: `name` is a value of the listing's field, and
- * `label` and `color` are what the adapter names and colours that row with.
+ * `label` and `color` are what the adapter names and colors that row with.
  */
 export interface ListedRowSource {
   name: string
@@ -15,7 +15,7 @@ export interface ListedRowSource {
  * #api
  * Every row an adapter has, in its own order, whatever the loaded regions hold,
  * so a row display gives a row with nothing in view its place, label and
- * colour.
+ * color.
  */
 export interface RowSourceListing {
   /** The feature field the listed names are values of: `source` on a multi-BigWig, `alignments` on a MAF, whose per-species record is keyed by them. */

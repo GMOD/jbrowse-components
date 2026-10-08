@@ -380,8 +380,8 @@ export default function stateModelFactory(
         },
         /**
          * #getter
-         * `TreeSidebarMixin`'s hook: a row's colour paints its blocks while
-         * nothing else colours them: no `color` value or field, and no itemRgb
+         * `TreeSidebarMixin`'s hook: a row's color paints its blocks while
+         * nothing else colors them: no `color` value or field, and no itemRgb
          * in the file.
          */
         get rowColorPaintsMarks(): boolean {
@@ -513,7 +513,7 @@ export default function stateModelFactory(
     .views(self => ({
       /**
        * #getter
-       * Categorical color key: an identity scale's colours, else the one the
+       * Categorical color key: an identity scale's colors, else the one the
        * color field's scale derives from the values the worker found, else
        * the one the painted colors derive, each named by the features
        * carrying it. All are gated on there being a painting to key, since a
@@ -554,8 +554,8 @@ export default function stateModelFactory(
       },
     }))
     .views(self => {
-      // Identity-stable, in colour order: the encode keys on it, and the legend
-      // it is read off recomputes on every recolour and region arrival.
+      // Identity-stable, in color order: the encode keys on it, and the legend
+      // it is read off recomputes on every recolor and region arrival.
       const hiddenColors = stableIdentityComputed(() => {
         if (!self.hiddenCategories.length) {
           return new Set<number>()
@@ -621,7 +621,7 @@ export default function stateModelFactory(
        * #getter
        * `LegendMixin`'s hook, two vocabularies as two scales: the per-feature
        * painting, toggleable and dimmed where a category is hidden, and the
-       * row colour key, which names rows and is not.
+       * row color key, which names rows and is not.
        */
       get colorScales(): ColorScale[] {
         const hidden = self.hiddenCategorySet
@@ -740,8 +740,8 @@ export default function stateModelFactory(
         /**
          * #getter
          * What the encode reads, and so what re-encodes every region on its
-         * identity: the keys, the hidden categories and the colour field's
-         * palette. The reader's order, focus and colours are the table's.
+         * identity: the keys, the hidden categories and the color field's
+         * palette. The reader's order, focus and colors are the table's.
          */
         get encodeInputs(): MultiRowEncodeInputs {
           return {
@@ -754,7 +754,7 @@ export default function stateModelFactory(
          * #getter
          * The row table both backends and the hit test place each key
          * through: its drawn row, hidden where the focus left it out, and its
-         * colour override. Rebuilt on a reorder, focus, recolour or a new
+         * color override. Rebuilt on a reorder, focus, recolor or a new
          * name, which is one texture upload and no instance bytes.
          */
         get rowTable(): RowTable {
@@ -815,7 +815,7 @@ export default function stateModelFactory(
         () => self.drawnRegionData,
         // `encodeInputs`, never `renderState`: the channels hold
         // {x,x2,row,color} and no geometry — the row height and canvas box
-        // reach the shape as uniforms, the reader's order, focus and colours
+        // reach the shape as uniforms, the reader's order, focus and colors
         // reach it as the row table, and a category toggle is what is left
         // to re-encode for.
         () => self.encodeInputs,
@@ -852,7 +852,7 @@ export default function stateModelFactory(
         /**
          * #getter
          * `encodedChannels` with each region's insertion markers, in the
-         * theme's insertion colour: what the backend uploads, the hit test
+         * theme's insertion color: what the backend uploads, the hit test
          * reads and the hover and export draw from.
          */
         get uploadedChannels(): ReadonlyMap<number, MultiRowUploadData> {
@@ -923,7 +923,7 @@ export default function stateModelFactory(
       },
       /**
        * #getter
-       * A wash and a border: the block colours are the data.
+       * A wash and a border: the block colors are the data.
        */
       get highlightStyle(): HighlightStyle {
         return 'box'
@@ -969,7 +969,7 @@ export default function stateModelFactory(
         },
         /**
          * #action
-         * Repartition. The arrangement and the row colours stay: a name keyed
+         * Repartition. The arrangement and the row colors stay: a name keyed
          * on another field matches nothing and comes back with the field. The
          * legend's hidden categories clear. Writing `rows.field` refetches on
          * its own.

@@ -16,11 +16,11 @@ import {
 /**
  * #config MarkColor
  * #category display
- * A mark's `encoding.color`: one CSS colour or `jexl:` callback for every
- * instance, or a field through a categorical scale (a `range` colour per
+ * A mark's `encoding.color`: one CSS color or `jexl:` callback for every
+ * instance, or a field through a categorical scale (a `range` color per
  * value), a `linear` or `log` scale (a ramp between `domainMin` and
  * `domainMax`, `domainMid` placing its middle stop where a diverging ramp
- * turns) or a `threshold` scale (a `range` colour per interval between the
+ * turns) or a `threshold` scale (a `range` color per interval between the
  * cut points `domain` lists). A string is the field, as every channel's is
  * inside `encoding`; a constant is `{ value }`. A scale is what the legend
  * describes.
@@ -89,13 +89,13 @@ export const markColorSchema = ConfigurationSchema(
     // #region contextVariableSlot
     /**
      * #slot value
-     * A CSS colour, or a jexl callback over `feature` returning one, for a
-     * mark whose colour is not a scale. Unset, a mark paints in the default
-     * blue, `#0068d1`, and a text mark prints in the page's text colour.
+     * A CSS color, or a jexl callback over `feature` returning one, for a
+     * mark whose color is not a scale. Unset, a mark paints in the default
+     * blue, `#0068d1`, and a text mark prints in the page's text color.
      */
     value: {
       type: 'maybeColor',
-      description: 'CSS colour or jexl callback; unset is the default blue',
+      description: 'CSS color or jexl callback; unset is the default blue',
       contextVariable: ['feature'],
     },
     // #endregion
@@ -106,17 +106,17 @@ export const markColorSchema = ConfigurationSchema(
       field:
         'the feature field a scale reads, or a jexl expression over feature, which is slower per feature and so the opt-in',
       scale:
-        'how field becomes a colour: categorical hands out range colours per distinct value; linear and log read the value between domainMin and domainMax into a ramp; threshold cuts the value at the domain and hands each interval a range colour; none paints value, keeping a field for a switch back; unset is linear for score and categorical for any other field',
+        'how field becomes a color: categorical hands out range colors per distinct value; linear and log read the value between domainMin and domainMax into a ramp; threshold cuts the value at the domain and hands each interval a range color; none paints value, keeping a field for a switch back; unset is linear for score and categorical for any other field',
     }),
     ...colorDomainSlot({
       domain:
-        "for a categorical scale, the values in legend order, walking the range from the first entry and continuing into the default palette past its end (a value left out derives its colour from itself and never takes a listed value's, so every region agrees); for a threshold scale, the cut points in ascending order, a value taking the range entry for the number of them it is at or past, so range has one entry more than this; a linear or log scale reads domainMin and domainMax instead",
+        "for a categorical scale, the values in legend order, walking the range from the first entry and continuing into the default palette past its end (a value left out derives its color from itself and never takes a listed value's, so every region agrees); for a threshold scale, the cut points in ascending order, a value taking the range entry for the number of them it is at or past, so range has one entry more than this; a linear or log scale reads domainMin and domainMax instead",
     }),
     ...colorDomainEndsSlots,
     ...colorDomainQuantileSlot,
     ...colorRangeSlot({
       range:
-        "CSS colours a categorical scale hands its domain in order, a threshold scale its intervals, or a linear or log scale's ramp as evenly spaced stops; empty is the default palette, or the scheme",
+        "CSS colors a categorical scale hands its domain in order, a threshold scale its intervals, or a linear or log scale's ramp as evenly spaced stops; empty is the default palette, or the scheme",
     }),
     ...colorLabelsSlot,
     ...colorRampSlots,

@@ -4,7 +4,7 @@
 # website/docs/tutorials/alu_age.md.
 #
 # One scored BED becomes one track that plots a numeric column: each copy's
-# divergence from its consensus as a bar coloured by subfamily lineage when
+# divergence from its consensus as a bar colored by subfamily lineage when
 # zoomed in, the count per bin with the AluY count over it when zoomed out, and
 # a `jbrowse make-density` sidecar past the fetch budget. A second file counts
 # the copies per megabase and tests whether the youngest lineage's share follows
@@ -138,7 +138,7 @@ cp -f "$BED" "$BED.tbi" "${BED%.gz}.density.bw" "$SHARE.gz" "$SHARE.gz.tbi" "$AP
 # The CLI cannot write a marks list, so the track is JSON. @PLACEHOLDERS@ are
 # real JSON strings, so the heredoc parses on its own.
 #
-# Mark 1 draws zoomed in: one bar per copy, milliDiv on the axis, coloured by
+# Mark 1 draws zoomed in: one bar per copy, milliDiv on the axis, colored by
 # the first four characters of the name (AluJ, AluS, AluY), which the formula
 # step writes into `lineage`. Mark 2 draws zoomed out: the count per bin, the
 # bin width following the zoom, and past the fetch budget the sidecar's bins in
@@ -221,7 +221,7 @@ JSON
 jb add-track-json track.json --out "$APP" --update
 
 # Two tracks over the per-megabase BED, one column each, on one fixed axis.
-# Bars grow from zero, coloured by a threshold at 0 whose key names the two
+# Bars grow from zero, colored by a threshold at 0 whose key names the two
 # directions.
 for lane in young:youngLog2 strand:strandLog2; do
   kind=${lane%%:*}

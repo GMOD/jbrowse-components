@@ -2,13 +2,13 @@ import { resolvePalette } from './palette.ts'
 import { createJBrowseThemeFromArgs, defaultThemes } from './theme.ts'
 
 /**
- * Every built-in theme resolved to its last colour, so a change to how a
+ * Every built-in theme resolved to its last color, so a change to how a
  * palette is *assembled* has to say which pixels it moved. Splitting light from
  * dark, folding two presets into one with a `dark` block, adding a mode
  * argument: none of those is supposed to repaint anything, and the diff here is
  * the only thing that can tell you whether it did.
  *
- * Update with `-u` when a colour change is the point.
+ * Update with `-u` when a color change is the point.
  */
 // Named rather than read off `defaultThemes`, because the retired names are
 // exactly what a shrinking `defaultThemes` would stop covering — and a stored
@@ -21,7 +21,7 @@ const NAMES = [
   'darkMinimal',
 ]
 
-test.each(NAMES)('%s resolves the same colours', name => {
+test.each(NAMES)('%s resolves the same colors', name => {
   expect(resolvePalette({ themeName: name })).toMatchSnapshot()
 })
 
@@ -35,7 +35,7 @@ test.each([
   ],
   ['a bare mode', { palette: { mode: 'dark' } }],
   ['a config background', { palette: { background: { paper: '#fafafa' } } }],
-] as const)('default + %s resolves the same colours', (_name, configTheme) => {
+] as const)('default + %s resolves the same colors', (_name, configTheme) => {
   expect(
     resolvePalette({ themeName: 'default', configTheme }),
   ).toMatchSnapshot()
@@ -43,7 +43,7 @@ test.each([
 
 // The MUI half, which the palette oracle cannot see: `darkStock` alone turns on
 // `enableColorOnDark` today, so its AppBar keeps the brand where every other
-// dark theme flattens to the paper colour. Whether that stays true of a palette
+// dark theme flattens to the paper color. Whether that stays true of a palette
 // drawn dark is a decision, and this is what makes it one.
 test.each(NAMES)('%s builds the same chrome', name => {
   const theme = createJBrowseThemeFromArgs({ themeName: name })

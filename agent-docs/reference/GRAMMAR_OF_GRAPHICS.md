@@ -23,13 +23,13 @@ found that every measured refusal to move a display onto the encoder blamed the
 per-row feature object, never the rule. The remaining copies are
 [copies-between-each-parser-and-its-instance-buffer](../ideas/waiting-on-a-number/copies-between-each-parser-and-its-instance-buffer.md).
 
-**2. One object per concept, and every surface reads it.** Colour, the value
+**2. One object per concept, and every surface reads it.** Color, the value
 scale, the facet and the transform step are one object each (ADR-131, 135, 142,
 150, 153): painter, uniforms, legend, axis, menu, dialog, validator, SVG export
 and hit test all derive from it. A display that spells one of those concepts its
 own way is the finding. The row axis follows it (ADR-165). Text follows it in
 typography only: `FloatingText` and `SvgHaloText` are the one emit, and placement
-stays each display's (ADR-162). Hi-C reads colour through `count`'s linear
+stays each display's (ADR-162). Hi-C reads color through `count`'s linear
 preset, LD through `r2`'s and `dprime`'s, the field being the statistic the
 file serves, and MAF through one preset per field.
 
@@ -55,7 +55,7 @@ guesser name carrying which display leads and its `displayDefaults`); the rule
 refuses a channel hidden inside a track type, which a bundle of defaults does not
 carry.
 
-**Colour stays each mark's.** Scale members on each mark's `encoding.color` are
+**Color stays each mark's.** Scale members on each mark's `encoding.color` are
 Vega-Lite's own spelling, and a display-level `scales.color` would be a second
 spelling. Plasma and turbo are not among the named ramps (plasma reads as
 magma's sibling, turbo is not perceptually uniform). On HicColor and LDColor
@@ -64,10 +64,10 @@ ramp dark at its low end paints every sparse cell a dark speck.
 
 ## Seams
 
-- **A colour or shape scale is declared on its channel; the value scale is the
+- **A color or shape scale is declared on its channel; the value scale is the
   plot's** (ADR-141, ADR-142, narrowing
   [ADR-113](../architecture-decision-records/adr-113-one-scale-rule-in-one-place.md)).
-  A categorical colour is data and travels packed with the instance, while a
+  A categorical color is data and travels packed with the instance, while a
   domain that moves on every autoscale must not touch a buffer
   ([ADR-097](../architecture-decision-records/adr-097-the-y-channel-shares-its-scale-and-not-its-anchor.md)).
 - **Two channel vocabularies remain.** The encoding says `x`, `x2`, `y`, `row`,
@@ -122,7 +122,7 @@ Declined on 2026-09-30: track- or view-level facets, and a free y per section.
   once today. It reopens when a named plot needs two files in one display.
 - **Fewer channels.** `opacity` and `angle` are uniforms, not channels, because
   shapes compile from hand-written Slang (ADR-095); `opacity` also breaks the
-  Canvas2D painters' colour batching. `encoding.size` maps a width through the
+  Canvas2D painters' color batching. `encoding.size` maps a width through the
   `size` lane on the link alone
   ([ADR-163](../architecture-decision-records/adr-163-a-link-is-a-mark-and-the-arc-plugin-is-gone.md)).
   An area mark waits on `y2`; the line is a mark
@@ -132,7 +132,7 @@ Declined on 2026-09-30: track- or view-level facets, and a free y per section.
 - **`scales.y.rules` draws fixed lines.** A `rule` layer with a constant `y`,
   taking a zoom range and a per-row value, waits on a plot that needs either;
   the CNV figures carry no reference line, since their keys name the level.
-- **`plotProblems` judges a draft's colour objects and `scales.y` on every
+- **`plotProblems` judges a draft's color objects and `scales.y` on every
   display** through the schema's own `fieldPresets` (`schemaPlotProblems`),
   the rule `jbrowse validate` runs offline; the mark display adds its rule
   list and canvas its jexl checks. A display-side notice with no schema
@@ -155,7 +155,7 @@ pipeline, the plot write paths and the docs before v5.0.0, and their findings
 landed as ADR-214 to ADR-220. What they checked and found in order is as much
 the result, since it is what a later audit need not redo:
 
-- Every colour object carries ADR-151's members, and `scale: 'none'` means the
+- Every color object carries ADR-151's members, and `scale: 'none'` means the
   same on each: paint `value`, keep the field.
 - `fieldPresets` names agree across displays: `strand`, `identity`, `mapq`,
   `count`, `r2`, `dprime`.
@@ -166,7 +166,7 @@ the result, since it is what a later audit need not redo:
 - The CLI's copy of the mark rule list is byte-identical to the live one, and
   `pnpm autogen` holds it there.
 - SVG export shares the Canvas2D painters, so no mark lacks a twin.
-- A new mark, step type, scale kind, colour member or display type is additive
+- A new mark, step type, scale kind, color member or display type is additive
   in the JSON schema: its `if/then` dispatch passes a type it does not know.
 - `displayDefaults` expand into the display config, so `plot` and "Reset track
   settings" see them.
@@ -175,8 +175,8 @@ the result, since it is what a later audit need not redo:
   `conservationMode` and `heightMode` are layout or fetch modes, not marks.
 
 Two docs the audit left on a jexl callback or a flag name, on purpose: the
-cookbook's whole-config recipe paints SNVs one colour and every other variant
-another, which a colour object has no member for, and jb2export's comparative
+cookbook's whole-config recipe paints SNVs one color and every other variant
+another, which a color object has no member for, and jb2export's comparative
 `--colorBy` keeps the menu's verb (ADR-139) while writing the `color` object.
 
 ## Where a proposal lands

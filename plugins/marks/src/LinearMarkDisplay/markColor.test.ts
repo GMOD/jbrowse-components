@@ -36,7 +36,7 @@ function layerOf(display: LinearMarkDisplayModel) {
 function colorLane(display: LinearMarkDisplayModel) {
   const { color } = layerOf(display)
   if (!(color instanceof Uint32Array)) {
-    throw new Error(`expected a colour lane, got ${color}`)
+    throw new Error(`expected a color lane, got ${color}`)
   }
   return [...color]
 }
@@ -56,7 +56,7 @@ function editColor(
   setConf(display.conf.marks[0]!, ['encoding', 'color', slot], value)
 }
 
-test('a constant colour crosses as the default and paints from the main thread', () => {
+test('a constant color crosses as the default and paints from the main thread', () => {
   const display = loaded([
     { mark: 'bar', encoding: { y: 'score', color: { value: 'red' } } },
   ])
@@ -78,7 +78,7 @@ test('a constant colour crosses as the default and paints from the main thread',
   expect(layerOf(display).colorValue).toBe(layerOf(display).y)
 })
 
-test('a categorical colour crosses as its field, and its domain and range repaint the keys met', () => {
+test('a categorical color crosses as its field, and its domain and range repaint the keys met', () => {
   const display = loaded([
     {
       mark: 'bar',
@@ -115,7 +115,7 @@ test('a categorical colour crosses as its field, and its domain and range repain
   expect(layerOf(display).colorKey).toBeUndefined()
 })
 
-test('categories the hash puts on one colour each take their own, and keep it as regions arrive', () => {
+test('categories the hash puts on one color each take their own, and keep it as regions arrive', () => {
   const { display } = createTestEnvironment({
     marks: [
       {
@@ -152,10 +152,10 @@ test('categories the hash puts on one colour each take their own, and keep it as
   expect(new Set(second).size).toBe(3)
   expect(second[1]).toBe(first[1])
   expect(second[2]).toBe(first[0])
-  expect(display.cornerNotices.join('\n')).not.toMatch(/share one colour/)
+  expect(display.cornerNotices.join('\n')).not.toMatch(/share one color/)
 })
 
-test('a threshold over the plotted field ships no colour lane and is not a fetch input', () => {
+test('a threshold over the plotted field ships no color lane and is not a fetch input', () => {
   const display = loaded([
     {
       mark: 'bar',
@@ -222,7 +222,7 @@ test('a ramp over the plotted field takes its extent off the values and its ends
   })
 })
 
-test('a colour over another field crosses as its field and reads the values that lane carries', () => {
+test('a color over another field crosses as its field and reads the values that lane carries', () => {
   const display = loaded([
     {
       mark: 'bar',
@@ -259,7 +259,7 @@ test('a colour over another field crosses as its field and reads the values that
   })
 })
 
-test('a span coloured by the depth its coverage step writes reads the raw values', () => {
+test('a span colored by the depth its coverage step writes reads the raw values', () => {
   const { display } = createTestEnvironment({
     marks: [
       {
@@ -278,7 +278,7 @@ test('a span coloured by the depth its coverage step writes reads the raw values
   expect(request!.lanes).not.toContain('y')
 })
 
-test('a jexl colour is the worker’s to evaluate per feature', () => {
+test('a jexl color is the worker’s to evaluate per feature', () => {
   const display = loaded([
     {
       mark: 'bar',
@@ -299,7 +299,7 @@ test('a jexl colour is the worker’s to evaluate per feature', () => {
   expect(colorLane(display)).toEqual([blue, red, red])
 })
 
-test('a text coloured by the field it stands at paints through the scale the bars share', () => {
+test('a text colored by the field it stands at paints through the scale the bars share', () => {
   const display = loaded([
     {
       mark: 'text',
@@ -358,7 +358,7 @@ test('a text ramp with open ends follows the domain the regions union', () => {
   expect((display.paintScales[0] as MarkRamp).domain).toEqual([1, 8])
 })
 
-// A colour edit that changes what the worker reads refetches, and until the
+// A color edit that changes what the worker reads refetches, and until the
 // refetch lands each region paints what it holds.
 test('a region holding keys under a ramp still draws them, and a constant clears what it held', () => {
   const display = loaded([
@@ -411,7 +411,7 @@ test('a region holding another field’s numbers paints them through a ramp over
   expect(display.legendSections).toEqual([])
 })
 
-test('a region holding no colour paints the default while a categorical refetch is pending', () => {
+test('a region holding no color paints the default while a categorical refetch is pending', () => {
   const display = loaded([
     {
       mark: 'bar',
@@ -427,10 +427,10 @@ test('a region holding no colour paints the default while a categorical refetch 
   expect(layerOf(display).scale).toBeUndefined()
 })
 
-// A colour change refetches region by region, so for a moment one region holds
-// the new kind of colour data and another the old; each paints what it holds,
+// A color change refetches region by region, so for a moment one region holds
+// the new kind of color data and another the old; each paints what it holds,
 // on the GPU as on Canvas2D, rather than one scale misreading the other.
-test('regions holding different kinds of colour data each paint through what they hold', () => {
+test('regions holding different kinds of color data each paint through what they hold', () => {
   const REGION_B = { ...REGION, refName: 'ctgB' }
   const { display } = createTestEnvironment(
     {
@@ -461,11 +461,11 @@ test('regions holding different kinds of colour data each paint through what the
   })
 })
 
-// Only the regions in view refetch after a colour change, so one loaded
-// earlier and scrolled away can hold the old colour's data indefinitely. It
+// Only the regions in view refetch after a color change, so one loaded
+// earlier and scrolled away can hold the old color's data indefinitely. It
 // must not reach the mark's scale or the legend, which the landed regions,
-// read for the colour as it now stands, paint through.
-test('a region still holding an earlier colour shapes neither the scale nor the key', () => {
+// read for the color as it now stands, paint through.
+test('a region still holding an earlier color shapes neither the scale nor the key', () => {
   const REGION_B = { ...REGION, refName: 'ctgB' }
   const { display } = createTestEnvironment(
     {
@@ -536,7 +536,7 @@ test('keys read for another categorical field are held, and leave the key to the
   expect(display.legendSections.map(s => s.scale.field)).toEqual(['kind'])
 })
 
-test('a held region read for another field takes none of its missing-value flags into a colour over y', () => {
+test('a held region read for another field takes none of its missing-value flags into a color over y', () => {
   const display = loaded([
     {
       mark: 'bar',
@@ -551,8 +551,8 @@ test('a held region read for another field takes none of its missing-value flags
   expect(layerOf(display).scale).not.toHaveProperty('missing')
 })
 
-// A held region's colour belongs to an earlier declaration no key names, so
-// the hover leaves its colour row out rather than name it under the new field.
+// A held region's color belongs to an earlier declaration no key names, so
+// the hover leaves its color row out rather than name it under the new field.
 test('a hover on a held region says so, and a landed one does not', () => {
   const display = loaded([
     {
@@ -587,9 +587,9 @@ test('a hover on a held region says so, and a landed one does not', () => {
   expect(hitAnywhere()).toMatchObject({ heldColor: true })
 })
 
-// A line's threshold colours along the line only over the plotted value; a cut
+// A line's threshold colors along the line only over the plotted value; a cut
 // on another field is in that field's units, not the y axis's.
-test('the render state says which marks colour by their own y', () => {
+test('the render state says which marks color by their own y', () => {
   const display = loaded([
     {
       mark: 'line',

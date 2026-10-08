@@ -1,6 +1,6 @@
 ---
 status: Superseded
-summary: "Superseded by ADR-184, which lands the shape in two modules once wiggle's port made it the second consumer. No render-core `line` shape: a step-and-centre `lineMark` generalising `wiggleLine.slang` over the mark uniforms and the row lane packed at parity with wiggle's hand path (0.96x at a million instances) and painted within 1.1x, but wiggle porting onto it would retain 16 more bytes a feature per region on its stroked renderings, since its payload is interleaved positions with a colour and a row per source and the shape's channels are per-instance lanes. The shape needs wiggle as its second consumer (ADR-040), so the step line and the centre line stay wiggle's, and the mark display exposes no `shape: 'line'`"
+summary: "Superseded by ADR-184, which lands the shape in two modules once wiggle's port made it the second consumer. No render-core `line` shape: a step-and-centre `lineMark` generalising `wiggleLine.slang` over the mark uniforms and the row lane packed at parity with wiggle's hand path (0.96x at a million instances) and painted within 1.1x, but wiggle porting onto it would retain 16 more bytes a feature per region on its stroked renderings, since its payload is interleaved positions with a color and a row per source and the shape's channels are per-instance lanes. The shape needs wiggle as its second consumer (ADR-040), so the step line and the centre line stay wiggle's, and the mark display exposes no `shape: 'line'`"
 ---
 
 # ADR-127: The line stays wiggle's
@@ -46,9 +46,9 @@ every instance and every path point in both orientations.
 
 The ported pack fills both variants' neighbour fields in one pass and is
 measured against wiggle's two, so 0.96x is parity. The painters' 8 to 12
-percent is the per-instance colour read the shape's channels carry and the
-row branch; the retired arm is wiggle's constant-colour path, and its own
-per-instance colour path pays the same read. Two costs the first painter had
+percent is the per-instance color read the shape's channels carry and the
+row branch; the retired arm is wiggle's constant-color path, and its own
+per-instance color path pays the same read. Two costs the first painter had
 were harness lessons, not the shape's: identity run before timing put two
 context shapes through the retired painters and read them at 2x their
 control, and a frame object returned from a call is reloaded per instance
@@ -58,10 +58,10 @@ control, and a frame object returned from a call is reloaded per instance
 
 **The shape does not land, and line stays wiggle's.** Speed was not the
 kill; the lens was. Wiggle's payload is one interleaved `featurePositions`
-array per source with the colour and the row on the source, and the shape
+array per source with the color and the row on the source, and the shape
 reads `x`, `x2`, `color` and `row` per instance. The `lens` row is the split
 alone, 2 to 4 ns an instance; what it retains is the cost — `x`, `x2`, a
-colour lane and a row lane are 16 bytes a feature held per region beside the
+color lane and a row lane are 16 bytes a feature held per region beside the
 40-byte record, on the two stroked renderings, where the fill record was cut
 to 20 bytes precisely so a thousand-source multi-wiggle would not carry
 neighbour fields it does not read (`plugins/wiggle/CLAUDE.md`). A lens that
@@ -84,8 +84,8 @@ footing.
 
 ## Rejected alternatives
 
-- **Widen the channel contract for wiggle** — a constant colour beside the
-  colour lane, a row offset in the params, interleaved positions as a
+- **Widen the channel contract for wiggle** — a constant color beside the
+  color lane, a row offset in the params, interleaved positions as a
   channel. Each one is a second spelling of a lane so one consumer can skip
   copying into the first, and the encoder, the hit test and every other
   shape read the first.

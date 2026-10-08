@@ -1,6 +1,6 @@
 ---
 status: Accepted
-summary: "render-core gains a `line` shape in two modules, `lineStepMark` (28 bytes an instance: the previous and next values) and `lineCenterMark` (32 bytes: the previous span and value), over `lineCommon`'s one uniform block; the mark display draws `mark: 'line'` through them, `interpolate: 'step' | 'linear'` choosing the module and `encoding.size` the width. ADR-127 declined the same shape because wiggle was not its second consumer; Colin's 2026-09-27 decision to move wiggle onto the mark display makes it one, and the shape lands ahead of the port because the port is what it is for. Colour is per instance for now: the pos/neg split along a rise is the shader-side threshold over the value lane, which the port's next stage adds. Amended 2026-09-28: ADR-185 lands that stage"
+summary: "render-core gains a `line` shape in two modules, `lineStepMark` (28 bytes an instance: the previous and next values) and `lineCenterMark` (32 bytes: the previous span and value), over `lineCommon`'s one uniform block; the mark display draws `mark: 'line'` through them, `interpolate: 'step' | 'linear'` choosing the module and `encoding.size` the width. ADR-127 declined the same shape because wiggle was not its second consumer; Colin's 2026-09-27 decision to move wiggle onto the mark display makes it one, and the shape lands ahead of the port because the port is what it is for. Color is per instance for now: the pos/neg split along a rise is the shader-side threshold over the value lane, which the port's next stage adds. Amended 2026-09-28: ADR-185 lands that stage"
 ---
 
 # ADR-184: A line is a mark
@@ -15,7 +15,7 @@ Accepted (2026-09-28). Supersedes
 ADR-127 built a `line` shape, measured it at parity with wiggle's hand-written
 step and centre lines (pack 0.96x, paint within 1.12x at a million instances)
 and declined it on one ground: wiggle's payload was interleaved positions with
-one colour and one row per source, so wiggle porting onto per-instance lanes
+one color and one row per source, so wiggle porting onto per-instance lanes
 would have retained 16 more bytes a feature, and without wiggle the shape had
 one consumer. The mark display was left with no line, so a BigWig under
 `marks` could draw bars and points and not the picture a quantitative track
@@ -24,8 +24,8 @@ is usually read as.
 On 2026-09-27 Colin asked why wiggle should not move onto `bar` and `point`,
 then said to aim for the ideal implementation, changing dataflow where needed.
 That port is the second consumer ADR-127 waited on: wiggle's row becomes a key
-the row table places (ADR-165), so a source's colour rides the table and the
-per-instance colour lane the ADR counted goes with it. The line is the first
+the row table places (ADR-165), so a source's color rides the table and the
+per-instance color lane the ADR counted goes with it. The line is the first
 landing of that port, because a quantitative display without one cannot be
 rebuilt on the grammar.
 
@@ -39,7 +39,7 @@ rebuilt on the grammar.
   `NO_PREV_X`) and where a value lands in its band. Wiggle split its own line
   shaders the same way for the same bytes (`plugins/wiggle/src/CLAUDE.md`).
 - **The row is a key through the row table**, as `bar`, `point` and `span`
-  read it: a hidden row's instances leave clip space, a colour override paints
+  read it: a hidden row's instances leave clip space, a color override paints
   the row, and a rowless caller draws on the canvas as one band.
 - **The step joins abutting spans on one row** (`x2[i-1] === x[i]`) and drops
   to `origin` across a gap, its three quads flat-filled so their overlaps do
@@ -50,7 +50,7 @@ rebuilt on the grammar.
   line did.
 - **`mark: 'line'` on the mark display**, `interpolate` a mark slot with the
   wiggle display's two values, `encoding.size` the stroke width defaulting to
-  1 px, `y` required, colour a constant, a categorical scale or a ramp. The
+  1 px, `y` required, color a constant, a categorical scale or a ramp. The
   rule list gains `unread-interpolate` beside `unread-link-shape`.
 - **Ink is the instance's own strokes**: the step's rise, top and drop, the
   linear variant's segment from the previous midpoint or its dot. The hit
@@ -58,10 +58,10 @@ rebuilt on the grammar.
 
 ## Consequences
 
-- A line's colour is one colour per instance. Wiggle colours a line by the
-  band its centre line is in, so a rise across the pivot changes colour
+- A line's color is one color per instance. Wiggle colors a line by the
+  band its centre line is in, so a rise across the pivot changes color
   mid-stroke; that is the shader-side threshold over the value lane, which the
-  port's next stage gives every valued shape, and until then a two-colour line
+  port's next stage gives every valued shape, and until then a two-color line
   on the mark display is two marks with a `filter` each.
 - The mark display's `marks_line` scene joins the cross-backend gate. Its
   goldens land with the first CI run.
@@ -71,10 +71,10 @@ rebuilt on the grammar.
 
 ### Amended 2026-09-28: the threshold landed
 
-[ADR-185](adr-185-a-colour-over-the-plotted-value-reads-the-y-lane.md) resolves
-a threshold in the shader and reads a colour over the plotted value off the
-`y` lane, so a line's rise across a cut changes colour at the cut and a
-two-colour line is one mark.
+[ADR-185](adr-185-a-color-over-the-plotted-value-reads-the-y-lane.md) resolves
+a threshold in the shader and reads a color over the plotted value off the
+`y` lane, so a line's rise across a cut changes color at the cut and a
+two-color line is one mark.
 
 ## Rejected alternatives
 

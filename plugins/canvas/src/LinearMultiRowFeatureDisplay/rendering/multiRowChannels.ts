@@ -24,7 +24,7 @@ export interface MultiRowEncoded extends SpanChannels {
 
 /**
  * Encode one region on the main thread, once: the row table carries the
- * reader's order, focus and colours, so only a category toggle re-encodes.
+ * reader's order, focus and colors, so only a category toggle re-encodes.
  * The row index is over the channels written, so the hit test cannot answer
  * "is this feature drawn" differently from the paint that put it there.
  */

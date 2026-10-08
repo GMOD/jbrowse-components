@@ -22,8 +22,8 @@ export default observer(function WiggleSetColorDialog({
   }
   handleClose: () => void
 }) {
-  // One subtrack has nothing to arrange, so the dialog is the plot's colours
-  // and the buttons — which is the whole colour UI a plain BigWig needs.
+  // One subtrack has nothing to arrange, so the dialog is the plot's colors
+  // and the buttons — which is the whole color UI a plain BigWig needs.
   const showRows = model.discoveredRows.length > 1
   const line = plotColorLine(model.wiggleColor, model.rowPaletteDeals)
   return (

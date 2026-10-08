@@ -99,9 +99,9 @@ export function extractModifications(
     }
   }
 
-  // Everything below places or scores marks, and only the modifications colour
+  // Everything below places or scores marks, and only the modifications color
   // schemes draw any — so a modBAM opened in normal, strand, insert-size or
-  // tag colouring stops here. It used to run the whole per-read pipeline
+  // tag coloring stops here. It used to run the whole per-read pipeline
   // regardless (`getModPositions` walks the delta list against the read
   // sequence, which makes BAM decode SEQ for the read), to populate the menu
   // above. That is the ungated cost the old comment on `packedCigarOps`
@@ -218,7 +218,7 @@ export function extractModifications(
  * filter left ticked. It did not, and that made the "Modification types"
  * checkboxes inert in this view while the LEGEND read the same predicate and
  * dropped the swatch — so unticking 5hmC removed its key and left its magenta
- * marks on screen, off a box whose whole claim is that it names every colour
+ * marks on screen, off a box whose whole claim is that it names every color
  * drawn.
  *
  * **A hidden type is excluded from the competition, not from the output**, at
@@ -305,7 +305,7 @@ export function extractMethylation(
 //
 // `callCounts` tallies every informative call per position, methylated or not,
 // while `modificationsData` gets only the marks `twoColor` paints. They differ
-// in single-colour mode and that is the point: the coverage bar's denominator
+// in single-color mode and that is the point: the coverage bar's denominator
 // is a measurement, not a count of what got drawn (computeBisulfiteCoverage).
 export function extractBisulfite(
   feature: Feature,

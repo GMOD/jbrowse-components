@@ -50,7 +50,7 @@ function sourceLayers({
     return lineLayers(source, summaryScoreMode, posColor, negColor)
   }
   // whiskers draws min, mean and max; any other mode draws its one band. Every
-  // value is coloured by its own sign against the pivot, so signed data reads
+  // value is colored by its own sign against the pivot, so signed data reads
   // as pos/neg on the main thread.
   //
   // Density is the one mode that gets to 'mean' without the user picking it, and
@@ -83,8 +83,8 @@ export interface WiggleGpuProps {
   // Whether the display puts its sources on rows, one each (`rows: 'source'`).
   // Otherwise every source is drawn on row 0 in one shared plot.
   rowLayout: boolean
-  // Whether each source paints its own colour on both sides of the cut, as
-  // sources sharing one plot do while their row colour paints it.
+  // Whether each source paints its own color on both sides of the cut, as
+  // sources sharing one plot do while their row color paints it.
   perSource: boolean
   // The `color` object resolved: the pair each mode partitions by and the
   // value they part at.
@@ -153,8 +153,8 @@ export function buildSourceRenderData(
     renderingType,
     maxGapMultiple,
   } = gpuProps
-  // A colour per source paints both sides of the cut in it, so the plot reads
-  // as one colour each; otherwise the pair stands.
+  // A color per source paints both sides of the cut in it, so the plot reads
+  // as one color each; otherwise the pair stands.
   const { pivot, cuts } = wiggleColor
   const innerColors = wiggleColor.innerColors.map(c =>
     cssColorToNormalizedRgb(c),
@@ -186,8 +186,8 @@ export function buildSourceRenderData(
         : defaultPosColor
       const row = rowLayout ? i : 0
       // With a row each the neg side keeps the shared negColor even when the
-      // source has a colour of its own, so signed data still reads as a pos/neg
-      // plot. Do NOT "fix" this to paint the whole row in the source's colour.
+      // source has a color of its own, so signed data still reads as a pos/neg
+      // plot. Do NOT "fix" this to paint the whole row in the source's color.
       const layers = sourceLayers({
         source,
         summaryScoreMode,

@@ -315,7 +315,7 @@ exports[`a declared order rotates a supplied tree 2`] = `
 }
 `;
 
-exports[`a dialog recolour over an adapter colour, in place 1`] = `
+exports[`a dialog recolor over an adapter color, in place 1`] = `
 {
   "editableSources": [
     {
@@ -362,7 +362,7 @@ exports[`a dialog recolour over an adapter colour, in place 1`] = `
 }
 `;
 
-exports[`a dialog reorder to a rotation keeps the supplied tree beside a relabel and a recolour, and a reset returns 1`] = `
+exports[`a dialog reorder to a rotation keeps the supplied tree beside a relabel and a recolor, and a reset returns 1`] = `
 {
   "editableSources": [
     {
@@ -413,7 +413,7 @@ exports[`a dialog reorder to a rotation keeps the supplied tree beside a relabel
 }
 `;
 
-exports[`a dialog reorder to a rotation keeps the supplied tree beside a relabel and a recolour, and a reset returns 2`] = `
+exports[`a dialog reorder to a rotation keeps the supplied tree beside a relabel and a recolor, and a reset returns 2`] = `
 {
   "editableSources": [
     {
@@ -924,7 +924,7 @@ exports[`a supplied guide tree leads the rows 1`] = `
 }
 `;
 
-exports[`adapter labels and colours are the rows own 1`] = `
+exports[`adapter labels and colors are the rows own 1`] = `
 {
   "editableSources": [
     {

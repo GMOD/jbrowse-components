@@ -103,7 +103,7 @@ export interface ArcTooltipPayload {
   // distance: `chr22:23,290,313-130,853,964` names one chromosome and a
   // coordinate from another, and a bp distance across a translocation is not a
   // quantity. As a tick this fact was readable from the mark itself; as an arc
-  // the colour is the only channel carrying it, so the hover has to say it.
+  // the color is the only channel carrying it, so the hover has to say it.
   endRefName?: string
   // Reads behind this arc. One arc is one junction since `resolveArcs`, so this
   // is the number the stroke width encodes — and the reason the hover is worth
@@ -126,7 +126,7 @@ export interface ArcTooltipPayload {
 
 // An interchromosomal connector tick. Its own payload rather than an
 // `ArcTooltipPayload` with optional halves: a tick has ONE endpoint, no span, no
-// insert size and no colour bucket (every tick is ARC_COLOR_INTERCHROM), and
+// insert size and no color bucket (every tick is ARC_COLOR_INTERCHROM), and
 // what it does have — the chromosomes on the far side — no arc has.
 export interface ArcLineTooltipPayload {
   type: 'arcLine'

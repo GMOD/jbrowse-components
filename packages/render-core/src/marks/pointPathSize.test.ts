@@ -4,7 +4,7 @@ import type { MarkContext2D } from './types.ts'
 
 const CHROME_SILENT_ARC_LIMIT = 180_000
 
-test('a same-colour run too long for one Chrome path fills in pieces', () => {
+test('a same-color run too long for one Chrome path fills in pieces', () => {
   const count = 250_000
   const arcsPerFill: number[] = []
   let arcs = 0

@@ -59,7 +59,7 @@ export function sourceChromRankLabel(rank: number): string {
  *
  * A lone "Main chromosome" entry is the meaningful minimum: it says nothing in
  * view is rearranged. A rank `color.labels` names takes that name, and a
- * written `color.range` its colours, the key stopping at its last.
+ * written `color.range` its colors, the key stopping at its last.
  */
 export function sourceChromLegendItems(
   maxRank: number,
@@ -129,9 +129,9 @@ const MAX_RANK_TABLES = 16
 const rankTables = new Map<string, readonly number[]>()
 
 /**
- * Each rank's packed colour, the last painting every rank past it: `range`'s
- * colours where it lists any, else `SOURCE_CHROM_PALETTE`. The same array for
- * the same range, so a colour edit that leaves it alone re-encodes nothing.
+ * Each rank's packed color, the last painting every rank past it: `range`'s
+ * colors where it lists any, else `SOURCE_CHROM_PALETTE`. The same array for
+ * the same range, so a color edit that leaves it alone re-encodes nothing.
  */
 export function sourceChromRankColors(
   range: readonly string[] = SOURCE_CHROM_PALETTE,

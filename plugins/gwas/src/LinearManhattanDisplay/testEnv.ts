@@ -24,7 +24,7 @@ const REGIONS = ['ctgA', 'ctgB'].map(refName => ({
  * `marks` is an environment option rather than a `createDisplay` one because
  * it is config, and the fetch autorun runs on the leading edge: config written
  * after the display attaches is a *user changing the plot*, which
- * legitimately costs a refetch. A session restoring an LD-coloured track has
+ * legitimately costs a refetch. A session restoring an LD-colored track has
  * its marks before `afterAttach`, so the harness must too, or every LD test
  * measures one round trip that production never makes.
  */

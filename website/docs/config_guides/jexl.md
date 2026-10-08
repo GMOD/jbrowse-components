@@ -13,10 +13,9 @@ that takes one, `"color": "jexl:feature.strand==-1?'red':'blue'"`. The
 [config pages](/docs/config_guide) list _callback args_ under each such slot,
 and a config writing a callback anywhere else fails to load, naming the slot. A
 [`featureField`](/docs/config_guides/slot_types#featurefield) slot, such as a
-colour's or a facet's `field`, takes a `jexl:` expression too, as a field
-derived from each feature. Any feature attribute is a plain property, nested
-attributes work (`feature.INFO.SVTYPE`), and `feature.parent` is the parent
-feature:
+color's or a facet's `field`, takes a `jexl:` expression too, as a field derived
+from each feature. Any feature attribute is a plain property, nested attributes
+work (`feature.INFO.SVTYPE`), and `feature.parent` is the parent feature:
 
 ```js
 jexl: feature.start // start coordinate, 0-based half open

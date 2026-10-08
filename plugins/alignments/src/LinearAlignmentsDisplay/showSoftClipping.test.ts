@@ -437,7 +437,7 @@ describe('alignments colorBy', () => {
     })
   })
 
-  it('the Tag dialog picks a gradient or a colour per value', () => {
+  it('the Tag dialog picks a gradient or a color per value', () => {
     const { display } = createDisplay({
       color: {
         field: 'tags.NM',
@@ -468,7 +468,7 @@ describe('alignments colorBy', () => {
     expect(display.pinnedInsertSizeBand).toEqual({ lower: 150, upper: 600 })
   })
 
-  it('an undeclared key in the colour object is named, and a write of one refused', () => {
+  it('an undeclared key in the color object is named, and a write of one refused', () => {
     const { display } = createDisplay({ color: { type: 'strand' } })
     expect(console.warn).toHaveBeenCalledWith(
       expect.stringMatching(/Color does not declare type: loading without it$/),

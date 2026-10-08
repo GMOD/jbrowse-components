@@ -91,7 +91,7 @@ test('typing the tag the reads are already colored by keeps that coloring', asyn
 
 // A different tag's colors are in force, so the box stays a genuine offer to
 // replace them and does nothing unless taken.
-test('a different tag colouring leaves the box unticked and untouched', async () => {
+test('a different tag coloring leaves the box unticked and untouched', async () => {
   const { setColorBy } = renderDialog({
     colorBy: { type: 'tag', tag: 'RG' },
   })
@@ -105,7 +105,7 @@ test('a different tag colouring leaves the box unticked and untouched', async ()
 // Every scheme but the plain one PAINTS something the checkbox would replace, so
 // grouping by HP over an insert-size view used to turn that picture off on
 // Submit.
-test('a non-tag colour scheme is not replaced by default', async () => {
+test('a non-tag color scheme is not replaced by default', async () => {
   const { setColorBy } = renderDialog({
     colorBy: { type: 'insertSize' },
   })

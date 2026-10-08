@@ -60,7 +60,7 @@ const stringOf = (v: unknown) => (typeof v === 'string' ? v : undefined)
  * The config an old session's row display state becomes: `rows` and
  * `rowColor` from the arrangement, and the sidebar slots. A `layout` row answers to its `source` where it has one, which v4's
  * quantitative display kept apart from the `name` it drew, and to its `name`
- * otherwise. `colors: false` leaves the colours behind, for a display whose
+ * otherwise. `colors: false` leaves the colors behind, for a display whose
  * old layout copied a palette in rather than holding a reader's choice.
  */
 export function liftRetiredRowState(
@@ -79,7 +79,7 @@ export function liftRetiredRowState(
         : [{ key, label: label === key ? undefined : label, color: row.color }]
     })
   const labelled = rows.filter(r => r.label !== undefined)
-  const coloured = colors ? rows.filter(r => typeof r.color === 'string') : []
+  const colored = colors ? rows.filter(r => typeof r.color === 'string') : []
   const arrangement = {
     ...(rows.length > 0 ? { domain: rows.map(r => r.key) } : {}),
     ...(labelled.length > 0
@@ -103,11 +103,11 @@ export function liftRetiredRowState(
     ...(typeof instance.showSidebarLabelsSetting === 'boolean'
       ? { showRowLabels: instance.showSidebarLabelsSetting }
       : {}),
-    ...(coloured.length > 0
+    ...(colored.length > 0
       ? {
           rowColor: {
-            domain: coloured.map(r => r.key),
-            range: coloured.map(r => r.color),
+            domain: colored.map(r => r.key),
+            range: colored.map(r => r.color),
           },
         }
       : {}),

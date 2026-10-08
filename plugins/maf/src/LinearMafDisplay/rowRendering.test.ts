@@ -1,6 +1,6 @@
 import { createMafTestEnvironment } from './testEnv.ts'
 
-// The rows are coloured by one field and, as a bar chart, may carry identity
+// The rows are colored by one field and, as a bar chart, may carry identity
 // on the bar height; the Row coloring radio writes the pair.
 describe('row coloring is the color field and the bar height', () => {
   it('defaults to the mismatches', () => {
@@ -10,7 +10,7 @@ describe('row coloring is the color field and the bar height', () => {
     expect(display.selectedRowRendering).toBe('mismatch')
   })
 
-  it('the X-Y plot pick writes identity on y, and a colour pick clears it', () => {
+  it('the X-Y plot pick writes identity on y, and a color pick clears it', () => {
     const { display } = createMafTestEnvironment().createDisplay()
     display.setRowRendering('xyplot')
     expect(display.yField).toBe('identity')
@@ -23,7 +23,7 @@ describe('row coloring is the color field and the bar height', () => {
     expect(display.selectedRowRendering).toBe('chromosome')
   })
 
-  it('takes a colour and a bar height a config names together', () => {
+  it('takes a color and a bar height a config names together', () => {
     const { display } = createMafTestEnvironment({
       displayConfig: {
         color: 'identity',
@@ -101,7 +101,7 @@ describe('what paints is the selection, overridden only by zoom and summary', ()
     expect(display.activeRowRendering).toBe('identity')
   })
 
-  it('yields the bar height to the colour field at base level', () => {
+  it('yields the bar height to the color field at base level', () => {
     const { display, view } = createMafTestEnvironment({
       displayConfig: { color: 'base', y: 'identity' },
     }).createDisplay()

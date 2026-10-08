@@ -20,7 +20,7 @@ const wolf = '#67001f'
 const dog = '#f4a582'
 
 describe('SvgRowLabels', () => {
-  it("draws a row's colour as a 4px bar at its label's left, the text past it", () => {
+  it("draws a row's color as a 4px bar at its label's left, the text past it", () => {
     const sources = [{ name: 'COLL000001', label: 'Collie 1', rowColor: dog }]
     const c = draw({ sources, rowHeight: 20, labelOffset: 0, backdrop: 'wash' })
     const bars = c.querySelectorAll('[data-testid="row-color-bar"]')
@@ -41,7 +41,7 @@ describe('SvgRowLabels', () => {
     expect(c.querySelector('path')?.getAttribute('d')).toContain(`h${w}`)
   })
 
-  it('draws no bar for a row with no colour, beside one that has one', () => {
+  it('draws no bar for a row with no color, beside one that has one', () => {
     const c = draw({
       sources: [{ name: 'a', rowColor: wolf }, { name: 'b' }],
       rowHeight: 20,
@@ -54,7 +54,7 @@ describe('SvgRowLabels', () => {
     expect(a!.getAttribute('x')).toBe(b!.getAttribute('x'))
   })
 
-  it('draws no bar, and starts the text at the box edge, when no row has a colour', () => {
+  it('draws no bar, and starts the text at the box edge, when no row has a color', () => {
     const c = draw({
       sources: [{ name: 'a' }, { name: 'b' }],
       rowHeight: 20,
@@ -107,7 +107,7 @@ describe('SvgRowLabels', () => {
     expect(wash.querySelectorAll('path')).toHaveLength(2)
   })
 
-  it('fills the label run with the colour, and draws no text, below the text threshold', () => {
+  it('fills the label run with the color, and draws no text, below the text threshold', () => {
     const c = draw({
       sources: [{ name: 'a', label: 'Collie 1', rowColor: dog }],
       rowHeight: 0.32,
@@ -279,19 +279,16 @@ describe('the label bar on screen and in the export', () => {
   it.each([
     ['on screen', onScreen],
     ['in the export', inExport],
-  ])(
-    'draws a 4px bar per coloured row above the text threshold %s',
-    (_, at) => {
-      const bars = [...at(20).querySelectorAll('[data-testid="row-color-bar"]')]
-      expect(bars.map(b => b.getAttribute('fill'))).toEqual([dog, wolf])
-      expect(bars.map(b => b.getAttribute('width'))).toEqual(['4', '4'])
-    },
-  )
+  ])('draws a 4px bar per colored row above the text threshold %s', (_, at) => {
+    const bars = [...at(20).querySelectorAll('[data-testid="row-color-bar"]')]
+    expect(bars.map(b => b.getAttribute('fill'))).toEqual([dog, wolf])
+    expect(bars.map(b => b.getAttribute('width'))).toEqual(['4', '4'])
+  })
 
   it.each([
     ['on screen', onScreen],
     ['in the export', inExport],
-  ])('fills each coloured run below the text threshold %s', (_, at) => {
+  ])('fills each colored run below the text threshold %s', (_, at) => {
     const el = at(2)
     expect(el.querySelectorAll('[data-testid="row-color-bar"]')).toHaveLength(0)
     expect(el.querySelectorAll('text')).toHaveLength(0)

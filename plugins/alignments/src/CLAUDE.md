@@ -30,21 +30,21 @@ A pass's `mark.ts` hands it a shader, a packer and rule CODES — `Fade`, `Hit`,
 `perBaseQuality`, `perBaseLetter`, `softclipBases`, `insertion`, `clip`,
 `overlap`, `modification`. `read`, `connectingLines` and `linkedReads` are
 plugin-local `MarkShape`s over their own painters: a read's instance is a
-segment and its colour a per-read function of the scheme, and the two lines
-carry two rows per instance. `modification`'s hit test stays a Flatbush query
-because the INDEX is the part a row scan cannot supply.
+segment and its color a per-read function of the scheme, and the two lines carry
+two rows per instance. `modification`'s hit test stays a Flatbush query because
+the INDEX is the part a row scan cannot supply.
 
 **A mark is DATA: channels plus rule codes, and no member takes an index.** The
 arrays come back from one `channels(data)` per region, in one field order for
 every mark; the alpha, the click gate, the row band, the point width and the
-fill colour are small integers the walkers switch on. The members used to be
+fill color are small integers the walkers switch on. The members used to be
 callbacks, and with ten marks over one walker every call in the loop was
 megamorphic. `41689b467e`, which made them codes, timed gap paint at 94 ms
 against 45 and mismatch at 59 against 19 over 100K instances, a median of 20
-with no control, and credits 42 ms of the 94 to its `rgbaPrefix255`
-colour-string change in the same commit, so codes against callbacks is
-unmeasured in isolation. A new rule is still a `Fade`/`Hit`/`Band`/`Paint` code
-and a case in the walker, never a function on the mark.
+with no control, and credits 42 ms of the 94 to its `rgbaPrefix255` color-string
+change in the same commit, so codes against callbacks is unmeasured in
+isolation. A new rule is still a `Fade`/`Hit`/`Band`/`Paint` code and a case in
+the walker, never a function on the mark.
 
 **The draw gate and the hit gate are one `enabled`.** The hit chain
 (`hitTestPipeline.ts`) asks each mark's `hitNearest` with the section's

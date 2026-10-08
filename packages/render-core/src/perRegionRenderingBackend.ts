@@ -119,7 +119,7 @@ export abstract class Canvas2DPerRegionRenderingBackend<
    * `prepareCanvas`'s `clearRect` as the whole of it, which is transparent.
    * Synteny is the one display that overrides: its indel wedges pre-blend
    * against a KNOWN ground and only agree with the base ribbon beside them over
-   * a destination that really is that colour.
+   * a destination that really is that color.
    */
   protected clearColor(_state: RenderState): ClearColor | undefined {
     return undefined

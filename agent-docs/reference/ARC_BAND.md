@@ -52,7 +52,7 @@ on screen. Three things ride on that, each a silently wrong picture if missed:
 worker's "Show proper pairs" filter (`isProperPairChain`) and the "Show
 concordant-pair arcs" filter (`resolveArcs`) both call it, and
 `concordantPairParity.test.ts` holds them together. The arc filter also requires
-the arc to paint the baseline colour slot (`arcPaintRank`), so "hidden" equals
+the arc to paint the baseline color slot (`arcPaintRank`), so "hidden" equals
 "grey" under any `colorByType`. The read cloud's `isConcordantFRPair` is a
 different, deliberate reading: |TLEN| in the modal band.
 

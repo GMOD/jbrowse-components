@@ -27,7 +27,7 @@ const IMPACT_COLOR: Record<string, string> = Object.fromEntries(
   IMPACT_TIERS.map(t => [t.tier, t.color]),
 )
 
-// The colour preset field for the most severe consequence tier.
+// The color preset field for the most severe consequence tier.
 export const IMPACT_FIELD = 'impact'
 
 // What `{ field: 'impact' }` paints on the single-variant display, through the

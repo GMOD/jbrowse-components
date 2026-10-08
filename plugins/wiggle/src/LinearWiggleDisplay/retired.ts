@@ -99,18 +99,18 @@ const SAME_NAME = ['summaryScoreMode', 'displayCrossHatches', 'resolution']
 const V4_RENDERERS = ['XYPlotRenderer', 'LinePlotRenderer', 'DensityRenderer']
 
 /**
- * v4's `renderers` block, as the display's `retired` reads it: its colours
+ * v4's `renderers` block, as the display's `retired` reads it: its colors
  * become `color`, and everything else in it is let go. The scale slots beside
  * it are `retiredScaleSpellings`.
  */
 export const retiredConfigSpellings = {
   renderers: (renderers: unknown) => {
     const block = isRecord(renderers) ? renderers : {}
-    const coloured = V4_RENDERERS.map(name => block[name])
+    const colored = V4_RENDERERS.map(name => block[name])
       .filter(isRecord)
       .map(colorOf)
       .find(lifted => 'color' in lifted)
-    return coloured ?? {}
+    return colored ?? {}
   },
 }
 

@@ -601,7 +601,7 @@ describe('GPU sync skips regions whose data is unchanged', () => {
 // together stranded a coverage-off LGVSyntenyDisplay on any window its file has
 // no records for. One scenario table, both backends, same expected result.
 describe('renderBlocks canvasDrawn gating parity', () => {
-  // Nothing here asserts on a colour — the scenarios are about whether a block
+  // Nothing here asserts on a color — the scenarios are about whether a block
   // reports having drawn — so this is makeTestPalette's all-zero palette rather
   // than thirty hand-written `[0, 0, 0]`s that had to grow with the type.
   const fullColors: ColorPalette = makeTestPalette()

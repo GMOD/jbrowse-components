@@ -15,7 +15,7 @@ public static const uint VERTS_PER_INSTANCE = 6u;
 // via covNormalizeDepth, so each segment is a linear slice of a possibly
 // log-scaled bar without any per-position un-mixing at draw time.
 //
-// Which means that on a LOG axis the coloured fraction reads as the allele
+// Which means that on a LOG axis the colored fraction reads as the allele
 // proportion and not as a count off the y-axis: a 50% allele is half the bar
 // whatever the scale, so its top edge does not land on the depth the axis would
 // read there. Deliberate — the alternative bakes the axis into the buffer and

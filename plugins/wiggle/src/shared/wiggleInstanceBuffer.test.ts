@@ -355,7 +355,7 @@ describe('each packer serves only its own rendering', () => {
   })
 })
 
-describe('both line records carry both pivot-side colours', () => {
+describe('both line records carry both pivot-side colors', () => {
   const signedColor = [0, 0, 1] as [number, number, number]
 
   test.each([
@@ -457,7 +457,7 @@ describe('packBandInstances', () => {
     )
   })
 
-  test('each bin carries its range and both sign colours', () => {
+  test('each bin carries its range and both sign colors', () => {
     const f = readBand(packBandInstances([bandSource(RENDERING_TYPE_LINE)]), 2)
     expect(f.start).toBe(300)
     expect(f.max).toBe(6)

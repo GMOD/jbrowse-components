@@ -57,9 +57,9 @@ test('checkbox selection feeds the move-to-bottom action (arg.ids wiring)', () =
   ])
 })
 
-// A row's own colour must not fall through to the auto-derived extras and
+// A row's own color must not fall through to the auto-derived extras and
 // render as a raw hex text column.
-test("a row's own colour is not rendered as an extras column", () => {
+test("a row's own color is not rendered as an extras column", () => {
   const rows: Src[] = [{ name: 'a', color: '#f00', rowColor: '#0f0' }]
   renderGrid(rows)
 

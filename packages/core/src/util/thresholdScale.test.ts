@@ -61,7 +61,7 @@ describe('thresholdField', () => {
     ])
   })
 
-  test('paints each bin its range colour in ascending cut order', () => {
+  test('paints each bin its range color in ascending cut order', () => {
     expect(field.domain.map(field.color)).toEqual([
       'blue',
       'lightblue',

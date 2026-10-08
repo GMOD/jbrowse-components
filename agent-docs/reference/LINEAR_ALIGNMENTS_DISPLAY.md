@@ -39,7 +39,7 @@ the display read it and must not recompute on the toggle.
   must not be there. Hover and selection are the chrome's highlight guide
   (`hoverInk`, `selectionInk`), never `renderState`.
 
-## A split segment's colour is framed by the chains on screen
+## A split segment's color is framed by the chains on screen
 
 `readChainHasSupp` is a **bitfield, not a 0-4 enum** — `CHAIN_SUPP_PRESENT` and
 `CHAIN_FRAME_REV` answer a chain-level question (which way does this molecule
@@ -71,7 +71,7 @@ statement of when framing is live.
 **`buildLanes` (lanes.ts) is where a group key becomes data** — the raw map, the
 laid-out map, the sashimi sides, and the collapse/override state, per lane, in
 stacking order. The read-connection feeds join in `sourceSections`, after
-layout, because they are coloured and the layout must not read the palette. A
+layout, because they are colored and the layout must not read the palette. A
 `renderSections` entry IS its lane plus band geometry, so a consumer walking
 sections has every per-lane answer in hand and none of them are optional. Don't
 reach back into a by-key collection from a call site that already has a lane;
@@ -269,7 +269,7 @@ an `onClick` gets nothing, `closeContextMenu` ran first.
 - **The collapse is for DRAWING, so the cluster key still takes the true
   endpoints** (`pushArc`'s `keyFeet`). `arcKey` carries no `spanBp` and an
   unplaced mark's `yBp` is 0, so keying off the drawn feet asks "same foot, same
-  colour?" — which at any real depth every read on that outer edge answers yes
+  color?" — which at any real depth every read on that outer edge answers yes
   to. They merged into one mark whose width counted them all and whose hover
   named one of their partners.
 - **`minInterchromSupport` is gated against the number each mark DRAWS with** —

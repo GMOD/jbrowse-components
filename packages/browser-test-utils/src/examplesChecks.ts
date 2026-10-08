@@ -320,7 +320,7 @@ export async function checkPluginTookEffect(
 //
 // The failure: an example may not use this shell's custom properties, because it
 // has to stay a file the reader can paste into their own app, so the demos style
-// themselves with CSS *system* colours. Get the theme plumbing wrong and those
+// themselves with CSS *system* colors. Get the theme plumbing wrong and those
 // stop tracking the page — `color-mix(in srgb, CanvasText 8%, Canvas)` painted a
 // near-white box under near-white text on every dark-mode page for as long as
 // `color-scheme` went undeclared, and the *only* reason anyone found out was
@@ -329,7 +329,7 @@ export async function checkPluginTookEffect(
 //
 // 3:1 is the large-text AA bound, and it sits well below anything deliberate: a
 // muted 0.6-alpha hint on this palette lands near 5.6:1. So a failure here is
-// never "this could be crisper", it is "these two colours came from different
+// never "this could be crisper", it is "these two colors came from different
 // themes". Raising it toward 4.5 would start reporting design choices, which is
 // how a check like this gets muted.
 const MIN_CONTRAST = 3
@@ -342,19 +342,19 @@ const MIN_TEXT_ELEMENTS = 25
  * Check that every piece of DOM text on the page is legible against what is
  * actually painted behind it.
  *
- * Both colours are *composited*, which is the whole reason this can't be a
+ * Both colors are *composited*, which is the whole reason this can't be a
  * stylesheet review: `color` and `background-color` are frequently translucent,
  * an ancestor's `opacity` multiplies through, and the effective background is
  * whatever the first opaque layer up the tree turns out to be. The pair that
- * shipped broken read `rgb(228,230,232)` on `rgb(235,235,235)` — two colours
+ * shipped broken read `rgb(228,230,232)` on `rgb(235,235,235)` — two colors
  * neither of which is wrong on its own.
  *
  * **Text over a `<canvas>` is skipped, and that is not laziness.** A scalebar
  * label or a track label sits on pixels the DOM cannot report: the background
- * walk finds the container's colour, not the rendered image, so any ratio
+ * walk finds the container's color, not the rendered image, so any ratio
  * computed for it would be fiction — and a confident fiction is worse here than
  * a gap, because it would be the number someone later tunes the palette
- * against. Those labels get their colour from `usePalette`, which is the
+ * against. Those labels get their color from `usePalette`, which is the
  * mechanism `PaletteProvider` exists to keep correct.
  */
 async function contrastPass(page: Page, minContrast: number) {
@@ -368,9 +368,9 @@ async function contrastPass(page: Page, minContrast: number) {
     // that skips the one syntax under test is worse than no check — this
     // returned a clean run against the very bug it was written for. So the
     // browser resolves it: fill one pixel and read it back, which works for
-    // `color-mix`, `color()`, `lab()`, system colours and named colours alike.
+    // `color-mix`, `color()`, `lab()`, system colors and named colors alike.
     // Every input here comes from `getComputedStyle`, so it is always a resolved,
-    // valid colour — no validity handling is needed, and adding some would only
+    // valid color — no validity handling is needed, and adding some would only
     // be another place to be quietly wrong.
     const probe = document.createElement('canvas')
     probe.width = 1
@@ -566,7 +566,7 @@ async function contrastPass(page: Page, minContrast: number) {
   // four were 404 shells, and it reported four clean sites in a row. Every page
   // here carries a sidebar, a heading and prose before any demo mounts, so a
   // couple of dozen text nodes is a floor no real page approaches — falling
-  // under it means the page did not load, not that its colours are good.
+  // under it means the page did not load, not that its colors are good.
   if (found.examined < MIN_TEXT_ELEMENTS) {
     return [
       `contrast check examined only ${found.examined} text elements (expected ` +
@@ -595,7 +595,7 @@ async function contrastPass(page: Page, minContrast: number) {
  * The page is left on whatever theme it arrived with, because this shares a
  * page with every other check in the composition. Even so, prefer to call it
  * before anything that clicks: the settle below is sized for a CSS cascade
- * (which is what these colours are), not for a display refetching at a new
+ * (which is what these colors are), not for a display refetching at a new
  * theme, and a check that drives the UI afterwards should start from a page
  * that has stopped moving.
  */

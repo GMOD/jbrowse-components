@@ -59,7 +59,7 @@ function paintCells(
   }
 }
 
-test('the default hands back the worker colours untouched', () => {
+test('the default hands back the worker colors untouched', () => {
   const data = cells()
   expect(paintCells(data, none, alleleCount).cellColors).toBe(data.cellColors)
   expect(paintCells(data, none, phased).cellColors).toBe(data.cellColors)
@@ -92,7 +92,7 @@ test('shading off paints the bare hue, the default one included', () => {
   ).toBe(getCachedABGR(ALT_HUE))
 })
 
-test('phased alt cells a hue paints take it; the rest keep their allele colour', () => {
+test('phased alt cells a hue paints take it; the rest keep their allele color', () => {
   const { cellColors } = paintCells(cells(), byValue, phased)
   expect(cellColors[3]).toBe(getCachedABGR('#aa0000'))
   expect(cellColors[5]).toBe(getCachedABGR('#0000aa'))
@@ -111,7 +111,7 @@ test('a constant paints every alt cell, with or without values', () => {
   )
 })
 
-test('values read for another colour paint as though none were read', () => {
+test('values read for another color paint as though none were read', () => {
   const data = cells()
   const stale = { ...alleleCount, valuesRead: false }
   expect(paintCells(data, byValue, stale).cellColors).toBe(data.cellColors)

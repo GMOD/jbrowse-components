@@ -368,7 +368,7 @@ stay display props.
 | `subtreeFilter` | `rows.kept` |
 
 A session with those props opens with them moved into `rows` and `rowColor`, and
-a v4 session's plot, scale, autoscale, domain and colours move to the config
+a v4 session's plot, scale, autoscale, domain and colors move to the config
 slots that hold them now.
 
 ## The multi-sample variant rows are config too
@@ -380,7 +380,7 @@ run's tree, and `rows.kept` the focus. In phased mode the names are haplotypes,
 `"<sample> HP<n>"`, and a sample's name stands for all of its haplotypes.
 `rowColor` is `field | { field, domain, range }`: the string is still the
 sample-metadata attribute that tints every row, and `domain`/`range` pair row
-names with the colours a reader set, which the attribute's palette beats while
+names with the colors a reader set, which the attribute's palette beats while
 one is named.
 
 <!-- prettier-ignore -->
@@ -434,8 +434,8 @@ also the value the bars grow from.
 `setColor` and `setOrigin`. **None of it migrates**, in a config, a session or
 an `applyDisplaySettings` bag: MST drops a snapshot key the model no longer
 declares, so a track that named one of them reopens in the default colors.
-`domainMid` is new on the ramp. The track menu has no colour row of its own any
-more: **Edit colors/arrangement...** offers the plot's two colours on one line,
+`domainMid` is new on the ramp. The track menu has no color row of its own any
+more: **Edit colors/arrangement...** offers the plot's two colors on one line,
 and its **Edit plot...** opens the shared plot dialog on the same object a
 config file holds.
 

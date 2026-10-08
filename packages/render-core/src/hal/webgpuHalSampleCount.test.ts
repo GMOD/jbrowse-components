@@ -5,8 +5,8 @@ import { WebGPUHal } from './webgpuHal.ts'
 import type { SampleCount } from './types.ts'
 
 // What a display's sample count decides, taken off a fake device: whether a
-// multisampled colour attachment is allocated at all, and what the frame's one
-// colour attachment then looks like. Both are validation failures on a real
+// multisampled color attachment is allocated at all, and what the frame's one
+// color attachment then looks like. Both are validation failures on a real
 // device rather than exceptions — an attachment that disagrees with the
 // pipelines has every draw in the frame rejected and paints a blank canvas — so
 // the shapes are worth pinning where they can be read.

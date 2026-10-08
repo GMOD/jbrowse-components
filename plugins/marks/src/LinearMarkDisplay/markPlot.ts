@@ -20,7 +20,7 @@ export type MarkPlot = Plot
 export const MARK_PLOT_EXAMPLES = [
   {
     plot: '{"marks":[{"mark":"point","encoding":{"y":"score","color":{"field":"strand"}}}]}',
-    description: 'a point per feature at its score, coloured by strand',
+    description: 'a point per feature at its score, colored by strand',
   },
   {
     plot: '{"facet":{"field":"HP","transform":[{"type":"pileup"}]},"marks":[{"mark":"span"}]}',

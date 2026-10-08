@@ -50,7 +50,7 @@ export const NO_PREV_START = GENERATED_NO_PREV_START
 // other.
 export const MIN_FILL_WIDTH_PX = GENERATED_MIN_FILL_WIDTH_PX
 
-// The most cuts a threshold colour parts a plot at: the shader's uniform
+// The most cuts a threshold color parts a plot at: the shader's uniform
 // block holds this many.
 export const MAX_WIGGLE_CUTS = GENERATED_MAX_WIGGLE_CUTS
 
@@ -77,10 +77,10 @@ export interface WiggleGPURenderState {
   lineWidth: number
   // The score xyplot bars grow from, the `origin` config slot.
   origin: number
-  // The score the colour parts at: which side a line, band or bar paints, and
+  // The score the color parts at: which side a line, band or bar paints, and
   // where the two-sided density fade is white. A threshold's cut, else `origin`.
   pivot: number
-  // Where the colour changes, ascending, `pivot` first, and the colour of each
+  // Where the color changes, ascending, `pivot` first, and the color of each
   // band between two of them; the lowest and highest bands take each layer's
   // own `negColor` and `color`.
   cuts: number[]
@@ -88,9 +88,9 @@ export interface WiggleGPURenderState {
   // The score at a density ramp's middle stop; absent runs the ramp straight
   // across the domain.
   rampMid?: number
-  // Density's colour ramp, already resolved to its 256 RGBA entries. Absent
-  // is the inline white→track-colour fade, which is what a per-row colour
-  // needs and one LUT cannot encode; present, both backends colour through
+  // Density's color ramp, already resolved to its 256 RGBA entries. Absent
+  // is the inline white→track-color fade, which is what a per-row color
+  // needs and one LUT cannot encode; present, both backends color through
   // these bytes (the GPU as the density pass's texture, Canvas2D/SVG as a
   // fillStyle LUT). The same cached array each read, so the GPU upload memo
   // keys on it.
@@ -124,7 +124,7 @@ export interface SourceRenderData {
   // feature in both backends; `color` stays the single-color fallback (and the
   // legend/first-color source).
   colorsAbgr?: Uint32Array
-  // A line plot's colour below the pivot; `color` is above.
+  // A line plot's color below the pivot; `color` is above.
   negColor?: [number, number, number]
   // Center-to-center bp distance past which the interpolated (linecenter) line
   // treats the span as a hole and starts a new run instead of drawing a chord

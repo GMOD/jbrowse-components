@@ -8,10 +8,10 @@
 // before believing timing — are in `agent-docs/reference/BENCHMARKING.md`.
 //
 // THE QUESTION. `buildReadTagColors` bakes one packed ABGR per read on the main
-// thread, per region, whenever the layout re-runs under a CPU-baked colour
+// thread, per region, whenever the layout re-runs under a CPU-baked color
 // scheme (tag values, or mate refNames under chromosome painting). It used to
 // resolve each read through a model-held `colorTagMap` of every value the track
-// had ever seen; it now computes the colour from the value itself and memoizes
+// had ever seen; it now computes the color from the value itself and memoizes
 // per bake. That deletes state, but it also moves a `hashString` +
 // `cssColorToRgb` + `packAbgr` off a once-per-session path and onto a
 // once-per-distinct-value-per-bake one — so the question is whether the bake
@@ -41,7 +41,7 @@
 //   mateRefName, 24, map 24      pure 1.80/2.03 ms   map 1.43x/1.24x  [1.01/1.00]
 //   mateRefName, 24, map 500     pure 1.91/2.26 ms   map 1.79x/1.66x  [1.01/1.01]
 //
-// The bake did NOT get slower for computing colours per value: it got faster in
+// The bake did NOT get slower for computing colors per value: it got faster in
 // every fixture, and more so the longer the track had been panned, because the
 // arm it replaced re-parsed the whole accumulated map on every bake while this
 // one only ever touches values that are on screen. The `=== ''` fast path is
@@ -171,7 +171,7 @@ const MATE: ColorBy = { type: 'mateRefName' }
 const chrom = (i: number) => `chr${i + 1}`
 
 const fixtures: Fixture[] = [
-  // Haplotype colouring: two values plus untagged reads, and the map never
+  // Haplotype coloring: two values plus untagged reads, and the map never
   // grows past them. The case where the old shape had least to lose.
   {
     name: 'HP, 3 values, map 3',
@@ -201,14 +201,14 @@ function main() {
     console.error('run with --expose-gc\n')
   }
   console.log(
-    `tag-colour bake, ${READS} reads, min of ${ROUNDS} rotated rounds\n`,
+    `tag-color bake, ${READS} reads, min of ${ROUNDS} rotated rounds\n`,
   )
   for (const fx of fixtures) {
     const values = Array.from(
       { length: READS },
       (_, i) => fx.onScreen[i % fx.onScreen.length]!,
     )
-    // Every value the map had accumulated, coloured exactly as the old code
+    // Every value the map had accumulated, colored exactly as the old code
     // filled it — through the same function, so the two arms cannot disagree
     // about what a value paints.
     const colorTagMap: Record<string, string> = {}

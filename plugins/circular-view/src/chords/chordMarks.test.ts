@@ -182,7 +182,7 @@ describe('one trace, two sinks', () => {
 
 describe('the canvas2d rung', () => {
   // rounded to the alpha byte the canvas keeps
-  test("fills each ribbon at its colour's alpha times the display's", () => {
+  test("fills each ribbon at its color's alpha times the display's", () => {
     const { ctx, calls } = recordingContext()
     ribbonMark.paintBlock(
       ctx,
@@ -200,7 +200,7 @@ describe('the canvas2d rung', () => {
     ])
   })
 
-  test('strokes a chord in its own colour and skips one under a pixel', () => {
+  test('strokes a chord in its own color and skips one under a pixel', () => {
     const { ctx, calls } = recordingContext()
     chordMark.paintBlock(
       ctx,

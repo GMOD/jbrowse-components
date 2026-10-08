@@ -69,7 +69,7 @@ describe('auto', () => {
   })
 })
 
-test('takes the field a colour object names outright', () => {
+test('takes the field a color object names outright', () => {
   expect(
     resolveClusterField({
       ...base,

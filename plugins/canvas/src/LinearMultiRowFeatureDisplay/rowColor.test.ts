@@ -34,7 +34,7 @@ function loaded(displayConfig: Record<string, unknown>) {
 
 const DECLARED = { rowColor: { domain: ['c', 'a'], range: ['#0f0', '#00f'] } }
 
-test('the dialog seeds each row with the colour the config gives it', () => {
+test('the dialog seeds each row with the color the config gives it', () => {
   const display = loaded(DECLARED)
   expect(display.editableSources.map(s => s.rowColor)).toEqual([
     '#00f',
@@ -54,7 +54,7 @@ test('a reorder writes the declared pairs back in their own order', () => {
   expect(display.rowLabels).toEqual({})
 })
 
-test('a recolour is custom until a reset returns the declared colours', () => {
+test('a recolor is custom until a reset returns the declared colors', () => {
   const display = loaded(DECLARED)
   display.applyRowEdits(display.editableSources, {
     domain: ['c', 'a', 'b'],
@@ -106,10 +106,10 @@ test('a submit over a window holding a fraction of the rows leaves the rest stan
   expect(display.rowDomain).toEqual(['b', 'a'])
 })
 
-// Each row has a lane of its own, so no palette deals the rows a colour by
+// Each row has a lane of its own, so no palette deals the rows a color by
 // name: with no pair, no `color` and no itemRgb every block draws in the
-// default colour, where a rainbow used to deal one per row.
-test('deals no rainbow: an unpaired row paints the default block colour', () => {
+// default color, where a rainbow used to deal one per row.
+test('deals no rainbow: an unpaired row paints the default block color', () => {
   const display = loaded({})
   expect(display.rowPaletteDeals).toBe(false)
   expect(display.rowColorStringsByIndex).toEqual([
@@ -120,9 +120,9 @@ test('deals no rainbow: an unpaired row paints the default block colour', () => 
   ])
 })
 
-// The colours resolve over the base arrangement, once per change to the rows,
+// The colors resolve over the base arrangement, once per change to the rows,
 // so no reorder, focus or relabel resolves them again.
-test('the row colours keep their identity across a reorder, a focus and a relabel', () => {
+test('the row colors keep their identity across a reorder, a focus and a relabel', () => {
   const display = loaded(DECLARED)
   const palette = display.resolvedRowColors
   expect(palette.size).toBe(2)
@@ -146,7 +146,7 @@ test("unknown: '' deals no palette, and the pairs still paint", () => {
   ])
 })
 
-test('a recolour from None reads as Each row, and None clears it', () => {
+test('a recolor from None reads as Each row, and None clears it', () => {
   const display = loaded({ rowColor: { unknown: '' } })
   expect(display.rowColorChoice).toBe('')
   display.applyRowEdits(display.editableSources, {
@@ -179,7 +179,7 @@ const GROUPS = {
   ],
 }
 
-test('rowColor by group deals a colour per group, and offers the field', () => {
+test('rowColor by group deals a color per group, and offers the field', () => {
   const display = loaded({ rowColor: 'group', ...GROUPS })
   expect(display.rowColorFields).toEqual(['group'])
   const [a, b, c] = display.rowColorStringsByIndex
@@ -218,7 +218,7 @@ test('rowColor by group pairs its domain with its range, on the blocks and the l
 // A row matching no `rowGroups` entry has no group, which is a missing value
 // rather than a category, as ggplot's `na.value`: the palette deals it nothing,
 // and neither does `unknown`.
-test('a row with no group takes no colour from the deal', () => {
+test('a row with no group takes no color from the deal', () => {
   const dealt = loaded({ rowColor: 'group', ...GROUPS })
   expect(dealt.sources[3]!.name).toBe('')
   expect(dealt.sources[3]!.rowColor).toBeUndefined()

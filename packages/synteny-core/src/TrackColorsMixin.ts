@@ -136,7 +136,7 @@ export function orderAttributeLabels(
  * #stateModel TrackColorsMixin
  *
  * The color-by state shared by every view that can draw more than one synteny
- * track at once: the view-wide colour object and the palette that tells overlaid tracks
+ * track at once: the view-wide color object and the palette that tells overlaid tracks
  * apart.
  *
  * A view supplies only `colorableTrackConfigs` — the dotplot walks its flat
@@ -149,14 +149,14 @@ export function TrackColorsMixin({ defaultColorField = '' } = {}) {
     .model({
       /**
        * #property
-       * The colour every track in the view paints with, a
+       * The color every track in the view paints with, a
        * [](/docs/config/syntenycolor) object: `{ field: "strand" }`,
        * `{ field: "query" }`, `{ field: "reference" }`, `{ field: "track" }`,
        * a measurement (`identity`, `mapq`, `dnds`) or a column the
        * tracks declare, with `domain` ordering a text column's labels,
-       * `range` colouring them and `labels` naming them in the key, and
+       * `range` coloring them and `labels` naming them in the key, and
        * `range` or `scheme`, `reverse` and pinned ends reshaping a ramp; a
-       * colour string paints every alignment. Unset, the view's default
+       * color string paints every alignment. Unset, the view's default
        * paints: `query` on the circular view, the default scheme elsewhere.
        */
       color: types.stripDefault(
@@ -264,7 +264,7 @@ export function TrackColorsMixin({ defaultColorField = '' } = {}) {
       /**
        * #method
        * Overridable hook: whether an alignment's shape shows its strand, which
-       * spares the strand colours a key. A linear ribbon twists against its
+       * spares the strand colors a key. A linear ribbon twists against its
        * rows' directions, which their rulers show; a whole-genome dotplot is
        * mostly dots with no slope to read.
        */
@@ -289,7 +289,7 @@ export function TrackColorsMixin({ defaultColorField = '' } = {}) {
       },
       /**
        * #getter
-       * `color.value`: the colour every alignment paints under the default
+       * `color.value`: the color every alignment paints under the default
        * mode in place of the view's own scheme, or undefined for that scheme.
        */
       get colorValue(): string | undefined {
@@ -298,14 +298,14 @@ export function TrackColorsMixin({ defaultColorField = '' } = {}) {
       /**
        * #getter
        * `color.domain`, the order a text column's labels take. Read off its
-       * own slot, so a key-only edit (`title`, `labels`) recolours nothing.
+       * own slot, so a key-only edit (`title`, `labels`) recolors nothing.
        */
       get colorDomain(): readonly string[] {
         return readConfObject(self.color, 'domain')
       },
       /**
        * #getter
-       * `color.range`, the colours a text column's labels take in domain order
+       * `color.range`, the colors a text column's labels take in domain order
        */
       get colorRange(): readonly string[] {
         return readConfObject(self.color, 'range')
@@ -377,7 +377,7 @@ export function TrackColorsMixin({ defaultColorField = '' } = {}) {
       },
       /**
        * #getter
-       * The field `color` paints by, `''` for the default colour.
+       * The field `color` paints by, `''` for the default color.
        */
       get colorField(): string {
         return paintedField(self.colorSetting)
@@ -386,7 +386,7 @@ export function TrackColorsMixin({ defaultColorField = '' } = {}) {
        * #getter
        * Whether the mode has a key worth a box: a track palette, a ramp, a
        * reader-named column, or strand wherever the shape does not show it
-       * (`shapeShowsStrand`), which leaves the colour the only strand cue.
+       * (`shapeShowsStrand`), which leaves the color the only strand cue.
        */
       get hasLegendKey(): boolean {
         const field = this.colorField
@@ -509,7 +509,7 @@ export function TrackColorsMixin({ defaultColorField = '' } = {}) {
         /**
          * #action
          * Set the field the view paints by over the `color` object (`''`
-         * for the default colour), and rescale the ramp, which is the only way
+         * for the default color), and rescale the ramp, which is the only way
          * back from a domain one outlying window widened.
          */
         setColorField(field: string) {

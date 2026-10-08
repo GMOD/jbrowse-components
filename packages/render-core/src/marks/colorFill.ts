@@ -3,8 +3,8 @@
  *
  * `@jbrowse/core/util/colorBits` re-exports `abgrToCssRgba` from here: core
  * depends on render-core, never the reverse. The direction that genuinely
- * needs core is resolving a CSS colour to a packed number, which is why a
- * shape takes packed colours and the display resolves them.
+ * needs core is resolving a CSS color to a packed number, which is why a
+ * shape takes packed colors and the display resolves them.
  */
 export function abgrToCssRgba(c: number) {
   const a = ((c >>> 24) & 255) / 255
@@ -12,8 +12,8 @@ export function abgrToCssRgba(c: number) {
 }
 
 /**
- * A fill-style setter that only touches `ctx.fillStyle` when the colour
- * changes. Most of a painting is runs of one colour, and both the string
+ * A fill-style setter that only touches `ctx.fillStyle` when the color
+ * changes. Most of a painting is runs of one color, and both the string
  * allocation and the context write cost more than the comparison.
  */
 export function makeAbgrFill(ctx: {

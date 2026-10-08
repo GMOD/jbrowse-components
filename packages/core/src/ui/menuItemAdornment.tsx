@@ -4,7 +4,7 @@ import type { MenuItem } from './MenuTypes.ts'
  * The trailing control a menu row draws, resolved at the point of drawing.
  *
  * `endAdornment` is an element the builder already made — synteny's and
- * wiggle's colour swatches — so the row hands it straight through.
+ * wiggle's color swatches — so the row hands it straight through.
  *
  * Lives in one place rather than at each of the four render sites, because the
  * "does any row have one?" predicate and the rendering have to agree — a row

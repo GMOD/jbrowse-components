@@ -305,8 +305,8 @@ export const alignmentsSpecs: ScreenshotSpec[] = [
 
   // Read cloud display on the volvox synthetic-SV CRAM: mates are
   // laid out on the Y axis by the log distance between them, so insertion pairs
-  // (drawn pink) separate from background. Each pair renders as two coloured
-  // squares at the read positions joined by a connector in the same colour —
+  // (drawn pink) separate from background. Each pair renders as two colored
+  // squares at the read positions joined by a connector in the same color —
   // the classic read-cloud look.
   // Drawn below the coverage band (readConnectionsDown) so the cloud doesn't
   // overlap the coverage histogram. Read arcs in an SV context are shown by the
@@ -444,7 +444,7 @@ export const alignmentsSpecs: ScreenshotSpec[] = [
   },
 
   // STRAND-SPLIT COVERAGE AS DEPTH, WHICH IS THE OTHER HALF OF THE SETTING.
-  // The figure below is about each band's own MISMATCH colouring and cannot
+  // The figure below is about each band's own MISMATCH coloring and cannot
   // show a depth split -- HG002 ONT is WGS and strand-balanced by construction,
   // which is exactly why it is the right data for that claim and the wrong data
   // for this one. So this is a second frame rather than a replacement.
@@ -482,7 +482,7 @@ export const alignmentsSpecs: ScreenshotSpec[] = [
   // what makes the flip read as one event rather than as two separate genes.
   //
   // `color: strand` for the same reason the ONT figure below sets it: the
-  // reads are coloured by the dimension the grouping used, so which section a
+  // reads are colored by the dimension the grouping used, so which section a
   // read belongs to is readable off the read.
   {
     mode: 'url',
@@ -654,7 +654,7 @@ export const alignmentsSpecs: ScreenshotSpec[] = [
     //
     // THE CONTROL IS FIVE BASES AWAY, AND IT WAS UNLABELLED. The loudest object
     // in this frame is not the boxed column: it is 1:55,705,716, an orange
-    // column running the full height of BOTH pileups and colouring both
+    // column running the full height of BOTH pileups and coloring both
     // coverage bands. Unmarked, it reads as a counterexample -- a reader is
     // told "one strand only" and their eye lands on a column that is plainly on
     // both. Marked, it is the control the figure needs, and the pair is the

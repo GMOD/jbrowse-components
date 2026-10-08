@@ -15,16 +15,16 @@ import type { AttributeRange } from './colorRamps.ts'
 import type { SyntenyOpacitySnapshot } from './syntenyOpacityConfigSchema.ts'
 
 /**
- * The opacity channel, read the way the colour channel is (`colorFunctions`):
+ * The opacity channel, read the way the color channel is (`colorFunctions`):
  * the view's `opacity` object plus a fetch's lanes in, a per-feature answer
  * out. Two numbers come out of it, because opacity is drawn in two places.
  *
  * The LEVEL is a shader uniform every alignment is multiplied by: the
  * constant `value`, or under a field the most opaque its `range` reaches.
- * Dragging the slider moves only the uniform, so it recolours nothing.
+ * Dragging the slider moves only the uniform, so it recolors nothing.
  *
  * The FADE is each feature's share of that level, baked into the alpha byte
- * of its packed colour by the colour pass. A field mapped through
+ * of its packed color by the color pass. A field mapped through
  * `range: [0.15, 0.8]` draws a feature at 0.15 as level 0.8 times fade
  * 0.1875.
  *
@@ -115,7 +115,7 @@ function isNumericField(
  * at the level.
  *
  * `viewRanges` is the domain a number column fades across, the view's
- * accumulated one as the colour ramp's is, and `fetchRanges` the fetch's own,
+ * accumulated one as the color ramp's is, and `fetchRanges` the fetch's own,
  * whose label lists a text column's values index.
  */
 export function createOpacityFunction({
@@ -184,7 +184,7 @@ export function createOpacityFunction({
 
 /**
  * #api
- * The part of `opacity` the colour pass reads: undefined for the constant,
+ * The part of `opacity` the color pass reads: undefined for the constant,
  * else the mapping with `range` as shares of its most opaque entry, so a
  * mapping scaled alike at both ends answers the same.
  */

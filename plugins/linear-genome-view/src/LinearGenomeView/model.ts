@@ -2431,7 +2431,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
         /**
          * #getter
          * Right edge (px, viewport-relative) of the on-screen content, clamped
-         * to the track — where a right-pinned overlay such as a wiggle's colour
+         * to the track — where a right-pinned overlay such as a wiggle's color
          * or score legend belongs, rather than out in the empty gutter the
          * regions can leave at whole-genome zoom. `@jbrowse/display-kit`'s
          * `contentRightEdgePx` states the rule; an SVG export applies the same

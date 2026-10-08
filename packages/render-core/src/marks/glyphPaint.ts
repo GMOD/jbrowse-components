@@ -21,7 +21,7 @@ export type GlyphPath = Pick<
  *
  * The disc/crisp-square split and the square's snap are pointGlyph.slang's
  * (adr-051), so the painter cannot drift from the shader about where the split
- * is. The caller owns `beginPath`/`fill`, so a run of one colour can batch into
+ * is. The caller owns `beginPath`/`fill`, so a run of one color can batch into
  * a single fill.
  *
  * Its own module, not `pointMark.ts`'s: this is the half of the shape a

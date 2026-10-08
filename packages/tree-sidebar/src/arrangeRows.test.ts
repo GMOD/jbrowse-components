@@ -134,7 +134,7 @@ describe('arrangeRows', () => {
     ).toBe(rows)
   })
 
-  test('a label replaces the row label and leaves its colour', () => {
+  test('a label replaces the row label and leaves its color', () => {
     const out = arrangeRows(rows, { domain: ['c'], labels: { a: 'Ay' } }, hooks)
     expect(out).toEqual([
       { name: 'c' },

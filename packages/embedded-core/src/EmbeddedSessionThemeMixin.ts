@@ -100,7 +100,7 @@ export function EmbeddedSessionThemeMixin(pluginManager: PluginManager) {
       /**
        * #action
        * Switch the session to light or dark, leaving the host's configured
-       * colours alone. `themeOptions` carries the mode to the renderer, so
+       * colors alone. `themeOptions` carries the mode to the renderer, so
        * labels drawn in the worker follow it, and `palette` is derived from
        * the same args, so React-drawn elements follow it too. An embedder who
        * sets only a React-side palette leaves the worker-drawn labels in the

@@ -765,7 +765,7 @@ export function stateModelFactory(
       },
       /**
        * #getter
-       * The slots a categorical gene colour deals its values into.
+       * The slots a categorical gene color deals its values into.
        */
       get geneColorSlots() {
         return heldColorSlots(self, this.geneColorEncoding)
@@ -2460,7 +2460,7 @@ export function stateModelFactory(
       /**
        * #action
        * Color by's Default: no field and no constant, so the config's own
-       * colour paints, a `jexl:` expression included
+       * color paints, a `jexl:` expression included
        */
       pickDefaultGeneColor() {
         const { color } = self.geneColorSettings
@@ -2581,7 +2581,7 @@ export function stateModelFactory(
       },
     }))
     .views(self => {
-      // a fresh array per read would recolour every held payload on each read
+      // a fresh array per read would recolor every held payload on each read
       // nothing observes, so an equal one keeps the last one's identity
       const sameColors = sameAsLast<ColorSource[][]>()
       return {
@@ -2597,7 +2597,7 @@ export function stateModelFactory(
         },
         /**
          * #getter
-         * where each lane layer's marks take their colour from, one per mark,
+         * where each lane layer's marks take their color from, one per mark,
          * read as the mark display reads its own
          */
         get laneLayerColors(): ColorSource[][] {
@@ -2611,7 +2611,7 @@ export function stateModelFactory(
         },
         /**
          * #method
-         * a held payload's layers, each coloured as its mark declares
+         * a held payload's layers, each colored as its mark declares
          */
         coloredLayersOf(held: HeldLaneLayer): EncodedChannels[] {
           const colors = this.laneLayerColors[held.layer]
@@ -2645,9 +2645,9 @@ export function stateModelFactory(
       /**
        * #getter
        * the ramp or threshold each lane layer's bars paint numbers through,
-       * one per mark and undefined for a mark coloured another way; a ramp's
+       * one per mark and undefined for a mark colored another way; a ramp's
        * domain covers the values of every drawn lane, as `laneLayerDomains`
-       * does for y, so one value takes one colour in all of them
+       * does for y, so one value takes one color in all of them
        */
       get laneLayerColorScales(): (MarkColorScale | undefined)[][] {
         const colors = self.laneLayerColors

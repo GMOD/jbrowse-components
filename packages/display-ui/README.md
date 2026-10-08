@@ -41,9 +41,9 @@ above them.
 | `TrackControlComponent`                     | one shape for every ambient bottom-right control, icons named rather than passed        |
 | `TrackControlProvider`                      | redirects those                                                                         |
 | `DisplayUIProvider`                         | both at once, defaulting to the plain sets — what an embedder mounts                    |
-| `plainChromeOverlays` / `plainTrackControl` | the toolkit-free sets, CSS system colours, no theme object                              |
+| `plainChromeOverlays` / `plainTrackControl` | the toolkit-free sets, CSS system colors, no theme object                               |
 | `TrackOverlaySlot` / `TrackOverlayPortal`   | the per-track overlay layer, and the host's half of it                                  |
-| `FloatingLegend`                            | the one legend box every display with colours to explain draws                          |
+| `FloatingLegend`                            | the one legend box every display with colors to explain draws                           |
 | `BottomRightCornerContext`                  | the corner `BackgroundProgress` is laid out in, which its prop types cannot express     |
 | `tooLargeBannerText`                        | what the byte gate says, shared by every set that renders it                            |
 | `isLiveModel`                               | the liveness guard an overlay's one button needs, for an MST node or a plain object     |
@@ -213,7 +213,7 @@ inside someone else's design system.
 
 `DisplayUIProvider` installs this by default, so mount that rather than naming
 this — reach for it directly only to wrap a state or to build a context value by
-hand. Colours come from `currentColor` and the CSS system colours, so the host's
+hand. Colors come from `currentColor` and the CSS system colors, so the host's
 own cascade drives them in both light and dark.
 
 The `data-testid` values it renders are a contract four of JBrowse's test
@@ -338,7 +338,7 @@ escapes into. Pair to `TrackOverlayPortal`, which is the other end.
 A display's React tree is sealed in a `contain: strict` sandbox — that is what
 isolates its paint, and dropping it is measured and rejected (ADR-058). A
 stacking context comes with the isolation, so floating chrome a display draws (a
-colour key, hi-c's overlay panel, maf's row labels) cannot out-z-index anything
+color key, hi-c's overlay panel, maf's row labels) cannot out-z-index anything
 painted over the track stack from outside. The escape is a node mounted _beside_
 the sandbox rather than inside it, published through `TrackOverlayContext`; this
 component is that node, its context and the paint order between them, in the one
@@ -431,7 +431,7 @@ carries position only.
 ### ValueScale
 
 A value scale a display places its y through, declared so the chrome can derive
-the axis from it — the score axis's counterpart to a colour scale.
+the axis from it — the score axis's counterpart to a color scale.
 
 `domain` is the resolved `[min, max]`; `height` the band it rules and `offset`
 the inset of the plot box inside that band (`axisPlotBox(height, offset)`);
@@ -444,15 +444,15 @@ geometry); `ScoreScaleMixin` derives one through `computeYTicks` otherwise.
 display stacks the same plot: the multi-wiggle's rows, a grouped alignments
 track's coverage band per group, each projected through the display's own
 scroll; the chrome drops the ones off screen. `[]` is a scale the display maps
-to colour rather than to y (density rows each in their own colour), which gets
-the `[min, max]` caption and no axis, as a scale whose bands are too short for
-one does. `side` and `left` are which of the band's edges the display's own
-panels leave clear for a gutter: `right` where a group label chip takes the
-left, `left: n` where a dendrogram takes the first `n` px. `caption` is what the
-scale measures (`TLEN`), as a colour scale's `field` is; the chrome draws it
-once for the scale, beside the bands on screen, however many it rules. `rules`
-are the reference lines the scale declares and `grid` a line at every tick, both
-drawn across every band.
+to color rather than to y (density rows each in their own color), which gets the
+`[min, max]` caption and no axis, as a scale whose bands are too short for one
+does. `side` and `left` are which of the band's edges the display's own panels
+leave clear for a gutter: `right` where a group label chip takes the left,
+`left: n` where a dendrogram takes the first `n` px. `caption` is what the scale
+measures (`TLEN`), as a color scale's `field` is; the chrome draws it once for
+the scale, beside the bands on screen, however many it rules. `rules` are the
+reference lines the scale declares and `grid` a line at every tick, both drawn
+across every band.
 
 A member describes the scale or the band it rules, never the axis — not an
 orientation, a form, a gutter width or a font. The chrome reads a member to keep

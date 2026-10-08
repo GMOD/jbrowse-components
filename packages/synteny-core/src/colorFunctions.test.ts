@@ -325,8 +325,8 @@ test('refNamePositionFor reads query off the first assembly and target off the s
   expect(at('query', ['unloaded', 'mm10'])).toBeUndefined()
 })
 
-// A value's colour on the ribbons and the key's stop at its place on the bar
-// are the same colour, through a middle `domainMid` moved off the centre.
+// A value's color on the ribbons and the key's stop at its place on the bar
+// are the same color, through a middle `domainMid` moved off the centre.
 test('a declared ramp paints what its key shows', () => {
   const ramp = { domainMax: 4, domainMid: 1 }
   const values = [0, 0.5, 1, 2, 4]

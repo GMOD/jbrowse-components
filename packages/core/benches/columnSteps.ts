@@ -12,9 +12,9 @@
 //   `seq`) reads through to the container's row. `cells` answers runs the same
 //   way, so `species` on a run is its row's.
 // - A column is built the first time a step reads it, and never otherwise. A
-//   declaration colouring by `state` builds no `base`, `match` or `length`.
+//   declaration coloring by `state` builds no `base`, `match` or `length`.
 // - A string column a categorical channel reads is a dictionary: the facet and
-//   the colour resolve once per distinct value and index per run.
+//   the color resolve once per distinct value and index per run.
 //
 // It implements what the bench times and throws on the rest.
 import {
@@ -670,7 +670,7 @@ export interface ColumnSpanEncoding {
 
 /**
  * A span's lanes over the table: its extent, the facet's row, and a
- * categorical colour resolved once per dictionary entry.
+ * categorical color resolved once per dictionary entry.
  */
 export function encodeSpanColumns(
   table: Table,

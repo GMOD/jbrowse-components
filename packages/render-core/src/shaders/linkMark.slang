@@ -113,7 +113,7 @@ struct Uniforms {
   float  rampMax;
   float  rampMidNorm;
   // `markColor`'s threshold: how many cuts are in use, the cuts four to a
-  // vector, and the colour of each interval between them.
+  // vector, and the color of each interval between them.
   int    colorCutCount;
   float4 colorCuts[2];
   float4 colorBands[MAX_COLOR_BANDS];

@@ -5,7 +5,7 @@ import { ConfigurationSchema } from '@jbrowse/core/configuration'
  * #category display
  * One entry of the multi-row feature display's `rowGroups`: a row joins the
  * `group` of the first entry whose `match` regex its name matches, and
- * `rowColor: { field: 'group' }` colours the groups.
+ * `rowColor: { field: 'group' }` colors the groups.
  *
  * #example
  * ```js

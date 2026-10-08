@@ -144,7 +144,7 @@ describe('the CDS strip keys itself', () => {
 
   // At base level each identity cell is one base, red or blue, so the key
   // names those two rather than a ramp whose middle nothing draws.
-  it('keys base-level identity with its two colours', () => {
+  it('keys base-level identity with its two colors', () => {
     const { display } = framesEnv().createDisplay()
     seed(display, false)
     display.setRowRendering('identity')

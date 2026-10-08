@@ -21,7 +21,7 @@ export const FACET_LABELS: Record<ReadDimension, string> = {
 }
 
 /**
- * The fragment strand the first mate implies, as a section chip and a colour
+ * The fragment strand the first mate implies, as a section chip and a color
  * key both name it: a reverse-mapped read1 is on the forward fragment, so the
  * plain strand wording would read as the read's own strand.
  */

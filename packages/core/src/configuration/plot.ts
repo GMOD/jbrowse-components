@@ -36,11 +36,11 @@ export const PLOT_VOCABULARY: Readonly<Record<string, string>> = {
   unit: 'what one row stands for: a read or a chain, a sample or a haplotype',
   facet: 'one section per value of a field',
   rows: 'the rows: their field or order, labels, focus and tree',
-  rowColor: 'the colour of each row, by a row attribute',
-  color: 'the colour',
+  rowColor: 'the color of each row, by a row attribute',
+  color: 'the color',
   baseColor: 'the per-base layer over the reads',
-  arcColor: 'the colour of the arcs between mates',
-  ribbonColor: 'the colour of the ribbons between lanes',
+  arcColor: 'the color of the arcs between mates',
+  ribbonColor: 'the color of the ribbons between lanes',
   laneLayers: 'the layers drawn over each lane',
   scales: 'the axes, scales.y the value axis',
   y: 'the field plotted on the value axis',
@@ -217,8 +217,8 @@ function membersOf(node: AnyConfigurationModel) {
 }
 
 /**
- * What a lifted plot's colour objects and `scales.y` say together that the
- * display cannot draw as written, as corner-notice lines: each colour object
+ * What a lifted plot's color objects and `scales.y` say together that the
+ * display cannot draw as written, as corner-notice lines: each color object
  * under its schema's `fieldPresets`, as `jbrowse validate` judges it.
  */
 export function schemaPlotProblems(lifted: AnyConfigurationModel): string[] {

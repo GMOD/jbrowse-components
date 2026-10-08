@@ -7,7 +7,7 @@
 // Each is a 6-vertex quad; the fragment shader carves the glyph.
 //
 // `row` is read through the bound row table, as `spanMark` reads it: a key
-// resolved to its band and colour, or dropped off clip space where the table
+// resolved to its band and color, or dropped off clip space where the table
 // hides it. A pass binding no table (`rowTableKeys` −1) draws `row` as the band.
 //! targets: wgsl, glsl
 //! export-consts: DIAMOND_GLYPH_SCALE, DIAMOND_MITER_REACHES, TRIANGLE_MITER_REACHES, GLYPH_DISC, GLYPH_TRIANGLE, GLYPH_DIAMOND, GLYPH_SQUARE
@@ -42,14 +42,14 @@ struct Uniforms {
   int    valueScaleType;
   // Already resolved from the domain (`resolveSymlogConstant`); read by symlog alone.
   float  valueSymlogConstant;
-  // `markColor`'s: 0 packs the instance's colour, 1 and 2 read its slot as a
+  // `markColor`'s: 0 packs the instance's color, 1 and 2 read its slot as a
   // value through the ramp below.
   int    rampMode;
   float  rampMin;
   float  rampMax;
   float  rampMidNorm;
   // `markColor`'s threshold: how many cuts are in use, the cuts four to a
-  // vector, and the colour of each interval between them.
+  // vector, and the color of each interval between them.
   int    colorCutCount;
   float4 colorCuts[2];
   float4 colorBands[MAX_COLOR_BANDS];
@@ -101,7 +101,7 @@ static const float SHAPE_BAR = 3.0;
 static const float INV_SQRT5 = 0.4472136;
 // The diamond is the shape's "singled out" glyph and draws visibly larger than
 // the others, so it reads as the one that matters at a glance rather than as a
-// colour swap. LocusZoom's lead-SNP convention, generalized.
+// color swap. LocusZoom's lead-SNP convention, generalized.
 static const float DIAMOND_GLYPH_SCALE = 1.6;
 
 // How far past its boundary each glyph still inks where its quad binds, in ramp

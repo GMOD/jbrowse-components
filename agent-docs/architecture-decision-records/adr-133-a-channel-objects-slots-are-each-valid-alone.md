@@ -1,6 +1,6 @@
 ---
 status: Accepted
-summary: "No combination of a channel object's slots is refused: a `domain` with no `field`, or a `field` under a scale that reads none, loads and waits unread. `scale` on the Manhattan, multi-way and mark colour objects is unset by default and reads as the scale its field implies (`paintedScale`), so an explicit `none` survives a reload, and a scale switch in a menu keeps the field, order and palette for the way back. Supersedes ADR-131's refusals of a `domain` or `palette` naming no `field` and of a `field` under a non-categorical scale. ADR-151 spells `palette` and `ramp` as `range` and `scheme` and drops MarkColor's `linear` beside a ramp"
+summary: "No combination of a channel object's slots is refused: a `domain` with no `field`, or a `field` under a scale that reads none, loads and waits unread. `scale` on the Manhattan, multi-way and mark color objects is unset by default and reads as the scale its field implies (`paintedScale`), so an explicit `none` survives a reload, and a scale switch in a menu keeps the field, order and palette for the way back. Supersedes ADR-131's refusals of a `domain` or `palette` naming no `field` and of a `field` under a non-categorical scale. ADR-151 spells `palette` and `ramp` as `range` and `scheme` and drops MarkColor's `linear` beside a ramp"
 ---
 
 # ADR-133: A channel object's slots are each valid alone
@@ -86,14 +86,14 @@ starts from neither.
   draws nothing, never draws or cannot run its steps, a warning where a slot
   waits unread. A file has no intermediate editor states, so what a load must
   not refuse a validator may.
-- The Edit as JSON dialog still refuses a spec naming no field or colour, with
+- The Edit as JSON dialog still refuses a spec naming no field or color, with
   its own message: a whole-object writer has no intermediate states to pass
   through, and such a spec changes nothing.
 - The validator no longer flags a `domain` with no `field`. A config that
-  writes one gets no colours by field and no error.
+  writes one gets no colors by field and no error.
 - ~~FeatureColor has no `scale`: its field paints whenever named, and Solid
   color drops it, as the flat slots before ADR-131 did.~~ Superseded by
-  [ADR-135](adr-135-the-colour-objects-share-one-shape-and-a-preset-is-a-field.md):
+  [ADR-135](adr-135-the-color-objects-share-one-shape-and-a-preset-is-a-field.md):
   FeatureColor has `scale`, and Solid color keeps the field under `none`.
 
 ## Rejected alternatives

@@ -584,7 +584,7 @@ function checkMarkDisplay(
   }
 }
 
-// A problem the colour and scale rules and the mark rule list both reach, such
+// A problem the color and scale rules and the mark rule list both reach, such
 // as scales.y's ends on a mark display, is reported once.
 function pushOnce(report: Report, problem: Problem) {
   if (
@@ -608,7 +608,7 @@ function declaredMembers(written: Record<string, unknown>, slot: SlotEntry) {
   )
 }
 
-// What the display's colour objects and its value scale say together that it
+// What the display's color objects and its value scale say together that it
 // cannot draw as written: its schema's fieldPresets stand in for the plugin
 // code the CLI does not run, and every quantitative scale's ends answer to
 // one rule.
@@ -686,7 +686,7 @@ function trackTypeOf(node: Record<string, unknown>) {
 
 // The shorthand router hands a `displayDefaults` key only to the displays
 // whose slot takes its value (`collectDisplayOverrides`), so a categorical
-// colour on a FeatureTrack never reaches its quantitative display's `score`
+// color on a FeatureTrack never reaches its quantitative display's `score`
 // presets. The same cut here, through each display's own schema branch.
 function displayDefaultsReaching(
   display: string,

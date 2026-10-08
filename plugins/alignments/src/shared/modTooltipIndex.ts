@@ -25,7 +25,7 @@ import type { ModificationEntry } from './webglRpcTypes.ts'
  * CSR-style layout: `positions` is the sorted distinct positions, `offsets`
  * says where each one's entries live, and the per-entry arrays are read by
  * index. The two strings become one `Uint8Array` of indices into a label table
- * with one string per distinct (modType, noMod, base), and the colour is kept
+ * with one string per distinct (modType, noMod, base), and the color is kept
  * as the packed ABGR u32 it already was and formatted at hover time.
  *
  * The aggregation is identical to what it replaced, down to two things that
@@ -97,10 +97,10 @@ export function buildModTooltipIndex(
     // `features/modCoverage/compute.ts` interns modType the same way, and says
     // why, beside this.
     //
-    // Colour is interned INTO the key rather than dropped from it, even though
+    // Color is interned INTO the key rather than dropped from it, even though
     // it is derived from (modType, noMod) at all three sites that build a
     // `ModificationEntry` — so dropping it would group identically today and
-    // stop doing so the moment a colour rule reads anything else. Interning
+    // stop doing so the moment a color rule reads anything else. Interning
     // makes it free rather than making it a rule to remember.
     const key =
       (getOrCreate(colorIds, mod.color, () => colorIds.size) << 9) |

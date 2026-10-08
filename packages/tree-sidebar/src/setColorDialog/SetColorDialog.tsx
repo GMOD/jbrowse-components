@@ -59,8 +59,8 @@ export interface SetColorDialogProps<S extends RowSource> {
   model: TreeLayoutModel<S>
   handleClose: () => void
   title?: string
-  // The display's own colour rather than a row's, on one line above the rows.
-  // Held here and written in `submit()` after the row colour, so Cancel
+  // The display's own color rather than a row's, on one line above the rows.
+  // Held here and written in `submit()` after the row color, so Cancel
   // reverts it like everything else.
   plotColor?: PlotColorControl
   // False where the display has nothing to arrange — one row, or none arrived
@@ -68,7 +68,7 @@ export interface SetColorDialogProps<S extends RowSource> {
   showRows?: boolean
   // The escape for what this dialog does not offer — a ramp, several cut
   // points, hand-written stops. A button here rather than a track-menu row of
-  // its own, so one row in the menu reaches every colour the display has.
+  // its own, so one row in the menu reaches every color the display has.
   onEditAsJson?: () => void
 }
 
@@ -76,15 +76,15 @@ export interface PlotColorControl {
   above: string
   below: string
   // `read` shows the pair beside `reason` and offers no edit, for a picture two
-  // colours cannot say.
+  // colors cannot say.
   mode: 'edit' | 'read'
   reason?: string
   onSubmit: (next: { above: string; below: string }) => void
 }
 
-// Each value of `field` over the rows with its colour, whether a pair of its
+// Each value of `field` over the rows with its color, whether a pair of its
 // own sets it, and its row count, in the order the key lists them: the
-// coloured values as dealt, then the rest.
+// colored values as dealt, then the rest.
 function valueColors(
   rows: readonly object[],
   field: string,
@@ -152,8 +152,8 @@ export default observer(function SetColorDialog<S extends RowSource>({
     model.rowAlias,
   )
 
-  // Each row's picks are set from the row list's swatches, the bulk colour
-  // button and a pasted colour column, and choose Each row.
+  // Each row's picks are set from the row list's swatches, the bulk color
+  // button and a pasted color column, and choose Each row.
   const setEachRow = (next: RowColorSetting) => {
     setDrafts({ ...drafts, name: next })
     setChoice('name')
@@ -176,11 +176,11 @@ export default observer(function SetColorDialog<S extends RowSource>({
 
   const byField = choice !== '' && choice !== 'name' ? choice : undefined
 
-  // An untouched panel writes no colour object, so the config's own stands
+  // An untouched panel writes no color object, so the config's own stands
   // whatever the panel can spell.
   const colorTouched = choice !== opened.choice || Object.hasOwn(drafts, choice)
 
-  // The row colour goes first: a plot colour can change whether the palette
+  // The row color goes first: a plot color can change whether the palette
   // deals, which the written object was chosen under.
   const submit = () => {
     model.applyRowEdits(

@@ -49,7 +49,7 @@ test('session.themeOptions carries the config theme slot (feeds canvas worker rp
 // a rendered image change mode along with everything React draws.
 //
 // The mode used to be written into the frozen `theme` slot, which meant merging
-// at two levels to avoid discarding the host's colours the first time their
+// at two levels to avoid discarding the host's colors the first time their
 // toggle fired. Mode is its own axis now, so the slot is left exactly as the
 // host passed it and both halves still reach the worker through `themeOptions`.
 test('setThemeMode keeps the rest of the configured theme', () => {

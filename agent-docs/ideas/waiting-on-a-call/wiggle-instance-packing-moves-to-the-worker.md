@@ -22,11 +22,11 @@ already refetches (ADR-125), so a worker-side pack rides along free there;
 `pack` takes `SourceRenderData[]`, which is what `buildSourceRenderData` returns
 — so the worker would have to run that too, or receive the expanded form over
 the wire, which is the thing being avoided. And `buildSourceRenderData` is where
-the pivot lives: `sourceLayers` colours every band around it, which is why
-the resolved colour and its `origin` sit in **`gpuProps`** and, since the
+the pivot lives: `sourceLayers` colors every band around it, which is why
+the resolved color and its `origin` sit in **`gpuProps`** and, since the
 worker-side split was deleted (ADR-016, superseded), nowhere else. The ENCODER is what needs the
 value — the SVG export calls `buildSourceRenderData(data, gpuProps)` directly
-(`LinearWiggleDisplay/renderSvg.tsx:38`) and would otherwise colour its bands
+(`LinearWiggleDisplay/renderSvg.tsx:38`) and would otherwise color its bands
 around nothing. A worker-side pack would have to be handed the pivot as a pack
 argument rather than reading it off the fetch. Availability is not the
 obstacle.
@@ -34,7 +34,7 @@ obstacle.
 **The obstacle is that the encoder cannot leave, only be duplicated.**
 `installUpload` re-encodes **every cached region** whenever `gpuProps` identity
 moves (`installUpload.ts:195-198`: `p !== lastProps` clears `encodedFrom`), and
-most of what moves it — colour, plot type, summary score mode, re-sort — does
+most of what moves it — color, plot type, summary score mode, re-sort — does
 **not** refetch. Those have to be served main-thread. So a worker-side pack adds
 a second encoder rather than relocating the first, and the two must agree
 forever.
@@ -56,11 +56,11 @@ puts that at **82MB for a 1000-source multiwiggle at a 1Mb view**
 (`wiggleInstanceBuffer.ts:33`). That is the decision, not a detail.
 
 **Of the old obstacle list, two counts were wrong and one is thinner than it
-reads.** Colour strings parse fine in a worker (`colorBits.ts` is a pure parser,
-and wiggle's colours are config slots, not theme reads — the theme-flip hazard
+reads.** Color strings parse fine in a worker (`colorBits.ts` is a pure parser,
+and wiggle's colors are config slots, not theme reads — the theme-flip hazard
 was imported from MAF by analogy). Multi-wiggle already ships
 `summaryScoreMode` worker-side — but note that answers the *mode*, not the
-*pivot* the bands are coloured around, which is the paragraph above and a
+*pivot* the bands are colored around, which is the paragraph above and a
 separate input to the same call. `rowIndex` is genuinely main-thread-bound, and
 worse than stated: the ordered source list is derived from the fetched data
 itself, so a fetch discovering a new source cannot be told its own row

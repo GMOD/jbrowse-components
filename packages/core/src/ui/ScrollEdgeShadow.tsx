@@ -50,9 +50,9 @@ const useStyles = makeStyles()(theme => {
  *
  * - **It costs nothing when nothing is hidden.** No content past an edge, no
  *   fade at that edge; a track that fits draws neither. So it is a readout of
- *   state, not a decoration — which a recoloured bottom border could not be
+ *   state, not a decoration — which a recolored bottom border could not be
  *   (and which would also need `showTrackOutlines`, an option the user can turn
- *   off, to have a border to recolour).
+ *   off, to have a border to recolor).
  * - **It says which way.** Scrolled to the bottom, the bottom fade goes and the
  *   top one appears, so "am I at the end" is answerable without scrolling.
  *

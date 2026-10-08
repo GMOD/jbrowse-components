@@ -62,7 +62,7 @@ describe.each(CASES)('$name', ({ scaleType, domain, c }) => {
 
 // A threshold cut is placed through the unclamped twin, so a cut the domain
 // excludes lands off the plot rather than on the edge the scores beyond it are
-// clamped onto. The wiggle line renderings colour by comparing those two
+// clamped onto. The wiggle line renderings color by comparing those two
 // placements, and that tie read as crossed.
 describe.each(CASES)('$name, unclamped', ({ scaleType, domain, c }) => {
   const [min, max] = domain

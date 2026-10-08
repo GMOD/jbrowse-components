@@ -64,7 +64,7 @@ test('positions a CDS frame strip at the bottom of its species row', () => {
 // deliberately does not floor it — 2000 species in 600px is ~0.3. The drawn band
 // floors at MIN_DRAWN_ROW_PX and overhangs its row there, exactly as the shader
 // paints it, so the strip cannot be bounded by the row; what it must stay inside
-// is the band, leaving the base/SNP colouring this function's docstring promises
+// is the band, leaving the base/SNP coloring this function's docstring promises
 // still visible underneath.
 test.each([15, 4, 2.5, 1.24, 1, 0.5, 0.06])(
   'the CDS strip is a band on the row at rowHeight %p, not instead of it',

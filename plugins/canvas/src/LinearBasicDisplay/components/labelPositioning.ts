@@ -252,9 +252,9 @@ function plainLabelColor(
 }
 
 /**
- * Where each of one feature's rendered labels sits, coloured when the caller
- * supplies a palette: the overlay and the painter want the colour, a highlight
- * box wants the geometry alone, and one walk serves both — the colour is folded
+ * Where each of one feature's rendered labels sits, colored when the caller
+ * supplies a palette: the overlay and the painter want the color, a highlight
+ * box wants the geometry alone, and one walk serves both — the color is folded
  * into the placement rather than mapped over it, since this runs per label per
  * frame.
  */

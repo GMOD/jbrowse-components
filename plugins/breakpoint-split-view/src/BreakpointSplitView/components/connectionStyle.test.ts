@@ -29,7 +29,7 @@ test('labels say what reaches this view', () => {
   expect(connectionLabel('splitDeletion')).toBe('Split alignment (same strand)')
 })
 
-test('the key has one row per colour', () => {
+test('the key has one row per color', () => {
   const rows = connectionKeyRows([
     'pairLR',
     'splitDeletion',

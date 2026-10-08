@@ -653,8 +653,8 @@ describe('computeArcsFromPileupData', () => {
       expect(crossRegion[0]!.p2RegionIndex).toBe(1)
     })
 
-    test('painted the interchromosomal colour, not the pair scheme', () => {
-      // The colour is now the ONLY channel saying "crosses chromosomes": a
+    test('painted the interchromosomal color, not the pair scheme', () => {
+      // The color is now the ONLY channel saying "crosses chromosomes": a
       // same-chromosome cross-region arc crosses the same panel divider and
       // otherwise looks identical.
       const { crossRegion } = run(bothContigs, toChr2([2000], 5000))
@@ -745,7 +745,7 @@ describe('computeArcsFromPileupData', () => {
     })
 
     // The second condition, and the one that keeps the setting honest: the
-    // aligner's verdict and the arc's colour can disagree, and the colour wins.
+    // aligner's verdict and the arc's color can disagree, and the color wins.
     // A pair flagged proper whose |TLEN| falls below the band paints
     // short-insert, and taking a pink arc off the screen under a setting about
     // ordinary pairs reads as a bug — it was 42 of the 48 short-insert arcs in
@@ -2969,7 +2969,7 @@ describe('identical arcs coalesce and carry their support', () => {
   //
   // Found on real data rather than reasoned about: over the HG02768 inverted
   // duplication a junction with 11 supporting reads came out as arcs of 7 and 4
-  // stacked in the same opaque colour, so the stroke width — the entire point of
+  // stacked in the same opaque color, so the stroke width — the entire point of
   // coalescing — under-reported it and no reader could tell.
   test('a junction folds regardless of which mate the reads name first', () => {
     const result = computeArcsFromPileupData(
@@ -3108,7 +3108,7 @@ describe('a mate link reads its pair fields off a primary, not a supplementary',
     expect(arcs[0]!.colorType).toBe(6)
   })
 
-  test('template length comes from the primary mate, so insert-size colour is not lost', () => {
+  test('template length comes from the primary mate, so insert-size color is not lost', () => {
     const withStats = {
       ...splitMateOffScreenPrimary,
       insertSizeStats: { upper: 500, lower: 100 },

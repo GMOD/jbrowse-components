@@ -154,7 +154,7 @@ const EMPTY_EXTENT_DOMAIN = [0, 1] as const
 
 /**
  * #api
- * The domain a continuous colour scale spans: each end `min` or `max` pins,
+ * The domain a continuous color scale spans: each end `min` or `max` pins,
  * else the extent's, ascending, since a span has no direction and `reverse`
  * is the ramp's. An open end stops at a pinned one rather than crossing it,
  * and an extent holding no value (`[Infinity, -Infinity]`) spans [0, 1].
@@ -179,7 +179,7 @@ export function rampDomain(
 
 /**
  * #api
- * The stops a continuous colour scale samples: `range`'s CSS colours where it
+ * The stops a continuous color scale samples: `range`'s CSS colors where it
  * lists any, else the named `scheme`, viridis while that is unset, turned
  * round under `reverse`.
  */
@@ -246,7 +246,7 @@ export function buildColorRampLut(stops: readonly ColorRampStop[]) {
 
 /**
  * #api
- * A continuous colour scale's ramp as a config declares it.
+ * A continuous color scale's ramp as a config declares it.
  */
 export interface RampDeclaration {
   range?: readonly string[]

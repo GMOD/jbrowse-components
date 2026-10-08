@@ -249,7 +249,7 @@ rows = paint(panel, 'dog10k_slc28a3_breed_cn.bed')
 print('%d painted segments across the %d animals of the panel'
       % (len(rows), len(order)))
 
-# Nothing checks that a display's colour key still matches what the painting
+# Nothing checks that a display's color key still matches what the painting
 # uses, and the two have drifted before, so print the blocks to paste rather
 # than leaving them to be remembered.
 print()

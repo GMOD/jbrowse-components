@@ -85,7 +85,7 @@ test.each([
   },
 )
 
-test('the Canvas2D twin paints a floored inversion in the cell colour, at the cell size', () => {
+test('the Canvas2D twin paints a floored inversion in the cell color, at the cell size', () => {
   const { ctx, calls } = recordingContext()
   cellMark.paintBlock(ctx, cells, BLOCK, FRAME, {
     rowHeight: 0.5,

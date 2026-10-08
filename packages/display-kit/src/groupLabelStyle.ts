@@ -8,7 +8,7 @@ export const GROUP_LABEL_FONT_WEIGHT = 500
 export const GROUP_LABEL_PADDING_X = 7
 export const GROUP_LABEL_RADIUS = 8
 
-// The pill is the paper colour under a wash of the text colour at this alpha,
+// The pill is the paper color under a wash of the text color at this alpha,
 // on both paths, so it reads the same over light and dark themes.
 export const GROUP_LABEL_TINT = 0.1
 

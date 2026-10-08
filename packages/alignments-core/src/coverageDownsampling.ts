@@ -570,7 +570,7 @@ export function countSnpsAtPosition(
  * A caller whose band hides low-frequency alleles hands `findSignificantInBin`
  * its own floor as `drawnAllele` rather than raising this one. The two answer
  * different questions and neither substitutes for the other: dominance in a
- * pixel is the bar's whole coloured height, so this floor pools the alleles,
+ * pixel is the bar's whole colored height, so this floor pools the alleles,
  * while the band paints one segment per allele and so hides them one at a time.
  * Folding both into a single `max()` let four alt alleles at 10% each on depth
  * 100 clear a 30% band floor on their 40% pooled total, and the tooltip named a

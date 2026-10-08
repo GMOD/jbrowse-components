@@ -4,7 +4,7 @@ import type {
 } from '@jbrowse/core/pluggableElementTypes'
 
 // Runs on a config entry and on an old session's display instance alike, so
-// it rewrites what the entry carries. The v4 colour, thickness and label were
+// it rewrites what the entry carries. The v4 color, thickness and label were
 // callbacks into the arc plugin's own jexl functions, which went with it
 // (ADR-163), so they are dropped rather than carried.
 function toLink(entry: DisplayEntry, mark: Record<string, unknown>) {

@@ -1,14 +1,14 @@
 ---
 id: syntenycolorsmixin
 title: SyntenyColorsMixin
-description: "The colour settings every view drawing synteny tracks shares — the linear synteny view, the dotplot and the circular view: TrackColorsMixin's colour object and palette, the opacity object and the…"
+description: "The color settings every view drawing synteny tracks shares — the linear synteny view, the dotplot and the circular view: TrackColorsMixin's color object and palette, the opacity object and the…"
 sidebar_label: Mixin -> SyntenyColorsMixin
 ---
 
 Auto-generated from the @jbrowse/mobx-state-tree model in the source — see the [developer guide](/docs/developer_guide/) for concepts. Built into JBrowse core. [View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/synteny-core/src/SyntenyColorsMixin.ts).
 
-The colour settings every view drawing synteny tracks shares — the linear
-synteny view, the dotplot and the circular view: `TrackColorsMixin`'s colour
+The color settings every view drawing synteny tracks shares — the linear
+synteny view, the dotplot and the circular view: `TrackColorsMixin`'s color
 object and palette, the `opacity` object and the shortest alignment drawn,
 over the tracks the view says it draws. A view supplies `syntenyTracks()`,
 its opacity default and, optionally, the field it paints by until told
@@ -37,7 +37,7 @@ Each section ends with the members a composed model contributes, linked to the p
 | --- | --- |
 | <span id="getter-defaultopacity">**defaultOpacity**</span><br><code>number</code> | The constant opacity a reset returns to. |
 | <span id="getter-opacitysetting">**opacitySetting**</span><br><code>SyntenyOpacitySnapshot</code> | The `opacity` object as its snapshot holds it. |
-| <span id="getter-opacityfade">**opacityFade**</span><br><code>SyntenyOpacitySnapshot &#124; undefined</code> | What the colour pass fades each alignment by: the field's mapping with its range as shares of `opacityLevel`, or undefined while `opacity` draws its constant, so the slider recolours nothing either way. |
+| <span id="getter-opacityfade">**opacityFade**</span><br><code>SyntenyOpacitySnapshot &#124; undefined</code> | What the color pass fades each alignment by: the field's mapping with its range as shares of `opacityLevel`, or undefined while `opacity` draws its constant, so the slider recolors nothing either way. |
 | <span id="getter-opacitylevel">**opacityLevel**</span><br><code>number</code> | The opacity every alignment draws at before a field's fade: the shader's uniform (`opacityLevel`). |
 | <span id="getter-opacityfield">**opacityField**</span><br><code>string</code> | The field `opacity` fades by, `''` while it draws its constant. |
 
@@ -50,7 +50,7 @@ Each section ends with the members a composed model contributes, linked to the p
 | --- | --- |
 | <span id="method-syntenytracks">**syntenyTracks**</span><br><code>() =&gt; ComparativeTrackModel[]</code> | Overridable hook: every synteny track in the view, in paint order. |
 | <span id="method-colorabletrackconfigs">**colorableTrackConfigs**</span><br><code>() =&gt; { trackId: string; name: string; }[]</code> |  |
-| <span id="method-colorableattributenames">**colorableAttributeNames**</span><br><code>() =&gt; string[]</code> | The columns the tracks declare in their adapter's `attributeColumns` (the ortholog-table adapter's slot), one colour mode each. |
+| <span id="method-colorableattributenames">**colorableAttributeNames**</span><br><code>() =&gt; string[]</code> | The columns the tracks declare in their adapter's `attributeColumns` (the ortholog-table adapter's slot), one color mode each. |
 | <span id="method-legendalpha">**legendAlpha**</span><br><code>() =&gt; number</code> | The key's chips are composited by the plot's opacity, as the alignments are. |
 
 <span data-pagefind-ignore>From [TrackColorsMixin](../trackcolorsmixin): <span id="method-loadedattributeranges">[`loadedAttributeRanges`](../trackcolorsmixin#method-loadedattributeranges)</span>, <span id="method-legendcigarops">[`legendCigarOps`](../trackcolorsmixin#method-legendcigarops)</span>, <span id="method-colorsurface">[`colorSurface`](../trackcolorsmixin#method-colorsurface)</span>, <span id="method-offersreferencecolor">[`offersReferenceColor`](../trackcolorsmixin#method-offersreferencecolor)</span>, <span id="method-shapeshowsstrand">[`shapeShowsStrand`](../trackcolorsmixin#method-shapeshowsstrand)</span>, <span id="method-trackcolorfor">[`trackColorFor`](../trackcolorsmixin#method-trackcolorfor)</span></span>

@@ -673,7 +673,7 @@ describe('a frameshift polyprotein CDS', () => {
     expect(layout.labelRows).toBe(2)
   })
 
-  it('gives a multi-line product one colour and one label over its whole span', () => {
+  it('gives a multi-line product one color and one label over its whole span', () => {
     const result = render(false)
     expect(new Set(result.rectYs).size).toBe(2)
     expect(new Set(result.rectColors).size).toBe(2)

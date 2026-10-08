@@ -279,7 +279,7 @@ describe('a colorArray slot', () => {
   const colors = (value?: unknown) =>
     makeConfig({ type: 'colorArray', defaultValue: [] }, value)
 
-  test('holds CSS colours, in order', () => {
+  test('holds CSS colors, in order', () => {
     expect(
       readConfObject(colors(['red', '#00f', 'rgb(0,128,0)']), 'slot'),
     ).toEqual(['red', '#00f', 'rgb(0,128,0)'])
@@ -295,7 +295,7 @@ describe('a colorArray slot', () => {
     },
   )
 
-  test('refuses a write naming no colour and keeps the value it had', () => {
+  test('refuses a write naming no color and keeps the value it had', () => {
     const config = colors(['white', 'red'])
     expect(() => {
       config.setSlot('slot', ['nosuchcolor'])

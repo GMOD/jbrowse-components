@@ -50,7 +50,7 @@ test('identical data re-packs nothing', () => {
   expect(packs()).toBe(1)
 })
 
-test('a recolor patches the colour lane in place, leaving geometry alone', () => {
+test('a recolor patches the color lane in place, leaving geometry alone', () => {
   const { cache, packs } = makeCache()
   const first = cache.get(data([1, 2]))
   const patched = cache.get(data([7, 8]))

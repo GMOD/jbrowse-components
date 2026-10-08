@@ -6,7 +6,7 @@ import { observer } from 'mobx-react'
 
 import type { GridRowId } from '@mui/x-data-grid'
 
-// Bulk header button + its popover for the selected rows' colour. The popover
+// Bulk header button + its popover for the selected rows' color. The popover
 // portals via MUI Popover, so rendering it as a sibling of the button is fine.
 const BulkColorControls = observer(function BulkColorControls({
   selected,

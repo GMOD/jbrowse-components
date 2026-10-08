@@ -24,7 +24,7 @@ Two distinct idioms — keep them separate:
   not a stacked bar (which would mislead).
 
 **What makes a signal lane affordable is that it accumulates rather than emits.**
-`perBaseQuality` as a COLOUR mode emits one entry per aligned base of every read
+`perBaseQuality` as a COLOR mode emits one entry per aligned base of every read
 — `region span x depth`, measured at 30,565,003 entries and 2.0 GB on a 1 Mb
 pacbio pileup (`measurements/per-base-wall-bin.json`). The same input summed into
 a per-reference-position accumulator is two arrays over the region span, a

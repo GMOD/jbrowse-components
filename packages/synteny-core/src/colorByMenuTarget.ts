@@ -77,7 +77,7 @@ export interface TrackColorsModel {
 }
 
 export interface ColorByMenuTarget {
-  /** the field the surface paints by, `''` for its default colour */
+  /** the field the surface paints by, `''` for its default color */
   field: string
   /** the structural fields the surface paints, in `COLOR_MODES` order */
   structuralFields: readonly string[]

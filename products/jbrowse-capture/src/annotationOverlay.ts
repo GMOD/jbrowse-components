@@ -839,7 +839,7 @@ export function drawAnnotationOverlay(
       rect.setAttribute('height', String(a.height ?? 0))
       rect.setAttribute('rx', '4')
       // a positive fillOpacity tints the box with a translucent wash of its
-      // own colour (a "light green/orange" highlight); otherwise hollow
+      // own color (a "light green/orange" highlight); otherwise hollow
       rect.setAttribute('fill', a.fillOpacity ? color : 'none')
       if (a.fillOpacity) {
         rect.setAttribute('fill-opacity', String(a.fillOpacity))

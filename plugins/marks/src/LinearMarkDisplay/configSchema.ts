@@ -209,9 +209,9 @@ const markEncodingSchema = ConfigurationSchema(
     },
     /**
      * #slot marks.encoding.color
-     * The mark's colour: a field through a categorical or continuous scale,
+     * The mark's color: a field through a categorical or continuous scale,
      * written bare or as an object with the scale's members, or a constant
-     * `{ value }`, a CSS colour or a jexl callback returning one. A scale is
+     * `{ value }`, a CSS color or a jexl callback returning one. A scale is
      * what the legend describes.
      */
     color: markColorSchema,
@@ -406,7 +406,7 @@ export function markListSchema(defaults: SnapshotIn<typeof markSchema>[]) {
  * one score axis.
  *
  * #example
- * A BED score column as bars, coloured by strand, with the key on screen,
+ * A BED score column as bars, colored by strand, with the key on screen,
  * and a per-10 kb count in its place once the view is wider than 100 bp
  * per px:
  * ```js
@@ -490,8 +490,8 @@ export function configSchemaFactory() {
       rows: rowsConfigSchema,
       /**
        * #slot rowColor
-       * The bar beside each row's label, the marks keeping their own colour:
-       * under the default field `name`, a row's value paired with a colour in
+       * The bar beside each row's label, the marks keeping their own color:
+       * under the default field `name`, a row's value paired with a color in
        * `domain`/`range`, which the arrangement dialog writes.
        */
       rowColor: rowColorConfigSchema,
@@ -532,13 +532,13 @@ export function configSchemaFactory() {
       },
       /**
        * #slot showLegend
-       * Draw the colour key for every mark whose colour is a scale. Defaults to
+       * Draw the color key for every mark whose color is a scale. Defaults to
        * on.
        */
       showLegend: {
         type: 'boolean',
         defaultValue: true,
-        description: 'draw the colour key',
+        description: 'draw the color key',
       },
       ...jexlFilterConfigSchemaFields,
     },

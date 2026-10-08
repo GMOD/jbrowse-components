@@ -35,7 +35,7 @@ public struct ChordStageUniforms {
   // curve's control point reaches
   public float radiusPx;
   public float bezierRadiusPx;
-  // the alpha every instance draws at, over its colour's own
+  // the alpha every instance draws at, over its color's own
   public float alpha;
   // a chord's stroke, CSS px
   public float strokeWidthPx;

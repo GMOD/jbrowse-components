@@ -37,7 +37,7 @@ export interface SequenceCells {
 }
 
 /**
- * The letter and colour of the base at `fwd` in a base row. A peptide track's
+ * The letter and color of the base at `fwd` in a base row. A peptide track's
  * residues are not nucleotides (its A/C/G/T are Ala, Cys, Gly and Thr), so only
  * DNA consults the base palette.
  */
@@ -55,7 +55,7 @@ export function baseCell(
 }
 
 /**
- * The amino acid and colour of the codon starting at `i`. A negative frame
+ * The amino acid and color of the codon starting at `i`. A negative frame
  * reads the other strand, so its triplet is the reverse complement of the
  * forward one whatever the block's orientation.
  */

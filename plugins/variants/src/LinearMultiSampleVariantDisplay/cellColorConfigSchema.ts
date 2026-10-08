@@ -14,9 +14,9 @@ import {
  * #category display
  * The multi-sample variant display's `color` setting: the hue of every
  * alt-carrying genotype cell, which `shadeByDosage` then lightens for a
- * heterozygote. Unset, the cells paint the genotype colours. A CSS colour or
+ * heterozygote. Unset, the cells paint the genotype colors. A CSS color or
  * `jexl:` callback in `value` paints every alt cell of a variant; a `field`
- * gives each of its values a colour with a key. Three fields are presets:
+ * gives each of its values a color with a key. Three fields are presets:
  * `impact`, the most severe SnpEff/VEP consequence tier; `svType`, the
  * structural-variant class; `phaseSet`, the FORMAT PS block, in phased mode.
  * Any other field is read off the record — `INFO.CLNSIG`, `QUAL`, or a
@@ -44,12 +44,12 @@ export const cellColorConfigSchema = ConfigurationSchema(
   {
     /**
      * #slot value
-     * A CSS colour, or a jexl callback over `feature` returning one, for every
-     * alt cell of the variant. Unset, the cells paint the genotype colours.
+     * A CSS color, or a jexl callback over `feature` returning one, for every
+     * alt cell of the variant. Unset, the cells paint the genotype colors.
      */
     value: {
       type: 'maybeColor',
-      description: 'CSS colour or jexl callback for every alt cell',
+      description: 'CSS color or jexl callback for every alt cell',
       contextVariable: ['feature'],
     },
     ...colorChannelSlots({
@@ -57,9 +57,9 @@ export const cellColorConfigSchema = ConfigurationSchema(
       scaleName: 'VariantCellColorScale',
       fieldType: 'featureField',
       field:
-        'impact, the most severe SnpEff/VEP consequence tier; svType, the structural-variant class; phaseSet, the FORMAT PS block in phased mode; or any record field, INFO.CLNSIG say, or a jexl expression over feature, whose values each paint one range colour with a key. A record with no value keeps the default alt colour',
+        'impact, the most severe SnpEff/VEP consequence tier; svType, the structural-variant class; phaseSet, the FORMAT PS block in phased mode; or any record field, INFO.CLNSIG say, or a jexl expression over feature, whose values each paint one range color with a key. A record with no value keeps the default alt color',
       scale:
-        'none paints value and keeps the field for a switch back; categorical a range colour per value of field; threshold a range colour per interval between the cut points in domain; unset follows field',
+        'none paints value and keeps the field for a switch back; categorical a range color per value of field; threshold a range color per interval between the cut points in domain; unset follows field',
     }),
     ...colorDomainSlot({
       domain:
@@ -67,7 +67,7 @@ export const cellColorConfigSchema = ConfigurationSchema(
     }),
     ...colorRangeSlot({
       range:
-        'CSS colours the domain takes, in order, continuing into the default palette past its end; under threshold one per interval, one more than the cuts',
+        'CSS colors the domain takes, in order, continuing into the default palette past its end; under threshold one per interval, one more than the cuts',
     }),
     ...colorLabelsSlot,
     ...colorTitleSlot,

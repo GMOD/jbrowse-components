@@ -1,6 +1,6 @@
 ---
 status: Accepted
-summary: "A bar whose value the y domain excludes is clamped to the axis edge, and now wears 2 px of red across that edge on wiggle's xyplot, the coverage band and render-core's `bar`, on WebGPU, WebGL, Canvas2D and the SVG export. One `clipStrip` shader module holds the colour, the thickness and `clipSide`, whose JS twin every painter reads. Wiggle and `bar` draw it as a second quad per instance; the coverage band as a sixth layer off the depth bars' buffer, after the segments stacked inside them. Colin chose the strip over a fade from captures on 2026-09-27"
+summary: "A bar whose value the y domain excludes is clamped to the axis edge, and now wears 2 px of red across that edge on wiggle's xyplot, the coverage band and render-core's `bar`, on WebGPU, WebGL, Canvas2D and the SVG export. One `clipStrip` shader module holds the color, the thickness and `clipSide`, whose JS twin every painter reads. Wiggle and `bar` draw it as a second quad per instance; the coverage band as a sixth layer off the depth bars' buffer, after the segments stacked inside them. Colin chose the strip over a fade from captures on 2026-09-27"
 ---
 
 # ADR-183: A bar the axis cut wears a red strip
@@ -70,7 +70,7 @@ is then its ink.
 
 - **The fade.** Quieter, and at the default band height invisible from
   across the room, which is the one thing a clip marker must not be.
-- **A `clipColor` slot**, v4's. One colour is the marker; a track colouring
+- **A `clipColor` slot**, v4's. One color is the marker; a track coloring
   its own strip would be a second thing for the key to explain.
-- **A whole clipped bar in the strip colour.** Louder still, and it hides
+- **A whole clipped bar in the strip color.** Louder still, and it hides
   the SNP and modification segments the bar carries.

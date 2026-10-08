@@ -196,7 +196,7 @@ describe('painter', () => {
     expect(fillRectCalls).toHaveLength(0)
   })
 
-  test('sets the fill from the packed colour', () => {
+  test('sets the fill from the packed color', () => {
     const { raw } = paint(
       makeData({ cellColors: new Uint32Array([0x7f204080]) }),
     )

@@ -19,14 +19,14 @@ import type { Feature } from '@jbrowse/core/util'
 import type { JexlInstance } from '@jbrowse/core/util/jexlStrings'
 import type { ColorEncoding } from '@jbrowse/core/util/markEncoding'
 
-/** The field a colour encoding names, or undefined for a constant. */
+/** The field a color encoding names, or undefined for a constant. */
 export function cellHueField(encoding: ColorEncoding | undefined) {
   return typeof encoding === 'object' ? encoding.field : undefined
 }
 
 /**
  * The categorical or threshold field a record field paints through, dealing
- * its colours into `held`, or undefined for a preset or a constant. A record
+ * its colors into `held`, or undefined for a preset or a constant. A record
  * with no value keeps the default alt hue.
  */
 export function recordHueField(
@@ -41,7 +41,7 @@ export function recordHueField(
     : colorFieldOf(encoding, held)
 }
 
-/** A record field's key colour, the no-value key taking the default alt hue. */
+/** A record field's key color, the no-value key taking the default alt hue. */
 export function recordKeyColor(
   field: { color: (key: string) => string },
   key: string,
@@ -50,7 +50,7 @@ export function recordKeyColor(
 }
 
 /**
- * What the worker reads off each variant for the alt cells' hue: the colour a
+ * What the worker reads off each variant for the alt cells' hue: the color a
  * `jexl:` callback returns, or a field's value as text. Undefined where the
  * hue needs nothing from the record.
  */
@@ -58,11 +58,11 @@ export type CellHueRead = string | { field: string } | undefined
 
 /**
  * Where the alt cells' hue comes from: `read`, what the worker reads off each
- * variant, a field without its scale so recolouring one refetches nothing;
- * `hueOf`, a read value's colour; `keyOf`, the key row it files under;
+ * variant, a field without its scale so recoloring one refetches nothing;
+ * `hueOf`, a read value's color; `keyOf`, the key row it files under;
  * `deal`, which sees a region's values before `hueOf` paints any; and
  * `constant`, the hue of every alt cell with no value of its own. No paint
- * member set paints the genotype colours.
+ * member set paints the genotype colors.
  */
 export interface CellHue {
   read: CellHueRead
@@ -75,7 +75,7 @@ export interface CellHue {
 /**
  * The hue a `color` encoding paints. `keptField` is the field a setting keeps
  * under `scale: 'none'` for the way back: its values are read while a
- * constant or the genotype colours paint, so returning to it refetches
+ * constant or the genotype colors paint, so returning to it refetches
  * nothing. A phase set is the exception, since reading it paints it.
  */
 export function cellHueOf(

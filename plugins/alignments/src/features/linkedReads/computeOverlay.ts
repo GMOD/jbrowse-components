@@ -145,7 +145,7 @@ export function bezierConnectionLegendItems(
     const color = rgb255(
       palette[linkedReadColorSlot(connectorPaletteSlot(colorType))]!,
     )
-    // A maps-back split keeps a row beside the RL pairs it shares a colour
+    // A maps-back split keeps a row beside the RL pairs it shares a color
     // with, whose label describes mates.
     const key =
       colorType === LINKED_READ_COLOR_MAPS_BACK ? `${color} split` : color
@@ -362,7 +362,7 @@ function crossesOwnAlignment(
 //
 // A normal connection is a plain line and everything else dips below the
 // reads. A same-strand split junction is normal on any pair of chromosomes,
-// as its colour says, so in chain layout it runs along the molecule's own
+// as its color says, so in chain layout it runs along the molecule's own
 // row. On a row it shares with alignments of the read lying between its
 // two ends, as on a fold-back, that line would paint over them, so it dips
 // like a discordant one. A hidden-segment line whose ends share a row would

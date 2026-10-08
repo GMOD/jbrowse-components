@@ -14,7 +14,7 @@ import type {
   FieldColorEncoding,
 } from '@jbrowse/display-kit/colorConfigSchema'
 
-/** paints each gene and box by its ortholog group, one colour down the stack */
+/** paints each gene and box by its ortholog group, one color down the stack */
 export const CLUSTER_FIELD = 'cluster'
 
 export interface PaintedFill {
@@ -46,7 +46,7 @@ function memo<K, V>(map: Map<K, V>, key: K, make: () => V) {
 
 /**
  * `encoding` is `geneColorEncoding`; `utrColor` is the slot as written;
- * `held`, where a categorical field deals its colours.
+ * `held`, where a categorical field deals its colors.
  */
 export function geneColors(
   conf: MultiWaySyntenyDisplayConfig,
@@ -63,7 +63,7 @@ export function geneColors(
     memo(byCss, css, () => ({ css, packed: cssColorToABGR(css) }))
 
   // #region contextVariableRead
-  // the slot as written, not resolved: a jexl colour read without a feature
+  // the slot as written, not resolved: a jexl color read without a feature
   // evaluates against an empty context and hands back the fallout (adr-066)
   const utrConstant = isJexl(utrColor)
     ? undefined

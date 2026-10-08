@@ -131,14 +131,14 @@ describe('color functions', () => {
 // **A VCF INFO value is an ARRAY, and every way of reading one has to cope with
 // that.** `@gmod/vcf` returns every INFO field as a list — `Number=1` included,
 // so `CLNSIG=Pathogenic` parses to `['Pathogenic']` — while the natural way to
-// colour by one is an object literal indexed by its value.
+// color by one is an object literal indexed by its value.
 //
 // Pinned because the indexing half broke once and nothing here noticed. Our jexl
 // fork evaluated `subject?.[index]`, so JS coerced the one-element array to its
 // string; 3.1.0 lowered the evaluator to closures, narrowed the index to a
 // string or a number, and answered `undefined` for anything else. That is
 // exactly what the `|| fallback` every such expression carries is there to
-// absorb, so a whole ClinVar track went one flat colour and a website figure was
+// absorb, so a whole ClinVar track went one flat color and a website figure was
 // the only thing that saw it. Restored in 4.0.1.
 //
 // So both spellings are asserted, and they must stay that way. `[0]` is what

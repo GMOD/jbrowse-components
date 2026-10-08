@@ -57,7 +57,7 @@ slice() { # slice <out> <src> <region>...
   samtools idxstats "$out" | awk '$3>0 {n+=$3} END {print "   mapped reads:", n+0}'
 }
 
-# Haplotagged (HP tag) ONT, which is what the haplotype figures colour by.
+# Haplotagged (HP tag) ONT, which is what the haplotype figures color by.
 slice HG002.ONTrel2.HP.hs37d5.demo_slices.bam "$ONT_SRC" "${HG002_REGIONS[@]}"
 slice HG002.hs37d5.2x250.demo_slices.bam "$ILL_SRC" "${HG002_REGIONS[@]}"
 

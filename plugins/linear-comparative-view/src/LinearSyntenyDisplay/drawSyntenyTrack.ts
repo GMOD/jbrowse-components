@@ -114,7 +114,7 @@ interface ResolvedFill {
 // arrives as 0.34999999403953552) from tipping a product that lands on an exact
 // integer — 255 * 0.35 — down a whole step.
 //
-// `ground` is the 0-255 twin of the shader's `u.ground` — the colour the band
+// `ground` is the 0-255 twin of the shader's `u.ground` — the color the band
 // was just cleared to, which the CIGAR branch bakes in rather than composites
 // against. Passed in resolved rather than parsed here: the draw loop runs this
 // once per on-screen instance.

@@ -1,6 +1,6 @@
 ---
 status: Accepted
-summary: "A colour or glyph object spells its scale the way `scales.y` and Vega-Lite do: `range` is the output for every kind (a palette, a threshold's colours, a ramp's stops, the glyph names), `scheme` a named ramp from one table every baker reads, `domain` a list only (category order or threshold cuts), `domainMin`/`domainMax` a continuous scale's ends, each pinned or following the data, and `reverse` its direction. `range` is a `colorArray` on a colour object and a `stringEnumArray` on the glyph object. The kind is `scale`, or the display's default for the field (`paintedScale`), never inferred from which output member is written. One bridge, `colorEncodingOf`, builds the encoder's `ColorEncoding` off the live node for the mark and Manhattan displays. Supersedes the `palette`/`ramp` members of ADR-135 and ADR-144, and the mark and alignments colours' `linear` beside a ramp. No migration"
+summary: "A color or glyph object spells its scale the way `scales.y` and Vega-Lite do: `range` is the output for every kind (a palette, a threshold's colors, a ramp's stops, the glyph names), `scheme` a named ramp from one table every baker reads, `domain` a list only (category order or threshold cuts), `domainMin`/`domainMax` a continuous scale's ends, each pinned or following the data, and `reverse` its direction. `range` is a `colorArray` on a color object and a `stringEnumArray` on the glyph object. The kind is `scale`, or the display's default for the field (`paintedScale`), never inferred from which output member is written. One bridge, `colorEncodingOf`, builds the encoder's `ColorEncoding` off the live node for the mark and Manhattan displays. Supersedes the `palette`/`ramp` members of ADR-135 and ADR-144, and the mark and alignments colors' `linear` beside a ramp. No migration"
 ---
 
 # ADR-151: A channel's scale is spelt as `scales.y` spells one
@@ -8,37 +8,37 @@ summary: "A colour or glyph object spells its scale the way `scales.y` and Vega-
 ## Status
 
 Accepted (2026-09-20). Supersedes the `palette` and `ramp` members of
-[ADR-135](adr-135-the-colour-objects-share-one-shape-and-a-preset-is-a-field.md)
-and [ADR-144](adr-144-one-colour-object-on-the-quantitative-display.md), the
-mark colour's "unset beside a field, `linear` with a ramp and `categorical`
-without", and the same rule on the alignments colour under a tag or attribute
-([ADR-148](adr-148-the-alignments-read-fill-is-the-colour-object.md)'s
+[ADR-135](adr-135-the-color-objects-share-one-shape-and-a-preset-is-a-field.md)
+and [ADR-144](adr-144-one-color-object-on-the-quantitative-display.md), the
+mark color's "unset beside a field, `linear` with a ramp and `categorical`
+without", and the same rule on the alignments color under a tag or attribute
+([ADR-148](adr-148-the-alignments-read-fill-is-the-color-object.md)'s
 consequences). The flattening of
 [ADR-131](adr-131-a-categorical-channel-is-one-config-object.md) and
 [ADR-142](adr-142-one-value-scale-object.md) stands: a channel carries its
 scale's members, it does not nest a scale object.
-[ADR-153](adr-153-every-display-resolves-its-colour-through-one-function.md)
+[ADR-153](adr-153-every-display-resolves-its-color-through-one-function.md)
 extends the one bridge below from the mark and Manhattan displays to every
-display holding a colour object.
+display holding a color object.
 
 ## Context
 
-The colour objects named one scale's output two ways, `palette` for a
+The color objects named one scale's output two ways, `palette` for a
 categorical or threshold scale and `ramp` for a continuous one, and spelt a
 continuous domain as the pair `domain: [min, max]`, where `scales.y` already
 said `domainMin`/`domainMax`. Each of the mismatches failed quietly, and every
 one below was reproduced before this change:
 
-- `ramp: ['magma']` loaded and painted the invalid-colour sentinel on every
-  feature: a scheme name sat in a list of colour stops, and only the bare
+- `ramp: ['magma']` loaded and painted the invalid-color sentinel on every
+  feature: a scheme name sat in a list of color stops, and only the bare
   string `'viridis'` was special-cased. The config wrote `['viridis']` and the
   wire needed `'viridis'`, so the display converted between them.
-- An entry of `palette` or `ramp` that was not a colour loaded, where the scalar
+- An entry of `palette` or `ramp` that was not a color loaded, where the scalar
   `color` slot has refused one since ADR-136. A glyph `range` naming `star`
   drew a disc under a key saying `star`.
 - `scale: 'linear'` beside a `palette` read the empty `ramp` and painted
   viridis; the word the scale did not read was ignored.
-- The mark colour's kind followed `ramp.length`, so emptying the ramp in the
+- The mark color's kind followed `ramp.length`, so emptying the ramp in the
   config editor turned a linear scale categorical with no message.
 - A ramp was reversed by writing its domain high to low, which the key could
   not show, and a half-pinned domain was a problem to report rather than a
@@ -46,7 +46,7 @@ one below was reproduced before this change:
 
 ## Decision
 
-**One vocabulary.** A colour object's members are `value`, `field`, `scale`,
+**One vocabulary.** A color object's members are `value`, `field`, `scale`,
 `domain`, `domainMin`, `domainMax`, `domainMid`, `range`, `scheme` and
 `reverse`, of which each display declares the ones it paints by spreading
 display-kit's pieces: `colorChannelSlots` (`field`, `scale`), `colorDomainSlot`,
@@ -59,7 +59,7 @@ The wire's `ColorEncoding` uses the same names.
   `COLOR_SCHEMES` (`@jbrowse/core/util/colorSchemes`), whose stop table
   `colorRampStops` reads for the encoder, the alignments bake and the wiggle
   LUT alike, so no display can declare a scheme nothing bakes. `range`'s
-  colours win over it.
+  colors win over it.
 - **`domain` is a list only**: a categorical scale's order, a threshold
   scale's cuts. A continuous scale reads **`domainMin`** and **`domainMax`**,
   each pinned or following the loaded regions (`rampDomain`), and an open end
@@ -71,7 +71,7 @@ The wire's `ColorEncoding` uses the same names.
   the quantitative display. A dialog may guess from data and write the guess;
   a reader does not guess.
 
-**Two slot types.** `colorArray` holds CSS colours and refuses anything else,
+**Two slot types.** `colorArray` holds CSS colors and refuses anything else,
 the empty string included, at load and at a write. `stringEnumArray` takes the
 author's enumeration as `model` and holds a list of its members, the way
 `maybeStringEnum` wraps one in `types.maybe`, so `slotChoices`, the JSON
@@ -83,12 +83,12 @@ live config node, typed, and answers one fixed set of keys per scale kind, so
 a fetch key compares alike whatever members a config happens to write. The
 mark display and the Manhattan display both send it; the Manhattan worker no
 longer rebuilds an encoding from a `ManhattanColor` of its own. `colorSpecOf`
-is the Edit as JSON counterpart, the colour as written.
+is the Edit as JSON counterpart, the color as written.
 
 ## Consequences
 
 - A config spelt the old way fails the load naming the member, since every
-  colour object is `closed`: `MarkColor takes value, field, scale, domain,
+  color object is `closed`: `MarkColor takes value, field, scale, domain,
   domainMin, domainMax, range, scheme, reverse and domainMid, not palette`.
 - A `domain` written beside a linear or log scale loads, since no slot
   combination is refused (ADR-133), and paints over the regions' extremes. The
@@ -111,14 +111,14 @@ is the Edit as JSON counterpart, the colour as written.
   both "off" and a kind: keeping both across the round trip needs the set/map
   switch to be a member of its own, which is a change to every menu that
   writes `none` and to ADR-133's rule, and is not made here.
-- The Edit as JSON box holds a colour spec to the members the display
+- The Edit as JSON box holds a color spec to the members the display
   declares, read off its schema (`colorMembersOf`).
 
 ## Rejected alternatives
 
 - **Keeping `palette` and `ramp` and making `scale` mandatory beside a ramp.**
   The inference that made two words necessary was itself the defect: dropping
-  it makes `scale` defaulted, as every other colour object already had it, and
+  it makes `scale` defaulted, as every other color object already had it, and
   every in-tree ramp already named its scale.
 - **Nesting a scale object, `color: { field, scale: { type, range } }`.** The
   menus' most used transition, a constant and back, is one `scale: 'none'`
@@ -128,7 +128,7 @@ is the Edit as JSON counterpart, the colour as written.
   sits on everywhere in a config; a channel is not a scale.
 - **A `scheme` enum per display.** One table makes a scheme a display cannot
   bake unspellable; a per-display enum would restate it.
-- **`domain: [min, max]` under a linear colour scale**, Vega-Lite's spelling.
+- **`domain: [min, max]` under a linear color scale**, Vega-Lite's spelling.
   It brings back two spellings of one pin and a precedence rule between them,
   where `scales.y` has one. The trap it answers, a `domain` written under a
   ramp, is reported instead: `ramp-domain` in display-kit's `colorProblems`.

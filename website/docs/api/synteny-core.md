@@ -30,16 +30,16 @@ identity. Anything worth keeping gets pinned.
 
 ## BAND_GROUND_COLOR
 
-The colour a comparative band is painted on, for every surface that has to
+The color a comparative band is painted on, for every surface that has to
 agree about it: the two backends' clear, the pre-blended indel wedges, every
 mark, tick, label halo and outline (`getContrastText` of it), the legend
 chips and the SVG export.
 
-Light in every theme. The ribbons are translucent colour that reads as tint
+Light in every theme. The ribbons are translucent color that reads as tint
 over a light ground and as murk over a dark one, so a dark theme's paper made
 a whole-genome band nearly unreadable. The band is the one sheet in the app
 that keeps its own ground. The dotplot's plot area is the same sheet, since
-it paints the same colour schemes, whose default is black.
+it paints the same color schemes, whose default is black.
 
 ```js
 // type signature
@@ -96,8 +96,8 @@ to rather than over an assumed white.
 ## carriedSyntenySettings
 
 What a view holding `SyntenyColorsMixin` hands the view it opens on the same
-alignments: the colour it paints by, which a view on its default scheme
-leaves to the new view's own, the pinned track colours, the unlabelled
+alignments: the color it paints by, which a view on its default scheme
+leaves to the new view's own, the pinned track colors, the unlabelled
 filter and the length filter. Opacity stays each view's own default, since a
 linear ribbon, a dotplot point and a circle's ribbon draw at densities of
 their own.
@@ -202,7 +202,7 @@ Each feature's fade, 0 to 1, as a share of `opacityLevel`; undefined while
 at the level.
 
 `viewRanges` is the domain a number column fades across, the view's
-accumulated one as the colour ramp's is, and `fetchRanges` the fetch's own,
+accumulated one as the color ramp's is, and `fetchRanges` the fetch's own,
 whose label lists a text column's values index.
 
 ```js
@@ -216,7 +216,7 @@ whose label lists a text column's values index.
 
 The lanes `createComparativeColorFunction` reads, built from features a
 display holds on the main thread rather than from a worker's payload. `ends`
-answers a feature's two refNames in the order the colour modes read them:
+answers a feature's two refNames in the order the color modes read them:
 `query` paints by the first and `target` by the second.
 
 ```js
@@ -340,7 +340,7 @@ drift this module exists to prevent — see the header.
 
 ## opacityFadeOf
 
-The part of `opacity` the colour pass reads: undefined for the constant,
+The part of `opacity` the color pass reads: undefined for the constant,
 else the mapping with `range` as shares of its most opaque entry, so a
 mapping scaled alike at both ends answers the same.
 
@@ -392,9 +392,9 @@ rather than the number column's default fade.
 
 ## paintedField
 
-The field a synteny colour object paints by, or `''` while it paints its
+The field a synteny color object paints by, or `''` while it paints its
 constant: `scale: 'none'`, or no field named. Read through the one resolver
-every display's colour object goes through.
+every display's color object goes through.
 
 ```js
 // type signature
@@ -430,7 +430,7 @@ second. Undefined for any other field, and while that assembly loads.
 
 ## syntenyColorFor
 
-The colour object that paints by `field`, written over `current`: display-kit's
+The color object that paints by `field`, written over `current`: display-kit's
 `colorForField`, the rule every display's Color by pick writes by.
 
 ```js

@@ -675,8 +675,8 @@ describe('per-instance colors reach every Canvas2D draw fn', () => {
     expect(ctx.fillStyle).toBe(abgrToCssRgba(blue))
   })
 
-  // A line with one colour on both sides of the pivot strokes once.
-  test('a single-colour line draws in one batch', () => {
+  // A line with one color on both sides of the pivot strokes once.
+  test('a single-color line draws in one batch', () => {
     const mock = createMockCanvas()
     paintWiggle(
       mock.ctx,
@@ -992,7 +992,7 @@ describe('the whiskers band', () => {
     ])
   })
 
-  test('a band crossing the pivot fills above in the pos colour and below in the neg colour', () => {
+  test('a band crossing the pivot fills above in the pos color and below in the neg color', () => {
     const { ctx, fillStyles, rectCalls } = paint(
       [bandLayer([5], [-5], [0], [100], RENDERING_TYPE_LINE)],
       RENDERING_TYPE_LINE,
@@ -1005,7 +1005,7 @@ describe('the whiskers band', () => {
     expect(clipRects.map(r => r[1])).toContain(100)
   })
 
-  test('a band crossing two cuts fills each band between them in its colour', () => {
+  test('a band crossing two cuts fills each band between them in its color', () => {
     const { fillStyles, rectCalls } = paint(
       [bandLayer([5], [-5], [0], [100], RENDERING_TYPE_LINE)],
       RENDERING_TYPE_LINE,
@@ -1029,7 +1029,7 @@ describe('the whiskers band', () => {
     ])
   })
 
-  test('an interpolated band fills a colour band it crosses between two bins', () => {
+  test('an interpolated band fills a color band it crosses between two bins', () => {
     const { fillStyles } = paint(
       [
         bandLayer(
@@ -1076,10 +1076,10 @@ describe('the whiskers band', () => {
   })
 })
 
-// A line plot takes its colour from the side of the pivot the line is on, not
-// from a bin, so a segment crossing the pivot changes colour at the crossing.
+// A line plot takes its color from the side of the pivot the line is on, not
+// from a bin, so a segment crossing the pivot changes color at the crossing.
 // Domain [-10, 10] over 200px puts the pivot at y 100 and y(s) = 100 - 10s.
-describe('line plots colour by pivot side', () => {
+describe('line plots color by pivot side', () => {
   const state = { ...lineState, domainY: [-10, 10] as [number, number] }
 
   function paintSigned(renderingType: WiggleRenderingType) {
@@ -1181,7 +1181,7 @@ describe('line plots colour by pivot side', () => {
     ])
   })
 
-  test('a line crossing two cuts takes each band colour between them', () => {
+  test('a line crossing two cuts takes each band color between them', () => {
     const mock = createMockCanvas()
     const source = {
       ...makeSource([5, -5], [0, 100], [100, 200], RENDERING_TYPE_LINE_CENTER),
@@ -1238,12 +1238,12 @@ describe('line plots colour by pivot side', () => {
 })
 
 // A threshold the score domain excludes. Domain [0, 10] with the cut at 15: no
-// bin reaches it, so no rendering may paint the above-cut colour.
+// bin reaches it, so no rendering may paint the above-cut color.
 //
 // The xyplot never did — `bandColorsAbgr` bands raw scores. The line family
 // bands screen y, and a cut outside the domain used to normalize to the same
 // clamped row edge that a score at the top of the domain does, so the tie read
-// as crossed and the same data changed colour when the user switched plot type.
+// as crossed and the same data changed color when the user switched plot type.
 // Both sides answer here, because a test written from either one alone passes
 // against the version that disagreed.
 describe('a cut outside the domain parts nothing', () => {
@@ -1321,7 +1321,7 @@ describe('a cut outside the domain parts nothing', () => {
   })
 
   // A peak clipped at the top of a [0, 10] plot still scores past the cut at
-  // 15: the line colours it by its score, as the bar does, and not by the row
+  // 15: the line colors it by its score, as the bar does, and not by the row
   // edge it is drawn on.
   test('a score past the domain keeps its side of the cut', () => {
     const peak = [20, 4]
@@ -1351,7 +1351,7 @@ describe('a cut outside the domain parts nothing', () => {
     }
   })
 
-  test('the step line colours its level run by the score and its rise by the row', () => {
+  test('the step line colors its level run by the score and its rise by the row', () => {
     const mock = createMockCanvas()
     paintWiggle(
       mock.ctx,

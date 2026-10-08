@@ -114,16 +114,16 @@ default display, so preset its slots in a `displays` array; they are listed on
 
 ### Coloring cells by the variant
 
-`color` paints every cell with an alt allele by the variant itself. A CSS colour
+`color` paints every cell with an alt allele by the variant itself. A CSS color
 or a jexl expression paints every alt cell of a variant, the
 [helper functions](#helper-functions-for-jexl-color-expressions) included. A
-`field` gives each of its values a colour, with a key. Three fields are the
-track menu's **Color by...** presets: `impact` for
+`field` gives each of its values a color, with a key. Three fields are the track
+menu's **Color by...** presets: `impact` for
 [consequence impact](/docs/user_guides/multivariant_track#coloring-by-consequence-impact-snpeffvep-annotations),
 `svType` for [SV type](/docs/user_guides/multivariant_track#coloring-by-sv-type)
 and `phaseSet` for the phase set in phased mode. Any other field is read off the
 record, such as `INFO.CLNSIG` or `QUAL`, and a variant with no value keeps the
-default alt colour.
+default alt color.
 
 ```json addtrack
 {
@@ -142,8 +142,8 @@ default alt colour.
 ```
 
 A number cuts into ranges with a `threshold` scale: `domain` lists the cut
-points and `range` one colour per range, one more than the cuts. Allele
-frequency split into ultra-rare, rare, low-frequency and common:
+points and `range` one color per range, one more than the cuts. Allele frequency
+split into ultra-rare, rare, low-frequency and common:
 
 ```json
 "displays": [

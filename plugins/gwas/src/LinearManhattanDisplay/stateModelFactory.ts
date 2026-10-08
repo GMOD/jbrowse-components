@@ -35,7 +35,7 @@ const NO_PLOT_FIELDS = { numeric: [], categorical: [] }
  * #stateModel LinearManhattanDisplay
  * #category display
  * The mark display with the LD join: an index SNP each fetch joins r² to,
- * which follows the top hit until the user pins one, and the menus that colour
+ * which follows the top hit until the user pins one, and the menus that color
  * the points by it.
  */
 export function stateModelFactory(
@@ -129,7 +129,7 @@ export function stateModelFactory(
     .views(self => ({
       /**
        * #getter
-       * Whether "Color by LD to index SNP" has a point mark to colour.
+       * Whether "Color by LD to index SNP" has a point mark to color.
        */
       get ldColorable(): boolean {
         return self.conf.marks.some(m => colorsByLd(m, self.sharedSteps))
@@ -210,8 +210,8 @@ export function stateModelFactory(
       },
       /**
        * #action
-       * Colour each point by its r² to the index SNP, the index a pink
-       * diamond over them, or take that colouring off, leaving every other
+       * Color each point by its r² to the index SNP, the index a pink
+       * diamond over them, or take that coloring off, leaving every other
        * member and mark of the plot as it was (`withLd`, `withoutLd`).
        */
       setLdColoring(on: boolean) {
@@ -229,7 +229,7 @@ export function stateModelFactory(
     .actions(self => ({
       /**
        * #action
-       * Right-click "Color by LD to this SNP": colour by r² to the clicked
+       * Right-click "Color by LD to this SNP": color by r² to the clicked
        * point and pin it as the index, in one action so the fetch inputs
        * settle once.
        */
@@ -271,7 +271,7 @@ export function stateModelFactory(
                         checked: self.ldColored,
                         disabled: !self.ldColored && !self.ldColorable,
                         disabledHelpText:
-                          'LD colouring colours a point mark that plots each SNP at its own position, and this plot has none: add one with Edit plot...',
+                          'LD coloring colors a point mark that plots each SNP at its own position, and this plot has none: add one with Edit plot...',
                         onClick: () => {
                           self.setLdColoring(!self.ldColored)
                         },

@@ -13,7 +13,7 @@ export interface RenderHicDataArgs {
   originBp: number
   resolution: number
   normalization: string
-  /** the quantile `quantileScore` answers, the colour's `domainQuantile`; 0.95 unset */
+  /** the quantile `quantileScore` answers, the color's `domainQuantile`; 0.95 unset */
   quantile?: number
 }
 
@@ -61,7 +61,7 @@ export interface HicDataResult {
   numContacts: number
   /**
    * Maximum and `quantile` of the finite counts, so a NaN or
-   * Infinity bin cannot poison the colour domain. 0 for an empty matrix.
+   * Infinity bin cannot poison the color domain. 0 for an empty matrix.
    */
   maxScore: number
   quantileScore: number

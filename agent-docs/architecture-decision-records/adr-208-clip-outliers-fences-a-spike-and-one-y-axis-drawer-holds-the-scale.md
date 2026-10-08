@@ -1,6 +1,6 @@
 ---
 status: Accepted
-summary: "Below a `scales.y.domainQuantile` of 1 an open end follows the extremes and stops only at a fence, twice the span the quantile ends draw (0 included where the axis reaches it), through `fenceOutliers` in `@jbrowse/core/util/quantileExtent`; the wiggle plot, the mark display and the coverage band read it, colour ramps still clip at the quantile, and a plot with no spike draws no red strip. The Score submenu, its three dialogs (Set min/max score, Autoscale with other tracks, Reference lines) and Show cross hatches become one track-menu row, Y axis..., opening a drawer widget that writes `scales.y` as each control changes: Scale, Min/Max (debounced), Include 0, Clip extreme outliers, Share axis with, Grid lines, Reference lines and Reset to defaults. The coverage band's row is Coverage axis..., a density plot's Score range..., and Summary score mode moves into Resolution. Amends ADR-179, ADR-182 and ADR-183"
+summary: "Below a `scales.y.domainQuantile` of 1 an open end follows the extremes and stops only at a fence, twice the span the quantile ends draw (0 included where the axis reaches it), through `fenceOutliers` in `@jbrowse/core/util/quantileExtent`; the wiggle plot, the mark display and the coverage band read it, color ramps still clip at the quantile, and a plot with no spike draws no red strip. The Score submenu, its three dialogs (Set min/max score, Autoscale with other tracks, Reference lines) and Show cross hatches become one track-menu row, Y axis..., opening a drawer widget that writes `scales.y` as each control changes: Scale, Min/Max (debounced), Include 0, Clip extreme outliers, Share axis with, Grid lines, Reference lines and Reset to defaults. The coverage band's row is Coverage axis..., a density plot's Score range..., and Summary score mode moves into Resolution. Amends ADR-179, ADR-182 and ADR-183"
 ---
 
 # ADR-208: Clip outliers fences a spike, and one Y axis drawer holds the scale
@@ -52,8 +52,8 @@ and then stops at the fence. With `zero` on and one-signed data that is
 `min(max, 2 × q)`. Quantile ends that meet span their own size, as a flat
 domain widens in `getNiceDomain`. `autoscaleDomainFromSpans` (wiggle and the
 mark display) and `computeVisibleCoverageDomain` (the coverage band) call it,
-each stating `zero`. Colour ramps and Hi-C keep clipping at the quantile
-itself: a saturated colour hides nothing its key does not say, where a cut bar
+each stating `zero`. Color ramps and Hi-C keep clipping at the quantile
+itself: a saturated color hides nothing its key does not say, where a cut bar
 loses its height and wears red, and Hi-C's 0.95 wants the saturation.
 
 **One row, one drawer widget, one config object.** Every control in the old

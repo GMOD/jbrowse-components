@@ -27,7 +27,7 @@ findable by anyone who does not already know the subsystem.
 
 The per-plugin decision trees live in `reference/`, entered through
 [RENDERING_DECISIONS](../reference/RENDERING_DECISIONS.md): the decision
-sequence every display runs, and the one table saying what a row and a colour
+sequence every display runs, and the one table saying what a row and a color
 mean in each plugin. They map a plugin, so they fail the first test below.
 
 The other family here is the **subsystem** a track type sits on top of rather
@@ -40,7 +40,7 @@ who does not know which plugin owns it.
 Three tests, all of them:
 
 - **Name the idea without naming the plugin.** "Classify once into a named
-  vocabulary, paint from a table" survives the trip; "how the pileup colours
+  vocabulary, paint from a table" survives the trip; "how the pileup colors
   reads" does not. A doc that cannot state its idea that way is a subsystem
   writeup and belongs in `reference/`.
 - **It is built, not proposed.** A shape that exists in the tree and has been

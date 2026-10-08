@@ -43,7 +43,7 @@ export type CoverageRowsBin = Omit<
 
 /**
  * One line of the coverage breakdown at a position. `color` is a
- * modification's own; `base` names an allele, whose colour the display looks
+ * modification's own; `base` names an allele, whose color the display looks
  * up in its own palette.
  */
 export interface CoverageRow {

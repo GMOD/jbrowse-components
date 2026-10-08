@@ -6,7 +6,7 @@ import type { SequenceMarkState } from './sequenceMarks.ts'
 import type { ColorQuad, JBrowsePalette } from '@jbrowse/core/ui/palette'
 import type { Frame } from '@jbrowse/core/util'
 
-/** One painted cell's fill, packed for the marks, and the letter colour on it. */
+/** One painted cell's fill, packed for the marks, and the letter color on it. */
 export interface SeqColor {
   fill: string
   abgr: number

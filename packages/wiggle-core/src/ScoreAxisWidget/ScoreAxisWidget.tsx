@@ -36,7 +36,7 @@ const SCALE_TYPE_LABELS: Record<(typeof VALUE_SCALE_TYPES)[number], string> = {
   symlog: 'Symlog',
 }
 
-// A density plot maps score to colour and rules no band, so it has no 0 to
+// A density plot maps score to color and rules no band, so it has no 0 to
 // include and no lines to draw across it.
 function rulesABand(display: ScoreAxisDisplay) {
   return display.scoreRulesDrawn === true

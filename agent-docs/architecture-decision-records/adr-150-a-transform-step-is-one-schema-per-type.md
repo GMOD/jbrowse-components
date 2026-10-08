@@ -89,7 +89,7 @@ key there rather than that the key does nothing.
 | `$defs.Display`'s any-string `type` hint | A misspelt type then matches no arm and passes with its keys unchecked; driven by replacing the enum, which silenced the `fliter` case. |
 | Required fields on the wire's step types | The core tests and benches write about 80 step literals, and a direct `CoreGetEncodedLayers` caller would restate every default; writing every slot out in `stepsOf` gives the one fetch key without it. |
 | Refusing a `bin.as` or `pileup.fields` of other than two names at load | The editor writes a `stringArray` one entry at a time and passes through the other lengths (ADR-133); the rule list says so (`step-pair`) and the step reads its default pair. |
-| The colour objects as unions of scale kinds | ADR-135 made them one flat shape on purpose, the same channel read alike on four displays; a step is a verb with disjoint operands and no such reader. |
+| The color objects as unions of scale kinds | ADR-135 made them one flat shape on purpose, the same channel read alike on four displays; a step is a verb with disjoint operands and no such reader. |
 | A bare string step (`transform: ['pileup']`) | The dispatcher reads `type` off an object and refuses a string, and a step with no slots has nothing for a shorthand to lift into; it needs a lift in the helper. |
 
 ## Consequences

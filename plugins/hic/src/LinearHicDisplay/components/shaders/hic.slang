@@ -1,5 +1,5 @@
 // Hi-C contact map: one instance per binned contact, a square rotated 45° into
-// the triangle, coloured by its count through the shared score scale.
+// the triangle, colored by its count through the shared score scale.
 //! targets: wgsl, glsl
 //! blend: premultiplied
 //! export-consts: MIN_VISIBLE_ALPHA

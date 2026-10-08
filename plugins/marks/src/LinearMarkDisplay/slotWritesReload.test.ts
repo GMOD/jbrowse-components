@@ -36,11 +36,11 @@ const STARTS: Record<string, unknown> = {
       },
     },
   },
-  'a constant colour': {
+  'a constant color': {
     mark: 'bar',
     encoding: { y: 'score', color: { value: 'steelblue' } },
   },
-  'a categorical colour with a range': {
+  'a categorical color with a range': {
     mark: 'bar',
     encoding: {
       y: 'score',

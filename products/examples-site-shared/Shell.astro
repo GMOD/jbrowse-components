@@ -115,10 +115,10 @@ try {
         `color-scheme` tracks the palette below, and it is load-bearing rather
         than a nicety. The demos are copy-pasteable files, so they cannot reach
         for the custom properties on this page -- they style themselves with CSS
-        *system* colours (`Canvas`, `CanvasText`, `color-mix` of the two), on the
+        *system* colors (`Canvas`, `CanvasText`, `color-mix` of the two), on the
         stated grounds that those read correctly on whatever host they are pasted
         into. Without this declaration they don't: `color-scheme` defaults to
-        `normal`, system colours stay on the light palette whatever `data-theme`
+        `normal`, system colors stay on the light palette whatever `data-theme`
         says, and `color-mix(in srgb, CanvasText 8%, Canvas)` paints a near-white
         box on a dark page while the text inside it inherits `--fg` and stays
         near-white too. That is a 1.0 contrast ratio, and it shipped: the
@@ -194,7 +194,7 @@ try {
         theme systems do not move together: a link in JBrowse's content — a
         track name carrying markup, a formatted feature detail — sat on the
         app's white paper wearing this page's *dark* accent, which measured
-        2.24:1. `revert` hands the colour back to the embedded app, falling
+        2.24:1. `revert` hands the color back to the embedded app, falling
         through to the UA default when it styles none.
       */
       .demo a {

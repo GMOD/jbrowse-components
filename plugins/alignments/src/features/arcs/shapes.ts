@@ -1,7 +1,7 @@
 // What an arc DRAWS AS, as an enum, and the predicates over it. Its own
 // module because the band's feed and the display's tooltip read it, and each
 // would otherwise pull in `compute.ts`, the read grouping, clustering and
-// colour classification. No shader reads these values: the feed picks a mark
+// color classification. No shader reads these values: the feed picks a mark
 // per shape on the CPU.
 
 // The single curved paired-read shape. Its on-screen form is chosen by the

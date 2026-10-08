@@ -204,7 +204,7 @@ it('reports a draft the schema refuses instead of crashing', () => {
   expect(applyPlot).not.toHaveBeenCalled()
 })
 
-describe('a colour or shape typed into its picker', () => {
+describe('a color or shape typed into its picker', () => {
   const POINT: MarkPlot = {
     marks: [{ mark: 'point', encoding: { y: 'score' } }],
   }
@@ -265,7 +265,7 @@ describe('a scale beside its field', () => {
     expect(screen.queryByTestId('scale-color')).toBeNull()
   })
 
-  it('offers every colour scale the schema declares, and shape only its own', () => {
+  it('offers every color scale the schema declares, and shape only its own', () => {
     setup(RAMP)
     const options = [...screen.getByTestId('scale-color').children].map(
       o => (o as HTMLOptionElement).value,
@@ -318,7 +318,7 @@ describe('a scale beside its field', () => {
 
   // The members the row does not show keep the picker above read-only, so the
   // form still cannot drop a palette it never displayed.
-  it("edits a categorical colour's values, colours and key names in place", () => {
+  it("edits a categorical color's values, colors and key names in place", () => {
     const { apply, written, writes } = setup({
       marks: [
         {
@@ -361,7 +361,7 @@ describe('a scale beside its field', () => {
     )
   })
 
-  it('cuts a threshold at the points typed, with a colour for each interval', () => {
+  it('cuts a threshold at the points typed, with a color for each interval', () => {
     const { apply, written, writes } = setup({
       marks: [
         {
@@ -400,7 +400,7 @@ describe('a scale beside its field', () => {
     )
   })
 
-  it("offers a link's width its own ramps, and no colour's stops", () => {
+  it("offers a link's width its own ramps, and no color's stops", () => {
     const { apply, written } = setup({
       marks: [
         { mark: 'link', encoding: { size: { field: 'score', scale: 'log' } } },

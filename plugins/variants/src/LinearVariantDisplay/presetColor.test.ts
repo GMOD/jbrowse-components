@@ -40,7 +40,7 @@ function clickRow(display: LinearVariantDisplayModel, label: string) {
   }
 }
 
-// The preset is a field of the colour object, as on the multi-sample
+// The preset is a field of the color object, as on the multi-sample
 // displays, and the display paints it through the jexl function that
 // computes it, since a VCF record carries no `impact` of its own.
 test('Consequence impact writes the impact field', () => {
@@ -73,7 +73,7 @@ test('SV type paints the svType field, which a VCF record carries', () => {
   expect(display.colorKeyTitle).toBe('SV type')
 })
 
-test('the worker is sent the jexl colour, not the preset field', () => {
+test('the worker is sent the jexl color, not the preset field', () => {
   const display = createDisplay()
   clickRow(display, 'Consequence impact')
   const { color } = display.rpcProps().displayConfig

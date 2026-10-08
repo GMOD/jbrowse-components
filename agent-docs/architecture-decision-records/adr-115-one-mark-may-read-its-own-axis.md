@@ -1,6 +1,6 @@
 ---
 status: Accepted
-summary: "Three moves at the layer stage. Layout becomes a transform — `pileup` is the seventh TransformStep kind, a greedy first-fit row per feature, measured at 5.07x the bare encode, so a `span` reading the row it writes is a declared pileup. One mark's `encoding.y` may declare `resolve: 'independent'`, folding its own domain and taking a second axis on the right through the `side` member `ValueScale` already had; a second such mark is refused where the config is read. And the mark display attaches to `AlignmentsTrack` and `VariantTrack` beside `FeatureTrack`, so both of those are config over a BAM or a VCF. An independent colour scale and a layout the main thread can re-pack are declined"
+summary: "Three moves at the layer stage. Layout becomes a transform — `pileup` is the seventh TransformStep kind, a greedy first-fit row per feature, measured at 5.07x the bare encode, so a `span` reading the row it writes is a declared pileup. One mark's `encoding.y` may declare `resolve: 'independent'`, folding its own domain and taking a second axis on the right through the `side` member `ValueScale` already had; a second such mark is refused where the config is read. And the mark display attaches to `AlignmentsTrack` and `VariantTrack` beside `FeatureTrack`, so both of those are config over a BAM or a VCF. An independent color scale and a layout the main thread can re-pack are declined"
 ---
 
 # ADR-115: One mark may read its own axis, and layout is a transform
@@ -122,7 +122,7 @@ asymmetry is the adapters' and not this display's to fix.
 ## Consequences
 
 - A pileup is config: `{ shape: 'span', transform: [{ type: 'pileup' }],
-  encoding: { row: 'row' } }` over a BAM, coloured by any field a read
+  encoding: { row: 'row' } }` over a BAM, colored by any field a read
   answers. It is not the alignments display — no mismatches, no soft clips, no
   sort — and the config guide says which question each is for.
 - A coverage run and the raw features share a plot with two axes and one
@@ -156,12 +156,12 @@ asymmetry is the adapters' and not this display's to fix.
   `axisGutterLeft`, and a third has nowhere at all; the honest form would be
   a gutter stack the chrome lays out, which is a chrome feature and not a
   grammar one. Refused with a message rather than drawn wrong.
-- **An independent colour scale.** The same `resolve` on `color` is one line
+- **An independent color scale.** The same `resolve` on `color` is one line
   in the schema and nothing else: a ramp already resolves per mark
   (`colorRamps[i]`) and a categorical table already keys by mark, so two marks
-  with two colour scales already have two keys. There is nothing to resolve
+  with two color scales already have two keys. There is nothing to resolve
   independently *of*, so the member would declare a difference that does not
-  exist. GRAMMAR_OF_GRAPHICS.md keeps colour on the gap list for the opposite
+  exist. GRAMMAR_OF_GRAPHICS.md keeps color on the gap list for the opposite
   reason — nothing unions two marks' ramps into one — which is a feature no
   config has asked for.
 - **`pileup` as a main-thread layout the display re-packs on pan.** The rows a

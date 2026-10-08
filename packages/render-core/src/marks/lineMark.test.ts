@@ -198,7 +198,7 @@ test('a row the table hides paints nothing, has no ink and breaks the run around
   expect(lineStepMark.ink!(c, block, frame, banded, 2)).toBeDefined()
 })
 
-test('a row colour override paints the row', () => {
+test('a row color override paints the row', () => {
   const c = channels([{ x: 10, x2: 20, y: 2, row: 0 }])
   const table = buildRowTable(Uint32Array.of(0), Uint32Array.of(BLUE))
   const { ctx, calls } = mockCtx()
@@ -211,7 +211,7 @@ test('interpolate picks the variant', () => {
   expect(lineMarkOf('linear')).toBe(lineCenterMark)
 })
 
-test('under a threshold a step is stroked once per band, a rise across the cut changing colour at it', () => {
+test('under a threshold a step is stroked once per band, a rise across the cut changing color at it', () => {
   const c = channels([
     { x: 10, x2: 20, y: 2 },
     { x: 20, x2: 30, y: 8 },
@@ -239,7 +239,7 @@ test('under a threshold a step is stroked once per band, a rise across the cut c
   ])
 })
 
-test('a threshold over another field colours each instance by its own value', () => {
+test('a threshold over another field colors each instance by its own value', () => {
   const c = channels([
     { x: 10, x2: 20, y: 9 },
     { x: 20, x2: 30, y: 9 },
@@ -257,7 +257,7 @@ test('a threshold over another field colours each instance by its own value', ()
   ])
 })
 
-test('along y, a row the table recolours paints its override', () => {
+test('along y, a row the table recolors paints its override', () => {
   const c = channels([
     { x: 10, x2: 20, y: 2 },
     { x: 20, x2: 30, y: 8 },
@@ -277,7 +277,7 @@ test('along y, a row the table recolours paints its override', () => {
   )
 })
 
-test('the uniforms say whether the colour field is the plotted y', () => {
+test('the uniforms say whether the color field is the plotted y', () => {
   const clip = clipBlock(block, frame.canvasWidth, frame.canvasHeight, {
     x: 1,
     y: 1,

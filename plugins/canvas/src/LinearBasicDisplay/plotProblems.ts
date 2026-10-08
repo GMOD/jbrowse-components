@@ -23,7 +23,7 @@ function colorExpression(color: unknown) {
       : undefined
 }
 
-/** A draft's `jexl:` colour or filter that does not compile, by setting. */
+/** A draft's `jexl:` color or filter that does not compile, by setting. */
 export function plotJexlProblems(draft: Plot, jexl: JexlInstance) {
   const filter = Array.isArray(draft.filter) ? (draft.filter as unknown[]) : []
   const expressions = [

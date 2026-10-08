@@ -330,7 +330,7 @@ renderer JBrowse shipped in 4.3.0 refetches, showing a loading indicator for
 15321ms<!--m:zoom-in-refetch.1000x-longread.baselineMs-->; the redraw that
 replaces it is 50ms<!--m:zoom-in-refetch.1000x-longread.redrawMs-->. **Quoting
 that as the speedup overstates it** — zoom in is the one gesture where this
-architecture skips the work rather than doing it faster. The two per-base colour
+architecture skips the work rather than doing it faster. The two per-base color
 modes are the exception: their worker output is sampled at the zoom's sub-pixel
 bin, so a zoom-in that crosses an octave refetches — at most once per octave,
 two or three calls over a seven-octave gesture, each a subset of the last

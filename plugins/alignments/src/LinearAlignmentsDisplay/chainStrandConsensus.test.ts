@@ -288,7 +288,7 @@ describe('panning', () => {
 
   it('does not repaint a chain when other reads scroll into view', () => {
     // the ordinary pan: more reads arrive at a locus a chain is already framed
-    // by. Rows the user is looking at must not change colour underneath them.
+    // by. Rows the user is looking at must not change color underneath them.
     const before = consensusChainStrandFrames(bothLoci())
     const after = consensusChainStrandFrames(
       new Map([
@@ -313,7 +313,7 @@ describe('panning', () => {
   // one bucket, so `solveFrames`' freeze applies and they fall back to the frame
   // their own primary gives.
   //
-  // That is a colour change with no data change, and the reason to accept it is
+  // That is a color change with no data change, and the reason to accept it is
   // that the fallback is exactly the answer these reads had before this pass
   // existed: the pass can only CHANGE a chain where cross-locus evidence is on
   // screen, so losing that evidence cannot land the display anywhere it could

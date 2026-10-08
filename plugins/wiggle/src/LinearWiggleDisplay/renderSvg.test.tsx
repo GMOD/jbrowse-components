@@ -62,7 +62,7 @@ const ticks = {
 
 // The one scale the rows share, as `ScoreScaleMixin` resolves it off the
 // model's `valueScales`: a band per row, past the dendrogram where one shows,
-// and no band at all for density rows in their own colours.
+// and no band at all for density rows in their own colors.
 function axes({ left = 0, density = false, grid = false } = {}) {
   return [
     {

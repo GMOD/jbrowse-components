@@ -12,7 +12,7 @@ import type { Instance } from '@jbrowse/mobx-state-tree'
  * #category display
  *
  * #example
- * A log colour scale, one step coarser than the zoom picks, through the
+ * A log color scale, one step coarser than the zoom picks, through the
  * `displayDefaults` shorthand. See the
  * [Hi-C track guide](/docs/config_guides/hic_track) for the rest:
  * ```js
@@ -37,7 +37,7 @@ const HicTrackConfigFactory = () => {
       ...triangleMatrixConfigSchemaFields,
       /**
        * #slot color
-       * How a count becomes a colour: a `linear` or `log` scale onto a named
+       * How a count becomes a color: a `linear` or `log` scale onto a named
        * `scheme`, over a domain whose unset ends follow the loaded counts.
        */
       color: hicColorConfigSchema,
@@ -74,7 +74,7 @@ const HicTrackConfigFactory = () => {
        * #identifier
        */
       explicitIdentifier: 'displayId',
-      // v4's renderer block held a base colour the ramp has no member for,
+      // v4's renderer block held a base color the ramp has no member for,
       // a cap on the triangle's height and a per-cell callback into the
       // plugin's jexl functions.
       retired: {

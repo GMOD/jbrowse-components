@@ -64,12 +64,12 @@ test('an incomplete tag cannot be submitted', () => {
   expect(screen.getByText('Submit').closest('button')).toBeDisabled()
 })
 
-test('asks how the tag colours only where the caller passes a scale', () => {
+test('asks how the tag colors only where the caller passes a scale', () => {
   renderDialog('NM')
   expect(screen.queryByText('A gradient over numbers')).toBeNull()
 })
 
-test('submits the colouring picked, opening on the one in use', () => {
+test('submits the coloring picked, opening on the one in use', () => {
   const { onSubmit } = renderDialog('NM', 'categorical')
   expect(screen.getByLabelText('A color per value')).toBeChecked()
   fireEvent.click(screen.getByLabelText('A gradient over numbers'))

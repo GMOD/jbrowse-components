@@ -23,7 +23,7 @@ export { getQueryColor, hashString } from '@jbrowse/core/ui/colors'
 // ground and written out opaque rather than composited, which is the arrangement
 // `LinearSyntenyDisplay/syntenyGroundClear` fixes that ground for.
 //
-// These remain LIGHT-GROUND colours — picked against a white band, and at the
+// These remain LIGHT-GROUND colors — picked against a white band, and at the
 // 0.25 default alpha they are faint on a dark one. The ground is threaded now,
 // which is what makes a dark band expressible at all; giving these a dark
 // variant, in the `colorPairLRDark` mould, is the separate follow-up.

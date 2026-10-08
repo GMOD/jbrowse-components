@@ -4,20 +4,20 @@ import type { ColorSetting } from '@jbrowse/display-kit/colorConfigSchema'
 /**
  * How much of the picture two swatches can say: `edit` offers them, `read`
  * shows what paints beside the reason they cannot replace it, and `hide` is
- * where a colour per subtrack paints and the grid below is already the control.
+ * where a color per subtrack paints and the grid below is already the control.
  */
 export type PlotColorMode = 'edit' | 'read' | 'hide'
 
 /**
- * The two colours the arrangement dialog offers on one line, above the rows:
+ * The two colors the arrangement dialog offers on one line, above the rows:
  * what the plot is drawn in, either side of where it parts. Read off the
- * resolved colour rather than the written one, so an unset `color` shows the
+ * resolved color rather than the written one, so an unset `color` shows the
  * pair the layout paints.
  */
 export interface PlotColorLine {
   above: string
   below: string
-  /** Where the colour parts: the declared cut, or the `origin`. */
+  /** Where the color parts: the declared cut, or the `origin`. */
   cut: number
   mode: PlotColorMode
   /** Under `read`, what paints instead. */
@@ -45,14 +45,14 @@ export function plotColorLine(
     return {
       ...line,
       mode: 'read',
-      reason: `${resolved.cuts.length} cuts, a colour each`,
+      reason: `${resolved.cuts.length} cuts, a color each`,
     }
   }
   return { ...line, mode: 'edit' }
 }
 
 /**
- * What a swatch writes. One colour on both sides is a flat plot, which the
+ * What a swatch writes. One color on both sides is a flat plot, which the
  * string form already says, so the line needs no solid-versus-two-sided
  * choice.
  *

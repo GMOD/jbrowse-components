@@ -7,8 +7,8 @@ import { observer } from 'mobx-react'
 import type React from 'react'
 
 /**
- * Color by's Solid color... picker: `label`'s colour, with `children` as the
- * display's further pickers, and a note where the colour object holds an
+ * Color by's Solid color... picker: `label`'s color, with `children` as the
+ * display's further pickers, and a note where the color object holds an
  * expression a pick would replace.
  */
 const SolidColorDialog = observer(function SolidColorDialog({

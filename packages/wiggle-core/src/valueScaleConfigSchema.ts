@@ -29,14 +29,14 @@ function valueScaleRuleSchema() {
       },
       /**
        * #slot scales.y.rules.color
-       * The line's colour, and its label's. Unset draws every rule in the one
-       * colour the chrome rules plots in, so a threshold that means something
+       * The line's color, and its label's. Unset draws every rule in the one
+       * color the chrome rules plots in, so a threshold that means something
        * particular — genome-wide significance, a diploid depth — is one an
        * author paints, on the plot where it means it.
        */
       color: {
         type: 'maybeColor',
-        description: 'line and label colour; unset is the chrome’s own',
+        description: 'line and label color; unset is the chrome’s own',
       },
       /**
        * #slot scales.y.rules.label
@@ -77,7 +77,7 @@ export type ValueScaleRuleConfig = Instance<
  *
  * Every scale carries the same guides: `rules`, reference lines at chosen
  * values, `grid`, a line at every tick, `minimalTicks`, and `title`, the
- * caption beside the axis. A rule naming no `color` draws in the one colour
+ * caption beside the axis. A rule naming no `color` draws in the one color
  * the chrome rules every plot in, so a red line is a claim its author makes
  * rather than a meaning a display assigns.
  *
@@ -182,7 +182,7 @@ export function valueScaleSchema({
        * 30 and 60 draws 0 to 60, and a bar always shows its whole height.
        * Off, the axis spans the values alone. A pinned end is unmoved either
        * way, a log axis has no 0, and a density plot, which maps score to
-       * colour and has no axis, spans its values whatever this says.
+       * color and has no axis, spans its values whatever this says.
        * The Y axis panel's "Include 0" toggles it.
        */
       zero: {
@@ -226,8 +226,8 @@ export function valueScaleSchema({
        * leaves a plot with no spike whole and keeps one spike from flattening
        * the rest. Each end's quantile is measured among the values on its side
        * of 0, so a sparse minority tail stays visible, and the span includes 0
-       * where `zero` reaches it. A colour ramp's `domainQuantile` clips at the
-       * quantile itself, since a saturated colour hides nothing its key does
+       * where `zero` reaches it. A color ramp's `domainQuantile` clips at the
+       * quantile itself, since a saturated color hides nothing its key does
        * not say. The Y axis panel's "Clip extreme outliers" toggles it.
        */
       domainQuantile: {

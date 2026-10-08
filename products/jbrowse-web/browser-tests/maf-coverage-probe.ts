@@ -44,8 +44,8 @@ setPort(port)
 fs.mkdirSync(outDir, { recursive: true })
 
 // Any pixel that is not the transparent/near-white page ground. The depth bars
-// are the theme's grey and the SNP slices are the base colours, so "is there
-// ink" is the question a first check wants, ahead of which colour it is.
+// are the theme's grey and the SNP slices are the base colors, so "is there
+// ink" is the question a first check wants, ahead of which color it is.
 function isInk(r: number, g: number, b: number, a: number) {
   return a > 32 && !(r > 245 && g > 245 && b > 245)
 }

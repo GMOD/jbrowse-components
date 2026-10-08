@@ -963,7 +963,7 @@ describe('phase-set coloring classifies from the allele, not the color', () => {
     { name: 'S2 HP1', sampleName: 'S2', HP: 1 },
   ]
   // S1 carries the insertion on one haplotype and no-calls the other; S2 is
-  // hom-ref. A PS is declared, so the per-cell colour path runs.
+  // hom-ref. A PS is declared, so the per-cell color path runs.
   const feature = vcfFeature(
     '1\t101\tins1\tA\tACGTACGTACGT\t60\tPASS\t.\tGT:PS\t1|.:77\t0|0:77',
     ['S1', 'S2'],

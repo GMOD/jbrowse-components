@@ -6,7 +6,7 @@ import {
 import type { JBrowsePalette } from '@jbrowse/core/ui/palette'
 
 /**
- * The display's base table read per character, so a base is one colour in the
+ * The display's base table read per character, so a base is one color in the
  * track and in the widget. Resolve once per paint, not per cell.
  */
 export function getSequenceColors(palette: JBrowsePalette) {

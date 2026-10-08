@@ -1,6 +1,6 @@
 ---
 name: wiggle-onto-bar-and-point
-description: Move the wiggle display's plots onto render-core's bar, point, line and span marks, keeping LinearWiggleDisplay as a display type. The line (ADR-184), the pivot as a shader-side threshold (ADR-185), the heatmap as a span (ADR-113's amendment) and a constant colour as one number (ADR-198) have landed. Colin's 2026-09-30 approval settled the rest of the shape - the row lane stays per instance, and whiskers become three translucent bar marks, shown as captures first. Left are a symlog ramp in markColor.slang, `resolution`, GC content's value domain, per-source colour on the plot, wiggle's all-sources tooltip and a typed table for MultiWiggleAdapter. Sized at 7-10 days.
+description: Move the wiggle display's plots onto render-core's bar, point, line and span marks, keeping LinearWiggleDisplay as a display type. The line (ADR-184), the pivot as a shader-side threshold (ADR-185), the heatmap as a span (ADR-113's amendment) and a constant color as one number (ADR-198) have landed. Colin's 2026-09-30 approval settled the rest of the shape - the row lane stays per instance, and whiskers become three translucent bar marks, shown as captures first. Left are a symlog ramp in markColor.slang, `resolution`, GC content's value domain, per-source color on the plot, wiggle's all-sources tooltip and a typed table for MultiWiggleAdapter. Sized at 7-10 days.
 ---
 
 # Wiggle's plots onto render-core's marks
@@ -15,12 +15,12 @@ centres a point), the interleaved positions live only in the payload
 (`plugins/wiggle/src/util.ts`; the GPU record already matches `bar`'s x/x2),
 and the row's f32-against-u32 is about an hour. Since then the line landed as
 a mark (ADR-184), and the bicolor pivot is a threshold over `y` resolved in the
-shader (ADR-185): a rise across the pivot changes colour at it, the colour
+shader (ADR-185): a rise across the pivot changes color at it, the color
 costs no lane because it reads the `y` lane, and a pivot edit refetches
-nothing. The density heatmap is a `span` under a colour scale (ADR-113's
+nothing. The density heatmap is a `span` under a color scale (ADR-113's
 2026-09-28 amendment), the white fade a diverging `range` with `domainMid`.
-[ADR-198](../../architecture-decision-records/adr-198-a-constant-colour-rides-as-a-scalar.md)
-lets `EncodedChannels.color` be one number, so a constant-colour bar holds
+[ADR-198](../../architecture-decision-records/adr-198-a-constant-color-rides-as-a-scalar.md)
+lets `EncodedChannels.color` be one number, so a constant-color bar holds
 wiggle's 12 payload bytes a feature.
 
 ## Settled by the 2026-09-30 plan
@@ -55,8 +55,8 @@ wiggle's 12 payload bytes a feature.
 - GC content's adapter declares the domain its values lie in
   ([ADR-176](../../architecture-decision-records/adr-176-gc-content-is-a-track-the-wiggle-display-draws.md)),
   which the mark display's unpinned ends do not read.
-- Per-source colour paints the plot through the row table's colour plane,
-  where the mark display's row colour tints only the label.
+- Per-source color paints the plot through the row table's color plane,
+  where the mark display's row color tints only the label.
 - Wiggle's tooltip lists every source's min, mean and max at the cursor; the
   mark display hovers one instance. A `tooltip` channel would be the general
   form ([GRAMMAR_OF_GRAPHICS.md](../../reference/GRAMMAR_OF_GRAPHICS.md)

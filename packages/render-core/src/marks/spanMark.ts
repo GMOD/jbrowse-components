@@ -17,8 +17,8 @@ import type { RowTable } from './rowTable.ts'
 import type { MarkColorScale, MarkShape } from './types.ts'
 
 /**
- * The `span` shape's channels: a coloured rectangle from `x` to `x2` on the
- * band belonging to `row`, its colour packed or, under a colour scale, the
+ * The `span` shape's channels: a colored rectangle from `x` to `x2` on the
+ * band belonging to `row`, its color packed or, under a color scale, the
  * value it resolves from.
  */
 export interface SpanChannels extends ColorChannel {
@@ -30,7 +30,7 @@ export interface SpanChannels extends ColorChannel {
 }
 
 export interface SpanParams {
-  /** The quantitative colour scale, for a span whose colour is a ramp or a threshold. */
+  /** The quantitative color scale, for a span whose color is a ramp or a threshold. */
   colorScale?: MarkColorScale
   /** CSS px per row. */
   rowHeight: number
@@ -52,7 +52,7 @@ export interface SpanParams {
   scrollTop: number
   /**
    * The table `row` is read through as a key: its drawn slot, hidden, or a
-   * colour override. Absent, `row` is the slot.
+   * color override. Absent, `row` is the slot.
    */
   rowTable?: RowTable
 }

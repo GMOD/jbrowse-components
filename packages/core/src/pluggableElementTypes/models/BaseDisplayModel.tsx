@@ -380,7 +380,7 @@ function stateModelFactory() {
       /**
        * #method
        * What a draft would report once applied, throwing a refusal as
-       * `liftPlot` does: what its colour objects and `scales.y` say together
+       * `liftPlot` does: what its color objects and `scales.y` say together
        * that cannot be drawn as written. A display with a rule list over its
        * settings overrides it; the draft still applies, and draws what it can.
        */

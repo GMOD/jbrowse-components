@@ -19,15 +19,15 @@ function colorRows(display: ReturnType<typeof createDisplay>) {
   )
 }
 
-test('the curated colour schemes are the four synteny ones', () => {
+test('the curated color schemes are the four synteny ones', () => {
   expect(
     colorRows(createDisplay()).map(i => ('label' in i ? i.label : undefined)),
   ).toEqual(['Normal', 'Strand', 'Mapping quality', 'Query name'])
 })
 
 // The field defaults to `strand` here, so the string has to say "no field" as
-// well as naming the colour, or the constant lands under a field that hides it.
-test('a string colour is the constant fill, over the strand default', () => {
+// well as naming the color, or the constant lands under a field that hides it.
+test('a string color is the constant fill, over the strand default', () => {
   const display = createDisplay()
   expect(display.colorBy).toEqual({ type: 'strand' })
   display.setColor('steelblue')

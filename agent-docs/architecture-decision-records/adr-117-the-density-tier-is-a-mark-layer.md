@@ -82,7 +82,7 @@ knows the sidecar is the right zoomed-out reading.
 
 **The bins arrive as a layer, not as a second renderer.** `densityPayloads`
 builds one `MarkRegionData` per region — the sidecar's intervals as `x`/`x2`,
-its levels as `y`, the mark's constant colour packed once, a Flatbush over the
+its levels as `y`, the mark's constant color packed once, a Flatbush over the
 same `(x, y, x2, y)` the encoder builds — and `rpcDataMap` answers it while the
 tier stands in. Everything downstream is the path the features already take:
 the shared y domain folds the bins' extremes, the axis and the shapes read the

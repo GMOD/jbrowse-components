@@ -225,12 +225,12 @@ export interface ReadColorContext {
 /**
  * Settle every unpaired split chain's `readChainHasSupp` frame bit by comparing
  * chains to each other (`consensusChainStrandFrames`), over an already laid-out
- * map and ahead of the colour bake. `attachChainFields` has already made the
+ * map and ahead of the color bake. `attachChainFields` has already made the
  * frame one answer per chain; this settles which way "same strand" points.
  *
  * ITS OWN STEP because its inputs are its own: it reads the layout, chain mode
  * and whether the framing is live, and nothing in `ReadColorContext`. Folded
- * into the colour bake it re-ran on every scheme switch and every tag value
+ * into the color bake it re-ran on every scheme switch and every tag value
  * discovered mid-fetch, re-solving a relaxation over every chain on screen for a
  * bit-identical answer. Callers should memoize this on `framed` as a BOOLEAN, so
  * the schemes that share an answer share the memo.
@@ -283,8 +283,8 @@ export function applyChainStrandFrames(
 }
 
 // The straight-line pass's records spread onto the regions holding a line.
-// After the colour bake, so a recolour leaves the line arrays the GPU holds
-// alone and a curved-connector toggle leaves the colours.
+// After the color bake, so a recolor leaves the line arrays the GPU holds
+// alone and a curved-connector toggle leaves the colors.
 export function attachLinkedReadLinesByGroup(
   byGroup: ColoredByGroup,
   connectors: ReadonlyMap<string, GroupConnectors>,

@@ -1,5 +1,5 @@
 /**
- * What colours an aligned cell: its base where it differs from the
+ * What colors an aligned cell: its base where it differs from the
  * reference, every base, the mean identity to the reference, the rank of its
  * block's source chromosome within the row, or its codon's amino-acid change.
  */
@@ -19,7 +19,7 @@ export const MAF_Y_FIELDS = ['identity'] as const
 export type MafYField = (typeof MAF_Y_FIELDS)[number]
 
 /**
- * The Row coloring radio's options: a colour field each, and the X-Y plot,
+ * The Row coloring radio's options: a color field each, and the X-Y plot,
  * which is identity on the bar height.
  */
 export type RowRendering = MafColorField | 'xyplot'

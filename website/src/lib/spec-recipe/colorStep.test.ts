@@ -5,7 +5,7 @@ function colorStep(value: unknown, displayType: string) {
   return Array.isArray(step) ? undefined : step
 }
 
-test('a declared range sends a canvas colour to Edit plot', () => {
+test('a declared range sends a canvas color to Edit plot', () => {
   expect(
     colorStep({ field: 'biotype', range: ['red'] }, 'LinearBasicDisplay')?.path,
   ).toBe('Track menu → Advanced → Edit plot...')

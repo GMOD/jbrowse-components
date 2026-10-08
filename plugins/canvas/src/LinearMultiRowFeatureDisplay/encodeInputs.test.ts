@@ -32,7 +32,7 @@ function makeDisplay(displayConfig?: Record<string, unknown>) {
 }
 
 // The default palette paints every row, so the legend keys nothing and a
-// toggle hides nothing; a `color` slot leaves the baked colours to the legend.
+// toggle hides nothing; a `color` slot leaves the baked colors to the legend.
 const KEYED = { color: 'steelblue' }
 
 // `installUpload` memoizes the display's declared `inputs`, so what that getter
@@ -69,7 +69,7 @@ describe('encodeInputs', () => {
     render.dispose()
   })
 
-  // The reader's order, focus and colours are the row table's: none of them
+  // The reader's order, focus and colors are the row table's: none of them
   // reaches the instance buffer.
   it.each([
     [
@@ -117,10 +117,10 @@ describe('encodeInputs', () => {
     encode.dispose()
   })
 
-  // Under a `color` value a row's colour paints no block, so no row is exempt
-  // from a category hide and no recolour changes which features the buffer
+  // Under a `color` value a row's color paints no block, so no row is exempt
+  // from a category hide and no recolor changes which features the buffer
   // holds.
-  it('re-encodes for no row colour while the colour object paints the blocks', () => {
+  it('re-encodes for no row color while the color object paints the blocks', () => {
     const { createDisplay } = createTestEnvironment({ displayConfig: KEYED })
     const { display } = createDisplay()
     const names = ['sampleA', 'sampleB', 'sampleC', 'sampleD']

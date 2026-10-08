@@ -282,7 +282,7 @@ plugins/wiggle/src/MultiQuantitativeTrack/displayDefaults.test.ts  (2)  [test]
   69	readConfObject('height')
   70	readConfObject('summaryScoreMode')
 plugins/wiggle/src/shared/wiggleMixinHosts.test.ts  (2)  [test]
-  15	getConf('posColour')
+  15	getConf('posColor')
   34	getConf('origin')
 products/jbrowse-react-app/src/createApp.test.ts  (1)  [test]
   352	readConfObject('adapter')

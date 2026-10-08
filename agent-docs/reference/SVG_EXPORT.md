@@ -33,13 +33,13 @@ replaces the state's canvas box with the layer's own `width` and `height`; its
 `paint` callback draws the overlays the screen stacks over its canvas, with the
 same framed state.
 
-**Colours come from `usePalette()`**, never `getPaletteHost` or the session:
+**Colors come from `usePalette()`**, never `getPaletteHost` or the session:
 the export dialog picks a theme the session need not be showing. A model input
 built from the theme gets a twin taking the palette (`renderStateIn`,
 `colorPaletteIn`, `rowsEncodePropsIn`), and the body calls that. Patching a
 palette into the getter's output re-copies model logic into the export. The
 shell's legend draws `legendSpecIn(palette)`, so a display whose key takes
-colours from the theme overrides `LegendMixin`'s `colorScalesIn` (alignments,
+colors from the theme overrides `LegendMixin`'s `colorScalesIn` (alignments,
 MAF); the default is `colorScales`. A ring's exports run `plotOnly`, so the
 circular view's own key (`CircularView.legendSpecIn`) reads each ring's
 `legendSpecIn` instead.

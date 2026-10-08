@@ -10,7 +10,7 @@ import type { CategoricalEntry } from '@jbrowse/core/ui/colorScale'
 
 /**
  * The `rowColor` object as read: the row attribute whose values take the
- * colours, `name` for the rows themselves, the values paired with a colour,
+ * colors, `name` for the rows themselves, the values paired with a color,
  * and what an unpaired value takes.
  */
 export interface RowColorSetting {
@@ -23,13 +23,13 @@ export interface RowColorSetting {
 const NONE: ReadonlyMap<string, string> = new Map()
 
 /**
- * The colour `setting` gives each value of its field over `rowsOf()`, the
+ * The color `setting` gives each value of its field over `rowsOf()`, the
  * rows in the base arrangement: its pairs, and the row palette dealt over the
  * rest by `dealRowColors`. An attribute's values deal always, first seen
- * first, except the empty value, which takes a colour only from a pair: a row
+ * first, except the empty value, which takes a color only from a pair: a row
  * with no value is missing, not a category, as ggplot's `na.value`. A row name
  * deals only while `namesDeal` or an `unknown` stands in for the palette, and
- * a row with its own colour takes no turn. None for an attribute no row
+ * a row with its own color takes no turn. None for an attribute no row
  * carries. Reads no row where only the pairs paint, so a reorder deals nothing
  * again.
  */
@@ -61,7 +61,7 @@ export function dealtValueColors(
 }
 
 /**
- * Each row's colour, by name: what `dealt` gives its value of `field` (under
+ * Each row's color, by name: what `dealt` gives its value of `field` (under
  * `name`, its own entry, else its alias's), else its own `color`.
  */
 export function resolveRowColors(
@@ -85,7 +85,7 @@ export function resolveRowColors(
 }
 
 /**
- * Each row carrying its colour from `colors` as `rowColor`; `rows` itself
+ * Each row carrying its color from `colors` as `rowColor`; `rows` itself
  * while every row already does.
  */
 export function withRowColors<S extends RowSource>(
@@ -121,13 +121,13 @@ export function rowFieldValue(row: object, field: string) {
   return value === undefined || value === null ? '' : String(value)
 }
 
-/** The id of the row colour key's scale, which `focusLegendEntry` answers. */
+/** The id of the row color key's scale, which `focusLegendEntry` answers. */
 export const ROW_COLOR_SCALE_ID = 'rowColor'
 
 const OTHER_VALUE = '\u0000other'
 const NO_VALUE = '\u0000none'
 
-/** What the row colour key reads: the setting and the colours it resolved. */
+/** What the row color key reads: the setting and the colors it resolved. */
 export interface RowColorKeyInputs {
   setting: RowColorSetting
   pairs: ReadonlyMap<string, string>
@@ -144,7 +144,7 @@ function keyColor(row: RowSource, value: string, key: RowColorKeyInputs) {
 /**
  * The key entry `row` is listed under: its value of the `rowColor` field, the
  * "(no value)" entry where it has none, the "Other" entry where it took the
- * `unknown` colour, or undefined where it has no colour.
+ * `unknown` color, or undefined where it has no color.
  */
 export function rowColorKeyValue(row: RowSource, key: RowColorKeyInputs) {
   const { field, unknown } = key.setting
@@ -160,11 +160,11 @@ export function rowColorKeyValue(row: RowSource, key: RowColorKeyInputs) {
 }
 
 /**
- * The row colour key over `rows`, the rows in the base arrangement: an entry
- * per value some row carries with a colour, in deal order, at most
+ * The row color key over `rows`, the rows in the base arrangement: an entry
+ * per value some row carries with a color, in deal order, at most
  * `MAX_LEGEND_ITEMS` and then a "+N more" note, then "(no value)" in the
- * colour of the first coloured row with no value, and a trailing "Other" in
- * the `unknown` colour where a row took it.
+ * color of the first colored row with no value, and a trailing "Other" in
+ * the `unknown` color where a row took it.
  */
 export function rowColorKeyEntries(
   rows: readonly RowSource[],
