@@ -315,7 +315,7 @@ one line per animal:
   (the Kars, the Eurasier, the Spanish Mastiff).
 - The Shiloh Shepherd has the longest wolf block of any dog outside the two
   wolfdog breeds, and many more blocks than the runner-up, a Great Anglo-French
-  Tricolour Hound with three. A later genome-wide run over the same collection
+  Tricolor Hound with three. A later genome-wide run over the same collection
   puts it among the three dogs with the longest, most recent wolf tracts
   ([Lin et al. 2025](https://doi.org/10.1073/pnas.2421768122)).
 

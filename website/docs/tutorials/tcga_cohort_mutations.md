@@ -2,7 +2,7 @@
 title: Mutation cohort (TCGA)
 description:
   Read somatic point mutations across a thousand tumors as a genotype matrix,
-  grouped by clinical annotation
+  faceted by clinical annotation
 guide_category: Tutorials
 tutorial_category: Cancer genomics
 ---
@@ -34,7 +34,7 @@ so there is nothing to download by hand.
 
 The build script copies the hg38 reference and the MANE gene track from the
 [hosted UCSC hg38 hub](https://genomes.jbrowse.org/ucsc/hg38/)'s config; that
-MANE track is the gene lane the collapse-introns step below right-clicks.
+MANE track is the gene track the collapse-introns step below right-clicks.
 
 ## The cohort VCF and the clinical table {#what-the-two-files-hold}
 
@@ -126,14 +126,14 @@ The track config sets three things:
   `impact` field colors each cell by its VEP impact tier from `CSQ`, the same as
   **Color by... → Consequence impact** in the track menu
 - [`samplesTsvLocation`](/docs/config/vcftabixadapter/#slot-samplestsvlocation)
-  makes the clinical columns available to group and color rows by
+  makes the clinical columns available to facet and color rows by
 
 The display divides
 [`height`](/docs/config/linearmultisamplevariantdisplay/#slot-height) among the
 rows, so each row is about a pixel tall and a band's mutation density shows as
 its darkness.
 
-## Group the rows by clinical annotation
+## Facet the rows by clinical annotation
 
 [`facet`](/docs/config/linearmultisamplevariantdisplay/#slot-facet) names a
 column of the samples TSV and makes each of its values a contiguous band of
@@ -170,8 +170,8 @@ by...** and **Color by... → Samples**.
 }
 ```
 
-Open the matrix over _CDH1_'s exons: right-click _CDH1_ in the gene lane, choose
-**Collapse introns**, and **Replace current view** (see
+Open the matrix over _CDH1_'s exons: right-click _CDH1_ in the gene track,
+choose **Collapse introns**, and **Replace current view** (see
 [](/docs/user_guides/gene_track)):
 
 <Video src="/media/tcga/mutations_collapse_introns.mp4" caption="The whole CDH1 transcript reshaped to its exons from the gene's context menu, and the 979-tumor matrix redrawn over the coding sequence." />
@@ -185,7 +185,7 @@ lobular breast cancer
 The GDC's open mutation calls cover the exome only, so every figure here is
 gene-scale.
 
-## Group rows by receptor subtype
+## Facet rows by receptor subtype
 
 Setting `facet` and `rowColor` to `subtype` instead bands the rows by receptor
 status ([TCGA 2012](https://doi.org/10.1038/nature11412)), with the HR+/HER2-
@@ -284,7 +284,7 @@ per group.
 Open the track above the matrix to read each band's rate over it.
 
 `--impact` sets what counts as a hit, defaulting to the HIGH and MODERATE tiers
-of the consequence impact that colours the matrix. The rate has no background
+of the consequence impact that colors the matrix. The rate has no background
 model, and gene length enters directly: _TTN_, a very long gene, ranks near the
 top on passenger mutations alone.
 

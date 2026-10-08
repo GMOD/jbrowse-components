@@ -2,7 +2,7 @@
 title: Selection pressure between two genomes (dN/dS)
 sidebar_label: Synteny (dN/dS)
 description:
-  Colour an ortholog track by the ratio of non-synonymous to synonymous
+  Color an ortholog track by the ratio of non-synonymous to synonymous
   substitution, and read selection pressure off a gene neighbourhood
 guide_category: Tutorials
 tutorial_category: Synteny & comparative genomics
@@ -12,7 +12,7 @@ tutorial_subcategory: Ortholog tables
 The ratio of non-synonymous to synonymous substitution rates, dN/dS, measures
 the selection pressure on a protein-coding gene between two species. jcvi builds
 a human against rhesus macaque ortholog table, `kaks_from_pairs.py` measures dN
-and dS on every pair, and JBrowse colours each ortholog link on a synteny track
+and dS on every pair, and JBrowse colors each ortholog link on a synteny track
 by the ratio. We then read the lysozyme neighbourhood on human chromosome 12.
 
 ## Prerequisites
@@ -130,7 +130,7 @@ its value.
 Every row also has that count and a two-sided Fisher exact p, the test
 [MEGA](https://www.megasoftware.net/web_help_12/Analysis_Preferences_Fisher_s_Exact_Test.htm)
 prescribes for small substitution counts. The track config below exposes both as
-`attributeColumns`, so clicking a link shows the evidence under its colour.
+`attributeColumns`, so clicking a link shows the evidence under its color.
 
 ## Loading the human and rhesus genomes and genes
 
@@ -194,14 +194,14 @@ Two view settings matter for a view this sparse:
 
 - **Opacity** on the sliders button in the view header sets `opacity`, which
   defaults to 0.25 for whole-genome views where ribbons overlap. 0.95 shows the
-  colour as it is.
+  color as it is.
 - **Curved lines** on the same menu sets `drawCurves`, which separates stacked
   neighbours.
 
 ## Reading lysozyme (LYZ) against its neighbours by dN/dS
 
 The session below opens, from the hosted copy, the stretch around lysozyme
-(_LYZ_) on human chromosome 12 where gene order matches rhesus, coloured by
+(_LYZ_) on human chromosome 12 where gene order matches rhesus, colored by
 dN/dS. In your own build, pick **Color by value → dN/dS**.
 
 ```json session config=https://jbrowse.org/demos/primate_selection/config.json
@@ -233,9 +233,9 @@ dN/dS. In your own build, pick **Color by value → dN/dS**.
 }
 ```
 
-<Figure caption="Human against rhesus macaque across a stretch of conserved gene order on human chromosome 12, each ribbon one ortholog pair coloured by dN/dS. Lysozyme (LYZ) is the one gene above the ramp's pivot; its neighbour YEATS4 is at the other end." src="/img/selection_pressure/lysozyme.png" />
+<Figure caption="Human against rhesus macaque across a stretch of conserved gene order on human chromosome 12, each ribbon one ortholog pair colored by dN/dS. Lysozyme (LYZ) is the one gene above the ramp's pivot; its neighbour YEATS4 is at the other end." src="/img/selection_pressure/lysozyme.png" />
 
-Gene order is the same in both genomes here, so colour is the only thing that
+Gene order is the same in both genomes here, so color is the only thing that
 varies. Click the orange _LYZ_ ribbon for its synonymous count and Fisher p in
 the detail panel. Messier and Stewart reported adaptive evolution of primate
 lysozyme in 1997; the published result rests on codon models across many primate

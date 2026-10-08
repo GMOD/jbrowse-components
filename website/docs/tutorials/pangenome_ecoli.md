@@ -566,7 +566,7 @@ segment and pick **Open in CFT073**.
 
 <Video src="/media/pangenome/pggb_out_to_strain.mp4" caption="The node's menu opened on the CFT073 allele, under the K12 genes it bypasses, and the view its Open in entry adds: CFT073 in CFT073 coordinates, where ssuE runs straight into pyrD." />
 
-### Coloring each segment by how many strains have it {#strains-per-segment-as-a-lane}
+### Coloring each segment by how many strains have it {#strains-per-segment-as-a-track}
 
 The index records which strains pass through each segment, and a feature track
 over the same files colors each segment by that count:

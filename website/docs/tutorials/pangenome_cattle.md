@@ -156,7 +156,7 @@ also sets:
 
 - `rows.domain`, which lists the cattle breeds above the wild species
 - `unit: "haplotype"` draws one row per assembly, each being one haplotype, with
-  a second alternate allele in a separate colour
+  a second alternate allele in a separate color
 - `showVariantLane` draws each call once in a lane above the rows, across the
   reference span it replaces, labelled with its VCF ID (the graph nodes that
   bound it) and the allele change
@@ -282,10 +282,10 @@ callset holds nothing that size there.
 
 Simmental and Hereford cattle have white heads. Milia et al. (2025) tied the
 trait to a 14.3 kb segment repeated in tandem upstream of _KIT_: white-headed
-breeds have extra copies, colour-headed breeds a deletion. The Hereford
-reference holds one collapsed copy. Open `chr6:70,080,000-70,180,000`, and put
-the graph track back on the reference's coordinates under the callset with
-**Anchored** under the **Layout** row of its menu.
+breeds have extra copies, color-headed breeds a deletion. The Hereford reference
+holds one collapsed copy. Open `chr6:70,080,000-70,180,000`, and put the graph
+track back on the reference's coordinates under the callset with **Anchored**
+under the **Layout** row of its menu.
 
 <Figure caption="Upstream of KIT on ARS-UCD1.2: RefSeq genes, the callset and the graph track. The Simmental row has a distinct allele across the repeat and every other row has the deletion, which the graph draws as the dashed arc skipping the repeat." src="/img/pangenome/bovine_kit.png" />
 

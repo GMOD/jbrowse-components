@@ -279,8 +279,8 @@ awk -F'\t' -v OFS='\t' '
 ```
 
 This config loads the regtools file built from this page's BAM as a feature
-track whose `link` mark draws each junction, coloured by the known-junction flag
-against RefSeq. `columnNames` names the extra columns so the colour encoding can
+track whose `link` mark draws each junction, colored by the known-junction flag
+against RefSeq. `columnNames` names the extra columns so the color encoding can
 read them:
 
 ```json addtrack loc=chr11:49,220,500-49,231,500
@@ -338,7 +338,7 @@ read them:
 
 The `filter` applies the sashimi menu's read-support floor to the whole-library
 counts in the file and keeps the canonical motifs, which drops the duplicate
-that wrong-strand reads give a junction on the opposite strand. The colour's
+that wrong-strand reads give a junction on the opposite strand. The color's
 `domain` lists the `known_junction` values as strings because the adapter reads
 extra columns as text.
 
@@ -349,10 +349,10 @@ splices:
 <Figure caption="The 5' end of FOLH1 on hg19: RefSeq transcripts above, the library's junctions below, blue where an annotated transcript joins the two ends and red where none does. The large red arc joins a donor and an acceptor RefSeq uses, skipping the exons between them, and it is about as thick as the blue arcs beside it." src="/img/rnaseq/junction_track.png" links="Open this view=rnaseq/junction_track" />
 
 For the STAR file, the `columnNames` end in `motif` and `annotated`, and the
-colour's `field` is `annotated`. For the portcullis file, the colour's `field`
-is `canonical_ss`, its `domain` `["C", "S", "N"]`, and its `labels` canonical,
-semi-canonical and non-canonical, with a third colour in `range`. **Edit
-plot...** in the track menu edits the same marks, colours and filter on a track
+color's `field` is `annotated`. For the portcullis file, the color's `field` is
+`canonical_ss`, its `domain` `["C", "S", "N"]`, and its `labels` canonical,
+semi-canonical and non-canonical, with a third color in `range`. **Edit
+plot...** in the track menu edits the same marks, colors and filter on a track
 already open.
 
 ## See also

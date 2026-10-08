@@ -533,7 +533,7 @@ the other four skip. To see it:
   menu.
 - Add a second copy of the segments track, colored by how many strains the
   `SM:Z:` tag lists for each segment, which shows which segments those are
-  ([config on the pggb page](/docs/tutorials/pangenome_ecoli#strains-per-segment-as-a-lane)).
+  ([config on the pggb page](/docs/tutorials/pangenome_ecoli#strains-per-segment-as-a-track)).
 - Show the [MAF track](#whole-genome-alignment-maf-projection) above the graph:
   the strains-per-segment track counts the strains, and the MAF's rows name
   them.

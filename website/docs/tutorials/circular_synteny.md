@@ -3,7 +3,7 @@ title: Synteny on a circle (human and mouse)
 sidebar_label: Synteny (circular, human and mouse)
 description:
   Put two genomes on one circular view, draw UCSC's liftOver chain between them
-  as ribbons straight from the copy jbrowse.org indexes, colour the ribbons by
+  as ribbons straight from the copy jbrowse.org indexes, color the ribbons by
   chromosome and by strand, read the mouse karyotype in human chromosomes, add a
   gene density ring per genome, and check a ribbon and a ring value against the
   files they came from
@@ -174,7 +174,7 @@ To read the circle:
 
 - **Layout.** Human chromosomes run clockwise from the top and mouse chromosomes
   follow; the title bar names the two in that order.
-- **Colour.** Each ribbon takes the ideogram colour of the human chromosome it
+- **Color.** Each ribbon takes the ideogram color of the human chromosome it
   leaves, so a human chromosome's pieces can be followed to every mouse
   chromosome that holds one.
 - **Twists.** A reverse alignment twists between its two ends.
@@ -183,7 +183,7 @@ To read the circle:
   [linear synteny view](/docs/user_guides/linear_synteny_view), so large blocks
   dominate and short rows stay faint.
 
-<Figure src="/img/circular_synteny/ribbons.png" caption="Human chromosomes clockwise from the top, mouse chromosomes after them, and every liftOver row of 100 kb and over as a ribbon in the colour of the human chromosome it leaves. Each human autosome fans out to several mouse chromosomes, and the two X arcs hold one bundle." />
+<Figure src="/img/circular_synteny/ribbons.png" caption="Human chromosomes clockwise from the top, mouse chromosomes after them, and every liftOver row of 100 kb and over as a ribbon in the color of the human chromosome it leaves. Each human autosome fans out to several mouse chromosomes, and the two X arcs hold one bundle." />
 
 ## Ordering the mouse arc to follow human
 
@@ -204,9 +204,9 @@ to the human chromosome it shares the most aligned bases with.
 
 ## The mouse genome in human chromosomes
 
-Each stretch of a mouse chromosome's ideogram is painted the colour of the human
+Each stretch of a mouse chromosome's ideogram is painted the color of the human
 chromosome aligned to it, and grey where nothing is. A mouse chromosome carved
-from one human chromosome is one colour, and one assembled from several is
+from one human chromosome is one color, and one assembled from several is
 striped with them.
 
 Hover the mouse chr11 band on the circle opened above to dim every ribbon that
@@ -215,18 +215,18 @@ it covers.
 
 <Figure src="/img/circular_synteny/band_hover.png" caption="Hovering mouse chr11 dims every ribbon that does not touch it, and the tooltip lists the human chromosomes it is assembled from, largest share first." />
 
-## Colouring the ribbons by strand
+## Coloring the ribbons by strand
 
-The chromosome colours show where each piece went; strand shows which way round
-it lies. Two settings switch the colouring:
+The chromosome colors show where each piece went; strand shows which way round
+it lies. Two settings switch the coloring:
 
 - **Color by... → Strand** in the view's menu paints the reverse alignments a
-  second colour, and **Show legend** names the two.
+  second color, and **Show legend** names the two.
 - In a session, `"color": { "field": "strand" }` on the view sets the same, and
-  `"field": "query"` colours by the first genome's chromosomes, human here,
-  which is how the circle opens.
+  `"field": "query"` colors by the first genome's chromosomes, human here, which
+  is how the circle opens.
 
-<Figure src="/img/circular_synteny/color_by_strand.png" caption="The human and mouse circle coloured by strand. Whole mouse chromosomes take one colour or the other by which way they run against their human partners; a ribbon of the other colour inside a bundle is an inversion." />
+<Figure src="/img/circular_synteny/color_by_strand.png" caption="The human and mouse circle colored by strand. Whole mouse chromosomes take one color or the other by which way they run against their human partners; a ribbon of the other color inside a bundle is an inversion." />
 
 ## The X chromosome as the control
 
@@ -276,7 +276,7 @@ jbrowse make-density hg38ToMm39.genes.gff.gz --chrom-sizes hg38ToMm39.chrom.size
 ```
 
 The track names both assemblies, and its display defaults draw it as a heatmap
-strip whose colour is the average over each pixel's bins:
+strip whose color is the average over each pixel's bins:
 
 ```json addtrack
 {
@@ -298,7 +298,7 @@ strip whose colour is the average over each pixel's bins:
 ```
 
 **Edit colors/arrangement...** in the track menu sets the `color` pair, one
-colour below the display's `origin` and one above.
+color below the display's `origin` and one above.
 
 Rings stack inward from the ideogram in the order the view's `tracks` lists
 them, and the ribbons draw inside the innermost ring, so the density entry goes
@@ -363,8 +363,8 @@ before the synteny track:
 
 Cut the ring session's `displayedRegionNames` to `["chr1", "chr2", "chrX"]` and
 hover the widest ribbon, the X block that runs reverse between the two genomes
-and so twists. The ribbon fills in the hover colour, and a tooltip gives its
-span in each genome and its strand.
+and so twists. The ribbon fills in the hover color, and a tooltip gives its span
+in each genome and its strand.
 
 <Figure src="/img/circular_synteny/ribbon_hover.png" caption="The widest X ribbon hovered on the three-chromosome circle, filled grey and crossing itself between the two X arcs because it is on the reverse strand. The tooltip names its span in each genome." />
 

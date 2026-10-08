@@ -190,8 +190,8 @@ const COHORT_TRACK_ID = 'tcga_brca_cnv'
 // Mutation MAFs. The page restates the track in each section that groups it,
 // so a figure names the section whose config it draws.
 const MUTATIONS_DOC = 'tutorials/tcga_cohort_mutations.md'
-const HISTOLOGY_SECTION = 'Group the rows by clinical annotation'
-const SUBTYPE_SECTION = 'Group rows by receptor subtype'
+const HISTOLOGY_SECTION = 'Facet the rows by clinical annotation'
+const SUBTYPE_SECTION = 'Facet rows by receptor subtype'
 
 // The matrix canvas only mounts once the cell-data RPC has landed, so this gates
 // each capture on real completion rather than on a duration guess.
@@ -726,7 +726,7 @@ export const tcgaSpecs: ScreenshotSpec[] = [
   // an uncollapsed window fills the matrix with private intronic MODIFIER
   // columns, which is precisely what the frequency filter would then be shown
   // removing.
-  // PIK3CA banded by receptor subtype, which the "Group rows by receptor subtype"
+  // PIK3CA banded by receptor subtype, which the "Facet rows by receptor subtype"
   // section described and had no picture for: its sentence ended on a colon
   // with nothing under it. Introns collapsed for the same reason CDH1's are --
   // the gene is 92 kb and an uncollapsed window fills the matrix with private

@@ -2,7 +2,7 @@
 title: Synteny visualization (a polyploid against itself)
 sidebar_label: Synteny (polyploid subgenomes)
 description:
-  Draw hexaploid oat against itself from syntenic anchors, coloured by the
+  Draw hexaploid oat against itself from syntenic anchors, colored by the
   selection pressure between each pair of copies
 guide_category: Tutorials
 tutorial_category: Synteny & comparative genomics
@@ -11,7 +11,7 @@ tutorial_subcategory: Ortholog tables
 
 Hexaploid oat has three near-complete copies of its genome, one from each grass
 that hybridized to make it, so most of its genes exist three times. We draw oat
-against itself in a dotplot from the gene pairs between those copies, and colour
+against itself in a dotplot from the gene pairs between those copies, and color
 each pair by how far it has diverged at silent sites (dS) and at
 protein-changing ones (dN). The two subgenomes from closely related ancestors
 should pair at a lower dS than either does with the third. jcvi finds the pairs
@@ -165,12 +165,12 @@ A self-comparison names one assembly twice, in `blockAssemblies`, in the track's
 
 `attributeColumns` names the columns after the two gene columns, and each
 becomes a feature attribute in the detail panel. `dn` and `ds` drive the palette
-button's **dN/dS**; `syn_subs` and `fisher_p` are the evidence behind a colour.
+button's **dN/dS**; `syn_subs` and `fisher_p` are the evidence behind a color.
 
 **Add → Dotplot view** with oat on both axes opens the track as a dotplot, and
 the session [below](#checking-the-rates-against-the-raw-data) does the same.
 
-## Colouring homoeolog pairs by dS, with A-D pairs as the control {#checking-the-rates-against-the-raw-data}
+## Coloring homoeolog pairs by dS, with A-D pairs as the control {#checking-the-rates-against-the-raw-data}
 
 The [script](#reproduce-it-end-to-end) ends by printing the median dS for each
 subgenome pair, the numbers behind the picture below.
@@ -179,7 +179,7 @@ subgenome pair, the numbers behind the picture below.
 pair by its dS. Oat's A and D subgenomes descend from closely related diploid
 _Avena_ species and its C subgenome from a more distant one, so A-D pairs should
 come out at a lower dS than A-C or C-D pairs. The session pins the ramp's ends
-with `domainMin` and `domainMax`, so a colour means one dS wherever the view
+with `domainMin` and `domainMax`, so a color means one dS wherever the view
 goes; the menu has no field for them:
 
 ```json session config=https://jbrowse.org/demos/oat_homoeologs/config.json
@@ -232,7 +232,7 @@ goes; the menu has no field for them:
 }
 ```
 
-<Figure caption="Oat against itself over groups 4, 5 and 7, each homoeolog pair coloured by dS on a pinned ramp. Cells pairing an A chromosome with a D one sit lower on the ramp than cells pairing either with C." src="/img/homoeolog_synteny/oat_ds.png" links="Open this view=homoeolog_synteny/oat_ds" />
+<Figure caption="Oat against itself over groups 4, 5 and 7, each homoeolog pair colored by dS on a pinned ramp. Cells pairing an A chromosome with a D one sit lower on the ramp than cells pairing either with C." src="/img/homoeolog_synteny/oat_ds.png" links="Open this view=homoeolog_synteny/oat_ds" />
 
 With **dN/dS** chosen on the palette button, almost every pair draws below 1 on
 the ramp. A ratio over 1 between copies this recently separated rests on few

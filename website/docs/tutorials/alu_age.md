@@ -2,7 +2,7 @@
 title: A grammar of graphics over a BED (RepeatMasker Alu age)
 sidebar_label: Marks over a BED (Alu age)
 description:
-  Declare a BED column as the height of a bar and another as its colour, count
+  Declare a BED column as the height of a bar and another as its color, count
   features per bin zoomed out, and read a density sidecar past the fetch budget
 guide_category: Tutorials
 tutorial_category: Grammar of graphics
@@ -64,7 +64,7 @@ lists three marks:
   the height. A `formula` step writes the first four characters of the name into
   `lineage` (AluJ, AluS, AluY: oldest to youngest, and AluY is still inserting),
   and the categorical `domain` fixes the legend order while `range` sets the
-  colours
+  colors
 - **Copies per bin** (past `minBpPerPx`): every Alu copy counted per bin, in
   grey, from the density sidecar
 - **AluY per bin**: the same count behind a `filter` for AluY, in red
@@ -151,7 +151,7 @@ The adapter's `densityAdapter` names the sidecar, built in
 Open it on `chr1:151,000,000-151,030,000`, 30 kb of 1q21. Hover a bar for its
 values; click it to open the row.
 
-<Figure src="/img/alu_age/locus.png" caption="Alu copies over a window of 1q21, one bar per copy with its divergence from its consensus as the height and its lineage as the colour. The AluY bars are among the shortest in the window and the AluJ bars the tallest, with AluS between; FLAM, the older free left Alu monomer, is as tall as AluJ." />
+<Figure src="/img/alu_age/locus.png" caption="Alu copies over a window of 1q21, one bar per copy with its divergence from its consensus as the height and its lineage as the color. The AluY bars are among the shortest in the window and the AluJ bars the tallest, with AluS between; FLAM, the older free left Alu monomer, is as tall as AluJ." />
 
 ## Counting Alu copies per bin when zoomed out {#zooming-out}
 
@@ -194,8 +194,8 @@ bgzip -f Alu.young_share.bed
 tabix -f -p bed Alu.young_share.bed.gz
 ```
 
-**Edit plot...** in the track menu sets the cut, colours and key names on an
-open track. The config below sets them in the track:
+**Edit plot...** in the track menu sets the cut, colors and key names on an open
+track. The config below sets them in the track:
 
 ```json addtrack
 {

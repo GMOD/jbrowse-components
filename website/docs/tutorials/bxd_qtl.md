@@ -208,7 +208,7 @@ Manhattan score ([GWAS track guide](/docs/config_guides/gwas_track)):
 }
 ```
 
-## Grouping the strains by coat color
+## Faceting the strains by coat color
 
 The scan puts a plateau of tied markers on chr4, whose interval contains
 _Tyrp1_, the brown coat-color gene, and a second, lower peak on chr9.

@@ -270,7 +270,7 @@ Open **Add → Linear synteny view** with hg38 on the top row and
 `der3_RARB_BICC1_TRHDE` below, and pick **der3 contig vs hg38** as the synteny
 track. The view shows:
 
-- ribbons coloured by the reference chromosome each segment came from
+- ribbons colored by the reference chromosome each segment came from
 - a BED track on the derivative labelling each segment with its reference
   interval, which the gene track cannot do because a segment usually sits inside
   one large intron

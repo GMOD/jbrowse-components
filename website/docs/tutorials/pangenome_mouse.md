@@ -154,7 +154,7 @@ the graph track menu:
 
 **Show... → Show bubble halos**
 
-<Figure caption="The Dock2 intron bubble, the densest in the mouse graph that fits in one window. The bubbles track is a single row, the allele inventory draws each alternative path at its size, and the graph carries one label for the whole bubble, with Dock2 pinned under the backbone. The coloured path is C57BL/6J, the reference, and each charcoal loop is sequence other strains have and the reference lacks." src="/img/pangenome/mouse_dock2.png" />
+<Figure caption="The Dock2 intron bubble, the densest in the mouse graph that fits in one window. The bubbles track is a single row, the allele inventory draws each alternative path at its size, and the graph carries one label for the whole bubble, with Dock2 pinned under the backbone. The colored path is C57BL/6J, the reference, and each charcoal loop is sequence other strains have and the reference lacks." src="/img/pangenome/mouse_dock2.png" />
 
 `minigraph` writes no path lines, so the graph does not record which strains
 carry an allele; the allele inventory's `firstSeenIn` names the first assembly

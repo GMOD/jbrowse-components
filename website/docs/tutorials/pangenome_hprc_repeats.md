@@ -91,7 +91,7 @@ the [HPRC page](https://staging.genomes.jbrowse.org/pangenomes/hprc) and press
 **graph** on the LPA row. JBrowse opens on `chr6:160,525,000-160,655,000`. Tick
 **Show... → Show bubble halos** in the graph track's menu. The strip along the
 top of the track draws each reference segment at its position on the ruler, in
-the colour of its node below.
+the color of its node below.
 
 <Figure caption="The LPA window with the RefSeq genes, UniProt's kringle domains and the HPRC bubbles above the force-directed graph track. The kringle array is the knot of loops in the middle, haloed and labelled as a repeat array, and LPA is pinned under the backbone with its exons along it." src="/img/pangenome/hprc_lpa_kiv2.png" />
 
@@ -185,9 +185,9 @@ haplotype, and a samples table gives each sample's population:
 Turn the track on, right-click the record and choose **Show repeat copies**. The
 TandemRepeat plugin, which the hosted config loads beside the graph plugin,
 opens a view with one bar per haplotype, each on its own bp axis and each copy
-coloured by its type. Hover a copy for its haplotype.
+colored by its type. Hover a copy for its haplotype.
 
-<Figure caption="The KIV-2 record over every HPRC haplotype, those with the most KIV-2B copies first, then longest, each copy coloured by its type. KIV-2B leads every array that holds it; the lone bar whose KIV-2B copy sits fourth is GRCh38's." src="/img/pangenome/hprc_kiv2_copies_all_by_unit.png" />
+<Figure caption="The KIV-2 record over every HPRC haplotype, those with the most KIV-2B copies first, then longest, each copy colored by its type. KIV-2B leads every array that holds it; the lone bar whose KIV-2B copy sits fourth is GRCh38's." src="/img/pangenome/hprc_kiv2_copies_all_by_unit.png" />
 
 **Group by… → superpopulation** in the view's menu splits the bars by that
 column of the samples table, every section on the same ruler and row height:

@@ -217,7 +217,7 @@ mosquito's karyotype as its mean alternate-allele count across the tag SNPs,
 rounded to a genotype, as MalariaGEN does for its Ag3 release. The score is
 trimodal, which the [reproduce script](#reproduce-it-end-to-end) checks.
 
-## Comparing the 2La LD block with karyotypes in Cameroon and Gabon {#reading-the-2la-ld-block-against-the-karyotype-lanes}
+## Comparing the 2La LD block with karyotypes in Cameroon and Gabon {#reading-the-2la-ld-block-against-the-karyotype-rows}
 
 Stack the r² track of each population over the karyotype track of the same
 population, one row per mosquito.

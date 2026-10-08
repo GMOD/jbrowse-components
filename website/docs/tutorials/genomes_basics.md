@@ -60,7 +60,7 @@ categories, and **Filter tracks** searches all of them. Type `phyloP` and tick
 **Basewise Conservation (phyloP) - 100-way vertebrate alignment**, under
 Comparative Genomics.
 
-<Video src="/media/genomes_basics/find_a_track.mp4" caption="The hg38 track catalog in the selector, narrowed by typing phyloP into Filter tracks, with the 100-way vertebrate alignment ticked under Comparative Genomics. The conservation lane appears under the TP53 transcript." />
+<Video src="/media/genomes_basics/find_a_track.mp4" caption="The hg38 track catalog in the selector, narrowed by typing phyloP into Filter tracks, with the 100-way vertebrate alignment ticked under Comparative Genomics. The conservation track appears under the TP53 transcript." />
 
 ## Reading the phyloP track
 
@@ -119,7 +119,7 @@ all seven in one plot box, UCSC's layered arrangement. **Plot type → Multi-row
 XY plot** in the track menu gives each cell line a row of its own. Their names
 include hg19 from ENCODE3's release; the config points at the hg38 files.
 
-<Figure src="/img/genomes_basics/promoter_regulation.png" caption="TP53 and its promoter, with CpG islands, ENCODE cCREs coloured by class, H3K4me3, H3K27ac and EPDnew's promoter calls. Left: the two marks with their seven cell lines in one plot box, and the Plot type menu that separates them. Right: the same six tracks with a row per cell line." />
+<Figure src="/img/genomes_basics/promoter_regulation.png" caption="TP53 and its promoter, with CpG islands, ENCODE cCREs colored by class, H3K4me3, H3K27ac and EPDnew's promoter calls. Left: the two marks with their seven cell lines in one plot box, and the Plot type menu that separates them. Right: the same six tracks with a row per cell line." />
 
 _TP53_ is on the minus strand, so its promoter sits at the high-coordinate end,
 where every track in the figure has a call.
@@ -127,7 +127,7 @@ where every track in the figure has a call.
 ## Filtering gnomAD's TP53 variants to predicted loss of function
 
 The **gnomAD v4.1.1 - gnomAD v4.1.1 Exomes** track, under Variation and Repeats,
-opens as several thousand variant records over _TP53_, one block of colour.
+opens as several thousand variant records over _TP53_, one block of color.
 **Filter by...** in the track menu takes rows of field, operator and value over
 the track's columns. Type a column name into the field box, which lists the
 file's columns with the description the file gives each. A record has to pass
@@ -139,7 +139,7 @@ every row:
 
 <Figure src="/img/genomes_basics/gnomad_filter_menu.png" caption="The gnomAD track's menu, and the dialog Filter by... opens over it, with a consequence-class row filled in." />
 
-<Video src="/media/genomes_basics/gnomad_filter.mp4" caption="gnomAD v4.1.1 Exomes over TP53 and the filter dialog its track menu opens. One consequence-class row redraws the lane with the predicted loss-of-function records alone, in the one colour the file gives that class." />
+<Video src="/media/genomes_basics/gnomad_filter.mp4" caption="gnomAD v4.1.1 Exomes over TP53 and the filter dialog its track menu opens. One consequence-class row redraws the track with the predicted loss-of-function records alone, in the one color the file gives that class." />
 
 Once a filter is in effect, the track menu's filter row opens a submenu with
 **Edit filters...** and **Clear all filters**.

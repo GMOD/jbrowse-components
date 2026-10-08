@@ -113,7 +113,7 @@ settings do the rest:
   into one labeled row per `sample`
 - [`color`](/docs/config/linearmultirowfeaturedisplay/#slot-color) paints
   `segmean` through a `threshold` scale, since this BED has no `itemRgb`: the
-  four cuts in `domain` open five intervals, `range` gives each a colour on a
+  four cuts in `domain` open five intervals, `range` gives each a color on a
   diverging blue-to-red scale, and `labels` names each interval in the key
 
 ## Cluster tumors by copy-number profile
@@ -146,9 +146,8 @@ chr16   89200000   89300000   3.26   -46.38
 ```
 
 `BedGraphTabixAdapter` reads every column past `end` as a separate signal. Loss
-is written negative, so a `threshold` colour with no `domain`, which cuts at the
-default `origin` of 0, draws gains up in one colour and losses down in the
-other.
+is written negative, so a `threshold` color with no `domain`, which cuts at the
+default `origin` of 0, draws gains up in one color and losses down in the other.
 
 ```json addtrack
 {
@@ -271,7 +270,7 @@ Two options adjust the split:
 ## Use your own cohort
 
 Any caller that writes per-sample segments works. Reshape its output into a BED
-with a sample column and a numeric column to colour by, one segment per line:
+with a sample column and a numeric column to color by, one segment per line:
 
 ```text
 #chrom  start      end        name   sample    segmean
@@ -308,7 +307,7 @@ One script builds every file above for any project id,
 3. It joins every tumor's segments into one BED with the barcode as `sample`,
    adding `chr` to the contig names and moving the 1-based `.seg` starts to
    BED's 0-based ones. `Segment_Mean` passes through unchanged, so each row's
-   colour is the caller's own log2 ratio.
+   color is the caller's own log2 ratio.
 4. [`cnv_recurrence.py`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/cnv_recurrence.py)
    tallies the gained and lost share of the cohort per 100 kb bin, pooled and
    per clinical group. A tumor counts in a bin when its segment covers the bin's

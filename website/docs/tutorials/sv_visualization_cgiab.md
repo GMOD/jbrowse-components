@@ -316,7 +316,7 @@ Open `chr3:139,970,000-140,005,000` with the five callsets loaded. A link whose
 other breakend lies outside the view draws as a short stem at the end in view,
 as both NYGC records do in the figure below.
 
-<Figure caption="The chr3 breakends of one benchmark rearrangement, filed under EVENT=cluster_3, in five SV callsets, over the HiFiCNV depth and the benchmark's CNV lane. Every callset marks both breakends, the depth steps down between them, and the CNV lane crosses the whole window as one segment." src="/img/sv_cgiab/sv_callset_comparison.png" />
+<Figure caption="The chr3 breakends of one benchmark rearrangement, filed under EVENT=cluster_3, in five SV callsets, over the HiFiCNV depth and the benchmark's CNV track. Every callset marks both breakends, the depth steps down between them, and the CNV lane crosses the whole window as one segment." src="/img/sv_cgiab/sv_callset_comparison.png" />
 
 ## Copy number from the published callsets
 
@@ -679,7 +679,7 @@ clinical significance, served by UCSC as a bigBed:
 The filter keeps ClinVar CNVs under 50 kb, and none of those covers this
 deletion.
 
-<Figure caption="The SV inspector after searching for SV_85, a heterozygous CUZD1 deletion, and the linear genome view its location link opens: the <DEL> ALT allele over the ClinVar CNV and NCBI RefSeq gene lanes." src="/img/sv_cgiab/deletion_sv_inspector_search.png" />
+<Figure caption="The SV inspector after searching for SV_85, a heterozygous CUZD1 deletion, and the linear genome view its location link opens: the <DEL> ALT allele over the ClinVar CNV and NCBI RefSeq gene tracks." src="/img/sv_cgiab/deletion_sv_inspector_search.png" />
 
 Open **NCBI RefSeq genes (hg38)** from the hosted config and the tumor PacBio
 HiFi reads, set **Read height → Compact** and **Sort by... → Base pair** from
@@ -695,7 +695,7 @@ _CDKN2A_, _TP53_ and _SMAD4_
 ([Waddell et al. 2015](https://doi.org/10.1038/nature14169),
 [Bailey et al. 2016](https://doi.org/10.1038/nature16965)). Each copy-number
 figure below draws the gene's MANE Select (standard reference) transcript under
-the lanes.
+the tracks.
 
 For a first check, load the tumor and normal coverage from
 [goleft indexcov](https://github.com/brentp/goleft/tree/master/indexcov), one
@@ -741,7 +741,7 @@ number steps, and the BAF track shows the allelic balance across each step.
 
 <Video src="/media/sv_cgiab/copy_number_layout.mp4" caption="Plot type → Overlapping → Scatter on the coverage track over chr5, redrawing the two stacked rows as one band of points: the normal holds flat while the tumor steps." />
 
-<Figure caption="Chromosome 5: the segmented copy ratio, tumor and normal indexcov coverage as overlapping scatter, B-allele frequency, and the benchmark CNV calls. The normal stays flat while the tumor steps, and the BAF lane shows what each step is." src="/img/sv_cgiab/cnv_with_bed_track.png" />
+<Figure caption="Chromosome 5: the segmented copy ratio, tumor and normal indexcov coverage as overlapping scatter, B-allele frequency, and the benchmark CNV calls. The normal stays flat while the tumor steps, and the BAF track shows what each step is." src="/img/sv_cgiab/cnv_with_bed_track.png" />
 
 #### CDKN2A: homozygous deletion
 
@@ -831,10 +831,10 @@ whole-chromosome scale it is a handful of pixels wide.
 
 _SMAD4_ on 18q is a single-copy loss with LOH (`CNA_48`, CN 1, 0+1), like
 _TP53_. The balanced p-arm and the matched normal are the two controls. Leave
-the copy-ratio track's `color` unset (one colour above the `origin` of 0,
-another below) with a symmetric axis, so a step down and a step up fill equally.
+the copy-ratio track's `color` unset (one color above the `origin` of 0, another
+below) with a symmetric axis, so a step down and a step up fill equally.
 
-<Figure caption="Chromosome 18: SMAD4's MANE Select transcript over the segmented copy ratio, the tumor and its matched normal from indexcov, and the BAF, above the CNV calls. All three lanes change together partway along 18q and stay changed to the telomere." src="/img/sv_cgiab/driver_smad4_loh.png" />
+<Figure caption="Chromosome 18: SMAD4's MANE Select transcript over the segmented copy ratio, the tumor and its matched normal from indexcov, and the BAF, above the CNV calls. All three tracks change together partway along 18q and stay changed to the telomere." src="/img/sv_cgiab/driver_smad4_loh.png" />
 
 ### Dotplot and synteny views of the tumor assembly against GRCh38
 

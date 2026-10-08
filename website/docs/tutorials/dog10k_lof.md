@@ -149,7 +149,7 @@ The display draws one row per sample, labelled with the Dog10K IDs. The figure
 below names them by breed with the display's `rows`, which takes the order in
 `domain` and a name per ID in `labels` (`{ "GHND000001": "German Hound 1" }`),
 and tints them with `rowColor`. **Edit colors/arrangement...** in the track menu
-writes both keys as you rename and recolour rows. For a larger panel, a
+writes both keys as you rename and recolor rows. For a larger panel, a
 `samplesTsvLocation` on the adapter supplies the names instead.
 
 A whole-gene view of the slice is a field of one-pixel ticks, so zoom to the
@@ -222,8 +222,8 @@ checks it against the 15 CRAMs the Dog10K share publishes. Over the shared
 windows the two depth sources agree closely, with no bias. The CRAM-based
 painting is in the config as `dog10k_cyp1a2_cn`.
 
-The output is a BED with the colour in the `itemRgb` column and the rounded call
-in `copyNumber`. The identity colour scale pairs each colour in the file with a
+The output is a BED with the color in the `itemRgb` column and the rounded call
+in `copyNumber`. The identity color scale pairs each color in the file with a
 copy number label, so the legend reads as copy number:
 
 ```json addtrack

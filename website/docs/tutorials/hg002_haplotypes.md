@@ -115,7 +115,7 @@ a second dotplot the same way with `chr8_MATERNAL` and `chr8_PATERNAL` in the
 two boxes, colored by strand, to read one chromosome pair at a scale where it
 has room.
 
-<Figure caption="The Q100 maternal-to-paternal chain as dotplots colored by strand, maternal on x against paternal on y: the whole genome above, chr8 alone below. Genome-wide each chromosome pairs with its homolog along one red diagonal, the empty lane and column being chrX and chrY; on chr8 the 8p23.1 inversion is the blue stretch running against the diagonal near the start." src="/img/hg002_haplotypes_wholegenome.png" />
+<Figure caption="The Q100 maternal-to-paternal chain as dotplots colored by strand, maternal on x against paternal on y: the whole genome above, chr8 alone below. Genome-wide each chromosome pairs with its homolog along one red diagonal, the empty row and column being chrX and chrY; on chr8 the 8p23.1 inversion is the blue stretch running against the diagonal near the start." src="/img/hg002_haplotypes_wholegenome.png" />
 
 ## Opening the 8p23.1 inversion in a linear synteny view
 
@@ -143,8 +143,8 @@ paternal panel to the matching stretch of `chr8_PATERNAL`. Then:
 The gene annotation shows the inversion too. The JHU Liftoff GFFs are published
 beside the assembly, one per haplotype, on matching contig names:
 
-- the files annotate v1.1, and on chromosome 8 the lanes still land where the
-  v1.2 ribbons do
+- the files annotate v1.1, and on chromosome 8 the gene tracks still land where
+  the v1.2 ribbons do
 - the gene symbol is in `gene_name` with no `Name`, so the label points there
 - the paternal panel takes the same config with `PAT` in the name and URL, under
   a different `trackId`
@@ -166,11 +166,11 @@ beside the assembly, one per haplotype, on matching contig names:
 }
 ```
 
-Set these on each gene lane:
+Set these on each gene track:
 
 - `geneGlyphMode` draws one representative transcript per gene, the RefSeq or
   MANE Select one where the file tags it and the longest coding one otherwise,
-  so the lane is one row deep
+  so the track is one row deep
 - **Color by... → Strand** paints forward red and reverse blue, matching the
   ribbons
 - at this zoom the labels come from a second track over the same GFF under its
@@ -178,7 +178,7 @@ Set these on each gene lane:
   `jexl:feature.gene_name == 'MFHAS1' || feature.gene_name == 'ERI1' || feature.gene_name == 'TNKS' || feature.gene_name == 'MSRA' || feature.gene_name == 'PINX1' || feature.gene_name == 'XKR6' || feature.gene_name == 'BLK' || feature.gene_name == 'GATA4'`,
   the longest protein-coding genes in the inverted block
 
-<Figure caption="HG002 v1.2 maternal (top) against paternal (bottom) at 8p23.1, colored by strand. The inverted block is the long blue bar in both panels, and the labeled lane beside the ribbons shows the same genes in opposite orders." src="/img/hg002_haplotypes_8p23_inversion.png" />
+<Figure caption="HG002 v1.2 maternal (top) against paternal (bottom) at 8p23.1, colored by strand. The inverted block is the long blue bar in both panels, and the labeled gene track beside the ribbons shows the same genes in opposite orders." src="/img/hg002_haplotypes_8p23_inversion.png" />
 
 ## Keeping the two haplotypes in register with the follow button
 
@@ -187,18 +187,18 @@ one window typed into both panels looks lined up. Zoomed in, every upstream
 indel shifts one haplotype against the other and the offset fills the screen.
 
 The figure below types the same 70 kb into both panels with follow off, and the
-follow button fills the paternal lane and closes the ribbon. Turn follow off to
+follow button fills the paternal panel and closes the ribbon. Turn follow off to
 pan the paternal panel by hand, or right-click a chain block for **Move other
 panel to the matching region**, which does the follow move once.
 
-<Figure caption="Before and after the follow button, maternal over paternal with the Q100 chain blocks in each haplotype's coordinates. The paternal lane is empty on the left because those coordinates land past the end of the block above them." src="/img/hg002_haplotypes_follow_panel.png" />
+<Figure caption="Before and after the follow button, maternal over paternal with the Q100 chain blocks in each haplotype's coordinates. The paternal panel is empty on the left because those coordinates land past the end of the block above them." src="/img/hg002_haplotypes_follow_panel.png" />
 
 **Location markers**, in the header's settings menu, draw a line through each
 ribbon from a point on the top row to where it maps on the bottom. The clip
 types the same coordinates into both panels, 2 Mb into the collinear chain past
 the inversion.
 
-<Video src="/media/synteny/hg002_follow_panels.mp4" caption="Maternal over paternal at chr8:13-15 Mb with gene lanes and location markers on. The follow button places the paternal panel from the maternal one through the chain, so the same genes line up and the markers stay vertical as the top panel is dragged." />
+<Video src="/media/synteny/hg002_follow_panels.mp4" caption="Maternal over paternal at chr8:13-15 Mb with gene tracks and location markers on. The follow button places the paternal panel from the maternal one through the chain, so the same genes line up and the markers stay vertical as the top panel is dragged." />
 
 ## Checking the 8p23.1 inversion against the chain
 

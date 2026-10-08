@@ -112,7 +112,7 @@ display settings turn that into a copy-number heatmap:
   one strip of color.
 - [`origin`](/docs/config/linearwiggledisplay/#slot-origin) `2` puts white at
   the diploid baseline, and [`color`](/docs/config/wigglecolor/) cuts there,
-  painting gains in the `range`'s second colour and losses in its first.
+  painting gains in the `range`'s second color and losses in its first.
 - [`scales.y.domainMin`](/docs/config/valuescale/#slot-scalesydomainmin) and
   [`scales.y.domainMax`](/docs/config/valuescale/#slot-scalesydomainmax) pin the
   scale, so two copies are the same color in every window. Keep the bounds
@@ -188,8 +188,8 @@ so each plateau lines up with a copy count:
 
 Two paralogous blocks hold the variation. The right-hand block spans the
 chemokine genes _CCL3L1_ and _CCL4L1_ (labelled _CCL3L3_ and _CCL4L2_ in the
-hg38 gene lane), in a variable number of tandem copies. The left-hand block is a
-_TBC1D3_ repeat.
+hg38 gene track), in a variable number of tandem copies. The left-hand block is
+a _TBC1D3_ repeat.
 
 ## UGT2B17, a simple deletion, against the 1000 Genomes SV map
 

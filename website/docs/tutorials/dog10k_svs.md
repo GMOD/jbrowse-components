@@ -163,7 +163,7 @@ is a 7.8 kb block.
 The VCF names each sample by its Dog10K ID. The session below labels and colors
 rows for two animals to show the shape, and the figure names every row the same
 way. **Edit colors/arrangement...** in the track menu writes the same two
-settings, `rows` and `rowColor`, as you rename and recolour rows by hand.
+settings, `rows` and `rowColor`, as you rename and recolor rows by hand.
 
 ```json session config=test_data/dog10k/config.json
 {

@@ -238,10 +238,9 @@ so we cluster the core first:
    appears in the sidebar.
 3. Widen back out to see how far the block runs.
 
-The display applies the size-class colour from the sample table after
-clustering, so the order comes from genotypes alone. A session can set the
-region directly with `clusterRegion` beside `runClustering`, as the figure below
-does:
+The display applies the size-class color from the sample table after clustering,
+so the order comes from genotypes alone. A session can set the region directly
+with `clusterRegion` beside `runClustering`, as the figure below does:
 
 ```json session
 {

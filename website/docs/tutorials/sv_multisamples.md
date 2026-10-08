@@ -172,7 +172,7 @@ red gain in the copy-number track.
 
 A matrix cell marks that a sample has some call at that column. To see which
 call, load the same VCF again in the ordinary variant display, which draws each
-record on a separate row with its id, class and size, or colour cells by **SV
+record on a separate row with its id, class and size, or color cells by **SV
 type**, as the [multi-variant track guide](/docs/user_guides/multivariant_track)
 shows.
 

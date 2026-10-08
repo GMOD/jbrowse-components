@@ -13,7 +13,7 @@ reads one window at a time. One command writes those files and the config that
 puts them on tracks. We run it on HPRC release 2, and:
 
 - load the plugin and run the command
-- open the track as a graph and as a lane of segments
+- open the track as a graph and as a row of segments
 - check the index against the graph
 - add two optional layers: haplotypes per segment, and haplotype routes
 
@@ -258,7 +258,7 @@ segment as an `SM:Z:` tag while it reads the paths.
 - The node panel lists them as `samples`; a track reads them as
   `feature.samples` and their count as `feature.sampleCount`.
 - **Color by... → Attribute...** with `sampleCount` gives each count a separate
-  colour.
+  color.
 - For more than a handful of haplotypes, **Edit plot...** in the same dialog
   takes a ramp, here red for a segment on one haplotype to grey for a segment on
   most:
