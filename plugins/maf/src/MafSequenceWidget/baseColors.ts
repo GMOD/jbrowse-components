@@ -1,45 +1,30 @@
+import {
+  getMafColorPalette,
+  getMafLabelColors,
+} from '../LinearMafRenderer/util.ts'
+
 import type { JBrowsePalette } from '@jbrowse/core/ui/palette'
 
-type BaseKey = 'A' | 'C' | 'G' | 'T'
-
-function getBaseKey(base: string): BaseKey | undefined {
-  switch (base.toUpperCase()) {
-    case 'A':
-      return 'A'
-    case 'C':
-      return 'C'
-    case 'G':
-      return 'G'
-    case 'T':
-    case 'U':
-      return 'T'
-    default:
-      return undefined
+/**
+ * The display's base table read per character, so a base is one colour in the
+ * track and in the widget. Resolve once per paint, not per cell.
+ */
+export function getSequenceColors(palette: JBrowsePalette) {
+  const { colorForBase, unknownBaseColor } = getMafColorPalette(palette)
+  const { forBase, unknownBase } = getMafLabelColors(palette)
+  const fill = (base: string) =>
+    colorForBase[base.toLowerCase()] ?? unknownBaseColor
+  return {
+    fill,
+    /** Glyph color for a sequence cell: gaps/missing-data grays, otherwise the
+     *  contrast color over a tinted background or the base color on plain. */
+    text: (base: string, colorBackground: boolean) =>
+      base === '-'
+        ? palette.grey[400]
+        : base === '.'
+          ? palette.grey[500]
+          : colorBackground
+            ? (forBase[base.toLowerCase()] ?? unknownBase)
+            : fill(base),
   }
-}
-
-export function getBaseColor(base: string, palette: JBrowsePalette): string {
-  const key = getBaseKey(base)
-  return key ? palette.bases[key].main : palette.grey[500]
-}
-
-export function getContrastText(base: string, palette: JBrowsePalette): string {
-  const key = getBaseKey(base)
-  return key ? palette.bases[key].contrastText : palette.common.white
-}
-
-/** Glyph color for a sequence cell: gaps/missing-data grays, otherwise the
- *  contrast color over a tinted background or the base color on plain. */
-export function getTextColor(
-  base: string,
-  colorBackground: boolean,
-  palette: JBrowsePalette,
-): string {
-  return base === '-'
-    ? palette.grey[400]
-    : base === '.'
-      ? palette.grey[500]
-      : colorBackground
-        ? getContrastText(base, palette)
-        : getBaseColor(base, palette)
 }

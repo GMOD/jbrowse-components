@@ -1,4 +1,4 @@
-import { getBaseColor, getTextColor } from './baseColors.ts'
+import { getSequenceColors } from './baseColors.ts'
 import { CHAR_WIDTH, FONT, ROW_HEIGHT } from './constants.ts'
 
 import type { JBrowsePalette } from '@jbrowse/core/ui/palette'
@@ -37,6 +37,7 @@ export function drawSequenceGrid({
 
   ctx.font = FONT
   ctx.textBaseline = 'top'
+  const colors = getSequenceColors(palette)
 
   for (let rowIdx = startRow; rowIdx < endRow; rowIdx++) {
     const seq = sequences[rowIdx] ?? ''
@@ -47,10 +48,10 @@ export function drawSequenceGrid({
       if (char) {
         const x = (colIdx - startCol) * CHAR_WIDTH
         if (colorBackground && char !== '-' && char !== '.') {
-          ctx.fillStyle = getBaseColor(char, palette)
+          ctx.fillStyle = colors.fill(char)
           ctx.fillRect(x, y, CHAR_WIDTH, ROW_HEIGHT)
         }
-        ctx.fillStyle = getTextColor(char, colorBackground, palette)
+        ctx.fillStyle = colors.text(char, colorBackground)
         ctx.fillText(char, x + 2, y + 2)
       }
     }
