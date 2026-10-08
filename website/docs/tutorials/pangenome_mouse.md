@@ -20,8 +20,8 @@ split and rejoin, by how many segments each holds, and open the densest. We:
 - look the _Dock2_ bubble up in the hosted index
 
 Every step starts from the mouse graph page on
-[staging.genomes.jbrowse.org](https://staging.genomes.jbrowse.org/pangenomes/mouse),
-where it stays until a JBrowse 5 host for the graph plugin ships.
+[genomes.jbrowse.org](https://genomes.jbrowse.org/pangenomes/mouse), which
+launches the JBrowse 5 development build until JBrowse 5 ships.
 
 :::caution Experimental
 
@@ -124,8 +124,8 @@ The bubbles track reads the same build's bubble index:
 ## Nnt: a C57BL/6J deletion that appears as an insertion
 
 Click **chr13** on the **Whole chromosomes** line of the
-[portal page](https://staging.genomes.jbrowse.org/pangenomes/mouse), which opens
-the whole chromosome with the graph drawn as one node per bubble. Type
+[portal page](https://genomes.jbrowse.org/pangenomes/mouse), which opens the
+whole chromosome with the graph drawn as one node per bubble. Type
 `chr13:119,440,000-119,600,000`, and the graph track draws the segments there.
 Then:
 

@@ -35,9 +35,9 @@ Two more pages start from the same HPRC page:
 
 :::caution Experimental
 
-The graph view is a beta plugin, and the HPRC page is on
-[staging.genomes.jbrowse.org](https://staging.genomes.jbrowse.org/pangenomes/)
-until JBrowse 5 ships. We welcome your [feedback](/contact).
+The graph view is a beta plugin, and the
+[HPRC page](https://genomes.jbrowse.org/pangenomes/) launches it on the JBrowse
+5 development build until JBrowse 5 ships. We welcome your [feedback](/contact).
 
 :::
 
@@ -71,11 +71,11 @@ the graph, by URL.
 
 ## Launching tracks from the HPRC page
 
-Open the [HPRC page](https://staging.genomes.jbrowse.org/pangenomes/hprc). It
-has one **Gene or region** box, with a row of **Examples** under it. Click an
-example, or type a gene symbol or a region such as `chr6:32,510,001-32,600,000`
-and press **Show**. The page answers with that window's launches, each with a
-line on what it draws:
+Open the [HPRC page](https://genomes.jbrowse.org/pangenomes/hprc). It has one
+**Gene or region** box, with a row of **Examples** under it. Click an example,
+or type a gene symbol or a region such as `chr6:32,510,001-32,600,000` and press
+**Show**. The page answers with that window's launches, each with a line on what
+it draws:
 
 - **Graph**: the region drawn as a graph
 - **Variants**: the structural variants each haplotype carries

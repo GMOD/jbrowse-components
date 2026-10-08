@@ -3,11 +3,11 @@ import { graphTrack } from './graph-fixtures.ts'
 
 import type { ScreenshotSpec } from '../screenshot-spec-types.ts'
 
-// The staging HPRC page and its graph launch, which open pangenome_hprc. The
+// The HPRC page and its graph launch, which open pangenome_hprc. The
 // session is the one the page's graph link carries (graphRegionUrl in
 // ~/src/jb2hubs/website/src/components/pangenomeLinks.ts), so re-copy it when
 // that repo moves a window or a launch prop.
-const HPRC_PAGE = 'https://staging.genomes.jbrowse.org/pangenomes/hprc'
+const HPRC_PAGE = 'https://genomes.jbrowse.org/pangenomes/hprc'
 // The page's HLA / MHC example is a link to this url.
 const HPRC_MHC_ANSWER = `${HPRC_PAGE}?region=${encodeURIComponent('chr6:32,510,001-32,600,000')}`
 export const PORTAL_CONFIG = encodeURIComponent(

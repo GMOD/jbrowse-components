@@ -21,9 +21,9 @@ With that view we:
 
 :::caution Experimental
 
-The graph view is a beta plugin, and the HPRC page lives on
-[staging.genomes.jbrowse.org](https://staging.genomes.jbrowse.org/pangenomes/)
-until JBrowse 5 ships. We welcome your [feedback](/contact).
+The graph view is a beta plugin, and the
+[HPRC page](https://genomes.jbrowse.org/pangenomes/) launches it on the JBrowse
+5 development build until JBrowse 5 ships. We welcome your [feedback](/contact).
 
 :::
 
@@ -99,8 +99,8 @@ the config below is the one to adapt for your own graph:
 
 ## CFH: haplotypes missing two genes
 
-Open the [HPRC page](https://staging.genomes.jbrowse.org/pangenomes/hprc) and
-click the **CFH / CFHR** example, the complement factor H gene cluster, then
+Open the [HPRC page](https://genomes.jbrowse.org/pangenomes/hprc) and click the
+**CFH / CFHR** example, the complement factor H gene cluster, then
 **Haplotypes**. A lane missing _CFHR3_ and _CFHR1_ (Hughes et al. 2006), such as
 HG00253's second haplotype, breaks across both genes.
 
