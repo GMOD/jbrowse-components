@@ -136,6 +136,8 @@ extend-exclude = [
   "website/docs/config/",
   # generated: mid-word truncated JSDoc excerpts, not prose
   "products/jbrowse-desktop/electron/mcp/docs/typeDocs.generated.json",
+  # generated: every trackId of the UCSC default configs, which are not prose
+  "website/src/lib/spec-recipe/hostedConfigs.generated.ts",
   # fixture and reference data
   "test_data/",
   "plugins/legacy-jbrowse/test_data/",

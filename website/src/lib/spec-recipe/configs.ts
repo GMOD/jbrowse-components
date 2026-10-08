@@ -36,6 +36,12 @@ export interface RawConfig {
   tracks?: RawTrack[]
 }
 
+export interface HostedConfig extends RawConfig {
+  absent: string[]
+  // every trackId of a default config, which a fence's track must not repeat
+  allTrackIds?: string[]
+}
+
 export interface TrackInfo {
   trackId: string
   name: string

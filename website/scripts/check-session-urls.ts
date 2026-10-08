@@ -22,6 +22,14 @@
 //     code/jb2/main/ on every commit to main. Always this repo's. This is what
 //     the figure specs' own live links use.
 //
+//   * a hosted config this repo holds no copy of (`https://jbrowse.org/ucsc/…`)
+//     ← its digest in hostedConfigs.generated.ts, which gen-hosted-configs
+//     fetches for every default config (src/lib/default-configs.ts) with all of
+//     its trackIds.
+//
+// An addtrack fence with `loc=` and no `config=` links to its first assembly's
+// default config, and is checked against that config like an explicit one.
+//
 // Tracked-in-git is asked here, per fence (isTracked below), so the half of
 // "is it published" that is decidable offline is covered by construction.
 //
@@ -46,7 +54,9 @@ import {
   sessionConfigUrl,
 } from '../src/lib/derive-session-url.ts'
 import { defaultSessionObject } from '../src/lib/derive-set-default-session.ts'
+import { trackConfigUrl } from '../src/lib/derive-track-url.ts'
 import { isAddtrack, isSession } from '../src/lib/remark-config-cli-tabs.ts'
+import { hostedConfigs } from '../src/lib/spec-recipe/hostedConfigs.generated.ts'
 import { docsMatching, reportProblems } from './check-utils.ts'
 import { docRelative, docsDir, repoRoot } from './paths.ts'
 
@@ -101,6 +111,19 @@ interface DemoConfig {
   tracks?: { trackId?: unknown }[]
 }
 
+interface TrackFence {
+  trackId?: unknown
+  assemblyNames?: unknown
+}
+
+function parseTrackFence(value: string) {
+  try {
+    return JSON.parse(value) as TrackFence
+  } catch {
+    return undefined
+  }
+}
+
 const parser = unified().use(remarkParse).use(remarkGfm)
 const problems: string[] = []
 let checked = 0
@@ -116,14 +139,8 @@ function checkTrackFence(
   where: string,
   configUrl: string,
   config: DemoConfig,
-  value: string,
+  track: TrackFence,
 ) {
-  let track: { trackId?: unknown; assemblyNames?: unknown }
-  try {
-    track = JSON.parse(value) as typeof track
-  } catch {
-    return
-  }
   checked++
   const assemblies = new Set((config.assemblies ?? []).map(a => a.name))
   const [assembly] = Array.isArray(track.assemblyNames)
@@ -141,7 +158,7 @@ function checkTrackFence(
       `  ${where}`,
       `    → ${configUrl} already defines track "${track.trackId}", so the live`,
       `      link would add a second track under the same id. Rename the fence's`,
-      `      trackId or drop \`config=\`.\n`,
+      `      trackId or drop \`config=\` and \`loc=\`.\n`,
     )
   }
 }
@@ -149,15 +166,31 @@ function checkTrackFence(
 for (const { file, text } of docsMatching(docsDir, LIVE_FENCE)) {
   const rel = docRelative(file)
   visit(parser.parse(text), 'code', node => {
-    const configUrl =
-      isSession(node) || isAddtrack(node)
-        ? sessionConfigUrl(node.meta)
-        : undefined
+    const track = isAddtrack(node) ? parseTrackFence(node.value) : undefined
+    const [assembly] = Array.isArray(track?.assemblyNames)
+      ? (track.assemblyNames as unknown[])
+      : []
+    const configUrl = isSession(node)
+      ? sessionConfigUrl(node.meta)
+      : track && trackConfigUrl(node.meta, String(assembly))
     if (configUrl === undefined) {
       return
     }
     const where = `${rel}:${node.position?.start.line ?? 0}`
     const path = repoConfigPath(configUrl)
+    const hosted = path === undefined ? hostedConfigs[configUrl] : undefined
+    if (track && hosted?.allTrackIds) {
+      checkTrackFence(
+        where,
+        configUrl,
+        {
+          assemblies: hosted.assemblies,
+          tracks: hosted.allTrackIds.map(trackId => ({ trackId })),
+        },
+        track,
+      )
+      return
+    }
     if (path === undefined) {
       const relative = codeBaseRelative(configUrl)
       problems.push(
@@ -201,8 +234,8 @@ for (const { file, text } of docsMatching(docsDir, LIVE_FENCE)) {
       )
       return
     }
-    if (isAddtrack(node)) {
-      checkTrackFence(where, configUrl, config, node.value)
+    if (track) {
+      checkTrackFence(where, configUrl, config, track)
       return
     }
     let session: unknown

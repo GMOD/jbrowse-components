@@ -92,13 +92,18 @@ check by fixing the manifest, not by removing a skip.
   config, and on a session that opens no tracks. **Ask what the session _shows_,
   not whether the check accepts it.**
 
-- **An addtrack fence takes `config=` too**, plus an optional `loc=` (no
-  spaces), and its link opens that config with the fence's track added and
-  shown. Without `loc=` the view opens on the whole genome, where most tracks
-  draw nothing, so give one unless the track reads at that scale. The build
-  refuses a fence naming a file by anything but an absolute URL, and
-  `check-session-urls` fails one whose assembly the config lacks or whose
-  trackId it already has.
+- **An addtrack fence takes `loc=` (no spaces), `config=`, or both**, and its
+  link opens that config with the fence's track added and shown. On an assembly
+  in `src/lib/default-configs.ts`, `loc=` alone is enough: the link opens that
+  assembly's hosted config. `config=` is for every other assembly, and wins when
+  both appear. Give a `loc=` only from a locus the page already states (a figure
+  spec, a `json session` fence, prose); without one the view opens on the whole
+  genome, where most tracks draw nothing. The build refuses a fence naming a
+  file by anything but an absolute URL, and warns on a `loc=` whose assembly has
+  no default config and no `config=`. `check-session-urls` fails a fence whose
+  assembly the config lacks or whose trackId it already has; a default config is
+  checked against `hostedConfigs.generated.ts`, so adding one to the table means
+  `pnpm gen:hosted-configs`.
 
 - **Write jexl the short way**: `feature.rank` over `get(feature,'rank')`.
 - **`user_guides/` drives the UI, `config_guides/` shows the JSON.** A config

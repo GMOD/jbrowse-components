@@ -1,4 +1,5 @@
 import { CODE_BASE } from './code-base.ts'
+import { defaultConfigs } from './default-configs.ts'
 import { configCliTabs } from './remark-config-cli-tabs.ts'
 
 import type { Root } from 'mdast'
@@ -90,6 +91,61 @@ test('config= on an addtrack fence opens the track as a session track', () => {
   })
   const desktop = hrefs.find(h => h.startsWith('jbrowse://'))!
   expect(new URL(desktop).searchParams.get('url')).toBe(web)
+})
+
+function configParam(html: string) {
+  const web = [...html.matchAll(/href="([^"]+)"/g)]
+    .map(m => m[1]!.replaceAll('&amp;', '&'))
+    .find(h => h.startsWith(CODE_BASE))
+  return web && new URL(web).searchParams.get('config')
+}
+
+test('loc= alone opens the default config of the first assembly', () => {
+  const { kinds, html, messages } = render('addtrack loc=chr1:1-100')
+  expect(messages).toEqual([])
+  expect(kinds).toEqual(['config', 'cli', 'desktop', 'live'])
+  expect(configParam(html)).toBe(defaultConfigs.hg38)
+  expect(
+    configParam(
+      render('addtrack loc=chr1:1-100', {
+        ...TRACK,
+        assemblyNames: ['mm39', 'hg38'],
+      }).html,
+    ),
+  ).toBe(defaultConfigs.mm39)
+})
+
+test('an explicit config= wins over the default config', () => {
+  const { html } = render('addtrack config=test_data/volvox/config.json loc=chr1:1-100')
+  expect(configParam(html)).toBe('test_data/volvox/config.json')
+})
+
+test('loc= on an assembly with no default config warns and gets no live tab', () => {
+  const { kinds, messages } = render('addtrack loc=chr1:1-100', {
+    ...TRACK,
+    assemblyNames: ['myGenome'],
+  })
+  expect(kinds).toEqual(['config', 'cli', 'desktop'])
+  expect(messages).toEqual([
+    expect.stringContaining('assembly "myGenome" has no default config'),
+  ])
+})
+
+test('a fence with neither config= nor loc= gets no live tab and no warning', () => {
+  const { kinds, messages } = render('addtrack')
+  expect(kinds).toEqual(['config', 'cli', 'desktop'])
+  expect(messages).toEqual([])
+})
+
+test('a default config is refused for a fence naming a relative file', () => {
+  const { kinds, messages } = render('addtrack loc=chr1:1-100', {
+    ...TRACK,
+    adapter: { type: 'VcfTabixAdapter', uri: 'sv.vcf.gz' },
+  })
+  expect(kinds).toEqual(['config', 'cli', 'desktop'])
+  expect(messages).toEqual([
+    expect.stringContaining('names a file by a non-URL path (sv.vcf.gz)'),
+  ])
 })
 
 test('without loc= the live view opens on the whole genome', () => {
