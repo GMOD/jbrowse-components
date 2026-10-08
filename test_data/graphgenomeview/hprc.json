@@ -154,6 +154,35 @@
       ]
     },
     {
+      "type": "GraphTrack",
+      "trackId": "hprc_v2_1_walks_hs1",
+      "name": "HPRC v2.1 haplotype walks",
+      "assemblyNames": ["hs1"],
+      "adapter": {
+        "type": "RgfaTabixAdapter",
+        "walksUri": "https://jbrowse.org/demos/hprc/hprc-v2.1-mc-grch38.CHM13",
+        "assemblyNameToPanSN": {
+          "hs1": "CHM13"
+        },
+        "defaultHaplotypes": [
+          "HG00097#1",
+          "HG00099#1",
+          "HG00128#1",
+          "HG00133#1",
+          "HG01109#1",
+          "HG01123#1",
+          "HG01960#1",
+          "HG02055#1"
+        ]
+      },
+      "displays": [
+        {
+          "type": "LinearGraphDisplay",
+          "displayId": "hprc_v2_1_walks_hs1-LinearGraphDisplay"
+        }
+      ]
+    },
+    {
       "type": "FeatureTrack",
       "trackId": "hprc_curated_vntrs",
       "name": "Curated VNTRs (LPA KIV-2)",
