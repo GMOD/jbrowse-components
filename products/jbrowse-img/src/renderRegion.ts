@@ -159,14 +159,13 @@ interface ModeContext {
 /**
  * An image and what can be counted off it, per alignments track in track
  * order. `links` is a breakpoint view's reads with pieces in more than one
- * panel: the molecules its connectors are drawn for. `nonref` is a linear
- * view's reads differing from the reference at `sortAt`, over the reads
- * spanning it: what the coverage band stacks at that column.
+ * panel: the molecules its connectors are drawn for. `alt` is a linear view's
+ * reads carrying `sortAllele` at `sortAt`, over the reads spanning it.
  */
 export interface Rendered {
   svg: string
   links?: number[]
-  nonref?: string[]
+  alt?: string[]
 }
 
 type ModeRenderer = (ctx: ModeContext) => Promise<string | Rendered>
@@ -589,11 +588,11 @@ const renderLinear: ModeRenderer = async ctx => {
   })
   return {
     svg,
-    nonref: sortAt
+    alt: sortAt
       ? view.tracks.flatMap(track => {
           const at = (
             track.displays[0] as Partial<LinearAlignmentsDisplayModel>
-          ).nonReferenceAt?.(sortAt)
+          ).nonReferenceAt?.(sortAt, opts.sortAllele)
           return at ? [`${at.count}/${at.depth}`] : []
         })
       : undefined,

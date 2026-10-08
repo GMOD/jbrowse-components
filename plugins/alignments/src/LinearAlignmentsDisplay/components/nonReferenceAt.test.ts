@@ -71,3 +71,40 @@ test('answers nothing for a column the data does not reach', () => {
     nonReferenceAt({ type: 'basePair', pos: 89 }, pileup()),
   ).toBeUndefined()
 })
+
+test('given the allele, counts the reads with that base and no other', () => {
+  const data = pileup({
+    mismatchPositions: Uint32Array.from([95, 95, 95, 96]),
+    mismatchBases: Uint8Array.from([67, 67, 84, 71]),
+  })
+  const at = (base: string, pos = 95) =>
+    nonReferenceAt({ type: 'basePair', pos }, data, { base })
+  expect(at('C')).toEqual({ count: 2, depth: 10 })
+  expect(at('T')).toEqual({ count: 1, depth: 10 })
+  expect(at('G')).toEqual({ count: 0, depth: 10 })
+  // a deletion is the allele `*`, and a mismatch beside it is not
+  expect(at('*', 101)).toEqual({ count: 2, depth: 10 })
+  expect(at('C', 101)).toEqual({ count: 0, depth: 10 })
+})
+
+test('given an insertion allele, counts each read with one long enough, near enough', () => {
+  // two reads with the 300-base insertion 40 bases off the caller's position,
+  // one of them with a second piece of it, and a one-base insertion on it
+  const data = pileup({
+    interbasePositions: Uint32Array.from([95, 99, 99, 105]),
+    interbaseLengths: Uint32Array.from([1, 300, 290, 200]),
+    interbaseTypes: new Uint8Array(4).fill(INTERBASE_INSERTION),
+    interbaseReadIndices: Uint32Array.from([4, 0, 1, 1]),
+    interbaseFrequencies: new Uint8Array(4),
+    numInsertions: 4,
+  })
+  const at = (minInsertion: number, within: number) =>
+    nonReferenceAt({ type: 'insertion', pos: 95 }, data, {
+      minInsertion,
+      within,
+    })
+  expect(at(150, 0)).toEqual({ count: 0, depth: 10 })
+  expect(at(150, 10)).toEqual({ count: 2, depth: 10 })
+  expect(at(150, 3)).toEqual({ count: 0, depth: 10 })
+  expect(at(1, 0)).toEqual({ count: 1, depth: 10 })
+})

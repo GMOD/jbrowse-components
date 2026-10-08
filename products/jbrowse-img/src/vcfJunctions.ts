@@ -1,8 +1,13 @@
 import { parseBreakend } from '@gmod/vcf'
-import { variantSortColumn } from '@jbrowse/alignments-core/variantSortColumn'
+import { variantCall } from '@jbrowse/alignments-core/variantSortColumn'
 
-import type { BatchRecord, Locus } from './batch.ts'
-import type { VariantSortColumn } from '@jbrowse/alignments-core/variantSortColumn'
+import { SMALL_VARIANT_BP } from './batch.ts'
+
+import type { BatchRecord, CarriedCall, Locus } from './batch.ts'
+import type {
+  VariantCall,
+  VariantSortColumn,
+} from '@jbrowse/alignments-core/variantSortColumn'
 
 // A VCF's records, for `batch` to render. The ALT bracket grammar is
 // `@gmod/vcf`'s `parseBreakend`: a regex over the bracket drops the 28 of 66
@@ -37,6 +42,7 @@ interface VcfRecord {
   /** REF's length: the reference bases the record's own locus covers */
   span: number
   sort?: VariantSortColumn
+  carried?: CarriedCall
   alleleLength?: number
   mate?: Endpoint
   id?: string
@@ -106,6 +112,31 @@ function breakendMate(alt: string): Endpoint | undefined {
   return ref && Number.isFinite(p) ? [ref, p] : undefined
 }
 
+// A symbolic allele sorts as its spelled-out form would: a deletion's carriers
+// have a gap over the base after the anchor, an insertion's an insertion there.
+function symbolicCall(
+  pos: number,
+  alt?: string,
+  inserted = 1,
+): VariantCall | undefined {
+  return alt === '<DEL>'
+    ? { column: { type: 'basePair', pos }, carried: { base: '*' } }
+    : alt === '<INS>'
+      ? { column: { type: 'insertion', pos }, carried: { inserted } }
+      : undefined
+}
+
+// An insertion is counted at half its length or more, and one of
+// structural-variant size wherever it sits in the image
+function carriedCall({ carried }: VariantCall): CarriedCall {
+  return 'base' in carried
+    ? carried
+    : {
+        minInsertion: Math.max(1, Math.ceil(carried.inserted / 2)),
+        anywhere: carried.inserted >= SMALL_VARIANT_BP,
+      }
+}
+
 /**
  * Every record a VCF holds that `batch` can draw, with the loci it is drawn on:
  * both ends of a junction (a breakend's mate, or INFO END on the contig CHR2
@@ -160,7 +191,18 @@ export function parseVcfJunctions(
     }
     const svtype = infoField(info, 'SVTYPE')
     const alts = alt?.split(',') ?? []
-    const sort = variantSortColumn(pos - 1, ref, alts)
+    const spelled = variantCall(pos - 1, ref, alts)
+    const inserted = Number(
+      infoField(info, 'SVINSLEN') ?? infoField(info, 'SVLEN'),
+    )
+    const call =
+      spelled ??
+      symbolicCall(
+        pos,
+        alt,
+        Number.isFinite(inserted) ? Math.abs(inserted) : undefined,
+      )
+    const sort = call?.column
     if (!svtype && !sort) {
       skipped.push(`line ${lineNo}: no SVTYPE, and no ALT spelling out bases`)
       continue
@@ -181,9 +223,10 @@ export function parseVcfJunctions(
       own: [chrom, pos],
       span: svtype ? 1 : ref.length,
       line: lineNo,
-      ...(sort
+      ...(call ? { sort: call.column, carried: carriedCall(call) } : {}),
+      // a symbolic allele spells out no bases, and keeps a junction's flank
+      ...(spelled
         ? {
-            sort,
             alleleLength: Math.max(
               ref.length,
               ...alts.filter(a => /^[ACGTN]+$/i.test(a)).map(a => a.length),
@@ -216,15 +259,19 @@ export function parseVcfJunctions(
       ...(r.mate ? { mate: canonical(r.mate) } : {}),
     })),
     tolerance,
-  ).map(({ own, span, sort, alleleLength, mate, id, event, line }) => ({
-    loci: mate
-      ? [locus(own), locus(mate)]
-      : [{ ...locus(own), end: own[1] - 1 + span }],
-    line,
-    ...(sort ? { sort, alleleLength } : {}),
-    ...(id ? { name: id } : {}),
-    ...(event ? { event } : {}),
-  }))
+  ).map(
+    ({ own, span, sort, carried, alleleLength, mate, id, event, line }) => ({
+      loci: mate
+        ? [locus(own), locus(mate)]
+        : [{ ...locus(own), end: own[1] - 1 + span }],
+      line,
+      ...(sort ? { sort } : {}),
+      ...(alleleLength === undefined ? {} : { alleleLength }),
+      ...(carried ? { carried } : {}),
+      ...(id ? { name: id } : {}),
+      ...(event ? { event } : {}),
+    }),
+  )
   // header order, then first appearance: the order an event's panels stack in
   return { records, skipped, refNames: [...contigs.values()] }
 }

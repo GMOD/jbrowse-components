@@ -1,3 +1,4 @@
+import { recordAllele, recordFlank } from './batch.ts'
 import { parseVcfJunctions } from './vcfJunctions.ts'
 
 function vcf(...lines: string[]) {
@@ -164,20 +165,53 @@ describe('parseVcfJunctions', () => {
         name: 'snv',
         sort: { type: 'basePair', pos: 999 },
         alleleLength: 1,
+        carried: { base: 'G' },
       },
       {
         loci: [{ refName: 'chr3', start: 1999, end: 2003 }],
         line: 6,
         sort: { type: 'basePair', pos: 2000 },
         alleleLength: 4,
+        carried: { base: '*' },
       },
       {
         loci: [{ refName: 'chr3', start: 2999, end: 3000 }],
         line: 7,
         sort: { type: 'insertion', pos: 3000 },
         alleleLength: 3,
+        carried: { minInsertion: 1, anywhere: false },
       },
     ])
+  })
+
+  it('sorts a symbolic deletion or insertion one panel holds as its spelled-out form', () => {
+    const { records } = parseVcfJunctions(
+      vcf(
+        'chr3\t1000\td\tA\t<DEL>\t.\tPASS\tSVTYPE=DEL;END=1072',
+        'chr3\t3000\ti\tA\t<INS>\t.\tPASS\tSVTYPE=INS;END=3000;SVINSLEN=348',
+        'chr3\t5000\tu\tA\t<DUP>\t.\tPASS\tSVTYPE=DUP;END=5900',
+      ),
+    )
+    // no spelled-out allele to read base by base, so a junction's flank stands
+    expect(records.map(r => recordFlank(r))).toEqual([500, 500, 500])
+    expect(records.map(r => [r.sort, r.carried])).toEqual([
+      [{ type: 'basePair', pos: 1000 }, { base: '*' }],
+      [
+        { type: 'insertion', pos: 3000 },
+        { minInsertion: 174, anywhere: true },
+      ],
+      [undefined, undefined],
+    ])
+    // an SV-sized insertion is counted across its window, a small one in place
+    expect(records.map(r => recordAllele(r))).toEqual([
+      { base: '*' },
+      { minInsertion: 174, within: 500 },
+      undefined,
+    ])
+    expect(recordAllele(records[1]!, 600)).toEqual({
+      minInsertion: 174,
+      within: 600,
+    })
   })
 
   it('reports a record with no SVTYPE and no bases in its ALT', () => {

@@ -1,5 +1,8 @@
 import type { Entry } from './parseArgv.ts'
-import type { VariantSortColumn } from '@jbrowse/alignments-core/variantSortColumn'
+import type {
+  VariantAllele,
+  VariantSortColumn,
+} from '@jbrowse/alignments-core/variantSortColumn'
 
 // Batch rendering: one image per record of a callset, so reviewing it is a
 // directory of pictures rather than N trips through the browser. BEDPE is the
@@ -29,6 +32,32 @@ export interface BatchRecord {
   sort?: VariantSortColumn
   /** the longest of that record's REF and ALTs, in bases */
   alleleLength?: number
+  /** what a read carrying the record's ALT has at `sort` */
+  carried?: CarriedCall
+}
+
+/**
+ * A base, `*` for a deleted one, or an insertion of at least `minInsertion`
+ * bases: half the ALT's own, because a long read's copy of an insertion is
+ * rarely the caller's length to the base. `anywhere` counts that insertion
+ * wherever it sits in the image, for one of structural-variant size.
+ */
+export type CarriedCall =
+  | { base: string }
+  | { minInsertion: number; anywhere: boolean }
+
+/** A record's `carried`, as the count is asked for at its flank */
+export function recordAllele(
+  rec: BatchRecord,
+  flank?: number,
+): VariantAllele | undefined {
+  const { carried } = rec
+  return carried && 'minInsertion' in carried
+    ? {
+        minInsertion: carried.minInsertion,
+        within: carried.anywhere ? recordFlank(rec, flank) : 0,
+      }
+    : carried
 }
 
 function parseLocus(refName?: string, start?: string, end?: string) {
@@ -83,7 +112,7 @@ export function parseBedpe(text: string) {
 }
 
 // The size below which callers file an indel as a small variant
-const SMALL_VARIANT_BP = 50
+export const SMALL_VARIANT_BP = 50
 
 /**
  * `--flank`, or the context the record is read at: 50 bp for a variant whose

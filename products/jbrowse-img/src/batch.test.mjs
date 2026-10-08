@@ -44,10 +44,12 @@ test('renders small variants sorted and marked at the variant, and counts who di
     'ctgA:3163-3263',
     'ctgA:3808-3910',
   ])
-  const nonref = column('nonref')
-  assert.equal(nonref[0], '3/3', 'an SNV every spanning read carries')
-  assert.equal(nonref[4], '16/18', 'a deletion: its carriers leave the depth')
-  assert.equal(nonref[10], '5/22', 'an insertion')
+  const alt = column('alt')
+  assert.equal(alt[0], '3/3', 'an SNV every spanning read carries')
+  // 13 reads have the gap; three more differ at the base by a mismatch, which
+  // is not the deletion
+  assert.equal(alt[4], '13/18', 'a deletion: its carriers leave the depth')
+  assert.equal(alt[10], '5/22', 'an insertion')
 
   // the band over the call is the image's one translucent rect, a base wide
   const svg = fs.readFileSync(path.join(outDir, column('file')[0]), 'utf8')

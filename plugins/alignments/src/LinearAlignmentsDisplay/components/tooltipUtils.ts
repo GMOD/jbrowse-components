@@ -43,6 +43,7 @@ import type { LengthAccumulator } from './lengthStats.ts'
 import type {
   CoverageRowsBin,
   CoverageTooltipBin,
+  VariantAllele,
   VariantSortColumn,
 } from '@jbrowse/alignments-core'
 
@@ -588,15 +589,40 @@ export function getCoverageBin(
   }
 }
 
+// The reads with an insertion of `minInsertion` bases or more within `within`
+// bases of `pos`, each read once
+function insertionReadsNear(
+  pos: number,
+  data: WorkerPileupData,
+  minInsertion: number,
+  within: number,
+) {
+  const { interbasePositions, interbaseLengths, interbaseReadIndices } = data
+  const reads = new Set<number>()
+  const { insEnd } = interbaseRangeEnds(data)
+  for (let i = 0; i < insEnd; i++) {
+    if (
+      interbaseLengths[i]! >= minInsertion &&
+      Math.abs(interbasePositions[i]! - pos) <= within
+    ) {
+      reads.add(interbaseReadIndices[i]!)
+    }
+  }
+  return reads.size
+}
+
 /**
  * The loaded reads differing from the reference at a variant's sort column,
  * over the reads spanning it: the mismatches and deletions the coverage band
- * stacks at a base, or the insertions it flags ahead of one. Undefined where
+ * stacks at a base, or the insertions it flags ahead of one. Given the
+ * variant's `allele`, only the reads carrying it: a third base in one read, or
+ * a one-base insertion beside a 300-base call, is not the call. Undefined where
  * `data` does not reach the column.
  */
 export function nonReferenceAt(
   { type, pos }: VariantSortColumn,
   data: WorkerPileupData,
+  allele?: VariantAllele,
 ) {
   const { coverageDepths, coverageStartPos } = data
   const idx = pos - coverageStartPos
@@ -605,18 +631,26 @@ export function nonReferenceAt(
   }
   if (type === 'insertion') {
     return {
-      count: collectInterbaseStats(pos, data).insertion?.count ?? 0,
+      count:
+        allele && 'minInsertion' in allele
+          ? insertionReadsNear(pos, data, allele.minInsertion, allele.within)
+          : (collectInterbaseStats(pos, data).insertion?.count ?? 0),
       depth: interbaseDepthAt(coverageDepths, coverageStartPos, pos),
     }
   }
   // a read deleted at the base is in neither the depth nor the mismatches
   const deleted = collectDeletionStats(pos, data)?.count ?? 0
-  let mismatched = 0
-  for (const { count } of Object.values(countSnpsAtPosition(pos, data))) {
-    mismatched += count
+  const snps = countSnpsAtPosition(pos, data)
+  let count = deleted
+  if (allele && 'base' in allele) {
+    count = allele.base === '*' ? deleted : (snps[allele.base]?.count ?? 0)
+  } else {
+    for (const snp of Object.values(snps)) {
+      count += snp.count
+    }
   }
   return {
-    count: mismatched + deleted,
+    count,
     depth: (coverageDepths[idx] ?? 0) + deleted,
   }
 }

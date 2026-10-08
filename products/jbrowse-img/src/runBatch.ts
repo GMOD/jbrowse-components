@@ -10,6 +10,7 @@ import {
   eventRecords,
   outputName,
   parseBedpe,
+  recordAllele,
   recordArgv,
   recordHighlight,
   recordLocs,
@@ -74,7 +75,7 @@ interface RowResult {
   file: string
   status: RecordStatus
   links?: string
-  nonref?: string
+  alt?: string
   error?: string
 }
 
@@ -396,6 +397,7 @@ async function renderRows(
               argv,
               loc: locs[0],
               sortAt: rec.sort,
+              sortAllele: recordAllele(rec, flank),
               highlight: recordHighlight(rec),
             },
         configObject && structuredClone(configObject),
@@ -405,7 +407,7 @@ async function renderRows(
         file,
         status: 'ok',
         links: rendered.links?.join(',') ?? '',
-        nonref: rendered.nonref?.join(',') ?? '',
+        alt: rendered.alt?.join(',') ?? '',
       })
     } catch (error) {
       report({
@@ -429,10 +431,11 @@ async function renderRows(
 // on `event` lists the event's image above its records'. `links` is the reads
 // with pieces in more than one panel, per alignments track: what a reviewer
 // reads as a fan of curves, as a number a queue can be sorted on. Empty for an
-// image of one panel. `nonref` is `count/depth` per alignments track: the reads
-// differing from the reference at the column a record's pileup is sorted at,
-// over the reads spanning it. Empty for a record with no such column.
-const COUNT_COLUMNS = ['links', 'nonref'] as const
+// image of one panel. `alt` is `count/depth` per alignments track: the reads
+// with the record's ALT at the column its pileup is sorted at, over the reads
+// spanning it. An insertion of 50 bases or more is counted within the flank,
+// wherever the aligner put it. Empty for a record with no such column.
+const COUNT_COLUMNS = ['links', 'alt'] as const
 type CountColumn = (typeof COUNT_COLUMNS)[number]
 
 const MANIFEST_COLUMNS = [

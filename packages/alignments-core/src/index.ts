@@ -240,5 +240,9 @@ export type {
   ConsensusVariant,
   ConsensusVcfEntry,
 } from './consensus/consensusVariants.ts'
-export { variantSortColumn } from './variantSortColumn.ts'
-export type { VariantSortColumn } from './variantSortColumn.ts'
+export { variantCall, variantSortColumn } from './variantSortColumn.ts'
+export type {
+  VariantAllele,
+  VariantCall,
+  VariantSortColumn,
+} from './variantSortColumn.ts'

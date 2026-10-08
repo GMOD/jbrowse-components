@@ -242,7 +242,7 @@ import type {
   BelowCoverageBandsSettings,
   SectionsLayout,
 } from './sectionLayout.ts'
-import type { VariantSortColumn } from '@jbrowse/alignments-core'
+import type { VariantAllele, VariantSortColumn } from '@jbrowse/alignments-core'
 import type { LodTier } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { ContextMenuAnchor, MenuItem } from '@jbrowse/core/ui'
 import type { ColorScale } from '@jbrowse/core/ui/colorScale'
@@ -571,14 +571,14 @@ export default function stateModelFactory(
           /**
            * #method
            * The loaded reads differing from the reference at a variant's sort
-           * column, over the reads spanning it. Undefined until a fetch
-           * reaching the column lands.
+           * column, or with `allele` only those carrying it, over the reads
+           * spanning it. Undefined until a fetch reaching the column lands.
            */
-          nonReferenceAt(column: VariantSortColumn) {
+          nonReferenceAt(column: VariantSortColumn, allele?: VariantAllele) {
             let total: { count: number; depth: number } | undefined
             for (const { groups } of self.rpcDataMap.values()) {
               for (const { data } of groups) {
-                const at = nonReferenceAt(column, data)
+                const at = nonReferenceAt(column, data, allele)
                 if (at) {
                   total = {
                     count: (total?.count ?? 0) + at.count,

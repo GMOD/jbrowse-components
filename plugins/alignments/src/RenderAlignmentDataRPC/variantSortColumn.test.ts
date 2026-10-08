@@ -1,4 +1,4 @@
-import { variantSortColumn } from '@jbrowse/alignments-core'
+import { variantCall, variantSortColumn } from '@jbrowse/alignments-core'
 
 import { GAP_DELETION } from '../shaders/slang/gap.consts.generated.ts'
 import { INTERBASE_INSERTION } from '../shared/types.ts'
@@ -115,4 +115,23 @@ test('an insertion sorts its carriers first, and its anchor does not', () => {
   expect(
     topRows(data, { type: 'insertion', pos: 100, refName: 'ctgA' }),
   ).not.toEqual(CARRIERS)
+})
+
+// what a read with the ALT has at the column: the count jb2export batch takes
+test.each([
+  ['SNV', 'G', ['A'], { base: 'A' }],
+  ['MNV past a shared prefix', 'ACG', ['ACT'], { base: 'T' }],
+  ['anchored deletion', 'ACGT', ['A'], { base: '*' }],
+  // the padding base after the gap is the ALT's next letter, and not its call
+  ['deletion padded to a longer REF', 'ATG', ['AG'], { base: '*' }],
+  ['delins', 'ACG', ['AT'], { base: 'T' }],
+  ['anchored insertion', 'A', ['ACCC'], { inserted: 3 }],
+  ['insertion padded to a longer REF', 'AC', ['ATC'], { inserted: 1 }],
+  ['lower-case alleles', 'c', ['t'], { base: 'T' }],
+])('a %s carries %s>%s as %o', (_name, ref, alts, carried) => {
+  expect(variantCall(100, ref, alts)?.carried).toEqual(carried)
+})
+
+test('a symbolic allele spells out nothing to carry', () => {
+  expect(variantCall(100, 'A', ['<DEL>'])).toBeUndefined()
 })

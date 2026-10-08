@@ -1,7 +1,10 @@
 import type { ViewMode } from './modes.ts'
 import type { themeModes, themeNames } from './options.ts'
 import type { Entry } from './parseArgv.ts'
-import type { VariantSortColumn } from '@jbrowse/alignments-core/variantSortColumn'
+import type {
+  VariantAllele,
+  VariantSortColumn,
+} from '@jbrowse/alignments-core/variantSortColumn'
 import type { CigarMode } from '@jbrowse/plugin-linear-comparative-view'
 import type { TrackLabelMode } from '@jbrowse/plugin-linear-genome-view'
 
@@ -33,6 +36,8 @@ export interface Opts {
   loc?: string
   // batch's per-record pileup sort, for an alignments track stating none
   sortAt?: VariantSortColumn
+  /** what a read with the variant's ALT has at `sortAt`; counted alone */
+  sortAllele?: VariantAllele
   // a band over a linear view's tracks, 0-based half-open
   highlight?: { refName: string; start: number; end: number }
   width?: number
