@@ -5,19 +5,12 @@ import { pruneNewickToLeaves } from '@jbrowse/tree-sidebar/clusterUtils'
 
 import { navigationFields } from './navigationFields.ts'
 
-import type { MafAdapterOptions, Sample } from '../types.ts'
+import type { Sample } from '../types.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { FileLocation, UriLocation } from '@jbrowse/core/util'
 import type { SamplesTsvRow } from '@jbrowse/core/util/samplesTsv'
 import type { NewickNode } from '@jbrowse/tree-sidebar'
-
-/** Sample-id set shared by all three adapters to resolve tokens — see `matchSampleId`. */
-export function buildSampleFilter(
-  opts?: MafAdapterOptions,
-): Set<string> | undefined {
-  return opts?.samples ? new Set(opts.samples.map(s => s.id)) : undefined
-}
 
 export interface SampleConfigEntry {
   id: string

@@ -17,7 +17,6 @@ import {
   parseCoordinatesAndEstablishBlock,
 } from './tafParsing.ts'
 
-import type { MafAdapterOptions } from '../types.ts'
 import type { SourceResolver } from '../util/parseAssemblyName.ts'
 import type { TaiIndex } from '../util/taiSlice.ts'
 import type { BgzipTaffyAdapterConfig } from './configSchema.ts'
@@ -190,9 +189,10 @@ export default class BgzipTaffyAdapter extends MafAdapterBase<BgzipTaffyAdapterC
     )
   }
 
-  getFeatures(query: Region, opts?: MafAdapterOptions) {
+  getFeatures(query: Region, opts?: BaseOptions) {
     return taiBlockFeatures({
       configure: this.configure,
+      sampleIds: o => this.sampleIds(o),
       location: this.getConf('tafGzLocation'),
       pluginManager: this.pluginManager,
       query,

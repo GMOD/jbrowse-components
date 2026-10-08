@@ -10,7 +10,7 @@ import { toArray } from 'rxjs/operators'
 import MafTabixAdapter from './MafTabixAdapter.ts'
 import MafTabixConfigSchema from './configSchema.ts'
 
-import type { AlignmentRecord, Sample } from '../types.ts'
+import type { AlignmentRecord } from '../types.ts'
 import type { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { Feature } from '@jbrowse/core/util'
 
@@ -56,10 +56,14 @@ const REGION = {
   assemblyName: 'volvox',
 }
 
-function features(a: MafTabixAdapter, samples?: Sample[]) {
-  return firstValueFrom(
-    a.getFeatures(REGION, samples ? { samples } : undefined).pipe(toArray()),
-  )
+function features(a: MafTabixAdapter) {
+  return firstValueFrom(a.getFeatures(REGION).pipe(toArray()))
+}
+
+// A `samples` list in place of the fixture's guide tree, which would otherwise
+// be the sample set.
+function listing(...samples: string[]) {
+  return adapter({ nhLocation: undefined, samples })
 }
 
 function alignmentsOf(f: Feature) {
@@ -128,12 +132,9 @@ describe('MafTabixAdapter reads a maf_to_bed BED', () => {
 
   // With a sample set the tokens resolve exactly (`matchSampleId`) instead of
   // heuristically, and species outside it are dropped rather than given a row.
-  it('narrows to the passed sample set', async () => {
+  it('narrows to its sample set', async () => {
     const warn = jest.spyOn(console, 'warn').mockImplementation(() => {})
-    const out = await features(adapter(), [
-      { id: 'volvox', label: 'volvox' },
-      { id: 'simvolvox', label: 'simvolvox' },
-    ])
+    const out = await features(listing('volvox', 'simvolvox'))
     expect(Object.keys(alignmentsOf(out[0]!)).sort()).toEqual([
       'simvolvox',
       'volvox',
@@ -144,15 +145,13 @@ describe('MafTabixAdapter reads a maf_to_bed BED', () => {
     warn.mockRestore()
   })
 
-  // The sequence widget's "Selected rows" and a `samples` config can both
-  // leave the reference out. The stanza's first entry is still the reference,
+  // A `samples` config can leave the reference out. The stanza's first entry
+  // is still the reference,
   // and it used to fall through to the first species that survived the filter,
   // so every column was walked by that species' gaps instead of the reference's.
   it('keeps the reference sequence when the sample set leaves it out', async () => {
     const [full] = await features(adapter())
-    const [narrowed] = await features(adapter(), [
-      { id: 'simvolvox', label: 'simvolvox' },
-    ])
+    const [narrowed] = await features(listing('simvolvox'))
     expect(Object.keys(alignmentsOf(narrowed!))).toEqual(['simvolvox'])
     expect(narrowed!.get('seq')).toBe(alignmentsOf(full!).volvox!.seq)
   })
@@ -164,9 +163,7 @@ describe('MafTabixAdapter reads a maf_to_bed BED', () => {
   // configured ids are both in hand.
   it('warns when the sample ids match nothing in the file', async () => {
     const warn = jest.spyOn(console, 'warn').mockImplementation(() => {})
-    const out = await features(adapter(), [
-      { id: 'Volvox_carteri', label: 'Volvox' },
-    ])
+    const out = await features(listing('Volvox_carteri'))
     expect(Object.keys(alignmentsOf(out[0]!))).toEqual([])
     expect(warn).toHaveBeenCalledTimes(1)
     const msg = warn.mock.calls[0]![0] as string

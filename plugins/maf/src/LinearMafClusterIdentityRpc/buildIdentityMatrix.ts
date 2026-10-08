@@ -5,10 +5,10 @@ import { DASH, LOWER_BIT, isUnknownBase } from '@jbrowse/core/util/alignedBytes'
 
 import { loadMafSamplesAdapter } from '../util/loadMafSamplesAdapter.ts'
 
-import type { MafAdapterOptions } from '../types.ts'
 import type { MafAdapterBase } from '../util/MafAdapterBase.ts'
 import type { MafBlockSink } from '../util/mafBlockSink.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
+import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { Region } from '@jbrowse/core/util'
 import type { StatusCallback } from '@jbrowse/core/util/progress'
 import type { ClusterMatrix } from '@jbrowse/tree-sidebar'
@@ -145,7 +145,7 @@ export async function buildIdentityMatrix({
     signal,
     statusCallback,
   } = args
-  const { adapter, samples: configSamples } = await loadMafSamplesAdapter(
+  const { adapter } = await loadMafSamplesAdapter(
     pluginManager,
     sessionId,
     adapterConfig,
@@ -165,8 +165,7 @@ export async function buildIdentityMatrix({
       `Too much alignment data to cluster over this span (${formatBytes(bytes!)} against a ${formatBytes(byteLimit!)} limit). Zoom in, or force-load the track to cluster it anyway.`,
     )
   }
-  const opts = configSamples.length ? { ...args, samples: configSamples } : args
-  return readIdentityMatrix(adapter, regions, sources, opts)
+  return readIdentityMatrix(adapter, regions, sources, args)
 }
 
 /**
@@ -178,7 +177,7 @@ export async function readIdentityMatrix(
   adapter: MafAdapterBase,
   regions: Region[],
   sources: string[],
-  opts?: MafAdapterOptions,
+  opts?: BaseOptions,
 ) {
   const { segments, columns } = buildSegments(regions)
   const sink = new IdentityMatrixSink(sources, columns, opts?.signal)

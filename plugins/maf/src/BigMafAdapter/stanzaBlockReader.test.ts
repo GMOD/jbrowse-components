@@ -13,11 +13,7 @@ import { mafFeatureTable } from '../util/mafFeatureTable.ts'
 import BigMafAdapter from './BigMafAdapter.ts'
 import BigMafConfigSchema from './configSchema.ts'
 
-import type {
-  AlignmentRecord,
-  EmptyRecord,
-  MafAdapterOptions,
-} from '../types.ts'
+import type { AlignmentRecord, EmptyRecord } from '../types.ts'
 import type { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { Feature } from '@jbrowse/core/util'
 import type { FeatureTable } from '@jbrowse/core/util/featureTable'
@@ -38,9 +34,9 @@ function bigBedOver(stanzas: string[][]) {
   } as unknown as BaseFeatureDataAdapter
 }
 
-function adapterOver(stanzas: string[][]) {
+function adapterOver(stanzas: string[][], samples: string[] = []) {
   const bigBed = bigBedOver(stanzas)
-  return new BigMafAdapter(BigMafConfigSchema.create({}), () =>
+  return new BigMafAdapter(BigMafConfigSchema.create({ samples }), () =>
     Promise.resolve({
       dataAdapter: bigBed,
       sessionIds: new Set<string>(),
@@ -104,25 +100,23 @@ const ALL_STANZAS = [
   ],
 ]
 
-async function featuresBothWays(stanzas: string[][], opts?: MafAdapterOptions) {
+async function featuresBothWays(stanzas: string[][], sampleIds?: string[]) {
   const rebuilt = await firstValueFrom(
-    adapterOver(stanzas).getFeatures(region, opts).pipe(toArray()),
+    adapterOver(stanzas, sampleIds).getFeatures(region).pipe(toArray()),
   )
   const legacy = await firstValueFrom(
-    legacyBigMafFeatures(bigBedOver(stanzas), region, opts).pipe(toArray()),
+    legacyBigMafFeatures(bigBedOver(stanzas), region, { sampleIds }).pipe(
+      toArray(),
+    ),
   )
   return { rebuilt, legacy }
 }
 
-async function packedBothWays(
-  adapter: BigMafAdapter,
-  opts?: MafAdapterOptions,
-  visible?: Set<string>,
-) {
+async function packedBothWays(adapter: BigMafAdapter, visible?: Set<string>) {
   const direct = new MafRegionSink(visible)
-  await adapter.readBlocks(region, direct, opts)
+  await adapter.readBlocks(region, direct)
   const features = new MafRegionSink(visible)
-  await featureBlocks(adapter.getFeatures(region, opts), features)
+  await featureBlocks(adapter.getFeatures(region), features)
   const view = (sink: MafRegionSink) => ({
     packed: sink.packer.finishBlocks(),
     refSampleId: sink.refSampleId,
@@ -146,10 +140,8 @@ test('the direct parse packs what the MafFeatures pack, byte for byte', async ()
 })
 
 test('a sample set and a subtree filter pack alike both ways', async () => {
-  const samples = ['mm10', '3', '7', 'rn6'].map(id => ({ id, label: id }))
   const { direct, features } = await packedBothWays(
-    adapterOver(STANZAS),
-    { samples },
+    adapterOver(STANZAS, ['mm10', '3', '7', 'rn6']),
     new Set(['mm10', '7']),
   )
   expect(direct.packed.blockRefLength[0]).toBe(4)
@@ -170,18 +162,10 @@ const alignmentsOf = (f: Feature) =>
   f.get('alignments') as Record<string, AlignmentRecord>
 
 describe('getFeatures answers the MafFeatures the old parse did', () => {
-  test.each<[string, MafAdapterOptions | undefined]>([
+  test.each<[string, string[] | undefined]>([
     ['every species', undefined],
-    [
-      'a sample set',
-      {
-        samples: ['mm10', '3', '7', 'rn6', 'baboon'].map(id => ({
-          id,
-          label: id,
-        })),
-      },
-    ],
-    ['a set matching nothing', { samples: [{ id: 'galGal6', label: 'x' }] }],
+    ['a sample set', ['mm10', '3', '7', 'rn6', 'baboon']],
+    ['a set matching nothing', ['galGal6']],
   ])('%s', async (_, opts) => {
     const spy = jest.spyOn(console, 'warn').mockImplementation(() => {})
     const { rebuilt, legacy } = await featuresBothWays(ALL_STANZAS, opts)

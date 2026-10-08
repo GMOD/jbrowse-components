@@ -96,12 +96,6 @@ export async function executeMafAlignmentData({
     return tooLarge
   }
 
-  // Samples come from config or the guide tree (see getSamples). With a set,
-  // the adapter resolves tokens against it. With neither, the adapter discovers
-  // the genomes from the alignment data, so the track still renders without a
-  // hand-listed sample list.
-  const opts = hasConfiguredSamples ? { ...args, samples: configSamples } : args
-
   // Rows outside the focus are dropped rather than shipped and hidden. The
   // returned `samples` stays the full set so the sidebar tree + "clear filter"
   // still see every genome.
@@ -116,7 +110,7 @@ export async function executeMafAlignmentData({
   // the profile behind it.
   const visible = visibleSamples(subtreeFilter, configSamples)
   const sink = new MafRegionSink(visible)
-  await adapter.readBlocks(region, sink, opts)
+  await adapter.readBlocks(region, sink, args)
   const { refSampleId } = sink
 
   const samples = withCopyRows(

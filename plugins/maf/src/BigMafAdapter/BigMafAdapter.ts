@@ -2,12 +2,10 @@ import { cachedSetup } from '@jbrowse/core/data_adapters/BaseAdapter'
 import { subscribeToObservable } from '@jbrowse/core/util/rxjs'
 
 import { MafAdapterBase } from '../util/MafAdapterBase.ts'
-import { buildSampleFilter } from '../util/getSamples.ts'
 import { loadSubAdapter } from '../util/loadSubAdapter.ts'
 import { mafBlockFeatures } from '../util/mafFeatureSink.ts'
 import { BigMafBlockReader } from './stanzaBlockReader.ts'
 
-import type { MafAdapterOptions } from '../types.ts'
 import type { SubAdapterLoader } from '../util/loadSubAdapter.ts'
 import type { MafBlockSink } from '../util/mafBlockSink.ts'
 import type { BigMafAdapterConfig } from './configSchema.ts'
@@ -56,7 +54,7 @@ export default class BigMafAdapter extends MafAdapterBase<BigMafAdapterConfig> {
     return adapter.getHeader()
   }
 
-  getFeatures(query: Region, opts?: MafAdapterOptions) {
+  getFeatures(query: Region, opts?: BaseOptions) {
     return mafBlockFeatures(
       query.refName,
       sink => this.readBlocks(query, sink, opts),
@@ -67,10 +65,10 @@ export default class BigMafAdapter extends MafAdapterBase<BigMafAdapterConfig> {
   override async readBlocks(
     query: Region,
     sink: MafBlockSink,
-    opts?: MafAdapterOptions,
+    opts?: BaseOptions,
   ) {
     const { adapter } = await this.configure(opts)
-    const reader = new BigMafBlockReader(buildSampleFilter(opts))
+    const reader = new BigMafBlockReader(await this.sampleIds(opts))
     await subscribeToObservable(adapter.getFeatures(query, opts), feature => {
       reader.read(
         sink,

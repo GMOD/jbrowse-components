@@ -18,7 +18,6 @@ import { featureBlocks } from '../util/mafBlockSink.ts'
 import MafTabixAdapter from './MafTabixAdapter.ts'
 import MafTabixConfigSchema from './configSchema.ts'
 
-import type { MafAdapterOptions } from '../types.ts'
 import type { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { Feature } from '@jbrowse/core/util'
 import type { FeatureTable } from '@jbrowse/core/util/featureTable'
@@ -41,29 +40,37 @@ const bed = new BedTabixAdapter(
   }),
 )
 
-const adapter = new MafTabixAdapter(
-  MafTabixConfigSchema.create({
-    bedGzLocation: {
-      localPath: fixture('volvox.maf.bed.gz'),
-      locationType: 'LocalPathLocation',
-    },
-    index: {
-      location: {
-        localPath: fixture('volvox.maf.bed.gz.tbi'),
+// The guide tree names the sample set, unless `samples` lists one.
+const adapterOf = (samples?: string[]) =>
+  new MafTabixAdapter(
+    MafTabixConfigSchema.create({
+      bedGzLocation: {
+        localPath: fixture('volvox.maf.bed.gz'),
         locationType: 'LocalPathLocation',
       },
-    },
-    nhLocation: {
-      localPath: fixture('volvox.maf.nh'),
-      locationType: 'LocalPathLocation',
-    },
-  }),
-  () =>
-    Promise.resolve({
-      dataAdapter: bed as BaseFeatureDataAdapter,
-      sessionIds: new Set<string>(),
+      index: {
+        location: {
+          localPath: fixture('volvox.maf.bed.gz.tbi'),
+          locationType: 'LocalPathLocation',
+        },
+      },
+      ...(samples
+        ? { samples }
+        : {
+            nhLocation: {
+              localPath: fixture('volvox.maf.nh'),
+              locationType: 'LocalPathLocation',
+            },
+          }),
     }),
-)
+    () =>
+      Promise.resolve({
+        dataAdapter: bed as BaseFeatureDataAdapter,
+        sessionIds: new Set<string>(),
+      }),
+  )
+
+const adapter = adapterOf()
 
 test('a flatten over alignments answers one row per species on the reference span', async () => {
   const blocks = await firstValueFrom(
@@ -140,21 +147,17 @@ test('the direct parse packs the region and answers the table its MafFeatures do
     end: 50000,
     assemblyName: 'volvox',
   }
-  const optsList: (MafAdapterOptions | undefined)[] = [
-    undefined,
-    { samples: ['volvox', 'nanovolvox'].map(id => ({ id, label: id })) },
-  ]
-  for (const opts of optsList) {
+  for (const narrowed of [adapter, adapterOf(['volvox', 'nanovolvox'])]) {
     const direct = new MafRegionSink(undefined)
-    await adapter.readBlocks(region, direct, opts)
+    await narrowed.readBlocks(region, direct)
     const features = new MafRegionSink(undefined)
-    await featureBlocks(adapter.getFeatures(region, opts), features)
+    await featureBlocks(narrowed.getFeatures(region), features)
     expect(direct.packer.finishBlocks()).toEqual(features.packer.finishBlocks())
     expect(direct.refSampleId).toBe(features.refSampleId)
     expect([...direct.discovered]).toEqual([...features.discovered])
 
-    const blocks = await adapter.getFeaturesArray(region, opts)
-    const table = await adapter.getFeatureTable(region, opts)
+    const blocks = await narrowed.getFeaturesArray(region)
+    const table = await narrowed.getFeatureTable(region)
     expect(table.length).toBe(blocks.length)
     for (const [i, block] of blocks.entries()) {
       expect(table.row(i).id()).toBe(block.id())
@@ -170,14 +173,12 @@ test('getFeatures answers the MafFeatures the old parse did', async () => {
     end: 50000,
     assemblyName: 'volvox',
   }
-  const optsList: (MafAdapterOptions | undefined)[] = [
-    undefined,
-    { samples: ['nanovolvox', 'simvolvox'].map(id => ({ id, label: id })) },
-  ]
-  for (const opts of optsList) {
-    const rebuilt = await adapter.getFeaturesArray(region, opts)
+  for (const sampleIds of [undefined, ['nanovolvox', 'simvolvox']]) {
+    const rebuilt = await (
+      sampleIds ? adapterOf(sampleIds) : adapter
+    ).getFeaturesArray(region)
     const legacy = await firstValueFrom(
-      legacyMafTabixFeatures(bed, region, opts).pipe(toArray()),
+      legacyMafTabixFeatures(bed, region, { sampleIds }).pipe(toArray()),
     )
     expect(rebuilt.length).toBeGreaterThan(400)
     expect(featureView(rebuilt)).toStrictEqual(featureView(legacy))

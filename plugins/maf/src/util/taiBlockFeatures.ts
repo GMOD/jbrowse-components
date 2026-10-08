@@ -2,18 +2,14 @@ import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 
 import { makeRefChrFilter } from '../BgzipTaffyAdapter/taiIndex.ts'
 import MafFeature from '../MafFeature.ts'
-import { buildSampleFilter } from './getSamples.ts'
 import { makeSourceResolver } from './parseAssemblyName.ts'
 import { readTaiSlice } from './taiSlice.ts'
 
-import type {
-  AlignmentRecord,
-  EmptyRecord,
-  MafAdapterOptions,
-} from '../types.ts'
+import type { AlignmentRecord, EmptyRecord } from '../types.ts'
 import type { SourceResolver } from './parseAssemblyName.ts'
 import type { TaiIndex } from './taiSlice.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
+import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { Feature, FileLocation, Region } from '@jbrowse/core/util'
 
 /**
@@ -55,17 +51,19 @@ export interface TaiBlockFeature {
  */
 export function taiBlockFeatures<SETUP extends TaiIndex>({
   configure,
+  sampleIds,
   location,
   pluginManager,
   query,
   opts,
   parse,
 }: {
-  configure: (opts?: MafAdapterOptions) => Promise<SETUP>
+  configure: (opts?: BaseOptions) => Promise<SETUP>
+  sampleIds: (opts?: BaseOptions) => Promise<Set<string> | undefined>
   location: FileLocation
   pluginManager?: PluginManager
   query: Region
-  opts: MafAdapterOptions | undefined
+  opts: BaseOptions | undefined
   parse: (
     slice: Uint8Array,
     setup: SETUP,
@@ -75,7 +73,7 @@ export function taiBlockFeatures<SETUP extends TaiIndex>({
   const { statusCallback, signal } = opts ?? {}
   return ObservableCreate<Feature>(async observer => {
     const setup = await configure(opts)
-    const resolver = makeSourceResolver(buildSampleFilter(opts))
+    const resolver = makeSourceResolver(await sampleIds(opts))
     const onQueriedChr = makeRefChrFilter(query.refName)
 
     const slice = await readTaiSlice({

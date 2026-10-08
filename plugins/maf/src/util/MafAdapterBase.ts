@@ -11,7 +11,6 @@ import {
 import { featureBlocks } from './mafBlockSink.ts'
 import { MafTableSink } from './mafFeatureTable.ts'
 
-import type { MafAdapterOptions } from '../types.ts'
 import type { MafBlockSink } from './mafBlockSink.ts'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
@@ -46,6 +45,16 @@ export abstract class MafAdapterBase<
     setup: opts => getSamplesFromAdapter(this, opts.signal),
   })
 
+  /**
+   * The ids every read resolves a source token against (`matchSampleId`): the
+   * adapter's own sample set, or undefined where it discovers its species. An
+   * empty set would match nothing, so it is never one.
+   */
+  async sampleIds(opts?: BaseOptions) {
+    const { samples } = await this.getSamples(opts)
+    return samples.length ? new Set(samples.map(s => s.id)) : undefined
+  }
+
   async listRowSources(opts?: BaseOptions): Promise<RowSourceListing> {
     const { samples, treeNewick } = await this.getSamples(opts)
     return {
@@ -64,7 +73,7 @@ export abstract class MafAdapterBase<
    * whose parse can hand each sequence over as a range of its line overrides
    * this and builds no `MafFeature`.
    */
-  readBlocks(query: Region, sink: MafBlockSink, opts?: MafAdapterOptions) {
+  readBlocks(query: Region, sink: MafBlockSink, opts?: BaseOptions) {
     return featureBlocks(this.getFeatures(query, opts), sink)
   }
 

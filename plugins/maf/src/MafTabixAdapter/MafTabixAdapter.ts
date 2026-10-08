@@ -2,12 +2,10 @@ import { cachedSetup } from '@jbrowse/core/data_adapters/BaseAdapter'
 import { subscribeToObservable } from '@jbrowse/core/util/rxjs'
 
 import { MafAdapterBase } from '../util/MafAdapterBase.ts'
-import { buildSampleFilter } from '../util/getSamples.ts'
 import { loadSubAdapter } from '../util/loadSubAdapter.ts'
 import { mafBlockFeatures } from '../util/mafFeatureSink.ts'
 import { MafTabixBlockReader } from './tabixBlockReader.ts'
 
-import type { MafAdapterOptions } from '../types.ts'
 import type { SubAdapterLoader } from '../util/loadSubAdapter.ts'
 import type { MafBlockSink } from '../util/mafBlockSink.ts'
 import type { MafTabixAdapterConfig } from './configSchema.ts'
@@ -61,7 +59,7 @@ export default class MafTabixAdapter extends MafAdapterBase<MafTabixAdapterConfi
     return adapter.getHeader()
   }
 
-  getFeatures(query: Region, opts?: MafAdapterOptions) {
+  getFeatures(query: Region, opts?: BaseOptions) {
     return mafBlockFeatures(
       query.refName,
       sink => this.readBlocks(query, sink, opts),
@@ -72,11 +70,11 @@ export default class MafTabixAdapter extends MafAdapterBase<MafTabixAdapterConfi
   override async readBlocks(
     query: Region,
     sink: MafBlockSink,
-    opts?: MafAdapterOptions,
+    opts?: BaseOptions,
   ) {
     const { adapter } = await this.configure(opts)
     const reader = new MafTabixBlockReader(
-      buildSampleFilter(opts),
+      await this.sampleIds(opts),
       this.getConf('refAssemblyName'),
       query.assemblyName,
     )

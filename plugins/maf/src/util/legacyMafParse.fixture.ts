@@ -9,16 +9,27 @@ import {
 
 import { buildSegments } from '../LinearMafClusterIdentityRpc/buildIdentityMatrix.ts'
 import MafFeature from '../MafFeature.ts'
-import { buildSampleFilter } from './getSamples.ts'
 import { MafStanzaRows, applyMafLine } from './mafLines.ts'
 import { makeSourceResolver } from './parseAssemblyName.ts'
 import { freeRowId } from './sampleCopies.ts'
 
-import type { AlignmentRecord, MafAdapterOptions } from '../types.ts'
+import type { AlignmentRecord } from '../types.ts'
 import type { SourceResolver } from './parseAssemblyName.ts'
-import type { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
+import type {
+  BaseFeatureDataAdapter,
+  BaseOptions,
+} from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { Feature, Region } from '@jbrowse/core/util'
 import type { Observable } from 'rxjs'
+
+/** The sample ids a legacy read resolves tokens against, as its adapter would. */
+export interface LegacyReadOptions extends BaseOptions {
+  sampleIds?: string[]
+}
+
+function sampleFilter(opts?: LegacyReadOptions) {
+  return opts?.sampleIds ? new Set(opts.sampleIds) : undefined
+}
 
 const MINUS_CHAR = 45
 const GAP = 45
@@ -85,11 +96,11 @@ export function parseBigMafStanza(maf: string, resolve: SourceResolver) {
 export function legacyMafTabixFeatures(
   bed: BaseFeatureDataAdapter,
   query: Region,
-  opts?: MafAdapterOptions,
+  opts?: LegacyReadOptions,
   refAssemblyName = '',
 ) {
   return ObservableCreate<Feature>(async observer => {
-    const resolver = makeSourceResolver(buildSampleFilter(opts))
+    const resolver = makeSourceResolver(sampleFilter(opts))
     const anySource = makeSourceResolver()
     await subscribeToObservable(bed.getFeatures(query, opts), feature => {
       const encoded = feature.get('field5') as string
@@ -138,10 +149,10 @@ export function legacyMafTabixFeatures(
 export function legacyBigMafFeatures(
   bigBed: BaseFeatureDataAdapter,
   query: Region,
-  opts?: MafAdapterOptions,
+  opts?: LegacyReadOptions,
 ) {
   return ObservableCreate<Feature>(async observer => {
-    const resolver = makeSourceResolver(buildSampleFilter(opts))
+    const resolver = makeSourceResolver(sampleFilter(opts))
     await subscribeToObservable(bigBed.getFeatures(query, opts), feature => {
       const { alignments, empties, referenceSeq } = parseBigMafStanza(
         feature.get('mafBlock') as string,

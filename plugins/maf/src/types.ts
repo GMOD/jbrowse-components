@@ -1,4 +1,3 @@
-import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { GatedFetchArgs } from '@jbrowse/core/rpc/byteBudget'
 import type { Region, UriLocation } from '@jbrowse/core/util'
 
@@ -23,15 +22,6 @@ import type { Region, UriLocation } from '@jbrowse/core/util'
 export interface BaseMafRpcArgs extends GatedFetchArgs {
   adapterConfig: Record<string, unknown>
   regions: Region[]
-}
-
-/**
- * Options for MAF adapter getFeatures call.
- * Extends BaseOptions with optional samples filter for subtree optimization.
- */
-export interface MafAdapterOptions extends BaseOptions {
-  /** If provided, only parse alignments for these sample IDs */
-  samples?: Sample[]
 }
 
 /**

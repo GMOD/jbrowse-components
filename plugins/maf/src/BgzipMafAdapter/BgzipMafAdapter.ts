@@ -5,7 +5,6 @@ import { taiBlockFeatures } from '../util/taiBlockFeatures.ts'
 import { readTaiIndex, taiRegionByteSize } from '../util/taiSlice.ts'
 import { parseMafBlocks } from './mafParsing.ts'
 
-import type { MafAdapterOptions } from '../types.ts'
 import type { BgzipMafAdapterConfig } from './configSchema.ts'
 import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { Region } from '@jbrowse/core/util'
@@ -46,9 +45,10 @@ export default class BgzipMafAdapter extends MafAdapterBase<BgzipMafAdapterConfi
     return [...index.keys()]
   }
 
-  getFeatures(query: Region, opts?: MafAdapterOptions) {
+  getFeatures(query: Region, opts?: BaseOptions) {
     return taiBlockFeatures({
       configure: this.configure,
+      sampleIds: o => this.sampleIds(o),
       location: this.getConf('mafGzLocation'),
       pluginManager: this.pluginManager,
       query,

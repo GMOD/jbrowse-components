@@ -13,7 +13,6 @@ import { mafFeatureTable } from '../util/mafFeatureTable.ts'
 import MafTabixAdapter from './MafTabixAdapter.ts'
 import MafTabixConfigSchema from './configSchema.ts'
 
-import type { MafAdapterOptions } from '../types.ts'
 import type { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { FeatureTable } from '@jbrowse/core/util/featureTable'
 
@@ -33,10 +32,14 @@ function bedOver(lines: string[]) {
   } as unknown as BaseFeatureDataAdapter
 }
 
-function adapterOver(lines: string[], refAssemblyName = '') {
+function adapterOver(
+  lines: string[],
+  refAssemblyName = '',
+  samples: string[] = [],
+) {
   const bed = bedOver(lines)
   return new MafTabixAdapter(
-    MafTabixConfigSchema.create({ refAssemblyName }),
+    MafTabixConfigSchema.create({ refAssemblyName, samples }),
     () =>
       Promise.resolve({
         dataAdapter: bed,
@@ -49,31 +52,30 @@ const region = { refName: 'chr1', start: 0, end: 1000, assemblyName: 'hg38' }
 
 async function featuresBothWays(
   lines: string[],
-  opts?: MafAdapterOptions,
+  sampleIds?: string[],
   refAssemblyName = '',
 ) {
   const rebuilt = await firstValueFrom(
-    adapterOver(lines, refAssemblyName)
-      .getFeatures(region, opts)
+    adapterOver(lines, refAssemblyName, sampleIds)
+      .getFeatures(region)
       .pipe(toArray()),
   )
   const legacy = await firstValueFrom(
-    legacyMafTabixFeatures(bedOver(lines), region, opts, refAssemblyName).pipe(
-      toArray(),
-    ),
+    legacyMafTabixFeatures(
+      bedOver(lines),
+      region,
+      { sampleIds },
+      refAssemblyName,
+    ).pipe(toArray()),
   )
   return { rebuilt, legacy }
 }
 
-async function packedBothWays(
-  adapter: MafTabixAdapter,
-  opts?: MafAdapterOptions,
-  visible?: Set<string>,
-) {
+async function packedBothWays(adapter: MafTabixAdapter, visible?: Set<string>) {
   const direct = new MafRegionSink(visible)
-  await adapter.readBlocks(region, direct, opts)
+  await adapter.readBlocks(region, direct)
   const features = new MafRegionSink(visible)
-  await featureBlocks(adapter.getFeatures(region, opts), features)
+  await featureBlocks(adapter.getFeatures(region), features)
   const view = (sink: MafRegionSink) => ({
     packed: sink.packer.finishBlocks(),
     refSampleId: sink.refSampleId,
@@ -89,14 +91,11 @@ function rows(table: FeatureTable) {
   })
 }
 
-async function tablesBothWays(
-  adapter: MafTabixAdapter,
-  opts?: MafAdapterOptions,
-) {
+async function tablesBothWays(adapter: MafTabixAdapter) {
   return {
-    direct: rows(await adapter.getFeatureTable(region, opts)),
+    direct: rows(await adapter.getFeatureTable(region)),
     features: rows(
-      await mafFeatureTable(adapter.getFeatures(region, opts), region.refName),
+      await mafFeatureTable(adapter.getFeatures(region), region.refName),
     ),
   }
 }
@@ -161,11 +160,8 @@ test('the direct parse packs what the MafFeatures pack, byte for byte', async ()
 })
 
 test('a subtree filter and a sample set pack alike both ways', async () => {
-  const adapter = adapterOver(LINES)
-  const samples = ['hg38', 'mm10', '3', 'rn6'].map(id => ({ id, label: id }))
   const { direct, features } = await packedBothWays(
-    adapter,
-    { samples },
+    adapterOver(LINES, '', ['hg38', 'mm10', '3', 'rn6']),
     new Set(['mm10', '3']),
   )
   expect(direct.packed.sampleIds).toEqual(['mm10', 'mm10~2', '3'])
@@ -173,9 +169,9 @@ test('a subtree filter and a sample set pack alike both ways', async () => {
 })
 
 test('a filtered-out first entry still positions its block', async () => {
-  const adapter = adapterOver(LINES)
-  const samples = [{ id: 'mm10', label: 'mm10' }]
-  const { direct, features } = await packedBothWays(adapter, { samples })
+  const { direct, features } = await packedBothWays(
+    adapterOver(LINES, '', ['mm10']),
+  )
   expect(direct.packed.blockRefLength[0]).toBe(4)
   expect(direct).toEqual(features)
 })
@@ -188,28 +184,49 @@ test('refAssemblyName picks the reference row both ways', async () => {
   expect(direct).toEqual(features)
 })
 
+// A caller that passes no sample set (the mark display's `getFeatureTable`,
+// the sequence widget) still gets the adapter's own: a dotted id keys as
+// listed, not as the name heuristic would cut it.
+test('every read resolves a dotted sample id against the adapter’s set', async () => {
+  const ids = ['Homo_sapiens.GRCh38', 'Mus_musculus.GRCm39']
+  const adapter = adapterOver(
+    [
+      [
+        e('Homo_sapiens.GRCh38.chr1', 100, '+', 'ACGT'),
+        e('Mus_musculus.GRCm39.chr2', 7, '+', 'ACGA'),
+      ].join(','),
+    ],
+    'Homo_sapiens.GRCh38',
+    ids,
+  )
+  const [feature] = await firstValueFrom(
+    adapter.getFeatures(region).pipe(toArray()),
+  )
+  expect(Object.keys(feature!.get('alignments') as object)).toEqual(ids)
+  const table = await adapter.getFeatureTable(region)
+  expect(table.row(0).toJSON()).toEqual(feature!.toJSON())
+})
+
 test("the adapter's table answers the ids and JSON its MafFeatures do", async () => {
   const adapter = adapterOver(LINES)
   const { direct, features } = await tablesBothWays(adapter)
   expect(direct).toHaveLength(LINES.length)
   expect(direct).toEqual(features)
-  const samples = [{ id: 'mm10', label: 'mm10' }]
-  const filtered = await tablesBothWays(adapter, { samples })
+  const filtered = await tablesBothWays(adapterOver(LINES, '', ['mm10']))
   expect(filtered.direct).toEqual(filtered.features)
 })
 
 describe('getFeatures answers the MafFeatures the old parse did', () => {
-  const samples = (...ids: string[]) => ids.map(id => ({ id, label: id }))
   test.each([
     ['every species', undefined, ''],
-    ['a sample set', { samples: samples('hg38', 'mm10', '3', 'rn6') }, ''],
-    ['a filtered-out reference', { samples: samples('mm10') }, ''],
+    ['a sample set', ['hg38', 'mm10', '3', 'rn6'], ''],
+    ['a filtered-out reference', ['mm10'], ''],
     ['refAssemblyName', undefined, 'panTro6'],
     ['an absent refAssemblyName', undefined, 'galGal6'],
-  ] as const)('%s', async (_, opts, refAssemblyName) => {
+  ] as const)('%s', async (_, sampleIds, refAssemblyName) => {
     const { rebuilt, legacy } = await featuresBothWays(
       LINES,
-      opts,
+      sampleIds && [...sampleIds],
       refAssemblyName,
     )
     expect(rebuilt).toHaveLength(LINES.length)
@@ -242,11 +259,13 @@ describe('getFeatures answers the MafFeatures the old parse did', () => {
   })
 
   test('the reference row is the named one, else the first entry', async () => {
-    const seqs = async (opts?: MafAdapterOptions, ref = '') =>
-      (await featuresBothWays(LINES, opts, ref)).rebuilt.map(f => f.get('seq'))
+    const seqs = async (sampleIds?: string[], ref = '') =>
+      (await featuresBothWays(LINES, sampleIds, ref)).rebuilt.map(f =>
+        f.get('seq'),
+      )
     expect((await seqs())[0]).toBe('ACGT')
     expect((await seqs(undefined, 'panTro6'))[0]).toBe('ACTT')
-    expect((await seqs({ samples: samples('mm10') }))[0]).toBe('ACGT')
+    expect((await seqs(['mm10']))[0]).toBe('ACGT')
     expect((await seqs()).at(-1)).toBe('')
   })
 })
