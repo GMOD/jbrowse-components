@@ -73,12 +73,11 @@ the structure highlight nothing. Each missing residue shows as a gap in the
 recognizable protein or transcript ID, which the RefSeq gene tracks on the
 hosted configs have.
 
-The protein view also carries per-residue tracks for pLDDT (AlphaFold's
-confidence), domains, helices and hydrophobicity. **Open side by side**, at the
-foot of the list the arrow beside the dialog's **Launch** button opens, puts the
-protein view beside the genome view. Click the nuclear export signal on the
-alignment panel's **Motif** row to select its residues and band their codons on
-the gene.
+The protein view also has per-residue tracks for pLDDT (AlphaFold's confidence),
+domains, helices and hydrophobicity. **Open side by side**, at the foot of the
+list the arrow beside the dialog's **Launch** button opens, puts the protein
+view beside the genome view. Click the nuclear export signal on the alignment
+panel's **Motif** row to select its residues and band their codons on the gene.
 
 <Figure caption="A connected session on human TP53 (UniProt P04637), NCBI RefSeq above the AlphaFold structure. A motif clicked on the protein's feature track selects its residues on the structure and bands the codons they came from on the gene." src="/img/protein/connected.png" />
 

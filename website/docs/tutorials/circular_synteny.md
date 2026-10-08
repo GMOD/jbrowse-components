@@ -234,9 +234,9 @@ The X chromosome has stayed whole across the two lineages, so no ribbon at the
 100 kb cut should join it to an autosome. Open the first session above with
 `displayedRegionNames` cut to `["chr1", "chr2", "chrX"]` to read the control.
 The two autosomes cross-wire between the genomes, and the X ribbons run between
-the two X arcs with nothing joining either X to an autosome. The figure also
-carries the gene density ring that
-[Gene density as a ring](#gene-density-as-a-ring) builds.
+the two X arcs with nothing joining either X to an autosome. The figure also has
+the gene density ring that [Gene density as a ring](#gene-density-as-a-ring)
+builds.
 
 <Figure src="/img/circular_synteny/x_control.png" caption="Human chr1, chr2 and chrX in one half of the circle and the same three mouse chromosomes in the other, with a gene density ring inside the ideogram. The autosome ribbons cross between the genomes, and the X ribbons stay between the two X arcs." />
 

@@ -202,7 +202,7 @@ with the same genes in the same order.
   end of the window on an unplaced contig.
 - **Mouse, cow and dog**: the track cuts a chain record at every indel of 10 kb
   or more, so the chain breaks into many gap-free runs, one ribbon each, with a
-  gap wherever the lane carries sequence hg38 lacks.
+  gap wherever the lane has sequence hg38 lacks.
 - **Apes**: the chain gaps fall under the 10 kb cut, so their ribbons look
   continuous.
 - **Mouse** shows `[rev]` because its chain runs the other way against hg38

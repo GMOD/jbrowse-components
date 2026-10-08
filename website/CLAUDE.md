@@ -134,5 +134,11 @@ These apply to everything under `website/`, including `docs/` and `tutorials/`.
   else.
 - Captions name the tracks and the one visual takeaway. If a caption needs a
   paragraph of background, fix the figure.
+- **One word per thing.** `color`, never colour. A row of a multi-row display is
+  a row and a track is a track; "lane" is the multi-way synteny display's own
+  word, because its menu says **Lanes**. Prose over a `facet` config says facet,
+  and `**Group by...**` stays where the app renders it. A scale's `domain` lists
+  its values or cuts and its `range` their colors, so name the object a `domain`
+  belongs to (`rows.domain`, `color.domain`).
 - Card titles: dataset first, then the pipeline that produced the picture. No
   numerals, no JBrowse vocabulary, ~32 characters.

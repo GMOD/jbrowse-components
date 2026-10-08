@@ -168,8 +168,8 @@ every wolf and every coyote in the collection is homozygous reference.
 Three other variants lie within about a hundred bases of the stop site, and the
 config below filters them out. Dropping the filter shows them: two are reference
 in every animal of this sample set, including the one at the codon's second
-base, so each draws an empty column, and the third sits 15 bp along with every
-wolf carrying it.
+base, so each draws an empty column, and the third sits 15 bp along, and every
+wolf has it.
 
 ```json addtrack
 {

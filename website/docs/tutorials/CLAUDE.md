@@ -102,6 +102,28 @@ PAF conversion left that page once and came straight back.
 (`graph.gbz.db`, `genes.fa`) over accession-laden URLs, one command per fence,
 one line of prose above it saying what it produces.
 
+## Say it once
+
+Nothing checks these, and a trim of every page found each on most of them.
+
+- **A paragraph beside a figure says what the caption cannot**: the instruction,
+  a detail to click, a coordinate to type. A sentence the caption already has
+  goes.
+- **Prose beside a fence names what its keys and comments cannot**: the menu
+  path that writes the setting, a default being overridden, a reason. A flag's
+  explanation has one home, the comment in its fence.
+- **A section has an instruction or a figure.** An orientation section that
+  restates the opening merges into the next step's lead-in.
+- **Script internals appear once**, in the numbered list above the
+  `curl … | bash` fence. A second script gets one bullet.
+- **A sentence naming another tutorial or tool needs a step that uses it.**
+  Otherwise the link belongs under See also.
+- **Steps and settings are bullets** under one lead-in sentence that has the
+  first fact.
+- **A flag the prose names is in a fence, and the fence is the config its figure
+  was shot with.** Read the figure's spec before writing either; a build script
+  writes the config its page shows.
+
 ## Commands
 
 These pages are about _using JBrowse_, not bioinformatics scripting, with one

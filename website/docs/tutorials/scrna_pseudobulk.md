@@ -289,7 +289,7 @@ Two settings decide whether the speckle is visible:
 
 - **Order the rows by cell type.** Thousands of rows in a few hundred pixels is
   under a pixel each, so a block only reads if its cells are adjacent. The
-  `group` each cell carries in the store's attributes seeds that and drives the
+  `group` each cell has in the store's attributes seeds that and drives the
   sidebar tree
 - **Pin the score axis.** A low `domainMax` puts one UMI a visible fraction up
   the color ramp, as in [](/docs/tutorials/population_cnv). Autoscale takes its

@@ -196,8 +196,7 @@ runs the whole build, and the alignment takes most of a day. It:
 
 The script runs two audits on the joined graph and stops if:
 
-- a segment carries an `SN` tag that is neither `mm39#0#chr*` nor
-  `<strain>#1#chr*`
+- a segment has an `SN` tag that is neither `mm39#0#chr*` nor `<strain>#1#chr*`
 - renumbering leaves a duplicate segment id
 
 Either failure produces a graph with wrong coordinates that every later check

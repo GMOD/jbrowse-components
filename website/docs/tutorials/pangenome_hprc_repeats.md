@@ -542,8 +542,7 @@ curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/
 bash build_amylase_haplotypes.sh
 ```
 
-The script's `config.json` is what this session opens; point `config=` at your
-copy:
+This session opens the script's `config.json`; point `config=` at your copy:
 
 ```json session config=test_data/amylase/config.json
 {

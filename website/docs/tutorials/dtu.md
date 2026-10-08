@@ -195,7 +195,7 @@ chr10  HAVANA  transcript  7788129  7807815  .  +  .
 ```
 
 The transcript statistics sit on the transcript row, and the exons, CDS and UTRs
-take the transcript value. The gene row carries `dtu_transcripts`, the count of
+take the transcript value. The gene row has `dtu_transcripts`, the count of
 called isoforms, and `dtu_top_dif`, the largest ΔIF among them, which the
 track's `mouseover` reads. The keys are lowercase because the GFF parser
 lowercases them, so a color field named `dIF` reads nothing and paints every
