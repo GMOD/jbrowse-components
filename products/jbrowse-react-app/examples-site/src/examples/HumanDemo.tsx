@@ -2,8 +2,7 @@ import { JBrowse } from '@jbrowse/react-app2'
 
 const assemblies = [
   {
-    name: 'GRCh38',
-    aliases: ['hg38'],
+    name: 'hg38',
     uri: 'https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz',
     refNameAliases: {
       uri: 'https://jbrowse.org/genomes/GRCh38/hg38_aliases.txt',

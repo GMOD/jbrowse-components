@@ -14,17 +14,16 @@ export default function WithInitAlignmentsDisplay() {
   return (
     <LinearGenomeView
       assembly={{
-        name: 'GRCh38',
-        aliases: ['hg38'],
-        uri: 'https://jbrowse.org/genomes/GRCh38/fasta/GRCh38.fa.gz',
+        name: 'hg38',
+        uri: 'https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz',
         refNameAliases: {
           uri: 'https://jbrowse.org/genomes/GRCh38/hg38_aliases.txt',
         },
-        geneticCodes: { MT: 2 },
+        geneticCodes: { chrM: 2 },
       }}
       tracks={tracks}
       view={{
-        loc: '1:100,987,200..100,987,450',
+        loc: 'chr1:100,987,200..100,987,450',
         tracks: [
           {
             trackId: cramTrackId,

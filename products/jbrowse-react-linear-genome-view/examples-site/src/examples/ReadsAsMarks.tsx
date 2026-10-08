@@ -1,13 +1,12 @@
 import { LinearGenomeView } from '@jbrowse/react-linear-genome-view2'
 
 const assembly = {
-  name: 'GRCh38',
-  aliases: ['hg38'],
-  uri: 'https://jbrowse.org/genomes/GRCh38/fasta/GRCh38.fa.gz',
+  name: 'hg38',
+  uri: 'https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz',
   refNameAliases: {
     uri: 'https://jbrowse.org/genomes/GRCh38/hg38_aliases.txt',
   },
-  geneticCodes: { MT: 2 },
+  geneticCodes: { chrM: 2 },
 }
 
 const tracks = [

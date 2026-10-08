@@ -6,13 +6,12 @@ import {
 export default function WithMultipleDisplayedRegionsFlipped() {
   const state = useCreateViewState({
     assembly: {
-      name: 'GRCh38',
-      uri: 'https://jbrowse.org/genomes/GRCh38/fasta/GRCh38.fa.gz',
-      aliases: ['hg38'],
+      name: 'hg38',
+      uri: 'https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz',
       refNameAliases: {
         uri: 'https://jbrowse.org/genomes/GRCh38/hg38_aliases.txt',
       },
-      geneticCodes: { MT: 2 },
+      geneticCodes: { chrM: 2 },
     },
     tracks: [
       {
@@ -27,7 +26,7 @@ export default function WithMultipleDisplayedRegionsFlipped() {
       view: {
         type: 'LinearGenomeView',
         loc: 'chr1:113073119..113073695 chr1:113091267..113091433[rev]',
-        assembly: 'GRCh38',
+        assembly: 'hg38',
         tracks: ['ncbi-refseq-genes'],
       },
     },
