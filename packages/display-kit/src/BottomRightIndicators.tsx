@@ -11,39 +11,25 @@ import { createPortal } from 'react-dom'
 
 import type { ReactNode } from 'react'
 
-// Single anchor point for every bottom-right overlay a display draws for itself
-// (track sizing, overflow expand/restore, isoform-collapse notice, ...) so they
-// lay out as one row instead of each picking their own position and colliding.
-// Children are self-gating (each renders null when inactive); an all-null flex
-// container has no size, so there's no need to also track "is anything visible"
-// here — callers just render every indicator unconditionally.
+// The one row for every bottom-right control a display draws for itself (track
+// sizing, overflow expand/restore, the isoform-collapse notice), so they lay
+// out together. Children gate themselves and an all-null flex container has no
+// size, so callers render every indicator unconditionally.
 //
-// The corner is shared with one thing this row cannot see: the chrome's
-// background-progress chip, which is rendered by the overlay set rather than by
-// the display. Both used to pin themselves to the same coordinates of the same
-// overlay layer, so the chrome anchors the corner now and this row is a member
-// of it (`bottomRightCorner.ts`) rather than a second box over it. Which is what
-// the paragraph above always claimed and, for that one chip, was not.
+// The row is a member of the corner the chrome anchors (bottomRightCorner.ts),
+// which it shares with the chrome's background-progress chip.
 //
-// Lives here rather than in one display's plugin because the two things it does
-// beyond layout are both contracts, and a display that re-rolled the row would
-// silently opt out of them:
+// Two contracts a display that re-rolled the row would drop:
 //
-// - **Portaled above the inter-region padding masks.** A display's tree is
-//   sealed in a `contain:strict` stacking context that the masks paint over, so
-//   in collapsed-introns / multi-region views the region separators would stripe
-//   straight across these chips no matter what z-index they carry.
-// - **Claims the press.** An embedder that pans the view with its own pointer
-//   handler sits above this row; if it captures the pointer on pointerdown, the
-//   click that opens these menus is retargeted at the embedder's element and
-//   never arrives. JBrowse's own pan skips `button` targets, so the marker is
-//   for everyone else's — see the build-your-own examples site, whose pan
-//   handler is exactly that shape.
+// - It is portalled above the inter-region padding masks, which would
+//   otherwise stripe across the chips in collapsed-intron and multi-region
+//   views (ADR-058).
+// - It claims the press. An embedder whose own pan handler captures the
+//   pointer on pointerdown would retarget the click that opens these menus;
+//   `data-gesture-owner` is the marker for it.
 //
-// The z-index matters only in the un-portaled fallback (no TrackContainer, i.e.
-// a display mounted standalone by an embedder). There this row is an ordinary
-// sibling of the display body, and it has to win against overlays inside it —
-// `VerticalScrollbar` sits at 10.
+// The z-index matters only un-portalled (a display an embedder mounts
+// standalone), where the row has to win against `VerticalScrollbar` at 10.
 const OVERFLOW_INDICATOR_Z_INDEX = 999
 
 const BottomRightIndicators = observer(function BottomRightIndicators({
@@ -63,22 +49,16 @@ const BottomRightIndicators = observer(function BottomRightIndicators({
   children: ReactNode
 }) {
   const clearance = scrollableHeight > 0 ? VERTICAL_SCROLLBAR_CLEARANCE : 0
-  // The chrome anchors the corner and puts its background-progress chip in it,
-  // so landing in that box is what keeps the two from being drawn on top of
-  // each other — see bottomRightCorner.ts. Null outside a chrome (a display an
-  // embedder mounted standalone, a unit test, the SVG export): claim the corner
-  // as this always did, there being nothing else in it to collide with.
+  // Null outside a chrome (standalone mount, unit test, SVG export), where the
+  // row claims the corner itself.
   const cornerEl = use(BottomRightCornerContext)
   const row = (
     <div
       style={
         cornerEl
           ? {
-              // an in-flow member of the corner's column, which owns the
-              // position. The z-index is still ours and still means what it
-              // always did — the corner sets none, so this competes in the
-              // overlay layer directly, and a flex item honours `z-index` with
-              // no `position` of its own (Flexbox §5.4).
+              // An in-flow member of the corner's column. A flex item honours
+              // `z-index` with no `position` of its own (Flexbox §5.4).
               order: BOTTOM_RIGHT_CONTROLS_ORDER,
               zIndex: OVERFLOW_INDICATOR_Z_INDEX,
               marginRight: clearance,

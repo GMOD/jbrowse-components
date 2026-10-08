@@ -58,16 +58,11 @@ function createMouseStore(): MouseStore {
 /**
  * Drop the tracked pointer, published by whoever bound the handlers.
  *
- * `mouseleave` reports the pointer leaving an element, and the browser decides
- * that by comparing the hover chain before a move to the chain after it. A menu
- * portalled to the body opens under the cursor with no move at all, and closing
- * it detaches the chain's nodes — so hover restarts at `body` and the display
- * the menu covered is never told anything again. Its overlays then keep drawing
- * at the coordinate the pointer had when the menu opened, wherever the pointer
- * has since gone.
- *
- * `ContextMenu` calls this on close, which is why the default is a no-op: a menu
- * raised outside a display's chrome has no tracked pointer to drop.
+ * A menu portalled to the body opens under the cursor with no move, and
+ * closing it detaches the hover chain, so the display it covered never gets a
+ * `mouseleave` and its overlays keep drawing where the menu opened.
+ * `ContextMenu` calls this on close; the default is a no-op for a menu raised
+ * outside a display's chrome.
  */
 const ClearTrackedPointerContext = createContext<() => void>(() => {})
 
@@ -81,28 +76,16 @@ export function useClearTrackedPointer() {
  * Container-relative mouse position for the overlays that follow the pointer
  * (`Crosshairs`, tooltips), coalesced to one update per frame.
  *
- * The position is measured against the box of whatever element the handlers are
- * bound to, which is what the overlays are positioned in — off `currentTarget`,
- * so there is no ref to pass and no way to bind the two to different elements.
+ * The position is measured against the box of the element the handlers are
+ * bound to, off `currentTarget`, which is what the overlays are positioned in.
  * A display that also hit-tests takes `onMove`, so its hit and its guides come
- * off one measurement in one frame instead of two pointer paths that have to
- * agree.
+ * off one measurement in one frame.
  *
- * **It returns a `mouseTracker` rather than the position, and that is the
- * load-bearing part.** Its one caller is `DisplayChromeBase`, which owns the
- * container the handlers bind to — so if the position were state here, every
- * mouse move would re-render the chrome itself (re-running
- * `useRenderingBackend`), the status container with a fresh inline `style`
- * object, all three overlays, and only then the body that actually wanted the
- * coordinate. That is a whole display's chrome repainting because the cursor
- * moved a pixel over it; it cost a full document `Layout` plus three `Paint`s
- * per mousemove on the wiggle displays, back when each display called this hook
- * itself and every one of them had it.
- *
- * So the position is published instead, and whoever wants it calls
- * `useMouseState(mouseTracker)` — from inside the chrome's body, where the
- * overlays live. Re-rendering then starts at the component that reads it.
- * Passing the tracker down a prop is free; passing `mouseState` down is the bug.
+ * It returns a `mouseTracker` and not the position: the caller is
+ * `DisplayChromeBase`, and position held as state there would re-render the
+ * whole chrome on every mouse move. Whoever draws at the cursor calls
+ * `useMouseState(mouseTracker)`, so re-rendering starts at that component.
+ * Pass the tracker down, never the position.
  */
 export function useMouseTracking(onMove?: (state?: MouseState) => void) {
   const rafRef = useRef<ReturnType<typeof requestAnimationFrame> | undefined>(
@@ -111,16 +94,9 @@ export function useMouseTracking(onMove?: (state?: MouseState) => void) {
   const storeRef = useRef<MouseStore | undefined>(undefined)
   storeRef.current ??= createMouseStore()
   const store = storeRef.current
-  // Reached through a ref rather than captured, so `handleMouseLeave` below can
-  // be identity-stable — one of its callers is an effect, and a handler that
-  // changed identity every render would make that effect re-run every render.
-  // Reading the latest is also the better answer for the frame callback, which
-  // runs after the render whose closure scheduled it.
-  //
-  // Written in an effect rather than during render: a render React discards must
-  // not leave this pointing at a callback from it. Nothing can read it before
-  // the first commit — both users are event/effect callbacks — and `useRef`'s
-  // initial value covers the first commit itself.
+  // Reached through a ref so `handleMouseLeave` is identity-stable (an effect
+  // depends on it), and written in an effect so a render React discards cannot
+  // leave it pointing at that render's callback.
   const onMoveRef = useRef(onMove)
   useEffect(() => {
     onMoveRef.current = onMove
@@ -132,8 +108,7 @@ export function useMouseTracking(onMove?: (state?: MouseState) => void) {
    * Bound as the container's `onMouseLeave`, and called directly for the three
    * cases `mouseleave` cannot report: the container being removed, a portalled
    * menu closing over it, and the pointer moving onto a portalled overlay.
-   * `DisplayChromeBase` makes all three calls.
-   * Identity-stable for both.
+   * `DisplayChromeBase` makes all three calls. Identity-stable.
    */
   const handleMouseLeave = useCallback(() => {
     if (rafRef.current) {
@@ -150,11 +125,9 @@ export function useMouseTracking(onMove?: (state?: MouseState) => void) {
     }
     const clientX = event.clientX
     const clientY = event.clientY
-    // Captured here rather than read in the frame: React clears `currentTarget`
-    // once the handler returns. `isConnected` then stands in for the ref check
-    // this used to do — a display unmounted between the move and the frame
-    // measures as a zero rect, and would publish the client point as if the
-    // pointer were at the origin of a box that is gone.
+    // Captured here: React clears `currentTarget` once the handler returns. A
+    // display unmounted before the frame measures as a zero rect, hence the
+    // `isConnected` check.
     const container = event.currentTarget
     rafRef.current = requestAnimationFrame(() => {
       if (container.isConnected) {

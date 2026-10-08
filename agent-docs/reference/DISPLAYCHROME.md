@@ -56,8 +56,14 @@ of cursor movement. The chrome exposes `mouseTracker`.
   `onPointerPosition`.** It gets `undefined` for the three exits `mouseleave`
   cannot report: a banner replacing the container, a context menu closing, and
   the pointer crossing onto a portalled overlay (legend, corner chip, error
-  bar), which is still the chrome's React child. A hover written from the
-  caller's own `onMouseMove` freezes over those.
+  bar), which is still the chrome's React child. A hover written from a
+  handler the caller binds on the chrome freezes over those.
+- **A display whose canvas shares the chrome with clickable overlays binds
+  hover on the canvas.** The feature display's floating labels answer their own
+  hover, so its canvas hit-tests only while the pointer is on the canvas
+  element, whose own `mouseleave` fires for every crossing
+  (`useCoalescedPointer`; the pileup binds the same way). Hit-testing the
+  container position there would light the feature under a label.
 - **The two families answer hover during a load differently on purpose.** A
   per-region display keeps hit-testing its loaded blocks; a global display
   replaces its whole frame and answers no hit while `isLoadingOrCanceled`. A new

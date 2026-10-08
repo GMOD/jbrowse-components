@@ -14,11 +14,9 @@ import type { RenderingBackend } from '@jbrowse/render-core/renderingBackendBase
 
 export type { ChromeModel } from './DisplayChromeBase.tsx'
 
-// The MUI overlay set, and the only reason MUI is a dependency of a display's
-// startup path. `pnpm measure-chrome-bundle` bundles this file and the
-// base+plain pairing separately and writes scripts/chromeBundleSizes.json; CI
-// re-checks it, so that file is the current cost, not a number in a comment.
-// Module-scope so the object identity is stable across renders.
+// The MUI overlay set, and the only reason MUI is on a display's startup path;
+// scripts/chromeBundleSizes.json holds what it costs. Module scope, so the
+// object identity is stable across renders.
 const muiOverlays: DisplayChromeOverlays = {
   RenderError: DisplayRenderErrorOverlay,
   TooLarge: TooLargeMessage,

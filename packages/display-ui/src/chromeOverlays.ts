@@ -1,15 +1,8 @@
 import type { ComponentType } from 'react'
 
-// The model each overlay is handed, and the reason they are declared here
-// rather than beside the components that read them: a *set* is written against
-// these, so a host writing one needs them exported — and a component wrapped in
-// `observer()` gets no contextual type for its props, so naming the shape
-// structurally in `DisplayChromeOverlays` is not enough. They lived in
-// JBrowse's own Material overlays until this package existed, which made the
-// contract un-nameable without importing an implementation of it.
-//
-// Structural, not MST types. A display satisfies one by having the fields; no
-// mixin has to be composed and no model type is named across a lazy boundary.
+// The model each overlay is handed, declared here so a host writing an overlay
+// set can name them without importing an implementation. Structural: a display
+// satisfies one by having the fields.
 
 /** What `ErrorBar` reads: a failed fetch, and the way to run it again. */
 export interface DisplayErrorBarModel {
@@ -43,32 +36,19 @@ export interface TooLargeMessageModel {
 }
 
 // The five components that draw `displayPhase`'s terminal and overlay states.
-// DisplayChromeBase decides WHICH of them renders; this interface is how it
-// stays ignorant of WHAT they render.
+// `DisplayChromeBase` decides which renders; this interface keeps it ignorant
+// of what they render, and so free of MUI: an embedder with its own design
+// system supplies plain markup and ships no ThemeProvider. Every import above
+// is type-only, so this module pulls no runtime dependency.
 //
-// Every import above is type-only and therefore erased, so this module pulls no
-// runtime dependency. That is the point: it lets `DisplayChromeBase` be free of
-// MUI, so an embedder with its own design system can supply plain markup and
-// neither ship MUI nor be forced to mount a ThemeProvider. `DisplayChrome`
-// (the default export every in-tree display uses) binds the MUI set, so nothing
-// in this repo changes appearance.
+// A replacement set must render something for each state; four test systems
+// key on the testids in `plainChromeOverlays.tsx`.
 //
-// Prop shapes are exactly what DisplayChromeBase passes today. A replacement
-// set is only obliged to render *something* for each state -- but see the
-// testids in `plainChromeOverlays.tsx`, which four test systems key on.
-//
-// One layout obligation, and it applies to any set: the three non-terminal
-// states (`ErrorBar`, `Loading`, `BackgroundProgress`) are portaled as a group
-// into the LGV's per-track overlay layer, so they clear the inter-region masks
-// that would otherwise stripe them at multi-region scale. That layer is
-// `pointer-events:none`, so anything of yours the user clicks -- a retry, a
-// cancel -- has to set `pointer-events:auto` on its own positioned box. The
-// shipped sets and the examples-site set all do; the states own their box, so
-// nothing can default it for them.
-//
-// `BackgroundProgress` is the exception to that last clause -- the chrome owns
-// its placement, because its corner is shared with something the overlay set
-// cannot see. See its entry below.
+// `ErrorBar`, `Loading` and `BackgroundProgress` are portalled as a group into
+// the LGV's per-track overlay layer, which is `pointer-events: none`, so
+// anything of yours the user clicks sets `pointer-events: auto` on its own
+// positioned box. `BackgroundProgress` alone does not own its box; see its
+// entry.
 export interface DisplayChromeOverlays {
   /**
    * GPU/render-backend failure. A subtree-replacing terminal state: the canvas

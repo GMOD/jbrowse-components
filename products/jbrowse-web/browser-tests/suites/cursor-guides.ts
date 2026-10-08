@@ -74,14 +74,18 @@ async function hoverFraction(
   return { x, y }
 }
 
-async function bootTrack(page: Page, trackId: string, displayTestId: string) {
+async function bootTrack(
+  page: Page,
+  track: string | { trackId: string; displaySnapshot: Record<string, unknown> },
+  displayTestId: string,
+) {
   await navigateWithSessionSpec(page, {
     views: [
       {
         type: 'LinearGenomeView',
         loc: 'ctgA:1..50000',
         assembly: 'volvox',
-        tracks: [trackId],
+        tracks: [track],
       },
     ],
   })
@@ -227,6 +231,44 @@ export const suite: TestSuite = {
         assert(
           (await countGuideLines(page)) === 0,
           'guides survived the pointer leaving the plot',
+        )
+      },
+    },
+    {
+      // A legend is portalled out of the chrome but stays its React child, so
+      // React fires no `mouseleave` for a pointer crossing onto it, and the
+      // move over it is the only signal the hover has ended.
+      name: 'multi-wiggle: hover ends when the pointer crosses onto the legend',
+      fn: async page => {
+        await bootTrack(
+          page,
+          {
+            trackId: 'volvox_microarray_multi_multirowxy',
+            displaySnapshot: { type: 'LinearWiggleDisplay', showLegend: true },
+          },
+          'wiggle-display',
+        )
+        await page.waitForSelector('[data-testid="floating-legend"]', {
+          timeout: 10000,
+        })
+        await hoverFraction(page, displayPainted('wiggle-display'), 0.3, 0.5)
+        assert(
+          (await countGuideLines(page)) === 2,
+          'expected the crosshair over the plot',
+        )
+        assert(
+          (await tooltipText(page)) !== '',
+          'expected a tooltip over the plot',
+        )
+
+        await hoverFraction(page, '[data-testid="floating-legend"]', 0.5, 0.5)
+        assert(
+          (await countGuideLines(page)) === 0,
+          'guides stayed drawn with the pointer over the legend',
+        )
+        assert(
+          (await tooltipText(page)) === '',
+          'tooltip stayed drawn with the pointer over the legend',
         )
       },
     },
