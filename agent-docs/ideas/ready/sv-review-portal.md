@@ -155,35 +155,34 @@ caller's job. The count stays what the picture draws, and the page says "split
 read" wherever it prints one.
 
 **A record one panel holds has a count of its own.** `batch` sorts a linear
-view's pileup at a record's variant, and the manifest's `nonref` column is what
-the coverage band stacks there: per alignments track, the reads differing from
-the reference at the column over the reads spanning it. The portal reads it as
-each lane's count, so the support filter covers one-panel records too.
-
-Three refinements of that count were measured on 2026-10-08 against the callers'
-own depths and are not built on main. Commit
-`eaac6f6b1e`, unlanded, holds them as a `carriers` column, and the
-hosted portals below were rendered from it.
+view's pileup at a record's variant, and the manifest's `alt` column is the
+reads with the record's ALT at that column over the reads spanning it, per
+alignments track. The portal reads it as each lane's count, so the support
+filter covers one-panel records too. Three choices in it were measured on
+2026-10-08 against the callers' own depths:
 
 - **The ALT alone, not any difference.** Over COLO829's 238 somatic coding
   variants on nanopore reads, any mismatch at the column put a read in the
   matched normal on 145; the ALT base alone does on 60, and the tumor count is
-  within a quarter or three reads of ClairS's `AD` on 216.
-- **A symbolic `<DEL>` or `<INS>` has no sort column**, so COLO829's 51
-  one-panel SV records get no count. Sorting a `<DEL>` at the base after its
-  anchor counts its gap, and agrees with nanomonsv to the read: `d_43` 46 of 48
-  both ways, `d_75` 9 of 38, `d_29` 21 of 64.
-- **An insertion counted at the caller's exact position read 0 on 24 of 35**,
-  where nanomonsv has 3 to 37 supporting reads: its POS sits tens of bases from
-  where minimap2 placed the insertion. Counting an insertion of 50 bases or more
-  anywhere within the flank, at half the call's length or longer, leaves 10 at
-  zero and 42 of the 51 within a quarter or three reads of the caller. The
-  window is also what two over-count on: `i_240` reads 32 of 35 in the tumor and
-  42 of 48 in the normal against the caller's 3 and 0, because a germline
-  insertion of the same size class is in view.
+  within a quarter or three reads of ClairS's `AD` on 216. One normal read with
+  the ALT is still enough for "a control too", so on nanopore SNVs that group
+  is a quarter of the callset and the order by control support is the better
+  tool.
+- **A symbolic `<DEL>` or `<INS>` sorts as its spelled-out form would**, which
+  gives COLO829's 51 one-panel SV records a count. A `<DEL>` counts a gap over
+  the base after its anchor, and agrees with nanomonsv to the read: `d_43` 46 of
+  48 both ways, `d_75` 9 of 38, `d_29` 21 of 64.
+- **An insertion of 50 bases or more is counted anywhere within the flank**, at
+  half the call's length or longer. Counted at the caller's exact position it
+  read 0 on 24 of 35, where nanomonsv has 3 to 37 supporting reads: its POS sits
+  tens of bases from where minimap2 placed the insertion. The window leaves 9 at
+  zero and 42 of the 51 within a quarter or three reads of the caller. It is
+  also what two over-count on: `i_240` reads 32 of 35 in the tumor and 42 of 48
+  in the normal against the caller's 3 and 0, because a germline insertion of
+  the same size class is in view.
 
-Depth is every read drawn, so a collapsed repeat reads 1,028 where the caller,
-filtering, has 498.
+Depth is every read the coverage band counts, so a collapsed repeat reads 1,027
+where the caller, filtering, has 498.
 
 Mappability is the one input still missing:
 `mappability_qc.md` §"the number behind it" gives the command over the UCSC Umap
