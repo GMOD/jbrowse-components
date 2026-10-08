@@ -1,16 +1,8 @@
-import { isJexl } from '@jbrowse/core/util/jexlStrings'
 import { MenuItem, TextField } from '@mui/material'
 import { observer } from 'mobx-react'
 
-import { DEFAULT_SCORE_COLUMN, SCORE_TRANSFORMS } from './configSchema.ts'
-
-import type { ScoreTransform } from './configSchema.ts'
-
-const TRANSFORM_LABELS: Record<ScoreTransform, string> = {
-  none: 'None — column is already -log10(p)',
-  negLog10: '-log10 — column is a raw p-value',
-  negLog10FromLn: '-log10 from ln — column is a natural-log p-value',
-}
+import { DEFAULT_SCORE_COLUMN } from './configSchema.ts'
+import { SCORE_TRANSFORMS } from './scoreTransforms.ts'
 
 const CUSTOM = 'custom'
 const CUSTOM_STARTER = 'jexl:score'
@@ -26,7 +18,7 @@ const ScoreColumnFields = observer(function ScoreColumnFields({
   scoreTransform: string
   setScoreTransform: (val: string) => void
 }) {
-  const custom = isJexl(scoreTransform)
+  const custom = !SCORE_TRANSFORMS.has(scoreTransform)
   return (
     <>
       <TextField
@@ -50,9 +42,9 @@ const ScoreColumnFields = observer(function ScoreColumnFields({
         }}
         fullWidth
       >
-        {SCORE_TRANSFORMS.map(t => (
-          <MenuItem key={t} value={t}>
-            {TRANSFORM_LABELS[t]}
+        {[...SCORE_TRANSFORMS].map(([mode, { label }]) => (
+          <MenuItem key={mode} value={mode}>
+            {label}
           </MenuItem>
         ))}
         <MenuItem value={CUSTOM}>Custom jexl expression…</MenuItem>

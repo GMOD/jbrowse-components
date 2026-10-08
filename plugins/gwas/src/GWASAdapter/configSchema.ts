@@ -7,10 +7,6 @@ export const DEFAULT_SCORE_COLUMN = 'neg_log_pvalue'
 
 export const DEFAULT_SCORE_TRANSFORM = 'none'
 
-// the presets; the slot also takes a `jexl:` expression
-export const SCORE_TRANSFORMS = ['none', 'negLog10', 'negLog10FromLn'] as const
-export type ScoreTransform = (typeof SCORE_TRANSFORMS)[number]
-
 export function scoreAdapterFields({
   scoreColumn,
   scoreTransform,
