@@ -27,18 +27,9 @@ export async function getGenotypeMatrix({
     report,
   } = await prepareMatrixWalk({ pluginManager, args })
 
-  // A site contributes one column per ALT allele, so the row width is the sum
-  // over sites rather than the site count — see `readAltDosages` for why the
-  // alt has to be identified and not just counted. A biallelic site has one
-  // ALT and therefore one column, so the common VCF is exactly as wide as it
-  // was; only multiallelic sites cost extra.
-  //
-  // The offsets are computed in a pre-pass so each row can still be one
-  // pre-sized Float32Array assigned by index, with no dynamic growth in the hot
-  // loop. Float32 rather than a packed integer type because a no-call has to be
-  // NaN, not a value on the dosage scale (see genotypeMatrixEncoding.ts).
-  // rowArrays parallels `resolved` so the inner loop writes to a direct
-  // reference rather than a string-keyed Record lookup per cell.
+  // A site contributes one column per ALT allele (`readAltDosages`), so a
+  // pre-pass sums the offsets and each row stays one pre-sized Float32Array.
+  // Float32 because a no-call is NaN (genotypeMatrixEncoding.ts).
   const numFeatures = filteredVariants.length
   const altCounts = new Int32Array(numFeatures)
   const colOffsets = new Int32Array(numFeatures)
@@ -56,10 +47,8 @@ export async function getGenotypeMatrix({
       maxAlts = k
     }
   }
-  // A Map keyed in `resolved` order: the cluster `order` comes back as indices
-  // into it and clusteredCladeLayout maps them into the display's own source list,
-  // which a plain object cannot carry (see ClusterMatrix) — numeric VCF sample
-  // IDs would have arrived at the clusterer renumbered.
+  // A Map keyed in `resolved` order, which the cluster `order` indexes; a plain
+  // object would renumber numeric sample IDs (see ClusterMatrix).
   const rows = new Map<string, Float32Array>()
   const rowArrays: Float32Array[] = []
   for (const r of resolved) {
@@ -72,10 +61,7 @@ export async function getGenotypeMatrix({
   // canonical sample column, with no Record and no substring; a feature
   // without it falls back to its genotypes Record.
   const used = new Uint8Array(samplesLen)
-  // One slot per (sample, ALT) for the widest site, reused across every site.
-  // Float32 (and MISSING-filled, not -1-filled) because a dosage is a fraction
-  // on a diploid scale rather than an integer class, and because NaN is the
-  // only missing marker the matrix has — see genotypeMatrixEncoding.ts.
+  // one slot per (sample, ALT) for the widest site, reused across every site
   const dosages = new Float32Array(samplesLen * maxAlts)
   const resolvedSampleIdx = resolved.map(r => {
     const idx = sampleIdxByKey.get(r.key) ?? -1
@@ -90,14 +76,9 @@ export async function getGenotypeMatrix({
     const numAlts = altCounts[f]!
     const col = colOffsets[f]!
     if (hasProcessGenotypes(feature) && samplesLen > 0) {
-      // Reset first: @gmod/vcf skips the callback for a sample whose FORMAT
-      // fields stop before GT, which would otherwise leave the previous
-      // feature's dosage standing in that slot. Only the slots this site uses
-      // are cleared — the scratch is sized for the widest site in the set.
+      // @gmod/vcf skips the callback for a sample whose FORMAT fields stop
+      // before GT, which would leave the previous feature's dosage in its slot
       dosages.fill(MISSING, 0, samplesLen * numAlts)
-      // `sampleIdx` counts against this feature's own header, `dosages` against
-      // the canonical union; `undefined` is the direct-index fast path taken
-      // whenever the two orders already agree.
       const remap = headerRemapOf(feature)
       feature.processGenotypes((str, start, end, sampleIdx) => {
         const column = remap === undefined ? sampleIdx : remap[sampleIdx]!
@@ -120,9 +101,8 @@ export async function getGenotypeMatrix({
         }
       }
     } else {
-      // `?? {}` for the sites-only case: a record with no genotypes at all has
-      // no `genotypes` field, and `readAltDosages` already reads '' as missing,
-      // so the whole row is MISSING rather than a crash on the lookup.
+      // a sites-only record has no `genotypes` field, and `readAltDosages`
+      // reads '' as missing
       const genotypes =
         (feature.get('genotypes') as Record<string, string> | undefined) ?? {}
       for (let k = 0; k < resolved.length; k++) {
