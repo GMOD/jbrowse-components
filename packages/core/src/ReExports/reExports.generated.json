@@ -4109,7 +4109,8 @@
     "@jbrowse/display-kit/configSchema": {
       "package": "@jbrowse/display-kit",
       "names": [
-        "default"
+        "default",
+        "retiredBaseDisplaySpellings"
       ],
       "worker": "real"
     },

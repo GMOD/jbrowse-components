@@ -30,19 +30,15 @@ describe('the display config schema', () => {
       expect(readConfObject(config, 'referenceDrawingMode')).toBe('draw')
     })
 
-    it('names showReferenceAlleles, which it no longer declares, and loads', () => {
+    it("lifts v4's showReferenceAlleles without a console line", () => {
       const warn = jest.spyOn(console, 'warn').mockImplementation(() => {})
       const config = configSchema.create({
         type: 'LinearMultiSampleVariantDisplay',
         displayId: 'test-2b',
         showReferenceAlleles: true,
       })
-      expect(readConfObject(config, 'referenceDrawingMode')).toBe('skip')
-      expect(warn).toHaveBeenCalledWith(
-        expect.stringMatching(
-          /^LinearMultiSampleVariantDisplay ".*" does not declare showReferenceAlleles: loading without it$/,
-        ),
-      )
+      expect(readConfObject(config, 'referenceDrawingMode')).toBe('draw')
+      expect(warn).not.toHaveBeenCalled()
       warn.mockRestore()
     })
   })

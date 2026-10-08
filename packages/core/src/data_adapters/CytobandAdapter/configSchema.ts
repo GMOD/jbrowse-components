@@ -46,6 +46,8 @@ const configSchema = ConfigurationSchema(
   {
     explicitlyTyped: true,
     closed: true,
+    // desktop's open-sequence dialog wrote the plural through v4.3
+    retired: { cytobandsLocation: cytobandLocation => ({ cytobandLocation }) },
 
     /**
      * #preProcessSnapshot

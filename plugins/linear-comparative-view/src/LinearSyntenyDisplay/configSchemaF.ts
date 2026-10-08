@@ -30,6 +30,9 @@ function configSchemaFactory() {
     {
       explicitlyTyped: true,
       explicitIdentifier: 'displayId',
+      // v4's renderer block held the colour the view paints with now, and
+      // `middle` drew the ribbons from the view's midline
+      retired: { renderer: () => ({}), middle: () => ({}) },
     },
   )
 }

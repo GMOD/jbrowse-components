@@ -83,7 +83,7 @@ const configSchema = ConfigurationSchema(
   {
     explicitlyTyped: true,
     closed: true,
-    retired: { sequenceAdapter: () => ({}) },
+    retired: { sequenceAdapter: () => ({}), chunkSizeLimit: () => ({}) },
 
     /**
      * #preProcessSnapshot

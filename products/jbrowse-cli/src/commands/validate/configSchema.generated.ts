@@ -313,6 +313,10 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         "baseUri": {
           "type": "string",
           "description": "Shorthand: a base URL \`uri\` resolves against."
+        },
+        "cytobandsLocation": {
+          "deprecated": true,
+          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
         }
       }
     },
@@ -525,6 +529,10 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "description": "Shorthand: the index beside \`uri\` is a \`.csi\` rather than a \`.tbi\`/\`.bai\`."
         },
         "sequenceAdapter": {
+          "deprecated": true,
+          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+        },
+        "chunkSizeLimit": {
           "deprecated": true,
           "description": "Legacy key: a migration rewrites it into current slots when the config loads."
         }
@@ -1296,6 +1304,10 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               "$ref": "#/$defs/JexlString"
             }
           }
+        },
+        "featureClass": {
+          "deprecated": true,
+          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
         }
       }
     },
@@ -1343,6 +1355,10 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               "$ref": "#/$defs/JexlString"
             }
           }
+        },
+        "featureClass": {
+          "deprecated": true,
+          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
         }
       }
     },
@@ -1390,6 +1406,10 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               "$ref": "#/$defs/JexlString"
             }
           }
+        },
+        "featureClass": {
+          "deprecated": true,
+          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
         }
       }
     },
@@ -1505,6 +1525,10 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         "baseUri": {
           "type": "string",
           "description": "Shorthand: a base URL \`uri\` resolves against."
+        },
+        "useUcscNameOverride": {
+          "deprecated": true,
+          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
         }
       }
     },
@@ -4265,6 +4289,10 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         },
         "bed2": {
           "description": "Shorthand the adapter's snapshot normalizer expands."
+        },
+        "subadapters": {
+          "deprecated": true,
+          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
         }
       }
     },
@@ -5445,6 +5473,14 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "type": "boolean"
           }
         },
+        "maxDisplayedBpPerPx": {
+          "deprecated": true,
+          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+        },
+        "jexlFilters": {
+          "deprecated": true,
+          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+        },
         "color1": {
           "deprecated": true,
           "description": "Legacy key: a migration rewrites it into current slots when the config loads."
@@ -5466,10 +5502,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "description": "Legacy key: a migration rewrites it into current slots when the config loads."
         },
         "renderer": {
-          "deprecated": true,
-          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
-        },
-        "jexlFilters": {
           "deprecated": true,
           "description": "Legacy key: a migration rewrites it into current slots when the config loads."
         },
@@ -5933,6 +5965,18 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "else": {
             "type": "number"
           }
+        },
+        "maxFeatureScreenDensity": {
+          "deprecated": true,
+          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+        },
+        "maxDisplayedBpPerPx": {
+          "deprecated": true,
+          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+        },
+        "jexlFilters": {
+          "deprecated": true,
+          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
         }
       }
     },
@@ -7135,6 +7179,18 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "type": "boolean"
           }
         },
+        "maxFeatureScreenDensity": {
+          "deprecated": true,
+          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+        },
+        "maxDisplayedBpPerPx": {
+          "deprecated": true,
+          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+        },
+        "jexlFilters": {
+          "deprecated": true,
+          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+        },
         "colorBy": {
           "deprecated": true,
           "description": "Legacy key: a migration rewrites it into current slots when the config loads."
@@ -7152,6 +7208,78 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "description": "Legacy key: a migration rewrites it into current slots when the config loads."
         },
         "linkedReads": {
+          "deprecated": true,
+          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+        },
+        "pileupDisplay": {
+          "deprecated": true,
+          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+        },
+        "snpCoverageDisplay": {
+          "deprecated": true,
+          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+        },
+        "defaultRendering": {
+          "deprecated": true,
+          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+        },
+        "renderers": {
+          "deprecated": true,
+          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+        },
+        "colorScheme": {
+          "deprecated": true,
+          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+        },
+        "scaleType": {
+          "deprecated": true,
+          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+        },
+        "autoscale": {
+          "deprecated": true,
+          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+        },
+        "minScore": {
+          "deprecated": true,
+          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+        },
+        "maxScore": {
+          "deprecated": true,
+          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+        },
+        "numStdDev": {
+          "deprecated": true,
+          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+        },
+        "inverted": {
+          "deprecated": true,
+          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+        },
+        "multiTicks": {
+          "deprecated": true,
+          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+        },
+        "jitter": {
+          "deprecated": true,
+          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+        },
+        "lineWidth": {
+          "deprecated": true,
+          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+        },
+        "hideSmallIndels": {
+          "deprecated": true,
+          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+        },
+        "hideMismatches": {
+          "deprecated": true,
+          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+        },
+        "hideLargeIndels": {
+          "deprecated": true,
+          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+        },
+        "minSubfeatureWidth": {
           "deprecated": true,
           "description": "Legacy key: a migration rewrites it into current slots when the config loads."
         }
@@ -7476,7 +7604,12 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
     },
     "DotplotDisplaySlots": {
       "type": "object",
-      "properties": {}
+      "properties": {
+        "renderer": {
+          "deprecated": true,
+          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+        }
+      }
     },
     "DotplotDisplay": {
       "title": "DotplotDisplay",
@@ -7505,7 +7638,16 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
     },
     "LinearSyntenyDisplaySlots": {
       "type": "object",
-      "properties": {}
+      "properties": {
+        "renderer": {
+          "deprecated": true,
+          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+        },
+        "middle": {
+          "deprecated": true,
+          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+        }
+      }
     },
     "LinearSyntenyDisplay": {
       "title": "LinearSyntenyDisplay",
@@ -8247,6 +8389,18 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "type": "boolean"
           }
         },
+        "maxFeatureScreenDensity": {
+          "deprecated": true,
+          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+        },
+        "maxDisplayedBpPerPx": {
+          "deprecated": true,
+          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+        },
+        "jexlFilters": {
+          "deprecated": true,
+          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+        },
         "colorBy": {
           "deprecated": true,
           "description": "Legacy key: a migration rewrites it into current slots when the config loads."
@@ -8264,6 +8418,78 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "description": "Legacy key: a migration rewrites it into current slots when the config loads."
         },
         "linkedReads": {
+          "deprecated": true,
+          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+        },
+        "pileupDisplay": {
+          "deprecated": true,
+          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+        },
+        "snpCoverageDisplay": {
+          "deprecated": true,
+          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+        },
+        "defaultRendering": {
+          "deprecated": true,
+          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+        },
+        "renderers": {
+          "deprecated": true,
+          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+        },
+        "colorScheme": {
+          "deprecated": true,
+          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+        },
+        "scaleType": {
+          "deprecated": true,
+          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+        },
+        "autoscale": {
+          "deprecated": true,
+          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+        },
+        "minScore": {
+          "deprecated": true,
+          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+        },
+        "maxScore": {
+          "deprecated": true,
+          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+        },
+        "numStdDev": {
+          "deprecated": true,
+          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+        },
+        "inverted": {
+          "deprecated": true,
+          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+        },
+        "multiTicks": {
+          "deprecated": true,
+          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+        },
+        "jitter": {
+          "deprecated": true,
+          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+        },
+        "lineWidth": {
+          "deprecated": true,
+          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+        },
+        "hideSmallIndels": {
+          "deprecated": true,
+          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+        },
+        "hideMismatches": {
+          "deprecated": true,
+          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+        },
+        "hideLargeIndels": {
+          "deprecated": true,
+          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+        },
+        "minSubfeatureWidth": {
           "deprecated": true,
           "description": "Legacy key: a migration rewrites it into current slots when the config loads."
         }
@@ -10266,6 +10492,18 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "else": {
             "type": "boolean"
           }
+        },
+        "maxFeatureScreenDensity": {
+          "deprecated": true,
+          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+        },
+        "maxDisplayedBpPerPx": {
+          "deprecated": true,
+          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+        },
+        "jexlFilters": {
+          "deprecated": true,
+          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
         }
       }
     },
@@ -10355,6 +10593,10 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "else": {
             "type": "boolean"
           }
+        },
+        "renderer": {
+          "deprecated": true,
+          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
         }
       }
     },
@@ -10625,6 +10867,14 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "$ref": "#/$defs/CanvasFeatureLabels"
           }
         },
+        "maxDisplayedBpPerPx": {
+          "deprecated": true,
+          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+        },
+        "jexlFilters": {
+          "deprecated": true,
+          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+        },
         "color1": {
           "deprecated": true,
           "description": "Legacy key: a migration rewrites it into current slots when the config loads."
@@ -10646,10 +10896,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "description": "Legacy key: a migration rewrites it into current slots when the config loads."
         },
         "renderer": {
-          "deprecated": true,
-          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
-        },
-        "jexlFilters": {
           "deprecated": true,
           "description": "Legacy key: a migration rewrites it into current slots when the config loads."
         },
@@ -11204,11 +11450,59 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             ]
           }
         },
+        "maxFeatureScreenDensity": {
+          "deprecated": true,
+          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+        },
+        "maxDisplayedBpPerPx": {
+          "deprecated": true,
+          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+        },
         "jexlFilters": {
           "deprecated": true,
           "description": "Legacy key: a migration rewrites it into current slots when the config loads."
         },
         "renderingMode": {
+          "deprecated": true,
+          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+        },
+        "showSidebarLabels": {
+          "deprecated": true,
+          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+        },
+        "showReferenceAlleles": {
+          "deprecated": true,
+          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+        },
+        "colorBy": {
+          "deprecated": true,
+          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+        },
+        "autoscale": {
+          "deprecated": true,
+          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+        },
+        "minScore": {
+          "deprecated": true,
+          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+        },
+        "maxScore": {
+          "deprecated": true,
+          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+        },
+        "scaleType": {
+          "deprecated": true,
+          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+        },
+        "inverted": {
+          "deprecated": true,
+          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+        },
+        "numStdDev": {
+          "deprecated": true,
+          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+        },
+        "minimalTicks": {
           "deprecated": true,
           "description": "Legacy key: a migration rewrites it into current slots when the config loads."
         }
@@ -11455,7 +11749,75 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             ]
           }
         },
+        "maxFeatureScreenDensity": {
+          "deprecated": true,
+          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+        },
+        "maxDisplayedBpPerPx": {
+          "deprecated": true,
+          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+        },
+        "fetchSizeLimit": {
+          "deprecated": true,
+          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+        },
+        "mouseover": {
+          "deprecated": true,
+          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+        },
+        "jexlFilters": {
+          "deprecated": true,
+          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+        },
         "ldMetric": {
+          "deprecated": true,
+          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+        },
+        "fitToHeight": {
+          "deprecated": true,
+          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+        },
+        "useGenomicPositions": {
+          "deprecated": true,
+          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+        },
+        "maxHeight": {
+          "deprecated": true,
+          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+        },
+        "colorScheme": {
+          "deprecated": true,
+          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+        },
+        "signedLD": {
+          "deprecated": true,
+          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+        },
+        "showLDTriangle": {
+          "deprecated": true,
+          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+        },
+        "showRecombination": {
+          "deprecated": true,
+          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+        },
+        "recombinationZoneHeight": {
+          "deprecated": true,
+          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+        },
+        "minorAlleleFrequencyFilter": {
+          "deprecated": true,
+          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+        },
+        "lengthCutoffFilter": {
+          "deprecated": true,
+          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+        },
+        "hweFilterThreshold": {
+          "deprecated": true,
+          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+        },
+        "callRateFilter": {
           "deprecated": true,
           "description": "Legacy key: a migration rewrites it into current slots when the config loads."
         }
@@ -12110,6 +12472,26 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "type": "boolean"
           }
         },
+        "maxFeatureScreenDensity": {
+          "deprecated": true,
+          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+        },
+        "maxDisplayedBpPerPx": {
+          "deprecated": true,
+          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+        },
+        "fetchSizeLimit": {
+          "deprecated": true,
+          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+        },
+        "mouseover": {
+          "deprecated": true,
+          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+        },
+        "jexlFilters": {
+          "deprecated": true,
+          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+        },
         "displayCrossHatches": {
           "deprecated": true,
           "description": "Legacy key: a migration rewrites it into current slots when the config loads."
@@ -12622,6 +13004,18 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "else": {
             "type": "boolean"
           }
+        },
+        "maxFeatureScreenDensity": {
+          "deprecated": true,
+          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+        },
+        "maxDisplayedBpPerPx": {
+          "deprecated": true,
+          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+        },
+        "jexlFilters": {
+          "deprecated": true,
+          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
         }
       }
     },
@@ -12823,6 +13217,30 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "else": {
             "$ref": "#/$defs/PlainString"
           }
+        },
+        "maxFeatureScreenDensity": {
+          "deprecated": true,
+          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+        },
+        "maxDisplayedBpPerPx": {
+          "deprecated": true,
+          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+        },
+        "fetchSizeLimit": {
+          "deprecated": true,
+          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+        },
+        "mouseover": {
+          "deprecated": true,
+          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+        },
+        "jexlFilters": {
+          "deprecated": true,
+          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+        },
+        "renderer": {
+          "deprecated": true,
+          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
         },
         "useColorPercentile": {
           "deprecated": true,
@@ -13265,15 +13683,27 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             }
           }
         },
+        "maxFeatureScreenDensity": {
+          "deprecated": true,
+          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+        },
+        "maxDisplayedBpPerPx": {
+          "deprecated": true,
+          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+        },
+        "mouseover": {
+          "deprecated": true,
+          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+        },
+        "jexlFilters": {
+          "deprecated": true,
+          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+        },
         "displayCrossHatches": {
           "deprecated": true,
           "description": "Legacy key: a migration rewrites it into current slots when the config loads."
         },
         "minimalTicks": {
-          "deprecated": true,
-          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
-        },
-        "jexlFilters": {
           "deprecated": true,
           "description": "Legacy key: a migration rewrites it into current slots when the config loads."
         }
@@ -13507,15 +13937,27 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             }
           }
         },
+        "maxFeatureScreenDensity": {
+          "deprecated": true,
+          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+        },
+        "maxDisplayedBpPerPx": {
+          "deprecated": true,
+          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+        },
+        "mouseover": {
+          "deprecated": true,
+          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+        },
+        "jexlFilters": {
+          "deprecated": true,
+          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+        },
         "displayCrossHatches": {
           "deprecated": true,
           "description": "Legacy key: a migration rewrites it into current slots when the config loads."
         },
         "minimalTicks": {
-          "deprecated": true,
-          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
-        },
-        "jexlFilters": {
           "deprecated": true,
           "description": "Legacy key: a migration rewrites it into current slots when the config loads."
         }
@@ -13975,6 +14417,14 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         "rpcDriverName": {
           "deprecated": true,
           "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+        },
+        "textSearchAdapter": {
+          "deprecated": true,
+          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+        },
+        "textSearchIndexingAttributes": {
+          "deprecated": true,
+          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
         }
       }
     },
@@ -14014,6 +14464,9 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
                 },
                 {
                   "$ref": "#/$defs/LinearMultiRowFeatureDisplaySlots/properties/fetchSizeLimit"
+                },
+                {
+                  "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/fetchSizeLimit"
                 },
                 {
                   "$ref": "#/$defs/LinearManhattanDisplaySlots/properties/fetchSizeLimit"
@@ -14065,6 +14518,15 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
                 },
                 {
                   "$ref": "#/$defs/LinearMultiRowFeatureDisplaySlots/properties/mouseover"
+                },
+                {
+                  "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/mouseover"
+                },
+                {
+                  "$ref": "#/$defs/LinearManhattanDisplaySlots/properties/mouseover"
+                },
+                {
+                  "$ref": "#/$defs/LinearMarkDisplaySlots/properties/mouseover"
                 }
               ]
             },
@@ -14120,7 +14582,23 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               ]
             },
             "maxFeatureScreenDensity": {
-              "$ref": "#/$defs/LinearBasicDisplaySlots/properties/maxFeatureScreenDensity"
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/LinearBasicDisplaySlots/properties/maxFeatureScreenDensity"
+                },
+                {
+                  "$ref": "#/$defs/LinearMultiRowFeatureDisplaySlots/properties/maxFeatureScreenDensity"
+                },
+                {
+                  "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/maxFeatureScreenDensity"
+                },
+                {
+                  "$ref": "#/$defs/LinearManhattanDisplaySlots/properties/maxFeatureScreenDensity"
+                },
+                {
+                  "$ref": "#/$defs/LinearMarkDisplaySlots/properties/maxFeatureScreenDensity"
+                }
+              ]
             },
             "showLegend": {
               "anyOf": [
@@ -14230,6 +14708,44 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "hideSourceFeatures": {
               "$ref": "#/$defs/LinearBasicDisplaySlots/properties/hideSourceFeatures"
             },
+            "maxDisplayedBpPerPx": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/LinearBasicDisplaySlots/properties/maxDisplayedBpPerPx"
+                },
+                {
+                  "$ref": "#/$defs/LinearMultiRowFeatureDisplaySlots/properties/maxDisplayedBpPerPx"
+                },
+                {
+                  "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/maxDisplayedBpPerPx"
+                },
+                {
+                  "$ref": "#/$defs/LinearManhattanDisplaySlots/properties/maxDisplayedBpPerPx"
+                },
+                {
+                  "$ref": "#/$defs/LinearMarkDisplaySlots/properties/maxDisplayedBpPerPx"
+                }
+              ]
+            },
+            "jexlFilters": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/LinearBasicDisplaySlots/properties/jexlFilters"
+                },
+                {
+                  "$ref": "#/$defs/LinearMultiRowFeatureDisplaySlots/properties/jexlFilters"
+                },
+                {
+                  "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/jexlFilters"
+                },
+                {
+                  "$ref": "#/$defs/LinearManhattanDisplaySlots/properties/jexlFilters"
+                },
+                {
+                  "$ref": "#/$defs/LinearMarkDisplaySlots/properties/jexlFilters"
+                }
+              ]
+            },
             "color1": {
               "$ref": "#/$defs/LinearBasicDisplaySlots/properties/color1"
             },
@@ -14247,19 +14763,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             },
             "renderer": {
               "$ref": "#/$defs/LinearBasicDisplaySlots/properties/renderer"
-            },
-            "jexlFilters": {
-              "anyOf": [
-                {
-                  "$ref": "#/$defs/LinearBasicDisplaySlots/properties/jexlFilters"
-                },
-                {
-                  "$ref": "#/$defs/LinearManhattanDisplaySlots/properties/jexlFilters"
-                },
-                {
-                  "$ref": "#/$defs/LinearMarkDisplaySlots/properties/jexlFilters"
-                }
-              ]
             },
             "showDescriptions": {
               "$ref": "#/$defs/LinearBasicDisplaySlots/properties/showDescriptions"
@@ -14659,6 +15162,14 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         "rpcDriverName": {
           "deprecated": true,
           "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+        },
+        "textSearchAdapter": {
+          "deprecated": true,
+          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+        },
+        "textSearchIndexingAttributes": {
+          "deprecated": true,
+          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
         }
       }
     },
@@ -14722,7 +15233,14 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               ]
             },
             "mouseover": {
-              "$ref": "#/$defs/LinearAlignmentsDisplaySlots/properties/mouseover"
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/LinearAlignmentsDisplaySlots/properties/mouseover"
+                },
+                {
+                  "$ref": "#/$defs/LinearMarkDisplaySlots/properties/mouseover"
+                }
+              ]
             },
             "featureHeight": {
               "$ref": "#/$defs/LinearAlignmentsDisplaySlots/properties/featureHeight"
@@ -14901,6 +15419,36 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "showSoftClipping": {
               "$ref": "#/$defs/LinearAlignmentsDisplaySlots/properties/showSoftClipping"
             },
+            "maxFeatureScreenDensity": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/LinearAlignmentsDisplaySlots/properties/maxFeatureScreenDensity"
+                },
+                {
+                  "$ref": "#/$defs/LinearMarkDisplaySlots/properties/maxFeatureScreenDensity"
+                }
+              ]
+            },
+            "maxDisplayedBpPerPx": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/LinearAlignmentsDisplaySlots/properties/maxDisplayedBpPerPx"
+                },
+                {
+                  "$ref": "#/$defs/LinearMarkDisplaySlots/properties/maxDisplayedBpPerPx"
+                }
+              ]
+            },
+            "jexlFilters": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/LinearAlignmentsDisplaySlots/properties/jexlFilters"
+                },
+                {
+                  "$ref": "#/$defs/LinearMarkDisplaySlots/properties/jexlFilters"
+                }
+              ]
+            },
             "colorBy": {
               "$ref": "#/$defs/LinearAlignmentsDisplaySlots/properties/colorBy"
             },
@@ -14915,6 +15463,60 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             },
             "linkedReads": {
               "$ref": "#/$defs/LinearAlignmentsDisplaySlots/properties/linkedReads"
+            },
+            "pileupDisplay": {
+              "$ref": "#/$defs/LinearAlignmentsDisplaySlots/properties/pileupDisplay"
+            },
+            "snpCoverageDisplay": {
+              "$ref": "#/$defs/LinearAlignmentsDisplaySlots/properties/snpCoverageDisplay"
+            },
+            "defaultRendering": {
+              "$ref": "#/$defs/LinearAlignmentsDisplaySlots/properties/defaultRendering"
+            },
+            "renderers": {
+              "$ref": "#/$defs/LinearAlignmentsDisplaySlots/properties/renderers"
+            },
+            "colorScheme": {
+              "$ref": "#/$defs/LinearAlignmentsDisplaySlots/properties/colorScheme"
+            },
+            "scaleType": {
+              "$ref": "#/$defs/LinearAlignmentsDisplaySlots/properties/scaleType"
+            },
+            "autoscale": {
+              "$ref": "#/$defs/LinearAlignmentsDisplaySlots/properties/autoscale"
+            },
+            "minScore": {
+              "$ref": "#/$defs/LinearAlignmentsDisplaySlots/properties/minScore"
+            },
+            "maxScore": {
+              "$ref": "#/$defs/LinearAlignmentsDisplaySlots/properties/maxScore"
+            },
+            "numStdDev": {
+              "$ref": "#/$defs/LinearAlignmentsDisplaySlots/properties/numStdDev"
+            },
+            "inverted": {
+              "$ref": "#/$defs/LinearAlignmentsDisplaySlots/properties/inverted"
+            },
+            "multiTicks": {
+              "$ref": "#/$defs/LinearAlignmentsDisplaySlots/properties/multiTicks"
+            },
+            "jitter": {
+              "$ref": "#/$defs/LinearAlignmentsDisplaySlots/properties/jitter"
+            },
+            "lineWidth": {
+              "$ref": "#/$defs/LinearAlignmentsDisplaySlots/properties/lineWidth"
+            },
+            "hideSmallIndels": {
+              "$ref": "#/$defs/LinearAlignmentsDisplaySlots/properties/hideSmallIndels"
+            },
+            "hideMismatches": {
+              "$ref": "#/$defs/LinearAlignmentsDisplaySlots/properties/hideMismatches"
+            },
+            "hideLargeIndels": {
+              "$ref": "#/$defs/LinearAlignmentsDisplaySlots/properties/hideLargeIndels"
+            },
+            "minSubfeatureWidth": {
+              "$ref": "#/$defs/LinearAlignmentsDisplaySlots/properties/minSubfeatureWidth"
             },
             "marks": {
               "$ref": "#/$defs/LinearMarkDisplaySlots/properties/marks"
@@ -14954,9 +15556,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             },
             "minimalTicks": {
               "$ref": "#/$defs/LinearMarkDisplaySlots/properties/minimalTicks"
-            },
-            "jexlFilters": {
-              "$ref": "#/$defs/LinearMarkDisplaySlots/properties/jexlFilters"
             }
           },
           "patternProperties": {
@@ -15059,6 +15658,10 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         "rpcDriverName": {
           "deprecated": true,
           "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+        },
+        "rendering": {
+          "deprecated": true,
+          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
         }
       }
     },
@@ -15108,6 +15711,9 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             },
             "forceLoad": {
               "$ref": "#/$defs/LinearReferenceSequenceDisplaySlots/properties/forceLoad"
+            },
+            "renderer": {
+              "$ref": "#/$defs/LinearReferenceSequenceDisplaySlots/properties/renderer"
             }
           },
           "patternProperties": {
@@ -15243,6 +15849,14 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         "rpcDriverName": {
           "deprecated": true,
           "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+        },
+        "textSearchAdapter": {
+          "deprecated": true,
+          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+        },
+        "textSearchIndexingAttributes": {
+          "deprecated": true,
+          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
         }
       }
     },
@@ -15368,6 +15982,9 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
                 },
                 {
                   "$ref": "#/$defs/LinearMultiSampleVariantDisplaySlots/properties/mouseover"
+                },
+                {
+                  "$ref": "#/$defs/LinearMarkDisplaySlots/properties/mouseover"
                 }
               ]
             },
@@ -15411,7 +16028,17 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               ]
             },
             "maxFeatureScreenDensity": {
-              "$ref": "#/$defs/LinearVariantDisplaySlots/properties/maxFeatureScreenDensity"
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/LinearVariantDisplaySlots/properties/maxFeatureScreenDensity"
+                },
+                {
+                  "$ref": "#/$defs/LinearMultiSampleVariantDisplaySlots/properties/maxFeatureScreenDensity"
+                },
+                {
+                  "$ref": "#/$defs/LinearMarkDisplaySlots/properties/maxFeatureScreenDensity"
+                }
+              ]
             },
             "showLegend": {
               "anyOf": [
@@ -15460,6 +16087,32 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "labels": {
               "$ref": "#/$defs/LinearVariantDisplaySlots/properties/labels"
             },
+            "maxDisplayedBpPerPx": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/LinearVariantDisplaySlots/properties/maxDisplayedBpPerPx"
+                },
+                {
+                  "$ref": "#/$defs/LinearMultiSampleVariantDisplaySlots/properties/maxDisplayedBpPerPx"
+                },
+                {
+                  "$ref": "#/$defs/LinearMarkDisplaySlots/properties/maxDisplayedBpPerPx"
+                }
+              ]
+            },
+            "jexlFilters": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/LinearVariantDisplaySlots/properties/jexlFilters"
+                },
+                {
+                  "$ref": "#/$defs/LinearMultiSampleVariantDisplaySlots/properties/jexlFilters"
+                },
+                {
+                  "$ref": "#/$defs/LinearMarkDisplaySlots/properties/jexlFilters"
+                }
+              ]
+            },
             "color1": {
               "$ref": "#/$defs/LinearVariantDisplaySlots/properties/color1"
             },
@@ -15474,19 +16127,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             },
             "maxHeight": {
               "$ref": "#/$defs/LinearVariantDisplaySlots/properties/maxHeight"
-            },
-            "jexlFilters": {
-              "anyOf": [
-                {
-                  "$ref": "#/$defs/LinearVariantDisplaySlots/properties/jexlFilters"
-                },
-                {
-                  "$ref": "#/$defs/LinearMultiSampleVariantDisplaySlots/properties/jexlFilters"
-                },
-                {
-                  "$ref": "#/$defs/LinearMarkDisplaySlots/properties/jexlFilters"
-                }
-              ]
             },
             "showDescriptions": {
               "$ref": "#/$defs/LinearVariantDisplaySlots/properties/showDescriptions"
@@ -15603,6 +16243,43 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "renderingMode": {
               "$ref": "#/$defs/LinearMultiSampleVariantDisplaySlots/properties/renderingMode"
             },
+            "showSidebarLabels": {
+              "$ref": "#/$defs/LinearMultiSampleVariantDisplaySlots/properties/showSidebarLabels"
+            },
+            "showReferenceAlleles": {
+              "$ref": "#/$defs/LinearMultiSampleVariantDisplaySlots/properties/showReferenceAlleles"
+            },
+            "colorBy": {
+              "$ref": "#/$defs/LinearMultiSampleVariantDisplaySlots/properties/colorBy"
+            },
+            "autoscale": {
+              "$ref": "#/$defs/LinearMultiSampleVariantDisplaySlots/properties/autoscale"
+            },
+            "minScore": {
+              "$ref": "#/$defs/LinearMultiSampleVariantDisplaySlots/properties/minScore"
+            },
+            "maxScore": {
+              "$ref": "#/$defs/LinearMultiSampleVariantDisplaySlots/properties/maxScore"
+            },
+            "scaleType": {
+              "$ref": "#/$defs/LinearMultiSampleVariantDisplaySlots/properties/scaleType"
+            },
+            "inverted": {
+              "$ref": "#/$defs/LinearMultiSampleVariantDisplaySlots/properties/inverted"
+            },
+            "numStdDev": {
+              "$ref": "#/$defs/LinearMultiSampleVariantDisplaySlots/properties/numStdDev"
+            },
+            "minimalTicks": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/LinearMultiSampleVariantDisplaySlots/properties/minimalTicks"
+                },
+                {
+                  "$ref": "#/$defs/LinearMarkDisplaySlots/properties/minimalTicks"
+                }
+              ]
+            },
             "marks": {
               "$ref": "#/$defs/LinearMarkDisplaySlots/properties/marks"
             },
@@ -15620,9 +16297,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             },
             "displayCrossHatches": {
               "$ref": "#/$defs/LinearMarkDisplaySlots/properties/displayCrossHatches"
-            },
-            "minimalTicks": {
-              "$ref": "#/$defs/LinearMarkDisplaySlots/properties/minimalTicks"
             }
           },
           "patternProperties": {
@@ -15758,6 +16432,14 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         "rpcDriverName": {
           "deprecated": true,
           "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+        },
+        "textSearchAdapter": {
+          "deprecated": true,
+          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+        },
+        "textSearchIndexingAttributes": {
+          "deprecated": true,
+          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
         }
       }
     },
@@ -15820,8 +16502,59 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "variantLayout": {
               "$ref": "#/$defs/LDTrackDisplaySlots/properties/variantLayout"
             },
+            "maxFeatureScreenDensity": {
+              "$ref": "#/$defs/LDTrackDisplaySlots/properties/maxFeatureScreenDensity"
+            },
+            "maxDisplayedBpPerPx": {
+              "$ref": "#/$defs/LDTrackDisplaySlots/properties/maxDisplayedBpPerPx"
+            },
+            "fetchSizeLimit": {
+              "$ref": "#/$defs/LDTrackDisplaySlots/properties/fetchSizeLimit"
+            },
+            "mouseover": {
+              "$ref": "#/$defs/LDTrackDisplaySlots/properties/mouseover"
+            },
+            "jexlFilters": {
+              "$ref": "#/$defs/LDTrackDisplaySlots/properties/jexlFilters"
+            },
             "ldMetric": {
               "$ref": "#/$defs/LDTrackDisplaySlots/properties/ldMetric"
+            },
+            "fitToHeight": {
+              "$ref": "#/$defs/LDTrackDisplaySlots/properties/fitToHeight"
+            },
+            "useGenomicPositions": {
+              "$ref": "#/$defs/LDTrackDisplaySlots/properties/useGenomicPositions"
+            },
+            "maxHeight": {
+              "$ref": "#/$defs/LDTrackDisplaySlots/properties/maxHeight"
+            },
+            "colorScheme": {
+              "$ref": "#/$defs/LDTrackDisplaySlots/properties/colorScheme"
+            },
+            "signedLD": {
+              "$ref": "#/$defs/LDTrackDisplaySlots/properties/signedLD"
+            },
+            "showLDTriangle": {
+              "$ref": "#/$defs/LDTrackDisplaySlots/properties/showLDTriangle"
+            },
+            "showRecombination": {
+              "$ref": "#/$defs/LDTrackDisplaySlots/properties/showRecombination"
+            },
+            "recombinationZoneHeight": {
+              "$ref": "#/$defs/LDTrackDisplaySlots/properties/recombinationZoneHeight"
+            },
+            "minorAlleleFrequencyFilter": {
+              "$ref": "#/$defs/LDTrackDisplaySlots/properties/minorAlleleFrequencyFilter"
+            },
+            "lengthCutoffFilter": {
+              "$ref": "#/$defs/LDTrackDisplaySlots/properties/lengthCutoffFilter"
+            },
+            "hweFilterThreshold": {
+              "$ref": "#/$defs/LDTrackDisplaySlots/properties/hweFilterThreshold"
+            },
+            "callRateFilter": {
+              "$ref": "#/$defs/LDTrackDisplaySlots/properties/callRateFilter"
             }
           },
           "patternProperties": {
@@ -15955,6 +16688,14 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           }
         },
         "rpcDriverName": {
+          "deprecated": true,
+          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+        },
+        "textSearchAdapter": {
+          "deprecated": true,
+          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+        },
+        "textSearchIndexingAttributes": {
           "deprecated": true,
           "description": "Legacy key: a migration rewrites it into current slots when the config loads."
         }
@@ -16116,6 +16857,56 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "showRowSeparators": {
               "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/showRowSeparators"
             },
+            "maxFeatureScreenDensity": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/maxFeatureScreenDensity"
+                },
+                {
+                  "$ref": "#/$defs/LinearMarkDisplaySlots/properties/maxFeatureScreenDensity"
+                }
+              ]
+            },
+            "maxDisplayedBpPerPx": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/maxDisplayedBpPerPx"
+                },
+                {
+                  "$ref": "#/$defs/LinearMarkDisplaySlots/properties/maxDisplayedBpPerPx"
+                }
+              ]
+            },
+            "fetchSizeLimit": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/fetchSizeLimit"
+                },
+                {
+                  "$ref": "#/$defs/LinearMarkDisplaySlots/properties/fetchSizeLimit"
+                }
+              ]
+            },
+            "mouseover": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/mouseover"
+                },
+                {
+                  "$ref": "#/$defs/LinearMarkDisplaySlots/properties/mouseover"
+                }
+              ]
+            },
+            "jexlFilters": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/jexlFilters"
+                },
+                {
+                  "$ref": "#/$defs/LinearMarkDisplaySlots/properties/jexlFilters"
+                }
+              ]
+            },
             "displayCrossHatches": {
               "anyOf": [
                 {
@@ -16163,9 +16954,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "lineWidth": {
               "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/lineWidth"
             },
-            "fetchSizeLimit": {
-              "$ref": "#/$defs/LinearMarkDisplaySlots/properties/fetchSizeLimit"
-            },
             "forceLoad": {
               "$ref": "#/$defs/LinearMarkDisplaySlots/properties/forceLoad"
             },
@@ -16192,9 +16980,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             },
             "filter": {
               "$ref": "#/$defs/LinearMarkDisplaySlots/properties/filter"
-            },
-            "jexlFilters": {
-              "$ref": "#/$defs/LinearMarkDisplaySlots/properties/jexlFilters"
             }
           },
           "patternProperties": {
@@ -16328,6 +17113,14 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           }
         },
         "rpcDriverName": {
+          "deprecated": true,
+          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+        },
+        "textSearchAdapter": {
+          "deprecated": true,
+          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+        },
+        "textSearchIndexingAttributes": {
           "deprecated": true,
           "description": "Legacy key: a migration rewrites it into current slots when the config loads."
         }
@@ -16489,6 +17282,56 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "showRowSeparators": {
               "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/showRowSeparators"
             },
+            "maxFeatureScreenDensity": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/maxFeatureScreenDensity"
+                },
+                {
+                  "$ref": "#/$defs/LinearMarkDisplaySlots/properties/maxFeatureScreenDensity"
+                }
+              ]
+            },
+            "maxDisplayedBpPerPx": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/maxDisplayedBpPerPx"
+                },
+                {
+                  "$ref": "#/$defs/LinearMarkDisplaySlots/properties/maxDisplayedBpPerPx"
+                }
+              ]
+            },
+            "fetchSizeLimit": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/fetchSizeLimit"
+                },
+                {
+                  "$ref": "#/$defs/LinearMarkDisplaySlots/properties/fetchSizeLimit"
+                }
+              ]
+            },
+            "mouseover": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/mouseover"
+                },
+                {
+                  "$ref": "#/$defs/LinearMarkDisplaySlots/properties/mouseover"
+                }
+              ]
+            },
+            "jexlFilters": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/jexlFilters"
+                },
+                {
+                  "$ref": "#/$defs/LinearMarkDisplaySlots/properties/jexlFilters"
+                }
+              ]
+            },
             "displayCrossHatches": {
               "anyOf": [
                 {
@@ -16536,9 +17379,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "lineWidth": {
               "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/lineWidth"
             },
-            "fetchSizeLimit": {
-              "$ref": "#/$defs/LinearMarkDisplaySlots/properties/fetchSizeLimit"
-            },
             "forceLoad": {
               "$ref": "#/$defs/LinearMarkDisplaySlots/properties/forceLoad"
             },
@@ -16565,9 +17405,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             },
             "filter": {
               "$ref": "#/$defs/LinearMarkDisplaySlots/properties/filter"
-            },
-            "jexlFilters": {
-              "$ref": "#/$defs/LinearMarkDisplaySlots/properties/jexlFilters"
             }
           },
           "patternProperties": {
@@ -16703,6 +17540,14 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         "rpcDriverName": {
           "deprecated": true,
           "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+        },
+        "textSearchAdapter": {
+          "deprecated": true,
+          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+        },
+        "textSearchIndexingAttributes": {
+          "deprecated": true,
+          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
         }
       }
     },
@@ -16791,6 +17636,21 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             },
             "showRowSeparators": {
               "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/showRowSeparators"
+            },
+            "maxFeatureScreenDensity": {
+              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/maxFeatureScreenDensity"
+            },
+            "maxDisplayedBpPerPx": {
+              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/maxDisplayedBpPerPx"
+            },
+            "fetchSizeLimit": {
+              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/fetchSizeLimit"
+            },
+            "mouseover": {
+              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/mouseover"
+            },
+            "jexlFilters": {
+              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/jexlFilters"
             },
             "displayCrossHatches": {
               "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/displayCrossHatches"
@@ -16959,6 +17819,14 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         "rpcDriverName": {
           "deprecated": true,
           "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+        },
+        "textSearchAdapter": {
+          "deprecated": true,
+          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+        },
+        "textSearchIndexingAttributes": {
+          "deprecated": true,
+          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
         }
       }
     },
@@ -17022,7 +17890,14 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               ]
             },
             "mouseover": {
-              "$ref": "#/$defs/LinearMafDisplaySlots/properties/mouseover"
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/LinearMafDisplaySlots/properties/mouseover"
+                },
+                {
+                  "$ref": "#/$defs/LinearMarkDisplaySlots/properties/mouseover"
+                }
+              ]
             },
             "rowHeight": {
               "anyOf": [
@@ -17149,6 +18024,36 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "showInversions": {
               "$ref": "#/$defs/LinearMafDisplaySlots/properties/showInversions"
             },
+            "maxFeatureScreenDensity": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/LinearMafDisplaySlots/properties/maxFeatureScreenDensity"
+                },
+                {
+                  "$ref": "#/$defs/LinearMarkDisplaySlots/properties/maxFeatureScreenDensity"
+                }
+              ]
+            },
+            "maxDisplayedBpPerPx": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/LinearMafDisplaySlots/properties/maxDisplayedBpPerPx"
+                },
+                {
+                  "$ref": "#/$defs/LinearMarkDisplaySlots/properties/maxDisplayedBpPerPx"
+                }
+              ]
+            },
+            "jexlFilters": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/LinearMafDisplaySlots/properties/jexlFilters"
+                },
+                {
+                  "$ref": "#/$defs/LinearMarkDisplaySlots/properties/jexlFilters"
+                }
+              ]
+            },
             "densityTier": {
               "$ref": "#/$defs/LinearMarkDisplaySlots/properties/densityTier"
             },
@@ -17181,9 +18086,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             },
             "minimalTicks": {
               "$ref": "#/$defs/LinearMarkDisplaySlots/properties/minimalTicks"
-            },
-            "jexlFilters": {
-              "$ref": "#/$defs/LinearMarkDisplaySlots/properties/jexlFilters"
             }
           },
           "patternProperties": {
@@ -17319,6 +18221,14 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         "rpcDriverName": {
           "deprecated": true,
           "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+        },
+        "textSearchAdapter": {
+          "deprecated": true,
+          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+        },
+        "textSearchIndexingAttributes": {
+          "deprecated": true,
+          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
         }
       }
     },
@@ -17371,6 +18281,24 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             },
             "selectedNormalization": {
               "$ref": "#/$defs/LinearHicDisplaySlots/properties/selectedNormalization"
+            },
+            "maxFeatureScreenDensity": {
+              "$ref": "#/$defs/LinearHicDisplaySlots/properties/maxFeatureScreenDensity"
+            },
+            "maxDisplayedBpPerPx": {
+              "$ref": "#/$defs/LinearHicDisplaySlots/properties/maxDisplayedBpPerPx"
+            },
+            "fetchSizeLimit": {
+              "$ref": "#/$defs/LinearHicDisplaySlots/properties/fetchSizeLimit"
+            },
+            "mouseover": {
+              "$ref": "#/$defs/LinearHicDisplaySlots/properties/mouseover"
+            },
+            "jexlFilters": {
+              "$ref": "#/$defs/LinearHicDisplaySlots/properties/jexlFilters"
+            },
+            "renderer": {
+              "$ref": "#/$defs/LinearHicDisplaySlots/properties/renderer"
             },
             "useColorPercentile": {
               "$ref": "#/$defs/LinearHicDisplaySlots/properties/useColorPercentile"
@@ -17509,6 +18437,18 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         "rpcDriverName": {
           "deprecated": true,
           "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+        },
+        "textSearchAdapter": {
+          "deprecated": true,
+          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+        },
+        "textSearchIndexingAttributes": {
+          "deprecated": true,
+          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+        },
+        "trackIds": {
+          "deprecated": true,
+          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
         }
       }
     },
@@ -17549,6 +18489,19 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             },
             "colorHover": {
               "$ref": "#/$defs/ChordSyntenyDisplaySlots/properties/colorHover"
+            },
+            "renderer": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/DotplotDisplaySlots/properties/renderer"
+                },
+                {
+                  "$ref": "#/$defs/LinearSyntenyDisplaySlots/properties/renderer"
+                }
+              ]
+            },
+            "middle": {
+              "$ref": "#/$defs/LinearSyntenyDisplaySlots/properties/middle"
             },
             "fetchSizeLimit": {
               "anyOf": [
@@ -17596,6 +18549,9 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
                 },
                 {
                   "$ref": "#/$defs/MultiWaySyntenyDisplaySlots/properties/mouseover"
+                },
+                {
+                  "$ref": "#/$defs/LinearMarkDisplaySlots/properties/mouseover"
                 }
               ]
             },
@@ -17799,6 +18755,45 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "hideSelfAlignments": {
               "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/hideSelfAlignments"
             },
+            "maxFeatureScreenDensity": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/maxFeatureScreenDensity"
+                },
+                {
+                  "$ref": "#/$defs/MultiWaySyntenyDisplaySlots/properties/maxFeatureScreenDensity"
+                },
+                {
+                  "$ref": "#/$defs/LinearMarkDisplaySlots/properties/maxFeatureScreenDensity"
+                }
+              ]
+            },
+            "maxDisplayedBpPerPx": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/maxDisplayedBpPerPx"
+                },
+                {
+                  "$ref": "#/$defs/MultiWaySyntenyDisplaySlots/properties/maxDisplayedBpPerPx"
+                },
+                {
+                  "$ref": "#/$defs/LinearMarkDisplaySlots/properties/maxDisplayedBpPerPx"
+                }
+              ]
+            },
+            "jexlFilters": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/jexlFilters"
+                },
+                {
+                  "$ref": "#/$defs/MultiWaySyntenyDisplaySlots/properties/jexlFilters"
+                },
+                {
+                  "$ref": "#/$defs/LinearMarkDisplaySlots/properties/jexlFilters"
+                }
+              ]
+            },
             "colorBy": {
               "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/colorBy"
             },
@@ -17813,6 +18808,60 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             },
             "linkedReads": {
               "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/linkedReads"
+            },
+            "pileupDisplay": {
+              "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/pileupDisplay"
+            },
+            "snpCoverageDisplay": {
+              "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/snpCoverageDisplay"
+            },
+            "defaultRendering": {
+              "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/defaultRendering"
+            },
+            "renderers": {
+              "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/renderers"
+            },
+            "colorScheme": {
+              "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/colorScheme"
+            },
+            "scaleType": {
+              "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/scaleType"
+            },
+            "autoscale": {
+              "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/autoscale"
+            },
+            "minScore": {
+              "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/minScore"
+            },
+            "maxScore": {
+              "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/maxScore"
+            },
+            "numStdDev": {
+              "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/numStdDev"
+            },
+            "inverted": {
+              "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/inverted"
+            },
+            "multiTicks": {
+              "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/multiTicks"
+            },
+            "jitter": {
+              "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/jitter"
+            },
+            "lineWidth": {
+              "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/lineWidth"
+            },
+            "hideSmallIndels": {
+              "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/hideSmallIndels"
+            },
+            "hideMismatches": {
+              "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/hideMismatches"
+            },
+            "hideLargeIndels": {
+              "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/hideLargeIndels"
+            },
+            "minSubfeatureWidth": {
+              "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/minSubfeatureWidth"
             },
             "utrColor": {
               "$ref": "#/$defs/MultiWaySyntenyDisplaySlots/properties/utrColor"
@@ -17895,9 +18944,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             },
             "minimalTicks": {
               "$ref": "#/$defs/LinearMarkDisplaySlots/properties/minimalTicks"
-            },
-            "jexlFilters": {
-              "$ref": "#/$defs/LinearMarkDisplaySlots/properties/jexlFilters"
             }
           },
           "patternProperties": {
@@ -18033,6 +19079,14 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         "rpcDriverName": {
           "deprecated": true,
           "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+        },
+        "textSearchAdapter": {
+          "deprecated": true,
+          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+        },
+        "textSearchIndexingAttributes": {
+          "deprecated": true,
+          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
         }
       }
     },
@@ -18125,14 +19179,23 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "filter": {
               "$ref": "#/$defs/LinearManhattanDisplaySlots/properties/filter"
             },
+            "maxFeatureScreenDensity": {
+              "$ref": "#/$defs/LinearManhattanDisplaySlots/properties/maxFeatureScreenDensity"
+            },
+            "maxDisplayedBpPerPx": {
+              "$ref": "#/$defs/LinearManhattanDisplaySlots/properties/maxDisplayedBpPerPx"
+            },
+            "mouseover": {
+              "$ref": "#/$defs/LinearManhattanDisplaySlots/properties/mouseover"
+            },
+            "jexlFilters": {
+              "$ref": "#/$defs/LinearManhattanDisplaySlots/properties/jexlFilters"
+            },
             "displayCrossHatches": {
               "$ref": "#/$defs/LinearManhattanDisplaySlots/properties/displayCrossHatches"
             },
             "minimalTicks": {
               "$ref": "#/$defs/LinearManhattanDisplaySlots/properties/minimalTicks"
-            },
-            "jexlFilters": {
-              "$ref": "#/$defs/LinearManhattanDisplaySlots/properties/jexlFilters"
             }
           },
           "patternProperties": {
@@ -20797,6 +21860,14 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           }
         },
         "rpcDriverName": {
+          "deprecated": true,
+          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+        },
+        "textSearchAdapter": {
+          "deprecated": true,
+          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+        },
+        "textSearchIndexingAttributes": {
           "deprecated": true,
           "description": "Legacy key: a migration rewrites it into current slots when the config loads."
         },

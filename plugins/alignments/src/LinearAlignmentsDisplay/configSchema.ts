@@ -17,7 +17,7 @@ import {
   SASHIMI_ARCS_MODES,
 } from './constants.ts'
 import { readFilterConfigSchema } from './readFilterConfigSchema.ts'
-import { colorSlotsOf } from './retired.ts'
+import { retiredConfigSpellings } from './retired.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { Instance } from '@jbrowse/mobx-state-tree'
@@ -522,22 +522,7 @@ export default function configSchemaFactory(_pluginManager: PluginManager) {
        */
       baseConfiguration: baseLinearDisplayConfigSchema,
       explicitlyTyped: true,
-      // v4's `colorBy` named a scheme and held the modification settings,
-      // which are the `color` or `baseColor` object's field and the
-      // `modifications` slot now, and its LinearReadArcsDisplay gated the two
-      // arc classes under the draw verb. The v5 betas spelled `unit` as
-      // `linkedReads: 'off' | 'normal'`.
-      // #region retired
-      retired: {
-        colorBy: colorSlotsOf,
-        drawInter: (v: unknown) => ({ showInterchrom: v }),
-        drawLongRange: (v: unknown) => ({ showLongRange: v }),
-        filterBy: (filter: unknown) => ({ filter }),
-        linkedReads: (v: unknown) => ({
-          unit: v === 'normal' ? 'chain' : 'read',
-        }),
-      },
-      // #endregion
+      retired: retiredConfigSpellings,
     },
   )
 }

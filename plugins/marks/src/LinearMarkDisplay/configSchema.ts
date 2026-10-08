@@ -4,11 +4,9 @@ import {
   normalizeChannel,
   paintedScale,
 } from '@jbrowse/display-kit/colorConfigSchema'
+import { retiredBaseDisplaySpellings } from '@jbrowse/display-kit/configSchema'
 import { densityTierConfigSchemaFields } from '@jbrowse/display-kit/densityTierConfigSchemaFields'
-import {
-  jexlFilterConfigSchemaFields,
-  retiredFilterSpelling,
-} from '@jbrowse/display-kit/jexlFilterConfigSchemaFields'
+import { jexlFilterConfigSchemaFields } from '@jbrowse/display-kit/jexlFilterConfigSchemaFields'
 import { regionTooLargeConfigSchemaFields } from '@jbrowse/display-kit/regionTooLargeConfigSchemaFields'
 import { rowColorConfigSchema } from '@jbrowse/display-kit/rowColorConfigSchema'
 import { rowsConfigSchema } from '@jbrowse/display-kit/rowsConfigSchema'
@@ -551,7 +549,7 @@ export function configSchemaFactory() {
     {
       explicitlyTyped: true,
       explicitIdentifier: 'displayId',
-      retired: { ...retiredAxisSpellings, ...retiredFilterSpelling },
+      retired: { ...retiredBaseDisplaySpellings, ...retiredAxisSpellings },
       preProcessSnapshot: checkMarks,
     },
   )

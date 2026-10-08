@@ -36,6 +36,8 @@ const configSchema = (pluginManager: PluginManager) =>
        * #baseConfiguration
        */
       baseConfiguration: createBaseTrackConfig(pluginManager),
+      // v1-v4 named the two tracks a synteny view paired
+      retired: { trackIds: () => ({}) },
     },
   )
 

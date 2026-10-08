@@ -1,8 +1,24 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 
+import { retiredFilterSpelling } from './jexlFilterConfigSchemaFields.ts'
 import { regionTooLargeConfigSchemaFields } from './regionTooLargeConfigSchemaFields.ts'
 
 import type { Instance } from '@jbrowse/mobx-state-tree'
+
+/**
+ * The slots v1-v4's base display declared that no display reads now, and
+ * `jexlFilters`, which lifts into `filter` where a display declares it. The
+ * base declares it, and a display standing apart from the base (wiggle, Hi-C,
+ * LD, the mark display) spreads it; a name a display still declares is left
+ * alone, so `fetchSizeLimit` and `mouseover` lift nowhere a slot takes them.
+ */
+export const retiredBaseDisplaySpellings = {
+  maxFeatureScreenDensity: () => ({}),
+  maxDisplayedBpPerPx: () => ({}),
+  fetchSizeLimit: () => ({}),
+  mouseover: () => ({}),
+  ...retiredFilterSpelling,
+}
 
 /**
  * #config BaseLinearDisplay
@@ -14,7 +30,6 @@ import type { Instance } from '@jbrowse/mobx-state-tree'
  * it too. `filter` is not here: it lives in
  * `jexlFilterConfigSchemaFields`, which only the displays that read it spread.
  */
-
 const baseLinearDisplayConfigSchema = ConfigurationSchema(
   'BaseLinearDisplay',
   {
@@ -49,6 +64,7 @@ const baseLinearDisplayConfigSchema = ConfigurationSchema(
      * #identifier
      */
     explicitIdentifier: 'displayId',
+    retired: retiredBaseDisplaySpellings,
   },
 )
 

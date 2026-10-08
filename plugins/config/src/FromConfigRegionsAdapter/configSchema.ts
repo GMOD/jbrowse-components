@@ -51,6 +51,7 @@ const regionsConfigSchema = ConfigurationSchema(
   {
     explicitlyTyped: true,
     closed: true,
+    retired: { featureClass: () => ({}) },
   },
 )
 export default regionsConfigSchema

@@ -50,6 +50,7 @@ const sequenceConfigSchema = ConfigurationSchema(
   {
     explicitlyTyped: true,
     closed: true,
+    retired: { featureClass: () => ({}) },
   },
 )
 

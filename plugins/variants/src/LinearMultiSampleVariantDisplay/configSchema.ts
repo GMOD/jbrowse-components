@@ -1,10 +1,7 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import baseLinearDisplayConfigSchema from '@jbrowse/display-kit/configSchema'
 import { facetConfigSchema } from '@jbrowse/display-kit/facetConfigSchema'
-import {
-  jexlFilterConfigSchemaFields,
-  retiredFilterSpelling,
-} from '@jbrowse/display-kit/jexlFilterConfigSchemaFields'
+import { jexlFilterConfigSchemaFields } from '@jbrowse/display-kit/jexlFilterConfigSchemaFields'
 import { rowColorConfigSchema } from '@jbrowse/display-kit/rowColorConfigSchema'
 import { sampleRowsConfigSchema } from '@jbrowse/display-kit/sampleRowsConfigSchema'
 import { types } from '@jbrowse/mobx-state-tree'
@@ -341,11 +338,26 @@ export default function configSchemaFactory() {
        */
       baseConfiguration: baseLinearDisplayConfigSchema,
       explicitlyTyped: true,
+      // v4's two multi-sample displays spelt the sidebar labels and the
+      // reference-allele paint as booleans, named a colour scheme the
+      // `color` object has no member for, and carried the wiggle scale slots
+      // the matrix never read.
       retired: {
-        ...retiredFilterSpelling,
         renderingMode: (v: unknown) => ({
           unit: v === 'phased' ? 'haplotype' : 'sample',
         }),
+        showSidebarLabels: (showRowLabels: unknown) => ({ showRowLabels }),
+        showReferenceAlleles: (draw: unknown) => ({
+          referenceDrawingMode: draw ? 'draw' : 'skip',
+        }),
+        colorBy: () => ({}),
+        autoscale: () => ({}),
+        minScore: () => ({}),
+        maxScore: () => ({}),
+        scaleType: () => ({}),
+        inverted: () => ({}),
+        numStdDev: () => ({}),
+        minimalTicks: () => ({}),
       },
     },
   )

@@ -93,6 +93,7 @@ const MCScanAnchorsAdapter = ConfigurationSchema(
   {
     explicitlyTyped: true,
     closed: true,
+    retired: { subadapters: () => ({}) },
 
     /**
      * #preProcessSnapshot

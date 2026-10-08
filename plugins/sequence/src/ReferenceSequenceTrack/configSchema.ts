@@ -100,7 +100,8 @@ export function createReferenceSeqTrackConfig(pluginManager: PluginManager) {
       explicitIdentifier: 'trackId',
       explicitlyTyped: true,
       closed: true,
-      retired: { rpcDriverName: () => ({}) },
+      // the assembly guide wrote `rendering` through v4.3
+      retired: { rpcDriverName: () => ({}), rendering: () => ({}) },
     },
   )
 }

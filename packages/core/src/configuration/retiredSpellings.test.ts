@@ -53,6 +53,18 @@ test('the first declaration wins where two lift onto one member', () => {
   expect(lift({ renderer: { strokeColor: 'blue' } })).toEqual({ color: 'blue' })
 })
 
+test('a retired name the schema declares is that slot', () => {
+  const declaring = ConfigurationSchema(
+    'Declaring',
+    { size: { type: 'number', defaultValue: 2 } },
+    { explicitlyTyped: true, retired: { size: () => ({}), width: () => ({}) } },
+  )
+  const snap = { size: 9, width: 3 }
+  expect(
+    liftRetiredSpellings(getConfigurationSchemaMetadata(declaring)!, snap),
+  ).toEqual({ size: 9 })
+})
+
 // A `displays` union runs every member's preprocessor over every entry while
 // it works out which display an entry is.
 test('an entry naming another type is left as it was', () => {

@@ -71,7 +71,12 @@ export const configSchema = ConfigurationSchema(
     // apply to a sequence row), so the pair comes from the mixin's own table.
     ...regionTooLargeConfigSchemaFields,
   },
-  { explicitIdentifier: 'displayId', explicitlyTyped: true },
+  {
+    explicitIdentifier: 'displayId',
+    explicitlyTyped: true,
+    // v4's renderer block held the row height
+    retired: { renderer: () => ({}) },
+  },
 )
 
 export type LinearReferenceSequenceDisplayConfigModel = typeof configSchema

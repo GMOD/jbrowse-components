@@ -104,6 +104,10 @@ A display's schema is `closed` without saying so, and an adapter's says
 without it and names the key on the console, and a write of one through
 `setConf` throws. An adapter's `preProcessSnapshot` therefore strips the
 shorthand keys it consumed, which `fillLocations` does for `uri` and `baseUri`.
+A key a shipped release declared and a later one dropped goes in the schema's
+`retired` map instead, lifted onto the slot that took it over or dropped with
+`() => ({})`, so a config written for that release loads in silence and
+`jbrowse validate` reports a dropped key as never read.
 
 The `Instance<typeof …>` export at the bottom is how the rest of the codebase
 gets a typed handle on the schema — it is the `CONF` in

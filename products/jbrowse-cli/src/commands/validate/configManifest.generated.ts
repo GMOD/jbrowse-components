@@ -15,6 +15,9 @@ export const configManifest: ConfigManifest = {
           "type": "((LocalPathLocation | UriLocation | BlobLocation | FileHandleLocation) | undefined)"
         }
       ],
+      "legacyKeys": [
+        "cytobandsLocation"
+      ],
       "shorthandKeys": [
         "uri",
         "baseUri"
@@ -92,10 +95,12 @@ export const configManifest: ConfigManifest = {
         }
       ],
       "legacyKeys": [
-        "sequenceAdapter"
+        "sequenceAdapter",
+        "chunkSizeLimit"
       ],
       "droppedKeys": [
-        "sequenceAdapter"
+        "sequenceAdapter",
+        "chunkSizeLimit"
       ],
       "shorthandKeys": [
         "uri",
@@ -384,6 +389,12 @@ export const configManifest: ConfigManifest = {
           "type": "frozen"
         }
       ],
+      "legacyKeys": [
+        "featureClass"
+      ],
+      "droppedKeys": [
+        "featureClass"
+      ],
       "shorthandKeys": []
     },
     "FromConfigRegionsAdapter": {
@@ -401,6 +412,12 @@ export const configManifest: ConfigManifest = {
           "type": "frozen"
         }
       ],
+      "legacyKeys": [
+        "featureClass"
+      ],
+      "droppedKeys": [
+        "featureClass"
+      ],
       "shorthandKeys": []
     },
     "FromConfigSequenceAdapter": {
@@ -417,6 +434,12 @@ export const configManifest: ConfigManifest = {
           "name": "features",
           "type": "frozen"
         }
+      ],
+      "legacyKeys": [
+        "featureClass"
+      ],
+      "droppedKeys": [
+        "featureClass"
       ],
       "shorthandKeys": []
     },
@@ -458,6 +481,9 @@ export const configManifest: ConfigManifest = {
           "name": "useNameOverride",
           "type": "boolean"
         }
+      ],
+      "legacyKeys": [
+        "useUcscNameOverride"
       ],
       "shorthandKeys": [
         "uri",
@@ -1520,6 +1546,12 @@ export const configManifest: ConfigManifest = {
           "type": "string[]"
         }
       ],
+      "legacyKeys": [
+        "subadapters"
+      ],
+      "droppedKeys": [
+        "subadapters"
+      ],
       "shorthandKeys": [
         "uri",
         "baseUri",
@@ -1808,10 +1840,14 @@ export const configManifest: ConfigManifest = {
         }
       ],
       "legacyKeys": [
-        "rpcDriverName"
+        "rpcDriverName",
+        "textSearchAdapter",
+        "textSearchIndexingAttributes"
       ],
       "droppedKeys": [
-        "rpcDriverName"
+        "rpcDriverName",
+        "textSearchAdapter",
+        "textSearchIndexingAttributes"
       ],
       "displayTypes": [
         "LinearBasicDisplay",
@@ -1919,10 +1955,14 @@ export const configManifest: ConfigManifest = {
         }
       ],
       "legacyKeys": [
-        "rpcDriverName"
+        "rpcDriverName",
+        "textSearchAdapter",
+        "textSearchIndexingAttributes"
       ],
       "droppedKeys": [
-        "rpcDriverName"
+        "rpcDriverName",
+        "textSearchAdapter",
+        "textSearchIndexingAttributes"
       ],
       "displayTypes": [
         "LinearAlignmentsDisplay",
@@ -1979,10 +2019,12 @@ export const configManifest: ConfigManifest = {
         }
       ],
       "legacyKeys": [
-        "rpcDriverName"
+        "rpcDriverName",
+        "rendering"
       ],
       "droppedKeys": [
-        "rpcDriverName"
+        "rpcDriverName",
+        "rendering"
       ],
       "displayTypes": [
         "LinearReferenceSequenceDisplay"
@@ -2086,10 +2128,14 @@ export const configManifest: ConfigManifest = {
         }
       ],
       "legacyKeys": [
-        "rpcDriverName"
+        "rpcDriverName",
+        "textSearchAdapter",
+        "textSearchIndexingAttributes"
       ],
       "droppedKeys": [
-        "rpcDriverName"
+        "rpcDriverName",
+        "textSearchAdapter",
+        "textSearchIndexingAttributes"
       ],
       "displayTypes": [
         "ChordVariantDisplay",
@@ -2196,10 +2242,14 @@ export const configManifest: ConfigManifest = {
         }
       ],
       "legacyKeys": [
-        "rpcDriverName"
+        "rpcDriverName",
+        "textSearchAdapter",
+        "textSearchIndexingAttributes"
       ],
       "droppedKeys": [
-        "rpcDriverName"
+        "rpcDriverName",
+        "textSearchAdapter",
+        "textSearchIndexingAttributes"
       ],
       "displayTypes": [
         "LDTrackDisplay"
@@ -2303,10 +2353,14 @@ export const configManifest: ConfigManifest = {
         }
       ],
       "legacyKeys": [
-        "rpcDriverName"
+        "rpcDriverName",
+        "textSearchAdapter",
+        "textSearchIndexingAttributes"
       ],
       "droppedKeys": [
-        "rpcDriverName"
+        "rpcDriverName",
+        "textSearchAdapter",
+        "textSearchIndexingAttributes"
       ],
       "displayTypes": [
         "LinearWiggleDisplay",
@@ -2411,10 +2465,14 @@ export const configManifest: ConfigManifest = {
         }
       ],
       "legacyKeys": [
-        "rpcDriverName"
+        "rpcDriverName",
+        "textSearchAdapter",
+        "textSearchIndexingAttributes"
       ],
       "droppedKeys": [
-        "rpcDriverName"
+        "rpcDriverName",
+        "textSearchAdapter",
+        "textSearchIndexingAttributes"
       ],
       "displayTypes": [
         "LinearWiggleDisplay",
@@ -2519,10 +2577,14 @@ export const configManifest: ConfigManifest = {
         }
       ],
       "legacyKeys": [
-        "rpcDriverName"
+        "rpcDriverName",
+        "textSearchAdapter",
+        "textSearchIndexingAttributes"
       ],
       "droppedKeys": [
-        "rpcDriverName"
+        "rpcDriverName",
+        "textSearchAdapter",
+        "textSearchIndexingAttributes"
       ],
       "displayTypes": [
         "LinearWiggleDisplay"
@@ -2626,10 +2688,14 @@ export const configManifest: ConfigManifest = {
         }
       ],
       "legacyKeys": [
-        "rpcDriverName"
+        "rpcDriverName",
+        "textSearchAdapter",
+        "textSearchIndexingAttributes"
       ],
       "droppedKeys": [
-        "rpcDriverName"
+        "rpcDriverName",
+        "textSearchAdapter",
+        "textSearchIndexingAttributes"
       ],
       "displayTypes": [
         "LinearMafDisplay",
@@ -2734,10 +2800,14 @@ export const configManifest: ConfigManifest = {
         }
       ],
       "legacyKeys": [
-        "rpcDriverName"
+        "rpcDriverName",
+        "textSearchAdapter",
+        "textSearchIndexingAttributes"
       ],
       "droppedKeys": [
-        "rpcDriverName"
+        "rpcDriverName",
+        "textSearchAdapter",
+        "textSearchIndexingAttributes"
       ],
       "displayTypes": [
         "LinearHicDisplay"
@@ -2841,10 +2911,16 @@ export const configManifest: ConfigManifest = {
         }
       ],
       "legacyKeys": [
-        "rpcDriverName"
+        "rpcDriverName",
+        "textSearchAdapter",
+        "textSearchIndexingAttributes",
+        "trackIds"
       ],
       "droppedKeys": [
-        "rpcDriverName"
+        "rpcDriverName",
+        "textSearchAdapter",
+        "textSearchIndexingAttributes",
+        "trackIds"
       ],
       "displayTypes": [
         "ChordSyntenyDisplay",
@@ -2953,10 +3029,14 @@ export const configManifest: ConfigManifest = {
         }
       ],
       "legacyKeys": [
-        "rpcDriverName"
+        "rpcDriverName",
+        "textSearchAdapter",
+        "textSearchIndexingAttributes"
       ],
       "droppedKeys": [
-        "rpcDriverName"
+        "rpcDriverName",
+        "textSearchAdapter",
+        "textSearchIndexingAttributes"
       ],
       "displayTypes": [
         "LinearManhattanDisplay"
@@ -3199,16 +3279,21 @@ export const configManifest: ConfigManifest = {
         }
       ],
       "legacyKeys": [
+        "maxDisplayedBpPerPx",
+        "jexlFilters",
         "color1",
         "color2",
         "color3",
         "outline",
         "maxHeight",
         "renderer",
-        "jexlFilters",
         "showDescriptions"
       ],
       "droppedKeys": [
+        "maxFeatureScreenDensity",
+        "maxDisplayedBpPerPx",
+        "fetchSizeLimit",
+        "mouseover",
         "maxHeight"
       ],
       "legacyValues": {
@@ -3474,6 +3559,17 @@ export const configManifest: ConfigManifest = {
           "name": "treeAreaWidth",
           "type": "number"
         }
+      ],
+      "legacyKeys": [
+        "maxFeatureScreenDensity",
+        "maxDisplayedBpPerPx",
+        "jexlFilters"
+      ],
+      "droppedKeys": [
+        "maxFeatureScreenDensity",
+        "maxDisplayedBpPerPx",
+        "fetchSizeLimit",
+        "mouseover"
       ],
       "stateModelProps": [
         "id",
@@ -3967,11 +4063,48 @@ export const configManifest: ConfigManifest = {
         }
       ],
       "legacyKeys": [
+        "maxFeatureScreenDensity",
+        "maxDisplayedBpPerPx",
+        "jexlFilters",
         "colorBy",
         "drawInter",
         "drawLongRange",
         "filterBy",
-        "linkedReads"
+        "linkedReads",
+        "pileupDisplay",
+        "snpCoverageDisplay",
+        "defaultRendering",
+        "renderers",
+        "colorScheme",
+        "scaleType",
+        "autoscale",
+        "minScore",
+        "maxScore",
+        "numStdDev",
+        "inverted",
+        "multiTicks",
+        "jitter",
+        "lineWidth",
+        "hideSmallIndels",
+        "hideMismatches",
+        "hideLargeIndels",
+        "minSubfeatureWidth"
+      ],
+      "droppedKeys": [
+        "maxFeatureScreenDensity",
+        "maxDisplayedBpPerPx",
+        "fetchSizeLimit",
+        "mouseover",
+        "jexlFilters",
+        "defaultRendering",
+        "colorScheme",
+        "numStdDev",
+        "inverted",
+        "multiTicks",
+        "jitter",
+        "hideSmallIndels",
+        "hideLargeIndels",
+        "minSubfeatureWidth"
       ],
       "aliases": [
         "LinearPileupDisplay",
@@ -4112,6 +4245,12 @@ export const configManifest: ConfigManifest = {
           "type": "identifier"
         }
       ],
+      "legacyKeys": [
+        "renderer"
+      ],
+      "droppedKeys": [
+        "renderer"
+      ],
       "stateModelProps": [
         "id",
         "type",
@@ -4128,6 +4267,14 @@ export const configManifest: ConfigManifest = {
           "name": "displayId",
           "type": "identifier"
         }
+      ],
+      "legacyKeys": [
+        "renderer",
+        "middle"
+      ],
+      "droppedKeys": [
+        "renderer",
+        "middle"
       ],
       "stateModelProps": [
         "id",
@@ -4627,11 +4774,48 @@ export const configManifest: ConfigManifest = {
         }
       ],
       "legacyKeys": [
+        "maxFeatureScreenDensity",
+        "maxDisplayedBpPerPx",
+        "jexlFilters",
         "colorBy",
         "drawInter",
         "drawLongRange",
         "filterBy",
-        "linkedReads"
+        "linkedReads",
+        "pileupDisplay",
+        "snpCoverageDisplay",
+        "defaultRendering",
+        "renderers",
+        "colorScheme",
+        "scaleType",
+        "autoscale",
+        "minScore",
+        "maxScore",
+        "numStdDev",
+        "inverted",
+        "multiTicks",
+        "jitter",
+        "lineWidth",
+        "hideSmallIndels",
+        "hideMismatches",
+        "hideLargeIndels",
+        "minSubfeatureWidth"
+      ],
+      "droppedKeys": [
+        "maxFeatureScreenDensity",
+        "maxDisplayedBpPerPx",
+        "fetchSizeLimit",
+        "mouseover",
+        "jexlFilters",
+        "defaultRendering",
+        "colorScheme",
+        "numStdDev",
+        "inverted",
+        "multiTicks",
+        "jitter",
+        "hideSmallIndels",
+        "hideLargeIndels",
+        "minSubfeatureWidth"
       ],
       "stateModelProps": [
         "id",
@@ -5131,6 +5315,17 @@ export const configManifest: ConfigManifest = {
           "type": "boolean"
         }
       ],
+      "legacyKeys": [
+        "maxFeatureScreenDensity",
+        "maxDisplayedBpPerPx",
+        "jexlFilters"
+      ],
+      "droppedKeys": [
+        "maxFeatureScreenDensity",
+        "maxDisplayedBpPerPx",
+        "fetchSizeLimit",
+        "mouseover"
+      ],
       "stateModelProps": [
         "id",
         "type",
@@ -5173,6 +5368,12 @@ export const configManifest: ConfigManifest = {
           "name": "forceLoad",
           "type": "boolean"
         }
+      ],
+      "legacyKeys": [
+        "renderer"
+      ],
+      "droppedKeys": [
+        "renderer"
       ],
       "stateModelProps": [
         "id",
@@ -5363,16 +5564,21 @@ export const configManifest: ConfigManifest = {
         }
       ],
       "legacyKeys": [
+        "maxDisplayedBpPerPx",
+        "jexlFilters",
         "color1",
         "color2",
         "color3",
         "outline",
         "maxHeight",
         "renderer",
-        "jexlFilters",
         "showDescriptions"
       ],
       "droppedKeys": [
+        "maxFeatureScreenDensity",
+        "maxDisplayedBpPerPx",
+        "fetchSizeLimit",
+        "mouseover",
         "maxHeight"
       ],
       "legacyValues": {
@@ -5628,8 +5834,34 @@ export const configManifest: ConfigManifest = {
         }
       ],
       "legacyKeys": [
+        "maxFeatureScreenDensity",
+        "maxDisplayedBpPerPx",
         "jexlFilters",
-        "renderingMode"
+        "renderingMode",
+        "showSidebarLabels",
+        "showReferenceAlleles",
+        "colorBy",
+        "autoscale",
+        "minScore",
+        "maxScore",
+        "scaleType",
+        "inverted",
+        "numStdDev",
+        "minimalTicks"
+      ],
+      "droppedKeys": [
+        "maxFeatureScreenDensity",
+        "maxDisplayedBpPerPx",
+        "fetchSizeLimit",
+        "mouseover",
+        "colorBy",
+        "autoscale",
+        "minScore",
+        "maxScore",
+        "scaleType",
+        "inverted",
+        "numStdDev",
+        "minimalTicks"
       ],
       "aliases": [
         "MultiLinearVariantDisplay",
@@ -5738,7 +5970,40 @@ export const configManifest: ConfigManifest = {
         }
       ],
       "legacyKeys": [
-        "ldMetric"
+        "maxFeatureScreenDensity",
+        "maxDisplayedBpPerPx",
+        "fetchSizeLimit",
+        "mouseover",
+        "jexlFilters",
+        "ldMetric",
+        "fitToHeight",
+        "useGenomicPositions",
+        "maxHeight",
+        "colorScheme",
+        "signedLD",
+        "showLDTriangle",
+        "showRecombination",
+        "recombinationZoneHeight",
+        "minorAlleleFrequencyFilter",
+        "lengthCutoffFilter",
+        "hweFilterThreshold",
+        "callRateFilter"
+      ],
+      "droppedKeys": [
+        "maxFeatureScreenDensity",
+        "maxDisplayedBpPerPx",
+        "fetchSizeLimit",
+        "mouseover",
+        "maxHeight",
+        "colorScheme",
+        "signedLD",
+        "showLDTriangle",
+        "showRecombination",
+        "recombinationZoneHeight",
+        "minorAlleleFrequencyFilter",
+        "lengthCutoffFilter",
+        "hweFilterThreshold",
+        "callRateFilter"
       ],
       "legacyValues": {
         "showLabels": [
@@ -6014,6 +6279,11 @@ export const configManifest: ConfigManifest = {
         }
       ],
       "legacyKeys": [
+        "maxFeatureScreenDensity",
+        "maxDisplayedBpPerPx",
+        "fetchSizeLimit",
+        "mouseover",
+        "jexlFilters",
         "displayCrossHatches",
         "minimalTicks",
         "scaleType",
@@ -6027,6 +6297,10 @@ export const configManifest: ConfigManifest = {
         "lineWidth"
       ],
       "droppedKeys": [
+        "maxFeatureScreenDensity",
+        "maxDisplayedBpPerPx",
+        "fetchSizeLimit",
+        "mouseover",
         "numStdDev",
         "inverted"
       ],
@@ -6342,6 +6616,17 @@ export const configManifest: ConfigManifest = {
           "type": "boolean"
         }
       ],
+      "legacyKeys": [
+        "maxFeatureScreenDensity",
+        "maxDisplayedBpPerPx",
+        "jexlFilters"
+      ],
+      "droppedKeys": [
+        "maxFeatureScreenDensity",
+        "maxDisplayedBpPerPx",
+        "fetchSizeLimit",
+        "mouseover"
+      ],
       "stateModelProps": [
         "id",
         "type",
@@ -6430,7 +6715,20 @@ export const configManifest: ConfigManifest = {
         }
       ],
       "legacyKeys": [
+        "maxFeatureScreenDensity",
+        "maxDisplayedBpPerPx",
+        "fetchSizeLimit",
+        "mouseover",
+        "jexlFilters",
+        "renderer",
         "useColorPercentile"
+      ],
+      "droppedKeys": [
+        "maxFeatureScreenDensity",
+        "maxDisplayedBpPerPx",
+        "fetchSizeLimit",
+        "mouseover",
+        "renderer"
       ],
       "stateModelProps": [
         "id",
@@ -6918,9 +7216,18 @@ export const configManifest: ConfigManifest = {
         }
       ],
       "legacyKeys": [
+        "maxFeatureScreenDensity",
+        "maxDisplayedBpPerPx",
+        "mouseover",
+        "jexlFilters",
         "displayCrossHatches",
-        "minimalTicks",
-        "jexlFilters"
+        "minimalTicks"
+      ],
+      "droppedKeys": [
+        "maxFeatureScreenDensity",
+        "maxDisplayedBpPerPx",
+        "fetchSizeLimit",
+        "mouseover"
       ],
       "stateModelProps": [
         "id",
@@ -7405,9 +7712,18 @@ export const configManifest: ConfigManifest = {
         }
       ],
       "legacyKeys": [
+        "maxFeatureScreenDensity",
+        "maxDisplayedBpPerPx",
+        "mouseover",
+        "jexlFilters",
         "displayCrossHatches",
-        "minimalTicks",
-        "jexlFilters"
+        "minimalTicks"
+      ],
+      "droppedKeys": [
+        "maxFeatureScreenDensity",
+        "maxDisplayedBpPerPx",
+        "fetchSizeLimit",
+        "mouseover"
       ],
       "aliases": [
         "LinearArcDisplay",

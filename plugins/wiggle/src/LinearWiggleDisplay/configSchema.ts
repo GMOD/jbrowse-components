@@ -1,4 +1,5 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
+import { retiredBaseDisplaySpellings } from '@jbrowse/display-kit/configSchema'
 import { rowColorConfigSchema } from '@jbrowse/display-kit/rowColorConfigSchema'
 import { trackHeightConfigSchemaFields } from '@jbrowse/display-kit/trackHeightConfigSchemaFields'
 import { types } from '@jbrowse/mobx-state-tree'
@@ -6,7 +7,10 @@ import {
   rowSeparatorsConfigSchemaFields,
   treeSidebarConfigSchemaFields,
 } from '@jbrowse/tree-sidebar/treeSidebarConfigSchemaFields'
-import { retiredAxisSpellings } from '@jbrowse/wiggle-core'
+import {
+  retiredAxisSpellings,
+  retiredScaleSpellings,
+} from '@jbrowse/wiggle-core'
 
 import { quantitativeRowsConfigSchema } from '../shared/quantitativeRowsConfigSchema.ts'
 import { summaryScoreModeConfigSchemaFields } from '../shared/summaryScoreModeConfigSchemaFields.ts'
@@ -210,7 +214,9 @@ const linearWiggleDisplayConfigSchema = ConfigurationSchema(
     explicitlyTyped: true,
     explicitIdentifier: 'displayId',
     retired: {
+      ...retiredBaseDisplaySpellings,
       ...retiredAxisSpellings,
+      ...retiredScaleSpellings,
       ...retiredConfigSpellings,
       defaultRendering: rendering =>
         markOf(String(rendering)) ?? { mark: rendering },

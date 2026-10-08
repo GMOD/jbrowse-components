@@ -1,6 +1,8 @@
 export {
   retiredAxisSpellings,
+  retiredScaleSpellings,
   scalesSchema,
+  valueScaleOf,
   valueScaleSchema,
 } from './valueScaleConfigSchema.ts'
 export type {

@@ -1,5 +1,6 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import { triangleMatrixConfigSchemaFields } from '@jbrowse/display-kit/TriangleMatrixMixin'
+import { retiredBaseDisplaySpellings } from '@jbrowse/display-kit/configSchema'
 import { trackHeightConfigSchemaFields } from '@jbrowse/display-kit/trackHeightConfigSchemaFields'
 
 import { hicColorConfigSchema } from './hicColorConfigSchema.ts'
@@ -73,7 +74,12 @@ const HicTrackConfigFactory = () => {
        * #identifier
        */
       explicitIdentifier: 'displayId',
+      // v4's renderer block held a base colour the ramp has no member for,
+      // a cap on the triangle's height and a per-cell callback into the
+      // plugin's jexl functions.
       retired: {
+        ...retiredBaseDisplaySpellings,
+        renderer: () => ({}),
         // eslint-disable-next-line @eslint-react/no-unnecessary-use-prefix -- the retired slot's own name
         useColorPercentile: follows => ({
           color: { domainQuantile: follows ? 0.95 : 1 },

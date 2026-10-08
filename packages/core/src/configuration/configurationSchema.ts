@@ -116,7 +116,10 @@ export interface ConfigurationSchemaOptions<
    * snapshot or a settings bag arrives by, and read by the `displayDefaults`
    * router, so one declaration serves a config entry, the shorthand object, a
    * share link and an agent's bag alike. A spelling the snapshot already
-   * carries wins over the one a lift produces.
+   * carries wins over the one a lift produces, and a name the schema declares
+   * is left alone, so a subclass keeping a slot its base retired still takes
+   * it. A lift reading no value and answering no member (`() => ({})`) drops
+   * the key, which `jbrowse validate` reports as never read.
    */
   retired?: Record<string, RetiredSpelling>
   /**

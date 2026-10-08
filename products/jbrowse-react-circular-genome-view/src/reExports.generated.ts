@@ -177,7 +177,7 @@ const libs: Record<string, unknown> = {
   '@jbrowse/display-kit/colorByMenu': m7,
   '@jbrowse/display-kit/colorConfigSchema': m8,
   '@jbrowse/display-kit/ConfigProblemsIndicator': { ...m9, __esModule: true },
-  '@jbrowse/display-kit/configSchema': m10.default,
+  '@jbrowse/display-kit/configSchema': { ...m10, __esModule: true },
   '@jbrowse/display-kit/const': m11,
   '@jbrowse/display-kit/ContextMenuMixin': m12,
   '@jbrowse/display-kit/densityTier': m13,

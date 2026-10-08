@@ -970,18 +970,30 @@ For the common case — a _display's_ config across a format change — declare 
 rather than registering a handler. A name an older release used goes in the
 config schema's `retired`:
 
-<!-- include: plugins/alignments/src/LinearAlignmentsDisplay/configSchema.ts#retired -->
+<!-- include: plugins/alignments/src/LinearAlignmentsDisplay/retired.ts#retired -->
 
 ```typescript
-retired: {
+export const retiredConfigSpellings: Record<string, RetiredSpelling> = {
   colorBy: colorSlotsOf,
-  drawInter: (v: unknown) => ({ showInterchrom: v }),
-  drawLongRange: (v: unknown) => ({ showLongRange: v }),
-  filterBy: (filter: unknown) => ({ filter }),
-  linkedReads: (v: unknown) => ({
-    unit: v === 'normal' ? 'chain' : 'read',
-  }),
-},
+  drawInter: v => ({ showInterchrom: v }),
+  drawLongRange: v => ({ showLongRange: v }),
+  filterBy: filter => ({ filter }),
+  linkedReads: v => ({ unit: v === 'normal' ? 'chain' : 'read' }),
+  jexlFilters: () => ({}),
+  pileupDisplay: block => subDisplaySlotsOf(block, 'pileup'),
+  snpCoverageDisplay: block => subDisplaySlotsOf(block, 'coverage'),
+  defaultRendering: () => ({}),
+  renderers: rendererSlotsOf,
+  colorScheme: () => ({}),
+  ...retiredScaleSpellings,
+  multiTicks: () => ({}),
+  jitter: () => ({}),
+  lineWidth: v => ({ readConnectionsLineWidth: v }),
+  hideSmallIndels: () => ({}),
+  hideMismatches: v => ({ showMismatches: !v }),
+  hideLargeIndels: () => ({}),
+  minSubfeatureWidth: () => ({}),
+}
 ```
 
 Each entry maps the old name to the members its value becomes. One declaration

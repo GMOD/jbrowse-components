@@ -340,7 +340,13 @@ export function createBaseTrackConfig(pluginManager: PluginManager) {
       explicitIdentifier: 'trackId',
       explicitlyTyped: true,
       closed: true,
-      retired: { rpcDriverName: () => ({}) },
+      // v1.3 wrote the text-search adapter and its attributes on the track,
+      // before `textSearching`
+      retired: {
+        rpcDriverName: () => ({}),
+        textSearchAdapter: () => ({}),
+        textSearchIndexingAttributes: () => ({}),
+      },
     },
   )
 }

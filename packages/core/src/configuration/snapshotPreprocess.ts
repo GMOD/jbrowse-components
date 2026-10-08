@@ -157,6 +157,8 @@ function underWritten(written: unknown, lifted: unknown): unknown {
  * the display has no slot for, and they were dropped then too. Where two
  * retired names lift onto one member — a slot the entry spelt directly and
  * the same slot inside a retired `renderer` — the one declared first wins.
+ * A retired name the schema itself declares is that slot, not a spelling,
+ * so a list shared across displays leaves it alone where one still takes it.
  */
 export function liftRetiredSpellings(
   schema: ConfigurationSchemaMetadata,
@@ -167,7 +169,10 @@ export function liftRetiredSpellings(
     return snapshot
   }
   const declared = new Set(declaredKeys(schema))
-  return applyRetiredSpellings(retired, snapshot, name => declared.has(name))
+  const spellings = Object.fromEntries(
+    Object.entries(retired).filter(([name]) => !declared.has(name)),
+  )
+  return applyRetiredSpellings(spellings, snapshot, name => declared.has(name))
 }
 
 /**

@@ -42,7 +42,12 @@ const configSchema = ConfigurationSchema(
       defaultValue: [],
     },
   },
-  { explicitlyTyped: true, closed: true },
+  // v1 named the feature class the adapter built
+  {
+    explicitlyTyped: true,
+    closed: true,
+    retired: { featureClass: () => ({}) },
+  },
 )
 
 export default configSchema

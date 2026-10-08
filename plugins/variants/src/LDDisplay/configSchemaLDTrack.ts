@@ -1,5 +1,6 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import { triangleMatrixConfigSchemaFields } from '@jbrowse/display-kit/TriangleMatrixMixin'
+import { retiredBaseDisplaySpellings } from '@jbrowse/display-kit/configSchema'
 import { trackHeightConfigSchemaFields } from '@jbrowse/display-kit/trackHeightConfigSchemaFields'
 import { types } from '@jbrowse/mobx-state-tree'
 
@@ -125,8 +126,26 @@ export default function ldTrackDisplayConfigSchema() {
        * #identifier
        */
       explicitIdentifier: 'displayId',
+      // v4.1-v4.3's display filtered and signed the statistic itself and
+      // drew a recombination band; the file carries the statistic now.
       retired: {
+        ...retiredBaseDisplaySpellings,
         ldMetric: field => ({ color: { field } }),
+        fitToHeight: squashToHeight => ({ squashToHeight }),
+        // eslint-disable-next-line @eslint-react/no-unnecessary-use-prefix -- the retired slot's own name
+        useGenomicPositions: genomic => ({
+          variantLayout: genomic ? 'genomic' : 'columns',
+        }),
+        maxHeight: () => ({}),
+        colorScheme: () => ({}),
+        signedLD: () => ({}),
+        showLDTriangle: () => ({}),
+        showRecombination: () => ({}),
+        recombinationZoneHeight: () => ({}),
+        minorAlleleFrequencyFilter: () => ({}),
+        lengthCutoffFilter: () => ({}),
+        hweFilterThreshold: () => ({}),
+        callRateFilter: () => ({}),
       },
       // v4 spelt the label mode as a boolean
       preProcessSnapshot: snap =>

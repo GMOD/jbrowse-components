@@ -90,6 +90,10 @@ const NcbiSequenceReportAliasAdapterConfigSchema = ConfigurationSchema(
   {
     explicitlyTyped: true,
     closed: true,
+    retired: {
+      // eslint-disable-next-line @eslint-react/no-unnecessary-use-prefix -- the retired slot's own name
+      useUcscNameOverride: useNameOverride => ({ useNameOverride }),
+    },
 
     /**
      * #preProcessSnapshot

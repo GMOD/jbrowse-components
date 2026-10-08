@@ -1,4 +1,5 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
+import { DEFAULT_CLIP_QUANTILE } from '@jbrowse/core/util/quantileExtent'
 import { types } from '@jbrowse/mobx-state-tree'
 
 import type { Instance } from '@jbrowse/mobx-state-tree'
@@ -293,6 +294,54 @@ export const retiredAxisSpellings = {
   minimalTicks: (minimalTicks: unknown) => ({
     scales: { y: { minimalTicks } },
   }),
+}
+
+const isRecord = (v: unknown): v is Record<string, unknown> =>
+  !!v && typeof v === 'object' && !Array.isArray(v)
+
+/**
+ * v4's display-level scale settings as the `scales.y` members they became.
+ * `localpercentile` is a clip; `local`, `localsd`, `global` and `globalsd`
+ * all follow the extremes closely enough to become one.
+ */
+export function valueScaleOf({
+  scale,
+  autoscale,
+  constraints,
+}: Record<string, unknown>) {
+  const y = {
+    ...(typeof scale === 'string' ? { type: scale } : {}),
+    ...(typeof autoscale === 'string'
+      ? {
+          domainQuantile:
+            autoscale === 'localpercentile' ? DEFAULT_CLIP_QUANTILE : 1,
+        }
+      : {}),
+    ...(isRecord(constraints) && typeof constraints.min === 'number'
+      ? { domainMin: constraints.min }
+      : {}),
+    ...(isRecord(constraints) && typeof constraints.max === 'number'
+      ? { domainMax: constraints.max }
+      : {}),
+  }
+  return Object.keys(y).length > 0 ? { scales: { y } } : {}
+}
+
+/**
+ * The scale slots v4 declared on a display, as `retired` declares them on
+ * each display whose `scales.y` took them over. `minScore` and `maxScore`
+ * were unset at v4's own sentinels; `numStdDev` and `inverted` have no
+ * successor and are let go.
+ */
+export const retiredScaleSpellings = {
+  scaleType: (scale: unknown) => valueScaleOf({ scale }),
+  autoscale: (autoscale: unknown) => valueScaleOf({ autoscale }),
+  minScore: (min: unknown) =>
+    min === Number.MIN_VALUE ? {} : valueScaleOf({ constraints: { min } }),
+  maxScore: (max: unknown) =>
+    max === Number.MAX_VALUE ? {} : valueScaleOf({ constraints: { max } }),
+  numStdDev: () => ({}),
+  inverted: () => ({}),
 }
 
 /**

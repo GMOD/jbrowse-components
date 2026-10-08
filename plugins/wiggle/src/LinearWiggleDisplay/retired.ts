@@ -1,8 +1,8 @@
-import { DEFAULT_CLIP_QUANTILE } from '@jbrowse/core/util/quantileExtent'
 import {
   RETIRED_ROW_STATE_KEYS,
   liftRetiredRowState,
 } from '@jbrowse/display-kit/retiredSettings'
+import { valueScaleOf } from '@jbrowse/wiggle-core'
 
 import {
   WIGGLE_NEG_COLOR_DEFAULT,
@@ -71,27 +71,6 @@ export const retiredTypes: RetiredDisplayType[] = [
   { type: 'LinearGCContentTrackDisplay' },
 ]
 
-// v4's `localpercentile` is a clip; its `local`, `localsd`, `global` and
-// `globalsd` all follow the extremes closely enough to become one.
-function scaleOf({ scale, autoscale, constraints }: DisplayEntry) {
-  const y = {
-    ...(typeof scale === 'string' ? { type: scale } : {}),
-    ...(typeof autoscale === 'string'
-      ? {
-          domainQuantile:
-            autoscale === 'localpercentile' ? DEFAULT_CLIP_QUANTILE : 1,
-        }
-      : {}),
-    ...(isRecord(constraints) && typeof constraints.min === 'number'
-      ? { domainMin: constraints.min }
-      : {}),
-    ...(isRecord(constraints) && typeof constraints.max === 'number'
-      ? { domainMax: constraints.max }
-      : {}),
-  }
-  return Object.keys(y).length > 0 ? { scales: { y } } : {}
-}
-
 function colorOf({ color, posColor, negColor }: DisplayEntry) {
   return typeof color === 'string'
     ? { color }
@@ -120,21 +99,11 @@ const SAME_NAME = ['summaryScoreMode', 'displayCrossHatches', 'resolution']
 const V4_RENDERERS = ['XYPlotRenderer', 'LinePlotRenderer', 'DensityRenderer']
 
 /**
- * The config slots v4's wiggle display declared that `scales.y` and `color`
- * took over, as the display's `retired` reads them. `minScore` and `maxScore`
- * were unset at v4's own sentinels; `numStdDev` and `inverted` have no
- * successor and are let go, as is everything in a `renderers` block but its
- * colours.
+ * v4's `renderers` block, as the display's `retired` reads it: its colours
+ * become `color`, and everything else in it is let go. The scale slots beside
+ * it are `retiredScaleSpellings`.
  */
 export const retiredConfigSpellings = {
-  scaleType: (scale: unknown) => scaleOf({ scale }),
-  autoscale: (autoscale: unknown) => scaleOf({ autoscale }),
-  minScore: (min: unknown) =>
-    min === Number.MIN_VALUE ? {} : scaleOf({ constraints: { min } }),
-  maxScore: (max: unknown) =>
-    max === Number.MAX_VALUE ? {} : scaleOf({ constraints: { max } }),
-  numStdDev: () => ({}),
-  inverted: () => ({}),
   renderers: (renderers: unknown) => {
     const block = isRecord(renderers) ? renderers : {}
     const coloured = V4_RENDERERS.map(name => block[name])
@@ -163,7 +132,7 @@ export const retiredState: RetiredDisplayState = {
     ...(typeof instance.rendererTypeNameState === 'string'
       ? { defaultRendering: instance.rendererTypeNameState }
       : {}),
-    ...scaleOf(instance),
+    ...valueScaleOf(instance),
     ...colorOf(instance),
     ...Object.fromEntries(
       SAME_NAME.filter(k => instance[k] !== undefined).map(k => [

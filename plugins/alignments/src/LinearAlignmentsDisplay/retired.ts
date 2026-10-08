@@ -1,3 +1,7 @@
+import { applyRetiredSpellings } from '@jbrowse/core/configuration'
+import { retiredScaleSpellings } from '@jbrowse/wiggle-core'
+
+import type { RetiredSpelling } from '@jbrowse/core/configuration'
 import type {
   DisplayEntry,
   RetiredDisplayState,
@@ -96,6 +100,74 @@ export function colorSlotsOf(value: unknown): DisplayEntry {
     ...(settings ? { modifications: settings } : {}),
   }
 }
+
+// v4's `renderers` block held the pileup renderer's own settings. Its colour
+// was a callback into the plugin's jexl functions, which went (ADR-163).
+function rendererSlotsOf(renderers: unknown): DisplayEntry {
+  const pileup = isObject(renderers) ? renderers.PileupRenderer : undefined
+  if (!isObject(pileup)) {
+    return {}
+  }
+  const { height, maxHeight, mismatchAlpha, hideMismatches } = pileup
+  return {
+    ...(height !== undefined ? { featureHeight: height } : {}),
+    ...(maxHeight !== undefined ? { maxHeight } : {}),
+    ...(mismatchAlpha !== undefined ? { mismatchAlpha } : {}),
+    ...(hideMismatches !== undefined
+      ? { showMismatches: !hideMismatches }
+      : {}),
+  }
+}
+
+// v1.2-v4.3's container held the pileup display's config and the coverage
+// display's as sub-configs; each lifts onto this display, the coverage one's
+// height as the band's.
+function subDisplaySlotsOf(block: unknown, band: 'pileup' | 'coverage') {
+  if (!isObject(block)) {
+    return {}
+  }
+  const { type: _type, displayId: _displayId, height, ...rest } = block
+  return applyRetiredSpellings(retiredConfigSpellings, {
+    ...rest,
+    ...(band === 'coverage' && height !== undefined
+      ? { coverageHeight: height }
+      : {}),
+  })
+}
+
+/**
+ * The config spellings v1-v4 wrote on this display and the four it retired,
+ * as `retired` declares them. v4's `colorBy` named a scheme and held the
+ * modification settings, which are the `color` or `baseColor` object's field
+ * and the `modifications` slot now; its LinearReadArcsDisplay gated the two
+ * arc classes under the draw verb; its `jexlFilters` has no slot, since
+ * `filter` is the read filter object. The coverage display's scale slots land
+ * on the band's `scales.y`. The v5 betas spelled `unit` as
+ * `linkedReads: 'off' | 'normal'`.
+ */
+// #region retired
+export const retiredConfigSpellings: Record<string, RetiredSpelling> = {
+  colorBy: colorSlotsOf,
+  drawInter: v => ({ showInterchrom: v }),
+  drawLongRange: v => ({ showLongRange: v }),
+  filterBy: filter => ({ filter }),
+  linkedReads: v => ({ unit: v === 'normal' ? 'chain' : 'read' }),
+  jexlFilters: () => ({}),
+  pileupDisplay: block => subDisplaySlotsOf(block, 'pileup'),
+  snpCoverageDisplay: block => subDisplaySlotsOf(block, 'coverage'),
+  defaultRendering: () => ({}),
+  renderers: rendererSlotsOf,
+  colorScheme: () => ({}),
+  ...retiredScaleSpellings,
+  multiTicks: () => ({}),
+  jitter: () => ({}),
+  lineWidth: v => ({ readConnectionsLineWidth: v }),
+  hideSmallIndels: () => ({}),
+  hideMismatches: v => ({ showMismatches: !v }),
+  hideLargeIndels: () => ({}),
+  minSubfeatureWidth: () => ({}),
+}
+// #endregion
 
 // The `*Setting` names are what v4.3.0 sessions carry: its mixin declared
 // `colorBySetting`/`filterBySetting` and wrote them back out under those
