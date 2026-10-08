@@ -4,7 +4,7 @@ import {
   desktopAssemblyNodes,
   desktopTrackNodes,
 } from './derive-desktop-steps.ts'
-import { deriveSessionUrl } from './derive-session-url.ts'
+import { deriveSessionUrl, namesInSession } from './derive-session-url.ts'
 import { deriveSetDefaultSession } from './derive-set-default-session.ts'
 import { deriveTrackLinks } from './derive-track-url.ts'
 import { escapeAttr } from './inline-html.ts'
@@ -196,6 +196,8 @@ interface TagEntry {
     json: string,
     meta: string | null | undefined,
     warn: (message: string) => void,
+    // the trackIds the page's sessions open
+    sessionTrackIds: Set<string>,
   ) => Tab[] | undefined
   refusal: string
 }
@@ -209,14 +211,21 @@ const TAGS: TagEntry[] = [
       ['Goes in the ', { code: 'tracks' }, ' array of ', { code: 'config.json' }],
       { title: 'Tracks', url: '/docs/config_guides/tracks/' },
     ),
-    build: (config, json, meta, warn) => {
+    build: (config, json, meta, warn, sessionTrackIds) => {
       const links = deriveTrackLinks(config, meta)
       if (links && 'refusal' in links) {
         warn(links.refusal)
       }
       return [
         cliTab(config, json),
-        desktopTab(desktopTrackNodes(config, json), 'In the app'),
+        desktopTab(
+          desktopTrackNodes(
+            config,
+            json,
+            sessionTrackIds.has(String(config.trackId)),
+          ),
+          'In the app',
+        ),
         ...(links && 'webUrl' in links ? [liveTab('track', links.webUrl, links.desktopUrl)] : []),
       ]
     },
@@ -278,6 +287,25 @@ export function configCliTabs(
   report: (message: string, node: Code) => void,
 ) {
   let widgets = 0
+  const sessionTrackIds = new Set<string>()
+  const collect = (parent: Parent) => {
+    for (const child of parent.children) {
+      if (child.type === 'code') {
+        const config =
+          child.lang === 'json' && !isAddtrack(child) && !isAddassembly(child)
+            ? parseConfig(child.value)
+            : undefined
+        if (config && !(config instanceof Error)) {
+          for (const trackId of namesInSession(config).trackIds) {
+            sessionTrackIds.add(trackId)
+          }
+        }
+      } else if ('children' in child) {
+        collect(child)
+      }
+    }
+  }
+  collect(tree)
   const widget = (node: Code) => {
     const entry = TAGS.find(t => t.matches(node))
     if (!entry) {
@@ -292,9 +320,15 @@ export function configCliTabs(
       report(`${entry.tag} block is not valid JSON: ${config.message}`, node)
       return undefined
     }
-    const tabs = entry.build(config, node.value, meta, message => {
-      report(`${entry.tag} block ${message}`, node)
-    })
+    const tabs = entry.build(
+      config,
+      node.value,
+      meta,
+      message => {
+        report(`${entry.tag} block ${message}`, node)
+      },
+      sessionTrackIds,
+    )
     if (tabs === undefined) {
       report(`${entry.tag} block ${entry.refusal}`, node)
       return undefined

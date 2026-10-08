@@ -299,12 +299,17 @@ function formNodes(config: Record<string, unknown>): RootContent[] | undefined {
   ]
 }
 
+// `keepsTrackId` is set for a track a session on the same page opens by its
+// trackId: the form mints its own, so only the pasted config keeps the one that
+// session names.
 export function desktopTrackNodes(
   config: Record<string, unknown>,
   json: string,
+  keepsTrackId = false,
 ): RootContent[] {
   const track = expandTrackShorthand(config)
-  const form = graphFormNodes(track) ?? formNodes(config)
+  const form =
+    graphFormNodes(track) ?? (keepsTrackId ? undefined : formNodes(config))
   if (form) {
     return form
   }

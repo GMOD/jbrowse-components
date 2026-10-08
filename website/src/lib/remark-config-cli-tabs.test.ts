@@ -216,3 +216,31 @@ test('a whole-track shorthand fence gets the add-track tab and its synteny note'
   expect(html).toContain('--name grape_peach.paf')
   expect(html).toContain('For the synteny view')
 })
+
+test('a track a session on the page opens keeps its pasted config in the app tab', () => {
+  const track = { trackId: 'reads', name: 'Reads', assemblyNames: ['hg38'], uri: 'https://example.com/reads.bam' }
+  const page = (session?: unknown): Root => ({
+    type: 'root',
+    children: [
+      { type: 'code', lang: 'json', meta: 'addtrack', value: JSON.stringify(track) },
+      ...(session
+        ? [{ type: 'code' as const, lang: 'json', meta: 'session', value: JSON.stringify(session) }]
+        : []),
+    ],
+  })
+  const app = (tree: Root) => {
+    configCliTabs(tree, () => {})
+    return tree.children.map(flatten).join('\n')
+  }
+  expect(app(page())).toContain('Main file')
+  const chained = app(
+    page({
+      defaultSession: {
+        name: 'x',
+        views: [{ type: 'LinearGenomeView', assembly: 'hg38', tracks: ['reads'] }],
+      },
+    }),
+  )
+  expect(chained).not.toContain('Main file')
+  expect(chained).toContain('Add track from pasted JSON')
+})
