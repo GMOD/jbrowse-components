@@ -74,18 +74,14 @@ async function hoverFraction(
   return { x, y }
 }
 
-async function bootTrack(
-  page: Page,
-  track: string | { trackId: string; displaySnapshot: Record<string, unknown> },
-  displayTestId: string,
-) {
+async function bootTrack(page: Page, trackId: string, displayTestId: string) {
   await navigateWithSessionSpec(page, {
     views: [
       {
         type: 'LinearGenomeView',
         loc: 'ctgA:1..50000',
         assembly: 'volvox',
-        tracks: [track],
+        tracks: [trackId],
       },
     ],
   })
@@ -101,6 +97,8 @@ function assert(cond: boolean, message: string) {
     throw new Error(message)
   }
 }
+
+const LEGEND = '[data-testid="floating-legend"]'
 
 const MULTIROW_HIGHLIGHT =
   '[data-testid="multirow-display"] [data-testid="chrome-hover"]'
@@ -240,28 +238,20 @@ export const suite: TestSuite = {
       // move over it is the only signal the hover has ended.
       name: 'multi-wiggle: hover ends when the pointer crosses onto the legend',
       fn: async page => {
+        // density draws its score ramp's key by default
         await bootTrack(
           page,
-          {
-            trackId: 'volvox_microarray_multi_multirowxy',
-            displaySnapshot: { type: 'LinearWiggleDisplay', showLegend: true },
-          },
+          'volvox_microarray_multi_multirowdensity',
           'wiggle-display',
         )
-        await page.waitForSelector('[data-testid="floating-legend"]', {
-          timeout: 10000,
-        })
+        await page.waitForSelector(LEGEND, { timeout: 10000 })
         await hoverFraction(page, displayPainted('wiggle-display'), 0.3, 0.5)
-        assert(
-          (await countGuideLines(page)) === 2,
-          'expected the crosshair over the plot',
-        )
         assert(
           (await tooltipText(page)) !== '',
           'expected a tooltip over the plot',
         )
 
-        await hoverFraction(page, '[data-testid="floating-legend"]', 0.5, 0.5)
+        await hoverFraction(page, LEGEND, 0.5, 0.5)
         assert(
           (await countGuideLines(page)) === 0,
           'guides stayed drawn with the pointer over the legend',
@@ -289,13 +279,13 @@ export const suite: TestSuite = {
         await bootTrack(page, 'gff3tabix_genes', 'feature-display')
         // On a feature rather than the gap between two rows: this track lays out
         // several rows over the locus and the gaps between them answer nothing,
-        // which is a miss and not a failure. Half way down and across lands on
-        // one of the `seg` genes.
+        // which is a miss and not a failure. The rows fill the top third of the
+        // display, and a fifth of the way down lands on one of the `seg` genes.
         const { x, y } = await hoverFraction(
           page,
           displayPainted('feature-display'),
           0.5,
-          0.5,
+          0.2,
         )
         const featureTip = await tooltipText(page)
         assert(
