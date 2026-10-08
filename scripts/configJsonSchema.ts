@@ -39,6 +39,7 @@ export interface SchemaMetadata {
     explicitIdentifier?: string
     shorthand?: string | readonly string[]
     closed?: boolean
+    retired?: Record<string, unknown>
     shorthandWith?: Record<string, unknown>
     preProcessSnapshot?: (snap: unknown) => unknown
     requires?: {
@@ -796,6 +797,12 @@ export function buildConfigJsonSchema(deps: Deps): JsonSchema {
     return ref(name)
   }
 
+  const LEGACY: JsonSchema = {
+    deprecated: true,
+    description:
+      'Legacy key: a migration rewrites it into current slots when the config loads.',
+  }
+
   // An unregistered ConfigurationSchema, i.e. a sub-schema slot. Every track
   // schema builds its own `textSearching` and `formatDetails`, so identical
   // ones share one definition, named after the sub-schema.
@@ -810,6 +817,9 @@ export function buildConfigJsonSchema(deps: Deps): JsonSchema {
     const forms = liftedForms(meta)
     const slots = slotTable(meta, depth)
     const properties = {
+      ...Object.fromEntries(
+        Object.keys(meta.options.retired ?? {}).map(key => [key, LEGACY]),
+      ),
       ...identityOf(meta, name),
       ...slots,
       ...(forms.uri
@@ -876,12 +886,6 @@ export function buildConfigJsonSchema(deps: Deps): JsonSchema {
     return Object.entries(meta.options.shorthandWith ?? {})
       .map(([slot, value]) => `, "${slot}": ${JSON.stringify(value)}`)
       .join('')
-  }
-
-  const LEGACY: JsonSchema = {
-    deprecated: true,
-    description:
-      'Legacy key: a migration rewrites it into current slots when the config loads.',
   }
 
   function registerConfigDefs(

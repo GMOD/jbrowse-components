@@ -379,6 +379,17 @@ describe('the schema', () => {
     expect(schemaProblems(alignments)).toEqual([])
   })
 
+  it('accepts a legacy key a nested schema retires', () => {
+    const alignments = baseConfig()
+    alignments.tracks[0]!.displays = [
+      {
+        type: 'LinearAlignmentsDisplay',
+        filter: { tagFilter: { tag: 'HP', value: '1' } },
+      },
+    ]
+    expect(schemaProblems(alignments)).toEqual([])
+  })
+
   it('accepts the sequenceAdapter a pre-v4 CRAM config carries', () => {
     const config = baseConfig()
     config.tracks[0]!.adapter = {

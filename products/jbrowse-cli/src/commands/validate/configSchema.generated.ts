@@ -6350,6 +6350,10 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "type": "object",
       "x-closed": true,
       "properties": {
+        "tagFilter": {
+          "deprecated": true,
+          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+        },
         "flagInclude": {
           "description": "a read passes only with every one of these SAM flag bits set, samtools -f.",
           "default": 0,
