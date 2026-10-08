@@ -11,7 +11,7 @@ page needs come from `@jbrowse/display-ui/embed` (`EmbedProvider`, `Track`,
 `LocationBox`, `TrackToggle`, `ResizeHandle`, `Legend`, `Toolbar`, `NavButton`,
 `Notifications`), so an example file is its engine options, its own controls and
 nothing else. No comments in example files, bar a one-line pointer at an option
-a reader would not otherwise find (`geneticCodes` in `StackOfTracks`).
+a reader would not otherwise find (`geneticCodes` in `MultipleTracks`).
 
 `EmbedProvider` mounts `Notifications`, which draws `session.snackbarMessages`
 and a line per queued dialog, so a page owes no error plumbing of its own:
