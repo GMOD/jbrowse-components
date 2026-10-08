@@ -98,16 +98,18 @@ the input to this decision.
 
 ## Known limits
 
-- **A far dome changed the read-connections band too.** The first cut drew
-  any pair wider than three canvas widths as a circle through its feet, which
-  the band clips to legs, so a view inside a long intron showed no junction.
-  The link mark now keeps the apex of a far pair whose apex is under a quarter
-  of its half-width (`LINK_FAR_FLAT_RATIO`), and a read pair's dome is clamped
-  to its band, so a far read pair rises from its foot to a level line where it
-  drew a leg. Only a true `arc` still draws legs. Both backends step the dome
-  from a foot in px: the shader measures it in float32 there, and Canvas2D
-  hands the canvas chords, since Skia flattens an ellipse that wide into too
-  few curves to hold its foot.
+- **A far junction is a dome only because its scale holds its apex.** The
+  first cut drew any pair wider than three canvas widths as a circle through
+  its feet, which the band clips to legs, so a view inside a long intron
+  showed no junction. The link mark now keeps the apex of a far pair when the
+  value scale holds it (`linkApexHeld`) under a quarter of the half-width
+  (`LINK_FAR_FLAT_RATIO`). A read pair's `y` is its own half-span, off the top
+  of its scale long before the pair is far, so the read-connections band still
+  draws legs: keeping every far pair's apex streaked HG008-T's Illumina arcs
+  at SUZ12 with level lines over the deletion's dome. Both backends step the
+  dome from a foot in px: the shader measures it in float32 there, and
+  Canvas2D hands the canvas chords, since Skia flattens an ellipse that wide
+  into too few curves to hold its foot.
 - **A junction in a displayed region past index 255 draws a stem.** The link
   shader's region table holds 256 entries (`LINK_MAX_REGIONS`) and places a
   far foot through it even when the foot is in the instance's own region. The

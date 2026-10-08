@@ -130,14 +130,34 @@ export function linkApexPx(halfWidthPx: number, reachPx: number, strokeHalfPx: n
   return _min(halfWidthPx, _max((reachPx - strokeHalfPx), 0.0))
 }
 
+export function linkApexHeld(valued: number, value: number, domainMax: number): number {
+  let _t0: boolean
+  if ((valued != 0)) {
+    _t0 = (value < domainMax)
+  } else {
+    _t0 = false
+  }
+  let _t1: number
+  if (_t0) {
+    _t1 = 1
+  } else {
+    _t1 = 0
+  }
+  return _t1
+}
+
 export function linkIsFar(halfWidthPx: number, screenWidthPx: number): boolean {
   return ((2.0 * halfWidthPx) > (3.0 * screenWidthPx))
 }
 
-export function linkRadiiPx(halfWidthPx: number, apexPx: number, screenWidthPx: number): [number, number] {
+export function linkRadiiPx(halfWidthPx: number, apexPx: number, screenWidthPx: number, held: number): [number, number] {
   let _t0: boolean
   if (linkIsFar(halfWidthPx, screenWidthPx)) {
-    _t0 = (apexPx >= (0.25 * halfWidthPx))
+    if ((held == 0)) {
+      _t0 = true
+    } else {
+      _t0 = (apexPx >= (0.25 * halfWidthPx))
+    }
   } else {
     _t0 = false
   }

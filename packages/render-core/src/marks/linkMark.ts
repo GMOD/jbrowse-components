@@ -22,6 +22,7 @@ import {
 } from '../shaders/linkMark.consts.generated.ts'
 import * as shader from '../shaders/linkMark.generated.ts'
 import {
+  linkApexHeld,
   linkApexPx,
   linkBaseYPx,
   linkFootDir,
@@ -400,7 +401,12 @@ function placeCurve(c: LinkChannels, g: LinkFrame, i: number) {
     g.ry = apex
     return
   }
-  const [rx, ry] = linkRadiiPx(pairHalf, apex, g.screenW)
+  const [rx, ry] = linkRadiiPx(
+    pairHalf,
+    apex,
+    g.screenW,
+    linkApexHeld(g.valued, c.y ? c.y[i]! : 0, g.domainMax),
+  )
   g.rx = rx
   g.ry = ry
   // A far pair with a low apex keeps its apex (`linkRadiiPx`) and is an

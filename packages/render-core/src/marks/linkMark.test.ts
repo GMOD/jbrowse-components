@@ -220,12 +220,15 @@ test('the size lane strokes each link through the size scale, and no number take
   expect(widths).toEqual([2, 10, 2])
 })
 
-test('a far dome keeps its apex, so a view inside the pair shows it passing over', () => {
-  // px 100 to px 8100: 8000 px apart on a 2000 px view, past three widths. The
-  // dome is clamped to its 100 px band, a fortieth of its half-width, so it is
+test('a far dome whose scale holds its apex keeps it, so a view inside the pair shows it passing over', () => {
+  // px 100 to px 8100: 8000 px apart on a 2000 px view, past three widths. Its
+  // value stands at 60 px of a 100 px band, far under its half-width, so it is
   // an ellipse still and not the circle a far arc becomes.
-  const c = channels([{ x: 100, x2: 5000 + 7100, region: 1 }])
-  const ink = linkMark.ink!(c, block, frame, params, 0)!
+  const c = channels([{ x: 100, x2: 5000 + 7100, region: 1, y: 6 }], {
+    y: true,
+  })
+  const valued: LinkParams = { ...params, valued: true }
+  const ink = linkMark.ink!(c, block, frame, valued, 0)!
   expect(ink.left).toBe(99)
   expect(ink.width).toBeCloseTo(8002)
   // chords, dense over the 2000 px the view shows and sparse past it: a canvas
@@ -233,19 +236,30 @@ test('a far dome keeps its apex, so a view inside the pair shows it passing over
   const d = ink.stroke!.d
   expect(d.startsWith('M100 100L')).toBe(true)
   expect(d.endsWith('L8100 100')).toBe(true)
-  expect(d).toContain('L4100 1L')
+  expect(d).toContain('L4100 40L')
   const xs = d.split('L').map(p => Number.parseFloat(p.replace('M', '')))
   expect(xs.filter(x => x <= 2000).length).toBeGreaterThan(60)
   expect(xs.filter(x => x > 2100).length).toBeLessThan(16)
   // level at the apex across the middle of the pair, where the legs of a
   // circle would have left the canvas empty
-  const mid = linkMark.hitNearest!(c, block, frame, params, 4100, 1, [0], 9)
+  const mid = linkMark.hitNearest!(c, block, frame, valued, 4100, 40, [0], 9)
   expect(mid).toMatchObject({ index: 0, distSq: 0 })
-  expect(linkApex(c, block, frame, params, 0)).toMatchObject({
+  expect(linkApex(c, block, frame, valued, 0)).toMatchObject({
     x: 4100,
-    y: 1,
+    y: 40,
     halfWidth: 4000,
   })
+})
+
+test('a far dome off the top of its scale is the circle its band clips to legs', () => {
+  // a read pair's y is its own half-span, and a dome with no y rises as far
+  // as its band lets it: neither names an apex inside the band
+  const pair = [{ x: 100, x2: 5000 + 7100, region: 1, y: 10 }]
+  const clamped = channels(pair, { y: true })
+  expect(
+    linkApex(clamped, block, frame, { ...params, valued: true }, 0),
+  ).toBeUndefined()
+  expect(linkApex(channels(pair), block, frame, params, 0)).toBeUndefined()
 })
 
 test('a far arc degenerates to legs rising from each foot', () => {
@@ -452,11 +466,7 @@ test('the apex is where the painted curve peaks, on either side of its band, and
     halfWidth: 0,
   })
   const narrow = { ...frame, canvasWidth: 300 }
-  // a far dome still peaks at its clamped apex, mid-pair
-  expect(linkApex(c, block, narrow, params, 2)).toMatchObject({
-    halfWidth: 1600,
-    rise: 99,
-  })
+  expect(linkApex(c, block, narrow, params, 2)).toBeUndefined()
   expect(linkApex(c, block, narrow, { ...params, linkShape: 'arc' }, 2)).toBe(
     undefined,
   )

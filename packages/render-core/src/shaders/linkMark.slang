@@ -28,7 +28,7 @@
 //! topology: triangle-strip
 //! coverage: analytic
 //! export-consts: LINK_SHAPE_DOME, LINK_SHAPE_ARC, LINK_SHAPE_LINE, LINK_LINE_MIN_PX, LINK_NO_REGION, LINK_ELSEWHERE, LINK_MAX_REGIONS, LINK_STEM_PX, LINK_FOOT_PX, LINK_FAR_SCREEN_WIDTHS, LINK_FAR_FLAT_RATIO, LINK_SIZE_CONSTANT, LINK_SIZE_SCALED, LINK_NO_SIZE, LINK_CURVE_SEGMENTS
-//! js-export: linkApexPx, linkRadiiPx, linkIsFar, linkStrokeWidthPx, linkValuePx, linkBaseYPx, linkFootLenPx, linkFootDir
+//! js-export: linkApexPx, linkApexHeld, linkRadiiPx, linkIsFar, linkStrokeWidthPx, linkValuePx, linkBaseYPx, linkFootLenPx, linkFootDir
 
 import antialias;
 import colorPack;
@@ -69,8 +69,8 @@ public static const float LINK_FOOT_PX = 20.0;
 // Not 1, because a circle throws the pair's direction away, and the limit is
 // tessellation: reference/ARC_BAND.md.
 public static const float LINK_FAR_SCREEN_WIDTHS = 3.0;
-// A far pair whose apex is under this share of its half-width keeps its apex
-// and draws as a flattened dome; above it the pair is a circle. A quarter
+// A far pair whose scale holds an apex under this share of its half-width
+// keeps it and draws as a flattened dome; above it the pair is a circle. A quarter
 // leaves an arc whose apex IS its half-width, give or take a float, a circle.
 public static const float LINK_FAR_FLAT_RATIO = 0.25;
 public static const int LINK_SIZE_CONSTANT = 0;
@@ -209,13 +209,24 @@ public float linkBaseYPx(float rowOffsetPx, float rowHeight, uint row, int rever
   return rowBandTopPx(rowOffsetPx, rowHeight, row) + (reverse != 0 ? 0.0 : rowHeight);
 }
 
+// Whether the value scale holds a pair's `y`: it names an apex inside the
+// band. A value past the top of its domain is clamped there, and so is a dome
+// with no `y`, which rises as far as its band lets it: the apex either draws
+// at is the band's, not the pair's.
+public int linkApexHeld(int valued, float value, float domainMax) {
+  return valued != 0 && value < domainMax ? 1 : 0;
+}
+
 // The two radii of the half-ellipse a pair draws. A far pair's are a true
-// circle's, unless its apex is low, when it keeps the apex and is the dome
-// that circle flattens to. `//! js-export`ed as a pair because the decision IS
-// the pair, and it is what the painter, the ink and the hit test read.
-public float2 linkRadiiPx(float halfWidthPx, float apexPx, float screenWidthPx) {
+// circle's, which its band clips to legs, unless the scale holds a low apex
+// for it: then it keeps the apex and is a dome level across the canvas. A read
+// pair's `y` is its own half-span, off the top of the scale long before the
+// pair is far, so it stays the circle. `//! js-export`ed as a pair because the
+// decision IS the pair, and it is what the painter, the ink and the hit test
+// read.
+public float2 linkRadiiPx(float halfWidthPx, float apexPx, float screenWidthPx, int held) {
   if (linkIsFar(halfWidthPx, screenWidthPx)
-      && apexPx >= LINK_FAR_FLAT_RATIO * halfWidthPx) {
+      && (held == 0 || apexPx >= LINK_FAR_FLAT_RATIO * halfWidthPx)) {
     return float2(halfWidthPx, halfWidthPx);
   }
   return float2(halfWidthPx, apexPx);
@@ -292,7 +303,8 @@ LinkVertex curveVertex(LinkInstance inst, LinkEnv e, uint seg, float side) {
     float valuePx = linkValuePx(inst.y, u.domainMin, u.domainMax, u.rowHeight,
                                 u.valueScaleType, u.insetPx, u.valueSymlogConstant);
     float apex = linkApexPx(pairHalf, e.reach, e.strokeHalf, u.linkShape, u.valued, valuePx);
-    v.radii = linkRadiiPx(pairHalf, apex, u.canvasWidth);
+    v.radii = linkRadiiPx(pairHalf, apex, u.canvasWidth,
+                          linkApexHeld(u.valued, inst.y, u.domainMax));
     float2 ends = float2(min(e.xPx, e.x2Px), max(e.xPx, e.x2Px));
     if (u.linkShape == LINK_SHAPE_LINE) {
       v.kind = KIND_LINE;
