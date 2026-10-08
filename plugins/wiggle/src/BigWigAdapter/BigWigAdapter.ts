@@ -178,11 +178,6 @@ export default class BigWigAdapter extends BaseFeatureDataAdapter<BigWigAdapterC
     return Object.keys(header.refsByName)
   }
 
-  public async refIdToName(refId: number) {
-    const { header } = await this.setup()
-    return header.refsByNumber[refId]?.name
-  }
-
   public getFeatures(region: Region, opts: WiggleOptions = {}) {
     const { signal } = opts
     return ObservableCreate<Feature>(async observer => {

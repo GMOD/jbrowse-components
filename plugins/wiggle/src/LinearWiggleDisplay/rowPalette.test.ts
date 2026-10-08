@@ -39,7 +39,7 @@ describe('an overlay of several subtracks deals tableau10 by name', () => {
     expect(display.sharesPanel).toBe(true)
     expect(display.rowPaletteDeals).toBe(true)
     expect(rowColors(display)).toEqual(TABLEAU)
-    expect(display.perSource).toBe(true)
+    expect(display.rowPaletteDeals).toBe(true)
     expect(display.rowColorChoice).toBe('name')
   })
 
@@ -69,7 +69,7 @@ describe('an overlay of several subtracks deals tableau10 by name', () => {
       displayConfig: { color: 'darkgreen' },
     })
     expect(display.rowPaletteDeals).toBe(false)
-    expect(display.perSource).toBe(false)
+    expect(display.rowPaletteDeals).toBe(false)
     expect(rowColors(display)).toEqual([undefined, undefined, undefined])
   })
 
@@ -85,7 +85,7 @@ describe('an overlay of several subtracks deals tableau10 by name', () => {
 it('a lone subtrack keeps the pos/neg pair', () => {
   const display = makeDisplay({ names: ['a'], rows: false })
   expect(display.sharesPanel).toBe(false)
-  expect(display.perSource).toBe(false)
+  expect(display.rowPaletteDeals).toBe(false)
   expect(rowColors(display)).toEqual([undefined])
 })
 

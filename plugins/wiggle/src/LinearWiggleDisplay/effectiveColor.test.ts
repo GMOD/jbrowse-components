@@ -28,14 +28,14 @@ test('a row per source defaults to the pos/neg pair about the origin', () => {
 })
 
 test('one source in a shared plot keeps the pair, several take a colour each', () => {
-  expect(makeDisplay(['a'], false).perSource).toBe(false)
-  expect(makeDisplay(['a', 'b'], false).perSource).toBe(true)
+  expect(makeDisplay(['a'], false).rowPaletteDeals).toBe(false)
+  expect(makeDisplay(['a', 'b'], false).rowPaletteDeals).toBe(true)
 })
 
 test('a written colour wins over the layout, whatever it is', () => {
   const display = makeDisplay(['a', 'b'], false)
   display.setColor('green')
-  expect(display.perSource).toBe(false)
+  expect(display.rowPaletteDeals).toBe(false)
   expect(display.wiggleColor.posColor).toBe('green')
 })
 
@@ -230,7 +230,7 @@ test.each([
 test('a colour per source on xyplot draws no gradient key', () => {
   const display = scoredDisplay([{ name: 'a' }, { name: 'b' }])
   display.setRowLayout(false)
-  expect(display.perSource).toBe(true)
+  expect(display.rowPaletteDeals).toBe(true)
   expect(display.domain).toBeDefined()
   expect(scoreKey(display)).toBeUndefined()
 })

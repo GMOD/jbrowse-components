@@ -10,7 +10,7 @@ import { processFeaturesFromArrays } from '../util.ts'
 
 import type { RawFeatureArrays } from '../util.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
-import type { Region, StatusCallback } from '@jbrowse/core/util'
+import type { RpcExecuteArgs } from '@jbrowse/core/rpc/RpcRegistry'
 import type { SourceInfo, WiggleDataResult } from '@jbrowse/wiggle-core'
 
 // `primary` order first (the caller's stable list), then any sources present in
@@ -25,21 +25,7 @@ function unionSourcesByName(
 
 interface ExecuteParams {
   pluginManager: PluginManager
-  args: {
-    sessionId: string
-    adapterConfig: Record<string, unknown>
-    regions: Region[]
-    sources?: SourceInfo[]
-    signal?: AbortSignal
-    bpPerPx?: number
-    resolution?: number
-    // The summary presentation the display resolved to, forwarded to the
-    // adapter so one that stores min/max separately can skip reading them.
-    // Optional: a caller that does not send it gets the summary either way.
-    summaryScoreMode?: string
-    scoreField?: string
-    statusCallback?: StatusCallback
-  }
+  args: RpcExecuteArgs<'RenderMultiWiggleData'>
 }
 
 // A shared constant only because processFeaturesFromArrays never returns its

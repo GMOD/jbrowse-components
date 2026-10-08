@@ -1,4 +1,3 @@
-import type { WiggleGpuProps } from '../../shared/buildSourceRenderData.ts'
 import type { WigglePlotGeometry } from '../../shared/wiggleDisplayViews.ts'
 import type { WiggleHoveredFeature } from '../../util.ts'
 import type { WiggleContextHit } from './findHit.ts'
@@ -13,8 +12,7 @@ import type {
   YAxis,
 } from '@jbrowse/wiggle-core'
 
-export interface WiggleDisplayModel
-  extends WiggleGpuDisplayModel, Omit<WiggleGpuProps, 'rowLayout'> {
+export interface WiggleDisplayModel extends WiggleGpuDisplayModel {
   id: string
   // read by DisplayChrome, which publishes it as `data-display-id` — the stable
   // hook the browser tests use to target one track's display
@@ -29,9 +27,6 @@ export interface WiggleDisplayModel
   // where the plot canvas sits inside the display's height — the same value
   // `valueScales` and the SVG export are laid out against
   plotGeometry: WigglePlotGeometry
-  // WiggleGpuProps above carries the raw `summaryScoreMode` slot (the encoder
-  // wants it verbatim); the hit/tooltip path reads the resolved one, which is
-  // what density actually draws
   effectiveSummaryScoreMode: string
   isRowLayout: boolean
   isOverlay: boolean

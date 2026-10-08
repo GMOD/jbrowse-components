@@ -236,8 +236,7 @@ export default function stateModelFactory(
           domain: self.rowDomain,
         })
       },
-    }))
-    .views(self => ({
+
       /**
        * #getter
        * Whether each source takes a row of its own, which is the whole of what
@@ -245,17 +244,16 @@ export default function stateModelFactory(
        * the clustering menu and the row-order sort all hang off it.
        */
       get isRowLayout() {
-        return !!self.rows
+        return !!this.rows
       },
-    }))
-    .views(self => ({
+
       /**
        * #getter
        * Every source in one plot box. The complement of the row layout, named
        * for what is drawn rather than for the setting that is off.
        */
       get isOverlay() {
-        return !self.isRowLayout
+        return !this.isRowLayout
       },
     }))
     .views(self => {
@@ -297,8 +295,7 @@ export default function stateModelFactory(
       get rowNoun(): string {
         return 'Subtrack'
       },
-    }))
-    .views(self => ({
+
       /**
        * #getter
        * The colour actually painted: what the config says, else the pos/neg
@@ -307,24 +304,22 @@ export default function stateModelFactory(
       get effectiveColor(): ColorSetting {
         return paintedWiggleColor(self.colorSetting)
       },
-    }))
-    .views(self => ({
+
       /**
        * #getter
        * `effectiveColor` as it paints, through the one resolver every
        * display's colour object goes through.
        */
       get colorEncoding() {
-        return wiggleColorEncoding(self.effectiveColor)
+        return wiggleColorEncoding(this.effectiveColor)
       },
-    }))
-    .views(self => ({
+
       /**
        * #getter
        * `colorEncoding` as the encoder and both backends take it.
        */
       get wiggleColor(): ResolvedWiggleColor {
-        return resolveWiggleColor(self.colorEncoding, self.origin)
+        return resolveWiggleColor(this.colorEncoding, self.origin)
       },
 
       /**
@@ -372,8 +367,7 @@ export default function stateModelFactory(
       get legendColor(): string {
         return this.wiggleColor.posColor
       },
-    }))
-    .views(self => ({
+
       /**
        * #getter
        * `TreeSidebarMixin`'s hook: a subtrack's colour paints its plot while
@@ -381,20 +375,9 @@ export default function stateModelFactory(
        */
       get rowColorPaintsMarks(): boolean {
         const { value, field } = self.colorSetting
-        return !self.scoreGradientPaints && value === undefined && !field
+        return !this.scoreGradientPaints && value === undefined && !field
       },
-    }))
-    .views(self => ({
-      /**
-       * #getter
-       * Whether each source paints both sides of the cut in its own colour,
-       * as sources sharing one plot do while the palette deals them.
-       */
-      get perSource(): boolean {
-        return self.rowPaletteDeals
-      },
-    }))
-    .views(self => ({
+
       /**
        * #getter
        * Whether each source's marks paint in its `rowColor`: while
@@ -425,8 +408,7 @@ export default function stateModelFactory(
           color: markColorOf(s, paints) ?? uncolored,
         }))
       },
-    }))
-    .views(self => ({
+
       /**
        * #getter
        * Overrides WiggleCommonMixin's empty base, so the axis reaches a
@@ -439,8 +421,7 @@ export default function stateModelFactory(
       get scoreRuleValues() {
         return self.isDensityMode ? [] : self.scoreRules.map(r => r.value)
       },
-    }))
-    .views(self => ({
+
       get numSources() {
         return self.sources.length
       },
@@ -450,8 +431,7 @@ export default function stateModelFactory(
       get autoscaleSourceNames() {
         return new Set(self.sources.map(s => s.name))
       },
-    }))
-    .views(self => ({
+
       /**
        * #getter
        * Resolved per-row height. This display is always fit-to-display-height —
@@ -463,7 +443,7 @@ export default function stateModelFactory(
       get effectiveRowHeight() {
         return self.isOverlay
           ? this.rowsHeight
-          : getRowHeight(this.rowsHeight, self.numSources)
+          : getRowHeight(this.rowsHeight, this.numSources)
       },
 
       /**
@@ -482,10 +462,9 @@ export default function stateModelFactory(
        * many rows exist.
        */
       get numRows() {
-        return self.isOverlay ? 1 : self.numSources
+        return self.isOverlay ? 1 : this.numSources
       },
-    }))
-    .views(self => ({
+
       /**
        * #getter
        * One row takes the scalebar-label gutter at top and bottom, so its end
@@ -495,8 +474,9 @@ export default function stateModelFactory(
        * a tick stays on the data it labels.
        */
       get plotGeometry() {
-        const { rowsTopOffset, rowsHeight } = self
-        if (self.numRows === 1) {
+        const { rowsTopOffset } = self
+        const { rowsHeight, numRows } = this
+        if (numRows === 1) {
           const { yTop, plotHeight } = axisPlotBox(rowsHeight)
           return {
             yTop: rowsTopOffset + yTop,
@@ -508,8 +488,8 @@ export default function stateModelFactory(
         return {
           yTop: rowsTopOffset,
           plotHeight: rowsHeight,
-          numRows: self.numRows,
-          tickHeight: self.effectiveRowHeight,
+          numRows,
+          tickHeight: this.effectiveRowHeight,
         }
       },
 
@@ -528,15 +508,14 @@ export default function stateModelFactory(
             self.sources.every(s => !s.color))
         )
       },
-    }))
-    .views(self => ({
+
       /**
        * #getter
        * A density row has no y scale, so under the one ramp the ramp is the
        * key and carries the domain; bars and points keep their axis beside it.
        */
       get scoreRampReplacesAxis() {
-        return self.isDensityMode && self.scoreRampApplies
+        return self.isDensityMode && this.scoreRampApplies
       },
     }))
     .views(self => wiggleDisplayViews(self))
@@ -579,25 +558,10 @@ export default function stateModelFactory(
       },
       /**
        * #method
-       * summaryScoreMode rides along so an adapter can skip work it cannot be
-       * asked to show. A store that keeps min/max beside each mean holds three
-       * arrays per level, and `mean`, the multi track's default, draws none of them, so
-       * sending the mode turns the common case back into one read per level
-       * instead of three, and drops the two `processFeaturesFromArrays`
-       * allocates per source per region for values it then discards.
-       *
-       * The raw slot, deliberately, and NOT effectiveSummaryScoreMode. The
-       * effective one would be tighter -- density resolves whiskers to mean, so
-       * it could skip the read there too -- but it changes when the rendering
-       * type changes, and anything in rpcProps invalidates the fetch. That
-       * would make switching to density discard the data and re-download it,
-       * on every multi-wiggle track, including the ones whose adapter gets its
-       * summary for free and gains nothing here. Over-fetching in
-       * density-with-whiskers is the cheaper mistake.
-       *
-       * In rpcProps rather than gpuProps because it changes what is fetched:
-       * switching the slot to max has to refetch, since a max nobody read
-       * cannot be drawn.
+       * `summaryScoreMode` is a fetch key so an adapter that stores min/max
+       * apart from the mean can skip reading them. The raw slot, not the
+       * effective one, which moves with the rendering type and would refetch
+       * on every switch to density (WIGGLE_DISPLAY.md, "Effective vs raw").
        */
       rpcProps() {
         return {
@@ -621,11 +585,10 @@ export default function stateModelFactory(
           ...self.sharedGpuProps(),
           sources: self.markSources,
           rowLayout: self.isRowLayout,
-          perSource: self.perSource,
+          perSource: self.rowPaletteDeals,
         }
       },
-    }))
-    .views(self => ({
+
       get showRowSeparators(): boolean {
         return getConf(self, 'showRowSeparators')
       },
@@ -670,8 +633,7 @@ export default function stateModelFactory(
       get prefersOffset() {
         return !self.isDensityMode || self.isRowLayout
       },
-    }))
-    .views(self => ({
+
       /**
        * #getter
        * `LegendMixin`'s hook: the score ramp or threshold key, then the row
@@ -687,8 +649,8 @@ export default function stateModelFactory(
             title: title ?? self.scoreColorScale.title,
           })
         }
-        if (self.thresholdColorScale) {
-          scales.push(self.thresholdColorScale)
+        if (this.thresholdColorScale) {
+          scales.push(this.thresholdColorScale)
         }
         if (!(self.isOverlay && self.scoreGradientPaints)) {
           scales.push(...self.rowColorScales)
@@ -707,8 +669,7 @@ export default function stateModelFactory(
       get drawsTree(): boolean {
         return !self.isOverlay
       },
-    }))
-    .views(self => ({
+
       /**
        * #getter
        */
@@ -900,11 +861,7 @@ export default function stateModelFactory(
         ]
         return [
           makeRenderingTypeSubMenu(self, WIGGLE_RENDERINGS),
-          // A row order is something to have only once the sources are on rows;
-          // the row-count half of the gate is `clusteringMenuItem`'s, off the
-          // count below. "Reset row order" is top-level rather than inside the
-          // Clustering submenu, where it used to sit as "Clear clustering" —
-          // see resetRowOrderMenuItems.
+          // a row order exists only once the sources are on rows
           ...(self.isRowLayout
             ? [
                 clusteringMenuItem(
@@ -936,12 +893,8 @@ export default function stateModelFactory(
           // its respective scatter / line rendering
           ...makePointSizeMenuItems(self),
           ...makeLineWidthMenuItems(self),
-          // The one colour row, on every quantitative track: with subtracks it
-          // is the grid, and with one it is the plot's two colours, which the
-          // menu had no row for at all. `ready` is the grid's gate and this
-          // dialog no longer needs one — a swatch waits for no row list, and
-          // greying the only colour route out until a fetch lands is what the
-          // gate would do on a plain BigWig.
+          // `ready: true`: a swatch waits for no row list, and a gate would grey
+          // out the only colour route on a plain BigWig until a fetch lands
           rowArrangementMenuItem(self, {
             ready: true,
             onOpen: () => {

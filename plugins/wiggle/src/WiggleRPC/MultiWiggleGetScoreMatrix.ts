@@ -24,11 +24,6 @@ export class MultiWiggleGetScoreMatrix extends RpcMethodTypeWithRenameRegions<'M
       args,
       pluginManager: this.pluginManager,
     })
-    // derived, not the hand loop this replaced: that list was correct and
-    // `rpcResult`'s under-test check called every entry of it "not in the
-    // payload", because neither walk could see into a Map. Nothing here reached
-    // `execute` under test, so the report was waiting for the first caller who
-    // did.
     return rpcResultWithArrayBuffers(matrix)
   }
 }

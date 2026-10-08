@@ -39,7 +39,7 @@ function makeDisplay({
 }
 
 function lineOf(display: ReturnType<typeof makeDisplay>) {
-  return plotColorLine(display.wiggleColor, display.perSource)
+  return plotColorLine(display.wiggleColor, display.rowPaletteDeals)
 }
 
 // The whole contract in one call: read the line, write it back unchanged, and
@@ -134,7 +134,7 @@ describe('what the line declines to edit, and why', () => {
   it('hides itself where a colour per subtrack paints', () => {
     const display = makeDisplay({ rows: false })
 
-    expect(display.perSource).toBe(true)
+    expect(display.rowPaletteDeals).toBe(true)
     expect(lineOf(display).mode).toBe('hide')
   })
 
