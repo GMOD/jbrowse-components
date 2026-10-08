@@ -5,7 +5,7 @@ import OverlayCanvas from '@jbrowse/render-core/OverlayCanvas'
 import { observer } from 'mobx-react'
 
 import { drawMafLabels } from '../../LinearMafRenderer/rendering/labels.ts'
-import { getContrastBaseMap } from '../../LinearMafRenderer/util.ts'
+import { getMafLabelColors } from '../../LinearMafRenderer/util.ts'
 
 import type { VisibleLabel } from './computeVisibleLabels.ts'
 
@@ -21,7 +21,7 @@ const VisibleLabelsOverlay = observer(function VisibleLabelsOverlay({
   height,
 }: Props) {
   const palette = usePalette()
-  const contrastForBase = useMemo(() => getContrastBaseMap(palette), [palette])
+  const labelColors = useMemo(() => getMafLabelColors(palette), [palette])
 
   if (labels.length === 0) {
     return null
@@ -31,7 +31,7 @@ const VisibleLabelsOverlay = observer(function VisibleLabelsOverlay({
       width={width}
       height={height}
       draw={ctx => {
-        drawMafLabels(ctx, labels, contrastForBase, palette.text.primary)
+        drawMafLabels(ctx, labels, labelColors)
       }}
     />
   )

@@ -172,11 +172,24 @@ export function getCodonLegendItems(
   })
 }
 
-export function getContrastBaseMap(palette: JBrowsePalette) {
-  return Object.fromEntries(
-    Object.entries(getColorBaseMap(palette)).map(([key, value]) => [
-      key,
-      getContrastText(value),
-    ]),
-  )
+/** What a per-base letter paints in, by the cell under it. */
+export interface MafLabelColors {
+  forBase: Record<string, string>
+  unknownBase: string
+  /** over a match cell */
+  neutral: string
+}
+
+export function getMafLabelColors(palette: JBrowsePalette): MafLabelColors {
+  const { colorForBase, unknownBaseColor } = getMafColorPalette(palette)
+  return {
+    forBase: Object.fromEntries(
+      Object.entries(colorForBase).map(([key, value]) => [
+        key,
+        getContrastText(value),
+      ]),
+    ),
+    unknownBase: getContrastText(unknownBaseColor),
+    neutral: palette.text.primary,
+  }
 }

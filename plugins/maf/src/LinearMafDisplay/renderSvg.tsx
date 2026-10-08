@@ -24,7 +24,7 @@ import { drawMafEmptyLines } from '../LinearMafRenderer/rendering/emptyLines.ts'
 import { drawInversions } from '../LinearMafRenderer/rendering/inversions.ts'
 import { drawMafLabels } from '../LinearMafRenderer/rendering/labels.ts'
 import {
-  getContrastBaseMap,
+  getMafLabelColors,
   getFrameColors,
   getMafColorPalette,
 } from '../LinearMafRenderer/util.ts'
@@ -70,7 +70,7 @@ function MafSvgBody({
     rowsHeight,
     palette: colorPalette,
   }
-  const contrast = getContrastBaseMap(palette)
+  const labelColors = getMafLabelColors(palette)
   const encodeProps = model.rowsEncodePropsIn(colorPalette)
   const shownRows = visibleRowRange(effectiveRowHeight, scrollTop, rowsHeight)
   const svgRows = new Map(
@@ -156,12 +156,7 @@ function MafSvgBody({
                 mafInsertionParams(framed),
               )
               drawMafDeletionLabels(ctx, model.visibleDeletions, colorPalette)
-              drawMafLabels(
-                ctx,
-                model.visibleLabels,
-                contrast,
-                palette.text.primary,
-              )
+              drawMafLabels(ctx, model.visibleLabels, labelColors)
               drawMafCodons(ctx, model.visibleCodonGlyphs, palette.text.primary)
               drawInversions(ctx, model.visibleInversions, colorLongreadInv)
             }}
