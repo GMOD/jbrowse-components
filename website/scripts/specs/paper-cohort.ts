@@ -166,7 +166,7 @@ export const paperCohortSpecs: ScreenshotSpec[] = [
       trackBlurb(
         'hprc_minigraph_segments',
         0.3,
-        'HPRC release 2.1\npangenome graph',
+        'HPRC v2.1\npangenome graph',
       ),
     ],
   },

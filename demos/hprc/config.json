@@ -216,7 +216,7 @@
     {
       "type": "GraphTrack",
       "trackId": "hprc_minigraph_segments",
-      "name": "HPRC release 2.1 graph (rGFA segments)",
+      "name": "HPRC v2.1 graph (rGFA segments)",
       "assemblyNames": ["hg38"],
       "adapter": {
         "type": "RgfaTabixAdapter",
@@ -303,7 +303,7 @@
     {
       "type": "GraphTrack",
       "trackId": "hprc_v2_1_gbz_lanes",
-      "name": "HPRC release 2.1 haplotypes vs GRCh38, read from the graph (gbz-base)",
+      "name": "HPRC v2.1 haplotypes vs GRCh38, read from the graph (gbz-base)",
       "assemblyNames": [
         "hg38",
         "HG00097.1",

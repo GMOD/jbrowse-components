@@ -281,7 +281,7 @@
     {
       "type": "GraphTrack",
       "trackId": "hprc_v2_1_gbz",
-      "name": "HPRC release 2.1 haplotypes vs GRCh38, read from the graph (gbz-base)",
+      "name": "HPRC v2.1 haplotypes vs GRCh38, read from the graph (gbz-base)",
       "assemblyNames": [
         "hg38",
         "HG00097.1",
