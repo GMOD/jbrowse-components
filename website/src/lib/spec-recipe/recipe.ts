@@ -216,9 +216,9 @@ interface BandContext {
 // belongs somewhere else — a second pane, a row of a synteny view — is added
 // from that view's own track selector, which is the app's own advice.
 const OPEN_TRACK =
-  'Add your own track: **File → Open track...**, then paste a URL or choose a local file.'
+  'Add a track: check one your config has in the track selector, or **File → Open track...** to paste a URL or choose a local file.'
 const ADD_TRACK =
-  "Add your own track: open this view's track selector, click **+** and choose **Add track**, then paste a URL or choose a local file."
+  "Add a track: open this view's track selector and check one your config has, or click **+** and choose **Add track** to paste a URL or choose a local file."
 
 function addTrackTitle(
   info: TrackInfo | undefined,

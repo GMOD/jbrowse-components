@@ -14,7 +14,7 @@ const twoTracks = recipeOf({
       assembly: 'volvox',
       loc: 'ctgA:1-5000',
       tracks: [
-        { trackId: 'volvox_cram', height: 300 },
+        { trackId: 'volvox_cram', height: 300, showSoftClipping: true },
         { trackId: 'volvox_filtered_vcf', height: 90 },
       ],
     },
@@ -22,16 +22,21 @@ const twoTracks = recipeOf({
 })
 
 test("a track's settings sit under the step that adds it", () => {
-  const adds = twoTracks.steps.filter(s => s.title.startsWith('Add your own'))
+  const adds = twoTracks.steps.filter(s => s.title.startsWith('Add a track'))
   expect(adds.map(s => s.substeps?.map(sub => sub.title))).toEqual([
-    [expect.stringContaining('(300px here)')],
-    [expect.stringContaining('(90px here)')],
+    [expect.stringContaining('Show soft clipping')],
+    undefined,
   ])
+})
+
+test("a track's height is layout, and gets no step", () => {
+  expect(recipeDialogHtml(twoTracks, 'd')).not.toContain('px here')
+  expect(twoTracks.unmapped).toEqual([])
 })
 
 test('nested steps render as a list inside their step', () => {
   expect(recipeDialogHtml(twoTracks, 'd')).toMatch(
-    /<li>[^]*?<ol class="spec-substeps"><li><span class="spec-step-title">Drag/,
+    /<li>[^]*?<ol class="spec-substeps"><li><span class="spec-step-title">Track menu/,
   )
 })
 

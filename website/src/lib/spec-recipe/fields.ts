@@ -1662,9 +1662,9 @@ export const trackFields: Record<string, FieldRecipe> = {
       ? { path: `${TRACK_MENU} → Show... → Labels → ${label}` }
       : undefined
   },
-  height: numberField(n => ({
-    path: `Drag the bar at the bottom edge of the track to resize it (${n}px here).`,
-  })),
+  // layout the reader sets to taste: a step per track buries the settings
+  // that make the picture
+  height: () => [],
   subfeatureLabels: fromTable('Subfeature labels', SUBFEATURE_LABELS),
   sashimiArcsMode: fromTable('Sashimi arcs → Arc placement', SASHIMI_PLACEMENT),
   readConnections: fromTable('Read connections', READ_CONNECTIONS),
