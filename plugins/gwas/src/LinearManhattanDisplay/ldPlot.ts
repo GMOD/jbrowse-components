@@ -1,3 +1,4 @@
+import { isJexl } from '@jbrowse/core/util/jexlStrings'
 import { getSnapshot } from '@jbrowse/mobx-state-tree'
 
 import { LD_FIELD, LD_ROLE_FIELD } from '../GWASAdapter/ldFields.ts'
@@ -114,6 +115,26 @@ export function placesEachSnp(
         (step.type === 'formula' && step.as !== 'start' && step.as !== 'end'),
     )
   )
+}
+
+const LD_FIELD_IN_EXPR = new RegExp(
+  String.raw`\b(${LD_FIELD}|${LD_ROLE_FIELD})\b`,
+)
+
+/**
+ * Whether anything in a plot's worker request names a field the LD join
+ * writes: a field reference that is one, or a `jexl:` expression holding one
+ * as a word, in any encoding, step, filter or facet. Wider than `readsLd`,
+ * which answers for the marks LD colouring writes and strips.
+ */
+export function namesLd(request: unknown): boolean {
+  return typeof request === 'string'
+    ? isJexl(request)
+      ? LD_FIELD_IN_EXPR.test(request)
+      : LD_FIELDS.has(request)
+    : typeof request === 'object' && request !== null
+      ? Object.values(request).some(namesLd)
+      : false
 }
 
 /** Whether LD colouring pairs this mark: a point mark placing each SNP. */

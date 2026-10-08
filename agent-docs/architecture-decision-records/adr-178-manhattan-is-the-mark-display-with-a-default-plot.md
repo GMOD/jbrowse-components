@@ -74,6 +74,20 @@ transforms or Edit plot.
   and the greyed item are the answers to those two. (Amended 2026-10-07: the
   join wrote the statistic as the field `ld`; it writes `r2`, the name the LD
   display's colour gives the same statistic. No retired spelling, as below.)
+- **The join follows every name the worker reads** (amended 2026-10-08).
+  `joinsLd` first asked whether a mark's `y`, `text`, or colour, shape or size
+  field was exactly `r2` or `ld_role`, so `y: 'jexl:feature.r2 * 10'` or a
+  `filter` step on `feature.r2` ran no join and read a field no feature held,
+  drawing nothing with no message. It now scans the mark model's
+  `plotRequest`, the worker request less the adapter options, for either name
+  as a field or as a word of a `jexl:` expression (`namesLd`). The scan cannot
+  read `rpcProps`, whose `opts` is derived from `joinsLd`. The menu item keeps
+  the narrow rule as `ldColored`, since `withoutLd` strips only the marks the
+  item writes. The other two requests a display sends the adapter follow the
+  same options: row clustering's matrix carries each region's resolved join,
+  and Edit plot lists `r2` and `ld_role` through the mark model's
+  `joinedPlotFields` hook, its field scan reading a 20 kb sample no join
+  reliably reaches.
 - **No field preset for `r2`.** The previous colour object painted `{ field:
   'ld' }` as the LocusZoom threshold through a preset only the model knew,
   while the rule list and Edit plot read every field as categorical.
@@ -118,6 +132,8 @@ transforms or Edit plot.
 - **The top hit read after the plot's shared steps**, to follow a display
   `filter`: a display-level filter on `ld_role` would reopen the refetch loop
   the adapter's report closes.
+- **Joining whenever the track has an LD file and an index**: every default
+  plot would fetch twice and read the LD file to colour nothing.
 - **An index SNP named by its id** (amended 2026-10-08: `indexSnp` took a SNP
   id beside a `chr:bp`). Both writers, the top hit and the right-click, place
   the index, so an id reached it only from a hand-written session. An id has no

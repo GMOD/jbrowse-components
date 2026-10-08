@@ -172,7 +172,7 @@ import type {
   ScalesSnapshot,
   StepSnapshot,
 } from './markProblems.ts'
-import type { PlotFields } from './scanPlotFields.ts'
+import type { JoinedPlotFields, PlotFields } from './scanPlotFields.ts'
 import type { StepChannels } from './stepChannels.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type {
@@ -218,6 +218,7 @@ export type MarkRenderingBackend = PerRegionRenderingBackend<
 const MarkPlotDialog = lazy(() => import('./components/MarkPlotDialog.tsx'))
 
 const NO_REGIONS: ReadonlyMap<number, MarkRegionData> = new Map()
+const NO_JOINED_FIELDS: JoinedPlotFields = { numeric: [], categorical: [] }
 const NO_LINK_REGIONS: readonly LinkRegion[] = []
 
 function storedRegionData(result: EncodedLayersResult): MarkRegionData {
@@ -350,6 +351,15 @@ export function stateModelFactory(
           _signal: AbortSignal,
         ): Promise<object | undefined> {
           return Promise.resolve(options)
+        },
+        /**
+         * #getter
+         * Overridable hook: the fields `adapterOptions` has the adapter write
+         * onto a feature, which Edit plot offers beside the ones a scan of the
+         * file found. Manhattan's LD join writes two.
+         */
+        get joinedPlotFields(): JoinedPlotFields {
+          return NO_JOINED_FIELDS
         },
         /**
          * #getter
@@ -1093,20 +1103,18 @@ export function stateModelFactory(
         },
         /**
          * #method
-         * the fetch inputs SettingsInvalidate watches: each mark's encoding
-         * and lanes, and the filters as transform steps, all evaluated in the
-         * worker, and the `adapterOptions` each region resolves
+         * The plot as the worker reads it: each mark's encoding and lanes, and
+         * the filters as transform steps. Every field and expression the plot
+         * names is in it, and `adapterOptions` is not, so a display may
+         * derive its options from what the plot reads.
          */
-        rpcProps(): {
+        plotRequest(): {
           layers: LayerRequest[]
           transform: TransformStep[]
           facet?: FacetSpec
-          opts?: object
         } {
           const field = self.splitField
-          const opts = self.adapterOptions
           return {
-            ...(opts ? { opts } : {}),
             layers: self.layerRequests,
             transform: [
               ...self.configuredFilters().map(expr => ({
@@ -1127,6 +1135,21 @@ export function stateModelFactory(
                   },
                 }),
           }
+        },
+        /**
+         * #method
+         * the fetch inputs SettingsInvalidate watches: `plotRequest`, all of
+         * it evaluated in the worker, and the `adapterOptions` each region
+         * resolves
+         */
+        rpcProps(): {
+          layers: LayerRequest[]
+          transform: TransformStep[]
+          facet?: FacetSpec
+          opts?: object
+        } {
+          const opts = self.adapterOptions
+          return { ...(opts ? { opts } : {}), ...this.plotRequest() }
         },
         /**
          * #getter

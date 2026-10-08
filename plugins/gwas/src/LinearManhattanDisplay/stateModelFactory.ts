@@ -8,10 +8,12 @@ import { getSnapshot, types } from '@jbrowse/mobx-state-tree'
 import { stateModelFactory as markStateModelFactory } from '@jbrowse/plugin-marks/LinearMarkDisplay/stateModel'
 import { namedAutorun } from '@jbrowse/render-core/namedReactions'
 
+import { LD_FIELD, LD_ROLE_FIELD } from '../GWASAdapter/ldFields.ts'
 import { readTopHit } from '../GWASAdapter/topHit.ts'
 import { ldJoinFor } from './ldJoinResolver.ts'
 import {
   colorsByLd,
+  namesLd,
   placesEachSnp,
   readsLd,
   withLd,
@@ -25,6 +27,9 @@ import type { MenuItem } from '@jbrowse/core/ui'
 import type { Region } from '@jbrowse/core/util'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 import type { MarkTransformStepConfig } from '@jbrowse/plugin-marks'
+
+const LD_PLOT_FIELDS = { numeric: [LD_FIELD], categorical: [LD_ROLE_FIELD] }
+const NO_PLOT_FIELDS = { numeric: [], categorical: [] }
 
 /**
  * #stateModel LinearManhattanDisplay
@@ -89,12 +94,28 @@ export function stateModelFactory(
       },
       /**
        * #getter
-       * Whether a fetch joins r² to the index: a mark's encoding names `r2`
-       * or `ld_role`, and the adapter has an LD file to read them from.
-       * Without one, a mark reads `r2` off the features like any other field.
+       * Whether a fetch joins r² to the index: the plot names `r2` or
+       * `ld_role` anywhere the worker reads, an expression or a filter
+       * included, and the adapter has an LD file to read them from. Without
+       * one, a plot reads `r2` off the features like any other field.
        */
       get joinsLd(): boolean {
+        return this.hasLdData && namesLd(self.plotRequest())
+      },
+      /**
+       * #getter
+       * Whether "Color by LD to index SNP" is on: a mark's encoding names an
+       * LD field, which is what the item writes and takes off.
+       */
+      get ldColored(): boolean {
         return this.hasLdData && self.conf.marks.some(readsLd)
+      },
+      /**
+       * #getter
+       * The two fields the LD join writes, for Edit plot to offer.
+       */
+      get joinedPlotFields() {
+        return this.hasLdData ? LD_PLOT_FIELDS : NO_PLOT_FIELDS
       },
       /**
        * #getter
@@ -247,12 +268,12 @@ export function stateModelFactory(
                       {
                         label: 'Color by LD to index SNP',
                         type: 'checkbox' as const,
-                        checked: self.joinsLd,
-                        disabled: !self.joinsLd && !self.ldColorable,
+                        checked: self.ldColored,
+                        disabled: !self.ldColored && !self.ldColorable,
                         disabledHelpText:
                           'LD colouring colours a point mark that plots each SNP at its own position, and this plot has none: add one with Edit plot...',
                         onClick: () => {
-                          self.setLdColoring(!self.joinsLd)
+                          self.setLdColoring(!self.ldColored)
                         },
                       },
                       {

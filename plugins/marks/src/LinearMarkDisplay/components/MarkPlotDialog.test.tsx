@@ -23,6 +23,7 @@ function setup(plot: MarkPlot = {}) {
   const model: MarkPlotDialogModel = {
     plot,
     plotFields: { numeric: ['score'], categorical: ['strand'] },
+    joinedPlotFields: { numeric: [], categorical: [] },
     plotScanLocus: 'ctgA:1..20,000',
     liftMarkPlot: draft => markPlotSettingsOf(liftPlot(conf, draft)),
     applyPlot: draft => {
@@ -184,6 +185,7 @@ it('reports a draft the schema refuses instead of crashing', () => {
         model={{
           plot: BAR,
           plotFields: undefined,
+          joinedPlotFields: { numeric: [], categorical: [] },
           plotScanLocus: undefined,
           liftMarkPlot: () => {
             throw new Error('refused')

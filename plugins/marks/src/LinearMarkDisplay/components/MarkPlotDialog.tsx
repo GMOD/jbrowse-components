@@ -22,6 +22,7 @@ import { markProblemIndex } from '../markProblemIndex.ts'
 import { markProblems } from '../markProblems.ts'
 import { MARK_TYPES } from '../markVocabulary.ts'
 import { stepWrittenFields, stepsOfMark, withSteps } from '../plotEdit.ts'
+import { withJoinedFields } from '../scanPlotFields.ts'
 import MarkFieldPicker from './MarkFieldPicker.tsx'
 import MarkList from './MarkList.tsx'
 import { MarkProblemList } from './MarkProblems.tsx'
@@ -33,13 +34,14 @@ import type { DraftMark, EditChannel } from '../markEdit.ts'
 import type { MarkPlot, MarkPlotSettings } from '../markPlot.ts'
 import type { StepSnapshot } from '../markProblems.ts'
 import type { MarkType } from '../markVocabulary.ts'
-import type { PlotFields } from '../scanPlotFields.ts'
+import type { JoinedPlotFields, PlotFields } from '../scanPlotFields.ts'
 
 const NO_FIELDS: PlotFields = { numeric: [], categorical: [] }
 
 export interface MarkPlotDialogModel {
   plot: MarkPlot
   plotFields: PlotFields | undefined
+  joinedPlotFields: JoinedPlotFields
   plotScanLocus: string | undefined
   liftMarkPlot: (plot: MarkPlot) => MarkPlotSettings
   applyPlot: (draft: MarkPlot) => void
@@ -120,7 +122,10 @@ const MarkPlotDialog = observer(function MarkPlotDialog({
   const editing = useRef<{ at: number; channel: EditChannel; base: unknown }>(
     undefined,
   )
-  const scanned = model.plotFields ?? NO_FIELDS
+  const scanned = withJoinedFields(
+    model.plotFields ?? NO_FIELDS,
+    model.joinedPlotFields,
+  )
   // Once per change, not once per render: the lift builds a whole config tree,
   // and a control's every keystroke re-renders the dialog around it.
   const { problems, error } = useMemo(

@@ -91,6 +91,63 @@ test('the join runs where a mark names an LD field and the adapter has an LD fil
   ).toBe(true)
 })
 
+// A plot that reads `r2` only inside an expression drew nothing: no join ran,
+// so the expression read a field no feature held, and no message said so.
+test.each([
+  [
+    'an expression for y',
+    [{ mark: 'point', encoding: { y: 'jexl:feature.r2 * 10' } }],
+  ],
+  [
+    "a mark's filter step",
+    [
+      {
+        mark: 'point',
+        transform: [{ type: 'filter', expr: 'jexl:feature.r2 > 0.8' }],
+        encoding: { y: 'score' },
+      },
+    ],
+  ],
+  [
+    'a bracketed lookup',
+    [{ mark: 'point', encoding: { y: "jexl:feature['ld_role'] == 'index'" } }],
+  ],
+])('the join runs for a plot naming an LD field in %s', (_, marks) => {
+  const { display } = createTestEnvironment({ marks }).createDisplay()
+  expect(display.joinsLd).toBe(true)
+  expect(display.ldColored).toBe(false)
+  expect(ldItem(display)).toMatchObject({ checked: false })
+})
+
+test('the join runs for a display filter or a row split naming an LD field', () => {
+  const filtered = createTestEnvironment().createDisplay().display
+  expect(filtered.joinsLd).toBe(false)
+  filtered.setFilter(['jexl:feature.r2 > 0.8'])
+  expect(filtered.joinsLd).toBe(true)
+
+  const split = createTestEnvironment({ rows: 'ld_role' }).createDisplay()
+  expect(split.display.joinsLd).toBe(true)
+})
+
+test('a field that only holds an LD field name inside its own joins nothing', () => {
+  const marks = [
+    { mark: 'point', encoding: { y: 'jexl:feature.r2_imputed + 1' } },
+    { mark: 'point', encoding: { y: 'score', color: { field: 'pr2' } } },
+  ]
+  const { display } = createTestEnvironment({ marks }).createDisplay()
+  expect(display.joinsLd).toBe(false)
+})
+
+test('Edit plot is offered the two fields the join writes, on a track with an LD file', () => {
+  expect(
+    createTestEnvironment().createDisplay().display.joinedPlotFields,
+  ).toEqual({ numeric: ['r2'], categorical: ['ld_role'] })
+  expect(
+    createTestEnvironment({ ldAdapter: false }).createDisplay().display
+      .joinedPlotFields,
+  ).toEqual({ numeric: [], categorical: [] })
+})
+
 // A plot restored with no index asks for no join, and the first load's top hit
 // is what the join then reads r² to.
 test('the index SNP is a fetch input only while the plot joins LD', () => {

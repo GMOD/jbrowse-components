@@ -28,6 +28,21 @@ const ALWAYS_CATEGORICAL = new Set(['strand'])
 const ROWS_FIELD = 'source'
 const GENOME_FIELD = 'mate.assemblyName'
 
+/** The fields an adapter writes onto a feature only under a fetch option. */
+export type JoinedPlotFields = Pick<PlotFields, 'numeric' | 'categorical'>
+
+/** The scanned fields with the joined ones a scan cannot find. */
+export function withJoinedFields(
+  scanned: PlotFields,
+  joined: JoinedPlotFields,
+): PlotFields {
+  return {
+    ...scanned,
+    numeric: [...new Set([...scanned.numeric, ...joined.numeric])],
+    categorical: [...new Set([...scanned.categorical, ...joined.categorical])],
+  }
+}
+
 /** The plottable fields the scanned features carry, split by what they hold. */
 export interface PlotFields {
   numeric: string[]
