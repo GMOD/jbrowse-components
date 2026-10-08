@@ -134,7 +134,7 @@ const state = createViewState({
 | @jbrowse/react-linear-genome-view2   | vanillajs | [demo](https://jbrowse.org/demos/lgv-vanillajs) | [source](https://github.com/GMOD/jbrowse-react-linear-genome-view-vanillajs-demo)   |
 | @jbrowse/react-circular-genome-view2 | vanillajs | [demo](https://jbrowse.org/demos/cgv-vanillajs) | [source](https://github.com/GMOD/jbrowse-react-circular-genome-view-vanillajs-demo) |
 | @jbrowse/react-circular-genome-view2 | next.js   | [demo](https://jbrowse.org/demos/cgv-nextjs)    | [source](https://github.com/GMOD/jbrowse-react-circular-genome-view-nextjs-demo)    |
-| @jbrowse/display-ui (build your own) | vite      | —                                               | [source](https://github.com/GMOD/jbrowse-build-your-own-vite-demo)                  |
+| @jbrowse/display-ui (build your own) | vite      | [demo](https://jbrowse.org/demos/byo-vite)      | [source](https://github.com/GMOD/jbrowse-build-your-own-vite-demo)                  |
 
 ## See also
 
