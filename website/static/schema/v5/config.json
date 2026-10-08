@@ -6978,10 +6978,6 @@
           "deprecated": true,
           "description": "Legacy key: a migration rewrites it into current slots when the config loads."
         },
-        "linkedReads": {
-          "deprecated": true,
-          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
-        },
         "pileupDisplay": {
           "deprecated": true,
           "description": "Legacy key: a migration rewrites it into current slots when the config loads."
@@ -8139,10 +8135,6 @@
           "description": "Legacy key: a migration rewrites it into current slots when the config loads."
         },
         "filterBy": {
-          "deprecated": true,
-          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
-        },
-        "linkedReads": {
           "deprecated": true,
           "description": "Legacy key: a migration rewrites it into current slots when the config loads."
         },
@@ -12778,10 +12770,6 @@
         "renderer": {
           "deprecated": true,
           "description": "Legacy key: a migration rewrites it into current slots when the config loads."
-        },
-        "useColorPercentile": {
-          "deprecated": true,
-          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
         }
       }
     },
@@ -13225,14 +13213,6 @@
         "jexlFilters": {
           "deprecated": true,
           "description": "Legacy key: a migration rewrites it into current slots when the config loads."
-        },
-        "displayCrossHatches": {
-          "deprecated": true,
-          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
-        },
-        "minimalTicks": {
-          "deprecated": true,
-          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
         }
       }
     },
@@ -13471,14 +13451,6 @@
           "description": "Legacy key: a migration rewrites it into current slots when the config loads."
         },
         "jexlFilters": {
-          "deprecated": true,
-          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
-        },
-        "displayCrossHatches": {
-          "deprecated": true,
-          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
-        },
-        "minimalTicks": {
           "deprecated": true,
           "description": "Legacy key: a migration rewrites it into current slots when the config loads."
         }
@@ -14450,30 +14422,10 @@
               "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/summaryScoreMode"
             },
             "displayCrossHatches": {
-              "anyOf": [
-                {
-                  "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/displayCrossHatches"
-                },
-                {
-                  "$ref": "#/$defs/LinearManhattanDisplaySlots/properties/displayCrossHatches"
-                },
-                {
-                  "$ref": "#/$defs/LinearMarkDisplaySlots/properties/displayCrossHatches"
-                }
-              ]
+              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/displayCrossHatches"
             },
             "minimalTicks": {
-              "anyOf": [
-                {
-                  "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/minimalTicks"
-                },
-                {
-                  "$ref": "#/$defs/LinearManhattanDisplaySlots/properties/minimalTicks"
-                },
-                {
-                  "$ref": "#/$defs/LinearMarkDisplaySlots/properties/minimalTicks"
-                }
-              ]
+              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/minimalTicks"
             },
             "scaleType": {
               "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/scaleType"
@@ -14957,9 +14909,6 @@
             "filterBy": {
               "$ref": "#/$defs/LinearAlignmentsDisplaySlots/properties/filterBy"
             },
-            "linkedReads": {
-              "$ref": "#/$defs/LinearAlignmentsDisplaySlots/properties/linkedReads"
-            },
             "pileupDisplay": {
               "$ref": "#/$defs/LinearAlignmentsDisplaySlots/properties/pileupDisplay"
             },
@@ -15046,12 +14995,6 @@
             },
             "minWidthPx": {
               "$ref": "#/$defs/LinearMarkDisplaySlots/properties/minWidthPx"
-            },
-            "displayCrossHatches": {
-              "$ref": "#/$defs/LinearMarkDisplaySlots/properties/displayCrossHatches"
-            },
-            "minimalTicks": {
-              "$ref": "#/$defs/LinearMarkDisplaySlots/properties/minimalTicks"
             }
           },
           "patternProperties": {
@@ -15753,14 +15696,7 @@
               "$ref": "#/$defs/LinearMultiSampleVariantDisplaySlots/properties/numStdDev"
             },
             "minimalTicks": {
-              "anyOf": [
-                {
-                  "$ref": "#/$defs/LinearMultiSampleVariantDisplaySlots/properties/minimalTicks"
-                },
-                {
-                  "$ref": "#/$defs/LinearMarkDisplaySlots/properties/minimalTicks"
-                }
-              ]
+              "$ref": "#/$defs/LinearMultiSampleVariantDisplaySlots/properties/minimalTicks"
             },
             "marks": {
               "$ref": "#/$defs/LinearMarkDisplaySlots/properties/marks"
@@ -15776,9 +15712,6 @@
             },
             "minWidthPx": {
               "$ref": "#/$defs/LinearMarkDisplaySlots/properties/minWidthPx"
-            },
-            "displayCrossHatches": {
-              "$ref": "#/$defs/LinearMarkDisplaySlots/properties/displayCrossHatches"
             }
           },
           "patternProperties": {
@@ -16374,24 +16307,10 @@
               ]
             },
             "displayCrossHatches": {
-              "anyOf": [
-                {
-                  "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/displayCrossHatches"
-                },
-                {
-                  "$ref": "#/$defs/LinearMarkDisplaySlots/properties/displayCrossHatches"
-                }
-              ]
+              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/displayCrossHatches"
             },
             "minimalTicks": {
-              "anyOf": [
-                {
-                  "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/minimalTicks"
-                },
-                {
-                  "$ref": "#/$defs/LinearMarkDisplaySlots/properties/minimalTicks"
-                }
-              ]
+              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/minimalTicks"
             },
             "scaleType": {
               "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/scaleType"
@@ -16791,24 +16710,10 @@
               ]
             },
             "displayCrossHatches": {
-              "anyOf": [
-                {
-                  "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/displayCrossHatches"
-                },
-                {
-                  "$ref": "#/$defs/LinearMarkDisplaySlots/properties/displayCrossHatches"
-                }
-              ]
+              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/displayCrossHatches"
             },
             "minimalTicks": {
-              "anyOf": [
-                {
-                  "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/minimalTicks"
-                },
-                {
-                  "$ref": "#/$defs/LinearMarkDisplaySlots/properties/minimalTicks"
-                }
-              ]
+              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/minimalTicks"
             },
             "scaleType": {
               "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/scaleType"
@@ -17522,12 +17427,6 @@
             },
             "filter": {
               "$ref": "#/$defs/LinearMarkDisplaySlots/properties/filter"
-            },
-            "displayCrossHatches": {
-              "$ref": "#/$defs/LinearMarkDisplaySlots/properties/displayCrossHatches"
-            },
-            "minimalTicks": {
-              "$ref": "#/$defs/LinearMarkDisplaySlots/properties/minimalTicks"
             }
           },
           "patternProperties": {
@@ -17733,9 +17632,6 @@
             },
             "renderer": {
               "$ref": "#/$defs/LinearHicDisplaySlots/properties/renderer"
-            },
-            "useColorPercentile": {
-              "$ref": "#/$defs/LinearHicDisplaySlots/properties/useColorPercentile"
             }
           },
           "patternProperties": {
@@ -18232,9 +18128,6 @@
             "filterBy": {
               "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/filterBy"
             },
-            "linkedReads": {
-              "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/linkedReads"
-            },
             "pileupDisplay": {
               "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/pileupDisplay"
             },
@@ -18364,12 +18257,6 @@
             },
             "minWidthPx": {
               "$ref": "#/$defs/LinearMarkDisplaySlots/properties/minWidthPx"
-            },
-            "displayCrossHatches": {
-              "$ref": "#/$defs/LinearMarkDisplaySlots/properties/displayCrossHatches"
-            },
-            "minimalTicks": {
-              "$ref": "#/$defs/LinearMarkDisplaySlots/properties/minimalTicks"
             }
           },
           "patternProperties": {
@@ -18608,12 +18495,6 @@
             },
             "jexlFilters": {
               "$ref": "#/$defs/LinearManhattanDisplaySlots/properties/jexlFilters"
-            },
-            "displayCrossHatches": {
-              "$ref": "#/$defs/LinearManhattanDisplaySlots/properties/displayCrossHatches"
-            },
-            "minimalTicks": {
-              "$ref": "#/$defs/LinearManhattanDisplaySlots/properties/minimalTicks"
             }
           },
           "patternProperties": {

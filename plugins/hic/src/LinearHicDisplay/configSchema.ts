@@ -80,10 +80,6 @@ const HicTrackConfigFactory = () => {
       retired: {
         ...retiredBaseDisplaySpellings,
         renderer: () => ({}),
-        // eslint-disable-next-line @eslint-react/no-unnecessary-use-prefix -- the retired slot's own name
-        useColorPercentile: follows => ({
-          color: { domainQuantile: follows ? 0.95 : 1 },
-        }),
       },
     },
   )

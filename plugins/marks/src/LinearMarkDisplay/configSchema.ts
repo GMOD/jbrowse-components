@@ -14,11 +14,7 @@ import { trackHeightConfigSchemaFields } from '@jbrowse/display-kit/trackHeightC
 import { types } from '@jbrowse/mobx-state-tree'
 import { rowHeightConfigSchemaFields } from '@jbrowse/tree-sidebar/rowHeightConfigSchemaFields'
 import { treeSidebarConfigSchemaFields } from '@jbrowse/tree-sidebar/treeSidebarConfigSchemaFields'
-import {
-  retiredAxisSpellings,
-  scalesSchema,
-  valueScaleSchema,
-} from '@jbrowse/wiggle-core'
+import { scalesSchema, valueScaleSchema } from '@jbrowse/wiggle-core'
 
 import { markColorSchema } from './markColorConfigSchema.ts'
 import { markFacetSchema } from './markFacetConfigSchema.ts'
@@ -549,7 +545,7 @@ export function configSchemaFactory() {
     {
       explicitlyTyped: true,
       explicitIdentifier: 'displayId',
-      retired: { ...retiredBaseDisplaySpellings, ...retiredAxisSpellings },
+      retired: retiredBaseDisplaySpellings,
       preProcessSnapshot: checkMarks,
     },
   )

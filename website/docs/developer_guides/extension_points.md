@@ -978,7 +978,6 @@ export const retiredConfigSpellings: Record<string, RetiredSpelling> = {
   drawInter: v => ({ showInterchrom: v }),
   drawLongRange: v => ({ showLongRange: v }),
   filterBy: filter => ({ filter }),
-  linkedReads: v => ({ unit: v === 'normal' ? 'chain' : 'read' }),
   jexlFilters: () => ({}),
   pileupDisplay: block => subDisplaySlotsOf(block, 'pileup'),
   snpCoverageDisplay: block => subDisplaySlotsOf(block, 'coverage'),

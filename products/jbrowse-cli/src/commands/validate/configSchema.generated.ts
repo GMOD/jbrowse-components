@@ -7207,10 +7207,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "deprecated": true,
           "description": "Legacy key: a migration rewrites it into current slots when the config loads."
         },
-        "linkedReads": {
-          "deprecated": true,
-          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
-        },
         "pileupDisplay": {
           "deprecated": true,
           "description": "Legacy key: a migration rewrites it into current slots when the config loads."
@@ -8414,10 +8410,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "description": "Legacy key: a migration rewrites it into current slots when the config loads."
         },
         "filterBy": {
-          "deprecated": true,
-          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
-        },
-        "linkedReads": {
           "deprecated": true,
           "description": "Legacy key: a migration rewrites it into current slots when the config loads."
         },
@@ -13241,10 +13233,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         "renderer": {
           "deprecated": true,
           "description": "Legacy key: a migration rewrites it into current slots when the config loads."
-        },
-        "useColorPercentile": {
-          "deprecated": true,
-          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
         }
       }
     },
@@ -13698,14 +13686,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         "jexlFilters": {
           "deprecated": true,
           "description": "Legacy key: a migration rewrites it into current slots when the config loads."
-        },
-        "displayCrossHatches": {
-          "deprecated": true,
-          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
-        },
-        "minimalTicks": {
-          "deprecated": true,
-          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
         }
       }
     },
@@ -13950,14 +13930,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "description": "Legacy key: a migration rewrites it into current slots when the config loads."
         },
         "jexlFilters": {
-          "deprecated": true,
-          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
-        },
-        "displayCrossHatches": {
-          "deprecated": true,
-          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
-        },
-        "minimalTicks": {
           "deprecated": true,
           "description": "Legacy key: a migration rewrites it into current slots when the config loads."
         }
@@ -14946,30 +14918,10 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/summaryScoreMode"
             },
             "displayCrossHatches": {
-              "anyOf": [
-                {
-                  "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/displayCrossHatches"
-                },
-                {
-                  "$ref": "#/$defs/LinearManhattanDisplaySlots/properties/displayCrossHatches"
-                },
-                {
-                  "$ref": "#/$defs/LinearMarkDisplaySlots/properties/displayCrossHatches"
-                }
-              ]
+              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/displayCrossHatches"
             },
             "minimalTicks": {
-              "anyOf": [
-                {
-                  "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/minimalTicks"
-                },
-                {
-                  "$ref": "#/$defs/LinearManhattanDisplaySlots/properties/minimalTicks"
-                },
-                {
-                  "$ref": "#/$defs/LinearMarkDisplaySlots/properties/minimalTicks"
-                }
-              ]
+              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/minimalTicks"
             },
             "scaleType": {
               "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/scaleType"
@@ -15461,9 +15413,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "filterBy": {
               "$ref": "#/$defs/LinearAlignmentsDisplaySlots/properties/filterBy"
             },
-            "linkedReads": {
-              "$ref": "#/$defs/LinearAlignmentsDisplaySlots/properties/linkedReads"
-            },
             "pileupDisplay": {
               "$ref": "#/$defs/LinearAlignmentsDisplaySlots/properties/pileupDisplay"
             },
@@ -15550,12 +15499,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             },
             "minWidthPx": {
               "$ref": "#/$defs/LinearMarkDisplaySlots/properties/minWidthPx"
-            },
-            "displayCrossHatches": {
-              "$ref": "#/$defs/LinearMarkDisplaySlots/properties/displayCrossHatches"
-            },
-            "minimalTicks": {
-              "$ref": "#/$defs/LinearMarkDisplaySlots/properties/minimalTicks"
             }
           },
           "patternProperties": {
@@ -16271,14 +16214,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               "$ref": "#/$defs/LinearMultiSampleVariantDisplaySlots/properties/numStdDev"
             },
             "minimalTicks": {
-              "anyOf": [
-                {
-                  "$ref": "#/$defs/LinearMultiSampleVariantDisplaySlots/properties/minimalTicks"
-                },
-                {
-                  "$ref": "#/$defs/LinearMarkDisplaySlots/properties/minimalTicks"
-                }
-              ]
+              "$ref": "#/$defs/LinearMultiSampleVariantDisplaySlots/properties/minimalTicks"
             },
             "marks": {
               "$ref": "#/$defs/LinearMarkDisplaySlots/properties/marks"
@@ -16294,9 +16230,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             },
             "minWidthPx": {
               "$ref": "#/$defs/LinearMarkDisplaySlots/properties/minWidthPx"
-            },
-            "displayCrossHatches": {
-              "$ref": "#/$defs/LinearMarkDisplaySlots/properties/displayCrossHatches"
             }
           },
           "patternProperties": {
@@ -16908,24 +16841,10 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               ]
             },
             "displayCrossHatches": {
-              "anyOf": [
-                {
-                  "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/displayCrossHatches"
-                },
-                {
-                  "$ref": "#/$defs/LinearMarkDisplaySlots/properties/displayCrossHatches"
-                }
-              ]
+              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/displayCrossHatches"
             },
             "minimalTicks": {
-              "anyOf": [
-                {
-                  "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/minimalTicks"
-                },
-                {
-                  "$ref": "#/$defs/LinearMarkDisplaySlots/properties/minimalTicks"
-                }
-              ]
+              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/minimalTicks"
             },
             "scaleType": {
               "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/scaleType"
@@ -17333,24 +17252,10 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               ]
             },
             "displayCrossHatches": {
-              "anyOf": [
-                {
-                  "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/displayCrossHatches"
-                },
-                {
-                  "$ref": "#/$defs/LinearMarkDisplaySlots/properties/displayCrossHatches"
-                }
-              ]
+              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/displayCrossHatches"
             },
             "minimalTicks": {
-              "anyOf": [
-                {
-                  "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/minimalTicks"
-                },
-                {
-                  "$ref": "#/$defs/LinearMarkDisplaySlots/properties/minimalTicks"
-                }
-              ]
+              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/minimalTicks"
             },
             "scaleType": {
               "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/scaleType"
@@ -18080,12 +17985,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             },
             "filter": {
               "$ref": "#/$defs/LinearMarkDisplaySlots/properties/filter"
-            },
-            "displayCrossHatches": {
-              "$ref": "#/$defs/LinearMarkDisplaySlots/properties/displayCrossHatches"
-            },
-            "minimalTicks": {
-              "$ref": "#/$defs/LinearMarkDisplaySlots/properties/minimalTicks"
             }
           },
           "patternProperties": {
@@ -18299,9 +18198,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             },
             "renderer": {
               "$ref": "#/$defs/LinearHicDisplaySlots/properties/renderer"
-            },
-            "useColorPercentile": {
-              "$ref": "#/$defs/LinearHicDisplaySlots/properties/useColorPercentile"
             }
           },
           "patternProperties": {
@@ -18806,9 +18702,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "filterBy": {
               "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/filterBy"
             },
-            "linkedReads": {
-              "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/linkedReads"
-            },
             "pileupDisplay": {
               "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/pileupDisplay"
             },
@@ -18938,12 +18831,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             },
             "minWidthPx": {
               "$ref": "#/$defs/LinearMarkDisplaySlots/properties/minWidthPx"
-            },
-            "displayCrossHatches": {
-              "$ref": "#/$defs/LinearMarkDisplaySlots/properties/displayCrossHatches"
-            },
-            "minimalTicks": {
-              "$ref": "#/$defs/LinearMarkDisplaySlots/properties/minimalTicks"
             }
           },
           "patternProperties": {
@@ -19190,12 +19077,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             },
             "jexlFilters": {
               "$ref": "#/$defs/LinearManhattanDisplaySlots/properties/jexlFilters"
-            },
-            "displayCrossHatches": {
-              "$ref": "#/$defs/LinearManhattanDisplaySlots/properties/displayCrossHatches"
-            },
-            "minimalTicks": {
-              "$ref": "#/$defs/LinearManhattanDisplaySlots/properties/minimalTicks"
             }
           },
           "patternProperties": {

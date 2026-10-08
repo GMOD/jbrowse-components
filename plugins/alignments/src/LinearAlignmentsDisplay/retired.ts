@@ -142,8 +142,7 @@ function subDisplaySlotsOf(block: unknown, band: 'pileup' | 'coverage') {
  * and the `modifications` slot now; its LinearReadArcsDisplay gated the two
  * arc classes under the draw verb; its `jexlFilters` has no slot, since
  * `filter` is the read filter object. The coverage display's scale slots land
- * on the band's `scales.y`. The v5 betas spelled `unit` as
- * `linkedReads: 'off' | 'normal'`.
+ * on the band's `scales.y`.
  */
 // #region retired
 export const retiredConfigSpellings: Record<string, RetiredSpelling> = {
@@ -151,7 +150,6 @@ export const retiredConfigSpellings: Record<string, RetiredSpelling> = {
   drawInter: v => ({ showInterchrom: v }),
   drawLongRange: v => ({ showLongRange: v }),
   filterBy: filter => ({ filter }),
-  linkedReads: v => ({ unit: v === 'normal' ? 'chain' : 'read' }),
   jexlFilters: () => ({}),
   pileupDisplay: block => subDisplaySlotsOf(block, 'pileup'),
   snpCoverageDisplay: block => subDisplaySlotsOf(block, 'coverage'),

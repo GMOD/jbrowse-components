@@ -4070,7 +4070,6 @@ export const configManifest: ConfigManifest = {
         "drawInter",
         "drawLongRange",
         "filterBy",
-        "linkedReads",
         "pileupDisplay",
         "snpCoverageDisplay",
         "defaultRendering",
@@ -4781,7 +4780,6 @@ export const configManifest: ConfigManifest = {
         "drawInter",
         "drawLongRange",
         "filterBy",
-        "linkedReads",
         "pileupDisplay",
         "snpCoverageDisplay",
         "defaultRendering",
@@ -6720,8 +6718,7 @@ export const configManifest: ConfigManifest = {
         "fetchSizeLimit",
         "mouseover",
         "jexlFilters",
-        "renderer",
-        "useColorPercentile"
+        "renderer"
       ],
       "droppedKeys": [
         "maxFeatureScreenDensity",
@@ -7219,9 +7216,7 @@ export const configManifest: ConfigManifest = {
         "maxFeatureScreenDensity",
         "maxDisplayedBpPerPx",
         "mouseover",
-        "jexlFilters",
-        "displayCrossHatches",
-        "minimalTicks"
+        "jexlFilters"
       ],
       "droppedKeys": [
         "maxFeatureScreenDensity",
@@ -7715,9 +7710,7 @@ export const configManifest: ConfigManifest = {
         "maxFeatureScreenDensity",
         "maxDisplayedBpPerPx",
         "mouseover",
-        "jexlFilters",
-        "displayCrossHatches",
-        "minimalTicks"
+        "jexlFilters"
       ],
       "droppedKeys": [
         "maxFeatureScreenDensity",

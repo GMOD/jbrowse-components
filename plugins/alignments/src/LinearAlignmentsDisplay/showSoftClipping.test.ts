@@ -533,14 +533,6 @@ describe('alignments unit (view as pairs)', () => {
     display.applyPlot({ unit: 'chain' })
     expect(display.plot.unit).toBe('chain')
   })
-
-  it.each([
-    ['normal', 'chain'],
-    ['off', 'read'],
-  ])('the beta spelling linkedReads: %s reads as unit %s', (old, unit) => {
-    const { display } = createDisplay({ linkedReads: old })
-    expect(display.unit).toBe(unit)
-  })
 })
 
 describe('alignments readConnections (arcs)', () => {
