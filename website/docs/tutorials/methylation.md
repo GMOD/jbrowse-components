@@ -87,7 +87,7 @@ Load the modBAM as an alignments track. For your own reads, swap `uri` for a
 sorted modBAM or CRAM with the `.bai` or `.crai` beside it, aligned to the same
 assembly:
 
-```json addtrack
+```json addtrack loc=chr15:24,948,000-24,962,000
 {
   "trackId": "HG002_snrpn_5mC_reads",
   "name": "HG002 ONT reads (5mC, haplotagged)",
@@ -144,7 +144,7 @@ bedMethyl is a BED file with a numeric score column, so it loads as a
 JBrowse reads the modification type from the `name` column and draws one
 subtrack per type, with a vertical bar per CpG on a percent-methylation axis:
 
-```json addtrack
+```json addtrack loc=chr15:24,948,000-24,962,000
 {
   "type": "MultiQuantitativeTrack",
   "trackId": "HG002_snrpn_modkit_hp1",
@@ -179,7 +179,7 @@ The two per-haplotype bedMethyl files from `--partition-tag HP` load as one
 track above the reads, with a row per file. Pinning the axis at 0 to 100 puts
 both rows on one scale, so an unmethylated row stays flat:
 
-```json addtrack
+```json addtrack loc=chr15:24,948,000-24,962,000
 {
   "type": "MultiQuantitativeTrack",
   "trackId": "HG002_snrpn_modkit_multi",

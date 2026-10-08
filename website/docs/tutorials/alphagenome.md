@@ -100,7 +100,7 @@ genes and the oncogenic _TAL1_ variants:
 }
 ```
 
-```json addtrack
+```json addtrack loc=chr1:47,189,833..47,259,832
 {
   "type": "FeatureTrack",
   "trackId": "genes",
@@ -117,7 +117,7 @@ The variants are a BED whose header names `REF` and `ALT` columns after the
 usual four. The right-click prediction item needs those alleles on each feature.
 For your own variants, swap `uri` for a VCF or a BED with the same columns:
 
-```json addtrack
+```json addtrack loc=chr1:47,189,833..47,259,832
 {
   "type": "VariantTrack",
   "trackId": "tal1_variants",

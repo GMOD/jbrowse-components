@@ -62,7 +62,7 @@ the assembly's refNames.
 }
 ```
 
-```json addtrack
+```json addtrack loc=chr22:49,987,402-50,067,759
 {
   "type": "FeatureTrack",
   "trackId": "tiberius",
@@ -75,7 +75,7 @@ the assembly's refNames.
 }
 ```
 
-```json addtrack
+```json addtrack loc=chr22:49,987,402-50,067,759
 {
   "type": "FeatureTrack",
   "trackId": "gencode_v47",

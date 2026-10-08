@@ -307,7 +307,7 @@ Add three `QuantitativeTrack`s shaped like the Fst track above: Tajima's D, π,
 and the called-variant count per window (column 4 of the table π comes from),
 each over all 205 lines.
 
-```json addtrack
+```json addtrack loc=chr2R:12,000,000-12,400,000
 {
   "type": "QuantitativeTrack",
   "trackId": "tajd_all",
@@ -320,7 +320,7 @@ each over all 205 lines.
 }
 ```
 
-```json addtrack
+```json addtrack loc=chr2R:12,000,000-12,400,000
 {
   "type": "QuantitativeTrack",
   "trackId": "pi_all",
@@ -333,7 +333,7 @@ each over all 205 lines.
 }
 ```
 
-```json addtrack
+```json addtrack loc=chr2R:12,000,000-12,400,000
 {
   "type": "QuantitativeTrack",
   "trackId": "sites_all",

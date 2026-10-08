@@ -55,7 +55,7 @@ with its index beside it:
 }
 ```
 
-```json addtrack
+```json addtrack loc=chr7:5,567,000-5,570,000
 {
   "trackId": "rnaseq_paired_stranded",
   "name": "Paired-end stranded RNA-seq (RSeQC sample)",
@@ -206,7 +206,7 @@ across every exon with one `N` skip per intron. JBrowse derives the same arcs
 and connectors from those skips. The IsoSeq alignments are a second BAM on the
 same assembly:
 
-```json addtrack
+```json addtrack loc=chr7:5,567,000-5,570,000
 {
   "trackId": "alzheimers_isoseq",
   "name": "IsoSeq high-quality isoforms",
@@ -283,7 +283,7 @@ track whose `link` mark draws each junction, coloured by the known-junction flag
 against RefSeq. `columnNames` names the extra columns so the colour encoding can
 read them:
 
-```json addtrack
+```json addtrack loc=chr11:49,220,500-49,231,500
 {
   "type": "FeatureTrack",
   "trackId": "rnaseq_junctions_hg19",

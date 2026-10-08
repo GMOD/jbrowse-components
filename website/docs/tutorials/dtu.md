@@ -218,7 +218,7 @@ lists every interval under the `title`, plus a `(no value)` row for uncalled
 transcripts, and a UTR follows `color` unless `utrColor` is set. Clicking an
 isoform opens its numbers in the details panel.
 
-```json addtrack
+```json addtrack loc=chr10:7,787,600-7,812,400
 {
   "trackId": "dtu_muscle_vs_liver",
   "name": "Transcript usage: skeletal muscle vs liver (satuRn)",
@@ -267,7 +267,7 @@ axis... → Share axis with** on one track, with the other ticked, gives both on
 axis that follows the view, so the two tissues compare by height. In a config,
 each track names the same group:
 
-```json addtrack
+```json addtrack loc=chr10:7,787,600-7,812,400
 {
   "trackId": "liver_plus",
   "name": "Liver RNA-seq, + strand (ENCSR135IAL)",
@@ -281,7 +281,7 @@ each track names the same group:
 
 The other three tracks differ in their id, name and file:
 
-```json addtrack
+```json addtrack loc=chr10:7,787,600-7,812,400
 {
   "trackId": "liver_minus",
   "name": "Liver RNA-seq, - strand (ENCSR135IAL)",
@@ -293,7 +293,7 @@ The other three tracks differ in their id, name and file:
 }
 ```
 
-```json addtrack
+```json addtrack loc=chr10:7,787,600-7,812,400
 {
   "trackId": "muscle_plus",
   "name": "Skeletal muscle RNA-seq, + strand (ENCSR609NZM)",
@@ -305,7 +305,7 @@ The other three tracks differ in their id, name and file:
 }
 ```
 
-```json addtrack
+```json addtrack loc=chr10:7,787,600-7,812,400
 {
   "trackId": "muscle_minus",
   "name": "Skeletal muscle RNA-seq, - strand (ENCSR609NZM)",

@@ -161,7 +161,7 @@ also sets:
   reference span it replaces, labelled with its VCF ID (the graph nodes that
   bound it) and the allele change
 
-```json addtrack
+```json addtrack loc=chr23:27,508,000-27,536,000
 {
   "type": "VariantTrack",
   "trackId": "bovine_pangenome_vcf",

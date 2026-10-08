@@ -166,7 +166,7 @@ every haplotype whose walk reaches both flanks. Each allele lists its runs of
 one copy type and every copy's length, a phased genotype puts each allele on its
 haplotype, and a samples table gives each sample's population:
 
-```json addtrack
+```json addtrack loc=chr6:160,616,002-160,646,753
 {
   "type": "VariantTrack",
   "trackId": "hprc_kiv2_copies_all",
@@ -321,7 +321,7 @@ row for its haplotype and length.
 [TRGT](https://github.com/PacificBiosciences/trgt) is PacBio's tandem repeat
 genotyper for HiFi reads. We host its _ABCA7_ call as this track:
 
-```json addtrack
+```json addtrack loc=chr19:1,049,000-1,050,500
 {
   "trackId": "hprc_abca7_trgt",
   "name": "TRGT repeat genotypes at ABCA7, 94 HPRC samples",
@@ -392,7 +392,7 @@ node trgt-to-cnv-tr.mjs hprc_abca7_trgt.vcf.gz > hprc_abca7_cnvtr.vcf
 [Sort, bgzip and index](/docs/quickstart_web#vcf) the output, then add it as a
 track:
 
-```json addtrack
+```json addtrack loc=chr19:1,049,000-1,050,500
 {
   "trackId": "hprc_abca7_cnvtr",
   "name": "TRGT alleles at ABCA7 as repeat records, 94 HPRC samples",

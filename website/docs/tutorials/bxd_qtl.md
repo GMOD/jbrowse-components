@@ -111,7 +111,7 @@ The painting track is a `FeatureTrack` with a
 your own panel, swap `uri` for the bgzipped, tabix-indexed BED your conversion
 wrote.
 
-```json addtrack
+```json addtrack loc=chr4
 {
   "type": "FeatureTrack",
   "trackId": "bxd_chromosome_painting_mm10",

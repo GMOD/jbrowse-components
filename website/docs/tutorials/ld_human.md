@@ -80,7 +80,7 @@ Point an [`LDTrack`](/docs/config/ldtrack) at the r² table (squared correlation
 per variant pair) [PLINK wrote below](#correlating-the-lct-variants-with-plink),
 in an hg38 session:
 
-```json addtrack
+```json addtrack loc=chr2:134,400,000-136,900,000
 {
   "type": "LDTrack",
   "trackId": "kgp_lct_ld",
@@ -235,7 +235,7 @@ equal-width columns, one row per chromosome. For your own cohort, write a
 samples TSV with a `name` column and a `population` column and point
 `samplesTsvLocation` at it:
 
-```json addtrack
+```json addtrack loc=chr2:134,400,000-136,900,000
 {
   "type": "VariantTrack",
   "trackId": "kgp_lct_haplotypes",
@@ -324,7 +324,7 @@ done
 A [`MultiQuantitativeTrack`](/docs/config_guides/quantitative_track) draws the
 six bigWigs as a row each, on one axis from 0 to 1:
 
-```json addtrack
+```json addtrack loc=chr2:135,844,000-135,858,000
 {
   "type": "MultiQuantitativeTrack",
   "trackId": "kgp_lct_population_af",

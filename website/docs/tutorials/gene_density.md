@@ -86,7 +86,7 @@ and attaches it; name a sidecar stored elsewhere, or a remote one, with
 `--density`. The sidecar goes in the `densityAdapter` slot on the adapter of the
 track:
 
-```json addtrack
+```json addtrack loc=chr1:150,000,000-160,000,000
 {
   "type": "FeatureTrack",
   "trackId": "hg38_genes",
@@ -116,7 +116,7 @@ per `repFamily`, so the Alu track and its sidecar hold only Alus. The same
 
 The Alu track follows the same pattern:
 
-```json addtrack
+```json addtrack loc=chr1:150,000,000-160,000,000
 {
   "type": "FeatureTrack",
   "trackId": "hg38_Alu",
@@ -135,7 +135,7 @@ The Alu track follows the same pattern:
 
 The L1 track and the simple-repeat control follow, with the file names swapped:
 
-```json addtrack
+```json addtrack loc=chr1:150,000,000-160,000,000
 {
   "type": "FeatureTrack",
   "trackId": "hg38_L1",
@@ -152,7 +152,7 @@ The L1 track and the simple-repeat control follow, with the file names swapped:
 }
 ```
 
-```json addtrack
+```json addtrack loc=chr1:150,000,000-160,000,000
 {
   "type": "FeatureTrack",
   "trackId": "hg38_Simple_repeat",

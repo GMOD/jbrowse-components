@@ -107,7 +107,7 @@ the figures to sit under:
 }
 ```
 
-```json addtrack
+```json addtrack loc=chr7:27,110,000-27,265,000
 {
   "type": "FeatureTrack",
   "trackId": "ncbi_gff_hg19",
@@ -216,7 +216,7 @@ and `rowColor` built later in this section). The hosted demo config,
 https://jbrowse.org/code/jb2/main/test_data/config_demo.json, has the track with
 all three:
 
-```json addtrack
+```json addtrack loc=chr9:34,700,000-38,420,000
 {
   "type": "FeatureTrack",
   "trackId": "roadmap_chromhmm_multirow_hg19",

@@ -64,7 +64,7 @@ must be the GRCh38 sequence the reads were aligned to.
 The window covers 30 kb of an _EFCAB8_ intron on chromosome 20, where the
 callset says NA12878 has one copy of a 3.9 kb deletion.
 
-```json addtrack
+```json addtrack loc=chr20:32,925,000-32,955,000
 {
   "type": "AlignmentsTrack",
   "trackId": "na12878_read_depth",
@@ -174,7 +174,7 @@ it:
 - the count track's axis, pinned at 60, lets the centromere saturate so a
   deletion's few dozen pairs stand up
 
-```json addtrack
+```json addtrack loc=chr20
 {
   "type": "FeatureTrack",
   "trackId": "na12878_chr20_pairs",
@@ -209,7 +209,7 @@ it:
 }
 ```
 
-```json addtrack
+```json addtrack loc=chr20
 {
   "type": "FeatureTrack",
   "trackId": "na12878_chr20_pair_counts",

@@ -72,7 +72,7 @@ lists three marks:
 The adapter's `densityAdapter` names the sidecar, built in
 [Zooming out](#zooming-out).
 
-```json addtrack
+```json addtrack loc=chr1:151,000,000-151,030,000
 {
   "type": "FeatureTrack",
   "trackId": "alu_age",

@@ -142,7 +142,7 @@ rows, sorted; its `domain` pins the bands you want first.
 the matching color strip in the gutter. Both have a track-menu row too: **Group
 by...** and **Color by... → Samples**.
 
-```json addtrack
+```json addtrack loc=chr16:68,730,000-68,842,000
 {
   "type": "VariantTrack",
   "trackId": "tcga_brca_mutations",
@@ -191,7 +191,7 @@ Setting `facet` and `rowColor` to `subtype` instead bands the rows by receptor
 status ([TCGA 2012](https://doi.org/10.1038/nature11412)), with the HR+/HER2-
 band first in `domain`:
 
-```json addtrack
+```json addtrack loc=chr3:179,148,000-179,240,500
 {
   "type": "VariantTrack",
   "trackId": "tcga_brca_mutations",

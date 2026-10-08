@@ -151,7 +151,7 @@ Then add the NA12878 reads, colored by mapping quality. The CRAM needs its
 `.crai` beside it and decodes against the hg38 assembly; for your own sample,
 swap the `uri`:
 
-```json addtrack
+```json addtrack loc=chr5:70,850,000-71,500,000
 {
   "trackId": "na12878_qc_reads",
   "name": "NA12878, 30x Illumina (1000 Genomes)",

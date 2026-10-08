@@ -158,7 +158,7 @@ haplotype's allele at every bubble: a record is one allele written against
 GRCh38, and each sample's genotype holds a 1 for each of its haplotypes with
 that allele. We'll add it to the graph launch's session:
 
-```json addtrack
+```json addtrack loc=chr6:31,980,000-32,050,000
 {
   "type": "VariantTrack",
   "trackId": "hprc2_pgbi_grch38",
@@ -211,7 +211,7 @@ HPRC also publishes its alignment as `hprc-v2.1-mc-grch38.full.maf.gz`, a
 multiple alignment with one row of bases per haplotype. A `.tai` index beside
 the 53 GB file makes a locus one ranged read:
 
-```json addtrack
+```json addtrack loc=chr6:31,980,000-32,050,000
 {
   "type": "MafTrack",
   "trackId": "hprc_v2_1_mc_grch38",

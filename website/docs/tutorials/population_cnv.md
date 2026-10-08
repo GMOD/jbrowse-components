@@ -77,7 +77,7 @@ one copy of a duplicated sequence. The config lists two of the panel's 104 PUR
 (Puerto Rican) bigWigs, and every file follows the
 `kidd_lab_cnv/<population>/<sample>.qm2.CN.1k.bw` pattern above:
 
-```json addtrack
+```json addtrack loc=chr3:162,275,163-163,360,944
 {
   "type": "MultiQuantitativeTrack",
   "trackId": "pur_copynumber_1000g",
@@ -134,7 +134,7 @@ with a variable number of copies), and load six individuals spanning the range
 of copy number as a second track. The track draws step lines on one pinned axis,
 so each plateau lines up with a copy count:
 
-```json addtrack
+```json addtrack loc=chr17:36,080,000-36,270,000
 {
   "type": "MultiQuantitativeTrack",
   "trackId": "pur_cnv_ladder",
@@ -307,7 +307,7 @@ inside a 114 kb one:
   Consortium ([Logsdon et al. 2025](https://doi.org/10.1038/s41586-025-09140-6))
   place both. We'll add those calls as a variant track:
 
-```json addtrack
+```json addtrack loc=chr3:162,650,000-163,050,000
 {
   "type": "VariantTrack",
   "trackId": "hgsvc3_sv_insdel",

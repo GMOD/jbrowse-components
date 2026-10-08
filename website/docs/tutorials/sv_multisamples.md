@@ -80,7 +80,7 @@ uses.
 We'll add the callset as a variant track. Swap `uri` for your own VCF, which
 needs per-sample genotype columns and an index beside it:
 
-```json addtrack
+```json addtrack loc=chr1:25,200,000-25,400,000
 {
   "type": "VariantTrack",
   "trackId": "kgp_ensemble_sv",
@@ -94,7 +94,7 @@ One alignments track per sample comes next, here HG00113, the homozygous alt.
 Swap `uri` for your own CRAM, with its `.crai` beside it. The other two samples
 differ only in the file:
 
-```json addtrack
+```json addtrack loc=chr1:25,200,000-25,400,000
 {
   "type": "AlignmentsTrack",
   "trackId": "hg00113_cram",

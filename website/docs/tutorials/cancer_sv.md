@@ -106,7 +106,7 @@ tracks. Each read file needs its index beside it, a `.crai` for the CRAM and a
 }
 ```
 
-```json addtrack
+```json addtrack loc=chr3:25,357,600-25,361,000
 {
   "trackId": "COLO829_tumor_ont",
   "name": "COLO829 tumor (ONT R10)",
@@ -115,7 +115,7 @@ tracks. Each read file needs its index beside it, a `.crai` for the CRAM and a
 }
 ```
 
-```json addtrack
+```json addtrack loc=chr3:25,357,600-25,361,000
 {
   "trackId": "COLO829BL_normal_ont",
   "name": "COLO829BL matched normal (ONT R10)",
@@ -127,7 +127,7 @@ tracks. Each read file needs its index beside it, a `.crai` for the CRAM and a
 The breakends come from the run's somatic SV calls, which need their `.tbi`
 beside them:
 
-```json addtrack
+```json addtrack loc=chr3:25,357,600-25,361,000
 {
   "trackId": "COLO829_somatic_sv",
   "name": "COLO829 somatic SVs (nanomonsv)",
