@@ -257,6 +257,7 @@ export function blockToFeature(
     // outside the one region query that produced it.
     uniqueId: `${row0.sequenceName}-${placed.start}-${row0.length}`,
     refSrc: row0.sequenceName,
+    refSampleId: resolve(row0.sequenceName)?.assemblyName || undefined,
     start: placed.start,
     end: placed.end,
     strand: 1,

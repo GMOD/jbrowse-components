@@ -13,7 +13,8 @@ import type { Observable } from 'rxjs'
  * packed rather than as `MafFeature`s: a block, then its rows in the order a
  * `MafFeature`'s `alignments` lists them, then its empties. Every sequence
  * arrives as `text[from..to)`, so an adapter hands over a range of the line it
- * parsed rather than a string per species.
+ * parsed rather than a string per species. `refSampleId` is the row the block's
+ * reference sequence is, or undefined where the sample set leaves it no row.
  */
 export interface MafBlockSink {
   startBlock(
@@ -24,6 +25,7 @@ export interface MafBlockSink {
     ref: string,
     refFrom: number,
     refTo: number,
+    refSampleId: string | undefined,
   ): void
   addRow(
     sampleId: string,
@@ -56,6 +58,7 @@ export function addFeatureBlock(sink: MafBlockSink, feature: Feature) {
     ref,
     0,
     ref.length,
+    feature.get('refSampleId') as string | undefined,
   )
   for (const sampleId in alignments) {
     const a = alignments[sampleId]!

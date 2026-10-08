@@ -38,7 +38,8 @@ block is a few columns and every cost is per row.
   ranges of the column; `BigMafBlockReader` runs `applyMafLine`, whose rows
   now go to a `MafLineTarget`, and hands over each `s` line's sequence.
 - **Both consumers are sinks.** `MafRegionSink` packs the visible rows,
-  discovers every species and finds the reference row by its text, for the
+  discovers every species and takes the reference row the reader names (a
+  byte search named a haplotype identical to an unlisted reference), for the
   worker RPC; `MafTableSink` packs every row and keeps the block ids for
   `getFeatureTable`. `MafWirePacker` writes a range of a string.
 - **`RecordSlots` keeps a record's order.** A species named twice in a block

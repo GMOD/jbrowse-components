@@ -35,6 +35,7 @@ export class MafFeatureSink implements MafBlockSink {
     ref: string,
     refFrom: number,
     refTo: number,
+    refSampleId: string | undefined,
   ) {
     this.finish()
     this.alignments = {}
@@ -48,6 +49,7 @@ export class MafFeatureSink implements MafBlockSink {
       this.alignments,
       ref.slice(refFrom, refTo),
       this.empties,
+      refSampleId,
     )
   }
 

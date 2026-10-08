@@ -176,6 +176,22 @@ test('a filtered-out first entry still positions its block', async () => {
   expect(direct).toEqual(features)
 })
 
+// mm10 and the dropped hg38 are byte-identical over this block, which is what
+// a pangenome haplotype is to its reference over most short blocks.
+test('a row identical to a filtered-out reference is not named the reference', async () => {
+  const lines = [
+    [e('hg38.chr1', 100, '+', 'ACGT'), e('mm10.chr9', 7, '+', 'ACGT')].join(
+      ',',
+    ),
+  ]
+  const narrowed = await packedBothWays(adapterOver(lines, '', ['mm10']))
+  expect(narrowed.direct.refSampleId).toBeUndefined()
+  expect(narrowed.direct).toEqual(narrowed.features)
+  const listed = await packedBothWays(adapterOver(lines, '', ['hg38', 'mm10']))
+  expect(listed.direct.refSampleId).toBe('hg38')
+  expect(listed.direct).toEqual(listed.features)
+})
+
 test('refAssemblyName picks the reference row both ways', async () => {
   const { direct, features } = await packedBothWays(
     adapterOver(LINES, 'panTro6'),

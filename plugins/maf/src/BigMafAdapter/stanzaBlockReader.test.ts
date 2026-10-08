@@ -148,6 +148,18 @@ test('a sample set and a subtree filter pack alike both ways', async () => {
   expect(direct).toEqual(features)
 })
 
+test('a row identical to a filtered-out reference is not named the reference', async () => {
+  const stanzas = [
+    ['s hg38.chr1 100 4 + 5000 ACGT', 's mm10.chr9 7 4 + 800 ACGT'],
+  ]
+  const narrowed = await packedBothWays(adapterOver(stanzas, ['mm10']))
+  expect(narrowed.direct.refSampleId).toBeUndefined()
+  expect(narrowed.direct).toEqual(narrowed.features)
+  const listed = await packedBothWays(adapterOver(stanzas, ['hg38', 'mm10']))
+  expect(listed.direct.refSampleId).toBe('hg38')
+  expect(listed.direct).toEqual(listed.features)
+})
+
 test("the adapter's table answers the ids and JSON its MafFeatures do", async () => {
   const adapter = adapterOver(STANZAS)
   const direct = rows(await adapter.getFeatureTable(region))

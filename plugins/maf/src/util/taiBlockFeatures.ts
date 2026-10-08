@@ -24,6 +24,8 @@ export interface TaiBlockFeature {
    * past the queried contig's end by design, see `makeRefChrFilter`.
    */
   refSrc: string
+  /** the row `refSrc` resolves to, where the sample set gives it one */
+  refSampleId: string | undefined
   start: number
   end: number
   strand: number
@@ -108,6 +110,7 @@ export function taiBlockFeatures<SETUP extends TaiIndex>({
             feat.alignments,
             feat.seq,
             feat.empties,
+            feat.refSampleId,
           ),
         )
       }

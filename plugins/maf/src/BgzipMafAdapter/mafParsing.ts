@@ -72,6 +72,7 @@ export function* parseMafBlocks(
         // id has to survive being read outside the query that produced it.
         uniqueId: `${refSrc}-${placed.start}-${refSize}`,
         refSrc,
+        refSampleId: resolve(refSrc)?.assemblyName || undefined,
         start: placed.start,
         end: placed.end,
         strand: 1,

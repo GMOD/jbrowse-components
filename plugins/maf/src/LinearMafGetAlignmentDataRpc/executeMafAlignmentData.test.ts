@@ -35,6 +35,7 @@ function feature(
     seq: refSeq,
     alignments,
     empties,
+    refSampleId: 'hg38' in alignments ? 'hg38' : undefined,
   }
   return {
     id: () => `b${startBp}`,

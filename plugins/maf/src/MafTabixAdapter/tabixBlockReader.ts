@@ -38,7 +38,7 @@ function parseDecimal(text: string, from: number, to: number) {
  * skipped; the sequence runs to the entry's end. The reference row is the one
  * `refAssemblyName` names, else the queried assembly's, else the column's
  * first entry, read before the sample filter so a reference the filter drops
- * still positions the block.
+ * still positions the block and names no row.
  */
 export class MafTabixBlockReader {
   private resolver
@@ -110,6 +110,7 @@ export class MafTabixBlockReader {
     rows.startBlock()
     let firstFrom = -1
     let firstTo = -1
+    let firstSlot = -1
     for (let from = 0, k = 0, l = text.length; from < l; k++) {
       let to = text.indexOf(',', from)
       if (to === -1) {
@@ -146,6 +147,7 @@ export class MafTabixBlockReader {
           if (from === 0) {
             firstFrom = c4 + 1
             firstTo = to
+            firstSlot = slot
           }
         } else if (
           from === 0 &&
@@ -162,12 +164,25 @@ export class MafTabixBlockReader {
     if (ref === -1) {
       ref = rows.slotOf(this.queryAssemblyName)
     }
+    if (ref === -1) {
+      ref = firstSlot
+    }
+    const refSampleId = ref === -1 ? undefined : rows.nameAt(ref)
     if (ref !== -1) {
-      sink.startBlock(id, start, end, 0, text, this.from[ref]!, this.to[ref]!)
+      sink.startBlock(
+        id,
+        start,
+        end,
+        0,
+        text,
+        this.from[ref]!,
+        this.to[ref]!,
+        refSampleId,
+      )
     } else if (firstFrom !== -1) {
-      sink.startBlock(id, start, end, 0, text, firstFrom, firstTo)
+      sink.startBlock(id, start, end, 0, text, firstFrom, firstTo, undefined)
     } else {
-      sink.startBlock(id, start, end, 0, '', 0, 0)
+      sink.startBlock(id, start, end, 0, '', 0, 0, undefined)
     }
     const order = rows.order()
     for (let j = 0; j < rows.count; j++) {

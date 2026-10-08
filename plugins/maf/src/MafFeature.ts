@@ -14,6 +14,7 @@ export default class MafFeature implements Feature {
   private _alignments: Record<string, AlignmentRecord>
   private _seq: string
   private _empties: Record<string, EmptyRecord>
+  private _refSampleId: string | undefined
 
   constructor(
     id: string,
@@ -24,6 +25,7 @@ export default class MafFeature implements Feature {
     alignments: Record<string, AlignmentRecord>,
     seq: string,
     empties: Record<string, EmptyRecord> = {},
+    refSampleId?: string,
   ) {
     this._id = id
     this._start = start
@@ -33,6 +35,7 @@ export default class MafFeature implements Feature {
     this._alignments = alignments
     this._seq = seq
     this._empties = empties
+    this._refSampleId = refSampleId
   }
 
   get(name: 'refName' | 'seq'): string
@@ -61,6 +64,8 @@ export default class MafFeature implements Feature {
         return this._empties
       case 'seq':
         return this._seq
+      case 'refSampleId':
+        return this._refSampleId
       default:
         return undefined
     }

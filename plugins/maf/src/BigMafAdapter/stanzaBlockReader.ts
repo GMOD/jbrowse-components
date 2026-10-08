@@ -11,7 +11,8 @@ import type { MafLineTarget, MafSourceLine } from '../util/mafLines.ts'
  * A bigMaf stanza, its lines `;`-joined, into a {@link MafBlockSink}: its rows
  * and empties in the order a record keyed by species lists them, with no
  * record per species. The reference is the first `s` line, taken before the
- * sample filter, so a reference the filter drops still positions the block.
+ * sample filter, so a reference the filter drops still positions the block
+ * and names no row.
  * `applyMafLine` is the line grammar, shared with the bgzip MAF reader.
  */
 export class BigMafBlockReader implements MafLineTarget {
@@ -69,13 +70,18 @@ export class BigMafBlockReader implements MafLineTarget {
     rows.startBlock()
     empties.startBlock()
     this.lastRowId.clear()
+    const { resolve } = this.resolver
     let ref: string | undefined
+    let refSampleId: string | undefined
     for (const line of stanza.split(';')) {
-      const s = applyMafLine(line, this.resolver.resolve, this)
-      ref ??= s?.seq
+      const s = applyMafLine(line, resolve, this)
+      if (s && ref === undefined) {
+        ref = s.seq
+        refSampleId = resolve(s.src)?.assemblyName || undefined
+      }
     }
     ref ??= ''
-    sink.startBlock(id, start, end, 0, ref, 0, ref.length)
+    sink.startBlock(id, start, end, 0, ref, 0, ref.length, refSampleId)
     const rowOrder = rows.order()
     for (let j = 0; j < rows.count; j++) {
       const slot = rowOrder[j]!
