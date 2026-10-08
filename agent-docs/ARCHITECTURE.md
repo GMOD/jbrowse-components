@@ -27,9 +27,7 @@ reuses the same Canvas2D draw fn, never the shader.
 
 Every canvas-drawing display **must** provide a Canvas2D draw function; the GPU
 shader path is an optional accelerator layered on top. Drawing to a canvas is
-itself a choice: the arc classes own a plain Canvas2D of their own and emit JSX
-`<path>` elements on the export path, and circular view's `ChordVariantDisplay`
-is SVG on both paths.
+itself a choice: circular view's `ChordVariantDisplay` is SVG on both paths.
 
 ## Vocabulary
 
@@ -495,10 +493,7 @@ Circular view's `ChordVariantDisplay` is a fourth shape, off this axis: it
 paints main-thread JSX SVG, composes none of the fetch foundations, and answers
 freshness with its own `ready` getter. It still runs the shared
 `computeSvgReady` / `awaitSvgReady` export gate and the shared `installFetch`
-skeleton. The arc classes compose `RenderLifecycleMixin` and never install it
-(`attachRenderingBackend` is what installs the pair), render
-`DisplayStatusChrome` instead of `DisplayChrome`, and answer `painted` from
-data arrival rather than a canvas.
+skeleton.
 
 ### Cross-cutting mixins, orthogonal to the fetch foundation
 

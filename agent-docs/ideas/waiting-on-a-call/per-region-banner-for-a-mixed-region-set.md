@@ -25,7 +25,7 @@ The two scopes differ:
   scope"). One over-budget region therefore sets `estimatedFetchBytes` for the
   display.
 - `regionTooLarge` is one boolean, `computeDisplayPhase` turns it into
-  `tooLarge`, and `DisplayStatusChromeBase` early-`return`s that phase's own
+  `tooLarge`, and `DisplayChromeBase` early-`return`s that phase's own
   root — the canvas unmounts rather than being drawn over.
 
 So on a mixed set the region that fit is measured, downloaded, parsed, stored

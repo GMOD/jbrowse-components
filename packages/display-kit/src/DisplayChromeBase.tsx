@@ -1,4 +1,4 @@
-import { Fragment, useEffect } from 'react'
+import { Fragment, useEffect, useState } from 'react'
 
 // deep subpath, never the `@jbrowse/core/ui` barrel: this file is the
 // toolkit-free half of the chrome and the barrel pulls in MUI
@@ -6,18 +6,26 @@ import {
   ClearTrackedPointerProvider,
   useMouseTracking,
 } from '@jbrowse/core/ui/useMouseTracking'
+import {
+  BottomRightCornerContext,
+  TrackOverlayPortal,
+} from '@jbrowse/display-ui'
 import { useRenderingBackend } from '@jbrowse/render-core/useRenderingBackend'
 import { observer } from 'mobx-react'
 
 import ChromeHighlight from './ChromeHighlight.tsx'
+import ChromeLegend from './ChromeLegend.tsx'
 import ChromeYAxis from './ChromeYAxis.tsx'
-import DisplayStatusChromeBase from './DisplayStatusChromeBase.tsx'
 import ReplacedDisplay from './ReplacedDisplay.tsx'
 import { isAxisHost } from './axisHost.ts'
 import { isHighlightHost } from './highlightHost.ts'
+import { isLegendHost } from './legendHost.ts'
 import { useAnimationFrames } from './useAnimationFrames.ts'
 
-import type { StatusChromeModel } from './DisplayStatusChromeBase.tsx'
+import type { DisplayBackgroundProgressModel } from './DisplayBackgroundProgress.tsx'
+import type { DisplayErrorBarModel } from './DisplayErrorBar.tsx'
+import type { DisplayLoadingOverlayModel } from './DisplayLoadingOverlay.tsx'
+import type { TooLargeMessageModel } from './TooLargeMessage.tsx'
 import type { AnimationHost } from './useAnimationFrames.ts'
 import type {
   MouseState,
@@ -27,119 +35,116 @@ import type { DisplayChromeOverlays } from '@jbrowse/display-ui'
 import type { DisplayPhase } from '@jbrowse/render-core/displayPhase'
 import type { RenderingBackend } from '@jbrowse/render-core/renderingBackendBase'
 import type { RenderLifecycleModel } from '@jbrowse/render-core/useRenderingBackend'
-import type { ComponentPropsWithRef, ReactNode } from 'react'
+import type { ComponentPropsWithRef, MouseEventHandler, ReactNode } from 'react'
 
-// What the chrome itself reads, on top of everything the overlays read
-// (`StatusChromeModel`, composed from their own prop types in
-// DisplayStatusChromeBase). (`renderError`/`setRenderError` are NOT here — they
-// live on `RenderLifecycleModel`, always intersected in below.)
+// What the chrome reads itself, plus what each overlay reads, composed from the
+// overlays' own model types so the two cannot drift. `renderError` and
+// `setRenderError` are `RenderLifecycleModel`'s, intersected in below.
 export type ChromeModel = {
   displayPhase: DisplayPhase
-  // `painted`, never the raw `canvasDrawn`: a display deliberately showing a
-  // static placeholder instead of a canvas (sequence zoomed out, LD with the
-  // triangle off) has finished, and the raw flag can never say so. See
-  // `RenderLifecycleMixin.painted`.
+  // `painted`, never the raw `canvasDrawn`: a display showing a static
+  // placeholder instead of a canvas has finished, and `canvasDrawn` can never
+  // say so. See `RenderLifecycleMixin.painted`.
   painted: boolean
   // The positioned dendrogram of a display with a tree sidebar, published as
-  // `data-clustered` — see the attribute below. Declared here so the chrome
-  // reads a member of its own type; a display without a sidebar leaves it
-  // undeclared and publishes nothing.
+  // `data-clustered`.
   hierarchy?: unknown
+  configuration: { displayId: string }
+  height: number
 } & AnimationHost &
-  StatusChromeModel
+  DisplayErrorBarModel &
+  TooLargeMessageModel &
+  DisplayLoadingOverlayModel &
+  DisplayBackgroundProgressModel
 
 export interface CanvasHandle {
   canvasRef: (node: HTMLCanvasElement | null) => void
   canvas: HTMLCanvasElement | null
   /**
-   * The container-relative pointer position, published rather than held — read
-   * it with `useMouseState(mouseTracker)` **in the body**, never beside the
-   * chrome. The chrome binds the handlers itself precisely so that rule can't be
-   * got wrong: there is no longer a position to hold up here.
+   * The container-relative pointer position, published rather than held. Read
+   * it with `useMouseState(mouseTracker)` in the body, in the smallest
+   * component that draws the cursor-following thing.
    */
   mouseTracker: MouseTracker
 }
 
-// Single home for every GPU display's render lifecycle AND status chrome.
-// DisplayChromeBase owns the backend hook (`useRenderingBackend`) and decides
-// which terminal-state UI shows, but the *states themselves* all live on the
-// model and collapse to one getter, `model.displayPhase`
-// ('renderError' | 'tooLarge' | 'error' | 'canceled' | 'loading' | 'ready'). The precedence
-// among them is single-sourced in `computeDisplayPhase` (see displayPhase.ts);
-// this component branches on it. So a display can't show a canvas while skipping
-// a terminal state, can't bury the hook somewhere the chrome can't see (the seam
-// alignments drifted through), and the loading-vs-terminal precedence isn't
-// re-encoded by subtraction per display.
-//
-// This file owns only what the backend makes possible: the hook, and the
-// `renderError` phase — the one phase whose banner needs the hook's `retry()`
-// and so cannot live in the backend-free `DisplayStatusChromeBase` below it.
-// Everything after that (the container, the testid and its
-// `data-display-drawn`, `data-display-phase`, the four remaining overlays) is
-// shared verbatim with
-// arc, which has no backend. See that file for the tree-shape rule.
-//
-// What it does NOT own is what those states look like. The five components come
-// in via `overlays` so this file stays free of any UI toolkit; `DisplayChrome`
-// binds the MUI set and is what every in-tree display imports. See
-// chromeOverlays.ts for why that split exists.
-//
-// `displayPhase`'s activity term is evaluated lazily (a thunk in
-// `computeDisplayPhase`) so that when a terminal flag is set this observer tracks
-// ONLY that flag — not the containing view's `visibleRegions` / `loadedRegions` —
-// avoiding needless re-renders while a banner is up.
-//
-// The body is a function so callers mount the canvas wherever it belongs. It
-// returns a named observer component (every display does) so observable reads
-// scope to the body rather than re-rendering the chrome.
-//
-// **Pointer tracking belongs to the chrome**, because the chrome owns the
-// element the position is measured against. Nine displays used to call
-// `useMouseTracking` themselves and wire three props, and the rule that keeps it
-// cheap — publish the position, never hold it at this level — survived only as
-// an identical comment copied into eight of them. Holding it here costs a whole
-// display's chrome re-rendering because the cursor moved a pixel: this component
-// (re-running `useRenderingBackend`), the status container with a fresh inline
-// `style` object, all the overlays, and only then the body that wanted the
-// coordinate. Now there is no position at this level to hold: `mouseTracker`
-// goes out through the handle and the body reads it with `useMouseState`.
-//
-// A display that hit-tests as the cursor moves passes `onPointerPosition`, so
-// its hit comes off the same single measurement as its guides. A display that
-// needs the container node itself still passes a plain `ref` — maf, whose
-// drag-selection resolves window-level drag coordinates against it — and gets
-// it, because the measurement here reads `currentTarget` and holds no ref to
-// collide with.
-//
-// `testid` names the display TYPE and never changes value. It used to gain a
-// `-done` suffix once `canvasDrawn` flipped; ADR-065 removed that in favour of
-// the `data-display-drawn` attribute the chrome publishes beside it, so a test
-// waits on `[data-testid="x"][data-display-drawn="true"]` (the
-// `displayPainted()` builder in @jbrowse/browser-test-utils writes it), then
-// reads the canvas inside.
-// Displays whose tests pixel-match or screenshot the canvas itself (hic, ld)
-// give the inner <canvas> a *static* selector (`hic_canvas`) for that lookup —
-// the readiness gate stays here on the chrome div, never duplicated as a
-// `canvasDrawn`/`rpcData` ternary on the canvas.
-// Exported so `DisplayChrome` can bind `overlays` off it rather than restate it.
-// It restated the list by hand until 2026-08, and that is exactly how the handle
-// grew a `containerRef` no display ever read: declared here, copied there, and
-// then only removable in two places at once.
+type ChromeDivProps = Omit<ComponentPropsWithRef<'div'>, 'children'>
+
 export type DisplayChromeBaseProps<B> = {
   model: ChromeModel & RenderLifecycleModel<B>
   factory: (canvas: HTMLCanvasElement) => Promise<B>
   children: (handle: CanvasHandle) => ReactNode
+  /**
+   * The display type's `data-testid`, the base name only and never mutated.
+   * Readiness is `data-display-drawn` / `data-display-phase` (ADR-065);
+   * `displayPainted(base)` from `@jbrowse/capture` composes the two.
+   */
   testid: string
   overlays: DisplayChromeOverlays
   /**
    * Called with each measured pointer position (and `undefined` on leave), for
-   * a display that hit-tests as the cursor moves. It runs off the same single
-   * measurement the tracker publishes, so a display's hit and its guides can't
-   * come from two different rects in two different frames.
+   * a display that hit-tests as the cursor moves. It runs off the same
+   * measurement the tracker publishes, so a display's hit and its guides come
+   * from one rect in one frame.
    */
   onPointerPosition?: (state?: MouseState) => void
-} & Omit<ComponentPropsWithRef<'div'>, 'children'>
+} & ChromeDivProps
 
+/**
+ * A pointer event that asks "what is under this pixel": anything but the
+ * enter/leave pairs, which keep firing from a portalled overlay because
+ * leaving the page from one is how a display learns to clear its hover.
+ */
+function asksWhereThePointerIs(key: string) {
+  return (
+    /^on(Mouse|Pointer|Aux|Click|ContextMenu|DoubleClick|Wheel)/.test(key) &&
+    !/(Enter|Leave)$/.test(key)
+  )
+}
+
+/**
+ * The caller's pointer handlers, rebound to fire only for pointers over the
+ * chrome. React events bubble through the component tree, not the DOM, so a
+ * context menu, legend or track control portalled elsewhere still delivers its
+ * pointer events here as though they had happened on the canvas. A portalled
+ * target is not inside this element, which is how the DOM tells them apart.
+ */
+function overChrome(props: ChromeDivProps): ChromeDivProps {
+  return Object.fromEntries(
+    Object.entries(props).map(([key, value]) => {
+      if (!asksWhereThePointerIs(key) || typeof value !== 'function') {
+        return [key, value]
+      }
+      const handler = value as MouseEventHandler<HTMLDivElement>
+      return [
+        key,
+        (event: React.MouseEvent<HTMLDivElement>) => {
+          if (event.currentTarget.contains(event.target as Node)) {
+            handler(event)
+          }
+        },
+      ]
+    }),
+  )
+}
+
+/**
+ * The render lifecycle and status chrome of every LGV display. It owns the
+ * backend hook (`useRenderingBackend`) and branches on `model.displayPhase`,
+ * whose precedence lives in `computeDisplayPhase`, so a display cannot paint a
+ * canvas while skipping a terminal state. What the states look like comes in
+ * through `overlays`, which keeps this file free of any UI toolkit;
+ * `DisplayChrome` binds the Material set.
+ *
+ * `renderError` and `tooLarge` return their own root: the unmount is what
+ * fires `canvasRef(null)` and `backend.dispose()`, so the caller's
+ * `className`, `ref` and handlers are absent in those states. `error`,
+ * `canceled` and `loading` draw over the mounted body.
+ *
+ * The body is a render prop so callers mount the canvas where it belongs. It
+ * runs during this component's render, so an observable read written inline in
+ * it re-renders the whole chrome: put only components in it.
+ */
 const DisplayChromeBase = observer(function DisplayChromeBase<
   B extends RenderingBackend,
 >({
@@ -147,42 +152,29 @@ const DisplayChromeBase = observer(function DisplayChromeBase<
   factory,
   children,
   overlays,
+  testid,
+  style,
   onPointerPosition,
   onMouseMove,
   onMouseLeave,
-  ...chromeProps
+  ...divProps
 }: DisplayChromeBaseProps<B>) {
+  const { RenderError, TooLarge, ErrorBar, Loading, BackgroundProgress } =
+    overlays
   const { canvas, canvasRef, retry, canvasKey } = useRenderingBackend(
     factory,
     model,
   )
-  // The chrome owns the pointer measurement, because it owns the element the
-  // measurement is *against*. Every display used to do this itself — `useRef` +
-  // `useMouseTracking` + three props, at nine call sites — and the rule that
-  // keeps it cheap ("publish the position, don't hold it here") survived only as
-  // an identical comment copied into eight files, with alignments having already
-  // dropped `onMouseLeave`. Owning it makes the rule structural: there is no
-  // position at this level to hold. The hook measures off `currentTarget`, so
-  // the chrome needs no ref of its own and a caller's `ref` rides the spread
-  // below untouched — nothing to merge, nothing to displace.
   const { mouseTracker, handleMouseMove, handleMouseLeave } =
     useMouseTracking(onPointerPosition)
+  // element state rather than a ref, so `BottomRightIndicators` re-renders
+  // once the corner mounts
+  const [cornerEl, setCornerEl] = useState<HTMLDivElement | null>(null)
   const phase = model.displayPhase
-  // The two subtree-replacing phases remove the very element the handlers above
-  // are bound to, and `mouseleave` cannot fire on an element unmounted under the
-  // cursor — so without this the tracker keeps publishing the position the
-  // pointer had when the banner went up. Nothing reads it while the banner is
-  // there, which is exactly why it goes unnoticed: the body remounts the instant
-  // the phase clears (Force load, Retry) and reads that stale snapshot on its
-  // FIRST render, drawing a crosshair or tooltip where the cursor is not. The
-  // displays whose pointer layer has no other gate — multi-row features, maf,
-  // both multi-sample variant displays — draw it immediately. `onPointerPosition`
-  // consumers (`hoveredFeature`, `hoveredFeature`) are pinned to the same
-  // stale hit, and get their `undefined` from the same call.
-  //
-  // Declared above the `renderError` return because it is a hook; the handler is
-  // identity-stable (see `useMouseTracking`) so this effect runs on the
-  // transition rather than on every render.
+  // `mouseleave` cannot fire on an element unmounted under the cursor, so a
+  // replacing phase would leave the tracker publishing the position the
+  // pointer had when the banner went up, and the body would draw a crosshair
+  // there on its first render after Force load or Retry.
   const containerMounted = phase !== 'renderError' && phase !== 'tooLarge'
   useEffect(() => {
     if (!containerMounted) {
@@ -191,10 +183,6 @@ const DisplayChromeBase = observer(function DisplayChromeBase<
   }, [containerMounted, handleMouseLeave])
   useAnimationFrames(model)
   if (phase === 'renderError') {
-    // destructured for the same reason as in DisplayStatusChromeBase: a plain
-    // component-typed prop reads better as `<RenderError/>` than as a member
-    // expression, and there is no observable here to stale
-    const { RenderError } = overlays
     return (
       <ReplacedDisplay model={model} phase={phase}>
         <RenderError
@@ -205,19 +193,40 @@ const DisplayChromeBase = observer(function DisplayChromeBase<
       </ReplacedDisplay>
     )
   }
-  // `phase` is narrowed to DisplayStatusPhase by the return above, which is the
-  // whole point of the two phase types: the backend-free chrome can't be handed
-  // a state whose banner it has no `retry()` to build.
+  if (phase === 'tooLarge') {
+    return (
+      <ReplacedDisplay model={model} phase={phase}>
+        <TooLarge model={model} />
+      </ReplacedDisplay>
+    )
+  }
+  const drawn = model.painted
   return (
-    <DisplayStatusChromeBase
-      {...chromeProps}
-      // Whether a tree is positioned against the drawn rows, for a display
-      // with a dendrogram sidebar. A figure that clusters with the sidebar
-      // hidden has no other DOM evidence the run finished — the tree canvas is
-      // what the sidebar toggle removes — so the capture gates wait on this.
-      // Published here off the one getter every sidebar display answers, so a
-      // display cannot forget to; two of the four used to, and each carried
-      // its own copy of this sentence.
+    <div
+      {...overChrome({
+        ...divProps,
+        // composed, never replacing: maf's drag-selection binds its own
+        onMouseMove: event => {
+          handleMouseMove(event)
+          onMouseMove?.(event)
+        },
+        onMouseLeave: event => {
+          handleMouseLeave()
+          onMouseLeave?.(event)
+        },
+      })}
+      // The chrome owns the box: the overlays, guides and the display's own
+      // content are all absolutely positioned, so without the height the
+      // container collapses and takes no pointer events.
+      style={{ position: 'relative', height: model.height, ...style }}
+      data-testid={testid}
+      data-display-id={model.configuration.displayId}
+      // first paint, true even while the fetch is still running
+      data-display-drawn={drawn}
+      // finished: every value but `loading`
+      data-display-phase={phase}
+      // A figure that clusters with the sidebar hidden has no other DOM
+      // evidence the run finished, so the capture gates wait on this.
       data-clustered={
         'hierarchy' in model ? String(!!model.hierarchy) : undefined
       }
@@ -226,61 +235,61 @@ const DisplayChromeBase = observer(function DisplayChromeBase<
       data-display-animating={
         'animating' in model ? String(!!model.animating) : undefined
       }
-      // Composed, never replacing: a caller still binding its own pointer
-      // handlers (maf's drag-selection, which owns a rubberband rect and a
-      // window-level drag) would otherwise be silently overridden by the
-      // measurement below — the handlers would just stop firing, with nothing
-      // to see but a drag that no longer drags.
-      onMouseMove={event => {
-        handleMouseMove(event)
-        onMouseMove?.(event)
-      }}
-      onMouseLeave={event => {
-        handleMouseLeave()
-        onMouseLeave?.(event)
-      }}
-      model={model}
-      phase={phase}
-      drawn={model.painted}
-      overlays={overlays}
     >
-      {/* Keyed on `canvasKey` so a backend re-init always gets a canvas element
-          that never held a context, whichever path triggered it. The old
-          reasoning — "DisplayChrome consumers get this free, the `renderError`
-          phase unmounts the canvas" — holds only for a *reported* loss. Three
-          re-init paths bump `canvasKey` without ever setting `renderError`
-          (`webglcontextrestored`, WebGPU `onDeviceLost`, a bfcache `pageshow`),
-          and on those the element was reused. Usually fine, since the same
-          context kind is re-acquirable; not fine when the HAL ladder lands on a
-          *different* rung than last time, because a canvas's context kind is
-          permanent — a device loss that can't re-acquire WebGPU falls to WebGL2
-          and finds the element already committed, which is unrecoverable on
-          that element. This makes the guarantee unconditional rather than a
-          property of which path happened to fire, and it costs a remount of the
-          body on an event that is rebuilding the whole backend anyway. The
-          overlays deliberately sit OUTSIDE the key: remounting the loading
-          scrim would reset its 250ms anti-flash timer (see
-          DisplayStatusChromeBase). */}
-      {/* A menu portalled to the body opens under the cursor without a mouse
-          event and takes the hover chain with it when it closes, so the
-          container below never gets the `mouseleave` that would drop the
-          tracked pointer — its overlays stay drawn at the coordinate the menu
-          opened on, however far the pointer then goes. `ContextMenu` is the one
-          menu every display raises, so it calls this on close and each display
-          is spared knowing about it. See `ClearTrackedPointerProvider`. */}
-      <ClearTrackedPointerProvider value={handleMouseLeave}>
-        <Fragment key={canvasKey}>
-          {children({ canvasRef, canvas, mouseTracker })}
-        </Fragment>
-      </ClearTrackedPointerProvider>
-      {/* The highlight and the axis, detected structurally so a display gets
-          each by answering its host members and nothing else. Outside the
-          canvas key: a backend re-init has nothing to say to them. The legend
-          is placed the same way by the status chrome, which a display with no
-          backend renders directly. */}
+      <BottomRightCornerContext value={cornerEl}>
+        {/* `ContextMenu` calls this on close: a menu portalled to the body
+            takes the hover chain with it, so the container never gets the
+            `mouseleave` that would drop the tracked pointer. */}
+        <ClearTrackedPointerProvider value={handleMouseLeave}>
+          {/* Keyed so a backend re-init always gets a canvas element that
+              never held a context: a canvas's context kind is permanent, and
+              a device loss can land the HAL ladder on a different rung. */}
+          <Fragment key={canvasKey}>
+            {children({ canvasRef, canvas, mouseTracker })}
+          </Fragment>
+        </ClearTrackedPointerProvider>
+      </BottomRightCornerContext>
+      {/* Detected structurally, so a display gets each guide by answering its
+          host members. Outside the canvas key, like the overlays below:
+          remounting the loading scrim would reset its anti-flash timer. */}
       {isHighlightHost(model) ? <ChromeHighlight model={model} /> : null}
       {isAxisHost(model) ? <ChromeYAxis model={model} /> : null}
-    </DisplayStatusChromeBase>
+      {/* In the TrackContainer's overlay layer rather than inline, where the
+          LGV's inter-region masks would stripe them (ADR-058). One portal for
+          the group, so every overlay set inherits it. */}
+      <TrackOverlayPortal>
+        <ErrorBar model={model} visible={phase === 'error'} />
+        <Loading
+          model={model}
+          visible={phase === 'loading' || phase === 'canceled'}
+          // nothing painted yet, so nothing for the indicator to flash over
+          immediate={!drawn}
+        />
+        {/* The bottom-right corner, shared by the status chip and the
+            display's own control row, which portals in through the context
+            above (bottomRightCorner.ts). No `z-index`, so it creates no
+            stacking context and its two members keep competing in the overlay
+            layer on their own values. */}
+        <div
+          ref={setCornerEl}
+          style={{
+            position: 'absolute',
+            bottom: 2,
+            right: 2,
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'flex-end',
+            gap: 4,
+            pointerEvents: 'none',
+          }}
+        >
+          {/* Bare, with no wrapper: a wrapper would stay a zero-height flex
+              item and spend the `gap`, lifting the control row 4px. */}
+          <BackgroundProgress model={model} visible={phase === 'ready'} />
+        </div>
+      </TrackOverlayPortal>
+      {isLegendHost(model) ? <ChromeLegend model={model} /> : null}
+    </div>
   )
 })
 

@@ -21,6 +21,10 @@ simplification pass that accepted breaking changes. See "Merge `useRenderer`
 into `useRenderingBackend`" under Rejected alternatives for why the original
 testability objection no longer holds. The rest of the layering stands.
 
+The backend-free shell (`DisplayStatusChrome`, split out for arc's main-thread
+Canvas2D) merged back into `DisplayChromeBase` in 2026-10: ADR-163 removed
+`plugins/arc`, its only consumer.
+
 Builds on [ADR-025](adr-025-gpu-canvas-stays-mounted-not-xor-error.md)
 and [DISPLAYCHROME.md](../reference/DISPLAYCHROME.md) (the "what it is" + the adoption
 map, including the SVG arc exception). This ADR records the outcome of a **leakiness / radical-simplification

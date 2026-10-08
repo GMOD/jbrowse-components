@@ -34,7 +34,7 @@ const DisplayBackgroundProgress = observer(function DisplayBackgroundProgress({
   return visible && model.statusMessage ? (
     <ProgressChip
       status={{ message: model.statusMessage, fraction: model.statusProgress }}
-      // DisplayStatusChromeBase anchors the corner and shares it with the
+      // DisplayChromeBase anchors the corner and shares it with the
       // display's control row; anchoring here too would put this underneath it
       anchored={false}
     />

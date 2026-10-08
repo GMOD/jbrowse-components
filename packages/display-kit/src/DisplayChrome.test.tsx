@@ -9,10 +9,9 @@ import {
 } from '@jbrowse/render-core/gpuDevice'
 import { createGpuContextLostError } from '@jbrowse/render-core/useRenderingBackend'
 import { act, fireEvent, render, waitFor } from '@testing-library/react'
-import { observer } from 'mobx-react'
 
 import BottomRightIndicators from './BottomRightIndicators.tsx'
-import DisplayChrome, { DisplayStatusChrome } from './DisplayChrome.tsx'
+import DisplayChrome from './DisplayChrome.tsx'
 import { TestChromeModel, stubFactory } from './chromeTestModel.ts'
 
 import type {
@@ -185,18 +184,6 @@ test('the container follows a model height change', async () => {
   const model = TestChromeModel.create({})
   const { findByTestId } = renderChrome(model)
   const chrome = await findByTestId('probe-display')
-  act(() => {
-    model.setHeight(250)
-  })
-  expect(chrome.style.height).toBe('250px')
-})
-
-test('the status chrome follows a model height change under a parent that reads nothing', async () => {
-  const model = TestChromeModel.create({})
-  const { findByTestId } = render(
-    <DisplayStatusChrome model={model} phase="ready" drawn testid="probe" />,
-  )
-  const chrome = await findByTestId('probe')
   act(() => {
     model.setHeight(250)
   })
@@ -480,105 +467,6 @@ describe('context-lost Canvas2D escape hatch', () => {
 
     await findByTestId('reload_button')
     expect(queryByTestId('use_canvas2d_button')).toBeNull()
-  })
-})
-
-// `DisplayStatusChrome` is the same chrome with the rendering backend peeled
-// off, for a display that has none (arc's main-thread SVG). It used to be a
-// hand-written copy in the arc plugin, which is how arc ended up as the only
-// display with no background-progress chip. These run the copy's former job
-// against the shared component, off the same fixture the GPU cases above use —
-// so "arc's chrome matches every other display's" is a claim under test rather
-// than one maintained by hand.
-describe('DisplayStatusChrome (no rendering backend)', () => {
-  // An observer that reads `model.displayPhase` itself, because that is what
-  // both real callers are (`DisplayChromeBase`, and arc's
-  // `BaseDisplayComponent`): `DisplayStatusChrome` takes the phase as a prop
-  // precisely so the *caller* owns the tracking. Reading it once outside the
-  // render instead left the fixture pinned to a stale phase, and the suite
-  // passed only because `ErrorBar` used to re-derive its own visibility from
-  // `model.error` — i.e. only while an overlay was free to disagree with the
-  // phase it had been handed.
-  const StatusProbe = observer(function StatusProbe({
-    model,
-    testid,
-  }: {
-    model: Instance<typeof TestChromeModel>
-    testid: string
-  }) {
-    // a backend-less display never reaches `renderError`, which is exactly what
-    // DisplayStatusPhase encodes — so the phase is passed through unchanged
-    const phase = model.displayPhase
-    if (phase === 'renderError') {
-      throw new Error('unreachable: the fixture sets no renderError here')
-    }
-    return (
-      <DisplayStatusChrome
-        model={model}
-        phase={phase}
-        drawn={model.painted}
-        testid={testid}
-      >
-        <div data-testid="probe-body" />
-      </DisplayStatusChrome>
-    )
-  })
-
-  function renderStatusChrome(
-    model: Instance<typeof TestChromeModel>,
-    testid = 'probe-display',
-  ) {
-    return render(<StatusProbe model={model} testid={testid} />)
-  }
-
-  test('tooLarge replaces the body, same as the GPU chrome', async () => {
-    const model = TestChromeModel.create({})
-    model.setRegionTooLarge(true, 'Requested too much data')
-    const { findByText, queryByTestId } = renderStatusChrome(model)
-
-    await findByText(/Requested too much data/)
-    expect(queryByTestId('probe-body')).toBeNull()
-  })
-
-  test('error and loading draw over a still-mounted body', async () => {
-    const model = TestChromeModel.create({})
-    model.setLoadingCondition(true)
-    const { findByTestId, queryByTestId } = renderStatusChrome(model)
-
-    await findByTestId('loading-overlay')
-    expect(queryByTestId('probe-body')).toBeTruthy()
-
-    act(() => {
-      model.setError(new Error('boom-status-error'))
-    })
-    await findByTestId('reload_button')
-    expect(queryByTestId('probe-body')).toBeTruthy()
-  })
-
-  test('owns the stable testid and publishes data-display-phase', async () => {
-    const model = TestChromeModel.create({})
-    model.setLoadingCondition(true)
-    const { findByTestId } = renderStatusChrome(model, 'status')
-
-    const el = await findByTestId('status')
-    expect(el.dataset.displayPhase).toBe('loading')
-
-    act(() => {
-      model.setCanvasDrawn(true)
-    })
-    await findByTestId('status')
-  })
-
-  // the drift this component was extracted to end
-  test('shows the background-progress chip while ready', async () => {
-    const model = TestChromeModel.create({})
-    act(() => {
-      model.setStatus('Clustering samples', 0.25)
-    })
-    const { findByTestId, queryByTestId } = renderStatusChrome(model)
-
-    await findByTestId('progress-chip')
-    expect(queryByTestId('loading-overlay')).toBeNull()
   })
 })
 

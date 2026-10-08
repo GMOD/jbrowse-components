@@ -4182,7 +4182,6 @@
     "@jbrowse/display-kit/DisplayChrome": {
       "package": "@jbrowse/display-kit",
       "names": [
-        "DisplayStatusChrome",
         "default"
       ],
       "worker": "stub",
@@ -4244,16 +4243,6 @@
         "@mui/material"
       ]
     },
-    "@jbrowse/display-kit/DisplayStatusChromeBase": {
-      "package": "@jbrowse/display-kit",
-      "names": [
-        "default"
-      ],
-      "worker": "stub",
-      "uiVia": [
-        "react-dom"
-      ]
-    },
     "@jbrowse/display-kit/facetConfigSchema": {
       "package": "@jbrowse/display-kit",
       "names": [
@@ -4293,8 +4282,7 @@
     "@jbrowse/display-kit/foundationDisplayPhase": {
       "package": "@jbrowse/display-kit",
       "names": [
-        "foundationDisplayPhase",
-        "foundationDisplayStatusPhase"
+        "foundationDisplayPhase"
       ],
       "worker": "real"
     },

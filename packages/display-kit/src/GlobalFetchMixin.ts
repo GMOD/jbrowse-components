@@ -25,16 +25,7 @@ export function blockKeySignature(blocks: { key: string }[]) {
 
 /**
  * **The** foundation for a display holding a single global (non-regional)
- * dataset — HiC's contact matrix, the LD triangle, both arc displays. One
- * foundation rather than the two this family carried until 2026-08-23:
- * `GlobalDataDisplayMixin` existed only to layer `RenderLifecycleMixin` on top
- * for the GPU composers, because arc paints its own main-thread Canvas2D and
- * declined it — so the fetch foundation was split in two, and the three getters
- * on the upper half (`canRender`, `paintInert`, `displayPhase`) were reachable
- * only by whichever displays composed it. A display that composes this now gets
- * the whole answer, and arc pays five unused volatiles and two autoruns it
- * never installs (`attachRenderingBackend` is what installs them, and arc never
- * calls it) for the same table row as everyone else.
+ * dataset: HiC's contact matrix, the LD triangle, multi-way synteny's lanes.
  *
  * Composes:
  *   - RegionTooLargeMixin (regionTooLarge, force-load, …)
@@ -177,11 +168,6 @@ export default function GlobalFetchMixin() {
        * its first fetch waits on — is `computeActivityPhase`'s shared
        * `rendersCanvas && !canvasDrawn` term, not anything this family spells
        * out.
-       *
-       * A display with no rendering backend narrows this to the backend-free
-       * `DisplayStatusPhase` with `foundationDisplayStatusPhase`. Such a
-       * display cannot reach `renderError`, and the narrower type lets
-       * `DisplayStatusChrome` take it with neither a cast nor a dead branch.
        */
       get displayPhase(): DisplayPhase {
         return foundationDisplayPhase(

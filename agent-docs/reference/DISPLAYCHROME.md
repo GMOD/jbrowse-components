@@ -24,7 +24,7 @@ re-encode it as `&& !error && !regionTooLarge`.
   `canceled` is its own phase because a `loading` that kept the overlay mounted
   held every readiness reader until Retry.
 - **The activity phase is single-sourced** in `computeActivityPhase`, mapped by
-  `foundationDisplayPhase` (backend-less: `foundationDisplayStatusPhase`).
+  `foundationDisplayPhase`.
   Customize through the hooks `fetchInert`, `rendersCanvas` and
   `awaitingDependentData`, never by overriding `displayPhase`: an override
   restates every term and misses the next one added.
@@ -165,9 +165,7 @@ look.
 
 ## Terminal states early-return their own root
 
-`renderError` returns early in `DisplayChromeBase`, `tooLarge` in
-`DisplayStatusChromeBase` (the split is which banner needs the hook's `retry()`).
-The caller's `className`/`ref`/mouse handlers are absent in those states. The
+`renderError` and `tooLarge` return early in `DisplayChromeBase`. The caller's `className`/`ref`/mouse handlers are absent in those states. The
 unmount fires `canvasRef(null)`, `backend.dispose()` and
 `stopRenderingBackend()`; force-load re-inits through the callback ref.
 Every chrome component is an inline `observer`, which the compiler leaves alone,

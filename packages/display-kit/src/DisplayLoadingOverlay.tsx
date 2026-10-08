@@ -16,7 +16,7 @@ const DisplayLoadingOverlay = observer(function DisplayLoadingOverlay({
   immediate?: boolean
 }) {
   // Lands above the LGV's inter-region masks without doing anything about it
-  // here: DisplayStatusChromeBase portals the whole overlay group. See there.
+  // here: DisplayChromeBase portals the whole overlay group. See there.
   return (
     <LoadingOverlay
       statusMessage={model.statusMessage}

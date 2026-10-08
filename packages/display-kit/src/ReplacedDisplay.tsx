@@ -10,7 +10,7 @@ import type { ReactNode } from 'react'
  * screen, and `display: contents` keeps the banner's own box the layout.
  *
  * The banner goes to the track's overlay layer, like the status overlays in
- * `DisplayStatusChromeBase`, so the LGV's region separators don't stripe it.
+ * `DisplayChromeBase`, so the LGV's region separators don't stripe it.
  * That layer takes no pointer events, so the wrapper takes them back for the
  * banner's buttons.
  */

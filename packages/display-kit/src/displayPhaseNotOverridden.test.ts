@@ -14,8 +14,7 @@
 // with a new term adds a hook beside those, or a mixin in display-kit.
 //
 // The legitimate declarations are the displays that compose no LGV foundation,
-// and they are told apart by the entry they map through: arc narrows to the
-// backend-free `DisplayStatusPhase` via `foundationDisplayStatusPhase`, chord
+// and they are told apart by the entry they map through: chord
 // writes `computeDisplayStatusPhase` / `computeSvgReady` itself, and the
 // comparative family declares its own over `comparativeDisplayPhase` /
 // `comparativeSurfacePhase`. A body calling anything else — a wrapper included —
@@ -61,7 +60,6 @@ function withoutComments(body: string) {
 
 const GETTERS = {
   displayPhase: [
-    'foundationDisplayStatusPhase',
     'computeDisplayStatusPhase',
     'comparativeDisplayPhase',
     'comparativeSurfacePhase',

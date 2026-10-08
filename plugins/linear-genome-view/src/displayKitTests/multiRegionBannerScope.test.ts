@@ -15,7 +15,7 @@ import type { PerRegionTestDisplay } from './perRegionTestEnv.ts'
 // may cost, REGION_TOO_LARGE.md §"A budget has a scope"), so a single
 // over-budget region carries the whole display over budget. `regionTooLarge` is
 // one boolean, `computeDisplayPhase` turns it into `tooLarge`, and that phase
-// early-`return`s its own root in `DisplayStatusChromeBase` — the canvas
+// early-`return`s its own root in `DisplayChromeBase` — the canvas
 // unmounts rather than being drawn over.
 //
 // So the region that fit is measured, downloaded, stored and marked loaded, and

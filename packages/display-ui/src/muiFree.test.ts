@@ -58,7 +58,6 @@ const displayKit = path.join(packages, 'display-kit/src')
 const core = path.join(packages, 'core/src')
 const weightPath = {
   DisplayChromeBase: path.join(displayKit, 'DisplayChromeBase.tsx'),
-  DisplayStatusChromeBase: path.join(displayKit, 'DisplayStatusChromeBase.tsx'),
   // The same shape, found the same way, fixed the same way — and it had only
   // half the guard. DISPLAYCHROME.md names `BaseTooltip` and `FloatingLegend`
   // together: each is rendered by a display directly, behind neither seam, and

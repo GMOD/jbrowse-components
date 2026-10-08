@@ -75,7 +75,7 @@ const noNamedObserver = {
     'Write `observer(function Name() {…})` inline. babel-plugin-react-compiler does not compile an inline observer, but it DOES compile the `function Name(){}; observer(Name)` form, and a compiled MobX render can serve a stale read.',
 }
 // A plain component re-renders for no MobX read, so a model property added to
-// one later goes stale with nothing failing. `DisplayStatusChromeBase` was
+// one later goes stale with nothing failing. The status chrome was
 // "deliberately not an observer" until a height read landed in it and the
 // display container stopped following a track resize.
 const SVG_EXPORT_COMPONENT = '^(Svg|SVG)|Svg(Body|Layer|Frame|Figure)?$'

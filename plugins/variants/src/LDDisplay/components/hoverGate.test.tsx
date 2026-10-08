@@ -120,7 +120,7 @@ test('a standing cancel takes the hover with it', async () => {
 
   // and the overlay really is the thing the tooltip would have been
   // floating over. Awaited, because the scrim holds a 250ms anti-flash
-  // timer before it paints anything (DisplayStatusChromeBase).
+  // timer before it paints anything (DisplayChromeBase).
   await waitFor(() => {
     expect(document.body.textContent).toContain('Loading canceled')
   })

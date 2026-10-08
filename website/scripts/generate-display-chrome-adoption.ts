@@ -20,7 +20,7 @@
 // hand-audit that has to be repeated is the thing this file replaces. The two
 // columns are resolved from the two halves of the same registration:
 //
-//   ReactComponent  →  the render tree  →  DisplayChrome / DisplayStatusChrome
+//   ReactComponent  →  the render tree  →  DisplayChrome
 //   stateModel      →  renderSvg        →  SvgChrome
 //
 // Resolution handles the four idioms a registration uses to name its component,
@@ -63,10 +63,7 @@ import { repoRoot } from './paths.ts'
 
 const docPath = join(repoRoot, 'agent-docs', 'reference', 'DISPLAYCHROME.md')
 
-// The two chrome components a display can render. `DisplayChrome` owns the
-// rendering-backend hook; `DisplayStatusChrome` is everything below it, which
-// is what a display with no backend (arc) renders directly.
-const CHROMES = new Set(['DisplayChrome', 'DisplayStatusChrome'])
+const CHROMES = new Set(['DisplayChrome'])
 
 // The export-side counterpart, and there is only one of it: `SvgChrome` has a
 // single terminal (regionTooLarge) where the on-screen chrome has five, and the

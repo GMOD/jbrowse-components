@@ -419,7 +419,6 @@ export default [
   '@jbrowse/display-kit/DisplayErrorBar',
   '@jbrowse/display-kit/DisplayLoadingOverlay',
   '@jbrowse/display-kit/DisplayRenderErrorOverlay',
-  '@jbrowse/display-kit/DisplayStatusChromeBase',
   '@jbrowse/display-kit/facetConfigSchema',
   '@jbrowse/display-kit/fetchEachRegion',
   '@jbrowse/display-kit/fetchInputs',

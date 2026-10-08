@@ -12,7 +12,7 @@ import { TestChromeModel, stubFactory } from './chromeTestModel.ts'
 // pixel": picking a menu item or dismissing a legend also opened whatever the
 // overlay happened to be covering.
 //
-// The DOM is what tells the two apart, and `DisplayStatusChromeBase` asks it.
+// The DOM is what tells the two apart, and `DisplayChromeBase` asks it.
 function OverlayPortal({ children }: { children: React.ReactNode }) {
   return createPortal(children, document.body)
 }

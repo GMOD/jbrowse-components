@@ -137,8 +137,6 @@ Drawing is implemented by the **display types**:
   Hi-C, GWAS and dotplot. Every one of them supplies a Canvas2D draw function,
   which SVG export runs too, so on-screen and exported pixels stay identical;
   the shader path is an accelerator layered over it.
-- The arc displays take a third route: their components emit JSX `<path>`
-  elements, on screen and in SVG export alike.
 
 `DisplayChrome` is the wrapper every canvas-backed display renders, and it owns
 the loading scrim, the error banner, the "region too large" message and the
@@ -146,8 +144,7 @@ render-error retry. It picks between them from a single getter,
 [`displayPhase`](/docs/models/multiregiondisplaymixin#getter-displayphase),
 which each display answers with one of `loading` / `error` / `tooLarge` /
 `renderError` / `ready`. So a new display gets every terminal state by composing
-the foundation mixins and answering that getter, and the arc displays get the
-same chrome through `DisplayStatusChrome`, the backend-free half.
+the foundation mixins and answering that getter.
 
 See
 [display foundations](/docs/developer_guides/creating_display#display-foundations)

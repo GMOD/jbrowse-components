@@ -19,13 +19,9 @@
 export type DisplayPhase = 'renderError' | DisplayStatusPhase
 
 /**
- * The phases a display without a rendering backend can be in — every phase
- * except the one that reports a backend failure. Its own type because
- * `renderError` is the only phase whose UI needs something no model can supply
- * (the backend hook's `retry()`), which is exactly the line between the shared
- * status chrome and the GPU chrome wrapped around it: `DisplayStatusChrome`
- * takes this, `DisplayChrome` takes the wider union and peels off `renderError`
- * before delegating.
+ * Every phase except the one that reports a backend failure: what a surface
+ * with no rendering backend of its own publishes (the comparative views'
+ * shared canvas, the circular view's chords).
  */
 export type DisplayStatusPhase = 'tooLarge' | 'error' | DisplayActivityPhase
 
@@ -166,8 +162,8 @@ export function computeActivityPhase(
 }
 
 /**
- * The same ranking minus `renderError`, for a display with no rendering backend
- * to fail (arc's main-thread SVG). `computeDisplayPhase` delegates here, so the
+ * The same ranking minus `renderError`, for a surface with no rendering backend
+ * of its own to fail. `computeDisplayPhase` delegates here, so the
  * order lives in one place.
  */
 export function computeDisplayStatusPhase(

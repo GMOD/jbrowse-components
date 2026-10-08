@@ -21,12 +21,9 @@ Three constraints decide what this renderer can be built on:
 - **A display's drawing has to survive [](/docs/developer_guides/svg_export).**
   A display that draws to a canvas ships a Canvas2D draw function, and the
   export runs that function rather than the shader, so on-screen and exported
-  pixels cannot drift. A display light enough to skip the canvas emits SVG
-  directly instead — the arc displays and `MultiWaySyntenyDisplay` render the
-  same JSX `<path>` elements on screen and into the export. Either way the
-  display already has a drawing path the GPU has no part in, and a rendering
-  library would add one more implementation of every glyph to keep in step with
-  it.
+  pixels cannot drift. The display already has a drawing path the GPU has no
+  part in, and a rendering library would add one more implementation of every
+  glyph to keep in step with it.
 - **The bytes are never converted.** A worker decodes a track into
   [one typed array per attribute](/docs/developer_guides/optimizations#the-worker-boundary),
   which crosses `postMessage` as a transferable and uploads to the GPU without

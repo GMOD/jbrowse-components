@@ -68,7 +68,7 @@ const RenderCanvas = observer(function RenderCanvas({
   drawn: boolean
   /**
    * The surface's own mutually-exclusive state, published as
-   * `data-display-phase` — the same attribute `DisplayStatusChrome` gives every
+   * `data-display-phase` — the same attribute `DisplayChrome` gives every
    * LGV display, and the same split of meaning: `drawn` above is FINISHED
    * CONTENT, this is still WORKING, and an error separates them.
    *

@@ -36,7 +36,7 @@ const DEFAULT_OFFSET = { x: 12, y: 0 }
  *
  * Its events do not stop at the portal — React bubbles them through the
  * component tree to whatever rendered the menu, which on a display is the
- * element that hit-tests the pointer. `DisplayStatusChromeBase` is where that
+ * element that hit-tests the pointer. `DisplayChromeBase` is where that
  * element refuses the events that did not happen over it, for every portalled
  * overlay rather than for menus alone.
  *
