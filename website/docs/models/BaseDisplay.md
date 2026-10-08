@@ -1,10 +1,11 @@
 ---
 id: basedisplay
 title: BaseDisplay
+description: "Properties, getters and actions of the BaseDisplay state model."
 sidebar_label: Display -> BaseDisplay
 ---
 
-Auto-generated @jbrowse/mobx-state-tree API for the current JBrowse release — see [pluggable elements](/docs/developer_guide/) for concepts. Built into JBrowse core. [View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/pluggableElementTypes/models/BaseDisplayModel.tsx).
+Auto-generated from the @jbrowse/mobx-state-tree model in the source — see the [developer guide](/docs/developer_guide/) for concepts. Built into JBrowse core. [View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/pluggableElementTypes/models/BaseDisplayModel.tsx).
 
 ## Properties
 
@@ -19,9 +20,9 @@ Auto-generated @jbrowse/mobx-state-tree API for the current JBrowse release — 
 <!-- prettier-ignore -->
 | Member | Description |
 | --- | --- |
-| <span id="volatile-error">**error**</span><br><code>error: undefined as unknown</code> |  |
-| <span id="volatile-statusmessage">**statusMessage**</span><br><code>statusMessage: undefined as string &#124; undefined</code> |  |
-| <span id="volatile-statusprogress">**statusProgress**</span><br><code>statusProgress: undefined as number &#124; undefined</code> | determinate progress fraction [0,1] for the current status, or undefined when the in-flight phase is indeterminate. Set alongside `statusMessage` by `setStatusMessage`; a display that never shows a bar simply leaves it undefined. |
+| <span id="volatile-error">**error**</span><br><code>unknown</code> |  |
+| <span id="volatile-statusmessage">**statusMessage**</span><br><code>string &#124; undefined</code> |  |
+| <span id="volatile-statusprogress">**statusProgress**</span><br><code>number &#124; undefined</code> | determinate progress fraction [0,1] for the current status, or undefined when the in-flight phase is indeterminate. Set alongside `statusMessage` by `setStatusMessage`; a display that never shows a bar simply leaves it undefined. |
 
 ## Getters
 

@@ -1,10 +1,11 @@
 ---
 id: hierarchicalconfigschema
 title: HierarchicalConfigSchema
+description: "generally exists on the config.json or root config as configuration.hierarchical"
 sidebar_label: Root -> HierarchicalConfigSchema
 ---
 
-Auto-generated config schema for the current JBrowse release — see the [config guide](/docs/config_guide) for concepts. Built into JBrowse core. [View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/product-core/src/RootModel/HierarchicalConfig.ts).
+Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Built into JBrowse core. [View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/product-core/src/RootModel/HierarchicalConfig.ts).
 
 generally exists on the config.json or root config as configuration.hierarchical
 

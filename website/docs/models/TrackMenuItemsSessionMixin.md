@@ -1,10 +1,11 @@
 ---
 id: trackmenuitemssessionmixin
 title: TrackMenuItemsSessionMixin
+description: "The two track-menu wrappers (getTrackListMenuItems for the hierarchical selector, getTrackActionMenuItems for the in-view label menu) shared by the full web and desktop sessions. Both are pure…"
 sidebar_label: Mixin -> TrackMenuItemsSessionMixin
 ---
 
-Auto-generated @jbrowse/mobx-state-tree API for the current JBrowse release — see [pluggable elements](/docs/developer_guide/) for concepts. Built into JBrowse core. [View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/product-core/src/Session/TrackMenu.ts).
+Auto-generated from the @jbrowse/mobx-state-tree model in the source — see the [developer guide](/docs/developer_guide/) for concepts. Built into JBrowse core. [View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/product-core/src/Session/TrackMenu.ts).
 
 The two track-menu wrappers (`getTrackListMenuItems` for the hierarchical
 selector, `getTrackActionMenuItems` for the in-view label menu) shared by the

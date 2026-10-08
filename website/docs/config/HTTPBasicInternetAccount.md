@@ -1,10 +1,11 @@
 ---
 id: httpbasicinternetaccount
 title: HTTPBasicInternetAccount
+description: "Configuration slots of HTTPBasicInternetAccount."
 sidebar_label: Internet Account -> HTTPBasicInternetAccount
 ---
 
-Auto-generated config schema for the current JBrowse release — see the [config guide](/docs/config_guide) for concepts. Provided by the `authentication` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/authentication/src/HTTPBasicModel/configSchema.ts).
+Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Provided by the `authentication` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/authentication/src/HTTPBasicModel/configSchema.ts).
 
 ## Example usage
 

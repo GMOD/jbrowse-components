@@ -13,6 +13,7 @@ import {
   isWebsiteDoc,
   walkFiles,
 } from '../check-utils.ts'
+import { firstParagraph } from './agentText.ts'
 import { slotSpreadPairs, slotSpreadPart } from './enumConstants.ts'
 import { readDoc, writeDoc } from './format.ts'
 
@@ -2212,6 +2213,7 @@ export function docPage({
   id,
   title,
   sidebarLabel,
+  description,
   notes,
   sourcePath,
   body,
@@ -2219,6 +2221,7 @@ export function docPage({
   id: string
   title: string
   sidebarLabel: string
+  description: string
   notes: string
   sourcePath: string
   body: string
@@ -2233,6 +2236,7 @@ export function docPage({
   return `---
 id: ${id}
 title: ${title}
+description: ${JSON.stringify(description)}
 sidebar_label: ${sidebarLabel}
 ---
 
@@ -2240,6 +2244,15 @@ ${intro}
 
 ${body}
 `
+}
+
+// A page's meta description: the opening of its docstring as plain text, or
+// `fallback` for a type whose docstring says nothing.
+export function pageDescription(docs: string, fallback: string) {
+  const text = firstParagraph(docs, 200)
+    .replaceAll(/\[([^\]]*)\]\([^)]*\)/g, '$1')
+    .replaceAll(/[`*_]/g, '')
+  return text || fallback
 }
 
 // Where a documented element comes from, derived from its source path: which

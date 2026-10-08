@@ -1,10 +1,11 @@
 ---
 id: pairwiseindexedpafadapter
 title: PairwiseIndexedPAFAdapter
+description: "a tabix-indexed PAF (PIF) for large synteny datasets. The uri shorthand auto-resolves the .tbi index (pass csi: true for a .csi index)."
 sidebar_label: Adapter -> PairwiseIndexedPAFAdapter
 ---
 
-Auto-generated config schema for the current JBrowse release — see the [config guide](/docs/config_guide) for concepts. Provided by the `comparative-adapters` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/comparative-adapters/src/PairwiseIndexedPAFAdapter/configSchema.ts).
+Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Provided by the `comparative-adapters` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/comparative-adapters/src/PairwiseIndexedPAFAdapter/configSchema.ts).
 
 ## Example usage
 

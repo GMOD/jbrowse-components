@@ -1,10 +1,11 @@
 ---
 id: marksize
 title: MarkSize
+description: "A mark's size in px, as color is its colour: a point's diameter, a rule's thickness or a link's stroke. A number is the constant every instance takes, and lands in value; a string is a feature…"
 sidebar_label: Display -> MarkSize
 ---
 
-Auto-generated config schema for the current JBrowse release — see the [config guide](/docs/config_guide) for concepts. Provided by the `marks` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/marks/src/LinearMarkDisplay/markSizeConfigSchema.ts).
+Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Provided by the `marks` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/marks/src/LinearMarkDisplay/markSizeConfigSchema.ts).
 
 ## Example usage
 

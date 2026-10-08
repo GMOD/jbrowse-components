@@ -1,10 +1,11 @@
 ---
 id: ucscresultswidget
 title: UcscResultsWidget
+description: "The hit table for one UCSC BLAT or in-silico PCR query. The features are the same ones the result track was built from, so the list and the track can't disagree."
 sidebar_label: Widget -> UcscResultsWidget
 ---
 
-Auto-generated @jbrowse/mobx-state-tree API for the current JBrowse release — see [pluggable elements](/docs/developer_guide/) for concepts. Provided by the `blat` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/blat/src/UcscResultsWidget/stateModel.ts).
+Auto-generated from the @jbrowse/mobx-state-tree model in the source — see the [developer guide](/docs/developer_guide/) for concepts. Provided by the `blat` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/blat/src/UcscResultsWidget/stateModel.ts).
 
 The hit table for one UCSC BLAT or in-silico PCR query. The features are the
 same ones the result track was built from, so the list and the track can't

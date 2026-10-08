@@ -1,10 +1,11 @@
 ---
 id: linearbasicdisplay
 title: LinearBasicDisplay
+description: "configuration for the basic linear feature display (genes, BED, GFF, etc.), which adds the gene-glyph slots — isoforms, subparts, UTRs, chevrons — to the shared canvas base; the color slots color,…"
 sidebar_label: Display -> LinearBasicDisplay
 ---
 
-Auto-generated config schema for the current JBrowse release — see the [config guide](/docs/config_guide) for concepts. Provided by the `canvas` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/canvas/src/LinearBasicDisplay/configSchema.ts).
+Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Provided by the `canvas` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/canvas/src/LinearBasicDisplay/configSchema.ts).
 
 ## Example usage
 

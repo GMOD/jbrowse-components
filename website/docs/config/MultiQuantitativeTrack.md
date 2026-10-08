@@ -1,10 +1,11 @@
 ---
 id: multiquantitativetrack
 title: MultiQuantitativeTrack
+description: "Configuration slots of MultiQuantitativeTrack."
 sidebar_label: Track -> MultiQuantitativeTrack
 ---
 
-Auto-generated config schema for the current JBrowse release — see the [config guide](/docs/config_guide) for concepts. Provided by the `wiggle` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/wiggle/src/MultiQuantitativeTrack/configSchema.ts).
+Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Provided by the `wiggle` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/wiggle/src/MultiQuantitativeTrack/configSchema.ts).
 
 ## Example usage
 

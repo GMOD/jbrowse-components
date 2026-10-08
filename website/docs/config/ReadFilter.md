@@ -1,10 +1,11 @@
 ---
 id: readfilter
 title: ReadFilter
+description: "Every read filter of the alignments display in one object, its filter slot: the SAM flag masks, a read name, the tag filters a read has to pass every one of, and the four read categories, each…"
 sidebar_label: Display -> ReadFilter
 ---
 
-Auto-generated config schema for the current JBrowse release — see the [config guide](/docs/config_guide) for concepts. Provided by the `alignments` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/alignments/src/LinearAlignmentsDisplay/readFilterConfigSchema.ts).
+Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Provided by the `alignments` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/alignments/src/LinearAlignmentsDisplay/readFilterConfigSchema.ts).
 
 ## Example usage
 

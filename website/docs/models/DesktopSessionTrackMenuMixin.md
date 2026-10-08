@@ -1,18 +1,19 @@
 ---
 id: desktopsessiontrackmenumixin
 title: DesktopSessionTrackMenuMixin
+description: "Properties, getters and actions of the DesktopSessionTrackMenuMixin state model."
 sidebar_label: Mixin -> DesktopSessionTrackMenuMixin
 ---
 
-Auto-generated @jbrowse/mobx-state-tree API for the current JBrowse release — see [pluggable elements](/docs/developer_guide/) for concepts. [View source](https://github.com/GMOD/jbrowse-components/blob/main/products/jbrowse-desktop/src/sessionModel/TrackMenu.ts).
+Auto-generated from the @jbrowse/mobx-state-tree model in the source — see the [developer guide](/docs/developer_guide/) for concepts. [View source](https://github.com/GMOD/jbrowse-components/blob/main/products/jbrowse-desktop/src/sessionModel/TrackMenu.ts).
 
-Members a composed model contributes are listed here too, so these tables are the whole surface.
+Each section ends with the members a composed model contributes, linked to the page that documents them.
 
 ## Methods
 
 <!-- prettier-ignore -->
-| Member | Description | Defined by |
-| --- | --- | --- |
-| <span id="method-gettrackactions">**getTrackActions**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>(trackConfig: AnyTrackConfig, view?: TrackActionView &#124; undefine…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>(trackConfig: AnyTrackConfig, view?: TrackActionView &#124; undefined) =&gt; MenuItem[]</code></pre></dialog></span> | raw track actions (Settings, Copy, Delete, Index) without submenu wrapper | DesktopSessionTrackMenuMixin |
-| <span id="method-gettracklistmenuitems">**getTrackListMenuItems**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>(config: AnyTrackConfig, view?: TrackActionView &#124; undefined) =&gt;…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>(config: AnyTrackConfig, view?: TrackActionView &#124; undefined) =&gt; MenuItem[]</code></pre></dialog></span> | <span data-pagefind-ignore>flattened menu items for use in hierarchical track selector</span> | [TrackMenuItemsSessionMixin](../trackmenuitemssessionmixin#method-gettracklistmenuitems) |
-| <span id="method-gettrackactionmenuitems">**getTrackActionMenuItems**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>({ config, view, }: { config: ConfigNodeProps&lt;…&gt; &amp; ConfigNodeAc…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>({ config, view, }: { config: ConfigNodeProps&lt;…&gt; &amp; ConfigNodeActions &amp; ConfigNodeBrand&lt;ConfigurationSchemaType&lt;…&gt;&gt;; view?: TrackActionView &#124; undefined; }) =&gt; MenuItem[]</code></pre></dialog></span> | <span data-pagefind-ignore>track menu with About + "Track actions" submenu for the in-view label</span> | [TrackMenuItemsSessionMixin](../trackmenuitemssessionmixin#method-gettrackactionmenuitems) |
+| Member | Description |
+| --- | --- |
+| <span id="method-gettrackactions">**getTrackActions**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>(trackConfig: AnyTrackConfig, view?: TrackActionView &#124; undefine…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>(trackConfig: AnyTrackConfig, view?: TrackActionView &#124; undefined) =&gt; MenuItem[]</code></pre></dialog></span> | raw track actions (Settings, Copy, Delete, Index) without submenu wrapper |
+
+<span data-pagefind-ignore>From [TrackMenuItemsSessionMixin](../trackmenuitemssessionmixin): <span id="method-gettracklistmenuitems">[`getTrackListMenuItems`](../trackmenuitemssessionmixin#method-gettracklistmenuitems)</span>, <span id="method-gettrackactionmenuitems">[`getTrackActionMenuItems`](../trackmenuitemssessionmixin#method-gettrackactionmenuitems)</span></span>

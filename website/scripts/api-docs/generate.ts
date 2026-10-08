@@ -201,6 +201,11 @@ async function main() {
       names: modelGaps.general,
     },
     {
+      title: 'model members with no description',
+      fix: 'write a sentence under the member’s #property/#volatile/#getter/#method/#action tag',
+      names: modelGaps.undocumented,
+    },
+    {
       title: 'members the structural pass cannot see',
       fix: 'add #getter/#method/#action to the local declaration the shorthand returns',
       names: blindSpots,

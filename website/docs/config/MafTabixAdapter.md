@@ -1,10 +1,11 @@
 ---
 id: maftabixadapter
 title: MafTabixAdapter
+description: "Multiple alignment format converted to a bgzipped, tabix-indexed BED. The nhLocation newick tree orders and labels the species rows; refAssemblyName names the MAF's reference species when it…"
 sidebar_label: Adapter -> MafTabixAdapter
 ---
 
-Auto-generated config schema for the current JBrowse release — see the [config guide](/docs/config_guide) for concepts. Provided by the `maf` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/maf/src/MafTabixAdapter/configSchema.ts).
+Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Provided by the `maf` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/maf/src/MafTabixAdapter/configSchema.ts).
 
 ## Example usage
 

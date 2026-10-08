@@ -1,10 +1,11 @@
 ---
 id: contextmenumixin
 title: ContextMenuMixin
+description: "The right-click state of a display whose menu acts on a position: the anchor plus whatever the click resolved to (a genomic column, a feature), held as one value so the menu's open-ness and the…"
 sidebar_label: Mixin -> ContextMenuMixin
 ---
 
-Auto-generated @jbrowse/mobx-state-tree API for the current JBrowse release — see [pluggable elements](/docs/developer_guide/) for concepts. Built into JBrowse core. [View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/display-kit/src/ContextMenuMixin.ts).
+Auto-generated from the @jbrowse/mobx-state-tree model in the source — see the [developer guide](/docs/developer_guide/) for concepts. Built into JBrowse core. [View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/display-kit/src/ContextMenuMixin.ts).
 
 The right-click state of a display whose menu acts on a
 position: the anchor plus whatever the click resolved to (a genomic column,
@@ -24,7 +25,7 @@ runs first when an item is clicked.
 <!-- prettier-ignore -->
 | Member | Description |
 | --- | --- |
-| <span id="volatile-contextmenuinfo">**contextMenuInfo**</span><br><code>contextMenuInfo: undefined as Info &#124; undefined</code> |  |
+| <span id="volatile-contextmenuinfo">**contextMenuInfo**</span><br><code>Info &#124; undefined</code> |  |
 
 ## Actions
 

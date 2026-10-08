@@ -24,6 +24,7 @@ import {
   lookupByIdOrName,
   mapByKey,
   markdownTable,
+  pageDescription,
   parseNode,
   proseCell,
   repoRelative,
@@ -69,7 +70,7 @@ const MEMBER_KINDS: {
     key: 'volatiles',
     tag: 'volatile',
     label: 'Volatiles',
-    memberCode: m => m.code,
+    memberCode: m => m.signature || m.code,
   },
   {
     key: 'getters',
@@ -287,30 +288,18 @@ function memberAnchor(def: MemberKind, name: string) {
 }
 
 // One row: the member's name over its type/declaration in a single cell, then
-// its full documentation, then where it comes from. Name and code share a cell
-// so the description gets the width — a member is looked up by name and read by
-// description, and a separate type column only squeezes the prose. Long code
-// folds (see codeCell) rather than holding the row open.
-// An inherited row repeats text that belongs to the ancestor's own page — ~26
-// pages carry a copy of every BaseDisplay member — so pagefind is told to index
-// it only where it is defined, and a search lands on that model rather than on a
-// wall of near-identical descendants. The row still renders for the reader.
+// its full documentation. Name and code share a cell so the description gets
+// the width — a member is looked up by name and read by description, and a
+// separate type column only squeezes the prose. Long code folds (see codeCell)
+// rather than holding the row open.
+//
 // `seen` carries the anchors already emitted on this page, and only the first
 // row for a name gets the `id`. A model composed of several sub-models lists
 // each one's members in the same table — WorkspaceLayoutMixin has three `id`
 // properties and two `size` ones, from LayoutTab, LayoutPanel and LayoutNode —
 // and repeating the anchor renders duplicate ids, which the website build
-// fails on. The first occurrence keeps the canonical anchor, so every existing
-// deep link into these pages still resolves.
-function memberRow(
-  def: MemberKind,
-  m: Member,
-  {
-    definedBy,
-    inherited,
-    seen,
-  }: { definedBy?: string; inherited: boolean; seen: Set<string> },
-) {
+// fails on.
+function memberRow(def: MemberKind, m: Member, seen: Set<string>) {
   const description = [proseCell(m.docs), exampleCell(m.examples)]
     .filter(Boolean)
     .join('<br>')
@@ -319,55 +308,50 @@ function memberRow(
     ? `**${m.name}**`
     : `<span id="${anchor}">**${m.name}**</span>`
   seen.add(anchor)
-  const cells = [
-    `${named}<br>${codeCell(def.memberCode(m))}`,
-    inherited && description
-      ? `<span data-pagefind-ignore>${description}</span>`
-      : description,
-    ...(definedBy === undefined ? [] : [definedBy]),
-  ]
-  return `| ${cells.join(' | ')} |`
+  return `| ${named}<br>${codeCell(def.memberCode(m))} | ${description} |`
 }
 
-// One kind's whole surface as a single table: this model's members first, then
-// the (deduped) ones each ancestor contributes, marked in a "Defined by" column
-// that links to the ancestor's own page. Inherited members are listed here
-// rather than repeated in full further down, so the page states each member
-// exactly once and can't disagree with itself. The column disappears entirely
-// on a model that composes nothing.
+// What one ancestor contributes to a kind: each name, linked to its row on the
+// page that documents it. The anchor a full row would carry stays on the name,
+// so a deep link into this page still lands. Pagefind indexes a member where it
+// is defined, not on every page that composes it.
+function inheritedLine(
+  def: MemberKind,
+  { model, members }: InheritedGroup,
+  seen: Set<string>,
+) {
+  const page = `../${model.header.id}`
+  const names = members[def.key].map(m => {
+    const anchor = memberAnchor(def, m.name)
+    const link = `[\`${m.name}\`](${page}#${anchor})`
+    const named = seen.has(anchor)
+      ? link
+      : `<span id="${anchor}">${link}</span>`
+    seen.add(anchor)
+    return named
+  })
+  return names.length
+    ? `<span data-pagefind-ignore>From [${model.header.name}](${page}): ${names.join(', ')}</span>`
+    : ''
+}
+
+// One kind's whole surface: this model's members as a table, then the (deduped)
+// names each ancestor contributes. A full row per inherited member put a copy
+// of every BaseDisplay docstring on 21 pages, and made two thirds of the rows
+// in this directory repeats.
 function kindSection(
   def: MemberKind,
-  ownName: string,
   ownMembers: Member[],
   inherited: InheritedGroup[],
 ) {
-  const hasInherited = inherited.some(g => g.members[def.key].length)
   const seen = new Set<string>()
-  const rows = [
-    ...ownMembers.map(m =>
-      memberRow(def, m, {
-        definedBy: hasInherited ? ownName : undefined,
-        inherited: false,
-        seen,
-      }),
-    ),
-    ...inherited.flatMap(({ model, members }) =>
-      members[def.key].map(m =>
-        memberRow(def, m, {
-          definedBy: `[${model.header.name}](../${model.header.id}#${memberAnchor(def, m.name)})`,
-          inherited: true,
-          seen,
-        }),
-      ),
-    ),
-  ]
-  return rows.length
+  const rows = ownMembers.map(m => memberRow(def, m, seen))
+  const lines = inherited.map(g => inheritedLine(def, g, seen)).filter(Boolean)
+  return rows.length || lines.length
     ? section(
         `## ${def.label}`,
-        markdownTable(
-          ['Member', 'Description', ...(hasInherited ? ['Defined by'] : [])],
-          rows,
-        ),
+        rows.length > 0 && markdownTable(['Member', 'Description'], rows),
+        ...lines,
       )
     : ''
 }
@@ -408,10 +392,8 @@ function renderModel(
       `${header.name} declares no members of its own — it composes the models below, and everything here is theirs.`,
     own > 0 &&
       inherited.length &&
-      'Members a composed model contributes are listed here too, so these tables are the whole surface.',
-    ...MEMBER_KINDS.map(k =>
-      kindSection(k, header.name, model.members[k.key], inherited),
-    ),
+      'Each section ends with the members a composed model contributes, linked to the page that documents them.',
+    ...MEMBER_KINDS.map(k => kindSection(k, model.members[k.key], inherited)),
   )
 
   const category = stateModelCategory(header.name, header.category)
@@ -419,7 +401,11 @@ function renderModel(
     id: header.id,
     title: header.name,
     sidebarLabel: `${category} -> ${header.name}`,
-    notes: `Auto-generated @jbrowse/mobx-state-tree API for the current JBrowse release — see [pluggable elements](/docs/developer_guide/) for concepts.`,
+    description: pageDescription(
+      header.docs,
+      `Properties, getters and actions of the ${header.name} state model.`,
+    ),
+    notes: `Auto-generated from the @jbrowse/mobx-state-tree model in the source — see the [developer guide](/docs/developer_guide/) for concepts.`,
     sourcePath: filename,
     body,
   })
@@ -529,6 +515,10 @@ export function resolvedProperties(
   ]
 }
 
+// Properties every pluggable element declares the same way, which a docstring
+// could only restate.
+const SELF_EVIDENT = new Set(['id', 'type', 'configuration'])
+
 export function writeModelDocs(
   byFile: Record<string, StateModel>,
   configNames: Set<string>,
@@ -587,6 +577,17 @@ export function writeModelDocs(
       isGeneralCategory: m =>
         stateModelCategory(m.header.name, m.header.category) === 'General',
     }),
+    undocumented: withHeader.flatMap(m =>
+      MEMBER_KINDS.flatMap(k =>
+        m.members[k.key]
+          .filter(
+            member =>
+              !member.docs.trim() &&
+              !(k.key === 'properties' && SELF_EVIDENT.has(member.name)),
+          )
+          .map(member => `${m.header.name}.${member.name}`),
+      ),
+    ),
     // Reported as a name plus the file, because the fix is positional and the
     // name alone doesn't say where to look.
     misattached: withHeader

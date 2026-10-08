@@ -1,10 +1,11 @@
 ---
 id: trackcolorsmixin
 title: TrackColorsMixin
+description: "The color-by state shared by every view that can draw more than one synteny track at once: the view-wide colour object and the palette that tells overlaid tracks apart."
 sidebar_label: Mixin -> TrackColorsMixin
 ---
 
-Auto-generated @jbrowse/mobx-state-tree API for the current JBrowse release — see [pluggable elements](/docs/developer_guide/) for concepts. Built into JBrowse core. [View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/synteny-core/src/TrackColorsMixin.ts).
+Auto-generated from the @jbrowse/mobx-state-tree model in the source — see the [developer guide](/docs/developer_guide/) for concepts. Built into JBrowse core. [View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/synteny-core/src/TrackColorsMixin.ts).
 
 The color-by state shared by every view that can draw more than one synteny
 track at once: the view-wide colour object and the palette that tells overlaid tracks
@@ -29,7 +30,7 @@ it lives here rather than being copied into both models.
 <!-- prettier-ignore -->
 | Member | Description |
 | --- | --- |
-| <span id="volatile-seenattributeranges">**seenAttributeRanges**</span><br><code>seenAttributeRanges: {} as Record&lt;string, AttributeRange&gt;</code> | The widest span each numeric channel has been seen to cover, over every fetch this view has taken — what keeps a column's ramp from re-scaling under a pan. Widened by `observeAttributeRanges`, dropped by `resetAttributeRanges`, read through `attributeRanges`, which is where the reasoning is. |
+| <span id="volatile-seenattributeranges">**seenAttributeRanges**</span><br><code>Record&lt;string, AttributeRange&gt;</code> | The widest span each numeric channel has been seen to cover, over every fetch this view has taken — what keeps a column's ramp from re-scaling under a pan. Widened by `observeAttributeRanges`, dropped by `resetAttributeRanges`, read through `attributeRanges`, which is where the reasoning is. |
 
 ## Getters
 

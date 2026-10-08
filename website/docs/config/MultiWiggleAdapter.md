@@ -1,10 +1,11 @@
 ---
 id: multiwiggleadapter
 title: MultiWiggleAdapter
+description: "combines multiple BigWig files into a single multi-row quantitative track"
 sidebar_label: Adapter -> MultiWiggleAdapter
 ---
 
-Auto-generated config schema for the current JBrowse release — see the [config guide](/docs/config_guide) for concepts. Provided by the `wiggle` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/wiggle/src/MultiWiggleAdapter/configSchema.ts).
+Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Provided by the `wiggle` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/wiggle/src/MultiWiggleAdapter/configSchema.ts).
 
 ## Example usage
 

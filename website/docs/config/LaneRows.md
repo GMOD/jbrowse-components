@@ -1,10 +1,11 @@
 ---
 id: lanerows
 title: LaneRows
+description: "The multi-way synteny display's rows: one lane per assembly below the anchor, so assembly is the one field, and the object is the arrangement a reader gives the lanes, written whole as every…"
 sidebar_label: Display -> LaneRows
 ---
 
-Auto-generated config schema for the current JBrowse release — see the [config guide](/docs/config_guide) for concepts. Provided by the `linear-comparative-view` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/linear-comparative-view/src/MultiWaySyntenyDisplay/laneRowsConfigSchema.ts).
+Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Provided by the `linear-comparative-view` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/linear-comparative-view/src/MultiWaySyntenyDisplay/laneRowsConfigSchema.ts).
 
 ## Example usage
 

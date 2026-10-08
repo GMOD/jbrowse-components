@@ -1,10 +1,11 @@
 ---
 id: storedhovermixin
 title: StoredHoverMixin
+description: "A stored hover. The hit type, as the type parameter. Brings the hoveredFeature getter BaseDisplay declares as a hook, setHoveredFeature, and the clearHoveredFeature the foundations'…"
 sidebar_label: Mixin -> StoredHoverMixin
 ---
 
-Auto-generated @jbrowse/mobx-state-tree API for the current JBrowse release — see [pluggable elements](/docs/developer_guide/) for concepts. Built into JBrowse core. [View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/display-kit/src/StoredHoverMixin.ts).
+Auto-generated from the @jbrowse/mobx-state-tree model in the source — see the [developer guide](/docs/developer_guide/) for concepts. Built into JBrowse core. [View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/display-kit/src/StoredHoverMixin.ts).
 
 A stored hover. The hit type, as the type parameter. Brings the `hoveredFeature` getter `BaseDisplay` declares as a hook, `setHoveredFeature`, and the `clearHoveredFeature` the foundations' viewport-change reaction calls
 
@@ -24,7 +25,7 @@ nothing and invalidates no observer.
 <!-- prettier-ignore -->
 | Member | Description |
 | --- | --- |
-| <span id="volatile-storedhoveredfeature">**storedHoveredFeature**</span><br><code>storedHoveredFeature: undefined as T &#124; undefined</code> |  |
+| <span id="volatile-storedhoveredfeature">**storedHoveredFeature**</span><br><code>T &#124; undefined</code> |  |
 
 ## Getters
 

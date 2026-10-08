@@ -1,10 +1,11 @@
 ---
 id: alignmentsmodifications
 title: AlignmentsModifications
+description: "The alignments displays' modifications setting: what the modifications and bisulfite fields of AlignmentsBaseColor draw. The by-type view paints each MM/ML call its…"
 sidebar_label: Display -> AlignmentsModifications
 ---
 
-Auto-generated config schema for the current JBrowse release — see the [config guide](/docs/config_guide) for concepts. Provided by the `alignments` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/alignments/src/LinearAlignmentsDisplay/alignmentsModificationsConfigSchema.ts).
+Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Provided by the `alignments` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/alignments/src/LinearAlignmentsDisplay/alignmentsModificationsConfigSchema.ts).
 
 ## Example usage
 

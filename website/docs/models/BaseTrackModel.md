@@ -1,10 +1,11 @@
 ---
 id: basetrackmodel
 title: BaseTrackModel
+description: "these MST models only exist for tracks that are shown. they should contain only UI state for the track, and have a reference to a track configuration. note that multiple displayed tracks could use…"
 sidebar_label: Track -> BaseTrackModel
 ---
 
-Auto-generated @jbrowse/mobx-state-tree API for the current JBrowse release — see [pluggable elements](/docs/developer_guide/) for concepts. Built into JBrowse core. [View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/pluggableElementTypes/models/BaseTrackModel.ts).
+Auto-generated from the @jbrowse/mobx-state-tree model in the source — see the [developer guide](/docs/developer_guide/) for concepts. Built into JBrowse core. [View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/pluggableElementTypes/models/BaseTrackModel.ts).
 
 these MST models only exist for tracks that are *shown*. they should contain
 only UI state for the track, and have a reference to a track configuration.
@@ -27,7 +28,7 @@ note that multiple displayed tracks could use the same configuration.
 <!-- prettier-ignore -->
 | Member | Description |
 | --- | --- |
-| <span id="volatile-resizing">**resizing**</span><br><code>resizing: false</code> | Whether a height-resize gesture is in progress on this track. Set by whichever handle owns the drag — the view's track resize handle, or a handle a display draws inside itself — and read by displays that sit an expensive per-frame layer out of the gesture.<br><br>On the track rather than the display because the gesture belongs to the container running it, not to whatever display happens to be active: the view can bracket a drag without knowing which display it landed on, and two handles on one track share one flag rather than racing to clear each other's. |
+| <span id="volatile-resizing">**resizing**</span><br><code>false</code> | Whether a height-resize gesture is in progress on this track. Set by whichever handle owns the drag — the view's track resize handle, or a handle a display draws inside itself — and read by displays that sit an expensive per-frame layer out of the gesture.<br><br>On the track rather than the display because the gesture belongs to the container running it, not to whatever display happens to be active: the view can bracket a drag without knowing which display it landed on, and two handles on one track share one flag rather than racing to clear each other's. |
 
 ## Getters
 

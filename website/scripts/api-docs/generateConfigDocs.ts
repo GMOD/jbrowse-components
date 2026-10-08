@@ -39,6 +39,7 @@ import {
   lookupByIdOrName,
   mapByKey,
   markdownTable,
+  pageDescription,
   overviewSection,
   parseNode,
   proseCell,
@@ -980,7 +981,11 @@ function renderConfig(
     id: header.id,
     title: header.name,
     sidebarLabel: `${category} -> ${header.name}`,
-    notes: `Auto-generated config schema for the current JBrowse release — see the [config guide](/docs/config_guide) for concepts.`,
+    description: pageDescription(
+      stripNameTautology(header.docs, header.name),
+      `Configuration slots of ${header.name}.`,
+    ),
+    notes: `Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts.`,
     sourcePath: filename,
     body: section(
       exSection,

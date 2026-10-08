@@ -1,10 +1,11 @@
 ---
 id: rowcolor
 title: RowColor
+description: "The rowColor setting of the row displays: one categorical colour channel on the row axis. field names the row attribute whose values take the colours, name (the row itself) by default, and…"
 sidebar_label: Display -> RowColor
 ---
 
-Auto-generated config schema for the current JBrowse release — see the [config guide](/docs/config_guide) for concepts. Built into JBrowse core. [View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/display-kit/src/rowColorConfigSchema.ts).
+Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Built into JBrowse core. [View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/display-kit/src/rowColorConfigSchema.ts).
 
 ## Example usage
 

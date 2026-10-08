@@ -1,10 +1,11 @@
 ---
 id: baseconnectionmodel
 title: BaseConnectionModel
+description: "Properties, getters and actions of the BaseConnectionModel state model."
 sidebar_label: Connection -> BaseConnectionModel
 ---
 
-Auto-generated @jbrowse/mobx-state-tree API for the current JBrowse release — see [pluggable elements](/docs/developer_guide/) for concepts. Built into JBrowse core. [View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/pluggableElementTypes/models/BaseConnectionModelFactory.ts).
+Auto-generated from the @jbrowse/mobx-state-tree model in the source — see the [developer guide](/docs/developer_guide/) for concepts. Built into JBrowse core. [View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/pluggableElementTypes/models/BaseConnectionModelFactory.ts).
 
 ## Properties
 
@@ -20,7 +21,7 @@ Auto-generated @jbrowse/mobx-state-tree API for the current JBrowse release — 
 <!-- prettier-ignore -->
 | Member | Description |
 | --- | --- |
-| <span id="volatile-loading">**loading**</span><br><code>loading: false</code> | true while `connect()` is fetching this connection's tracks; drives a loading affordance in the track selector. Distinct from an empty `tracks` array, which is also the state of a connection that loaded successfully but has no tracks. |
+| <span id="volatile-loading">**loading**</span><br><code>false</code> | true while `connect()` is fetching this connection's tracks; drives a loading affordance in the track selector. Distinct from an empty `tracks` array, which is also the state of a connection that loaded successfully but has no tracks. |
 
 ## Getters
 

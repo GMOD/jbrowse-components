@@ -1,10 +1,11 @@
 ---
 id: lgvsyntenycolor
 title: LGVSyntenyColor
+description: "The LGVSyntenyDisplay's color setting: the AlignmentsColor object with field defaulting to strand, where the alignments display paints one fill. A string is the constant,…"
 sidebar_label: Display -> LGVSyntenyColor
 ---
 
-Auto-generated config schema for the current JBrowse release — see the [config guide](/docs/config_guide) for concepts. Provided by the `linear-comparative-view` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/linear-comparative-view/src/LGVSyntenyDisplay/lgvSyntenyColorConfigSchema.ts).
+Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Provided by the `linear-comparative-view` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/linear-comparative-view/src/LGVSyntenyDisplay/lgvSyntenyColorConfigSchema.ts).
 
 ## Example usage
 

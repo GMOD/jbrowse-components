@@ -106,29 +106,32 @@ Then, in statemodels
 #method - a view that takes function params or is called as a function
 ```
 
-Each `#stateModel` page is five tables — Properties, Volatiles, Getters,
-Methods, Actions — and nothing else. A table lists this model's own members
-first, then every member reachable through composition, with a "Defined by"
-column linking to the ancestor's page; a member redeclared by a more specific
-model appears once, at its most-specific definition. The whole API surface is
-therefore on the page, stated exactly once, and a member is one row rather than
-a heading plus a code fence.
+Each `#stateModel` page is five sections — Properties, Volatiles, Getters,
+Methods, Actions. A section is a table of the model's own members, then one line
+per composed model naming the members it contributes, each linked to its row on
+the page that documents it. A member redeclared by a more specific model appears
+once, at its most-specific definition. A full row per inherited member was two
+thirds of the rows in the directory, and put a copy of every `BaseDisplay`
+docstring on 21 pages.
 
 A row is name-over-type in one cell and the full documentation in the next, so
 the prose gets the width. Long types and authored `#example` blocks open in a
 modal `<dialog>` from inside their cell (`codeCell`/`exampleCell`/`dialogCell`)
 rather than holding the row open — expanding in place reflows the whole table
 around a `<pre>` that then has a quarter-width column to live in, where the
-dialog gets the width of the window. Each name carries a
-`<span id="<tag>-<name>">`, which is what the "Defined by" links on descendant
-pages point at. Inherited rows are `data-pagefind-ignore`d, so a search lands on
-the model that defines a member instead of on every page that composes it.
+dialog gets the width of the window. Each name, own or inherited, carries a
+`<span id="<tag>-<name>">`, so a deep link into a page lands whichever model
+declares the member. Inherited names are `data-pagefind-ignore`d, so a search
+lands on the model that defines a member instead of on every page that composes
+it.
 
 Type signatures come from the TypeScript checker, which truncates past ~340
-characters by cutting mid-token. `elideSignature` in `util.ts` shortens
-over-long types structurally instead, collapsing generic arguments from the
-inside out (`IConfigurationReference<ConfigurationSchemaType<…>>`) so what
-survives is the outer constructor and the function's own parameter/return shape.
+characters by cutting mid-token and by emptying nested groups. `typeSignature`
+in `util.ts` re-renders a truncated type whole, and `elideSignature` shortens an
+over-long one structurally instead, collapsing generic arguments from the inside
+out (`IConfigurationReference<ConfigurationSchemaType<…>>`) so what survives is
+the outer constructor and the function's own parameter/return shape. An
+overloaded function prints one arrow per overload.
 
 The composition graph is **derived from code**, not authored — the generator
 resolves the models passed to the factory's `types.compose(...)` call, and the
@@ -243,18 +246,17 @@ minimal form alongside a fully-expanded one:
 
 Labeled examples render as `### Example: minimal` /
 `### Example: with-explicit-index` subsections nested under `## Example usage`.
-Slot- and member-level labeled examples use italic (`_label_`) instead of a
-heading to stay subordinate.
+A slot- or member-level label titles its example inside the dialog.
 
 ### Where `#example` can appear
 
-| Tag                               | Renders at                                      |
-| --------------------------------- | ----------------------------------------------- |
-| `#config`                         | Top of the config page (`## Example usage`)     |
-| `#stateModel`                     | Top of the model page (`## Example usage`)      |
-| `#slot`                           | After the slot's code block (`**Example:**`)    |
-| `#getter` / `#method` / `#action` | After the member's code block (`**Example:**`)  |
-| `#api`                            | After the type signature (`#### Example usage`) |
+| Tag                         | Renders at                                      |
+| --------------------------- | ----------------------------------------------- |
+| `#config`                   | Top of the config page (`## Example usage`)     |
+| `#stateModel`               | Top of the model page (`## Example usage`)      |
+| `#slot`                     | In the slot's Description cell, behind a dialog |
+| a member tag (`#getter`, …) | In the member's Description cell, same dialog   |
+| `#api`                      | After the type signature (`#### Example usage`) |
 
 ### Coverage is tracked in `coverage-gaps.txt`
 
@@ -269,7 +271,7 @@ step in `push.yml` diffs it alongside the generated pages, so the list can't go
 stale.
 
 The file carries one section per gap kind, each naming the tag that clears it:
-missing `#example` (configs, models), blank slot descriptions,
+missing `#example` (configs, models), model members with no description,
 `General`-category fallbacks, members the structural pass can't see, unresolved
 `baseConfiguration` references, and adapters whose example defaulted to
 `FeatureTrack`. A section stays in the file at `(0)` so a regression is a `+`
@@ -301,12 +303,12 @@ guide opts in by dropping that pair, and editing between the markers is
 pointless since regen overwrites it.
 
 **The complete list of markers, and which docs render each, is generated**: the
-`MARKER_INDEX` table in `agent-docs/ARCHITECTURE.md`. A list here would be the
-same enumeration these generators exist to stop hand-maintaining, and was — it
-named eight of the thirty-two markers in use, sourced `#color` to the file that
-re-exports the colors rather than the one that declares them, and described a
-per-generator CLI that had already been replaced by `markers.ts`. Below is how
-to write one, not what exists.
+`MARKER_INDEX` table in `agent-docs/reference/GENERATED_DOC_BLOCKS.md`. A list
+here would be the same enumeration these generators exist to stop
+hand-maintaining, and was — it named eight of the thirty-two markers in use,
+sourced `#color` to the file that re-exports the colors rather than the one that
+declares them, and described a per-generator CLI that had already been replaced
+by `markers.ts`. Below is how to write one, not what exists.
 
 A few, as examples of the shapes:
 
@@ -354,11 +356,14 @@ discovered in `parseTaggedComment`. Every one of them is stripped from the
 rendered prose, and every one is recognized only when it **heads** its comment
 line — a mention inside a sentence is prose, not a tag.
 
-| Tag                     | On                                 | Effect                                                                                                                                                                                                                                                                                                              |
-| ----------------------- | ---------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `#category <word>`      | `#config` / `#stateModel`          | Overrides the name-suffix heuristic that buckets the page in the sidebar (`Adapter`, `Display`, `View`, …). A camelCase word becomes a title-cased label. `*Mixin` model names always bucket under `Mixin` regardless.                                                                                              |
-| `#trackType <Type>`     | an adapter's `#config`             | The track type the adapter's `#example` is wrapped in, so the page shows the full config a reader pastes rather than a bare adapter snapshot. Also links the adapter to its track and that track's displays under **Related links**. Defaults to `FeatureTrack`, and is listed in `coverage-gaps.txt` when it does. |
-| `#gotcha <text>`        | `#config`                          | A footgun a reader configuring this type has to know but would not infer from the slot list. Renders as a `:::caution` callout directly under the example, and can be pulled into a guide with a `GOTCHA` marker. Runs to the next tag or the next blank line, so it may wrap across lines.                         |
-| `#fileFormat`           | an adapter's `#config`             | Opts the adapter into a `FILE_TYPES` table (above).                                                                                                                                                                                                                                                                 |
-| `#displayFoundation`    | a display's `#stateModel`          | Opts the display into the `DISPLAY_FOUNDATIONS` table (above) as a user of the named foundation.                                                                                                                                                                                                                    |
-| `#displayFoundationDef` | a foundation mixin's `#stateModel` | Declares the foundation and what it brings.                                                                                                                                                                                                                                                                         |
+| Tag                         | On                                 | Effect                                                                                                                                                                                                                                                                                                              |
+| --------------------------- | ---------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `#category <word>`          | `#config` / `#stateModel`          | Overrides the name-suffix heuristic that buckets the page in the sidebar (`Adapter`, `Display`, `View`, …). A camelCase word becomes a title-cased label. `*Mixin` model names always bucket under `Mixin` regardless.                                                                                              |
+| `#trackType <Type>`         | an adapter's `#config`             | The track type the adapter's `#example` is wrapped in, so the page shows the full config a reader pastes rather than a bare adapter snapshot. Also links the adapter to its track and that track's displays under **Related links**. Defaults to `FeatureTrack`, and is listed in `coverage-gaps.txt` when it does. |
+| `#gotcha <text>`            | `#config`                          | A footgun a reader configuring this type has to know but would not infer from the slot list. Renders as a `:::caution` callout directly under the example, and can be pulled into a guide with a `GOTCHA` marker. Runs to the next tag or the next blank line, so it may wrap across lines.                         |
+| `#fileFormat`               | an adapter's `#config`             | Opts the adapter into a `FILE_TYPES` table (above).                                                                                                                                                                                                                                                                 |
+| `#displayFoundation`        | a display's `#stateModel`          | Opts the display into the `DISPLAY_FOUNDATIONS` table (above) as a user of the named foundation.                                                                                                                                                                                                                    |
+| `#crossCuttingMixin <text>` | a mixin's `#stateModel`            | The mixin's one-line summary: a row of the `CROSS_CUTTING_MIXINS` table, and the opening sentence of its own page.                                                                                                                                                                                                  |
+| `#internal`                 | `#stateModel`                      | Keeps the docstrings in the source and publishes no page (above).                                                                                                                                                                                                                                                   |
+| `#preProcessSnapshot`       | a schema's `preProcessSnapshot`    | A note for the reader of the source. The page states the shorthand from the manifest and shows it in the `#example`, so this text renders only on a config with no example.                                                                                                                                         |
+| `#displayFoundationDef`     | a foundation mixin's `#stateModel` | Declares the foundation and what it brings.                                                                                                                                                                                                                                                                         |

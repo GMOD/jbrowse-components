@@ -1,10 +1,11 @@
 ---
 id: legendmixin
 title: LegendMixin
+description: "The legend, whole. A display declares the color scales it paints with (colorScales, a getter hook, and colorScalesIn where they follow the theme) and the mixin derives the key from them…"
 sidebar_label: Mixin -> LegendMixin
 ---
 
-Auto-generated @jbrowse/mobx-state-tree API for the current JBrowse release — see [pluggable elements](/docs/developer_guide/) for concepts. Built into JBrowse core. [View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/display-kit/src/LegendMixin.ts).
+Auto-generated from the @jbrowse/mobx-state-tree model in the source — see the [developer guide](/docs/developer_guide/) for concepts. Built into JBrowse core. [View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/display-kit/src/LegendMixin.ts).
 
 The legend, whole. A display declares the color scales it paints with (`colorScales`, a getter hook, and `colorScalesIn` where they follow the theme) and the mixin derives the key from them (`legendSpec`, and `legendSpecIn` for the SVG export, through `legendSpecOf`), keeps the `showLegend` slot's getter and setter, dismisses sections one at a time (`dismissLegendSection`, undone by re-showing the legend), answers whether there is a key to offer (`hasLegendKey`) and whether the export parks it beside the plot (`svgLegendWidth`). `DisplayChrome` draws the on-screen key and `renderDisplaySvg` the exported one, so a display places neither
 
@@ -20,7 +21,7 @@ this mixin supplies the accessors over the slot and never the slot.
 <!-- prettier-ignore -->
 | Member | Description |
 | --- | --- |
-| <span id="volatile-dismissedlegendsections">**dismissedLegendSections**</span><br><code>dismissedLegendSections: [] as string[]</code> | Ids of the scales whose section the reader closed on its own; cleared when the whole legend is shown again. Volatile where `showLegend` is config: which sections a reader collapsed in one sitting is not how the track is configured. |
+| <span id="volatile-dismissedlegendsections">**dismissedLegendSections**</span><br><code>string[]</code> | Ids of the scales whose section the reader closed on its own; cleared when the whole legend is shown again. Volatile where `showLegend` is config: which sections a reader collapsed in one sitting is not how the track is configured. |
 
 ## Getters
 

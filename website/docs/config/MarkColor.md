@@ -1,10 +1,11 @@
 ---
 id: markcolor
 title: MarkColor
+description: "A mark's encoding.color: one CSS colour or jexl: callback for every instance, or a field through a categorical scale (a range colour per value), a linear or log scale (a ramp between…"
 sidebar_label: Display -> MarkColor
 ---
 
-Auto-generated config schema for the current JBrowse release — see the [config guide](/docs/config_guide) for concepts. Provided by the `marks` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/marks/src/LinearMarkDisplay/markColorConfigSchema.ts).
+Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Provided by the `marks` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/marks/src/LinearMarkDisplay/markColorConfigSchema.ts).
 
 ## Example usage
 

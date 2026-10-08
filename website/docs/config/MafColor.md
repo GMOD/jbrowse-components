@@ -1,10 +1,11 @@
 ---
 id: mafcolor
 title: MafColor
+description: "The MAF display's color: what colours each species row's aligned cells. mismatch paints a base only where it differs from the reference, base every base, identity the mean identity to the…"
 sidebar_label: Display -> MafColor
 ---
 
-Auto-generated config schema for the current JBrowse release — see the [config guide](/docs/config_guide) for concepts. Provided by the `maf` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/maf/src/LinearMafDisplay/mafColorConfigSchema.ts).
+Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Provided by the `maf` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/maf/src/LinearMafDisplay/mafColorConfigSchema.ts).
 
 ## Example usage
 

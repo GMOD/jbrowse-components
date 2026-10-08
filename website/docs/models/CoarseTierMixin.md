@@ -1,10 +1,11 @@
 ---
 id: coarsetiermixin
 title: CoarseTierMixin
+description: "The zoomed-out tier a display draws in place of its detail: the density band's bins, MAF's summary bars. The verdict stays exactly what RegionTooLargeMixin derives, and this mixin adds the swap…"
 sidebar_label: Mixin -> CoarseTierMixin
 ---
 
-Auto-generated @jbrowse/mobx-state-tree API for the current JBrowse release — see [pluggable elements](/docs/developer_guide/) for concepts. Built into JBrowse core. [View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/display-kit/src/CoarseTierMixin.ts).
+Auto-generated from the @jbrowse/mobx-state-tree model in the source — see the [developer guide](/docs/developer_guide/) for concepts. Built into JBrowse core. [View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/display-kit/src/CoarseTierMixin.ts).
 
 The zoomed-out tier a display draws in place of its detail: the density
 band's bins, MAF's summary bars. The verdict stays exactly what
@@ -31,9 +32,9 @@ itself. Composed after `MultiRegionDisplayMixin`, so its `displayPhase` and
 <!-- prettier-ignore -->
 | Member | Description |
 | --- | --- |
-| <span id="volatile-coarsetier">**coarseTier**</span><br><code>coarseTier: regionDataMap&lt;P&gt;('coarseTier')</code> | The coarse payload by `displayedRegionIndex`, over the regions the last read was issued for. Cleared on chromosome navigation. |
-| <span id="volatile-coarsetierread">**coarseTierRead**</span><br><code>coarseTierRead: undefined as CoarseTierRead &#124; undefined</code> | What the held payloads were read over — the buffered regions and the read key — so a pan or a zoom inside them re-reads nothing. Undefined until a read lands. |
-| <span id="volatile-coarsetierloading">**coarseTierLoading**</span><br><code>coarseTierLoading: false</code> |  |
+| <span id="volatile-coarsetier">**coarseTier**</span><br><code>ObservableMap&lt;number, P&gt;</code> | The coarse payload by `displayedRegionIndex`, over the regions the last read was issued for. Cleared on chromosome navigation. |
+| <span id="volatile-coarsetierread">**coarseTierRead**</span><br><code>CoarseTierRead &#124; undefined</code> | What the held payloads were read over — the buffered regions and the read key — so a pan or a zoom inside them re-reads nothing. Undefined until a read lands. |
+| <span id="volatile-coarsetierloading">**coarseTierLoading**</span><br><code>false</code> |  |
 
 ## Getters
 

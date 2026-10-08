@@ -1,10 +1,11 @@
 ---
 id: cramadapter
 title: CramAdapter
+description: "sequenceAdapter is filled in automatically from the enclosing assembly's sequence track — you never specify it."
 sidebar_label: Adapter -> CramAdapter
 ---
 
-Auto-generated config schema for the current JBrowse release — see the [config guide](/docs/config_guide) for concepts. Provided by the `alignments` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/alignments/src/CramAdapter/configSchema.ts).
+Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Provided by the `alignments` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/alignments/src/CramAdapter/configSchema.ts).
 
 ## Example usage
 

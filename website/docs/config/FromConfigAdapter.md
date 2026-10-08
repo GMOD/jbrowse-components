@@ -1,10 +1,11 @@
 ---
 id: fromconfigadapter
 title: FromConfigAdapter
+description: "supplies features inline in the config instead of reading a file, useful for small feature sets added via a URL or session spec"
 sidebar_label: Adapter -> FromConfigAdapter
 ---
 
-Auto-generated config schema for the current JBrowse release — see the [config guide](/docs/config_guide) for concepts. Provided by the `config` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/config/src/FromConfigAdapter/configSchema.ts).
+Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Provided by the `config` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/config/src/FromConfigAdapter/configSchema.ts).
 
 ## Example usage
 

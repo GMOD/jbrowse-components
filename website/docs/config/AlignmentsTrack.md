@@ -1,10 +1,11 @@
 ---
 id: alignmentstrack
 title: AlignmentsTrack
+description: "has very little config; most config and state logic is on the display"
 sidebar_label: Track -> AlignmentsTrack
 ---
 
-Auto-generated config schema for the current JBrowse release — see the [config guide](/docs/config_guide) for concepts. Provided by the `alignments` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/alignments/src/AlignmentsTrack/configSchemaF.ts).
+Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Provided by the `alignments` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/alignments/src/AlignmentsTrack/configSchemaF.ts).
 
 ## Example usage
 

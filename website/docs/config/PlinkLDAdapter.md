@@ -1,10 +1,11 @@
 ---
 id: plinkldadapter
 title: PlinkLDAdapter
+description: "Adapter for reading pre-computed LD data from a PLINK LD table, either PLINK 2.0's .vcor or PLINK 1.9's .ld. Loads the entire file into memory - suitable for small to medium files."
 sidebar_label: Adapter -> PlinkLDAdapter
 ---
 
-Auto-generated config schema for the current JBrowse release — see the [config guide](/docs/config_guide) for concepts. Provided by the `variants` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/variants/src/PlinkLDAdapter/configSchema.ts).
+Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Provided by the `variants` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/variants/src/PlinkLDAdapter/configSchema.ts).
 
 ## Example usage
 

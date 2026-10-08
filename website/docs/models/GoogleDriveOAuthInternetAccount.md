@@ -1,14 +1,15 @@
 ---
 id: googledriveoauthinternetaccount
 title: GoogleDriveOAuthInternetAccount
+description: "Properties, getters and actions of the GoogleDriveOAuthInternetAccount state model."
 sidebar_label: Internet Account -> GoogleDriveOAuthInternetAccount
 ---
 
-Auto-generated @jbrowse/mobx-state-tree API for the current JBrowse release — see [pluggable elements](/docs/developer_guide/) for concepts. Provided by the `authentication` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/authentication/src/GoogleDriveOAuthModel/model.tsx).
+Auto-generated from the @jbrowse/mobx-state-tree model in the source — see the [developer guide](/docs/developer_guide/) for concepts. Provided by the `authentication` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/authentication/src/GoogleDriveOAuthModel/model.tsx).
 
 The configuration slots for this model are documented on its [config schema page](../../config/googledriveoauthinternetaccount).
 
-Members a composed model contributes are listed here too, so these tables are the whole surface.
+Each section ends with the members a composed model contributes, linked to the page that documents them.
 
 ## Properties
 
@@ -21,41 +22,28 @@ Members a composed model contributes are listed here too, so these tables are th
 ## Getters
 
 <!-- prettier-ignore -->
-| Member | Description | Defined by |
-| --- | --- | --- |
-| <span id="getter-togglecontents">**toggleContents**</span><br><code>Element</code> | The FileSelector icon for Google drive | GoogleDriveOAuthInternetAccount |
-| <span id="getter-selectorlabel">**selectorLabel**</span><br><code>string</code> |  | GoogleDriveOAuthInternetAccount |
-| <span id="getter-conf">**conf**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>ConfigNodeProps&lt;…&gt; &amp; ConfigNodeActions &amp; ConfigNodeBrand&lt;Config…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>ConfigNodeProps&lt;…&gt; &amp; ConfigNodeActions &amp; ConfigNodeBrand&lt;ConfigurationSchemaType&lt;…&gt;&gt;</code></pre></dialog></span> | <span data-pagefind-ignore>The config typed off the concrete schema. `ConfigurationReference` erases `self.configuration` to `any` (the reference's MST instance brand doesn't carry the schema's slot definitions), so reads go through this getter to recover per-slot types and slot-name validation.</span> | [OAuthInternetAccount](../oauthinternetaccount#getter-conf) |
-| <span id="getter-authendpoint">**authEndpoint**</span><br><code>string</code> |  | [OAuthInternetAccount](../oauthinternetaccount#getter-authendpoint) |
-| <span id="getter-tokenendpoint">**tokenEndpoint**</span><br><code>string</code> |  | [OAuthInternetAccount](../oauthinternetaccount#getter-tokenendpoint) |
-| <span id="getter-needspkce">**needsPKCE**</span><br><code>boolean</code> |  | [OAuthInternetAccount](../oauthinternetaccount#getter-needspkce) |
-| <span id="getter-clientid">**clientId**</span><br><code>string</code> |  | [OAuthInternetAccount](../oauthinternetaccount#getter-clientid) |
-| <span id="getter-scopes">**scopes**</span><br><code>string</code> |  | [OAuthInternetAccount](../oauthinternetaccount#getter-scopes) |
-| <span id="getter-state">**state**</span><br><code>string</code> | <span data-pagefind-ignore>OAuth state parameter: https://www.rfc-editor.org/rfc/rfc6749#section-4.1.1<br><br>Can override or extend if dynamic state is needed.</span> | [OAuthInternetAccount](../oauthinternetaccount#getter-state) |
-| <span id="getter-responsetype">**responseType**</span><br><code>string</code> |  | [OAuthInternetAccount](../oauthinternetaccount#getter-responsetype) |
-| <span id="getter-refreshtokenkey">**refreshTokenKey**</span><br><code>string</code> |  | [OAuthInternetAccount](../oauthinternetaccount#getter-refreshtokenkey) |
-| <span id="getter-authflowparams">**authFlowParams**</span><br><code>Record&lt;string, string&gt;</code> | <span data-pagefind-ignore>Extra parameters to add to the authorization request. Empty here; a provider that needs one of its own overrides this.</span> | [OAuthInternetAccount](../oauthinternetaccount#getter-authflowparams) |
+| Member | Description |
+| --- | --- |
+| <span id="getter-togglecontents">**toggleContents**</span><br><code>Element</code> | The FileSelector icon for Google drive |
+| <span id="getter-selectorlabel">**selectorLabel**</span><br><code>string</code> |  |
+
+<span data-pagefind-ignore>From [OAuthInternetAccount](../oauthinternetaccount): <span id="getter-conf">[`conf`](../oauthinternetaccount#getter-conf)</span>, <span id="getter-authendpoint">[`authEndpoint`](../oauthinternetaccount#getter-authendpoint)</span>, <span id="getter-tokenendpoint">[`tokenEndpoint`](../oauthinternetaccount#getter-tokenendpoint)</span>, <span id="getter-needspkce">[`needsPKCE`](../oauthinternetaccount#getter-needspkce)</span>, <span id="getter-clientid">[`clientId`](../oauthinternetaccount#getter-clientid)</span>, <span id="getter-scopes">[`scopes`](../oauthinternetaccount#getter-scopes)</span>, <span id="getter-state">[`state`](../oauthinternetaccount#getter-state)</span>, <span id="getter-responsetype">[`responseType`](../oauthinternetaccount#getter-responsetype)</span>, <span id="getter-refreshtokenkey">[`refreshTokenKey`](../oauthinternetaccount#getter-refreshtokenkey)</span>, <span id="getter-authflowparams">[`authFlowParams`](../oauthinternetaccount#getter-authflowparams)</span></span>
 
 ## Methods
 
 <!-- prettier-ignore -->
-| Member | Description | Defined by |
-| --- | --- | --- |
-| <span id="method-getfetcher">**getFetcher**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>(location?: UriLocation &#124; undefined) =&gt; (input: RequestInfo, in…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>(location?: UriLocation &#124; undefined) =&gt; (input: RequestInfo, init?: RequestInitWithMetadata &#124; undefined) =&gt; Promise&lt;Response&gt;</code></pre></dialog></span> |  | GoogleDriveOAuthInternetAccount |
-| <span id="method-openlocation">**openLocation**</span><br><code>(location: UriLocation) =&gt; GoogleDriveFile</code> |  | GoogleDriveOAuthInternetAccount |
-| <span id="method-retrieverefreshtoken">**retrieveRefreshToken**</span><br><code>() =&gt; string &#124; undefined</code> |  | [OAuthInternetAccount](../oauthinternetaccount#method-retrieverefreshtoken) |
+| Member | Description |
+| --- | --- |
+| <span id="method-getfetcher">**getFetcher**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>(location?: UriLocation &#124; undefined) =&gt; (input: RequestInfo, in…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>(location?: UriLocation &#124; undefined) =&gt; (input: RequestInfo, init?: RequestInitWithMetadata &#124; undefined) =&gt; Promise&lt;Response&gt;</code></pre></dialog></span> |  |
+| <span id="method-openlocation">**openLocation**</span><br><code>(location: UriLocation) =&gt; GoogleDriveFile</code> |  |
+
+<span data-pagefind-ignore>From [OAuthInternetAccount](../oauthinternetaccount): <span id="method-retrieverefreshtoken">[`retrieveRefreshToken`](../oauthinternetaccount#method-retrieverefreshtoken)</span></span>
 
 ## Actions
 
 <!-- prettier-ignore -->
-| Member | Description | Defined by |
-| --- | --- | --- |
-| <span id="action-validatetoken">**validateToken**</span><br><code>(token: string, location: UriLocation) =&gt; Promise&lt;string&gt;</code> |  | GoogleDriveOAuthInternetAccount |
-| <span id="action-storerefreshtoken">**storeRefreshToken**</span><br><code>(refreshToken: string) =&gt; void</code> |  | [OAuthInternetAccount](../oauthinternetaccount#action-storerefreshtoken) |
-| <span id="action-removerefreshtoken">**removeRefreshToken**</span><br><code>() =&gt; void</code> |  | [OAuthInternetAccount](../oauthinternetaccount#action-removerefreshtoken) |
-| <span id="action-posttokengrant">**postTokenGrant**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>(grant: Record&lt;string, string&gt;, describeError: (response: Respo…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>(grant: Record&lt;string, string&gt;, describeError: (response: Response) =&gt; Promise&lt;string&gt;) =&gt; Promise&lt;string&gt;</code></pre></dialog></span> | <span data-pagefind-ignore>POST a grant to the token endpoint and read the access token out of the answer. Both grants this account makes — trading the authorization code on the way in, trading the refresh token when the access token expires — are the same form-encoded request to the same endpoint answered by the same body, and OAuth 2 says so (RFC 6749 §4.1.3, §6). They differ in the grant's own parameters and in what a failure means, which is what stays at the call sites.</span> | [OAuthInternetAccount](../oauthinternetaccount#action-posttokengrant) |
-| <span id="action-exchangeauthorizationforaccesstoken">**exchangeAuthorizationForAccessToken**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>(code: string, redirectUri: string, codeVerifier: string &#124; unde…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>(code: string, redirectUri: string, codeVerifier: string &#124; undefined) =&gt; Promise&lt;string&gt;</code></pre></dialog></span> |  | [OAuthInternetAccount](../oauthinternetaccount#action-exchangeauthorizationforaccesstoken) |
-| <span id="action-exchangerefreshforaccesstoken">**exchangeRefreshForAccessToken**</span><br><code>(refreshToken: string) =&gt; Promise&lt;string&gt;</code> |  | [OAuthInternetAccount](../oauthinternetaccount#action-exchangerefreshforaccesstoken) |
-| <span id="action-validatetokenwithprobe">**validateTokenWithProbe**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>(token: string, probe: (token: string) =&gt; Promise&lt;Response&gt;, de…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>(token: string, probe: (token: string) =&gt; Promise&lt;Response&gt;, describeError: (response: Response, reason?: string &#124; undefined) =&gt; Promise&lt;string&gt;) =&gt; Promise&lt;string&gt;</code></pre></dialog></span> | <span data-pagefind-ignore>Prove a token against the resource and, if that fails, refresh it once and prove the new one. Returns whichever token worked; throws if neither does. Every OAuth account validates this way and they differ only in what a probe is — a HEAD of the resource here, a metadata call for Dropbox and Google Drive.</span> | [OAuthInternetAccount](../oauthinternetaccount#action-validatetokenwithprobe) |
-| <span id="action-gettokenviaauthflow">**getTokenViaAuthFlow**</span><br><code>() =&gt; Promise&lt;string&gt;</code> | <span data-pagefind-ignore>Opens the provider's auth page and returns a promise for the resulting token. For Electron, drives the flow directly via IPC; for web, opens a popup and waits for the redirect message.</span> | [OAuthInternetAccount](../oauthinternetaccount#action-gettokenviaauthflow) |
-| <span id="action-gettokenfromuser">**getTokenFromUser**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>(resolve: (token: string) =&gt; void, reject: (error: Error) =&gt; vo…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>(resolve: (token: string) =&gt; void, reject: (error: Error) =&gt; void) =&gt; Promise&lt;void&gt;</code></pre></dialog></span> |  | [OAuthInternetAccount](../oauthinternetaccount#action-gettokenfromuser) |
+| Member | Description |
+| --- | --- |
+| <span id="action-validatetoken">**validateToken**</span><br><code>(token: string, location: UriLocation) =&gt; Promise&lt;string&gt;</code> |  |
+
+<span data-pagefind-ignore>From [OAuthInternetAccount](../oauthinternetaccount): <span id="action-storerefreshtoken">[`storeRefreshToken`](../oauthinternetaccount#action-storerefreshtoken)</span>, <span id="action-removerefreshtoken">[`removeRefreshToken`](../oauthinternetaccount#action-removerefreshtoken)</span>, <span id="action-posttokengrant">[`postTokenGrant`](../oauthinternetaccount#action-posttokengrant)</span>, <span id="action-exchangeauthorizationforaccesstoken">[`exchangeAuthorizationForAccessToken`](../oauthinternetaccount#action-exchangeauthorizationforaccesstoken)</span>, <span id="action-exchangerefreshforaccesstoken">[`exchangeRefreshForAccessToken`](../oauthinternetaccount#action-exchangerefreshforaccesstoken)</span>, <span id="action-validatetokenwithprobe">[`validateTokenWithProbe`](../oauthinternetaccount#action-validatetokenwithprobe)</span>, <span id="action-gettokenviaauthflow">[`getTokenViaAuthFlow`](../oauthinternetaccount#action-gettokenviaauthflow)</span>, <span id="action-gettokenfromuser">[`getTokenFromUser`](../oauthinternetaccount#action-gettokenfromuser)</span></span>

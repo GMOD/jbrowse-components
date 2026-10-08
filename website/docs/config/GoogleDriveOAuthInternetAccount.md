@@ -1,10 +1,11 @@
 ---
 id: googledriveoauthinternetaccount
 title: GoogleDriveOAuthInternetAccount
+description: "Configuration slots of GoogleDriveOAuthInternetAccount."
 sidebar_label: Internet Account -> GoogleDriveOAuthInternetAccount
 ---
 
-Auto-generated config schema for the current JBrowse release — see the [config guide](/docs/config_guide) for concepts. Provided by the `authentication` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/authentication/src/GoogleDriveOAuthModel/configSchema.ts).
+Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Provided by the `authentication` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/authentication/src/GoogleDriveOAuthModel/configSchema.ts).
 
 ## Example usage
 

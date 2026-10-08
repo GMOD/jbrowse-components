@@ -1,18 +1,19 @@
 ---
 id: thememanagersessionmixin
 title: ThemeManagerSessionMixin
+description: "Properties, getters and actions of the ThemeManagerSessionMixin state model."
 sidebar_label: Mixin -> ThemeManagerSessionMixin
 ---
 
-Auto-generated @jbrowse/mobx-state-tree API for the current JBrowse release — see [pluggable elements](/docs/developer_guide/) for concepts. Built into JBrowse core. [View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/product-core/src/Session/Themes.ts).
+Auto-generated from the @jbrowse/mobx-state-tree model in the source — see the [developer guide](/docs/developer_guide/) for concepts. Built into JBrowse core. [View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/product-core/src/Session/Themes.ts).
 
 ## Volatiles
 
 <!-- prettier-ignore -->
 | Member | Description |
 | --- | --- |
-| <span id="volatile-systemprefersdark">**systemPrefersDark**</span><br><code>systemPrefersDark: prefersDarkColorScheme()</code> |  |
-| <span id="volatile-darkreaderdark">**darkReaderDark**</span><br><code>darkReaderDark: darkReaderIsDark()</code> |  |
+| <span id="volatile-systemprefersdark">**systemPrefersDark**</span><br><code>boolean</code> |  |
+| <span id="volatile-darkreaderdark">**darkReaderDark**</span><br><code>boolean</code> |  |
 
 ## Getters
 

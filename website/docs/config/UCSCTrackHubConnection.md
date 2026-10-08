@@ -1,10 +1,11 @@
 ---
 id: ucsctrackhubconnection
 title: UCSCTrackHubConnection
+description: "Configuration slots of UCSCTrackHubConnection."
 sidebar_label: Connection -> UCSCTrackHubConnection
 ---
 
-Auto-generated config schema for the current JBrowse release — see the [config guide](/docs/config_guide) for concepts. Provided by the `data-management` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/data-management/src/UCSCTrackHubConnection/configSchema.ts).
+Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Provided by the `data-management` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/data-management/src/UCSCTrackHubConnection/configSchema.ts).
 
 ## Example usage
 

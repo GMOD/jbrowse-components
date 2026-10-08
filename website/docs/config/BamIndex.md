@@ -1,10 +1,11 @@
 ---
 id: bamindex
 title: BamIndex
+description: "Where a BAM's index is and which of the two kinds it is. indexType is derived from the index file's own name where the config names a .csi and leaves it unset, so the usual config states neither…"
 sidebar_label: Adapter -> BamIndex
 ---
 
-Auto-generated config schema for the current JBrowse release — see the [config guide](/docs/config_guide) for concepts. Built into JBrowse core. [View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/configuration/bamIndexFields.ts).
+Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Built into JBrowse core. [View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/configuration/bamIndexFields.ts).
 
 Where a BAM's index is and which of the two kinds it is. `indexType` is
 derived from the index file's own name where the config names a `.csi` and

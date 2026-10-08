@@ -1,10 +1,11 @@
 ---
 id: baserootmodel
 title: BaseRootModel
+description: "factory function for the Base-level root model shared by all products"
 sidebar_label: Root -> BaseRootModel
 ---
 
-Auto-generated @jbrowse/mobx-state-tree API for the current JBrowse release — see [pluggable elements](/docs/developer_guide/) for concepts. Built into JBrowse core. [View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/product-core/src/RootModel/BaseRootModel.ts).
+Auto-generated from the @jbrowse/mobx-state-tree model in the source — see the [developer guide](/docs/developer_guide/) for concepts. Built into JBrowse core. [View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/product-core/src/RootModel/BaseRootModel.ts).
 
 factory function for the Base-level root model shared by all products
 
@@ -23,11 +24,11 @@ factory function for the Base-level root model shared by all products
 <!-- prettier-ignore -->
 | Member | Description |
 | --- | --- |
-| <span id="volatile-rpcmanager">**rpcManager**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>rpcManager: new RpcManager( pluginManager, self.jbrowse.configu…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>rpcManager: new RpcManager(&#10;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;pluginManager,&#10;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;self.jbrowse.configuration.rpc,&#10;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;rpcManagerOptions,&#10;&#160;&#160;&#160;&#160;&#160;&#160;)</code></pre></dialog></span> |  |
-| <span id="volatile-adminmode">**adminMode**</span><br><code>adminMode: false</code> |  |
-| <span id="volatile-error">**error**</span><br><code>error: undefined as unknown</code> |  |
-| <span id="volatile-textsearchmanager">**textSearchManager**</span><br><code>textSearchManager: new TextSearchManager(pluginManager)</code> |  |
-| <span id="volatile-pluginmanager">**pluginManager**</span><br><code>pluginManager</code> |  |
+| <span id="volatile-rpcmanager">**rpcManager**</span><br><code>RpcManager</code> |  |
+| <span id="volatile-adminmode">**adminMode**</span><br><code>false</code> |  |
+| <span id="volatile-error">**error**</span><br><code>unknown</code> |  |
+| <span id="volatile-textsearchmanager">**textSearchManager**</span><br><code>TextSearchManager</code> |  |
+| <span id="volatile-pluginmanager">**pluginManager**</span><br><code>PluginManager</code> |  |
 
 ## Actions
 

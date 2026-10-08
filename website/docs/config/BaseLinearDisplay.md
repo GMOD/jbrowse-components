@@ -1,10 +1,11 @@
 ---
 id: baselineardisplay
 title: BaseLinearDisplay
+description: "Shared base config for linear displays — its slots (height, fetchSizeLimit, mouseover) are common to all of them. The GPU stack's LinearCanvasBaseDisplay config extends it, and third-party…"
 sidebar_label: Display -> BaseLinearDisplay
 ---
 
-Auto-generated config schema for the current JBrowse release — see the [config guide](/docs/config_guide) for concepts. Built into JBrowse core. [View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/display-kit/src/configSchema.ts).
+Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Built into JBrowse core. [View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/display-kit/src/configSchema.ts).
 
 ## Overview
 

@@ -1,10 +1,11 @@
 ---
 id: linearvariantdisplay
 title: LinearVariantDisplay
+description: "Extends LinearCanvasBaseDisplay for GPU-accelerated variant rendering."
 sidebar_label: Display -> LinearVariantDisplay
 ---
 
-Auto-generated config schema for the current JBrowse release — see the [config guide](/docs/config_guide) for concepts. Provided by the `variants` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/variants/src/LinearVariantDisplay/configSchema.ts).
+Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Provided by the `variants` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/variants/src/LinearVariantDisplay/configSchema.ts).
 
 ## Example usage
 

@@ -1,10 +1,11 @@
 ---
 id: importformsyntenymixin
 title: ImportFormSyntenyMixin
+description: "The synteny track each row pair of a view's import form has picked, held on the model so it outlives the form's per-pair remounts. Composed by the linear synteny, dotplot and circular views."
 sidebar_label: Mixin -> ImportFormSyntenyMixin
 ---
 
-Auto-generated @jbrowse/mobx-state-tree API for the current JBrowse release — see [pluggable elements](/docs/developer_guide/) for concepts. Built into JBrowse core. [View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/synteny-core/src/ImportFormSyntenyMixin.ts).
+Auto-generated from the @jbrowse/mobx-state-tree model in the source — see the [developer guide](/docs/developer_guide/) for concepts. Built into JBrowse core. [View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/synteny-core/src/ImportFormSyntenyMixin.ts).
 
 The synteny track each row pair of a view's import form has picked, held on
 the model so it outlives the form's per-pair remounts. Composed by the linear
@@ -15,7 +16,7 @@ synteny, dotplot and circular views.
 <!-- prettier-ignore -->
 | Member | Description |
 | --- | --- |
-| <span id="volatile-importformsyntenytrackselections">**importFormSyntenyTrackSelections**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>importFormSyntenyTrackSelections: observable.array&lt;ImportFormSy…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>importFormSyntenyTrackSelections:&#10;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;observable.array&lt;ImportFormSyntenyTrack&gt;()</code></pre></dialog></span> |  |
+| <span id="volatile-importformsyntenytrackselections">**importFormSyntenyTrackSelections**</span><br><code>IObservableArray&lt;ImportFormSyntenyTrack&gt;</code> |  |
 
 ## Actions
 

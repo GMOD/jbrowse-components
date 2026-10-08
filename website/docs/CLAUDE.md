@@ -9,7 +9,9 @@ are in `website/CLAUDE.md`.
 `pnpm autogen` rebuilds `config/`, `models/`, `api/`, the guide indexes,
 `cli.md`, `jbrowse-img.md`, and every `<!-- NAME START/END -->` marker block
 from JSDoc tags, registrations and manifests at the definition site. Document a
-new one by tagging the source. `scripts/autogen.ts` is the list of markers.
+new one by tagging the source. `scripts/autogen.ts` lists the generators, and
+the `MARKER_INDEX` table in `agent-docs/reference/GENERATED_DOC_BLOCKS.md` lists
+the markers.
 
 **A table a reader could check against the code is a generator waiting to be
 written.** Every generated table replaced a hand-written one that had already

@@ -1,10 +1,11 @@
 ---
 id: linearcanvasbasedisplay
 title: LinearCanvasBaseDisplay
+description: "base config for canvas-based linear feature displays (pileup-style glyphs)"
 sidebar_label: Display -> LinearCanvasBaseDisplay
 ---
 
-Auto-generated config schema for the current JBrowse release — see the [config guide](/docs/config_guide) for concepts. Provided by the `canvas` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/canvas/src/LinearBasicDisplay/baseConfigSchema.ts).
+Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Provided by the `canvas` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/canvas/src/LinearBasicDisplay/baseConfigSchema.ts).
 
 base config for canvas-based linear feature displays (pileup-style glyphs)
 

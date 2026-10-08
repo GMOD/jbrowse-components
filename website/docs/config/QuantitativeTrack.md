@@ -1,10 +1,11 @@
 ---
 id: quantitativetrack
 title: QuantitativeTrack
+description: "a numerical signal track (coverage, conservation, etc.), typically backed by a BigWig file and drawn as an XY plot or density"
 sidebar_label: Track -> QuantitativeTrack
 ---
 
-Auto-generated config schema for the current JBrowse release — see the [config guide](/docs/config_guide) for concepts. Provided by the `wiggle` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/wiggle/src/QuantitativeTrack/configSchema.ts).
+Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Provided by the `wiggle` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/wiggle/src/QuantitativeTrack/configSchema.ts).
 
 ## Example usage
 

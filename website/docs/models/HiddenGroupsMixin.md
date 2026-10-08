@@ -1,10 +1,11 @@
 ---
 id: hiddengroupsmixin
 title: HiddenGroupsMixin
+description: "The sections a reader hid from an in-track grouping's chips: the hiddenGroups set, hideGroup and showAllGroups over it, the displayHiddenGroupKeys hook a display hides a lane through on its…"
 sidebar_label: Mixin -> HiddenGroupsMixin
 ---
 
-Auto-generated @jbrowse/mobx-state-tree API for the current JBrowse release — see [pluggable elements](/docs/developer_guide/) for concepts. Built into JBrowse core. [View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/display-kit/src/HiddenGroupsMixin.ts).
+Auto-generated from the @jbrowse/mobx-state-tree model in the source — see the [developer guide](/docs/developer_guide/) for concepts. Built into JBrowse core. [View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/display-kit/src/HiddenGroupsMixin.ts).
 
 The sections a reader hid from an in-track grouping's chips: the `hiddenGroups` set, `hideGroup` and `showAllGroups` over it, the `displayHiddenGroupKeys` hook a display hides a lane through on its own behalf, `hiddenGroupKeys` folding both, `groupStateKey` (with the `ownGroupState` hook) for a live figure to key on, and the `dropGroupState` reset that fires when the host's `groupKeySpace` moves
 
@@ -21,7 +22,7 @@ through.
 <!-- prettier-ignore -->
 | Member | Description |
 | --- | --- |
-| <span id="volatile-hiddengroups">**hiddenGroups**</span><br><code>hiddenGroups: observable.set&lt;string&gt;()</code> | Group keys the user hid from the stack. |
+| <span id="volatile-hiddengroups">**hiddenGroups**</span><br><code>ObservableSet&lt;string&gt;</code> | Group keys the user hid from the stack. |
 
 ## Getters
 

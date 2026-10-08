@@ -1,10 +1,11 @@
 ---
 id: alignmentsarccolor
 title: AlignmentsArcColor
+description: "The alignments displays' arcColor setting: what colours the read-connection arcs and the read cloud. Empty, the default, the arcs take the reads' color field where it is one an arc paints…"
 sidebar_label: Display -> AlignmentsArcColor
 ---
 
-Auto-generated config schema for the current JBrowse release — see the [config guide](/docs/config_guide) for concepts. Provided by the `alignments` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/alignments/src/LinearAlignmentsDisplay/alignmentsArcColorConfigSchema.ts).
+Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Provided by the `alignments` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/alignments/src/LinearAlignmentsDisplay/alignmentsArcColorConfigSchema.ts).
 
 ## Example usage
 

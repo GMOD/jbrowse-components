@@ -1,10 +1,11 @@
 ---
 id: timetraveller
 title: TimeTraveller
+description: "Undo/redo history for a target state-tree node: records snapshots as it changes and exposes canUndo/canRedo with undo/redo actions."
 sidebar_label: General -> TimeTraveller
 ---
 
-Auto-generated @jbrowse/mobx-state-tree API for the current JBrowse release — see [pluggable elements](/docs/developer_guide/) for concepts. Built into JBrowse core. [View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/TimeTraveller.ts).
+Auto-generated from the @jbrowse/mobx-state-tree model in the source — see the [developer guide](/docs/developer_guide/) for concepts. Built into JBrowse core. [View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/TimeTraveller.ts).
 
 Undo/redo history for a target state-tree node: records snapshots as it
 changes and exposes canUndo/canRedo with undo/redo actions.
@@ -22,9 +23,9 @@ changes and exposes canUndo/canRedo with undo/redo actions.
 <!-- prettier-ignore -->
 | Member | Description |
 | --- | --- |
-| <span id="volatile-history">**history**</span><br><code>history: [] as unknown[]</code> |  |
-| <span id="volatile-nottrackingundo">**notTrackingUndo**</span><br><code>notTrackingUndo: false</code> |  |
-| <span id="volatile-haspendingrecord">**hasPendingRecord**</span><br><code>hasPendingRecord: false</code> |  |
+| <span id="volatile-history">**history**</span><br><code>unknown[]</code> |  |
+| <span id="volatile-nottrackingundo">**notTrackingUndo**</span><br><code>false</code> |  |
+| <span id="volatile-haspendingrecord">**hasPendingRecord**</span><br><code>false</code> |  |
 
 ## Getters
 

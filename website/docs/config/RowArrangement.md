@@ -1,10 +1,11 @@
 ---
 id: rowarrangement
 title: RowArrangement
+description: "The rows setting of a display whose rows are its own — a sample, a species — rather than the values of a field: the arrangement a reader gives them, which every product writes as a session edit to…"
 sidebar_label: Display -> RowArrangement
 ---
 
-Auto-generated config schema for the current JBrowse release — see the [config guide](/docs/config_guide) for concepts. Built into JBrowse core. [View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/display-kit/src/rowArrangementConfigSchema.ts).
+Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Built into JBrowse core. [View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/display-kit/src/rowArrangementConfigSchema.ts).
 
 ## Example usage
 

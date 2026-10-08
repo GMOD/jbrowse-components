@@ -1,10 +1,11 @@
 ---
 id: base1dview
 title: Base1DView
+description: "used in non-lgv view representations of a 1d view e.g. the two axes of the dotplot use this. categorized General rather than View because it is not a pluggable view type, which the name-suffix…"
 sidebar_label: General -> Base1DView
 ---
 
-Auto-generated @jbrowse/mobx-state-tree API for the current JBrowse release — see [pluggable elements](/docs/developer_guide/) for concepts. Built into JBrowse core. [View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/Base1DViewModel.ts).
+Auto-generated from the @jbrowse/mobx-state-tree model in the source — see the [developer guide](/docs/developer_guide/) for concepts. Built into JBrowse core. [View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/Base1DViewModel.ts).
 
 used in non-lgv view representations of a 1d view e.g. the two axes of the
 dotplot use this. categorized General rather than View because it is not a
@@ -26,7 +27,7 @@ pluggable view type, which the name-suffix heuristic would otherwise assume
 <!-- prettier-ignore -->
 | Member | Description |
 | --- | --- |
-| <span id="volatile-volatilewidth">**volatileWidth**</span><br><code>volatileWidth: 0</code> |  |
+| <span id="volatile-volatilewidth">**volatileWidth**</span><br><code>number</code> |  |
 
 ## Getters
 

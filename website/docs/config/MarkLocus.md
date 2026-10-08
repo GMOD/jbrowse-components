@@ -1,10 +1,11 @@
 ---
 id: marklocus
 title: MarkLocus
+description: "A mark's far end as a position that may lie on another sequence: pos, the feature field holding its coordinate, and chrom, the field holding its refName, as a paired record states its mate.…"
 sidebar_label: Display -> MarkLocus
 ---
 
-Auto-generated config schema for the current JBrowse release — see the [config guide](/docs/config_guide) for concepts. Provided by the `marks` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/marks/src/LinearMarkDisplay/markLocusConfigSchema.ts).
+Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Provided by the `marks` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/marks/src/LinearMarkDisplay/markLocusConfigSchema.ts).
 
 ## Example usage
 

@@ -1,10 +1,11 @@
 ---
 id: ncbisequencereportaliasadapter
 title: NcbiSequenceReportAliasAdapter
+description: "can read \"sequencereport.tsv\" type files from NCBI"
 sidebar_label: Adapter -> NcbiSequenceReportAliasAdapter
 ---
 
-Auto-generated config schema for the current JBrowse release — see the [config guide](/docs/config_guide) for concepts. Provided by the `config` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/config/src/NcbiSequenceReportAliasAdapter/configSchema.ts).
+Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Provided by the `config` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/config/src/NcbiSequenceReportAliasAdapter/configSchema.ts).
 
 ## Example usage
 

@@ -1,10 +1,11 @@
 ---
 id: bgzipmafadapter
 title: BgzipMafAdapter
+description: "A bgzip-compressed MAF with a Taffy .tai index — the form whole-genome multiple alignments are actually distributed in. HPRC release 2 publishes hprc-v2.1-mc-grch38.full.maf.gz (53 GB, 464…"
 sidebar_label: Adapter -> BgzipMafAdapter
 ---
 
-Auto-generated config schema for the current JBrowse release — see the [config guide](/docs/config_guide) for concepts. Provided by the `maf` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/maf/src/BgzipMafAdapter/configSchema.ts).
+Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Provided by the `maf` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/maf/src/BgzipMafAdapter/configSchema.ts).
 
 ## Example usage
 

@@ -1,10 +1,11 @@
 ---
 id: trackheightmixin
 title: TrackHeightMixin
+description: "Internal vertical scroll. scrollContentHeight and scrollViewportHeight (both default 0 = doesn't scroll). Brings the derived scrollableHeight, the clamped setScrollTop and the autorun that…"
 sidebar_label: Mixin -> TrackHeightMixin
 ---
 
-Auto-generated @jbrowse/mobx-state-tree API for the current JBrowse release — see [pluggable elements](/docs/developer_guide/) for concepts. Built into JBrowse core. [View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/display-kit/src/TrackHeightMixin.tsx).
+Auto-generated from the @jbrowse/mobx-state-tree model in the source — see the [developer guide](/docs/developer_guide/) for concepts. Built into JBrowse core. [View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/display-kit/src/TrackHeightMixin.tsx).
 
 Internal vertical scroll. `scrollContentHeight` and `scrollViewportHeight` (both default 0 = doesn't scroll). Brings the derived `scrollableHeight`, the clamped `setScrollTop` and the autorun that re-clamps when content shrinks
 
@@ -21,7 +22,7 @@ passes itself to `ScrollChrome` and the wheel hooks.
 <!-- prettier-ignore -->
 | Member | Description |
 | --- | --- |
-| <span id="volatile-scrolltop">**scrollTop**</span><br><code>scrollTop: 0</code> |  |
+| <span id="volatile-scrolltop">**scrollTop**</span><br><code>number</code> |  |
 
 ## Getters
 

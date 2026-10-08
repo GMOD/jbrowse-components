@@ -1,10 +1,11 @@
 ---
 id: diagonalizeprogressmixin
 title: DiagonalizeProgressMixin
+description: "The auto-diagonalize lifecycle state shared by the comparative views (LinearSyntenyView, DotplotView, CircularView): the in-flight wait, its live RPC status and signal, and the flag that gates…"
 sidebar_label: Mixin -> DiagonalizeProgressMixin
 ---
 
-Auto-generated @jbrowse/mobx-state-tree API for the current JBrowse release — see [pluggable elements](/docs/developer_guide/) for concepts. Built into JBrowse core. [View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/synteny-core/src/DiagonalizeProgressMixin.ts).
+Auto-generated from the @jbrowse/mobx-state-tree model in the source — see the [developer guide](/docs/developer_guide/) for concepts. Built into JBrowse core. [View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/synteny-core/src/DiagonalizeProgressMixin.ts).
 
 The auto-diagonalize lifecycle state shared by the comparative views
 (LinearSyntenyView, DotplotView, CircularView): the in-flight wait, its live RPC status and
@@ -21,11 +22,11 @@ views report progress, cancel, and gate identically.
 <!-- prettier-ignore -->
 | Member | Description |
 | --- | --- |
-| <span id="volatile-awaitingautodiagonalize">**awaitingAutoDiagonalize**</span><br><code>awaitingAutoDiagonalize: false</code> | True while the init autorun is waiting on the diagonalize RPC. Gates the canvas off — otherwise the user watches an undiagonalized hairball flash before the reorder kicks in. |
-| <span id="volatile-pendingautodiagonalize">**pendingAutoDiagonalize**</span><br><code>pendingAutoDiagonalize: false</code> | A reorder this init asked for that has not succeeded yet. Raised before any render can paint, and lowered only once the pass RESOLVES — a skipped or thrown reorder leaves it up, so the view's `settled` gate never reports done on an undiagonalized view and the capture fails loudly (times out) instead of committing a hairball.<br><br>One flag rather than a requested/complete pair: the two only ever moved together, and every state a pair can drift into either wedges the gate shut or opens it on the wrong pass. |
-| <span id="volatile-diagonalizestatus">**diagonalizeStatus**</span><br><code>diagonalizeStatus: createStatusChannel()</code> | Live status from the auto-diagonalize RPC (download %, parse, algorithm phase) shown on the reordering spinner; blank outside that wait.<br><br>A `StatusChannel` rather than a status field plus a setter: there is one operation to narrate here, and the channel is that pair with the message/fraction split already done, so the spinner reads `{ message, fraction }` instead of calling `statusMessageText` / `statusFraction` at every render site. |
-| <span id="volatile-diagonalizecancel">**diagonalizeCancel**</span><br><code>diagonalizeCancel: undefined as (() =&gt; void) &#124; undefined</code> | Aborts the in-flight auto-diagonalize, so the spinner's Cancel can reach it; undefined when none is running. |
-| <span id="volatile-diagonalizeerror">**diagonalizeError**</span><br><code>diagonalizeError: undefined as unknown</code> | Why the last reorder failed, while its gate is still up; cleared by the next run, a finish or a cancel |
+| <span id="volatile-awaitingautodiagonalize">**awaitingAutoDiagonalize**</span><br><code>false</code> | True while the init autorun is waiting on the diagonalize RPC. Gates the canvas off — otherwise the user watches an undiagonalized hairball flash before the reorder kicks in. |
+| <span id="volatile-pendingautodiagonalize">**pendingAutoDiagonalize**</span><br><code>false</code> | A reorder this init asked for that has not succeeded yet. Raised before any render can paint, and lowered only once the pass RESOLVES — a skipped or thrown reorder leaves it up, so the view's `settled` gate never reports done on an undiagonalized view and the capture fails loudly (times out) instead of committing a hairball.<br><br>One flag rather than a requested/complete pair: the two only ever moved together, and every state a pair can drift into either wedges the gate shut or opens it on the wrong pass. |
+| <span id="volatile-diagonalizestatus">**diagonalizeStatus**</span><br><code>StatusChannel</code> | Live status from the auto-diagonalize RPC (download %, parse, algorithm phase) shown on the reordering spinner; blank outside that wait.<br><br>A `StatusChannel` rather than a status field plus a setter: there is one operation to narrate here, and the channel is that pair with the message/fraction split already done, so the spinner reads `{ message, fraction }` instead of calling `statusMessageText` / `statusFraction` at every render site. |
+| <span id="volatile-diagonalizecancel">**diagonalizeCancel**</span><br><code>(() =&gt; void) &#124; undefined</code> | Aborts the in-flight auto-diagonalize, so the spinner's Cancel can reach it; undefined when none is running. |
+| <span id="volatile-diagonalizeerror">**diagonalizeError**</span><br><code>unknown</code> | Why the last reorder failed, while its gate is still up; cleared by the next run, a finish or a cancel |
 
 ## Actions
 

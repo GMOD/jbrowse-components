@@ -1,10 +1,11 @@
 ---
 id: jb2trackhubconnection
 title: JB2TrackHubConnection
+description: "Configuration slots of JB2TrackHubConnection."
 sidebar_label: Connection -> JB2TrackHubConnection
 ---
 
-Auto-generated config schema for the current JBrowse release — see the [config guide](/docs/config_guide) for concepts. Provided by the `data-management` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/data-management/src/JB2TrackHubConnection/configSchema.ts).
+Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Provided by the `data-management` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/data-management/src/JB2TrackHubConnection/configSchema.ts).
 
 ## Example usage
 

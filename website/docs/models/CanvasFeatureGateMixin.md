@@ -1,10 +1,11 @@
 ---
 id: canvasfeaturegatemixin
 title: CanvasFeatureGateMixin
+description: "The density axis of the region-too-large gate, composed after MultiRegionDisplayMixin. A display opts in by composing this and calling commitGateMeasurements from its fetch's onComplete."
 sidebar_label: Mixin -> CanvasFeatureGateMixin
 ---
 
-Auto-generated @jbrowse/mobx-state-tree API for the current JBrowse release — see [pluggable elements](/docs/developer_guide/) for concepts. Provided by the `canvas` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/canvas/src/shared/CanvasFeatureGateMixin.ts).
+Auto-generated from the @jbrowse/mobx-state-tree model in the source — see the [developer guide](/docs/developer_guide/) for concepts. Provided by the `canvas` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/canvas/src/shared/CanvasFeatureGateMixin.ts).
 
 The density axis of the region-too-large gate, composed after
 `MultiRegionDisplayMixin`. A display opts in by composing this and calling
@@ -15,7 +16,7 @@ The density axis of the region-too-large gate, composed after
 <!-- prettier-ignore -->
 | Member | Description |
 | --- | --- |
-| <span id="volatile-densitystatsperregion">**densityStatsPerRegion**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>densityStatsPerRegion: regionDataMap&lt;RegionDensityStats&gt;( 'dens…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>densityStatsPerRegion: regionDataMap&lt;RegionDensityStats&gt;(&#10;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;'densityStatsPerRegion',&#10;&#160;&#160;&#160;&#160;&#160;&#160;)</code></pre></dialog></span> | Per-region feature counts, so the verdict is a live max at the current `bpPerPx`. |
+| <span id="volatile-densitystatsperregion">**densityStatsPerRegion**</span><br><code>ObservableMap&lt;number, RegionDensityStats&gt;</code> | Per-region feature counts, so the verdict is a live max at the current `bpPerPx`. |
 
 ## Getters
 

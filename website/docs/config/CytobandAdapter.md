@@ -1,10 +1,11 @@
 ---
 id: cytobandadapter
 title: CytobandAdapter
+description: "Configuration slots of CytobandAdapter."
 sidebar_label: Adapter -> CytobandAdapter
 ---
 
-Auto-generated config schema for the current JBrowse release — see the [config guide](/docs/config_guide) for concepts. Built into JBrowse core. [View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/data_adapters/CytobandAdapter/configSchema.ts).
+Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Built into JBrowse core. [View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/data_adapters/CytobandAdapter/configSchema.ts).
 
 ## Example usage
 

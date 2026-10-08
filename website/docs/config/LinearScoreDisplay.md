@@ -1,10 +1,11 @@
 ---
 id: linearscoredisplay
 title: LinearScoreDisplay
+description: "Config for the worked-example score display. Attaches to any FeatureTrack."
 sidebar_label: Display -> LinearScoreDisplay
 ---
 
-Auto-generated config schema for the current JBrowse release — see the [config guide](/docs/config_guide) for concepts. [View source](https://github.com/GMOD/jbrowse-components/blob/main/example-plugins/score-example/src/LinearScoreDisplay/configSchema.ts).
+Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. [View source](https://github.com/GMOD/jbrowse-components/blob/main/example-plugins/score-example/src/LinearScoreDisplay/configSchema.ts).
 
 Config for the worked-example score display. Attaches to any `FeatureTrack`.
 

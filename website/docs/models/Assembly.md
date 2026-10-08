@@ -1,10 +1,11 @@
 ---
 id: assembly
 title: Assembly
+description: "Properties, getters and actions of the Assembly state model."
 sidebar_label: Assembly Management -> Assembly
 ---
 
-Auto-generated @jbrowse/mobx-state-tree API for the current JBrowse release — see [pluggable elements](/docs/developer_guide/) for concepts. Built into JBrowse core. [View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/assemblyManager/assembly.ts).
+Auto-generated from the @jbrowse/mobx-state-tree model in the source — see the [developer guide](/docs/developer_guide/) for concepts. Built into JBrowse core. [View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/assemblyManager/assembly.ts).
 
 ## Properties
 
@@ -18,19 +19,19 @@ Auto-generated @jbrowse/mobx-state-tree API for the current JBrowse release — 
 <!-- prettier-ignore -->
 | Member | Description |
 | --- | --- |
-| <span id="volatile-error">**error**</span><br><code>error</code> |  |
-| <span id="volatile-loadingp">**loadingP**</span><br><code>loadingP: undefined as Promise&lt;void&gt; &#124; undefined</code> |  |
-| <span id="volatile-adapterloads">**adapterLoads**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>adapterLoads: new QuickLRU&lt;string, Promise&lt;RefNameAliases&gt;&gt;({ m…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>adapterLoads: new QuickLRU&lt;string, Promise&lt;RefNameAliases&gt;&gt;({&#10;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;maxSize: 1000,&#10;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;})</code></pre></dialog></span> |  |
-| <span id="volatile-regions">**regions**</span><br><code>regions: undefined as BasicRegion[] &#124; undefined</code> |  |
-| <span id="volatile-refnamealiases">**refNameAliases**</span><br><code>refNameAliases: undefined as RefNameAliases &#124; undefined</code> |  |
-| <span id="volatile-canonicaltoseqadapterrefnames">**canonicalToSeqAdapterRefNames**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>canonicalToSeqAdapterRefNames: undefined as &#124; Record&lt;string, st…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>canonicalToSeqAdapterRefNames: undefined as&#10;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#124; Record&lt;string, string&gt;&#10;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#124; undefined</code></pre></dialog></span> | Maps canonical refName -> sequence adapter refName (in FASTA). These may differ when refNameAliases with override:true remap names. |
-| <span id="volatile-cytobands">**cytobands**</span><br><code>cytobands: undefined as Feature[] &#124; undefined</code> |  |
-| <span id="volatile-loadedgeneticcodes">**loadedGeneticCodes**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>loadedGeneticCodes: undefined as Record&lt;string, number&gt; &#124; undef…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>loadedGeneticCodes: undefined as Record&lt;string, number&gt; &#124; undefined</code></pre></dialog></span> | refName -> NCBI genetic-code id loaded from `geneticCodesLocation`; merged with (and overridden by) the inline `geneticCodes` config slot |
-| <span id="volatile-lowercaserefnamealiases">**lowerCaseRefNameAliases**</span><br><code>lowerCaseRefNameAliases: undefined as RefNameAliases &#124; undefined</code> | Precomputed in loadPre to avoid expensive synchronous computation when MobX triggers the autorun after setLoaded |
-| <span id="volatile-statusmessage">**statusMessage**</span><br><code>statusMessage: undefined as string &#124; undefined</code> | What the in-flight load is doing ("Downloading chromosome sizes"), for a view that is showing a spinner while it waits. Same split as BaseDisplayModel's status fields, so the same LoadingProgress UI renders both. |
-| <span id="volatile-statusprogress">**statusProgress**</span><br><code>statusProgress: undefined as number &#124; undefined</code> | Fraction in [0,1] when the load reports determinate progress |
-| <span id="volatile-statussource">**statusSource**</span><br><code>statusSource: undefined as string &#124; undefined</code> | The URL the in-flight phase is fetching, when it named one. A load that hangs shows this and not the label: "Downloading chromosome aliases" forever says nothing a user can act on, and the address of the server that stopped answering does. |
-| <span id="volatile-refnamemismatches">**refNameMismatches**</span><br><code>refNameMismatches: new Map&lt;string, RefNameMismatch&gt;()</code> | adapter cache key -> the empty-intersection verdict `loadRefNameMap` reached for that adapter under this assembly. Sits beside `adapterLoads` and is keyed the same way, so it inherits that cache's once-per-(assembly, adapter config) property: the diagnostic is recorded exactly as often as the map is built, which is once.<br><br>Written by replacing the Map rather than mutating it — a Map inside a volatile is one observable, not a deeply observable collection, so a `.set()` would leave every reader stale. |
+| <span id="volatile-error">**error**</span><br><code>unknown</code> |  |
+| <span id="volatile-loadingp">**loadingP**</span><br><code>Promise&lt;void&gt; &#124; undefined</code> |  |
+| <span id="volatile-adapterloads">**adapterLoads**</span><br><code>QuickLRU&lt;string, Promise&lt;RefNameAliases&gt;&gt;</code> |  |
+| <span id="volatile-regions">**regions**</span><br><code>BasicRegion[] &#124; undefined</code> |  |
+| <span id="volatile-refnamealiases">**refNameAliases**</span><br><code>RefNameAliases &#124; undefined</code> |  |
+| <span id="volatile-canonicaltoseqadapterrefnames">**canonicalToSeqAdapterRefNames**</span><br><code>Record&lt;string, string&gt; &#124; undefined</code> | Maps canonical refName -> sequence adapter refName (in FASTA). These may differ when refNameAliases with override:true remap names. |
+| <span id="volatile-cytobands">**cytobands**</span><br><code>Feature[] &#124; undefined</code> |  |
+| <span id="volatile-loadedgeneticcodes">**loadedGeneticCodes**</span><br><code>Record&lt;string, number&gt; &#124; undefined</code> | refName -> NCBI genetic-code id loaded from `geneticCodesLocation`; merged with (and overridden by) the inline `geneticCodes` config slot |
+| <span id="volatile-lowercaserefnamealiases">**lowerCaseRefNameAliases**</span><br><code>RefNameAliases &#124; undefined</code> | Precomputed in loadPre to avoid expensive synchronous computation when MobX triggers the autorun after setLoaded |
+| <span id="volatile-statusmessage">**statusMessage**</span><br><code>string &#124; undefined</code> | What the in-flight load is doing ("Downloading chromosome sizes"), for a view that is showing a spinner while it waits. Same split as BaseDisplayModel's status fields, so the same LoadingProgress UI renders both. |
+| <span id="volatile-statusprogress">**statusProgress**</span><br><code>number &#124; undefined</code> | Fraction in [0,1] when the load reports determinate progress |
+| <span id="volatile-statussource">**statusSource**</span><br><code>string &#124; undefined</code> | The URL the in-flight phase is fetching, when it named one. A load that hangs shows this and not the label: "Downloading chromosome aliases" forever says nothing a user can act on, and the address of the server that stopped answering does. |
+| <span id="volatile-refnamemismatches">**refNameMismatches**</span><br><code>Map&lt;string, RefNameMismatch&gt;</code> | adapter cache key -> the empty-intersection verdict `loadRefNameMap` reached for that adapter under this assembly. Sits beside `adapterLoads` and is keyed the same way, so it inherits that cache's once-per-(assembly, adapter config) property: the diagnostic is recorded exactly as often as the map is built, which is once.<br><br>Written by replacing the Map rather than mutating it — a Map inside a volatile is one observable, not a deeply observable collection, so a `.set()` would leave every reader stale. |
 
 ## Getters
 

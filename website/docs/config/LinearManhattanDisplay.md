@@ -1,10 +1,11 @@
 ---
 id: linearmanhattandisplay
 title: LinearManhattanDisplay
+description: "The Manhattan plot: the default display of a GWAS track, and one a FeatureTrack can switch to. It is the mark display with a point per feature at its score as its default plot, so every mark,…"
 sidebar_label: Display -> LinearManhattanDisplay
 ---
 
-Auto-generated config schema for the current JBrowse release — see the [config guide](/docs/config_guide) for concepts. Provided by the `gwas` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/gwas/src/LinearManhattanDisplay/configSchemaFactory.ts).
+Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Provided by the `gwas` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/gwas/src/LinearManhattanDisplay/configSchemaFactory.ts).
 
 ## Example usage
 

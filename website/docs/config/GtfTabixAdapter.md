@@ -1,10 +1,11 @@
 ---
 id: gtftabixadapter
 title: GtfTabixAdapter
+description: "used to load bgzip-compressed, tabix-indexed GTF files"
 sidebar_label: Adapter -> GtfTabixAdapter
 ---
 
-Auto-generated config schema for the current JBrowse release — see the [config guide](/docs/config_guide) for concepts. Provided by the `gtf` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/gtf/src/GtfTabixAdapter/configSchema.ts).
+Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Provided by the `gtf` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/gtf/src/GtfTabixAdapter/configSchema.ts).
 
 ## Example usage
 

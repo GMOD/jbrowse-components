@@ -1,10 +1,11 @@
 ---
 id: gccontentadapter
 title: GCContentAdapter
+description: "Computes GC content (or GC skew) from an assembly's sequence at render time, so there is no data file to prepare: the sequence comes from the assembly the track is displayed against. The window, the…"
 sidebar_label: Adapter -> GCContentAdapter
 ---
 
-Auto-generated config schema for the current JBrowse release — see the [config guide](/docs/config_guide) for concepts. Provided by the `gccontent` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/gccontent/src/GCContentAdapter/configSchema.ts).
+Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Provided by the `gccontent` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/gccontent/src/GCContentAdapter/configSchema.ts).
 
 ## Example usage
 

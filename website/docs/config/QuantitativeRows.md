@@ -1,10 +1,11 @@
 ---
 id: quantitativerows
 title: QuantitativeRows
+description: "A quantitative display's rows: source is the one field a quantitative row can be, since a wiggle carries a score per base and a subtrack name and nothing else to put on rows. The arrangement…"
 sidebar_label: Display -> QuantitativeRows
 ---
 
-Auto-generated config schema for the current JBrowse release — see the [config guide](/docs/config_guide) for concepts. Provided by the `wiggle` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/wiggle/src/shared/quantitativeRowsConfigSchema.ts).
+Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Provided by the `wiggle` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/wiggle/src/shared/quantitativeRowsConfigSchema.ts).
 
 ## Example usage
 

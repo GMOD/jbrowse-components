@@ -1,10 +1,11 @@
 ---
 id: syntenyopacity
 title: SyntenyOpacity
+description: "The synteny views' opacity setting, as color is their colour: one opacity for every alignment, or a field each alignment carries read into opacities. A number is the constant and lands in…"
 sidebar_label: View -> SyntenyOpacity
 ---
 
-Auto-generated config schema for the current JBrowse release — see the [config guide](/docs/config_guide) for concepts. Built into JBrowse core. [View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/synteny-core/src/syntenyOpacityConfigSchema.ts).
+Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Built into JBrowse core. [View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/synteny-core/src/syntenyOpacityConfigSchema.ts).
 
 ## Example usage
 

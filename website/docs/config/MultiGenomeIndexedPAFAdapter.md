@@ -1,10 +1,11 @@
 ---
 id: multigenomeindexedpafadapter
 title: MultiGenomeIndexedPAFAdapter
+description: "The tabix-indexed (PIF) form of the MultiGenomePAFAdapter. Run jbrowse make-pif allvsall.paf on a multi-genome PAF whose sequence names are PanSN-prefixed (sample#haplotype#contig) and point…"
 sidebar_label: Adapter -> MultiGenomeIndexedPAFAdapter
 ---
 
-Auto-generated config schema for the current JBrowse release — see the [config guide](/docs/config_guide) for concepts. Provided by the `comparative-adapters` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/comparative-adapters/src/MultiGenomeIndexedPAFAdapter/configSchema.ts).
+Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Provided by the `comparative-adapters` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/comparative-adapters/src/MultiGenomeIndexedPAFAdapter/configSchema.ts).
 
 ## Example usage
 

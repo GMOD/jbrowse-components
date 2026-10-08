@@ -1,10 +1,11 @@
 ---
 id: unindexedfastaadapter
 title: UnindexedFastaAdapter
+description: "loads a plain (non-bgzipped) FASTA without a separate index. Reads the whole sequence into memory, so prefer the IndexedFastaAdapter for large genomes."
 sidebar_label: Adapter -> UnindexedFastaAdapter
 ---
 
-Auto-generated config schema for the current JBrowse release — see the [config guide](/docs/config_guide) for concepts. Provided by the `sequence` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/sequence/src/UnindexedFastaAdapter/configSchema.ts).
+Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Provided by the `sequence` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/sequence/src/UnindexedFastaAdapter/configSchema.ts).
 
 ## Example usage
 

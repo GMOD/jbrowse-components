@@ -1,10 +1,11 @@
 ---
 id: hierarchicaltrackselectorwidget
 title: HierarchicalTrackSelectorWidget
+description: "Properties, getters and actions of the HierarchicalTrackSelectorWidget state model."
 sidebar_label: Widget -> HierarchicalTrackSelectorWidget
 ---
 
-Auto-generated @jbrowse/mobx-state-tree API for the current JBrowse release — see [pluggable elements](/docs/developer_guide/) for concepts. Provided by the `data-management` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/data-management/src/HierarchicalTrackSelectorWidget/model.ts).
+Auto-generated from the @jbrowse/mobx-state-tree model in the source — see the [developer guide](/docs/developer_guide/) for concepts. Provided by the `data-management` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/data-management/src/HierarchicalTrackSelectorWidget/model.ts).
 
 ## Properties
 
@@ -21,15 +22,15 @@ Auto-generated @jbrowse/mobx-state-tree API for the current JBrowse release — 
 <!-- prettier-ignore -->
 | Member | Description |
 | --- | --- |
-| <span id="volatile-favorites">**favorites**</span><br><code>favorites: localStorageGetStringArray(favoritesK())</code> |  |
-| <span id="volatile-recentlyused">**recentlyUsed**</span><br><code>recentlyUsed: [] as string[]</code> |  |
-| <span id="volatile-selectedtrackids">**selectedTrackIds**</span><br><code>selectedTrackIds: [] as string[]</code> | the shopping cart, by trackId; `selection` resolves the configs |
-| <span id="volatile-sorttracknames">**sortTrackNames**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>sortTrackNames: localStorageGetJSON&lt;boolean &#124; undefined&gt;( sortT…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>sortTrackNames: localStorageGetJSON&lt;boolean &#124; undefined&gt;(&#10;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;sortTrackNamesK,&#10;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;undefined,&#10;&#160;&#160;&#160;&#160;&#160;&#160;)</code></pre></dialog></span> |  |
-| <span id="volatile-sortcategories">**sortCategories**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>sortCategories: localStorageGetJSON&lt;boolean &#124; undefined&gt;( sortC…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>sortCategories: localStorageGetJSON&lt;boolean &#124; undefined&gt;(&#10;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;sortCategoriesK,&#10;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;undefined,&#10;&#160;&#160;&#160;&#160;&#160;&#160;)</code></pre></dialog></span> |  |
-| <span id="volatile-categorymode">**categoryMode**</span><br><code>categoryMode: observable.map&lt;string, CategoryMode&gt;()</code> | per-category rendering mode; absent means expanded. Collapsed and folder are mutually exclusive by construction, so un-foldering a category can't reveal a stale collapse underneath it |
-| <span id="volatile-filtertext">**filterText**</span><br><code>filterText: ''</code> |  |
-| <span id="volatile-recentlyusedcounter">**recentlyUsedCounter**</span><br><code>recentlyUsedCounter: 0</code> |  |
-| <span id="volatile-favoritescounter">**favoritesCounter**</span><br><code>favoritesCounter: 0</code> |  |
+| <span id="volatile-favorites">**favorites**</span><br><code>string[]</code> |  |
+| <span id="volatile-recentlyused">**recentlyUsed**</span><br><code>string[]</code> |  |
+| <span id="volatile-selectedtrackids">**selectedTrackIds**</span><br><code>string[]</code> | the shopping cart, by trackId; `selection` resolves the configs |
+| <span id="volatile-sorttracknames">**sortTrackNames**</span><br><code>boolean &#124; undefined</code> |  |
+| <span id="volatile-sortcategories">**sortCategories**</span><br><code>boolean &#124; undefined</code> |  |
+| <span id="volatile-categorymode">**categoryMode**</span><br><code>ObservableMap&lt;string, CategoryMode&gt;</code> | per-category rendering mode; absent means expanded. Collapsed and folder are mutually exclusive by construction, so un-foldering a category can't reveal a stale collapse underneath it |
+| <span id="volatile-filtertext">**filterText**</span><br><code>string</code> |  |
+| <span id="volatile-recentlyusedcounter">**recentlyUsedCounter**</span><br><code>number</code> |  |
+| <span id="volatile-favoritescounter">**favoritesCounter**</span><br><code>number</code> |  |
 
 ## Getters
 

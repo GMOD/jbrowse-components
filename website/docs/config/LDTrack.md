@@ -1,10 +1,11 @@
 ---
 id: ldtrack
 title: LDTrack
+description: "Track type for displaying pre-computed linkage disequilibrium data (e.g., from PLINK --r2 output)"
 sidebar_label: Track -> LDTrack
 ---
 
-Auto-generated config schema for the current JBrowse release — see the [config guide](/docs/config_guide) for concepts. Provided by the `variants` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/variants/src/LDTrack/configSchema.ts).
+Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Provided by the `variants` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/variants/src/LDTrack/configSchema.ts).
 
 ## Example usage
 

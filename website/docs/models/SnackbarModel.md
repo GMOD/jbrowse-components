@@ -1,18 +1,19 @@
 ---
 id: snackbarmodel
 title: SnackbarModel
+description: "Properties, getters and actions of the SnackbarModel state model."
 sidebar_label: Session -> SnackbarModel
 ---
 
-Auto-generated @jbrowse/mobx-state-tree API for the current JBrowse release — see [pluggable elements](/docs/developer_guide/) for concepts. Built into JBrowse core. [View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/ui/SnackbarModel.tsx).
+Auto-generated from the @jbrowse/mobx-state-tree model in the source — see the [developer guide](/docs/developer_guide/) for concepts. Built into JBrowse core. [View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/ui/SnackbarModel.tsx).
 
 ## Volatiles
 
 <!-- prettier-ignore -->
 | Member | Description |
 | --- | --- |
-| <span id="volatile-snackbarmessages">**snackbarMessages**</span><br><code>snackbarMessages: observable.array&lt;SnackbarMessage&gt;()</code> |  |
-| <span id="volatile-errordialog">**errorDialog**</span><br><code>errorDialog: undefined as ErrorDialogState &#124; undefined</code> | the error currently shown in the stack-trace dialog. Kept off the dialog queue so it can stack on top of an already-open dialog (e.g. the one whose action raised the error) instead of waiting behind it |
+| <span id="volatile-snackbarmessages">**snackbarMessages**</span><br><code>IObservableArray&lt;SnackbarMessage&gt;</code> |  |
+| <span id="volatile-errordialog">**errorDialog**</span><br><code>ErrorDialogState &#124; undefined</code> | the error currently shown in the stack-trace dialog. Kept off the dialog queue so it can stack on top of an already-open dialog (e.g. the one whose action raised the error) instead of waiting behind it |
 
 ## Getters
 

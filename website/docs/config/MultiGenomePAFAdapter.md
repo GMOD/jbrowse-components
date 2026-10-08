@@ -1,10 +1,11 @@
 ---
 id: multigenomepafadapter
 title: MultiGenomePAFAdapter
+description: "Loads a single PAF holding alignments among several genomes, where every sequence name is PanSN-prefixed with its assembly (sample#haplotype#contig). The file may state any set of pairs: a complete…"
 sidebar_label: Adapter -> MultiGenomePAFAdapter
 ---
 
-Auto-generated config schema for the current JBrowse release — see the [config guide](/docs/config_guide) for concepts. Provided by the `comparative-adapters` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/comparative-adapters/src/MultiGenomePAFAdapter/configSchema.ts).
+Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Provided by the `comparative-adapters` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/comparative-adapters/src/MultiGenomePAFAdapter/configSchema.ts).
 
 ## Example usage
 

@@ -1,10 +1,11 @@
 ---
 id: linearmultirowfeaturedisplay
 title: LinearMultiRowFeatureDisplay
+description: "Paints interval features as colored blocks on stacked rows partitioned by a feature attribute (\"chromosome / ancestry painting\")."
 sidebar_label: Display -> LinearMultiRowFeatureDisplay
 ---
 
-Auto-generated config schema for the current JBrowse release — see the [config guide](/docs/config_guide) for concepts. Provided by the `canvas` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/canvas/src/LinearMultiRowFeatureDisplay/configSchema.ts).
+Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Provided by the `canvas` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/canvas/src/LinearMultiRowFeatureDisplay/configSchema.ts).
 
 ## Example usage
 

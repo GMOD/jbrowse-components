@@ -1,10 +1,11 @@
 ---
 id: gwasadapter
 title: GWASAdapter
+description: "adapter for GWAS results files; a BedTabixAdapter with scoreColumn defaulted to neglogpvalue so files load with a sensible Manhattan plot score out of the box"
 sidebar_label: Adapter -> GWASAdapter
 ---
 
-Auto-generated config schema for the current JBrowse release — see the [config guide](/docs/config_guide) for concepts. Provided by the `gwas` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/gwas/src/GWASAdapter/configSchema.ts).
+Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Provided by the `gwas` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/gwas/src/GWASAdapter/configSchema.ts).
 
 ## Example usage
 

@@ -1,10 +1,11 @@
 ---
 id: basefeaturewidget
 title: BaseFeatureWidget
+description: "The feature-details panel. featureData is the clicked feature with the track's and the session's formatDetails callbacks applied, derived on read from the raw feature the widget was opened with,…"
 sidebar_label: Widget -> BaseFeatureWidget
 ---
 
-Auto-generated @jbrowse/mobx-state-tree API for the current JBrowse release — see [pluggable elements](/docs/developer_guide/) for concepts. Built into JBrowse core. [View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/BaseFeatureWidget/stateModelFactory.ts).
+Auto-generated from the @jbrowse/mobx-state-tree model in the source — see the [developer guide](/docs/developer_guide/) for concepts. Built into JBrowse core. [View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/BaseFeatureWidget/stateModelFactory.ts).
 
 The feature-details panel. `featureData` is the clicked feature with the
 track's and the session's `formatDetails` callbacks applied, derived on read
@@ -32,7 +33,7 @@ config edit and survives its track being closed.
 <!-- prettier-ignore -->
 | Member | Description |
 | --- | --- |
-| <span id="volatile-sequencehoverposition">**sequenceHoverPosition**</span><br><code>sequenceHoverPosition: undefined</code> | genomic base currently hovered in this widget's sequence panel, read by the LGV crosshair overlay |
+| <span id="volatile-sequencehoverposition">**sequenceHoverPosition**</span><br><code>undefined</code> | genomic base currently hovered in this widget's sequence panel, read by the LGV crosshair overlay |
 
 ## Getters
 

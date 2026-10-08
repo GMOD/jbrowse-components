@@ -1,10 +1,11 @@
 ---
 id: valuescale
 title: ValueScale
+description: "The value scale of a quantitative display, written as scales.y: the wiggle plot, the alignments coverage band and the mark display, the Manhattan plot among them, each carry one, with the axis…"
 sidebar_label: Display -> ValueScale
 ---
 
-Auto-generated config schema for the current JBrowse release — see the [config guide](/docs/config_guide) for concepts. Built into JBrowse core. [View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/wiggle-core/src/valueScaleConfigSchema.ts).
+Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Built into JBrowse core. [View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/wiggle-core/src/valueScaleConfigSchema.ts).
 
 ## Example usage
 

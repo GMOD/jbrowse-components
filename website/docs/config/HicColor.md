@@ -1,10 +1,11 @@
 ---
 id: hiccolor
 title: HicColor
+description: "The Hi-C display's color: a bin's contact count through a linear or log scale onto a named scheme. An unset domainMax follows the loaded counts, saturating at their domainQuantile, the…"
 sidebar_label: Display -> HicColor
 ---
 
-Auto-generated config schema for the current JBrowse release — see the [config guide](/docs/config_guide) for concepts. Provided by the `hic` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/hic/src/LinearHicDisplay/hicColorConfigSchema.ts).
+Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Provided by the `hic` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/hic/src/LinearHicDisplay/hicColorConfigSchema.ts).
 
 ## Example usage
 

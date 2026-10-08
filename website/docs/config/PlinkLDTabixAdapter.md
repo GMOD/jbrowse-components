@@ -1,10 +1,11 @@
 ---
 id: plinkldtabixadapter
 title: PlinkLDTabixAdapter
+description: "Adapter for reading pre-computed LD data from a PLINK LD table (tabix-indexed), either PLINK 2.0's .vcor or PLINK 1.9's .ld."
 sidebar_label: Adapter -> PlinkLDTabixAdapter
 ---
 
-Auto-generated config schema for the current JBrowse release — see the [config guide](/docs/config_guide) for concepts. Provided by the `variants` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/variants/src/PlinkLDAdapter/configSchemaTabix.ts).
+Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Provided by the `variants` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/variants/src/PlinkLDAdapter/configSchemaTabix.ts).
 
 ## Example usage
 

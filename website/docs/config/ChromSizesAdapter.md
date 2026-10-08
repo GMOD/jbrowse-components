@@ -1,10 +1,11 @@
 ---
 id: chromsizesadapter
 title: ChromSizesAdapter
+description: "loads only chromosome names and lengths from a UCSC-style .chrom.sizes file (tab-separated name<TAB>length), with no actual sequence. Useful for karyotype or whole-genome/synteny views where the…"
 sidebar_label: Adapter -> ChromSizesAdapter
 ---
 
-Auto-generated config schema for the current JBrowse release — see the [config guide](/docs/config_guide) for concepts. Provided by the `sequence` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/sequence/src/ChromSizesAdapter/configSchema.ts).
+Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Provided by the `sequence` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/sequence/src/ChromSizesAdapter/configSchema.ts).
 
 ## Example usage
 

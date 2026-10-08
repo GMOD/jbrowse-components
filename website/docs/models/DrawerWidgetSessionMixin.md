@@ -1,10 +1,11 @@
 ---
 id: drawerwidgetsessionmixin
 title: DrawerWidgetSessionMixin
+description: "Properties, getters and actions of the DrawerWidgetSessionMixin state model."
 sidebar_label: Mixin -> DrawerWidgetSessionMixin
 ---
 
-Auto-generated @jbrowse/mobx-state-tree API for the current JBrowse release — see [pluggable elements](/docs/developer_guide/) for concepts. Built into JBrowse core. [View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/product-core/src/Session/DrawerWidgets.ts).
+Auto-generated from the @jbrowse/mobx-state-tree model in the source — see the [developer guide](/docs/developer_guide/) for concepts. Built into JBrowse core. [View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/product-core/src/Session/DrawerWidgets.ts).
 
 ## Properties
 
@@ -22,8 +23,8 @@ Auto-generated @jbrowse/mobx-state-tree API for the current JBrowse release — 
 <!-- prettier-ignore -->
 | Member | Description |
 | --- | --- |
-| <span id="volatile-poppedout">**poppedOut**</span><br><code>poppedOut: false</code> | true while the visible widget is shown in a modal dialog instead of the drawer. Volatile because a restored session that opened straight into a modal, with no drawer behind it, is disorienting |
-| <span id="volatile-modalwidgets">**modalWidgets**</span><br><code>modalWidgets: false</code> | set by a host with no room for a drawer column beside its views (a phone), so every widget shows in a modal instead |
+| <span id="volatile-poppedout">**poppedOut**</span><br><code>false</code> | true while the visible widget is shown in a modal dialog instead of the drawer. Volatile because a restored session that opened straight into a modal, with no drawer behind it, is disorienting |
+| <span id="volatile-modalwidgets">**modalWidgets**</span><br><code>false</code> | set by a host with no room for a drawer column beside its views (a phone), so every widget shows in a modal instead |
 
 ## Getters
 

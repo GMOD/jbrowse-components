@@ -1,10 +1,11 @@
 ---
 id: basetrack
 title: BaseTrack
+description: "Configuration shared by all track types. Concrete tracks (FeatureTrack, AlignmentsTrack, VariantTrack, ...) extend this, so every track accepts these fields in addition to its own."
 sidebar_label: Track -> BaseTrack
 ---
 
-Auto-generated config schema for the current JBrowse release — see the [config guide](/docs/config_guide) for concepts. Built into JBrowse core. [View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/pluggableElementTypes/models/baseTrackConfig.ts).
+Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Built into JBrowse core. [View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/pluggableElementTypes/models/baseTrackConfig.ts).
 
 ## Overview
 

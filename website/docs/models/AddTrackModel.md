@@ -1,10 +1,11 @@
 ---
 id: addtrackmodel
 title: AddTrackModel
+description: "Properties, getters and actions of the AddTrackModel state model."
 sidebar_label: Widget -> AddTrackModel
 ---
 
-Auto-generated @jbrowse/mobx-state-tree API for the current JBrowse release — see [pluggable elements](/docs/developer_guide/) for concepts. Provided by the `data-management` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/data-management/src/AddTrackWidget/model.ts).
+Auto-generated from the @jbrowse/mobx-state-tree model in the source — see the [developer guide](/docs/developer_guide/) for concepts. Provided by the `data-management` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/data-management/src/AddTrackWidget/model.ts).
 
 ## Properties
 
@@ -21,17 +22,17 @@ Auto-generated @jbrowse/mobx-state-tree API for the current JBrowse release — 
 <!-- prettier-ignore -->
 | Member | Description |
 | --- | --- |
-| <span id="volatile-trackdata">**trackData**</span><br><code>trackData: undefined as FileLocation &#124; undefined</code> |  |
-| <span id="volatile-indextrackdata">**indexTrackData**</span><br><code>indexTrackData: undefined as FileLocation &#124; undefined</code> |  |
-| <span id="volatile-altassemblyname">**altAssemblyName**</span><br><code>altAssemblyName: ''</code> |  |
-| <span id="volatile-alttrackname">**altTrackName**</span><br><code>altTrackName: undefined as string &#124; undefined</code> |  |
-| <span id="volatile-alttracktype">**altTrackType**</span><br><code>altTrackType: ''</code> |  |
-| <span id="volatile-adapterhint">**adapterHint**</span><br><code>adapterHint: ''</code> |  |
-| <span id="volatile-textindextrack">**textIndexTrack**</span><br><code>textIndexTrack: true</code> |  |
-| <span id="volatile-textindexingconf">**textIndexingConf**</span><br><code>textIndexingConf: undefined as IndexingAttr &#124; undefined</code> |  |
-| <span id="volatile-mixindata">**mixinData**</span><br><code>mixinData: {} as Record&lt;string, unknown&gt;</code> |  |
-| <span id="volatile-detectedindexname">**detectedIndexName**</span><br><code>detectedIndexName: undefined as string &#124; undefined</code> |  |
-| <span id="volatile-bulk">**bulk**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>bulk: { mode: 'remote', text: '', localLocations: [], customNam…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>bulk: {&#10;&#160;&#160;&#160;&#160;&#160;&#160;mode: 'remote',&#10;&#160;&#160;&#160;&#160;&#160;&#160;text: '',&#10;&#160;&#160;&#160;&#160;&#160;&#160;localLocations: [],&#10;&#160;&#160;&#160;&#160;&#160;&#160;customNames: {},&#10;&#160;&#160;&#160;&#160;&#160;&#160;stripExtensions: false,&#10;&#160;&#160;&#160;&#160;} as BulkInputState</code></pre></dialog></span> |  |
+| <span id="volatile-trackdata">**trackData**</span><br><code>FileLocation &#124; undefined</code> |  |
+| <span id="volatile-indextrackdata">**indexTrackData**</span><br><code>FileLocation &#124; undefined</code> |  |
+| <span id="volatile-altassemblyname">**altAssemblyName**</span><br><code>string</code> |  |
+| <span id="volatile-alttrackname">**altTrackName**</span><br><code>string &#124; undefined</code> |  |
+| <span id="volatile-alttracktype">**altTrackType**</span><br><code>string</code> |  |
+| <span id="volatile-adapterhint">**adapterHint**</span><br><code>string</code> |  |
+| <span id="volatile-textindextrack">**textIndexTrack**</span><br><code>boolean</code> |  |
+| <span id="volatile-textindexingconf">**textIndexingConf**</span><br><code>IndexingAttr &#124; undefined</code> |  |
+| <span id="volatile-mixindata">**mixinData**</span><br><code>Record&lt;string, unknown&gt;</code> |  |
+| <span id="volatile-detectedindexname">**detectedIndexName**</span><br><code>string &#124; undefined</code> |  |
+| <span id="volatile-bulk">**bulk**</span><br><code>BulkInputState</code> |  |
 
 ## Getters
 

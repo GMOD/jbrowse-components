@@ -1,10 +1,11 @@
 ---
 id: htsgetbamadapter
 title: HtsgetBamAdapter
+description: "Used to fetch data from Htsget endpoints in BAM format, using the gmod/bam library"
 sidebar_label: Adapter -> HtsgetBamAdapter
 ---
 
-Auto-generated config schema for the current JBrowse release — see the [config guide](/docs/config_guide) for concepts. Provided by the `alignments` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/alignments/src/HtsgetBamAdapter/configSchema.ts).
+Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Provided by the `alignments` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/alignments/src/HtsgetBamAdapter/configSchema.ts).
 
 ## Example usage
 

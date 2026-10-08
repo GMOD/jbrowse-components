@@ -1,10 +1,11 @@
 ---
 id: samplerows
 title: SampleRows
+description: "The rows of a display whose rows are the file's samples, one each, with nothing else a row could be: the multi-sample variant display and the multiple alignment display. sample is the one field,…"
 sidebar_label: Display -> SampleRows
 ---
 
-Auto-generated config schema for the current JBrowse release — see the [config guide](/docs/config_guide) for concepts. Built into JBrowse core. [View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/display-kit/src/sampleRowsConfigSchema.ts).
+Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Built into JBrowse core. [View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/display-kit/src/sampleRowsConfigSchema.ts).
 
 ## Example usage
 

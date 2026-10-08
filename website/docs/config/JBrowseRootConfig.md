@@ -1,10 +1,11 @@
 ---
 id: jbrowserootconfig
 title: JBrowseRootConfig
+description: "this is a config model representing a config.json (for jbrowse-web) or somefile.jbrowse (for jbrowse-desktop, where configs have the .jbrowse extension)"
 sidebar_label: Root -> JBrowseRootConfig
 ---
 
-Auto-generated config schema for the current JBrowse release — see the [config guide](/docs/config_guide) for concepts. Built into JBrowse core. [View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/app-core/src/JBrowseConfig/index.ts).
+Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Built into JBrowse core. [View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/app-core/src/JBrowseConfig/index.ts).
 
 this is a config model representing a config.json (for jbrowse-web) or
 somefile.jbrowse (for jbrowse-desktop, where configs have the .jbrowse

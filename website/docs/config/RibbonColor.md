@@ -1,10 +1,11 @@
 ---
 id: ribboncolor
 title: RibbonColor
+description: "The multi-way synteny display's ribbonColor setting: one colour for every ribbon, or a field each ribbon carries: the record's strand, a measurement on its preset ramp (identity, mapq, dnds),…"
 sidebar_label: Display -> RibbonColor
 ---
 
-Auto-generated config schema for the current JBrowse release — see the [config guide](/docs/config_guide) for concepts. Provided by the `linear-comparative-view` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/linear-comparative-view/src/MultiWaySyntenyDisplay/ribbonColorConfigSchema.ts).
+Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Provided by the `linear-comparative-view` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/linear-comparative-view/src/MultiWaySyntenyDisplay/ribbonColorConfigSchema.ts).
 
 ## Example usage
 

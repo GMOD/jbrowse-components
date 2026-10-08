@@ -1,10 +1,11 @@
 ---
 id: variantcellcolor
 title: VariantCellColor
+description: "The multi-sample variant display's color setting: the hue of every alt-carrying genotype cell, which shadeByDosage then lightens for a heterozygote. Unset, the cells paint the genotype colours. A…"
 sidebar_label: Display -> VariantCellColor
 ---
 
-Auto-generated config schema for the current JBrowse release — see the [config guide](/docs/config_guide) for concepts. Provided by the `variants` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/variants/src/LinearMultiSampleVariantDisplay/cellColorConfigSchema.ts).
+Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Provided by the `variants` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/variants/src/LinearMultiSampleVariantDisplay/cellColorConfigSchema.ts).
 
 ## Example usage
 

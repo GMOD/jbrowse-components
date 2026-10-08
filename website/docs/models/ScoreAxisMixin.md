@@ -1,10 +1,11 @@
 ---
 id: scoreaxismixin
 title: ScoreAxisMixin
+description: "Not a cross-cutting mixin any more: ScoreScaleMixin is its one composer, and a display takes the axis by taking that. The two stay apart because the halves answer different questions — this one…"
 sidebar_label: Mixin -> ScoreAxisMixin
 ---
 
-Auto-generated @jbrowse/mobx-state-tree API for the current JBrowse release — see [pluggable elements](/docs/developer_guide/) for concepts. Built into JBrowse core. [View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/wiggle-core/src/ScoreAxisMixin.ts).
+Auto-generated from the @jbrowse/mobx-state-tree model in the source — see the [developer guide](/docs/developer_guide/) for concepts. Built into JBrowse core. [View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/wiggle-core/src/ScoreAxisMixin.ts).
 
 Not a cross-cutting mixin any more: ScoreScaleMixin is its one
 composer, and a display takes the axis by taking that. The two stay apart

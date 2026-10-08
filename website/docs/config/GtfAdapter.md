@@ -1,10 +1,11 @@
 ---
 id: gtfadapter
 title: GtfAdapter
+description: "used to load plain-text GTF files (optionally gzipped). Loads the whole file into memory, so prefer the GtfTabixAdapter for large files."
 sidebar_label: Adapter -> GtfAdapter
 ---
 
-Auto-generated config schema for the current JBrowse release — see the [config guide](/docs/config_guide) for concepts. Provided by the `gtf` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/gtf/src/GtfAdapter/configSchema.ts).
+Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Provided by the `gtf` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/gtf/src/GtfAdapter/configSchema.ts).
 
 ## Example usage
 

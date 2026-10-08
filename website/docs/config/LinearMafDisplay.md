@@ -1,10 +1,11 @@
 ---
 id: linearmafdisplay
 title: LinearMafDisplay
+description: "the display for a MafTrack: one row per aligned species, with a conservation summary above them. The conservation band, per-row identity, color-by-source-chromosome, and inversion overlays are all…"
 sidebar_label: Display -> LinearMafDisplay
 ---
 
-Auto-generated config schema for the current JBrowse release — see the [config guide](/docs/config_guide) for concepts. Provided by the `maf` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/maf/src/LinearMafDisplay/configSchema.ts).
+Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Provided by the `maf` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/maf/src/LinearMafDisplay/configSchema.ts).
 
 ## Example usage
 

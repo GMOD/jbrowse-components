@@ -1,10 +1,11 @@
 ---
 id: fromconfigsequenceadapter
 title: FromConfigSequenceAdapter
+description: "supplies reference sequence inline in the config; each feature's seq holds the bases for its region"
 sidebar_label: Adapter -> FromConfigSequenceAdapter
 ---
 
-Auto-generated config schema for the current JBrowse release — see the [config guide](/docs/config_guide) for concepts. Provided by the `config` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/config/src/FromConfigSequenceAdapter/configSchema.ts).
+Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Provided by the `config` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/config/src/FromConfigSequenceAdapter/configSchema.ts).
 
 ## Example usage
 

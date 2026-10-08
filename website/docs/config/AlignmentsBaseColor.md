@@ -1,10 +1,11 @@
 ---
 id: alignmentsbasecolor
 title: AlignmentsBaseColor
+description: "The alignments displays' baseColor setting: the per-base variable painted as a cell per base over the reads, whatever color fills them with. modifications paints the MM/ML calls and bisulfite…"
 sidebar_label: Display -> AlignmentsBaseColor
 ---
 
-Auto-generated config schema for the current JBrowse release — see the [config guide](/docs/config_guide) for concepts. Provided by the `alignments` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/alignments/src/LinearAlignmentsDisplay/alignmentsBaseColorConfigSchema.ts).
+Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Provided by the `alignments` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/alignments/src/LinearAlignmentsDisplay/alignmentsBaseColorConfigSchema.ts).
 
 ## Example usage
 

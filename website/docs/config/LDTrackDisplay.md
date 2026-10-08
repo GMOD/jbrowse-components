@@ -1,10 +1,11 @@
 ---
 id: ldtrackdisplay
 title: LDTrackDisplay
+description: "Linkage disequilibrium heatmap read from an LDTrack's pre-computed file — PLINK --r2 output and the formats that follow it. JBrowse does not compute LD from genotypes; run plink (or an…"
 sidebar_label: Display -> LDTrackDisplay
 ---
 
-Auto-generated config schema for the current JBrowse release — see the [config guide](/docs/config_guide) for concepts. Provided by the `variants` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/variants/src/LDDisplay/configSchemaLDTrack.ts).
+Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Provided by the `variants` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/variants/src/LDDisplay/configSchemaLDTrack.ts).
 
 ## Example usage
 

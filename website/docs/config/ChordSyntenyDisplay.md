@@ -1,10 +1,11 @@
 ---
 id: chordsyntenydisplay
 title: ChordSyntenyDisplay
+description: "Configuration slots of ChordSyntenyDisplay."
 sidebar_label: Display -> ChordSyntenyDisplay
 ---
 
-Auto-generated config schema for the current JBrowse release — see the [config guide](/docs/config_guide) for concepts. Provided by the `circular-view` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/circular-view/src/ChordSyntenyDisplay/models/configSchema.ts).
+Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Provided by the `circular-view` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/circular-view/src/ChordSyntenyDisplay/models/configSchema.ts).
 
 ## Example usage
 

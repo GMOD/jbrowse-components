@@ -1,10 +1,11 @@
 ---
 id: bedgraphadapter
 title: BedGraphAdapter
+description: "used to load plain-text bedGraph signal files. Loads the whole file into memory, so prefer the BedGraphTabixAdapter for large files. Several signals in one file are a MultiQuantitativeTrack's…"
 sidebar_label: Adapter -> BedGraphAdapter
 ---
 
-Auto-generated config schema for the current JBrowse release — see the [config guide](/docs/config_guide) for concepts. Provided by the `bed` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/bed/src/BedGraphAdapter/configSchema.ts).
+Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Provided by the `bed` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/bed/src/BedGraphAdapter/configSchema.ts).
 
 ## Example usage
 

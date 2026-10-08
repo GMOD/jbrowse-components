@@ -1,10 +1,11 @@
 ---
 id: jbrowsereactlineargenomeviewrootmodel
 title: JBrowseReactLinearGenomeViewRootModel
+description: "Composes the shared EmbeddedRootModel with a LinearGenomeView session and this product's own props."
 sidebar_label: Root -> JBrowseReactLinearGenomeViewRootModel
 ---
 
-Auto-generated @jbrowse/mobx-state-tree API for the current JBrowse release — see [pluggable elements](/docs/developer_guide/) for concepts. [View source](https://github.com/GMOD/jbrowse-components/blob/main/products/jbrowse-react-linear-genome-view/src/createModel/createModel.ts).
+Auto-generated from the @jbrowse/mobx-state-tree model in the source — see the [developer guide](/docs/developer_guide/) for concepts. [View source](https://github.com/GMOD/jbrowse-components/blob/main/products/jbrowse-react-linear-genome-view/src/createModel/createModel.ts).
 
 Composes the shared EmbeddedRootModel with a LinearGenomeView session
 and this product's own props.

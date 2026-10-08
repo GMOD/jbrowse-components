@@ -1,10 +1,11 @@
 ---
 id: treesidebarmixin
 title: TreeSidebarMixin
+description: "Row set with a dendrogram sidebar, its arrangement the display's rows config object and its row colours the rowColor object, each written as a session edit to the track's config so undo, reset…"
 sidebar_label: Mixin -> TreeSidebarMixin
 ---
 
-Auto-generated @jbrowse/mobx-state-tree API for the current JBrowse release — see [pluggable elements](/docs/developer_guide/) for concepts. Built into JBrowse core. [View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/tree-sidebar/src/TreeSidebarMixin.ts).
+Auto-generated from the @jbrowse/mobx-state-tree model in the source — see the [developer guide](/docs/developer_guide/) for concepts. Built into JBrowse core. [View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/tree-sidebar/src/TreeSidebarMixin.ts).
 
 Row set with a dendrogram sidebar, its arrangement the display's `rows` config object and its row colours the `rowColor` object, each written as a session edit to the track's config so undo, reset and a share link reach it and it survives unticking the track. Brings the sidebar toggles, the `runClustering` / `clusterRegion` and `sortRowsBy` declarative launch specs `setupTreeSidebarAutoruns` consumes, the row arrangement every shared consumer goes through, the rows derived from it (`editableSources`, `clusterableSources`) with the arrangement dialog's `applyRowEdits`, the `root` getter, and the tree-hover and canvas-ref volatiles the shared sidebar draws through. A display supplies `discoveredRows`, and `guideTreeNewick` where its adapter carries a tree, and overrides the hooks its rows need
 
@@ -43,9 +44,9 @@ or what a track the session owns was added with, and never touches
 <!-- prettier-ignore -->
 | Member | Description |
 | --- | --- |
-| <span id="volatile-hoveredtreenode">**hoveredTreeNode**</span><br><code>hoveredTreeNode: undefined as HoveredTreeNode &#124; undefined</code> |  |
-| <span id="volatile-treecanvas">**treeCanvas**</span><br><code>treeCanvas: null as HTMLCanvasElement &#124; null</code> |  |
-| <span id="volatile-mouseovercanvas">**mouseoverCanvas**</span><br><code>mouseoverCanvas: null as HTMLCanvasElement &#124; null</code> |  |
+| <span id="volatile-hoveredtreenode">**hoveredTreeNode**</span><br><code>HoveredTreeNode &#124; undefined</code> |  |
+| <span id="volatile-treecanvas">**treeCanvas**</span><br><code>HTMLCanvasElement &#124; null</code> |  |
+| <span id="volatile-mouseovercanvas">**mouseoverCanvas**</span><br><code>HTMLCanvasElement &#124; null</code> |  |
 
 ## Getters
 

@@ -1,10 +1,11 @@
 ---
 id: assemblymanager
 title: AssemblyManager
+description: "Properties, getters and actions of the AssemblyManager state model."
 sidebar_label: Assembly Management -> AssemblyManager
 ---
 
-Auto-generated @jbrowse/mobx-state-tree API for the current JBrowse release — see [pluggable elements](/docs/developer_guide/) for concepts. Built into JBrowse core. [View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/assemblyManager/assemblyManager.ts).
+Auto-generated from the @jbrowse/mobx-state-tree model in the source — see the [developer guide](/docs/developer_guide/) for concepts. Built into JBrowse core. [View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/assemblyManager/assemblyManager.ts).
 
 ## Properties
 
@@ -18,7 +19,7 @@ Auto-generated @jbrowse/mobx-state-tree API for the current JBrowse release — 
 <!-- prettier-ignore -->
 | Member | Description |
 | --- | --- |
-| <span id="volatile-unrecognizedreports">**unrecognizedReports**</span><br><code>unrecognizedReports: createUnrecognizedAssemblyReports()</code> | rate limiter for `get`'s `Core-handleUnrecognizedAssembly` reports, so each unknown name reaches the extension point once per session |
+| <span id="volatile-unrecognizedreports">**unrecognizedReports**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>{ report(session: unknown, name: string, handlerCount: number,…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>{ report(session: unknown, name: string, handlerCount: number, fire: () =&gt; unknown): void; reportFor(session: unknown, name: string): { handled: boolean; claim?: Promise&lt;void&gt; &#124; undefined; } &#124; undefined; }</code></pre></dialog></span> | rate limiter for `get`'s `Core-handleUnrecognizedAssembly` reports, so each unknown name reaches the extension point once per session |
 
 ## Getters
 

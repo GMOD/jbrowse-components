@@ -1,10 +1,11 @@
 ---
 id: linearwiggledisplay
 title: LinearWiggleDisplay
+description: "configuration for the quantitative display: an XY plot, density, line or scatter rendering of one source or of many, with rows: 'source' giving each source a row of its own"
 sidebar_label: Display -> LinearWiggleDisplay
 ---
 
-Auto-generated config schema for the current JBrowse release — see the [config guide](/docs/config_guide) for concepts. Provided by the `wiggle` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/wiggle/src/LinearWiggleDisplay/configSchema.ts).
+Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Provided by the `wiggle` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/wiggle/src/LinearWiggleDisplay/configSchema.ts).
 
 ## Example usage
 

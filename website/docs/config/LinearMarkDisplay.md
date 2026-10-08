@@ -1,10 +1,11 @@
 ---
 id: linearmarkdisplay
 title: LinearMarkDisplay
+description: "A grammar of graphics over a feature, alignments or variant track: a list of marks — bars, points, rules, lines, spans, text or links — each with an encoding naming which feature fields feed its…"
 sidebar_label: Display -> LinearMarkDisplay
 ---
 
-Auto-generated config schema for the current JBrowse release — see the [config guide](/docs/config_guide) for concepts. Provided by the `marks` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/marks/src/LinearMarkDisplay/configSchema.ts).
+Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Provided by the `marks` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/marks/src/LinearMarkDisplay/configSchema.ts).
 
 ## Example usage
 

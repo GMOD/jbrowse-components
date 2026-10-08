@@ -1,10 +1,11 @@
 ---
 id: linearmultisamplevariantdisplay
 title: LinearMultiSampleVariantDisplay
+description: "Configuration slots of LinearMultiSampleVariantDisplay."
 sidebar_label: Display -> LinearMultiSampleVariantDisplay
 ---
 
-Auto-generated config schema for the current JBrowse release — see the [config guide](/docs/config_guide) for concepts. Provided by the `variants` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/variants/src/LinearMultiSampleVariantDisplay/configSchema.ts).
+Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Provided by the `variants` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/variants/src/LinearMultiSampleVariantDisplay/configSchema.ts).
 
 ## Example usage
 

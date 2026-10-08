@@ -1,10 +1,11 @@
 ---
 id: syntenyfademixin
 title: SyntenyFadeMixin
+description: "The fade a view drawing synteny ribbons offers whatever the colour mode: a sub-pixel alignment by its on-screen width, so a dense whole-genome picture keeps its density instead of saturating. A fade…"
 sidebar_label: Mixin -> SyntenyFadeMixin
 ---
 
-Auto-generated @jbrowse/mobx-state-tree API for the current JBrowse release — see [pluggable elements](/docs/developer_guide/) for concepts. Built into JBrowse core. [View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/synteny-core/src/SyntenyFadeMixin.ts).
+Auto-generated from the @jbrowse/mobx-state-tree model in the source — see the [developer guide](/docs/developer_guide/) for concepts. Built into JBrowse core. [View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/synteny-core/src/SyntenyFadeMixin.ts).
 
 The fade a view drawing synteny ribbons offers whatever the colour mode: a
 sub-pixel alignment by its on-screen width, so a dense whole-genome picture
@@ -24,7 +25,7 @@ circular view both compose it; a view supplies `autoFadeWidthPx`.
 <!-- prettier-ignore -->
 | Member | Description |
 | --- | --- |
-| <span id="volatile-fadethinlatch">**fadeThinLatch**</span><br><code>fadeThinLatch: false</code> | Whether the 'auto' thin-fade is latched on (see `fadeThinAlignments`). |
+| <span id="volatile-fadethinlatch">**fadeThinLatch**</span><br><code>false</code> | Whether the 'auto' thin-fade is latched on (see `fadeThinAlignments`). |
 
 ## Getters
 

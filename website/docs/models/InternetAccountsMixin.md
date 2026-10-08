@@ -1,10 +1,11 @@
 ---
 id: internetaccountsmixin
 title: InternetAccountsMixin
+description: "Properties, getters and actions of the InternetAccountsMixin state model."
 sidebar_label: Mixin -> InternetAccountsMixin
 ---
 
-Auto-generated @jbrowse/mobx-state-tree API for the current JBrowse release — see [pluggable elements](/docs/developer_guide/) for concepts. Built into JBrowse core. [View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/product-core/src/RootModel/InternetAccounts.ts).
+Auto-generated from the @jbrowse/mobx-state-tree model in the source — see the [developer guide](/docs/developer_guide/) for concepts. Built into JBrowse core. [View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/product-core/src/RootModel/InternetAccounts.ts).
 
 ## Properties
 

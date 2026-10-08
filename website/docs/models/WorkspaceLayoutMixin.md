@@ -1,10 +1,11 @@
 ---
 id: workspacelayoutmixin
 title: WorkspaceLayoutMixin
+description: "The whole workspace as one MST tree:"
 sidebar_label: Mixin -> WorkspaceLayoutMixin
 ---
 
-Auto-generated @jbrowse/mobx-state-tree API for the current JBrowse release — see [pluggable elements](/docs/developer_guide/) for concepts. Built into JBrowse core. [View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/app-core/src/WorkspaceLayout/model.ts).
+Auto-generated from the @jbrowse/mobx-state-tree model in the source — see the [developer guide](/docs/developer_guide/) for concepts. Built into JBrowse core. [View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/app-core/src/WorkspaceLayout/model.ts).
 
 The whole workspace as one MST tree:
 

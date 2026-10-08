@@ -1,10 +1,11 @@
 ---
 id: oauthinternetaccount
 title: OAuthInternetAccount
+description: "Properties, getters and actions of the OAuthInternetAccount state model."
 sidebar_label: Internet Account -> OAuthInternetAccount
 ---
 
-Auto-generated @jbrowse/mobx-state-tree API for the current JBrowse release — see [pluggable elements](/docs/developer_guide/) for concepts. Provided by the `authentication` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/authentication/src/OAuthModel/model.tsx).
+Auto-generated from the @jbrowse/mobx-state-tree model in the source — see the [developer guide](/docs/developer_guide/) for concepts. Provided by the `authentication` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/authentication/src/OAuthModel/model.tsx).
 
 The configuration slots for this model are documented on its [config schema page](../../config/oauthinternetaccount).
 

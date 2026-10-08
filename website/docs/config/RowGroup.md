@@ -1,10 +1,11 @@
 ---
 id: rowgroup
 title: RowGroup
+description: "One entry of the multi-row feature display's rowGroups: a row joins the group of the first entry whose match regex its name matches, and rowColor: { field: 'group' } colours the groups."
 sidebar_label: Display -> RowGroup
 ---
 
-Auto-generated config schema for the current JBrowse release — see the [config guide](/docs/config_guide) for concepts. Provided by the `canvas` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/canvas/src/LinearMultiRowFeatureDisplay/rowGroupConfigSchema.ts).
+Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Provided by the `canvas` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/canvas/src/LinearMultiRowFeatureDisplay/rowGroupConfigSchema.ts).
 
 ## Example usage
 

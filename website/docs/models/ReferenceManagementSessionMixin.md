@@ -1,10 +1,11 @@
 ---
 id: referencemanagementsessionmixin
 title: ReferenceManagementSessionMixin
+description: "Properties, getters and actions of the ReferenceManagementSessionMixin state model."
 sidebar_label: Mixin -> ReferenceManagementSessionMixin
 ---
 
-Auto-generated @jbrowse/mobx-state-tree API for the current JBrowse release — see [pluggable elements](/docs/developer_guide/) for concepts. Built into JBrowse core. [View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/product-core/src/Session/ReferenceManagement.ts).
+Auto-generated from the @jbrowse/mobx-state-tree model in the source — see the [developer guide](/docs/developer_guide/) for concepts. Built into JBrowse core. [View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/product-core/src/Session/ReferenceManagement.ts).
 
 ## Methods
 

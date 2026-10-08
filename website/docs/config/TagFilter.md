@@ -1,10 +1,11 @@
 ---
 id: tagfilter
 title: TagFilter
+description: "One tag a read has to carry to pass, with the value it has to hold where one is named."
 sidebar_label: Display -> TagFilter
 ---
 
-Auto-generated config schema for the current JBrowse release — see the [config guide](/docs/config_guide) for concepts. Provided by the `alignments` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/alignments/src/LinearAlignmentsDisplay/tagFilterConfigSchema.ts).
+Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Provided by the `alignments` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/alignments/src/LinearAlignmentsDisplay/tagFilterConfigSchema.ts).
 
 One tag a read has to carry to pass, with the value it has to hold where
 one is named.

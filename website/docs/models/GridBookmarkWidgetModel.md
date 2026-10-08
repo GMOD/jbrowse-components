@@ -1,10 +1,11 @@
 ---
 id: gridbookmarkwidgetmodel
 title: GridBookmarkWidgetModel
+description: "the list of the session's highlights"
 sidebar_label: Widget -> GridBookmarkWidgetModel
 ---
 
-Auto-generated @jbrowse/mobx-state-tree API for the current JBrowse release — see [pluggable elements](/docs/developer_guide/) for concepts. Provided by the `grid-bookmark` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/grid-bookmark/src/GridBookmarkWidget/model.ts).
+Auto-generated from the @jbrowse/mobx-state-tree model in the source — see the [developer guide](/docs/developer_guide/) for concepts. Provided by the `grid-bookmark` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/grid-bookmark/src/GridBookmarkWidget/model.ts).
 
 the list of the session's highlights
 
@@ -21,7 +22,7 @@ the list of the session's highlights
 <!-- prettier-ignore -->
 | Member | Description |
 | --- | --- |
-| <span id="volatile-selectedkeys">**selectedKeys**</span><br><code>selectedKeys: new Set&lt;string&gt;()</code> | a row's key holds its coordinates and its place in the session's list, so a key left stale by a removal elsewhere selects nothing rather than a neighbour |
+| <span id="volatile-selectedkeys">**selectedKeys**</span><br><code>Set&lt;string&gt;</code> | a row's key holds its coordinates and its place in the session's list, so a key left stale by a removal elsewhere selects nothing rather than a neighbour |
 
 ## Getters
 

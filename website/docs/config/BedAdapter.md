@@ -1,10 +1,11 @@
 ---
 id: bedadapter
 title: BedAdapter
+description: "used to load plain-text BED files. Loads the whole file into memory, so prefer the BedTabixAdapter for large files."
 sidebar_label: Adapter -> BedAdapter
 ---
 
-Auto-generated config schema for the current JBrowse release — see the [config guide](/docs/config_guide) for concepts. Provided by the `bed` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/bed/src/BedAdapter/configSchema.ts).
+Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Provided by the `bed` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/bed/src/BedAdapter/configSchema.ts).
 
 ## Example usage
 

@@ -1,10 +1,11 @@
 ---
 id: configurationeditorwidget
 title: ConfigurationEditorWidget
+description: "Widget for editing a config model's slots in a form: holds the target configuration and debounce-saves edits back to the session."
 sidebar_label: Widget -> ConfigurationEditorWidget
 ---
 
-Auto-generated @jbrowse/mobx-state-tree API for the current JBrowse release — see [pluggable elements](/docs/developer_guide/) for concepts. Provided by the `config` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/config/src/ConfigurationEditorWidget/model.ts).
+Auto-generated from the @jbrowse/mobx-state-tree model in the source — see the [developer guide](/docs/developer_guide/) for concepts. Provided by the `config` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/config/src/ConfigurationEditorWidget/model.ts).
 
 Widget for editing a config model's slots in a form: holds the target
 configuration and debounce-saves edits back to the session.
@@ -23,8 +24,8 @@ configuration and debounce-saves edits back to the session.
 <!-- prettier-ignore -->
 | Member | Description |
 | --- | --- |
-| <span id="volatile-inlinetarget">**inlineTarget**</span><br><code>inlineTarget: undefined as AnyConfigurationModel &#124; undefined</code> |  |
-| <span id="volatile-expandeddisplayid">**expandedDisplayId**</span><br><code>expandedDisplayId: undefined as string &#124; undefined</code> |  |
+| <span id="volatile-inlinetarget">**inlineTarget**</span><br><code>AnyConfigurationModel &#124; undefined</code> |  |
+| <span id="volatile-expandeddisplayid">**expandedDisplayId**</span><br><code>string &#124; undefined</code> |  |
 
 ## Getters
 

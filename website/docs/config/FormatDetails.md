@@ -1,10 +1,11 @@
 ---
 id: formatdetails
 title: FormatDetails
+description: "jexl callbacks that add, rewrite or hide fields in the feature-details panel. The same schema hangs off every track and off the session as configuration.formatDetails, which applies to every track…"
 sidebar_label: Root -> FormatDetails
 ---
 
-Auto-generated config schema for the current JBrowse release — see the [config guide](/docs/config_guide) for concepts. Built into JBrowse core. [View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/configuration/formatDetailsConfigSchema.ts).
+Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Built into JBrowse core. [View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/configuration/formatDetailsConfigSchema.ts).
 
 ## Example usage
 

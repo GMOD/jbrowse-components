@@ -1,10 +1,11 @@
 ---
 id: mafsequencewidget
 title: MafSequenceWidget
+description: "Widget showing multiple-alignment (MAF) sequence for a set of samples over the connected view's regions, with per-row hover highlight state."
 sidebar_label: Widget -> MafSequenceWidget
 ---
 
-Auto-generated @jbrowse/mobx-state-tree API for the current JBrowse release — see [pluggable elements](/docs/developer_guide/) for concepts. Provided by the `maf` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/maf/src/MafSequenceWidget/stateModelFactory.ts).
+Auto-generated from the @jbrowse/mobx-state-tree model in the source — see the [developer guide](/docs/developer_guide/) for concepts. Provided by the `maf` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/maf/src/MafSequenceWidget/stateModelFactory.ts).
 
 Widget showing multiple-alignment (MAF) sequence for a set of samples over the
 connected view's regions, with per-row hover highlight state.
@@ -27,7 +28,7 @@ connected view's regions, with per-row hover highlight state.
 <!-- prettier-ignore -->
 | Member | Description |
 | --- | --- |
-| <span id="volatile-hoverhighlight">**hoverHighlight**</span><br><code>hoverHighlight: undefined as HoverHighlight &#124; undefined</code> |  |
+| <span id="volatile-hoverhighlight">**hoverHighlight**</span><br><code>HoverHighlight &#124; undefined</code> |  |
 
 ## Actions
 

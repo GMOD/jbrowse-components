@@ -1,10 +1,11 @@
 ---
 id: jbrowse1textsearchadapter
 title: JBrowse1TextSearchAdapter
+description: "note: metadata about tracks and assemblies covered by text search adapter"
 sidebar_label: Adapter -> JBrowse1TextSearchAdapter
 ---
 
-Auto-generated config schema for the current JBrowse release — see the [config guide](/docs/config_guide) for concepts. Provided by the `legacy-jbrowse` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/legacy-jbrowse/src/JBrowse1TextSearchAdapter/configSchema.ts).
+Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Provided by the `legacy-jbrowse` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/legacy-jbrowse/src/JBrowse1TextSearchAdapter/configSchema.ts).
 
 ## Example usage
 

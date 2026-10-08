@@ -1,10 +1,11 @@
 ---
 id: syntenycolor
 title: SyntenyColor
+description: "The linear synteny and dotplot views' color setting, which every track in the view paints with: one colour for every alignment, or a field each alignment carries — its strand, the sequence at…"
 sidebar_label: View -> SyntenyColor
 ---
 
-Auto-generated config schema for the current JBrowse release — see the [config guide](/docs/config_guide) for concepts. Built into JBrowse core. [View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/synteny-core/src/syntenyColorConfigSchema.ts).
+Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Built into JBrowse core. [View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/synteny-core/src/syntenyColorConfigSchema.ts).
 
 ## Example usage
 

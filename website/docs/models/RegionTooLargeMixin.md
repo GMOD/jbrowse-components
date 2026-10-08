@@ -1,10 +1,11 @@
 ---
 id: regiontoolargemixin
 title: RegionTooLargeMixin
+description: "The region-too-large gate: a display opts in by overriding gateEnabled and passing byteLimit: self.resolvedByteLimit() to its fetch RPC. The RPC measures the index before it downloads and answers…"
 sidebar_label: Mixin -> RegionTooLargeMixin
 ---
 
-Auto-generated @jbrowse/mobx-state-tree API for the current JBrowse release — see [pluggable elements](/docs/developer_guide/) for concepts. Built into JBrowse core. [View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/display-kit/src/RegionTooLargeMixin.ts).
+Auto-generated from the @jbrowse/mobx-state-tree model in the source — see the [developer guide](/docs/developer_guide/) for concepts. Built into JBrowse core. [View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/display-kit/src/RegionTooLargeMixin.ts).
 
 The region-too-large gate: a display opts in by overriding `gateEnabled` and
 passing `byteLimit: self.resolvedByteLimit()` to its fetch RPC. The RPC
@@ -21,9 +22,9 @@ the numbers behind them: agent-docs/reference/REGION_TOO_LARGE.md.
 <!-- prettier-ignore -->
 | Member | Description |
 | --- | --- |
-| <span id="volatile-forceloadtrack">**forceLoadTrack**</span><br><code>forceLoadTrack: false</code> | The force-load button's track-wide approval. Volatile so it never reaches a saved session; the `forceLoad` config slot is the durable form. |
-| <span id="volatile-byteestimate">**byteEstimate**</span><br><code>byteEstimate: undefined as ByteEstimate &#124; undefined</code> | The last byte measurement: bytes, the span they were taken at, and whether zooming has been shown not to shrink them. Survives `clearAllRpcData`; dropped on chromosome navigation and on a tier swap. |
-| <span id="volatile-gatemeasuredviewportkey">**gateMeasuredViewportKey**</span><br><code>gateMeasuredViewportKey: undefined as unknown</code> | The `gateViewport` key the gate last asked the adapter about, on either axis — the viewport AND the settings it asked under. Separate from `byteEstimate` because a density refusal measures no bytes. |
+| <span id="volatile-forceloadtrack">**forceLoadTrack**</span><br><code>false</code> | The force-load button's track-wide approval. Volatile so it never reaches a saved session; the `forceLoad` config slot is the durable form. |
+| <span id="volatile-byteestimate">**byteEstimate**</span><br><code>ByteEstimate &#124; undefined</code> | The last byte measurement: bytes, the span they were taken at, and whether zooming has been shown not to shrink them. Survives `clearAllRpcData`; dropped on chromosome navigation and on a tier swap. |
+| <span id="volatile-gatemeasuredviewportkey">**gateMeasuredViewportKey**</span><br><code>unknown</code> | The `gateViewport` key the gate last asked the adapter about, on either axis — the viewport AND the settings it asked under. Separate from `byteEstimate` because a density refusal measures no bytes. |
 
 ## Getters
 

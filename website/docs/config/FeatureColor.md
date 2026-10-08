@@ -1,10 +1,11 @@
 ---
 id: featurecolor
 title: FeatureColor
+description: "The canvas feature displays' color setting: a CSS colour or jexl: callback in value, or a field whose values each take a range colour, whose numbers each take the colour of the interval between…"
 sidebar_label: Display -> FeatureColor
 ---
 
-Auto-generated config schema for the current JBrowse release — see the [config guide](/docs/config_guide) for concepts. Built into JBrowse core. [View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/display-kit/src/colorConfigSchema.ts).
+Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Built into JBrowse core. [View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/display-kit/src/colorConfigSchema.ts).
 
 ## Example usage
 

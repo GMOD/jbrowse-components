@@ -1,10 +1,11 @@
 ---
 id: nclistadapter
 title: NCListAdapter
+description: "Configuration slots of NCListAdapter."
 sidebar_label: Adapter -> NCListAdapter
 ---
 
-Auto-generated config schema for the current JBrowse release — see the [config guide](/docs/config_guide) for concepts. Provided by the `legacy-jbrowse` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/legacy-jbrowse/src/NCListAdapter/configSchema.ts).
+Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Provided by the `legacy-jbrowse` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/legacy-jbrowse/src/NCListAdapter/configSchema.ts).
 
 ## Example usage
 

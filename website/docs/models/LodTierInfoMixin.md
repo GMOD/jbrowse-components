@@ -1,10 +1,11 @@
 ---
 id: lodtierinfomixin
 title: LodTierInfoMixin
+description: "What the tiered adapter said about its file, held by every display that resolves a level-of-detail tier (LinearSyntenyDisplay, DotplotDisplay, LGVSyntenyDisplay, MultiWaySyntenyDisplay) and read by…"
 sidebar_label: Mixin -> LodTierInfoMixin
 ---
 
-Auto-generated @jbrowse/mobx-state-tree API for the current JBrowse release — see [pluggable elements](/docs/developer_guide/) for concepts. Built into JBrowse core. [View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/synteny-core/src/LodTierInfoMixin.ts).
+Auto-generated from the @jbrowse/mobx-state-tree model in the source — see the [developer guide](/docs/developer_guide/) for concepts. Built into JBrowse core. [View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/synteny-core/src/LodTierInfoMixin.ts).
 
 What the tiered adapter said about its file, held by every display that
 resolves a level-of-detail tier (LinearSyntenyDisplay, DotplotDisplay,
@@ -16,7 +17,7 @@ getters through `resolveLodTier`. Filled by `installLodTierInfoFetch`.
 <!-- prettier-ignore -->
 | Member | Description |
 | --- | --- |
-| <span id="volatile-adapterheaderread">**adapterHeaderRead**</span><br><code>adapterHeaderRead: undefined as AdapterRead&lt;unknown&gt; &#124; undefined</code> | The adapter's `CoreGetInfo` header, stamped with the adapter config it answers. |
+| <span id="volatile-adapterheaderread">**adapterHeaderRead**</span><br><code>AdapterRead&lt;unknown&gt; &#124; undefined</code> | The adapter's `CoreGetInfo` header, stamped with the adapter config it answers. |
 
 ## Getters
 

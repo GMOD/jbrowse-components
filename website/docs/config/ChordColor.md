@@ -1,10 +1,11 @@
 ---
 id: chordcolor
 title: ChordColor
+description: "A variant chord's color: a CSS colour or jexl: callback in value for every chord, or a field of the record whose values each take a range colour, with a key on the circle. svType paints the…"
 sidebar_label: Display -> ChordColor
 ---
 
-Auto-generated config schema for the current JBrowse release — see the [config guide](/docs/config_guide) for concepts. Provided by the `circular-view` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/circular-view/src/ChordVariantDisplay/models/chordColorConfigSchema.ts).
+Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Provided by the `circular-view` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/circular-view/src/ChordVariantDisplay/models/chordColorConfigSchema.ts).
 
 ## Example usage
 

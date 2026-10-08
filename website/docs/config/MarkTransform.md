@@ -1,10 +1,11 @@
 ---
 id: marktransform
 title: MarkTransform
+description: "One step of a transform list, which runs over the region's features in order, each step reading what the one before it answered. A step names its type and takes that step's own settings; a key…"
 sidebar_label: Display -> MarkTransform
 ---
 
-Auto-generated config schema for the current JBrowse release — see the [config guide](/docs/config_guide) for concepts. Provided by the `marks` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/marks/src/LinearMarkDisplay/markTransformConfigSchema.ts).
+Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Provided by the `marks` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/marks/src/LinearMarkDisplay/markTransformConfigSchema.ts).
 
 ## Example usage
 

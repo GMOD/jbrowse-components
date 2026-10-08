@@ -1,10 +1,11 @@
 ---
 id: ldcolor
 title: LDColor
+description: "The LD display's color: which statistic the cells are, r2 or dprime, through a linear scale onto a named scheme. An unset scheme is the metric's own, reds for r² and blues for D'. The…"
 sidebar_label: Display -> LDColor
 ---
 
-Auto-generated config schema for the current JBrowse release — see the [config guide](/docs/config_guide) for concepts. Provided by the `variants` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/variants/src/LDDisplay/ldColorConfigSchema.ts).
+Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Provided by the `variants` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/variants/src/LDDisplay/ldColorConfigSchema.ts).
 
 ## Example usage
 
