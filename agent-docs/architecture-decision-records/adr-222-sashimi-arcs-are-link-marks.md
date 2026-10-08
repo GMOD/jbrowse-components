@@ -103,11 +103,13 @@ the input to this decision.
   draws a circle through the feet, which the band clips to legs off screen, so
   nothing says a junction passes over. Captured before and after at volvox
   `ctgA:35,000-39,000`. The rule is render-core's (`linkIsFar`), shared with
-  the read-connections band.
+  the read-connections band:
+  [a-far-link-with-a-low-apex-draws-flat-not-as-legs](../ideas/waiting-on-a-call/a-far-link-with-a-low-apex-draws-flat-not-as-legs.md).
 - **A junction in a displayed region past index 255 draws a stem.** The link
   shader's region table holds 256 entries (`LINK_MAX_REGIONS`) and places a
   far foot through it even when the foot is in the instance's own region. The
-  read-connections band has the same limit.
+  read-connections band has the same limit:
+  [a-link-places-a-foot-in-its-own-region-at-any-index](../ideas/ready/a-link-places-a-foot-in-its-own-region-at-any-index.md).
 
 ## Measured
 
