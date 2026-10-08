@@ -136,22 +136,24 @@ does not finish there.
 
 The command writes these files beside the prefix:
 
-| file                     | what it holds                                                                       |
-| ------------------------ | ----------------------------------------------------------------------------------- |
-| `.segs.bed.gz`           | one row per segment, at its reference coordinate                                    |
-| `.links.bed.gz`          | one row per link per endpoint, both ends stated in full                             |
-| `.bubbles.bed.gz`        | where haplotypes diverge and rejoin, with each bubble's shortest and longest allele |
-| `.tier10000.segs.bed.gz` | one node per bubble, so a whole chromosome draws                                    |
-| `.alleles.bed.gz`        | one row per allele, with a CIGAR that states its size                               |
-| `.config.json`           | the tracks below, with the plugin entry                                             |
+| file                                          | what it holds                                                                                   |
+| --------------------------------------------- | ----------------------------------------------------------------------------------------------- |
+| `.segs.bed.gz`                                | one row per segment, at its reference coordinate                                                |
+| `.links.bed.gz`                               | one row per link per endpoint, both ends stated in full                                         |
+| `.bubbles.bed.gz`                             | where haplotypes diverge and rejoin, with each bubble's shortest and longest allele             |
+| `.tier10000.segs.bed.gz`                      | one node per bubble, so a whole chromosome draws                                                |
+| `.tier10000.links.bed.gz`                     | the tier's links                                                                                |
+| `.contig.segs.bed.gz`, `.contig.links.bed.gz` | the segment and link rows under each segment's own coordinate, which the allele inventory reads |
+| `.alleles.bed.gz`                             | one row per allele, with a CIGAR that states its size                                           |
+| `.config.json`                                | the tracks below, with the plugin entry                                                         |
 
 ### The bubble tier for whole-chromosome views {#a-whole-chromosome-the-bubble-tier}
 
 The bubble tier is a coarse copy of the graph that draws each bubble as one node
 on the reference backbone and folds smaller bubbles into it. A bubble's size for
 that test is the larger of its reference span and its longest allele. The
-threshold is in the file name, 10,000 bp by default; `--tier` sets it, and a
-pggb graph defaults to 50, since most of its bubbles are single bases.
+threshold is in the file name, 10,000 bp by default for an rGFA; `--tier` sets
+it, and a plain GFA defaults to 50, since most of its bubbles are single bases.
 
 ## Configuring the graph track {#the-two-indexes-a-graph-track-reads}
 

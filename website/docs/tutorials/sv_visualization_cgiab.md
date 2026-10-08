@@ -831,8 +831,8 @@ whole-chromosome scale it is a handful of pixels wide.
 
 _SMAD4_ on 18q is a single-copy loss with LOH (`CNA_48`, CN 1, 0+1), like
 _TP53_. The balanced p-arm and the matched normal are the two controls. Leave
-the copy-ratio track's bicolor mode on (one colour above zero, another below)
-with a symmetric axis, so a step down and a step up fill equally.
+the copy-ratio track's `color` unset (one colour above the `origin` of 0,
+another below) with a symmetric axis, so a step down and a step up fill equally.
 
 <Figure caption="Chromosome 18: SMAD4's MANE Select transcript over the segmented copy ratio, the tumor and its matched normal from indexcov, and the BAF, above the CNV calls. All three lanes change together partway along 18q and stay changed to the telomere." src="/img/sv_cgiab/driver_smad4_loh.png" />
 

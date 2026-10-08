@@ -85,8 +85,9 @@ protein would look named and match nothing:
 curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/symbols_to_blocks.py
 # --anchor names the genome whose genes lead the table; --unnamed is the
 # locus-tag shape PGAP falls back to, which joins nothing; --merge-cited
-# joins a gene PGAP renamed to the gene it was annotated from
-python3 symbols_to_blocks.py --anchor MG1655 -o ecoli.blocks --unnamed '_RS[0-9]+$' --merge-cited \
+# joins a gene PGAP renamed to the gene it was annotated from; --pseudogenes
+# keeps a gene NCBI writes as a pseudogene feature, such as K-12's wbbL
+python3 symbols_to_blocks.py --anchor MG1655 -o ecoli.blocks --unnamed '_RS[0-9]+$' --merge-cited --pseudogenes \
   MG1655=MG1655.gff.gz Sakai=Sakai.gff.gz CFT073=CFT073.gff.gz Sflexneri_301=Sflexneri_301.gff.gz
 ```
 

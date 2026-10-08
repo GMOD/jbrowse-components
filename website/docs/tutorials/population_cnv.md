@@ -214,7 +214,8 @@ VCF on the same assembly:
 
 ## Load the whole panel from one Zarr store {#a-zarr-store-for-the-whole-panel}
 
-The PUR panel track holds 104 individuals, and the full panel has 2504.
+The full PUR panel track in `config_demo.json` holds 104 individuals, and the
+full 1000 Genomes panel has 2504.
 [`measure_signal_latency.ts`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/measure_signal_latency.ts)
 measures the requests, bytes and time needed to fill the _CCL3L1_ window from
 all 2504 BigWigs and from a Zarr store holding the same samples, using the
@@ -349,7 +350,7 @@ node build_signal_zarr.ts \
 The command above built the hosted store from all 2504 samples, over the windows
 in the figures.
 
-Three options shape the store:
+Three things shape the store:
 
 - **`--levels`** sets the resolution pyramid, one samples-by-bins array per
   entry, with coarser ones averaged from the finest. The adapter reads the

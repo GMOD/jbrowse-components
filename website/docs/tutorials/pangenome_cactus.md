@@ -160,7 +160,7 @@ named as in the `assemblyNames` of the tracks below.
 [`halSynteny`](https://github.com/ComparativeGenomicsToolkit/hal) reads the
 HAL's base-level alignment and emits synteny blocks per genome pair as PSL with
 no sample tag in its sequence names, so the
-[build script](#reproduce-it-end-to-end) runs it for all six pairs and converts
+[build script](#reproduce-it-end-to-end) runs it for all ten pairs and converts
 each to PAF with PanSN `sample#0#chr` names.
 
 Index the combined PAF so a range query fetches only the region in view:
@@ -249,8 +249,8 @@ matrix display, one column per variant and one row per sample:
 }
 ```
 
-Each strain is one haplotype, so `unit: "haplotype"` colors each cell by that
-strain's allele. The
+Each strain is one haplotype, so `unit: "haplotype"` draws one row per strain,
+colored by that strain's allele. The
 [multi-sample variant track guide](/docs/user_guides/multivariant_track) covers
 columns versus genomic positions, the genotype colors, and clustering samples by
 genotype.

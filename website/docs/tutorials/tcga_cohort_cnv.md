@@ -111,9 +111,10 @@ settings do the rest:
 
 - [`rows`](/docs/config/linearmultirowfeaturedisplay/#slot-rows) splits the file
   into one labeled row per `sample`
-- [`color`](/docs/config/linearmultirowfeaturedisplay/#slot-color) bins
-  `segmean` onto a diverging blue-to-red scale at four cut points, since this
-  BED has no `itemRgb`, and `labels` names each bin in the key
+- [`color`](/docs/config/linearmultirowfeaturedisplay/#slot-color) paints
+  `segmean` through a `threshold` scale, since this BED has no `itemRgb`: the
+  four cuts in `domain` open five intervals, `range` gives each a colour on a
+  diverging blue-to-red scale, and `labels` names each interval in the key
 
 ## Cluster tumors by copy-number profile
 
@@ -135,7 +136,7 @@ end, form a band of their own.
 
 Each 100 kb bin of `tcga_brca_cnv_recurrence.bedGraph.gz` has the percent of the
 cohort gained and the percent lost, on the same log2 cutoffs the stack colors by
-(gain above 0.3, loss below -0.3):
+(gain at or above 0.3, loss at or below -0.3):
 
 ```text
 #chrom  start      end        gain   loss
@@ -145,8 +146,9 @@ chr16   89200000   89300000   3.26   -46.38
 ```
 
 `BedGraphTabixAdapter` reads every column past `end` as a separate signal. Loss
-is written negative so a wiggle cutting its colour at the default `origin` of 0
-draws gains up in one colour and losses down in the other.
+is written negative, so a `threshold` colour with no `domain`, which cuts at the
+default `origin` of 0, draws gains up in one colour and losses down in the
+other.
 
 ```json addtrack
 {

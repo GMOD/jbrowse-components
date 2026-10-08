@@ -35,8 +35,8 @@ several chromosomes.
 The genomes and the ortholog tables are the Dryad deposit behind Schultz et al.
 2023, released CC0.
 
-The [build script](#reproduce-it-end-to-end) takes these files from their URLs,
-so there is nothing to download by hand.
+Dryad has no direct download URL, so the two tarballs are downloaded by hand.
+The [build script](#reproduce-it-end-to-end) fetches the _Ephydatia_ assembly.
 
 - Both tarballs, `genomes.tar.gz` and `supplementary_information.tar.gz`:
   https://datadryad.org/dataset/doi:10.5061/dryad.dncjsxm47

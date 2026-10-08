@@ -221,7 +221,7 @@ The scores come from GeneNetwork's sample-data API. `jq` turns them into one
 [`rowGroups`](/docs/config/linearmultirowfeaturedisplay/#slot-rowgroups) entry
 per score, a regex matching that score's strains, and a
 [`rowColor`](/docs/config/linearmultirowfeaturedisplay/#slot-rowcolor) that
-pairs each score with its coat color:
+pairs each group with its coat color:
 
 <!-- from: scripts/bxd_build_demo.sh -->
 

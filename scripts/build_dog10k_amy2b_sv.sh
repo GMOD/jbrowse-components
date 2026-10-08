@@ -99,7 +99,7 @@ tabix -f -p vcf dog10k_amy2b_svs.vcf.gz
 
 # The sample metadata TSV. The panel is whole breeds rather than a handful of
 # named animals, so the rows are labelled through the adapter rather than
-# through a display `layout`. `group` is the column the figure's `colorBy`
+# through a display `layout`. `group` is the column the figure's `rowColor`
 # paints, and it is deliberately category and not breed: the claim the swatch
 # has to support is dog against wolf, and a swatch per breed would put 90 rows
 # of legend beside a two-value result.

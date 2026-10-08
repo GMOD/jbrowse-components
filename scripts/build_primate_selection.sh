@@ -350,7 +350,7 @@ jb add-track-json human_genes.json --update --out "$APP"
 jb add-track-json rhesus_genes.json --update --out "$APP"
 jb add-track-json tracks.json --update --out "$APP"
 
-# `alpha` defaults to 0.2, which is tuned for whole-genome views where thousands
+# `opacity` defaults to 0.25, which is tuned for whole-genome views where thousands
 # of ribbons overlap; a dozen of them at that opacity is nearly invisible.
 cat > session.json <<'JSON'
 {
@@ -373,7 +373,7 @@ cat > session.json <<'JSON'
       ],
       "tracks": [["primate_orthologs"]],
       "color": { "field": "dnds" },
-      "alpha": 0.95,
+      "opacity": 0.95,
       "drawCurves": true
     }
   ]

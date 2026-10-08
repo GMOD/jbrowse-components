@@ -282,11 +282,12 @@ where the 3' kit's reads land:
 Per cell, many lymphocytes have a single UMI of a monocyte gene, ambient RNA
 that was free in the droplet.
 
-Two settings in the config above decide whether the speckle is visible:
+Two settings decide whether the speckle is visible:
 
 - **Order the rows by cell type.** Thousands of rows in a few hundred pixels is
   under a pixel each, so a block only reads if its cells are adjacent. The
-  `group` on each row seeds that and drives the sidebar tree
+  `group` each cell carries in the store's attributes seeds that and drives the
+  sidebar tree
 - **Pin the score axis.** A low `domainMax` puts one UMI a visible fraction up
   the color ramp, as in [](/docs/tutorials/population_cnv). Autoscale takes its
   maximum from the tallest single cell in view

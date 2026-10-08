@@ -15,8 +15,8 @@ creates.
 
 :::caution Experimental
 
-The AlphaGenome plugin is beta, and every track on this page is a model's
-prediction. We welcome your [feedback](/contact).
+The AlphaGenome plugin is beta, and every prediction track on this page is a
+model's output. We welcome your [feedback](/contact).
 
 :::
 

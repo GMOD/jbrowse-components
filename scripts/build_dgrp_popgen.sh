@@ -294,8 +294,8 @@ cat > "$APP"/config.json <<'JSON'
       "displays": [
         {
           "type": "LinearMultiSampleVariantDisplay",
-          "groupBy": "karyotype",
-          "colorBy": "karyotype",
+          "facet": { "field": "karyotype", "domain": ["Standard", "In(2L)t"] },
+          "rowColor": "karyotype",
           "height": 300
         }
       ]

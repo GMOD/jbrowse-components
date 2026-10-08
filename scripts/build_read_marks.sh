@@ -135,7 +135,7 @@ sed -e "s|@ASSEMBLY@|$ASM|g" -e "s|@SAMPLE@|$SAMPLE|g" -e "s|\"@ADAPTER@\"|$ADAP
         {
           "mark": "bar",
           "transform": [{ "type": "coverage" }],
-          "encoding": { "y": "coverage", "color": "#c8d8ee" }
+          "encoding": { "y": "coverage", "color": { "value": "#c8d8ee" } }
         }
       ]
     }

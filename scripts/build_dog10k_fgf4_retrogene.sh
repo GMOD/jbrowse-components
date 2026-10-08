@@ -123,7 +123,7 @@ panel += [(s, 'Greek wolf %d' % (i + 1), 'Greek gray wolf', 'Gray wolf')
 with open('fgf4.samples', 'w') as fh:
     fh.write('\n'.join(s for s, _, _, _ in panel) + '\n')
 # The row labels and swatch groups travel with the data, not with the figure:
-# `samplesTsvLocation` on the adapter feeds the display's `colorBy`/`groupBy`,
+# `samplesTsvLocation` on the adapter feeds the display's `rowColor`/`facet`,
 # so the sample-to-breed mapping lives in one file derived from the Dog10K
 # table instead of being restated wherever the track is drawn.
 with open('dog10k_fgf4_samples.tsv', 'w') as fh:

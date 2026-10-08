@@ -156,7 +156,7 @@ config = {
                 {
                     'type': 'MultiWaySyntenyDisplay',
                     'displayId': 'syri_pangenome-MultiWaySyntenyDisplay',
-                    'domain': names[1:],
+                    'rows': {'domain': names[1:]},
                     'ribbonColor': {'field': 'syri', 'domain': syri_types},
                 }
             ],

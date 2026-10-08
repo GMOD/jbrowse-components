@@ -99,7 +99,8 @@ is `ENSG00000188263`, _TTLL8_ is `ENSG00000138892`.
 ## Sorting Tiberius models into five classes against GENCODE
 
 The portal compares each Tiberius model on chr22 with GENCODE and puts it in one
-of five classes, and every class except Agrees gets a card.
+of five classes: Agrees and four classes of disagreement. Only the four
+disagreement classes get a card.
 
 | Class              | What it means                                                     | On chr22                                                   | What an annotator does   |
 | ------------------ | ----------------------------------------------------------------- | ---------------------------------------------------------- | ------------------------ |
@@ -192,7 +193,7 @@ of its five junctions, say), which get no card.
 
 ```text
 chr22  21636314  21636431  g13605.t1:donor-1048     0  +
-chr22  23977067  23977386  g13682.t1:acceptor+3025  0  -
+chr22  23977067  23977386  g13682.t1:donor+3025     0  -
 chr22  50012765  50018574  g14001.t1:split          0  -
 ```
 

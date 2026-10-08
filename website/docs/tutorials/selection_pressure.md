@@ -108,7 +108,7 @@ curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/
 
 ```bash
 python3 kaks_from_pairs.py pairs.tsv both.cds.fa.gz \
-  --key record --strip-version -o primate.blocks
+  --key record --strip-version --min-syn-subs 3 --max-ds 0.3 -o primate.blocks
 gzip -kf primate.blocks human.bed rhesus.bed
 ```
 
@@ -118,13 +118,14 @@ frame, and runs Nei-Gojobori.
 
 ### Filtering paralogs and low-count pairs
 
-True orthologs share one divergence time, so their dS values cluster. A pair an
-order of magnitude above the cluster is a paralog the aligner preferred, and
-`--max-ds` removes it.
+True orthologs share one divergence time, so their dS values cluster. A pair
+well above the cluster is a paralog the aligner preferred, and `--max-ds` drops
+every pair whose dS exceeds its value.
 
 The top of a table sorted by dN/dS is the pairs with almost nothing to divide
 by: _HBA1_ lands there off a single synonymous difference. `--min-syn-subs` is a
-floor on that count.
+floor on that count, and drops every pair with fewer synonymous differences than
+its value.
 
 Every row also has that count and a two-sided Fisher exact p, the test
 [MEGA](https://www.megasoftware.net/web_help_12/Analysis_Preferences_Fisher_s_Exact_Test.htm)

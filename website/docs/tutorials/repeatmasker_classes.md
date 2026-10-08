@@ -84,9 +84,10 @@ features have, `repFamily` among them. <!-- menu-path-ok -->
 
 ## Pinning lane order and colors in a track config
 
-A track config can open the track in the partitioned view. Two more settings
-keep the lanes stable as the window's class list changes: `rowColor` pairs a
-class with a color, and `rows.domain` fixes the lane order.
+A track config can open the track in the partitioned view. `rowColor` pairs a
+class with a color, so a class keeps its color as the window's class list
+changes. This config sets no `rows.domain`, so the lanes sort by class name, as
+in the figure; a `rows.domain` listing classes puts them first, in that order.
 
 ```json addtrack
 {
@@ -123,8 +124,8 @@ class with a color, and `rows.domain` fixes the lane order.
 }
 ```
 
-A lane not named in `rowColor` takes a color from the categorical palette by its
-position in the stack, so its color moves as the window's class list changes.
+A lane not named in `rowColor` paints in the default block color. Setting
+`unknown` in `rowColor` gives every unnamed lane one color.
 
 The track opens with the display listed **first**, so the multi-row entry makes
 lanes the default. Putting a bare `{ "type": "LinearBasicDisplay" }` ahead of it

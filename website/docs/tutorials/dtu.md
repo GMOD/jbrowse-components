@@ -12,7 +12,7 @@ Differential transcript usage tests whether a gene changes which of its isoforms
 it expresses between two conditions, here skeletal muscle and liver. We run the
 test with satuRn, a Bioconductor package, on ENCODE quantifications, write each
 transcript's statistic into the GFF3 attribute column, and color the gene track
-by it, with a key listing each bin.
+by it, with a key listing each interval.
 
 ## Prerequisites
 
@@ -211,7 +211,7 @@ hg38 assembly before either track.
 
 ## Coloring each isoform by its usage change
 
-The track's `color` bins `dif_called`, a called transcript's isoform-fraction
+The track's `color` paints `dif_called`, a called transcript's isoform-fraction
 change, through a `threshold` scale, liver-preferred below zero and
 muscle-preferred above. A value on a cut takes the interval above it. The key
 lists every interval under the `title`, plus a `(no value)` row for uncalled

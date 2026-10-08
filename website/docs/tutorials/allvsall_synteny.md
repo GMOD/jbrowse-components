@@ -277,11 +277,14 @@ The `ecoli_ava` track can also draw each alignment as a line at its identity,
 one row per strain, the percent identity plot
 [PipMaker](https://doi.org/10.1101/gr.10.4.577) drew for a pair of genomes. In
 the track menu, **Display types → Marks** draws it with nothing to configure.
-The config below is that plot written out, with two details to read:
+The config below is that plot written out, with four details to read:
 
 - `identity` comes from minimap2's `de` divergence tag
+- `rows` gives each `mate.assemblyName` one row
 - `filter` drops K-12's alignments to itself, which otherwise take a row of
   their own
+- `scales.y.zero` is `false`, so the autoscaled axis spans the identities alone
+  and does not reach 0
 
 ```json addtrack config=https://jbrowse.org/demos/ecoli_pangenome/config.json loc=chr
 {

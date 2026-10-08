@@ -271,7 +271,8 @@ awk -F'\t' -v OFS='\t' -v B=250000 '
 bedGraphToBigWig pi_ratio_In2Lt.bedgraph dm6.chrom.sizes pi_ratio_In2Lt.bw
 ```
 
-The π ratio track colors bins by their side of zero on a pinned symmetric axis:
+The π ratio track colors bins by their side of zero with a `threshold` scale, on
+a y scale pinned to ±1.5:
 
 ```json addtrack
 {
@@ -369,7 +370,10 @@ field holds the far breakpoint:
 2L      2225744  In2Lt  N    <INV>  .     PASS    SVTYPE=INV;END=13154180  GT      1/1       0/0
 ```
 
-The samples TSV pairs each line with its `karyotype` (standard or inverted):
+The samples TSV pairs each line with its `karyotype` (standard or inverted).
+`facet` gives each karyotype its own band of rows, with `domain` listing the
+bands in order, and `rowColor` colors the bar beside each row's label by the
+same column:
 
 ```json addtrack
 {

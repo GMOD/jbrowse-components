@@ -246,8 +246,9 @@ takes `CG`, `CHG`, `CHH` or `all`.
 
 ## Coloring the reads by cytosine context
 
-**Color by... → Bisulfite / EM-seq** in the alignments track menu colors the
-reads by cytosine context. The submenu offers:
+**Color by... → Bisulfite / EM-seq** in the alignments track menu sets
+`baseColor` to the `bisulfite` field, which paints each read's cytosines by
+context. The submenu offers:
 
 - **CpG**, **CHG**, **CHH** or **All cytosines**: methylated cytosines paint red
 - **Show unmethylated (blue)**: once a context is set, converted sites paint

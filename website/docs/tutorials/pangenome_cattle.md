@@ -150,8 +150,9 @@ ANG	Angus	taurine
 BIS	Bison	bison
 ```
 
-The track config uses the other columns, a breed and a lineage per code, to
-write the breed beside each row and tint it by lineage. It also sets:
+The track config tints each row through `rowColor`, whose `field` is the sample
+table's `lineage` column, and `rows.labels` writes each breed beside its row. It
+also sets:
 
 - `rows.domain`, which lists the cattle breeds above the wild species
 - `unit: "haplotype"` draws one row per assembly, each being one haplotype, with

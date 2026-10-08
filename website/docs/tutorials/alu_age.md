@@ -63,7 +63,8 @@ lists three marks:
 - **Per-copy bars** (below `maxBpPerPx`): a `bar` per copy with `milliDiv` as
   the height. A `formula` step writes the first four characters of the name into
   `lineage` (AluJ, AluS, AluY: oldest to youngest, and AluY is still inserting),
-  and a categorical `domain` fixes the legend order and colours
+  and the categorical `domain` fixes the legend order while `range` sets the
+  colours
 - **Copies per bin** (past `minBpPerPx`): every Alu copy counted per bin, in
   grey, from the density sidecar
 - **AluY per bin**: the same count behind a `filter` for AluY, in red

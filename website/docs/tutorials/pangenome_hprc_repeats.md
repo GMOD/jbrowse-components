@@ -14,7 +14,7 @@ tutorial_subcategory: HPRC release 2
 A tandem repeat is one sequence copied head to tail, and the number of copies
 varies from person to person. An assembled haplotype spans the whole array, so
 the Human Pangenome Reference Consortium's release 2 graph holds each
-haplotype's repeat at its full length. We read two repeats off it, one bar per
+haplotype's repeat at its full length. We read three arrays off it, one bar per
 haplotype:
 
 - at _LPA_, count copies of the kringle IV type 2 repeat and tell its two repeat

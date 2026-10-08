@@ -126,8 +126,8 @@ Two entries in the track config matter here:
   becomes a color-by mode, and `color` is the color the file puts beside each
   type
 - the `MultiWaySyntenyDisplay` entry sets up the
-  [lanes view](#every-accession-in-columbia-coordinates): `domain` names the
-  lanes and `ribbonColor` colors the bands by `syri`
+  [lanes view](#every-accession-in-columbia-coordinates): `rows.domain` names
+  the lanes and `ribbonColor` colors the bands by `syri`
 
 ```json addtrack
 {

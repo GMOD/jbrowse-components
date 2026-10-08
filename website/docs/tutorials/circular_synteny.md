@@ -17,9 +17,9 @@ hg38-to-mm39 liftOver chain as ribbons between them, so one picture shows where
 the autosomes have been shuffled and where the X has not. The circle is a
 Circos-style circular genome view opened on both assemblies at once. It reads
 the chain from the indexed copy on jbrowse.org and orders the mouse arc to
-follow the human one. We add a gene density ring per genome, then read one
-ribbon and one ring value back out of the indexed alignment file and the bigWig
-they came from.
+follow the human one. We add a gene density ring covering both genomes, then
+read one ribbon and one ring value back out of the indexed alignment file and
+the bigWig they came from.
 
 ## Prerequisites
 
@@ -223,7 +223,8 @@ it lies. Two settings switch the colouring:
 - **Color by... → Strand** in the view's menu paints the reverse alignments a
   second colour, and **Show legend** names the two.
 - In a session, `"color": { "field": "strand" }` on the view sets the same, and
-  `"field": "query"` is the chromosome colouring the circle opens with.
+  `"field": "query"` colours by the first genome's chromosomes, human here,
+  which is how the circle opens.
 
 <Figure src="/img/circular_synteny/color_by_strand.png" caption="The human and mouse circle coloured by strand. Whole mouse chromosomes take one colour or the other by which way they run against their human partners; a ribbon of the other colour inside a bundle is an inversion." />
 
@@ -297,7 +298,7 @@ strip whose colour is the average over each pixel's bins:
 ```
 
 **Edit colors/arrangement...** in the track menu sets the `color` pair, one
-colour below the baseline and one above.
+colour below the display's `origin` and one above.
 
 Rings stack inward from the ideogram in the order the view's `tracks` lists
 them, and the ribbons draw inside the innermost ring, so the density entry goes

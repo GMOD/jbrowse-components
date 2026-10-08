@@ -195,8 +195,9 @@ with a `LinearMultiSampleVariantDisplay`:
 }
 ```
 
-[`facet`](/docs/config/linearmultisamplevariantdisplay/#slot-facet) keeps the
-karyotype classes contiguous, and its `domain` stacks them in dosage order.
+[`facet`](/docs/config/linearmultisamplevariantdisplay/#slot-facet) gives each
+karyotype class its own labelled band, and its `domain` orders the bands by
+dosage.
 [`referenceDrawingMode`](/docs/config/linearmultisamplevariantdisplay/#slot-referencedrawingmode)
 `skip` fills the track with the reference color and paints alt cells on top. The
 display draws a row for every sample in the file and divides the track height

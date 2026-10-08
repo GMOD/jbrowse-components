@@ -298,9 +298,9 @@ reference, so the build script drops it from every row.[^cpg]
 The lower track repeats the estimate for every canid.
 
 **Clustering → Cluster rows by similarity...** in its track menu, or
-`runClustering` in the config, orders the rows by each animal's profile across
-the window. Clustering groups animals whose expansion starts and ends in the
-same place, and the blocks on either side of the gene are deletion
+`runClustering` in a session's display entry, orders the rows by each animal's
+profile across the window. Clustering groups animals whose expansion starts and
+ends in the same place, and the blocks on either side of the gene are deletion
 polymorphisms.
 
 The depth-based estimate puts far more of the collection at three or more copies

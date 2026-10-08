@@ -156,22 +156,21 @@ bgzipped, tabix-indexed BED from the merge above:
 ```
 
 JBrowse finds the `.bed.gz.tbi` beside the file.
-[`rows`](/docs/config/linearmultirowfeaturedisplay/#slot-rows) sets up the
-sub-rows:
+[`rows`](/docs/config/linearmultirowfeaturedisplay/#slot-rows) sets up the rows:
 
 - `field` is the attribute to split rows by; every distinct `cellType` becomes a
-  labeled sub-row
-- `domain` pins the sub-rows to an order, here ENCODE's tiers; the default is
-  alphabetical
+  labeled row
+- `domain` pins the rows to an order, here ENCODE's tiers; without it the rows
+  sort by value
 
 JBrowse paints each feature with its `itemRgb`; the
 [`color`](/docs/config/linearmultirowfeaturedisplay/#slot-color) slot overrides
-that, taking the same `field` and `domain` pair as `rows`. The adapter needs
+that with a `field` whose values each take a color through its `domain` and
+`range`. The adapter needs
 [`columnNames`](/docs/config/bedtabixadapter/#slot-columnnames) only for a file
 without a defline.
 
-Type `chr7:27,110,000-27,265,000` into the location box, the _HOXA_ cluster and
-the window the build script opens on:
+Type `chr7:27,110,000-27,265,000` into the location box, the _HOXA_ cluster:
 
 <Figure src="/img/chromhmm_encode_hoxa.png" caption="The nine ENCODE cell types over HOXA, one row each in ENCODE's tier order, under the RefSeq genes. HUVEC, HSMM and NHEK are active into the posterior genes, NHLF stops at HOXA7 and HMEC fades past it, the blood lines GM12878 and K562 are repressed across the cluster, and H1-hESC is poised." />
 
@@ -211,9 +210,9 @@ one fetch. Their state names are mnemonics (`12_EnhBiv`, `14_ReprPCWk`), so this
 track labels its colors with `scale: "identity"`: the file's `itemRgb` still
 paints each block, and `labels` spells out the fifteen `domain` colors in order.
 The merged file is hosted, so the track loads as it stands. It omits the three
-settings the PAX5 figure uses to order and tint the 127 rows (a `rows.domain`
-naming every epigenome in the paper's tissue order, plus the `rowGroups` and
-`rowColor` built later in this section). The hosted demo config,
+settings the PAX5 figure uses to order the 127 rows and color their label bars
+(a `rows.domain` naming every epigenome, grouped by tissue, plus the `rowGroups`
+and `rowColor` built later in this section). The hosted demo config,
 https://jbrowse.org/code/jb2/main/test_data/config_demo.json, has the track with
 all three:
 
@@ -276,9 +275,10 @@ Red is active TSS, yellow enhancer, green transcription, grey Polycomb, and
 speckled olive bivalent.
 
 Type `chr9:34,700,000-38,420,000` into the location box, the chr9 stretch from
-_FAM205A_ to _ALDH1B1_. With the hosted track's tissue order, the track
-reproduces [Roadmap Epigenomics 2015](https://doi.org/10.1038/nature14248) Fig.
-3a, all 127 epigenomes in the paper's order. Over _PAX5_:
+_FAM205A_ to _ALDH1B1_. The figure below adds a `facet` whose `domain` lists the
+tissue groups in the paper's order, which reproduces
+[Roadmap Epigenomics 2015](https://doi.org/10.1038/nature14248) Fig. 3a, all 127
+epigenomes. Over _PAX5_:
 
 - strong transcription with genic enhancers (green and yellow) marks only the B
   cells and the B-lymphoblastoid GM12878
@@ -388,9 +388,10 @@ Merge the two keys of `tissues.json` into the display. The build script also
 appends the mnemonic to a name that two epigenomes share, which a `STD_NAME`
 match leaves as one row.
 
-The hosted track orders the rows by tissue through `rows.domain` and leaves
-`facet` out, so clustering runs over all 127 together and the label bars show
-which tissues a cluster spans. The PAX5 figure adds `facet` to draw the bands.
+The hosted track orders the rows by tissue group through `rows.domain` and
+leaves `facet` out, so clustering runs over all 127 together and the label bars
+show which tissues a cluster spans. The PAX5 figure adds `facet` to draw the
+bands, with a `domain` that stacks them in the paper's group order.
 
 The 19 groups in `EID_metadata.tab` include ENCODE2012. Roadmap folded the
 ENCODE 2012 reference epigenomes (GM12878, K562, HeLa-S3, HepG2, A549, HUVEC,

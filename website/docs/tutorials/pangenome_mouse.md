@@ -194,10 +194,10 @@ runs the whole build, and the alignment takes most of a day. It:
 3. runs `minigraph` per chromosome
 4. joins the chromosomes with segment ids renumbered
 
-The script writes a `README.txt` beside the data recording the source, the
-modifications, the tool versions and the audits that ran. The build stops if:
+The script runs two audits on the joined graph and stops if:
 
-- the reference path does not reproduce the reference chromosome lengths
+- a segment carries an `SN` tag that is neither `mm39#0#chr*` nor
+  `<strain>#1#chr*`
 - renumbering leaves a duplicate segment id
 
 Either failure produces a graph with wrong coordinates that every later check

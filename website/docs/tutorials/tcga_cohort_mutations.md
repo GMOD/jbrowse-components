@@ -117,7 +117,7 @@ the multi-sample matrix display:
 }
 ```
 
-The display config sets three things:
+The track config sets three things:
 
 - [`variantLayout: 'columns'`](/docs/user_guides/multivariant_track#matrix-best-for-snpindel-patterns)
   uses one column per mutation, so a gene's mutations pack together however far
@@ -130,7 +130,7 @@ The display config sets three things:
 
 The display divides
 [`height`](/docs/config/linearmultisamplevariantdisplay/#slot-height) among the
-rows, so each row is under a pixel tall and a band's mutation density shows as
+rows, so each row is about a pixel tall and a band's mutation density shows as
 its darkness.
 
 ## Group the rows by clinical annotation

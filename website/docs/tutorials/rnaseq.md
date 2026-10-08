@@ -279,9 +279,9 @@ awk -F'\t' -v OFS='\t' '
 ```
 
 This config loads the regtools file built from this page's BAM as a feature
-track with one mark per junction, coloured by the known-junction flag against
-RefSeq. `columnNames` names the extra columns so the colour encoding can read
-them:
+track whose `link` mark draws each junction, coloured by the known-junction flag
+against RefSeq. `columnNames` names the extra columns so the colour encoding can
+read them:
 
 ```json addtrack
 {
