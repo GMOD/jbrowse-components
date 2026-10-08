@@ -6,6 +6,10 @@ import { getLDMatrixFromPlink } from './getLDMatrixFromPlink.ts'
 import { bandPairIndex } from './ldBand.ts'
 
 function ldMatrix(start: number, end: number) {
+  return ldMatrixOf('example.ld', [{ start, end }])
+}
+
+function ldMatrixOf(file: string, spans: { start: number; end: number }[]) {
   const pluginManager = new PluginManager([new VariantsPlugin()])
   pluginManager.createPluggableElements()
   pluginManager.configure()
@@ -16,11 +20,15 @@ function ldMatrix(start: number, end: number) {
       adapterConfig: {
         type: 'PlinkLDAdapter',
         ldLocation: {
-          localPath: require.resolve('../PlinkLDAdapter/test_data/example.ld'),
+          localPath: require.resolve(`../PlinkLDAdapter/test_data/${file}`),
           locationType: 'LocalPathLocation',
         },
       },
-      regions: [{ assemblyName: 'a', refName: '1', start, end }],
+      regions: spans.map(span => ({
+        assemblyName: 'a',
+        refName: '1',
+        ...span,
+      })),
     },
   })
 }
@@ -50,4 +58,23 @@ test('a pair the file does not list is not computed', async () => {
   const { ldValues, band } = await ldMatrix(0, 5000)
   expect(ldValues[bandPairIndex(0, 1, band)]).toBeCloseTo(0.82)
   expect(ldValues[bandPairIndex(1, 2, band)]).toBe(LD_NOT_COMPUTED)
+})
+
+test('a pair spanning two displayed blocks loads', async () => {
+  const { snps, ldValues, band } = await ldMatrixOf('example.ld', [
+    { start: 900, end: 1100 },
+    { start: 1900, end: 2100 },
+  ])
+  expect(snps.map(s => s.id)).toEqual(['rsLEAD', 'rsD'])
+  expect(ldValues[bandPairIndex(0, 1, band)]).toBeCloseTo(0.05)
+})
+
+test('two variants at one position keep a column each', async () => {
+  const { snps, ldValues, band } = await ldMatrixOf('colocated.ld', [
+    { start: 0, end: 5000 },
+  ])
+  expect(snps.map(s => s.id)).toEqual(['rs1', 'rs2', 'rs3'])
+  expect(ldValues[bandPairIndex(0, 1, band)]).toBeCloseTo(0.9)
+  expect(ldValues[bandPairIndex(0, 2, band)]).toBeCloseTo(0.4)
+  expect(ldValues[bandPairIndex(1, 2, band)]).toBeCloseTo(0.6)
 })

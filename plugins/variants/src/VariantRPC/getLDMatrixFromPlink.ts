@@ -1,6 +1,7 @@
 import { getAdapter } from '@jbrowse/core/data_adapters/dataAdapterCache'
 import { LD_NOT_COMPUTED, isLDRecordSource } from '@jbrowse/ld-core'
 
+import { bpInRegion } from '../PlinkLDAdapter/filterRecordsInRegion.ts'
 import { bandCellCount, bandPairIndex, resolveBand } from './ldBand.ts'
 
 import type { LDMatrixResult, LDMetric, LDSnp } from './ldTypes.ts'
@@ -8,10 +9,11 @@ import type PluginManager from '@jbrowse/core/PluginManager'
 import type { Region } from '@jbrowse/core/util'
 import type { PlinkLDRecord } from '@jbrowse/ld-core'
 
-// PLINK LD records name the same SNP from many rows, so (refName, BP)
-// deduplicates and indexes them.
-function snpKey(refName: string, bp: number) {
-  return `${refName}:${bp}`
+// PLINK LD records name the same SNP from many rows. The id is part of the
+// key because two variants can share a position: a site split into one record
+// per allele, or a SNP beside an indel.
+function snpKey(refName: string, bp: number, id = '') {
+  return `${refName}:${bp}:${id}`
 }
 
 function metricValue(record: PlinkLDRecord, ldMetric: LDMetric) {
@@ -48,7 +50,7 @@ function resolveMetric(
 function collectSortedSnps(records: PlinkLDRecord[]): LDSnp[] {
   const snpMap = new Map<string, LDSnp>()
   const add = (refName: string, bp: number, id: string, maf?: number) => {
-    const key = snpKey(refName, bp)
+    const key = snpKey(refName, bp, id)
     if (!snpMap.has(key)) {
       snpMap.set(key, {
         id,
@@ -65,7 +67,7 @@ function collectSortedSnps(records: PlinkLDRecord[]): LDSnp[] {
   }
   return [...snpMap.values()].sort((a, b) =>
     a.refName === b.refName
-      ? a.start - b.start
+      ? a.start - b.start || (a.id ?? '').localeCompare(b.id ?? '')
       : a.refName.localeCompare(b.refName),
   )
 }
@@ -112,14 +114,22 @@ export async function getLDMatrixFromPlink({
   const hasDprime = header.dprimeIdx >= 0
   const metric = resolveMetric(ldMetric, { hasR2, hasDprime })
 
+  // A pair is fetched by the region its A side is in and kept where its B
+  // side is in any displayed region, so a pair spanning two blocks loads.
   const allRecords: PlinkLDRecord[] = []
   for (const region of regions) {
-    const records = await dataAdapter.getLDRecordsInRegion(
+    const records = await dataAdapter.getLDRecords(
       { refName: region.refName, start: region.start, end: region.end },
       args,
     )
     for (const r of records) {
-      allRecords.push(r)
+      if (
+        regions.some(
+          other => other.refName === r.chrB && bpInRegion(r.bpB, other),
+        )
+      ) {
+        allRecords.push(r)
+      }
     }
   }
 
@@ -127,7 +137,7 @@ export async function getLDMatrixFromPlink({
   const n = snps.length
   const indexByKey = new Map<string, number>()
   for (const [idx, snp] of snps.entries()) {
-    indexByKey.set(snpKey(snp.refName, snp.end), idx)
+    indexByKey.set(snpKey(snp.refName, snp.end, snp.id), idx)
   }
 
   // A pair the file does not list was never measured: plink's default
@@ -139,8 +149,8 @@ export async function getLDMatrixFromPlink({
   )
 
   for (const record of allRecords) {
-    const i = indexByKey.get(snpKey(record.chrA, record.bpA))
-    const j = indexByKey.get(snpKey(record.chrB, record.bpB))
+    const i = indexByKey.get(snpKey(record.chrA, record.bpA, record.snpA))
+    const j = indexByKey.get(snpKey(record.chrB, record.bpB, record.snpB))
     if (i !== undefined && j !== undefined && i !== j) {
       const slot = bandPairIndex(i, j, band)
       if (slot >= 0) {

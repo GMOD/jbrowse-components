@@ -1,0 +1,4 @@
+CHR_A	BP_A	SNP_A	CHR_B	BP_B	SNP_B	R2
+1	100	rs1	1	100	rs2	0.9
+1	100	rs1	1	300	rs3	0.4
+1	100	rs2	1	300	rs3	0.6
