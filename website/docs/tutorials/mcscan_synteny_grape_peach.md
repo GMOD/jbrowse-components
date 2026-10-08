@@ -16,12 +16,6 @@ view, where a ribbon joins each orthologous gene pair between the grape and
 peach views and a bar marks each block (a run of gene pairs in conserved order),
 then into a dotplot.
 
-The run writes two files that JBrowse loads as separate synteny tracks:
-`.anchors` (one gene pair per line, via `MCScanAnchorsAdapter`) and
-`.anchors.simple` (one synteny block per line, via
-`MCScanSimpleAnchorsAdapter`). Both pair genes by name, so each also needs a BED
-per genome mapping gene ids to coordinates.
-
 ## Prerequisites
 
 - [jcvi](https://github.com/tanghaibao/jcvi) with the
@@ -57,17 +51,11 @@ so there is nothing to download by hand.
 - peach gene annotation:
   http://ftp.ensemblgenomes.org/pub/plants/release-58/gff3/prunus_persica/
 
-## What MCScan compares
-
-MCScan compares gene annotations, so it finds synteny between species too
-divergent for [minimap2](/docs/tutorials/synteny_visualization) to line up base
-by base. Each gene pair it reports (an anchor) has no base-level alignment, so
-the finest ribbon spans one whole gene.
-
 ## What `.anchors` and `.anchors.simple` hold
 
-`.anchors` is the gene-pair level. Each line is one orthologous pair and its
-alignment score, with `###` separating synteny blocks:
+The run writes two files that JBrowse loads as separate synteny tracks.
+`.anchors`, via `MCScanAnchorsAdapter`, is the gene-pair level: each line is one
+orthologous pair and its alignment score, with `###` separating synteny blocks:
 
 ```text
 ###
@@ -76,8 +64,9 @@ VIT_201s0011g00080.1	Prupe.1G290800.1	446
 VIT_201s0011g00090.1	Prupe.1G290700.1	147
 ```
 
-`.anchors.simple` is the same run reduced to one line per block: the first and
-last gene of the block on each side, a score, and the block's orientation:
+`.anchors.simple`, via `MCScanSimpleAnchorsAdapter`, is the same run reduced to
+one line per block: the first and last gene of the block on each side, a score,
+and the block's orientation:
 
 ```text
 VIT_201s0011g00070.1	VIT_201s0011g00910.1	Prupe.1G281700.1	Prupe.1G290900.1	149	-
@@ -202,9 +191,8 @@ swapped:
 }
 ```
 
-`bed1` and `bed2` supply the coordinates, one per genome in `assemblyNames`
-order. Both adapters read the whole file into memory, which MCScan output is
-small enough for.
+Both adapters read the whole file into memory, which MCScan output is small
+enough for.
 
 ## Viewing gene pairs and blocks in one synteny view
 
@@ -240,9 +228,6 @@ name needs the full `displays` array:
 }
 ```
 
-A block's bar shows where it lies and which way it runs; the gene-pair ribbons
-show whether the genes inside keep their order.
-
 <Figure src="/img/mcscan_synteny/anchors_vs_simple.png" links="Gene pairs=mcscan_synteny/anchors,Blocks=mcscan_synteny/anchors_simple" caption="A run of MCScan blocks on grape chr9 against peach Pp03. Top: .anchors alone, one ribbon per orthologous gene pair. Bottom: both files on the same band, so each block is the bundle of pairs it was reduced from." />
 
 ## A single gene pair up close {#what-an-anchor-looks-like-up-close}
@@ -251,9 +236,8 @@ Zoom to one block with both gene tracks on and set to **Show only genes**.
 
 <Figure caption="One MCScan block on grape chr19 against peach Pp04, both gene tracks set to Show only genes. Each ribbon is one .anchors line, spanning the two genes it pairs; genes without a ribbon have no anchor in this run." src="/img/mcscan_synteny/gene_level.png" />
 
-Most genes have no ribbon, since MCScan anchors only the pairs it could call
-confidently. Zooming further widens the ribbons, which span whole genes because
-the file holds no finer alignment.
+MCScan anchors only the pairs it could call confidently, so most genes have no
+ribbon.
 
 ## Viewing the gene pairs as a dotplot
 
@@ -269,8 +253,7 @@ vertical axis to follow the horizontal one.
 **Re-order chromosomes** puts each peach chromosome's strongest grape partner on
 the diagonal, and its other partners stay off it. The
 [script](#reproduce-it-end-to-end) prints the same pairings off
-`.anchors.simple`. Grape and peach both descend from the ancestral eudicot
-hexaploidy (Jaillon et al.) and have rearranged differently since.
+`.anchors.simple`.
 
 ## Converting an MCScanX run {#coming-from-mcscanx}
 
@@ -300,13 +283,14 @@ track's `assemblyNames`. Two options decide whether the result draws:
 `--fai peach=peach.fa.fai` checks the refNames against the assembly; an unknown
 name draws empty. An anchors score becomes `-log10` of MCScanX's e-value.
 
-Naming a third `--species` writes an ortholog table instead, since one
-`.collinearity` covers every pair. See
-[ortholog tables](/docs/config_guides/synteny_track#from-mcscanx).
+The number of `--species` names sets what the run writes:
 
-Naming a single `--species` keeps the blocks duplicated within that genome,
-which [](/docs/tutorials/homoeolog_synteny) draws as a dotplot of one assembly
-on both axes.
+- A third species writes an ortholog table instead, since one `.collinearity`
+  covers every pair. See
+  [ortholog tables](/docs/config_guides/synteny_track#from-mcscanx).
+- A single species keeps the blocks duplicated within that genome, which
+  [](/docs/tutorials/homoeolog_synteny) draws as a dotplot of one assembly on
+  both axes.
 
 ## Reproduce it end to end
 

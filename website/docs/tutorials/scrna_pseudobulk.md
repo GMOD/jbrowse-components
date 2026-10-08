@@ -63,18 +63,17 @@ the tracks go on an hg38 assembly that spells them the same way.
 Clustering and labeling happen upstream, in Seurat, scanpy, or whatever produced
 the annotation. The build here starts from a barcode-to-label table and the BAM.
 
-Two decisions determine whether the rows can be compared:
+Three decisions determine whether the rows can be compared:
 
-- **Duplicates.** Cell Ranger flags PCR duplicates of the same UMI (unique
-  molecular identifier) with `0x400`; filter them out so a row's height tracks
-  expression. Restricting to uniquely mapped reads (`MAPQ` 255, what STAR emits
-  inside Cell Ranger) keeps multimappers off paralogs
+- **Duplicates and multimappers.** Cell Ranger flags PCR duplicates of the same
+  UMI (unique molecular identifier) with `0x400`; filter them out so a row's
+  height tracks expression. Restricting to uniquely mapped reads (`MAPQ` 255,
+  what STAR emits inside Cell Ranger) keeps multimappers off paralogs
 - **Normalization.** Cell types differ in cell count and depth, so each pooled
   track needs scaling (CPM is usual) before one row's height means anything next
   to another's
-
-Coverage must also be splice-aware: a read spanning an intron has an `N` in its
-CIGAR, and counting that as covered fills in introns no read touched.
+- **Splice-aware coverage.** A read spanning an intron has an `N` in its CIGAR,
+  and counting that as covered fills in introns no read touched
 
 One route splits the BAM by label with
 [`sinto filterbarcodes`](https://timoast.github.io/sinto/basic_usage.html) and
@@ -95,8 +94,7 @@ for bam in *.bam; do
 done
 ```
 
-The sinto route writes a second copy of the BAM to disk, split N ways.
-
+The sinto route writes a second copy of the BAM to disk, split N ways;
 [`build_scrna_pseudobulk.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_scrna_pseudobulk.sh)
 instead reads the BAM by region over HTTPS, accumulating each cell type's
 coverage in one pass with no download, split or scratch space. Either route
@@ -115,9 +113,7 @@ awk -v total="$reads" -v OFS='\t' \
 bedGraphToBigWig celltype.cpm.bg hg38.chrom.sizes celltype.bw
 ```
 
-The script fills one row per cell type in one pass over each chromosome. The
-first `continue` applies the duplicate and uniqueness filters, and `get_blocks`
-makes the coverage splice-aware:
+The script fills one row per cell type in one pass over each chromosome:
 
 <!-- from: scripts/build_scrna_pseudobulk.sh -->
 
@@ -144,8 +140,7 @@ for read in bam.fetch(chrom):
         cov[t][start // BIN : (end - 1) // BIN + 1] += 1
 ```
 
-The script writes each row as a bedGraph, scales it by
-`1e6 / <that cell type's counted reads>`, and converts it:
+The last step converts each row's bedGraph:
 
 <!-- from: scripts/build_scrna_pseudobulk.sh -->
 
@@ -219,10 +214,6 @@ chrX:136,658,390-136,662,390 chr12:10,556,794-10,560,794 chr4:1,164,931-1,168,93
 
 <Figure caption="Nine per-cell-type BigWigs from the 10x 5k PBMC dataset, loaded as one MultiQuantitativeTrack, over nine marker loci the cluster labelling did not use, in the same order as the rows they mark. The signal runs down the diagonal." src="/img/scrna/marker_panel.png" />
 
-Each marker's expression shows as the height of its 3' spike from row to row.
-All nine rows share one axis, and its log scale keeps the weaker markers' spikes
-readable beside the strongest.
-
 `jbrowse add-track --multiwig` takes a comma-separated list of the BigWigs and
 builds the same track, labeling each row from its filename, and the **Add
 multi-row track** workflow under **Add track** takes the same URLs one per line.
@@ -279,28 +270,26 @@ points at a store with the same layout, built by the reproduce script below:
 A relative `uri` resolves against the config that holds it, so the store is
 served as static files beside `config.json`.
 
-The store holds one marker window per chromosome, looked up by chromosome name,
-so the build script picks one marker per chromosome. Covering only marker
-windows, where the cells have reads, keeps the store small.
+The store covers only marker windows, where the cells have reads, which keeps it
+small. The lookup is by chromosome name, so the build script picks one marker
+per chromosome.
 
 Type `chr12:69,353,000-69,354,500` into the location box, the 3' end of _LYZ_,
 where the 3' kit's reads land:
 
 <Figure caption="The nine pseudobulk rows at LYZ above the individual cells they are a sum over, ordered by cell type and colored to match. The monocyte and dendritic blocks are solid; the lymphocyte blocks are speckle, one UMI per cell." src="/img/scrna/percell_lyz.png" />
 
-Summed, the lymphocyte rows are a low flat line beside the monocyte peak. Per
-cell, many lymphocytes have a single UMI of a monocyte gene, ambient RNA that
-was free in the droplet.
+Per cell, many lymphocytes have a single UMI of a monocyte gene, ambient RNA
+that was free in the droplet.
 
 Two settings in the config above decide whether the speckle is visible:
 
 - **Order the rows by cell type.** Thousands of rows in a few hundred pixels is
   under a pixel each, so a block only reads if its cells are adjacent. The
   `group` on each row seeds that and drives the sidebar tree
-- **Pin the score axis.** `scales.y` with a `domainMin` of 0 and a low
-  `domainMax` puts one UMI a visible fraction up the color ramp, as in
-  [](/docs/tutorials/population_cnv). Autoscale takes its maximum from the
-  tallest single cell in view
+- **Pin the score axis.** A low `domainMax` puts one UMI a visible fraction up
+  the color ramp, as in [](/docs/tutorials/population_cnv). Autoscale takes its
+  maximum from the tallest single cell in view
 
 ## Reproduce it end to end
 

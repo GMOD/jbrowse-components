@@ -15,12 +15,14 @@ The Columbia and Landsberg accessions of _Arabidopsis thaliana_ differ by an
 inversion of more than a megabase on the short arm of chromosome 4, first seen
 under the microscope and later confirmed by assembling Landsberg. We find it
 again by aligning six assembled accessions and running
-[SyRI](https://github.com/schneebergerlab/syri), which sorts what an alignment
-contains into syntenic, inverted, translocated and duplicated regions. We
-compare each accession with Columbia and with the accession above it, and every
-comparison goes into one file whose ribbons take their color from the type SyRI
-assigns: the stack [plotsr](https://github.com/schneebergerlab/plotsr) draws,
-and the same accessions as lanes under Columbia coordinates.
+[SyRI](https://github.com/schneebergerlab/syri), which sorts an alignment into
+syntenic, inverted, translocated and duplicated regions. We compare each
+accession with Columbia and with the accession above it, and every comparison
+goes into one file whose ribbons take the color of the type SyRI assigns. We
+draw that file two ways:
+
+- the stack [plotsr](https://github.com/schneebergerlab/plotsr) draws
+- the same accessions as lanes under Columbia coordinates
 
 ## Prerequisites
 
@@ -59,10 +61,9 @@ so there is nothing to download by hand.
 ## Aligning a pair and running SyRI
 
 SyRI reads a whole-genome alignment of two chromosome-level assemblies whose
-homologous chromosomes share a name. The [script](#reproduce-it-end-to-end)
-keeps the five nuclear chromosomes of each assembly and names them `Chr1` to
-`Chr5`. It aligns each accession to Col-0, and to the accession above it in the
-stack:
+homologous chromosomes share a name, which the
+[script](#reproduce-it-end-to-end) arranges. For each pair the script aligns,
+the commands are:
 
 <!-- from: scripts/build_syri_synteny.sh -->
 
@@ -76,21 +77,25 @@ minimap2 -cx asm5 --eqx Col-0.fa Ler.fa >Col-0_Ler.aln.paf
 syri -c Col-0_Ler.aln.paf -r Col-0.fa -q Ler.fa -F P --prefix Col-0_Ler. --nc 5
 ```
 
-`Col-0_Ler.syri.out` holds one row per annotation. The structural regions are
-the rows with no parent: `SYN`, `INV`, `TRANS`, `INVTR`, `DUP` and `INVDP`, each
-with its interval on both genomes.
+In `Col-0_Ler.syri.out`, the structural regions are the rows with no parent:
+`SYN`, `INV`, `TRANS`, `INVTR`, `DUP` and `INVDP`.
 
 ## SyRI regions as one PAF
 
 A SyRI region is an interval on each of two genomes, the same shape as a PAF
 alignment record.
 [`syri_to_paf.py`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/syri_to_paf.py)
-writes each region as one, naming sequences `<genome>#1#<chrom>` so records from
-many pairs can share a file, with the inverted types on the minus strand and two
-tags: `syri`, the type, and `color`, the color plotsr gives that type. It reads
-sequence lengths from a `.chrom.sizes` file beside `syri.out`, the first two
-columns of the FASTA index. Concatenating the records from every pair gives one
-file for every view below:
+writes each region as one:
+
+- **Sequence names** are `<genome>#1#<chrom>`, so records from many pairs can
+  share a file.
+- **Inverted types** go on the minus strand.
+- **Two tags** carry `syri`, the type, and `color`, the color plotsr gives that
+  type.
+- **Sequence lengths** come from a `.chrom.sizes` file beside `syri.out`, the
+  first two columns of the FASTA index.
+
+Concatenating the records from every pair gives one file for every view below:
 
 <!-- from: scripts/build_syri_synteny.sh -->
 
@@ -180,12 +185,10 @@ Open the first 6 Mb of chromosome 4 in both accessions and pick **syri** under
 }
 ```
 
-The syntenic regions run straight down in grey, and one inverted region crosses
-over between them. The thin ribbons leaving the frame are duplications and
-translocations whose other end sits on another chromosome, which the label at
-the edge of the frame names. The key has one row per color, since plotsr paints
-an inverted translocation as a translocation and an inverted duplication as a
-duplication: `INVTR` shares a row with `TRANS` and `INVDP` with `DUP`.
+The thin ribbons leaving the frame are duplications and translocations whose
+other end sits on another chromosome, which the label at the edge of the frame
+names. The key has one row per color, so `INVTR` shares a row with `TRANS` and
+`INVDP` with `DUP`.
 
 <Figure caption="Chromosome 4 in Col-0 above and Ler below, SyRI regions colored by type. The crossed ribbon is the inversion between the two accessions, with syntenic regions either side." src="/img/syri/col_ler_chr4.png" />
 

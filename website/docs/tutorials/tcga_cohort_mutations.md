@@ -71,9 +71,7 @@ Its columns come from three places:
 - `subtype` is derived from those three; a tumor whose receptor calls do not
   resolve it stays `unknown`
 
-The table lists more tumors than the mutation track draws, since a case with no
-mutation calls still has receptor status. JBrowse reports the unmatched tumors
-when the track loads.
+The table lists more tumors than the mutation track draws.[^unmatched]
 
 ## Load the cohort VCF into JBrowse
 
@@ -178,9 +176,6 @@ Open the matrix over _CDH1_'s exons: right-click _CDH1_ in the gene lane, choose
 
 <Video src="/media/tcga/mutations_collapse_introns.mp4" caption="The whole CDH1 transcript reshaped to its exons from the gene's context menu, and the 979-tumor matrix redrawn over the coding sequence." />
 
-With `facet` and `rowColor` both set to `histology`, the rows band by how the
-tumor was called under the microscope:
-
 <Figure caption="CDH1's exons (introns collapsed), rows grouped and colored by histology, cells colored by VEP impact. The truncating (HIGH impact) cells crowd into the lobular band and the much larger ductal band above it is nearly empty." src="/img/tcga/mutations_cdh1_histology.png" />
 
 Loss of E-cadherin, the protein _CDH1_ encodes, is the defining lesion of
@@ -193,9 +188,8 @@ gene-scale.
 ## Group rows by receptor subtype
 
 Setting `facet` and `rowColor` to `subtype` instead bands the rows by receptor
-status ([TCGA 2012](https://doi.org/10.1038/nature11412)), as does picking
-**Group by...** then **Color by... → Samples** in the track menu. The `domain`
-puts the HR+/HER2- band first:
+status ([TCGA 2012](https://doi.org/10.1038/nature11412)), with the HR+/HER2-
+band first in `domain`:
 
 ```json addtrack
 {
@@ -229,14 +223,17 @@ puts the HR+/HER2- band first:
 ```
 
 The bottom band is the tumors whose receptor calls do not resolve a subtype.
-Hovering a column names its mutation and consequence; clicking opens the variant
-popup with per-tumor read counts.
 
 With its introns collapsed the same way, _PIK3CA_ shows its calls piled on three
 columns: H1047R in the kinase domain, and E542K and E545K side by side in the
 helical domain. All three run through every band, densest in HR+/HER2-.
 
 <Figure caption="PIK3CA's exons (introns collapsed), rows banded and colored by receptor subtype. Three columns, two in the helical domain and one in the kinase domain, hold most of the cohort's calls, against the private columns spread around them." src="/img/tcga/mutations_pik3ca_grouped.png" />
+
+The
+[copy-number cohort](/docs/tutorials/tcga_cohort_cnv#split-the-recurrence-by-clinical-group)
+splits its gain and loss frequency by the same clinical TSV, so its subtype rows
+line up with these bands.
 
 ## Add a track of mutation frequency per gene
 
@@ -284,10 +281,7 @@ per group.
 }
 ```
 
-[`scales.y.domainMin`](/docs/config/valuescale/#slot-scalesydomainmin)/[`scales.y.domainMax`](/docs/config/valuescale/#slot-scalesydomainmax)
-pin every row to one axis. Open the track above the matrix to read each band's
-rate over it. In the output above, _TP53_ climbs toward the triple-negative
-group where _PIK3CA_ falls.
+Open the track above the matrix to read each band's rate over it.
 
 `--impact` sets what counts as a hit, defaulting to the HIGH and MODERATE tiers
 of the consequence impact that colours the matrix. The rate has no background
@@ -308,14 +302,6 @@ cBioPortal study downloads, your own caller) whose rows have `Chromosome`,
 A cohort that never passed through a MAF needs a multi-sample somatic VCF. For
 grouping, any TSV whose first column matches the VCF's sample names works.
 
-## Copy number for the same TCGA-BRCA tumors
-
-The
-[copy-number cohort](/docs/tutorials/tcga_cohort_cnv#split-the-recurrence-by-clinical-group)
-splits its gain and loss frequency by the same clinical TSV, so its subtype rows
-line up with the bands above: 17q gain is confined to the HER2+ row, and 5q loss
-and 10p gain to the triple-negative row.
-
 ## Reproduce it end to end
 
 One script builds every file above for any project id,
@@ -325,13 +311,13 @@ One script builds every file above for any project id,
    project, the GDC's aliquot-merged ensemble calls with germline sites masked
    out, which need no dbGaP application.
 2. [`maf_to_vcf.py`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/maf_to_vcf.py)
-   merges them into one VCF, a column per tumor. A GDC file query filters on
-   what a case has, so it returns metastasis MAFs too. The merge keeps primary
-   tumors, found by the sample-type code `01` in each MAF's own barcode, which
-   are the tumors the [copy-number cohort](/docs/tutorials/tcga_cohort_cnv)
-   paints. It keeps one aliquot per tumor, names each column by its sample
-   barcode as the copy-number rows are named, and reads each deletion's anchor
-   base from the MAF's `CONTEXT` column, so it needs no reference FASTA.
+   merges them into one VCF, a column per tumor. A GDC file query also returns
+   metastasis MAFs, so the merge keeps primary tumors (sample-type code `01` in
+   each MAF's barcode), the tumors the
+   [copy-number cohort](/docs/tutorials/tcga_cohort_cnv) paints. It keeps one
+   aliquot per tumor, names each column by sample barcode as the copy-number
+   rows are named, and reads each deletion's anchor base from the MAF's
+   `CONTEXT` column, so it needs no reference FASTA.
 3. [`tcga_clinical_tsv.py`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/tcga_clinical_tsv.py)
    builds the [clinical table](#what-the-two-files-hold).
 4. [`mutation_recurrence.py`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/mutation_recurrence.py)
@@ -350,8 +336,7 @@ npx --yes serve jbrowse2                         # then open the printed URL
 ```
 
 The script writes a `jbrowse2/` opening on _PIK3CA_ with the recurrence rows
-over the matrix. The assembly is the hosted UCSC hg38 hub's entry copied in, so
-the reference is never downloaded.
+over the matrix.
 
 Swap in any other project id (`TCGA-LUAD`, `TCGA-COAD`, ...) for a different
 cohort, with `--no-receptors` to `tcga_clinical_tsv.py` for a non-breast
@@ -373,3 +358,7 @@ project.
 - [GDC Data Portal](https://portal.gdc.cancer.gov/)
 - [GDC MAF format](https://docs.gdc.cancer.gov/Data/File_Formats/MAF_Format/)
 - [TCGA publication guidelines](https://www.cancer.gov/ccg/research/genome-sequencing/tcga/using-tcga-data/citing)
+
+[^unmatched]:
+    A case with no mutation calls still has receptor status. JBrowse reports the
+    unmatched tumors when the track loads.

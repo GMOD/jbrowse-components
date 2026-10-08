@@ -11,11 +11,14 @@ tutorial_category: Population genomics
 In _Drosophila melanogaster_, a selective sweep at the insecticide-resistance
 gene _Cyp6g1_ and the `In(2L)t` inversion on chromosome 2L each leave a mark in
 population-genetic statistics. From a multi-sample VCF of 205 inbred lines we
-compute three statistics per window: Fst (how far apart two groups' allele
-frequencies sit), nucleotide diversity (π, how much sequences differ within a
-group) and Tajima's D (below zero where rare variants are in excess, as after a
-sweep). We load each as a bigWig track on dm6, read the _Cyp6g1_ sweep against
-the genes, then read the inversion.
+compute three statistics per window:
+
+- Fst, how far apart two groups' allele frequencies sit
+- nucleotide diversity (π), how much sequences differ within a group
+- Tajima's D, below zero where rare variants are in excess, as after a sweep
+
+We load each as a bigWig track on dm6, read the _Cyp6g1_ sweep against the
+genes, then read the inversion.
 
 ## Prerequisites
 
@@ -56,22 +59,17 @@ The dm6 assembly and gene track are the hosted UCSC
 
 ## Windowed statistics as tracks
 
-A population-genetic scan reports one statistic per window along the genome,
-such as Fst, π, or dxy (the average sequence difference between two groups). Any
-per-window output loads as a
-[quantitative track](/docs/user_guides/quantitative_track), and haplotype
-statistics (iHS, XP-EHH, e.g. from
-[selscan](https://github.com/szpiech/selscan)) load the same way.
-
-We stack Fst, π and Tajima's D in one view over the
+Any per-window output loads as a
+[quantitative track](/docs/user_guides/quantitative_track). We stack Fst, π and
+Tajima's D in one view over the
 [Drosophila Genetic Reference Panel](https://dgrpool.epfl.ch/) (DGRP) on dm6 and
 look at two signals:
 
 - π dips at loci under selection, such as the insecticide-resistance gene
   _Cyp6g1_ ([Daborn et al. 2002](https://doi.org/10.1126/science.1074170)).
-- Fst across the `In(2L)t` inversion, a stretch of chromosome 2L flipped end to
-  end. It suppresses recombination between the inverted and standard
-  arrangements in a heterozygote
+- Fst rises across the `In(2L)t` inversion, a stretch of chromosome 2L flipped
+  end to end. The inversion suppresses recombination between the inverted and
+  standard arrangements in a heterozygote
   ([Corbett-Detig & Hartl 2012](https://doi.org/10.1371/journal.pgen.1003056)),
   so Fst tracks the arrangement boundary.
 
@@ -90,7 +88,7 @@ normalizing DGRPool's `DGRP_021` to the VCF's `DGRP-021`. DGRPool also types
 same way.
 
 Each scan is one vcftools run, an awk turning its table into a bedGraph, and a
-pack into a bigWig. Fst uses the Weir & Cockerham estimator
+pack into a bigWig. Fst uses the Weir & Cockerham estimator[^hudson]
 ([Weir & Cockerham 1984](https://doi.org/10.2307/2408641)):
 
 <!-- from: scripts/build_dgrp_popgen.sh -->
@@ -133,12 +131,6 @@ vcftools --gzvcf dgrp2.vcf.gz --keep In2Lt_INV.txt --window-pi 2000 --out pi_INV
 `$4` of the same table is the called-variant count the figure below stacks under
 π, packed into a bigWig by the same `awk` and `bedGraphToBigWig` pair.
 
-The inverted and standard groups are very unequal in size, since the inverted
-arrangement is the rarer one. Hudson's estimator is the usual recommendation
-where groups differ this much
-([Bhatia et al. 2013](https://doi.org/10.1101/gr.154831.113));
-[](/docs/tutorials/dog10k_selection) scans with that one.
-
 Tajima's D ([Tajima 1989](https://doi.org/10.1093/genetics/123.3.585)) reports
 `BIN_START` 0-based, so no `-1` shift, and no `BIN_END`, so the window end is
 constructed before the clamp:
@@ -158,8 +150,8 @@ awk -F'\t' 'NR==FNR{len[$1]=$2; next}
 bedGraphToBigWig tajimad_all.bedgraph dm6.chrom.sizes tajimad_all.bw
 ```
 
-Window size trades resolution for smoothness. 2 kb resolves a single-gene sweep
-like _Cyp6g1_ sharply; widen toward 5-10 kb for smoother genome-wide overviews.
+2 kb windows resolve a single-gene sweep like _Cyp6g1_; widen toward 5-10 kb for
+genome-wide overviews.
 
 A contig-name mismatch draws an empty track with no error. The bigWigs take
 contig names from the VCF header (`2L`, `2R`, `X`, FlyBase style), where UCSC
@@ -169,12 +161,9 @@ other.
 
 The DGRP VCF holds variant sites only, so `--window-pi` counts every position
 missing from the file as invariant and callable, and a window that lost sites to
-filtering shows low diversity. [pixy](https://pixy.readthedocs.io/)
-([Korunes & Samuk 2021](https://doi.org/10.1111/1755-0998.13326)) takes an
-allSites VCF and reports π, dxy and Fst per window without that bias, and its
-output packs into a bigWig the same way. Filtering also shifts the whole
-baseline of Tajima's D, so read D at a locus against the genome-wide background
-of the 205 lines.
+filtering shows low diversity.[^pixy] Filtering also shifts the whole baseline
+of Tajima's D, so read D at a locus against the genome-wide background of the
+205 lines.
 
 ## Loading the scans in JBrowse
 
@@ -380,8 +369,7 @@ field holds the far breakpoint:
 2L      2225744  In2Lt  N    <INV>  .     PASS    SVTYPE=INV;END=13154180  GT      1/1       0/0
 ```
 
-The samples TSV pairs each line with its `karyotype` (standard or inverted),
-which the display bands and colors rows by:
+The samples TSV pairs each line with its `karyotype` (standard or inverted):
 
 ```json addtrack
 {
@@ -440,8 +428,7 @@ is strongest. Toward the centromere past the inversion, where the arrangements
 recombine freely, the ratio sits at zero.
 
 Differentiation decays gradually outside the breakpoints
-([Corbett-Detig & Hartl](https://doi.org/10.1371/journal.pgen.1003056)); the
-inversion track at the top of the frame marks the published breakpoints.
+([Corbett-Detig & Hartl](https://doi.org/10.1371/journal.pgen.1003056)).
 
 ## Reproduce it end to end
 
@@ -454,9 +441,7 @@ bash build_dgrp_popgen.sh                  # builds ./dgrp_popgen_build/jbrowse2
 npx --yes serve dgrp_popgen_build/jbrowse2 # then open the printed URL
 ```
 
-The config holds the dm6 assembly, every scan, and one `<INV>` record over the
-published In(2L)t breakpoints, genotyped in each line from its DGRPool
-karyotype. It opens on In(2L)t across arm 2L. The `.bw` and `.vcf.gz` files are
+The config opens on In(2L)t across arm 2L. The `.bw` and `.vcf.gz` files are
 written next to it, to host elsewhere or
 [open as local track files](/docs/user_guides/basic_usage#opening-tracks) in
 JBrowse Desktop.
@@ -497,3 +482,16 @@ JBrowse Desktop.
   [Statistical method for testing the neutral mutation hypothesis by DNA polymorphism](https://doi.org/10.1093/genetics/123.3.585)
 - Weir & Cockerham (1984).
   [Estimating F-statistics for the analysis of population structure](https://doi.org/10.2307/2408641)
+
+[^pixy]:
+    [pixy](https://pixy.readthedocs.io/)
+    ([Korunes & Samuk 2021](https://doi.org/10.1111/1755-0998.13326)) takes an
+    allSites VCF and reports π, dxy and Fst per window without that bias, and
+    its output packs into a bigWig the same way.
+
+[^hudson]:
+    The inverted and standard groups are very unequal in size, since the
+    inverted arrangement is the rarer one. Hudson's estimator is the usual
+    recommendation where groups differ this much
+    ([Bhatia et al. 2013](https://doi.org/10.1101/gr.154831.113));
+    [](/docs/tutorials/dog10k_selection) scans with that one.

@@ -82,24 +82,17 @@ GenBank accessions:
 ## The CYP1A2 nonsense variant
 
 _CYP1A2_ is a drug-metabolizing cytochrome P450 in which dogs have a nonsense
-variant. The Dog10K paper's figure for the gene has two halves, the truncating
-variant and who has it, and the gene's copy number across the collection, and we
-draw both.
-
-The truncating allele acts recessively: liver microsomes from dogs homozygous
-for it have no CYP1A2 protein and those dogs are poor metabolizers of drugs the
-enzyme clears, while heterozygotes express the enzyme normally
-([Mise et al. 2004](https://pubmed.ncbi.nlm.nih.gov/15564884/)).
-
-We ask which breeds carry the allele and whether wild canids do. Wolves are the
-control: an allele they share predates domestication.
+variant. The truncating allele acts recessively: liver microsomes from dogs
+homozygous for it have no CYP1A2 protein and those dogs are poor metabolizers of
+drugs the enzyme clears, while heterozygotes express the enzyme normally
+([Mise et al. 2004](https://pubmed.ncbi.nlm.nih.gov/15564884/)). We ask which
+breeds carry the allele and whether wild canids do. Wolves are the control: an
+allele they share predates domestication.
 
 ## Deriving the CYP1A2 stop codon's coordinate from the reference
 
-The literature names this variant by its protein consequence, p.Arg373Ter, which
-is enough to locate it against whichever assembly is in use.
-
-The build script rebuilds _CYP1A2_'s coding sequence from the reference and the
+The literature names this variant by its protein consequence, p.Arg373Ter. The
+build script rebuilds _CYP1A2_'s coding sequence from the reference and the
 RefSeq exon structure, translates it, and reports codon 373:
 
 ```text
@@ -108,9 +101,8 @@ codon 373 = CGA (R) at chr30:38261635
 C>T at that first base makes TGA, a stop
 ```
 
-`CGA` to `TGA` is one substitution and it is a stop codon, so a C>T at
-chr30:38,261,635 truncates the protein at 373 of 513 residues. Checking the
-callset at exactly that position finds it, passing every filter:
+The C>T at chr30:38,261,635 truncates the protein at residue 373 of 513.
+Checking the callset at exactly that position finds it, passing every filter:
 
 <!-- from: scripts/build_dog10k_cyp1a2.sh -->
 
@@ -173,8 +165,11 @@ of breeds have the allele and it reaches homozygosity in several: every German
 Hound and every Shetland Sheepdog sampled here has at least one copy, while
 every wolf and every coyote in the collection is homozygous reference.
 
-Three other variants lie within about a hundred bases of the stop site. This
-config filters them out:
+Three other variants lie within about a hundred bases of the stop site, and the
+config below filters them out. Dropping the filter shows them: two are reference
+in every animal of this sample set, including the one at the codon's second
+base, so each draws an empty column, and the third sits 15 bp along with every
+wolf carrying it.
 
 ```json addtrack
 {
@@ -191,10 +186,6 @@ config filters them out:
   ]
 }
 ```
-
-Drop the filter to see them. Two are reference in every animal of this sample
-set, including the one at the codon's second base, so each draws an empty
-column. The third sits 15 bp along, and every wolf here has it.
 
 ## Copy number at CYP1A2
 
@@ -231,10 +222,9 @@ checks it against the 15 CRAMs the Dog10K share publishes. Over the shared
 windows the two depth sources agree closely, with no bias. The CRAM-based
 painting is in the config as `dog10k_cyp1a2_cn`.
 
-The output is a BED with the colour in the itemRgb column, a `sample` column and
-the rounded call in `copyNumber`. The multi-row display gives each sample a row,
-and the identity colour scale lists the colours in the file with a copy number
-label for each, so the legend reads as copy number:
+The output is a BED with the colour in the `itemRgb` column and the rounded call
+in `copyNumber`. The identity colour scale pairs each colour in the file with a
+copy number label, so the legend reads as copy number:
 
 ```json addtrack
 {
@@ -289,10 +279,6 @@ figure's upper track is a second BED the script writes,
 names; its track takes `rows: { "field": "sample", "domain": [...] }` with those
 names in drawing order.
 
-The figure stacks two tracks, each window coloured by its rounded call and grey
-at two copies: named animals above, and all 1,987 canids clustered on their
-profiles below.
-
 <Figure caption="Copy number over CYP1A2 and its neighbours, named animals above and the whole collection below. The expansion is a breed-level fact in some breeds and segregates one dog to the next in others." src="/img/dog10k-cyp1a2-cohort-copy-number.png" />
 
 The upper track holds every Golden Retriever, Labrador Retriever and Boxer in
@@ -307,9 +293,7 @@ wolf.
 
 The white stripes through both tracks are windows with no call. A window whose
 median across the whole collection is not two copies measures a quirk of the
-reference, so the build script drops it from every row. The widest stripe sits
-on a CpG island, whose high GC content lowers read depth in every canid, and
-each 5 kb window spreads that over the blocks around it.
+reference, so the build script drops it from every row.[^cpg]
 
 The lower track repeats the estimate for every canid.
 
@@ -320,26 +304,26 @@ same place, and the blocks on either side of the gene are deletion
 polymorphisms.
 
 The depth-based estimate puts far more of the collection at three or more copies
-than the paper reports, and the two depth sources agree too closely for the gap
-to be noise. The two counts cover different intervals: the paper ran QuicK-mer2
-over an element whose extent is unpublished, and the build script counts the
-windows the collection puts above two.
+than the paper reports. The two counts cover different intervals: the paper ran
+QuicK-mer2 over an element whose extent is unpublished, and the build script
+counts the windows the collection puts above two.
 
 ## Reproduce it end to end
 
 [`build_dog10k_cyp1a2.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_dog10k_cyp1a2.sh)
-runs every step:
+builds the genotype track. It:
+
+1. derives the stop codon's position from the reference
+2. builds the sample list from the Dog10K sample table and slices the gene out
+   of the callset
+3. prints the genotypes at the stop so you can check the figure against the data
+4. genotypes that one site over all 1,987 canids for the breed and wild-canid
+   counts quoted above
 
 ```bash
 curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/build_dog10k_cyp1a2.sh
 bash build_dog10k_cyp1a2.sh   # writes ./dog10k_cyp1a2_build/
 ```
-
-The script derives the stop codon's position from the reference, builds the
-sample list from the Dog10K sample table, slices the gene out of the callset,
-prints the genotypes at the stop so you can check the figure against the data,
-then genotypes that one site over all 1,987 canids for the breed and wild-canid
-counts quoted above.
 
 [`build_dog10k_cyp1a2_cn.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_dog10k_cyp1a2_cn.sh)
 builds the copy-number tracks. It:
@@ -374,3 +358,8 @@ bash build_dog10k_cyp1a2_cn.sh   # writes ./dog10k_cyp1a2_cn_build/
   [Genome sequencing of 2000 canids by the Dog10K consortium advances the understanding of demography, genome function and architecture](https://doi.org/10.1186/s13059-023-03023-7)
 - Court (2013).
   [Canine cytochrome P450 pharmacogenetics](https://doi.org/10.1016/j.cvsm.2013.05.001)
+
+[^cpg]:
+    The widest stripe sits on a CpG island, whose high GC content lowers read
+    depth in every canid, and each 5 kb window spreads that over the blocks
+    around it.

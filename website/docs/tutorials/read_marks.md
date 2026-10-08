@@ -12,11 +12,10 @@ A read pair that straddles a deletion maps with a long insert (the distance
 between its reads), and a heterozygous deletion halves the read depth. We plot
 those two fields straight from NA12878's reads to find a deletion on chromosome
 20 without a variant caller, scan the whole chromosome for the same signature,
-and check the hits against the 1000 Genomes callset. We draw the plots with
-JBrowse's mark display, a grammar of graphics over a track: each entry in
-`marks` names a mark type, a `transform` list and an `encoding` that maps
-feature fields to channels, as in the [Alu tutorial](/docs/tutorials/alu_age).
-The mark display is experimental, and its config shape may change.
+and check the hits against the 1000 Genomes callset. The plots use JBrowse's
+mark display, which maps feature fields to plot channels, as in the
+[Alu tutorial](/docs/tutorials/alu_age). The mark display is experimental, and
+its config shape may change.
 
 ## Prerequisites
 
@@ -47,8 +46,7 @@ so there is nothing to download by hand.
 ## Loading hg38
 
 The CRAM decodes against the assembly the track is added to, so the assembly
-must be the GRCh38 sequence the reads were aligned to. The cytoband table draws
-each chromosome's banding in the view's overview.
+must be the GRCh38 sequence the reads were aligned to.
 
 ```json addassembly
 {
@@ -64,8 +62,7 @@ each chromosome's banding in the view's overview.
 ## Plotting read depth as bars over the EFCAB8 deletion
 
 The window covers 30 kb of an _EFCAB8_ intron on chromosome 20, where the
-callset says NA12878 has one copy of a 3.9 kb deletion. A `bar` mark over a
-`coverage` transform draws the reads as runs of constant depth.
+callset says NA12878 has one copy of a 3.9 kb deletion.
 
 ```json addtrack
 {
@@ -97,12 +94,10 @@ Open the track at `chr20:32,925,000-32,955,000`.
 ## Plotting insert size as one point per read pair
 
 A mark display draws one y axis. Depth runs in the tens and an insert size in
-the thousands, so the insert goes on a second track over the same file:
-
-- a `point` mark plots `template_length` per pair
-- a `filter` keeps the leftmost mate, where the template length is positive, so
-  each pair counts once, and drops the few over 8 kb
-- the colour is mapping quality on a ramp pinned to 0 to 60
+the thousands, so the insert goes on a second track over the same file. Its
+`filter` keeps the leftmost mate, where the template length is positive, so each
+pair counts once, and drops the few over 8 kb. On an alignments track `score` is
+the mapping quality, which colors the points.
 
 ```json addtrack
 {
@@ -146,8 +141,8 @@ Open it under the depth track, on the same window.
 
 <Figure src="/img/read_marks/insert_size.png" caption="The same window, the depth as bars above and each pair's insert size as a point below, each track with a separate y axis. The pairs sit in a low band, and over the left edge of the dip a second group appears well above it, in full blue." />
 
-Each pair in the upper group straddles the missing 3.9 kb. On an alignments
-track `score` is the mapping quality; click a point to open its read.
+Each pair in the upper group straddles the missing 3.9 kb; click a point to open
+its read.
 
 ## Scanning chromosome 20 for clusters of long-insert pairs
 
@@ -171,13 +166,13 @@ samtools view -q 20 -F 0x904 --input-fmt-option required_fields=0x1DF NA12878.fi
 tabix -p bed NA12878.chr20.discordant_pairs.bed.gz
 ```
 
-The BED holds few enough rows to fetch whole at any zoom. Two tracks read it:
+The BED holds few enough rows to fetch whole at any zoom, and two tracks read
+it:
 
-- a `point` per pair at the middle of its insert, `tlen` on y, coloured by
-  `score`; a `filter` under 20 kb keeps the centromere's megabase inserts off
-  the axis
-- a `bar` per bin counting pairs of 2 to 10 kb, on an axis pinned at 60 so the
-  centromere saturates and a deletion's few dozen pairs stand up
+- the point track's `filter` under 20 kb keeps the centromere's megabase inserts
+  off the axis
+- the count track's axis, pinned at 60, lets the centromere saturate so a
+  deletion's few dozen pairs stand up
 
 ```json addtrack
 {

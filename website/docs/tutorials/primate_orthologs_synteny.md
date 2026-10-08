@@ -13,9 +13,9 @@ We look at one human locus across seven other primates at once. NCBI gives an
 orthologous gene the same symbol in every species it annotates, so an ortholog
 table is a join on the gene name, built from eight GFF3 files in seconds. Each
 primate then becomes a lane under the human view, laid out in the coordinates of
-its genome, with the gene models annotated there. The join covers the genes
-every annotation names alike, and it stops at a gene family whose copies have
-placeholder names.
+its genome, with the gene models annotated there. We read the TP53 neighbourhood
+and a 17q window across the eight primates, then human chromosome 2 as two fused
+ape chromosomes.
 
 ## Prerequisites
 
@@ -30,9 +30,7 @@ placeholder names.
 Eight RefSeq assemblies, each fetched by accession with the `datasets` CLI: the
 current human reference, the six NHGRI telomere-to-telomere ape assemblies (Yoo
 et al. 2025) and the telomere-to-telomere rhesus macaque. The build downloads
-the annotation and sequence report for each genome, a few hundred megabytes for
-the eight. Human is GRCh38, so the window coordinates are the ones the rest of
-the ecosystem quotes.
+the annotation and sequence report for each genome.
 
 The [build script](#reproduce-it-end-to-end) takes these files from their URLs,
 so there is nothing to download by hand.
@@ -88,24 +86,18 @@ python3 symbols_to_blocks.py --anchor human -o primates.blocks \
   sumatran=sumatran.gff.gz bornean=bornean.gff.gz siamang=siamang.gff.gz macaque=macaque.gff.gz
 ```
 
-`symbols_to_blocks.py` joins on the symbol and handles these cases:
+`symbols_to_blocks.py` joins on the case-folded symbol and handles these cases:
 
-- Symbols compare case-folded, so a mouse `Atp5f1a` would meet the human
-  `ATP5F1A`.
-- A gene named with an NCBI `LOC` placeholder joins nothing. RefSeq names the
-  salivary amylase copies that way in the other primates.
-- A symbol shared by several genes in one genome gets a row per copy, because a
-  link joins one gene to one gene. RefSeq gives duplicated primate genes
-  distinct lettered symbols (_AMY1A_, _AMY1B_) or placeholders, so the main case
-  is the pseudoautosomal genes, annotated on both X and Y, where each Y copy
-  gets its own row.
-- RefSeq spells open reading frame genes differently in the apes: human
-  _C1orf35_ becomes chimp _C1H1orf35_, and the helper reads that back.
-- The helper prints how much of each column it filled, nearly full for these
-  eight because the annotations share one naming pipeline. It also writes a row
-  for each symbol human lacks, which a window anchored on human does not draw.
-  Those are genes human has only as a pseudogene or non-coding RNA, _CMAH_ among
-  them, and genes the ape annotations name differently from human's.
+- **A gene named with an NCBI `LOC` placeholder** joins nothing. RefSeq names
+  the salivary amylase copies that way in the other primates.
+- **A symbol shared by several genes in one genome** gets a row per copy,
+  because a link joins one gene to one gene. The main case is the
+  pseudoautosomal genes, annotated on both X and Y.
+- **Open reading frame genes** spell differently in the apes (human _C1orf35_ is
+  chimp _C1H1orf35_), and the helper reads that back.
+
+The helper prints how much of each column it filled, nearly full for these eight
+because the annotations share one naming pipeline.
 
 ## Setting up each lane's assembly from its hub
 
@@ -120,8 +112,8 @@ ortholog table is the one file built here:
 curl -fO https://jbrowse.org/hubs/genark/GCF/028/858/775/GCF_028858775.2/config.json
 ```
 
-The build keeps each entry as the hub wrote it, relabels the lane and adds the
-short name as an alias, so a session can still say `chimp`:
+The build relabels the lane and adds the short name as an alias, so a session
+can still say `chimp`:
 
 ```json
 {
@@ -148,10 +140,8 @@ short name as an alias, so a session can still say `chimp`:
 ```
 
 `refNameColumnHeaderName` makes the UCSC names canonical, so the lane headers
-read `chr19` where the assembly names it `chr19_hap1_hsa17`. The other apes and
-the macaque take the same entry with their own accession. Human is the one
-exception to the accession rule: UCSC serves GRCh38 as `hg38` with no GenArk
-hub, so the human lane is [hg38](https://genomes.jbrowse.org/ucsc/hg38/):
+read `chr19`. Human is the exception: UCSC serves GRCh38 as `hg38` with no
+GenArk hub, so the human lane is [hg38](https://genomes.jbrowse.org/ucsc/hg38/):
 
 ```json addassembly
 {
@@ -188,9 +178,8 @@ One `SyntenyTrack` names all eight assemblies. `blockAssemblies` and
 `{ "field": "cluster" }` colors each gene by its ortholog group, named by its
 gene symbol: a conserved gene is one color down the whole stack, a lane missing
 it breaks the column, and a gene no group claims is grey. A key naming the
-groups appears in the top right once the window holds few enough to list. At the
-windows below, the ribbon-strand key takes that corner. To hide either, untick
-**Show... → Show legend** on the track menu:
+groups appears in the top right once the window holds few enough to list; untick
+**Show... → Show legend** on the track menu to hide it:
 
 ```json addtrack
 {
@@ -243,12 +232,12 @@ windows below, the ribbon-strand key takes that corner. To hide either, untick
 ## Reading the TP53 neighbourhood across eight primates
 
 In a linear genome view on human, the track draws a lane per primate under the
-human axis. Each lane uses its own genome's coordinates, and its header names
-the chromosome and span shown, with `[rev]` where the lane runs against human
+human axis, each in its own genome's coordinates. Each lane's header names the
+chromosome and span, with `[rev]` where the lane runs against human
 ([lane headers](/docs/tutorials/multiway_synteny_grape_peach_cacao#what-a-lane-header-shows)).
 **Color by... → Strand**, under **Ribbons** on the track menu, colors each
-ribbon by the product of its two lanes' orientations against the human axis. The
-session below opens the TP53 neighbourhood with it:
+ribbon by whether its two lanes agree in orientation. The session below opens
+the TP53 neighbourhood with it:
 
 ```json session config=https://jbrowse.org/demos/primate_orthologs/config.json
 {
@@ -293,11 +282,9 @@ Human chromosome 2 is two ape chromosomes joined end to end. To see the join:
 
 <Figure caption="Human chr2 over chimpanzee chr12 and chr13, the hsa2a and hsa2b chromosomes, ribbons colored by the chimpanzee chromosome. The orthologs of one chimpanzee chromosome fill human chr2 up to 2q13 and those of the other fill it past there." src="/img/multiway_synteny/primate_chr2_fusion.png" />
 
-In the multi-lane view, a window across the fusion point has orthologs on both
-chimpanzee chromosomes, but a lane follows one contig at a time. Each ape lane
-picks the contig with more genes in the window and names the other in its
-header; **Show ⟨contig⟩ in this lane** on the header menu swaps the lane onto
-it.
+In the multi-lane view, each ape lane picks the contig with more genes in the
+window and names the other in its header. **Show ⟨contig⟩ in this lane** on the
+header menu swaps the lane onto it.
 
 ## Reproduce it end to end
 

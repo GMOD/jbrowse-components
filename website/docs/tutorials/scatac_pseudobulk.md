@@ -48,10 +48,8 @@ SnapATAC2, so there is nothing to download by hand.
 
 ## Pooling cells into one coverage track per cell type
 
-One ATAC cell contributes only a few thousand fragments, so a single cell's
-coverage track is almost entirely zero. Pseudobulking pools every fragment
-belonging to a label into one profile, a dense track resembling a bulk ATAC
-experiment on that cell type. JBrowse stacks the files as rows of one
+One ATAC cell contributes only a few thousand fragments, so its own coverage is
+almost entirely zero. JBrowse stacks the pooled files as rows of one
 track.[^inline]
 
 PBMC marker genes are the control. At a T-cell marker the T-cell rows have
@@ -94,8 +92,7 @@ snap.ex.export_coverage(
 ```
 
 Too many `n_jobs` workers exhaust memory and fail the writer partway through the
-groups. `groupby` picks the rows: the cluster column (`"leiden"`) gives one per
-cluster, the annotated column (`"cell_type"`) one per cell type.
+groups. `groupby="leiden"` gives one BigWig per cluster instead.
 
 ### Pseudobulk BigWigs from ArchR, a barcoded BAM or a fragments file
 
@@ -136,11 +133,12 @@ draws empty unless the assembly has a name-alias table.
 All the per-cell-type BigWigs go into one `MultiQuantitativeTrack` whose
 `MultiWiggleAdapter` holds one `BigWigAdapter` per file, each with a `name`, an
 optional `color`, and an optional `group`. Swap each `uri` for the BigWig your
-pooling step wrote. The fence lists three of the twelve cell types the figure
-draws; the [build script](#reproduce-it-end-to-end) writes the whole list, and
-the hosted demo config,
-https://jbrowse.org/code/jb2/main/test_data/config_demo.json, has it as
-`pbmc5k_scatac_pseudobulk_hg38`:
+pooling step wrote.
+
+The fence lists three of the twelve cell types the figure draws; the
+[build script](#reproduce-it-end-to-end) writes the whole list, and the hosted
+demo config, https://jbrowse.org/code/jb2/main/test_data/config_demo.json, has
+it as `pbmc5k_scatac_pseudobulk_hg38`:
 
 ```json addtrack
 {
@@ -206,16 +204,16 @@ array of URLs and labels each row from its filename:
 }
 ```
 
-[CATlas](https://www.catlas.org/), a published single-cell atlas, serves hg38
-per-cell-type coverage from
-`https://decoder-genetics.wustl.edu/catlasv1/humanenhancer/data/bw/`, one file
-per cell type, and its URLs go into the `subadapters` list like the PBMC files.
-Percent-encode the `+` in a cell-type name (`T_lymphocyte_2_CD4%2B.bw`); left
-unencoded, the URL breaks and the row loads with no data.
+[CATlas](https://www.catlas.org/) serves hg38 per-cell-type coverage, one file
+per cell type, from
+`https://decoder-genetics.wustl.edu/catlasv1/humanenhancer/data/bw/`; its URLs
+go into the `subadapters` list like the PBMC files. Percent-encode the `+` in a
+cell-type name (`T_lymphocyte_2_CD4%2B.bw`); left unencoded, the URL breaks and
+the row loads with no data.
 
-[`mark`](/docs/config/linearwiggledisplay/#slot-mark) lists every drawing mode,
-and the track menu switches between them. `bar` (the default, and the figures
-here) compares peak shape; `span` maps score to color and fits more rows.
+The track menu switches [`mark`](/docs/config/linearwiggledisplay/#slot-mark)
+between drawing modes. `bar` (the default, and the figures here) compares peak
+shape; `span` maps score to color and fits more rows.
 [](/docs/user_guides/quantitative_track) covers the rest of the menu.
 
 To check the rows against marker genes, paste two loci into the location box to
@@ -230,15 +228,15 @@ chr2:86,780,000-86,820,000 chr11:60,450,000-60,490,000
 
 ### Building the track from a folder of BigWigs
 
-Two workflows write the list from a set of files.
+Two workflows write the list from a set of files:
 
-"Add multi-row track", in the "Add track" workflow, takes BigWig URLs one per
-line, or a JSON array of subadapter objects. Exporting the session gets the JSON
-config back out. On JBrowse Desktop it reads local `.bw` files directly. The
-same form stacks BED or BigBed files, one row of features per file.
-
-`jbrowse add-track --multiwig` takes the whole set of BigWigs in place of the
-single positional file, labeling rows from the filenames:
+- **Add multi-row track**, in the **Add track** workflow, takes BigWig URLs one
+  per line, or a JSON array of subadapter objects. On JBrowse Desktop it reads
+  local `.bw` files directly, and the same form stacks BED or BigBed files, one
+  row of features per file. Exporting the session gets the JSON config back out
+- **`jbrowse add-track --multiwig`** takes the whole set of BigWigs in place of
+  the single positional file, labeling rows from the filenames, as in the
+  command below
 
 ```bash
 jbrowse add-track --multiwig "$(find bw -name '*.bw' | sort | paste -sd,)" \
@@ -253,12 +251,11 @@ pass a `.json` file of subadapter objects instead of the comma list.
 ## Reproduce it end to end
 
 [`build_scatac_pseudobulk.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_scatac_pseudobulk.sh)
-starts from SnapATAC2's annotated release of the 10x 5k-PBMC dataset, what that
-tool's [standard pipeline](https://scverse.org/SnapATAC2/tutorials/pbmc.html)
-and
+starts from SnapATAC2's annotated release of the 10x 5k PBMC dataset, whose
+[standard pipeline](https://scverse.org/SnapATAC2/tutorials/pbmc.html) and
 [cell-type annotation](https://scverse.org/SnapATAC2/tutorials/annotation.html)
-tutorials produce: every cell already filtered, clustered and labeled, with its
-fragments beside its `cell_type`. The script:
+tutorials leave every cell filtered, clustered and labeled, with its fragments
+beside its `cell_type`. The script:
 
 1. pools each cell type's fragments into one BigWig, in 25 bp bins and RPKM, as
    above

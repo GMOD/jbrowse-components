@@ -125,9 +125,9 @@ The bubbles track reads the same build's bubble index:
 
 Click **chr13** on the **Whole chromosome** line of the
 [portal page](https://staging.genomes.jbrowse.org/pangenomes/mouse), which opens
-the whole chromosome with the graph drawn as one node per bubble, a region where
-the strains' paths split and rejoin. Type `chr13:119,440,000-119,600,000`, and
-the graph track draws the segments there. Then:
+the whole chromosome with the graph drawn as one node per bubble. Type
+`chr13:119,440,000-119,600,000`, and the graph track draws the segments there.
+Then:
 
 - in the graph track's menu, tick **Show... → Show bubble halos**
 - turn on the bubbles track in the track selector
@@ -135,27 +135,24 @@ the graph track draws the segments there. Then:
 C57BL/6J has a multi-exon deletion at _Nnt_ (nicotinamide nucleotide
 transhydrogenase) that abolishes the protein and makes C57BL/6J mice glucose
 intolerant. **GRCm39 is C57BL/6J**, so the backbone of this graph, the reference
-path, is the strain with the deletion. The graph shows the deletion as sequence
-that the _other_ strains have and the reference lacks, the opposite sign from
-the published descriptions.
+path, is the strain with the deletion.
 
 <Figure caption="The Nnt window with the RefSeq genes and the bubbles track above the force-directed graph track. The node hanging off the backbone beside Nnt is haloed and labelled as an insertion, because the reference is the strain that lacks the sequence." src="/img/pangenome/graph_mouse_nnt_halos.png" />
 
 ## Ranking the graph's bubbles to find Dock2 {#finding-the-loci}
 
-The whole-chromosome overview records how many segments each bubble holds, and
-more segments mean more variation. Ranking the bubbles by that count finds where
-the graph varies most, and matching them to the reference annotation names each
-locus.
+The whole-chromosome overview records how many segments each bubble holds. The
+portal page's **Loci** table ranks bubbles by that count and names each by the
+reference annotation;
 [`generatePangenomeLoci.ts`](https://github.com/GMOD/jb2hubs/blob/main/website/generatePangenomeLoci.ts)
-in the genomes.jbrowse.org repo computes the ranking.
+in the genomes.jbrowse.org repo computes it. The ranking recovers the
+vomeronasal receptor and Speer families and the immunoglobulin heavy chain
+locus. The rows above _Dock2_ are too wide for one window; its row is the
+densest bubble that fits in one, inside one intron at
+`chr11:34,516,044-34,560,497`. Click its **graph** link, then tick this entry in
+the graph track menu:
 
-The portal page's **Loci** table shows that ranking. It recovers the vomeronasal
-receptor and Speer families and the immunoglobulin heavy chain locus. The rows
-above _Dock2_ are too wide for one window; its row is the densest bubble that
-fits in one, inside one intron at `chr11:34,516,044-34,560,497`. Click its
-**graph** link, then tick **Show... → Show bubble halos** in the graph track
-menu:
+**Show... → Show bubble halos**
 
 <Figure caption="The Dock2 intron bubble, the densest in the mouse graph that fits in one window. The bubbles track is a single row, the allele inventory draws each alternative path at its size, and the graph carries one label for the whole bubble, with Dock2 pinned under the backbone. The coloured path is C57BL/6J, the reference, and each charcoal loop is sequence other strains have and the reference lacks." src="/img/pangenome/mouse_dock2.png" />
 
@@ -190,17 +187,21 @@ minigraph -cxggs -t 8 mm39.chr13.fa strain1.chr13.fa strain2.chr13.fa > chr13.gf
 [](/docs/tutorials/pangenome_prepare_graph) then turns the graph into the files
 above with one command, `build_pangenome_graph.sh`.
 [`build_mouse_pangenome.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_mouse_pangenome.sh)
-runs the whole build: it downloads the assemblies, extracts each chromosome
-renamed to PanSN (`sample#haplotype#contig`), runs `minigraph` per chromosome,
-and joins the chromosomes with segment ids renumbered; the alignment takes most
-of a day.
+runs the whole build, and the alignment takes most of a day. It:
+
+1. downloads the assemblies
+2. extracts each chromosome, renamed to PanSN (`sample#haplotype#contig`)
+3. runs `minigraph` per chromosome
+4. joins the chromosomes with segment ids renumbered
 
 The script writes a `README.txt` beside the data recording the source, the
-modifications, the tool versions and the audits that ran. The build stops if the
-reference path does not reproduce the reference chromosome lengths, or if
-renumbering leaves a duplicate segment id; either failure produces a graph with
-wrong coordinates that every later check accepts. Copy these audits into your
-own build.
+modifications, the tool versions and the audits that ran. The build stops if:
+
+- the reference path does not reproduce the reference chromosome lengths
+- renumbering leaves a duplicate segment id
+
+Either failure produces a graph with wrong coordinates that every later check
+accepts. Copy these audits into your own build.
 
 ## See also
 

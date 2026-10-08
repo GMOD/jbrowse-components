@@ -62,9 +62,8 @@ coordinates, so we load that assembly first.
 
 ## Loading the trio's phased VCF
 
-A trio is a mother, father, and child sequenced together. A phased VCF tags each
-variant with the haplotype it sits on (`0|1` vs `1|0`), so you can follow each
-variant to the copy of the genome it came from.
+A phased VCF tags each variant with the haplotype it sits on (`0|1` vs `1|0`),
+so you can follow each variant to the copy of the genome it came from.
 
 The VCF loads on `hg38` as an ordinary `VariantTrack`
 ([variant track guide](/docs/config_guides/variant_track)). For your own trio,
@@ -110,16 +109,11 @@ Choose **Rows → Per haplotype** from the track menu:
 
 <Video src="/media/variants/trio_phased_matrix.mp4" caption="The multi-sample matrix display switched on, then Rows → Per haplotype splitting each trio member into its two haplotype rows." />
 
-Each of the child's two haplotypes comes from one parent: along it, the matching
-parental copy is one of that parent's two copies for a stretch, then the other.
-The rest of the page paints that pattern as a track.
-
 ## Running hap-ibd to find segments shared with each parent
 
 [hap-ibd](https://github.com/browning-lab/hap-ibd) computes the matching
-stretches as "identical by descent" (IBD) segments. It is built for
-population-scale cohorts and also runs on a single trio. It takes a phased VCF
-and a genetic map in PLINK format.
+stretches as "identical by descent" (IBD) segments. It takes a phased VCF and a
+genetic map in PLINK format.
 
 The trio VCF calls its chromosome `1`, with no `chr` prefix, so the run uses the
 `no_chr_in_chrom_field` variant of the GRCh38 PLINK map:
@@ -147,31 +141,25 @@ them:
 | HG02024:2       | HG02025 (mother) | maternal       |
 
 The 1000 Genomes pedigree line `VN049 HG02024 HG02026 HG02025` gives the roles:
-father HG02026, mother HG02025. Within one child haplotype, the matching
-_parental_ copy flips between the parent's copy 1 and copy 2 at each crossover.
-
-hap-ibd's output has gaps, plus short spurious segments from the statistical
-phasing, so the next step merges its segments into clean blocks before painting.
+father HG02026, mother HG02025.
 
 ## Converting hap-ibd data into painted inheritance blocks
 
-The painted track has one row per parental haplotype (father copy 1, father copy
-2, mother copy 1, mother copy 2), with the child's inherited chromosome split
-between each parent's pair of rows. A crossover shows up as a block stepping
-from one row to its partner.
-
+hap-ibd's output has gaps and short spurious segments from the statistical
+phasing, so
 [`hapibd_to_bed.py`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/hapibd_to_bed.py)
-does the cleanup. Per child haplotype it:
+merges them into clean blocks. Per child haplotype it:
 
 - merges adjacent segments of the same parental copy into runs
 - drops short interior runs, which are switch errors
 - snaps each remaining crossover to the midpoint of the gap between runs so the
   blocks abut; a gap too wide to bridge stays blank
 
-The script writes one BED9 line per block plus a `parenthap` label, and its
-`itemRgb` colors the father's two copies blue and the mother's red. It takes
-`trio.ibd.gz` and the child, father and mother sample IDs; `bgzip` and
-`tabix -p bed` then index the output:
+The script writes one BED9 line per block plus a `parenthap` label for the
+painted track's four rows (father copy 1, father copy 2, mother copy 1, mother
+copy 2), and its `itemRgb` colors the father's two copies blue and the mother's
+red. It takes `trio.ibd.gz` and the child, father and mother sample IDs; `bgzip`
+and `tabix -p bed` then index the output:
 
 <!-- from: scripts/build_khv_trio_hapibd.sh -->
 
@@ -187,14 +175,10 @@ sorts the rest under `LC_ALL=C`, so the adapter reads the column names from the
 header, needs no `columnNames`, and sees the same order in every locale.
 
 Load `trio.hapibd.bed.gz` as a `FeatureTrack` with a
-`LinearMultiRowFeatureDisplay`:
-
-- `rows` draws one row per distinct value of its `field`, so `parenthap` gives
-  the four parental-haplotype rows
-- `rows.domain` sets their top-to-bottom order
-- the display paints each block with its BED `itemRgb`
-- [`showLegend`](/docs/config/linearmultirowfeaturedisplay/#slot-showlegend) is
-  off, because the row labels already name the four categories
+`LinearMultiRowFeatureDisplay` that draws one row per `parenthap` value, in
+`rows.domain` order, painting each block with its BED `itemRgb`.
+[`showLegend`](/docs/config/linearmultirowfeaturedisplay/#slot-showlegend) is
+off because the row labels already name the four categories:
 
 ```json addtrack
 {
@@ -266,24 +250,26 @@ copies:
 
 <Figure caption="A maternal crossover. The painting steps from Mother hap2 to Mother hap1, and the frames tie Child hap2 to each in turn." src="/img/trio-crossover-maternal.png"/>
 
-The 1000 Genomes VCF is _statistically_ phased, so the genotypes underneath
-switch between the two parental copies more often than real crossovers do. The
-painting summarises those switch errors away, because hap-ibd's cM-length
-threshold filters most of them out. The two crossovers above are well supported,
-and the finer blocks are approximate. For crossover mapping, use a
-pedigree-aware method such as
+The 1000 Genomes VCF is statistically phased, so its genotypes switch between
+the two parental copies more often than real crossovers do. hap-ibd's cM-length
+threshold filters most of those switches out of the painting, so the two
+crossovers above are well supported and the finer blocks are approximate. For
+crossover mapping, use a pedigree-aware method such as
 [duoHMM](https://mathgen.stats.ox.ac.uk/genetics_software/duohmm/duohmm.html).
 
 ## Reproduce it end to end
 
 [`build_khv_trio_hapibd.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_khv_trio_hapibd.sh)
-runs the whole pipeline. It downloads the trio VCF, hap-ibd and the genetic map,
-runs hap-ibd, paints the BED with
-[`hapibd_to_bed.py`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/hapibd_to_bed.py),
-downloads JBrowse, and writes `khv_trio_build/jbrowse2` with a `config.json`
-holding the hg38 assembly plus the VCF and hap-ibd tracks. It needs the tools in
-[Prerequisites](#prerequisites). Serve the folder and open the URL `serve`
-prints:
+runs the whole pipeline. It:
+
+1. downloads the trio VCF, hap-ibd and the genetic map
+2. runs hap-ibd and paints the BED with
+   [`hapibd_to_bed.py`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/hapibd_to_bed.py)
+3. downloads JBrowse
+4. writes `khv_trio_build/jbrowse2` with a `config.json` holding the hg38
+   assembly plus the VCF and hap-ibd tracks
+
+Serve the folder and open the URL `serve` prints:
 
 ```bash
 curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/build_khv_trio_hapibd.sh

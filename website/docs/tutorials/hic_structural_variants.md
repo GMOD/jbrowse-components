@@ -70,11 +70,11 @@ ENCODE publishes both as annotation files derived from the matrix:
   of convergent CTCF sites. ENCODE calls them with
   [HiCCUPS](https://github.com/aidenlab/juicer/wiki/HiCCUPS), also a BEDPE.
 
-JBrowse picks the largest bin size no coarser than twice the current
-bp-per-pixel; over a wide window this can render the triangle as red speckle.
-[`resolutionBias`](/docs/config/linearhicdisplay/#slot-resolutionbias) steps to
-coarser bins; if a Hi-C track looks like noise, change it first. See
-[adjusting resolution](/docs/user_guides/hic_track#adjusting-resolution).
+Over a wide window the triangle can render as red speckle. If a Hi-C track looks
+like noise, change
+[`resolutionBias`](/docs/config/linearhicdisplay/#slot-resolutionbias) first,
+which steps to coarser bins
+([adjusting resolution](/docs/user_guides/hic_track#adjusting-resolution)).
 
 ## Loading the GRCh38 assembly
 
@@ -149,23 +149,13 @@ the whole GM12878 loops track is `hic_gm12878_loops` in
 https://jbrowse.org/code/jb2/main/test_data/config_demo.json.
 
 To color or filter either track by a column, set
-[`columnNames`](/docs/config/bedpeadapter/#slot-columnnames) explicitly. Juicer
-writes a version banner after the header line, so column names read from the
-header come out `undefined` past the tenth column, and a jexl expression on one
-of them matches nothing and reports no error. HiCCUPS writes 24 columns and
-Arrowhead 16.
-
-Both callers leave `name` and `score` at `.` and put what they rank by further
-along: HiCCUPS' is `observed`, Arrowhead's a second column called `score`.
-Values past the tenth column arrive as strings, so compare with `>` and `<`,
-which coerce, rather than `==`.
+[`columnNames`](/docs/config/bedpeadapter/#slot-columnnames)
+explicitly.[^juicer]
 
 ## Opening chr9 and chr22 in one view to look for the translocation
 
-The matrix is fetched for every pair of displayed regions. Open a second region
-and JBrowse also fetches the contacts _between_ the two, drawn in the wedge
-between their triangles. Type both locations into the location box, separated by
-a space: `chr9:129,730,000-131,730,000 chr22:22,285,000-24,285,000`.
+Type both locations into the location box, separated by a space:
+`chr9:129,730,000-131,730,000 chr22:22,285,000-24,285,000`.
 
 <Video src="/media/hic/two_regions.mp4" caption="A chr22 window entered into the location box beside a chr9 one, GM12878 above and K562 below: the wedge between the two triangles appears with the second region." />
 
@@ -174,8 +164,7 @@ they contact each other constantly.
 
 K562 has the Philadelphia chromosome, t(9;22)(q34;q11)
 ([Rowley 1973](https://doi.org/10.1038/243290a0)), joining _BCR_ on chr22 to
-_ABL1_ on chr9. GM12878 has a normal karyotype. Both have deep in situ Hi-C from
-the same ENCODE lab and pipeline.
+_ABL1_ on chr9.
 
 <Figure src="/img/hic/bcr_abl1_translocation.png" caption="ABL1 (chr9) and BCR (chr22) as two windows in one linear view, GM12878 above and K562 below. The wedge between the two panels' triangles is chr9 against chr22: empty in GM12878, a dense block under the arrow in K562." links="Open this view=hic/bcr_abl1_translocation" />
 
@@ -186,8 +175,8 @@ and chr22 each fold normally in K562.
 
 **Control depth.** The scan script below compares a case `.hic` with a control,
 and ships with ENCODE's deep GM12878 in situ file, `ENCSR410MDC`, as the
-control. The much shallower GM12878 "supernatant" fraction, `ENCSR730CER`, is
-commented out in the script, because a wedge empty for want of reads looks the
+control. The script leaves the much shallower GM12878 "supernatant" fraction,
+`ENCSR730CER`, commented out, because a wedge empty for want of reads looks the
 same as one empty for want of a translocation. With the deep file, the scan
 finds GM12878 with more contact than K562 across the whole chr9-chr22 block
 except the junction bin, where the order inverts.
@@ -240,15 +229,16 @@ curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/
 bash scan_hic_translocation.sh
 ```
 
-`CASE`, `CTRL`, `CHR1`, `CHR2`, `RES` and `NORM` are all overridable, so the
-same scan applies to any two `.hic` files that hold inter-chromosomal blocks.
-The top row pairs _ABL1_ intron 1 with the 5' end of _BCR_. Drop `RES` to
-`10000` and it lands on the junction itself, _ABL1_ intron 1 against the _BCR_
-major breakpoint cluster region.
-[The K562 fusions tutorial](/docs/tutorials/k562_fusions) places the DNA break
-of the same fusion in that intron. Further down, a second chr9-chr22 bin also
-sits well clear of the control, so treat the ranking as a list of candidates to
-open.
+Override `CASE`, `CTRL`, `CHR1`, `CHR2`, `RES` and `NORM` to scan any two `.hic`
+files that hold inter-chromosomal blocks. Reading the output:
+
+- The top row pairs _ABL1_ intron 1 with the 5' end of _BCR_.
+- `RES=10000` lands on the junction itself, _ABL1_ intron 1 against the _BCR_
+  major breakpoint cluster region.
+  [The K562 fusions tutorial](/docs/tutorials/k562_fusions) places the DNA break
+  of the same fusion in that intron.
+- A second chr9-chr22 bin further down also sits well clear of the control, so
+  treat the ranking as a list of candidates to open.
 
 Purpose-built callers scan the whole genome:
 [EagleC](https://github.com/XiaoTaoWang/EagleC),
@@ -260,10 +250,9 @@ next to the matrix it was called from.
 
 ## A and B compartments at EBF1 in GM12878 and K562
 
-Beyond domains and loops, the genome sorts into two interleaved sets of regions,
-the gene-rich, active A compartment and the inactive B compartment, and regions
-contact others in the same set most. ENCODE publishes that call for every
-experiment as a
+The genome sorts into two interleaved sets of regions, the gene-rich, active A
+compartment and the inactive B compartment, and regions contact others in the
+same set most. ENCODE publishes that call for every experiment as a
 [compartment eigenvector and a set of subcompartment classes](/docs/user_guides/hic_track#compartments-and-subcompartments).
 
 We load each line's eigenvector, a score per bin whose sign marks the
@@ -289,16 +278,10 @@ ends. Open both eigenvector tracks over _EBF1_ on chr5:
 
 <Figure src="/img/hic/compartment_switch.png" caption="GM12878 and K562 eigenvector tracks over the same window: the band at EBF1 is in opposite compartments in the two lines while the frame edges agree." links="Open this view=hic/compartment_switch" />
 
-_EBF1_ is a transcription factor B cells depend on for their identity. The band
-over it is in the A compartment in GM12878, a B-lymphoblastoid line, and the B
-compartment in K562, an erythroleukemia, while the sequence either side of it
-agrees. The sign of an eigenvector is arbitrary, so use the gene track to tell
-which sign is A, the gene-rich compartment.
-
-The
-[user guide section](/docs/user_guides/hic_track#compartments-and-subcompartments)
-covers the pinning and the sign, and why subcompartment class numbers cannot be
-compared between files.
+The band over _EBF1_ is in the A compartment in GM12878, a B-lymphoblastoid
+line, and the B compartment in K562, an erythroleukemia, while the sequence
+either side of it agrees. The sign of an eigenvector is arbitrary, so use the
+gene track to tell which sign is A, the gene-rich compartment.
 
 ## See also
 
@@ -312,3 +295,12 @@ compared between files.
 ## External links
 
 - [HiGlass](https://higlass.io/)
+
+[^juicer]:
+    Juicer writes a version banner after the header line, so column names read
+    from the header come out `undefined` past the tenth column, and a jexl
+    expression on one of them matches nothing and reports no error. HiCCUPS
+    writes 24 columns and Arrowhead 16, and both leave `name` and `score` at `.`
+    and put what they rank by further along: `observed` for HiCCUPS, a second
+    column called `score` for Arrowhead. Values past the tenth column arrive as
+    strings, so compare with `>` and `<`, which coerce.

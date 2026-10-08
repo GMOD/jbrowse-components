@@ -7,8 +7,10 @@ guide_category: Tutorials
 tutorial_category: Population genomics
 ---
 
-The BXD mice are inbred strains bred down from two parents, B6 and DBA/2, so
-each strain is a mosaic of blocks from one or the other. We paint each strain by
+The [BXD mice](https://genenetwork.org) are about 200 recombinant-inbred strains
+bred down from two parents, C57BL/6J (B6, the "B" parent) and DBA/2J (the "D"
+parent), so each strain is a mosaic of blocks from one or the other. GeneNetwork
+has phenotyped the same strains for thousands of traits. We paint each strain by
 which parent gave it each block and stack that under a GeneNetwork QTL scan of
 coat color (a QTL is a region linked to variation in a trait). Banding the
 strains by coat color then shows which blocks under each peak set it.
@@ -39,19 +41,6 @@ so there is nothing to download by hand.
   https://genenetwork.org/api/v_pre1/mapping?db=BXDPublish&method=gemma&trait_id=11280
 - the coat-color scores per strain, from GeneNetwork's sample-data API:
   https://genenetwork.org/api/v_pre1/sample_data/BXDPublish/11280
-
-## The BXD strains and the two tracks built from them
-
-The [BXD family](https://genenetwork.org) is a set of ~200 mouse
-recombinant-inbred (RI) strains bred from a cross of C57BL/6J (the "B" parent)
-and DBA/2J (the "D" parent), and GeneNetwork has phenotyped the same strains for
-thousands of traits. We build two tracks from the strains on mm10:
-
-- a chromosome-painting track (the
-  [multi-row feature display](/docs/user_guides/multirow_feature_track)) showing
-  the B and D blocks of each strain
-- a QTL Manhattan track (the [Manhattan display](/docs/user_guides/gwas_track))
-  from a single-marker scan of a BXD phenotype
 
 ## Reading GeneNetwork's BXD genotype file
 
@@ -117,10 +106,10 @@ marker positions follow:
 }
 ```
 
-The painting track is a `FeatureTrack` whose multi-row display
-(`LinearMultiRowFeatureDisplay`) splits rows on the `sample` column and colors
-each block from the `itemRgb` field. For your own panel, swap `uri` for the
-bgzipped, tabix-indexed BED your conversion wrote.
+The painting track is a `FeatureTrack` with a
+[`LinearMultiRowFeatureDisplay`](/docs/user_guides/multirow_feature_track). For
+your own panel, swap `uri` for the bgzipped, tabix-indexed BED your conversion
+wrote.
 
 ```json addtrack
 {
@@ -148,21 +137,18 @@ bgzipped, tabix-indexed BED your conversion wrote.
 }
 ```
 
-- `rows: "sample"` splits the one file into one labeled row per strain.
-- The display paints each block in the `itemRgb` color from the file
-  ([`color`](/docs/config/linearmultirowfeaturedisplay/#slot-color)).
-- `scale: "identity"` on the `color` keeps those colors, and its `labels` name
-  the genotype each `domain` color stands for. The same entries fill the
-  **Categories** toggles in the track menu, so hiding `H` isolates the B/D
-  contrast.
+- `scale: "identity"` on the
+  [`color`](/docs/config/linearmultirowfeaturedisplay/#slot-color) keeps the
+  `itemRgb` colors, and its `labels` name the genotype each `domain` color
+  stands for. The same entries fill the **Categories** toggles in the track
+  menu, so hiding `H` isolates the B/D contrast.
 - `disableGeneHeuristic: true` stops the BED adapter from reading each block as
   a gene, which the `thickStart`/`thickEnd` columns would otherwise trigger.
 
 ## Loading the coat-color QTL scan as a Manhattan track
 
-GeneNetwork maps these traits itself. Its API serves the per-marker result of a
-GEMMA run, a mixed model that accounts for how closely related the BXD strains
-are.
+GeneNetwork maps these traits itself, and its API serves the per-marker result
+of a GEMMA run.
 
 Fetch the scan for one trait by its GeneNetwork id and reshape it with `jq`.
 Each record has a marker, its mm10 position in Mb, a LOD score (log odds of
@@ -193,17 +179,17 @@ chr4    81304223  81304224  rs3708061   .     .      48.1126
 
 The trait id is the number in the GeneNetwork URL for that trait, and
 [`bxd_phenocovar.csv`](https://github.com/rqtl/qtl2data/tree/master/BXD) in the
-qtl2data BXD release lists the ids with their descriptions. `11280` is the hair
-coat color scale, scored across more strains than most.
+qtl2data BXD release lists the ids with their descriptions.
 
-A `GWASTrack`/`GWASAdapter` reads one column of that file as the Manhattan
-score. The adapter defaults to a pre-computed `-log10(p)` in a column called
-`neg_log_pvalue`, so a LOD column needs
-[`scoreColumn`](/docs/config/gwasadapter/#slot-scorecolumn) naming it.
-[`scoreTransform`](/docs/config/gwasadapter/#slot-scoretransform) stays at its
-default, since a LOD is already on the scale the plot draws; a raw or
-natural-log p-value column would need it. See the
-[GWAS track guide](/docs/config_guides/gwas_track).
+A `GWASTrack` with a `GWASAdapter` reads one column of that file as the
+Manhattan score ([GWAS track guide](/docs/config_guides/gwas_track)):
+
+- [`scoreColumn`](/docs/config/gwasadapter/#slot-scorecolumn) names the column.
+  The default is a pre-computed `-log10(p)` called `neg_log_pvalue`, so a LOD
+  column needs it set.
+- [`scoreTransform`](/docs/config/gwasadapter/#slot-scoretransform) stays at its
+  default, since a LOD is already on the scale the plot draws. A raw or
+  natural-log p-value column would need it.
 
 ```json addtrack
 {
@@ -222,15 +208,10 @@ natural-log p-value column would need it. See the
 }
 ```
 
-## Coat-color peaks on chr4 and chr9
-
-The scan puts a plateau of tied markers on chr4, whose interval contains
-_Tyrp1_, the brown coat-color gene. A second, lower peak sits on chr9. Over the
-painting, each peak marks a column of genotypes, and the question is whether the
-strains' coat colors line up with their genotype there.
-
 ## Grouping the strains by coat color
 
+The scan puts a plateau of tied markers on chr4, whose interval contains
+_Tyrp1_, the brown coat-color gene, and a second, lower peak on chr9.
 GeneNetwork scores coat color on a four-step scale: black is 4, grey 3, brown 2
 and DBA/2's dilute brown 1. We'll fetch each strain's score and turn the four
 values into four bands of painting rows, so the phenotype orders the rows and
@@ -271,6 +252,9 @@ The fence below holds those new keys, `coatColor.json` with `facet` added.
 `https://jbrowse.org/code/jb2/main/test_data/config_bxd.json` holds the whole
 track, as `bxd_chromosome_painting_mm10`.
 
+<details>
+<summary>The generated coatColor.json keys</summary>
+
 ```json
 {
   "rowGroups": [
@@ -305,6 +289,8 @@ track, as `bxd_chromosome_painting_mm10`.
 }
 ```
 
+</details>
+
 Add the mm10 RefSeq genes
 (`https://jbrowse.org/demos/bxd/mm10.ncbiRefSeq.sorted.gtf.gz`, with its `.tbi`
 beside it), filter them to _Tyrp1_ with **Filter by...** in their track menu
@@ -313,9 +299,8 @@ grouped painting:
 
 <Figure src="/img/qtl/bxd_tyrp1_locus.png" caption="The whole of chr4, with the painting's rows banded by coat color. Under the peak at Tyrp1 the black and grey bands are nearly all B (blue) and both brown bands nearly all D (red). Away from the peak every band is a mix of the two."/>
 
-The bands come from the phenotype alone. Under the peak, black and grey strains
-carry B6's copy of _Tyrp1_ and brown and dilute brown strains DBA/2's. The rest
-of chr4 is the control, where the bands mix B and D blocks because nothing there
+Under the peak, black and grey strains carry B6's copy of _Tyrp1_ and brown and
+dilute brown strains DBA/2's. The rest of chr4 is the control, where nothing
 sets coat color.
 
 ## Myo5a, the dilute locus, under the chr9 peak
@@ -326,14 +311,19 @@ splits the bands the other way:
 
 <Figure src="/img/qtl/bxd_myo5a_locus.png" caption="The whole of chr9, same bands. Under the peak at Myo5a the black and brown bands are B and the grey and dilute brown bands D, while the rest of chr9 is mixed."/>
 
-The two loci split the four-step scale between them: _Tyrp1_ sets black against
-brown, _Myo5a_ sets full color against dilute, and grey is a black coat diluted.
-
 ## Reproduce it end to end
 
 [`bxd_build_demo.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/bxd_build_demo.sh)
-runs every step above, painting the genotypes with
-[`bxd_geno_to_painting_bed.py`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/bxd_geno_to_painting_bed.py):
+runs every step above. It:
+
+1. downloads JBrowse and the GeneNetwork consensus genotypes
+2. builds the painting with
+   [`bxd_geno_to_painting_bed.py`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/bxd_geno_to_painting_bed.py)
+3. fetches the coat-color scan (trait `11280`) and the per-strain scores from
+   GeneNetwork
+4. writes a `config.json` that opens on mm10 chr4 with the scan over the
+   painting banded by coat color, and prints the marker at the peak and its LOD
+   as it goes
 
 ```bash
 curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/bxd_build_demo.sh
@@ -341,15 +331,7 @@ bash bxd_build_demo.sh            # builds ./bxd_demo/jbrowse2
 npx --yes serve bxd_demo/jbrowse2 # then open the printed URL
 ```
 
-The script downloads JBrowse and the GeneNetwork consensus genotypes, builds the
-painting, fetches the coat-color scan (trait `11280`) and the per-strain scores
-from GeneNetwork, and writes a `config.json` that opens on mm10 chr4 with the
-scan over the painting banded by coat color. It prints the marker at the peak
-and its LOD as it goes.
-
-You can swap in any GeneNetwork trait id. Coat color is close to Mendelian here,
-and a polygenic trait scans flatter, with no peak sharp enough to band the
-painting under.
+Any GeneNetwork trait id works in place of `11280`.
 
 ## See also
 

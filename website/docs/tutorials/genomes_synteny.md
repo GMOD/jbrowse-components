@@ -11,39 +11,39 @@ tutorial_category: genomes.jbrowse.org
 genomes.jbrowse.org already has UCSC's pairwise liftOver alignments for every
 genome, so you can turn one on in a linear genome view and launch a two-panel
 linear synteny view from any chain block. We compare hg38 against T2T-CHM13
-(hs1) at _TNNT3_, a locus the two lay out differently.
+(hs1) at _TNNT3_, a locus the two lay out differently, then against chimp at an
+_FTO_ intron. A multi-way track then stacks many genomes under hg38 at _TNNT3_,
+mouse strains at _Nnt_ and one person's haplotypes at 17q21.31.
 
 ## Opening a liftOver track
 
 Open [hg38 on genomes.jbrowse.org](https://genomes.jbrowse.org), find **Pairwise
 alignments** → **liftOver** in the track selector and turn on **hg38 to Human
 (hs1) liftOver**. Type `TNNT3` into the location box; the hosted config ships a
-name index.
+name index. The liftOver track draws one feature per chain block.
 
 The hg38 config declares one assembly, hg38. When a track names another genome,
 the site loads that genome's config the first time a view needs it.
 
-In a plain linear genome view the liftOver track draws one feature per chain
-block, laid out in rows.
-
 ## Launching a synteny view
 
 Right-click any chain block and choose **Launch → Linear synteny view with
-\<assembly\>**. <!-- menu-path-ok --> The dialog frames the second panel. **Use
-CIGAR to map the current visible region to the target** finds, from the
-alignment, the interval in the other genome that matches what is in view. The
-chain through _TNNT3_ spans the chromosome, so with the box unticked both panels
-frame all of chromosome 11. A reverse-strand block adds **Horizontally flip
-inverted targets**, ticked by default.
+\<assembly\>**. <!-- menu-path-ok --> The dialog frames the second panel:
 
-**Open in new view** appends the result below the linear view; **Replace current
-view** puts it in that view's place.
+- **Use CIGAR to map the current visible region to the target** finds, from the
+  alignment, the interval in the other genome that matches what is in view. The
+  chain through _TNNT3_ spans the chromosome, so with the box unticked both
+  panels frame all of chromosome 11.
+- **Horizontally flip inverted targets** (ticked by default) appears for a
+  reverse-strand block.
+- **Open in new view** appends the result below the linear view, and **Replace
+  current view** puts it in that view's place.
 
 <Video src="/media/synteny/liftover_launch.mp4" caption="Launching from a chain block on the hg38 to Human (hs1) liftOver track at TNNT3: the block's right-click menu, the dialog that frames the second panel, and Replace current view putting the two-panel synteny view in the linear view's place. The hg38 panel opens with the gene track that was open above; the hs1 panel opens empty." />
 
-The panel you launched from keeps the tracks that view had on (**Copy this
-view's tracks into its panel** turns that off). The hs1 panel opens empty; the
-view header's track selector button lists one selector per panel.
+**Copy this view's tracks into its panel** controls whether the panel you
+launched from keeps the tracks that view had on. The view header's track
+selector button lists one selector per panel.
 
 For a locus no single chain block covers, drag-select it on the scale bar and
 pick **Launch → Linear synteny view**, whose dialog offers every assembly the
@@ -68,20 +68,18 @@ The palette button in the same header sets what ribbons are colored by.
 
 _TNNT3_ is the locus of Fig 5C in Aganezov et al. (2022). Against GRCh38 the
 region reads as an inversion plus a deletion that removes the long noncoding RNA
-_LINC01150_ in every individual. Against T2T-CHM13 that segment is intact, on
-the other side of _TNNT3_ and in the opposite orientation. Pick **Strand** from
-the header's palette button, and that segment is the one off-color ribbon.
+_LINC01150_ in every individual. Pick **Strand** from the header's palette
+button, and the segment that moved is the one off-color ribbon.
 
 <Figure caption="hg38 (top) vs T2T-CHM13/hs1 (bottom) at TNNT3, colored by strand, with LINC01150 shaded in each. LINC01150 sits upstream of TNNT3 in hg38 and downstream of it in T2T-CHM13, and the blue ribbon joining the two shaded spans is the segment that moved." src="/img/synteny_hg38_hs1_tnnt3.png" />
 
 ## Launching hg38 against chimp at an FTO intron
 
-The steps above, right-clicking a chain block and launching, work for any track
-under **Pairwise alignments** → **liftOver**, one per chain file UCSC publishes
-against the genome you are in. A chain or PAF of your own opens the same way
-once it is added as a synteny track:
-[HG002 haplotypes](/docs/tutorials/hg002_haplotypes) loads a chain, and
-[Synteny (pairwise minimap2)](/docs/tutorials/synteny_visualization) a PAF.
+The steps above work for any track under **Pairwise alignments** → **liftOver**,
+one per chain file UCSC publishes against the genome you are in, and for a chain
+or PAF of your own once it is added as a synteny track
+([HG002 haplotypes](/docs/tutorials/hg002_haplotypes) loads a chain,
+[Synteny (pairwise minimap2)](/docs/tutorials/synteny_visualization) a PAF).
 
 Turn on **hg38 to Chimp (panTro6) liftOver** under **Pairwise alignments** →
 **liftOver**, type `chr16:54,036,000-54,054,000`, an intron of _FTO_, into the
@@ -91,8 +89,8 @@ location box, and launch a synteny view from a chain block:
 
 The figure's last step switches to curves and **Transparent indels**
 ([above](#ribbon-display-settings)), turning the one gap into a hole that lines
-up with a RepeatMasker element: an L1HS, the youngest human LINE-1 subfamily.
-The chimp panel lacks that element and holds every other repeat in the window.
+up with a RepeatMasker element. The chimp panel lacks that element and holds
+every other repeat in the window.
 
 The chimp panel's track selector offers **NCBI RefSeq - RefSeq All** and
 **RepeatMasker**, brought in with the panTro6 hub. The rest of that hub loads
@@ -109,27 +107,22 @@ alignment exists.
 A liftOver track pairs hg38 with one other genome. hg38's staging config also
 has **hg38 vs 240 genomes (liftOver, multi-way)**, one track over all of hg38's
 liftOver chains. It draws hg38 on top and a lane per genome below, each lane
-with the gene models annotated on that genome. The track is on
+with the gene models annotated on that genome, and lives on
 [staging.genomes.jbrowse.org](https://staging.genomes.jbrowse.org) until JBrowse
-5 ships, since the display it opens in is new in JBrowse 5.
+5 ships.
 
-The route into the multi-way track starts from a gene page. Open
-[the TNNT3 gene page](https://staging.genomes.jbrowse.org/gene/?gene=TNNT3) and
-scroll to **Conserved gene order**, which draws the genes around _TNNT3_ in the
-80 species nearest human. **☰ Multi-way synteny lanes** at the top of that
+Open [the TNNT3 gene page](https://staging.genomes.jbrowse.org/gene/?gene=TNNT3)
+and scroll to **Conserved gene order**, which draws the genes around _TNNT3_ in
+the 80 species nearest human. **☰ Multi-way synteny lanes** at the top of that
 figure opens the track over the same hg38 window, with a lane for each of those
 species the track holds.
 
 <Figure src="/img/genomes_synteny/star_link.png" caption="The TNNT3 gene page on staging.genomes.jbrowse.org at its Conserved gene order section, with the Multi-way synteny lanes link boxed." />
 
-Most of the 80 species get no lane, because the track holds only genomes UCSC
-publishes a liftOver chain to. Where the gene page's assembly for a species has
-no chain, its lane is the newest build of that species that does. **[rev]**
-after a lane's coordinates marks a genome drawn reversed so that it reads in
-hg38's orientation.
-
-The link opens a lane for every species it found, too many to read at once. In
-the track menu:
+The track holds only genomes UCSC publishes a liftOver chain to. Where the gene
+page's assembly for a species has no chain, its lane is the newest build of that
+species that does. The link opens a lane for every species it found, too many to
+read at once, so in the track menu:
 
 - **Lanes → Choose lanes...** and tick chimp, orangutan, rhesus, gray mouse
   lemur, Chinese tree shrew, naked mole-rat, elephant and platypus, a span from
@@ -140,19 +133,13 @@ the track menu:
 
 <Figure src="/img/genomes_synteny/star_lanes.png" caption="hg38 at TNNT3 over eight genomes from chimp to platypus, ribbons colored by strand. Down to elephant the ribbons run nearly all red and the genes that lanes name keep hg38's order, while the gaps between ribbons widen down the stack. The platypus lane spreads over many sequences, and its ribbons are blue." />
 
-Each lane reads the same chain file as that genome's pairwise liftOver track, so
-the one view holds what a synteny view per genome would. Every lane's ribbons
-run to hg38, since each chain aligns one genome to hg38, and the badge opening
-each lane label says so.
 [Reading the stack](/docs/tutorials/hg38_vertebrates_synteny#reading-the-stack)
-covers the lane labels, the ribbons and the lane menus.
+covers the lane labels, `[rev]`, the ribbons and the lane menus.
 
 ## Choosing which mouse strains become lanes at Nnt
 
-A multi-way liftOver track has the reference at its centre and a chain to each
-other genome. It holds every genome UCSC lifts the reference over to, so which
-lanes open is a choice. mm39's track holds the Mouse Genomes Project strains,
-and mm39 is C57BL/6J, the strain that lost _Nnt_ exons 7 to 11 (Freeman et al.
+mm39's multi-way liftOver track holds the Mouse Genomes Project strains, and
+mm39 is C57BL/6J, the strain that lost _Nnt_ exons 7 to 11 (Freeman et al.
 2006). We'll open the strain lanes at that gene:
 
 - open
@@ -165,16 +152,12 @@ and mm39 is C57BL/6J, the strain that lost _Nnt_ exons 7 to 11 (Freeman et al.
 
 <Figure src="/img/genomes_synteny/mouse_strains_nnt.png" caption="mm39 at Nnt over the Mus assemblies the track holds, the C57BL/6J T2T assembly first. The T2T assembly of that strain runs straight under mm39, and every other strain's ribbon fans open in the middle of the gene, over the exons the reference strain lost." />
 
-Each strain is compared with mm39 alone. Whether two strains carry the same
-sequence there takes an alignment between them, which this track does not hold.
-
 ## Comparing one person's two haplotypes at the 17q21.31 inversion
 
 hg38's multi-way track holds both haplotypes of the H9 T2T assembly, so a stack
 can put one person's two chromosomes under the reference. At 17q21.31 the H2
 haplotype is a 900 kb inversion (Stefansson et al. 2005), and H9 carries one of
-each. Each lane is read against hg38, so the haplotype carrying the inversion
-draws blue and its partner draws red. On hg38 at
+each. On hg38 at
 [staging.genomes.jbrowse.org](https://staging.genomes.jbrowse.org), turn on
 **hg38 vs 240 genomes (liftOver, multi-way)**, type
 `chr17:45,300,000-46,800,000` into the location box, then in the track menu:

@@ -16,10 +16,7 @@ back into JBrowse. The pipeline is
 [cmdcolin/gene-review-portal](https://github.com/cmdcolin/gene-review-portal),
 and its README documents every option.
 
-The comparison needs an existing annotation, so it suits re-annotating a species
-that has one, or comparing a new predictor against it. For the first annotation
-of a new assembly, RNA-seq support across each predicted junction can order the
-models instead.
+The comparison needs an existing annotation to compare against.
 
 ## Prerequisites
 
@@ -93,14 +90,11 @@ the assembly's refNames.
 
 Open the two annotations together at `chr22:49,987,402-50,067,759`. Tiberius
 draws one model, `g14001.t1`, across most of the window, where GENCODE has two
-genes, _IL17REL_ and _TTLL8_, with a gap between them. The GENCODE gene features
+genes, _IL17REL_ and _TTLL8_, with a gap between them. GENCODE's gene features
 have `gene_name` and no `Name`, so the track labels them by accession: _IL17REL_
-is `ENSG00000188263` and _TTLL8_ is `ENSG00000138892`.
+is `ENSG00000188263`, _TTLL8_ is `ENSG00000138892`.
 
 <Figure src="/img/gene_prediction_merge.png" caption="One Tiberius model spans IL17REL (ENSG00000188263) and TTLL8 (ENSG00000138892), which GENCODE annotates as separate genes. MLC1 on the right gets a separate prediction." />
-
-_MLC1_, the next gene on the right, gets a separate Tiberius model, so the merge
-is specific to the two genes on the left.
 
 ## Sorting Tiberius models into five classes against GENCODE
 
@@ -115,14 +109,16 @@ of five classes, and every class except Agrees gets a card.
 | Novel locus        | predicted where the reference annotates nothing                   | 12<!--m:tiberius-chr22-classes.novel-locus.models-->       | assess, then create      |
 | Novel coding       | predicted coding where the reference has only non-coding features | 119<!--m:tiberius-chr22-classes.novel-coding.models-->     | assess coding potential  |
 
-A junction counts as shared when it is an intron of one of the gene's
-transcripts. The portal compares exons with genes on the same strand, and counts
-a merge only when the genes it joins do not overlap each other. _PI4KA_ is the
-control: it spans 152 kb on the minus strand, and _SERPIND1_ sits inside one of
-its introns on the plus strand. Tiberius predicts _PI4KA_ correctly, and the
-portal leaves it off the list. GENCODE readthrough genes (one transcript
-spanning two neighbours) such as `CHKB-CPT1B` overlap the genes they join, so
-the portal skips them too.
+The portal applies these rules, and the _PI4KA_ control exercises them:
+
+- **A shared junction** is an intron of one of the gene's transcripts.
+- **Exons are compared** with genes on the same strand.
+- **A merge** counts only when the genes it joins do not overlap each other.
+  _PI4KA_ spans 152 kb on the minus strand with _SERPIND1_ inside one of its
+  introns on the plus strand; Tiberius predicts _PI4KA_ correctly, and the
+  portal leaves it off the list.
+- **GENCODE readthrough genes** (one transcript spanning two neighbours) such as
+  `CHKB-CPT1B` overlap the genes they join, so the portal skips them.
 
 ## Building the review portal with make-portal.mjs
 
@@ -156,24 +152,21 @@ and, with `--with-app`, a copy of JBrowse. Copy it to any web server to publish.
 and in the links; repeat it for more BAMs, and label each with `--rnaseq-name`.
 Reads across the exons of a novel locus support it as a gene.
 
-The [example portal](https://jbrowse.org/demos/tiberius_review/) has two samples
+The [example portal](https://jbrowse.org/demos/tiberius_review/) is this build
+with `--rnaseq` run on Human Brain Reference and Universal Human Reference BAMs
 from the
-[Griffith lab's RNA-seq course data](https://genomedata.org/rnaseq-tutorial/results/alignments/hisat/):
-Human Brain Reference and Universal Human Reference, a pool of ten cell lines.
-The merged _IL17REL_/_TTLL8_ model has more reads in brain, and `g13664.t1`,
-predicted coding over the lncRNA `FAM230I`, has more in the cell-line pool.
-
-Tiberius has an evidence mode, a Nextflow pipeline that folds proteins, RNA-Seq
-and Iso-Seq into the prediction. The released human annotation read here comes
-from a run with default weights, so the RNA-seq tracks are evidence a reviewer
-judges each model against.
+[Griffith lab's RNA-seq course data](https://genomedata.org/rnaseq-tutorial/results/alignments/hisat/).
 
 ## Using the review page: cards, filters and verdicts
 
-The [example portal](https://jbrowse.org/demos/tiberius_review/) covers chr22.
-Each card shows the class, the reference genes, the locus and a capture of the
-two annotations. The filter chips narrow the list to one class, and the verdict
-buttons record what you decide. **Open in JBrowse** opens the same view live.
+The [example portal](https://jbrowse.org/demos/tiberius_review/) covers chr22,
+with one card per model:
+
+- **Card** shows the class, the reference genes, the locus and a capture of the
+  two annotations
+- **Filter chips** narrow the list to one class
+- **Verdict buttons** record what you decide
+- **Open in JBrowse** opens the same view live
 
 Verdicts stay in your browser, and **Export decisions** writes them out as TSV.
 Building with `--apollo <url>` adds a second link to every card that opens the

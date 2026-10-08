@@ -69,26 +69,27 @@ _SMN1_ and _SMN2_ sit about 900 kb apart on chromosome 5 and are roughly 99.9%
 identical across their ~28 kb. Spinal muscular atrophy turns on the copy number
 of _SMN1_, so which copy a read came from is the clinical question. An aligner
 given a 150 bp read from either copy has two equally good places to put it, and
-reports that as mapping quality 0 (MAPQ 0). The read is still drawn where it
-aligned. MAPQ is `-10 log10 Pr{mapping position is wrong}`
+reports that as mapping quality 0 (MAPQ 0). MAPQ is
+`-10 log10 Pr{mapping position is wrong}`
 ([SAM specification](https://samtools.github.io/hts-specs/SAMv1.pdf)), so MAPQ 0
 means the chosen position is about as likely wrong as right.
 
 ## Mappability, coverage and read tracks across the SMN1 and SMN2 region
 
-Open the hosted hg38 config at
-[genomes.jbrowse.org](https://genomes.jbrowse.org) and turn on these tracks from
-the track selector. These are plain bigWig and bigBed files, so the configs
-below add them to any JBrowse with the hg38 assembly loaded. UCSC publishes the
+Turn on these tracks from the track selector of the hosted hg38 config at
+[genomes.jbrowse.org](https://genomes.jbrowse.org), or add them to any JBrowse
+with the hg38 assembly loaded using the configs below. UCSC publishes the
 mappability and problematic-region tracks for hg38 only:
 
 - **Multi-read mappability - Umap M100**, the fraction of overlapping 100-mers
   at each position that are unique in the genome, computed from the reference
   alone. The file omits positions with no unique 100-mer, so the track goes
-  blank there. Set **Resolution → Summary score mode → Minimum**, which draws
-  the worst position in each bin, and pin the axis at 0 to 1 with **Y axis... →
-  Range**. In the 2.5 Mb frame, at about a kilobase per pixel, even **Minimum**
-  sits on the floor everywhere, so read this track in the narrower read view.
+  blank there.
+  - **Resolution → Summary score mode → Minimum** draws the worst position in
+    each bin
+  - **Y axis... → Range** pins the axis at 0 to 1
+  - In the 2.5 Mb frame, at about a kilobase per pixel, even **Minimum** sits on
+    the floor everywhere, so read this track in the narrower read view
 - **gnomAD v3 Genome Coverage - Mean Coverage**, averaged over tens of thousands
   of genomes. gnomAD drops reads that do not place uniquely before averaging, so
   this track falls wherever the Umap track is blank.
@@ -165,26 +166,23 @@ Open `chr5:69,200,000-71,700,000` for the whole region, and a second view at
 
 <Figure src="/img/qc/smn_block_and_reads.png" caption="Two scales of the same place. Top, the region on chr5 with SMN2 and SMN1 banded: RefSeq genes, gnomAD mean coverage, GIAB's low-mappability and segmental-duplication regions, and the 1000 Genomes long-read SV callset. Below it, a second view from SMN1 to where the reads recover, with Umap k100 mappability and NA12878 reads colored by mapping quality." links="Open the wide view=qc/smn_problematic_regions,Open the read view=qc/smn_read_placement" />
 
-GIAB flags a sequence much larger than the gene, as two long intervals,
-chr5:69,533,889-71,009,585 and a second that starts a few kilobases past its
-end, and the gnomAD track stays low across both. Beyond them, GIAB flags nothing
-larger than a few kilobases for megabases in either direction. In the read view,
-the reads stay at MAPQ 0 until well past the end of _SMN1_, and the Umap track
-steps up at the same coordinate as the gnomAD coverage.
+GIAB flags a sequence much larger than the gene, as two long intervals, and the
+gnomAD track stays low across both. Beyond them, GIAB flags nothing larger than
+a few kilobases for megabases in either direction. In the read view, the reads
+stay at MAPQ 0 until well past the end of _SMN1_, where the Umap track steps up
+at the same coordinate as the gnomAD coverage.
 
 Zoom the read view to the SMN cassette, `chr5:70,889,000-70,989,000`.
 
 <Figure src="/img/qc/smn1_evidence.png" caption="The SMN cassette, holding SERF1A, SMN1 and NAIP, with the same four tracks and one read per row. Almost every read is dark blue, mapped where it is drawn and fitting somewhere else just as well." links="Open this view=qc/smn1_evidence" />
 
-Dark blue is MAPQ 0, a read that fits another place equally well; yellow is MAPQ
-60 and above.
+Dark blue is MAPQ 0; yellow is MAPQ 60 and above.
 
 ## Does T2T-CHM13 resolve the SMN duplication?
 
-T2T-CHM13, the telomere-to-telomere assembly, is finished on this chromosome, so
-it could in principle place reads that GRCh38 cannot. UCSC's hg38-to-CHM13
-liftOver chains over the region form several long chains that overlap each
-other, some of them reversed:
+T2T-CHM13, the telomere-to-telomere assembly, is finished on this chromosome.
+UCSC's hg38-to-CHM13 liftOver chains over the region form several long chains
+that overlap each other, some of them reversed:
 
 ```bash
 tabix https://jbrowse.org/ucsc/hg38/liftOver/hg38ToHs1.over.pif.gz \
@@ -238,23 +236,21 @@ on both references.
 the right-hand end of the read view, from the same library, and the two come
 back at the same depth. A coverage track with no MAPQ filter draws flat across
 both. The MAPQ 0 share separates them, with most reads at _SMN1_ at MAPQ 0 and
-almost none at the control.
-
-The gnomAD track shows the effect of a MAPQ filter on depth. Over _SMN1_ it
-drops to a fraction of the control's depth, because gnomAD dropped MAPQ 0 reads
-before averaging.
+almost none at the control; the gnomAD depth over _SMN1_ falls to a fraction of
+the control's for the same reason.
 
 ## Long-read SV calls across the SMN1 and SMN2 region
 
 The long-read SV track in the wide view is empty across the region.
 `scan_mappability_qc.sh` counts calls over the flagged region and an equal-width
 window on either side, and finds few inside and many on both sides, where the
-older Database of Genomic Variants (DGV) merged catalogue,
-https://hgdownload.soe.ucsc.edu/gbdb/hg38/dgv/dgvMerged.bb, has records
-throughout. Over the whole chromosome, both catalogues put a larger share of
-their calls inside the flagged regions than those regions' share of chr5.
-Segmental duplications are copy-number variable, so real variation and artifacts
-both concentrate there.
+older Database of Genomic Variants (DGV) merged catalogue has records
+throughout.
+
+Across the whole chromosome, both catalogues put a larger share of their calls
+inside the flagged regions than those regions' share of chr5. Segmental
+duplications are copy-number variable, so real variation and artifacts both
+concentrate there.
 
 ## Applying the mappability check to another locus
 
@@ -309,8 +305,7 @@ against a control:
    pipeline, so the two counts compare.
 4. It counts each SV catalogue's calls inside the region and in a flank of about
    the same width on either side, and across chr5 the share of calls whose
-   midpoint falls in a flagged region. Counting by midpoint gives a long record
-   the same weight as a short one.
+   midpoint falls in a flagged region.
 
 It needs kent tools (`bigWigInfo`, `bigWigToBedGraph`, `bigBedToBed`),
 `bedtools`, `samtools`, `curl` and `awk`.

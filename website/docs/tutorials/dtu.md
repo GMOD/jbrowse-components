@@ -59,14 +59,12 @@ so there is nothing to download by hand.
 
 ## Building the GFF3
 
-The build takes the ENCODE quantifications to a colorable GFF3 in four steps,
-and one [script](#reproduce-it-end-to-end) runs all four.
+The build takes the ENCODE quantifications to a colorable GFF3 in three steps,
+and one [script](#reproduce-it-end-to-end) runs all three.
 
-**Fetch the quantifications.** The script downloads the eight RSEM tables listed
-above, with the accessions written into it.
-
-**Build the matrices.** One pass over those tables writes a count matrix and a
-TPM matrix: counts feed the model, TPM feeds the effect size.
+**Build the matrices.** The script downloads the eight RSEM tables listed above,
+with the accessions written into it, and writes a count matrix, which feeds the
+model, and a TPM matrix, which feeds the effect size.
 
 **Test usage.** [satuRn](https://doi.org/10.12688/f1000research.51749.1) fits a
 quasi-binomial model to each transcript's share of its gene's reads and tests
@@ -109,14 +107,14 @@ res <- rowData(se)[["fitDTUResult_muscle_vs_liver"]]
 
 `res` holds, per transcript, the p-value, the regular and empirical FDRs and the
 model estimates. The script computes each transcript's isoform fraction, its
-share of the gene's expression, from the TPM matrix.
+share of the gene's expression, from the TPM matrix.[^tpm]
 
 **Write the statistics into GENCODE.** The annotation has to be the release the
-quantifications were made against. RSEM names each transcript with its version,
-`ENST00000356708.11`, and GENCODE raises that version whenever it revises the
-transcript, so joining these tables against a later release drops every
-transcript revised since, with no error. ENCODE lists the release on each
-quantification's file page as its genome annotation, `V29` for all eight here.
+quantifications were made against. RSEM names each transcript with its version
+(`ENST00000356708.11`) and GENCODE raises that version whenever it revises the
+transcript, so joining against a later release drops every transcript revised
+since, with no error. ENCODE lists the release on each quantification's file
+page as its genome annotation (`V29` for all eight here).
 
 The script keeps each gene with a called transcript that is meaningfully
 expressed, since a fraction can swing widely on a handful of reads. It subsets
@@ -191,18 +189,9 @@ the transcript value. The keys are lowercase because the GFF parser lowercases
 them, so a color field named `dIF` reads nothing and paints every transcript
 grey.
 
-`dtu` is a flag with the values `muscle`, `liver` and `ns`. The script calls a
-transcript when its FDR is below 0.05 and its isoform fraction moves by more
-than 0.1, the same threshold it reports on. `dif_called` is `dif` on the
-transcripts the flag calls and absent on the rest, so a transcript the test
-could not separate has no value to color and stays grey.
-
-### Effect size from TPM, cutoff from the regular FDR
-
-The script takes the isoform fraction from TPM, because read counts scale with
-effective length and bias a count-based fraction toward long isoforms. It gates
-on satuRn's regular FDR, because the empirical FDR assumes most tests are null
-and this contrast breaks that assumption.
+`dtu` is `muscle`, `liver` or `ns`, as the script above calls it. `dif_called`
+is `dif` on the called transcripts and absent on the rest, so a transcript the
+test could not separate has no value to color and stays grey.
 
 ## Loading GRCh38
 
@@ -223,16 +212,11 @@ hg38 assembly before either track.
 ## Coloring each isoform by its usage change
 
 The track's `color` bins `dif_called`, a called transcript's isoform-fraction
-change, through a threshold scale. `domain` lists the cut points, `range` gives
-one color per interval between them, and `labels` gives the key's name for each
-interval, liver-preferred below zero and muscle-preferred above. A value on a
-cut takes the interval above it. The key lists every interval under the `title`,
-and a `(no value)` row for the uncalled transcripts. A UTR follows `color`
-unless `utrColor` is set.
-
-`labels.name` reads GENCODE's `transcript_name`, which also labels the isoform
-under the cursor. `mouseover` resolves against the gene and summarizes it;
-clicking an isoform opens its numbers in the details panel.
+change, through a `threshold` scale, liver-preferred below zero and
+muscle-preferred above. A value on a cut takes the interval above it. The key
+lists every interval under the `title`, plus a `(no value)` row for uncalled
+transcripts, and a UTR follows `color` unless `utrColor` is set. Clicking an
+isoform opens its numbers in the details panel.
 
 ```json addtrack
 {
@@ -345,12 +329,10 @@ curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/
 bash build_dtu_demo.sh dtu_build   # writes ./dtu_build/
 ```
 
-The script fetches the eight RSEM tables and the four coverage bigWigs from
-ENCODE, downloads the GENCODE v29 GFF3 those quantifications were made against,
-runs the satuRn fit, and writes `dtu_muscle_vs_liver.gff3.gz` with its `.tbi`
-index, a local build of the file the track configuration above loads from
-jbrowse.org. Point the track's `uri` at the local copy to open your own run. The
-script needs [Prerequisites](#prerequisites) on your `PATH`.
+The script writes `dtu_muscle_vs_liver.gff3.gz` with its `.tbi` index, a local
+build of the file the track configuration above loads from jbrowse.org. Point
+the track's `uri` at the local copy to open your own run. The script needs the
+[Prerequisites](#prerequisites) on your `PATH`.
 
 ## See also
 
@@ -366,3 +348,9 @@ script needs [Prerequisites](#prerequisites) on your `PATH`.
 - Li B, Dewey CN.
   [RSEM: accurate transcript quantification from RNA-Seq data with or without a reference genome](https://doi.org/10.1186/1471-2105-12-323).
   _BMC Bioinformatics_ 12:323 (2011), the quantifier ENCODE ran.
+
+[^tpm]:
+    The script takes the isoform fraction from TPM, because read counts scale
+    with effective length and bias a count-based fraction toward long isoforms.
+    It gates on satuRn's regular FDR, because the empirical FDR assumes most
+    tests are null and this contrast breaks that assumption.

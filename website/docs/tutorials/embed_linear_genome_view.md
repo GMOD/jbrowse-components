@@ -84,9 +84,8 @@ Open the URL `serve` prints.
 
 The `@next` tag fetches the newest v5 prerelease, which the `assembly` and
 `tracks` shorthand above needs, so pin a version for production
-(`@jbrowse/react-linear-genome-view2@5.0.0-beta.11/dist/...`).
-
-For other view types, a different bundler, or working demo repos, see
+(`@jbrowse/react-linear-genome-view2@5.0.0-beta.11/dist/...`). For other view
+types, a different bundler, or working demo repos, see
 [](/docs/embedded_components).
 
 ## Using your own data files in the embedded view
@@ -106,9 +105,7 @@ indexed:
   `refNameAliases` map them.
 
 Prep your own data files with the
-[web quickstart](/docs/quickstart_web#adding-tracks) recipes. For more tracks,
-more track types, or name search, see the
-<a href="#more-complete-example">complete example</a> below.
+[web quickstart](/docs/quickstart_web#adding-tracks) recipes.
 
 ## Using the component in a React app
 
@@ -124,7 +121,9 @@ function GenomeBrowser() {
 
 The component reads its props once, on mount. To navigate or show a track from
 code afterwards, take a `ref` or use `useCreateViewState`, which builds the same
-view state as a hook. The hook returns `undefined` for the first frame while the
+view state as a hook.
+
+The `useCreateViewState` hook returns `undefined` for the first frame while the
 view and display types load, so render nothing until then:
 
 ```js

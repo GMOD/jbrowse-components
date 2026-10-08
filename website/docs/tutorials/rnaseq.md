@@ -39,10 +39,10 @@ Nothing to download: the track configs below read these files by URL.
 
 ## Loading hg19, the stranded reads and RefSeq genes
 
-The alignments are against hg19, so we load that assembly. The alias file lets
-the chromosome names in the BAM and the gene models resolve to the assembly's.
-The two tracks below are the stranded paired-end reads and the RefSeq gene
-models, each with its index beside it:
+The alignments are against hg19, so we load that assembly, with an alias file
+that resolves the chromosome names in the BAM and the gene models to the
+assembly's, then the stranded paired-end reads and the RefSeq gene models, each
+with its index beside it:
 
 ```json addassembly
 {
@@ -87,35 +87,36 @@ one `uri`, and JBrowse finds the `.bai` or `.crai` beside the file:
 }
 ```
 
-The track's `assemblyNames` must match an assembly already configured in
-JBrowse; see the
-[assemblies configuration guide](/docs/config_guides/assemblies). Align reads
-with a spliced aligner such as STAR, then `samtools sort` and `samtools index`
-so the `.bai` sits beside the BAM.
+Your own reads load like the track above once four things are in place:
 
-The [alignments track config guide](/docs/config_guides/alignments_track) covers
-adapter and display options. A precomputed coverage signal, such as a
-strand-specific BigWig from the aligner, loads separately as a
-[quantitative track](/docs/user_guides/quantitative_track).
+- **Assembly.** `assemblyNames` must match an assembly already configured in
+  JBrowse; see the
+  [assemblies configuration guide](/docs/config_guides/assemblies).
+- **Alignment.** Align reads with a spliced aligner such as STAR, then
+  `samtools sort` and `samtools index` so the `.bai` sits beside the BAM.
+- **Options.** The
+  [alignments track config guide](/docs/config_guides/alignments_track) covers
+  adapter and display options.
+- **Coverage signal.** A precomputed signal, such as a strand-specific BigWig
+  from the aligner, loads separately as a
+  [quantitative track](/docs/user_guides/quantitative_track).
 
 ## What RNA-seq looks like in the genome browser
 
 Type `chr7:5,567,000-5,570,000` into the location box. The gene there is _ACTB_,
 a compact gene with deep, even read coverage.
 
-Each grey box below is a read. The thin teal lines jumping across a gap are
-spliced alignments, where a read maps partly to one exon and partly to the next,
-skipping the intron between them. The histogram along the top is read coverage
-at each position.
+The thin teal lines jumping across a gap are spliced alignments, where a read
+maps partly to one exon and partly to the next, skipping the intron between
+them.
 
 <Figure caption="RNA-seq reads over ACTB under the NCBI RefSeq gene model: the coverage histogram with strand-colored splice arcs, then the spliced read pileup." src="/img/rnaseq/basic.png" />
 
 ## Read coverage and read height
 
-The histogram counts the reads in the pileup below it at each position, so
-comparing genes or libraries needs the transcript-length and library-size
-normalization a counts pipeline applies. Pick **Read height → Compact** in the
-track menu to pack the full read stack into view:
+The histogram counts the reads in the pileup below it at each position. Pick
+**Read height → Compact** in the track menu to pack the full read stack into
+view:
 
 <Figure caption="ACTB under compact read height: the whole read stack fits the track, under the per-position coverage histogram and the hg19 NCBI RefSeq gene model." src="/img/rnaseq/compact_stacked.png" />
 
@@ -138,16 +139,17 @@ CIGAR is one skipped intron.
 
 JBrowse computes the arcs on the fly from the skips in the reads in view, and
 colors each arc by transcript strand, salmon for forward and purple for reverse,
-the colors the reads of each strand take. The `XS` and `TS` tags record that
-strand directly; minimap2's `ts` records it relative to the read, and JBrowse
-combines it with the strand the read aligned to.
+the colors the reads of each strand take. It finds the strand two ways:
 
-A BAM aligned by STAR without `--outSAMstrandField intronMotif` has none of
-those tags. JBrowse then reads the first and last two bases of the intron off
-the reference and takes the strand from the splice motif: GT-AG on the forward
-strand reads as CT-AC on the reverse. A junction whose reads disagree, or whose
-motif is none of GT-AG, GC-AG and AT-AC, draws in the neutral color. Hovering an
-arc shows the motif beside the read count.
+- **Tags.** `XS` and `TS` record the strand directly. minimap2's `ts` is
+  relative to the read, so JBrowse combines it with the strand the read aligned
+  to.
+- **Splice motif.** A BAM from STAR without `--outSAMstrandField intronMotif`
+  has no tags, so JBrowse reads the first and last two bases of the intron off
+  the reference: GT-AG on the forward strand reads as CT-AC on the reverse. A
+  junction whose reads disagree, or whose motif is none of GT-AG, GC-AG and
+  AT-AC, draws in the neutral color. Hovering an arc shows the motif beside the
+  read count.
 
 ## Picking out spliced reads in a deep pileup
 
@@ -163,13 +165,12 @@ pileup.
 **Filter by... → Spliced reads → Only spliced reads** keeps just those reads,
 and the coverage histogram follows, so what is left is a histogram of the
 junction-spanning evidence alone. **Hide spliced reads** in the same submenu is
-the complement, useful for checking intron retention.
+the complement.
 
 **Sashimi arcs → Hide non-canonical junctions** drops every arc whose intron
-does not begin and end with GT-AG, GC-AG or AT-AC on either strand. At depth the
-thin arcs are mostly these alignment artefacts. Raising **Sashimi arcs → Min
-read support** removes them too, but only by also removing a real junction
-supported by few reads.
+does not begin and end with GT-AG, GC-AG or AT-AC on either strand. Raising
+**Sashimi arcs → Min read support** also drops thin arcs, along with any real
+junction few reads support.
 
 <Figure caption="Every junction the reads have above, and only the canonical ones below. The motif filter drops the two salmon arcs around the leftmost intron and keeps the purple ones, whose introns the gene model also draws." src="/img/rnaseq/hide_non_canonical.png" links="All junctions=rnaseq/sashimi_all_junctions,Canonical only=rnaseq/sashimi_canonical_only" />
 
@@ -180,9 +181,10 @@ records the transcript strand in which mate of the pair a read is, so every read
 has it, which separates genes close together or overlapping on opposite strands.
 
 The surfeit locus is a tight cluster of genes on alternating strands (_RPL7A_,
-_SURF1_, _SURF2_, _SURF4_), so the read colors can be checked against the gene
-models. Type `chr9:136,214,000-136,229,000` into the location box, open the
-track menu and pick **Color by... → Paired end → First-of-pair strand**:
+_SURF1_, _SURF2_, _SURF4_). Type `chr9:136,214,000-136,229,000` into the
+location box, then pick this path from the track menu:
+
+**Color by... → Paired end → First-of-pair strand**
 
 <Figure caption="The surfeit locus colored by first-of-pair strand. The pileup splits into two colors, and the switch falls where the genes change strand: RPL7A forward, SURF1 reverse, SURF2 forward." src="/img/rnaseq/strand_specific.png" />
 
@@ -192,24 +194,17 @@ each with a coverage histogram from only that group's reads, forward and reverse
 on one autoscaled axis. Turning off **Show... → Show pileup** leaves the two
 histograms alone.
 
-In the gene-dense class III region of the major histocompatibility complex (MHC)
-on chr6, _NELFE_ and _SKIV2L_ sit back to back on opposite strands. Type
+On chr6, _NELFE_ and _SKIV2L_ sit back to back on opposite strands. Type
 `chr6:31,920,500-31,933,000` into the location box:
 
 <Figure caption="NELFE and SKIV2L, adjacent and on opposite strands, grouped by first-of-pair strand: each band shows signal over exactly one of the two genes." src="/img/rnaseq/strand_split_coverage.png" />
 
-Grouping by **Strand** uses the strand each read aligned to. In a paired-end
-library the two mates of every pair land in opposite bands, so neither band
-follows the transcript strand.
-
 ## Long-read splicing: IsoSeq over ACTB
 
-Short-read RNA-seq (usually Illumina, ~150 bp per read) fragments each
-transcript, so a transcript is reassembled from many overlapping reads. A long
-read (PacBio IsoSeq, Nanopore) often spans a whole transcript, aligning across
-every exon with one `N` skip per intron. JBrowse derives the same arcs and
-connectors from those skips. The IsoSeq alignments are a second BAM on the same
-assembly:
+A long read (PacBio IsoSeq, Nanopore) often spans a whole transcript, aligning
+across every exon with one `N` skip per intron. JBrowse derives the same arcs
+and connectors from those skips. The IsoSeq alignments are a second BAM on the
+same assembly:
 
 ```json addtrack
 {
@@ -224,15 +219,12 @@ assembly:
 
 ## Loading STAR, regtools and portcullis junction tables
 
-JBrowse computes splice arcs from the reads in view. A junction table from an
-RNA-seq pipeline adds values computed over the whole library: read counts, an
-annotated-or-novel flag, or portcullis's filtering verdict. One `awk` line
-converts each such table to BED, and a BED file of introns draws as arcs on a
-feature track.
-
-Each recipe below writes one line per junction with the intron as the BED
-interval, the read count as the score, the strand, and the columns specific to
-that tool after them. Sorting and indexing is the same for all three:
+A junction table from an RNA-seq pipeline adds values JBrowse cannot compute
+from the reads in view: whole-library read counts, an annotated-or-novel flag,
+or portcullis's filtering verdict. One `awk` line converts each table to BED,
+which draws as arcs on a feature track, with the intron as the interval, the
+read count as the score, the strand, and the tool's own columns after them. Sort
+and index all three the same way:
 
 ```bash
 sort -k1,1 -k2,2n junctions.bed | bgzip > junctions.bed.gz
@@ -240,8 +232,8 @@ tabix -p bed junctions.bed.gz
 ```
 
 **STAR** writes `SJ.out.tab` with the intron as 1-based inclusive coordinates,
-the strand as 0/1/2, the motif as a STAR code (0 is non-canonical) and the
-annotated flag, then the unique and multi-mapping read counts:
+then the strand, the motif as a STAR code (0 is non-canonical), the annotated
+flag and the unique and multi-mapping read counts:
 
 ```bash
 awk -v OFS='\t' '{
@@ -344,13 +336,11 @@ them:
 }
 ```
 
-Each junction is a `link` from its start to its end, stroked by its score on a
-log scale, with a `text` mark printing the score over it. The `filter` applies
-the sashimi menu's read-support floor to the whole-library counts in the file
-and keeps the canonical motifs, which drops the duplicate that wrong-strand
-reads give a junction on the opposite strand. The colour's `domain` lists the
-`known_junction` values as strings because the adapter reads extra columns as
-text, and `labels` names each one in the key.
+The `filter` applies the sashimi menu's read-support floor to the whole-library
+counts in the file and keeps the canonical motifs, which drops the duplicate
+that wrong-strand reads give a junction on the opposite strand. The colour's
+`domain` lists the `known_junction` values as strings because the adapter reads
+extra columns as text.
 
 Type `chr11:49,220,500-49,231,500` into the location box, the 5' end of _FOLH1_,
 where the file separates what RefSeq annotates from what this library also

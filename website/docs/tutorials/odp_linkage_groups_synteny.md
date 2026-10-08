@@ -18,8 +18,7 @@ color for it. JBrowse loads that table as a synteny track, paints every ortholog
 with its set's color, and sorts one genome's chromosomes by where their
 orthologs land on the other. In a sponge the colors fall in one block per
 chromosome along a diagonal, and in a comb jelly each group is spread over
-several chromosomes. The color mode is a column of the table, so any label a
-pipeline puts beside an ortholog can drive it.
+several chromosomes.
 
 ## Prerequisites
 
@@ -47,24 +46,23 @@ so there is nothing to download by hand.
 
 ## The linkage-group label in the ortholog table
 
-Simakov et al. 2022 named a set of gene families the BCnS linkage groups, after
-the bilaterians, cnidarians and sponges whose chromosomes have them, and gave
-each a letter: A1a, A2, B1, and so on to R. A gene belongs to one of them or to
-none. odp ships the groups as a database of protein models, searches every
-proteome it is given against them, and writes the group each ortholog landed in
-as a column beside it. A synteny track can read that column. Your own genomes
-need odp's table with its `gene_group` and `color` columns, written when odp
-runs with `plot_LGs: True`, and a `.chrom` file per genome.
+Simakov et al. 2022 named a set of gene families the BCnS linkage groups. A gene
+belongs to one group or to none. odp searches every proteome it is given against
+a database of the groups' protein models and writes the group each ortholog
+landed in as a column beside it, which a synteny track can read. Your own
+genomes need odp's table with its `gene_group` and `color` columns, written when
+odp runs with `plot_LGs: True`, and a `.chrom` file per genome.
 
 The dotplot uses two genomes and the stack at the end adds four:
 
-- `RES`, the jellyfish _Rhopilema esculentum_, in the dotplot and the stack
-- `EMU`, the freshwater sponge _Ephydatia muelleri_, in the dotplot and the
-  stack
-- `HCA` and `BIN`, the comb jellies _Hormiphora californensis_ and _Bolinopsis
-  microptera_, in the stack only
-- `BFL`, the amphioxus _Branchiostoma floridae_, in the stack only
-- `CLAa`, a cladorhizid sponge, in the stack only
+| Code   | Species                                | Used in           |
+| ------ | -------------------------------------- | ----------------- |
+| `RES`  | jellyfish _Rhopilema esculentum_       | dotplot and stack |
+| `EMU`  | freshwater sponge _Ephydatia muelleri_ | dotplot and stack |
+| `HCA`  | comb jelly _Hormiphora californensis_  | stack only        |
+| `BIN`  | comb jelly _Bolinopsis microptera_     | stack only        |
+| `BFL`  | amphioxus _Branchiostoma floridae_     | stack only        |
+| `CLAa` | cladorhizid sponge                     | stack only        |
 
 odp's group database was built from five genomes, three of them on this page:
 the jellyfish, _Ephydatia_ and amphioxus. The comb jellies and the cladorhizid
@@ -133,10 +131,13 @@ each.
 
 ## Loading the jellyfish-sponge table as a synteny track
 
-`attributeColumns` exposes the last three columns of the `.blocks` file.
-`gene_group` becomes a color-by mode named after it. `color` holds the palette
-odp chose for each group, so the menu leaves it out of the modes. `break_FET` is
-odp's test of the row's chromosome pair, which the stack below reads as opacity.
+`attributeColumns` exposes the last three columns of the `.blocks` file:
+
+- `gene_group` becomes a color-by mode named after it.
+- `color` holds the palette odp chose for each group, so the menu leaves it out
+  of the modes.
+- `break_FET` is odp's test of the row's chromosome pair, which the stack below
+  reads as opacity.
 
 ```json addtrack
 {
@@ -214,9 +215,8 @@ the `opacity` mapping:
   `diagonalizeAnchorRow`. Rows count from 0, so 2 is the jellyfish, where each
   group sits on one chromosome. **Rows → Re-order chromosomes** on the view menu
   runs the same sort and asks for that row.
-- `hideUnlabelled` draws only the orthologs in a group: **Hide unlabelled rows**
-  on the palette menu.
-- `drawCurves` bundles the ribbons: **Curved lines** on the sliders button.
+- `hideUnlabelled` is **Hide unlabelled rows** on the palette menu.
+- `drawCurves` is **Curved lines** on the sliders button.
 - `fadeThinAlignmentsMode` turns off the fade a whole-genome view applies to
   sub-pixel ribbons, since their colors are what the figure shows. It has no
   menu item.
@@ -269,11 +269,6 @@ the `opacity` mapping:
 
 <Figure caption="Six genomes in the order of the paper's figure 1d, ribbons colored by linkage group, solid on significantly paired chromosomes and faint elsewhere. Each Bolinopsis chromosome pairs with one Hormiphora chromosome in the top band, each Hormiphora chromosome scatters over many jellyfish chromosomes in the second, and from the jellyfish down the groups travel as bundles." src="/img/linkage_groups/alg_stack.png" />
 
-In the second band, between _Hormiphora_ and the jellyfish, far fewer grouped
-orthologs sit on a significant pair than in the other bands. Each comb jelly
-chromosome mixes groups that match no jellyfish chromosome, and those orthologs
-draw faint. The two comb jellies agree with each other in the band above.
-
 Amphioxus and _Ephydatia_ helped build the group database, so the bundles
 running through them are expected. The cladorhizid sponge took no part, and in
 the bottom band the groups still reach it as bundles.
@@ -318,8 +313,7 @@ curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/
 DRYAD_DIR=~/Downloads bash build_odp_linkage_groups_synteny.sh
 ```
 
-For your own genomes, run odp with `plot_LGs: True` and point the conversion at
-the tables it writes under
+For your own genomes, point the conversion at the tables odp writes under
 `synteny_analysis/step2-figures/synteny_coloredby_BCnS_LGs/`.
 
 ## See also

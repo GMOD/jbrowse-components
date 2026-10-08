@@ -47,15 +47,10 @@ so there is nothing to download by hand.
 
 ## Oat subgenomes and homoeologs
 
-Oat (_Avena sativa_) is an allohexaploid: three diploid grasses hybridized and
-the result kept all three genomes. Its 21 chromosomes are seven homoeologous
-groups of three, one per subgenome (A, C and D), and nearly every gene exists
-three times. The copies across subgenomes are homoeologs. A table of them pairs
-one genome with itself, so the dotplot puts oat on both axes.
-
-The dotplot shows where the copies sit, and a segment moved between groups
-leaves the diagonal. dN/dS measures the selection pressure on each pair of
-copies, and the dotplot draws it as a colour.
+Oat (_Avena sativa_) is an allohexaploid with 21 chromosomes, seven homoeologous
+groups of three, one per subgenome (A, C and D). Copies across subgenomes are
+homoeologs, so a table of them pairs oat with itself and the dotplot puts oat on
+both axes. A segment moved between groups leaves the diagonal.
 
 ## Producing the homoeolog table
 
@@ -71,8 +66,6 @@ python -m jcvi.formats.gff bed --type=mRNA --key=transcript_id \
   --primary_only oat.gff3.gz -o oat.all.bed
 awk -F'\t' '$1 ~ /^[1-7][ACD]$/' oat.all.bed > oat.bed
 ```
-
-The `awk` keeps the 21 chromosomes and drops the unplaced contigs.
 
 The [end-to-end script](#reproduce-it-end-to-end) translates the proteome from
 the CDS, keeping the transcript ids the BED uses.
@@ -108,21 +101,21 @@ Two flags matter here:
 - `--no_strip_names` keeps the ids byte-identical to the BED the adapter joins
   on
 
-The alignment is the long step, over an hour on every core here. Running it
-separately keeps DIAMOND at default sensitivity, which finds homoeologs this
-recent; jcvi's own call uses `--ultra-sensitive --max-target-seqs 1000`. jcvi
-picks the file up by name and skips its alignment step.
+The alignment is the long step. Running it separately keeps DIAMOND at default
+sensitivity, which finds homoeologs this recent. jcvi picks the file up by name
+and skips its alignment step.
 
-Chaining keeps a gene pair (an anchor) only where its neighbours agree, which
-removes the off-diagonal noise of gene families' best hits. A self-comparison
-also chains tandem and segmental duplicates within a subgenome. A homoeolog pair
-has its two genes on different subgenomes, so the script keeps the pairs whose
-chromosomes carry different subgenome letters and writes them, two transcript
-ids per line, to `oat.pairs.tsv`.
+Three choices decide which pairs survive:
 
-Take `oat.oat.anchors` and skip `oat.oat.lifted.anchors`. Liftover recruits
-extra pairs near an established block, and their dS runs far above the chained
-ones', which marks them as paralogs.
+- Chaining keeps a gene pair (an anchor) only where its neighbours agree, which
+  removes the off-diagonal noise of gene families' best hits.
+- The script keeps the pairs whose chromosomes carry different subgenome
+  letters, since a self-comparison also chains tandem and segmental duplicates
+  within a subgenome, and writes them, two transcript ids per line, to
+  `oat.pairs.tsv`.
+- Take `oat.oat.anchors` and skip `oat.oat.lifted.anchors`: liftover recruits
+  extra pairs near an established block, and their dS runs far above the chained
+  ones', which marks them as paralogs.
 
 ### Measuring dN and dS on each homoeolog pair
 
@@ -172,8 +165,7 @@ A self-comparison names one assembly twice, in `blockAssemblies`, in the track's
 
 `attributeColumns` names the columns after the two gene columns, and each
 becomes a feature attribute in the detail panel. `dn` and `ds` drive the palette
-button's **dN/dS**, a ramp with 1 at its middle and 2 at its top. `syn_subs` and
-`fisher_p` are the evidence behind a colour.
+button's **dN/dS**; `syn_subs` and `fisher_p` are the evidence behind a colour.
 
 **Add → Dotplot view** with oat on both axes opens the track as a dotplot, and
 the session [below](#checking-the-rates-against-the-raw-data) does the same.
@@ -244,8 +236,7 @@ goes; the menu has no field for them:
 
 With **dN/dS** chosen on the palette button, almost every pair draws below 1 on
 the ramp. A ratio over 1 between copies this recently separated rests on few
-substitutions; the [primate walkthrough](/docs/tutorials/selection_pressure)
-works through that arithmetic on a locus small enough to check by eye.
+substitutions.
 
 ## Reproduce it end to end
 
@@ -267,8 +258,6 @@ curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/
 bash build_oat_homoeologs.sh
 npx --yes serve oat_homoeologs_build/jbrowse2  # then open the printed URL
 ```
-
-The script needs the tools under [Prerequisites](#prerequisites) on PATH.
 
 ## See also
 

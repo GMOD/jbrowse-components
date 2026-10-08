@@ -53,11 +53,9 @@ so there is nothing to download by hand.
 minimap2 -c -x asm20 --eqx hpylori_j99.fa.gz hpylori_26695.fa.gz > 26695_vs_j99.paf
 ```
 
-- `-x asm20` is the assembly preset for the divergence between the genomes.
-  `asm5` covers up to about 5%; these strains diverge well past that.
+- `-x asm20` is the assembly preset for strains this diverged.
 - `-c` emits the base-level CIGAR the linear synteny view draws from.
-- `--eqx` splits CIGAR matches (`=`) from mismatches (`X`), so the same track
-  opened in a plain linear genome view draws per-base mismatches.
+- `--eqx` splits CIGAR matches (`=`) from mismatches (`X`).
   [Color by value → Identity](/docs/user_guides/linear_synteny_view#coloring-the-ribbons)
   reads the PAF's divergence tag or match counts.
 
@@ -70,8 +68,8 @@ JBrowse also loads [MUMmer](https://github.com/mummer4/mummer) `.delta` and UCSC
 
 We'll load each strain's assembly from its hub. Each strain's hub `config.json`
 holds a whole JBrowse assembly: the 2bit sequence, an alias table and the NCBI
-RefSeq gene track. The build copies each entry as the hub wrote it and adds the
-old short name as an alias, so a session can still say `hpylori_26695`:
+RefSeq gene track. The build adds the old short name as an alias, so a session
+can still say `hpylori_26695`:
 
 ```json
 {
@@ -131,10 +129,8 @@ indexed needs only its `uri`; swap in your own file.
 }
 ```
 
-A track with its `assemblyNames` in the wrong order draws an empty band. JBrowse
-checks at view load whether the top row's chromosome names belong to that
-assembly, and a warning in the view header names the remedy when they belong to
-the other row.
+A track with its `assemblyNames` in the wrong order draws an empty band, and the
+warning in the view header names the remedy:
 
 <Figure caption="A synteny track whose assemblyNames are reversed. No chromosome name resolves, so the band is empty, and the warning icon in the header opens a dialog reporting the reversal." src="/img/sv_synteny/assembly_order_warning.png" />
 
@@ -172,13 +168,11 @@ above, then:
    track: 26695 against CHC155, then CHC155 against J99.
 4. Click **Launch**, and all three strains stack in one view.
 
-A whole strain has about as many genes as its row has pixels, so zoom each row
-in once with its magnifier, then open each strain's gene track, **NCBI RefSeq -
-RefSeq All (GFF)**, from the track selector for that row.
+Zoom each row in once with its magnifier, then open each strain's gene track,
+**NCBI RefSeq - RefSeq All (GFF)**, from the track selector for that row.
 
-CHC155 has an inversion that 26695 and J99 do not, so the 26695 vs J99 dotplot
-shows nothing there and only a row for CHC155 can. To frame it, type one window
-into each row's search box, top to bottom. `[rev]` flips the J99 row so it reads
+CHC155 has an inversion that 26695 and J99 lack. To frame it, type one window
+into each row's search box, top to bottom; `[rev]` flips the J99 row so it reads
 in 26695's direction:
 
 ```text
@@ -191,25 +185,21 @@ NZ_CP011330v1:305,000-415,000[rev]
 
 <Figure caption="Three H. pylori strains stacked with a gene track on each genome, across the stretch inverted in CHC155. The ribbons into the middle row cross from both sides, since the same stretch runs one way in 26695 and J99 and the other way in CHC155." src="/img/sv_synteny/linear_synteny_genes.png" />
 
-Each panel is a full linear genome view with a separate search box, zoom and
-track selector. See [](/docs/user_guides/linear_synteny_view) for ribbon options
-and [URL parameters → linear synteny view](/docs/urlparams#linear-synteny-view)
-for building one from a URL.
+See [](/docs/user_guides/linear_synteny_view) for ribbon options and
+[URL parameters → linear synteny view](/docs/urlparams#linear-synteny-view) for
+building one from a URL.
 
 ## Coloring genes by ortholog
 
-In bacteria the gene symbol is effectively the ortholog id, since NCBI reuses
-standardized symbols across strains. On each gene track, pick **Color by... →
-Attribute...** from the track menu and enter `gene`. JBrowse gives each distinct
-value a color from one palette, chosen from the value itself, so an ortholog is
-one color down all three panels. Features with no value are grey; most genes
-here have only a locus tag. Across the inversion, the colors run from _hydE_ to
-_uvrA_ in 26695 and J99 and from _uvrA_ back to _hydE_ in CHC155.
+NCBI reuses standardized gene symbols across bacterial strains, so the symbol is
+effectively an ortholog id. On each gene track, pick **Color by... →
+Attribute...** from the track menu and enter `gene`. An ortholog is one color
+down all three panels, and features with no `gene` value (most genes here have
+only a locus tag) stay grey.
 
 <Figure caption="The click and its result. Left, the Color by attribute dialog on the first strain's gene track with the attribute name set to gene. Right, the same three strains after applying it: a shared symbol holds one color down all three panels, and the middle row shows the colors in reverse order." src="/img/sv_synteny/color_by_attribute_steps.png" links="Dialog=sv_synteny/color_by_attribute,Result=sv_synteny/ortholog_colors" />
 
-The dialog writes the field into the display's `color`, one line of config on
-the hub's gene track:
+The same setting as config on the hub's gene track:
 
 ```json addtrack
 {

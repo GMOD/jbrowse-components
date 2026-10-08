@@ -44,40 +44,35 @@ Nothing to download: the plugin fetches these files when a link opens.
 ## Opening three TP53 structures mapped to one transcript
 
 An AlphaFold model is one chain, numbered like the UniProt sequence. A crystal
-structure often holds one domain of the protein, sometimes in several copies and
-with a partner or DNA, numbered from wherever the crystallised construct began.
-The plugin maps both kinds to the gene by aligning the structure's sequence to
-the transcript's translation.
+structure often holds one domain of the protein, numbered from wherever the
+crystallised construct began. The plugin maps both kinds to the gene by aligning
+the structure's sequence to the transcript's translation.
 
 [Open the three structures of TP53](https://jbrowse.org/code/jb2/main/?config=test_data/protein3d_config.json&session=spec-%7B%22views%22%3A%5B%7B%22type%22%3A%22ProteinView%22%2C%22structures%22%3A%5B%7B%22uniprotId%22%3A%22P04637%22%7D%2C%7B%22pdbId%22%3A%221TUP%22%7D%2C%7B%22pdbId%22%3A%221YCR%22%7D%5D%2C%22transcriptId%22%3A%22NM_000546.6%22%2C%22zoomToBaseLevel%22%3Afalse%2C%22connectedView%22%3A%7B%22assembly%22%3A%22hg38%22%2C%22loc%22%3A%22chr17%3A7%2C671%2C000-7%2C684%2C500%22%2C%22tracks%22%3A%5B%22hg38-ncbiRefSeq%22%5D%7D%2C%22colorScheme%22%3A%22mapped-chain%22%7D%5D%7D).
-The link is a session spec naming the gene's locus, the RefSeq transcript
-`NM_000546.6`, and three structures: the AlphaFold model by UniProt accession,
-and PDB 1TUP and 1YCR. The plugin superposes the structures with TM-align. The
-**Color** menu is set to Mapped chain, which colours the chain the transcript
-encodes blue and everything else grey.
+The plugin superposes the structures with TM-align, and the **Color** menu is
+set to Mapped chain, which colours the chain the transcript encodes blue and
+everything else grey. The arrow beside each structure in the header opens its
+alignment panel, with the transcript's translation on the GENOME row, the
+structure's sequence on the STRUCT row and a ruler in the authors' residue
+numbering:
 
-The arrow beside each structure in the header opens its alignment panel, with
-the transcript's translation on the GENOME row, the structure's sequence on the
-STRUCT row, and a ruler in the authors' residue numbering. The AlphaFold panel
-is one unbroken match. The 1TUP panel covers the DNA-binding core alone, and its
-ruler starts at 94, the residue where the crystallised construct begins. Under
-the AlphaFold STRUCT row, pLDDT, AlphaFold's per-residue confidence, is high
-across the core and falls away at both ends, the same tails both crystals leave
-out.
+- **AlphaFold** is one unbroken match. Under its STRUCT row, pLDDT (AlphaFold's
+  per-residue confidence) is high across the core and falls away at both ends,
+  the same tails both crystals leave out.
+- **1TUP** covers the DNA-binding core alone, and its ruler starts at 94, the
+  residue where the crystallised construct begins.
 
 ## UniProt annotations on the 1TUP core-domain crystal
 
-The feature tracks under each panel come from UniProt, numbered along the
-full-length protein. For 1TUP the plugin looks up where the construct starts in
-SIFTS and shifts every feature by that offset, dropping features outside the
-construct. **Show all feature tracks** in the display settings menu adds
-secondary structure, modified residues and other minor types to the default
-domains, binding sites and variants.
+The feature tracks under each panel come from UniProt, shifted to the
+construct's numbering with the SIFTS offset. **Show all feature tracks** in the
+display settings menu adds secondary structure, modified residues and other
+minor types to the default domains, binding sites and variants.
 
 1TUP holds three copies of the core and two DNA strands. The panel's **Mapped
 chain** picker lists them, and the plugin chose the protein entity because its
-sequence aligns to the transcript. Hovering any of the three copies in the 3D
-canvas highlights the same residue on the genome.
+sequence aligns to the transcript. Hovering any copy in the 3D canvas highlights
+the same residue on the genome.
 
 ## Finding the codon of the R248 hotspot from the crystal
 
@@ -88,7 +83,6 @@ numbered their construct the way UniProt numbers the whole protein.
 
 <Figure src="/img/protein/tp53_hotspot.png" caption="NCBI RefSeq at TP53's R248 codon beside 1TUP with R248 selected. The crystal's three copies of p53's core are blue on grey DNA, R248 is magenta on the copies in view, with its neighbours drawn as sticks, and a band marks its codon on the gene." />
 
-On one copy, the side chain of R248 reaches into the minor groove of the DNA.
 Hovering the codon on the gene highlights the residue on the structures that
 contain it; hovering the intron beside the exon highlights nothing.
 
@@ -104,8 +98,7 @@ transcript row.
 
 Switch the picker to Chain A. The plugin realigns against MDM2, which turns
 blue, and the GENOME row becomes a scatter of gapped fragments, because the
-transcript does not encode MDM2. In a complex of two different proteins the
-automatic choice can land on the wrong chain, and the picker corrects it.
+transcript does not encode MDM2.
 
 ## The p53 transactivation domain as an NMR ensemble
 
@@ -117,17 +110,15 @@ fit the data.
 [Open 2L14 with its two helices selected](https://jbrowse.org/code/jb2/main/?config=test_data/protein3d_config.json&session=spec-%7B%22views%22%3A%5B%7B%22type%22%3A%22ProteinView%22%2C%22structures%22%3A%5B%7B%22pdbId%22%3A%222L14%22%2C%22initialTranscriptResidues%22%3A%5B%7B%22start%22%3A18%2C%22end%22%3A26%7D%2C%7B%22start%22%3A46%2C%22end%22%3A54%7D%5D%7D%5D%2C%22transcriptId%22%3A%22NM_000546.6%22%2C%22zoomToBaseLevel%22%3Afalse%2C%22connectedView%22%3A%7B%22assembly%22%3A%22hg38%22%2C%22loc%22%3A%22chr17%3A7%2C676%2C140-7%2C676%2C640%22%2C%22tracks%22%3A%5B%22hg38-ncbiRefSeq%22%5D%7D%2C%22colorScheme%22%3A%22mapped-chain%22%7D%5D%7D).
 The link selects the two helices the file annotates, residues 18 to 26 and 46 to
 54, through `initialTranscriptResidues`, which counts along the transcript's
-translation. The plugin loads each model as a separate structure, so the view
-opens more slowly than a crystal's. Click **Reset Zoom**, the circular arrow at
-the top right of the canvas, to fit the whole ensemble.
+translation. The view opens slowly because the plugin loads each model as a
+separate structure. Click **Reset Zoom**, the circular arrow at the top right of
+the canvas, to fit the whole ensemble.
 
 <Figure src="/img/protein/tp53_nmr_ensemble.png" caption="NCBI RefSeq over TP53's first coding exons beside every model of 2L14. The p53 chain is blue on grey CBP with its two helices in magenta; the helices overlap from model to model, the linker leaving the first one spreads, and bands on the gene mark the helices' codons." />
 
-The two helices sit on CBP in the same place in every model. The linker after
-the first helix and both ends of the chain differ from model to model, and the
-grey spray on the right is the C-terminal tail of CBP. The first helix lies
-within the stretch the 1YCR peptide covers. The first helix's codons straddle an
-intron, so its band on the gene is split across two exons.
+The grey spray on the right is the C-terminal tail of CBP. The first helix lies
+within the stretch the 1YCR peptide covers, and its codons straddle an intron,
+so its band on the gene splits across two exons.
 
 ## Checking the R248 codon against the reference sequence
 
@@ -135,8 +126,7 @@ In the R248 session's genome view, zoom into the band the selection drew on
 _TP53_, down to base level, and tick **Reference sequence** in the track
 selector. The transcript is on the minus strand, so the codon under the band
 reads `CCG` left to right on the reference track, which is `CGG`, arginine, on
-the transcript. R248W and R248Q, the two commonest substitutions at the codon in
-tumours, change its first base and its middle one.
+the transcript.
 
 ## Structures of your own gene
 

@@ -92,15 +92,14 @@ paste that `esmUrl` into **ESM build URL** and leave the rest empty.
 ## Indexing a graph with build_pangenome_graph.sh {#what-your-graph-can-produce}
 
 Install [`gfa-to-tabix`](https://github.com/GMOD/gfa-to-tabix), which writes the
-segment and link indexes, and fetch the script:
+segment and link indexes (its
+[releases](https://github.com/GMOD/gfa-to-tabix/releases) have Linux and macOS
+binaries if you have no Rust toolchain), and fetch the script:
 
 ```bash
 cargo install gfa-to-tabix
 curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/build_pangenome_graph.sh
 ```
-
-The `gfa-to-tabix` [releases](https://github.com/GMOD/gfa-to-tabix/releases)
-have binaries for Linux and macOS if you have no Rust toolchain.
 
 An **rGFA**, from minigraph or the minigraph stage of Minigraph-Cactus, needs an
 output prefix and the assembly name your config uses:
@@ -111,12 +110,14 @@ bash build_pangenome_graph.sh graph.rgfa.gz out --assembly hg38
 
 A **plain GFA**, from pggb, odgi, vg or base-level Minigraph-Cactus, also needs
 the backbone sample and its bubbles. The bubbles come from a snarl VCF (vg's
-word for a bubble is snarl): `vg deconstruct` writes one record per top-level
-snarl against the reference path, and `pggb -V` writes the same file. The VCF's
-CHROM must be the assembly's refName, so rename the PanSN path
-(`sample#haplotype#contig`) as the
-[pggb tutorial](/docs/tutorials/pangenome_ecoli#opening-the-graph-in-the-graph-genome-view)
-does:
+word for a bubble is snarl):
+
+- `vg deconstruct` writes one record per top-level snarl against the reference
+  path, and `pggb -V` writes the same file.
+- The VCF's CHROM must be the assembly's refName, so rename the PanSN path
+  (`sample#haplotype#contig`) as the
+  [pggb tutorial](/docs/tutorials/pangenome_ecoli#opening-the-graph-in-the-graph-genome-view)
+  does:
 
 ```bash
 # -p: the reference path to decompose against
@@ -131,8 +132,7 @@ bash build_pangenome_graph.sh graph.gfa out --reference K12 --assembly K12 --sna
 ```
 
 At human-chromosome scale, index the SV-resolution rGFA; a pggb graph's index
-does not finish there. An assembly graph from SPAdes or Flye has no reference to
-index against; open it in Bandage.
+does not finish there.
 
 The command writes these files beside the prefix:
 
@@ -147,18 +147,21 @@ The command writes these files beside the prefix:
 
 ### The bubble tier for whole-chromosome views {#a-whole-chromosome-the-bubble-tier}
 
-The bubble tier is a coarse copy of the graph. It draws each bubble as one node
-on the reference backbone and folds bubbles under its threshold into it. A
-bubble's size for that test is the larger of its reference span and its longest
-allele. The threshold is in the file name, 10,000 bp by default; `--tier` sets
-it, and a pggb graph defaults to 50, since most of its bubbles are single bases.
+The bubble tier is a coarse copy of the graph that draws each bubble as one node
+on the reference backbone and folds smaller bubbles into it. A bubble's size for
+that test is the larger of its reference span and its longest allele. The
+threshold is in the file name, 10,000 bp by default; `--tier` sets it, and a
+pggb graph defaults to 50, since most of its bubbles are single bases.
 
 ## Configuring the graph track {#the-two-indexes-a-graph-track-reads}
 
-The config's first track is the graph. `uri` is the prefix, and `coarse` names
-the tier the track draws past `aboveBpPerPx` bp per pixel. `assemblyNameToPanSN`
-maps your assembly name to the graph's PanSN sample, and the command writes it
-only when the two differ.
+The config's first track is the graph. Its adapter holds:
+
+- `uri`, the prefix
+- `coarse`, which names the tier the track draws past `aboveBpPerPx` bp per
+  pixel
+- `assemblyNameToPanSN`, which maps your assembly name to the graph's PanSN
+  sample; the command writes it only when the two differ
 
 ```json addtrack
 {
@@ -194,9 +197,9 @@ Turn them on and switch the graph back with **Display types → Graph**.
 
 <Figure caption="The four tracks the command writes, over the C4 region on hg38: the bubbles as a row and as a curve, the allele inventory, and the graph track at the bottom." src="/img/pangenome/host_your_own.png" />
 
-A node's right-click menu offers **Open in** the haplotype named in its rGFA id,
-such as `NA20809#2#CM094351.1`, when the session holds an assembly named or
-aliased `sample#haplotype`, here `NA20809#2`.
+A node's right-click menu offers **Open in** the haplotype its rGFA id names
+(`NA20809#2#CM094351.1` opens `NA20809#2`), when the session holds an assembly
+named or aliased `sample#haplotype`.
 [The HPRC tutorial](/docs/tutorials/pangenome_hprc#opening-the-haplotype-an-allele-came-from)
 takes that route.
 
@@ -248,12 +251,15 @@ runs that per assembly and joins the output into one tabix-indexed row per
 bubble per sample, drawn as one row per haplotype.
 
 With a **plain GFA**, the command records the haplotypes whose paths visit each
-segment as an `SM:Z:` tag while it reads the paths. The node panel lists them as
-`samples`, and a track reads them as `feature.samples` and their count as
-`feature.sampleCount`. **Color by... → Attribute...** with `sampleCount` gives
-each count a separate colour. Past a handful of haplotypes a ramp reads better;
-**Edit plot...** in the same dialog takes one, here red for a segment on one
-haplotype to grey for a segment on most:
+segment as an `SM:Z:` tag while it reads the paths.
+
+- The node panel lists them as `samples`; a track reads them as
+  `feature.samples` and their count as `feature.sampleCount`.
+- **Color by... → Attribute...** with `sampleCount` gives each count a separate
+  colour.
+- For more than a handful of haplotypes, **Edit plot...** in the same dialog
+  takes a ramp, here red for a segment on one haplotype to grey for a segment on
+  most:
 
 ```json addtrack
 {
@@ -277,13 +283,8 @@ haplotype to grey for a segment on most:
 }
 ```
 
-[The E. coli pggb tutorial](/docs/tutorials/pangenome_ecoli#strains-per-segment-as-a-lane)
-draws the count over an IS5 insertion.
-
 The count is per haplotype (`HG002.1`), so a diploid sample's two copies count
 separately.
-[The HPRC tutorial](/docs/tutorials/pangenome_hprc#every-haplotype-with-the-allele)
-reads HPRC's phased VCF, which lists every haplotype's allele at every bubble.
 
 ## Building a gbz-base database of haplotype walks {#haplotype-walks-a-gbz-base-database}
 
@@ -365,10 +366,10 @@ the lanes this track produces.
 The one command builds the graph track, the bubbles, the tier and the allele
 inventory, with the tools under [Prerequisites](#prerequisites). It:
 
-1. places every segment on a genome. An rGFA states each segment's position in
-   its own tags. For a plain GFA the command follows the backbone's paths first,
-   so every segment on them lands on the reference, and places each remaining
-   segment on the first other haplotype whose path visits it
+1. places every segment on a genome: an rGFA states each position in its own
+   tags, and for a plain GFA the command follows the backbone's paths first,
+   then places each remaining segment on the first other haplotype whose path
+   visits it
 2. finds the bubbles, with `gfatools bubble` on an rGFA or from the snarl VCF on
    a plain GFA, and builds the tier from them
 3. reads each allele out of the links, following it from where it leaves the
@@ -386,10 +387,9 @@ links, then fetches and runs
 [`build_bubble_tier.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_bubble_tier.sh)
 and
 [`build_rgfa_alleles.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_rgfa_alleles.sh),
-each runnable alone. HPRC publishes the gbz-base database itself, so a separate
-script builds only the
-[haplotype-walk companion](#haplotype-walks-a-gbz-base-database), from the 5.5
-GB `.gbz` and the 10 GB database:
+each runnable alone. A separate script builds the
+[haplotype-walk companion](#haplotype-walks-a-gbz-base-database) from HPRC's 5.5
+GB `.gbz` and 10 GB gbz-base database:
 
 ```bash
 curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/build_hprc_gbz_index.sh

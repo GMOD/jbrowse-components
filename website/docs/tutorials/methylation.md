@@ -53,11 +53,9 @@ from these files.
 
 ## Two parental alleles at the SNRPN imprinting center
 
-At the _SNRPN_ imprinting center on chr15, one parental allele is methylated and
-the other is unmethylated. The reads should split into two populations, and the
-reads and the aggregate profile should agree on which allele is which. Every
-view below is at `chr15:24,948,000-24,962,000`; type it into the location box
-once the tracks are loaded.
+Every view below is at `chr15:24,948,000-24,962,000`, the _SNRPN_ imprinting
+center; type it into the location box once the tracks are loaded. The reads and
+the aggregate profile should agree on which allele is methylated.
 
 ## Loading GRCh38
 
@@ -76,10 +74,12 @@ assembly they were aligned to.
 ```
 
 The figures also show UCSC's CpG islands and the NCBI RefSeq genes. The hosted
-hg38 hub config, https://jbrowse.org/ucsc/hg38/config.json, has both: **CpG
-Islands** reads https://jbrowse.org/ucsc/hg38/cpgIslandExt.bed.gz with a CSI
-index, and **NCBI RefSeq - RefSeq All** reads
-https://jbrowse.org/ucsc/hg38/ncbiRefSeq.gff.gz.
+hg38 hub config, https://jbrowse.org/ucsc/hg38/config.json, has both:
+
+- **CpG Islands** reads https://jbrowse.org/ucsc/hg38/cpgIslandExt.bed.gz with a
+  CSI index
+- **NCBI RefSeq - RefSeq All** reads
+  https://jbrowse.org/ucsc/hg38/ncbiRefSeq.gff.gz
 
 ## Per-read methylation from the alignments
 
@@ -99,10 +99,15 @@ assembly:
 **File → Open track...** also opens the file by URL and infers the `.bai`.
 
 Set **Color by... → Modifications** from the track menu to paint each read with
-its 5mC calls. **One color per modification type** paints the positions the MM
-tag reports as modified. **One color per type, plus low-probability & unmodified
-in blue** (IGV's "2-color" scheme) also fills in every CpG the tag left
-implicit, so an unmethylated region is solid blue. The
+its 5mC calls, in one of two modes:
+
+- **One color per modification type** paints the positions the MM tag reports as
+  modified
+- **One color per type, plus low-probability & unmodified in blue** (IGV's
+  "2-color" scheme) also fills in every CpG the tag left implicit, so an
+  unmethylated region is solid blue
+
+The
 [alignments track guide](/docs/user_guides/alignments_track#modifications-and-methylation)
 covers both modes, the probability threshold, and the cytosine-context submenu.
 
@@ -110,9 +115,8 @@ covers both modes, the probability threshold, and the cytosine-context submenu.
 
 <Figure caption="HG002 ONT reads over the SNRPN CpG island in both modification color modes. Top, the MM tag's modified positions alone, red against bare read bodies. Bottom, the same reads with every unmarked CpG filled in, so a read with no methylation reads blue where it was blank." src="/img/methylation/hg002_snrpn_mod_modes.png" links="Modified only=methylation/hg002_snrpn_marked_only,Every CpG=methylation/hg002_snrpn_fill_unmarked" />
 
-The pileup over the CpG island interleaves methylated and unmethylated reads.
-[Splitting the alleles apart](#splitting-the-alleles-apart) groups them by their
-`HP` haplotype tag.
+[Splitting the alleles apart](#splitting-the-alleles-apart) groups the reads by
+their `HP` haplotype tag.
 
 ## Aggregate methylation with modkit bedMethyl
 
@@ -127,10 +131,12 @@ bgzip output.bedmethyl
 tabix -p bed output.bedmethyl.gz
 ```
 
-`--preset traditional` collapses 5mC and 5hmC into a single 5mC fraction
-(bisulfite-equivalent). Omit it to keep separate rows per modification type (`m`
-for 5mC, `h` for 5hmC). Passing `--partition-tag HP` writes one file per
-haplotype, and this dataset uses it.
+Two `modkit pileup` options shape the output:
+
+- `--preset traditional` collapses 5mC and 5hmC into a single 5mC fraction
+  (bisulfite-equivalent). Omit it to keep separate rows per modification type
+  (`m` for 5mC, `h` for 5hmC)
+- `--partition-tag HP` writes one file per haplotype, and this dataset uses it
 
 bedMethyl is a BED file with a numeric score column, so it loads as a
 `MultiQuantitativeTrack` (see the
@@ -153,14 +159,17 @@ subtrack per type, with a vertical bar per CpG on a percent-methylation axis:
 
 ## Splitting the alleles apart
 
-Each long read is a single DNA molecule, so reads that have an `HP` haplotype
-tag (from WhatsHap, HiPhase, or ONT's `wf-human-variation`) can be separated by
-allele. Pick **Group by... → Tag...** from the track menu and enter `HP`. The
-dialog scans the reads in view and reports the values it found. It also offers
-to color reads by the same tag; with methylation coloring on, that box starts
-unchecked and the coloring stays. The pileup then stacks into one band per
-haplotype, one methylated over the island and the other unmethylated, and a
-third band, `HP: none`, holds the reads the haplotagging could not assign.
+Each long read is one DNA molecule, so reads with an `HP` haplotype tag (from
+WhatsHap, HiPhase or ONT's `wf-human-variation`) separate by allele. Pick
+**Group by... → Tag...** from the track menu and enter `HP`. The pileup then
+stacks into:
+
+- one band per haplotype, one methylated over the island and the other
+  unmethylated
+- an `HP: none` band for the reads the haplotagging could not assign
+
+The dialog also offers to color reads by the tag; with methylation coloring on,
+that box starts unchecked, and leaving it unchecked keeps the coloring.
 
 <Video src="/media/methylation/group_by_hp.mp4" caption="The split as the menu does it: the interleaved pileup, the tag dialog finding HP values 1 and 2 in the reads themselves, and one methylated band resolving over one unmethylated." />
 

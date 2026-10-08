@@ -98,13 +98,10 @@ in an hg38 session:
 }
 ```
 
-[`variantLayout`](/docs/config/ldtrackdisplay/#slot-variantlayout) sizes each
-cell by genomic distance, and [`color.field`](/docs/config/ldcolor/#slot-field)
-picks r² or D' (a second LD measure), both of which this table has.
-
-The block is a selective sweep. The allele that keeps lactase switched on into
-adulthood, `rs4988235`, rose in frequency, and its neighbouring variants rose
-with it ([Bersaglieri et al. 2004](https://doi.org/10.1086/421051)).
+The block is the lactase-persistence sweep
+([Bersaglieri et al. 2004](https://doi.org/10.1086/421051)).
+[`color.field`](/docs/config/ldcolor/#slot-field) picks r² or D' (a second LD
+measure), and this table has both.
 
 ## Cutting the LCT region out of the 1000 Genomes VCF
 
@@ -138,8 +135,10 @@ bcftools view -m2 -M2 -v snps panel.vcf.gz | bcftools norm -d both |
   bcftools annotate -x ID -Oz -o panel.snvs.vcf.gz
 ```
 
-Then pick common variants per cohort and correlate every pair; the minor allele
-frequency (MAF) floor keeps the table small enough for a browser to draw. The
+Then pick common variants per cohort and correlate every pair. PLINK's table
+holds one row per pair, so the minor allele frequency (MAF) floor keeps it small
+enough for a browser to draw. [](/docs/tutorials/ld_mosquitoes) draws a 22 Mb
+inversion by thinning the variants to a grid before PLINK correlates them. The
 same reduction on `pooled.vcf.gz` gives `pooled.snvs.vcf.gz` for the pooled
 table.
 
@@ -232,9 +231,8 @@ pointed at `https://jbrowse.org/demos/popgen/lct_1kg38_chr2_pooled.ld.gz`:
 
 The triangle summarises haplotypes, the variants each chromosome carries along
 the block. A track over the six-population VCF draws them below it in
-equal-width columns, one row per chromosome. The samples TSV maps each sample ID
-to its population, a `name` column and a `population` column, and `rowColor`
-colors the rows by the second. For your own cohort, write that table and point
+equal-width columns, one row per chromosome. For your own cohort, write a
+samples TSV with a `name` column and a `population` column and point
 `samplesTsvLocation` at it:
 
 ```json addtrack
@@ -281,11 +279,9 @@ Cluster the rows by genotype two ways:
 
 ### Subsampling six populations for the haplotype matrix {#rows-have-to-be-worth-a-pixel}
 
-Over the whole release each haplotype row falls below a pixel and blurs flat.
-The haplotype figure reads a subsample of six populations, built by the third
-script under [Reproduce it end to end](#reproduce-it-end-to-end). Its core is
-one `bcftools` call over a list of 150 sample IDs, one per line, 25 from each
-population:
+Over the whole release each haplotype row falls below a pixel, so the figure
+reads 25 samples from each of six populations. The core of the script behind it
+is one `bcftools` call over a list of 150 sample IDs, one per line:
 
 <!-- from: scripts/build_lct_haploblock.sh -->
 
@@ -415,49 +411,38 @@ bash build_lct_ld.sh                  # builds ./lct_ld_build/jbrowse2
 npx --yes serve lct_ld_build/jbrowse2 # then open the printed URL
 ```
 
-The wide Fst track is a second file, from
-[`build_lct_fst_scan.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_lct_fst_scan.sh).
-It scores the same panels with the same estimator over 40 Mb of chr2 with _LCT_
-at its middle, one value per variant, because a window averages a sweep's few
-differentiated variants into the many around them. It prints where `rs4988235`
-ranks across the span.
+Three more scripts build the other files:
+
+- [`build_lct_fst_scan.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_lct_fst_scan.sh)
+  writes the wide Fst track. It scores the same panels with the same estimator
+  over 40 Mb of chr2 with _LCT_ at its middle, one value per variant, and prints
+  where `rs4988235` ranks across the span.
+- [`build_lct_haploblock.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_lct_haploblock.sh)
+  builds the [subsampled haplotype matrix](#rows-have-to-be-worth-a-pixel). It
+  takes the same number of unrelated samples from each of CEU, FIN, PJL, TSI,
+  YRI and CHB, which span the lactase-persistence allele from common to absent,
+  so no population outweighs the rest in the clustering. It prints the allele's
+  frequency in each, over the release and over the subsample.
+- [`build_lct_population_af.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_lct_population_af.sh)
+  builds the [per-population frequencies](#allele-frequency-per-population). It
+  reads the pooled slice, takes every unrelated sample of the six populations,
+  and prints the frequencies at `rs4988235` so the bars can be checked against
+  them.
 
 ```bash
 curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/build_lct_fst_scan.sh
 bash build_lct_fst_scan.sh            # builds ./lct_fst_scan_build
 ```
 
-The [subsampled haplotype matrix](#rows-have-to-be-worth-a-pixel) is a third
-file, from
-[`build_lct_haploblock.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_lct_haploblock.sh).
-It takes the same number of unrelated samples from each of six populations, so
-no population outweighs the rest in the clustering. The six span the
-lactase-persistence allele from common to absent: CEU, FIN, PJL, TSI, YRI and
-CHB. The script prints the allele's frequency in each, over the release and over
-the subsample.
-
 ```bash
 curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/build_lct_haploblock.sh
 bash build_lct_haploblock.sh          # builds ./lct_haploblock_build
 ```
 
-The [per-population frequencies](#allele-frequency-per-population) are a fourth
-file, from
-[`build_lct_population_af.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_lct_population_af.sh).
-It reads the pooled slice, takes every unrelated sample of the six populations,
-and prints the frequencies at `rs4988235` so the bars can be checked against
-them.
-
 ```bash
 curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/build_lct_population_af.sh
 bash build_lct_population_af.sh       # builds ./lct_population_af_build
 ```
-
-## LD across a whole chromosome arm
-
-A span many megabases wide needs fewer variants, because PLINK's table holds one
-row per pair. [](/docs/tutorials/ld_mosquitoes) draws a 22 Mb inversion by
-thinning the variants to a grid before PLINK correlates them.
 
 ## See also
 

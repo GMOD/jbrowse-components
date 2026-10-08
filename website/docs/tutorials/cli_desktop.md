@@ -44,9 +44,7 @@ commands below assume you have already run them.
 
 Point every command at the same output directory with `--out`, which the CLI
 creates if needed. The first `add-assembly` writes `myproject/config.json`, and
-each later command edits that file in place. With `--load copy`, `add-assembly`
-copies `GRCh38.fa.gz` and its `.fai`/`.gzi` index into `myproject/`, and each
-`add-track` copies the data file and its `.bai`/`.tbi`/`.csi` index:
+each later command edits that file in place:
 
 ```bash
 jbrowse add-assembly GRCh38.fa.gz --name hg38 --load copy --out myproject
@@ -77,7 +75,8 @@ myproject/
 └── variants.vcf.gz  (+ .vcf.gz.tbi)
 ```
 
-Inside `config.json`, the CLI referenced each file by its bare relative name:
+<details>
+<summary>What the CLI wrote into config.json: each file by its bare relative name</summary>
 
 ```json
 "adapter": {
@@ -90,14 +89,17 @@ Inside `config.json`, the CLI referenced each file by its bare relative name:
 }
 ```
 
+</details>
+
 ## Open the folder on a default view with a session
 
 A config with tracks but no session loads the assembly and tracks but displays
 nothing until you launch a view and tick tracks in the selector. To open the
-folder ready to read, write a session and hand it to the CLI. In the session,
-`assembly` is the `--name` you gave `add-assembly`, and `tracks` takes the
-`trackId`s the CLI derived from your filenames;
-`jq '.tracks[].trackId' myproject/config.json` prints them:
+folder ready to read, write a session and hand it to the CLI. In the session:
+
+- **`assembly`** is the `--name` you gave `add-assembly`
+- **`tracks`** takes the `trackId`s the CLI derived from your filenames;
+  `jq '.tracks[].trackId' myproject/config.json` prints them
 
 ```json
 {
@@ -138,16 +140,13 @@ jbrowse-desktop myproject/config.json
 
 <Figure src="/img/desktop-cli-config.png" caption="A CLI-built folder opened in JBrowse Desktop by path, with no start screen and no Add track form. The session name and the track labels come from the commands above, run on the volvox test genome."/>
 
-Desktop resolves the relative `uri`s into absolute local paths for the renderer
-and autosaves your work to a separate session file, so `config.json` keeps its
-relative paths and the folder still serves on the web. A `.jbrowse` file, which
-Desktop itself writes, saves in place.
+Desktop autosaves your work to a separate session file, and a `.jbrowse` file,
+which Desktop itself writes, saves in place.
 
 ## Serve the config folder on the web
 
-On the web, the relative paths in `myproject/config.json` resolve against the
-served config's URL. JBrowse Web is a separate app, so a served `myproject/`
-needs a JBrowse Web instance alongside it, set up either way:
+JBrowse Web is a separate app, so a served `myproject/` needs a JBrowse Web
+instance alongside it, set up either way:
 
 - Build into a JBrowse Web install: run `jbrowse create jbrowse2` first and pass
   `--out jbrowse2` on the commands above, so the app and your config sit in one

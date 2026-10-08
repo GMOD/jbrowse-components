@@ -189,9 +189,6 @@ bash build_hprc_multiway_synteny.sh
 [Its output is hosted](https://jbrowse.org/code/jb2/main/?config=https://jbrowse.org/demos/hprc_multiway/config.json)
 and opens at the CFH deletion, one lane per haplotype under GRCh38.
 
-[Hosting your own graph](/docs/tutorials/pangenome_prepare_graph#haplotype-walks-a-gbz-base-database)
-builds the gbz-base database for a graph of your own.
-
 ## See also
 
 - [](/docs/tutorials/pangenome_hprc)

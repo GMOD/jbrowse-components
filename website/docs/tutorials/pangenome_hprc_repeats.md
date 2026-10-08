@@ -98,22 +98,22 @@ the colour of its node below.
 Each loop in the knot is a different number of copies. Click the array's purple
 label to lay the bubble's segments out alone, with a button back to the window.
 The rGFA records segments and links; each haplotype's route through them, its
-walk, is in the release's gbz-base database, read next.
+walk, is in the release's gbz-base database.
 
 ## Eight haplotypes' routes through the KIV-2 array {#one-haplotypes-copies}
 
 A **walk** is one haplotype's route through the graph, and the release publishes
-one per haplotype as a gbz-base database. Type the array's window,
-`chr6:160,616,002-160,646,753`, put the rGFA graph track back to a row of
-segments with **Display types → Feature display**, and turn the gbz-base track
-on from the track selector. **Display types → Graph** in its track menu draws
-that same track as a force-directed graph of the walks.
+one per haplotype as a gbz-base database. In the same window:
 
-**Haplotypes → The track's 8 assemblies** <!-- menu-path-ok --> is checked in
-the same menu: the track cuts for the eight HPRC assemblies the hosted config
-loads. Every haplotype's walks through the array hold more nodes than a
-force-directed drawing takes, so this step keeps the eight, and walk rows below
-draw them all.
+- Type `chr6:160,616,002-160,646,753`, the array.
+- **Display types → Feature display** puts the rGFA graph track back to a row of
+  segments.
+- Turn the gbz-base track on in the track selector, then take **Display types →
+  Graph** in its menu for a force-directed graph of the walks.
+- Check **Haplotypes → The track's 8 assemblies** <!-- menu-path-ok --> in the
+  same menu. Every haplotype's walks through the array hold more nodes than a
+  force-directed drawing takes, so this step keeps the eight HPRC assemblies the
+  hosted config loads, and walk rows below draw them all.
 
 A node draws thicker the more walks visit it (as in Bandage), so the shared
 backbone is the thick line and copies on one haplotype are thin loops. Pick
@@ -144,13 +144,15 @@ Click the KIV-2 bubble boxed in the bubbles track. Its details give
 routes the rGFA holds there, and the bars run from about the one to about the
 other.
 
-To read one sample at full size, right-click its bar and pick **Show only** with
-its name. Under the **Layout** row, **Samples → Choose samples...** picks names,
-and **Samples → Every sample** brings the cohort back.
+Three controls change which bars show:
 
-**Group by... → superpopulation** under the **Layout** row splits the bars into
-a section per superpopulation, from the samples table the track names, every
-section on one ruler and row height.
+- Right-click a bar and pick **Show only** with its name to read one sample at
+  full size.
+- **Samples → Choose samples...** under the **Layout** row picks names, and
+  **Samples → Every sample** brings the cohort back.
+- **Group by... → superpopulation** under the **Layout** row splits the bars
+  into a section per superpopulation, from the samples table the track names,
+  every section on one ruler and row height.
 
 ## Telling KIV-2A from KIV-2B {#which-copy-is-which}
 
@@ -183,24 +185,17 @@ haplotype, and a samples table gives each sample's population:
 Turn the track on, right-click the record and choose **Show repeat copies**. The
 TandemRepeat plugin, which the hosted config loads beside the graph plugin,
 opens a view with one bar per haplotype, each on its own bp axis and each copy
-coloured by its type. The bars are too many to label, so the view squeezes them
-into its height, those with the most KIV-2B first, then longest; hover a copy
-for its haplotype.
+coloured by its type. Hover a copy for its haplotype.
 
 <Figure caption="The KIV-2 record over every HPRC haplotype, those with the most KIV-2B copies first, then longest, each copy coloured by its type. KIV-2B leads every array that holds it; the lone bar whose KIV-2B copy sits fourth is GRCh38's." src="/img/pangenome/hprc_kiv2_copies_all_by_unit.png" />
-
-KIV-2A and KIV-2B are the copy types LPA studies tell apart by three synonymous
-sites in exon 1, and the script that wrote the record finds those sites from the
-copies alone (below).
 
 **Group by… → superpopulation** in the view's menu splits the bars by that
 column of the samples table, every section on the same ruler and row height:
 
 <Figure caption="The same record grouped by superpopulation. Arrays opening with a block of KIV-2B copies gather in the AMR, EAS and SAS sections; in EUR, KIV-2B is mostly a single opening copy, and most AFR arrays hold none." src="/img/pangenome/hprc_kiv2_copies_by_superpopulation.png" />
 
-The same record over the eight haplotypes of the walks above is
-`LPA KIV-2 copies by unit, eight HPRC haplotypes` in the track selector, few
-enough bars to label each by name.
+The track selector also holds `LPA KIV-2 copies by unit, eight HPRC haplotypes`,
+few enough bars to label each by name.
 
 We wrote the KIV-2 record from the walks above. To write one for your own array,
 we'll first cut the walks over it out of the gbz-base database as a GFA
@@ -235,7 +230,8 @@ node tandem-repeat-vcf.mjs cut.gfa --bed arrays.bed --name KIV-2 \
 
 Given one copy's exons as BED rows with their strand, `--sites` reports where
 the units differ inside each. At KIV-2 that is exon 1's positions 14, 41 and 86,
-the sites that define KIV-2B, and nothing in exon 2:
+the three synonymous sites LPA studies use to tell KIV-2B from KIV-2A, and
+nothing in exon 2:
 
 ```bash
 printf 'chr6\t160617116\t160617276\texon 1\t0\t-\nchr6\t160618483\t160618665\texon 2\t0\t-\n' > kiv2_exons.bed
@@ -251,10 +247,8 @@ A repeat finder's output draws as these bars too once it is written as a
 An intron of _ABCA7_ holds a VNTR (variable-number tandem repeat) tied to
 Alzheimer's disease risk (De Roeck et al. 2018). Each haplotype's walk length
 comes from its assembly, and PacBio measured the same repeat from HiFi reads in
-100 HPRC samples. The session below opens the genes, the catalogue's VNTR row,
-the TRGT genotypes and the gbz-base graph track in **Walk rows** layout with
-**Uniform** color, cut for **Haplotypes → Every haplotype in the graph** (an
-empty `subgraphHaplotypes`):
+100 HPRC samples. The session below lays the walks out as bars beside the genes,
+the catalogue's VNTR row and the TRGT genotypes:
 
 ```json session config=https://jbrowse.org/demos/hprc/config.json
 {
@@ -319,9 +313,8 @@ empty `subgraphHaplotypes`):
 }
 ```
 
-Each row is one haplotype's walk between the flanking reference nodes, blue on
-GRCh38's path and purple off it, packed to fit the track. Hover a row for its
-haplotype and length.
+Each row is one haplotype's walk between the flanking reference nodes. Hover a
+row for its haplotype and length.
 
 ## Overlaying TRGT's read-based genotypes on the ABCA7 bars
 
@@ -360,12 +353,11 @@ also divide into motif-length units.
 
 ## Samples where reads and assemblies disagree
 
-Each walk's bar carries a tick at the allele length TRGT called from reads, so a
-tick at the bar's end means reads and assembly agree. To compare seven samples,
-keep the _ABCA7_ record picked under **Repeat**, then under the **Layout** row
-of the graph track's menu choose **Samples → Choose samples...** and pick
-HG00099, HG03688, HG00741, HG02647, HG01943, HG02559 and HG04199 in that order.
-Their walks show in pairs, in the order picked, and fall into three groups:
+To compare seven samples, keep the _ABCA7_ record picked under **Repeat**.
+**Samples → Choose samples...**, under the **Layout** row of the graph track's
+menu, takes HG00099, HG03688, HG00741, HG02647, HG01943, HG02559 and HG04199 in
+that order. Their walks show in pairs, in the order picked, and fall into three
+groups:
 
 - HG00099, HG03688 and HG00741 tick at each bar's end: reads and assemblies
   agree.
@@ -375,20 +367,17 @@ Their walks show in pairs, in the order picked, and fall into three groups:
   HG02559's alleles, so the tick on HG02559#1 is grey, and HG04199's assembly
   does not span the repeat, so its readout marks that walk partial.
 
+Click the TRGT record to see why. Its sample table gives `AL`, the allele
+lengths behind each tick, and `SD`, the number of reads spanning each allele;
+one of HG02559's alleles has an `SD` of 0.
+
 <Figure caption="Seven samples' walks through the ABCA7 VNTR in pairs, each bar marked with the allele TRGT called for it as a tick. A tick at the end of its bar is agreement, a red readout is a walk far from its allele, and a grey tick is an allele no read spanned." src="/img/pangenome/hprc_abca7_disagreements.png" />
-
-## Reading TRGT's allele lengths and spanning reads
-
-Click the TRGT record. Its sample table gives `AL`, the allele lengths behind
-each tick, and `SD`, the number of reads spanning each allele. One of HG02559's
-alleles has an `SD` of 0, the grey tick in the figure above.
 
 ## The ABCA7 alleles across 94 samples
 
-TRGT writes each allele as its full sequence, so the record above lists well
-over a hundred ALT alleles, some of them kilobases long, and the details are a
-wall of `CCCCGTGAGC`. The TandemRepeat plugin's script rewrites the same record
-as `<CNV:TR>` alleles, each a run of the locus's 51 bp motif:
+TRGT writes each allele as its full sequence, so the details are a wall of
+`CCCCGTGAGC`. The TandemRepeat plugin's script rewrites the record as `<CNV:TR>`
+alleles, each a run of the locus's 51 bp motif:
 
 ```bash
 curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-plugin-tandem-repeat/main/scripts/trgt-to-cnv-tr.mjs
@@ -414,15 +403,13 @@ track:
 
 Open `chr19:1,049,000-1,050,500` and click the record. A **Tandem repeat** card
 opens above the details. With 94 samples the card starts on **By allele**: one
-bar for each of the 167 alleles, squeezed into the card's height longest first.
-They are too many to label, so hovering a copy names its allele, that allele's
-share of the 188 called alleles and its length.
+bar per allele, longest first. Hover a copy for its allele, that allele's share
+and its length.
 
 <Figure caption="The ABCA7 VNTR record's Tandem repeat card, by allele: one bar per TRGT allele as copies of the motif, longest first. The dotted line is GRCh38's allele, and all but a handful of the bars run past it." src="/img/pangenome/hprc_abca7_tandem_repeat_alleles.png" />
 
-Almost every allele is called once, and no sample has GRCh38's allele. Click a
-bar: the other bars fade and the **Samples** card narrows to the samples with
-that allele. **By haplotype** swaps in one bar per called allele, all 188, and
+Click a bar: the other bars fade and the **Samples** card narrows to the samples
+with that allele. **By haplotype** swaps in one bar per called allele, and
 hovering a copy names its sample.
 
 ## Checking HG00099's allele lengths against TRGT's AL field
@@ -435,12 +422,15 @@ copy in the card names its allele with that allele's length: ALT 1's bar gives
 
 A gene array varies the same way a tandem repeat does, in whole gene copies. We
 draw the salivary amylase array as the haplotype lanes of
-[part 2](/docs/tutorials/pangenome_hprc_haplotypes): on the
-[HPRC page](https://staging.genomes.jbrowse.org/pangenomes/hprc), press
-**haplotypes** on the AMY1 row, then choose `HG01361.1`, `HG00133.2`,
-`HG00133.1`, `NA18608.2` and `HG00232.1` under **Lanes → Choose lanes...**. A
-lane with more copies spans more of its contig in the same width, and its label
-gives that span as a multiple of the window.
+[part 2](/docs/tutorials/pangenome_hprc_haplotypes):
+
+- On the [HPRC page](https://staging.genomes.jbrowse.org/pangenomes/hprc), press
+  **haplotypes** on the AMY1 row.
+- Choose `HG01361.1`, `HG00133.2`, `HG00133.1`, `NA18608.2` and `HG00232.1`
+  under **Lanes → Choose lanes...**.
+
+A lane with more copies spans more of its contig in the same width, and its
+label gives that span as a multiple of the window.
 
 <Figure caption="The amylase locus from the HPRC page's haplotypes launch with five lanes chosen, one per amylase structure, under the RefSeq genes. Each lane is drawn on the haplotype's contig under its CAT genes; a lane longer than the window gives its span as a multiple in its label." src="/img/multiway_synteny/hprc_amylase_lanes.png" />
 
@@ -455,8 +445,7 @@ shows a long purple stretch, because the graph routes copies of a duplication
 through nodes off GRCh38's path. Count the _AMY1_ boxes on each bar to read copy
 number.
 
-Yilmaz et al. (2024) name each structure by its _AMY1_ count. Our five
-haplotypes land on H1a, H2A0, H3r, H5 and H7:
+Yilmaz et al. (2024) name each structure by its _AMY1_ count:
 
 | Span against GRCh38's | _AMY1_ copies | Structure |
 | --------------------- | ------------- | --------- |
@@ -506,10 +495,8 @@ gbz-base database and any bgzipped, indexed assembly:
    span across the locus, and the spans fall into the published structures.
 2. Pick one haplotype per structure and fetch only the locus from its assembly.
 3. Count each haplotype's gene copies, and align it to its neighbour in the
-   stack, so each band is an alignment between two haplotypes and can match
-   copies GRCh38 lacks.
-4. Shift each alignment from the fetched piece's coordinates back onto the whole
-   contig, so every row draws in its own assembly's coordinates under its genes.
+   stack, so a band can match copies GRCh38 lacks.
+4. Shift each alignment back onto the whole contig's coordinates.
 
 Get every haplotype's path through a window:
 
@@ -554,9 +541,8 @@ curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/
 bash build_amylase_haplotypes.sh
 ```
 
-The build script writes the `config.json` that this session opens, with the five
-assemblies, their gene tracks and the `amylase_adjacent` alignments. The session
-below opens that config; point `config=` at your copy:
+The script's `config.json` is what this session opens; point `config=` at your
+copy:
 
 ```json session config=test_data/amylase/config.json
 {

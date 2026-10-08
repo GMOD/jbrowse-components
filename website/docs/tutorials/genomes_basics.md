@@ -18,21 +18,22 @@ its conservation, regulation and variant tracks from the catalog.
 [genomes.jbrowse.org](https://genomes.jbrowse.org) hosts a JBrowse 2 instance
 for every main UCSC database (hg19, hg38, hs1, mm39 and the rest) plus the UCSC
 GenArk assemblies, track hubs for tens of thousands of NCBI plants, animals,
-fungi, bacteria and viruses.
+fungi, bacteria and viruses. Three routes lead to one, each ending at an
+instance with a URL you can share:
+
+- The front page's table of main genomes, with the GenArk catalog below it
 
 <Figure src="/img/genomes_basics/site_home.png" caption="The genomes.jbrowse.org front page. The top table is the short list of main genomes, and the GenArk catalog starts below it." />
 
-The [/ucsc](https://genomes.jbrowse.org/ucsc) page lists every UCSC database,
-with a filter box over the names, species and descriptions.
+- The [/ucsc](https://genomes.jbrowse.org/ucsc) page, with a filter box over
+  every UCSC database's name, species and description
 
 <Figure src="/img/genomes_basics/site_ucsc_list.png" caption="The full UCSC database listing. Each row opens the same kind of JBrowse instance the front page links to." />
 
-The search box in the header takes a common name, a species, an assembly name or
-an accession, and covers both catalogs at once.
+- The header search box, which takes a common name, a species, an assembly name
+  or an accession across both catalogs
 
 <Figure src="/img/genomes_basics/site_search.png" caption="The header search box, mid-query. The dropdown mixes UCSC database names with GenArk accessions, since both catalogs are in the one index." />
-
-Picking a result opens its JBrowse instance at a URL you can share.
 
 ## Searching for TP53 and trimming its isoforms
 
@@ -44,12 +45,12 @@ config ships a name index, so gene symbols resolve, and coordinates like
 <Figure src="/img/genomes_basics/search_tp53.png" caption="Top: TP53 typed into the location box, found by the config's name index. Middle: what Enter opens, as many transcripts as the track's height holds, a link beside the TP53 label for the ones it does not, and the isoform control circled. Bottom: the same view after picking Representative transcript from it." />
 
 RefSeq All draws each transcript on a separate row, and _TP53_ has more than the
-track's height holds. A **+19 more** link sits beside the gene name, and the
-circled chip at the bottom right reads `Isoforms trimmed`. To see more:
+track's height holds. Two controls trim the isoforms:
 
-- Click **+19 more** to open that one gene
-- Click the chip for **Auto / All transcripts / Representative transcript**. The
-  last collapses every gene to one transcript, which the rest of this page uses
+- Click the **+19 more** link beside the gene name to open that one gene
+- Click the `Isoforms trimmed` chip at the bottom right for **Auto / All
+  transcripts / Representative transcript**. The last collapses every gene to
+  one transcript, which the rest of this page uses
 
 ## Finding the phyloP conservation track in the catalog
 
@@ -61,19 +62,13 @@ Comparative Genomics.
 
 <Video src="/media/genomes_basics/find_a_track.mp4" caption="The hg38 track catalog in the selector, narrowed by typing phyloP into Filter tracks, with the 100-way vertebrate alignment ticked under Comparative Genomics. The conservation lane appears under the TP53 transcript." />
 
-The names are UCSC's, so a track known from the UCSC browser is findable under
-the same label. UCSC publishes several phyloP tracks for hg38, so the words
-after the parenthesis pick one out.
-
 ## Reading the phyloP track
 
 phyloP scores each base against the neutral rate the alignment implies. The
 score is signed: blue above the line marks a base that changes more slowly than
 neutral, and red below it one that changes faster.
 
-Type `chr17:7,674,180-7,674,290` into the location box, a stretch of exon 7
-covering G245, R248 and R249, three of _TP53_'s most often mutated codons in
-human cancer.
+Type `chr17:7,674,180-7,674,290`, a stretch of exon 7, into the location box.
 
 - Tick **Reference sequence**, which is off by default
 - At this zoom the gene track draws a codon row per transcript; pick
@@ -107,8 +102,7 @@ substitution events on the tree:
   that do disagree with each other, and the score goes red
 
 A MAF block has a row per species, so at gene-wide zoom the alignment track asks
-you to confirm before fetching. Further out it draws a precomputed summary with
-a conservation bar per species.
+you to confirm before fetching.
 
 ## Regulatory tracks at the TP53 promoter
 
@@ -123,15 +117,12 @@ Zoom out to the whole gene, and tick five Regulation and Expression tracks:
 The Layered H3K4Me3 and H3K27Ac tracks each hold seven cell lines, and open with
 all seven in one plot box, UCSC's layered arrangement. **Plot type → Multi-row →
 XY plot** in the track menu gives each cell line a row of its own. Their names
-include hg19 because ENCODE3 released them on it; the config points at the hg38
-files.
+include hg19 from ENCODE3's release; the config points at the hg38 files.
 
 <Figure src="/img/genomes_basics/promoter_regulation.png" caption="TP53 and its promoter, with CpG islands, ENCODE cCREs coloured by class, H3K4me3, H3K27ac and EPDnew's promoter calls. Left: the two marks with their seven cell lines in one plot box, and the Plot type menu that separates them. Right: the same six tracks with a row per cell line." />
 
-_TP53_ is on the minus strand, so its promoter is at the high-coordinate end.
-The CpG island, a promoter-class cCRE, the EPDnew call and both histone marks
-all sit there. H3K4me3 marks a promoter and H3K27ac an active one, and all seven
-cell lines have both.
+_TP53_ is on the minus strand, so its promoter sits at the high-coordinate end,
+where every track in the figure has a call.
 
 ## Filtering gnomAD's TP53 variants to predicted loss of function
 
@@ -147,9 +138,6 @@ every row:
 - `AF` ≥ `0.001` drops the rarest variants
 
 <Figure src="/img/genomes_basics/gnomad_filter_menu.png" caption="The gnomAD track's menu, and the dialog Filter by... opens over it, with a consequence-class row filled in." />
-
-The file assigns one colour per consequence class, so the loss-of-function
-filter leaves a track drawn in one colour.
 
 <Video src="/media/genomes_basics/gnomad_filter.mp4" caption="gnomAD v4.1.1 Exomes over TP53 and the filter dialog its track menu opens. One consequence-class row redraws the lane with the predicted loss-of-function records alone, in the one colour the file gives that class." />
 
@@ -170,10 +158,8 @@ adapter, which is where to look when a track is slow or missing.
 
 <Figure src="/img/genomes_basics/about_track.png" caption="Left: the phyloP track menu, with the icon that opens it circled and About track boxed. Right: the dialog it opens, naming the BigWig on hgdownload with UCSC's trackDb entry below it." />
 
-JBrowse fetches only the blocks under the current view, so a genome-wide signal
-track opens at gene zoom without downloading the whole file. The URL is the file
-itself, and any program that reads a BigWig by range can open it, such as
-`rtracklayer` in R:
+The URL is the file itself, and any program that reads a BigWig by range can
+open it, such as `rtracklayer` in R:
 
 ```r
 library(rtracklayer)
@@ -183,24 +169,17 @@ scores <- import(
 )
 ```
 
-The BigBeds behind the variant and annotation tracks read the same way.
-
 ## Searching TP53 on a GenArk genome, the axolotl
 
-The GenArk configs have a smaller track set than the UCSC database configs.
-Their name index is built from NCBI RefSeq annotation, so a `GCF_` accession has
-gene tracks and resolves gene symbols, while a `GCA_` one generally has neither
-and takes coordinates.
-
-An assembly released both ways appears under both accessions, and gene search
-works on the RefSeq one. The axolotl `Mex_15411` is `GCF_040938575.1` and
-`GCA_040938575.1`. Open `GCF_040938575.1` from the site's header search for
-`axolotl`, and type `TP53` into its location box.
+The GenArk configs have a smaller track set than the UCSC database configs, and
+their name indexes come from NCBI RefSeq annotation. A `GCF_` accession has gene
+tracks and resolves gene symbols, while a `GCA_` accession generally has neither
+and takes coordinates. An assembly released both ways appears under both
+accessions: the axolotl `Mex_15411` is `GCF_040938575.1` and `GCA_040938575.1`.
+Open `GCF_040938575.1` from the site's header search for `axolotl`, and type
+`TP53` into its location box.
 
 <Figure src="/img/genomes_basics/genark_axolotl.png" caption="Axolotl TP53, reached by typing the symbol into the location box of the GCF_ accession." />
-
-_TP53_ spans a few hundred kb in axolotl, whose genome is one of the largest
-sequenced.
 
 ## See also
 

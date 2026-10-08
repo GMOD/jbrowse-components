@@ -35,8 +35,7 @@ the classic reference strains across phylogroups A, B1, B2, D and E, four
 Shigella, and complete genomes picked by striding a `datasets summary` listing.
 The five strains the [pangenome graph](/docs/tutorials/pangenome_ecoli) and
 [all-vs-all](/docs/tutorials/allvsall_synteny) pages build from are all here
-under the same accessions (MG1655 is the strain those pages call K12), so the
-three pages read one set of genomes three ways. The
+under the same accessions (MG1655 is the strain those pages call K12). The
 [build script](#reproduce-it-end-to-end) pins and fetches every accession, so
 there is nothing to download by hand; the anchor and the four Shigella are:
 
@@ -69,15 +68,12 @@ datasets download genome accession --inputfile accessions.txt \
 unzip genomes.zip
 ```
 
-The build script takes the longest sequence in each report as the chromosome and
-drops the plasmids, since a lane follows one contig at a time. It filters the
-GFF3 to that sequence, then sorts, bgzips and tabix-indexes it as in the
-[web quickstart](/docs/quickstart_web) to make the gene track for that genome.
-
-Each lane takes its name from the strain field of the assembly report (MG1655
-rather than "K-12 substr. MG1655", and `Sflexneri_301` for the Shigella so it
-does not read as an E. coli strain). The build also checks the organism name in
-the report and drops a genome that is neither _E. coli_ nor _Shigella_.
+The build script keeps each genome's longest sequence as its chromosome, so a
+lane follows one contig and no plasmid, and sorts, bgzips and tabix-indexes the
+GFF3 as in the [web quickstart](/docs/quickstart_web) to make that genome's gene
+track. Each lane takes its name from the strain field of the assembly report:
+MG1655 for "K-12 substr. MG1655", and `Sflexneri_301` for the Shigella so it
+does not read as an E. coli strain.
 
 PGAP writes a gene's locus tag into its `Name` when it has no symbol for it, so
 the join has to be told what an unnamed gene looks like, or every hypothetical
@@ -99,8 +95,7 @@ _gndA_. Each CDS records the protein PGAP annotated the gene from
 (`similar to AA sequence:RefSeq:NP_416533.1`, the K-12 _gnd_ protein), and
 `--merge-cited` joins the two symbols when that protein is in the table under
 the other name. Two symbols one genome has side by side, such as K-12's _narH_
-and its paralog _narY_, stay apart. The table then adds a row for each symbol
-K-12 lacks that two other genomes share, with a dot in K-12's column.
+and its paralog _narY_, stay apart.
 
 `symbols_to_blocks.py` reports how much of each column it filled, which tells
 whether a strain joins. Older PGAP runs gave genes a locus tag and no symbol, so
@@ -140,12 +135,11 @@ and tabix-indexed GFF3 the build made above:
 }
 ```
 
-One `SyntenyTrack` names all forty-four assemblies. `blockAssemblies` and
-`bedLocations` hold one entry per table column, in the order the helper printed.
-The config below keeps the four genomes the command above joined, and the hosted
+One `SyntenyTrack` names all forty-four assemblies, with `blockAssemblies` and
+`bedLocations` in the order the helper printed. The config below keeps the four
+genomes the command above joined, and the hosted
 [config.json](https://jbrowse.org/demos/ecoli_orthologs/config.json) has all
-forty-four. The adapter decompresses the table and BEDs itself and reads each
-file whole before the first lane draws:
+forty-four:
 
 ```json addtrack
 {
@@ -187,14 +181,13 @@ The colors read as follows:
   whole stack.
 - A gene no group claims is grey, which marks the genes specific to a strain at
   a glance.
-- The demo config hides the key, since the cluster window holds dozens of
-  groups. **Show... → Show legend** on the track menu turns it on, and its
-  entries turn a color back into a group's name. The display leaves it out in
-  any window holding more than thirty groups.
+- **Show... → Show legend** on the track menu turns on the key, which the demo
+  config hides because the cluster window holds dozens of groups. The display
+  omits it in any window holding more than thirty groups.
 
 Lanes stack with the genome placing the most of the window's genes first. The
-default height scrolls the stack inside the track, so the session sets a
-`height` that fits every lane:
+default height scrolls the stack inside the track, so the session sets `height`
+to fit every lane:
 
 ```json session config=https://jbrowse.org/demos/ecoli_orthologs/config.json
 {
@@ -248,7 +241,7 @@ differs most between strains. Open the cluster:
 }
 ```
 
-<Figure caption="The O-antigen cluster on K-12 over the same forty-three lanes. K-12 derivatives at the top match the cluster gene for gene. In every lane below, the flanking galF, gnd, ugd and wzzB ribbons run through, the rfb genes, wzx and wzy join where a strain has them, serotype genes K-12 lacks join the strains that share them, and the genes no other strain carries are grey." src="/img/multiway_synteny/ecoli_symbol_oantigen.png" />
+<Figure caption="The O-antigen cluster on K-12 over the same forty-three lanes. The flanking ribbons run through every lane; the interior is mostly grey." src="/img/multiway_synteny/ecoli_symbol_oantigen.png" />
 
 Read the lanes from the top:
 
@@ -264,12 +257,12 @@ gene a few strains share, such as _vioB_ in IAI39 and the BL21 lanes, runs down
 those lanes and skips the rest. A gene PGAP left under its locus tag, such as
 `ECOLC_RS24020` in the ATCC_8739 lane, has no row.
 
-Most of the grey left is the biology: each serotype's sugar genes arrived by
-horizontal transfer and have no K-12 counterpart to join. A homology call across
-the proteomes, such as an [OrthoFinder](/docs/tutorials/orthofinder_synteny)
-run, would add the genes the annotations named differently, and the
-[all-vs-all alignment](/docs/tutorials/allvsall_synteny) draws the same locus
-base by base for five strains.
+Most of the grey is biology: each serotype's sugar genes arrived by horizontal
+transfer and have no K-12 counterpart to join. An
+[OrthoFinder](/docs/tutorials/orthofinder_synteny) run would add genes the
+annotations named differently, and the
+[all-vs-all alignment](/docs/tutorials/allvsall_synteny) draws this locus base
+by base for five strains.
 
 ## Reproduce it end to end
 

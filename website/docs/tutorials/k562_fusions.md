@@ -63,9 +63,7 @@ so there is nothing to download by hand.
 ## Cutting K562 out of DepMap and lifting its breakpoints to hg38
 
 K562 is a chronic myeloid leukemia line with the Philadelphia chromosome, the
-t(9;22) translocation between chr9 and chr22 that fuses _BCR_ to _ABL1_. Its
-transcripts here are long RNA reads, its fusion calls come from DepMap's
-short-read pipeline, and its DNA breakpoints from a linked-read run.
+t(9;22) translocation between chr9 and chr22 that fuses _BCR_ to _ABL1_.
 
 The fusion and copy-number tables both cover every line in the release.
 `depmap_to_jbrowse.py` filters to one line and writes a STAR-Fusion TSV from the
@@ -139,9 +137,9 @@ your BAM, with its `.bai` beside it and alignments to the same assembly:
 ## Triaging the STAR-Fusion calls in the SV inspector
 
 The SV inspector opens the STAR-Fusion table beside a circular view of it, one
-chord per row. **Add → SV inspector**, then the file: the import form reads the
-File Type from a STAR-Fusion filename or the table's header line, and the menu
-sets it by hand for a file named some other way.
+chord per row. **Add → SV inspector**, then the file. The import form reads the
+**File Type** from the filename or the table's header line; the menu sets it by
+hand.
 
 Searching the SV inspector's table filters the table and the circular view
 together:
@@ -150,20 +148,20 @@ together:
   usual chimeric-read artefacts.
 - `Mitelman` keeps the two rows listed in the fusion databases.
 - `chr9` keeps the same two, `BCR--ABL1` and `NUP214--XKR3`: junctions between
-  chr9 and chr22 whose chr22 partners lie megabases apart. The rest of the page
-  shows them to be the two ends of one amplified segment.
+  chr9 and chr22 whose chr22 partners lie megabases apart.
 
 Each table row's caret menu has **Open in linear genome view**, which puts the
-row's two breakpoints side by side as two regions of one view, each oriented so
-the fusion transcript reads left to right across the join. _XKR3_ is on the
-minus strand, so its region arrives reversed (`[rev]`). Turn on **Read
-connections → View as pairs / link supplementary alignments** to merge each
-molecule's two alignments onto one row.
+row's two breakpoints side by side as two regions of one view:
+
+- Each region is oriented so the fusion transcript reads left to right across
+  the join. _XKR3_ is on the minus strand, so its region arrives reversed
+  (`[rev]`).
+- **Read connections → View as pairs / link supplementary alignments** merges
+  each molecule's two alignments onto one row.
 
 <Figure caption="NUP214--XKR3 as two regions of one view with reads linked, opened from its row in the SV inspector. The breakpoints are banded and each line is one Iso-Seq molecule running from NUP214 into XKR3." src="/img/cancer_sv/k562_fusion_inspector_reads.png" links="Import form=cancer_sv/k562_fusion_inspector_form,All 44 calls=cancer_sv/k562_fusion_inspector_all,Searched for chr9=cancer_sv/k562_fusion_inspector_pair,Linked reads=cancer_sv/k562_fusion_inspector_reads" />
 
-The rest of the page follows `BCR--ABL1`, with its breakpoints as regions of one
-linear view. The build script adds the STAR-Fusion calls as this track:
+The build script adds the STAR-Fusion calls as a track:
 
 ```json addtrack
 {
@@ -180,25 +178,27 @@ linear view. The build script adds the STAR-Fusion calls as this track:
 
 ## Split RNA reads at BCR-ABL1 across three regions
 
-Right-click a read that crosses the junction and choose **Split current view to
-show split alignments**, or type the three locations into the location box
-separated by spaces,
-`chr22:23,286,000-23,293,000 chr9:130,778,000-130,785,000 chr9:130,851,000-130,858,000`.
 The transcript reaches _ABL1_ at more than one place, so the view uses three
 regions: the _BCR_ donor (where the transcript starts) and two _ABL1_ acceptor
-windows.
+windows. Right-click a read that crosses the junction and choose **Split current
+view to show split alignments**, or type the three locations into the location
+box separated by spaces:
+`chr22:23,286,000-23,293,000 chr9:130,778,000-130,785,000 chr9:130,851,000-130,858,000`.
 
 A read crossing the junction is one alignment on chr22 and a supplementary
-alignment (the second piece of the split read) on chr9. **Read connections → Use
-curved connectors** joins the two across the region divider. **Filter by... →
-Split alignments → Only split alignments** drops every read that stays on one
-chromosome.
+alignment (the second piece of the split read) on chr9. In the track menu:
 
-**Read connections → Read arcs** adds a band under the coverage with one arc per
-junction, thicker where more reads support it. An arc needs both ends in view:
-the right-hand window gets one arc and the intron 1 window two, one at each
-place the reads enter it. A vertical line at the _BCR_ donor marks molecules
-whose _ABL1_ alignment lands in neither window.
+- **Read connections → Use curved connectors** joins the two across the region
+  divider.
+- **Filter by... → Split alignments → Only split alignments** drops every read
+  that stays on one chromosome.
+- **Read connections → Read arcs** adds a band under the coverage with one arc
+  per junction, thicker where more reads support it. An arc needs both ends in
+  view: the right-hand window gets one arc and the intron 1 window two, one at
+  each place the reads enter it.
+
+A vertical line at the _BCR_ donor marks molecules whose _ABL1_ alignment lands
+in neither window.
 
 <Figure caption="BCR on chr22 beside two ABL1 windows on chr9 as three regions of one view, showing only split reads with supplementary alignments linked. The arc band draws counted arcs from the BCR donor into both ABL1 windows, and only the right-hand window has a STAR-Fusion band." src="/img/cancer_sv/k562_bcr_abl_split.png" />
 
@@ -206,11 +206,14 @@ whose _ABL1_ alignment lands in neither window.
 
 A fusion caller reports transcribed junctions, so its breakpoints sit on exon
 edges. Two DNA assays on the same cells show where the chromosome broke and how
-much of it is amplified: ENCODE's 10X Chromium linked-read run on K562
-(ENCSR053AXS, [Zhou et al. 2019](https://doi.org/10.1101/gr.234948.118)) called
-the breakends, the two ends of each junction, and DepMap's WGS segmentation
-gives the copy number. The build script lifts the breakends to hg38 and adds
-both as tracks:
+much of it is amplified:
+
+- **10X Chromium linked reads** from ENCODE (ENCSR053AXS,
+  [Zhou et al. 2019](https://doi.org/10.1101/gr.234948.118)) call the breakends,
+  the two ends of each junction.
+- **DepMap WGS segmentation** gives the copy number.
+
+The build script lifts the breakends to hg38 and adds both as tracks:
 
 ```json addtrack
 {
@@ -258,12 +261,10 @@ partner is on another chromosome draws a stem at its breakpoint.
 
 The amplified block on chr9 ends where the DNA breaks do. The _ABL1_ intron 1
 break is also the locus that
-[a Hi-C scan](/docs/tutorials/hic_structural_variants) pairs with _BCR_. The
-right-hand break joins chr9 to a point on chr13 outside any gene, so no
-transcript crosses it and no fusion caller reports it. DepMap's segmentation has
-no interval over _BCR_, so the donor window shows an arc and no copy-number
-step. SplitThreader read the _ERBB2_ amplicon in SK-BR-3 the same way, matching
-copy-number steps to breakpoints
+[a Hi-C scan](/docs/tutorials/hic_structural_variants) pairs with _BCR_.
+DepMap's segmentation has no interval over _BCR_, so the donor window shows an
+arc and no copy-number step. SplitThreader matched copy-number steps to
+breakpoints the same way in the SK-BR-3 _ERBB2_ amplicon
 ([Nattestad et al. 2018](https://doi.org/10.1101/gr.231100.117)).
 
 ## Reproduce it end to end
@@ -274,8 +275,8 @@ builds everything above from public sources. For K562 it:
 1. sorts the four ENCODE Iso-Seq runs, which ENCODE releases unsorted, and
    merges them into the one read track the junction counts come from
 2. cuts K562's rows out of DepMap's fusion and copy-number tables, with the
-   fusion calls ordered by FFPM, fusion fragments per million RNA-seq fragments,
-   so the best-supported call comes first
+   fusion calls ordered by FFPM (fusion fragments per million RNA-seq
+   fragments), best-supported first
 3. lifts the 10X breakends to hg38 as above, and drops a junction whole when
    either end fails to lift or lands reversed in hg38, where its orientation
    would come out wrong

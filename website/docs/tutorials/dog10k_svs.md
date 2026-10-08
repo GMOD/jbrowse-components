@@ -12,9 +12,12 @@ tutorial_subcategory: Dog10K
 Dog breeds differ by large structural variants, some of them tied to a breed's
 traits. We slice four loci out of the Dog10K callsets over HTTP and show each
 animal's genotype as one row, labelled by breed, under the gene the variant sits
-in: a deletion in _NHEJ1_ behind Collie eye anomaly, a duplication of the
-amylase gene _AMY2B_, a SINE insertion in _RNASE1_, and the footprint an _FGF4_
-retrogene leaves at its parent gene.
+in:
+
+- a deletion in _NHEJ1_ behind Collie eye anomaly
+- a duplication of the amylase gene _AMY2B_
+- a SINE insertion in _RNASE1_
+- the footprint an _FGF4_ retrogene leaves at its parent gene
 
 ## Prerequisites
 
@@ -121,11 +124,15 @@ bcftools view -r chr37:25500000-25620000 -S sv.samples --force-samples \
 tabix -p vcf dog10k_nhej1_svs.vcf.gz
 ```
 
-`sv.samples` comes from the Dog10K sample table: every Collie, Shetland Sheepdog
-and Silken Windhound in the analysis set; four Lancashire Heelers, a breed where
-Collie eye anomaly is reported; Australian Shepherds, German Shepherds and
-Labrador Retrievers as breeds with no reported association; and four Greek gray
-wolves as the outgroup. Read the genotypes directly first:
+`sv.samples` comes from the Dog10K sample table and lists:
+
+- every Collie, Shetland Sheepdog and Silken Windhound in the analysis set
+- four Lancashire Heelers, a breed where Collie eye anomaly is reported
+- Australian Shepherds, German Shepherds and Labrador Retrievers, breeds with no
+  reported association
+- four Greek gray wolves, the outgroup
+
+Read the genotypes directly first:
 
 <!-- from: scripts/build_dog10k_nhej1_sv.sh -->
 
@@ -135,7 +142,8 @@ bcftools query -r chr37:25574005-25574006 -f '[%SAMPLE=%GT ]\n' \
 ```
 
 Most of the Collies have it, some homozygous, along with some of the Shetland
-Sheepdogs and Silken Windhounds. Every other animal is homozygous reference.
+Sheepdogs and Silken Windhounds. Every other animal is homozygous reference,
+including the four Lancashire Heelers.
 
 ## Loading the NHEJ1 slice with breed labels
 
@@ -152,11 +160,10 @@ is a 7.8 kb block.
 }
 ```
 
-The VCF names each sample by its Dog10K ID. In the session below, `rows` gives
-each sample a label and orders the rows as `domain` lists them, and `rowColor`
-gives each row a swatch. The fence names two animals to show the shape, and the
-figure names every row the same way. **Edit colors/arrangement...** in the track
-menu writes the same two settings as you rename and recolour rows by hand.
+The VCF names each sample by its Dog10K ID. The session below labels and colors
+rows for two animals to show the shape, and the figure names every row the same
+way. **Edit colors/arrangement...** in the track menu writes the same two
+settings, `rows` and `rowColor`, as you rename and recolour rows by hand.
 
 ```json session config=test_data/dog10k/config.json
 {
@@ -222,8 +229,7 @@ wc -l < unmapped.bed   # records the chain could not place
 ```
 
 The label under the bar gives the mode of inheritance. Click the bar for the
-rest of the record, including whether the build lifted it from CanFam3.1. A
-lifted record can place the locus correctly and still be off by a few bases.
+rest of the record, including whether the build lifted it from CanFam3.1.
 
 ### Filtering the NHEJ1 window to the deletion record
 
@@ -257,12 +263,6 @@ bcftools query -r chr37:25578185-25578186 -i 'POS=25578185' \
   | tr ' ' '\n' | grep -v '=0/0'
 ```
 
-### Lancashire Heelers, with Collie eye anomaly and no deletion
-
-Collie eye anomaly is reported in Lancashire Heelers, and none of the four
-sampled here have the deletion. Four dogs are too few to estimate how common the
-deletion is in the breed.
-
 ## AMY2B duplication and RNASE1 insertion
 
 A 14.9 kb duplication (`DUP`) at chr6:47,375,677 in the Michigan Manta callset
@@ -280,9 +280,13 @@ in wolves and almost no dogs.
 prints both records' genotypes tallied by population.
 
 The build script slices the same animals from both callsets in the same order,
-so the two tracks line up row for row: two ordinary breeds, the three Arctic
-breeds, the English Springer Spaniels and Czechoslovakian Wolfdogs, the Alaskan
-village dogs, and every gray wolf, labelled by country.
+so the two tracks line up row for row:
+
+- two ordinary breeds
+- the three Arctic breeds
+- the English Springer Spaniels and Czechoslovakian Wolfdogs
+- the Alaskan village dogs
+- every gray wolf, labelled by country
 
 ```json addtrack
 {
@@ -306,18 +310,14 @@ village dogs, and every gray wolf, labelled by country.
 ```
 
 A samples TSV supplies the labels for these 86 rows. Its first column is the
-sample name and every other column is an attribute; `rowColor` names the
-attribute that colours the swatch. The _RNASE1_ track is the same config with
-the other slice's `uri`.
+sample name and every other column is an attribute that `rowColor` can name. The
+_RNASE1_ track is the same config with the other slice's `uri`.
 
 <Figure caption="Left: a 14.9 kb duplication over pancreatic amylase. Right: a 223 bp insertion in pancreatic ribonuclease. The same animals are in the same order in both, so each row is one animal: the dogs have the amylase duplication and the wolves the ribonuclease insertion." src="/img/dog10k-diet-genes.png" />
 
-Most of the Greenland Dogs lack the duplication, while every Alaskan Malamute
-and Samoyed has it. The grey Czechoslovakian Wolfdog row is CZEC000003, the
-animal [the local-ancestry tutorial](/docs/tutorials/local_ancestry) paints
-wolf-derived blocks on. Every wolf with the insertion is heterozygous. Some of
-the Iranian wolves have the amylase duplication and none the ribonuclease
-insertion, while the Greek and Swedish wolves do the reverse.
+The grey Czechoslovakian Wolfdog row is CZEC000003, the animal
+[the local-ancestry tutorial](/docs/tutorials/local_ancestry) paints
+wolf-derived blocks on. Every wolf with the insertion is heterozygous.
 
 A genotype records whether an animal has the duplication, so an animal with four
 copies and one with twenty are both `1/1`.
@@ -330,9 +330,8 @@ copy number from the SNV callset's per-sample `DP`.
 breed-defining short legs to an expressed _FGF4_ retrogene, a copy of the
 spliced _FGF4_ mRNA reinserted elsewhere in the genome. The copy has no introns,
 so short reads from it map to the parent gene's exons and stop at each splice
-site, and a short-read caller reports that pileup as a deletion of each intron.
-At _FGF4_ the callset therefore records the retrogene as intron deletions, which
-look the same as real ones.
+site, and a short-read caller reports each intron as a deletion. The callset
+therefore records the retrogene as intron deletions that look like real ones.
 
 ### Checking the records against the FGF4 introns
 
@@ -393,21 +392,22 @@ breed group.
 }
 ```
 
-Each record draws at the coordinates it names, so the two blocks sit against the
-exons. Every animal with the insertion is heterozygous: the parent gene's
-introns are still on both chromosomes, so each such animal's pileup is always a
-mixture.
+Every animal with the insertion is heterozygous: the parent gene's introns are
+still on both chromosomes, so each such animal's pileup is always a mixture.
 
 ### The two known FGF4 retrocopies
 
-Two _FGF4_ retrocopies are known in dogs. Parker et al. tied one to short legs;
-[Brown et al. (2017)](https://doi.org/10.1073/pnas.1709082114) tied a second, on
-a different chromosome, to chondrodystrophy and intervertebral disc disease,
-which is why breeds of ordinary proportions have a copy too. Both retrocopies
-leave the same records at the parent gene, so a genotype here cannot say which
-copy an animal has. The spaniels are the rows where body proportions and
-genotype disagree. Placing either insertion needs the other side of the
-junction, from a different callset.
+Two _FGF4_ retrocopies are known in dogs. Both leave the same records at the
+parent gene, so a genotype here cannot say which copy an animal has:
+
+- one, tied to short legs by Parker et al.
+- a second, on a different chromosome, tied to chondrodystrophy and
+  intervertebral disc disease by
+  [Brown et al. (2017)](https://doi.org/10.1073/pnas.1709082114), which is why
+  breeds of ordinary proportions have a copy too
+
+The spaniels are the rows where body proportions and genotype disagree. Placing
+either insertion needs the other side of the junction, from a different callset.
 
 ### Aligning the retrocopies to FGF4
 
@@ -483,29 +483,27 @@ track loads, `dog10k_fgf4_retro_cfa12.paf` and its CFA18 twin. For each file it:
 - writes each GenBank feature table as GFF3 for the gene model, and checks that
   the CDS is a single interval (the parent's has three)
 
-To put the parent gene between the two retrocopies, choose **Add → Linear
-synteny view**, switch to **Manual**, and set the rows to `FGF4retro-CFA18`,
-`UU_Cfam_GSD_1.0` and `FGF4retro-CFA12`, top to bottom. Give the upper pair the
-CFA18 alignment and the lower pair the CFA12 one, then click **Launch**. Open
-the view's sliders menu and set **CIGAR indels → Transparent indels**. Colored
-indels would show one gap as a deletion above the parent row and an insertion
-below it, because each ribbon reads the CIGAR from its own side. Both
-retrocopies align to the same three exons, so each intron is a gap in both
-ribbons. The window ends where the CFA18 alignment does, and the CFA12 ribbon
-runs past it.
+To put the parent gene between the two retrocopies, we:
+
+1. Choose **Add → Linear synteny view**, switch to **Manual**, and set the rows
+   to `FGF4retro-CFA18`, `UU_Cfam_GSD_1.0` and `FGF4retro-CFA12`, top to bottom.
+2. Give the upper pair the CFA18 alignment and the lower pair the CFA12 one,
+   then click **Launch**.
+3. Open the view's sliders menu and set **CIGAR indels → Transparent indels**.
+   Colored indels would show one gap as a deletion above the parent row and an
+   insertion below it, because each ribbon reads the CIGAR from its own side.
+
+The window ends where the CFA18 alignment does, and the CFA12 ribbon runs past
+it.
 
 <Figure caption="Two independent FGF4 retrocopies aligned to the parent gene between them, with the Manta calls in reference coordinates and then across Dog10K genomes. Every ribbon gap falls on a parent intron and the blue blocks sit in those same two places." src="/img/dog10k-fgf4-retrogene-synteny.png" />
 
-The two GenBank records agree across the coding sequence and differ in how much
-UTR they include. Both deposited sequences end at the poly(A) tail, so neither
-records where its copy inserted.
-
 ## Slicing more clade-associated SVs from Schall and Kidd
 
-Schall and Kidd list the clade-associated SVs they found, and any of them can be
-sliced and loaded the same way. Another retrogene shows up as a gene whose
-introns are all called deleted in some animals, and the FGF4 build script's
-check applies to it: each record should match an annotated intron to the base.
+Any clade-associated SV on Schall and Kidd's list slices and loads the same way.
+Another retrogene shows up as a gene whose introns are all called deleted in
+some animals, and each record should match an annotated intron to the base, as
+the _FGF4_ check does.
 
 ## Reproduce it end to end
 

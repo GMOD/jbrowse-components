@@ -89,9 +89,9 @@ edit, and reopening the file restores every setting.
 </details>
 
 `height`, `unit` and `color` are the setting names in both apps. The
-[config schema docs](/docs/config_guide) list the names each display takes (e.g.
-[](/docs/config/linearalignmentsdisplay), [](/docs/config/linearwiggledisplay))
-and the values each accepts. The same read-back finds the key for any other
+[config schema docs](/docs/config_guide) list the names and values each display
+takes (e.g. [](/docs/config/linearalignmentsdisplay),
+[](/docs/config/linearwiggledisplay)). The same read-back finds the key for any
 setting on any track: change it in the menu, share, and read the new key in the
 JSON.
 
@@ -115,9 +115,9 @@ track's `displayDefaults` apply every time the track loads, and in a served
 }
 ```
 
-The track opens paired and colored. To select a non-default display type
-(`LinearMultiSampleVariantDisplay`, `LDTrackDisplay`), write a `displays` array;
-[configuring tracks](/docs/config_guides/tracks) covers both forms.
+The track opens paired and colored. To select a non-default display type, write
+a `displays` array; [configuring tracks](/docs/config_guides/tracks) covers both
+forms.
 
 ## When a session and the track config set the same setting
 
@@ -146,9 +146,7 @@ type in brackets. This session sets `color` on that track and nothing else:
 ```
 
 The session's `color` replaces the config's, so the features draw grey, and
-their labels still read `seg04 [match]` from `displayDefaults`.[^snapshot] The
-CRAM track follows the same rule, so a session that sets `height: 100` on it
-draws the track 100px tall and keeps the paired coloring from its config.
+their labels still read `seg04 [match]` from `displayDefaults`.[^snapshot]
 
 ## Where each route keeps a setting (link, session file or config)
 

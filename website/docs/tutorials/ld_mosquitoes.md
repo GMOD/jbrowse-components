@@ -77,15 +77,10 @@ so we load that assembly and its gene models first. The gene track reads the
 }
 ```
 
-## The 2La inversion as one LD block
-
-A mosquito with one inverted and one standard copy of 2La, a heterokaryotype,
-cannot cross over inside the inversion, so the segment is inherited as a unit.
-JBrowse draws LD from a precomputed table: PLINK correlates the variants and
-[`PlinkLDTabixAdapter`](/docs/config/plinkldtabixadapter) reads its output.
-
 ## Precomputing 2L LD with PLINK
 
+JBrowse draws LD from a precomputed table: PLINK correlates the variants and
+[`PlinkLDTabixAdapter`](/docs/config/plinkldtabixadapter) reads its output.
 PLINK reads a binary fileset, so we first convert the phased VCF of common
 variants into one. `--double-id` sets each family id to the sample id:
 
@@ -171,8 +166,7 @@ The samples TSV has a `name` column matching the VCF sample ids and a
 `2La/2L+a`, `2La/2La`, the `+` marking the non-inverted arrangement.
 
 Load each population as a `VariantTrack` whose adapter includes the samples TSV,
-with a `LinearMultiSampleVariantDisplay` that bands (`facet`) and colors
-(`rowColor`) rows by `karyotype`:
+with a `LinearMultiSampleVariantDisplay`:
 
 ```json addtrack
 {
@@ -208,20 +202,19 @@ karyotype classes contiguous, and its `domain` stacks them in dosage order.
 display draws a row for every sample in the file and divides the track height
 among them, so each population gets its own track. Gabon's two tracks are the
 same configs with `CMgam` replaced by `GAgam` in the trackIds and file names:
-`https://jbrowse.org/demos/popgen/ag1000g_2L_GAgam.vcor.gz`,
-`https://jbrowse.org/demos/popgen/ag1000g_2La_GAgam.vcf.gz` and
-`https://jbrowse.org/demos/popgen/ag1000g_2La_GAgam_samples.tsv`.
+
+- `https://jbrowse.org/demos/popgen/ag1000g_2L_GAgam.vcor.gz`
+- `https://jbrowse.org/demos/popgen/ag1000g_2La_GAgam.vcf.gz`
+- `https://jbrowse.org/demos/popgen/ag1000g_2La_GAgam_samples.tsv`
 
 ### Scoring each mosquito's 2La karyotype from tag SNPs
 
-The build script draws the `<INV>` call at the published 2La extent. The
-breakpoints have been cloned and sequenced
-([Sharakhov et al. 2006](https://doi.org/10.1073/pnas.0509683103)), and
-[White et al. 2007](https://doi.org/10.4269/ajtmh.2007.76.334) karyotyped single
-mosquitoes by PCR across the junctions. The script scores each mosquito's
-karyotype as its mean alternate-allele count across the tag SNPs, rounded to a
-genotype, as MalariaGEN does for its Ag3 release. The score is trimodal, which
-the [reproduce script](#reproduce-it-end-to-end) checks.
+The build script draws the `<INV>` call at the published 2La extent
+([Sharakhov et al. 2006](https://doi.org/10.1073/pnas.0509683103),
+[White et al. 2007](https://doi.org/10.4269/ajtmh.2007.76.334)) and scores each
+mosquito's karyotype as its mean alternate-allele count across the tag SNPs,
+rounded to a genotype, as MalariaGEN does for its Ag3 release. The score is
+trimodal, which the [reproduce script](#reproduce-it-end-to-end) checks.
 
 ## Comparing the 2La LD block with karyotypes in Cameroon and Gabon {#reading-the-2la-ld-block-against-the-karyotype-lanes}
 
@@ -230,18 +223,14 @@ population, one row per mosquito.
 
 <Figure src="/img/ld/anopheles_2la.png" caption="Ag1000G chromosome arm 2L, the same window and settings throughout. Top: the published extents of 2La and of Vgsc, the two loci the blocks below sit on. r² fills the 2La extent in Cameroon, which segregates both arrangements, and is empty over that span in Gabon, which is near-fixed for the standard arrangement."/>
 
-The block's edges line up with the published breakpoint coordinates, where the
-karyotype track beneath draws its calls. The karyotype track shows which
-mosquitoes carry the inversion, and the block appears only in the population
-whose rows hold both arrangements.
+The block's edges line up with the published breakpoint coordinates.
 
 - A second block, at the low-coordinate end of the arm in both populations, is
   _Vgsc_, a sodium channel gene whose codon-995 substitutions confer pyrethroid
   insecticide resistance
   ([Clarkson et al. 2021](https://doi.org/10.1111/mec.15845)).
-- The 2La span is flat in Gabon, which is near-fixed for the standard
-  arrangement, so almost no chromosome pair is a heterokaryotype. 2La is so rare
-  there that the variants tagging it fall below the `--maf` cutoff.
+- Gabon is near-fixed for the standard arrangement, so 2La is rare enough that
+  the variants tagging it fall below the `--maf` cutoff.
 
 ## Reproduce it end to end
 

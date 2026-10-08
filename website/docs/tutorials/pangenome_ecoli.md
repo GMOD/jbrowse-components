@@ -68,14 +68,7 @@ under
 A pangenome graph stores sequence the genomes share once, as a path every genome
 follows, and branches where they differ. A **linear projection** flattens the
 graph onto one genome's coordinates, so it loads as an ordinary track. Every
-graph builder emits these:
-
-| Projection             | What it shows                              | From the graph                                        | JBrowse track                                                      |
-| ---------------------- | ------------------------------------------ | ----------------------------------------------------- | ------------------------------------------------------------------ |
-| Synteny                | The blocks each pair of genomes shares     | `odgi untangle`, `halSynteny`                         | [synteny track](/docs/config_guides/synteny_track)                 |
-| Pangenome variants     | Every difference the graph calls           | `pggb -V`, `cactus-pangenome --vcf`, `vg deconstruct` | [multi-sample variant track](/docs/user_guides/multivariant_track) |
-| Whole-genome alignment | The multiple alignment, column by column   | `pggb -M`, `hal2maf`                                  | [](/docs/user_guides/maf_track)                                    |
-| Pangenome depth        | How many genomes cover each reference base | `odgi depth`, `odgi pav`                              | [quantitative track](/docs/config_guides/quantitative_track)       |
+graph builder emits these.
 
 ## Building the graph
 
@@ -279,10 +272,11 @@ strain's allele:
 With a length after the path name, as in `-V K12:10000`, pggb runs
 [`vcfbub`](https://github.com/pangenome/vcfbub) and
 [`vcfwave`](https://github.com/vcflib/vcflib) over the VCF to decompose large
-sites into smaller variants, giving `*.decomposed.vcf`. The undecomposed
-`*.smooth.final.K12.vcf` keeps one record per bubble (where paths split and
-rejoin) for the [graph track](#opening-the-graph-in-the-graph-genome-view) to
-read.
+sites into smaller variants, giving `*.decomposed.vcf`.
+
+The undecomposed `*.smooth.final.K12.vcf` keeps one record per bubble (where
+paths split and rejoin) for the
+[graph track](#opening-the-graph-in-the-graph-genome-view) to read.
 
 ## Whole-genome alignment onto K12 (MAF) {#whole-genome-alignment-maf-projection}
 
@@ -394,9 +388,8 @@ The config draws reference lines at the strain count and at 1:
 }
 ```
 
-Zoomed out, the curve sits on the strain-count line over the core genome, rises
-past it over the rRNA operons (repeated ribosomal RNA genes) that the graph
-collapses into one copy, and drops to 1 over sequence only K12 has.
+The curve rises past the strain-count line over the rRNA operons (repeated
+ribosomal RNA genes), because the graph collapses their copies into one.
 
 ### Per-strain presence
 
@@ -611,9 +604,6 @@ over the same files colors each segment by that count:
 Type `chr:1,299,499-1,300,693`, the IS5 element.
 
 <Figure caption="The IS5 element in K12: the windowed depth curve, and under it the strains-per-segment track, colored by how many strains have each segment, so the red box is a segment K12 alone has." src="/img/pangenome/pggb_carriage_lane.png" />
-
-The [graph genome view guide](/docs/user_guides/graph_genome_view) covers the
-layouts and the node menu.
 
 ## Reproduce it end to end
 

@@ -53,13 +53,6 @@ so there is nothing to download by hand.
 
 </details>
 
-## QuicK-mer2 k-mer copy-number estimates
-
-[QuicK-mer2](https://github.com/KiddLab/QuicK-mer2) counts k-mers that occur
-exactly once in the reference, so each estimate is specific to one _paralog_,
-one copy of a duplicated sequence. We read the lab's per-sample bigWigs from the
-Kidd lab's [KiddLab/kmer_1KG](https://github.com/KiddLab/kmer_1KG) track hub.
-
 ## Load the hg38 assembly
 
 The copy-number bins are on GRCh38, so the tracks below attach to an hg38
@@ -78,11 +71,11 @@ assembly:
 
 ## Load the panel as one heatmap track
 
-The whole panel goes in as one track on hg38, so the display, clustering and
-color settings are declared once. The config lists two of the panel's 104 PUR
-(Puerto Rican) bigWigs; the full list is the `pur_copynumber_1000g` track in
-https://jbrowse.org/code/jb2/main/test_data/config_demo.json, and every file
-follows the `kidd_lab_cnv/<population>/<sample>.qm2.CN.1k.bw` pattern above:
+[QuicK-mer2](https://github.com/KiddLab/QuicK-mer2) counts k-mers that occur
+exactly once in the reference, so each estimate is specific to one _paralog_,
+one copy of a duplicated sequence. The config lists two of the panel's 104 PUR
+(Puerto Rican) bigWigs, and every file follows the
+`kidd_lab_cnv/<population>/<sample>.qm2.CN.1k.bw` pattern above:
 
 ```json addtrack
 {
@@ -129,7 +122,8 @@ display settings turn that into a copy-number heatmap:
 Rows stay in file order until **Clustering → Cluster rows by score...** in the
 track menu brings similar samples together.
 
-The PUR track is also in `config_demo`, so
+The full list is the `pur_copynumber_1000g` track in
+https://jbrowse.org/code/jb2/main/test_data/config_demo.json, so
 [the panel opens on a copy-number-polymorphic window of chr3](https://jbrowse.org/code/jb2/main/?config=test_data/config_demo.json&session=spec-%7B%22views%22%3A%5B%7B%22type%22%3A%22LinearGenomeView%22%2C%22assembly%22%3A%22hg38%22%2C%22loc%22%3A%22chr3%3A162%2C275%2C163-163%2C360%2C944%22%2C%22tracks%22%3A%5B%7B%22trackId%22%3A%22pur_copynumber_1000g%22%2C%22type%22%3A%22LinearWiggleDisplay%22%2C%22height%22%3A420%2C%22defaultRendering%22%3A%22density%22%2C%22scales%22%3A%7B%22y%22%3A%7B%22domainQuantile%22%3A1%7D%7D%2C%22showTree%22%3Afalse%7D%5D%7D%5D%7D&sessionName=Screenshot)
 with these settings already applied.
 
@@ -193,17 +187,15 @@ so each plateau lines up with a copy count:
 <Figure caption="The CCL3L1 window as six stacked profiles on one shared axis, from the individual with the most copies down to one with none. The plateaus are flat and land on integers." src="/img/cnv1000g/ccl3l1_ladder.png" />
 
 Two paralogous blocks hold the variation. The right-hand block spans the
-chemokine genes _CCL3L1_ and _CCL4L1_, which exist in a variable number of
-tandem copies; the hg38 gene lane labels the reference copies _CCL3L3_ and
-_CCL4L2_. The left-hand block is a _TBC1D3_ repeat.
+chemokine genes _CCL3L1_ and _CCL4L1_ (labelled _CCL3L3_ and _CCL4L2_ in the
+hg38 gene lane), in a variable number of tandem copies. The left-hand block is a
+_TBC1D3_ repeat.
 
 ## UGT2B17, a simple deletion, against the 1000 Genomes SV map
 
-The 1000 Genomes phase 3 integrated structural variant (SV) map records each
-variant as one interval with fixed breakpoints and a few symbolic alleles. At a
-simple biallelic deletion the SV map and the depth profiles should agree. We'll
-add the SV map as a variant track, then navigate to _UGT2B17_ on chr4 with the
-PUR panel track from
+At a simple biallelic deletion the 1000 Genomes phase 3 integrated structural
+variant (SV) map and the depth profiles should agree. We'll add the SV map as a
+variant track, then navigate to _UGT2B17_ on chr4 with the PUR panel track from
 [Load the panel as one heatmap track](#load-the-panel-as-one-heatmap-track)
 under it. For your own callset, swap `uri` for a bgzip-compressed, tabix-indexed
 VCF on the same assembly:
@@ -248,11 +240,10 @@ Against the hosted files, at a median range request of 25 ms:
 
 Each BigWig needs several dependent reads to find and fetch a region's values,
 so the cost grows with the number of files. The Zarr store is one array of
-samples by bins: two metadata reads, then one chunk covering all 2504 samples
-across 256 bins.
+samples by bins, read in two metadata requests and one chunk.
 
 [Zarr](https://zarr.dev/) v3 stores such arrays as chunk files on static
-hosting, which [zarrita.js](https://github.com/manzt/zarrita.js) reads directly.
+hosting.
 [`jbrowse-plugin-zarr`](https://github.com/cmdcolin/jbrowse-plugin-zarr) adds a
 `MultiWiggleZarrAdapter`, which takes the same display settings as the BigWig
 track.
@@ -298,22 +289,22 @@ With the plugin loaded, a track points the adapter at the store:
 }
 ```
 
-The adapter config gives the store's location, and the store holds the sample
-list, bin size and resolution levels. A relative `uri` resolves against the
-config that holds it, so a store beside your `config.json` takes
-`qm2_cn_1kb.zarr`.
+A relative `uri` resolves against the config that holds it, so a store beside
+your `config.json` takes `qm2_cn_1kb.zarr`.
 
 <Figure caption="All 2504 individuals of the 1000 Genomes panel, clustered, from a single Zarr store. Red is a gain over the diploid baseline, blue a loss, white two copies. The CCL3L1/CCL4L1 block is flat diploid on both sides of it." src="/img/cnv1000g/zarr_cohort.png" />
 
 ## A deletion nested inside another on chr3, sorted by clustering
 
 The Zarr store also covers chr3:162.5-163.2 Mb, where a 22 kb deletion sits
-inside a 114 kb one. Navigate the Zarr track to `chr3:162,650,000-163,050,000`
-and run **Clustering → Cluster rows by score...**. The panel sorts individuals
-by which of the two deletions they have, and the long-read assembly calls of the
-Human Genome Structural Variation Consortium
-([Logsdon et al. 2025](https://doi.org/10.1038/s41586-025-09140-6)) place both.
-We'll add those calls as a variant track:
+inside a 114 kb one:
+
+- Navigate the Zarr track to `chr3:162,650,000-163,050,000`.
+- Run **Clustering → Cluster rows by score...** to sort individuals by which of
+  the two deletions they have.
+- The long-read assembly calls of the Human Genome Structural Variation
+  Consortium ([Logsdon et al. 2025](https://doi.org/10.1038/s41586-025-09140-6))
+  place both. We'll add those calls as a variant track:
 
 ```json addtrack
 {
@@ -358,24 +349,25 @@ node build_signal_zarr.ts \
 The command above built the hosted store from all 2504 samples, over the windows
 in the figures.
 
-`--levels` sets the resolution pyramid. Each entry is one samples-by-bins array,
-with coarser ones averaged from the finest. The adapter reads the coarsest level
-whose bins are no wider than a screen pixel, so a whole-chromosome view costs
-the same couple of requests. Give it your input's bin size first, then steps of
-roughly 3x: `10000,30000,100000` rather than `10000,100000`, since a 10x gap
-leaves a view fetching 10x the bins it can draw.
+Three options shape the store:
 
-Every level above the finest stores the minimum and maximum of the bins it
-averages alongside the mean.
-[`summaryScoreMode`](/docs/config/linearwiggledisplay/#slot-summaryscoremode)
-picks which a view draws, so an amplification narrower than a bin is visible
-under `max` and averaged away under `mean`.
-
-The converter holds the finest level in memory and derives the rest from it.
-Without the `--region` flags this panel takes a few GB at 10 kb bins and tens of
-GB at the 1 kb of the BigWigs, so start a whole-genome pyramid coarse. The
-converter prints the size of the finest level before allocating it, and exits if
-it will not fit.
+- **`--levels`** sets the resolution pyramid, one samples-by-bins array per
+  entry, with coarser ones averaged from the finest. The adapter reads the
+  coarsest level whose bins are no wider than a screen pixel, so a
+  whole-chromosome view costs the same couple of requests. Give the input's bin
+  size first, then steps of roughly 3x (`10000,30000,100000`, not
+  `10000,100000`), since a 10x gap leaves a view fetching 10x the bins it can
+  draw.
+- **`--region`** limits the build to the windows you pass. The converter holds
+  the finest level in memory and derives the rest from it, so without `--region`
+  this panel takes a few GB at 10 kb bins and tens of GB at the 1 kb of the
+  BigWigs; start a whole-genome pyramid coarse. The converter prints the size of
+  the finest level before allocating it, and exits if it will not fit.
+- **Summary levels** above the finest store the minimum and maximum of the bins
+  they average alongside the mean.
+  [`summaryScoreMode`](/docs/config/linearwiggledisplay/#slot-summaryscoremode)
+  picks which a view draws, so an amplification narrower than a bin is visible
+  under `max` and averaged away under `mean`.
 
 The output is a folder of files. Copy it to any static host with CORS enabled
 and point a track at it. To write a store from something other than BigWigs, the
@@ -391,8 +383,6 @@ The lab's
 one 30x 1000 Genomes CRAM through `count` and `est`, and for GRCh38 the k-mer
 index is
 [prebuilt](https://kiddlabshare.med.umich.edu/QuicK-mer/QuicK-mer2-refs/GRCh38/).
-The tutorial reports 67 GB of reference files, roughly 50 GB of RAM, and about
-25 minutes on six threads per sample.
 
 `est` writes copy number in 1 kb windows, and its four columns are bedGraph once
 the decoy and EBV contigs are dropped:
@@ -411,8 +401,12 @@ gives the lab's estimate as a check.
 ## Reproduce it end to end
 
 [`build_1000g_cnv_zarr.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_1000g_cnv_zarr.sh)
-derives the full 2504-sample list from the Kidd lab `trackDb` and runs the
-converter over it, fetching the converter and its two packages itself:
+builds the store above. The script:
+
+1. Derives the full 2504-sample list from the Kidd lab `trackDb`.
+2. Fetches the converter and its two npm packages.
+3. Runs the converter over the tutorial's windows, or over every main contig
+   with `--whole-genome`.
 
 ```bash
 curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/build_1000g_cnv_zarr.sh

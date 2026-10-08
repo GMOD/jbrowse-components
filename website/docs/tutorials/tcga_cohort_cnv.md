@@ -115,11 +115,6 @@ settings do the rest:
   `segmean` onto a diverging blue-to-red scale at four cut points, since this
   BED has no `itemRgb`, and `labels` names each bin in the key
 
-The `color` block names the column, the scale type, its cut points, the colours
-they map to and the labels in the key. Any display with a `color` slot takes the
-same keys, and [](/docs/tutorials/alu_age) uses them to set height and colour
-from one file.
-
 ## Cluster tumors by copy-number profile
 
 Open the track over _ERBB2_ and choose **Clustering → Cluster rows by
@@ -128,20 +123,13 @@ JBrowse averages `segmean` across each bin in view and sorts the rows into
 blocks with a shared copy-number profile, so the tumors amplified at _ERBB2_
 gather into one band.
 
-A vertical stripe is one locus called the same way across many rows. Clustered
-at whole-genome zoom, the stack groups tumors by their genome-wide profile, and
-the heavily aneuploid tumors, whose rows run red or blue end to end, form a band
-of their own.
+Clustered at whole-genome zoom, the stack groups tumors by their genome-wide
+profile, and the heavily aneuploid tumors, whose rows run red or blue end to
+end, form a band of their own.
 
 <Video src="/media/tcga/cohort_cnv_clustering.mp4" caption="The ERBB2 window, clustered from the track menu: 1104 tumors in barcode order, the Clustering item, and the bands the run leaves behind." />
 
-Every figure below shows the clustered stack.
-
 <Figure caption="Copy-number segments around ERBB2 (highlighted), one row per tumor, clustered on this window. The rows sort into amplified, gained, lost and balanced bands, and the amplified tumors' gain thins out on either side of the gene." src="/img/tcga/cohort_cnv_erbb2.png" />
-
-With each row under a pixel tall, the saturated colours crowd out the neutral
-ones. The stack shows where the events are, and a recurrence track counts how
-many tumors have them.
 
 ## Add a track of gain and loss frequency {#add-a-recurrence-track}
 
@@ -185,15 +173,10 @@ draws gains up in one colour and losses down in the other.
 
 `scales.y`'s `domainMin` and `domainMax`
 ([display options](/docs/config_guides/quantitative_track#display-options)) pin
-the axis, so a bar means the same fraction wherever you navigate, and the colour
-reuses the palette of the stack. Place the track above the stack, so that each
-peak sits over a stripe:
+the axis, so a bar means the same fraction wherever you navigate. Place the
+track above the stack, so that each peak sits over a stripe:
 
 <Figure caption="Gain and loss frequency per 100 kb (bars up for gain, down for loss) above the copy-number stack of all primary tumors, one row per tumor, clustered by profile. Recurrent events read as vertical stripes through the stack." src="/img/tcga/cohort_cnv_genome.png" />
-
-In the frequency track, each bar is the fraction of the cohort with a call past
-the cutoff. [GISTIC](https://doi.org/10.1186/gb-2011-12-4-r41) tests which peaks
-rise above a background model.
 
 ## Split gain and loss frequency by clinical group {#split-the-recurrence-by-clinical-group}
 
@@ -213,11 +196,8 @@ The `--groups` file is the
 the mutation cohort also uses. Four subtypes give eight signals, each named for
 its subtype and direction, with losses stored below zero. We'll draw them on a
 [mark display](/docs/config_guides/mark_display), one row per subtype with its
-gain above the line and its loss below:
-
-- a `formula` step reads the subtype off each signal's column name
-- `rows` gives each subtype a row, in the order `domain` lists
-- the bar's colour cuts at zero, so the key names gain and loss
+gain above the line and its loss below. A `formula` step reads the subtype off
+each signal's column name:
 
 ```json addtrack config=test_data/tcga_cnv/config.json
 {
@@ -275,15 +255,16 @@ receptor calls do not resolve a subtype.
 
 <Figure caption="Gain and loss frequency per 100 kb (bars up for gain, down for loss) across the 22 autosomes and chrX, one row per receptor subtype. 17q gain is confined to the HER2+ row, 5q loss and 10p gain to the triple-negative row; 1q and 8q gain are in every row." src="/img/tcga/cohort_cnv_recurrence_subtype.png" />
 
-[`scales.y.domainMin`](/docs/config/valuescale/#slot-scalesydomainmin)/[`scales.y.domainMax`](/docs/config/valuescale/#slot-scalesydomainmax)
-pin every row to one axis. The file keeps gain and loss as separate columns,
-since at the edge of the 17q amplicon the HER2+ group is gained and lost at
-nearly the same rate, and its row draws both.
+The file keeps gain and loss as separate columns, since at the edge of the 17q
+amplicon the HER2+ group is gained and lost at nearly the same rate, and its row
+draws both.
 
-`--min-group` sets how many tumors a subtype needs before it is plotted, and the
-script names each group it dropped. Point `--groups` at any other column for a
-different split: `histology` and `stage` work for any TCGA project, while
-`subtype` is breast specific.
+Two options adjust the split:
+
+- `--min-group` sets how many tumors a subtype needs before it is plotted, and
+  the script names each group it dropped.
+- `--groups` takes any other column for a different split: `histology` and
+  `stage` work for any TCGA project, while `subtype` is breast specific.
 
 ## Use your own cohort
 
@@ -317,11 +298,11 @@ One script builds every file above for any project id,
 [`build_tcga_cohort_cnv.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_tcga_cohort_cnv.sh):
 
 1. It asks the GDC for the project's open-access **Masked Copy Number Segment**
-   files (Affymetrix SNP 6.0, harmonized to GRCh38, germline CNV probes
-   removed), which need no dbGaP application, from primary tumors only, so the
-   matched normals stay out of the stack.
-2. It keeps one file per tumor barcode, since a tumor run twice on the array
-   would otherwise draw two overlapping sets of segments in one row.
+   files (Affymetrix SNP 6.0, GRCh38, germline CNV probes removed), which need
+   no dbGaP application, from primary tumors only, so the matched normals stay
+   out of the stack.
+2. It keeps one file per tumor barcode, so a tumor run twice on the array does
+   not draw two overlapping sets of segments in one row.
 3. It joins every tumor's segments into one BED with the barcode as `sample`,
    adding `chr` to the contig names and moving the 1-based `.seg` starts to
    BED's 0-based ones. `Segment_Mean` passes through unchanged, so each row's
@@ -329,9 +310,8 @@ One script builds every file above for any project id,
 4. [`cnv_recurrence.py`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/cnv_recurrence.py)
    tallies the gained and lost share of the cohort per 100 kb bin, pooled and
    per clinical group. A tumor counts in a bin when its segment covers the bin's
-   midpoint, so a breakpoint inside a bin puts the tumor on one side of it only.
-   Bins where fewer than half the tumors have any call are left out, so a gap in
-   the track is missing data.
+   midpoint. Bins where fewer than half the tumors have any call are left out,
+   so a gap in the track is missing data.
 
 It needs `curl`, `python3`, and `bgzip` + `tabix` from
 [htslib](http://www.htslib.org/), which on Debian/Ubuntu is
@@ -344,14 +324,12 @@ bash build_tcga_cohort_cnv.sh TCGA-BRCA    # the full cohort, ~20 minutes
 npx --yes serve jbrowse2                   # then open the printed URL
 ```
 
-The script writes a `jbrowse2/` opening on _ERBB2_, with the assembly copied
-from the hosted UCSC hg38 hub, so it downloads no reference. Swap in any other
-project id (`TCGA-OV`, `TCGA-LUAD`, ...), with a third argument to group the
-recurrence by a different clinical column.
+The script writes a `jbrowse2/` opening on _ERBB2_. Swap in any other project id
+(`TCGA-OV`, `TCGA-LUAD`, ...), with a third argument to group the recurrence by
+a different clinical column.
 
-You can run `cnv_recurrence.py` alone on a cohort BED. Even with `--groups`, the
-coverage gaps come from the whole cohort, so the grouped file has the same gaps
-as the pooled one. The clinical table comes from
+You can run `cnv_recurrence.py` alone on a cohort BED. The clinical table comes
+from
 [`tcga_clinical_tsv.py`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/tcga_clinical_tsv.py),
 shared with the [mutation cohort](/docs/tutorials/tcga_cohort_mutations).
 

@@ -72,9 +72,8 @@ the graph, by URL.
 
 Open the [HPRC page](https://staging.genomes.jbrowse.org/pangenomes/hprc). Each
 row of its **Loci** table ends in launches: **graph**, **variants**,
-**haplotypes**, **BandageJS** and **gene hub**. **BandageJS** cuts the row's
-haplotypes out of the graph and draws them in
-[BandageJS](https://jbrowse.org/demos/bandagejs/), laid out by force.
+**haplotypes**, **BandageJS** and **gene hub**. **BandageJS** draws the row's
+haplotypes in [BandageJS](https://jbrowse.org/demos/bandagejs/).
 
 <Figure caption="The HPRC page: the whole-chromosome links, then the head of the Loci table, where each row ends in its launches. The RHD / RHCE and SMN1 / SMN2 rows have no graph launch. The boxed link is the HLA / MHC graph launch." src="/img/pangenome/genomes_hprc_loci.png" />
 
@@ -93,12 +92,14 @@ overview and writes the `coarse` slot.
 
 ## The C4 locus as a graph
 
-On the HPRC page, press **graph** on the HLA / MHC row. The launch opens four
-tracks: genes, bubbles, the allele inventory (one row per allele) and the graph.
-Hide the bubbles and the allele inventory in the track selector to leave the
-genes over the graph. Type `C4A` in the location box, pick the chr6 hit, and
-zoom out twice to take in _C4B_. The graph opens in the force-directed layout,
-which draws it by its shape.
+Press **graph** on the HLA / MHC row of the HPRC page. The launch opens four
+tracks: genes, bubbles, the allele inventory (one row per allele) and the graph,
+in the force-directed layout. Then:
+
+- Hide the bubbles and the allele inventory in the track selector, leaving the
+  genes over the graph.
+- Type `C4A` in the location box, pick the chr6 hit, and zoom out twice to take
+  in _C4B_.
 
 <Figure caption="The C4 locus as a force-directed graph under the hg38 genes for the same window, colored by reference position. The labels name a backbone segment, an allele, and a bubble whose two routes are the reference path and the dashed arc that skips one whole copy of the tandem C4-CYP21-TNX module." src="/img/pangenome/hprc_graph_anatomy.png" />
 
@@ -125,11 +126,12 @@ most of _HLA-DRB5_.
 
 Left-click the charcoal allele beside _HLA-DRB5_. Its details give
 `contributingHaplotype`, `NA20809#2`: the graph's `SN` tag records which
-assembly minigraph first took the allele from. **Open in** appears when the
-session has an assembly named or aliased `sample#haplotype`, the graph's name
-for it. The launch's config declares every release 2 haplotype that way. To
-declare one, load its contig sizes (or FASTA) under a display name, with the
-graph's name as an alias:
+assembly minigraph first took the allele from.
+
+**Open in** appears when the session has an assembly named or aliased
+`sample#haplotype`, the graph's name for it. The launch's config declares every
+release 2 haplotype that way. To declare one, load its contig sizes (or FASTA)
+under a display name, with the graph's name as an alias:
 
 ```json addassembly
 {
@@ -184,8 +186,8 @@ that allele. We'll add it to the graph launch's session:
   filters...** in the track menu shows the filter and changes it.
 - `fetchSizeLimit` raises the download cap past
   [its default](/docs/config/vcftabixadapter/#slot-fetchsizelimit). The VCF
-  spells out each inserted allele, which puts both the MHC class II window and
-  LPA's kringle repeat over the default.
+  spells out each inserted allele, which puts the MHC class II window over the
+  default.
 
 Open the track menu again and take **Clustering → Cluster rows by genotype...**,
 then **Run clustering**: the rows reorder so haplotypes with the same alleles
@@ -205,12 +207,9 @@ that removes the whole stretch.
 
 ## Reading C4's alleles as aligned bases {#the-same-alleles-as-aligned-bases}
 
-minigraph builds the structural-variant graph this page draws. Cactus then
-aligns every assembly against it base by base, and HPRC exports that alignment
-twice: as the base-level graph that `vg deconstruct` writes the VCF from, and as
-`hprc-v2.1-mc-grch38.full.maf.gz`, a multiple alignment with one row of bases
-per haplotype. Beside the 53 GB MAF sits a `.tai` index that makes a locus one
-ranged read:
+HPRC also publishes its alignment as `hprc-v2.1-mc-grch38.full.maf.gz`, a
+multiple alignment with one row of bases per haplotype. A `.tai` index beside
+the 53 GB file makes a locus one ranged read:
 
 ```json addtrack
 {
@@ -235,10 +234,12 @@ taffy index -i alignment.maf.gz
 
 Go back to the C4 window, `chr6:31,980,000-32,050,000`, with the genes, the VCF
 and this alignment over the graph track. A white stretch in an alignment row is
-sequence that haplotype lacks. Order the rows with **Clustering → Cluster rows
-by genotype...** on the VCF and **Clustering → Cluster rows by identity...** on
-the alignment, which clusters over the window in view because HPRC's file ships
-no guide tree. **Reset row order** restores the order in the file.
+sequence that haplotype lacks. Then:
+
+- **Clustering → Cluster rows by genotype...** on the VCF orders its rows.
+- **Clustering → Cluster rows by identity...** on the alignment clusters over
+  the window in view, because HPRC's file ships no guide tree.
+- **Reset row order** restores the order in the file.
 
 <Figure caption="C4 with the RefSeq genes, the VCF's haplotypes clustered by genotype, a subtree of them as alignment rows clustered by identity, and the graph track in the force-directed layout. The band marks the pseudogene pair between C4A and C4B, and the haplotypes with no sequence across the module gather into one block." src="/img/maf_hprc_pangenome.png" />
 
@@ -246,8 +247,8 @@ The VCF's widest blue block is one record, a deletion of a whole C4-CYP21-TNX
 module, which is the dashed arc in the C4 graph. Every alignment row in the
 white block has that deletion in the VCF. The narrower blocks are the 6.4 kb
 HERV-K (endogenous retrovirus) insertion in a C4 gene's intron, the difference
-between a long and a short C4. The figure keeps a subset of the alignment rows
-so each has room for its name; the configured track draws all.
+between a long and a short C4. The configured track draws all the alignment
+rows.
 
 ## Reproduce it end to end
 

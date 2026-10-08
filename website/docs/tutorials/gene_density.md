@@ -15,7 +15,7 @@ more evenly. A whole chromosome holds more genes, and far more repeat copies,
 than a browser fetches at once, so each track points at a small bigWig of
 feature counts per kilobase, built once with `jbrowse make-density`. The track
 draws that bigWig as a band wherever its features are too many to fetch, and
-draws the features once they fit.
+swaps in the features once they fit.
 
 ## Prerequisites
 
@@ -105,18 +105,16 @@ track:
 ```
 
 Because `densityAdapter` sits on the adapter, every display of the track draws
-the band. On the smaller chromosomes a screen of genes fits the fetch budget,
-but the band reads more easily than individual genes at that zoom, so
-`densityTierBpPerPx` switches the gene track to the band from 50 kb per pixel
-outward. The setting is optional, has no menu entry, and the **Density band**
-choices below override it. The repeat tracks leave it unset.
+the band. The optional `densityTierBpPerPx` switches the gene track to the band
+from 50 kb per pixel outward, since on the smaller chromosomes the band reads
+more easily than a screen of genes. It has no menu entry, the **Density band**
+choices below override it, and the repeat tracks leave it unset.
 
 The three repeat tracks come from cutting the RepeatMasker table into one BED
 per `repFamily`, so the Alu track and its sidecar hold only Alus. The same
 `make-density` line over each family BED builds its sidecar.
 
-Each repeat track is configured like the gene track, over a bgzipped,
-tabix-indexed BED with its sidecar beside it. The Alu track:
+The Alu track follows the same pattern:
 
 ```json addtrack
 {
@@ -179,28 +177,25 @@ elsewhere.
 ## Gene and repeat density bands along chromosome 1
 
 Add the four tracks above, then open chromosome 1 with all four. At this width
-no track fetches its features: a track that would have to pull tens of thousands
-of records stops at the estimate and, since each of these has a density sidecar,
-draws the sidecar instead.
+every track is over its fetch budget, so each draws its density sidecar.
 
 <Figure src="/img/gene_density_chr1.png" caption="Chromosome 1 with the RefSeq curated genes, the Alu and L1 copies from RepeatMasker, and the simple repeats. Each band is that track's features per kilobase, scaled to its own peak. Genes cluster at the 1p36 tip and across 1q21 to 1q23, and Alu rises and falls with them. L1 and the simple repeats run close to level throughout." />
 
-The gene band and the Alu band peak together. The simple-repeat band, the
-control, follows neither, and L1 runs about as level. The gap in every band is
-the centromere and the 1q12 heterochromatin beside it.
+The gap in every band is the centromere and the 1q12 heterochromatin beside it.
 
 ## Zooming in to 1q21 draws the genes again
 
 Type `chr1:150,000,000-160,000,000`, 10 Mb over 1q21 to 1q23. The gene track's
-fetch now fits, so its band is gone and the genes are drawn. The Alu and L1
-tracks would still each pull thousands of records for this window, so they keep
-their bands.
+fetch now fits, so its genes are drawn, while the Alu and L1 tracks keep their
+bands.
 
 <Figure src="/img/gene_density_1q21.png" caption="Chromosome 1 from 150 to 160 Mb. The RefSeq genes are back as features; the Alu and L1 tracks, still over budget at this width, keep their bands. The Alu band peaks under the densest runs of genes, and the L1 band runs more evenly across them." />
 
-A track with a sidecar has a **Density band** entry in its track menu, with
-**Automatic**, **Features only** and **Density only** to keep or drop the band
-by hand, and **Load features anyway** to force the fetch the band replaced.
+The track menu of a track with a sidecar has a **Density band** entry:
+
+- **Automatic**, **Features only** and **Density only** keep or drop the band by
+  hand
+- **Load features anyway** forces the fetch the band replaced
 
 ## Checking the bands against counts from the files
 
@@ -238,8 +233,7 @@ npx --yes serve gene_density_build/jbrowse2 # then open the printed URL
 
 The script fetches the two UCSC tables and the reference lengths, cuts the
 RepeatMasker table into the three family BEDs, builds a sidecar for each of the
-four files, and writes a JBrowse with the four tracks. The tools it needs are
-the ones under [Prerequisites](#prerequisites).
+four files, and writes a JBrowse with the four tracks.
 
 ## See also
 

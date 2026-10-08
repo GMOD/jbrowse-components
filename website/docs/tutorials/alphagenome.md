@@ -50,14 +50,13 @@ Nothing to download: the plugin reads both stored predictions by URL.
 
 Given a window of reference sequence and a cell type, AlphaGenome predicts the
 RNA-seq, DNase, ATAC, CAGE, PRO-cap and ChIP-seq signal an experiment would
-produce there, plus splice junctions and a contact map. Because the input is
-sequence, changing one base and asking again gives a second prediction, and the
-difference between the two is the variant's predicted effect.
+produce there, plus splice junctions and a contact map. Changing one base and
+asking again gives a second prediction, and the difference is the variant's
+predicted effect.
 
-The window is a megabase centered on _TAL1_, a transcription factor whose
-misexpression drives T-cell acute lymphoblastic leukemia (T-ALL). _TAL1_ is on
-in K562, an erythroleukemia line, and off in GM12878, a lymphoblastoid line, the
-control in the locus figures below.
+The window is a megabase centered on _TAL1_, which is on in K562, an
+erythroleukemia line, and off in GM12878, a lymphoblastoid line, the control in
+the locus figures below.
 
 ## The AlphaGenome plugin
 
@@ -169,16 +168,13 @@ returns at once.[^rounding]
 
 A finished prediction lists its tracks, often thousands. Type `polyA plus` into
 the list's filter, tick K562 and GM12878, and **Add 2 selected** puts both in
-one multi-wiggle track on a shared y-axis. The panel stacks tracks in the same
-units this way: several biosamples of one assay, DNase beside ATAC, CAGE beside
-PRO-cap, histone ChIP beside TF ChIP. Untick **Stack on a shared scale** for one
-track per pick.
+one multi-wiggle track on a shared y-axis. The panel stacks any tracks in the
+same units this way; untick **Stack on a shared scale** for one track per pick.
 
 <Figure caption="Predicted polyA plus RNA-seq over TAL1 in K562 and GM12878, both rows on one y-axis. The K562 row shows a block of signal across the annotated exons that the GM12878 row does not." src="/img/alphagenome/expression_two_cell_lines.png" />
 
-_TAL1_ shows predicted transcription on its exons in K562 and almost none in
-GM12878. _STIL_, to the right, is predicted in both lines, which shows the
-GM12878 row loaded.
+_STIL_, to the right, is predicted in both lines, which shows the GM12878 row
+loaded.
 
 ## Where the chromatin is open
 
@@ -188,9 +184,7 @@ selected** puts all four in one track on one axis.
 
 <Figure caption="Predicted DNase and ATAC for K562 and GM12878, four rows on one shared y-axis because accessibility is one set of units. The K562 ATAC row runs high across the whole window; the K562 DNase row below it resolves into peaks." src="/img/alphagenome/accessibility_shared_axis.png" />
 
-Predicted ATAC in K562 sits above every other row across the window, and K562
-DNase resolves into peaks. The GM12878 rows have peaks too, at open chromatin
-that is not transcribed.
+The GM12878 rows have peaks too, at open chromatin that is not transcribed.
 
 ## Predicted TAL1 splice junctions in each cell line
 
@@ -199,27 +193,20 @@ K562 and GM12878 polyA junctions and zoom in to _TAL1_.[^junctions]
 
 <Figure caption="Predicted splice junctions over TAL1 for K562 and GM12878 polyA plus RNA-seq. The K562 arcs join the exons the RefSeq track draws; the GM12878 track has none." src="/img/alphagenome/splice_junctions.png" />
 
-The K562 arcs land on the exon boundaries in the RefSeq track. The GM12878 track
-is empty, because _TAL1_ is off there.
-
 ## The predicted GM12878 contact map over the whole window
 
 AlphaGenome predicts Hi-C-style contact maps at 2 kb bins for about a dozen cell
 lines, GM12878 among them. Add the GM12878 contact map and zoom out to the whole
-predicted megabase; the adapter reads each range the view asks for from the
-stored arrays, so navigating starts no new prediction.
+predicted megabase:
 
 <Figure caption="The predicted GM12878 contact map across the whole window, at 2 kb bins. Blocks of self-interaction sit along the diagonal with blank stretches between them, and TAL1 lies near the middle of the view." src="/img/alphagenome/contact_map.png" />
 
-The contact map's color scale saturates at the 95th percentile, because
-predicted maps are less skewed than measured Hi-C maps.
-
 ## Scoring a TAL1 variant against the reference
 
-In T-ALL, _TAL1_ is switched on in a lineage where it should be silent. One
-route is a small insertion upstream of the gene that creates a binding site, and
-the variant track holds the insertions reported in T-ALL patients and cell
-lines, all at one site.
+In T-cell acute lymphoblastic leukemia (T-ALL), _TAL1_ is switched on in a
+lineage where it should be silent. One route is a small insertion upstream of
+the gene that creates a binding site, and the variant track holds the insertions
+reported in T-ALL patients and cell lines, all at one site.
 
 Right-click any variant and choose **Predict variant effect with AlphaGenome**,
 the last row of the menu. The query panel opens with the position and the two

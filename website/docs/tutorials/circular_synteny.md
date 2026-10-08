@@ -15,10 +15,11 @@ tutorial_subcategory: Whole-genome alignments
 We lay the human and mouse chromosomes around one circle and draw UCSC's
 hg38-to-mm39 liftOver chain as ribbons between them, so one picture shows where
 the autosomes have been shuffled and where the X has not. The circle is a
-circular genome view opened on both assemblies at once. It reads the chain from
-the indexed copy on jbrowse.org and orders the mouse arc to follow the human
-one. We add a gene density ring per genome, then read one ribbon and one ring
-value back out of the indexed alignment file and the bigWig they came from.
+Circos-style circular genome view opened on both assemblies at once. It reads
+the chain from the indexed copy on jbrowse.org and orders the mouse arc to
+follow the human one. We add a gene density ring per genome, then read one
+ribbon and one ring value back out of the indexed alignment file and the bigWig
+they came from.
 
 ## Prerequisites
 
@@ -50,15 +51,6 @@ so there is nothing to download by hand.
   https://hgdownload.soe.ucsc.edu/goldenPath/hg38/liftOver/hg38ToMm39.over.chain.gz
 
 </details>
-
-## What a two-genome synteny circle shows
-
-A Circos-style circle shows, for each chromosome of one genome, which
-chromosomes of the other contain its sequence and how much of each. In human and
-mouse the autosomes have been cut and rejoined many times since the lineages
-split, and the X chromosome has not, so a human autosome should fan out across
-several mouse chromosomes while the two X chromosomes hold one bundle between
-them. That expectation is the control the figures are read against.
 
 ## Declaring the human and mouse assemblies
 
@@ -177,71 +169,71 @@ track). As a session:
 }
 ```
 
-Both assemblies name their chromosomes alike, so the arcs carry the same labels
-around the circle: human chromosomes run clockwise from the top, mouse
-chromosomes follow, and the view's title bar names the two in that order. Each
-ribbon takes the ideogram colour of the human chromosome it leaves, so a human
-chromosome's pieces can be followed to every mouse chromosome that contains one,
-and a reverse alignment reads as a twist between its two ends. A row narrower
-than a pixel draws at the share of the pixel it covers, as in the
-[linear synteny view](/docs/user_guides/linear_synteny_view), so large blocks
-dominate and the short rows the filter lets through stay faint.
+Both assemblies name their chromosomes alike, so the arcs carry the same labels.
+To read the circle:
+
+- **Layout.** Human chromosomes run clockwise from the top and mouse chromosomes
+  follow; the title bar names the two in that order.
+- **Colour.** Each ribbon takes the ideogram colour of the human chromosome it
+  leaves, so a human chromosome's pieces can be followed to every mouse
+  chromosome that holds one.
+- **Twists.** A reverse alignment twists between its two ends.
+- **Faint ribbons.** A row narrower than a pixel draws at the share of the pixel
+  it covers, as in the
+  [linear synteny view](/docs/user_guides/linear_synteny_view), so large blocks
+  dominate and short rows stay faint.
 
 <Figure src="/img/circular_synteny/ribbons.png" caption="Human chromosomes clockwise from the top, mouse chromosomes after them, and every liftOver row of 100 kb and over as a ribbon in the colour of the human chromosome it leaves. Each human autosome fans out to several mouse chromosomes, and the two X arcs hold one bundle." />
 
 ## Ordering the mouse arc to follow human
 
 In native contig order, a mouse chromosome sits wherever its number falls, so
-ribbons cross the middle of the circle to reach their human partners.
-
-On open, the circle reorders the mouse arc as the
+ribbons cross the middle of the circle to reach their human partners. On open,
+the circle reorders the mouse arc as the
 [linear synteny view](/docs/user_guides/linear_synteny_view) and the
-[dotplot](/docs/user_guides/dotplot_view) do: each mouse chromosome goes next to
-the human chromosome it shares the most aligned bases with. The circle draws the
-mouse arc mirrored, so a mouse chromosome running the same way as its human
-partner faces it, and their ribbons run straight across. A mouse chromosome that
-runs antiparallel is flipped as a whole, so a twist left in the figure is an
-inversion inside a chromosome.
+[dotplot](/docs/user_guides/dotplot_view) do, placing each mouse chromosome next
+to the human chromosome it shares the most aligned bases with.
 
-**Re-order chromosomes** in the view's menu runs the same reorder on demand,
-with a progress bar and a cancel; running it on a circle that is already ordered
-moves nothing. `"autoDiagonalize": false` on the view keeps each genome in its
-native contig order.
+- The circle draws the mouse arc mirrored, so a mouse chromosome running the
+  same way as its human partner faces it and their ribbons run straight across.
+- A mouse chromosome running antiparallel is flipped whole, so a twist left in
+  the figure is an inversion inside a chromosome.
+- **Re-order chromosomes** in the view's menu reruns the reorder, and
+  `"autoDiagonalize": false` on the view keeps each genome in its native contig
+  order.
 
 ## The mouse genome in human chromosomes
 
 Each stretch of a mouse chromosome's ideogram is painted the colour of the human
 chromosome aligned to it, and grey where nothing is. A mouse chromosome carved
 from one human chromosome is one colour, and one assembled from several is
-striped with them, so the mouse arc reads as the mouse karyotype in human
-pieces.
+striped with them.
 
-Hover the mouse chr11 band on the circle opened above. Every ribbon that misses
-it dims, and the tooltip lists each chromosome aligned to it with the share of
-it that chromosome covers, which on a mouse chromosome are the colours its band
-is painted in.
+Hover the mouse chr11 band on the circle opened above to dim every ribbon that
+misses it. The tooltip lists each human chromosome aligned to it with the share
+it covers.
 
 <Figure src="/img/circular_synteny/band_hover.png" caption="Hovering mouse chr11 dims every ribbon that does not touch it, and the tooltip lists the human chromosomes it is assembled from, largest share first." />
 
 ## Colouring the ribbons by strand
 
 The chromosome colours show where each piece went; strand shows which way round
-it lies. **Color by... → Strand** in the view's menu paints the reverse
-alignments a second colour, and **Show legend** names the two. A mouse
-chromosome that runs antiparallel to its human partner is then one colour along
-its whole bundle, and a ribbon of the other colour inside that bundle is an
-inversion within it. In a session, the setting is
-`"color": { "field": "strand" }` on the view, and `"field": "query"` is the
-chromosome colouring the circle opens with.
+it lies. Two settings switch the colouring:
+
+- **Color by... → Strand** in the view's menu paints the reverse alignments a
+  second colour, and **Show legend** names the two.
+- In a session, `"color": { "field": "strand" }` on the view sets the same, and
+  `"field": "query"` is the chromosome colouring the circle opens with.
 
 <Figure src="/img/circular_synteny/color_by_strand.png" caption="The human and mouse circle coloured by strand. Whole mouse chromosomes take one colour or the other by which way they run against their human partners; a ribbon of the other colour inside a bundle is an inversion." />
 
 ## The X chromosome as the control
 
-Open the first session above with `displayedRegionNames` cut to
-`["chr1", "chr2", "chrX"]` to read the control. The two autosomes cross-wire
-between the genomes, and the X ribbons run between the two X arcs with nothing
-joining either X to an autosome.
+The X chromosome has stayed whole across the two lineages, so no ribbon at the
+100 kb cut should join it to an autosome. Open the first session above with
+`displayedRegionNames` cut to `["chr1", "chr2", "chrX"]` to read the control.
+The two autosomes cross-wire between the genomes, and the X ribbons run between
+the two X arcs with nothing joining either X to an autosome.
 
 <Figure src="/img/circular_synteny/x_control.png" caption="Human chr1, chr2 and chrX in one half of the circle and the same three mouse chromosomes in the other, with a gene density ring inside the ideogram. The autosome ribbons cross between the genomes, and the X ribbons stay between the two X arcs." />
 
@@ -264,11 +256,8 @@ For one genome, `make-density` takes the GFF3 and its chrom.sizes directly:
 jbrowse make-density genes.gff.gz --chrom-sizes genome.chrom.sizes --bin 100000
 ```
 
-A ring on a two-genome circle comes from one track that names both assemblies,
-so both genomes' densities go into one bigWig. The script prefixes each contig
-with its genome before counting, and adds the prefixed name to each assembly's
-alias table as an alias of the bare name. A `chr1` request from the mouse arc
-then reaches `mm39.chr1`, and one from the human arc reaches `hg38.chr1`.
+A ring on a two-genome circle comes from one track naming both assemblies, so
+both genomes' densities go into one bigWig.
 
 <!-- from: scripts/build_circular_synteny.sh -->
 
@@ -307,9 +296,8 @@ strip whose colour is the average over each pixel's bins:
 }
 ```
 
-`color` holds the pair that **Edit colors/arrangement...** in the track menu
-sets, one colour below the baseline and one above. A heatmap of counts fades
-from white to the colour above.
+**Edit colors/arrangement...** in the track menu sets the `color` pair, one
+colour below the baseline and one above.
 
 Rings stack inward from the ideogram in the order the view's `tracks` lists
 them, and the ribbons draw inside the innermost ring, so the density entry goes
@@ -369,9 +357,6 @@ before the synteny track:
 ```
 
 <Figure src="/img/circular_synteny/rings.png" caption="The human and mouse circle with a gene density ring inside the ideogram, dark where a stretch is gene-rich. The densest stretches sit on the small human chromosomes and their mouse counterparts, and both X arcs are paler than the autosomes beside them." />
-
-The ring under a mirrored arc is mirrored with it, so a bin sits under the
-stretch of ideogram it belongs to whichever way round that chromosome is drawn.
 
 ## Checking a ribbon and a ring value against the source files
 

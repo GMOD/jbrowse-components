@@ -48,11 +48,6 @@ hand.
 
 </details>
 
-## COLO829, a tumor callset with a matched normal
-
-**COLO829** is a melanoma cell line with a matched normal, COLO829BL, and a
-community reference for somatic structural-variant calling.
-
 ## Rendering every tumor junction with jb2export batch
 
 A breakpoint split view shows the two loci a junction joins as two panels.
@@ -73,10 +68,12 @@ wrote 135/135 images to tumor
 ```
 
 For your own callset, point `--config` at a JBrowse config that holds the
-assembly and an alignments track. `--assembly` is the assembly's `name` in that
-config and `--track` the track's `trackId`. The track's reads need their index
-beside them (`.bai` or `.crai`), and the VCF's chromosome names must match the
-assembly's.
+assembly and an alignments track:
+
+- `--assembly` is the assembly's `name` in that config and `--track` the track's
+  `trackId`.
+- The track's reads need their index beside them (`.bai` or `.crai`).
+- The VCF's chromosome names must match the assembly's.
 
 ```bash
 jb2export batch --vcf calls.vcf.gz \
@@ -87,43 +84,40 @@ jb2export batch --vcf calls.vcf.gz \
 A record that fits one window is drawn as a single panel: an insertion names one
 locus, and a deletion shorter than `--flank` has both ends in one frame.
 
-`batch` reads the breakend notation in the ALT column with `@gmod/vcf`, which
-handles four cases a hand-written parser gets wrong without raising an error:
-
-- the replacement string may contain inserted sequence either side of the
-  bracket (`GTGATGGATTCA[CHR12:72273112[`)
-- callers upper-case the mate contig, and hg38 has no contig named `CHR12`
-- a search for `END=` also matches inside `CIEND=`, and the first hit wins
-- callers write each breakend pair as two records naming the same translocation,
-  and `batch` renders the pair once
+`batch` reads the breakend notation in the ALT column with `@gmod/vcf`, and
+renders once a breakend pair that a caller writes as two records naming the same
+translocation.[^breakends]
 
 `batch` writes one image per record, named
 `002_chr1_33053494-chr6_2919922_r_0_0.png`: the record's index, so the directory
 sorts in callset order, then the coordinates and the caller's ID where the
 record has one.
 
-A breakend is one base, so `--flank` sets the window drawn around it. `--dryRun`
-prints the file and loci of every row and renders nothing, and `--limit 20`
-renders the first few, to check the framing before the whole callset.
+A breakend is one base, so `--flank` sets the window drawn around it. Further
+options check the framing and manage a long run:
 
-For a long run:
-
+- `--dryRun` prints the file and loci of every row and renders nothing, and
+  `--limit 20` renders the first few, to check the framing before the whole
+  callset
 - `--resume` skips a row whose image is already in `--outDir`. A `--limit` run
   names its images as the whole run will, so the whole run picks them up
-- `--manifest` writes `manifest.tsv` beside the images: one row per image with
-  its file, its panels' loci, its name, its `EVENT`, and whether it rendered.
-  The `line` column is the record's line in the VCF, which joins a row back to
-  any column of the callset
+- `--manifest` writes `manifest.tsv` beside the images, one row per image: file,
+  panels' loci, name, `EVENT`, whether it rendered, `line` (the record's line in
+  the VCF, which joins a row back to any column of the callset) and `links`, the
+  count of split reads (reads aligned in pieces to different places) with pieces
+  in more than one panel
 - `--passOnly` drops records the caller filtered out. `--limit` takes the first
   N in file order, so on an unfiltered callset the two go together
 - `--jobs` sets how many processes render, each about a gigabyte. The default is
   half the cores, up to four
 
-`batch` streams the reads from the hosted CRAM and fetches a `--config` URL or
-`--hub` once. It reports a row it cannot render and continues, and `--resume`
-retries that row. Deep long reads can put even a `--flank` window over a track's
-size limit, where the app would ask you to press **Force load**; `batch` loads
-every panel as if you had.
+During a run, `batch`:
+
+- streams the reads from the hosted CRAM and fetches a `--config` URL or `--hub`
+  once
+- reports a row it cannot render and continues, and `--resume` retries that row
+- loads every panel as if you had pressed **Force load**, because deep long
+  reads can put even a `--flank` window over a track's size limit
 
 COLO829's der(3), a derivative chromosome 3 joined from pieces of chr3, chr10
 and chr12, has reads that visit all three loci. We render that event with
@@ -145,12 +139,10 @@ jb2export breakpoint \
 `featureHeight:super-compact` in the `jb2export breakpoint` command draws each
 read 1 px tall, which fits six pileups on one screen.
 
-A curve joins the two pieces of a split read, so it shows that two loci are
-joined, and a dashed connector marks a read with a segment at a locus outside
-the frame. The reconstructed contig on the right shows the order and orientation
-of the pieces. The [complex rearrangements tutorial](/docs/tutorials/cancer_sv)
-builds that contig from these reads, and rendering it is another `jb2export` run
-with the contig as `--assembly`.
+A dashed connector marks a read with a segment at a locus outside the frame. The
+[complex rearrangements tutorial](/docs/tutorials/cancer_sv) builds the
+reconstructed contig from these reads, and rendering it is another `jb2export`
+run with the contig as `--assembly`.
 
 ## Rendering the matched normal as the control
 
@@ -182,14 +174,11 @@ normal mark it as germline.
   the connectors from the aligner's output, so a read mismapped into a repeat
   adds a confident-looking curve.
 
-Add `--manifest` to both `batch` runs and each directory gets a `manifest.tsv`
-whose `links` column counts the curves in each image, meaning the split reads
-(reads aligned in pieces to different places) with pieces in more than one
-panel. Sort `tumor/manifest.tsv` on `links` to put the calls no split read joins
-at the top; the same column in `normal/manifest.tsv` shows which calls the
-normal has too. A deletion short enough for one alignment to hold draws a gap
-through both panels and no curve, so it counts zero links although the reads
-support it.
+Add `--manifest` to both `batch` runs. Sort `tumor/manifest.tsv` on `links` to
+put the calls no split read joins at the top; the same column in
+`normal/manifest.tsv` shows which calls the normal has too. A deletion short
+enough for one alignment to hold draws a gap through both panels and no curve,
+so it counts zero links although the reads support it.
 
 ## Opening a call in the browser
 
@@ -197,11 +186,6 @@ Take the coordinates from an image's filename, open the
 [SV inspector](/docs/user_guides/sv_inspector_view) on the same VCF, and click
 through to the breakpoint split view, with the gene track and read details
 attached.
-
-A junction can be one link in a longer chain. COLO829's der(3) is three
-junctions across three chromosomes, and
-[the complex rearrangements tutorial](/docs/tutorials/cancer_sv#following-the-chain-across-panels)
-follows the chain from a single record.
 
 ## Rendering calls from other SV callers
 
@@ -228,19 +212,8 @@ Severus writes the same grouping as `CLUSTERID`, and the
 shows how to rename it to `EVENT`.
 
 Ordering breakends into a derivative chromosome needs allele-specific copy
-number and a centromere constraint.
-[LINX derives both from PURPLE's purity and ploidy](https://doi.org/10.1016/j.xgen.2022.100112).
-
-## Reproduce it end to end
-
-The commands above run against hosted files. The figures come from specs in
-[`website/scripts/specs/jbrowse-img.ts`](https://github.com/GMOD/jbrowse-components/blob/main/website/scripts/specs/jbrowse-img.ts):
-
-- the der(3) figure, from three `jb2export` runs: `sv_review_tumor` and
-  `sv_review_normal` (a `breakpoint` render per sample, with one `--loc` per
-  panel) and `sv_review_derivative` (a plain render of the derivative assembly)
-- the contact sheet, from the `sv_sheet` specs, which render three rows of the
-  two `batch` runs, each with the `--loc` list `batch` builds for that row
+number and a centromere constraint, which
+[LINX derives from PURPLE's purity and ploidy](https://doi.org/10.1016/j.xgen.2022.100112).
 
 ## See also
 
@@ -259,3 +232,10 @@ The commands above run against hosted files. The figures come from specs in
 - Shale C, et al. Unscrambling cancer genomes via integrated analysis of
   structural variation and copy number. _Cell Genomics_ (2022).
   https://doi.org/10.1016/j.xgen.2022.100112
+
+[^breakends]:
+    The parser also handles cases a hand-written one gets wrong without raising
+    an error: inserted sequence either side of the bracket
+    (`GTGATGGATTCA[CHR12:72273112[`), mate contigs that callers upper-case (hg38
+    has no contig `CHR12`), and an `END=` search that would otherwise match
+    inside `CIEND=`, where the first hit wins.

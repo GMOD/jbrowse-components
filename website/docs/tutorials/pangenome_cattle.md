@@ -115,10 +115,8 @@ the assemblies' paths split and rejoin.
 <Figure caption="Chromosome 23 on ARS-UCD1.2, one axis: RefSeq genes, a curve of how many segments each bubble holds (higher means more variation), and the graph with one node per bubble. The curve peaks over BoLA." src="/img/pangenome/bovine_whole_chromosome.png" />
 
 The curve peaks over BoLA, the cattle major histocompatibility complex (immune
-genes that vary a lot between breeds). The heat shock gene _HSPA1A_, the subject
-of the next section, lies inside it. The portal's **Loci** table ranks the
-genome's most variable stretches this way; see
-[Ranking the graph's bubbles](/docs/tutorials/pangenome_mouse#finding-the-loci).
+genes that vary a lot between breeds), which contains the heat shock gene
+_HSPA1A_, the subject of the next section.
 
 ## HSPA1A in the graph and the callset
 
@@ -152,11 +150,10 @@ ANG	Angus	taurine
 BIS	Bison	bison
 ```
 
-The track config uses the other columns, a breed and a lineage per code:
+The track config uses the other columns, a breed and a lineage per code, to
+write the breed beside each row and tint it by lineage. It also sets:
 
-- `rows.labels` writes the breed beside each row
-- `rowColor` tints each row by lineage
-- `rows.domain` lists the cattle breeds above the wild species
+- `rows.domain`, which lists the cattle breeds above the wild species
 - `unit: "haplotype"` draws one row per assembly, each being one haplotype, with
   a second alternate allele in a separate colour
 - `showVariantLane` draws each call once in a lane above the rows, across the
@@ -220,23 +217,17 @@ The track config uses the other columns, a breed and a lineage per code:
 ```
 
 In the chr23 view the portal opened, type `chr23:27,508,000-27,536,000`, and the
-graph track draws the segments around _HSPA1A_. Turn on the callset and the
-allele inventory in the track selector. An insertion has no reference span to
-draw along, and the portal opens the graph force-directed, which draws it by its
-shape. Open **Settings** in the graph track's menu and set **Bubble spread** to
-**Compress lengths**.
+graph track draws the segments around _HSPA1A_. Then:
 
-The figure shows all three tracks under the RefSeq genes.
+- Turn on the callset and the allele inventory in the track selector.
+- Open **Settings** in the graph track's menu and set **Bubble spread** to
+  **Compress lengths**. An insertion has no reference span to draw along, and
+  the portal opens the graph force-directed, which draws it by its shape.
 
 <Figure caption="HSPA1A on ARS-UCD1.2: RefSeq genes, the deconstructed callset with one row per assembly, the allele inventory, and the graph track. The variant lane over the rows marks the insertion beside HSPA1A. Every row but the yak has the insertion, which the inventory lists once, and the graph draws it as the charcoal loop off the backbone at HSPA1A." src="/img/pangenome/bovine_bola.png" />
 
 The yak row has the reference allele. Leonard et al. built no yak assembly, so
 their result does not cover it.
-
-Leonard et al. published the bovine graph with a path line per assembly, and
-`vg deconstruct` reads those paths. A graph straight out of `minigraph` has no
-path lines and so no callset to deconstruct; [](/docs/tutorials/pangenome_mouse)
-starts from such a graph.
 
 ## Published variants in the callset
 
@@ -307,10 +298,10 @@ deletion in gaur that removes it. Open `chr5:98,575,000-98,615,000`.
 
 <Figure caption="TAS2R46 on ARS-UCD1.2: RefSeq genes, the callset and the graph track. The gaur row has the deletion, which the graph draws as the dashed arc over TAS2R46, and four cattle rows have a different allele across the same span." src="/img/pangenome/bovine_tas2r46.png" />
 
-The four cattle rows, Angus, Piedmontese, Brahman and Nellore, hold an allele
-slightly longer than the reference, and the insertion boxed in each row, between
-TAS2R46 and the next gene, is most of the difference. Two taurine and two
-indicine breeds share that allele, and only the gaur's deletes the span.
+Angus, Piedmontese, Brahman and Nellore, two taurine and two indicine breeds,
+share that allele, and only the gaur's deletes the span. The insertion boxed in
+each of the four rows, between _TAS2R46_ and the next gene, is most of the
+difference.
 
 ## Building the bovine graph files
 
@@ -328,8 +319,6 @@ runs:
   rank).
 - **Deconstruct the callset**, with the `vg deconstruct` call above.
 
-The whole build takes about half an hour after the download.
-
 The script stops if the reference path does not reproduce bosTau9's chromosome
 lengths, and a
 [README.txt](https://jbrowse.org/demos/bovine_pangenome/README.txt) beside the
@@ -337,9 +326,8 @@ hosted files records the source and every modification.
 
 Leonard et al. also built pggb and Minigraph-Cactus graphs of the same twelve
 assemblies, base-level GFAs with path lines and no rGFA tags.
-`build_pangenome_graph.sh` reads their paths and writes an `SM:Z:` tag per
-segment listing the assemblies that pass through it, which the graph track
-shows.
+`build_pangenome_graph.sh` writes an `SM:Z:` tag per segment listing the
+assemblies that pass through it.
 
 ## See also
 

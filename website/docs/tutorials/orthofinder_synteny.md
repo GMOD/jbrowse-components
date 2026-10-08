@@ -161,9 +161,8 @@ One track backs each pair of adjacent rows in the stack:
 }
 ```
 
-`blockAssemblies` and `bedLocations` follow the table columns, and the track
-draws every genome they name. A mismatch against the column order the conversion
-printed reports a track error naming both lists.
+A mismatch between `blockAssemblies` and the column order the conversion printed
+reports a track error naming both lists.
 
 ### Assemblies from a chrom.sizes
 
@@ -203,11 +202,13 @@ assembly's refNames:
 **Add → Linear synteny view**, pick `wheat_orthogroups` and add the six genomes
 in the order tauschii, wheat, durum, emmer, urartu, timopheevii; the
 [all-vs-all tutorial](/docs/tutorials/allvsall_synteny#from-the-ui) walks the
-dialog. **Show all regions - same bp per pixel** in the view menu (`sameScale`
-in a session spec) puts the rows on one bp/px, so row length on screen matches
-genome size. **Rows → Re-order chromosomes** sorts each row's chromosomes
-against its neighbour so the links run along a diagonal (`autoDiagonalize` in a
-session spec).
+dialog. Two view-menu items shape the stack, and the session below sets both:
+
+- **Show all regions - same bp per pixel** (`sameScale` in a session spec) puts
+  the rows on one bp/px, so row length on screen matches genome size.
+- **Rows → Re-order chromosomes** (`autoDiagonalize` in a session spec) sorts
+  each row's chromosomes against its neighbour so the links run along a
+  diagonal.
 
 The wheat stack as a session over the hosted wheat config. It is the page's
 heaviest stack, so the bands take a while to draw:
@@ -244,9 +245,6 @@ heaviest stack, so the bands take a while to draw:
 }
 ```
 
-For your own set, name your assemblies top to bottom in `views` and your
-orthogroups track once per band in `tracks`.
-
 <Figure caption="Six wheat-lineage genomes stacked on OrthoFinder orthogroups, in evolutionary order. All six rows are on one genomic scale, so row length matches genome size: the two diploid donors against the hexaploid they built, with the tetraploids between." src="/img/orthofinder_synteny/wheat.png" />
 
 ### Coloring wheat 4A by its tauschii chromosomes
@@ -278,16 +276,16 @@ Open human at `2:176,090,000-176,290,000`, the _HOXD_ cluster of body-axis
 patterning genes, with the human gene track and the orthogroups track on the
 [multi-way synteny display](/docs/tutorials/multiway_synteny_grape_peach_cacao#each-genome-in-its-own-coordinates).
 A lane (one horizontal strip per genome) for each of chicken, frog, gar and
-zebrafish draws under it, and solid ribbon chains stop at the cluster.
+zebrafish draws under it.
 
 <Figure caption="The human HOXD cluster over chicken, frog, gar and zebrafish lanes from one OrthoFinder orthogroups track. Every lane draws its genome's genes across the cluster, but the ribbons there are scattered slivers; the solid chains sit to the right of it, on single-copy genes the orthogroup table could resolve." src="/img/multiway_synteny/vertebrate_hox_lanes.png" />
 
 ## Drosophila: chromosome arms keep their genes while gene order changes {#drosophila}
 
-The `drosophila` set is _D. melanogaster_, close relatives _D. simulans_ and _D.
-yakuba_, and the distant _D. pseudoobscura_ and _D. virilis_. Across these flies
-the chromosome arms (Muller elements) keep their gene content, while inversions
-reorder the genes inside each arm.
+The `drosophila` set stacks _D. melanogaster_ with close relatives _D. simulans_
+and _D. yakuba_ and the distant _D. pseudoobscura_ and _D. virilis_. Across
+these flies the chromosome arms (Muller elements) keep their gene content, while
+inversions reorder the genes inside each arm.
 
 In the `drosophila` config, stack the flies as simulans, melanogaster, yakuba,
 melanogaster, pseudoobscura, melanogaster, virilis, so every band sets one fly
@@ -315,14 +313,10 @@ regions - same bp per pixel**, so row length matches genome size.
 
 ## Grasses: the maize whole-genome duplication {#grasses}
 
-The `grasses` set is rice, sorghum, maize, brachypodium and foxtail millet. Open
-the `grasses` config and stack them as for [wheat](#stacking-the-wheat-genomes),
-with `grasses_orthogroups` in each band.
+Open the `grasses` config and stack the five grasses as for
+[wheat](#stacking-the-wheat-genomes), with `grasses_orthogroups` in each band.
 
 <Figure caption="Five grass genomes stacked on OrthoFinder orthogroups: rice, sorghum, maize, brachypodium, foxtail millet. The maize whole-genome duplication shows as more ribbons per gene in the two maize bands than in the other pairs." src="/img/orthofinder_synteny/grasses.png" />
-
-The `--pick` table [above](#what-to-do-with-a-duplicated-gene) sets how many
-ribbons a duplicated gene draws.
 
 ### A rice window against four grasses
 
@@ -360,8 +354,6 @@ under the rice gene track:
   }
 }
 ```
-
-A lane follows one chromosome, so the maize lane shows one of the two copies.
 
 <Figure caption="A rice window over sorghum, brachypodium, setaria and maize lanes from one OrthoFinder orthogroups track, each lane drawing that grass's gene models. The window is syntenic in all four, and the maize lane shows whichever of the two maize copies places more of the window." src="/img/multiway_synteny/grasses_rice_lanes.png" />
 
@@ -422,9 +414,8 @@ Two cuts are environment variables:
 MAXSEQ=60 MAXCOPIES=6 bash build_orthofinder_synteny.sh wheat
 ```
 
-Three sets need the NCBI datasets CLI to name chromosomes their GFF3 gives as
-INSDC accessions, each from its
-[sequence report](/docs/config/ncbisequencereportaliasadapter).
+The NCBI `datasets` CLI names chromosomes that a GFF3 gives as INSDC accessions,
+each from its [sequence report](/docs/config/ncbisequencereportaliasadapter).
 
 ## Your own genomes
 
@@ -449,10 +440,10 @@ bash build_orthofinder_synteny.sh my_genomes.tsv
 npx --yes serve orthofinder_my_genomes_build/jbrowse2  # then open the printed URL
 ```
 
-Column 1 names the assembly; the file columns take a local path or URL, and two
-genomes make a valid manifest. Column 4 is optional: an INSDC accession fetches
-NCBI's sequence report for chromosome names, or names a two-column alias table
-you supply.
+- Column 1 names the assembly, and columns 2 and 3 take a local path or URL.
+- Column 4 is optional. An INSDC accession fetches NCBI's sequence report for
+  chromosome names, and a file name supplies a two-column alias table.
+- Two genomes make a valid manifest.
 
 ## See also
 

@@ -53,22 +53,17 @@ methylation: a C→T change means unmethylated, and a retained C means methylate
 JBrowse makes that comparison per read as it draws.
 
 Plants methylate in three sequence contexts: CpG, CHG, and CHH (H is A, C, or
-T). JBrowse colors the reads by one context at a time, and the track menu
-switches between them, so one pileup shows each of the three in turn.
+T). JBrowse colors the reads by one context at a time.
 
 ## Producing the BAM
 
-The [reproduce script](#reproduce-it-end-to-end) runs the pipeline from the
-TAIR10 reference and one wild-type Col-0 WGBS run
-([`DRR029742`](https://www.ebi.ac.uk/ena/browser/view/DRR029742), paired-end 150
-bp) through Trim Galore to a sorted BAM.
-
-The aligner is [bwameth](https://github.com/brentp/bwa-meth), which C→T converts
-both reads and reference in silico and runs `bwa mem`. It writes an ordinary BAM
-with the original read sequences, so the C→T changes are still in the reads for
-JBrowse to find. Bismark BAMs work the same way.
-
-Trimming and alignment, on any pair of WGBS or EM-seq FASTQs:
+The [reproduce script](#reproduce-it-end-to-end) trims the reads of
+[`DRR029742`](https://www.ebi.ac.uk/ena/browser/view/DRR029742) with Trim Galore
+and aligns them with [bwameth](https://github.com/brentp/bwa-meth), which C→T
+converts reads and reference in silico and runs `bwa mem`. The BAM keeps the
+original read sequences, so the C→T changes are still there for JBrowse to find;
+Bismark BAMs work the same way. Trimming and alignment, on any pair of WGBS or
+EM-seq FASTQs:
 
 <!-- from: scripts/build_arabidopsis_wgbs.sh -->
 
@@ -82,8 +77,8 @@ bwameth.py --reference tair10.fa -t 8 R1_val_1.fq.gz R2_val_2.fq.gz \
 samtools index arabidopsis_wgbs.bam
 ```
 
-`bwameth.py index` writes a C→T converted copy of the reference next to the
-original, so the reference directory has to be writable.
+`bwameth.py index` writes the converted reference beside the original, so that
+directory has to be writable.
 
 ### Checking the bisulfite conversion rate
 
@@ -171,10 +166,9 @@ loads its modkit aggregate the same way.
 ## Loading the TAIR10 hub assembly and the WGBS BAM
 
 TAIR10 is a genome hub on [genomes.jbrowse.org](https://genomes.jbrowse.org),
-and a hub's `config.json` holds a whole JBrowse assembly: the 2bit sequence, an
-alias table, and the NCBI RefSeq genes. The view loads its assembly and gene
-track from there, and the BAM and the optional bigWigs from the pipeline go in
-beside them:
+whose `config.json` holds the 2bit sequence, an alias table and the NCBI RefSeq
+genes. The view loads its assembly and gene track from there, and the BAM and
+the optional bigWigs go in beside them:
 
 ```bash
 # a GenArk hub's path is its accession cut into threes
@@ -183,8 +177,12 @@ curl -fO https://jbrowse.org/hubs/genark/GCF/000/001/735/GCF_000001735.4/config.
 
 The [reproduce script](#reproduce-it-end-to-end) keeps the hub's assembly entry
 as written, adding `tair10` as an alias so a session can still name it that way.
-The excerpt below leaves out the entry's UCSC `metadata` block; the downloaded
-`config.json` has it:
+
+<details>
+<summary>The hub's assembly entry</summary>
+
+The excerpt leaves out the entry's UCSC `metadata` block; the downloaded
+`config.json` has it.
 
 ```json
 {
@@ -210,6 +208,8 @@ The excerpt below leaves out the entry's UCSC `metadata` block; the downloaded
   "geneticCodes": { "NC_000932.1": 11 }
 }
 ```
+
+</details>
 
 The 2bit is the same TAIR10.1 sequence the reads were aligned to, and JBrowse
 reads each cytosine's context off it. The alias table maps `NC_003070.9`, `1`,
@@ -246,22 +246,23 @@ takes `CG`, `CHG`, `CHH` or `all`.
 
 ## Coloring the reads by cytosine context
 
-In the alignments track menu, pick **Color by... → Bisulfite / EM-seq**, then a
-cytosine context: **CpG**, **CHG**, **CHH**, or **All cytosines**. Methylated
-cytosines paint red. Once a context is set, the same submenu has **Show
-unmethylated (blue)**, which paints converted sites blue to separate an
-unmethylated cytosine from a position with no cytosine. The figure and clip
-further down leave it off.
+**Color by... → Bisulfite / EM-seq** in the alignments track menu colors the
+reads by cytosine context. The submenu offers:
+
+- **CpG**, **CHG**, **CHH** or **All cytosines**: methylated cytosines paint red
+- **Show unmethylated (blue)**: once a context is set, converted sites paint
+  blue, separating an unmethylated cytosine from a position with no cytosine.
+  The figure and clip further down leave it off
 
 ## Gene body methylation and transposon silencing
 
 Plants run two unrelated methylation programs, and the three contexts
 distinguish them:
 
-| Program                         | CpG | CHG | CHH | Effect on the locus                                                                                                   |
-| ------------------------------- | --- | --- | --- | --------------------------------------------------------------------------------------------------------------------- |
-| Gene body methylation (gbM)     | yes | no  | no  | None obvious, the gene stays transcribed. Maintained by MET1, depleted at both ends of the gene                       |
-| Transposon and repeat silencing | yes | yes | yes | Heterochromatin, transcriptionally off. CMT3 maintains CHG; RNA-directed DNA methylation (RdDM) and CMT2 maintain CHH |
+| Program                         | CpG | CHG | CHH | Effect on the locus                                                  |
+| ------------------------------- | --- | --- | --- | -------------------------------------------------------------------- |
+| Gene body methylation (gbM)     | yes | no  | no  | None obvious, the gene stays transcribed. Depleted at both gene ends |
+| Transposon and repeat silencing | yes | yes | yes | Heterochromatin, transcriptionally off                               |
 
 Red in the CpG context alone is gene body methylation, and red in all three
 contexts is silencing.
@@ -272,9 +273,8 @@ right. The [reproduce script](#reproduce-it-end-to-end) prints the fraction per
 context for both regions.
 
 To identify the element on the right, add the RepeatMasker track from the TAIR10
-genome hub. It labels the element `META1_LTR#LTR/Copia`, an LTR retrotransposon
-(`AT1TE14315` in the TAIR10 transposable-element annotation). No RefSeq
-transcript overlaps it:
+genome hub. It labels the element `META1_LTR#LTR/Copia`, an LTR retrotransposon.
+No RefSeq transcript overlaps it:
 
 ```json addtrack
 {
@@ -319,7 +319,16 @@ copies change the `trackId`, the name and `cytosineContext`:
 ## Reproduce it end to end
 
 The whole pipeline is wrapped in one script,
-[`build_arabidopsis_wgbs.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_arabidopsis_wgbs.sh):
+[`build_arabidopsis_wgbs.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_arabidopsis_wgbs.sh).
+It:
+
+1. downloads the TAIR10 reference and the DRR029742 WGBS run, then trims and
+   aligns them with bwameth
+2. downloads JBrowse and writes a `config.json` with the hub's TAIR10 assembly
+   and RefSeq genes and the pileup pre-colored Bisulfite / CpG, opening on the
+   window above
+3. with MethylDackel on `PATH`, prints the conversion rate and the per-context
+   fractions (the aggregate bigWig track is left out either way)
 
 ```bash
 curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/build_arabidopsis_wgbs.sh
@@ -327,18 +336,9 @@ bash build_arabidopsis_wgbs.sh          # builds ./arabidopsis_wgbs_build/jbrows
 npx --yes serve arabidopsis_wgbs_build/jbrowse2 # then open the printed URL
 ```
 
-The script downloads the TAIR10 reference and the DRR029742 WGBS run, trims and
-aligns them with bwameth, downloads JBrowse, and writes a `config.json` with the
-hub's TAIR10 assembly and RefSeq genes and the pileup pre-colored Bisulfite /
-CpG, opening on the window above. With MethylDackel on `PATH` it also prints the
-conversion rate and the per-context fractions; the aggregate bigWig track is
-left out either way.
-
 On Debian/Ubuntu, `apt install wget curl samtools` covers several
-[prerequisites](#prerequisites). bwameth, Trim Galore and the NCBI `datasets`
-CLI install from the pages linked there, and `node` from
-[nodejs.org](https://nodejs.org/). The alignment step downloads a full WGBS run,
-so allow time and disk.
+[prerequisites](#prerequisites); the rest install from the pages linked there.
+The alignment step downloads a full WGBS run, so allow time and disk.
 
 ## See also
 

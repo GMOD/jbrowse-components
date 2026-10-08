@@ -54,16 +54,19 @@ so there is nothing to download by hand.
 ## What dN/dS says
 
 A coding substitution is synonymous (the codon changes, the amino acid does not)
-or non-synonymous. Selection acts weakly on synonymous changes, so their rate dS
-approximates the mutation rate. Selection acts on non-synonymous changes, so
-their rate dN reflects it. A ratio below 1 indicates purifying selection, where
-most genes sit, and a ratio above 1 needs positive selection to explain.
+or non-synonymous.
+
+- **dS** is the synonymous rate. Selection acts weakly on synonymous changes, so
+  dS approximates the mutation rate.
+- **dN** is the non-synonymous rate, which reflects the selection acting on
+  those changes.
+- **dN/dS below 1** indicates purifying selection, where most genes sit. **Above
+  1** needs positive selection to explain.
 
 ## Producing the human-rhesus ortholog table and its rates
 
 dS has to be large enough to estimate and small enough not to saturate. Rhesus
-macaque sits in that window against human; chimpanzee leaves a denominator near
-zero on most genes.
+macaque sits in that window against human.[^chimp]
 
 ### Calling human-rhesus orthologs with jcvi
 
@@ -93,9 +96,9 @@ Two input mistakes leave jcvi with no orthologs:
 ### Measuring dN and dS on each pair {#dn-and-ds}
 
 `pairs.tsv` is the two gene columns of `human.rhesus.anchors`. The script skips
-`human.rhesus.lifted.anchors`: liftover recruits extra pairs near an established
-syntenic block, and their median dS is several times that of the chained ones,
-which marks them as paralogs.
+`human.rhesus.lifted.anchors`, which recruits extra pairs near an established
+syntenic block. Their median dS is several times that of the chained ones, which
+marks them as paralogs.
 
 ```bash
 curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/kaks_from_pairs.py
@@ -162,8 +165,10 @@ Add the rhesus track the same way, with `rhesus_genes` under `rhesus`.
 ## Loading the ortholog table as a synteny track
 
 `primate.blocks` lists each pair's two gene ids, then dN, dS, the synonymous
-substitution count and the Fisher p. That is the `.blocks` shape
-[`MCScanBlocksAdapter`](/docs/config_guides/synteny_track) reads:
+substitution count and the Fisher p, the `.blocks` shape
+[`MCScanBlocksAdapter`](/docs/config_guides/synteny_track) reads.
+`attributeColumns` names the columns after the two gene columns, and the detail
+panel lists each as a feature attribute:
 
 ```json addtrack
 {
@@ -181,15 +186,16 @@ substitution count and the Fisher p. That is the `.blocks` shape
 }
 ```
 
-`attributeColumns` names the columns after the two gene columns, and the detail
-panel lists each as a feature attribute. **Color by value → dN/dS** in the
-palette button menu reads `dn` and `ds`, on a ramp with 1 at the middle and 2 at
-the top.
+**Color by value → dN/dS** in the palette button menu reads `dn` and `ds`, on a
+ramp with 1 at the middle and 2 at the top.
 
-Two view settings matter for a view this sparse. `opacity` defaults to 0.25 for
-whole-genome views where ribbons overlap, and 0.95 shows the colour as it is:
-**Opacity** on the sliders button in the view header. `drawCurves` separates
-stacked neighbours: **Curved lines** on the same menu.
+Two view settings matter for a view this sparse:
+
+- **Opacity** on the sliders button in the view header sets `opacity`, which
+  defaults to 0.25 for whole-genome views where ribbons overlap. 0.95 shows the
+  colour as it is.
+- **Curved lines** on the same menu sets `drawCurves`, which separates stacked
+  neighbours.
 
 ## Reading lysozyme (LYZ) against its neighbours by dN/dS
 
@@ -229,20 +235,19 @@ dN/dS. In your own build, pick **Color by value → dN/dS**.
 <Figure caption="Human against rhesus macaque across a stretch of conserved gene order on human chromosome 12, each ribbon one ortholog pair coloured by dN/dS. Lysozyme (LYZ) is the one gene above the ramp's pivot; its neighbour YEATS4 is at the other end." src="/img/selection_pressure/lysozyme.png" />
 
 Gene order is the same in both genomes here, so colour is the only thing that
-varies. Messier and Stewart reported adaptive evolution of primate lysozyme
-in 1997. Foregut-fermenting primates use the enzyme as a digestive protein.
-
-Clicking the orange _LYZ_ ribbon shows its synonymous count and Fisher p in the
-detail panel; the published result rests on codon models across many primate
-lineages. Blue is the low end of the ramp, where the Fisher test does reach
-significance: a conserved gene accumulates measurable synonymous change while
-holding non-synonymous change near zero.
+varies. Click the orange _LYZ_ ribbon for its synonymous count and Fisher p in
+the detail panel. Messier and Stewart reported adaptive evolution of primate
+lysozyme in 1997; the published result rests on codon models across many primate
+lineages.
 
 ## YEATS4, a conserved neighbour, as the control for LYZ
 
 _YEATS4_ begins just past where _LYZ_ ends, so the two share a locus and a
 divergence time and land at opposite ends of the ramp. It is conserved and
-compact, so its dS is low while its synonymous count clears the floor.
+compact, so its dS is low while its synonymous count clears the floor. Blue is
+the low end of the ramp, where the Fisher test does reach significance: a
+conserved gene accumulates measurable synonymous change while holding
+non-synonymous change near zero.
 
 The [script](#reproduce-it-end-to-end) ends by printing how many pairs
 genome-wide exceed 1, and dN/dS and dS for every pair around _LYZ_ on chromosome
@@ -269,8 +274,6 @@ bash build_primate_selection.sh
 npx --yes serve primate_selection_build/jbrowse2  # then open the printed URL
 ```
 
-The script needs the tools under [Prerequisites](#prerequisites) on PATH.
-
 ## See also
 
 - [](/docs/tutorials/homoeolog_synteny)
@@ -286,3 +289,5 @@ The script needs the tools under [Prerequisites](#prerequisites) on PATH.
   _Nature_ 385, 151-154 (1997). https://doi.org/10.1038/385151a0
 - Tang, H. _et al._ jcvi: A versatile toolkit for comparative genomics analysis.
   _iMeta_ 3, e211 (2024). https://doi.org/10.1002/imt2.211
+
+[^chimp]: Chimpanzee leaves a denominator near zero on most genes.

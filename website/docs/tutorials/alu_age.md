@@ -57,13 +57,19 @@ We'll load hg38, the assembly the RepeatMasker coordinates are on.
 ```
 
 The track reads any BED-like file, bgzipped and tabix-indexed, with a `#` header
-line naming the columns; a mark refers to a column by its name in that header.
-The track below lists three marks, and the first draws a `bar` per copy with
-`milliDiv` as the height, below `maxBpPerPx`. A `formula` step writes the first
-four characters of the name into a `lineage` field (AluJ, AluS, AluY: oldest to
-youngest, and AluY is still inserting), and a categorical `domain` fixes the
-legend order and colours. The adapter's `densityAdapter` names a density
-sidecar, built in [Zooming out](#zooming-out).
+line naming the columns; a mark refers to a column by name. The track below
+lists three marks:
+
+- **Per-copy bars** (below `maxBpPerPx`): a `bar` per copy with `milliDiv` as
+  the height. A `formula` step writes the first four characters of the name into
+  `lineage` (AluJ, AluS, AluY: oldest to youngest, and AluY is still inserting),
+  and a categorical `domain` fixes the legend order and colours
+- **Copies per bin** (past `minBpPerPx`): every Alu copy counted per bin, in
+  grey, from the density sidecar
+- **AluY per bin**: the same count behind a `filter` for AluY, in red
+
+The adapter's `densityAdapter` names the sidecar, built in
+[Zooming out](#zooming-out).
 
 ```json addtrack
 {
@@ -148,11 +154,6 @@ values; click it to open the row.
 
 ## Counting Alu copies per bin when zoomed out {#zooming-out}
 
-Past the per-copy bars' `minBpPerPx`, two binned counts replace them: every Alu
-copy in grey, and the AluY copies in red. In the config, each count is a mark
-that bins copies with `{ "type": "bin", "step": "auto" }` and counts them with
-an `aggregate`; the red one adds a `filter` for AluY.
-
 On a whole chromosome the track would exceed its feature budget. The grey mark
 has `"source": "density"`, so past the budget it draws the bins of a density
 sidecar, a bigWig of feature starts per kilobase:
@@ -192,9 +193,8 @@ bgzip -f Alu.young_share.bed
 tabix -f -p bed Alu.young_share.bed.gz
 ```
 
-The track below plots the young share on a symmetric pinned axis, coloured by a
-threshold at 0. **Edit plot...** in the track menu sets the same cut, colours
-and key names on an open track.
+**Edit plot...** in the track menu sets the cut, colours and key names on an
+open track. The config below sets them in the track:
 
 ```json addtrack
 {
@@ -235,9 +235,6 @@ and key names on an open track.
 ```
 
 <Figure src="/img/alu_age/young_share.png" caption="Top, chromosome 1 end to end: Alu copies from the density sidecar above the AluY share per megabase, red above the genome-wide share and blue below. Under the wedge, the same two tracks over a stretch where Alu-sparse megabases meet Alu-dense ones, with copies counted per bin in grey and AluY in red." links="Chromosome 1=alu_age/chromosome,The stretch under the wedge=alu_age/binned" />
-
-Where Alu is sparse the young share runs red, and where it is dense it turns
-blue.
 
 ## Correlating AluY share with Alu density across the genome
 

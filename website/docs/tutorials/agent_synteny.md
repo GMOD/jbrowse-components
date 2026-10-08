@@ -69,8 +69,8 @@ The agent runs this aligner command:
 minimap2 -t 8 -cx asm20 --cs mau.fa.gz sim.fa.gz > sim_vs_mau.paf
 ```
 
-The whole-genome alignment takes several minutes, longer than the two-minute
-timeout on `run_javascript`, so the request above runs it in the background.
+The whole-genome alignment takes several minutes, so the request runs it in the
+background.
 
 Indexing the PAF lets the browser read one region of it without parsing the
 whole file:
@@ -81,12 +81,10 @@ whole file:
 jbrowse make-pif sim_vs_mau.paf
 ```
 
-The config the agent writes merges the two genomes.jbrowse.org configs listed
-above, keeping each gene track and adding the alignment as a synteny track.
-
-Check the order of `assemblyNames` on the track the agent wrote. For your own
-pair, swap `uri` for your `.pif.gz`, which needs its `.tbi` beside it, and load
-both assemblies:
+The agent's config merges the two genomes.jbrowse.org configs listed above,
+keeping each gene track, and adds this alignment as a synteny track. For your
+own pair, swap `uri` for your `.pif.gz` (its `.tbi` beside it), load both
+assemblies, and check the order of `assemblyNames` on the track:
 
 ```json addtrack
 {
@@ -114,8 +112,7 @@ order no chromosome name resolves and the synteny band draws empty.
 Add a dotplot of the same two assemblies underneath.
 ```
 
-Each genome has a few hundred unplaced scaffolds (not assigned to a chromosome),
-which interleave the axes if drawn. Naming the arms gives one diagonal:
+Naming the six chromosome arms gives one diagonal:
 
 ```text
 Restrict both dotplot axes to chr2L, chr2R, chr3L, chr3R, chr4 and chrX.
@@ -179,17 +176,13 @@ X   sim 8,303,553 - 8,752,357  <->  mau 8,530,265 - 8,980,862   (0.45 Mb,  2 blo
 X   sim 21,441,285 - 22,026,996 <->  mau 21,459,277 - 22,872,816 (0.59 Mb, 12 blocks)
 ```
 
-The 2R region is the largest and the least tidy; the two X regions are smaller
-and cleaner.
-
 ## Ask the agent to open the 2R and X regions
 
 ```text
 Close the gene tracks and take the synteny view to the 2R region.
 ```
 
-The agent closes both gene tracks, so the view draws the whole-genome alignment
-alone, and opens the simulans row at `chr2R:1-2,400,000` and the mauritiana row
+The agent opens the simulans row at `chr2R:1-2,400,000` and the mauritiana row
 at `chr2R:500,000-3,800,000`.
 
 <Figure caption="The 2R region, the alignment alone between the two rows. Reverse-strand blocks in blue cross the band, short and many, because the sequence at this end of the arm is repeat-rich." src="/img/agent_synteny/inversion_2r.png" />
@@ -204,10 +197,10 @@ Then ask for the first of the two X regions, `chrX:8,100,000-8,950,000` over
 Three instructions each prevent a failure that raises no error:
 
 - **Start long work in the background, and let it finish before opening
-  anything.** Otherwise a tool call times out and the agent reports a failure
-  that did not happen.
+  anything.** Otherwise a tool call times out, after two minutes for
+  `run_javascript`, and the agent reports a failure that did not happen.
 - **Restrict the dotplot axes to the arms.** Otherwise a few hundred unplaced
-  scaffolds interleave both axes.
+  scaffolds (not assigned to a chromosome) interleave both axes.
 - **Answer counted from the alignment file.** Otherwise the agent describes the
   dotplot.
 

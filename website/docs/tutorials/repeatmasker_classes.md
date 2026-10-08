@@ -13,10 +13,11 @@ copies fill it end to end while LINE copies come in clusters. A RepeatMasker
 track draws every class in one packed lane of colored blocks, where that
 difference is hard to read. The same file opened as a
 [multi-row feature display](/docs/user_guides/multirow_feature_track) draws one
-labelled lane per class. JBrowse reads the classes from the file, so no data
-preparation is needed. Every genome at
-[genomes.jbrowse.org](https://genomes.jbrowse.org), and any other UCSC/GenArk
-hub config, has a RepeatMasker track to try it on.
+labelled lane per class.
+
+JBrowse reads the classes from the file, so no data preparation is needed. Every
+genome at [genomes.jbrowse.org](https://genomes.jbrowse.org), and any other
+UCSC/GenArk hub config, has a RepeatMasker track to try it on.
 
 ## Prerequisites
 
@@ -78,9 +79,6 @@ features have, `repFamily` among them. <!-- menu-path-ok -->
 <Figure src="/img/multirow/display_types_menu.png" caption="Top: the track menu's Display types submenu on the UCSC RepeatMasker track; any feature track offers the multi-row display beside its default one. Bottom: the same window after picking it, one lane per repeat class." />
 
 <Video src="/media/repeats/painting_display_switch.mp4" caption="The RepeatMasker track from one packed lane to a labelled lane per class: the track menu's Display types, and the multi-row painting partitioning on the repeat class column in the file." />
-
-The packed form and the lane form are the same track and the same fetch, shown
-here over one window:
 
 <Figure caption="Top: UCSC RepeatMasker over a 17q21 window, colored by repClass, every class in one packed lane. Bottom: the same track and window with one lane per repClass. SINE fills the window and LINE comes in clusters. The empty LTR? lane comes from a repeat just past the window's right edge, and LTR? and Unknown take palette colors because the color's domain does not list them." src="/img/cookbook_color_by_type_two_ways.png"/>
 
@@ -144,12 +142,15 @@ tabix https://jbrowse.org/ucsc/hg38/rmsk.bed.gz chr17:45,700,000-45,750,000 |
   sort -k3 -nr
 ```
 
-The printed classes are the lanes with features on screen, and their bp totals
-are the area drawn in each lane. JBrowse fetches past the view's edges and
-builds lanes from everything it fetched, so an empty lane can come from a repeat
-just outside the window: the figures' empty `LTR?` lane is `MamRep605`, past the
-right edge. A printed class with no lane, or a lane with features and no printed
-line, means the view is showing a different file.
+The printed output lines up with the lanes:
+
+- Each printed class is a lane with features on screen, and its bp total is the
+  area drawn in that lane.
+- JBrowse fetches past the view's edges and builds lanes from everything it
+  fetched, so an empty lane can come from a repeat just outside the window: the
+  figures' empty `LTR?` lane is `MamRep605`, past the right edge.
+- A printed class with no lane, or a lane with features and no printed line,
+  means the view is showing a different file.
 
 The `Unknown` lane is the control. Neither the `rowColor` above nor the
 [cookbook's color lookup](/docs/cookbook#colors) names it, and it appears
@@ -207,9 +208,7 @@ npx --yes serve repeatmasker_build/jbrowse2               # then open the printe
 ```
 
 `genome.fa` is the FASTA RepeatMasker was run against and `repeats.out` is its
-`.out`; either may be gzipped. Tools are under [Prerequisites](#prerequisites).
-The script runs the conversion above, `samtools faidx` over the FASTA for the
-assembly, and `jbrowse add-track` with the display already set.
+`.out`; either may be gzipped.
 
 On a genome UCSC also masks, compare the output with the UCSC conversion:
 
@@ -220,10 +219,8 @@ diff <(gzip -dc repeatmasker_build/rmsk.bed.gz | grep -v '^#' | cut -f1-7 | sort
 ```
 
 No output means every interval, name, strand, family and class agrees with the
-UCSC conversion of the same `.out`. A disagreement usually comes from one of two
-quirks of the `.out` format, both handled by the awk above: its coordinates are
-1-based and inclusive where BED coordinates are 0-based and half-open, and its
-strand column spells the minus strand `C`.
+UCSC conversion of the same `.out`. A disagreement usually traces to the `.out`
+quirks the awk comments name.
 
 ## See also
 

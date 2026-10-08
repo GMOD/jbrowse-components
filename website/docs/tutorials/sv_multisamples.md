@@ -54,12 +54,6 @@ Nothing to download: the track configs below read these files by URL.
 
 ## The RHD deletion in the 1000 Genomes SV callset
 
-The [1000 Genomes Project](https://www.internationalgenome.org/) sequenced 2,504
-individuals across 26 populations. The 2022 high-coverage re-analysis
-([Byrska-Bishop et al., 2022](https://doi.org/10.1016/j.cell.2022.08.004))
-called deletions, insertions, inversions and translocations with per-sample
-genotypes across all 3,202 individuals.
-
 `HGSV_1821` is a deletion on chr1 spanning the whole of _RHD_, so samples called
 homozygous have no copy of that gene. Deleting _RHD_ is the most common cause of
 the RhD-negative blood type. The call is `PASS` and common enough to fill all
@@ -111,11 +105,22 @@ differ only in the file:
 ```
 
 The copy-number track reads the Zarr store through `jbrowse-plugin-zarr`, which
-is not yet in the plugin store. Load its hosted bundle with a `plugins` entry,
-`{ "name": "Zarr", "url": "https://jbrowse.org/demos/zarr/jbrowse-plugin-zarr.umd.production.min.js" }`;
-the
+is not yet in the plugin store. Add its hosted bundle to the config's `plugins`:
+
+```json
+{
+  "plugins": [
+    {
+      "name": "Zarr",
+      "url": "https://jbrowse.org/demos/zarr/jbrowse-plugin-zarr.umd.production.min.js"
+    }
+  ]
+}
+```
+
+The track below reads the store; the
 [copy-number tutorial](/docs/tutorials/population_cnv#building-a-zarr-store-from-per-sample-bigwigs)
-builds a store from your own BigWigs:
+builds one from your own BigWigs:
 
 ```json addtrack
 {
@@ -159,13 +164,17 @@ track menu clusters rows by genotypes across the whole window, with a
 dendrogram.
 
 In the matrix, dark blue is no copy of _RHD_, light blue one, grey two, and the
-olive stripe is a separate nested call.
+olive stripe is a separate nested call. The olive stripe is `HGSV_1823`, a small
+copy-number record inside the deletion. The callset gives most of the cohort a
+no-call there (no genotype reported), but QuicK-mer2 measures copy number per
+bin from the reads, so the column that is an olive no-call in the matrix is a
+red gain in the copy-number track.
 
 A matrix cell marks that a sample has some call at that column. To see which
 call, load the same VCF again in the ordinary variant display, which draws each
-record on a separate row with its id, class and size. Colouring cells by **SV
-type** also tells the calls apart, as the
-[multi-variant track guide](/docs/user_guides/multivariant_track) shows.
+record on a separate row with its id, class and size, or colour cells by **SV
+type**, as the [multi-variant track guide](/docs/user_guides/multivariant_track)
+shows.
 
 The figure below has three tracks over NCBI RefSeq genes:
 
@@ -179,11 +188,6 @@ The figure below has three tracks over NCBI RefSeq genes:
 <Figure caption="The 1KGP ensemble SV callset over the RHD locus on chr1, with the panel's copy-number calls under it. The deletion draws as a wide block, splitting the cohort into three bands in the matrix and three levels of copy number." src="/img/multisv_rhd.png" />
 
 <Video src="/media/sv/multisample_sort.mp4" caption="A right-click on the deletion sorts the cohort by genotype there, resolving the callset order into three bands: both copies of RHD deleted, one, then neither." />
-
-The olive stripe is `HGSV_1823`, a small copy-number record inside the deletion.
-The callset gives most of the cohort a no-call there (no genotype reported), but
-QuicK-mer2 measures copy number per bin from the reads, so the column that is an
-olive no-call in the matrix is a red gain in the copy-number track.
 
 ## Checking the RHD genotypes against read coverage in three samples
 
@@ -200,8 +204,7 @@ comparable:
 
 Coverage over the deleted span in the top row sits just above zero. The
 neighbouring gene _RHCE_, just right of _RHD_, is nearly identical, so some
-_RHCE_ reads land in the empty _RHD_ footprint, and the aligner records its
-uncertainty in their mapping quality.
+_RHCE_ reads land in the empty _RHD_ footprint.
 
 ## Reading a complex call in HG02768 from read-pair orientation
 
@@ -225,8 +228,8 @@ orientation class, each with a separate coverage curve and arcs.
 
 The call also lists a duplicated copy in `INFO.CPX_INTERVALS`, which no band
 shows: a copy inserted beside its origin leaves pair orientation unchanged, so
-that half of the call rests on coverage. At this size coverage noise makes bumps
-as wide as the duplication, so its step cannot be picked out.
+that half of the call rests on coverage, where noise at this size makes bumps as
+wide as the duplication.
 
 ## See also
 

@@ -53,28 +53,16 @@ so there is nothing to download by hand.
 
 ## Producing an all-vs-all PAF
 
-The mapping step of [PGGB](https://github.com/pangenome/pggb), the PanGenome
-Graph Builder, writes an all-vs-all PAF, and so does
 [minimap2](https://github.com/lh3/minimap2) aligning
 [PanSN](https://github.com/pangenome/PanSN-spec)-named genomes against
-themselves. PanSN names every sequence `sample#haplotype#contig`, e.g.
-`K12#1#chr`.
+themselves writes an all-vs-all PAF, as does the mapping step of
+[PGGB](https://github.com/pangenome/pggb), the PanGenome Graph Builder. PanSN
+names every sequence `sample#haplotype#contig`, e.g. `K12#1#chr`.
 
-The [script](#reproduce-it-end-to-end) downloads five RefSeq assemblies with the
-NCBI `datasets` CLI, annotation included, and reduces each to one `chr` record
-by dropping the plasmids and renaming the chromosome:
-
-| Strain | RefSeq accession |
-| ------ | ---------------- |
-| K12    | GCF_000005845.2  |
-| Sakai  | GCF_000008865.2  |
-| CFT073 | GCF_000007445.1  |
-| NCTC86 | GCF_002007705.1  |
-| IAI39  | GCF_000026345.1  |
-
-The five strain FASTAs become the JBrowse assemblies as-is. The PanSN names
-exist only in the concatenated copy minimap2 aligns; the haplotype is `1`
-throughout:
+The [script](#reproduce-it-end-to-end) reduces each of the five assemblies to
+one `chr` record. The five strain FASTAs become the JBrowse assemblies as-is;
+the PanSN names exist only in the concatenated copy minimap2 aligns, with the
+haplotype `1` throughout:
 
 <!-- from: scripts/build_ecoli_pangenome_synteny.sh -->
 
@@ -136,13 +124,8 @@ the records whose PanSN prefixes match the pair of rows each band joins:
 ```
 
 `MultiGenomePAFAdapter` has to be named; from a `.paf` extension JBrowse guesses
-the pairwise `PAFAdapter`, which reads only two assembly names.
-
-If an assembly name differs from its PanSN sample prefix, map it with
-`assemblyNameToPanSN`, e.g. `{ "Ecoli_K12": "K12" }`. A haplotype-resolved
-pangenome can map each haplotype to a separate assembly with a
-`sample#haplotype` prefix; see
-[PanSN depth](/docs/config_guides/synteny_track#pansn-depth-sample-or-haplotype).
+the pairwise `PAFAdapter`, which reads only two assembly names. An assembly name
+that differs from its PanSN sample prefix needs a map.[^pansn]
 
 ## Large files: index with make-pif
 
@@ -179,11 +162,8 @@ Only the `adapter` block differs from the un-indexed version:
 }
 ```
 
-`make-pif` also writes a coarse copy of the alignments for zoomed-out views.
-`--coarse` sets how many bp a coarse row may stray from the real alignment; with
-a larger value, raise
-[`coarseBpPerPxThreshold`](/docs/config/multigenomeindexedpafadapter#slot-coarsebpperpxthreshold)
-on the adapter too. `--csi` swaps the TBI index for sequences over ~512 Mb.
+`make-pif` also writes a coarse copy of the alignments for zoomed-out
+views.[^coarse]
 
 ## Stacking the five strains {#stacking-the-genomes}
 
@@ -200,8 +180,7 @@ connector button between each pair to pick its track.
 
 ### Stacking the strains in a defaultSession
 
-A `defaultSession` holding a `LinearSyntenyView` opens the stack on load. Five
-rows means four bands, so `tracks` has four entries:
+A `defaultSession` holding a `LinearSyntenyView` opens the stack on load:
 
 ```json session config=https://jbrowse.org/demos/ecoli_pangenome/config.json
 {
@@ -226,26 +205,20 @@ rows means four bands, so `tracks` has four entries:
 }
 ```
 
-- `tracks` is one entry per band: `tracks[0]` connects rows 0-1, `tracks[1]`
-  rows 1-2, and so on
-- `minAlignmentLength` hides the many short alignments minimap2 writes, leaving
-  the shared backbone
+- `tracks` is one entry per band, so five rows take four: `tracks[0]` connects
+  rows 0-1, `tracks[1]` rows 1-2, and so on
 - `collapseEmptyRows` gives each trackless row a bare scale bar
 
 Row order is a free choice with an all-vs-all PAF, since the file aligns every
-pair. The
-[ortholog-tables tutorial](/docs/tutorials/multiway_synteny_grape_peach_cacao)
-walks through the rest of the `defaultSession` structure.
+pair.
 
 <Figure caption="Five E. coli strains stacked from one minimap2 all-vs-all PAF, short alignments hidden with minAlignmentLength. The continuous ribbons are the backbone shared by all five; the bottom band crosses because IAI39 has inversions against the others." src="/img/multiway_synteny/ecoli_pangenome.png" />
 
-The gaps between ribbons mark where the strains differ. Sakai's gaps hold its
-Shiga-toxin prophage genes, and CFT073's hold its pathogenicity islands.
+The gaps between ribbons mark where the strains differ.
 
 ## Adding gene tracks to see what a gap holds
 
-The [script](#reproduce-it-end-to-end) gives each GFF the same two adjustments
-as its FASTA: it renames the seqid to `chr` and drops plasmid features.
+Each strain's GFF becomes a gene track attached to that strain's assembly:
 
 <!-- from: scripts/build_ecoli_pangenome_synteny.sh -->
 
@@ -281,20 +254,20 @@ Three track-menu items set the pileup up for reading strain by strain:
 3. **Show... → Show coverage** adds a histogram of how many other strains cover
    each base.
 
-The figure below adds a track of the pangenome graph's segments, built with
-minigraph in the [E. coli pangenome tutorial](/docs/tutorials/pangenome_ecoli),
-above the lanes, and the same window as a graph view under the linear view. The
-shaded band is K-12's phenylacetate (paa) operon, where three strains stop at
-its left edge and NCTC86 runs through.
+The figure below shows K-12's phenylacetate (paa) operon, where three strains
+stop at the shaded edge and NCTC86 runs through, with a track of the pangenome
+graph's segments, built with minigraph in the
+[E. coli pangenome tutorial](/docs/tutorials/pangenome_ecoli), above the lanes.
 
 <Figure caption="Above, one track with one lane per strain: K-12 against every other sample in the file, grouped by mate assembly. Below, the same window as a graph, where the short arm beside the ringed node is the detour the other three take." src="/img/multiway_synteny/ecoli_one_vs_all.png" />
 
 At whole-chromosome zoom, the same lanes also fit on the K-12 row of the
-five-strain stack. List IAI39 second in the session's `views`, add `ecoli_ava`
-to the K-12 row from that row's track selector, and pick **Strand** from the
-palette button, so an inversion is blue in both halves. A pangenome with many
-samples needs the indexed file from [make-pif](#large-files-index-with-make-pif)
-first.
+five-strain stack:
+
+- List IAI39 second in the session's `views`.
+- Add `ecoli_ava` to the K-12 row from that row's track selector.
+- Pick **Strand** from the palette button, so an inversion is blue in both
+  halves.
 
 <Figure caption="The one-vs-all lanes on the K-12 row of the five-strain stack, both drawn from the same PAF and colored by strand. White gaps are where a strain has no alignment to the K-12 backbone. IAI39 sits directly below K-12, so its blue stretches and the blue crossings under them are the same inversions." src="/img/multiway_synteny/ecoli_one_vs_all_whole_genome.png" />
 
@@ -304,13 +277,9 @@ The `ecoli_ava` track can also draw each alignment as a line at its identity,
 one row per strain, the percent identity plot
 [PipMaker](https://doi.org/10.1101/gr.10.4.577) drew for a pair of genomes. In
 the track menu, **Display types → Marks** draws it with nothing to configure.
-The config below is that plot written out, with one addition:
+The config below is that plot written out, with two details to read:
 
-- `rows` splits the alignments by the strain each one aligns to, which the PAF
-  adapter puts in `mate.assemblyName`
-- a `rule` mark draws a line across each alignment at its `identity`, which
-  comes from minimap2's `de` divergence tag
-- `zero: false` fits the axis to the identities instead of running it down to 0
+- `identity` comes from minimap2's `de` divergence tag
 - `filter` drops K-12's alignments to itself, which otherwise take a row of
   their own
 
@@ -344,25 +313,26 @@ The config below is that plot written out, with one addition:
 
 On the K-12 axis, a strain with no alignment to the backbone is a white gap.
 **Display types → Multi-way synteny display** redraws each lane in the
-coordinates of the strain it shows, with each PAF record as one ribbon. The
+coordinates of the strain it shows, with each PAF record as one ribbon; the
 [ortholog-table tutorial](/docs/tutorials/multiway_synteny_grape_peach_cacao#each-genome-in-its-own-coordinates)
-has a figure of the display, and the
-[E. coli pangenome tutorial](/docs/tutorials/pangenome_ecoli) draws the same gap
-as a graph.
+has a figure of the display.
 
 ### Launching a stacked view at one locus
 
 Drag-select a region on the scale bar and pick **Launch → Linear synteny view**.
-A dialog lists every assembly aligning to that region as a panel, top to bottom,
-with arrows to reorder them and a checkbox to drop one; **Replace current view**
-or **Open in new view** launches the stack. Ribbons draw between neighbouring
-rows only.
+The dialog lists every assembly aligning to that region as a panel, top to
+bottom, with arrows to reorder them and a checkbox to drop one; **Replace
+current view** or **Open in new view** launches the stack. Ribbons draw between
+neighbouring rows only.
 
-Right-clicking a single alignment offers three routes under **Launch**: **Linear
-synteny view with Sakai** (or whichever strain the alignment names) opens that
-one pair, **Linear synteny view, all assemblies here** opens the same
-multi-strain dialog, and **Open Sakai at the matching region** opens a linear
-genome view of Sakai at that region.
+Right-clicking a single alignment offers three routes under **Launch**:
+
+- **Linear synteny view with Sakai** (or whichever strain the alignment names)
+  opens that one pair.
+- **Linear synteny view, all assemblies here** opens the same multi-strain
+  dialog.
+- **Open Sakai at the matching region** opens a linear genome view of Sakai at
+  that region.
 
 <Figure caption="Right-clicking one alignment in the one-vs-all lanes: the pair it describes, every strain aligning here, or a linear view of that strain, in one Launch submenu." src="/img/multiway_synteny/ecoli_alignment_menu.png" />
 
@@ -421,10 +391,6 @@ bash build_ecoli_pangenome_synteny.sh          # builds ./ecoli_pangenome_build/
 npx --yes serve ecoli_pangenome_build/jbrowse2 # then open the printed URL
 ```
 
-For a whole-genome pangenome, swap the `add-track` step for the `make-pif` +
-`MultiGenomeIndexedPAFAdapter` path from
-[Large files](#large-files-index-with-make-pif).
-
 ## See also
 
 - [](/docs/tutorials/pangenome_ecoli)
@@ -439,3 +405,15 @@ For a whole-genome pangenome, swap the `add-track` step for the `make-pif` +
 - [](/docs/developer_guides/pif_format)
 - [](/docs/jbrowse_anywidget)
 - [](/docs/jbrowser)
+
+[^pansn]:
+    `assemblyNameToPanSN` maps such a name, e.g. `{ "Ecoli_K12": "K12" }`. A
+    haplotype-resolved pangenome can map each haplotype to a separate assembly
+    with a `sample#haplotype` prefix; see
+    [PanSN depth](/docs/config_guides/synteny_track#pansn-depth-sample-or-haplotype).
+
+[^coarse]:
+    `--coarse` sets how many bp a coarse row may stray from the real alignment;
+    with a larger value, raise
+    [`coarseBpPerPxThreshold`](/docs/config/multigenomeindexedpafadapter#slot-coarsebpperpxthreshold)
+    on the adapter too. `--csi` swaps the TBI index for sequences over ~512 Mb.
