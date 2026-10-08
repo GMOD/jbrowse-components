@@ -10,14 +10,8 @@ import type {
 } from '@jbrowse/plugin-marks'
 
 /** LocusZoom.js's r² cuts and the palette of the five bins between them. */
-export const LD_DOMAIN = ['0.2', '0.4', '0.6', '0.8']
-export const LD_PALETTE = [
-  '#357ebd',
-  '#46b8da',
-  '#5cb85c',
-  '#eea236',
-  '#d43f3a',
-]
+const LD_DOMAIN = ['0.2', '0.4', '0.6', '0.8']
+const LD_PALETTE = ['#357ebd', '#46b8da', '#5cb85c', '#eea236', '#d43f3a']
 
 /**
  * A partner's colour: its r² to the index SNP in LocusZoom's bins, the key
@@ -61,7 +55,7 @@ const LD_INDEX_SHAPE = {
  * Every point but the index SNP, coloured by its r² to it. A SNP the join
  * left out has no `ld_role`, so the filter keeps it, grey as "No LD data".
  */
-export const LD_PARTNERS_MARK = {
+const LD_PARTNERS_MARK = {
   mark: 'point',
   transform: [LD_PARTNERS_FILTER],
   encoding: { y: 'score', color: LD_COLOR },
@@ -71,7 +65,7 @@ export const LD_PARTNERS_MARK = {
  * The index SNP alone, drawn over the rest as a diamond in its own colour,
  * with its own key row.
  */
-export const LD_INDEX_MARK = {
+const LD_INDEX_MARK = {
   mark: 'point',
   transform: [LD_INDEX_FILTER],
   encoding: {

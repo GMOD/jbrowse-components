@@ -2,7 +2,7 @@ import { waitFor } from '@testing-library/react'
 import { when } from 'mobx'
 
 import { LD_MARKS } from './ldPlot.ts'
-import { manhattanFixture } from './manhattanFixture.ts'
+import { manhattanFixture } from './manhattan.fixture.ts'
 import { createTestEnvironment } from './testEnv.ts'
 
 import type { LdJoin } from '../GWASAdapter/ldJoin.ts'

@@ -100,21 +100,17 @@ const GWASAddTrackWorkflow = observer(function GWASAddTrackWorkflow({
           name="GWAS file (bgzipped BED, e.g. .bed.gz)"
           location={gwasLocation}
           rootModel={rootModel}
-          setLocation={loc => {
-            setGwasLocation(loc)
-          }}
+          setLocation={setGwasLocation}
         />
         <FileSelector
           name={
             gwasIndexRequired
-              ? 'GWAS tabix index (.tbi, required for uploaded files)'
-              : 'GWAS tabix index (.tbi, optional — defaults to <file>.tbi)'
+              ? 'GWAS tabix index (.tbi or .csi, required for uploaded files)'
+              : 'GWAS tabix index (.tbi or .csi, optional — defaults to <file>.tbi)'
           }
           location={gwasIndexLocation}
           rootModel={rootModel}
-          setLocation={loc => {
-            setGwasIndexLocation(loc)
-          }}
+          setLocation={setGwasIndexLocation}
         />
         <ScoreColumnFields
           scoreColumn={scoreColumn}
@@ -134,22 +130,18 @@ const GWASAddTrackWorkflow = observer(function GWASAddTrackWorkflow({
           name="PLINK LD table (.ld or .vcor, bgzipped or not)"
           location={ldLocation}
           rootModel={rootModel}
-          setLocation={loc => {
-            setLdLocation(loc)
-          }}
+          setLocation={setLdLocation}
         />
         {ldIsTabix ? (
           <FileSelector
             name={
               ldIndexRequired
-                ? 'LD tabix index (.tbi, required for uploaded files)'
-                : 'LD tabix index (.tbi, optional — defaults to <file>.tbi)'
+                ? 'LD tabix index (.tbi or .csi, required for uploaded files)'
+                : 'LD tabix index (.tbi or .csi, optional — defaults to <file>.tbi)'
             }
             location={ldIndexLocation}
             rootModel={rootModel}
-            setLocation={loc => {
-              setLdIndexLocation(loc)
-            }}
+            setLocation={setLdIndexLocation}
           />
         ) : null}
       </div>
@@ -187,9 +179,7 @@ const GWASAddTrackWorkflow = observer(function GWASAddTrackWorkflow({
             assembly,
           })
         }
-        onClick={() => {
-          doSubmit()
-        }}
+        onClick={doSubmit}
       >
         Submit
       </Button>

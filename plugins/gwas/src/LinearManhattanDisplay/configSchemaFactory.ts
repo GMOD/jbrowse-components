@@ -7,15 +7,13 @@ import {
 
 import { MANHATTAN_MARK } from './ldPlot.ts'
 
-import type { Instance } from '@jbrowse/mobx-state-tree'
-
 /**
  * #config LinearManhattanDisplay
  * #category display
  * The Manhattan plot: the default display of a GWAS track, and one a
  * FeatureTrack can switch to. It is the mark display with a point per feature
  * at its `score` as its default plot, so every mark, scale, facet and row
- * setting applies, and a plot whose encoding names `ld` or `ld_role` joins
+ * setting applies, and a plot whose encoding names `r2` or `ld_role` joins
  * each SNP's r² to the index SNP from the `GWASAdapter`'s `ldAdapter`.
  *
  * #example
@@ -152,6 +150,3 @@ export function configSchemaFactory() {
 export type LinearManhattanDisplayConfigModel = ReturnType<
   typeof configSchemaFactory
 >
-
-export type LinearManhattanDisplayConfig =
-  Instance<LinearManhattanDisplayConfigModel>
