@@ -22,14 +22,20 @@ means a card draws an allele only where a tool outside JBrowse built one.
 
 One record of the callset, which is one row of `jb2export batch --manifest`:
 
-- **Evidence row**: one image, tumor above normal. Colin, 2026-10-08: a simple
-  deletion is not a stacked split view. `batch` draws two ends on one contig as
-  one row, both windows side by side in a linear view with each track's read
-  arcs on and its split reads first; a junction between two contigs, and an
-  event, as a breakpoint split view with curved connectors; and a record one
-  window holds as the plain pileup. On COLO829 that is 82
-  two-panel images and 53 one-panel ones, 11 of them records naming a single
-  locus.
+- **Evidence row**: one image, tumor above normal, a contig a row. Colin,
+  2026-10-08: a simple deletion is not a stacked split view. `batch` groups a
+  record's windows by contig: one contig is a linear view, its windows side by
+  side with each track's read arcs on; several are a breakpoint split view of
+  one panel a contig, with curved connectors. A row holds four windows at most
+  and a contig of more wraps, so HG008's ten-locus `cluster_6` is three rows
+  where it was ten panels. Every alignments track lays out its split reads
+  first, beside the reads carrying a deletion of 50 bp or more.
+- **Context tracks**: whatever else the run names with `--track`. The hosted
+  portals draw RefSeq genes and the callset above the reads and RepeatMasker
+  below, at `height:50` each. The callset track is the one that earns its
+  room: it marks where the caller put the call, labels the distance a row's
+  seam hides, and shows the neighbouring calls a second fan of connectors
+  belongs to.
 - **Allele row**, where a contig exists: the contig against the reference, see
   [below](#the-allele-row-is-a-bam-record).
 - **Facts**: the record's own VCF columns — `SVTYPE`, `SVLEN`, `FILTER`,
@@ -38,8 +44,9 @@ One record of the callset, which is one row of `jb2export batch --manifest`:
 - **Verdict**: confirmed / needs a look / artefact, kept in the browser and
   exported as TSV, as gene-review-portal's `app.jsx` does. Nothing writes a
   FILTER or a genotype.
-- **Live link**: a `BreakpointSplitView` or `LinearGenomeView` session spec over
-  the manifest's loci and the run's tracks.
+- **Live link**: the manifest's `spec` column, the view `batch` drew as a
+  session spec, over the config the run read. It carries the `--track` tracks
+  and not a file flag's, which no hosted config holds.
 
 A caller's `EVENT` is a property of a card and a filter over the queue, and the
 manifest's `event` column carries it. An event visiting more than two loci also
@@ -150,12 +157,14 @@ the normal, the 29 spanning reads and 0 of 115 that
 Over the whole callset, 82 records have panels to join: 67 have split reads in
 the tumor alone, 12 in the normal too, and 3 none.
 
-**None is not unsupported.** All 3 are deletions of 1.5 to 2.9 kb that one
-alignment carries as a gap, so the image draws the gap through both panels and
-no connector, and chrX's is clonal with every read carrying it. Counting those
-means reading a CIGAR for a gap over an interval, which is genotyping and a
-caller's job. The count stays what the picture draws, and the page says "split
-read" wherever it prints one.
+**A deletion one alignment carries has no connector, and is counted as a
+gap.** An aligner writes a deletion as a gap up to a size and as two pieces past
+it. Seven live cards, deletions of 1.5 to 7.7 kb, read "No supporting read
+counted" while their windows were two and their count was `links` alone: a
+1,128 bp deletion in one window had the `alt` count below and a 1,499 bp one in
+two did not. A record on one contig now has both columns whatever its windows,
+and a card prints `3 split + 4 gapped of 56 reads`. COLO829 `d_78` reads 4 of
+56, the caller's `AD` of 4.
 
 **A record one panel holds has a count of its own.** `batch` sorts a linear
 view's pileup at a record's variant, and the manifest's `alt` column is the
@@ -197,7 +206,7 @@ MAPQ 0.
 ## Pieces
 
 `jb2export batch --manifest` already writes what the page reads: a row per image
-with `file, locs, name, line, event, links, status`. `line` is the record's line in the
+with `file, locs, name, line, event, links, alt, spec, status`. `line` is the record's line in the
 VCF, so the page reads `SVTYPE`, `SVLEN`, `FILTER` and the rest from the callset
 itself and `jb2export` holds no list of blessed INFO keys.
 
@@ -304,7 +313,7 @@ the page is for the subset a filter leaves.
 
 - **Byte gate.** `batch` loads every panel as if given `force:true`: over the
   matched normal, COLO829's chr12 panel drew "Region too large to render", which
-  beside a tumor panel full of connectors reads as no support. One panel per
+  beside a tumor panel full of connectors reads as no support. One window per
   locus at a fixed flank keeps that load bounded, never one window per event.
   [per-region-banner-for-a-mixed-region-set](../waiting-on-a-call/per-region-banner-for-a-mixed-region-set.md)
   is the open bug a mixed-size region set hits.
@@ -313,8 +322,9 @@ the page is for the subset a filter leaves.
   window and a click restores it. A shorter track used to cut off the rows the
   split reads sit in; a breakpoint panel now lays its pileup out split reads
   first (`layoutOrder: split`), so at `height:150` the reads the connectors join
-  fill the rows shown and the same card is about 820 px. An event of four loci
-  is still twice that.
+  fill the rows shown and the same card is about 820 px. With the three context
+  tracks at `height:50` a card of one row is 637 px and one of two contigs
+  about 1,250.
 - **Capture readiness.** Software-rasterised Chromium over several panels of
   deep long reads is slow, which is why `jb2export` is the renderer and
   `@jbrowse/capture` the opt-in.
