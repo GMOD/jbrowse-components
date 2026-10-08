@@ -163,19 +163,11 @@ const remarkVideo: Plugin<[{ base?: string }?], Root> = (options = {}) => {
           `<span class="video-play-icon" aria-hidden="true"></span></button></div>`
       const ref = videoLiveRefs[name]
       const live = ref === undefined ? undefined : liveHref(ref)
-      // Where the video STARTS, which for one that shows something being added is
-      // not the state it ends in — the reader takes the same route from the same
-      // place rather than being handed the result. Reader-facing, so it says video
-      // where the tooling says tour.
-      const label = 'Open the session this video starts in ↗'
-      const link = live
-        ? ` <a href="${live}" target="_blank" rel="noopener noreferrer">${label}</a>`
-        : ''
-      // The figure recipe's dialog, with the clip's own steps in front: the
-      // link hands the reader the start state, and the dialog is the route
-      // from there, as the words the clip held on screen, plus the config it
-      // pasted. A clip with no live session has nothing to build on.
-      const recipe = live ? buildRecipe(live, name) : undefined
+      // The dialog's first line opens the session the video STARTS in, which
+      // is not the state it ends in. A feed cannot open a dialog and a clip
+      // with no steps has none, so those keep that link in the caption.
+      const recipe =
+        live && file.data.feed !== true ? buildRecipe(live, name) : undefined
       const steps = videoSteps[name] ?? []
       const id = `video-dialog-${dialogCount}`
       const help =
@@ -183,8 +175,8 @@ const remarkVideo: Plugin<[{ base?: string }?], Root> = (options = {}) => {
           ? {
               button: recipeButtonHtml(
                 id,
-                'Make this video yourself',
-                'How to make this video yourself',
+                'Open and follow along',
+                'Open the session this video starts in and take its steps yourself',
               ),
               dialog: videoRecipeDialogHtml(recipe, id, {
                 steps,
@@ -195,6 +187,10 @@ const remarkVideo: Plugin<[{ base?: string }?], Root> = (options = {}) => {
       if (help.dialog) {
         dialogCount++
       }
+      const link =
+        live && !help.dialog
+          ? ` <a href="${live}" target="_blank" rel="noopener noreferrer">Open the session this video starts in ↗</a>`
+          : ''
       const anchor = anchorFor(name)
       // One entry per section, landing on the first clip in it.
       // pangenome_ecoli runs four clips under one h3, and four links reading
@@ -203,7 +199,7 @@ const remarkVideo: Plugin<[{ base?: string }?], Root> = (options = {}) => {
       if (!videos.some(entry => entry.section === section)) {
         videos.push({ id: anchor, section })
       }
-      return `<figure id="${anchor}">${frameVideo}<figcaption>${caption}${link}${help.button}</figcaption>${help.dialog}</figure>`
+      return `<figure id="${anchor}">${frameVideo}<figcaption>${caption}${link} ${help.button}</figcaption>${help.dialog}</figure>`
     }
     visit(tree, node => {
       if (node.type === 'heading' && SECTION_DEPTHS.has(node.depth)) {
