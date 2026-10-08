@@ -20,7 +20,7 @@ field read through it, and the Y axis panel's Min and Max write there
 The scale never crosses the wire: shipping it would key the fetch on the axis.
 
 **Colour resolves in exactly one place per cardinality**, and the legend reads the
-same table ([mechanisms/rendering-decisions](../mechanisms/rendering-decisions.md)).
+same table ([rendering-decisions](RENDERING_DECISIONS.md)).
 
 - **Which kind comes from `scale` alone**, never from the data or another member:
   a `field` with no `scale` is categorical whatever `range` lists.

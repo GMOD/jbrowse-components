@@ -1,7 +1,8 @@
 ---
 name: rendering-decisions
-description: The decision sequence every track type runs — the too-large gate, the fetch tier, layout, height, the backend ladder, the layer lists and the overlays — plus the one table saying what a row and a colour mean in each plugin, and which map to read next. Read first when the question is what the program does when it draws a track.
+description: The decision sequence every track type runs — too-large gate, fetch tier, layout, height, backend ladder, layer lists, overlays — plus a table of what a row and a colour mean per plugin. Read first to learn what the program does when drawing a track.
 audience: internal
+kind: spec
 ---
 
 # What the program decides when it draws a track
@@ -17,7 +18,7 @@ of these steps — not the shape of the sequence itself.
 **Is the region too large.** A byte estimate or a feature-density estimate,
 whichever the adapter can answer, against the display's budget. Over it, the
 display raises a banner and does not fetch — see
-[region-too-large](../reference/REGION_TOO_LARGE.md).
+[region-too-large](REGION_TOO_LARGE.md).
 
 **Did a fetch input change.** A display declares which of its settings are part
 of the request. Change one and the data is re-read; change anything else and the
@@ -38,7 +39,7 @@ so sorting and clustering re-arrange what is already on screen.
 **Height is either fitted or configured.** Fit divides the space left after the
 bands between the rows; a configured height keeps its size and lets the overflow
 scroll. `0` in a row-height slot means fit
-([row-height-and-fit](../reference/ROW_HEIGHT_AND_FIT.md)).
+([row-height-and-fit](ROW_HEIGHT_AND_FIT.md)).
 
 **The backend ladder picks a painter.** WebGPU if the browser has it, else
 WebGL2, else Canvas2D. The GPU path packs instances and uploads once per region;
@@ -56,13 +57,13 @@ gates, read back through the same layout.
 
 | track type | a row is | a colour means | resolved in | map |
 | --- | --- | --- | --- | --- |
-| alignments | a read, or a chain of reads | a category per read, from an ordered precedence ladder | the worker, into a byte array | [alignments-decision-tree](alignments-decision-tree.md) |
-| variants | a record, a sample, or a haplotype | the genotype at that cell, or one override that replaces it | the worker, into packed colours | [variants-decision-tree](variants-decision-tree.md) |
-| quantitative | a source | identity, or a score ramp — depending on the mode | the main thread, per layer | [wiggle-decision-tree](wiggle-decision-tree.md) |
-| annotations | a packed layout row | the feature's own colour, or the file's | the worker, per box | [feature-track-decision-tree](feature-track-decision-tree.md) |
-| comparative | an alignment between two genomes | a mode over the pair: strand, chromosome, or a measured channel | the main thread, from worker geometry | [synteny-decision-tree](synteny-decision-tree.md) |
-| multiple alignment | a genome aligned against the reference | one of five renderings of that genome's row — the aligned base, an identity mean, a codon change, a source chromosome | the main thread, from one category cascade | [maf-decision-tree](maf-decision-tree.md) |
-| contact matrix | not a row — one cell is a binned pair of loci | a raw count against a saturation point | the fragment shader, and its lifted twin for Canvas2D and SVG | [hic-decision-tree](hic-decision-tree.md) |
+| alignments | a read, or a chain of reads | a category per read, from an ordered precedence ladder | the worker, into a byte array | [alignments-decision-tree](ALIGNMENTS_DECISION_TREE.md) |
+| variants | a record, a sample, or a haplotype | the genotype at that cell, or one override that replaces it | the worker, into packed colours | [variants-decision-tree](VARIANTS_DECISION_TREE.md) |
+| quantitative | a source | identity, or a score ramp — depending on the mode | the main thread, per layer | [wiggle-decision-tree](WIGGLE_DECISION_TREE.md) |
+| annotations | a packed layout row | the feature's own colour, or the file's | the worker, per box | [feature-track-decision-tree](FEATURE_TRACK_DECISION_TREE.md) |
+| comparative | an alignment between two genomes | a mode over the pair: strand, chromosome, or a measured channel | the main thread, from worker geometry | [synteny-decision-tree](SYNTENY_DECISION_TREE.md) |
+| multiple alignment | a genome aligned against the reference | one of five renderings of that genome's row — the aligned base, an identity mean, a codon change, a source chromosome | the main thread, from one category cascade | [maf-decision-tree](MAF_DECISION_TREE.md) |
+| contact matrix | not a row — one cell is a binned pair of loci | a raw count against a saturation point | the fragment shader, and its lifted twin for Canvas2D and SVG | [hic-decision-tree](HIC_DECISION_TREE.md) |
 
 Two things that read as coincidences and are not. **Every plugin resolves colour
 in exactly one place and has its legend read the same answer** — a legend built
@@ -96,12 +97,12 @@ the colour.
 ordered id lists with a per-consumer record over the same ids, so adding a
 member fails the build until every consumer — GPU pass, Canvas2D painter, hit
 test, legend, menu — has answered for it. See
-[draw-pass-registries](draw-pass-registries.md).
+[draw-pass-registries](../mechanisms/draw-pass-registries.md).
 
 The comparative row is the one that bends the sequence: its displays own their
 fetch rather than composing the shared mixin, and their canvas belongs to the
 container that lays out both genomes rather than to a display
-([shared-canvas-views](../reference/SHARED_CANVAS_VIEWS.md)). The decisions are
+([shared-canvas-views](SHARED_CANVAS_VIEWS.md)). The decisions are
 still the ones above, in the same order.
 
 ## Not yet mapped

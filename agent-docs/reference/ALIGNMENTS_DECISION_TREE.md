@@ -1,7 +1,8 @@
 ---
 name: alignments-decision-tree
-description: What an alignments track decides — what colour each read takes, how a colour scheme reaches that answer, and the draw sequence from the too-large gate to the overlays — as three rendered decision graphs, with the failures behind the odd-looking branches kept to a tail. Read before touching a colour scheme, a draw layer or a gate.
+description: What an alignments track decides — each read's colour, how a colour scheme reaches it, and the draw sequence from the too-large gate to the overlays — as three decision graphs. Read before touching a colour scheme, a draw layer or a gate.
 audience: internal
+kind: spec
 ---
 
 # The alignments decision tree
@@ -49,7 +50,7 @@ array it bakes.
 - **Category, then colour.** Resolving a category takes no scheme: four
   categories resolve per read and every other one goes through the shared swatch
   table, which is also where the arc and linked-read overlays get their slot
-  colours — see [alignments-color-parity](../reference/ALIGNMENTS_COLOR_PARITY.md).
+  colours — see [alignments-color-parity](ALIGNMENTS_COLOR_PARITY.md).
 
 Per-base marks are a separate, much shorter tree: one function mutes the base
 colours where modifications are shown, and both backends index a 256-entry table
@@ -69,8 +70,8 @@ off the raw base byte, so no call site respells the fallback.
   gate parity test cannot see. See
   `plugins/alignments/src/LinearAlignmentsDisplay/CLAUDE.md`.
 - Whether a display should have layer lists at all is
-  [draw-pass-registries](draw-pass-registries.md); the arc band's own rules are
-  [arc-band](../reference/ARC_BAND.md).
+  [draw-pass-registries](../mechanisms/draw-pass-registries.md); the arc band's own rules are
+  [arc-band](ARC_BAND.md).
 
 ### The last gate: per-mark alpha
 
@@ -130,6 +131,6 @@ a setting lands in is a product decision with a measurable cost — that is the
 whole content of "bake tag colours on the main thread".
 
 The recurring bug class all four exist against is in
-[green-checks-that-cannot-fail](green-checks-that-cannot-fail.md): a check that
+[green-checks-that-cannot-fail](../mechanisms/green-checks-that-cannot-fail.md): a check that
 passes for structural reasons rather than real ones, and a rule that agrees with
 its copy in exactly the configuration everybody looks at.

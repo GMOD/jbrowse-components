@@ -1,7 +1,8 @@
 ---
 name: synteny-decision-tree
-description: What a comparative track decides — which surface draws it, what a fetch asks for at this zoom, what colour an alignment takes, and how a ribbon is built and picked — as four rendered decision graphs, with the failures behind the odd-looking branches kept to a tail. Read before touching a level-of-detail tier, a colour mode, the ribbon geometry or the pick index.
+description: What a comparative track decides — the drawing surface, a fetch's request at this zoom, an alignment's colour, and how a ribbon is built and picked — as four decision graphs. Read before touching a level-of-detail tier, colour mode, ribbon geometry or the pick index.
 audience: internal
+kind: spec
 ---
 
 # The synteny decision tree
@@ -11,8 +12,8 @@ systems, and every decision below follows from that. Four of them: **which
 surface** draws the alignments, **what a fetch asks for** at this zoom, **what
 colour** an alignment takes, and **how a ribbon is built, painted and picked**.
 
-Depth: [synteny-lod](../reference/SYNTENY_LOD.md) for the tiers and for what
-the pick index can and cannot discriminate, [shared-canvas-views](../reference/SHARED_CANVAS_VIEWS.md)
+Depth: [synteny-lod](SYNTENY_LOD.md) for the tiers and for what
+the pick index can and cannot discriminate, [shared-canvas-views](SHARED_CANVAS_VIEWS.md)
 for why these displays own their fetch and share a container's canvas.
 
 ## Which surface

@@ -21,7 +21,7 @@ docs.
 
 ## Context
 
-[mechanisms/rendering-decisions](../mechanisms/rendering-decisions.md) states
+[rendering-decisions](../reference/RENDERING_DECISIONS.md) states
 the rule every plugin kept by hand: colour is resolved in exactly one place and
 the legend reads the same answer. The shared half already existed —
 `LegendSpec`, `FloatingLegend`, `SvgColorLegend`, `SvgGradientLegend`,

@@ -1,7 +1,8 @@
 ---
 name: feature-track-decision-tree
-description: What an annotation track decides — which glyph a feature gets, how much of it survives the vertical budget, and what colour a box takes — as three rendered decision graphs, with the failures behind the odd-looking branches kept to a tail. Read before adding a glyph, touching the fit ladder or the label modes.
+description: What an annotation track decides — a feature's glyph, how much of it survives the vertical budget (the fit ladder), and a box's colour — as three decision graphs. Read before adding a glyph, touching the fit ladder or the label modes.
 audience: internal
+kind: spec
 ---
 
 # The feature-track decision tree
@@ -129,7 +130,7 @@ measured off the drawing.
 
 **A cache key must not read a setting that does not change what is cached.**
 Same family as the wiggle plugin's raw-versus-resolved summary mode
-([wiggle-decision-tree](wiggle-decision-tree.md)): the drawing side may resolve;
+([wiggle-decision-tree](WIGGLE_DECISION_TREE.md)): the drawing side may resolve;
 the fetching side may not.
 
 **Decide where you can measure, not where the data is cheapest.** The isoform

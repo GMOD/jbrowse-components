@@ -10,6 +10,11 @@ Every multi-row display has a **raw per-row height in px**, where `0` is a
 sentinel meaning "fit the rows to the display height", and a **resolved height**
 that consumers divide by and draw with.
 
+This page covers the fit sentinel. The annotation track's fit heuristic, where a
+gene gives up descriptions, then isoforms, then label room until it fits, is the
+fit ladder in
+[FEATURE_TRACK_DECISION_TREE](FEATURE_TRACK_DECISION_TREE.md#how-much-fits).
+
 ## The convention
 
 `rowHeight` is the raw setting (a **config slot**, `type: 'number'`,

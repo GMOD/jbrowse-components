@@ -1,7 +1,8 @@
 ---
 name: maf-decision-tree
-description: What a multiple-alignment track decides — which of two tiers a fetch reads, which rendering the rows are painting, what colour one aligned base takes, and how a species becomes a placed row — as four rendered decision graphs, each stated against the naive version it replaced. Read before touching the summary threshold, a row rendering, the cell colour table or the height ladder.
+description: What a multiple-alignment track decides — a fetch's tier, a row's rendering, an aligned base's colour and a species' placed row — as four decision graphs. Read before touching the summary threshold, a row rendering, the cell colour table or the height ladder.
 audience: internal
+kind: spec
 ---
 
 # The multiple-alignment decision tree
@@ -21,7 +22,7 @@ Four questions:
 
 Where the worker's time goes, why long alignment blocks are expensive and why
 clipping them is the wrong fix are all in
-[reference/MAF_LARGE_BLOCKS.md](../reference/MAF_LARGE_BLOCKS.md). The depth
+[reference/MAF_LARGE_BLOCKS.md](MAF_LARGE_BLOCKS.md). The depth
 stays there.
 
 ## The tier

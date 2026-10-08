@@ -1,7 +1,8 @@
 ---
 name: variants-decision-tree
-description: What a variant track decides and in what order — which of the four displays a VCF lands in, what the "Color by" slot resolves to, what colour one genotype cell takes, and the draw sequence from filters to overlays — as four rendered decision graphs, with the failures behind the odd-looking branches kept to a tail. Read before touching a colour mode, a cell loop or a band.
+description: What a variant track decides — the display a VCF lands in, what Color by resolves to, a genotype cell's colour, and the draw sequence from filters to overlays — as four decision graphs. Read before touching a colour mode or a cell loop.
 audience: internal
+kind: spec
 ---
 
 # The variants decision tree
@@ -12,7 +13,7 @@ Four decisions, in this order: **which display** the data lands in, **what the
 the rest of the plugin reads the answer.
 
 Depth on the pipeline is
-[multi-sample-variants](../reference/MULTI_SAMPLE_VARIANTS.md); the invariants
+[multi-sample-variants](MULTI_SAMPLE_VARIANTS.md); the invariants
 that bite while editing are `plugins/variants/src/CLAUDE.md`.
 
 ## Which display
@@ -80,7 +81,7 @@ packed colours it produces.
   one row under the cursor.
 - Bands come out of the available height, and rows begin below them.
 - `rowHeight` of 0 means fit-to-height
-  ([row-height-and-fit](../reference/ROW_HEIGHT_AND_FIT.md)); a configured
+  ([row-height-and-fit](ROW_HEIGHT_AND_FIT.md)); a configured
   height scrolls instead of resizing.
 - The Canvas2D painters are the ones the SVG export calls.
 
@@ -129,7 +130,7 @@ two modes could answer from the wrong one.
 **One slot for mutually exclusive meanings; a precedence ladder only for
 independent ones.** Every "Color by" value answers the same question, so they
 share one slot and no precedence exists to settle. Contrast
-[alignments-decision-tree](alignments-decision-tree.md), whose overrides are
+[alignments-decision-tree](ALIGNMENTS_DECISION_TREE.md), whose overrides are
 scoped to different data, genuinely coexist, and therefore need an ordered
 ladder. Decide which you have before adding the third setting.
 

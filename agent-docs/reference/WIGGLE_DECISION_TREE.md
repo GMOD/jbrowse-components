@@ -1,7 +1,8 @@
 ---
 name: wiggle-decision-tree
-description: What a quantitative track decides — the score domain, the shape that draws it, and the colour that shape takes — as three rendered decision graphs, each resolved in one place and read by the axis, the painter, the legend and the tooltip alike. Read before touching autoscale, a plot type or the quantitative colour model.
+description: What a quantitative track decides — the score domain, the shape that draws it and the shape's colour — as three decision graphs, each resolved in one place. Read before touching autoscale, a plot type or the quantitative colour model.
 audience: internal
+kind: spec
 ---
 
 # The quantitative decision tree

@@ -1,7 +1,8 @@
 ---
 name: hic-decision-tree
-description: What a contact-matrix track decides — which binsize and which normalization a fetch asks for, where a contact lands and how a cursor gets back to it, and what a raw count saturates against — as three rendered decision graphs, each stated against the naive version it replaced. Read before touching the binsize ladder, the normalization names, the packed payload or the colour saturation point.
+description: What a contact-matrix track decides — the binsize and normalization a fetch asks for, where a contact lands and how a cursor finds it, and what a count saturates against — as three decision graphs. Read before touching the binsize ladder, normalization or saturation.
 audience: internal
+kind: spec
 ---
 
 # The contact-matrix decision tree
@@ -20,7 +21,7 @@ Three questions:
 - **the colour** — what a raw count saturates against.
 
 The GPU lifecycle around all of it is
-[reference/GPU_DISPLAY_LIFECYCLE.md](../reference/GPU_DISPLAY_LIFECYCLE.md); the rotated-triangle
+[reference/GPU_DISPLAY_LIFECYCLE.md](GPU_DISPLAY_LIFECYCLE.md); the rotated-triangle
 forward/inverse pair is the shared
 `packages/display-kit/src/triangleTransform.ts`
 (the LD heatmap draws and hit-tests through the same pair, plus the connector

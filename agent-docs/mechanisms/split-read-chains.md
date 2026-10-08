@@ -236,7 +236,7 @@ need not have existed, and the redundancy tax of rule 3 paid for nothing.
 ## Depth lives elsewhere
 
 - What a chain's colour then means, and which rule outranks which:
-  [alignments-decision-tree](alignments-decision-tree.md).
+  [alignments-decision-tree](../reference/ALIGNMENTS_DECISION_TREE.md).
 - The measurements, and the offline tool that answers the same question from a
   callset: [reference/SV_MULTIHOP.md](../reference/SV_MULTIHOP.md).
 - What is still parked in this feature area:
