@@ -258,6 +258,15 @@ const GENERATORS: Generator[] = [
     needs: ['adapter track type map'],
   },
   {
+    // Writes nothing: the schema above still admits every slot path and enum
+    // member in scripts/configSlotPaths.v<major>.txt, which a stable release
+    // freezes.
+    name: 'config slot paths',
+    argv: rootScript('check-config-slot-paths.ts'),
+    independent: true,
+    needs: ['config schema manifest'],
+  },
+  {
     // The generated pages under website/docs/{config,models,api}, the marker
     // blocks that need the whole-repo program (DISPLAY_TYPES, GOTCHA,
     // SPEC_KEYS, ...), each package's API_DOCS README block,

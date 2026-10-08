@@ -593,12 +593,25 @@ function main() {
       ['--experimental-strip-types', 'scripts/generateConfigManifest.ts'],
       'Regenerating the config schema manifest',
     )
+    if (!prerelease) {
+      runQuiet(
+        'node',
+        [
+          '--experimental-strip-types',
+          'scripts/check-config-slot-paths.ts',
+          '--freeze',
+        ],
+        'Freezing the config slot paths this release ships',
+      )
+    }
   }
+  const major = version.split('.')[0]
   const schemaFiles = dryRun
     ? []
     : [
         'products/jbrowse-cli/src/commands/validate/configSchema.generated.ts',
-        `website/static/schema/v${version.split('.')[0]}/config.json`,
+        `website/static/schema/v${major}/config.json`,
+        ...(prerelease ? [] : [`scripts/configSlotPaths.v${major}.txt`]),
       ]
 
   const written = [...(rendered?.written ?? []), ...bumped, ...schemaFiles]

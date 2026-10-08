@@ -93,9 +93,15 @@ manifest's type set, key for key.
 
 **The versioned URL.** `schema/v<major>/config.json`, the major read off
 `products/jbrowse-web/package.json` at generation. Within a major the file
-regenerates on every docs deploy; a slot that goes is gone from the schema the
-next deploy, as it is from the app, and a legacy spelling a migration keeps is
-a deprecated property rather than an absence. At a major bump the generator
+regenerates on every docs deploy, and a legacy spelling a migration keeps is a
+deprecated property rather than an absence, at any depth. Before a major's
+first stable release a slot that goes is gone from the schema the next deploy,
+as it is from the app. A stable release freezes the config slot paths and enum
+members its schema admits into `scripts/configSlotPaths.v<major>.txt`
+(amended 2026-10-08), and `pnpm autogen --check` fails while the schema lacks
+one, so within a major a slot leaves only through its schema's `retired` map.
+`scripts/check-config-slot-paths.ts` is the check; the session half of the
+schema stays outside it. At a major bump the generator
 writes the new segment and the old file stays committed as it last was —
 `rclone sync` deletes what `dist/` does not carry, so keeping an old URL alive
 means keeping its file in the tree. Every whole-config fence in the docs opens
