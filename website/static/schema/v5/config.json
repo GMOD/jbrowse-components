@@ -6708,13 +6708,13 @@
           }
         },
         "layoutOrder": {
-          "description": "Pileup row order where no sort applies: by start (position), widest first (length), or spliced reads first (spliced).",
+          "description": "Pileup row order where no sort applies: by start (position), widest first (length), spliced reads first (spliced), or reads aligned in pieces first (split).",
           "default": "position",
           "if": {
             "type": "null"
           },
           "else": {
-            "enum": ["position", "length", "spliced"]
+            "enum": ["position", "length", "spliced", "split"]
           }
         },
         "showOutline": {
@@ -7854,7 +7854,7 @@
             "type": "null"
           },
           "else": {
-            "enum": ["position", "length", "spliced"]
+            "enum": ["position", "length", "spliced", "split"]
           }
         },
         "showOutline": {

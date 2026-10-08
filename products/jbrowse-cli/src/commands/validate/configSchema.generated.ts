@@ -6922,7 +6922,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           }
         },
         "layoutOrder": {
-          "description": "Pileup row order where no sort applies: by start (position), widest first (length), or spliced reads first (spliced).",
+          "description": "Pileup row order where no sort applies: by start (position), widest first (length), spliced reads first (spliced), or reads aligned in pieces first (split).",
           "default": "position",
           "if": {
             "type": "null"
@@ -6931,7 +6931,8 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "enum": [
               "position",
               "length",
-              "spliced"
+              "spliced",
+              "split"
             ]
           }
         },
@@ -8113,7 +8114,8 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "enum": [
               "position",
               "length",
-              "spliced"
+              "spliced",
+              "split"
             ]
           }
         },
