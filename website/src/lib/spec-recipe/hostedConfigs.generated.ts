@@ -225,7 +225,7 @@ export const hostedConfigs: Record<string, HostedConfig> = {
       },
       {
         "trackId": "hprc_minigraph_segments",
-        "name": "HPRC release 2 graph (rGFA segments)",
+        "name": "HPRC v2.1 graph (rGFA segments)",
         "type": "GraphTrack",
         "adapter": {
           "type": "RgfaTabixAdapter"
