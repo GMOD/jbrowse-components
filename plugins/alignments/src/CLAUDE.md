@@ -69,9 +69,10 @@ shared with MAF and declared once in
 plugin's own: `coverage/` (the density tier's band), `modCoverage/` (the
 modification stacks) and `indicator/` (the hit type).
 
-One directory is **not** a pass and says so by having no `packGpu.ts` —
-`sashimi/` computes geometry for a React SVG overlay, which is a separate draw
-mechanism with no registry. `alignedBaseWalk.ts` is a bare shared walk, not a
+`sashimi/` is a band of its own, as `arcs/` is: its compute stages and
+`bandFeed.ts`, which hands render-core's link mark the junctions as channels
+(`renderers/sashimiMarks.ts`, ADR-222). Its count labels are the one DOM layer
+left (`computeOverlay.ts`). `alignedBaseWalk.ts` is a bare shared walk, not a
 directory at all.
 
 The `clip` layer draws soft AND hard clips from one shader, so `features/clip/`

@@ -42,7 +42,7 @@ export function SectionBandClip({
 // scrollTop: the arcs connect reads, so pinning them to 0 while the reads
 // scrolled left them hanging off the wrong rows.
 //
-// Not an observer, for the reason `SashimiArcsSvg` states: the geometry is
+// Not an observer, for the reason `SashimiLabelsSvg` states: the geometry is
 // built from `view.offsetPx`/`bpPerPx`, so subscribing slid these arcs across
 // a frozen figure's reads on every pan.
 export default function PileupBezierArcsSvg({

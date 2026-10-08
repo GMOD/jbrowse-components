@@ -10,8 +10,12 @@ self-contained", which a new track type is not: nothing past "somewhere to live"
 is designed — no adapter, no display, no decision about whether the overlay
 stays beside it or becomes it.
 
-Sashimi is an overlay (`plugins/alignments/src/features/sashimi`) and nothing
-else. There is no junction track type — confirmed 2026-08-26, no
+Since ADR-222 the arcs are link marks fed by
+`features/sashimi/bandFeed.ts`, so what a junction track needs is a display to
+hold that feed, not a renderer.
+
+Sashimi is a band on the alignments display
+(`plugins/alignments/src/features/sashimi`) and nothing else. There is no junction track type — confirmed 2026-08-26, no
 `SpliceJunction`/`JunctionTrack` anywhere in `plugins` or `packages` — so
 junction counts can only be read where a pileup is already drawn, at whatever
 height that pileup wants.

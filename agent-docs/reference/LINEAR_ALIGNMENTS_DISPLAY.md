@@ -210,10 +210,11 @@ an `onClick` gets nothing, `closeContextMenu` ran first.
   that doesn't is a silent no-op, and a tag sort additionally refetches.
 - `placeRect` cannot use a levels / right-edge-only array: features arrive out
   of start order in both layouts.
-- On-screen and SVG export share `drawAlignmentBlocks`. Sashimi and linked-read
-  bezier arcs stay interactive SVG overlays, each sharing one geometry source
-  with the export; sashimi's is a model because the geometry depends on pan/zoom
-  but **not** `scrollTop`.
+- On-screen and SVG export share `drawAlignmentBlocks`, sashimi arcs included:
+  they are link marks (`SASHIMI_MARKS`, ADR-222) fed in bp, so a pan rebuilds
+  nothing. The sashimi count labels and the linked-read bezier arcs stay SVG
+  overlays, each sharing one geometry source with the export.
+  `sashimiLabelSections` depends on pan/zoom but **not** `scrollTop`.
 - **A per-block pass cannot join two displayed regions**, since it maps bp
   through its own block. The read-connection band's links do, drawing over the
   whole canvas through the view's region table (ADR-170). The per-read bezier
@@ -248,6 +249,8 @@ an `onClick` gets nothing, `closeContextMenu` ran first.
   carries ticks and no arcs.
 - **Across lanes, ask `computeArcsByGroup`**, not a walk of `arcsByGroup`, and
   after regionization.
+- **A splice junction outranks the arc band** (`resolveSashimiHit`), its mark
+  painting last, and unlike an arc it is clickable.
 - **`runHitTest` asks the arc band FIRST and returns
   `arc ?? performHitTest(…)`** — the one place "an arc outranks the band under
   it" is stated, and outranking it means `performHitTest` is skipped rather than
