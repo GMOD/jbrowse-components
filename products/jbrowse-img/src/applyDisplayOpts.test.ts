@@ -88,6 +88,7 @@ describe("batch's per-record sort", () => {
     expect(calls[0]).toEqual({
       sortedBy: { ...sortAt, refName: 'chr3', assemblyName: 'hg38' },
       heightMode: 'grow',
+      growMaxHeight: 250,
     })
   })
 
@@ -111,6 +112,7 @@ describe("batch's per-record sort", () => {
     expect(calls[0]).toMatchObject({
       sortedBy: { type: 'strand' },
       heightMode: 'grow',
+      growMaxHeight: 250,
     })
   })
 

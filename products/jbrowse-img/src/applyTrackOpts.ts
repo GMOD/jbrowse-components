@@ -268,6 +268,7 @@ interface DisplaySnapshot {
   featureHeight?: number
   displayMode?: 'normal' | 'compact' | 'superCompact'
   heightMode?: HeightMode
+  growMaxHeight?: number
   baseColor?: { field: string }
   modifications?: { fillUnmarked?: boolean }
   sortedBy?: {
@@ -782,6 +783,10 @@ function lastSessionError(view: LinearGenomeViewModel) {
   }
 }
 
+// Two tracks at this ceiling, a sample over its control, are a card a laptop
+// window holds without scaling.
+const CARD_GROW_MAX_HEIGHT = 250
+
 export async function applyDisplayOpts(
   view: LinearGenomeViewModel,
   trackId: string,
@@ -820,8 +825,9 @@ export async function applyDisplayOpts(
       }
     }
   }
-  // One row height on every card of a run, and every read where the display's
-  // grow ceiling allows it. A track stating either height keeps it.
+  // One row height on every card of a run: a shallow pileup takes the room it
+  // needs and a deep one stops at the ceiling, its carriers sorted into view.
+  // A track stating either height keeps it.
   if (
     sortAt &&
     category === 'alignments' &&
@@ -829,6 +835,7 @@ export async function applyDisplayOpts(
     snap.height === undefined
   ) {
     snap.heightMode = 'grow'
+    snap.growMaxHeight ??= CARD_GROW_MAX_HEIGHT
   }
 
   // `filterBy` is the one slot a modifier EDITS rather than states, so it can't
