@@ -189,7 +189,7 @@ column, such as tumor subtype, and writes a gain and a loss column per group:
 ```bash
 curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/cnv_recurrence.py
 python3 cnv_recurrence.py tcga_brca_cnv.bed.gz by_subtype.bedGraph \
-  --groups tcga_brca_clinical.tsv:subtype
+  --groups tcga_brca_clinical.tsv:subtype --min-group 20
 ```
 
 The `--groups` file is the

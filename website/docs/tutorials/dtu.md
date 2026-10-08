@@ -123,9 +123,10 @@ its attribute column.
 
 To do the same join over your own results, write the table as `results.tsv` with
 one row per transcript and the columns `isoform_id`, `regular_FDR` and `dIF`
-(the isoform-fraction change). This version keeps every GENCODE row and appends
-the numbers to each transcript row, with the keys the track reads: `dif`, `fdr`,
-`dtu` and `dif_called`:
+(the isoform-fraction change). This version keeps every GENCODE row. It appends
+`dif`, `fdr`, `dtu` and `dif_called` to each transcript row, and
+`dtu_transcripts` and `dtu_top_dif` to the gene row of each gene with a called
+transcript. Those are the keys the track reads:
 
 <!-- from: scripts/build_dtu_demo.sh -->
 
@@ -136,14 +137,18 @@ import gzip
 stats = {r['isoform_id']: r
          for r in csv.DictReader(open('results.tsv'), delimiter='\t')}
 
+genes = {}
+called = {}
 records = []
 with gzip.open('gencode.v29.annotation.gff3.gz', 'rt') as fh:
     for line in fh:
         if line.startswith('#'):
             continue
         cols = line.rstrip('\n').split('\t')
-        if cols[2] == 'transcript':
-            d = dict(kv.split('=', 1) for kv in cols[8].split(';') if '=' in kv)
+        d = dict(kv.split('=', 1) for kv in cols[8].split(';') if '=' in kv)
+        if cols[2] == 'gene':
+            genes[d['ID']] = cols
+        elif cols[2] == 'transcript':
             r = stats.get(d['transcript_id'])
             if r:
                 dif, fdr = float(r['dIF']), float(r['regular_FDR'])
@@ -153,13 +158,18 @@ with gzip.open('gencode.v29.annotation.gff3.gz', 'rt') as fh:
                 cols[8] += f';dif={dif:.3f};fdr={fdr:.3g};dtu={direction}'
                 if direction != 'ns':
                     cols[8] += f';dif_called={dif:.3f}'
-        records.append((cols[0], int(cols[3]), int(cols[4]), '\t'.join(cols)))
+                    called.setdefault(d['Parent'], []).append(dif)
+        records.append((cols[0], int(cols[3]), int(cols[4]), cols))
+
+for gene_id, difs in called.items():
+    top = max(difs, key=abs)
+    genes[gene_id][8] += f';dtu_transcripts={len(difs)};dtu_top_dif={top:.3f}'
 
 records.sort(key=lambda r: r[:3])
 with open('dtu_muscle_vs_liver.gff3', 'w') as out:
     out.write('##gff-version 3\n')
-    for _, _, _, line in records:
-        out.write(line + '\n')
+    for _, _, _, cols in records:
+        out.write('\t'.join(cols) + '\n')
 ```
 
 The rows come out in coordinate order, so indexing is the ordinary pair:
@@ -184,10 +194,12 @@ chr10  HAVANA  transcript  7788129  7807815  .  +  .
   tpm_muscle=10.03;tpm_liver=28.88;dtu=liver;dif_called=-0.299
 ```
 
-The numbers sit on the transcript row alone, and the exons, CDS and UTRs take
-the transcript value. The keys are lowercase because the GFF parser lowercases
-them, so a color field named `dIF` reads nothing and paints every transcript
-grey.
+The transcript statistics sit on the transcript row, and the exons, CDS and UTRs
+take the transcript value. The gene row carries `dtu_transcripts`, the count of
+called isoforms, and `dtu_top_dif`, the largest ΔIF among them, which the
+track's `mouseover` reads. The keys are lowercase because the GFF parser
+lowercases them, so a color field named `dIF` reads nothing and paints every
+transcript grey.
 
 `dtu` is `muscle`, `liver` or `ns`, as the script above calls it. `dif_called`
 is `dif` on the called transcripts and absent on the rest, so a transcript the

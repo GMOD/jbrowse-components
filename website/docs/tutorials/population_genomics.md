@@ -36,10 +36,11 @@ genes, then read the inversion.
   utility that packs a bedGraph into an indexed bigWig
 
 On Debian/Ubuntu, `apt install vcftools bcftools tabix curl` covers everything
-but `bedGraphToBigWig`, which is a
+but `node` and `bedGraphToBigWig`, which is a
 [single static binary from UCSC](https://hgdownload.soe.ucsc.edu/admin/exe/).
-Homebrew has the same four (`brew install vcftools bcftools htslib`), and all
-five are on [bioconda](https://bioconda.github.io/) if you already run conda.
+Homebrew has the first three tools (`brew install vcftools bcftools htslib`),
+and all four are on [bioconda](https://bioconda.github.io/) if you already run
+conda.
 
 ## Where the data comes from
 

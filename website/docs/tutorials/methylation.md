@@ -138,6 +138,12 @@ Two `modkit pileup` options shape the output:
   (`m` for 5mC, `h` for 5hmC)
 - `--partition-tag HP` writes one file per haplotype, and this dataset uses it
 
+Both options together, writing the per-haplotype files into a directory:
+
+```bash
+modkit pileup sample.bam hp_bedmethyl/ --ref reference.fa --preset traditional --partition-tag HP
+```
+
 bedMethyl is a BED file with a numeric score column, so it loads as a
 `MultiQuantitativeTrack` (see the
 [multi-quantitative track config guide](/docs/config_guides/quantitative_track)).

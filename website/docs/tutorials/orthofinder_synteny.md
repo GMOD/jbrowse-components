@@ -84,12 +84,19 @@ next command reduces to one gene id per cell:
 curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/orthogroups_to_blocks.py
 python3 orthogroups_to_blocks.py Orthogroups.tsv -o tauschii.blocks \
   --bed tauschii=tauschii.bed --bed wheat=wheat.bed --bed durum=durum.bed \
-  --bed emmer=emmer.bed --bed urartu=urartu.bed --bed timopheevii=timopheevii.bed
+  --bed emmer=emmer.bed --bed urartu=urartu.bed --bed timopheevii=timopheevii.bed \
+  --max-copies 4
 ```
 
 `blockAssemblies` must match the column order the script prints.
 `--assembly COLUMN=NAME` renames a column; a misspelled column there renames
-nothing and raises no error, while a typo in `--bed` is an error.
+nothing and raises no error, while a typo in `--bed` is an error:
+
+```bash
+python3 orthogroups_to_blocks.py Orthogroups.tsv -o tauschii.blocks \
+  --bed tauschii=tauschii.bed --bed wheat=wheat.bed \
+  --assembly wheat=bread_wheat
+```
 
 ### Duplicated genes: one ribbon, two ribbons or none {#what-to-do-with-a-duplicated-gene}
 
@@ -103,7 +110,13 @@ treatments:
 | `expand` (default) | two ribbons, one per maize copy                              | the duplication is part of what you are looking at        |
 | `single`           | no ribbon                                                    | you want a strictly one-to-one table                      |
 
-A cell over `--max-copies` counts as a family and contributes no row.
+A cell over `--max-copies` counts as a family and contributes no row:
+
+```bash
+python3 orthogroups_to_blocks.py Orthogroups.tsv -o tauschii.blocks \
+  --bed tauschii=tauschii.bed --bed wheat=wheat.bed \
+  --pick single --max-copies 2
+```
 
 Open the `grasses` set's hosted config
 (https://jbrowse.org/demos/orthofinder_grasses/config.json) as sorghum over rice

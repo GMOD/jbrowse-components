@@ -58,7 +58,8 @@ until JBrowse 5 ships. We welcome your [feedback](/contact).
 ## Where the data comes from
 
 [HPRC release 2](https://doi.org/10.64898/2026.07.21.739710) and PacBio's TRGT
-genotypes of 100 of its samples (Dolzhenko et al. 2024).
+genotypes of 100 of its samples (Dolzhenko et al. 2024), 94 of which have a call
+at _ABCA7_.
 
 The [build script](#reproduce-it-end-to-end) takes these files from their URLs,
 so there is nothing to download by hand.
@@ -247,7 +248,7 @@ A repeat finder's output draws as these bars too once it is written as a
 An intron of _ABCA7_ holds a VNTR (variable-number tandem repeat) tied to
 Alzheimer's disease risk (De Roeck et al. 2018). Each haplotype's walk length
 comes from its assembly, and PacBio measured the same repeat from HiFi reads in
-100 HPRC samples. The session below lays the walks out as bars beside the genes,
+94 HPRC samples. The session below lays the walks out as bars beside the genes,
 the catalogue's VNTR row and the TRGT genotypes:
 
 ```json session config=https://jbrowse.org/demos/hprc/config.json
@@ -457,9 +458,9 @@ Yilmaz et al. (2024) name each structure by its _AMY1_ count:
 
 ## Reproduce it end to end
 
-PacBio publishes TRGT's calls for 100 HPRC samples as a TRGTdb, and the build
-turns its _ABCA7_ locus into the VCF this page loads, without re-genotyping
-anything. It:
+PacBio publishes TRGT's calls for 100 HPRC samples as a TRGTdb, 94 of which have
+a call at _ABCA7_, and the build turns that locus into the VCF this page loads,
+without re-genotyping anything. It:
 
 1. downloads the TRGTdb and the repeat catalogue
 2. reads the locus's alleles and every sample's calls out of the database

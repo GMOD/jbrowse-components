@@ -54,6 +54,8 @@ format and its gbz-base database itself.
 
 - the same graph in vg's format:
   https://s3-us-west-2.amazonaws.com/human-pangenomics/pangenomes/freeze/release2/minigraph-cactus/v2.1/hprc-v2.1-mc-grch38/hprc-v2.1-mc-grch38.gbz
+- the same graph as a gbz-base database:
+  https://s3-us-west-2.amazonaws.com/human-pangenomics/pangenomes/freeze/release2/minigraph-cactus/v2.1/hprc-v2.1-mc-grch38/hprc-v2.1-mc-grch38.gbz.db
 
 <details>
 <summary>Other files (no download needed)</summary>

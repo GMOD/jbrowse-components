@@ -80,9 +80,9 @@ features have, `repFamily` among them. <!-- menu-path-ok -->
 
 <Video src="/media/repeats/painting_display_switch.mp4" caption="The RepeatMasker track from one packed row to a labelled row per class: the track menu's Display types, and the multi-row painting partitioning on the repeat class column in the file." />
 
-<Figure caption="Top: UCSC RepeatMasker over a 17q21 window, colored by repClass, every class in one packed row. Bottom: the same track and window with one row per repClass. SINE fills the window and LINE comes in clusters. The empty LTR? row comes from a repeat just past the window's right edge, and LTR? and Unknown take palette colors because the color's domain does not list them." src="/img/cookbook_color_by_type_two_ways.png"/>
+<Figure caption="Top: UCSC RepeatMasker over a 17q21 window, colored by repClass, every class in one packed row. Bottom: the same track and window with one row per repClass. SINE fills the window and LINE comes in clusters. The empty LTR? row comes from a repeat just past the window's right edge." src="/img/cookbook_color_by_type_two_ways.png"/>
 
-## Pinning row order and colors in a track config
+## Pinning row colors in a track config
 
 A track config can open the track in the partitioned view. `rowColor` pairs a
 class with a color, so a class keeps its color as the window's class list

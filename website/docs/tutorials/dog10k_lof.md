@@ -224,7 +224,9 @@ painting is in the config as `dog10k_cyp1a2_cn`.
 
 The output is a BED with the color in the `itemRgb` column and the rounded call
 in `copyNumber`. The identity color scale pairs each color in the file with a
-copy number label, so the legend reads as copy number:
+copy number label, so the key reads as copy number. The figure draws one key,
+from the named-animals track above this one (described below), so this track
+sets `showLegend` to `false`. Drop that line to get a key on this track:
 
 ```json addtrack
 {
@@ -254,6 +256,7 @@ copy number label, so the legend reads as copy number:
     {
       "type": "LinearMultiRowFeatureDisplay",
       "rows": "sample",
+      "showLegend": false,
       "color": {
         "scale": "identity",
         "title": "Copy number",

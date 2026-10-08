@@ -14,11 +14,12 @@ tutorial_subcategory: HPRC release 2
 ---
 
 The Human Pangenome Reference Consortium's release 2 builds 464 human haplotypes
-into a pangenome graph. Where the haplotypes differ, the graph forms a bubble,
-and each route through a bubble is an allele. HPRC writes each haplotype's route
-through every bubble as a phased VCF, so a record lists which haplotypes have
-which allele. We open the graph and the VCF from the HPRC page on
-genomes.jbrowse.org as tracks of a linear view of GRCh38, and:
+into a pangenome graph; the phased VCF used here lists 462 of them. Where the
+haplotypes differ, the graph forms a bubble, and each route through a bubble is
+an allele. HPRC writes each haplotype's route through every bubble as a phased
+VCF, so a record lists which haplotypes have which allele. We open the graph and
+the VCF from the HPRC page on genomes.jbrowse.org as tracks of a linear view of
+GRCh38, and:
 
 - read a whole chromosome, one node per bubble
 - at C4 (complement genes), read the graph's backbone, bubbles and alleles

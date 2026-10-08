@@ -79,7 +79,9 @@ export const wiggleColorSchema = ConfigurationSchema(
     /**
      * #slot scale
      * How `score` becomes a color. `threshold` paints each band between two
-     * of its cuts; `linear` runs `range`, else `scheme`, else viridis across
+     * of its cuts, and on a density plot (`mark: 'span'`) fades from white at
+     * the lowest cut to the first `range` color below it and the last above it;
+     * `linear` runs `range`, else `scheme`, else viridis across
      * the y domain through `scales.y.type`, with `domainMid` at the middle
      * stop, coloring each bar, point and density cell by its score, and a
      * one-color `range` runs from white to that color; a line still parts
@@ -90,7 +92,7 @@ export const wiggleColorSchema = ConfigurationSchema(
       type: 'maybeStringEnum',
       model: types.enumeration('WiggleColorScale', [...WIGGLE_COLOR_SCALES]),
       description:
-        'threshold bands score at the domain cuts, linear ramps it across the y domain, none paints value; unset beside a field is threshold',
+        'threshold bands score at the domain cuts, and on a density plot fades from white at the lowest cut to the first range color below it and the last above it, linear ramps it across the y domain, none paints value; unset beside a field is threshold',
     },
     ...colorDomainSlot({
       domain:

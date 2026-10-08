@@ -118,7 +118,9 @@ one BAM and index it:
 ```bash
 samtools sort -o s_run1.bam run1.bam
 samtools sort -o s_run2.bam run2.bam
-samtools merge -f K562_isoseq.bam s_run1.bam s_run2.bam
+samtools sort -o s_run3.bam run3.bam
+samtools sort -o s_run4.bam run4.bam
+samtools merge -f K562_isoseq.bam s_run1.bam s_run2.bam s_run3.bam s_run4.bam
 samtools index K562_isoseq.bam
 ```
 

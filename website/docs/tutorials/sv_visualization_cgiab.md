@@ -733,8 +733,8 @@ each `uri` for your sample's bigWig:
 ```
 
 **Plot type → Overlapping → Scatter** in its track menu draws the two samples as
-points in one band, tumor red and normal blue, and **Y axis... → Range** with 0
-and 3 stops indexcov's centromere spikes from flattening every plateau.
+points in one band, with a key naming each sample's color. **Y axis... → Range**
+with 0 and 3 stops indexcov's centromere spikes from flattening every plateau.
 
 Zoom to a region and open the benchmark CNV BED. Coverage shows where the copy
 number steps, and the BAF track shows the allelic balance across each step.

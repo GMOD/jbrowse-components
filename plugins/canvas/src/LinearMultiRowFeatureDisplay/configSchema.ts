@@ -56,11 +56,12 @@ import type { Instance } from '@jbrowse/mobx-state-tree'
  *   ],
  * }
  * ```
- * Omit `rowColor` entirely and each row is auto-assigned a distinct palette
- * color — unless the features carry an `itemRgb`, which is honored as the
- * per-feature color with no configuration at all, and which `color.scale:
- * 'identity'` names in the key. To color per feature off some other attribute,
- * set the `color` slot to a `jexl:` expression reading it.
+ * Omit `rowColor` entirely and the blocks paint in the default block color.
+ * A row `rowColor` does not name paints the same way, unless `unknown` gives
+ * unnamed rows a color. A feature's `itemRgb` is honored as its own color with
+ * no configuration at all, and `color.scale: 'identity'` names it in the key.
+ * To color per feature off some other attribute, set the `color` slot to a
+ * `jexl:` expression reading it.
  * Omit `rows.domain` and the rows sort by value.
  */
 export default function configSchemaF() {
@@ -133,8 +134,8 @@ export default function configSchemaF() {
        * Each block's fill, the FeatureColor object: a CSS color or `jexl:`
        * callback in `value`, or a field whose values each take a color
        * through a scale, with a key. Unset, a feature's own itemRgb paints it
-       * if it has one, else each row takes a color from a categorical
-       * palette. `scale: 'identity'` keeps each feature's own color and
+       * if it has one, else `rowColor` paints its row's blocks, else the
+       * default block color does. `scale: 'identity'` keeps each feature's own color and
        * names the `domain` colors in the key, which is how a file's itemRgb
        * states get their names.
        *

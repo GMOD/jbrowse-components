@@ -191,7 +191,7 @@ cfg['tracks'].append({
         'uri': recurrence,
     },
     'displayDefaults': {
-        'height': 320,
+        'height': 260,
         'scales': {'y': {'domainMin': 0, 'domainMax': 100}},
         'showRowSeparators': True,
     },

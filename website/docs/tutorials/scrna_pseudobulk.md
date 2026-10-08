@@ -198,6 +198,9 @@ as `pbmc5k_scrna_pseudobulk_hg38`:
 }
 ```
 
+The `log` axis keeps the dim rows readable. _LYZ_ in monocytes sits an order of
+magnitude above _IL7R_ in CD4 T cells, and the rows share one axis.
+
 Take the row order and colors from the single-cell object, so related lineages
 stay adjacent and a row keeps the color its cluster had on the UMAP.
 

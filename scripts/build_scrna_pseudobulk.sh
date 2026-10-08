@@ -668,16 +668,15 @@ for s in sources:
 track = {
     "type": "MultiQuantitativeTrack",
     "trackId": "pbmc5k_scrna_pseudobulk",
-    "name": "PBMC scRNA by cell type (pseudobulk)",
+    "name": "scRNA pseudobulk by cell type (10x 5k PBMC)",
     "assemblyNames": ["hg38"],
-    "category": ["Single cell"],
+    "category": ["Single cell", "Expression"],
     "adapter": {"type": "MultiWiggleAdapter", "subadapters": sources},
-    "displays": [{
-        "type": "LinearWiggleDisplay",
-        "displayId": "pbmc5k_scrna_pseudobulk-LinearWiggleDisplay",
+    "displayDefaults": {
         "mark": "bar",
+        "scales": {"y": {"type": "log", "title": "CPM"}},
         "height": 330,
-    }],
+    },
 }
 cfg["tracks"] = [t for t in cfg["tracks"] if t.get("trackId") != track["trackId"]]
 cfg["tracks"].append(track)

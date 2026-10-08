@@ -234,6 +234,7 @@ jb add-track "$DEMO/K562.star-fusion.tsv" --load copy \
   --assemblyNames hg38 --out "$APP" --force
 jb add-track "$DEMO/K562_cn.bw" --load copy \
   --name 'K562 copy-number segments (DepMap WGS)' --trackId K562_cn \
+  --config '{"displayDefaults":{"scales":{"y":{"domainMin":0,"domainMax":8,"title":"copy ratio (DepMap)"}}}}' \
   --assemblyNames hg38 --out "$APP" --force
 jb add-track "$DEMO/K562.10x-large-sv.vcf.gz" --load copy \
   --name 'K562 DNA breakpoints (10X linked reads, lifted to hg38)' \

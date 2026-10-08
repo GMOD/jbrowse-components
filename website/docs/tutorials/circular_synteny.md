@@ -5,8 +5,8 @@ description:
   Put two genomes on one circular view, draw UCSC's liftOver chain between them
   as ribbons straight from the copy jbrowse.org indexes, color the ribbons by
   chromosome and by strand, read the mouse karyotype in human chromosomes, add a
-  gene density ring per genome, and check a ribbon and a ring value against the
-  files they came from
+  gene density ring over both genomes, and check a ribbon and a ring value
+  against the files they came from
 guide_category: Tutorials
 tutorial_category: Synteny & comparative genomics
 tutorial_subcategory: Whole-genome alignments
@@ -234,7 +234,9 @@ The X chromosome has stayed whole across the two lineages, so no ribbon at the
 100 kb cut should join it to an autosome. Open the first session above with
 `displayedRegionNames` cut to `["chr1", "chr2", "chrX"]` to read the control.
 The two autosomes cross-wire between the genomes, and the X ribbons run between
-the two X arcs with nothing joining either X to an autosome.
+the two X arcs with nothing joining either X to an autosome. The figure also
+carries the gene density ring that
+[Gene density as a ring](#gene-density-as-a-ring) builds.
 
 <Figure src="/img/circular_synteny/x_control.png" caption="Human chr1, chr2 and chrX in one half of the circle and the same three mouse chromosomes in the other, with a gene density ring inside the ideogram. The autosome ribbons cross between the genomes, and the X ribbons stay between the two X arcs." />
 
@@ -298,7 +300,9 @@ strip whose color is the average over each pixel's bins:
 ```
 
 **Edit colors/arrangement...** in the track menu sets the `color` pair, one
-color below the display's `origin` and one above.
+color below the display's `origin` and one above. A density strip fades from
+white at the `origin`, which is 0 here, so every bin fades toward the second
+color and the first never paints.
 
 Rings stack inward from the ideogram in the order the view's `tracks` lists
 them, and the ribbons draw inside the innermost ring, so the density entry goes

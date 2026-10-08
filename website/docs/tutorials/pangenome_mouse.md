@@ -7,12 +7,12 @@ guide_category: Tutorials
 tutorial_category: Pangenomes
 ---
 
-The mouse strain pangenome aligns eighteen inbred and wild-derived strains from
-the Mouse Genomes Project onto the GRCm39 reference with `minigraph`. GRCm39 is
-itself one of the strains, C57BL/6J, which inverts the sign of the best-known
-variant in the panel. No locus list has been published for these strains, so we
-rank the graph's bubbles, the regions where the strains' paths split and rejoin,
-by how many segments each holds, and open the densest. We:
+The mouse strain pangenome aligns eighteen inbred and wild-derived strain
+assemblies from the Mouse Genomes Project onto the GRCm39 reference with
+`minigraph`. GRCm39 is itself a strain, C57BL/6J, which inverts the sign of the
+best-known variant in the panel. No locus list has been published for these
+strains, so we rank the graph's bubbles, the regions where the strains' paths
+split and rejoin, by how many segments each holds, and open the densest. We:
 
 - at _Nnt_, read a C57BL/6J deletion as sequence the other strains have
 - rank the bubbles in the graph and open the densest one that fits in a window,

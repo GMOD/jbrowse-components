@@ -126,10 +126,10 @@ cp -f rmsk.bed.gz rmsk.bed.gz.tbi "$APP"/
 # opens with; the plain one after it stays a menu click away.
 #
 # `rowColor` is deliberately partial. A class not named in it still gets a
-# lane, colored from the categorical palette by its position, so this is the
-# list of classes whose color should not move as you pan rather than a list of
-# what exists. @ASSEMBLY@ is a real JSON string so the heredoc parses on its
-# own, which is what scripts/check-build-scripts.py validates it as.
+# row, painted in the default block color, so this is the list of classes that
+# get a color of their own and not a list of what exists. @ASSEMBLY@ is a real
+# JSON string so the heredoc parses on its own, which is what
+# scripts/check-build-scripts.py validates it as.
 sed "s|@ASSEMBLY@|$ASM|" >track.json <<'JSON'
 {
   "type": "FeatureTrack",

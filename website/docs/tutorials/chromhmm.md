@@ -74,12 +74,25 @@ names from it. The merge is one pass:
 <!-- from: scripts/build_chromhmm_multirow.sh -->
 
 ```bash
-# awk appends each file's name as the row label, so Gm12878.bed.gz labels
-# its segments Gm12878
+# Each entry pairs a file's name token with the row label its segments get
+CELL_TYPES=(
+  Gm12878:GM12878
+  H1hesc:H1-hESC
+  K562:K562
+  Hepg2:HepG2
+  Huvec:HUVEC
+  Hmec:HMEC
+  Hsmm:HSMM
+  Nhek:NHEK
+  Nhlf:NHLF
+)
+
+# awk appends the label to every segment of its file
 {
   printf '#chrom\tchromStart\tchromEnd\tname\tscore\tstrand\tthickStart\tthickEnd\titemRgb\tcellType\n'
-  for f in *.bed.gz; do
-    gzip -dc "$f" | awk -v c="${f%%.*}" 'BEGIN{OFS="\t"} {print $0, c}'
+  for entry in "${CELL_TYPES[@]}"; do
+    gzip -dc "wgEncodeBroadHmm${entry%%:*}HMM.bed.gz" |
+      awk -v c="${entry##*:}" 'BEGIN{OFS="\t"} {print $0, c}'
   done
 } > multirow.bed
 
@@ -392,6 +405,35 @@ The hosted track orders the rows by tissue group through `rows.domain` and
 leaves `facet` out, so clustering runs over all 127 together and the label bars
 show which tissues a cluster spans. The PAX5 figure adds `facet` to draw the
 bands, with a `domain` that stacks them in the paper's group order.
+
+```json
+{
+  "facet": {
+    "field": "group",
+    "domain": [
+      "IMR90",
+      "ESC",
+      "iPSC",
+      "ES-deriv",
+      "Blood & T-cell",
+      "HSC & B-cell",
+      "Mesench",
+      "Myosat",
+      "Epithelial",
+      "Neurosph",
+      "Thymus",
+      "Brain",
+      "Adipose",
+      "Muscle",
+      "Heart",
+      "Sm. Muscle",
+      "Digestive",
+      "Other",
+      "ENCODE2012"
+    ]
+  }
+}
+```
 
 The 19 groups in `EID_metadata.tab` include ENCODE2012. Roadmap folded the
 ENCODE 2012 reference epigenomes (GM12878, K562, HeLa-S3, HepG2, A549, HUVEC,

@@ -222,11 +222,11 @@ needs no `assemblyNames` unless you mean to narrow it:
 ```
 
 The hosted
-[config.json](https://jbrowse.org/demos/grape_peach_cacao/config.json) adds a
-seven-column version of this track for the one-locus view below, named **Grape
-vs peach, cacao, arabidopsis, poplar, tomato, citrus (MCScan blocks)**. Its
-`assemblyNames` stays the three declared genomes, since a lane takes just the
-table and that genome's BED.
+[config.json](https://jbrowse.org/demos/grape_peach_cacao/config.json) holds the
+seven-column version of this track under the same `trackId`, named **Grape vs
+peach, cacao, arabidopsis, poplar, tomato, citrus (MCScan blocks)**. Every
+session and figure below runs on that one. Its `assemblyNames` stays the three
+declared genomes, since a lane takes just the table and that genome's BED.
 
 ## Stacking grape, peach and cacao
 
