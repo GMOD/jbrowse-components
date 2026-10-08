@@ -143,8 +143,8 @@ lanes...**, and then:
   jexl:feature.inversion
   ```
 
-- **HPRC v2.1 graph (rGFA segments)** in the track selector draws the
-  window's graph in the force-directed layout.
+- **HPRC v2.1 graph (rGFA segments)** in the track selector draws the window's
+  graph in the force-directed layout.
 
 <Figure caption="The FLNA / EMD window with the RefSeq genes, the bubbles track filtered to inversions, four lanes and the force-directed graph, the flagged bubble shaded. The band crosses between HG00099's two haplotypes and runs straight between the two lanes under it, which both carry EMD ahead of FLNA. The graph draws the block as a loop off the backbone." src="/img/pangenome/hprc_inversion.png" />
 

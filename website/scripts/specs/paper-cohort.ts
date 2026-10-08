@@ -163,11 +163,7 @@ export const paperCohortSpecs: ScreenshotSpec[] = [
         0.55,
         '1000 Genomes estimated\ncopy number (QuicK-mer2)',
       ),
-      trackBlurb(
-        'hprc_minigraph_segments',
-        0.3,
-        'HPRC v2.1\npangenome graph',
-      ),
+      trackBlurb('hprc_minigraph_segments', 0.3, 'HPRC v2.1\npangenome graph'),
     ],
   },
 ]
