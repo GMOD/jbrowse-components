@@ -33,7 +33,8 @@ mapping quality, or any BAM tag. Three more order the whole layout instead:
 - **Sort by... → Spliced reads first** puts the reads with a reference skip
   (`N`) in the CIGAR there.
 - **Sort by... → Split reads first** puts the reads aligned in pieces there, the
-  ones with an `SA` tag, which at a breakpoint are the reads crossing it.
+  ones with an `SA` tag, beside the reads carrying a deletion of 50 bp or more:
+  at a breakpoint those are the reads crossing it.
 
 ## Color by
 

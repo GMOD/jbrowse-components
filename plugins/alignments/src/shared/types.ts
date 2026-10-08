@@ -244,7 +244,7 @@ export interface SortedBy {
 }
 
 // The pileup's row order where no `sortedBy` column sort applies: by start,
-// widest first, spliced reads first, or reads aligned in pieces first.
+// widest first, spliced reads first, or reads aligned in pieces or across a large deletion first.
 export const LAYOUT_ORDERS = ['position', 'length', 'spliced', 'split'] as const
 export type LayoutOrder = (typeof LAYOUT_ORDERS)[number]
 

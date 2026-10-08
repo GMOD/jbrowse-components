@@ -474,12 +474,24 @@ function readSplicedFlags(data: WorkerPileupData, numReads: number) {
   return spliced
 }
 
-// 1 for every read aligned in pieces, which is one carrying an SA tag: the
-// primary and each supplementary alike. The array is absent when no read of the
-// group has one.
+// The size from which callers file a deletion as a structural variant
+const SV_GAP_BP = 50
+
+// 1 for every read aligned in pieces, which is one carrying an SA tag, and for
+// every read carrying a deletion of structural-variant size: an aligner writes
+// the same molecule either way, by the deletion's length. The SA array is
+// absent when no read of the group has one.
 function readSplitFlags(data: WorkerPileupData, numReads: number) {
-  const { readSuppAlignments } = data
+  const { readSuppAlignments, gapPositions, gapTypes, gapReadIndices } = data
   const split = new Uint8Array(numReads)
+  for (let i = 0; i < gapTypes.length; i++) {
+    if (
+      gapTypes[i] === GAP_DELETION &&
+      gapPositions[i * 2 + 1]! - gapPositions[i * 2]! >= SV_GAP_BP
+    ) {
+      split[gapReadIndices[i]!] = 1
+    }
+  }
   if (readSuppAlignments) {
     for (let i = 0; i < numReads; i++) {
       if (readSuppAlignments[i]) {
@@ -491,7 +503,8 @@ function readSplitFlags(data: WorkerPileupData, numReads: number) {
 }
 
 // The reads an order lifts ahead of the rest, or undefined for an order that
-// lifts no class: spliced reads, or reads aligned in pieces.
+// lifts no class: spliced reads, or reads aligned in pieces or across a large
+// deletion.
 function liftedFlags(
   layoutOrder: LayoutOrder,
   data: WorkerPileupData,

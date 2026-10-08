@@ -1,6 +1,9 @@
 import { namesToBlock } from '@jbrowse/alignments-core'
 
-import { GAP_SKIP } from '../shaders/slang/gap.consts.generated.ts'
+import {
+  GAP_DELETION,
+  GAP_SKIP,
+} from '../shaders/slang/gap.consts.generated.ts'
 import {
   INTERBASE_HARDCLIP,
   INTERBASE_INSERTION,
@@ -32,6 +35,7 @@ interface Read {
   softclip?: { pos: number; length: number; type?: number }
   // Intron skips, [start, end) each — what marks the read as spliced.
   skips?: [number, number][]
+  deletions?: [number, number][]
 }
 
 function makePileupData(opts: {
@@ -99,15 +103,28 @@ function makePileupData(opts: {
     interbaseReadIndices[i] = e.readIdx
   }
 
-  const skipEntries = reads.flatMap((r, i) =>
-    (r.skips ?? []).map(([start, end]) => ({ readIdx: i, start, end })),
-  )
+  const skipEntries = reads.flatMap((r, i) => [
+    ...(r.skips ?? []).map(([start, end]) => ({
+      readIdx: i,
+      start,
+      end,
+      type: GAP_SKIP,
+    })),
+    ...(r.deletions ?? []).map(([start, end]) => ({
+      readIdx: i,
+      start,
+      end,
+      type: GAP_DELETION,
+    })),
+  ])
   const gapPositions = new Uint32Array(skipEntries.length * 2)
   const gapReadIndices = new Uint32Array(skipEntries.length)
+  const gapTypes = new Uint8Array(skipEntries.length)
   for (const [i, e] of skipEntries.entries()) {
     gapPositions[i * 2] = e.start
     gapPositions[i * 2 + 1] = e.end
     gapReadIndices[i] = e.readIdx
+    gapTypes[i] = e.type
   }
 
   return {
@@ -116,7 +133,7 @@ function makePileupData(opts: {
     ...namesToBlock(readNames),
     readPositions,
     gapPositions,
-    gapTypes: new Uint8Array(skipEntries.length).fill(GAP_SKIP),
+    gapTypes,
     gapReadIndices,
     gapFrequencies: new Uint8Array(skipEntries.length),
     readStrands: Int8Array.from(reads.map(r => r.strand ?? 0)),
@@ -418,6 +435,30 @@ describe("computeLayout layoutOrder 'split'", () => {
     // the worker ships no SA array at all when no read carries the tag
     expect([
       ...computeLayout(data(), false, undefined, 'split').readYs,
+    ]).toEqual([0, 1, 0])
+  })
+
+  // An aligner writes a deletion as a gap up to a size and as two pieces past
+  // it, so a read carrying one of structural-variant size is lifted too.
+  const gapped = (deletion: [number, number]) =>
+    makePileupData({
+      regionStart: 0,
+      reads: [
+        { start: 0, end: 50 },
+        { start: 10, end: 200, deletions: [deletion] },
+        { start: 300, end: 350 },
+      ],
+    })
+
+  test('a read carrying a 50 bp deletion takes the lowest row', () => {
+    expect([
+      ...computeLayout(gapped([60, 110]), false, undefined, 'split').readYs,
+    ]).toEqual([1, 0, 0])
+  })
+
+  test('a shorter deletion lifts nothing', () => {
+    expect([
+      ...computeLayout(gapped([60, 109]), false, undefined, 'split').readYs,
     ]).toEqual([0, 1, 0])
   })
 })
