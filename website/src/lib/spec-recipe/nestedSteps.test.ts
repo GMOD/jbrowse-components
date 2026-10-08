@@ -22,11 +22,23 @@ const twoTracks = recipeOf({
 })
 
 test("a track's settings sit under the step that adds it", () => {
-  const adds = twoTracks.steps.filter(s => s.title.startsWith('Add a track'))
+  const adds = twoTracks.steps.filter(s => s.example?.includes('“'))
   expect(adds.map(s => s.substeps?.map(sub => sub.title))).toEqual([
     [expect.stringContaining('Show soft clipping')],
     undefined,
   ])
+})
+
+test('only the first track step says how a track is added', () => {
+  const [first, second] = twoTracks.steps.filter(s => s.example?.includes('“'))
+  expect(first?.title).toContain('File → Open track...')
+  expect(second?.title).toMatch(/^Add the next track the same way\./)
+})
+
+test('the Spec tab names the config by a url a reader can open', () => {
+  expect(recipeDialogHtml(twoTracks, 'd')).toContain(
+    'href="https://jbrowse.org/code/jb2/main/test_data/volvox/config.json"',
+  )
 })
 
 test("a track's height is layout, and gets no step", () => {

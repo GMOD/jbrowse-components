@@ -144,7 +144,7 @@ function panels(recipe: Recipe, inlineOpens = false): Panel[] {
       kind: 'spec',
       body: [
         note(
-          `This <a href="/docs/urlparams/#session-spec">session spec</a> draws the figure from <code>${escapeAttr(recipe.config)}</code>: paste it after <code>&amp;session=spec-</code> on a JBrowse Web link that loads that config.`,
+          `This <a href="/docs/urlparams/#session-spec">session spec</a> draws the figure. It goes after <code>&amp;session=spec-</code> on a JBrowse Web link that loads <a href="${escapeAttr(recipe.configUrl)}">${escapeAttr(recipe.configUrl)}</a>, which is what the Web button above opens.`,
         ),
         copyableBlock(recipe.specJson, 'spec-json'),
       ].join(''),

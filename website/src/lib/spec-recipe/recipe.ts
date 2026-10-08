@@ -58,6 +58,7 @@ export interface Recipe {
   // opens directly
   desktopUrl: string
   config: string
+  configUrl: string
   specJson: string
   steps: RecipeStep[]
   webSteps: RecipeStep[]
@@ -220,18 +221,21 @@ const OPEN_TRACK =
 const ADD_TRACK =
   "Add a track: open this view's track selector and check one your config has, or click **+** and choose **Add track** to paste a URL or choose a local file."
 
+const NEXT_TRACK = 'Add the next track the same way.'
+
 function addTrackTitle(
   info: TrackInfo | undefined,
   kind: string | undefined,
   band: BandContext | undefined,
   viaTrackSelector: boolean | undefined,
+  repeat: boolean | undefined,
 ) {
   const needs = kind ? ` This one needs ${kind}.` : ''
   return info?.type === 'ReferenceSequenceTrack'
     ? `Show the genome's sequence: open the track selector and check **${info.name}**.`
     : band
       ? `Point the import form at your own file: ${band.form.band}, choose **New track**, and paste a URL or pick a local file.${needs}`
-      : `${viaTrackSelector ? ADD_TRACK : OPEN_TRACK}${needs}`
+      : `${repeat ? NEXT_TRACK : viaTrackSelector ? ADD_TRACK : OPEN_TRACK}${needs}`
 }
 
 function trackStep(
@@ -240,6 +244,8 @@ function trackStep(
   sessionTracks?: RawTrack[],
   band?: BandContext,
   viaTrackSelector?: boolean,
+  // an earlier step of this view already said how a track is added
+  repeat?: boolean,
 ): RecipeStep & { unmapped: string[] } {
   const trackId = specTrackId(entry)
   const info = lookupTrack(config, trackId, sessionTracks)
@@ -268,7 +274,7 @@ function trackStep(
   }
   const name = info ? `“${info.name}”` : `the “${trackId}” track`
   return {
-    title: addTrackTitle(info, kind, band, viaTrackSelector),
+    title: addTrackTitle(info, kind, band, viaTrackSelector, repeat),
     example:
       info?.type === 'ReferenceSequenceTrack'
         ? undefined
@@ -443,6 +449,7 @@ function viewSteps(
     unmapped.push(...formSteps.unmapped)
   } else {
     const entries = specTracks(view)
+    let explained = false
     for (const entry of entries) {
       const { unmapped: trackUnmapped, ...step } = trackStep(
         entry,
@@ -450,7 +457,9 @@ function viewSteps(
         sessionTracks,
         undefined,
         viaTrackSelector,
+        explained,
       )
+      explained ||= step.title.startsWith('Add a track')
       steps.push(step)
       unmapped.push(...trackUnmapped)
     }
@@ -591,6 +600,7 @@ export function buildRecipe(
     // one the app parses cannot drift apart
     desktopUrl: toProtocolUrl(desktopWebUrl),
     config,
+    configUrl,
     specJson,
     steps,
     webSteps: forWeb(steps),
