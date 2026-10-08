@@ -207,3 +207,20 @@ describe('the grow ceiling', () => {
     expect(display.height).toBeLessThan(display.growMaxHeight)
   })
 })
+
+// Grow's `height` runs ahead of the slot, so a handle clamped against it banked
+// px the band never drew and the drag back had to spend them first.
+describe('a band drag in grow mode', () => {
+  it('banks no height the band does not draw', () => {
+    const { display } = createEnvWithPileup(60)
+    display.setHeightMode('grow')
+    expect(display.height).toBeGreaterThan(display.fitTargetHeight)
+    for (let i = 0; i < 40; i++) {
+      display.setCoverageHeight(display.coverageHeight + 10)
+    }
+    expect(display.coverageHeight).toBe(display.bandHeights.coverageHeight)
+    const drawn = display.bandHeights.coverageHeight
+    display.setCoverageHeight(display.coverageHeight - 10)
+    expect(display.bandHeights.coverageHeight).toBe(drawn - 10)
+  })
+})

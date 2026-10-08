@@ -1370,24 +1370,30 @@ export default function stateModelFactory(
 
           /**
            * #getter
-           * The three band heights as every consumer draws them: the slots bound
-           * to their legal range. A config, a session snapshot or a menu states
-           * these rather than dragging them, so nothing else clamps them — and a
-           * band dragged tall stays tall in its slot while the track shrinks under
-           * it. The ceiling leaves the pileup a row to be squashed into, and so
-           * applies only where there is a pileup. Off `fitTargetHeight`, the raw
-           * slot, since this feeds the layout `height` is derived from in grow
-           * mode.
+           * The ceiling of the three bands stacked over the pileup, which the
+           * resize handles drag against and `bandHeights` draws within, so a
+           * handle never banks px the band cannot show. It leaves the pileup a
+           * row where there is one. Off `fitTargetHeight`, the raw slot, since
+           * `height` derives from the layout these heights feed in grow mode.
            */
-          get bandHeights() {
+          get resizableBandBounds() {
             const pileupReservePx = self.showPileup ? MIN_BAND_HEIGHT : 0
-            const bounds = {
-              min: 0,
+            return {
               max: Math.max(
                 MIN_BAND_HEIGHT,
                 self.fitTargetHeight - pileupReservePx,
               ),
             }
+          },
+
+          /**
+           * #getter
+           * The three band heights as every consumer draws them: the slots
+           * bound to `resizableBandBounds`, since a config or a session
+           * snapshot states a height no drag clamped.
+           */
+          get bandHeights() {
+            const bounds = { min: 0, ...this.resizableBandBounds }
             return {
               coverageHeight: boundBandHeight(self.coverageHeight, bounds),
               readConnectionsHeight: boundBandHeight(
@@ -3330,26 +3336,6 @@ export default function stateModelFactory(
             self.perBaseBinBp !== self.livePerBaseBinBp ||
             self.lodTier !== self.liveLodTier
           )
-        },
-      }))
-      .views(self => ({
-        /**
-         * #getter
-         * The legal range for any of the three drag-resizable bands stacked over
-         * the pileup (coverage, read connections, sashimi).
-         *
-         * The ceiling keeps the drag reversible. `scrollViewportHeight` floors
-         * at 0, so without a ceiling a band dragged past the display height
-         * squashes the pileup to nothing and moves its resize handle off the
-         * bottom edge, and only growing the track brings it back. Each band is
-         * bounded against the display height individually; three bands dragged
-         * large can still crowd the pileup, but every resize handle stays
-         * reachable.
-         */
-        get resizableBandBounds() {
-          return {
-            max: Math.max(MIN_BAND_HEIGHT, self.height - MIN_BAND_HEIGHT),
-          }
         },
       }))
       .views(self => ({
