@@ -3,10 +3,8 @@ import { toArray } from 'rxjs/operators'
 
 import { asTable } from '../../util/featureTable.ts'
 import { createStatusFanOut } from '../../util/progress.ts'
-import { blankStats, scoresToStats } from '../../util/stats.ts'
 import { BaseAdapter } from './BaseAdapter.ts'
 import { isSubAdapterConfig } from './featureDensity.ts'
-import { aggregateQuantitativeStats } from './stats.ts'
 import { isFeatureAdapter } from './util.ts'
 
 import type { AnyConfigurationModel } from '../../configuration/index.ts'
@@ -155,31 +153,6 @@ export abstract class BaseFeatureDataAdapter<
   public async hasDataForRefName(refName: string, opts: BaseOptions = {}) {
     const refNames = await this.getRefNames(opts)
     return refNames.includes(refName)
-  }
-
-  /**
-   * Calculates the minimum score, maximum score, and other statistics from
-   * features over a region, primarily used for quantitative tracks
-   */
-  public async getRegionQuantitativeStats(region: Region, opts?: BaseOptions) {
-    const feats = this.getFeatures(region, opts)
-    return scoresToStats(region, feats)
-  }
-  /**
-   * Calculates the minimum score, maximum score, and other statistics from
-   * features over multiple regions, primarily used for quantitative tracks
-   */
-  public async getMultiRegionQuantitativeStats(
-    regions: Region[] = [],
-    opts?: BaseOptions,
-  ) {
-    if (!regions.length) {
-      return blankStats()
-    }
-    const stats = await Promise.all(
-      regions.map(region => this.getRegionQuantitativeStats(region, opts)),
-    )
-    return aggregateQuantitativeStats(stats)
   }
 
   /**

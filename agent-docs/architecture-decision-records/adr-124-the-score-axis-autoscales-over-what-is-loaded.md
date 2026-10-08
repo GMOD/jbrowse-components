@@ -10,6 +10,13 @@ summary: "The wiggle family's `global` and `globalsd` autoscale modes were retir
 Amended by [ADR-141](adr-141-one-y-scale-the-displays.md): the mark display's
 pin lands on `scales.y`, not on the owning mark's `encoding.y.domain`.
 
+Amended 2026-10-08: the adapter stats methods are removed.
+`getRegionQuantitativeStats` and `getMultiRegionQuantitativeStats` left
+`BaseFeatureDataAdapter`, with the `BigWigAdapter` and `MultiWiggleAdapter`
+overrides, since nothing in the tree called them and an external caller was
+judged too rare to keep them for. The "stay, as adapter surface" paragraph
+below is superseded; the rest stands.
+
 Accepted (2026-09-16), recording a retirement made on 2026-06-19 in
 c7ee0eadd1 that no document described. Closes the last two items of the
 2026-09-15 grammar handoff.

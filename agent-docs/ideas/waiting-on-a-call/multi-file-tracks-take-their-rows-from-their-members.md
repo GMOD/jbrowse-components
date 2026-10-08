@@ -97,8 +97,7 @@ BigWig assumptions:
   today's unbounded `Promise.all` (`MultiWiggleAdapter.ts:187`) downloads every
   index before the first paint.
 - `getRegionByteSize` sums the members that estimate, as
-  `MultiWiggleAdapter`'s does; `getZoomRange` intersects;
-  `getRegionQuantitativeStats` aggregates.
+  `MultiWiggleAdapter`'s does; `getZoomRange` intersects.
 - `listRowSources` lists every member with its label, colour and attributes,
   plus a `warnings` member, which `RowSourceListing` lacks
   (`rowSources.ts`). Today's listing strips everything but label and colour

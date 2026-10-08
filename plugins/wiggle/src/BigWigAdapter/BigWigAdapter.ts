@@ -6,7 +6,6 @@ import {
 import { downloadStatus } from '@jbrowse/core/util'
 import { openLocation } from '@jbrowse/core/util/io'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
-import { calcStdFromSums } from '@jbrowse/core/util/stats'
 
 import { bigWigFeatureTable } from './bigWigFeatureTable.ts'
 import {
@@ -27,84 +26,7 @@ import type {
   ZoomRange,
 } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { Feature } from '@jbrowse/core/util'
-import type { RectifiedQuantitativeStats } from '@jbrowse/core/util/stats'
 import type { AugmentedRegion as Region } from '@jbrowse/core/util/types'
-
-function computeStatsFromView(
-  view: ArrayFeatureView,
-  targetStart: number,
-  targetEnd: number,
-): RectifiedQuantitativeStats {
-  const basesCovered = targetEnd - targetStart
-  // Number.MAX_VALUE not Infinity: precautionary, since Infinity serializes as
-  // null in JSON and these stats cross the RPC boundary. In practice the
-  // sentinels are always replaced (featureCount===0 returns zeros early).
-  let scoreMin = Number.MAX_VALUE
-  let scoreMax = -Number.MAX_VALUE
-  let scoreMeanMin = Number.MAX_VALUE
-  let scoreMeanMax = -Number.MAX_VALUE
-  let scoreSum = 0
-  let scoreSumSquares = 0
-  let featureCount = 0
-
-  for (let i = 0; i < view.length; i++) {
-    if (view.end(i) <= targetStart || view.start(i) >= targetEnd) {
-      continue
-    }
-
-    const score = view.score(i)
-    const min = view.minScore(i) ?? score
-    const max = view.maxScore(i) ?? score
-
-    scoreMin = Math.min(scoreMin, min)
-    scoreMax = Math.max(scoreMax, max)
-    scoreMeanMin = Math.min(scoreMeanMin, score)
-    scoreMeanMax = Math.max(scoreMeanMax, score)
-    scoreSum += score
-    scoreSumSquares += score * score
-    featureCount++
-  }
-
-  if (featureCount === 0) {
-    return {
-      scoreMin: 0,
-      scoreMax: 0,
-      scoreSum: 0,
-      scoreSumSquares: 0,
-      scoreMean: 0,
-      scoreStdDev: 0,
-      featureCount: 0,
-      basesCovered,
-      featureDensity: 0,
-    }
-  }
-
-  const scoreMean = scoreSum / featureCount
-  // calcStdFromSums guards variance<0 (floating-point rounding can push it
-  // slightly negative when every score in the window is equal — a flat region —
-  // which a bare Math.sqrt would turn into NaN). population=true keeps the
-  // divide-by-n behavior this used to compute inline.
-  const scoreStdDev = calcStdFromSums(
-    scoreSum,
-    scoreSumSquares,
-    featureCount,
-    true,
-  )
-
-  return {
-    scoreMin,
-    scoreMax,
-    scoreMeanMin,
-    scoreMeanMax,
-    scoreSum,
-    scoreSumSquares,
-    scoreMean,
-    scoreStdDev,
-    featureCount,
-    basesCovered,
-    featureDensity: featureCount / basesCovered,
-  }
-}
 
 export default class BigWigAdapter extends BaseFeatureDataAdapter<BigWigAdapterConfig> {
   setup = cachedSetup({
@@ -311,20 +233,5 @@ export default class BigWigAdapter extends BaseFeatureDataAdapter<BigWigAdapterC
     opts: WiggleOptions = {},
   ): Promise<RawFeatureArrays[]> {
     return this.readRegions(regions, opts)
-  }
-
-  // No in-tree caller; overrides the base class's feature walk for external
-  // plugins, and the base class's multi-region version builds on it.
-  public async getRegionQuantitativeStats(
-    region: Region,
-    opts?: WiggleOptions,
-  ) {
-    const { start, end } = region
-    const view = await this.getArrayFeatureView(region, {
-      ...opts,
-      bpPerPx: (end - start) / 1000,
-    })
-
-    return computeStatsFromView(view, start, end)
   }
 }

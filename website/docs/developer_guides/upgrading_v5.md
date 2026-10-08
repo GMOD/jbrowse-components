@@ -77,7 +77,11 @@ alongside `CoreRender` above:
   `WiggleGetMultiRegionQuantitativeStats`. There is no separate stats round trip
   any more: `RenderMultiWiggleData` returns the per-region score arrays and the
   display derives its own domain from them, which is also what makes the
-  percentile clip (`scales.y.domainQuantile`) possible.
+  percentile clip (`scales.y.domainQuantile`) possible. The adapter methods
+  those two called, `getRegionQuantitativeStats` and
+  `getMultiRegionQuantitativeStats`, are gone from `BaseFeatureDataAdapter` as
+  well; `scoresToStats` from `@jbrowse/core/util/stats` computes the same from
+  an adapter's `getFeatures`.
 - `RenderWiggleData`. `RenderMultiWiggleData` serves every quantitative adapter
   now that there is one quantitative display; an adapter handing back typed
   arrays reports one unnamed source through it.

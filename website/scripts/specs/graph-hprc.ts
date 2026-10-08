@@ -314,9 +314,9 @@ const HPRC_TIER_SESSION_TRACK = {
 }
 
 // The same bubble file as a curve. No new data and no new code:
-// MinigraphBubbleAdapter already sets `score` to the bubble's segment count and
-// extends BaseFeatureDataAdapter, which supplies getRegionQuantitativeStats off
-// `scoresToStats`, so only the track TYPE changes — a FeatureTrack offers no
+// MinigraphBubbleAdapter already sets `score` to the bubble's segment count,
+// which the wiggle display plots off any feature adapter, so only the track
+// TYPE changes — a FeatureTrack offers no
 // wiggle display to choose. 9,444 bubbles on chr1 with segment counts into the
 // hundreds, so at 249 Mb each pixel aggregates a handful and the profile is
 // real rather than sampled.

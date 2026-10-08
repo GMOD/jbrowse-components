@@ -1,4 +1,18 @@
-import { hitTestMouse } from './wiggleHitTest.ts'
+import { hitTestMouse, wiggleFeatureWidgetData } from './wiggleHitTest.ts'
+
+test('the details payload lists min, avg and max for a summary bin', () => {
+  expect(
+    wiggleFeatureWidgetData({
+      refName: 'chr1',
+      start: 0,
+      end: 100,
+      rows: [
+        { source: 'a', score: 5, summary: true, minScore: 1, maxScore: 9 },
+        { source: 'b', score: 3 },
+      ],
+    }).sources,
+  ).toEqual({ a: { min: 1, avg: 5, max: 9 }, b: 3 })
+})
 
 describe('hitTestMouse', () => {
   // 100px of screen over 10bp → 10px per base, so each base's pixels are

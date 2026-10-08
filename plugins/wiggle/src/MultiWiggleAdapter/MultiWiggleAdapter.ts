@@ -3,7 +3,6 @@ import {
   BaseFeatureDataAdapter,
   cachedSetup,
 } from '@jbrowse/core/data_adapters/BaseAdapter'
-import { aggregateQuantitativeStats } from '@jbrowse/core/data_adapters/BaseAdapter/stats'
 import { SimpleFeature, createStatusFanOut } from '@jbrowse/core/util'
 import { isAbortException } from '@jbrowse/core/util/aborting'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
@@ -325,23 +324,6 @@ export default class MultiWiggleAdapter
         ),
       }),
     )
-  }
-
-  public async getRegionQuantitativeStats(
-    region: Region,
-    opts?: WiggleOptions,
-  ) {
-    const adapters = await this.getAdapters()
-    const allStats = await mapWithConcurrency(
-      adapters,
-      SUBTRACK_FETCH_CONCURRENCY,
-      adp =>
-        namingSource(
-          adp.source,
-          adp.dataAdapter.getRegionQuantitativeStats(region, opts),
-        ),
-    )
-    return aggregateQuantitativeStats(allStats)
   }
 
   // A row's attributes are the keys its subadapter config carries beyond the
