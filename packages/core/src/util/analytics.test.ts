@@ -4,6 +4,7 @@ import { observable, runInAction } from 'mobx'
 import { ConfigurationSchema } from '../configuration/index.ts'
 import {
   doAnalytics,
+  urlParamNames,
   writeAWSAnalytics,
   writeGAAnalytics,
 } from './analytics.ts'
@@ -251,4 +252,11 @@ test('a config that disables analytics stops the end reports', async () => {
   await new Promise(resolve => setTimeout(resolve, 50))
 
   expect(fetchMock).not.toHaveBeenCalled()
+})
+
+test('urlParamNames keeps the names of JBrowse parameters and drops the rest', () => {
+  expect(
+    urlParamNames('?config=c.json&loc=chr1:1-100&tracks=genes&utm_source=x'),
+  ).toBe('config,loc,tracks')
+  expect(urlParamNames('')).toBe('')
 })

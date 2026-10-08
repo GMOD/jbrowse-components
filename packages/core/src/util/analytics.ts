@@ -51,7 +51,9 @@ function getPageLoadId() {
 }
 
 // Names only, and only JBrowse's own: says whether a load was a link to a
-// location or a set of tracks without saying which.
+// location or a set of tracks without saying which. Read when this module
+// loads, because jbrowse-web folds `loc`, `tracks` and `assembly` into a
+// `session` parameter before the report goes out.
 const knownUrlParams = [
   'assembly',
   'config',
@@ -64,10 +66,12 @@ const knownUrlParams = [
   'tracklist',
   'tracks',
 ]
-function urlParamNames() {
-  const params = new URLSearchParams(window.location.search)
+export function urlParamNames(search: string) {
+  const params = new URLSearchParams(search)
   return knownUrlParams.filter(name => params.has(name)).join(',')
 }
+const initialUrlParams =
+  typeof window === 'undefined' ? '' : urlParamNames(window.location.search)
 
 function sessionTrackTypeCounts(session: ActivitySession | undefined) {
   const counts: Record<string, number> = {}
@@ -135,7 +139,7 @@ export async function writeAWSAnalytics(
       'open-views': session?.views.length ?? 0,
       'view-types': tallyTypes(shape.viewTypes),
       'open-track-types': tallyTypes(shape.trackTypes),
-      'url-params': urlParamNames(),
+      'url-params': initialUrlParams,
       'synteny-tracks-count': multiAssemblyTracks,
 
       // No `saved-sessions-count`: it counted localStorage keys matching
