@@ -78,7 +78,7 @@ describe('resetRowOrderMenuItems', () => {
 // let one row through. Passing `rowCount` moves the menu half of it here.
 describe('clusteringMenuItem', () => {
   const runItem = { label: 'Cluster rows by score...', onClick: () => {} }
-  const model = { setRowFocus: () => {} }
+  const model = { setRowFocus: () => {}, setScrollTop: () => {} }
   const subMenuOf = (item: ReturnType<typeof clusteringMenuItem>) =>
     'subMenu' in item ? resolveSubMenu(item) : []
 
@@ -103,5 +103,22 @@ describe('clusteringMenuItem', () => {
     expect(subMenuOf(clusteringMenuItem(model, runItem, 2))[0]).toMatchObject({
       disabled: false,
     })
+  })
+
+  it('clears the focus and the scroll offset the focused rows left', () => {
+    const focused = {
+      rowFocus: ['a'],
+      setRowFocus: jest.fn(),
+      setScrollTop: jest.fn(),
+    }
+    const clear = subMenuOf(clusteringMenuItem(focused, runItem, 2)).find(
+      item => 'label' in item && item.label === 'Clear subtree filter',
+    )
+    if (!clear || !('onClick' in clear)) {
+      throw new Error('no "Clear subtree filter" item')
+    }
+    ;(clear.onClick as () => void)()
+    expect(focused.setRowFocus).toHaveBeenCalledWith(undefined)
+    expect(focused.setScrollTop).toHaveBeenCalledWith(0)
   })
 })

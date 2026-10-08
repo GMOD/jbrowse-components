@@ -6,6 +6,7 @@ import SwapVertIcon from '@mui/icons-material/SwapVert'
 import { MIN_SEPARATOR_ROW_PX } from './RowSeparatorLines.tsx'
 import { MIN_CLUSTER_ROWS } from './clusterMatrix.ts'
 import { describeClusterProvenance } from './clusterProvenance.ts'
+import { focusRows } from './focusRows.ts'
 
 import type { ClusterProvenance } from './clusterProvenance.ts'
 import type { MenuItem, NormalMenuItem } from '@jbrowse/core/ui'
@@ -138,6 +139,7 @@ export function treeSidebarShowMenuItems(
 interface RowFocusMenuModel {
   rowFocus?: readonly string[]
   setRowFocus: (arg?: readonly string[]) => void
+  setScrollTop: (scrollTop: number) => void
 }
 
 // "Clear subtree filter", or nothing when no filter is set — spread, don't
@@ -153,7 +155,7 @@ export function clearRowFocusMenuItems(self: RowFocusMenuModel): MenuItem[] {
         {
           label: 'Clear subtree filter',
           onClick: () => {
-            self.setRowFocus(undefined)
+            focusRows(self)
           },
         },
       ]

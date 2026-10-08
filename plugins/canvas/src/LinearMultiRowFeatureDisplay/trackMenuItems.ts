@@ -72,6 +72,7 @@ interface MultiRowMenuSelf
   setHiddenCategories: (labels: string[]) => void
   setShowBranchLength: (f: boolean) => void
   setRowFocus: (names?: readonly string[]) => void
+  setScrollTop: (scrollTop: number) => void
   setRowHeight: (n: number) => void
   setFitToHeight: () => void
 }

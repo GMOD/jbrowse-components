@@ -110,6 +110,7 @@ interface MafMenuSelf
   setRowIdentityAutoZoom: (f: boolean) => void
   rowFocus?: readonly string[]
   setRowFocus: (names?: readonly string[]) => void
+  setScrollTop: (scrollTop: number) => void
   // `resetRowOrderMenuItems` gates on the first and calls the second.
   rowArrangementIsCustom: boolean
   resetRowArrangement: () => void

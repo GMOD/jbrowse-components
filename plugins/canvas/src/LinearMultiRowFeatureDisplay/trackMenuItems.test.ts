@@ -59,6 +59,7 @@ function makeSelf(
     setHiddenCategories: () => {},
     setShowBranchLength: () => {},
     setRowFocus: () => {},
+    setScrollTop: () => {},
     setRowOrder: () => {},
     applyRowEdits: () => {},
     resetRowArrangement: () => {},
