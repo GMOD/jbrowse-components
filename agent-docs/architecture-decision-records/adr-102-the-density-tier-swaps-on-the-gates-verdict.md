@@ -18,7 +18,7 @@ gene annotation or a 30x BAM has a perfectly good rendering — features per
 bin — that costs nothing to fetch.
 
 MAF already has a zoom-out tier (`summaryAdapter`), and it swaps **on span**,
-at the 20 kb force-load floor. `produce-and-host-the-hprc-summary-tier.md`
+at the 20 kb force-load floor. `the-hprc-summary-tier-swaps-on-span-or-on-cost.md`
 records what that costs: the tutorial's own figure is drawn at 83 kb, where a
 detail read is ~1.2 MB against a 5 Mb budget, so wiring the summary there
 silently replaces the per-haplotype rows the figure exists to show. Span is a

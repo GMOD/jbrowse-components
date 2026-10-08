@@ -38,11 +38,8 @@ gate.
 
 `LinearSyntenyDisplay` (hover/click indices, `setRpcData`'s clear),
 `MultiWaySyntenyDisplay` (hover and click, the group-key click),
-and `DotplotDisplay` (hover only today; its click currently resolves the
-alignment under the pointer and does nothing —
-[let-a-dotplot-click-open-the-alignment-it-is-on](let-a-dotplot-click-open-the-alignment-it-is-on.md)
-is the feature the mixin would make cheap). The GPU buffer half is already
-shared (`SyntenyRibbonBuffers`); this is the model-side counterpart.
+and `DotplotDisplay` (hover only; its click resolves the alignment under the
+pointer and does nothing).
 
 ## What stays per-display
 

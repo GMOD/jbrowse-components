@@ -1,25 +1,12 @@
 ---
 name: row-display-followups
-description: What the 2026-08-25 pass over the four row displays (multi-row features, multi-wiggle, MAF, the two multi-sample variant displays) left unbuilt — a fixed row height with a scroll viewport for multi-wiggle, MAF row separators, a metadata filter dialog, two multi-row product calls and the row-model loose ends — with what each one costs and what already exists to build it from.
+description: What the 2026-08-25 pass over the four row displays (multi-row features, multi-wiggle, MAF, the two multi-sample variant displays) left unbuilt — MAF row separators, a metadata filter dialog, two multi-row product calls and the row-model loose ends — with what each one costs and what already exists to build it from.
 ---
 
 # Row display follow-ups
 
 What a 2026-08-25 pass over the row displays priced and did not build, and what
 later reviews left open.
-
-**Multi-wiggle: a fixed row height and a scroll viewport.** The one row display
-with no `RowHeightMixin`: it is always fit-to-height, and past ~100 subtracks
-`MultiWiggleHint` tells the reader to switch renderings or grow the track.
-Everything but the shader exists — `useRowVirtualScroll` (core) and
-`VerticalScrollbar` are shared with MAF and the variant displays,
-`rowHeightConfigSchemaFields` + `RowHeightMixin` + `rowHeightMenuItem` are the
-slot, the getters and the menu. What is missing is a `scrollTop` uniform in
-`wiggle.slang` / `wiggleLine.slang` and the Canvas2D twin, a `rowsHeight`
-viewport under `plotGeometry`, and the per-row axes (the chrome's, off `valueScales`)
-culling to it. Declined in the pass because fit-to-height is what the display
-is for at cohort scale (a 1,000-row density matrix is read as a stack), and the
-hint's advice is right more often than a scrollbar would be.
 
 **MAF row separators.** `showRowSeparatorsMenuItem` and `RowSeparatorLines`
 (now scroll-aware) are shared, so wiring them into MAF is the same three lines

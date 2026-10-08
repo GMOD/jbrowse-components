@@ -1,9 +1,9 @@
 ---
-name: produce-and-host-the-hprc-summary-tier
+name: the-hprc-summary-tier-swaps-on-span-or-on-cost
 description: the tier is built and hosted and worth 3.19 GB refused against 150 kB drawn; what is left is an upstream report to `maf2bed` about the overlap collapse, and the decision that stops it being switched on for `hprc_maf.json` — whether the summary tier swaps on span or on cost
 ---
 
-# Produce and host the HPRC summary tier
+# The HPRC summary tier swaps on span or on cost
 
 Moved out of [TODO.md](../../TODO.md) on 2026-08-26, when the backlog was cut to
 what v5.0.0 turns on. The build and the hosting shipped; the remainder is an
