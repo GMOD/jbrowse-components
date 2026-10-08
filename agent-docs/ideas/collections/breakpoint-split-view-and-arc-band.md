@@ -62,8 +62,6 @@ a 6 kb fold gives two windows of one chromosome that read against each other.
 - Building the stacked panels applies `panelIsTurned` to the second panel of
   each junction, the way the single-row launch does; the first panel stays
   forward so the reader keeps one fixed frame.
-- Each panel's submenu gains a Flip entry that calls the panel's own LGV flip
-  action, for the other frame or a callset whose brackets are wrong.
 - The overlay needs nothing: `placeOnRow` reads the region's `reversed` flag
   and flips the feet with it, and `Variants.test.ts` pins that.
 
@@ -134,10 +132,6 @@ and relayout on every landing, for mates on one row, which the view never
 draws as evidence. A fresh track from `openDefaultTracks` is the one place a
 default could honestly live, through `setUnit` so the colour swap comes with
 it.
-
-Two findings from the same survey were fixed at once and are not here: the
-view-menu toggle that also gates variant curves is named for both, and the
-cgiab tutorial no longer describes the removed reconstruction.
 
 **The variant widget's link follows no chain.** `LaunchBreakendPanel.tsx`
 calls `launchBreakpointSplitView` with no `findJunctionsNear`, so the dialog

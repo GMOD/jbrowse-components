@@ -64,17 +64,6 @@ chromosomes, whose arms go to different partners. The same run found
 `drawCIGAR`/`drawCIGARMatchesOnly`; worker always emits full geometry, flags control
 visibility. Only worth it if users toggle frequently.
 
-`drawLocationMarkers` was the third name here and is **done** — by a different
-mechanism, and the difference is the whole reason it went first. Markers need nothing
-from the adapter, so "always emit" cost only the tick instances (`MIN_MARKER_FEATURE_PX`
-bounds those: a whole-genome hairball emits none) and the toggle became a zero alpha on
-the color lane in `computeSyntenyColors` — no new uniform, and it reuses the
-`patchInstanceColors` path the colour already had. The two CIGAR flags cannot follow that
-route: they gate the CIGAR *parse* in `executeSyntenyFeaturesAndPositions`, so the fetch
-genuinely brings back different bytes, and "always emit" means always parsing
-multi-megabyte CIGARs. A uniform flag is the right shape for them; a color-lane trick is
-not.
-
 **A location-marker tick can't be read, only seen.** A tick states "this query
 coordinate maps to that target coordinate" and there is no way to get the two numbers:
 markers are excluded from the pick index by construction — both their edges are single
@@ -244,10 +233,7 @@ Whole-genome synteny between species with an ancestral WGD / paleopolyploidy (gr
 paleohexaploidy is the resident demo — `grape_peach_synteny`) is intrinsically 1:many: each
 peach region maps to ~3 grape blocks, so ribbons cross no matter how you reorder, and
 single-axis `diagonalizeRegions` cannot flatten it. Reviewers repeatedly read the crossings
-as a diagonalization *failure*; they're real biology. A concrete demo now exists — the
-`grape_triplication` dotplot (in the `multiway_synteny` tutorial) isolates peach Pp01 →
-grape chr5/chr1/chr18 (the three gamma-triplication paralogs) so the 1:3 fan reads cleanly.
-Idea (still open): detect the fan (a query region
+as a diagonalization *failure*; they're real biology. Idea (still open): detect the fan (a query region
 with M target hits above a length/identity floor) and make the multi-mapping read as signal,
 not noise — e.g. a shared hue per source-block family, an explicit "paralog fan" affordance,
 or a summary "×3" annotation on the region. Complements the barycenter/layer-sweep note above

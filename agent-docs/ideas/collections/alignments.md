@@ -5,14 +5,8 @@ description: Pileup and coverage-band ideas — a read-count floor for the low-f
 
 # Alignments
 
-**Auto-scale noise.** Per-track noise estimate (mean insertion rate) to auto-scale
-`featureFrequencyThreshold` (noisy → strict, clean → lenient).
-
-**Quality-aware feature fade.** Toggle to disable sub-pixel fade for high-quality
-reads (Illumina/HiFi) where most mismatches are real variants, not errors.
-
-**A count floor, not a depth ramp, for `featureFrequencyThreshold`.** The two
-entries above both rescale a curve whose SHAPE is the problem. A 50% allele
+**A count floor, not a depth ramp, for `featureFrequencyThreshold`.** The ramp's
+SHAPE is the problem, not its scale. A 50% allele
 first clears the ramp at **22x** (0.8 under 10x, linear to 0.3 at 30x), so below
 that a heterozygote's pileup marks are zeroed and fade to `pxPerBp` when zoomed
 out. What separates a sequencing error from a het at low depth is the read
