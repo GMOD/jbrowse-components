@@ -85,7 +85,7 @@ function collectUses(): Map<string, Use[]> {
   return uses
 }
 
-function rows(): string[] {
+function rows(): string[][] {
   const uses = collectUses()
   const orphans: string[] = []
   const out: string[][] = []

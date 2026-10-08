@@ -13,6 +13,8 @@
 //! js-skip: farDomeStep — a step of farDomeDistancePx's solve, so it inherits farDomeDistSq's reason exactly
 //! oracle-skip: ellipseHullPoint — a miter between near-parallel tangent lines, so float32 and float64 part on the probe's arbitrary directions and radii; over the angles the hull steps through they agree to 0.004 px, and arcHull.test.ts referees the twin against every inked point instead
 //! oracle-skip: wideCircleHullPoint — the foot-relative frame cancels at half steps and angles the band never reaches; arcHull.test.ts referees it with the legs
+//! oracle-skip: farDomeDistancePx — at the probe's 65536 px ry, q = h / ry and 1 - q² round to the same float32, so the solve starts from the wrong foot and lands up to 18 px out; ry is the arc band, tens of px, where float32 and float64 agree, and farDome.test.ts referees the twin against an exact solve
+//! oracle-skip: farDomeStep — a step of farDomeDistancePx's solve, so it inherits that reason; the probe also feeds it negative radii and widths the solve never reaches
 
 module curveDistance;
 
