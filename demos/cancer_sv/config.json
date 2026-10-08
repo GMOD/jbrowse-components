@@ -57,6 +57,20 @@
       }
     },
     {
+      "type": "FeatureTrack",
+      "trackId": "repeats_hg38",
+      "name": "Repeats",
+      "assemblyNames": ["hg38"],
+      "category": ["Annotation"],
+      "adapter": {
+        "type": "BigBedAdapter",
+        "bigBedLocation": {
+          "uri": "https://jbrowse.org/genomes/GRCh38/repeats.bb",
+          "locationType": "UriLocation"
+        }
+      }
+    },
+    {
       "type": "VariantTrack",
       "trackId": "COLO829_somatic_sv",
       "name": "COLO829 somatic SVs (nanomonsv)",
