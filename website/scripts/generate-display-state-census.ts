@@ -96,9 +96,10 @@ function displayDirs() {
       if (!isRegistration(file)) {
         continue
       }
-      if (
-        readFileSync(file, 'utf8').includes('pluginManager.addDisplayType(')
-      ) {
+      // The construction, not the call that registers it: a plugin names its
+      // manager what it likes (dotplot-view's is `pm`), and a track's own
+      // `addDisplayType` attaches a display someone else registered.
+      if (readFileSync(file, 'utf8').includes('new DisplayType(')) {
         dirs.push(dirname(file))
       }
     }
@@ -132,10 +133,13 @@ function main() {
     '<!-- prettier-ignore -->',
     ...markdownTableLines(
       ['Display', 'Plugin', '`#slot`', '`#property`', '`#volatile`'],
-      rows.map(
-        r =>
-          `| \`${r.display}\` | \`${r.plugin}\` | ${r.slots} | ${r.properties} | ${r.volatiles} |`,
-      ),
+      rows.map(r => [
+        `\`${r.display}\``,
+        `\`${r.plugin}\``,
+        r.slots,
+        r.properties,
+        r.volatiles,
+      ]),
     ),
   ]
 
@@ -147,7 +151,7 @@ function main() {
       body,
     }),
     label: 'display state census',
-    staleHint: 'display state census',
+    staleHint: 'run `pnpm autogen`',
   })
 }
 

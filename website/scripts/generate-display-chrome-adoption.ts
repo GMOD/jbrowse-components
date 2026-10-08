@@ -1306,12 +1306,13 @@ checkOrWrite({
       '',
       ...markdownTableLines(
         ['Display type', 'Chrome', 'Component', 'SVG chrome', 'renderSvg'],
-        rows.map(
-          r =>
-            `| ${r.name} | ${r.chrome ? `\`${r.chrome}\`` : '—'} | ${r.via} | ${
-              r.svgChrome ? `\`${SVG_CHROME}\`` : '—'
-            } | ${r.svgVia} |`,
-        ),
+        rows.map(r => [
+          r.name,
+          r.chrome ? `\`${r.chrome}\`` : '—',
+          r.via,
+          r.svgChrome ? `\`${SVG_CHROME}\`` : '—',
+          r.svgVia,
+        ]),
       ),
     ],
   }),

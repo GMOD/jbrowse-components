@@ -88,7 +88,7 @@ function collectUses(): Map<string, Use[]> {
 function rows(): string[] {
   const uses = collectUses()
   const orphans: string[] = []
-  const out: string[] = []
+  const out: string[][] = []
   for (const source of readdirSync(diagramsDir).filter(f =>
     SOURCE_EXT.test(f),
   )) {
@@ -104,7 +104,7 @@ function rows(): string[] {
         return u.section ? `${link} — ${u.section}` : link
       })
       .join('<br />')
-    out.push(`| \`${source}\` | ${where} |`)
+    out.push([`\`${source}\``, where])
   }
   if (orphans.length > 0) {
     throw new Error(
@@ -118,7 +118,7 @@ function rows(): string[] {
         )}\nEmbed it, or delete the source and its figures.lock line.`,
     )
   }
-  return out.sort()
+  return out.sort(([a], [b]) => (a! < b! ? -1 : a! > b! ? 1 : 0))
 }
 
 checkOrWrite({

@@ -44,7 +44,7 @@ import { readFileSync, readdirSync } from 'node:fs'
 import { join } from 'node:path'
 
 import {
-  checkOrWrite,
+  checkOrWriteAll,
   markdownTableLines,
   parseFrontmatter,
   spliceGeneratedBlock,
@@ -233,48 +233,56 @@ function collectDocs(
 const tableFor = (docs: Doc[], heading: string) =>
   markdownTableLines(
     ['Doc', heading],
-    docs.map(
-      d =>
-        `| [${d.name}](${d.file})${d.audience === 'internal' ? ' (internal)' : ''} | ${d.description} |`,
-    ),
+    docs.map(d => [
+      `[${d.name}](${d.file})${d.audience === 'internal' ? ' (internal)' : ''}`,
+      d.description,
+    ]),
   )
 
-for (const {
-  dir,
-  marker,
-  label,
-  heading,
-  slugFilenames,
-  groups,
-  maxDescriptionWords,
-  subfolders,
-} of INDEXES) {
-  const indexPath = join(repoRoot, 'agent-docs', dir, SELF)
-  const docs = collectDocs(dir, slugFilenames, maxDescriptionWords, subfolders)
-  const filled = groups?.filter(g => docs.some(g.match))
-  const ungrouped = groups
-    ? docs.filter(d => !groups.some(g => g.match(d)))
-    : []
-  if (ungrouped.length) {
-    throw new Error(
-      `agent-docs/${dir}/: ${ungrouped.map(d => d.file).join(', ')} match no group of the index, so they would be invisible on it. Each needs what the groups split on — the \`kind:\` frontmatter in reference/, one of the subfolders in ideas/ — named in website/scripts/generate-doc-indexes.ts`,
-    )
-  }
-  checkOrWrite({
-    path: indexPath,
-    content: spliceGeneratedBlock({
-      path: indexPath,
-      marker,
-      body: filled
-        ? filled.flatMap((group, i) => [
-            ...(i ? [''] : []),
-            `## ${group.title}`,
-            '',
-            ...tableFor(docs.filter(group.match), heading),
-          ])
-        : tableFor(docs, heading),
-    }),
+const indexes = INDEXES.map(
+  ({
+    dir,
+    marker,
     label,
-    staleHint: 'run `pnpm autogen`',
-  })
-}
+    heading,
+    slugFilenames,
+    groups,
+    maxDescriptionWords,
+    subfolders,
+  }) => {
+    const indexPath = join(repoRoot, 'agent-docs', dir, SELF)
+    const docs = collectDocs(
+      dir,
+      slugFilenames,
+      maxDescriptionWords,
+      subfolders,
+    )
+    const filled = groups?.filter(g => docs.some(g.match))
+    const ungrouped = groups
+      ? docs.filter(d => !groups.some(g => g.match(d)))
+      : []
+    if (ungrouped.length) {
+      throw new Error(
+        `agent-docs/${dir}/: ${ungrouped.map(d => d.file).join(', ')} match no group of the index, so they would be invisible on it. Each needs what the groups split on — the \`kind:\` frontmatter in reference/, one of the subfolders in ideas/ — named in website/scripts/generate-doc-indexes.ts`,
+      )
+    }
+    return {
+      path: indexPath,
+      content: spliceGeneratedBlock({
+        path: indexPath,
+        marker,
+        body: filled
+          ? filled.flatMap((group, i) => [
+              ...(i ? [''] : []),
+              `## ${group.title}`,
+              '',
+              ...tableFor(docs.filter(group.match), heading),
+            ])
+          : tableFor(docs, heading),
+      }),
+      label,
+    }
+  },
+)
+
+checkOrWriteAll(indexes, 'run `pnpm autogen`')

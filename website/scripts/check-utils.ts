@@ -190,15 +190,17 @@ export function parseFrontmatter(
 // string, led by a `prettier-ignore`), and that file imports this one — so the
 // two were a single mistaken import away from a table rendered as
 // `[object Object]` or a `.join` on a string.
+//
+// Rows are cells, not finished lines, so a `|` in a summary or a type cannot
+// split its row: ADR-198's `Uint32Array | number` did, and GFM dropped the rest
+// of the cell.
 export function markdownTableLines(
   headers: string[],
-  rows: string[],
+  rows: (string | number)[][],
 ): string[] {
-  return [
-    `| ${headers.join(' | ')} |`,
-    `| ${headers.map(() => '---').join(' | ')} |`,
-    ...rows,
-  ]
+  const line = (cells: (string | number)[]) =>
+    `| ${cells.map(c => String(c).replaceAll(/(?<!\\)\|/g, '\\|')).join(' | ')} |`
+  return [line(headers), line(headers.map(() => '---')), ...rows.map(line)]
 }
 
 // Every generated block in agent-docs says so, in one line. Defined here and
@@ -394,6 +396,14 @@ export function oxfmtBin(): string {
 // construction. `--stdin-filepath` is how oxfmt picks its parser, so the path
 // matters even though nothing is read from it.
 export function formatMarkdown(text: string, filepath: string): string {
+  // `agent-docs` is on .prettierignore, so oxfmt hands the text back as it
+  // came. Forty-two such spawns were all of the measurement-table generator's
+  // four seconds.
+  if (
+    resolve(repoRoot, filepath).startsWith(`${join(repoRoot, 'agent-docs')}/`)
+  ) {
+    return text
+  }
   // `cwd: repoRoot`, and the binary resolved from there too, because oxfmt
   // reads its config from the directory it is SPAWNED in: the same text
   // formatted from website/ and from the repo root came out differently (a

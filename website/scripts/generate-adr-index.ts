@@ -15,7 +15,7 @@
 // rejected, which the title doesn't say.
 //
 // Only the table between the BEGIN/END markers is generated; the prose above it
-// is hand-maintained. Run: `pnpm gen-adr-index` (or `--check` in CI).
+// is hand-maintained. Run: `pnpm autogen ADR` (or `--check` in CI).
 import { readFileSync, readdirSync } from 'node:fs'
 import { join } from 'node:path'
 
@@ -50,7 +50,7 @@ const REMOVED: { range: string; sortKey: number; note: string }[] = [
 
 interface Adr {
   sortKey: number
-  row: string
+  row: string[]
 }
 
 // The index is the only thing that lists the ADRs, so a file this loop skips is
@@ -87,7 +87,7 @@ function collectAdrs() {
     } else {
       adrs.push({
         sortKey: Number(num),
-        row: `| [${num}](${file}) | ${status} | ${summary} |`,
+        row: [`[${num}](${file})`, status, summary],
       })
     }
   }
@@ -99,7 +99,7 @@ function collectAdrs() {
     )
   }
   for (const { range, sortKey, note } of REMOVED) {
-    adrs.push({ sortKey, row: `| ${range} | Removed | ${note} |` })
+    adrs.push({ sortKey, row: [range, 'Removed', note] })
   }
   return adrs.sort((a, b) => a.sortKey - b.sortKey)
 }

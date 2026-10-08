@@ -115,7 +115,7 @@ function main() {
     '<!-- prettier-ignore -->',
     ...markdownTableLines(
       ['Model', 'Loaded signature', 'Live signature'],
-      rows.map(r => `| \`${r.file}\` | \`${r.loaded}\` | \`${r.live}\` |`),
+      rows.map(r => [`\`${r.file}\``, `\`${r.loaded}\``, `\`${r.live}\``]),
     ),
   ]
 
@@ -127,7 +127,7 @@ function main() {
       body,
     }),
     label: 'freshness signature census',
-    staleHint: 'freshness signature census',
+    staleHint: 'run `pnpm autogen`',
   })
 }
 

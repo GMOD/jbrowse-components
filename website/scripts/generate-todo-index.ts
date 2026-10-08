@@ -191,9 +191,11 @@ for (const { category, marker } of TABLES) {
     text: content,
     body: markdownTableLines(
       ['Item', 'Area', 'First move'],
-      byCategory(category).map(
-        e => `| [${e.title}](todo/${e.file}) | ${e.area} | ${e.firstMove} |`,
-      ),
+      byCategory(category).map(e => [
+        `[${e.title}](todo/${e.file})`,
+        e.area,
+        e.firstMove,
+      ]),
     ),
   })
 }

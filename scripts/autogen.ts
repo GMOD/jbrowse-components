@@ -100,8 +100,8 @@ const GENERATORS: Generator[] = [
     // in core and each product, and the manifest the checkers read — from the
     // served packages' exports maps.
     // Not `independent`: the ABI removal tables and the marker tables read
-    // reExports.generated.json, so this holds its place in the ordered chain
-    // ahead of both.
+    // reExports.generated.json and name this in their `needs`, which is what
+    // `--fix-stale` follows downstream.
     name: 'runtime re-exports',
     argv: rootScript('generateReExports.ts'),
     needs: ['core exports'],
@@ -149,6 +149,7 @@ const GENERATORS: Generator[] = [
     // publishedPluginBreaks.json.
     name: 'ABI removal tables',
     argv: web('generate-abi-removals.ts'),
+    needs: ['runtime re-exports', 'publishConfig exports'],
   },
   { name: 'doc indexes', argv: web('generate-doc-indexes.ts') },
   { name: 'backlog index', argv: web('generate-todo-index.ts') },
@@ -223,6 +224,8 @@ const GENERATORS: Generator[] = [
     // `markers.ts <label>` narrows a development loop to one.
     name: 'marker tables',
     argv: api('markers.ts'),
+    // REEXPORT_MODULES reads reExports.generated.json.
+    needs: ['runtime re-exports'],
     redundantWith: 'config/model/api docs',
   },
   {

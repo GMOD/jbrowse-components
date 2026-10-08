@@ -348,14 +348,14 @@ function namesBody() {
   const entries = [...removed.values()].reduce((a, m) => a + m.length, 0)
   const shared = [...removed.values()].filter(m => m.length > 1)
   const most = Math.max(...removed.values().map(m => m.length))
-  const rows = NAME_GROUPS.map(
-    ({ label, names, survivors }) =>
-      `| ${label} | ${names
-        .map(n =>
-          survivors?.[n] ? `\`${n}\` → \`${survivors[n]}\`` : `\`${n}\``,
-        )
-        .join(', ')} |`,
-  )
+  const rows = NAME_GROUPS.map(({ label, names, survivors }) => [
+    label,
+    names
+      .map(n =>
+        survivors?.[n] ? `\`${n}\` → \`${survivors[n]}\`` : `\`${n}\``,
+      )
+      .join(', '),
+  ])
   return [
     `${removed.size} names over ${entries} entries, since ${shared.length} of them were served from ${most === 2 ? 'two modules' : 'more than one module'} each.`,
     '',
@@ -367,9 +367,10 @@ function namesBody() {
 function subpathsBody() {
   const removed = removedSubpaths()
   assertCovers('removed-subpath', removed, Object.keys(SUBPATH_NOTES))
-  const rows = removed.map(
-    s => `| \`@jbrowse/core${s.slice(1)}\` | ${SUBPATH_NOTES[s]} |`,
-  )
+  const rows = removed.map(s => [
+    `\`@jbrowse/core${s.slice(1)}\``,
+    SUBPATH_NOTES[s]!,
+  ])
   return [
     `${removed.length} subpaths the published \`exports\` map no longer serves, against what 4.3.0 published.`,
     '',
@@ -383,9 +384,10 @@ function breaksBody() {
     'packages/core/src/ReExports/publishedPluginBreaks.json',
   ) as { plugin: string; breaks: string[] }[]
   const broken = plugins.filter(p => p.breaks.length > 0)
-  const rows = broken.map(
-    p => `| ${p.plugin} | ${p.breaks.map(b => `\`${b}\``).join('<br />')} |`,
-  )
+  const rows = broken.map(p => [
+    p.plugin,
+    p.breaks.map(b => `\`${b}\``).join('<br />'),
+  ])
   return [
     `${broken.length} of the ${plugins.length} plugins in the store break against this build.`,
     '',

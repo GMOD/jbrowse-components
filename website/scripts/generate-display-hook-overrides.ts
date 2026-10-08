@@ -260,12 +260,12 @@ function unitOf(file: string): string | undefined {
  * carrying a same-named field — `{ scrollableHeight: model.scrollableHeight }`
  * passed to a hook reads as a second implementation and is not one.
  */
-function declaredMembers(file: string): Set<string> {
+function declaredMembers(file: string, text: string): Set<string> {
   const src = ts.createSourceFile(
     file,
-    readFileSync(file, 'utf8'),
+    text,
     ts.ScriptTarget.Latest,
-    true,
+    false,
     file.endsWith('.tsx') ? ts.ScriptKind.TSX : ts.ScriptKind.TS,
   )
   const found = new Set<string>()
@@ -297,7 +297,8 @@ function main() {
   for (const hook of HOOKS) {
     declarers.set(hook.name, { units: new Set(), files: new Set() })
   }
-  const names = new Set(HOOKS.map(h => h.name))
+  const hookNames = HOOKS.map(h => h.name)
+  const names = new Set(hookNames)
 
   for (const root of SCAN_ROOTS) {
     const files = walkFiles(
@@ -314,7 +315,13 @@ function main() {
       if (!unit) {
         continue
       }
-      const members = declaredMembers(file)
+      // A file that never spells a hook name declares none, and that is 96%
+      // of them: parsing all 3,400 was most of this generator's run.
+      const text = readFileSync(file, 'utf8')
+      if (!hookNames.some(name => text.includes(name))) {
+        continue
+      }
+      const members = declaredMembers(file, text)
       for (const name of names) {
         if (members.has(name)) {
           const entry = declarers.get(name)!
@@ -347,9 +354,11 @@ function main() {
       ownersOf(hook).map(owner => unitOf(join(repoRoot, owner))),
     )
     const overriders = [...units].filter(u => !ownerUnits.has(u)).sort()
-    return `| \`${hook.name}\` | ${hook.ifNotOverridden} | ${
-      overriders.length > 0 ? overriders.map(u => `\`${u}\``).join(', ') : '—'
-    } |`
+    return [
+      `\`${hook.name}\``,
+      hook.ifNotOverridden,
+      overriders.length > 0 ? overriders.map(u => `\`${u}\``).join(', ') : '—',
+    ]
   })
 
   const body = [
@@ -371,7 +380,7 @@ function main() {
       body,
     }),
     label: 'display hook override table',
-    staleHint: 'display hook override table',
+    staleHint: 'run `pnpm autogen`',
   })
 }
 

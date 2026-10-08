@@ -1412,7 +1412,7 @@ Run `jb2export --help` for the full option list, or
 `jb2export <subcommand> --help` (e.g. `jb2export dotplot --help`) for a
 subcommand's options. The complete output:
 
-<!-- INJECT_HELP START: auto-filled from buildFullHelp() by website/scripts/generate-img-doc.ts; run `pnpm gen-img-doc` to refresh -->
+<!-- INJECT_HELP START: auto-filled from buildFullHelp() by website/scripts/generate-img-doc.ts; run `pnpm autogen img` to refresh -->
 
 ```text
 Usage: jb2export [options]
