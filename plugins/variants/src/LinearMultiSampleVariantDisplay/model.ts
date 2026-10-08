@@ -178,13 +178,9 @@ type VariantHoverFields = Record<string, unknown> & {
   name: string
 }
 
-// One spelling of "the config names an attribute the metadata doesn't have", for
-// the two settings that take one. Called from the actions that set them and
-// from `setSources`, which is where a config-declared attribute first meets the
-// metadata; never from a computed, which must not console.warn per menu render.
-// Silent on an empty source list: that is the pre-load state, not a bad config,
-// and warning there printed an attribute list that was empty because there was
-// nothing to list yet.
+// Called from the actions that set an attribute and from `setSources`, never
+// from a computed, which would console.warn per menu render. Silent on an empty
+// source list, the pre-load state.
 function warnMissingAttribute(
   setting: string,
   attribute: string,
@@ -198,9 +194,8 @@ function warnMissingAttribute(
   }
 }
 
-// Loaded features in genomic order plus their interned genotype codes: what an
-// anchored sort needs. `simplifiedFeatures` is the single ordered list spanning
-// every fetched region, while the codes live in each region's payload.
+// What an anchored sort needs: the features in genomic order
+// (`simplifiedFeatures`) and each one's interned codes, which live per region.
 function getOrderedGenotypeCodes(cellData: CellDataResult) {
   const genotypeCodesByFeatureId = new Map<string, Uint32Array>()
   for (const regionData of Object.values(cellData.perRegionCellData)) {
@@ -214,8 +209,6 @@ function getOrderedGenotypeCodes(cellData: CellDataResult) {
   }
 }
 
-// Warn about both arrangement attributes at once, from the three actions that
-// can newly pair one with a source list: the load, and each setter.
 function warnUnknownArrangementAttributes(
   self: { rowColorAttribute: string; facet: FacetSetting | undefined },
   sources: Source[],
@@ -233,12 +226,9 @@ function warnUnknownArrangementAttributes(
   }
 }
 
-// Regions to fetch + render, by layout. At genomic positions each variant draws
-// at its span, so off-screen buffered features simply clip — use the
-// half-screen-buffered regions for smooth scrolling. Columns are laid out by
-// feature index across the *visible* width, so including buffered features
-// would cram off-screen variants into the viewport and draw connector lines to
-// off-screen genomic positions — use the visible regions only.
+// Columns fetch the visible regions only: they are laid out by feature index
+// across the visible width, so a buffered feature would be crammed into the
+// viewport. Genomic positions clip, and fetch the buffered regions.
 function fetchRegionsForLayout(
   view: RegionHost,
   onTrack: (assemblyName: string) => boolean,
@@ -253,10 +243,8 @@ function fetchRegionsForLayout(
           start: Math.floor(vr.start),
           end: Math.ceil(vr.end),
           assemblyName: vr.assemblyName,
-          // carried, not dropped: matrix columns are laid out in the order the
-          // worker returns features, and inside a reversed region screen x rises
-          // as bp falls, so the worker cannot put the columns in screen order
-          // without it (orderByScreenPosition).
+          // carried so the worker can put the columns in screen order inside a
+          // reversed region (orderByScreenPosition)
           reversed: vr.reversed,
         },
         displayedRegionIndex: vr.displayedRegionIndex,
@@ -266,21 +254,14 @@ function fetchRegionsForLayout(
 }
 
 /**
- * The unscaled height a lane mark is packed at, before the fit ladder scales the
- * kept stack to fill the band.
- *
- * plugin-canvas's own `featureHeight` default, so a lane mark and the same record
- * in a `LinearVariantDisplay` start from one number — the band's compactness
- * comes from the display mode and the fit, not from a second height.
+ * plugin-canvas's own `featureHeight` default, so a lane mark and the same
+ * record in a `LinearVariantDisplay` start from one height.
  */
 const LANE_FEATURE_HEIGHT = 10
 
 /**
- * The lane packs in `compact`, with bodies at 0.6x and label text shrunk to
- * match, so a 40px band holds two labeled rows where `normal` holds one.
- * `compact` also gives the fit ladder room to GROW a sparse window: the lane's
- * grow ceiling is `1 / 0.6`, so a handful of records fills the band at up to
- * normal size.
+ * `compact` fits two labeled rows in a 40px band, and leaves the fit ladder
+ * room to grow a sparse window up to normal size.
  */
 const LANE_DISPLAY_MODE = 'compact' as const
 
@@ -393,10 +374,7 @@ export function stateModelFactory(
         sampleListing: undefined as AdapterRead<Source[]> | undefined,
         /**
          * #volatile
-         *
-         * Single source of truth for fetched per-display data. samplePloidy
-         * and the summary flags are derived from this via getters —
-         * fetchNeeded only needs to call setCellData(result).
+         * The fetched per-display data, replaced whole by each fetch.
          */
         cellData: undefined as CellDataResult | undefined,
         /**
@@ -418,10 +396,8 @@ export function stateModelFactory(
         cellDataBpPerPx: undefined as number | undefined,
         /**
          * #volatile
-         * The genotype cell under the pointer, as `hoverInk` lights it.
-         * Beside `hoveredFeature` (the tooltip) rather than folded into it:
-         * the tooltip is the shared cross-display slot, and the box needs the
-         * cell's instance that slot has no reason to carry.
+         * The genotype cell under the pointer, as `hoverInk` lights it; the
+         * shared tooltip slot has no reason to carry the cell's instance.
          */
         hoveredCell: undefined as HoveredCell | undefined,
         /**
@@ -511,12 +487,10 @@ export function stateModelFactory(
         },
         /**
          * #method
-         * Whether the held payload was fetched for this region. A batched
-         * fetch marks only the regions it issued as loaded, but replaces the
-         * whole payload — so a region an earlier batch loaded keeps its
-         * `loadedRegions` entry with nothing behind it, and without this
-         * check reads as cache-valid and draws blank. In matrix mode, also
-         * whether it was fetched at the zoom on screen (`cellDataBpPerPx`).
+         * Whether the held payload was fetched for this region: a batched fetch
+         * replaces the whole payload, so a region an earlier batch loaded keeps
+         * its `loadedRegions` entry with nothing behind it. In columns, also
+         * whether it was fetched at the zoom on screen.
          */
         regionHasData(displayedRegionIndex: number): boolean {
           const fetchedAt = self.cellDataBpPerPx
@@ -553,21 +527,17 @@ export function stateModelFactory(
         },
         /**
          * #getter
-         * Whether any called genotype is phased or haploid, which gates the
-         * "Phased" rendering mode. The painter's rule, `isPhasedOrHaploid` (no
-         * `/`), rather than "any `|`": a pangenome callset is haploid per
-         * assembly path and `vg deconstruct` writes bare `0`/`1`/`23`, a file
-         * with no `|` anywhere that phased mode renders correctly.
+         * Whether any called genotype is phased or haploid (no `/`), which
+         * gates the per-haplotype rows; a pangenome callset writes bare `0`/`1`
+         * with no `|` anywhere.
          */
         get hasPhasedOrHaploid() {
           return self.cellData?.hasPhasedOrHaploid ?? false
         },
         /**
          * #getter
-         * Whether the worker painted a secondary-alt cell (drives the "Other
-         * alt allele" legend entry). Painted, not possible: a multiallelic site
-         * nobody carries the second alt at raised this when the color was
-         * nowhere in the fetched cell data.
+         * Whether the worker painted a secondary-alt cell, which keys the
+         * "Other alt allele" legend entry. Painted, not possible.
          */
         get hasSecondaryAlt() {
           return self.cellData?.hasSecondaryAlt ?? false
@@ -700,11 +670,8 @@ export function stateModelFactory(
         },
         /**
          * #getter
-         * Whether a hover draws the tooltip table. Only the tooltip: the
-         * crosshairs, the hovered-cell highlight and `hoveredFeature` (the
-         * cross-display hover channel) all keep working with it off, which is
-         * the point — the reader who turns it off wants the rows uncovered, not
-         * the pointer silenced.
+         * Whether a hover draws the tooltip table. The crosshairs, the
+         * hovered-cell highlight and `hoveredFeature` keep working with it off.
          */
         get showTooltips(): boolean {
           return getConf(self, 'showTooltips')
@@ -824,11 +791,8 @@ export function stateModelFactory(
               return
             }
             // An order none of whose names is a current row is a previous
-            // dataset's: an adapter edit swapped the cohort out from under it,
-            // and the tree beside it names rows that are gone. The same reset
-            // `setUnit` takes when it renames the rows. Keyed on total
-            // mismatch — a partial overlap is the same cohort with samples
-            // added or removed, and the reader's order survives that.
+            // dataset's. A partial overlap is the same cohort with samples
+            // added or removed, and keeps the reader's order.
             const names = new Set(sources.map(resolveSampleName))
             const domain = self.rowDomain
             const arrangementIsStale =
@@ -891,10 +855,8 @@ export function stateModelFactory(
             const renamesRows = self.unit !== unit
             setConf(self, 'unit', unit)
             if (renamesRows) {
-              // The unit decides what a row is *called*, a sample name or a
-              // "HG001 HP0" haplotype name, so the order, the labels, the
-              // tints, the tree and the focus naming its leaves all go stale
-              // together.
+              // the unit decides what a row is called, so everything naming
+              // rows goes stale together
               self.resetRowArrangement()
             }
           },
@@ -951,18 +913,16 @@ export function stateModelFactory(
           },
           /**
            * #action
-           * Switch the variant lane on or off. The rows resize with it, because
-           * `availableHeight` subtracts the band, so the lane takes its space
-           * from the plot and the track keeps its height.
+           * Switch the variant lane on or off; it takes its space from the
+           * rows.
            */
           setShowVariantLane(arg: boolean) {
             setConf(self, 'showVariantLane', arg)
           },
           /**
            * #action
-           * Resize the variant lane, clamped. Clamped in the setter rather than
-           * at read time for the same reason `setLineZoneHeight` is: a drag can
-           * deliver any number, and a band dragged shut has to stay grabbable.
+           * Resize the variant lane, clamped here because a drag can deliver
+           * any number and a band dragged shut has to stay grabbable.
            */
           setVariantLaneHeight(arg: number) {
             setConf(
@@ -1007,7 +967,6 @@ export function stateModelFactory(
       .views(self => ({
         /**
          * #getter
-         * Returns the minor allele frequency filter config slot value
          */
         get minorAlleleFrequencyFilter(): number {
           return getConf(self, 'minorAlleleFrequencyFilter')
@@ -1024,11 +983,7 @@ export function stateModelFactory(
 
         /**
          * #getter
-         * The jexl filter expressions (from the Edit filters dialog) as a
-         * SerializableFilterChain, ready to pass as the RPC `filters` arg.
-         * MultiSampleVariantGet{CellData,GenotypeMatrix,ClusterGenotypeMatrix}
-         * all extend RpcMethodTypeWithFiltersAndRenameRegions, which serializes
-         * this to string[] and rebuilds it in the worker with pluginManager.jexl.
+         * The jexl filter expressions as the RPC's `filters` arg.
          */
         get filters() {
           const filters = self.configuredFilters()
@@ -1137,13 +1092,10 @@ export function stateModelFactory(
       .views(self => ({
         /**
          * #getter
-         * The adapter's samples narrowed to the focus, `rows.kept` — a
-         * haplotype named there keeps its sample. The row set the fetch asks
-         * for, and so it must not read `samplePloidy` (see `sampleFilter`).
-         * `undefined` until the samples land: `sampleFilter` and `fetchNeeded`
-         * both read it, and its `undefined` → list transition wakes the fetch
-         * autorun (reference/FETCH_KEYS.md §"The global-fetch trigger list must
-         * be read unconditionally"). `sources` is the resolved list.
+         * The adapter's samples narrowed to the focus, `rows.kept`: the row set
+         * the fetch asks for, so it must not read `samplePloidy`. `undefined`
+         * until the samples land, a transition that wakes the fetch autorun
+         * (reference/FETCH_KEYS.md).
          */
         get sourcesBase(): Source[] | undefined {
           const sources = self.adapterSamples
@@ -1154,11 +1106,8 @@ export function stateModelFactory(
         /**
          * #getter
          * Whether the rows are at the granularity they draw, which clustering
-         * and the arrangement dialog both need. Phased mode draws haplotypes,
-         * which needs `samplePloidy`; that arrives with `cellData`, later than
-         * the header-only `adapterSamples`. Before it a clustering run builds
-         * a sample-level tree whose leaves ("HG001") never match the expanded
-         * haplotype rows ("HG001 HP0"), and the dialog writes a sample order.
+         * and the arrangement dialog need: phased mode draws haplotypes, which
+         * needs the `samplePloidy` a fetch brings.
          */
         get clusteringReady() {
           return (
@@ -1168,32 +1117,15 @@ export function stateModelFactory(
         },
         /**
          * #getter
-         * Whether there is anything to cluster: clustering reorders rows, so it
-         * needs at least two rows to put in an order. An empty list is "none"
-         * and "the sample list hasn't landed yet" alike — both mean "not now",
-         * which is why one boolean answers for both and the menu's help text
-         * asks `adapterSamples` itself which of the two it is.
-         *
-         * **The rows on screen**, which is the list the run clusters
-         * (`clusterableSources`) and so the row set the tree comes back
-         * describing. Counting the unfiltered list instead offered — and let
-         * the declarative path fire — a run over a clade focused down to one
-         * row.
+         * Whether there are at least two rows on screen to put in an order,
+         * counted over `clusterableSources`, the list a run clusters.
          */
         get hasClusterableRows() {
           return self.clusterableSources.length > 1
         },
         /**
          * #getter
-         * Whether the declarative `runClustering: true` path may fire: the
-         * inputs have landed AND there are rows worth ordering. Both halves are
-         * named booleans rather than one expression at the autorun, so each can
-         * be read — and tested — on its own.
-         *
-         * The dialog gates on the same pair, spelled at its own call site: the
-         * menu row that opens it carries `hasClusterableRows` too, but a
-         * subtree filter applied while the dialog is open can take the rows
-         * away underneath it.
+         * Whether the declarative `runClustering: true` path may fire.
          */
         get autoClusterReady() {
           return this.clusteringReady && this.hasClusterableRows
@@ -1202,21 +1134,11 @@ export function stateModelFactory(
       .views(self => ({
         /**
          * #getter
-         * Which samples the worker should emit rows for, as a **set** — sorted
-         * and deduped, so only a membership change can move it. Row order is not
-         * a fetch input here; reference/FETCH_KEYS.md §"Row order is not a fetch input",
-         * has the why and how the three row displays each do it.
-         *
-         * `undefined` means the sources haven't loaded, and is deliberately not
-         * reused for "all of them". `fetchNeeded` declines until `sourcesBase`
-         * exists and this key changing is the only thing that wakes it, so
-         * collapsing the two would leave it unchanged when sources landed and
-         * wedge the display with nothing drawn.
-         *
-         * Reads `sourcesBase`, the focused samples before phased expansion,
-         * never `sources`, for the loop reason below: expansion reads
-         * `samplePloidy`, a fetch result. A focus naming haplotypes asks for their
-         * samples, and the worker expands them itself.
+         * Which samples the worker emits rows for, as a sorted set: row order
+         * is not a fetch input (reference/FETCH_KEYS.md). `undefined` means the
+         * sources haven't loaded and is never reused for "all of them", or the
+         * fetch would not wake when they land. Reads `sourcesBase`, never
+         * `sources`, which reads the fetch-derived `samplePloidy`.
          */
         get sampleFilter(): string[] | undefined {
           const base = self.sourcesBase
@@ -1247,15 +1169,10 @@ export function stateModelFactory(
         }
       })
       .views(self => ({
-        // Payload for MultiSampleVariantGetCellData. SettingsInvalidate watches
-        // this — any change clears loaded data and triggers a refetch.
-        //
-        // Only settings the *worker* reads belong here, and nothing fetch-derived
-        // may appear (`sampleFilter` reads `sourcesBase`, not `sources`, because
-        // `sources` reads `samplePloidy` — a fetch result — and would loop).
-        // `referenceDrawingMode` is one at genomic positions only, where the
-        // worker drops reference cells under 'skip'; columns always draw them,
-        // so a toggle there refetches nothing.
+        // Payload for MultiSampleVariantGetCellData; a change refetches. Only
+        // what the worker reads, and nothing fetch-derived.
+        // `referenceDrawingMode` is one at genomic positions only: columns draw
+        // every reference cell.
         rpcProps() {
           return {
             layout: self.variantLayout,
@@ -1311,23 +1228,11 @@ export function stateModelFactory(
           },
           /**
            * #getter
-           * sampleName -> column index into each feature's interned
-           * `genotypeCodes`. Used by the tooltips to decode a hovered cell's
-           * genotype (see genotypeCodec.ts).
-           *
-           * **Rebuilt per pointer frame, not per `cellData` change.** Its only
-           * readers are the two layouts' hit tests, which run in React pointer
-           * handlers where nothing is tracked — and MobX discards an unobserved
-           * computed's value as it hands it over. So a hover walks every sample in
-           * the callset, ~60×/s, on a cohort VCF.
-           *
-           * A keep-alive autorun is the fix the canvas displays use
-           * (`CanvasHitIndexes`, and see packages/display-kit/CLAUDE.md), and it
-           * does not work here yet: it evaluates this before any payload has
-           * landed, and several suites stub the cell-data RPC with a catch-all
-           * that resolves a bare `[]`, so `cellData` is truthy with no
-           * `sampleNames` and the reaction throws. Making it holdable means giving
-           * those stubs a real payload shape first; the getter itself is fine.
+           * sampleName -> column of each feature's interned `genotypeCodes`,
+           * for the tooltips (genotypeCodec.ts). Rebuilt per pointer frame, its
+           * readers being untracked pointer handlers. A keep-alive autorun was
+           * tried and throws on test stubs that resolve the cell-data RPC to a
+           * bare `[]`.
            */
           get genotypeSampleIndex() {
             return self.cellData
@@ -1336,24 +1241,12 @@ export function stateModelFactory(
           },
           /**
            * #getter
-           * Worker row -> screen row, the client half of taking row order out of
-           * the RPC (see `sampleFilter`). The cells arrive numbered against the
-           * worker's `rowNames` list, and `rowRemap` maps each to the row the
-           * user is looking at. Rebuilding it is all a reorder costs, and a
-           * change that moves no row hands back the previous array, so the
-           * placed cells and their upload stay as they are.
-           *
-           * A worker row the display isn't drawing maps to `HIDDEN_ROW` rather than
-           * being dropped: at that index every painter's own Y-cull puts the cell
-           * far below the canvas, so the sentinel needs no special case on either
-           * backend, in the glyph overlay, or in the SVG export. (It stays rare —
-           * the *set* is still a fetch input, so normally every row shipped is a
-           * row drawn.)
-           *
-           * Undefined until data lands. Consumers that draw cells must treat that
-           * as "nothing to draw yet" rather than falling back to identity: the
-           * worker's order is arbitrary, so identity would paint rows under the
-           * wrong sample names.
+           * Worker row -> screen row. The cells arrive numbered against the
+           * worker's `rowNames`, so rebuilding this is all a reorder costs, and
+           * a change that moves no row hands back the previous array. A worker
+           * row the display isn't drawing maps to `HIDDEN_ROW`, which every
+           * painter's Y-cull puts below the canvas. Undefined until data lands:
+           * never fall back to identity, the worker's order is its own.
            */
           get rowRemap(): Uint32Array | undefined {
             const rowNames = self.cellData?.rowNames
@@ -1403,13 +1296,8 @@ export function stateModelFactory(
           },
           /**
            * #getter
-           * Available height for rows (total height minus whatever the bands
-           * above them take). Floored at 0: `lineZoneHeight` (matrix only,
-           * user-draggable up to 1000 independently of `height`) can exceed a
-           * shrunk display height on its own, and the variant lane adds to it.
-           * Every consumer treats this as a real pixel dimension (canvas
-           * height, CSS `height`, scroll viewport height), so it must never go
-           * negative.
+           * Height left for the rows under the bands above them, floored at 0:
+           * every consumer treats it as a pixel dimension.
            */
           get availableHeight() {
             return Math.max(0, self.height - self.rowsTopOffset)
@@ -1423,14 +1311,7 @@ export function stateModelFactory(
 
           /**
            * #getter
-           * What fit-to-display-height divides between the rows, and the reason
-           * `RowHeightMixin`'s non-positive floor is reachable at all here:
-           * `availableHeight` floors at 0, so a `lineZoneHeight` that swallows
-           * the whole display makes this exactly 0.
-           *
-           * A **fixed** height goes the other way and is used as-is however many
-           * samples there are — the rows area is a scroll viewport, so rows that
-           * don't fit cost scroll extent rather than a resize.
+           * What fit-to-display-height divides between the rows.
            */
           get autoRowHeight() {
             return this.availableHeight / this.nrow
@@ -1454,15 +1335,9 @@ export function stateModelFactory(
       .views(self => ({
         /**
          * #getter
-         * Screen row -> worker row, the inverse of `rowRemap`; `-1` for a screen
-         * row this window's data has no cells for (a sample the display draws
-         * but whose genotypes never appear in the fetched variants).
-         *
-         * The hit test needs this direction, and needs it separately, because the
-         * cell arrays stay in the worker's numbering: they are sorted by
-         * `(featureIndex, rowIndex)` and `findCellIndex` binary-searches that
-         * order, which remapping the array in place would destroy. Converting the
-         * one row the cursor is over is O(1) and keeps the search O(log n).
+         * Screen row -> worker row, `-1` for a screen row the data has no cells
+         * for. The cell arrays stay in the worker's numbering, which
+         * `findCellIndex` binary-searches, so the hit test converts its row.
          */
         get rowUnmap(): Int32Array | undefined {
           const remap = self.rowRemap
@@ -1480,22 +1355,9 @@ export function stateModelFactory(
         },
         /**
          * #getter
-         * The hovered thing as the tooltip table reads it: the record's fields,
-         * with the hovered sample row's metadata attributes merged underneath
-         * them so a cohort colored by a `samplesTsv` column reports that column
-         * too.
-         *
-         * A hover naming no row falls through to the record's fields alone, and
-         * the variant lane's tooltip is always that case: its marks are
-         * records, so `buildVariantLaneHit` leaves `name` empty and there is no
-         * source to find here. A *cell* hover always finds one, because both
-         * hit tests take the name off `sources`, and `sourceMap` is built from
-         * `sources`.
-         *
-         * `showTooltips` is gated here rather than in the component, so the one
-         * getter feeding the tooltip is the one place that answers "is there a
-         * tooltip" — the hit test, `hoveredFeature` and the hovered-cell
-         * highlight go on reading `hoveredFeature` and are unaffected.
+         * The hovered thing as the tooltip table reads it: the record's fields
+         * over the hovered row's sample metadata. A lane hover names no row and
+         * is the record's fields alone. Undefined with `showTooltips` off.
          */
         get hoveredTooltipSource() {
           const { hoveredFeature, sourceMap } = self
@@ -1509,22 +1371,15 @@ export function stateModelFactory(
       .actions(self => ({
         /**
          * #action
-         * Order the rows by their genotype at one variant, breaking ties by how
-         * far each row agrees with its neighbours to either side of it. With
-         * the flanking tiebreak, rows sharing the anchor allele sit together,
-         * and their shared block frays outward at the recombination
-         * breakpoints that end it.
-         *
-         * Sorts `editableSources`, the rows at the mode's granularity with no
-         * focus, so the order written to `rows.domain` names every row.
+         * Order the rows by their genotype at one variant, ties broken by how
+         * far each row agrees with its neighbours to either side. Sorts
+         * `editableSources`, so the order written names every row.
          */
         sortByGenotype(featureId: string) {
           const { cellData } = self
           const sources = self.editableSources
-          // Fewer than two rows has nothing to order, and the write is not a
-          // harmless no-op: `setRowOrder` drops the cluster tree whenever the row
-          // set changes. The same decline the other "sort rows here" actions
-          // make in `sortRowsAtColumn`.
+          // fewer than two rows has nothing to order, and `setRowOrder` would
+          // drop the cluster tree
           let sorted: ProcessedSource[] | undefined
           if (cellData && sources.length > 1) {
             const { featureIds, genotypeCodesByFeatureId } =
@@ -1548,22 +1403,10 @@ export function stateModelFactory(
       .actions(self => ({
         /**
          * #action
-         * `sortByGenotype` at a genomic column rather than a record: the
-         * declarative `sortRowsBy` entry point, for a session that wants a
-         * cohort to open sorted at a locus. The variant is the loaded record
-         * covering the column; a column no record covers leaves the rows
-         * alone, the rule every "sort rows here" shares (`rowSortColumn.ts`).
-         *
-         * **Returns whether it sorted**, so `sortRowsBy` stays set when it did
-         * not. The shared gate only checks that a region covers the
-         * column, and this display additionally needs a record there — a
-         * session naming a variant-free column would otherwise clear its own
-         * trigger and leave the rows unsorted with nothing left to re-fire it
-         * once a record loads (`setupRowSortAutorun`).
-         *
-         * `refName` arrives canonical — the autorun normalizes it — while a
-         * record's refName is whatever the file spelled, so the comparison
-         * canonicalizes the record's side.
+         * `sortByGenotype` at a genomic column, the declarative `sortRowsBy`
+         * entry point. Returns whether it sorted, so `sortRowsBy` stays set for
+         * the fetch that brings a record to the column. `refName` arrives
+         * canonical; a record's is whatever the file spelled.
          */
         sortRowsByGenotypeAt(refName: string, pos: number) {
           const features = self.cellData?.simplifiedFeatures
@@ -1655,10 +1498,7 @@ export function stateModelFactory(
       .views(self => ({
         /**
          * #getter
-         * Opt into RegionTooLargeMixin's byte gate: `fetchNeeded` passes
-         * `resolvedByteLimit()` to `MultiSampleVariantGetCellData`, whose first
-         * await on the adapter is the index estimate — so an over-budget
-         * viewport is refused before a single genotype is downloaded.
+         * Opt into RegionTooLargeMixin's byte gate.
          */
         get gateEnabled() {
           return true
@@ -1674,19 +1514,9 @@ export function stateModelFactory(
         },
         /**
          * #getter
-         * Retry here is two-stage: the sources autorun reads the same
-         * `reloadCounter` bump `reload()` makes for the region fetch, and
-         * `fetchNeeded` below declines until `sourcesBase` lands. So the retry
-         * contract is judged on the run that follows, not on the declining one
-         * — see `FetchMixin.awaitingPrerequisite`.
-         *
-         * Strictly narrower than the declines it explains, so it defers
-         * judgement on this decline only: `FetchVisibleRegions` also declines
-         * when every visible block is already covered, and that one is judged as
-         * soon as `sourcesBase` is in hand. Not `fetchNeeded`'s own empty-region
-         * return — the autorun only calls it with a non-empty `needed`, which
-         * means the view has visible regions, so that branch is unreachable from
-         * there.
+         * `fetchNeeded` declines until `sourcesBase` lands, so the retry
+         * contract is judged on the run that follows
+         * (`FetchMixin.awaitingPrerequisite`).
          */
         get awaitingPrerequisite(): boolean {
           return !self.sourcesBase
@@ -1697,18 +1527,14 @@ export function stateModelFactory(
           self.setCellData(undefined)
         },
 
-        // The row set is a setting and the payload is one matrix over every
-        // visible region, so there is no per-region replacement for stale cells
-        // to draw under — see the hook.
+        // the payload is one matrix over every visible region, so nothing stale
+        // is left to draw under
         clearSettingsBakedData() {
           self.clearDisplaySpecificData()
         },
 
-        // Ignores `needed` and refetches all visible regions because the
-        // cellData RPC payload is monolithic — one call returns data covering
-        // all visible regions, so partial refetches don't fit. That is why the
-        // region list is `fetchRegionsBatched`'s argument: the set this display
-        // derives is both what the RPC is sent and what the commits name.
+        // Ignores `needed`: one RPC returns every visible region, so the set
+        // derived here is both what it is sent and what the commit names.
         async fetchNeeded(_needed: IndexedRegion[]) {
           if (!self.sourcesBase) {
             return
@@ -1723,14 +1549,10 @@ export function stateModelFactory(
           if (regions.length === 0) {
             return
           }
-          // Resolved before the await, so the RPC sends exactly what
-          // `fetchNeeded` is about to mark loaded — no second view read across
-          // the async boundary.
+          // resolved before the await, so the RPC sends what is marked loaded
           const args = rpcArgs(self)
           const fetchedAt =
             variantLayout === 'columns' ? view.bpPerPx : undefined
-          // One RPC serves every region, so the whole batch is held or none of
-          // it is, and `fetchRegionsBatched` marks them loaded together.
           await fetchRegionsBatched(self, regions, {
             call: (batch, ctx) =>
               ctx.callRpc('MultiSampleVariantGetCellData', {
@@ -1837,9 +1659,7 @@ export function stateModelFactory(
         get placedRegionRows() {
           const { cellData, rowRemap } = self
           const out = new Map<number, Placed<VariantCellData>>()
-          // No rowRemap means no data has landed: an empty map is the same
-          // "nothing to draw" every consumer already handles. Never fall back to
-          // identity placement — the worker's row order is its own.
+          // never identity placement: the worker's row order is its own
           if (cellData && rowRemap) {
             for (const k in cellData.perRegionCellData) {
               out.set(
@@ -1872,17 +1692,10 @@ export function stateModelFactory(
         /**
          * #getter
          * Each fetched region placed (`placedRegionRows`) and painted
-         * (`regionCellColors`): the cells both layouts draw, which the
-         * columns upload as they are. This is the display's "derived region
-         * map" in the sense of ARCHITECTURE.md's re-upload-without-refetch
-         * pattern: a reorder or a recolour changes each entry's identity,
-         * `installUpload` sees the change and re-uploads, and no RPC is
-         * involved.
-         *
-         * A computed returning a plain Map, for the same reason the multi-row
-         * display's is: the overlay draws inside an effect, where nothing it
-         * reads is tracked, so the read has to happen here for a refetch to
-         * repaint.
+         * (`regionCellColors`), the cells both layouts draw. A reorder or a
+         * recolour changes an entry's identity and `installUpload` re-uploads
+         * with no RPC. A computed, because the overlay draws in an effect where
+         * nothing is tracked.
          */
         get paintedRegionRows() {
           const { placedRegionRows, regionCellColors } = self
@@ -1897,14 +1710,8 @@ export function stateModelFactory(
         /**
          * #getter
          * The one walk of the payload every genomic-position consumer reads:
-         * `paintedRegionRows` with the `cell` mark's attributes dealt from
-         * the records (`regionCellGlyphs`), and the insertion markers'
-         * channels while `showInsertionGlyphs` is on. So "does the glyph
-         * overlay see the same regions, and the same rows and colours, as
-         * the canvas" has a single answer — the payload is the
-         * `VariantUploadData` the cells and the markers upload, and carries
-         * `featureIndexData` for the hit-test index plus
-         * `cellWorkerRowIndices` for its lookup.
+         * `paintedRegionRows` with the `cell` mark's attributes and, while
+         * `showInsertionGlyphs` is on, the insertion markers' channels.
          */
         get perRegionCellMap() {
           const { paintedRegionRows, regionCellGlyphs, showInsertionGlyphs } =
@@ -2114,31 +1921,17 @@ export function stateModelFactory(
         },
         /**
          * #getter
-         * Whether this display is drawing insertion markers in the current
-         * window, which is what puts the marker's explanation in the legend.
-         *
-         * The condition is `anyMarkerPossibleForBlock`, on the painter's own
-         * blocks, because the two cheaper approximations are wrong on real
-         * figures. "The window holds an insertion" puts the entry on a callset
-         * of short indels, which can never draw a marker at any zoom. "The
-         * window holds a *long* insertion" puts one on any view zoomed out far
-         * enough that even a long bar falls under the 2px cell floor; that was
-         * three of the fourteen committed figures carrying this display, each
-         * gaining one entry and no glyph.
-         *
-         * The insertion mark's gate reads the unsnapped span, so the answer
-         * holds still under a sub-pixel pan and a single-frame export needs no
-         * settling.
+         * Whether insertion markers draw in the current window, which keys the
+         * marker in the legend. Asked of the painter's own blocks
+         * (`anyMarkerPossibleForBlock`): "the window holds an insertion" keys a
+         * callset of short indels that never draws one.
          */
         get drawsInsertionMarkers(): boolean {
           if (!self.showInsertionGlyphs || !self.atGenomicPositions) {
             return false
           }
-          // `effectiveRowHeight` read directly, never through `renderState`:
-          // that object also carries `scrollTop`, so depending on it walked
-          // every feature again per wheel-scroll frame. `canvasWidthPx` is not
-          // read at all — it enters the painter's answer only through the snap
-          // phase, which is exactly what this getter declines to depend on.
+          // `effectiveRowHeight` directly: `renderState` carries `scrollTop`,
+          // and would walk every feature per wheel frame
           const drawnRowHeight = drawnCellHeightPx(self.effectiveRowHeight)
           for (const block of self.renderBlocks) {
             const region = self.perRegionCellMap.get(block.displayedRegionIndex)
@@ -2185,11 +1978,8 @@ export function stateModelFactory(
         },
         /**
          * #method
-         * The record behind a lane mark, by feature id. plugin-canvas's hit test
-         * answers with an id (its payload carries no VCF fields), and the tooltip
-         * and the click both want the record — so this is the one place that
-         * crosses back, over `featureInfo`, the same records the genotype
-         * cells' hit test reads.
+         * The record behind a lane mark, by the feature id plugin-canvas's hit
+         * test answers with.
          */
         laneFeatureInfo(featureId: string) {
           const { cellData } = self
@@ -2209,20 +1999,9 @@ export function stateModelFactory(
         /**
          * #getter
          * The lane's marks as plugin-canvas render data, one entry per fetched
-         * region — the payload that display's own RPC produces, built here from
-         * records this display already parsed. Empty when the band is off, so
-         * every getter below it does no work.
-         *
-         * See `buildLaneRenderData` for why this is main-thread and costs no
-         * second fetch. A MobX computed, rebuilt when the payload or the label
-         * mode or the lane colours change: keyed off the fetched
-         * `perRegionCellData` and `regionFeatureColors`, not the row-placed
-         * `perRegionCellMap`, since a record's mark does not move with the
-         * rows, and off the **displayed regions'** bounds, never
-         * `visibleRegions`, which the LGV rebuilds on every pan and zoom frame.
-         * Either would re-run the whole chain below — SimpleFeature per
-         * record, jexl color eval, packing, label solves — per reorder or per
-         * frame.
+         * region, empty while the band is off. Keyed off the fetched payload
+         * and the **displayed regions'** bounds, never the row-placed map or
+         * `visibleRegions`, which would rebuild it per reorder or per frame.
          */
         get laneRenderDataMap(): ReadonlyMap<number, LayoutRegionData> {
           const out = new Map<number, LayoutRegionData>()
@@ -2269,13 +2048,9 @@ export function stateModelFactory(
         },
         /**
          * #getter
-         * What the lane's packer reads, minus the label reservation each fit rung
-         * varies. One source, so the rungs cannot drift on zoom or orientation.
-         *
-         * `coarseBpPerPx`, the 500ms-debounced one, for the reason
-         * `LinearBasicDisplay` uses it: row packing must not recompute on every
-         * frame of a smooth zoom. Reversal off `displayedRegions` — stable
-         * across pan frames — for the reason `laneRenderDataMap` gives.
+         * What the lane's packer reads, minus the label reservation each fit
+         * rung varies. `coarseBpPerPx`, so packing does not recompute per frame
+         * of a zoom.
          */
         get laneLayoutInputs(): Omit<
           LayoutInputs,
@@ -2293,13 +2068,8 @@ export function stateModelFactory(
             reversedRegions,
             displayMode: LANE_DISPLAY_MODE,
             pinnedFeatureIds: NO_PINNED_FEATURES,
-            // The band is a fixed 40px holding a whole callset, so its records
-            // are meant to share pixels rather than each claim a row: stacking
-            // them honestly needs 68px, which costs the band every name through
-            // the fit ladder. Names survive because this flattens the rows
-            // without `displayMode: 'collapsed'`'s label suppression; the
-            // packer drops a record's labels where they would overprint a
-            // kept one.
+            // one row: the band's records share pixels, and the packer drops a
+            // label that would overprint a kept one (VARIANTS_DISPLAY.md)
             flattenRows: true,
           }
         },
@@ -2308,13 +2078,7 @@ export function stateModelFactory(
         /**
          * #method
          * One fit candidate: the lane's row packed with the given label
-         * reservation. plugin-canvas's packer, so a label is placed by the
-         * layout that reserved room for it, and paint order is the order the
-         * hit test resolves by.
-         *
-         * Non-incremental, unlike that display's four memos: those exist so a
-         * GPU upload diff stays small across a pan over a stack of hundreds of
-         * thousands of features. A band holds thousands and repaints whole.
+         * reservation. Non-incremental, a band holding thousands of marks.
          */
         laneLayoutAt(
           showLabels: boolean,
@@ -2343,15 +2107,8 @@ export function stateModelFactory(
       .views(self => ({
         /**
          * #getter
-         * The rung the lane keeps and the scale that fills the band with it —
-         * plugin-canvas's fit ladder, run against `laneHeight` instead of a track
-         * height. Names and descriptions if they fit; else descriptions dropped;
-         * else names kept only where they have room; else bodies alone, squeezed
-         * and scrolled-off if even that overflows.
-         *
-         * This is the whole of "compact": the band never grows, so what adapts is
-         * how much of each record the band spends its pixels on — which is the
-         * question `LinearVariantDisplay` in fit mode already answers.
+         * The rung the lane keeps and the scale that fills the band with it:
+         * plugin-canvas's fit ladder, run against `laneHeight`.
          */
         get laneFitStage() {
           const bodies = () => self.laneLayoutAt(false, false)
@@ -2364,9 +2121,7 @@ export function stateModelFactory(
               ? self.laneLayoutAt(self.topBands.wantsName, false)
               : full
           const decimated = () => {
-            // The solve and the commit pack through one builder, so the stack
-            // measured cannot differ from the stack kept — plugin-canvas's rule,
-            // and the reason its own probe is a getter.
+            // the solve and the commit pack through one builder
             const factor = self.topBands.wantsName
               ? solveLabelRoomFactor(
                   createContentHeightProbe(
@@ -2408,11 +2163,9 @@ export function stateModelFactory(
               },
             ],
             self.topBands.laneHeight,
-            // the same floor a track's squeeze bottoms out at, and the same one
-            // every variant painter here already draws to (`variantCellSpanPx`)
+            // the floor a track's squeeze bottoms out at
             squeezeFloorScale(shortestBox, MIN_FIT_BOX_PX),
-            // the display mode's compact ratio inverted: a sparse band fills up
-            // to normal feature height and no further
+            // a sparse band fills up to normal feature height
             1 / HEIGHT_MULTIPLIERS[LANE_DISPLAY_MODE],
           )
         },
@@ -2429,10 +2182,8 @@ export function stateModelFactory(
         },
         /**
          * #getter
-         * The band's own drawn height — the kept rung's stack, scaled. Less than
-         * `laneHeight` on a sparse window (the surplus is bottom whitespace, so a
-         * relayout packs back against the top rather than jumping to a re-centred
-         * offset) and equal to it whenever the fit had to work.
+         * The band's drawn height: the kept rung's stack, scaled, at most
+         * `laneHeight`.
          */
         get laneContentHeight() {
           const { contentHeight, scale } = self.laneFitStage
@@ -2452,19 +2203,10 @@ export function stateModelFactory(
       .views(self => ({
         /**
          * #getter
-         * Per-region hit index over the lane's laid-out marks — plugin-canvas's,
-         * built off the same stack it painted, so the box under the cursor is the
-         * box the pick returns. Its label overhang is part of the hit box there,
-         * which is why this reads the RENDERED label flags and not the mode's.
-         *
-         * Uses Canvas's `flatbushIndexes` dependencies: keyed off
-         * `laneLaidOutDataMap` and the DEBOUNCED `coarseBpPerPx`, never
-         * `visibleRegions` (per-frame fresh) or the live block width, so the
-         * `LaneHitIndexes` autorun can hold it alive without per-frame rebuilds.
-         * Without that subscription its only reader is the hit test, running
-         * untracked in pointer handlers, so MobX would discard the value and
-         * rebuild a Hilbert-sorted Flatbush with a text measurement per mark on
-         * every pointer frame over the band.
+         * Per-region hit index over the lane's laid-out marks, off the stack
+         * that was painted and the RENDERED label flags, a label's overhang
+         * being part of its hit box. Its dependencies are debounced, so the
+         * `LaneHitIndexes` autorun holds it alive across pointer frames.
          */
         get laneFlatbushIndexes() {
           const { showLabels, showDescriptions } = self.laneRenderedLabels
@@ -2568,10 +2310,7 @@ export function stateModelFactory(
               (await import('./setupMultiSampleVariantAutoruns.ts'))
                 .setupMultiSampleVariantAutoruns,
           )
-          // The hit test reads this only from untracked pointer handlers, so
-          // without an observer MobX discards the computed per read — the
-          // CanvasHitIndexes rule (packages/display-kit/CLAUDE.md), earned
-          // here by the getter's debounced, non-per-frame dependency set.
+          // read only from untracked pointer handlers, so held alive here
           autorunOnReadyView(
             self,
             () => {
