@@ -1,4 +1,4 @@
-import { hostReads, unservedReads } from './pluginHostReads.ts'
+import { gatePluginReads, hostReads, unservedReads } from './pluginHostReads.ts'
 
 const ENTRY = 'https://example.org/dist/plugin.esm.js'
 const SHARED = 'https://example.org/dist/chunks/shared.js'
@@ -69,4 +69,24 @@ test('a removed name is unserved; default, * and a nameless framework module are
     '@jbrowse/display-kit/Gone#default',
     'mobx-state-tree#flow',
   ])
+})
+
+test('an accepted removal passes the gate until no plugin reads it', () => {
+  const manifest = {
+    framework: {},
+    modules: { '@jbrowse/core/util': { names: ['getSession'] } },
+  }
+  const gone = '@jbrowse/core/util#isContainedWithin'
+  const reads = { Apollo: ['@jbrowse/core/util#getSession', gone] }
+  expect(gatePluginReads(reads, manifest, {})).toEqual({
+    broken: [{ plugin: 'Apollo', gone: [gone] }],
+    stale: [],
+  })
+  expect(gatePluginReads(reads, manifest, { [gone]: 'dead code' })).toEqual({
+    broken: [],
+    stale: [],
+  })
+  expect(
+    gatePluginReads({ Apollo: [] }, manifest, { [gone]: 'dead code' }),
+  ).toEqual({ broken: [], stale: [gone] })
 })

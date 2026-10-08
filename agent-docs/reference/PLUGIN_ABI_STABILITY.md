@@ -34,7 +34,9 @@ costs more than the removals it catches. Only `preservedExports` survives.
 `packages/core/src/ReExports/publishedPluginReads.json` lists every
 `module#name` an ES module store plugin's shipped bundle takes off the host, and
 `pnpm autogen --check` fails when `reExports.generated.json` stops serving one
-(`scripts/check-plugin-reads.ts`). `pnpm check-published-plugins --write`
+(`scripts/check-plugin-reads.ts`). A removal that has to break a plugin goes in
+`acceptedPluginReadRemovals.json` with its reason, and that entry fails as stale
+once the plugin releases without the read. `pnpm check-published-plugins --write`
 refreshes the list from the store, so a plugin published since the last refresh
 is not covered, and neither is a UMD bundle or a plugin outside the store.
 

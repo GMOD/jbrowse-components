@@ -10,29 +10,27 @@
 //
 // publishedPluginReads.json is as fresh as the last `pnpm
 // check-published-plugins --write`; a plugin published since is not in it.
+//
+// acceptedPluginReadRemovals.json is the way to remove a read name on purpose:
+// `"module#name": "why"`. The plugin stays broken on this build until it
+// releases without the read, and the entry then fails here as stale.
 import { readFileSync } from 'node:fs'
 import { join } from 'node:path'
 
-import { unservedReads } from './pluginHostReads.ts'
+import { gatePluginReads } from './pluginHostReads.ts'
 
 import type { AbiManifest } from './pluginHostReads.ts'
 
 const dir = join(import.meta.dirname, '../packages/core/src/ReExports')
 const read = (f: string) =>
   JSON.parse(readFileSync(join(dir, f), 'utf8')) as unknown
+const ACCEPTED = 'acceptedPluginReadRemovals.json'
 
-const manifest = read('reExports.generated.json') as AbiManifest
-const pluginReads = read('publishedPluginReads.json') as Record<
-  string,
-  string[]
->
-
-const broken = Object.entries(pluginReads)
-  .map(([plugin, reads]) => ({
-    plugin,
-    gone: unservedReads(reads, manifest),
-  }))
-  .filter(r => r.gone.length > 0)
+const { broken, stale } = gatePluginReads(
+  read('publishedPluginReads.json') as Record<string, string[]>,
+  read('reExports.generated.json') as AbiManifest,
+  read(ACCEPTED) as Record<string, string>,
+)
 
 if (broken.length > 0) {
   console.error('A published plugin reads a name this ABI no longer serves:')
@@ -40,9 +38,14 @@ if (broken.length > 0) {
     console.error(`  ${plugin}: ${gone.join(', ')}`)
   }
   console.error(
-    '\nThe name is undefined inside the bundle the store already serves. Keep ' +
-      'serving it, or release the plugin without the read and refresh the ' +
-      'list with `pnpm check-published-plugins --write`.',
+    `\nThe name is undefined inside the bundle the store already serves. Keep serving it, or add it to ${ACCEPTED} with the reason if the plugin has to break.`,
   )
+}
+if (stale.length > 0) {
+  console.error(
+    `${ACCEPTED} excuses a removal no published plugin is broken by; delete: ${stale.join(', ')}`,
+  )
+}
+if (broken.length > 0 || stale.length > 0) {
   process.exit(1)
 }

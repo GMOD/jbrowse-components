@@ -423,3 +423,27 @@ export function unservedReads(reads: string[], manifest: AbiManifest) {
     )
   })
 }
+
+// What the offline gate reports. `accepted` maps a read to the reason it was
+// removed while a store plugin still reads it; an entry that excuses nothing
+// is stale, so the list empties itself as plugins release.
+export function gatePluginReads(
+  pluginReads: Record<string, string[]>,
+  manifest: AbiManifest,
+  accepted: Record<string, string>,
+) {
+  const unserved = Object.entries(pluginReads).map(([plugin, reads]) => ({
+    plugin,
+    gone: unservedReads(reads, manifest),
+  }))
+  const excused = new Set(unserved.flatMap(r => r.gone))
+  return {
+    broken: unserved
+      .map(({ plugin, gone }) => ({
+        plugin,
+        gone: gone.filter(read => !(read in accepted)),
+      }))
+      .filter(r => r.gone.length > 0),
+    stale: Object.keys(accepted).filter(read => !excused.has(read)),
+  }
+}
