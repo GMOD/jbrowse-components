@@ -171,3 +171,15 @@ test('no warning when everything is a URL', async () => {
 
   expect(queryByText(/files from your computer/)).toBeNull()
 })
+
+test.each(['short', 'long'])(
+  'the Desktop link wraps the %s link the dialog shows',
+  async mode => {
+    const utils = await renderDialog(mode)
+
+    const href = utils.getByText('Open in JBrowse Desktop').closest('a')!
+    expect(new URL(href.getAttribute('href')!).searchParams.get('url')).toBe(
+      `http://localhost/app/#session=${mode}-link`,
+    )
+  },
+)

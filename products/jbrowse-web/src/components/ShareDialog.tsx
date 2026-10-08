@@ -10,6 +10,7 @@ import { useFetch } from '@jbrowse/core/util/useFetch'
 import { getShareableSessionSnapshot } from '@jbrowse/product-core'
 import BookmarkAddIcon from '@mui/icons-material/BookmarkAdd'
 import ContentCopyIcon from '@mui/icons-material/ContentCopy'
+import LaunchIcon from '@mui/icons-material/Launch'
 import SettingsIcon from '@mui/icons-material/Settings'
 import {
   Alert,
@@ -17,6 +18,7 @@ import {
   Button,
   CircularProgress,
   DialogContentText,
+  Tooltip,
   Typography,
 } from '@mui/material'
 import { observer } from 'mobx-react'
@@ -24,6 +26,7 @@ import { observer } from 'mobx-react'
 import ShareInfoDialog from './ShareInfoDialog.tsx'
 import { buildShareUrl } from './buildShareUrl.ts'
 import { findLocalFileNames } from './localFileTracks.ts'
+import { toDesktopLink } from './toDesktopLink.ts'
 
 import type { SessionShareMode, SessionWithShareURL } from '@jbrowse/core/util'
 
@@ -98,6 +101,18 @@ const ShareDialog = observer(function ShareDialog({
         title="JBrowse Shareable Link"
         actions={
           <>
+            <Tooltip title="Needs JBrowse Desktop 5.0 or newer">
+              <span>
+                <Button
+                  component="a"
+                  href={disabled ? undefined : toDesktopLink(url)}
+                  startIcon={<LaunchIcon />}
+                  disabled={disabled}
+                >
+                  Open in JBrowse Desktop
+                </Button>
+              </span>
+            </Tooltip>
             <Button
               startIcon={<BookmarkAddIcon />}
               disabled={disabled}

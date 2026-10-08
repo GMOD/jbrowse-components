@@ -1,6 +1,6 @@
 ---
 name: web-share-link-in-desktop
-description: Desktop opens every link web's share button makes (share-, encoded-, json-) since 2026-10-08, except a session carrying its own connections, which it refuses. What is left is a home for sessionConnections and an "Open in Desktop" button in web's ShareDialog.
+description: Desktop opens every link web's share button makes (share-, encoded-, json-) since 2026-10-08, except a session carrying its own connections, which it refuses. What is left is a home for sessionConnections.
 ---
 
 # Opening a web share link in Desktop
@@ -14,15 +14,11 @@ the link's config, gets the snapshot, and hands it to the config as its
 names (`shareURL`, relative to the page the link points at), decrypted with the
 link's `password=`.
 
-Two things are still out.
+One thing is still out.
 
 **`sessionConnections`** (web-core's `SessionConnections`) has no slot in
 Desktop's session, so a link whose session carries any stops with an error
 naming the count. They need a home in Desktop's session or a translation.
-
-**Web's ShareDialog has no "Open in Desktop" button.** It was held back because
-none of its formats was one Desktop could accept. Now each is, so the button is
-`jbrowse://open?url=` around the link the dialog already shows.
 
 `sessionPlugins` is the other key Desktop's session does not declare; those join
 the config's plugins once `trustPlugins` (ADR-038) has passed them. Any further

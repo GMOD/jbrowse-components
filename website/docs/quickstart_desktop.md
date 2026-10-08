@@ -140,6 +140,9 @@ Desktop downloads the config the link names and saves it with the session. A
 short share link is read from the share service that config names, so it needs a
 network connection and the link's `&password=` intact.
 
+JBrowse Web's Share dialog has an "Open in JBrowse Desktop" button that opens
+the link it shows, through the same `jbrowse://` link.
+
 Figures in these docs also offer an "Open this view in JBrowse Desktop" button,
 through a `jbrowse://` link the macOS and Windows installers register. The Linux
 AppImage registers nothing by itself, so there paste the link, pass it on the
