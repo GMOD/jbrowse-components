@@ -2544,6 +2544,7 @@
       "package": "@jbrowse/core",
       "names": [
         "doAnalytics",
+        "urlParamNames",
         "writeAWSAnalytics",
         "writeAWSSessionEnd",
         "writeGAAnalytics"
