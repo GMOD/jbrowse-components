@@ -1279,6 +1279,15 @@ export default class PluginManager {
     return this.addElementType('view', callback)
   }
 
+  // v5 has no renderer registry. A v4 plugin still calls this from `install`,
+  // and without the method what it throws is "addRendererType is not a
+  // function", which names neither the cause nor the fix.
+  addRendererType(_cb?: unknown): never {
+    throw new Error(
+      'addRendererType was removed in JBrowse 5 along with server-side renderers: this plugin was built for JBrowse 4 or earlier and has to draw from a display instead, as the "Upgrading to v5" guide describes',
+    )
+  }
+
   addWidgetType(cb: (pm: PluginManager) => WidgetType) {
     return this.addElementType('widget', cb)
   }

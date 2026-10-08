@@ -357,3 +357,19 @@ test('a display naming several track types attaches to each of them', () => {
   expect(displaysOf('TrackB')).toEqual(['SharedDisplay'])
   expect(displaysOf('TrackC')).toEqual([])
 })
+
+test('a v4 plugin registering a renderer is told renderers are gone', () => {
+  class RendererPlugin extends Plugin {
+    name = 'RendererPlugin'
+    install(pluginManager: PluginManager) {
+      ;(
+        pluginManager as unknown as {
+          addRendererType: (cb: () => unknown) => void
+        }
+      ).addRendererType(() => ({}))
+    }
+  }
+  expect(() => new PluginManager([new RendererPlugin()])).toThrow(
+    /addRendererType was removed in JBrowse 5/,
+  )
+})
