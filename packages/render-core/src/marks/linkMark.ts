@@ -2,6 +2,7 @@ import { getDpr } from '../canvas2dUtils.ts'
 import { SCALE_TYPE_LOG } from '../scoreScale.ts'
 import {
   distToWideCirclePx,
+  farDomeParam,
   legSweepAngle,
 } from '../shaders/curveDistance.js.generated.ts'
 import {
@@ -133,6 +134,7 @@ const KIND_LINE = 4
 // The painter's leg polyline: enough segments that the chord sagitta on any
 // leg the band can show is under a pixel.
 const LEG_SEGMENTS = 32
+const FAR_DOME_COARSE = 16
 
 interface LinkFrame {
   band: number
@@ -401,7 +403,9 @@ function placeCurve(c: LinkChannels, g: LinkFrame, i: number) {
   const [rx, ry] = linkRadiiPx(pairHalf, apex, g.screenW)
   g.rx = rx
   g.ry = ry
-  if (linkIsFar(pairHalf, g.screenW)) {
+  // A far pair with a low apex keeps its apex (`linkRadiiPx`) and is an
+  // ellipse still, traced as chords (`farDomePoints`).
+  if (linkIsFar(pairHalf, g.screenW) && ry >= rx) {
     g.kind = KIND_CIRCLE
     g.legSweep = legSweepAngle(rx, g.reach + g.strokePx / 2)
     g.legHeight = rx * Math.sin(g.legSweep)
@@ -546,6 +550,47 @@ function legPoints(g: LinkFrame, footX: number, legDir: number): LegPoint[] {
   return points
 }
 
+// A far dome as chords from the foot nearer the canvas, stepped as the shader
+// steps it: fine over the stretch the canvas shows, coarse over the rest. A
+// canvas flattens an ellipse tens of thousands of px wide into too few curves
+// to hold its feet.
+function farDomePoints(g: LinkFrame, left: number, right: number): LegPoint[] {
+  const fromRight = g.screenW / 2 - left > g.rx
+  const footX = fromRight ? right : left
+  const dir = fromRight ? -1 : 1
+  const margin = g.strokePx
+  const u0 = farDomeParam(
+    fromRight ? footX - g.screenW - margin : -margin - footX,
+    g.rx,
+  )
+  const u1 = Math.max(
+    u0,
+    farDomeParam(fromRight ? footX + margin : g.screenW + margin - footX, g.rx),
+  )
+  const coarse = Array.from({ length: FAR_DOME_COARSE + 1 }, (_, k) =>
+    Math.sin(((k / FAR_DOME_COARSE) * Math.PI) / 2),
+  )
+  const fine = Array.from(
+    { length: LINK_CURVE_SEGMENTS + 1 },
+    (_, k) => u0 + ((u1 - u0) * k) / LINK_CURVE_SEGMENTS,
+  )
+  return [
+    ...coarse.filter(u => u < u0),
+    ...fine,
+    ...coarse.filter(u => u > u1),
+  ].map(u => ({
+    x: footX + dir * 2 * g.rx * u * u,
+    y: yAt(g, 2 * g.ry * u * Math.sqrt(1 - u * u)),
+  }))
+}
+
+function traceChords(ctx: PathSink, points: LegPoint[]) {
+  ctx.moveTo(points[0]!.x, points[0]!.y)
+  for (let k = 1; k < points.length; k++) {
+    ctx.lineTo(points[k]!.x, points[k]!.y)
+  }
+}
+
 interface PathSink {
   moveTo(x: number, y: number): void
   lineTo(x: number, y: number): void
@@ -581,12 +626,12 @@ function tracePath(ctx: PathSink, g: LinkFrame) {
       [right, 1],
       [left, -1],
     ] as const) {
-      const points = legPoints(g, footX, legDir)
-      ctx.moveTo(points[0]!.x, points[0]!.y)
-      for (let k = 1; k < points.length; k++) {
-        ctx.lineTo(points[k]!.x, points[k]!.y)
-      }
+      traceChords(ctx, legPoints(g, footX, legDir))
     }
+    return
+  }
+  if (linkIsFar(g.rx, g.screenW)) {
+    traceChords(ctx, farDomePoints(g, left, right))
     return
   }
   const mid = (left + right) / 2
@@ -785,7 +830,9 @@ function nearestRising(g: LinkFrame, px: number, py: number): CurvePoint {
     return { x, y: baseY, dist: Math.hypot(px - x, py - baseY) }
   }
   const near = ellipseNearest(px - mid, py - baseY, g.rx, g.ry)
-  return { x: mid + near.x, y: baseY + near.y, dist: near.dist }
+  // The drawn half rises from the baseline. A cursor on the baseline is as
+  // near the mirrored half, and the solve may name that one.
+  return { x: mid + near.x, y: baseY - Math.abs(near.y), dist: near.dist }
 }
 
 export const linkMark: MarkShape<LinkChannels, LinkParams> = {

@@ -7,8 +7,10 @@
 // The fragment ramps its alpha to zero at `halfWidth + aaHalfPx`, so the hull
 // has to cover everything nearer the curve than that. Both flanks of a hull
 // sampled from the offset curve fall short of it at a clamped dome's feet.
-//! js-export: distToWideCirclePx, legSweepAngle, wideCircleLeg, wideCircleLegStep, ellipseHullPoint, wideCircleHullPoint
+//! js-export: distToWideCirclePx, legSweepAngle, wideCircleLeg, wideCircleLegStep, ellipseHullPoint, wideCircleHullPoint, farDomeParam, farDomeDistancePx
 //! js-skip: nearCircleDistancePx — a float32 remedy with no float64 caller. The hit tests' copy of this file's solve (marks/ellipseDistance.ts) holds the ellipse at every aspect, so nothing outside the shader has an approximation to want.
+//! js-skip: farDomeDistSq — a step of farDomeDistancePx's solve, which its twin carries; nothing outside it wants one step
+//! js-skip: farDomeStep — a step of farDomeDistancePx's solve, so it inherits farDomeDistSq's reason exactly
 //! oracle-skip: ellipseHullPoint — a miter between near-parallel tangent lines, so float32 and float64 part on the probe's arbitrary directions and radii; over the angles the hull steps through they agree to 0.004 px, and arcHull.test.ts referees the twin against every inked point instead
 //! oracle-skip: wideCircleHullPoint — the foot-relative frame cancels at half steps and angles the band never reaches; arcHull.test.ts referees it with the legs
 
@@ -161,6 +163,75 @@ public float distToWideCirclePx(float x, float y, float r) {
 
 public float distToWideCircle(float2 legLocal, float r) {
   return distToWideCirclePx(legLocal.x, legLocal.y, r);
+}
+
+// A far pair whose apex is low is not a circle: it is a dome thousands of px
+// wide and tens tall, which over one canvas is a nearly level line. The
+// functions below measure it from a foot, so nothing cancels at these radii.
+//
+// u = sin(b / 2) for the angle b from a foot at which the dome is `d` px inward
+// of that foot, by the half-angle identity d = 2 rx sin^2(b / 2). Held short of
+// the far foot, where the height's slope in u has no bound: the foot is the
+// nearer one, and a far pair's canvas reaches under a third of the way past
+// the apex.
+public float farDomeParam(float dPx, float rxPx) {
+  return sqrt(clamp(dPx / (2.0 * max(rxPx, 1e-6)), 0.0, 0.84));
+}
+
+// A far dome's point in the frame of one of its feet, by u = sin(b / 2) for the
+// angle b from that foot: 2 rx u^2 inward of the foot, 2 ry u sqrt(1 - u^2)
+// up. No trigonometry, so the twin the hit tests' referee runs is this code.
+float farDomeDistSq(float u, float dPx, float hPx, float rx, float ry) {
+  float ox = 2.0 * rx * u * u - dPx;
+  float oy = 2.0 * ry * u * sqrt(max(1.0 - u * u, 0.0)) - hPx;
+  return ox * ox + oy * oy;
+}
+
+// One Newton step toward the u whose dome point is nearest the fragment. Held
+// short of 1, the far foot, where the height's slope in u has no bound; the
+// frame is the nearer foot's, so the answer is never there.
+float farDomeStep(float u, float dPx, float hPx, float rx, float ry) {
+  float w = sqrt(max(1.0 - u * u, 1e-6));
+  float ox = 2.0 * rx * u * u - dPx;
+  float oy = 2.0 * ry * u * w - hPx;
+  float dx = 4.0 * rx * u;
+  float dy = 2.0 * ry * (1.0 - 2.0 * u * u) / w;
+  float ddx = 4.0 * rx;
+  float ddy = 2.0 * ry * u * (2.0 * u * u - 3.0) / (w * w * w);
+  float f = ox * dx + oy * dy;
+  float df = dx * dx + dy * dy + ox * ddx + oy * ddy;
+  // A foot is a tip sharper than a px, where the step overshoots: it is taken
+  // whole or by half, and only where it lands nearer.
+  float whole = clamp(u - f / max(df, 1e-12), 0.0, 0.999);
+  float half = 0.5 * (u + whole);
+  float here = ox * ox + oy * oy;
+  return farDomeDistSq(whole, dPx, hPx, rx, ry) < here
+    ? whole
+    : (farDomeDistSq(half, dPx, hPx, rx, ry) < here ? half : u);
+}
+
+// Distance from a fragment to a far dome, in the frame of one of its feet: the
+// fragment `dPx` inward of the foot and `hPx` above the baseline. Newton's
+// method from the nearer of the dome's point level with the fragment, which is
+// the near one where the dome is steep at its feet, and its point above or
+// below it, which is near everywhere else. Every term is assembled from the
+// foot, so a width in the millions of px cancels nothing.
+public float farDomeDistancePx(float dPx, float hPx, float rxPx, float ryPx) {
+  float rx = max(rxPx, 1e-6);
+  float ry = max(ryPx, 1e-6);
+  float q = clamp(hPx / ry, 0.0, 1.0);
+  float c = sqrt(1.0 - q * q);
+  // sin(b / 2) for sin(b) = q, on this foot's half or the far one's
+  float uH = dPx > rx ? sqrt(0.5 * (1.0 + c)) : q / sqrt(2.0 * (1.0 + c));
+  float uD = sqrt(clamp(dPx / (2.0 * rx), 0.0, 1.0));
+  float u = farDomeDistSq(uH, dPx, hPx, rx, ry) < farDomeDistSq(uD, dPx, hPx, rx, ry)
+    ? uH
+    : uD;
+  u = farDomeStep(u, dPx, hPx, rx, ry);
+  u = farDomeStep(u, dPx, hPx, rx, ry);
+  u = farDomeStep(u, dPx, hPx, rx, ry);
+  u = farDomeStep(u, dPx, hPx, rx, ry);
+  return sqrt(farDomeDistSq(u, dPx, hPx, rx, ry));
 }
 
 // How far around a far circle each leg's hull sweeps, in radians from its foot:

@@ -11,7 +11,10 @@
 // true distance to the analytic curve, so the hull's facets never reach the
 // picture. A pair wider than LINK_FAR_SCREEN_WIDTHS view widths degenerates to
 // a circle whose legs rise from each real foot, built endpoint-relative so a
-// radius in the millions of px cancels nothing. A foot the table cannot place
+// radius in the millions of px cancels nothing, or where its apex is low to
+// a dome that keeps the apex, whose canvas-wide stretch is a nearly level
+// line, so a view inside the pair still shows it passing over. A foot the
+// table cannot place
 // draws a stem at the placed one, so an off-view mate still says it exists. A
 // foot may carry a breakend tick along the baseline, pointing along the arm
 // its junction keeps. Under `line` the pair is a straight segment at the apex
@@ -24,7 +27,7 @@
 //! targets: wgsl, glsl
 //! topology: triangle-strip
 //! coverage: analytic
-//! export-consts: LINK_SHAPE_DOME, LINK_SHAPE_ARC, LINK_SHAPE_LINE, LINK_LINE_MIN_PX, LINK_NO_REGION, LINK_ELSEWHERE, LINK_MAX_REGIONS, LINK_STEM_PX, LINK_FOOT_PX, LINK_FAR_SCREEN_WIDTHS, LINK_SIZE_CONSTANT, LINK_SIZE_SCALED, LINK_NO_SIZE, LINK_CURVE_SEGMENTS
+//! export-consts: LINK_SHAPE_DOME, LINK_SHAPE_ARC, LINK_SHAPE_LINE, LINK_LINE_MIN_PX, LINK_NO_REGION, LINK_ELSEWHERE, LINK_MAX_REGIONS, LINK_STEM_PX, LINK_FOOT_PX, LINK_FAR_SCREEN_WIDTHS, LINK_FAR_FLAT_RATIO, LINK_SIZE_CONSTANT, LINK_SIZE_SCALED, LINK_NO_SIZE, LINK_CURVE_SEGMENTS
 //! js-export: linkApexPx, linkRadiiPx, linkIsFar, linkStrokeWidthPx, linkValuePx, linkBaseYPx, linkFootLenPx, linkFootDir
 
 import antialias;
@@ -66,6 +69,10 @@ public static const float LINK_FOOT_PX = 20.0;
 // Not 1, because a circle throws the pair's direction away, and the limit is
 // tessellation: reference/ARC_BAND.md.
 public static const float LINK_FAR_SCREEN_WIDTHS = 3.0;
+// A far pair whose apex is under this share of its half-width keeps its apex
+// and draws as a flattened dome; above it the pair is a circle. A quarter
+// leaves an arc whose apex IS its half-width, give or take a float, a circle.
+public static const float LINK_FAR_FLAT_RATIO = 0.25;
 public static const int LINK_SIZE_CONSTANT = 0;
 public static const int LINK_SIZE_SCALED = 1;
 // The `size` lane's value for an instance holding no number, which takes the
@@ -202,11 +209,13 @@ public float linkBaseYPx(float rowOffsetPx, float rowHeight, uint row, int rever
   return rowBandTopPx(rowOffsetPx, rowHeight, row) + (reverse != 0 ? 0.0 : rowHeight);
 }
 
-// The two radii of the half-ellipse a pair draws, or a true circle's once the
-// pair is far. `//! js-export`ed as a pair because the decision IS the pair,
-// and it is what the painter, the ink and the hit test read.
+// The two radii of the half-ellipse a pair draws. A far pair's are a true
+// circle's, unless its apex is low, when it keeps the apex and is the dome
+// that circle flattens to. `//! js-export`ed as a pair because the decision IS
+// the pair, and it is what the painter, the ink and the hit test read.
 public float2 linkRadiiPx(float halfWidthPx, float apexPx, float screenWidthPx) {
-  if (linkIsFar(halfWidthPx, screenWidthPx)) {
+  if (linkIsFar(halfWidthPx, screenWidthPx)
+      && apexPx >= LINK_FAR_FLAT_RATIO * halfWidthPx) {
     return float2(halfWidthPx, halfWidthPx);
   }
   return float2(halfWidthPx, apexPx);
@@ -291,6 +300,34 @@ LinkVertex curveVertex(LinkInstance inst, LinkEnv e, uint seg, float side) {
       v.radii = float2(len, 0.0);
       v.local = float2(t * len, pad);
       origin = float2((e.xPx + e.x2Px) * 0.5 - len * 0.5, e.baseY - apex * e.ySign);
+    } else if (linkIsFar(pairHalf, u.canvasWidth) && v.radii.y < v.radii.x) {
+      // A far dome, in px from the foot nearer the canvas and stepped in
+      // u = sin(b / 2) for the angle b from that foot, as the fragment
+      // measures it: a square root places the canvas's edges where an arcsine
+      // is px off at these radii. Over the stretch the canvas shows and no
+      // more, so every segment is spent on screen.
+      v.kind = KIND_CIRCLE;
+      float rx = v.radii.x;
+      float ry = max(v.radii.y, 1e-6);
+      bool fromRight = u.canvasWidth * 0.5 - ends.x > rx;
+      float footX = fromRight ? ends.y : ends.x;
+      float margin = e.hw + 2.0;
+      float nearD = fromRight ? footX - u.canvasWidth - margin : -margin - footX;
+      float farD = fromRight ? footX + margin : u.canvasWidth + margin - footX;
+      float u0 = farDomeParam(nearD, rx);
+      float step = (max(farDomeParam(farD, rx), u0) - u0) / float(u.curveSegments);
+      float su = u0 + float(seg) * step;
+      // The dome leaves its foot upright and is level within a px, so the
+      // foot's normal is its first chord's.
+      float un = max(su, 0.5 * step);
+      float2 normal = normalize(float2(
+        -ry * (1.0 - 2.0 * un * un), 2.0 * rx * un * sqrt(1.0 - un * un)));
+      // A chord cuts inside the curve by its sagitta, which the pad takes on.
+      float2 p = float2(2.0 * rx * su * su, 2.0 * ry * su * sqrt(1.0 - su * su))
+        + normal * side * (e.hw + 0.5 * rx * step * step);
+      v.local = -p;
+      origin = float2(footX, e.baseY);
+      legDir = fromRight ? 1.0 : -1.0;
     } else if (linkIsFar(pairHalf, u.canvasWidth)) {
       v.kind = KIND_CIRCLE;
       float legSweep = legSweepAngle(v.radii.x, e.reach + e.hw);
@@ -412,7 +449,11 @@ float linkDistance(VsOut i) {
     float y = clamp(i.local.y, -i.radii.y, 0.0);
     return length(float2(i.local.x, i.local.y - y));
   }
-  if (i.kind >= 0.5) { return distToWideCircle(i.local, i.radii.x); }
+  if (i.kind >= 0.5) {
+    return i.radii.y < i.radii.x
+      ? farDomeDistancePx(-i.local.x, -i.local.y, i.radii.x, i.radii.y)
+      : distToWideCircle(i.local, i.radii.x);
+  }
   return sdEllipse(i.local, i.radii);
 }
 

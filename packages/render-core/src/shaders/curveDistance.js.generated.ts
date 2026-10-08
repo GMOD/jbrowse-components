@@ -101,3 +101,60 @@ export function wideCircleHullPoint(sinB: number, sinHalfB: number, cosHalf: num
   let sh2 = (sinHalfB * sinHalfB)
   return [((grow * (1.0 - (2.0 * sh2))) - ((2.0 * radiusPx) * sh2)), ((radiusPx + grow) * sinB)]
 }
+
+export function farDomeParam(dPx: number, rxPx: number): number {
+  return Math.sqrt(_clamp((dPx / (2.0 * _max(rxPx, 9.99999997475242708e-07))), 0.0, 0.8399999737739563))
+}
+
+function farDomeDistSq(u: number, dPx: number, hPx: number, rx: number, ry: number): number {
+  let ox = ((((2.0 * rx) * u) * u) - dPx)
+  let oy = ((((2.0 * ry) * u) * Math.sqrt(_max((1.0 - (u * u)), 0.0))) - hPx)
+  return ((ox * ox) + (oy * oy))
+}
+
+function farDomeStep(u: number, dPx: number, hPx: number, rx: number, ry: number): number {
+  let w = Math.sqrt(_max((1.0 - (u * u)), 9.99999997475242708e-07))
+  let ox = ((((2.0 * rx) * u) * u) - dPx)
+  let _t0 = (2.0 * ry)
+  let _t1 = (_t0 * u)
+  let oy = ((_t1 * w) - hPx)
+  let _t2 = (4.0 * rx)
+  let dx = (_t2 * u)
+  let _t3 = ((2.0 * u) * u)
+  let dy = ((_t0 * (1.0 - _t3)) / w)
+  let whole = _clamp((u - (((ox * dx) + (oy * dy)) / _max(((((dx * dx) + (dy * dy)) + (ox * _t2)) + (oy * ((_t1 * (_t3 - 3.0)) / ((w * w) * w)))), 9.999999960041972e-13))), 0.0, 0.99900001287460327)
+  let half = (0.5 * (u + whole))
+  let here = ((ox * ox) + (oy * oy))
+  let _t4: number
+  if ((farDomeDistSq(whole, dPx, hPx, rx, ry) < here)) {
+    _t4 = whole
+  } else {
+    if ((farDomeDistSq(half, dPx, hPx, rx, ry) < here)) {
+      _t4 = half
+    } else {
+      _t4 = u
+    }
+  }
+  return _t4
+}
+
+export function farDomeDistancePx(dPx: number, hPx: number, rxPx: number, ryPx: number): number {
+  let _t0 = _max(rxPx, 9.99999997475242708e-07)
+  let _t1 = _max(ryPx, 9.99999997475242708e-07)
+  let q = _clamp((hPx / _t1), 0.0, 1.0)
+  let c = Math.sqrt((1.0 - (q * q)))
+  let uH: number
+  if ((dPx > _t0)) {
+    uH = Math.sqrt((0.5 * (1.0 + c)))
+  } else {
+    uH = (q / Math.sqrt((2.0 * (1.0 + c))))
+  }
+  let uD = Math.sqrt(_clamp((dPx / (2.0 * _t0)), 0.0, 1.0))
+  let u: number
+  if ((farDomeDistSq(uH, dPx, hPx, _t0, _t1) < farDomeDistSq(uD, dPx, hPx, _t0, _t1))) {
+    u = uH
+  } else {
+    u = uD
+  }
+  return Math.sqrt(farDomeDistSq(farDomeStep(farDomeStep(farDomeStep(farDomeStep(u, dPx, hPx, _t0, _t1), dPx, hPx, _t0, _t1), dPx, hPx, _t0, _t1), dPx, hPx, _t0, _t1), dPx, hPx, _t0, _t1))
+}

@@ -218,9 +218,9 @@ describe('sashimiLabels', () => {
     expect(labelsOf([junction(1200, 1400)])).toHaveLength(0)
   })
 
-  // The mark clips such a dome to the legs at its feet, so a count at the
-  // dome's apex would stand over nothing.
-  it('labels no arc spanning more than three canvas widths', () => {
+  // A dome that wide keeps its apex and passes over the view as a near-level
+  // line, so its count stands on it.
+  it('labels an arc spanning more than three canvas widths', () => {
     // scrolled 4000px in, so both arcs are centred on x 500 with their feet
     // off either side of the canvas
     const scrolled = {
@@ -228,7 +228,9 @@ describe('sashimiLabels', () => {
       linkRegions: [{ anchorPx: -4000, anchorBp: 0, signedPxPerBp: 1 }],
     }
     expect(labelsOf([junction(3600, 5400)], [], scrolled)).toHaveLength(1)
-    expect(labelsOf([junction(100, 8900)], [], scrolled)).toHaveLength(0)
+    const [far] = labelsOf([junction(100, 8900)], [], scrolled)
+    expect(far).toMatchObject({ x: 500 })
+    expect(far!.y).toBeCloseTo(upApexY(8800))
   })
 
   it('labels nothing in a band with no height', () => {

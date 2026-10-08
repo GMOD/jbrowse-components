@@ -402,7 +402,7 @@ describe('a count beside a link mark stands at the apex of the arc on its feet',
     expect(glyphTop(label!)).toBeCloseTo(valuePx(50) + STROKE / 2 + 2)
   })
 
-  test('a far pair, whose band shows only its legs, carries no count', () => {
+  test('a far dome keeps its apex, so its count stands on it, and a far arc, whose band shows only its legs, carries none', () => {
     // feet 7000 px apart, either side of the canvas, the middle on it
     const spans: [number, number][] = [[100, 7100]]
     const counts = textLayer(spans, ['3'])
@@ -413,8 +413,17 @@ describe('a count beside a link mark stands at the apex of the arc on its feet',
     const blocks = [
       { ...BLOCK, end: 10000, screenStartPx: -3000, screenEndPx: 7000 },
     ]
+    const [onDome] = place(
+      [linkEntry, countEntry],
+      [linkLayer(spans), counts],
+      state,
+      blocks,
+    )
+    expect(onDome).toMatchObject({ x: 600 })
+    expect(glyphTop(onDome!)).toBeGreaterThan(drawnTop(linkLayer(spans), 0))
+    const arcEntry = { ...linkEntry, linkShape: 'arc' as const }
     expect(
-      place([linkEntry, countEntry], [linkLayer(spans), counts], state, blocks),
+      place([arcEntry, countEntry], [linkLayer(spans), counts], state, blocks),
     ).toEqual([])
     expect(place([countEntry], [counts], state, blocks)).toEqual([
       expect.objectContaining({ x: 600 }),

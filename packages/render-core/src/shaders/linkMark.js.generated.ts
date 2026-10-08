@@ -135,7 +135,13 @@ export function linkIsFar(halfWidthPx: number, screenWidthPx: number): boolean {
 }
 
 export function linkRadiiPx(halfWidthPx: number, apexPx: number, screenWidthPx: number): [number, number] {
+  let _t0: boolean
   if (linkIsFar(halfWidthPx, screenWidthPx)) {
+    _t0 = (apexPx >= (0.25 * halfWidthPx))
+  } else {
+    _t0 = false
+  }
+  if (_t0) {
     return [halfWidthPx, halfWidthPx]
   }
   return [halfWidthPx, apexPx]

@@ -21,6 +21,8 @@ export const LINK_FOOT_PX = 20
 
 export const LINK_FAR_SCREEN_WIDTHS = 3
 
+export const LINK_FAR_FLAT_RATIO = 0.25
+
 export const LINK_SIZE_CONSTANT = 0
 
 export const LINK_SIZE_SCALED = 1

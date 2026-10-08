@@ -5519,6 +5519,8 @@
       "names": [
         "distToWideCirclePx",
         "ellipseHullPoint",
+        "farDomeDistancePx",
+        "farDomeParam",
         "legSweepAngle",
         "wideCircleHullPoint",
         "wideCircleLeg",
@@ -5639,6 +5641,7 @@
       "names": [
         "LINK_CURVE_SEGMENTS",
         "LINK_ELSEWHERE",
+        "LINK_FAR_FLAT_RATIO",
         "LINK_FAR_SCREEN_WIDTHS",
         "LINK_FOOT_PX",
         "LINK_LINE_MIN_PX",

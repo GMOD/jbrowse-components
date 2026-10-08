@@ -14,8 +14,8 @@ Read [ADR-051](../architecture-decision-records/adr-051-shader-js-codegen-is-sca
 in the export set and what deliberately does not. This file says what the
 tree currently looks like against that standard.
 
-Scanned 48 shaders with entry points. 132 functions
-are inside the emitter's subset, of which **103 are exported**.
+Scanned 48 shaders with entry points. 136 functions
+are inside the emitter's subset, of which **105 are exported**.
 
 ## Candidates
 
@@ -46,6 +46,8 @@ longer see, or one that is exported after all, fails `pnpm gen:shaders`.
 | `expandToMinWidthPx` | `(f32, f32, f32) -> vec2f` | the float2 over expandToMinWidthLeftPx and RightPx, which coverageBar.slang exports as the twins; a float2 twin is a tuple per call, and the pileup walk allocating one per span measured 0.85x against 0.78x of its hand painter |
 | `expandToMinWidthX` | `(f32, f32, f32, f32) -> vec2f` | clip-space wrapper over expandToMinWidthPx, same reason as extendToMinWidthX |
 | `extendToMinWidthX` | `(f32, f32, f32, f32) -> f32` | clip-space wrapper over the exported extendToMinWidthPx, which is the decision |
+| `farDomeDistSq` | `(f32, f32, f32, f32, f32) -> f32` | a step of farDomeDistancePx's solve, which its twin carries; nothing outside it wants one step |
+| `farDomeStep` | `(f32, f32, f32, f32, f32) -> f32` | a step of farDomeDistancePx's solve, so it inherits farDomeDistSq's reason exactly |
 | `footRadians` | `(f32, f32, f32, f32) -> f32` | the stage's two-term scale, which chordStage.ts applies with the same two uniforms |
 | `hpSplitUint` | `(u32) -> vec2f` | the hi/lo float32 precision split exists because a GPU has no float64; the Canvas2D path just uses a number |
 | `insetValueYPx` | `(f32, f32, f32, f32, i32, f32, f32) -> f32` | its two consumers lift it under their own anchors, pointMark.slang as pointYPx and linkMark.slang as linkValuePx, and those are the spellings the painters and hit tests read; a third twin would be one nothing calls |
@@ -118,6 +120,7 @@ is no longer shared with anything.
 | `edgeCoverage` | tests only — `arcHull.test.ts`, `buttSegmentCoverage.test.ts`, `dotplotCapsulePad.test.ts`, `sdEllipse.test.ts` |
 | `ellipseHullPoint` | tests only — `arcHull.test.ts` |
 | `extendToMinWidthPx` | tests only — `densityMinWidth.test.ts`, `hpmathParity.test.ts`, `markParity.test.ts`, `rectSpanParity.test.ts` |
+| `farDomeDistancePx` | tests only — `farDome.test.ts` |
 | `frequencyAlpha` | tests only — `alphaShaderParity.test.ts` |
 | `glyphExpand` | tests only — `pointGlyphPad.test.ts` |
 | `isTileKind` | tests only — `syntenyShaderParity.test.ts` |

@@ -50,6 +50,7 @@ const params: LinkParams = {
   valued: false,
   sizePx: 2,
 }
+const domeParams = params
 
 function channels(
   rows: {
@@ -134,7 +135,7 @@ test('a link s ink carries its curve as a path', () => {
     channels([{ x: 100, x2: 5000 + 7100, region: 1 }]),
     block,
     frame,
-    params,
+    { ...params, linkShape: 'arc' },
     0,
   )!
   const d = far.stroke!.d
@@ -219,8 +220,37 @@ test('the size lane strokes each link through the size scale, and no number take
   expect(widths).toEqual([2, 10, 2])
 })
 
-test('a far pair degenerates to legs rising from each foot', () => {
-  // px 100 to px 8100: 8000 px apart on a 2000 px view, past three widths
+test('a far dome keeps its apex, so a view inside the pair shows it passing over', () => {
+  // px 100 to px 8100: 8000 px apart on a 2000 px view, past three widths. The
+  // dome is clamped to its 100 px band, a fortieth of its half-width, so it is
+  // an ellipse still and not the circle a far arc becomes.
+  const c = channels([{ x: 100, x2: 5000 + 7100, region: 1 }])
+  const ink = linkMark.ink!(c, block, frame, params, 0)!
+  expect(ink.left).toBe(99)
+  expect(ink.width).toBeCloseTo(8002)
+  // chords, dense over the 2000 px the view shows and sparse past it: a canvas
+  // flattens an arc this wide too coarsely to hold its foot
+  const d = ink.stroke!.d
+  expect(d.startsWith('M100 100L')).toBe(true)
+  expect(d.endsWith('L8100 100')).toBe(true)
+  expect(d).toContain('L4100 1L')
+  const xs = d.split('L').map(p => Number.parseFloat(p.replace('M', '')))
+  expect(xs.filter(x => x <= 2000).length).toBeGreaterThan(60)
+  expect(xs.filter(x => x > 2100).length).toBeLessThan(16)
+  // level at the apex across the middle of the pair, where the legs of a
+  // circle would have left the canvas empty
+  const mid = linkMark.hitNearest!(c, block, frame, params, 4100, 1, [0], 9)
+  expect(mid).toMatchObject({ index: 0, distSq: 0 })
+  expect(linkApex(c, block, frame, params, 0)).toMatchObject({
+    x: 4100,
+    y: 1,
+    halfWidth: 4000,
+  })
+})
+
+test('a far arc degenerates to legs rising from each foot', () => {
+  // the same pair as a true semicircle, whose apex is its half-width
+  const params: LinkParams = { ...domeParams, linkShape: 'arc' }
   const c = channels([{ x: 100, x2: 5000 + 7100, region: 1 }])
   const ink = linkMark.ink!(c, block, frame, params, 0)!
   expect(ink.left).toBe(99)
@@ -400,7 +430,7 @@ test('a reversed scale hangs the curve from the top of a band placed by its offs
   expect(Math.max(...calls.map(r => r.y + r.h))).toBeCloseTo(71)
 })
 
-test('the apex is where the painted curve peaks, on either side of its band, and a far pair has none', () => {
+test('the apex is where the painted curve peaks, on either side of its band, and a far arc has none', () => {
   const c = channels([
     { x: 100, x2: 200 },
     { x: 500, x2: 42, region: LINK_NO_REGION },
@@ -421,7 +451,13 @@ test('the apex is where the painted curve peaks, on either side of its band, and
     y: 100 - LINK_STEM_PX,
     halfWidth: 0,
   })
-  expect(linkApex(c, block, { ...frame, canvasWidth: 300 }, params, 2)).toBe(
+  const narrow = { ...frame, canvasWidth: 300 }
+  // a far dome still peaks at its clamped apex, mid-pair
+  expect(linkApex(c, block, narrow, params, 2)).toMatchObject({
+    halfWidth: 1600,
+    rise: 99,
+  })
+  expect(linkApex(c, block, narrow, { ...params, linkShape: 'arc' }, 2)).toBe(
     undefined,
   )
 })

@@ -75,9 +75,9 @@ the input to this decision.
   case, draws as one arc across the seam through the view's region table.
 - The curve is the link's half-ellipse where the overlay drew a cubic. Both
   leave the feet vertically and peak at the same apex.
-- A junction wider than three canvas widths draws as the link's far-pair legs
-  near its feet. The overlay drew a near-flat line across the view at apex
-  height.
+- A junction wider than three canvas widths keeps its apex and draws as the
+  link's far dome: a near-level line across a view inside the intron, as the
+  overlay drew it, with the count on it.
 - The thinnest stroke is the link's floor, 1.5 device px, where the overlay
   floored at 1 CSS px.
 - Hover and selection stroke over the arc at 0.55 opacity, in the overlay the
@@ -98,13 +98,16 @@ the input to this decision.
 
 ## Known limits
 
-- **A junction zoomed past three canvas widths shows its legs alone.** Inside
-  a long intron the SVG drew a flat line overhead; the link's far-pair rule
-  draws a circle through the feet, which the band clips to legs off screen, so
-  nothing says a junction passes over. Captured before and after at volvox
-  `ctgA:35,000-39,000`. The rule is render-core's (`linkIsFar`), shared with
-  the read-connections band:
-  [a-far-link-with-a-low-apex-draws-flat-not-as-legs](../ideas/waiting-on-a-call/a-far-link-with-a-low-apex-draws-flat-not-as-legs.md).
+- **A far dome changed the read-connections band too.** The first cut drew
+  any pair wider than three canvas widths as a circle through its feet, which
+  the band clips to legs, so a view inside a long intron showed no junction.
+  The link mark now keeps the apex of a far pair whose apex is under a quarter
+  of its half-width (`LINK_FAR_FLAT_RATIO`), and a read pair's dome is clamped
+  to its band, so a far read pair rises from its foot to a level line where it
+  drew a leg. Only a true `arc` still draws legs. Both backends step the dome
+  from a foot in px: the shader measures it in float32 there, and Canvas2D
+  hands the canvas chords, since Skia flattens an ellipse that wide into too
+  few curves to hold its foot.
 - **A junction in a displayed region past index 255 draws a stem.** The link
   shader's region table holds 256 entries (`LINK_MAX_REGIONS`) and places a
   far foot through it even when the foot is in the instance's own region. The
