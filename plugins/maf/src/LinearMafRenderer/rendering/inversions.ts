@@ -5,6 +5,7 @@ import type { InversionMarker } from '../../LinearMafDisplay/components/computeV
 import type { Ctx2D } from '@jbrowse/core/util/paintLayer'
 
 const HATCH_SPACING = 4
+const OUTLINE_PX = 2
 
 /**
  * Draw the inversion (strand-flip) indicator over each block that aligns
@@ -22,9 +23,24 @@ export function drawInversions(
 ) {
   const hatchColor = alpha(color, 0.55)
   for (const m of markers) {
-    const right = m.xLeft + m.width
+    const outlineWidth = Math.max(m.width, 2)
+    if (m.h <= 2 * OUTLINE_PX) {
+      // The outline alone would cover a band this short, and its 2px stroke
+      // would overhang one shorter still.
+      ctx.fillStyle = color
+      ctx.fillRect(m.xLeft - 1, m.rowTop, outlineWidth + 2, m.h)
+      continue
+    }
+    const right = m.visibleLeft + m.visibleWidth
     const bottom = m.rowTop + m.h
-    withClip(ctx, m.xLeft, m.rowTop, m.width, m.h, () => {
+    // Phased off the block's own left edge so the pattern pans with the block,
+    // and started at the first line that reaches the visible part.
+    const first =
+      m.xLeft -
+      m.h +
+      HATCH_SPACING *
+        Math.max(0, Math.floor((m.visibleLeft - m.xLeft) / HATCH_SPACING))
+    withClip(ctx, m.visibleLeft, m.rowTop, m.visibleWidth, m.h, () => {
       ctx.strokeStyle = hatchColor
       ctx.lineWidth = 1
       // Diagonal hatch across the clipped block band, as one path rather than a
@@ -36,7 +52,7 @@ export function drawInversions(
       // deep alignment is hundreds of lines, and a rearranged pangenome has many
       // such blocks.
       ctx.beginPath()
-      for (let x = m.xLeft - m.h; x < right; x += HATCH_SPACING) {
+      for (let x = first; x < right; x += HATCH_SPACING) {
         ctx.moveTo(x, bottom)
         ctx.lineTo(x + m.h, m.rowTop)
       }
@@ -44,7 +60,12 @@ export function drawInversions(
     })
     // Full-opacity outline marks the block extent (visible even when narrow).
     ctx.strokeStyle = color
-    ctx.lineWidth = 2
-    ctx.strokeRect(m.xLeft, m.rowTop + 1, Math.max(m.width, 2), m.h - 2)
+    ctx.lineWidth = OUTLINE_PX
+    ctx.strokeRect(
+      m.xLeft,
+      m.rowTop + OUTLINE_PX / 2,
+      outlineWidth,
+      m.h - OUTLINE_PX,
+    )
   }
 }

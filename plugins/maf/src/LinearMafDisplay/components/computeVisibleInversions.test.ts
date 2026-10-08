@@ -166,5 +166,7 @@ test('a block straddling the visible start still draws', () => {
       ]),
     ],
   ])
-  expect(visibleInversions(rpcDataMap, narrow)).toHaveLength(1)
+  expect(visibleInversions(rpcDataMap, narrow)).toMatchObject([
+    { xLeft: -50, width: 100, visibleLeft: 0, visibleWidth: 50 },
+  ])
 })
