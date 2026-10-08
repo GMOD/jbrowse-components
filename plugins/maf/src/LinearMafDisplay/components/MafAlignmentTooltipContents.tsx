@@ -66,24 +66,23 @@ function refLabel(p: GenomicPosition) {
   return `${p.refName}:${toLocale(p.coord)}`
 }
 
+/** The drag's span as `selectionRegion` resolves it: 0-based half-open. */
+export interface SelectionSpan {
+  refName: string
+  start: number
+  end: number
+}
+
 const RangeContents = observer(function RangeContents({
-  p1,
-  p2,
+  selection: { refName, start, end },
 }: {
-  p1: GenomicPosition
-  p2: GenomicPosition
+  selection: SelectionSpan
 }) {
   return (
     <TableShell caption="Selection">
-      <Row label="Start" value={refLabel(p1)} />
-      <Row label="End" value={refLabel(p2)} />
-      <Row
-        label="Length"
-        // Inclusive of both ends, because the subsequence widget this drag
-        // opens extracts `max - min + 1` bases. The exclusive count read
-        // "0 bp" over a one-base drag that hands back one base.
-        value={getBpDisplayStr(Math.abs(p1.coord - p2.coord) + 1)}
-      />
+      <Row label="Start" value={refLabel({ refName, coord: start + 1 })} />
+      <Row label="End" value={refLabel({ refName, coord: end })} />
+      <Row label="Length" value={getBpDisplayStr(end - start)} />
     </TableShell>
   )
 })
@@ -288,7 +287,7 @@ export interface IdentityHover {
 
 const MafAlignmentTooltipContents = observer(
   function MafAlignmentTooltipContents({
-    p1,
+    selection,
     p2,
     hover,
     frame,
@@ -297,7 +296,7 @@ const MafAlignmentTooltipContents = observer(
     summarySampleLabel,
     identity,
   }: {
-    p1?: GenomicPosition
+    selection?: SelectionSpan
     p2: GenomicPosition
     hover?: MafHover
     frame?: FrameHover
@@ -306,8 +305,8 @@ const MafAlignmentTooltipContents = observer(
     summarySampleLabel?: string
     identity?: IdentityHover
   }) {
-    if (p1) {
-      return <RangeContents p1={p1} p2={p2} />
+    if (selection) {
+      return <RangeContents selection={selection} />
     }
     // The zoom-out tier: `hover` is always absent here (no alignment blocks), so
     // this is the whole readout rather than a section stacked under one. The CDS

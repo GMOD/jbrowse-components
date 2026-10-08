@@ -8,6 +8,7 @@ import BaseTooltip from '@jbrowse/core/ui/BaseTooltip'
 import { basePaintedAt } from '@jbrowse/core/util/Base1DUtils'
 import { observer } from 'mobx-react'
 
+import { selectionRegion } from '../openSubsequenceWidget.ts'
 import MafAlignmentTooltipContents from './MafAlignmentTooltipContents.tsx'
 
 import type { LinearMafDisplayModel } from '../stateModel.ts'
@@ -37,8 +38,14 @@ const MAFTooltip = observer(function MAFTooltip({
   const { classes } = useTooltipTableStyles()
   const clientPoint = { x: mouseState.clientX, y: mouseState.clientY }
   const view = model.view
-  const p1 = origMouseX !== undefined ? view.pxToBp(origMouseX) : undefined
   const { pos: p2, baseBp, rowIndex, inBands, onRow, hover } = hit
+  const selection =
+    origMouseX === undefined
+      ? undefined
+      : selectionRegion(
+          view.pxToBp(Math.min(origMouseX, mouseState.x)),
+          view.pxToBp(Math.max(origMouseX, mouseState.x)),
+        )
 
   // Over the band area above the rows (coverage and/or conservation). Both show
   // the depth + SNP + identity breakdown via the shared alignments-core tooltip
@@ -125,7 +132,7 @@ const MAFTooltip = observer(function MAFTooltip({
   return (
     <BaseTooltip clientPoint={clientPoint}>
       <MafAlignmentTooltipContents
-        p1={p1}
+        selection={selection}
         p2={p2}
         hover={hover}
         frame={frame}
