@@ -11,6 +11,7 @@ import type PluginManager from '@jbrowse/core/PluginManager'
 class MyPlugin extends Plugin {
   name = 'MyPlugin'
   install(pluginManager: PluginManager) {
+    // #region extend
     extendViewType(pluginManager, 'LinearGenomeView', stateModel =>
       types.compose(
         stateModel,
@@ -20,6 +21,7 @@ class MyPlugin extends Plugin {
         })),
       ),
     )
+    // #endregion
   }
   configure() {}
 }

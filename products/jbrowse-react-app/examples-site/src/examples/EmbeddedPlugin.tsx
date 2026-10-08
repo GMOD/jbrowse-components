@@ -55,6 +55,7 @@ class HighlightRegionPlugin extends Plugin {
   configure() {}
 }
 
+// #region usePlugin
 export default function EmbeddedPlugin() {
   return (
     <JBrowse
@@ -72,3 +73,4 @@ export default function EmbeddedPlugin() {
     />
   )
 }
+// #endregion
