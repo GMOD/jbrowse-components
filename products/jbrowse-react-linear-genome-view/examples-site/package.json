@@ -21,7 +21,7 @@
     "@jbrowse/plugin-wiggle": "workspace:*",
     "@jbrowse/react-linear-genome-view2": "workspace:*",
     "@r2wc/react-to-web-component": "^2.1.1",
-    "astro": "^7.3.6",
+    "astro": "^7.3.8",
     "mobx": "^7.0.6",
     "mobx-react": "^10.0.2",
     "react": "^19.3.0",
