@@ -11992,7 +11992,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               }
             },
             "scale": {
-              "description": "threshold bands score at the domain cuts, linear ramps it across the y domain, none paints value; unset beside a field is threshold.",
+              "description": "threshold bands score at the domain cuts, and on a density plot fades from white at the lowest cut to the first range color below it and the last above it, linear ramps it across the y domain, none paints value; unset beside a field is threshold.",
               "if": {
                 "type": "null"
               },
