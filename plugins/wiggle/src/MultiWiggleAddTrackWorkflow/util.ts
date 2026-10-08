@@ -60,7 +60,11 @@ export function parseItems(val: string): TrackItem[] {
   try {
     const parsed: unknown = JSON.parse(val)
     if (Array.isArray(parsed)) {
-      return parsed as TrackItem[]
+      return parsed.filter(
+        (item): item is TrackItem =>
+          typeof item === 'string' ||
+          (typeof item === 'object' && item !== null),
+      )
     }
     if (typeof parsed === 'object' && parsed !== null) {
       return [parsed as Record<string, unknown>]

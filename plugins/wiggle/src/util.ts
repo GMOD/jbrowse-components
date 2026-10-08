@@ -102,21 +102,54 @@ export interface RawFeatureArrays {
   count: number
 }
 
+// The rare file: `processFeaturesFromArrays` calls this only where a NaN may be.
+function withoutNaNScores(raw: RawFeatureArrays): RawFeatureArrays {
+  const { starts, ends, scores, minScores, maxScores, count } = raw
+  const keep: number[] = []
+  for (let i = 0; i < count; i++) {
+    if (!Number.isNaN(scores[i]!)) {
+      keep.push(i)
+    }
+  }
+  return {
+    starts: Uint32Array.from(keep, i => starts[i]!),
+    ends: Uint32Array.from(keep, i => ends[i]!),
+    scores: Float32Array.from(keep, i => scores[i]!),
+    minScores: minScores && Float32Array.from(keep, i => minScores[i]!),
+    maxScores: maxScores && Float32Array.from(keep, i => maxScores[i]!),
+    count: keep.length,
+  }
+}
+
 // Adapter arrays -> the render-side layout: absolute positions, scores and the
 // min/max summary bands. Min/max are aliased onto the scores where no feature
 // is a summary, which is safe because every consumer only reads and structured
 // clone preserves the sharing across the worker boundary
 // (collectWiggleTransferables dedupes the buffers).
+//
+// A NaN score is dropped, as `featuresToRaw` drops one: it has no y, and the
+// two backends draw it differently (a GPU clamp of NaN is driver-defined).
 export function processFeaturesFromArrays(
   raw: RawFeatureArrays,
 ): WiggleFeatureArrays {
   const { starts, ends, scores, minScores, maxScores, count } = raw
   const featurePositions = new Uint32Array(count * 2)
   const featureScores = new Float32Array(count)
+  // A sum is the check with no branch in the copy; it is also NaN for a file
+  // holding both infinities, which `withoutNaNScores` then leaves whole.
+  let sum = 0
   for (let i = 0; i < count; i++) {
+    const score = scores[i]!
     featurePositions[i * 2] = starts[i]!
     featurePositions[i * 2 + 1] = ends[i]!
-    featureScores[i] = scores[i]!
+    featureScores[i] = score
+    sum += score
+  }
+  if (Number.isNaN(sum)) {
+    const kept = withoutNaNScores(raw)
+    if (kept.count < count) {
+      return processFeaturesFromArrays(kept)
+    }
   }
 
   let featureMinScores = featureScores

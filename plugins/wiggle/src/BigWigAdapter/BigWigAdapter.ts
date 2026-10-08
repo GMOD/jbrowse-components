@@ -193,14 +193,20 @@ export default class BigWigAdapter extends BaseFeatureDataAdapter<BigWigAdapterC
     return bigWigFeatureTable(await this.getArrayFeatureView(region, opts))
   }
 
+  // A config naming 0 or less would declare a zoom range no zoom falls in.
+  private get resolutionMultiplier() {
+    const multiplier = this.getConf('resolutionMultiplier')
+    return multiplier > 0 ? multiplier : 1
+  }
+
   private basesPerSpan({ bpPerPx = 0, resolution = 1 }: WiggleOptions) {
-    return (bpPerPx / resolution) * this.getConf('resolutionMultiplier')
+    return (bpPerPx / resolution) * this.resolutionMultiplier
   }
 
   public async getZoomRange(opts: WiggleOptions = {}): Promise<ZoomRange> {
     const levels = await this.tierLevels(opts)
     const { resolution = 1 } = opts
-    const bpPerPxPerSpan = resolution / this.getConf('resolutionMultiplier')
+    const bpPerPxPerSpan = resolution / this.resolutionMultiplier
     const [lo, hi] = tierSpanRange(levels, this.basesPerSpan(opts))
     return {
       minBpPerPx: lo * bpPerPxPerSpan,

@@ -29,6 +29,34 @@ const normalizeScore = (
   )(score)
 
 describe('processFeaturesFromArrays', () => {
+  test('keeps both infinities, whose sum is NaN though neither score is', () => {
+    const out = processFeaturesFromArrays({
+      starts: new Int32Array([0, 10]),
+      ends: new Int32Array([10, 20]),
+      scores: new Float32Array([Infinity, -Infinity]),
+      minScores: undefined,
+      maxScores: undefined,
+      count: 2,
+    })
+    expect([...out.featureScores]).toEqual([Infinity, -Infinity])
+  })
+
+  test('drops a NaN score with its position and its summary band', () => {
+    const out = processFeaturesFromArrays({
+      starts: new Int32Array([0, 10, 20]),
+      ends: new Int32Array([10, 20, 30]),
+      scores: new Float32Array([1, Number.NaN, -2]),
+      minScores: new Float32Array([0, Number.NaN, -3]),
+      maxScores: new Float32Array([2, Number.NaN, -1]),
+      count: 3,
+    })
+    expect(out.numFeatures).toBe(2)
+    expect([...out.featurePositions]).toEqual([0, 10, 20, 30])
+    expect([...out.featureScores]).toEqual([1, -2])
+    expect([...out.featureMinScores]).toEqual([0, -3])
+    expect([...out.featureMaxScores]).toEqual([2, -1])
+  })
+
   test('produces same output as featuresToRaw + processFeaturesFromArrays for basic features', () => {
     const starts = new Int32Array([100, 200, 300])
     const ends = new Int32Array([200, 300, 400])

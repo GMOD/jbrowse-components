@@ -33,6 +33,13 @@ function asMember(c: ReturnType<typeof classifyItem>) {
 }
 
 describe('parseItems', () => {
+  it('drops array entries that are neither a URL nor a config', () => {
+    expect(parseItems('[null, 3, "https://a.bw", {"type":"X"}]')).toEqual([
+      'https://a.bw',
+      { type: 'X' },
+    ])
+  })
+
   it('parses a JSON array of subadapter objects', () => {
     const json = '[{"type":"BigWigAdapter","source":"a"}]'
     expect(parseItems(json)).toEqual([{ type: 'BigWigAdapter', source: 'a' }])
@@ -61,6 +68,12 @@ describe('parseItems', () => {
 })
 
 describe('itemToName', () => {
+  it("names a config in the uri shorthand by the file's basename", () => {
+    expect(
+      itemToName({ type: 'BigWigAdapter', uri: 'https://example.com/y.bw' }),
+    ).toBe('y')
+  })
+
   it('names a URL item by the basename the track will label it with', () => {
     expect(itemToName('https://example.com/x.bw')).toBe('x')
   })

@@ -162,10 +162,13 @@ export default class MultiWiggleAdapter
   // note: can't really have dis-agreeing refNames
   public async getRefNames(opts?: BaseOptions) {
     const adapters = await this.getAdapters()
-    const allNames = await mapWithConcurrency(
-      adapters,
-      SUBTRACK_FETCH_CONCURRENCY,
-      a => namingSource(a.source, a.dataAdapter.getRefNames(opts)),
+    // Unbounded, unlike the data reads: a header is a few KB, and every one
+    // read here is one the first fetch finds cached instead of queueing for
+    // inside SUBTRACK_FETCH_CONCURRENCY.
+    const allNames = await Promise.all(
+      adapters.map(a =>
+        namingSource(a.source, a.dataAdapter.getRefNames(opts)),
+      ),
     )
     return [...new Set(allNames.flat())]
   }

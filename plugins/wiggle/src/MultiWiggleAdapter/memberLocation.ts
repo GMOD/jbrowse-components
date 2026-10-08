@@ -27,9 +27,11 @@ export function getLocationPath(location?: FileLocation) {
 
 export function getPrimaryLocationPath(config: MemberConfig) {
   const spec = config.type ? adapterSpec(config.type) : undefined
-  return spec && 'locField' in spec
-    ? getLocationPath(config[spec.locField] as FileLocation | undefined)
-    : undefined
+  const path =
+    spec && 'locField' in spec
+      ? getLocationPath(config[spec.locField] as FileLocation | undefined)
+      : undefined
+  return path ?? (typeof config.uri === 'string' ? config.uri : undefined)
 }
 
 export function getFilenameFromAdapterConfig(config: MemberConfig) {

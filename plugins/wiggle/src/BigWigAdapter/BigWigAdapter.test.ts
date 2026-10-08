@@ -17,6 +17,22 @@ jest.mock('./syntheticTiers.ts', () => {
   }
 })
 
+it('reads a resolutionMultiplier of 0 or less as 1', async () => {
+  const zoomRange = (resolutionMultiplier: number) =>
+    new BigWigAdapter(
+      configSchema.create({
+        bigWigLocation: {
+          localPath: require.resolve('./test_data/volvox.bw'),
+          locationType: 'LocalPathLocation',
+        },
+        resolutionMultiplier,
+      }),
+    ).getZoomRange({ bpPerPx: 400 })
+  const expected = await zoomRange(1)
+  expect(await zoomRange(0)).toEqual(expected)
+  expect(await zoomRange(-2)).toEqual(expected)
+})
+
 describe('adapter can fetch features from volvox.bw', () => {
   let adapter: BigWigAdapter
   beforeEach(() => {
