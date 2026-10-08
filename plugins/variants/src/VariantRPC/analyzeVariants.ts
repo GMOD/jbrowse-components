@@ -6,11 +6,12 @@ import {
   countGenotypeAlleles,
   newAlleleBuckets,
 } from '../shared/alleleCounts.ts'
-import { internGenotype } from '../shared/genotypeCodec.ts'
+import { buildSampleIndex, internGenotype } from '../shared/genotypeCodec.ts'
 import { featureHasPhaseSet } from '../shared/getPhasedColor.ts'
 import { hasProcessGenotypes } from '../shared/hasProcessGenotypes.ts'
 import {
   getFilteredVariants,
+  passesSiteThresholds,
   summarizeAlleleCounts,
 } from '../shared/minorAlleleFrequencyUtils.ts'
 import { featureHasConsequence } from '../shared/variantConsequence.ts'
@@ -188,6 +189,24 @@ export function buildHeaderRemap(
 }
 
 /**
+ * `buildHeaderRemap` for each feature of a fetch, rebuilt only when the header
+ * changes: a header array is identity-stable per parser, so that is once per
+ * file.
+ */
+export function makeHeaderRemapper(columnByName: Map<string, number>) {
+  let lastNames: string[] | undefined
+  let lastRemap: Int32Array | undefined
+  return (feature: Feature) => {
+    const names = feature.get('sampleNames') as string[] | undefined
+    if (names !== lastNames) {
+      lastNames = names
+      lastRemap = buildHeaderRemap(names, columnByName)
+    }
+    return lastRemap
+  }
+}
+
+/**
  * The one pass over a fetch's genotypes: the feature filters, and everything
  * the cell loops and the legend need — per-sample ploidy, the legend
  * flags and each kept feature's interned genotype codes.
@@ -243,10 +262,8 @@ export function analyzeVariants({
   const featureGenotypeCodes = new Map<string, Uint32Array>()
   const sampleNames = collectSampleNames(passing)
   const numSamples = sampleNames.length
-  const sampleIndexByName = new Map<string, number>()
-  for (let i = 0; i < numSamples; i++) {
-    sampleIndexByName.set(sampleNames[i]!, i)
-  }
+  const sampleIndexByName = buildSampleIndex(sampleNames)
+  const headerRemapOf = makeHeaderRemapper(sampleIndexByName)
 
   // Per-site memo of the genotype ranges already seen, as parallel arrays so
   // the scan allocates nothing. A hit reuses the interned code and the
@@ -272,12 +289,6 @@ export function analyzeVariants({
   // the no-header-sample-list path below.
   const pendingRecords: [string, Record<string, string>][] = []
 
-  // The header the last remap was built for, and the remap itself. Held across
-  // features because a header array is identity-stable per parser, so a fetch
-  // rebuilds this once per file rather than once per variant.
-  let lastHeaderNames: string[] | undefined
-  let lastHeaderRemap: Int32Array | undefined
-
   // A dropped site's codes, zeroed for the next site to fill
   let spareCodes: Uint32Array | undefined
 
@@ -294,12 +305,7 @@ export function analyzeVariants({
       codes = siteCodes
       // `sampleIdx` counts against this feature's own header; `codes` and
       // `sampleNames` are the canonical union (see `buildHeaderRemap`).
-      const headerNames = feature.get('sampleNames') as string[] | undefined
-      if (headerNames !== lastHeaderNames) {
-        lastHeaderNames = headerNames
-        lastHeaderRemap = buildHeaderRemap(headerNames, sampleIndexByName)
-      }
-      const remap = lastHeaderRemap
+      const remap = headerRemapOf(feature)
       // genotypes past a full memo are counted as they come
       const overflow = newAlleleBuckets()
       let memoN = 0
@@ -429,19 +435,13 @@ export function analyzeVariants({
       alleleCounts = calculateAlleleCounts(record)
     }
 
-    const {
-      minorAlleleFrequency,
-      missingness,
-      mostFrequentAlt,
-      calledAlleleCount,
-    } = summarizeAlleleCounts(alleleCounts)
-    // A site with no called allele anywhere has no cell to draw, so it drops
-    // regardless of the thresholds. A monomorphic site does *not*: with the
-    // filters off it is a real row of the file.
+    const summary = summarizeAlleleCounts(alleleCounts)
+    const { mostFrequentAlt } = summary
     if (
-      calledAlleleCount > 0 &&
-      minorAlleleFrequency >= minorAlleleFrequencyFilter &&
-      missingness <= maxMissingnessFilter
+      passesSiteThresholds(summary, {
+        minorAlleleFrequencyFilter,
+        maxMissingnessFilter,
+      })
     ) {
       const featureId = feature.id()
       filteredVariants.push({ feature, mostFrequentAlt })

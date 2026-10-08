@@ -1,54 +1,22 @@
-import { getFeatureAdapterOrThrow } from '@jbrowse/core/data_adapters/getFeatureAdapter'
-import { createProgressReporter } from '@jbrowse/core/util'
-import { createAbortBreakpoint } from '@jbrowse/core/util/aborting'
-
 import { expandSourcesToHaplotypes } from '../shared/getSources.ts'
 import { hasProcessGenotypes } from '../shared/hasProcessGenotypes.ts'
-import { getFilteredVariants } from '../shared/minorAlleleFrequencyUtils.ts'
-import { buildHeaderRemap, collectSampleNames } from './analyzeVariants.ts'
-import { fetchVariantFeatures } from './fetchVariantFeatures.ts'
 import {
   MISSING,
   readPhasedAlleleIndicators,
 } from './genotypeMatrixEncoding.ts'
+import { prepareMatrixWalk } from './matrixWalk.ts'
 
-import type { Source } from '../shared/types.ts'
+import type { MatrixWalkArgs } from './matrixWalk.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
-import type SerializableFilterChain from '@jbrowse/core/pluggableElementTypes/renderers/util/serializableFilterChain'
-import type { Region, StatusCallback } from '@jbrowse/core/util'
 
 export async function getPhasedGenotypeMatrix({
   pluginManager,
   args,
 }: {
   pluginManager: PluginManager
-  args: {
-    adapterConfig: Record<string, unknown>
-    signal?: AbortSignal
-    sessionId: string
-    headers?: Record<string, string>
-    regions: Region[]
-    sources: Source[]
-    bpPerPx?: number
-    minorAlleleFrequencyFilter: number
-    maxMissingnessFilter: number
-    filters?: SerializableFilterChain
-    samplePloidy: Record<string, number>
-    statusCallback?: StatusCallback
-  }
+  args: MatrixWalkArgs & { samplePloidy: Record<string, number> }
 }) {
-  const {
-    sources,
-    minorAlleleFrequencyFilter,
-    maxMissingnessFilter,
-    filters,
-    regions,
-    signal,
-    samplePloidy,
-    statusCallback,
-  } = args
-  const dataAdapter = await getFeatureAdapterOrThrow({ ...args, pluginManager })
-
+  const { sources, samplePloidy } = args
   // Flatten sources to one entry per output row, up front, through the same
   // `expandSourcesToHaplotypes` the worker's cell computation and the model's
   // `sources` getter use. That is what lets the caller line the returned `order`
@@ -62,19 +30,14 @@ export async function getPhasedGenotypeMatrix({
   // visible and the other not.
   const rowSpecs = expandSourcesToHaplotypes({ sources, samplePloidy })
 
-  const rawFeatures = await fetchVariantFeatures(dataAdapter, regions, args)
-  const filteredVariants = getFilteredVariants({
-    minorAlleleFrequencyFilter,
-    maxMissingnessFilter,
-    filterChain: filters,
-    features: rawFeatures,
-    report: createProgressReporter({
-      label: 'Filtering variants',
-      total: rawFeatures.length,
-      statusCallback,
-      signal,
-    }),
-  })
+  const {
+    filteredVariants,
+    sampleIdxByKey,
+    samplesLen,
+    headerRemapOf,
+    breakpoint,
+    report,
+  } = await prepareMatrixWalk({ pluginManager, args })
 
   // Pre-size each haplotype row to the filtered-variant count and assign by
   // feature index.
@@ -90,23 +53,6 @@ export async function getPhasedGenotypeMatrix({
     return arr
   })
 
-  // Mirrors getGenotypeMatrix's fast path: iterate genotypes via
-  // processGenotypes into a reusable per-sample scratch buffer indexed by
-  // sample-array position, no genotypes Record and no substring per call. This
-  // path matters more here than there — phased mode builds twice the rows.
-  //
-  // The union of every header in the fetch, not feature 0's list: a
-  // SplitVcfTabixAdapter opens one file — one header — per refName, and a view
-  // spanning chr1 and chrY hands back features from both, interleaved. Feature
-  // 0's header then names the wrong samples for every feature out of the other
-  // file, and `buildHeaderRemap` below is what lines each feature's own header
-  // up against this union.
-  const sampleNames = collectSampleNames(filteredVariants.map(v => v.feature))
-  const samplesLen = sampleNames.length
-  const sampleIdxByKey = new Map<string, number>()
-  for (let i = 0; i < samplesLen; i++) {
-    sampleIdxByKey.set(sampleNames[i]!, i)
-  }
   // Wide enough to index every haplotype some row asks for, which for a
   // pre-expanded source is its own HP rather than a ploidy count.
   let maxPloidy = 1
@@ -130,19 +76,6 @@ export async function getPhasedGenotypeMatrix({
   const indicators = new Float32Array(samplesLen * maxPloidy)
   const scratch = new Float32Array(maxPloidy)
 
-  // The header the last remap was built for, and the remap itself. A header
-  // array is identity-stable per parser, so this rebuilds once per file rather
-  // than once per variant.
-  let lastHeaderNames: string[] | undefined
-  let lastRemap: Int32Array | undefined
-
-  const report = createProgressReporter({
-    label: 'Building genotype matrix',
-    total: numFeatures,
-    statusCallback,
-    signal,
-  })
-  const breakpoint = createAbortBreakpoint(signal)
   for (let f = 0; f < numFeatures; f++) {
     const feature = filteredVariants[f]!.feature
     if (hasProcessGenotypes(feature) && samplesLen > 0) {
@@ -153,12 +86,7 @@ export async function getPhasedGenotypeMatrix({
       // `sampleIdx` counts against this feature's own header, `indicators`
       // against the canonical union; `undefined` is the direct-index fast path
       // taken whenever the two orders already agree.
-      const headerNames = feature.get('sampleNames') as string[] | undefined
-      if (headerNames !== lastHeaderNames) {
-        lastHeaderNames = headerNames
-        lastRemap = buildHeaderRemap(headerNames, sampleIdxByKey)
-      }
-      const remap = lastRemap
+      const remap = headerRemapOf(feature)
       feature.processGenotypes((str, start, end, sampleIdx) => {
         const column = remap === undefined ? sampleIdx : remap[sampleIdx]!
         if (column >= 0 && column < samplesLen && used[column]) {
@@ -181,8 +109,7 @@ export async function getPhasedGenotypeMatrix({
       // `?? {}` for the sites-only case — see getGenotypeMatrix.
       const genotypes =
         (feature.get('genotypes') as Record<string, string> | undefined) ?? {}
-      // Rows of one sample are adjacent, so its genotype is scanned once and
-      // read by each of its haplotype rows.
+      // a sample's genotype is scanned once for each run of its adjacent rows
       let scannedKey: string | undefined
       for (let k = 0; k < rowArrays.length; k++) {
         const { sampleName: key, HP: hp } = rowSpecs[k]!

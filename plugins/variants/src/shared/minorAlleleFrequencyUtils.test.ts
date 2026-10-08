@@ -456,22 +456,6 @@ describe('getFilteredVariants', () => {
     expect(result).toHaveLength(0)
   })
 
-  it('uses genotypes cache when provided', () => {
-    const genotypesCache = new Map<string, Record<string, string>>()
-    const genotypes = { s1: '0/1', s2: '0/1', s3: '0/1', s4: '0/1', s5: '0/1' }
-
-    const features = [createMockFeature('snp1', 100, 101, genotypes)]
-
-    getFilteredVariants({
-      features,
-      minorAlleleFrequencyFilter: 0,
-      genotypesCache,
-    })
-
-    // Cache should now contain the genotypes
-    expect(genotypesCache.get('snp1')).toEqual(genotypes)
-  })
-
   it('filters out variants above the missingness ceiling', () => {
     const features = [
       // 3/5 samples no-call => missingness 0.6

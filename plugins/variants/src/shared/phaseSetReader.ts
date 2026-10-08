@@ -1,4 +1,5 @@
-import { buildHeaderRemap } from '../VariantRPC/analyzeVariants.ts'
+import { makeHeaderRemapper } from '../VariantRPC/analyzeVariants.ts'
+import { buildSampleIndex } from './genotypeCodec.ts'
 import { hasProcessFormatFields } from './hasProcessGenotypes.ts'
 
 import type { Feature } from '@jbrowse/core/util'
@@ -57,18 +58,13 @@ function readIntFromRange(str: string, start: number, end: number) {
  */
 export function makePhaseSetReader(sampleNames: string[]) {
   const numSamples = sampleNames.length
-  const columnByName = new Map<string, number>()
-  for (let i = 0; i < numSamples; i++) {
-    columnByName.set(sampleNames[i]!, i)
-  }
+  const headerRemapOf = makeHeaderRemapper(buildSampleIndex(sampleNames))
   // Indexed by canonical column. `present` is separate from the value because
   // the two absent spellings mean different things downstream: no PS field at
   // all (or '.') falls back to allele coloring, while a present-but-malformed
   // one is a phase set whose hue resolves to 0.
   const value = new Float64Array(numSamples)
   const present = new Uint8Array(numSamples)
-  let lastHeaderNames: string[] | undefined
-  let lastRemap: Int32Array | undefined
 
   return {
     value,
@@ -83,16 +79,7 @@ export function makePhaseSetReader(sampleNames: string[]) {
         return false
       }
       present.fill(0)
-      // `sampleIdx` counts against this feature's own header, not the canonical
-      // union — the same trap the genotype pass hit. Rebuilt only when the
-      // header array identity changes, and `undefined` when the two orders
-      // already agree.
-      const headerNames = feature.get('sampleNames') as string[] | undefined
-      if (headerNames !== lastHeaderNames) {
-        lastHeaderNames = headerNames
-        lastRemap = buildHeaderRemap(headerNames, columnByName)
-      }
-      const remap = lastRemap
+      const remap = headerRemapOf(feature)
       feature.processFormatFields(['PS'], (str, ranges, sampleIdx) => {
         const column = remap === undefined ? sampleIdx : remap[sampleIdx]!
         if (column < 0 || column >= numSamples) {

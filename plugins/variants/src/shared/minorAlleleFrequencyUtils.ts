@@ -86,29 +86,12 @@ export interface FilteredVariant {
   mostFrequentAlt: string
 }
 
-// Resolve allele counts from whichever genotype representation a feature
-// carries: VcfFeature's processGenotypes callback (fastest), or a plain
-// genotypes object (cached per feature id).
-function computeAlleleCounts(
-  feature: Feature,
-  genotypesCache?: Map<string, Record<string, string>>,
-) {
-  let alleleCounts: Record<string, number>
-  if (hasProcessGenotypes(feature)) {
-    alleleCounts = calculateAlleleCountsFast(feature)
-  } else {
-    const featureId = feature.id()
-    let genotypes = genotypesCache?.get(featureId)
-    if (!genotypes) {
-      // A sites-only VCF has no genotypes field at all; normalize to {} so the
-      // cache never hands a later consumer an undefined it has to re-guard.
-      genotypes =
-        (feature.get('genotypes') as Record<string, string> | undefined) ?? {}
-      genotypesCache?.set(featureId, genotypes)
-    }
-    alleleCounts = calculateAlleleCounts(genotypes)
-  }
-  return alleleCounts
+function computeAlleleCounts(feature: Feature) {
+  return hasProcessGenotypes(feature)
+    ? calculateAlleleCountsFast(feature)
+    : calculateAlleleCounts(
+        (feature.get('genotypes') as Record<string, string> | undefined) ?? {},
+      )
 }
 
 // A jexlFeatureProxy answers `processGenotypes` through `get()`, so the jexl
@@ -132,50 +115,64 @@ export function featureMissingness(feature: Feature) {
   return counts ? calculateMissingnessFrequency(counts) : 0
 }
 
-// The single feature-level filter chokepoint for the cell/matrix/cluster
-// paths: a jexl `filterChain`, a minor-allele-frequency floor, and a
-// no-call-missingness ceiling, all evaluated off the one allele-count pass.
-// `maxMissingnessFilter` of 1 (or undefined) disables the missingness ceiling.
+export interface SiteThresholds {
+  minorAlleleFrequencyFilter: number
+  /** 1 or undefined keeps every site */
+  maxMissingnessFilter?: number
+}
+
+/**
+ * Whether a site's allele summary clears the thresholds. A site with no called
+ * allele anywhere has no cell to draw, so it drops whatever they are; a
+ * monomorphic site is a real row of the file and stays.
+ */
+export function passesSiteThresholds(
+  summary: ReturnType<typeof summarizeAlleleCounts>,
+  { minorAlleleFrequencyFilter, maxMissingnessFilter = 1 }: SiteThresholds,
+) {
+  return (
+    summary.calledAlleleCount > 0 &&
+    summary.minorAlleleFrequency >= minorAlleleFrequencyFilter &&
+    summary.missingness <= maxMissingnessFilter
+  )
+}
+
+/**
+ * One feature through the jexl `filterChain` and the thresholds, off one
+ * allele-count pass; undefined where it fails either.
+ */
+export function filterVariant(
+  feature: Feature,
+  thresholds: SiteThresholds,
+  filterChain?: SerializableFilterChain,
+): FilteredVariant | undefined {
+  if (filterChain && !filterChain.passes(feature)) {
+    return undefined
+  }
+  const summary = summarizeAlleleCounts(computeAlleleCounts(feature))
+  return passesSiteThresholds(summary, thresholds)
+    ? { feature, mostFrequentAlt: summary.mostFrequentAlt }
+    : undefined
+}
+
+/** `filterVariant` over a fetch, for the cell, matrix and cluster paths. */
 export function getFilteredVariants({
   features,
-  minorAlleleFrequencyFilter,
-  maxMissingnessFilter,
   filterChain,
-  genotypesCache,
   report,
-}: {
+  ...thresholds
+}: SiteThresholds & {
   features: Iterable<Feature>
-  minorAlleleFrequencyFilter: number
-  maxMissingnessFilter?: number
   filterChain?: SerializableFilterChain
-  genotypesCache?: Map<string, Record<string, string>>
   report?: ProgressReporter
 }) {
   const results: FilteredVariant[] = []
-  const missingnessCeiling = maxMissingnessFilter ?? 1
-
   for (const feature of features) {
-    if (!filterChain || filterChain.passes(feature)) {
-      const {
-        minorAlleleFrequency,
-        missingness,
-        mostFrequentAlt,
-        calledAlleleCount,
-      } = summarizeAlleleCounts(computeAlleleCounts(feature, genotypesCache))
-      // A site with no called allele anywhere has no cell to draw, so it drops
-      // regardless of the thresholds. A monomorphic site does *not*: with the
-      // filters off it is a real row of the file, and dropping the all-ref case
-      // while keeping the all-alt one was an asymmetry, not a filter decision.
-      if (
-        calledAlleleCount > 0 &&
-        minorAlleleFrequency >= minorAlleleFrequencyFilter &&
-        missingness <= missingnessCeiling
-      ) {
-        results.push({ feature, mostFrequentAlt })
-      }
+    const kept = filterVariant(feature, thresholds, filterChain)
+    if (kept) {
+      results.push(kept)
     }
     report?.()
   }
-
   return results
 }

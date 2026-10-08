@@ -1,70 +1,31 @@
-import { getFeatureAdapterOrThrow } from '@jbrowse/core/data_adapters/getFeatureAdapter'
-import { createProgressReporter } from '@jbrowse/core/util'
-import { createAbortBreakpoint } from '@jbrowse/core/util/aborting'
-
 import { resolveSampleName } from '../shared/getSources.ts'
 import { hasProcessGenotypes } from '../shared/hasProcessGenotypes.ts'
-import { getFilteredVariants } from '../shared/minorAlleleFrequencyUtils.ts'
-import { buildHeaderRemap, collectSampleNames } from './analyzeVariants.ts'
-import { fetchVariantFeatures } from './fetchVariantFeatures.ts'
 import { MISSING, readAltDosages } from './genotypeMatrixEncoding.ts'
+import { prepareMatrixWalk } from './matrixWalk.ts'
 
-import type { Source } from '../shared/types.ts'
+import type { MatrixWalkArgs } from './matrixWalk.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
-import type SerializableFilterChain from '@jbrowse/core/pluggableElementTypes/renderers/util/serializableFilterChain'
-import type { Region, StatusCallback } from '@jbrowse/core/util'
 
 export async function getGenotypeMatrix({
   pluginManager,
   args,
 }: {
   pluginManager: PluginManager
-  args: {
-    adapterConfig: Record<string, unknown>
-    signal?: AbortSignal
-    sessionId: string
-    headers?: Record<string, string>
-    regions: Region[]
-    sources: Source[]
-    bpPerPx?: number
-    minorAlleleFrequencyFilter: number
-    maxMissingnessFilter: number
-    filters?: SerializableFilterChain
-    statusCallback?: StatusCallback
-  }
+  args: MatrixWalkArgs
 }) {
-  const {
-    sources,
-    minorAlleleFrequencyFilter,
-    maxMissingnessFilter,
-    filters,
-    regions,
-    signal,
-    statusCallback,
-  } = args
-  const dataAdapter = await getFeatureAdapterOrThrow({ ...args, pluginManager })
-
-  // Hoist sample-key resolution out of the per-feature loop. Per (source ×
-  // feature) the previous code recomputed `sampleName ?? name`, constant per
-  // source.
-  const resolved = sources.map(s => ({
+  // resolved once per source, not per (source, feature)
+  const resolved = args.sources.map(s => ({
     name: s.name,
     key: resolveSampleName(s),
   }))
-
-  const rawFeatures = await fetchVariantFeatures(dataAdapter, regions, args)
-  const filteredVariants = getFilteredVariants({
-    minorAlleleFrequencyFilter,
-    maxMissingnessFilter,
-    filterChain: filters,
-    features: rawFeatures,
-    report: createProgressReporter({
-      label: 'Filtering variants',
-      total: rawFeatures.length,
-      statusCallback,
-      signal,
-    }),
-  })
+  const {
+    filteredVariants,
+    sampleIdxByKey,
+    samplesLen,
+    headerRemapOf,
+    breakpoint,
+    report,
+  } = await prepareMatrixWalk({ pluginManager, args })
 
   // A site contributes one column per ALT allele, so the row width is the sum
   // over sites rather than the site count — see `readAltDosages` for why the
@@ -107,23 +68,9 @@ export async function getGenotypeMatrix({
     rowArrays.push(arr)
   }
 
-  // Set up the allocation-free non-raw path: per feature, iterate genotypes
-  // via processGenotypes (no Record / no substring slices) into a reusable
-  // dosage buffer indexed by sample-array position. Falls back to the
-  // genotypes-Record path if features don't support processGenotypes.
-  //
-  // The union of every header in the fetch, not feature 0's list: a
-  // SplitVcfTabixAdapter opens one file — one header — per refName, and a view
-  // spanning chr1 and chrY hands back features from both, interleaved. Feature
-  // 0's header then names the wrong samples for every feature out of the other
-  // file, and `buildHeaderRemap` below is what lines each feature's own header
-  // up against this union.
-  const sampleNames = collectSampleNames(filteredVariants.map(v => v.feature))
-  const samplesLen = sampleNames.length
-  const sampleIdxByKey = new Map<string, number>()
-  for (let i = 0; i < samplesLen; i++) {
-    sampleIdxByKey.set(sampleNames[i]!, i)
-  }
+  // Per feature, processGenotypes fills a reusable dosage buffer indexed by
+  // canonical sample column, with no Record and no substring; a feature
+  // without it falls back to its genotypes Record.
   const used = new Uint8Array(samplesLen)
   // One slot per (sample, ALT) for the widest site, reused across every site.
   // Float32 (and MISSING-filled, not -1-filled) because a dosage is a fraction
@@ -138,19 +85,6 @@ export async function getGenotypeMatrix({
     return idx
   })
 
-  // The header the last remap was built for, and the remap itself. A header
-  // array is identity-stable per parser, so this rebuilds once per file rather
-  // than once per variant.
-  let lastHeaderNames: string[] | undefined
-  let lastRemap: Int32Array | undefined
-
-  const report = createProgressReporter({
-    label: 'Building genotype matrix',
-    total: numFeatures,
-    statusCallback,
-    signal,
-  })
-  const breakpoint = createAbortBreakpoint(signal)
   for (let f = 0; f < numFeatures; f++) {
     const feature = filteredVariants[f]!.feature
     const numAlts = altCounts[f]!
@@ -164,12 +98,7 @@ export async function getGenotypeMatrix({
       // `sampleIdx` counts against this feature's own header, `dosages` against
       // the canonical union; `undefined` is the direct-index fast path taken
       // whenever the two orders already agree.
-      const headerNames = feature.get('sampleNames') as string[] | undefined
-      if (headerNames !== lastHeaderNames) {
-        lastHeaderNames = headerNames
-        lastRemap = buildHeaderRemap(headerNames, sampleIdxByKey)
-      }
-      const remap = lastRemap
+      const remap = headerRemapOf(feature)
       feature.processGenotypes((str, start, end, sampleIdx) => {
         const column = remap === undefined ? sampleIdx : remap[sampleIdx]!
         if (column >= 0 && column < samplesLen && used[column]) {
