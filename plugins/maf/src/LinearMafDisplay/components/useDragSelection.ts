@@ -1,5 +1,7 @@
 import { useEffect, useState } from 'react'
 
+import { isFromPortal } from '@jbrowse/core/util/pressOwner'
+
 import type { ContextMenuAnchor } from '@jbrowse/core/ui'
 
 const MIN_DRAG_DISTANCE = 3
@@ -71,6 +73,7 @@ export function useDragSelection(
     return (
       e.button > 0 ||
       e.shiftKey ||
+      isFromPortal(e) ||
       !!(e.target as Element).closest('[data-gesture-owner]')
     )
   }

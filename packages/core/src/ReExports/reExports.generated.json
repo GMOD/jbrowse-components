@@ -3429,6 +3429,14 @@
       ],
       "worker": "real"
     },
+    "@jbrowse/core/util/pressOwner": {
+      "package": "@jbrowse/core",
+      "names": [
+        "isClaimedPress",
+        "isFromPortal"
+      ],
+      "worker": "real"
+    },
     "@jbrowse/core/util/progress": {
       "package": "@jbrowse/core",
       "names": [

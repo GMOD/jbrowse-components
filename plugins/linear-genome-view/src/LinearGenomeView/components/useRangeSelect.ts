@@ -1,6 +1,7 @@
 import { useCallback, useState } from 'react'
 
 import { getRelativeX } from '@jbrowse/core/util/getRelativeX'
+import { isFromPortal } from '@jbrowse/core/util/pressOwner'
 
 import { useWindowDrag } from '../../shared/useWindowDrag.ts'
 import { isOnScalebarRefLabel } from './util.ts'
@@ -69,7 +70,7 @@ export function useRangeSelect(
   })
 
   function mouseDown(event: React.MouseEvent<HTMLDivElement>) {
-    if (shiftOnly && !event.shiftKey) {
+    if (isFromPortal(event) || (shiftOnly && !event.shiftKey)) {
       return
     }
     // a press with the refName menu already open reopens it on the label under
@@ -92,7 +93,7 @@ export function useRangeSelect(
 
   function mouseMove(event: React.MouseEvent<HTMLDivElement>) {
     // Keep the rubberband visible while a drag-selection menu is open
-    if (anchorPosition?.isClick === false) {
+    if (anchorPosition?.isClick === false || isFromPortal(event)) {
       return
     }
     const wantsGuide = !mouseDragging && (!shiftOnly || event.shiftKey)

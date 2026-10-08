@@ -346,6 +346,7 @@ export default [
   '@jbrowse/core/util/paintLayer',
   '@jbrowse/core/util/parseLineByLine',
   '@jbrowse/core/util/preloadComponent',
+  '@jbrowse/core/util/pressOwner',
   '@jbrowse/core/util/progress',
   '@jbrowse/core/util/quantileExtent',
   '@jbrowse/core/util/range',

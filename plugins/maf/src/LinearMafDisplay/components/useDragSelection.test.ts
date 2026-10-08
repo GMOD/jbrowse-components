@@ -157,3 +157,29 @@ test('shift-press is reserved for the view and starts nothing', () => {
   })
   expect(onClick).not.toHaveBeenCalled()
 })
+
+// React bubbles a portal's events to its React parent, so a press in a dialog
+// the display opened arrives at the display's handlers from outside its DOM.
+test('a press in a portal is left alone and starts nothing', () => {
+  const { result } = setup()
+  const stopPropagation = jest.fn()
+  const press = {
+    button: 0,
+    pointerType: 'mouse',
+    shiftKey: false,
+    clientX: 200,
+    clientY: 50,
+    target: document.createElement('div'),
+    currentTarget: document.createElement('div'),
+    stopPropagation,
+  } as unknown as React.PointerEvent
+  result.current.handlePointerDown(press)
+  act(() => {
+    result.current.handleMouseDown(press)
+  })
+  act(() => {
+    result.current.handleMouseMove(mouseEvent(300, 60))
+  })
+  expect(stopPropagation).not.toHaveBeenCalled()
+  expect(result.current.isDragging).toBe(false)
+})

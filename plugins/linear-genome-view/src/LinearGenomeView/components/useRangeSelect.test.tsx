@@ -1,6 +1,7 @@
 import { useRef } from 'react'
 
 import { act, fireEvent, render, screen } from '@testing-library/react'
+import { createPortal } from 'react-dom'
 
 import { useRangeSelect } from './useRangeSelect.ts'
 import { scalebarRefLabelProps } from './util.ts'
@@ -23,6 +24,7 @@ function TestRubberband({ model }: { model: LinearGenomeViewModel }) {
       <span data-testid="guideX">{guideX ?? 'none'}</span>
       <span data-testid="menuOpen">{String(!!anchorPosition)}</span>
       <span data-testid="refLabel" {...scalebarRefLabelProps} />
+      {createPortal(<div data-testid="dialog" />, document.body)}
     </div>
   )
 }
@@ -218,5 +220,26 @@ describe('useRangeSelect (LGV)', () => {
       expect.objectContaining({ offset: 100 }),
       expect.objectContaining({ offset: 250 }),
     )
+  })
+
+  // React bubbles a portal's events to its React parent, so a press in a
+  // dialog a track opened arrives here. Taking it cancelled the press, which
+  // is what places the caret and extends a selection in the dialog's text.
+  it('leaves a press and a hover in a portal alone', () => {
+    const setOffsets = jest.fn()
+    render(<TestRubberband model={makeModel({ setOffsets })} />)
+    const dialog = screen.getByTestId('dialog')
+
+    fireEvent.mouseMove(dialog, { clientX: 50, clientY: 0 })
+    expect(screen.getByTestId('guideX').textContent).toBe('none')
+
+    // fireEvent returns false for a cancelled event
+    expect(fireEvent.mouseDown(dialog, { clientX: 100, clientY: 0 })).toBe(true)
+    act(() => {
+      window.dispatchEvent(
+        new MouseEvent('mouseup', { bubbles: true, clientX: 250, clientY: 0 }),
+      )
+    })
+    expect(setOffsets).not.toHaveBeenCalled()
   })
 })

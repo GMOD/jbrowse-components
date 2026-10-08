@@ -25,6 +25,7 @@
 
 import { useEffect, useRef } from 'react'
 
+import { isClaimedPress } from './pressOwner.ts'
 import { createWheelZoomController } from './wheelZoom.ts'
 
 import type { WheelZoomView } from './wheelZoom.ts'
@@ -169,23 +170,12 @@ export function usePanZoom(
   return {
     containerProps: {
       onPointerDown(event: React.PointerEvent<HTMLElement>) {
-        // Leave the press alone when something else owns it: a control that
-        // claimed it (`[data-gesture-owner]`, JBrowse's marker on the parts
-        // that drag on their own — a display's vertical scrollbar, a resize
-        // handle), a button (the track-sizing button a display draws in its own
-        // corner), or a draggable element. `closest`, because the press usually
-        // lands on an icon inside the control. Shift is left alone too: it is
-        // what a range-select of the host's own would want, and it is what
-        // JBrowse's own view uses it for.
+        // Shift is left alone: it is what a range-select of the host's own
+        // would want, and it is what JBrowse's own view uses it for.
         if (!event.isPrimary || event.button !== 0 || event.shiftKey) {
           return
         }
-        if (
-          event.target instanceof Element &&
-          event.target.closest(
-            'button, [data-gesture-owner], [draggable="true"]',
-          )
-        ) {
+        if (isClaimedPress(event)) {
           return
         }
         // Note what this does *not* do: capture the pointer. See onPointerMove.

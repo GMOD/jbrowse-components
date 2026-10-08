@@ -322,6 +322,75 @@ test('a display without the height mixin survives drag and double click', async 
   fireEvent.doubleClick(handle)
 }, 20000)
 
+class CrashingDisplayPlugin extends Plugin {
+  name = 'CrashingDisplayPlugin'
+
+  install(pluginManager: PluginManager) {
+    pluginManager.addDisplayType(() => {
+      const configSchema = ConfigurationSchema(
+        'CrashingDisplay',
+        {},
+        {
+          explicitIdentifier: 'displayId',
+          explicitlyTyped: true,
+          closed: true,
+        },
+      )
+      return new DisplayType({
+        name: 'CrashingDisplay',
+        displayName: 'Crashing display',
+        configSchema,
+        stateModel: types.compose(
+          'CrashingDisplay',
+          BaseDisplay,
+          types.model({
+            type: types.literal('CrashingDisplay'),
+            configuration: ConfigurationReference(configSchema),
+          }),
+        ),
+        trackType: 'FeatureTrack',
+        viewType: 'LinearGenomeView',
+        ReactComponent: () => {
+          throw new Error('display crashed')
+        },
+      })
+    })
+  }
+}
+
+// The banner sits inline in the track rather than in the overlay layer, so it
+// carries the marker itself. Without it the view's pan takes a press on the
+// banner and blocks the text selection the user wants the message for.
+test('a crashed display’s error banner claims its presses from the pan', async () => {
+  const model = await setup({
+    runtimePlugins: [
+      {
+        plugin: new CrashingDisplayPlugin(),
+        definition: { name: 'CrashingDisplay', umdUrl: 'crashing.js' },
+      },
+    ],
+    displays: [{ type: 'CrashingDisplay', displayId: 'crashing-display' }],
+  })
+  const consoleError = jest.spyOn(console, 'error').mockImplementation(() => {})
+  try {
+    const { findByTestId, getByTestId } = render(
+      <ThemeProvider theme={createJBrowseTheme()}>
+        <LinearGenomeView model={model} />
+      </ThemeProvider>,
+    )
+    const banner = await findByTestId('error-message-box')
+    expect(banner.textContent).toContain('display crashed')
+    expect(banner.closest('[data-gesture-owner]')).not.toBeNull()
+
+    fireEvent.pointerDown(banner, { button: 0, clientX: 100 })
+    expect(
+      Object.hasOwn(getByTestId('tracksContainer').dataset, 'panDragging'),
+    ).toBe(false)
+  } finally {
+    consoleError.mockRestore()
+  }
+}, 20000)
+
 /**
  * A display that wants the label on a row of its own, as every display with a
  * left-edge axis or sidebar does.

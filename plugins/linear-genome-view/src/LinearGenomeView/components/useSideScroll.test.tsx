@@ -218,18 +218,21 @@ test('a pointer that is not a finger does not join the pan', () => {
 test('a pan selects no text, and text is selectable again after', () => {
   const model = fakeView()
   const { getByTestId } = render(<Harness model={model} />)
-  const selectStart = () => {
+  const canvas = getByTestId('canvas')
+  const selectStart = (on: Element) => {
     const event = new Event('selectstart', { cancelable: true })
-    document.body.dispatchEvent(event)
+    on.dispatchEvent(event)
     return event.defaultPrevented
   }
 
   act(() => {
-    fireEvent.pointerDown(getByTestId('canvas'), { button: 0, clientX: 100 })
+    fireEvent.pointerDown(canvas, { button: 0, clientX: 100 })
   })
-  expect(selectStart()).toBe(true)
+  expect(selectStart(canvas)).toBe(true)
+  // the block covers the tracks alone, not the rest of the app
+  expect(selectStart(document.body)).toBe(false)
   pointer('pointerup', { clientX: 100 })
-  expect(selectStart()).toBe(false)
+  expect(selectStart(canvas)).toBe(false)
 })
 
 // React bubbles a portal's events to its React parent, so a press in a dialog

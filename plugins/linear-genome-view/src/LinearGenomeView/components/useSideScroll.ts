@@ -1,5 +1,6 @@
 import { useEffect, useRef } from 'react'
 
+import { isClaimedPress } from '@jbrowse/core/util/pressOwner'
 import { transaction } from 'mobx'
 
 import type { LinearGenomeViewModel } from '../index.ts'
@@ -28,10 +29,6 @@ interface Point {
 interface Gesture {
   join: (event: React.PointerEvent) => void
   cancel: () => void
-}
-
-function preventDefault(event: Event) {
-  event.preventDefault()
 }
 
 function pointOf(event: { clientX: number; clientY: number }): Point {
@@ -75,17 +72,7 @@ export function useSideScroll(model: LinearGenomeViewModel) {
     if (event.shiftKey || event.button !== 0 || !event.isPrimary) {
       return
     }
-    // a draggable element, a control that claimed the press (resize handles,
-    // the scalebar, a legend), or a button: `closest`, since the press usually
-    // lands on a child of the control. `contains` rejects a press in a portal
-    // (a dialog a track opened), which React bubbles here from outside the host
-    const target = event.target as HTMLElement
-    if (
-      !host.contains(target) ||
-      target.draggable ||
-      target.closest('[data-gesture-owner]') ||
-      target.closest('button')
-    ) {
+    if (isClaimedPress(event)) {
       return
     }
 
@@ -95,6 +82,14 @@ export function useSideScroll(model: LinearGenomeViewModel) {
     const pointers = new Map([[event.pointerId, pointOf(event)]])
     let applied = new Map(pointers)
     let frame: number | undefined
+
+    // only a selection that starts in the tracks, so a press that leaks here
+    // cannot block selection in the rest of the app
+    function blockSelection(e: Event) {
+      if (e.target instanceof Node && host.contains(e.target)) {
+        e.preventDefault()
+      }
+    }
 
     function flush() {
       frame = undefined
@@ -155,7 +150,7 @@ export function useSideScroll(model: LinearGenomeViewModel) {
       window.removeEventListener('pointermove', move, true)
       window.removeEventListener('pointerup', release, true)
       window.removeEventListener('pointercancel', release, true)
-      window.removeEventListener('selectstart', preventDefault, true)
+      window.removeEventListener('selectstart', blockSelection, true)
       gestureRef.current = undefined
     }
 
@@ -178,7 +173,7 @@ export function useSideScroll(model: LinearGenomeViewModel) {
     window.addEventListener('pointermove', move, true)
     window.addEventListener('pointerup', release, true)
     window.addEventListener('pointercancel', release, true)
-    window.addEventListener('selectstart', preventDefault, true)
+    window.addEventListener('selectstart', blockSelection, true)
     gestureRef.current = {
       join(e) {
         if (e.pointerType !== 'touch' || pointers.size > 1) {
