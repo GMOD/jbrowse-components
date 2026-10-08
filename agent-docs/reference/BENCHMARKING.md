@@ -78,6 +78,7 @@ change as a 2.2x win that an interleaved A/B put at zero.
 - `website/scripts/ab-compare.ts` interleaves two prebuilt `build/` trees. For a
   source A/B, `git worktree add --detach <dir> <sha>` with symlinked `node_modules`
   runs jest in both trees.
+
 ## Instrumenting render and scroll jank
 
 Gate probes on a `?gpu-perf=1` URL flag and strip them before landing.

@@ -9,7 +9,7 @@ kind: spec
 How a display gets bytes onto the GPU and pixels onto the screen.
 [ARCHITECTURE.md](../ARCHITECTURE.md) is the front door: read its **Display
 stacks** and **Data fetching pipeline** first. This doc is the hub for the model
-that has data and needs to draw it; the depth lives in four sibling docs.
+that has data and needs to draw it; the depth lives in the sibling docs below.
 
 Everything here applies to displays that draw to a canvas. A display that paints
 JSX SVG on both the on-screen and export paths composes none of it.

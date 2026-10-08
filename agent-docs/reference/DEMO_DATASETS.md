@@ -34,6 +34,7 @@ format traps.
   so its tag variants sit below the floor. An empty panel speaks only to common
   variation. The LD status bar names only the pair window, so never gate a
   screenshot on a "… variants shown" text.
+
 ## Datasets tried and rejected
 
 - **DGRP In(2L)t for an LD triangle.** An inversion suppresses recombination only
@@ -54,6 +55,7 @@ format traps.
   `samtools view --input-fmt-option required_fields=0x87F -F 1540 <url> <region>`.
 - **ASW trio ancestry** is deliberately not an AMR trio: 1000G has no unadmixed
   Native American reference.
+
 ## Where a new demo's annotation comes from
 
 **Default to `datasets download genome accession <acc> --include gff3,protein`**

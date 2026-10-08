@@ -46,6 +46,7 @@ trailing-only and would stall cold open, so a `primed` flag drives a custom
   manual Retry does. **A WebGPU device loss shares the budget** and needs it more:
   that path re-inits invisibly, so uncapped it re-initializes against a dying
   device for the life of the tab.
+
 **Every re-init needs a canvas element that never held a context.**
 `getContext('webgl2')` returns the same lost context, and `getContext('2d')`
 returns `null` on any element that once had WebGL. **A canvas's context kind is
@@ -82,6 +83,7 @@ map is keyed by**:
   out (`oneCell(0, self.rpcData)` does), so the key is released and the frame
   clears. A fetch that came back *empty* must stay in the map, so `renderBlocks`
   answers true and `canvasDrawn` flips; otherwise the scrim never lifts.
+
 ### One autorun and a diff (`installUpload`)
 
 - **`inputs` is the whole contract.** `encode`'s own reads wake the autorun but
@@ -89,6 +91,7 @@ map is keyed by**:
   Anything a settings change must reach the buffer through goes in `inputs`.
   [ADR-078](../architecture-decision-records/adr-078-one-upload-autorun-and-a-diff.md)
   has the reasoning.
+
 ### Whole-map synced: skipping a region without leaving stale buffers
 
 - **Forget a key when it leaves**: delete the HAL buffers and the memo entry

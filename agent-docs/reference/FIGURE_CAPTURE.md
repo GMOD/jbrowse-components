@@ -97,6 +97,7 @@ hg19 session was torn down hangs the import form with the assembly stuck
   (`products/jbrowse-capture/src/waits.ts`). **They must stay clear for a settle
   window, not read clear once**: a display's fetch autorun is debounced, so right
   after a navigation every signal reads ready and the capture gets a blank canvas.
+
 ### Selenium traps
 
 - **The implicit wait dominates a run.** `setTimeouts({ implicit: 30000 })` makes

@@ -143,11 +143,11 @@ graph is a track of the linear view and launches nothing).
 4. **Take the widest block, never the first.** `dynamicBlocks.contentBlocks` and
    `getSelectedRegions()` return display order, and a rubberband dragged across a
    region boundary puts a sliver first, so `[0]` frames 3 bp of the region the
-   user left. `widestRegion` (`regionLaunchMenuItems.ts`) and `widestBlock`
-   (`launchSubgraphView.ts`) pick the widest by bp, ties leftmost. Under a size
-   guard this is silent: the sliver puts an illegal window under the cap, so the
-   item renders enabled and cuts a degenerate graph. **No figure can cover this**
-   (no spec has a multi-region view); the unit tests are the coverage.
+   user left. `widestRegion` (`regionLaunchMenuItems.ts`) picks the widest by
+   bp, ties leftmost. Under a size guard this is silent: the sliver puts an
+   illegal window under the cap, so the item renders enabled and opens a
+   degenerate view. **No figure can cover this** (no spec has a multi-region
+   view); the unit tests are the coverage.
 
 ### Launcher gotchas
 
@@ -164,8 +164,8 @@ graph is a track of the linear view and launches nothing).
   (`noPanSNMatchError`, `plugins/comparative-adapters/src/util.ts`), since both
   all-vs-all adapters answer `hasDataForRefName` with `true`.
 - **A launch RPC that does not rename its region silently opens an empty view.**
-  A plain `RpcMethodType` gets no refName mapping (`GetSubgraph` extends
-  `RpcMethodTypeWithRenameRegion`; see
+  A plain `RpcMethodType` gets no refName mapping (the graph plugin's
+  `GetSubgraph` extends `RpcMethodTypeWithRenameRegion`; see
   [REFNAME_NAMESPACES.md](REFNAME_NAMESPACES.md)). Hosted GRCh38 FASTAs use bare
   `1`/`6` names while graph stable names are `GRCh38#0#chr6`.
 - **`getSession()` throws on a track *config* node.** Session-wide discovery

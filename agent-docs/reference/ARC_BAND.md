@@ -92,6 +92,7 @@ real pair into the top third of the axis.
 - **Ask the loaded list, not `displayedRegions`.** An ordinary LGV's one displayed
   region is the whole chromosome, so every mate would read as placeable.
   `cloudUnplaced.test.ts` pins the distinction.
+
 ## Breakend feet
 
 **An interchromosomal arc draws breakend feet, and no other arc does.** A short

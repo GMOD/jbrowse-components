@@ -46,10 +46,10 @@ one device and has no per-canvas cap.
 Limit checks are per buffer and per texture; nothing sums uploaded bytes across
 displays, so OOM is reportable, not preventable. ADR-035 settled that
 `maxHeight` bounds pixels, not GPU memory. **WebGL2 is the stricter HAL**: it
-refuses past the fixed `MAX_VERTEX_BUFFER_BYTES` (256 MiB) where WebGPU uses the adapter
-maximum, so a region can banner on WebGL2 and render on WebGPU. We accept that
-direction, since the unguarded WebGL2 failure is a dropped context that evicts a
-sibling.
+refuses past the fixed `MAX_VERTEX_BUFFER_BYTES` (256 MiB) where WebGPU uses the
+adapter maximum, so a region can banner on WebGL2 and render on WebGPU. We
+accept that direction, since the unguarded WebGL2 failure is a dropped context
+that evicts a sibling.
 
 **Retire when** a HAL byte counter with cross-display LRU prune exists, or an
 OOM report arrives that the per-object guards missed.
@@ -60,8 +60,9 @@ OOM report arrives that the per-object guards missed.
 
 `WebGPUHal` holds one 4x MSAA color attachment per display, sized to the canvas
 (`recreateMsaaTexture`) and independent of the data, so an empty tall track costs
-what a full one does (79.2 MiB for one track dragged to 4100px). [GPU_PORTABILITY.md](GPU_PORTABILITY.md) §"The number that
-generalizes badly" holds the sizes; `probe-msaa-resize-cost.ts` takes the census.
+what a full one does (79.2 MiB for one track dragged to 4100px).
+[GPU_PORTABILITY.md](GPU_PORTABILITY.md) §"The number that generalizes badly"
+holds the sizes; `probe-msaa-resize-cost.ts` takes the census.
 **The figures are what the descriptor asks for, not what is resident.** Profile
 residency before spending anything on size:
 [arc-antialiasing-without-msaa.md](../ideas/waiting-on-a-number/arc-antialiasing-without-msaa.md).

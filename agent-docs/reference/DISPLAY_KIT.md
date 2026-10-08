@@ -127,7 +127,7 @@ This is the whole decision, and it inverts: subscribing moves the rebuild from
 change to its inputs". Canvas's `flatbushIndexes` is safe because it keys off
 `laidOutDataMap` and the DEBOUNCED `coarseBpPerPx`. `laneFlatbushIndexes` in
 plugin-variants is not, and says so at the getter: it walks `visibleRegions`
-(see the section above), so holding it would have bought a per-pan-frame
+(see "Read a scalar off the host"), so holding it would have bought a per-pan-frame
 Flatbush build on every variant track in the session. Give a getter canvas's
 dependencies before giving it canvas's autorun.
 

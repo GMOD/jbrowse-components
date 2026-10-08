@@ -11,6 +11,7 @@ Three repos serve one BAM query: `BamAdapter` (`plugins/alignments`), `@gmod/bam
 `@gmod/bgzf-filehandle` over `@gmod/range-cache-filehandle`. Each is optimized
 against its own measurements, and most apparent gaps between them already exist
 one layer down under another name. BGZF inflate is the largest line of a query;
+
 ## The deliberate non-integrations
 
 Do not "fix" these.
@@ -25,6 +26,7 @@ Do not "fix" these.
   (worker) and `attachChainFields` (main thread). `@gmod/bam` ADR 0003 rejected
   memoizing `get name` on the premise that `fetchPairs` is the only repeat
   caller, so that premise depends on the option staying unused.
+
 ## Seam 2 — the chunk cache key slides as a query pans
 
 `@gmod/bam` keys its parsed-chunk cache on the merged chunk's virtual-offset

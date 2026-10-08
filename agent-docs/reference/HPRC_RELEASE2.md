@@ -30,6 +30,7 @@ the graph plugin's repo (`jbrowse-plugin-graphgenomeviewer`, its `IDEAS.md`).
   2.1's graph and callsets. Sites move between the two: the CFHR3/CFHR1 deletion
   is `chr1:196753075` in the 2.0 wave VCF and `196758726` in 2.1's. At C4, a
   copy-number variable locus, no build is the single correct projection.
+
 ## Measured findings
 
 **impg's PAF output is projections, not compositions.** `impg query -x -o paf`
@@ -115,6 +116,7 @@ Traps in the summary build, none specific to HPRC:
   message, empty MAF, exit 0, so a harness testing `[ -s file ]` passes a summary
   holding only its header (one build lost 93 of 195 contigs). A per-chromosome
   table catches it; a genome-wide total hides it.
+
 ## Which VCF to read the graph against
 
 The release builds in one order: `minigraph -cxggs` makes the SV-level `sv.gfa`,

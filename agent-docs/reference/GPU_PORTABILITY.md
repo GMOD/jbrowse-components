@@ -70,6 +70,14 @@ apart.
   compare canvas2d with canvas2d and pass. `appendGpuParam` sets `renderer=` on
   every run from `snapshotConfig.backend`, and
   `createRenderingBackend.test.ts` pins the property.
+- **The figure corpus.** `pinRenderer` in `website/scripts/screenshot-ready.ts`
+  is the one place to move it between backends. Pinning in `sessionSpec` instead
+  forces WebGL on the website's gallery links, since `gen-live-links.ts` reads
+  the same builder. Before touching it, enumerate the navigation paths:
+  `renderSpecToTemp` branches to the embedded harness (pinned through
+  `setGpuOverride`) or `captureUrl`, and `captureEachStage` re-enters
+  `captureUrl` per stage.
+
 ### Fixes measured and eliminated
 
 Layout write amplification, releasing the context on dispose (`loseContext()`),

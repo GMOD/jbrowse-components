@@ -1,5 +1,5 @@
 ---
-name: ORTHOLOG_TABLES
+name: ortholog-tables
 description: What a .blocks ortholog table can express — MCScanBlocksAdapter pairs any two columns, so all-vs-all is a question about the producer — the grape/peach/cacao recipe, and why a refName rename needs a length check first. Read before adding an ortholog format.
 kind: dataset
 ---

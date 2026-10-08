@@ -82,7 +82,7 @@ WebAssembly SIMD kernel (costs a wasm module and build step).
 ## Render cost
 
 Do not re-profile render cost before reading the plugin's commit history, which
-holds the passes and their numbers. Three lessons generalize:
+holds the passes and their numbers. Two lessons generalize:
 
 - **Check sibling getters before declaring a zoom level cheap.** Decimation fixed
   the base-cell encode while a sibling getter kept a full per-cell scan.

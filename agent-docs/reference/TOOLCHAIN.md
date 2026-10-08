@@ -47,6 +47,7 @@ callback, or `contributeToExtensionPoint` rejecting the name outright.
 - **`eslint-disable-next-line` means the next line.** A directive followed by more
   comment lines applies to the comment and fails silently. Put the prose first and the
   directive last.
+
 ## Worktrees
 
 - **Check what the worktree branched from before trusting a gate.** `setup-worktree.sh`

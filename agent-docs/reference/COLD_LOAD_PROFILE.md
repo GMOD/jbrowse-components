@@ -1,7 +1,7 @@
 ---
-name: COLD_LOAD_PROFILE
+name: cold-load-profile
+description: "What does jbrowse-web's cold load to a BAM or CRAM track's first paint wait on (2026-10-04)? Small loads wait on serialized idle time, repeat visits on CPU and GPU, deep windows on one RPC worker. Shader compile and Suspense were measured and declined."
 kind: measurement
-description: "Profile of jbrowse-web's cold load to a BAM or CRAM track's first paint (2026-10-04): small loads wait on serialized idle time, repeat visits on CPU and GPU, deep windows on one RPC worker. Shader compile and Suspense measured and declined."
 ---
 
 # Cold load to first alignments paint

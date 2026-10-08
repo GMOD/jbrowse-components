@@ -95,7 +95,8 @@ Three shapes have failed it:
   current needs the loaded signature dropped too (`GlobalFetchMixin.reload()`).
   Gates on committed state are declared as `installFetch`'s `fetchKey`. A
   secondary fetch passes no `contract` (one ledger per node), so
-  `makeRetryContractCheck` cannot see it; multi-way synteny's dependent fetches shipped a dead Retry there.
+  `makeRetryContractCheck` cannot see it; multi-way synteny's dependent fetches
+  shipped a dead Retry there.
 - **Work `reload()` never re-runs.** HiC's header read now runs from an autorun
   tracking `reloadCounter` (`LinearHicDisplay/infoFetchFailure.test.ts`).
 - **A phase that unmounts the affordance.** `cancelFetchByUser` aborts

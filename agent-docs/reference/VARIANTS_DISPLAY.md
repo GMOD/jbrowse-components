@@ -313,7 +313,7 @@ their click target. The box is the cell united with the marker wherever the
 mark's own gate (`insertionMarkerDraws`, unsnapped, floored at `MIN_CELL_PX`)
 draws one, so it reads no pan phase and the legend asks the painter's question. The **lane** is no longer
 one of them: its marks, their hover box and their click target are
-plugin-canvas's layout (see the band section above), which is why they can
+plugin-canvas's layout (see "Bands above the rows"), which is why they can
 stack.
 
 **Edges go in in RECORD order, `toX(start)` then `toX(end)`** — never sorted,
