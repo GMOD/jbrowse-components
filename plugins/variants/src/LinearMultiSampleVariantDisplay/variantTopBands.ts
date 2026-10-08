@@ -21,7 +21,7 @@ import { modeCanShowDescription, modeCanShowName } from '@jbrowse/plugin-canvas'
 
 import type { ShowLabelsMode } from '@jbrowse/plugin-canvas'
 
-export interface VariantTopBandsInput {
+interface VariantTopBandsInput {
   showVariantLane: boolean
   /** The lane's configured height, spent only when the lane is on. */
   variantLaneHeight: number

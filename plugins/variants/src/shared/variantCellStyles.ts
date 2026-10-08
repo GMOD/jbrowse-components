@@ -21,7 +21,7 @@ import type { Feature } from '@jbrowse/core/util'
  * facts the buckets and the insertion pass key off. `null` means the genotype
  * paints nothing here (`''` from `getPhasedColor` / `getAlleleColor`).
  */
-export interface VariantCellStyle {
+interface VariantCellStyle {
   abgr: number
   isRef: boolean
   isAlt: boolean
@@ -33,8 +33,8 @@ export interface VariantCellStyle {
   category: number
 }
 
-export const CELL_REF = 0
-export const CELL_ALT = 1
+const CELL_REF = 0
+const CELL_ALT = 1
 export const CELL_ALT_SECONDARY = 2
 export const CELL_NO_CALL = 3
 export const CELL_UNPHASED = 4

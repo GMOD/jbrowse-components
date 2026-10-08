@@ -78,7 +78,7 @@ function accumulatePloidy(
   }
 }
 
-export interface AnalyzedVariants {
+interface AnalyzedVariants {
   filteredVariants: FilteredVariant[]
   samplePloidy: Record<string, number>
   // Whether any called genotype is phased or haploid data per
