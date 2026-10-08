@@ -63,6 +63,30 @@ test('a deletion run wide enough for its label becomes a marker', () => {
   expect(markers[0]!.width).toBe(20)
 })
 
+test('a run wider than the viewport marks the part on screen', () => {
+  const data = regionData('A'.repeat(30), `AAAAA${'-'.repeat(20)}AAAAA`)
+  const markers = computeVisibleDeletions({
+    view: {
+      visibleRegions: [
+        {
+          displayedRegionIndex: 0,
+          start: 110,
+          end: 118,
+          screenStartPx: 0,
+          reversed: false,
+        },
+      ],
+      bpPerPx: 0.1,
+    },
+    rpcDataMap: new Map([[0, data]]),
+    rowHeight: 15,
+    rowProportion: 0.8,
+    scrollTop: 0,
+    viewportHeight: 1000,
+  })
+  expect(markers).toMatchObject([{ xLeft: 0, width: 80, length: 20 }])
+})
+
 // The overlay draws only the count label, so a run too narrow to fit one can
 // never paint. Emitting it anyway meant allocating a marker per gap run purely
 // for the draw pass to re-test and discard.

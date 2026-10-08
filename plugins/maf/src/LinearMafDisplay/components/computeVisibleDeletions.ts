@@ -29,9 +29,9 @@ import type { MafOverlayParams } from './visibleRegionGeometry.ts'
 const MIN_LABEL_WIDTH = LABEL_FONT.measure('0') + 2
 
 export interface DeletionMarker {
-  /** screen px of the left edge of the deleted run */
+  /** screen px of the left edge of the run's visible part */
   xLeft: number
-  /** screen px width of the deleted run */
+  /** screen px width of the run's visible part */
   width: number
   rowTop: number
   h: number
@@ -42,7 +42,8 @@ export interface DeletionMarker {
 /**
  * Positioned deletion runs for every aligned row in the visible blocks. A
  * deletion spans reference bases `[start, start+length)`, so the marker spans
- * those cells; the overlay draws the bp count centered when it fits. Geometry
+ * the cells of those on screen; the overlay draws the bp count centered there
+ * when it fits, which keeps the count in view inside a run wider than the view. Geometry
  * comes from the shared `forEachDeletion` walk, the same source the hover
  * hit-test uses.
  *
@@ -68,10 +69,13 @@ export function computeVisibleDeletions(
   const minLabelBp = MIN_LABEL_WIDTH * view.bpPerPx
 
   if (h >= MIN_HEIGHT_FOR_TEXT) {
-    for (const { data: regionData, bpToPx, overlaps } of eachVisibleRegion(
-      view,
-      rpcDataMap,
-    )) {
+    for (const {
+      data: regionData,
+      bpToPx,
+      overlaps,
+      visibleStart,
+      visibleEnd,
+    } of eachVisibleRegion(view, rpcDataMap)) {
       const { blocks } = regionData
       const runBounds = regionDeletionRunBounds(regionData)
       // Built only once a block survives the culls: it is an array as long as
@@ -113,12 +117,10 @@ export function computeVisibleDeletions(
               if (measuring && length > longest) {
                 longest = length
               }
-              if (drawn) {
-                const { left: xLeft, width } = spanRect(
-                  bpToPx,
-                  start,
-                  start + length,
-                )
+              const lo = Math.max(start, visibleStart)
+              const hi = Math.min(start + length, visibleEnd)
+              if (drawn && hi > lo) {
+                const { left: xLeft, width } = spanRect(bpToPx, lo, hi)
                 if (width >= MIN_LABEL_WIDTH) {
                   markers.push({ xLeft, width, rowTop, h, length })
                 }

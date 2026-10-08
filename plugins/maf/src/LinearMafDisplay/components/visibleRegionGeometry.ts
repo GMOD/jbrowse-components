@@ -177,8 +177,8 @@ export function bpCull(bpLo: number, bpHi: number) {
  * Walk the visible regions that have data in `dataMap`, yielding each region's
  * data alongside its `bpToPx` mapper, `displayedRegionIndex` (which lets a
  * caller correlate a second per-region map — e.g. codon translation reads both
- * the alignment and the frames map), and its `bpCull` over the region's
- * *visible* span padded by `CULL_SLACK_PX`. This is the marker-side twin of
+ * the alignment and the frames map), its visible span, and its `bpCull` over
+ * that span padded by `CULL_SLACK_PX`. This is the marker-side twin of
  * `paintedBpRange`, which culls the Canvas2D painters against a render block's
  * clip rather than a visible region.
  */
@@ -199,6 +199,8 @@ export function* eachVisibleRegion<T>(
       data,
       bpToPx,
       displayedRegionIndex: vr.displayedRegionIndex,
+      visibleStart: vr.start,
+      visibleEnd: vr.end,
       ...bpCull(vr.start - slack, vr.end + slack),
     }
   }
