@@ -84,9 +84,8 @@ export function storedThemeArgs(): SerializableThemeArgs {
   return {
     themeName: sessionThemeName,
     mode:
-      sessionThemeMode === 'system'
-        ? (systemThemeOverride ?? systemMode())
-        : sessionThemeMode,
+      systemThemeOverride ??
+      (sessionThemeMode === 'system' ? systemMode() : sessionThemeMode),
   }
 }
 
@@ -136,9 +135,13 @@ export function ThemeManagerSessionMixin(_pluginManager: PluginManager) {
          * Dark Reader never touches the file.
          */
         get selectedThemeMode(): PaletteMode {
+          if (self.systemThemeOverride) {
+            return self.systemThemeOverride
+          }
           return this.themeMode === 'system'
-            ? (self.systemThemeOverride ??
-                (self.systemPrefersDark ? 'dark' : 'light'))
+            ? self.systemPrefersDark
+              ? 'dark'
+              : 'light'
             : this.themeMode
         },
         /**
@@ -291,10 +294,10 @@ export function ThemeManagerSessionMixin(_pluginManager: PluginManager) {
       },
       /**
        * #action
-       * Hold a session that follows the system on the mode the OS is not
-       * asking for, or `undefined` to follow it again. The toolbar's sun/moon
-       * writes this, so it stays in the toolbar after a click. The OS flipping
-       * clears it, since by then the OS has come round to the held mode. The
+       * Hold a session on the mode its setting is not asking for, or
+       * `undefined` to return to the setting. The toolbar's sun/moon writes
+       * this, so it stays in the toolbar after a click. The OS flipping clears
+       * it, since by then the OS has come round to the held mode. The
        * palette is untouched: a reader on Minimal who does this keeps Minimal.
        */
       setSystemThemeOverride(mode?: PaletteMode) {

@@ -34,9 +34,10 @@ const Session = types
       if (self.darkReaderDark) {
         return 'dark'
       }
-      return self.themeMode === 'system'
-        ? (self.systemThemeOverride ?? self.systemMode)
-        : self.themeMode
+      if (self.systemThemeOverride) {
+        return self.systemThemeOverride
+      }
+      return self.themeMode === 'system' ? self.systemMode : self.themeMode
     },
     get themeIsDark() {
       return self.pinnedDark || this.effectiveThemeMode === 'dark'
@@ -63,12 +64,26 @@ function renderButton(snap: {
   return { ...utils, session }
 }
 
-// The point of the gating: a session on an explicit mode is never shown a
+// The point of the gating: a session on an explicit light is never shown a
 // route into dark it did not ask for.
-test('an explicit mode gets no control', () => {
+test('an explicit light gets no control', () => {
   const { queryByTestId } = renderButton({ themeMode: 'light' })
 
   expect(queryByTestId('theme-mode-button')).toBeNull()
+})
+
+test('an explicit dark gets a control that holds light and returns', () => {
+  const { getByTestId, session } = renderButton({ themeMode: 'dark' })
+
+  fireEvent.click(getByTestId('theme-mode-button'))
+  expect(session.themeMode).toBe('dark')
+  expect(session.themeIsDark).toBe(false)
+  expect(getByTestId('theme-mode-button').getAttribute('aria-label')).toBe(
+    'Light instead of your dark setting',
+  )
+
+  fireEvent.click(getByTestId('theme-mode-button'))
+  expect(session.themeIsDark).toBe(true)
 })
 
 test('following the system names the mode it landed in', () => {
