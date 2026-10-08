@@ -45,9 +45,9 @@ example file no page mounts. The same demo takes the same slug on every site
 
 ## Shared layouts reach their site through `~site`
 
-The layouts (`Shell`, `ExamplePage`, `Gallery`) and `exampleModel.ts` live in
-`examples-site-shared/` and are symlinked into each site. A shared file imports its site's own modules
-as `~site/...` (`siteMeta.ts`, `examples.ts`, `docs/*.md`), never by a relative
+The layouts (`Shell.astro`, `ExamplePage.astro`, `Gallery.astro`) and
+`exampleModel.ts` live in `examples-site-shared/` and are symlinked into each
+site. A shared file imports its site's own modules as `~site/...` (`siteMeta.ts`, `examples.ts`, `docs/*.md`), never by a relative
 path: `astro check` resolves a relative import from the symlink's directory and
 vite from the file's real path, so only an alias, declared in both
 `astro.config.mjs` and `tsconfig.json`, means the same file to both. Every site's

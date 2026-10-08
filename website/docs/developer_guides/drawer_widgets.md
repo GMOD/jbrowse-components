@@ -183,8 +183,7 @@ only fetched when it first opens.
 
 ## Storybook example
 
-See the `WithDrawerWidget` example:
-https://jbrowse.org/storybook/lgv/drawer-widget/
+See the `DrawerWidget` example: https://jbrowse.org/storybook/lgv/drawer-widget/
 
 ## See also
 
