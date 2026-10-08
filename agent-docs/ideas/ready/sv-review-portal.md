@@ -1,6 +1,6 @@
 ---
 name: sv-review-portal
-description: A static review page over a whole SV callset in the shape of gene-review-portal — one card per record of `jb2export batch --manifest`, tumor over normal, grouped by the caller's VCF `EVENT`, sorted by read support, with a verdict and a live link. Where a caller or an assembler wrote a contig BAM, the card's allele row draws that contig against the reference through "Linear read vs ref", which no spec, URL or `jb2export` mode reaches yet. ADR-140 deleted the chain finder the first plan stood on, so every grouping here is the caller's.
+description: A static review page over a whole SV callset in the shape of gene-review-portal — one card per record of `jb2export batch --manifest`, tumor and normal in one image, grouped by the caller's VCF `EVENT`, sorted by read support, with a verdict and a live link. Where a caller or an assembler wrote a contig BAM, the card's allele row draws that contig against the reference through "Linear read vs ref", which no spec, URL or `jb2export` mode reaches yet. ADR-140 deleted the chain finder the first plan stood on, so every grouping here is the caller's.
 ---
 
 # SV review portal
@@ -22,7 +22,7 @@ means a card draws an allele only where a tool outside JBrowse built one.
 
 One record of the callset, which is one row of `jb2export batch --manifest`:
 
-- **Evidence row**: tumor above normal at the record's loci, split alignments
+- **Evidence row**: one image, tumor above normal at each of the record's loci, split alignments
   with curved connectors for a junction, the plain pileup for a record one
   window holds. `batch` already picks between the two. On COLO829 that is 82
   two-panel images and 53 one-panel ones, 11 of them records naming a single
@@ -171,9 +171,17 @@ itself and `jb2export` holds no list of blessed INFO keys.
 The page is built:
 [variant-review-portal](https://github.com/cmdcolin/variant-review-portal), a
 repo of its own beside gene-review-portal and carrying that page's keyboard,
-verdicts and TSV round trip. It takes the VCF and one `--images` directory per
-sample, joins them on `line`, and needs no JBrowse dependency. The whole
-COLO829 callset is its first portal, tumor over normal.
+verdicts and TSV round trip. It takes the VCF and one `--images` directory
+whose images hold every alignments track (`--images tumor,normal=reads`), joins
+the two on `line`, and needs no JBrowse dependency. The manifest's `links` is
+one count per track, so a single image still gives the tumor and the normal a
+count each. The whole COLO829 callset is its first portal, at
+https://jbrowse.org/demos/colo829_review/.
+
+A card also prints what the VCF holds beyond the SV columns: the sample's
+`FORMAT` numbers, every `INFO` key with the header's description, and the genes
+and effect of the top SnpEff `ANN` or VEP `CSQ` annotation. The queue sorts on
+size, split reads or any `FORMAT` number, and lists as a table.
 
 ## What a whole callset costs
 
@@ -184,6 +192,11 @@ process and in the four `--jobs` defaults to:
 | --- | --- | --- | --- | --- |
 | tumor | CRAM | 5 min 45 s | 1 min 48 s | 0 |
 | matched normal | whole-genome BAM | 14 min 53 s | 7 min 55 s | 3, then 0 |
+| both in one image | CRAM and BAM | | 4 min 42 s | 0 |
+
+Both tracks in one image (2026-10-08, `@jbrowse/img` 5.0.0-beta.13) cost less
+than the normal alone did, and on local disk 24 s where the two runs apart took
+12 s and 16 s (`jb2bench/results/portals.md`).
 
 - **Four processes are four times one on the CRAM, and the curve is flat past
   them.** In one sitting: 345 s, then 86 s at four, 78 s at eight and 73 s at
@@ -247,8 +260,10 @@ the page is for the subset a filter leaves.
   locus at a fixed flank keeps that load bounded, never one window per event.
   [per-region-banner-for-a-mixed-region-set](../waiting-on-a-call/per-region-banner-for-a-mixed-region-set.md)
   is the open bug a mixed-size region set hits.
-- **Blank space under a panel.** A split-view panel keeps its height whatever
-  the pileup fills, so two stacked samples make a card taller than a window.
+- **A two-panel card is taller than a window.** Two loci of two tracks at
+  `height:240` is an 1100 by 1183 image, so the page scales each image to the
+  window and a click restores it. A shorter track cuts off the rows the split
+  reads sit in.
 - **Capture readiness.** Software-rasterised Chromium over several panels of
   deep long reads is slow, which is why `jb2export` is the renderer and
   `@jbrowse/capture` the opt-in.
