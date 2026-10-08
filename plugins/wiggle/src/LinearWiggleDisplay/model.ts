@@ -80,6 +80,7 @@ import { sortSourcesByScoreAt } from './sortSourcesByScoreAt.ts'
 import {
   UNCOLORED_ROW,
   markColorOf,
+  sourceWarnings,
   sourcesFromRegionData,
 } from './sourcesLogic.ts'
 
@@ -350,6 +351,7 @@ export default function stateModelFactory(
         const notices = [
           ...wiggleColorNotices(self.colorSetting),
           ...self.valueScaleNotices,
+          ...sourceWarnings(self.rpcDataMap),
         ]
         return this.wiggleColor.rampLut !== null &&
           isLineMode(self.renderingType)
@@ -750,6 +752,16 @@ export default function stateModelFactory(
        */
       setRowLayout(on: boolean) {
         setConf(self, ['rows', 'field'], on ? 'source' : '')
+      },
+
+      /**
+       * #action
+       * A Plot type leaf whole, so the regions encode once and never as the
+       * new plot in the old layout.
+       */
+      setPlot(rendering: string, rowLayout: boolean) {
+        self.setRenderingType(rendering)
+        setConf(self, ['rows', 'field'], rowLayout ? 'source' : '')
       },
 
       /**

@@ -118,6 +118,10 @@ export async function executeRenderMultiWiggleData({
         perSource.map(({ source }) => ({ name: source })),
       )
 
+  const warnings = isMulti
+    ? (await dataAdapter.getSourcesAndWarnings?.(opts))?.warnings
+    : undefined
+
   // Every region carries the full source list — a source with no features here
   // still gets an entry, so row placement stays aligned across regions.
   const results: WiggleDataResult[] = regions.map((_region, regionIndex) => ({
@@ -129,6 +133,7 @@ export async function executeRenderMultiWiggleData({
     })),
     zoomRange,
     ...(valueDomain ? { valueDomain } : {}),
+    ...(warnings?.length ? { warnings } : {}),
   }))
   return rpcResult(results, collectWiggleTransferables(results))
 }

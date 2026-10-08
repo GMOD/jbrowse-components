@@ -133,6 +133,10 @@ export interface SourceRenderData {
   // — the Canvas2D path reads it directly, the GPU path has it baked into the
   // instance buffer as a NO_PREV_START sentinel. `undefined` never breaks.
   gapLimitBp?: number
+  // The score a step line rises from and falls to where its bins do not abut:
+  // the `origin` bars grow from, so the line traces the bars' outline. Both
+  // backends read it off the layer; 0 while unset.
+  gapScore?: number
   // A line plot's whiskers band, whose `featureScores` are the maxima.
   band?: {
     minScores: Float32Array

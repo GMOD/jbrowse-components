@@ -105,8 +105,8 @@ export function packFillInstances(sources: SourceRenderData[]) {
 //   v2–v3: horizontal at score across [startX, endX]
 //   v4–v5: vertical at endX   from score → nextScore (transition out)
 //
-// prevScore=0 with a gap-before encodes "rise from the zero line."
-// nextScore=0 with a gap-after encodes "drop to the zero line."
+// At a gap, prevScore and nextScore are the layer's `gapScore`, the origin
+// bars grow from, so the line rises from and drops to the bars' baseline.
 //
 // When adjacent: prevScore = previous feature's score (smooth join); nextScore
 // deliberately stays equal to the current score so v4–v5 collapses to a no-op —
@@ -130,6 +130,7 @@ export function packLineInstances(sources: SourceRenderData[]) {
     const positions = source.featurePositions
     const scores = source.featureScores
     const n = source.numFeatures
+    const gapScore = source.gapScore ?? 0
     for (let i = 0; i < n; i++) {
       const pi = i * 2
       const score = scores[i]!
@@ -140,8 +141,8 @@ export function packLineInstances(sources: SourceRenderData[]) {
       u32[off + LINE_U32.startEnd] = currStart
       u32[off + LINE_U32.startEnd + 1] = currEnd
       f32[off + LINE_F32.score] = score
-      f32[off + LINE_F32.prevScore] = prevAdj ? scores[i - 1]! : 0
-      f32[off + LINE_F32.nextScore] = nextAdj ? score : 0
+      f32[off + LINE_F32.prevScore] = prevAdj ? scores[i - 1]! : gapScore
+      f32[off + LINE_F32.nextScore] = nextAdj ? score : gapScore
       u32[off + LINE_U32.color] = colorAbgr
       f32[off + LINE_F32.rowIndex] = row
       u32[off + LINE_U32.negColor] = negAbgr

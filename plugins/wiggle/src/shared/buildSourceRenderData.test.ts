@@ -331,6 +331,15 @@ describe('buildSourceRenderData gapLimitBp', () => {
     return { sources: [{ name: 'default', ...arrays }] }
   }
 
+  test('a step line falls to the origin bars grow from', () => {
+    const [layer] = buildSourceRenderData(spacedData(), {
+      ...baseGpuProps,
+      renderingType: 'line',
+      origin: 4,
+    })
+    expect(layer!.gapScore).toBe(4)
+  })
+
   test('set from the mean point spacing for linecenter', () => {
     const [layer] = buildSourceRenderData(spacedData(), {
       ...baseGpuProps,

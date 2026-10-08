@@ -54,8 +54,8 @@ float rowScoreToClipY(float score, float rowTop, float rowHeight, float pxToClip
 //   seg 0: vertical at startX from prevScore → score (transition in)
 //   seg 1: horizontal at score across [startX, endX]
 //   seg 2: vertical at endX   from score → nextScore (transition out)
-// prevScore=0 encodes gapBefore (rise from zero); nextScore=0 encodes gapAfter
-// (drop to zero). When adjacent, nextScore==score collapses seg 2 to a square
+// At a gap prevScore and nextScore are the origin, the bars' baseline. When
+// adjacent, nextScore==score collapses seg 2 to a square
 // joint that fills the corner with the next feature's seg 0.
 [shader("vertex")]
 VsOut vs_main(WiggleLineInstance inst, uint vid : SV_VertexID) {

@@ -532,6 +532,30 @@ const score5Y = 100
 const score8Y = (1 - 8 / 10) * 200
 
 describe('drawLine path commands', () => {
+  test('a gap rises from and drops to the gap score', () => {
+    const { ctx } = createMockCanvas()
+    paintWiggle(
+      ctx,
+      new Map([
+        [
+          0,
+          [
+            {
+              ...makeSource([8], [0], [100], RENDERING_TYPE_LINE),
+              gapScore: 5,
+            },
+          ],
+        ],
+      ]),
+      [lineBlock],
+      lineState,
+    )
+    const moves = ctx.moveTo.mock.calls as [number, number][]
+    const lines = ctx.lineTo.mock.calls as [number, number][]
+    expect(moves[0]).toEqual([0, score5Y])
+    expect(lines.at(-1)).toEqual([80, score5Y])
+  })
+
   test('isolated feature: rise at x1, horizontal, drop at x2', () => {
     const { ctx } = createMockCanvas()
     paintWiggle(

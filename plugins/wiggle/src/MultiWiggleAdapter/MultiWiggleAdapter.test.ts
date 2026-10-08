@@ -228,6 +228,29 @@ describe('MultiWiggleAdapter.getAdapters with bigWigs config', () => {
   })
 })
 
+it("lists a subadapter's extra keys as row attributes and none of its slots", async () => {
+  const adapter = new MultiWiggleAdapter(
+    configSchema.create({
+      subadapters: [
+        {
+          type: 'BigWigAdapter',
+          name: 'Alpha',
+          group: 'Islet',
+          resolutionMultiplier: 2,
+          bigWigLocation: { uri: 'https://x/alpha.bw' },
+        },
+      ],
+    }),
+    jest.fn().mockResolvedValue({ dataAdapter: stubDataAdapter }),
+    {
+      getAdapterType: () => ({ configSchema: bigWigConfigSchema }),
+    } as unknown as PluginManager,
+  )
+  expect(await adapter.getSources([])).toEqual([
+    { name: 'Alpha', source: 'Alpha', group: 'Islet' },
+  ])
+})
+
 describe('MultiWiggleAdapter.getSources', () => {
   let adapter: MultiWiggleAdapter
 

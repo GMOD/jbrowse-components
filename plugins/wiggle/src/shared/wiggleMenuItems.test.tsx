@@ -76,8 +76,8 @@ function makePlotSelf(sourceCount: number, isRowLayout: boolean) {
       writes.push(t)
     },
     isRowLayout,
-    setRowLayout: (on: boolean) => {
-      writes.push(on)
+    setPlot: (rendering: string, rowLayout: boolean) => {
+      writes.push(rendering, rowLayout)
     },
     discoveredRows: Array.from({ length: sourceCount }, (_, i) => i),
   }
@@ -123,7 +123,7 @@ test('the checked leaf is the pair, not the plot alone', () => {
   expect(checkedIn(overlapping)).toEqual(['XY plot'])
 })
 
-test('one leaf writes both axes', () => {
+test('one leaf writes both axes in one action', () => {
   const { self, item } = plotMenu(2)
   const [multirow] = rowsOf(item)
   const density = rowsOf(multirow).find(

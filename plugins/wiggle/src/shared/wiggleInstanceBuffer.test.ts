@@ -106,6 +106,17 @@ function readCenter(buf: ArrayBuffer, i: number) {
 }
 
 describe('packLineInstances', () => {
+  test('a gap rises from and drops to the gap score, the bars baseline', () => {
+    const source = {
+      ...stepSource([5, 7, 9], [0, 10, 50], [10, 20, 60]),
+      gapScore: 3,
+    }
+    const buf = packLineInstances([source])
+    expect(readStep(buf, 0).prevScore).toBe(3)
+    expect(readStep(buf, 1)).toEqual({ score: 7, prevScore: 5, nextScore: 3 })
+    expect(readStep(buf, 2)).toEqual({ score: 9, prevScore: 3, nextScore: 3 })
+  })
+
   test('single isolated feature has prevScore=0 and nextScore=0', () => {
     const buf = packLineInstances([stepSource([5], [0], [100])])
     const f = readStep(buf, 0)

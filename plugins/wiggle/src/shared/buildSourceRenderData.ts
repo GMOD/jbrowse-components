@@ -206,6 +206,7 @@ export function buildSourceRenderData(
           ...layer,
           rowIndex: row,
           renderingType: renderingTypeInt,
+          gapScore: origin,
           gapLimitBp: layerGapLimitBp(
             layer.featurePositions,
             layer.numFeatures,

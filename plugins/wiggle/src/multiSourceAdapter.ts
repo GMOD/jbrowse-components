@@ -1,6 +1,9 @@
 import type { RawFeatureArrays } from './util.ts'
 import type { WiggleAdapterOptions } from './wiggleAdapterOptions.ts'
-import type { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
+import type {
+  BaseFeatureDataAdapter,
+  BaseOptions,
+} from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { Region } from '@jbrowse/core/util'
 
 export interface MultiSourceFetchOpts extends WiggleAdapterOptions {
@@ -23,6 +26,7 @@ export interface MultiSourceWiggleAdapter extends BaseFeatureDataAdapter {
     regions: Region[],
     opts: MultiSourceFetchOpts,
   ): Promise<{ source: string; raws: RawFeatureArrays[] }[]>
+  getSourcesAndWarnings?(opts?: BaseOptions): Promise<{ warnings: string[] }>
 }
 
 // Shared by the render RPC and the clustering score matrix so the two take the

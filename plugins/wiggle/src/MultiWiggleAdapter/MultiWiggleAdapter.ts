@@ -162,8 +162,10 @@ export default class MultiWiggleAdapter
   // note: can't really have dis-agreeing refNames
   public async getRefNames(opts?: BaseOptions) {
     const adapters = await this.getAdapters()
-    const allNames = await Promise.all(
-      adapters.map(a => a.dataAdapter.getRefNames(opts)),
+    const allNames = await mapWithConcurrency(
+      adapters,
+      SUBTRACK_FETCH_CONCURRENCY,
+      a => namingSource(a.source, a.dataAdapter.getRefNames(opts)),
     )
     return [...new Set(allNames.flat())]
   }
@@ -327,20 +329,44 @@ export default class MultiWiggleAdapter
     opts?: WiggleOptions,
   ) {
     const adapters = await this.getAdapters()
-    const allStats = await Promise.all(
-      adapters.map(adp =>
-        adp.dataAdapter.getRegionQuantitativeStats(region, opts),
-      ),
+    const allStats = await mapWithConcurrency(
+      adapters,
+      SUBTRACK_FETCH_CONCURRENCY,
+      adp =>
+        namingSource(
+          adp.source,
+          adp.dataAdapter.getRegionQuantitativeStats(region, opts),
+        ),
     )
     return aggregateQuantitativeStats(allStats)
+  }
+
+  // A row's attributes are the keys its subadapter config carries beyond the
+  // adapter's own slots, which would otherwise list a file location as a column.
+  private withoutAdapterSlots(
+    type: string | undefined,
+    conf: Record<string, unknown>,
+  ) {
+    const schema = type
+      ? this.pluginManager?.getAdapterType(type).configSchema
+      : undefined
+    const slots = schema
+      ? new Set(Object.keys(declaredSnapshot(schema, conf)))
+      : undefined
+    return slots
+      ? Object.fromEntries(
+          Object.entries(conf).filter(([key]) => !slots.has(key)),
+        )
+      : conf
   }
 
   getSourcesAndWarnings = cachedSetup({
     setup: async opts => {
       const sources = (await this.getAdapters()).map(
-        ({ type: _t, bigWigLocation: _bw, dataAdapter: _da, ...rest }) => ({
-          ...rest,
-          name: rest.source,
+        ({ type, bigWigLocation: _bw, dataAdapter: _da, source, ...rest }) => ({
+          ...this.withoutAdapterSlots(type, rest),
+          source,
+          name: source,
         }),
       )
       const { sources: rows, warnings } = await getSamplesTsvSources({

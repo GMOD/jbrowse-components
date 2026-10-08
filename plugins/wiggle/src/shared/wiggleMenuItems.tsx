@@ -46,7 +46,7 @@ export function makeRenderingTypeSubMenu(
     renderingType: string
     setRenderingType: (t: string) => void
     isRowLayout: boolean
-    setRowLayout: (on: boolean) => void
+    setPlot: (rendering: string, rowLayout: boolean) => void
     discoveredRows: readonly unknown[]
   },
   renderings: readonly (readonly [string, string])[],
@@ -80,8 +80,7 @@ export function makeRenderingTypeSubMenu(
         value: current,
         onChange: key => {
           const cut = key.indexOf(':')
-          self.setRenderingType(key.slice(cut + 1))
-          self.setRowLayout(key.slice(0, cut) === 'rows')
+          self.setPlot(key.slice(cut + 1), key.slice(0, cut) === 'rows')
         },
         options: renderings.map(
           ([value, label]) => [leafKey(layout, value), label] as const,

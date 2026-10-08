@@ -123,6 +123,24 @@ describe('multi-source adapter (batched)', () => {
   })
 })
 
+it("carries the source listing's warnings on every region", async () => {
+  jest.mocked(getFeatureAdapterOrThrow).mockResolvedValue({
+    getZoomRange: async () => undefined,
+    getValueDomain: async () => undefined,
+    getMultiSourceFeatureArraysMulti: async () => [
+      { source: 'a', raws: [raw([1]), raw([2])] },
+    ],
+    getSources: async () => [{ name: 'a' }],
+    getSourcesAndWarnings: async () => ({ warnings: ['2 samples unmatched'] }),
+  } as never)
+
+  const results = await run({})
+  expect(results.map(r => r.warnings)).toEqual([
+    ['2 samples unmatched'],
+    ['2 samples unmatched'],
+  ])
+})
+
 describe('plain feature adapter fallback', () => {
   function feature(source: string, start: number, score: number) {
     return new SimpleFeature({

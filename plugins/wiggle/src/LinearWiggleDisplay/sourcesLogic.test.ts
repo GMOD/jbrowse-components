@@ -1,6 +1,12 @@
-import { markColorOf } from './sourcesLogic.ts'
+import {
+  markColorOf,
+  sourceWarnings,
+  sourcesFromRegionData,
+} from './sourcesLogic.ts'
+import { makeSource } from './testEnv.ts'
 
 import type { Source } from '../util.ts'
+import type { WiggleDataResult } from '@jbrowse/wiggle-core'
 
 const sources: Source[] = [
   { name: 'a', color: '#0a0a0a', rowColor: '#a0a0a0' },
@@ -24,4 +30,43 @@ describe('markColorOf', () => {
       '#0c0c0c',
     ])
   })
+})
+
+const region = (
+  rows: Record<string, unknown>[],
+  warnings?: string[],
+): WiggleDataResult => ({
+  sources: rows.map(row => ({ ...makeSource(`${row.name}`), ...row })),
+  ...(warnings ? { warnings } : {}),
+})
+
+test('a row keeps every column its source carries and none of its arrays', () => {
+  const rows = sourcesFromRegionData(
+    new Map([
+      [0, region([{ name: 'a', tissue: 'liver', color: '#f00' }])],
+      [
+        1,
+        region([
+          { name: 'a', tissue: 'liver' },
+          { name: 'b', batch: 2 },
+        ]),
+      ],
+    ]),
+  )
+  expect(rows).toEqual([
+    { name: 'a', tissue: 'liver', color: '#f00' },
+    { name: 'b', batch: 2 },
+  ])
+})
+
+test('a warning every region repeats is listed once', () => {
+  expect(
+    sourceWarnings(
+      new Map([
+        [0, region([{ name: 'a' }], ['1 of 3 samples unmatched'])],
+        [1, region([{ name: 'a' }], ['1 of 3 samples unmatched'])],
+        [2, region([{ name: 'a' }])],
+      ]),
+    ),
+  ).toEqual(['1 of 3 samples unmatched'])
 })

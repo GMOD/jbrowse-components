@@ -199,8 +199,10 @@ floored at 1 or the shader seeds the row transform with Infinity.
 
 ## Three gap rules, one owner each
 
-- **Step line** breaks on bp adjacency. `0` is both the gap sentinel and a legal
-  score — harmless only because a 0-scoring feature draws the same either way.
+- **Step line** breaks on bp adjacency, and at a break rises from and falls to
+  the `origin` bars grow from, so the line traces the bars' outline. The layer
+  carries it as `gapScore` and both backends read it there; the shader draws
+  `prevScore`/`nextScore` as plain scores and tests for no sentinel.
 - **`linecenter`** connects consecutive pairs regardless of adjacency (reduced
   BigWig data is full of non-tiling bins); only a hole past `gapLimitBp` breaks
   it, computed once per layer and measured in **bp, not px** — px drifts from

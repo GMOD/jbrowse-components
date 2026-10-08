@@ -11,22 +11,39 @@ import type { WiggleDataResult } from '@jbrowse/wiggle-core'
  * fetch landed has to appear once a later region reveals it, and appending
  * keeps the rows a user already saw where they were.
  *
- * The feature arrays are dropped here: what a row IS survives a refetch, and
- * everything downstream of this (the layout merge, clustering, the color
- * dialog) is metadata.
+ * The feature arrays are dropped here and every other attribute kept: what a
+ * row IS survives a refetch, and a samples table's columns are what the
+ * sidebar colours and bands the rows by.
  */
 export function sourcesFromRegionData(
   rpcDataMap: ReadonlyMap<number, WiggleDataResult>,
 ): Source[] {
   const byName = new Map<string, Source>()
   for (const data of rpcDataMap.values()) {
-    for (const { name, color, label, group, baseUri } of data.sources) {
-      if (!byName.has(name)) {
-        byName.set(name, { name, color, label, group, baseUri })
+    for (const {
+      featurePositions: _positions,
+      featureScores: _scores,
+      featureMinScores: _minScores,
+      featureMaxScores: _maxScores,
+      numFeatures: _numFeatures,
+      hasSummaryScores: _hasSummaryScores,
+      ...source
+    } of data.sources) {
+      if (!byName.has(source.name)) {
+        byName.set(source.name, source)
       }
     }
   }
   return [...byName.values()]
+}
+
+/** What the adapter's source listing warned of, once each. */
+export function sourceWarnings(
+  rpcDataMap: ReadonlyMap<number, WiggleDataResult>,
+): string[] {
+  return [
+    ...new Set([...rpcDataMap.values()].flatMap(data => data.warnings ?? [])),
+  ]
 }
 
 /**

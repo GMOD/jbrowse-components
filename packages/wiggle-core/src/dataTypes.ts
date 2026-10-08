@@ -26,4 +26,6 @@ export interface WiggleDataResult {
   zoomRange?: ZoomRange
   /** The bounds the adapter's values lie in by definition (`getValueDomain`). */
   valueDomain?: [number, number]
+  /** What the adapter's source listing dropped or could not match. */
+  warnings?: string[]
 }

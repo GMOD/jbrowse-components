@@ -375,7 +375,7 @@ export function drawLine({
   ctx.lineWidth = lineWidth
   const scoreToY = makeScoreToY(rowHeight, domainY, scaleType, symlogConstant)
   const colorToY = makeColorToY(rowHeight, domainY, scaleType, symlogConstant)
-  const zeroY = scoreToY(0) + rowTop
+  const gapY = scoreToY(source.gapScore ?? 0) + rowTop
   const positions = source.featurePositions
   const scores = source.featureScores
   const toX = makeBpMapper(block)
@@ -392,7 +392,7 @@ export function drawLine({
         const scoreY = scoreToY(scores[i]!) + rowTop
         const scoreColorY = colorToY(scores[i]!) + rowTop
         if (!inRun) {
-          pen.moveTo(x1, zeroY)
+          pen.moveTo(x1, gapY)
           inRun = true
         }
         pen.lineTo(x1, scoreY)
@@ -400,7 +400,7 @@ export function drawLine({
         pen.lineTo(x2, scoreY, scoreColorY)
         pen.recolor(scoreY)
         if (i === n - 1 || positions[(i + 1) * 2] !== endBp) {
-          pen.lineTo(x2, zeroY)
+          pen.lineTo(x2, gapY)
           inRun = false
         }
       }
