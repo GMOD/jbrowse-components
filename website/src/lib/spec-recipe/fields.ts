@@ -485,7 +485,7 @@ function colorStep(
           note: 'The two colours the plot is drawn in, above and below the baseline; both the same paints a flat plot.',
         }
       : {
-          path: `${TRACK_MENU} → Edit plot...`,
+          path: `${TRACK_MENU} → Advanced → Edit plot...`,
           note: 'More than two swatches can say, so Edit plot writes the whole colour object.',
         }
   }
@@ -503,7 +503,7 @@ function colorStep(
       return { path: `${colorBy} → ${preset}` }
     }
     if (asList(scale.domain) || asList(scale.range)) {
-      return { path: `${TRACK_MENU} → Edit plot...` }
+      return { path: `${TRACK_MENU} → Advanced → Edit plot...` }
     }
     return field === 'strand' && displayType === 'LinearBasicDisplay'
       ? { path: `${colorBy} → Strand` }
