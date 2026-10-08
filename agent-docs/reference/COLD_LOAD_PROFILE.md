@@ -52,6 +52,38 @@ out. That work is diffuse (probe `inclusive` over the window):
 track. The remaining move is
 [start-the-fetch-before-react-renders-the-display](../ideas/ready/start-the-fetch-before-react-renders-the-display.md).
 
+## Code-discovery rounds
+
+At 80 ms RTT a cold load found its code in six serial rounds: the HTML,
+`main.js`, the Loader group and worker, the re-export registry when the config
+names a plugin, the view's chunks, then the display's.
+`HtmlPreloadPlugin` (`products/jbrowse-web/scripts/config.ts`) names the Loader
+group and the worker's chunks in the HTML, so they download beside `main.js`.
+Measured 2026-10-08 on `c69bf194f6`, one build with the links stripped or kept,
+medians of 5-9 interleaved cold loads on ada. One BAM track: 1116 ms to 1035 ms
+at 80 ms RTT, 2040 to 1894 at 200 ms, 735 to 721 at 20 ms and 664 to 643 with
+no latency. At 80 ms the four-track session went from 1267 ms to 1178 and the
+hg38 hub from 1311 to 1224.
+
+Declined: preloading the linear genome view's component and the workspace
+container as well. It measured no faster at any RTT (1043 and 1023 ms against
+1035), because the view's UI is not on the path to the first data request.
+
+Preloading every chunk a BAM load uses took a further ~140 ms off at 80 ms RTT
+in an injected-link experiment, so three levers remain:
+
+- **The assembly's sequence adapter chunks.** Preloading the TwoBit, Cytoband
+  and FromConfig adapters moved the page's first data read from 755 ms to 627 ms
+  and ready by 36 ms (62 ms at 200 ms RTT). The adapter depends on the config,
+  so the real fix is starting the assembly load when the config arrives, not a
+  static link.
+- **The re-export registry.** Its 37 chunks are requested ~90 ms after the
+  config arrives, once the Loader group has evaluated; `earlyStart.ts` could
+  start the import when the prefetched config text names a plugin.
+- **The plugin store manifest.** On a hub, config, `plugin-store/v2/plugins.json`
+  (181 ms, 2.75 KB, `no-cache`), each plugin's entry and its chunks are four
+  serial rounds.
+
 ## Repeat visits
 
 A returning user's load is CPU and GPU, not network: `static/` is immutable,
