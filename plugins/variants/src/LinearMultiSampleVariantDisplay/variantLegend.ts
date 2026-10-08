@@ -56,6 +56,7 @@ export interface VariantLegendInputs {
   // cell of that category anywhere in the fetched cell data (see
   // `paintedLegendFlags`).
   hasSecondaryAlt: boolean
+  hasAltWithoutPhaseSet?: boolean
   hasUnphased: boolean
   hasNoCall: boolean
   // The cell scale's domain values an alt cell was painted for — impact tiers
@@ -266,6 +267,9 @@ function getCellColorScale(
       entries: [
         entry('Reference', REFERENCE_COLOR),
         entry('Alt allele (hue identifies the phase set)'),
+        ...(inputs.hasAltWithoutPhaseSet
+          ? [entry('Alt allele, no phase set', ALT_HUE)]
+          : []),
         ...(inputs.hasSecondaryAlt
           ? [entry('Other alt allele, no phase set', SECONDARY_ALT_COLOR)]
           : []),

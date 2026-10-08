@@ -70,6 +70,7 @@ export function cellDataOf(
     rowNames: [],
     hasPhasedOrHaploid: false,
     hasSecondaryAlt: false,
+    hasAltWithoutPhaseSet: false,
     hasUnphased: false,
     hasNoCall: false,
     colorRead: undefined,

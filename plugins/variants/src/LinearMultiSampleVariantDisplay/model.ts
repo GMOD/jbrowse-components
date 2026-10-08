@@ -544,6 +544,14 @@ export function stateModelFactory(
         },
         /**
          * #getter
+         * Whether phase-set colouring painted an alt cell whose call names no
+         * phase set, which keys that cell's plain hue.
+         */
+        get hasAltWithoutPhaseSet() {
+          return self.cellData?.hasAltWithoutPhaseSet ?? false
+        },
+        /**
+         * #getter
          * Whether the worker painted a black unphased cell (drives the
          * "Unphased" legend entry).
          */
@@ -2243,6 +2251,7 @@ export function stateModelFactory(
             ...getVariantColorScales({
               unit: self.unit,
               hasSecondaryAlt: self.hasSecondaryAlt,
+              hasAltWithoutPhaseSet: self.hasAltWithoutPhaseSet,
               hasUnphased: self.hasUnphased,
               hasNoCall: self.hasNoCall,
               paintedDomain: self.paintedDomain,

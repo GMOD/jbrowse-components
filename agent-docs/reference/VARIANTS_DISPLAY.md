@@ -100,7 +100,7 @@ Each channel carries one variable through one scale.
 
 `LinearMultiSampleVariantDisplay/variantLegend.ts` builds from the scale in use plus the absent-data
 categories present, and its swatches come from the same functions the cells do.
-`hasSecondaryAlt`, `hasUnphased` and `hasNoCall` are the cell loops' own record
+`hasSecondaryAlt`, `hasAltWithoutPhaseSet`, `hasUnphased` and `hasNoCall` are the cell loops' own record
 of what they emitted (`paintedCategories`, one bit per `CELL_*`), merged across
 regions in `paintedLegendFlags`; `paintedDomain` keys the values a variant with
 an alt cell carried (`paintedColorValues`). "The site is multiallelic" is not

@@ -38,6 +38,8 @@ export const CELL_ALT = 1
 export const CELL_ALT_SECONDARY = 2
 export const CELL_NO_CALL = 3
 export const CELL_UNPHASED = 4
+// an alt in its plain hue under phase-set colouring, its call naming no PS
+export const CELL_ALT_NO_PHASE_SET = 5
 
 // Classified from the ALLELE, never the color: a mode that blends its no-call
 // to a hex would read as alt-carrying (see `altDosageByte`).
@@ -202,9 +204,11 @@ function makePhaseSetStyler() {
       ? CELL_REF
       : !isAlt
         ? CELL_NO_CALL
-        : phaseSet === undefined && allele !== mostFrequentAlt
-          ? CELL_ALT_SECONDARY
-          : CELL_ALT
+        : phaseSet !== undefined
+          ? CELL_ALT
+          : allele === mostFrequentAlt
+            ? CELL_ALT_NO_PHASE_SET
+            : CELL_ALT_SECONDARY
     return scratch
   }
 }

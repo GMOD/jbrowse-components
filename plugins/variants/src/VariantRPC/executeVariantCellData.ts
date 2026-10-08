@@ -7,6 +7,7 @@ import { computeVariantCells } from '../LinearMultiSampleVariantDisplay/componen
 import { cellHueReaderOf } from '../shared/cellHue.ts'
 import { buildCanonicalRows } from '../shared/getSources.ts'
 import {
+  CELL_ALT_NO_PHASE_SET,
   CELL_ALT_SECONDARY,
   CELL_NO_CALL,
   CELL_UNPHASED,
@@ -34,6 +35,7 @@ function paintedLegendFlags(passes: { paintedCategories: number }[]) {
   }
   return {
     hasSecondaryAlt: (mask & (1 << CELL_ALT_SECONDARY)) !== 0,
+    hasAltWithoutPhaseSet: (mask & (1 << CELL_ALT_NO_PHASE_SET)) !== 0,
     hasUnphased: (mask & (1 << CELL_UNPHASED)) !== 0,
     hasNoCall: (mask & (1 << CELL_NO_CALL)) !== 0,
   }
@@ -93,6 +95,7 @@ interface CellDataBase {
   // a `color` hue repaints it; the key lists it under the genotype colours
   // alone.
   hasSecondaryAlt: boolean
+  hasAltWithoutPhaseSet: boolean
   hasUnphased: boolean
   hasNoCall: boolean
   // The `color` the worker read each variant's `colorValues` for, so a payload

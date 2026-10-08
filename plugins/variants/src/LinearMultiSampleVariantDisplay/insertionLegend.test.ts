@@ -32,6 +32,7 @@ function cellData(insertedBp: number): CellDataResult {
     rowNames: ['S0'],
     hasPhasedOrHaploid: false,
     hasSecondaryAlt: false,
+    hasAltWithoutPhaseSet: false,
     hasUnphased: false,
     hasNoCall: false,
     colorRead: undefined,

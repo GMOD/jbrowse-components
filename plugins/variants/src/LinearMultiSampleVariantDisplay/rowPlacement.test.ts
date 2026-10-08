@@ -30,6 +30,7 @@ function regularCellData(rowNames: string[]): CellDataResult {
     rowNames,
     hasPhasedOrHaploid: false,
     hasSecondaryAlt: false,
+    hasAltWithoutPhaseSet: false,
     hasUnphased: false,
     hasNoCall: false,
     colorRead: undefined,

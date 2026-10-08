@@ -8,7 +8,10 @@ import {
   decodeGenotype,
   internGenotype,
 } from '../../shared/genotypeCodec.ts'
-import { CELL_ALT_SECONDARY } from '../../shared/variantCellStyles.ts'
+import {
+  CELL_ALT_NO_PHASE_SET,
+  CELL_ALT_SECONDARY,
+} from '../../shared/variantCellStyles.ts'
 import {
   paintCellColors,
   paintFeatureColors,
@@ -1049,6 +1052,8 @@ test('phase-set coloring files a secondary alt with no phase set as one', () => 
   }
   expect(run('1|2:.') & (1 << CELL_ALT_SECONDARY)).not.toBe(0)
   expect(run('1|2:77') & (1 << CELL_ALT_SECONDARY)).toBe(0)
+  expect(run('1|0:.') & (1 << CELL_ALT_NO_PHASE_SET)).not.toBe(0)
+  expect(run('1|0:77') & (1 << CELL_ALT_NO_PHASE_SET)).toBe(0)
 })
 
 // `referenceDrawingMode: 'skip'` has to reach the phase-set path too, or the

@@ -27,6 +27,7 @@ function cellData(colorRead: CellHueRead): CellDataResult {
     rowNames: SAMPLES,
     hasPhasedOrHaploid: false,
     hasSecondaryAlt: false,
+    hasAltWithoutPhaseSet: false,
     hasUnphased: false,
     hasNoCall: false,
     colorRead,

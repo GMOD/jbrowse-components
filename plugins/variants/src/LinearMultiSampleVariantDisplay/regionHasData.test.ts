@@ -70,6 +70,7 @@ test('a fetch at genomic positions stays current across a zoom', async () => {
             rowNames: [],
             hasPhasedOrHaploid: false,
             hasSecondaryAlt: false,
+            hasAltWithoutPhaseSet: false,
             hasUnphased: false,
             hasNoCall: false,
             colorRead: undefined,
