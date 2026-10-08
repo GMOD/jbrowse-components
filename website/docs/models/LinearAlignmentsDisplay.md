@@ -348,6 +348,7 @@ Each section ends with the members a composed model contributes, linked to the p
 <!-- prettier-ignore -->
 | Member | Description |
 | --- | --- |
+| <span id="method-nonreferenceat">**nonReferenceAt**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>(column: VariantSortColumn) =&gt; { count: number; depth: number;…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>(column: VariantSortColumn) =&gt; { count: number; depth: number; } &#124; undefined</code></pre></dialog></span> | The loaded reads differing from the reference at a variant's sort column, over the reads spanning it. Undefined until a fetch reaching the column lands. |
 | <span id="method-colorpalettein">**colorPaletteIn**</span><br><code>(theme: JBrowsePalette) =&gt; ColorPalette</code> | The read palette over `theme`, with the category colors `color` sets. SVG export passes its own theme. |
 | <span id="method-legenditems">**legendItems**</span><br><code>(palette: ColorPalette) =&gt; LegendItem[]</code> |  |
 | <span id="method-arclegenditems">**arcLegendItems**</span><br><code>(palette: ColorPalette) =&gt; LegendItem[]</code> | Key for the paired-end arc / read-cloud colors, empty when no overlay is drawn. |

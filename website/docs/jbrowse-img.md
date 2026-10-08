@@ -1633,8 +1633,11 @@ insertion, a single breakend, an SNV or indel, or two ends closer together
 than --flank reaches. Where a single-panel record spells out its alleles,
 every alignments track with no sort: of its own is sorted at the variant:
 an SNV at its base, a deletion at its first deleted base, an insertion at
-the base after it. The module graph loads once for the whole callset, so this is
-much faster than a shell loop over "jb2export breakpoint".
+the base after it. A band marks the bases the record changes, and the
+manifest counts the reads differing from the reference there.
+
+The module graph loads once for the whole callset, so this is much faster
+than a shell loop over "jb2export breakpoint".
 
 Options:
   --fasta           Path to indexed FASTA file
@@ -1663,7 +1666,7 @@ Options:
   --format          Output format: png, svg, or pdf [default: png]
   --passOnly        Skip VCF records whose FILTER is neither PASS nor "." [default: false]
   --resume          Skip a record whose image is already in --outDir, so an interrupted run picks up where it stopped [default: false]
-  --manifest        Also write manifest.tsv to --outDir: one row per image with its file, loci, name, line in the input, EVENT, the reads joining its panels and status [default: false]
+  --manifest        Also write manifest.tsv to --outDir: one row per image with its file, loci, name, line in the input, EVENT, the reads joining its panels, the reads differing from the reference at its variant and status [default: false]
   --dryRun          Print the file and loci each record would render, and render nothing [default: false]
   --jobs            Processes to render in, each about a gigabyte. The default is half the cores, up to 4 and to what memory allows; 1 renders in this process
 
