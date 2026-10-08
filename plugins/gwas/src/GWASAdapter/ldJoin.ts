@@ -1,7 +1,3 @@
-import { SimpleFeature } from '@jbrowse/core/util'
-
-import { LD_FIELD, LD_ROLE_FIELD } from './ldFields.ts'
-
 import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { Feature, Region } from '@jbrowse/core/util'
 import type { LDRecordSource } from '@jbrowse/ld-core'
@@ -70,6 +66,7 @@ export async function ldToIndex(
   source: Pick<LDRecordSource, 'getLDRecords'>,
   region: Region,
   join: LdJoin,
+  opts?: BaseOptions,
 ): Promise<LdToIndex> {
   const { index, refName } = join
   const isIndex = (snp: string, chr: string, bp: number) =>
@@ -77,7 +74,7 @@ export async function ldToIndex(
       ? chr === refName && bp - 1 === index.start
       : isNamedSnp(snp) && snp === index.name
   const query = ldWindow(region, join)
-  const records = await source.getLDRecords(query)
+  const records = await source.getLDRecords(query, opts)
   const byName = new Map<string, number>()
   const byStart = new Map<number, number>()
   let found = false
@@ -107,24 +104,20 @@ export async function ldToIndex(
 }
 
 /**
- * The feature with its r² to the index and its part in the join, or the
- * feature itself where it has neither. The index SNP joins whether or not the
- * LD file names it.
+ * A feature's r² to the index and its part in the join, or undefined where it
+ * has neither. The index SNP joins whether or not the LD file names it.
  */
-export function joinLd(feature: Feature, ld: LdToIndex, { index }: LdJoin) {
+export function ldOf(
+  feature: Feature,
+  ld: LdToIndex,
+  { index }: LdJoin,
+): { r2: number; role: 'index' | 'partner' } | undefined {
   const name: unknown = feature.get('name')
   const start = feature.get('start')
   const named = isNamedSnp(name)
-  const isIndex =
-    'start' in index ? start === index.start : named && name === index.name
-  const r2 = isIndex
-    ? 1
-    : ((named ? ld.byName.get(name) : undefined) ?? ld.byStart.get(start))
-  return r2 === undefined
-    ? feature
-    : new SimpleFeature({
-        ...feature.toJSON(),
-        [LD_FIELD]: r2,
-        [LD_ROLE_FIELD]: isIndex ? 'index' : 'partner',
-      })
+  if ('start' in index ? start === index.start : named && name === index.name) {
+    return { r2: 1, role: 'index' }
+  }
+  const r2 = (named ? ld.byName.get(name) : undefined) ?? ld.byStart.get(start)
+  return r2 === undefined ? undefined : { r2, role: 'partner' }
 }

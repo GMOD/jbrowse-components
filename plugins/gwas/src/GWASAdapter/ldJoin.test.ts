@@ -1,6 +1,6 @@
 import SimpleFeature from '@jbrowse/core/util/simpleFeature'
 
-import { LD_WINDOW_BP, joinLd, ldToIndex } from './ldJoin.ts'
+import { LD_WINDOW_BP, ldOf, ldToIndex } from './ldJoin.ts'
 
 import type { LdJoin } from './ldJoin.ts'
 import type { NoAssemblyRegion } from '@jbrowse/core/util/types'
@@ -59,8 +59,8 @@ async function joined(
 ) {
   const ld = await ldToIndex(source(join.refName, records), region, join)
   return features.map(f => {
-    const out = joinLd(f, ld, join)
-    return [out.get('r2'), out.get('ld_role')]
+    const out = ldOf(f, ld, join)
+    return [out?.r2, out?.role]
   })
 }
 
@@ -208,4 +208,16 @@ describe('a region panned away from a placed index', () => {
       { refName: '2', start: panned.start, end: panned.end },
     ])
   })
+})
+
+test('the LD read carries the fetch options, so an abort reaches it', async () => {
+  const getLDRecords = jest.fn().mockResolvedValue([])
+  const opts = { signal: new AbortController().signal }
+  await ldToIndex(
+    { getLDRecords },
+    region,
+    { index: { start: 99 }, refName: 'chr1' },
+    opts,
+  )
+  expect(getLDRecords).toHaveBeenCalledWith(expect.anything(), opts)
 })

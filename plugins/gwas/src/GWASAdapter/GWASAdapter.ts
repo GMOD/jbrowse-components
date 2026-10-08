@@ -2,15 +2,15 @@ import { readConfObject } from '@jbrowse/core/configuration'
 import { SimpleFeature, updateStatus } from '@jbrowse/core/util'
 import { isLDRecordSource } from '@jbrowse/ld-core'
 import { BedTabixAdapter } from '@jbrowse/plugin-bed'
-import { from, map, mergeMap, tap } from 'rxjs'
+import { defer, forkJoin, map, mergeMap, toArray } from 'rxjs'
 
-import { LD_ROLE_FIELD } from './ldFields.ts'
-import { INDEX_SNP_MISSING, joinLd, ldToIndex } from './ldJoin.ts'
+import { LD_FIELD, LD_ROLE_FIELD } from './ldFields.ts'
+import { INDEX_SNP_MISSING, ldOf, ldToIndex } from './ldJoin.ts'
 import { getScoreTransform } from './scoreTransforms.ts'
 
 import type { GWASAdapterConfig } from './configSchema.ts'
 import type { GWASFetchOptions, LdJoin } from './ldJoin.ts'
-import type { Region } from '@jbrowse/core/util'
+import type { Feature, Region } from '@jbrowse/core/util'
 
 export default class GWASAdapter extends BedTabixAdapter {
   declare config: GWASAdapterConfig
@@ -42,50 +42,44 @@ export default class GWASAdapter extends BedTabixAdapter {
       )
     }
     return updateStatus('Downloading LD data', opts.statusCallback, () =>
-      ldToIndex(dataAdapter, region, join),
+      ldToIndex(dataAdapter, region, join, opts),
     )
   }
 
-  getFeatures(region: Region, opts: GWASFetchOptions = {}) {
+  private rewritten(f: Feature, ld?: ReturnType<typeof ldOf>) {
     const transform = this.scoreTransform
+    const score = f.get('score')
+    const rescored = transform !== undefined && score !== undefined
+    return rescored || ld
+      ? new SimpleFeature({
+          ...f.toJSON(),
+          ...(rescored ? { score: transform(score) } : {}),
+          ...(ld ? { [LD_FIELD]: ld.r2, [LD_ROLE_FIELD]: ld.role } : {}),
+        })
+      : f
+  }
+
+  getFeatures(region: Region, opts: GWASFetchOptions = {}) {
     const features = super.getFeatures(region, opts)
-    const scored = transform
-      ? features.pipe(
-          map(f => {
-            const score = f.get('score')
-            return score === undefined
-              ? f
-              : new SimpleFeature({ ...f.toJSON(), score: transform(score) })
-          }),
-        )
-      : features
     const { ld } = opts
     if (!ld) {
-      return scored
+      return this.scoreTransform
+        ? features.pipe(map(f => this.rewritten(f)))
+        : features
     }
-    let indexHeld = false
-    let partners = 0
-    return from(this.ldToIndex(region, ld, opts)).pipe(
-      mergeMap(lookup =>
-        lookup
-          ? scored.pipe(
-              map(f => {
-                const joined = joinLd(f, lookup, ld)
-                const role = joined.get(LD_ROLE_FIELD)
-                indexHeld ||= role === 'index'
-                partners += role === 'partner' ? 1 : 0
-                return joined
-              }),
-              tap({
-                complete: () => {
-                  if (indexHeld && partners === 0) {
-                    opts.notices?.push(INDEX_SNP_MISSING)
-                  }
-                },
-              }),
-            )
-          : scored,
-      ),
+    return forkJoin([
+      defer(() => this.ldToIndex(region, ld, opts)),
+      features.pipe(toArray()),
+    ]).pipe(
+      mergeMap(([lookup, loaded]) => {
+        const found = loaded.map(f => lookup && ldOf(f, lookup, ld))
+        const indexHeld = found.some(l => l?.role === 'index')
+        const partnered = found.some(l => l?.role === 'partner')
+        if (indexHeld && !partnered) {
+          opts.notices?.push(INDEX_SNP_MISSING)
+        }
+        return loaded.map((f, i) => this.rewritten(f, found[i]))
+      }),
     )
   }
 }
