@@ -45,27 +45,27 @@
 <!-- keep -->
 <g id="node7" class="node">
 <title>keep</title>
-<polygon fill="none" stroke="black" points="173.83,-265.25 103.83,-265.25 103.83,-229.25 173.83,-229.25 173.83,-265.25"/>
-<text xml:space="preserve" text-anchor="middle" x="138.83" y="-244.12" font-family="monospace" font-size="10.00">the field</text>
+<polygon fill="none" stroke="black" points="174.83,-265.25 104.83,-265.25 104.83,-229.25 174.83,-229.25 174.83,-265.25"/>
+<text xml:space="preserve" text-anchor="middle" x="139.83" y="-244.12" font-family="monospace" font-size="10.00">the field</text>
 </g>
 <!-- field&#45;&gt;keep -->
 <g id="edge5" class="edge">
 <title>field&#45;&gt;keep</title>
-<path fill="none" stroke="black" d="M121.94,-343.88C115.99,-336.54 110.51,-328.12 107.33,-319.25 101.94,-304.19 101.6,-298.19 107.33,-283.25 108.45,-280.34 109.93,-277.53 111.64,-274.84"/>
-<polygon fill="black" stroke="black" points="114.39,-277 117.69,-266.94 108.83,-272.75 114.39,-277"/>
+<path fill="none" stroke="black" d="M121.94,-343.88C115.99,-336.54 110.51,-328.12 107.33,-319.25 101.94,-304.19 101.48,-298.14 107.33,-283.25 108.53,-280.21 110.12,-277.28 111.97,-274.49"/>
+<polygon fill="black" stroke="black" points="114.57,-276.84 118.04,-266.82 109.09,-272.49 114.57,-276.84"/>
 <text xml:space="preserve" text-anchor="middle" x="121.58" y="-296.57" font-family="Times,serif" font-size="14.00"> yes</text>
 </g>
 <!-- mismatch -->
 <g id="node8" class="node">
 <title>mismatch</title>
-<polygon fill="none" stroke="black" points="272.83,-265.25 208.83,-265.25 208.83,-229.25 272.83,-229.25 272.83,-265.25"/>
-<text xml:space="preserve" text-anchor="middle" x="240.83" y="-244.12" font-family="monospace" font-size="10.00">mismatch</text>
+<polygon fill="none" stroke="black" points="273.83,-265.25 209.83,-265.25 209.83,-229.25 273.83,-229.25 273.83,-265.25"/>
+<text xml:space="preserve" text-anchor="middle" x="241.83" y="-244.12" font-family="monospace" font-size="10.00">mismatch</text>
 </g>
 <!-- field&#45;&gt;mismatch -->
 <g id="edge6" class="edge">
 <title>field&#45;&gt;mismatch</title>
-<path fill="none" stroke="black" d="M143.13,-338.22C141.69,-320.5 143.06,-298.87 154.33,-283.25 159.96,-275.45 178.96,-267.36 197.73,-260.92"/>
-<polygon fill="black" stroke="black" points="198.8,-264.26 207.22,-257.81 196.62,-257.61 198.8,-264.26"/>
+<path fill="none" stroke="black" d="M143.14,-338.61C141.64,-320.81 142.95,-298.97 154.33,-283.25 160.1,-275.29 179.71,-267.1 198.91,-260.64"/>
+<polygon fill="black" stroke="black" points="199.86,-264.01 208.31,-257.61 197.72,-257.35 199.86,-264.01"/>
 <text xml:space="preserve" text-anchor="middle" x="242.08" y="-305.2" font-family="Times,serif" font-size="14.00"> no: codon off base level,</text>
 <text xml:space="preserve" text-anchor="middle" x="242.08" y="-287.95" font-family="Times,serif" font-size="14.00"> identity at base level</text>
 </g>
@@ -124,27 +124,27 @@
 <!-- rowsColor -->
 <g id="node9" class="node">
 <title>rowsColor</title>
-<polygon fill="none" stroke="black" stroke-width="2" points="393.83,-192.25 245.83,-192.25 245.83,-156.25 393.83,-156.25 393.83,-192.25"/>
-<text xml:space="preserve" text-anchor="middle" x="319.83" y="-177.5" font-family="monospace" font-size="10.00">rowsColor</text>
-<text xml:space="preserve" text-anchor="middle" x="319.83" y="-164.75" font-family="monospace" font-size="10.00">what colors the cells</text>
+<polygon fill="none" stroke="black" stroke-width="2" points="392.83,-192.25 250.83,-192.25 250.83,-156.25 392.83,-156.25 392.83,-192.25"/>
+<text xml:space="preserve" text-anchor="middle" x="321.83" y="-177.5" font-family="monospace" font-size="10.00">rowsColor</text>
+<text xml:space="preserve" text-anchor="middle" x="321.83" y="-164.75" font-family="monospace" font-size="10.00">what colors the cells</text>
 </g>
 <!-- fallback&#45;&gt;rowsColor -->
 <g id="edge7" class="edge">
 <title>fallback&#45;&gt;rowsColor</title>
-<path fill="none" stroke="black" d="M379.24,-282.87C367.76,-262.07 348.39,-226.98 334.9,-202.55"/>
-<polygon fill="black" stroke="black" points="337.97,-200.87 330.08,-193.81 331.85,-204.25 337.97,-200.87"/>
+<path fill="none" stroke="black" d="M379.52,-282.87C368.37,-262.07 349.56,-226.98 336.47,-202.55"/>
+<polygon fill="black" stroke="black" points="339.59,-200.98 331.78,-193.82 333.42,-204.28 339.59,-200.98"/>
 </g>
 <!-- keep&#45;&gt;rowsColor -->
 <g id="edge8" class="edge">
 <title>keep&#45;&gt;rowsColor</title>
-<path fill="none" stroke="black" d="M174.16,-232.39C199.91,-222.29 235.29,-208.41 264.74,-196.86"/>
-<polygon fill="black" stroke="black" points="265.85,-200.19 273.88,-193.28 263.29,-193.67 265.85,-200.19"/>
+<path fill="none" stroke="black" d="M174.92,-232.56C200.87,-222.44 236.71,-208.46 266.49,-196.84"/>
+<polygon fill="black" stroke="black" points="267.71,-200.12 275.75,-193.23 265.17,-193.6 267.71,-200.12"/>
 </g>
 <!-- mismatch&#45;&gt;rowsColor -->
 <g id="edge9" class="edge">
 <title>mismatch&#45;&gt;rowsColor</title>
-<path fill="none" stroke="black" d="M259.96,-229.06C269.59,-220.41 281.45,-209.75 292.06,-200.21"/>
-<polygon fill="black" stroke="black" points="294.39,-202.82 299.49,-193.54 289.71,-197.62 294.39,-202.82"/>
+<path fill="none" stroke="black" d="M261.2,-229.06C271.05,-220.32 283.2,-209.53 294.03,-199.92"/>
+<polygon fill="black" stroke="black" points="296.08,-202.79 301.24,-193.53 291.43,-197.55 296.08,-202.79"/>
 </g>
 <!-- active -->
 <g id="node11" class="node">
@@ -156,8 +156,8 @@
 <!-- rowsColor&#45;&gt;active -->
 <g id="edge12" class="edge">
 <title>rowsColor&#45;&gt;active</title>
-<path fill="none" stroke="black" d="M337.99,-156.06C347.13,-147.41 358.39,-136.75 368.47,-127.21"/>
-<polygon fill="black" stroke="black" points="370.63,-129.98 375.49,-120.57 365.82,-124.9 370.63,-129.98"/>
+<path fill="none" stroke="black" d="M339.5,-156.06C348.32,-147.49 359.14,-136.96 368.88,-127.49"/>
+<polygon fill="black" stroke="black" points="371.26,-130.06 375.99,-120.58 366.38,-125.04 371.26,-130.06"/>
 </g>
 <!-- rowsY&#45;&gt;active -->
 <g id="edge13" class="edge">
@@ -194,5 +194,5 @@
 <polygon fill="black" stroke="black" points="457.04,-56.36 462.79,-47.46 452.74,-50.83 457.04,-56.36"/>
 </g>
 </g>
-<!-- diagram-source-sha256 9bc33fe593184a2b555c3e4fa1bd10dd6217e4053d752c3ff975d4587e83b90a -->
+<!-- diagram-source-sha256 e1bac4796a7999ed21af36faba7b3e1afa71229622e17747645e46982fb64bcf -->
 </svg>

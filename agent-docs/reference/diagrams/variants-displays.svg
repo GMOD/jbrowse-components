@@ -32,7 +32,7 @@
 <!-- single -->
 <g id="node4" class="node">
 <title>single</title>
-<polygon fill="none" stroke="black" points="680.5,-76.25 484.5,-76.25 484.5,-30 680.5,-30 680.5,-76.25"/>
+<polygon fill="none" stroke="black" points="677.5,-76.25 487.5,-76.25 487.5,-30 677.5,-30 677.5,-76.25"/>
 <text xml:space="preserve" text-anchor="middle" x="582.5" y="-62.75" font-family="monospace" font-size="10.00">LinearVariantDisplay</text>
 <text xml:space="preserve" text-anchor="middle" x="582.5" y="-50" font-family="monospace" font-size="10.00">row = record</text>
 <text xml:space="preserve" text-anchor="middle" x="582.5" y="-37.25" font-family="monospace" font-size="10.00">color = the `color` jexl slot</text>
@@ -40,8 +40,8 @@
 <!-- genotypes&#45;&gt;single -->
 <g id="edge2" class="edge">
 <title>genotypes&#45;&gt;single</title>
-<path fill="none" stroke="black" d="M347.39,-76.26C383.37,-72.7 430.37,-68.06 472.81,-63.86"/>
-<polygon fill="black" stroke="black" points="472.95,-67.37 482.56,-62.9 472.26,-60.4 472.95,-67.37"/>
+<path fill="none" stroke="black" d="M347.39,-76.26C384.22,-72.62 432.59,-67.84 475.79,-63.57"/>
+<polygon fill="black" stroke="black" points="476.12,-67.05 485.73,-62.59 475.44,-60.09 476.12,-67.05"/>
 <text xml:space="preserve" text-anchor="middle" x="426.25" y="-73.31" font-family="Times,serif" font-size="14.00"> no</text>
 </g>
 <!-- matrix -->
@@ -106,5 +106,5 @@
 <text xml:space="preserve" text-anchor="middle" x="117" y="-40.01" font-family="Times,serif" font-size="14.00"> pairwise LD</text>
 </g>
 </g>
-<!-- diagram-source-sha256 cde8e380fc2a7335dc17ab5925d3b459940ab9692240be97f6d1269a7e313f03 -->
+<!-- diagram-source-sha256 7a13426704ed651e87b33b8c54f98a92026e2dac61f582ff7a47dfa69c5e8b2f -->
 </svg>

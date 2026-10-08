@@ -128,7 +128,7 @@
 <!-- category -->
 <g id="node10" class="node">
 <title>category</title>
-<polygon fill="none" stroke="black" stroke-width="2" points="348.34,-265.25 164.34,-265.25 164.34,-229.25 348.34,-229.25 348.34,-265.25"/>
+<polygon fill="none" stroke="black" stroke-width="2" points="345.34,-265.25 167.34,-265.25 167.34,-229.25 345.34,-229.25 345.34,-265.25"/>
 <text xml:space="preserve" text-anchor="middle" x="256.34" y="-244.12" font-family="monospace" font-size="10.00">a CellCategory, not a color</text>
 </g>
 <!-- skip&#45;&gt;category -->
@@ -208,5 +208,5 @@
 <polygon fill="black" stroke="black" points="386.84,-47.95 383.34,-37.95 379.84,-47.95 386.84,-47.95"/>
 </g>
 </g>
-<!-- diagram-source-sha256 ef6209991fb1c6b5a48226293e1bf95e8f36c033a5b4831a6bfb41e0650a725a -->
+<!-- diagram-source-sha256 148ad69c11e8ccfd49186a7cef28accf29b632a6ebeb624cd29e4f5cbedcfc33 -->
 </svg>
