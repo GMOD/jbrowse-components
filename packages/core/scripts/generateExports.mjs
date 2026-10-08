@@ -38,6 +38,10 @@ const preservedExports = [
   // both stay published whichever subpath importers come and go.
   '@jbrowse/core/ReExports/registry',
   '@jbrowse/core/ReExports/modules',
+  // `scoresToStats` is what a plugin calls now that the adapter's
+  // `getRegionQuantitativeStats` is gone (ADR-124), and BigWigAdapter was the
+  // subpath's last in-repo importer.
+  '@jbrowse/core/util/stats',
   // jest.mock target for stable adapter ids in tests
   '@jbrowse/core/data_adapters/BaseAdapter/getAdapterId',
   // util/index.ts <-> offscreenCanvasPonyfill.ts re-export each other; only
