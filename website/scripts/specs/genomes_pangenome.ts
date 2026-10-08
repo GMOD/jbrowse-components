@@ -129,7 +129,7 @@ export const genomesPangenomeSpecs: ScreenshotSpec[] = [
     url: HPRC_MHC_ANSWER,
     readySelector: MHC_GRAPH_LINK,
     viewportWidth: 1100,
-    viewportHeight: 996,
+    viewportHeight: 1100,
     liveLabel: 'Open the HPRC page',
     diffThreshold: 0.02,
     annotations: [
