@@ -27,6 +27,7 @@ import type {
   LinearAlignmentsDisplayModel,
   ReadCategoryKey,
 } from '@jbrowse/plugin-alignments'
+import type { VariantSortColumn } from '@jbrowse/plugin-alignments/variantSortColumn'
 import type { LinearBasicDisplayModel } from '@jbrowse/plugin-canvas'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 import type {
@@ -786,6 +787,7 @@ export async function applyDisplayOpts(
   trackId: string,
   category: Category,
   opts: string[],
+  sortAt?: VariantSortColumn,
 ) {
   const { snap, sort, displayType } = buildDisplaySnapshot(category, opts)
 
@@ -807,6 +809,15 @@ export async function applyDisplayOpts(
       console.warn(
         `Warning: sort:${sort.type} on "${trackId}" ignored — the view has no center position to sort at (pass --loc)`,
       )
+    }
+  } else if (sortAt && category === 'alignments') {
+    const [region] = view.displayedRegions
+    if (region) {
+      snap.sortedBy = {
+        ...sortAt,
+        refName: region.refName,
+        assemblyName: region.assemblyName,
+      }
     }
   }
 

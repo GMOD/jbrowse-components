@@ -148,12 +148,60 @@ describe('parseVcfJunctions', () => {
     ])
   })
 
-  it('reports a record with no SVTYPE', () => {
+  it('draws a small variant over its REF, sorted at the variant', () => {
     const { records, skipped } = parseVcfJunctions(
-      vcf('chr3\t1000\tsnv\tA\tG\t.\tPASS\tDP=30'),
+      vcf(
+        'chr3\t1000\tsnv\tA\tG\t.\tPASS\tDP=30',
+        'chr3\t2000\t.\tACGT\tA\t.\tPASS\tDP=30',
+        'chr3\t3000\t.\tA\tACC,<*>\t.\tPASS\tDP=30',
+      ),
+    )
+    expect(skipped).toEqual([])
+    expect(records).toEqual([
+      {
+        loci: [{ refName: 'chr3', start: 999, end: 1000 }],
+        line: 5,
+        name: 'snv',
+        sort: { type: 'basePair', pos: 999 },
+      },
+      {
+        loci: [{ refName: 'chr3', start: 1999, end: 2003 }],
+        line: 6,
+        sort: { type: 'basePair', pos: 2000 },
+      },
+      {
+        loci: [{ refName: 'chr3', start: 2999, end: 3000 }],
+        line: 7,
+        sort: { type: 'insertion', pos: 3000 },
+      },
+    ])
+  })
+
+  it('reports a record with no SVTYPE and no bases in its ALT', () => {
+    const { records, skipped } = parseVcfJunctions(
+      vcf(
+        'chr3\t1000\t.\tA\t<NON_REF>\t.\tPASS\tDP=30',
+        'chr3\t2000\t.\tA\t.\t.\tPASS\tDP=30',
+      ),
     )
     expect(records).toEqual([])
+    expect(skipped).toHaveLength(2)
     expect(skipped[0]).toMatch(/no SVTYPE/)
+  })
+
+  it('keeps an SV spelling out its alleles on its two ends', () => {
+    const { records } = parseVcfJunctions(
+      vcf(
+        `chr3\t1000\td\tA${'C'.repeat(900)}\tA\t.\tPASS\tSVTYPE=DEL;END=1900`,
+      ),
+    )
+    expect(records[0]).toMatchObject({
+      loci: [
+        { refName: 'chr3', start: 999, end: 1000 },
+        { refName: 'chr3', start: 1899, end: 1900 },
+      ],
+      sort: { type: 'basePair', pos: 1000 },
+    })
   })
 
   it('files a junction under the caller’s own ID', () => {

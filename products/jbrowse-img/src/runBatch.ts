@@ -381,7 +381,7 @@ async function renderRows(
               argv: [...argv, ...recordArgv(rec, flank)],
               loc: undefined,
             }
-          : { ...shared, mode: 'linear', argv, loc: locs[0] },
+          : { ...shared, mode: 'linear', argv, loc: locs[0], sortAt: rec.sort },
         configObject && structuredClone(configObject),
       )
       writeRendered(rendered.svg, out, width)

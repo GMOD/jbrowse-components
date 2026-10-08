@@ -67,6 +67,42 @@ test('filterBy is kept out of the snapshot showTrack replaces slots from', async
   expect(calls[0]).toEqual({ height: 400 })
 })
 
+describe("batch's per-record sort", () => {
+  const sortAt = { type: 'insertion', pos: 3000 } as const
+  const center = { refName: 'chr3', assemblyName: 'hg38', offset: 2960 }
+
+  function sortableView() {
+    const { view, calls } = fakeView()
+    Object.assign(view, {
+      displayedRegions: [
+        { refName: 'chr3', assemblyName: 'hg38', start: 2959, end: 3040 },
+      ],
+      centerLineInfo: center,
+    })
+    return { view, calls }
+  }
+
+  it('sorts an alignments track at the variant, in the view’s refName', async () => {
+    const { view, calls } = sortableView()
+    await applyDisplayOpts(view, 't', 'alignments', [], sortAt)
+    expect(calls[0]).toEqual({
+      sortedBy: { ...sortAt, refName: 'chr3', assemblyName: 'hg38' },
+    })
+  })
+
+  it('yields to a sort the track states', async () => {
+    const { view, calls } = sortableView()
+    await applyDisplayOpts(view, 't', 'alignments', ['sort:strand'], sortAt)
+    expect(calls[0]).toMatchObject({ sortedBy: { type: 'strand' } })
+  })
+
+  it('leaves a track of another kind alone', async () => {
+    const { view, calls } = sortableView()
+    await applyDisplayOpts(view, 't', 'variant', [], sortAt)
+    expect(calls[0]).toEqual({})
+  })
+})
+
 test('a display with no filterBy says so rather than dropping the option', async () => {
   const warn = jest.spyOn(console, 'warn').mockImplementation(() => undefined)
   const view = {

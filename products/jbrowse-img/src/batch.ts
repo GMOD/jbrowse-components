@@ -1,4 +1,5 @@
 import type { Entry } from './parseArgv.ts'
+import type { VariantSortColumn } from '@jbrowse/plugin-alignments/variantSortColumn'
 
 // Batch rendering: one image per record of a callset, so reviewing it is a
 // directory of pictures rather than N trips through the browser. BEDPE is the
@@ -24,6 +25,8 @@ export interface BatchRecord {
   line?: number
   /** VCF's `EVENT`: the rearrangement the caller filed the record under */
   event?: string
+  /** the pileup column a record spelling out its alleles is sorted at */
+  sort?: VariantSortColumn
 }
 
 function parseLocus(refName?: string, start?: string, end?: string) {

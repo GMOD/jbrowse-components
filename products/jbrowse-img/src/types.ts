@@ -1,6 +1,7 @@
 import type { ViewMode } from './modes.ts'
 import type { themeModes, themeNames } from './options.ts'
 import type { Entry } from './parseArgv.ts'
+import type { VariantSortColumn } from '@jbrowse/plugin-alignments/variantSortColumn'
 import type { CigarMode } from '@jbrowse/plugin-linear-comparative-view'
 import type { TrackLabelMode } from '@jbrowse/plugin-linear-genome-view'
 
@@ -30,6 +31,8 @@ export type Covers<Upstream extends string, List extends readonly string[]> = [
 export interface Opts {
   noRasterize?: boolean
   loc?: string
+  // batch's per-record pileup sort, for an alignments track stating none
+  sortAt?: VariantSortColumn
   width?: number
   session?: string
   assembly?: string

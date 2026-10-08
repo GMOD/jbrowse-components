@@ -1,8 +1,10 @@
 import { parseBreakend } from '@gmod/vcf'
+import { variantSortColumn } from '@jbrowse/plugin-alignments/variantSortColumn'
 
 import type { BatchRecord, Locus } from './batch.ts'
+import type { VariantSortColumn } from '@jbrowse/plugin-alignments/variantSortColumn'
 
-// A VCF's SV records, for `batch` to render. The ALT bracket grammar is
+// A VCF's records, for `batch` to render. The ALT bracket grammar is
 // `@gmod/vcf`'s `parseBreakend`: a regex over the bracket drops the 28 of 66
 // COLO829 breakends that carry inserted sequence. What no library owns is the
 // two file-level facts below: which spelling of a contig the file itself uses,
@@ -32,6 +34,9 @@ type Endpoint = [string, number]
 
 interface VcfRecord {
   own: Endpoint
+  /** REF's length: the reference bases the record's own locus covers */
+  span: number
+  sort?: VariantSortColumn
   mate?: Endpoint
   id?: string
   event?: string
@@ -101,11 +106,12 @@ function breakendMate(alt: string): Endpoint | undefined {
 }
 
 /**
- * Every SV record a VCF holds, with the loci it is drawn on: both ends of a
- * junction (a breakend's mate, or INFO END on the contig CHR2 names), and the
- * record's own position alone where it names no other end — an insertion, a
- * single breakend. `text` is the decompressed VCF. Rows left out are reported
- * with a reason.
+ * Every record a VCF holds that `batch` can draw, with the loci it is drawn on:
+ * both ends of a junction (a breakend's mate, or INFO END on the contig CHR2
+ * names), and the record's own position alone where it names no other end — an
+ * insertion, a single breakend, an SNV or indel. A record with no SVTYPE is
+ * drawn where its ALT spells out bases, which gives the pileup a column to sort
+ * at. `text` is the decompressed VCF. Rows left out are reported with a reason.
  */
 export function parseVcfJunctions(
   text: string,
@@ -137,7 +143,7 @@ export function parseVcfJunctions(
       skipped.push(`line ${lineNo}: fewer than 8 columns`)
       continue
     }
-    const [chrom, posStr, id, , alt, , filter, info = ''] = f
+    const [chrom, posStr, id, ref = '', alt, , filter, info = ''] = f
     const pos = Number(posStr)
     if (!chrom || !Number.isFinite(pos)) {
       skipped.push(`line ${lineNo}: no usable CHROM/POS`)
@@ -152,8 +158,9 @@ export function parseVcfJunctions(
       continue
     }
     const svtype = infoField(info, 'SVTYPE')
-    if (!svtype) {
-      skipped.push(`line ${lineNo}: no SVTYPE`)
+    const sort = variantSortColumn(pos - 1, ref, alt?.split(',') ?? [])
+    if (!svtype && !sort) {
+      skipped.push(`line ${lineNo}: no SVTYPE, and no ALT spelling out bases`)
       continue
     }
     const end = infoField(info, 'END')
@@ -170,7 +177,9 @@ export function parseVcfJunctions(
     const event = infoField(info, 'EVENT')
     found.push({
       own: [chrom, pos],
+      span: svtype ? 1 : ref.length,
       line: lineNo,
+      ...(sort ? { sort } : {}),
       ...(mate && !mateIsOwn ? { mate } : {}),
       ...(id && id !== '.' ? { id } : {}),
       ...(event ? { event } : {}),
@@ -197,9 +206,12 @@ export function parseVcfJunctions(
       ...(r.mate ? { mate: canonical(r.mate) } : {}),
     })),
     tolerance,
-  ).map(({ own, mate, id, event, line }) => ({
-    loci: mate ? [locus(own), locus(mate)] : [locus(own)],
+  ).map(({ own, span, sort, mate, id, event, line }) => ({
+    loci: mate
+      ? [locus(own), locus(mate)]
+      : [{ ...locus(own), end: own[1] - 1 + span }],
     line,
+    ...(sort ? { sort } : {}),
     ...(id ? { name: id } : {}),
     ...(event ? { event } : {}),
   }))

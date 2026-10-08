@@ -500,6 +500,7 @@ const renderLinear: ModeRenderer = async ctx => {
     showGridlines,
     trackLabels,
     refseq,
+    sortAt,
   } = opts
 
   const { session } = model
@@ -569,6 +570,7 @@ const renderLinear: ModeRenderer = async ctx => {
       trackId,
       trackCategory(model.session, trackId, opts),
       opts,
+      sortAt,
     )
   }
 
