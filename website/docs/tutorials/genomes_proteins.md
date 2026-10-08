@@ -11,8 +11,11 @@ tutorial_category: genomes.jbrowse.org
 genomes.jbrowse.org loads the protein3d and msaview plugins, so you can open any
 gene in a linear genome view as a 3D structure or as a cross-species protein
 MSA. Both views stay linked to the genome, so hovering a variant highlights the
-residue it lands on. We open _TP53_ as an AlphaFold structure and _NLRP1_ as an
-MSA, then read the MSA's domains back on the genome.
+residue it lands on. We start from the
+[protein browser](https://genomes.jbrowse.org/protein-browser/), which builds
+that session from a gene symbol, then make the same views by hand for _TP53_ as
+an AlphaFold structure and _NLRP1_ as an MSA, and read the MSA's domains back on
+the genome.
 
 ## Where the data comes from
 
@@ -36,6 +39,21 @@ structure or an alignment.
   https://www.ncbi.nlm.nih.gov/Structure/cdd/cdd.shtml
 
 </details>
+
+## Opening a gene in the protein browser
+
+Open the [protein browser](https://genomes.jbrowse.org/protein-browser/) and
+search for `TP53`, or arrive with the gene resolved at
+[?gene=TP53](https://genomes.jbrowse.org/protein-browser/?gene=TP53). It builds
+one session with three linked views: the coding exons back to back in a linear
+genome view, the AlphaFold structure, and a cross-species protein alignment.
+Hover a residue in any of them and its codon lights up in the other two.
+
+**Open in JBrowse** hands the session to the full app, where every view takes
+the menus described below.
+
+The rest of the page makes these views one at a time from the hosted hg38 genome
+view, which is the route for a gene or track the protein browser does not cover.
 
 ## Launching a structure
 
@@ -166,41 +184,6 @@ in the linear view you launched from, then narrow it to one record:
 
 <Figure src="/img/genomes_msa/genomic_domains.png" caption="NLRP1 with NCBI RefSeq above UniProt - Domains, filtered to the gene's reviewed UniProt entry. Pyrin sits at the right-hand end, where the N terminus is, and NACHT, FIIND and CARD run leftward from it." />
 
-## Sharing a connected view as a URL
-
-A connected view can also be built as a session-spec URL, for demo links and
-embedded apps. This session opens the AlphaFold structure of UniProt P04637
-beside a genome view of the TP53 locus with NCBI RefSeq and ClinVar loaded.
-
-```json live config=test_data/protein3d_config.json
-{
-  "views": [
-    {
-      "type": "ProteinView",
-      "uniprotId": "P04637",
-      "transcriptId": "NM_000546.6",
-      "sideBySide": true,
-      "connectedView": {
-        "assembly": "hg38",
-        "loc": "chr17:7,671,000-7,684,500",
-        "tracks": ["hg38-ncbiRefSeq", "clinvar_ncbi_hg38"]
-      }
-    }
-  ]
-}
-```
-
-The short form takes a UniProt accession plus a transcript ID, from which the
-plugin derives the AlphaFold structure, finds the transcript in the
-`connectedView` tracks at `loc`, and translates its CDS. The explicit form takes
-a structure `url`, feature and protein sequence, for a transcript no loaded
-track serves. protein3d's
-[launching guide](https://github.com/GMOD/jbrowse-plugin-protein3d/blob/main/docs/launching.md#a-structure-connected-to-the-genome)
-walks through both.
-
-A `ProteinView` with only a structure `url` and no `connectedView` opens as a
-standalone structure, with no genome to exchange highlights with.
-
 ## Adding the plugins to your own instance
 
 - Open the [plugin store](/docs/user_guides/plugin_store) (Tools menu) and
@@ -213,7 +196,7 @@ right-click menu in JBrowse Web and Desktop. The single-view embedded components
 host only a linear genome view, so neither view type appears there.
 [](/docs/jbrowser)'s `JBrowseRApp` takes both runtime plugins and a `views`
 list, while [anywidget](/docs/jbrowse_anywidget)'s `JBrowseApp` has no plugin
-loading yet.
+loading yet.[^session]
 
 The approach is described in
 [_Proteins in the Genome Browser_](https://doi.org/10.1016/j.jmb.2026.169645)
@@ -247,3 +230,14 @@ The approach is described in
     builds a linked genome view, structure and MSA from a `gene` and a `taxon`
     in its URL, such as
     [?gene=TP53&taxon=9606](https://gmod.org/JBrowseMSA/gene-explorer/?gene=TP53&taxon=9606).
+
+[^session]:
+    A `ProteinView` entry in a session-spec URL opens a connected view for demo
+    links and embedded apps. The short form takes `uniprotId`, `transcriptId`
+    and a `connectedView` with the `assembly`, `loc` and `tracks` to look the
+    transcript up in; the plugin derives the AlphaFold structure and translates
+    the transcript's CDS. The explicit form takes a structure `url`, feature and
+    protein sequence, for a transcript no loaded track serves. A `ProteinView`
+    with only a `url` opens as a standalone structure. The protein3d
+    [launching guide](https://github.com/GMOD/jbrowse-plugin-protein3d/blob/main/docs/launching.md#a-structure-connected-to-the-genome)
+    has both forms.
