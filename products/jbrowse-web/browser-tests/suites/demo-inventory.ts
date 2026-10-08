@@ -70,7 +70,6 @@ const loadChecks: [string, string, string?][] = [
   ['Hi-C', 'extra_test_data/hic_integration_test.json'],
   ['Methylation test', 'test_data/methylation_test/config.json'],
   ['Modifications test', 'test_data/modifications_test/config.json'],
-  ['Honeybee', 'test_data/honeybee/config.json'],
   ['Grape-peach synteny', 'test_data/config_synteny_grape_peach.json'],
   ['CFAM2 (dog genome)', 'test_data/cfam2/config.json'],
   [
