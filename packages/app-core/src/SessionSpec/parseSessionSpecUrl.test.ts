@@ -1,5 +1,5 @@
 import {
-  parseInlineSessionUrl,
+  parseSessionSnapshotUrl,
   parseSessionSpecUrl,
 } from './parseSessionSpecUrl.ts'
 
@@ -398,12 +398,26 @@ describe('the loc/assembly shorthand', () => {
 
 test('a link carrying its whole session yields it undecoded, with its config', () => {
   expect(
-    parseInlineSessionUrl(
+    parseSessionSnapshotUrl(
       'https://jbrowse.org/code/jb2/main/#config=%2Fucsc%2Fhg38%2Fconfig.json&session=encoded-abc123',
     ),
   ).toEqual({
     configUrl: 'https://jbrowse.org/ucsc/hg38/config.json',
     session: 'encoded-abc123',
+    pageUrl:
+      'https://jbrowse.org/code/jb2/main/#config=%2Fucsc%2Fhg38%2Fconfig.json&session=encoded-abc123',
+  })
+})
+
+test('a share link yields its id and the password only the link holds', () => {
+  expect(
+    parseSessionSnapshotUrl(
+      'https://jbrowse.org/code/jb2/main/?session=share-abc&password=pw123',
+    ),
+  ).toMatchObject({
+    configUrl: 'https://jbrowse.org/code/jb2/main/config.json',
+    session: 'share-abc',
+    password: 'pw123',
   })
 })
 
@@ -411,19 +425,19 @@ test('the same link wrapped as jbrowse:// reads the same', () => {
   const web =
     'https://jbrowse.org/code/jb2/main/?config=test_data/volvox/config.json&session=json-%7B%7D'
   expect(
-    parseInlineSessionUrl(`jbrowse://open?url=${encodeURIComponent(web)}`),
-  ).toEqual(parseInlineSessionUrl(web))
+    parseSessionSnapshotUrl(`jbrowse://open?url=${encodeURIComponent(web)}`),
+  ).toEqual(parseSessionSnapshotUrl(web))
 })
 
-test('spec, share and session-less links carry no inline session', () => {
-  for (const session of ['spec-%7B%7D', 'share-abc', 'local-abc']) {
+test('spec, local and session-less links hand over no snapshot', () => {
+  for (const session of ['spec-%7B%7D', 'local-abc']) {
     expect(
-      parseInlineSessionUrl(
+      parseSessionSnapshotUrl(
         `https://jbrowse.org/code/jb2/main/?session=${session}`,
       ),
     ).toBeUndefined()
   }
   expect(
-    parseInlineSessionUrl('https://jbrowse.org/code/jb2/main/?loc=ctgA:1-10'),
+    parseSessionSnapshotUrl('https://jbrowse.org/code/jb2/main/?loc=ctgA:1-10'),
   ).toBeUndefined()
 })

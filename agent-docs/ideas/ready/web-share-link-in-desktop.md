@@ -1,32 +1,34 @@
 ---
 name: web-share-link-in-desktop
-description: Desktop opens encoded- and json- links since 2026-10-08 but not the short share- links web's share button makes by default, and it refuses a session carrying its own connections. The work left is a fetch and a decrypt for share-, and a home for sessionConnections.
+description: Desktop opens every link web's share button makes (share-, encoded-, json-) since 2026-10-08, except a session carrying its own connections, which it refuses. What is left is a home for sessionConnections and an "Open in Desktop" button in web's ShareDialog.
 ---
 
 # Opening a web share link in Desktop
 
 Desktop reads `session=spec-`, the `&assembly=`/`&loc=` shorthand, `&hubURL=`,
-and a link that carries its whole session: `encoded-<b64>` (compressed inline)
-and `json-<json>`. `launchInlineSession`
-(`products/jbrowse-desktop/src/components/StartScreen/launchFromLink.ts`) decodes
-the snapshot and hands it to the config as its `defaultSession`. Two things are
-still out.
+and a link that hands over a whole session: `share-<id>` (uploaded, encrypted),
+`encoded-<b64>` (compressed inline) and `json-<json>`. `launchSessionSnapshot`
+(`products/jbrowse-desktop/src/components/StartScreen/launchFromLink.ts`) fetches
+the link's config, gets the snapshot, and hands it to the config as its
+`defaultSession`. A `share-` snapshot comes from the share service that config
+names (`shareURL`, relative to the page the link points at), decrypted with the
+link's `password=`.
 
-**`share-<id>`**, the uploaded and encrypted form the share button makes by
-default. The transport is not the obstacle: `readSessionFromDynamo` is in
-`@jbrowse/core/util/sessionSharing`, Desktop already imports that module for
-export-to-web, and it already runs `aesEncrypt` there, so WebCrypto works in that
-renderer. A `share-` link needs the fetch, the decrypt with the link's
-`password=`, and then the same `launchInlineSession`. Until it lands the
-ShareDialog has no "Open in Desktop" button, and `parseSessionSpecUrl` answers a
-pasted `share-` link with a sentence naming the kind.
+Two things are still out.
 
 **`sessionConnections`** (web-core's `SessionConnections`) has no slot in
 Desktop's session, so a link whose session carries any stops with an error
 naming the count. They need a home in Desktop's session or a translation.
+
+**Web's ShareDialog has no "Open in Desktop" button.** It was held back because
+none of its formats was one Desktop could accept. Now each is, so the button is
+`jbrowse://open?url=` around the link the dialog already shows.
 
 `sessionPlugins` is the other key Desktop's session does not declare; those join
 the config's plugins once `trustPlugins` (ADR-038) has passed them. Any further
 key Desktop's session does not take is reported on the opened session by name,
 because MST drops an undeclared snapshot key in silence. That report is what
 finds the next key a web session grows.
+
+Not exercised against the live share service or in a packaged app as of
+2026-10-08: the tests stub the service's response.

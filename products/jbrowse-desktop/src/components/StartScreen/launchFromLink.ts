@@ -1,13 +1,20 @@
 import {
+  DEFAULT_SHARE_URL,
   loadSessionSpec,
-  parseInlineSessionUrl,
+  parseSessionSnapshotUrl,
   parseSessionSpecUrl,
 } from '@jbrowse/app-core'
+import {
+  SHARE_PREFIX,
+  fromUrlSafeB64,
+  readSessionFromDynamo,
+  shareEndpoint,
+} from '@jbrowse/core/util'
 import { getSnapshot } from '@jbrowse/mobx-state-tree'
 import { decodeSessionFromUrl } from '@jbrowse/product-core'
 
 import type { JBrowseConfig } from './types.ts'
-import type { ParsedInlineSession } from '@jbrowse/app-core'
+import type { ParsedSessionSnapshotUrl } from '@jbrowse/app-core'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { PluginDefinition } from '@jbrowse/core/pluginDefinitions'
 
@@ -35,22 +42,49 @@ function nonEmptyList(value: unknown): unknown[] {
   return Array.isArray(value) ? value : []
 }
 
-// A link that carries its whole session (`encoded-`/`json-`, what JBrowse Web's
-// share button and genomes.jbrowse.org's protein browser write). The snapshot
-// becomes the config's defaultSession, which is the session Desktop opens for
-// any config, so nothing here re-implements applying one.
+// The snapshot a `share-` link names: fetched from the share service the
+// link's own config points at, and decrypted with the password only the link
+// holds. Web honors an empty or relative shareURL as relative to its page, so
+// it is resolved against the page the link points at.
+async function fetchSharedSnapshot(
+  { session, password, pageUrl }: ParsedSessionSnapshotUrl,
+  config: JBrowseConfig,
+) {
+  const configured = config.configuration?.shareURL
+  const loadUrl = new URL(
+    shareEndpoint(
+      typeof configured === 'string' ? configured : DEFAULT_SHARE_URL,
+      'load',
+    ),
+    pageUrl,
+  ).href
+  return JSON.parse(
+    await fromUrlSafeB64(
+      await readSessionFromDynamo(loadUrl, session, password ?? ''),
+    ),
+  ) as Record<string, unknown>
+}
+
+// A link that hands over a whole session: carried in it (`encoded-`/`json-`,
+// what genomes.jbrowse.org's protein browser writes) or stored under an id
+// (`share-`, what JBrowse Web's share button writes). The snapshot becomes the
+// config's defaultSession, which is the session Desktop opens for any config,
+// so nothing here re-implements applying one.
 //
 // Two keys of a web session have no slot in Desktop's: `sessionPlugins`, which
 // join the config's plugins once trusted, and `sessionConnections`, which have
 // nowhere to go yet and so stop the launch. MST drops an undeclared snapshot key
 // in silence, so any other key Desktop's session did not take is reported on
 // the session that opened without it.
-async function launchInlineSession(
-  { configUrl, session: encoded }: ParsedInlineSession,
+async function launchSessionSnapshot(
+  link: ParsedSessionSnapshotUrl,
   { fetchConfig, createPluginManager, trustPlugins }: LaunchFromLinkDeps,
 ) {
+  const config = await fetchConfig(link.configUrl)
   const { sessionPlugins, sessionConnections, ...session } =
-    await decodeSessionFromUrl(encoded)
+    link.session.startsWith(SHARE_PREFIX)
+      ? await fetchSharedSnapshot(link, config)
+      : await decodeSessionFromUrl(link.session)
   const connections = nonEmptyList(sessionConnections)
   if (connections.length) {
     throw new Error(
@@ -58,7 +92,6 @@ async function launchInlineSession(
     )
   }
   const plugins = nonEmptyList(sessionPlugins) as PluginDefinition[]
-  const config = await fetchConfig(configUrl)
   if (plugins.length) {
     await trustPlugins(plugins)
   }
@@ -99,9 +132,9 @@ export async function launchFromLink(
   deps: LaunchFromLinkDeps,
 ): Promise<PluginManager> {
   const { fetchConfig, createPluginManager } = deps
-  const inline = parseInlineSessionUrl(link)
-  if (inline) {
-    return launchInlineSession(inline, deps)
+  const snapshotLink = parseSessionSnapshotUrl(link)
+  if (snapshotLink) {
+    return launchSessionSnapshot(snapshotLink, deps)
   }
   let parsed
   try {

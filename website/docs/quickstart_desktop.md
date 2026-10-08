@@ -132,13 +132,13 @@ Session**, takes a JBrowse Web URL and rebuilds it as a new session:
   `&tracks=` and `&highlight=`
 - a `&hubURL=` link, attached as a connection; `&assembly=` naming one of the
   hub's genomes opens at a place in it
-- a link that carries its whole session (`&session=encoded-...` or `json-...`),
-  which is what the Share dialog's long link is; plugins the session added are
+- a link from JBrowse Web's Share button, short (`&session=share-...`, with its
+  `&password=`) or long (`&session=encoded-...`); plugins the session added are
   put through the same trust prompt as a config's
 
-Desktop downloads the config the link names and saves it with the session. Short
-share links (`&session=share-...`) cannot be opened this way, since only the
-instance that created one can resolve it.
+Desktop downloads the config the link names and saves it with the session. A
+short share link is read from the share service that config names, so it needs a
+network connection and the link's `&password=` intact.
 
 Figures in these docs also offer an "Open this view in JBrowse Desktop" button,
 through a `jbrowse://` link the macOS and Windows installers register. The Linux

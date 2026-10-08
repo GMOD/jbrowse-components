@@ -186,23 +186,28 @@ function readSessionTracks(params: URLSearchParams) {
   return parsed as Record<string, unknown>[]
 }
 
-export interface ParsedInlineSession {
+export interface ParsedSessionSnapshotUrl {
   configUrl: string
   /** the `session=` value as it is in the link, prefix included, undecoded */
   session: string
+  /** a `share-` link's key; the share service never sees it */
+  password?: string
+  /** the JBrowse Web page the link points at, which a relative shareURL is relative to */
+  pageUrl: string
 }
 
 /**
- * The session a link carries whole (`session=encoded-…` or `json-…`), with the
- * config it applies to — or undefined for any other link.
+ * The session snapshot a link hands over whole — carried in it (`encoded-…`,
+ * `json-…`) or stored by the share service under the id it names (`share-…`) —
+ * with the config it applies to. Undefined for any other link.
  *
  * A link with no `config=` means the instance's own `config.json`, as it does
  * to the JBrowse Web page the link points at. A snapshot names assemblies and
  * tracks by id and holds none of them, so there is always a config to fetch.
  */
-export function parseInlineSessionUrl(
+export function parseSessionSnapshotUrl(
   input: string,
-): ParsedInlineSession | undefined {
+): ParsedSessionSnapshotUrl | undefined {
   let url: URL
   try {
     url = unwrapProtocolUrl(new URL(input.trim()))
@@ -211,11 +216,13 @@ export function parseInlineSessionUrl(
   }
   const params = readAllQueryParams(url)
   const session = params.get('session')
-  return session && /^(encoded|json)-/.test(session)
+  return session && /^(share|encoded|json)-/.test(session)
     ? {
         configUrl: new URL(params.get('config') ?? 'config.json', url.href)
           .href,
         session,
+        password: params.get('password') ?? undefined,
+        pageUrl: url.href,
       }
     : undefined
 }
