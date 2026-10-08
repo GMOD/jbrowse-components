@@ -17,6 +17,8 @@ We:
 - load the benchmark SV and CNV calls beside four further published callsets
 - read one chr3-chr13 translocation three ways: the caller's breakend, the reads
   that span it, and the tumor assembly that resolves it onto one contig
+- read a small heterozygous deletion in _CUZD1_ at base level, against ClinVar's
+  copy-number variants
 - check copy number at four driver genes, _CDKN2A_, _TP53_, _SMAD4_ and _KRAS_,
   against depth and B-allele frequency
 - align the tumor assembly to GRCh38 and view the same rearrangement as synteny

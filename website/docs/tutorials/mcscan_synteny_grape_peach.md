@@ -55,7 +55,10 @@ so there is nothing to download by hand.
 
 The run writes two files that JBrowse loads as separate synteny tracks.
 `.anchors`, via `MCScanAnchorsAdapter`, is the gene-pair level: each line is one
-orthologous pair and its alignment score, with `###` separating synteny blocks:
+orthologous pair and its alignment score, with `###` separating synteny blocks.
+The sample lines and the figures below come from a Phytozome annotation of the
+same genomes, so their gene ids and chromosome names differ from the ones the
+script writes:
 
 ```text
 ###
@@ -312,9 +315,6 @@ curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/
 bash build_grape_peach_anchors.sh
 npx --yes serve grape_peach_anchors_build/jbrowse2  # then open the printed URL
 ```
-
-The gene ids the script writes differ from the samples above, which come from a
-Phytozome annotation of the same genomes.
 
 ## See also
 

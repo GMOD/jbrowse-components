@@ -20,9 +20,9 @@ apart.
   plus a JBrowse instance to load them into (the
   [web quickstart](/docs/quickstart_web) or the
   [desktop quickstart](/docs/quickstart_desktop))
-- [modkit](https://github.com/nanoporetech/modkit/releases), Oxford Nanopore's
-  tool for tallying per-read calls into per-CpG methylation fractions, for the
-  aggregate section only; a single-binary download
+- [modkit](https://github.com/nanoporetech/modkit/releases) 0.6 or later, Oxford
+  Nanopore's tool for tallying per-read calls into per-CpG methylation
+  fractions, for the aggregate section only; a single-binary download
 - [WhatsHap](https://whatshap.readthedocs.io/), to haplotag reads of your own
   that have no `HP` tag
 
@@ -126,23 +126,29 @@ holding the fraction of reads that were modified. The file is much smaller than
 the reads.[^dmr]
 
 ```bash
-modkit pileup sample.bam output.bedmethyl --ref reference.fa --preset traditional
+# --cpg: count at CpG sites only
+# --combine-strands: one row per CpG, the two strands summed
+# --combine-mods with --modified-bases C: 5mC and 5hmC summed into one fraction
+modkit pileup sample.bam output.bedmethyl --ref reference.fa \
+  --cpg --combine-strands --combine-mods --modified-bases C
 bgzip output.bedmethyl
 tabix -p bed output.bedmethyl.gz
 ```
 
 Two `modkit pileup` options shape the output:
 
-- `--preset traditional` collapses 5mC and 5hmC into a single 5mC fraction
-  (bisulfite-equivalent). Omit it to keep separate rows per modification type
-  (`m` for 5mC, `h` for 5hmC)
-- `--partition-tag HP` writes one file per haplotype, and this dataset uses it
+- `--combine-mods` collapses 5mC and 5hmC into a single fraction
+  (bisulfite-equivalent). Pass `--modified-bases 5mC 5hmC` without it to keep
+  separate rows per modification type (`m` for 5mC, `h` for 5hmC)
+- `--phased` writes one file per haplotype from the reads' `HP` tags, and this
+  dataset uses it
 
-With both options, `modkit pileup` writes the per-haplotype files into a
-directory:
+With `--phased` the output argument is a directory, which gets `hp1.bedmethyl`,
+`hp2.bedmethyl` and `combined.bedmethyl`:
 
 ```bash
-modkit pileup sample.bam hp_bedmethyl/ --ref reference.fa --preset traditional --partition-tag HP
+modkit pileup sample.bam hp_bedmethyl/ --ref reference.fa \
+  --cpg --combine-strands --combine-mods --modified-bases C --phased
 ```
 
 bedMethyl is a BED file with a numeric score column, so it loads as a
@@ -182,9 +188,9 @@ that box starts unchecked, and leaving it unchecked keeps the coloring.
 
 <Figure caption="HG002 ONT reads over the SNRPN CpG island, colored by 5mC with unmethylated CpGs in blue. Top: file order, with the track menu open at Group by... → Tag.... Bottom: the same reads grouped by the HP tag, one band per haplotype and one for untagged reads." src="/img/methylation/hg002_snrpn_group_by_hp.png" links="Ungrouped=methylation/hg002_snrpn_ungrouped,Grouped by HP=methylation/hg002_snrpn_grouped" />
 
-The two per-haplotype bedMethyl files from `--partition-tag HP` load as one
-track above the reads, with a row per file. Pinning the axis at 0 to 100 puts
-both rows on one scale, so an unmethylated row stays flat:
+The two per-haplotype bedMethyl files from `--phased` load as one track above
+the reads, with a row per file. Pinning the axis at 0 to 100 puts both rows on
+one scale, so an unmethylated row stays flat:
 
 ```json addtrack loc=chr15:24,948,000-24,962,000
 {
