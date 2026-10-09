@@ -381,6 +381,52 @@
       ]
     },
     {
+      "type": "GraphTrack",
+      "trackId": "hprc_v2_1_walk_lanes",
+      "name": "HPRC v2.1 haplotypes vs GRCh38, read from the walk files",
+      "assemblyNames": [
+        "hg38",
+        "HG00097.1",
+        "HG00099.1",
+        "HG00128.1",
+        "HG00133.1",
+        "HG01109.1",
+        "HG01123.1",
+        "HG01960.1",
+        "HG02055.1"
+      ],
+      "adapter": {
+        "type": "WalkTabixSyntenyAdapter",
+        "walksUri": "https://jbrowse.org/demos/hprc/hprc-v2.1-mc-grch38.GRCh38",
+        "samplesTsvLocation": {
+          "uri": "https://jbrowse.org/demos/hprc/hprc_samples.tsv"
+        },
+        "assemblyNames": ["hg38"],
+        "assemblyNameToPanSN": {
+          "hg38": "GRCh38#0",
+          "HG00097.1": "HG00097#1",
+          "HG00099.1": "HG00099#1",
+          "HG00128.1": "HG00128#1",
+          "HG00133.1": "HG00133#1",
+          "HG01109.1": "HG01109#1",
+          "HG01123.1": "HG01123#1",
+          "HG01960.1": "HG01960#1",
+          "HG02055.1": "HG02055#1"
+        }
+      },
+      "displays": [
+        {
+          "type": "MultiWaySyntenyDisplay",
+          "displayId": "hprc_v2_1_walk_lanes-MultiWaySyntenyDisplay",
+          "height": 600
+        },
+        {
+          "type": "LinearGraphDisplay",
+          "displayId": "hprc_v2_1_walk_lanes-LinearGraphDisplay"
+        }
+      ]
+    },
+    {
       "type": "FeatureTrack",
       "trackId": "hprc_cfhr_genes_HG01109_1",
       "name": "HG01109.1 genes (HPRC release 2 CAT annotation)",

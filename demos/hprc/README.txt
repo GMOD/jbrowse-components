@@ -205,6 +205,11 @@ Haplotype walks
   reads one range of each file per window and decodes only the haplotypes it
   is asked for.
 
+  The hprc_v2_1_walk_lanes track draws haplotype lanes from the GRCh38 set's
+  walk and node files: it aligns each haplotype's walk to the reference's, and
+  each lane to the next, on the nodes both visit, with no base compared. It
+  reads no gbz.db and no haplotype index.
+
   Each file's first header line gives chunk:i:65536, the chunk size;
   maxnode:i:1024, the longest node, which sets how far before a window a
   reader queries; and cap:i:8192, the most steps in one row. The walk file
