@@ -144,9 +144,9 @@ pnpm add @jbrowse/react-linear-genome-view2@next @jbrowse/display-ui@next @jbrow
 The `next` tag is the v5 beta, and `latest` is v4, which has no
 `@jbrowse/display-ui/embed`. Pin the exact version. The
 [examples](https://jbrowse.org/storybook/byo/) build from the main branch, so
-they run ahead of npm: `Toolbar`, `ScrollZoomToggle`, `NavButton` and
-`Notifications` are in main and not in `5.0.0-beta.13`. Read the package's
-`.d.ts` to see what a release exports.
+they run ahead of npm: `Toolbar`, `NavButton` and `Notifications` are in main
+and not in `5.0.0-beta.13`. Read the package's `.d.ts` to see what a release
+exports.
 
 **Sizing.** `TrackStack` sets `overflow: hidden` on its wrapper, and each track
 takes the `height` in its `displayDefaults`. A track with more rows than fit,
