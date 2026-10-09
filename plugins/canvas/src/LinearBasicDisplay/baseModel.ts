@@ -100,7 +100,7 @@ import {
   createMembershipMemo,
   featureIdsTouchingBlocks,
 } from './layoutQueries.ts'
-import { facetOf, plotJexlProblems } from './plotProblems.ts'
+import { colorOf, facetOf, plotJexlProblems } from './plotProblems.ts'
 import { scanGroupByCandidates } from './scanGroupByCandidates.ts'
 import { modeCanShowDescription, modeCanShowName } from './showLabelsMode.ts'
 import {
@@ -1579,22 +1579,19 @@ export default function baseStateModelFactory(
       },
       /**
        * #method
-       * The Group by dialog's choice of field as plot settings: the facet,
-       * keeping its domain while the field is the one already set, a color by
-       * the field when ticked (left alone while it already paints, through
-       * any scale), and no color when unticked over a categorical color that
-       * was the facet's own.
+       * The Group by dialog's choice of field as plot settings, which its
+       * Apply writes and its Edit plot button shows: the facet, keeping its
+       * domain while the field is the one already set; a color by the field
+       * when ticked, left alone while it already paints through any scale;
+       * and unticked over a categorical color that was the facet's own, that
+       * field parked under `scale: 'none'`. Both colors keep a written
+       * constant for the way back, as Color by does.
        */
-      groupByPlot(
-        field: string | undefined,
-        colorByGroup: boolean,
-      ): {
-        facet: ReturnType<typeof facetOf>
-        color?: { field: string } | null
-      } {
+      groupByPlot(field: string | undefined, colorByGroup: boolean): Plot {
         const colorField = self.colorField?.field ?? ''
         const painted = self.colorFieldName ?? ''
         const current = facetOf(self.facet)
+        const written = colorOf(self.plot.color)
         const wasGroupColor =
           colorField !== '' &&
           (colorField === current?.field || colorField === field)
@@ -1607,9 +1604,9 @@ export default function baseStateModelFactory(
           ...(colorByGroup && field
             ? field === painted
               ? {}
-              : { color: { field } }
+              : { color: colorForField(written, field) }
             : wasGroupColor
-              ? { color: null }
+              ? { color: colorForField(written, '') }
               : {}),
         }
       },
@@ -1688,17 +1685,12 @@ export default function baseStateModelFactory(
     .actions(self => ({
       /**
        * #action
-       * What the Group by dialog applies: the settings its choice changes,
-       * through the setters the menus use.
+       * What the Group by dialog applies: `groupByPlot`, the draft its Edit
+       * plot button shows. The stack starts over from the top.
        */
       applyGroupBy(field: string | undefined, colorByGroup: boolean) {
-        const { facet, color } = self.groupByPlot(field, colorByGroup)
-        self.setFacet(facet ?? undefined)
-        if (color === null) {
-          self.setColorScale()
-        } else if (color) {
-          self.colorByField(color.field)
-        }
+        self.applyPlot(self.groupByPlot(field, colorByGroup))
+        self.setScrollTop(0)
       },
       /**
        * #action

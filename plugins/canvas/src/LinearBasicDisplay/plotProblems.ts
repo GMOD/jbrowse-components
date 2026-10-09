@@ -2,6 +2,7 @@ import { isJexl, stringToJexlExpression } from '@jbrowse/core/util/jexlStrings'
 
 import type { FeatureFacet } from './facet.ts'
 import type { Plot } from '@jbrowse/core/configuration'
+import type { ColorSlots } from '@jbrowse/core/util/colorScale'
 import type { JexlInstance } from '@jbrowse/core/util/jexlStrings'
 
 /** A facet as the plot writes it, its field alone while it lists no order. */
@@ -12,6 +13,13 @@ export function facetOf(facet: FeatureFacet | undefined) {
         ...(facet.domain.length ? { domain: [...facet.domain] } : {}),
       }
     : null
+}
+
+/** A plot's color as an object, its constant shorthand unfolded. */
+export function colorOf(color: unknown): ColorSlots {
+  return typeof color === 'string'
+    ? { value: color }
+    : ((color as ColorSlots | undefined) ?? {})
 }
 
 function colorExpression(color: unknown) {

@@ -195,15 +195,33 @@ describe('the Group by dialog applies a plot', () => {
     expect(viaText.plot.color).toEqual({ field: 'biotype' })
   })
 
-  it("clears a color that was the grouping's own when unticked, and leaves any other", () => {
+  it("parks a color that was the grouping's own when unticked, and leaves any other", () => {
     const d = display()
     d.applyGroupBy('strand', true)
     expect(d.groupByPlot(undefined, false)).toEqual({
       facet: null,
-      color: null,
+      color: { field: 'strand', scale: 'none' },
     })
     d.applyDisplaySettings({ color: 'purple' })
     expect(d.groupByPlot(undefined, false)).toEqual({ facet: null })
+  })
+
+  it('keeps a solid color beside the group color on Apply and on Edit plot alike', () => {
+    const viaDialog = display()
+    const viaText = display()
+    for (const d of [viaDialog, viaText]) {
+      d.setFeatureColor('purple')
+      d.applyGroupBy('biotype', true)
+      expect(d.plot.color).toEqual({ value: 'purple', field: 'biotype' })
+    }
+    viaDialog.applyGroupBy(undefined, false)
+    viaText.applyPlot({
+      ...viaText.plot,
+      ...viaText.groupByPlot(undefined, false),
+    })
+    expect(viaDialog.plot).toEqual(viaText.plot)
+    expect(viaDialog.colorByMode).toBe('solid')
+    expect(viaDialog.solidColor).toBe('purple')
   })
 
   it('leaves a threshold color alone, ticked on its own field or unticked on another', () => {
