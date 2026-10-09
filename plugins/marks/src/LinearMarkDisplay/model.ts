@@ -50,6 +50,7 @@ import {
 } from '@jbrowse/display-kit/stableIdentityComputed'
 import { viewRegionTable } from '@jbrowse/display-kit/viewRegionTable'
 import {
+  TEXT_BASELINE_RATIO,
   YSCALEBAR_LABEL_OFFSET,
   leftAxisGutterWidth,
 } from '@jbrowse/display-ui'
@@ -144,6 +145,7 @@ import {
   markRowTable,
 } from './rowTable.ts'
 import { stepChannels } from './stepChannels.ts'
+import { TEXT_MARK_FONT_PX, placeTextMarks } from './textMarks.ts'
 
 import type { MarkDisplayContextMenuInfo } from './components/markDisplayTypes.ts'
 import type {
@@ -180,6 +182,7 @@ import type {
   RowSourceListing,
 } from '@jbrowse/core/data_adapters/BaseAdapter/rowSources'
 import type { MenuItem } from '@jbrowse/core/ui'
+import type { JBrowsePalette } from '@jbrowse/core/ui/palette'
 import type { AdapterRead } from '@jbrowse/core/util/installPrerequisiteFetch'
 import type {
   EncodedLayersResult,
@@ -193,6 +196,7 @@ import type { Region } from '@jbrowse/core/util/types/data'
 import type { SkippedFeatures } from '@jbrowse/display-kit/SkippedFeaturesIndicator'
 import type { CoarseTierMode } from '@jbrowse/display-kit/coarseTier'
 import type { FacetSetting } from '@jbrowse/display-kit/facetConfigSchema'
+import type { FloatingLabel } from '@jbrowse/display-kit/floatingLabelHost'
 import type {
   HighlightRect,
   HighlightStyle,
@@ -1372,6 +1376,35 @@ export function stateModelFactory(
               height,
             }
           })
+        },
+        /**
+         * #method
+         * The text marks' labels as records in the display's own px, for a
+         * host that shows the plot canvas but not the text layer over it: a
+         * ring of the circular view. Placed and culled as on screen.
+         */
+        floatingLabels(palette: JBrowsePalette): FloatingLabel[] {
+          if (!self.markTypes.includes('text')) {
+            return []
+          }
+          const fontSize = TEXT_MARK_FONT_PX
+          const top = self.rowsTopOffset - fontSize * TEXT_BASELINE_RATIO
+          return placeTextMarks(
+            self.textMarkEntries,
+            self.rpcDataMap,
+            self.renderBlocks,
+            this.renderState,
+            { size: fontSize },
+            palette.text.primary,
+          ).map(label => ({
+            key: `${label.regionIndex}-${label.markIndex}-${label.instance}`,
+            x: label.x - label.width / 2,
+            y: top + label.baseline,
+            width: label.width,
+            text: label.text,
+            color: label.color,
+            fontSize,
+          }))
         },
         /**
          * #getter

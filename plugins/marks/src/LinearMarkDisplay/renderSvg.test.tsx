@@ -26,8 +26,8 @@ function draw(result: React.ReactNode) {
 }
 
 // the screen draws a text mark as a DOM layer over the canvas, so a reader that
-// samples the canvas alone — the circular view's ring — gets no text from the
-// export either
+// samples the canvas alone — the circular view's ring — gets its text through
+// `floatingLabels` instead
 test('a text mark exports with the plot, and stays out of a plot-only export', async () => {
   const { display } = createTestEnvironment({
     marks: [{ mark: 'text', encoding: { y: 'score' } }],
@@ -44,6 +44,33 @@ test('a text mark exports with the plot, and stays out of a plot-only export', a
   expect(draw(await renderSvg(display, { plotOnly: true }))).not.toContain(
     'geneA',
   )
+})
+
+test('a text mark answers its labels as floating labels, below the rows header', () => {
+  const palette = createJBrowseTheme().palette
+  const { display, view } = createTestEnvironment({
+    marks: [{ mark: 'text', encoding: { y: 'score' } }],
+  }).createDisplay()
+  display.setRpcData(
+    0,
+    workerResult(
+      display,
+      features([{ start: 1000, end: 4000, score: 5, name: 'geneA' }]),
+    ),
+    REGION,
+  )
+  const [label, ...rest] = display.floatingLabels(palette)
+  expect(rest).toEqual([])
+  expect(label).toMatchObject({ text: 'geneA', color: palette.text.primary })
+  expect(label!.y).toBeGreaterThanOrEqual(display.rowsTopOffset)
+  expect(label!.x + label!.width / 2).toBeCloseTo(
+    view.bpToPx({ refName: 'ctgA', coord: 2500 })!.offsetPx - view.offsetPx,
+  )
+
+  const { display: points } = createTestEnvironment({
+    marks: [{ mark: 'point', encoding: { y: 'score' } }],
+  }).createDisplay()
+  expect(points.floatingLabels(palette)).toEqual([])
 })
 
 test('a text mark inherits the font the export picked', async () => {
