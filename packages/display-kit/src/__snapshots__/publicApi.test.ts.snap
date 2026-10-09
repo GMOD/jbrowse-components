@@ -83,6 +83,7 @@ exports[`display-kit public surface pins the subpath exports 1`] = `
   "./rowsConfigSchema",
   "./rpcArgs",
   "./sampleRowsConfigSchema",
+  "./sectionFacetConfigSchema",
   "./stableIdentityComputed",
   "./subPixelBinBp",
   "./trackHeightConfigSchemaFields",

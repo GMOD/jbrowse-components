@@ -18,6 +18,7 @@ import { getContainingView, getEnv, getSession } from '@jbrowse/core/util'
 import HiddenGroupsMixin from '@jbrowse/display-kit/HiddenGroupsMixin'
 import LegendMixin from '@jbrowse/display-kit/LegendMixin'
 import TrackHeightMixin from '@jbrowse/display-kit/TrackHeightMixin'
+import { sectionFacetConfigSchema } from '@jbrowse/display-kit/sectionFacetConfigSchema'
 import { getParent, types } from '@jbrowse/mobx-state-tree'
 import { act, render, waitFor, within } from '@testing-library/react'
 import { observer } from 'mobx-react'
@@ -64,9 +65,9 @@ function displayModel(
     .volatile(() => ({
       reloadCounter: 0,
     }))
-    .views(() => ({
-      get groupKeySpace() {
-        return ''
+    .views(self => ({
+      get groupKeySpace(): string {
+        return getConf(self, ['facet', 'field'])
       },
       get colorScales(): ColorScale[] {
         return LEGEND_SECTIONS.map(id => ({
@@ -143,6 +144,7 @@ function initialize() {
           height: { type: 'number', defaultValue: DISPLAY_HEIGHT },
           color: { type: 'color', defaultValue: DISPLAY_COLOR },
           showLegend: { type: 'boolean', defaultValue: true },
+          facet: sectionFacetConfigSchema,
         },
         {
           explicitIdentifier: 'displayId',
@@ -603,17 +605,20 @@ test('dismissing a legend section redraws the figure without it', async () => {
   })
 })
 
-// Volatile, so in no snapshot: a hidden section is per-group state the key
-// reads through `groupStateKey`.
+// A hidden section is per-group state the key reads through `groupStateKey`.
 test('hiding a group redraws the figure without it', async () => {
   const view = makeView([{ trackId: 'first', name: 'first', type: 'SvgTrack' }])
+  const display = view.tracks[0]!.displays[0]!
+  act(() => {
+    setConf(display, 'facet', 'group')
+  })
   const { svg } = await renderFigure(view)
   const hidden = () =>
     svg().querySelector<SVGRectElement>('[data-testid="body"]')?.dataset.hidden
   expect(hidden()).toBe('')
 
   await act(async () => {
-    view.tracks[0]!.displays[0]!.hideGroup('g1')
+    display.hideGroup('g1')
     await Promise.resolve()
   })
 

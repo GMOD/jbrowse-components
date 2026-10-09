@@ -111,19 +111,31 @@ export function groupKeyComparator(domain?: readonly string[]) {
 }
 
 /**
- * The domain a re-pick keeps: a facet set from a menu or dialog names no
- * domain, so one naming the field the current facet already reads carries
- * the current order along. A reorder names its own domain and passes
- * through, an empty one included.
+ * The order and hidden sections a re-pick keeps: a facet set from a menu or
+ * dialog names neither, so one naming the field the current facet already
+ * reads carries the current `domain` and `hidden` along. A member the next
+ * facet names passes through, an empty one included.
  */
 export function carryGroupDomain<
-  T extends { field: string; domain?: readonly string[] },
+  T extends {
+    field: string
+    domain?: readonly string[]
+    hidden?: readonly string[]
+  },
 >(next: T | undefined, current: T | undefined): T | undefined {
-  return next !== undefined &&
-    next.domain === undefined &&
-    current?.domain !== undefined &&
-    next.field === current.field
-    ? { ...next, domain: current.domain }
+  if (next === undefined || next.field !== current?.field) {
+    return next
+  }
+  const domain =
+    next.domain === undefined && current.domain !== undefined
+      ? { domain: current.domain }
+      : {}
+  const hidden =
+    next.hidden === undefined && current.hidden?.length
+      ? { hidden: current.hidden }
+      : {}
+  return Object.keys(domain).length || Object.keys(hidden).length
+    ? { ...next, ...domain, ...hidden }
     : next
 }
 

@@ -1,8 +1,8 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import baseLinearDisplayConfigSchema from '@jbrowse/display-kit/configSchema'
 import { densityTierConfigSchemaFields } from '@jbrowse/display-kit/densityTierConfigSchemaFields'
-import { facetConfigSchema } from '@jbrowse/display-kit/facetConfigSchema'
 import { heightModeConfigSchemaFields } from '@jbrowse/display-kit/heightModeConfigSchemaFields'
+import { sectionFacetConfigSchema } from '@jbrowse/display-kit/sectionFacetConfigSchema'
 import { types } from '@jbrowse/mobx-state-tree'
 import { scalesSchema, valueScaleSchema } from '@jbrowse/wiggle-core'
 
@@ -199,7 +199,7 @@ export default function configSchemaFactory(_pluginManager: PluginManager) {
        * other field. `{ field: "tags.HP", domain: ["2", "1"] }` stacks the
        * listed values first.
        */
-      facet: facetConfigSchema,
+      facet: sectionFacetConfigSchema,
       /**
        * #slot
        * Only consulted while `facet` is in effect. Collapsing trades the

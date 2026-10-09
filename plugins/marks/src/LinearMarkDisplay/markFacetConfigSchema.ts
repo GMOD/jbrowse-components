@@ -1,5 +1,5 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
-import { facetConfigSchema } from '@jbrowse/display-kit/facetConfigSchema'
+import { sectionFacetConfigSchema } from '@jbrowse/display-kit/sectionFacetConfigSchema'
 import { types } from '@jbrowse/mobx-state-tree'
 
 import { markTransformStep } from './markTransformConfigSchema.ts'
@@ -38,6 +38,6 @@ export const markFacetSchema = ConfigurationSchema(
     /**
      * #baseConfiguration
      */
-    baseConfiguration: facetConfigSchema,
+    baseConfiguration: sectionFacetConfigSchema,
   },
 )

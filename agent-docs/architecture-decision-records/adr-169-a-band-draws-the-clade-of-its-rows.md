@@ -8,7 +8,7 @@ summary: "Bands of rows on the multi-sample variant displays (`facet`, a samples
 ## Status
 
 Accepted (2026-09-25). Step 5 of
-[one-row-model-for-displays-that-stack-by-a-key](../ideas/ready/one-row-model-for-displays-that-stack-by-a-key.md),
+the one-row-model plan,
 on Colin's answers to calls 6, 7 and 8 of the row-model handoff. Builds on
 [ADR-157](adr-157-a-row-displays-arrangement-is-the-rows-config-object.md),
 whose `rows.tree` this gives a second shape, and

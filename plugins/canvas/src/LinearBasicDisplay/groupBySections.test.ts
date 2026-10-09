@@ -220,3 +220,21 @@ test('re-picking the same field from the dialog keeps a curated domain', () => {
   display.applyGroupBy('gene_type', true)
   expect(display.facet).toEqual({ field: 'gene_type', domain: [] })
 })
+
+// The hidden sections are config, so a session and a share link carry them,
+// and hiding one refetches nothing.
+test('a hidden section is written to the facet and costs no fetch', () => {
+  const { createDisplay } = createTestEnvironment()
+  const { display } = createDisplay()
+  display.setRpcData(0, strandedRegionData(), ctgA)
+  display.setFacet({ field: 'biotype' })
+  const before = display.rpcProps()
+  display.hideGroup('lncRNA')
+  expect(display.plot.facet).toEqual({ field: 'biotype', hidden: ['lncRNA'] })
+  expect(display.rpcProps()).toEqual(before)
+  display.applyGroupBy('biotype', false)
+  expect(display.hiddenGroups.size).toBe(1)
+  display.applyGroupBy('strand', false)
+  expect(display.hiddenGroups.size).toBe(0)
+  expect(display.plot.facet).toBe('strand')
+})

@@ -8,7 +8,7 @@ summary: "A row display's `rowColor` is one categorical color channel on the row
 ## Status
 
 Accepted (2026-09-23); amended by [ADR-207](adr-207-a-rows-color-resolves-once-and-shows-beside-its-label.md), which deals one palette for every display and resolves a row's color once. The first half of step 4 of
-[one-row-model-for-displays-that-stack-by-a-key](../ideas/ready/one-row-model-for-displays-that-stack-by-a-key.md)
+the one-row-model plan
 ("Color, after the rows"), gated on a zero image diff. Builds on
 [ADR-157](adr-157-a-row-displays-arrangement-is-the-rows-config-object.md),
 which put the row colors in `rowColor`, and applies

@@ -3197,7 +3197,11 @@ export default function stateModelFactory(
            * reorder.
            */
           setFacet(facet?: Facet) {
-            setConf(self, 'facet', carryGroupDomain(facet, self.facet) ?? {})
+            const current = self.facet && {
+              ...self.facet,
+              hidden: getConf(self, ['facet', 'hidden']),
+            }
+            setConf(self, 'facet', carryGroupDomain(facet, current) ?? {})
             self.scrollTop = 0
           },
 

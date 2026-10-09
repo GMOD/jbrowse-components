@@ -1710,12 +1710,13 @@ export function stateModelFactory(
         /**
          * #action
          * A field's own bands, in their sorted order: the outgoing field's
-         * domain goes with it, and the facet's steps stay.
+         * domain and hidden sections go with it, and the facet's steps stay.
          */
         setFacetField(field: string) {
           if (self.facet?.field !== field) {
             setConf(self.conf, ['facet', 'field'], field)
             setConf(self.conf, ['facet', 'domain'], [])
+            setConf(self.conf, ['facet', 'hidden'], [])
           }
         },
         /**

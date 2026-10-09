@@ -1594,8 +1594,24 @@ describe('per-lane state belongs to one grouping key space', () => {
     expect(display.groupHeightOverrides.has('')).toBe(false)
   })
 
-  // A live figure keys on this, since none of it is in a snapshot: the hidden
-  // sections stay the mixin's, beside the collapses and height overrides.
+  // A live figure keys on this, since the collapses and height overrides are
+  // in no snapshot: the hidden sections, config now, sit beside them.
+  // A chain cannot group by a per-read dimension, its reads disagreeing, so
+  // the stack degrades to the one ungrouped section; the facet's hidden keys
+  // name MAPQ's sections and wait unread rather than hide it.
+  test("a chain leaves the facet's hidden sections unread, and a re-pick keeps them", () => {
+    const display = createDisplay({ withRegions: true })
+    display.setFacet({ field: 'mapq' })
+    display.hideGroup('0')
+    expect([...display.hiddenGroupKeys]).toEqual(['0'])
+    display.setUnit('chain')
+    expect(display.groupKeySpace).toBe('')
+    expect(display.hiddenGroupKeys.size).toBe(0)
+    display.setUnit('read')
+    display.setFacet({ field: 'mapq' })
+    expect([...display.hiddenGroupKeys]).toEqual(['0'])
+  })
+
   test('groupStateKey carries every per-group state the lanes draw from', () => {
     const display = collapsedUntaggedLane()
     display.toggleGroupExpanded('')

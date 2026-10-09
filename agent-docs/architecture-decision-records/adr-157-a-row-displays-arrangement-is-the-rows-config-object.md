@@ -8,7 +8,7 @@ summary: "A row display's arrangement (the row order, per-row labels, the cluste
 ## Status
 
 Accepted (2026-09-23). Step 3 of
-[one-row-model-for-displays-that-stack-by-a-key](../ideas/ready/one-row-model-for-displays-that-stack-by-a-key.md):
+the one-row-model plan:
 the quantitative display moves first, the multi-sample variant displays
 second, the multi-row feature display third and MAF fourth, each gated on a
 zero image diff. The mark display moves fifth, which is step 6 for bar and
@@ -20,6 +20,11 @@ as a session delta.
 [packages/tree-sidebar/CLAUDE.md](../../packages/tree-sidebar/CLAUDE.md) and
 [plugins/wiggle/src/CLAUDE.md](../../plugins/wiggle/src/CLAUDE.md) are the
 operational docs.
+
+Amended 2026-10-09: the plan's last open item, `facet.hidden`, landed as the
+`SectionFacet` hide-set on the displays that stack sections (the canvas
+feature displays, alignments and the mark display), applied only while the
+stack groups by the facet's own field, and the plan doc closed with it.
 
 ## Context
 

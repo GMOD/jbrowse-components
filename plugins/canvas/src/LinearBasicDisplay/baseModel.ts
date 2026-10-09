@@ -1356,17 +1356,16 @@ export default function baseStateModelFactory(
 
       /**
        * #action
-       * Writes the `facet` object, an unnamed domain as empty; undefined is
-       * ungrouped. The stack starts over from the top.
+       * Writes the `facet` object, an unnamed domain as empty, keeping the
+       * hidden sections while the field holds; undefined is ungrouped. The
+       * stack starts over from the top.
        */
       setFacet(facet?: { field: string; domain?: readonly string[] }) {
-        setConf(
-          self,
-          'facet',
-          facet
-            ? { field: facet.field, domain: [...(facet.domain ?? [])] }
-            : {},
+        const next = carryGroupDomain(
+          facet && { field: facet.field, domain: [...(facet.domain ?? [])] },
+          facetOf(self.facet, getConf(self, ['facet', 'hidden'])) ?? undefined,
         )
+        setConf(self, 'facet', next ?? {})
         self.setScrollTop(0)
       },
 
@@ -1635,7 +1634,7 @@ export default function baseStateModelFactory(
       groupByPlot(field: string | undefined, colorByGroup: boolean): Plot {
         const colorField = self.colorField?.field ?? ''
         const painted = self.colorFieldName ?? ''
-        const current = facetOf(self.facet)
+        const current = facetOf(self.facet, getConf(self, ['facet', 'hidden']))
         const written = colorOf(self.plot.color)
         const wasGroupColor =
           colorField !== '' &&

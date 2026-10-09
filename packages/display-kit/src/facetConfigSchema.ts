@@ -6,6 +6,7 @@ import { normalizeChannel } from './colorConfigSchema.ts'
 export interface FacetSetting {
   field: string
   domain: readonly string[]
+  hidden?: readonly string[]
 }
 
 /**

@@ -2,9 +2,9 @@ import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import { colorConfigSchema } from '@jbrowse/display-kit/colorConfigSchema'
 import baseLinearDisplayConfigSchema from '@jbrowse/display-kit/configSchema'
 import { densityTierConfigSchemaFields } from '@jbrowse/display-kit/densityTierConfigSchemaFields'
-import { facetConfigSchema } from '@jbrowse/display-kit/facetConfigSchema'
 import { heightModeConfigSchemaFields } from '@jbrowse/display-kit/heightModeConfigSchemaFields'
 import { jexlFilterConfigSchemaFields } from '@jbrowse/display-kit/jexlFilterConfigSchemaFields'
+import { sectionFacetConfigSchema } from '@jbrowse/display-kit/sectionFacetConfigSchema'
 import { types } from '@jbrowse/mobx-state-tree'
 
 import { DISPLAY_MODES } from '../RenderFeatureDataRPC/renderConfig.ts'
@@ -154,7 +154,7 @@ export default function baseConfigSchemaFactory(_pluginManager: PluginManager) {
        * One labelled section of the track per value of a field: `"strand"`,
        * or `{ field, domain }` with the order its sections stack in.
        */
-      facet: facetConfigSchema,
+      facet: sectionFacetConfigSchema,
       labels: ConfigurationSchema('CanvasFeatureLabels', {
         /**
          * #slot labels.name
