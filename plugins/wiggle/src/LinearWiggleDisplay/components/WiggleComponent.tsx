@@ -12,7 +12,6 @@ import { WIGGLE_MARKS } from '../../shared/wiggleMarks.ts'
 import WiggleRowLabels from '../WiggleRowLabels.tsx'
 import WiggleRowSeparators from '../WiggleRowSeparators.tsx'
 import WiggleHint from './WiggleHint.tsx'
-import WiggleScoreFlag from './WiggleScoreFlag.tsx'
 import { findWiggleContextHit, findWiggleHit } from './findHit.ts'
 
 import type { WiggleDisplayModel } from './wiggleDisplayTypes.ts'
@@ -84,26 +83,12 @@ const WiggleComponent = observer(function WiggleComponent({
       }}
       contextMenu={model}
       overlay={() => <WiggleOverlay model={model} />}
-      // The vertical guide is drawn for the pointer and not for a hit. A
-      // horizontal one reads as an axis rule, so the score rides a flag at the
-      // top of the hovered lane instead.
+      // The vertical guide only, drawn for the pointer and not for a hit: a
+      // horizontal one reads as an axis rule.
       tooltip={mouseState => (
         <>
           {mouseState ? (
-            <>
-              <DisplayCrosshairs model={model} mouseX={mouseState.x} />
-              <WiggleScoreFlag
-                hit={model.hoveredFeature}
-                mouseX={mouseState.x}
-                mouseY={mouseState.y}
-                width={model.canvasWidthPx}
-                lanes={{
-                  rowsTopOffset: model.rowsTopOffset,
-                  rowHeight: model.effectiveRowHeight,
-                  numRows: model.numRows,
-                }}
-              />
-            </>
+            <DisplayCrosshairs model={model} mouseX={mouseState.x} />
           ) : null}
           <WiggleTooltip model={model} mouseState={mouseState} />
         </>
