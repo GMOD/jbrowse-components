@@ -54,18 +54,16 @@ so there is nothing to download by hand.
 <details>
 <summary>Read by URL (no download needed)</summary>
 
-- the graph as a gbz-base database:
-  https://s3-us-west-2.amazonaws.com/human-pangenomics/pangenomes/freeze/release2/minigraph-cactus/v2.1/hprc-v2.1-mc-grch38/hprc-v2.1-mc-grch38.gbz.db
-- our bubble projections of the graph, with the exact build recorded beside
-  them: https://jbrowse.org/demos/hprc/README.txt
+- our tabix index files of the graph's haplotype walks and bubbles, with the
+  exact build recorded beside them: https://jbrowse.org/demos/hprc/README.txt
 
 </details>
 
 ## Configuring the haplotype lanes track
 
-One track draws the lanes, reading the release's gbz-base database (the graph
-stored as SQLite) directly. The HPRC page's **Haplotypes** launch adds it, and
-the config below is the one to adapt for your own graph:
+One track draws the lanes, reading each haplotype's walk from tabix-indexed
+files we built from the release's graph. The HPRC page's **Haplotypes** launch
+adds it, and the config below is the one to adapt for your own graph:
 
 - **A lane** is one haplotype's walk, its route through the graph.
 - **`assemblyNames`** lists an assembly per haplotype. The track finds each walk
@@ -75,24 +73,20 @@ the config below is the one to adapt for your own graph:
   declares.
 - **`assemblyNameToPanSN`** names the walk of an assembly with no such alias,
   here GRCh38's.
-- **The database and haplotype index** for a graph of your own come from
-  [Hosting your own graph](/docs/tutorials/pangenome_prepare_graph#haplotype-walks-a-gbz-base-database).
+- **The walk files** for a graph of your own come from
+  [Hosting your own graph](/docs/tutorials/pangenome_prepare_graph#haplotype-walks-tabix).
 
 ```json addtrack
 {
   "type": "GraphTrack",
-  "trackId": "hprc_v2_1_gbz_lanes",
-  "name": "HPRC v2.1 haplotypes vs GRCh38, read from the graph (gbz-base)",
+  "trackId": "hprc_v2_1_walk_lanes",
+  "name": "HPRC v2.1 haplotypes vs GRCh38, read from the walk files",
   "assemblyNames": ["hg38", "HG00097.1", "HG00099.1"],
   "adapter": {
-    "type": "GbzBaseSyntenyAdapter",
-    "uri": "https://s3-us-west-2.amazonaws.com/human-pangenomics/pangenomes/freeze/release2/minigraph-cactus/v2.1/hprc-v2.1-mc-grch38/hprc-v2.1-mc-grch38.gbz.db",
-    "haplotypeIndexLocation": {
-      "uri": "https://jbrowse.org/demos/hprc/hprc-v2.1-mc-grch38.haplotype-index.f3.db"
-    },
+    "type": "WalkTabixSyntenyAdapter",
+    "walksUri": "https://jbrowse.org/demos/hprc/hprc-v2.1-mc-grch38.GRCh38",
     "assemblyNames": ["hg38"],
-    "assemblyNameToPanSN": { "hg38": "GRCh38#0" },
-    "context": 1000
+    "assemblyNameToPanSN": { "hg38": "GRCh38#0" }
   },
   "displays": [
     { "type": "MultiWaySyntenyDisplay", "height": 600 },
@@ -232,8 +226,8 @@ and opens at the CFH deletion, one lane per haplotype under GRCh38.
 
 - Li H. [gfatools](https://github.com/lh3/gfatools), whose `bubble` subcommand
   flags the inversion.
-- [gbz-base](https://github.com/jltsiren/gbz-base), which stores a GBZ as the
-  SQLite database a window is range-requested out of.
+- [gfa-to-tabix](https://github.com/GMOD/gfa-to-tabix#walks), which files each
+  haplotype's walk under the reference so a window is one range request.
 
 ## Citations
 

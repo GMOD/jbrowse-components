@@ -32,10 +32,10 @@ The graph view is a beta plugin. We welcome your [feedback](/contact).
 - [`gfatools`](https://github.com/lh3/gfatools), for an rGFA's bubbles
 - [`minigraph`](https://github.com/lh3/minigraph), for each assembly's path
   through the graph
-- [`vg`](https://github.com/vgteam/vg) 1.69.0+,
-  [`gbz-base`](https://github.com/jltsiren/gbz-base) and
-  [`gbz-haplotype-index`](https://crates.io/crates/gbz-haplotype-index), for
-  haplotype walks
+- [`vg`](https://github.com/vgteam/vg) 1.69.0+, for haplotype walks, and
+  [`gbz-base`](https://github.com/jltsiren/gbz-base) with
+  [`gbz-haplotype-index`](https://crates.io/crates/gbz-haplotype-index) to serve
+  them from a gbz-base database
 
 ## Where the data comes from
 
@@ -290,88 +290,14 @@ segment as an `SM:Z:` tag while it reads the paths.
 The count is per haplotype (`HG002.1`), so a diploid sample's two copies count
 separately.
 
-## Building a gbz-base database of haplotype walks {#haplotype-walks-a-gbz-base-database}
-
-A `.gbz` is vg's indexed form of a graph, with one walk per haplotype (its route
-through the graph). The browser reads it as a **gbz-base database**, the graph
-in SQLite, which three commands build.
-
-Build the distance-index chains. vg 1.69.0 or newer reads them out of a distance
-index, and a top-level one (`vg index --no-nested-distance`) is enough:
-
-```bash
-vg chains graph.gbz graph.dist > graph.chains
-```
-
-Build the database, one row per node and per path, plus the chains. Without
-`--chains`, a window comes back as the reference walk alone.
-
-```bash
-gbz-base construct --chains graph.chains graph.gbz
-```
-
-Name the haplotypes. `gbz-base` reports the walks in a subgraph as `unknown#1`,
-`unknown#2`, and `gbz-haplotype-index` writes their names to a companion file.
-It reads the database beside the GBZ to check that the two match:
-
-<!-- from: scripts/build_hprc_gbz_index.sh -->
-
-```bash
-# --interval: bp between recorded GBWT positions per path; denser is bigger
-#   and faster
-# --anchor-spacing: bp between anchor nodes on the reference path, so a window
-#   reads the chosen haplotypes' paths
-gbz-haplotype-index --interval 16384 --anchor-spacing 131072 \
-  graph.gbz graph.gbz.db graph.haplotype-index.db
-```
-
-`cargo install gbz-base` and `cargo install gbz-haplotype-index` install the two
-tools. The browser reads only the format 3 companion that `gbz-haplotype-index`
-0.3.0 and later writes.[^gbz-cost]
-
-Serve the database and the companion from URLs that answer range requests, and
-point the track's `uri` and `haplotypeIndexLocation` at them. Each haplotype in
-`assemblyNames` is an assembly whose aliases include its `sample#haplotype`
-name, as
-[the HPRC tutorial](/docs/tutorials/pangenome_hprc#opening-the-haplotype-an-allele-came-from)
-declares one; `assemblyNameToPanSN` covers the reference, which has none:
-
-```json addtrack
-{
-  "type": "GraphTrack",
-  "trackId": "my_graph_lanes",
-  "name": "My graph: haplotypes vs the reference, read from the graph",
-  "assemblyNames": ["hg38", "HG00097.1", "HG00099.1"],
-  "adapter": {
-    "type": "GbzBaseSyntenyAdapter",
-    "uri": "https://example.com/graphs/my_graph.gbz.db",
-    "haplotypeIndexLocation": {
-      "uri": "https://example.com/graphs/my_graph.haplotype-index.db"
-    },
-    "assemblyNames": ["hg38"],
-    "assemblyNameToPanSN": { "hg38": "GRCh38#0" },
-    "context": 1000
-  },
-  "displays": [
-    { "type": "MultiWaySyntenyDisplay", "height": 600 },
-    { "type": "LinearGraphDisplay" }
-  ]
-}
-```
-
-The adapter rejects a companion built from a graph with a different path count.
-Past `nodeLimit` nodes, or 5 Mb for the Graph display, both displays ask the
-reader to zoom in.
-[Haplotypes against each other](/docs/tutorials/pangenome_hprc_haplotypes) draws
-the lanes this track produces.
-
 ## Indexing haplotype walks with gfa-to-tabix {#haplotype-walks-tabix}
 
-`gfa-to-tabix --walks` (0.5.0 or later) writes each haplotype's walk to
-tabix-indexed files, which a graph track reads in place of a gbz-base database.
-It cuts each walk into pieces, one for each stretch the walk spends in a 64 kb
-chunk of a reference, and files each piece under its chunk, so the browser reads
-one range of each file per window.
+A **walk** is one haplotype's route through the graph. `gfa-to-tabix --walks`
+(0.5.0 or later) writes every walk to tabix-indexed files, which the browser
+reads for the graph track and for the haplotype lanes. It cuts each walk into
+pieces, one for each stretch the walk spends in a 64 kb chunk of a reference,
+and files each piece under its chunk, so the browser reads one range of each
+file per window.
 
 `vg convert` writes the GBZ as a GFA whose W lines are the walks. Index that GFA
 against both of HPRC's references:[^walks-cost]
@@ -412,7 +338,38 @@ walk file then lists its reference sample and every other haplotype with rows in
 it, the other reference included, once each.
 
 A track's `walksUri` names one reference's set by its prefix,
-`<prefix>.<sample>`, in place of `uri`:
+`<prefix>.<sample>`. This track draws the graph and, as a second display, one
+lane per haplotype. Each haplotype in `assemblyNames` is an assembly whose
+aliases include its `sample#haplotype` name, as
+[the HPRC tutorial](/docs/tutorials/pangenome_hprc#opening-the-haplotype-an-allele-came-from)
+declares one; `assemblyNameToPanSN` covers the reference, which has none:
+
+```json addtrack
+{
+  "type": "GraphTrack",
+  "trackId": "my_graph_lanes",
+  "name": "My graph: haplotypes vs the reference",
+  "assemblyNames": ["hg38", "HG00097.1", "HG00099.1"],
+  "adapter": {
+    "type": "WalkTabixSyntenyAdapter",
+    "walksUri": "https://example.com/graphs/my_graph.GRCh38",
+    "assemblyNames": ["hg38"],
+    "assemblyNameToPanSN": { "hg38": "GRCh38#0" }
+  },
+  "displays": [
+    { "type": "MultiWaySyntenyDisplay", "height": 600 },
+    { "type": "LinearGraphDisplay" }
+  ]
+}
+```
+
+The lanes align each walk to the reference's on the nodes both visit, so the
+track needs no sequence beyond the three files.
+[Haplotypes against each other](/docs/tutorials/pangenome_hprc_haplotypes) draws
+the lanes this track produces.
+
+A graph track with no lanes names the same set through `RgfaTabixAdapter`, here
+T2T-CHM13's:
 
 ```json addtrack
 {
@@ -461,9 +418,83 @@ Two budgets in the
 refuse a window with a notice to zoom in. `walkByteBudget` caps the compressed
 bytes that the three indexes estimate a window would fetch. The estimate is the
 same for any set of haplotypes, because the browser downloads every haplotype's
-rows and drops the unwanted ones by name. `walkStepBudget` caps the walk steps
-the browser decodes, counting only the haplotypes the track draws, so fewer
-haplotypes draw a wider window.
+rows and drops the unwanted ones by name. `walkStepBudget` caps the walk steps a
+window keeps, counting only the haplotypes the track draws, so fewer haplotypes
+draw a wider window.
+
+## Building a gbz-base database of haplotype walks {#haplotype-walks-a-gbz-base-database}
+
+A `.gbz` is vg's indexed form of a graph, with one walk per haplotype. The
+browser also reads it as a **gbz-base database**, the graph in SQLite, which
+three commands build. The same lanes take more requests this way: 27 against 5
+for eight haplotypes across the 260 kb CFH cluster.
+
+Build the distance-index chains. vg 1.69.0 or newer reads them out of a distance
+index, and a top-level one (`vg index --no-nested-distance`) is enough:
+
+```bash
+vg chains graph.gbz graph.dist > graph.chains
+```
+
+Build the database, one row per node and per path, plus the chains. Without
+`--chains`, a window comes back as the reference walk alone.
+
+```bash
+gbz-base construct --chains graph.chains graph.gbz
+```
+
+Name the haplotypes. `gbz-base` reports the walks in a subgraph as `unknown#1`,
+`unknown#2`, and `gbz-haplotype-index` writes their names to a companion file.
+It reads the database beside the GBZ to check that the two match:
+
+<!-- from: scripts/build_hprc_gbz_index.sh -->
+
+```bash
+# --interval: bp between recorded GBWT positions per path; denser is bigger
+#   and faster
+# --anchor-spacing: bp between anchor nodes on the reference path, so a window
+#   reads the chosen haplotypes' paths
+gbz-haplotype-index --interval 16384 --anchor-spacing 131072 \
+  graph.gbz graph.gbz.db graph.haplotype-index.db
+```
+
+`cargo install gbz-base` and `cargo install gbz-haplotype-index` install the two
+tools. The browser reads only the format 3 companion that `gbz-haplotype-index`
+0.3.0 and later writes.[^gbz-cost]
+
+Serve the database and the companion from URLs that answer range requests, and
+point the track's `uri` and `haplotypeIndexLocation` at them. Each haplotype in
+`assemblyNames` is an assembly whose aliases include its `sample#haplotype`
+name, as
+[the HPRC tutorial](/docs/tutorials/pangenome_hprc#opening-the-haplotype-an-allele-came-from)
+declares one; `assemblyNameToPanSN` covers the reference, which has none:
+
+```json addtrack
+{
+  "type": "GraphTrack",
+  "trackId": "my_graph_gbz_lanes",
+  "name": "My graph: haplotypes vs the reference, read from the graph",
+  "assemblyNames": ["hg38", "HG00097.1", "HG00099.1"],
+  "adapter": {
+    "type": "GbzBaseSyntenyAdapter",
+    "uri": "https://example.com/graphs/my_graph.gbz.db",
+    "haplotypeIndexLocation": {
+      "uri": "https://example.com/graphs/my_graph.haplotype-index.db"
+    },
+    "assemblyNames": ["hg38"],
+    "assemblyNameToPanSN": { "hg38": "GRCh38#0" },
+    "context": 1000
+  },
+  "displays": [
+    { "type": "MultiWaySyntenyDisplay", "height": 600 },
+    { "type": "LinearGraphDisplay" }
+  ]
+}
+```
+
+The adapter rejects a companion built from a graph with a different path count.
+Past `nodeLimit` nodes, or 5 Mb for the Graph display, both displays ask the
+reader to zoom in.
 
 ## Reproduce it end to end
 
@@ -491,9 +522,10 @@ links, then fetches and runs
 [`build_bubble_tier.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_bubble_tier.sh)
 and
 [`build_rgfa_alleles.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_rgfa_alleles.sh),
-each runnable alone. A separate script builds the
-[haplotype-walk companion](#haplotype-walks-a-gbz-base-database) from HPRC's 5.5
-GB `.gbz` and 10 GB gbz-base database:
+each runnable alone. The walk files come from the two commands under
+[Indexing haplotype walks](#haplotype-walks-tabix). A separate script builds the
+[gbz-base companion](#haplotype-walks-a-gbz-base-database) from HPRC's 5.5 GB
+`.gbz` and 10 GB gbz-base database:
 
 ```bash
 curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/build_hprc_gbz_index.sh

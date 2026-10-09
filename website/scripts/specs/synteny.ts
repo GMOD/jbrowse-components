@@ -1517,8 +1517,8 @@ export const syntenySpecs: ScreenshotSpec[] = [
 
   // The CFH cluster from the HPRC page's haplotypes launch, for
   // pangenome_hprc_haplotypes's first section: the page's own panel for the locus,
-  // one lane per structural configuration, read from HPRC's release 2.1
-  // gbz-base database and our companion index at capture time.
+  // one lane per structural configuration, read from the release 2.1 walk
+  // files at capture time.
   {
     mode: 'url',
     name: 'pangenome/hprc_gbz_cfhr_lanes',

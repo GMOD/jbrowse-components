@@ -23,7 +23,7 @@ const NONHUMAN_CONFIG = local(
   'test_data/graphgenomeview/pangenome_nonhuman.json',
 )
 
-const GBZ_TRACK = 'hprc_v2_1_gbz_lanes'
+const LANES_TRACK = 'hprc_v2_1_walk_lanes'
 const WALK_READOUT = '[data-testid="graph-walk-readout"]'
 
 // ---------------------------------------------------------------------------
@@ -41,7 +41,7 @@ const KIV2_BUBBLE_REGION = {
   start: 160616002,
   end: 160646753,
 }
-// The lanes the HPRC page config's gbz-base track names, which the graph track
+// The lanes the HPRC page config's haplotypes track names, which the graph track
 // cuts its walks for.
 const KIV2_HAPLOTYPES = [
   'HG00097.1',
@@ -83,7 +83,7 @@ function hprcSegmentsLane(domain: { start: number; end: number }) {
 }
 
 function kiv2WalksGraphTrack(pane: Record<string, unknown> = {}) {
-  return graphTrack(GBZ_TRACK, {
+  return graphTrack(LANES_TRACK, {
     subgraphHaplotypes: KIV2_HAPLOTYPES,
     layoutMode: 'force',
     colorScheme: 'reference-position',
@@ -133,7 +133,7 @@ const kiv2WalksSpec: ScreenshotSpec = {
   hideTooltip: true,
   clicksChange: "lift HG00133's walk out of the graph",
   actions: [
-    trackMenuIcon(GBZ_TRACK),
+    trackMenuIcon(LANES_TRACK),
     {
       type: 'hover',
       selector: '[data-testid="cascading-submenu-haplotypes"]',

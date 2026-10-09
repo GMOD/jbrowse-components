@@ -261,11 +261,11 @@ export const hostedConfigs: Record<string, HostedConfig> = {
         }
       },
       {
-        "trackId": "hprc_v2_1_gbz_lanes",
-        "name": "HPRC release 2 haplotypes vs GRCh38, read from the graph (gbz-base)",
+        "trackId": "hprc_v2_1_walk_lanes",
+        "name": "HPRC release 2 haplotypes vs GRCh38, read from the haplotype walk files",
         "type": "GraphTrack",
         "adapter": {
-          "type": "GbzBaseSyntenyAdapter"
+          "type": "WalkTabixSyntenyAdapter"
         },
         "displays": [
           {

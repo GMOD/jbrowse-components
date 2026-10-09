@@ -73,10 +73,11 @@ so there is nothing to download by hand.
 <details>
 <summary>Read by URL (no download needed)</summary>
 
-- our tabix index files cut from the release's rGFA graph, with the build
-  recorded beside them: https://jbrowse.org/demos/hprc/README.txt
-- the release 2.1 gbz-base database, one walk per haplotype, read by range
-  request:
+- our tabix index files cut from the release's rGFA graph and from its haplotype
+  walks, with the build recorded beside them:
+  https://jbrowse.org/demos/hprc/README.txt
+- the release 2.1 gbz-base database, which the cut under
+  [Which copy is which](#which-copy-is-which) reads by range request:
   https://s3-us-west-2.amazonaws.com/human-pangenomics/pangenomes/freeze/release2/minigraph-cactus/v2.1/hprc-v2.1-mc-grch38/hprc-v2.1-mc-grch38.gbz.db
 - our companion index naming that database's haplotypes:
   https://jbrowse.org/demos/hprc/hprc-v2.1-mc-grch38.haplotype-index.f3.db
@@ -98,18 +99,18 @@ in the color of its node below.
 Each loop in the knot is a different number of copies. Click the array's purple
 label to lay the bubble's segments out alone, with a button back to the window.
 The rGFA records segments and links; each haplotype's route through them, its
-walk, is in the release's gbz-base database.
+walk, is in the haplotypes track.
 
 ## Eight haplotypes' routes through the KIV-2 array {#one-haplotypes-copies}
 
-A **walk** is one haplotype's route through the graph, and the release publishes
-one per haplotype as a gbz-base database. In the same window:
+A **walk** is one haplotype's route through the graph, and the haplotypes track
+reads one per haplotype from tabix-indexed files. In the same window:
 
 - Type `chr6:160,616,002-160,646,753`, the array.
 - **Display types → Feature display** puts the rGFA graph track back to a row of
   segments.
-- Turn the gbz-base track on in the track selector, then take **Display types →
-  Graph** in its menu for a force-directed graph of the walks.
+- Turn the haplotypes track on in the track selector, then take **Display types
+  → Graph** in its menu for a force-directed graph of the walks.
 - Check **Haplotypes → The track's 8 assemblies** <!-- menu-path-ok --> in the
   same menu. Every haplotype's walks through the array hold more nodes than a
   force-directed drawing takes, so this step keeps the eight HPRC assemblies the
@@ -125,7 +126,7 @@ fades, and a readout gives its length against the reference walk.
 ## Every haplotype's KIV-2 array as a bar {#every-haplotypes-copies}
 
 Walk rows draw each walk as a bar, so every haplotype in the release fits in the
-track. In the gbz-base track's menu:
+track. In the haplotypes track's menu:
 
 - **Walk rows** under the **Layout** row and **Uniform** under the **Color** row
   turn each walk into a bar, longest first, blue on GRCh38's path through the
@@ -298,7 +299,7 @@ the catalogue's VNTR row and the TRGT genotypes:
             "height": 40
           },
           {
-            "trackId": "hprc_v2_1_gbz_lanes",
+            "trackId": "hprc_v2_1_walk_lanes",
             "type": "LinearGraphDisplay",
             "layoutMode": "walkrows",
             "colorScheme": "uniform",

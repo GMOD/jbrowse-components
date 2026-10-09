@@ -421,7 +421,7 @@ const ABCA7_VNTR_TRACK = {
   },
 }
 
-// The VNTR's lanes over the walk rows of the gbz-base graph, which measure
+// The VNTR's lanes over the walk rows of the haplotypes track, which measure
 // each walk against the TRGT record and tile it by the motif.
 function abca7View({
   genes = true,
@@ -456,7 +456,7 @@ function abca7View({
         type: 'LinearVariantDisplay',
         height: 40,
       },
-      graphTrack('hprc_v2_1_gbz_lanes', {
+      graphTrack('hprc_v2_1_walk_lanes', {
         layoutMode: 'walkrows',
         colorScheme: 'uniform',
         subgraphHaplotypes: [],
@@ -1407,7 +1407,7 @@ export const hprcGraphSpecs: ScreenshotSpec[] = [
     // grown to its rows, and the fixed 110 px lane takes 50 more
     viewportHeight: 454,
   },
-  // The five amylase lanes pangenome_hprc_haplotypes chooses, cut from the gbz-base
+  // The five amylase lanes pangenome_hprc_haplotypes chooses, cut from the haplotypes
   // track for those lanes and drawn in walk rows, in the lanes' place: each
   // bar's length is the haplotype's span across the cut, and the readout its
   // excess over GRCh38.
@@ -1420,7 +1420,7 @@ export const hprcGraphSpecs: ScreenshotSpec[] = [
           ...AMYLASE_LANES,
           tracks: [
             AMYLASE_LANES.tracks[0]!,
-            graphTrack('hprc_v2_1_gbz_lanes', {
+            graphTrack('hprc_v2_1_walk_lanes', {
               layoutMode: 'walkrows',
               colorScheme: 'uniform',
               subgraphHaplotypes: PORTAL_LOCI.amylase.lanes,

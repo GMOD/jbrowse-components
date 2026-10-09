@@ -113,7 +113,7 @@ export function portalLanesView({
         height: 60,
       },
       {
-        trackId: 'hprc_v2_1_gbz_lanes',
+        trackId: 'hprc_v2_1_walk_lanes',
         type: 'MultiWaySyntenyDisplay',
         rows: { domain: lanes, kept: lanes },
         height: 51 * (lanes.length + 1),
