@@ -44,7 +44,8 @@ displayId: '...', color: ... }]`. See
 ```
 
 Long reads — taller track, soft-clipping shown, split/chimeric reads
-connected by arcs:
+connected by arcs, each segment colored by its strand against its
+molecule's:
 
 ```js
 {
@@ -57,6 +58,7 @@ connected by arcs:
     height: 400,
     showSoftClipping: true,
     unit: 'chain',
+    color: { field: 'pairOrientation' },
     readConnections: 'arc',
   },
 }
@@ -99,7 +101,7 @@ These slots go on a display entry: `"displays": [{ "type": "LinearAlignmentsDisp
 | <span id="slot-showlegend">**showLegend**</span><br>[`boolean`](/docs/config_guides/slot_types#boolean) = <code>false</code> | Show the color-scheme legend overlay. Defaults to off |
 | <span id="slot-sortedby">**sortedBy**</span><br>[`maybeFrozen`](/docs/config_guides/slot_types#the-maybe-types) | Sort reads at a genomic position, e.g. by base, strand, or a tag (unset = unsorted)<br>_advanced_ |
 | <span id="slot-layoutorder">**layoutOrder**</span><br>[`stringEnum`](/docs/config_guides/slot_types#stringenum) (position, length, spliced, split) = <code>'position'</code> | The row order where no `sortedBy` sort applies. `length` puts the widest features in the lowest rows, so large alignments cluster at the top rather than interleaving with small ones (LGVSyntenyDisplay's default); `spliced` does the same for reads whose CIGAR carries a skip, for RNA-seq, and `split` for reads aligned in pieces or carrying a deletion of 50 bp or more, which are the ones crossing a breakpoint. |
-| <span id="slot-showoutline">**showOutline**</span><br>[`maybeBoolean`](/docs/config_guides/slot_types#the-maybe-types) | null = auto: outline is drawn only in chain/linked-read modes. Set true/false to force it on or off regardless of mode.<br>_advanced_ |
+| <span id="slot-showoutline">**showOutline**</span><br>[`maybeBoolean`](/docs/config_guides/slot_types#the-maybe-types) | null = auto: outline is drawn only under `unit: 'chain'`. Set true/false to force it on or off regardless of mode.<br>_advanced_ |
 | <span id="slot-unit">**unit**</span><br>[`stringEnum`](/docs/config_guides/slot_types#stringenum) (read, chain) = <code>'read'</code> | What one row stands for: a read, or a chain of a read, its mate and its split segments (the "View as pairs" menu row) |
 | <span id="slot-showbezierconnections">**showBezierConnections**</span><br>[`boolean`](/docs/config_guides/slot_types#boolean) = <code>false</code> | Draw paired-read connection curves over the pileup |
 | <span id="slot-showcoverage">**showCoverage**</span><br>[`boolean`](/docs/config_guides/slot_types#boolean) = <code>true</code> | Draw the coverage histogram band |
@@ -108,7 +110,6 @@ These slots go on a display entry: `"displays": [{ "type": "LinearAlignmentsDisp
 | <span id="slot-coveragesnpminfrequency">**coverageSnpMinFrequency**</span><br>[`number`](/docs/config_guides/slot_types#number) = <code>0</code> | Hide a coverage-band allele segment whose share of that position's depth is below this fraction, so the band stops painting a sliver for every sequencing error at high depth. 0 (the default) colors every mismatch. Distinct from `fadeLowFreqMismatches`, the pileup's fade of sub-pixel marks against a depth-dependent threshold; this is a flat allele-fraction floor on the band, and the grey depth bar still shows through where a segment is hidden<br>_advanced_ |
 | <span id="slot-showmismatches">**showMismatches**</span><br>[`boolean`](/docs/config_guides/slot_types#boolean) = <code>true</code> | Draw how reads differ from the reference: per-base mismatches, insertion markers and deletion bars. Not the intron centerlines — a spliced read is drawn as separate exon blocks, so the line joining them says they are one read rather than several, and it draws either way (PILEUP_MARKS) |
 | <span id="slot-showinterbaseindicators">**showInterbaseIndicators**</span><br>[`boolean`](/docs/config_guides/slot_types#boolean) = <code>true</code> | Draw interbase insertion/clip count bars and indicator triangles |
-| <span id="slot-flipstrandlongreadchains">**flipStrandLongReadChains**</span><br>[`boolean`](/docs/config_guides/slot_types#boolean) = <code>true</code> | Color split segments relative to the predominant orientation of the reads on screen, rather than by their own mapping strand |
 | <span id="slot-showinterchrom">**showInterchrom**</span><br>[`boolean`](/docs/config_guides/slot_types#boolean) = <code>true</code> | Draw inter-chromosomal read-connection arcs |
 | <span id="slot-showproperpairarcs">**showProperPairArcs**</span><br>[`boolean`](/docs/config_guides/slot_types#boolean) = <code>true</code> | Draw arcs for ordinary concordant pairs. Uncheck to leave only the arcs that carry a category (abnormal insert size or orientation, split junctions), which on deep coverage is the difference between a readable band and a solid mass |
 | <span id="slot-showmodalpairsincloud">**showModalPairsInCloud**</span><br>[`boolean`](/docs/config_guides/slot_types#boolean) = <code>false</code> | Keep the pairs of ordinary insert size in the read cloud, as the band the abnormal pairs are read against |

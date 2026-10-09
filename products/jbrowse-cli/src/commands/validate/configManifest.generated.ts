@@ -3714,10 +3714,25 @@ export const configManifest: ConfigManifest = {
               ]
             },
             "mapq": {
-              "scale": "categorical",
+              "scale": "threshold",
               "domain": [
-                "255"
-              ]
+                "1",
+                "10",
+                "30"
+              ],
+              "range": [
+                "rgb(0,34,78)",
+                "rgb(87,93,109)",
+                "rgb(165,156,116)",
+                "rgb(254,232,56)"
+              ],
+              "labels": [
+                "MAPQ 0 (multi-mapping)",
+                "MAPQ 1-9 (low)",
+                "MAPQ 10-29",
+                "MAPQ 30+ (high confidence)"
+              ],
+              "title": "Mapping quality"
             },
             "insertSize": {
               "scale": "threshold"
@@ -3736,7 +3751,13 @@ export const configManifest: ConfigManifest = {
                 "RL",
                 "RR",
                 "LL",
-                ""
+                "",
+                "unmappedMate",
+                "interchrom",
+                "splitInverted",
+                "splitSameStrand",
+                "segmentInverted",
+                "segmentSameStrand"
               ]
             },
             "insertSizeAndOrientation": {
@@ -3993,10 +4014,6 @@ export const configManifest: ConfigManifest = {
           "type": "boolean"
         },
         {
-          "name": "flipStrandLongReadChains",
-          "type": "boolean"
-        },
-        {
           "name": "showInterchrom",
           "type": "boolean"
         },
@@ -4087,7 +4104,8 @@ export const configManifest: ConfigManifest = {
         "hideSmallIndels",
         "hideMismatches",
         "hideLargeIndels",
-        "minSubfeatureWidth"
+        "minSubfeatureWidth",
+        "flipStrandLongReadChains"
       ],
       "droppedKeys": [
         "maxFeatureScreenDensity",
@@ -4103,7 +4121,8 @@ export const configManifest: ConfigManifest = {
         "jitter",
         "hideSmallIndels",
         "hideLargeIndels",
-        "minSubfeatureWidth"
+        "minSubfeatureWidth",
+        "flipStrandLongReadChains"
       ],
       "aliases": [
         "LinearPileupDisplay",
@@ -4415,10 +4434,25 @@ export const configManifest: ConfigManifest = {
               ]
             },
             "mapq": {
-              "scale": "categorical",
+              "scale": "threshold",
               "domain": [
-                "255"
-              ]
+                "1",
+                "10",
+                "30"
+              ],
+              "range": [
+                "rgb(0,34,78)",
+                "rgb(87,93,109)",
+                "rgb(165,156,116)",
+                "rgb(254,232,56)"
+              ],
+              "labels": [
+                "MAPQ 0 (multi-mapping)",
+                "MAPQ 1-9 (low)",
+                "MAPQ 10-29",
+                "MAPQ 30+ (high confidence)"
+              ],
+              "title": "Mapping quality"
             },
             "insertSize": {
               "scale": "threshold"
@@ -4437,7 +4471,13 @@ export const configManifest: ConfigManifest = {
                 "RL",
                 "RR",
                 "LL",
-                ""
+                "",
+                "unmappedMate",
+                "interchrom",
+                "splitInverted",
+                "splitSameStrand",
+                "segmentInverted",
+                "segmentSameStrand"
               ]
             },
             "insertSizeAndOrientation": {
@@ -4695,10 +4735,6 @@ export const configManifest: ConfigManifest = {
           "type": "boolean"
         },
         {
-          "name": "flipStrandLongReadChains",
-          "type": "boolean"
-        },
-        {
           "name": "showInterchrom",
           "type": "boolean"
         },
@@ -4797,7 +4833,8 @@ export const configManifest: ConfigManifest = {
         "hideSmallIndels",
         "hideMismatches",
         "hideLargeIndels",
-        "minSubfeatureWidth"
+        "minSubfeatureWidth",
+        "flipStrandLongReadChains"
       ],
       "droppedKeys": [
         "maxFeatureScreenDensity",
@@ -4813,7 +4850,8 @@ export const configManifest: ConfigManifest = {
         "jitter",
         "hideSmallIndels",
         "hideLargeIndels",
-        "minSubfeatureWidth"
+        "minSubfeatureWidth",
+        "flipStrandLongReadChains"
       ],
       "stateModelProps": [
         "id",

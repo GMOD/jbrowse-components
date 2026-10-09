@@ -992,6 +992,7 @@ export const retiredConfigSpellings: Record<string, RetiredSpelling> = {
   hideMismatches: v => ({ showMismatches: !v }),
   hideLargeIndels: () => ({}),
   minSubfeatureWidth: () => ({}),
+  flipStrandLongReadChains: () => ({}),
 }
 ```
 

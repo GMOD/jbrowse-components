@@ -41,7 +41,7 @@ Dotplot1DView
 LinearSyntenyViewHelper
 TimeTraveller
 
-# model members with no description (1364)
+# model members with no description (1362)
 # fix: write a sentence under the member’s #property/#volatile/#getter/#method/#action tag
 AddTrackModel.adapterHint
 AddTrackModel.altAssemblyName
@@ -571,7 +571,6 @@ LinearAlignmentsDisplay.featureIdUnderMouse
 LinearAlignmentsDisplay.featureWidgetType
 LinearAlignmentsDisplay.fetchNeeded
 LinearAlignmentsDisplay.findFeatureInRpcData
-LinearAlignmentsDisplay.flipStrandLongReadChains
 LinearAlignmentsDisplay.getFeatureInfoById
 LinearAlignmentsDisplay.hoveredFeature
 LinearAlignmentsDisplay.legendItems
@@ -601,7 +600,6 @@ LinearAlignmentsDisplay.setContextMenuFeature
 LinearAlignmentsDisplay.setCoverageHeight
 LinearAlignmentsDisplay.setCoverageSnpMinFrequency
 LinearAlignmentsDisplay.setError
-LinearAlignmentsDisplay.setFlipStrandLongReadChains
 LinearAlignmentsDisplay.setMaxHeight
 LinearAlignmentsDisplay.setMinInterchromSupport
 LinearAlignmentsDisplay.setMinSashimiScore

@@ -6028,7 +6028,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               }
             },
             "field": {
-              "description": "what colors a read: strand, firstOfPairStrand, pairOrientation, insertSize, insertSizeAndOrientation, mateRefName and mapq paint their own vocabulary or ramp; tags.XX reads a SAM tag and any other name a feature attribute.",
+              "description": "what colors a read: strand, firstOfPairStrand, pairOrientation, insertSize, insertSizeAndOrientation, mateRefName and mapq paint their own vocabulary or ramp; tags.XX reads a SAM tag; any other name reads as a facet over it does: splitRead, mateAssembly, a feature attribute, a dotted path or a jexl: expression.",
               "default": "",
               "if": {
                 "type": "null"
@@ -7028,16 +7028,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "type": "boolean"
           }
         },
-        "flipStrandLongReadChains": {
-          "description": "Color split segments relative to the predominant orientation of the reads on screen, rather than by their own mapping strand.",
-          "default": true,
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "type": "boolean"
-          }
-        },
         "showInterchrom": {
           "description": "Draw inter-chromosomal read-connection arcs.",
           "default": true,
@@ -7281,6 +7271,10 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "description": "Legacy key: a migration rewrites it into current slots when the config loads."
         },
         "minSubfeatureWidth": {
+          "deprecated": true,
+          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+        },
+        "flipStrandLongReadChains": {
           "deprecated": true,
           "description": "Legacy key: a migration rewrites it into current slots when the config loads."
         }
@@ -7698,7 +7692,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               }
             },
             "field": {
-              "description": "what colors a read: strand, firstOfPairStrand, pairOrientation, insertSize, insertSizeAndOrientation, mateRefName and mapq paint their own vocabulary or ramp; tags.XX reads a SAM tag and any other name a feature attribute.",
+              "description": "what colors a read: strand, firstOfPairStrand, pairOrientation, insertSize, insertSizeAndOrientation, mateRefName and mapq paint their own vocabulary or ramp; tags.XX reads a SAM tag; any other name reads as a facet over it does: splitRead, mateAssembly, a feature attribute, a dotted path or a jexl: expression.",
               "default": "strand",
               "if": {
                 "type": "null"
@@ -8211,16 +8205,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "type": "boolean"
           }
         },
-        "flipStrandLongReadChains": {
-          "description": "Color split segments relative to the predominant orientation of the reads on screen, rather than by their own mapping strand.",
-          "default": true,
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "type": "boolean"
-          }
-        },
         "showInterchrom": {
           "description": "Draw inter-chromosomal read-connection arcs.",
           "default": true,
@@ -8488,6 +8472,10 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "description": "Legacy key: a migration rewrites it into current slots when the config loads."
         },
         "minSubfeatureWidth": {
+          "deprecated": true,
+          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+        },
+        "flipStrandLongReadChains": {
           "deprecated": true,
           "description": "Legacy key: a migration rewrites it into current slots when the config loads."
         }
@@ -15332,9 +15320,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "showInterbaseIndicators": {
               "$ref": "#/$defs/LinearAlignmentsDisplaySlots/properties/showInterbaseIndicators"
             },
-            "flipStrandLongReadChains": {
-              "$ref": "#/$defs/LinearAlignmentsDisplaySlots/properties/flipStrandLongReadChains"
-            },
             "showInterchrom": {
               "$ref": "#/$defs/LinearAlignmentsDisplaySlots/properties/showInterchrom"
             },
@@ -15472,6 +15457,9 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             },
             "minSubfeatureWidth": {
               "$ref": "#/$defs/LinearAlignmentsDisplaySlots/properties/minSubfeatureWidth"
+            },
+            "flipStrandLongReadChains": {
+              "$ref": "#/$defs/LinearAlignmentsDisplaySlots/properties/flipStrandLongReadChains"
             },
             "marks": {
               "$ref": "#/$defs/LinearMarkDisplaySlots/properties/marks"
@@ -18599,9 +18587,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "showInterbaseIndicators": {
               "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/showInterbaseIndicators"
             },
-            "flipStrandLongReadChains": {
-              "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/flipStrandLongReadChains"
-            },
             "showInterchrom": {
               "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/showInterchrom"
             },
@@ -18761,6 +18746,9 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             },
             "minSubfeatureWidth": {
               "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/minSubfeatureWidth"
+            },
+            "flipStrandLongReadChains": {
+              "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/flipStrandLongReadChains"
             },
             "utrColor": {
               "$ref": "#/$defs/MultiWaySyntenyDisplaySlots/properties/utrColor"
