@@ -142,8 +142,10 @@ export function getCodonColors(palette: JBrowsePalette) {
 }
 
 /**
- * The color key for the codon view: each change `domain` lists, in order and
- * named by `labels`, in the very fill `getCodonColors` hands the painter.
+ * The color key for the codon view: every change the painter fills, the ones
+ * `domain` lists first, each named by `labels` or else by the preset, in the
+ * very fill `getCodonColors` hands the painter. A domain orders the key and
+ * never decides what it lists, since every change paints whatever it says.
  *
  * It has to be the fill, because the fills are alpha-composited: the legend
  * used to name the raw theme colors, so the faint synonymous fill (alpha 0.18
@@ -159,16 +161,20 @@ export function getCodonLegendItems(
   }: {
     domain?: readonly (string | number)[]
     labels?: readonly string[]
-  } = MAF_FIELD_PRESETS.codon,
+  } = {},
 ): LegendItem[] {
   const { fill } = getCodonColors(palette)
+  const preset = MAF_FIELD_PRESETS.codon
   const names = keyNames(domain, labels)
-  return domain.flatMap(key => {
-    const value = String(key)
+  const presetNames = keyNames(preset.domain, preset.labels)
+  const order = new Set([...domain.map(String), ...preset.domain])
+  return [...order].flatMap(value => {
     const color = Object.hasOwn(fill, value)
       ? fill[value as CodonChange]
       : undefined
-    return color ? [{ label: names.get(value) ?? value, color }] : []
+    return color
+      ? [{ label: names.get(value) ?? presetNames.get(value) ?? value, color }]
+      : []
   })
 }
 

@@ -101,6 +101,19 @@ describe('each row rendering keys itself from what it paints', () => {
       expect(items[1]!.color).not.toBe(palette.codonSynonymous)
     })
 
+    it('lists every change a written domain leaves out, after the ones it orders', () => {
+      const palette = resolvePalette()
+      const items = getCodonLegendItems(palette, {
+        domain: ['stop'],
+        labels: ['Stop'],
+      })
+      expect(items.map(i => i.label)).toEqual([
+        'Stop',
+        'Nonsynonymous',
+        'Synonymous',
+      ])
+    })
+
     // A conserved codon takes no fill at all, so it has no swatch to show.
     it('omits the unchanged category, which paints nothing', () => {
       const palette = resolvePalette()
