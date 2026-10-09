@@ -5062,7 +5062,7 @@ export const configManifest: ConfigManifest = {
               "scale": "linear",
               "domainMin": 0,
               "domainMax": 1,
-              "scheme": "viridis",
+              "scheme": "redgreyblue",
               "title": "Identity"
             },
             "dnds": {

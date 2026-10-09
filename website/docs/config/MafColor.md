@@ -33,7 +33,8 @@ ramp, `chromosome` each block by the rank of its source chromosome within
 the row, and `codon` each codon by its amino-acid change, given an
 `annotationAdapter`. A string is the field. Each field has one scale:
 `identity` runs from `domainMin` 0 to `domainMax` 1 along the
-`redgreyblue` scheme, and the others are categorical. The bases and the
+`redgreyblue` scheme, as every display's identity does, and the others are
+categorical. The bases and the
 codons paint the theme's colors. The slots are the shared color object's,
 so `jbrowse validate` and "Edit plot..." judge them as they judge any other
 display's.
