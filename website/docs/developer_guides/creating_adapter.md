@@ -72,6 +72,7 @@ import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 import { parseLinesLazy } from 'gff-nostream'
 
 import { Gff3Feature } from '../Gff3Feature.ts'
+import { cutAtOrigin, sequenceLengths } from '../originSpanning.ts'
 
 import type { Gff3AdapterConfig } from './configSchema.ts'
 import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
@@ -118,7 +119,8 @@ export default class Gff3Adapter extends BaseFeatureDataAdapter<Gff3AdapterConfi
         'Parsing GFF data',
       )
 
-      return { header: headerLines.join('\n'), intervalTreeMap }
+      const header = headerLines.join('\n')
+      return { header, intervalTreeMap, lengths: sequenceLengths(header) }
     },
   })
 
@@ -137,13 +139,23 @@ export default class Gff3Adapter extends BaseFeatureDataAdapter<Gff3AdapterConfi
     // observer.error itself
     return ObservableCreate<Feature>(async observer => {
       const { start, end, refName } = query
-      const { intervalTreeMap } = await this.loadData(opts)
-      const tree = intervalTreeMap[refName]
+      const { intervalTreeMap, lengths } = await this.loadData(opts)
+      const tree = intervalTreeMap[refName]?.(opts.statusCallback)
       if (tree) {
-        for (const { feature, uniqueId } of tree(opts.statusCallback).search([
-          start,
-          end,
-        ])) {
+        // a feature crossing a circular sequence's origin is stored from its
+        // start near the end, so a query short of the end looks there too
+        const length = lengths.get(refName)
+        const candidates = [
+          ...tree.search([start, end]),
+          ...(length !== undefined && end < length
+            ? tree.search([length - 1, length])
+            : []),
+        ]
+        for (const { feature, uniqueId } of cutAtOrigin(
+          candidates,
+          query,
+          length,
+        )) {
           observer.next(new Gff3Feature(feature, uniqueId))
         }
       }

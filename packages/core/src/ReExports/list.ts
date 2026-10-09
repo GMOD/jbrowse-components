@@ -424,6 +424,7 @@ export default [
   '@jbrowse/display-kit/fetchEachRegion',
   '@jbrowse/display-kit/fetchInputs',
   '@jbrowse/display-kit/FetchMixin',
+  '@jbrowse/display-kit/floatingLabelHost',
   '@jbrowse/display-kit/foundationDisplayPhase',
   '@jbrowse/display-kit/foundationPaintInert',
   '@jbrowse/display-kit/foundationSvgReady',

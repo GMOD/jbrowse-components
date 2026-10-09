@@ -4290,6 +4290,13 @@
       ],
       "worker": "real"
     },
+    "@jbrowse/display-kit/floatingLabelHost": {
+      "package": "@jbrowse/display-kit",
+      "names": [
+        "isFloatingLabelHost"
+      ],
+      "worker": "real"
+    },
     "@jbrowse/display-kit/foundationDisplayPhase": {
       "package": "@jbrowse/display-kit",
       "names": [
