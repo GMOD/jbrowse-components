@@ -29,7 +29,7 @@ function renderDialog(state: {
   facet?: Facet
 }) {
   const setFacet = jest.fn()
-  const setColorBy = jest.fn()
+  const colorByField = jest.fn()
   const model = {
     id: 'display1',
     colorBy: state.colorBy,
@@ -38,14 +38,14 @@ function renderDialog(state: {
     readFilter: {},
     resolvedByteLimit: () => undefined,
     setFacet,
-    setColorBy,
+    colorByField,
   } as unknown as GroupByDialogModel
   render(
     <ThemeProvider theme={createJBrowseTheme()}>
       <GroupByDialog model={model} handleClose={() => {}} />
     </ThemeProvider>,
   )
-  return { setFacet, setColorBy }
+  return { setFacet, colorByField }
 }
 
 const checkbox = () => screen.getByRole('checkbox') as HTMLInputElement
@@ -77,7 +77,7 @@ function submit() {
 // (there was no facet to compare against), and unticked means "don't color by
 // this tag", so submitting reset the HP coloring the user could see.
 test('typing the tag the reads are already colored by keeps that coloring', async () => {
-  const { setFacet, setColorBy } = renderDialog({
+  const { setFacet, colorByField } = renderDialog({
     colorBy: { type: 'tag', tag: 'HP' },
   })
   expect(checkbox().checked).toBe(false)
@@ -86,40 +86,40 @@ test('typing the tag the reads are already colored by keeps that coloring', asyn
   await settleScan()
   submit()
   expect(setFacet).toHaveBeenCalledWith({ field: 'tags.HP' })
-  expect(setColorBy).toHaveBeenCalledWith({ type: 'tag', tag: 'HP' })
+  expect(colorByField).toHaveBeenCalledWith('tags.HP')
 })
 
 // A different tag's colors are in force, so the box stays a genuine offer to
 // replace them and does nothing unless taken.
 test('a different tag coloring leaves the box unticked and untouched', async () => {
-  const { setColorBy } = renderDialog({
+  const { colorByField } = renderDialog({
     colorBy: { type: 'tag', tag: 'RG' },
   })
   typeTag('HP')
   expect(checkbox().checked).toBe(false)
   await settleScan()
   submit()
-  expect(setColorBy).not.toHaveBeenCalled()
+  expect(colorByField).not.toHaveBeenCalled()
 })
 
 // Every scheme but the plain one PAINTS something the checkbox would replace, so
 // grouping by HP over an insert-size view used to turn that picture off on
 // Submit.
 test('a non-tag color scheme is not replaced by default', async () => {
-  const { setColorBy } = renderDialog({
+  const { colorByField } = renderDialog({
     colorBy: { type: 'insertSize' },
   })
   typeTag('HP')
   expect(checkbox().checked).toBe(false)
   await settleScan()
   submit()
-  expect(setColorBy).not.toHaveBeenCalled()
+  expect(colorByField).not.toHaveBeenCalled()
 })
 
 // The plain fill under a per-base layer is the backdrop its calls read
 // against, and the tag palette's blue and pink collide with the calls'.
 test('the plain fill under a per-base layer is not replaced by default', async () => {
-  const { setColorBy } = renderDialog({
+  const { colorByField } = renderDialog({
     colorBy: { type: 'normal' },
     baseLayer: { type: 'modifications' },
   })
@@ -127,7 +127,7 @@ test('the plain fill under a per-base layer is not replaced by default', async (
   expect(checkbox().checked).toBe(false)
   await settleScan()
   submit()
-  expect(setColorBy).not.toHaveBeenCalled()
+  expect(colorByField).not.toHaveBeenCalled()
 })
 
 // The guard this dialog exists for reads a scan that has not landed yet, so a
@@ -143,18 +143,18 @@ test('Submit is held until the scan settles', async () => {
 // Grouping by a tag usually pairs with coloring by it, so an uncolored track
 // opts in by default.
 test('an uncolored track defaults to coloring by the grouped tag', async () => {
-  const { setColorBy } = renderDialog({ colorBy: { type: 'normal' } })
+  const { colorByField } = renderDialog({ colorBy: { type: 'normal' } })
   typeTag('HP')
   expect(checkbox().checked).toBe(true)
   await settleScan()
   submit()
-  expect(setColorBy).toHaveBeenCalledWith({ type: 'tag', tag: 'HP' })
+  expect(colorByField).toHaveBeenCalledWith('tags.HP')
 })
 
 // Unticking is still how you drop the coloring this dialog would set, and it
 // pins: the default no longer re-ticks the box as the tag is edited.
 test('unticking drops the matching coloring and stays unticked', async () => {
-  const { setColorBy } = renderDialog({
+  const { colorByField } = renderDialog({
     colorBy: { type: 'tag', tag: 'HP' },
     facet: { field: 'tags.HP' },
   })
@@ -165,7 +165,7 @@ test('unticking drops the matching coloring and stays unticked', async () => {
   expect(checkbox().checked).toBe(false)
   await settleScan()
   submit()
-  expect(setColorBy).toHaveBeenCalledWith({ type: 'normal' })
+  expect(colorByField).toHaveBeenCalledWith('')
 })
 
 // The scan's verdict, unit-tested rather than driven through the dialog: the

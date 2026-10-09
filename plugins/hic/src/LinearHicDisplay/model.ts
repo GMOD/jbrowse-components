@@ -501,10 +501,11 @@ export default function stateModelFactory(configSchema: HicTrackConfigModel) {
       },
       /**
        * #action
-       * `color.scale`; undefined returns it to `count`'s linear preset.
+       * The Log scale toggle: `color.scale` log, or unset for `count`'s
+       * linear preset.
        */
-      setColorScale(scale?: HicColorScale) {
-        setConf(self, ['color', 'scale'], scale)
+      setLogScale(log: boolean) {
+        setConf(self, ['color', 'scale'], log ? 'log' : undefined)
       },
       /**
        * #action

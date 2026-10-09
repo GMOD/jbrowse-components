@@ -234,7 +234,7 @@ describe('color swatches under a per-feature jexl slot', () => {
     expect(typeof plainFeature).toBe('string')
     expect(typeof plainUtr).toBe('string')
 
-    display.setFeatureColor(jexlColor)
+    display.setColorValue(jexlColor)
     display.setUtrColor(jexlColor)
     expect(display.featureColor).toBe(plainFeature)
     expect(display.utrColor).toBe(plainUtr)
@@ -243,14 +243,14 @@ describe('color swatches under a per-feature jexl slot', () => {
   it('reads the track expression as Default, since no field paints', () => {
     const { createDisplay } = createTestEnvironment()
     const { display } = createDisplay()
-    display.setFeatureColor(jexlColor)
+    display.setColorValue(jexlColor)
     expect(display.colorByMode).toBe('default')
   })
 
   it('keeps a concrete color as the swatch', () => {
     const { createDisplay } = createTestEnvironment()
     const { display } = createDisplay()
-    display.setFeatureColor('#ff0000')
+    display.setColorValue('#ff0000')
     display.setUtrColor('#00ff00')
     expect(display.featureColor).toBe('#ff0000')
     expect(display.utrColor).toBe('#00ff00')
@@ -281,7 +281,7 @@ describe('Color by... > Solid color...', () => {
     const { createDisplay } = createTestEnvironment()
     const { display } = createDisplay()
     expect(ticked(display)).toEqual(['Default'])
-    display.setFeatureColor('#ff0000')
+    display.setColorValue('#ff0000')
     expect(ticked(display)).toEqual(['Solid color...'])
     display.colorByField('strand')
     expect(ticked(display)).toEqual(['Strand'])
@@ -290,7 +290,7 @@ describe('Color by... > Solid color...', () => {
   it('paints the constant kept beside a field again', () => {
     const { createDisplay } = createTestEnvironment()
     const { display } = createDisplay()
-    display.setFeatureColor('#ff0000')
+    display.setColorValue('#ff0000')
     display.colorByField('strand')
     display.pickSolidColor()
     expect(display.colorByMode).toBe('solid')
@@ -321,7 +321,7 @@ describe('the Default color rung', () => {
   it('drops a solid color, so Solid color... loses the tick to Default', () => {
     const { createDisplay } = createTestEnvironment()
     const { display } = createDisplay()
-    display.setFeatureColor('#ff0000')
+    display.setColorValue('#ff0000')
     expect(display.colorByMode).toBe('solid')
     ;(
       find(subMenuOf(display.trackMenuItems(), 'Color by...'), 'Default') as {
@@ -336,7 +336,7 @@ describe('the Default color rung', () => {
     const { createDisplay } = createTestEnvironment()
     const { display } = createDisplay()
     const own = "jexl:get(feature,'type')=='CDS'?'red':'blue'"
-    display.setFeatureColor(own)
+    display.setColorValue(own)
     const colorBy = () => subMenuOf(display.trackMenuItems(), 'Color by...')
     ;(find(colorBy(), 'Strand') as { onClick: () => void }).onClick()
     expect(display.colorByMode).toBe('strand')

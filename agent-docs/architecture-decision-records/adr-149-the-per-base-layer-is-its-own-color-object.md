@@ -45,7 +45,7 @@ multi-sample variant displays hold `color` and `rowColor` on the same ground
 **The runtime form splits the same way.** `colorBy` is a `ReadColorBy`, whose
 type excludes the four per-base schemes, and `baseLayer` a `BaseLayer` or
 undefined (`baseLayerOf`). A comparison of the read scheme against a per-base
-name is a type error. `setColorBy` writes `color`, `setBaseLayer` writes
+name is a type error. ~~`setColorBy`~~ `colorByField` (ADR-223) writes `color`, `setBaseLayer` writes
 `baseColor` with the modification settings, and neither touches the other.
 
 **The worker takes both.** The request carries `colorBy` through `workerColorBy`

@@ -28,7 +28,7 @@ function baseSelf() {
     appliedNormalization: 'KR',
     effectiveResolution: 25000 as number | undefined,
     resolutionBias: 0,
-    setColorScale: jest.fn(),
+    setLogScale: jest.fn(),
     setColorFollowsPercentile: jest.fn(),
     setShowLegend: jest.fn(),
     setShowResolutionControls: jest.fn(),

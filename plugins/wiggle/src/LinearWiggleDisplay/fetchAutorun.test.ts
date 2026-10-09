@@ -187,7 +187,7 @@ describe('LinearWiggleDisplay SettingsInvalidate autorun', () => {
     })
 
     const callsBefore = mockRpcCall.mock.calls.length
-    display.setColor('#abcdef')
+    display.applyPlot({ color: '#abcdef' })
     jest.advanceTimersByTime(800)
     await jest.runAllTimersAsync()
 
@@ -324,7 +324,7 @@ describe('LinearWiggleDisplay solid color', () => {
     'every layer keeps the single hue in %s mode',
     mode => {
       const display = loadedWithSignedData()
-      display.setColor('green')
+      display.applyPlot({ color: 'green' })
       display.setSummaryScoreMode(mode)
 
       const layers = buildSourceRenderData(
@@ -351,7 +351,7 @@ describe('LinearWiggleDisplay solid color', () => {
     'density under a constant color stays one color in %s mode',
     mode => {
       const display = loadedWithSignedData()
-      display.setColor('green')
+      display.applyPlot({ color: 'green' })
       display.setRenderingType('density')
       display.setSummaryScoreMode(mode)
 

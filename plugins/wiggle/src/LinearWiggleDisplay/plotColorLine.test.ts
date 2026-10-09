@@ -27,7 +27,7 @@ function makeDisplay({
     view.displayedRegions[0],
   )
   if (color !== undefined) {
-    display.setColor(color)
+    display.applyPlot({ color })
   }
   if (origin !== undefined) {
     display.setOrigin(origin)
@@ -46,7 +46,7 @@ function lineOf(display: ReturnType<typeof makeDisplay>) {
 // the colors the plot paints have not moved.
 function roundTrips(display: ReturnType<typeof makeDisplay>) {
   const before = lineOf(display)
-  display.setColor(plotColorEdit(display.colorSetting, before))
+  display.applyPlot({ color: plotColorEdit(display.colorSetting, before) })
   return { before, after: lineOf(display) }
 }
 
@@ -201,7 +201,7 @@ describe('what a swatch writes', () => {
     })
     expect(written).not.toHaveProperty('domain')
 
-    display.setColor(written)
+    display.applyPlot({ color: written })
     display.setOrigin(3)
     expect(lineOf(display).cut).toBe(3)
   })
@@ -236,9 +236,12 @@ describe('what a swatch writes', () => {
       },
     })
 
-    display.setColor(
-      plotColorEdit(display.colorSetting, { above: 'green', below: 'green' }),
-    )
+    display.applyPlot({
+      color: plotColorEdit(display.colorSetting, {
+        above: 'green',
+        below: 'green',
+      }),
+    })
     expect(lineOf(display)).toMatchObject({ above: 'green', below: 'green' })
     expect(
       plotColorEdit(display.colorSetting, {

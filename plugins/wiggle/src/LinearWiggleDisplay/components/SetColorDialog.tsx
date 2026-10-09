@@ -5,6 +5,7 @@ import { plotColorEdit, plotColorLine } from '../plotColorLine.ts'
 
 import type { ResolvedWiggleColor } from '../../shared/wiggleColor.ts'
 import type { Source } from '../../util.ts'
+import type { Plot } from '@jbrowse/core/configuration'
 import type { ColorSetting } from '@jbrowse/display-kit/colorConfigSchema'
 import type { TreeLayoutModel } from '@jbrowse/tree-sidebar'
 
@@ -17,7 +18,7 @@ export default observer(function WiggleSetColorDialog({
     rowPaletteDeals: boolean
     colorSetting: ColorSetting
     discoveredRows: readonly unknown[]
-    setColor: (color?: Partial<ColorSetting> | string) => void
+    applyPlot: (draft: Plot) => void
     openPlotDialog: () => void
   }
   handleClose: () => void
@@ -41,7 +42,9 @@ export default observer(function WiggleSetColorDialog({
               mode: line.mode,
               reason: line.reason,
               onSubmit: next => {
-                model.setColor(plotColorEdit(model.colorSetting, next))
+                model.applyPlot({
+                  color: plotColorEdit(model.colorSetting, next),
+                })
               },
             }
       }

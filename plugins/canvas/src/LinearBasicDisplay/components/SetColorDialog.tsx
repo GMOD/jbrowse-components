@@ -11,7 +11,7 @@ const SetColorDialog = observer(function SetColorDialog({
   model: {
     featureColor: string
     colorSetting: { value?: string }
-    setFeatureColor: (arg?: string) => void
+    setColorValue: (value: string | undefined) => void
     utrColor?: string
     setUtrColor?: (arg?: string) => void
   }
@@ -24,10 +24,10 @@ const SetColorDialog = observer(function SetColorDialog({
       color={model.featureColor}
       written={model.colorSetting.value}
       onChange={color => {
-        model.setFeatureColor(color)
+        model.setColorValue(color)
       }}
       onReset={() => {
-        model.setFeatureColor(undefined)
+        model.setColorValue(undefined)
         setUtrColor?.(undefined)
       }}
       handleClose={handleClose}

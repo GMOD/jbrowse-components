@@ -4,36 +4,40 @@ import { radioItem, radioItems } from '@jbrowse/core/ui/menuItems'
 import { getDialogHost } from '@jbrowse/core/util'
 import { colorByMenuItem } from '@jbrowse/display-kit/colorByMenu'
 
-import { BASE_COLOR_FIELDS } from '../../shared/alignmentsColor.ts'
+import { baseLayerOfField, tagColorFor } from '../../shared/alignmentsColor.ts'
 import {
   ARC_COLOR_OPTIONS,
   SAME_AS_READS_HELP,
   SAME_AS_READS_LABEL,
 } from '../../shared/arcColorOptions.ts'
-import { radioColorOptions } from '../../shared/colorSchemes.ts'
+import { radioColorFieldOptions } from '../../shared/colorFieldOptions.ts'
 import { bisulfiteItem } from './bisulfiteMenu.ts'
 import { modificationsMenu } from './modificationsMenu.ts'
 
-import type { AlignmentsColorEncoding } from '../../shared/alignmentsColor.ts'
-import type { ColorOption } from '../../shared/colorSchemes.ts'
+import type {
+  AlignmentsColorEncoding,
+  AlignmentsColorSetting,
+} from '../../shared/alignmentsColor.ts'
+import type { ColorFieldOption } from '../../shared/colorFieldOptions.ts'
 import type {
   ArcColorField,
   BaseLayer,
-  BaseLayerType,
-  ColorSchemeType,
   ReadColorBy,
   TagColorScale,
 } from '../../shared/types.ts'
 import type { ModificationsMenuModel } from './modificationsMenu.ts'
+import type { Plot } from '@jbrowse/core/configuration'
 import type { MenuItem } from '@jbrowse/core/ui'
 
 const TagDialog = lazy(() => import('../dialogs/TagDialog.tsx'))
 
 interface ColorByModel {
   colorBy: ReadColorBy
+  colorField: string
   colorEncoding: AlignmentsColorEncoding
-  setColorBy: (colorBy: ReadColorBy) => void
-  setColorByTag: (tag: string, scale: TagColorScale) => void
+  writtenColor: AlignmentsColorSetting
+  colorByField: (field: string) => void
+  applyPlot: (draft: Plot) => void
   baseLayer: BaseLayer | undefined
   setBaseLayer: (layer?: BaseLayer) => void
 }
@@ -69,7 +73,7 @@ interface ColorByMenuOptions {
   includePairedEnd?: boolean
   // The MM/ML modification submenu plus reference-based bisulfite.
   includeModifications?: boolean
-  colorOptions?: ColorOption[]
+  colorOptions?: ColorFieldOption[]
   // Read-connection arc coloring lives here rather than in the Read connections
   // menu — it's a rare setting and colors belong together. Omitted (like every
   // other section here) when no overlay (arcs or read cloud) is active, since
@@ -82,8 +86,8 @@ interface ColorByMenuOptions {
 
 // Derived from the shared COLOR_SCHEMES registry (single source of menu
 // placement + shader path), in registry order so the menu is unchanged.
-const basicColorOptions = radioColorOptions('basic')
-const pairedEndColorOptions = radioColorOptions('pairedEnd')
+const basicColorOptions = radioColorFieldOptions('basic')
+const pairedEndColorOptions = radioColorFieldOptions('pairedEnd')
 
 // --- menu sections ----------------------------------------------------------
 //
@@ -93,29 +97,26 @@ const pairedEndColorOptions = radioColorOptions('pairedEnd')
 // which spread one caller decision across six signatures and hid the opt-in
 // list the file's comments keep describing.
 
-// A plain radio that selects a whole color scheme (no extra config).
+// A plain radio naming a field: the read fill's, or a per-base layer's.
 function colorRadio(
   model: AnyColorByModel,
-  { label, type }: ColorOption,
+  { label, field }: ColorFieldOption,
 ): MenuItem {
-  return isBaseLayerType(type)
-    ? radioItem(label, model.baseLayer?.type === type, () => {
-        model.setBaseLayer({ type })
+  const layer = baseLayerOfField(field)
+  return layer
+    ? radioItem(label, model.baseLayer?.type === layer, () => {
+        model.setBaseLayer({ type: layer })
       })
-    : radioItem(label, model.colorBy.type === type, () => {
-        model.setColorBy({ type })
+    : radioItem(label, model.colorField === field, () => {
+        model.colorByField(field)
       })
-}
-
-function isBaseLayerType(type: ColorSchemeType): type is BaseLayerType {
-  return Object.hasOwn(BASE_COLOR_FIELDS, type)
 }
 
 // The per-base layer draws over whatever fills the reads, so its rows are a
 // radio group of their own with a way back to none.
 function baseLayerItems(
   model: AnyColorByModel,
-  options: ColorOption[],
+  options: ColorFieldOption[],
   mods: ModificationsModel | undefined,
 ): MenuItem[] {
   return [
@@ -157,7 +158,13 @@ function tagItem(model: AnyColorByModel): MenuItem {
           initialTag: colorBy.tag,
           colorScale: tagColorScaleOf(model),
           onSubmit: (tag: string, scale: TagColorScale | undefined) => {
-            model.setColorByTag(tag, scale ?? 'categorical')
+            model.applyPlot({
+              color: tagColorFor(
+                model.writtenColor,
+                tag,
+                scale ?? 'categorical',
+              ),
+            })
           },
           handleClose,
         },
@@ -240,8 +247,12 @@ export function getColorByMenuItem(
     arcColor,
   } = options
   const mods = includeModifications ? modModel(model) : undefined
-  const readOptions = colorOptions.filter(o => !isBaseLayerType(o.type))
-  const layerOptions = colorOptions.filter(o => isBaseLayerType(o.type))
+  const readOptions = colorOptions.filter(
+    o => baseLayerOfField(o.field) === undefined,
+  )
+  const layerOptions = colorOptions.filter(
+    o => baseLayerOfField(o.field) !== undefined,
+  )
   // Everything above the header picks the read fill scheme — the radios and the
   // Paired end / Modifications / Bisulfite submenus alike. Below it the arcs
   // and read cloud take their own field. Both render as a submenu arrow, so one

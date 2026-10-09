@@ -4,24 +4,19 @@ import {
   Toolbar,
   TrackStack,
 } from '@jbrowse/display-ui/embed'
-import { pickColorOptions } from '@jbrowse/plugin-alignments'
+import { colorFieldOptions } from '@jbrowse/plugin-alignments'
 import { useCreateViewState } from '@jbrowse/react-linear-genome-view2'
 import { observer } from 'mobx-react'
 
-import type {
-  LinearAlignmentsDisplayModel,
-  ReadColorBy,
-} from '@jbrowse/plugin-alignments'
+import type { LinearAlignmentsDisplayModel } from '@jbrowse/plugin-alignments'
 
-const schemeTypes = [
-  'normal',
+const fields = colorFieldOptions(
+  '',
   'strand',
   'pairOrientation',
   'insertSizeAndOrientation',
-  'mappingQuality',
-] as const satisfies readonly ReadColorBy['type'][]
-
-const schemes = pickColorOptions(...schemeTypes)
+  'mapq',
+)
 
 const Settings = observer(function Settings({
   display,
@@ -33,16 +28,14 @@ const Settings = observer(function Settings({
       <label>
         Color by{' '}
         <select
-          value={display.colorBy.type}
+          value={display.colorField}
           onChange={event => {
-            const type = schemeTypes.find(t => t === event.target.value)
-            if (type) {
-              display.setColorBy({ type })
-            }
+            const field = event.target.value
+            display.applyPlot({ color: field ? { field } : null })
           }}
         >
-          {schemes.map(({ type, label }) => (
-            <option key={type} value={type}>
+          {fields.map(({ field, label }) => (
+            <option key={field} value={field}>
               {label}
             </option>
           ))}

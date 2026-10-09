@@ -32,6 +32,7 @@ import {
 } from '@jbrowse/core/util/bandHeight'
 import { carryGroupDomain, groupKeySpaceOf } from '@jbrowse/core/util/groupKeys'
 import { sameStrings } from '@jbrowse/core/util/sameStrings'
+import ColorWritesMixin from '@jbrowse/display-kit/ColorWritesMixin'
 import { ContextMenuMixin } from '@jbrowse/display-kit/ContextMenuMixin'
 import DensityTierMixin from '@jbrowse/display-kit/DensityTierMixin'
 import HeightModeMixin from '@jbrowse/display-kit/HeightModeMixin'
@@ -77,7 +78,6 @@ import { arcSlotCategory } from '../shaders/palettes.ts'
 import {
   BASE_COLOR_FIELDS,
   colorFieldOf,
-  colorSnapshotFor,
   writtenReadCategoryColors,
   declaredReadLabels,
   isBakedScheme,
@@ -203,10 +203,7 @@ import type { BezierArcScope } from '../features/linkedReads/computeOverlay.ts'
 import type { SashimiBandFeed } from '../features/sashimi/bandFeed.ts'
 import type { LaneJunction } from '../features/sashimi/supportingReads.ts'
 import type { ArcCategory } from '../shaders/palettes.ts'
-import type {
-  AlignmentsColorSetting,
-  DeclaredReadLabels,
-} from '../shared/alignmentsColor.ts'
+import type { DeclaredReadLabels } from '../shared/alignmentsColor.ts'
 import type { ReadSlot } from '../shared/readSlot.ts'
 import type {
   ArcColorField,
@@ -214,9 +211,7 @@ import type {
   ReadFilter,
   Facet,
   LayoutOrder,
-  ReadColorBy,
   SortedBy,
-  TagColorScale,
 } from '../shared/types'
 import type { NumericExtent } from './bakedColorScale.ts'
 import type { ReadColorCategory } from './colorUtils.ts'
@@ -374,6 +369,7 @@ export default function stateModelFactory(
         DensityTierMixin(),
         ScoreScaleMixin(),
         LegendMixin(),
+        ColorWritesMixin(),
         ContextMenuMixin<AlignmentsContextMenuInfo>(),
         HiddenGroupsMixin(),
         types.model({
@@ -3058,35 +3054,8 @@ export default function stateModelFactory(
 
           /**
            * #action
-           */
-          setColorBy(colorBy: ReadColorBy) {
-            // A re-pick of the scheme in use writes nothing: the write would
-            // replace the slot's arrays, and every color tier keys on them.
-            if (!compareStructural(colorBy, self.colorBy)) {
-              setConf(
-                self,
-                'color',
-                colorSnapshotFor(colorBy, self.writtenColor),
-              )
-            }
-          },
-
-          /**
-           * #action
-           * Color by a read tag as categories, a color per value, or on a
-           * gradient over its numeric values.
-           */
-          setColorByTag(tag: string, scale: TagColorScale) {
-            setConf(self, 'color', {
-              ...colorSnapshotFor({ type: 'tag', tag }, self.writtenColor),
-              scale: scale === 'linear' ? 'linear' : undefined,
-            })
-          },
-
-          /**
-           * #action
            * Draw a per-base layer over the reads, or none. The read fill is
-           * `setColorBy`'s and stays as it is.
+           * `colorByField`'s and stays as it is.
            */
           setBaseLayer(layer?: BaseLayer) {
             if (!compareStructural(layer, self.baseLayer)) {
@@ -3107,15 +3076,6 @@ export default function stateModelFactory(
                 setConf(self, 'modifications', layer.modifications)
               }
             }
-          },
-
-          /**
-           * #action
-           * Replace the `color` object whole: `"steelblue"`,
-           * `{ field: 'tags.HP', range: [...] }`.
-           */
-          setColor(color: string | Partial<AlignmentsColorSetting>) {
-            setConf(self, 'color', color)
           },
 
           /**
@@ -3499,14 +3459,10 @@ export default function stateModelFactory(
             // marks read against, so neither direction swaps.
             const [from, to] =
               unit === 'read'
-                ? (['insertSizeAndOrientation', 'normal'] as const)
-                : (['normal', 'insertSizeAndOrientation'] as const)
-            if (self.colorBy.type === from && !self.baseLayer) {
-              setConf(
-                self,
-                'color',
-                colorSnapshotFor({ type: to }, self.writtenColor),
-              )
+                ? (['insertSizeAndOrientation', ''] as const)
+                : (['', 'insertSizeAndOrientation'] as const)
+            if (self.colorField === from && !self.baseLayer) {
+              self.colorByField(to)
             }
             // No refetch: chain identity is joined on the main thread
             // (`chainAttachment`). A facet in effect refetches, since it

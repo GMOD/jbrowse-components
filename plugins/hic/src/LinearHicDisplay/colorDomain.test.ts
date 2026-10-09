@@ -86,7 +86,7 @@ test('a pinned top gives a key before any data lands', () => {
 // the log scale floors at a count of 1, so that is where the key starts
 test('a log key starts where the ramp does', () => {
   const display = loaded()
-  display.setColorScale('log')
+  display.setLogScale(true)
   expect(display.renderState.scaleType).toBe(SCALE_TYPE_LOG)
   expect(display.colorScales[0]).toMatchObject({
     title: 'Contacts (log)',

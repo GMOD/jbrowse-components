@@ -27,6 +27,7 @@ import type {
   ModificationColorBy,
   ReadColorBy,
   ReadColorSchemeType,
+  TagColorScale,
 } from './types.ts'
 import type { FieldPresets } from '@jbrowse/core/util/colorScale'
 import type { ColorSchemeName } from '@jbrowse/core/util/colorSchemes'
@@ -88,6 +89,11 @@ const LAYER_OF_FIELD = new Map(
     layer as BaseLayerType,
   ]),
 )
+
+/** The per-base layer `field` draws, if it names one. */
+export function baseLayerOfField(field: string) {
+  return LAYER_OF_FIELD.get(field)
+}
 
 const READS_MODIFICATION_SETTINGS = new Set<BaseLayerType>([
   'modifications',
@@ -499,12 +505,20 @@ function bakedKeys(
       : []
 }
 
-/** The `color` object a scheme pick writes: `colorForField` over the scheme's field. */
-export function colorSnapshotFor(
-  colorBy: ColorBy,
+/**
+ * The `color` object the Tag dialog writes over `current`: the tag's field
+ * as a Color by pick writes it, on a ramp under `linear` and a color per
+ * value otherwise.
+ */
+export function tagColorFor(
   current: AlignmentsColorSetting,
-): Partial<AlignmentsColorSetting> {
-  return colorForField(current, colorFieldOf(colorBy))
+  tag: string,
+  scale: TagColorScale,
+) {
+  return {
+    ...colorForField(current, `${TAG_FIELD_PREFIX}${tag}`),
+    scale: scale === 'linear' ? 'linear' : undefined,
+  }
 }
 
 /**

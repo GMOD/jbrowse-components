@@ -29,6 +29,7 @@
     "./ChromeHighlight": "./src/ChromeHighlight.tsx",
     "./ChromeLegend": "./src/ChromeLegend.tsx",
     "./CoarseTierMixin": "./src/CoarseTierMixin.ts",
+    "./ColorWritesMixin": "./src/ColorWritesMixin.ts",
     "./ContextMenuMixin": "./src/ContextMenuMixin.ts",
     "./DensityTierMixin": "./src/DensityTierMixin.ts",
     "./DisplayBackgroundProgress": "./src/DisplayBackgroundProgress.tsx",

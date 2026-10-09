@@ -74,7 +74,8 @@ export type {
 } from './LinearAlignmentsDisplay/menus/index.ts'
 export { queueReadVsRefDialog } from './ReadVsRefDialog/index.ts'
 export type { ReadVsRefLaunchArgs } from './ReadVsRefDialog/index.ts'
-export { pickColorOptions } from './shared/colorSchemes.ts'
+export { colorFieldOptions } from './shared/colorFieldOptions.ts'
+export type { ColorFieldOption } from './shared/colorFieldOptions.ts'
 export { pickFacetOptions } from './shared/groupFeatures.ts'
 export type { ReadDimension } from './shared/types.ts'
 

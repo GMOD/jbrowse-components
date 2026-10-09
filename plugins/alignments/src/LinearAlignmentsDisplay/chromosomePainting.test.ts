@@ -89,7 +89,7 @@ function createDisplay() {
 
 async function loadedDisplay() {
   const { display } = createDisplay()
-  display.setColorBy({ type: 'mateRefName' })
+  display.colorByField('mateRefName')
   jest.advanceTimersByTime(400)
   await jest.runAllTimersAsync()
   await waitFor(() => {
@@ -131,6 +131,6 @@ test('the order reaches the baked read colors', async () => {
 // and a tag value is not a refName.
 test('no position is offered under a scheme that is not chromosome painting', async () => {
   const display = await loadedDisplay()
-  display.setColorBy({ type: 'tag', tag: 'HP' })
+  display.colorByField('tags.HP')
   expect(display.paintedRefNamePosition).toBeUndefined()
 })

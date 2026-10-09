@@ -43,7 +43,7 @@ interface SortByModel {
 // reveals when applied. Interbase types from the context menu's "sort at
 // position" keep "Base pair" checked.
 //
-// Callers pick the applicable modes and the label noun (like pickColorOptions):
+// Callers pick the applicable modes and the label noun (like colorFieldOptions):
 // alignments takes every mode with 'read'; LGVSyntenyDisplay drops base pair /
 // tag — a PAF block has neither per-base sequence nor SAM tags — and uses
 // 'feature'. The noun is held lower-case because it also lands mid-label

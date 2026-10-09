@@ -12,10 +12,6 @@ import {
   colorByMenuItem,
   solidColorItem,
 } from '@jbrowse/display-kit/colorByMenu'
-import {
-  colorForField,
-  colorForValue,
-} from '@jbrowse/display-kit/colorConfigSchema'
 import { groupByRadioMenuItem } from '@jbrowse/display-kit/groupByMenu'
 import {
   clusteringMenuItem,
@@ -68,7 +64,7 @@ function needs(label: string, what: string, present: boolean, loaded: boolean) {
 function pickCellSolidColor(self: LinearMultiSampleVariantDisplayModel) {
   const { value } = self.colorSetting
   if (self.colorField && value !== undefined && !isJexl(value)) {
-    self.setColor(colorForField(self.colorSetting, ''))
+    self.colorByField('')
   }
   getDialogHost(self).queueDialog(handleClose => [
     CellSolidColorDialog,
@@ -243,7 +239,7 @@ export function variantTrackMenuItems(
               type: 'radio',
               checked: self.colorEncoding === undefined,
               onClick: () => {
-                self.setColor(colorForValue(self.colorSetting, undefined))
+                self.setColorValue(undefined)
               },
             },
             {
@@ -257,7 +253,7 @@ export function variantTrackMenuItems(
                 ? undefined
                 : 'Only applies with a row per haplotype — switch Rows to Per haplotype',
               onClick: () => {
-                self.setColorField(PHASE_SET_FIELD)
+                self.colorByField(PHASE_SET_FIELD)
               },
             },
             {
@@ -272,7 +268,7 @@ export function variantTrackMenuItems(
               type: 'radio',
               checked: self.colorField === IMPACT_FIELD,
               onClick: () => {
-                self.setColorField(IMPACT_FIELD)
+                self.colorByField(IMPACT_FIELD)
               },
             },
             {
@@ -287,7 +283,7 @@ export function variantTrackMenuItems(
               type: 'radio',
               checked: self.colorField === SV_TYPE_FIELD,
               onClick: () => {
-                self.setColorField(SV_TYPE_FIELD)
+                self.colorByField(SV_TYPE_FIELD)
               },
             },
             {

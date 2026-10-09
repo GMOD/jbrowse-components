@@ -455,7 +455,7 @@ export function facetUnitNotices(
 // Dimensions as menu radio options, in the given order: the one join between the
 // registry above and the label table, so no call site re-spells a label. The
 // alignments menu takes every non-hidden dimension, LGVSyntenyDisplay a curated
-// three. Mirrors pickColorOptions.
+// three. Mirrors colorFieldOptions.
 export function pickFacetOptions(...fields: ReadDimension[]) {
   return fields.map(field => ({ type: field, label: FACET_LABELS[field] }))
 }

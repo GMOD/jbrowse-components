@@ -1,5 +1,6 @@
 import { getConf, setConf } from '@jbrowse/core/configuration'
 
+import { tagColorFor } from '../shared/alignmentsColor.ts'
 import { getFeatureHeightMenuItem } from './menus/featureSize.ts'
 import {
   bootAlignmentsDisplay,
@@ -369,7 +370,7 @@ describe('alignments colorBy', () => {
 
   it('a read pick leaves the layer alone, and the layer has its own way off', () => {
     const { display } = createDisplay({ baseColor: 'modifications' })
-    display.setColorBy({ type: 'strand' })
+    display.colorByField('strand')
     expect(display.baseLayer?.type).toBe('modifications')
     display.setBaseLayer({ type: 'perBaseQuality' })
     expect(display.colorBy).toEqual({ type: 'strand' })
@@ -406,12 +407,12 @@ describe('alignments colorBy', () => {
     const { display } = createDisplay({
       color: { field: 'tags.HP', range: ['red', 'blue'] },
     })
-    display.setColorBy({ type: 'normal' })
+    display.colorByField('')
     expect(display.colorBy).toEqual({ type: 'normal' })
     expect(display.colorSetting.field).toBe('tags.HP')
-    display.setColorBy({ type: 'tag', tag: 'HP' })
+    display.colorByField('tags.HP')
     expect(display.colorSetting.range).toEqual(['red', 'blue'])
-    display.setColorBy({ type: 'strand' })
+    display.colorByField('strand')
     expect(display.colorSetting).toMatchObject({ field: 'strand', range: [] })
   })
 
@@ -426,9 +427,9 @@ describe('alignments colorBy', () => {
     }
     const { display } = createDisplay({ color })
     expect(display.bakedColorScale?.kind).toBe('linear')
-    display.setColorBy({ type: 'normal' })
+    display.colorByField('')
     expect(display.bakedColorScale).toBeUndefined()
-    display.setColorBy({ type: 'tag', tag: 'NM' })
+    display.colorByField('tags.NM')
     expect(display.colorSetting).toMatchObject({
       field: 'tags.NM',
       scale: undefined,
@@ -446,14 +447,18 @@ describe('alignments colorBy', () => {
         domainMin: 0,
       },
     })
-    display.setColorBy({ type: 'normal' })
-    display.setColorByTag('NM', 'linear')
+    display.colorByField('')
+    display.applyPlot({
+      color: tagColorFor(display.writtenColor, 'NM', 'linear'),
+    })
     expect(display.bakedColorScale?.kind).toBe('linear')
     expect(display.colorSetting).toMatchObject({
       range: ['#ffffff', '#000000'],
       domainMin: 0,
     })
-    display.setColorByTag('NM', 'categorical')
+    display.applyPlot({
+      color: tagColorFor(display.writtenColor, 'NM', 'categorical'),
+    })
     expect(display.colorSetting.scale).toBeUndefined()
   })
 

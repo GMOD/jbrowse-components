@@ -1,3 +1,5 @@
+import { colorForField } from '@jbrowse/display-kit/colorConfigSchema'
+
 import { bakedColorScale } from '../LinearAlignmentsDisplay/bakedColorScale.ts'
 import { makeTestPalette } from '../LinearAlignmentsDisplay/testUtils.ts'
 import {
@@ -8,7 +10,6 @@ import { bezierConnectionLegendItems } from '../features/linkedReads/computeOver
 import {
   alignmentsColorEncoding,
   colorByOf,
-  colorSnapshotFor,
   declaredReadLabels,
   isBakedScheme,
 } from './alignmentsColor.ts'
@@ -231,11 +232,9 @@ test('a scheme pick over the same field keeps the labels and title, a new field 
     labels: ['Maternal', 'Paternal'],
     title: 'Haplotype',
   }
-  expect(colorSnapshotFor({ type: 'tag', tag: 'HP' }, written)).toMatchObject({
+  expect(colorForField(written, 'tags.HP')).toMatchObject({
     labels: ['Maternal', 'Paternal'],
     title: 'Haplotype',
   })
-  expect(
-    colorSnapshotFor({ type: 'tag', tag: 'NM' }, written),
-  ).not.toHaveProperty('labels')
+  expect(colorForField(written, 'tags.NM')).not.toHaveProperty('labels')
 })

@@ -242,7 +242,7 @@ describe('the band stands alone, and fetches nothing', () => {
   // screen; the toggle stays for the zoom back in.
   it('drops the color key while the band stands in, and keeps its toggle', () => {
     const { display } = refusableDisplay(DENSITY_ADAPTER)
-    display.setColorScale({ field: 'type' })
+    display.applyPlot({ color: { field: 'type' } })
     display.setRpcData(
       0,
       makeFeatureData({

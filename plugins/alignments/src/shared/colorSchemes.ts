@@ -167,17 +167,6 @@ export const COLOR_SCHEMES: Record<ColorSchemeType, ColorSchemeDef> = {
   },
 }
 
-export interface ColorOption {
-  label: string
-  type: ColorSchemeType
-}
-
-// Human label for any scheme, so a menu can name the active scheme instead of
-// pointing at it with a bare "this color scheme".
-export function colorSchemeLabel(type: ColorSchemeType): string {
-  return COLOR_SCHEMES[type].menu.label
-}
-
 // True for the modification family (modifications/methylation/bisulfite) — the
 // schemes that share the 'modifications' shader path and drive the MM/ML
 // overlay, mod-coverage, and legend. Derived from the registry so the family
@@ -221,38 +210,4 @@ export function paintsEveryBase(layer: BaseLayer | undefined) {
 // only the paint/extract passes are gated.
 export function workerColorBy(colorBy: ReadColorBy): ReadColorBy | undefined {
   return COLOR_SCHEMES[colorBy.type].workerExtracts ? colorBy : undefined
-}
-
-type RadioColorScheme = ColorSchemeDef & {
-  menu: Extract<ColorSchemeMenu, { kind: 'radio' }>
-}
-
-// The radio schemes for a menu group, in registry (= menu) order. A user-defined
-// guard narrows to radio entries so `menu.label` reads without a cast.
-export function radioColorOptions(group: ColorGroup): ColorOption[] {
-  return Object.values(COLOR_SCHEMES)
-    .filter(
-      (s): s is RadioColorScheme =>
-        s.menu.kind === 'radio' && s.menu.group === group,
-    )
-    .map(({ type, menu }) => ({ type, label: menu.label }))
-}
-
-// Curated subset of schemes, in the given order, with labels sourced from the
-// registry — for consumers (e.g. synteny) that support only a handful of schemes
-// and shouldn't re-spell the labels at the call site.
-//
-// An entry may instead be a whole `{type,label}` to override the label for one
-// display, which is for the case where the registry name is right in one domain
-// and wrong in another (`mateRefName`: a mate's chromosome on a BAM, a query
-// contig on a PAF). Taking it inline keeps the curated list one ordered call
-// rather than a `pickColorOptions(...)` spread with a literal appended, so the
-// menu order stays visible in one place; `type` is still a `ColorSchemeType`, so
-// an override can't name a scheme the registry doesn't have.
-export function pickColorOptions(
-  ...types: (ColorSchemeType | ColorOption)[]
-): ColorOption[] {
-  return types.map(t =>
-    typeof t === 'string' ? { type: t, label: colorSchemeLabel(t) } : t,
-  )
 }

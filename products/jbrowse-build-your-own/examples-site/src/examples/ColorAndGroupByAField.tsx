@@ -62,9 +62,9 @@ const Channels = observer(function Channels({
         label="Color by"
         value={display.colorField}
         onChange={field => {
-          display.setColorScale(
-            field ? { field, domain: domains[field] } : undefined,
-          )
+          display.applyPlot({
+            color: field ? { field, domain: domains[field] } : null,
+          })
         }}
       />
       <FieldSelect

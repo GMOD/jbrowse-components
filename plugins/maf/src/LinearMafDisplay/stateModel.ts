@@ -24,13 +24,13 @@ import { colorNotices, withPreset } from '@jbrowse/core/util/colorScale'
 import { copyText } from '@jbrowse/core/util/copyText'
 import { deepEqual } from '@jbrowse/core/util/deepEqual'
 import CoarseTierMixin from '@jbrowse/display-kit/CoarseTierMixin'
+import ColorWritesMixin from '@jbrowse/display-kit/ColorWritesMixin'
 import LegendMixin from '@jbrowse/display-kit/LegendMixin'
 import MultiRegionDisplayMixin from '@jbrowse/display-kit/MultiRegionDisplayMixin'
 import StoredHoverMixin from '@jbrowse/display-kit/StoredHoverMixin'
 import TrackHeightMixin from '@jbrowse/display-kit/TrackHeightMixin'
 import {
   colorEncodingOf,
-  colorForField,
   colorSettingOf,
 } from '@jbrowse/display-kit/colorConfigSchema'
 import { MIN_DISPLAY_HEIGHT } from '@jbrowse/display-kit/const'
@@ -307,6 +307,7 @@ export default function stateModelFactory(
         MultiRegionDisplayMixin(),
         CoarseTierMixin<MafRegionPayload<MafSummaryRecord[]>>(),
         LegendMixin(),
+        ColorWritesMixin(),
         RowHeightMixin(),
         TreeSidebarMixin<MafSource>(),
         ContextMenuMixin<MafContextMenuInfo>(),
@@ -663,12 +664,6 @@ export default function stateModelFactory(
          */
         setConservationMode(arg: ConservationMode) {
           setConf(self, 'conservationMode', arg)
-        },
-        /**
-         * #action
-         */
-        setColorField(field: MafColorField) {
-          setConf(self, 'color', colorForField(self.colorSetting, field))
         },
         /**
          * #action
@@ -2180,7 +2175,7 @@ export default function stateModelFactory(
          */
         setRowRendering(rendering: RowRendering) {
           const { color, y } = rowRenderingSettings(rendering)
-          self.setColorField(color)
+          self.colorByField(color)
           self.setYField(y)
         },
       }))

@@ -697,15 +697,6 @@ export default function stateModelFactory(
 
       /**
        * #action
-       * The whole color object at once, since a scale and the slots it reads
-       * are one setting; `undefined` returns to the layout's own picture.
-       */
-      setColor(color?: Partial<ColorSetting> | string) {
-        setConf(self, 'color', color ?? {})
-      },
-
-      /**
-       * #action
        * The layout half of a Plot type leaf — `Multi-row` or `Overlapping`,
        * each holding the five plot names. Writes the field alone, so the
        * arrangement survives a trip through the shared plot and comes back

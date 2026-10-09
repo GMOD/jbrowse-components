@@ -30,12 +30,12 @@ test('the curated color schemes are the four synteny ones', () => {
 test('a string color is the constant fill, over the strand default', () => {
   const display = createDisplay()
   expect(display.colorBy).toEqual({ type: 'strand' })
-  display.setColor('steelblue')
+  display.applyPlot({ color: 'steelblue' })
   expect(display.colorBy).toEqual({ type: 'normal' })
   expect(display.colorSetting.value).toBe('steelblue')
-  display.setColorBy({ type: 'strand' })
+  display.colorByField('strand')
   expect(display.colorBy).toEqual({ type: 'strand' })
-  display.setColor({ value: 'steelblue', field: 'strand' })
+  display.applyPlot({ color: { value: 'steelblue', field: 'strand' } })
   expect(display.colorBy).toEqual({ type: 'strand' })
 })
 

@@ -70,7 +70,7 @@ async function syntenyDisplay() {
   const display = session.views[0].tracks[0].displays[0] as {
     trackMenuItems: () => MenuItem[]
     colorBy: { type: string }
-    setColorBy: (colorBy: { type: string }) => void
+    colorByField: (field: string) => void
   }
   return display
 }
@@ -107,6 +107,6 @@ test('colors by strand until a config says otherwise', async () => {
 
 test('picking Query name stores the scheme through the config slot', async () => {
   const display = await syntenyDisplay()
-  display.setColorBy({ type: 'mateRefName' })
+  display.colorByField('mateRefName')
   expect(display.colorBy).toEqual({ type: 'mateRefName' })
 })

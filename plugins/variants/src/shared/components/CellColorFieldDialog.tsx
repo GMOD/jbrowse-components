@@ -14,6 +14,7 @@ import {
   parseCuts,
 } from './cellColorFieldDialogUtil.ts'
 
+import type { Plot } from '@jbrowse/core/configuration'
 import type { JexlFilterField } from '@jbrowse/core/ui/JexlFilterDialog'
 
 interface FieldChoice {
@@ -48,7 +49,7 @@ const CellColorFieldDialog = observer(function CellColorFieldDialog({
     colorField: string
     colorSetting: { scale: string | undefined; domain: readonly string[] }
     fetchAdapterMetadata: () => Promise<unknown>
-    setColor: (color: Record<string, unknown>) => void
+    applyPlot: (draft: Plot) => void
   }
   handleClose: () => void
 }) {
@@ -77,7 +78,7 @@ const CellColorFieldDialog = observer(function CellColorFieldDialog({
         handleClose()
       }}
       onSubmit={() => {
-        model.setColor(cellColorOfField(trimmed, parsed ?? []))
+        model.applyPlot({ color: cellColorOfField(trimmed, parsed ?? []) })
         handleClose()
       }}
     >

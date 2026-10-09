@@ -1,3 +1,5 @@
+import { colorForField } from '@jbrowse/display-kit/colorConfigSchema'
+
 import {
   BASE_COLOR_FIELDS,
   COLOR_FIELDS,
@@ -6,13 +8,11 @@ import {
   bodyColorScheme,
   colorByOf,
   colorFieldOf,
-  colorSnapshotFor,
   pinnedInsertSizeBand,
 } from './alignmentsColor.ts'
 import { FACET_LABELS } from './facetLabels.ts'
 
 import type { AlignmentsColorSetting } from './alignmentsColor.ts'
-import type { ColorBy } from './types.ts'
 
 const UNSET: AlignmentsColorSetting = {
   value: undefined,
@@ -107,30 +107,30 @@ describe('bodyColorScheme', () => {
   })
 })
 
-describe('colorSnapshotFor', () => {
+describe('a Color by pick over the written color', () => {
   const hp: AlignmentsColorSetting = {
     ...UNSET,
     field: 'tags.HP',
     domain: ['1', '2'],
     range: ['red', 'blue'],
   }
-  const tagHP: ColorBy = { type: 'tag', tag: 'HP' }
 
   test('the plain fill keeps the field under none, and re-picking it restores it', () => {
-    expect(colorSnapshotFor({ type: 'normal' }, hp)).toMatchObject({
+    expect(colorForField(hp, '')).toMatchObject({
       field: 'tags.HP',
       scale: 'none',
       domain: ['1', '2'],
     })
-    const back = colorSnapshotFor(tagHP, { ...hp, scale: 'none' })
+    const back = colorForField({ ...hp, scale: 'none' }, 'tags.HP')
     expect(back).toMatchObject({ field: 'tags.HP', range: ['red', 'blue'] })
     expect(back.scale).toBeUndefined()
   })
 
   test('a new field starts from no order or range and keeps the constant', () => {
-    expect(
-      colorSnapshotFor({ type: 'strand' }, { ...hp, value: 'grey' }),
-    ).toEqual({ value: 'grey', field: 'strand' })
+    expect(colorForField({ ...hp, value: 'grey' }, 'strand')).toEqual({
+      value: 'grey',
+      field: 'strand',
+    })
   })
 })
 

@@ -2,10 +2,12 @@ import { isValidElement } from 'react'
 
 import { resolveSubMenu, staysOpenOnClick } from '@jbrowse/core/ui'
 
-import { pickColorOptions } from '../../shared/colorSchemes.ts'
+import { colorFieldOptions } from '../../shared/colorFieldOptions.ts'
 import { getColorByMenuItem } from './colorBy.ts'
 
+import type { AlignmentsColorSetting } from '../../shared/alignmentsColor.ts'
 import type { BaseLayer, ReadColorBy } from '../../shared/types.ts'
+import type { Plot } from '@jbrowse/core/configuration'
 import type { MenuItem } from '@jbrowse/core/ui'
 
 // Minimal model: enough for schemeRadios + the Paired end submenu (modModel is
@@ -13,13 +15,24 @@ import type { MenuItem } from '@jbrowse/core/ui'
 function makeModel() {
   return {
     colorBy: { type: 'normal' } as ReadColorBy,
+    colorField: '',
     colorEncoding: undefined,
-    setColorBy(cb: ReadColorBy) {
-      this.colorBy = cb
+    writtenColor: {
+      value: undefined,
+      field: '',
+      scale: undefined,
+      domain: [],
+      range: [],
+      scheme: undefined,
+      reverse: false,
+      domainMin: undefined,
+      domainMax: undefined,
+      domainMid: undefined,
+    } as AlignmentsColorSetting,
+    colorByField(field: string) {
+      this.colorField = field
     },
-    setColorByTag(tag: string) {
-      this.colorBy = { type: 'tag', tag }
-    },
+    applyPlot(_draft: Plot) {},
     baseLayer: undefined as BaseLayer | undefined,
     setBaseLayer(layer?: BaseLayer) {
       this.baseLayer = layer
@@ -376,15 +389,15 @@ describe('color by menu curation', () => {
 
   test('curated colorOptions replace the basic radios', () => {
     expect(
-      labelsFor({ colorOptions: pickColorOptions('normal', 'mateRefName') }),
+      labelsFor({ colorOptions: colorFieldOptions('', 'mateRefName') }),
     ).toEqual(['Normal', 'Mate chromosome'])
   })
 
   test('a curated entry can relabel one scheme for its own display', () => {
     expect(
       labelsFor({
-        colorOptions: pickColorOptions('normal', {
-          type: 'mateRefName',
+        colorOptions: colorFieldOptions('', {
+          field: 'mateRefName',
           label: 'Query name',
         }),
       }),
@@ -399,6 +412,6 @@ describe('color by menu curation', () => {
     // clickRadio throws if the row isn't there or isn't clickable, so reaching
     // the assertion is itself the "it is offered" half
     clickRadio(model, 'Mate chromosome')
-    expect(model.colorBy).toEqual({ type: 'mateRefName' })
+    expect(model.colorField).toBe('mateRefName')
   })
 })

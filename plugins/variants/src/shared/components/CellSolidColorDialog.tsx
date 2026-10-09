@@ -1,6 +1,5 @@
 import { isJexl } from '@jbrowse/core/util/jexlStrings'
 import SolidColorDialog from '@jbrowse/display-kit/SolidColorDialog'
-import { colorForValue } from '@jbrowse/display-kit/colorConfigSchema'
 import { observer } from 'mobx-react'
 
 import { ALT_HUE } from '../cellFill.ts'
@@ -13,7 +12,7 @@ const CellSolidColorDialog = observer(function CellSolidColorDialog({
 }: {
   model: {
     colorSetting: ColorSetting
-    setColor: (color: Record<string, unknown>) => void
+    setColorValue: (value: string | undefined) => void
   }
   handleClose: () => void
 }) {
@@ -24,10 +23,10 @@ const CellSolidColorDialog = observer(function CellSolidColorDialog({
       color={value !== undefined && !isJexl(value) ? value : ALT_HUE}
       written={value}
       onChange={color => {
-        model.setColor(colorForValue(model.colorSetting, color))
+        model.setColorValue(color)
       }}
       onReset={() => {
-        model.setColor(colorForValue(model.colorSetting, undefined))
+        model.setColorValue(undefined)
       }}
       handleClose={handleClose}
     />

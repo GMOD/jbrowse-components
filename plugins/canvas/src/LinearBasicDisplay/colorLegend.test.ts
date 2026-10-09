@@ -41,7 +41,7 @@ describe('the color key', () => {
 
     expect(legendItem()).toBeUndefined()
 
-    display.setColorScale({ field: 'repClass' })
+    display.applyPlot({ color: { field: 'repClass' } })
     display.setRpcData(
       0,
       makeFeatureData({
@@ -137,7 +137,7 @@ describe('derived color key', () => {
   }) {
     const { createDisplay } = createTestEnvironment()
     const { display } = createDisplay()
-    display.setColorScale(scale)
+    display.applyPlot({ color: scale })
     const biotypes = ['protein_coding', 'lncRNA', 'snoRNA']
     display.setRpcData(
       0,
@@ -277,10 +277,12 @@ describe('derived color key', () => {
   it('is no key while every value paints one color', () => {
     const { createDisplay } = createTestEnvironment()
     const { display } = createDisplay()
-    display.setColorScale({
-      field: 'biotype',
-      domain: ['a', 'b'],
-      range: ['red', 'red'],
+    display.applyPlot({
+      color: {
+        field: 'biotype',
+        domain: ['a', 'b'],
+        range: ['red', 'red'],
+      },
     })
     display.setRpcData(0, paintedData(['a', 'b']), ctgA)
     expect(display.colorScales).toEqual([])

@@ -63,7 +63,7 @@ function cellData(colorRead: CellHueRead): CellDataResult {
 function setup() {
   const { display } = createTestEnvironment().createDisplay()
   display.setSources(SAMPLES.map(name => ({ name })))
-  display.setColor({ ...AF, domain: ['0.5'], range: ['#aa0000'] })
+  display.applyPlot({ color: { ...AF, domain: ['0.5'], range: ['#aa0000'] } })
   display.setCellData(cellData({ field: 'INFO.AF' }))
   // the views are observed, as the renderer observes them, so each keeps its
   // value until an input moves
@@ -84,7 +84,7 @@ test('a recolor repaints the loaded cells, the lane and the key', () => {
   expect(cells(display)).toEqual(new Array(3).fill(het('#aa0000')))
   expect(display.paintedDomain).toEqual(['0.5'])
 
-  display.setColor({ ...AF, domain: ['0.5'], range: ['#00aa00'] })
+  display.applyPlot({ color: { ...AF, domain: ['0.5'], range: ['#00aa00'] } })
   expect(display.rpcProps()).toEqual(key)
   expect(cells(display)).toEqual(new Array(3).fill(het('#00aa00')))
   expect([...display.regionFeatureColors.get(0)!]).toEqual([
@@ -99,11 +99,11 @@ test('a recolor repaints the loaded cells, the lane and the key', () => {
 test('a switch to a constant and back keeps the fetch key', () => {
   const { display, dispose } = setup()
   const key = display.rpcProps()
-  display.setColorField('')
+  display.colorByField('')
   expect(display.rpcProps()).toEqual(key)
   expect(cells(display)).toEqual(new Array(3).fill(het(ALT_HUE)))
   expect(display.paintedDomain).toEqual([])
-  display.setColorField('INFO.AF')
+  display.colorByField('INFO.AF')
   expect(display.rpcProps()).toEqual(key)
   expect(cells(display)).toEqual(new Array(3).fill(het('#aa0000')))
   dispose()
@@ -123,12 +123,14 @@ test('a key label repaints nothing, and a reorder or shading moves only what it 
   const lane = display.regionFeatureColors
   const rows = display.placedRegionRows
 
-  display.setColor({
-    ...AF,
-    domain: ['0.5'],
-    range: ['#aa0000'],
-    labels: ['half'],
-    title: 'Allele frequency',
+  display.applyPlot({
+    color: {
+      ...AF,
+      domain: ['0.5'],
+      range: ['#aa0000'],
+      labels: ['half'],
+      title: 'Allele frequency',
+    },
   })
   expect(display.regionCellColors).toBe(colors)
   expect(display.regionFeatureColors).toBe(lane)
@@ -147,24 +149,28 @@ test('a key label repaints nothing, and a reorder or shading moves only what it 
 
 test('a recolor of one field keeps the fetch key', () => {
   const { display } = createTestEnvironment().createDisplay()
-  display.setColor(AF)
+  display.applyPlot({ color: AF })
   const key = display.rpcProps()
-  display.setColor({ ...AF, range: ['#aa0000'] })
+  display.applyPlot({ color: { ...AF, range: ['#aa0000'] } })
   expect(display.rpcProps()).toEqual(key)
-  display.setColor({ field: 'INFO.AF', scale: 'threshold', domain: ['0.01'] })
+  display.applyPlot({
+    color: { field: 'INFO.AF', scale: 'threshold', domain: ['0.01'] },
+  })
   expect(display.rpcProps()).toEqual(key)
   display.setShadeByDosage(false)
   expect(display.rpcProps()).toEqual(key)
-  display.setColor({ field: 'INFO.DP', scale: 'threshold', domain: ['10'] })
+  display.applyPlot({
+    color: { field: 'INFO.DP', scale: 'threshold', domain: ['10'] },
+  })
   expect(display.rpcProps()).not.toEqual(key)
 })
 
 test('a constant reads nothing, and a jexl callback is read in the worker', () => {
   const { display } = createTestEnvironment().createDisplay()
   const key = display.rpcProps()
-  display.setColor({ value: '#123456' })
+  display.applyPlot({ color: { value: '#123456' } })
   expect(display.rpcProps()).toEqual(key)
-  display.setColor({ value: "jexl:'#123456'" })
+  display.applyPlot({ color: { value: "jexl:'#123456'" } })
   expect(display.rpcProps().color).toBe("jexl:'#123456'")
 })
 

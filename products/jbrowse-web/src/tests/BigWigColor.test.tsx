@@ -37,9 +37,9 @@ test.each(['green', 'purple'])(
     const blue = canvasToBuffer(canvas1)
 
     const display = view.tracks[0]!.displays[0] as {
-      setColor: (c: string) => void
+      applyPlot: (draft: Record<string, unknown>) => void
     }
-    display.setColor(color)
+    display.applyPlot({ color })
 
     // the recolor repaints without refetching, so nothing on the model moves —
     // the pixels leaving the default blue are the signal

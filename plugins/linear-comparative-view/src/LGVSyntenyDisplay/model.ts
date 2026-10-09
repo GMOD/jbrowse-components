@@ -8,6 +8,7 @@ import { isSameAssemblyName } from '@jbrowse/core/util/tracks'
 import { editPlotMenuItems } from '@jbrowse/display-kit/plotMenu'
 import { types } from '@jbrowse/mobx-state-tree'
 import {
+  colorFieldOptions,
   getColorByMenuItem,
   getFeatureHeightMenuItem,
   getFiltersMenuItems,
@@ -15,7 +16,6 @@ import {
   getSectionOrderMenuItems,
   getSortByMenuItem,
   NO_HIDDEN_GROUPS,
-  pickColorOptions,
 } from '@jbrowse/plugin-alignments'
 // the subpath, not the barrel: the barrel is eager, and a value edge from it
 // into the alignments display model would undo that display's lazy loading.
@@ -290,12 +290,10 @@ function stateModelFactory(schema: LGVSyntenyDisplayConfigModel) {
             // is relabelled here for the thing a PAF block aligns to —
             // chromosome painting, matching the synteny view's Query mode.
             getColorByMenuItem(self, {
-              colorOptions: pickColorOptions(
-                'normal',
-                'strand',
-                'mappingQuality',
-                { type: 'mateRefName', label: 'Query name' },
-              ),
+              colorOptions: colorFieldOptions('', 'strand', 'mapq', {
+                field: 'mateRefName',
+                label: 'Query name',
+              }),
             }),
             ...editPlotMenuItems(self),
             // No base pair / tag: a PAF block has no per-base sequence to sort a

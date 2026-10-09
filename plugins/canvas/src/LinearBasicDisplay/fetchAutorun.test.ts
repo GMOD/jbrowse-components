@@ -1642,14 +1642,16 @@ describe('SettingsInvalidate keys on the payload, not the reads', () => {
     await jest.runAllTimersAsync()
     const callsBefore = mockRpcCall.mock.calls.length
 
-    display.setColorScale({
-      field: 'biotype',
-      domain: ['lncRNA'],
-      range: ['#123456'],
+    display.applyPlot({
+      color: {
+        field: 'biotype',
+        domain: ['lncRNA'],
+        range: ['#123456'],
+      },
     })
     setConf(display, ['color', 'domain'], ['lncRNA', 'protein_coding'])
     setConf(display, ['color', 'scale'], 'threshold')
-    display.setColorScale()
+    display.colorByField('')
     display.colorByField('biotype')
     jest.advanceTimersByTime(800)
     await jest.runAllTimersAsync()

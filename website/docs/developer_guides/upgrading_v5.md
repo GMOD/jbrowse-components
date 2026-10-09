@@ -453,8 +453,8 @@ its schemes are the ones every color scale names. `colorScheme` and
 | `colorScheme: 'fall'` | `color: { scheme: 'fall' }` |
 | `useLogScale: true` | `color: { scale: 'log' }` |
 
-`setUseLogScale` is `setColorScale('log' | 'linear')`. [](/docs/config/hiccolor)
-lists the members.
+`setUseLogScale` is `setLogScale(true | false)`. [](/docs/config/hiccolor) lists
+the members.
 
 ## The LD color is a `color` object
 

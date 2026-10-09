@@ -129,7 +129,7 @@ test('the entry has no swatch and names what the number means', () => {
 
 test('the SV-type key takes its title and class names from the field preset', () => {
   const display = setup(0)
-  display.setColorField(SV_TYPE_FIELD)
+  display.colorByField(SV_TYPE_FIELD)
   const base = cellData(0)
   display.setCellData({
     ...base,

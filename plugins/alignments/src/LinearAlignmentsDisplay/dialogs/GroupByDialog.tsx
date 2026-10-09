@@ -13,6 +13,7 @@ import { useFetch } from '@jbrowse/core/util/useFetch'
 import { Typography } from '@mui/material'
 import { observer } from 'mobx-react'
 
+import { colorFieldOf } from '../../shared/alignmentsColor.ts'
 import { COMMON_READ_TAG_PICKS } from '../../shared/commonTags.ts'
 import { TAG_FIELD_PREFIX, facetTag } from '../../shared/facetLabels.ts'
 import { getUniqueTags } from '../../shared/getUniqueTags.ts'
@@ -46,7 +47,7 @@ export interface GroupByDialogModel extends IStateTreeNode {
   baseLayer: BaseLayer | undefined
   facet?: Facet
   setFacet: (facet?: Facet) => void
-  setColorBy: (colorBy: ReadColorBy) => void
+  colorByField: (field: string) => void
 }
 
 // Reads are currently colored by exactly this tag.
@@ -153,7 +154,7 @@ const GroupByDialog = observer(function GroupByDialog(props: {
     model.setFacet({ field: `${TAG_FIELD_PREFIX}${groupByTag}` })
     const scheme = nextColorScheme(model.colorBy, groupByTag, colorByTag)
     if (scheme) {
-      model.setColorBy(scheme)
+      model.colorByField(colorFieldOf(scheme))
     }
     handleClose()
   }

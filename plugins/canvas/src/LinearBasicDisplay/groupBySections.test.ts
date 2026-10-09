@@ -133,7 +133,7 @@ test('grouping with its color writes the grouping color, and unticking takes it 
   display.applyGroupBy('biotype', false)
   expect(display.colorByMode).toBe('default')
 
-  display.setColorScale({ field: 'biotype', domain: ['b', 'a'] })
+  display.applyPlot({ color: { field: 'biotype', domain: ['b', 'a'] } })
   display.applyGroupBy('biotype', false)
   expect(display.colorByMode).toBe('default')
 
@@ -145,7 +145,7 @@ test('grouping with its color writes the grouping color, and unticking takes it 
 test('a color picked by hand survives regrouping without the color', () => {
   const { createDisplay } = createTestEnvironment()
   const { display } = createDisplay()
-  display.setFeatureColor('purple')
+  display.setColorValue('purple')
   display.applyGroupBy('strand', false)
   display.applyGroupBy(undefined, false)
   expect(display.featureColor).toBe('purple')
@@ -154,7 +154,7 @@ test('a color picked by hand survives regrouping without the color', () => {
 test('unticking the grouping color returns to the color picked by hand', () => {
   const { createDisplay } = createTestEnvironment()
   const { display } = createDisplay()
-  display.setFeatureColor('purple')
+  display.setColorValue('purple')
   display.applyGroupBy('strand', true)
   expect(display.colorByMode).toBe('strand')
   display.applyGroupBy('strand', false)

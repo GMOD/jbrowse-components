@@ -25,15 +25,13 @@ import {
   jexlFilterNarrowing,
 } from '@jbrowse/core/util/jexlFilters'
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
+import ColorWritesMixin from '@jbrowse/display-kit/ColorWritesMixin'
 import { ContextMenuMixin } from '@jbrowse/display-kit/ContextMenuMixin'
 import HeightModeMixin from '@jbrowse/display-kit/HeightModeMixin'
 import HiddenGroupsMixin from '@jbrowse/display-kit/HiddenGroupsMixin'
 import LegendMixin from '@jbrowse/display-kit/LegendMixin'
 import MultiRegionDisplayMixin from '@jbrowse/display-kit/MultiRegionDisplayMixin'
-import {
-  colorForField,
-  colorForValue,
-} from '@jbrowse/display-kit/colorConfigSchema'
+import { colorForField } from '@jbrowse/display-kit/colorConfigSchema'
 import { densityTierMenuItems } from '@jbrowse/display-kit/densityTierMenu'
 import {
   autorunOnReadyView,
@@ -225,6 +223,7 @@ export default function baseStateModelFactory(
       HeightModeMixin(),
       MultiRegionDisplayMixin(),
       LegendMixin(),
+      ColorWritesMixin(),
       CanvasFeatureGateMixin(),
       // After both gate mixins, since it keys off their verdict.
       DensityBandMixin(),
@@ -1276,41 +1275,6 @@ export default function baseStateModelFactory(
 
         /**
          * #action
-         * Paints every feature one constant, a CSS color or a `jexl:`
-         * callback; undefined lets each feature's own color paint. The field,
-         * its order and range stay under `scale: 'none'` for the way back.
-         */
-        setFeatureColor(color?: string) {
-          setConf(self, 'color', colorForValue(self.colorSetting, color))
-        },
-
-        /**
-         * #action
-         * Paints by a field's values through a categorical scale, keeping
-         * `color.value` for the way back; undefined returns to that value.
-         */
-        setColorScale(scale?: {
-          field: string
-          domain?: readonly string[]
-          range?: readonly string[]
-        }) {
-          const { value } = self.colorSetting
-          setConf(
-            self,
-            'color',
-            scale
-              ? {
-                  ...(value === undefined ? {} : { value }),
-                  field: scale.field,
-                  domain: [...(scale.domain ?? [])],
-                  range: [...(scale.range ?? [])],
-                }
-              : colorForField(self.colorSetting, ''),
-          )
-        },
-
-        /**
-         * #action
          */
         // Skips no-op updates: mousemove fires per pixel but the base under
         // the cursor changes far less often.
@@ -1711,14 +1675,6 @@ export default function baseStateModelFactory(
     .actions(self => ({
       /**
        * #action
-       * What a menu or dialog naming only a field writes: the field, keeping
-       * the domain and range while it is the field already painting.
-       */
-      colorByField(field: string) {
-        setConf(self, 'color', colorForField(self.colorSetting, field))
-      },
-      /**
-       * #action
        * "Edit plot...", seeded with a draft a dialog has not applied.
        */
       openPlotDialog(seed?: Plot) {
@@ -1831,33 +1787,27 @@ export default function baseStateModelFactory(
     .actions(self => ({
       /**
        * #action
+       * Color by's Default: no field and no solid color, so the track's own
+       * color paints, a `jexl:` expression included.
+       */
+      pickDefaultColor() {
+        if (self.solidColor === undefined) {
+          self.colorByField('')
+        } else {
+          self.setColorValue(undefined)
+        }
+      },
+
+      /**
+       * #action
        * Color by's Solid color...: paints the constant kept beside a field,
        * where there is one, and opens the picker.
        */
       pickSolidColor() {
         if (self.colorField !== undefined && self.solidColor !== undefined) {
-          setConf(self, 'color', colorForField(self.colorSetting, ''))
+          self.colorByField('')
         }
         self.openSetColorDialog()
-      },
-
-      /**
-       * #action
-       * Color by's Default: no field and no constant, so the track's own
-       * color paints, a `jexl:` expression included.
-       */
-      pickDefaultColor() {
-        const { colorSetting } = self
-        setConf(
-          self,
-          'color',
-          colorForField(
-            self.solidColor === undefined
-              ? colorSetting
-              : { ...colorSetting, value: undefined },
-            '',
-          ),
-        )
       },
     }))
     .views(self => ({

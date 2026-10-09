@@ -725,14 +725,14 @@ describe('FetchVisibleRegions autorun', () => {
     })
 
     const callsBefore = mockRpcCall.mock.calls.length
-    for (const type of [
+    for (const field of [
       'strand',
-      'mappingQuality',
+      'mapq',
       'insertSize',
       'pairOrientation',
-      'normal',
-    ] as const) {
-      display.setColorBy({ type })
+      '',
+    ]) {
+      display.colorByField(field)
       jest.advanceTimersByTime(800)
       await jest.runAllTimersAsync()
     }

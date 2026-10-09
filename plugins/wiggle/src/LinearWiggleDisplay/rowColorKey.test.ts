@@ -48,7 +48,9 @@ it('keys nothing by name on stacked rows, and the groups once colored by them', 
 
 it('keys nothing in an overlay painting a score gradient', () => {
   const display = makeDisplay(GROUPED)
-  display.setColor({ field: 'score', scale: 'linear', scheme: 'viridis' })
+  display.applyPlot({
+    color: { field: 'score', scale: 'linear', scheme: 'viridis' },
+  })
   expect(display.colorScales.map(s => s.id)).not.toContain('rowColor')
 })
 

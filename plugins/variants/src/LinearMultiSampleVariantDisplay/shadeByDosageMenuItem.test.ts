@@ -49,7 +49,7 @@ test('a constant cell color ticks Solid color..., and Genotype clears it', () =>
       .filter(item => item.type === 'radio' && item.checked)
       .map(labelOf)
   expect(ticked()).toEqual(['Genotype'])
-  display.setColor({ value: '#ff0000' })
+  display.applyPlot({ color: { value: '#ff0000' } })
   expect(ticked()).toEqual(['Solid color...'])
   const genotype = colorByRows(display).find(
     item => labelOf(item) === 'Genotype',

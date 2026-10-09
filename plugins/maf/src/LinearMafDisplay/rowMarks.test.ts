@@ -181,7 +181,7 @@ describe('identity is a row mark', () => {
     expect(new Set(flat.color as Uint32Array).size).toBe(1)
     expect(display.identityEncoding).toBe('bars')
 
-    display.setColorField('identity')
+    display.colorByField('identity')
     expect(display.identityEncoding).toBe('rampBars')
     expect(display.encodedUpload.get(0)!.identity).toBeUndefined()
   })

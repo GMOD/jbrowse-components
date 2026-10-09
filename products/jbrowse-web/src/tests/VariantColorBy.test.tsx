@@ -35,7 +35,7 @@ interface ColorMenuItem {
 interface VariantDisplay {
   featureColor: string
   colorByMode: string
-  setFeatureColor: (arg?: string) => void
+  setColorValue: (value: string | undefined) => void
   colorMenuItems: () => ColorMenuItem[]
   colorScales: ColorScale[]
   showLegend: boolean
@@ -65,7 +65,7 @@ test('variant display exposes one "Color by..." menu and applies a solid color',
   ])
 
   expect(display.colorByMode).toBe('default')
-  display.setFeatureColor('red')
+  display.setColorValue('red')
   expect(display.featureColor).toBe('red')
   expect(display.colorByMode).toBe('solid')
 
@@ -97,7 +97,7 @@ test('the consequence-impact color key renders, and dismissing it stops it drawi
   const display = view.tracks[0]!.displays[0] as VariantDisplay
   expect(display.colorScales).toEqual([])
 
-  display.setFeatureColor('jexl:impactColor(feature)')
+  display.setColorValue('jexl:impactColor(feature)')
   const [scale] = display.colorScales
   expect(
     scale?.kind === 'categorical' && scale.entries.map(i => i.label),

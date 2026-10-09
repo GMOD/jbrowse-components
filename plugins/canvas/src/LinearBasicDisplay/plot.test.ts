@@ -176,8 +176,10 @@ describe('the Group by dialog applies a plot', () => {
 
   it('brings back the order and range Solid color parked', () => {
     const d = display()
-    d.setColorScale({ field: 'biotype', domain: ['lncRNA'], range: ['red'] })
-    d.setFeatureColor('purple')
+    d.applyPlot({
+      color: { field: 'biotype', domain: ['lncRNA'], range: ['red'] },
+    })
+    d.setColorValue('purple')
     d.applyGroupBy('biotype', true)
     expect(d.categoricalColorField?.domain).toEqual(['lncRNA'])
     expect(d.categoricalColorField?.color('lncRNA')).toBe('red')
@@ -210,7 +212,7 @@ describe('the Group by dialog applies a plot', () => {
     const viaDialog = display()
     const viaText = display()
     for (const d of [viaDialog, viaText]) {
-      d.setFeatureColor('purple')
+      d.setColorValue('purple')
       d.applyGroupBy('biotype', true)
       expect(d.plot.color).toEqual({ value: 'purple', field: 'biotype' })
     }
@@ -242,8 +244,10 @@ describe('the Group by dialog applies a plot', () => {
 // constant that paints.
 test('Solid color keeps the field, its order and range under scale none for the way back', () => {
   const d = display()
-  d.setColorScale({ field: 'biotype', domain: ['lncRNA'], range: ['red'] })
-  d.setFeatureColor('purple')
+  d.applyPlot({
+    color: { field: 'biotype', domain: ['lncRNA'], range: ['red'] },
+  })
+  d.setColorValue('purple')
   expect(d.colorByMode).toBe('solid')
   expect(d.categoricalColorField).toBeUndefined()
   expect(d.plot.color).toMatchObject({ value: 'purple', scale: 'none' })
@@ -257,7 +261,7 @@ test('Solid color keeps the field, its order and range under scale none for the 
   expect(d.colorByMode).toBe('attribute')
   expect(d.categoricalColorField?.domain).toEqual(['lncRNA'])
   expect(d.categoricalColorField?.color('lncRNA')).toBe('red')
-  d.setFeatureColor(undefined)
+  d.setColorValue(undefined)
   expect(d.colorByMode).toBe('default')
   expect(d.colorSetting).toMatchObject({ field: 'biotype', scale: 'none' })
   expect(d.groupByPlot(undefined, false)).toEqual({ facet: null })

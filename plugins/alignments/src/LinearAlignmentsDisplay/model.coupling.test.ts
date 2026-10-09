@@ -18,6 +18,7 @@ import {
   LINKED_READ_COLOR_PAIR_LR,
   LINKED_READ_COLOR_PAIR_RL,
 } from '../features/linkedReads/compute.ts'
+import { colorFieldOf } from '../shared/alignmentsColor.ts'
 import { CHAIN_FRAME_REV, CHAIN_SUPP_PRESENT } from '../shared/types.ts'
 import { READ_COLOR_CATEGORY_BY_INDEX } from './colorUtils.ts'
 import { applyReadColorsByGroup } from './groupLayout.ts'
@@ -161,7 +162,7 @@ describe('alignments display cross-feature coupling', () => {
   })
 })
 
-// `setColorBy` used to also manage a discovered-value map: clear it when
+// Color by used to also manage a discovered-value map: clear it when
 // the scheme changed, and — a second rule patching the first — NOT clear it
 // when the radio already showing was re-picked, since that refetches nothing
 // and an emptied map left the legend blank until the next pan. Both rules went
@@ -169,22 +170,22 @@ describe('alignments display cross-feature coupling', () => {
 // (`colorTagUtils.test.ts` pins that, including the one thing that is not: the
 // scheme picks which function runs). What has to survive is that re-picking the
 // scheme in use is still inert.
-describe('setColorBy', () => {
+describe('colorByField', () => {
   test('re-picking the scheme in use changes nothing', () => {
     const display = createDisplay()
-    display.setColorBy({ type: 'mateRefName' })
+    display.colorByField('mateRefName')
     const before = display.readColorContext
 
-    display.setColorBy({ type: 'mateRefName' })
+    display.colorByField('mateRefName')
     expect(display.readColorContext).toStrictEqual(before)
   })
 
   test('a different scheme reaches the bake', () => {
     const display = createDisplay()
-    display.setColorBy({ type: 'tag', tag: 'HP' })
+    display.colorByField('tags.HP')
     const before = display.readColorContext
 
-    display.setColorBy({ type: 'tag', tag: 'RG' })
+    display.colorByField('tags.RG')
     expect(display.readColorContext).not.toStrictEqual(before)
   })
 })
@@ -192,14 +193,14 @@ describe('setColorBy', () => {
 describe('colorKeyTitle', () => {
   test("a preset field's title heads the key until one is written", () => {
     const display = createDisplay()
-    display.setColor({ field: 'mapq' })
+    display.applyPlot({ color: { field: 'mapq' } })
     expect(display.colorKeyTitle).toBe('Mapping quality')
     expect(display.colorScales.map(s => s.title)).toContain('Mapping quality')
 
-    display.setColor({ field: 'mapq', title: 'MAPQ' })
+    display.applyPlot({ color: { field: 'mapq', title: 'MAPQ' } })
     expect(display.colorKeyTitle).toBe('MAPQ')
 
-    display.setColor({ field: 'mapq', scale: 'linear' })
+    display.applyPlot({ color: { field: 'mapq', scale: 'linear' } })
     expect(display.colorKeyTitle).toBeUndefined()
   })
 })
@@ -207,7 +208,7 @@ describe('colorKeyTitle', () => {
 describe('keySectionOrder', () => {
   test('a facet on the color field hands the key its section order', () => {
     const display = createDisplay()
-    display.setColorBy({ type: 'tag', tag: 'HP' })
+    display.colorByField('tags.HP')
     expect(display.keySectionOrder).toBeUndefined()
 
     display.setFacet({ field: 'tags.HP', domain: ['2'] })
@@ -242,7 +243,7 @@ describe('setUnit color scheme preservation', () => {
 
   test('entering pairs preserves an explicit non-pairing color scheme', () => {
     const display = createDisplay()
-    display.setColorBy({ type: 'tag', tag: 'HP' })
+    display.colorByField('tags.HP')
 
     display.setUnit('chain')
     expect(display.colorBy.type).toBe('tag')
@@ -263,7 +264,7 @@ describe('setUnit color scheme preservation', () => {
   // with pairs off; a trip through pairs used to reset it to normal
   test('a trip through pairs keeps any other paired-end fill', () => {
     const display = createDisplay()
-    display.setColorBy({ type: 'firstOfPairStrand' })
+    display.colorByField('firstOfPairStrand')
 
     display.setUnit('chain')
     display.setUnit('read')
@@ -273,7 +274,7 @@ describe('setUnit color scheme preservation', () => {
   test('leaving pairs preserves an explicit non-pairing color scheme', () => {
     const display = createDisplay()
     display.setUnit('chain')
-    display.setColorBy({ type: 'tag', tag: 'HP' })
+    display.colorByField('tags.HP')
 
     display.setUnit('read')
     expect(display.unit).toBe('read')
@@ -311,29 +312,29 @@ describe('arc color follows the reads unless it names its own field', () => {
   test('an empty arcColor takes a pair field from the reads', () => {
     const display = createDisplay()
     display.setArcColorField('')
-    display.setColorBy({ type: 'pairOrientation' })
+    display.colorByField('pairOrientation')
     expect(display.arcColorField).toBe('pairOrientation')
-    display.setColorBy({ type: 'strand' })
+    display.colorByField('strand')
     expect(display.arcColorField).toBe('insertSizeAndOrientation')
   })
 
   test('a display naming no arcColor follows the reads', () => {
     const display = createDisplay()
-    display.setColorBy({ type: 'insertSize' })
+    display.colorByField('insertSize')
     expect(display.arcColorField).toBe('insertSize')
   })
 
   test('an arcColor field of its own ignores the reads', () => {
     const display = createDisplay()
     display.setArcColorField('insertSize')
-    display.setColorBy({ type: 'pairOrientation' })
+    display.colorByField('pairOrientation')
     expect(display.arcColorField).toBe('insertSize')
   })
 
   test('the Arc color radios write the field, Same as reads the empty one', () => {
     const display = createDisplay()
     display.setReadConnections('arc')
-    display.setColorBy({ type: 'insertSize' })
+    display.colorByField('insertSize')
     const arcMenu = () => menuSubItems(display.trackMenuItems(), 'Arc color')
     clickMenuItem(arcMenu(), 'Pair orientation')
     expect(display.arcColorField).toBe('pairOrientation')
@@ -779,7 +780,7 @@ describe('curved connectors', () => {
     expect(connectors.get('')?.lines.get(0)?.numLinkedReadLines).toBe(1)
 
     display.setCoverageHeight(display.coverageHeight + 20)
-    display.setColorBy({ type: 'strand' })
+    display.colorByField('strand')
     expect(display.connectorsByGroup).toBe(connectors)
     dispose()
   })
@@ -1324,7 +1325,7 @@ describe('upload tiers: what a settings change does to the laid-out payloads', (
     const display = createDisplay()
     // Tag coloring is the CPU-baked scheme `colorTagMap` feeds; set it before
     // seeding, since colorBy is an rpcProps (tier-1) setting and clears data.
-    display.setColor(color)
+    display.applyPlot({ color })
     display.setRpcData(
       0,
       {
@@ -1377,7 +1378,7 @@ describe('upload tiers: what a settings change does to the laid-out payloads', (
     const beforeLayout = display.laidOutByGroupUncolored
     const before = region0(display)
 
-    display.setColor({ field: 'tags.HP', range: ['#ff0000'] })
+    display.applyPlot({ color: { field: 'tags.HP', range: ['#ff0000'] } })
 
     const after = region0(display)
     // Layout memoized across the recolor…
@@ -1397,7 +1398,7 @@ describe('upload tiers: what a settings change does to the laid-out payloads', (
     const beforeLayout = display.laidOutByGroupUncolored
     const before = region0(display)
 
-    display.setColor({ ...pinned, value: 'red' })
+    display.applyPlot({ color: { ...pinned, value: 'red' } })
 
     expect(display.laidOutByGroupUncolored).toBe(beforeLayout)
     expect(region0(display).readYs).toBe(before.readYs)
@@ -1407,7 +1408,7 @@ describe('upload tiers: what a settings change does to the laid-out payloads', (
     const display = displayWithOneRead()
     const before = display.rpcProps()
 
-    display.setColor({ field: 'tags.HP', range: ['#ff0000'] })
+    display.applyPlot({ color: { field: 'tags.HP', range: ['#ff0000'] } })
 
     expect(display.rpcProps()).toStrictEqual(before)
   })
@@ -1780,7 +1781,7 @@ describe('chain-strand framing: the gate, the bake and the key agree', () => {
   )('%s fill under the %s layer', (_fill, _layer, fill, layer) => {
     const display = createDisplay()
     display.setUnit('chain')
-    display.setColorBy(fill)
+    display.colorByField(colorFieldOf(fill))
     display.setBaseLayer(layer)
     const baked = applyReadColorsByGroup(
       new Map([['', new Map([[0, splitSegment]])]]),

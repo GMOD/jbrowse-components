@@ -142,7 +142,7 @@ export default function stateModelFactory(
             checked: self.colorByMode === 'default' && !preset,
             onClick: () => {
               if (preset) {
-                self.setFeatureColor(undefined)
+                self.setColorValue(undefined)
               } else {
                 self.pickDefaultColor()
               }

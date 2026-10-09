@@ -265,13 +265,20 @@ export function configSlotViews(self: ConfigSlotSelf) {
     },
     /**
      * #getter
+     * The field the read fill paints by, `''` for the plain fill.
+     */
+    get colorField(): string {
+      return colorFieldOf(this.colorBy)
+    },
+    /**
+     * #getter
      * The field the arcs and the read cloud paint: `arcColor`'s own, or the
      * reads' where `arcColor` names none.
      */
     get arcColorField(): ArcColorField {
       return arcColorFieldOf(
         getConf(self, ['arcColor', 'field']),
-        colorFieldOf(this.colorBy),
+        this.colorField,
       )
     },
     /**

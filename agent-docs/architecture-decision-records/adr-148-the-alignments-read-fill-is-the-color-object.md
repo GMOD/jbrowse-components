@@ -71,7 +71,8 @@ the reads with.
 **The scheme name is the runtime form.** `colorByOf` maps the object onto the
 `ColorBy` the worker request, the classifier, the shader dispatch and the menus
 already read, as `ribbonColorBy.ts` does for the multi-way display, and
-`setColorBy` writes the object back through `colorSnapshotFor`: the plain fill
+~~`setColorBy` writes the object back through `colorSnapshotFor`~~
+`colorByField` writes the object back (ADR-223): the plain fill
 keeps the field under `none`, a re-picked field keeps its order, ~~palette and
 ramp~~ `range`, `scheme` and domain ends (ADR-151), and a re-pick of the scheme
 in use writes nothing, since every color tier keys on the slot's arrays.

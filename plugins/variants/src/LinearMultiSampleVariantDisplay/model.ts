@@ -27,6 +27,7 @@ import {
   configuredJexlFilters,
 } from '@jbrowse/core/util/jexlFilters'
 import { runLazyAfterAttach } from '@jbrowse/core/util/lazyAfterAttach'
+import ColorWritesMixin from '@jbrowse/display-kit/ColorWritesMixin'
 import { ContextMenuMixin } from '@jbrowse/display-kit/ContextMenuMixin'
 import LegendMixin from '@jbrowse/display-kit/LegendMixin'
 import MultiRegionDisplayMixin from '@jbrowse/display-kit/MultiRegionDisplayMixin'
@@ -34,7 +35,6 @@ import StoredHoverMixin from '@jbrowse/display-kit/StoredHoverMixin'
 import TrackHeightMixin from '@jbrowse/display-kit/TrackHeightMixin'
 import {
   colorEncodingOf,
-  colorForField,
   paintedColorEncoding,
 } from '@jbrowse/display-kit/colorConfigSchema'
 import { autorunOnReadyView } from '@jbrowse/display-kit/displayAutoruns'
@@ -356,6 +356,7 @@ export function stateModelFactory(
         TrackHeightMixin(),
         MultiRegionDisplayMixin(),
         LegendMixin(),
+        ColorWritesMixin(),
         RowHeightMixin(),
         StoredHoverMixin<VariantHoverFields>(),
         TreeSidebarMixin<ProcessedSource>(),
@@ -893,23 +894,6 @@ export function stateModelFactory(
            */
           setShowTooltips(arg: boolean) {
             setConf(self, 'showTooltips', arg)
-          },
-          /**
-           * #action
-           * Paint the alt cells by a field, or by the genotype colors with
-           * `''`, which keeps the field under `scale: 'none'` for the way
-           * back. A fetch input only where it names a different field.
-           */
-          setColorField(field: string) {
-            setConf(self, 'color', colorForField(self.colorSetting, field))
-          },
-          /**
-           * #action
-           * Replace the whole `color` object, as the field dialog does when it
-           * writes cut points with the field.
-           */
-          setColor(color: Record<string, unknown>) {
-            setConf(self, 'color', color)
           },
           /**
            * #action
