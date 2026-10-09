@@ -7,6 +7,12 @@ summary: "The mark display's fourth mark is `text`, spelt as Vega-Lite and Genom
 
 ## Status
 
+**Amended 2026-10-09:** a ring of the circular view draws a text mark's
+labels. The display answers them through display-kit's `FloatingLabelHost`
+(`floatingLabels`, the same `placeTextMarks` call), and the ring's overlay
+curves them along its arc and re-culls them at the ring's size, on screen and
+in the export.
+
 Accepted (2026-09-24), the text layer the grammar handoff listed next, built on
 Colin's 2026-09-23 call that the layer draws DOM text on screen for
 accessibility.
@@ -80,7 +86,7 @@ loop flushes style recalc, which is why ADR-106 kept labels off the mark layer.
   Dense per-base text (sequence letters, MAF bases) stays on canvas and outside
   the layer, as the 2026-09-23 call said.
 - The circular view samples the display's canvas for its ring, so a text
-  mark's labels stay on the linear track.
+  mark's labels reach a ring only through `floatingLabels` (amended above).
 - `MARK_RULES` reads `span-density-source`, `unpinned-span-ramp` and
   `value-beside-rows` over text as over span; a `text` channel on any other
   mark is `unread-channel`; `size` on a text is `unread-size`.
