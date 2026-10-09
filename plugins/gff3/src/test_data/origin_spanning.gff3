@@ -1,0 +1,9 @@
+##gff-version 3
+##sequence-region pTest 1 1000
+pTest	test	region	1	1000	.	+	.	ID=pTest;Is_circular=true
+pTest	test	gene	100	300	.	+	.	ID=geneA;Name=geneA
+pTest	test	D_loop	900	1100	.	+	.	ID=dloop;Name=D-loop
+pTest	test	gene	950	1150	.	-	.	ID=geneB;Name=geneB
+pTest	test	mRNA	950	1150	.	-	.	ID=mrnaB;Parent=geneB
+pTest	test	exon	950	980	.	-	.	ID=exB1;Parent=mrnaB
+pTest	test	exon	1020	1150	.	-	.	ID=exB2;Parent=mrnaB
