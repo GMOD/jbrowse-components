@@ -42,6 +42,13 @@ export interface Opts {
    * the reads joining the two regions are counted
    */
   joined?: boolean
+  /**
+   * Leave the data adapters this render opened in the cache when its view goes,
+   * for a caller about to render the same tracks again: a batch. Each adapter
+   * otherwise goes with the view and the next record reads every index and
+   * header over again.
+   */
+  keepAdapters?: boolean
   /** what a read with the variant's ALT has at `sortAt`; counted alone */
   sortAllele?: VariantAllele
   // a band over a linear view's tracks, 0-based half-open

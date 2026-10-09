@@ -186,6 +186,7 @@ describe('runBatch', () => {
           joined?: boolean
           sortAt?: { pos: number }
           highlight?: object
+          keepAdapters?: boolean
           argv: [string, string[]][]
         },
     )
@@ -197,6 +198,8 @@ describe('runBatch', () => {
       ['breakpoint', undefined, undefined],
       ['linear', 'chr1:29400-30600 chr1:62988-64188', true],
     ])
+    // every record's adapters stay open for the next
+    expect(calls.map(c => c.keepAdapters)).toEqual([true, true, true, true])
     // a deletion of two windows is still counted at its first deleted base;
     // the band over a call's bases is for the one window that holds them all
     expect(calls[3]!.sortAt?.pos).toBe(30000)

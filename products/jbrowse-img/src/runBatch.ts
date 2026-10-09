@@ -29,7 +29,10 @@ import type { Opts } from './types.ts'
 // Drives `renderRegionReport` once per record, in-process. The module graph loads
 // once for the whole callset rather than once per variant, which is the reason
 // this is a subcommand and not a shell loop over `jb2export`: on a few hundred
-// rows the per-process startup dominates everything else.
+// rows the per-process startup dominates everything else. So do each track's
+// index and header, which is why a record leaves its adapters open for the
+// next: twelve records over two remote read files took 24 to 33 s that way
+// and 44 to 53 s reopening them per record.
 
 export interface BatchOpts extends Opts {
   /** BEDPE of junctions; mutually exclusive with `vcf` */
@@ -79,6 +82,12 @@ interface RowResult {
   spec?: string
   error?: string
 }
+
+// What a worker's open files may keep decoded between records. A record draws
+// a flank around a locus the next one is nowhere near, so past reads are worth
+// little here, and the gigabyte an interactive session pans back through would
+// be held by each of four workers.
+const BATCH_CACHE_BYTES = 256 * 2 ** 20
 
 // A render is one core's work between its own fetches, and two of them side by
 // side ran at full pace each. Each holds about a gigabyte.
@@ -367,6 +376,9 @@ async function renderRows(
   // that hands its rows to workers never load the render stack.
   const { setupEnv } = await import('./setupEnv.ts')
   setupEnv()
+  const { decompressedBytesBudget } =
+    await import('@jbrowse/core/util/cacheBudgets')
+  decompressedBytesBudget.limit = BATCH_CACHE_BYTES
   const { renderRegionReport } = await import('./renderRegion.ts')
   for (const { rec, file, rows: windows } of rows) {
     const out = path.join(outDir, file)
@@ -382,6 +394,7 @@ async function renderRows(
       const shared = {
         ...opts,
         width,
+        keepAdapters: true,
         showTracks: forceLoaded(opts.showTracks),
         trackList: forceLoaded(opts.trackList),
       }

@@ -1,3 +1,4 @@
+import { retainAdapterSession } from '@jbrowse/core/data_adapters/adapterSessionRefcount'
 import { getEnv } from '@jbrowse/core/util'
 import { openTracks } from '@jbrowse/core/util/openViews'
 import {
@@ -954,6 +955,17 @@ export async function renderRegionReport(
         a.loadingP ? [a.loadingP] : [],
       ),
     )
+    if (opts.keepAdapters) {
+      // A track frees its adapter when the last claim on it goes, and the
+      // claims are counted per view state. One more that nothing releases
+      // leaves the adapter cached under its config, where the next record's
+      // track finds it.
+      for (const track of openTracks(model.session)) {
+        if ('rpcSessionId' in track && typeof track.rpcSessionId === 'string') {
+          retainAdapterSession(model.session.rpcManager, track.rpcSessionId)
+        }
+      }
+    }
     destroy(model)
   }
 }
