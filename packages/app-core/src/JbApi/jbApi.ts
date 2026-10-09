@@ -209,6 +209,7 @@ interface SessionChrome {
   drawerWidth?: number
   visibleWidget?: { type?: string }
   DialogComponent?: unknown
+  views?: { searchPicker?: unknown }[]
 }
 
 /**
@@ -234,13 +235,14 @@ function sessionChrome(session: AbstractSessionModel) {
           },
         }
       : {}
-  const dialog = s.DialogComponent
-    ? {
-        dialog: {
-          note: 'a modal dialog is open over the app, so a screenshot is of the dialog',
-        },
-      }
-    : {}
+  const dialog =
+    s.DialogComponent || s.views?.some(view => view.searchPicker)
+      ? {
+          dialog: {
+            note: 'a modal dialog is open over the app, so a screenshot is of the dialog',
+          },
+        }
+      : {}
   return { ...drawer, ...dialog }
 }
 

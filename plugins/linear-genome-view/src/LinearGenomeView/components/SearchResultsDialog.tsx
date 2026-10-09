@@ -4,46 +4,32 @@ import { observer } from 'mobx-react'
 
 import SearchResultsTable from './SearchResultsTable.tsx'
 
-import type { LinearGenomeViewModel } from '../../index.ts'
-import type BaseResult from '@jbrowse/core/TextSearch/BaseResults'
+import type { LinearGenomeViewModel } from '../index.ts'
 
 const SearchResultsDialog = observer(function SearchResultsDialog({
   model,
-  assemblyName,
-  searchQuery,
-  searchResults,
-  handleClose,
-  onPick,
 }: {
   model: LinearGenomeViewModel
-  assemblyName: string
-  searchQuery: string
-  searchResults: BaseResult[]
-  handleClose: () => void
-  onPick: (result: BaseResult) => Promise<unknown>
 }) {
-  return (
-    <InfoDialog open maxWidth="xl" onClose={handleClose} title="Search results">
-      {!searchResults.length ? (
-        <Typography>
-          No results found for <b>{searchQuery}</b>
-        </Typography>
-      ) : (
-        <>
-          <Typography>
-            Showing results for <b>{searchQuery}</b>
-          </Typography>
-          <SearchResultsTable
-            model={model}
-            handleClose={handleClose}
-            assemblyName={assemblyName}
-            searchResults={searchResults}
-            onPick={onPick}
-          />
-        </>
-      )}
+  const { searchPicker } = model
+  return searchPicker ? (
+    <InfoDialog
+      open
+      maxWidth="xl"
+      onClose={model.closeSearchPicker}
+      title="Search results"
+    >
+      <Typography>
+        Showing results for <b>{searchPicker.query}</b>
+      </Typography>
+      <SearchResultsTable
+        model={model}
+        assemblyName={searchPicker.assemblyName}
+        searchResults={searchPicker.results}
+        onPick={searchPicker.pick}
+      />
     </InfoDialog>
-  )
+  ) : null
 })
 
 export default SearchResultsDialog

@@ -986,50 +986,55 @@ async function searchByNameResolvesNames(page, slug) {
       return !!el
     }, label)
 
-  // The page's sharpest claim: a query with no exact match and several prefix
-  // ones cannot navigate, so JBrowse queues a dialog and this host draws none.
-  // `BRC` and not `TP53` — TP53 prefixes twenty features and is exactly one of
-  // them, so the exact pass wins and it navigates, which is the neighbouring
-  // button and the distinction the page is about.
+  const pickerShown = () =>
+    page.evaluate(
+      () => !!document.querySelector('[data-testid="search-picker"]'),
+    )
+
+  // `BRC` and not `TP53`: TP53 prefixes twenty features and is exactly one of
+  // them, so the exact pass wins and it navigates. BRC has several prefix
+  // matches and no exact one, so the view leaves the choice to the page.
   if (await clickButton('BRC')) {
     try {
       await page.waitForFunction(
-        () => !!document.querySelector('[data-testid="queued-dialog-notice"]'),
+        () => !!document.querySelector('[data-testid="search-picker"]'),
+        { timeout: 30000 },
+      )
+      const picked = await page.evaluate(() => {
+        const row = document.querySelector(
+          '[data-testid="search-picker"] li button',
+        )
+        row?.click()
+        return !!row
+      })
+      if (!picked) {
+        out.push('the BRC picker listed no rows')
+      }
+      await page.waitForFunction(
+        () => !document.querySelector('[data-testid="search-picker"]'),
         { timeout: 30000 },
       )
     } catch {
       out.push(
-        'searching the ambiguous name BRC queued no dialog — either the ' +
-          'multi-hit path stopped going through session.queueDialog, or the ' +
-          'index stopped returning more than one non-exact hit for it',
+        'searching the ambiguous name BRC raised no picker, or picking a hit ' +
+          'left it open — either navToLocString stopped raising ' +
+          'view.searchPicker, or the index stopped returning more than one ' +
+          'non-exact hit for it',
       )
     }
   } else {
     out.push('no exact "BRC" button')
   }
 
-  // Clear it before the next click, or the TP53 check below reads BRC's
-  // notice and reports the opposite of what happened.
-  await clickButton('Dismiss')
-  await page.waitForFunction(
-    () => !document.querySelector('[data-testid="queued-dialog-notice"]'),
-    { timeout: 5000 },
-  )
-
-  // The other half of that pair, and the reason the one above says "no exact
-  // match" rather than "several hits": TP53 is ambiguous by prefix (twenty
-  // `TP53*` relatives) and still must not ask. Losing the exact-first pass
-  // would make this queue a dialog.
+  // TP53 is ambiguous by prefix and still must not ask. Losing the exact-first
+  // pass would raise the picker.
   if (await clickButton('TP53')) {
     await new Promise(r => setTimeout(r, 3000))
-    const queued = await page.evaluate(
-      () => !!document.querySelector('[data-testid="queued-dialog-notice"]'),
-    )
-    if (queued) {
+    if (await pickerShown()) {
       out.push(
-        'searching TP53 queued a dialog — the exact pass no longer runs ' +
+        'searching TP53 raised a picker — the exact pass no longer runs ' +
           'before the prefix one, so a gene that prefixes its own relatives ' +
-          'now opens a picker instead of navigating',
+          'now asks instead of navigating',
       )
     }
   } else {

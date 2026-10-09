@@ -13,8 +13,6 @@ import {
 } from '@mui/material'
 import { observer } from 'mobx-react'
 
-import { isOpenInView } from '../../searchUtils.ts'
-
 import type { LinearGenomeViewModel } from '../../index.ts'
 import type BaseResult from '@jbrowse/core/TextSearch/BaseResults'
 
@@ -22,13 +20,11 @@ const SearchResultsTable = observer(function SearchResultsTable({
   searchResults,
   assemblyName,
   model,
-  handleClose,
   onPick,
 }: {
   searchResults: BaseResult[]
   assemblyName: string
   model: LinearGenomeViewModel
-  handleClose: () => void
   onPick: (result: BaseResult) => Promise<unknown>
 }) {
   const session = getSession(model)
@@ -49,13 +45,6 @@ const SearchResultsTable = observer(function SearchResultsTable({
       : locString
   }
 
-  // A hit in a track that is already on screen is usually the one meant, so it
-  // is listed first rather than given a control that says so. sort is stable,
-  // so everything else keeps the ranked order it arrived in.
-  const ordered = [...searchResults].sort(
-    (a, b) => Number(isOpenInView(b, model)) - Number(isOpenInView(a, model)),
-  )
-
   return (
     <TableContainer component={Paper}>
       <Table>
@@ -68,7 +57,7 @@ const SearchResultsTable = observer(function SearchResultsTable({
           </TableRow>
         </TableHead>
         <TableBody>
-          {ordered.map(result => (
+          {searchResults.map(result => (
             <TableRow key={result.getId()}>
               <TableCell component="th" scope="row">
                 {result.getLabel()}
@@ -83,14 +72,8 @@ const SearchResultsTable = observer(function SearchResultsTable({
               </TableCell>
               <TableCell align="right">
                 <Button
-                  onClick={async () => {
-                    try {
-                      await onPick(result)
-                    } catch (e) {
-                      console.error(e)
-                      session.notifyError(`${e}`, e)
-                    }
-                    handleClose()
+                  onClick={() => {
+                    void onPick(result)
                   }}
                   color="primary"
                   variant="contained"

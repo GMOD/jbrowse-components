@@ -178,7 +178,8 @@ test('hits in different places still raise the picker', async () => {
 
   await view.navToLocString('seg02', 'volvox')
 
-  expect(session.queueOfDialogs).toHaveLength(1)
+  expect(view.searchPicker?.results.length).toBeGreaterThan(1)
+  expect(session.queueOfDialogs).toHaveLength(0)
 }, 40_000)
 
 test('test navigation with the search input box, {volvox2}ctgB:1..200', async () => {

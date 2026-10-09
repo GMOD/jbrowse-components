@@ -1,5 +1,6 @@
 import {
   EmbedProvider,
+  SearchPicker,
   TrackStack,
   useLocationBox,
 } from '@jbrowse/display-ui/embed'
@@ -87,6 +88,7 @@ const SearchByName = observer(function SearchByName() {
   return state ? (
     <EmbedProvider session={state.session}>
       <SearchBox view={state.session.view} />
+      <SearchPicker view={state.session.view} />
       <TrackStack view={state.session.view} />
     </EmbedProvider>
   ) : null

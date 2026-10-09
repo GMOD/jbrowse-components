@@ -404,6 +404,26 @@ describe('waitReady', () => {
     })
   })
 
+  it('names the search picker a view raised as a modal', () => {
+    const picking = {
+      views: [
+        {
+          type: 'LinearGenomeView',
+          ownTracks: [],
+          ownViews: [],
+          searchPicker: { query: 'BRC' },
+        },
+      ],
+      snackbarMessages: [],
+      assemblyNames: ['volvox'],
+    } as unknown as AbstractSessionModel
+    expect(
+      createJbApi({
+        rootModel: { session: picking },
+      } as unknown as PluginManager).sessionSummary(),
+    ).toMatchObject({ dialog: {} })
+  })
+
   it('says nothing about chrome that is not up', () => {
     const plain = {
       views: [],

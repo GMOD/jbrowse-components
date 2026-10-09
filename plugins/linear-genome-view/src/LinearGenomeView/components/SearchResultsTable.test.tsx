@@ -3,6 +3,7 @@ import { createTestSession } from '@jbrowse/web/testUtils'
 import { fireEvent, render, screen, waitFor } from '@testing-library/react'
 
 import { showSearchResults } from '../../searchUtils.ts'
+import SearchResultsDialog from './SearchResultsDialog.tsx'
 
 jest.mock('@jbrowse/web/makeWorkerInstance', () => () => {})
 
@@ -60,7 +61,7 @@ const hits = ['ctgA:100..200', 'ctgA:500..600'].map(
 )
 
 async function pickFirst(showHitTrack?: boolean) {
-  const { session, model } = await setup()
+  const { model } = await setup()
   const moved = await showSearchResults({
     results: hits,
     query: 'EDEN',
@@ -69,8 +70,7 @@ async function pickFirst(showHitTrack?: boolean) {
     showHitTrack,
   })
   expect(moved).toBe(false)
-  const { DialogComponent, DialogProps } = session
-  render(<DialogComponent {...DialogProps} />)
+  render(<SearchResultsDialog model={model} />)
   fireEvent.click((await screen.findAllByText('Go'))[0]!)
   await waitFor(() => {
     expect(model.displayedRegions.length).toBe(1)
@@ -93,4 +93,42 @@ test('a picked hit shows its track by default', async () => {
   await waitFor(() => {
     expect(trackIds(model)).toEqual(['genes'])
   })
+})
+
+test('picking a hit closes the picker', async () => {
+  const { model } = await setup()
+  await showSearchResults({
+    results: hits,
+    query: 'EDEN',
+    model,
+    assemblyName: 'volvox',
+  })
+  expect(model.searchPicker?.results).toHaveLength(2)
+  await model.searchPicker.pick(model.searchPicker.results[0])
+  expect(model.searchPicker).toBeUndefined()
+})
+
+test('a hit that fails to land is reported and still closes the picker', async () => {
+  const { session, model } = await setup()
+  jest.spyOn(console, 'error').mockImplementation(() => {})
+  model.setSearchResults(hits, 'EDEN', 'volvox', () =>
+    Promise.reject(new Error('no such track')),
+  )
+  await model.searchPicker.pick(hits[0]!)
+  expect(model.searchPicker).toBeUndefined()
+  expect(session.snackbarMessages.at(-1)?.message).toContain('no such track')
+})
+
+test('hits in a track the view already shows come first', async () => {
+  const { model } = await setup()
+  await model.launchTrack('genes')
+  const elsewhere = new BaseResult({
+    label: 'EDEN',
+    locString: 'ctgA:700..800',
+    trackId: 'not_in_view',
+  })
+  model.setSearchResults([elsewhere, ...hits], 'EDEN', 'volvox')
+  expect(
+    model.searchPicker?.results.map((r: BaseResult) => r.getTrackId()),
+  ).toEqual(['genes', 'genes', 'not_in_view'])
 })

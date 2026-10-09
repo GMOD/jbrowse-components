@@ -1,4 +1,4 @@
-import { lazy } from 'react'
+import { Suspense, lazy } from 'react'
 
 import { ViewLoadingScreen } from '@jbrowse/core/ui'
 import { observer } from 'mobx-react'
@@ -9,21 +9,31 @@ import type { LinearGenomeViewModel } from '../index.ts'
 
 // lazies
 const ImportForm = lazy(() => import('./ImportForm.tsx'))
+const SearchResultsDialog = lazy(() => import('./SearchResultsDialog.tsx'))
 
 const LinearGenomeView = observer(function LinearGenomeView({
   model,
 }: {
   model: LinearGenomeViewModel
 }) {
-  const { loading, showImportForm } = model
+  const { loading, showImportForm, searchPicker } = model
 
-  if (loading) {
-    return <ViewLoadingScreen {...loading} />
-  } else if (showImportForm) {
-    return <ImportForm model={model} />
-  } else {
-    return <LinearGenomeViewContainer model={model} />
-  }
+  return (
+    <>
+      {loading ? (
+        <ViewLoadingScreen {...loading} />
+      ) : showImportForm ? (
+        <ImportForm model={model} />
+      ) : (
+        <LinearGenomeViewContainer model={model} />
+      )}
+      {searchPicker ? (
+        <Suspense fallback={null}>
+          <SearchResultsDialog model={model} />
+        </Suspense>
+      ) : null}
+    </>
+  )
 })
 
 export default LinearGenomeView

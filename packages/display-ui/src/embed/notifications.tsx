@@ -28,7 +28,8 @@ const row: React.CSSProperties = {
  * Draws the two session channels a host with its own UI otherwise drops: the
  * latest of `session.snackbarMessages`, where a failed navigation, track launch
  * or config lands, and a line for each dialog JBrowse queued, which only a
- * Material host can open.
+ * Material host can open. A name search's picker is not one: it is
+ * `view.searchPicker`, drawn by `SearchPicker`.
  *
  * `EmbedProvider` mounts one below its children. Pass it
  * `notifications={false}` to place this elsewhere or to draw the two queues

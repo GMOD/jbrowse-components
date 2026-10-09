@@ -1,5 +1,3 @@
-import { lazy } from 'react'
-
 import { getConf } from '@jbrowse/core/configuration'
 import { BaseViewModel } from '@jbrowse/core/pluggableElementTypes/models'
 import { exportViewSvg } from '@jbrowse/core/svg/exportViewSvg'
@@ -7,7 +5,7 @@ import {
   assembleLocString,
   clamp,
   getBpDisplayStr,
-  getDialogHost,
+  getNotificationSink,
   getSession,
   getTickDisplayStr,
   isSessionModelWithWidgets,
@@ -60,7 +58,11 @@ import {
 } from '@jbrowse/mobx-state-tree'
 import { observable, when } from 'mobx'
 
-import { handleSelectedRegion, navToOption } from '../searchUtils.ts'
+import {
+  handleSelectedRegion,
+  isOpenInView,
+  navToOption,
+} from '../searchUtils.ts'
 import { doAfterAttach } from './afterAttach.ts'
 import { getCytobands, shouldSwapTracks } from './components/util.ts'
 import {
@@ -124,10 +126,19 @@ import type { ViewStatus } from '@jbrowse/core/util/viewStatus'
 import type { LaunchInput } from '@jbrowse/core/util/withLaunchInput'
 import type { IAnyStateTreeNode, Instance } from '@jbrowse/mobx-state-tree'
 
-// lazies
-const SearchResultsDialog = lazy(
-  () => import('./components/SearchResultsDialog.tsx'),
-)
+/**
+ * The hits of a name search that point at more than one place, waiting for the
+ * user to choose. A host draws them however it likes: the Material view shows
+ * a dialog, and `SearchPicker` in `@jbrowse/display-ui/embed` a plain list.
+ */
+export interface SearchPicker {
+  query: string
+  assemblyName: string
+  /** one hit per place, hits in a track the view already shows first */
+  results: BaseResult[]
+  /** navigates to the hit, reports a failure and closes the picker */
+  pick: (result: BaseResult) => Promise<unknown>
+}
 
 /** One span of the row that is not track data — see `paddingSpans`. */
 export interface PaddingSpan {
@@ -560,6 +571,12 @@ export function stateModelFactory(pluginManager: PluginManager) {
          * #volatile
          */
         draggingTrackId: undefined as undefined | string,
+        /**
+         * #volatile
+         * Set by a search whose hits name more than one place, until the user
+         * picks one or closes it.
+         */
+        searchPicker: undefined as SearchPicker | undefined,
         /**
          * #volatile
          */
@@ -1295,6 +1312,14 @@ export function stateModelFactory(pluginManager: PluginManager) {
       /**
        * #action
        */
+      closeSearchPicker() {
+        self.searchPicker = undefined
+      },
+    }))
+    .actions(self => ({
+      /**
+       * #action
+       */
       setShowTrackOutlines(arg: boolean) {
         self.showTrackOutlines = arg
       },
@@ -1519,17 +1544,28 @@ export function stateModelFactory(pluginManager: PluginManager) {
             assemblyName,
           }),
       ) {
-        getDialogHost(self).queueDialog(handleClose => [
-          SearchResultsDialog,
-          {
-            model: self as LinearGenomeViewModel,
-            searchResults,
-            searchQuery,
-            handleClose,
-            assemblyName,
-            onPick,
+        self.searchPicker = {
+          query: searchQuery,
+          assemblyName,
+          results: [...searchResults].sort(
+            (a, b) =>
+              Number(isOpenInView(b, self as LinearGenomeViewModel)) -
+              Number(isOpenInView(a, self as LinearGenomeViewModel)),
+          ),
+          pick: async result => {
+            try {
+              await onPick(result)
+            } catch (e) {
+              console.error(e)
+              if (isAlive(self)) {
+                getNotificationSink(self).notifyError(`${e}`, e)
+              }
+            }
+            if (isAlive(self)) {
+              self.closeSearchPicker()
+            }
           },
-        ])
+        }
       },
 
       /**

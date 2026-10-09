@@ -81,6 +81,7 @@ Each section ends with the members a composed model contributes, linked to the p
 | <span id="volatile-scrollportexcess">**scrollPortExcess**</span><br><code>number &#124; undefined</code> | How much taller the view's box is than the scroll port it sits in, in px, negative when it is shorter. Measured by the view component for a top-level view; undefined until then, and for a nested one. |
 | <span id="volatile-volatilewidth">**volatileWidth**</span><br><code>number &#124; undefined</code> |  |
 | <span id="volatile-draggingtrackid">**draggingTrackId**</span><br><code>string &#124; undefined</code> |  |
+| <span id="volatile-searchpicker">**searchPicker**</span><br><code>SearchPicker &#124; undefined</code> | Set by a search whose hits name more than one place, until the user picks one or closes it. |
 | <span id="volatile-lasttrackdragy">**lastTrackDragY**</span><br><code>number &#124; undefined</code> |  |
 | <span id="volatile-volatileerror">**volatileError**</span><br><code>unknown</code> |  |
 | <span id="volatile-coarsedynamicblocks">**coarseDynamicBlocks**</span><br><code>ContentBlock[]</code> |  |
@@ -216,6 +217,7 @@ Each section ends with the members a composed model contributes, linked to the p
 <!-- prettier-ignore -->
 | Member | Description |
 | --- | --- |
+| <span id="action-closesearchpicker">**closeSearchPicker**</span><br><code>() =&gt; void</code> |  |
 | <span id="action-setshowtrackoutlines">**setShowTrackOutlines**</span><br><code>(arg: boolean) =&gt; void</code> |  |
 | <span id="action-setscrollzoom">**setScrollZoom**</span><br><code>(flag: boolean) =&gt; void</code> |  |
 | <span id="action-setcolorbycds">**setColorByCDS**</span><br><code>(flag: boolean) =&gt; void</code> |  |

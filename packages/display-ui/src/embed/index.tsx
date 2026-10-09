@@ -26,6 +26,7 @@ export { LocationBox, useLocationBox } from './location.tsx'
 export { Notifications } from './notifications.tsx'
 export { EmbedProvider } from './provider.tsx'
 export { Highlights, RegionSeams, Scalebar } from './regions.tsx'
+export { SearchPicker } from './searchPicker.tsx'
 export { NavButton, Toolbar } from './toolbar.tsx'
 
 export interface EmbedDisplay {

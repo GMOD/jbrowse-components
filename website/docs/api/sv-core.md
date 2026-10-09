@@ -112,7 +112,7 @@ view, never a circle, whose tracks carry displays a linear panel cannot draw.
 
 ```js
 // type signature
-(view?: {…} | undefined) => (ModelInstanceTypeProps<…> & {…} & {…} & {…} & {…} & {…} & {…} & {…} & {…} & {…} & {…} & {…} & {…} & {…} & {…} & {…} & {…} & {…} & {…} & {…} & {…} & {…} & {…} & {…} & {…} & {…} & { flyTo: (centerBp: number, windowWidthBp: number) => void; flyToCenter(coord: number, refName: string, displayedRegionIndex?: number | undefined): void; flyToFit(centerBp: number, fitWidthBp: number): void; } & { afterCreate(): void; afterAttach(): void; } & IStateTreeNode<…>) | undefined
+(view?: {…} | undefined) => (ModelInstanceTypeProps<…> & {…} & {…} & {…} & {…} & {…} & {…} & {…} & {…} & {…} & {…} & {…} & {…} & {…} & {…} & {…} & {…} & {…} & {…} & {…} & {…} & {…} & {…} & {…} & {…} & {…} & {…} & { flyTo: (centerBp: number, windowWidthBp: number) => void; flyToCenter(coord: number, refName: string, displayedRegionIndex?: number | undefined): void; flyToFit(centerBp: number, fitWidthBp: number): void; } & { afterCreate(): void; afterAttach(): void; } & IStateTreeNode<…>) | undefined
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/sv-core/src/util.ts)
