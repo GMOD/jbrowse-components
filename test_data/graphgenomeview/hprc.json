@@ -160,7 +160,7 @@
       "assemblyNames": ["hs1"],
       "adapter": {
         "type": "RgfaTabixAdapter",
-        "walksUri": "https://jbrowse.org/demos/hprc/hprc-v2.1-mc-grch38.CHM13",
+        "walksUri": "https://jbrowse.org/demos/hprc/hprc-v2.1-mc-grch38-w6.CHM13",
         "assemblyNameToPanSN": {
           "hs1": "CHM13"
         },

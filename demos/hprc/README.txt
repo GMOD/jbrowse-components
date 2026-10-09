@@ -221,7 +221,8 @@ Haplotype walks
   CHM13: 56,789,151 walk rows from 49,414 paths, 139,657,552 node rows,
   192,362,348 link rows; 3,736 paths have no row.
 
-  Built 2026-10-08 from HPRC's hprc-v2.1-mc-grch38.gbz (5,492,627,216 bytes,
+  Built 2026-10-08 (0.5.0 files, prefix hprc-v2.1-mc-grch38) and rebuilt 2026-10-09
+  with 0.6.0 (prefix hprc-v2.1-mc-grch38-w6, 44:13, same flags) from HPRC's hprc-v2.1-mc-grch38.gbz (5,492,627,216 bytes,
   the release directory above), so node ids match the GBZ and the gbz.db:
 
     vg convert -f hprc-v2.1-mc-grch38.gbz | pigz > hprc-v2.1-mc-grch38.W.gfa.gz
@@ -233,7 +234,7 @@ Haplotype walks
   The defaults apply: --chunk 65536, --cap 8192, --settle 0. The tool files a
   reference's own steps at their own offset, so each pass over a satellite
   array lies where it is. The track's walksUri names the GRCh38 set by its
-  prefix, hprc-v2.1-mc-grch38.GRCh38, and defaultHaplotypes names the lanes it
+  prefix, hprc-v2.1-mc-grch38-w6.GRCh38, and defaultHaplotypes names the lanes it
   draws unless the haplotype menu says otherwise.
 
   Two earlier builds, the 0.4.0 single set with both references in one index

@@ -257,7 +257,7 @@
       "assemblyNames": ["hg38"],
       "adapter": {
         "type": "RgfaTabixAdapter",
-        "walksUri": "https://jbrowse.org/demos/hprc/hprc-v2.1-mc-grch38.GRCh38",
+        "walksUri": "https://jbrowse.org/demos/hprc/hprc-v2.1-mc-grch38-w6.GRCh38",
         "assemblyNameToPanSN": {
           "hg38": "GRCh38"
         },
@@ -397,7 +397,7 @@
       ],
       "adapter": {
         "type": "WalkTabixSyntenyAdapter",
-        "walksUri": "https://jbrowse.org/demos/hprc/hprc-v2.1-mc-grch38.GRCh38",
+        "walksUri": "https://jbrowse.org/demos/hprc/hprc-v2.1-mc-grch38-w6.GRCh38",
         "samplesTsvLocation": {
           "uri": "https://jbrowse.org/demos/hprc/hprc_samples.tsv"
         },
