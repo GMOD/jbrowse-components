@@ -91,7 +91,9 @@ test('the padding holds the labels drawn at the fit and no more', () => {
   const fit = fitLayout(input(regions, 600))
   expect(drawn(fit, regions).elided.map(regionLabelText)).toContain('[2]')
   expect(fit.bpPerPx).toBeCloseTo(12_000_000 / 6, -1)
-  expect(fit.paddingPx).toBe(60)
+  expect(fit.paddingPx).toBe(
+    maxLabelGutterPx(drawn(fit, regions).elided.map(regionLabelText)),
+  )
 })
 
 // a seeded sweep over region sets whose elision lands anywhere, including on a
@@ -118,11 +120,15 @@ test('the fit never overflows the box or clips a label below the cap', () => {
     const fit = fitLayout(input(regions, box))
     const { elided, ringPx } = drawn(fit, regions)
     expect(ringPx).toBeLessThanOrEqual(2 * Math.PI * fit.radiusPx * (1 + 1e-9))
+    // a lone region is titled in the middle, leaving the ticks alone outside
     const reach =
-      maxLabelGutterPx(elided.map(regionLabelText)) +
+      maxLabelGutterPx(regions.length > 1 ? elided.map(regionLabelText) : []) +
       (assemblies.length > 1 ? assemblyBandPx : 0)
     const boxShare = Math.min(80, Math.max(20, box / 10))
-    expect(fit.paddingPx).toBe(Math.max(boxShare, Math.min(reach, box / 4)))
+    expect(fit.paddingPx).toBeCloseTo(
+      Math.max(boxShare, Math.min(reach, box / 4)),
+      9,
+    )
     expect(fit.radiusPx + fit.paddingPx).toBeLessThanOrEqual(box / 2 + 1e-9)
   }
 })

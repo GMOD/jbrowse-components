@@ -12,8 +12,24 @@ export const labelFontSizePx = 13
 export const ideogramGapPx = 2
 export const ideogramThicknessPx = 8
 
-// how far outside the circle's radius a label is anchored: past the ideogram
-export const labelOffsetPx = ideogramGapPx + ideogramThicknessPx + 5
+// base-pair ticks stand on the ideogram's outer edge, a major tick's label
+// just past its tip
+export const tickMajorPx = 5
+export const tickMinorPx = 3
+export const tickLabelGapPx = 2
+export const tickFontSizePx = 10
+
+// how far outside the circle's radius the base-pair ticks and their labels
+// reach
+export const tickReachPx =
+  ideogramGapPx +
+  ideogramThicknessPx +
+  tickMajorPx +
+  tickLabelGapPx +
+  tickFontSizePx
+
+// how far outside the circle's radius a label is anchored: past the ticks
+export const labelOffsetPx = tickReachPx + 5
 
 // rough advance width of one character at `labelFontSizePx`. Only ever used to
 // compare a label against the arc it would sit on, so an estimate is enough —
@@ -44,8 +60,20 @@ export function regionLabelText(region: SliceRegion) {
   return region.elided ? `[${toLocale(region.regions.length)}]` : region.refName
 }
 
-export function sliceLabelText(slice: Slice) {
-  return regionLabelText(slice.region)
+/**
+ * The contig a circle of one names in its middle, beside its length, the way
+ * a plasmid map titles itself. Its arc then carries no label.
+ */
+export function middleTitle(staticSlices: readonly Slice[]) {
+  const [only, ...rest] = staticSlices
+  return only && rest.length === 0 && !only.region.elided
+    ? only.region
+    : undefined
+}
+
+/** The text on a slice's arc: its region's, unless the middle names it. */
+export function sliceLabelText(slice: Slice, staticSlices: readonly Slice[]) {
+  return middleTitle(staticSlices) ? '' : regionLabelText(slice.region)
 }
 
 export function sliceArcWidthPx(slice: Slice, radiusPx: number) {
@@ -65,7 +93,7 @@ export function labelsRunAlongArcs({
   staticSlices: Slice[]
 }) {
   return staticSlices.every(slice => {
-    const text = sliceLabelText(slice)
+    const text = sliceLabelText(slice, staticSlices)
     const maxWidthPx = sliceArcWidthPx(slice, radiusPx)
     return (
       !labelIsDrawn(text, maxWidthPx) || labelFitsAlongArc(text, maxWidthPx)
@@ -86,12 +114,15 @@ export function labelsRunAlongArcs({
  * at a negative x and clipped by the box.
  */
 export function maxLabelGutterPx(labels: string[]) {
-  return labelOffsetPx + max(labels.map(labelWidthPx), 0)
+  return labels.length
+    ? labelOffsetPx + max(labels.map(labelWidthPx), 0)
+    : tickReachPx
 }
 
 /**
- * How far past the ruler arc this figure's labels actually reach: half a line
- * when they run along their arcs, the longest label when they radiate.
+ * How far past the ruler arc this figure's labels actually reach: the ticks,
+ * then half a line when the labels run along their arcs, the longest label
+ * when they radiate.
  *
  * The on-screen view reserves a fixed `paddingPx` for this and lives in a box
  * that clips anyway; an SVG export is a standalone artifact, so it sizes its
@@ -106,7 +137,7 @@ export function labelGutterPx(model: {
   const alongArcs = labelsRunAlongArcs(model)
   return max(
     staticSlices.map(slice => {
-      const text = sliceLabelText(slice)
+      const text = sliceLabelText(slice, staticSlices)
       if (!labelIsDrawn(text, sliceArcWidthPx(slice, radiusPx))) {
         return 0
       }
@@ -117,7 +148,7 @@ export function labelGutterPx(model: {
         (alongArcs ? labelFontSizePx / 2 : labelWidthPx(text))
       )
     }),
-    0,
+    tickReachPx,
   )
 }
 

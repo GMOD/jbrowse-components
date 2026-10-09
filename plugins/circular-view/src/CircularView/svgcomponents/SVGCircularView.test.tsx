@@ -201,6 +201,7 @@ test('the export canvas grows to fit labels that overrun paddingPx', async () =>
       { length: 24 },
       (_, i) => `NC_0000${String(i + 1).padStart(2, '0')}.11`,
     ),
+    { height: 500 },
   )
   const svg = await renderToSvg(view, {})
   const halfCanvas = Number(/viewBox="0 0 ([\d.]+)/.exec(svg)![1]) / 2

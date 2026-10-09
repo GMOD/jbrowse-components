@@ -19,8 +19,14 @@ import {
   labelIsDrawn,
   labelOffsetPx,
   labelsRunAlongArcs,
+  middleTitle,
   sliceLabelText,
+  tickFontSizePx,
+  tickLabelGapPx,
+  tickMajorPx,
+  tickMinorPx,
 } from '../rulerLabels.ts'
+import { rulerTicks } from '../rulerTicks.ts'
 import { bpToRadians } from '../slices.ts'
 
 import type { CircularViewModel } from '../model.ts'
@@ -125,6 +131,8 @@ function labelPlacement(
       ? { textAnchor: 'start' as const, rotation: deg }
       : { textAnchor: 'end' as const, rotation: deg + 180 }
 }
+
+const middleTitleFontSizePx = 16
 
 const RulerLabel = observer(function RulerLabel({
   offsetRadians,
@@ -242,6 +250,59 @@ const IdeogramBand = observer(function IdeogramBand({
   )
 })
 
+// a slice's base-pair ticks, standing outward from the ideogram's outer edge,
+// each major one labelled along the arc past its tip
+const RulerTicks = observer(function RulerTicks({
+  model,
+  slice,
+  basePx,
+  seam,
+}: {
+  model: CircularViewModel
+  slice: Slice
+  basePx: number
+  seam: boolean
+}) {
+  const palette = usePalette()
+  const { radiusPx, offsetRadians } = model
+  const color = palette.text.secondary
+  return (
+    <g stroke={color} data-testid="ruler-ticks">
+      {rulerTicks(slice, radiusPx, seam).map(({ base, radians, label }) => {
+        const tipPx = basePx + (label ? tickMajorPx : tickMinorPx)
+        const [x1, y1] = polarToCartesian(basePx, radians)
+        const [x2, y2] = polarToCartesian(tipPx, radians)
+        const labelXY = polarToCartesian(
+          tipPx + tickLabelGapPx + tickFontSizePx / 2,
+          radians,
+        )
+        const { textAnchor, rotation } = labelPlacement(
+          radians,
+          offsetRadians,
+          true,
+        )
+        return (
+          <g key={base}>
+            <line x1={x1} y1={y1} x2={x2} y2={y2} />
+            {label === undefined ? null : (
+              <text
+                fontSize={tickFontSizePx}
+                textAnchor={textAnchor}
+                dominantBaseline="middle"
+                transform={`translate(${labelXY}) rotate(${rotation})`}
+                fill={color}
+                stroke="none"
+              >
+                {label}
+              </text>
+            )}
+          </g>
+        )
+      })}
+    </g>
+  )
+})
+
 const Ruler = observer(function Ruler({
   model,
   slice,
@@ -259,7 +320,7 @@ const Ruler = observer(function Ruler({
   return (
     <>
       <RulerLabel
-        text={sliceLabelText(slice)}
+        text={sliceLabelText(slice, model.staticSlices)}
         title={
           region.elided
             ? `${toLocale(region.regions.length)} regions too small to show`
@@ -281,13 +342,21 @@ const Ruler = observer(function Ruler({
           fill="none"
         />
       ) : (
-        <IdeogramBand
-          model={model}
-          slice={slice}
-          region={region}
-          innerPx={innerPx}
-          outerPx={outerPx}
-        />
+        <>
+          <IdeogramBand
+            model={model}
+            slice={slice}
+            region={region}
+            innerPx={innerPx}
+            outerPx={outerPx}
+          />
+          <RulerTicks
+            model={model}
+            slice={slice}
+            basePx={outerPx}
+            seam={middleTitle(model.staticSlices) !== undefined}
+          />
+        </>
       )}
     </>
   )
@@ -339,6 +408,39 @@ const AssemblyArcLabel = observer(function AssemblyArcLabel({
   )
 })
 
+// a circle of one contig titled in its middle, kept level as the figure turns
+const MiddleTitle = observer(function MiddleTitle({
+  model,
+}: {
+  model: CircularViewModel
+}) {
+  const palette = usePalette()
+  const region = middleTitle(model.staticSlices)
+  return region ? (
+    <g
+      data-testid="circular-middle-title"
+      transform={`rotate(${-radToDeg(model.offsetRadians)})`}
+      textAnchor="middle"
+    >
+      <text
+        y={-4}
+        fontSize={middleTitleFontSizePx}
+        fontWeight={600}
+        fill={palette.text.primary}
+      >
+        {region.refName}
+      </text>
+      <text
+        y={middleTitleFontSizePx}
+        fontSize={labelFontSizePx}
+        fill={palette.text.secondary}
+      >
+        {toLocale(region.end - region.start)} bp
+      </text>
+    </g>
+  ) : null
+})
+
 // the whole ideogram: shared by the on-screen view and the SVG export so the
 // two can't drift
 export const Rulers = observer(function Rulers({
@@ -351,6 +453,7 @@ export const Rulers = observer(function Rulers({
   const assemblyRadiusPx = radiusPx + labelGutterPx(model) + assemblyArcGapPx
   return (
     <>
+      <MiddleTitle model={model} />
       {staticSlices.map(slice => (
         <Ruler
           key={slice.key}

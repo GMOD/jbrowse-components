@@ -144,8 +144,11 @@ export function fitLayout(input: FitInput): FitLayout {
     if (!drawn) {
       const elided = elideRegions(regions, mask)
       const needPx =
-        maxLabelGutterPx([...elided.map(regionLabelText), ...elidedLabel]) +
-        genomeBand
+        maxLabelGutterPx(
+          regions.length > 1
+            ? [...elided.map(regionLabelText), ...elidedLabel]
+            : [],
+        ) + genomeBand
       drawn = {
         units: sum(gapUnitsAfter(elided)),
         paddingPx: Math.max(boxPadding, Math.min(needPx, halfBox / 2)),

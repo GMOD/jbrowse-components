@@ -94,15 +94,18 @@ function regionAssemblyName(region: SliceRegion) {
 /**
  * The gap after each region, in inter-slice gaps: one between two regions of
  * a genome, `GENOME_GAP_UNITS` where the next region, wrapping round to the
- * first, is another genome's.
+ * first, is another genome's. A lone region closes the ring, its end meeting
+ * its start, as a plasmid or organelle map draws.
  */
 export function gapUnitsAfter(regions: readonly SliceRegion[]) {
-  return regions.map((region, i) =>
-    regionAssemblyName(regions[(i + 1) % regions.length]!) ===
-    regionAssemblyName(region)
-      ? 1
-      : GENOME_GAP_UNITS,
-  )
+  return regions.length === 1
+    ? [0]
+    : regions.map((region, i) =>
+        regionAssemblyName(regions[(i + 1) % regions.length]!) ===
+        regionAssemblyName(region)
+          ? 1
+          : GENOME_GAP_UNITS,
+      )
 }
 
 export function calculateStaticSlices(self: {

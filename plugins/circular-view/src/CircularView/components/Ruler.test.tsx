@@ -8,10 +8,14 @@ import Ruler from './Ruler.tsx'
 
 import type { CircularViewModel } from '../model.ts'
 
-// the elided branch of Ruler reads only these two off the view; the non-elided
+// the elided branch of Ruler reads only these off the view; the non-elided
 // branch additionally needs getSession, so it can't run outside an MST tree
 function makeModel(offsetRadians: number) {
-  return { radiusPx: 150, offsetRadians } as unknown as CircularViewModel
+  return {
+    radiusPx: 150,
+    offsetRadians,
+    staticSlices: [],
+  } as unknown as CircularViewModel
 }
 
 function makeRegion(refName: string) {
