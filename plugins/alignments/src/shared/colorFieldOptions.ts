@@ -40,7 +40,6 @@ export function radioColorFieldOptions(group: ColorGroup): ColorFieldOption[] {
 }
 
 /**
- * #api
  * Color by radios for a display offering a curated few fields, in the order
  * given, each labelled as the alignments menu labels it; an entry naming its
  * own label is for a field whose name is right on one display and wrong on
