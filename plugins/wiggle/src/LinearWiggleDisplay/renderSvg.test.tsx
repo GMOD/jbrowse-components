@@ -269,17 +269,21 @@ describe('MultiLinearWiggleDisplay renderSvg', () => {
   })
 
   // The scalebars stay beside the plot in the export margin whether or not a
-  // tree is showing; the tree and labels sit left of them.
+  // tree is showing; the tree and labels sit left of them, so the spine turns
+  // to face them and the numbers grow right, toward the plot.
   it('keeps the per-row axes beside the plot when a tree is showing', async () => {
-    const gutterXs = (html: string) =>
+    const gutters = (html: string) =>
       [
         ...html.matchAll(
-          /<g transform="translate\((-?\d+) \d+\)"><g transform="translate\(50 0\)">/g,
+          /<g transform="translate\((-?\d+) \d+\)"><g transform="translate\((\d+) 0\)">/g,
         ),
-      ].map(m => Number(m[1]))
-    expect(gutterXs(render(await renderSvg(makeModel())))).toEqual([-50, -50])
+      ].map(m => [Number(m[1]), Number(m[2])])
+    expect(gutters(render(await renderSvg(makeModel())))).toEqual([
+      [-50, 50],
+      [-50, 50],
+    ])
     expect(
-      gutterXs(
+      gutters(
         render(
           await renderSvg(
             makeModel(
@@ -289,7 +293,10 @@ describe('MultiLinearWiggleDisplay renderSvg', () => {
           ),
         ),
       ),
-    ).toEqual([-50, -50])
+    ).toEqual([
+      [-50, 0],
+      [-50, 0],
+    ])
   })
 
   it('omits the dendrogram when the tree is hidden', async () => {

@@ -19,7 +19,11 @@ export interface SvgSidebarProps {
   leftInset?: number
 }
 
-export function svgSidebarWidth(
+/**
+ * Px the dendrogram, band strip and row labels take together: the panel a
+ * display's left axis sits past on screen.
+ */
+export function sidebarPanelWidth(
   {
     showTree,
     hierarchy,
@@ -28,7 +32,6 @@ export function svgSidebarWidth(
     treeAreaWidth,
     showLabels = true,
     bands = [],
-    leftInset = 0,
   }: SvgSidebarProps,
   text?: ExportTextStyle,
 ) {
@@ -36,9 +39,17 @@ export function svgSidebarWidth(
     showLabels && sources.length
       ? rowLabelsBoxWidth(sources, rowHeight, text)
       : 0
-  const width =
+  return (
     treeSidebarOffset({ showTree, hierarchy, treeAreaWidth }) +
     (bands.length ? bandLabelWidth(text) : 0) +
     labels
-  return width > 0 ? width + leftInset : 0
+  )
+}
+
+export function svgSidebarWidth(
+  sidebar: SvgSidebarProps,
+  text?: ExportTextStyle,
+) {
+  const width = sidebarPanelWidth(sidebar, text)
+  return width > 0 ? width + (sidebar.leftInset ?? 0) : 0
 }

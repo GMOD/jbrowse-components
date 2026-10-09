@@ -40,7 +40,7 @@ import {
   showRowSeparatorsMenuItem,
   sortRowsAtColumn,
   sortRowsHereMenuItem,
-  treeSidebarOffset,
+  sidebarPanelWidth,
   treeSidebarShowMenuItems,
 } from '@jbrowse/tree-sidebar'
 import {
@@ -519,6 +519,24 @@ export default function stateModelFactory(
     .views(self => ({
       /**
        * #getter
+       * The dendrogram and row labels at the display's left, which the axis
+       * sits past on screen and the export parks left of the figure.
+       */
+      get sidebarPanel(): SvgSidebarProps {
+        return {
+          showTree: self.showTree,
+          hierarchy: self.hierarchy,
+          sources: self.sources,
+          rowHeight: self.effectiveRowHeight,
+          treeAreaWidth: self.treeAreaWidth,
+          showLabels:
+            self.numSources > 1 && !self.isOverlay && self.showRowLabels,
+        }
+      },
+    }))
+    .views(self => ({
+      /**
+       * #getter
        * The one scale every row shares, ruling a band per row stacked down the
        * track, past the dendrogram where one is shown. Density rows each in
        * their own color map the scale to color rather than to y, so they
@@ -546,7 +564,7 @@ export default function stateModelFactory(
                     self.rowsTopOffset +
                     getRowTop(row, self.effectiveRowHeight),
                 ),
-            left: treeSidebarOffset(self),
+            left: sidebarPanelWidth(self.sidebarPanel),
             caption: self.scaleTitle,
             rules: self.scoreRules,
             grid: self.grid,
@@ -672,13 +690,7 @@ export default function stateModelFactory(
        */
       get svgSidebar(): SvgSidebarProps {
         return {
-          showTree: self.showTree,
-          hierarchy: self.hierarchy,
-          sources: self.sources,
-          rowHeight: self.effectiveRowHeight,
-          treeAreaWidth: self.treeAreaWidth,
-          showLabels:
-            self.numSources > 1 && !self.isOverlay && self.showRowLabels,
+          ...self.sidebarPanel,
           leftInset: leftAxisGutterWidth(self.axes),
         }
       },

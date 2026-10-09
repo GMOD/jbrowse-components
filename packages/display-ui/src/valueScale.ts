@@ -37,8 +37,8 @@ export interface ValueScaleRule {
  * color), which gets the `[min, max]` caption and no axis, as a scale whose
  * bands are too short for one does. `side` and `left` are which of the band's
  * edges the display's own panels leave clear for a gutter: `right` where a
- * group label chip takes the left, `left: n` where a dendrogram takes the
- * first `n` px. `caption` is what the scale measures (`TLEN`), as a color
+ * group label chip takes the left, `left: n` where a dendrogram and row
+ * labels take the first `n` px. `caption` is what the scale measures (`TLEN`), as a color
  * scale's `field` is; the chrome draws it once for the scale, beside the
  * bands on screen, however many it rules. `rules` are the reference lines the
  * scale declares and `grid` a line at every tick, both drawn across every

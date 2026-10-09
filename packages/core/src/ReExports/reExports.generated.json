@@ -4901,6 +4901,7 @@
         "axisGutterLeft",
         "axisGutterWidth",
         "leftAxisGutterWidth",
+        "numbersGrowRight",
         "rulesABand"
       ],
       "worker": "real"

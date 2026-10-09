@@ -77,6 +77,16 @@ export function leftAxisGutterWidth(
     : 0
 }
 
+/**
+ * Whether an axis's numbers grow rightward from its spine: a right-side axis
+ * keeps them inside the plot's right edge, and a left-side axis set past a
+ * panel keeps its spine against the panel. Only a left-side axis at the
+ * display's own edge grows them leftward, toward that edge.
+ */
+export function numbersGrowRight(axis: Pick<YAxis, 'side' | 'left'>) {
+  return axis.side === 'right' || (axis.left ?? 0) > 0
+}
+
 /** How far in from the plot's right edge a right-side gutter ends in an export. */
 export const AXIS_RIGHT_INSET_PX = 4
 

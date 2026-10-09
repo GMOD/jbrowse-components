@@ -7,6 +7,7 @@ import {
   axisCaptionY,
   axisGutterLeft,
   axisGutterWidth,
+  numbersGrowRight,
 } from './axisPlacement.ts'
 import { AXIS_FONT_PX, CAPTION_INSET_PX } from './yAxisConstants.ts'
 
@@ -49,10 +50,9 @@ export default function AxisCaption({
   height: number
 }) {
   const palette = usePalette()
-  const x =
-    axis.side === 'right'
-      ? axisGutterWidth(axis) - CAPTION_INSET_PX
-      : CAPTION_INSET_PX
+  const x = numbersGrowRight(axis)
+    ? axisGutterWidth(axis) - CAPTION_INSET_PX
+    : CAPTION_INSET_PX
   const caption = fitCaption(axis.caption ?? '', height)
   if (!caption) {
     return null

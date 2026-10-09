@@ -1,6 +1,6 @@
 import { bandLabelWidth } from './SvgBandLabels.tsx'
 import { rowLabelsBoxWidth } from './rowLabelsBoxWidth.ts'
-import { svgSidebarWidth } from './svgSidebarWidth.ts'
+import { sidebarPanelWidth, svgSidebarWidth } from './svgSidebarWidth.ts'
 
 const sources = [{ name: 'a' }, { name: 'longer name' }]
 const base = {
@@ -22,6 +22,12 @@ test('hidden labels and no tree reserve nothing, whatever the inset', () => {
 test('the inset sits past the sidebar, and only when there is one', () => {
   const labels = rowLabelsBoxWidth(sources, 20)
   expect(svgSidebarWidth({ ...base, leftInset: 50 })).toBe(labels + 50)
+})
+
+test('the panel an on-screen axis sits past leaves the inset out', () => {
+  expect(sidebarPanelWidth({ ...base, leftInset: 50 })).toBe(
+    rowLabelsBoxWidth(sources, 20),
+  )
 })
 
 test('a band strip adds its column ahead of the labels', () => {

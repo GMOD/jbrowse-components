@@ -1,8 +1,5 @@
 import { SvgRowLabels } from '@jbrowse/tree-sidebar'
-import { rowLabelOffset } from '@jbrowse/wiggle-core'
 import { observer } from 'mobx-react'
-
-import type { YAxis } from '@jbrowse/wiggle-core'
 
 interface LabelModel {
   sources: {
@@ -14,11 +11,10 @@ interface LabelModel {
   effectiveRowHeight: number
   numSources: number
   showRowLabels: boolean
-  axes: YAxis[]
 }
 
-// Row labels (non-overlay mode) for the live WiggleComponent. `labelOffset` is
-// where they start with no axis, past the dendrogram.
+// Row labels (non-overlay mode) for the live WiggleComponent, starting past the
+// dendrogram at `labelOffset`; the axis sits past them.
 export default observer(function WiggleRowLabels({
   model,
   labelOffset,
@@ -35,7 +31,7 @@ export default observer(function WiggleRowLabels({
     <SvgRowLabels
       sources={sources}
       rowHeight={effectiveRowHeight}
-      labelOffset={rowLabelOffset(model.axes, labelOffset)}
+      labelOffset={labelOffset}
       backdrop="wash"
     />
   )

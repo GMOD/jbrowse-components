@@ -1,5 +1,4 @@
-import { RowsPanel, treeSidebarOffset } from '@jbrowse/tree-sidebar'
-import { rowLabelOffset } from '@jbrowse/wiggle-core'
+import { RowsPanel } from '@jbrowse/tree-sidebar'
 import { observer } from 'mobx-react'
 
 import type { MarkDisplayModel } from './markDisplayTypes.ts'
@@ -14,11 +13,7 @@ const MarkRows = observer(function MarkRows({
   model: MarkDisplayModel
 }) {
   return model.drawsKeyedRows ? (
-    <RowsPanel
-      model={model}
-      testIdPrefix="mark"
-      labelOffset={rowLabelOffset(model.axes, treeSidebarOffset(model))}
-    />
+    <RowsPanel model={model} testIdPrefix="mark" />
   ) : null
 })
 

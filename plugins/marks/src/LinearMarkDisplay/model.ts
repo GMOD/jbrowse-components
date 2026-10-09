@@ -75,6 +75,7 @@ import {
   orderRowsByValueAt,
   setupTreeSidebarAutoruns,
   sortRowsAtColumn,
+  sidebarPanelWidth,
   treeSidebarOffset,
 } from '@jbrowse/tree-sidebar'
 import {
@@ -1034,6 +1035,25 @@ export function stateModelFactory(
       .views(self => ({
         /**
          * #getter
+         * The dendrogram, band strip and row labels at the display's left,
+         * which the axis sits past on screen and the export parks left of the
+         * figure.
+         */
+        get sidebarPanel(): SvgSidebarProps {
+          return {
+            showTree: self.showTree,
+            hierarchy: self.hierarchy,
+            sources: self.sources,
+            rowHeight: self.effectiveRowHeight,
+            treeAreaWidth: self.treeAreaWidth,
+            showLabels: self.showRowLabels,
+            bands: self.rowBands,
+          }
+        },
+      }))
+      .views(self => ({
+        /**
+         * #getter
          * The px the y scale stands in from both ends of its band, one number
          * for the axis and every mark: room for the largest glyph or half the
          * thickest rule where only those draw, and none beside a bar, whose
@@ -1097,7 +1117,9 @@ export function stateModelFactory(
               scaleType: self.scaleType,
               symlogConstant: self.symlogConstant,
               ...band,
-              left: treeSidebarOffset(self),
+              left: self.drawsKeyedRows
+                ? sidebarPanelWidth(self.sidebarPanel)
+                : treeSidebarOffset(self),
               minimalTicks,
               caption: self.scaleTitle,
               rules: self.scoreRules,
@@ -1656,12 +1678,7 @@ export function stateModelFactory(
         get svgSidebar(): SvgSidebarProps | undefined {
           return self.drawsKeyedRows
             ? {
-                showTree: self.showTree,
-                hierarchy: self.hierarchy,
-                sources: self.sources,
-                rowHeight: self.effectiveRowHeight,
-                treeAreaWidth: self.treeAreaWidth,
-                showLabels: self.showRowLabels,
+                ...self.sidebarPanel,
                 leftInset: leftAxisGutterWidth(self.axes),
               }
             : undefined

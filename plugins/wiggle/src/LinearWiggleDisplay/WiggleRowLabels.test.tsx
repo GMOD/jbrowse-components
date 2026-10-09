@@ -12,12 +12,11 @@ test('the live row labels sit on the wash over the plot', () => {
           effectiveRowHeight: 40,
           numSources: 2,
           showRowLabels: true,
-          axes: [],
         }}
         labelOffset={0}
       />
     </svg>,
   )
-  expect(container.querySelectorAll('path')).toHaveLength(2)
+  expect(container.querySelectorAll('path')).toHaveLength(3)
   expect(container.querySelectorAll('text')).toHaveLength(2)
 })
