@@ -25,6 +25,10 @@ The graph view is a beta plugin, and the
 [HPRC page](https://genomes.jbrowse.org/pangenomes/) launches it on the JBrowse
 5 development build until JBrowse 5 ships. We welcome your [feedback](/contact).
 
+A lane shows only what the graph aligned, and some haplotypes get no lane at
+all. Read [what the lanes leave out](#limits) before reading an absent or empty
+lane as a deletion.
+
 :::
 
 ## Prerequisites
@@ -147,6 +151,32 @@ lanes...**, and then:
   graph in the force-directed layout.
 
 <Figure caption="The FLNA / EMD window with the RefSeq genes, the bubbles track filtered to inversions, four lanes and the force-directed graph, the flagged bubble shaded. The band crosses between HG00099's two haplotypes and runs straight between the two lanes under it, which both carry EMD ahead of FLNA. The graph draws the block as a loop off the backbone." src="/img/pangenome/hprc_inversion.png" />
+
+## What the lanes leave out {#limits}
+
+The three loci above are ones the lanes draw well. These are the cases where
+they mislead, each measured on HPRC release 2.1 in October 2026;
+[part 1](/docs/tutorials/pangenome_hprc#limits) lists the limits of the graph
+and the VCF behind them.
+
+- **A haplotype the graph does not align has no lane.** The page says how many:
+  116 at FLNA / EMD, the haplotypes without an X chromosome. At other loci the
+  assembly has the sequence and the graph leaves it out, so a missing lane is
+  not a deletion.
+- **A lane can be empty and correct.** Where a haplotype's deletion is longer
+  than the window, the graph has no walk for it there and the launch opens no
+  row. Around SMN1 / SMN2 four of eight lanes are 190 to 250 kb deletions that
+  draw nothing in a 60 kb window.
+- **A lane can stop partway.** A haplotype aligned for part of a window draws
+  that part and ends. The gap after it is where the graph's alignment stops, not
+  where the sequence does.
+- **One lane stands for many haplotypes.** The page picks one haplotype per
+  structural form, and a form groups haplotypes by their structural variants of
+  50 bp or more. Two haplotypes in one form can still differ in everything
+  smaller.
+- **Near-identical gene copies are not told apart.** The graph puts the copies
+  at RHD / RHCE and CYP2D6 on one path, so a lane there cannot show how many
+  copies a haplotype carries.
 
 ## Whole-genome synteny from a GFA's walks
 

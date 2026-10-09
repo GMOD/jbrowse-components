@@ -27,6 +27,9 @@ launches the JBrowse 5 development build until JBrowse 5 ships.
 
 The graph view is a beta plugin. We welcome your [feedback](/contact).
 
+This graph records no strain's path. It shows that an allele exists, and never
+which strains carry it.
+
 :::
 
 ## Prerequisites

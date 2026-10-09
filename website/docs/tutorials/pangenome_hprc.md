@@ -39,6 +39,10 @@ The graph view is a beta plugin, and the
 [HPRC page](https://genomes.jbrowse.org/pangenomes/) launches it on the JBrowse
 5 development build until JBrowse 5 ships. We welcome your [feedback](/contact).
 
+The graph and the page also leave real variation out, at some of the best-known
+loci in the genome. Read [what they do not show](#limits) before trusting an
+empty or simple picture.
+
 :::
 
 ## Prerequisites
@@ -84,15 +88,56 @@ it draws:
   [BandageJS](https://jbrowse.org/demos/bandagejs/)
 
 Under the launches, a sentence counts the structural forms the 464 haplotypes
-fall into in the window, and a **Lane / Haplotypes / Share** table names the
-haplotype that stands for each form and how many share it. Those are the lanes
-**Haplotypes** and **BandageJS** open. A window over 150 kb offers the graph
-alone.
+fall into in the window, and a **Lane / Structure / Haplotypes / Share** table
+names the haplotype that stands for each form, how the form differs from GRCh38
+and how many share it. Those are the lanes **Haplotypes** and **BandageJS**
+open. A window over 150 kb offers the graph alone.
 
 <Figure caption="The HPRC page answering its HLA / MHC example: the Gene or region box and its examples, then the window's launches and the structural forms its haplotypes carry. The boxed link is the Graph launch." src="/img/pangenome/genomes_hprc_loci.png" />
 
-The graph merges the near-identical copies at RHD / RHCE and CYP2D6 onto one
-path, so those examples offer no **Graph** launch.
+## What the graph and the page do not show {#limits}
+
+The examples are loci where at least one launch draws something readable. Other
+loci do not, and a picture that looks simple or empty is often one of the cases
+below, not a locus without variation. We measured each on HPRC release 2.1 in
+October 2026.
+
+- **Near-identical duplications draw as a single thread.** The graph puts the
+  copies at RHD / RHCE and CYP2D6 on one path, so those examples offer no
+  **Graph** launch. SMN1 / SMN2, SRGAP2 and the 8p23.1 beta-defensin cluster are
+  not examples at all: the graph over each is a thread, and no launch showed
+  their copy number. A gene-level graph is the better tool for that question.
+- **The graph does not align every haplotype everywhere.** A haplotype the graph
+  does not carry through a window gets no lane, and the page counts them: "116
+  haplotypes are not aligned at any of them and have no lane" at FLNA / EMD,
+  where those are the haplotypes without an X chromosome. Elsewhere the sequence
+  exists in the assembly and the graph leaves it out. At NPHP1, 326 of the 462
+  haplotypes are aligned at two of the window's four sites and not at the rest,
+  so the commonest lane reads "not aligned at 2 sites".
+- **The VCF has no record for the largest events.** HPRC removes every site with
+  an allele over 100 kb from the VCF and keeps the smaller sites nested inside
+  it. The **Variants** launch therefore cannot show UGT2B17's 117 kb deletion,
+  which 229 haplotypes carry. AMY1, GYPA / GYPB, PRSS1 / PRSS2, UGT2B17 and
+  NPHP1 offer no **Variants** launch, because the matrix over each is blank. The
+  page's table restores those sites from the release's unfiltered VCF, so the
+  table can name a deletion the **Variants** launch does not draw.
+- **The Structure column is a summary.** A size is rounded to two figures, and a
+  state fewer than 5 haplotypes carry is folded into the commonest one. At a
+  complex locus a row reads "14 size changes, largest a 10 kb deletion", which
+  says little, and the HLA / MHC example has 34 forms of which the commonest
+  holds 11% of haplotypes and the page lists 8. Two rows can carry the same
+  words for changes at different sites: four of PRSS1 / PRSS2's lanes read "20
+  kb insertion".
+- **A size in the table can be wrong where sites nest.** A restored site's size
+  is what the sites inside it leave unexplained. That subtraction checked out
+  for 92.5% of the cases we could test and gave a size the haplotype does not
+  carry in 189, most of them at 8p23.1.
+- **Only the examples are checked.** We looked at every launch of every example.
+  A gene or region you type can still land where the graph is a thread or the
+  VCF is blank, and the page will offer the launch anyway.
+- **No one launch shows the whole locus.** The graph shows which sequence
+  exists, the VCF which haplotypes carry it, and the lanes how a few haplotypes
+  are arranged. Reading a locus means opening more than one.
 
 ## Overview of chr1 with one node per variant region {#a-chromosome-and-back}
 
