@@ -24,7 +24,7 @@ import {
   RC_TAG,
   RC_UNMAPPED_MATE,
 } from '../shaders/slang/read.consts.generated.ts'
-import { COLOR_SCHEMES, isDataFillScheme } from '../shared/colorSchemes.ts'
+import { COLOR_SCHEMES } from '../shared/colorSchemes.ts'
 import { pairCategory } from '../shared/pairCategory.ts'
 import { MAPQ_CSS } from '../shared/qualityRamps.ts'
 import {
@@ -93,24 +93,15 @@ function strandCategory(strand: number): ReadColorCategory {
   return strand < 0 ? 'revStrand' : 'fwdStrand'
 }
 
-export interface ChainFramingSettings {
-  chainMode?: boolean
-  flipStrandLongReadChains?: boolean
-}
-
-// Whether the unpaired chain-strand framing is live. The display asks once and
-// hands the answer to the consensus pass, the bake (`ReadColorOpts`) and the
-// key. It takes a scheme name, not the shader index: that index puts both
-// per-base schemes on `normal`, which frames split segments under the cells.
-// The `flipStrandLongReadChains` default mirrors its config slot's (true).
+// Whether the unpaired chain-strand framing is live: an orientation field
+// paints a split segment's strand against its molecule's, and only a chain has
+// a molecule. The display asks once and hands the answer to the consensus
+// pass, the bake (`ReadColorOpts`) and the key.
 export function framesUnpairedChainStrand(
   colorScheme: ColorSchemeType,
-  {
-    chainMode = false,
-    flipStrandLongReadChains = true,
-  }: ChainFramingSettings = {},
+  chainMode: boolean,
 ) {
-  return chainMode && flipStrandLongReadChains && !isDataFillScheme(colorScheme)
+  return chainMode && COLOR_SCHEMES[colorScheme].orientation === true
 }
 
 // Category → the shader's RC_* index. Built from the generated constants, so
@@ -191,103 +182,48 @@ export function readColorCategory(
   )
 }
 
-// The chain / unmapped-mate / inter-chromosomal ladder, which outranks whatever
-// the active scheme would say; `undefined` hands the read on to
-// `schemeCategory`.
+// The levels a mate-aware field paints beyond the pair's own: a mate on
+// another chromosome or none at all, and under an orientation field in a chain
+// the split levels. `undefined` hands the read on to `schemeCategory`. Under
+// any other field, and under a constant, a read paints its field's value.
 //
-// Two of these repaint a chain that carries a supplementary segment, scoped to
-// opposite data because a pair HAS a richer answer: a supplementary framed
-// against its own mate's primary is an inversion or a deletion junction, which
-// `attachChainFields` already resolved into CHAIN_SPLIT_*, and an unpaired
-// read has no mate to frame against, so the strand flip is the whole story. A
-// flat color over every split chain, whatever the scheme, was a third rule
-// and went: a `splitRead` facet beside a strand color draws that picture.
+// A paired split mate is framed against its own mate's primary, which
+// `attachChainFields` resolved into CHAIN_SPLIT_*; an unpaired segment has no
+// mate, so its strand against the chain's frame is the whole story. The frame
+// is `consensusChainStrandFrames`'s, settled across the chains on screen
+// because on a foldback the primary flag is arbitrary: read the bit, never
+// re-derive it here.
 function overrideCategory(
   i: number,
   data: ReadColorData,
   colorScheme: ColorSchemeType,
   opts: ReadColorOpts,
 ): ReadColorCategory | undefined {
-  const { chainMode: isChain = false } = opts
+  const { mateAware, orientation } = COLOR_SCHEMES[colorScheme]
+  if (!mateAware) {
+    return undefined
+  }
   const flags = data.readFlags[i]!
-  const strand = data.readStrands[i]!
-
   const chainSupp = data.readChainHasSupp?.[i] ?? CHAIN_SUPP_NONE
-  const hasSupp = chainHasSupp(chainSupp)
   const isPaired = (flags & SAM_FLAG_PAIRED) !== 0
-  // Both split markers only apply to paired chains, and only under a scheme that
-  // encodes orientation — otherwise the split hue would displace the scheme the
-  // user picked (insert size, tag, modifications).
-  const splitsUnderOrientationScheme =
-    isChain &&
-    isPaired &&
-    (colorScheme === 'pairOrientation' ||
-      colorScheme === 'insertSizeAndOrientation')
-
-  // Long-read (unpaired) supplementary chains frame each segment's strand
-  // against the chain's frame: a segment agreeing with it is forward-red and one
-  // that flipped at the split junction goes reverse-blue, so an inversion reads
-  // as a color flip rather than as something to look up.
-  //
-  // The frame itself is NOT this file's to decide, and used to be — it was the
-  // chain's own primary strand, which a foldback makes arbitrary (both arms are
-  // candidates for "longest alignment", so the flag lands on whichever the read
-  // happened to cover more of, and the colors flip with it). It is now settled
-  // across chains by `consensusChainStrandFrames`, which rewrites this same
-  // marker before the bake. Read the marker; don't re-derive a frame here, and
-  // don't re-derive whether to frame either: `framesChainStrand` is the
-  // display's one answer, which the consensus pass and the key read too.
-  if (opts.framesChainStrand && hasSupp && !isPaired) {
-    // One bit, read as the sign it is. This was a comparison against a code,
-    // and correct only while the split bits could not coexist with the frame —
-    // which rested on `summarizeChain`'s `paired` (ANY read of the chain is
-    // paired) agreeing with this branch's `!isPaired` (THIS read is not), and
-    // two records sharing a QNAME across a paired and an unpaired run do not.
-    // Now the frame is its own bit and answers on its own terms whatever else
-    // the byte carries.
-    return strandCategory(strand * chainFrame(chainSupp))
+  if (opts.framesChainStrand && chainHasSupp(chainSupp) && !isPaired) {
+    return strandCategory(data.readStrands[i]! * chainFrame(chainSupp))
   }
-
-  // Paired split read whose supplementary segment maps opposite-strand to its
-  // own primary mate: the split crosses an inversion junction. Paint the whole
-  // chain a dedicated inversion hue, distinct from the RR-pair blue so the two
-  // are tellable apart. Co-linear paired splits keep their per-scheme
-  // pair-orientation color.
-  // `chainSplitKind` settles inversion-beats-deletion, so a mate whose several
-  // supplementary segments disagree resolves once here rather than at whichever
-  // segment the accumulating OR saw last.
-  const splitKind = chainSplitKind(chainSupp)
-  if (splitsUnderOrientationScheme && splitKind === CHAIN_SPLIT_INVERSION) {
-    return 'splitInversion'
+  if (opts.chainMode && isPaired && orientation) {
+    const splitKind = chainSplitKind(chainSupp)
+    if (splitKind === CHAIN_SPLIT_INVERSION) {
+      return 'splitInversion'
+    }
+    if (splitKind === CHAIN_SPLIT_DELETION) {
+      return 'splitDeletion'
+    }
   }
-
-  // Same as above but for a same-strand (co-linear) split — a deletion / tandem-
-  // dup junction. Its own color (the supplementary orange), reserving magenta
-  // for the more specific inversion case.
-  if (splitsUnderOrientationScheme && splitKind === CHAIN_SPLIT_DELETION) {
-    return 'splitDeletion'
-  }
-
-  // unmapped mate — its own color for orientation-aware schemes (tlen=0
-  // would miscolor as "short insert"), or the plain BODY in linked-read mode,
-  // which the per-base schemes also paint under their marks.
-  const mateUnmapped = (flags & SAM_FLAG_MATE_UNMAPPED) !== 0
-  const { mateAware, shaderScheme } = COLOR_SCHEMES[colorScheme]
-  const isOrientationScheme = mateAware === true
-  if (
-    mateUnmapped &&
-    (isOrientationScheme || (shaderScheme === 'normal' && isChain))
-  ) {
+  // tlen=0 would read as a short insert, and across chromosomes neither
+  // orientation nor insert size means anything
+  if (flags & SAM_FLAG_MATE_UNMAPPED) {
     return 'unmappedMate'
   }
-
-  // Mate on another chromosome: orientation/insert size are meaningless, so one
-  // distinct bucket instead of an LR/RL/etc hue. Not in chain mode's normal
-  // scheme, unlike the unmapped mate: there the brown says "no mate anywhere",
-  // and a mate on another chromosome is placed, like one past the fetch.
-  return data.readInterchrom[i] === 1 && isOrientationScheme
-    ? 'interchrom'
-    : undefined
+  return data.readInterchrom[i] === 1 ? 'interchrom' : undefined
 }
 
 // The scheme's own bucket, for a read no override claimed. Takes the SHADER

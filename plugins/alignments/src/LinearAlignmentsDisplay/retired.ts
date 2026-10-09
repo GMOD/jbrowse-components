@@ -142,7 +142,9 @@ function subDisplaySlotsOf(block: unknown, band: 'pileup' | 'coverage') {
  * and the `modifications` slot now; its LinearReadArcsDisplay gated the two
  * arc classes under the draw verb; its `jexlFilters` has no slot, since
  * `filter` is the read filter object. The coverage display's scale slots land
- * on the band's `scales.y`.
+ * on the band's `scales.y`. `flipStrandLongReadChains` went: a split segment's
+ * strand against its molecule is a level of the orientation fields, which
+ * `color.range` recolors.
  */
 // #region retired
 export const retiredConfigSpellings: Record<string, RetiredSpelling> = {
@@ -164,6 +166,7 @@ export const retiredConfigSpellings: Record<string, RetiredSpelling> = {
   hideMismatches: v => ({ showMismatches: !v }),
   hideLargeIndels: () => ({}),
   minSubfeatureWidth: () => ({}),
+  flipStrandLongReadChains: () => ({}),
 }
 // #endregion
 

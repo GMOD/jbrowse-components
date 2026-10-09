@@ -1095,7 +1095,6 @@ export default function stateModelFactory(
               bakedScale: this.bakedColorScale,
               sectionOrder: this.keySectionOrder,
               baseQualityUnavailable: this.baseQualitySpan.unavailable,
-              chainFramed: this.framesChainStrand,
               labels: this.declaredReadLabels,
             })
           },
@@ -1345,11 +1344,8 @@ export default function stateModelFactory(
            */
           get framesChainStrand() {
             return framesUnpairedChainStrand(
-              self.baseLayer?.type ?? self.colorBy.type,
-              {
-                chainMode: self.unit === 'chain',
-                flipStrandLongReadChains: self.flipStrandLongReadChains,
-              },
+              self.bodyColorScheme,
+              self.unit === 'chain',
             )
           },
 
@@ -2250,7 +2246,6 @@ export default function stateModelFactory(
         get readCategoryLabel() {
           const overrides = readCategoryLabelOverrides(
             self.colorBy,
-            self.framesChainStrand,
             self.declaredReadLabels.categories,
           )
           return (c: ReadColorCategory) => readColorCategoryLabel(c, overrides)
@@ -3495,13 +3490,6 @@ export default function stateModelFactory(
 
           /**
            * #action
-           */
-          setFlipStrandLongReadChains(flag: boolean) {
-            setConf(self, 'flipStrandLongReadChains', flag)
-          },
-
-          /**
-           * #action
            * A new unit restacks the whole pileup, so the scroll resets: the
            * `scrollableHeight` clamp catches only a shorter stack.
            */
@@ -3773,13 +3761,6 @@ export default function stateModelFactory(
                         self.setArcColorField(field)
                       },
                     },
-              supplementaryColoring: {
-                unit: self.unit,
-                flipStrandLongReadChains: self.flipStrandLongReadChains,
-                setFlipStrandLongReadChains: (flag: boolean) => {
-                  self.setFlipStrandLongReadChains(flag)
-                },
-              },
             }),
             ...editPlotMenuItems(self),
             getSortByMenuItem(self, {

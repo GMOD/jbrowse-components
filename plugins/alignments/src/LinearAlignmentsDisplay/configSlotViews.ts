@@ -99,10 +99,6 @@ export function configSlotViews(self: ConfigSlotSelf) {
       return getConf(self, 'showInterbaseIndicators')
     },
     /** #getter */
-    get flipStrandLongReadChains(): boolean {
-      return getConf(self, 'flipStrandLongReadChains')
-    },
-    /** #getter */
     get showInterchrom(): boolean {
       return getConf(self, 'showInterchrom')
     },

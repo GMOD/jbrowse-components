@@ -1559,17 +1559,6 @@ export const trackFields: Record<string, FieldRecipe> = {
           note: 'Its tooltip reads "Drag to resize arcs area"; there is no menu entry for the height.',
         }
       : undefined,
-  // The submenu is greyed out until chain mode is on, the same shape as the
-  // arc band options above, and its tooltip names the switch that makes it
-  // live. Worth the note: a reader who unchecks this without chain mode sees
-  // nothing happen and concludes the setting does nothing.
-  flipStrandLongReadChains: (value, { displayType }) =>
-    typeof value === 'boolean' && isAlignmentsOnlyField(displayType)
-      ? {
-          path: `${TRACK_MENU} → Color by... → Supplementary / split reads → Color supplementary alignments by consensus strand (${value ? 'checked' : 'unchecked'})`,
-          note: 'Greyed out until "Read connections → View as pairs / link supplementary alignments" is on. It is what classifies a long read\'s segments against the orientation the chains on screen agree on, so unchecking it drops the red/blue split-segment coloring and the legend rows that go with it.',
-        }
-      : undefined,
   arcColor: (value, { displayType }) => {
     const field = typeof value === 'string' ? value : asRecord(value)?.field
     const label = typeof field === 'string' ? ARC_COLORS[field] : undefined

@@ -514,31 +514,6 @@ describe('ordering controls in chain mode', () => {
     expect(item?.disabledHelpText).toMatch(/View as pairs/)
   })
 
-  // The mirror case: `flipStrandLongReadChains` is read only inside
-  // readColorCategory's isChain branch, so OUTSIDE chain mode it is the silent
-  // no-op — a checkbox ticked by default that changes nothing.
-  //
-  // colorBy.test.tsx covers the menu builder given a `unit`; this covers
-  // the half that bug actually lived in, which is whether the model hands it the
-  // right one. Driven through the real display, so it asserts nothing about how
-  // the flag is spelled.
-  test('"Supplementary / split reads" greys out until chain mode is on', () => {
-    const display = createDisplay()
-    display.setUnit('read')
-    const off = findMenuItem(
-      display.trackMenuItems(),
-      'Supplementary / split reads',
-    )
-    expect(off?.disabled).toBe(true)
-    expect(off?.disabledHelpText).toMatch(/View as pairs/)
-
-    display.setUnit('chain')
-    expect(
-      findMenuItem(display.trackMenuItems(), 'Supplementary / split reads')
-        ?.disabled,
-    ).toBe(false)
-  })
-
   test('the context menu drops its position-anchored sorts too', () => {
     const display = createDisplay()
     display.openContextMenu({
@@ -1785,8 +1760,6 @@ describe('chain-strand framing: the gate, the bake and the key agree', () => {
         baked.get('')!.get(0)!.readColorCategories[0]!
       ]
     expect(category === 'fwdStrand').toBe(display.framesChainStrand)
-    if (layer) {
-      expect(display.framesChainStrand).toBe(false)
-    }
+    expect(display.framesChainStrand).toBe(fill.type === 'pairOrientation')
   })
 })

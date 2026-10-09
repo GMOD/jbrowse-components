@@ -24,12 +24,13 @@ export interface ColorSchemeDef {
   shaderScheme: ShaderScheme
   menu: ColorSchemeMenu
   // Color depends on the read's MATE (insert size / pair orientation), so an
-  // unmapped mate (tlen=0) or inter-chromosomal mate needs its own color bucket
-  // rather than a misleading insert/orientation hue. Read by `overrideCategory`
-  // in colorUtils.ts, and that is now the only reader: read.slang used to
-  // hard-code the same membership for its own classification, and no longer
-  // classifies at all.
+  // unmapped mate (tlen=0) or inter-chromosomal mate is a level of its own
+  // rather than a misleading insert/orientation hue (`overrideCategory`).
   mateAware?: boolean
+  // The field reads how a read sits in its fragment, so in a chain the split
+  // junction kinds and an unpaired segment's strand against its molecule's
+  // are levels of it too (`overrideCategory`).
+  orientation?: boolean
   // The worker emits one entry per ALIGNED BASE of every read for this scheme,
   // rather than one per event: the two walls this pipeline paints. Every other
   // scheme's worker output is sparse in the reads' bases, so these are the only
@@ -110,6 +111,7 @@ export const COLOR_SCHEMES: Record<ColorSchemeType, ColorSchemeDef> = {
       group: 'pairedEnd',
     },
     mateAware: true,
+    orientation: true,
   },
   insertSizeAndOrientation: {
     type: 'insertSizeAndOrientation',
@@ -120,6 +122,7 @@ export const COLOR_SCHEMES: Record<ColorSchemeType, ColorSchemeDef> = {
       group: 'pairedEnd',
     },
     mateAware: true,
+    orientation: true,
   },
   tag: {
     type: 'tag',
@@ -200,23 +203,6 @@ export function paintsModifications(layer: BaseLayer | undefined) {
 /** Whether the per-base layer draws a cell for every aligned base. */
 export function paintsEveryBase(layer: BaseLayer | undefined) {
   return layer !== undefined && isPerBaseScheme(layer.type)
-}
-
-const PER_READ_COLOR_PATHS = new Set<ShaderScheme>([
-  'mappingQuality',
-  'tag',
-  'modifications',
-])
-
-// True when the read's fill IS a datum the user asked to see — a MAPQ ramp, a
-// tag palette slot, a modification hue, a wall of per-base cells — so the
-// chain-strand framing, which repaints a whole read, is held off it
-// (`framesUnpairedChainStrand`). Everything else is geometry the framing refines
-// rather than displaces. Derived from the registry for the reason
-// `isModificationScheme` is.
-export function isDataFillScheme(type: ColorSchemeType) {
-  const { perBase, shaderScheme } = COLOR_SCHEMES[type]
-  return perBase === true || PER_READ_COLOR_PATHS.has(shaderScheme)
 }
 
 // The part of `colorBy` the RPC worker actually reads, for `rpcProps`. A scheme

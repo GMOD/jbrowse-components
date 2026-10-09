@@ -6,7 +6,6 @@ import { pickColorOptions } from '../../shared/colorSchemes.ts'
 import { getColorByMenuItem } from './colorBy.ts'
 
 import type { BaseLayer, ReadColorBy } from '../../shared/types.ts'
-import type { AlignmentsUnit } from '../constants.ts'
 import type { MenuItem } from '@jbrowse/core/ui'
 
 // Minimal model: enough for schemeRadios + the Paired end submenu (modModel is
@@ -349,40 +348,6 @@ describe('color by modifications menu', () => {
 // A display that composes the alignments state model (LGVSyntenyDisplay does)
 // carries every modification field, so the menu cannot infer from the model's
 // shape that pairs/modifications are meaningless for it — the caller says so.
-// The row is read only by `readColorCategory`'s chain branch, so outside
-// chain mode it is a setting that changes nothing. Greyed out rather than
-// hidden, matching the read-connection band options.
-describe('supplementary / split read coloring', () => {
-  const supp = (unit: AlignmentsUnit) => ({
-    unit,
-    flipStrandLongReadChains: true,
-    setFlipStrandLongReadChains: () => {},
-  })
-
-  test('greys out with chain mode off, naming the switch that enables it', () => {
-    const item = byLabel(makeModel(), 'Supplementary / split reads', {
-      supplementaryColoring: supp('read'),
-    })
-    expect(item && 'disabled' in item && item.disabled).toBe(true)
-    expect(
-      item && 'disabledHelpText' in item ? item.disabledHelpText : undefined,
-    ).toMatch(/View as pairs/)
-  })
-
-  test('live in chain mode, and the row says which reads it reaches', () => {
-    const model = makeModel()
-    const item = byLabel(model, 'Supplementary / split reads', {
-      supplementaryColoring: supp('chain'),
-    })
-    expect(item && 'disabled' in item && item.disabled).toBe(false)
-    const rows = subMenuOf(item)
-    expect(rows).toHaveLength(1)
-    expect(rows.map(r => ('helpText' in r ? r.helpText : ''))).toEqual([
-      expect.stringContaining('long (unpaired) reads'),
-    ])
-  })
-})
-
 describe('color by menu curation', () => {
   const labelsFor = (opts: Parameters<typeof getColorByMenuItem>[1]) =>
     subMenuOf(getColorByMenuItem(makeModel(), opts)).map(i =>

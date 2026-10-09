@@ -10,6 +10,7 @@ import {
   colorForField,
 } from '@jbrowse/display-kit/colorConfigSchema'
 
+import { COLOR_SCHEMES } from './colorSchemes.ts'
 import { TAG_FIELD_PREFIX, facetTag } from './facetLabels.ts'
 import { MAPQ_UNAVAILABLE } from './util.ts'
 
@@ -219,6 +220,21 @@ const STRAND_LEVELS: readonly ReadColorLevel[] = [
 
 const NO_VALUE_LEVEL: ReadColorLevel = ['', 'noTagValue']
 
+// The levels a mate-aware field paints that no facet section shares: a mate
+// with no placement or on another chromosome, and in a chain a split mate's
+// junction and an unpaired segment's strand against its molecule's.
+const MATE_LEVELS: readonly ReadColorLevel[] = [
+  ['unmappedMate', 'unmappedMate'],
+  ['interchrom', 'interchrom'],
+]
+
+const CHAIN_LEVELS: readonly ReadColorLevel[] = [
+  ['splitInverted', 'splitInversion'],
+  ['splitSameStrand', 'splitDeletion'],
+  ['segmentInverted', 'revStrand'],
+  ['segmentSameStrand', 'fwdStrand'],
+]
+
 /**
  * Each read scheme's levels, by the value a `domain` names them with, in the
  * order a `range` beside no `domain` colors them. `''` is a read with no
@@ -248,6 +264,20 @@ const READ_COLOR_LEVELS: Record<
   mappingQuality: [[`${MAPQ_UNAVAILABLE}`, 'mapqUnavailable']],
   mateRefName: [NO_VALUE_LEVEL],
   tag: [NO_VALUE_LEVEL],
+}
+
+/**
+ * Every level a field paints: the levels its facet sections share, then the
+ * mate and chain levels a mate-aware field adds, so a `domain`, `range` or
+ * `labels` reaches every color on screen.
+ */
+function paintedLevels(type: ReadColorSchemeType): readonly ReadColorLevel[] {
+  const { mateAware, orientation } = COLOR_SCHEMES[type]
+  return [
+    ...READ_COLOR_LEVELS[type],
+    ...(mateAware ? MATE_LEVELS : []),
+    ...(orientation ? CHAIN_LEVELS : []),
+  ]
 }
 
 const LEVEL_KEYS = new Map(
@@ -283,7 +313,7 @@ export const ALIGNMENTS_FIELD_PRESETS = {
           ? { scale: 'categorical' }
           : {
               scale: 'categorical',
-              domain: READ_COLOR_LEVELS[scheme as PresetScheme].map(
+              domain: paintedLevels(scheme as PresetScheme).map(
                 ([value]) => value,
               ),
             },
@@ -309,7 +339,7 @@ function levelNotices(encoding: AlignmentsColorEncoding): string[] {
   if (!LEVEL_SCHEMES.has(type)) {
     return []
   }
-  const levels = READ_COLOR_LEVELS[type].map(([value]) => value)
+  const levels = paintedLevels(type).map(([value]) => value)
   const named = levels.filter(level => level !== '').join(', ')
   if (encoding.scale === 'threshold') {
     return Array.from(encoding.domain ?? [], String).some(value =>
@@ -357,7 +387,7 @@ function declaredLevels(
   encoding: Exclude<AlignmentsColorEncoding, string | undefined>,
 ) {
   const colorBy = colorByOf(encoding)
-  const levels = READ_COLOR_LEVELS[colorBy.type]
+  const levels = paintedLevels(colorBy.type)
   return {
     order: levelOrder(encoding, levels, isBakedScheme(colorBy)),
     categoryOf: new Map(levels),

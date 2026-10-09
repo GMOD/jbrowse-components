@@ -539,6 +539,8 @@ export const pangenomeSpecs: ScreenshotSpec[] = [
               // sections, so "18 of 38 carry an SA tag" is a thing you can see
               // rather than count.
               facet: 'splitRead',
+              // a split segment's strand against its molecule's
+              color: 'pairOrientation',
               height: 210,
             },
             {

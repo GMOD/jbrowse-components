@@ -13,9 +13,8 @@ import type { ReadColorOpts } from './colorUtils.ts'
 // classify before that and every tag-colored read lands in the wrong bucket.
 //
 // Main thread rather than the worker for the same reason tag colors are: the
-// input (`flipStrandLongReadChains`) would otherwise have to enter `rpcProps()`
-// and turn a color toggle into a full region refetch. Here it is tier-2 — a
-// relayout, no worker round trip.
+// chain frame it reads is joined on the main thread, and a color switch here is
+// tier-2, a recolor with no worker round trip.
 //
 // A PURE PER-READ BAKE, and nothing else. The frame pass that rewrites
 // `readChainHasSupp` reads neither the color scheme nor the tag map, so it runs

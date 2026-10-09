@@ -126,6 +126,28 @@ describe('a declared range on a preset field', () => {
   })
 })
 
+// The mate and chain levels an orientation field paints are its levels too,
+// so a domain names them and a range recolors them like LR or RR.
+test('an orientation field names its mate and chain levels', () => {
+  const palette = paletteFor({
+    field: 'pairOrientation',
+    domain: ['interchrom', 'unmappedMate', 'splitInverted', 'segmentInverted'],
+    range: ['#ff0000', '#00ff00', '#0000ff', '#ffff00'],
+  })
+  expect(everyPathPaints(palette, 'interchrom')[0]).toBe('rgb(255,0,0)')
+  expect(everyPathPaints(palette, 'unmappedMate')[0]).toBe('rgb(0,255,0)')
+  expect(everyPathPaints(palette, 'splitInversion')[0]).toBe('rgb(0,0,255)')
+  expect(everyPathPaints(palette, 'revStrand')[0]).toBe('rgb(255,255,0)')
+  expect(
+    alignmentsColorNotices({
+      ...UNSET,
+      field: 'insertSizeAndOrientation',
+      scale: 'categorical',
+      domain: ['interchrom', 'splitSameStrand'],
+    }),
+  ).toEqual([])
+})
+
 describe('the five levels that share the neutral default', () => {
   const LEVELS: [Partial<AlignmentsColorSetting>, SwatchCategory][] = [
     [{ field: 'pairOrientation', domain: ['LR'] }, 'pairLR'],
@@ -185,7 +207,7 @@ describe('a domain that names no level says so', () => {
     expect(
       notices({ field: 'insertSize', domain: ['normal'], range: ['#1b9e77'] }),
     ).toContain(
-      'color.domain: names a level of insertSize (short, normal, long), which a threshold scale reads as a cut point; scale: "categorical" colors the levels',
+      'color.domain: names a level of insertSize (short, normal, long, unmappedMate, interchrom), which a threshold scale reads as a cut point; scale: "categorical" colors the levels',
     )
   })
 

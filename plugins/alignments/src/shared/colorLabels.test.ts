@@ -63,7 +63,7 @@ function keyOf(
     hover: (c: ReadColorCategory) =>
       readColorCategoryLabel(
         c,
-        readCategoryLabelOverrides(colorBy, false, declared.categories),
+        readCategoryLabelOverrides(colorBy, declared.categories),
       ),
   }
 }

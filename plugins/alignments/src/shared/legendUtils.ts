@@ -461,23 +461,13 @@ const FIRST_OF_PAIR_LABELS: Partial<Record<SwatchCategory, string>> = {
   revStrand: FIRST_OF_PAIR_STRAND_LABELS.reverse,
 }
 
-// Per-scheme relabeling of the shared fwd/rev-strand swatches. Every scheme but
-// the plain `strand` one reframes fwd/rev as either the fragment strand or a
-// split read (see the two maps above).
-//
-// `strand` keeps CATEGORY_LEGEND's plain wording only while nothing is framing
-// it. The framing branch is NOT held off this scheme — it refines it — so in
-// chain mode "Forward strand" names a swatch painted on segments that are half
-// reverse-mapped, which is the one wording this box must not carry. It reads as
-// true here more than anywhere else, because under every other scheme a
-// fwd/rev bucket is self-evidently not about the raw strand.
-function strandLabelOverrides(
-  colorType: ColorSchemeType | undefined,
-  chainFramed: boolean,
-) {
+// Per-scheme relabeling of the shared fwd/rev-strand swatches: the fragment
+// strand under `firstOfPairStrand`, a split segment against its molecule under
+// the orientation fields, and the read's own strand under `strand`.
+function strandLabelOverrides(colorType: ColorSchemeType | undefined) {
   return colorType === 'firstOfPairStrand'
     ? FIRST_OF_PAIR_LABELS
-    : colorType === 'strand' && !chainFramed
+    : colorType === 'strand'
       ? undefined
       : SPLIT_STRAND_LABELS
 }
@@ -490,11 +480,10 @@ function strandLabelOverrides(
 // bucket over every wording here.
 export function readCategoryLabelOverrides(
   colorBy: ColorBy | undefined,
-  chainFramed: boolean,
   declared: Partial<Record<ReadColorCategory, string>> = {},
 ): Partial<Record<ReadColorCategory, string>> {
   return {
-    ...strandLabelOverrides(colorBy?.type, chainFramed),
+    ...strandLabelOverrides(colorBy?.type),
     ...(colorBy?.type === 'mateRefName' ? { noTagValue: 'No mate' } : {}),
     ...(colorBy?.type === 'tag' && colorBy.tag !== undefined
       ? { noTagValue: `No ${colorBy.tag} value` }
@@ -1104,11 +1093,6 @@ interface ReadDisplayLegendArgs {
   // not just the layout. Last in the list because it modifies the colors above
   // it rather than adding one.
   overlaps?: 'chain' | 'collapsed'
-  // Whether the unpaired chain-strand framing is live — `framesUnpairedChainStrand`
-  // in the display, which is the same predicate that gates the consensus pass.
-  // Only the `strand` scheme's wording turns on it; every other scheme already
-  // words fwd/rev as something other than the read's own strand.
-  chainFramed?: boolean
   // Values the rendered reads carry, for the CPU-baked schemes — the display's
   // `presentTagValues`, and the whole swatch list for those schemes. Undefined
   // means "not known here" and keys none; the empty set means the scheme has
@@ -1157,7 +1141,6 @@ export function getReadDisplayLegendItems({
   bakedScale,
   sectionOrder,
   baseQualityUnavailable,
-  chainFramed = false,
   overlaps,
   labels,
 }: ReadDisplayLegendArgs & {
@@ -1193,7 +1176,7 @@ export function getReadDisplayLegendItems({
     ...bucketItems(
       categories,
       palette,
-      readCategoryLabelOverrides(colorBy, chainFramed, labels?.categories),
+      readCategoryLabelOverrides(colorBy, labels?.categories),
       colorBy ? levelKeysOf(colorBy.type) : undefined,
       sectionOrder,
     ),

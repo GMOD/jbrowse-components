@@ -63,7 +63,8 @@ import type { Instance } from '@jbrowse/mobx-state-tree'
  *
  * #example
  * Long reads — taller track, soft-clipping shown, split/chimeric reads
- * connected by arcs:
+ * connected by arcs, each segment colored by its strand against its
+ * molecule's:
  * ```js
  * {
  *   type: 'AlignmentsTrack',
@@ -75,6 +76,7 @@ import type { Instance } from '@jbrowse/mobx-state-tree'
  *     height: 400,
  *     showSoftClipping: true,
  *     unit: 'chain',
+ *     color: 'pairOrientation',
  *     readConnections: 'arc',
  *   },
  * }
@@ -282,7 +284,7 @@ export default function configSchemaFactory(_pluginManager: PluginManager) {
       },
       /**
        * #slot
-       * null = auto: outline is drawn only in chain/linked-read modes. Set
+       * null = auto: outline is drawn only under `unit: 'chain'`. Set
        * true/false to force it on or off regardless of mode.
        */
       showOutline: {
@@ -364,21 +366,6 @@ export default function configSchemaFactory(_pluginManager: PluginManager) {
       /**
        * #slot
        */
-      flipStrandLongReadChains: {
-        type: 'boolean',
-        defaultValue: true,
-        // Named for what it did when it framed each chain against its own
-        // primary. It now frames every chain against the orientation the chains
-        // on screen agree on (`consensusChainStrandFrames`) — the slot name is
-        // kept because sessions and configs in the wild carry it, and it still
-        // answers the same question: is a split segment colored by its own
-        // mapping strand, or relative to the rest of its molecule.
-        description:
-          'Color split segments relative to the predominant orientation of the reads on screen, rather than by their own mapping strand',
-      },
-      /**
-       * #slot
-       */
       showInterchrom: {
         type: 'boolean',
         defaultValue: true,
@@ -389,9 +376,9 @@ export default function configSchemaFactory(_pluginManager: PluginManager) {
        */
       showProperPairArcs: {
         type: 'boolean',
-        // "Concordant" here is `isConcordantPairRead`, the same rule the
-        // `drawProperPairs` READ filter uses — that setting hides the reads,
-        // this one hides their arcs. Default true, so the band is unchanged
+        // "Concordant" here is `isConcordantPairRead`, the same rule
+        // `filter.properPairs` uses — that setting hides the reads, this one
+        // hides their arcs. Default true, so the band is unchanged
         // until asked.
         defaultValue: true,
         description:

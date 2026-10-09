@@ -78,10 +78,6 @@ export interface RenderState {
   // The overlap tint is what makes that depth readable, hence a second reason
   // (besides chain mode) for that layer to draw.
   collapseGroupRows: boolean
-  // NOT here: flipStrandLongReadChains. It feeds read classification only,
-  // which now happens once on the CPU (readColorCategories) — the renderers
-  // receive the resulting category and never re-decide. Carrying it would make
-  // a layout-tier setting needlessly invalidate the canvas as well.
   readConnectionsLineWidth: number
   // The read cloud's largest insert size, which tops its log y axis; absent
   // in arc mode, where an arc's apex is its own half-width.

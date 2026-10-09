@@ -186,7 +186,9 @@ export const junctionScaffold = (
                 ...reads,
                 unit: 'chain',
                 facet: 'splitRead',
-                // names the split-segment colors and the plain reads
+                // a split segment's strand against its molecule's, which the
+                // legend names beside the unsplit reads
+                color: 'pairOrientation',
                 showLegend: true,
                 featureHeight: 2,
                 readConnections: 'arc',

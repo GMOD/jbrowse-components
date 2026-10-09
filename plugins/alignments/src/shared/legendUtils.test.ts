@@ -40,7 +40,6 @@ function legendFor(
     detectedModifications?: Map<string, string>
     presentTagValues?: ReadonlySet<string>
     presentModifications?: ReadonlySet<string>
-    chainFramed?: boolean
     refNamePosition?: RefNamePosition
     bakedScale?: BakedColorScale
     sectionOrder?: (a: string, b: string) => number
@@ -94,19 +93,6 @@ describe('getReadDisplayLegendItems', () => {
       'Forward strand',
       'Reverse strand',
     ])
-  })
-
-  // The strand scheme is the one the chain framing REFINES rather than replaces,
-  // so it is also the one whose plain wording goes wrong the moment framing is
-  // live: the swatch is painted on segments framed against their chain, half of
-  // which are reverse-mapped. Every other scheme already words fwd/rev as
-  // something other than the read's own strand, so only this one turns on it.
-  test('the strand scheme drops "Forward strand" once the framing is live', () => {
-    expect(
-      legendFor({ type: 'strand' }, ['fwdStrand', 'revStrand'], {
-        chainFramed: true,
-      }).map(i => i.label),
-    ).toEqual(['Split segment (same strand)', 'Split segment (inverted)'])
   })
 
   test('pair-orientation scheme: split-read strand framing + non-split bucket', () => {
@@ -265,11 +251,10 @@ describe('getReadDisplayLegendItems', () => {
     ])
   })
 
-  // The read body, under the marks painted on top of it. fwd/revStrand is what
-  // this used to assert, and no read reaches those under this scheme: the
-  // chain-strand framing is held off the data-fill schemes
-  // (`isDataFillScheme`), so `schemeCategory` decides every read here and it answers
-  // modFwd/modRev.
+  // The read body, under the marks painted on top of it. No read reaches
+  // fwd/revStrand under this scheme: the chain-strand framing is the
+  // orientation fields' alone, so `schemeCategory` decides every read here and
+  // it answers modFwd/modRev.
   test('modifications view names the read body after the mod-type key', () => {
     const mods = new Map([['m', 'red']])
     expect(labels('modifications', ['modFwd', 'modRev'], mods)).toEqual([

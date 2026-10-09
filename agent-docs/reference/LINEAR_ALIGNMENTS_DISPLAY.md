@@ -64,7 +64,13 @@ the consensus reaches 100%.
 
 Panning can change a frame, and that is accepted. **Don't re-derive a frame at a
 call site** — read `readChainHasSupp`. `framesUnpairedChainStrand` is the single
-statement of when framing is live.
+statement of when framing is live: in a chain, under an orientation field
+(`pairOrientation`, `insertSizeAndOrientation`). There a framed segment, a split
+mate's junction, an unmapped mate and an interchromosomal mate are levels of
+the field (`segmentSameStrand`, `splitInverted`, `unmappedMate`, ...), so
+`color.domain`, `range` and `labels` reach them. Under every other field, and
+under a constant, a read paints its field's value: `strand` is the read's own,
+and a constant fill is one color in a chain too.
 
 ## A lane, not a group key
 

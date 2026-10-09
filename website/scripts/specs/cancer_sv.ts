@@ -683,7 +683,6 @@ export const cancerSvSpecs: ScreenshotSpec[] = [
                   filterBy: { split: 'only' },
                   unit: 'chain',
                   showBezierConnections: true,
-                  flipStrandLongReadChains: false,
                   heightMode: 'grow',
                   height: 200,
                   coverageHeight: 30,
@@ -858,21 +857,10 @@ export const cancerSvSpecs: ScreenshotSpec[] = [
                   // colorby:strand settings. the reads could all be grey and i
                   // think story would be the same. both top and bottom views").
                   //
-                  // It is not `colorBy` that paints them, which is worth knowing
-                  // before reaching for the obvious key: under CHAIN layout an
-                  // unpaired read whose chain carries a supplementary segment is
-                  // framed against the orientation the chains on screen agree on
-                  // (readColorCategory's unpaired classifier), whatever scheme is
-                  // set. Dropping `colorBy` was rendered and changes nothing.
+                  // The reads take the plain fill: what the figure keeps is
+                  // where each row STOPS and where the same molecule picks up
+                  // again, which the row ends and the connectors carry.
                   //
-                  // `flipStrandLongReadChains` is the switch that classifier is
-                  // gated on, so turning it off lets the reads fall through to
-                  // the scheme's own fill. What the figure loses is a color
-                  // saying "this segment flipped at the junction", and what it
-                  // keeps is where each row STOPS and where the same molecule
-                  // picks up again -- which the row ends and the connectors
-                  // carry, and which is the whole claim.
-                  flipStrandLongReadChains: false,
                   // A KEY FOR THE CURVES, which nothing else in the frame
                   // supplies: `showLegend` is opt-in for every color scheme, so
                   // a reader met two families of connector -- an orange
@@ -1012,13 +1000,6 @@ export const cancerSvSpecs: ScreenshotSpec[] = [
                   heightMode: 'grow',
                   height: 175,
                   featureHeight: 5,
-                  // Neutral here too, and this is the lane the strand channel
-                  // served worst: these reads are realigned to the reconstructed
-                  // allele, where the fold-back has been straightened out, so
-                  // every segment agrees with its frame and the lane painted one
-                  // color whatever the scheme said. It was spending a color
-                  // channel to say nothing.
-                  flipStrandLongReadChains: false,
                   // THE DEPTH CLAIM, which the tutorial makes in prose ("depth
                   // does not dip at them") and no lane had drawn since this
                   // one's band was dropped. It belongs here rather than on the
@@ -1526,33 +1507,15 @@ export const cancerSvSpecs: ScreenshotSpec[] = [
           filterBy: { split: 'only' },
           unit: 'chain',
           // THE LEGEND, WHICH IS THE ANSWER TO "unclear why the reads are
-          // red/pink on the left but not on the right" (review). The colors
-          // are not a scheme this spec picked, which is why nothing in the spec
-          // explained them: colorBy here is `normal`, and under CHAIN layout an
-          // unpaired long read whose chain carries a supplementary alignment is
-          // colored by that segment's strand relative to the chain's primary
-          // instead (`readColorCategory`, the `isChain && hasSupp && !isPaired`
-          // branch). So the frame holds three categories and the legend names
-          // all three: `Split segment (same strand)`, `Split segment (inverted)`
-          // and plain `Reads` — same/flipped being relative to the chain's
-          // frame, which is why the rows do not name a strand. The frame is the
-          // orientation the chains on screen agree on
-          // (`consensusChainStrandFrames`), no longer each chain's own primary;
-          // on this two-locus join both answer the same, and derivative_inserts
-          // is the figure where they don't.
-          //
-          // AND THE LEFT/RIGHT ASYMMETRY THE REVIEWER SAW WAS A BUG, not the
-          // classification: `readChainHasSupp` was computed per WORKER CALL and
-          // a call sees one window, so a molecule whose primary is in the chr9
-          // window and whose supplementary is in the chr22 one was classified
-          // twice from half a molecule each time — the primary side reporting
-          // "not a split read" (plain) and the far side framing its segment
-          // against an invented forward primary. Which is exactly a left/right
-          // asymmetry, and exactly not what the legend claimed. Fixed by
-          // joining chains across windows (`attachChainFields`), so the framing
-          // now means what the rows say on both sides of the join, and plain
-          // `Reads` is left to the molecules whose other segment is in neither
-          // window.
+          // red/pink on the left but not on the right" (review). Under
+          // pairOrientation in a chain, an unpaired segment is colored by its
+          // strand against the orientation the chains on screen agree on
+          // (`consensusChainStrandFrames`), so the legend names `Split segment
+          // (same strand)`, `Split segment (inverted)` and `Unsplit read`.
+          // The left/right asymmetry the reviewer saw was a bug, a chain
+          // classified per window from half a molecule each time; chains now
+          // join across windows (`attachChainFields`).
+          color: 'pairOrientation',
           // `showLegend` is opt-in per track and off by default, so a figure
           // that leans on those colors has to ask for it.
           showLegend: true,

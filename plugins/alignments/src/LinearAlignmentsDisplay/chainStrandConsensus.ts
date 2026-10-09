@@ -214,8 +214,8 @@ function solveFrames(
  * molecule contributes one segment of each arm) while chr10 and chr12 go
  * uniform.
  *
- * Starts from `attachChainFields`' per-chain answer, and runs only when `flipStrandLongReadChains` is on and the
- * scheme actually reads the framing (see `framesUnpairedChainStrand`).
+ * Starts from `attachChainFields`' per-chain answer, and runs only while an
+ * orientation field reads the framing (see `framesUnpairedChainStrand`).
  *
  * `locusOf` names which entries share a locus, defaulting to one locus per entry
  * — the single-lane case, where an entry IS a displayed region. A grouped

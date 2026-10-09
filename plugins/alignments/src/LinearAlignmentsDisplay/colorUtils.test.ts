@@ -19,7 +19,6 @@ import { makeTestPalette } from './testUtils.ts'
 
 import type { RGBColor } from '../shaders/colors.ts'
 import type { ColorSchemeType } from '../shared/types.ts'
-import type { ChainFramingSettings } from './colorUtils.ts'
 
 // The `readChainHasSupp` bit combinations these cases build, named for what they
 // mean rather than spelled as the byte. The frame and the split kind are
@@ -270,17 +269,17 @@ describe('readColorCategory', () => {
       readColorCategory(
         0,
         makeData({ chainHasSupp: SUPP_REV, flags: 0, strand: 1 }),
-        'strand',
+        'pairOrientation',
         framedOpts,
       ),
     ).toBe('revStrand')
-    // Unframed, the scheme answers, which under `strand` is the segment's own.
+    // `strand` is the segment's own, framed or not
     expect(
       readColorCategory(
         0,
         makeData({ chainHasSupp: SUPP_REV, flags: 0, strand: 1 }),
         'strand',
-        chainOpts,
+        framedOpts,
       ),
     ).toBe('fwdStrand')
   })
@@ -302,7 +301,7 @@ describe('readColorCategory', () => {
         readColorCategory(
           0,
           makeData({ chainHasSupp: SUPP_FWD | split, flags: 0, strand: 1 }),
-          'strand',
+          'pairOrientation',
           framedOpts,
         ),
       ).toBe('fwdStrand')
@@ -312,19 +311,22 @@ describe('readColorCategory', () => {
         readColorCategory(
           0,
           makeData({ chainHasSupp: SUPP_REV | split, flags: 0, strand: 1 }),
-          'strand',
+          'pairOrientation',
           framedOpts,
         ),
       ).toBe('revStrand')
     }
   })
 
-  // Unticking the framing is the only escape hatch under a geometry scheme, and
-  // it used to leave the reads strand-colored anyway.
-  test('unframed, a geometry scheme paints its own bucket, not the strand', () => {
+  // A constant is one color for every read, in a chain as anywhere: the chain
+  // levels are the orientation fields', and a mate-less read under a constant
+  // keeps the constant.
+  test('a constant fill paints every read plain, chain or not', () => {
     const supp = makeData({ chainHasSupp: SUPP_REV, flags: 0, strand: 1 })
-    expect(readColorCategory(0, supp, 'normal', framedOpts)).toBe('revStrand')
-    expect(readColorCategory(0, supp, 'normal', chainOpts)).toBe('plain')
+    expect(readColorCategory(0, supp, 'normal', framedOpts)).toBe('plain')
+    expect(
+      readColorCategory(0, makeData({ flags: 9 }), 'normal', chainOpts),
+    ).toBe('plain')
     expect(readColorCategory(0, supp, 'pairOrientation', chainOpts)).toBe(
       'nonSplit',
     )
@@ -442,41 +444,28 @@ describe('firstOfPairStrand: color and grouping agree', () => {
   })
 })
 
-// The framing repaints the whole read, so it may only refine a fill that is
-// about the alignment's geometry, never one carrying a datum the user asked for.
+// The framing is two levels of the orientation fields, so only they paint
+// it, and only in a chain: a constant stays one color and `strand` stays the
+// read's own strand.
 describe('framesUnpairedChainStrand', () => {
-  const on = { chainMode: true }
-  const cases: [string, ColorSchemeType, ChainFramingSettings, boolean][] = [
-    ['chain mode with the defaults', 'strand', on, true],
-    ['pileup mode', 'strand', {}, false],
-    [
-      'the tickbox off',
-      'strand',
-      { ...on, flipStrandLongReadChains: false },
-      false,
-    ],
-    // the data-carrying schemes: the framing would displace the datum the user
-    // asked to see, so the branch is held off them and so is the pass
-    ['a tag scheme', 'tag', on, false],
-    ['a mapq scheme', 'mappingQuality', on, false],
-    ['a modifications scheme', 'modifications', on, false],
-    // and the two per-base ones, which share the 'normal' shader path with a
-    // geometry scheme the framing DOES apply to
-    ['per-base quality', 'perBaseQuality', on, false],
-    ['per-base lettering', 'perBaseLetter', on, false],
-    // geometry schemes, which the framing refines rather than replaces
-    ['the pair-orientation scheme', 'pairOrientation', on, true],
-    ['the insert-size scheme', 'insertSize', on, true],
-    [
-      'the plain scheme, which shares a shader path with the two above',
-      'normal',
-      on,
-      true,
-    ],
+  const cases: [ColorSchemeType, boolean, boolean][] = [
+    ['pairOrientation', true, true],
+    ['insertSizeAndOrientation', true, true],
+    ['pairOrientation', false, false],
+    ['insertSize', true, false],
+    ['strand', true, false],
+    ['normal', true, false],
+    ['mappingQuality', true, false],
+    ['tag', true, false],
+    ['modifications', true, false],
+    ['perBaseQuality', true, false],
   ]
-  test.each(cases)('%s', (_label, scheme, opts, expected) => {
-    expect(framesUnpairedChainStrand(scheme, opts)).toBe(expected)
-  })
+  test.each(cases)(
+    '%s in chain mode %s frames: %s',
+    (scheme, chain, expected) => {
+      expect(framesUnpairedChainStrand(scheme, chain)).toBe(expected)
+    },
+  )
 })
 
 // `rgbaPrefix255` is `rgba255` split at the alpha so a painter resolving one per

@@ -1,6 +1,6 @@
 import { lazy } from 'react'
 
-import { radioItem, radioItems, toggleItem } from '@jbrowse/core/ui/menuItems'
+import { radioItem, radioItems } from '@jbrowse/core/ui/menuItems'
 import { getDialogHost } from '@jbrowse/core/util'
 import { colorByMenuItem } from '@jbrowse/display-kit/colorByMenu'
 
@@ -24,7 +24,6 @@ import type {
   ReadColorBy,
   TagColorScale,
 } from '../../shared/types.ts'
-import type { AlignmentsUnit } from '../constants.ts'
 import type { ModificationsMenuModel } from './modificationsMenu.ts'
 import type { MenuItem } from '@jbrowse/core/ui'
 
@@ -78,16 +77,6 @@ interface ColorByMenuOptions {
   arcColor?: {
     own: ArcColorField | ''
     setField: (field: ArcColorField | '') => void
-  }
-  // The split-read strand framing colors how chained supplementary alignments
-  // are drawn, so it belongs with the color scheme rather than in the "Show..."
-  // visibility menu. Read only by `readColorCategory`'s chain branch, hence
-  // `unit`: without a chain there is nothing chained to recolor and the row
-  // would be a live tickbox that does nothing.
-  supplementaryColoring?: {
-    unit: AlignmentsUnit
-    flipStrandLongReadChains: boolean
-    setFlipStrandLongReadChains: (flag: boolean) => void
   }
 }
 
@@ -239,33 +228,6 @@ function arcColorItem(
   }
 }
 
-// Greyed out rather than hidden while chain mode is off, matching the
-// read-connection band options: the setting stays discoverable, and the
-// tooltip names the one switch that makes it live. A flat color marking every
-// split chain, whatever the scheme, was a hue override and went; "Group by
-// split reads" beside a strand color is that picture.
-function supplementaryItem(
-  supp: NonNullable<ColorByMenuOptions['supplementaryColoring']>,
-): MenuItem {
-  return {
-    label: 'Supplementary / split reads',
-    disabled: supp.unit !== 'chain',
-    disabledHelpText:
-      'Enable "Read connections ▸ View as pairs / link supplementary alignments" first',
-    subMenu: [
-      toggleItem(
-        'Color supplementary alignments by consensus strand',
-        supp.flipStrandLongReadChains,
-        supp.setFlipStrandLongReadChains,
-        {
-          helpText:
-            'long (unpaired) reads: segments agreeing with the orientation most reads on screen share stay red and the ones inverted at a junction go blue, so an inversion reads as a color flip. To mark every split chain instead, group by split reads',
-        },
-      ),
-    ],
-  }
-}
-
 export function getColorByMenuItem(
   model: AnyColorByModel,
   options: ColorByMenuOptions = {},
@@ -276,25 +238,16 @@ export function getColorByMenuItem(
     includePairedEnd,
     includeModifications,
     arcColor,
-    supplementaryColoring,
   } = options
   const mods = includeModifications ? modModel(model) : undefined
   const readOptions = colorOptions.filter(o => !isBaseLayerType(o.type))
   const layerOptions = colorOptions.filter(o => isBaseLayerType(o.type))
   // Everything above the header picks the read fill scheme — the radios and the
-  // Paired end / Modifications / Bisulfite submenus alike. Everything below
-  // refines coloring without selecting a scheme: the arcs and read cloud have
-  // their own axis, and the supplementary modifiers ride whatever scheme is
-  // chosen. The two kinds are indistinguishable otherwise — both render as a
-  // submenu arrow — so one header carries the whole distinction. Absent when
-  // neither refinement is offered, so a curated menu (synteny) stays a plain
-  // radio list.
-  const refinements = [
-    ...(arcColor ? [arcColorItem(arcColor)] : []),
-    ...(supplementaryColoring
-      ? [supplementaryItem(supplementaryColoring)]
-      : []),
-  ]
+  // Paired end / Modifications / Bisulfite submenus alike. Below it the arcs
+  // and read cloud take their own field. Both render as a submenu arrow, so one
+  // header carries the distinction. Absent when the arcs are off, so a curated
+  // menu (synteny) stays a plain radio list.
+  const refinements = arcColor ? [arcColorItem(arcColor)] : []
   return colorByMenuItem({
     blocks: [
       {
