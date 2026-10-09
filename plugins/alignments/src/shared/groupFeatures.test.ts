@@ -2,6 +2,7 @@ import PluginManager from '@jbrowse/core/PluginManager'
 import { SimpleFeature } from '@jbrowse/core/util'
 import { groupKeySpaceOf } from '@jbrowse/core/util/groupKeys'
 
+import { levelKeysOf } from './alignmentsColor.ts'
 import {
   FACET_DIMENSIONS,
   MAX_GROUPS,
@@ -245,6 +246,25 @@ test('pair-orientation stacks sections in the legend swatch order', () => {
   ])
   expect(groups.at(-1)!.label).toBe('No orientation')
   expect(keys(groups)).toEqual(['LR', 'RL', 'RR', 'LL', ''])
+})
+
+test("a facet section's key is the value the color names that level by", () => {
+  const features = [
+    feat('lr', { pair_orientation: 'F1R2', strand: 1, flags: 0x41 }),
+    feat('rl', { pair_orientation: 'R1F2', strand: -1, flags: 0x51 }),
+    feat('rr', { pair_orientation: 'R1R2', strand: 1, flags: 0x81 }),
+    feat('ll', { pair_orientation: 'F1F2', strand: -1, flags: 0x91 }),
+    feat('none', { strand: 1 }),
+  ]
+  for (const [field, scheme] of [
+    ['pairOrientation', 'pairOrientation'],
+    ['strand', 'strand'],
+    ['firstOfPairStrand', 'firstOfPairStrand'],
+  ] as const) {
+    expect(keys(partitionFeatures(features, { field })).toSorted()).toEqual(
+      Object.values(levelKeysOf(scheme)!).toSorted(),
+    )
+  }
 })
 
 // A facet's domain names the values a color's domain names, so one

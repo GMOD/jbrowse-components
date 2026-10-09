@@ -23,7 +23,11 @@ import {
   FACET_LABELS,
   facetTag,
 } from './facetLabels.ts'
-import { MAPQ_UNAVAILABLE_LEVEL, levelOrder } from './readFieldLevels.ts'
+import {
+  MAPQ_UNAVAILABLE_LEVEL,
+  SPLIT_READ_LEVELS,
+  levelOrder,
+} from './readFieldLevels.ts'
 import { chainIsSplit, isSplitAlignment } from './splitAlignment.ts'
 import {
   MAPQ_UNAVAILABLE,
@@ -153,8 +157,9 @@ function pairOrientationKey(feature: Feature): GroupKey {
     : PAIR_ORIENTATION_GROUPS[dir]
 }
 
-const SPLIT_GROUP: GroupKey = { key: 'split', label: 'Split (SA)' }
-const UNSPLIT_GROUP: GroupKey = { key: 'unsplit', label: 'Not split' }
+const [SPLIT_KEY, UNSPLIT_KEY] = SPLIT_READ_LEVELS
+const SPLIT_GROUP: GroupKey = { key: SPLIT_KEY, label: 'Split (SA)' }
+const UNSPLIT_GROUP: GroupKey = { key: UNSPLIT_KEY, label: 'Not split' }
 
 // Reads that cross a breakpoint and reads that don't — at an SV locus, the
 // evidence and the background. `isSplitAlignment` carries why that is an SA

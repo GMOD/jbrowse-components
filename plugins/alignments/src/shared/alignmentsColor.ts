@@ -15,7 +15,11 @@ import {
 
 import { COLOR_SCHEMES } from './colorSchemes.ts'
 import { TAG_FIELD_PREFIX, facetTag } from './facetLabels.ts'
-import { MAPQ_UNAVAILABLE } from './util.ts'
+import {
+  INSERT_SIZE_LEVELS,
+  MAPQ_UNAVAILABLE_LEVEL,
+  PAIR_ORIENTATION_LEVELS,
+} from './readFieldLevels.ts'
 
 import type { ReadColorCategory } from '../LinearAlignmentsDisplay/colorUtils.ts'
 import type { RGBColor } from '../shaders/colors.ts'
@@ -221,11 +225,20 @@ export function isBakedScheme(colorBy: ColorBy) {
 
 type ReadColorLevel = readonly [value: string, category: ReadColorCategory]
 
-const INSERT_SIZE_LEVELS: readonly ReadColorLevel[] = [
-  ['short', 'shortInsert'],
-  ['normal', 'normalInsert'],
-  ['long', 'longInsert'],
-]
+const INSERT_SIZE_CATEGORY = {
+  short: 'shortInsert',
+  normal: 'normalInsert',
+  long: 'longInsert',
+} as const satisfies Record<
+  (typeof INSERT_SIZE_LEVELS)[number],
+  ReadColorCategory
+>
+
+const INSERT_SIZE_COLOR_LEVELS: readonly ReadColorLevel[] =
+  INSERT_SIZE_LEVELS.map(value => [value, INSERT_SIZE_CATEGORY[value]])
+
+const PAIR_COLOR_LEVELS: readonly ReadColorLevel[] =
+  PAIR_ORIENTATION_LEVELS.map(dir => [dir, `pair${dir}`])
 
 const STRAND_LEVELS: readonly ReadColorLevel[] = [
   ['1', 'fwdStrand'],
@@ -261,21 +274,14 @@ const READ_COLOR_LEVELS: Record<
   normal: [],
   strand: STRAND_LEVELS,
   firstOfPairStrand: STRAND_LEVELS,
-  pairOrientation: [
-    ['LR', 'pairLR'],
-    ['RL', 'pairRL'],
-    ['RR', 'pairRR'],
-    ['LL', 'pairLL'],
-    ['', 'nonSplit'],
-  ],
-  insertSize: INSERT_SIZE_LEVELS,
+  pairOrientation: [...PAIR_COLOR_LEVELS, ['', 'nonSplit']],
+  insertSize: INSERT_SIZE_COLOR_LEVELS,
+  // an LR pair of normal size is the normal insert
   insertSizeAndOrientation: [
-    ...INSERT_SIZE_LEVELS,
-    ['RL', 'pairRL'],
-    ['RR', 'pairRR'],
-    ['LL', 'pairLL'],
+    ...INSERT_SIZE_COLOR_LEVELS,
+    ...PAIR_COLOR_LEVELS.filter(([dir]) => dir !== 'LR'),
   ],
-  mappingQuality: [[`${MAPQ_UNAVAILABLE}`, 'mapqUnavailable']],
+  mappingQuality: [[MAPQ_UNAVAILABLE_LEVEL, 'mapqUnavailable']],
   mateRefName: [NO_VALUE_LEVEL],
   tag: [NO_VALUE_LEVEL],
 }
@@ -376,15 +382,13 @@ function levelNotices(encoding: AlignmentsColorEncoding): string[] {
     )
 }
 
-function levelOrder(
+function declaredOrder(
   encoding: Exclude<AlignmentsColorEncoding, string | undefined>,
   levels: readonly ReadColorLevel[],
   bakesValues: boolean,
 ) {
   if (encoding.scale === 'threshold') {
-    return INSERT_SIZE_FIELDS.has(encoding.field)
-      ? INSERT_SIZE_LEVELS.map(([value]) => value)
-      : []
+    return INSERT_SIZE_FIELDS.has(encoding.field) ? INSERT_SIZE_LEVELS : []
   }
   if (encoding.scale !== 'categorical') {
     return []
@@ -404,7 +408,7 @@ function declaredLevels(
   const colorBy = colorByOf(encoding)
   const levels = paintedLevels(colorBy.type)
   return {
-    order: levelOrder(encoding, levels, isBakedScheme(colorBy)),
+    order: declaredOrder(encoding, levels, isBakedScheme(colorBy)),
     categoryOf: new Map(levels),
   }
 }
