@@ -147,6 +147,10 @@ async function openSelectedRibbon() {
 
 test('a pan and a hover leave the outline cell alone', async () => {
   const { view, level, display, uploaded } = await openSelectedRibbon()
+  // the rows open fit-to-width, where a pan has nowhere to go
+  for (const row of view.views) {
+    row.zoomTo(row.bpPerPx / 2)
+  }
   const cell = display.outlineCell
   expect(cell?.kind).toBe('outline')
   expect(level.syntenyCells.get(display.outlineKey)).toBe(cell)

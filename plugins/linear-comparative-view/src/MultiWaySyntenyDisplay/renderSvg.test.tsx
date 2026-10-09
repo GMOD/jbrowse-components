@@ -65,7 +65,7 @@ test('the SVG export carries no hover and no selection; the chrome ink does', as
 test('the export prints gene names where the panned glyphs are', async () => {
   const display = createDisplay()
   const view = display.lgv
-  view.setNewView(100, -30)
+  view.setNewView(0.5, 100)
   view.settleCoarseBlocks()
   await when(() => display.features !== undefined, { timeout: 5000 })
   display.setShowLegend(false)
@@ -98,8 +98,7 @@ test('the export prints gene names where the panned glyphs are', async () => {
     Number(/<text[^>]* x="([^"]*)"[^>]*>galF_mate</.exec(svg)?.[1])
   const before = labelX(await exported())
 
-  view.setNewView(100, -60)
-  view.settleCoarseBlocks()
+  view.horizontalScroll(-30)
   expect(display.dragOffsetPx).toBe(30)
   await when(() => display.svgReady, { timeout: 5000 })
   expect(labelX(await exported()) - before).toBe(30)

@@ -39,10 +39,12 @@ function ldData(
   }
 }
 
-function loadedDisplay({ scrollTo = 0, data = {} } = {}) {
+// `zoomedOut` shrinks the region to less than the viewport, which centers it and
+// leaves a gap to its left, the only state the view scrolls left of the start
+function loadedDisplay({ zoomedOut = false, data = {} } = {}) {
   const { display, view } = createTestEnvironment().createDisplay()
-  view.zoomTo(10)
-  view.scrollTo(scrollTo)
+  view.zoomTo(zoomedOut ? view.maxBpPerPx : 10)
+  view.scrollTo(zoomedOut ? view.minOffset : 0)
   const width = view.dynamicBlocks.totalWidthPxWithoutBorders
   display.setRpcData(
     ldData(4, width * view.bpPerPx, {
@@ -106,25 +108,28 @@ describe('loadedLDWindow follows the loaded matrix', () => {
 // content block instead left them short by the left gap while the guides beside
 // them carried it.
 test('locusViewportX is the frame the connector lines land in', () => {
-  const { display } = loadedDisplay({ scrollTo: -100 })
+  const { display, view } = loadedDisplay({ zoomedOut: true })
   const coords = display.connectorLineCoords
+  const gap = -view.offsetPx
 
-  expect(display.viewTransform.viewOffsetX).toBe(100)
+  expect(gap).toBeGreaterThan(0)
+  expect(display.viewTransform.viewOffsetX).toBe(gap)
   for (const [i, snp] of display.snps.entries()) {
     expect(display.locusViewportX(snp.refName, snp.start)).toBe(coords[i]!.gx)
   }
   // the first SNP sits at bp 0, which is the gap's width right of the edge
-  expect(display.locusViewportX('ctgA', 0)).toBe(100)
+  expect(display.locusViewportX('ctgA', 0)).toBe(gap)
 })
 
-// Scrolled left of the genome start the triangle is drawn from the left gap
+// With room left of the genome start the triangle is drawn from the left gap
 // onward. A box only as wide as the triangle's base cut the gap's width off
 // its right corner, on screen and in the export alike.
 test('the box reaches the triangle’s right corner when scrolled left of the start', () => {
-  const { display, width } = loadedDisplay({ scrollTo: -100 })
+  const { display, view, width } = loadedDisplay({ zoomedOut: true })
   const { viewOffsetX } = display.viewTransform
 
-  expect(viewOffsetX).toBe(100)
+  expect(viewOffsetX).toBe(-view.offsetPx)
+  expect(viewOffsetX).toBeGreaterThan(0)
   expect(display.canvasWidth).toBeGreaterThanOrEqual(viewOffsetX + width)
 })
 
@@ -176,7 +181,7 @@ describe('cellToScreen and screenToCell are inverses', () => {
     ['natural height', false],
     ['fit-to-height squash', true],
   ])('%s', (_label, squash) => {
-    const { display } = loadedDisplay({ scrollTo: -100 })
+    const { display } = loadedDisplay({ zoomedOut: true })
     display.setSquashToHeight(squash)
     expect(squash ? display.yScalar !== 1 : display.yScalar === 1).toBe(true)
 
@@ -236,7 +241,7 @@ test('a cell nothing computed has no tooltip', () => {
 // `columnX`'s own comment names the symptom — everything anchored through it
 // slides off the triangle. So the agreement is asserted instead.
 test('columnX agrees with the x half of cellToScreen', () => {
-  const { display } = loadedDisplay({ scrollTo: -100 })
+  const { display } = loadedDisplay({ zoomedOut: true })
   const { cellWidth } = display
   for (const column of [0, 0.5, 1, 2.5, 4]) {
     const u = column * cellWidth

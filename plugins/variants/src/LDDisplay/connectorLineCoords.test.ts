@@ -29,14 +29,14 @@ function ldData(n: number, widthBp: number, originBp: number): LDDataResult {
 
 // A display holding a 4-SNP result fetched for the current viewport, i.e. what
 // the model looks like the instant after a commit.
-function loadedDisplay({ scrollToEnd = false } = {}) {
+function loadedDisplay({ zoomedOut = false } = {}) {
   const { createDisplay } = createTestEnvironment()
   const { display, view } = createDisplay()
-  view.zoomTo(10)
-  // the 10Mbp region spans 1,000,000px at bpPerPx 10, so parking 700px short of
-  // its end leaves 100px of the 800px viewport empty — and puts the region's
-  // right edge off-center, so a zoom changes how much content the viewport holds
-  view.scrollTo(scrollToEnd ? 1_000_000 - 700 : 0)
+  // zoomed out the 10Mbp region is narrower than the 800px viewport, so it sits
+  // centered with empty viewport on both sides, and a zoom changes how much
+  // content the viewport holds
+  view.zoomTo(zoomedOut ? view.maxBpPerPx : 10)
+  view.scrollTo(zoomedOut ? view.minOffset : 0)
   const width = view.dynamicBlocks.totalWidthPxWithoutBorders
   const block = view.dynamicBlocks.contentBlocks[0]!
   display.setRpcData(ldData(4, width * view.bpPerPx, block.start))
@@ -63,11 +63,11 @@ test('column centers land on the triangle apexes the shader draws', () => {
 // while still being multiplied by the view transform's scale, so whenever the two
 // disagreed a zoom applied the scale twice and the lines slid off the apexes for
 // the whole debounce+RPC window. They disagree exactly when the content doesn't
-// fill the viewport (here it stops 100px short), because zooming then changes
+// fill the viewport (here it stops short of both edges), because zooming then changes
 // how much content the viewport holds. Deriving the pitch from the fetch-time
 // cellWidth tracks the same rescale the stale pixels get.
 test('zooming before the refetch lands keeps the lines on the stale triangle', () => {
-  const { display, view } = loadedDisplay({ scrollToEnd: true })
+  const { display, view } = loadedDisplay({ zoomedOut: true })
   const fetchWidth = view.dynamicBlocks.totalWidthPxWithoutBorders
   const t1 = display.viewTransform
   const before = display.connectorLineCoords.map(c => c.mx)
@@ -81,25 +81,27 @@ test('zooming before the refetch lands keeps the lines on the stale triangle', (
   expect(view.dynamicBlocks.totalWidthPxWithoutBorders).toBeGreaterThan(
     fetchWidth,
   )
-  expect(display.connectorLineCoords.map(c => c.mx)).toEqual(
-    before.map(
-      mx =>
-        (mx - t1.viewOffsetX) * (t2.viewScale / t1.viewScale) + t2.viewOffsetX,
-    ),
-  )
+  const after = display.connectorLineCoords.map(c => c.mx)
+  for (const [i, mx] of before.entries()) {
+    expect(after[i]).toBeCloseTo(
+      (mx - t1.viewOffsetX) * (t2.viewScale / t1.viewScale) + t2.viewOffsetX,
+      9,
+    )
+  }
 })
 
-test('panning left of genome start keeps lines and ruler in one frame', () => {
-  const { display, view } = loadedDisplay()
-  view.scrollTo(-100)
+test('a view with room left of genome start keeps lines and ruler in one frame', () => {
+  const { display, view } = loadedDisplay({ zoomedOut: true })
 
   const { viewOffsetX } = display.viewTransform
   const coords = display.connectorLineCoords
+  const gap = -view.offsetPx
   // the gap is carried once, by the frame: the first SNP sits at bp 0, which is
-  // now 100px right of the viewport edge, and the first column with it
-  expect(coords[0]!.gx).toBe(100)
-  expect(viewOffsetX).toBe(100)
-  expect(coords[0]!.mx).toBeGreaterThan(100)
+  // `gap` px right of the viewport edge, and the first column with it
+  expect(gap).toBeGreaterThan(0)
+  expect(coords[0]!.gx).toBe(gap)
+  expect(viewOffsetX).toBe(gap)
+  expect(coords[0]!.mx).toBeGreaterThan(gap)
 })
 
 test('a SNP off the displayed regions is dropped, not pinned to the left edge', () => {

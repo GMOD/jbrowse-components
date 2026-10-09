@@ -1,8 +1,8 @@
 import { createTestEnvironment } from './testEnv.ts'
 
 // HiC holds two content widths and read both off the view directly, which is
-// silent for as long as they agree — and they agree until the view is scrolled
-// past an end, where `dynamicBlocks` adds the boundary padding blocks that
+// silent for as long as they agree — and they agree until the view has room past
+// an end, where `dynamicBlocks` adds the boundary padding blocks that
 // `totalWidthPx` counts and `totalWidthPxWithoutBorders` does not.
 describe('the HiC canvas box', () => {
   it('is the width renderState sizes the backing store to', () => {
@@ -16,7 +16,8 @@ describe('the HiC canvas box', () => {
   // contig.
   it('counts the boundary padding the triangle base does not', () => {
     const { display, view } = createTestEnvironment().createDisplay()
-    view.scrollTo(-200)
+    view.zoomTo(view.maxBpPerPx)
+    view.scrollTo(view.minOffset)
 
     expect(view.totalWidthPx).toBeGreaterThan(view.totalWidthPxWithoutBorders)
     expect(display.canvasWidth).toBe(view.totalWidthPx)

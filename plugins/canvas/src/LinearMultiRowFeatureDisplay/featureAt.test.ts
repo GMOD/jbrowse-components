@@ -193,7 +193,7 @@ describe('featureAt', () => {
       [{ refName: 'ctgA', start: 0, end: 200, assemblyName: 'volvox' }],
     )
     // The view is 800px wide over a 200bp region, so most of it is off the end.
-    expect(display.featureAt(500, 10)).toBeUndefined()
+    expect(display.featureAt(790, 10)).toBeUndefined()
   })
 
   it('is undefined for a region whose features have not loaded', () => {

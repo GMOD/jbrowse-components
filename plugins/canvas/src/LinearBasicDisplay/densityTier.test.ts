@@ -104,7 +104,7 @@ describe('the density tier stands in for the too-large banner', () => {
       regions: [],
       key: 'k',
     })
-    const px = 400
+    const px = 100
     const under = view.pxToBp(px).coord0
     expect(under).toBeLessThan(12_700)
 

@@ -79,7 +79,7 @@ describe('contextTargetAt', () => {
       { refName: 'ctgA', start: 0, end: 200, assemblyName: 'volvox' },
     ])
     // 800px of view over 200bp, so most of it is off the end.
-    expect(display.contextTargetAt(500, 10)).toBeUndefined()
+    expect(display.contextTargetAt(790, 10)).toBeUndefined()
   })
 
   it('resolves nothing over the tree sidebar, which owns its own menu', () => {

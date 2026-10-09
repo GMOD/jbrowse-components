@@ -98,6 +98,10 @@ test('a hover set on the level lands on the display that owns the hit', async ()
 // writer that clears the hover, never runs.
 test('a pan of either row drops the hover', async () => {
   const { view, level, display } = await setup()
+  // the rows open fit-to-width, where a pan has nowhere to go
+  for (const row of view.views) {
+    row.zoomTo(row.bpPerPx / 2)
+  }
 
   hover(level, display)
   view.views[0]!.horizontalScroll(50)

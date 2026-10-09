@@ -37,6 +37,7 @@ test('what each row step recomputes', async () => {
     },
     REGIONS,
   ).createDisplay()
+  view.zoomTo(view.bpPerPx / 2)
   const firstEdited = (edit: Partial<RowSource>) => {
     const [first, ...rest] = display.editableSources
     return [{ ...first!, ...edit }, ...rest]
