@@ -49,6 +49,24 @@ test('the fit closes the ring on the radius the box leaves', () => {
   )
 })
 
+test('a lone circular sequence closes the ring, and a lone linear one keeps its gap', () => {
+  const linear = elideRegions([region('chr1', 16_569)], '0')
+  const circular = elideRegions(
+    [{ ...region('chrM', 16_569), circular: true }],
+    '0',
+  )
+  expect(gapUnitsAfter(linear)).toEqual([1])
+  expect(gapUnitsAfter(circular)).toEqual([0])
+  expect(
+    gapUnitsAfter(
+      elideRegions(
+        [{ ...region('chrM', 16_569), circular: true }, region('chr1', 9)],
+        '00',
+      ),
+    ),
+  ).toEqual([1, 1])
+})
+
 // hg19's unplaced contigs carry the circle's longest names and all elide into
 // one run at the fit. Measuring the padding before the fit, when nothing is
 // elided yet, sized the SKBR3 circle for `chrUn_gl000211` and drew it 40px

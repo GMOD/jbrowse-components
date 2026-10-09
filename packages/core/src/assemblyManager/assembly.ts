@@ -626,6 +626,16 @@ export default function assemblyFactory(
     .views(self => ({
       /**
        * #method
+       * Whether the assembly's `circularRefNames` lists this refName, matched
+       * through its aliases.
+       */
+      isCircularRefName(refName: string) {
+        const canonical = self.getCanonicalRefName2(refName)
+        const names: string[] = self.getConf('circularRefNames') ?? []
+        return names.some(name => self.getCanonicalRefName2(name) === canonical)
+      },
+      /**
+       * #method
        * Where a refName — canonical or any alias — sits in this assembly's own
        * order, which is what chromosome painting hands its palette out by.
        * Canonicalized first because a name off a feature can be the FILE's

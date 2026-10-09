@@ -193,6 +193,27 @@ function assemblyConfigSchema(pluginManager: PluginManager) {
 
       /**
        * #slot
+       * The reference sequences that are circular: a plasmid, an organelle, a
+       * bacterial chromosome. The circular view closes a circle of one such
+       * sequence into a ring with no gap at its origin; every other sequence
+       * keeps the gap that marks its two ends. Names are matched through
+       * refName aliasing.
+       *
+       * #example
+       * The human mitochondrion, by its RefSeq accession:
+       * ```js
+       * ['NC_012920.1']
+       * ```
+       */
+      circularRefNames: {
+        type: 'stringArray',
+        defaultValue: [],
+        description:
+          'Reference sequences that are circular (a plasmid, an organelle, a bacterial chromosome), which the circular view closes into a ring',
+      },
+
+      /**
+       * #slot
        * Optional file (tab-separated `refName<TAB>geneticCodeId`, `#` comments
        * allowed) to load the same refName-to-genetic-code mapping from, instead
        * of inlining it — useful when a config generator emits a sidecar rather

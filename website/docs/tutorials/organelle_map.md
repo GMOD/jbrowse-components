@@ -13,8 +13,8 @@ organelle genomes are usually pictured, with base-pair ticks around one closed
 ring and the genes along it in a row per strand, colored by feature type. The
 same steps make a map of any small circular sequence that NCBI annotates, from a
 chloroplast to a plasmid. JBrowse's circular view draws a feature track as a
-ring around the circle, and closes a circle of one sequence with no gap at its
-origin.
+ring around the circle, and closes a sequence its assembly marks as circular
+with no gap at its origin.
 
 ## Prerequisites
 
@@ -86,15 +86,17 @@ We'll load the sequence as an assembly, indexed with samtools first:
 samtools faidx genome.fa
 ```
 
-The assembly names the sequence `human_mito`. Its `geneticCodes` entry
-translates `NC_012920.1` with NCBI's vertebrate mitochondrial code, table 2,
-wherever JBrowse shows a protein; the add-genome form has no field for it, so
-add it in the JSON:
+The assembly is named `human_mito`, and two of its settings name the sequence
+`NC_012920.1`. `circularRefNames` marks it circular, so the circular view closes
+it into a ring with no gap at its origin. `geneticCodes` translates it with
+NCBI's vertebrate mitochondrial code, table 2, wherever JBrowse shows a protein.
+The add-genome form has a field for neither, so add both in the JSON:
 
 ```json addassembly
 {
   "name": "human_mito",
   "uri": "https://jbrowse.org/code/jb2/main/test_data/human_mito/sequence.fasta.gz",
+  "circularRefNames": ["NC_012920.1"],
   "geneticCodes": { "NC_012920.1": 2 }
 }
 ```
@@ -137,9 +139,9 @@ record with no `gene` or `product`, like the D-loop, takes its `gbkey`:
 
 ## Opening the genome as a circle
 
-We'll open the assembly in a circular view with the gene track. A circle showing
-one sequence closes at position 1, ticks its bases, and prints the sequence's
-name and length in the middle:
+We'll open the assembly in a circular view with the gene track. A circle of one
+circular sequence closes at position 1, ticks its bases, and prints the
+sequence's name and length in the middle:
 
 ```json session config=test_data/human_mito/config.json
 {

@@ -37,6 +37,7 @@ function setup() {
         get: () => ({
           initialized: true,
           getRefNameColor: () => undefined,
+          isCircularRefName: () => false,
         }),
       },
     }))

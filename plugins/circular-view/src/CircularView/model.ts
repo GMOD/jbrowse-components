@@ -97,6 +97,7 @@ import type {
   PointerTarget,
 } from '../chords/shapes.ts'
 import type { FitLayout } from './fitLayout.ts'
+import type { CircleRegion } from './slices.ts'
 import type { CircularViewCommands } from './types.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { ViewExportSvgOptions } from '@jbrowse/core/svg/exportViewSvg'
@@ -517,13 +518,33 @@ function stateModelFactory(pluginManager: PluginManager) {
 
       /**
        * #getter
+       * `displayedRegions`, each marked `circular` where it is a whole sequence
+       * its assembly lists in `circularRefNames`
+       */
+      get circleRegions(): CircleRegion[] {
+        const { assemblyManager } = getSession(self)
+        return self.displayedRegions.map(region => {
+          const asm = assemblyManager.get(region.assemblyName)
+          if (!asm?.isCircularRefName(region.refName)) {
+            return region
+          }
+          const whole = asm.getRegionForRefName(
+            asm.getCanonicalRefName2(region.refName),
+          )
+          return region.start === 0 && region.end === whole?.end
+            ? { ...region, circular: true }
+            : region
+        })
+      },
+      /**
+       * #getter
        * the circle that fills the box: its scale and radius, and the padding
        * the view keeps at every zoom. A pure function of the regions and the
        * box — see `fitLayout`
        */
       get fitLayout(): FitLayout {
         return fitLayout({
-          regions: self.displayedRegions,
+          regions: this.circleRegions,
           width: self.width,
           height: self.height,
           spacingPx: self.spacingPx,
@@ -678,7 +699,7 @@ function stateModelFactory(pluginManager: PluginManager) {
        * `elisionMask`, so a zoom that elides nothing new rebuilds nothing
        */
       get elidedRegions() {
-        return elideRegions(self.displayedRegions, this.elisionMask)
+        return elideRegions(this.circleRegions, this.elisionMask)
       },
       /**
        * #getter

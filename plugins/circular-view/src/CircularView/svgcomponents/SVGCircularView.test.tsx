@@ -81,10 +81,12 @@ async function setup(init?: Record<string, unknown>) {
 async function setupRefNames(
   refNames: string[],
   viewSnap: Record<string, unknown> = {},
+  circularRefNames: string[] = [],
 ) {
   const session = createTestSession()
   session.addAssemblyConf({
     name: 'test',
+    circularRefNames,
     sequence: {
       trackId: 'test_refseq',
       type: 'ReferenceSequenceTrack',
@@ -190,6 +192,16 @@ test('a slice covering the whole circle still draws its ring', async () => {
   expect(
     Math.hypot(second![7]! - first![0]!, second![8]! - first![1]!),
   ).toBeLessThan(0.05)
+}, 20000)
+
+// A sequence alone on the circle closes into a ring only where its assembly
+// lists it as circular; a linear one keeps the gap that marks its two ends.
+test('a lone sequence closes the ring only where its assembly lists it as circular', async () => {
+  const linear = await setupRefNames(['chr1'])
+  expect(linear.staticSlices[0]!.endRadians).toBeLessThan(2 * Math.PI - 1e-3)
+
+  const circular = await setupRefNames(['chrM'], {}, ['chrM'])
+  expect(circular.staticSlices[0]!.endRadians).toBeCloseTo(2 * Math.PI)
 }, 20000)
 
 // A refName too long to sit along its own arc radiates outward instead, and the

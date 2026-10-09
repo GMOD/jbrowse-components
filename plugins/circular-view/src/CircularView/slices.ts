@@ -8,6 +8,12 @@ export interface SliceElidedRegion {
   regions: Region[]
 }
 
+/**
+ * A displayed region as the circle lays it out: `circular` where it is a whole
+ * sequence its assembly lists in `circularRefNames`.
+ */
+export type CircleRegion = Region & { circular?: boolean }
+
 export interface SliceNonElidedRegion {
   elided: false
   widthBp: number
@@ -16,6 +22,7 @@ export interface SliceNonElidedRegion {
   refName: string
   assemblyName: string
   reversed?: boolean
+  circular?: boolean
 }
 export type SliceRegion = SliceNonElidedRegion | SliceElidedRegion
 
@@ -91,14 +98,20 @@ function regionAssemblyName(region: SliceRegion) {
   return region.elided ? region.regions[0]?.assemblyName : region.assemblyName
 }
 
+/** A circle of one circular sequence, whose end meets its start. */
+export function closesRing(regions: readonly SliceRegion[]) {
+  const [only, ...rest] = regions
+  return !!only && rest.length === 0 && !only.elided && !!only.circular
+}
+
 /**
  * The gap after each region, in inter-slice gaps: one between two regions of
  * a genome, `GENOME_GAP_UNITS` where the next region, wrapping round to the
- * first, is another genome's. A lone region closes the ring, its end meeting
- * its start, as a plasmid or organelle map draws.
+ * first, is another genome's. A lone circular sequence closes the ring, its
+ * end meeting its start, as a plasmid or organelle map draws.
  */
 export function gapUnitsAfter(regions: readonly SliceRegion[]) {
-  return regions.length === 1
+  return closesRing(regions)
     ? [0]
     : regions.map((region, i) =>
         regionAssemblyName(regions[(i + 1) % regions.length]!) ===

@@ -6,6 +6,7 @@
       "geneticCodes": {
         "NC_012920.1": 2
       },
+      "circularRefNames": ["NC_012920.1"],
       "sequence": {
         "type": "ReferenceSequenceTrack",
         "trackId": "human_mito-ReferenceSequenceTrack",

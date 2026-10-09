@@ -32,7 +32,9 @@ function createView({
     .volatile(() => ({
       rpcManager: {},
       configuration: {},
-      assemblyManager: { get: () => ({ initialized: true }) },
+      assemblyManager: {
+        get: () => ({ initialized: true, isCircularRefName: () => false }),
+      },
     }))
   const { view } = Session.create({ view: { type: 'CircularView' } })
   view.setWidth(width)
@@ -259,7 +261,9 @@ test('height before width does not throw, and the fit lands once width arrives',
     .volatile(() => ({
       rpcManager: {},
       configuration: {},
-      assemblyManager: { get: () => ({ initialized: true }) },
+      assemblyManager: {
+        get: () => ({ initialized: true, isCircularRefName: () => false }),
+      },
     }))
   const { view } = Session.create({ view: { type: 'CircularView' } })
 

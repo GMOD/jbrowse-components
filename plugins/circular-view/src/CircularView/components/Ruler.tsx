@@ -28,7 +28,7 @@ import {
   tickMinorPx,
 } from '../rulerLabels.ts'
 import { rulerTicks } from '../rulerTicks.ts'
-import { bpToRadians } from '../slices.ts'
+import { bpToRadians, closesRing } from '../slices.ts'
 
 import type { CircularViewModel } from '../model.ts'
 import type { AssemblyArc } from '../rulerLabels.ts'
@@ -330,7 +330,7 @@ const Ruler = observer(function Ruler({
             model={model}
             slice={slice}
             basePx={outerPx}
-            seam={middleTitle(model.staticSlices) !== undefined}
+            seam={closesRing(model.elidedRegions)}
           />
         </>
       )}

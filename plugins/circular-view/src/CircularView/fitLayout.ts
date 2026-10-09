@@ -7,7 +7,7 @@ import {
 } from './rulerLabels.ts'
 import { gapUnitsAfter } from './slices.ts'
 
-import type { SliceRegion } from './slices.ts'
+import type { CircleRegion, SliceRegion } from './slices.ts'
 import type { Region } from '@jbrowse/core/util'
 
 const twoPi = 2 * Math.PI
@@ -39,7 +39,7 @@ export function elisionMask(
  * The regions as the circle draws them: each run of masked regions within one
  * assembly becomes one elided slice, and a lone masked region draws as itself.
  */
-export function elideRegions(regions: readonly Region[], mask: string) {
+export function elideRegions(regions: readonly CircleRegion[], mask: string) {
   const out: SliceRegion[] = []
   regions.forEach((region, i) => {
     const widthBp = region.end - region.start
@@ -88,7 +88,7 @@ export function maxBpPerPxFor(totalBp: number, minimumRadiusPx: number) {
 }
 
 export interface FitInput {
-  regions: readonly Region[]
+  regions: readonly CircleRegion[]
   width: number
   height: number
   spacingPx: number
