@@ -285,14 +285,12 @@ displays — and the band cannot drift from the display it stands in for.
   `showVariantLane` stays a render-tier setting a toggle must not refetch. The
   pass is per record (thousands), not per cell (millions), and plugin-canvas
   packs main-thread anyway.
-- **Sub-pixel records collapse before layout** (`laneRecordsAtZoom`). A record
-  no wider than `settledSubPixelBinBp` keeps only the last of its (genomic bin,
-  color), the one an opaque mark shows, so the work follows the band's width and
-  not the window's record count: building and packing 100k records took seconds
-  on the main thread. Wider records always stay. The bin is genomic, so a pan
-  keeps the same survivors, and it moves once per octave of zoom. The kept
-  record's label can differ from the one an unreduced lane would have lettered
-  first in its bin.
+- **The lane never thins its records.** The shared painter fades each piled
+  sub-pixel mark to alpha 0.3, so a pixel's shade is the count of marks under
+  it. Keeping one record per half-pixel bin lightened a 4-per-pixel stretch from
+  0.91 to 0.81 mean shade. The cost of 100k records (about 0.65 s to build and
+  0.5-0.75 s to pack on the main thread) is `LinearVariantDisplay`'s too, so it
+  belongs to plugin-canvas's layout.
 - **The lane is one row** (`flattenRows`, ADR-037), so a nested record cannot
   stack under the one holding it. The packer drops a record's name and
   description where they would overprint a kept one, and a long record's labels

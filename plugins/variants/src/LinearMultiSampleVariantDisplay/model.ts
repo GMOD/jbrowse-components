@@ -2065,7 +2065,6 @@ export function stateModelFactory(
                     },
                     config,
                     jexl,
-                    binBp: self.settledSubPixelBinBp,
                   }),
                 )
               }

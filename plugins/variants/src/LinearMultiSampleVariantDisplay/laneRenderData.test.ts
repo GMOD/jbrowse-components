@@ -3,7 +3,7 @@ import createJexlInstance from '@jbrowse/core/util/jexl'
 import { computeLaidOutData } from '@jbrowse/plugin-canvas'
 
 import { laneDisplayConfig } from './laneDisplayConfig.ts'
-import { buildLaneRenderData, laneRecordsAtZoom } from './laneRenderData.ts'
+import { buildLaneRenderData } from './laneRenderData.ts'
 
 import type { VariantFeatureInfo } from '../shared/types.ts'
 import type { LaneSourceData } from './laneRenderData.ts'
@@ -133,56 +133,4 @@ test('label mode none letters nothing', () => {
   expect(
     without.get(0)!.floatingLabelsData.get('rs1')?.nameLabel,
   ).toBeUndefined()
-})
-
-describe('laneRecordsAtZoom', () => {
-  const colors = (n: number) => new Uint32Array(n).fill(1)
-
-  test('keeps everything below the first binned zoom', () => {
-    expect(
-      laneRecordsAtZoom(
-        {
-          featurePositions: Uint32Array.of(0, 1, 0, 1),
-          featureColors: colors(2),
-        },
-        1,
-      ),
-    ).toBeUndefined()
-  })
-
-  test('keeps the last record of each bin, in payload order', () => {
-    expect(
-      laneRecordsAtZoom(
-        {
-          featurePositions: Uint32Array.of(0, 1, 1, 2, 2, 3, 9, 10, 17, 18),
-          featureColors: colors(5),
-        },
-        8,
-      ),
-    ).toEqual([2, 3, 4])
-  })
-
-  test('a wider record and a second color survive their bin', () => {
-    expect(
-      laneRecordsAtZoom(
-        {
-          featurePositions: Uint32Array.of(0, 1, 1, 100, 2, 3, 3, 4),
-          featureColors: Uint32Array.of(1, 1, 1, 2),
-        },
-        8,
-      ),
-    ).toEqual([1, 2, 3])
-  })
-
-  test('one record per bin leaves nothing to drop', () => {
-    expect(
-      laneRecordsAtZoom(
-        {
-          featurePositions: Uint32Array.of(0, 3, 8, 9, 16, 17),
-          featureColors: colors(3),
-        },
-        8,
-      ),
-    ).toBeUndefined()
-  })
 })
