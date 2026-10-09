@@ -171,3 +171,28 @@ test.each([
   expect(collisions(boxes)).toEqual([])
   expect(boxes.map(b => b.text).filter(t => t.startsWith('>'))).toEqual(named)
 })
+
+describe('records sharing a pixel', () => {
+  const dense = Array.from({ length: 400 }, (_, i): LaneRecord => [
+    `r${i}`,
+    i * 5,
+    i * 5 + 1,
+    'A -> T',
+  ])
+  const laidOutCount = (bpPerPx: number) =>
+    [...laneAt(dense, bpPerPx).laneRenderDataMap.values()][0]!.featureCount
+
+  test('the lane lays out one mark per bin where the records are sub-pixel', () => {
+    expect(laidOutCount(1)).toBe(400)
+    expect(laidOutCount(64)).toBeLessThan(80)
+  })
+})
+
+test('a record is found by id, and a new payload forgets the old one', () => {
+  const display = laneAt(KIT, 51)
+  expect(display.featureInfoById('>7494>7499')?.featureId).toBe('>7494>7499')
+  expect(display.simplifiedFeatureById('>7494>7499')?.id).toBe('>7494>7499')
+  display.setCellData(cellData(TAS2R46))
+  expect(display.featureInfoById('>7494>7499')).toBeUndefined()
+  expect(display.simplifiedFeatureById('>10043>10050')?.id).toBe('>10043>10050')
+})

@@ -27,58 +27,89 @@ interface LaneRegion {
 }
 
 /**
+ * The indices of the records worth laying out at this zoom, in payload order,
+ * or undefined when every record is.
+ *
+ * A record no wider than `binBp` shares its pixel with its neighbours, and an
+ * opaque mark there shows only the last one drawn. So the lane keeps the last
+ * record of each (bin, color) among those and every wider record, which paints
+ * the pixels the full set would and bounds the work by the band's width rather
+ * than the window's record count. A bin is genomic, so a pan keeps the same
+ * survivors.
+ */
+export function laneRecordsAtZoom(
+  data: Pick<LaneSourceData, 'featurePositions' | 'featureColors'>,
+  binBp: number,
+) {
+  if (binBp <= 1) {
+    return undefined
+  }
+  const { featurePositions, featureColors } = data
+  const binsByColor = new Map<number, Set<number>>()
+  const kept: number[] = []
+  for (let f = featureColors.length - 1; f >= 0; f--) {
+    const start = featurePositions[f * 2]!
+    if (featurePositions[f * 2 + 1]! - start > binBp) {
+      kept.push(f)
+    } else {
+      const color = featureColors[f]!
+      let bins = binsByColor.get(color)
+      if (!bins) {
+        bins = new Set()
+        binsByColor.set(color, bins)
+      }
+      const bin = Math.floor(start / binBp)
+      if (!bins.has(bin)) {
+        bins.add(bin)
+        kept.push(f)
+      }
+    }
+  }
+  return kept.length === featureColors.length ? undefined : kept.reverse()
+}
+
+/**
  * The lane's marks, as `plugin-canvas` render data.
  *
- * This is the whole reason the lane is not its own painter any more. The band
- * wants what a `LinearVariantDisplay` gives — boxes packed so overlapping SVs
- * stack instead of overdrawing, labels placed by layout, one paint order that
- * the hit test agrees with — and every one of those is a decision
- * `plugin-canvas` has already made. So the lane stops making them and hands its
- * records to `buildFeatureRenderData` instead, exactly as that plugin's own RPC
- * does with the features it fetched.
+ * The records come from the cell payload, which already holds each one's span,
+ * ID, description, SO type and resolved color, so the band costs no RPC and
+ * `showVariantLane` stays a render-tier setting. The packer, the fit ladder, the
+ * painter and the hit test are plugin-canvas's own, which is what keeps the
+ * band and a `LinearVariantDisplay` from drifting apart.
  *
- * **Main thread, and no second fetch.** The variants worker already parsed these
- * records (it read every genotype off them), and everything a variant *record*
- * is already rides in the payload — span in `featurePositions`, ID and
- * description and SO type in `featureInfo`, and the color
- * `paintCells` resolves into `featureColors`. So the features are rebuilt here
- * from bytes already on the wire: no extra RPC, no extra payload, and `showVariantLane` stays a
- * render-tier setting that a toggle or a band resize must not refetch. The pass
- * is per record (thousands), not per cell (millions), and it is memoized on the
- * model beside the packer — which `plugin-canvas` also runs main-thread.
- *
- * A rebuilt feature is deliberately thin: a variant's glyph is `layoutBox`, one
- * rect with no subfeatures, so the layout reads a span, a height and a color and
- * nothing else. `laneColor` is how the color gets in — the lane's `color` slot is
- * a jexl reading exactly that attribute (see `laneDisplayConfig`), which is the
- * ordinary per-feature-color path and keeps a mark the same color as the alt
- * cells in the column under it.
+ * A rebuilt feature is thin: a variant's glyph is `layoutBox`, one rect with no
+ * subfeatures. `laneColor` carries the display's color in, and the lane's
+ * `color` slot is a jexl reading it (`laneDisplayConfig`).
  */
 export function buildLaneRenderData({
   data,
   region,
   config,
   jexl,
+  binBp = 1,
 }: {
   data: LaneSourceData
   region: LaneRegion
   config: DisplayConfig
   jexl: JexlInstance
+  binBp?: number
 }): LayoutRegionData {
   const { featureInfo, featurePositions, featureColors } = data
-  const features = featureInfo.map(
-    (info, f) =>
-      new SimpleFeature({
-        uniqueId: info.featureId,
-        refName: region.refName,
-        start: featurePositions[f * 2]!,
-        end: featurePositions[f * 2 + 1]!,
-        name: info.name,
-        description: info.description,
-        type: info.type,
-        laneColor: abgrToCssRgba(featureColors[f]!),
-      }),
-  )
+  const indices =
+    laneRecordsAtZoom(data, binBp) ?? Array.from(featureInfo.keys())
+  const features = indices.map(f => {
+    const info = featureInfo[f]!
+    return new SimpleFeature({
+      uniqueId: info.featureId,
+      refName: region.refName,
+      start: featurePositions[f * 2]!,
+      end: featurePositions[f * 2 + 1]!,
+      name: info.name,
+      description: info.description,
+      type: info.type,
+      laneColor: abgrToCssRgba(featureColors[f]!),
+    })
+  })
   return {
     ...buildFeatureRenderData({
       features,
@@ -87,8 +118,7 @@ export function buildLaneRenderData({
       regionStart: region.start,
       regionEnd: region.end,
     }),
-    // What `computeLaidOutData` groups regions by, so two blocks of one
-    // chromosome pack against each other rather than each from row 0.
+    // two blocks of one chromosome pack against each other
     regionKey: layoutRegionKey(region),
   }
 }

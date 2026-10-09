@@ -50,7 +50,7 @@ function getHoveredLaneMark(
     return undefined
   }
   const { featureId } = result.feature
-  const info = model.laneFeatureInfo(featureId)
+  const info = model.featureInfoById(featureId)
   // The record's own tooltip table, the one the genotype cells show minus the
   // sample rows — `buildVariantLaneHit` leaves those empty, which is what lets
   // one hover slot serve both bands. plugin-canvas's `hoverTooltipRows` is the
@@ -86,7 +86,7 @@ export function variantLaneSurface(
       const { featureId } = hit.fields
       const baseFeature = model.featureById(featureId)
       return baseFeature
-        ? enrichFeatureFromClick(baseFeature, model.laneFeatureInfo(featureId))
+        ? enrichFeatureFromClick(baseFeature, model.featureInfoById(featureId))
         : undefined
     },
     onHover: hit => {

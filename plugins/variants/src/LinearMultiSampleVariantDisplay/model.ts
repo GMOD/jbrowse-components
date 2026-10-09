@@ -123,6 +123,7 @@ import {
   variantTopBandsGeometry,
 } from './variantTopBands.ts'
 
+import type { SimplifiedVariantFeature } from '../VariantRPC/analyzeVariants.ts'
 import type { CellDataResult } from '../VariantRPC/executeVariantCellData.ts'
 import type { ConnectorCoord } from '../shared/ConnectorLines.tsx'
 import type { VariantUnit } from '../shared/constants.ts'
@@ -130,6 +131,7 @@ import type {
   ProcessedSource,
   Source,
   VariantContextMenuInfo,
+  VariantFeatureInfo,
 } from '../shared/types.ts'
 import type { HoveredCell } from './components/VariantComponent.tsx'
 import type { CellGlyphs } from './components/cellGlyphs.ts'
@@ -482,6 +484,55 @@ export function stateModelFactory(
           self.clearHoveredFeature()
         },
       }))
+      .views(self => {
+        let held:
+          | {
+              cellData: CellDataResult
+              info: Map<string, VariantFeatureInfo>
+              positional: Map<string, SimplifiedVariantFeature>
+            }
+          | undefined
+        // keyed on the payload rather than a computed: pointer handlers read
+        // these untracked, where a computed would rebuild per call
+        function recordsOf(cellData: CellDataResult) {
+          if (held?.cellData !== cellData) {
+            const info = new Map<string, VariantFeatureInfo>()
+            for (const data of Object.values(cellData.perRegionCellData)) {
+              for (const record of data.featureInfo) {
+                info.set(record.featureId, record)
+              }
+            }
+            held = {
+              cellData,
+              info,
+              positional: new Map(
+                cellData.simplifiedFeatures.map(f => [f.id, f]),
+              ),
+            }
+          }
+          return held
+        }
+        return {
+          /**
+           * #method
+           * The payload's record behind a cell or a lane mark.
+           */
+          featureInfoById(featureId: string) {
+            return self.cellData
+              ? recordsOf(self.cellData).info.get(featureId)
+              : undefined
+          },
+          /**
+           * #method
+           * The payload's positional record behind a cell or a lane mark.
+           */
+          simplifiedFeatureById(featureId: string) {
+            return self.cellData
+              ? recordsOf(self.cellData).positional.get(featureId)
+              : undefined
+          },
+        }
+      })
       .views(self => ({
         get view() {
           return containingLgv(self)
@@ -521,9 +572,7 @@ export function stateModelFactory(
          * positional fields only: its genotypes live in the cell payload.
          */
         featureById(featureId: string): Feature | undefined {
-          const hit = self.cellData?.simplifiedFeatures.find(
-            f => f.id === featureId,
-          )
+          const hit = self.simplifiedFeatureById(featureId)
           return hit && new SimpleFeature(hit)
         },
         /**
@@ -1970,23 +2019,6 @@ export function stateModelFactory(
         get laneFontSize() {
           return labelFontSize(LANE_DISPLAY_MODE)
         },
-        /**
-         * #method
-         * The record behind a lane mark, by the feature id plugin-canvas's hit
-         * test answers with.
-         */
-        laneFeatureInfo(featureId: string) {
-          const { cellData } = self
-          if (cellData) {
-            for (const data of Object.values(cellData.perRegionCellData)) {
-              const info = data.featureInfo.find(f => f.featureId === featureId)
-              if (info) {
-                return info
-              }
-            }
-          }
-          return undefined
-        },
       }))
       // separate block so the lane chain reads its siblings off `self`
       .views(self => ({
@@ -2033,6 +2065,7 @@ export function stateModelFactory(
                     },
                     config,
                     jexl,
+                    binBp: self.settledSubPixelBinBp,
                   }),
                 )
               }

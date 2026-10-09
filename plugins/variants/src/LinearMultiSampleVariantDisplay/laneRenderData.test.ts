@@ -1,9 +1,9 @@
 import { abgrToCssRgba, cssColorToABGR } from '@jbrowse/core/util/colorBits'
 import createJexlInstance from '@jbrowse/core/util/jexl'
-import { computeLaidOutData, maxBottom } from '@jbrowse/plugin-canvas'
+import { computeLaidOutData } from '@jbrowse/plugin-canvas'
 
 import { laneDisplayConfig } from './laneDisplayConfig.ts'
-import { buildLaneRenderData } from './laneRenderData.ts'
+import { buildLaneRenderData, laneRecordsAtZoom } from './laneRenderData.ts'
 
 import type { VariantFeatureInfo } from '../shared/types.ts'
 import type { LaneSourceData } from './laneRenderData.ts'
@@ -68,6 +68,7 @@ function laidOut(
     pinnedFeatureIds: new Set(),
     showLabels: labels !== 'none',
     showDescriptions: false,
+    flattenRows: true,
   })
 }
 
@@ -79,11 +80,9 @@ function itemsById(map: ReturnType<typeof laidOut>) {
   )
 }
 
-// The whole reason the band went through plugin-canvas. Two SVs that overlap
-// partially — the short one starting first, which is the arrangement VCF order
-// produces and the one a single-row painter cannot express — have to end up on
-// different rows rather than one overdrawing the other.
-test('two overlapping records stack onto separate rows', () => {
+// The lane is one row, as the display lays it out: records that overlap share
+// pixels, and the packer drops a label that would overprint a kept one.
+test('overlapping records share one row', () => {
   const items = itemsById(
     laidOut(
       source([
@@ -92,38 +91,8 @@ test('two overlapping records stack onto separate rows', () => {
       ]),
     ),
   )
-  const del = items.get('del')!
-  const inv = items.get('inv')!
-  expect(del.topPx).not.toBe(inv.topPx)
-  // and neither is pushed off the layout
-  expect(Math.min(del.topPx, inv.topPx)).toBe(0)
-})
-
-test('records that do not overlap share one row', () => {
-  const items = itemsById(
-    laidOut(
-      source([
-        ['a', 1000, 2000],
-        ['b', 5000, 6000],
-      ]),
-    ),
-  )
-  expect(items.get('a')!.topPx).toBe(items.get('b')!.topPx)
-})
-
-// A stack of overlaps is taller than a single row, which is what the fit ladder
-// then has to spend the band's height on — the band cannot grow, so this is the
-// number `laneFitStage` reads.
-test('a pile of overlapping records makes a taller stack', () => {
-  const one = laidOut(source([['a', 1000, 2000]]))
-  const three = laidOut(
-    source([
-      ['a', 1000, 5000],
-      ['b', 1500, 5500],
-      ['c', 2000, 6000],
-    ]),
-  )
-  expect(maxBottom(three)).toBeGreaterThan(maxBottom(one))
+  expect(items.get('del')!.topPx).toBe(0)
+  expect(items.get('inv')!.topPx).toBe(0)
 })
 
 // The lane's marks are the same color as the alt cells in the column under
@@ -164,4 +133,56 @@ test('label mode none letters nothing', () => {
   expect(
     without.get(0)!.floatingLabelsData.get('rs1')?.nameLabel,
   ).toBeUndefined()
+})
+
+describe('laneRecordsAtZoom', () => {
+  const colors = (n: number) => new Uint32Array(n).fill(1)
+
+  test('keeps everything below the first binned zoom', () => {
+    expect(
+      laneRecordsAtZoom(
+        {
+          featurePositions: Uint32Array.of(0, 1, 0, 1),
+          featureColors: colors(2),
+        },
+        1,
+      ),
+    ).toBeUndefined()
+  })
+
+  test('keeps the last record of each bin, in payload order', () => {
+    expect(
+      laneRecordsAtZoom(
+        {
+          featurePositions: Uint32Array.of(0, 1, 1, 2, 2, 3, 9, 10, 17, 18),
+          featureColors: colors(5),
+        },
+        8,
+      ),
+    ).toEqual([2, 3, 4])
+  })
+
+  test('a wider record and a second color survive their bin', () => {
+    expect(
+      laneRecordsAtZoom(
+        {
+          featurePositions: Uint32Array.of(0, 1, 1, 100, 2, 3, 3, 4),
+          featureColors: Uint32Array.of(1, 1, 1, 2),
+        },
+        8,
+      ),
+    ).toEqual([1, 2, 3])
+  })
+
+  test('one record per bin leaves nothing to drop', () => {
+    expect(
+      laneRecordsAtZoom(
+        {
+          featurePositions: Uint32Array.of(0, 3, 8, 9, 16, 17),
+          featureColors: colors(3),
+        },
+        8,
+      ),
+    ).toBeUndefined()
+  })
 })
