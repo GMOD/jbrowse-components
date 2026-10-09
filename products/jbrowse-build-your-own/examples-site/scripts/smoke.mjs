@@ -16,39 +16,19 @@ import { pages } from '../src/examples.ts'
 
 const here = path.dirname(fileURLToPath(import.meta.url))
 
-// How many Material UI elements each page renders. This whole site is an
-// argument about that number, so it is measured rather than claimed — the same
-// reason the landing page's bundle figures come out of
-// `pnpm measure-chrome-bundle` instead of a comment.
+// How many Material UI elements each page renders. This site is an argument
+// about that number, so it is measured rather than claimed.
 //
-// **Zero is the bar** for every page that installs both plain sets
-// (`plainChromeOverlays` for the status states, `plainTrackControl` for the
-// corner controls). Those pages render JBrowse's own stock wiggle, feature and
-// alignments displays, unforked, and nothing Material reaches the screen.
+// **Zero is the bar** for every page behind `EmbedProvider`. Those pages render
+// JBrowse's own stock wiggle, feature and alignments displays, unforked, and
+// nothing Material reaches the screen.
 //
-// `multiple-tracks` is the deliberate exception: it comes before the page that
-// introduces the swap, so it shows what a stock display looks like out of the
-// box. Its three are the ambient bottom-right controls — every display with a
-// `heightMode` slot draws a track-sizing button, and the feature display adds
-// the isoform-collapse notice while genes are collapsed.
-//
-// **This budget is per document, which is what decides where a page boundary
-// may go.** Several demos share a page now (`src/examples.ts` says why), and
-// two demos on one page report one number for both. So a stock demo may not
-// share a page with a plain one: the merged page would carry the sum, the plain
-// half's zero would stop being stated anywhere, and the site's central claim
-// would be resting on a number that no longer isolates it. That is the whole
-// reason `multiple-tracks` is still a page of its own.
-//
-// **`ultraminimal` installs no provider either, and its zero is unearned.**
-// Both its demos show a lone wiggle track, and the corner controls come from
-// canvas's FeatureComponent and the alignments component — wiggle draws none. So
-// it scores zero by having no Material widget to suppress, not by suppressing
-// one. The day a wiggle display grows an ambient control it will fail this
-// budget for a reason that has nothing to do with what it teaches, and the
-// obvious fix — installing DisplayUIProvider on the page whose whole point is
-// that nothing is drawn around the track — would be the wrong one. Raise it to
-// what wiggle actually draws and say so here instead.
+// `multiple-tracks` is the deliberate exception: it shows what a stock display
+// looks like out of the box. Its three are the ambient bottom-right controls —
+// every display with a `heightMode` slot draws a track-sizing button, and the
+// feature display adds the isoform-collapse notice while genes are collapsed.
+// A stock demo may not share a page with a plain one, since the page carries
+// one number for both.
 //
 // Exact equality, in both directions. A new Material widget appearing in a
 // display's render path has to be noticed here; so does one disappearing,
@@ -69,8 +49,7 @@ const MUI_BUDGET = {
   // At rest this page shows a pileup coloured `normal`, which has no key — so
   // this zero is the ordinary one and says nothing about the legend. The legend
   // is a separate check (`legendIsPlainAndAboveTheSeams`), because it has to be
-  // driven and because a census that only ever runs before the thing appears is
-  // the `ultraminimal` unearned-zero trap one paragraph up.
+  // driven: a census that runs before the thing appears scores an unearned zero.
   'track-settings': 0,
   'color-and-group-by-a-field': 0,
   'plot-from-json': 0,
