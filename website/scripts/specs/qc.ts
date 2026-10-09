@@ -223,9 +223,9 @@ const panel = (loc: string) => ({
       // coverage band's extremes topped out near the library's real depth,
       // but over 100 kb it reaches a collapsed-repeat pile-up and the axis
       // ran to 1,600, drawing a 30x library as a flat line on the floor. A
-      // 0.99 domainQuantile clips at the 99th percentile of the bins in view,
-      // so the ceiling comes from the window rather than from a number
-      // somebody picked.
+      // 0.99 domainQuantile fences the axis at twice the 99th percentile of
+      // the bins in view, so the ceiling comes from the window rather than
+      // from a number somebody picked.
       scales: { y: { domainQuantile: 0.99 } },
     },
   ],
@@ -342,7 +342,8 @@ export const qcSpecs: ScreenshotSpec[] = [
               // handful of collapsed-repeat pile-ups set that ceiling, so a
               // 30x library drew as a 2%-height line and the band carried
               // nothing. A 0.99 domainQuantile is the display's own answer to
-              // peaky data, the 99th percentile of the bins in view, and it
+              // peaky data, a fence at twice the 99th percentile of the bins in
+              // view, and it
               // is preferred here over a hand-picked ceiling because the
               // ceiling then comes from the window rather than from a number
               // somebody chose, and it survives the window being moved.
