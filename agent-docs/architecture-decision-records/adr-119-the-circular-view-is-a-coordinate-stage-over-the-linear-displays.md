@@ -7,6 +7,17 @@ summary: "The circular view is a coordinate stage: every linear display draws on
 
 ## Status
 
+**Amended 2026-10-09:** the Canvas2D fallback and the SVG export warp per
+device pixel through `warpRing` (`rings/warpRing.ts`), the shader's fragment
+written out in TypeScript, where they drew rotated slices of the strip. A slice
+is a rectangle, so neighbours overlapped at their one-pixel seams and more
+toward the inner rim, and a translucent strip composited twice: on a 50% strip
+the slices differed from the GPU ring on 71% of the band and `warpRing` on
+none. It costs about three times the slices per Canvas2D frame (the
+`c2d-slices` and `c2d-pixel` arms of `ringWarp.bench.ts --alpha=0.5`), on the
+rung that has no GPU. `ringHit`, the ideogram's `bandAt` and `warpRing` read a
+point's angle through one `turnAt`.
+
 Accepted (2026-09-10). Closes the "fixed coordinate system" gap in
 [GRAMMAR_OF_GRAPHICS.md](../reference/GRAMMAR_OF_GRAPHICS.md), whose
 coordinates row read "genomic x, fixed; circular and dotplot are displays, not

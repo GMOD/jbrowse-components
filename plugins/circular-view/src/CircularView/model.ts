@@ -75,6 +75,7 @@ import { buildChordAxis } from '../chords/chordStage.ts'
 import { partnerShares } from '../chords/partnerShares.ts'
 import { samePointerTarget } from '../chords/shapes.ts'
 import { RingHost } from '../rings/ringHost.ts'
+import { turnAt } from '../rings/warpRing.ts'
 import { circularLegendSpec } from './circularLegend.ts'
 import {
   elideRegions,
@@ -981,8 +982,7 @@ function stateModelFactory(pluginManager: PluginManager) {
         if (r < innerPx || r > innerPx + ideogramThicknessPx) {
           return undefined
         }
-        const turn = Math.atan2(dy, dx) - self.offsetRadians
-        const radians = turn - twoPi * Math.floor(turn / twoPi)
+        const radians = turnAt(dx, dy, self.offsetRadians)
         const slice = this.staticSlices.find(
           s => s.startRadians <= radians && radians < s.endRadians,
         )

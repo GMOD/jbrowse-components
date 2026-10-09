@@ -8,6 +8,7 @@ import { canvasWideBlocks } from '@jbrowse/render-core/renderBlock'
 import { autorun, computed, observable } from 'mobx'
 
 import { RING_PASSES } from './ringMarks.ts'
+import { turnAt } from './warpRing.ts'
 
 import type { Slice } from '../CircularView/slices.ts'
 import type { RingCell, RingFrame } from './ringMarks.ts'
@@ -20,8 +21,6 @@ import type { MarkImage } from '@jbrowse/render-core/marks'
 import type { PerRegionRenderingBackend } from '@jbrowse/render-core/perRegionRenderingBackend'
 import type { IComputedValue } from 'mobx'
 import type { ComponentType } from 'react'
-
-const TWO_PI = 2 * Math.PI
 
 /** CSS px between the ruler's arc and the first ring, and between rings. */
 export const RING_GAP_PX = 4
@@ -210,11 +209,9 @@ export function ringHit(
   if (!ring) {
     return undefined
   }
-  let a = Math.atan2(dy, dx) - offsetRadians
-  a -= Math.floor(a / TWO_PI) * TWO_PI
   return {
     ring,
-    x: a * stripRadiusPx,
+    x: turnAt(dx, dy, offsetRadians) * stripRadiusPx,
     y: (ring.outerPx - r) * stripPerRingPx(ring),
   }
 }
