@@ -39,13 +39,6 @@ export function readConfigValueSafe<T>(
   }
 }
 
-// Sentinel config color meaning "derive from the theme". Only outlineColor needs
-// one: that slot has three states (no outline / theme-derived / explicit color)
-// and just one spare non-color value (`''` = off), so the third rides in-band.
-// The main thread resolves it against the palette at render time, so the slot
-// is not a worker input and toggling it refetches nothing.
-export const THEME_DERIVED_COLOR = '#f0f'
-
 export type WorkerColor = Pick<ColorSetting, 'value' | 'field'>
 
 /** The share of a color object the worker reads: its value, and its field. */

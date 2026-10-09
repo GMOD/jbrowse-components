@@ -108,7 +108,7 @@ function makeModel(overrides: Partial<LegendModel> = {}): LegendModel {
         scrollY: this.scrollTop,
         canvasWidth: 798,
         canvasHeight: this.height,
-        outlineColor: resolveOutlineColor('', palette),
+        outlineColor: resolveOutlineColor(false, undefined, palette),
         hideChevrons: false,
       }
     },

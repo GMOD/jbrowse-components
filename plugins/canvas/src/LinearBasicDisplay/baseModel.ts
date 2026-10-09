@@ -54,10 +54,7 @@ import { toJS } from 'mobx'
 import { themedColorTable } from '../RenderFeatureDataRPC/colorClasses.ts'
 import { renderedTextWidth } from '../RenderFeatureDataRPC/constants.ts'
 import { labelFontSize } from '../RenderFeatureDataRPC/glyphs/glyphUtils.ts'
-import {
-  THEME_DERIVED_COLOR,
-  pickDisplayConfig,
-} from '../RenderFeatureDataRPC/renderConfig.ts'
+import { pickDisplayConfig } from '../RenderFeatureDataRPC/renderConfig.ts'
 import { shouldRenderPeptideBackground } from '../RenderFeatureDataRPC/zoomThresholds.ts'
 import CanvasFeatureGateMixin from '../shared/CanvasFeatureGateMixin.ts'
 import DensityBandMixin from '../shared/DensityBandMixin.ts'
@@ -487,7 +484,11 @@ export default function baseStateModelFactory(
           scrollY: self.scrollTop,
           canvasWidth: self.canvasWidthPx,
           canvasHeight: self.height,
-          outlineColor: resolveOutlineColor(self.outlineColorSlot, palette),
+          outlineColor: resolveOutlineColor(
+            self.showOutline,
+            self.outlineColor,
+            palette,
+          ),
           hideChevrons: !this.displayDirectionalChevrons,
         }
       },
@@ -1271,7 +1272,7 @@ export default function baseStateModelFactory(
          * #action
          */
         setShowOutline(value: boolean) {
-          setConf(self, 'outlineColor', value ? THEME_DERIVED_COLOR : '')
+          setConf(self, 'showOutline', value)
         },
 
         /**

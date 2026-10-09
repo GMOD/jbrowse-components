@@ -117,10 +117,18 @@ export default function baseConfigSchemaFactory(_pluginManager: PluginManager) {
       /**
        * #slot
        */
+      showOutline: {
+        type: 'boolean',
+        description: 'draw an outline around each feature',
+        defaultValue: false,
+      },
+      /**
+       * #slot
+       */
       outlineColor: {
-        type: 'color',
-        description: 'outline color for features (empty string = no outline)',
-        defaultValue: '',
+        type: 'maybeColor',
+        description:
+          "the outline's color while showOutline draws one; unset takes the theme's",
       },
       /**
        * #slot

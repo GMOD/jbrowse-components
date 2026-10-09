@@ -307,6 +307,7 @@ describe('LinearBasicDisplay configSchema', () => {
       expect(readConfObject(config, 'connectorColor')).toBe('gray')
       expect(readConfObject(config, 'utrColor')).toBe('lightblue')
       expect(readConfObject(config, 'outlineColor')).toBe('black')
+      expect(readConfObject(config, 'showOutline')).toBe(true)
     })
 
     it('maps a legacy jexl color1 expression onto color', () => {

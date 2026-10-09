@@ -6,7 +6,6 @@ import {
   resolveColorLane,
   themedColorTable,
 } from '../../RenderFeatureDataRPC/colorClasses.ts'
-import { THEME_DERIVED_COLOR } from '../../RenderFeatureDataRPC/renderConfig.ts'
 
 import type { FieldPalette } from '../../RenderFeatureDataRPC/colorClasses.ts'
 import type { FeatureDataResult } from '../../RenderFeatureDataRPC/rpcTypes.ts'
@@ -58,17 +57,21 @@ export function resolveRegionColors(
 }
 
 /**
- * The packed outline color the `outlineColor` slot asks for: 0 for none, the
- * palette's faint outline for the menu toggle's `THEME_DERIVED_COLOR` (a fixed
- * black vanishes on a dark track), else the literal. Display-wide, so it rides
- * in the render state rather than in each region's payload.
+ * The packed outline color: 0 while no outline shows, `outlineColor` where it
+ * names one, else the palette's faint outline, since a fixed black vanishes on
+ * a dark track. Display-wide, so it rides in the render state rather than in
+ * each region's payload.
  */
-export function resolveOutlineColor(slot: string, palette: JBrowsePalette) {
-  return slot === THEME_DERIVED_COLOR
-    ? themedColorTable(palette)[OUTLINE]!
-    : slot
-      ? cssColorToABGR(slot)
-      : 0
+export function resolveOutlineColor(
+  show: boolean,
+  color: string | undefined,
+  palette: JBrowsePalette,
+) {
+  return !show
+    ? 0
+    : color
+      ? cssColorToABGR(color)
+      : themedColorTable(palette)[OUTLINE]!
 }
 
 export function resolveMapColors(

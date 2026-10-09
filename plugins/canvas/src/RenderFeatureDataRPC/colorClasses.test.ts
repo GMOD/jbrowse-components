@@ -20,7 +20,6 @@ import {
   createFieldPalette,
   themedColorTable,
 } from './colorClasses.ts'
-import { THEME_DERIVED_COLOR } from './renderConfig.ts'
 import { makeFeatureData, mockDisplayConfig } from './testUtils.ts'
 
 const jexl = createJexlInstance()
@@ -86,13 +85,18 @@ describe('the worker emits a class where it cannot resolve a color', () => {
     expect(stroke.colorClass).toBe(STROKE)
   })
 
-  it('resolves the outline against the palette only for the theme-derived sentinel', () => {
+  it('resolves an outline with no color of its own against the palette', () => {
     const palette = resolvePalette()
-    expect(resolveOutlineColor(THEME_DERIVED_COLOR, palette)).toBe(
+    expect(resolveOutlineColor(true, undefined, palette)).toBe(
       themedColorTable(palette)[OUTLINE],
     )
-    expect(resolveOutlineColor('', palette)).toBe(0)
-    expect(resolveOutlineColor('red', palette)).toBe(cssColorToABGR('red'))
+    expect(resolveOutlineColor(false, 'red', palette)).toBe(0)
+    expect(resolveOutlineColor(true, 'red', palette)).toBe(
+      cssColorToABGR('red'),
+    )
+    expect(resolveOutlineColor(true, '#f0f', palette)).toBe(
+      cssColorToABGR('#f0f'),
+    )
   })
 
   // The codon stripe is two tints of the box it sits on, so a frame-colored box

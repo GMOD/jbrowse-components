@@ -23,7 +23,7 @@ function notAColor(value: unknown) {
   return `${JSON.stringify(value)} is not a color. A color is a CSS color: a name like "red" or "steelblue", "#rgb" / "#rrggbb" / "#rrggbbaa", "rgb()" / "rgba()" / "hsl()" / "hsla()", "transparent" or a BED triple like "255,0,0"; a color computed per feature is a "jexl:" callback, in a slot that takes one`
 }
 
-// '' is a color slot's "none", as in `outlineColor`
+// '' is a color slot's "none", as in `rowColor.unknown`
 const CssColorType = types.refinement(
   'CssColor',
   types.string,

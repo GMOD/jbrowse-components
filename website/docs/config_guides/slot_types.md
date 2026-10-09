@@ -96,8 +96,8 @@ the load and names the slot.
 
 A CSS color: a hex string (`#f00`), an `rgb()`/`rgba()` or `hsl()` value, a
 named color, or a BED color triple (`255,0,0`). The empty string `""` means no
-color, as in an `outlineColor` that draws no outline. Many color slots also
-accept a [`jexl:` callback](/docs/config_guides/jexl) for
+color, as in a `rowColor.unknown` that gives unlisted rows none. Many color
+slots also accept a [`jexl:` callback](/docs/config_guides/jexl) for
 [per-feature coloring](/docs/config_guides/customizing_feature_colors).
 
 ## colorArray

@@ -51,7 +51,8 @@ export const basicRetired: Record<
   color1: (color: unknown) => ({ color }),
   color2: (connectorColor: unknown) => ({ connectorColor }),
   color3: (utrColor: unknown) => ({ utrColor }),
-  outline: (outlineColor: unknown) => ({ outlineColor }),
+  outline: (outlineColor: unknown) =>
+    outlineColor ? { showOutline: true, outlineColor } : {},
   // a second grow ceiling, dead at its default; `growMaxHeight` is the one
   maxHeight: () => ({}),
   renderer: liftRenderer,
