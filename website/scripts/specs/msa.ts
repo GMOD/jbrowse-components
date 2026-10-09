@@ -189,10 +189,6 @@ export const proteinTourFixtures = {
   }),
 }
 
-// The session https://genomes.jbrowse.org/protein-browser/?gene=TP53&residue=248&align=hundredWay
-// hands to Open in JBrowse, decoded from that link's `encoded-` session and
-// carried here as the same snapshot. Regenerate it from the page when the
-// protein browser changes what it builds.
 const TP53_CDS: [number, number, number][] = [
   [7669608, 7669690, 1],
   [7670608, 7670715, 0],
@@ -207,13 +203,13 @@ const TP53_CDS: [number, number, number][] = [
 ]
 
 const TP53_TRANSCRIPT = {
-  uniqueId: 'ENST00000269305.9',
+  uniqueId: 'NM_000546.6',
   type: 'mRNA',
   refName: 'chr17',
   start: 7669608,
   end: 7676594,
   strand: -1,
-  name: 'ENST00000269305.9',
+  name: 'NM_000546.6',
   subfeatures: TP53_CDS.map(([start, end, phase]) => ({
     type: 'CDS',
     start,
@@ -224,7 +220,7 @@ const TP53_TRANSCRIPT = {
 }
 
 const TP53_PROTEIN =
-  'MEEPQSDPSVEPPLSQETFSDLWKLLPENNVLSPLPSQAMDDLMLSPDDIEQWFTEDPGPDEAPRMPEAAPPVAPAPAAPTPAAPAPAPSWPLSSSVPSQKTYQGSYGFRLGFLHSGTAKSVTCTYSPALNKMFCQLAKTCPVQLWVDSTPPPGTRVRAMAIYKQSQHMTEVVRRCPHHERCSDSDGLAPPQHLIRVEGNLRVEYLDDRNTFRHSVVVPYEPPEVGSDCTTIHYNYMCNSSCMGGMNRRPILTIITLEDSSGNLLGRNSFEVRVCACPGRDRRTEEENLRKKGEPHHELPPGSTKRALPNNTSSSPQPKKKPLDGEYFTLQIRGRERFEMFRELNEALELKDAQAGKEPGGSRAHSSHLKSKKGQSTSRHKKLMFKTEGPDSDZ'
+  'MEEPQSDPSVEPPLSQETFSDLWKLLPENNVLSPLPSQAMDDLMLSPDDIEQWFTEDPGPDEAPRMPEAAPPVAPAPAAPTPAAPAPAPSWPLSSSVPSQKTYQGSYGFRLGFLHSGTAKSVTCTYSPALNKMFCQLAKTCPVQLWVDSTPPPGTRVRAMAIYKQSQHMTEVVRRCPHHERCSDSDGLAPPQHLIRVEGNLRVEYLDDRNTFRHSVVVPYEPPEVGSDCTTIHYNYMCNSSCMGGMNRRPILTIITLEDSSGNLLGRNSFEVRVCACPGRDRRTEEENLRKKGEPHHELPPGSTKRALPNNTSSSPQPKKKPLDGEYFTLQIRGRERFEMFRELNEALELKDAQAGKEPGGSRAHSSHLKSKKGQSTSRHKKLMFKTEGPDSD'
 
 const PROTEIN_BROWSER_TP53 = {
   name: 'Gene explorer: TP53',
@@ -254,16 +250,14 @@ const PROTEIN_BROWSER_TP53 = {
       colorSchemeName: 'percent_identity_dynamic',
       labelsAlignRight: true,
       treeAreaWidth: 200,
-      treeFilehandle: {
-        uri: 'https://jbrowse.org/demos/msaview/100way/hg38.multiz100way.nh',
-        locationType: 'UriLocation',
-      },
-      init: {
-        msaIndexedLocation: {
-          uri: 'https://jbrowse.org/demos/msaview/100way/hg38.knownCanonical.multiz100way.aa.fa.gz',
-        },
-        msaName: 'TP53',
-        querySeqName: 'hg38',
+      allowedGappyness: 50,
+      orthologParams: {
+        taxId: 9606,
+        geneCandidates: ['P04637', 'TP53'],
+        source: 'ncbi',
+        msaAlgorithm: 'browser',
+        maxSpecies: 100,
+        proteinSequence: TP53_PROTEIN,
       },
     },
     {
@@ -271,6 +265,7 @@ const PROTEIN_BROWSER_TP53 = {
       type: 'ProteinView',
       height: 500,
       zoomToBaseLevel: false,
+      showAlignment: false,
       structures: [
         {
           url: 'https://alphafold.ebi.ac.uk/files/AF-P04637-F1-model_v6.cif',
@@ -310,8 +305,9 @@ export const msaSpecs: ScreenshotSpec[] = [
     mode: 'url',
     name: 'protein/protein_browser_tp53',
     url: `?config=${UCSC_HG38_CONFIG}&session=json-${encodeURIComponent(JSON.stringify({ session: PROTEIN_BROWSER_TP53 }))}`,
-    readySelector: '[data-testid="protein-view-ready"]',
-    readyTimeout: 180000,
+    readySelector:
+      'body:has([data-testid="protein-view-ready"]):has([data-testid="msa_canvas"])',
+    readyTimeout: 300000,
     hideSelectors: ['.msp-background-tasks'],
     hideTooltip: true,
     viewportWidth: 2000,
