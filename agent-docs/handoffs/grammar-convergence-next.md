@@ -1,6 +1,6 @@
 ---
 name: grammar-convergence-next
-description: What is left of the 2026-10-09 grammar convergence (identity's one default scheme, the mouseover bench), with the calls already made so nobody re-asks them. Read before touching a color preset.
+description: What is left of the 2026-10-09 grammar convergence (identity's one default scheme, Colin's call), with the calls already made so nobody re-asks them. Read before touching a color preset.
 ---
 
 # Grammar convergence: what is left
@@ -8,7 +8,7 @@ description: What is left of the 2026-10-09 grammar convergence (identity's one 
 The direction, from the 2026-10-09 analysis and its two reviews: the config
 vocabulary agrees across displays, and the bugs left come from per-field
 presets kept outside `FieldPresets` and from per-display color write paths,
-which ADR-223 settled. Smallest useful first. **Delete this file when the list is empty.**
+which ADR-223 settled. **Delete this file when the list is empty.**
 
 1. **Identity's one default scheme, Colin's call against pictures.**
    `MEASURE_FIELD_PRESETS.identity` is viridis and MAF overrides only its
@@ -18,11 +18,10 @@ which ADR-223 settled. Smallest useful first. **Delete this file when the list i
    whose white gaps barely show. Red-grey-blue everywhere is the
    conservation-track convention and keeps that figure, but it is diverging,
    and `dotplotColors.test.ts` pins viridis for a sequential measure's
-   monotonic luminance. Capture the synteny or dotplot ribbons by identity
-   under both before asking.
-2. **Bench before touching:** the canvas worker evaluates the default
-   `mouseover` jexl per feature (`glyphEmitters.ts`, `featureTooltip`) whether
-   or not anyone hovers.
+   monotonic luminance. On the E. coli pangenome's K-12/IAI39/Sakai ribbons
+   (near 100% identity) viridis draws pale yellow that washes out at the
+   ribbons' default opacity, and red-grey-blue a visible blue. Put to Colin
+   with both captures on 2026-10-09; red-grey-blue recommended.
 
 Low, take only with a trigger: `MarkColor`'s key members (`breaks`,
 `missingLabel`) on another color object only where its key would read them;
