@@ -91,8 +91,8 @@ alone.
 
 <Figure caption="The HPRC page answering its HLA / MHC example: the Gene or region box and its examples, then the window's launches and the structural forms its haplotypes carry. The boxed link is the Graph launch." src="/img/pangenome/genomes_hprc_loci.png" />
 
-The graph merges the near-identical copies at RHD / RHCE, SMN1 / SMN2 and CYP2D6
-onto one path, so those examples offer no **Graph** launch.
+The graph merges the near-identical copies at RHD / RHCE and CYP2D6 onto one
+path, so those examples offer no **Graph** launch.
 
 ## Overview of chr1 with one node per variant region {#a-chromosome-and-back}
 
