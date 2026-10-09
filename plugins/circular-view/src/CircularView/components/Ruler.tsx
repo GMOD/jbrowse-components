@@ -18,6 +18,7 @@ import {
   labelGutterPx,
   labelIsDrawn,
   labelOffsetPx,
+  labelPlacement,
   labelsRunAlongArcs,
   middleTitle,
   sliceLabelText,
@@ -105,31 +106,6 @@ function sliceBandPath(
     ...polarToCartesian(innerPx, startRadians),
     'Z',
   ].join(' ')
-}
-
-// The view rotates the whole figure by offsetRadians, so which half of the
-// screen a label lands on - and therefore which way it has to be flipped to
-// read right-side-up - depends on that rotation too. cos/sin of the on-screen
-// angle answer that without normalizing offsetRadians, which grows without
-// bound as the user rotates.
-//
-// Along the arc: centered, flipped end-for-end on the bottom half. Radial:
-// radiating outward from the arc, flipped on the left half. Both flips keep the
-// anchored text outside the arc.
-function labelPlacement(
-  radians: number,
-  offsetRadians: number,
-  alongArc: boolean,
-) {
-  const deg = radToDeg(radians)
-  const screenRadians = radians + offsetRadians
-  const rightHalf = Math.cos(screenRadians) > 0
-  const bottomHalf = Math.sin(screenRadians) > 0
-  return alongArc
-    ? { textAnchor: 'middle' as const, rotation: deg + (bottomHalf ? -90 : 90) }
-    : rightHalf
-      ? { textAnchor: 'start' as const, rotation: deg }
-      : { textAnchor: 'end' as const, rotation: deg + 180 }
 }
 
 const middleTitleFontSizePx = 16

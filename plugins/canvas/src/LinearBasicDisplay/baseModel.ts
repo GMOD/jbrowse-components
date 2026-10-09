@@ -52,6 +52,7 @@ import VisibilityIcon from '@mui/icons-material/Visibility'
 import { toJS } from 'mobx'
 
 import { themedColorTable } from '../RenderFeatureDataRPC/colorClasses.ts'
+import { renderedTextWidth } from '../RenderFeatureDataRPC/constants.ts'
 import { labelFontSize } from '../RenderFeatureDataRPC/glyphs/glyphUtils.ts'
 import {
   THEME_DERIVED_COLOR,
@@ -74,7 +75,11 @@ import {
   buildFeatureFlatbushIndex,
   buildSubfeatureFlatbushIndex,
 } from './components/hitTesting.ts'
-import { labelScrollBucket } from './components/labelPositioning.ts'
+import { labelColors } from './components/labelColors.ts'
+import {
+  forEachDisplayLabel,
+  labelScrollBucket,
+} from './components/labelPositioning.ts'
 import {
   resolveOutlineColor,
   resolveRegionColors,
@@ -152,6 +157,7 @@ import type {
   StatusCallback,
 } from '@jbrowse/core/util'
 import type { CanonicalTranscripts } from '@jbrowse/core/util/isoformRank'
+import type { FloatingLabel } from '@jbrowse/display-kit/floatingLabelHost'
 import type { HighlightRect } from '@jbrowse/display-kit/highlightHost'
 import type { IndexedRegion } from '@jbrowse/display-kit/planRegionFetch'
 import type { ExportSvgDisplayOptions } from '@jbrowse/display-kit/types'
@@ -933,6 +939,44 @@ export default function baseStateModelFactory(
     .actions(yMorphActions)
     .views(heightViews)
     .views(self => ({
+      /**
+       * #method
+       * The labels the floating label layer draws over the canvas, as records
+       * in the display's own px, for a host that shows the canvas but not this
+       * display's DOM: a ring of the circular view. The isoform badge is a
+       * control, not a label, and stays out.
+       */
+      floatingLabels(palette: JBrowsePalette): FloatingLabel[] {
+        const fontSize = self.renderedLabelFontSize
+        const labels: FloatingLabel[] = []
+        forEachDisplayLabel(
+          containingLgv(self).visibleRegions,
+          self.renderDataMap,
+          {
+            showLabels: self.renderedShowLabels,
+            showDescriptions: self.renderedShowDescriptions,
+            showSubfeatureLabels: self.renderedShowSubfeatureLabels,
+            fontSize,
+            colors: labelColors(palette),
+          },
+          (featureId, resolved, region) => {
+            for (const r of resolved) {
+              if (r.kind !== 'more') {
+                labels.push({
+                  key: `${region.displayedRegionIndex}-${featureId}-${r.kind}`,
+                  x: r.labelX,
+                  y: r.labelY,
+                  width: renderedTextWidth(r.label.textWidth, fontSize),
+                  text: r.label.text,
+                  color: r.color,
+                  fontSize,
+                })
+              }
+            }
+          },
+        )
+        return labels
+      },
       /**
        * #getter
        */

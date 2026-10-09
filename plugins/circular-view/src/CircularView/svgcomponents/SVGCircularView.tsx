@@ -12,6 +12,7 @@ import { legendEntries } from '@jbrowse/core/ui/legendSpec'
 import { getSession, radToDeg } from '@jbrowse/core/util'
 
 import { RingAxes } from '../../rings/RingAxes.tsx'
+import { RingOverlay } from '../../rings/RingOverlay.tsx'
 import {
   canRasterizeRings,
   paintRingsSvg,
@@ -142,6 +143,7 @@ export async function renderToSvg(
         >
           <Rulers model={model} />
           <RingAxes model={model} />
+          <RingOverlay model={model} exporting />
           {displayResults.map(({ id, result }) => (
             <Fragment key={id}>{result}</Fragment>
           ))}

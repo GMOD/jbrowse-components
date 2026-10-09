@@ -51,6 +51,7 @@ exports[`display-kit public surface pins the subpath exports 1`] = `
   "./facetConfigSchema",
   "./fetchEachRegion",
   "./fetchInputs",
+  "./floatingLabelHost",
   "./foundationDisplayPhase",
   "./foundationPaintInert",
   "./foundationSvgReady",

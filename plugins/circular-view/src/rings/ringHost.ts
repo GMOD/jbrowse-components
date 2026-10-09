@@ -187,7 +187,7 @@ export function ringAxisTicks(ring: Ring) {
 }
 
 /** Strip px per ring px, above 1 on a ring that `layoutRings` shrank. */
-function stripPerRingPx({ display, innerPx, outerPx }: Ring) {
+export function stripPerRingPx({ display, innerPx, outerPx }: Ring) {
   const band = outerPx - innerPx
   return band > 0 ? display.height / band : 1
 }

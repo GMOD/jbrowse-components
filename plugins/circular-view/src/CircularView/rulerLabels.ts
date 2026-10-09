@@ -1,4 +1,4 @@
-import { max, toLocale } from '@jbrowse/core/util'
+import { max, radToDeg, toLocale } from '@jbrowse/core/util'
 
 import type { Slice, SliceRegion } from './slices.ts'
 
@@ -197,4 +197,33 @@ export function figureGutterPx(model: {
     labelGutterPx(model) +
     (assemblyArcs(model.staticSlices).length > 0 ? assemblyBandPx : 0)
   )
+}
+
+// The view rotates the whole figure by offsetRadians, so which half of the
+// screen a label lands on - and therefore which way it has to be flipped to
+// read right-side-up - depends on that rotation too. cos/sin of the on-screen
+// angle answer that without normalizing offsetRadians, which grows without
+// bound as the user rotates.
+//
+// Along the arc: centered, flipped end-for-end on the bottom half. Radial:
+// radiating outward from the arc, flipped on the left half. Both flips keep the
+// anchored text outside the arc.
+export function labelPlacement(
+  radians: number,
+  offsetRadians: number,
+  alongArc: boolean,
+) {
+  const deg = radToDeg(radians)
+  const rightHalf = Math.cos(radians + offsetRadians) > 0
+  const bottomHalf = onBottomHalf(radians, offsetRadians)
+  return alongArc
+    ? { textAnchor: 'middle' as const, rotation: deg + (bottomHalf ? -90 : 90) }
+    : rightHalf
+      ? { textAnchor: 'start' as const, rotation: deg }
+      : { textAnchor: 'end' as const, rotation: deg + 180 }
+}
+
+/** Whether a turn of the rotated figure lands on the screen's lower half. */
+export function onBottomHalf(radians: number, offsetRadians: number) {
+  return Math.sin(radians + offsetRadians) > 0
 }
