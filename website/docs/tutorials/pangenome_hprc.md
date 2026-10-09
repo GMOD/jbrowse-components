@@ -155,8 +155,8 @@ overview and writes the `coarse` slot.
 ## The C4 locus as a graph
 
 Click the **HLA / MHC** example on the HPRC page, then **Graph**. The launch
-opens four tracks: genes, bubbles, the allele inventory (one row per allele) and
-the graph, in the force-directed layout. Then:
+opens four tracks: genes, the graph in the force-directed layout, then the
+bubbles and the allele inventory (one row per allele) under it. Then:
 
 - Hide the bubbles and the allele inventory in the track selector, leaving the
   genes over the graph.

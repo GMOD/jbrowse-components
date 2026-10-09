@@ -33,7 +33,18 @@ export function portalGraphLaunch({
         assembly: 'hg38',
         loc,
         tracks: [
-          'hg38_ncbiRefSeq_ucsc',
+          {
+            trackId: 'hg38_ncbiRefSeq_ucsc',
+            type: 'LinearBasicDisplay',
+            geneGlyphMode: 'longestCoding',
+            displayMode: 'compact',
+            height: 60,
+          },
+          graphTrack('hprc_minigraph_segments', {
+            layoutMode,
+            colorScheme: 'reference-position',
+            paneHeight: 420,
+          }),
           {
             trackId: 'hprc_minigraph_bubbles',
             type: 'LinearBasicDisplay',
@@ -44,10 +55,6 @@ export function portalGraphLaunch({
             type: 'LinearAlignmentsDisplay',
             height: 120,
           },
-          graphTrack('hprc_minigraph_segments', {
-            layoutMode,
-            colorScheme: 'reference-position',
-          }),
         ],
       },
     ],
