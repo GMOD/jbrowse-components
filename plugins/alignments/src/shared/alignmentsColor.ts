@@ -1,6 +1,9 @@
 import { keyNames } from '@jbrowse/core/util/categoricalField'
 import { cssColorToNormalizedRgb } from '@jbrowse/core/util/colorBits'
-import { colorNotices } from '@jbrowse/core/util/colorScale'
+import {
+  MEASURE_FIELD_PRESETS,
+  colorNotices,
+} from '@jbrowse/core/util/colorScale'
 import {
   thresholdCuts,
   thresholdLabels,
@@ -12,7 +15,6 @@ import {
 
 import { COLOR_SCHEMES } from './colorSchemes.ts'
 import { TAG_FIELD_PREFIX, facetTag } from './facetLabels.ts'
-import { MAPQ_BIN_LABELS, MAPQ_CUTS } from './readFieldLevels.ts'
 import { MAPQ_UNAVAILABLE } from './util.ts'
 
 import type { ReadColorCategory } from '../LinearAlignmentsDisplay/colorUtils.ts'
@@ -324,14 +326,7 @@ export const ALIGNMENTS_FIELD_PRESETS = {
             },
     ]),
   ),
-  mapq: {
-    scale: 'threshold',
-    domain: MAPQ_CUTS,
-    scheme: 'cividis',
-    labels: MAPQ_BIN_LABELS,
-    title: 'Mapping quality',
-    descending: true,
-  },
+  mapq: MEASURE_FIELD_PRESETS.mapq,
   '*': { scale: 'categorical' },
 } satisfies FieldPresets
 

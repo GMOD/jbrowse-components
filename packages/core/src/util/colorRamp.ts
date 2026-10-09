@@ -121,6 +121,18 @@ const REDGREYBLUE_STOPS: readonly ColorRampStop[] = [
   [47, 102, 176, 255],
 ]
 
+const BLUEYELLOWRED_STOPS: readonly ColorRampStop[] = [
+  [69, 117, 180, 255],
+  [116, 173, 209, 255],
+  [171, 217, 233, 255],
+  [224, 243, 248, 255],
+  [255, 255, 191, 255],
+  [254, 224, 144, 255],
+  [253, 174, 97, 255],
+  [244, 109, 67, 255],
+  [215, 48, 39, 255],
+]
+
 const SCHEME_STOPS: Record<ColorSchemeName, readonly ColorRampStop[]> = {
   viridis: VIRIDIS_STOPS,
   juicebox: JUICEBOX_STOPS,
@@ -133,6 +145,7 @@ const SCHEME_STOPS: Record<ColorSchemeName, readonly ColorRampStop[]> = {
   redblue: REDBLUE_STOPS,
   purpleorange: PURPLEORANGE_STOPS,
   redgreyblue: REDGREYBLUE_STOPS,
+  blueyellowred: BLUEYELLOWRED_STOPS,
 }
 
 function luminanceOverWhite([r, g, b, a]: ColorRampStop) {

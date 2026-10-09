@@ -1,5 +1,6 @@
 import { resolveSubMenu } from '@jbrowse/core/ui/menuItems'
 import { resolvePalette } from '@jbrowse/core/ui/palette'
+import { DEFAULT_MARK_COLOR } from '@jbrowse/core/util/markEncoding'
 
 import {
   identityColorScale,
@@ -31,7 +32,7 @@ describe('each row rendering keys itself from what it paints', () => {
       expect(scale.kind).toBe('ramp')
       if (scale.kind === 'ramp') {
         expect(scale.stops.map(s => s.color)).toEqual(
-          [0, 0.5, 1].map(identityRgb),
+          [0, 0.125, 0.25, 0.375, 0.5, 0.625, 0.75, 0.875, 1].map(identityRgb),
         )
         expect(scale.format!(0)).toBe('0%')
         expect(scale.format!(1)).toBe('100%')
@@ -51,15 +52,15 @@ describe('each row rendering keys itself from what it paints', () => {
       }
     })
 
-    // The X-Y plot paints every bar the conserved end of that ramp and puts the
-    // identity in the bar's HEIGHT. Handed the heatmap's key it advertised a
-    // "Divergent" red against a plot that never draws one.
+    // The X-Y plot paints every bar one color and puts the identity in the
+    // bar's HEIGHT. Handed the heatmap's key it advertised a "Divergent" end
+    // against a plot that never draws one.
     it('keys the X-Y plot with the one color it paints, not the ramp', () => {
       const scale = identityColorScale('xyplot')
       expect(scale.kind).toBe('categorical')
       if (scale.kind === 'categorical') {
         expect(scale.entries).toHaveLength(1)
-        expect(scale.entries[0]!.color).toBe(identityRgb(1))
+        expect(scale.entries[0]!.color).toBe(DEFAULT_MARK_COLOR)
         expect(scale.entries[0]!.label).toMatch(/height/i)
       }
     })

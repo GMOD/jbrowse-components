@@ -15,7 +15,7 @@ import type { RowRendering } from './rowRenderings.ts'
 // them over, pinned so the defaults stay what they were.
 
 const IDENTITY_ABGR_HEX =
-  'ff3843c7 ff3a44c6 ff3b46c5 ff3d47c3 ff3f49c2 ff404ac1 ff424cc0 ff444dbf ff454fbe ff4750bc ff4952bb ff4a53ba ff4c55b9 ff4e56b8 ff5057b6 ff5159b5 ff535ab4 ff555cb3 ff565db2 ff585fb1 ff5a60af ff5b62ae ff5d63ad ff5f65ac ff6066ab ff6268aa ff6469a8 ff656aa7 ff676ca6 ff696da5 ff6a6fa4 ff6c70a2 ff6e72a1 ff6f73a0 ff71759f ff73769e ff74789d ff76799b ff787a9a ff7a7c99 ff7b7d98 ff7d7f97 ff7f8095 ff808294 ff828393 ff848592 ff858691 ff878890 ff89898e ff8a8b8d ff8c8c8c ff8d8b8a ff8d8a88 ff8e8a86 ff8f8985 ff908883 ff908781 ff91877f ff92867d ff92857b ff938479 ff948478 ff958376 ff958274 ff968172 ff978170 ff98806e ff987f6c ff997e6b ff9a7e69 ff9a7d67 ff9b7c65 ff9c7b63 ff9d7b61 ff9d7a5f ff9e795e ff9f785c ff9f775a ffa07758 ffa17656 ffa27554 ffa27452 ffa37450 ffa4734f ffa4724d ffa5714b ffa67149 ffa77047 ffa76f45 ffa86e43 ffa96e42 ffaa6d40 ffaa6c3e ffab6b3c ffac6b3a ffac6a38 ffad6936 ffae6835 ffaf6833 ffaf6731 ffb0662f'
+  'ff540144 ff580545 ff5c0846 ff5f0c47 ff631047 ff671448 ff691748 ff6d1b48 ff6f1e48 ff732148 ff762548 ff782848 ff7a2b47 ff7c2e47 ff7e3146 ff803446 ff823845 ff833a44 ff853e43 ff864042 ff874441 ff88473f ff89493e ff8a4d3d ff8a4f3c ff8b523b ff8c543a ff8c5838 ff8c5a37 ff8d5d36 ff8d6035 ff8d6233 ff8e6532 ff8e6731 ff8e6a30 ff8e6c2f ff8e6f2e ff8e712d ff8e732c ff8e752b ff8e782a ff8e7b29 ff8e7d28 ff8e8027 ff8e8226 ff8e8425 ff8e8624 ff8e8923 ff8d8b22 ff8d8e21 ff8d9121 ff8c9220 ff8b951f ff8b971f ff8a9a1f ff899c1e ff889f1f ff88a11f ff86a320 ff85a521 ff84a822 ff82ab25 ff81ad26 ff7faf29 ff7eb12c ff7cb42f ff7ab633 ff78b837 ff76ba3a ff73bc3f ff71bf43 ff6ec148 ff6bc34d ff69c552 ff66c757 ff63c85d ff5fcb62 ff5ccc68 ff58ce6e ff55d074 ff51d17a ff4dd380 ff49d586 ff45d68d ff41d793 ff3dd99a ff38daa1 ff34dba8 ff30dcae ff2bdeb5 ff27dfbc ff23dfc2 ff1fe1c9 ff1ce1d0 ff19e2d7 ff18e3de ff19e4e4 ff1ae5eb ff1de5f1 ff20e6f7 ff25e7fd'
 
 const RANK_ABGR_HEX = [
   'ffcb8c4d',
@@ -154,9 +154,15 @@ const HEATMAP_RAMP = {
   title: IDENTITY_TITLE,
   domain: [0, 1],
   stops: [
-    { offset: 0, color: 'rgb(199,67,56)' },
-    { offset: 0.5, color: 'rgb(140,140,140)' },
-    { offset: 1, color: 'rgb(47,102,176)' },
+    { offset: 0, color: 'rgb(68,1,84)' },
+    { offset: 0.125, color: 'rgb(71,45,123)' },
+    { offset: 0.25, color: 'rgb(59,82,139)' },
+    { offset: 0.375, color: 'rgb(44,114,142)' },
+    { offset: 0.5, color: 'rgb(33,145,141)' },
+    { offset: 0.625, color: 'rgb(39,173,129)' },
+    { offset: 0.75, color: 'rgb(93,200,99)' },
+    { offset: 0.875, color: 'rgb(170,220,50)' },
+    { offset: 1, color: 'rgb(253,231,37)' },
   ],
 }
 
@@ -179,12 +185,12 @@ describe('each field keys as it did', () => {
           {
             value: 'match',
             label: 'Conserved (base matches)',
-            color: 'rgb(47,102,176)',
+            color: 'rgb(253,231,37)',
           },
           {
             value: 'mismatch',
             label: 'Divergent (base differs)',
-            color: 'rgb(199,67,56)',
+            color: 'rgb(68,1,84)',
           },
         ],
       },
@@ -201,7 +207,7 @@ describe('each field keys as it did', () => {
           {
             value: 'bar',
             label: 'Bar height: full = conserved, flat = divergent',
-            color: 'rgb(47,102,176)',
+            color: '#0068d1',
           },
         ],
       },

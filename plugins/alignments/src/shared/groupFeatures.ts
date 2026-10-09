@@ -8,6 +8,7 @@ import {
   STRAND_FIELD,
   categoricalField,
 } from '@jbrowse/core/util/categoricalField'
+import { MAPQ_BINS } from '@jbrowse/core/util/colorScale'
 import { fieldReader } from '@jbrowse/core/util/fieldReader'
 import {
   OVERFLOW_GROUP_KEY,
@@ -22,11 +23,7 @@ import {
   FACET_LABELS,
   facetTag,
 } from './facetLabels.ts'
-import {
-  MAPQ_BINS,
-  MAPQ_UNAVAILABLE_LEVEL,
-  levelOrder,
-} from './readFieldLevels.ts'
+import { MAPQ_UNAVAILABLE_LEVEL, levelOrder } from './readFieldLevels.ts'
 import { chainIsSplit, isSplitAlignment } from './splitAlignment.ts'
 import {
   MAPQ_UNAVAILABLE,
