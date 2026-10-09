@@ -30,7 +30,7 @@
     "clean": "rimraf esm *.tsbuildinfo"
   },
   "dependencies": {
-    "@gmod/nclist": "^3.0.14",
+    "@gmod/nclist": "^3.0.15",
     "@jbrowse/add-track-core": "workspace:^",
     "@jbrowse/core": "workspace:^",
     "@jbrowse/mobx-state-tree": "^6.7.0",

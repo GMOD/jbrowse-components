@@ -423,8 +423,8 @@ importers:
         specifier: ^1.5.0
         version: 1.5.0
       '@gmod/shared-read-cache':
-        specifier: ^1.7.2
-        version: 1.7.2
+        specifier: ^2.0.0
+        version: 2.0.0
       '@gmod/vcf':
         specifier: ^7.2.0
         version: 7.2.0
@@ -868,11 +868,11 @@ importers:
   plugins/alignments:
     dependencies:
       '@gmod/bam':
-        specifier: ^10.0.4
-        version: 10.0.4
+        specifier: ^10.0.5
+        version: 10.0.5
       '@gmod/cram':
-        specifier: ^14.2.0
-        version: 14.2.0
+        specifier: ^14.2.1
+        version: 14.2.1
       '@jbrowse/alignments-core':
         specifier: workspace:^
         version: link:../../packages/alignments-core
@@ -971,8 +971,8 @@ importers:
         specifier: ^2.3.1
         version: 2.3.1
       '@gmod/tabix':
-        specifier: ^3.10.0
-        version: 3.10.0
+        specifier: ^3.10.1
+        version: 3.10.1
       '@gmod/trix':
         specifier: ^3.0.22
         version: 3.0.22
@@ -1168,8 +1168,8 @@ importers:
   plugins/comparative-adapters:
     dependencies:
       '@gmod/tabix':
-        specifier: ^3.10.0
-        version: 3.10.0
+        specifier: ^3.10.1
+        version: 3.10.1
       '@jbrowse/cigar-utils':
         specifier: workspace:^
         version: link:../../packages/cigar-utils
@@ -1364,8 +1364,8 @@ importers:
   plugins/gff3:
     dependencies:
       '@gmod/tabix':
-        specifier: ^3.10.0
-        version: 3.10.0
+        specifier: ^3.10.1
+        version: 3.10.1
       '@jbrowse/core':
         specifier: workspace:^
         version: link:../../packages/core
@@ -1427,8 +1427,8 @@ importers:
   plugins/gtf:
     dependencies:
       '@gmod/tabix':
-        specifier: ^3.10.0
-        version: 3.10.0
+        specifier: ^3.10.1
+        version: 3.10.1
       '@jbrowse/core':
         specifier: workspace:^
         version: link:../../packages/core
@@ -1509,8 +1509,8 @@ importers:
   plugins/hic:
     dependencies:
       '@gmod/hic':
-        specifier: ^1.3.0
-        version: 1.3.0
+        specifier: ^1.3.1
+        version: 1.3.1
       '@jbrowse/core':
         specifier: workspace:^
         version: link:../../packages/core
@@ -1585,8 +1585,8 @@ importers:
   plugins/legacy-jbrowse:
     dependencies:
       '@gmod/nclist':
-        specifier: ^3.0.14
-        version: 3.0.14
+        specifier: ^3.0.15
+        version: 3.0.15
       '@jbrowse/add-track-core':
         specifier: workspace:^
         version: link:../../packages/add-track-core
@@ -1889,8 +1889,8 @@ importers:
   plugins/sequence:
     dependencies:
       '@gmod/indexedfasta':
-        specifier: ^5.0.11
-        version: 5.0.11
+        specifier: ^5.0.12
+        version: 5.0.12
       '@gmod/twobit':
         specifier: ^6.0.13
         version: 6.0.13
@@ -2055,8 +2055,8 @@ importers:
   plugins/variants:
     dependencies:
       '@gmod/tabix':
-        specifier: ^3.10.0
-        version: 3.10.0
+        specifier: ^3.10.1
+        version: 3.10.1
       '@gmod/vcf':
         specifier: ^7.2.0
         version: 7.2.0
@@ -4157,10 +4157,6 @@ packages:
     resolution: {integrity: sha512-NpugTzbKgGrNe45Ui32cN8vCFFMxVtP/9rtfwv0nP5FRDAjvYBxJcLVpYA9mr1jxP6cnIT7x9LUzuDTbWYYNRA==}
     engines: {node: '>=6.9.0'}
 
-  '@babel/runtime@7.29.7':
-    resolution: {integrity: sha512-Nq8OhGWiZIZGV6hLHoyAKLLcJihP/xFeBMGJoUrxTX2psI8dCifzLhZISFb+VWS3wFMRDmCGw5R+dOySCqPLhw==}
-    engines: {node: '>=6.9.0'}
-
   '@babel/runtime@8.0.7':
     resolution: {integrity: sha512-k0hagDDq/6w4v+0Sp4wFvIz/yswH5O7Va6aRTnD7N62Tnborp4X+YB+H3XUcWVSR4aE47WPEXiIIZchBs0GmYg==}
 
@@ -4790,8 +4786,8 @@ packages:
   '@fontsource/roboto@5.3.0':
     resolution: {integrity: sha512-BapRJOWYP+LZ21zp+wBQjfpPYKRoxc4LspJ/RLuI+HSMBD5u/X4O+ESDrSvEqDSy0rAl7GwBJ+09mdc16cVQ1Q==}
 
-  '@gmod/bam@10.0.4':
-    resolution: {integrity: sha512-T07X0uEDvxmhHD3naLg4pHradKqIrJLR9QloiDze1KoDKYf9/UWFVRLSWGp3lgKUWQYRWaTW0GruygtjguRp+w==}
+  '@gmod/bam@10.0.5':
+    resolution: {integrity: sha512-SvtXsE3esi4+D4bhBLuca7J0+hUNpSVwATNZviGqgjeAdXVt+hTVeHwl/CSwNIvPkQIhSZpLmUJTTYpKmDb7tQ==}
 
   '@gmod/bbi@11.3.0':
     resolution: {integrity: sha512-Uztjf46uEDOMu3qQ3q1ysQSH93e/nOQT3LJ7X3mE/KkMlX3p9ywtOKylEfyaWTZfMIGu+nZoQkjKbQCqnVrqog==}
@@ -4802,8 +4798,8 @@ packages:
   '@gmod/bgzf-filehandle@6.7.0':
     resolution: {integrity: sha512-ThtHVneb+tASyGFACVL/rMu6d5AY0vWK6poeOJwIIAaJpXYpptrmwvhdk2xk5eoNzL+iN40B3bXytMvQ+e+80Q==}
 
-  '@gmod/cram@14.2.0':
-    resolution: {integrity: sha512-jtgSVUUtTncr1Qa1S7gdmpLu7Ke0qJeMzkKjpGK1yPgbETI5E6kImBFtRoOOFxgMbsrJ1Em1Lzjkpr2GMncoJQ==}
+  '@gmod/cram@14.2.1':
+    resolution: {integrity: sha512-b2FyD18X+7VAWJzb4Wt9Q20NynA3QmxzYWj6kZ2QMOJcWrpZNq/1XvoDy0Eo3LnqzuVea9K6Qry3lpVDxrUzbg==}
 
   '@gmod/faidx@3.0.1':
     resolution: {integrity: sha512-VvAPjPbZ1wGKQKFnyfaZJnhSiowon6eLQlgRuukmZb4InwVv8yAEzlCTvRyCl2Nlqjw6VN7W+jyHEVgWAD0uNQ==}
@@ -4811,17 +4807,17 @@ packages:
   '@gmod/hclust@6.0.0':
     resolution: {integrity: sha512-/vCkUXOhCcNmLp13Alw8Vyf+48tYg8La4SfziOJkpgX0HrHCHa6xJZQSenpYuhYCc++kK0X+mQCbSTESKGanIg==}
 
-  '@gmod/hic@1.3.0':
-    resolution: {integrity: sha512-4C+PZGjqgLCaxZ0ZlzaUUo++UgB7f+9l2ORzBI4YTr1CqDYhmJ6uInxrBdFBhBZPoxjew2RrYfiSvwxXQ7dg6A==}
+  '@gmod/hic@1.3.1':
+    resolution: {integrity: sha512-tNXTDINLBHSbIkXwQXknvqIQY+U01x6ZJk6rySgD5nDPFc8LgdJPcdBzhjz5+We+PTjhRIzhCzlZ3CQ1bPR8Hg==}
 
-  '@gmod/indexedfasta@5.0.11':
-    resolution: {integrity: sha512-wyfFH/sEcTAuwRmp3a8jVColo5Y328GIZGTmzFv+ZY1Qu3SOQH8se2L1QZ5/3GZH6d057ZZm65/LgqOFWOQL8A==}
+  '@gmod/indexedfasta@5.0.12':
+    resolution: {integrity: sha512-XrN/oRWRNKBn5k5+tl4G6kexoJNjIb2dYxjJ2RiJS5jbtdrK7ff5sIQH+qIP1F1CSFSX2vmgvDZ9jtlxUDiaUg==}
 
   '@gmod/inflate@1.0.0':
     resolution: {integrity: sha512-sYVWYJyl8gyU/Q8FqpEe682Kpv527ZVwln2dDqJXr1/lRPWfjCJGuVTxR78SPZAgoRYDDtIUsN3D4if3F7/cBA==}
 
-  '@gmod/nclist@3.0.14':
-    resolution: {integrity: sha512-Tk7bHTFs0rP3o4/Kx4GYKKA95HwzkkQbbZ+/rMtXFfO3BKZScZ0jL4p60vxuXaPw1Tmnc0c4PqHPvWgCzwsyuQ==}
+  '@gmod/nclist@3.0.15':
+    resolution: {integrity: sha512-HCpoyJ1CUYQQvJgSIFMvjsn0nA0tnyABPTUvOq895ECeHQfbcpl4JrddFpBisfEZXOWp5+rcYucL/kx89AqaAA==}
 
   '@gmod/newick@1.0.3':
     resolution: {integrity: sha512-r8xab2D78LqYSuOmAEetzw5JNvsCSVHhhoCdKOxsOGbBMSCKvWZE5jkAq88iuHjvGcdkn0fRWfkvTr7szJVnng==}
@@ -4832,8 +4828,11 @@ packages:
   '@gmod/shared-read-cache@1.7.2':
     resolution: {integrity: sha512-N71dzJHYYSEAZYQCl38QGZ8cx468lFZE9VdS29N2DhRbKMf/X7Qb+cJsuIt1MeVDmpvKui5wDiNILgkQREpwlw==}
 
-  '@gmod/tabix@3.10.0':
-    resolution: {integrity: sha512-PG35zxVN0jKSlOrDH0EM2dD2N08og+tzjaungFvvQM11B9+vZWxZcGGNdWObvRUH+689u4cCuSgslFtpvvRfzg==}
+  '@gmod/shared-read-cache@2.0.0':
+    resolution: {integrity: sha512-nU4HPB+DlvZqRVJZvtIbJ3zS+kSKfOhibCu3Y7Sia9D4GwA1MotdBNH19hM8/gP/tYuHGaSdvpGhZ0FfJbw/Hg==}
+
+  '@gmod/tabix@3.10.1':
+    resolution: {integrity: sha512-bynf5MGr50O6Re2asEbt3kEfULUhXb2J87dqFK/78xXfJIWWrKfuQCA+ADSp3QJtdODvTf7ftWiTnc8yLQ0Yrw==}
 
   '@gmod/trix@3.0.22':
     resolution: {integrity: sha512-cOf2r20K2LecQCZ6Am4H17S6GNAU0g5FZJ4t6EU6IiKGpmYclDWjGVNvDnsERJgjOfvkp4HzHJxQ37WnuKK8Sg==}
@@ -8472,10 +8471,6 @@ packages:
   is-bun-module@2.0.0:
     resolution: {integrity: sha512-gNCGbnnnnFAUGKeZ9PdbyeGYJqewpmc2aKHUEMO5nQPWU9lOmv7jcmQIv+qHD8fXW6W7qfuCwX4rY9LNRjXrkQ==}
 
-  is-core-module@2.16.2:
-    resolution: {integrity: sha512-evOr8xfXKxE6qSR0hSXL2r3sd7ALj8+7jQEUvPYcm5sgZFdJ+AYzT6yNmJenvIYQBgIGwfwz08sL8zoL7yq2BA==}
-    engines: {node: '>= 0.4'}
-
   is-core-module@2.17.0:
     resolution: {integrity: sha512-J/vG0zBCbIKOQFfufSwyXdMrsohyJIUNkrnmo6WZGzoM7tr/lsbfW5b2BvisL6zsyMzK9UxV9L6c7AoFbyXHOA==}
     engines: {node: '>= 0.4'}
@@ -10031,11 +10026,6 @@ packages:
 
   resolve-pkg-maps@1.0.0:
     resolution: {integrity: sha512-seS2Tj26TBVOC2NIc2rOe2y2ZO7efxITtLZcGSOnHHNOQ7CkiUBfw0Iw2ck6xkIhPwLhKNLS8BO+hEpngQlqzw==}
-
-  resolve@1.22.12:
-    resolution: {integrity: sha512-TyeJ1zif53BPfHootBGwPRYT1RUt6oGWsaQr8UyZW/eAm9bKoijtvruSDEmZHm92CwS9nj7/fWttqPCgzep8CA==}
-    engines: {node: '>= 0.4'}
-    hasBin: true
 
   resolve@1.22.13:
     resolution: {integrity: sha512-Dj/cW9zBV2aRj6XzCxuGIs3ESZKv02jixne3q6jFZYZ3/Tg09gHHviSMDL4kObh9pqSahdRHEnDoaP2gn8YLhA==}
@@ -12291,8 +12281,6 @@ snapshots:
 
   '@babel/runtime@7.29.10': {}
 
-  '@babel/runtime@7.29.7': {}
-
   '@babel/runtime@8.0.7': {}
 
   '@babel/template@7.29.7':
@@ -12945,10 +12933,10 @@ snapshots:
 
   '@fontsource/roboto@5.3.0': {}
 
-  '@gmod/bam@10.0.4':
+  '@gmod/bam@10.0.5':
     dependencies:
       '@gmod/bgzf-filehandle': 6.7.0
-      '@gmod/shared-read-cache': 1.7.2
+      '@gmod/shared-read-cache': 2.0.0
       '@jbrowse/quick-lru': 8.0.0
       generic-filehandle2: 2.5.0
 
@@ -12964,9 +12952,9 @@ snapshots:
       generic-filehandle2: 2.5.0
       pako-esm2: 2.0.2
 
-  '@gmod/cram@14.2.0':
+  '@gmod/cram@14.2.1':
     dependencies:
-      '@gmod/shared-read-cache': 1.7.2
+      '@gmod/shared-read-cache': 2.0.0
       crc: 4.3.2
       generic-filehandle2: 2.5.0
       md5: 2.3.0
@@ -12979,23 +12967,23 @@ snapshots:
     dependencies:
       '@gmod/newick': 1.0.3
 
-  '@gmod/hic@1.3.0':
+  '@gmod/hic@1.3.1':
     dependencies:
       '@gmod/inflate': 1.0.0
-      '@gmod/shared-read-cache': 1.7.2
+      '@gmod/shared-read-cache': 2.0.0
       generic-filehandle2: 2.5.0
 
-  '@gmod/indexedfasta@5.0.11':
+  '@gmod/indexedfasta@5.0.12':
     dependencies:
       '@gmod/bgzf-filehandle': 6.7.0
-      '@gmod/shared-read-cache': 1.7.2
+      '@gmod/shared-read-cache': 2.0.0
       generic-filehandle2: 2.5.0
 
   '@gmod/inflate@1.0.0': {}
 
-  '@gmod/nclist@3.0.14':
+  '@gmod/nclist@3.0.15':
     dependencies:
-      '@gmod/shared-read-cache': 1.7.2
+      '@gmod/shared-read-cache': 2.0.0
       '@jridgewell/resolve-uri': 3.1.2
 
   '@gmod/newick@1.0.3': {}
@@ -13006,10 +12994,12 @@ snapshots:
 
   '@gmod/shared-read-cache@1.7.2': {}
 
-  '@gmod/tabix@3.10.0':
+  '@gmod/shared-read-cache@2.0.0': {}
+
+  '@gmod/tabix@3.10.1':
     dependencies:
       '@gmod/bgzf-filehandle': 6.7.0
-      '@gmod/shared-read-cache': 1.7.2
+      '@gmod/shared-read-cache': 2.0.0
       '@jbrowse/quick-lru': 8.0.0
       generic-filehandle2: 2.5.0
 
@@ -15110,9 +15100,9 @@ snapshots:
 
   babel-plugin-macros@3.1.0:
     dependencies:
-      '@babel/runtime': 7.29.7
+      '@babel/runtime': 7.29.10
       cosmiconfig: 7.1.0
-      resolve: 1.22.12
+      resolve: 1.22.13
 
   babel-plugin-polyfill-corejs3@1.0.0(@babel/core@8.0.7):
     dependencies:
@@ -16836,10 +16826,6 @@ snapshots:
   is-bun-module@2.0.0:
     dependencies:
       semver: 7.8.5
-
-  is-core-module@2.16.2:
-    dependencies:
-      hasown: 2.0.4
 
   is-core-module@2.17.0:
     dependencies:
@@ -18872,13 +18858,6 @@ snapshots:
   resolve-from@5.0.0: {}
 
   resolve-pkg-maps@1.0.0: {}
-
-  resolve@1.22.12:
-    dependencies:
-      es-errors: 1.3.0
-      is-core-module: 2.16.2
-      path-parse: 1.0.7
-      supports-preserve-symlinks-flag: 1.0.0
 
   resolve@1.22.13:
     dependencies:

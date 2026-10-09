@@ -172,13 +172,16 @@ export type getSubAdapterType = (
  *
  * The indexed adapters are the exception, which is why an evicted adapter is
  * also told so (`freeResources`). @gmod/bam, @gmod/cram and @gmod/tabix each
- * hold their parsed chunks in a SharedReadCache that sweeps itself on a
- * setInterval, and a pending timer is a GC root, so a cache nobody clears stays
- * reachable through its own sweep timer until that sweep empties it, three
- * minutes later. Closing one panned alignments track that way costs nothing
- * that matters: the worker falls from 296 MB to 7 MB four minutes on. A run
- * that opens and closes a track per image does not have four minutes.
- * `jb2export batch` drew a callset from CRAM slices of long reads at about a
+ * hold their parsed chunks in a SharedReadCache charged to the shared budget,
+ * and the budget credits a dropped cache back only once the collector has
+ * actually taken it — whenever that is. Until @gmod/shared-read-cache 2.0 it
+ * was worse than "whenever": the cache's idle sweep ran on a setInterval that
+ * held the cache, a pending timer is a GC root, and so a cache nobody cleared
+ * stayed reachable until that sweep emptied it three minutes later. Closing one
+ * panned alignments track that way cost nothing that mattered: the worker fell
+ * from 296 MB to 7 MB four minutes on. A run that opens and closes a track per
+ * image does not have four minutes, and with the timer now holding its cache
+ * weakly it still does not have a GC to wait for. `jb2export batch` drew a callset from CRAM slices of long reads at about a
  * record every two seconds, each record's adapters leaving a decoded slice
  * behind, and two of its four processes reached the 4 GB heap limit 135 s in
  * with the shared budget reporting 3,100 MB held against its 1,024 MB limit:
