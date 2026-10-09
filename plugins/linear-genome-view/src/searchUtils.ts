@@ -297,6 +297,7 @@ export async function handleSelectedRegion({
   showHitTrack?: boolean
 }) {
   const { assemblyManager, textSearchManager } = getSession(model)
+  model.closeSearchPicker()
   // resolves only once regions/aliases are loaded, which isValidRefName needs
   // (it throws otherwise). A load failure is not this function's to report:
   // swallow it and let the input fall through to the text-search path below

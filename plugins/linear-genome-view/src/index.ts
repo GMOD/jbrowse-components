@@ -138,7 +138,11 @@ export type {
 // tarballs don't ship and consumers can't resolve. check-declaration-leaks
 // guards this; see issue #4678.
 export type { ScalebarRefNameLabel } from './LinearGenomeView/util.ts'
-export type { HighlightRegion } from './LinearGenomeView/model.ts'
+export type {
+  HighlightRegion,
+  SearchPickerRow,
+  SearchPickerState,
+} from './LinearGenomeView/model.ts'
 // Same reason, for the `displayedRegionsOrientation` getter: the breakpoint
 // split view, the two synteny displays and the react-linear-genome-view model
 // all serialize it.

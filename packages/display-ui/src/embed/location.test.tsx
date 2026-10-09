@@ -6,6 +6,7 @@ import { LocationBox, useLocationBox } from './location.tsx'
 function fakeView(fail?: (input: string) => Error | undefined) {
   const view = observable({
     coarseVisibleLocStrings: 'chr17:1..100',
+    closeSearchPicker() {},
     navToLocString(input: string) {
       const error = fail?.(input)
       if (error) {
@@ -123,4 +124,21 @@ test('a search that fails after a later one landed says nothing', async () => {
     settle.TP53!()
   })
   expect(screen.queryByRole('status')).toBeNull()
+})
+
+test('a search the view left to the host is listed under the box', () => {
+  const view = {
+    coarseVisibleLocStrings: 'chr17:1..100',
+    navToLocString: () => Promise.resolve(false),
+    closeSearchPicker() {},
+    searchPicker: {
+      query: 'BRC',
+      rows: [
+        { id: 'a', label: 'BRCA1', location: 'chr17:1..2', trackName: '' },
+      ],
+      pick: () => Promise.resolve(),
+    },
+  }
+  render(<LocationBox view={view} />)
+  expect(screen.getByTestId('search-picker').textContent).toContain('BRCA1')
 })

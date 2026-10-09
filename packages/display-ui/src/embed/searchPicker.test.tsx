@@ -1,68 +1,54 @@
-import BaseResult from '@jbrowse/core/TextSearch/BaseResults'
-import { types } from '@jbrowse/mobx-state-tree'
 import { act, fireEvent, render, screen } from '@testing-library/react'
+import { observable } from 'mobx'
 
 import { SearchPicker } from './searchPicker.tsx'
 
-const hits = [
-  new BaseResult({
-    label: 'BRCA1',
-    locString: 'chr17:43,044,295..43,125,364',
-    trackId: 'genes',
-  }),
-  new BaseResult({ label: 'BRCA1P1', locString: 'chr17:43,000..44,000' }),
-]
+import type { SearchPickerView } from './searchPicker.tsx'
 
-const FakeView = types
-  .model({})
-  .volatile(() => ({
-    searchPicker: undefined as
-      | {
-          query: string
-          assemblyName: string
-          results: BaseResult[]
-          pick: (result: BaseResult) => Promise<unknown>
-        }
-      | undefined,
-  }))
-  .actions(self => ({
-    raise(pick: (result: BaseResult) => Promise<unknown>) {
-      self.searchPicker = {
-        query: 'BRC',
-        assemblyName: 'hg38',
-        results: hits,
-        pick,
-      }
-    },
+function fakeView(pick = jest.fn(() => Promise.resolve())) {
+  const view = observable({
+    searchPicker: undefined as SearchPickerView['searchPicker'],
     closeSearchPicker() {
-      self.searchPicker = undefined
+      view.searchPicker = undefined
     },
-  }))
-
-const FakeSession = types
-  .model({ views: types.array(FakeView) })
-  .volatile(() => ({
-    rpcManager: {},
-    configuration: {},
-    assemblyManager: { get: () => undefined },
-    getTrackById: (id: string) =>
-      id === 'genes' ? { name: 'RefSeq' } : undefined,
-  }))
+  })
+  return {
+    view,
+    pick,
+    raise() {
+      act(() => {
+        view.searchPicker = {
+          query: 'BRC',
+          pick,
+          rows: [
+            {
+              id: 'a',
+              label: 'BRCA1',
+              location: 'chr17:43,044,295..43,125,364',
+              trackName: 'RefSeq',
+            },
+            {
+              id: 'b',
+              label: 'BRCA1P1',
+              location: 'chr17:43,000..44,000',
+              trackName: '',
+            },
+          ],
+        }
+      })
+    },
+  }
+}
 
 test('nothing raised draws nothing', () => {
-  const session = FakeSession.create({ views: [{}] })
-  const { container } = render(<SearchPicker view={session.views[0]!} />)
+  const { container } = render(<SearchPicker view={fakeView().view} />)
   expect(container.innerHTML).toBe('')
 })
 
 test('a raised picker lists each place with its track, and picking one reaches the view', () => {
-  const session = FakeSession.create({ views: [{}] })
-  const view = session.views[0]!
-  const pick = jest.fn(() => Promise.resolve())
+  const { view, pick, raise } = fakeView()
   render(<SearchPicker view={view} />)
-  act(() => {
-    view.raise(pick)
-  })
+  raise()
   expect(screen.getByTestId('search-picker').textContent).toContain(
     '“BRC” matches 2 places',
   )
@@ -72,16 +58,13 @@ test('a raised picker lists each place with its track, and picking one reaches t
     'BRCA1P1 chr17:43,000..44,000',
   ])
   fireEvent.click(rows[1]!)
-  expect(pick).toHaveBeenCalledWith(hits[1])
+  expect(pick).toHaveBeenCalledWith('b')
 })
 
 test('the close button closes the picker', () => {
-  const session = FakeSession.create({ views: [{}] })
-  const view = session.views[0]!
+  const { view, raise } = fakeView()
   render(<SearchPicker view={view} />)
-  act(() => {
-    view.raise(jest.fn(() => Promise.resolve()))
-  })
+  raise()
   fireEvent.click(screen.getByRole('button', { name: 'Close search results' }))
   expect(screen.queryByTestId('search-picker')).toBeNull()
 })

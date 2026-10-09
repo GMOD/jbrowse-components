@@ -198,12 +198,14 @@ implement rather than an 81-member session, and every one of the 50 call sites
 asks for it by name through `getDialogHost(self)`.
 
 **First site turned to data, 2026-10-09**: the ambiguous-name search picker is
-`view.searchPicker` (query, assembly, one hit per place, and a `pick`), no longer
+`view.searchPicker` (query, assembly, one row per place, and a `pick`), no longer
 a queued dialog. The Material `LinearGenomeView` draws it as a dialog and
-`SearchPicker` in `@jbrowse/display-ui/embed` as a plain list, so it was the one
-dialog a bring-your-own page could reach and now draws. A picker that outlived
-its view in the queue (ADR-069's shape) cannot, since the volatile dies with the
-view. The other 48 sites remain.
+`LocationBox` and `SearchPicker` in `@jbrowse/display-ui/embed` as a plain list,
+so the one dialog a bring-your-own page could reach now draws. A picker cannot
+outlive its view the way a queued dialog could (the dead-view crash
+`DialogQueue`'s error boundary guards), since the volatile dies with the view.
+The picker draws only while its view's body is mounted, so one raised on a
+minimized or background view waits there. The other 49 sites remain.
 
 That is the seam, not the redesign. A dialog is still a component the display
 hands over, so the host that implements `DialogHost` still has to mount JBrowse's

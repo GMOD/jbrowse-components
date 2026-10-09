@@ -41,7 +41,7 @@ Dotplot1DView
 LinearSyntenyViewHelper
 TimeTraveller
 
-# model members with no description (1361)
+# model members with no description (1360)
 # fix: write a sentence under the member’s #property/#volatile/#getter/#method/#action tag
 AddTrackModel.adapterHint
 AddTrackModel.altAssemblyName
@@ -765,7 +765,6 @@ LinearGenomeView.assemblyErrors
 LinearGenomeView.assemblyNames
 LinearGenomeView.bpToPx
 LinearGenomeView.centerLineInfo
-LinearGenomeView.closeSearchPicker
 LinearGenomeView.coarseBpPerPx
 LinearGenomeView.coarseDynamicBlocks
 LinearGenomeView.coarseTotalBp

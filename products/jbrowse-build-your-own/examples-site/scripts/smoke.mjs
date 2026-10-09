@@ -1008,12 +1008,18 @@ async function searchByNameResolvesNames(page, slug) {
         return !!row
       })
       if (!picked) {
-        out.push('the BRC picker listed no rows')
+        throw new Error('the BRC picker listed no rows')
       }
       await page.waitForFunction(
         () => !document.querySelector('[data-testid="search-picker"]'),
         { timeout: 30000 },
       )
+      const failed = await page.evaluate(
+        () => !!document.querySelector('[data-testid="embed-notification"]'),
+      )
+      if (failed) {
+        out.push('picking a BRC hit left an error notification')
+      }
     } catch {
       out.push(
         'searching the ambiguous name BRC raised no picker, or picking a hit ' +

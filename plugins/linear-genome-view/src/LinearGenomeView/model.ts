@@ -1,3 +1,4 @@
+import { canonicalLocString } from '@jbrowse/core/TextSearch/places'
 import { getConf } from '@jbrowse/core/configuration'
 import { BaseViewModel } from '@jbrowse/core/pluggableElementTypes/models'
 import { exportViewSvg } from '@jbrowse/core/svg/exportViewSvg'
@@ -126,18 +127,28 @@ import type { ViewStatus } from '@jbrowse/core/util/viewStatus'
 import type { LaunchInput } from '@jbrowse/core/util/withLaunchInput'
 import type { IAnyStateTreeNode, Instance } from '@jbrowse/mobx-state-tree'
 
+/** One place a name search points at, as a picker lists it. */
+export interface SearchPickerRow {
+  id: string
+  label: string
+  /** the canonical location string, or the hit's own when the assembly is not loaded */
+  location: string
+  /** the name of the track the hit's index came from, or '' when the session has none */
+  trackName: string
+}
+
 /**
  * The hits of a name search that point at more than one place, waiting for the
  * user to choose. A host draws them however it likes: the Material view shows
  * a dialog, and `SearchPicker` in `@jbrowse/display-ui/embed` a plain list.
  */
-export interface SearchPicker {
+export interface SearchPickerState {
   query: string
   assemblyName: string
-  /** one hit per place, hits in a track the view already shows first */
-  results: BaseResult[]
-  /** navigates to the hit, reports a failure and closes the picker */
-  pick: (result: BaseResult) => Promise<unknown>
+  /** one row per place, hits in a track the view already shows first */
+  rows: SearchPickerRow[]
+  /** navigates to the row's place, reports a failure and closes the picker */
+  pick: (id: string) => Promise<unknown>
 }
 
 /** One span of the row that is not track data — see `paddingSpans`. */
@@ -576,7 +587,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
          * Set by a search whose hits name more than one place, until the user
          * picks one or closes it.
          */
-        searchPicker: undefined as SearchPicker | undefined,
+        searchPicker: undefined as SearchPickerState | undefined,
         /**
          * #volatile
          */
@@ -1311,6 +1322,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
     .actions(self => ({
       /**
        * #action
+       * Dismiss the search picker without choosing a place.
        */
       closeSearchPicker() {
         self.searchPicker = undefined
@@ -1544,28 +1556,49 @@ export function stateModelFactory(pluginManager: PluginManager) {
             assemblyName,
           }),
       ) {
-        self.searchPicker = {
+        const session = getSession(self)
+        const assembly = session.assemblyManager.get(assemblyName)
+        const ordered = [...searchResults].sort(
+          (a, b) =>
+            Number(isOpenInView(b, self as LinearGenomeViewModel)) -
+            Number(isOpenInView(a, self as LinearGenomeViewModel)),
+        )
+        const picker: SearchPickerState = {
           query: searchQuery,
           assemblyName,
-          results: [...searchResults].sort(
-            (a, b) =>
-              Number(isOpenInView(b, self as LinearGenomeViewModel)) -
-              Number(isOpenInView(a, self as LinearGenomeViewModel)),
-          ),
-          pick: async result => {
+          rows: ordered.map(result => {
+            const location = result.getLocation() ?? ''
+            const trackId = result.getTrackId()
+            return {
+              id: result.getId(),
+              label: result.getLabel(),
+              location:
+                assembly && location
+                  ? canonicalLocString(location, assembly)
+                  : location,
+              trackName: trackId
+                ? (session.getTrackById(trackId)?.name ?? '')
+                : '',
+            }
+          }),
+          pick: async id => {
+            const picked = ordered.find(result => result.getId() === id)
             try {
-              await onPick(result)
+              if (picked) {
+                await onPick(picked)
+              }
             } catch (e) {
               console.error(e)
               if (isAlive(self)) {
                 getNotificationSink(self).notifyError(`${e}`, e)
               }
             }
-            if (isAlive(self)) {
+            if (isAlive(self) && self.searchPicker === picker) {
               self.closeSearchPicker()
             }
           },
         }
+        self.searchPicker = picker
       },
 
       /**

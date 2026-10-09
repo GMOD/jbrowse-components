@@ -2,6 +2,9 @@ import { useRef, useState } from 'react'
 
 import { observer } from 'mobx-react'
 
+import { SearchPicker } from './searchPicker.tsx'
+
+import type { SearchPickerView } from './searchPicker.tsx'
 import type React from 'react'
 
 export interface LocationView {
@@ -57,46 +60,53 @@ export const LocationBox = observer(function LocationBox({
   view,
   style,
 }: {
-  view: LocationView
+  view: LocationView & SearchPickerView
   style?: React.CSSProperties
 }) {
   const box = useLocationBox(view)
   return (
-    <form
-      style={{
-        display: 'flex',
-        flexWrap: 'wrap',
-        alignItems: 'center',
-        gap: 4,
-        ...style,
-      }}
-      onSubmit={event => {
-        event.preventDefault()
-        box.go()
-      }}
-    >
-      <input
-        aria-label="Location"
-        value={box.value}
-        size={38}
-        style={{ font: 'inherit', padding: '2px 4px' }}
-        onChange={event => {
-          box.edit(event.target.value)
+    <>
+      <form
+        style={{
+          display: 'flex',
+          flexWrap: 'wrap',
+          alignItems: 'center',
+          gap: 4,
+          ...style,
         }}
-        onKeyDown={event => {
-          if (event.key === 'Escape') {
-            box.reset()
-          }
+        onSubmit={event => {
+          event.preventDefault()
+          box.go()
         }}
-      />
-      <button type="submit" disabled={box.pending} style={{ font: 'inherit' }}>
-        Go
-      </button>
-      {box.error ? (
-        <span role="alert">
-          {box.error instanceof Error ? box.error.message : String(box.error)}
-        </span>
-      ) : null}
-    </form>
+      >
+        <input
+          aria-label="Location"
+          value={box.value}
+          size={38}
+          style={{ font: 'inherit', padding: '2px 4px' }}
+          onChange={event => {
+            box.edit(event.target.value)
+          }}
+          onKeyDown={event => {
+            if (event.key === 'Escape') {
+              box.reset()
+            }
+          }}
+        />
+        <button
+          type="submit"
+          disabled={box.pending}
+          style={{ font: 'inherit' }}
+        >
+          Go
+        </button>
+        {box.error ? (
+          <span role="alert">
+            {box.error instanceof Error ? box.error.message : String(box.error)}
+          </span>
+        ) : null}
+      </form>
+      <SearchPicker view={view} />
+    </>
   )
 })

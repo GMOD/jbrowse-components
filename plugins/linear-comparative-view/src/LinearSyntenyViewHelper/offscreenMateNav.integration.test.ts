@@ -201,7 +201,7 @@ test('a partial mate name is reported, and opens no picker', async () => {
   await when(() => session.snackbarMessages.length > 0, { timeout: 5000 })
 
   expect(refNames(view, 1)).toEqual(['ctgA'])
-  expect(session.queueOfDialogs).toEqual([])
+  expect(view.views.some(row => row.searchPicker)).toBe(false)
 }, 20000)
 
 // The mark's own coordinates, which is the whole reason the payload carries

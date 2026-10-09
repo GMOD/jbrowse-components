@@ -209,7 +209,16 @@ interface SessionChrome {
   drawerWidth?: number
   visibleWidget?: { type?: string }
   DialogComponent?: unknown
-  views?: { searchPicker?: unknown }[]
+  views?: PickerView[]
+}
+
+interface PickerView {
+  searchPicker?: object
+  ownViews?: PickerView[]
+}
+
+function raisesPicker(views?: PickerView[]): boolean {
+  return !!views?.some(view => view.searchPicker || raisesPicker(view.ownViews))
 }
 
 /**
@@ -236,7 +245,7 @@ function sessionChrome(session: AbstractSessionModel) {
         }
       : {}
   const dialog =
-    s.DialogComponent || s.views?.some(view => view.searchPicker)
+    s.DialogComponent || raisesPicker(s.views)
       ? {
           dialog: {
             note: 'a modal dialog is open over the app, so a screenshot is of the dialog',

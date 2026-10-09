@@ -103,8 +103,8 @@ test('picking a hit closes the picker', async () => {
     model,
     assemblyName: 'volvox',
   })
-  expect(model.searchPicker?.results).toHaveLength(2)
-  await model.searchPicker.pick(model.searchPicker.results[0])
+  expect(model.searchPicker?.rows).toHaveLength(2)
+  await model.searchPicker.pick(model.searchPicker.rows[0].id)
   expect(model.searchPicker).toBeUndefined()
 })
 
@@ -114,7 +114,7 @@ test('a hit that fails to land is reported and still closes the picker', async (
   model.setSearchResults(hits, 'EDEN', 'volvox', () =>
     Promise.reject(new Error('no such track')),
   )
-  await model.searchPicker.pick(hits[0]!)
+  await model.searchPicker.pick(hits[0]!.getId())
   expect(model.searchPicker).toBeUndefined()
   expect(session.snackbarMessages.at(-1)?.message).toContain('no such track')
 })
@@ -129,6 +129,29 @@ test('hits in a track the view already shows come first', async () => {
   })
   model.setSearchResults([elsewhere, ...hits], 'EDEN', 'volvox')
   expect(
-    model.searchPicker?.results.map((r: BaseResult) => r.getTrackId()),
-  ).toEqual(['genes', 'genes', 'not_in_view'])
+    model.searchPicker?.rows.map((r: { trackName: string }) => r.trackName),
+  ).toEqual(['genes', 'genes', ''])
+})
+
+test('a pick that settles after a newer search leaves the newer picker open', async () => {
+  const { model } = await setup()
+  let settle = () => {}
+  model.setSearchResults(
+    hits,
+    'EDEN',
+    'volvox',
+    () => new Promise<void>(resolve => (settle = resolve)),
+  )
+  const slow = model.searchPicker.pick(hits[0]!.getId())
+  model.setSearchResults(hits, 'EDEN again', 'volvox')
+  settle()
+  await slow
+  expect(model.searchPicker?.query).toBe('EDEN again')
+})
+
+test('a new search closes the picker the last one raised', async () => {
+  const { model } = await setup()
+  model.setSearchResults(hits, 'EDEN', 'volvox')
+  await model.navToLocString('ctgA:1..100', 'volvox')
+  expect(model.searchPicker).toBeUndefined()
 })

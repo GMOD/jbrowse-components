@@ -22,12 +22,7 @@ const SearchResultsDialog = observer(function SearchResultsDialog({
       <Typography>
         Showing results for <b>{searchPicker.query}</b>
       </Typography>
-      <SearchResultsTable
-        model={model}
-        assemblyName={searchPicker.assemblyName}
-        searchResults={searchPicker.results}
-        onPick={searchPicker.pick}
-      />
+      <SearchResultsTable picker={searchPicker} />
     </InfoDialog>
   ) : null
 })
