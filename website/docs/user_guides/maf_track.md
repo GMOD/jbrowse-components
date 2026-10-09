@@ -65,8 +65,8 @@ _which_ genomes diverge in a region. The rows are colored one way at a time:
   above.
 - **Bases (every base colored)** colors matching bases by base too, so the whole
   alignment reads as sequence.
-- **Identity heatmap** shades each row on the viridis ramp, dark purple where it
-  diverges and yellow where it is conserved.
+- **Identity heatmap** shades each row on a red→grey→blue ramp (red divergent,
+  blue conserved).
 - **Identity X-Y plot** draws the same signal as a per-species wiggle.
 
 In a display config each option is a value of `color` (`mismatch`, `base`,
@@ -76,7 +76,7 @@ which is `y: "identity"`, identity on each row's bar height. The two combine:
 
 The heatmap's ramp runs from 0 to 100% identity, and
 [`color`](/docs/config/mafcolor) can move it. Close relatives all sit near its
-yellow end, so `color: { field: "identity", domainMin: 0.7 }` spreads the ramp
+blue end, so `color: { field: "identity", domainMin: 0.7 }` spreads the ramp
 over 70 to 100%, where they differ; `scheme`, `reverse` and `domainMid` change
 the ramp itself. The source-chromosome colors below take a `range`, one color
 per rank.
@@ -92,7 +92,7 @@ full set of species. Fit-to-display-height mode takes every species into one
 display, so each row goes near-1px and the alignment reads as a texture, with
 the guide tree (dendrogram) down the left.
 
-<Figure src="/img/maf_470way.png" caption="The UCSC hg38 470-way multiz over the GAPDH locus, every species at once. Conserved coding columns run yellow top-to-bottom across the whole phylogeny; gaps and less-conserved regions break up as dark and white streaks."/>
+<Figure src="/img/maf_470way.png" caption="The UCSC hg38 470-way multiz over the GAPDH locus, every species at once. Conserved coding columns run blue top-to-bottom across the whole phylogeny; gaps and less-conserved regions break up as red and white streaks."/>
 
 ## Color by source chromosome
 

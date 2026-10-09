@@ -11,6 +11,8 @@ import { createMafTestEnvironment, stageDetailRegion } from './testEnv.ts'
 
 import type { LinearMafDisplayModel } from './stateModel.ts'
 
+const GREY = packAbgr(140, 140, 140, 255)
+
 function displayWith(color: unknown) {
   const { display, view } = createMafTestEnvironment({
     displayConfig: { color, rowIdentityAutoZoom: false },
@@ -66,23 +68,23 @@ describe('identity', () => {
     const lowest = identityLut()[0]
     expect(colors[0]).toBe(lowest)
     expect(colors[70]).toBe(lowest)
-    expect(colors[85]).toBe(identityLut()[50])
+    expect(colors[85]).toBe(GREY)
     expect(colors[100]).toBe(identityLut()[100])
   })
 
-  test("domainMid moves the ramp's middle", () => {
+  test('domainMid moves the grey middle', () => {
     expect(
       displayWith({ field: 'identity', domainMid: 0.9 }).identityColors[90],
-    ).toBe(identityLut()[50])
+    ).toBe(GREY)
   })
 
   test('a scheme replaces the ramp, reversed where asked', () => {
-    const [first] = colorRampStops({ scheme: 'magma' })
-    const [last] = colorRampStops({ scheme: 'magma', reverse: true })
-    const plain = displayWith({ field: 'identity', scheme: 'magma' })
+    const [first] = colorRampStops({ scheme: 'viridis' })
+    const [last] = colorRampStops({ scheme: 'viridis', reverse: true })
+    const plain = displayWith({ field: 'identity', scheme: 'viridis' })
     const turned = displayWith({
       field: 'identity',
-      scheme: 'magma',
+      scheme: 'viridis',
       reverse: true,
     })
     expect(plain.identityColors[0]).toBe(packAbgr(...first!))
@@ -90,7 +92,7 @@ describe('identity', () => {
   })
 
   test('the heatmap paints through it', () => {
-    const display = displayWith({ field: 'identity', scheme: 'magma' })
+    const display = displayWith({ field: 'identity', scheme: 'viridis' })
     stageTwoIdentities(display)
     expect(heatmapColors(display)).toEqual([
       display.identityColors[100],
@@ -104,15 +106,9 @@ describe('identity', () => {
       kind: 'ramp',
       domain: [0.7, 1],
       stops: [
-        { offset: 0, color: 'rgb(68,1,84)' },
-        { offset: 0.125, color: 'rgb(71,45,123)' },
-        { offset: 0.25, color: 'rgb(59,82,139)' },
-        { offset: 0.375, color: 'rgb(44,114,142)' },
-        { offset: 0.5, color: 'rgb(33,145,141)' },
-        { offset: 0.625, color: 'rgb(39,173,129)' },
-        { offset: 0.75, color: 'rgb(93,200,99)' },
-        { offset: 0.875, color: 'rgb(170,220,50)' },
-        { offset: 1, color: 'rgb(253,231,37)' },
+        { offset: 0, color: 'rgb(199,67,56)' },
+        { offset: 0.5, color: 'rgb(140,140,140)' },
+        { offset: 1, color: 'rgb(47,102,176)' },
       ],
     })
   })

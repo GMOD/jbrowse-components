@@ -33,6 +33,7 @@ export const MAF_FIELD_PRESETS = {
   },
   identity: {
     ...MEASURE_FIELD_PRESETS.identity,
+    scheme: 'redgreyblue',
     title: 'Per-base identity to reference',
   },
   chromosome: {
@@ -60,8 +61,8 @@ export const MAF_FIELD_PRESETS = {
  * ramp, `chromosome` each block by the rank of its source chromosome within
  * the row, and `codon` each codon by its amino-acid change, given an
  * `annotationAdapter`. A string is the field. Each field has one scale:
- * `identity` runs from `domainMin` 0 to `domainMax` 1 along the `viridis`
- * scheme, as every display's identity does, and the others are categorical. The bases and the
+ * `identity` runs from `domainMin` 0 to `domainMax` 1 along the
+ * `redgreyblue` scheme, and the others are categorical. The bases and the
  * codons paint the theme's colors. The slots are the shared color object's,
  * so `jbrowse validate` and "Edit plot..." judge them as they judge any other
  * display's.
@@ -76,7 +77,7 @@ export const MAF_FIELD_PRESETS = {
  * ```js
  * {
  *   type: 'LinearMafDisplay',
- *   color: { field: 'identity', domainMin: 0.7, scheme: 'magma' },
+ *   color: { field: 'identity', domainMin: 0.7, scheme: 'viridis' },
  * }
  * ```
  */
@@ -135,7 +136,7 @@ export const mafColorConfigSchema = ConfigurationSchema(
       type: 'maybeStringEnum',
       model: types.enumeration('ColorScheme', [...COLOR_SCHEMES]),
       description:
-        "the named ramp identity runs along; unset is viridis, and range's colors, where it lists any, win over it",
+        "the named ramp identity runs along; unset is redgreyblue, and range's colors, where it lists any, win over it",
     },
     /**
      * #slot reverse

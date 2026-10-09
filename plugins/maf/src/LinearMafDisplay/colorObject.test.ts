@@ -35,7 +35,7 @@ describe('the color encoding is the field through its preset', () => {
         scale: 'linear',
         domainMin: 0,
         domainMax: 1,
-        scheme: 'viridis',
+        scheme: 'redgreyblue',
         reverse: false,
       },
     ],

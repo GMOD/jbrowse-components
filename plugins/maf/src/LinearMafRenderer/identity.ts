@@ -6,10 +6,7 @@ import {
 } from '@jbrowse/core/util/alignedBytes'
 import { cssColorToABGR, packAbgr } from '@jbrowse/core/util/colorBits'
 import { colorRampStops, sampleColorRamp } from '@jbrowse/core/util/colorRamp'
-import {
-  DEFAULT_MARK_COLOR,
-  continuousColorScale,
-} from '@jbrowse/core/util/markEncoding'
+import { continuousColorScale } from '@jbrowse/core/util/markEncoding'
 import {
   SCALE_TYPE_LINEAR,
   makeScoreNormalizer,
@@ -72,7 +69,11 @@ function rgbOf([r, g, b]: ColorRampStop) {
   return `rgb(${r},${g},${b})`
 }
 
-/** The default ramp's color at identity `t`: core's shared identity preset. */
+/**
+ * The default ramp: divergent red (0) through a grey neutral (0.5) to
+ * conserved blue (1). The grey middle keeps low identity visible where a white
+ * one would vanish.
+ */
 export function identityColor(t: number): [number, number, number] {
   const [r, g, b] = DEFAULT_IDENTITY_SCALE.at(t)
   return [r, g, b]
@@ -118,7 +119,8 @@ export function identityLut(
   return lut
 }
 
-const XYPLOT_BAR_ABGR = cssColorToABGR(DEFAULT_MARK_COLOR)
+const XYPLOT_BAR_RGB = identityRgb(1)
+const XYPLOT_BAR_ABGR = cssColorToABGR(XYPLOT_BAR_RGB)
 
 /**
  * The key for whichever identity plot draws: the ramp, the X-Y plot's one bar
@@ -160,7 +162,7 @@ export function identityColorScale(
           {
             value: 'bar',
             label: 'Bar height: full = conserved, flat = divergent',
-            color: DEFAULT_MARK_COLOR,
+            color: XYPLOT_BAR_RGB,
           },
         ],
       }

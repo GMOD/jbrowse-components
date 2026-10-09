@@ -425,8 +425,8 @@ export const mafSpecs: ScreenshotSpec[] = [
   {
     // Dense comparative view: the UCSC hg38 470-way multiz (mammals + more), all
     // ~470 species at once over the GAPDH gene with the per-row identity heatmap
-    // pinned on (dark = divergent, yellow = conserved). The coding exons light up
-    // as conserved bands across the whole phylogeny while the introns stay dark
+    // pinned on (red = divergent, blue = conserved). The coding exons light up as
+    // conserved blue bands across the whole phylogeny while the introns stay red
     // — genome-scale conservation read at a glance. Remote UCSC data, generous
     // timeout.
     mode: 'url',
@@ -440,13 +440,13 @@ export const mafSpecs: ScreenshotSpec[] = [
           // a focused ~700bp window over a few GAPDH exons rather than the whole
           // gene: at 470 rows the full-gene view is an unreadable wall, so
           // narrowing widens each alignment column enough that the conserved
-          // exon bands and divergent intron columns are legible
+          // (blue) exon bands and divergent (red) intron columns are legible
           loc: '12:6,536,700-6,537,400',
           trackLabels: 'offset',
           tracks: [
             // NCBI RefSeq gene track on top (longest-coding transcript only):
             // the exon/CDS structure of GAPDH lines up with the conserved
-            // coding bands in the heatmap below. showOnlyGenes drops
+            // (blue) coding bands in the heatmap below. showOnlyGenes drops
             // the individual transcript features (each drawn under its own
             // UUID id, since GAPDH has several isoforms here) down to one
             // gene-level glyph per locus (reviewer).
@@ -463,7 +463,7 @@ export const mafSpecs: ScreenshotSpec[] = [
               // mode), so all ~470 rows squeeze into 600px at ~1px each. Rows go
               // sub-pixel but the conserved/divergent banding still reads as a
               // texture, and the whole phylogeny is visible at once instead of
-              // scrolling off. The top-right legend names the identity ramp.
+              // scrolling off. The top-right legend names the red/blue ramp.
               type: 'LinearMafDisplay',
               height: 600,
               color: 'identity',

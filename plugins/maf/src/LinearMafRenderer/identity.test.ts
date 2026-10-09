@@ -139,15 +139,16 @@ test('the hover reads the mean over its window', () => {
   expect(identityOver(blocks, 0, 500, 504)).toBeUndefined()
 })
 
-test('identityColor runs viridis from divergent to identical', () => {
-  expect(identityColor(0)).toEqual([68, 1, 84])
-  expect(identityColor(1)).toEqual([253, 231, 37])
-  expect(identityColor(-1)).toEqual([68, 1, 84])
-  expect(identityColor(2)).toEqual([253, 231, 37])
+test('identityColor ramps from divergent red through grey to conserved blue', () => {
+  expect(identityColor(0)).toEqual([199, 67, 56])
+  expect(identityColor(0.5)).toEqual([140, 140, 140])
+  expect(identityColor(1)).toEqual([47, 102, 176])
+  expect(identityColor(-1)).toEqual([199, 67, 56])
+  expect(identityColor(2)).toEqual([47, 102, 176])
 })
 
-test('the viridis scheme is the identity ramp, at every hundredth', () => {
-  const stops = colorRampStops({ scheme: 'viridis' })
+test('the redgreyblue scheme is the identity ramp, at every hundredth', () => {
+  const stops = colorRampStops({ scheme: 'redgreyblue' })
   for (let i = 0; i <= 100; i++) {
     expect(sampleColorRamp(stops, i / 100).slice(0, 3)).toEqual(
       identityColor(i / 100),
