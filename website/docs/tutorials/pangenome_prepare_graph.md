@@ -26,9 +26,9 @@ The graph view is a beta plugin. We welcome your [feedback](/contact).
 ## Prerequisites
 
 - [the GraphGenomeView plugin](#the-graphgenomeview-plugin)
-- htslib (`bgzip`, `tabix`), `bcftools`, `python3`, `sort`
+- htslib (`bgzip`, `tabix`), `bcftools`, `python3`, `sort`, `pigz`
 - [`gfa-to-tabix`](https://github.com/GMOD/gfa-to-tabix), for the segment and
-  link indexes
+  link indexes, and 0.5.0 or later for the walk index
 - [`gfatools`](https://github.com/lh3/gfatools), for an rGFA's bubbles
 - [`minigraph`](https://github.com/lh3/minigraph), for each assembly's path
   through the graph
@@ -365,6 +365,106 @@ reader to zoom in.
 [Haplotypes against each other](/docs/tutorials/pangenome_hprc_haplotypes) draws
 the lanes this track produces.
 
+## Indexing haplotype walks with gfa-to-tabix {#haplotype-walks-tabix}
+
+`gfa-to-tabix --walks` (0.5.0 or later) writes each haplotype's walk to
+tabix-indexed files, which a graph track reads in place of a gbz-base database.
+It cuts each walk into pieces, one for each stretch the walk spends in a 64 kb
+chunk of a reference, and files each piece under its chunk, so the browser reads
+one range of each file per window.
+
+`vg convert` writes the GBZ as a GFA whose W lines are the walks. Index that GFA
+against both of HPRC's references:[^walks-cost]
+
+```bash
+vg convert -f hprc-v2.1-mc-grch38.gbz | pigz > hprc-v2.1-mc-grch38.W.gfa.gz
+gfa-to-tabix hprc-v2.1-mc-grch38.W.gfa.gz --walks --refs GRCh38,CHM13 \
+  -o hprc-v2.1-mc-grch38
+```
+
+The tool writes three files and their `.tbi` indexes for each sample in
+`--refs`, named `<prefix>.<sample>.<kind>.bed.gz`, so a track on GRCh38 reads an
+index that covers GRCh38 alone:
+
+| file                   | what it holds                                              |
+| ---------------------- | ---------------------------------------------------------- |
+| `.GRCh38.walks.bed.gz` | each walk's steps through each 64 kb chunk of GRCh38       |
+| `.GRCh38.nodes.bed.gz` | the nodes those steps visit, filed under the same chunks   |
+| `.GRCh38.links.bed.gz` | the links between those steps, filed under the same chunks |
+| `.CHM13.*.bed.gz`      | the same three files, filed under the chunks of T2T-CHM13  |
+
+Each file opens with header lines, which `tabix -H` prints:
+
+```bash
+tabix -H hprc-v2.1-mc-grch38.CHM13.walks.bed.gz | head -4
+```
+
+```text
+#walks	chunk:i:65536	maxnode:i:1024	cap:i:8192
+#reference	CHM13
+#haplotype	GRCh38#0
+#haplotype	HG00097#1
+```
+
+The first line gives the chunk size, the longest node in bp, which sets how far
+before a window the browser starts reading, and the most steps in one row. The
+walk file then lists its reference sample and every other haplotype with rows in
+it, the other reference included, once each.
+
+A track's `walksUri` names one reference's set by its prefix,
+`<prefix>.<sample>`, in place of `uri`:
+
+```json addtrack
+{
+  "type": "GraphTrack",
+  "trackId": "hprc_walks_chm13",
+  "name": "HPRC v2.1 haplotype walks",
+  "assemblyNames": ["hs1"],
+  "adapter": {
+    "type": "RgfaTabixAdapter",
+    "walksUri": "hprc-v2.1-mc-grch38.CHM13",
+    "assemblyNameToPanSN": { "hs1": "CHM13" },
+    "defaultHaplotypes": [
+      "HG00097#1",
+      "HG00099#1",
+      "HG00128#1",
+      "HG00133#1",
+      "HG01109#1",
+      "HG01123#1",
+      "HG01960#1",
+      "HG02055#1"
+    ]
+  }
+}
+```
+
+- `assemblyNameToPanSN` maps the assembly name to the set's reference sample,
+  here `hs1` to `CHM13`
+- `defaultHaplotypes` lists the haplotypes the track draws until the reader
+  picks others, as `sample#haplotype`, or a bare sample for both of its
+  haplotypes
+
+The HPRC tracks built this way open at chr22:20,000,000-20,100,000 on
+[hs1, from the CHM13 set](https://jbrowse.org/code/jb2/main/?config=test_data/graphgenomeview/hprc.json&session=spec-%7B%22views%22%3A%5B%7B%22type%22%3A%22LinearGenomeView%22%2C%22assembly%22%3A%22hs1%22%2C%22loc%22%3A%22chr22%3A20%2C000%2C000-20%2C100%2C000%22%2C%22tracks%22%3A%5B%22hprc_v2_1_walks_hs1%22%5D%7D%5D%7D)
+and
+[hg38, from the GRCh38 set](https://jbrowse.org/code/jb2/main/?config=https://jbrowse.org/demos/hprc/config.json&session=spec-%7B%22views%22%3A%5B%7B%22type%22%3A%22LinearGenomeView%22%2C%22assembly%22%3A%22hg38%22%2C%22loc%22%3A%22chr22%3A20%2C000%2C000-20%2C100%2C000%22%2C%22tracks%22%3A%5B%22hprc_v2_1_walks%22%5D%7D%5D%7D).
+
+The track menu's **Haplotypes** submenu switches the track between **The track's
+default haplotypes**, **Every haplotype in the graph** and **Chosen in
+Settings...**, whose dialog offers the names from the walk file's header. A
+graph view opened from the track draws the same set. Where the graph collapses
+the copies of a repeat onto one set of nodes, the track draws a walk through
+them where the reference places those nodes.
+
+Two budgets in the
+[adapter's config](https://github.com/GMOD/jbrowse-plugin-graphgenomeviewer/blob/main/src/RgfaTabixAdapter/configSchema.ts)
+refuse a window with a notice to zoom in. `walkByteBudget` caps the compressed
+bytes that the three indexes estimate a window would fetch. The estimate is the
+same for any set of haplotypes, because the browser downloads every haplotype's
+rows and drops the unwanted ones by name. `walkStepBudget` caps the walk steps
+the browser decodes, counting only the haplotypes the track draws, so fewer
+haplotypes draw a wider window.
+
 ## Reproduce it end to end
 
 The one command builds the graph track, the bubbles, the tier and the allele
@@ -416,11 +516,17 @@ bash build_hprc_gbz_index.sh out
   bubble calls.
 - [gbz-base](https://github.com/jltsiren/gbz-base): a GBZ as a SQLite database,
   range-requested per window.
+- [gfa-to-tabix](https://github.com/GMOD/gfa-to-tabix#walks): the walk, node and
+  link row formats `--walks` writes.
 
 ## Citations
 
 - [HPRC release 2](https://doi.org/10.64898/2026.07.21.739710), the worked
   example here.
+
+[^walks-cost]:
+    On a 24-core machine `gfa-to-tabix` took 44 minutes and 16 GB of memory, and
+    wrote 18 GB for the two references.
 
 [^gbz-cost]:
     Over HPRC's 464 haplotypes the companion is 5.1 GB, built in 35 minutes on
