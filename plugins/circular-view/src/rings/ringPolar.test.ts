@@ -15,6 +15,7 @@ const display = (height: number): RingDisplay => ({
   paintCount: 1,
   painted: true,
   renderNow() {},
+  setHostHeight() {},
   configuration: { displayId: 'genes' },
   RenderingComponent: () => null,
 })

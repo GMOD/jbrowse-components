@@ -41,10 +41,35 @@ export default function TrackHeightMixin() {
        * #volatile
        */
       scrollTop: 0,
+      /**
+       * #volatile
+       * The height a host draws the display at where it is not the slot's: a
+       * ring of the circular view sets its band. Never persisted.
+       */
+      hostHeight: undefined as number | undefined,
+    }))
+    .views(self => ({
+      /**
+       * #getter
+       * The height the `height` slot asks for, which a drag or a session sets.
+       */
+      get configuredHeight(): number {
+        return getConf(confNode(self), 'height')
+      },
+    }))
+    .views(self => ({
+      /**
+       * #getter
+       * The height the display lays itself out in: its host's where one sets
+       * it, else the slot's.
+       */
+      get allottedHeight(): number {
+        return self.hostHeight ?? self.configuredHeight
+      },
     }))
     .views(self => ({
       get height() {
-        return getConf(confNode(self), 'height')
+        return self.allottedHeight
       },
       /**
        * #getter
@@ -99,6 +124,12 @@ export default function TrackHeightMixin() {
         if (self.scrollTop !== next) {
           self.scrollTop = next
         }
+      },
+      /**
+       * #action
+       */
+      setHostHeight(height: number | undefined) {
+        self.hostHeight = height
       },
       /**
        * #action

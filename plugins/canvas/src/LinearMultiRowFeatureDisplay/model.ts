@@ -498,7 +498,7 @@ export default function stateModelFactory(
        * The track height that auto-fit mode divides among rows.
        */
       get fitTargetHeight(): number {
-        return readConfObject(self.conf, 'height')
+        return self.allottedHeight
       },
     }))
     .views(self => ({

@@ -26,6 +26,7 @@ const confNode = (self: object) => self as HeightModeHost
 // so they are really there — this is again about what the *mixin* can see.
 const heightHost = (self: object) =>
   self as {
+    allottedHeight: number
     setHeight: (height: number) => number
     setScrollTop: (scrollTop: number) => void
     setHeightMode: (mode: HeightMode) => void
@@ -34,7 +35,7 @@ const heightHost = (self: object) =>
 /**
  * #stateModel HeightModeMixin
  * #category display
- * #crossCuttingMixin Track-height strategy; the one row that must compose **after** `TrackHeightMixin()`, whose `height` and `resizeHeight` it overrides. `growTargetHeight` (default = the raw slot). Brings `heightMode`/`autoHeight`/`fitHeightToDisplay`, `grownHeight`, the reactive `height` override, `setHeightMode`, and the grow-aware `resizeHeight`, and the grow-exit bake reaction that writes the grown height into the slot when the mode leaves grow
+ * #crossCuttingMixin Track-height strategy; the one row that must compose **after** `TrackHeightMixin()`, whose `height` and `resizeHeight` it overrides. `growTargetHeight` (default = the allotted height). Brings `heightMode`/`autoHeight`/`fitHeightToDisplay`, `grownHeight`, the reactive `height` override, `setHeightMode`, and the grow-aware `resizeHeight`, and the grow-exit bake reaction that writes the grown height into the slot when the mode leaves grow
  *
  * The whole track-height strategy every display with a `heightMode` config slot
  * shares (the canvas feature display, the alignments display), so the
@@ -75,13 +76,14 @@ export default function HeightModeMixin() {
       },
       /**
        * #getter
-       * The drag-resizable track height as stored in the config slot — the fit
-       * target the fit/grow layout scales or packs content into. Read there
-       * instead of the reactive `height` getter to break the grow-mode cycle
+       * The height the track is allotted (`TrackHeightMixin.allottedHeight`:
+       * the slot's, or a ring's band) — the fit target the fit/grow layout
+       * scales or packs content into. Read there instead of the reactive
+       * `height` getter to break the grow-mode cycle
        * (`height`->grownHeight->layout->height). Equals `height` in fixed/fit.
        */
       get fitTargetHeight(): number {
-        return getConf(confNode(self), 'height')
+        return heightHost(self).allottedHeight
       },
       /**
        * #getter
@@ -212,7 +214,10 @@ export default function HeightModeMixin() {
         addDisposer(
           self,
           installGrowExitBake(
-            self as typeof self & { setHeight: (height: number) => number },
+            self as typeof self & {
+              configuredHeight: number
+              setHeight: (height: number) => number
+            },
           ),
         )
       },
@@ -247,7 +252,7 @@ export function installGrowExitBake(
     heightMode: HeightMode
     autoHeight: boolean
     grownHeight: number
-    fitTargetHeight: number
+    configuredHeight: number
     setHeight: (height: number) => number
   },
 ): IReactionDisposer {
@@ -257,7 +262,7 @@ export function installGrowExitBake(
       mode: self.heightMode,
       grown:
         self.autoHeight && view().initialized ? self.grownHeight : undefined,
-      slot: self.fitTargetHeight,
+      slot: self.configuredHeight,
     }),
     (curr, prev) => {
       if (

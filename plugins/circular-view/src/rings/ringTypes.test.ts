@@ -165,13 +165,16 @@ test('a bigwig-shaped track opens on the circle as a wiggle ring over the strip'
   const [a, b] = display.renderBlocks
   expect(b!.screenStartPx - a!.screenEndPx).toBeCloseTo(view.effectiveSpacingPx)
 
-  // the ring is the display's height, under the ruler, shrunk to leave the
-  // small test circle half its radius
+  // the ring is the display's configured height, under the ruler, shrunk to
+  // leave the small test circle half its radius, and the display lays itself
+  // out in that band
   const [ring] = host.rings
   expect(ring!.outerPx).toBe(view.radiusPx - RING_GAP_PX)
   expect(ring!.innerPx).toBeCloseTo(
-    ring!.outerPx - Math.min(display.height, view.radiusPx / 2 - RING_GAP_PX),
+    ring!.outerPx -
+      Math.min(display.configuredHeight!, view.radiusPx / 2 - RING_GAP_PX),
   )
+  expect(display.height).toBe(Math.floor(ring!.outerPx - ring!.innerPx))
   expect(host.chordRadiusPx).toBe(ring!.innerPx - RING_GAP_PX)
 
   // the strip fetched per slice
@@ -260,6 +263,33 @@ test("a single-genome ring's group-by scan reads its own genome's blocks", async
     'noncoding',
   ])
 }, 30000)
+
+// A gene track taller than its band fits its rows and labels into the band,
+// where it was drawn at its own height and shrunk past reading.
+test('a feature ring taller than its band lays itself out in the band', async () => {
+  const { view, display } = await ringTestSession(
+    {
+      type: 'FeatureTrack',
+      adapter: { type: 'FromConfigAdapter', features: [] },
+      displays: [
+        {
+          type: 'LinearBasicDisplay',
+          displayId: 'ring-LinearBasicDisplay',
+          height: 500,
+        },
+      ],
+    },
+    'LinearBasicDisplay',
+  )
+  const [ring] = view.ringHost.rings
+  const band = Math.floor(ring!.outerPx - ring!.innerPx)
+  expect(band).toBeLessThan(500)
+  expect(display.configuredHeight).toBe(500)
+  expect(display.height).toBe(band)
+  expect(
+    (display as unknown as { fitTargetHeight: number }).fitTargetHeight,
+  ).toBe(band)
+})
 
 // The density tier's read and its covered check both take this track's
 // genome: a read over every slice threw, and a check over every slice never

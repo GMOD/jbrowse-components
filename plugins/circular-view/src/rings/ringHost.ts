@@ -29,13 +29,19 @@ export const RING_GAP_PX = 4
 export const MAX_RINGS_RADIUS_FRACTION = 0.5
 
 /**
- * A ring's display: the height and paint count every linear display carries
+ * A ring's display: the heights and paint count every linear display carries
  * through `TrackHeightMixin` and `RenderLifecycleMixin`, and its component.
+ * It asks the circle for its `configuredHeight`, its height slot, or its
+ * height where the slot is unset, and gets its band back through
+ * `setHostHeight`; a display whose height is not the allotted one is scaled
+ * into the band instead.
  */
 export interface RingDisplay {
   id: string
   type: string
   height: number
+  configuredHeight?: number
+  setHostHeight: (height: number | undefined) => void
   paintCount: number
   painted: boolean
   renderNow: () => void
@@ -124,8 +130,8 @@ export function stripBlocks(
 }
 
 /**
- * Where the rings sit: stacked inward from the ruler, each taking its
- * display's height as its band, with a gap between. Past
+ * Where the rings sit: stacked inward from the ruler, each taking the height
+ * its display asks for as its band, with a gap between. Past
  * `MAX_RINGS_RADIUS_FRACTION` of the radius every band shrinks in proportion,
  * so a small circle keeps an interior for its chords and ribbons. Once the
  * gaps alone take that share — a handful of rings at the zoom floor — there is
@@ -136,14 +142,15 @@ export function layoutRings(
   displays: readonly RingDisplay[],
   radiusPx: number,
 ): Ring[] {
-  const heights = displays.reduce((sum, d) => sum + d.height, 0)
+  const ask = (d: RingDisplay) => d.configuredHeight ?? d.height
+  const heights = displays.reduce((sum, d) => sum + ask(d), 0)
   const gaps = displays.length * RING_GAP_PX
   const room = Math.max(0, radiusPx * MAX_RINGS_RADIUS_FRACTION - gaps)
   const scale = heights > 0 ? Math.min(1, room / heights) : 0
   const rings: Ring[] = []
   let outerPx = radiusPx - RING_GAP_PX
   for (const display of displays) {
-    const innerPx = Math.max(0, outerPx - display.height * scale)
+    const innerPx = Math.max(0, outerPx - ask(display) * scale)
     if (outerPx > innerPx) {
       rings.push({ display, innerPx, outerPx })
     }
@@ -721,6 +728,18 @@ export const RingHost = types
         autorun(() => {
           if (view.initialized) {
             self.syncRings(self.rings.map(r => r.display.id))
+          }
+        }),
+      )
+      // A display lays itself out in its band, so a band shrunk to leave the
+      // circle its interior packs rows and labels at the size they draw.
+      addDisposer(
+        self,
+        autorun(() => {
+          if (view.initialized) {
+            for (const { display, innerPx, outerPx } of self.rings) {
+              display.setHostHeight(Math.floor(outerPx - innerPx))
+            }
           }
         }),
       )

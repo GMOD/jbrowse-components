@@ -19,6 +19,7 @@ const display: RingDisplay = {
   paintCount: 1,
   painted: true,
   renderNow() {},
+  setHostHeight() {},
   configuration: { displayId: 'ring' },
   RenderingComponent: () => null,
 }
