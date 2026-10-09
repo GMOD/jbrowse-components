@@ -76,7 +76,7 @@ import type { Instance } from '@jbrowse/mobx-state-tree'
  *     height: 400,
  *     showSoftClipping: true,
  *     unit: 'chain',
- *     color: 'pairOrientation',
+ *     color: { field: 'pairOrientation' },
  *     readConnections: 'arc',
  *   },
  * }

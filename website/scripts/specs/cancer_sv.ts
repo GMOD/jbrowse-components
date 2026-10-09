@@ -1515,7 +1515,7 @@ export const cancerSvSpecs: ScreenshotSpec[] = [
           // The left/right asymmetry the reviewer saw was a bug, a chain
           // classified per window from half a molecule each time; chains now
           // join across windows (`attachChainFields`).
-          color: 'pairOrientation',
+          color: { field: 'pairOrientation' },
           // `showLegend` is opt-in per track and off by default, so a figure
           // that leans on those colors has to ask for it.
           showLegend: true,

@@ -540,7 +540,7 @@ export const pangenomeSpecs: ScreenshotSpec[] = [
               // rather than count.
               facet: 'splitRead',
               // a split segment's strand against its molecule's
-              color: 'pairOrientation',
+              color: { field: 'pairOrientation' },
               height: 210,
             },
             {
