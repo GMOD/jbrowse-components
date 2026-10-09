@@ -12761,7 +12761,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               }
             },
             "scheme": {
-              "description": "the named ramp identity runs along; unset is viridis, and range's colors, where it lists any, win over it.",
+              "description": "the named ramp identity runs along; unset is redgreyblue, and range's colors, where it lists any, win over it.",
               "if": {
                 "type": "null"
               },
