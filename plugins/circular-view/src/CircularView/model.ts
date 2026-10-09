@@ -97,7 +97,6 @@ import type {
   PointerTarget,
 } from '../chords/shapes.ts'
 import type { FitLayout } from './fitLayout.ts'
-import type { CircleRegion } from './slices.ts'
 import type { CircularViewCommands } from './types.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { ViewExportSvgOptions } from '@jbrowse/core/svg/exportViewSvg'
@@ -521,7 +520,7 @@ function stateModelFactory(pluginManager: PluginManager) {
        * `displayedRegions`, each marked `circular` where it is a whole sequence
        * its assembly lists in `circularRefNames`
        */
-      get circleRegions(): CircleRegion[] {
+      get circleRegions() {
         const { assemblyManager } = getSession(self)
         return self.displayedRegions.map(region => {
           const asm = assemblyManager.get(region.assemblyName)
