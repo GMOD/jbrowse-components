@@ -1,4 +1,5 @@
 import { polarToCartesian } from '@jbrowse/core/util'
+import { cullOverlappingLabels } from '@jbrowse/display-ui'
 
 import { stripPerRingPx } from './ringHost.ts'
 
@@ -9,7 +10,7 @@ import type { HighlightRect } from '@jbrowse/display-kit/highlightHost'
 /** Below this many css px a ring's label is not drawn: it would not read. */
 export const MIN_RING_LABEL_PX = 6
 
-/** css px left between two labels on one line of a ring */
+/** css px left between two labels along a ring */
 const RING_LABEL_GAP_PX = 3
 
 /**
@@ -92,11 +93,11 @@ export interface RingLabel {
  * it to.
  *
  * The strip spaced its labels at the strip's radius, and an inner ring gives
- * the same text more of a turn, so one can now reach over the next on its
- * line; that one is dropped rather than shrunk, as is every label of a band
- * shrunk past reading. A label never runs past the strip's end, where a ring
- * closed on itself meets its start: it is pulled back to end there, as the
- * linear view keeps one inside its region.
+ * the same text more of a turn, so one can now reach over another; in strip
+ * order, a label meeting one already kept is dropped rather than shrunk, as
+ * is every label of a band shrunk past reading. A label never runs past the
+ * strip's end, where a ring closed on itself meets its start: it is pulled
+ * back to end there, as the linear view keeps one inside its region.
  */
 export function ringLabels(
   ring: Ring,
@@ -104,50 +105,44 @@ export function ringLabels(
   stripRadiusPx: number,
 ): RingLabel[] {
   const scale = stripPerRingPx(ring)
-  const lines = new Map<number, FloatingLabel[]>()
+  const { innerPx, outerPx } = ring
+  // Unrolled to arc px at the outer edge across and radius px up, so the
+  // strip's own cull compares them; the gap rides on each label's far end.
+  const candidates = []
   for (const label of labels) {
-    const line = lines.get(label.y)
-    if (line) {
-      line.push(label)
-    } else {
-      lines.set(label.y, [label])
-    }
-  }
-  const kept: RingLabel[] = []
-  for (const [y, line] of lines) {
-    const fontSize = (line[0]?.fontSize ?? 0) / scale
+    const fontSize = label.fontSize / scale
     const { radiusPx } = stripPointToPolar(
       ring,
       0,
-      y + (line[0]?.fontSize ?? 0) / 2,
+      label.y + label.fontSize / 2,
       stripRadiusPx,
     )
     if (
       fontSize < MIN_RING_LABEL_PX ||
-      radiusPx <= ring.innerPx ||
-      radiusPx >= ring.outerPx
+      radiusPx <= innerPx ||
+      radiusPx >= outerPx
     ) {
       continue
     }
-    let free = Number.NEGATIVE_INFINITY
-    for (const label of line.toSorted((a, b) => a.x - b.x)) {
-      const turn = label.width / scale / radiusPx
-      const start = Math.min(label.x / stripRadiusPx, 2 * Math.PI - turn)
-      if (start >= free) {
-        kept.push({
-          key: label.key,
-          text: label.text,
-          color: label.color,
-          fontSize,
-          radians: start + turn / 2,
-          turn,
-          radiusPx,
-        })
-        free = start + turn + RING_LABEL_GAP_PX / radiusPx
-      }
-    }
+    const turn = label.width / scale / radiusPx
+    const start = Math.min(label.x / stripRadiusPx, 2 * Math.PI - turn)
+    candidates.push({
+      key: label.key,
+      text: label.text,
+      color: label.color,
+      fontSize,
+      radians: start + turn / 2,
+      turn,
+      radiusPx,
+      left: start * outerPx,
+      right: (start + turn + RING_LABEL_GAP_PX / radiusPx) * outerPx,
+      top: radiusPx - fontSize / 2,
+      bottom: radiusPx + fontSize / 2,
+    })
   }
-  return kept
+  return cullOverlappingLabels(candidates, Infinity, Infinity, 0).map(
+    ({ left, right, top, bottom, ...kept }) => kept,
+  )
 }
 
 /**

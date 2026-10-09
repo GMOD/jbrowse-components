@@ -81,6 +81,16 @@ test('an inner ring drops a label the next on its line now overruns, and pulls o
   expect(kept[0]!.radiusPx).toBeCloseTo(200 - 25)
 })
 
+test('labels on two lines cull each other where their text meets, as a text mark at its value places them', () => {
+  const ring = { display: display(100), innerPx: 100, outerPx: 200 }
+  const kept = ringLabels(
+    ring,
+    [label(0, 20, 30), label(20, 25, 30), label(20, 40, 30)],
+    400,
+  )
+  expect(kept.map(k => k.key)).toEqual(['0-20', '20-40'])
+})
+
 test('a band shrunk past reading keeps no label', () => {
   const ring = { display: display(100), innerPx: 190, outerPx: 200 }
   expect(10 / (100 / 10)).toBeLessThan(MIN_RING_LABEL_PX)
