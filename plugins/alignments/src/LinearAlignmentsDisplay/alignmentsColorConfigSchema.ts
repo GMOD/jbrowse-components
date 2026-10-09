@@ -22,10 +22,11 @@ import {
  * The alignments displays' `color` setting: one color for every read, or a
  * field each read carries. A read dimension paints its own vocabulary
  * (`strand`, `firstOfPairStrand`, `pairOrientation`, `insertSize`,
- * `insertSizeAndOrientation`, `mateRefName`) or ramp (`mapq`), `tags.XX` reads
- * a SAM tag, and any other name reads the read as a facet over it does: the
- * facet's own `splitRead` and `mateAssembly`, a feature attribute, a dotted
- * path into one or a `jexl:` expression. A string is the constant.
+ * `insertSizeAndOrientation`, `mateRefName`) or bins (`mapq`, the four a
+ * facet over it stacks), `tags.XX` reads a SAM tag, and any other name reads
+ * the read as a facet over it does: the facet's own `splitRead` and
+ * `mateAssembly`, a feature attribute, a dotted path into one or a `jexl:`
+ * expression. A string is the constant.
  * The per-base layer over the reads is
  * [AlignmentsBaseColor](../alignmentsbasecolor).
  *
@@ -77,19 +78,19 @@ export const alignmentsColorConfigSchema = ConfigurationSchema(
       scaleName: 'AlignmentsColorScale',
       fieldType: 'string',
       field:
-        'what colors a read: strand, firstOfPairStrand, pairOrientation, insertSize, insertSizeAndOrientation, mateRefName and mapq paint their own vocabulary or ramp; tags.XX reads a SAM tag; any other name reads as a facet over it does: splitRead, mateAssembly, a feature attribute, a dotted path or a jexl: expression',
+        'what colors a read: strand, firstOfPairStrand, pairOrientation, insertSize, insertSizeAndOrientation and mateRefName paint their own vocabulary and mapq its four bins; tags.XX reads a SAM tag; any other name reads as a facet over it does: splitRead, mateAssembly, a feature attribute, a dotted path or a jexl: expression',
       scale:
-        'none paints value and keeps the field for a switch back; categorical a range color per value; linear a ramp over a numeric tag or attribute between domainMin and domainMax; threshold the bins domain cuts; unset, threshold over insertSize and insertSizeAndOrientation and categorical over any other field',
+        'none paints value and keeps the field for a switch back; categorical a range color per value; linear a ramp over mapq or a numeric tag or attribute between domainMin and domainMax; threshold the bins domain cuts; unset, threshold over insertSize, insertSizeAndOrientation and mapq, and categorical over any other field',
     }),
     ...colorDomainSlot({
       domain:
-        "for a categorical scale, the values that take the range first, in order: a preset field's own levels (strand 1 and -1; pairOrientation LR, RL, RR and LL; insertSize short, normal and long; mapq 255 for unavailable; '' a read with no value) or a tag's values; for a threshold scale, the cut points, which over insertSize are the two between short, normal and long, where the sampled distribution otherwise sets them",
+        "for a categorical scale, the values that take the range first, in order: a preset field's own levels (strand 1 and -1; pairOrientation LR, RL, RR and LL; insertSize short, normal and long; under the insert-size and orientation fields, unmappedMate and interchrom, and in a chain under the orientation ones splitInverted, splitSameStrand, segmentInverted and segmentSameStrand; '' a read with no value), a MAPQ, 255 for unavailable, or a tag's values; for a threshold scale, the cut points, which over insertSize are the two between short, normal and long, where the sampled distribution otherwise sets them, and over mapq 1, 10 and 30",
     }),
     ...colorDomainEndsSlots,
     ...colorDomainQuantileSlot,
     ...colorRangeSlot({
       range:
-        "CSS colors a categorical scale hands its domain in order, or with no domain a preset field's levels in their own order, a threshold scale its bins, or a linear scale's stops, evenly spaced; a level left out keeps its default; empty is the field's own colors, the tag palette or viridis",
+        "CSS colors a categorical scale hands its domain in order, or with no domain a preset field's levels in their own order, a threshold scale its bins, or a linear scale's stops, evenly spaced; a level left out keeps its default; empty is the field's own colors, cividis over mapq's bins, the tag palette or viridis",
     }),
     ...colorRampSlots,
     /**
