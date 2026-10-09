@@ -4921,7 +4921,8 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
                   "blues",
                   "redblue",
                   "purpleorange",
-                  "redgreyblue"
+                  "redgreyblue",
+                  "blueyellowred"
                 ]
               }
             },
@@ -6212,7 +6213,8 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
                   "blues",
                   "redblue",
                   "purpleorange",
-                  "redgreyblue"
+                  "redgreyblue",
+                  "blueyellowred"
                 ]
               }
             },
@@ -7879,7 +7881,8 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
                   "blues",
                   "redblue",
                   "purpleorange",
-                  "redgreyblue"
+                  "redgreyblue",
+                  "blueyellowred"
                 ]
               }
             },
@@ -8848,7 +8851,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               }
             },
             "field": {
-              "description": "what colors a ribbon: strand reads the relative strand between the two lanes the ribbon joins (the two placements' orientations multiplied out, not the drawn twist, so a flipped lane still shows its inversions); identity, mapq and dnds paint the synteny view's ramps; any other name is a column the table declares in attributeColumns, a ramp over the values seen for numbers and one color per label for text (or the color a color column put beside it).",
+              "description": "what colors a ribbon: strand reads the relative strand between the two lanes the ribbon joins (the two placements' orientations multiplied out, not the drawn twist, so a flipped lane still shows its inversions); identity and dnds paint their preset ramps and mapq its bins, as the synteny view's do; any other name is a column the table declares in attributeColumns, a ramp over the values seen for numbers and one color per label for text (or the color a color column put beside it).",
               "default": "",
               "if": {
                 "type": "null"
@@ -8858,16 +8861,20 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               }
             },
             "scale": {
-              "description": "none paints value and keeps the field for a switch back; unset, a field paints.",
+              "description": "none paints value and keeps the field for a switch back; linear runs a number along a ramp and threshold bins it at the cuts domain lists; unset, a measurement paints its own scale and a column one read off its values.",
               "if": {
                 "type": "null"
               },
               "else": {
-                "const": "none"
+                "enum": [
+                  "none",
+                  "linear",
+                  "threshold"
+                ]
               }
             },
             "domain": {
-              "description": "a text column's labels that take the palette first, in order, and lead the key, the rest following sorted; a label left out takes a color no listed label or label met before it paints, the first time the view meets it, and keeps it.",
+              "description": "a text column's labels that take the palette first, in order, and lead the key, the rest following sorted, strand's values (1, -1) in the order range colors them, or a threshold's cuts; a label left out takes a color no listed label or label met before it paints, the first time the view meets it, and keeps it.",
               "if": {
                 "type": "null"
               },
@@ -8890,7 +8897,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               }
             },
             "range": {
-              "description": "CSS colors a text column's labels take, in domain order, continuing into the default palette past its end; with no domain, each label takes one of them by its name; on a ramp (identity, mapq, dnds or a numeric column), its stops, evenly spaced, in place of the field's own.",
+              "description": "CSS colors a text column's labels or strand's values take, in domain order, continuing into the default palette past its end; with no domain, each label takes one of them by its name; on a ramp (identity, dnds or a numeric column), its stops, evenly spaced, in place of the field's own; under threshold, one per interval.",
               "if": {
                 "type": "null"
               },
@@ -8918,7 +8925,8 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
                   "blues",
                   "redblue",
                   "purpleorange",
-                  "redgreyblue"
+                  "redgreyblue",
+                  "blueyellowred"
                 ]
               }
             },
@@ -8980,6 +8988,15 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
                     }
                   }
                 ]
+              }
+            },
+            "descending": {
+              "description": "threshold key lists the highest interval first; unset follows the field's preset, else the lowest first.",
+              "if": {
+                "type": "null"
+              },
+              "else": {
+                "type": "boolean"
               }
             },
             "title": {
@@ -9192,7 +9209,8 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
                   "blues",
                   "redblue",
                   "purpleorange",
-                  "redgreyblue"
+                  "redgreyblue",
+                  "blueyellowred"
                 ]
               }
             },
@@ -11653,7 +11671,8 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
                   "blues",
                   "redblue",
                   "purpleorange",
-                  "redgreyblue"
+                  "redgreyblue",
+                  "blueyellowred"
                 ]
               }
             },
@@ -12129,7 +12148,8 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
                   "blues",
                   "redblue",
                   "purpleorange",
-                  "redgreyblue"
+                  "redgreyblue",
+                  "blueyellowred"
                 ]
               }
             },
@@ -12741,7 +12761,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               }
             },
             "scheme": {
-              "description": "the named ramp identity runs along; unset is redgreyblue, and range's colors, where it lists any, win over it.",
+              "description": "the named ramp identity runs along; unset is viridis, and range's colors, where it lists any, win over it.",
               "if": {
                 "type": "null"
               },
@@ -12757,7 +12777,8 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
                   "blues",
                   "redblue",
                   "purpleorange",
-                  "redgreyblue"
+                  "redgreyblue",
+                  "blueyellowred"
                 ]
               }
             },
@@ -13149,7 +13170,8 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
                   "blues",
                   "redblue",
                   "purpleorange",
-                  "redgreyblue"
+                  "redgreyblue",
+                  "blueyellowred"
                 ]
               }
             },
@@ -25267,7 +25289,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               }
             },
             "field": {
-              "description": "what colors an alignment: strand paints forward and reverse; query and target one color per sequence on that side, reference one per chromosome of the anchor assembly across a stack, track one per overlaid track (pinned under Track colors); identity, mapq and dnds paint the preset ramps; any other name is a column the tracks declare in attributeColumns, a ramp over the values seen for numbers and one color per label for text (or the color a color column put beside it).",
+              "description": "what colors an alignment: strand paints forward and reverse; query and target one color per sequence on that side, reference one per chromosome of the anchor assembly across a stack, track one per overlaid track (pinned under Track colors); identity and dnds paint their preset ramps and mapq its bins; any other name is a column the tracks declare in attributeColumns, a ramp over the values seen for numbers and one color per label for text (or the color a color column put beside it).",
               "default": "",
               "if": {
                 "type": "null"
@@ -25277,16 +25299,20 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               }
             },
             "scale": {
-              "description": "none paints value and keeps the field for a switch back; unset, a field paints.",
+              "description": "none paints value and keeps the field for a switch back; linear runs a number along a ramp and threshold bins it at the cuts domain lists; unset, a measurement paints its own scale and a column one read off its values.",
               "if": {
                 "type": "null"
               },
               "else": {
-                "const": "none"
+                "enum": [
+                  "none",
+                  "linear",
+                  "threshold"
+                ]
               }
             },
             "domain": {
-              "description": "a text column's labels that take the palette first, in order, and lead the key, the rest following sorted; a label left out takes a color no listed label or label met before it paints, the first time the view meets it, and keeps it.",
+              "description": "a text column's labels that take the palette first, in order, and lead the key, the rest following sorted, strand's values (1, -1) in the order range colors them, or a threshold's cuts; a label left out takes a color no listed label or label met before it paints, the first time the view meets it, and keeps it.",
               "if": {
                 "type": "null"
               },
@@ -25309,7 +25335,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               }
             },
             "range": {
-              "description": "CSS colors a text column's labels take, in domain order, continuing into the default palette past its end; with no domain, each label takes one of them by its name; on a ramp (identity, mapq, dnds or a numeric column), its stops, evenly spaced, in place of the field's own.",
+              "description": "CSS colors a text column's labels or strand's values take, in domain order, continuing into the default palette past its end; with no domain, each label takes one of them by its name; on a ramp (identity, dnds or a numeric column), its stops, evenly spaced, in place of the field's own; under threshold, one per interval.",
               "if": {
                 "type": "null"
               },
@@ -25337,7 +25363,8 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
                   "blues",
                   "redblue",
                   "purpleorange",
-                  "redgreyblue"
+                  "redgreyblue",
+                  "blueyellowred"
                 ]
               }
             },
@@ -25399,6 +25426,15 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
                     }
                   }
                 ]
+              }
+            },
+            "descending": {
+              "description": "threshold key lists the highest interval first; unset follows the field's preset, else the lowest first.",
+              "if": {
+                "type": "null"
+              },
+              "else": {
+                "type": "boolean"
               }
             },
             "title": {

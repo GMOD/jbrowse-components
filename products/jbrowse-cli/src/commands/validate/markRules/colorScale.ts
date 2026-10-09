@@ -135,6 +135,54 @@ export const FEATURE_FIELD_PRESETS = {
 } as const satisfies FieldPresets
 
 /**
+ * Mapping quality's bins, each keyed by its lowest score and confident reads
+ * first: real MAPQ is bimodal at the aligner's ceiling and at 0, and these
+ * are the cuts people filter on (`samtools view -q 10` / `-q 30`).
+ */
+export const MAPQ_BINS = [
+  { key: '30', min: 30, label: 'MAPQ 30+ (high confidence)' },
+  { key: '10', min: 10, label: 'MAPQ 10-29' },
+  { key: '1', min: 1, label: 'MAPQ 1-9 (low)' },
+  { key: '0', min: 0, label: 'MAPQ 0 (multi-mapping)' },
+] as const
+
+const MAPQ_BINS_ASCENDING = [...MAPQ_BINS].reverse()
+
+/**
+ * The measurements whose scale is part of what they mean, for a display
+ * whose features carry them to spread into its own presets: `mapq` in the
+ * bins above, `identity` a fraction from 0 to 1, and `dnds` read against 1,
+ * its ramp's pale middle, up to 2, past which a few fast-evolving genes would
+ * flatten the rest into one blue. Opt-in rather than universal, since a
+ * column another file names `identity` need not be a fraction.
+ */
+export const MEASURE_FIELD_PRESETS = {
+  mapq: {
+    scale: 'threshold',
+    domain: MAPQ_BINS_ASCENDING.slice(1).map(bin => bin.key),
+    scheme: 'cividis',
+    labels: MAPQ_BINS_ASCENDING.map(bin => bin.label),
+    title: 'Mapping quality',
+    descending: true,
+  },
+  identity: {
+    scale: 'linear',
+    domainMin: 0,
+    domainMax: 1,
+    scheme: 'viridis',
+    title: 'Identity',
+  },
+  dnds: {
+    scale: 'linear',
+    domainMin: 0,
+    domainMax: 2,
+    domainMid: 1,
+    scheme: 'blueyellowred',
+    title: 'dN/dS',
+  },
+} as const satisfies FieldPresets<'linear' | 'threshold'>
+
+/**
  * A field's preset under `presets`: its own, else a universal one, else
  * `*`'s, else categorical.
  */

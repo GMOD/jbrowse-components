@@ -28,6 +28,18 @@ identity. Anything worth keeping gets pinned.
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/synteny-core/src/trackColors.ts)
 
+## attributeOf
+
+The per-feature attribute a field reads: `mapq` is the comparative
+adapters' `mappingQual`, and any other field its own name.
+
+```js
+// type signature
+(field: string) => string
+```
+
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/synteny-core/src/colorRamps.ts)
+
 ## BAND_GROUND_COLOR
 
 The color a comparative band is painted on, for every surface that has to
@@ -145,12 +157,13 @@ followed by a no-value row once a row carried no value; chips are blended
 over the band's ground by the view's alpha, so the key matches the
 on-screen composited ribbon colors, subject to `legendChipColor`'s
 legibility floor; a mode with no fixed key (a color per sequence name) is a
-note row saying so. `title` is `color.title` as written: unset keeps the
-field's own heading, `''` draws none.
+note row saying so. A threshold keys its bins as chips. `title` is
+`color.title` as written: unset keeps the field's own heading, `''` draws
+none.
 
 ```js
 // type signature
-(field: string, { alpha, title, ...opts }?: { pointBased?: boolean | undefined; cigarOps?: number | undefined; trackChips?: ColorChip[] | undefined; attributeRanges?: Record<string, AttributeRange> | undefined; hideUnlabelled?: boolean | undefined; missingColor?: string | undefined; labels?: readonly string[] | undefined; ramp?: DeclaredRamp | undefined; } & { alpha?: number | undefined; title?: string | undefined; }) => ColorScale[]
+(field: string, { alpha, title, ...opts }?: { pointBased?: boolean | undefined; cigarOps?: number | undefined; trackChips?: ColorChip[] | undefined; attributeRanges?: Record<string, AttributeRange> | undefined; hideUnlabelled?: boolean | undefined; missingColor?: string | undefined; labels?: readonly string[] | undefined; descending?: boolean | undefined; paint?: SyntenyColorPaint | undefined; } & { alpha?: number | undefined; title?: string | undefined; }) => ColorScale[]
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/synteny-core/src/colorLegend.ts)
@@ -170,8 +183,9 @@ anchor on are the view's own hooks, so the button takes nothing else.
 
 ## colorByShortLabel
 
-Short human-readable title for the floating legend header. A column has no
-title but its own name, which is the point of it — the reader named it.
+Short human-readable title for the floating legend header: a measurement's
+preset title, and a column's own name, which is the point of it — the
+reader named it.
 
 ```js
 // type signature
@@ -237,6 +251,18 @@ read from `identity`, or back to the constant.
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/synteny-core/src/settingsMenuItems.ts)
+
+## isMeasureField
+
+Whether `field` is a preset measurement. An own-property lookup: a field
+spelled `toString` is a column nobody declared, not `Object`'s method.
+
+```js
+// type signature
+(field: string) => field is "dnds" | "identity" | "mapq"
+```
+
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/synteny-core/src/colorRamps.ts)
 
 ## LEGEND_CHIP_ALPHA_FLOOR
 
@@ -403,18 +429,6 @@ every display's color object goes through.
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/synteny-core/src/syntenyColorBy.ts)
 
-## presetRamp
-
-The preset ramp a field names, if it names one. An own-property lookup: a
-field spelled `toString` is a column nobody declared, not `Object`'s method.
-
-```js
-// type signature
-(field: string) => ContinuousMode | undefined
-```
-
-[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/synteny-core/src/colorRamps.ts)
-
 ## refNamePositionFor
 
 The `RefNamePosition` a chromosome-painting field hands its palette out by:
@@ -427,6 +441,48 @@ second. Undefined for any other field, and while that assembly loads.
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/synteny-core/src/colorFunctions.ts)
+
+## resolveNumericMode
+
+How a numeric field paints under `paint`: a preset measurement through its
+preset, and a column a track declares on a viridis ramp over the span seen,
+labelled with the actual numbers, the honest reading when nothing declares
+what the column's range is supposed to be. A written `scale` names a ramp
+or a threshold's bins either way. Undefined for the constant, a structural
+field and a text column.
+
+```js
+// type signature
+(field: string, ranges?: Record<string, AttributeRange>, paint?: SyntenyColorPaint) => NumericMode | undefined
+```
+
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/synteny-core/src/colorRamps.ts)
+
+## strandLevels
+
+Each strand's color under `paint`, forward then reverse: the universal
+strand preset's, or `range`'s in `domain` order where the color object
+writes them, and the name `labels` gives it, if any.
+
+```js
+// type signature
+({ domain, range }: SyntenyColorPaint, labels?: readonly string[]) => { value: "-1" | "1"; color: string; label: string | undefined; }[]
+```
+
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/synteny-core/src/colorRamps.ts)
+
+## SYNTENY_FIELD_PRESETS
+
+The fields every comparative view paints through a preset: core's
+measurements, so `identity` and `mapq` paint here as they do on the MAF and
+alignments displays.
+
+```js
+// type signature
+{ readonly mapq: {…}; readonly identity: { readonly scale: "linear"; readonly domainMin: 0; readonly domainMax: 1; readonly scheme: "viridis"; readonly title: "Identity"; }; readonly dnds: { readonly scale: "linear"; readonly domainMin: 0; readonly domainMax: 2; readonly domainMid: 1; readonly scheme: "blueyellowred"; readonly title: "dN/dS"; }; }
+```
+
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/synteny-core/src/colorRamps.ts)
 
 ## syntenyColorFor
 

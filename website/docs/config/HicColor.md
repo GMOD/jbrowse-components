@@ -34,7 +34,7 @@ Slot types (`fileLocation`, `frozen`, ...) are explained in the [config slot typ
 | Slot | Description |
 | --- | --- |
 | <span id="slot-field">**field**</span><br>[`stringEnum`](/docs/config_guides/slot_types#stringenum) = <code>'count'</code> | count, each bin's contact count |
-| <span id="slot-scheme">**scheme**</span><br>[`stringEnum`](/docs/config_guides/slot_types#stringenum) (viridis, magma, inferno, cividis, juicebox, fall, reds, blues, redblue, purpleorange, redgreyblue) = <code>'juicebox'</code> | the named ramp counts run across; juicebox fades from transparent to red |
+| <span id="slot-scheme">**scheme**</span><br>[`stringEnum`](/docs/config_guides/slot_types#stringenum) (viridis, magma, inferno, cividis, juicebox, fall, reds, blues, redblue, purpleorange, redgreyblue, blueyellowred) = <code>'juicebox'</code> | the named ramp counts run across; juicebox fades from transparent to red |
 | <span id="slot-reverse">**reverse**</span><br>[`maybeBoolean`](/docs/config_guides/slot_types#the-maybe-types) | Unset turns round a scheme dark at its low end, since an unpainted bin is the page behind the matrix. |
 | <span id="slot-domainmin">**domainMin**</span><br>[`maybeNumber`](/docs/config_guides/slot_types#the-maybe-types) | the bottom of the scale; unset is 0 |
 | <span id="slot-domainquantile">**domainQuantile**</span><br>[`number`](/docs/config_guides/slot_types#number) = <code>0.95</code> | What an unset `domainMax` follows: the loaded counts' quantile, `0.95` so faint off-diagonal contacts read, or at `1` their maximum. The track menu's "Emphasize faint contacts" toggles it. The same word every color ramp and `scales.y` take. |

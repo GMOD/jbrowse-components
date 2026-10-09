@@ -34,7 +34,7 @@ Slot types (`fileLocation`, `frozen`, ...) are explained in the [config slot typ
 | Slot | Description |
 | --- | --- |
 | <span id="slot-field">**field**</span><br>[`stringEnum`](/docs/config_guides/slot_types#stringenum) (r2, dprime) = <code>'r2'</code> | Which of the file's columns the cells are: `r2` (R², the R2/PHASED_R2 column) or `dprime` (D', the DP/ABS_DPRIME one). A file that carries only one of the two serves that one whichever is asked for, and the legend and the menu say which. |
-| <span id="slot-scheme">**scheme**</span><br>[`maybeStringEnum`](/docs/config_guides/slot_types#the-maybe-types) (viridis, magma, inferno, cividis, juicebox, fall, reds, blues, redblue, purpleorange, redgreyblue) | the named ramp the statistic runs across; unset is the field's own, reds for r2 and blues for dprime |
+| <span id="slot-scheme">**scheme**</span><br>[`maybeStringEnum`](/docs/config_guides/slot_types#the-maybe-types) (viridis, magma, inferno, cividis, juicebox, fall, reds, blues, redblue, purpleorange, redgreyblue, blueyellowred) | the named ramp the statistic runs across; unset is the field's own, reds for r2 and blues for dprime |
 | <span id="slot-reverse">**reverse**</span><br>[`maybeBoolean`](/docs/config_guides/slot_types#the-maybe-types) | Unset turns round a scheme dark at its low end, since an unpainted cell is the page behind the matrix. |
 | <span id="slot-domainmin">**domainMin**</span><br>[`maybeNumber`](/docs/config_guides/slot_types#the-maybe-types) | the value the bottom color paints, everything below it too; unset is 0 |
 | <span id="slot-domainmax">**domainMax**</span><br>[`maybeNumber`](/docs/config_guides/slot_types#the-maybe-types) | the value the top color paints, everything above it too; unset is 1 |

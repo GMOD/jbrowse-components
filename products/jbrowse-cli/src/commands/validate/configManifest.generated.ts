@@ -5029,6 +5029,10 @@ export const configManifest: ConfigManifest = {
               "liftsNumbers": true
             },
             {
+              "name": "descending",
+              "type": "(boolean | undefined)"
+            },
+            {
               "name": "title",
               "type": "(string | undefined)"
             }
@@ -5037,8 +5041,37 @@ export const configManifest: ConfigManifest = {
             "string": "value"
           },
           "fieldPresets": {
-            "*": {
-              "scale": "categorical"
+            "mapq": {
+              "scale": "threshold",
+              "domain": [
+                "1",
+                "10",
+                "30"
+              ],
+              "scheme": "cividis",
+              "labels": [
+                "MAPQ 0 (multi-mapping)",
+                "MAPQ 1-9 (low)",
+                "MAPQ 10-29",
+                "MAPQ 30+ (high confidence)"
+              ],
+              "title": "Mapping quality",
+              "descending": true
+            },
+            "identity": {
+              "scale": "linear",
+              "domainMin": 0,
+              "domainMax": 1,
+              "scheme": "viridis",
+              "title": "Identity"
+            },
+            "dnds": {
+              "scale": "linear",
+              "domainMin": 0,
+              "domainMax": 2,
+              "domainMid": 1,
+              "scheme": "blueyellowred",
+              "title": "dN/dS"
             }
           }
         },
@@ -6486,7 +6519,7 @@ export const configManifest: ConfigManifest = {
               "scale": "linear",
               "domainMin": 0,
               "domainMax": 1,
-              "scheme": "redgreyblue",
+              "scheme": "viridis",
               "title": "Per-base identity to reference"
             },
             "chromosome": {

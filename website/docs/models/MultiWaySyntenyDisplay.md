@@ -95,7 +95,7 @@ Each section ends with the members a composed model contributes, linked to the p
 | <span id="getter-ribboncolorfield">**ribbonColorField**</span><br><code>string</code> |  |
 | <span id="getter-ribboncolorattributes">**ribbonColorAttributes**</span><br><code>string[]</code> |  |
 | <span id="getter-ribboncolordomain">**ribbonColorDomain**</span><br><code>string[]</code> |  |
-| <span id="getter-ribbonramp">**ribbonRamp**</span><br><code>DeclaredRamp</code> |  |
+| <span id="getter-ribbonpaint">**ribbonPaint**</span><br><code>SyntenyColorPaint</code> |  |
 | <span id="getter-ribbonattributeranges">**ribbonAttributeRanges**</span><br><code>Record&lt;string, AttributeRange&gt;</code> |  |
 | <span id="getter-hideunlabelled">**hideUnlabelled**</span><br><code>boolean</code> |  |
 | <span id="getter-drawcurves">**drawCurves**</span><br><code>boolean</code> |  |

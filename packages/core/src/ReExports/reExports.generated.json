@@ -2804,6 +2804,8 @@
         "COLOR_SCALES",
         "FEATURE_FIELD_PRESETS",
         "IDENTITY_SCALE",
+        "MAPQ_BINS",
+        "MEASURE_FIELD_PRESETS",
         "UNIVERSAL_FIELD_PRESETS",
         "colorNotices",
         "colorProblems",
