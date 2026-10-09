@@ -38,7 +38,6 @@ import HeightModeMixin from '@jbrowse/display-kit/HeightModeMixin'
 import HiddenGroupsMixin from '@jbrowse/display-kit/HiddenGroupsMixin'
 import LegendMixin from '@jbrowse/display-kit/LegendMixin'
 import MultiRegionDisplayMixin from '@jbrowse/display-kit/MultiRegionDisplayMixin'
-import TrackHeightMixin from '@jbrowse/display-kit/TrackHeightMixin'
 import { coarseTierPending } from '@jbrowse/display-kit/coarseTierPhase'
 import { densityTierMenuItems } from '@jbrowse/display-kit/densityTierMenu'
 import { onDisplayedRegionsChange } from '@jbrowse/display-kit/displayAutoruns'
@@ -370,7 +369,6 @@ export default function stateModelFactory(
       .compose(
         'LinearAlignmentsDisplay',
         BaseDisplay,
-        TrackHeightMixin(),
         HeightModeMixin(),
         MultiRegionDisplayMixin(),
         DensityTierMixin(),

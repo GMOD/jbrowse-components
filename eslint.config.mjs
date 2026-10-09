@@ -305,19 +305,15 @@ const noGateMixinComposedFirst = {
     'CanvasFeatureGateMixin() must be composed AFTER MultiRegionDisplayMixin(), and this types.compose has them the other way round. Both declare `gateEnabled` and `densityTooLarge` — the gate mixin contributes the opt-in and the density verdict, RegionTooLargeMixin (which MultiRegionDisplayMixin brings in) defaults both `false` — and types.compose resolves a member collision to the LATER argument, so composing the gate first hands them back to those defaults. The entire region-too-large gate is then off for this display: no banner, no error, nothing the type system objects to, and the track downloads whatever the viewport covers. Move CanvasFeatureGateMixin() below MultiRegionDisplayMixin() in the same call. See agent-docs/reference/REGION_TOO_LARGE.md.',
 }
 
-// `HeightModeMixin` overrides `TrackHeightMixin`'s `height` getter and
-// `resizeHeight` action, and `types.compose` resolves a member collision by
-// ARGUMENT POSITION, so writing the two in the wrong order silently hands both
-// back to the base and leaves grow mode inert. Same sibling-combinator shape as
-// the canvas gate rule above, and the same residual: an order assembled across
-// two files is not syntax and is not seen. This one had no natural opt-in to
-// probe, so the runtime version it replaces needed a `supportsHeightModes` flag
-// invented for it on both mixins; the selector needs neither, and both are gone.
-const noHeightModeComposedFirst = {
+// `HeightModeMixin` composes `TrackHeightMixin` and overrides its `height`
+// getter and `resizeHeight` action. A second `TrackHeightMixin()` beside it in
+// one `types.compose` either does nothing or, written after it, takes both
+// back, since a collision goes to the later argument.
+const noTrackHeightBesideHeightMode = {
   selector:
-    "CallExpression[callee.name='HeightModeMixin'] ~ CallExpression[callee.name='TrackHeightMixin']",
+    "CallExpression[callee.name='HeightModeMixin'] ~ CallExpression[callee.name='TrackHeightMixin'], CallExpression[callee.name='TrackHeightMixin'] ~ CallExpression[callee.name='HeightModeMixin']",
   message:
-    'HeightModeMixin() must be composed AFTER TrackHeightMixin(), and this types.compose has them the other way round. HeightModeMixin overrides that mixin’s `height` getter and `resizeHeight` action, and types.compose resolves a member collision to the LATER argument, so composing it first hands both straight back to the base: the track height stops following the laid-out content in grow mode, a drag-resize no longer leaves grow before writing the slot, and nothing errors anywhere. No value gives it away either — the two `height` getters agree in fixed mode, which is the state most fixtures start in. Move HeightModeMixin() below TrackHeightMixin() in the same call. See agent-docs/ARCHITECTURE.md §"What not to do".',
+    'HeightModeMixin() already composes TrackHeightMixin(), so keep HeightModeMixin() alone in this types.compose. A TrackHeightMixin() written after it takes back the `height` getter and `resizeHeight` action HeightModeMixin overrides, since types.compose gives a collision to the later argument: the track height stops following the laid-out content in grow mode and a drag-resize no longer leaves grow, with nothing erroring.',
 }
 
 // The MST fork types `types.compose` for eleven model parts after the optional
@@ -407,7 +403,7 @@ const sourceRestrictedSyntax = [
   noHandRolledAttach,
   noFetchHookInActions,
   noGateMixinComposedFirst,
-  noHeightModeComposedFirst,
+  noTrackHeightBesideHeightMode,
   noTenthComposePart,
   noUnexplainedUntracked,
   noPayloadThroughAProp,

@@ -2,6 +2,7 @@ import { getConf, setConf } from '@jbrowse/core/configuration'
 import { addDisposer, types } from '@jbrowse/mobx-state-tree'
 import { reaction } from 'mobx'
 
+import TrackHeightMixin from './TrackHeightMixin.tsx'
 import { containingHost } from './foundationView.ts'
 
 import type { HeightMode } from './heightMode.ts'
@@ -21,21 +22,10 @@ export type HeightModeHost = { configuration: HeightModeConfigModel }
 // BaseDisplay, so they are really there.
 const confNode = (self: object) => self as HeightModeHost
 
-// The `TrackHeightMixin` members this one drives. Composed before it by every
-// user (the `height` and `resizeHeight` overrides below depend on that order),
-// so they are really there — this is again about what the *mixin* can see.
-const heightHost = (self: object) =>
-  self as {
-    allottedHeight: number
-    setHeight: (height: number) => number
-    setScrollTop: (scrollTop: number) => void
-    setHeightMode: (mode: HeightMode) => void
-  }
-
 /**
  * #stateModel HeightModeMixin
  * #category display
- * #crossCuttingMixin Track-height strategy; the one row that must compose **after** `TrackHeightMixin()`, whose `height` and `resizeHeight` it overrides. `growTargetHeight` (default = the allotted height). Brings `heightMode`/`autoHeight`/`fitHeightToDisplay`, `grownHeight`, the reactive `height` override, `setHeightMode`, and the grow-aware `resizeHeight`, and the grow-exit bake reaction that writes the grown height into the slot when the mode leaves grow
+ * #crossCuttingMixin Track-height strategy over `TrackHeightMixin()`, which it composes and whose `height` and `resizeHeight` it overrides. `growTargetHeight` (default = the allotted height). Brings `heightMode`/`autoHeight`/`fitHeightToDisplay`, `grownHeight`, the reactive `height` override, `setHeightMode`, and the grow-aware `resizeHeight`, and the grow-exit bake reaction that writes the grown height into the slot when the mode leaves grow
  *
  * The whole track-height strategy every display with a `heightMode` config slot
  * shares (the canvas feature display, the alignments display), so the
@@ -65,7 +55,7 @@ const heightHost = (self: object) =>
  */
 export default function HeightModeMixin() {
   return types
-    .model({})
+    .compose('HeightModeMixin', TrackHeightMixin(), types.model({}))
     .views(self => ({
       /**
        * #getter
@@ -83,7 +73,7 @@ export default function HeightModeMixin() {
        * (`height`->grownHeight->layout->height). Equals `height` in fixed/fit.
        */
       get fitTargetHeight(): number {
-        return heightHost(self).allottedHeight
+        return self.allottedHeight
       },
       /**
        * #getter
@@ -182,13 +172,15 @@ export default function HeightModeMixin() {
         // mode switch is a user gesture, so the view is measured by the time it
         // can fire (the reaction's exits are the ones that need the init guard).
         if (self.autoHeight && mode !== 'grow') {
-          heightHost(self).setHeight(self.grownHeight)
+          self.setHeight(self.grownHeight)
         }
         setConf(confNode(self), 'heightMode', mode)
         if (mode !== 'fixed') {
-          heightHost(self).setScrollTop(0)
+          self.setScrollTop(0)
         }
       },
+    }))
+    .actions(self => ({
       /**
        * #action
        * Drag-resize. A manual drag means the user wants a fixed height, so leave
@@ -204,22 +196,14 @@ export default function HeightModeMixin() {
           ? self.grownHeight
           : self.fitTargetHeight
         if (self.autoHeight) {
-          heightHost(self).setHeightMode('fixed')
+          self.setHeightMode('fixed')
         }
-        return heightHost(self).setHeight(displayed + distance) - displayed
+        return self.setHeight(displayed + distance) - displayed
       },
     }))
     .actions(self => ({
       afterAttach() {
-        addDisposer(
-          self,
-          installGrowExitBake(
-            self as typeof self & {
-              configuredHeight: number
-              setHeight: (height: number) => number
-            },
-          ),
-        )
+        addDisposer(self, installGrowExitBake(self))
       },
     }))
 }

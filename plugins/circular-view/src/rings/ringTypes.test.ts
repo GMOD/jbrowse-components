@@ -286,9 +286,6 @@ test('a feature ring taller than its band lays itself out in the band', async ()
   expect(band).toBeLessThan(500)
   expect(display.configuredHeight).toBe(500)
   expect(display.height).toBe(band)
-  expect(
-    (display as unknown as { fitTargetHeight: number }).fitTargetHeight,
-  ).toBe(band)
 })
 
 // The density tier's read and its covered check both take this track's

@@ -141,20 +141,11 @@ test('expandToContentHeight goes through an overriding resizeHeight', () => {
   expect(m.height).toBe(100)
 })
 
-// The compose-order contract. `HeightModeMixin` overrides `height` and
-// `resizeHeight`, and `types.compose` gives a collision to the later argument,
-// so the wrong order silently drops grow mode. Writing the two the wrong way
-// round in one `types.compose` is a `no-restricted-syntax` error; what these
-// pin is the consequence the rule exists to prevent, which is the half a lint
-// selector cannot state — and which the `supportsHeightModes` flag they used to
-// read stood in for, because the flag was invented as a compose-order probe and
-// nothing else ever read it.
-//
-// Grow mode is the state that tells the two orders apart at all: in fixed mode
-// both `height` getters return the same slot, which is why the contract went
-// unchecked for so long. So the fixture pins `heightMode` and `growTargetHeight`
-// in its own trailing `.views()` — a display's two jobs under this mixin — and
-// drag-resizes.
+// `HeightModeMixin` composes `TrackHeightMixin` and overrides its `height` and
+// `resizeHeight`. Grow mode is the state that tells the override from the base
+// at all: in fixed mode both `height` getters return the same slot. So the
+// fixture pins `heightMode` and `growTargetHeight` in its own trailing
+// `.views()` — a display's two jobs under this mixin — and drag-resizes.
 const heightModeConfig = ConfigurationSchema('TestHeightMode', {
   height: { type: 'number', defaultValue: 100 },
   growMaxHeight: { type: 'number', defaultValue: 1000 },
@@ -165,11 +156,11 @@ const heightModeConfig = ConfigurationSchema('TestHeightMode', {
   },
 })
 
-function composeInOrder(...mixins: any[]) {
+function withHeightMode() {
   return types
     .compose(
-      'TestHeightModeOrder',
-      types.compose('TestMixins', mixins[0], mixins[1]),
+      'TestHeightMode',
+      HeightModeMixin(),
       types.model({
         type: types.literal('test'),
         configuration: heightModeConfig,
@@ -193,11 +184,11 @@ function composeInOrder(...mixins: any[]) {
 // standalone root — and the parent is view-shaped (`width` + `setWidth`, which
 // is what `getContainingView` looks for), since the mixin's grow-exit bake
 // reads the view's `initialized` while in grow mode.
-function mount(...mixins: any[]) {
+function mount() {
   const Parent = types
     .model('TestView', {
       width: 800,
-      display: composeInOrder(...mixins),
+      display: withHeightMode(),
     })
     .views(() => ({
       get initialized() {
@@ -215,21 +206,20 @@ function mount(...mixins: any[]) {
   return display
 }
 
-test('the correct order leaves HeightModeMixin owning the drag-resize', () => {
-  const display = mount(TrackHeightMixin(), HeightModeMixin())
+test('HeightModeMixin owns the drag-resize over the TrackHeightMixin it composes', () => {
+  const display = mount()
   display.resizeHeight(30)
   // the grown height the user was seeing, plus the drag, and grow left first
   expect(display.configuration.height).toBe(330)
   expect(display.configuration.heightMode).toBe('fixed')
 })
 
-test('the wrong order silently leaves grow mode inert', () => {
-  const display = mount(HeightModeMixin(), TrackHeightMixin())
-  display.resizeHeight(30)
-  // the base's `resizeHeight` won: it drags the raw slot, never sees the 300px
-  // the track was displaying, and never leaves grow
-  expect(display.configuration.height).toBe(130)
-  expect(display.configuration.heightMode).toBe('grow')
+test('a host height is what the fit target reads, and the slot stays put', () => {
+  const display = mount()
+  display.setHostHeight(80)
+  expect(display.fitTargetHeight).toBe(80)
+  expect(display.configuredHeight).toBe(100)
+  expect(display.configuration.height).toBe(100)
 })
 
 // One line per mixin, and the whole point of it: a host cast widened back to

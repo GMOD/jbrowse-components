@@ -84,13 +84,6 @@ is declared in `STATES_NO_RULES`.
   mixins](#cross-cutting-mixins-orthogonal-to-the-fetch-foundation)); a
   hand-rolled copy is how four displays came to hold four spellings of the same
   scroll clamp.
-- Don't compose `HeightModeMixin()` before `TrackHeightMixin()`. It overrides
-  that mixin's `height` and `resizeHeight`, and `types.compose` gives the
-  collision to the later argument, so the wrong order silently drops grow mode —
-  and the two `height` getters agree in fixed mode, so no value gives it away.
-  `no-restricted-syntax` fails the wrong order written in one `types.compose`
-  and says what it costs —
-  [ordering is the contract](reference/ARCHITECTURAL_LIMITS.md#ordering-is-the-contract).
 - Don't chain to `super` in a display's own `afterAttach`. Our MST fork
   auto-chains lifecycle hooks, so calling it installs every fetch autorun twice;
   `assertDisplayContract` reports it in dev, from whichever installer put the

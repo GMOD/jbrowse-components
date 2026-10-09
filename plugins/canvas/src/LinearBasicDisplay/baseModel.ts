@@ -30,7 +30,6 @@ import HeightModeMixin from '@jbrowse/display-kit/HeightModeMixin'
 import HiddenGroupsMixin from '@jbrowse/display-kit/HiddenGroupsMixin'
 import LegendMixin from '@jbrowse/display-kit/LegendMixin'
 import MultiRegionDisplayMixin from '@jbrowse/display-kit/MultiRegionDisplayMixin'
-import TrackHeightMixin from '@jbrowse/display-kit/TrackHeightMixin'
 import {
   colorForField,
   colorForValue,
@@ -223,7 +222,6 @@ export default function baseStateModelFactory(
     .compose(
       'LinearCanvasBaseDisplay',
       BaseDisplay,
-      TrackHeightMixin(),
       HeightModeMixin(),
       MultiRegionDisplayMixin(),
       LegendMixin(),

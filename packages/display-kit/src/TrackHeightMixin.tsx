@@ -36,7 +36,7 @@ const SUBPIXEL_OVERFLOW = 0.5
 export default function TrackHeightMixin() {
   return types
     .model({})
-    .volatile(() => ({
+    .volatile((): { scrollTop: number; hostHeight: number | undefined } => ({
       /**
        * #volatile
        */
@@ -46,7 +46,7 @@ export default function TrackHeightMixin() {
        * The height a host draws the display at where it is not the slot's: a
        * ring of the circular view sets its band. Never persisted.
        */
-      hostHeight: undefined as number | undefined,
+      hostHeight: undefined,
     }))
     .views(self => ({
       /**
