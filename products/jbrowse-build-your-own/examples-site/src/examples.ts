@@ -8,8 +8,7 @@ export const pages: ExamplePage[] = [
   {
     slug: 'ultraminimal',
     title: 'Ultraminimal',
-    description:
-      'TrackStack draws one track. Drag to pan, ctrl or cmd + wheel to zoom.',
+    description: 'TrackStack draws one track. Drag to pan, scroll to zoom.',
     group: 'First view',
   },
   {

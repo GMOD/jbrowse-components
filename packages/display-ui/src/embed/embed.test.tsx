@@ -4,6 +4,7 @@ import { act, fireEvent, render, screen } from '@testing-library/react'
 import {
   Legend,
   ResizeHandle,
+  ScrollZoomToggle,
   Track,
   TrackStack,
   TrackToggle,
@@ -210,6 +211,21 @@ test('a track toggle is checked while its track is shown, and asks the view to f
   expect([genes.checked, reads.checked]).toEqual([true, false])
   fireEvent.click(reads)
   expect(asked).toEqual(['reads'])
+})
+
+test('a scroll-zoom toggle shows the preference and flips it', () => {
+  const asked: boolean[] = []
+  const view = {
+    scrollZoom: true,
+    setScrollZoom: (flag: boolean) => {
+      asked.push(flag)
+    },
+  }
+  render(<ScrollZoomToggle view={view} />)
+  const box = screen.getByLabelText<HTMLInputElement>('Zoom on scroll')
+  expect(box.checked).toBe(true)
+  fireEvent.click(box)
+  expect(asked).toEqual([false])
 })
 
 test('a legend lists the rows of the key its track derived, and nothing for an empty key or a display with none', () => {

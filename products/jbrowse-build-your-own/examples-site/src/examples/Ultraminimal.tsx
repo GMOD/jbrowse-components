@@ -1,4 +1,9 @@
-import { EmbedProvider, TrackStack } from '@jbrowse/display-ui/embed'
+import {
+  EmbedProvider,
+  ScrollZoomToggle,
+  Toolbar,
+  TrackStack,
+} from '@jbrowse/display-ui/embed'
 import { useCreateViewState } from '@jbrowse/react-linear-genome-view2'
 import { observer } from 'mobx-react'
 
@@ -19,6 +24,7 @@ const Ultraminimal = observer(function Ultraminimal() {
         displayDefaults: { height: 100, color: '#3a7ca5' },
       },
     ],
+    configuration: { preferences: { scrollZoom: true } },
     view: {
       loc: 'chr17:43,044,295..43,125,364',
       tracks: ['hg38_phylop'],
@@ -26,6 +32,9 @@ const Ultraminimal = observer(function Ultraminimal() {
   })
   return state ? (
     <EmbedProvider session={state.session}>
+      <Toolbar>
+        <ScrollZoomToggle view={state.session.view} />
+      </Toolbar>
       <TrackStack view={state.session.view} />
     </EmbedProvider>
   ) : null

@@ -8,11 +8,11 @@ An example imports only published packages: `@jbrowse/react-linear-genome-view2`
 plus the others that doc names. The mounting, status and chrome blocks every
 page needs come from `@jbrowse/display-ui/embed` (`EmbedProvider`, `Track`,
 `TrackStack`, `ViewStatus`, `Scalebar`, `RegionSeams`, `Highlights`,
-`LocationBox`, `SearchPicker`, `TrackToggle`, `ResizeHandle`, `Legend`,
-`Toolbar`, `NavButton`, `Notifications`), so an example file is its engine
-options, its own controls and nothing else. No comments in example files, bar a
-one-line pointer at an option a reader would not otherwise find (`geneticCodes`
-in `MultipleTracks`).
+`LocationBox`, `SearchPicker`, `TrackToggle`, `ScrollZoomToggle`,
+`ResizeHandle`, `Legend`, `Toolbar`, `NavButton`, `Notifications`), so an
+example file is its engine options, its own controls and nothing else. No
+comments in example files, bar a one-line pointer at an option a reader would
+not otherwise find (`geneticCodes` in `MultipleTracks`).
 
 `EmbedProvider` mounts `Notifications`, which draws `session.snackbarMessages`
 and a line per queued dialog, so a page owes no error plumbing of its own:

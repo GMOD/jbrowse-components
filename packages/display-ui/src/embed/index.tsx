@@ -2,6 +2,10 @@ import { Fragment, Suspense } from 'react'
 
 import AppReadyMarker from '@jbrowse/core/ui/AppReadyMarker'
 import {
+  SCROLL_ZOOM_HELP,
+  SCROLL_ZOOM_LABEL,
+} from '@jbrowse/core/ui/scrollZoomLabels'
+import {
   useSlowLoad,
   useStalled,
   useWidthSetter,
@@ -140,6 +144,32 @@ export const TrackToggle = observer(function TrackToggle({
         }}
       />
       {children}
+    </label>
+  )
+})
+
+export const ScrollZoomToggle = observer(function ScrollZoomToggle({
+  view,
+  style,
+  children,
+}: {
+  view: {
+    scrollZoom: boolean
+    setScrollZoom: (flag: boolean) => void
+  }
+  style?: React.CSSProperties
+  children?: React.ReactNode
+}) {
+  return (
+    <label style={style} title={SCROLL_ZOOM_HELP}>
+      <input
+        type="checkbox"
+        checked={view.scrollZoom}
+        onChange={() => {
+          view.setScrollZoom(!view.scrollZoom)
+        }}
+      />
+      {children ?? SCROLL_ZOOM_LABEL}
     </label>
   )
 })
