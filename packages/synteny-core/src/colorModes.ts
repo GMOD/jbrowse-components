@@ -82,7 +82,7 @@ export const COLOR_MODES: ColorModeEntry[] = [
     kind: 'value',
     label: 'Identity',
     helpText:
-      'Sequence identity on a viridis ramp, dark for divergent and yellow for identical. Needs a CIGAR with =/X or a de tag.',
+      'Sequence identity, red for divergent through grey to blue for identical, as the MAF track paints it. Needs a CIGAR with =/X or a de tag.',
   },
   {
     field: 'mapq',

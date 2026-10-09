@@ -150,9 +150,12 @@ const MAPQ_BINS_ASCENDING = [...MAPQ_BINS].reverse()
 /**
  * The measurements whose scale is part of what they mean, for a display
  * whose features carry them to spread into its own presets: `mapq` in the
- * bins above, `identity` a fraction from 0 to 1, and `dnds` read against 1,
- * its ramp's pale middle, up to 2, past which a few fast-evolving genes would
- * flatten the rest into one blue. Opt-in rather than universal, since a
+ * bins above; `identity` a fraction from 0 to 1, red where it diverges and
+ * blue where it is conserved, as conservation tracks paint it, through a grey
+ * middle that stays visible on a white page and under a faint ribbon, where
+ * viridis's bright top washed out; and `dnds` read against 1, its ramp's pale
+ * middle, up to 2, past which a few fast-evolving genes would flatten the
+ * rest into one blue. Opt-in rather than universal, since a
  * column another file names `identity` need not be a fraction.
  */
 export const MEASURE_FIELD_PRESETS = {
@@ -168,7 +171,7 @@ export const MEASURE_FIELD_PRESETS = {
     scale: 'linear',
     domainMin: 0,
     domainMax: 1,
-    scheme: 'viridis',
+    scheme: 'redgreyblue',
     title: 'Identity',
   },
   dnds: {

@@ -187,8 +187,9 @@ ribbon band; close it with its own button and it stays away for that mode.
   chromosome names, so a region keeps one color as it is traced down the stack
 - Color by value - a submenu of the numbers an alignment can have, each painted
   on a color ramp or in bins. The row names whichever is in use.
-  - Identity - per-alignment sequence identity on a viridis ramp. It needs the
-    `=`/`X` CIGAR that `minimap2 --eqx` writes
+  - Identity - per-alignment sequence identity on a red-grey-blue ramp, red
+    divergent and blue identical, as the MAF track's identity heatmap paints it.
+    It needs the `=`/`X` CIGAR that `minimap2 --eqx` writes
   - Mapping quality - per-alignment PAF MAPQ in the alignments track's four bins
     (0, 1-9, 10-29 and 30+), dark to light
   - dN/dS - the ratio of non-synonymous to synonymous substitution rate, on a

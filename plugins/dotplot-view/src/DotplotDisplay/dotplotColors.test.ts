@@ -66,23 +66,16 @@ describe('createDotplotColorFunction', () => {
     expect(unpack(fn(0))).toMatchObject(rgbOf(colorSchemes.default.pointColor))
   })
 
-  // Identity uses the perceptually-uniform viridis ramp: dark purple at low
-  // identity, bright yellow at high. Lock in the endpoints and that luminance
-  // increases monotonically (the property colorblind-safe ramps must have).
-  test('identity ramp is viridis (dark purple → yellow, monotonic luminance)', () => {
+  // Identity runs red (divergent) through grey to blue (conserved), the
+  // shared preset every display paints it with, MAF's heatmap included.
+  test('identity ramp is red-grey-blue, as the MAF heatmap paints it', () => {
     const data = fakeRpcData({
-      attributes: { identity: new Float32Array([0, 0.25, 0.5, 0.75, 1]) },
+      attributes: { identity: new Float32Array([0, 0.5, 1]) },
     })
     const fn = createDotplotColorFunction('identity', data, TRACK_COLOR, {})
-    const lum = (i: number) => {
-      const { r, g, b } = unpack(fn(i))
-      return 0.299 * r + 0.587 * g + 0.114 * b
-    }
-    expect(unpack(fn(0))).toMatchObject({ r: 68, g: 1, b: 84 })
-    expect(unpack(fn(4))).toMatchObject({ r: 253, g: 231, b: 37 })
-    for (let i = 1; i < 5; i++) {
-      expect(lum(i)).toBeGreaterThan(lum(i - 1))
-    }
+    expect(unpack(fn(0))).toMatchObject({ r: 199, g: 67, b: 56 })
+    expect(unpack(fn(1))).toMatchObject({ r: 140, g: 140, b: 140 })
+    expect(unpack(fn(2))).toMatchObject({ r: 47, g: 102, b: 176 })
   })
 
   test('missing-value sentinel (NaN) paints the no-value grey', () => {
