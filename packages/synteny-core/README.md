@@ -32,7 +32,8 @@ identity. Anything worth keeping gets pinned.
 ### attributeOf
 
 The per-feature attribute a field reads: `mapq` is the comparative adapters'
-`mappingQual`, and any other field its own name.
+`mappingQual`, which they omit for MAPQ 255, so it paints and keys as no value;
+any other field reads its own name.
 
 ```js
 // type signature
