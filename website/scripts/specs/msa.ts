@@ -189,7 +189,134 @@ export const proteinTourFixtures = {
   }),
 }
 
+// The session https://genomes.jbrowse.org/protein-browser/?gene=TP53&residue=248&align=hundredWay
+// hands to Open in JBrowse, decoded from that link's `encoded-` session and
+// carried here as the same snapshot. Regenerate it from the page when the
+// protein browser changes what it builds.
+const TP53_CDS: [number, number, number][] = [
+  [7669608, 7669690, 1],
+  [7670608, 7670715, 0],
+  [7673534, 7673608, 2],
+  [7673700, 7673837, 1],
+  [7674180, 7674290, 0],
+  [7674858, 7674971, 2],
+  [7675052, 7675236, 0],
+  [7675993, 7676272, 0],
+  [7676381, 7676403, 1],
+  [7676520, 7676594, 0],
+]
+
+const TP53_TRANSCRIPT = {
+  uniqueId: 'ENST00000269305.9',
+  type: 'mRNA',
+  refName: 'chr17',
+  start: 7669608,
+  end: 7676594,
+  strand: -1,
+  name: 'ENST00000269305.9',
+  subfeatures: TP53_CDS.map(([start, end, phase]) => ({
+    type: 'CDS',
+    start,
+    end,
+    strand: -1,
+    phase,
+  })),
+}
+
+const TP53_PROTEIN =
+  'MEEPQSDPSVEPPLSQETFSDLWKLLPENNVLSPLPSQAMDDLMLSPDDIEQWFTEDPGPDEAPRMPEAAPPVAPAPAAPTPAAPAPAPSWPLSSSVPSQKTYQGSYGFRLGFLHSGTAKSVTCTYSPALNKMFCQLAKTCPVQLWVDSTPPPGTRVRAMAIYKQSQHMTEVVRRCPHHERCSDSDGLAPPQHLIRVEGNLRVEYLDDRNTFRHSVVVPYEPPEVGSDCTTIHYNYMCNSSCMGGMNRRPILTIITLEDSSGNLLGRNSFEVRVCACPGRDRRTEEENLRKKGEPHHELPPGSTKRALPNNTSSSPQPKKKPLDGEYFTLQIRGRERFEMFRELNEALELKDAQAGKEPGGSRAHSSHLKSKKGQSTSRHKKLMFKTEGPDSDZ'
+
+const PROTEIN_BROWSER_TP53 = {
+  name: 'Gene explorer: TP53',
+  views: [
+    {
+      id: 'lgv-TP53',
+      type: 'LinearGenomeView',
+      colorByCDS: true,
+      hideHeaderOverview: true,
+      showGridlines: false,
+      init: {
+        assembly: 'hg38',
+        loc: 'chr17:7676481-7676634[rev] chr17:7676342-7676443[rev] chr17:7675954-7676312[rev] chr17:7675013-7675276[rev] chr17:7674819-7675011[rev] chr17:7674141-7674330[rev] chr17:7673661-7673877[rev] chr17:7673495-7673648[rev] chr17:7670569-7670755[rev] chr17:7669569-7669730[rev]',
+        tracks: [
+          'hg38-ncbiRefSeqSelect',
+          'hg38-clinvarMain',
+          'hg38-alphaMissense',
+        ],
+      },
+    },
+    {
+      id: 'msa-TP53',
+      type: 'MsaView',
+      connectedViewId: 'lgv-TP53',
+      connectedFeature: TP53_TRANSCRIPT,
+      uniprotId: 'P04637',
+      colorSchemeName: 'percent_identity_dynamic',
+      labelsAlignRight: true,
+      treeAreaWidth: 200,
+      treeFilehandle: {
+        uri: 'https://jbrowse.org/demos/msaview/100way/hg38.multiz100way.nh',
+        locationType: 'UriLocation',
+      },
+      init: {
+        msaIndexedLocation: {
+          uri: 'https://jbrowse.org/demos/msaview/100way/hg38.knownCanonical.multiz100way.aa.fa.gz',
+        },
+        msaName: 'TP53',
+        querySeqName: 'hg38',
+      },
+    },
+    {
+      id: 'protein-TP53',
+      type: 'ProteinView',
+      height: 500,
+      zoomToBaseLevel: false,
+      structures: [
+        {
+          url: 'https://alphafold.ebi.ac.uk/files/AF-P04637-F1-model_v6.cif',
+          feature: TP53_TRANSCRIPT,
+          userProvidedTranscriptSequence: TP53_PROTEIN,
+          connectedViewId: 'lgv-TP53',
+          initialTranscriptResidues: [{ start: 248, end: 248 }],
+        },
+      ],
+    },
+  ],
+  useWorkspaces: true,
+  activePanelId: 'panel-left',
+  layout: {
+    id: 'branch-root',
+    direction: 'row',
+    size: 1,
+    children: [
+      {
+        id: 'panel-left',
+        size: 58,
+        tabs: [{ id: 'tab-left', viewIds: ['lgv-TP53', 'msa-TP53'] }],
+        activeTabId: 'tab-left',
+      },
+      {
+        id: 'panel-right',
+        size: 42,
+        tabs: [{ id: 'tab-right', viewIds: ['protein-TP53'] }],
+        activeTabId: 'tab-right',
+      },
+    ],
+  },
+}
+
 export const msaSpecs: ScreenshotSpec[] = [
+  {
+    mode: 'url',
+    name: 'protein/protein_browser_tp53',
+    url: `?config=${UCSC_HG38_CONFIG}&session=json-${encodeURIComponent(JSON.stringify({ session: PROTEIN_BROWSER_TP53 }))}`,
+    readySelector: '[data-testid="protein-view-ready"]',
+    readyTimeout: 180000,
+    hideSelectors: ['.msp-background-tasks'],
+    hideTooltip: true,
+    viewportWidth: 2000,
+    viewportHeight: 1300,
+  },
   {
     mode: 'url',
     name: 'genomes_msa/launch_sequence',

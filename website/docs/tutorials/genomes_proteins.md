@@ -49,8 +49,12 @@ one session with three linked views: the coding exons back to back in a linear
 genome view, the AlphaFold structure, and a cross-species protein alignment.
 Hover a residue in any of them and its codon lights up in the other two.
 
-**Open in JBrowse** hands the session to the full app, where every view takes
-the menus described below.
+**Opens on** takes a residue for the session to open on:
+[?gene=TP53&residue=248&align=hundredWay](https://genomes.jbrowse.org/protein-browser/?gene=TP53&residue=248&align=hundredWay)
+opens on R248 with the 100-way vertebrate alignment. **Open in JBrowse** hands
+the session to the full app, where every view takes the menus described below.
+
+<Figure caption="TP53 as the protein browser builds it: the coding exons back to back above ClinVar and AlphaMissense, the 100-way vertebrate alignment under them, and the AlphaFold structure beside. R248 is magenta on the structure and a line through its codon in the genome view." src="/img/protein/protein_browser_tp53.png" />
 
 The rest of the page makes these views one at a time from the hosted hg38 genome
 view, which is the route for a gene or track the protein browser does not cover.
