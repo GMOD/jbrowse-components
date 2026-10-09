@@ -1,12 +1,10 @@
-import { abgrToCssRgba, packAbgr } from '@jbrowse/core/util/colorBits'
+import { packAbgr } from '@jbrowse/core/util/colorBits'
 import { rampLutOf, stopsFromRampLut } from '@jbrowse/core/util/colorRamp'
 
 import type { RampScale } from '@jbrowse/core/ui/colorScale'
 
 const QUALITY_LUT = rampLutOf({ scheme: 'cividis' })
 const QUALITY_KEY_STOPS = stopsFromRampLut(QUALITY_LUT, 8)
-
-export const MAPQ_RAMP_MAX = 60
 
 export const BASE_QUALITY_RAMP_MAX = 40
 
@@ -26,10 +24,6 @@ export function qualityRampAbgr(max: number) {
     )
   })
 }
-
-export const MAPQ_ABGR = qualityRampAbgr(MAPQ_RAMP_MAX)
-
-export const MAPQ_CSS = Array.from(MAPQ_ABGR, abgrToCssRgba)
 
 /** A quality ramp's color bar, over `[0, max]`, marking an end `extent` runs past. */
 export function qualityRampScale(

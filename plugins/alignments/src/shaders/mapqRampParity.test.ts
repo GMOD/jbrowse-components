@@ -1,13 +1,18 @@
-import { rampLutOf } from '@jbrowse/core/util/colorRamp'
 import { colord } from '@jbrowse/core/util/colord'
 
+import { bakedColorScale } from '../LinearAlignmentsDisplay/bakedColorScale.ts'
 import {
   buildReadColorCategories,
   readColorFromCategoryIndex,
 } from '../LinearAlignmentsDisplay/colorUtils.ts'
+import { buildReadTagColors } from '../LinearAlignmentsDisplay/readTagColors.ts'
 import { makeTestPalette } from '../LinearAlignmentsDisplay/testUtils.ts'
+import { baseWorkerPileupData } from '../RenderAlignmentDataRPC/testPileupData.ts'
 import { packReadSegments } from '../features/read/mark.ts'
-import { MAPQ_RAMP_MAX } from '../shared/qualityRamps.ts'
+import {
+  ALIGNMENTS_FIELD_PRESETS,
+  alignmentsColorEncoding,
+} from '../shared/alignmentsColor.ts'
 import { RC_MAPQ, RC_MAPQ_UNAVAILABLE } from './slang/read.consts.generated.ts'
 import {
   INSTANCE_OFFSET_U32,
@@ -31,10 +36,34 @@ function mapqRegion() {
     segmentReadIndices: Uint32Array.from({ length: n }, (_, i) => i),
     segmentEdgeFlags: new Uint8Array(n),
   }
+  const colorBy = { type: 'mappingQuality' } as const
+  const scale = bakedColorScale(
+    colorBy,
+    alignmentsColorEncoding({
+      value: undefined,
+      field: 'mapq',
+      scale: undefined,
+      scheme: undefined,
+      reverse: false,
+      domainMin: undefined,
+      domainMax: undefined,
+      domainMid: undefined,
+      domain: [],
+      range: [],
+    }),
+    undefined,
+    undefined,
+  )
+  const readTagColors = buildReadTagColors(
+    { ...baseWorkerPileupData(n), readMapqs: base.readMapqs },
+    colorBy,
+    scale,
+  )
+  const colored = { ...base, readTagColors }
   return {
-    ...base,
+    ...colored,
     readPositions: new Uint32Array(n * 2),
-    readColorCategories: buildReadColorCategories(base, 'mappingQuality'),
+    readColorCategories: buildReadColorCategories(colored, 'mappingQuality'),
   }
 }
 
@@ -65,10 +94,9 @@ function canvasRgb(mapq: number) {
   return [r, g, b]
 }
 
-function lutRgb(t: number) {
-  const lut = rampLutOf({ scheme: 'cividis' })
-  const o = Math.round(t * (lut.length / 4 - 1)) * 4
-  return [lut[o], lut[o + 1], lut[o + 2]]
+function cssRgb(css: string) {
+  const { r, g, b } = colord(css).toRgb()
+  return [r, g, b]
 }
 
 test('the GPU fill and the Canvas2D fill are one color at every MAPQ', () => {
@@ -80,18 +108,19 @@ test('the GPU fill and the Canvas2D fill are one color at every MAPQ', () => {
   }
 })
 
-test('the ramp is core cividis over 0 to 60 and flat past it', () => {
-  expect(canvasRgb(0)).toEqual(lutRgb(0))
-  expect(canvasRgb(30)).toEqual(lutRgb(0.5))
-  for (const mapq of [MAPQ_RAMP_MAX, 61, 100, 254]) {
-    expect(canvasRgb(mapq)).toEqual(lutRgb(1))
+// The facet's confidence bins, each one color: 0, 1-9, 10-29 and 30 up.
+test('by default MAPQ paints the facet bins', () => {
+  const bins = ALIGNMENTS_FIELD_PRESETS.mapq.range.map(cssRgb)
+  expect(canvasRgb(0)).toEqual(bins[0])
+  for (const mapq of [1, 9]) {
+    expect(canvasRgb(mapq)).toEqual(bins[1])
   }
-  const ramp = new Set(
-    Array.from({ length: MAPQ_RAMP_MAX + 1 }, (_, mapq) =>
-      canvasRgb(mapq).join(','),
-    ),
-  )
-  expect(ramp.size).toBe(MAPQ_RAMP_MAX + 1)
+  for (const mapq of [10, 29]) {
+    expect(canvasRgb(mapq)).toEqual(bins[2])
+  }
+  for (const mapq of [30, 60, 254]) {
+    expect(canvasRgb(mapq)).toEqual(bins[3])
+  }
 })
 
 test('MAPQ 255 leaves the ramp for its own flat bucket', () => {

@@ -1,5 +1,4 @@
 import { makePileupDataResult } from '../RenderAlignmentDataRPC/testPileupData.ts'
-import { READ_COLOR_CATEGORY } from './colorUtils.ts'
 import {
   baseQualitySpanAcrossGroups,
   mapqExtentAcrossGroups,
@@ -13,28 +12,18 @@ function byGroup(...regions: Partial<PileupDataResult>[]) {
   ])
 }
 
-const { mapq, mapqUnavailable, interchrom } = READ_COLOR_CATEGORY
-
-test('the MAPQ extent spans only the reads the ramp paints', () => {
+test('the MAPQ extent spans every read with one, 255 held out', () => {
   const groups = byGroup(
-    {
-      readMapqs: Uint8Array.of(12, 255, 70),
-      readColorCategories: Uint8Array.of(mapq, mapqUnavailable, interchrom),
-    },
-    {
-      readMapqs: Uint8Array.of(3, 45),
-      readColorCategories: Uint8Array.of(mapq, mapq),
-    },
+    { readMapqs: Uint8Array.of(12, 255, 70) },
+    { readMapqs: Uint8Array.of(3, 45) },
   )
-  expect(mapqExtentAcrossGroups(groups)).toEqual([3, 45])
+  expect(mapqExtentAcrossGroups(groups)).toEqual([3, 70])
 })
 
-test('no ramp-painted read is no MAPQ extent', () => {
-  const groups = byGroup({
-    readMapqs: Uint8Array.of(255),
-    readColorCategories: Uint8Array.of(mapqUnavailable),
-  })
-  expect(mapqExtentAcrossGroups(groups)).toBeUndefined()
+test('reads with no MAPQ are no MAPQ extent', () => {
+  expect(
+    mapqExtentAcrossGroups(byGroup({ readMapqs: Uint8Array.of(255) })),
+  ).toBeUndefined()
 })
 
 test('the base-quality span holds 255 out and reports it', () => {

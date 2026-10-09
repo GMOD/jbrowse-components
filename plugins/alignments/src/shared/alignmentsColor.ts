@@ -1,5 +1,6 @@
 import { keyNames } from '@jbrowse/core/util/categoricalField'
 import { cssColorToNormalizedRgb } from '@jbrowse/core/util/colorBits'
+import { rampLutOf, stopsFromRampLut } from '@jbrowse/core/util/colorRamp'
 import { colorNotices } from '@jbrowse/core/util/colorScale'
 import {
   thresholdCuts,
@@ -12,6 +13,7 @@ import {
 
 import { COLOR_SCHEMES } from './colorSchemes.ts'
 import { TAG_FIELD_PREFIX, facetTag } from './facetLabels.ts'
+import { MAPQ_BIN_LABELS, MAPQ_CUTS } from './readFieldLevels.ts'
 import { MAPQ_UNAVAILABLE } from './util.ts'
 
 import type { ReadColorCategory } from '../LinearAlignmentsDisplay/colorUtils.ts'
@@ -197,9 +199,13 @@ export function bodyColorScheme(
     : colorBy.type
 }
 
-/** Whether the main thread bakes a color per read from a value the worker ships. */
+/**
+ * Whether the main thread bakes a color per read through the `color` scale:
+ * from a value the worker ships, or from the read's MAPQ.
+ */
 export function isBakedScheme(colorBy: ColorBy) {
   return (
+    colorBy.type === 'mappingQuality' ||
     colorBy.type === 'mateRefName' ||
     (colorBy.type === 'tag' && !!(colorBy.tag ?? colorBy.attribute))
   )
@@ -319,6 +325,16 @@ export const ALIGNMENTS_FIELD_PRESETS = {
             },
     ]),
   ),
+  mapq: {
+    scale: 'threshold',
+    domain: MAPQ_CUTS,
+    range: stopsFromRampLut(
+      rampLutOf({ scheme: 'cividis' }),
+      MAPQ_BIN_LABELS.length,
+    ).map(stop => stop.color),
+    labels: MAPQ_BIN_LABELS,
+    title: 'Mapping quality',
+  },
   '*': { scale: 'categorical' },
 } satisfies FieldPresets
 
@@ -455,8 +471,13 @@ export interface DeclaredReadLabels {
  */
 export function declaredReadLabels(
   encoding: AlignmentsColorEncoding,
-  labels: readonly string[],
+  written: readonly string[],
 ): DeclaredReadLabels {
+  const preset =
+    typeof encoding === 'object' && 'labels' in encoding
+      ? encoding.labels
+      : undefined
+  const labels = written.length > 0 ? written : (preset ?? written)
   if (typeof encoding !== 'object' || labels.length === 0) {
     return { categories: {}, values: new Map() }
   }

@@ -178,6 +178,7 @@ import {
   NO_QUALITY_SPAN,
   baseQualitySpanAcrossGroups,
   mapqExtentAcrossGroups,
+  presentMapqs,
 } from './qualitySpans.ts'
 import { chainReadIdsAt, findRead, readInfo } from './readLookup.ts'
 import { shouldDrawOverlaps } from './renderers/rendererTypes.ts'
@@ -964,10 +965,9 @@ export default function stateModelFactory(
             if (!self.showLegend || !isBakedScheme(self.colorBy)) {
               return undefined
             }
-            return collectAcrossGroups(
-              this.laidOutByGroup,
-              d => d.readTagValues,
-            )
+            return self.colorBy.type === 'mappingQuality'
+              ? presentMapqs(this.laidOutByGroup)
+              : collectAcrossGroups(this.laidOutByGroup, d => d.readTagValues)
           },
 
           /**
@@ -1482,26 +1482,17 @@ export default function stateModelFactory(
            */
           get tagValueExtent(): NumericExtent | undefined {
             const encoding = self.colorEncoding
-            return self.colorBy.type === 'tag' &&
-              typeof encoding === 'object' &&
-              encoding.scale === 'linear'
-              ? numericExtentAcrossGroups(
-                  this.laidOutByGroupFramed,
-                  d => d.readTagValues,
-                )
-              : undefined
-          },
-
-          /**
-           * #getter
-           * The MAPQ span of the reads the mapping-quality ramp paints, which
-           * the key marks an end the reads run past by. O(reads), so gated on
-           * showLegend like the category scan.
-           */
-          get mapqExtent(): NumericExtent | undefined {
-            return self.showLegend && self.colorBy.type === 'mappingQuality'
-              ? mapqExtentAcrossGroups(this.laidOutByGroup)
-              : undefined
+            const { type } = self.colorBy
+            return typeof encoding !== 'object' || encoding.scale !== 'linear'
+              ? undefined
+              : type === 'mappingQuality'
+                ? mapqExtentAcrossGroups(this.laidOutByGroupFramed)
+                : type === 'tag'
+                  ? numericExtentAcrossGroups(
+                      this.laidOutByGroupFramed,
+                      d => d.readTagValues,
+                    )
+                  : undefined
           },
 
           /**
@@ -2504,7 +2495,6 @@ export default function stateModelFactory(
                 baseLayer: self.baseLayer,
                 bakedScale: self.bakedColorScale,
                 tagValueExtent: self.tagValueExtent,
-                mapqExtent: self.mapqExtent,
                 baseQualityExtent: self.baseQualitySpan.extent,
               }),
               colorTitle: self.colorTitle,

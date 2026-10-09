@@ -1,20 +1,20 @@
 import { BASE_QUALITY_UNAVAILABLE } from '../features/perBaseQuality/colors.ts'
-import { RC_MAPQ } from '../shaders/slang/read.consts.generated.ts'
+import { MAPQ_UNAVAILABLE } from '../shared/util.ts'
 
 import type { NumericExtent } from './bakedColorScale.ts'
-import type { ColoredByGroup, LaidOutByGroup } from './groupLayout.ts'
+import type { LaidOutByGroup } from './groupLayout.ts'
 
-/** The MAPQ span of the reads the ramp paints, over every laid-out region. */
+/** The MAPQ span of the reads with one, over every laid-out region. */
 export function mapqExtentAcrossGroups(
-  byGroup: ColoredByGroup,
+  byGroup: LaidOutByGroup,
 ): NumericExtent | undefined {
   let min = Infinity
   let max = -Infinity
   for (const map of byGroup.values()) {
-    for (const { readMapqs, readColorCategories } of map.values()) {
+    for (const { readMapqs } of map.values()) {
       for (let i = 0; i < readMapqs.length; i++) {
-        if (readColorCategories[i] === RC_MAPQ) {
-          const mapq = readMapqs[i]!
+        const mapq = readMapqs[i]!
+        if (mapq !== MAPQ_UNAVAILABLE) {
           min = Math.min(min, mapq)
           max = Math.max(max, mapq)
         }
@@ -22,6 +22,25 @@ export function mapqExtentAcrossGroups(
     }
   }
   return min <= max ? [min, max] : undefined
+}
+
+/** The MAPQ values the reads carry, as a categorical key lists them. */
+export function presentMapqs(byGroup: LaidOutByGroup) {
+  const seen = new Uint8Array(MAPQ_UNAVAILABLE)
+  for (const map of byGroup.values()) {
+    for (const { readMapqs } of map.values()) {
+      for (let i = 0; i < readMapqs.length; i++) {
+        seen[readMapqs[i]!] = 1
+      }
+    }
+  }
+  const present = new Set<string>()
+  seen.forEach((hit, mapq) => {
+    if (hit) {
+      present.add(`${mapq}`)
+    }
+  })
+  return present
 }
 
 export interface QualitySpan {

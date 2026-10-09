@@ -32,13 +32,10 @@ import { arcCategoryColor } from '../shaders/palettes.ts'
 import { OVERLAP_ALPHA } from '../shaders/slang/overlap.consts.generated.ts'
 import { colorFieldOf, isBakedScheme, levelKeysOf } from './alignmentsColor.ts'
 import { paintsModifications } from './colorSchemes.ts'
-import { FIRST_OF_PAIR_STRAND_LABELS } from './facetLabels.ts'
+import { FACET_LABELS, FIRST_OF_PAIR_STRAND_LABELS } from './facetLabels.ts'
+import { isReadDimension } from './groupFeatures.ts'
 import { getModificationName, modificationData } from './modificationData.ts'
-import {
-  BASE_QUALITY_RAMP_MAX,
-  MAPQ_RAMP_MAX,
-  qualityRampScale,
-} from './qualityRamps.ts'
+import { BASE_QUALITY_RAMP_MAX, qualityRampScale } from './qualityRamps.ts'
 import {
   isModificationTypeVisible,
   paintsUnmodifiedState,
@@ -858,17 +855,18 @@ function bakedValueLegend(
   }))
 }
 
-/** The key of a tag or attribute painted through a linear ramp. */
+/** The key of a tag, attribute or MAPQ painted through a linear ramp. */
 export function bakedRampScale(
   colorBy: ColorBy,
   scale: BakedColorScale | undefined,
   extent?: readonly [number, number],
 ): RampScale | undefined {
+  const field = colorFieldOf(colorBy)
   return scale?.kind === 'linear'
     ? {
         kind: 'ramp',
         id: READS_RAMP_ID,
-        title: colorFieldOf(colorBy),
+        title: isReadDimension(field) ? FACET_LABELS[field] : field,
         domain: [...scale.domain],
         stops: scale.stops,
         extent,
@@ -888,25 +886,16 @@ export function colorRampScales({
   baseLayer,
   bakedScale,
   tagValueExtent,
-  mapqExtent,
   baseQualityExtent,
 }: {
   colorBy: ColorBy | undefined
   baseLayer: BaseLayer | undefined
   bakedScale: BakedColorScale | undefined
   tagValueExtent: Extent
-  mapqExtent: Extent
   baseQualityExtent: Extent
 }): RampScale[] {
   const readRamp =
-    colorBy?.type === 'mappingQuality'
-      ? qualityRampScale(
-          READS_RAMP_ID,
-          'Mapping quality',
-          MAPQ_RAMP_MAX,
-          mapqExtent,
-        )
-      : colorBy && bakedRampScale(colorBy, bakedScale, tagValueExtent)
+    colorBy && bakedRampScale(colorBy, bakedScale, tagValueExtent)
   return [
     ...(baseLayer?.type === 'perBaseQuality'
       ? [
@@ -1064,7 +1053,11 @@ function schemeLegend({
       { color: rgb255(palette.colorRevStrand), label: 'Reverse strand' },
     ]
   }
-  if (colorType === 'tag' || colorType === 'mateRefName') {
+  if (
+    colorType === 'tag' ||
+    colorType === 'mateRefName' ||
+    colorType === 'mappingQuality'
+  ) {
     return bakedValueLegend(
       colorBy,
       presentTagValues,
@@ -1074,8 +1067,8 @@ function schemeLegend({
       labels?.values,
     )
   }
-  // Mapping quality is a color bar (`colorRampScales`); it and the strand /
-  // insert-size / orientation schemes add only the buckets that occurred.
+  // The strand, insert-size and orientation schemes add only the buckets that
+  // occurred.
   return []
 }
 

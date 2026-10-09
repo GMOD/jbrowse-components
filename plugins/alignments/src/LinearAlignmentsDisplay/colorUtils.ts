@@ -26,7 +26,6 @@ import {
 } from '../shaders/slang/read.consts.generated.ts'
 import { COLOR_SCHEMES } from '../shared/colorSchemes.ts'
 import { pairCategory } from '../shared/pairCategory.ts'
-import { MAPQ_CSS } from '../shared/qualityRamps.ts'
 import {
   CHAIN_SPLIT_DELETION,
   CHAIN_SPLIT_INVERSION,
@@ -302,7 +301,6 @@ function categoryColor(
 ): string {
   switch (cat) {
     case 'mapq':
-      return MAPQ_CSS[data.readMapqs[i]!]!
     case 'tag': {
       const packed = data.readTagColors[i]
       return packed

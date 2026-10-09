@@ -2,6 +2,7 @@ import { colorFwdStrand, colorRevStrand } from '@jbrowse/core/ui/palette'
 import { cssColorToRgb, packAbgr } from '@jbrowse/core/util/colorBits'
 
 import { isBakedScheme } from '../shared/alignmentsColor.ts'
+import { MAPQ_UNAVAILABLE } from '../shared/util.ts'
 
 import type {
   LaidOutPileupData,
@@ -113,7 +114,36 @@ export function buildReadTagColors(
   colorBy: ColorBy,
   scale: BakedColorScale,
 ): Uint32Array {
-  return applyResolver(data, makeColorResolver(colorBy, scale))
+  return bakerFor(colorBy, scale)(data)
+}
+
+// MAPQ has 255 scores worth a color, so the scale is evaluated once per score
+// and each read is an index into the table; 255 is unavailable, its own bucket.
+function mapqColorTable(scale: BakedColorScale) {
+  const table = new Uint32Array(256)
+  for (let mapq = 0; mapq < MAPQ_UNAVAILABLE; mapq++) {
+    const css = scale.color(`${mapq}`)
+    table[mapq] = css === undefined ? 0 : packRgb(cssColorToRgb(css))
+  }
+  return table
+}
+
+function applyMapqTable(data: WorkerPileupData, table: Uint32Array) {
+  const mapqs = data.readMapqs
+  const out = new Uint32Array(mapqs.length)
+  for (let i = 0; i < mapqs.length; i++) {
+    out[i] = table[mapqs[i]!]!
+  }
+  return out
+}
+
+function bakerFor(colorBy: ColorBy, scale: BakedColorScale) {
+  if (colorBy.type === 'mappingQuality') {
+    const table = mapqColorTable(scale)
+    return (data: WorkerPileupData) => applyMapqTable(data, table)
+  }
+  const resolve = makeColorResolver(colorBy, scale)
+  return (data: WorkerPileupData) => applyResolver(data, resolve)
 }
 
 // Overlay freshly-baked `readTagColors` onto each laid-out region. Baking here
@@ -132,15 +162,15 @@ export function overlayReadTagColors(
   colorBy: ColorBy | undefined,
   scale: BakedColorScale | undefined,
 ): Map<number, TagColoredPileupData> {
-  const resolve =
+  const bake =
     colorBy && scale && isBakedScheme(colorBy)
-      ? makeColorResolver(colorBy, scale)
+      ? bakerFor(colorBy, scale)
       : undefined
   const out = new Map<number, TagColoredPileupData>()
   for (const [idx, data] of map) {
     out.set(idx, {
       ...data,
-      readTagColors: resolve ? applyResolver(data, resolve) : NO_TAG_COLORS,
+      readTagColors: bake ? bake(data) : NO_TAG_COLORS,
     })
   }
   return out

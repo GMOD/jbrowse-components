@@ -200,11 +200,15 @@ describe('color.title heads the key the color object draws', () => {
 
   test('a ramp fill takes the title on its bar and leaves the read rows theirs', () => {
     const ramps = colorRampScales({
-      colorBy: { type: 'mappingQuality' },
+      colorBy: { type: 'tag', tag: 'NM' },
       baseLayer: undefined,
-      bakedScale: undefined,
-      tagValueExtent: undefined,
-      mapqExtent: [0, 60],
+      bakedScale: bakedColorScale(
+        { type: 'tag', tag: 'NM' },
+        { field: 'tags.NM', scale: 'linear', reverse: false },
+        undefined,
+        [0, 10],
+      ),
+      tagValueExtent: [0, 10],
       baseQualityExtent: undefined,
     })
     expect(

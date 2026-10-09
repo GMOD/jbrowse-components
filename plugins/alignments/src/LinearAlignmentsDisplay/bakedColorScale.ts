@@ -137,14 +137,14 @@ function withoutNoValue(
 }
 
 /**
- * The scale the tag, attribute and mate-reference fields bake through, read
- * off the resolved `color`. With nothing declared a value's color is a
+ * The scale the tag, attribute, MAPQ and mate-reference fields bake through,
+ * read off the resolved `color`. With nothing declared a value's color is a
  * function of the value alone (`bakedValueColor`); a `domain` or `range` hands
  * the listed values their colors in order, over the same tag palette. `''`
  * in `domain` names a read with no value, which the category table colors
  * (`declaredReadCategoryColors`), so it and its `range` entry leave the list.
- * A linear or threshold scale reads a tag or attribute, and waits unread
- * beside a mate reference, whose values are sequence names.
+ * A linear or threshold scale reads a tag, an attribute or MAPQ, and waits
+ * unread beside a mate reference, whose values are sequence names.
  */
 export function bakedColorScale(
   colorBy: ColorBy,
@@ -153,7 +153,8 @@ export function bakedColorScale(
   extent: NumericExtent | undefined,
 ): BakedColorScale {
   const scaled = typeof encoding === 'object' ? encoding : undefined
-  if (colorBy.type === 'tag' && scaled?.scale === 'linear') {
+  const numeric = colorBy.type === 'tag' || colorBy.type === 'mappingQuality'
+  if (numeric && scaled?.scale === 'linear') {
     return linearScale(
       scaled,
       rampDomain(
@@ -163,7 +164,7 @@ export function bakedColorScale(
       ),
     )
   }
-  if (colorBy.type === 'tag' && scaled?.scale === 'threshold') {
+  if (numeric && scaled?.scale === 'threshold') {
     return thresholdScale(scaled)
   }
   const { domain, range } =

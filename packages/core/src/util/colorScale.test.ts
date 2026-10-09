@@ -31,6 +31,25 @@ test('a preset fills the members a config leaves unwritten, an empty list among 
   ).toMatchObject({ domain: ['0.5'], range: ['a', 'b', 'c'] })
 })
 
+test("written cuts take a threshold preset's palette and none of its interval names", () => {
+  const presets = {
+    q: {
+      scale: 'threshold',
+      domain: ['10'],
+      range: ['a', 'b'],
+      labels: ['low', 'high'],
+    },
+  } as const
+  expect(withPreset({ field: 'q', domain: ['5', '20'] }, presets)).toEqual({
+    field: 'q',
+    domain: ['5', '20'],
+    range: ['a', 'b'],
+  })
+  expect(withPreset({ field: 'q' }, presets)).toMatchObject({
+    labels: ['low', 'high'],
+  })
+})
+
 test("strand's universal preset sits under every display's own table", () => {
   expect(
     withPreset({ field: 'strand', labels: ['Plus', 'Minus'] }, {}),

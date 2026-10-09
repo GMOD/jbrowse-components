@@ -157,7 +157,10 @@ describe('the five levels that share the neutral default', () => {
       'normalInsert',
     ],
     [{ field: 'tags.HP', domain: [''] }, 'noTagValue'],
-    [{ field: 'mapq', domain: ['255'] }, 'mapqUnavailable'],
+    [
+      { field: 'mapq', scale: 'categorical', domain: ['255'] },
+      'mapqUnavailable',
+    ],
   ]
   const neutral = categorySwatchColor('pairLR', DEFAULT)
 

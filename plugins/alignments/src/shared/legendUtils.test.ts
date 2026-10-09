@@ -21,7 +21,6 @@ import {
   getReadDisplayLegendItems,
   sashimiLegendItems,
 } from './legendUtils.ts'
-import { MAPQ_CSS } from './qualityRamps.ts'
 import { splitSchemeForTest } from './splitSchemeForTest.ts'
 import { CHAIN_FRAME_REV, CHAIN_SUPP_PRESENT } from './types.ts'
 
@@ -880,30 +879,55 @@ describe('colorRampScales', () => {
   const noExtents = {
     bakedScale: undefined,
     tagValueExtent: undefined,
-    mapqExtent: undefined,
     baseQualityExtent: undefined,
   }
+  const mapqRamp = bakedColorScale(
+    { type: 'mappingQuality' },
+    {
+      field: 'mapq',
+      scale: 'linear',
+      scheme: 'cividis',
+      domainMin: 0,
+      domainMax: 60,
+      reverse: false,
+    },
+    undefined,
+    undefined,
+  )
   const rgbOf = (css: string) => {
     const { r, g, b } = colord(css).toRgb()
     return [r, g, b]
   }
   const bar = (scale: RampScale) => legendSpecOf([scale]).sections[0]!.items[0]!
 
-  test('mapping quality keys a color bar from the MAPQ table the reads paint', () => {
+  test('a linear MAPQ keys a color bar from the scale the reads bake through', () => {
     const [mapq, ...rest] = colorRampScales({
       ...noExtents,
       colorBy: { type: 'mappingQuality' },
       baseLayer: undefined,
-      mapqExtent: [0, 70],
+      bakedScale: mapqRamp,
+      tagValueExtent: [0, 70],
     })
     expect(rest).toEqual([])
     expect(mapq).toMatchObject({ title: 'Mapping quality', domain: [0, 60] })
-    expect(rgbOf(mapq!.stops[0]!.color)).toEqual(rgbOf(MAPQ_CSS[0]!))
-    expect(rgbOf(mapq!.stops.at(-1)!.color)).toEqual(rgbOf(MAPQ_CSS[60]!))
+    expect(rgbOf(mapq!.stops[0]!.color)).toEqual(rgbOf(mapqRamp.color('0')!))
+    expect(rgbOf(mapq!.stops.at(-1)!.color)).toEqual(
+      rgbOf(mapqRamp.color('60')!),
+    )
     expect(bar(mapq!)).toMatchObject({
       label: 'Mapping quality',
       gradient: { minLabel: '0', maxLabel: '≥60' },
     })
+  })
+
+  test('the default MAPQ bins key no color bar', () => {
+    expect(
+      colorRampScales({
+        ...noExtents,
+        colorBy: { type: 'mappingQuality' },
+        baseLayer: undefined,
+      }),
+    ).toEqual([])
   })
 
   test('base quality keys a color bar from the table the cells paint, ahead of the read fill', () => {
@@ -911,6 +935,7 @@ describe('colorRampScales', () => {
       ...noExtents,
       colorBy: { type: 'mappingQuality' },
       baseLayer: { type: 'perBaseQuality' },
+      bakedScale: mapqRamp,
       baseQualityExtent: [2, 38],
     })
     expect(baseQuality).toMatchObject({

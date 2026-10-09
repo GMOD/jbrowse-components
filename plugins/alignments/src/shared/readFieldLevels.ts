@@ -32,6 +32,14 @@ export const MAPQ_BINS = [
   { key: '0', min: 0, label: 'MAPQ 0 (multi-mapping)' },
 ] as const
 
+/** The same bins lowest first, as a threshold scale lists its intervals. */
+const MAPQ_BINS_ASCENDING = MAPQ_BINS.toReversed()
+
+/** The cuts between the bins, which a `mapq` color's threshold scale reads. */
+export const MAPQ_CUTS = MAPQ_BINS_ASCENDING.slice(1).map(b => b.key)
+
+export const MAPQ_BIN_LABELS = MAPQ_BINS_ASCENDING.map(b => b.label)
+
 export const SPLIT_READ_LEVELS = ['split', 'unsplit'] as const
 
 const LEVEL_ORDER: Readonly<Record<string, readonly string[]>> = {

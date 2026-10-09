@@ -13,14 +13,14 @@ function createDisplay() {
 test.each([
   [
     'cuts out of order',
-    { color: { field: 'mapq', scale: 'threshold', domain: ['5', '1'] } },
+    { color: { field: 'tags.NM', scale: 'threshold', domain: ['5', '1'] } },
     /^color\.domain: threshold cuts are distinct numbers/,
   ],
   [
     'a range short of its cuts',
     {
       color: {
-        field: 'mapq',
+        field: 'tags.NM',
         scale: 'threshold',
         domain: ['1', '5'],
         range: ['red'],

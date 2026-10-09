@@ -153,9 +153,10 @@ function unwritten(value: unknown) {
  * names and the config leaves unwritten, an empty list counting as unwritten.
  * Only while the color paints through the preset's own scale, so the cuts of
  * a threshold preset never reach a field read through a ramp. A categorical
- * preset's `range` and `labels` name its `domain`'s values in order, so they
- * fill only while `domain` does too: a written order keeps each value's own
- * color and name.
+ * preset's `range` and `labels` name its `domain`'s values in order, and a
+ * threshold preset's `labels` its intervals, so they fill only while `domain`
+ * does too: a written order keeps each value's own color and name, and written
+ * cuts keep the preset's palette and lose its interval names.
  */
 export function withPreset<C extends { field?: string; scale?: string }>(
   color: C,
@@ -167,15 +168,14 @@ export function withPreset<C extends { field?: string; scale?: string }>(
     return color
   }
   const written = new Map<string, unknown>(Object.entries(color))
-  const ordered =
-    preset.scale !== 'categorical' ||
-    !preset.domain ||
-    unwritten(written.get('domain'))
+  const ownDomain = !preset.domain || unwritten(written.get('domain'))
+  const named =
+    preset.scale === 'categorical' ? ['range', 'labels'] : ['labels']
   const filled = Object.entries(preset).filter(
     ([key]) =>
       key !== 'scale' &&
       key !== 'missing' &&
-      (ordered || (key !== 'range' && key !== 'labels')) &&
+      (ownDomain || !named.includes(key)) &&
       unwritten(written.get(key)),
   )
   return filled.length > 0 ? { ...color, ...Object.fromEntries(filled) } : color
