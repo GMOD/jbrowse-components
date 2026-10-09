@@ -987,12 +987,27 @@ function describeSymbol(checker: ts.TypeChecker, node: ts.Node) {
 // of expanded config schema ending in "including c..."). When that happens,
 // re-render untruncated and shorten structurally instead, so the type still
 // reads as a type.
+// A member of an object literal whose type is written elsewhere, as in
+// `.volatile((): State => ({ x: undefined }))`, reads as that written type
+// rather than its initializer's `undefined`.
+function declaredType(
+  checker: ts.TypeChecker,
+  symbol: ts.Symbol,
+  decl: ts.Declaration,
+) {
+  const written =
+    ts.isPropertyAssignment(decl) && ts.isObjectLiteralExpression(decl.parent)
+      ? checker.getContextualType(decl.parent)?.getProperty(symbol.getName())
+      : undefined
+  return checker.getTypeOfSymbolAtLocation(written ?? symbol, decl)
+}
+
 function typeSignature(
   checker: ts.TypeChecker,
   symbol: ts.Symbol,
   decl: ts.Declaration,
 ) {
-  const type = checker.getTypeOfSymbolAtLocation(symbol, decl)
+  const type = declaredType(checker, symbol, decl)
   const overloads = type.getCallSignatures()
   // An overloaded function prints as one object type of call signatures, which
   // elision then collapses whole. One arrow per line reads as what it is.
