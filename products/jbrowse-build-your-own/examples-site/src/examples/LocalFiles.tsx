@@ -1,14 +1,9 @@
 import { useState } from 'react'
 
 import { refNameMismatchMessage } from '@jbrowse/core/assemblyManager/assembly'
+import { fileToLocation, getEnv } from '@jbrowse/core/util'
 import { indexCandidateNames } from '@jbrowse/core/util/indexCandidates'
-import {
-  UNKNOWN,
-  UNSUPPORTED,
-  guessAdapter,
-  guessTrackType,
-  storeBlobLocation,
-} from '@jbrowse/core/util/tracks'
+import { guessTrackConfForLocation } from '@jbrowse/core/util/tracks'
 import { EmbedProvider, TrackStack } from '@jbrowse/display-ui/embed'
 import { useCreateViewState } from '@jbrowse/react-linear-genome-view2'
 import { observer } from 'mobx-react'
@@ -24,40 +19,21 @@ const notice: React.CSSProperties = {
   fontSize: '0.8rem',
 }
 
-function register(file: File) {
-  const location = storeBlobLocation({ blob: file })
-  if (!('blobId' in location)) {
-    throw new Error(`could not register ${file.name}`)
-  }
-  return location
-}
-
 function openFiles(session: Session, files: File[]) {
-  const { view } = session
+  const { pluginManager } = getEnv(session)
   const indexOf = (data: File) =>
     files.find(f => indexCandidateNames(data.name).includes(f.name))
   const indexes = new Set(files.map(indexOf))
   for (const data of files.filter(f => !indexes.has(f))) {
     const index = indexOf(data)
-    const location = register(data)
-    const adapter = guessAdapter(
-      location,
-      index ? register(index) : undefined,
-      undefined,
-      view,
+    const conf = guessTrackConfForLocation(
+      fileToLocation(data),
+      index && fileToLocation(index),
+      pluginManager,
+      'hg38',
     )
-    if (adapter.type === UNKNOWN || adapter.type === UNSUPPORTED) {
-      throw new Error(`No loaded plugin reads "${data.name}"`)
-    }
-    const trackId = `local-${location.blobId}`
-    session.addSessionTrackConf({
-      trackId,
-      type: guessTrackType(adapter.type, view, location),
-      name: data.name,
-      assemblyNames: ['hg38'],
-      adapter,
-    })
-    void view.launchTrack(trackId)
+    session.addSessionTrackConf(conf)
+    void session.view.launchTrack(conf.trackId)
   }
 }
 
