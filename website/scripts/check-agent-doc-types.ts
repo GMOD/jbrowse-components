@@ -60,6 +60,9 @@ const EXEMPT: Record<string, string> = {
   // `LaunchView-<type>`, and the prefix ends in View like a type name does. No
   // build registers a view called this.
   LaunchView: 'the LaunchView-<type> extension point, not a view type',
+  // Internal duck-type interface in jbApi.ts used to check if picker dialogs
+  // are open, not a displayable type for agents.
+  PickerView: 'internal duck-type interface, not a display type',
 }
 
 function documented(name: string) {
