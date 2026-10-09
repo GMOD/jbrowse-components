@@ -34,7 +34,7 @@
     "clean": "rimraf esm *.tsbuildinfo"
   },
   "dependencies": {
-    "@gmod/bbi": "^11.3.0",
+    "@gmod/bbi": "^11.3.1",
     "@jbrowse/add-track-core": "workspace:^",
     "@jbrowse/core": "workspace:^",
     "@jbrowse/display-kit": "workspace:^",

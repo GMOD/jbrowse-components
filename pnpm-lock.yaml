@@ -43,8 +43,8 @@ importers:
         specifier: ^10.0.1
         version: 10.0.1(eslint@10.12.0(supports-color@8.1.1))
       '@gmod/bbi':
-        specifier: ^11.3.0
-        version: 11.3.0
+        specifier: ^11.3.1
+        version: 11.3.1
       '@jbrowse/mobx-state-tree':
         specifier: ^6.7.0
         version: 6.7.0(mobx@7.0.6)
@@ -965,8 +965,8 @@ importers:
   plugins/bed:
     dependencies:
       '@gmod/bbi':
-        specifier: ^11.3.0
-        version: 11.3.0
+        specifier: ^11.3.1
+        version: 11.3.1
       '@gmod/bed':
         specifier: ^2.3.1
         version: 2.3.1
@@ -2128,8 +2128,8 @@ importers:
   plugins/wiggle:
     dependencies:
       '@gmod/bbi':
-        specifier: ^11.3.0
-        version: 11.3.0
+        specifier: ^11.3.1
+        version: 11.3.1
       '@jbrowse/add-track-core':
         specifier: workspace:^
         version: link:../../packages/add-track-core
@@ -4789,8 +4789,8 @@ packages:
   '@gmod/bam@10.0.5':
     resolution: {integrity: sha512-SvtXsE3esi4+D4bhBLuca7J0+hUNpSVwATNZviGqgjeAdXVt+hTVeHwl/CSwNIvPkQIhSZpLmUJTTYpKmDb7tQ==}
 
-  '@gmod/bbi@11.3.0':
-    resolution: {integrity: sha512-Uztjf46uEDOMu3qQ3q1ysQSH93e/nOQT3LJ7X3mE/KkMlX3p9ywtOKylEfyaWTZfMIGu+nZoQkjKbQCqnVrqog==}
+  '@gmod/bbi@11.3.1':
+    resolution: {integrity: sha512-ckW8d0polYNUwtjT7nDwJhFJpmU9+dOd3egjFfUwqyuo2wALkW+5lPHbQAVRwYc3VlUaUxBK6to41Jq8iXxAxA==}
 
   '@gmod/bed@2.3.1':
     resolution: {integrity: sha512-wuyv0Z3AwJOg9/9LRODlzeTxIm05jWv57N/TmRXoPfZJMtvw4RwYjWF1joVRuv1zVkn9TrW8zIANJFqt+4uQgQ==}
@@ -4824,9 +4824,6 @@ packages:
 
   '@gmod/range-cache-filehandle@1.5.0':
     resolution: {integrity: sha512-73XvHyvAqORaJD5k+Jn009ttPM1vFm7cN78EjR+Q/IoW8Sih+8b5wq4CFsiJed4P7WEmaagni337X9s8Gk3zxw==}
-
-  '@gmod/shared-read-cache@1.7.2':
-    resolution: {integrity: sha512-N71dzJHYYSEAZYQCl38QGZ8cx468lFZE9VdS29N2DhRbKMf/X7Qb+cJsuIt1MeVDmpvKui5wDiNILgkQREpwlw==}
 
   '@gmod/shared-read-cache@2.0.0':
     resolution: {integrity: sha512-nU4HPB+DlvZqRVJZvtIbJ3zS+kSKfOhibCu3Y7Sia9D4GwA1MotdBNH19hM8/gP/tYuHGaSdvpGhZ0FfJbw/Hg==}
@@ -12940,9 +12937,9 @@ snapshots:
       '@jbrowse/quick-lru': 8.0.0
       generic-filehandle2: 2.5.0
 
-  '@gmod/bbi@11.3.0':
+  '@gmod/bbi@11.3.1':
     dependencies:
-      '@gmod/shared-read-cache': 1.7.2
+      '@gmod/shared-read-cache': 2.0.0
       generic-filehandle2: 2.5.0
 
   '@gmod/bed@2.3.1': {}
@@ -12991,8 +12988,6 @@ snapshots:
   '@gmod/range-cache-filehandle@1.5.0':
     dependencies:
       generic-filehandle2: 2.5.0
-
-  '@gmod/shared-read-cache@1.7.2': {}
 
   '@gmod/shared-read-cache@2.0.0': {}
 
