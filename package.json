@@ -87,7 +87,7 @@
     "test:e2e:desktop": "pnpm --filter @jbrowse/desktop test:e2e"
   },
   "devDependencies": {
-    "@babel/core": "^8.0.7",
+    "@babel/core": "catalog:",
     "@babel/preset-env": "^8.0.7",
     "@babel/preset-react": "^8.0.1",
     "@babel/preset-typescript": "^8.0.7",
