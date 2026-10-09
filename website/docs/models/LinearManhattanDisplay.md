@@ -43,8 +43,6 @@ Each section ends with the members a composed model contributes, linked to the p
 
 <span data-pagefind-ignore>From [StoredHoverMixin](../storedhovermixin): <span id="volatile-storedhoveredfeature">[`storedHoveredFeature`](../storedhovermixin#volatile-storedhoveredfeature)</span></span>
 
-<span data-pagefind-ignore>From [HiddenGroupsMixin](../hiddengroupsmixin): <span id="volatile-hiddengroups">[`hiddenGroups`](../hiddengroupsmixin#volatile-hiddengroups)</span></span>
-
 <span data-pagefind-ignore>From [BaseDisplay](../basedisplay): <span id="volatile-error">[`error`](../basedisplay#volatile-error)</span>, <span id="volatile-statusmessage">[`statusMessage`](../basedisplay#volatile-statusmessage)</span>, <span id="volatile-statusprogress">[`statusProgress`](../basedisplay#volatile-statusprogress)</span></span>
 
 <span data-pagefind-ignore>From [TrackHeightMixin](../trackheightmixin): <span id="volatile-scrolltop">[`scrollTop`](../trackheightmixin#volatile-scrolltop)</span></span>
@@ -90,7 +88,7 @@ Each section ends with the members a composed model contributes, linked to the p
 
 <span data-pagefind-ignore>From [StoredHoverMixin](../storedhovermixin): <span id="getter-hoveredfeature">[`hoveredFeature`](../storedhovermixin#getter-hoveredfeature)</span></span>
 
-<span data-pagefind-ignore>From [HiddenGroupsMixin](../hiddengroupsmixin): <span id="getter-displayhiddengroupkeys">[`displayHiddenGroupKeys`](../hiddengroupsmixin#getter-displayhiddengroupkeys)</span>, <span id="getter-owngroupstate">[`ownGroupState`](../hiddengroupsmixin#getter-owngroupstate)</span>, <span id="getter-hiddengroupkeys">[`hiddenGroupKeys`](../hiddengroupsmixin#getter-hiddengroupkeys)</span>, <span id="getter-groupstatekey">[`groupStateKey`](../hiddengroupsmixin#getter-groupstatekey)</span></span>
+<span data-pagefind-ignore>From [HiddenGroupsMixin](../hiddengroupsmixin): <span id="getter-displayhiddengroupkeys">[`displayHiddenGroupKeys`](../hiddengroupsmixin#getter-displayhiddengroupkeys)</span>, <span id="getter-owngroupstate">[`ownGroupState`](../hiddengroupsmixin#getter-owngroupstate)</span>, <span id="getter-hiddengroups">[`hiddenGroups`](../hiddengroupsmixin#getter-hiddengroups)</span>, <span id="getter-hiddengroupkeys">[`hiddenGroupKeys`](../hiddengroupsmixin#getter-hiddengroupkeys)</span>, <span id="getter-groupstatekey">[`groupStateKey`](../hiddengroupsmixin#getter-groupstatekey)</span></span>
 
 <span data-pagefind-ignore>From [BaseDisplay](../basedisplay): <span id="getter-parenttrack">[`parentTrack`](../basedisplay#getter-parenttrack)</span>, <span id="getter-renderingcomponent">[`RenderingComponent`](../basedisplay#getter-renderingcomponent)</span>, <span id="getter-displayblurb">[`DisplayBlurb`](../basedisplay#getter-displayblurb)</span>, <span id="getter-adapterconfig">[`adapterConfig`](../basedisplay#getter-adapterconfig)</span>, <span id="getter-isminimized">[`isMinimized`](../basedisplay#getter-isminimized)</span>, <span id="getter-featurenoun">[`featureNoun`](../basedisplay#getter-featurenoun)</span>, <span id="getter-featurewidgettype">[`featureWidgetType`](../basedisplay#getter-featurewidgettype)</span>, <span id="getter-plotkeys">[`plotKeys`](../basedisplay#getter-plotkeys)</span>, <span id="getter-plot">[`plot`](../basedisplay#getter-plot)</span>, <span id="getter-plotexamples">[`plotExamples`](../basedisplay#getter-plotexamples)</span>, <span id="getter-configdocsurl">[`configDocsUrl`](../basedisplay#getter-configdocsurl)</span></span>
 

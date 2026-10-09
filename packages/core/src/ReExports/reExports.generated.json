@@ -4656,6 +4656,13 @@
       ],
       "worker": "real"
     },
+    "@jbrowse/display-kit/sectionFacetConfigSchema": {
+      "package": "@jbrowse/display-kit",
+      "names": [
+        "sectionFacetConfigSchema"
+      ],
+      "worker": "real"
+    },
     "@jbrowse/display-kit/SkippedFeaturesIndicator": {
       "package": "@jbrowse/display-kit",
       "names": [

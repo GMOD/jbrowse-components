@@ -3182,8 +3182,12 @@ export const configManifest: ConfigManifest = {
           }
         },
         {
+          "name": "showOutline",
+          "type": "boolean"
+        },
+        {
           "name": "outlineColor",
-          "type": "CssColor"
+          "type": "(CssColor | undefined)"
         },
         {
           "name": "featureHeight",
@@ -3195,7 +3199,7 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "facet",
-          "type": "FacetConfigurationSchema",
+          "type": "SectionFacetConfigurationSchema",
           "subSlots": [
             {
               "name": "field",
@@ -3203,6 +3207,11 @@ export const configManifest: ConfigManifest = {
             },
             {
               "name": "domain",
+              "type": "string[]",
+              "liftsNumbers": true
+            },
+            {
+              "name": "hidden",
               "type": "string[]",
               "liftsNumbers": true
             }
@@ -3857,7 +3866,7 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "facet",
-          "type": "FacetConfigurationSchema",
+          "type": "SectionFacetConfigurationSchema",
           "subSlots": [
             {
               "name": "field",
@@ -3865,6 +3874,11 @@ export const configManifest: ConfigManifest = {
             },
             {
               "name": "domain",
+              "type": "string[]",
+              "liftsNumbers": true
+            },
+            {
+              "name": "hidden",
               "type": "string[]",
               "liftsNumbers": true
             }
@@ -4575,7 +4589,7 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "facet",
-          "type": "FacetConfigurationSchema",
+          "type": "SectionFacetConfigurationSchema",
           "subSlots": [
             {
               "name": "field",
@@ -4583,6 +4597,11 @@ export const configManifest: ConfigManifest = {
             },
             {
               "name": "domain",
+              "type": "string[]",
+              "liftsNumbers": true
+            },
+            {
+              "name": "hidden",
               "type": "string[]",
               "liftsNumbers": true
             }
@@ -5543,8 +5562,12 @@ export const configManifest: ConfigManifest = {
           }
         },
         {
+          "name": "showOutline",
+          "type": "boolean"
+        },
+        {
           "name": "outlineColor",
-          "type": "CssColor"
+          "type": "(CssColor | undefined)"
         },
         {
           "name": "featureHeight",
@@ -5556,7 +5579,7 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "facet",
-          "type": "FacetConfigurationSchema",
+          "type": "SectionFacetConfigurationSchema",
           "subSlots": [
             {
               "name": "field",
@@ -5564,6 +5587,11 @@ export const configManifest: ConfigManifest = {
             },
             {
               "name": "domain",
+              "type": "string[]",
+              "liftsNumbers": true
+            },
+            {
+              "name": "hidden",
               "type": "string[]",
               "liftsNumbers": true
             }
@@ -7053,6 +7081,11 @@ export const configManifest: ConfigManifest = {
               "liftsNumbers": true
             },
             {
+              "name": "hidden",
+              "type": "string[]",
+              "liftsNumbers": true
+            },
+            {
               "name": "transform",
               "type": "(filterConfigurationSchema | formulaConfigurationSchema | binConfigurationSchema | aggregateConfigurationSchema | coverageConfigurationSchema | flattenConfigurationSchema | cellsConfigurationSchema | pileupConfigurationSchema | mateConfigurationSchema)[]"
             }
@@ -7543,6 +7576,11 @@ export const configManifest: ConfigManifest = {
             },
             {
               "name": "domain",
+              "type": "string[]",
+              "liftsNumbers": true
+            },
+            {
+              "name": "hidden",
               "type": "string[]",
               "liftsNumbers": true
             },

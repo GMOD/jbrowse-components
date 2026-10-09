@@ -38,7 +38,7 @@ and it bands the sample rows by its value, with no chip.
 
 ## Related links
 
-- **Extended by:** [MarkFacet](../markfacet)
+- **Extended by:** [SectionFacet](../sectionfacet)
 
 ## Config slots
 

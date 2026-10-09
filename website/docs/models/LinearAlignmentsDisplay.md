@@ -125,8 +125,6 @@ Each section ends with the members a composed model contributes, linked to the p
 
 <span data-pagefind-ignore>From [ContextMenuMixin](../contextmenumixin): <span id="volatile-contextmenuinfo">[`contextMenuInfo`](../contextmenumixin#volatile-contextmenuinfo)</span></span>
 
-<span data-pagefind-ignore>From [HiddenGroupsMixin](../hiddengroupsmixin): <span id="volatile-hiddengroups">[`hiddenGroups`](../hiddengroupsmixin#volatile-hiddengroups)</span></span>
-
 ## Getters
 
 <!-- prettier-ignore -->
@@ -340,7 +338,7 @@ Each section ends with the members a composed model contributes, linked to the p
 
 <span data-pagefind-ignore>From [LegendMixin](../legendmixin): <span id="getter-showlegend">[`showLegend`](../legendmixin#getter-showlegend)</span>, <span id="getter-legendtop">[`legendTop`](../legendmixin#getter-legendtop)</span>, <span id="getter-legendright">[`legendRight`](../legendmixin#getter-legendright)</span>, <span id="getter-legendspec">[`legendSpec`](../legendmixin#getter-legendspec)</span>, <span id="getter-haslegendkey">[`hasLegendKey`](../legendmixin#getter-haslegendkey)</span></span>
 
-<span data-pagefind-ignore>From [HiddenGroupsMixin](../hiddengroupsmixin): <span id="getter-displayhiddengroupkeys">[`displayHiddenGroupKeys`](../hiddengroupsmixin#getter-displayhiddengroupkeys)</span>, <span id="getter-hiddengroupkeys">[`hiddenGroupKeys`](../hiddengroupsmixin#getter-hiddengroupkeys)</span>, <span id="getter-groupstatekey">[`groupStateKey`](../hiddengroupsmixin#getter-groupstatekey)</span></span>
+<span data-pagefind-ignore>From [HiddenGroupsMixin](../hiddengroupsmixin): <span id="getter-displayhiddengroupkeys">[`displayHiddenGroupKeys`](../hiddengroupsmixin#getter-displayhiddengroupkeys)</span>, <span id="getter-hiddengroups">[`hiddenGroups`](../hiddengroupsmixin#getter-hiddengroups)</span>, <span id="getter-hiddengroupkeys">[`hiddenGroupKeys`](../hiddengroupsmixin#getter-hiddengroupkeys)</span>, <span id="getter-groupstatekey">[`groupStateKey`](../hiddengroupsmixin#getter-groupstatekey)</span></span>
 
 ## Methods
 

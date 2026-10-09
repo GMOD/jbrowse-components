@@ -467,6 +467,7 @@ export default [
   '@jbrowse/display-kit/rowsConfigSchema',
   '@jbrowse/display-kit/rpcArgs',
   '@jbrowse/display-kit/sampleRowsConfigSchema',
+  '@jbrowse/display-kit/sectionFacetConfigSchema',
   '@jbrowse/display-kit/SkippedFeaturesIndicator',
   '@jbrowse/display-kit/SolidColorDialog',
   '@jbrowse/display-kit/stableIdentityComputed',

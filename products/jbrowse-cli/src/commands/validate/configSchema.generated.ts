@@ -4989,8 +4989,8 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         }
       ]
     },
-    "Facet": {
-      "title": "Facet",
+    "SectionFacet": {
+      "title": "SectionFacet",
       "anyOf": [
         {
           "description": "Shorthand for \`{ \\"field\\": ... }\`.",
@@ -4999,7 +4999,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "type": "string"
         },
         {
-          "title": "Facet",
+          "title": "SectionFacet",
           "type": "object",
           "x-closed": true,
           "properties": {
@@ -5015,6 +5015,29 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             },
             "domain": {
               "description": "values whose sections stack first, in order.",
+              "if": {
+                "type": "null"
+              },
+              "else": {
+                "anyOf": [
+                  {
+                    "type": "array",
+                    "items": {
+                      "anyOf": [
+                        {
+                          "type": "string"
+                        },
+                        {
+                          "type": "number"
+                        }
+                      ]
+                    }
+                  }
+                ]
+              }
+            },
+            "hidden": {
+              "description": "keys of the sections hidden from the stack.",
               "if": {
                 "type": "null"
               },
@@ -5253,9 +5276,18 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "$ref": "#/$defs/FeatureColor"
           }
         },
+        "showOutline": {
+          "description": "draw an outline around each feature.",
+          "default": false,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "boolean"
+          }
+        },
         "outlineColor": {
-          "description": "outline color for features (empty string = no outline).",
-          "default": "",
+          "description": "the outline's color while showOutline draws one; unset takes the theme's.",
           "if": {
             "type": "null"
           },
@@ -5305,7 +5337,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "type": "null"
           },
           "else": {
-            "$ref": "#/$defs/Facet"
+            "$ref": "#/$defs/SectionFacet"
           }
         },
         "labels": {
@@ -5755,6 +5787,61 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         "^_+comment": {}
       },
       "additionalProperties": false
+    },
+    "Facet": {
+      "title": "Facet",
+      "anyOf": [
+        {
+          "description": "Shorthand for \`{ \\"field\\": ... }\`.",
+          "default": "",
+          "$ref": "#/$defs/FeatureField",
+          "type": "string"
+        },
+        {
+          "title": "Facet",
+          "type": "object",
+          "x-closed": true,
+          "properties": {
+            "field": {
+              "description": "feature field (or jexl expression) to group by, one labelled section per value; \`strand\` for one per strand, and empty for no sections.",
+              "default": "",
+              "if": {
+                "type": "null"
+              },
+              "else": {
+                "$ref": "#/$defs/FeatureField"
+              }
+            },
+            "domain": {
+              "description": "values whose sections stack first, in order.",
+              "if": {
+                "type": "null"
+              },
+              "else": {
+                "anyOf": [
+                  {
+                    "type": "array",
+                    "items": {
+                      "anyOf": [
+                        {
+                          "type": "string"
+                        },
+                        {
+                          "type": "number"
+                        }
+                      ]
+                    }
+                  }
+                ]
+              }
+            }
+          },
+          "patternProperties": {
+            "^_+comment": {}
+          },
+          "additionalProperties": false
+        }
+      ]
     },
     "LinearMultiRowFeatureDisplaySlots": {
       "type": "object",
@@ -6852,7 +6939,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "type": "null"
           },
           "else": {
-            "$ref": "#/$defs/Facet"
+            "$ref": "#/$defs/SectionFacet"
           }
         },
         "collapseGroupRows": {
@@ -8032,7 +8119,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "type": "null"
           },
           "else": {
-            "$ref": "#/$defs/Facet"
+            "$ref": "#/$defs/SectionFacet"
           }
         },
         "collapseGroupRows": {
@@ -10783,9 +10870,18 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "$ref": "#/$defs/FeatureColor"
           }
         },
+        "showOutline": {
+          "description": "draw an outline around each feature.",
+          "default": false,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "boolean"
+          }
+        },
         "outlineColor": {
-          "description": "outline color for features (empty string = no outline).",
-          "default": "",
+          "description": "the outline's color while showOutline draws one; unset takes the theme's.",
           "if": {
             "type": "null"
           },
@@ -10835,7 +10931,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "type": "null"
           },
           "else": {
-            "$ref": "#/$defs/Facet"
+            "$ref": "#/$defs/SectionFacet"
           }
         },
         "labels": {
@@ -13283,6 +13379,29 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
                 ]
               }
             },
+            "hidden": {
+              "description": "keys of the sections hidden from the stack.",
+              "if": {
+                "type": "null"
+              },
+              "else": {
+                "anyOf": [
+                  {
+                    "type": "array",
+                    "items": {
+                      "anyOf": [
+                        {
+                          "type": "string"
+                        },
+                        {
+                          "type": "number"
+                        }
+                      ]
+                    }
+                  }
+                ]
+              }
+            },
             "transform": {
               "if": {
                 "type": "null"
@@ -14587,6 +14706,9 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
                   "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/color"
                 }
               ]
+            },
+            "showOutline": {
+              "$ref": "#/$defs/LinearBasicDisplaySlots/properties/showOutline"
             },
             "outlineColor": {
               "$ref": "#/$defs/LinearBasicDisplaySlots/properties/outlineColor"
@@ -15979,6 +16101,9 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             },
             "maxDescriptionFeatureDensity": {
               "$ref": "#/$defs/LinearVariantDisplaySlots/properties/maxDescriptionFeatureDensity"
+            },
+            "showOutline": {
+              "$ref": "#/$defs/LinearVariantDisplaySlots/properties/showOutline"
             },
             "outlineColor": {
               "$ref": "#/$defs/LinearVariantDisplaySlots/properties/outlineColor"

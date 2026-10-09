@@ -4855,8 +4855,8 @@
         }
       ]
     },
-    "Facet": {
-      "title": "Facet",
+    "SectionFacet": {
+      "title": "SectionFacet",
       "anyOf": [
         {
           "description": "Shorthand for `{ \"field\": ... }`.",
@@ -4865,7 +4865,7 @@
           "type": "string"
         },
         {
-          "title": "Facet",
+          "title": "SectionFacet",
           "type": "object",
           "x-closed": true,
           "properties": {
@@ -4881,6 +4881,29 @@
             },
             "domain": {
               "description": "values whose sections stack first, in order.",
+              "if": {
+                "type": "null"
+              },
+              "else": {
+                "anyOf": [
+                  {
+                    "type": "array",
+                    "items": {
+                      "anyOf": [
+                        {
+                          "type": "string"
+                        },
+                        {
+                          "type": "number"
+                        }
+                      ]
+                    }
+                  }
+                ]
+              }
+            },
+            "hidden": {
+              "description": "keys of the sections hidden from the stack.",
               "if": {
                 "type": "null"
               },
@@ -5108,9 +5131,18 @@
             "$ref": "#/$defs/FeatureColor"
           }
         },
+        "showOutline": {
+          "description": "draw an outline around each feature.",
+          "default": false,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "boolean"
+          }
+        },
         "outlineColor": {
-          "description": "outline color for features (empty string = no outline).",
-          "default": "",
+          "description": "the outline's color while showOutline draws one; unset takes the theme's.",
           "if": {
             "type": "null"
           },
@@ -5152,7 +5184,7 @@
             "type": "null"
           },
           "else": {
-            "$ref": "#/$defs/Facet"
+            "$ref": "#/$defs/SectionFacet"
           }
         },
         "labels": {
@@ -5587,6 +5619,61 @@
         "^_+comment": {}
       },
       "additionalProperties": false
+    },
+    "Facet": {
+      "title": "Facet",
+      "anyOf": [
+        {
+          "description": "Shorthand for `{ \"field\": ... }`.",
+          "default": "",
+          "$ref": "#/$defs/FeatureField",
+          "type": "string"
+        },
+        {
+          "title": "Facet",
+          "type": "object",
+          "x-closed": true,
+          "properties": {
+            "field": {
+              "description": "feature field (or jexl expression) to group by, one labelled section per value; `strand` for one per strand, and empty for no sections.",
+              "default": "",
+              "if": {
+                "type": "null"
+              },
+              "else": {
+                "$ref": "#/$defs/FeatureField"
+              }
+            },
+            "domain": {
+              "description": "values whose sections stack first, in order.",
+              "if": {
+                "type": "null"
+              },
+              "else": {
+                "anyOf": [
+                  {
+                    "type": "array",
+                    "items": {
+                      "anyOf": [
+                        {
+                          "type": "string"
+                        },
+                        {
+                          "type": "number"
+                        }
+                      ]
+                    }
+                  }
+                ]
+              }
+            }
+          },
+          "patternProperties": {
+            "^_+comment": {}
+          },
+          "additionalProperties": false
+        }
+      ]
     },
     "LinearMultiRowFeatureDisplaySlots": {
       "type": "object",
@@ -6638,7 +6725,7 @@
             "type": "null"
           },
           "else": {
-            "$ref": "#/$defs/Facet"
+            "$ref": "#/$defs/SectionFacet"
           }
         },
         "collapseGroupRows": {
@@ -7775,7 +7862,7 @@
             "type": "null"
           },
           "else": {
-            "$ref": "#/$defs/Facet"
+            "$ref": "#/$defs/SectionFacet"
           }
         },
         "collapseGroupRows": {
@@ -10411,9 +10498,18 @@
             "$ref": "#/$defs/FeatureColor"
           }
         },
+        "showOutline": {
+          "description": "draw an outline around each feature.",
+          "default": false,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "boolean"
+          }
+        },
         "outlineColor": {
-          "description": "outline color for features (empty string = no outline).",
-          "default": "",
+          "description": "the outline's color while showOutline draws one; unset takes the theme's.",
           "if": {
             "type": "null"
           },
@@ -10455,7 +10551,7 @@
             "type": "null"
           },
           "else": {
-            "$ref": "#/$defs/Facet"
+            "$ref": "#/$defs/SectionFacet"
           }
         },
         "labels": {
@@ -12816,6 +12912,29 @@
                 ]
               }
             },
+            "hidden": {
+              "description": "keys of the sections hidden from the stack.",
+              "if": {
+                "type": "null"
+              },
+              "else": {
+                "anyOf": [
+                  {
+                    "type": "array",
+                    "items": {
+                      "anyOf": [
+                        {
+                          "type": "string"
+                        },
+                        {
+                          "type": "number"
+                        }
+                      ]
+                    }
+                  }
+                ]
+              }
+            },
             "transform": {
               "if": {
                 "type": "null"
@@ -14089,6 +14208,9 @@
                   "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/color"
                 }
               ]
+            },
+            "showOutline": {
+              "$ref": "#/$defs/LinearBasicDisplaySlots/properties/showOutline"
             },
             "outlineColor": {
               "$ref": "#/$defs/LinearBasicDisplaySlots/properties/outlineColor"
@@ -15459,6 +15581,9 @@
             },
             "maxDescriptionFeatureDensity": {
               "$ref": "#/$defs/LinearVariantDisplaySlots/properties/maxDescriptionFeatureDensity"
+            },
+            "showOutline": {
+              "$ref": "#/$defs/LinearVariantDisplaySlots/properties/showOutline"
             },
             "outlineColor": {
               "$ref": "#/$defs/LinearVariantDisplaySlots/properties/outlineColor"
