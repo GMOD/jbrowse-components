@@ -59,8 +59,8 @@ export function plotColorLine(
  * its cut, labels and title come back when the sides part again.
  *
  * A channel replaces its setting whole, and the members this drops are the
- * ones the threshold scale does not read: `scheme`, `reverse` and `domainMid`
- * belong to a ramp, and a ramp is where the line is not editable. A declared
+ * ones a threshold writing its `range` does not read: `scheme`, `reverse` and
+ * `domainMid`, and a ramp is where the line is not editable. A declared
  * cut survives, and an undeclared one stays undeclared — writing `domain`
  * here would pin at the `origin` every config that had been following it.
  */

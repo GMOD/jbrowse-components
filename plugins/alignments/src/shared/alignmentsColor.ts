@@ -1,6 +1,5 @@
 import { keyNames } from '@jbrowse/core/util/categoricalField'
 import { cssColorToNormalizedRgb } from '@jbrowse/core/util/colorBits'
-import { rampLutOf, stopsFromRampLut } from '@jbrowse/core/util/colorRamp'
 import { colorNotices } from '@jbrowse/core/util/colorScale'
 import {
   thresholdCuts,
@@ -328,10 +327,7 @@ export const ALIGNMENTS_FIELD_PRESETS = {
   mapq: {
     scale: 'threshold',
     domain: MAPQ_CUTS,
-    range: stopsFromRampLut(
-      rampLutOf({ scheme: 'cividis' }),
-      MAPQ_BIN_LABELS.length,
-    ).map(stop => stop.color),
+    scheme: 'cividis',
     labels: MAPQ_BIN_LABELS,
     title: 'Mapping quality',
   },

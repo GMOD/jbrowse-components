@@ -5,7 +5,11 @@ import {
 } from '@jbrowse/core/configuration'
 import { paletteFromSpec, rowPaletteColorAt } from '@jbrowse/core/ui/colors'
 import { categoricalField, keyNames } from '@jbrowse/core/util/categoricalField'
-import { darkAtLowEnd } from '@jbrowse/core/util/colorRamp'
+import {
+  darkAtLowEnd,
+  rampLutOf,
+  stopsFromRampLut,
+} from '@jbrowse/core/util/colorRamp'
 import {
   CATEGORICAL_FIELD_PRESETS,
   FEATURE_FIELD_PRESETS,
@@ -354,17 +358,17 @@ export const colorReverseSlot = {
     type: 'boolean',
     defaultValue: false,
     description:
-      "turns a linear or log scale's ramp round, so its last color paints the bottom of the domain",
+      "turns the ramp round, so its last color paints the bottom of a linear or log domain or a threshold's lowest interval",
   },
 } as const
 
-/** What a linear or log scale adds: a named ramp, its direction, its middle. */
+/** What a ramp adds: a named scheme, its direction, its middle. */
 export const colorRampSlots = {
   scheme: {
     type: 'maybeStringEnum',
     model: types.enumeration('ColorScheme', [...COLOR_SCHEMES]),
     description:
-      "a named ramp for a linear or log scale; range's colors, where it lists any, win over it",
+      "a named ramp: a linear or log scale runs along it, and a threshold that writes cuts takes one color per interval from end to end; range's colors, where it lists any, win over it",
   },
   ...colorReverseSlot,
   domainMid: {
@@ -447,6 +451,24 @@ function listed(values: readonly string[]) {
   return values.length > 0 ? [...values] : undefined
 }
 
+/**
+ * A threshold's colors where it writes cuts and no `range`: its `scheme`, the
+ * written one or its field preset's, sampled one color per interval from end
+ * to end. Without a scheme the display's own default colors stand.
+ */
+function thresholdRange(color: ColorSetting) {
+  const listedRange = listed(color.range)
+  const { domain, scheme, reverse } = color
+  return (
+    listedRange ??
+    (domain.length > 0 && scheme !== undefined
+      ? stopsFromRampLut(rampLutOf({ scheme, reverse }), domain.length + 1).map(
+          stop => stop.color,
+        )
+      : undefined)
+  )
+}
+
 /** A color that maps a field: every form of {@link ColorEncoding} but the constant. */
 export type FieldColorEncoding = Exclude<ColorEncoding, string>
 
@@ -484,7 +506,7 @@ export function colorEncodingOf<V extends string | undefined>(
         field,
         scale,
         domain: [...color.domain],
-        range: listed(color.range),
+        range: thresholdRange(color),
         labels: listed(color.labels ?? []),
       }
     case 'linear':

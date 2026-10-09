@@ -124,6 +124,24 @@ test('the scale is never read off which output member is written', () => {
   expect(scaleOf({ scheme: 'viridis' })).toBe('categorical')
 })
 
+test('a threshold writing cuts and no range spreads its scheme, else leaves the display its colors', () => {
+  const rangeOf = (snapshot: Record<string, unknown>) => {
+    const encoding = encodingOf({ field: 'x', scale: 'threshold', ...snapshot })
+    return typeof encoding === 'object' && 'range' in encoding
+      ? encoding.range
+      : undefined
+  }
+  expect(rangeOf({ domain: ['1', '2'], scheme: 'viridis' })).toHaveLength(3)
+  expect(rangeOf({ domain: ['1'], scheme: 'viridis', reverse: true })).toEqual(
+    rangeOf({ domain: ['1'], scheme: 'viridis' })?.toReversed(),
+  )
+  expect(rangeOf({ domain: ['1'] })).toBeUndefined()
+  expect(rangeOf({ scheme: 'viridis' })).toBeUndefined()
+  expect(
+    rangeOf({ domain: ['1'], scheme: 'viridis', range: ['red', 'blue'] }),
+  ).toEqual(['red', 'blue'])
+})
+
 test('a field name written as the constant is refused with the field spelling', () => {
   const create = (value: string) =>
     colorConfigSchema.create({ value }, { pluginManager })

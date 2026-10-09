@@ -1,3 +1,4 @@
+import { rampLutOf, stopsFromRampLut } from '@jbrowse/core/util/colorRamp'
 import { colord } from '@jbrowse/core/util/colord'
 
 import { bakedColorScale } from '../LinearAlignmentsDisplay/bakedColorScale.ts'
@@ -9,10 +10,7 @@ import { buildReadTagColors } from '../LinearAlignmentsDisplay/readTagColors.ts'
 import { makeTestPalette } from '../LinearAlignmentsDisplay/testUtils.ts'
 import { baseWorkerPileupData } from '../RenderAlignmentDataRPC/testPileupData.ts'
 import { packReadSegments } from '../features/read/mark.ts'
-import {
-  ALIGNMENTS_FIELD_PRESETS,
-  alignmentsColorEncoding,
-} from '../shared/alignmentsColor.ts'
+import { alignmentsColorEncoding } from '../shared/alignmentsColor.ts'
 import { RC_MAPQ, RC_MAPQ_UNAVAILABLE } from './slang/read.consts.generated.ts'
 import {
   INSTANCE_OFFSET_U32,
@@ -21,7 +19,7 @@ import {
 
 const palette = makeTestPalette({ colorPairLR: [0.5, 0.5, 0.5] })
 
-function mapqRegion() {
+function mapqRegion(written: { domain?: string[] } = {}) {
   const n = 256
   const base = {
     readYs: new Uint16Array(n),
@@ -50,6 +48,7 @@ function mapqRegion() {
       domainMid: undefined,
       domain: [],
       range: [],
+      ...written,
     }),
     undefined,
     undefined,
@@ -82,12 +81,12 @@ function rgbOfAbgr(c: number) {
   return [c & 255, (c >>> 8) & 255, (c >>> 16) & 255]
 }
 
-function canvasRgb(mapq: number) {
+function canvasRgb(mapq: number, painted = region) {
   const { r, g, b } = colord(
     readColorFromCategoryIndex(
-      region.readColorCategories[mapq]!,
+      painted.readColorCategories[mapq]!,
       mapq,
-      region,
+      painted,
       palette,
     ),
   ).toRgb()
@@ -108,9 +107,15 @@ test('the GPU fill and the Canvas2D fill are one color at every MAPQ', () => {
   }
 })
 
+function cividis(n: number) {
+  return stopsFromRampLut(rampLutOf({ scheme: 'cividis' }), n).map(stop =>
+    cssRgb(stop.color),
+  )
+}
+
 // The facet's confidence bins, each one color: 0, 1-9, 10-29 and 30 up.
 test('by default MAPQ paints the facet bins', () => {
-  const bins = ALIGNMENTS_FIELD_PRESETS.mapq.range.map(cssRgb)
+  const bins = cividis(4)
   expect(canvasRgb(0)).toEqual(bins[0])
   for (const mapq of [1, 9]) {
     expect(canvasRgb(mapq)).toEqual(bins[1])
@@ -121,6 +126,15 @@ test('by default MAPQ paints the facet bins', () => {
   for (const mapq of [30, 60, 254]) {
     expect(canvasRgb(mapq)).toEqual(bins[3])
   }
+})
+
+test('written cuts spread the preset scheme from end to end', () => {
+  const twoBins = mapqRegion({ domain: ['20'] })
+  const [low, high] = cividis(2)
+  expect(canvasRgb(0, twoBins)).toEqual(low)
+  expect(canvasRgb(19, twoBins)).toEqual(low)
+  expect(canvasRgb(20, twoBins)).toEqual(high)
+  expect(canvasRgb(60, twoBins)).toEqual(high)
 })
 
 test('MAPQ 255 leaves the ramp for its own flat bucket', () => {
