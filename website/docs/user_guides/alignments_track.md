@@ -54,9 +54,10 @@ The track menu's **Color by...** offers several schemes.
 
 ### Read quality and bases
 
-- **Mapping quality** colors each read by its MAPQ on a cividis ramp, dark blue
-  at 0 to yellow at 60 and above, so reads in repeats come out dark. A MAPQ of
-  255, which means the aligner reported none, is grey. The
+- **Mapping quality** colors each read by its MAPQ bin, the same four bins a
+  MAPQ facet stacks: dark blue at 0, through 1-9 and 10-29, to yellow at 30 and
+  above, so reads in repeats come out dark. A MAPQ of 255, which means the
+  aligner reported none, is grey. The
   [SAM specification](https://samtools.github.io/hts-specs/SAMv1.pdf) defines
   MAPQ as `-10 log10 Pr{mapping position is wrong}`, so a MAPQ 0 read is drawn
   where it aligned with the aligner putting no better than even odds on it being

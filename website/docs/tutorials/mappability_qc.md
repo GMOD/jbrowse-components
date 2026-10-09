@@ -176,7 +176,7 @@ Zoom the read view to the SMN cassette, `chr5:70,889,000-70,989,000`.
 
 <Figure src="/img/qc/smn1_evidence.png" caption="The SMN cassette, holding SERF1A, SMN1 and NAIP, with the same four tracks and one read per row. Almost every read is dark blue, mapped where it is drawn and fitting somewhere else just as well." links="Open this view=qc/smn1_evidence" />
 
-Dark blue is MAPQ 0; yellow is MAPQ 60 and above.
+Dark blue is MAPQ 0; yellow is MAPQ 30 and above.
 
 ## Does T2T-CHM13 resolve the SMN duplication?
 
