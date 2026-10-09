@@ -10,7 +10,7 @@ const SetColorDialog = observer(function SetColorDialog({
 }: {
   model: {
     featureColor: string
-    colorSettings: { value?: string }
+    colorSetting: { value?: string }
     setFeatureColor: (arg?: string) => void
     utrColor?: string
     setUtrColor?: (arg?: string) => void
@@ -22,7 +22,7 @@ const SetColorDialog = observer(function SetColorDialog({
     <SolidColorDialog
       label="Feature color"
       color={model.featureColor}
-      written={model.colorSettings.value}
+      written={model.colorSetting.value}
       onChange={color => {
         model.setFeatureColor(color)
       }}

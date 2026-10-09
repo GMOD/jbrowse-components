@@ -539,7 +539,7 @@ export default function stateModelFactory(
                 self.drawnRegionData.values(),
                 self.rowIndexByValue,
                 self.rowColorsByIndex,
-                self.colorSettings.domain,
+                self.colorSetting.domain,
               )
       },
     }))
@@ -635,7 +635,7 @@ export default function stateModelFactory(
             kind: 'categorical' as const,
             id: 'features',
             title: self.colorKeyTitle ?? 'Feature colors',
-            domain: field ? field.domain : self.colorSettings.domain,
+            domain: field ? field.domain : self.colorSetting.domain,
             entries: self.colorLegend.map(e => ({
               value: e.values[0]!,
               values: e.values,

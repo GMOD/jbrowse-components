@@ -62,8 +62,8 @@ export default function stateModelFactory(
        */
       get colorsByConsequenceImpact() {
         return (
-          self.colorSettings.field === IMPACT_FIELD &&
-          self.colorSettings.scale !== 'none'
+          self.colorSetting.field === IMPACT_FIELD &&
+          self.colorSetting.scale !== 'none'
         )
       },
       /**
@@ -71,8 +71,8 @@ export default function stateModelFactory(
        */
       get colorsBySvType() {
         return (
-          self.colorSettings.field === SV_TYPE_FIELD &&
-          self.colorSettings.scale !== 'none'
+          self.colorSetting.field === SV_TYPE_FIELD &&
+          self.colorSetting.scale !== 'none'
         )
       },
       /**
@@ -83,7 +83,7 @@ export default function stateModelFactory(
       get colorByAttribute(): string {
         return this.colorsByConsequenceImpact || this.colorsBySvType
           ? ''
-          : self.colorSettings.field
+          : self.colorSetting.field
       },
       // #endregion
     }))

@@ -188,7 +188,7 @@ const stateModelFactory = (configSchema: ChordVariantDisplayConfigModel) => {
        * #getter
        * the field the chords paint by, undefined for a constant or callback
        */
-      get colorField() {
+      get paintedColorField() {
         return colorFieldOf(colorEncodingOf(this.colorSetting))
       },
       /**
@@ -198,7 +198,7 @@ const stateModelFactory = (configSchema: ChordVariantDisplayConfigModel) => {
        */
       get chordStrokes(): Map<Feature, string> {
         const features = self.drawnFeatures ?? []
-        const field = this.colorField
+        const field = this.paintedColorField
         if (field) {
           const read = fieldReader(field.field, getEnv(self).pluginManager.jexl)
           return new Map(
@@ -454,7 +454,7 @@ const stateModelFactory = (configSchema: ChordVariantDisplayConfigModel) => {
        */
       get legendColor(): string | undefined {
         const { value } = self.colorSetting
-        return self.colorField || value === undefined || isJexl(value)
+        return self.paintedColorField || value === undefined || isJexl(value)
           ? undefined
           : value
       },
@@ -463,7 +463,7 @@ const stateModelFactory = (configSchema: ChordVariantDisplayConfigModel) => {
        * the key of the values the drawn chords paint, while they paint a field
        */
       get colorScales(): ColorScale[] {
-        const field = self.colorField
+        const field = self.paintedColorField
         if (!field) {
           return []
         }

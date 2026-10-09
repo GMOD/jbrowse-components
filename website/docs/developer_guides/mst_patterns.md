@@ -276,8 +276,8 @@ block. `LinearVariantDisplay`'s color getters use both in one expression:
  */
 get colorsByConsequenceImpact() {
   return (
-    self.colorSettings.field === IMPACT_FIELD &&
-    self.colorSettings.scale !== 'none'
+    self.colorSetting.field === IMPACT_FIELD &&
+    self.colorSetting.scale !== 'none'
   )
 },
 /**
@@ -285,8 +285,8 @@ get colorsByConsequenceImpact() {
  */
 get colorsBySvType() {
   return (
-    self.colorSettings.field === SV_TYPE_FIELD &&
-    self.colorSettings.scale !== 'none'
+    self.colorSetting.field === SV_TYPE_FIELD &&
+    self.colorSetting.scale !== 'none'
   )
 },
 /**
@@ -297,7 +297,7 @@ get colorsBySvType() {
 get colorByAttribute(): string {
   return this.colorsByConsequenceImpact || this.colorsBySvType
     ? ''
-    : self.colorSettings.field
+    : self.colorSetting.field
 },
 ```
 

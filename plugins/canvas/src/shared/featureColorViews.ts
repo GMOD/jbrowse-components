@@ -129,7 +129,7 @@ export function featureColorViews(self: FeatureColorHost) {
      * The `color` object as written, its `value` and `field` raw: either
      * may be a `jexl:` expression over a feature, which has none here.
      */
-    get colorSettings(): ColorSetting {
+    get colorSetting(): ColorSetting {
       return featureColorSettingOf(self)
     },
 
@@ -143,7 +143,7 @@ export function featureColorViews(self: FeatureColorHost) {
 
     /**
      * #getter
-     * `colorSettings` as it paints, through the one resolver every display's
+     * `colorSetting` as it paints, through the one resolver every display's
      * color object goes through: `color.value`, or a field through its
      * scale, `score` a ramp and any other field categorical while `scale` is
      * unset.
@@ -157,7 +157,7 @@ export function featureColorViews(self: FeatureColorHost) {
      * The field the color paints by, through any scale, or undefined while
      * `color.value` paints.
      */
-    get colorFieldName(): string | undefined {
+    get colorField(): string | undefined {
       const current = this.colorEncoding
       return typeof current === 'object' ? current.field : undefined
     },
@@ -167,7 +167,7 @@ export function featureColorViews(self: FeatureColorHost) {
      * The color channel's field while it paints through a categorical scale,
      * which a facet on the same field shares.
      */
-    get colorField() {
+    get categoricalColorField() {
       const encoding = this.colorEncoding
       return categoricalColorField(encoding, heldColorSlots(self, encoding))
     },
@@ -187,7 +187,7 @@ export function featureColorViews(self: FeatureColorHost) {
      * The rows an identity scale's key names, empty under any other scale.
      */
     get identityKeyEntries() {
-      return identityKeyEntries(this.colorSettings)
+      return identityKeyEntries(this.colorSetting)
     },
 
     /**
@@ -197,8 +197,8 @@ export function featureColorViews(self: FeatureColorHost) {
      */
     get colorKeyTitle(): string | undefined {
       return (
-        withPreset(this.colorSettings, FEATURE_FIELD_PRESETS).title ??
-        this.colorFieldName
+        withPreset(this.colorSetting, FEATURE_FIELD_PRESETS).title ??
+        this.colorField
       )
     },
 
@@ -264,7 +264,7 @@ export function featureColorViews(self: FeatureColorHost) {
      */
     get fieldPalette(): FieldPalette | undefined {
       const paint = this.paintColorValue
-      const name = this.colorFieldName
+      const name = this.colorField
       const field = this.colorRamp ? undefined : this.paintedColorField
       return paint && name !== undefined
         ? createFieldPalette(
@@ -308,7 +308,7 @@ export function featureColorViews(self: FeatureColorHost) {
      * written.
      */
     get colorNotices(): string[] {
-      return colorNotices(this.colorSettings, FEATURE_FIELD_PRESETS)
+      return colorNotices(this.colorSetting, FEATURE_FIELD_PRESETS)
     },
 
     /**

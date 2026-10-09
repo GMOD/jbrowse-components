@@ -14,7 +14,7 @@ function renderDialog(withUtr: boolean, value?: string) {
       <SetColorDialog
         model={{
           featureColor: 'goldenrod',
-          colorSettings: { value },
+          colorSetting: { value },
           setFeatureColor,
           ...(withUtr ? { utrColor: '#357089', setUtrColor } : {}),
         }}

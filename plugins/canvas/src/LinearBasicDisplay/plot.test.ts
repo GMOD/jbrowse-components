@@ -31,7 +31,7 @@ test('facet, color and filter read back as the box shows them', () => {
     field: 'subtrack',
     domain: ['key5', 'key2', 'key3'],
   })
-  expect(d.colorSettings).toMatchObject({
+  expect(d.colorSetting).toMatchObject({
     value: undefined,
     field: 'subtrack',
     scale: undefined,
@@ -54,7 +54,7 @@ test('a string is the one-value form: the facet field, or the constant color', (
   const d = display()
   d.applyDisplaySettings({ facet: 'strand', color: 'red' })
   expect(d.facet).toEqual({ field: 'strand', domain: [] })
-  expect(d.colorSettings).toMatchObject({ value: 'red', field: '' })
+  expect(d.colorSetting).toMatchObject({ value: 'red', field: '' })
   expect(d.colorByMode).toBe('solid')
   expect(d.plot).toEqual({ facet: 'strand', color: 'red' })
 })
@@ -63,8 +63,8 @@ test('strand is a field on both channels, painting its own colors', () => {
   const d = display()
   d.applyDisplaySettings({ facet: 'strand', color: { field: 'strand' } })
   expect(d.colorByMode).toBe('strand')
-  expect(d.colorField?.color('1')).toBe('tomato')
-  expect(d.colorField?.color('-1')).toBe('cornflowerblue')
+  expect(d.categoricalColorField?.color('1')).toBe('tomato')
+  expect(d.categoricalColorField?.color('-1')).toBe('cornflowerblue')
   expect(d.plot).toEqual({ facet: 'strand', color: { field: 'strand' } })
 })
 
@@ -73,16 +73,16 @@ test('strand takes a range like any other field', () => {
   const plot = { color: { field: 'strand', range: ['red', 'blue'] } }
   expect(d.plotProblems(plot)).toEqual([])
   d.applyPlot(plot)
-  expect(d.colorField?.domain).toEqual(['1', '-1', '0'])
-  expect(d.colorField?.color('1')).toBe('red')
-  expect(d.colorField?.color('-1')).toBe('blue')
+  expect(d.categoricalColorField?.domain).toEqual(['1', '-1', '0'])
+  expect(d.categoricalColorField?.color('1')).toBe('red')
+  expect(d.categoricalColorField?.color('-1')).toBe('blue')
 })
 
 test('an object replaces the setting whole, and null clears it', () => {
   const d = display()
   d.applyPlot({ color: { field: 'source', range: ['red'] } })
   d.applyPlot({ color: 'red' })
-  expect(d.colorSettings).toMatchObject({
+  expect(d.colorSetting).toMatchObject({
     value: 'red',
     field: '',
     scale: undefined,
@@ -92,7 +92,7 @@ test('an object replaces the setting whole, and null clears it', () => {
   d.applyPlot({ facet: 'strand', color: { field: 'type' } })
   d.applyPlot({ color: null })
   expect(d.facet).toMatchObject({ field: 'strand' })
-  expect(d.colorSettings).toMatchObject({ value: undefined, field: '' })
+  expect(d.colorSetting).toMatchObject({ value: undefined, field: '' })
   expect(d.plot.color).toBeUndefined()
   d.applyPlot({ facet: { field: 'biotype', domain: ['b', 'a'] } })
   d.applyPlot({ facet: { field: 'biotype' } })
@@ -179,8 +179,8 @@ describe('the Group by dialog applies a plot', () => {
     d.setColorScale({ field: 'biotype', domain: ['lncRNA'], range: ['red'] })
     d.setFeatureColor('purple')
     d.applyGroupBy('biotype', true)
-    expect(d.colorField?.domain).toEqual(['lncRNA'])
-    expect(d.colorField?.color('lncRNA')).toBe('red')
+    expect(d.categoricalColorField?.domain).toEqual(['lncRNA'])
+    expect(d.categoricalColorField?.color('lncRNA')).toBe('red')
   })
 
   it('names no color domain from the facet on either route', () => {
@@ -245,9 +245,9 @@ test('Solid color keeps the field, its order and range under scale none for the 
   d.setColorScale({ field: 'biotype', domain: ['lncRNA'], range: ['red'] })
   d.setFeatureColor('purple')
   expect(d.colorByMode).toBe('solid')
-  expect(d.colorField).toBeUndefined()
+  expect(d.categoricalColorField).toBeUndefined()
   expect(d.plot.color).toMatchObject({ value: 'purple', scale: 'none' })
-  expect(d.colorSettings).toMatchObject({
+  expect(d.colorSetting).toMatchObject({
     value: 'purple',
     field: 'biotype',
     scale: 'none',
@@ -255,10 +255,10 @@ test('Solid color keeps the field, its order and range under scale none for the 
   expect(d.colorByAttribute).toBe('biotype')
   d.colorByField('biotype')
   expect(d.colorByMode).toBe('attribute')
-  expect(d.colorField?.domain).toEqual(['lncRNA'])
-  expect(d.colorField?.color('lncRNA')).toBe('red')
+  expect(d.categoricalColorField?.domain).toEqual(['lncRNA'])
+  expect(d.categoricalColorField?.color('lncRNA')).toBe('red')
   d.setFeatureColor(undefined)
   expect(d.colorByMode).toBe('default')
-  expect(d.colorSettings).toMatchObject({ field: 'biotype', scale: 'none' })
+  expect(d.colorSetting).toMatchObject({ field: 'biotype', scale: 'none' })
   expect(d.groupByPlot(undefined, false)).toEqual({ facet: null })
 })

@@ -267,7 +267,7 @@ describe('Color by... > Strand', () => {
     ) as { onClick: () => void }
     strand.onClick()
     expect(display.colorByMode).toBe('strand')
-    expect(display.colorField?.field).toBe('strand')
+    expect(display.categoricalColorField?.field).toBe('strand')
   })
 })
 
@@ -315,7 +315,7 @@ describe('the Default color rung', () => {
     ) as { onClick: () => void }
     item.onClick()
     expect(display.colorByMode).toBe('default')
-    expect(display.colorField).toBeUndefined()
+    expect(display.categoricalColorField).toBeUndefined()
   })
 
   it('drops a solid color, so Solid color... loses the tick to Default', () => {
@@ -329,7 +329,7 @@ describe('the Default color rung', () => {
       }
     ).onClick()
     expect(display.colorByMode).toBe('default')
-    expect(display.colorSettings.value).toBeUndefined()
+    expect(display.colorSetting.value).toBeUndefined()
   })
 
   it("returns to the track's own color after a field painted over it", () => {

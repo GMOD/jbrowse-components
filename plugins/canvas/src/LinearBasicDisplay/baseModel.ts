@@ -1282,7 +1282,7 @@ export default function baseStateModelFactory(
          * its order and range stay under `scale: 'none'` for the way back.
          */
         setFeatureColor(color?: string) {
-          setConf(self, 'color', colorForValue(self.colorSettings, color))
+          setConf(self, 'color', colorForValue(self.colorSetting, color))
         },
 
         /**
@@ -1295,7 +1295,7 @@ export default function baseStateModelFactory(
           domain?: readonly string[]
           range?: readonly string[]
         }) {
-          const { value } = self.colorSettings
+          const { value } = self.colorSetting
           setConf(
             self,
             'color',
@@ -1306,7 +1306,7 @@ export default function baseStateModelFactory(
                   domain: [...(scale.domain ?? [])],
                   range: [...(scale.range ?? [])],
                 }
-              : colorForField(self.colorSettings, ''),
+              : colorForField(self.colorSetting, ''),
           )
         },
 
@@ -1603,7 +1603,7 @@ export default function baseStateModelFactory(
             : []
         }
         const scale = self.paintedColorField
-        const { facet, hiddenGroupKeys, colorField } = self
+        const { facet, hiddenGroupKeys, categoricalColorField } = self
         if (!scale) {
           return []
         }
@@ -1615,7 +1615,7 @@ export default function baseStateModelFactory(
             data => data.colorValues?.field === scale.field,
           ),
           sectionOf && (section => hiddenGroupKeys.has(sectionOf(section).key)),
-          facet && facet.field === colorField?.field
+          facet && facet.field === categoricalColorField?.field
             ? { ...facetField(facet), label: scale.label }
             : scale,
           colorKeyTitle,
@@ -1632,13 +1632,13 @@ export default function baseStateModelFactory(
        * constant for the way back, as Color by does.
        */
       groupByPlot(field: string | undefined, colorByGroup: boolean): Plot {
-        const colorField = self.colorField?.field ?? ''
-        const painted = self.colorFieldName ?? ''
+        const groupColor = self.categoricalColorField?.field ?? ''
+        const painted = self.colorField ?? ''
         const current = facetOf(self.facet, getConf(self, ['facet', 'hidden']))
         const written = colorOf(self.plot.color)
         const wasGroupColor =
-          colorField !== '' &&
-          (colorField === current?.field || colorField === field)
+          groupColor !== '' &&
+          (groupColor === current?.field || groupColor === field)
         return {
           facet:
             carryGroupDomain(
@@ -1716,7 +1716,7 @@ export default function baseStateModelFactory(
        * the domain and range while it is the field already painting.
        */
       colorByField(field: string) {
-        setConf(self, 'color', colorForField(self.colorSettings, field))
+        setConf(self, 'color', colorForField(self.colorSetting, field))
       },
       /**
        * #action
@@ -1766,8 +1766,8 @@ export default function baseStateModelFactory(
             {
               model: self,
               handleClose,
-              color: self.colorSettings.value,
-              colorField: self.colorFieldName ?? '',
+              color: self.colorSetting.value,
+              colorField: self.colorField ?? '',
             },
           ])
         },
@@ -1836,11 +1836,8 @@ export default function baseStateModelFactory(
        * where there is one, and opens the picker.
        */
       pickSolidColor() {
-        if (
-          self.colorFieldName !== undefined &&
-          self.solidColor !== undefined
-        ) {
-          setConf(self, 'color', colorForField(self.colorSettings, ''))
+        if (self.colorField !== undefined && self.solidColor !== undefined) {
+          setConf(self, 'color', colorForField(self.colorSetting, ''))
         }
         self.openSetColorDialog()
       },
@@ -1851,14 +1848,14 @@ export default function baseStateModelFactory(
        * color paints, a `jexl:` expression included.
        */
       pickDefaultColor() {
-        const { colorSettings } = self
+        const { colorSetting } = self
         setConf(
           self,
           'color',
           colorForField(
             self.solidColor === undefined
-              ? colorSettings
-              : { ...colorSettings, value: undefined },
+              ? colorSetting
+              : { ...colorSetting, value: undefined },
             '',
           ),
         )

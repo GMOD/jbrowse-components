@@ -10,8 +10,8 @@ import type { Instance } from '@jbrowse/mobx-state-tree'
 export interface ColorHost {
   configuration: Instance<LinearCanvasBaseDisplayConfigModel>
   conf: Instance<LinearCanvasBaseDisplayConfigModel>
-  colorFieldName: string | undefined
-  colorSettings: ColorSetting
+  colorField: string | undefined
+  colorSetting: ColorSetting
 }
 
 export function colorViews(self: ColorHost) {
@@ -56,7 +56,7 @@ export function colorViews(self: ColorHost) {
      * track's own color.
      */
     get colorByMode(): 'default' | 'solid' | 'strand' | 'attribute' {
-      const field = self.colorFieldName
+      const field = self.colorField
       return field === undefined
         ? this.solidColor === undefined
           ? 'default'
@@ -70,7 +70,7 @@ export function colorViews(self: ColorHost) {
      * #getter
      */
     get colorByAttribute(): string {
-      const { field } = self.colorSettings
+      const { field } = self.colorSetting
       return field === STRAND_FIELD ? '' : field
     },
   }

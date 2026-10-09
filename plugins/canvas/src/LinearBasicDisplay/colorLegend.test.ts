@@ -305,7 +305,7 @@ describe('derived color key', () => {
       expect(display.colorScales[0]).toMatchObject({ title: 'dif' })
       expect(keyValues(display)).toEqual(['< -0.3', '-0.3 – 0.3', '≥ 0.3', ''])
       expect(display.colorByMode).toBe('attribute')
-      expect(display.colorField).toBeUndefined()
+      expect(display.categoricalColorField).toBeUndefined()
     })
 
     it('names each interval by its label, keyed by the interval still', () => {
@@ -396,7 +396,7 @@ describe('derived color key', () => {
         scale: 'linear',
       })
       expect(display.colorByMode).toBe('attribute')
-      expect(display.colorField).toBeUndefined()
+      expect(display.categoricalColorField).toBeUndefined()
     })
 
     it('paints the loaded extent end to end, and a feature with no score grey', () => {

@@ -60,7 +60,7 @@ const Channels = observer(function Channels({
     <Toolbar>
       <FieldSelect
         label="Color by"
-        value={display.colorField?.field}
+        value={display.colorField}
         onChange={field => {
           display.setColorScale(
             field ? { field, domain: domains[field] } : undefined,

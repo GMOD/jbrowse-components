@@ -45,7 +45,7 @@ function clickRow(display: LinearVariantDisplayModel, label: string) {
 test('Consequence impact paints the impact field through its preset', () => {
   const display = createDisplay()
   clickRow(display, 'Consequence impact')
-  expect(display.colorSettings.field).toBe('impact')
+  expect(display.colorSetting.field).toBe('impact')
   expect(display.colorsByConsequenceImpact).toBe(true)
   expect(display.colorEncoding).toMatchObject({
     field: 'impact',
