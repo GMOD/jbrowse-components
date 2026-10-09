@@ -3406,6 +3406,14 @@
       ],
       "worker": "real"
     },
+    "@jbrowse/core/util/originCut": {
+      "package": "@jbrowse/core",
+      "names": [
+        "originHeadId",
+        "originTailId"
+      ],
+      "worker": "real"
+    },
     "@jbrowse/core/util/paintLayer": {
       "package": "@jbrowse/core",
       "names": [

@@ -343,6 +343,7 @@ const names: Record<string, string[]> = {
   '@jbrowse/core/util/numericUtils': ['avg', 'clamp', 'formatScore', 'getDisplayStr', 'getNumberGrouping', 'max', 'maxFinite', 'min', 'minmax', 'polarToCartesian', 'radToDeg', 'reducePrecision', 'setNumberGrouping', 'sum', 'toLocale', 'toPrecision'],
   '@jbrowse/core/util/offscreenCanvasPonyfill': ['drawImageOntoCanvasContext'],
   '@jbrowse/core/util/openViews': ['openTracks', 'openViews', 'viewAndNested'],
+  '@jbrowse/core/util/originCut': ['originHeadId', 'originTailId'],
   '@jbrowse/core/util/paintLayer': ['PaintLayer'],
   '@jbrowse/core/util/parseLineByLine': ['groupLinesByRef', 'makeFeatureIntervalTreeMap', 'parseLineByLine'],
   '@jbrowse/core/util/preloadComponent': ['preloadComponent'],

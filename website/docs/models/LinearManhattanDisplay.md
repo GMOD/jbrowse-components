@@ -115,7 +115,7 @@ Each section ends with the members a composed model contributes, linked to the p
 | <span id="method-trackmenuitems">**trackMenuItems**</span><br><code>() =&gt; MenuItem[]</code> |  |
 | <span id="method-contextmenuitems">**contextMenuItems**</span><br><code>() =&gt; MenuItem[]</code> |  |
 
-<span data-pagefind-ignore>From [LinearMarkDisplay](../linearmarkdisplay): <span id="method-plotrequest">[`plotRequest`](../linearmarkdisplay#method-plotrequest)</span>, <span id="method-rpcprops">[`rpcProps`](../linearmarkdisplay#method-rpcprops)</span>, <span id="method-plotproblems">[`plotProblems`](../linearmarkdisplay#method-plotproblems)</span>, <span id="method-liftmarkplot">[`liftMarkPlot`](../linearmarkdisplay#method-liftmarkplot)</span></span>
+<span data-pagefind-ignore>From [LinearMarkDisplay](../linearmarkdisplay): <span id="method-plotrequest">[`plotRequest`](../linearmarkdisplay#method-plotrequest)</span>, <span id="method-rpcprops">[`rpcProps`](../linearmarkdisplay#method-rpcprops)</span>, <span id="method-floatinglabels">[`floatingLabels`](../linearmarkdisplay#method-floatinglabels)</span>, <span id="method-plotproblems">[`plotProblems`](../linearmarkdisplay#method-plotproblems)</span>, <span id="method-liftmarkplot">[`liftMarkPlot`](../linearmarkdisplay#method-liftmarkplot)</span></span>
 
 <span data-pagefind-ignore>From [LegendMixin](../legendmixin): <span id="method-svglegendwidth">[`svgLegendWidth`](../legendmixin#method-svglegendwidth)</span>, <span id="method-colorscalesin">[`colorScalesIn`](../legendmixin#method-colorscalesin)</span>, <span id="method-legendspecin">[`legendSpecIn`](../legendmixin#method-legendspecin)</span></span>
 

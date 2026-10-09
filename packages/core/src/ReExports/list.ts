@@ -343,6 +343,7 @@ export default [
   '@jbrowse/core/util/numericUtils',
   '@jbrowse/core/util/offscreenCanvasPonyfill',
   '@jbrowse/core/util/openViews',
+  '@jbrowse/core/util/originCut',
   '@jbrowse/core/util/paintLayer',
   '@jbrowse/core/util/parseLineByLine',
   '@jbrowse/core/util/preloadComponent',
