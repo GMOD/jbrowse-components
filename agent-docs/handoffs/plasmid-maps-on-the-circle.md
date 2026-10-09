@@ -1,6 +1,6 @@
 ---
 name: plasmid-maps-on-the-circle
-description: Plasmid and organelle maps on the circular view, 2026-10-09. Landed base-pair ticks, the one-contig circle, GFF3 features cut at a circular origin and drawn as one labelled arc in one row, and ring labels (canvas labels and text marks, culled across lines) and highlights. Open are a tall display's labels shrinking away on a ring, overlay labels overrunning on inner lines, radial labels, overlay canvases, the linear view's scroll through the origin, other formats, and a tutorial. Read before touching ring labels or circular GFF3.
+description: Plasmid and organelle maps on the circular view, 2026-10-09. Landed base-pair ticks, the one-contig circle, GFF3 features cut at a circular origin and drawn as one labelled arc in one row, and ring labels (canvas labels and text marks, culled across lines) and highlights. A ring lays its display out in its band, and tutorials/organelle_map.md walks the mitochondrion. Open are overlay labels overrunning on inner lines, radial labels, overlay canvases, the linear view's scroll through the origin, and other formats. Read before touching ring labels or circular GFF3.
 ---
 
 # Plasmid and organelle maps on the circular view
@@ -29,35 +29,32 @@ Landed, each with a test that fails on the code before it:
   `cullOverlappingLabels`, unrolled to arc px and radius, wrapping at the
   strip's end, and labels a feature cut at the origin once, by its piece before
   it.
+- A ring lays its display out in its band: `TrackHeightMixin`'s `hostHeight`,
+  which `layoutRings` sets from bands sized by each display's
+  `configuredHeight`. A fit-mode track then packs its rows and labels at the
+  size they draw; a display whose height follows its content is still scaled.
+- The walkthrough is `website/docs/tutorials/organelle_map.md`, on
+  `test_data/human_mito` (track `mito_genes`).
 
 ## Next
 
-1. **A tall display's labels shrink away on a ring.** `layoutRings` scales each
-   display's whole `height` into its band, so the SARS-CoV-2 gene track
-   (`test_data/sars-cov2`, height 500) lands on a ~185 px band at a third of
-   its size and every label falls under `MIN_RING_LABEL_PX`; at height 180 the
-   same ring is labelled throughout. Laying the display out at the band's
-   height, so fit mode re-solves its rows and labels there, would fix it at the
-   source, but it needs a ring-only height that is not the persisted one.
-2. **An overlay subfeature label overruns its peptide on an inner line.** The
+1. **An overlay subfeature label overruns its peptide on an inner line.** The
    strip placed it to fit at `stripRadiusPx`; an inner radius gives it more
    turn, so on SARS-CoV-2 `nsp8 (ORF1ab polyprotein)` runs over its neighbours.
    The cull only compares labels with labels.
-3. **Radial labels.** The ring-labels proposal decided "along the arc when every
+2. **Radial labels.** The ring-labels proposal decided "along the arc when every
    label on the ring fits its span, else radial, one orientation per ring", the
    ruler's `labelsRunAlongArcs` rule. Only along-the-arc is built. Every label
    reads `offsetRadians` for its flip, so measure a rotation drag on a dense
    ring before adding more.
-4. **Overlay canvases never reach a ring**: the ring samples the strip's first
+3. **Overlay canvases never reach a ring**: the ring samples the strip's first
    `<canvas>`, so density bands, indel glyphs, alignments labels and MAF
    overlays are dropped. Waiting on Colin, with the other review items in
    memory under circular-view-review-thread.
-5. **The linear view cannot scroll through the origin.** Listing the contig
+4. **The linear view cannot scroll through the origin.** Listing the contig
    twice in `displayedRegions` with zero inter-region padding gives the `2L`
    space and true coordinates for free, and the two pieces then abut at the
    seam. Try it by hand on a bacterial genome before building anything.
-6. **Formats other than GFF3 are not cut.** A BED or bigBed record with its end
+5. **Formats other than GFF3 are not cut.** A BED or bigBed record with its end
    past the contig length still draws into virtual space. Count first whether
    jb2hubs serves any origin-spanning features, or only `Is_circular` contigs.
-7. **A tutorial: an organelle or plasmid map.** It needs a capture of the
-   mitochondrion with labels on, at a track height that fits the band (item 1).
