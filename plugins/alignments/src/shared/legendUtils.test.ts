@@ -350,7 +350,7 @@ describe('getReadDisplayLegendItems', () => {
       labelsIn(
         { type: 'pairOrientation' },
         pairs,
-        sectionOrder('pairOrientation', ['4', '2']),
+        sectionOrder('pairOrientation', ['LL', 'RL']),
       ),
     ).toEqual([ll, rl, lr])
   })

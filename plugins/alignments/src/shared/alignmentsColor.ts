@@ -245,6 +245,23 @@ const READ_COLOR_LEVELS: Record<
   tag: [NO_VALUE_LEVEL],
 }
 
+const LEVEL_KEYS = new Map(
+  Object.entries(READ_COLOR_LEVELS).map(([type, levels]) => [
+    type,
+    Object.fromEntries(
+      levels.map(([value, category]) => [category, value]),
+    ) as Partial<Record<ReadColorCategory, string>>,
+  ]),
+)
+
+/**
+ * The value each of a field's read buckets names, which is also the key of
+ * the section a facet over that field files the bucket's reads under.
+ */
+export function levelKeysOf(type: ColorSchemeType) {
+  return LEVEL_KEYS.get(type)
+}
+
 /**
  * What each field paints through while `scale` is unset: an insert-size field
  * a threshold, and any other field categorical, a preset scheme's field over

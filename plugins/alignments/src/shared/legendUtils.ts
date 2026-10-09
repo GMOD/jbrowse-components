@@ -5,7 +5,6 @@
 import {
   CONNECTION_LABELS,
   PAIR_DIRECTION_LABELS,
-  PAIR_DIRECTION_NUM,
   SPLIT_JUNCTION_LABELS,
 } from '@jbrowse/alignments-core'
 import { legendSwatches } from '@jbrowse/core/ui/legendSpec'
@@ -14,10 +13,6 @@ import {
   methylated5mC,
   unmethylated5mC,
 } from '@jbrowse/core/ui/palette'
-import {
-  STRAND_FIELD,
-  categoricalField,
-} from '@jbrowse/core/util/categoricalField'
 import { groupKeyComparator } from '@jbrowse/core/util/groupKeys'
 import { isMethylationFillType } from '@jbrowse/modifications-utils'
 
@@ -35,7 +30,7 @@ import {
 import { sashimiArcColor } from '../features/sashimi/computeOverlay.ts'
 import { arcCategoryColor } from '../shaders/palettes.ts'
 import { OVERLAP_ALPHA } from '../shaders/slang/overlap.consts.generated.ts'
-import { colorFieldOf, isBakedScheme } from './alignmentsColor.ts'
+import { colorFieldOf, isBakedScheme, levelKeysOf } from './alignmentsColor.ts'
 import { paintsModifications } from './colorSchemes.ts'
 import { FIRST_OF_PAIR_STRAND_LABELS } from './facetLabels.ts'
 import { getModificationName, modificationData } from './modificationData.ts'
@@ -625,27 +620,6 @@ function keyedModifications(
 // scheme appends them after its own key rather than any one branch owning them.
 // fwd/rev are reworded per scheme (split read vs. fragment strand) — see
 // strandLabelOverrides.
-const STRANDS = categoricalField(STRAND_FIELD)
-const STRAND_SECTION_KEYS: Partial<Record<SwatchCategory, string>> = {
-  fwdStrand: STRANDS.key(1),
-  revStrand: STRANDS.key(-1),
-}
-
-// The section each bucket of a read-dimension scheme names when the reads are
-// faceted on that dimension, keyed as `groupFeatures.ts` keys the sections.
-const BUCKET_SECTION_KEYS: Partial<
-  Record<ColorSchemeType, Partial<Record<SwatchCategory, string>>>
-> = {
-  strand: STRAND_SECTION_KEYS,
-  firstOfPairStrand: STRAND_SECTION_KEYS,
-  pairOrientation: {
-    pairLR: `${PAIR_DIRECTION_NUM.LR}`,
-    pairRL: `${PAIR_DIRECTION_NUM.RL}`,
-    pairRR: `${PAIR_DIRECTION_NUM.RR}`,
-    pairLL: `${PAIR_DIRECTION_NUM.LL}`,
-  },
-}
-
 // The present buckets in the table's order, those naming a section re-sorted
 // among the slots they hold by the order the sections stack in.
 function orderedBuckets(
@@ -1220,7 +1194,7 @@ export function getReadDisplayLegendItems({
       categories,
       palette,
       readCategoryLabelOverrides(colorBy, chainFramed, labels?.categories),
-      colorBy ? BUCKET_SECTION_KEYS[colorBy.type] : undefined,
+      colorBy ? levelKeysOf(colorBy.type) : undefined,
       sectionOrder,
     ),
     ...(overlaps === undefined

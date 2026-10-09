@@ -1,8 +1,4 @@
-import {
-  PAIR_DIRECTION_LABELS,
-  pairDirection,
-  PAIR_DIRECTION_NUM,
-} from '@jbrowse/alignments-core'
+import { PAIR_DIRECTION_LABELS, pairDirection } from '@jbrowse/alignments-core'
 import {
   SAM_FLAG_SECOND_IN_PAIR,
   SAM_FLAG_SECONDARY,
@@ -26,6 +22,11 @@ import {
   FACET_LABELS,
   facetTag,
 } from './facetLabels.ts'
+import {
+  MAPQ_BINS,
+  MAPQ_UNAVAILABLE_LEVEL,
+  levelOrder,
+} from './readFieldLevels.ts'
 import { chainIsSplit, isSplitAlignment } from './splitAlignment.ts'
 import {
   MAPQ_UNAVAILABLE,
@@ -100,7 +101,7 @@ const STRAND_VALUED: ReadonlySet<string> = new Set([
 
 export function sectionOrder(field: string, domain?: readonly string[]) {
   return categoricalField(STRAND_VALUED.has(field) ? STRAND_FIELD : field, {
-    domain,
+    domain: levelOrder(field, domain),
   }).compare
 }
 
@@ -130,21 +131,20 @@ function firstOfPairStrandKey(feature: Feature): GroupKey {
 // `pair_orientation`: F1R2 and F2R1 are one normal LR pair differing only in
 // which mate the record is, so the raw string opens up to eight sections, two of
 // them "normal". Every other consumer — color scheme, tooltip, arc palette,
-// concordant-pair filter — collapses them the same way.
-//
-// `PAIR_DIRECTION_NUM` digits as keys, so the sections stack in the order the
-// legend lists its swatches; the letters' own code-point order (LL, LR, RL, RR)
-// would strand the normal lane between the aberrant ones. An unrecognized
+// concordant-pair filter — collapses them the same way. An unrecognized
 // orientation is not a category, so it files with the reads that have none.
 const NO_PAIR_ORIENTATION_GROUP: GroupKey = {
   key: '',
   label: 'No orientation',
 }
+function pairOrientationGroup(dir: PairDirection): GroupKey {
+  return { key: dir, label: PAIR_DIRECTION_LABELS[dir] }
+}
 const PAIR_ORIENTATION_GROUPS: Record<PairDirection, GroupKey> = {
-  LR: { key: `${PAIR_DIRECTION_NUM.LR}`, label: PAIR_DIRECTION_LABELS.LR },
-  RL: { key: `${PAIR_DIRECTION_NUM.RL}`, label: PAIR_DIRECTION_LABELS.RL },
-  RR: { key: `${PAIR_DIRECTION_NUM.RR}`, label: PAIR_DIRECTION_LABELS.RR },
-  LL: { key: `${PAIR_DIRECTION_NUM.LL}`, label: PAIR_DIRECTION_LABELS.LL },
+  LR: pairOrientationGroup('LR'),
+  RL: pairOrientationGroup('RL'),
+  RR: pairOrientationGroup('RR'),
+  LL: pairOrientationGroup('LL'),
 }
 
 function pairOrientationKey(feature: Feature): GroupKey {
@@ -178,33 +178,21 @@ function mateAssemblyKey(feature: Feature): GroupKey {
     : { key: '', label: 'No mate assembly' }
 }
 
-// Bucketed by confidence rather than by decade: real MAPQ is bimodal, piling at
-// the aligner's ceiling (60 for bwa/minimap2, 42 for bowtie2) and at 0, so
-// decades spend up to 26 mostly-empty sections. These are the thresholds people
-// already filter on (`samtools view -q 10` / `-q 30`), with 0 ("no unique
-// placement") and SAM's 255 ("unavailable") called out. Digit keys, like
-// pairOrientation's, so `compareGroupKeys` puts the confident reads at the head
-// of the stack where the labels would not.
-const MAPQ_HIGH_GROUP: GroupKey = {
-  key: '0',
-  label: 'MAPQ 30+ (high confidence)',
+const MAPQ_UNAVAILABLE_GROUP: GroupKey = {
+  key: MAPQ_UNAVAILABLE_LEVEL,
+  label: 'MAPQ unavailable',
 }
-const MAPQ_MID_GROUP: GroupKey = { key: '1', label: 'MAPQ 10-29' }
-const MAPQ_LOW_GROUP: GroupKey = { key: '2', label: 'MAPQ 1-9 (low)' }
-const MAPQ_ZERO_GROUP: GroupKey = { key: '3', label: 'MAPQ 0 (multi-mapping)' }
-const MAPQ_UNAVAILABLE_GROUP: GroupKey = { key: '4', label: 'MAPQ unavailable' }
 
 function mapqKey(feature: Feature): GroupKey {
   const mapq = getMappingQuality(feature)
-  return mapq === MAPQ_UNAVAILABLE
-    ? MAPQ_UNAVAILABLE_GROUP
-    : mapq >= 30
-      ? MAPQ_HIGH_GROUP
-      : mapq >= 10
-        ? MAPQ_MID_GROUP
-        : mapq >= 1
-          ? MAPQ_LOW_GROUP
-          : MAPQ_ZERO_GROUP
+  if (mapq !== MAPQ_UNAVAILABLE) {
+    for (const bin of MAPQ_BINS) {
+      if (mapq >= bin.min) {
+        return bin
+      }
+    }
+  }
+  return MAPQ_UNAVAILABLE_GROUP
 }
 
 // Every group runs the whole spine, and its coverage pipeline allocates

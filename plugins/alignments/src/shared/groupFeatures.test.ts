@@ -9,6 +9,7 @@ import {
   facetForUnit,
   isChainFacetable,
   partitionFeatures,
+  sectionOrder,
   workerFacet,
 } from './groupFeatures.ts'
 
@@ -142,6 +143,7 @@ test('mapq buckets by confidence, best first, unavailable last', () => {
     'MAPQ 0 (multi-mapping)',
     'MAPQ unavailable',
   ])
+  expect(keys(groups)).toEqual(['30', '10', '1', '0', '255'])
 })
 
 // The bin count is fixed, so this dimension can never approach MAX_GROUPS
@@ -221,9 +223,9 @@ test('pair-orientation grouping keys the IGV category, not the raw string', () =
   expect(groups[0]!.features.map(f => f.id())).toEqual(['a', 'b'])
 })
 
-// The sections stack in the order the legend lists its pair-orientation swatches
-// (PAIR_DIRECTION_NUM), which is why the keys are ordinals: the category letters
-// sort LL, LR, RL, RR, stranding the normal lane between the aberrant ones.
+// The sections stack in the order the legend lists its pair-orientation
+// swatches, the field's own level order rather than the letters' (LL, LR, RL,
+// RR), which would strand the normal lane between the aberrant ones.
 test('pair-orientation stacks sections in the legend swatch order', () => {
   const features = [
     feat('ll', { pair_orientation: 'F1F2' }),
@@ -241,6 +243,19 @@ test('pair-orientation stacks sections in the legend swatch order', () => {
     'none',
   ])
   expect(groups.at(-1)!.label).toBe('No orientation')
+  expect(keys(groups)).toEqual(['LR', 'RL', 'RR', 'LL', ''])
+})
+
+// A facet's domain names the values a color's domain names, so one
+// `{ field, domain }` reorders the sections and the key alike; the rest keep
+// the field's own order.
+test('a facet domain names a read field by its values', () => {
+  expect(
+    ['LR', 'RL', 'RR', 'LL', ''].sort(sectionOrder('pairOrientation', ['RR'])),
+  ).toEqual(['RR', 'LR', 'RL', 'LL', ''])
+  expect(
+    ['30', '10', '1', '0', '255'].sort(sectionOrder('mapq', ['255', '0'])),
+  ).toEqual(['255', '0', '30', '10', '1'])
 })
 
 // An orientation string the classifier doesn't recognize is not a category, so it
