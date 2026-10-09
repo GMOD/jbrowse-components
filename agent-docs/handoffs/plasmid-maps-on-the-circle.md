@@ -1,6 +1,6 @@
 ---
 name: plasmid-maps-on-the-circle
-description: Plasmid and organelle maps on the circular view, 2026-10-09. Landed base-pair ticks, the one-contig circle, GFF3 features cut at a circular origin and drawn as one labelled arc in one row, and ring labels (canvas labels and text marks, culled across lines) and highlights. A ring lays its display out in its band, and tutorials/organelle_map.md walks the mitochondrion. A sequence closes into a ring only where the assembly's circularRefNames lists it. Open are overlay labels overrunning on inner lines, radial labels, overlay canvases, the linear view's scroll through the origin, reading Is_circular, and other formats. Read before touching ring labels or circular GFF3.
+description: Plasmid and organelle maps on the circular view, 2026-10-09. Landed base-pair ticks, the one-contig circle, GFF3 features cut at a circular origin and drawn as one labelled arc in one row, and ring labels (canvas labels and text marks, culled across lines) and highlights. A ring lays its display out in its band, and tutorials/organelle_map.md walks the mitochondrion. A sequence closes into a ring only where the assembly's circularRefNames lists it. Open are overlay labels overrunning on inner lines, radial labels, overlay canvases, the linear view's scroll through the origin, and other formats. Read before touching ring labels or circular GFF3.
 ---
 
 # Plasmid and organelle maps on the circular view
@@ -56,10 +56,12 @@ Landed, each with a test that fails on the code before it:
    twice in `displayedRegions` with zero inter-region padding gives the `2L`
    space and true coordinates for free, and the two pieces then abut at the
    seam. Try it by hand on a bacterial genome before building anything.
-5. **`Is_circular=true` is not read.** NCBI's GFF3 marks a circular sequence
-   on its `region` record, but the circle's geometry is settled from the
-   assembly before any track loads, so reading it means an RPC whose answer
-   moves the layout. `circularRefNames` is the only source today.
+5. **`Is_circular=true` reaches JBrowse only through jb2hubs.** The circle's
+   geometry is settled from the assembly before any track loads, so JBrowse
+   reads `circularRefNames` alone. jb2hubs writes it: GenArk configs from the
+   NCBI GFF's region records (`deriveCircularSeqids.sh`), UCSC configs for the
+   chrM/chrMT contig (`addMitochondrion.ts`). The hosted configs carry it once
+   the pipeline next runs on ada and uploads.
 6. **Formats other than GFF3 are not cut.** A BED or bigBed record with its end
    past the contig length still draws into virtual space. Count first whether
    jb2hubs serves any origin-spanning features, or only `Is_circular` contigs.
