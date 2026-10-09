@@ -100,6 +100,33 @@ describe('mateRefName extraction', () => {
   })
 })
 
+// A field `color` paints from a value per read is read as a facet keys its
+// section, so a path reaches into the feature and a read dimension's name
+// paints the dimension's own values rather than an attribute nobody sets.
+describe('attribute color extraction', () => {
+  test('a path field reads into the feature', () => {
+    expect(
+      extract([syntenyFeature('ctgA', 'ctgB')], {
+        type: 'tag',
+        attribute: 'mate.assemblyName',
+      }).tagColorValues,
+    ).toEqual(['volvox_random'])
+  })
+
+  test('a read dimension paints its facet values', () => {
+    expect(
+      extract([syntenyFeature('ctgA', 'ctgB'), bamRead('ctgB')], {
+        type: 'tag',
+        attribute: 'mateAssembly',
+      }).tagColorValues,
+    ).toEqual(['volvox_random', ''])
+    expect(
+      extract([bamRead('ctgB')], { type: 'tag', attribute: 'splitRead' })
+        .tagColorValues,
+    ).toEqual(['unsplit'])
+  })
+})
+
 // The SA tag walk is UNCONDITIONAL, and this is the test that says so.
 //
 // It was briefly gated on `readConnections !== 'off'` — 18.1ms of tag-block

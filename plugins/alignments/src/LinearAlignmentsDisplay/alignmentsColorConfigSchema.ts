@@ -22,7 +22,9 @@ import {
  * field each read carries. A read dimension paints its own vocabulary
  * (`strand`, `firstOfPairStrand`, `pairOrientation`, `insertSize`,
  * `insertSizeAndOrientation`, `mateRefName`) or ramp (`mapq`), `tags.XX` reads
- * a SAM tag and any other name a feature attribute. A string is the constant.
+ * a SAM tag, and any other name reads the read as a facet over it does: the
+ * facet's own `splitRead` and `mateAssembly`, a feature attribute, a dotted
+ * path into one or a `jexl:` expression. A string is the constant.
  * The per-base layer over the reads is
  * [AlignmentsBaseColor](../alignmentsbasecolor).
  *
@@ -74,7 +76,7 @@ export const alignmentsColorConfigSchema = ConfigurationSchema(
       scaleName: 'AlignmentsColorScale',
       fieldType: 'string',
       field:
-        'what colors a read: strand, firstOfPairStrand, pairOrientation, insertSize, insertSizeAndOrientation, mateRefName and mapq paint their own vocabulary or ramp; tags.XX reads a SAM tag and any other name a feature attribute',
+        'what colors a read: strand, firstOfPairStrand, pairOrientation, insertSize, insertSizeAndOrientation, mateRefName and mapq paint their own vocabulary or ramp; tags.XX reads a SAM tag; any other name reads as a facet over it does: splitRead, mateAssembly, a feature attribute, a dotted path or a jexl: expression',
       scale:
         'none paints value and keeps the field for a switch back; categorical a range color per value; linear a ramp over a numeric tag or attribute between domainMin and domainMax; threshold the bins domain cuts; unset, threshold over insertSize and insertSizeAndOrientation and categorical over any other field',
     }),

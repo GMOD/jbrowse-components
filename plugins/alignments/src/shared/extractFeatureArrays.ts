@@ -15,6 +15,7 @@ import {
   isMismatchFeature,
 } from './extractCigarFeatures.ts'
 import { extractFeatureTagValue } from './extractFeatureTagValue.ts'
+import { fieldValueReader } from './groupFeatures.ts'
 import { isFillUnmarkedMode } from './types.ts'
 import { getStrand } from './util.ts'
 
@@ -29,6 +30,7 @@ import type {
   SoftclipData,
 } from './webglRpcTypes.ts'
 import type { Feature, ProgressReporter, Region } from '@jbrowse/core/util'
+import type { JexlInstance } from '@jbrowse/core/util/jexlStrings'
 import type { ModificationType } from '@jbrowse/modifications-utils'
 
 // The name of whatever this feature aligns *to*. A synteny/PAF block carries a
@@ -55,6 +57,7 @@ interface ExtractOpts {
   // reference for the bisulfite color mode (read-vs-reference C->T comparison)
   regionSequence?: string
   regionSequenceStart?: number
+  jexl?: JexlInstance
 }
 
 // Outside the modifications layer the MM tag answers one question, which types
@@ -131,6 +134,10 @@ export function extractFeatureArrays<T extends FeatureData>(
   const isTagColorMode = colorBy?.type === 'tag' && !!colorBy.tag
   const colorAttribute =
     colorBy?.type === 'tag' && !colorBy.tag ? colorBy.attribute : undefined
+  const readColorAttribute =
+    colorAttribute === undefined
+      ? undefined
+      : fieldValueReader(colorAttribute, opts.jexl)
   // Chromosome painting reuses the tag channel: both resolve one string per
   // read that the main thread bakes into a color (see buildReadTagColors), so
   // the mate refName travels as a `tagColorValues` entry rather than earning a
@@ -178,9 +185,8 @@ export function extractFeatureArrays<T extends FeatureData>(
 
     if (isTagColorMode) {
       tagColorValues.push(extractFeatureTagValue(feature, colorBy.tag!))
-    } else if (colorAttribute) {
-      const value: unknown = feature.get(colorAttribute)
-      tagColorValues.push(value == null ? '' : String(value))
+    } else if (readColorAttribute) {
+      tagColorValues.push(readColorAttribute(feature))
     } else if (isMateRefNameMode) {
       tagColorValues.push(getMateRefName(feature) ?? '')
     }

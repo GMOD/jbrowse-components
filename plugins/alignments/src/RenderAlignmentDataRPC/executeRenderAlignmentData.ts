@@ -323,6 +323,7 @@ export async function executeRenderAlignmentData({
   const readIdPrefix = readIdPrefixOf(featuresArray)
   const buildFeatureData = (f: Feature) => buildBaseFeatureData(f, readIdPrefix)
   const extractOpts = {
+    jexl: pluginManager.jexl,
     colorBy,
     baseLayer,
     showSoftClipping,

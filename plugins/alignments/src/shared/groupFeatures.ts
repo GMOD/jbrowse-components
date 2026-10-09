@@ -406,6 +406,17 @@ function groupKeyer(
   return readDimension(field) ?? { key: valueKeyer(field, jexl) }
 }
 
+/**
+ * The value one read takes for a field, as a facet keys its section: a read
+ * dimension's own key, a tag's value or a field's, a path or a `jexl:`
+ * expression included. A field the color bake paints from a value per read
+ * reads it here too, so the two channels name a read alike.
+ */
+export function fieldValueReader(field: string, jexl?: JexlInstance) {
+  const { key } = groupKeyer(field, jexl)
+  return (feature: Feature) => key(feature).key
+}
+
 // Whether chain mode can honor a facet: the chain has to resolve to one key,
 // which holds when the representative read answers for the fragment or when the
 // dimension states the chain's key itself. A tag or a field keys the chain off
