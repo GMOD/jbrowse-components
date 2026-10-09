@@ -10,7 +10,8 @@ import type { Instance } from '@jbrowse/mobx-state-tree'
  * `jexlFilters`, which lifts into `filter` where a display declares it. The
  * base declares it, and a display standing apart from the base (wiggle, Hi-C,
  * LD, the mark display) spreads it; a name a display still declares is left
- * alone, so `fetchSizeLimit` and `mouseover` lift nowhere a slot takes them.
+ * alone, so `fetchSizeLimit` lifts nowhere a slot takes it, and `mouseover`
+ * stays on the canvas feature displays, the ones whose hover reads it.
  */
 export const retiredBaseDisplaySpellings = {
   maxFeatureScreenDensity: () => ({}),
@@ -25,10 +26,11 @@ export const retiredBaseDisplaySpellings = {
  * #category display
  *
  * Shared base config for linear displays — its slots (`height`,
- * `fetchSizeLimit`, `mouseover`) are common to all of them. The GPU stack's
+ * `fetchSizeLimit`) are common to all of them. The GPU stack's
  * `LinearCanvasBaseDisplay` config extends it, and third-party plugins extend
  * it too. `filter` is not here: it lives in
  * `jexlFilterConfigSchemaFields`, which only the displays that read it spread.
+ * Nor is `mouseover`, which a display declares only where its hover reads it.
  */
 const baseLinearDisplayConfigSchema = ConfigurationSchema(
   'BaseLinearDisplay',
@@ -45,18 +47,6 @@ const baseLinearDisplayConfigSchema = ConfigurationSchema(
       type: 'number',
       defaultValue: 100,
       description: 'default height for the track',
-    },
-    /**
-     * #slot
-     */
-    mouseover: {
-      type: 'string',
-      description: 'text to display when the cursor hovers over a feature',
-      // `function` (INSDC/GFF3 qualifier) before the id fallback so hovering a
-      // feature with no name — e.g. an NCBI viral `stem_loop` — surfaces its
-      // descriptor rather than a bare id. get() since `function` is reserved.
-      defaultValue: `jexl:get(feature,'_mouseOver')||get(feature,'name')||get(feature,'function')||get(feature,'id')`,
-      contextVariable: ['feature'],
     },
   },
   {

@@ -1,5 +1,4 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
-import { assembleLocString, toLocale } from '@jbrowse/core/util'
 import { types } from '@jbrowse/mobx-state-tree'
 import {
   LAYOUT_ORDERS,
@@ -7,11 +6,9 @@ import {
 } from '@jbrowse/plugin-alignments'
 import { lodModeSlot } from '@jbrowse/synteny-core'
 
-import { getMate } from '../syntenyMate.ts'
 import { lgvSyntenyColorConfigSchema } from './lgvSyntenyColorConfigSchema.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
-import type { Feature } from '@jbrowse/core/util'
 
 /**
  * #config LGVSyntenyDisplay
@@ -42,46 +39,10 @@ import type { Feature } from '@jbrowse/core/util'
  * ```
  */
 function configSchemaF(pluginManager: PluginManager) {
-  /** #jexlFunction Slot defaults from plugins | lgvSyntenyTooltip(feature) | both sides of a synteny feature, the LGVSyntenyDisplay's default mouseover */
-  pluginManager.jexl.addFunction('lgvSyntenyTooltip', (f: Feature) => {
-    const mate = getMate(f)
-    const l1name = f.get('name') || f.get('id')
-    const l2name = mate?.name || mate?.id
-    return [
-      l1name ? `Name1: ${l1name}` : '',
-      l2name ? `Name2: ${l2name}` : '',
-      `Loc1: ${assembleLocString({
-        refName: f.get('refName'),
-        start: f.get('start'),
-        end: f.get('end'),
-      })} (${toLocale(f.get('end') - f.get('start'))}bp)`,
-      // a mate-less feature (a non-synteny adapter under this display) still
-      // gets a tooltip for its own side rather than an exception that swallows
-      // the whole tooltip
-      mate
-        ? `Loc2: ${assembleLocString({
-            refName: mate.refName,
-            start: mate.start,
-            end: mate.end,
-          })} (${toLocale(mate.end - mate.start)}bp)`
-        : '',
-    ]
-      .filter(Boolean)
-      .join('<br/>')
-  })
   return ConfigurationSchema(
     'LGVSyntenyDisplay',
     {
       ...lodModeSlot,
-      /**
-       * #slot
-       * Tooltip shown on hovering a synteny feature; the default jexl expression
-       * renders both mates' names and locations.
-       */
-      mouseover: {
-        type: 'string',
-        defaultValue: 'jexl:lgvSyntenyTooltip(feature)',
-      },
       /**
        * #slot color
        * The alignments displays' `color` object with `field` defaulting to

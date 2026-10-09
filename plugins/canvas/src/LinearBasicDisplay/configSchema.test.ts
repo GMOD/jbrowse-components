@@ -1,5 +1,7 @@
 import PluginManager from '@jbrowse/core/PluginManager'
 import { isCallbackValue, readConfObject } from '@jbrowse/core/configuration'
+import baseLinearDisplayConfigSchema from '@jbrowse/display-kit/configSchema'
+import { getSnapshot } from '@jbrowse/mobx-state-tree'
 
 import configSchemaFactory from './configSchema.ts'
 
@@ -330,4 +332,18 @@ describe('LinearBasicDisplay configSchema', () => {
       expect(readConfObject(config, ['color', 'value'])).toBe('red')
     })
   })
+})
+
+test('mouseover stays on the feature display, and lifts away on the shared base', () => {
+  const pm = createPluginManager()
+  const basic = configSchemaFactory(pm).create(
+    { displayId: 'b', type: 'LinearBasicDisplay', mouseover: 'hover text' },
+    { pluginManager: pm },
+  )
+  expect(readConfObject(basic, 'mouseover')).toBe('hover text')
+  const base = baseLinearDisplayConfigSchema.create(
+    { displayId: 'a', mouseover: 'hover text' },
+    { pluginManager: pm },
+  )
+  expect(getSnapshot(base)).not.toHaveProperty('mouseover')
 })

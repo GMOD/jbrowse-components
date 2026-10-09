@@ -277,7 +277,7 @@ Options:
                              displayDefaults
 
       --displayDefaults      Inline JSON merged into the track displayDefaults
-                             (labels, mouseover, filter, etc.)
+                             (labels, color, filter, etc.)
 
       --multiwig             Build a MultiQuantitativeTrack from several BigWigs
                              (in place of the positional track arg): a
@@ -332,7 +332,7 @@ text-index.
 JSON. Wrap the value in single quotes and use double quotes inside a jexl
 callback so nothing needs escaping, e.g. --color
 'jexl:feature.strand==1?"blue":"red"'. --displayDefaults takes inline JSON for
-any other appearance setting (labels, mouseover, filter).
+any other appearance setting (labels, facet, filter).
 
 --multiwig bundles several BigWigs into one MultiQuantitativeTrack, in place of
 the positional track argument: pass a comma-separated list of BigWig files/URLs,
