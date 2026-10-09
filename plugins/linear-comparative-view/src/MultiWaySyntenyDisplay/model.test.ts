@@ -495,6 +495,19 @@ test('Solid color... paints the kept constant and opens the picker; Default drop
   expect(display.geneColorSettings.color).toMatchObject({ field: 'name' })
 })
 
+test('Solid color... over a painting field paints the pick', () => {
+  const { display } = createDisplayWithSession()
+  setConf(display, 'color', { field: 'strand' })
+  display.pickGeneSolidColor()
+  display.setGeneSolidColor('teal')
+  expect(display.geneColorField).toBe('')
+  expect(display.geneColorSettings.color).toMatchObject({
+    value: 'teal',
+    field: 'strand',
+    scale: 'none',
+  })
+})
+
 test('a jexl gene color is no constant', () => {
   const display = createDisplay()
   setConf(display, ['color', 'value'], "jexl:'red'")

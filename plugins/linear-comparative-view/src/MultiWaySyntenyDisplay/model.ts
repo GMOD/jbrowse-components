@@ -42,6 +42,7 @@ import {
   colorEncodingOf,
   colorFieldOf,
   colorForField,
+  colorForValue,
   colorSnapshotOf,
 } from '@jbrowse/display-kit/colorConfigSchema'
 import { heldColorSlots } from '@jbrowse/display-kit/heldColorSlots'
@@ -2451,9 +2452,17 @@ export function stateModelFactory(
           colorForField(self.geneColorSettings.color, field),
         )
       },
-      /** #action */
+      /**
+       * #action
+       * Paints the constant, a field staying under `scale: 'none'` for the way
+       * back; undefined returns to the config's own color.
+       */
       setGeneSolidColor(color: string | undefined) {
-        setConf(self, ['color', 'value'], color)
+        setConf(
+          self,
+          'color',
+          colorForValue(self.geneColorSettings.color, color),
+        )
       },
     }))
     .actions(self => ({
