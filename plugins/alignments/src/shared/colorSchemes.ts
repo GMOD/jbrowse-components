@@ -64,12 +64,12 @@ export const COLOR_SCHEMES: Record<ColorSchemeType, ColorSchemeDef> = {
   strand: {
     type: 'strand',
     shaderScheme: 'strand',
-    menu: { kind: 'radio', label: 'Strand', group: 'basic' },
+    menu: { kind: 'radio', label: FACET_LABELS.strand, group: 'basic' },
   },
   mappingQuality: {
     type: 'mappingQuality',
     shaderScheme: 'mappingQuality',
-    menu: { kind: 'radio', label: 'Mapping quality', group: 'basic' },
+    menu: { kind: 'radio', label: FACET_LABELS.mapq, group: 'basic' },
   },
   perBaseQuality: {
     type: 'perBaseQuality',
