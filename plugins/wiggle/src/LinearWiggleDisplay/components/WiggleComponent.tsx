@@ -85,8 +85,8 @@ const WiggleComponent = observer(function WiggleComponent({
       contextMenu={model}
       overlay={() => <WiggleOverlay model={model} />}
       // The vertical guide is drawn for the pointer and not for a hit. A
-      // horizontal one reads as an axis rule, so the score rides a flag on the
-      // guide's top instead.
+      // horizontal one reads as an axis rule, so the score rides a flag at the
+      // top of the hovered lane instead.
       tooltip={mouseState => (
         <>
           {mouseState ? (
@@ -95,7 +95,13 @@ const WiggleComponent = observer(function WiggleComponent({
               <WiggleScoreFlag
                 hit={model.hoveredFeature}
                 mouseX={mouseState.x}
+                mouseY={mouseState.y}
                 width={model.canvasWidthPx}
+                lanes={{
+                  rowsTopOffset: model.rowsTopOffset,
+                  rowHeight: model.effectiveRowHeight,
+                  numRows: model.numRows,
+                }}
               />
             </>
           ) : null}
