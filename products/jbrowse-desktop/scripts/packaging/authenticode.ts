@@ -64,10 +64,14 @@ export interface Signer {
 
 /**
  * The signing certificate, picked out of a chain by being the one nothing else
- * issued. Taking the first or the last gets a root on some chains.
+ * issued. Taking the first or the last gets a root on some chains. A
+ * self-signed certificate does not count as issuing itself, or SignPath's test
+ * certificate, alone in its chain, would have no signer.
  */
 export function signerCertificate(certificates: Certificate[]): Signer {
-  const issuers = new Set(certificates.map(c => c.issuer))
+  const issuers = new Set(
+    certificates.filter(c => c.issuer !== c.subject).map(c => c.issuer),
+  )
   const leaf = certificates.find(c => !issuers.has(c.subject))
   if (!leaf) {
     throw new Error('every certificate in the chain issued another one')

@@ -90,6 +90,15 @@ test('the signer is the certificate nothing else issued', () => {
   )
 })
 
+test('a self-signed certificate alone is its own signer', () => {
+  const selfSigned = {
+    subject: 'CN=SignPath Test',
+    issuer: 'CN=SignPath Test',
+    notAfter: 'Jan 1 2030',
+  }
+  expect(signerCertificate([selfSigned]).commonName).toBe('SignPath Test')
+})
+
 const signer = signerCertificate([root, intermediate, leaf])
 const publisherNames = ['Evolutionary Software Foundation']
 const before = new Date('2026-09-10')
