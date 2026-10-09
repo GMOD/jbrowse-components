@@ -16,14 +16,14 @@ export const pages: ExamplePage[] = [
     slug: 'multiple-tracks',
     title: 'Multiple tracks',
     description:
-      'A wiggle, genes and reads, with the Material UI overlays JBrowse draws by default.',
+      "A wiggle, genes and reads, with JBrowse's default Material UI overlays.",
     group: 'First view',
   },
   {
     slug: 'view-controls',
     title: 'Location box, zoom and track toggles',
     description:
-      'A location box, zoom buttons, bookmarks and track toggles call methods on the view.',
+      'A location box, zoom buttons and track toggles call methods on the view.',
     group: 'Navigation',
   },
   {
@@ -90,7 +90,7 @@ export const pages: ExamplePage[] = [
     slug: 'view-loading-and-errors',
     title: 'View loading and error states',
     description:
-      'The page draws the loading, error and no-location states of the view, and its notifications.',
+      "The page draws the view's loading, error, no-location and notification states.",
     group: 'Loading, errors and theme',
   },
   {
@@ -122,7 +122,7 @@ export const pages: ExamplePage[] = [
     slug: 'color-and-group-by-a-field',
     title: 'Coloring and grouping by a field',
     description:
-      'Two menus set the color scale and the row facet from any attribute, and a Legend sits outside the track.',
+      'Two menus set the color and the row facet from any attribute, with a Legend.',
     group: 'Custom plots',
   },
   {

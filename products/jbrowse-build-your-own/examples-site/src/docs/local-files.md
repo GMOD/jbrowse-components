@@ -1,3 +1,4 @@
-A blob has no URL to append `.bai` to, so JBrowse cannot find an index beside
-it: the picker has to take the pair. A `blobId` lives in memory, so a local
-track is gone after a reload and means nothing in a saved session.
+A file from disk has no URL to append `.bai` to, so JBrowse cannot look for an
+index beside it, and the picker takes the data file and its index together. A
+`blobId` refers to memory in the open tab, so a reload drops the track and a
+saved session cannot reopen it.

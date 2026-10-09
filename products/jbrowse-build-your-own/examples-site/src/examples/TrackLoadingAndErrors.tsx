@@ -114,15 +114,17 @@ const myOverlays: Partial<DisplayChromeOverlays> = {
 }
 
 const sets = {
-  'a set written in this file': myOverlays,
-  'the plain set JBrowse ships': plainChromeOverlays,
-  "JBrowse's own — Material UI": undefined,
+  'overlays defined in this file': myOverlays,
+  plainChromeOverlays,
+  'the Material UI default': undefined,
 }
 
 type SetName = keyof typeof sets
 
 const TrackLoadingAndErrors = observer(function TrackLoadingAndErrors() {
-  const [setName, setSetName] = useState<SetName>('a set written in this file')
+  const [setName, setSetName] = useState<SetName>(
+    'overlays defined in this file',
+  )
   const state = useCreateViewState({
     assembly: {
       name: 'hg38',
@@ -169,7 +171,7 @@ const TrackLoadingAndErrors = observer(function TrackLoadingAndErrors() {
   return (
     <div>
       <Toolbar>
-        Draw the status states with
+        Draw loading and errors with
         {Object.keys(sets).map(name => (
           <label key={name}>
             <input

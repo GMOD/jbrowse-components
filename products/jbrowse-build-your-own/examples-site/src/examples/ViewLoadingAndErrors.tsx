@@ -113,7 +113,7 @@ const Browser = observer(function Browser({
       </button>
       {view.status.type === 'noRegions' ? (
         <div role="status" style={{ padding: '10px 12px' }}>
-          Nothing has told this view where to look yet.{' '}
+          This view has no location.{' '}
           <button
             type="button"
             onClick={() => {

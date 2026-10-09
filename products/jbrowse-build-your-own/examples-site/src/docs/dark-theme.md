@@ -1,5 +1,5 @@
-Leave `mode` off and the engine follows the page's CSS `color-scheme`: the OS
+With `mode` left off, the tracks follow the page's CSS `color-scheme`: the OS
 preference where the page declares `light dark`, and light where it declares
-nothing. `mode` reaches the worker too, which bakes feature labels into the
-image it returns, so mount `EmbedProvider` or `SessionPaletteProvider` and not
-`PaletteProvider` alone.
+nothing. The worker draws feature labels into the image it returns, so `mode`
+goes to the worker as well. For that, mount `EmbedProvider` or
+`SessionPaletteProvider`, and not `PaletteProvider` alone.

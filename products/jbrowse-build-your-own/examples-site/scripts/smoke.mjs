@@ -905,9 +905,7 @@ async function viewStatusStatesAreDrawn(page, slug) {
   try {
     await page.waitForFunction(
       () =>
-        document
-          .querySelector('.demo')
-          ?.innerText.includes('where to look yet'),
+        document.querySelector('.demo')?.innerText.includes('has no location'),
       { timeout: 10000 },
     )
   } catch {
