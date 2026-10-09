@@ -366,7 +366,8 @@ groups:
   far from both calls (both walks, in HG01943).
 - HG02559 and HG04199 each have a walk with no verdict. No read spans one of
   HG02559's alleles, so the tick on HG02559#1 is grey, and HG04199's assembly
-  does not span the repeat, so its readout marks that walk partial.
+  does not span the repeat: its second walk's readout says the contig ends
+  before it.
 
 Click the TRGT record to see why. Its sample table gives `AL`, the allele
 lengths behind each tick, and `SD`, the number of reads spanning each allele;
