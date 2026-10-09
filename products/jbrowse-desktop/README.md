@@ -181,9 +181,10 @@ updates silently and relaunch the app. Note: users on an older per-machine build
 update rather than an in-place upgrade.
 
 A local `pnpm package:win` produces unsigned binaries. Windows code signing
-happens in `release.yml` through [SignPath.io](https://about.signpath.io), which
-signs an uploaded GitHub Actions artifact rather than a file on the runner — so
-the release runs the build in three parts with a signing request between each:
+happens in `windows-desktop.yml`, which `release.yml` calls, through
+[SignPath.io](https://about.signpath.io), which signs an uploaded GitHub Actions
+artifact rather than a file on the runner — so the release runs the build in
+three parts with a signing request between each:
 
 ```sh
 pnpm package:win:no-installer   # unpacked app; SignPath signs jbrowse-desktop.exe
@@ -198,12 +199,24 @@ region `website/src/pages/privacy.md` marks with
 installer window gets the part of it that is about the app. `pnpm check:nsis`
 compiles the installer script and is what catches a policy that moved.
 
-Both requests need a human to approve them in SignPath. The release job reads
+Both requests need a human to approve them in SignPath. The job reads
 `SIGNPATH_API_TOKEN` (a secret) and `SIGNPATH_ORGANIZATION_ID` (a repository
-variable), and names the project, signing policy and artifact configurations
-that must exist in SignPath. `WINDOWS_PUBLISHER_NAMES` in
+variable), and names the SignPath project (`jbrowse-components`), signing policy
+and artifact configurations; the XML for the configurations is in
+`.signpath/artifact-configurations/`. `WINDOWS_PUBLISHER_NAMES` in
 `scripts/packaging/config.ts` lists the certificate names clients accept, and
 the signed files are checked against it before they are published.
+
+To check the SignPath setup without a tag, run the Windows desktop workflow by
+hand:
+
+```sh
+gh workflow run windows-desktop.yml -f signing-policy=test-signing
+```
+
+It signs both files with SignPath's self-signed test certificate, accepts any
+publisher name, and keeps the signed installer as a workflow artifact instead of
+publishing it.
 
 ### All platforms
 

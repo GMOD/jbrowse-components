@@ -119,6 +119,12 @@ test('a certificate under another name is caught here', () => {
   ).toEqual([expect.stringContaining('Windows updates would be refused')])
 })
 
+test('a test certificate passes under any name', () => {
+  expect(
+    auditSignature({ signer, publisherNames: undefined, now: before }),
+  ).toEqual([])
+})
+
 // The mac identity expired once and three releases shipped unsigned without
 // saying so.
 test('an expired certificate is caught here', () => {

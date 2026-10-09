@@ -12,7 +12,7 @@ export type Platform = 'linux' | 'mac' | 'win'
 //
 // `installer` and `finalize` resume a Windows build that has been away being
 // signed. SignPath signs an uploaded GitHub Actions artifact rather than a file
-// on the runner, so release.yml packages, sends the app exe away, comes back
+// on the runner, so windows-desktop.yml packages, sends the app exe away, comes back
 // for `installer` to wrap what returned, sends that away, and comes back for
 // `finalize` to measure it into latest.yml.
 const PHASES = ['all', 'app', 'installer', 'finalize'] as const

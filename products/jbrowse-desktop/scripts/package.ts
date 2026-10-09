@@ -32,7 +32,7 @@ function printBanner(platforms: string[], phase: Phase) {
   console.log(`Platforms: ${platforms.join(', ')}`)
   console.log(`Phase: ${phase}`)
   console.log(`macOS signing: ${macSign}`)
-  console.log('Windows signing: SignPath, from release.yml')
+  console.log('Windows signing: SignPath, from windows-desktop.yml')
 }
 
 function printResults() {

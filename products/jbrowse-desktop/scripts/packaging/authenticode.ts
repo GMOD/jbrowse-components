@@ -82,6 +82,8 @@ export function signerCertificate(certificates: Certificate[]): Signer {
 /**
  * Everything wrong with a signature, as sentences. Empty means it can ship.
  * `now` is a parameter so the expiry is testable without waiting for 2027.
+ * `publisherNames` is undefined under a test certificate, whose name no client
+ * is told to expect.
  */
 export function auditSignature({
   signer,
@@ -89,14 +91,14 @@ export function auditSignature({
   now,
 }: {
   signer: Signer | undefined
-  publisherNames: string[]
+  publisherNames: string[] | undefined
   now: Date
 }) {
   if (!signer) {
     return ['it carries no Authenticode signature at all']
   }
   const problems: string[] = []
-  if (!publisherNames.includes(signer.commonName)) {
+  if (publisherNames && !publisherNames.includes(signer.commonName)) {
     const expected = publisherNames.map(name => `"${name}"`).join(' or ')
     problems.push(
       `it is signed by "${signer.commonName}", but app-update.yml tells every client to expect ${expected}, so Windows updates would be refused`,

@@ -55,7 +55,9 @@ function readChain(pkcs7: Buffer): Certificate[] {
  * update, and the first report would be a user who cannot upgrade.
  *
  * buildWindows calls this only in the phases that resume after a signing
- * request, so a local `package:win` is unaffected.
+ * request, so a local `package:win` is unaffected. WINDOWS_TEST_SIGNING (set
+ * by windows-desktop.yml under SignPath's test-signing policy) accepts any
+ * publisher, since the self-signed test certificate is never listed.
  */
 export function verifyWindowsSignature(filePath: string) {
   const name = path.basename(filePath)
@@ -68,7 +70,9 @@ export function verifyWindowsSignature(filePath: string) {
   )
   const problems = auditSignature({
     signer,
-    publisherNames: WINDOWS_PUBLISHER_NAMES,
+    publisherNames: process.env.WINDOWS_TEST_SIGNING
+      ? undefined
+      : WINDOWS_PUBLISHER_NAMES,
     now: new Date(),
   })
   if (problems.length > 0) {
