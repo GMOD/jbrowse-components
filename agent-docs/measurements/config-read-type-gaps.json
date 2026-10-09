@@ -1,6 +1,6 @@
 {
   "id": "config-read-type-gaps",
-  "measured": "2026-10-07",
+  "measured": "2026-10-09",
   "published": false,
   "source": {
     "kind": "bench",
@@ -44,22 +44,22 @@
     {
       "values": {
         "scope": "source",
-        "calls": 572,
-        "unchecked": 80
+        "calls": 571,
+        "unchecked": 74
       }
     },
     {
       "values": {
         "scope": "tests",
-        "calls": 698,
-        "unchecked": 181
+        "calls": 705,
+        "unchecked": 183
       }
     },
     {
       "values": {
         "scope": "all",
-        "calls": 1270,
-        "unchecked": 261
+        "calls": 1276,
+        "unchecked": 257
       }
     }
   ]

@@ -32,8 +32,8 @@
 #     taken from `pluginManager.getDisplayType(…).configSchema` poisons the
 #     whole schema through GetBase and has to be re-plumbed first.
 #
-# 80 unchecked in source, 181 in tests,
-# of 1270 total config accessor calls. The gate counts source only.
+# 74 unchecked in source, 183 in tests,
+# of 1276 total config accessor calls. The gate counts source only.
 
 packages/app-core/src/JbApi/jbApi.ts  (1)
   1217	readConfObject('adapter')
@@ -120,7 +120,7 @@ packages/core/src/TextSearch/TextSearchManager.ts  (1)
 packages/core/src/ui/AppLogo.tsx  (1)
   58	readConfObject('logoPath')
 packages/core/src/util/analytics.ts  (1)
-  194	readConfObject('disableAnalytics')
+  326	readConfObject('disableAnalytics')
 packages/core/src/util/jexlFilters.ts  (1)
   42	getConf('filter')
 packages/core/src/util/tracks.ts  (7)
@@ -132,8 +132,8 @@ packages/core/src/util/tracks.ts  (7)
   765	readConfObject('name')
   1567	readConfObject('adapter')
 packages/display-kit/src/colorConfigSchema.ts  (2)
-  138	readConfObject('labels')
-  139	readConfObject('title')
+  145	readConfObject('labels')
+  146	readConfObject('title')
 packages/embedded-core/src/EmbeddedSessionThemeMixin.ts  (1)
   35	getConf('theme')
 packages/product-core/src/RootModel/createConfigModel.ts  (1)
@@ -142,10 +142,10 @@ packages/product-core/src/Session/SessionTracks.ts  (2)
   92	readConfObject('name')
   93	readConfObject('aliases')
 packages/product-core/src/Session/Themes.ts  (4)
-  111	getConf('extraThemes')
-  169	getConf('theme')
-  170	getConf('extraThemes')
-  248	getConf('theme')
+  110	getConf('extraThemes')
+  172	getConf('theme')
+  173	getConf('extraThemes')
+  251	getConf('theme')
 packages/product-core/src/ui/AssemblyInfoPanel.tsx  (1)
   99	readConfObject('name')
 packages/product-core/src/ui/DescriptionPanel.tsx  (1)
@@ -154,13 +154,6 @@ packages/product-core/src/ui/FileInfoPanel.tsx  (1)
   22	readConfObject('adapter')
 packages/product-core/src/ui/RefNameInfoDialog.tsx  (1)
   57	readConfObject('adapter')
-packages/synteny-core/src/colorRamps.ts  (6)
-  86	readConfObject('range')
-  87	readConfObject('scheme')
-  88	readConfObject('reverse')
-  89	readConfObject('domainMin')
-  90	readConfObject('domainMax')
-  91	readConfObject('domainMid')
 packages/tree-sidebar/src/rowHeight/RowHeightMixin.test.ts  (1)  [test]
   163	getConf('rowHieght')
 packages/tree-sidebar/src/TreeSidebarMixin.test.ts  (1)  [test]
@@ -174,7 +167,7 @@ packages/wiggle-core/src/WiggleScoreConfigMixin.test.ts  (3)  [test]
 plugins/alignments/src/consensus/index.ts  (1)
   57	getConf('name')
 plugins/alignments/src/LinearAlignmentsDisplay/model.ts  (1)
-  755	getConf('sortedBy')
+  662	getConf('sortedBy')
 plugins/alignments/src/LinearAlignmentsDisplay/readFilterConfigSchema.ts  (1)
   120	readConfObject('tagFilters')
 plugins/alignments/src/ReadVsRefDialog/fetchPrimaryAlignment.ts  (1)
@@ -192,7 +185,7 @@ plugins/canvas/src/LinearMultiRowFeatureDisplay/model.ts  (1)
 plugins/canvas/src/shared/CanvasFeatureGateMixin.test.ts  (1)  [test]
   20	getConf('maxFeatureScreenDensty')
 plugins/circular-view/src/CircularView/model.ts  (1)
-  1142	readConfObject('trackId')
+  1162	readConfObject('trackId')
 plugins/comparative-adapters/src/MCScanBlocksAdapter/configSchema.test.ts  (2)  [test]
   24	readConfObject('bedLocations')
   36	readConfObject('bedLocations')
@@ -239,7 +232,7 @@ plugins/gccontent/src/GCContentTrack/index.ts  (3)
   51	readConfObject('windowDelta')
   57	readConfObject('gcMode')
 plugins/gwas/src/GWASAdapter/GWASAdapter.ts  (1)
-  34	readConfObject('ldAdapter')
+  39	readConfObject('ldAdapter')
 plugins/legacy-jbrowse/src/JBrowse1TextSearchAdapter/JBrowse1TextSearchAdapter.ts  (1)
   36	readConfObject('namesIndexLocation')
 plugins/linear-comparative-view/src/LaunchSyntenyView/discoverMates.ts  (1)
@@ -251,7 +244,7 @@ plugins/linear-comparative-view/src/LinearReadVsRef/launchLinearReadVsRef.ts  (1
 plugins/linear-comparative-view/src/LinearSyntenyView/initTracks.integration.test.ts  (1)  [test]
   79	readConfObject('trackId')
 plugins/linear-genome-view/src/LinearGenomeView/svgcomponents/useViewSvgFigure.test.tsx  (1)  [test]
-  97	getConf('color')
+  98	getConf('color')
 plugins/maf/src/BgzipTaffyAdapter/configSchema.test.ts  (1)  [test]
   51	readConfObject('nhLocation')
 plugins/maf/src/BigMafAdapter/configSchema.test.ts  (4)  [test]
@@ -273,7 +266,7 @@ plugins/trix/src/TrixTextSearchAdapter/TrixTextSearchAdapter.ts  (2)
   56	readConfObject('ixFilePath')
   57	readConfObject('ixxFilePath')
 plugins/variants/src/LinearMultiSampleVariantDisplay/configSchema.test.ts  (1)  [test]
-  149	readConfObject('unit')
+  145	readConfObject('unit')
 plugins/variants/src/LinearMultiSampleVariantDisplay/jexlFilterContract.test.ts  (1)  [test]
   111	readConfObject('filter')
 plugins/variants/src/LinearMultiSampleVariantDisplay/showInsertionGlyphsSlot.test.ts  (1)  [test]
@@ -328,6 +321,9 @@ products/jbrowse-web/src/rootModel/rootModel.test.ts  (3)  [test]
   265	readConfObject('name')
 products/jbrowse-web/src/rootModel/rootModel.ts  (1)
   471	readConfObject('preConfiguredSessions')
+products/jbrowse-web/src/schemaTests/LegacyConfigKeysLoadSilently.test.ts  (2)  [test]
+  324	readConfObject('cytobandLocation')
+  328	readConfObject('useNameOverride')
 products/jbrowse-web/src/schemaTests/TrackConfigShorthand.test.ts  (1)  [test]
   36	readConfObject('type')
 products/jbrowse-web/src/tests/assemblyConfigShorthand.test.ts  (2)  [test]

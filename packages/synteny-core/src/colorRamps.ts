@@ -16,7 +16,8 @@ import { SCALE_TYPE_LINEAR, rampMidNorm } from '@jbrowse/render-core/scoreScale'
 
 import { SYNTENY_VIEW_FIELDS } from './syntenyColorConfigSchema.ts'
 
-import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
+import type { syntenyColorSlots } from './syntenyColorConfigSchema.ts'
+import type { ConfigModelForFields } from '@jbrowse/core/configuration'
 import type { ColorRampStop } from '@jbrowse/core/util/colorRamp'
 import type { ColorSchemeName } from '@jbrowse/core/util/colorSchemes'
 
@@ -75,8 +76,13 @@ export interface SyntenyColorPaint {
   domainMid?: number
 }
 
+/** A comparative color object: the synteny views' `color`, a ribbon's `ribbonColor`. */
+type SyntenyColorConfig = ConfigModelForFields<
+  ReturnType<typeof syntenyColorSlots>
+>
+
 /** Read off the paint's own slots, so a key-only edit repaints nothing. */
-export function colorPaintOf(color: AnyConfigurationModel): SyntenyColorPaint {
+export function colorPaintOf(color: SyntenyColorConfig): SyntenyColorPaint {
   return {
     scale: readConfObject(color, 'scale'),
     domain: readConfObject(color, 'domain'),
