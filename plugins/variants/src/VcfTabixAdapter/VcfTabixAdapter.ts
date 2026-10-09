@@ -21,6 +21,13 @@ import type { NoAssemblyRegion } from '@jbrowse/core/util/types'
 export default class VcfTabixAdapter extends BaseFeatureDataAdapter<VcfTabixAdapterConfig> {
   public static capabilities = ['getFeatures', 'getRefNames', 'exportData']
 
+  // set once the file is open, for dataAdapterCache's eviction to clear
+  private file?: TabixIndexedFile
+
+  freeResources() {
+    this.file?.clearChunkCache()
+  }
+
   configure = cachedSetup({
     label: 'Downloading index',
     setup: opts => this.configurePre(opts),
@@ -36,6 +43,7 @@ export default class VcfTabixAdapter extends BaseFeatureDataAdapter<VcfTabixAdap
       chunkCacheBudget: decompressedBytesBudget,
       bgzfWorkerPool: sharedBgzfWorkerPool(),
     })
+    this.file = vcf
     const header = await vcf.getHeader({ signal: opts.signal })
     return {
       vcf,

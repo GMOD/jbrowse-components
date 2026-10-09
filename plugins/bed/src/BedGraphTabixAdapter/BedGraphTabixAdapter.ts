@@ -18,6 +18,13 @@ import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { Feature, Region } from '@jbrowse/core/util'
 
 export default class BedGraphTabixAdapter extends BaseFeatureDataAdapter<BedGraphTabixAdapterConfig> {
+  // set once the file is open, for dataAdapterCache's eviction to clear
+  private file?: TabixIndexedFile
+
+  freeResources() {
+    this.file?.clearChunkCache()
+  }
+
   // `label` because the index setup narrates nothing itself; the helper shows
   // it only while the first attempt is in flight, so pan/zoom re-entry (every
   // getFeatures/byte-estimate awaits it) doesn't re-flash "Downloading index"
@@ -38,6 +45,7 @@ export default class BedGraphTabixAdapter extends BaseFeatureDataAdapter<BedGrap
       chunkCacheBudget: decompressedBytesBudget,
       bgzfWorkerPool: sharedBgzfWorkerPool(),
     })
+    this.file = bedGraph
     const columnNames = this.getConf('columnNames')
 
     // Not bedGraph.getHeader(): that returns only a `#`-commented header, so a

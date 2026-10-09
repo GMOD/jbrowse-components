@@ -34,6 +34,10 @@ export function pickPifPrefix({
 export default class PairwiseIndexedPAFAdapter extends PairwiseAdapterBase<PairwiseIndexedPAFAdapterConfig> {
   private pif = new PifFile(this)
 
+  freeResources() {
+    this.pif.clearChunkCache()
+  }
+
   getHeader(opts?: ComparativeOptions) {
     return this.pif.info(opts)
   }

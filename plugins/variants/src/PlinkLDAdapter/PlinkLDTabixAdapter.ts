@@ -21,6 +21,13 @@ interface Config {
 }
 
 export default class PlinkLDTabixAdapter extends PlinkLDAdapterBase<Config> {
+  // set once the file is open, for dataAdapterCache's eviction to clear
+  private file?: TabixIndexedFile
+
+  freeResources() {
+    this.file?.clearChunkCache()
+  }
+
   protected statusLabel() {
     return 'Downloading index'
   }
@@ -36,6 +43,7 @@ export default class PlinkLDTabixAdapter extends PlinkLDAdapterBase<Config> {
       chunkCacheBudget: decompressedBytesBudget,
       bgzfWorkerPool: sharedBgzfWorkerPool(),
     })
+    this.file = ld
 
     // The column layout decides whether the file's D' column is found at all,
     // so `color.field: 'dprime'` lives or dies here.

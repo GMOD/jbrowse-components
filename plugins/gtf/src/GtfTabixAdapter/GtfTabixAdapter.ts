@@ -17,6 +17,13 @@ import type { Feature } from '@jbrowse/core/util'
 import type { Region } from '@jbrowse/core/util/types'
 
 export default class GtfTabixAdapter extends BaseFeatureDataAdapter<GtfTabixAdapterConfig> {
+  // set once the file is open, for dataAdapterCache's eviction to clear
+  private file?: TabixIndexedFile
+
+  freeResources() {
+    this.file?.clearChunkCache()
+  }
+
   private configure = cachedSetup({
     label: 'Downloading index',
     setup: async (opts, onProgress) => {
@@ -32,6 +39,7 @@ export default class GtfTabixAdapter extends BaseFeatureDataAdapter<GtfTabixAdap
         ),
         chunkCacheBudget: decompressedBytesBudget,
       })
+      this.file = gtf
       return {
         gtf,
         dontRedispatchSet: new Set(this.getConf('dontRedispatch')),

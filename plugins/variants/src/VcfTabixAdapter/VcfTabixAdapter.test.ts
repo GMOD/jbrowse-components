@@ -1,4 +1,5 @@
 import { makeAbortError } from '@jbrowse/core/util/aborting'
+import { decompressedBytesBudget } from '@jbrowse/core/util/cacheBudgets'
 import { CachedFilehandle } from '@jbrowse/core/util/io'
 import { firstValueFrom } from 'rxjs'
 import { toArray } from 'rxjs/operators'
@@ -162,4 +163,37 @@ describe('a symbolic record with no usable END', () => {
   test('an END before POS does not hide the record at its POS', async () => {
     expect(await names(1199, 1200)).toEqual(['delsvlen', 'insbadend'])
   })
+})
+
+// dataAdapterCache calls this when the last session lets go of the adapter. A
+// chunk cache nobody clears stays alive on its idle sweep for three minutes.
+test('an evicted adapter hands its chunks back to the shared budget', async () => {
+  const adapter = new Adapter(
+    configSchema.create({
+      vcfGzLocation: {
+        localPath: require.resolve('./test_data/volvox.filtered.vcf.gz'),
+        locationType: 'LocalPathLocation',
+      },
+      index: {
+        indexType: 'TBI',
+        location: {
+          localPath: require.resolve('./test_data/volvox.filtered.vcf.gz.tbi'),
+          locationType: 'LocalPathLocation',
+        },
+      },
+    }),
+  )
+  // freeing an adapter that never opened its file is not an error
+  adapter.freeResources()
+
+  const before = decompressedBytesBudget.total
+  await firstValueFrom(
+    adapter
+      .getFeatures({ refName: 'ctgA', start: 0, end: 20000 })
+      .pipe(toArray()),
+  )
+  expect(decompressedBytesBudget.total).toBeGreaterThan(before)
+
+  adapter.freeResources()
+  expect(decompressedBytesBudget.total).toBe(before)
 })

@@ -20,6 +20,13 @@ import type { TabixLine } from '@jbrowse/core/util/tabix'
 import type { Region } from '@jbrowse/core/util/types'
 
 export default class Gff3TabixAdapter extends BaseFeatureDataAdapter<Gff3TabixAdapterConfig> {
+  // set once the file is open, for dataAdapterCache's eviction to clear
+  private file?: TabixIndexedFile
+
+  freeResources() {
+    this.file?.clearChunkCache()
+  }
+
   private configure = cachedSetup({
     label: 'Downloading index',
     setup: async (opts, onProgress) => {
@@ -35,6 +42,7 @@ export default class Gff3TabixAdapter extends BaseFeatureDataAdapter<Gff3TabixAd
         ),
         chunkCacheBudget: decompressedBytesBudget,
       })
+      this.file = gff
       // the index is a whole-file read, so its byte ticks turn the
       // "Downloading index" label into a determinate bar
       await gff.getReferenceSequenceNames({ onProgress, signal: opts.signal })

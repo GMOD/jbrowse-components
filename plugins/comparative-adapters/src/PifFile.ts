@@ -45,6 +45,11 @@ export class PifFile {
     })
   }
 
+  /** What an evicted adapter clears: every decompressed chunk the file holds */
+  clearChunkCache() {
+    this.tabix.clearChunkCache()
+  }
+
   /**
    * What both adapters answer `CoreGetInfo` with: the header's facts plus
    * whether the coarse tier exists, in the shape the displays' `lodTier`

@@ -72,6 +72,10 @@ export default class BedTabixAdapter extends BaseFeatureDataAdapter<BedTabixAdap
     })
   }
 
+  freeResources() {
+    this.bed.clearChunkCache()
+  }
+
   public async getRefNames(opts: BaseOptions = {}) {
     return downloadStatus(
       'Downloading index',

@@ -45,6 +45,10 @@ function pifSide(line: PifLine): AlignedSide {
 
 export default class MultiGenomeIndexedPAFAdapter extends ComparativeAdapterBase<MultiGenomeIndexedPAFAdapterConfig> {
   private pif = new PifFile(this)
+
+  freeResources() {
+    this.pif.clearChunkCache()
+  }
   // The distinct PanSN seqids (tier letter t/q/T/Q stripped, deduped across
   // tiers) grouped prefix -> contig -> seqids. Every seqid is filed under each
   // prefix it is addressable by (`grape` and `grape#1`), so a sample-level

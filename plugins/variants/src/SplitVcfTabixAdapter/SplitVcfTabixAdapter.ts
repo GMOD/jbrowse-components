@@ -46,6 +46,15 @@ export default class SplitVcfTabixAdapter extends BaseFeatureDataAdapter<SplitVc
     (opts?: BaseOptions) => Promise<ContigFile>
   >()
 
+  // every contig's file opened so far, for dataAdapterCache's eviction to clear
+  private files: TabixIndexedFile[] = []
+
+  freeResources() {
+    for (const file of this.files) {
+      file.clearChunkCache()
+    }
+  }
+
   // `vcfGzLocationMap` is a frozen slot, so nothing validates its keys at load
   private locationMap(): Record<string, FileLocation | undefined> {
     return this.getConf('vcfGzLocationMap')
@@ -69,7 +78,7 @@ export default class SplitVcfTabixAdapter extends BaseFeatureDataAdapter<SplitVc
         `SplitVcfTabixAdapter needs an indexLocationMap entry for "${refName}": its vcfGzLocationMap entry is not a uri, so the index location cannot be derived from it`,
       )
     }
-    return new TabixIndexedFile({
+    const file = new TabixIndexedFile({
       filehandle: openLocation(vcfGzLocation, this.pluginManager),
       ...openTabixIndexFilehandle(
         indexLocation,
@@ -79,6 +88,8 @@ export default class SplitVcfTabixAdapter extends BaseFeatureDataAdapter<SplitVc
       chunkCacheBudget: decompressedBytesBudget,
       bgzfWorkerPool: sharedBgzfWorkerPool(),
     })
+    this.files.push(file)
+    return file
   }
 
   /** The contig's file, or undefined for a contig the map has no file for. */
