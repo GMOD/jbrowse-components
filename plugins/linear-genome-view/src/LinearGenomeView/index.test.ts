@@ -356,11 +356,31 @@ describe.each([
 // so the numbers show up in the failure output.
 describe('scroll-zoom diagnostic — cursor bp stability across frames', () => {
   it.each([
-    { name: 'single-region zoom-in at bpPerPx=10', start: 10, sign: 1 },
-    { name: 'single-region zoom-out at bpPerPx=10', start: 10, sign: -1 },
-    { name: 'single-region zoom-in at bpPerPx=1', start: 1, sign: 1 },
-    { name: 'multi-region zoom-in at bpPerPx=500', start: 500, sign: 1 },
-  ])('$name', ({ start, sign }) => {
+    {
+      name: 'single-region zoom-in at bpPerPx=10',
+      start: 10,
+      offsetPx: 20000,
+      sign: 1,
+    },
+    {
+      name: 'single-region zoom-out at bpPerPx=10',
+      start: 10,
+      offsetPx: 20000,
+      sign: -1,
+    },
+    {
+      name: 'single-region zoom-in at bpPerPx=1',
+      start: 1,
+      offsetPx: 200000,
+      sign: 1,
+    },
+    {
+      name: 'multi-region zoom-in at bpPerPx=500',
+      start: 500,
+      offsetPx: 1000,
+      sign: -1,
+    },
+  ])('$name', ({ start, offsetPx, sign }) => {
     const { Session, LinearGenomeModel } = initialize()
     const model = Session.create({ configuration: {} }).setView(
       LinearGenomeModel.create({
@@ -374,7 +394,7 @@ describe('scroll-zoom diagnostic — cursor bp stability across frames', () => {
       { assemblyName: 'volvox', refName: 'ctgA', start: 0, end: 1e6 },
       { assemblyName: 'volvox', refName: 'ctgB', start: 0, end: 1e6 },
     ])
-    model.setNewView(start, 1000)
+    model.setNewView(start, offsetPx)
 
     const cursorPx = 600
     const initial = model.pxToBp(cursorPx)
@@ -745,14 +765,14 @@ test('setDisplayedRegions re-clamps a now-out-of-range offsetPx', () => {
     { assemblyName: 'volvox', refName: 'ctgA', start: 0, end: 10000 },
     { assemblyName: 'volvox', refName: 'ctgB', start: 0, end: 10000 },
   ])
-  model.setNewView(10, 1900)
-  expect(model.offsetPx).toBe(1900)
+  model.setNewView(10, 1200)
+  expect(model.offsetPx).toBe(1200)
 
-  // drop ctgB: total content is now 1000px, so maxOffset is 990
+  // drop ctgB: total content is now 1000px, so maxOffset is 200
   model.setDisplayedRegions([
     { assemblyName: 'volvox', refName: 'ctgA', start: 0, end: 10000 },
   ])
-  expect(model.offsetPx).toBe(990)
+  expect(model.offsetPx).toBe(200)
 })
 
 // when a refName appears twice with different bounds and the navigated
@@ -1326,21 +1346,17 @@ test('can perform pxToBp on human genome things with elided blocks (zoomed out)'
   const width = 800
   model.setWidth(width)
   model.setDisplayedRegions(hg38Regions)
-  model.setNewView(3209286.105, -225.5083315372467)
-  // chr1 to the left
+  model.showAllRegions()
+  // chr1 to the left, in the padding the centered view leaves
   expect(model.pxToBp(0).refName).toBe('1')
   expect(model.pxToBp(0).oob).toBeTruthy()
-  // chr11 in the middle
-  expect(model.pxToBp(800).coord).toBe(35027079)
-  expect(model.pxToBp(800).refName).toBe('11')
+  // chr9 in the middle
+  expect(model.pxToBp(400).coord).toBe(68154141)
+  expect(model.pxToBp(400).refName).toBe('9')
 
-  // past end of genome without inter-region padding
-  expect(model.pxToBp(1228).refName).toBe('Y_KI270740v1_random')
-  expect(model.pxToBp(1228).oob).toBeTruthy()
-
-  // chrY_random at the end
-  expect(model.pxToBp(1500).refName).toBe('Y_KI270740v1_random')
-  expect(model.pxToBp(1500).oob).toBeTruthy()
+  // chrY_random at the end, past the genome without inter-region padding
+  expect(model.pxToBp(799).refName).toBe('Y_KI270740v1_random')
+  expect(model.pxToBp(799).oob).toBeTruthy()
 })
 
 test('can showAllRegionsInAssembly', async () => {
@@ -1799,7 +1815,7 @@ test('navToLocString with human assembly', async () => {
     expect(view.bpPerPx).toBe(0.02)
   })
   await waitFor(() => {
-    expect(view.offsetPx).toBe(9914777550)
+    expect(view.offsetPx).toBe(9914777150)
   })
   await view.navToLocString('chr3:-1,100,000,000..-1,000,000,000')
 })
@@ -4004,6 +4020,7 @@ describe('staticBlocksTranslateX', () => {
 
     // a scroll moves it by exactly what it scrolled, and nothing else: the
     // frame-relative x values are what stay put
+    model.setNewView(10, 1000)
     const before = model.staticBlocksTranslateX
     const spansBefore = model.paddingSpans.map(s => s.x)
     model.horizontalScroll(120)

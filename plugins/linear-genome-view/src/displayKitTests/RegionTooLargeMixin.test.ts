@@ -40,10 +40,9 @@ function setup(gate?: GateOptIns, displayConfig?: Record<string, unknown>) {
 }
 
 /**
- * Zoom by `bpPerPx` rather than by a target span. The view's window overhangs
- * the region's left edge at offset 0, so the visible span is about half a
- * screen short of `width * bpPerPx` — a helper that took a span would be
- * asserting the view's clamping arithmetic instead of the gate's.
+ * Zoom by `bpPerPx` rather than by a target span: the span is `width * bpPerPx`
+ * once the view is clamped to the region, and a helper that took a span would
+ * be asserting the view's clamping arithmetic instead of the gate's.
  */
 function zoomTo(view: LinearGenomeViewModel, bpPerPx: number) {
   view.zoomTo(bpPerPx)
@@ -54,7 +53,7 @@ function zoomTo(view: LinearGenomeViewModel, bpPerPx: number) {
 // land below it. The tests assert the resolved span rather than trusting these.
 const WIDE = 200
 const CLOSER = 60
-const NARROW = 25
+const NARROW = 20
 const TINY = 5
 
 describe('gateEnabled is the whole opt-in', () => {

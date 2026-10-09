@@ -209,14 +209,16 @@ function canonicalHighlight(self: IAnyStateTreeNode, region: HighlightRegion) {
 // pointless offset re-anchoring on micro-steps
 const BP_PER_PX_EPSILON = 0.000001
 
-// px of the rightmost content kept on-screen at max scroll-right, so the genome
-// can't be scrolled entirely off the left edge. Shared by maxOffset and
-// getSelectedRegions' clamp so the two bounds can't drift apart.
-const MAX_OFFSET_PADDING_PX = 10
-
-// px of the leftmost content kept on-screen at max scroll-left, mirroring
-// MAX_OFFSET_PADDING_PX at the other end
-const MIN_OFFSET_PADDING_PX = 30
+// The offsets a view can scroll to: content edge to edge, never blank space
+// past either end. Content narrower than the view collapses the range to the
+// centered offset, which is what `showAllRegions` and `fitAllRegions` ask for.
+function offsetBounds(contentPx: number, viewportPx: number) {
+  const centered = getCenteredOffsetPx(contentPx, viewportPx)
+  return {
+    min: Math.min(0, centered),
+    max: Math.max(contentPx - viewportPx, centered),
+  }
+}
 
 // whether two BlockSets cover the same blocks, by key and in order
 function sameBlockKeys(a: BlockSet, b: BlockSet) {
@@ -1259,16 +1261,14 @@ export function stateModelFactory(pluginManager: PluginManager) {
        * #getter
        */
       get maxOffset() {
-        // objectively determined to keep the linear genome on the main screen
-        return this.displayedRegionsTotalPx - MAX_OFFSET_PADDING_PX
+        return offsetBounds(this.displayedRegionsTotalPx, self.width).max
       },
 
       /**
        * #getter
        */
       get minOffset() {
-        // objectively determined to keep the linear genome on the main screen
-        return -self.width + MIN_OFFSET_PADDING_PX
+        return offsetBounds(this.displayedRegionsTotalPx, self.width).min
       },
 
       /**
@@ -1821,11 +1821,8 @@ export function stateModelFactory(pluginManager: PluginManager) {
         )
         // mirror Base1DView.scrollTo clamping: raw offsetPx can be far outside
         // the valid range when both offsets are oob on the same side
-        const offsetPx = clamp(
-          rawOffsetPx,
-          self.minOffset,
-          self.totalBp / bpPerPx - MAX_OFFSET_PADDING_PX,
-        )
+        const { min, max } = offsetBounds(self.totalBp / bpPerPx, self.width)
+        const offsetPx = clamp(rawOffsetPx, min, max)
         return wholeBaseRegions(
           calculateDynamicBlocks({
             ...layout,

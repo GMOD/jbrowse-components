@@ -173,10 +173,11 @@ test('"Copy coordinate" on a reversed region names the base under the pointer', 
 
 test('"Center view here" on a reversed region centers the base the label names', () => {
   const { view } = setup([{ ...WHOLE_CONTIG[0]!, reversed: true }])
-  // px 100 paints base 9,900 counting from one, 9899 0-based; centering the
+  view.scrollTo(5000)
+  // px 100 paints base 4,900 counting from one, 4899 0-based; centering the
   // base one past it is what the old `coord - 1` did
   clickItem(clickAt(view, 100), 'Center view here')
-  const centered = view.bpToPx({ refName: 'ctgA', coord: 9899 })!
+  const centered = view.bpToPx({ refName: 'ctgA', coord: 4899 })!
   expect(centered.offsetPx - view.offsetPx).toBeCloseTo(view.width / 2, 6)
 })
 
