@@ -11,6 +11,8 @@ export interface FloatingLabel {
   text: string
   color: string
   fontSize: number
+  /** the feature the label names, where it names one */
+  featureId?: string
 }
 
 /**

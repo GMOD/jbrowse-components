@@ -971,6 +971,7 @@ export default function baseStateModelFactory(
                   text: r.label.text,
                   color: r.color,
                   fontSize,
+                  featureId,
                 })
               }
             }

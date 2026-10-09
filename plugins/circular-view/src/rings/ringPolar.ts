@@ -1,4 +1,5 @@
 import { polarToCartesian } from '@jbrowse/core/util'
+import { originHeadId } from '@jbrowse/core/util/originCut'
 import { cullOverlappingLabels } from '@jbrowse/display-ui'
 
 import { stripPerRingPx } from './ringHost.ts'
@@ -97,7 +98,9 @@ export interface RingLabel {
  * order, a label meeting one already kept is dropped rather than shrunk, as
  * is every label of a band shrunk past reading. A label never runs past the
  * strip's end, where a ring closed on itself meets its start: it is pulled
- * back to end there, as the linear view keeps one inside its region.
+ * back to end there, as the linear view keeps one inside its region. The
+ * two pieces of a feature cut at the origin meet there as one arc, which
+ * takes the label of the piece before it.
  */
 export function ringLabels(
   ring: Ring,
@@ -108,8 +111,13 @@ export function ringLabels(
   const { innerPx, outerPx } = ring
   // Unrolled to arc px at the outer edge across and radius px up, so the
   // strip's own cull compares them; the gap rides on each label's far end.
+  const labelled = new Set(labels.map(l => l.featureId))
   const candidates = []
   for (const label of labels) {
+    const head = label.featureId && originHeadId(label.featureId)
+    if (head && labelled.has(head)) {
+      continue
+    }
     const fontSize = label.fontSize / scale
     const { radiusPx } = stripPointToPolar(
       ring,
@@ -140,9 +148,19 @@ export function ringLabels(
       bottom: radiusPx + fontSize / 2,
     })
   }
-  return cullOverlappingLabels(candidates, Infinity, Infinity, 0).map(
-    ({ left, right, top, bottom, ...kept }) => kept,
-  )
+  const kept = cullOverlappingLabels(candidates, Infinity, Infinity, 0)
+  // The cull reads the strip as a line, and the ring meets its start again
+  // at its end.
+  const full = 2 * Math.PI * outerPx
+  return kept
+    .filter(
+      k =>
+        k.right <= full ||
+        !kept.some(
+          j => j.left < k.right - full && j.top < k.bottom && j.bottom > k.top,
+        ),
+    )
+    .map(({ left, right, top, bottom, ...label }) => label)
 }
 
 /**

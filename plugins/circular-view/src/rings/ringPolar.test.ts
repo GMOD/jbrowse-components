@@ -91,6 +91,36 @@ test('labels on two lines cull each other where their text meets, as a text mark
   expect(kept.map(k => k.key)).toEqual(['0-20', '20-40'])
 })
 
+test('a label pulled back to the strip end yields to one at its start on the same line', () => {
+  const ring = { display: display(100), innerPx: 100, outerPx: 200 }
+  const end = 2 * Math.PI * 400
+  const kept = ringLabels(
+    ring,
+    [label(end - 5, 20, 30), label(0, 20, 30), label(end - 5, 60, 30)],
+    400,
+  )
+  expect(kept.map(k => k.key)).toEqual(['0-20', `${end - 5}-60`])
+})
+
+test('a feature cut at the origin is labelled once, by its piece before the origin', () => {
+  const ring = { display: display(100), innerPx: 100, outerPx: 200 }
+  const end = 2 * Math.PI * 400
+  const piece = (x: number, featureId: string) => ({
+    ...label(x, 20, 30, 'D-loop'),
+    featureId,
+  })
+  expect(
+    ringLabels(
+      ring,
+      [piece(end - 200, 'dloop'), piece(0, 'dloop-origin')],
+      400,
+    ).map(k => k.key),
+  ).toEqual([`${end - 200}-20`])
+  expect(
+    ringLabels(ring, [piece(0, 'dloop-origin')], 400).map(k => k.key),
+  ).toEqual(['0-20'])
+})
+
 test('a band shrunk past reading keeps no label', () => {
   const ring = { display: display(100), innerPx: 190, outerPx: 200 }
   expect(10 / (100 / 10)).toBeLessThan(MIN_RING_LABEL_PX)

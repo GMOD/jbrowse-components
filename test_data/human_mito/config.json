@@ -54,7 +54,7 @@
           "type": "LinearBasicDisplay",
           "displayId": "ncbi_genes_human_mito-LinearBasicDisplay",
           "labels": {
-            "name": "jexl:get(feature,'gene') || get(feature,'product') || get(feature,'name') || get(feature,'id')"
+            "name": "jexl:get(feature,'gene') || get(feature,'product') || get(feature,'name') || get(feature,'gbkey') || get(feature,'id')"
           }
         }
       ]
