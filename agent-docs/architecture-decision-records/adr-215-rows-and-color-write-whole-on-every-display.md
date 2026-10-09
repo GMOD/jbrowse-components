@@ -1,6 +1,6 @@
 ---
 status: Accepted
-summary: "A settings bag, a session spec, a share link and jb2export write `rows` and every color object whole on every display, where the multi-sample variant and MAF displays merged `rows` member by member and LD and Hi-C merged `color`, so one share link kept a clustering tree beside an order it no longer listed on one display and dropped it on another. The two displays' `rows` is `SampleRows`, the shared `Rows` object with `sample` as its one field, and LD and Hi-C color take the bare-string field shorthand every other color object takes. `scales` is the one namespace left, and the write mode stays derived from the shorthand rather than declared"
+summary: "A settings bag, a session spec, a share link and jb2export write `rows` and every color object whole on every display, where the multi-sample variant and MAF displays merged `rows` member by member and LD and Hi-C merged `color`, so one share link kept a clustering tree beside an order it no longer listed on one display and dropped it on another. The two displays' `rows` is `SampleRows`, the shared `Rows` object with `sample` as its one field, and LD and Hi-C color take the bare-string field shorthand every color object with no constant of its own takes. `scales` is the one namespace left, and the write mode stays derived from the shorthand rather than declared"
 ---
 
 # ADR-215: `rows` and color write whole on every display
@@ -9,7 +9,8 @@ summary: "A settings bag, a session spec, a share link and jb2export write `rows
 
 Accepted (2026-10-07). Settles call 2 of the 2026-10-07 grammar audit;
 narrows [ADR-142](adr-142-one-value-scale-object.md) §"A partial sub-schema
-write merges" to `scales`.
+write merges" to `scales`. Amended 2026-10-09: the shorthand claim below
+covers the color objects that declare no `value`.
 
 ## Context
 
@@ -34,7 +35,11 @@ lifted.
   displays declare it, so `rows` is one object with one write rule on every
   display, and `rows: "sample"` is legal and arranges nothing.
 - **LD and Hi-C color declare `shorthand: 'field'`**, as MAF's does, so a
-  bare string names the field on every color object.
+  bare string names the field on every color object that has no constant. One
+  that declares a `value` keeps the constant shorthand, as
+  [ADR-159](adr-159-a-mark-is-spelt-as-vega-lite-spells-one.md)'s amendment
+  keeps it for a display-level color, and a field name written there is
+  refused with the `{ "field": … }` spelling (`colorChannelOptions`).
 - **`scales` is the one namespace**, and the rule that a shorthand marks a
   channel stands: with every color object and every `rows` a channel, the
   derivation and a declared write mode would say the same thing.

@@ -124,6 +124,16 @@ test('the scale is never read off which output member is written', () => {
   expect(scaleOf({ scheme: 'viridis' })).toBe('categorical')
 })
 
+test('a field name written as the constant is refused with the field spelling', () => {
+  const create = (value: string) =>
+    colorConfigSchema.create({ value }, { pluginManager })
+  expect(() => create('pairOrientation')).toThrow(
+    'To color by the field, write color: { "field": "pairOrientation" }',
+  )
+  expect(() => create("jexl:get(feature,'score')>1?'red':'blue'")).not.toThrow()
+  expect(() => create('255,0,0')).not.toThrow()
+})
+
 describe('colorSettingOf', () => {
   it('reads a callback value as written and leaves the key to the display', () => {
     const color = colorConfigSchema.create(

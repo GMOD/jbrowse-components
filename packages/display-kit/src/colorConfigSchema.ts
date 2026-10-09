@@ -15,6 +15,8 @@ import {
   withPreset,
 } from '@jbrowse/core/util/colorScale'
 import { COLOR_SCHEMES } from '@jbrowse/core/util/colorSchemes'
+import { isCssColor } from '@jbrowse/core/util/cssColorParse'
+import { isJexl } from '@jbrowse/core/util/jexlStrings'
 import { thresholdField } from '@jbrowse/core/util/thresholdScale'
 import { types } from '@jbrowse/mobx-state-tree'
 
@@ -403,6 +405,28 @@ export const colorDomainQuantileSlot = {
   },
 } as const
 
+/**
+ * A word where a color object's constant goes is the field its writer meant,
+ * so it is refused with the spelling of one rather than as no color.
+ */
+function refuseFieldAsConstant(
+  snap: Record<string, unknown> | undefined,
+  name: string,
+) {
+  const value = snap?.value
+  if (
+    typeof value === 'string' &&
+    value !== '' &&
+    !isJexl(value) &&
+    !isCssColor(value)
+  ) {
+    throw new Error(
+      `${name}: "${value}" is not a color. To color by the field, write ${name}: { "field": "${value}" }`,
+    )
+  }
+  return snap
+}
+
 /** A color object's options: a bare string is its `value`, and an undeclared key is refused. */
 export function colorChannelOptions(
   name: string,
@@ -413,7 +437,7 @@ export function colorChannelOptions(
     closed: true,
     fieldPresets,
     preProcessSnapshot: (snap: Record<string, unknown> | undefined) =>
-      normalizeChannel(snap, name),
+      normalizeChannel(refuseFieldAsConstant(snap, name), name),
   }
 }
 
