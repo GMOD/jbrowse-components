@@ -2,7 +2,7 @@ import { EmbedProvider, TrackStack } from '@jbrowse/display-ui/embed'
 import { useCreateViewState } from '@jbrowse/react-linear-genome-view2'
 import { observer } from 'mobx-react'
 
-const Ultraminimal = observer(function Ultraminimal() {
+const OneTrack = observer(function OneTrack() {
   const state = useCreateViewState({
     assembly: {
       name: 'hg38',
@@ -31,4 +31,4 @@ const Ultraminimal = observer(function Ultraminimal() {
   ) : null
 })
 
-export default Ultraminimal
+export default OneTrack

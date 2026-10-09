@@ -16,7 +16,8 @@ a reader would not otherwise find (`geneticCodes` in `MultipleTracks`).
 `EmbedProvider` mounts `Notifications`, which draws `session.snackbarMessages`
 and a line per queued dialog, so a page owes no error plumbing of its own:
 `notifyError` and a failed `NavButton`, `TrackToggle` or `launchTrack` all land
-there. `loading-and-errors` passes `notifications={false}` and draws its own.
+there. `view-loading-and-errors` passes `notifications={false}` and draws its
+own.
 
 ## `check-duplication.mjs` holds the copy-paste rule up from both sides
 
@@ -55,9 +56,10 @@ places outside its track, on the two pages that place one.
 for the row to be selected, the band to carry its id and the scalebar to read
 its locus.
 
-**`viewStatusStatesAreDrawn`** drives the loading-and-errors page through the
-snackbar, `noRegions` (an engine built with no `view`) and a 404 assembly. When
-a demo names a state, check that some input on the site actually reaches it.
+**`viewStatusStatesAreDrawn`** drives the view-loading-and-errors page through
+the snackbar, `noRegions` (an engine built with no `view`) and a 404 assembly.
+When a demo names a state, check that some input on the site actually reaches
+it.
 
 **`eagerBundleSizes.json`** is written by `pnpm measure-eager-bundle` and
 re-checked by `pnpm smoke`. Going **under** a budget fails as well as over, so

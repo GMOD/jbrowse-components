@@ -73,7 +73,7 @@ const Controls = observer(function Controls({
   )
 })
 
-const DriveItFromYourApp = observer(function DriveItFromYourApp() {
+const ViewControls = observer(function ViewControls() {
   const state = useCreateViewState({
     assembly: {
       name: 'hg38',
@@ -122,4 +122,4 @@ const DriveItFromYourApp = observer(function DriveItFromYourApp() {
   )
 })
 
-export default DriveItFromYourApp
+export default ViewControls

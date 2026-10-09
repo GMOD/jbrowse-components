@@ -40,7 +40,7 @@ const here = path.dirname(fileURLToPath(import.meta.url))
 // would be resting on a number that no longer isolates it. That is the whole
 // reason `multiple-tracks` is still a page of its own.
 //
-// **`ultraminimal` installs no provider either, and its zero is unearned.**
+// **`one-track` installs no provider either, and its zero is unearned.**
 // Both its demos show a lone wiggle track, and the corner controls come from
 // canvas's FeatureComponent and the alignments component — wiggle draws none. So
 // it scores zero by having no Material widget to suppress, not by suppressing
@@ -56,31 +56,31 @@ const here = path.dirname(fileURLToPath(import.meta.url))
 const MUI_BUDGET = {
   // the landing page, which runs the scalebar demo rather than describing it
   '': 0,
-  ultraminimal: 0,
+  'one-track': 0,
   'multiple-tracks': 3,
-  'removing-material-ui': 0,
-  'loading-and-errors': 0,
+  'track-loading-and-errors': 0,
+  'view-loading-and-errors': 0,
   'scalebar-and-gridlines': 0,
   'track-labels': 0,
-  'drive-it-from-your-app': 0,
+  'view-controls': 0,
   'every-chromosome': 0,
-  'your-own-feature-details': 0,
-  'your-own-track-selector': 0,
+  'feature-details': 0,
+  'track-selector': 0,
   // At rest this page shows a pileup coloured `normal`, which has no key — so
   // this zero is the ordinary one and says nothing about the legend. The legend
   // is a separate check (`legendIsPlainAndAboveTheSeams`), because it has to be
   // driven and because a census that only ever runs before the thing appears is
-  // the `ultraminimal` unearned-zero trap one paragraph up.
+  // the `one-track` unearned-zero trap one paragraph up.
   'track-settings': 0,
   'color-and-group-by-a-field': 0,
-  'a-plot-from-json': 0,
+  'plot-from-json': 0,
   'genome-by-name': 0,
-  'a-table-of-calls': 0,
+  'table-of-calls': 0,
   'search-by-name': 0,
-  'your-own-search-results': 0,
+  'search-results': 0,
   'local-files': 0,
   'highlight-a-region': 0,
-  'dark-mode': 0,
+  'dark-theme': 0,
   'session-in-url': 0,
   'web-worker': 0,
   // measured, not chosen -- see the note below the budget
@@ -503,7 +503,7 @@ async function dragToZoomFramesTheSpan(page, slug) {
 const PLACED_KEYS = {
   'color-and-group-by-a-field': 'protein_coding',
   'gene-lanes': 'atpA',
-  'a-plot-from-json': 'AluY',
+  'plot-from-json': 'AluY',
 }
 
 async function placedKeyNamesItsRows(page, slug) {
@@ -527,7 +527,7 @@ async function placedKeyNamesItsRows(page, slug) {
 }
 
 async function aTableRowMovesTheView(page, slug) {
-  if (slug !== 'a-table-of-calls') {
+  if (slug !== 'table-of-calls') {
     return []
   }
   await page.evaluate(() => {
@@ -819,7 +819,7 @@ async function localFileOpensAsATrack(page, slug) {
 
 // The one page whose subject is a state you cannot see by loading it.
 //
-// `loading-and-errors` argues that a host gating on `view.ready` alone ships an
+// `view-loading-and-errors` argues that a host gating on `view.ready` alone ships an
 // empty box: false for a failed load, and true for a view nothing has navigated
 // yet. Neither shows up on an idle page, and neither does the snackbar channel
 // that carries the failures the view has no state for. Every other check in
@@ -837,7 +837,7 @@ async function localFileOpensAsATrack(page, slug) {
 // Runs last. Picking the broken scenario replaces the engine with one that has
 // no canvas, so anything after it would be censusing a different page.
 async function viewStatusStatesAreDrawn(page, slug) {
-  if (slug !== 'loading-and-errors') {
+  if (slug !== 'view-loading-and-errors') {
     return []
   }
   const clickByText = async text => {
@@ -877,7 +877,7 @@ async function viewStatusStatesAreDrawn(page, slug) {
   }
 
   // …and now that it is on screen, is it readable? This is the one place the
-  // repo's actual dark-mode bug can be caught, rather than a sibling of it: the
+  // repo's actual dark-theme bug can be caught, rather than a sibling of it: the
   // snackbar exists only after the click above, so the at-rest contrast pass in
   // the check list never sees it, and for as long as `color-scheme` went
   // undeclared this notification — the single thing this page exists to prove a
@@ -964,7 +964,7 @@ async function viewStatusStatesAreDrawn(page, slug) {
 // a click aimed at `BRCA1`, which is a different one of the four paths.
 async function searchByNameResolvesNames(page, slug) {
   const out = []
-  if (slug === 'your-own-search-results') {
+  if (slug === 'search-results') {
     // No interaction for this one: the dropdown's box starts on `BRCA1`, so a
     // populated list is the evidence that `fetchResults` reached the hosted index
     // and parsed it. Both columns are checked — `BRCA1P1` (a prefix hit, not the
@@ -1099,17 +1099,18 @@ const failures = await smokeExamplesSite({
   // census to what ever rendered rather than to what survived the load
   recordFromLoad: recordMuiFromLoad,
   // The two console errors on this site that are a page working rather than
-  // failing: `loading-and-errors` points a radio at an assembly whose sequence
+  // failing: `view-loading-and-errors` points a radio at an assembly whose sequence
   // file does not exist, and `viewStatusStatesAreDrawn` below clicks it, while
-  // `removing-material-ui` carries a "track that fails to load" so its
+  // `track-loading-and-errors` carries a "track that fails to load" so its
   // bring-your-own error overlay has something to draw. Both named down to the
   // URL on purpose — a filter matching "404" would waive the ordinary
   // broken-data-link regression they look exactly like, on every page.
   allowedConsoleError: (text, slug) =>
-    (slug === 'loading-and-errors' && text.includes('does-not-exist.2bit')) ||
-    (slug === 'removing-material-ui' && text.includes('does-not-exist.bw')),
+    (slug === 'view-loading-and-errors' &&
+      text.includes('does-not-exist.2bit')) ||
+    (slug === 'track-loading-and-errors' && text.includes('does-not-exist.bw')),
   allowedUnsettled: (text, slug) =>
-    slug === 'removing-material-ui' &&
+    slug === 'track-loading-and-errors' &&
     text ===
       'display(s) showing an error: wiggle-display (hg38_broken-LinearWiggleDisplay) is error',
   //

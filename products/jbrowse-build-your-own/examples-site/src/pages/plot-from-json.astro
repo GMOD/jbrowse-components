@@ -1,0 +1,9 @@
+---
+import Demo from '../examples/PlotFromJson.tsx'
+import code from '../examples/PlotFromJson.tsx?raw'
+import ExamplePage from '../layouts/ExamplePage.astro'
+---
+
+<ExamplePage slug="plot-from-json" code={code}>
+  <Demo client:only="react" />
+</ExamplePage>

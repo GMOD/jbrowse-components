@@ -121,7 +121,7 @@ const sets = {
 
 type SetName = keyof typeof sets
 
-const RemovingMaterialUi = observer(function RemovingMaterialUi() {
+const TrackLoadingAndErrors = observer(function TrackLoadingAndErrors() {
   const [setName, setSetName] = useState<SetName>('a set written in this file')
   const state = useCreateViewState({
     assembly: {
@@ -193,4 +193,4 @@ const RemovingMaterialUi = observer(function RemovingMaterialUi() {
   )
 })
 
-export default RemovingMaterialUi
+export default TrackLoadingAndErrors

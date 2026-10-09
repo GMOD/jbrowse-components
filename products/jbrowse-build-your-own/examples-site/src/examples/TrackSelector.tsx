@@ -35,11 +35,7 @@ function listTracks(session: Session) {
   })
 }
 
-const TrackSelector = observer(function TrackSelector({
-  session,
-}: {
-  session: Session
-}) {
+const Sidebar = observer(function Sidebar({ session }: { session: Session }) {
   const [filter, setFilter] = useState('')
   const { view } = session
   const needle = filter.trim().toLowerCase()
@@ -98,7 +94,7 @@ const TrackSelector = observer(function TrackSelector({
   )
 })
 
-const YourOwnTrackSelector = observer(function YourOwnTrackSelector() {
+const TrackSelector = observer(function TrackSelector() {
   const state = useCreateViewState({
     assembly: {
       name: 'hg38',
@@ -171,7 +167,7 @@ const YourOwnTrackSelector = observer(function YourOwnTrackSelector() {
   return (
     <EmbedProvider session={session}>
       <div style={{ display: 'flex', minHeight: 330 }}>
-        <TrackSelector session={session} />
+        <Sidebar session={session} />
         <TrackStack
           view={session.view}
           trackIds={listTracks(session).map(e => e.trackId)}
@@ -182,4 +178,4 @@ const YourOwnTrackSelector = observer(function YourOwnTrackSelector() {
   )
 })
 
-export default YourOwnTrackSelector
+export default TrackSelector

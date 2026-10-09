@@ -13,7 +13,7 @@ const hidden = new Set([
   'uniqueId',
 ])
 
-const FeatureDetails = observer(function FeatureDetails({
+const Panel = observer(function Panel({
   session,
 }: {
   session: { selection: unknown; clearSelection: () => void }
@@ -63,7 +63,7 @@ const FeatureDetails = observer(function FeatureDetails({
   )
 })
 
-const YourOwnFeatureDetails = observer(function YourOwnFeatureDetails() {
+const FeatureDetails = observer(function FeatureDetails() {
   const state = useCreateViewState({
     assembly: {
       name: 'hg38',
@@ -103,11 +103,11 @@ const YourOwnFeatureDetails = observer(function YourOwnFeatureDetails() {
               '1px solid color-mix(in srgb, currentColor 25%, transparent)',
           }}
         >
-          <FeatureDetails session={session} />
+          <Panel session={session} />
         </div>
       </div>
     </EmbedProvider>
   )
 })
 
-export default YourOwnFeatureDetails
+export default FeatureDetails

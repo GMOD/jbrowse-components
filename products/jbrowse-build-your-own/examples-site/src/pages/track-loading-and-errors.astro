@@ -1,0 +1,9 @@
+---
+import Demo from '../examples/TrackLoadingAndErrors.tsx'
+import code from '../examples/TrackLoadingAndErrors.tsx?raw'
+import ExamplePage from '../layouts/ExamplePage.astro'
+---
+
+<ExamplePage slug="track-loading-and-errors" code={code}>
+  <Demo client:only="react" />
+</ExamplePage>

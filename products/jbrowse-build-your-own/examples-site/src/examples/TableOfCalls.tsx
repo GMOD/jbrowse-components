@@ -112,7 +112,7 @@ const Calls = observer(function Calls({
   )
 })
 
-const ATableOfCalls = observer(function ATableOfCalls() {
+const TableOfCalls = observer(function TableOfCalls() {
   const state = useCreateViewState({
     assembly: {
       name: 'hg38',
@@ -157,4 +157,4 @@ const ATableOfCalls = observer(function ATableOfCalls() {
   )
 })
 
-export default ATableOfCalls
+export default TableOfCalls

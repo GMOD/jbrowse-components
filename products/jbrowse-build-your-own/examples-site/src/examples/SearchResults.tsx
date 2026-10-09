@@ -98,7 +98,7 @@ const SearchPanel = observer(function SearchPanel({
   )
 })
 
-const YourOwnSearchResults = observer(function YourOwnSearchResults() {
+const SearchResults = observer(function SearchResults() {
   const state = useCreateViewState({
     assembly: {
       name: 'hg38',
@@ -133,4 +133,4 @@ const YourOwnSearchResults = observer(function YourOwnSearchResults() {
   ) : null
 })
 
-export default YourOwnSearchResults
+export default SearchResults

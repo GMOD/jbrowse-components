@@ -1,0 +1,9 @@
+---
+import Demo from '../examples/ViewLoadingAndErrors.tsx'
+import code from '../examples/ViewLoadingAndErrors.tsx?raw'
+import ExamplePage from '../layouts/ExamplePage.astro'
+---
+
+<ExamplePage slug="view-loading-and-errors" code={code}>
+  <Demo client:only="react" />
+</ExamplePage>

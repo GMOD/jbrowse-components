@@ -6,7 +6,7 @@ import { observer } from 'mobx-react'
 
 const modes = ['light', 'dark'] as const
 
-const DarkMode = observer(function DarkMode() {
+const DarkTheme = observer(function DarkTheme() {
   const [mode, setMode] = useState<(typeof modes)[number]>('dark')
   const state = useCreateViewState({
     assembly: {
@@ -67,4 +67,4 @@ const DarkMode = observer(function DarkMode() {
   ) : null
 })
 
-export default DarkMode
+export default DarkTheme

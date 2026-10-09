@@ -52,7 +52,7 @@ const aluTrack = (
   ],
 })
 
-const APlotFromJson = observer(function APlotFromJson() {
+const PlotFromJson = observer(function PlotFromJson() {
   const state = useCreateViewState({
     assembly: {
       name: 'hg38',
@@ -96,4 +96,4 @@ const APlotFromJson = observer(function APlotFromJson() {
   )
 })
 
-export default APlotFromJson
+export default PlotFromJson

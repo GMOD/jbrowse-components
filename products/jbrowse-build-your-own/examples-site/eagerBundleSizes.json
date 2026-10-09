@@ -3,28 +3,20 @@
     "chunks": 265,
     "gzipKb": 464
   },
-  "a-plot-from-json": {
-    "chunks": 267,
-    "gzipKb": 465
-  },
-  "a-table-of-calls": {
-    "chunks": 266,
-    "gzipKb": 464
-  },
   "color-and-group-by-a-field": {
     "chunks": 266,
     "gzipKb": 464
   },
-  "dark-mode": {
+  "dark-theme": {
     "chunks": 265,
     "gzipKb": 463
   },
-  "drive-it-from-your-app": {
-    "chunks": 267,
-    "gzipKb": 465
-  },
   "every-chromosome": {
     "chunks": 265,
+    "gzipKb": 463
+  },
+  "feature-details": {
+    "chunks": 264,
     "gzipKb": 463
   },
   "gene-lanes": {
@@ -39,10 +31,6 @@
     "chunks": 266,
     "gzipKb": 464
   },
-  "loading-and-errors": {
-    "chunks": 265,
-    "gzipKb": 463
-  },
   "local-files": {
     "chunks": 264,
     "gzipKb": 463
@@ -51,9 +39,13 @@
     "chunks": 256,
     "gzipKb": 455
   },
-  "removing-material-ui": {
+  "one-track": {
     "chunks": 264,
-    "gzipKb": 463
+    "gzipKb": 462
+  },
+  "plot-from-json": {
+    "chunks": 267,
+    "gzipKb": 465
   },
   "scalebar-and-gridlines": {
     "chunks": 265,
@@ -62,6 +54,10 @@
   "search-by-name": {
     "chunks": 265,
     "gzipKb": 463
+  },
+  "search-results": {
+    "chunks": 265,
+    "gzipKb": 464
   },
   "session-in-url": {
     "chunks": 266,
@@ -75,32 +71,36 @@
     "chunks": 374,
     "gzipKb": 627
   },
+  "table-of-calls": {
+    "chunks": 266,
+    "gzipKb": 464
+  },
   "track-labels": {
     "chunks": 264,
     "gzipKb": 462
+  },
+  "track-loading-and-errors": {
+    "chunks": 264,
+    "gzipKb": 463
+  },
+  "track-selector": {
+    "chunks": 264,
+    "gzipKb": 463
   },
   "track-settings": {
     "chunks": 266,
     "gzipKb": 464
   },
-  "ultraminimal": {
-    "chunks": 264,
-    "gzipKb": 462
+  "view-controls": {
+    "chunks": 267,
+    "gzipKb": 465
+  },
+  "view-loading-and-errors": {
+    "chunks": 265,
+    "gzipKb": 463
   },
   "web-worker": {
     "chunks": 264,
     "gzipKb": 462
-  },
-  "your-own-feature-details": {
-    "chunks": 264,
-    "gzipKb": 463
-  },
-  "your-own-search-results": {
-    "chunks": 265,
-    "gzipKb": 464
-  },
-  "your-own-track-selector": {
-    "chunks": 264,
-    "gzipKb": 463
   }
 }

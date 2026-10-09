@@ -1,0 +1,9 @@
+---
+import Demo from '../examples/TrackSelector.tsx'
+import code from '../examples/TrackSelector.tsx?raw'
+import ExamplePage from '../layouts/ExamplePage.astro'
+---
+
+<ExamplePage slug="track-selector" code={code}>
+  <Demo client:only="react" />
+</ExamplePage>

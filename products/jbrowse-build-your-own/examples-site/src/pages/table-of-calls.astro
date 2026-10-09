@@ -1,0 +1,9 @@
+---
+import Demo from '../examples/TableOfCalls.tsx'
+import code from '../examples/TableOfCalls.tsx?raw'
+import ExamplePage from '../layouts/ExamplePage.astro'
+---
+
+<ExamplePage slug="table-of-calls" code={code}>
+  <Demo client:only="react" />
+</ExamplePage>

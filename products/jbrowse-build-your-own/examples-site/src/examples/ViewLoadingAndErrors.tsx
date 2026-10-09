@@ -131,7 +131,7 @@ const Browser = observer(function Browser({
   )
 })
 
-const LoadingAndErrors = observer(function LoadingAndErrors() {
+const ViewLoadingAndErrors = observer(function ViewLoadingAndErrors() {
   const [scenario, setScenario] = useState<Scenario>('hg38 (2bit), which loads')
   return (
     <div>
@@ -156,4 +156,4 @@ const LoadingAndErrors = observer(function LoadingAndErrors() {
   )
 })
 
-export default LoadingAndErrors
+export default ViewLoadingAndErrors
