@@ -3067,10 +3067,6 @@ export const configManifest: ConfigManifest = {
           "type": "number"
         },
         {
-          "name": "mouseover",
-          "type": "(JexlString | string)"
-        },
-        {
           "name": "heightMode",
           "type": "heightMode"
         },
@@ -3089,6 +3085,10 @@ export const configManifest: ConfigManifest = {
         {
           "name": "filter",
           "type": "JexlExpression[]"
+        },
+        {
+          "name": "mouseover",
+          "type": "(JexlString | string)"
         },
         {
           "name": "maxFeatureScreenDensity",
@@ -3344,10 +3344,6 @@ export const configManifest: ConfigManifest = {
           "type": "number"
         },
         {
-          "name": "mouseover",
-          "type": "(JexlString | string)"
-        },
-        {
           "name": "rows",
           "type": "RowsConfigurationSchema",
           "subSlots": [
@@ -3563,6 +3559,7 @@ export const configManifest: ConfigManifest = {
       "legacyKeys": [
         "maxFeatureScreenDensity",
         "maxDisplayedBpPerPx",
+        "mouseover",
         "jexlFilters"
       ],
       "droppedKeys": [
@@ -3602,10 +3599,6 @@ export const configManifest: ConfigManifest = {
         {
           "name": "height",
           "type": "number"
-        },
-        {
-          "name": "mouseover",
-          "type": "(JexlString | string)"
         },
         {
           "name": "featureHeight",
@@ -4082,6 +4075,7 @@ export const configManifest: ConfigManifest = {
       "legacyKeys": [
         "maxFeatureScreenDensity",
         "maxDisplayedBpPerPx",
+        "mouseover",
         "jexlFilters",
         "colorBy",
         "drawInter",
@@ -4322,10 +4316,6 @@ export const configManifest: ConfigManifest = {
         {
           "name": "height",
           "type": "number"
-        },
-        {
-          "name": "mouseover",
-          "type": "(JexlString | string)"
         },
         {
           "name": "featureHeight",
@@ -4811,6 +4801,7 @@ export const configManifest: ConfigManifest = {
       "legacyKeys": [
         "maxFeatureScreenDensity",
         "maxDisplayedBpPerPx",
+        "mouseover",
         "jexlFilters",
         "colorBy",
         "drawInter",
@@ -4880,10 +4871,6 @@ export const configManifest: ConfigManifest = {
         {
           "name": "height",
           "type": "number"
-        },
-        {
-          "name": "mouseover",
-          "type": "(JexlString | string)"
         },
         {
           "name": "color",
@@ -5354,6 +5341,7 @@ export const configManifest: ConfigManifest = {
       "legacyKeys": [
         "maxFeatureScreenDensity",
         "maxDisplayedBpPerPx",
+        "mouseover",
         "jexlFilters"
       ],
       "droppedKeys": [
@@ -5440,10 +5428,6 @@ export const configManifest: ConfigManifest = {
           "type": "number"
         },
         {
-          "name": "mouseover",
-          "type": "(JexlString | string)"
-        },
-        {
           "name": "heightMode",
           "type": "heightMode"
         },
@@ -5462,6 +5446,10 @@ export const configManifest: ConfigManifest = {
         {
           "name": "filter",
           "type": "JexlExpression[]"
+        },
+        {
+          "name": "mouseover",
+          "type": "(JexlString | string)"
         },
         {
           "name": "maxFeatureScreenDensity",
@@ -5660,10 +5648,6 @@ export const configManifest: ConfigManifest = {
         {
           "name": "height",
           "type": "number"
-        },
-        {
-          "name": "mouseover",
-          "type": "(JexlString | string)"
         },
         {
           "name": "variantLayout",
@@ -5872,6 +5856,7 @@ export const configManifest: ConfigManifest = {
       "legacyKeys": [
         "maxFeatureScreenDensity",
         "maxDisplayedBpPerPx",
+        "mouseover",
         "jexlFilters",
         "renderingMode",
         "showSidebarLabels",
@@ -6382,10 +6367,6 @@ export const configManifest: ConfigManifest = {
           "type": "(number | undefined)"
         },
         {
-          "name": "mouseover",
-          "type": "(JexlString | string)"
-        },
-        {
           "name": "rowHeight",
           "type": "number"
         },
@@ -6655,6 +6636,7 @@ export const configManifest: ConfigManifest = {
       "legacyKeys": [
         "maxFeatureScreenDensity",
         "maxDisplayedBpPerPx",
+        "mouseover",
         "jexlFilters"
       ],
       "droppedKeys": [

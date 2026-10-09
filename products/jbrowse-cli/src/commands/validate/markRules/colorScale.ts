@@ -199,6 +199,7 @@ export interface ScaleProblem {
     | 'threshold-cuts'
     | 'threshold-range'
     | 'ramp-domain'
+    | 'ramp-range'
     | 'domain-ends'
     | 'domain-quantile'
     | 'log-floor'
@@ -385,6 +386,14 @@ export function colorProblems(
         slot: 'domain',
         message:
           "a linear or log scale reads no domain, which is a categorical scale's order and a threshold scale's cuts; a ramp's ends are domainMin and domainMax where the color has them",
+      })
+    }
+    if (range.length === 1) {
+      problems.push({
+        rule: 'ramp-range',
+        slot: 'range',
+        message:
+          'a linear or log ramp runs between at least two colors, and one paints every value alike; a single color is value',
       })
     }
     problems.push(

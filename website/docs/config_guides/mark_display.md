@@ -981,6 +981,7 @@ each reported under its id:
 | `threshold-cut-count` | warning | A threshold color naming more cuts than it paints, so a value past the eighth takes the ninth color. |
 | `threshold-range` | warning | A threshold `range` not one color longer than its cuts. |
 | `ramp-domain` | warning | A `domain` on a linear or log color, whose ends are `domainMin` and `domainMax`. |
+| `ramp-range` | warning | A linear or log color whose `range` lists one color, which paints every value alike. |
 | `domain-ends` | warning | A scale's `domainMax` below its `domainMin`: a color ramp's, a width's or `scales.y`'s. |
 | `domain-quantile` | warning | A color ramp's or `scales.y`'s `domainQuantile` outside 0.5 to 1, a percent among them. |
 | `log-floor` | warning | A log scale's `domainMin` at or below 0, which it cannot hold, so the end floors above it. |

@@ -60,7 +60,6 @@ These slots go on a display entry: `"displays": [{ "type": "LGVSyntenyDisplay", 
 <!-- prettier-ignore -->
 | Slot | Description |
 | --- | --- |
-| <span id="slot-mouseover">**mouseover**</span><br>[`string`](/docs/config_guides/slot_types#string) = <code>'jexl:lgvSyntenyTooltip(feature)'</code> | Tooltip shown on hovering a synteny feature; the default jexl expression renders both mates' names and locations.<br>_callback args:_ `feature` |
 | <span id="slot-color">**color**</span><br>[LGVSyntenyColor](../lgvsyntenycolor) | The alignments displays' `color` object with `field` defaulting to `strand`, where the base display paints the plain fill. |
 | <span id="slot-showcoverage">**showCoverage**</span><br>[`boolean`](/docs/config_guides/slot_types#boolean) = <code>false</code> | Synteny reads hide the coverage histogram by default; overrides the inherited base alignments display's `showCoverage` default of `true`. |
 | <span id="slot-collapsegrouprows">**collapseGroupRows**</span><br>[`boolean`](/docs/config_guides/slot_types#boolean) = <code>true</code> | One lane per group by default: an all-vs-all track grouped by mate assembly draws each mate genome as a single band, with repeat depth shown as darker shading rather than as extra rows. Overrides the base alignments display's `collapseGroupRows` default of `false`, where a group is a read category and the stack itself is the information. |

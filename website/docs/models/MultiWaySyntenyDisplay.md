@@ -300,7 +300,7 @@ Each section ends with the members a composed model contributes, linked to the p
 | <span id="action-advanceanimation">**advanceAnimation**</span><br><code>(nowMs: number) =&gt; void</code> |  |
 | <span id="action-endanimation">**endAnimation**</span><br><code>() =&gt; void</code> |  |
 | <span id="action-setgenecolorby">**setGeneColorBy**</span><br><code>(field: string) =&gt; void</code> | `''` paints by `color.value` |
-| <span id="action-setgenesolidcolor">**setGeneSolidColor**</span><br><code>(color: string &#124; undefined) =&gt; void</code> |  |
+| <span id="action-setgenesolidcolor">**setGeneSolidColor**</span><br><code>(color: string &#124; undefined) =&gt; void</code> | Paints the constant, a field staying under `scale: 'none'` for the way back; undefined returns to the config's own color. |
 | <span id="action-pickdefaultgenecolor">**pickDefaultGeneColor**</span><br><code>() =&gt; void</code> | Color by's Default: no field and no constant, so the config's own color paints, a `jexl:` expression included |
 | <span id="action-pickgenesolidcolor">**pickGeneSolidColor**</span><br><code>() =&gt; void</code> | Color by's Solid color...: paints the constant kept beside a field, where there is one, and opens the picker |
 | <span id="action-selectfeature">**selectFeature**</span><br><code>(feature: Feature) =&gt; void</code> |  |

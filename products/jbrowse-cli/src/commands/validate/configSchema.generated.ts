@@ -5107,16 +5107,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "type": "number"
           }
         },
-        "mouseover": {
-          "description": "text to display when the cursor hovers over a feature.",
-          "default": "jexl:get(feature,'_mouseOver')||get(feature,'name')||get(feature,'function')||get(feature,'id')",
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "$ref": "#/$defs/StringOrJexl"
-          }
-        },
         "heightMode": {
           "description": "Track-sizing strategy — how the track responds when there are more features than fit (shared vocabulary with the alignments display, exposed in the \\"Track sizing\\" menu). \`fit\` (the default) keeps the track height and gives up descriptions, then isoforms, then names, then squeezes boxes down to 2px, and scrolls only what still overflows; \`fixed\` keeps a scrollable fixed height; \`grow\` expands the track to show all features. Orthogonal to the per-feature size set by \`displayMode\`, which fit never enlarges.",
           "default": "fit",
@@ -5175,6 +5165,16 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "items": {
               "$ref": "#/$defs/JexlExpression"
             }
+          }
+        },
+        "mouseover": {
+          "description": "text to display when the cursor hovers over a feature.",
+          "default": "jexl:get(feature,'_mouseOver')||get(feature,'name')||get(feature,'function')||get(feature,'id')",
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/StringOrJexl"
           }
         },
         "maxFeatureScreenDensity": {
@@ -5789,16 +5789,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "type": "number"
           }
         },
-        "mouseover": {
-          "description": "text to display when the cursor hovers over a feature.",
-          "default": "jexl:get(feature,'_mouseOver')||get(feature,'name')||get(feature,'function')||get(feature,'id')",
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "$ref": "#/$defs/StringOrJexl"
-          }
-        },
         "rows": {
           "if": {
             "type": "null"
@@ -5971,6 +5961,10 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "description": "Legacy key: a migration rewrites it into current slots when the config loads."
         },
         "maxDisplayedBpPerPx": {
+          "deprecated": true,
+          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+        },
+        "mouseover": {
           "deprecated": true,
           "description": "Legacy key: a migration rewrites it into current slots when the config loads."
         },
@@ -6714,16 +6708,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "type": "number"
           }
         },
-        "mouseover": {
-          "description": "text to display when the cursor hovers over a feature.",
-          "default": "jexl:get(feature,'_mouseOver')||get(feature,'name')||get(feature,'function')||get(feature,'id')",
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "$ref": "#/$defs/StringOrJexl"
-          }
-        },
         "featureHeight": {
           "description": "Height of each feature (read) in pixels. Defaults to 7.",
           "default": 7,
@@ -7179,6 +7163,10 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "description": "Legacy key: a migration rewrites it into current slots when the config loads."
         },
         "maxDisplayedBpPerPx": {
+          "deprecated": true,
+          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+        },
+        "mouseover": {
           "deprecated": true,
           "description": "Legacy key: a migration rewrites it into current slots when the config loads."
         },
@@ -7891,16 +7879,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "type": "number"
           }
         },
-        "mouseover": {
-          "description": "text to display when the cursor hovers over a feature.",
-          "default": "jexl:lgvSyntenyTooltip(feature)",
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "$ref": "#/$defs/StringOrJexl"
-          }
-        },
         "featureHeight": {
           "description": "Height of each feature (read) in pixels. Defaults to 7.",
           "default": 7,
@@ -8380,6 +8358,10 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "description": "Legacy key: a migration rewrites it into current slots when the config loads."
         },
         "maxDisplayedBpPerPx": {
+          "deprecated": true,
+          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+        },
+        "mouseover": {
           "deprecated": true,
           "description": "Legacy key: a migration rewrites it into current slots when the config loads."
         },
@@ -10308,16 +10290,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "type": "number"
           }
         },
-        "mouseover": {
-          "description": "text to display when the cursor hovers over a feature.",
-          "default": "jexl:get(feature,'_mouseOver')||get(feature,'name')||get(feature,'function')||get(feature,'id')",
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "$ref": "#/$defs/StringOrJexl"
-          }
-        },
         "color": {
           "if": {
             "type": "null"
@@ -10487,6 +10459,10 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "deprecated": true,
           "description": "Legacy key: a migration rewrites it into current slots when the config loads."
         },
+        "mouseover": {
+          "deprecated": true,
+          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+        },
         "jexlFilters": {
           "deprecated": true,
           "description": "Legacy key: a migration rewrites it into current slots when the config loads."
@@ -10644,16 +10620,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "type": "number"
           }
         },
-        "mouseover": {
-          "description": "text to display when the cursor hovers over a feature.",
-          "default": "jexl:get(feature,'_mouseOver')||get(feature,'name')||get(feature,'function')||get(feature,'id')",
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "$ref": "#/$defs/StringOrJexl"
-          }
-        },
         "heightMode": {
           "description": "Track-sizing strategy — how the track responds when there are more features than fit (shared vocabulary with the alignments display, exposed in the \\"Track sizing\\" menu). \`fit\` (the default) keeps the track height and gives up descriptions, then isoforms, then names, then squeezes boxes down to 2px, and scrolls only what still overflows; \`fixed\` keeps a scrollable fixed height; \`grow\` expands the track to show all features. Orthogonal to the per-feature size set by \`displayMode\`, which fit never enlarges.",
           "default": "fit",
@@ -10712,6 +10678,16 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "items": {
               "$ref": "#/$defs/JexlExpression"
             }
+          }
+        },
+        "mouseover": {
+          "description": "text to display when the cursor hovers over a feature.",
+          "default": "jexl:get(feature,'_mouseOver')||get(feature,'name')||get(feature,'function')||get(feature,'id')",
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/StringOrJexl"
           }
         },
         "maxFeatureScreenDensity": {
@@ -11179,16 +11155,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "type": "number"
           }
         },
-        "mouseover": {
-          "description": "text to display when the cursor hovers over a feature.",
-          "default": "jexl:get(feature,'_mouseOver')||get(feature,'name')||get(feature,'function')||get(feature,'id')",
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "$ref": "#/$defs/StringOrJexl"
-          }
-        },
         "variantLayout": {
           "description": "'genomic' draws each variant at its span; 'columns' draws one equal-width column per variant, tied to its position by a connector line.",
           "default": "genomic",
@@ -11441,6 +11407,10 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "description": "Legacy key: a migration rewrites it into current slots when the config loads."
         },
         "maxDisplayedBpPerPx": {
+          "deprecated": true,
+          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+        },
+        "mouseover": {
           "deprecated": true,
           "description": "Legacy key: a migration rewrites it into current slots when the config loads."
         },
@@ -12755,16 +12725,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "type": "number"
           }
         },
-        "mouseover": {
-          "description": "text to display when the cursor hovers over a feature.",
-          "default": "jexl:get(feature,'_mouseOver')||get(feature,'name')||get(feature,'function')||get(feature,'id')",
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "$ref": "#/$defs/StringOrJexl"
-          }
-        },
         "rowHeight": {
           "description": "per-row height in px, scrolling the rows that do not fit; 0 (the default) fits the rows to the display height instead, dividing it between them.",
           "default": 0,
@@ -12996,6 +12956,10 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "description": "Legacy key: a migration rewrites it into current slots when the config loads."
         },
         "maxDisplayedBpPerPx": {
+          "deprecated": true,
+          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+        },
+        "mouseover": {
           "deprecated": true,
           "description": "Legacy key: a migration rewrites it into current slots when the config loads."
         },
@@ -14477,25 +14441,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
                 }
               ]
             },
-            "mouseover": {
-              "anyOf": [
-                {
-                  "$ref": "#/$defs/LinearBasicDisplaySlots/properties/mouseover"
-                },
-                {
-                  "$ref": "#/$defs/LinearMultiRowFeatureDisplaySlots/properties/mouseover"
-                },
-                {
-                  "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/mouseover"
-                },
-                {
-                  "$ref": "#/$defs/LinearManhattanDisplaySlots/properties/mouseover"
-                },
-                {
-                  "$ref": "#/$defs/LinearMarkDisplaySlots/properties/mouseover"
-                }
-              ]
-            },
             "heightMode": {
               "$ref": "#/$defs/LinearBasicDisplaySlots/properties/heightMode"
             },
@@ -14544,6 +14489,25 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
                 },
                 {
                   "$ref": "#/$defs/LinearMarkDisplaySlots/properties/filter"
+                }
+              ]
+            },
+            "mouseover": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/LinearBasicDisplaySlots/properties/mouseover"
+                },
+                {
+                  "$ref": "#/$defs/LinearMultiRowFeatureDisplaySlots/properties/mouseover"
+                },
+                {
+                  "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/mouseover"
+                },
+                {
+                  "$ref": "#/$defs/LinearManhattanDisplaySlots/properties/mouseover"
+                },
+                {
+                  "$ref": "#/$defs/LinearMarkDisplaySlots/properties/mouseover"
                 }
               ]
             },
@@ -15178,16 +15142,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
                 }
               ]
             },
-            "mouseover": {
-              "anyOf": [
-                {
-                  "$ref": "#/$defs/LinearAlignmentsDisplaySlots/properties/mouseover"
-                },
-                {
-                  "$ref": "#/$defs/LinearMarkDisplaySlots/properties/mouseover"
-                }
-              ]
-            },
             "featureHeight": {
               "$ref": "#/$defs/LinearAlignmentsDisplaySlots/properties/featureHeight"
             },
@@ -15379,6 +15333,16 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
                 },
                 {
                   "$ref": "#/$defs/LinearMarkDisplaySlots/properties/maxDisplayedBpPerPx"
+                }
+              ]
+            },
+            "mouseover": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/LinearAlignmentsDisplaySlots/properties/mouseover"
+                },
+                {
+                  "$ref": "#/$defs/LinearMarkDisplaySlots/properties/mouseover"
                 }
               ]
             },
@@ -15912,19 +15876,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
                 }
               ]
             },
-            "mouseover": {
-              "anyOf": [
-                {
-                  "$ref": "#/$defs/LinearVariantDisplaySlots/properties/mouseover"
-                },
-                {
-                  "$ref": "#/$defs/LinearMultiSampleVariantDisplaySlots/properties/mouseover"
-                },
-                {
-                  "$ref": "#/$defs/LinearMarkDisplaySlots/properties/mouseover"
-                }
-              ]
-            },
             "heightMode": {
               "$ref": "#/$defs/LinearVariantDisplaySlots/properties/heightMode"
             },
@@ -15961,6 +15912,19 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
                 },
                 {
                   "$ref": "#/$defs/LinearMarkDisplaySlots/properties/filter"
+                }
+              ]
+            },
+            "mouseover": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/LinearVariantDisplaySlots/properties/mouseover"
+                },
+                {
+                  "$ref": "#/$defs/LinearMultiSampleVariantDisplaySlots/properties/mouseover"
+                },
+                {
+                  "$ref": "#/$defs/LinearMarkDisplaySlots/properties/mouseover"
                 }
               ]
             },
@@ -17788,16 +17752,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
                 }
               ]
             },
-            "mouseover": {
-              "anyOf": [
-                {
-                  "$ref": "#/$defs/LinearMafDisplaySlots/properties/mouseover"
-                },
-                {
-                  "$ref": "#/$defs/LinearMarkDisplaySlots/properties/mouseover"
-                }
-              ]
-            },
             "rowHeight": {
               "anyOf": [
                 {
@@ -17940,6 +17894,16 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
                 },
                 {
                   "$ref": "#/$defs/LinearMarkDisplaySlots/properties/maxDisplayedBpPerPx"
+                }
+              ]
+            },
+            "mouseover": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/LinearMafDisplaySlots/properties/mouseover"
+                },
+                {
+                  "$ref": "#/$defs/LinearMarkDisplaySlots/properties/mouseover"
                 }
               ]
             },
@@ -18432,19 +18396,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
                 }
               ]
             },
-            "mouseover": {
-              "anyOf": [
-                {
-                  "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/mouseover"
-                },
-                {
-                  "$ref": "#/$defs/MultiWaySyntenyDisplaySlots/properties/mouseover"
-                },
-                {
-                  "$ref": "#/$defs/LinearMarkDisplaySlots/properties/mouseover"
-                }
-              ]
-            },
             "featureHeight": {
               "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/featureHeight"
             },
@@ -18665,6 +18616,19 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
                 },
                 {
                   "$ref": "#/$defs/LinearMarkDisplaySlots/properties/maxDisplayedBpPerPx"
+                }
+              ]
+            },
+            "mouseover": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/mouseover"
+                },
+                {
+                  "$ref": "#/$defs/MultiWaySyntenyDisplaySlots/properties/mouseover"
+                },
+                {
+                  "$ref": "#/$defs/LinearMarkDisplaySlots/properties/mouseover"
                 }
               ]
             },

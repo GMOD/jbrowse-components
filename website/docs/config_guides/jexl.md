@@ -136,7 +136,6 @@ jexl: feature.flags & 2 // bitwise and to check if BAM or CRAM feature flags has
 **Slot defaults from plugins**
 
 ```js
-jexl: lgvSyntenyTooltip(feature) // both sides of a synteny feature, the LGVSyntenyDisplay's default mouseover
 jexl: defaultOnChordClick(feature, track, pluginManager) // opens a breakpoint split view on the clicked chord
 ```
 

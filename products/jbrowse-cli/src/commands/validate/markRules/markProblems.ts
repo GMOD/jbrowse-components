@@ -81,6 +81,8 @@ export const MARK_RULES = {
   'threshold-range': 'warning',
   /** A `domain` on a linear or log color, whose ends are `domainMin` and `domainMax`. */
   'ramp-domain': 'warning',
+  /** A linear or log color whose `range` lists one color, which paints every value alike. */
+  'ramp-range': 'warning',
   /** A scale's `domainMax` below its `domainMin`: a color ramp's, a width's or `scales.y`'s. */
   'domain-ends': 'warning',
   /** A color ramp's or `scales.y`'s `domainQuantile` outside 0.5 to 1, a percent among them. */
