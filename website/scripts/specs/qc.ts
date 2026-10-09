@@ -198,7 +198,8 @@ const panel = (loc: string) => ({
       // Mapping-quality coloring is the only thing on screen that separates
       // "there are no reads here" from "there are reads and none of them can be
       // placed": both draw a pileup, and the default coloring draws the same
-      // pileup. Dark blue is MAPQ 0 and yellow MAPQ >= 60 (qualityRamps.ts).
+      // pileup. Dark blue is MAPQ 0 and yellow MAPQ 30+, the facet's four
+      // bins (MAPQ_BINS in readFieldLevels.ts).
       color: { field: 'mapq' },
       // Opt-in per the display's own default. Without it the reader has to be
       // told what dark blue means, which is exactly the caption-rescues-the-figure
