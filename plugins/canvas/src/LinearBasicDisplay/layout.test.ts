@@ -583,6 +583,22 @@ test('same-chromosome discontiguous regions share spanning feature Y', () => {
   expect(s1.topPx).toBe(s2.topPx)
 })
 
+test('the two pieces of a feature cut at a circular origin share a row', () => {
+  const data = makeFeatureData({
+    features: [
+      { featureId: 'nearOrigin', startBp: 0, endBp: 600, height: 20 },
+      { featureId: 'dloop', startBp: 16024, endBp: 16569, height: 20 },
+      { featureId: 'dloop-origin', startBp: 0, endBp: 576, height: 20 },
+    ],
+  })
+  const r = layout(new Map([[0, data]]), 1).get(0)!
+  const top = (id: string) =>
+    r.flatbushItems.find(f => f.featureId === id)!.topPx
+
+  expect(top('dloop-origin')).toBeGreaterThan(0)
+  expect(top('dloop')).toBe(top('dloop-origin'))
+})
+
 test('non-overlapping features on same chromosome share the first row', () => {
   const data = makeFeatureData({
     features: [

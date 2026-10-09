@@ -46,6 +46,20 @@ interface Rectangle {
   h: number
 }
 
+interface LowerSpan {
+  top: number
+  left: number
+  right: number
+}
+
+// A rect in pitch units before it has a top; its rows from `lowerTop` down
+// claim `lowerSpan`.
+interface Placement {
+  rectangle: Rectangle
+  lowerTop: number
+  lowerSpan: { l: number; r: number }
+}
+
 export default class GranularRectLayout {
   private pitchX: number
 
@@ -98,46 +112,86 @@ export default class GranularRectLayout {
     left: number,
     right: number,
     height: number,
-    lower?: { top: number; left: number; right: number },
+    lower?: LowerSpan,
   ): number | null {
-    const pitchX = this.pitchX
-    const pitchY = this.pitchY
-
-    // if we have already laid it out, return its layout
     const storedRec = this.rectangles.get(id)
     if (storedRec) {
-      return storedRec.top === null ? null : storedRec.top * pitchY
+      return storedRec.top === null ? null : storedRec.top * this.pitchY
     }
+    const placement = this.placement(left, right, height, lower)
+    return this.commit(id, placement, this.firstFit(placement, 0))
+  }
 
-    // Use Math.trunc for fast floor operation that works with large coordinates
-    // (bitwise | 0 overflows above 2^31, causing layout issues with large genomic coordinates)
-    const pLeft = Math.trunc(left / pitchX)
-    const pRight = Math.trunc(right / pitchX)
-    const pHeight = Math.ceil(height / pitchY)
-    const pLowerTop = lower ? Math.ceil(lower.top / pitchY) : pHeight
-
-    const rectangle: Rectangle = {
-      l: pLeft,
-      r: pRight,
-      top: null,
-      h: pHeight,
-    }
-    const lowerSpan = lower
-      ? {
-          l: Math.trunc(lower.left / pitchX),
-          r: Math.trunc(lower.right / pitchX),
-        }
-      : rectangle
-
-    // Allow features to start at any position up to maxHeight
-    // Features starting at maxHeight or beyond are filtered out, but features
-    // that start below maxHeight and extend past it are allowed
-    const maxTop = this.maxHeight
+  /**
+   * Lays out rects, none of them placed yet, at one shared top: the lowest
+   * where every one fits. For the pieces of one feature drawn apart.
+   */
+  addRectsAtOneTop(
+    rects: readonly {
+      id: string
+      left: number
+      right: number
+      height: number
+      lower?: LowerSpan
+    }[],
+  ): number | null {
+    const placements = rects.map(r =>
+      this.placement(r.left, r.right, r.height, r.lower),
+    )
     let top = 0
+    for (let i = 0; i < placements.length && top <= this.maxHeight;) {
+      const fit = this.firstFit(placements[i]!, top)
+      if (fit === top) {
+        i += 1
+      } else {
+        top = fit
+        i = 0
+      }
+    }
+    let result: number | null = null
+    for (const [i, rect] of rects.entries()) {
+      result = this.commit(rect.id, placements[i]!, top)
+    }
+    return result
+  }
 
-    // OPTIMIZATION: Inline collision checking for hot path
-    // Eliminates function call overhead which is critical at 100k+ features
+  private placement(
+    left: number,
+    right: number,
+    height: number,
+    lower?: LowerSpan,
+  ): Placement {
+    const pitchX = this.pitchX
+    const pitchY = this.pitchY
+    // Math.trunc, not `| 0`, which overflows above 2^31 genomic coordinates
+    const rectangle: Rectangle = {
+      l: Math.trunc(left / pitchX),
+      r: Math.trunc(right / pitchX),
+      top: null,
+      h: Math.ceil(height / pitchY),
+    }
+    return {
+      rectangle,
+      lowerTop: lower ? Math.ceil(lower.top / pitchY) : rectangle.h,
+      lowerSpan: lower
+        ? {
+            l: Math.trunc(lower.left / pitchX),
+            r: Math.trunc(lower.right / pitchX),
+          }
+        : rectangle,
+    }
+  }
+
+  // The first top at or past `fromTop` where the rect fits, maxHeight + 1
+  // when none does. A rect starting below maxHeight may extend past it.
+  private firstFit(
+    { rectangle, lowerTop: pLowerTop, lowerSpan }: Placement,
+    fromTop: number,
+  ) {
+    const { l: pLeft, r: pRight, h: pHeight } = rectangle
+    const maxTop = this.maxHeight
     const bitmap = this.bitmap
+    let top = fromTop
 
     // On a collision at row y, the next top worth trying is y + 1, not top + 1.
     // Rows top..y-1 are clear (y is the first hit walking upward) and every top'
@@ -149,12 +203,9 @@ export default class GranularRectLayout {
     // blocks every top to y, and a hit in the lower span blocks just the tops
     // keeping y there: the jump goes to the first top putting y above it.
     outer: for (; top <= maxTop; top += 1) {
-      // Check all rows that this rectangle would occupy
       const maxY = top + pHeight
       for (let y = top; y < maxY; y += 1) {
         const row = bitmap[y]
-
-        // Fast path: no row created yet
         if (!row) {
           continue
         }
@@ -168,7 +219,6 @@ export default class GranularRectLayout {
           const r = inLower ? lowerSpan.r : pRight
           const blockedTop = inLower ? y - pLowerTop : y
           if (len < 40) {
-            // Linear scan for small arrays
             for (let i = 0; i < len; i += 2) {
               const start = intervals[i]!
               const end = intervals[i + 1]!
@@ -178,7 +228,6 @@ export default class GranularRectLayout {
               }
             }
           } else {
-            // Binary search for larger arrays
             let low = 0
             let high = len >> 1
 
@@ -203,24 +252,28 @@ export default class GranularRectLayout {
           }
         }
       }
-
-      // No collision found in any row
       break
     }
+    return top
+  }
 
+  private commit(
+    id: string,
+    { rectangle, lowerTop, lowerSpan }: Placement,
+    top: number,
+  ) {
     this.rectangles.set(id, rectangle)
-    if (top > maxTop) {
+    if (top > this.maxHeight) {
       return null
     }
-
     rectangle.top = top
-    const yEnd = top + pHeight
+    const yEnd = top + rectangle.h
     for (let y = top; y < yEnd; y += 1) {
       this.getOrCreateRow(y).addRect(
-        y - top >= pLowerTop ? lowerSpan : rectangle,
+        y - top >= lowerTop ? lowerSpan : rectangle,
       )
     }
-    return top * pitchY
+    return top * this.pitchY
   }
 
   private getOrCreateRow(y: number): LayoutRow {

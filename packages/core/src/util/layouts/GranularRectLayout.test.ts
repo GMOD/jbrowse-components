@@ -166,3 +166,25 @@ test('a lower span is checked on the binary-search path too', () => {
     l.addRect('rect', 300, 400, 30, { top: 20, left: 300, right: 420 }),
   ).toBe(10)
 })
+
+test('rects at one top take the lowest top every one of them fits', () => {
+  // Rows 0, 1 and 3 blocked across, row 2 only near the tail.
+  const blocked = () => {
+    const l = new Layout({ pitchX: 1, pitchY: 10 })
+    l.addRect('across', 0, 1000, 20)
+    l.addRect('nearTail', 0, 100, 10)
+    l.addRect('acrossAgain', 0, 1000, 10)
+    return l
+  }
+  expect(blocked().addRect('head', 950, 1000, 10)).toBe(20)
+  expect(blocked().addRect('tail', 0, 50, 10)).toBe(40)
+
+  const l = blocked()
+  expect(
+    l.addRectsAtOneTop([
+      { id: 'head', left: 950, right: 1000, height: 10 },
+      { id: 'tail', left: 0, right: 50, height: 10 },
+    ]),
+  ).toBe(40)
+  expect(l.addRect('nextToTail', 0, 50, 10)).toBe(50)
+})

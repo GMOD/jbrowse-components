@@ -1,4 +1,5 @@
 import GranularRectLayout from '@jbrowse/core/util/layouts/GranularRectLayout'
+import { originHeadId } from '@jbrowse/core/util/originCut'
 
 import {
   LABEL_LEAD_PX,
@@ -87,6 +88,9 @@ export interface PackPrep {
   // Booked out of row 0 before anything stacks, so a feature overlapping a
   // pile stacks above it rather than being handed the pile's row.
   collapsedSpansPx: readonly Span[]
+  // Each piece of a feature cut at a circular origin to the other, both ways.
+  // The two meet there on a ring, so they share a row.
+  originPartners: ReadonlyMap<string, string>
 }
 
 // Per kind, because the decimation measures the name alone while the overhang
@@ -230,9 +234,15 @@ export function prepareRefPack(
   }
 
   const stacks: [string, IsoformStack][] = []
+  const originPartners = new Map<string, string>()
   for (const [id, geom] of features) {
     if (geom.stack) {
       stacks.push([id, geom.stack])
+    }
+    const head = originHeadId(id)
+    if (head !== undefined && features.has(head)) {
+      originPartners.set(id, head)
+      originPartners.set(head, id)
     }
   }
 
@@ -240,6 +250,7 @@ export function prepareRefPack(
     labelInfoByFeatureId,
     features,
     stacks,
+    originPartners,
     overhangRoom:
       labelDecimation === 'fitWidth'
         ? labelOverhangRoomPx(features, bpPerPx, id => {
@@ -569,7 +580,8 @@ export function packPreparedRef(
 ) {
   const { bpPerPx, pinnedFeatureIds } = inputs
   const { heightMultiplier, singleRow } = metrics
-  const { features, collapsedFeatureIds, collapsedSpansPx } = prep
+  const { features, collapsedFeatureIds, collapsedSpansPx, originPartners } =
+    prep
   const { trimPlan } = trims
   const { packed, droppedNameIds } = decideLabelReservations(
     prep,
@@ -604,22 +616,44 @@ export function packPreparedRef(
   bookPileReservations(layout, packed, collapsedFeatureIds, collapsedSpansPx)
   const sorted = byPackPriority(packed, pinnedFeatureIds, prevYByFeatureId)
 
+  const boxOf = (id: string) => {
+    const ext = packed.get(id)!
+    const box = reservedBoxPx(ext, features.get(id)!, bpPerPx)
+    return {
+      id,
+      left: box.leftPx,
+      right: box.rightPx,
+      height: ext.height,
+      lower: box.labelRows,
+    }
+  }
   for (const [id, ext] of sorted) {
+    if (layoutMap.has(id)) {
+      continue
+    }
     if (collapsedFeatureIds.has(id)) {
       layoutMap.set(id, 0)
       layoutHeights.set(id, ext.height)
       continue
     }
-    const { leftPx, rightPx, labelRows } = reservedBoxPx(
-      ext,
-      features.get(id)!,
-      bpPerPx,
-    )
+    const partner = originPartners.get(id)
     // A null top means the stack passed GranularRectLayout's own 10000px
     // `maxHeight`, not the display's slot; `countTruncatedFeatures` owns up
     // to it.
-    const top = layout.addRect(id, leftPx, rightPx, ext.height, labelRows)
-    layoutMap.set(id, top === null ? OFFSCREEN_Y : top)
+    if (partner !== undefined && !collapsedFeatureIds.has(partner)) {
+      const top = layout.addRectsAtOneTop([boxOf(id), boxOf(partner)])
+      layoutMap.set(partner, top === null ? OFFSCREEN_Y : top)
+      layoutHeights.set(partner, packed.get(partner)!.height)
+      layoutMap.set(id, top === null ? OFFSCREEN_Y : top)
+    } else {
+      const { leftPx, rightPx, labelRows } = reservedBoxPx(
+        ext,
+        features.get(id)!,
+        bpPerPx,
+      )
+      const top = layout.addRect(id, leftPx, rightPx, ext.height, labelRows)
+      layoutMap.set(id, top === null ? OFFSCREEN_Y : top)
+    }
     layoutHeights.set(id, ext.height)
   }
 

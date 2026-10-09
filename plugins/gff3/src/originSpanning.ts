@@ -1,3 +1,4 @@
+import { originTailId } from '@jbrowse/core/util/originCut'
 import { doesIntersect2 } from '@jbrowse/core/util/range'
 
 import type { LazyGffFeature } from 'gff-nostream'
@@ -46,8 +47,8 @@ export interface Candidate {
  * GFF3 writes such a feature on a circular sequence with its end past the
  * sequence's length, in "virtual" coordinates, so one record covers both
  * sides. Each half keeps the children that fall in it, clipped; the half
- * after the origin, shifted back onto the sequence, takes the id with
- * `-origin` added.
+ * after the origin, shifted back onto the sequence, takes `originTailId` of
+ * the id.
  */
 export function* cutAtOrigin(
   candidates: Iterable<Candidate>,
@@ -66,7 +67,7 @@ export function* cutAtOrigin(
             { half: clip(feature, feature.start, length, 0), uniqueId },
             {
               half: clip(feature, length, feature.end, length),
-              uniqueId: `${uniqueId}-origin`,
+              uniqueId: originTailId(uniqueId),
             },
           ]
         : [{ half: feature, uniqueId }]
