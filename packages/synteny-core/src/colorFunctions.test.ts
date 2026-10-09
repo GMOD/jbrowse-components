@@ -336,9 +336,9 @@ test('a declared ramp paints what its key shows', () => {
     trackColor: 'black',
     defaultColor: DEFAULT_RIBBON_COLOR,
     attributeRanges: {},
-    ramp,
+    paint: ramp,
   })
-  const swatch = getColorBySwatch('dnds', { ramp })
+  const swatch = getColorBySwatch('dnds', { paint: ramp })
   if (swatch?.kind !== 'ramp') {
     throw new Error('dnds keys as a ramp')
   }
@@ -350,4 +350,45 @@ test('a declared ramp paints what its key shows', () => {
       expect(Math.abs(painted[c]! - channel)).toBeLessThanOrEqual(3)
     }
   }
+})
+
+// The key's bins and the ribbons are one mode, so a bin's chip is the color
+// every value inside it paints.
+test('mapq paints the bins its key lists, and no value grey', () => {
+  const values = [0, 5, 20, 60, Number.NaN]
+  const paint = createComparativeColorFunction({
+    field: 'mapq',
+    data: inputs({ attributes: { mappingQual: new Float32Array(values) } }),
+    trackColor: 'black',
+    defaultColor: DEFAULT_RIBBON_COLOR,
+    attributeRanges: {},
+  })
+  const swatch = getColorBySwatch('mapq')
+  if (swatch?.kind !== 'chips') {
+    throw new Error('mapq keys as chips')
+  }
+  const bins = swatch.chips.map(chip => cssColorToABGR(chip.color!))
+  expect(values.map((_, i) => paint(i))).toEqual([
+    bins[3],
+    bins[2],
+    bins[1],
+    bins[0],
+    MISSING_VALUE_COLOR,
+  ])
+})
+
+test('strand paints the range a color object writes, in domain order', () => {
+  const data = inputs({ strands: new Int8Array([1, -1]) })
+  const paint = createComparativeColorFunction({
+    field: 'strand',
+    data,
+    trackColor: 'black',
+    defaultColor: DEFAULT_RIBBON_COLOR,
+    attributeRanges: {},
+    paint: { domain: ['-1', '1'], range: ['black', 'gold'] },
+  })
+  expect([paint(0), paint(1)]).toEqual([
+    cssColorToABGR('gold'),
+    cssColorToABGR('black'),
+  ])
 })

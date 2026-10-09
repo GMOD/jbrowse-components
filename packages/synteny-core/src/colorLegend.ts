@@ -2,19 +2,28 @@ import { NO_VALUE_LABEL, keyNames } from '@jbrowse/core/util/categoricalField'
 import { NO_CATEGORY_COLOR } from '@jbrowse/core/util/color'
 import { cssColorToABGR } from '@jbrowse/core/util/colorBits'
 import { sampleColorRamp } from '@jbrowse/core/util/colorRamp'
+import { withPreset } from '@jbrowse/core/util/colorScale'
 import { groupKeyComparator } from '@jbrowse/core/util/groupKeys'
 import { MAX_LEGEND_ENTRIES } from '@jbrowse/core/util/legendCandidates'
+import { thresholdKeyEntries } from '@jbrowse/core/util/thresholdScale'
 import { rampMidT } from '@jbrowse/render-core/shaders/colorRampLut'
 
 import { bandGroundColor } from './bandGround.ts'
 import { categoricalColor } from './colorFunctions.ts'
-import { resolveCategoricalMode, resolveContinuousMode } from './colorRamps.ts'
+import {
+  SYNTENY_FIELD_PRESETS,
+  isMeasureField,
+  resolveCategoricalMode,
+  resolveNumericMode,
+  strandLevels,
+} from './colorRamps.ts'
 import { colorSchemes, legendChipColor } from './colorUtils.ts'
 
 import type {
   AttributeRange,
   CategoricalMode,
-  DeclaredRamp,
+  SyntenyColorPaint,
+  ThresholdMode,
 } from './colorRamps.ts'
 import type { ColorScale } from '@jbrowse/core/ui/colorScale'
 import type { ColorRampStop } from '@jbrowse/core/util/colorRamp'
@@ -113,7 +122,7 @@ export type ColorBySwatchSpec =
   | { kind: 'chips'; chips: ColorChip[] }
 
 const { cigarColors: defaultCigar, pointColor } = colorSchemes.default
-const { posColor, negColor, cigarColors: strandCigar } = colorSchemes.strand
+const { cigarColors: strandCigar } = colorSchemes.strand
 
 // default/strand draw block colors plus the CIGAR indel ops present on screen.
 // One chip per set op bit, drawn from the active scheme's colors so they can't
@@ -135,25 +144,57 @@ function indelChips(
   return chips
 }
 
-const PRESET_LABELS: Record<string, string> = {
+const VIEW_FIELD_LABELS: Record<string, string> = {
   '': 'Default',
   strand: 'Strand',
   query: 'Query name',
   target: 'Target name',
   reference: 'Reference name',
-  identity: 'Identity',
-  mapq: 'Mapping quality',
-  dnds: 'dN/dS',
   track: 'Track',
 }
 
 /**
  * #api
- * Short human-readable title for the floating legend header. A column has no
- * title but its own name, which is the point of it — the reader named it.
+ * Short human-readable title for the floating legend header: a measurement's
+ * preset title, and a column's own name, which is the point of it — the
+ * reader named it.
  */
 export function colorByShortLabel(field: string) {
-  return PRESET_LABELS[field] ?? field
+  return (
+    VIEW_FIELD_LABELS[field] ??
+    (isMeasureField(field) ? SYNTENY_FIELD_PRESETS[field].title : field)
+  )
+}
+
+// A threshold's bins as chips, named by `labels` or the field's preset and
+// turned round where the key reads highest first.
+function thresholdChips(
+  field: string,
+  mode: ThresholdMode,
+  {
+    paint = {},
+    labels = [],
+    descending,
+  }: {
+    paint?: SyntenyColorPaint
+    labels?: readonly string[]
+    descending?: boolean
+  },
+): ColorChip[] {
+  const key = withPreset(
+    {
+      field,
+      scale: mode.scale,
+      domain: paint.domain ?? [],
+      labels,
+      descending,
+    },
+    SYNTENY_FIELD_PRESETS,
+  )
+  const chips = thresholdKeyEntries(mode.cuts, mode.colors, {}, key.labels).map(
+    ({ color, label }) => ({ color, label }),
+  )
+  return key.descending ? chips.toReversed() : chips
 }
 
 // What a field with no swatch spec is doing instead. Lives here rather than
@@ -182,7 +223,8 @@ export function getColorBySwatch(
     hideUnlabelled = false,
     missingColor,
     labels,
-    ramp,
+    descending,
+    paint = {},
   }: {
     pointBased?: boolean
     cigarOps?: CigarOpMask
@@ -199,10 +241,12 @@ export function getColorBySwatch(
     // both kinds of mode; by default a ramp's is the match red and a text
     // column's the no-category grey, as `colorFunctions` paints them
     missingColor?: string
-    // `color.labels`: what a text column's key names each domain label
+    // `color.labels`: what the key names each domain value or interval
     labels?: readonly string[]
-    // the ramp `color` declares over a preset's or a column's own
-    ramp?: DeclaredRamp
+    // `color.descending`: a threshold's key lists its highest interval first
+    descending?: boolean
+    // what `color` declares over a field's own scale
+    paint?: SyntenyColorPaint
   } = {},
 ): ColorBySwatchSpec | undefined {
   // dotplot paints flat points and never draws CIGAR ops
@@ -220,15 +264,17 @@ export function getColorBySwatch(
               ...indelChips(defaultCigar, ops),
             ],
       }
-    case 'strand':
+    case 'strand': {
+      const [forward, reverse] = strandLevels(paint, labels)
       return {
         kind: 'chips',
         chips: [
-          { color: posColor, label: 'forward' },
-          { color: negColor, label: 'reverse' },
+          { color: forward!.color, label: forward!.label ?? 'forward' },
+          { color: reverse!.color, label: reverse!.label ?? 'reverse' },
           ...indelChips(strandCigar, ops),
         ],
       }
+    }
     case 'track':
       return trackChips?.length
         ? { kind: 'chips', chips: trackChips }
@@ -239,21 +285,37 @@ export function getColorBySwatch(
       // a color per sequence name has no fixed key
       return undefined
   }
-  // Every ramp, preset or column, reads its stops and its domain labels off
-  // the one spec the renderer paints from, so a new measurement needs no arm
-  // here. For the diverging preset the pivot is the ramp's own pale middle,
-  // which is what the end labels alone cannot say.
-  const continuous = resolveContinuousMode(field, attributeRanges, ramp)
-  if (continuous) {
+  // Every number, preset or column, reads its stops or bins and its labels
+  // off the one mode the renderer paints from, so a new measurement needs no
+  // arm here. For the diverging preset the pivot is the ramp's own pale
+  // middle, which is what the end labels alone cannot say.
+  const numeric = resolveNumericMode(field, attributeRanges, paint)
+  if (numeric) {
+    const missing = attributeRanges?.[numeric.attribute]?.missing
+    if (numeric.scale === 'threshold') {
+      return {
+        kind: 'chips',
+        chips: [
+          ...thresholdChips(field, numeric, { paint, labels, descending }),
+          ...(missing
+            ? [
+                {
+                  color: missingColor ?? NO_CATEGORY_COLOR,
+                  label: NO_VALUE_LABEL,
+                  missing: true,
+                },
+              ]
+            : []),
+        ],
+      }
+    }
     return {
       kind: 'ramp',
-      stops: rampStops(continuous.stops, continuous.midNorm),
-      domain: [continuous.minValue ?? 0, continuous.maxValue],
-      minLabel: continuous.minLabel,
-      maxLabel: continuous.maxLabel,
-      ...(attributeRanges?.[continuous.attribute]?.missing
-        ? { missingColor: missingColor ?? NO_CATEGORY_COLOR }
-        : {}),
+      stops: rampStops(numeric.stops, numeric.midNorm),
+      domain: [numeric.minValue ?? 0, numeric.maxValue],
+      minLabel: numeric.minLabel,
+      maxLabel: numeric.maxLabel,
+      ...(missing ? { missingColor: missingColor ?? NO_CATEGORY_COLOR } : {}),
     }
   }
   const categorical = resolveCategoricalMode(field, attributeRanges)
@@ -293,8 +355,9 @@ export function getColorBySwatch(
  * over the band's ground by the view's alpha, so the key matches the
  * on-screen composited ribbon colors, subject to `legendChipColor`'s
  * legibility floor; a mode with no fixed key (a color per sequence name) is a
- * note row saying so. `title` is `color.title` as written: unset keeps the
- * field's own heading, `''` draws none.
+ * note row saying so. A threshold keys its bins as chips. `title` is
+ * `color.title` as written: unset keeps the field's own heading, `''` draws
+ * none.
  */
 export function colorByScales(
   field: string,

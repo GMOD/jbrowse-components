@@ -186,10 +186,11 @@ ribbon band; close it with its own button and it stays away for that mode.
 - Reference - color every level of a stacked view by the shared reference's
   chromosome names, so a region keeps one color as it is traced down the stack
 - Color by value - a submenu of the numbers an alignment can have, each painted
-  on a color ramp. The row names whichever is in use.
+  on a color ramp or in bins. The row names whichever is in use.
   - Identity - per-alignment sequence identity on a viridis ramp. It needs the
     `=`/`X` CIGAR that `minimap2 --eqx` writes
-  - Mapping quality - per-alignment PAF MAPQ on a cividis ramp
+  - Mapping quality - per-alignment PAF MAPQ in the alignments track's four bins
+    (0, 1-9, 10-29 and 30+), dark to light
   - dN/dS - the ratio of non-synonymous to synonymous substitution rate, on a
     diverging blue-yellow-red ramp whose pale middle is 1. Blue below it is
     purifying selection, red above it positive selection, clamped at 2. It needs

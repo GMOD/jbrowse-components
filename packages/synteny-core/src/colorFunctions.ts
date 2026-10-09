@@ -10,12 +10,14 @@ import {
   withAbgrAlpha,
 } from '@jbrowse/core/util/colorBits'
 import { sampleColorRamp } from '@jbrowse/core/util/colorRamp'
+import { thresholdIndex } from '@jbrowse/core/util/thresholdScale'
 import { rampMidT } from '@jbrowse/render-core/shaders/colorRampLut'
 
 import {
   rampNorm,
   resolveCategoricalMode,
-  resolveContinuousMode,
+  resolveNumericMode,
+  strandLevels,
 } from './colorRamps.ts'
 import { colorSchemes } from './colorUtils.ts'
 import { createOpacityFunction, fadedColor } from './opacityChannel.ts'
@@ -24,7 +26,9 @@ import type {
   AttributeRange,
   CategoricalMode,
   ContinuousMode,
-  DeclaredRamp,
+  NumericMode,
+  SyntenyColorPaint,
+  ThresholdMode,
 } from './colorRamps.ts'
 import type { SyntenyOpacitySnapshot } from './syntenyOpacityConfigSchema.ts'
 import type { ColorRampStop } from '@jbrowse/core/util/colorRamp'
@@ -65,9 +69,6 @@ export const DEFAULT_RIBBON_COLOR = cssColorToABGR(
 // takes the one grey every categorical channel paints a value-less feature
 export const UNLABELLED_COLOR = cssColorToABGR(NO_CATEGORY_COLOR)
 const HIDDEN_UNLABELLED_COLOR = withAbgrAlpha(UNLABELLED_COLOR, 0)
-
-const STRAND_POS = cssColorToABGR(colorSchemes.strand.posColor)
-const STRAND_NEG = cssColorToABGR(colorSchemes.strand.negColor)
 
 /**
  * The palette color for a chromosome at `position` in its assembly, packed.
@@ -180,7 +181,7 @@ function buildLut(stops: readonly ColorRampStop[]) {
 // several fields share viridis, and a column has no fixed identity to key on.
 // Built a handful of times for the life of the process, where the dotplot used
 // to rebuild one per recolor pass.
-const lutCache = new Map<readonly ColorRampStop[], Uint32Array>()
+const lutCache = new WeakMap<readonly ColorRampStop[], Uint32Array>()
 
 function lutFor(stops: readonly ColorRampStop[]) {
   let lut = lutCache.get(stops)
@@ -215,6 +216,31 @@ export function makeContinuousColorFunction(
     const norm = Math.max(0, Math.min(255, t * 255))
     return lut[(norm + 0.5) | 0]!
   }
+}
+
+/** A threshold's bins in one function: each value's bin is an index into its colors. */
+export function makeThresholdColorFunction(
+  mode: ThresholdMode,
+  attributes: Record<string, Float32Array>,
+) {
+  const values = attributes[mode.attribute]
+  const lut = Uint32Array.from(mode.colors, cssColorToABGR)
+  return (index: number) => {
+    const value = values?.[index]
+    return value === undefined || !Number.isFinite(value)
+      ? MISSING_VALUE_COLOR
+      : lut[thresholdIndex(value, mode.cuts)]!
+  }
+}
+
+/** A number's color through whichever scale its mode names. */
+export function makeNumericColorFunction(
+  mode: NumericMode,
+  attributes: Record<string, Float32Array>,
+) {
+  return mode.scale === 'threshold'
+    ? makeThresholdColorFunction(mode, attributes)
+    : makeContinuousColorFunction(mode, attributes)
 }
 
 const dealtScales = new WeakMap<
@@ -353,8 +379,8 @@ interface ComparativeColorArgs {
   // a text column's unlabelled rows drawn at zero alpha, so a categorical mode
   // shows only the rows that carry a label
   hideUnlabelled?: boolean
-  // the ramp `color` declares over a preset's or a column's own
-  ramp?: DeclaredRamp
+  // what `color` declares over a field's own scale
+  paint?: SyntenyColorPaint
 }
 
 function paintFunction({
@@ -366,7 +392,7 @@ function paintFunction({
   nameColor,
   attributeRanges,
   hideUnlabelled = false,
-  ramp,
+  paint,
 }: ComparativeColorArgs): (index: number) => number {
   switch (field) {
     case '':
@@ -377,8 +403,12 @@ function paintFunction({
       const packed = cssColorToABGR(trackColor)
       return () => packed
     }
-    case 'strand':
-      return index => (data.strands[index] === -1 ? STRAND_NEG : STRAND_POS)
+    case 'strand': {
+      const [forward, reverse] = strandLevels(paint ?? {}).map(level =>
+        cssColorToABGR(level.color),
+      )
+      return index => (data.strands[index] === -1 ? reverse! : forward!)
+    }
     case 'query':
       return makeNameColorFunction(
         data.refNameDict,
@@ -394,11 +424,11 @@ function paintFunction({
         nameColor,
       )
   }
-  // Every ramp in one arm, preset or column, so the switch above does not
-  // grow per measurement.
-  const continuous = resolveContinuousMode(field, attributeRanges, ramp)
-  if (continuous) {
-    return makeContinuousColorFunction(continuous, data.attributes)
+  // Every number in one arm, preset or column, ramp or bins, so the switch
+  // above does not grow per measurement.
+  const numeric = resolveNumericMode(field, attributeRanges, paint)
+  if (numeric) {
+    return makeNumericColorFunction(numeric, data.attributes)
   }
   const categorical = resolveCategoricalMode(field, attributeRanges)
   return categorical

@@ -145,6 +145,38 @@ test('the strand key names the genome each lane is read against', () => {
   ).toEqual(['Same orientation as hg38', 'Inverted vs hg38'])
 })
 
+test('the strand key takes the colors range writes and the names labels gives', () => {
+  expect(
+    ribbonColorKey(
+      'strand',
+      {},
+      { paint: { range: ['gold', 'black'] }, labels: ['Kept', 'Flipped'] },
+    ),
+  ).toEqual([
+    { value: 'same', label: 'Kept', color: 'gold' },
+    { value: 'inverted', label: 'Flipped', color: 'black' },
+  ])
+})
+
+test('a measurement in bins keys them under the ribbons heading', () => {
+  const [scale] = ribbonColorScales('mapq', {
+    mappingQual: { min: 0, max: 60 },
+  })
+  expect(scale).toMatchObject({
+    kind: 'categorical',
+    id: 'ribbons',
+    title: 'Ribbon mapping quality',
+  })
+  expect(
+    scale?.kind === 'categorical' && scale.entries.map(e => e.label),
+  ).toEqual([
+    'MAPQ 30+ (high confidence)',
+    'MAPQ 10-29',
+    'MAPQ 1-9 (low)',
+    'MAPQ 0 (multi-mapping)',
+  ])
+})
+
 test('the other two ribbon modes key no rows', () => {
   expect(ribbonColorKey('default')).toEqual([])
   expect(ribbonColorKey('identity')).toEqual([])
@@ -174,7 +206,7 @@ test("the ribbons' declared ramp keys its pinned end", () => {
   const [scale] = ribbonColorScales(
     'identity',
     { identity: { min: 0.5, max: 1 } },
-    { ramp: { domainMin: 0.9 } },
+    { paint: { domainMin: 0.9 } },
   )
   expect(scale!.kind === 'ramp' && scale!.domain).toEqual([0.9, 1])
 })

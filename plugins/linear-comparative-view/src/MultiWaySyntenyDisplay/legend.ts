@@ -5,17 +5,17 @@ import {
 import {
   colorByScales,
   colorByShortLabel,
-  colorSchemes,
   getColorBySwatch,
   resolveCategoricalMode,
-  resolveContinuousMode,
+  resolveNumericMode,
+  strandLevels,
 } from '@jbrowse/synteny-core'
 
 import type { Span } from './layoutMultiWay.ts'
 import type { GlyphHit } from './multiwayRenderTypes.ts'
 import type { CategoricalEntry, ColorScale } from '@jbrowse/core/ui/colorScale'
 import type { CategoricalField } from '@jbrowse/core/util/categoricalField'
-import type { AttributeRange, DeclaredRamp } from '@jbrowse/synteny-core'
+import type { AttributeRange, SyntenyColorPaint } from '@jbrowse/synteny-core'
 
 function onScreen(hits: readonly GlyphHit[], [from, to]: Span) {
   return hits.filter(
@@ -83,19 +83,21 @@ export function ribbonColorKey(
     slotColor,
     labels,
     against = 'lane above',
+    paint = {},
   }: RibbonKeyOptions = {},
 ): CategoricalEntry[] {
   if (field === 'strand') {
+    const [same, inverted] = strandLevels(paint, labels)
     return [
       {
         value: 'same',
-        label: `Same orientation as ${against}`,
-        color: colorSchemes.strand.posColor,
+        label: same!.label ?? `Same orientation as ${against}`,
+        color: same!.color,
       },
       {
         value: 'inverted',
-        label: `Inverted vs ${against}`,
-        color: colorSchemes.strand.negColor,
+        label: inverted!.label ?? `Inverted vs ${against}`,
+        color: inverted!.color,
       },
     ]
   }
@@ -125,6 +127,8 @@ interface RibbonKeyOptions {
   labels?: readonly string[]
   /** what each ribbon's lower lane is read against; the lane above when unset */
   against?: string
+  /** what `ribbonColor` declares over a field's own scale */
+  paint?: SyntenyColorPaint
 }
 
 /** `title` unset keeps the ribbons' own heading; `''` draws none. */
@@ -134,38 +138,42 @@ export function ribbonColorScales(
   {
     domain,
     title,
-    ramp: declared,
+    descending,
     ...keyOptions
   }: RibbonKeyOptions & {
     domain?: string[]
     title?: string
-    ramp?: DeclaredRamp
+    /** a threshold's key lists its highest interval first */
+    descending?: boolean
   } = {},
 ): ColorScale[] {
-  const continuous = resolveContinuousMode(field, attributeRanges, declared)
-  if (continuous && continuous.attribute in attributeRanges) {
+  const { paint, labels } = keyOptions
+  const numeric = resolveNumericMode(field, attributeRanges, paint)
+  if (numeric && numeric.attribute in attributeRanges) {
     const label = colorByShortLabel(field)
-    const [ramp, ...noValue] = colorByScales(field, {
+    const [key, ...noValue] = colorByScales(field, {
       attributeRanges,
-      ramp: declared,
+      paint,
+      labels,
+      descending,
     })
     return [
       {
-        ...ramp!,
+        ...key!,
         id: 'ribbons',
         title: title ?? `Ribbon ${label[0]!.toLowerCase()}${label.slice(1)}`,
       },
       ...noValue,
     ]
   }
-  const labels = resolveCategoricalMode(field, attributeRanges)
+  const textColumn = resolveCategoricalMode(field, attributeRanges)
   return [
     {
       kind: 'categorical',
       id: 'ribbons',
       title: title ?? 'Ribbon colors',
       entries: ribbonColorKey(field, attributeRanges, keyOptions),
-      domain: labels ? domain : undefined,
+      domain: textColumn ? domain : undefined,
     },
   ]
 }

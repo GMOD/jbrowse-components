@@ -1,75 +1,72 @@
 import { readConfObject } from '@jbrowse/core/configuration'
+import { categoricalColorScale } from '@jbrowse/core/ui/colors'
+import { keyNames } from '@jbrowse/core/util/categoricalField'
+import { colorRampStops, rampDomain } from '@jbrowse/core/util/colorRamp'
 import {
-  VIRIDIS_STOPS,
-  colorRampStops,
-  rampDomain,
-} from '@jbrowse/core/util/colorRamp'
+  MEASURE_FIELD_PRESETS,
+  withPreset,
+} from '@jbrowse/core/util/colorScale'
 import { formatScore } from '@jbrowse/core/util/numericUtils'
+import {
+  thresholdCuts,
+  thresholdPalette,
+} from '@jbrowse/core/util/thresholdScale'
+import { colorEncodingOf } from '@jbrowse/display-kit/colorConfigSchema'
 import { SCALE_TYPE_LINEAR, rampMidNorm } from '@jbrowse/render-core/scoreScale'
+
+import { SYNTENY_VIEW_FIELDS } from './syntenyColorConfigSchema.ts'
 
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { ColorRampStop } from '@jbrowse/core/util/colorRamp'
 import type { ColorSchemeName } from '@jbrowse/core/util/colorSchemes'
 
-// The continuous "color by" ramps of the synteny, dotplot and multi-way views,
-// which bake these stops into one LUT per ramp and sample it per feature. The
-// stops are core's where the ramp is one of core's named ones, so a viridis
-// here is the viridis every other display paints.
-
-// ColorBrewer RdYlBu, reversed so low reads cool and high reads hot: the one
-// diverging ramp here, its pale middle the pivot a diverging quantity is read
-// against.
-const RD_YL_BU_R: readonly ColorRampStop[] = [
-  [69, 117, 180, 255],
-  [116, 173, 209, 255],
-  [171, 217, 233, 255],
-  [224, 243, 248, 255],
-  [255, 255, 191, 255],
-  [254, 224, 144, 255],
-  [253, 174, 97, 255],
-  [244, 109, 67, 255],
-  [215, 48, 39, 255],
-]
+// How the synteny, dotplot, circular and multi-way views paint a number: a
+// ramp or a threshold's bins, read off the color object through the presets
+// and the resolver every display's color object goes through.
 
 /**
- * dN/dS is read against 1: below it a gene is under purifying selection, above
- * it under positive selection. The ramp spans 0 to 2, so 1 lands on its pale
- * middle, and anything at or above 2 takes its top: nearly every gene sits well
- * under 1, and a domain stretched to a few fast-evolving outliers would flatten
- * the rest into one blue.
+ * #api
+ * The fields every comparative view paints through a preset: core's
+ * measurements, so `identity` and `mapq` paint here as they do on the MAF and
+ * alignments displays.
  */
-export const DNDS_MAX = 2
+export const SYNTENY_FIELD_PRESETS = MEASURE_FIELD_PRESETS
+
+export type SyntenyMeasureField = keyof typeof SYNTENY_FIELD_PRESETS
 
 /**
- * A continuous color field: which feature attribute it paints, the ramp's
- * stops, and the domain a raw value is read against.
- *
- * A value rather than a switch arm, so the field list does not grow by one
- * enum member, one menu entry, one legend arm, one LUT, one typed array and
- * one RPC transfer entry per measurement someone wants to see. A column nobody
- * anticipated is built from this same shape at read time.
+ * #api
+ * Whether `field` is a preset measurement. An own-property lookup: a field
+ * spelled `toString` is a column nobody declared, not `Object`'s method.
  */
-export interface ContinuousMode {
-  /** the per-feature numeric attribute this reads */
-  attribute: string
-  stops: readonly ColorRampStop[]
-  /** domain bottom; 0 unless the mode says otherwise */
-  minValue?: number
-  maxValue: number
-  /** where the ramp's middle stop sits in the normalized domain (`rampMidT`) */
-  midNorm?: number
-  minLabel: string
-  maxLabel: string
-  /** how an end names a value it did not start with; the plain number unset */
-  format?: (value: number) => string
+export function isMeasureField(field: string): field is SyntenyMeasureField {
+  return Object.hasOwn(SYNTENY_FIELD_PRESETS, field)
 }
 
 /**
- * The ramp a `color` object declares: `range`'s stops or a named `scheme` in
- * place of the field's own, turned round under `reverse`, with each pinned
- * end and the middle's value.
+ * #api
+ * The per-feature attribute a field reads: `mapq` is the comparative
+ * adapters' `mappingQual`, and any other field its own name.
  */
-export interface DeclaredRamp {
+export function attributeOf(field: string) {
+  return field === 'mapq' ? 'mappingQual' : field
+}
+
+const STRUCTURAL_FIELDS: ReadonlySet<string> = new Set(SYNTENY_VIEW_FIELDS)
+
+function formatOf(field: string) {
+  return field === 'identity'
+    ? (value: number) => `${formatScore(value * 100)}%`
+    : formatScore
+}
+
+/**
+ * The members of a color object a paint reads: all but the key's names,
+ * heading and direction, so renaming a key repaints nothing.
+ */
+export interface SyntenyColorPaint {
+  scale?: string
+  domain?: readonly string[]
   range?: readonly string[]
   scheme?: ColorSchemeName
   reverse?: boolean
@@ -78,11 +75,11 @@ export interface DeclaredRamp {
   domainMid?: number
 }
 
-/**
- * Read off the ramp's own slots, so a key-only edit repaints no ramp.
- */
-export function declaredRampOf(color: AnyConfigurationModel): DeclaredRamp {
+/** Read off the paint's own slots, so a key-only edit repaints nothing. */
+export function colorPaintOf(color: AnyConfigurationModel): SyntenyColorPaint {
   return {
+    scale: readConfObject(color, 'scale'),
+    domain: readConfObject(color, 'domain'),
     range: readConfObject(color, 'range'),
     scheme: readConfObject(color, 'scheme'),
     reverse: readConfObject(color, 'reverse'),
@@ -92,47 +89,56 @@ export function declaredRampOf(color: AnyConfigurationModel): DeclaredRamp {
   }
 }
 
-// The preset fields. Each carries domain knowledge a column name cannot: that
-// identity is a fraction, that MAPQ tops out at minimap2's 60, that dN/dS is
-// read against 1 rather than against its own maximum. `mapq` is the pileup's
-// name for the variable, and reads the attribute the comparative adapters emit.
-export const continuousRampConfig: Record<
-  'identity' | 'mapq' | 'dnds',
-  ContinuousMode
-> = {
-  identity: {
-    attribute: 'identity',
-    stops: VIRIDIS_STOPS,
-    maxValue: 1,
-    minLabel: '0%',
-    maxLabel: '100%',
-    format: value => `${formatScore(value * 100)}%`,
-  },
-  mapq: {
-    attribute: 'mappingQual',
-    stops: colorRampStops({ scheme: 'cividis' }),
-    maxValue: 60,
-    minLabel: '0',
-    maxLabel: '60',
-  },
-  dnds: {
-    attribute: 'dnds',
-    stops: RD_YL_BU_R,
-    maxValue: DNDS_MAX,
-    minLabel: '0',
-    maxLabel: '≥2',
-  },
+/**
+ * A numeric field on a ramp: the attribute it reads, the ramp's stops, the
+ * domain a value is read against and where the middle stop sits in it, and
+ * the key's end labels.
+ */
+export interface ContinuousMode {
+  scale: 'linear'
+  attribute: string
+  stops: readonly ColorRampStop[]
+  /** domain bottom; 0 unless the mode says otherwise */
+  minValue?: number
+  maxValue: number
+  /** where the ramp's middle stop sits in the normalized domain (`rampMidT`) */
+  midNorm?: number
+  minLabel: string
+  maxLabel: string
 }
 
-/**
- * #api
- * The preset ramp a field names, if it names one. An own-property lookup: a
- * field spelled `toString` is a column nobody declared, not `Object`'s method.
- */
-export function presetRamp(field: string): ContinuousMode | undefined {
-  return Object.hasOwn(continuousRampConfig, field)
-    ? (continuousRampConfig as Record<string, ContinuousMode>)[field]
-    : undefined
+/** A numeric field in bins: the cuts between them and each bin's color. */
+export interface ThresholdMode {
+  scale: 'threshold'
+  attribute: string
+  /** ascending */
+  cuts: readonly number[]
+  /** one per bin, lowest first */
+  colors: readonly string[]
+}
+
+export type NumericMode = ContinuousMode | ThresholdMode
+
+const MAX_STOP_TABLES = 32
+const stopTables = new Map<string, readonly ColorRampStop[]>()
+
+// The same stop list for the same declaration, so a LUT cached on the list
+// is built once per ramp rather than once per recolor.
+function stopsOf(ramp: {
+  range?: readonly string[]
+  scheme?: ColorSchemeName
+  reverse?: boolean
+}) {
+  const key = `${ramp.scheme ?? ''}|${ramp.range?.join(' ') ?? ''}|${!!ramp.reverse}`
+  let stops = stopTables.get(key)
+  if (!stops) {
+    if (stopTables.size >= MAX_STOP_TABLES) {
+      stopTables.delete(stopTables.keys().next().value!)
+    }
+    stops = colorRampStops(ramp)
+    stopTables.set(key, stops)
+  }
+  return stops
 }
 
 /** The observed span of one numeric attribute across the features in hand. */
@@ -205,93 +211,101 @@ export function resolveCategoricalMode(
     : undefined
 }
 
+const STRANDS = ['1', '-1'] as const
+
 /**
- * How a numeric field paints: a preset's fixed ramp, or a viridis ramp over
- * the observed span of a declared column, labelled with the actual numbers —
- * a RELATIVE scale, the honest reading when nothing declares what the
- * column's range is supposed to be — each under what `ramp` declares.
- * Undefined for a text column and the constant. A structural field (strand,
- * query, track, ...) is the caller's to dispatch before asking here.
+ * #api
+ * Each strand's color under `paint`, forward then reverse: the universal
+ * strand preset's, or `range`'s in `domain` order where the color object
+ * writes them, and the name `labels` gives it, if any.
  */
-export function resolveContinuousMode(
-  field: string,
-  ranges?: Record<string, AttributeRange>,
-  ramp: DeclaredRamp = {},
-): ContinuousMode | undefined {
-  const mode = field
-    ? (presetRamp(field) ?? columnRamp(field, ranges))
-    : undefined
-  return mode && withDeclaredRamp(mode, ramp, ranges?.[mode.attribute])
+export function strandLevels(
+  { domain = [], range = [] }: SyntenyColorPaint,
+  labels: readonly string[] = [],
+) {
+  const filled = withPreset(
+    { field: 'strand', scale: 'categorical', domain, range },
+    SYNTENY_FIELD_PRESETS,
+  )
+  const color = categoricalColorScale(filled.domain, filled.range)
+  const named = keyNames(filled.domain, labels)
+  return STRANDS.map(value => ({
+    value,
+    color: color(value),
+    label: named.get(value),
+  }))
 }
 
-// The stops a declaration names, else the field's own, then `reverse`; each
-// pinned end over the field's domain (`rampDomain` keeps an open end from
-// crossing a pinned one); and an end that moved relabelled, `≥`/`≤` where the
-// values seen run past it.
-function withDeclaredRamp(
-  mode: ContinuousMode,
-  ramp: DeclaredRamp,
-  observed: AttributeRange | undefined,
-): ContinuousMode {
-  const { range, scheme, reverse, domainMin, domainMax, domainMid } = ramp
-  const named = range?.length || scheme
-  if (
-    !named &&
-    !reverse &&
-    domainMin === undefined &&
-    domainMax === undefined &&
-    domainMid === undefined
-  ) {
-    return mode
+/**
+ * #api
+ * How a numeric field paints under `paint`: a preset measurement through its
+ * preset, and a column a track declares on a viridis ramp over the span seen,
+ * labelled with the actual numbers, the honest reading when nothing declares
+ * what the column's range is supposed to be. A written `scale` names a ramp
+ * or a threshold's bins either way. Undefined for the constant, a structural
+ * field and a text column.
+ */
+export function resolveNumericMode(
+  field: string,
+  ranges: Record<string, AttributeRange> = {},
+  paint: SyntenyColorPaint = {},
+): NumericMode | undefined {
+  if (!field || STRUCTURAL_FIELDS.has(field)) {
+    return undefined
   }
-  const stops = named ? colorRampStops({ range, scheme }) : mode.stops
-  const own: [number, number] = [mode.minValue ?? 0, mode.maxValue]
-  const [minValue, maxValue] = rampDomain(domainMin, domainMax, own)
+  const attribute = attributeOf(field)
+  const observed = ranges[attribute]
+  const measure = isMeasureField(field)
+  if (!measure && observed && isAttributeLabels(observed)) {
+    return undefined
+  }
+  const written =
+    paint.scale === 'linear' || paint.scale === 'threshold'
+      ? paint.scale
+      : undefined
+  const encoding = colorEncodingOf(
+    {
+      ...paint,
+      value: undefined,
+      field,
+      scale: written ?? (measure ? undefined : 'linear'),
+      domain: paint.domain ?? [],
+      range: paint.range ?? [],
+    },
+    SYNTENY_FIELD_PRESETS,
+  )
+  if (encoding?.scale === 'threshold') {
+    const cuts = thresholdCuts(encoding.domain ?? [])
+    return {
+      scale: 'threshold',
+      attribute,
+      cuts,
+      colors: thresholdPalette(cuts.length + 1, encoding.range),
+    }
+  }
+  if (encoding?.scale !== 'linear') {
+    return undefined
+  }
   const span = observed && !isAttributeLabels(observed) ? observed : undefined
-  const format = mode.format ?? formatScore
-  const relabel = (value: number, past: boolean | undefined, sign: string) =>
-    `${past ? sign : ''}${format(value)}`
+  const [minValue, maxValue] = rampDomain(
+    encoding.domainMin,
+    encoding.domainMax,
+    [span?.min ?? 0, span?.max ?? 0],
+  )
+  const { domainMid } = encoding
+  const format = formatOf(field)
   return {
-    ...mode,
-    stops: reverse ? stops.toReversed() : stops,
+    scale: 'linear',
+    attribute,
+    stops: stopsOf(encoding),
     minValue,
     maxValue,
     midNorm:
       domainMid === undefined
         ? undefined
         : rampMidNorm(minValue, maxValue, SCALE_TYPE_LINEAR, domainMid),
-    minLabel:
-      minValue === own[0]
-        ? mode.minLabel
-        : relabel(minValue, span && span.min < minValue, '≤'),
-    maxLabel:
-      maxValue === own[1]
-        ? mode.maxLabel
-        : relabel(maxValue, span && span.max > maxValue, '≥'),
-  }
-}
-
-// A numeric column's viridis over the span seen, or undefined for text.
-function columnRamp(
-  field: string,
-  ranges: Record<string, AttributeRange> | undefined,
-): ContinuousMode | undefined {
-  const range = ranges?.[field]
-  if (range && isAttributeLabels(range)) {
-    return undefined
-  }
-  // no data yet, or a column nothing carried: a flat domain would divide by
-  // zero, and rampNorm answers 0 for it, so the ribbons stay at the ramp's
-  // bottom rather than painting garbage
-  const min = range?.min ?? 0
-  const max = range?.max ?? 0
-  return {
-    attribute: field,
-    stops: VIRIDIS_STOPS,
-    minValue: min,
-    maxValue: max,
-    minLabel: formatScore(min),
-    maxLabel: formatScore(max),
+    minLabel: `${span && span.min < minValue ? '≤' : ''}${format(minValue)}`,
+    maxLabel: `${span && span.max > maxValue ? '≥' : ''}${format(maxValue)}`,
   }
 }
 

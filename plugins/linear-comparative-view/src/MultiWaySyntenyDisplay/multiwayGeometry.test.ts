@@ -631,6 +631,28 @@ describe('the ribbons', () => {
     expect(data.colors[1]).toBe(withAbgrAlpha(cssColorToABGR(reverse), alpha))
   })
 
+  test('color by strand paints the range ribbonColor writes', () => {
+    const s = stack({
+      features: [
+        pairFeature('g1', 100, 200),
+        pairFeature('g2', 300, 400, { strand: -1 }),
+      ],
+    })
+    const { cells } = buildRibbonGeometry({
+      stack: s,
+      laneLinks: undefined,
+      ribbonColor: 'rgba(130,130,130,0.4)',
+      ribbonColorField: 'strand',
+      paint: { range: ['gold', 'black'] },
+      drawCurves: false,
+      bridgeSkippedLanes: false,
+    })
+    const data = ribbonData(cells, 'ribbons:0')
+    const alpha = Math.round(0.4 * 255)
+    expect(data.colors[0]).toBe(withAbgrAlpha(cssColorToABGR('gold'), alpha))
+    expect(data.colors[1]).toBe(withAbgrAlpha(cssColorToABGR('black'), alpha))
+  })
+
   test('color by identity ramps the pair’s attribute and leaves a pair without one at the slot color', () => {
     const s = stack({
       features: [

@@ -5,10 +5,10 @@ import {
 } from '@jbrowse/core/util/thresholdScale'
 
 import {
+  attributeOf,
   isAttributeLabels,
-  presetRamp,
   rampNorm,
-  resolveContinuousMode,
+  resolveNumericMode,
 } from './colorRamps.ts'
 
 import type { AttributeRange } from './colorRamps.ts'
@@ -139,8 +139,7 @@ export function createOpacityFunction({
   }
   const share = (opacity: number | undefined) =>
     opacity === undefined ? 1 : clamp01(opacity / level)
-  // a preset reads its own lane: `mapq` is the adapters' `mappingQual`
-  const values = attributes[presetRamp(field)?.attribute ?? field]
+  const values = attributes[attributeOf(field)]
 
   if (setting.scale === 'threshold') {
     const cuts = thresholdCuts(setting.domain ?? [])
@@ -165,11 +164,12 @@ export function createOpacityFunction({
     }
   }
 
-  const mode = resolveContinuousMode(field, viewRanges, {
+  const mode = resolveNumericMode(field, viewRanges, {
+    scale: 'linear',
     domainMin: setting.domainMin,
     domainMax: setting.domainMax,
   })
-  if (!mode) {
+  if (mode?.scale !== 'linear') {
     return undefined
   }
   const [lo, hi = lo] = rangeOf(setting, true)

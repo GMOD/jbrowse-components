@@ -5,7 +5,12 @@ import { colorSnapshotOf } from '@jbrowse/display-kit/colorConfigSchema'
 import { cast, types } from '@jbrowse/mobx-state-tree'
 
 import { colorByScales } from './colorLegend.ts'
-import { declaredRampOf, isAttributeLabels, presetRamp } from './colorRamps.ts'
+import {
+  colorPaintOf,
+  isAttributeLabels,
+  isMeasureField,
+  resolveCategoricalMode,
+} from './colorRamps.ts'
 import { paintedField, syntenyColorFor } from './syntenyColorBy.ts'
 import {
   SYNTENY_VIEW_FIELDS,
@@ -15,7 +20,7 @@ import { assignTrackColors, syntenyTrackPalette } from './trackColors.ts'
 
 import type { CigarOpMask, ColorChip } from './colorLegend.ts'
 import type { SyntenyColorSurface } from './colorModes.ts'
-import type { AttributeRange, DeclaredRamp } from './colorRamps.ts'
+import type { AttributeRange, SyntenyColorPaint } from './colorRamps.ts'
 import type { SyntenyColorSnapshot } from './syntenyColorConfigSchema.ts'
 import type { ColorableTrack } from './trackColors.ts'
 import type { ColorScale } from '@jbrowse/core/ui/colorScale'
@@ -23,11 +28,7 @@ import type { ColorScale } from '@jbrowse/core/ui/colorScale'
 const STRUCTURAL_FIELDS: ReadonlySet<string> = new Set(SYNTENY_VIEW_FIELDS)
 
 function isColumnField(field: string) {
-  return (
-    field !== '' &&
-    !STRUCTURAL_FIELDS.has(field) &&
-    presetRamp(field) === undefined
-  )
+  return field !== '' && !STRUCTURAL_FIELDS.has(field) && !isMeasureField(field)
 }
 
 // A label list only ever gains labels, in the order they were first seen, and
@@ -154,9 +155,10 @@ export function TrackColorsMixin({ defaultColorField = '' } = {}) {
        * `{ field: "query" }`, `{ field: "reference" }`, `{ field: "track" }`,
        * a measurement (`identity`, `mapq`, `dnds`) or a column the
        * tracks declare, with `domain` ordering a text column's labels,
-       * `range` coloring them and `labels` naming them in the key, and
-       * `range` or `scheme`, `reverse` and pinned ends reshaping a ramp; a
-       * color string paints every alignment. Unset, the view's default
+       * `range` coloring them and `labels` naming them in the key, `range` or
+       * `scheme`, `reverse` and pinned ends reshaping a ramp, and
+       * `scale: 'threshold'` binning a number at `domain`'s cuts; a color
+       * string paints every alignment. Unset, the view's default
        * paints: `query` on the circular view, the default scheme elsewhere.
        */
       color: types.stripDefault(
@@ -280,12 +282,13 @@ export function TrackColorsMixin({ defaultColorField = '' } = {}) {
       },
       /**
        * #getter
-       * The ramp `color` declares over a preset's or a column's own: `range`
-       * or `scheme` for its stops, `reverse`, and its pinned ends and middle.
-       * Read off its own slots, so a key-only edit repaints no ramp.
+       * What `color` declares over a field's own scale: `scale`, `domain`,
+       * `range` or `scheme` for its colors, `reverse`, and a ramp's pinned
+       * ends and middle. Read off its own slots, so a key-only edit repaints
+       * nothing.
        */
-      get colorRamp(): DeclaredRamp {
-        return declaredRampOf(self.color)
+      get colorPaint(): SyntenyColorPaint {
+        return colorPaintOf(self.color)
       },
       /**
        * #getter
@@ -393,7 +396,7 @@ export function TrackColorsMixin({ defaultColorField = '' } = {}) {
         return (
           field === 'track' ||
           (field === 'strand' && !self.shapeShowsStrand()) ||
-          presetRamp(field) !== undefined ||
+          isMeasureField(field) ||
           isColumnField(field)
         )
       },
@@ -440,8 +443,11 @@ export function TrackColorsMixin({ defaultColorField = '' } = {}) {
         }
         const field = self.colorField
         const { labels, title } = self.colorSetting
+        const textColumn =
+          isColumnField(field) &&
+          resolveCategoricalMode(field, self.attributeRanges) !== undefined
         // only a text column's rows are the reader's to order; a track
-        // palette and a ramp key what they key
+        // palette, a ramp and bins key what they key
         return colorByScales(field, {
           pointBased: self.colorSurface() === 'points',
           cigarOps: self.legendCigarOps(),
@@ -451,11 +457,10 @@ export function TrackColorsMixin({ defaultColorField = '' } = {}) {
           hideUnlabelled: self.hideUnlabelled,
           labels,
           title,
-          ramp: self.colorRamp,
+          descending: readConfObject(self.color, 'descending'),
+          paint: self.colorPaint,
         }).map(scale =>
-          scale.kind === 'categorical' &&
-          scale.id === field &&
-          isColumnField(field)
+          scale.kind === 'categorical' && scale.id === field && textColumn
             ? { ...scale, domain: [...self.colorDomain] }
             : scale,
         )

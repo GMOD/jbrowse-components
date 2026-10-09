@@ -172,6 +172,7 @@ export {
   SYNTENY_COLOR_SCALES,
   SYNTENY_VIEW_FIELDS,
   syntenyColorConfigSchema,
+  syntenyColorSlots,
 } from './syntenyColorConfigSchema.ts'
 export type {
   SyntenyColorScale,
@@ -218,14 +219,16 @@ export {
 export { comparativeTooltipLines } from './comparativeTooltipLines.ts'
 export type { ComparativeTooltipSide } from './comparativeTooltipLines.ts'
 export {
-  continuousRampConfig,
-  declaredRampOf,
-  presetRamp,
+  SYNTENY_FIELD_PRESETS,
+  attributeOf,
+  colorPaintOf,
   dnDsRatio,
   isAttributeLabels,
+  isMeasureField,
   rampNorm,
   resolveCategoricalMode,
-  resolveContinuousMode,
+  resolveNumericMode,
+  strandLevels,
 } from './colorRamps.ts'
 export type {
   AttributeLabels,
@@ -233,7 +236,10 @@ export type {
   AttributeSpan,
   CategoricalMode,
   ContinuousMode,
-  DeclaredRamp,
+  NumericMode,
+  SyntenyColorPaint,
+  SyntenyMeasureField,
+  ThresholdMode,
 } from './colorRamps.ts'
 export {
   DEFAULT_RIBBON_COLOR,
@@ -244,6 +250,8 @@ export {
   makeCategoricalColorFunction,
   makeContinuousColorFunction,
   makeNameColorFunction,
+  makeNumericColorFunction,
+  makeThresholdColorFunction,
   nameColorCss,
   paletteColorAt,
 } from './colorFunctions.ts'

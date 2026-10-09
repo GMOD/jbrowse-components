@@ -22,7 +22,7 @@ import {
 import type {
   AttributeRange,
   ColorFunctionInputs,
-  DeclaredRamp,
+  SyntenyColorPaint,
   RefNamePosition,
   SyntenyOpacitySnapshot,
 } from '@jbrowse/synteny-core'
@@ -86,7 +86,7 @@ export function computeSyntenyColors({
   attributeRanges,
   hideUnlabelled,
   hiddenFeatures,
-  ramp,
+  paint,
 }: {
   instanceData: InstanceInputs
   featureData: ColorFunctionInputs
@@ -113,8 +113,8 @@ export function computeSyntenyColors({
   attributeRanges: Record<string, AttributeRange>
   hideUnlabelled?: boolean
   hiddenFeatures?: ReadonlySet<number>
-  // the ramp the view's `color` declares
-  ramp?: DeclaredRamp
+  // what the view's `color` declares over a field's own scale
+  paint?: SyntenyColorPaint
 }) {
   const { kinds, instanceFeatureIdx, instanceCount } = instanceData
   const colorFn = createComparativeColorFunction({
@@ -124,7 +124,7 @@ export function computeSyntenyColors({
     namePosition,
     attributeRanges,
     hideUnlabelled,
-    ramp,
+    paint,
     opacity,
     defaultColor:
       valueColor === undefined

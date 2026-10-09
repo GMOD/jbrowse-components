@@ -354,7 +354,7 @@ describe('the color object', () => {
 
   it('keys a declared ramp, keeps it through a domain edit, and drops it on a new field', () => {
     const v = view({ field: 'identity', scheme: 'magma', domainMin: 0.9 })
-    expect(v.colorRamp).toMatchObject({ scheme: 'magma', domainMin: 0.9 })
+    expect(v.colorPaint).toMatchObject({ scheme: 'magma', domainMin: 0.9 })
     const [ramp] = v.colorScales
     expect(ramp?.kind === 'ramp' && ramp.domain).toEqual([0.9, 1])
     v.setColorDomain(['a'])

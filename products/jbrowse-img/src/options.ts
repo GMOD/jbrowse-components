@@ -7,7 +7,7 @@ import type { CigarMode } from '@jbrowse/plugin-linear-comparative-view'
 import type { TrackLabelMode } from '@jbrowse/plugin-linear-genome-view'
 import type {
   SYNTENY_VIEW_FIELDS,
-  continuousRampConfig,
+  SYNTENY_FIELD_PRESETS,
 } from '@jbrowse/synteny-core'
 
 export interface OptionDef {
@@ -62,7 +62,7 @@ const cigarModes = [
 // paints by. Validated here so a typo like `--colorBy quary` reports itself.
 type SyntenyColorField =
   | (typeof SYNTENY_VIEW_FIELDS)[number]
-  | keyof typeof continuousRampConfig
+  | keyof typeof SYNTENY_FIELD_PRESETS
 
 const syntenyColorByModes = [
   'strand',

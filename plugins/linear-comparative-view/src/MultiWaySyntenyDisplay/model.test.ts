@@ -545,10 +545,10 @@ test('a ribbon color pick keeps the ramp the config declares', () => {
     domainMid: 95,
   }
   display.setRibbonColorField('identity')
-  expect(display.ribbonRamp).toMatchObject(ramp)
+  expect(display.ribbonPaint).toMatchObject(ramp)
   display.setRibbonColorField('')
   display.setRibbonColorField('identity')
-  expect(display.ribbonRamp).toMatchObject(ramp)
+  expect(display.ribbonPaint).toMatchObject(ramp)
 })
 
 test('the strand ribbon mode adds its own section', () => {
@@ -2170,7 +2170,7 @@ test('a ribbonColor field is a preset or a column, scale none parks it, and a pa
       palette: ['red'],
     }),
   ).toThrow(
-    'RibbonColor takes value, field, scale, domain, range, scheme, reverse, domainMid, domainMin, domainMax, labels and title, not palette',
+    'RibbonColor takes value, field, scale, domain, range, scheme, reverse, domainMid, domainMin, domainMax, labels, descending and title, not palette',
   )
   for (const field of ['strand', 'identity', 'mapq', 'dnds']) {
     display.configuration.setSubschema('ribbonColor', { field })

@@ -18,10 +18,11 @@ import {
 import {
   categoricalColor,
   colorSchemes,
-  makeContinuousColorFunction,
+  makeNumericColorFunction,
   readChannelValue,
   resolveCategoricalMode,
-  resolveContinuousMode,
+  resolveNumericMode,
+  strandLevels,
 } from '@jbrowse/synteny-core'
 
 import {
@@ -58,7 +59,7 @@ import type {
   RibbonTarget,
 } from './multiwayRenderTypes.ts'
 import type { Feature } from '@jbrowse/core/util'
-import type { AttributeRange, DeclaredRamp } from '@jbrowse/synteny-core'
+import type { AttributeRange, SyntenyColorPaint } from '@jbrowse/synteny-core'
 
 // narrower ribbons are clutter; the boxes they join still draw in the lanes
 const MIN_RIBBON_PX = 2
@@ -262,29 +263,24 @@ function ribbonColorer(
   slotColor: number,
   attributeRanges: Record<string, AttributeRange>,
   hideUnlabelled: boolean,
-  ramp?: DeclaredRamp,
+  paint: SyntenyColorPaint = {},
 ) {
   const alpha = slotColor >>> 24
   if (field === 'strand') {
-    const pos = withAbgrAlpha(
-      cssColorToABGR(colorSchemes.strand.posColor),
-      alpha,
+    const [pos, neg] = strandLevels(paint).map(level =>
+      withAbgrAlpha(cssColorToABGR(level.color), alpha),
     )
-    const neg = withAbgrAlpha(
-      cssColorToABGR(colorSchemes.strand.negColor),
-      alpha,
-    )
-    return (strand: number) => (strand < 0 ? neg : pos)
+    return (strand: number) => (strand < 0 ? neg! : pos!)
   }
-  const continuous = resolveContinuousMode(field, attributeRanges, ramp)
-  if (continuous) {
+  const numeric = resolveNumericMode(field, attributeRanges, paint)
+  if (numeric) {
     const value = new Float32Array(1)
-    const ramp = makeContinuousColorFunction(continuous, {
-      [continuous.attribute]: value,
+    const colorOf = makeNumericColorFunction(numeric, {
+      [numeric.attribute]: value,
     })
     return (_strand: number, feature: Feature) => {
-      value[0] = readChannelValue(feature, continuous.attribute)
-      return withAbgrAlpha(ramp(0), alpha)
+      value[0] = readChannelValue(feature, numeric.attribute)
+      return withAbgrAlpha(colorOf(0), alpha)
     }
   }
   const categorical = resolveCategoricalMode(field, attributeRanges)
@@ -471,7 +467,7 @@ export function buildRibbonGeometry({
   ribbonColorField = '',
   attributeRanges = {},
   hideUnlabelled = false,
-  ramp,
+  paint,
   drawCurves,
   bridgeSkippedLanes,
   rowsVsAnchor = false,
@@ -483,7 +479,7 @@ export function buildRibbonGeometry({
   ribbonColorField?: string
   attributeRanges?: Record<string, AttributeRange>
   hideUnlabelled?: boolean
-  ramp?: DeclaredRamp
+  paint?: SyntenyColorPaint
   drawCurves: boolean
   bridgeSkippedLanes: boolean
   /** each gutter draws its lower lane against the anchor, as a star source states it */
@@ -496,7 +492,7 @@ export function buildRibbonGeometry({
     color,
     attributeRanges,
     hideUnlabelled,
-    ramp,
+    paint,
   )
   const mismatch = mismatchColor(ribbonColorField)
   const cells = new Map<string, MultiWayCell>()

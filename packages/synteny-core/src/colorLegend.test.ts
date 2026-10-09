@@ -20,10 +20,47 @@ test('continuous modes get a gradient ramp with bounded domain labels', () => {
     expect(identity.stops.length).toBeGreaterThan(2)
   }
 
+  const dnds = getColorBySwatch('dnds')
+  expect(dnds?.kind === 'ramp' && [dnds.minLabel, dnds.maxLabel]).toEqual([
+    '0',
+    '2',
+  ])
+})
+
+test("mapq keys the alignments display's bins, confident reads first", () => {
   const mapq = getColorBySwatch('mapq')
-  if (mapq?.kind === 'ramp') {
-    expect(mapq.maxLabel).toBe('60')
+  expect(mapq?.kind === 'chips' && mapq.chips.map(c => c.label)).toEqual([
+    'MAPQ 30+ (high confidence)',
+    'MAPQ 10-29',
+    'MAPQ 1-9 (low)',
+    'MAPQ 0 (multi-mapping)',
+  ])
+  const [scale] = colorByScales('mapq')
+  expect(scale?.title).toBe('Mapping quality')
+})
+
+test('written cuts key their intervals, lowest first unless descending', () => {
+  const labels = (descending?: boolean) => {
+    const swatch = getColorBySwatch('identity', {
+      paint: { scale: 'threshold', domain: ['0.95', '0.99'] },
+      descending,
+    })
+    return swatch?.kind === 'chips' && swatch.chips.map(c => c.label)
   }
+  expect(labels()).toEqual(['< 0.95', '0.95 – 0.99', '≥ 0.99'])
+  expect(labels(true)).toEqual(['≥ 0.99', '0.95 – 0.99', '< 0.95'])
+})
+
+test('strand keys the colors range writes and the names labels gives', () => {
+  const strand = getColorBySwatch('strand', {
+    paint: { range: ['gold', 'black'] },
+    labels: ['Plus', 'Minus'],
+    cigarOps: NO_CIGAR_OPS,
+  })
+  expect(strand?.kind === 'chips' && strand.chips).toEqual([
+    { color: 'gold', label: 'Plus' },
+    { color: 'black', label: 'Minus' },
+  ])
 })
 
 // Default (no cigarOps) is the static menu preview: match + the two indel ops

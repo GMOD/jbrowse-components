@@ -26,6 +26,8 @@ extend-ignore-re = [
   # an `encoded-` session: deflate's zlib header always base64s to `eJ`, and
   # the rest is random letters
   "\\beJ[A-Za-z0-9_-]{30,}",
+  # an opaque packed-ABGR color pinned in a test: `ff38daa1` read `daa`
+  "\\bff[0-9a-f]{6}\\b",
 ]
 
 [default.extend-words]

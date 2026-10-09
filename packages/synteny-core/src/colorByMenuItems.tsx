@@ -2,7 +2,7 @@ import PopoverPicker from '@jbrowse/core/ui/PopoverPicker'
 import { withHint } from '@jbrowse/core/ui/menuItems'
 
 import { COLOR_MODES, VALUE_MODES_LABEL } from './colorModes.ts'
-import { presetRamp, resolveCategoricalMode } from './colorRamps.ts'
+import { attributeOf, resolveCategoricalMode } from './colorRamps.ts'
 
 import type { ColorByMenuTarget } from './colorByMenuTarget.ts'
 import type { MenuItem } from '@jbrowse/core/ui'
@@ -54,7 +54,7 @@ function valueModes({
       label: m.label,
       helpText: m.helpText,
       disabledHelpText:
-        (presetRamp(m.field)?.attribute ?? m.field) in attributeRanges
+        attributeOf(m.field) in attributeRanges
           ? undefined
           : `The loaded alignments carry no ${m.label[0]!.toLowerCase()}${m.label.slice(1)}`,
     })),

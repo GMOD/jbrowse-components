@@ -88,7 +88,8 @@ export const COLOR_MODES: ColorModeEntry[] = [
     field: 'mapq',
     kind: 'value',
     label: 'Mapping quality',
-    helpText: 'MAPQ 0 to 60 on a cividis ramp.',
+    helpText:
+      'MAPQ in the bins aligners are filtered at, 0, 1-9, 10-29 and 30+, dark to light.',
   },
   {
     field: 'dnds',

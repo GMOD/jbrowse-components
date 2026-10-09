@@ -91,6 +91,7 @@ describe('a number field', () => {
     const fade = fadeOf(
       { field: 'mapq' },
       { mappingQual: new Float32Array([0, 60]) },
+      { mappingQual: { min: 0, max: 60 } },
     )
     expect(fade(0)).toBeCloseTo(0.3)
     expect(fade(1)).toBeCloseTo(1)

@@ -68,7 +68,7 @@ import {
   bandPalette,
   colorableColumns,
   declaredAttributes,
-  declaredRampOf,
+  colorPaintOf,
   declaredLanesOf,
   featureAttributeRanges,
   lodMenuItems,
@@ -245,7 +245,7 @@ import type { MarkColorScale } from '@jbrowse/render-core/marks'
 import type {
   AttributeRange,
   DeclaredLane,
-  DeclaredRamp,
+  SyntenyColorPaint,
   LodMode,
   SyntenyColorSnapshot,
 } from '@jbrowse/synteny-core'
@@ -693,8 +693,8 @@ export function stateModelFactory(
         return getConf(self, ['ribbonColor', 'domain'])
       },
       /** #getter */
-      get ribbonRamp(): DeclaredRamp {
-        return declaredRampOf(self.configuration.ribbonColor)
+      get ribbonPaint(): SyntenyColorPaint {
+        return colorPaintOf(self.configuration.ribbonColor)
       },
       /** #getter */
       get ribbonAttributeRanges(): Record<string, AttributeRange> {
@@ -2135,7 +2135,7 @@ export function stateModelFactory(
           ribbonColorField: self.ribbonColorField,
           attributeRanges: self.ribbonAttributeRanges,
           hideUnlabelled: self.hideUnlabelled,
-          ramp: self.ribbonRamp,
+          paint: self.ribbonPaint,
           drawCurves: self.drawCurves,
           bridgeSkippedLanes: self.bridgeSkippedLanes,
           rowsVsAnchor: self.rowsVsAnchor,
@@ -2524,7 +2524,8 @@ export function stateModelFactory(
               slotColor: self.ribbonColor,
               labels: getConf(self, ['ribbonColor', 'labels']),
               title: getConf(self, ['ribbonColor', 'title']),
-              ramp: self.ribbonRamp,
+              descending: getConf(self, ['ribbonColor', 'descending']),
+              paint: self.ribbonPaint,
               against: self.rowsVsAnchor ? self.anchorAssemblyName : undefined,
             },
           ),
