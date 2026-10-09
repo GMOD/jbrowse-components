@@ -122,6 +122,8 @@ export const markColorSchema = ConfigurationSchema(
     ...colorLabelsSlot,
     ...colorRampSlots,
     ...colorTitleSlot,
+    // `breaks` and `missingLabel` join another color object only where its
+    // key would read them.
     /**
      * #slot breaks
      * The values a categorical key lists, in this order; empty lists every

@@ -164,6 +164,8 @@ export function createOpacityFunction({
     }
   }
 
+  // a measurement in bins (`mapq`) has no ramp of its own, so a linear fade
+  // over it spans the values seen
   const mode = resolveNumericMode(field, viewRanges, {
     scale: 'linear',
     domainMin: setting.domainMin,

@@ -105,6 +105,8 @@ export default class VCFFeature implements Feature {
     this.variant.processFormatFields(keys, callback)
   }
 
+  // `impact` stays out: it scans the record's annotations, a cost every
+  // serialized feature would pay for a field only a color reads.
   toJSON() {
     const svType = this.svType()
     return {

@@ -449,7 +449,8 @@ function refuseFieldAsConstant(
 /**
  * A color object's options: a bare string is its `value`, an undeclared key
  * is refused, and `impliedField` is the field the object maps while it names
- * neither a field nor a constant.
+ * neither a field nor a constant. A default on the `field` slot cannot stand
+ * in for it: `{ value: 'red' }` would then paint the field.
  */
 export function colorChannelOptions(
   name: string,

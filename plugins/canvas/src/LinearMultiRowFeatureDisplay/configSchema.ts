@@ -251,6 +251,8 @@ export default function configSchemaF() {
       fetchSizeLimit: { type: 'number', defaultValue: 5_000_000 },
     },
     {
+      // No `mouseover`: a written one evaluates per feature, a cost the dense
+      // row tracks are not given.
       /**
        * #baseConfiguration
        */

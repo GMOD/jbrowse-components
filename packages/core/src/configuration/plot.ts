@@ -28,6 +28,8 @@ import type { AnyConfigurationModel } from './types.ts'
  * display's `plot`. A display's plot is the ones its config declares
  * (`plotKeysOf`).
  */
+// The multi-row display's `rowGroups` is not here yet; it joins when "Edit
+// plot..." should show the row grouping.
 export const PLOT_VOCABULARY: Readonly<Record<string, string>> = {
   marks: 'the marks drawn in order, each a mark and an encoding',
   mark: 'what each value is drawn as: a bar, a point, a line or a span',

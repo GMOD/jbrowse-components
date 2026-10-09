@@ -149,6 +149,8 @@ export type {
   AlignmentsColorSetting,
   DeclaredReadLabels,
 } from './shared/alignmentsColor.ts'
+// `ColorBy` and `ReadColorBy` stay: the `colorBy` getter returns the runtime
+// form, and a display composing this model has to name it in its declarations.
 export type {
   ArcColorField,
   CategoryFilter,

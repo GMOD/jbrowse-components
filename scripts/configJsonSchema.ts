@@ -850,6 +850,9 @@ export function buildConfigJsonSchema(deps: Deps): JsonSchema {
     let shared = sharedByContent.get(content)
     if (!shared) {
       shared = base
+      // Two schemas of one name that differ get numbered defs (`Scales2`,
+      // `ValueScale3`); naming them by their owner waits on a reader who
+      // trips on one.
       for (let i = 2; shared in defs; i++) {
         shared = `${base}${i}`
       }

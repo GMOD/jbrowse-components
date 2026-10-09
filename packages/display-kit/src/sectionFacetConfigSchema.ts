@@ -8,7 +8,8 @@ import { facetConfigSchema } from './facetConfigSchema.ts'
  * The facet of a display that stacks labelled sections, each of which a
  * reader can hide from its chip: Facet's `field` and `domain`, and the
  * sections hidden. A hide-set rather than a show-set, so a section a later
- * region discovers shows; a new `field` starts with none hidden.
+ * region discovers shows; a new `field` starts with none hidden. Only here,
+ * since the row displays' Facet reads no hidden band.
  *
  * #example
  * ```js
