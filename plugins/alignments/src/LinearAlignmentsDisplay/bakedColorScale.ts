@@ -113,14 +113,16 @@ function linearScale(
 function thresholdScale({
   domain = [],
   range,
+  descending,
 }: ThresholdRef): ThresholdBakedScale {
   const cuts = thresholdCuts(domain)
   const colors = thresholdPalette(cuts.length + 1, range)
   const labels = thresholdLabels(cuts)
+  const bins = colors.map((color, i) => ({ color, label: labels[i]! }))
   return {
     kind: 'threshold',
     declared: true,
-    bins: colors.map((color, i) => ({ color, label: labels[i]! })),
+    bins: descending ? bins.toReversed() : bins,
     color: value =>
       value === '' ? undefined : colors[thresholdIndex(value, cuts)],
   }

@@ -7,6 +7,7 @@ import {
   colorDomainQuantileSlot,
   colorDomainEndsSlots,
   colorDomainSlot,
+  colorDescendingSlot,
   colorLabelsSlot,
   colorRampSlots,
   colorRangeSlot,
@@ -132,16 +133,7 @@ export const markColorSchema = ConfigurationSchema(
       defaultValue: [],
       description: 'values the key lists; empty lists every value met',
     },
-    /**
-     * #slot descending
-     * A threshold key lists its intervals from the highest down, the way a
-     * vertical stepped legend stands.
-     */
-    descending: {
-      type: 'boolean',
-      defaultValue: false,
-      description: 'threshold key lists the highest interval first',
-    },
+    ...colorDescendingSlot,
     /**
      * #slot missingLabel
      * What the key calls a feature with nothing in `field`; unset is

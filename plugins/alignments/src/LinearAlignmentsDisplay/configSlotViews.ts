@@ -208,6 +208,7 @@ export function configSlotViews(self: ConfigSlotSelf) {
         ...this.colorSetting,
         labels: this.colorLabels,
         title: this.colorTitle,
+        descending: getConf(self, ['color', 'descending']),
       }
     },
     /**

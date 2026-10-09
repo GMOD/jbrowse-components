@@ -330,6 +330,7 @@ export const ALIGNMENTS_FIELD_PRESETS = {
     scheme: 'cividis',
     labels: MAPQ_BIN_LABELS,
     title: 'Mapping quality',
+    descending: true,
   },
   '*': { scale: 'categorical' },
 } satisfies FieldPresets

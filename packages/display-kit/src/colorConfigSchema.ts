@@ -92,6 +92,7 @@ export interface ColorSetting {
   domainQuantile?: number
   labels?: readonly string[]
   title?: string | undefined
+  descending?: boolean
 }
 
 const PAINTED_SLOTS = [
@@ -261,6 +262,18 @@ export const colorLabelsSlot = {
     defaultValue: [],
     description:
       'what the key names each domain value, one each in order, or under threshold each interval from the lowest; one past the list keeps its own name',
+  },
+} as const
+
+/**
+ * A threshold key's direction, the way a vertical stepped legend stands. A
+ * color object declares it only where its display's key reads it.
+ */
+export const colorDescendingSlot = {
+  descending: {
+    type: 'maybeBoolean',
+    description:
+      "threshold key lists the highest interval first; unset follows the field's preset, else the lowest first",
   },
 } as const
 
@@ -508,6 +521,7 @@ export function colorEncodingOf<V extends string | undefined>(
         domain: [...color.domain],
         range: thresholdRange(color),
         labels: listed(color.labels ?? []),
+        descending: color.descending,
       }
     case 'linear':
     case 'log':
@@ -545,8 +559,8 @@ export function matrixColorEncodingOf(
 }
 
 /**
- * What a worker paints from: the encoding less the key's own names, so
- * renaming a key entry refetches nothing.
+ * What a worker paints from: the encoding less the key's own names and
+ * direction, so renaming or turning a key round refetches nothing.
  */
 export function paintedColorEncoding(
   encoding: ColorEncoding | undefined,
@@ -554,7 +568,11 @@ export function paintedColorEncoding(
   if (typeof encoding !== 'object' || !('labels' in encoding)) {
     return encoding
   }
-  const { labels: _labels, ...painted } = encoding
+  const {
+    labels: _labels,
+    descending: _descending,
+    ...painted
+  } = encoding as typeof encoding & { descending?: boolean }
   return painted
 }
 

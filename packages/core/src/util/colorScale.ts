@@ -43,6 +43,8 @@ export interface FieldPreset<S extends string = ColorScaleName> {
   domainMid?: number
   scheme?: string
   reverse?: boolean
+  /** A threshold key's direction: its highest interval first. */
+  descending?: boolean
 }
 
 /** Each field's preset, `*` for any other field. */

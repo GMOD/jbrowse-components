@@ -51,6 +51,8 @@ export interface ThresholdRef {
   range?: string[]
   /** What the key names each bin, one each from the lowest. */
   labels?: string[]
+  /** The key lists the bins from the highest. */
+  descending?: boolean
 }
 
 /**

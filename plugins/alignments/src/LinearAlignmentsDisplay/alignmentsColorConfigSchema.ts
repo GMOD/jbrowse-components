@@ -4,6 +4,7 @@ import {
   colorChannelSlots,
   colorDomainQuantileSlot,
   colorDomainEndsSlots,
+  colorDescendingSlot,
   colorDomainSlot,
   colorRampSlots,
   colorRangeSlot,
@@ -104,6 +105,7 @@ export const alignmentsColorConfigSchema = ConfigurationSchema(
         "what the key names each value domain names, in order, or with no domain a preset field's levels in their own order, a threshold scale's bins from the lowest; an empty or missing entry keeps its own name",
     },
     ...colorTitleSlot,
+    ...colorDescendingSlot,
   },
   colorChannelOptions('color', ALIGNMENTS_FIELD_PRESETS),
 )

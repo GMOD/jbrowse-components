@@ -143,3 +143,33 @@ test('MAPQ 255 leaves the ramp for its own flat bucket', () => {
   expect(fillColor).toBe(0)
   expect(canvasRgb(255)).toEqual([128, 128, 128])
 })
+
+// The facet stacks the confident reads first, and the key lists its bins the
+// same way unless the color turns it round.
+test("the key lists MAPQ's confident bin first, as its facet stacks it", () => {
+  const binColors = (descending?: boolean) => {
+    const scale = bakedColorScale(
+      { type: 'mappingQuality' },
+      alignmentsColorEncoding({
+        value: undefined,
+        field: 'mapq',
+        scale: undefined,
+        scheme: undefined,
+        reverse: false,
+        domainMin: undefined,
+        domainMax: undefined,
+        domainMid: undefined,
+        domain: [],
+        range: [],
+        descending,
+      }),
+      undefined,
+      undefined,
+    )
+    return scale.kind === 'threshold'
+      ? scale.bins.map(bin => cssRgb(bin.color))
+      : []
+  }
+  expect(binColors()).toEqual(cividis(4).toReversed())
+  expect(binColors(false)).toEqual(cividis(4))
+})
