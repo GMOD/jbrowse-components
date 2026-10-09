@@ -18,10 +18,7 @@ import LegendMixin, {
 import MultiRegionDisplayMixin from '@jbrowse/display-kit/MultiRegionDisplayMixin'
 import StoredHoverMixin from '@jbrowse/display-kit/StoredHoverMixin'
 import TrackHeightMixin from '@jbrowse/display-kit/TrackHeightMixin'
-import {
-  colorSettingOf,
-  colorSnapshotOf,
-} from '@jbrowse/display-kit/colorConfigSchema'
+import { colorSettingOf } from '@jbrowse/display-kit/colorConfigSchema'
 import { fetchAllRegions } from '@jbrowse/display-kit/fetchEachRegion'
 import {
   editPlotMenuItems,
@@ -814,25 +811,6 @@ export default function stateModelFactory(
         })
       },
     }))
-    .views(self => {
-      const superPlotProblems = self.plotProblems
-      return {
-        /**
-         * #method
-         * The base display's problems, the color judged as it paints, so a
-         * `color` naming no field is read as the `score` threshold it draws.
-         */
-        plotProblems(draft: Plot): string[] {
-          const { color } = self.liftPlot(draft)
-          return [
-            ...wiggleColorNotices(colorSnapshotOf(color)),
-            ...superPlotProblems(draft).filter(
-              line => !line.startsWith('color.'),
-            ),
-          ]
-        },
-      }
-    })
     .views(self => ({
       trackMenuItems() {
         const showItems: MenuItem[] = [

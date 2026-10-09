@@ -127,6 +127,11 @@ export interface ConfigurationSchemaOptions<
    * `scale` is unset, and the members that scale reads while unwritten.
    */
   fieldPresets?: Readonly<Record<string, { readonly scale: string }>>
+  /**
+   * The field a color object naming neither a field nor a constant maps
+   * (`withImpliedField`).
+   */
+  impliedField?: string
   preProcessSnapshot?: (
     snapshot: Record<string, unknown>,
   ) => Record<string, unknown>

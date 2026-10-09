@@ -12,6 +12,7 @@ import {
   noticeLines,
   scaleEndProblems,
   scaleEndsOf,
+  withImpliedField,
 } from '../util/colorScale.ts'
 import { readConfObject } from './readConfObject.ts'
 import { getConfigurationSchemaMetadata } from './schemaRegistry.ts'
@@ -212,8 +213,13 @@ function subConfOf(conf: AnyConfigurationModel, key: string) {
   return isStateTreeNode(member) ? (member as AnyConfigurationModel) : undefined
 }
 
+// `value` raw, as `colorSettingOf` reads it: a `jexl:` constant is a constant
+// to judge, never a callback to evaluate here.
 function membersOf(node: AnyConfigurationModel) {
-  return (name: string): unknown => readConfObject(node, name)
+  return (name: string): unknown =>
+    name === 'value'
+      ? (node as unknown as Record<string, unknown>).value
+      : readConfObject(node, name)
 }
 
 /**
@@ -224,15 +230,22 @@ function membersOf(node: AnyConfigurationModel) {
 export function schemaPlotProblems(lifted: AnyConfigurationModel): string[] {
   return plotKeysOf(lifted).flatMap(key => {
     const node = subConfOf(lifted, key)
-    const presets = node
-      ? getConfigurationSchemaMetadata(node)?.options.fieldPresets
+    const options = node
+      ? getConfigurationSchemaMetadata(node)?.options
       : undefined
+    const presets = options?.fieldPresets
     const y = key === 'scales' && node ? subConfOf(node, 'y') : undefined
     return [
       ...(node && presets
         ? noticeLines(
             key,
-            colorProblems(colorSlotsOf(membersOf(node)), presets),
+            colorProblems(
+              withImpliedField(
+                colorSlotsOf(membersOf(node)),
+                options.impliedField,
+              ),
+              presets,
+            ),
           )
         : []),
       ...(y

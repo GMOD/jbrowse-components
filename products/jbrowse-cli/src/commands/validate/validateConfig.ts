@@ -25,6 +25,7 @@ import {
   colorSlotsOf,
   scaleEndProblems,
   scaleEndsOf,
+  withImpliedField,
 } from './markRules/colorScale.ts'
 import { markProblems } from './markRules/markProblems.ts'
 import {
@@ -638,10 +639,13 @@ function checkScaleSlots(
     const members = declaredMembers(written, slot)
     if (slot.fieldPresets) {
       for (const problem of colorProblems(
-        colorSlotsOf(name =>
-          name === 'field'
-            ? (members.field ?? slot.fieldDefault)
-            : members[name],
+        withImpliedField(
+          colorSlotsOf(name =>
+            name === 'field'
+              ? (members.field ?? slot.fieldDefault)
+              : members[name],
+          ),
+          slot.impliedField,
         ),
         slot.fieldPresets,
       )) {

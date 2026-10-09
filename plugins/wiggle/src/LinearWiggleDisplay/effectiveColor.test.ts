@@ -27,6 +27,30 @@ test('a row per source defaults to the pos/neg pair about the origin', () => {
   })
 })
 
+// A bare color object is score, so a scale written without the field paints
+// score through it, where the pair used to swallow it.
+test('a bare color writing a scale paints score through it', () => {
+  const display = makeDisplay(['a'], true)
+  display.applyPlot({ color: { scale: 'linear', scheme: 'viridis' } })
+  expect(display.colorEncoding).toMatchObject({
+    field: 'score',
+    scale: 'linear',
+    scheme: 'viridis',
+  })
+})
+
+// The display judges the color as `jbrowse validate` does, through the
+// schema's implied field, and a written constant is not score.
+test("the plot's notices read a bare color as score and a constant as no field", () => {
+  const display = makeDisplay(['a'], true)
+  expect(display.plotProblems({ color: { domain: ['2', '1'] } })).toEqual([
+    expect.stringMatching(/^color\.domain: threshold cuts/),
+  ])
+  expect(
+    display.plotProblems({ color: { value: 'red', domain: ['2', '1'] } }),
+  ).toEqual([])
+})
+
 test('one source in a shared plot keeps the pair, several take a color each', () => {
   expect(makeDisplay(['a'], false).rowPaletteDeals).toBe(false)
   expect(makeDisplay(['a', 'b'], false).rowPaletteDeals).toBe(true)

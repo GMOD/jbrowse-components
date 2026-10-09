@@ -166,6 +166,7 @@ function slotsOf(type) {
       fieldDefault: subOptions?.fieldPresets
         ? subMeta.definition?.field?.defaultValue || undefined
         : undefined,
+      impliedField: subOptions?.impliedField,
       liftsString: lifts.string || undefined,
       liftsNumbers: lifts.numbers || undefined,
       liftsUri: lifts.uri || undefined,

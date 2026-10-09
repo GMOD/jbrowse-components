@@ -3,13 +3,16 @@ import {
   NO_CATEGORY_COLOR,
 } from '@jbrowse/core/util/color'
 import { rampLutOf } from '@jbrowse/core/util/colorRamp'
-import { colorNotices } from '@jbrowse/core/util/colorScale'
+import { colorNotices, withImpliedField } from '@jbrowse/core/util/colorScale'
 import { thresholdCuts } from '@jbrowse/core/util/thresholdScale'
 import { colorEncodingOf } from '@jbrowse/display-kit/colorConfigSchema'
 import { MAX_WIGGLE_CUTS } from '@jbrowse/wiggle-core'
 
 import { WIGGLE_NEG_COLOR_DEFAULT, WIGGLE_POS_COLOR_DEFAULT } from '../util.ts'
-import { WIGGLE_FIELD_PRESETS } from './wiggleColorConfigSchema.ts'
+import {
+  WIGGLE_FIELD_PRESETS,
+  WIGGLE_IMPLIED_FIELD,
+} from './wiggleColorConfigSchema.ts'
 
 import type { ColorSetting } from '@jbrowse/display-kit/colorConfigSchema'
 
@@ -47,12 +50,11 @@ export function wiggleColorEncoding(color: ColorSetting) {
 
 /**
  * The `color` object as it paints: naming neither `value` nor `field`, it is
- * the pos/neg pair, `score` through a threshold at its cuts or the `origin`.
+ * `score`, the pos/neg pair through a threshold at its cuts or the `origin`
+ * unless it writes another scale.
  */
 export function paintedWiggleColor<C extends ColorSetting>(color: C): C {
-  return color.value !== undefined || color.field
-    ? color
-    : { ...color, field: 'score', scale: 'threshold' }
+  return withImpliedField(color, WIGGLE_IMPLIED_FIELD)
 }
 
 /** What the `color` object's slots say together that it cannot paint as written. */

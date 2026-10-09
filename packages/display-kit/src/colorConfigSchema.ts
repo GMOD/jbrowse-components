@@ -446,15 +446,21 @@ function refuseFieldAsConstant(
   return snap
 }
 
-/** A color object's options: a bare string is its `value`, and an undeclared key is refused. */
+/**
+ * A color object's options: a bare string is its `value`, an undeclared key
+ * is refused, and `impliedField` is the field the object maps while it names
+ * neither a field nor a constant.
+ */
 export function colorChannelOptions(
   name: string,
   fieldPresets: FieldPresets = CATEGORICAL_FIELD_PRESETS,
+  { impliedField }: { impliedField?: string } = {},
 ) {
   return {
     shorthand: 'value',
     closed: true,
     fieldPresets,
+    ...(impliedField ? { impliedField } : {}),
     preProcessSnapshot: (snap: Record<string, unknown> | undefined) =>
       normalizeChannel(refuseFieldAsConstant(snap, name), name),
   }

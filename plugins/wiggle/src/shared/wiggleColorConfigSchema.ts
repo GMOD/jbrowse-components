@@ -17,6 +17,9 @@ const WIGGLE_COLOR_FIELDS = ['score'] as const
 /** A ramp here runs across the y domain through the y scale's own type, so no color scale is `log`. */
 const WIGGLE_COLOR_SCALES = ['none', 'linear', 'threshold'] as const
 
+/** The field a color naming neither a field nor a constant maps: the bicolor pair is `score` cut at the origin. */
+export const WIGGLE_IMPLIED_FIELD = 'score'
+
 /** `score` is the bicolor cut while `scale` is unset. */
 export const WIGGLE_FIELD_PRESETS = {
   '*': { scale: 'threshold' },
@@ -69,7 +72,8 @@ export const wiggleColorSchema = ConfigurationSchema(
     /**
      * #slot field
      * `score`, the value each bar carries. Unset, the color paints
-     * `value`.
+     * `value`, or `score` while `value` is unset too, which `jbrowse
+     * validate` reads alike.
      */
     field: {
       type: 'maybeStringEnum',
@@ -106,5 +110,7 @@ export const wiggleColorSchema = ConfigurationSchema(
     ...colorLabelsSlot,
     ...colorTitleSlot,
   },
-  colorChannelOptions('color', WIGGLE_FIELD_PRESETS),
+  colorChannelOptions('color', WIGGLE_FIELD_PRESETS, {
+    impliedField: WIGGLE_IMPLIED_FIELD,
+  }),
 )

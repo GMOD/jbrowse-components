@@ -242,6 +242,21 @@ export function withPreset<C extends { field?: string; scale?: string }>(
 }
 
 /**
+ * A color object with `implied` as its field while it names neither a field
+ * nor a constant, for a display whose bare color object still maps one (a
+ * quantitative display's `score`), so the display and `jbrowse validate`
+ * read it alike. A written `value` keeps the object a constant.
+ */
+export function withImpliedField<C extends { value?: unknown; field?: string }>(
+  color: C,
+  implied: string | undefined,
+): C {
+  return implied && !color.field && color.value === undefined
+    ? { ...color, field: implied }
+    : color
+}
+
+/**
  * The scale a color object paints through: `none` while no `field` is
  * named, else its own `scale`, or `fieldScale` where that is unset.
  */
@@ -378,6 +393,7 @@ export function scaleEndsOf(member: (name: string) => unknown): ScaleEnds {
 export function colorSlotsOf(member: (name: string) => unknown): ColorSlots {
   return {
     ...scaleEndsOf(member),
+    value: stringOf(member('value')),
     field: stringOf(member('field')) ?? '',
     scale: stringOf(member('scale')),
     domain: listOf(member('domain')),

@@ -516,6 +516,22 @@ describe('validateConfig', () => {
       ).toEqual([`threshold-cuts ${where}.domain`])
     })
 
+    // The pos/neg pair is score cut at the origin, so cuts written with no
+    // field are that threshold's, as the display reads them; a written
+    // constant keeps the object a constant.
+    it('reads a bare wiggle color as the score threshold it paints', () => {
+      const wiggle = (color: Record<string, unknown>) =>
+        found({
+          type: 'QuantitativeTrack',
+          adapter: { type: 'BigWigAdapter', uri: 'x.bw' },
+          ...display('LinearWiggleDisplay', color),
+        })
+      expect(wiggle({ domain: ['2', '1'] })).toEqual([
+        `threshold-cuts ${where}.domain`,
+      ])
+      expect(wiggle({ value: 'red', domain: ['2', '1'] })).toEqual([])
+    })
+
     it("checks a feature track's threshold color", () => {
       const track = {
         type: 'FeatureTrack',
