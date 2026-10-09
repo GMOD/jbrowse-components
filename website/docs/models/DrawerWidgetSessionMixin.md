@@ -23,8 +23,8 @@ Auto-generated from the @jbrowse/mobx-state-tree model in the source — see the
 <!-- prettier-ignore -->
 | Member | Description |
 | --- | --- |
-| <span id="volatile-poppedout">**poppedOut**</span><br><code>false</code> | true while the visible widget is shown in a modal dialog instead of the drawer. Volatile because a restored session that opened straight into a modal, with no drawer behind it, is disorienting |
-| <span id="volatile-modalwidgets">**modalWidgets**</span><br><code>false</code> | set by a host with no room for a drawer column beside its views (a phone), so every widget shows in a modal instead |
+| <span id="volatile-poppedout">**poppedOut**</span><br><code>boolean</code> | true while the visible widget is shown in a modal dialog instead of the drawer. Volatile because a restored session that opened straight into a modal, with no drawer behind it, is disorienting |
+| <span id="volatile-modalwidgets">**modalWidgets**</span><br><code>boolean</code> | set by a host with no room for a drawer column beside its views (a phone), so every widget shows in a modal instead |
 
 ## Getters
 

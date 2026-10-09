@@ -88,7 +88,7 @@ Each section ends with the members a composed model contributes, linked to the p
 | <span id="volatile-coarsebpperpx">**coarseBpPerPx**</span><br><code>number</code> |  |
 | <span id="volatile-leftoffset">**leftOffset**</span><br><code>BpOffset &#124; undefined</code> |  |
 | <span id="volatile-rightoffset">**rightOffset**</span><br><code>BpOffset &#124; undefined</code> |  |
-| <span id="volatile-isscalebarrefnamemenuopen">**isScalebarRefNameMenuOpen**</span><br><code>false</code> |  |
+| <span id="volatile-isscalebarrefnamemenuopen">**isScalebarRefNameMenuOpen**</span><br><code>boolean</code> |  |
 | <span id="volatile-volatileguides">**volatileGuides**</span><br><code>VolatileGuide[]</code> | temporary vertical guides that can be set by displays (e.g., LD display hover) |
 
 <span data-pagefind-ignore>From [BaseViewModel](../baseviewmodel): <span id="volatile-width">[`width`](../baseviewmodel#volatile-width)</span>, <span id="volatile-bodymounted">[`bodyMounted`](../baseviewmodel#volatile-bodymounted)</span></span>

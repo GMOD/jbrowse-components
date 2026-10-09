@@ -25,7 +25,7 @@ Each section ends with the members a composed model contributes, linked to the p
 | Member | Description |
 | --- | --- |
 | <span id="volatile-version">**version**</span><br><code>string</code> |  |
-| <span id="volatile-pluginsupdated">**pluginsUpdated**</span><br><code>false</code> |  |
+| <span id="volatile-pluginsupdated">**pluginsUpdated**</span><br><code>boolean</code> |  |
 | <span id="volatile-pluginsupdatedcallback">**pluginsUpdatedCallback**</span><br><code>((args: PluginsUpdate) =&gt; void) &#124; undefined</code> | host hook for PluginsUpdated, set from createViewState's `onPluginsUpdated`. Undefined means the host didn't ask to handle it. |
 
 <span data-pagefind-ignore>From [BaseRootModel](../baserootmodel): <span id="volatile-rpcmanager">[`rpcManager`](../baserootmodel#volatile-rpcmanager)</span>, <span id="volatile-adminmode">[`adminMode`](../baserootmodel#volatile-adminmode)</span>, <span id="volatile-error">[`error`](../baserootmodel#volatile-error)</span>, <span id="volatile-textsearchmanager">[`textSearchManager`](../baserootmodel#volatile-textsearchmanager)</span>, <span id="volatile-pluginmanager">[`pluginManager`](../baserootmodel#volatile-pluginmanager)</span></span>

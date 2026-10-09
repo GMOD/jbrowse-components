@@ -34,7 +34,7 @@ itself. Composed after `MultiRegionDisplayMixin`, so its `displayPhase` and
 | --- | --- |
 | <span id="volatile-coarsetier">**coarseTier**</span><br><code>ObservableMap&lt;number, P&gt;</code> | The coarse payload by `displayedRegionIndex`, over the regions the last read was issued for. Cleared on chromosome navigation. |
 | <span id="volatile-coarsetierread">**coarseTierRead**</span><br><code>CoarseTierRead &#124; undefined</code> | What the held payloads were read over — the buffered regions and the read key — so a pan or a zoom inside them re-reads nothing. Undefined until a read lands. |
-| <span id="volatile-coarsetierloading">**coarseTierLoading**</span><br><code>false</code> |  |
+| <span id="volatile-coarsetierloading">**coarseTierLoading**</span><br><code>boolean</code> |  |
 
 ## Getters
 

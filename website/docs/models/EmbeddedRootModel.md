@@ -32,7 +32,7 @@ Each section ends with the members a composed model contributes, linked to the p
 <!-- prettier-ignore -->
 | Member | Description |
 | --- | --- |
-| <span id="volatile-adminmode">**adminMode**</span><br><code>false</code> |  |
+| <span id="volatile-adminmode">**adminMode**</span><br><code>boolean</code> |  |
 | <span id="volatile-version">**version**</span><br><code>string</code> |  |
 | <span id="volatile-rpcmanager">**rpcManager**</span><br><code>RpcManager</code> |  |
 | <span id="volatile-textsearchmanager">**textSearchManager**</span><br><code>TextSearchManager</code> |  |

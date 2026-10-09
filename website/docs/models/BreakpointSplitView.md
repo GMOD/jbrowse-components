@@ -51,10 +51,10 @@ Each section ends with the members a composed model contributes, linked to the p
 | Member | Description |
 | --- | --- |
 | <span id="volatile-width">**width**</span><br><code>number</code> |  |
-| <span id="volatile-matchedtrackfeatures">**matchedTrackFeatures**</span><br><code>{}</code> |  |
+| <span id="volatile-matchedtrackfeatures">**matchedTrackFeatures**</span><br><code>Record&lt;string, Feature[][]&gt;</code> |  |
 | <span id="volatile-reloadcounter">**reloadCounter**</span><br><code>number</code> | The pure "go again" signal the shared fetch skeleton reads above every gate, bumped by `reload()`: after a failure every other input of the overlay fetch is unchanged, so nothing else can rewake it. The Retry on the failure notification is what spends it. |
 | <span id="volatile-fetchstatus">**fetchStatus**</span><br><code>StatusChannel</code> | What the overlay-feature fetch is doing, for the corner chip. A `StatusChannel` rather than the `statusMessage`/`statusProgress`/ `setStatusMessage` trio a display declares: this is a view with one operation to narrate, and the trio is a status vocabulary it has no other use for. |
-| <span id="volatile-hoveredoverlay">**hoveredOverlay**</span><br><code>undefined</code> | Which overlay curve the pointer is on, and the reason it lives here rather than in each overlay's React state: a hover the viewport can invalidate needs one place to be cleared from, and `overlayTransformKey` and the `afterAttach` reaction clear it here. |
+| <span id="volatile-hoveredoverlay">**hoveredOverlay**</span><br><code>OverlayHover &#124; undefined</code> | Which overlay curve the pointer is on, and the reason it lives here rather than in each overlay's React state: a hover the viewport can invalidate needs one place to be cleared from, and `overlayTransformKey` and the `afterAttach` reaction clear it here. |
 
 <span data-pagefind-ignore>From [BaseViewModel](../baseviewmodel): <span id="volatile-bodymounted">[`bodyMounted`](../baseviewmodel#volatile-bodymounted)</span></span>
 

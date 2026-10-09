@@ -33,7 +33,7 @@ config edit and survives its track being closed.
 <!-- prettier-ignore -->
 | Member | Description |
 | --- | --- |
-| <span id="volatile-sequencehoverposition">**sequenceHoverPosition**</span><br><code>undefined</code> | genomic base currently hovered in this widget's sequence panel, read by the LGV crosshair overlay |
+| <span id="volatile-sequencehoverposition">**sequenceHoverPosition**</span><br><code>SequenceHoverPosition &#124; undefined</code> | genomic base currently hovered in this widget's sequence panel, read by the LGV crosshair overlay |
 
 ## Getters
 

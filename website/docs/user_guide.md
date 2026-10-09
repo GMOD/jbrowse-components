@@ -152,6 +152,7 @@ How to drive JBrowse once it is running. New here? Start with the
 
 - [](/docs/tutorials/gene_prediction_review)
 - [](/docs/tutorials/gene_density)
+- [](/docs/tutorials/organelle_map)
 
 ### Grammar of graphics
 

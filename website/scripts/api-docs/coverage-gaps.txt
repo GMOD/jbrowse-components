@@ -41,7 +41,7 @@ Dotplot1DView
 LinearSyntenyViewHelper
 TimeTraveller
 
-# model members with no description (1361)
+# model members with no description (1362)
 # fix: write a sentence under the member’s #property/#volatile/#getter/#method/#action tag
 AddTrackModel.adapterHint
 AddTrackModel.altAssemblyName
@@ -1336,6 +1336,7 @@ TrackHeightMixin.height
 TrackHeightMixin.resizeHeight
 TrackHeightMixin.scrollTop
 TrackHeightMixin.setHeight
+TrackHeightMixin.setHostHeight
 TrackHeightMixin.setScrollTop
 TrackMenuSessionMixin.getTrackActionMenuItems
 TracksManagerSessionMixin.deleteTrackConf

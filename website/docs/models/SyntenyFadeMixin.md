@@ -25,7 +25,7 @@ circular view both compose it; a view supplies `autoFadeWidthPx`.
 <!-- prettier-ignore -->
 | Member | Description |
 | --- | --- |
-| <span id="volatile-fadethinlatch">**fadeThinLatch**</span><br><code>false</code> | Whether the 'auto' thin-fade is latched on (see `fadeThinAlignments`). |
+| <span id="volatile-fadethinlatch">**fadeThinLatch**</span><br><code>boolean</code> | Whether the 'auto' thin-fade is latched on (see `fadeThinAlignments`). |
 
 ## Getters
 

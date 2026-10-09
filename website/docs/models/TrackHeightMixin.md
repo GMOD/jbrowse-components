@@ -23,12 +23,15 @@ passes itself to `ScrollChrome` and the wheel hooks.
 | Member | Description |
 | --- | --- |
 | <span id="volatile-scrolltop">**scrollTop**</span><br><code>number</code> |  |
+| <span id="volatile-hostheight">**hostHeight**</span><br><code>number &#124; undefined</code> | The height a host draws the display at where it is not the slot's: a ring of the circular view sets its band. Never persisted. |
 
 ## Getters
 
 <!-- prettier-ignore -->
 | Member | Description |
 | --- | --- |
+| <span id="getter-configuredheight">**configuredHeight**</span><br><code>number</code> | The height the `height` slot asks for, which a drag or a session sets. |
+| <span id="getter-allottedheight">**allottedHeight**</span><br><code>number</code> | The height the display lays itself out in: its host's where one sets it, else the slot's. |
 | <span id="getter-height">**height**</span><br><code>number</code> |  |
 | <span id="getter-resizing">**resizing**</span><br><code>boolean</code> | True for the duration of a height drag on this track, whichever handle is running it. A display whose row geometry is a function of the track height restretches every row per animation frame, and can use this to sit an expensive per-frame layer out of the drag (MAF's dense per-base letter overlay is a Canvas2D pass that scales with rows x columns).<br><br>The flag itself is the track's (`BaseTrackModel`), so the view brackets a drag without needing the active display to have opted into this mixin. This getter reads it so that a display that did opt in has `self.resizing`. |
 | <span id="getter-scrollcontentheight">**scrollContentHeight**</span><br><code>number</code> | Overridable hook: the height of the content that scrolls, in px. |
@@ -41,6 +44,7 @@ passes itself to `ScrollChrome` and the wheel hooks.
 | Member | Description |
 | --- | --- |
 | <span id="action-setscrolltop">**setScrollTop**</span><br><code>(scrollTop: number) =&gt; void</code> |  |
+| <span id="action-sethostheight">**setHostHeight**</span><br><code>(height: number &#124; undefined) =&gt; void</code> |  |
 | <span id="action-setheight">**setHeight**</span><br><code>(displayHeight: number) =&gt; number</code> |  |
 | <span id="action-resizeheight">**resizeHeight**</span><br><code>(distance: number) =&gt; number</code> |  |
 | <span id="action-expandtocontentheight">**expandToContentHeight**</span><br><code>() =&gt; number</code> | Grow the track by the content it is hiding, for the resize handle's double click. Goes through `resizeHeight` so grow mode's override leaves grow first. |

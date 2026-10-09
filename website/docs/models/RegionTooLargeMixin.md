@@ -22,7 +22,7 @@ the numbers behind them: agent-docs/reference/REGION_TOO_LARGE.md.
 <!-- prettier-ignore -->
 | Member | Description |
 | --- | --- |
-| <span id="volatile-forceloadtrack">**forceLoadTrack**</span><br><code>false</code> | The force-load button's track-wide approval. Volatile so it never reaches a saved session; the `forceLoad` config slot is the durable form. |
+| <span id="volatile-forceloadtrack">**forceLoadTrack**</span><br><code>boolean</code> | The force-load button's track-wide approval. Volatile so it never reaches a saved session; the `forceLoad` config slot is the durable form. |
 | <span id="volatile-byteestimate">**byteEstimate**</span><br><code>ByteEstimate &#124; undefined</code> | The last byte measurement: bytes, the span they were taken at, and whether zooming has been shown not to shrink them. Survives `clearAllRpcData`; dropped on chromosome navigation and on a tier swap. |
 | <span id="volatile-gatemeasuredviewportkey">**gateMeasuredViewportKey**</span><br><code>unknown</code> | The `gateViewport` key the gate last asked the adapter about, on either axis — the viewport AND the settings it asked under. Separate from `byteEstimate` because a density refusal measures no bytes. |
 

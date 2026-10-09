@@ -21,7 +21,7 @@ Auto-generated from the @jbrowse/mobx-state-tree model in the source — see the
 <!-- prettier-ignore -->
 | Member | Description |
 | --- | --- |
-| <span id="volatile-loading">**loading**</span><br><code>false</code> | true while `connect()` is fetching this connection's tracks; drives a loading affordance in the track selector. Distinct from an empty `tracks` array, which is also the state of a connection that loaded successfully but has no tracks. |
+| <span id="volatile-loading">**loading**</span><br><code>boolean</code> | true while `connect()` is fetching this connection's tracks; drives a loading affordance in the track selector. Distinct from an empty `tracks` array, which is also the state of a connection that loaded successfully but has no tracks. |
 
 ## Getters
 

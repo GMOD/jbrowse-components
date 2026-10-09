@@ -24,8 +24,8 @@ changes and exposes canUndo/canRedo with undo/redo actions.
 | Member | Description |
 | --- | --- |
 | <span id="volatile-history">**history**</span><br><code>unknown[]</code> |  |
-| <span id="volatile-nottrackingundo">**notTrackingUndo**</span><br><code>false</code> |  |
-| <span id="volatile-haspendingrecord">**hasPendingRecord**</span><br><code>false</code> |  |
+| <span id="volatile-nottrackingundo">**notTrackingUndo**</span><br><code>boolean</code> |  |
+| <span id="volatile-haspendingrecord">**hasPendingRecord**</span><br><code>boolean</code> |  |
 
 ## Getters
 

@@ -25,7 +25,7 @@ factory function for the Base-level root model shared by all products
 | Member | Description |
 | --- | --- |
 | <span id="volatile-rpcmanager">**rpcManager**</span><br><code>RpcManager</code> |  |
-| <span id="volatile-adminmode">**adminMode**</span><br><code>false</code> |  |
+| <span id="volatile-adminmode">**adminMode**</span><br><code>boolean</code> |  |
 | <span id="volatile-error">**error**</span><br><code>unknown</code> |  |
 | <span id="volatile-textsearchmanager">**textSearchManager**</span><br><code>TextSearchManager</code> |  |
 | <span id="volatile-pluginmanager">**pluginManager**</span><br><code>PluginManager</code> |  |

@@ -32,7 +32,7 @@ Each section ends with the members a composed model contributes, linked to the p
 | Member | Description |
 | --- | --- |
 | <span id="volatile-version">**version**</span><br><code>string</code> |  |
-| <span id="volatile-adminmode">**adminMode**</span><br><code>true</code> |  |
+| <span id="volatile-adminmode">**adminMode**</span><br><code>boolean</code> |  |
 | <span id="volatile-detachdisposers">**detachDisposers**</span><br><code>(() =&gt; void)[]</code> | What has to stop the moment the Loader lets go of this root — here, the autosave autorun, which writes to disk over IPC.<br><br>Not `addDisposer`, which fires only on destroy, and the destroy is now a task later than the swap. An autosave left running in that gap writes the *outgoing* session to `sessionPath`, which the replacement has already been loaded from. See `detach`. |
 | <span id="volatile-opennewsessioncallback">**openNewSessionCallback**</span><br><code>(_path: string) =&gt; Promise&lt;void&gt;</code> |  |
 | <span id="volatile-openlinkcallback">**openLinkCallback**</span><br><code>(_link: string) =&gt; Promise&lt;void&gt;</code> |  |
