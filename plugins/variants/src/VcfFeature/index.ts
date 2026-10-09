@@ -1,5 +1,6 @@
 import { svClassOf } from '@jbrowse/core/util/svAlt'
 
+import { getVariantImpact } from '../shared/variantConsequence.ts'
 import { getEnd, getSOTermAndDescription } from './util.ts'
 
 import type VCFParser from '@gmod/vcf'
@@ -38,6 +39,8 @@ export default class VCFFeature implements Feature {
 
   private _svType?: string
 
+  private _impact?: string
+
   constructor(args: { variant: Variant; parser: VCFParser; id: string }) {
     this.variant = args.variant
     this.parser = args.parser
@@ -47,7 +50,7 @@ export default class VCFFeature implements Feature {
 
   get(name: 'refName'): string
   get(
-    name: 'name' | 'type' | 'id' | 'source' | 'REF' | 'svType',
+    name: 'name' | 'type' | 'id' | 'source' | 'REF' | 'svType' | 'impact',
   ): string | undefined
   get(name: 'start' | 'end'): number
   get(name: 'phase'): 0 | 1 | 2 | undefined
@@ -67,13 +70,20 @@ export default class VCFFeature implements Feature {
         ? this.variant.GENOTYPES()
         : field === 'svType'
           ? this.svType()
-          : (this.data[field as keyof typeof this.data] ??
-            this.variant[field as keyof typeof this.variant])
+          : field === 'impact'
+            ? this.impact()
+            : (this.data[field as keyof typeof this.data] ??
+              this.variant[field as keyof typeof this.variant])
   }
 
   private svType() {
     this._svType ??= svClassOf(this)
     return this._svType || undefined
+  }
+
+  private impact() {
+    this._impact ??= getVariantImpact(this)
+    return this._impact || undefined
   }
   parent() {
     return undefined

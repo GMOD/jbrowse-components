@@ -240,6 +240,17 @@ test('multiple insertions of varying lengths', () => {
   expect(f.get('description')).toMatchSnapshot()
 })
 
+test('impact is the most severe SnpEff or VEP tier, read on demand', () => {
+  const annotated = createFeature(
+    'chr1\t100\t.\tG\tA\t29\tPASS\tANN=A|missense_variant|MODERATE|GENE,A|stop_gained|HIGH|GENE',
+  )
+  const plain = createFeature('chr1\t100\t.\tG\tA\t29\tPASS\t.')
+
+  expect(annotated.get('impact')).toBe('HIGH')
+  expect(plain.get('impact')).toBeUndefined()
+  expect('impact' in annotated.toJSON()).toBe(false)
+})
+
 test('svType is the structural class, carried through toJSON', () => {
   const del = createFeature('chr1\t100\t.\tG\t<DEL:ME:ALU>\t29\tPASS\t.')
   const snv = createFeature('chr1\t100\t.\tG\tA\t29\tPASS\t.')

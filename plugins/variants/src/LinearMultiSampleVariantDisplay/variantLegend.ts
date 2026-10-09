@@ -1,4 +1,3 @@
-import { keyNames } from '@jbrowse/core/util/categoricalField'
 import { cssColorToABGR } from '@jbrowse/core/util/colorBits'
 import { isJexl } from '@jbrowse/core/util/jexlStrings'
 import {
@@ -19,12 +18,6 @@ import {
   UNPHASED_COLOR,
 } from '../shared/constants.ts'
 import { PHASE_SET_FIELD } from '../shared/getPhasedColor.ts'
-import {
-  IMPACT_FIELD,
-  IMPACT_TIERS,
-  UNANNOTATED_IMPACT,
-  getImpactColor,
-} from '../shared/variantConsequence.ts'
 
 import type { VariantUnit } from '../shared/constants.ts'
 import type {
@@ -69,19 +62,6 @@ export interface VariantLegendInputs {
 
 function keyTitle({ colorTitle }: VariantLegendInputs, own: string) {
   return colorTitle ?? own
-}
-
-// `color.labels` by the `domain` value each names, for the preset keys; a
-// record field's key takes them through its categorical field instead.
-function labelOf(
-  encoding: ColorEncoding | undefined,
-  own: (value: string) => string,
-) {
-  const names =
-    typeof encoding === 'object' && encoding.scale === 'categorical'
-      ? keyNames(encoding.domain ?? [], encoding.labels)
-      : undefined
-  return (value: string) => names?.get(value) ?? own(value)
 }
 
 // The absent-data categories, which every cell scale paints and none of them
@@ -142,48 +122,6 @@ export function getGenotypeEntries(
 
 export const DOSAGE_NOTE = 'Pale: het, full: hom'
 
-// One row per painted domain value, ordered by the scale's own vocabulary.
-// Where lightness carries dosage, each row draws its het and hom shades and a
-// note row says which is which; otherwise the row is the hue alone.
-function domainEntries(
-  order: readonly string[],
-  inputs: VariantLegendInputs,
-  color: (value: string) => string,
-  label: (value: string) => string,
-): CategoricalEntry[] {
-  const painted = inputs.paintedDomain
-  const seen = new Set(painted)
-  const ranked = order.filter(value => seen.has(value))
-  const rest = painted.filter(value => !order.includes(value)).sort()
-  return swatchEntries([...ranked, ...rest], inputs, color, label)
-}
-
-function swatchEntries(
-  values: readonly string[],
-  inputs: VariantLegendInputs,
-  color: (value: string) => string,
-  label: (value: string) => string,
-): CategoricalEntry[] {
-  if (inputs.unit === 'haplotype' || !inputs.shadeByDosage) {
-    return values.map(value => ({
-      value,
-      label: label(value),
-      color: color(value),
-    }))
-  }
-  return [
-    ...values.map(value => ({
-      value,
-      label: label(value),
-      swatches: [
-        { color: shadeByDosage(color(value), HET_DOSAGE) },
-        { color: color(value) },
-      ],
-    })),
-    ...(values.length ? [entry(DOSAGE_NOTE)] : []),
-  ]
-}
-
 // A record field's rows are the key every color channel derives
 // (`derivedColorScale`) from the values painted, each drawn at het and hom
 // dosage where lightness carries it. The absent-data rows follow whatever that
@@ -226,9 +164,9 @@ function recordFieldScale(
   }
 }
 
-// The cell-coloring scale for the resolved `color`: the impact tiers painted
-// for the consequence preset, the phasing rule for the phase-set preset, a
-// record field's values (the SV classes among them), or the
+// The cell-coloring scale for the resolved `color`: the phasing rule for the
+// phase-set preset, a record field's values (the SV classes and the impact
+// tiers among them), or the
 // genotype key — which is also where a plain CSS color lands, since "every alt
 // cell is that color" is a genotype key with one alt hue. Undefined only for a
 // jexl callback, whose output can't be enumerated into swatches.
@@ -238,22 +176,6 @@ function getCellColorScale(
   held: HeldSlots | undefined,
 ): CategoricalScale | undefined {
   const cellField = cellHueField(encoding)
-  if (cellField === IMPACT_FIELD) {
-    return {
-      kind: 'categorical',
-      id: 'consequenceImpact',
-      title: keyTitle(inputs, 'Consequence impact'),
-      entries: [
-        ...domainEntries(
-          [...IMPACT_TIERS.map(t => t.tier), UNANNOTATED_IMPACT],
-          inputs,
-          getImpactColor,
-          labelOf(encoding, tier => tier),
-        ),
-        ...absentDataEntries(inputs),
-      ],
-    }
-  }
   if (cellField === PHASE_SET_FIELD) {
     return {
       kind: 'categorical',

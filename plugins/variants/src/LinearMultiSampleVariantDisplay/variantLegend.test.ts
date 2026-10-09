@@ -115,7 +115,7 @@ describe('getVariantColorScales', () => {
       ...inputs({ paintedDomain: ['MODIFIER', 'HIGH'], shadeByDosage: false }),
       color: IMPACT,
     })
-    expect(sections.map(s => s.id)).toEqual(['consequenceImpact'])
+    expect(sections.map(s => s.id)).toEqual(['recordField'])
     expect(entriesOf(sections[0])!.map(i => i.label)).toEqual([
       // severity order, not the order they were met
       'HIGH',
@@ -497,15 +497,15 @@ describe('getVariantColorScales insertion marker', () => {
   // looked at. Same for consequence impact, and for a raw jexl expression,
   // which drops the cell section entirely.
   test.each([
-    ['recordField', SV_TYPE],
-    ['consequenceImpact', IMPACT],
-  ])('survives the %s coloring replacing the genotype items', (id, color) => {
+    ['SV type', SV_TYPE],
+    ['consequence impact', IMPACT],
+  ])('survives the %s coloring replacing the genotype items', (_, color) => {
     const sections = getVariantColorScales({
       ...base,
       color,
       insertionMarkers: true,
     })
-    expect(sections.map(s => s.id)).toEqual([id, 'insertions'])
+    expect(sections.map(s => s.id)).toEqual(['recordField', 'insertions'])
   })
 
   test('survives a jexl coloring that drops the cell section outright', () => {

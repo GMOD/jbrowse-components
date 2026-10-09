@@ -1,3 +1,5 @@
+import { UNIVERSAL_FIELD_PRESETS } from '@jbrowse/core/util/colorScale'
+
 import type { Feature } from '@jbrowse/core/util'
 
 // SnpEff (INFO/ANN) and VEP (INFO/CSQ) both encode per-transcript annotations
@@ -13,35 +15,24 @@ const IMPACT_RANK: Record<string, number> = {
   MODIFIER: 1,
 }
 
-// Impact tiers in descending severity, with their legend colors. Exported so
-// the "Consequence impact" color legend renders the exact same swatches the
-// `impactColor` jexl paints features with.
-export const IMPACT_TIERS = [
-  { tier: 'HIGH', color: '#d32f2f' },
-  { tier: 'MODERATE', color: '#f57c00' },
-  { tier: 'LOW', color: '#fbc02d' },
-  { tier: 'MODIFIER', color: '#9e9e9e' },
-] as const
+const IMPACT_PRESET = UNIVERSAL_FIELD_PRESETS.impact
+
+/** The domain value a record with no SnpEff/VEP annotation files under. */
+export const UNANNOTATED_IMPACT = IMPACT_PRESET.missing
 
 const IMPACT_COLOR: Record<string, string> = Object.fromEntries(
-  IMPACT_TIERS.map(t => [t.tier, t.color]),
+  IMPACT_PRESET.domain.map((tier, i) => [tier, IMPACT_PRESET.range[i]!]),
 )
 
-// The color preset field for the most severe consequence tier.
+const NO_IMPACT_COLOR = IMPACT_COLOR[UNANNOTATED_IMPACT]!
+
+/** The impact tiers in descending severity, with the colors the preset paints. */
+export const IMPACT_TIERS = IMPACT_PRESET.domain
+  .filter(tier => tier !== UNANNOTATED_IMPACT)
+  .map(tier => ({ tier, color: IMPACT_COLOR[tier]! }))
+
+/** The field a variant's most severe consequence tier is read under. */
 export const IMPACT_FIELD = 'impact'
-
-// What `{ field: 'impact' }` paints on the single-variant display, through the
-// `impactColor` jexl function registered in the plugin's configure().
-export const CONSEQUENCE_IMPACT_JEXL = 'jexl:impactColor(feature)'
-
-/**
- * The domain value a record with no SnpEff/VEP annotation takes. Its own member
- * of the scale, and its own color: folded into MODIFIER, "we looked and it is
- * harmless" and "nobody looked" painted the same grey.
- */
-export const UNANNOTATED_IMPACT = 'Unannotated'
-
-const NO_IMPACT_COLOR = '#607d8b'
 
 function annotationStrings(feature: Feature) {
   const info = feature.get('INFO') as Record<string, unknown> | undefined

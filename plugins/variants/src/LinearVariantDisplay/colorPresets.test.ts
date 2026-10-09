@@ -2,7 +2,6 @@ import { resolveSubMenu } from '@jbrowse/core/ui/menuItems'
 import { createDisplayTestEnvironment } from '@jbrowse/display-test-utils'
 import { linearGenomeViewStateModelFactory } from '@jbrowse/plugin-linear-genome-view'
 
-import { CONSEQUENCE_IMPACT_JEXL } from '../shared/variantConsequence.ts'
 import configSchemaF from './configSchema.ts'
 import stateModelFactory from './model.ts'
 
@@ -41,14 +40,18 @@ function clickRow(display: LinearVariantDisplayModel, label: string) {
 }
 
 // The preset is a field of the color object, as on the multi-sample
-// displays, and the display paints it through the jexl function that
-// computes it, since a VCF record carries no `impact` of its own.
-test('Consequence impact writes the impact field', () => {
+// displays: a VCF record answers `impact` with its most severe tier, and the
+// universal preset names, orders and colors the tiers.
+test('Consequence impact paints the impact field through its preset', () => {
   const display = createDisplay()
   clickRow(display, 'Consequence impact')
   expect(display.colorSettings.field).toBe('impact')
   expect(display.colorsByConsequenceImpact).toBe(true)
-  expect(display.colorEncoding).toBe(CONSEQUENCE_IMPACT_JEXL)
+  expect(display.colorEncoding).toMatchObject({
+    field: 'impact',
+    scale: 'categorical',
+  })
+  expect(display.colorKeyTitle).toBe('Consequence impact')
 })
 
 // Read as an ordinary attribute, a preset ticked Attribute... and offered a
@@ -73,12 +76,12 @@ test('SV type paints the svType field, which a VCF record carries', () => {
   expect(display.colorKeyTitle).toBe('SV type')
 })
 
-test('the worker is sent the jexl color, not the preset field', () => {
+test('the worker reads the impact field as it reads any other', () => {
   const display = createDisplay()
   clickRow(display, 'Consequence impact')
   const { color } = display.rpcProps().displayConfig
-  expect(color.value).toBe(CONSEQUENCE_IMPACT_JEXL)
-  expect(color.field).toBe('')
+  expect(color.field).toBe('impact')
+  expect(color.value).toBeUndefined()
 })
 
 test('Default parks the preset under none', () => {

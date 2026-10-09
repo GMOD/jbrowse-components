@@ -8,7 +8,7 @@ import VariantsPlugin from '../index.ts'
 import { ALT_HUE } from './cellFill.ts'
 import { cellHueOf, cellHueReaderOf, sameHueRead } from './cellHue.ts'
 import { PHASE_SET_FIELD } from './getPhasedColor.ts'
-import { IMPACT_FIELD, getVariantImpactColor } from './variantConsequence.ts'
+import { IMPACT_FIELD, getImpactColor } from './variantConsequence.ts'
 import { getCachedABGR as abgr } from './variantWebglUtils.ts'
 
 import type { VariantUnit } from './constants.ts'
@@ -122,11 +122,19 @@ test('a jexl callback paints the color it returns', () => {
   expect(hue("jexl:'#abcdef'")(variant({}))).toBe(abgr('#abcdef'))
 })
 
-test('the impact preset paints the consequence tier colors', () => {
+test('the impact preset paints the tier a record answers, Unannotated where it has none', () => {
   const encoding = { field: IMPACT_FIELD, scale: 'categorical' as const }
-  const v = variant({ ANN: ['T|missense_variant|MODERATE|G'] })
-  expect(hue(encoding)(v)).toBe(abgr(getVariantImpactColor(v)))
-  expect(key(encoding)(v)).toBe('MODERATE')
+  const moderate = new SimpleFeature({
+    uniqueId: 'm',
+    refName: 'chr1',
+    start: 0,
+    end: 1,
+    impact: 'MODERATE',
+  })
+  expect(hue(encoding)(moderate)).toBe(abgr(getImpactColor('MODERATE')))
+  expect(key(encoding)(moderate)).toBe('MODERATE')
+  expect(key(encoding)(variant({}))).toBe('Unannotated')
+  expect(hue(encoding)(variant({}))).toBe(abgr(getImpactColor('Unannotated')))
 })
 
 test('svType paints the class colors, and a record with no class the alt hue', () => {

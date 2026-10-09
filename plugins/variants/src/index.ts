@@ -74,15 +74,15 @@ export default class VariantsPlugin extends Plugin {
 
     // Variant-consequence helpers, reading SnpEff ANN / VEP CSQ. `impact` and
     // `consequence` return strings for custom color-by-attribute expressions
-    // (e.g. jexl:randomColor(consequence(feature))); `impactColor` powers the
-    // one-click "Color by consequence impact" menu item.
+    // (e.g. jexl:randomColor(consequence(feature))); `impactColor` is the
+    // impact preset's color as a callback.
     /** #jexlFunction Variant functions | impact(feature) | HIGH, MODERATE, LOW or MODIFIER, from SnpEff ANN / VEP CSQ */
     jexl.addFunction('impact', getVariantImpact)
     /** #jexlFunction Variant functions | consequence(feature) | e.g. missense_variant, from the same annotation — the MOST SEVERE one alone */
     jexl.addFunction('consequence', getVariantConsequence)
     /** #jexlFunction Variant functions | 'missense_variant' in consequences(feature) | every consequence term on the record, across all transcripts (bcftools INFO/CSQ ~ "missense_variant") */
     jexl.addFunction('consequences', getVariantConsequences)
-    /** #jexlFunction Variant functions | impactColor(feature) | the color the "Color by consequence impact" menu item uses */
+    /** #jexlFunction Variant functions | impactColor(feature) | the color `color: { field: 'impact' }` paints the variant's most severe tier */
     jexl.addFunction('impactColor', getVariantImpactColor)
     // Longest allele in bp, so a filter can select the SV tier of a decomposed
     // pangenome callset (`jexl:alleleLength(feature) >= 50`) without missing

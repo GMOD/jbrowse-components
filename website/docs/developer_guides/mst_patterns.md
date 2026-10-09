@@ -266,7 +266,7 @@ block's override; what differs is what TypeScript can see:
   reaches same-block siblings and nothing else.
 
 Prefer `self.X`, and reach for `this.X` only for a sibling defined in the same
-block. `LinearVariantDisplay`'s legend getters use both, one line apart:
+block. `LinearVariantDisplay`'s color getters use both in one expression:
 
 <!-- include: plugins/variants/src/LinearVariantDisplay/model.ts#sameBlockThis -->
 
@@ -275,36 +275,29 @@ block. `LinearVariantDisplay`'s legend getters use both, one line apart:
  * #getter
  */
 get colorsByConsequenceImpact() {
-  return self.colorEncoding === CONSEQUENCE_IMPACT_JEXL
+  return (
+    self.colorSettings.field === IMPACT_FIELD &&
+    self.colorSettings.scale !== 'none'
+  )
 },
 /**
  * #getter
- * The key while features draw: the impact tiers under that preset, or
- * else the key a color by a field derives.
  */
-get featureColorScales(): ColorScale[] {
-  if (this.colorsByConsequenceImpact) {
-    return [
-      {
-        kind: 'categorical',
-        id: 'consequenceImpact',
-        title: 'Consequence impact',
-        entries: [
-          ...IMPACT_TIERS.map(t => ({
-            value: t.tier,
-            label: t.tier,
-            color: t.color,
-          })),
-          {
-            value: UNANNOTATED_IMPACT,
-            label: UNANNOTATED_IMPACT,
-            color: getImpactColor(UNANNOTATED_IMPACT),
-          },
-        ],
-      },
-    ]
-  }
-  return self.derivedColorScales
+get colorsBySvType() {
+  return (
+    self.colorSettings.field === SV_TYPE_FIELD &&
+    self.colorSettings.scale !== 'none'
+  )
+},
+/**
+ * #getter
+ * The attribute the Attribute dialog opens on, '' under the impact or
+ * SV type preset, each of which has its own row.
+ */
+get colorByAttribute(): string {
+  return this.colorsByConsequenceImpact || this.colorsBySvType
+    ? ''
+    : self.colorSettings.field
 },
 ```
 

@@ -2,7 +2,6 @@ import { getDialogHost } from '@jbrowse/core/util'
 import { createAdapterMetadataFetch } from '@jbrowse/core/util/adapterMetadata'
 import { SV_TYPE_FIELD } from '@jbrowse/core/util/categoricalField'
 import { solidColorItem } from '@jbrowse/display-kit/colorByMenu'
-import { featureColorEncoding } from '@jbrowse/display-kit/colorConfigSchema'
 import { types } from '@jbrowse/mobx-state-tree'
 // the subpath, not the barrel: the barrel is eager, and a value edge from it
 // into the canvas base display model would undo that display's lazy loading
@@ -10,22 +9,14 @@ import linearCanvasBaseDisplayStateModelFactory from '@jbrowse/plugin-canvas/Lin
 
 import { VARIANT_FEATURE_WIDGET } from '../shared/constants.ts'
 import { JexlFilterDialog } from '../shared/lazyDialogs.ts'
-import {
-  CONSEQUENCE_IMPACT_JEXL,
-  IMPACT_FIELD,
-  IMPACT_TIERS,
-  UNANNOTATED_IMPACT,
-  getImpactColor,
-} from '../shared/variantConsequence.ts'
+import { IMPACT_FIELD } from '../shared/variantConsequence.ts'
 import { VARIANT_FILTER_EXAMPLES } from '../shared/variantFilterExamples.ts'
 import { variantFilterFields } from '../shared/variantFilterFields.ts'
 import { breakendMenuItems } from './breakendMenu.ts'
-import { presetColorOf } from './presetColor.ts'
 import { sortReadsMenuItems } from './sortReadsMenu.ts'
 
 import type { LinearVariantDisplayConfigModel } from './configSchema.ts'
 import type { MenuItem } from '@jbrowse/core/ui'
-import type { ColorScale } from '@jbrowse/core/ui/colorScale'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 
 /**
@@ -65,15 +56,14 @@ export default function stateModelFactory(
       type: types.literal('LinearVariantDisplay'),
     })
     .views(self => ({
+      // #region sameBlockThis
       /**
        * #getter
-       * The canvas resolver, with the `impact` preset field resolved to the
-       * jexl color that computes it.
        */
-      get colorEncoding() {
+      get colorsByConsequenceImpact() {
         return (
-          presetColorOf(self.colorSettings) ??
-          featureColorEncoding(self.colorSettings)
+          self.colorSettings.field === IMPACT_FIELD &&
+          self.colorSettings.scale !== 'none'
         )
       },
       /**
@@ -87,41 +77,19 @@ export default function stateModelFactory(
       },
       /**
        * #getter
-       * The attribute the Attribute dialog opens on, '' under a preset or the
-       * SV type, each of which has its own row.
+       * The attribute the Attribute dialog opens on, '' under the impact or
+       * SV type preset, each of which has its own row.
        */
       get colorByAttribute(): string {
-        return presetColorOf(self.colorSettings) || this.colorsBySvType
+        return this.colorsByConsequenceImpact || this.colorsBySvType
           ? ''
           : self.colorSettings.field
       },
+      // #endregion
     }))
     .views(self => {
       const superContextMenuItems = self.contextMenuItems
-      const superRpcProps = self.rpcProps
       return {
-        /**
-         * #method
-         * The canvas payload with a preset field sent as the jexl color it
-         * resolves to, since the worker reads the raw `color` object.
-         */
-        rpcProps() {
-          const props = superRpcProps()
-          const preset = presetColorOf(self.colorSettings)
-          return preset
-            ? {
-                ...props,
-                displayConfig: {
-                  ...props.displayConfig,
-                  color: {
-                    ...props.displayConfig.color,
-                    value: preset,
-                    field: '',
-                  },
-                },
-              }
-            : props
-        },
         /**
          * #method
          * The shared feature menu plus, on a breakend record, the row that
@@ -137,7 +105,7 @@ export default function stateModelFactory(
         },
       }
     })
-    .views(self => ({
+    .views(() => ({
       /**
        * #getter
        * Names what the track holds in every menu row, chip and indicator, so
@@ -154,43 +122,6 @@ export default function stateModelFactory(
       get featureWidgetType() {
         return VARIANT_FEATURE_WIDGET
       },
-      // #region sameBlockThis
-      /**
-       * #getter
-       */
-      get colorsByConsequenceImpact() {
-        return self.colorEncoding === CONSEQUENCE_IMPACT_JEXL
-      },
-      /**
-       * #getter
-       * The key while features draw: the impact tiers under that preset, or
-       * else the key a color by a field derives.
-       */
-      get featureColorScales(): ColorScale[] {
-        if (this.colorsByConsequenceImpact) {
-          return [
-            {
-              kind: 'categorical',
-              id: 'consequenceImpact',
-              title: 'Consequence impact',
-              entries: [
-                ...IMPACT_TIERS.map(t => ({
-                  value: t.tier,
-                  label: t.tier,
-                  color: t.color,
-                })),
-                {
-                  value: UNANNOTATED_IMPACT,
-                  label: UNANNOTATED_IMPACT,
-                  color: getImpactColor(UNANNOTATED_IMPACT),
-                },
-              ],
-            },
-          ]
-        }
-        return self.derivedColorScales
-      },
-      // #endregion
     }))
     .views(self => ({
       /**
@@ -238,7 +169,7 @@ export default function stateModelFactory(
           {
             label: 'Attribute...',
             type: 'radio' as const,
-            checked: self.colorByMode === 'attribute' && !self.colorsBySvType,
+            checked: self.colorByMode === 'attribute' && !preset,
             keepMenuOpen: false,
             onClick: () => {
               self.openColorByAttributeDialog()

@@ -7,11 +7,6 @@ import { colorFieldOf } from '@jbrowse/display-kit/colorConfigSchema'
 
 import { ALT_HUE } from './cellFill.ts'
 import { PHASE_SET_FIELD } from './getPhasedColor.ts'
-import {
-  IMPACT_FIELD,
-  getImpactColor,
-  getVariantImpactDomain,
-} from './variantConsequence.ts'
 
 import type { VariantUnit } from './constants.ts'
 import type { HeldSlots } from '@jbrowse/core/ui/colors'
@@ -34,9 +29,7 @@ export function recordHueField(
   held?: HeldSlots,
 ) {
   const field = cellHueField(encoding)
-  return field === undefined ||
-    field === IMPACT_FIELD ||
-    field === PHASE_SET_FIELD
+  return field === undefined || field === PHASE_SET_FIELD
     ? undefined
     : colorFieldOf(encoding, held)
 }
@@ -87,9 +80,6 @@ export function cellHueOf(
     return { read: encoding, hueOf: css => css }
   }
   const field = cellHueField(encoding)
-  if (field === IMPACT_FIELD) {
-    return { read: { field }, hueOf: getImpactColor, keyOf: tier => tier }
-  }
   if (field === PHASE_SET_FIELD) {
     return { read: { field } }
   }
@@ -151,11 +141,8 @@ export function cellHueReaderOf(
       },
     }
   }
-  switch (read.field) {
-    case IMPACT_FIELD:
-      return { value: getVariantImpactDomain }
-    case PHASE_SET_FIELD:
-      return { byPhaseSet: unit === 'haplotype' }
+  if (read.field === PHASE_SET_FIELD) {
+    return { byPhaseSet: unit === 'haplotype' }
   }
   const get = fieldReader(read.field, jexl)
   return { value: feature => valueText(get(feature)) }
