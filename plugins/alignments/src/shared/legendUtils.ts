@@ -831,16 +831,18 @@ function bakedValueLegend(
   scale: BakedColorScale | undefined,
   sectionOrder: ((a: string, b: string) => number) | undefined,
   names: ReadonlyMap<string, string> = new Map(),
+  descending = false,
 ): LegendItem[] {
   const field = colorFieldOf(colorBy)
   if (scale?.kind === 'linear') {
     return []
   }
   if (scale?.kind === 'threshold') {
-    return scale.bins.map(({ color, label }) => ({
+    const items = scale.bins.map(({ color, label }) => ({
       color,
       label: names.get(label) ?? `${field} ${label}`,
     }))
+    return descending ? items.toReversed() : items
   }
   const values = [...(present ?? [])].filter(value => value !== '')
   const sorted = sectionOrder
@@ -977,6 +979,7 @@ type SchemeLegendArgs = Pick<
   | 'sectionOrder'
   | 'baseQualityUnavailable'
   | 'labels'
+  | 'descending'
 > & { palette: ColorPalette }
 
 // The per-base layer's own rows: the base vocabulary, the modification types
@@ -1022,6 +1025,7 @@ function schemeLegend({
   baseLayer,
   sectionOrder,
   labels,
+  descending,
 }: SchemeLegendArgs): LegendItem[] {
   // The normal scheme paints every read one flat color ('plain'),
   // which isn't a CATEGORY_LEGEND bucket, so without an explicit entry its
@@ -1065,6 +1069,7 @@ function schemeLegend({
       bakedScale,
       sectionOrder,
       labels?.values,
+      descending,
     )
   }
   // The strand, insert-size and orientation schemes add only the buckets that
@@ -1078,6 +1083,8 @@ interface ReadDisplayLegendArgs {
   colorBy: ColorBy | undefined
   // `color.labels` against what it names (`declaredReadLabels`)
   labels?: DeclaredReadLabels
+  // A threshold key lists its highest interval first (`colorKeyDescending`).
+  descending?: boolean
   // The per-base layer, keyed ahead of the read fill it paints over.
   baseLayer?: BaseLayer
   detectedModifications?: ReadonlyMap<string, string>
@@ -1136,6 +1143,7 @@ export function getReadDisplayLegendItems({
   baseQualityUnavailable,
   overlaps,
   labels,
+  descending,
 }: ReadDisplayLegendArgs & {
   palette: ColorPalette
   presentCategories: ReadonlySet<ReadColorCategory>
@@ -1162,6 +1170,7 @@ export function getReadDisplayLegendItems({
     sectionOrder,
     baseQualityUnavailable,
     labels,
+    descending,
   }
   return [
     ...baseLayerLegend(scheme),

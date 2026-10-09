@@ -4,6 +4,7 @@ import {
   SAM_FLAG_PAIRED,
   SAM_FLAG_SECOND_IN_PAIR,
 } from '@jbrowse/cigar-utils'
+import { setConf } from '@jbrowse/core/configuration'
 import { createJBrowseTheme } from '@jbrowse/core/ui'
 import { resolvePalette } from '@jbrowse/core/ui/palette'
 import { SimpleFeature, getSession } from '@jbrowse/core/util'
@@ -202,6 +203,57 @@ describe('colorKeyTitle', () => {
 
     display.applyPlot({ color: { field: 'mapq', scale: 'linear' } })
     expect(display.colorKeyTitle).toBeUndefined()
+  })
+})
+
+// The facet stacks the confident reads first, and the key lists its bins the
+// same way unless the color turns it round.
+describe('colorKeyDescending', () => {
+  function binLabels(display: ReturnType<typeof createDisplay>) {
+    return display
+      .legendItems(display.colorPalette)
+      .map(item => item.label)
+      .filter(label => label.includes('MAPQ') || label.includes('tags.NM'))
+  }
+
+  test("mapq's key lists 30+ first until the color says otherwise", () => {
+    const display = createDisplay()
+    display.applyPlot({ color: { field: 'mapq' } })
+    expect(binLabels(display)[0]).toBe('MAPQ 30+ (high confidence)')
+
+    display.applyPlot({ color: { field: 'mapq', descending: false } })
+    expect(binLabels(display)[0]).toBe('MAPQ 0 (multi-mapping)')
+  })
+
+  test('a threshold over a tag keys highest first where written', () => {
+    const display = createDisplay()
+    display.applyPlot({
+      color: { field: 'tags.NM', scale: 'threshold', domain: ['1', '5'] },
+    })
+    expect(binLabels(display)).toEqual([
+      'tags.NM < 1',
+      'tags.NM 1 – 5',
+      'tags.NM ≥ 5',
+    ])
+
+    display.applyPlot({
+      color: {
+        field: 'tags.NM',
+        scale: 'threshold',
+        domain: ['1', '5'],
+        descending: true,
+      },
+    })
+    expect(binLabels(display)[0]).toBe('tags.NM ≥ 5')
+  })
+
+  test('turning the key round re-bakes no read', () => {
+    const display = createDisplay()
+    display.applyPlot({ color: { field: 'mapq' } })
+    const before = display.readColorContext
+    setConf(display, ['color', 'descending'], false)
+    expect(display.colorKeyDescending).toBe(false)
+    expect(display.readColorContext).toBe(before)
   })
 })
 

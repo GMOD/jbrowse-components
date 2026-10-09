@@ -1090,6 +1090,7 @@ export default function stateModelFactory(
               sectionOrder: this.keySectionOrder,
               baseQualityUnavailable: this.baseQualitySpan.unavailable,
               labels: this.declaredReadLabels,
+              descending: self.colorKeyDescending,
             })
           },
 

@@ -214,6 +214,21 @@ export function configSlotViews(self: ConfigSlotSelf) {
     },
     /**
      * #getter
+     * `color.descending` as written, else its field preset's while the color
+     * paints through the preset, so `{ field: 'mapq' }` keys 30+ first. Read
+     * apart from `colorSetting`, so turning the key round re-bakes no read.
+     */
+    get colorKeyDescending(): boolean | undefined {
+      return withPreset(
+        {
+          ...this.colorSetting,
+          descending: getConf(self, ['color', 'descending']),
+        },
+        ALIGNMENTS_FIELD_PRESETS,
+      ).descending
+    },
+    /**
+     * #getter
      * What the `color` object's slots say together that it cannot paint as
      * written, which the corner notice lists.
      */
