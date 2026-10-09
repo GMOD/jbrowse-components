@@ -225,6 +225,36 @@ describe('what a swatch writes', () => {
     ).toMatchObject({ labels: ['loss', 'gain'], title: 'log2 ratio' })
   })
 
+  it('parks a declared cut under one color, and parts at it again', () => {
+    const display = makeDisplay({
+      color: {
+        field: 'score',
+        scale: 'threshold',
+        domain: ['2'],
+        labels: ['loss', 'gain'],
+        title: 'log2 ratio',
+      },
+    })
+
+    display.setColor(
+      plotColorEdit(display.colorSetting, { above: 'green', below: 'green' }),
+    )
+    expect(lineOf(display)).toMatchObject({ above: 'green', below: 'green' })
+    expect(
+      plotColorEdit(display.colorSetting, {
+        above: '#b2182b',
+        below: '#2166ac',
+      }),
+    ).toEqual({
+      field: 'score',
+      scale: 'threshold',
+      domain: ['2'],
+      range: ['#2166ac', '#b2182b'],
+      labels: ['loss', 'gain'],
+      title: 'log2 ratio',
+    })
+  })
+
   it('keeps a declared cut', () => {
     const display = makeDisplay({
       color: { field: 'score', scale: 'threshold', domain: ['2'] },

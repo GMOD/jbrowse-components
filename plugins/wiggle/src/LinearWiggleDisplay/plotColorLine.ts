@@ -1,3 +1,5 @@
+import { colorForValue } from '@jbrowse/display-kit/colorConfigSchema'
+
 import type { ResolvedWiggleColor } from '../shared/wiggleColor.ts'
 import type { ColorSetting } from '@jbrowse/display-kit/colorConfigSchema'
 
@@ -52,9 +54,9 @@ export function plotColorLine(
 }
 
 /**
- * What a swatch writes. One color on both sides is a flat plot, which the
- * string form already says, so the line needs no solid-versus-two-sided
- * choice.
+ * What a swatch writes. One color on both sides is a flat plot: the string
+ * form, or over a written field that field parked under `scale: 'none'`, so
+ * its cut, labels and title come back when the sides part again.
  *
  * A channel replaces its setting whole, and the members this drops are the
  * ones the threshold scale does not read: `scheme`, `reverse` and `domainMid`
@@ -66,14 +68,15 @@ export function plotColorEdit(
   color: ColorSetting,
   { above, below }: { above: string; below: string },
 ): string | Partial<ColorSetting> {
-  return above === below
-    ? above
-    : {
-        field: 'score',
-        scale: 'threshold',
-        ...(color.domain.length ? { domain: [...color.domain] } : {}),
-        range: [below, above],
-        ...(color.labels?.length ? { labels: [...color.labels] } : {}),
-        ...(color.title === undefined ? {} : { title: color.title }),
-      }
+  if (above === below) {
+    return color.field ? colorForValue(color, above) : above
+  }
+  return {
+    field: 'score',
+    scale: 'threshold',
+    ...(color.domain.length ? { domain: [...color.domain] } : {}),
+    range: [below, above],
+    ...(color.labels?.length ? { labels: [...color.labels] } : {}),
+    ...(color.title === undefined ? {} : { title: color.title }),
+  }
 }
