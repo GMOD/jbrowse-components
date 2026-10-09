@@ -52,6 +52,7 @@ import { markDisplayExampleSpecs } from './specs/mark_display_examples.ts'
 import { aluAgeSpecs, marksSpecs } from './specs/marks.ts'
 import { methylationSpecs } from './specs/methylation.ts'
 import { msaSpecs } from './specs/msa.ts'
+import { organelleMapSpecs } from './specs/organelle_map.ts'
 import { pangenomeSpecs } from './specs/pangenome.ts'
 import { pangenomeCactusSpecs } from './specs/pangenome_cactus.ts'
 import { paperCohortSpecs } from './specs/paper-cohort.ts'
@@ -104,6 +105,7 @@ export const specs: ScreenshotSpec[] = [
   ...cnv1000gSpecs,
   ...gwasSpecs,
   ...geneDensitySpecs,
+  ...organelleMapSpecs,
   ...hg002HaplotypeSpecs,
   ...hicSpecs,
   ...qtlSpecs,

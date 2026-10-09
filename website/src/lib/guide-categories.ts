@@ -149,6 +149,7 @@ export const TUTORIAL_ORDER = [
   'tp53_structures',
   'gene_prediction_review',
   'gene_density',
+  'organelle_map',
   'alu_age',
   'read_marks',
   'cookbook',

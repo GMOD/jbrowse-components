@@ -145,6 +145,7 @@ together.
 - [Structural variant visualization](/docs/user_guides/sv_visualization)
 - [Cancer SVs (C-GIAB) tutorial](/docs/tutorials/sv_visualization_cgiab)
 - [](/docs/tutorials/circular_synteny)
+- [](/docs/tutorials/organelle_map)
 - [ChordVariantDisplay config schema](/docs/config/chordvariantdisplay)
 - [ChordSyntenyDisplay config schema](/docs/config/chordsyntenydisplay)
 - [LinearMarkDisplay config schema](/docs/config/linearmarkdisplay), for a

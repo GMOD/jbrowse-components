@@ -239,6 +239,7 @@ four files, and writes a JBrowse with the four tracks.
 
 - [](/docs/tutorials/repeatmasker_classes)
 - [](/docs/tutorials/circular_synteny)
+- [](/docs/tutorials/organelle_map)
 - [](/docs/tutorials/gene_prediction_review)
 - [](/docs/cli)
 - [](/docs/quickstart_web)

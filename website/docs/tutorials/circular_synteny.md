@@ -439,6 +439,7 @@ bash build_circular_synteny.sh
 - [](/docs/tutorials/hg38_vertebrates_synteny)
 - [](/docs/tutorials/synteny_visualization)
 - [](/docs/tutorials/gene_density)
+- [](/docs/tutorials/organelle_map)
 
 ## Citations
 
