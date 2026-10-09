@@ -106,3 +106,37 @@ test('an unwritten color object takes its first field', () => {
   d.colorByField('strand')
   expect(colorOf(d)).toEqual({ field: 'strand' })
 })
+
+const StrandDefaultDisplay = types.compose(
+  types.model({
+    configuration: ConfigurationSchema('TestStrandDefaultDisplay', {
+      color: ConfigurationSchema(
+        'TestStrandDefaultColor',
+        { field: { type: 'string', defaultValue: 'strand' } },
+        { baseConfiguration: TestColor, ...colorChannelOptions('color') },
+      ),
+    }),
+  }),
+  ColorWritesMixin(),
+)
+
+// LGVSyntenyColor's field defaults to `strand`, which its snapshot omits
+test('a defaulted field parks on the way back and keeps its range on a re-pick', () => {
+  const d = StrandDefaultDisplay.create(
+    { configuration: { color: { range: ['red', 'blue'] } } },
+    { pluginManager },
+  )
+  const patches: unknown[] = []
+  onPatch(d, patch => patches.push(patch))
+  d.colorByField('strand')
+  expect(patches).toEqual([])
+
+  d.colorByField('')
+  expect(d.writtenColor).toEqual({
+    field: 'strand',
+    range: ['red', 'blue'],
+    scale: 'none',
+  })
+  d.colorByField('strand')
+  expect(d.writtenColor).toEqual({ field: 'strand', range: ['red', 'blue'] })
+})

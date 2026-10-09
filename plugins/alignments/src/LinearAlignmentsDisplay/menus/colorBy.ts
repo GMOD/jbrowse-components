@@ -14,10 +14,7 @@ import { radioColorFieldOptions } from '../../shared/colorFieldOptions.ts'
 import { bisulfiteItem } from './bisulfiteMenu.ts'
 import { modificationsMenu } from './modificationsMenu.ts'
 
-import type {
-  AlignmentsColorEncoding,
-  AlignmentsColorSetting,
-} from '../../shared/alignmentsColor.ts'
+import type { AlignmentsColorEncoding } from '../../shared/alignmentsColor.ts'
 import type { ColorFieldOption } from '../../shared/colorFieldOptions.ts'
 import type {
   ArcColorField,
@@ -28,6 +25,7 @@ import type {
 import type { ModificationsMenuModel } from './modificationsMenu.ts'
 import type { Plot } from '@jbrowse/core/configuration'
 import type { MenuItem } from '@jbrowse/core/ui'
+import type { ColorSlots } from '@jbrowse/core/util/colorScale'
 
 const TagDialog = lazy(() => import('../dialogs/TagDialog.tsx'))
 
@@ -35,7 +33,7 @@ interface ColorByModel {
   colorBy: ReadColorBy
   colorField: string
   colorEncoding: AlignmentsColorEncoding
-  writtenColor: AlignmentsColorSetting
+  writtenColor: ColorSlots
   colorByField: (field: string) => void
   applyPlot: (draft: Plot) => void
   baseLayer: BaseLayer | undefined

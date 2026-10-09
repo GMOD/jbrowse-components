@@ -33,7 +33,7 @@ import type {
   ReadColorSchemeType,
   TagColorScale,
 } from './types.ts'
-import type { FieldPresets } from '@jbrowse/core/util/colorScale'
+import type { ColorSlots, FieldPresets } from '@jbrowse/core/util/colorScale'
 import type { ColorSchemeName } from '@jbrowse/core/util/colorSchemes'
 import type { ColorSetting } from '@jbrowse/display-kit/colorConfigSchema'
 
@@ -516,7 +516,7 @@ function bakedKeys(
  * value otherwise.
  */
 export function tagColorFor(
-  current: AlignmentsColorSetting,
+  current: ColorSlots,
   tag: string,
   scale: TagColorScale,
 ) {

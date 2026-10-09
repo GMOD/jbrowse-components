@@ -5,7 +5,6 @@ import { resolveSubMenu, staysOpenOnClick } from '@jbrowse/core/ui'
 import { colorFieldOptions } from '../../shared/colorFieldOptions.ts'
 import { getColorByMenuItem } from './colorBy.ts'
 
-import type { AlignmentsColorSetting } from '../../shared/alignmentsColor.ts'
 import type { BaseLayer, ReadColorBy } from '../../shared/types.ts'
 import type { Plot } from '@jbrowse/core/configuration'
 import type { MenuItem } from '@jbrowse/core/ui'
@@ -17,18 +16,7 @@ function makeModel() {
     colorBy: { type: 'normal' } as ReadColorBy,
     colorField: '',
     colorEncoding: undefined,
-    writtenColor: {
-      value: undefined,
-      field: '',
-      scale: undefined,
-      domain: [],
-      range: [],
-      scheme: undefined,
-      reverse: false,
-      domainMin: undefined,
-      domainMax: undefined,
-      domainMid: undefined,
-    } as AlignmentsColorSetting,
+    writtenColor: {},
     colorByField(field: string) {
       this.colorField = field
     },

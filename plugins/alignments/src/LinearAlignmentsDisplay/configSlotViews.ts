@@ -214,24 +214,14 @@ export function configSlotViews(self: ConfigSlotSelf) {
     },
     /**
      * #getter
-     * The `color` object a scheme pick writes over: `colorSetting` and the
-     * key's own slots, so a pick that keeps the field keeps its names.
-     */
-    get writtenColor(): AlignmentsColorSetting {
-      return {
-        ...this.colorSetting,
-        labels: this.colorLabels,
-        title: this.colorTitle,
-        descending: getConf(self, ['color', 'descending']),
-      }
-    },
-    /**
-     * #getter
-     * What `writtenColor`'s slots say together that it cannot paint as
+     * What the `color` object's slots say together that it cannot paint as
      * written, which the corner notice lists.
      */
     get colorNotices(): string[] {
-      return alignmentsColorNotices(this.writtenColor)
+      return alignmentsColorNotices({
+        ...this.colorSetting,
+        labels: this.colorLabels,
+      })
     },
     /**
      * #getter
