@@ -216,8 +216,8 @@ export const suite: TestSuite = {
         )
         await hoverFraction(page, displayPainted('wiggle-display'), 0.5, 0.5)
         assert(
-          (await countGuideLines(page)) === 2,
-          'expected the full crosshair over a multi-row wiggle',
+          (await countGuideLines(page)) === 1,
+          'expected the vertical guide alone over a multi-row wiggle',
         )
         const tip = await tooltipText(page)
         assert(

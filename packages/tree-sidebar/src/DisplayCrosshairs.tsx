@@ -33,7 +33,8 @@ export const DisplayCrosshairs = observer(function DisplayCrosshairs({
     treeAreaWidth: number
   }
   mouseX: number
-  mouseY: number
+  // omit for a vertical-only guide
+  mouseY?: number
 }) {
   return (
     <Crosshairs

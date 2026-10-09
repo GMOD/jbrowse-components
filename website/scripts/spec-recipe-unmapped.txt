@@ -5,27 +5,27 @@
 #
 # Adding a name here is a coverage regression — prefer a verified click-path in
 # src/lib/spec-recipe/fields.ts. Removing one is the win.
-colorDomain
+color
 colorScheme
 connectedView
-contigThickness
 fadeThinAlignmentsMode
 geneTrackId
 height
+layers
 loadedRegion
 loadedTrackId
 maxRegionBp
-nodeWidth
 opacity
 paneHeight
 repeatKey
 repeatTrackId
+rows
 showAlignment
 showModalPairsInCloud
 showProteinTracks
 sideBySide
+size
 structures
 transcriptId
 uniprotId
-walkRowSamples
 zoomToBaseLevel

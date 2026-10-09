@@ -85,7 +85,6 @@ export const PATH_ROOTS = new Set([
   'Track menu',
   'View menu',
   'Synteny view header',
-  'Graph view menu',
   'Graph view toolbar',
   'Dotplot header',
   'palette button',

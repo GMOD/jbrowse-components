@@ -62,3 +62,15 @@ test('no pointer, no crosshair', async () => {
 
   expect(fullHeightGuides(display.height)).toHaveLength(0)
 }, 30000)
+
+// A horizontal guide at the pointer's y reads as an axis rule.
+test('the crosshair is the vertical guide alone', async () => {
+  await loadedDisplay()
+
+  await hoverAt(300, 20)
+
+  const horizontal = [...document.querySelectorAll('line')].filter(
+    line => line.getAttribute('y1') === line.getAttribute('y2'),
+  )
+  expect(horizontal).toHaveLength(0)
+}, 30000)
