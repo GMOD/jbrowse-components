@@ -749,6 +749,26 @@ test('can navToMultiple', () => {
   expect(model.bpPerPx).toBeCloseTo(25)
 })
 
+test('scrolling stops 100px past either end of the regions', () => {
+  const { Session, LinearGenomeModel } = initialize()
+  const session = Session.create({ configuration: {} })
+  const model = session.setView(
+    LinearGenomeModel.create({
+      id: 'testOverscroll',
+      type: 'LinearGenomeView',
+    }),
+  )
+  model.setWidth(800)
+  model.setDisplayedRegions([
+    { assemblyName: 'volvox', refName: 'ctgA', start: 0, end: 20000 },
+  ])
+  model.setNewView(10, 0)
+  model.horizontalScroll(-1000)
+  expect(model.offsetPx).toBe(-100)
+  model.horizontalScroll(10000)
+  expect(model.offsetPx).toBe(1300)
+})
+
 // removing/replacing regions shrinks maxOffset; a view already scrolled past
 // the new end must be pulled back, otherwise it sits on blank space
 test('setDisplayedRegions re-clamps a now-out-of-range offsetPx', () => {
@@ -768,11 +788,12 @@ test('setDisplayedRegions re-clamps a now-out-of-range offsetPx', () => {
   model.setNewView(10, 1200)
   expect(model.offsetPx).toBe(1200)
 
-  // drop ctgB: total content is now 1000px, so maxOffset is 200
+  // drop ctgB: total content is now 1000px, so maxOffset is 300: the 200px
+  // that fill the view past its left edge and 100px of overscroll
   model.setDisplayedRegions([
     { assemblyName: 'volvox', refName: 'ctgA', start: 0, end: 10000 },
   ])
-  expect(model.offsetPx).toBe(200)
+  expect(model.offsetPx).toBe(300)
 })
 
 // when a refName appears twice with different bounds and the navigated
@@ -1815,7 +1836,7 @@ test('navToLocString with human assembly', async () => {
     expect(view.bpPerPx).toBe(0.02)
   })
   await waitFor(() => {
-    expect(view.offsetPx).toBe(9914777150)
+    expect(view.offsetPx).toBe(9914777250)
   })
   await view.navToLocString('chr3:-1,100,000,000..-1,000,000,000')
 })

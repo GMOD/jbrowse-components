@@ -209,15 +209,18 @@ function canonicalHighlight(self: IAnyStateTreeNode, region: HighlightRegion) {
 // pointless offset re-anchoring on micro-steps
 const BP_PER_PX_EPSILON = 0.000001
 
-// The offsets a view can scroll to: content edge to edge, never blank space
-// past either end. Content narrower than the view collapses the range to the
+// px of blank space a view may scroll past either end of its regions, enough to
+// read as an edge and too little to lose the content
+const OVERSCROLL_PX = 100
+
+// The offsets a view can scroll to: the content edge to edge plus a little
+// overscroll. Content narrower than the view collapses the range to the
 // centered offset, which is what `showAllRegions` and `fitAllRegions` ask for.
 function offsetBounds(contentPx: number, viewportPx: number) {
   const centered = getCenteredOffsetPx(contentPx, viewportPx)
-  return {
-    min: Math.min(0, centered),
-    max: Math.max(contentPx - viewportPx, centered),
-  }
+  return contentPx > viewportPx
+    ? { min: -OVERSCROLL_PX, max: contentPx - viewportPx + OVERSCROLL_PX }
+    : { min: centered, max: centered }
 }
 
 // whether two BlockSets cover the same blocks, by key and in order
