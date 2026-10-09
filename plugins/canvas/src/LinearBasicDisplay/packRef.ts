@@ -637,24 +637,25 @@ export function packPreparedRef(
       continue
     }
     const partner = originPartners.get(id)
+    const pair =
+      partner !== undefined && !collapsedFeatureIds.has(partner)
+        ? partner
+        : undefined
+    const box = boxOf(id)
     // A null top means the stack passed GranularRectLayout's own 10000px
     // `maxHeight`, not the display's slot; `countTruncatedFeatures` owns up
     // to it.
-    if (partner !== undefined && !collapsedFeatureIds.has(partner)) {
-      const top = layout.addRectsAtOneTop([boxOf(id), boxOf(partner)])
-      layoutMap.set(partner, top === null ? OFFSCREEN_Y : top)
-      layoutHeights.set(partner, packed.get(partner)!.height)
-      layoutMap.set(id, top === null ? OFFSCREEN_Y : top)
-    } else {
-      const { leftPx, rightPx, labelRows } = reservedBoxPx(
-        ext,
-        features.get(id)!,
-        bpPerPx,
-      )
-      const top = layout.addRect(id, leftPx, rightPx, ext.height, labelRows)
-      layoutMap.set(id, top === null ? OFFSCREEN_Y : top)
-    }
+    const top =
+      pair === undefined
+        ? layout.addRect(id, box.left, box.right, box.height, box.lower)
+        : layout.addRectsAtOneTop([box, boxOf(pair)])
+    const y = top === null ? OFFSCREEN_Y : top
+    layoutMap.set(id, y)
     layoutHeights.set(id, ext.height)
+    if (pair !== undefined) {
+      layoutMap.set(pair, y)
+      layoutHeights.set(pair, packed.get(pair)!.height)
+    }
   }
 
   return {
