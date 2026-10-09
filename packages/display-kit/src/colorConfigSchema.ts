@@ -390,10 +390,12 @@ export const colorDomainEndsSlots = {
 
 /**
  * The quantile an open end of a linear or log color scale follows over the
- * loaded values, the rule `scales.y.domainQuantile` names alike: 1 spans
- * their extremes, and below it each end is clipped at that quantile of the
- * values on its side of 0, so one spike no longer takes the whole ramp and a
- * ramp over MAPQ or GC spans the data rather than starting at 0.
+ * loaded values: 1 spans their extremes, and below it each end is clipped at
+ * that quantile of the values on its side of 0, so one spike no longer takes
+ * the whole ramp and a ramp over GC spans the data rather than starting at 0.
+ * `scales.y.domainQuantile` names a looser rule, fencing an end at twice the
+ * span its quantile draws, since an axis wants headroom past a spike and a
+ * saturated color hides nothing its key does not say.
  */
 export const colorDomainQuantileSlot = {
   domainQuantile: {
