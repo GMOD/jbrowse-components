@@ -1075,7 +1075,7 @@ export const hprcGraphSpecs: ScreenshotSpec[] = [
     hideTooltip: true,
     stages: [
       {
-        viewportHeight: 1060,
+        viewportHeight: 660,
         actions: [
           { type: 'delay', ms: 2000 },
           { type: 'rightclick', anchor: { graphNode: HPRC_ALLELE } },
@@ -1093,7 +1093,7 @@ export const hprcGraphSpecs: ScreenshotSpec[] = [
       },
       {
         url: MHC_FORCE_LAUNCH,
-        viewportHeight: 1330,
+        viewportHeight: 930,
         actions: [
           { type: 'delay', ms: 2000 },
           { type: 'rightclick', anchor: { graphNode: HPRC_ALLELE } },

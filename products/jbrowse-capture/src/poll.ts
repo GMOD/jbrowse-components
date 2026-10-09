@@ -1,4 +1,7 @@
-import type { Page } from 'puppeteer'
+import type { Frame, Page } from 'puppeteer'
+
+/** A page, or a frame inside one such as an embedded JBrowse's iframe. */
+export type PageOrFrame = Page | Frame
 
 /** The budget each stage of the ready chain gets unless told otherwise. */
 export const DEFAULT_TIMEOUT = 60000
@@ -40,6 +43,12 @@ export async function holdTrue(
   return false
 }
 
+function isGone(target: PageOrFrame): boolean {
+  return 'page' in target
+    ? target.detached || isGone(target.page())
+    : target.isClosed() || !target.browser().connected
+}
+
 const PAGE_GONE = /crashed|Target closed|Session closed|Connection closed/i
 
 /**
@@ -48,7 +57,7 @@ const PAGE_GONE = /crashed|Target closed|Session closed|Connection closed/i
  * closed or crashed page throws, since no poll will recover it.
  */
 export async function queryWhileOpen<T, F>(
-  page: Page,
+  target: PageOrFrame,
   query: Promise<T>,
   fallback: F,
 ): Promise<T | F> {
@@ -56,11 +65,7 @@ export async function queryWhileOpen<T, F>(
     return await query
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error)
-    if (
-      PAGE_GONE.test(message) ||
-      page.isClosed() ||
-      !page.browser().connected
-    ) {
+    if (PAGE_GONE.test(message) || isGone(target)) {
       throw new Error(
         `the page closed or crashed before it finished rendering (${message})`,
         { cause: error },

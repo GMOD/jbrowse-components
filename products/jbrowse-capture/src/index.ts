@@ -38,6 +38,7 @@ export type {
   OpenOptions,
   OpenResult,
 } from './capture.ts'
+export type { PageOrFrame } from './poll.ts'
 export type { ReadyOptions, ReadyReport } from './ready.ts'
 export type { DisplayState, SessionExpectations } from './sessionGate.ts'
 export type { JBrowseUrlOptions } from './url.ts'

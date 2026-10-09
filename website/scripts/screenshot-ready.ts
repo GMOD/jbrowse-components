@@ -115,11 +115,29 @@ async function waitForPlainPage(
     for (const selector of readySelectors) {
       await waitForVisible(page, selector, { timeout })
     }
+    if (spec.readyFrame) {
+      await waitForEmbeddedJBrowse(page, spec.readyFrame, timeout)
+    }
     await page.waitForNetworkIdle({ idleTime: 500, timeout })
   } catch (e) {
     await debugDump(page, spec.name)
     throw e
   }
+}
+
+async function waitForEmbeddedJBrowse(
+  page: Page,
+  selector: string,
+  timeout: number,
+) {
+  const frame = await (
+    await page.waitForSelector(selector, { timeout })
+  )?.contentFrame()
+  if (!frame) {
+    throw new Error(`${selector} holds no frame`)
+  }
+  await waitForSession(frame, { timeout })
+  await waitForFrame(frame, { timeout })
 }
 
 /**

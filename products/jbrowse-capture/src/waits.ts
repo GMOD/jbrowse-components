@@ -1,7 +1,8 @@
 import { DEFAULT_TIMEOUT, holdTrue, queryWhileOpen } from './poll.ts'
 import { describeDisplays, displayCensusInPage } from './sessionGate.ts'
 
-import type { ElementHandle, Page } from 'puppeteer'
+import type { PageOrFrame } from './poll.ts'
+import type { ElementHandle } from 'puppeteer'
 
 interface WaitOptions {
   timeout?: number
@@ -25,7 +26,7 @@ export const displayPainted = (testid: string) =>
 export const displaySettled = (testid: string) =>
   `[data-testid="${testid}"][data-display-phase="ready"]`
 
-async function describeDisplaysNow(page: Page) {
+async function describeDisplaysNow(page: PageOrFrame) {
   try {
     const { pending, tooLarge } = await page.evaluate(displayCensusInPage)
     const found = [
@@ -49,7 +50,7 @@ async function describeDisplaysNow(page: Page) {
  * painted and the phase it was in.
  */
 export async function waitForSelectorAttributed(
-  page: Page,
+  page: PageOrFrame,
   selector: string,
   { timeout = DEFAULT_TIMEOUT }: WaitOptions = {},
 ): Promise<ElementHandle> {
@@ -89,7 +90,7 @@ type SettleOptions = WaitOptions & { holdMs?: number; pollMs?: number }
  * or undefined once the hold passed.
  */
 export async function appSettledBlocker(
-  page: Page,
+  page: PageOrFrame,
   {
     timeout = DEFAULT_TIMEOUT,
     holdMs = APP_SETTLED_HOLD_MS,
@@ -142,6 +143,9 @@ export async function appSettledBlocker(
  * publishes `[data-app-phase]` throws, since nothing positive exists to wait
  * for.
  */
-export async function waitForAppSettled(page: Page, options?: SettleOptions) {
+export async function waitForAppSettled(
+  page: PageOrFrame,
+  options?: SettleOptions,
+) {
   return (await appSettledBlocker(page, options)) === undefined
 }

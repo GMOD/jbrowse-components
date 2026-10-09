@@ -7,8 +7,8 @@ import {
 } from './sessionGate.ts'
 import { appSettledBlocker } from './waits.ts'
 
+import type { PageOrFrame } from './poll.ts'
 import type { DisplayState, SessionExpectations } from './sessionGate.ts'
-import type { Page } from 'puppeteer'
 
 export interface ReadyOptions extends SessionExpectations {
   /** Budget for each wait stage. */
@@ -34,7 +34,7 @@ export interface ReadyReport {
  * held itself ready, every display has painted, and no error is on screen.
  */
 export async function waitForJBrowseReady(
-  page: Page,
+  page: PageOrFrame,
   options: ReadyOptions = {},
 ): Promise<ReadyReport> {
   await waitForSession(page, options)
@@ -46,7 +46,7 @@ export async function waitForJBrowseReady(
  * while the session did not, such as after a viewport resize.
  */
 export async function waitForFrame(
-  page: Page,
+  page: PageOrFrame,
   {
     timeout = DEFAULT_TIMEOUT,
     allowUnsettled = false,

@@ -1,6 +1,6 @@
 import { DEFAULT_TIMEOUT, holdTrue, queryWhileOpen } from './poll.ts'
 
-import type { Page } from 'puppeteer'
+import type { PageOrFrame } from './poll.ts'
 
 export interface SessionExpectations {
   /** Assembly that must be open on some view. */
@@ -62,7 +62,7 @@ export function readSessionInPage(): {
  * with what the census held instead.
  */
 export async function waitForSession(
-  page: Page,
+  page: PageOrFrame,
   {
     assembly,
     trackIds = [],

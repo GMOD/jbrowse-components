@@ -4,8 +4,8 @@ import { graphTrack } from './graph-fixtures.ts'
 import type { ScreenshotSpec } from '../screenshot-spec-types.ts'
 
 // The HPRC page and its graph launch, which open pangenome_hprc. The
-// session is the one the page's graph link carries (graphRegionUrl in
-// ~/src/jb2hubs/website/src/components/pangenomeLinks.ts), so re-copy it when
+// session is the one graphRegionUrl builds in
+// ~/src/jb2hubs/website/src/components/pangenomeLinks.ts, so re-copy it when
 // that repo moves a window or a launch prop.
 const HPRC_PAGE = 'https://genomes.jbrowse.org/pangenomes/hprc'
 // The page's HLA / MHC example is a link to this url.
@@ -16,11 +16,13 @@ export const PORTAL_CONFIG = encodeURIComponent(
 
 const MHC_WINDOW = { refName: 'chr6', start: 32510000, end: 32600000 }
 
-// The Graph launch, the first link in the answer's list.
-const MHC_GRAPH_LINK = 'section[aria-live] li:first-child a'
+// The answer's view switcher, which opens on Graph, and the frame it draws in.
+const GRAPH_VIEW_BUTTON = '[aria-label="View"] button[aria-pressed="true"]'
+const ANSWER_FRAME = 'iframe.ui-embed'
 
-// `loc` and `layoutMode` move the launched session the way the tutorial's
-// reader moves it after the launch.
+// The Graph launch as the tutorial's reader has it after hiding the variant
+// matrix under the graph, as its C4 step says: genes over the graph. `loc` and
+// `layoutMode` move it the way the reader does after that.
 export function portalGraphLaunch({
   loc = `${MHC_WINDOW.refName}:${MHC_WINDOW.start + 1}-${MHC_WINDOW.end}`,
   layoutMode = 'auto',
@@ -43,18 +45,8 @@ export function portalGraphLaunch({
           graphTrack('hprc_minigraph_segments', {
             layoutMode,
             color: { field: 'position' },
-            paneHeight: 420,
+            paneHeight: 320,
           }),
-          {
-            trackId: 'hprc_minigraph_bubbles',
-            type: 'LinearBasicDisplay',
-            height: 90,
-          },
-          {
-            trackId: 'hprc_minigraph_alleles',
-            type: 'LinearAlignmentsDisplay',
-            height: 120,
-          },
         ],
       },
     ],
@@ -127,22 +119,25 @@ export function portalHaplotypeLanes(locus: { loc: string; lanes: string[] }) {
 }
 
 export const genomesPangenomeSpecs: ScreenshotSpec[] = [
-  // The answer arrives after the page: its section holds the launches and the
-  // structural forms read from the sidecar.
+  // The answer arrives after the page: its section holds the view switcher, the
+  // Graph launch drawn in a frame, and the structural forms read from the
+  // sidecar.
   {
     mode: 'url',
     name: 'pangenome/genomes_hprc_loci',
     noSession: true,
     url: HPRC_MHC_ANSWER,
-    readySelector: MHC_GRAPH_LINK,
+    readySelector: GRAPH_VIEW_BUTTON,
+    readyFrame: ANSWER_FRAME,
+    readyTimeout: 180000,
     viewportWidth: 1100,
-    viewportHeight: 1100,
+    viewportHeight: 2205,
     liveLabel: 'Open the HPRC page',
     diffThreshold: 0.02,
     annotations: [
       {
         type: 'box',
-        anchor: { selector: MHC_GRAPH_LINK },
+        anchor: { selector: GRAPH_VIEW_BUTTON },
         strokeWidth: 3,
       },
     ],

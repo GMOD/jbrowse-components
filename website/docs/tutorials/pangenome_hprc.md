@@ -78,22 +78,24 @@ the graph, by URL.
 Open the [HPRC page](https://genomes.jbrowse.org/pangenomes/hprc). It has one
 **Gene or region** box, with a row of **Examples** under it. Click an example,
 or type a gene symbol or a region such as `chr6:32,510,001-32,600,000` and press
-**Show**. The page answers with that window's launches, each with a line on what
-it draws:
+**Show**. The page answers with the window drawn in JBrowse, and a row of
+buttons choosing what it draws:
 
-- **Graph**: the region drawn as a graph
-- **Variants**: the structural variants each haplotype carries
+- **Graph**: the region drawn as a graph, with the structural variants each
+  haplotype carries under it
+- **Variants**: the structural variants each haplotype carries, over the genes
 - **Haplotypes**: one lane per structural form, commonest first
 - **BandageJS**: the same haplotypes in
   [BandageJS](https://jbrowse.org/demos/bandagejs/)
 
-Under the launches, a sentence counts the structural forms the 464 haplotypes
-fall into in the window, and a **Lane / Structure / Haplotypes / Share** table
-names the haplotype that stands for each form, how the form differs from GRCh38
-and how many share it. Those are the lanes **Haplotypes** and **BandageJS**
-open. A window over 150 kb offers the graph alone.
+**Open in full JBrowse** opens the view shown in a tab of its own. Under the
+view, a sentence counts the structural forms the 464 haplotypes fall into in the
+window, and a **Lane / Structure / Haplotypes / Share** table names the
+haplotype that stands for each form, how the form differs from GRCh38 and how
+many share it. Those are the lanes **Haplotypes** and **BandageJS** open. A
+window over 150 kb offers the graph alone.
 
-<Figure caption="The HPRC page answering its HLA / MHC example: the Gene or region box and its examples, then the window's launches and the structural forms its haplotypes carry. The boxed link is the Graph launch." src="/img/pangenome/genomes_hprc_loci.png" />
+<Figure caption="The HPRC page answering its HLA / MHC example: the Gene or region box and its examples, then the Graph view drawn in the page and the structural forms its haplotypes carry. The boxed button is Graph." src="/img/pangenome/genomes_hprc_loci.png" />
 
 ## What the graph and the page do not show {#limits}
 
@@ -154,12 +156,13 @@ overview and writes the `coarse` slot.
 
 ## The C4 locus as a graph
 
-Click the **HLA / MHC** example on the HPRC page, then **Graph**. The launch
-opens four tracks: genes, the graph in the force-directed layout, then the
-bubbles and the allele inventory (one row per allele) under it. Then:
+Click the **HLA / MHC** example on the HPRC page, then **Open in full JBrowse**.
+The Graph view opens three tracks: genes, the graph in the force-directed
+layout, and under it a matrix of the structural variants each haplotype carries,
+one row per haplotype. Then:
 
-- Hide the bubbles and the allele inventory in the track selector, leaving the
-  genes over the graph.
+- Hide the variant matrix in the track selector, leaving the genes over the
+  graph.
 - Type `C4A` in the location box, pick the chr6 hit, and zoom out twice to take
   in _C4B_.
 

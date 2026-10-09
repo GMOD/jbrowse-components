@@ -313,6 +313,9 @@ export interface SessionUrlSpec extends CommonSpecFields {
   // census — so `readyText` or `readySelector` is its whole positive signal,
   // followed by network idle
   noSession?: boolean
+  // CSS selector of an iframe holding a JBrowse on a noSession page: the
+  // capture also waits for that JBrowse's session and paint gates
+  readyFrame?: string
   // the spec's `assembly` presets an import form rather than opening a view,
   // so the census has no open assembly to wait for
   formAssembly?: boolean
