@@ -1758,14 +1758,16 @@ export function stateModelFactory(
         /**
          * #getter
          * The one block the column layout draws: the whole canvas, spanning
-         * the column indices.
+         * the column indices. One column wide when there are none, since the
+         * GPU backend skips a block with no span and the canvas would never
+         * count as painted.
          */
         get matrixBlocks(): VariantMatrixRenderBlock[] {
           return [
             {
               displayedRegionIndex: 0,
               start: 0,
-              end: this.columnGeometry.n,
+              end: Math.max(this.columnGeometry.n, 1),
               screenStartPx: 0,
               screenEndPx: self.matrixWidth,
               reversed: false,

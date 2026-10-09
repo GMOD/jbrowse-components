@@ -194,3 +194,12 @@ test('scrolling the rows does not invalidate the width the canvas is sized by', 
   expect(display.scrollTop).toBe(100)
   expect(widthReads).toBe(1)
 })
+
+// A GPU backend skips a block with no span, and a canvas nothing painted
+// leaves the display on its loading scrim.
+test('a window with no variants still gives the matrix a block with a span', () => {
+  const { display } = loadedDisplay({ starts: [] })
+
+  expect(display.columnGeometry.n).toBe(0)
+  expect(display.matrixBlocks).toMatchObject([{ start: 0, end: 1 }])
+})

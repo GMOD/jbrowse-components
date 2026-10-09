@@ -39,8 +39,8 @@ test('a loaded region whose data the last payload replaced is not cache-valid', 
 })
 
 // `regionHasData` records the regions the commit named, not the payload's
-// keys: a region with no variants gets no `perRegionCellData` entry, and
-// reading that as "no data" would refetch an empty region forever.
+// keys, so a payload that names no region is still read as answered and an
+// empty region is not refetched forever.
 test('an empty region the fetch covered stays cache-valid', () => {
   const display = twoRegionsLoaded()
   display.setCellData(payload(), [0, 1])

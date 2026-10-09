@@ -45,7 +45,9 @@ function paintedLegendFlags(passes: { paintedCategories: number }[]) {
 // At genomic positions, each displayed region's in file order, so overlapping
 // records paint later over earlier whatever order the merged fetches arrived
 // in. In columns, every record once under 0, in the screen order its column
-// index is. A region with no records gets no payload.
+// index is. A block with no records still gets a payload, an empty one: the
+// canvas counts as painted only once a block on screen has a payload, so a
+// window with no records at all would otherwise read as loading for good.
 function recordsByBlock({
   layout,
   regions,
@@ -59,7 +61,7 @@ function recordsByBlock({
   filteredVariants: FilteredVariant[]
 }): Map<number, FilteredVariant[]> {
   if (layout === 'columns') {
-    return new Map(filteredVariants.length ? [[0, filteredVariants]] : [])
+    return new Map([[0, filteredVariants]])
   }
   return groupFeaturesByRegion(
     [...filteredVariants].sort(

@@ -31,7 +31,10 @@ matrix to its backend as region 0.
 - **One payload shape.** `CellDataResult` is the fetch's flags plus
   `perRegionCellData: Record<number, VariantCellData>`: one entry per block the
   layout draws, under each displayed region's index at genomic positions and
-  under 0 for the columns. A block with no records has no entry.
+  under 0 for the columns. A block with no records has an empty entry: a
+  backend answers "painted" only for a block that has one, so a window holding
+  no records (HPRC's callset has none across chr8:7,546,668-8,096,808) stayed
+  on the loading scrim until it had.
 - **One cell loop.** `computeVariantCells` builds every payload. The RPC's
   `layout: 'genomic' | 'columns'` decides only how the records are grouped
   into blocks, per displayed region in file order or all of them once in

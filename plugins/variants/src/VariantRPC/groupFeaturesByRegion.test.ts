@@ -27,7 +27,7 @@ test('keeps a feature that starts before the region but overlaps it', () => {
   expect(ids(grouped.get(0))).toEqual(['bigdel', 'snp'])
 })
 
-test('drops a feature that only touches the region boundary', () => {
+test('drops a feature that only touches the region boundary, leaving the region empty', () => {
   const grouped = groupFeaturesByRegion(
     [
       feat('before', 'ctgA', 5000, 10000),
@@ -37,7 +37,7 @@ test('drops a feature that only touches the region boundary', () => {
     [region],
     f => f,
   )
-  expect(grouped.get(0)).toBeUndefined()
+  expect(grouped.get(0)).toEqual([])
 })
 
 test('files a feature spanning two regions under both', () => {
