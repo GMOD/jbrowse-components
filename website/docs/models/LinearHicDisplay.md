@@ -148,7 +148,7 @@ Each section ends with the members a composed model contributes, linked to the p
 | Member | Description |
 | --- | --- |
 | <span id="action-startrenderingbackend">**startRenderingBackend**</span><br><code>(backend: HicRenderingBackend) =&gt; void</code> |  |
-| <span id="action-setcolorscale">**setColorScale**</span><br><code>(scale?: "linear" &#124; "log" &#124; undefined) =&gt; void</code> | `color.scale`; undefined returns it to `count`'s linear preset. |
+| <span id="action-setlogscale">**setLogScale**</span><br><code>(log: boolean) =&gt; void</code> | The Log scale toggle: `color.scale` log, or unset for `count`'s linear preset. |
 | <span id="action-setcolorfollowspercentile">**setColorFollowsPercentile**</span><br><code>(f: boolean) =&gt; void</code> |  |
 | <span id="action-setshowresolutioncontrols">**setShowResolutionControls**</span><br><code>(f: boolean) =&gt; void</code> |  |
 | <span id="action-setcolorscheme">**setColorScheme**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>(scheme: "blues" &#124; "blueyellowred" &#124; "cividis" &#124; "fall" &#124; "infe…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>(scheme: "blues" &#124; "blueyellowred" &#124; "cividis" &#124; "fall" &#124; "inferno" &#124; "juicebox" &#124; "magma" &#124; "purpleorange" &#124; "redblue" &#124; "redgreyblue" &#124; "reds" &#124; "viridis") =&gt; void</code></pre></dialog></span> | The scheme, with `reverse` back to unset so it follows the scheme. |

@@ -4113,6 +4113,14 @@
       ],
       "worker": "real"
     },
+    "@jbrowse/display-kit/ColorWritesMixin": {
+      "package": "@jbrowse/display-kit",
+      "names": [
+        "default",
+        "writtenColorOf"
+      ],
+      "worker": "real"
+    },
     "@jbrowse/display-kit/ConfigProblemsIndicator": {
       "package": "@jbrowse/display-kit",
       "names": [

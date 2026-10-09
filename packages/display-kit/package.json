@@ -145,6 +145,7 @@
       "./ChromeHighlight": "./esm/ChromeHighlight.js",
       "./ChromeLegend": "./esm/ChromeLegend.js",
       "./CoarseTierMixin": "./esm/CoarseTierMixin.js",
+      "./ColorWritesMixin": "./esm/ColorWritesMixin.js",
       "./ContextMenuMixin": "./esm/ContextMenuMixin.js",
       "./DensityTierMixin": "./esm/DensityTierMixin.js",
       "./DisplayBackgroundProgress": "./esm/DisplayBackgroundProgress.js",

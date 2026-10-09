@@ -405,6 +405,7 @@ export default [
   '@jbrowse/display-kit/coarseTierPhase',
   '@jbrowse/display-kit/colorByMenu',
   '@jbrowse/display-kit/colorConfigSchema',
+  '@jbrowse/display-kit/ColorWritesMixin',
   '@jbrowse/display-kit/ConfigProblemsIndicator',
   '@jbrowse/display-kit/configSchema',
   '@jbrowse/display-kit/const',

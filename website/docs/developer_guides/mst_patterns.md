@@ -105,6 +105,7 @@ so the mixins cannot be chained on one at a time the way `.views()` and
   MultiRegionDisplayMixin(),
   CoarseTierMixin<MafRegionPayload<MafSummaryRecord[]>>(),
   LegendMixin(),
+  ColorWritesMixin(),
   RowHeightMixin(),
   TreeSidebarMixin<MafSource>(),
   ContextMenuMixin<MafContextMenuInfo>(),

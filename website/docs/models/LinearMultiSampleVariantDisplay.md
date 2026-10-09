@@ -293,8 +293,6 @@ Each section ends with the members a composed model contributes, linked to the p
 | <span id="action-setreferencedrawingmode">**setReferenceDrawingMode**</span><br><code>(arg: string) =&gt; void</code> |  |
 | <span id="action-setshowrowseparators">**setShowRowSeparators**</span><br><code>(arg: boolean) =&gt; void</code> |  |
 | <span id="action-setshowtooltips">**setShowTooltips**</span><br><code>(arg: boolean) =&gt; void</code> |  |
-| <span id="action-setcolorfield">**setColorField**</span><br><code>(field: string) =&gt; void</code> | Paint the alt cells by a field, or by the genotype colors with `''`, which keeps the field under `scale: 'none'` for the way back. A fetch input only where it names a different field. |
-| <span id="action-setcolor">**setColor**</span><br><code>(color: Record&lt;string, unknown&gt;) =&gt; void</code> | Replace the whole `color` object, as the field dialog does when it writes cut points with the field. |
 | <span id="action-setshadebydosage">**setShadeByDosage**</span><br><code>(arg: boolean) =&gt; void</code> | Turn dosage shading on or off; the main thread repaints the loaded cells. |
 | <span id="action-setshowvariantlane">**setShowVariantLane**</span><br><code>(arg: boolean) =&gt; void</code> | Switch the variant lane on or off; it takes its space from the rows. |
 | <span id="action-setvariantlaneheight">**setVariantLaneHeight**</span><br><code>(arg: number) =&gt; void</code> | Resize the variant lane, clamped here because a drag can deliver any number and a band dragged shut has to stay grabbable. |
@@ -322,6 +320,8 @@ Each section ends with the members a composed model contributes, linked to the p
 <span data-pagefind-ignore>From [FetchMixin](../fetchmixin): <span id="action-stopactivefetch">[`stopActiveFetch`](../fetchmixin#action-stopactivefetch)</span>, <span id="action-openstatusstream">[`openStatusStream`](../fetchmixin#action-openstatusstream)</span>, <span id="action-cancelfetch">[`cancelFetch`](../fetchmixin#action-cancelfetch)</span>, <span id="action-cancelfetchbyuser">[`cancelFetchByUser`](../fetchmixin#action-cancelfetchbyuser)</span>, <span id="action-beforedestroy">[`beforeDestroy`](../fetchmixin#action-beforedestroy)</span>, <span id="action-beginfetch">[`beginFetch`](../fetchmixin#action-beginfetch)</span>, <span id="action-endfetch">[`endFetch`](../fetchmixin#action-endfetch)</span>, <span id="action-runfetch">[`runFetch`](../fetchmixin#action-runfetch)</span></span>
 
 <span data-pagefind-ignore>From [LegendMixin](../legendmixin): <span id="action-setshowlegend">[`setShowLegend`](../legendmixin#action-setshowlegend)</span>, <span id="action-dismisslegendsection">[`dismissLegendSection`](../legendmixin#action-dismisslegendsection)</span></span>
+
+<span data-pagefind-ignore>From [ColorWritesMixin](../colorwritesmixin): <span id="action-colorbyfield">[`colorByField`](../colorwritesmixin#action-colorbyfield)</span>, <span id="action-setcolorvalue">[`setColorValue`](../colorwritesmixin#action-setcolorvalue)</span></span>
 
 <span data-pagefind-ignore>From [RowHeightMixin](../rowheightmixin): <span id="action-setrowheight">[`setRowHeight`](../rowheightmixin#action-setrowheight)</span></span>
 

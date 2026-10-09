@@ -11,160 +11,161 @@ import * as m5 from '@jbrowse/display-kit/CoarseTierMixin'
 import * as m6 from '@jbrowse/display-kit/coarseTierPhase'
 import * as m7 from '@jbrowse/display-kit/colorByMenu'
 import * as m8 from '@jbrowse/display-kit/colorConfigSchema'
-import * as m9 from '@jbrowse/display-kit/ConfigProblemsIndicator'
-import * as m10 from '@jbrowse/display-kit/configSchema'
-import * as m11 from '@jbrowse/display-kit/const'
-import * as m12 from '@jbrowse/display-kit/ContextMenuMixin'
-import * as m13 from '@jbrowse/display-kit/densityTier'
-import * as m14 from '@jbrowse/display-kit/densityTierConfigSchemaFields'
-import * as m15 from '@jbrowse/display-kit/densityTierMenu'
-import * as m16 from '@jbrowse/display-kit/DensityTierMixin'
-import * as m17 from '@jbrowse/display-kit/displayAutoruns'
-import * as m18 from '@jbrowse/display-kit/DisplayBackgroundProgress'
-import * as m19 from '@jbrowse/display-kit/DisplayChrome'
-import * as m20 from '@jbrowse/display-kit/DisplayChromeBase'
-import * as m21 from '@jbrowse/display-kit/DisplayContextMenu'
-import * as m22 from '@jbrowse/display-kit/DisplayErrorBar'
-import * as m23 from '@jbrowse/display-kit/DisplayLoadingOverlay'
-import * as m24 from '@jbrowse/display-kit/DisplayRenderErrorOverlay'
-import * as m25 from '@jbrowse/display-kit/facetConfigSchema'
-import * as m26 from '@jbrowse/display-kit/fetchEachRegion'
-import * as m27 from '@jbrowse/display-kit/fetchInputs'
-import * as m28 from '@jbrowse/display-kit/FetchMixin'
-import * as m29 from '@jbrowse/display-kit/floatingLabelHost'
-import * as m30 from '@jbrowse/display-kit/foundationDisplayPhase'
-import * as m31 from '@jbrowse/display-kit/foundationPaintInert'
-import * as m32 from '@jbrowse/display-kit/foundationSvgReady'
-import * as m33 from '@jbrowse/display-kit/foundationView'
-import * as m34 from '@jbrowse/display-kit/gateCommit'
-import * as m35 from '@jbrowse/display-kit/GlobalFetchMixin'
-import * as m36 from '@jbrowse/display-kit/groupByMenu'
-import * as m37 from '@jbrowse/display-kit/GroupLabelBox'
-import * as m38 from '@jbrowse/display-kit/GroupLabelChips'
-import * as m39 from '@jbrowse/display-kit/groupLabelChipStyles'
-import * as m40 from '@jbrowse/display-kit/groupLabelStyle'
-import * as m41 from '@jbrowse/display-kit/heightMode'
-import * as m42 from '@jbrowse/display-kit/heightModeConfigSchemaFields'
-import * as m43 from '@jbrowse/display-kit/heightModeMenu'
-import * as m44 from '@jbrowse/display-kit/HeightModeMixin'
-import * as m45 from '@jbrowse/display-kit/heldColorSlots'
-import * as m46 from '@jbrowse/display-kit/HiddenGroupsMixin'
-import * as m47 from '@jbrowse/display-kit/highlightHost'
-import * as m48 from '@jbrowse/display-kit/installClearHoverOnViewportChange'
-import * as m49 from '@jbrowse/display-kit/installGlobalFetchAutorun'
-import * as m50 from '@jbrowse/display-kit/installPerRegionFetchAutoruns'
-import * as m51 from '@jbrowse/display-kit/jexlFilterConfigSchemaFields'
-import * as m52 from '@jbrowse/display-kit/KeyedFetchMixin'
-import * as m53 from '@jbrowse/display-kit/legendHost'
-import * as m54 from '@jbrowse/display-kit/LegendMixin'
-import * as m55 from '@jbrowse/display-kit/MarkSvgLayer'
-import * as m56 from '@jbrowse/display-kit/MultiRegionDisplayMixin'
-import * as m57 from '@jbrowse/display-kit/planRegionFetch'
-import * as m58 from '@jbrowse/display-kit/PlotDialog'
-import * as m59 from '@jbrowse/display-kit/plotMenu'
-import * as m60 from '@jbrowse/display-kit/regionCommit'
-import * as m61 from '@jbrowse/display-kit/regionHost'
-import * as m62 from '@jbrowse/display-kit/regionTooLargeConfigSchemaFields'
-import * as m63 from '@jbrowse/display-kit/RegionTooLargeMixin'
-import * as m64 from '@jbrowse/display-kit/regionTooLargeUtils'
-import * as m65 from '@jbrowse/display-kit/renderDisplaySvg'
-import * as m66 from '@jbrowse/display-kit/retiredSettings'
-import * as m67 from '@jbrowse/display-kit/rowArrangementConfigSchema'
-import * as m68 from '@jbrowse/display-kit/rowColorConfigSchema'
-import * as m69 from '@jbrowse/display-kit/rowsConfigSchema'
-import * as m70 from '@jbrowse/display-kit/rpcArgs'
-import * as m71 from '@jbrowse/display-kit/sampleRowsConfigSchema'
-import * as m72 from '@jbrowse/display-kit/sectionFacetConfigSchema'
-import * as m73 from '@jbrowse/display-kit/SkippedFeaturesIndicator'
-import * as m74 from '@jbrowse/display-kit/SolidColorDialog'
-import * as m75 from '@jbrowse/display-kit/stableIdentityComputed'
-import * as m76 from '@jbrowse/display-kit/StoredHoverMixin'
-import * as m77 from '@jbrowse/display-kit/subPixelBinBp'
-import * as m78 from '@jbrowse/display-kit/TooLargeMessage'
-import * as m79 from '@jbrowse/display-kit/TrackControl'
-import * as m80 from '@jbrowse/display-kit/trackHeightConfigSchemaFields'
-import * as m81 from '@jbrowse/display-kit/TrackHeightIndicator'
-import * as m82 from '@jbrowse/display-kit/TrackHeightMixin'
-import * as m83 from '@jbrowse/display-kit/TriangleMatrixMixin'
-import * as m84 from '@jbrowse/display-kit/TriangleMatrixSvgLayer'
-import * as m85 from '@jbrowse/display-kit/triangleTransform'
-import * as m86 from '@jbrowse/display-kit/types'
-import * as m87 from '@jbrowse/display-kit/viewportEmpty'
-import * as m88 from '@jbrowse/display-kit/viewRegionTable'
-import * as m89 from '@jbrowse/display-ui'
-import * as m90 from '@jbrowse/display-ui/axisPlacement'
-import * as m91 from '@jbrowse/display-ui/embed'
-import * as m92 from '@jbrowse/display-ui/yAxisConstants'
-import * as m93 from '@jbrowse/display-ui/yScaleTicks'
-import * as m94 from '@jbrowse/render-core/blockClipUtils'
-import * as m95 from '@jbrowse/render-core/canvas2dUtils'
-import * as m96 from '@jbrowse/render-core/canvasContext'
-import * as m97 from '@jbrowse/render-core/colorRampLut'
-import * as m98 from '@jbrowse/render-core/computePipeline'
-import * as m99 from '@jbrowse/render-core/contractReports'
-import * as m100 from '@jbrowse/render-core/coverageBand'
-import * as m101 from '@jbrowse/render-core/coverageBandBuffers'
-import * as m102 from '@jbrowse/render-core/createRenderingBackend'
-import * as m103 from '@jbrowse/render-core/displayPhase'
-import * as m104 from '@jbrowse/render-core/encodeMemo'
-import * as m105 from '@jbrowse/render-core/gpuDevice'
-import * as m106 from '@jbrowse/render-core/graphicsCapabilities'
-import * as m107 from '@jbrowse/render-core/hal'
-import * as m108 from '@jbrowse/render-core/installUpload'
-import * as m109 from '@jbrowse/render-core/instanceCache'
-import * as m110 from '@jbrowse/render-core/instancePass'
-import * as m111 from '@jbrowse/render-core/linkFeet'
-import * as m112 from '@jbrowse/render-core/marks'
-import * as m113 from '@jbrowse/render-core/marks/backend'
-import * as m114 from '@jbrowse/render-core/marks/colorFill'
-import * as m115 from '@jbrowse/render-core/marks/drawAgainstHit'
-import * as m116 from '@jbrowse/render-core/marks/ellipseDistance'
-import * as m117 from '@jbrowse/render-core/marks/glyphPaint'
-import * as m118 from '@jbrowse/render-core/marks/hit'
-import * as m119 from '@jbrowse/render-core/namedReactions'
-import * as m120 from '@jbrowse/render-core/OverlayCanvas'
-import * as m121 from '@jbrowse/render-core/perRegionRenderingBackend'
-import * as m122 from '@jbrowse/render-core/regionDataMap'
-import * as m123 from '@jbrowse/render-core/renderBlock'
-import * as m124 from '@jbrowse/render-core/RenderCanvas'
-import * as m125 from '@jbrowse/render-core/renderingBackendBase'
-import * as m126 from '@jbrowse/render-core/RenderLifecycleMixin'
-import * as m127 from '@jbrowse/render-core/scoreScale'
-import * as m128 from '@jbrowse/render-core/ScrollLockedOverlay'
-import * as m129 from '@jbrowse/render-core/shaders/antialias'
-import * as m130 from '@jbrowse/render-core/shaders/barMarkIface'
-import * as m131 from '@jbrowse/render-core/shaders/capsule'
-import * as m132 from '@jbrowse/render-core/shaders/capsuleConsts'
-import * as m133 from '@jbrowse/render-core/shaders/clipStrip'
-import * as m134 from '@jbrowse/render-core/shaders/clipStripConsts'
-import * as m135 from '@jbrowse/render-core/shaders/colorRampLut'
-import * as m136 from '@jbrowse/render-core/shaders/coverageBar'
-import * as m137 from '@jbrowse/render-core/shaders/coverageIndicator'
-import * as m138 from '@jbrowse/render-core/shaders/coverageInterbase'
-import * as m139 from '@jbrowse/render-core/shaders/coverageMod'
-import * as m140 from '@jbrowse/render-core/shaders/coverageSnp'
-import * as m141 from '@jbrowse/render-core/shaders/curveDistance'
-import * as m142 from '@jbrowse/render-core/shaders/hpmath'
-import * as m143 from '@jbrowse/render-core/shaders/lineCenterMarkIface'
-import * as m144 from '@jbrowse/render-core/shaders/lineCommonConsts'
-import * as m145 from '@jbrowse/render-core/shaders/lineStepMarkIface'
-import * as m146 from '@jbrowse/render-core/shaders/linkMark'
-import * as m147 from '@jbrowse/render-core/shaders/linkMarkConsts'
-import * as m148 from '@jbrowse/render-core/shaders/markColorConsts'
-import * as m149 from '@jbrowse/render-core/shaders/pointGlyph'
-import * as m150 from '@jbrowse/render-core/shaders/pointGlyphConsts'
-import * as m151 from '@jbrowse/render-core/shaders/pointMark'
-import * as m152 from '@jbrowse/render-core/shaders/pointMarkConsts'
-import * as m153 from '@jbrowse/render-core/shaders/pointMarkIface'
-import * as m154 from '@jbrowse/render-core/shaders/rowRect'
-import * as m155 from '@jbrowse/render-core/shaders/rowRectConsts'
-import * as m156 from '@jbrowse/render-core/shaders/scoreScale'
-import * as m157 from '@jbrowse/render-core/shaders/spanMarkIface'
-import * as m158 from '@jbrowse/render-core/sharedBackendKey'
-import * as m159 from '@jbrowse/render-core/slangPass'
-import * as m160 from '@jbrowse/render-core/useGraphicsCapabilities'
-import * as m161 from '@jbrowse/render-core/useRenderingBackend'
-import * as m162 from '@jbrowse/render-core/useTabVisibilityRerender'
+import * as m9 from '@jbrowse/display-kit/ColorWritesMixin'
+import * as m10 from '@jbrowse/display-kit/ConfigProblemsIndicator'
+import * as m11 from '@jbrowse/display-kit/configSchema'
+import * as m12 from '@jbrowse/display-kit/const'
+import * as m13 from '@jbrowse/display-kit/ContextMenuMixin'
+import * as m14 from '@jbrowse/display-kit/densityTier'
+import * as m15 from '@jbrowse/display-kit/densityTierConfigSchemaFields'
+import * as m16 from '@jbrowse/display-kit/densityTierMenu'
+import * as m17 from '@jbrowse/display-kit/DensityTierMixin'
+import * as m18 from '@jbrowse/display-kit/displayAutoruns'
+import * as m19 from '@jbrowse/display-kit/DisplayBackgroundProgress'
+import * as m20 from '@jbrowse/display-kit/DisplayChrome'
+import * as m21 from '@jbrowse/display-kit/DisplayChromeBase'
+import * as m22 from '@jbrowse/display-kit/DisplayContextMenu'
+import * as m23 from '@jbrowse/display-kit/DisplayErrorBar'
+import * as m24 from '@jbrowse/display-kit/DisplayLoadingOverlay'
+import * as m25 from '@jbrowse/display-kit/DisplayRenderErrorOverlay'
+import * as m26 from '@jbrowse/display-kit/facetConfigSchema'
+import * as m27 from '@jbrowse/display-kit/fetchEachRegion'
+import * as m28 from '@jbrowse/display-kit/fetchInputs'
+import * as m29 from '@jbrowse/display-kit/FetchMixin'
+import * as m30 from '@jbrowse/display-kit/floatingLabelHost'
+import * as m31 from '@jbrowse/display-kit/foundationDisplayPhase'
+import * as m32 from '@jbrowse/display-kit/foundationPaintInert'
+import * as m33 from '@jbrowse/display-kit/foundationSvgReady'
+import * as m34 from '@jbrowse/display-kit/foundationView'
+import * as m35 from '@jbrowse/display-kit/gateCommit'
+import * as m36 from '@jbrowse/display-kit/GlobalFetchMixin'
+import * as m37 from '@jbrowse/display-kit/groupByMenu'
+import * as m38 from '@jbrowse/display-kit/GroupLabelBox'
+import * as m39 from '@jbrowse/display-kit/GroupLabelChips'
+import * as m40 from '@jbrowse/display-kit/groupLabelChipStyles'
+import * as m41 from '@jbrowse/display-kit/groupLabelStyle'
+import * as m42 from '@jbrowse/display-kit/heightMode'
+import * as m43 from '@jbrowse/display-kit/heightModeConfigSchemaFields'
+import * as m44 from '@jbrowse/display-kit/heightModeMenu'
+import * as m45 from '@jbrowse/display-kit/HeightModeMixin'
+import * as m46 from '@jbrowse/display-kit/heldColorSlots'
+import * as m47 from '@jbrowse/display-kit/HiddenGroupsMixin'
+import * as m48 from '@jbrowse/display-kit/highlightHost'
+import * as m49 from '@jbrowse/display-kit/installClearHoverOnViewportChange'
+import * as m50 from '@jbrowse/display-kit/installGlobalFetchAutorun'
+import * as m51 from '@jbrowse/display-kit/installPerRegionFetchAutoruns'
+import * as m52 from '@jbrowse/display-kit/jexlFilterConfigSchemaFields'
+import * as m53 from '@jbrowse/display-kit/KeyedFetchMixin'
+import * as m54 from '@jbrowse/display-kit/legendHost'
+import * as m55 from '@jbrowse/display-kit/LegendMixin'
+import * as m56 from '@jbrowse/display-kit/MarkSvgLayer'
+import * as m57 from '@jbrowse/display-kit/MultiRegionDisplayMixin'
+import * as m58 from '@jbrowse/display-kit/planRegionFetch'
+import * as m59 from '@jbrowse/display-kit/PlotDialog'
+import * as m60 from '@jbrowse/display-kit/plotMenu'
+import * as m61 from '@jbrowse/display-kit/regionCommit'
+import * as m62 from '@jbrowse/display-kit/regionHost'
+import * as m63 from '@jbrowse/display-kit/regionTooLargeConfigSchemaFields'
+import * as m64 from '@jbrowse/display-kit/RegionTooLargeMixin'
+import * as m65 from '@jbrowse/display-kit/regionTooLargeUtils'
+import * as m66 from '@jbrowse/display-kit/renderDisplaySvg'
+import * as m67 from '@jbrowse/display-kit/retiredSettings'
+import * as m68 from '@jbrowse/display-kit/rowArrangementConfigSchema'
+import * as m69 from '@jbrowse/display-kit/rowColorConfigSchema'
+import * as m70 from '@jbrowse/display-kit/rowsConfigSchema'
+import * as m71 from '@jbrowse/display-kit/rpcArgs'
+import * as m72 from '@jbrowse/display-kit/sampleRowsConfigSchema'
+import * as m73 from '@jbrowse/display-kit/sectionFacetConfigSchema'
+import * as m74 from '@jbrowse/display-kit/SkippedFeaturesIndicator'
+import * as m75 from '@jbrowse/display-kit/SolidColorDialog'
+import * as m76 from '@jbrowse/display-kit/stableIdentityComputed'
+import * as m77 from '@jbrowse/display-kit/StoredHoverMixin'
+import * as m78 from '@jbrowse/display-kit/subPixelBinBp'
+import * as m79 from '@jbrowse/display-kit/TooLargeMessage'
+import * as m80 from '@jbrowse/display-kit/TrackControl'
+import * as m81 from '@jbrowse/display-kit/trackHeightConfigSchemaFields'
+import * as m82 from '@jbrowse/display-kit/TrackHeightIndicator'
+import * as m83 from '@jbrowse/display-kit/TrackHeightMixin'
+import * as m84 from '@jbrowse/display-kit/TriangleMatrixMixin'
+import * as m85 from '@jbrowse/display-kit/TriangleMatrixSvgLayer'
+import * as m86 from '@jbrowse/display-kit/triangleTransform'
+import * as m87 from '@jbrowse/display-kit/types'
+import * as m88 from '@jbrowse/display-kit/viewportEmpty'
+import * as m89 from '@jbrowse/display-kit/viewRegionTable'
+import * as m90 from '@jbrowse/display-ui'
+import * as m91 from '@jbrowse/display-ui/axisPlacement'
+import * as m92 from '@jbrowse/display-ui/embed'
+import * as m93 from '@jbrowse/display-ui/yAxisConstants'
+import * as m94 from '@jbrowse/display-ui/yScaleTicks'
+import * as m95 from '@jbrowse/render-core/blockClipUtils'
+import * as m96 from '@jbrowse/render-core/canvas2dUtils'
+import * as m97 from '@jbrowse/render-core/canvasContext'
+import * as m98 from '@jbrowse/render-core/colorRampLut'
+import * as m99 from '@jbrowse/render-core/computePipeline'
+import * as m100 from '@jbrowse/render-core/contractReports'
+import * as m101 from '@jbrowse/render-core/coverageBand'
+import * as m102 from '@jbrowse/render-core/coverageBandBuffers'
+import * as m103 from '@jbrowse/render-core/createRenderingBackend'
+import * as m104 from '@jbrowse/render-core/displayPhase'
+import * as m105 from '@jbrowse/render-core/encodeMemo'
+import * as m106 from '@jbrowse/render-core/gpuDevice'
+import * as m107 from '@jbrowse/render-core/graphicsCapabilities'
+import * as m108 from '@jbrowse/render-core/hal'
+import * as m109 from '@jbrowse/render-core/installUpload'
+import * as m110 from '@jbrowse/render-core/instanceCache'
+import * as m111 from '@jbrowse/render-core/instancePass'
+import * as m112 from '@jbrowse/render-core/linkFeet'
+import * as m113 from '@jbrowse/render-core/marks'
+import * as m114 from '@jbrowse/render-core/marks/backend'
+import * as m115 from '@jbrowse/render-core/marks/colorFill'
+import * as m116 from '@jbrowse/render-core/marks/drawAgainstHit'
+import * as m117 from '@jbrowse/render-core/marks/ellipseDistance'
+import * as m118 from '@jbrowse/render-core/marks/glyphPaint'
+import * as m119 from '@jbrowse/render-core/marks/hit'
+import * as m120 from '@jbrowse/render-core/namedReactions'
+import * as m121 from '@jbrowse/render-core/OverlayCanvas'
+import * as m122 from '@jbrowse/render-core/perRegionRenderingBackend'
+import * as m123 from '@jbrowse/render-core/regionDataMap'
+import * as m124 from '@jbrowse/render-core/renderBlock'
+import * as m125 from '@jbrowse/render-core/RenderCanvas'
+import * as m126 from '@jbrowse/render-core/renderingBackendBase'
+import * as m127 from '@jbrowse/render-core/RenderLifecycleMixin'
+import * as m128 from '@jbrowse/render-core/scoreScale'
+import * as m129 from '@jbrowse/render-core/ScrollLockedOverlay'
+import * as m130 from '@jbrowse/render-core/shaders/antialias'
+import * as m131 from '@jbrowse/render-core/shaders/barMarkIface'
+import * as m132 from '@jbrowse/render-core/shaders/capsule'
+import * as m133 from '@jbrowse/render-core/shaders/capsuleConsts'
+import * as m134 from '@jbrowse/render-core/shaders/clipStrip'
+import * as m135 from '@jbrowse/render-core/shaders/clipStripConsts'
+import * as m136 from '@jbrowse/render-core/shaders/colorRampLut'
+import * as m137 from '@jbrowse/render-core/shaders/coverageBar'
+import * as m138 from '@jbrowse/render-core/shaders/coverageIndicator'
+import * as m139 from '@jbrowse/render-core/shaders/coverageInterbase'
+import * as m140 from '@jbrowse/render-core/shaders/coverageMod'
+import * as m141 from '@jbrowse/render-core/shaders/coverageSnp'
+import * as m142 from '@jbrowse/render-core/shaders/curveDistance'
+import * as m143 from '@jbrowse/render-core/shaders/hpmath'
+import * as m144 from '@jbrowse/render-core/shaders/lineCenterMarkIface'
+import * as m145 from '@jbrowse/render-core/shaders/lineCommonConsts'
+import * as m146 from '@jbrowse/render-core/shaders/lineStepMarkIface'
+import * as m147 from '@jbrowse/render-core/shaders/linkMark'
+import * as m148 from '@jbrowse/render-core/shaders/linkMarkConsts'
+import * as m149 from '@jbrowse/render-core/shaders/markColorConsts'
+import * as m150 from '@jbrowse/render-core/shaders/pointGlyph'
+import * as m151 from '@jbrowse/render-core/shaders/pointGlyphConsts'
+import * as m152 from '@jbrowse/render-core/shaders/pointMark'
+import * as m153 from '@jbrowse/render-core/shaders/pointMarkConsts'
+import * as m154 from '@jbrowse/render-core/shaders/pointMarkIface'
+import * as m155 from '@jbrowse/render-core/shaders/rowRect'
+import * as m156 from '@jbrowse/render-core/shaders/rowRectConsts'
+import * as m157 from '@jbrowse/render-core/shaders/scoreScale'
+import * as m158 from '@jbrowse/render-core/shaders/spanMarkIface'
+import * as m159 from '@jbrowse/render-core/sharedBackendKey'
+import * as m160 from '@jbrowse/render-core/slangPass'
+import * as m161 from '@jbrowse/render-core/useGraphicsCapabilities'
+import * as m162 from '@jbrowse/render-core/useRenderingBackend'
+import * as m163 from '@jbrowse/render-core/useTabVisibilityRerender'
 
 const libs: Record<string, unknown> = {
   ...coreLibs,
@@ -177,160 +178,161 @@ const libs: Record<string, unknown> = {
   '@jbrowse/display-kit/coarseTierPhase': m6,
   '@jbrowse/display-kit/colorByMenu': m7,
   '@jbrowse/display-kit/colorConfigSchema': m8,
-  '@jbrowse/display-kit/ConfigProblemsIndicator': { ...m9, __esModule: true },
-  '@jbrowse/display-kit/configSchema': { ...m10, __esModule: true },
-  '@jbrowse/display-kit/const': m11,
-  '@jbrowse/display-kit/ContextMenuMixin': m12,
-  '@jbrowse/display-kit/densityTier': m13,
-  '@jbrowse/display-kit/densityTierConfigSchemaFields': m14,
-  '@jbrowse/display-kit/densityTierMenu': m15,
-  '@jbrowse/display-kit/DensityTierMixin': m16.default,
-  '@jbrowse/display-kit/displayAutoruns': m17,
-  '@jbrowse/display-kit/DisplayBackgroundProgress': m18.default,
-  '@jbrowse/display-kit/DisplayChrome': m19.default,
-  '@jbrowse/display-kit/DisplayChromeBase': m20.default,
-  '@jbrowse/display-kit/DisplayContextMenu': m21,
-  '@jbrowse/display-kit/DisplayErrorBar': m22.default,
-  '@jbrowse/display-kit/DisplayLoadingOverlay': m23.default,
-  '@jbrowse/display-kit/DisplayRenderErrorOverlay': m24.default,
-  '@jbrowse/display-kit/facetConfigSchema': m25,
-  '@jbrowse/display-kit/fetchEachRegion': m26,
-  '@jbrowse/display-kit/fetchInputs': m27,
-  '@jbrowse/display-kit/FetchMixin': { ...m28, __esModule: true },
-  '@jbrowse/display-kit/floatingLabelHost': m29,
-  '@jbrowse/display-kit/foundationDisplayPhase': m30,
-  '@jbrowse/display-kit/foundationPaintInert': m31,
-  '@jbrowse/display-kit/foundationSvgReady': m32,
-  '@jbrowse/display-kit/foundationView': m33,
-  '@jbrowse/display-kit/gateCommit': m34,
-  '@jbrowse/display-kit/GlobalFetchMixin': { ...m35, __esModule: true },
-  '@jbrowse/display-kit/groupByMenu': m36,
-  '@jbrowse/display-kit/GroupLabelBox': { ...m37, __esModule: true },
-  '@jbrowse/display-kit/GroupLabelChips': m38,
-  '@jbrowse/display-kit/groupLabelChipStyles': m39,
-  '@jbrowse/display-kit/groupLabelStyle': m40,
-  '@jbrowse/display-kit/heightMode': m41,
-  '@jbrowse/display-kit/heightModeConfigSchemaFields': m42,
-  '@jbrowse/display-kit/heightModeMenu': m43,
-  '@jbrowse/display-kit/HeightModeMixin': { ...m44, __esModule: true },
-  '@jbrowse/display-kit/heldColorSlots': m45,
-  '@jbrowse/display-kit/HiddenGroupsMixin': { ...m46, __esModule: true },
-  '@jbrowse/display-kit/highlightHost': m47,
-  '@jbrowse/display-kit/installClearHoverOnViewportChange': m48,
-  '@jbrowse/display-kit/installGlobalFetchAutorun': m49,
-  '@jbrowse/display-kit/installPerRegionFetchAutoruns': m50,
-  '@jbrowse/display-kit/jexlFilterConfigSchemaFields': m51,
-  '@jbrowse/display-kit/KeyedFetchMixin': m52.default,
-  '@jbrowse/display-kit/legendHost': m53,
-  '@jbrowse/display-kit/LegendMixin': { ...m54, __esModule: true },
-  '@jbrowse/display-kit/MarkSvgLayer': m55.default,
-  '@jbrowse/display-kit/MultiRegionDisplayMixin': { ...m56, __esModule: true },
-  '@jbrowse/display-kit/planRegionFetch': m57,
-  '@jbrowse/display-kit/PlotDialog': m58.default,
-  '@jbrowse/display-kit/plotMenu': m59,
-  '@jbrowse/display-kit/regionCommit': m60,
-  '@jbrowse/display-kit/regionHost': m61,
-  '@jbrowse/display-kit/regionTooLargeConfigSchemaFields': m62,
-  '@jbrowse/display-kit/RegionTooLargeMixin': m63.default,
-  '@jbrowse/display-kit/regionTooLargeUtils': m64,
-  '@jbrowse/display-kit/renderDisplaySvg': m65,
-  '@jbrowse/display-kit/retiredSettings': m66,
-  '@jbrowse/display-kit/rowArrangementConfigSchema': m67,
-  '@jbrowse/display-kit/rowColorConfigSchema': m68,
-  '@jbrowse/display-kit/rowsConfigSchema': m69,
-  '@jbrowse/display-kit/rpcArgs': m70,
-  '@jbrowse/display-kit/sampleRowsConfigSchema': m71,
-  '@jbrowse/display-kit/sectionFacetConfigSchema': m72,
-  '@jbrowse/display-kit/SkippedFeaturesIndicator': { ...m73, __esModule: true },
-  '@jbrowse/display-kit/SolidColorDialog': m74.default,
-  '@jbrowse/display-kit/stableIdentityComputed': m75,
-  '@jbrowse/display-kit/StoredHoverMixin': m76.default,
-  '@jbrowse/display-kit/subPixelBinBp': m77,
-  '@jbrowse/display-kit/TooLargeMessage': m78.default,
-  '@jbrowse/display-kit/TrackControl': m79.default,
-  '@jbrowse/display-kit/trackHeightConfigSchemaFields': m80,
-  '@jbrowse/display-kit/TrackHeightIndicator': m81.default,
-  '@jbrowse/display-kit/TrackHeightMixin': m82.default,
-  '@jbrowse/display-kit/TriangleMatrixMixin': { ...m83, __esModule: true },
-  '@jbrowse/display-kit/TriangleMatrixSvgLayer': m84.default,
-  '@jbrowse/display-kit/triangleTransform': m85,
-  '@jbrowse/display-kit/types': m86,
-  '@jbrowse/display-kit/viewportEmpty': m87,
-  '@jbrowse/display-kit/viewRegionTable': m88,
-  '@jbrowse/display-ui': m89,
-  '@jbrowse/display-ui/axisPlacement': m90,
-  '@jbrowse/display-ui/embed': m91,
-  '@jbrowse/display-ui/yAxisConstants': m92,
-  '@jbrowse/display-ui/yScaleTicks': m93,
-  '@jbrowse/render-core/blockClipUtils': m94,
-  '@jbrowse/render-core/canvas2dUtils': m95,
-  '@jbrowse/render-core/canvasContext': m96,
-  '@jbrowse/render-core/colorRampLut': m97,
-  '@jbrowse/render-core/computePipeline': m98,
-  '@jbrowse/render-core/contractReports': m99,
-  '@jbrowse/render-core/coverageBand': m100,
-  '@jbrowse/render-core/coverageBandBuffers': m101,
-  '@jbrowse/render-core/createRenderingBackend': m102,
-  '@jbrowse/render-core/displayPhase': m103,
-  '@jbrowse/render-core/encodeMemo': m104,
-  '@jbrowse/render-core/gpuDevice': m105,
-  '@jbrowse/render-core/graphicsCapabilities': m106,
-  '@jbrowse/render-core/hal': m107,
-  '@jbrowse/render-core/installUpload': m108,
-  '@jbrowse/render-core/instanceCache': m109,
-  '@jbrowse/render-core/instancePass': m110,
-  '@jbrowse/render-core/linkFeet': m111,
-  '@jbrowse/render-core/marks': m112,
-  '@jbrowse/render-core/marks/backend': m113,
-  '@jbrowse/render-core/marks/colorFill': m114,
-  '@jbrowse/render-core/marks/drawAgainstHit': m115,
-  '@jbrowse/render-core/marks/ellipseDistance': m116,
-  '@jbrowse/render-core/marks/glyphPaint': m117,
-  '@jbrowse/render-core/marks/hit': m118,
-  '@jbrowse/render-core/namedReactions': m119,
-  '@jbrowse/render-core/OverlayCanvas': m120.default,
-  '@jbrowse/render-core/perRegionRenderingBackend': m121,
-  '@jbrowse/render-core/regionDataMap': m122,
-  '@jbrowse/render-core/renderBlock': m123,
-  '@jbrowse/render-core/RenderCanvas': m124.default,
-  '@jbrowse/render-core/renderingBackendBase': m125,
-  '@jbrowse/render-core/RenderLifecycleMixin': m126,
-  '@jbrowse/render-core/scoreScale': m127,
-  '@jbrowse/render-core/ScrollLockedOverlay': m128,
-  '@jbrowse/render-core/shaders/antialias': m129,
-  '@jbrowse/render-core/shaders/barMarkIface': m130,
-  '@jbrowse/render-core/shaders/capsule': m131,
-  '@jbrowse/render-core/shaders/capsuleConsts': m132,
-  '@jbrowse/render-core/shaders/clipStrip': m133,
-  '@jbrowse/render-core/shaders/clipStripConsts': m134,
-  '@jbrowse/render-core/shaders/colorRampLut': m135,
-  '@jbrowse/render-core/shaders/coverageBar': m136,
-  '@jbrowse/render-core/shaders/coverageIndicator': m137,
-  '@jbrowse/render-core/shaders/coverageInterbase': m138,
-  '@jbrowse/render-core/shaders/coverageMod': m139,
-  '@jbrowse/render-core/shaders/coverageSnp': m140,
-  '@jbrowse/render-core/shaders/curveDistance': m141,
-  '@jbrowse/render-core/shaders/hpmath': m142,
-  '@jbrowse/render-core/shaders/lineCenterMarkIface': m143,
-  '@jbrowse/render-core/shaders/lineCommonConsts': m144,
-  '@jbrowse/render-core/shaders/lineStepMarkIface': m145,
-  '@jbrowse/render-core/shaders/linkMark': m146,
-  '@jbrowse/render-core/shaders/linkMarkConsts': m147,
-  '@jbrowse/render-core/shaders/markColorConsts': m148,
-  '@jbrowse/render-core/shaders/pointGlyph': m149,
-  '@jbrowse/render-core/shaders/pointGlyphConsts': m150,
-  '@jbrowse/render-core/shaders/pointMark': m151,
-  '@jbrowse/render-core/shaders/pointMarkConsts': m152,
-  '@jbrowse/render-core/shaders/pointMarkIface': m153,
-  '@jbrowse/render-core/shaders/rowRect': m154,
-  '@jbrowse/render-core/shaders/rowRectConsts': m155,
-  '@jbrowse/render-core/shaders/scoreScale': m156,
-  '@jbrowse/render-core/shaders/spanMarkIface': m157,
-  '@jbrowse/render-core/sharedBackendKey': m158,
-  '@jbrowse/render-core/slangPass': m159,
-  '@jbrowse/render-core/useGraphicsCapabilities': m160,
-  '@jbrowse/render-core/useRenderingBackend': m161,
-  '@jbrowse/render-core/useTabVisibilityRerender': m162,
+  '@jbrowse/display-kit/ColorWritesMixin': { ...m9, __esModule: true },
+  '@jbrowse/display-kit/ConfigProblemsIndicator': { ...m10, __esModule: true },
+  '@jbrowse/display-kit/configSchema': { ...m11, __esModule: true },
+  '@jbrowse/display-kit/const': m12,
+  '@jbrowse/display-kit/ContextMenuMixin': m13,
+  '@jbrowse/display-kit/densityTier': m14,
+  '@jbrowse/display-kit/densityTierConfigSchemaFields': m15,
+  '@jbrowse/display-kit/densityTierMenu': m16,
+  '@jbrowse/display-kit/DensityTierMixin': m17.default,
+  '@jbrowse/display-kit/displayAutoruns': m18,
+  '@jbrowse/display-kit/DisplayBackgroundProgress': m19.default,
+  '@jbrowse/display-kit/DisplayChrome': m20.default,
+  '@jbrowse/display-kit/DisplayChromeBase': m21.default,
+  '@jbrowse/display-kit/DisplayContextMenu': m22,
+  '@jbrowse/display-kit/DisplayErrorBar': m23.default,
+  '@jbrowse/display-kit/DisplayLoadingOverlay': m24.default,
+  '@jbrowse/display-kit/DisplayRenderErrorOverlay': m25.default,
+  '@jbrowse/display-kit/facetConfigSchema': m26,
+  '@jbrowse/display-kit/fetchEachRegion': m27,
+  '@jbrowse/display-kit/fetchInputs': m28,
+  '@jbrowse/display-kit/FetchMixin': { ...m29, __esModule: true },
+  '@jbrowse/display-kit/floatingLabelHost': m30,
+  '@jbrowse/display-kit/foundationDisplayPhase': m31,
+  '@jbrowse/display-kit/foundationPaintInert': m32,
+  '@jbrowse/display-kit/foundationSvgReady': m33,
+  '@jbrowse/display-kit/foundationView': m34,
+  '@jbrowse/display-kit/gateCommit': m35,
+  '@jbrowse/display-kit/GlobalFetchMixin': { ...m36, __esModule: true },
+  '@jbrowse/display-kit/groupByMenu': m37,
+  '@jbrowse/display-kit/GroupLabelBox': { ...m38, __esModule: true },
+  '@jbrowse/display-kit/GroupLabelChips': m39,
+  '@jbrowse/display-kit/groupLabelChipStyles': m40,
+  '@jbrowse/display-kit/groupLabelStyle': m41,
+  '@jbrowse/display-kit/heightMode': m42,
+  '@jbrowse/display-kit/heightModeConfigSchemaFields': m43,
+  '@jbrowse/display-kit/heightModeMenu': m44,
+  '@jbrowse/display-kit/HeightModeMixin': { ...m45, __esModule: true },
+  '@jbrowse/display-kit/heldColorSlots': m46,
+  '@jbrowse/display-kit/HiddenGroupsMixin': { ...m47, __esModule: true },
+  '@jbrowse/display-kit/highlightHost': m48,
+  '@jbrowse/display-kit/installClearHoverOnViewportChange': m49,
+  '@jbrowse/display-kit/installGlobalFetchAutorun': m50,
+  '@jbrowse/display-kit/installPerRegionFetchAutoruns': m51,
+  '@jbrowse/display-kit/jexlFilterConfigSchemaFields': m52,
+  '@jbrowse/display-kit/KeyedFetchMixin': m53.default,
+  '@jbrowse/display-kit/legendHost': m54,
+  '@jbrowse/display-kit/LegendMixin': { ...m55, __esModule: true },
+  '@jbrowse/display-kit/MarkSvgLayer': m56.default,
+  '@jbrowse/display-kit/MultiRegionDisplayMixin': { ...m57, __esModule: true },
+  '@jbrowse/display-kit/planRegionFetch': m58,
+  '@jbrowse/display-kit/PlotDialog': m59.default,
+  '@jbrowse/display-kit/plotMenu': m60,
+  '@jbrowse/display-kit/regionCommit': m61,
+  '@jbrowse/display-kit/regionHost': m62,
+  '@jbrowse/display-kit/regionTooLargeConfigSchemaFields': m63,
+  '@jbrowse/display-kit/RegionTooLargeMixin': m64.default,
+  '@jbrowse/display-kit/regionTooLargeUtils': m65,
+  '@jbrowse/display-kit/renderDisplaySvg': m66,
+  '@jbrowse/display-kit/retiredSettings': m67,
+  '@jbrowse/display-kit/rowArrangementConfigSchema': m68,
+  '@jbrowse/display-kit/rowColorConfigSchema': m69,
+  '@jbrowse/display-kit/rowsConfigSchema': m70,
+  '@jbrowse/display-kit/rpcArgs': m71,
+  '@jbrowse/display-kit/sampleRowsConfigSchema': m72,
+  '@jbrowse/display-kit/sectionFacetConfigSchema': m73,
+  '@jbrowse/display-kit/SkippedFeaturesIndicator': { ...m74, __esModule: true },
+  '@jbrowse/display-kit/SolidColorDialog': m75.default,
+  '@jbrowse/display-kit/stableIdentityComputed': m76,
+  '@jbrowse/display-kit/StoredHoverMixin': m77.default,
+  '@jbrowse/display-kit/subPixelBinBp': m78,
+  '@jbrowse/display-kit/TooLargeMessage': m79.default,
+  '@jbrowse/display-kit/TrackControl': m80.default,
+  '@jbrowse/display-kit/trackHeightConfigSchemaFields': m81,
+  '@jbrowse/display-kit/TrackHeightIndicator': m82.default,
+  '@jbrowse/display-kit/TrackHeightMixin': m83.default,
+  '@jbrowse/display-kit/TriangleMatrixMixin': { ...m84, __esModule: true },
+  '@jbrowse/display-kit/TriangleMatrixSvgLayer': m85.default,
+  '@jbrowse/display-kit/triangleTransform': m86,
+  '@jbrowse/display-kit/types': m87,
+  '@jbrowse/display-kit/viewportEmpty': m88,
+  '@jbrowse/display-kit/viewRegionTable': m89,
+  '@jbrowse/display-ui': m90,
+  '@jbrowse/display-ui/axisPlacement': m91,
+  '@jbrowse/display-ui/embed': m92,
+  '@jbrowse/display-ui/yAxisConstants': m93,
+  '@jbrowse/display-ui/yScaleTicks': m94,
+  '@jbrowse/render-core/blockClipUtils': m95,
+  '@jbrowse/render-core/canvas2dUtils': m96,
+  '@jbrowse/render-core/canvasContext': m97,
+  '@jbrowse/render-core/colorRampLut': m98,
+  '@jbrowse/render-core/computePipeline': m99,
+  '@jbrowse/render-core/contractReports': m100,
+  '@jbrowse/render-core/coverageBand': m101,
+  '@jbrowse/render-core/coverageBandBuffers': m102,
+  '@jbrowse/render-core/createRenderingBackend': m103,
+  '@jbrowse/render-core/displayPhase': m104,
+  '@jbrowse/render-core/encodeMemo': m105,
+  '@jbrowse/render-core/gpuDevice': m106,
+  '@jbrowse/render-core/graphicsCapabilities': m107,
+  '@jbrowse/render-core/hal': m108,
+  '@jbrowse/render-core/installUpload': m109,
+  '@jbrowse/render-core/instanceCache': m110,
+  '@jbrowse/render-core/instancePass': m111,
+  '@jbrowse/render-core/linkFeet': m112,
+  '@jbrowse/render-core/marks': m113,
+  '@jbrowse/render-core/marks/backend': m114,
+  '@jbrowse/render-core/marks/colorFill': m115,
+  '@jbrowse/render-core/marks/drawAgainstHit': m116,
+  '@jbrowse/render-core/marks/ellipseDistance': m117,
+  '@jbrowse/render-core/marks/glyphPaint': m118,
+  '@jbrowse/render-core/marks/hit': m119,
+  '@jbrowse/render-core/namedReactions': m120,
+  '@jbrowse/render-core/OverlayCanvas': m121.default,
+  '@jbrowse/render-core/perRegionRenderingBackend': m122,
+  '@jbrowse/render-core/regionDataMap': m123,
+  '@jbrowse/render-core/renderBlock': m124,
+  '@jbrowse/render-core/RenderCanvas': m125.default,
+  '@jbrowse/render-core/renderingBackendBase': m126,
+  '@jbrowse/render-core/RenderLifecycleMixin': m127,
+  '@jbrowse/render-core/scoreScale': m128,
+  '@jbrowse/render-core/ScrollLockedOverlay': m129,
+  '@jbrowse/render-core/shaders/antialias': m130,
+  '@jbrowse/render-core/shaders/barMarkIface': m131,
+  '@jbrowse/render-core/shaders/capsule': m132,
+  '@jbrowse/render-core/shaders/capsuleConsts': m133,
+  '@jbrowse/render-core/shaders/clipStrip': m134,
+  '@jbrowse/render-core/shaders/clipStripConsts': m135,
+  '@jbrowse/render-core/shaders/colorRampLut': m136,
+  '@jbrowse/render-core/shaders/coverageBar': m137,
+  '@jbrowse/render-core/shaders/coverageIndicator': m138,
+  '@jbrowse/render-core/shaders/coverageInterbase': m139,
+  '@jbrowse/render-core/shaders/coverageMod': m140,
+  '@jbrowse/render-core/shaders/coverageSnp': m141,
+  '@jbrowse/render-core/shaders/curveDistance': m142,
+  '@jbrowse/render-core/shaders/hpmath': m143,
+  '@jbrowse/render-core/shaders/lineCenterMarkIface': m144,
+  '@jbrowse/render-core/shaders/lineCommonConsts': m145,
+  '@jbrowse/render-core/shaders/lineStepMarkIface': m146,
+  '@jbrowse/render-core/shaders/linkMark': m147,
+  '@jbrowse/render-core/shaders/linkMarkConsts': m148,
+  '@jbrowse/render-core/shaders/markColorConsts': m149,
+  '@jbrowse/render-core/shaders/pointGlyph': m150,
+  '@jbrowse/render-core/shaders/pointGlyphConsts': m151,
+  '@jbrowse/render-core/shaders/pointMark': m152,
+  '@jbrowse/render-core/shaders/pointMarkConsts': m153,
+  '@jbrowse/render-core/shaders/pointMarkIface': m154,
+  '@jbrowse/render-core/shaders/rowRect': m155,
+  '@jbrowse/render-core/shaders/rowRectConsts': m156,
+  '@jbrowse/render-core/shaders/scoreScale': m157,
+  '@jbrowse/render-core/shaders/spanMarkIface': m158,
+  '@jbrowse/render-core/sharedBackendKey': m159,
+  '@jbrowse/render-core/slangPass': m160,
+  '@jbrowse/render-core/useGraphicsCapabilities': m161,
+  '@jbrowse/render-core/useRenderingBackend': m162,
+  '@jbrowse/render-core/useTabVisibilityRerender': m163,
 }
 
 export default libs

@@ -205,7 +205,6 @@ Each section ends with the members a composed model contributes, linked to the p
 | --- | --- |
 | <span id="action-startrenderingbackend">**startRenderingBackend**</span><br><code>(backend: WiggleRenderingBackend) =&gt; void</code> |  |
 | <span id="action-setshowrowseparators">**setShowRowSeparators**</span><br><code>(arg: boolean) =&gt; void</code> |  |
-| <span id="action-setcolor">**setColor**</span><br><code>(color?: string &#124; Partial&lt;ColorSetting&gt; &#124; undefined) =&gt; void</code> | The whole color object at once, since a scale and the slots it reads are one setting; `undefined` returns to the layout's own picture. |
 | <span id="action-setrowlayout">**setRowLayout**</span><br><code>(on: boolean) =&gt; void</code> | The layout half of a Plot type leaf — `Multi-row` or `Overlapping`, each holding the five plot names. Writes the field alone, so the arrangement survives a trip through the shared plot and comes back with the rows. |
 | <span id="action-setplot">**setPlot**</span><br><code>(rendering: string, rowLayout: boolean) =&gt; void</code> | A Plot type leaf whole, so the regions encode once and never as the new plot in the old layout. |
 | <span id="action-openplotdialog">**openPlotDialog**</span><br><code>(seed?: Plot &#124; undefined) =&gt; void</code> | The arrangement dialog's "Edit plot..." button: the color object and the rows beside it as text, the escape for a ramp, several cut points or a typed row order, none of which the dialog's own controls offer. |

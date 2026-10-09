@@ -255,7 +255,6 @@ Each section ends with the members a composed model contributes, linked to the p
 | <span id="action-setshowalignments">**setShowAlignments**</span><br><code>(arg: boolean) =&gt; void</code> |  |
 | <span id="action-setshowconservation">**setShowConservation**</span><br><code>(arg: boolean) =&gt; void</code> |  |
 | <span id="action-setconservationmode">**setConservationMode**</span><br><code>(arg: "base" &#124; "codon") =&gt; void</code> |  |
-| <span id="action-setcolorfield">**setColorField**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>(field: "base" &#124; "chromosome" &#124; "codon" &#124; "identity" &#124; "mismatc…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>(field: "base" &#124; "chromosome" &#124; "codon" &#124; "identity" &#124; "mismatch") =&gt; void</code></pre></dialog></span> |  |
 | <span id="action-setyfield">**setYField**</span><br><code>(field: "identity" &#124; undefined) =&gt; void</code> |  |
 | <span id="action-setrowidentityautozoom">**setRowIdentityAutoZoom**</span><br><code>(arg: boolean) =&gt; void</code> |  |
 | <span id="action-setshowannotations">**setShowAnnotations**</span><br><code>(arg: boolean) =&gt; void</code> |  |
@@ -291,6 +290,8 @@ Each section ends with the members a composed model contributes, linked to the p
 <span data-pagefind-ignore>From [CoarseTierMixin](../coarsetiermixin): <span id="action-setcoarsetier">[`setCoarseTier`](../coarsetiermixin#action-setcoarsetier)</span>, <span id="action-clearcoarsetier">[`clearCoarseTier`](../coarsetiermixin#action-clearcoarsetier)</span>, <span id="action-setcoarsetierloading">[`setCoarseTierLoading`](../coarsetiermixin#action-setcoarsetierloading)</span></span>
 
 <span data-pagefind-ignore>From [LegendMixin](../legendmixin): <span id="action-setshowlegend">[`setShowLegend`](../legendmixin#action-setshowlegend)</span>, <span id="action-dismisslegendsection">[`dismissLegendSection`](../legendmixin#action-dismisslegendsection)</span></span>
+
+<span data-pagefind-ignore>From [ColorWritesMixin](../colorwritesmixin): <span id="action-colorbyfield">[`colorByField`](../colorwritesmixin#action-colorbyfield)</span>, <span id="action-setcolorvalue">[`setColorValue`](../colorwritesmixin#action-setcolorvalue)</span></span>
 
 <span data-pagefind-ignore>From [RowHeightMixin](../rowheightmixin): <span id="action-setrowheight">[`setRowHeight`](../rowheightmixin#action-setrowheight)</span></span>
 
