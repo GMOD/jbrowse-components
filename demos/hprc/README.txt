@@ -231,11 +231,12 @@ Haplotype walks
   prefix, hprc-v2.1-mc-grch38.GRCh38, and defaultHaplotypes names the lanes it
   draws unless the haplotype menu says otherwise.
 
-  Two earlier builds stay hosted for the jb2bench traces that measured them:
-  the 0.4.0 single set with both references in one index
-  (hprc-v2.1-mc-grch38.{walks,nodes,links}), and the chr22-only files
-  (hprc-v2.1-mc-grch38.chr22.{walks,nodes,links}; ids renumbered from 1 by
-  gbz2layout, so they match no other file here).
+  Two earlier builds, the 0.4.0 single set with both references in one index
+  and the chr22-only files, were removed on 2026-10-08 once this set replaced
+  them; the jb2bench traces that measured them keep their numbers. The single
+  set's links file had taken the name of the contig-layout
+  hprc-v2.1-mc-grch38.links.bed.gz above for a day; that file is back as it
+  was, from a verbatim copy.
 
 
 repeat_density/ - per-class RepeatMasker density
