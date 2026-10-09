@@ -6236,7 +6236,8 @@ export const configManifest: ConfigManifest = {
             "*": {
               "scale": "threshold"
             }
-          }
+          },
+          "impliedField": "score"
         },
         {
           "name": "y",
