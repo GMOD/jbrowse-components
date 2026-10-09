@@ -98,7 +98,7 @@ describe('the key reads the encoding', () => {
     })
   })
 
-  test('codon labels and order follow the encoding', () => {
+  test('codon labels and order follow the encoding, every change listed', () => {
     const { display, view } = displayWith(
       {
         field: 'codon',
@@ -111,7 +111,11 @@ describe('the key reads the encoding', () => {
     view.setCoarseDynamicBlocks(view.dynamicBlocks, view.bpPerPx)
     expect(display.colorScales[0]).toMatchObject({
       id: 'codon',
-      entries: [{ label: 'Stop' }, { label: 'Changed' }],
+      entries: [
+        { label: 'Stop' },
+        { label: 'Changed' },
+        { label: 'Synonymous' },
+      ],
     })
   })
 })
