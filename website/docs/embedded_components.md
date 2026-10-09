@@ -120,6 +120,46 @@ const state = createViewState({
   something changes the running plugin set, with what a rebuild needs to remount
   the app on the new set.
 
+## Build your own
+
+[`@jbrowse/display-ui/embed`](https://jbrowse.org/storybook/byo/) holds the
+blocks of a view you draw yourself. `createViewState` builds the engine, and
+these draw it:
+
+- **`EmbedProvider`** wraps the page. It mounts `DisplayUIProvider` (the plain,
+  Material-free overlays a track draws while it loads or fails), the theme
+  palette and, from the release after beta.13, `Notifications`.
+- **`TrackStack`** draws a view's tracks and handles pan and zoom. `Track`,
+  `Scalebar`, `LocationBox`, `Legend`, `ResizeHandle` and the rest are the
+  pieces to place beside it.
+
+Install them as direct dependencies. Under pnpm a package your code imports must
+be in your own `package.json`, and `mobx-react` is needed to write an `observer`
+component:
+
+```bash
+pnpm add @jbrowse/react-linear-genome-view2@next @jbrowse/display-ui@next @jbrowse/core@next mobx mobx-react react react-dom
+```
+
+The `next` tag is the v5 beta, and `latest` is v4, which has no
+`@jbrowse/display-ui/embed`. Pin the exact version. The
+[examples](https://jbrowse.org/storybook/byo/) build from the main branch, so
+they run ahead of npm: `Toolbar`, `NavButton` and `Notifications` are in main
+and not in `5.0.0-beta.13`. Read the package's `.d.ts` to see what a release
+exports.
+
+**Sizing.** `TrackStack` sets `overflow: hidden` on its wrapper, and each track
+takes the `height` in its `displayDefaults`. A track with more rows than fit,
+such as a gene track with several isoforms at its default height, scrolls inside
+itself. Set `displayDefaults: { height }` per track, add a `ResizeHandle` so the
+reader can drag, and put the stack in a container that grows with its content.
+
+**Keeping an existing config.** The `uri` and `displayDefaults` shorthand is
+optional. The engine expands only a track that has a `uri` and no `adapter`, so
+a track written in full, with its `adapter`, `displays` and `type`, or one on a
+`FromConfigAdapter`, goes to `createViewState` unchanged. A
+`JBrowseLinearGenomeView` track list moves over as it is.
+
 ## Bundler examples
 
 | Package                              | Bundler   | Demo                                            | Source                                                                              |
