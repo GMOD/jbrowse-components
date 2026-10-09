@@ -41,7 +41,7 @@ Dotplot1DView
 LinearSyntenyViewHelper
 TimeTraveller
 
-# model members with no description (1360)
+# model members with no description (1359)
 # fix: write a sentence under the member’s #property/#volatile/#getter/#method/#action tag
 AddTrackModel.adapterHint
 AddTrackModel.altAssemblyName
@@ -217,7 +217,6 @@ BaseSessionModel.jbrowse
 BaseSessionModel.name
 BaseSessionModel.queueDialog
 BaseSessionModel.queueOfDialogs
-BaseSessionModel.removeActiveDialog
 BaseSessionModel.removeDialog
 BaseSessionModel.removeHighlight
 BaseSessionModel.root

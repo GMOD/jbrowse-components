@@ -86,7 +86,7 @@ Each section ends with the members a composed model contributes, linked to the p
 | <span id="action-setscrollzoom">**setScrollZoom**</span><br><code>(flag: boolean) =&gt; void</code> | set the global scroll-to-zoom preference (see the `scrollZoom` getter) |
 | <span id="action-setname">**setName**</span><br><code>(str: string) =&gt; void</code> |  |
 | <span id="action-setfocusedviewid">**setFocusedViewId**</span><br><code>(viewId: string &#124; undefined) =&gt; void</code> | `undefined` is "no view is focused", which the property has always been able to hold (`types.maybe`) and this had no way to spell. Nothing cleared it on teardown as a result: a view that was focused when it left the session left its id behind, and since every consumer compares `focusedViewId === view.id`, the id matched nothing, the focus ring vanished with nothing to say why, and the dead id persisted into a saved or shared session. `takeOut` clears it now. |
-| <span id="action-removeactivedialog">**removeActiveDialog**</span><br><code>() =&gt; void</code> |  |
+| <span id="action-removeactivedialog">**removeActiveDialog**</span><br><code>() =&gt; void</code> | Dismiss the dialog on screen as its own close button would, so a dialog that settles a promise on close (an internet account's token prompt) settles it, and drop it from the queue if it did not. |
 | <span id="action-queuedialog">**queueDialog**</span><br><code>(doneCallback: DoneCallback) =&gt; void</code> |  |
 | <span id="action-removedialog">**removeDialog**</span><br><code>(entry: [DialogComponentType, Record&lt;string, unknown&gt;]) =&gt; void</code> |  |
 

@@ -426,9 +426,19 @@ export function BaseSessionModel<
       },
       /**
        * #action
+       * Dismiss the dialog on screen as its own close button would, so a
+       * dialog that settles a promise on close (an internet account's token
+       * prompt) settles it, and drop it from the queue if it did not.
        */
       removeActiveDialog() {
-        self.queueOfDialogs = self.queueOfDialogs.slice(1)
+        const active = self.queueOfDialogs[0]
+        const close = active?.[1].handleClose
+        if (typeof close === 'function') {
+          close()
+        }
+        if (self.queueOfDialogs[0] === active) {
+          self.queueOfDialogs = self.queueOfDialogs.slice(1)
+        }
       },
       /**
        * #action
