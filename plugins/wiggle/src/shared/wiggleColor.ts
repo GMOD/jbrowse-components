@@ -112,11 +112,7 @@ export function resolveWiggleColor(
     case 'linear':
     case 'log': {
       const { range = [], scheme, reverse = false, domainMid } = encoding
-      const rampLut = rampLutOf({
-        range: range.length === 1 ? ['white', range[0]!] : range,
-        scheme,
-        reverse,
-      })
+      const rampLut = rampLutOf({ range, scheme, reverse })
       const ends = range.length
         ? reverse
           ? range.toReversed()

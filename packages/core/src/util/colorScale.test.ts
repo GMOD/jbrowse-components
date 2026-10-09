@@ -138,6 +138,15 @@ test('a ramp reads no domain, and its ends in either order are named', () => {
   ).toEqual(['domain-ends'])
 })
 
+test('a ramp of one color is named, since it paints every value alike', () => {
+  expect(rules({ field: 'x', scale: 'linear', range: ['red'] })).toEqual([
+    'ramp-range',
+  ])
+  expect(
+    rules({ field: 'x', scale: 'linear', range: ['white', 'red'] }),
+  ).toEqual([])
+})
+
 test('a ramp quantile outside 0.5 to 1 is named, a percent among them', () => {
   const quantile = (domainQuantile: number) =>
     rules({ field: 'x', scale: 'linear', domainQuantile })

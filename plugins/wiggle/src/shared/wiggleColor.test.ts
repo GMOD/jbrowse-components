@@ -160,10 +160,10 @@ test('CSS stops build one cached LUT, and domainMid moves the pivot', () => {
   expect(out.rampLut).not.toBeNull()
 })
 
-test('one CSS stop is a ramp from white to that color, whatever the origin', () => {
+test('one CSS stop paints flat, as a one-stop ramp does on every display', () => {
   const written = color({ field: 'score', scale: 'linear', range: ['red'] })
   const out = resolved(written, 3)
-  expect(out.rampLut).toBe(rampLutOf({ range: ['white', 'red'] }))
+  expect(out.rampLut).toBe(rampLutOf({ range: ['red'] }))
   expect(out.rampMid).toBeUndefined()
   expect(resolved(written, -7).rampLut).toBe(out.rampLut)
   expect([out.posColor, out.negColor]).toEqual(['red', 'red'])

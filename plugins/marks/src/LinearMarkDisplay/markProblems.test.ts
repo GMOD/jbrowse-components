@@ -778,6 +778,9 @@ test('a ramp reads its ends, not a domain, and leaves an end open on any mark', 
   expect(found(ramp('bar', { domain: ['0', '10'] }))).toEqual([
     'warning ramp-domain mark 0 encoding.color.domain',
   ])
+  expect(found(ramp('bar', { range: ['red'] }))).toEqual([
+    'warning ramp-range mark 0 encoding.color.range',
+  ])
   expect(found(ramp('bar', { domainMin: 10, domainMax: 0 }))).toEqual([
     'warning domain-ends mark 0 encoding.color.domainMax',
   ])
