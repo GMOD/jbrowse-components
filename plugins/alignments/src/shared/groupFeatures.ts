@@ -443,6 +443,18 @@ export function facetForUnit(facet: Facet | undefined, unit: AlignmentsUnit) {
   return unit === 'chain' && !isChainFacetable(facet?.field) ? undefined : facet
 }
 
+/** What `facet` says that `unit` cannot draw, for the corner notice. */
+export function facetUnitNotices(
+  facet: Facet | undefined,
+  unit: AlignmentsUnit,
+): string[] {
+  return facet && facetForUnit(facet, unit) === undefined
+    ? [
+        `facet: ${facet.field} differs between a chain's reads, so unit: "chain" draws one ungrouped section`,
+      ]
+    : []
+}
+
 // Dimensions as menu radio options, in the given order: the one join between the
 // registry above and the label table, so no call site re-spells a label. The
 // alignments menu takes every non-hidden dimension, LGVSyntenyDisplay a curated

@@ -7,6 +7,7 @@ import {
   MAX_GROUPS,
   OVERFLOW_GROUP_KEY,
   facetForUnit,
+  facetUnitNotices,
   isChainFacetable,
   partitionFeatures,
   sectionOrder,
@@ -305,6 +306,15 @@ test('mate-assembly grouping pins features with no mate assembly last', () => {
 // `splitRead` is the second — its per-read key differs between a split mate and
 // its unsplit partner — so a reading of `fragmentLevel` alone would drop it from
 // chain mode, where it matters most.
+test('a facet a chain cannot honor says so beside the ungrouped picture', () => {
+  expect(facetUnitNotices({ field: 'mapq' }, 'chain')).toEqual([
+    'facet: mapq differs between a chain\'s reads, so unit: "chain" draws one ungrouped section',
+  ])
+  expect(facetUnitNotices({ field: 'mapq' }, 'read')).toEqual([])
+  expect(facetUnitNotices({ field: 'pairOrientation' }, 'chain')).toEqual([])
+  expect(facetUnitNotices(undefined, 'chain')).toEqual([])
+})
+
 test('isChainFacetable allows a fragment-level key, a chainKey, a tag or a field', () => {
   expect(isChainFacetable('tags.HP')).toBe(true)
   expect(isChainFacetable('name')).toBe(true)

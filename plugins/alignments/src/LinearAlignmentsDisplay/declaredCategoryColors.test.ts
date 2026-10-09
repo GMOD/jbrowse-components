@@ -189,6 +189,13 @@ describe('a domain that names no level says so', () => {
     )
   })
 
+  test('a per-base field names the layer that draws it', () => {
+    expect(notices({ field: 'modifications' })).toEqual([
+      'color.field: modifications is drawn a cell per base, which baseColor paints over the reads',
+    ])
+    expect(notices({ field: 'baseQuality' })).toHaveLength(1)
+  })
+
   test('a level the field has, or a tag value, passes', () => {
     expect(notices({ field: 'pairOrientation', domain: ['RR'] })).toEqual([])
     expect(notices({ field: 'tags.HP', domain: ['x'] })).toEqual([])

@@ -13,6 +13,7 @@ import {
   pinnedInsertSizeBand,
 } from '../shared/alignmentsColor.ts'
 import { arcColorFieldOf } from '../shared/arcColorOptions.ts'
+import { facetUnitNotices } from '../shared/groupFeatures.ts'
 import { readFilterOf } from './readFilterConfigSchema.ts'
 
 import type {
@@ -220,6 +221,14 @@ export function configSlotViews(self: ConfigSlotSelf) {
      */
     get colorNotices(): string[] {
       return alignmentsColorNotices(this.writtenColor)
+    },
+    /**
+     * #getter
+     * What `facet` names that `unit` cannot group by, which the corner notice
+     * lists.
+     */
+    get facetNotices(): string[] {
+      return facetUnitNotices(this.facet, this.unit)
     },
     /**
      * #getter

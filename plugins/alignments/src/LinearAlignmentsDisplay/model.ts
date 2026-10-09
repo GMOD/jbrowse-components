@@ -396,11 +396,15 @@ export default function stateModelFactory(
       .views(self => ({
         /**
          * #getter
-         * What the `color` object's and `scales.y`'s slots say together that
-         * they cannot draw as written, for the corner notice.
+         * What the `color`, `facet` and `scales.y` slots say that the display
+         * cannot draw as written, for the corner notice.
          */
         get notices(): string[] {
-          return [...self.colorNotices, ...self.valueScaleNotices]
+          return [
+            ...self.colorNotices,
+            ...self.facetNotices,
+            ...self.valueScaleNotices,
+          ]
         },
       }))
       .volatile(() => {

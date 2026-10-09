@@ -106,9 +106,14 @@ export function alignmentsColorEncoding(setting: AlignmentsColorSetting) {
 
 /** What the `color` object's slots say together that it cannot paint as written. */
 export function alignmentsColorNotices(setting: AlignmentsColorSetting) {
+  const encoding = alignmentsColorEncoding(setting)
   return [
     ...colorNotices(setting, ALIGNMENTS_FIELD_PRESETS),
-    ...levelNotices(alignmentsColorEncoding(setting)),
+    ...(typeof encoding === 'object' && LAYER_OF_FIELD.has(encoding.field)
+      ? [
+          `color.field: ${encoding.field} is drawn a cell per base, which baseColor paints over the reads`,
+        ]
+      : levelNotices(encoding)),
   ]
 }
 
