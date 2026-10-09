@@ -36,6 +36,7 @@ interface VariantDisplay {
   featureColor: string
   colorByMode: string
   setColorValue: (value: string | undefined) => void
+  colorByField: (field: string) => void
   colorMenuItems: () => ColorMenuItem[]
   colorScales: ColorScale[]
   showLegend: boolean
@@ -97,11 +98,13 @@ test('the consequence-impact color key renders, and dismissing it stops it drawi
   const display = view.tracks[0]!.displays[0] as VariantDisplay
   expect(display.colorScales).toEqual([])
 
-  display.setColorValue('jexl:impactColor(feature)')
-  const [scale] = display.colorScales
-  expect(
-    scale?.kind === 'categorical' && scale.entries.map(i => i.label),
-  ).toEqual(['HIGH', 'MODERATE', 'LOW', 'MODIFIER', 'Unannotated'])
+  display.colorByField('impact')
+  await waitFor(() => {
+    const [scale] = display.colorScales
+    expect(
+      scale?.kind === 'categorical' && scale.entries.map(i => i.label),
+    ).toEqual(['HIGH', 'MODERATE', 'LOW', 'MODIFIER'])
+  }, delay)
   expect(await screen.findByText('MODERATE', ...opts)).toBeInTheDocument()
 
   display.setShowLegend(false)
