@@ -10,7 +10,7 @@ import { observer } from 'mobx-react'
 
 import type { LinearAlignmentsDisplayModel } from '@jbrowse/plugin-alignments'
 
-const fields = colorFieldOptions(
+const colorFields = colorFieldOptions(
   '',
   'strand',
   'pairOrientation',
@@ -34,7 +34,7 @@ const Settings = observer(function Settings({
             display.applyPlot({ color: field ? { field } : null })
           }}
         >
-          {fields.map(({ field, label }) => (
+          {colorFields.map(({ field, label }) => (
             <option key={field} value={field}>
               {label}
             </option>
