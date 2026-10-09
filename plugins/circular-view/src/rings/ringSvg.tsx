@@ -2,9 +2,8 @@ import { SvgThemeProviders } from '@jbrowse/core/svg/SvgThemeProviders'
 import { serializeSvg } from '@jbrowse/core/svg/serializeSvg'
 import { awaitSvgRenders } from '@jbrowse/core/svg/svgReady'
 import { createSvgRasterCanvas } from '@jbrowse/core/util/createSvgRasterCanvas'
-import { canvasWideBlock } from '@jbrowse/render-core/renderBlock'
 
-import { ringShape } from './ringShape.ts'
+import { warpRing } from './warpRing.ts'
 
 import type { ExportSvgOptions } from '../CircularView/model.ts'
 import type { RingDisplay, RingHostModel } from './ringHost.ts'
@@ -58,7 +57,7 @@ async function rasterize(
   const img = await decodeSvg(markup, opts)
   const { canvas, ctx } = createSvgRasterCanvas(width, height, opts)
   ctx.drawImage(img, 0, 0, width, height)
-  return canvas
+  return ctx.getImageData(0, 0, canvas.width, canvas.height)
 }
 
 /**
@@ -89,8 +88,8 @@ export function renderRingBodies(
 
 /**
  * The rings of an export, as one raster: each body is rendered for its strip,
- * rasterized, and warped into its annulus by the Canvas2D ring painter — the
- * same resampling the screen shows. An SVG has no polar transform, so the
+ * rasterized, and warped into its annulus by `warpRing` — the resampling the
+ * screen's ring pass runs per fragment. An SVG has no polar transform, so the
  * alternative was re-tessellating every path of every display; the raster is
  * what the screen drew, and costs no display a line.
  *
@@ -98,7 +97,7 @@ export function renderRingBodies(
  * display that grows to its data only reaches its height once they resolve.
  */
 export async function paintRingsSvg(
-  host: RingHostModel,
+  host: Pick<RingHostModel, 'rings' | 'width'>,
   bodies: RingBody[],
   opts: ExportSvgOptions & SvgRasterCanvasOpts,
   theme: ThemeOptions | undefined,
@@ -113,9 +112,8 @@ export async function paintRingsSvg(
     return null
   }
   const { canvas, ctx } = createSvgRasterCanvas(figure.size, figure.size, opts)
-  const shape = ringShape('ringExport')
-  const block = canvasWideBlock(0, figure.size)
-  const frame = { canvasWidth: figure.size, canvasHeight: figure.size }
+  const scale = canvas.width / figure.size
+  const pixels = ctx.createImageData(canvas.width, canvas.height)
   for (const { ring, body } of drawn) {
     const { height } = ring.display
     const markup = serializeSvg(
@@ -131,24 +129,15 @@ export async function paintRingsSvg(
         </svg>
       </SvgThemeProviders>,
     )
-    const strip = await rasterize(markup, width, height, opts)
-    shape.paintBlock(
-      ctx,
-      {
-        innerPx: new Float32Array([ring.innerPx]),
-        outerPx: new Float32Array([ring.outerPx]),
-        count: 1,
-      },
-      block,
-      frame,
-      {
-        centerX: figure.center,
-        centerY: figure.center,
-        offsetRadians: figure.offsetRadians,
-        strip: { image: strip, width: strip.width, height: strip.height },
-      },
-    )
+    warpRing(pixels, await rasterize(markup, width, height, opts), {
+      centerX: figure.center * scale,
+      centerY: figure.center * scale,
+      innerPx: ring.innerPx * scale,
+      outerPx: ring.outerPx * scale,
+      offsetRadians: figure.offsetRadians,
+    })
   }
+  ctx.putImageData(pixels, 0, 0)
   return (
     <image
       width={figure.size}

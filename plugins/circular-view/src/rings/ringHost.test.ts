@@ -14,11 +14,10 @@ import {
   stripBlocks,
 } from './ringHost.ts'
 import { RING_PASSES, ringMarks } from './ringMarks.ts'
-import { SLICE_ARC_PX, ringShape } from './ringShape.ts'
+import { ringShape } from './ringShape.ts'
 
 import type { RingDisplay, RingHostView } from './ringHost.ts'
 import type { RingCell, RingFrame } from './ringMarks.ts'
-import type { MarkContext2D } from '@jbrowse/render-core/marks'
 
 const TWO_PI = 2 * Math.PI
 
@@ -217,35 +216,6 @@ test('a point on a ring unwarps to the strip x its angle covers and the y from t
   expect(back.x).toBeCloseTo((TWO_PI - 0.01) * stripRadius)
 })
 
-function recordingContext() {
-  const calls: { a: number; sx: number; sw: number; dy: number; dh: number }[] =
-    []
-  let angle = 0
-  const ctx = {
-    fillStyle: '',
-    strokeStyle: '',
-    lineWidth: 1,
-    translate() {},
-    rotate(a: number) {
-      angle += a
-    },
-    drawImage(
-      _image: CanvasImageSource,
-      sx: number,
-      _sy: number,
-      sw: number,
-      _sh: number,
-      _dx: number,
-      dy: number,
-      _dw: number,
-      dh: number,
-    ) {
-      calls.push({ a: angle, sx, sw, dy, dh })
-    },
-  } as unknown as MarkContext2D
-  return { ctx, calls }
-}
-
 const canvas = () => {
   const c = document.createElement('canvas')
   c.width = 2000
@@ -253,49 +223,74 @@ const canvas = () => {
   return c
 }
 
-test('the Canvas2D painter slices the strip around the ring, and each slice lands where ringHit unwarps it', () => {
-  const shape = ringShape('ring0')
-  const { ctx, calls } = recordingContext()
-  const strip = { image: canvas(), width: 2000, height: 100 }
-  const ring = { display: display('a', 100), innerPx: 300, outerPx: 400 }
+function canvas2d(width: number, height: number) {
+  const c = document.createElement('canvas')
+  c.width = width
+  c.height = height
+  return { canvas: c, ctx: c.getContext('2d')! }
+}
+
+test('the Canvas2D painter draws a translucent strip at its own alpha, each column where ringHit unwarps it', () => {
+  const strip = canvas2d(2000, 100)
+  strip.ctx.fillStyle = 'rgba(0, 0, 255, 0.5)'
+  strip.ctx.fillRect(0, 0, 1000, 100)
+  strip.ctx.fillStyle = 'rgb(255, 0, 0)'
+  strip.ctx.fillRect(1000, 0, 1000, 100)
+  const target = canvas2d(1000, 1000)
   const offset = 0.7
-  shape.paintBlock(
-    ctx,
+  ringShape('ring0').paintBlock(
+    target.ctx,
     { innerPx: Float32Array.of(300), outerPx: Float32Array.of(400), count: 1 },
     canvasWideBlocks([0], 1000)[0]!,
     { canvasWidth: 1000, canvasHeight: 1000 },
-    { centerX: 500, centerY: 500, offsetRadians: offset, strip },
+    {
+      centerX: 500,
+      centerY: 500,
+      offsetRadians: offset,
+      strip: { image: strip.canvas, width: 2000, height: 100 },
+    },
   )
-  const slices = Math.ceil((TWO_PI * 400) / SLICE_ARC_PX)
-  expect(calls).toHaveLength(slices)
-  // the slices tile the strip exactly once, top row at the outer rim
-  expect(calls[0]!.sx).toBe(0)
-  expect(calls.at(-1)!.sx + calls.at(-1)!.sw).toBeCloseTo(2000)
-  expect(calls[0]!.dy).toBe(-400)
-  expect(calls[0]!.dh).toBe(100)
-  // slice s is rotated to sit where the hit test says its strip columns are
-  const stripRadius = 400
-  for (const s of [0, 7, Math.floor(slices / 2), slices - 1]) {
-    const call = calls[s]!
-    const a = call.a - Math.PI / 2
-    const r = 350
-    const hit = ringHit(
-      [ring],
-      r * Math.cos(a),
-      r * Math.sin(a),
-      offset,
-      stripRadius,
-    )!
-    const x = (hit.x / (TWO_PI * stripRadius)) * 2000
-    expect(x).toBeGreaterThanOrEqual(call.sx - 1e-6)
-    expect(x).toBeLessThanOrEqual(call.sx + call.sw + 1e-6)
+  const ring = { display: display('a', 100), innerPx: 300, outerPx: 400 }
+  const { data } = target.ctx.getImageData(0, 0, 1000, 1000)
+  const seen = { translucent: 0, opaque: 0, outside: 0 }
+  const wrong: number[][] = []
+  for (let y = 0; y < 1000; y++) {
+    for (let x = 0; x < 1000; x++) {
+      const dx = x + 0.5 - 500
+      const dy = y + 0.5 - 500
+      const r = Math.hypot(dx, dy)
+      const o = (y * 1000 + x) * 4
+      const [red, green, blue, alpha] = data.subarray(o, o + 4)
+      const column =
+        ((ringHit([ring], dx, dy, offset, 400)?.x ?? 0) / (TWO_PI * 400)) * 2000
+      if (r < 299 || r > 401) {
+        seen.outside++
+        if (alpha !== 0) {
+          wrong.push([x, y, alpha!])
+        }
+      } else if (r > 301 && r < 399 && column > 2 && column < 998) {
+        seen.translucent++
+        if (blue !== 255 || red !== 0 || Math.abs(alpha! - 128) > 1) {
+          wrong.push([x, y, red!, green!, blue!, alpha!])
+        }
+      } else if (r > 301 && r < 399 && column > 1002 && column < 1998) {
+        seen.opaque++
+        if (red !== 255 || blue !== 0 || alpha !== 255) {
+          wrong.push([x, y, red!, green!, blue!, alpha!])
+        }
+      }
+    }
   }
+  expect(wrong.slice(0, 5)).toEqual([])
+  expect(seen.translucent).toBeGreaterThan(100_000)
+  expect(seen.opaque).toBeGreaterThan(100_000)
+  expect(seen.outside).toBeGreaterThan(100_000)
 })
 
 test('the painter draws nothing without a strip', () => {
   const shape = ringShape('ring0')
-  const { ctx, calls } = recordingContext()
-  const params = { centerX: 0, centerY: 0, offsetRadians: 0, strip: undefined }
+  const target = canvas2d(10, 10)
+  const params = { centerX: 5, centerY: 5, offsetRadians: 0, strip: undefined }
   expect(
     shape.paintsBlock!(
       canvasWideBlocks([0], 10)[0]!,
@@ -304,13 +299,15 @@ test('the painter draws nothing without a strip', () => {
     ),
   ).toBe(false)
   shape.paintBlock(
-    ctx,
-    { innerPx: Float32Array.of(1), outerPx: Float32Array.of(2), count: 1 },
+    target.ctx,
+    { innerPx: Float32Array.of(1), outerPx: Float32Array.of(4), count: 1 },
     canvasWideBlocks([0], 10)[0]!,
     { canvasWidth: 10, canvasHeight: 10 },
     params,
   )
-  expect(calls).toHaveLength(0)
+  expect(target.ctx.getImageData(0, 0, 10, 10).data.every(v => v === 0)).toBe(
+    true,
+  )
 })
 
 const frame: RingFrame = {

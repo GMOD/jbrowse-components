@@ -1,13 +1,11 @@
+import { getDpr } from '@jbrowse/render-core/canvas2dUtils'
 import { slangPass } from '@jbrowse/render-core/slangPass'
 
 import * as shader from './shaders/ringWarp.generated.ts'
+import { warpRing } from './warpRing.ts'
 
+import type { Pixels } from './warpRing.ts'
 import type { MarkImage, MarkShape } from '@jbrowse/render-core/marks'
-
-const TWO_PI = 2 * Math.PI
-
-/** Outer arc length one Canvas2D slice covers, in CSS px. */
-export const SLICE_ARC_PX = 2
 
 /**
  * The ring shape's channels: one instance per annulus, radii in CSS px from
@@ -29,11 +27,52 @@ export interface RingParams {
   strip: MarkImage | undefined
 }
 
+let scratchCanvas: HTMLCanvasElement | undefined
+let ringPixels: ImageData | undefined
+
+function scratchContext(width: number, height: number) {
+  scratchCanvas ??= document.createElement('canvas')
+  scratchCanvas.width = width
+  scratchCanvas.height = height
+  const ctx = scratchCanvas.getContext('2d', { willReadFrequently: true })
+  if (!ctx) {
+    throw new Error('ring painter: 2D context unavailable')
+  }
+  return ctx
+}
+
+const stripPixels = new WeakMap<MarkImage, Pixels>()
+
+/**
+ * The strip's pixels, read once per strip: a `MarkImage` is handed fresh per
+ * repaint, so a rotation reuses the read.
+ */
+function pixelsOf(strip: MarkImage) {
+  let pixels = stripPixels.get(strip)
+  if (!pixels) {
+    const ctx = scratchContext(strip.width, strip.height)
+    ctx.drawImage(strip.image, 0, 0)
+    pixels = ctx.getImageData(0, 0, strip.width, strip.height)
+    stripPixels.set(strip, pixels)
+  }
+  return pixels
+}
+
+/** A transparent `ImageData` the size of `ctx`'s canvas, reused across frames. */
+function blankPixels(ctx: CanvasRenderingContext2D) {
+  const { width, height } = ctx.canvas
+  if (ringPixels?.width === width && ringPixels.height === height) {
+    ringPixels.data.fill(0)
+  } else {
+    ringPixels = ctx.createImageData(width, height)
+  }
+  return ringPixels
+}
+
 /**
  * The polar resampling of a linear display's strip, as a mark shape. The GPU
- * samples the strip per fragment; the Canvas2D painter draws it as rotated
- * slices of `SLICE_ARC_PX` of outer arc, each a column range of the strip
- * stretched between the two rims and overlapped by a pixel to close the seams.
+ * samples the strip per fragment; the Canvas2D painter runs the same map per
+ * device pixel of the annulus that lies on the canvas (`warpRing`).
  *
  * One shape per pass id: a pass holds one texture, so a canvas drawing several
  * rings declares one of these per ring.
@@ -61,37 +100,48 @@ export function ringShape(id: string): MarkShape<RingChannels, RingParams> {
       return params.strip !== undefined
     },
 
-    paintBlock(ctx, channels, _block, _frame, params) {
-      const { strip, centerX, centerY, offsetRadians } = params
+    paintBlock(ctx, channels, _block, frame, params) {
+      const { strip, offsetRadians } = params
       if (!strip || !ctx.drawImage) {
         return
       }
-      const { image, width, height } = strip
+      const pixels = pixelsOf(strip)
+      const dpr = getDpr()
+      const cx = params.centerX * dpr
+      const cy = params.centerY * dpr
       for (let i = 0; i < channels.count; i++) {
-        const inner = channels.innerPx[i]!
-        const outer = channels.outerPx[i]!
-        const band = outer - inner
-        const slices = Math.max(1, Math.ceil((TWO_PI * outer) / SLICE_ARC_PX))
-        const step = TWO_PI / slices
-        const sliceWidth = outer * step
-        for (let s = 0; s < slices; s++) {
-          const a = (s + 0.5) * step + offsetRadians + Math.PI / 2
-          ctx.translate(centerX, centerY)
-          ctx.rotate(a)
-          ctx.drawImage(
-            image,
-            (s / slices) * width,
-            0,
-            width / slices,
-            height,
-            -sliceWidth / 2 - 0.5,
-            -outer,
-            sliceWidth + 1,
-            band,
-          )
-          ctx.rotate(-a)
-          ctx.translate(-centerX, -centerY)
+        const outerPx = channels.outerPx[i]! * dpr
+        const left = Math.max(0, Math.floor(cx - outerPx - 1))
+        const top = Math.max(0, Math.floor(cy - outerPx - 1))
+        const right = Math.min(frame.canvasWidth * dpr, cx + outerPx + 1)
+        const bottom = Math.min(frame.canvasHeight * dpr, cy + outerPx + 1)
+        if (right - left < 1 || bottom - top < 1) {
+          continue
         }
+        const out = scratchContext(
+          Math.ceil(right - left),
+          Math.ceil(bottom - top),
+        )
+        const ring = blankPixels(out)
+        warpRing(ring, pixels, {
+          centerX: cx - left,
+          centerY: cy - top,
+          innerPx: channels.innerPx[i]! * dpr,
+          outerPx,
+          offsetRadians,
+        })
+        out.putImageData(ring, 0, 0)
+        ctx.drawImage(
+          out.canvas,
+          0,
+          0,
+          ring.width,
+          ring.height,
+          left / dpr,
+          top / dpr,
+          ring.width / dpr,
+          ring.height / dpr,
+        )
       }
     },
   }

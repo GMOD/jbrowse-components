@@ -5,9 +5,11 @@
 //   node plugins/circular-view/benches/ringWarp.bench.ts --bins=5278
 //   node plugins/circular-view/benches/ringWarp.bench.ts --bins=10
 //   node plugins/circular-view/benches/ringWarp.bench.ts --bins=5278 --gpu=swiftshader
+//   node plugins/circular-view/benches/ringWarp.bench.ts --bins=5278 --alpha=0.5
 //
 // Flags: --bins=<n> (required; one fixture per process), --rounds=<n>,
-// --frames=<n>, --gpu=angle|swiftshader (default angle: the machine's GPU
+// --frames=<n>, --alpha=<0..1> (the bars' alpha, default 1),
+// --gpu=angle|swiftshader (default angle: the machine's GPU
 // through ANGLE, which is what a user's Chrome does; swiftshader is CPU
 // rasterisation and only says which arm is heavier, never how heavy).
 //
@@ -38,6 +40,14 @@
 // and Canvas2D:
 //   c2d-warp    the strip drawn as one rotated one-device-pixel slice per
 //               column
+//   c2d-slices  the painter `ringShape.ts` shipped until 2026-10: rotated
+//               slices of two css px of outer arc, each a constant-width rect
+//               overlapping its neighbours by a css px. Under a translucent
+//               strip the overlaps composite twice
+//   c2d-pixel   the painter that replaced it: `warpRing`, run from its own
+//               module's source, maps each device pixel as the shader does,
+//               bilinear over the premultiplied strip with both rims faded,
+//               into an ImageData drawn onto the canvas
 //   c2d-wedge   each bar as an arc path
 //
 // Each frame finishes with a 1x1 `readPixels` / `getImageData`, so the time is
@@ -49,7 +59,8 @@
 // differs and the mean absolute difference on those — which is the arc
 // exactness question (b) in ADR-119, measured rather than argued.
 
-import { createRequire } from 'node:module'
+import { readFileSync } from 'node:fs'
+import { createRequire, stripTypeScriptTypes } from 'node:module'
 import { parseArgs } from 'node:util'
 
 import type { PuppeteerNode } from 'puppeteer'
@@ -60,6 +71,7 @@ const { values } = parseArgs({
     rounds: { type: 'string', default: '10' },
     frames: { type: 'string', default: '6' },
     gpu: { type: 'string', default: 'angle' },
+    alpha: { type: 'string', default: '1' },
   },
 })
 if (!values.bins) {
@@ -69,6 +81,7 @@ if (!values.bins) {
 const bins = Number(values.bins)
 const rounds = Number(values.rounds)
 const frames = Number(values.frames)
+const alpha = Number(values.alpha)
 
 const require = createRequire(
   new URL('../../../packages/browser-test-utils/package.json', import.meta.url),
@@ -83,6 +96,10 @@ const INNER_PX = OUTER_PX - BAND_PX
 const STRIP_W = Math.round(2 * Math.PI * OUTER_PX)
 const TWO_PI = 2 * Math.PI
 
+const warpRingModule = stripTypeScriptTypes(
+  readFileSync(new URL('../src/rings/warpRing.ts', import.meta.url), 'utf8'),
+).replaceAll(/^export /gm, '')
+
 const pageScript = String.raw`
 const DPR = ${DPR}
 const FIGURE_PX = ${FIGURE_PX}
@@ -92,6 +109,8 @@ const INNER_PX = ${INNER_PX}
 const STRIP_W = ${STRIP_W}
 const TWO_PI = ${TWO_PI}
 const BINS = ${bins}
+const ALPHA = ${alpha}
+const FILL = 'rgba(76, 120, 168, ' + ALPHA + ')'
 const ROUNDS = ${rounds}
 const FRAMES = ${frames}
 
@@ -115,7 +134,7 @@ strip.width = STRIP_W
 strip.height = BAND_PX
 {
   const c = strip.getContext('2d')
-  c.fillStyle = '#4c78a8'
+  c.fillStyle = FILL
   for (let i = 0; i < BINS; i++) {
     c.fillRect(x0[i], BAND_PX - h[i], x1[i] - x0[i], h[i])
   }
@@ -174,7 +193,7 @@ const WEDGE_VS = '#version 300 es\n' +
   ' vec2 px = u_center + r * vec2(cos(a), sin(a));\n' +
   ' gl_Position = vec4(px.x/u_canvas.x*2.0-1.0, 1.0-px.y/u_canvas.y*2.0, 0.0, 1.0); }'
 const WEDGE_FS = '#version 300 es\nprecision highp float; out vec4 o;\n' +
-  'void main(){ o = vec4(0.298, 0.471, 0.659, 1.0); }'
+  'void main(){ o = vec4(0.298, 0.471, 0.659, 1.0) * ${alpha.toFixed(4)}; }'
 
 const probe = new Uint8Array(4)
 function glArm(name, kind) {
@@ -256,25 +275,58 @@ function glArm(name, kind) {
   }
 }
 
+const stripPixels = strip.getContext('2d').getImageData(0, 0, STRIP_W, BAND_PX)
+
+const { warpRing } = (() => {
+${warpRingModule}
+  return { warpRing }
+})()
+
 function c2dArm(name, kind) {
   const canvas = makeCanvas()
   const ctx = canvas.getContext('2d')
   const cx = FIGURE_PX / 2
   const cy = FIGURE_PX / 2
+  const img = kind === 'c2d-pixel' ? new ImageData(FIGURE_PX, FIGURE_PX) : undefined
+  const scratch = kind === 'c2d-pixel' ? document.createElement('canvas') : undefined
+  if (scratch) {
+    scratch.width = FIGURE_PX
+    scratch.height = FIGURE_PX
+  }
   return {
     name,
     canvas,
     frame(rot) {
       ctx.setTransform(1, 0, 0, 1, 0, 0)
       ctx.clearRect(0, 0, FIGURE_PX, FIGURE_PX)
-      if (kind === 'c2d-warp') {
+      if (kind === 'c2d-pixel') {
+        img.data.fill(0)
+        warpRing(img, stripPixels, { centerX: cx, centerY: cy, innerPx: INNER_PX, outerPx: OUTER_PX, offsetRadians: rot })
+        scratch.getContext('2d').putImageData(img, 0, 0)
+        ctx.drawImage(scratch, 0, 0)
+      } else if (kind === 'c2d-slices') {
+        const outer = OUTER_PX / DPR
+        const band = BAND_PX / DPR
+        const slices = Math.ceil((TWO_PI * outer) / 2)
+        const step = TWO_PI / slices
+        const sliceWidth = outer * step
+        ctx.setTransform(DPR, 0, 0, DPR, 0, 0)
+        for (let s = 0; s < slices; s++) {
+          const a = (s + 0.5) * step + rot + Math.PI / 2
+          ctx.translate(cx / DPR, cy / DPR)
+          ctx.rotate(a)
+          ctx.drawImage(strip, (s / slices) * STRIP_W, 0, STRIP_W / slices, BAND_PX, -sliceWidth / 2 - 0.5, -outer, sliceWidth + 1, band)
+          ctx.rotate(-a)
+          ctx.translate(-cx / DPR, -cy / DPR)
+        }
+      } else if (kind === 'c2d-warp') {
         for (let i = 0; i < STRIP_W; i++) {
           const a = ((i + 0.5) / STRIP_W) * TWO_PI + rot + Math.PI / 2
           ctx.setTransform(Math.cos(a), Math.sin(a), -Math.sin(a), Math.cos(a), cx, cy)
           ctx.drawImage(strip, i, 0, 1, BAND_PX, -0.5, -OUTER_PX, 1, BAND_PX)
         }
       } else {
-        ctx.fillStyle = '#4c78a8'
+        ctx.fillStyle = FILL
         for (let i = 0; i < BINS; i++) {
           const a0 = (x0[i] / STRIP_W) * TWO_PI + rot
           const a1 = (x1[i] / STRIP_W) * TWO_PI + rot
@@ -298,6 +350,8 @@ const arms = [
   glArm('wedge1', 'wedge1'),
   glArm('wedge8', 'wedge8'),
   c2dArm('c2d-warp', 'c2d-warp'),
+  c2dArm('c2d-slices', 'c2d-slices'),
+  c2dArm('c2d-pixel', 'c2d-pixel'),
   c2dArm('c2d-wedge', 'c2d-wedge'),
 ]
 
@@ -380,6 +434,8 @@ const exact = {
   wedge1: compare(warpPx, pixels.get('wedge1')),
   wedge8: compare(warpPx, pixels.get('wedge8')),
   'c2d-warp': compare(warpPx, pixels.get('c2d-warp')),
+  'c2d-slices': compare(warpPx, pixels.get('c2d-slices')),
+  'c2d-pixel': compare(warpPx, pixels.get('c2d-pixel')),
   'c2d-wedge': compare(warpPx, pixels.get('c2d-wedge')),
 }
 window.__result = {
@@ -399,10 +455,12 @@ async function main() {
     headless: true,
     protocolTimeout: 900_000,
     executablePath: process.env.PUPPETEER_EXECUTABLE_PATH,
-    args:
-      values.gpu === 'swiftshader'
+    args: [
+      '--no-sandbox',
+      ...(values.gpu === 'swiftshader'
         ? ['--use-gl=swiftshader', '--enable-unsafe-swiftshader']
-        : ['--use-gl=angle', '--ignore-gpu-blocklist'],
+        : ['--use-gl=angle', '--ignore-gpu-blocklist']),
+    ],
   })
   try {
     const page = await browser.newPage()
@@ -418,7 +476,9 @@ async function main() {
       renderer: string
     }
     const base = result.timing.warp!
-    console.log(`bins=${bins} gpu=${values.gpu} renderer=${result.renderer}`)
+    console.log(
+      `bins=${bins} alpha=${alpha} gpu=${values.gpu} renderer=${result.renderer}`,
+    )
     console.log('arm\tms/frame\tvs warp\tring inked')
     for (const [arm, ms] of Object.entries(result.timing)) {
       console.log(
