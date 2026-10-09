@@ -4,7 +4,6 @@ import { getFillProps } from '@jbrowse/core/util'
 
 import {
   ROW_COLOR_BAR_WIDTH,
-  rowLabelBoxHeight,
   rowLabelFontSize,
   rowLabelFullText,
   rowLabelText,
@@ -68,9 +67,6 @@ export function SvgRowLabels({
   }
 
   const boxWidth = rowLabelsBoxWidth(sources, rowHeight, text)
-  const boxHeight = rowLabelBoxHeight(rowHeight, text)
-  const boxInset = (rowHeight - boxHeight) / 2
-  const boxesAbut = boxHeight === rowHeight
   const textX = rowLabelTextX(sources)
   const rows = textFits
     ? sources
@@ -78,14 +74,12 @@ export function SvgRowLabels({
         .filter(({ y }) => !offscreen(y, rowHeight))
     : []
   const boxes = rows
-    .map(({ y }) => `M0 ${y + boxInset}h${boxWidth}v${boxHeight}h${-boxWidth}z`)
+    .map(({ y }) => `M0 ${y}h${boxWidth}v${rowHeight}h${-boxWidth}z`)
     .join('')
-  const separators = boxesAbut
-    ? rows
-        .filter(({ idx }) => idx > 0)
-        .map(({ y }) => `M0 ${y}h${boxWidth}v1h${-boxWidth}z`)
-        .join('')
-    : ''
+  const separators = rows
+    .filter(({ idx }) => backdrop && idx > 0)
+    .map(({ y }) => `M0 ${y}h${boxWidth}v1h${-boxWidth}z`)
+    .join('')
 
   return textFits ? (
     <g transform={`translate(${labelOffset} 0)`}>
@@ -111,9 +105,9 @@ export function SvgRowLabels({
             key={source.name}
             data-testid="row-color-bar"
             x={0}
-            y={y + boxInset}
+            y={y}
             width={ROW_COLOR_BAR_WIDTH}
-            height={boxHeight}
+            height={rowHeight}
             {...getFillProps(source.rowColor)}
           />
         ) : null,

@@ -58,15 +58,6 @@ export function rowLabelFontSize(rowHeight: number, text?: ExportTextStyle) {
   return Math.min(rowHeight, sidebarFontSize(text))
 }
 
-/**
- * Height of a label's box, centered in its row: one line of text, not the row,
- * so a tall row does not draw a tall cell around a short name. Rows at or
- * below a line's height get boxes that abut, as one strip.
- */
-export function rowLabelBoxHeight(rowHeight: number, text?: ExportTextStyle) {
-  return Math.min(rowHeight, rowLabelFontSize(rowHeight, text) + 4)
-}
-
 export function rowLabelFullText(source: RowLabelSource) {
   return source.label ?? source.name
 }

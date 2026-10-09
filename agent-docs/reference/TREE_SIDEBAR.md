@@ -385,7 +385,10 @@ parameter is named to refuse.
 - **A row's color is a bar, not a tinted box.** Above `MIN_TEXT_ROW_HEIGHT`
   `SvgRowLabels` draws `rowColor` as a `ROW_COLOR_BAR_WIDTH` (4 px) bar at the
   label's left, and every name in the column starts past the bars once any row
-  has one; the text keeps the theme's color. There is no toggle.
+  has one; the text keeps the theme's color. There is no toggle. The label box
+  and the bar span their whole row, so the strip reads as the rows beside it,
+  with a hairline between rows and consecutive same-colored rows forming one
+  block.
 - **A sub-pixel row still draws.** Below `MIN_TEXT_ROW_HEIGHT`, where no text
   draws, `SvgRowLabels` fills the label run with `rowColor`, floored to a pixel,
   **longest-first** so the rarest group isn't overdrawn. So **the stripe is a

@@ -30,8 +30,8 @@ describe('SvgRowLabels', () => {
     expect(bar.getAttribute('fill')).toBe(dog)
     expect(bar.getAttribute('x')).toBe('0')
     expect(bar.getAttribute('width')).toBe('4')
-    expect(bar.getAttribute('height')).toBe('16')
-    expect(bar.getAttribute('y')).toBe('2')
+    expect(bar.getAttribute('height')).toBe('20')
+    expect(bar.getAttribute('y')).toBe('0')
     const text = c.querySelector('text')!
     expect(text.textContent).toBe('Collie 1')
     expect(Number(text.getAttribute('x'))).toBeGreaterThan(4)
@@ -49,7 +49,8 @@ describe('SvgRowLabels', () => {
     })
     const bars = c.querySelectorAll('[data-testid="row-color-bar"]')
     expect(bars).toHaveLength(1)
-    expect(bars[0]!.getAttribute('y')).toBe('2')
+    expect(bars[0]!.getAttribute('y')).toBe('0')
+    expect(bars[0]!.getAttribute('height')).toBe('20')
     const [a, b] = [...c.querySelectorAll('text')]
     expect(a!.getAttribute('x')).toBe(b!.getAttribute('x'))
   })
@@ -64,25 +65,15 @@ describe('SvgRowLabels', () => {
     expect(c.querySelector('text')?.getAttribute('x')).toBe('4')
   })
 
-  it('boxes each label one line tall, centered in a tall row, with no separator', () => {
-    const sources = [{ name: 'a' }, { name: 'b' }]
+  it('boxes each label to its whole row, with a separator between rows', () => {
+    const sources = [{ name: 'a' }, { name: 'b' }, { name: 'c' }]
     const c = draw({ sources, rowHeight: 40, labelOffset: 0, backdrop: 'wash' })
     const w = rowLabelsBoxWidth(sources, 40)
     expect(c.querySelector('path')?.getAttribute('d')).toBe(
-      `M0 12h${w}v16h${-w}zM0 52h${w}v16h${-w}z`,
-    )
-    expect(c.querySelectorAll('rect')).toHaveLength(0)
-  })
-
-  it('abuts the boxes of rows no taller than a line, with a separator between them', () => {
-    const sources = [{ name: 'a' }, { name: 'b' }, { name: 'c' }]
-    const c = draw({ sources, rowHeight: 12, labelOffset: 0, backdrop: 'wash' })
-    const w = rowLabelsBoxWidth(sources, 12)
-    expect(c.querySelector('path')?.getAttribute('d')).toBe(
-      [0, 12, 24].map(y => `M0 ${y}h${w}v12h${-w}z`).join(''),
+      [0, 40, 80].map(y => `M0 ${y}h${w}v40h${-w}z`).join(''),
     )
     const paths = [...c.querySelectorAll('path')].map(p => p.getAttribute('d'))
-    expect(paths).toContain(`M0 12h${w}v1h${-w}zM0 24h${w}v1h${-w}z`)
+    expect(paths).toContain(`M0 40h${w}v1h${-w}zM0 80h${w}v1h${-w}z`)
     expect(c.querySelectorAll('rect')).toHaveLength(0)
   })
 
@@ -97,14 +88,14 @@ describe('SvgRowLabels', () => {
       labelOffset: 0,
       backdrop: 'paper',
     })
-    expect(paper.querySelectorAll('path')).toHaveLength(1)
+    expect(paper.querySelectorAll('path')).toHaveLength(2)
     const wash = draw({
       sources,
       rowHeight: 40,
       labelOffset: 0,
       backdrop: 'wash',
     })
-    expect(wash.querySelectorAll('path')).toHaveLength(2)
+    expect(wash.querySelectorAll('path')).toHaveLength(3)
   })
 
   it('fills the label run with the color, and draws no text, below the text threshold', () => {
