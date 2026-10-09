@@ -94,7 +94,7 @@ const view = (
     graphTrack(SEGMENTS_TRACK, {
       layoutMode,
       paneHeight,
-      colorScheme: 'reference-position',
+      color: { field: 'position' },
     }),
   ],
 })

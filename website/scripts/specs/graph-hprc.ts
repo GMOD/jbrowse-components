@@ -224,8 +224,7 @@ const mhcLayoutForceSpec: ScreenshotSpec = {
           hg38GeneLane(70),
           graphTrack(SEGMENTS_TRACK, {
             layoutMode: 'force',
-            colorScheme: 'reference-position',
-            showDeletionEdges: true,
+            color: { field: 'position' },
             maxRegionBp: cutNear(60_000),
             // The force drawing here is a tall narrow chain ending in a 9.4 kb
             // loop, so it would take the whole 600 px ceiling; lower, it fits
@@ -458,7 +457,7 @@ function abca7View({
       },
       graphTrack('hprc_v2_1_walk_lanes', {
         layoutMode: 'walkrows',
-        colorScheme: 'uniform',
+        color: 'uniform',
         subgraphHaplotypes: [],
         repeatTrackId: 'hprc_abca7_trgt',
         repeatKey: ABCA7_REPEAT_KEY,
@@ -709,13 +708,12 @@ export const hprcGraphSpecs: ScreenshotSpec[] = [
             graphTrack(SEGMENTS_TRACK, {
               layoutMode: 'force',
               paneHeight: 600,
-              colorScheme: 'reference-position',
-              showDeletionEdges: true,
+              color: { field: 'position' },
               maxRegionBp: cutNear(70_000),
               // Halos and route chips are introduced on the KIV-2 figure
               // further down; here they arrived unexplained, and one chip sat
               // over the C4A junction the backbone label points past.
-              showBubbles: false,
+              layers: { bubbles: false },
             }),
           ],
         },
@@ -800,7 +798,7 @@ export const hprcGraphSpecs: ScreenshotSpec[] = [
             INV_LANES_VIEW.tracks[1],
             graphTrack(SEGMENTS_TRACK, {
               layoutMode: 'force',
-              colorScheme: 'reference-position',
+              color: { field: 'position' },
               maxRegionBp: cutNear(INV_REGION),
               paneHeight: 380,
             }),
@@ -895,8 +893,8 @@ export const hprcGraphSpecs: ScreenshotSpec[] = [
             graphTrack(SEGMENTS_TRACK, {
               layoutMode: 'force',
               paneHeight: 600,
-              colorScheme: 'reference-position',
-              showBubbles: true,
+              color: { field: 'position' },
+              layers: { bubbles: true },
               maxRegionBp: cutNear(130_000),
             }),
           ],
@@ -994,7 +992,7 @@ export const hprcGraphSpecs: ScreenshotSpec[] = [
             graphTrack(SEGMENTS_TRACK, {
               layoutMode: 'force',
               paneHeight: 600,
-              colorScheme: 'reference-position',
+              color: { field: 'position' },
               maxRegionBp: cutNear(90_000),
             }),
           ],
@@ -1344,7 +1342,7 @@ export const hprcGraphSpecs: ScreenshotSpec[] = [
             // and assemblies part, and two carrying a walk the view leaves
             // unscored: HG02559's second allele has no spanning read,
             // HG04199's second walk does not span the array
-            walkRowSamples: ABCA7_SAMPLES,
+            rows: { kept: ABCA7_SAMPLES },
             paneHeight: 360,
           },
         }),
@@ -1422,7 +1420,7 @@ export const hprcGraphSpecs: ScreenshotSpec[] = [
             AMYLASE_LANES.tracks[0]!,
             graphTrack('hprc_v2_1_walk_lanes', {
               layoutMode: 'walkrows',
-              colorScheme: 'uniform',
+              color: 'uniform',
               subgraphHaplotypes: PORTAL_LOCI.amylase.lanes,
               paneHeight: 380,
               // a bar spans the cut, so the cut stays the array's window
@@ -1457,7 +1455,7 @@ export const hprcGraphSpecs: ScreenshotSpec[] = [
             // the layout the tutorial's own config draws, which names none;
             // the portal's config opens its graph tracks force-directed
             graphTrack(SEGMENTS_TRACK, {
-              colorScheme: 'reference-position',
+              color: { field: 'position' },
               layoutMode: 'auto',
             }),
           ],

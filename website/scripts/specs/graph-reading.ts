@@ -86,15 +86,18 @@ function kiv2WalksGraphTrack(pane: Record<string, unknown> = {}) {
   return graphTrack(LANES_TRACK, {
     subgraphHaplotypes: KIV2_HAPLOTYPES,
     layoutMode: 'force',
-    colorScheme: 'reference-position',
-    colorDomain: KIV2_BUBBLE_REGION,
+    color: {
+      field: 'position',
+      domainMin: KIV2_BUBBLE_REGION.start,
+      domainMax: KIV2_BUBBLE_REGION.end,
+    },
     // the private array copies are 11 kb to 105 kb of sequence each; at
     // proportional length they set the frame and the flank is a dot
     bubbleSpread: 'compress',
     // No halos or route chips (review: "so much text annotations in the
     // graphgenomeviewer itself makes it hard to see"): nine chips stacked on
     // the loops covered the drawing they named.
-    showBubbles: false,
+    layers: { bubbles: false },
     paneHeight: 400,
     ...pane,
   })
@@ -182,13 +185,12 @@ const kiv2WalkRowsSpec: ScreenshotSpec = {
           hprcBubblesLane(80),
           kiv2WalksGraphTrack({
             layoutMode: 'walkrows',
-            colorScheme: 'uniform',
+            color: 'uniform',
             subgraphHaplotypes: [],
             // GRCh38's bar is the graph's own backbone nodes, the other rows
             // are flat bars; at depth width its nodes swelled and thinned by
             // carriage
-            nodeWidth: 'uniform',
-            contigThickness: 12,
+            size: 12,
             paneHeight: 300,
           }),
         ],
@@ -259,9 +261,9 @@ const nntHalosSpec: ScreenshotSpec = {
           },
           graphTrack('mouse_minigraph_segments', {
             layoutMode: 'force',
-            colorScheme: 'reference-position',
+            color: { field: 'position' },
             paneHeight: 420,
-            showBubbles: true,
+            layers: { bubbles: true },
           }),
         ],
       },

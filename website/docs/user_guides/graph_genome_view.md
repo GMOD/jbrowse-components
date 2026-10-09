@@ -483,13 +483,16 @@ jexl:feature.rank==0 ? 'rgb(52,152,219)' : 'rgb(237,137,44)'
 Hover a node, and the lanes above it highlight the reference interval the node
 occupies; above a force-directed or ordered drawing, the reference strip boxes
 the same interval and draws a line to the node. Hovering a bubble's label does
-the same for the bubble's span. Hover a lane, and the graph highlights the
-segment under the cursor. Hover sync needs no configuration. It is the only way
-to locate a rank>0 allele, because those alleles have no reference coordinates.
+the same for the bubble's span. This needs no configuration, and it is the only
+way to locate a rank>0 allele, because those alleles have no reference
+coordinates.
 
-The reverse direction works from any track. A gene gives a coordinate, and that
-is enough, because rGFA segments do not overlap on a stable sequence and one
-backbone segment covers the coordinate.
+The reverse direction, a lane's pointer lighting the segment under it, is off by
+default, since every track's pointer crosses some segment. **Show... → Hover
+highlight → Everything** turns it on, along with edge hover. It then works from
+any track: a gene gives a coordinate, and that is enough, because rGFA segments
+do not overlap on a stable sequence and one backbone segment covers the
+coordinate.
 
 The alignment lane below shows the same event from the other side. CFT073 has no
 aligned bases across the band, and neither do IAI39 or Sakai, while NCTC86

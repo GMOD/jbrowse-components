@@ -42,7 +42,7 @@ export function portalGraphLaunch({
           },
           graphTrack('hprc_minigraph_segments', {
             layoutMode,
-            colorScheme: 'reference-position',
+            color: { field: 'position' },
             paneHeight: 420,
           }),
           {

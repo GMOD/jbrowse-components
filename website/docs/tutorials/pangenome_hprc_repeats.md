@@ -302,7 +302,7 @@ the catalogue's VNTR row and the TRGT genotypes:
             "trackId": "hprc_v2_1_walk_lanes",
             "type": "LinearGraphDisplay",
             "layoutMode": "walkrows",
-            "colorScheme": "uniform",
+            "color": "uniform",
             "subgraphHaplotypes": [],
             "repeatTrackId": "hprc_abca7_trgt",
             "height": 600

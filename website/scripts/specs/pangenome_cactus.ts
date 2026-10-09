@@ -181,10 +181,10 @@ export const pangenomeCactusSpecs: ScreenshotSpec[] = [
             graphTrack(MC_SEGMENTS_TRACK, {
               layoutMode: 'force',
               paneHeight: 600,
-              colorScheme: 'reference-position',
+              color: { field: 'position' },
               // a SNP halo on every backbone joint, and a second deletion label
               // over the arc's own
-              showBubbles: false,
+              layers: { bubbles: false },
               // a window-width more each side would braid the drawing
               maxRegionBp: cutNear(1600),
             }),

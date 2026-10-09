@@ -181,8 +181,11 @@ const PGGB_TIER_SESSION_TRACK = ecoliPageTrack(ECOLI_DOC, PGGB_TIER_TRACK)
 // `coarse.aboveBpPerPx` the track cuts the tier by itself, and the ramp runs
 // over the same span as the tier lane's.
 const pggbTierCut = graphTrack(PGGB_SEGMENTS_TRACK, {
-  colorScheme: 'reference-position',
-  colorDomain: { start: PGGB_TIER_REGION.start, end: PGGB_TIER_REGION.end },
+  color: {
+    field: 'position',
+    domainMin: PGGB_TIER_REGION.start,
+    domainMax: PGGB_TIER_REGION.end,
+  },
 })
 
 // The per-strain window, which cannot be the kilobase above (review of the sample
@@ -207,12 +210,12 @@ const PGGB_ROWS_WINDOW = 'chr:1,004,500-1,004,961'
 // rows window, with the cut held to it.
 const PGGB_STRAIN_GRAPH = graphTrack(PGGB_SEGMENTS_TRACK, {
   layoutMode: 'force',
-  colorScheme: 'stable-rank',
+  color: { field: 'rank' },
   maxRegionBp: cutNear(PGGB_ROWS_LOCUS),
   paneHeight: 420,
   // the bubble halos and chips said nothing about the one node this figure is
   // about, and two ran off the pane's edges
-  showBubbles: false,
+  layers: { bubbles: false },
 })
 
 // Where pangenome/pggb_out_to_strain starts. The five-assembly config, because
@@ -333,7 +336,7 @@ const SEGMENT_WINDOW = 'chr:4,053,156-4,067,028'
 // each. It has to be stated to the graph, not read off it: a file-loaded graph
 // has no `loadedRegion`, so its ramp otherwise spans whatever the file holds,
 // which for a gfatools cut is the first and last backbone node's midpoints
-// rather than the window. The view takes `colorDomain` for that.
+// rather than the window. The view takes `color.domainMin`/`domainMax` for that.
 const PAA_RAMP_DOMAIN = { start: 1445000, end: 1474500 }
 
 // The same span as a region, for the figures that cut it out of the track's own
@@ -497,8 +500,8 @@ const LAUNCH_OUT_URL = sessionSpec(ECOLI_PANGENOME_CONFIG, {
       loadedTrackId: LAUNCH_OUT_SEGMENTS_TRACK,
       loadedRegion: LAUNCH_OUT_REGION,
       layoutMode: 'force',
-      colorScheme: 'reference-position',
-      showGenes: false,
+      color: { field: 'position' },
+      layers: { genes: false },
     },
   ],
 })
@@ -564,10 +567,9 @@ function ecoliHoverSession() {
           // the genes, and the 65 kb loop took most of a 600 px pane.
           graphTrack(ECOLI_SEGMENTS_TRACK, {
             layoutMode: 'force',
-            colorScheme: 'reference-position',
-            showBubbles: false,
-            showGenes: false,
-            contigThickness: 10,
+            color: { field: 'position' },
+            layers: { bubbles: false, genes: false },
+            size: { field: 'depth', value: 10 },
             paneHeight: 420,
           }),
         ],
@@ -683,11 +685,16 @@ function pggbLocusSession(
           graphTrack(PGGB_SEGMENTS_TRACK, {
             layoutMode,
             paneHeight,
-            colorScheme: 'reference-position',
-            colorDomain: { start: region.start, end: region.end },
+            color: {
+              field: 'position',
+              domainMin: region.start,
+              domainMax: region.end,
+            },
             maxRegionBp: cutNear(region),
             ...(bubbleSpread ? { bubbleSpread } : {}),
-            ...(showBubbles === undefined ? {} : { showBubbles }),
+            ...(showBubbles === undefined
+              ? {}
+              : { layers: { bubbles: showBubbles } }),
           }),
         ],
       },
@@ -804,7 +811,7 @@ function graphContextPartSpecs(): ScreenshotSpec[] {
             graphTrack(ECOLI_SEGMENTS_TRACK, {
               layoutMode: 'force',
               paneHeight: 600,
-              colorScheme: 'reference-position',
+              color: { field: 'position' },
               maxRegionBp: cutNear(PAA_REGION),
               subgraphContext,
               // Bandage's own drawn-length power law (review, on all three
@@ -819,8 +826,7 @@ function graphContextPartSpecs(): ScreenshotSpec[] {
               // both halves carried bubble labels that differ between the cuts
               // and read as the finding, where the finding is the boxed stubs
               // closing.
-              showBubbles: false,
-              showGenes: false,
+              layers: { bubbles: false, genes: false },
             }),
           ],
         },
@@ -1240,8 +1246,11 @@ export const ecoliGraphSpecs: ScreenshotSpec[] = [
             graphTrack(ECOLI_SEGMENTS_TRACK, {
               layoutMode: 'force',
               paneHeight: 600,
-              colorScheme: 'reference-position',
-              colorDomain: { start: ECOLI_REGION.start, end: ECOLI_REGION.end },
+              color: {
+                field: 'position',
+                domainMin: ECOLI_REGION.start,
+                domainMax: ECOLI_REGION.end,
+              },
               maxRegionBp: cutNear(ECOLI_REGION),
             }),
           ],
@@ -1408,8 +1417,11 @@ export const ecoliGraphSpecs: ScreenshotSpec[] = [
           // scripts/build_ecoli_pangenome_graph.sh, which writes this file.
           gfaLocation: { uri: `${DATA}/ecoli_paa_subgraph.gfa` },
           layoutMode: 'force',
-          colorScheme: 'reference-position',
-          colorDomain: PAA_RAMP_DOMAIN,
+          color: {
+            field: 'position',
+            domainMin: PAA_RAMP_DOMAIN.start,
+            domainMax: PAA_RAMP_DOMAIN.end,
+          },
           // The shorter graph panel review asked for, and the RIGHT lever for
           // it: `paneHeight` replaces GraphGenomeView's built-in 600px ceiling,
           // so the whole drawing scales down to fit. Cutting the capture's
@@ -1430,7 +1442,7 @@ export const ecoliGraphSpecs: ScreenshotSpec[] = [
           // somewhat confusing because its always 'relative to what'"): the
           // island is the ringed node and the synteny rows above, so the label
           // named it a second time, from K12's side only.
-          showBubbles: false,
+          layers: { bubbles: false },
         },
       ],
     }),
@@ -1994,7 +2006,7 @@ export const ecoliGraphSpecs: ScreenshotSpec[] = [
             graphTrack(ECOLI_SEGMENTS_TRACK, {
               layoutMode: 'force',
               paneHeight: 600,
-              colorScheme: 'stable-rank',
+              color: { field: 'rank' },
               maxRegionBp: cutNear(PKS_REGION),
             }),
           ],

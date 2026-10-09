@@ -111,8 +111,8 @@ const dock2Spec: ScreenshotSpec = {
           graphTrack('mouse_minigraph_segments', {
             layoutMode: 'force',
             paneHeight: 600,
-            colorScheme: 'reference-position',
-            showBubbles: true,
+            color: { field: 'position' },
+            layers: { bubbles: true },
           }),
         ],
       },
@@ -249,7 +249,7 @@ export const mouseCattleGraphSpecs: ScreenshotSpec[] = [
         bovineGenes,
         bovineVariantLane(300),
         graphTrack('bovine_minigraph_segments', {
-          colorScheme: 'reference-position',
+          color: { field: 'position' },
           bubbleSpread: 'compress',
           paneHeight: 240,
           maxRegionBp: cutNear(100_000),
@@ -267,7 +267,7 @@ export const mouseCattleGraphSpecs: ScreenshotSpec[] = [
         bovineGenes,
         bovineVariantLane(300),
         graphTrack('bovine_minigraph_segments', {
-          colorScheme: 'reference-position',
+          color: { field: 'position' },
           bubbleSpread: 'compress',
           paneHeight: 240,
           maxRegionBp: cutNear(40_000),
@@ -311,7 +311,7 @@ export const mouseCattleGraphSpecs: ScreenshotSpec[] = [
         graphTrack('bovine_minigraph_segments', {
           layoutMode: 'force',
           bubbleSpread: 'compress',
-          colorScheme: 'reference-position',
+          color: { field: 'position' },
           paneHeight: 420,
           maxRegionBp: cutNear(28_000),
         }),

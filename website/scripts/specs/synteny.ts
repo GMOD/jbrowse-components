@@ -3346,8 +3346,11 @@ export const syntenySpecs: ScreenshotSpec[] = [
             type: 'GraphGenomeView',
             gfaLocation: { uri: `${ECOLI_DEMO_BASE}/ecoli_paa_subgraph.gfa` },
             layoutMode: 'force',
-            colorScheme: 'reference-position',
-            colorDomain: PAA_COLOR_DOMAIN,
+            color: {
+              field: 'position',
+              domainMin: PAA_COLOR_DOMAIN.start,
+              domainMax: PAA_COLOR_DOMAIN.end,
+            },
           },
         ],
       },

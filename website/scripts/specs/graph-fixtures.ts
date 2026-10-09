@@ -76,9 +76,9 @@ export const GRAPH_DRAWN =
 export const graphCutDrawn = (tier: 'fine' | 'coarse') =>
   `[data-testid="linear-graph-display"][data-cut-tier="${tier}"][data-node-count]:not([data-loading])`
 
-// A graph track's display entry, its props flat (plugin 4.0.7; a 4.0 `pane`
-// still loads). What it states wins over the display config's layout and
-// color. `paneHeight`, the standalone view's ceiling, is the track's `height`
+// A graph track's display entry, its settings flat: `layoutMode`, `color`,
+// `size`, `layers`, `facet`, `rows`, `hover` and the cut's own. What it states
+// wins over the display config's. `paneHeight`, the standalone view's ceiling, is the track's `height`
 // here; unstated, the track is the config's 300 px.
 export const graphTrack = (trackId: string, props: Record<string, unknown>) => {
   const { paneHeight, ...rest } = props
@@ -268,7 +268,7 @@ export const STRAINS_PER_SEGMENT_DISPLAY = {
 //
 // The graph's own ramp runs over its cut, which a graph track makes a
 // window-width wider than the view on each side, so a lane painted with this
-// passes the same domain to the graph track as `pane.colorDomain`.
+// passes the same domain to the graph track as `color.domainMin`/`domainMax`.
 export function referencePositionColor({
   start,
   end,
