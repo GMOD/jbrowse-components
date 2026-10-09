@@ -6,8 +6,8 @@ export type { ExamplePage } from './exampleModel.ts'
 
 export const pages: ExamplePage[] = [
   {
-    slug: 'one-track',
-    title: 'One track',
+    slug: 'ultraminimal',
+    title: 'Ultraminimal',
     description:
       'TrackStack draws one track. Drag to pan, ctrl or cmd + wheel to zoom.',
     group: 'First view',

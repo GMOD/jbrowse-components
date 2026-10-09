@@ -63,7 +63,7 @@ plugins for ~115 KB, so roughly 10 KB gzipped per plugin, and it is a
 correlation on one page rather than a controlled result: react-app2 also brings
 app chrome. Taken at face value it says a four-plugin subset of the 18 might
 save ~140 KB off a 508 KB page. Get the real number by building the
-`one-track` page against a hand-cut array and running that site's
+`ultraminimal` page against a hand-cut array and running that site's
 `measureEagerBundle.mjs`, before anyone argues about the ABI.
 
 **This is the lever [reference/EAGER_BUNDLE.md](../../reference/EAGER_BUNDLE.md)

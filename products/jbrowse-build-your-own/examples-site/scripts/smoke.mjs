@@ -40,7 +40,7 @@ const here = path.dirname(fileURLToPath(import.meta.url))
 // would be resting on a number that no longer isolates it. That is the whole
 // reason `multiple-tracks` is still a page of its own.
 //
-// **`one-track` installs no provider either, and its zero is unearned.**
+// **`ultraminimal` installs no provider either, and its zero is unearned.**
 // Both its demos show a lone wiggle track, and the corner controls come from
 // canvas's FeatureComponent and the alignments component — wiggle draws none. So
 // it scores zero by having no Material widget to suppress, not by suppressing
@@ -56,7 +56,7 @@ const here = path.dirname(fileURLToPath(import.meta.url))
 const MUI_BUDGET = {
   // the landing page, which runs the scalebar demo rather than describing it
   '': 0,
-  'one-track': 0,
+  ultraminimal: 0,
   'multiple-tracks': 3,
   'track-loading-and-errors': 0,
   'view-loading-and-errors': 0,
@@ -70,7 +70,7 @@ const MUI_BUDGET = {
   // this zero is the ordinary one and says nothing about the legend. The legend
   // is a separate check (`legendIsPlainAndAboveTheSeams`), because it has to be
   // driven and because a census that only ever runs before the thing appears is
-  // the `one-track` unearned-zero trap one paragraph up.
+  // the `ultraminimal` unearned-zero trap one paragraph up.
   'track-settings': 0,
   'color-and-group-by-a-field': 0,
   'plot-from-json': 0,
