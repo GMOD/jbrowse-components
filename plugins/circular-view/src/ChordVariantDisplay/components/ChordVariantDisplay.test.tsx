@@ -172,3 +172,66 @@ test('the export dims chords outside the highlighted set, and with no set none',
     null,
   ])
 })
+
+test("the export draws each chord at the display's opacity, over its color's alpha and the dimming", () => {
+  const { container } = render(
+    <svg>
+      <ShapePaths
+        display={chordModel('ready', {
+          shapes: shapesOf(bnd('a', 100, 900), bnd('b', 200, 800)),
+          shapeAlpha: 0.45,
+          highlightedFeatureIdSet: new Set(['b']),
+        })}
+        testid="structuralVariantChordRenderer"
+        only="all"
+      />
+    </svg>,
+  )
+  const paths = [...container.querySelectorAll('path')]
+  expect(paths.map(p => Number(p.getAttribute('opacity')))).toEqual([
+    expect.closeTo(0.45 * 0.15),
+    0.45,
+  ])
+  expect(paths.map(p => Number(p.getAttribute('stroke-opacity')))).toEqual([
+    expect.closeTo(0.32, 2),
+    expect.closeTo(0.32, 2),
+  ])
+})
+
+function pairModel(overrides: Partial<ChordDisplayModel>) {
+  const [shared] = shapesOf(bnd('a', 100, 900))
+  return chordModel('ready', {
+    shapes: [shared!],
+    shapeFor: id => (id === 'a' || id === 'a-mate' ? shared : undefined),
+    ...overrides,
+  })
+}
+
+test('selecting the second record of a breakend pair draws the chord the pair shares as selected', () => {
+  const { container } = render(
+    <svg>
+      <ChordVariantDisplay
+        display={pairModel({ selectedFeatureId: 'a-mate' })}
+      />
+    </svg>,
+  )
+  const paths = [...container.querySelectorAll('path')]
+  expect(paths.map(p => p.dataset.testid)).toEqual(['chord-a'])
+  expect(paths[0]!.getAttribute('stroke')).toBe('#000000')
+})
+
+test('a pair hovered through one record and selected through the other draws its chord once, hovered', () => {
+  const { container } = render(
+    <svg>
+      <ChordVariantDisplay
+        display={pairModel({
+          hoveredFeatureId: 'a',
+          selectedFeatureId: 'a-mate',
+        })}
+      />
+    </svg>,
+  )
+  const paths = [...container.querySelectorAll('path')]
+  expect(paths).toHaveLength(1)
+  expect(paths[0]!.getAttribute('stroke-width')).toBe('3')
+})
