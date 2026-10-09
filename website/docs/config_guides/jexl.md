@@ -147,7 +147,7 @@ jexl: missingness(feature) // fraction of alleles with no call, so ./1 counts ha
 jexl: impact(feature) // HIGH, MODERATE, LOW or MODIFIER, from SnpEff ANN / VEP CSQ
 jexl: consequence(feature) // e.g. missense_variant, from the same annotation — the MOST SEVERE one alone
 jexl: 'missense_variant' in consequences(feature) // every consequence term on the record, across all transcripts (bcftools INFO/CSQ ~ "missense_variant")
-jexl: impactColor(feature) // the color the "Color by consequence impact" menu item uses
+jexl: impactColor(feature) // the color `color: { field: 'impact' }` paints the variant's most severe tier
 jexl: alleleLength(feature) >= 50 // longest allele in bp, so an insertion is not measured by its reference span
 jexl: svType(feature) == 'DEL' // SV class, read off a symbolic ALT before falling back to INFO/SVTYPE (bcftools INFO/SVTYPE)
 jexl: nAlt(feature) == 1 // ALT alleles the record declares, i.e. biallelic-only (bcftools N_ALT)

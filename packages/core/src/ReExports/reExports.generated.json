@@ -4074,6 +4074,7 @@
         "colorChannelOptions",
         "colorChannelSlots",
         "colorConfigSchema",
+        "colorDescendingSlot",
         "colorDomainEndsSlots",
         "colorDomainQuantileSlot",
         "colorDomainSlot",

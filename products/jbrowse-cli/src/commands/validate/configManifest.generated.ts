@@ -3693,6 +3693,10 @@ export const configManifest: ConfigManifest = {
             {
               "name": "title",
               "type": "(string | undefined)"
+            },
+            {
+              "name": "descending",
+              "type": "(boolean | undefined)"
             }
           ],
           "shorthand": {
@@ -3713,19 +3717,15 @@ export const configManifest: ConfigManifest = {
                 "10",
                 "30"
               ],
-              "range": [
-                "rgb(0,34,78)",
-                "rgb(87,93,109)",
-                "rgb(165,156,116)",
-                "rgb(254,232,56)"
-              ],
+              "scheme": "cividis",
               "labels": [
                 "MAPQ 0 (multi-mapping)",
                 "MAPQ 1-9 (low)",
                 "MAPQ 10-29",
                 "MAPQ 30+ (high confidence)"
               ],
-              "title": "Mapping quality"
+              "title": "Mapping quality",
+              "descending": true
             },
             "insertSize": {
               "scale": "threshold"
@@ -4410,6 +4410,10 @@ export const configManifest: ConfigManifest = {
             {
               "name": "title",
               "type": "(string | undefined)"
+            },
+            {
+              "name": "descending",
+              "type": "(boolean | undefined)"
             }
           ],
           "shorthand": {
@@ -4430,19 +4434,15 @@ export const configManifest: ConfigManifest = {
                 "10",
                 "30"
               ],
-              "range": [
-                "rgb(0,34,78)",
-                "rgb(87,93,109)",
-                "rgb(165,156,116)",
-                "rgb(254,232,56)"
-              ],
+              "scheme": "cividis",
               "labels": [
                 "MAPQ 0 (multi-mapping)",
                 "MAPQ 1-9 (low)",
                 "MAPQ 10-29",
                 "MAPQ 30+ (high confidence)"
               ],
-              "title": "Mapping quality"
+              "title": "Mapping quality",
+              "descending": true
             },
             "insertSize": {
               "scale": "threshold"
@@ -5197,7 +5197,7 @@ export const configManifest: ConfigManifest = {
                         },
                         {
                           "name": "descending",
-                          "type": "boolean"
+                          "type": "(boolean | undefined)"
                         },
                         {
                           "name": "missingLabel",
@@ -6901,7 +6901,7 @@ export const configManifest: ConfigManifest = {
                     },
                     {
                       "name": "descending",
-                      "type": "boolean"
+                      "type": "(boolean | undefined)"
                     },
                     {
                       "name": "missingLabel",
@@ -7403,7 +7403,7 @@ export const configManifest: ConfigManifest = {
                     },
                     {
                       "name": "descending",
-                      "type": "boolean"
+                      "type": "(boolean | undefined)"
                     },
                     {
                       "name": "missingLabel",

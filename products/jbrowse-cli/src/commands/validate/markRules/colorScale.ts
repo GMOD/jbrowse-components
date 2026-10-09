@@ -44,6 +44,8 @@ export interface FieldPreset<S extends string = ColorScaleName> {
   domainMid?: number
   scheme?: string
   reverse?: boolean
+  /** A threshold key's direction: its highest interval first. */
+  descending?: boolean
 }
 
 /** Each field's preset, `*` for any other field. */
@@ -60,7 +62,10 @@ const CATEGORICAL_PRESET: FieldPreset<'categorical'> = { scale: 'categorical' }
  * `svClassOf`'s, deletion red and duplication blue as dbVar and gnomAD-SV
  * paint them, insertion the pileup's purple, and the rest kept apart under
  * deuteranopia and protanopia. A record with no class files under `''`, so
- * each display keeps its own no-value color for it.
+ * each display keeps its own no-value color for it. The impact tiers are a
+ * variant's most severe SnpEff (ANN) or VEP (CSQ) consequence, and a record
+ * with neither files under Unannotated, its own color: "nobody looked" is
+ * not MODIFIER's "we looked and it is harmless".
  */
 export const UNIVERSAL_FIELD_PRESETS = {
   strand: {
@@ -96,6 +101,13 @@ export const UNIVERSAL_FIELD_PRESETS = {
       'Other / mixed',
     ],
     title: 'SV type',
+  },
+  impact: {
+    scale: 'categorical',
+    missing: 'Unannotated',
+    domain: ['HIGH', 'MODERATE', 'LOW', 'MODIFIER', 'Unannotated'],
+    range: ['#d32f2f', '#f57c00', '#fbc02d', '#9e9e9e', '#607d8b'],
+    title: 'Consequence impact',
   },
 } as const satisfies FieldPresets<'categorical'>
 
