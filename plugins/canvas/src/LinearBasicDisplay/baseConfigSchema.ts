@@ -7,6 +7,7 @@ import { jexlFilterConfigSchemaFields } from '@jbrowse/display-kit/jexlFilterCon
 import { sectionFacetConfigSchema } from '@jbrowse/display-kit/sectionFacetConfigSchema'
 import { types } from '@jbrowse/mobx-state-tree'
 
+import { DEFAULT_MOUSEOVER } from '../RenderFeatureDataRPC/featureMouseover.ts'
 import { DISPLAY_MODES } from '../RenderFeatureDataRPC/renderConfig.ts'
 import {
   MAX_DESCRIPTION_FEATURE_DENSITY,
@@ -49,11 +50,7 @@ export default function baseConfigSchemaFactory(_pluginManager: PluginManager) {
       mouseover: {
         type: 'string',
         description: 'text to display when the cursor hovers over a feature',
-        // `function` (INSDC/GFF3 qualifier) before the id fallback so hovering
-        // a feature with no name — e.g. an NCBI viral `stem_loop` — surfaces
-        // its descriptor rather than a bare id. get() since `function` is
-        // reserved.
-        defaultValue: `jexl:get(feature,'_mouseOver')||get(feature,'name')||get(feature,'function')||get(feature,'id')`,
+        defaultValue: DEFAULT_MOUSEOVER,
         contextVariable: ['feature'],
       },
       /**

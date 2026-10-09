@@ -8,6 +8,7 @@ import {
 } from '@jbrowse/core/util/colorBits'
 
 import { LITERAL, STROKE, cdsFrameClass } from '../colorClasses.ts'
+import { DEFAULT_MOUSEOVER, defaultMouseover } from '../featureMouseover.ts'
 import { getFeatureName } from '../labelUtils.ts'
 import { readConfigValueSafe } from '../renderConfig.ts'
 import { isCDS, isUTR } from '../util.ts'
@@ -216,16 +217,30 @@ export function packColor({
   }
 }
 
-// Evaluated worker-side because the full feature is already here; a throwing
-// override degrades to the feature name rather than failing the render.
+/**
+ * The hover text of each feature record, evaluated worker-side because the
+ * full feature is here: the default slot natively (`defaultMouseover`), any
+ * other through jexl, where a throwing override degrades to the feature name
+ * rather than failing the render. Resolved once per walk.
+ */
+export function tooltipReader(
+  config: RenderContext['config'],
+  jexl: RenderContext['jexl'],
+): (feature: Feature) => string {
+  return config.mouseover === DEFAULT_MOUSEOVER
+    ? defaultMouseover
+    : feature =>
+        String(
+          readConfigValueSafe<unknown>(
+            config,
+            'mouseover',
+            feature,
+            jexl,
+            getFeatureName(feature) ?? '',
+          ),
+        )
+}
+
 export function featureTooltip(feature: Feature, ctx: RenderContext) {
-  return String(
-    readConfigValueSafe<unknown>(
-      ctx.config,
-      'mouseover',
-      feature,
-      ctx.jexl,
-      getFeatureName(feature) ?? '',
-    ),
-  )
+  return (ctx.tooltipOf ?? tooltipReader(ctx.config, ctx.jexl))(feature)
 }

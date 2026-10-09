@@ -1,6 +1,7 @@
 import { fieldReader } from '@jbrowse/core/util/fieldReader'
 
 import { createColorKey } from './collect/colorKey.ts'
+import { tooltipReader } from './collect/glyphColors.ts'
 import { processFeatureRecord } from './collect/glyphEmitters.ts'
 import { createCollector } from './collect/renderContext.ts'
 import { geneTypeTest } from './featureAdmission.ts'
@@ -29,6 +30,7 @@ export function collectRenderData(
         ? undefined
         : fieldReader(config.facetField, jexl),
     isGeneType: geneTypeTest(config),
+    tooltipOf: tooltipReader(config, jexl),
   }
 
   for (const layout of layouts) {
