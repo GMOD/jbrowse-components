@@ -384,6 +384,12 @@ const THUMB_SPECS: Record<string, ThumbSpec> = {
     src: 'circular_synteny/rings.png',
     band: [0.14, 0.94],
   },
+  organelle_map: {
+    // The middle of the mitochondrial ring, both gene rows and the sequence's
+    // name; a 5:3 card cannot hold the whole circle at a readable size.
+    src: 'organelle_map/mito_ring.png',
+    band: [0.19, 0.85],
+  },
   hg38_vertebrates_synteny: {
     // The anchor lane and the mammal lanes under it, past the app chrome and
     // the gene track, where the composed liftOver ribbons run.
