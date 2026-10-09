@@ -22283,6 +22283,18 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             }
           }
         },
+        "circularRefNames": {
+          "description": "Reference sequences that are circular (a plasmid, an organelle, a bacterial chromosome), which the circular view closes into a ring.",
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
         "geneticCodesLocation": {
           "description": "Optional TSV file of refName<TAB>geneticCodeId, an alternative to inlining the geneticCodes map.",
           "if": {

@@ -99,7 +99,7 @@ through `junctionEnds`; a record naming no other end spans its own extent.
 
 ```js
 // type signature
-({…}: { feature: Feature; assembly: ModelInstanceTypeProps<…> & {…} & {…} & {…} & {…} & {…} & {…} & {…} & {…} & {…} & {…} & {…} & {…} & { getCanonicalRefName2(refName: string): string; isValidRefName(refName: string): boolean; } & { getRefNamePosition(refName: string): number | undefined; getAliasesForRefName(refName: string): string[]; getRefNameMapForAdapter(adapterConf: AdapterConf, options: BaseOptions): Promise<…>; getRefNameMismatch(adapterCacheKey: string): RefNameMismatch | undefined; } & IStateTreeNode<…>; }) => { pos: number; refName: string; mateRefName: string; matePos: number; }
+({…}: { feature: Feature; assembly: ModelInstanceTypeProps<…> & {…} & {…} & {…} & {…} & {…} & {…} & {…} & {…} & {…} & {…} & {…} & {…} & {…} & { isCircularRefName(refName: string): boolean; getRefNamePosition(refName: string): number | undefined; getAliasesForRefName(refName: string): string[]; getRefNameMapForAdapter(adapterConf: AdapterConf, options: BaseOptions): Promise<…>; getRefNameMismatch(adapterCacheKey: string): RefNameMismatch | undefined; } & IStateTreeNode<…>; }) => { pos: number; refName: string; mateRefName: string; matePos: number; }
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/sv-core/src/util.ts)
