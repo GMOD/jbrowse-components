@@ -1,9 +1,11 @@
 import { getConf } from '@jbrowse/core/configuration'
+import { withPreset } from '@jbrowse/core/util/colorScale'
 import { colorSettingOf } from '@jbrowse/display-kit/colorConfigSchema'
 import { facetSettingOf } from '@jbrowse/display-kit/facetConfigSchema'
 import { stableIdentityComputed } from '@jbrowse/display-kit/stableIdentityComputed'
 
 import {
+  ALIGNMENTS_FIELD_PRESETS,
   alignmentsColorEncoding,
   alignmentsColorNotices,
   baseLayerOf,
@@ -197,6 +199,18 @@ export function configSlotViews(self: ConfigSlotSelf) {
      */
     get colorTitle(): string | undefined {
       return getConf(self, ['color', 'title'])
+    },
+    /**
+     * #getter
+     * The key's heading: `color.title` as written, else its field preset's
+     * while the color paints through the preset, so `{ field: 'mapq' }` keys
+     * as "Mapping quality". Unset keeps the key's own heading.
+     */
+    get colorKeyTitle(): string | undefined {
+      return withPreset(
+        { ...this.colorSetting, title: this.colorTitle },
+        ALIGNMENTS_FIELD_PRESETS,
+      ).title
     },
     /**
      * #getter

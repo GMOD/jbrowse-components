@@ -222,8 +222,8 @@ function scaleOf(
  * (inverted)" against the fill's "Split paired-end read (inverted)"), still
  * earns its row.
  *
- * `colorTitle` is `color.title` as written, unset keeping the display's own
- * heading and `''` drawing none. It heads the read fill's color bar when the
+ * `colorTitle` is the color's heading, `color.title` or its field preset's
+ * (`colorKeyTitle`), unset keeping the display's own and `''` drawing none. It heads the read fill's color bar when the
  * fill is a ramp, since the read rows beside a bar are the buckets every
  * scheme paints, and otherwise the read rows, standing in for "Read" when
  * they merge with the arcs.

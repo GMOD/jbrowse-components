@@ -2497,7 +2497,7 @@ export default function stateModelFactory(
                 tagValueExtent: self.tagValueExtent,
                 baseQualityExtent: self.baseQualitySpan.extent,
               }),
-              colorTitle: self.colorTitle,
+              colorTitle: self.colorKeyTitle,
               legendItems: () => self.legendItems(palette),
               arcLegendTitle: self.arcLegendTitle,
               arcLegendItems: () => self.arcLegendItems(palette),

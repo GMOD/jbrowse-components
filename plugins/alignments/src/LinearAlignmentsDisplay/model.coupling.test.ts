@@ -189,6 +189,21 @@ describe('setColorBy', () => {
   })
 })
 
+describe('colorKeyTitle', () => {
+  test("a preset field's title heads the key until one is written", () => {
+    const display = createDisplay()
+    display.setColor({ field: 'mapq' })
+    expect(display.colorKeyTitle).toBe('Mapping quality')
+    expect(display.colorScales.map(s => s.title)).toContain('Mapping quality')
+
+    display.setColor({ field: 'mapq', title: 'MAPQ' })
+    expect(display.colorKeyTitle).toBe('MAPQ')
+
+    display.setColor({ field: 'mapq', scale: 'linear' })
+    expect(display.colorKeyTitle).toBeUndefined()
+  })
+})
+
 describe('keySectionOrder', () => {
   test('a facet on the color field hands the key its section order', () => {
     const display = createDisplay()
