@@ -1,6 +1,6 @@
 ---
 name: grammar-convergence-next
-description: What is left of the 2026-10-09 grammar convergence (presets as one table, one color write path), with the calls already made so nobody re-asks them. Two reviews (Fable, Opus) shaped the order. Read before touching a color preset, a display's color setters, or the synteny ramps.
+description: What is left of the 2026-10-09 grammar convergence (identity's one default scheme, one color write path, wiggle's validator), with the calls already made so nobody re-asks them. Read before touching a color preset, a display's color setters, or the synteny ramps.
 ---
 
 # Grammar convergence: what is left
@@ -10,20 +10,16 @@ vocabulary agrees across displays, and the bugs left come from per-field
 presets kept outside `FieldPresets` and from per-display color write paths.
 Smallest useful first. **Delete this file when the list is empty.**
 
-1. **Measurement presets in one table.** A `MEASURE_FIELD_PRESETS` in
-   `packages/core/src/util/colorScale.ts` (not `UNIVERSAL_FIELD_PRESETS`:
-   `presetOf` consults that on every display, and a GFF `identity=98.5` would
-   pin to 0-1) holding `mapq` (the alignments bins, `scheme: 'cividis'`,
-   `descending`), `identity` (linear 0-1, viridis) and `dnds`, spread by
-   alignments, LGV synteny, `SyntenyColor` and MAF.
-   - Synteny-core's `continuousRampConfig` goes, but `presetRamp` and it are
-     exported and jbrowse-img reads them; `mappingQual` stays a local alias at
-     synteny-core's attribute reader.
-   - `SyntenyColor` declares no `fieldPresets` and `SYNTENY_COLOR_SCALES` is
-     `['none']`: the ribbons paint a threshold as a step table over 0-60, and
-     MAPQ 255 needs deciding (alignments gives it its own level).
-   - `rdylbu` is not in `COLOR_SCHEMES`. MAF's `identity` moves from
-     redgreyblue to viridis: reshoot `website/scripts/specs/maf.ts`.
+1. **Identity's one default scheme, Colin's call against pictures.**
+   `MEASURE_FIELD_PRESETS.identity` is viridis and MAF overrides only its
+   `scheme` with `redgreyblue` (`mafColorConfigSchema.ts`), so the word still
+   paints two ramps. Viridis on MAF turned `maf_470way`'s base-level heatmap,
+   where matches dominate and take the ramp's top, into a bright yellow field
+   whose white gaps barely show. Red-grey-blue everywhere is the
+   conservation-track convention and keeps that figure, but it is diverging,
+   and `dotplotColors.test.ts` pins viridis for a sequential measure's
+   monotonic luminance. Capture the synteny or dotplot ribbons by identity
+   under both before asking.
 2. **One color write path.** `colorByField(field)` and `setColorValue(value)`
    as `setConf` over `colorForField`/`colorForValue`, defined once in a
    display-kit mixin; `applyPlot` only behind Apply buttons, since it rebuilds
@@ -43,10 +39,7 @@ Smallest useful first. **Delete this file when the list is empty.**
    threshold preset) has a trap: `{ value: 'red' }` written as an object then
    paints the default field, and `plotColorLine.ts`'s `color.field` branch
    becomes always true.
-4. **Multi-way ribbons ignore `range` and `labels` under `strand`**
-   (`synteny-core` `colorFunctions.ts`, `multiwayGeometry.ts`, the multi-way
-   `legend.ts`).
-5. **Bench before touching:** the canvas worker evaluates the default
+4. **Bench before touching:** the canvas worker evaluates the default
    `mouseover` jexl per feature (`glyphEmitters.ts`, `featureTooltip`) whether
    or not anyone hovers.
 
@@ -55,7 +48,10 @@ Low, take only with a trigger: `MarkColor`'s key members (`breaks`,
 `rowGroups` outside `PLOT_VOCABULARY`; the JSON schema's numbered defs
 (`Scales2`, `ValueScale3`) from `scripts/configJsonSchema.ts`.
 
-Decided, not to re-ask: a threshold with no `range` spreads its `scheme` only
+Decided, not to re-ask: MAPQ 255 is no value on the comparative views (the
+adapters omit `mappingQual`), painted and keyed as missing; a linear opacity or
+color over `mapq` spans the values seen, since the bins replaced the 0-60 ramp;
+a threshold with no `range` spreads its `scheme` only
 when cuts are written and a scheme is named, so wiggle keeps its two-sided
 default; multi-row does not honour `mouseover` (a per-feature jexl cost on
 dense row tracks); `impact` stays out of `VcfFeature.toJSON` (an annotation
