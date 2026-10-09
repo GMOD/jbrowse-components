@@ -1,6 +1,6 @@
 ---
 status: Accepted
-summary: "Every display with a `color` object composes display-kit's `ColorWritesMixin`, whose `colorByField(field)` and `setColorValue(value)` rewrite the object as written through `colorForField` and `colorForValue`, and write nothing where the pick already paints. A dialog with an Apply button writes the whole object through `applyPlot({ color })`. The per-display setters go: alignments' `setColorBy`, `setColorByTag` and `setColor`, canvas's `setFeatureColor` and `setColorScale`, MAF's and multi-sample variants' `setColorField`, and the multi-sample and wiggle `setColor`; Hi-C's log toggle is `setLogScale`. Alignments' Color by menu speaks fields, so `colorFieldOptions` replaces `pickColorOptions`"
+summary: "Every display whose menus pick a color field or a constant composes display-kit's `ColorWritesMixin`, whose `colorByField(field)` and `setColorValue(value)` rewrite the object as written through `colorForField` and `colorForValue`, and write nothing where the pick already paints. A dialog with an Apply button writes the whole object through `applyPlot({ color })`. The per-display setters go: alignments' `setColorBy`, `setColorByTag` and `setColor`, canvas's `setFeatureColor` and `setColorScale`, MAF's and multi-sample variants' `setColorField`, and the multi-sample and wiggle `setColor`; Hi-C's log toggle is `setLogScale`. Alignments' Color by menu speaks fields, so `colorFieldOptions` replaces `pickColorOptions`"
 ---
 
 # ADR-223: A color object takes two writes, and an Apply button `applyPlot`
@@ -31,11 +31,12 @@ display for the same pick.
 
 ## Decision
 
-- **Two writes, once.** `ColorWritesMixin` (`packages/display-kit`) gives a
-  display `colorByField(field)` and `setColorValue(value)`. Each reads the
-  object as written, `getSnapshot` of the `color` node, so a pick keeps what it
-  does not change, and skips a write that would change nothing, since every
-  color tier keys on the object's arrays.
+- **Two writes, once.** `ColorWritesMixin` (`packages/display-kit`) gives the
+  alignments, canvas feature, MAF and multi-sample variant displays
+  `colorByField(field)` and `setColorValue(value)`. Each reads the object as
+  written, `getSnapshot` of the `color` node, so a pick keeps what it does not
+  change, and skips a write that would change nothing, since every color tier
+  keys on the object's arrays.
 - **An Apply button writes `applyPlot`.** A dialog that sets more than a field
   or a constant (the Tag dialog's scale, the variant cell dialog's cuts,
   wiggle's two-color plot) writes `applyPlot({ color })`. A picker that writes
@@ -53,7 +54,8 @@ display for the same pick.
 
 ## Consequences
 
-A display with a color object composes the mixin, or its menus have nothing
-to call. The removed actions fail as `is not a function` in a plugin or a
-script still calling them; `reference/PLUGIN_ABI_STABILITY.md` covers the
-release note.
+A display whose menus pick a field or a constant composes the mixin, or they
+have nothing to call. Wiggle, Hi-C, LD and the mark display compose none: their
+color UI is a dialog writing `applyPlot` or a one-slot toggle. The removed
+actions fail as `is not a function` in a plugin or a script still calling
+them; `reference/PLUGIN_ABI_STABILITY.md` covers the release note.
