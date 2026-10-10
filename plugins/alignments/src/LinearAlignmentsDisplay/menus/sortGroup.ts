@@ -45,7 +45,7 @@ interface SortMenuModel {
 // alignments takes every mode with 'read'; LGVSyntenyDisplay drops base pair /
 // tag — a PAF block has neither per-base sequence nor SAM tags — and uses
 // 'feature'. The noun is held lower-case because it also lands mid-label
-// ("Longest reads first"); rows that lead with it capitalize through
+// ("Longest reads first", "Spliced reads first", "Split reads first"); rows that lead with it capitalize through
 // `capitalizeFirst`.
 
 export type SortMode = LayoutOrder | 'strand' | 'basePair' | 'tag'
