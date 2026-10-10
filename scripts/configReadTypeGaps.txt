@@ -32,11 +32,11 @@
 #     taken from `pluginManager.getDisplayType(…).configSchema` poisons the
 #     whole schema through GetBase and has to be re-plumbed first.
 #
-# 74 unchecked in source, 183 in tests,
-# of 1276 total config accessor calls. The gate counts source only.
+# 75 unchecked in source, 183 in tests,
+# of 1274 total config accessor calls. The gate counts source only.
 
 packages/app-core/src/JbApi/jbApi.ts  (1)
-  1217	readConfObject('adapter')
+  1228	readConfObject('adapter')
 packages/app-core/src/JBrowseModel/index.ts  (1)
   99	readConfObject('name')
 packages/core/src/assemblyManager/assemblyManager.ts  (4)
@@ -134,6 +134,8 @@ packages/core/src/util/tracks.ts  (7)
 packages/display-kit/src/colorConfigSchema.ts  (2)
   145	readConfObject('labels')
   146	readConfObject('title')
+packages/display-kit/src/ColorWritesMixin.ts  (1)
+  28	readConfObject('field')
 packages/embedded-core/src/EmbeddedSessionThemeMixin.ts  (1)
   35	getConf('theme')
 packages/product-core/src/RootModel/createConfigModel.ts  (1)
