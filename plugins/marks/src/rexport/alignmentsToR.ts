@@ -13,6 +13,7 @@ import {
   grey,
   palettePresets,
   tagColorPalette,
+  resolvePalette,
 } from '@jbrowse/core/ui/palette'
 import { MEASURE_FIELD_PRESETS } from '@jbrowse/core/util/colorScale'
 import {
@@ -375,9 +376,7 @@ export function alignmentsPanels({
   const coverageShown = display.showCoverage !== false
   const notes: string[] = []
   if (pileupShown) {
-    notes.push(
-      'reads: each draws as one bar over its reference span, without its deletions, insertions, clips or splice gaps',
-    )
+    notes.push('reads: drawn without their insertions or clips')
   }
   if (coverageShown) {
     notes.push(
@@ -441,23 +440,84 @@ export function alignmentsPanels({
     notes,
     bpPerPx: 1,
   })
+  const indexArg = index ? `, index = ${rStr(index)}` : ''
+  const refChromArg = Object.keys(aliases ?? {}).length
+    ? ', ref_chrom = chrom'
+    : ''
+  const at = `${fileChrom('chrom', aliases)}, start, end`
+  const gapsName = named('gaps')
+  const gaps = frame({
+    name: gapsName,
+    columns: ['read_index', 'start', 'end', 'type', '.region', 'row'],
+    packages: ['GenomicAlignments'],
+    statements: `${gapsName} <- read_regions(
+  function(chrom, start, end) bam_gaps(${rStr(uri)}, ${at}${indexArg}),
+  regions, c("start", "end"))
+${gapsName}$row <- ${readsName}$row[match(
+  paste(${gapsName}$.region, ${gapsName}$read_index),
+  paste(${readsName}$.region, ${readsName}$read_index))]
+${gapsName} <- ${gapsName}[!is.na(${gapsName}$row), ]`,
+    parent: packed,
+  })
+  const ofType = (type: string) => {
+    const name = named(`${type}s`)
+    return frame({
+      name,
+      columns: gaps.columns,
+      packages: gaps.packages,
+      statements: `${name} <- ${gapsName}[${gapsName}$type == ${rStr(type)}, ]`,
+      parent: gaps,
+    })
+  }
+  const skips = ofType('skip')
+  const blocksName = named('read_blocks')
+  const blocks = frame({
+    name: blocksName,
+    columns: packed.columns,
+    coords: packed.coords,
+    packages: packed.packages,
+    statements: `${blocksName} <- read_blocks(${readsName}, ${skips.name})`,
+    parent: skips,
+  })
   const reads = markLayer(
     {
       mark: 'span',
       rowProportion: 0.8,
       encoding: { row: 'row', color: color.spec },
     },
-    packed,
+    blocks,
     expr('0'),
     notes,
     { steps: [pileup] },
   )
-  const indexArg = index ? `, index = ${rStr(index)}` : ''
-  const refChromArg = Object.keys(aliases ?? {}).length
-    ? ', ref_chrom = chrom'
-    : ''
-  const at = `${fileChrom('chrom', aliases)}, start, end`
-  const layers = reads ? [reads.layer] : []
+  const palette = resolvePalette()
+  const layers = reads
+    ? [
+        reads.layer,
+        layer({
+          geom: 'segment',
+          frame: skips,
+          aes: {
+            x: 'start',
+            xend: 'end',
+            y: expr('row + 0.5'),
+            yend: expr('row + 0.5'),
+          },
+          constants: { colour: palette.skip, linewidth: 0.3 },
+        }),
+        layer({
+          geom: 'rect',
+          frame: ofType('deletion'),
+          aes: {
+            xmin: 'start',
+            xmax: 'end',
+            ymin: expr('row + 0.35'),
+            ymax: expr('row + 0.65'),
+          },
+          constants: { fill: palette.deletion },
+        }),
+      ]
+    : []
   const scales: Plot['scales'] = {
     ...reads?.scales,
     ...(color.manual ? { fill: color.manual } : {}),

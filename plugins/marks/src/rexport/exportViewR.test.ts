@@ -220,6 +220,30 @@ const aloneInsertClasses = SV_REGIONS.map((r, i) =>
   insertClasses(`alone_${i + 1}`, [r], 1),
 )
 
+const splicedBlocks = register(
+  'aln_spliced_blocks',
+  scriptFor(
+    [track(main, 'spliced', 'LinearAlignmentsDisplay', {})],
+    SPLICED_REGION,
+  ),
+  `{ b <- read_blocks_spliced; s <- skips_spliced; r <- reads_spliced
+  key <- function(d) paste(d$.region, d$read_index)
+  covered <- tapply(b$end - b$start, key(b), sum)
+  skipped <- tapply(s$end - s$start, key(s), sum)
+  span <- setNames(r$end - r$start, key(r))
+  tiled <- all(covered[names(span)] + ifelse(is.na(skipped[names(span)]), 0, skipped[names(span)]) == span)
+  crossed <- any(vapply(seq_len(nrow(s)), function(j)
+    any(key(b) == key(s)[j] & b$start < s$end[j] & b$end > s$start[j]), TRUE))
+  c(nrow(s) > 0, tiled, !crossed) }`,
+)
+const deletions = register(
+  'aln_deletions',
+  scriptFor([track(main, 'volvox_alignments', 'LinearAlignmentsDisplay', {})]),
+  `{ d <- deletions_volvox_alignments; r <- reads_volvox_alignments
+  i <- match(paste(d$.region, d$read_index), paste(r$.region, r$read_index))
+  c(nrow(d) > 0, all(d$start >= r$start[i] & d$end <= r$end[i])) }`,
+)
+
 const collidingIds = register(
   'colliding_ids',
   scriptFor(
@@ -660,6 +684,11 @@ maybe('the emitted script, run under R', () => {
       expect(results.get(name)).toMatch(/normal/)
       expect(results.get(name)).toBe(results.get(aloneInsertClasses[i]!))
     }
+  })
+
+  it('draws a spliced read as its blocks and a deletion inside its read', () => {
+    expect(results.get(splicedBlocks)).toBe('[1] TRUE TRUE TRUE')
+    expect(results.get(deletions)).toBe('[1] TRUE TRUE')
   })
 
   it('keeps two track ids that sanitise alike apart', () => {
