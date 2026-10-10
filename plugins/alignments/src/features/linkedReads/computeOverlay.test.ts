@@ -55,7 +55,7 @@ import type { LinkRegion } from '@jbrowse/render-core/marks'
 // the mark's own path: a straight one as `M x y L x y`, a curve as
 // `M x y C ...`. The region table is sampled from `bpToScreenX`, which every
 // fixture here keeps linear.
-function computePileupBezierArcs(opts: {
+function drawnConnectors(opts: {
   pairs: LinkedPair[]
   displayedRegions: { refName: string; reversed?: boolean }[]
   bpToScreenX: (
@@ -128,7 +128,7 @@ function linesOf(
   }).lines
 }
 
-// Minimal PileupDataResult with only the fields computePileupBezierArcs reads.
+// Minimal PileupDataResult with only the fields drawnConnectors reads.
 function makeData(opts: {
   names: string[]
   flags: number[]
@@ -225,7 +225,7 @@ describe('connectors — split-read tangent direction', () => {
       ],
       ys: [0, 1],
     })
-    const arcs = computePileupBezierArcs({
+    const arcs = drawnConnectors({
       colors: PALETTE,
       ...baseOpts,
       pairs: enumerateBezierPairs(new Map([[0, data]])),
@@ -247,7 +247,7 @@ describe('connectors — split-read tangent direction', () => {
       ],
       ys: [0, 1],
     })
-    const arcs = computePileupBezierArcs({
+    const arcs = drawnConnectors({
       colors: PALETTE,
       ...baseOpts,
       pairs: enumerateBezierPairs(new Map([[0, data]])),
@@ -271,7 +271,7 @@ describe('connectors — split-read tangent direction', () => {
       ],
       ys: [0, 1],
     })
-    const arcs = computePileupBezierArcs({
+    const arcs = drawnConnectors({
       colors: PALETTE,
       ...baseOpts,
       displayedRegions: [{ refName: 'chr1', reversed: true }],
@@ -295,7 +295,7 @@ describe('connectors — split-read tangent direction', () => {
       ],
       ys: [0, 1],
     })
-    const arcs = computePileupBezierArcs({
+    const arcs = drawnConnectors({
       colors: PALETTE,
       ...baseOpts,
       pairs: enumerateBezierPairs(new Map([[0, data]])),
@@ -326,7 +326,7 @@ describe('connectors — distinct inversion hue + tooltip label', () => {
       ],
       ys: [0, 1],
     })
-    const arcs = computePileupBezierArcs({
+    const arcs = drawnConnectors({
       colors: PALETTE,
       ...baseOpts,
       pairs: enumerateBezierPairs(new Map([[0, data]])),
@@ -352,7 +352,7 @@ describe('connectors — distinct inversion hue + tooltip label', () => {
       ],
       ys: [0, 1],
     })
-    const arcs = computePileupBezierArcs({
+    const arcs = drawnConnectors({
       colors: PALETTE,
       ...baseOpts,
       pairs: enumerateBezierPairs(new Map([[0, data]])),
@@ -383,7 +383,7 @@ describe('connectors — paired tangent direction', () => {
       ],
       ys: [0, 1],
     })
-    const arcs = computePileupBezierArcs({
+    const arcs = drawnConnectors({
       colors: PALETTE,
       ...baseOpts,
       pairs: enumerateBezierPairs(new Map([[0, data]])),
@@ -411,7 +411,7 @@ describe('connectors — discordant curves dip', () => {
       ],
       ys: [0, 0],
     })
-    const arcs = computePileupBezierArcs({
+    const arcs = drawnConnectors({
       colors: PALETTE,
       ...baseOpts,
       pairs: enumerateBezierPairs(new Map([[0, data]])),
@@ -437,7 +437,7 @@ describe('connectors — discordant curves dip', () => {
       ],
       ys: [0, 0],
     })
-    const arcs = computePileupBezierArcs({
+    const arcs = drawnConnectors({
       colors: PALETTE,
       ...baseOpts,
       pairs: enumerateBezierPairs(new Map([[0, data]])),
@@ -468,7 +468,7 @@ describe('connectors — discordant curves dip', () => {
       ys: [0, 0],
     })
     const depthAt = (bpPerPx: number) => {
-      const arcs = computePileupBezierArcs({
+      const arcs = drawnConnectors({
         colors: PALETTE,
         ...baseOpts,
         bpToScreenX: (_refName: string, bp: number) => bp / bpPerPx,
@@ -483,7 +483,7 @@ describe('connectors — discordant curves dip', () => {
 
   it('scales the dip to the band, overshooting the clip by at most a row', () => {
     const arcsFor = (positions: [number, number][], pileupHeight: number) =>
-      computePileupBezierArcs({
+      drawnConnectors({
         colors: PALETTE,
         ...baseOpts,
         pileupHeight,
@@ -564,7 +564,7 @@ describe('bezierDipReservePx', () => {
   it('holds the apex of a curve on the last row', () => {
     const data = rrPair([2, 2])
     const reserve = reserveFor(data)
-    const arcs = computePileupBezierArcs({
+    const arcs = drawnConnectors({
       colors: PALETTE,
       ...baseOpts,
       pileupHeight,
@@ -683,7 +683,7 @@ describe('connectors — one refName displayed twice', () => {
   )
 
   it('draws each endpoint in the region it was fetched from', () => {
-    const arcs = computePileupBezierArcs({
+    const arcs = drawnConnectors({
       colors: PALETTE,
       ...baseOpts,
       displayedRegions: REGIONS,
@@ -703,9 +703,61 @@ describe('connectors — one refName displayed twice', () => {
   })
 })
 
+// A long read fetched in one displayed region can run past its end, so the
+// junction at its trailing edge lies in the next region. Placed through the
+// region it was fetched in, that end extrapolates off its region's edge, a
+// hook where the junction is not.
+describe('connectors — an end past the region its read was fetched in', () => {
+  const displayedRegions = [
+    { refName: 'chr3', start: 1000, end: 3000 },
+    { refName: 'chr3', start: 3000, end: 5000 },
+  ]
+  // region 1 starts 100 px past region 0's end
+  const regions = [
+    { anchorPx: 0, anchorBp: 1000, signedPxPerBp: 1 },
+    { anchorPx: 2100, anchorBp: 3000, signedPxPerBp: 1 },
+  ]
+  const primary = makeData({
+    names: ['r'],
+    ids: ['r-primary'],
+    flags: [0],
+    strands: [1],
+    positions: [[1500, 3200]],
+    ys: [0],
+    clipAtStart: [0],
+  })
+  const supplementary = makeData({
+    names: ['r'],
+    ids: ['r-supplementary'],
+    flags: [SAM_FLAG_SUPPLEMENTARY],
+    strands: [-1],
+    positions: [[4000, 4100]],
+    ys: [1],
+    clipAtStart: [1700],
+  })
+
+  it('places the end through the region that holds its bp', () => {
+    const arcs = drawnConnectors({
+      colors: PALETTE,
+      ...baseOpts,
+      displayedRegions,
+      regions,
+      pairs: enumerateBezierPairs(
+        new Map([
+          [0, primary],
+          [1, supplementary],
+        ]),
+      ),
+    })
+    expect(arcs).toHaveLength(1)
+    // bp 3200 is 200 bp into region 1, not 2200 bp past region 0's start
+    expect(arcs[0]!.x1).toBe(2300)
+  })
+})
+
 describe('connectors — exclusions', () => {
   // Normal-orientation within-region pairs are drawn by the GPU/Canvas2D
-  // straight-line pass, so the bezier overlay must not duplicate them.
+  // straight-line pass, so the connector mark must not duplicate them.
   it('excludes normal within-region paired reads', () => {
     const data = makeData({
       names: ['p', 'p'],
@@ -720,7 +772,7 @@ describe('connectors — exclusions', () => {
       ],
       ys: [0, 0],
     })
-    const arcs = computePileupBezierArcs({
+    const arcs = drawnConnectors({
       colors: PALETTE,
       ...baseOpts,
       pairs: enumerateBezierPairs(new Map([[0, data]])),
@@ -739,7 +791,7 @@ describe('connectors — exclusions', () => {
       ],
       ys: [0, 1],
     })
-    const arcs = computePileupBezierArcs({
+    const arcs = drawnConnectors({
       colors: PALETTE,
       ...baseOpts,
       pairs: enumerateBezierPairs(new Map([[0, data]])),
@@ -840,7 +892,7 @@ describe('enumerateBezierPairs — a junction across segments nothing fetched', 
   })
 
   it('dashes the arc and carries the loci to the hover', () => {
-    const arcs = computePileupBezierArcs({
+    const arcs = drawnConnectors({
       colors: PALETTE,
       ...baseOpts,
       displayedRegions: [{ refName: 'chr3' }],
@@ -896,7 +948,7 @@ describe('enumerateBezierPairs — a junction across segments nothing fetched', 
     expect(pairs).toHaveLength(1)
     expect(pairs[0]!.hiddenSegmentsBetween).toBeUndefined()
     expect(
-      computePileupBezierArcs({
+      drawnConnectors({
         colors: PALETTE,
         ...baseOpts,
         displayedRegions: [{ refName: 'chr3' }],
@@ -967,7 +1019,7 @@ describe('enumerateBezierPairs — crossRegion scope', () => {
   })
 
   it('draws the straddling co-linear split as a straight line', () => {
-    const arcs = computePileupBezierArcs({
+    const arcs = drawnConnectors({
       colors: PALETTE,
       ...baseOpts,
       displayedRegions: [{ refName: 'chr1' }, { refName: 'chr1' }],
@@ -978,7 +1030,7 @@ describe('enumerateBezierPairs — crossRegion scope', () => {
   })
 
   it('draws a same-strand split between two chromosomes along its row', () => {
-    const arcs = computePileupBezierArcs({
+    const arcs = drawnConnectors({
       colors: PALETTE,
       ...baseOpts,
       displayedRegions: [{ refName: 'chr1' }, { refName: 'chr2' }],
@@ -998,7 +1050,7 @@ describe('enumerateBezierPairs — crossRegion scope', () => {
       positions: [[9000, 9100]],
       ys: [0],
     })
-    const arcs = computePileupBezierArcs({
+    const arcs = drawnConnectors({
       colors: PALETTE,
       ...baseOpts,
       displayedRegions: [{ refName: 'chr1' }, { refName: 'chr2' }],
@@ -1029,7 +1081,7 @@ describe('enumerateBezierPairs — crossRegion scope', () => {
       positions: [[9000, 9100]],
       ys: [0],
     })
-    const arcs = computePileupBezierArcs({
+    const arcs = drawnConnectors({
       colors: PALETTE,
       ...baseOpts,
       displayedRegions: [
@@ -1078,7 +1130,7 @@ describe('enumerateBezierPairs — crossRegion scope', () => {
       ys: [0],
       clipAtStart: [100],
     })
-    const arcs = computePileupBezierArcs({
+    const arcs = drawnConnectors({
       colors: PALETTE,
       ...baseOpts,
       displayedRegions: [{ refName: 'chr1' }, { refName: 'chr2' }],
@@ -1119,7 +1171,7 @@ describe('enumerateBezierPairs — crossRegion scope', () => {
       ys: [0],
       clipAtStart: [100],
     })
-    const arcs = computePileupBezierArcs({
+    const arcs = drawnConnectors({
       colors: PALETTE,
       ...baseOpts,
       displayedRegions: [
@@ -1163,7 +1215,7 @@ describe('enumerateBezierPairs — crossRegion scope', () => {
       map: Map<number, PileupDataResult>,
       displayedRegions: { refName: string; reversed?: boolean }[],
     ) =>
-      computePileupBezierArcs({
+      drawnConnectors({
         colors: PALETTE,
         ...baseOpts,
         displayedRegions,
@@ -1191,7 +1243,7 @@ describe('enumerateBezierPairs — crossRegion scope', () => {
   })
 
   it('carries the read name and both endpoint xs for the overlay', () => {
-    const arcs = computePileupBezierArcs({
+    const arcs = drawnConnectors({
       colors: PALETTE,
       ...baseOpts,
       displayedRegions: [{ refName: 'chr1' }, { refName: 'chr1' }],
@@ -1235,7 +1287,7 @@ describe('a same-strand junction across segments nothing fetched', () => {
     ])
   const identity = (refName: string) => refName
   const arcOf = (ys: number[]) =>
-    computePileupBezierArcs({
+    drawnConnectors({
       colors: PALETTE,
       ...baseOpts,
       displayedRegions: [{ refName: 'chr3' }],

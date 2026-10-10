@@ -90,9 +90,41 @@ export function connectorArrowPx(featureHeight: number) {
     : 0
 }
 
+interface DisplayedRegion {
+  refName: string
+  reversed?: boolean
+  start?: number
+  end?: number
+}
+
+function holds(r: DisplayedRegion | undefined, refName: string, bp: number) {
+  return (
+    r !== undefined &&
+    r.refName === refName &&
+    bp >= (r.start ?? -Infinity) &&
+    bp <= (r.end ?? Infinity)
+  )
+}
+
+// The displayed region an end places through: the one its read was fetched in
+// where that holds the bp, else the first that does. A long read fetched in one
+// region can end, and so join, in the next.
+function placingRegion(
+  displayedRegions: readonly DisplayedRegion[],
+  fetchedIn: number,
+  refName: string,
+  bp: number,
+) {
+  if (holds(displayedRegions[fetchedIn], refName, bp)) {
+    return fetchedIn
+  }
+  const i = displayedRegions.findIndex(r => holds(r, refName, bp))
+  return i === -1 ? undefined : i
+}
+
 export interface ConnectorFeedInput {
   pairs: readonly LinkedPair[]
-  displayedRegions: readonly { refName: string; reversed?: boolean }[]
+  displayedRegions: readonly DisplayedRegion[]
   featureHeight: number
   featureSpacing: number
   /** The section's laid-out pileup band, which a discordant dip is sized to. */
@@ -132,7 +164,23 @@ export function buildConnectorFeeds({
     const { e1, e2, c, hiddenSegmentsBetween } = pair
     const r1 = displayedRegions[e1.displayedRegionIndex]
     const r2 = displayedRegions[e2.displayedRegionIndex]
-    if (!r1 || !r2) {
+    const own =
+      r1 &&
+      placingRegion(
+        displayedRegions,
+        e1.displayedRegionIndex,
+        r1.refName,
+        c.bp1,
+      )
+    const far =
+      r2 &&
+      placingRegion(
+        displayedRegions,
+        e2.displayedRegionIndex,
+        r2.refName,
+        c.bp2,
+      )
+    if (!r1 || !r2 || own === undefined || far === undefined) {
       continue
     }
     const { straight, hidden, loop, dipPx } = connectorShape(
@@ -142,15 +190,15 @@ export function buildConnectorFeeds({
       displayedRegions,
       pileupHeight,
     )
-    let lanes = byRegion.get(e1.displayedRegionIndex)
+    let lanes = byRegion.get(own)
     if (!lanes) {
       lanes = new Lanes()
-      byRegion.set(e1.displayedRegionIndex, lanes)
+      byRegion.set(own, lanes)
     }
     const rgb = palette[linkedReadColorSlot(connectorPaletteSlot(c.colorType))]!
     lanes.x.push(c.bp1)
     lanes.x2.push(c.bp2)
-    lanes.x2Region.push(e2.displayedRegionIndex)
+    lanes.x2Region.push(far)
     lanes.row.push(e1.data.readYs[e1.readIdx]!)
     lanes.row2.push(e2.data.readYs[e2.readIdx]!)
     lanes.bend.push(loop ? loopDipPx : (dipPx ?? CONNECTOR_BOW))
