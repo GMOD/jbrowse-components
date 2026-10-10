@@ -533,6 +533,8 @@ export default [
   '@jbrowse/render-core/shaders/clipStrip',
   '@jbrowse/render-core/shaders/clipStripConsts',
   '@jbrowse/render-core/shaders/colorRampLut',
+  '@jbrowse/render-core/shaders/connectorMark',
+  '@jbrowse/render-core/shaders/connectorMarkConsts',
   '@jbrowse/render-core/shaders/coverageBar',
   '@jbrowse/render-core/shaders/coverageIndicator',
   '@jbrowse/render-core/shaders/coverageInterbase',
