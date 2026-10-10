@@ -32,8 +32,8 @@
 #     taken from `pluginManager.getDisplayType(…).configSchema` poisons the
 #     whole schema through GetBase and has to be re-plumbed first.
 #
-# 75 unchecked in source, 183 in tests,
-# of 1274 total config accessor calls. The gate counts source only.
+# 74 unchecked in source, 183 in tests,
+# of 1280 total config accessor calls. The gate counts source only.
 
 packages/app-core/src/JbApi/jbApi.ts  (1)
   1228	readConfObject('adapter')
@@ -168,8 +168,6 @@ packages/wiggle-core/src/WiggleScoreConfigMixin.test.ts  (3)  [test]
   37	getConf('y')
 plugins/alignments/src/consensus/index.ts  (1)
   57	getConf('name')
-plugins/alignments/src/LinearAlignmentsDisplay/model.ts  (1)
-  662	getConf('sortedBy')
 plugins/alignments/src/LinearAlignmentsDisplay/readFilterConfigSchema.ts  (1)
   120	readConfObject('tagFilters')
 plugins/alignments/src/ReadVsRefDialog/fetchPrimaryAlignment.ts  (1)
@@ -228,7 +226,7 @@ plugins/data-management/src/UCSCTrackHubConnection/doConnect.ts  (2)
   123	getConf('assemblyNames')
 plugins/gccontent/src/GCContentTrack/gcTrack.test.ts  (2)  [test]
   91	readConfObject('gcMode')
-  166	readConfObject('summaryScoreMode')
+  166	readConfObject('aggregate')
 plugins/gccontent/src/GCContentTrack/index.ts  (3)
   45	readConfObject('windowSize')
   51	readConfObject('windowDelta')
@@ -275,7 +273,7 @@ plugins/variants/src/LinearMultiSampleVariantDisplay/showInsertionGlyphsSlot.tes
   31	getConf('notARealSlot')
 plugins/wiggle/src/MultiQuantitativeTrack/displayDefaults.test.ts  (2)  [test]
   69	readConfObject('height')
-  70	readConfObject('summaryScoreMode')
+  70	readConfObject('aggregate')
 plugins/wiggle/src/shared/wiggleMixinHosts.test.ts  (2)  [test]
   15	getConf('posColor')
   34	getConf('origin')
@@ -288,7 +286,7 @@ products/jbrowse-react-app/src/rootModel/legacySessions.test.ts  (11)  [test]
   212	getConf('showPileup')
   213	getConf('showCoverage')
   433	getConf('height')
-  434	getConf('summaryScoreMode')
+  434	getConf('aggregate')
   518	getConf('marks')
   530	getConf('marks')
   581	getConf('marks')
