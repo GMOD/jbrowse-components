@@ -15,9 +15,9 @@ Written 2026-10-10. The design and hooks are in
    `pnpm publish -r` fails on it.
 2. **Create GMOD/ggjbrowse** from `~/src/ggjbrowse` (local repo, committed):
    `gh repo create GMOD/ggjbrowse --public --source ~/src/ggjbrowse --push`.
-   Rebuild its bundle from main first (`scripts/build-js.sh`) so the header
+   Rebuild its bundle from main first (its build-js script) so the header
    names a landed commit.
-3. **Merge the `scripts/check-against-jbrowse.sh` commits** waiting in
+3. **Merge the check-against-jbrowse script commits** waiting in
    `~/src/JBrowseR` and `~/src/jbrowse-anywidget` (local branches, one commit
    each), fast-forward and push. The anywidget workflow edit has not been
    through prettier.
