@@ -18,7 +18,7 @@ Auto-generated from the config schema in the source — see the [config guide](/
   type: 'LinearAlignmentsDisplay',
   color: { field: 'tags.HP' },
   baseColor: { field: 'modifications' },
-  modifications: { twoColor: true },
+  modifications: { unmodified: 'calls' },
 }
 ```
 

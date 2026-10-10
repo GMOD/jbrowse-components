@@ -3799,12 +3799,8 @@ export const configManifest: ConfigManifest = {
               "type": "number"
             },
             {
-              "name": "twoColor",
-              "type": "boolean"
-            },
-            {
-              "name": "fillUnmarked",
-              "type": "boolean"
+              "name": "unmodified",
+              "type": "ModificationUnmodified"
             },
             {
               "name": "cytosineContext",
@@ -4536,12 +4532,8 @@ export const configManifest: ConfigManifest = {
               "type": "number"
             },
             {
-              "name": "twoColor",
-              "type": "boolean"
-            },
-            {
-              "name": "fillUnmarked",
-              "type": "boolean"
+              "name": "unmodified",
+              "type": "ModificationUnmodified"
             },
             {
               "name": "cytosineContext",

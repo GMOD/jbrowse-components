@@ -38,7 +38,7 @@ displayId: '...', color: ... }]`. See
   adapter: { type: 'CramAdapter', uri: 'https://example.com/sample.cram' },
   displayDefaults: {
     baseColor: { field: 'modifications' },
-    modifications: { fillUnmarked: true },
+    modifications: { unmodified: 'all' },
   },
 }
 ```
@@ -91,7 +91,7 @@ These slots go on a display entry: `"displays": [{ "type": "LinearAlignmentsDisp
 | <span id="slot-height">**height**</span><br>[`number`](/docs/config_guides/slot_types#number) = <code>250</code> | Starting height in pixels for the coverage band and pileup together; heightMode decides what a pileup deeper than this does |
 | <span id="slot-color">**color**</span><br>[AlignmentsColor](../alignmentscolor) | The read fill: `"steelblue"` paints every read, `{ field: "strand" }` a read dimension's own vocabulary and `{ field: "tags.HP" }` a SAM tag. |
 | <span id="slot-basecolor">**baseColor**</span><br>[AlignmentsBaseColor](../alignmentsbasecolor) | The per-base layer drawn over the reads, whatever fills them: `{ field: "modifications" }`, `"bisulfite"`, `"baseQuality"` or `"base"`. |
-| <span id="slot-modifications">**modifications**</span><br>[AlignmentsModifications](../alignmentsmodifications) | What the `modifications` and `bisulfite` color fields draw: `threshold` (percent, default 10), `twoColor`, `fillUnmarked`, `cytosineContext` and `shownModifications`. |
+| <span id="slot-modifications">**modifications**</span><br>[AlignmentsModifications](../alignmentsmodifications) | What the `modifications` and `bisulfite` color fields draw: `threshold` (percent, default 10), `unmodified`, `cytosineContext` and `shownModifications`. |
 | <span id="slot-filter">**filter**</span><br>[ReadFilter](../readfilter) | Every read filter, in one object: the flag masks, a read name, tag filters, and the four read categories.<br><br>default filter flags is exclude 1540 read unmapped (0x4) read fails platform/vendor quality checks (0x200) read is PCR or optical duplicate (0x400)<br><br>A read category takes `"only"` or `"exclude"`, and is absent when it isn't filtering — `{ "properPairs": "exclude", "split": "only" }` for the split reads of discordant pairs. `spliced`, `properPairs`, `singletons` and `split`. |
 | <span id="slot-facet">**facet**</span><br>[SectionFacet](../sectionfacet) | In-track stacked grouping, one labelled section per value: a read dimension (`strand`, `firstOfPairStrand`, `pairOrientation`, `splitRead`, `mapq`, `mateAssembly`), a tag (`tags.HP`), or any other field. `{ field: "tags.HP", domain: ["2", "1"] }` stacks the listed values first. |
 | <span id="slot-collapsegrouprows">**collapseGroupRows**</span><br>[`boolean`](/docs/config_guides/slot_types#boolean) = <code>false</code> | Only consulted while `facet` is in effect. Collapsing trades the per-group stack for one lane per group, with overlap depth carried by the tint shading instead of by row count — the compact reading for a track with many groups (an all-vs-all synteny track's mate genomes). A group expanded from its label chip opts back out and draws a true stack. |

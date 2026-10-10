@@ -6169,24 +6169,14 @@
             "type": "number"
           }
         },
-        "twoColor": {
-          "description": "paint the unmodified side blue as well as the modified side its color, under modifications and bisulfite alike.",
-          "default": false,
+        "unmodified": {
+          "description": "which unmodified sites paint blue: 'hidden' none, 'calls' the calls more likely unmodified, under modifications and bisulfite alike, and 'all' every cytosine in the context as well, the ones the basecaller left implicit included; 'all' is the methylation view.",
+          "default": "hidden",
           "if": {
             "type": "null"
           },
           "else": {
-            "type": "boolean"
-          }
-        },
-        "fillUnmarked": {
-          "description": "paint every cytosine in the context as methylated or unmethylated, the ones the basecaller left implicit included; the methylation view.",
-          "default": false,
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "type": "boolean"
+            "enum": ["hidden", "calls", "all"]
           }
         },
         "cytosineContext": {
