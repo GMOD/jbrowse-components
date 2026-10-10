@@ -185,14 +185,10 @@ function hitTestChain(
   // lines in one ascending pass over chain index, so a higher index is a later
   // line.
   //
-  // Ambiguity is only reachable on the `placeRectCapped` overflow row, where
-  // every truncated chain is piled onto the `maxRows` sentinel and their spans
-  // freely overlap; a real row holds non-overlapping chain extents by
-  // construction, so a point query there returns one box and any rule agrees.
-  // That row sits immediately below the last drawn one (truncation implies
-  // `maxY === maxRows`) and an ungrouped display hit-tests the whole canvas
-  // against its single section — `findSectionAtY` short-circuits with no bottom
-  // bound — so a track taller than its capped pileup can put the cursor there.
+  // A real row holds non-overlapping chain extents by construction, so a point
+  // query there returns one box. Only the `placeRectCapped` overflow row piles
+  // spans up, and it sits below the band, where neither the clip nor
+  // `overPileup` reaches.
   let best = hits[0]!
   for (let i = 1; i < hits.length; i++) {
     if (hits[i]! > best) {

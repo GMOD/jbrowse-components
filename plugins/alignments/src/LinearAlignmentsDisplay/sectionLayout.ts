@@ -342,8 +342,8 @@ export function computeStackedSections(
 
 // Resolve a SectionsLayout into the screen-space draw geometry the renderers
 // loop. Ungrouped (one section) reproduces the prior sticky-coverage layout
-// exactly: coverage clips to the full canvas, the pileup clips from its top to
-// the canvas bottom, and scrollTop is applied only by the pileup shaders (via
+// exactly: coverage clips to its band, the pileup from its top to its scrolled
+// bottom or the canvas bottom, and scrollTop is applied only by the pileup shaders (via
 // rangeY0), never to the coverage band. Grouped sections instead scroll their
 // whole coverage+pileup band as a unit, so scrollTop shifts every offset/clip.
 export function buildSectionRenders(
@@ -361,12 +361,14 @@ export function buildSectionRenders(
   if (!grouped) {
     const sec = layout.sections[0]
     const pileupTop = sec?.pileupTop ?? 0
-    // The sticky-coverage layout clips the pileup to the viewport below coverage
-    // (only the pileup content scrolls). But a section that reserves no pileup
-    // rows — `showPileup` off, or an empty/collapsed pileup — must clip to zero
-    // so its (still laid-out) reads don't paint into that viewport. An empty
-    // pileup draws nothing either way, so gating on `pileupHeight > 0` is safe.
-    const hasPileup = (sec?.pileupHeight ?? 0) > 0
+    // From the sticky ceiling down to the band's scrolled bottom, which is
+    // where the overlays and the hover stop too. Past it sit only the reads a
+    // row cap parked on the overflow row, and a section with no pileup rows
+    // clips to zero.
+    const pileupBottom = Math.min(
+      canvasHeight,
+      pileupTop + (sec?.pileupHeight ?? 0) - scrollTop,
+    )
     return [
       {
         pileupTopOffset: pileupTop,
@@ -374,7 +376,7 @@ export function buildSectionRenders(
         covClipTop: 0,
         covClipHeight: sec?.coverageHeight ?? 0,
         pileupClipTop: pileupTop,
-        pileupClipHeight: hasPileup ? Math.max(0, canvasHeight - pileupTop) : 0,
+        pileupClipHeight: Math.max(0, pileupBottom - pileupTop),
         // Coverage + arc band are sticky in ungrouped mode (only the pileup
         // scrolls), so the arc band keeps its content-space top.
         arcBand: sec ? arcBandAt(sec, sec.arcBandTop) : undefined,

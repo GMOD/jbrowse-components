@@ -459,7 +459,7 @@ const grouped: SectionsLayout = computeStackedSections(
   { coverageHeight: 20, rowHeight: 10 },
 )
 
-test('buildSectionRenders: ungrouped keeps coverage sticky and pileup full-bleed', () => {
+test('buildSectionRenders: ungrouped keeps coverage sticky and clips the pileup at its band', () => {
   // scrollTop must NOT move the ungrouped coverage band (sticky) or its clips.
   const renders = buildSectionRenders(ungrouped, {
     scrollTop: 37,
@@ -476,9 +476,26 @@ test('buildSectionRenders: ungrouped keeps coverage sticky and pileup full-bleed
       // painted down through the pileup, where the hit test does not answer.
       covClipHeight: 45,
       pileupClipTop: 45,
-      pileupClipHeight: 555,
+      // 4 rows of 10 scrolled up by 37: the band ends 3 px below the ceiling
+      pileupClipHeight: 3,
     },
   ])
+})
+
+// A row cap parks its overflow reads on the row just below the last, where
+// PileupTruncationRule draws; a track taller than the capped pileup must not
+// paint them there.
+test('buildSectionRenders: an ungrouped pileup shorter than the canvas clips at its last row', () => {
+  const [render] = buildSectionRenders(ungrouped, {
+    scrollTop: 0,
+    canvasHeight: 600,
+  })
+  expect(render?.pileupClipHeight).toBe(40)
+  const [tall] = buildSectionRenders(ungrouped, {
+    scrollTop: 0,
+    canvasHeight: 60,
+  })
+  expect(tall?.pileupClipHeight).toBe(15)
 })
 
 test('buildSectionRenders: grouped scrolls each whole section band by scrollTop', () => {
