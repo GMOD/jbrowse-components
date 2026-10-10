@@ -520,7 +520,7 @@ export interface TooltipFeatureInfo {
   refName: string
 }
 
-// "name chr1:1,001-1,100" for one read, for the bezier overlay's two-endpoint
+// "name chr1:1,001-1,100" for one read, for the connector mark's two-endpoint
 // tooltip. No strand: the curve's own color already encodes orientation.
 export function formatFeatureLabel(info: TooltipFeatureInfo) {
   return `${escapeHTML(info.name || info.id)} ${formatLocationRange(info.refName, info.start, info.end)}`

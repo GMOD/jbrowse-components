@@ -8,7 +8,7 @@ import { writePileupUniforms } from '../../LinearAlignmentsDisplay/renderers/pil
 import { pileupRowY } from '../../LinearAlignmentsDisplay/renderers/rendererTypes.ts'
 import { buildLinkedReadColorPalette } from '../../shaders/palettes.ts'
 // The palette-index rule, generated from alignmentsUniforms.slang (adr-051) —
-// the same import the bezier overlay makes. This pass once spelled it
+// the same import the connector mark makes. This pass once spelled it
 // `colorType % css.length`, the wrap that file's `min` explicitly replaced.
 import { linkedReadColorSlot } from '../../shaders/slang/alignmentsUniforms.js.generated.ts'
 import {
@@ -89,6 +89,9 @@ const linkedReadLineShape: MarkShape<LinkedReadLinesUploadData, RenderState> = {
     // nothing at all on the GPU, which drew a native line list at a fixed
     // 1 px — the two backends disagreed on the weight of every connector.
     ctx.lineWidth = LINKED_READ_LINE_WIDTH_PX
+    // One stroke per line. A path per color strokes 1.3-2.6x slower in Chrome
+    // and Cairo over 8000 lines, and blends crossings once where the GPU
+    // blends each line (ADR-225).
     const css = lineCss(state.colors)
     for (let i = 0; i < region.numLinkedReadLines; i++) {
       const y1 = pileupRowY(region.linkedReadLineYs[i * 2]!, state) + fH / 2

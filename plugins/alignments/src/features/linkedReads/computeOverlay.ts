@@ -99,11 +99,9 @@ export function bezierConnectionLegendItems(
   return [...byColor.values()]
 }
 
-// Enumerate the linked pairs of a laid-out region map: the scroll- and
-// pan-invariant half of the overlay. Only the read grouping + connection
-// resolution live here, so a model getter can memoize it (recompute on relayout
-// only) while the per-frame screen projection stays in `computePileupBezierArcs`
-// — the name→reads Map is no longer rebuilt on every scroll frame.
+// Enumerate the linked pairs of a laid-out region map, which the connector
+// feed (`buildConnectorFeeds`) turns into the mark's channels. A model getter
+// memoizes it, so it reruns on a relayout and never on a scroll or pan.
 //
 // The `crossRegion` short-circuit is what keeps that scope free where it can buy
 // nothing: a pair needs two regions to straddle, so a section holding one is

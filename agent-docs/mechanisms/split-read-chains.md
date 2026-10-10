@@ -129,7 +129,7 @@ There are two right answers and the choice is per consumer:
 - **A connector draws the junction and marks it.** `splitJunctions`
   (`readGroupConnections.ts`) emits the junction, counts the read's own segments
   lying strictly between the two on-screen ones, and passes the loci up — which
-  the bezier overlay and the breakpoint split view both draw dashed and name in
+  the alignments connector mark and the breakpoint split view both draw dashed and name in
   their hover. A reader following one molecule loses the thread if the
   connector disappears.
 - **An aggregate emits nothing.** `unpairedChainArcs` withholds the junction,

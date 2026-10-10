@@ -1407,7 +1407,7 @@ export default function stateModelFactory(
           /**
            * #getter
            * Every read connector per group, from one walk of its reads: the
-           * straight-line pass's records and the pairs the bezier overlay
+           * straight-line pass's records and the pairs the connector mark
            * draws. Reads the layout tier, so a band resize, height drag or
            * recolor reuses them.
            */
@@ -1983,7 +1983,7 @@ export default function stateModelFactory(
 
         /**
          * #getter
-         * The pairs the bezier overlay draws, placed on each drawn section's
+         * The pairs the connector mark draws, placed on each drawn section's
          * pileup band.
          */
         get bezierPairSections() {
@@ -2205,7 +2205,7 @@ export default function stateModelFactory(
         /**
          * #method
          * `readIdsSharingChain` from a read id alone, for a caller holding no
-         * block — the bezier overlay, whose arcs carry ids. Empty outside chain
+         * block — the connector mark, whose arcs carry ids. Empty outside chain
          * mode and for an id no fetched region holds.
          */
         readIdsSharingChainWith(featureId: string) {

@@ -45,7 +45,7 @@ import type {
 // regions rather than the data map, so a region whose fetch has not landed drops
 // out and every entry gets its region's refName.
 //
-// The bezier overlay has the twin of this loop over its own entry type. Sharing
+// The connector mark has the twin of this loop over its own entry type. Sharing
 // them was tried and measured back out; the object build is the hot part and every way of varying
 // it generically costs more than the eight lines are worth.
 //
@@ -330,7 +330,7 @@ export function pairOuterDir(entry: ReadEntry) {
 
 // The mate link between the two reads of one pair, sourcing orientation and
 // template length from a primary segment (see `pairFieldEntry`, which owns that
-// rule for this path and for the bezier overlay alike).
+// rule for this path and for the connector mark alike).
 //
 // Split junctions do not come through here. The arc path chains a read's
 // segments as `SegAln`s so it can walk off-screen SA records, and
@@ -370,7 +370,7 @@ export function mateLinkArc(e1: ReadEntry, e2: ReadEntry): PairedPendingArc {
 }
 
 // The link to a mate that isn't on screen: only RNEXT/PNEXT locate it, so this
-// is the one connection kind the bezier overlay can't draw and the arc path can.
+// is the one connection kind the connector mark can't draw and the arc path can.
 // Gated on `emitsOffScreenPartner` — either user setting can ask for it, and a
 // translocation seen from a single-chromosome view has ONLY this path, which is
 // why "Show inter-chromosomal pairs" is one of the two — and on the mate
@@ -453,7 +453,7 @@ interface LanePendingArc {
   arc: PendingArc
 }
 
-// Every QNAME group resolves the same way — the bezier overlay's group
+// Every QNAME group resolves the same way — the connector mark's group
 // resolution (resolveReadGroup owns the secondary filter, the readId dedup, the
 // mate partition, and the mate-link guard) with two arc-path substitutions:
 //

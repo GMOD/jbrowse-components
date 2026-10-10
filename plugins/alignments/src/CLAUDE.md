@@ -73,7 +73,9 @@ modification stacks) and `indicator/` (the hit type).
 `bandFeed.ts`, which hands render-core's link mark the junctions as channels
 (`renderers/sashimiMarks.ts`, ADR-222). Its count labels are the one DOM layer
 left, placed by `sashimiLabels` at the apex the mark reports.
-`alignedBaseWalk.ts` is a bare shared walk, not a directory at all.
+`linkedReads/connectorFeed.ts` likewise hands render-core's connector mark the
+connectors the straight-line pass leaves (`renderers/connectorMarks.ts`,
+ADR-225). `alignedBaseWalk.ts` is a bare shared walk, not a directory at all.
 
 The `clip` layer draws soft AND hard clips from one shader, so `features/clip/`
 owns both emitters and there is no `hardclip/`. `features/softclipBases/` is the

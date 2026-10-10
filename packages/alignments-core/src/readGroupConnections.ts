@@ -56,7 +56,7 @@ export interface ReadConnection<E> {
   // Loc strings of the read's OWN segments that lie between these two in read
   // order and that no fetched entry carries — the junction joins two segments
   // that are read-adjacent on screen and not on the molecule. Absent when the
-  // two really are consecutive, and on every mate link. The bezier overlay and
+  // two really are consecutive, and on every mate link. The connector mark and
   // the breakpoint split view both dash such a junction.
   hiddenSegmentsBetween?: string[]
 }
@@ -310,12 +310,12 @@ export function primaryOf<E extends MinEntry>(segs: E[]) {
 // The read FILLS follow the same rule in chain mode, where `attachChainFields`
 // gives a supplementary its chain primary's `readPairOrientations` entry. The
 // arc band reads the fetched array, which carries no such correction, and the
-// bezier overlay the laid-out one, which carries it in chain mode alone — so the
+// connector mark the laid-out one, which carries it in chain mode alone — so the
 // resolver applies the rule itself, or the same reads at the same locus would
 // color differently depending on a layout setting.
 //
 // Lives here, beside the resolver that chose the two entries, because the arc
-// band and the bezier overlay each need it and a second copy is how the two came
+// band and the connector mark each need it and a second copy is how the two came
 // to disagree in the first place.
 export function pairFieldEntry<E extends MinEntry>(e1: E, e2: E) {
   return isSupplementary(e1) && !isSupplementary(e2) ? e2 : e1
@@ -422,7 +422,7 @@ function partitionReadGroup<E extends MinEntry>(entries: E[]) {
 // The shape every connection renderer shares: chain each mate's own segments in
 // read order (`chainMate`), then link the two mates' primaries (`mateLink`) when
 // both mates are present, or hand the one present mate to `loneMateLink` when
-// only one is. Generic over the produced element `T` so the bezier overlay
+// only one is. Generic over the produced element `T` so the connector mark
 // (ReadConnection) and the coverage arcs (PendingArc) route through one skeleton
 // and can't drift on which segments join. Each caller supplies its own per-mate
 // chainer: the bezier path chains only the on-screen segments

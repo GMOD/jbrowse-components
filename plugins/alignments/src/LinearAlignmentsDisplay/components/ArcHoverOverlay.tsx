@@ -24,14 +24,12 @@ const useStyles = makeStyles()(theme => ({
   },
 }))
 
-// Which read-connection arc or splice junction the tooltip is talking about,
-// and which junction is selected.
+// Which read-connection arc, splice junction or read connector the tooltip is
+// talking about, and which junction or read's connectors are selected.
 //
 // The tooltip can say "heaviest of several here", which invites exactly this
 // question — and even over a lone arc, naming a junction with nothing marking it
-// is a claim the reader has to take on trust. The linked-read bezier overlay
-// thickens its hovered path; it is SVG with per-path handlers, so it gets that
-// for free. Arcs are canvas, so this is the equivalent.
+// is a claim the reader has to take on trust.
 //
 // An overlay rather than a canvas pass because the canvas is repaint-tier: the
 // hovered arc changes on nearly every mousemove, and on the Canvas2D fallback a

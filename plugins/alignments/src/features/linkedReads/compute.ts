@@ -187,7 +187,7 @@ export interface LinkedPair {
 // then resolve each group into per-mate split junctions + the mate link
 // (readGroupConnections owns filtering, read-order sorting, and paired/split
 // partitioning). `resolveConnectors` walks it once for both the straight-line
-// pass and the bezier overlay, so the rules that define "a linked pair" live in
+// pass and the connector mark, so the rules that define "a linked pair" live in
 // one place.
 //
 // `canonicalRefName` is what lets a junction report the segments it skipped

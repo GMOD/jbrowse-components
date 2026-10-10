@@ -645,7 +645,7 @@ describe('the straight-line records', () => {
     expect(lines.linkedReadLinePositions[1]).toBe(300) // rev 3-prime
   })
 
-  it('excludes aberrant (RR) paired reads — bezier overlay handles them', () => {
+  it('excludes aberrant (RR) paired reads — the connector mark draws them', () => {
     const data = makeData({
       names: ['r1', 'r1'],
       flags: [
@@ -739,7 +739,7 @@ describe('the straight-line records', () => {
     expect(lines.linkedReadLinePositions[1]).toBe(300)
   })
 
-  it('excludes split inversions (SPLIT_INV) — bezier overlay handles them', () => {
+  it('excludes split inversions (SPLIT_INV) — the connector mark draws them', () => {
     const data = makeData({
       names: ['r1', 'r1'],
       flags: [0, SAM_FLAG_SUPPLEMENTARY],

@@ -97,7 +97,7 @@ const expectedStroke = (slot: number) =>
 // WRAP, which agrees with the clamp on every slot in use and so survives review,
 // and which for an out-of-range slot resolves to a different REAL color rather
 // than to the last one. The rule's own unit test could not catch this, because
-// what drifted was the call site, not the rule; the bezier overlay had already
+// what drifted was the call site, not the rule; the connector mark had already
 // been moved onto it and this one had not.
 describe('linked-read connector strokes follow the generated slot rule', () => {
   it('reads the slot the color type names, for every slot in the palette', () => {

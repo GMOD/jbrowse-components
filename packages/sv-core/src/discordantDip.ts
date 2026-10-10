@@ -1,7 +1,7 @@
 import { BEZIER_CONNECTOR_MAX_REACH_PX } from '@jbrowse/core/util'
 
 // How deep a discordant connector dips below the reads it joins, for the two
-// renderers that draw one (the pileup's bezier overlay and BreakpointSplitView's
+// renderers that draw one (the alignments connector mark and BreakpointSplitView's
 // AlignmentConnections). Shared so the mark means the same thing in both.
 //
 // The depth is `band * f(spanBp)`. Keying on BASE PAIRS is what makes it say

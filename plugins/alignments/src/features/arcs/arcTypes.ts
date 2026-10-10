@@ -272,7 +272,7 @@ export interface PairedPendingArc extends PendingArcEndpoints {
 }
 
 export type PendingArc = SplitPendingArc | PairedPendingArc
-// Carries `refName` — unlike the bezier overlay's entry — because this path
+// Carries `refName` — unlike the connector mark's entry — because this path
 // compares a fetched segment against one named only by an SA tag or RNEXT, and
 // same-chromosome-ness is the whole difference between an arc and a connector
 // tick. That extra field is why the two paths build their own entries; the field

@@ -118,7 +118,7 @@ matters.
   deep short-read view then pays nothing.
 - **A mark on a chain's row has to clear its span.** `buildChainConnectingData`
   draws ONE solid span per chain per region, min start to max end, so a dash
-  lying on the row vanishes into it. `computePileupBezierArcs` bows a
+  lying on the row vanishes into it. `connectorShape` bows a
   hidden-segment line whose ends share a row for that reason, and a one-ended
   hop's mark needs the same.
 - **Gate on the settings that exist**: `showLongRange` ("Draw long-range
@@ -161,10 +161,11 @@ not plumbing:
   land in the region that copy came from, so the other window draws the reads
   again with no connector. A split view can keep a panel per visit, since
   each panel there is a separate view.
-- **The gesture is the open half.** `PileupBezierOverlay` has no context menu,
-  and a plain click already selects the nearer endpoint. Either a right-click
-  item on the arc target (the display's `openContextMenu` builds its items from
-  a read feature, so an arc needs its own item source) or a modified click.
+- **The gesture is the open half.** A connector (ADR-225) offers no context
+  menu (`contextMenuTargetForHit` answers none for it), and a plain click
+  already selects the nearer endpoint. Either a right-click item on the
+  connector (the display's `openContextMenu` builds its items from a read
+  feature, so a connector needs its own item source) or a modified click.
   Decide that before the plumbing, since it fixes where the region list is
   built.
 

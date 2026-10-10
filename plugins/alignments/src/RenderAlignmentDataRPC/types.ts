@@ -398,11 +398,10 @@ export interface PileupLayoutArrays {
   overlapYs: Uint16Array // shared chain row for each overlap
 
   // Linked-read straight-line connections. Sibling pass to `connectingLine*`
-  // because the bezier overlay's GPU pass differs: per-endpoint Y (mates can sit
-  // on different rows when `sortColumn` is in effect), and a per-line palette index
-  // instead of a hard-coded color. Cross-region pairs are excluded — those keep
-  // being drawn as SVG straight paths via PileupBezierOverlay (the GPU pass is
-  // one region per buffer). Absolute genomic uint32 like all worker output (per
+  // with a per-endpoint Y (mates can sit on different rows when `sortColumn`
+  // is in effect) and a per-line palette index. Cross-region pairs are
+  // excluded — the connector mark draws those (ADR-225), since this pass is one
+  // region per buffer. Absolute genomic uint32 like all worker output (per
   // ARCHITECTURE.md coordinate convention).
   linkedReadLinePositions: Uint32Array // [bp1, bp2] pairs
   linkedReadLineYs: Uint16Array // [y1, y2] paired per line
