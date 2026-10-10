@@ -191,7 +191,7 @@ const featureExporter: RExporter = (track, regions) => {
     aliases: track.refNames,
     fields: [
       ...new Set([
-        ...featureFields(display, regions),
+        ...featureFields(display, regions, track.viewBpPerPx),
         ...(aggregate ? [aggregate] : []),
       ]),
     ],
@@ -203,6 +203,7 @@ const featureExporter: RExporter = (track, regions) => {
     frame: base,
     regions,
     aggregate,
+    viewBpPerPx: track.viewBpPerPx,
   })
   return {
     panels: [{ variable: `p_${key}`, plot }],

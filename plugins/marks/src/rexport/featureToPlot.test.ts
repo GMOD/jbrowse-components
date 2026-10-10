@@ -13,15 +13,21 @@ const REGIONS = [{ refName: 'ctgA', start: 0, end: 24000 }]
 function script(
   display: FeatureDisplaySpec,
   type: 'Gff3TabixAdapter' | 'BedTabixAdapter' = 'Gff3TabixAdapter',
+  viewBpPerPx?: number,
 ) {
   const f = frameFor({
     type,
     uri: 'x',
     name: 'genes',
-    fields: featureFields(display, REGIONS),
+    fields: featureFields(display, REGIONS, viewBpPerPx),
     wholeFeatures: true,
   })
-  const { plot, notes } = featurePlot({ display, frame: f, regions: REGIONS })
+  const { plot, notes } = featurePlot({
+    display,
+    frame: f,
+    regions: REGIONS,
+    viewBpPerPx,
+  })
   return {
     r: assembleRScript({
       regions: REGIONS,
@@ -71,6 +77,13 @@ describe('the gene panel', () => {
     expect(script({ geneGlyphMode: 'longestCoding' }).r).toMatch(
       /collapse_isoforms\(genes/,
     )
+  })
+
+  it('collapses in auto mode at the zoom the view collapsed at', () => {
+    const auto = (bpPerPx: number) =>
+      script({ geneGlyphMode: 'auto' }, 'Gff3TabixAdapter', bpPerPx).r
+    expect(auto(150)).toMatch(/collapse_isoforms\(genes/)
+    expect(auto(50)).not.toMatch(/collapse_isoforms\(genes/)
   })
 
   it('paints a UTR the track color when only that is set', () => {

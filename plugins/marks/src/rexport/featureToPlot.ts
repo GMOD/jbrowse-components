@@ -131,6 +131,11 @@ function spanOf(regions: readonly Region[]) {
   return regions.reduce((a, r) => a + (r.end - r.start), 0)
 }
 
+/** The zoom `auto` collapses at: the live view's, else the figure's own. */
+function zoomOf(regions: readonly Region[], viewBpPerPx?: number) {
+  return viewBpPerPx ?? Math.max(spanOf(regions), 1) / FIGURE_WIDTH_PX
+}
+
 /**
  * The file's fields the glyph reads beyond the reader's own columns: what the
  * filters compare, the source-record marker, the description and the curated
@@ -139,8 +144,9 @@ function spanOf(regions: readonly Region[]) {
 export function featureFields(
   display: FeatureDisplaySpec,
   regions: readonly Region[] = [],
+  viewBpPerPx?: number,
 ) {
-  const bpPerPx = Math.max(spanOf(regions), 1) / FIGURE_WIDTH_PX
+  const bpPerPx = zoomOf(regions, viewBpPerPx)
   return [
     ...new Set([
       ...translateFilters(display.filter ?? []).rules.map(r => r.attr),
@@ -303,22 +309,25 @@ function admitted(
  * `frame` is the reader's: a GFF3 frame, a BED one, which `bed_features`
  * turns into the same shape, or any frame with `id`, `parent`, `type`, `name`
  * and `strand` columns. `aggregate` is the column a BigBed adapter groups
- * transcripts into genes by, which the frame must hold.
+ * transcripts into genes by, which the frame must hold. `viewBpPerPx` is the
+ * live view's zoom, which decides whether `auto` collapses isoforms as the
+ * browser decided.
  */
 export function featurePlot({
   display,
   frame: base,
   regions,
   aggregate,
+  viewBpPerPx,
 }: {
   display: FeatureDisplaySpec
   frame: RFrame
   regions: readonly Region[]
   aggregate?: string
+  viewBpPerPx?: number
 }): TranslatedPlot {
   const notes: string[] = []
-  const span = Math.max(spanOf(regions), 1)
-  const bpPerPx = span / FIGURE_WIDTH_PX
+  const bpPerPx = zoomOf(regions, viewBpPerPx)
   unsupported(display, notes)
   const n = base.name
   const shaped = base.columns.includes('parent')
@@ -400,7 +409,7 @@ ${n}_parts <- clip_regions(${n}_parts, regions)`
     utrDefaultColor
   const connector =
     literalColor('connectorColor', display.connectorColor, notes) ?? CONNECTOR
-  const arrowBp = (span / FIGURE_WIDTH_PX) * 6
+  const arrowBp = (Math.max(spanOf(regions), 1) / FIGURE_WIDTH_PX) * 6
   const tip = expr('ifelse(strand > 0, end, start)')
   const layers: Layer[] = [
     layer({
