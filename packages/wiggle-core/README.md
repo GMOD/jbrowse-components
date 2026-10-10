@@ -101,7 +101,7 @@ against, so there is nothing to call a hole.
 
 ### getEffectiveScores
 
-Per-feature scalar score array for a summary mode: the min/max summary array for
+Per-feature scalar score array for an aggregate: the min/max summary array for
 `'min'`/`'max'`, otherwise the average score.
 
 ```js

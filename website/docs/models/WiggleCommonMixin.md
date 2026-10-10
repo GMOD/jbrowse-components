@@ -1,7 +1,7 @@
 ---
 id: wigglecommonmixin
 title: WiggleCommonMixin
-description: "Extends ScoreFieldConfigMixin with the narrowed rpcDataMap, the autoscale domain and the wiggle-specific config: the origin, rendering type, summary mode, resolution and the line/gap settings.…"
+description: "Extends ScoreFieldConfigMixin with the narrowed rpcDataMap, the autoscale domain and the wiggle-specific config: the origin, rendering type, aggregate, resolution and the line/gap settings.…"
 sidebar_label: Mixin -> WiggleCommonMixin
 ---
 
@@ -9,7 +9,7 @@ Auto-generated from the @jbrowse/mobx-state-tree model in the source — see the
 
 Extends `ScoreFieldConfigMixin` with the narrowed rpcDataMap, the autoscale
 domain and the wiggle-specific config: the origin, rendering type,
-summary mode, resolution and the line/gap settings. Extended on this chain
+aggregate, resolution and the line/gap settings. Extended on this chain
 with `.props()`/`.views()` rather than a mixin composed in, so no
 `types.compose` layer is added (ADR-041).
 
@@ -32,10 +32,10 @@ Each section ends with the members a composed model contributes, linked to the p
 | <span id="getter-linewidth">**lineWidth**</span><br><code>number</code> | A line's width, the `size` slot or 1 px while unset. |
 | <span id="getter-size">**size**</span><br><code>number</code> | A point's diameter, the `size` slot or 2 px while unset. |
 | <span id="getter-maxgapmultiple">**maxGapMultiple**</span><br><code>number</code> | Interpolated-line gap threshold, as a multiple of the track's own mean point spacing (see gapBreakLimit). 0 keeps one connected line. |
-| <span id="getter-aggregate">**aggregate**</span><br><code>string</code> |  |
+| <span id="getter-aggregate">**aggregate**</span><br><code>"max" &#124; "mean" &#124; "min" &#124; "whiskers"</code> |  |
 | <span id="getter-renderingtype">**renderingType**</span><br><code>"density" &#124; "line" &#124; "linecenter" &#124; "scatter" &#124; "xyplot"</code> |  |
 | <span id="getter-hasresolution">**hasResolution**</span><br><code>boolean</code> | Asked of the display's OWN adapter, which for the GC display is the synthesized GCContentAdapter rather than the track's raw sequence adapter — the two diverged when the adapter config moved onto the shared model. It answers the same today, since only BigWigAdapter and MultiWiggleAdapter declare the capability, and the display's adapter is the honest subject: the resolution slot it gates is passed to whatever this display fetches from. |
-| <span id="getter-effectiveaggregate">**effectiveAggregate**</span><br><code>string</code> | The summary mode actually drawn. Density has no whiskers presentation — `sourceLayers` falls back to the average scores — so the autoscale domain reads this rather than the raw slot; otherwise the color ramp spans the whisker extremes while the plot paints averages, and the score legend reports a range nothing on screen reaches. Single-wiggle defaults to whiskers, so plain "plot type → Density" hit this. |
+| <span id="getter-effectiveaggregate">**effectiveAggregate**</span><br><code>"max" &#124; "mean" &#124; "min" &#124; "whiskers"</code> | The aggregate actually drawn. Density has no whiskers presentation — `sourceLayers` falls back to the average scores — so the autoscale domain reads this rather than the raw slot; otherwise the color ramp spans the whisker extremes while the plot paints averages, and the score legend reports a range nothing on screen reaches. Single-wiggle defaults to whiskers, so plain "plot type → Density" hit this. |
 | <span id="getter-autoscalesourcenames">**autoscaleSourceNames**</span><br><code>Set&lt;string&gt; &#124; undefined</code> | Source names to include when computing the autoscale domain; `undefined` means every fetched source. The wiggle display always fetches all sources and filters client-side, so it overrides this to the visible subset — otherwise a subtree filter that hides sources would leave the Y-axis scaled to the hidden ones. |
 | <span id="getter-scorerulevalues">**scoreRuleValues**</span><br><code>number[]</code> | Scores the axis must reach whatever the data does, so a rule drawn at one stays on it. `[]` here and overridden by the display that draws `scales.y.rules`. |
 | <span id="getter-autoscalerange">**autoscaleRange**</span><br><code>[number, number] &#124; undefined</code> | What the sources visible in the settled blocks span, under the autoscale mode. `undefined` until the view and the data are ready, which is not the `[0, 1]` a caller falls back to — see `visibleStatsRange`. |
@@ -60,7 +60,7 @@ Each section ends with the members a composed model contributes, linked to the p
 | <span id="action-setresolution">**setResolution**</span><br><code>(res: number) =&gt; void</code> |  |
 | <span id="action-setorigin">**setOrigin**</span><br><code>(val?: number &#124; undefined) =&gt; void</code> |  |
 | <span id="action-setrenderingtype">**setRenderingType**</span><br><code>(type: string) =&gt; void</code> |  |
-| <span id="action-setaggregate">**setAggregate**</span><br><code>(val: string) =&gt; void</code> |  |
+| <span id="action-setaggregate">**setAggregate**</span><br><code>(val: "max" &#124; "mean" &#124; "min" &#124; "whiskers") =&gt; void</code> |  |
 | <span id="action-setlinewidth">**setLineWidth**</span><br><code>(val?: number &#124; undefined) =&gt; void</code> |  |
 | <span id="action-setsize">**setSize**</span><br><code>(val?: number &#124; undefined) =&gt; void</code> |  |
 
