@@ -44,6 +44,8 @@ exports[`render-core public surface pins the subpath exports 1`] = `
   "./shaders/clipStrip",
   "./shaders/clipStripConsts",
   "./shaders/colorRampLut",
+  "./shaders/connectorMark",
+  "./shaders/connectorMarkConsts",
   "./shaders/coverageBar",
   "./shaders/coverageIndicator",
   "./shaders/coverageInterbase",

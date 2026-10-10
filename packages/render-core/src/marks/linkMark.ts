@@ -282,7 +282,11 @@ function linkShapeCode(shape: LinkShape) {
       : LINK_SHAPE_DOME
 }
 
-function regionPx(regions: readonly LinkRegion[], index: number, bp: number) {
+export function regionPx(
+  regions: readonly LinkRegion[],
+  index: number,
+  bp: number,
+) {
   const r = regions[index]!
   return r.anchorPx + (bp - r.anchorBp) * r.signedPxPerBp
 }
@@ -577,6 +581,22 @@ function fillTable(regions: readonly LinkRegion[]) {
     writeSpan(SPANS[i >> 1]!, (i & 1) === 0 ? 0 : 2, regions[i])
   }
   return n
+}
+
+/**
+ * The view's region table as a view-spanning shader's uniforms take it: the
+ * entries in use, their count, and the drawing region's own entry. Shared
+ * arrays, rewritten per call, so a frame allocates nothing per block.
+ */
+export function viewRegionUniforms(
+  regions: readonly LinkRegion[],
+  own: number,
+) {
+  return {
+    regionCount: fillTable(regions),
+    ownEntry: tableEntry(regions[own]),
+    regionTable: TABLE,
+  }
 }
 
 interface LegPoint {

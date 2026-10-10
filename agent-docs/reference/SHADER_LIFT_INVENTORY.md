@@ -14,8 +14,8 @@ Read [ADR-051](../architecture-decision-records/adr-051-shader-js-codegen-is-sca
 in the export set and what deliberately does not. This file says what the
 tree currently looks like against that standard.
 
-Scanned 48 shaders with entry points. 138 functions
-are inside the emitter's subset, of which **107 are exported**.
+Scanned 49 shaders with entry points. 144 functions
+are inside the emitter's subset, of which **112 are exported**.
 
 ## Candidates
 
@@ -24,7 +24,9 @@ empty.** A row here is either the next export or the next `//! js-skip` —
 and a row appearing in a diff means a shader edit created one without
 anyone deciding which.
 
-_None._
+| Function | Signature | Shaders |
+| --- | --- | --- |
+| `bitSet` | `(u32, u32) -> f32` | connectorMark |
 
 ## Declined
 
@@ -79,8 +81,9 @@ noticing in a diff.
 | --- | --- | --- |
 | type 'vec2' is outside the supported scalar subset | 27 | `buttSegmentCoverage`, `capsuleDist`, `capsuleFrame`, `capsuleQuadLocal`, `covFlippedQuad`, `covSegQuad`, … |
 | member access (vector swizzle or struct field) is outside the supported scalar subset | 21 | `bandCoverage`, `barAaPx`, `bpToClipX`, `capVertex`, `cutScore`, `drawsBar`, … |
-| type 'vec4' is outside the supported scalar subset | 19 | `bandColorAt`, `colorCutAt`, `cutYAt`, `cutYsPx`, `edgeSpan`, `entryPx`, … |
+| type 'vec4' is outside the supported scalar subset | 19 | `bandColorAt`, `colorCutAt`, `cutYAt`, `cutYsPx`, `edgeSpan`, `fillEdges`, … |
 | type 'ptr' is outside the supported scalar subset | 17 | `bpToClipX`, `covAreaTop`, `covBaselinePx`, `covBpToClipX`, `covClipKindColor`, `covEffHeight`, … |
+| type 'Cubic' is outside the supported scalar subset | 6 | `armCorner`, `armEnd`, `cubicAt`, `cubicDirection`, `curveVertex`, `lengthTo` |
 | type 'Instance' is outside the supported scalar subset | 4 | `computeCorners`, `fillVsBegin`, `getReadColor`, `isClickedSilhouette` |
 | type 'LinkInstance' is outside the supported scalar subset | 4 | `curveVertex`, `footBlockStart`, `footCorner`, `footVertex` |
 | type 'texture_2d' is outside the supported scalar subset | 4 | `markScaleColor`, `rampColor`, `rampColorPremultiplied`, `rowTableLookup` |
@@ -95,6 +98,7 @@ noticing in a diff.
 | //! js-export: 'rowScoreToClipY' reaches rowScoreToYPx(), which is outside the supported scalar subset | 1 | `rowScoreToClipY` |
 | //! js-export: 'turnControlPoint' reaches polarPoint(), which is outside the supported scalar subset | 1 | `turnControlPoint` |
 | type 'ColorVsOut' is outside the supported scalar subset | 1 | `discardVertex` |
+| type 'ConnectorInstance' is outside the supported scalar subset | 1 | `placeCubic` |
 | type 'CoverageVsOut' is outside the supported scalar subset | 1 | `covDiscardVertex` |
 | type 'RowBand' is outside the supported scalar subset | 1 | `rowBandPx` |
 | type 'RowRectUniforms' is outside the supported scalar subset | 1 | `rowRectClipPos` |
@@ -116,6 +120,11 @@ is no longer shared with anything.
 | `aaHalfPx` | tests only — `arcHull.test.ts`, `buttSegmentCoverage.test.ts`, `dotplotCapsulePad.test.ts`, `glyphEdgeAlpha.test.ts`, `pointGlyphPad.test.ts` |
 | `aaPx` | nothing |
 | `aaRamp` | tests only — `pointGlyphPad.test.ts` |
+| `connectorBudgetPx` | nothing |
+| `connectorHandlePx` | nothing |
+| `connectorLiftPx` | nothing |
+| `connectorStrokePx` | nothing |
+| `connectorTangent` | nothing |
 | `discExpand` | tests only — `pointGlyphPad.test.ts` |
 | `edgeCoverage` | tests only — `arcHull.test.ts`, `buttSegmentCoverage.test.ts`, `dotplotCapsulePad.test.ts`, `sdEllipse.test.ts` |
 | `ellipseHullPoint` | tests only — `arcHull.test.ts` |

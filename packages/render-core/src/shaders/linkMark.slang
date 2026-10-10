@@ -38,6 +38,7 @@ import markColor;
 import rowTable;
 import scoreScale;
 import valueScale;
+import viewRegion;
 
 public static const uint LINK_CURVE_SEGMENTS = 64u;
 static const uint CURVE_VERTS = (LINK_CURVE_SEGMENTS + 1u) * 2u;
@@ -59,7 +60,7 @@ public static const uint LINK_NO_REGION = 0xFFFFFFFFu;
 // An `x2Region` for an instance another region's payload draws: the far half
 // of a pair both of whose ends have records, or a record fetched twice.
 public static const uint LINK_ELSEWHERE = 0xFFFFFFFEu;
-public static const uint LINK_MAX_REGIONS = 256u;
+public static const uint LINK_MAX_REGIONS = VIEW_REGION_MAX;
 public static const float LINK_STEM_PX = 12.0;
 // How long a breakend foot is where its region has the room: a tick along
 // the baseline over the arm its junction keeps, BreakpointSplitView's length.
@@ -176,10 +177,6 @@ struct VsOut {
   // ramps between the legs.
   float  legSide : COLOR5;
 };
-
-float entryPx(uint bp, float4 r, float hpZero) {
-  return r.x - hpViewportOffsetBp(hpSplitUint(bp), float3(r.y, r.z, 0.0), hpZero) * r.w;
-}
 
 // Whether a pair is wide enough to draw as a true circle's two legs, which the
 // painter strokes as a circle and `linkRadiiPx` sizes as one.
@@ -412,9 +409,9 @@ VsOut vs_main(LinkInstance inst, uint vid : SV_VertexID) {
   e.baseY = linkBaseYPx(u.rowOffsetPx, u.rowHeight, place.slot, u.reverse);
   e.ySign = u.reverse != 0 ? -1.0 : 1.0;
   e.reach = max(u.rowHeight - u.insetPx, 0.0);
-  e.xPx = entryPx(inst.x, u.ownEntry, u.zero);
+  e.xPx = viewRegionPx(inst.x, u.ownEntry, u.zero);
   e.placed = inst.x2Region < u.regionCount;
-  e.x2Px = e.placed ? entryPx(inst.x2, u.regionTable[inst.x2Region], u.zero) : e.xPx;
+  e.x2Px = e.placed ? viewRegionPx(inst.x2, u.regionTable[inst.x2Region], u.zero) : e.xPx;
 
   uint curveVerts = (u.curveSegments + 1u) * 2u;
   LinkVertex v;

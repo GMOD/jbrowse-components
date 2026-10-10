@@ -17,6 +17,17 @@ export {
   LINK_ELSEWHERE,
   LINK_NO_REGION,
 } from './linkMark.ts'
+export { connectorEnds, connectorMark } from './connectorMark.ts'
+export {
+  CONNECTOR_ARROW,
+  CONNECTOR_BOW,
+  CONNECTOR_DASHED,
+  CONNECTOR_LEADING_2,
+  CONNECTOR_MAX_REACH_PX,
+  CONNECTOR_MINUS_1,
+  CONNECTOR_MINUS_2,
+  CONNECTOR_STRAIGHT,
+} from '../shaders/connectorMark.consts.generated.ts'
 export { ellipseDistance, ellipseNearest } from './ellipseDistance.ts'
 export { appendGlyph, pointInsetPx } from './glyphPaint.ts'
 export { recordPath } from './pathRecorder.ts'
@@ -79,6 +90,7 @@ export type {
   LinkRegion,
   LinkSizeScale,
 } from './linkMark.ts'
+export type { ConnectorChannels, ConnectorParams } from './connectorMark.ts'
 export type { RowTable } from './rowTable.ts'
 export type { RowSpanIndex } from './rowSpanIndex.ts'
 export type { ColorChannel } from './markRamp.ts'
