@@ -215,6 +215,7 @@ function sources(data: PileupDataResult, arcs: ArcBandFeed): AlignmentsSources {
         laidOutPileupMap: new Map([[0, data]]),
         arcFeeds: new Map([[0, arcs]]),
         sashimiFeeds: new Map(),
+        connectorFeeds: new Map(),
       },
     ],
     densityRegions: new Map(),

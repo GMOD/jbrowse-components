@@ -88,6 +88,7 @@ function sources(
         laidOutPileupMap: data ? new Map([[0, data]]) : new Map(),
         arcFeeds: arcs ? new Map([[0, arcs]]) : new Map(),
         sashimiFeeds: new Map(),
+        connectorFeeds: new Map(),
       },
     ],
     densityRegions: new Map(),

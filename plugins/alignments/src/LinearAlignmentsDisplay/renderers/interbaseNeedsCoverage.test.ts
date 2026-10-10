@@ -80,6 +80,7 @@ function sources(): AlignmentsSources {
         groupKey: '',
         arcFeeds: new Map(),
         sashimiFeeds: new Map(),
+        connectorFeeds: new Map(),
         laidOutPileupMap: new Map([
           [
             0,
@@ -152,6 +153,8 @@ function state(overrides: Partial<RenderState>): RenderState {
         covClipHeight: 50,
         pileupClipTop: 50,
         pileupClipHeight: 150,
+        connectorClipTop: 0,
+        connectorClipHeight: 0,
       },
     ],
     ...overrides,

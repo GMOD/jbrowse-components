@@ -9,6 +9,7 @@ import {
 } from '@jbrowse/cigar-utils'
 import { toLocale } from '@jbrowse/core/util'
 import { escapeHTML } from '@jbrowse/core/util/htmlText'
+import { hiddenSegmentsNote } from '@jbrowse/sv-core'
 
 import {
   ARC_SHAPE_FLAT,
@@ -25,6 +26,7 @@ import { getCoverageBin, getInterbaseBin } from './positionStats.ts'
 import type { PileupDataResult } from '../../RenderAlignmentDataRPC/types'
 import type { PartnerLocus } from '../../features/arcs/arcTypes.ts'
 import type { ArcHit, TickHit } from '../../features/arcs/bandFeed.ts'
+import type { ConnectorHit } from '../../features/linkedReads/connectorFeed.ts'
 import type { ModificationHitResult } from '../../features/modification/hitTest.ts'
 import type { CigarHitResult } from '../../shared/hitTestTypes.ts'
 import type { InsertSizeBand } from '../../shared/insertSizeStats.ts'
@@ -484,6 +486,29 @@ export function formatArcLineTooltip(
     support: hit.support,
     partnerOffView,
   }
+}
+
+/**
+ * A connector's hover: what kind of connection it is and the two reads it
+ * joins, and for a junction across unfetched segments the loci it stepped
+ * through, the one place those are named.
+ */
+export function formatConnectorTooltip(
+  hit: Pick<ConnectorHit, 'label' | 'id1' | 'id2' | 'hiddenSegmentsBetween'>,
+  infoOf: (id: string) => TooltipFeatureInfo | undefined,
+) {
+  const parts: string[] = []
+  for (const id of [hit.id1, hit.id2]) {
+    const info = infoOf(id)
+    if (info) {
+      parts.push(formatFeatureLabel(info))
+    }
+  }
+  const connection =
+    parts.length > 0 ? `${hit.label}: ${parts.join(' → ')}` : hit.label
+  return hit.hiddenSegmentsBetween?.length
+    ? `${connection}<br/>${hiddenSegmentsNote(hit.hiddenSegmentsBetween)}`
+    : connection
 }
 
 export interface TooltipFeatureInfo {

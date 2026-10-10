@@ -87,6 +87,8 @@ function state(): RenderState {
         covClipHeight: 50,
         pileupClipTop: 50,
         pileupClipHeight: 150,
+        connectorClipTop: 0,
+        connectorClipHeight: 0,
       },
     ],
   })

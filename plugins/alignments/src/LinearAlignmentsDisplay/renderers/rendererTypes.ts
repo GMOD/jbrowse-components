@@ -8,6 +8,7 @@ import { READ_OUTLINE_MIN_HEIGHT_PX } from '../../shaders/slang/read.consts.gene
 import type { PileupDataResult } from '../../RenderAlignmentDataRPC/types.ts'
 import type { ArcBandFeed } from '../../features/arcs/bandFeed.ts'
 import type { CoverageRegionFields } from '../../features/coverage/types.ts'
+import type { ConnectorFeed } from '../../features/linkedReads/connectorFeed.ts'
 import type { SashimiBandFeed } from '../../features/sashimi/bandFeed.ts'
 import type { ColorPalette } from '../../shaders/colors.ts'
 import type { ReadConnectionsMode } from '../constants.ts'
@@ -111,6 +112,10 @@ export interface SectionRender {
   // Clip band for the pileup passes.
   pileupClipTop: number
   pileupClipHeight: number
+  // Clip band for the connectors: the pileup's, run on through the room the
+  // section reserves under its last row for a dipping one.
+  connectorClipTop: number
+  connectorClipHeight: number
   // Screen-space paired-end arc band for this section, or undefined when arcs
   // are off / this section reserves none. Ungrouped is sticky (not scrolled);
   // grouped scrolls with its section, matching coverage.
@@ -149,6 +154,9 @@ export interface SectionSource {
   arcFeeds: ReadonlyMap<number, ArcBandFeed>
   // This group's splice junctions by region index. Empty when they are off.
   sashimiFeeds: ReadonlyMap<number, SashimiBandFeed>
+  // This group's curved and cross-region connectors by region index. Empty
+  // when none draw.
+  connectorFeeds: ReadonlyMap<number, ConnectorFeed>
 }
 
 export interface AlignmentsSources {

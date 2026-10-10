@@ -478,6 +478,10 @@ test('buildSectionRenders: ungrouped keeps coverage sticky and clips the pileup 
       pileupClipTop: 45,
       // 4 rows of 10 scrolled up by 37: the band ends 3 px below the ceiling
       pileupClipHeight: 3,
+      connectorClipTop: 45,
+      connectorClipHeight: 3,
+      arcBand: undefined,
+      sashimiBandTop: undefined,
     },
   ])
 })
@@ -512,6 +516,10 @@ test('buildSectionRenders: grouped scrolls each whole section band by scrollTop'
       covClipHeight: 20,
       pileupClipTop: 10,
       pileupClipHeight: 30,
+      connectorClipTop: 10,
+      connectorClipHeight: 30,
+      arcBand: undefined,
+      sashimiBandTop: undefined,
     },
     {
       pileupTopOffset: 70,
@@ -520,8 +528,33 @@ test('buildSectionRenders: grouped scrolls each whole section band by scrollTop'
       covClipHeight: 20,
       pileupClipTop: 60,
       pileupClipHeight: 50,
+      connectorClipTop: 60,
+      connectorClipHeight: 50,
+      arcBand: undefined,
+      sashimiBandTop: undefined,
     },
   ])
+})
+
+// The room a section reserves under its last row is the connectors' alone:
+// a dipping one finishes there, and the reads a row cap parked do not paint.
+test('buildSectionRenders: the connector band runs past the pileup by the dip reserve', () => {
+  const dipped = computeStackedSections([lane({ key: '', maxY: 4 })], {
+    coverageHeight: 45,
+    rowHeight: 10,
+    dipReservePx: () => 12,
+  })
+  const [ungroupedRender] = buildSectionRenders(dipped, {
+    scrollTop: 0,
+    canvasHeight: 600,
+  })
+  expect(ungroupedRender?.pileupClipHeight).toBe(40)
+  expect(ungroupedRender?.connectorClipHeight).toBe(52)
+  const [clamped] = buildSectionRenders(dipped, {
+    scrollTop: 0,
+    canvasHeight: 90,
+  })
+  expect(clamped?.connectorClipHeight).toBe(45)
 })
 
 test('buildSectionRenders: grouped pileupTopOffset is content-space (scroll via shader)', () => {

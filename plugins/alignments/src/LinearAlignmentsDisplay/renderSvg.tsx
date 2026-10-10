@@ -5,7 +5,6 @@ import { GroupLabelBoxes } from '@jbrowse/display-kit/GroupLabelBox'
 import { renderDisplaySvg } from '@jbrowse/display-kit/renderDisplaySvg'
 
 import { getMismatchContrastMap } from '../shared/util.ts'
-import PileupBezierArcsSvg from './components/PileupBezierArcsSvg.tsx'
 import SashimiLabels from './components/SashimiLabels.tsx'
 import { drawAlignmentLabels } from './components/drawAlignmentLabels.ts'
 import { bandScreenTop } from './components/sectionScreen.ts'
@@ -103,17 +102,7 @@ function AlignmentsSvgBody({
           }
         }}
       />
-      {overlays ? (
-        <>
-          <SashimiLabels labels={sashimiCounts} />
-          <PileupBezierArcsSvg
-            model={model}
-            view={model.view}
-            width={canvasWidth}
-            colors={state.colors}
-          />
-        </>
-      ) : null}
+      {overlays ? <SashimiLabels labels={sashimiCounts} /> : null}
       {overlays && model.showsGroupLabels ? (
         <GroupLabelBoxes
           sections={screenSections.map(s => ({

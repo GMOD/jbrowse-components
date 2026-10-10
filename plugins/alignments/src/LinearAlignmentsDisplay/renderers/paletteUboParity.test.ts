@@ -60,6 +60,8 @@ const SECTION: SectionRender = {
   covClipHeight: 0,
   pileupClipTop: 0,
   pileupClipHeight: 40,
+  connectorClipTop: 0,
+  connectorClipHeight: 0,
 }
 
 // The uniforms one block of one empty region leaves behind. showModifications
@@ -74,6 +76,7 @@ function frameUniforms() {
         laidOutPileupMap: new Map([[0, makePileupDataResult({})]]),
         arcFeeds: new Map(),
         sashimiFeeds: new Map(),
+        connectorFeeds: new Map(),
       },
     ],
     densityRegions: new Map(),

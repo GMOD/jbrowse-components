@@ -52,12 +52,14 @@ function twoSections(): AlignmentsSources {
         laidOutPileupMap: new Map([[0, laneWithCoverage(24)]]),
         arcFeeds: new Map(),
         sashimiFeeds: new Map(),
+        connectorFeeds: new Map(),
       },
       {
         groupKey: 'unsplit',
         laidOutPileupMap: new Map([[0, laneWithCoverage(8)]]),
         arcFeeds: new Map(),
         sashimiFeeds: new Map(),
+        connectorFeeds: new Map(),
       },
     ],
     densityRegions: new Map(),
@@ -72,6 +74,8 @@ function section(top: number) {
     covClipHeight: 50,
     pileupClipTop: top + 50,
     pileupClipHeight: 50,
+    connectorClipTop: 0,
+    connectorClipHeight: 0,
   }
 }
 

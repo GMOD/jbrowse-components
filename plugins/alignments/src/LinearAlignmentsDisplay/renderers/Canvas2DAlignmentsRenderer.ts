@@ -13,6 +13,7 @@ import {
   ARC_LINK_MARKS,
   ARC_MARKER_MARK,
 } from './arcMarks.ts'
+import { CONNECTOR_MARK, connectorParamsOf } from './connectorMarks.ts'
 import {
   ALIGNMENTS_COVERAGE_MARKS,
   coverageRegionOf,
@@ -24,6 +25,7 @@ import { SASHIMI_MARKS, sashimiBandsOf } from './sashimiMarks.ts'
 
 import type { PileupDataResult } from '../../RenderAlignmentDataRPC/types.ts'
 import type { ArcBandFeed } from '../../features/arcs/bandFeed.ts'
+import type { ConnectorFeed } from '../../features/linkedReads/connectorFeed.ts'
 import type { SashimiBandFeed } from '../../features/sashimi/bandFeed.ts'
 import type { AlignmentsCoverageRegion } from './coverageMarks.ts'
 import type {
@@ -48,6 +50,7 @@ export interface Canvas2DRegionMap {
   regions: ReadonlyMap<number, Canvas2DRegion>
   sectionFeeds: readonly ReadonlyMap<number, ArcBandFeed>[]
   sashimiFeeds: readonly ReadonlyMap<number, SashimiBandFeed>[]
+  connectorFeeds: readonly ReadonlyMap<number, ConnectorFeed>[]
 }
 
 /**
@@ -71,6 +74,7 @@ export function buildAlignmentsRegionMap(
     for (const regionIdx of [
       ...section.arcFeeds.keys(),
       ...section.sashimiFeeds.keys(),
+      ...section.connectorFeeds.keys(),
     ]) {
       if (!section.laidOutPileupMap.has(regionIdx)) {
         regions.set(sectionRegionKey(s, regionIdx), {
@@ -92,6 +96,7 @@ export function buildAlignmentsRegionMap(
     regions,
     sectionFeeds: sources.sections.map(section => section.arcFeeds),
     sashimiFeeds: sources.sections.map(section => section.sashimiFeeds),
+    connectorFeeds: sources.sections.map(section => section.connectorFeeds),
   }
 }
 
@@ -118,6 +123,7 @@ const NO_REGIONS: Canvas2DRegionMap = {
   regions: new Map(),
   sectionFeeds: [],
   sashimiFeeds: [],
+  connectorFeeds: [],
 }
 
 /**
@@ -165,7 +171,7 @@ export class Canvas2DAlignmentsRenderer
  */
 export function drawAlignmentBlocks(
   ctx: Ctx2D,
-  { regions, sectionFeeds, sashimiFeeds }: Canvas2DRegionMap,
+  { regions, sectionFeeds, sashimiFeeds, connectorFeeds }: Canvas2DRegionMap,
   blocks: RenderBlock[],
   state: RenderState,
 ) {
@@ -263,9 +269,48 @@ export function drawAlignmentBlocks(
       }
     },
   )
+  paintConnectorBands(ctx, connectorFeeds, state)
   paintArcBands(ctx, sectionFeeds, blocks, state)
   paintSashimiBands(ctx, sashimiFeeds, state)
   return painted
+}
+
+// Each section's connectors over its pileup, in the GPU's order: the mark
+// over the whole canvas from every region's feed, clipped to the section's
+// connector band.
+function paintConnectorBands(
+  ctx: Ctx2D,
+  connectorFeeds: readonly ReadonlyMap<number, ConnectorFeed>[],
+  state: RenderState,
+) {
+  const { canvasWidth } = state
+  state.sections.forEach((sec, s) => {
+    const feeds = connectorFeeds[s]
+    if (!feeds || feeds.size === 0 || sec.connectorClipHeight <= 0) {
+      return
+    }
+    const bandState = {
+      ...sectionRenderState(state, sec),
+      connector: connectorParamsOf(state, sec),
+    }
+    withClip(
+      ctx,
+      0,
+      sec.connectorClipTop,
+      canvasWidth,
+      sec.connectorClipHeight,
+      () => {
+        for (const [regionIdx, feed] of feeds) {
+          CONNECTOR_MARK.paintBlock(
+            ctx,
+            feed,
+            canvasWideBlock(regionIdx, canvasWidth),
+            bandState,
+          )
+        }
+      },
+    )
+  })
 }
 
 // Each section's splice junctions over everything, in the GPU's order: each

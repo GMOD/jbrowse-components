@@ -29,6 +29,11 @@ import {
   ARC_MARKER_MARK,
 } from './arcMarks.ts'
 import {
+  CONNECTOR_MARK,
+  EMPTY_CONNECTOR_FEED,
+  connectorParamsOf,
+} from './connectorMarks.ts'
+import {
   ALIGNMENTS_COVERAGE_MARKS,
   type AlignmentsCoverageRegion,
   coverageRegionOf,
@@ -47,8 +52,10 @@ import { SASHIMI_MARKS, sashimiBandsOf } from './sashimiMarks.ts'
 import type { PileupDataResult } from '../../RenderAlignmentDataRPC/types.ts'
 import type { ArcBandFeed } from '../../features/arcs/bandFeed.ts'
 import type { CoverageRegionFields } from '../../features/coverage/types.ts'
+import type { ConnectorFeed } from '../../features/linkedReads/connectorFeed.ts'
 import type { SashimiBandFeed } from '../../features/sashimi/bandFeed.ts'
 import type { ArcBandState } from './arcMarks.ts'
+import type { ConnectorBandState } from './connectorMarks.ts'
 import type { PileupUniformViews } from './pileupUniforms.ts'
 import type {
   AlignmentsRenderingBackend,
@@ -85,6 +92,7 @@ interface UploadedRegion {
   lines: Uint32Array | undefined
   arcs: ArcBandFeed | undefined
   sashimi: SashimiBandFeed | undefined
+  connectors: ConnectorFeed | undefined
   // The density tier's packed bins, when this key is a density region rather
   // than a pileup one. Also what tells the two apart in the memo, so a swap
   // either way rebuilds rather than trusting matching `undefined` layouts.
@@ -112,6 +120,7 @@ export const ALIGNMENTS_PASSES: PipelineDescriptor[] = [
   ...ALIGNMENTS_COVERAGE_MARKS.map(m => m.pass),
   ...ARC_PASSES,
   ...SASHIMI_MARKS.map(m => m.pass),
+  CONNECTOR_MARK.pass,
 ]
 
 export class GpuAlignmentsRenderer
@@ -136,6 +145,7 @@ export class GpuAlignmentsRenderer
   private uploaded = new Map<number, UploadedRegion>()
   private sectionFeeds: ReadonlyMap<number, ArcBandFeed>[] = []
   private sashimiFeeds: ReadonlyMap<number, SashimiBandFeed>[] = []
+  private connectorFeeds: ReadonlyMap<number, ConnectorFeed>[] = []
   private textures: MarkTextureBinder
 
   constructor(hal: GpuHal) {
@@ -163,15 +173,20 @@ export class GpuAlignmentsRenderer
     this.regions.clear()
     this.sectionFeeds = sources.sections.map(section => section.arcFeeds)
     this.sashimiFeeds = sources.sections.map(section => section.sashimiFeeds)
+    this.connectorFeeds = sources.sections.map(
+      section => section.connectorFeeds,
+    )
     const seen = new Set<number>()
     sources.sections.forEach((section, s) => {
-      const { laidOutPileupMap, arcFeeds, sashimiFeeds } = section
+      const { laidOutPileupMap, arcFeeds, sashimiFeeds, connectorFeeds } =
+        section
       // A region with connections or junctions and no pileup (a far foot's
       // region) gets its own key.
       for (const regionIdx of new Set([
         ...laidOutPileupMap.keys(),
         ...arcFeeds.keys(),
         ...sashimiFeeds.keys(),
+        ...connectorFeeds.keys(),
       ])) {
         const idx = sectionRegionKey(s, regionIdx)
         seen.add(idx)
@@ -180,6 +195,7 @@ export class GpuAlignmentsRenderer
           laidOutPileupMap.get(regionIdx),
           arcFeeds.get(regionIdx),
           sashimiFeeds.get(regionIdx),
+          connectorFeeds.get(regionIdx),
         )
       }
     })
@@ -237,6 +253,7 @@ export class GpuAlignmentsRenderer
     data: PileupDataResult | undefined,
     arcs: ArcBandFeed | undefined,
     sashimi: SashimiBandFeed | undefined,
+    connectors: ConnectorFeed | undefined,
   ) {
     this.regions.set(idx, data ? coverageRegionOf(data) : emptyCoverageRegion())
     const prev = this.uploaded.get(idx)
@@ -247,6 +264,7 @@ export class GpuAlignmentsRenderer
       lines: data?.linkedReadLinePositions,
       arcs,
       sashimi,
+      connectors,
       density: undefined,
     })
 
@@ -279,6 +297,14 @@ export class GpuAlignmentsRenderer
           sashimi ?? EMPTY_SASHIMI_BAND_FEED,
         )
       }
+      if (prev.connectors !== connectors) {
+        uploadMarks(
+          this.hal,
+          idx,
+          [CONNECTOR_MARK],
+          connectors ?? EMPTY_CONNECTOR_FEED,
+        )
+      }
     } else {
       this.hal.deleteRegion(idx)
       if (data) {
@@ -292,6 +318,9 @@ export class GpuAlignmentsRenderer
       }
       if (sashimi) {
         uploadMarks(this.hal, idx, SASHIMI_MARKS, sashimi)
+      }
+      if (connectors) {
+        uploadMarks(this.hal, idx, [CONNECTOR_MARK], connectors)
       }
     }
   }
@@ -312,6 +341,7 @@ export class GpuAlignmentsRenderer
       lines: undefined,
       arcs: undefined,
       sashimi: undefined,
+      connectors: undefined,
       density: coverage.coveragePackedBuffer,
     })
     if (prev?.density !== coverage.coveragePackedBuffer) {
@@ -369,6 +399,7 @@ export class GpuAlignmentsRenderer
       }
     }
 
+    this.drawConnectorBands(state, scale, bufH)
     this.drawArcBands(blocks, state, scale, bufH)
     this.drawSashimiBands(state, scale, bufH)
 
@@ -582,6 +613,54 @@ export class GpuAlignmentsRenderer
           }
         }
       })
+    })
+  }
+
+  // Each section's connectors over its pileup, from every region's feed, so a
+  // connector crosses a region seam whole, scissored to the section's
+  // connector band.
+  private drawConnectorBands(
+    state: RenderState,
+    scale: CanvasScale,
+    bufH: number,
+  ) {
+    const { canvasWidth, canvasHeight } = state
+    state.sections.forEach((sec, s) => {
+      const feeds = this.connectorFeeds[s]
+      if (!feeds || feeds.size === 0) {
+        return
+      }
+      const strip = devicePxBand(
+        sec.connectorClipTop,
+        sec.connectorClipHeight,
+        scale.y,
+        bufH,
+      )
+      if (strip.height <= 0) {
+        return
+      }
+      const bandState: ConnectorBandState = {
+        ...sectionRenderState(state, sec),
+        connector: connectorParamsOf(state, sec),
+      }
+      for (const [regionIdx, feed] of feeds) {
+        const block = canvasWideBlock(regionIdx, canvasWidth)
+        const clip = clipBlock(block, canvasWidth, canvasHeight, scale)
+        if (clip) {
+          this.hal.setScissor(clip.pxX, strip.top, clip.pxW, strip.height)
+          drawMarks(
+            this.hal,
+            this.uBand,
+            [CONNECTOR_MARK],
+            block,
+            clip,
+            feed,
+            bandState,
+            sectionRegionKey(s, regionIdx),
+            this.textures,
+          )
+        }
+      }
     })
   }
 

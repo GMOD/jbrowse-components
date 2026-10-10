@@ -6,8 +6,11 @@ import { regionAtPixel } from '@jbrowse/render-core/canvas2dUtils'
 
 import { arcSlotCategory } from '../../shaders/palettes.ts'
 import { snpBaseFromCigar } from '../../shared/hitTestTypes.ts'
+import { connectorParamsOf } from '../renderers/connectorMarks.ts'
+import { sectionRenderState } from '../renderers/rendererTypes.ts'
 import { sashimiBandsOf } from '../renderers/sashimiMarks.ts'
 import { resolveArcBandHover } from './arcHitTest.ts'
+import { resolveConnectorHover } from './connectorHitTest.ts'
 import {
   openCigarWidget,
   openCoverageWidget,
@@ -24,6 +27,7 @@ import {
   formatArcLineTooltip,
   formatArcTooltip,
   formatCigarTooltip,
+  formatConnectorTooltip,
   formatCoverageTooltip,
   formatIndicatorTooltip,
   formatModificationTooltip,
@@ -34,6 +38,7 @@ import {
 import type { ResolvedBlock } from '../../shared/hitTestTypes.ts'
 import type { LinearAlignmentsDisplayModel } from '../model.ts'
 import type { ArcMarkHit } from './arcHitTest.ts'
+import type { ConnectorMarkHit } from './connectorHitTest.ts'
 import type { MarkHitResult } from './hitTestPipeline.ts'
 import type { SashimiMarkHit } from './sashimiHitTest.ts'
 import type React from 'react'
@@ -89,7 +94,8 @@ export function useAlignmentsBase(model: LinearAlignmentsDisplayModel) {
     // region lookup and a map get, not the pipeline.
     //
     // A splice junction outranks both by the same argument: its mark paints
-    // last.
+    // last. A connector paints over the reads it joins, so it outranks the
+    // pileup the same way.
     const { renderState } = model
     const sec = picked ? renderState.sections[picked.index] : undefined
     const arc =
@@ -101,7 +107,14 @@ export function useAlignmentsBase(model: LinearAlignmentsDisplayModel) {
             renderState,
             sec,
           ) ??
-          resolveArcHover(canvasX, canvasY, picked.section, renderState, sec))
+          resolveArcHover(canvasX, canvasY, picked.section, renderState, sec) ??
+          resolveConnectorHit(
+            canvasX,
+            canvasY,
+            picked.section,
+            renderState,
+            sec,
+          ))
         : undefined
     // No section under the cursor, or no fetched block at that x, is a miss.
     // Answering it here is what lets performHitTest take a definite block and
@@ -163,6 +176,26 @@ export function useAlignmentsBase(model: LinearAlignmentsDisplayModel) {
           reversed: r.reversed ?? false,
         }
       : undefined
+  }
+
+  // The connector under the cursor in the hovered section, asked of the
+  // connector mark.
+  function resolveConnectorHit(
+    canvasX: number,
+    canvasY: number,
+    section: LinearAlignmentsDisplayModel['renderSections'][number],
+    renderState: RenderStateOf,
+    sec: SectionRenderOf,
+  ): ConnectorMarkHit | undefined {
+    const feeds = model.connectorFeedsByGroup.get(section.groupKey)
+    if (!feeds || feeds.size === 0) {
+      return undefined
+    }
+    const hover = resolveConnectorHover(canvasX, canvasY, feeds, sec, {
+      ...sectionRenderState(renderState, sec),
+      connector: connectorParamsOf(renderState, sec),
+    })
+    return hover ? { type: 'connector', ...hover } : undefined
   }
 
   // The splice junction under the cursor in the hovered section, asked of the
@@ -379,6 +412,19 @@ export function useAlignmentsBase(model: LinearAlignmentsDisplayModel) {
           highlightedChainReadIds: [],
         }
       }
+      case 'connector': {
+        const { id1, id2 } = result.hit
+        const chain = model.readIdsSharingChainWith(id1)
+        return {
+          overCigarItem: true,
+          featureIdUnderMouse: undefined,
+          mouseoverExtraInformation: formatConnectorTooltip(result.hit, id =>
+            model.getFeatureInfoById(id),
+          ),
+          hoveredArcHighlight: result.highlight,
+          highlightedChainReadIds: chain.length > 0 ? chain : [id1, id2],
+        }
+      }
       case 'arc':
         return {
           // FALSE, unlike every other tooltip branch: `overCigarItem` is the
@@ -501,6 +547,9 @@ export function useAlignmentsBase(model: LinearAlignmentsDisplayModel) {
         return
       case 'sashimi':
         openSashimiWidget(model, result.junction, result.groupKey)
+        return
+      case 'connector':
+        void model.selectFeatureById(result.nearerId)
         return
       case 'indicator':
         openIndicatorWidget(

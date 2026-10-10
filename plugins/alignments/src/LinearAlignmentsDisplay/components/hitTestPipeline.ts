@@ -35,6 +35,7 @@ import type {
 import type { PileupMark } from '../renderers/pileupMarks.ts'
 import type { RenderState } from '../renderers/rendererTypes.ts'
 import type { ArcMarkHit } from './arcHitTest.ts'
+import type { ConnectorMarkHit } from './connectorHitTest.ts'
 import type { SashimiMarkHit } from './sashimiHitTest.ts'
 import type { RenderBlock } from '@jbrowse/render-core/renderBlock'
 
@@ -67,7 +68,11 @@ export type HitTestResult =
 // in this pipeline — but every consumer of a gesture's result switches over
 // all three, which is what makes declining to act through an arc a thing the
 // compiler asks for.
-export type MarkHitResult = HitTestResult | ArcMarkHit | SashimiMarkHit
+export type MarkHitResult =
+  | HitTestResult
+  | ArcMarkHit
+  | SashimiMarkHit
+  | ConnectorMarkHit
 
 // Above ~50kbp visible region (2000px / 50000bp = 25), per-base detail is
 // too zoomed out to be meaningful.
@@ -128,7 +133,8 @@ export function contextMenuTargetForHit(
   if (
     result.type === 'none' ||
     result.type === 'arc' ||
-    result.type === 'sashimi'
+    result.type === 'sashimi' ||
+    result.type === 'connector'
   ) {
     return undefined
   }

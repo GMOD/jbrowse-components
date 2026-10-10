@@ -10,7 +10,6 @@ import { observer } from 'mobx-react'
 import { stackedBandGain } from '../sectionLayout.ts'
 import ArcHoverOverlay from './ArcHoverOverlay.tsx'
 import GroupLabelsOverlay from './GroupLabelsOverlay.tsx'
-import PileupBezierOverlay from './PileupBezierOverlay.tsx'
 import PileupTruncationRule from './PileupTruncationRule.tsx'
 import SashimiLabelsOverlay from './SashimiLabelsOverlay.tsx'
 import VisibleLabelsOverlay from './VisibleLabelsOverlay.tsx'
@@ -89,7 +88,6 @@ const PileupBody = observer(function PileupBody({
       <PileupTruncationRule model={model} />
 
       <SashimiLabelsOverlay model={model} />
-      <PileupBezierOverlay model={model} />
       <ArcHoverOverlay model={model} />
 
       <VisibleLabelsHost

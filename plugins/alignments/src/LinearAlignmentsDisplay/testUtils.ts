@@ -138,6 +138,8 @@ export function makeTestRenderState(
         covClipHeight: 0,
         pileupClipTop: 0,
         pileupClipHeight: 100,
+        connectorClipTop: 0,
+        connectorClipHeight: 0,
       },
     ],
     ...overrides,

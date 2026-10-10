@@ -122,6 +122,7 @@ function oneRegion(): AlignmentsSources {
         laidOutPileupMap: new Map([[0, fullyPopulated()]]),
         arcFeeds: new Map(),
         sashimiFeeds: new Map(),
+        connectorFeeds: new Map(),
       },
     ],
     densityRegions: new Map(),

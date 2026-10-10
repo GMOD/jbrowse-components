@@ -70,6 +70,7 @@ import {
   bezierDipReservePx,
   resolveConnectorsByGroup,
 } from '../features/linkedReads/computeOverlay.ts'
+import { buildConnectorFeeds } from '../features/linkedReads/connectorFeed.ts'
 import { buildSashimiBandFeeds } from '../features/sashimi/bandFeed.ts'
 import { visibleRegionJunctions } from '../features/sashimi/computeOverlay.ts'
 import { mergeJunctions } from '../features/sashimi/junctions.ts'
@@ -120,6 +121,7 @@ import {
 } from './colorUtils.ts'
 import { buildColorPaletteFromPalette } from './components/alignmentComponentUtils.ts'
 import { computeVisibleLabels } from './components/computeVisibleLabels.ts'
+import { selectedConnectorHighlight } from './components/connectorHitTest.ts'
 import { nonReferenceAt } from './components/positionStats.ts'
 import {
   readHighlightInk,
@@ -181,7 +183,11 @@ import {
   presentMapqs,
 } from './qualitySpans.ts'
 import { chainReadIdsAt, findRead, readInfo } from './readLookup.ts'
-import { shouldDrawOverlaps } from './renderers/rendererTypes.ts'
+import { connectorParamsOf } from './renderers/connectorMarks.ts'
+import {
+  sectionRenderState,
+  shouldDrawOverlaps,
+} from './renderers/rendererTypes.ts'
 import { sashimiBandsOf, sashimiLabels } from './renderers/sashimiMarks.ts'
 import { fetchFeatureDetails, fetchFeaturesForRegion } from './rpcCalls.ts'
 import {
@@ -201,6 +207,7 @@ import type { ArcBandFeed } from '../features/arcs/bandFeed.ts'
 import type { ArcsByGroupResult } from '../features/arcs/compute.ts'
 import type { CoverageRegionFields } from '../features/coverage/types.ts'
 import type { BezierArcScope } from '../features/linkedReads/computeOverlay.ts'
+import type { ConnectorFeed } from '../features/linkedReads/connectorFeed.ts'
 import type { SashimiBandFeed } from '../features/sashimi/bandFeed.ts'
 import type { LaneJunction } from '../features/sashimi/supportingReads.ts'
 import type { ArcCategory } from '../shaders/palettes.ts'
@@ -281,6 +288,7 @@ const NO_SASHIMI_FEEDS_BY_GROUP: ReadonlyMap<
 const NO_SASHIMI_FEEDS: ReadonlyMap<number, SashimiBandFeed> = new Map()
 const NO_LINK_REGIONS: readonly LinkRegion[] = []
 const NO_ARC_FEEDS: ReadonlyMap<number, ArcBandFeed> = new Map()
+const NO_CONNECTOR_FEEDS: ReadonlyMap<number, ConnectorFeed> = new Map()
 
 /**
  * What a right-click on the pileup resolved: the anchor, the hit and the read
@@ -2364,6 +2372,39 @@ export default function stateModelFactory(
           },
 
           /**
+           * #getter
+           * The connector mark's input, per group and region
+           * (`buildConnectorFeeds`): the pairs `bezierPairSections` places, in
+           * bp and rows, so a pan or zoom rebuilds nothing.
+           */
+          get connectorFeedsByGroup() {
+            return this.connectorFeedsByGroupIn(self.colorPalette)
+          },
+
+          /**
+           * #method
+           * `connectorFeedsByGroup` colored from `colors`, for the SVG export's
+           * theme.
+           */
+          connectorFeedsByGroupIn(colors: ColorPalette) {
+            const { displayedRegions } = self.view
+            return new Map(
+              self.bezierPairSections.map(sec => [
+                sec.groupKey,
+                buildConnectorFeeds({
+                  pairs: sec.pairs,
+                  displayedRegions,
+                  featureHeight: self.featureHeight,
+                  featureSpacing: self.featureSpacing,
+                  pileupHeight: sec.pileupHeight,
+                  colors,
+                  labels: self.declaredReadLabels.categories,
+                }),
+              ]),
+            )
+          },
+
+          /**
            * #method
            * `sashimiFeedsByGroup` colored from `colors`, which the SVG export
            * passes to draw in its own theme.
@@ -2398,6 +2439,7 @@ export default function stateModelFactory(
             return this.sourceSectionsWith(
               self.arcFeedsByGroup,
               this.sashimiFeedsByGroup,
+              this.connectorFeedsByGroup,
             )
           },
 
@@ -2410,6 +2452,7 @@ export default function stateModelFactory(
             return this.sourceSectionsWith(
               self.arcFeedsByGroupIn(colors),
               this.sashimiFeedsByGroupIn(colors),
+              this.connectorFeedsByGroupIn(colors),
             )
           },
 
@@ -2425,6 +2468,10 @@ export default function stateModelFactory(
               string,
               ReadonlyMap<number, SashimiBandFeed>
             >,
+            connectorFeeds: ReadonlyMap<
+              string,
+              ReadonlyMap<number, ConnectorFeed>
+            >,
           ): SectionSource[] {
             return self.renderSections.map(
               ({ groupKey, laidOutPileupMap }) => ({
@@ -2432,6 +2479,8 @@ export default function stateModelFactory(
                 laidOutPileupMap,
                 arcFeeds: feeds.get(groupKey) ?? NO_ARC_FEEDS,
                 sashimiFeeds: sashimiFeeds.get(groupKey) ?? NO_SASHIMI_FEEDS,
+                connectorFeeds:
+                  connectorFeeds.get(groupKey) ?? NO_CONNECTOR_FEEDS,
               }),
             )
           },
@@ -2602,7 +2651,9 @@ export default function stateModelFactory(
          * `renderState` alone on a track that draws neither.
          */
         get linkRegions(): readonly LinkRegion[] {
-          return (self.readConnections === 'off' && !self.drawsSashimi) ||
+          return (self.readConnections === 'off' &&
+            !self.drawsSashimi &&
+            self.bezierPairSections.length === 0) ||
             !self.view.initialized
             ? NO_LINK_REGIONS
             : viewRegionTable(self.view)
@@ -2648,6 +2699,37 @@ export default function stateModelFactory(
                     sashimi: sashimiBandsOf(state, sec),
                   })
                 : undefined
+            if (highlight) {
+              return highlight
+            }
+          }
+          return undefined
+        },
+
+        /**
+         * #getter
+         * The connectors of the selected read or chain, for the overlay that
+         * outlines them. Reads the pan, and only while one is selected.
+         */
+        get selectedConnectorHighlight(): ArcHighlight | undefined {
+          const id = self.selectedFeatureId
+          if (id === undefined || self.bezierPairSections.length === 0) {
+            return undefined
+          }
+          const selected = new Set([id, ...self.selectedChainReadIds])
+          const state = this.renderState
+          for (const [s, sec] of state.sections.entries()) {
+            const groupKey = self.renderSections[s]?.groupKey
+            const feeds =
+              groupKey === undefined
+                ? undefined
+                : self.connectorFeedsByGroup.get(groupKey)
+            const highlight = feeds
+              ? selectedConnectorHighlight(selected, feeds, sec, {
+                  ...sectionRenderState(state, sec),
+                  connector: connectorParamsOf(state, sec),
+                })
+              : undefined
             if (highlight) {
               return highlight
             }

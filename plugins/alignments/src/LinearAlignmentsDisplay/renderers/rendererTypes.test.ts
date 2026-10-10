@@ -76,6 +76,8 @@ function makeState(
         covClipHeight: 600,
         pileupClipTop: 50,
         pileupClipHeight: 550,
+        connectorClipTop: 0,
+        connectorClipHeight: 0,
       },
     ],
     ...overrides,

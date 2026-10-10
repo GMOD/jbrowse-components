@@ -1,9 +1,6 @@
-import { readIdAt, readNameAt, spanOf } from '@jbrowse/alignments-core'
-import {
-  BEZIER_CONNECTOR_MAX_REACH_PX,
-  bezierConnectorPath,
-} from '@jbrowse/core/util'
-import { HIDDEN_SEGMENT_DASH, discordantDipPx } from '@jbrowse/sv-core'
+import { spanOf } from '@jbrowse/alignments-core'
+import { BEZIER_CONNECTOR_MAX_REACH_PX } from '@jbrowse/core/util'
+import { discordantDipPx } from '@jbrowse/sv-core'
 
 import { rgb255 } from '../../LinearAlignmentsDisplay/colorUtils.ts'
 import { buildLinkedReadColorPalette } from '../../shaders/palettes.ts'
@@ -12,7 +9,6 @@ import { buildLinkedReadColorPalette } from '../../shaders/palettes.ts'
 // shader's clamp on every slot in use and resolves an out-of-range one to a
 // different real color instead of the last slot.
 import { linkedReadColorSlot } from '../../shaders/slang/alignmentsUniforms.js.generated.ts'
-import { LINKED_READ_LINE_WIDTH_PX } from '../../shaders/slang/linkedReadLine.consts.generated.ts'
 import {
   LINKED_READ_COLOR_MAPS_BACK,
   connectionLabel,
@@ -26,68 +22,12 @@ import type { SwatchCategory } from '../../LinearAlignmentsDisplay/colorUtils.ts
 import type { LaidOutPileupData } from '../../RenderAlignmentDataRPC/types.ts'
 import type { ColorPalette } from '../../shaders/colors.ts'
 import type { CanonicalRefName } from '../arcs/arcTypes.ts'
-import type { LinkedPair, ReadEntry } from './compute.ts'
+import type { LinkedPair } from './compute.ts'
 import type { LinkedReadLinesUploadData } from './types.ts'
 import type { LegendItem } from '@jbrowse/plugin-linear-genome-view'
 
 // The split view's alignment connector width, which draws the same curve.
-const CURVE_STROKE_WIDTH_PX = 1
-
-// Cull by endpoint Y, padded by the shaping's reach: a curve dips below or bows
-// above its endpoints (see bezierConnector), so a connector whose reads have
-// both scrolled just past an edge can still have a visible body. The pad stays
-// the CONSTANT even though a dip is now scaled by the band: core clamps every
-// dip to it, so it still bounds the reach, and a pad derived from this section's
-// band would be the same number on any band deep enough to matter.
-function arcIsVisible(
-  sy1: number,
-  sy2: number,
-  viewportTop: number,
-  viewportBottom: number,
-) {
-  const reach = BEZIER_CONNECTOR_MAX_REACH_PX
-  return (
-    Math.min(sy1, sy2) - reach < viewportBottom &&
-    Math.max(sy1, sy2) + reach > viewportTop
-  )
-}
-
-export interface PileupArc {
-  d: string
-  stroke: string
-  id1: string
-  id2: string
-  // The QNAME both ends share, so a hover can emphasize every arc of one read
-  // the way the breakpoint split view thickens every junction of a chain.
-  readName: string
-  // Screen x of each endpoint, so a click can pick the nearer read.
-  x1: number
-  x2: number
-  // Connection classification for the hover tooltip. An inverted split gets
-  // its own color (colorSplitReadInversion), distinct from the RR-pair blue, so
-  // the two are tellable apart at a glance; the tooltip names which evidence
-  // produced the arc rather than overloading a second dimension onto the stroke.
-  label: string
-  // A straight connector strokes at the line pass's width, which draws the same
-  // connection when both ends share a region; a curve at the split view's.
-  strokeWidth: number
-  // Set together, and only for a junction across unfetched segments: the dash
-  // resolved HERE so the live overlay and the SVG export cannot disagree about
-  // which arcs are dashed (the invariant this file's stroke constants exist
-  // for), and the loci for the hover to name (`hiddenSegmentsNote`).
-  dash?: string
-  hiddenSegmentsBetween?: string[]
-  // A maps-back loop lies over its own read's bar and its neighbours', so it
-  // draws at full strength.
-  opaque?: boolean
-}
-
-// Stable React key / selection identity for a bezier arc, shared by the live
-// overlay and the SVG export so the two can't key differently (mirrors
-// sashimiArcKey).
-export function bezierArcKey(arc: Pick<PileupArc, 'id1' | 'id2'>) {
-  return `${arc.id1}:${arc.id2}`
-}
+export const CURVE_STROKE_WIDTH_PX = 1
 
 // Every pair the line pass leaves: it cannot dash a line or name the loci a
 // junction skips.
@@ -288,32 +228,12 @@ export function resolveConnectorsByGroup(
 
 interface Opts {
   pairs: LinkedPair[]
-  displayedRegions: { refName: string; reversed?: boolean }[]
-  bpToScreenX: (
-    refName: string,
-    bp: number,
-    displayedRegionIndex?: number,
-  ) => number | undefined
+  displayedRegions: readonly { refName: string; reversed?: boolean }[]
   featureHeight: number
   featureSpacing: number
-  pileupTopOffset: number
   // The section's laid-out pileup band height, which is how deep a discordant
-  // connector may dip. A layout quantity on purpose: `clipBottom - clipTop`
-  // moves as the reader scrolls (bandScreenTop is sticky while the band bottom
-  // clamps to the canvas), and keying depth on it would put the depth back on
-  // the scroll position.
+  // connector may dip: a layout quantity, so a scroll moves no depth.
   pileupHeight: number
-  scrollTop: number
-  // Screen-y of this section's pileup clip top and of its band bottom, dip
-  // reserve included: the edges the visibility cull keeps a curve between.
-  viewportTop: number
-  viewportBottom: number
-  // The themed palette, for the same reason the read fills take one: a baked
-  // module palette drew connectors in light-mode colors over dimmed dark-mode
-  // reads.
-  colors: ColorPalette
-  // `color.labels` by bucket, which the hover names a curve by
-  labels?: Partial<Record<SwatchCategory, string>>
 }
 
 // Left-to-right screen order without projecting, which answers nothing for the
@@ -370,7 +290,7 @@ function crossesOwnAlignment(
 // A split junction is judged by the way its two segments point on screen,
 // so an inverted fusion viewed with one partner's region flipped reads
 // straight across the seam.
-function connectorShape(
+export function connectorShape(
   pair: LinkedPair,
   r1: Opts['displayedRegions'][number],
   r2: Opts['displayedRegions'][number],
@@ -409,29 +329,12 @@ function connectorShape(
 // read's own bar, within bounds that keep it visible on thin rows and local on
 // tall ones. A fixed depth, where a discordant dip grows with the distance
 // spanned and would carry a long duplication's loop across every row below.
-const LOOP_MIN_DIP_PX = 10
-const LOOP_MAX_DIP_PX = 28
-const LOOP_STROKE_WIDTH_PX = 2
+export const LOOP_MIN_DIP_PX = 10
+export const LOOP_MAX_DIP_PX = 28
+export const LOOP_STROKE_WIDTH_PX = 2
 // Rows thinner than this have no room for an arrowhead.
-const LOOP_ARROW_MIN_FEATURE_HEIGHT_PX = 5
-const LOOP_MAX_ARROW_PX = 8
-
-// An open chevron where a loop lands on the start of the next segment, pointing
-// the way the read continues. Part of the path, so the live overlay and the SVG
-// export draw it alike.
-function loopArrowhead(
-  x: number,
-  y: number,
-  size: number,
-  strand: number,
-  reversed: boolean,
-) {
-  if (size === 0) {
-    return ''
-  }
-  const back = (reversed ? -strand : strand) * -size
-  return ` M ${x + back} ${y - size} L ${x} ${y} L ${x + back} ${y + size}`
-}
+export const LOOP_ARROW_MIN_FEATURE_HEIGHT_PX = 5
+export const LOOP_MAX_ARROW_PX = 8
 
 // Clearance under the deepest apex for the stroke, which a hover thickens.
 const DIP_RESERVE_PAD_PX = 2
@@ -490,121 +393,4 @@ export function bezierDipReservePx({
   return deepest > 0
     ? Math.max(0, Math.ceil(deepest + DIP_RESERVE_PAD_PX - pileupHeight))
     : 0
-}
-
-// Bezier curves for aberrant pairs, plus straight `M..L..` paths for
-// cross-region normal pairs. Within-region normal pairs are rendered by the
-// GPU + Canvas2D pipelines and are already absent from `pairs`, which
-// `resolveConnectors` narrows to what this draws. Purely a projection of
-// those pairs to screen space — the only scroll/pan-dependent half, and the only
-// thing it drops is what falls outside the frame.
-export function computePileupBezierArcs(opts: Opts): PileupArc[] {
-  const {
-    pairs,
-    displayedRegions,
-    bpToScreenX,
-    featureHeight,
-    featureSpacing,
-    pileupTopOffset,
-    pileupHeight,
-    scrollTop,
-    viewportTop,
-    viewportBottom,
-    colors,
-    labels,
-  } = opts
-  const linkedReadPalette = buildLinkedReadColorPalette(colors)
-
-  const rowH = featureHeight + featureSpacing
-  const readCenterDy = featureHeight / 2
-  const readScreenY = (e: ReadEntry) =>
-    e.data.readYs[e.readIdx]! * rowH +
-    pileupTopOffset -
-    scrollTop +
-    readCenterDy
-
-  const loopDipPx = Math.min(
-    LOOP_MAX_DIP_PX,
-    Math.max(LOOP_MIN_DIP_PX, 4 * rowH),
-  )
-  const arrowPx =
-    featureHeight >= LOOP_ARROW_MIN_FEATURE_HEIGHT_PX
-      ? Math.min(featureHeight, LOOP_MAX_ARROW_PX) / 2
-      : 0
-
-  const result: PileupArc[] = []
-
-  for (const pair of pairs) {
-    const { e1, e2, c, hiddenSegmentsBetween } = pair
-    const r1 = displayedRegions[e1.displayedRegionIndex]
-    const r2 = displayedRegions[e2.displayedRegionIndex]
-    if (!r1 || !r2) {
-      continue
-    }
-    // Region index, not just refName: the two ends of a pair can sit in two
-    // different displayed regions that share a refName, and resolving by name
-    // alone would draw both ends in the first of them (a zero-length arc).
-    const sx1 = bpToScreenX(r1.refName, c.bp1, e1.displayedRegionIndex)
-    const sx2 = bpToScreenX(r2.refName, c.bp2, e2.displayedRegionIndex)
-    if (sx1 === undefined || sx2 === undefined) {
-      continue
-    }
-
-    const sy1 = readScreenY(e1)
-    const sy2 = readScreenY(e2)
-
-    if (!arcIsVisible(sy1, sy2, viewportTop, viewportBottom)) {
-      continue
-    }
-
-    const { straight, hidden, loop, dipPx } = connectorShape(
-      pair,
-      r1,
-      r2,
-      displayedRegions,
-      pileupHeight,
-    )
-    const d = straight
-      ? `M ${sx1} ${sy1} L ${sx2} ${sy2}`
-      : bezierConnectorPath({
-          x1: sx1,
-          y1: sy1,
-          x2: sx2,
-          y2: sy2,
-          s1: c.s1,
-          s2: c.s2,
-          leadingEnd2: c.isSplit,
-          reversed1: !!r1.reversed,
-          reversed2: !!r2.reversed,
-          dipPx: loop ? loopDipPx : dipPx,
-        }) + (loop ? loopArrowhead(sx2, sy2, arrowPx, c.s2, !!r2.reversed) : '')
-    const stroke = rgb255(
-      linkedReadPalette[
-        linkedReadColorSlot(connectorPaletteSlot(c.colorType))
-      ]!,
-    )
-
-    result.push({
-      d,
-      stroke,
-      label: connectionLabel(c.colorType, labels),
-      strokeWidth: straight
-        ? LINKED_READ_LINE_WIDTH_PX
-        : loop
-          ? LOOP_STROKE_WIDTH_PX
-          : CURVE_STROKE_WIDTH_PX,
-      opaque: loop || undefined,
-      // The id STRINGS, not the keys: these reach `selectFeatureById` and
-      // `getFeatureInfoById`. One pair per drawn arc, not per read.
-      id1: readIdAt(e1.data, e1.readIdx)!,
-      id2: readIdAt(e2.data, e2.readIdx)!,
-      readName: readNameAt(e1.data, e1.readIdx),
-      x1: sx1,
-      x2: sx2,
-      dash: hidden ? HIDDEN_SEGMENT_DASH : undefined,
-      hiddenSegmentsBetween,
-    })
-  }
-
-  return result
 }

@@ -60,6 +60,7 @@ function gpuBaseSlots(showModifications: boolean) {
         laidOutPileupMap: new Map([[0, makePileupDataResult({})]]),
         arcFeeds: new Map(),
         sashimiFeeds: new Map(),
+        connectorFeeds: new Map(),
       },
     ],
     densityRegions: new Map(),

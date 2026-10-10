@@ -369,6 +369,10 @@ export function buildSectionRenders(
       canvasHeight,
       pileupTop + (sec?.pileupHeight ?? 0) - scrollTop,
     )
+    const connectorBottom = Math.min(
+      canvasHeight,
+      pileupTop + (sec?.pileupHeight ?? 0) + (sec?.dipReserve ?? 0) - scrollTop,
+    )
     return [
       {
         pileupTopOffset: pileupTop,
@@ -377,6 +381,8 @@ export function buildSectionRenders(
         covClipHeight: sec?.coverageHeight ?? 0,
         pileupClipTop: pileupTop,
         pileupClipHeight: Math.max(0, pileupBottom - pileupTop),
+        connectorClipTop: pileupTop,
+        connectorClipHeight: Math.max(0, connectorBottom - pileupTop),
         // Coverage + arc band are sticky in ungrouped mode (only the pileup
         // scrolls), so the arc band keeps its content-space top.
         arcBand: sec ? arcBandAt(sec, sec.arcBandTop) : undefined,
@@ -391,6 +397,8 @@ export function buildSectionRenders(
     covClipHeight: sec.coverageHeight,
     pileupClipTop: sec.pileupTop - scrollTop,
     pileupClipHeight: sec.pileupHeight,
+    connectorClipTop: sec.pileupTop - scrollTop,
+    connectorClipHeight: sec.pileupHeight + sec.dipReserve,
     // The whole section scrolls as a unit, so the arc band scrolls too.
     arcBand: arcBandAt(sec, sec.arcBandTop - scrollTop),
     sashimiBandTop: sec.hasSashimiBand

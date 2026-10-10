@@ -299,6 +299,7 @@ function drawAt(reversed: boolean, overrides: Partial<RenderState> = {}) {
         laidOutPileupMap: new Map([[0, pileupData()]]),
         arcFeeds: new Map(),
         sashimiFeeds: new Map(),
+        connectorFeeds: new Map(),
       },
     ],
     densityRegions: new Map(),
