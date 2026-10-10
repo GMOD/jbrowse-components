@@ -11,7 +11,8 @@
 # Requires: curl, unzip, awk (gawk), python3, samtools, minimap2, minigraph,
 #           gfatools, bgzip and tabix, bedGraphToBigWig, the NCBI `datasets`
 #           CLI, and SyRI (`syri` on the PATH, or Docker, which runs the
-#           biocontainers image)
+#           biocontainers image), node (npx) and gfa-to-tabix for the coarse
+#           tier
 # Usage:    bash build_arabidopsis_pangenome.sh [outdir]
 #
 # ROWS is one `<id> <name> <country> <admixture group>` line per accession,
@@ -23,7 +24,7 @@ set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 HELPERS=(syri_to_paf.py arabidopsis_pangenome_config.py build_rgfa_tabix.sh
-  build_rgfa_alleles.sh build_bubble_tier.sh bubbles_to_tier_bed.py
+  build_rgfa_alleles.sh build_fold_tier.sh
   build_minigraph_paths.sh)
 for h in "${HELPERS[@]}"; do
   [ -f "$SCRIPT_DIR/$h" ] || curl -fsSL -o "$SCRIPT_DIR/$h" \
@@ -182,7 +183,7 @@ if [ ! -s "$GRAPH.bubbles.bed.gz" ]; then
   gzip -dc "$GRAPH.rgfa.gz" | gfatools bubble - | sort -k1,1 -k2,2n | bgzip >"$GRAPH.bubbles.bed.gz"
   tabix -f -p bed "$GRAPH.bubbles.bed.gz"
 fi
-[ -s "$GRAPH.tier10000.segs.bed.gz" ] || bash "$SCRIPT_DIR/build_bubble_tier.sh" "$GRAPH.bubbles.bed.gz" "$GRAPH.tier10000" 10000
+[ -s "$GRAPH.fold10000.segs.bed.gz" ] || bash "$SCRIPT_DIR/build_fold_tier.sh" "$GRAPH.rgfa.gz" "$GRAPH.fold10000" 10000 --layout contig
 PANSN_FASTAS=()
 for fa in "${FASTAS[@]}"; do PANSN_FASTAS+=("$(basename "$fa")"); done
 [ -s "$GRAPH.paths.bed.gz" ] || bash "$SCRIPT_DIR/build_minigraph_paths.sh" "$GRAPH.rgfa.gz" "$GRAPH.paths" "${PANSN_FASTAS[@]}"

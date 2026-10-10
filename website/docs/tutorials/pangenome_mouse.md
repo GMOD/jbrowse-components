@@ -60,10 +60,11 @@ Nothing to download: the track configs below read the index files by URL.
   https://jbrowse.org/demos/mouse_pangenome/mouse-mm39-minigraph.bubbles.bed.gz
 - the allele inventory, one row per alternative sequence at a bubble:
   https://jbrowse.org/demos/mouse_pangenome/mouse-mm39-minigraph.alleles.bed.gz
-- the whole-chromosome overview, one node per bubble:
-  https://jbrowse.org/demos/mouse_pangenome/mouse-mm39-minigraph.tier10000.segs.bed.gz
+- the whole-chromosome overview, with variants under 10 kb folded into the
+  reference:
+  https://jbrowse.org/demos/mouse_pangenome/mouse-mm39-minigraph.fold10000.segs.bed.gz
   and
-  https://jbrowse.org/demos/mouse_pangenome/mouse-mm39-minigraph.tier10000.links.bed.gz
+  https://jbrowse.org/demos/mouse_pangenome/mouse-mm39-minigraph.fold10000.links.bed.gz
 
 </details>
 
@@ -97,8 +98,8 @@ hosted copy, so swap the prefix for your own build.
     "type": "RgfaTabixAdapter",
     "uri": "https://jbrowse.org/demos/mouse_pangenome/mouse-mm39-minigraph",
     "coarse": {
-      "uri": "https://jbrowse.org/demos/mouse_pangenome/mouse-mm39-minigraph.tier10000",
-      "aboveBpPerPx": 328
+      "uri": "https://jbrowse.org/demos/mouse_pangenome/mouse-mm39-minigraph.fold10000",
+      "aboveBpPerPx": 1000
     }
   },
   "displays": [

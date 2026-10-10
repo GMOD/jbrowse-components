@@ -6,8 +6,8 @@
 # puts them on one graph track with the tier beside it.
 #
 # Requires: gfa-to-tabix (https://github.com/GMOD/gfa-to-tabix), bgzip, tabix,
-#           sort, python3; gfatools for an rGFA's bubbles; a `vg deconstruct`
-#           snarl VCF for a plain GFA's bubbles
+#           sort, python3, node (npx); gfatools for an rGFA's bubbles; a
+#           `vg deconstruct` snarl VCF for a plain GFA's bubbles
 # Usage:    bash scripts/build_pangenome_graph.sh <graph.gfa[.gz]> <out-prefix> \
 #             [--reference SAMPLE] [--assembly NAME] [--snarls snarls.vcf.gz] [--tier N]
 #
@@ -27,21 +27,21 @@
 #                                  coordinate, which the allele inventory reads
 #                                  and a lane on a non-reference assembly needs
 #   .bubbles.bed.gz                where the graph varies
-#   .tier<N>.segs/links.bed.gz     one node per bubble with content over N bp
+#   .fold<N>.segs/links.bed.gz     the graph with variants under N bp folded
+#                                  into the reference (build_fold_tier.sh)
 #   .alleles.bed.gz                what the variation is, one CIGAR per allele
 #   .config.json                   the tracks, ready to merge into a config
 #
 # --assembly is the name your JBrowse config gives the reference; the graph
-# track maps it onto the graph's own PanSN sample. --tier is the bubble
-# content, in bp, below which a bubble joins the backbone in the tier: 10000 for
-# an SV-resolution graph, 50 for a base-level one, which is what the builder
-# used on HPRC and on the five-strain E. coli pggb graph.
+# track maps it onto the graph's own PanSN sample. --tier is the size, in bp,
+# under which the coarse tier folds a variant into the reference: 10000 for an
+# SV-resolution graph, 50 for a base-level one, which is what the builder used
+# on HPRC and on the five-strain E. coli pggb graph.
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 
-HELPERS=(build_bubble_tier.sh bubbles_to_tier_bed.py build_rgfa_alleles.sh
-  snarls_to_bubble_bed.py)
+HELPERS=(build_fold_tier.sh build_rgfa_alleles.sh snarls_to_bubble_bed.py)
 for h in "${HELPERS[@]}"; do
   [ -f "$SCRIPT_DIR/$h" ] || curl -fsSL -o "$SCRIPT_DIR/$h" \
     "https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/$h"
@@ -120,7 +120,7 @@ case "$ROUTE" in
       rm -f "$PREFIX.bubbles.bed"
       tabix -f -p bed "$PREFIX.bubbles.bed.gz"
     else
-      echo "== no --snarls given, so no bubble file, tier or bubble tracks for this graph" >&2
+      echo "== no --snarls given, so no bubble file or bubble tracks for this graph" >&2
     fi
     ;;
 esac
@@ -133,18 +133,18 @@ SAMPLE="$(gzip -dc "$PREFIX.segs.bed.gz" | awk -F'\t' '$5 == 0 && !s { s = $1 } 
 if [ -z "$TIER" ]; then
   [ "$ROUTE" = rgfa ] && TIER=10000 || TIER=50
 fi
-if [ -s "$PREFIX.bubbles.bed.gz" ]; then
-  bash "$SCRIPT_DIR/build_bubble_tier.sh" "$PREFIX.bubbles.bed.gz" "$PREFIX.tier$TIER" "$TIER"
-fi
+echo "== $PREFIX.fold$TIER"
+gfa | bash "$SCRIPT_DIR/build_fold_tier.sh" - "$PREFIX.fold$TIER" "$TIER" \
+  ${REFERENCE:+--reference "$REFERENCE"}
 
 bash "$SCRIPT_DIR/build_rgfa_alleles.sh" "$PREFIX.contig"
 mv "$PREFIX.contig.alleles.bed.gz" "$PREFIX.alleles.bed.gz"
 mv "$PREFIX.contig.alleles.bed.gz.tbi" "$PREFIX.alleles.bed.gz.tbi"
 
-# A node draws about ten pixels wide at the zoom the fine tier hands over to
-# the coarse one, so the handover is the mean backbone segment length over ten
-# bp per pixel: about 1,000 for HPRC's minigraph graph, under 2 for a pggb one.
-ABOVE_BP_PER_PX="$(gzip -dc "$PREFIX.segs.bed.gz" | awk -F'\t' '$5 == 0 { bp += $3 - $2; n++ } END { v = n ? bp / n / 10 : 100; if (v < 1) v = 1; printf "%d", v }')"
+# The graph track folds what it draws at ten of the linear view's pixels, so a
+# tier folded at N is handed over to at N / 10 bp per pixel, where the fine cut
+# folds the same variants away.
+ABOVE_BP_PER_PX=$((TIER / 10 > 0 ? TIER / 10 : 1))
 
 echo "== $PREFIX.config.json"
 PREFIX="$PREFIX" ASSEMBLY="$ASSEMBLY" SAMPLE="$SAMPLE" TIER="$TIER" ABOVE="$ABOVE_BP_PER_PX" python3 - <<'PY'
@@ -171,11 +171,7 @@ tracks = [
             'type': 'RgfaTabixAdapter',
             'uri': base,
             **pansn,
-            **(
-                {'coarse': {'uri': f'{base}.tier{tier}', 'aboveBpPerPx': above}}
-                if have_bubbles
-                else {}
-            ),
+            'coarse': {'uri': f'{base}.fold{tier}', 'aboveBpPerPx': above},
         },
         'displayDefaults': {'showLabels': 'none'},
         'displays': [

@@ -149,8 +149,9 @@ The plain-GFA walk makes four choices:
   a reference query reaches them through the links file.
 
 Both routes write `<prefix>.segs.bed.gz` and `<prefix>.links.bed.gz` with their
-tabix indexes, and a second such pair for the bubble tier, one node per bubble.
-One adapter reads all four, and `<prefix>.config.json` holds the track:
+tabix indexes, and a second such pair for the coarse tier, the same graph with
+every variant under 10 kb folded into the reference. One adapter reads all four,
+and `<prefix>.config.json` holds the track:
 
 ```json addtrack
 {
@@ -161,7 +162,7 @@ One adapter reads all four, and `<prefix>.config.json` holds the track:
   "adapter": {
     "type": "RgfaTabixAdapter",
     "uri": "ecoli_minigraph",
-    "coarse": { "uri": "ecoli_minigraph.tier10000", "aboveBpPerPx": 307 }
+    "coarse": { "uri": "ecoli_minigraph.fold10000", "aboveBpPerPx": 1000 }
   },
   "displays": [
     {
@@ -179,10 +180,9 @@ One adapter reads all four, and `<prefix>.config.json` holds the track:
 The `uri` is the shared prefix, from which the adapter resolves `.segs.bed.gz`,
 `.links.bed.gz` and both `.tbi` files. `coarse` names the tier by a prefix of
 its own, and `aboveBpPerPx` is the handover, the linear view's zoom in bp per
-pixel past which the graph track cuts the tier. The script derives it from the
-graph's mean backbone segment. These stable names are PanSN (`K12#1#chr`), and
-their sample prefix is already the assembly name, so the track needs no
-`assemblyNameToPanSN` mapping.
+pixel past which the graph track cuts the tier: the tier's fold size over ten.
+These stable names are PanSN (`K12#1#chr`), and their sample prefix is already
+the assembly name, so the track needs no `assemblyNameToPanSN` mapping.
 [HPRC's graph track](/docs/tutorials/pangenome_prepare_graph#the-two-indexes-a-graph-track-reads)
 needs one, because that graph calls the reference `GRCh38` while the assembly is
 `hg38`.
@@ -200,12 +200,17 @@ structural variation and collapses everything smaller, so a legible window is
 hundreds of kb. A pggb graph puts a node at every SNP, so a legible window is
 hundreds of bp.
 
-A track whose adapter names `coarse` gives the graph a second tier to cut. Once
-the linear view is zoomed out past `aboveBpPerPx`, the graph track cuts the
-tier, one node per bubble, and the size limit no longer applies; zooming back in
-cuts the segments again. The segments lane draws segments at every zoom, so load
-the tier's prefix as a track of its own too, a lane that draws a whole
-chromosome where the segments lane refuses.
+The graph track draws only what the zoom can show: variants smaller than ten of
+the linear view's pixels fold into the reference, the legend says how small, and
+zooming in brings them back. A track whose adapter names `coarse` gives the
+graph a second tier to cut, built by the same fold
+([`build_fold_tier.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_fold_tier.sh)).
+Once the linear view is zoomed out past `aboveBpPerPx`, the graph track cuts the
+tier and the size limit no longer applies; the drawing does not change across
+the handover, since the fine cut has folded the same variants by then. The
+segments lane draws segments at every zoom, so load the tier's prefix as a track
+of its own too, a lane that draws a whole chromosome where the segments lane
+refuses.
 
 Each line in the graph is one graph link. The track draws a link only when both
 endpoints are inside the cut, so an allele near the window's edge draws only the
@@ -449,7 +454,7 @@ that the figures above are cut from:
   "adapter": {
     "type": "RgfaTabixAdapter",
     "uri": "ecoli_minigraph",
-    "coarse": { "uri": "ecoli_minigraph.tier10000", "aboveBpPerPx": 307 }
+    "coarse": { "uri": "ecoli_minigraph.fold10000", "aboveBpPerPx": 1000 }
   },
   "displayDefaults": {
     "color": "jexl:feature.rank>0 ? 'rgb(60,65,72)' : `hsl(${min(300, max(0, ((feature.start+feature.end)/2 - 4050000) / 50000 * 300))},70%,50%)`"

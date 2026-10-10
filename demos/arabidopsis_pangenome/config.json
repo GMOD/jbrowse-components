@@ -625,8 +625,8 @@
           "TAIR10": "TAIR10"
         },
         "coarse": {
-          "uri": "arabidopsis-tair10-minigraph.tier10000",
-          "aboveBpPerPx": 117
+          "uri": "arabidopsis-tair10-minigraph.fold10000",
+          "aboveBpPerPx": 1000
         }
       },
       "displayDefaults": {
@@ -653,11 +653,11 @@
     {
       "type": "GraphTrack",
       "trackId": "arabidopsis_minigraph_tier",
-      "name": "1001G+ minigraph pangenome: bubble tier (one node per bubble)",
+      "name": "1001G+ minigraph pangenome: variants under 10 kb folded (coarse tier)",
       "assemblyNames": ["TAIR10"],
       "adapter": {
         "type": "RgfaTabixAdapter",
-        "uri": "arabidopsis-tair10-minigraph.tier10000",
+        "uri": "arabidopsis-tair10-minigraph.fold10000",
         "assemblyNameToPanSN": {
           "TAIR10": "TAIR10"
         }

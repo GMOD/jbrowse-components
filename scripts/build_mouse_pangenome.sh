@@ -30,7 +30,8 @@
 # minigraph-cactus, which writes per-haplotype walks. See the foot of this file.
 #
 # Requires: curl, samtools, bgzip (htslib), minigraph, gfatools, gawk (as
-#           `awk`), sort, flock, python3
+#           `awk`), sort, flock, python3, node (npx) and gfa-to-tabix for
+#           the coarse tier
 # Usage:    bash scripts/build_mouse_pangenome.sh [outdir]
 #           THREADS=8 JOBS=2 MEM_FLOOR_GB=30 bash scripts/build_mouse_pangenome.sh
 #
@@ -44,8 +45,7 @@ set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 
-HELPERS=(build_rgfa_tabix.sh build_rgfa_alleles.sh build_bubble_tier.sh
-  bubbles_to_tier_bed.py)
+HELPERS=(build_rgfa_tabix.sh build_rgfa_alleles.sh build_fold_tier.sh)
 for h in "${HELPERS[@]}"; do
   [ -f "$SCRIPT_DIR/$h" ] || curl -fsSL -o "$SCRIPT_DIR/$h" \
     "https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/$h"
@@ -302,10 +302,9 @@ if [ ! -s "$PREFIX.bubbles.bed.gz" ]; then
   tabix -f -p bed "$PREFIX.bubbles.bed.gz"
 fi
 
-echo "=== coarse tier ==="
-[ -s "$PREFIX.tier10000.segs.bed.gz" ] ||
-  bash "$SCRIPT_DIR/build_bubble_tier.sh" "$PREFIX.bubbles.bed.gz" \
-    "$PREFIX.tier10000" 10000
+echo "=== coarse tier: variants under 10 kb folded into the reference ==="
+[ -s "$PREFIX.fold10000.segs.bed.gz" ] ||
+  bash "$SCRIPT_DIR/build_fold_tier.sh" "$PREFIX.rgfa.gz" "$PREFIX.fold10000" 10000 --layout contig
 
 echo
 echo "Built in $PWD:"

@@ -73,10 +73,17 @@ Files
   hprc-v2.1-mc-grch38.bubbles.bed.gz{,.tbi}  gfatools bubble output,
                                              129,611 bubbles
 
+  hprc-v2.1-mc-grch38.fold10000.{segs,links}.bed.gz{,.tbi}
+                                             the graph with variants under 10 kb
+                                             folded into the reference, anchored
+                                             rows like the fine pair: 24,928
+                                             segments, 35,074 links
+
   hprc-v2.1-mc-grch38.tier10000.{segs,links}.bed.gz{,.tbi}
-                                             one node per bubble whose content
-                                             (reference span or longest allele)
-                                             is 10 kb or more, backbone between:
+                                             the earlier tier, one node per
+                                             bubble whose content (reference
+                                             span or longest allele) is 10 kb
+                                             or more, backbone between:
                                              3,442 bubbles, 6,858 links, the
                                              whole-chromosome level of detail
 
@@ -151,9 +158,9 @@ How they were built
     | sort -k1,1 -k2,2n | bgzip > hprc-v2.1-mc-grch38.bubbles.bed.gz
   tabix -p bed hprc-v2.1-mc-grch38.bubbles.bed.gz
 
-  # the bubble tier, via scripts/build_bubble_tier.sh
-  bash build_bubble_tier.sh hprc-v2.1-mc-grch38.bubbles.bed.gz \
-    hprc-v2.1-mc-grch38.tier10000 10000
+  # the coarse tier, via scripts/build_fold_tier.sh (bandage-fold, gfa-to-tabix)
+  bash build_fold_tier.sh hprc-v2.1-mc-grch38.sv.gfa.gz \
+    hprc-v2.1-mc-grch38.fold10000 10000
 
   # alleles, via scripts/build_rgfa_alleles.sh
   bash build_rgfa_alleles.sh hprc-v2.1-mc-grch38

@@ -96,10 +96,11 @@ Files
     (+ .tbi; these two are one track -- JBrowse's RgfaTabixAdapter is given the
      shared prefix `mouse-mm39-minigraph` and appends both suffixes itself)
 
-  mouse-mm39-minigraph.tier10000.segs.bed.gz   level-of-detail tier: one node
-  mouse-mm39-minigraph.tier10000.links.bed.gz  per top-level bubble, so a whole
-    (+ .tbi)                                   chromosome draws in a few hundred
-                                               nodes instead of tens of thousands
+  mouse-mm39-minigraph.fold10000.segs.bed.gz   coarse tier: the graph with
+  mouse-mm39-minigraph.fold10000.links.bed.gz  variants under 10 kb folded into
+    (+ .tbi)                                   the reference, 16,697 segments,
+                                               so a whole chromosome draws
+    (the .tier10000 pair, one node per bubble, stays for sessions that name it)
 
   mouse-mm39-minigraph.bubbles.bed.gz       gfatools bubble output (+ .tbi),
                                             read both as a feature track and as

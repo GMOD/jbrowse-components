@@ -54,10 +54,11 @@ track configs below read the hosted files by URL.
   https://jbrowse.org/demos/bovine_pangenome/bovine-arsucd12-minigraph.bubbles.bed.gz
 - the allele inventory, one row per alternative sequence at a bubble:
   https://jbrowse.org/demos/bovine_pangenome/bovine-arsucd12-minigraph.alleles.bed.gz
-- the overview used for whole chromosomes, one node per bubble:
-  https://jbrowse.org/demos/bovine_pangenome/bovine-arsucd12-minigraph.tier10000.segs.bed.gz
+- the overview used for whole chromosomes, with variants under 10 kb folded into
+  the reference:
+  https://jbrowse.org/demos/bovine_pangenome/bovine-arsucd12-minigraph.fold10000.segs.bed.gz
   and
-  https://jbrowse.org/demos/bovine_pangenome/bovine-arsucd12-minigraph.tier10000.links.bed.gz
+  https://jbrowse.org/demos/bovine_pangenome/bovine-arsucd12-minigraph.fold10000.links.bed.gz
 
 </details>
 
@@ -91,8 +92,8 @@ writes the tabix-indexed segments and links and the overview.
     "type": "RgfaTabixAdapter",
     "uri": "https://jbrowse.org/demos/bovine_pangenome/bovine-arsucd12-minigraph",
     "coarse": {
-      "uri": "https://jbrowse.org/demos/bovine_pangenome/bovine-arsucd12-minigraph.tier10000",
-      "aboveBpPerPx": 880
+      "uri": "https://jbrowse.org/demos/bovine_pangenome/bovine-arsucd12-minigraph.fold10000",
+      "aboveBpPerPx": 1000
     }
   },
   "displays": [

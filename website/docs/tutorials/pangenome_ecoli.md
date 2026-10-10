@@ -495,9 +495,9 @@ curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/
 bash build_pangenome_graph.sh pggb/*.smooth.final.gfa ecoli_pggb --reference K12 --snarls ecoli_pggb_snarls.vcf.gz
 ```
 
-The script writes the segments and links, a coarse tier of one node per bubble,
-and `ecoli_pggb.config.json`. The `uri`s below are our hosted copy; a local
-build uses `ecoli_pggb`:
+The script writes the segments and links, a coarse tier with variants under 50
+bp folded into the reference, and `ecoli_pggb.config.json`. The `uri`s below are
+our hosted copy; a local build uses `ecoli_pggb`:
 
 ```json addtrack
 {
@@ -509,8 +509,8 @@ build uses `ecoli_pggb`:
     "type": "RgfaTabixAdapter",
     "uri": "https://jbrowse.org/demos/ecoli_pangenome/ecoli_pggb",
     "coarse": {
-      "uri": "https://jbrowse.org/demos/ecoli_pangenome/ecoli_pggb.tier50",
-      "aboveBpPerPx": 1
+      "uri": "https://jbrowse.org/demos/ecoli_pangenome/ecoli_pggb.fold50",
+      "aboveBpPerPx": 5
     }
   },
   "displayDefaults": { "showLabels": "none" },
@@ -526,19 +526,20 @@ session:
 
 <Video src="/media/pangenome/pggb_subgraph_launch.mp4" caption="A K12 session with no graph in it, to a graph track: the track added through Open track... → Add pangenome graph track, the window narrowed onto the IS5 element, and the track drawing the graph on K12's coordinates." />
 
-Type `chr:1,292,500-1,307,500`. Zoomed out past one bp per pixel, the track
-draws the coarse tier, with the reference as backbone and charcoal where the
-strains differ. The tier also loads as a separate track:
+Type `chr:1,292,500-1,307,500`. Zoomed out past five bp per pixel, the track
+draws the coarse tier, the graph with variants under 50 bp folded into the
+reference, with charcoal where the strains differ. The tier also loads as a
+separate track:
 
 ```json addtrack
 {
   "type": "GraphTrack",
   "trackId": "ecoli_pggb_tier50",
-  "name": "pggb graph bubbles (coarse tier, one node per bubble)",
+  "name": "pggb graph, variants under 50 bp folded (coarse tier)",
   "assemblyNames": ["K12"],
   "adapter": {
     "type": "RgfaTabixAdapter",
-    "uri": "https://jbrowse.org/demos/ecoli_pangenome/ecoli_pggb.tier50"
+    "uri": "https://jbrowse.org/demos/ecoli_pangenome/ecoli_pggb.fold50"
   },
   "displays": [
     { "type": "LinearGraphDisplay" },
@@ -547,10 +548,11 @@ strains differ. The tier also loads as a separate track:
 }
 ```
 
-In the tier track's menu, **Display types → Feature display** draws the bubbles
-as a row at any zoom. The tier marks where the strains differ, and between the
-tier and the graph the [MAF track](#whole-genome-alignment-maf-projection) shows
-which strain, since its row breaks across each bubble it skips.
+In the tier track's menu, **Display types → Feature display** draws the tier's
+segments as a row at any zoom. The tier marks where the strains differ, and
+between the tier and the graph the
+[MAF track](#whole-genome-alignment-maf-projection) shows which strain, since
+its row breaks across each bubble it skips.
 
 <Figure caption="K12 around two insertion sequences, one node per bubble: the tier, the MAF's strain rows, and the graph track, which draws from the tier at this zoom. The highlight and boxed node are the IS5 element insH21, which all four other strains skip, their MAF rows breaking across it; NCTC86's row runs through insZ to its left." src="/img/pangenome/pggb_bubble_tier.png" />
 

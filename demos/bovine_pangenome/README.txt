@@ -137,11 +137,12 @@ Files
                                     .tbi             771,214   output
                                                  153,719 bubbles
 
-  bovine-arsucd12-minigraph.tier10000.segs.bed.gz     47,919   coarse tier, one
-                                    .tbi              17,744   node per bubble
-  bovine-arsucd12-minigraph.tier10000.links.bed.gz    97,641   holding >=10 kb
-                                    .tbi              19,727   of content
-                                                 2,944 nodes, 5,830 links
+  bovine-arsucd12-minigraph.fold10000.segs.bed.gz     58,389   coarse tier: the
+                                    .tbi              55,677   graph with variants
+  bovine-arsucd12-minigraph.fold10000.links.bed.gz   212,684   under 10 kb folded
+                                    .tbi              61,670   into the reference
+                                                 5,136 segments, 7,344 links
+  (the .tier10000 pair, one node per bubble, stays for sessions that name it)
 
   bovine-arsucd12-minigraph.vcf.gz             88,349,570   the variant route:
                                     .tbi          786,027   the graph
@@ -217,9 +218,9 @@ How they were built
     | sort -k1,1 -k2,2n | bgzip > bovine-arsucd12-minigraph.bubbles.bed.gz
   tabix -p bed bovine-arsucd12-minigraph.bubbles.bed.gz
 
-  # coarse tier, via scripts/build_bubble_tier.sh
-  bash build_bubble_tier.sh bovine-arsucd12-minigraph.bubbles.bed.gz \
-    bovine-arsucd12-minigraph.tier10000 10000
+  # coarse tier, via scripts/build_fold_tier.sh (bandage-fold, gfa-to-tabix)
+  bash build_fold_tier.sh bovine-arsucd12-minigraph.rgfa.gz \
+    bovine-arsucd12-minigraph.fold10000 10000 --layout contig
 
   gfatools: https://github.com/lh3/gfatools
   Built 2026-09-02 with gfatools 0.5-r296 (git HEAD, reported as 0.5-r296-dirty),
@@ -234,7 +235,7 @@ Using them
   RgfaTabixAdapter takes the shared prefix (no suffix):
     https://jbrowse.org/demos/bovine_pangenome/bovine-arsucd12-minigraph
   and for the coarse tier:
-    https://jbrowse.org/demos/bovine_pangenome/bovine-arsucd12-minigraph.tier10000
+    https://jbrowse.org/demos/bovine_pangenome/bovine-arsucd12-minigraph.fold10000
   MinigraphBubbleAdapter takes the bubbles file directly:
     https://jbrowse.org/demos/bovine_pangenome/bovine-arsucd12-minigraph.bubbles.bed.gz
   The alleles file is a plain BedTabixAdapter uri, on an AlignmentsTrack:

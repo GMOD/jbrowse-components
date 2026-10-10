@@ -13,7 +13,8 @@
 #   depth          `odgi depth`, core vs accessory over K12 as a bigWig
 #   presence       `odgi pav`, one bigWig per strain as a MultiWiggle
 #   graph          `build_pangenome_graph.sh`, the whole graph as a track with
-#                  its coarse bubble tier, plus a lane colored by carriage
+#                  its coarse tier (variants under 50 bp folded), plus a lane
+#                  colored by carriage
 #
 # It downloads the same five RefSeq E. coli chromosomes as the all-vs-all synteny
 # tutorial, PanSN-names a concatenated copy, runs pggb, converts each output to
@@ -405,8 +406,8 @@ tabix -f -p bed ecoli_pggb_subgraph_nodes.bed.gz
 
 # The same walk over the WHOLE pggb graph, so it is browsable by locus: the
 # segment and link indexes RgfaTabixAdapter reads, with each segment's haplotypes
-# as an SM:Z: tag, and the one-node-per-bubble tier (ecoli_pggb.tier50) cut from
-# the raw snarl VCF above. Runs on the host (python3 only, no docker).
+# as an SM:Z: tag, and the coarse tier with variants under 50 bp folded into the
+# reference (ecoli_pggb.fold50). Runs on the host (python3 and node, no docker).
 bash "$SCRIPT_DIR/build_pangenome_graph.sh" "$GFA" ecoli_pggb --reference "$REF" \
   --snarls ecoli_pggb_snarls.vcf.gz
 
@@ -743,10 +744,10 @@ cat > subgraph_nodes_track.json <<'JSON'
 JSON
 jb add-track-json subgraph_nodes_track.json --update --out "$APP"
 
-# The whole pggb graph as a track, drawing from the bubble tier past one bp per
+# The whole pggb graph as a track, drawing from the coarse tier past five bp per
 # pixel; the tier as a separate track; and the segments colored by how many
 # strains walk each one.
-for p in ecoli_pggb ecoli_pggb.tier50; do
+for p in ecoli_pggb ecoli_pggb.fold50; do
   cp "$p".segs.bed.gz "$p".segs.bed.gz.tbi "$p".links.bed.gz "$p".links.bed.gz.tbi "$APP/"
 done
 cat > pggb_segments_track.json <<'JSON'
@@ -758,7 +759,7 @@ cat > pggb_segments_track.json <<'JSON'
   "adapter": {
     "type": "RgfaTabixAdapter",
     "uri": "ecoli_pggb",
-    "coarse": { "uri": "ecoli_pggb.tier50", "aboveBpPerPx": 1 }
+    "coarse": { "uri": "ecoli_pggb.fold50", "aboveBpPerPx": 5 }
   },
   "displayDefaults": { "showLabels": "none" },
   "displays": [
@@ -772,11 +773,11 @@ cat > pggb_tier_track.json <<'JSON'
 {
   "type": "GraphTrack",
   "trackId": "ecoli_pggb_tier50",
-  "name": "pggb graph bubbles (coarse tier, one node per bubble)",
+  "name": "pggb graph, variants under 50 bp folded (coarse tier)",
   "assemblyNames": ["K12"],
   "adapter": {
     "type": "RgfaTabixAdapter",
-    "uri": "ecoli_pggb.tier50"
+    "uri": "ecoli_pggb.fold50"
   },
   "displays": [
     { "type": "LinearGraphDisplay" },

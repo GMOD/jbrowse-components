@@ -1,6 +1,6 @@
 ---
 name: pangenome-graphs
-description: How a graph reaches JBrowse — what rGFA and GFA can say about coordinates and carriage, the one-node-per-bubble detail level, measured ceilings on the HPRC index, and pairwise PAF from a graph's walks. Read before touching a graph adapter or pangenome figure.
+description: How a graph reaches JBrowse — what rGFA and GFA can say about coordinates and carriage, the fold by zoom, measured ceilings on the HPRC index, and pairwise PAF from a graph's walks. Read before touching a graph adapter or pangenome figure.
 kind: spec
 ---
 
@@ -32,17 +32,32 @@ package, bundle, repo and hosted prefix all spell `graphgenomeview**er**`, only
   rebuilds `samples` from path visits when there are any; the tag is the fallback
   for an indexed cut.
 
-## Level of detail: one node per bubble
+## Level of detail: the fold
 
-- **Threshold on content, never reference span.** A pure insertion is a
-  zero-length bubble, so `end - start` drops the 100 kb+ insertions that are the
-  pangenome's whole claim. Content is `max(reference span, longest allele)`.
+The graph track folds every cut at ten of the linear view's pixels, and a coarse
+tier is the same fold of the whole graph (`scripts/build_fold_tier.sh`, over
+bandage-core's `bandage-fold`), so the handover changes what is fetched and not
+what is drawn. The plugin's `GRAPH_TRACK.md` "Level of detail: the fold" states
+the rule.
+
+- **Threshold on content, never reference span.** A pure insertion replaces no
+  reference, so `end - start` drops the 100 kb+ insertions that are the
+  pangenome's whole claim. An allele's content is the longer of its own length
+  and the reference it replaces.
+- **One node per bubble drew structure as a line.** Bovine DEFB
+  (chr27:6.35-7.2 Mb) is one gfatools bubble of 1,113 segments, so the old tier
+  drew the zoomed-out track as a straight chain with a hole in its reference
+  strip, and zooming in past the handover showed a dozen loops at once. The
+  fold keeps them at every zoom.
+- **A path GFA's reference reads some segments reversed** (`L a - b -`), and an
+  index states no strand, so the fold reads a link joining opposite ends of two
+  abutting segments as the sequence going on, either way round. Reading only
+  `+ +` left the E. coli pggb tier 89,473 backbone segments; it is 3,919
+  segments in all at 50 bp.
 - **`gfatools bubble` returns 0 bubbles on a pggb GFA** (it needs `SN`/`SO`/`SR`).
   `scripts/snarls_to_bubble_bed.py` builds the bubble BED from the `pggb -V`
-  `vg deconstruct` VCF (`LV=0` records), then `bubbles_to_tier_bed.py` runs
-  unchanged. Use `--min-content 50` there: at 0 every single-base alternative is
-  a node and the tier is worse than the fine index.
-- **A pggb node id needs qualifying** (`<source>@<refStart>`): pggb folds
+  `vg deconstruct` VCF (`LV=0` records) for the bubble track.
+- **A pggb bubble id needs qualifying** (`<source>@<refStart>`): pggb folds
   repeats, so a snarl can appear twice on the reference path.
 
 ## Decisions that look like bugs and are not

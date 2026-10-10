@@ -583,48 +583,6 @@ def refusal(mod, argv, expect):
     return "wrote a file"
 
 
-# bubbles_to_tier_bed.py: the coarse level-of-detail tier behind the whole-chromosome
-# figure. gfatools bubble BED is chrom/start/end/segments/walks/inversion/shortest/
-# longest, three debug columns, then the segment list whose first member is the
-# source -- and then two more, the shortest and longest allele sequences, so the
-# list is column 11 of 14 rather than the last one. Read off gfatools 0.5-r296
-# below when it is installed, rather than off a file.
-tier = load("scripts/bubbles_to_tier_bed.py", "bubbles_to_tier_bed")
-bubbles = os.path.join(pangenome_dir, "bubbles.bed")
-with open(bubbles, "w") as fh:
-    fh.write("chr1\t1000\t2000\t5\t9\t0\t900\t1100\tx\ty\tz\ts10,s11,s12\n"
-             # a PURE INSERTION: zero-length on the reference, 60 kb of allele.
-             # 53,293 of HPRC's 130,510 bubbles are this shape.
-             "chr1\t5000\t5000\t7\t3\t0\t0\t60000\tx\ty\tz\ts20,s21\n"
-             "chr1\t9000\t9500\t3\t2\t1\t400\t600\tx\ty\tz\ts30,s31\n")
-tier_prefix = os.path.join(pangenome_dir, "tier")
-run_helper(tier, ["bubbles_to_tier_bed.py", bubbles, tier_prefix,
-                  "--min-content", "1000"])
-tier_segs = [l.split("\t") for l in
-             open(f"{tier_prefix}.segs.bed").read().splitlines()]
-tier_bubbles = [r for r in tier_segs if r[4] == "1"]
-# Filtering on `end - start` would drop every pure insertion, including the
-# 100 kb+ ones that are the pangenome's whole claim. Content is
-# max(reference span, longest allele), so an insertion is kept on what it inserts.
-check("the content filter keeps a pure insertion and drops a small bubble",
-      [r[3] for r in tier_bubbles], ["s10", "s20"])
-# A reference axis has nowhere to put sequence the reference does not have, so a
-# zero-span bubble draws 1 bp wide and states its magnitude in the tag instead.
-check("a zero-span bubble is 1 bp wide, with its size in cl:i:",
-      [tier_bubbles[1][1], tier_bubbles[1][2], "cl:i:60000" in tier_bubbles[1][5]],
-      ["5000", "5001", True])
-# The node id is the bubble's own source segment, not a synthesized counter, so
-# expanding a tier node is a query of the fine index over the same span.
-check("a tier node's id is the bubble's source segment, so it joins back",
-      [r[3] for r in tier_segs],
-      ["bb_chr1_0", "s10", "bb_chr1_2000", "s20"])
-check("backbone and bubble alternate, which is what makes one walk complete",
-      [r[4] for r in tier_segs], ["0", "1", "0", "1"])
-# One row per link per endpoint, matching build_rgfa_tabix.sh: a neighbour can
-# sit outside the queried region, so the row states it rather than pointing at it.
-check("each tier link is written under both of its endpoints",
-      len(open(f"{tier_prefix}.links.bed").read().splitlines()), 6)
-
 # untangle_to_bed.py: a second producer of build_minigraph_paths.sh's schema.
 # Consumers reach these columns POSITIONALLY as well as by name, so a dropped
 # blank slides selfCov into `class` and a jexl on class reads a float.
@@ -943,11 +901,11 @@ else:
            [r.split("\t")[0] for r in rgfa_rows("outref.ref.segs.bed.gz")]),
           (0, ["K12#1#chr", "K12#1#chr"]))
 
-    # Three scripts write this one pair and nothing has pinned that they agree.
-    # build_rgfa_tabix.sh is the shape the adapter was built for; the two path
-    # walkers append tags AFTER it, one column on segs and two on links, so the
+    # Two scripts write this one pair and nothing else pins that they agree.
+    # build_rgfa_tabix.sh is the shape the adapter was built for; the path
+    # walker appends tags AFTER it, one column on segs and two on links, so the
     # shared prefix is positionally identical and a reader that stops at 5 or 13
-    # reads all three. A producer that inserted a column instead of appending one
+    # reads both. A producer that inserted a column instead of appending one
     # would keep every row well formed and every index valid, and move a
     # coordinate under a rank.
     def arity(rows):
@@ -956,14 +914,12 @@ else:
     def bed_rows(path):
         return open(path).read().splitlines()
 
-    check("all three producers write the same segs columns, tags appended last",
+    check("both producers write the same segs columns, tags appended last",
           [arity(rgfa_rows("out.segs.bed.gz")),
-           arity(bed_rows(f"{multi_prefix}.segs.bed")),
-           arity(bed_rows(f"{tier_prefix}.segs.bed"))], [[5], [6], [6]])
-    check("all three producers write the same links columns, tags appended last",
+           arity(bed_rows(f"{multi_prefix}.segs.bed"))], [[5], [6]])
+    check("both producers write the same links columns, tags appended last",
           [arity(rgfa_rows("out.links.bed.gz")),
-           arity(bed_rows(f"{multi_prefix}.links.bed")),
-           arity(bed_rows(f"{tier_prefix}.links.bed"))], [[13], [15], [15]])
+           arity(bed_rows(f"{multi_prefix}.links.bed"))], [[13], [15]])
     # The shared prefix is the same fields in the same places: chrom/start/end
     # then the endpoint pair, then both endpoints stated in full.
     check("the shared links prefix means the same thing in each",
@@ -1098,10 +1054,10 @@ if rgfa_ran:
           (missing.returncode, "run build_rgfa_tabix.sh first" in missing.stderr),
           (1, True))
 
-# bubbles_to_tier_bed.py reads `gfatools bubble` POSITIONALLY, and that layout
-# was written down from a file rather than from the tool. With gfatools present
-# the two ends can be joined: generate the bubbles, run the tier over them, and
-# check that the numbers the tier states are the ones the graph has.
+# MinigraphBubbleAdapter reads `gfatools bubble` POSITIONALLY, and
+# snarls_to_bubble_bed.py writes that layout for a pggb graph, which was written
+# down from a file rather than from the tool. With gfatools present, check it
+# against the tool.
 if not gfatools_ran:
     print("note: gfatools not installed, "
           "SKIPPING the gfatools bubble column contract")
@@ -1131,21 +1087,10 @@ else:
     check("gfatools bubble writes 14 columns, with the segment list at 11",
           sorted({len(r) for r in bubble_cols}), [14])
     real = next(r for r in bubble_cols if r[11] == "s2,a1,s3")
-    check("the columns the tier reads by index are the ones it names",
+    check("the columns read by index are the ones they are named for",
           [real[1], real[2], real[3], real[4], real[5], real[6], real[7]],
           # start end #segments #walks inversion shortest longest
           ["20", "20", "3", "2", "0", "0", "20"])
-    tier_real = os.path.join(bub_dir, "real")
-    run_helper(tier, ["bubbles_to_tier_bed.py", bubble_bed, tier_real,
-                      "--min-content", "1"])
-    # End to end: the tier node for that bubble is 1 bp wide because the
-    # reference has nowhere to put the insertion, and carries the 20 bp in cl:i:.
-    check("the tier states the graph's own numbers, from gfatools to BED",
-          [r.split("\t")[1:6] for r in
-           open(f"{tier_real}.segs.bed").read().splitlines()
-           if r.split("\t")[3] == "s2"],
-          [["20", "21", "s2", "1",
-            "ct:Z:bubble cn:i:3 cw:i:2 cs:i:0 cl:i:20 cv:i:0"]])
 
 # odgi_similarity_to_newick.py: orders and groups a MAF track's rows, and had a
 # bug fixed with no check behind it -- a sample odgi reports only as the second

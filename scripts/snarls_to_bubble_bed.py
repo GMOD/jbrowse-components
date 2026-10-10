@@ -1,14 +1,11 @@
 #!/usr/bin/env python3
-"""Turn a `vg deconstruct` snarl VCF into the bubble BED `bubbles_to_tier_bed.py`
-reads, so a pggb / Minigraph-Cactus graph can have a coarse level-of-detail tier.
+"""Turn a `vg deconstruct` snarl VCF into the bubble BED `gfatools bubble` writes,
+so a pggb / Minigraph-Cactus graph gets the bubble track and the graph view's
+bubble index that an rGFA gets from gfatools.
 
-WHY THIS EXISTS. The tier itself is graph-agnostic — a collapsed bubble is just a
-reference span with an id and a rank, which is all the segs/links contract asks
-for — but its only producer was `gfatools bubble`, and that returns **0 bubbles
-on a pggb GFA**: it reads rGFA `SN`/`SO`/`SR` to place a bubble on a reference,
-and a pggb graph states the same information in P/W lines instead. So the graph
-that most needs coarsening was the one that could not be coarsened
-(PANGENOME_GRAPHS.md §"Level of detail: one node per bubble").
+WHY THIS EXISTS. `gfatools bubble` returns **0 bubbles on a pggb GFA**: it reads
+rGFA `SN`/`SO`/`SR` to place a bubble on a reference, and a pggb graph states the
+same information in P/W lines instead.
 
 A snarl VCF is the decomposition that graph already ships, and it carries more
 than gfatools' does:
@@ -20,10 +17,8 @@ than gfatools' does:
   AT        one traversal per allele, as a signed node path
   ALT       the allele sequences, so allele lengths need no graph
 
-Top level (`LV=0`) is what a tier draws, and it is the same choice gfatools makes
-by reporting top-level bubbles only. Nesting is preserved in the file for
-whoever wants it: a collapsed node's id is its source segment, so expanding one
-is a query of the fine index over the same span.
+Top level (`LV=0`) is the same choice gfatools makes by reporting top-level
+bubbles only.
 
 `vg deconstruct` and `pggb -V` both write this; pggb's own `*.snarls.vcf.gz`
 output is what the E. coli demo hosts.
@@ -32,7 +27,7 @@ Requires: python3 only.
 Usage:    python3 snarls_to_bubble_bed.py <snarls.vcf[.gz]> [out.bed] [--min-alleles N]
 
 Emits the 12-column BED on stdout when no output path is given. Columns are
-gfatools' own, and only the ones `bubbles_to_tier_bed.py` reads are meaningful:
+gfatools' own, and only the ones MinigraphBubbleAdapter reads are meaningful:
 
   0 chrom  1 start  2 end  3 segments  4 walks  5 inversion
   6 shortest  7 longest  8-10 unused (`.`)  11 comma-separated segment ids
@@ -139,22 +134,16 @@ def main():
                 # per visit: `>544433>544462` is reported at chr:3,943,364 and
                 # again at chr:4,168,214, 225 kb away. Measured on this graph, 67
                 # of 143,897 sources are used twice, 134 rows in all, clustered
-                # in one repeat. Unqualified, those two loci are one tier node
-                # and `bubbles_to_tier_bed.py` refuses the file (which is what
-                # found this). Qualified, each reference visit is its own node and
-                # the segment id is still readable in it. The cost is that the id
-                # no longer joins straight back to the fine tier the way an rGFA
-                # tier's does — for a repeat-folded graph that join was never
-                # single-valued anyway.
+                # in one repeat. Unqualified, those two loci are one bubble id.
+                # Qualified, each reference visit is its own and the segment id
+                # is still readable in it.
                 [f"{boundary_ids(snarl_id)[0]}@{start}"]
                 + boundary_ids(snarl_id)[1:],
             )
         )
 
-    # bubbles_to_tier_bed.py walks each sequence in start order and writes one
-    # backbone node per gap, so an OVERLAP would emit a negative-length backbone
-    # and silently corrupt the chain. gfatools guarantees non-overlap; a snarl
-    # VCF does not, so it is checked here rather than assumed.
+    # Top-level bubbles do not overlap. gfatools guarantees it; a snarl VCF does
+    # not, so it is checked here rather than assumed.
     rows.sort(key=lambda r: (r[0], r[1], r[2]))
     dropped = 0
     kept = []

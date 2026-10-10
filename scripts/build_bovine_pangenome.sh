@@ -36,7 +36,7 @@
 # carriage.
 #
 # Requires: curl, tar, md5sum, python3, gfatools, vg, gawk (as `awk`), sort,
-#           bgzip/tabix (htslib)
+#           bgzip/tabix (htslib), node (npx) and gfa-to-tabix for the coarse tier
 # Usage:    bash scripts/build_bovine_pangenome.sh [outdir]
 #
 # Roughly 30 min after the download, most of it the rGFA reconstruction and the
@@ -50,7 +50,7 @@ SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 # Sibling helpers, fetched next to this one when absent, so a bare `curl -fO` of
 # this single file behaves the same as a repo checkout.
 HELPERS=(gfa_paths_to_rgfa.py build_rgfa_tabix.sh build_rgfa_alleles.sh
-  build_bubble_tier.sh bubbles_to_tier_bed.py)
+  build_fold_tier.sh)
 for h in "${HELPERS[@]}"; do
   [ -f "$SCRIPT_DIR/$h" ] || curl -fsSL -o "$SCRIPT_DIR/$h" \
     "https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/$h"
@@ -175,13 +175,13 @@ if [ ! -s "$PREFIX.bubbles.bed.gz" ]; then
   tabix -f -p bed "$PREFIX.bubbles.bed.gz"
 fi
 
-echo "=== coarse tier: one node per bubble holding >=10 kb ==="
-# What makes a whole chromosome drawable. The graph view's layout scales to a
-# target node size, so ten times the nodes is the same ink at a tenth the size;
-# 29 autosomes at segment resolution draw as a thread.
-[ -s "$PREFIX.tier10000.segs.bed.gz" ] ||
-  bash "$SCRIPT_DIR/build_bubble_tier.sh" "$PREFIX.bubbles.bed.gz" \
-    "$PREFIX.tier10000" 10000
+echo "=== coarse tier: variants under 10 kb folded into the reference ==="
+# What makes a whole chromosome drawable: the graph track folds each window it
+# draws the same way, so zooming out onto this tier keeps every loop over 10 kb
+# where the fine cut had it. Contig rows, as build_rgfa_tabix.sh writes the fine
+# pair, so a tier window returns what a fine one does.
+[ -s "$PREFIX.fold10000.segs.bed.gz" ] ||
+  bash "$SCRIPT_DIR/build_fold_tier.sh" "$PREFIX.rgfa.gz" "$PREFIX.fold10000" 10000 --layout contig
 
 echo "=== variant route: vg deconstruct per chromosome ==="
 # The graph route above and this are the two halves the HPRC tutorial names:

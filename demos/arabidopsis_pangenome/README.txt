@@ -153,8 +153,9 @@ How the graph was built
     scripts/build_rgfa_alleles.sh       .alleles.bed.gz, one row per allele the
                                         graph holds, with a CIGAR for its size
     gfatools bubble                     .bubbles.bed.gz
-    scripts/build_bubble_tier.sh        .tier10000.segs.bed.gz, one node per
-                                        bubble
+    scripts/build_fold_tier.sh          .fold10000.segs.bed.gz, the graph with
+                                        variants under 10 kb folded into the
+                                        reference
     scripts/build_minigraph_paths.sh    .paths.bed.gz, each accession's path
                                         through every bubble (minigraph --call
                                         per accession), rows by `strain`

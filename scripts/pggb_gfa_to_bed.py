@@ -24,8 +24,7 @@ ordinary GFA parser, so it needs no bespoke plumbing per thing it carries.
 This script puts carriage there, as `SM:Z:`, which is the one thing rGFA cannot
 express and a path GFA can: which assemblies actually carry a segment. rGFA's SR
 is build order, so there the most a segment says is which assembly contributed
-it first. bubbles_to_tier_bed.py uses the same column for a level-of-detail
-tier's collapse summary.
+it first.
 
 Six decisions worth keeping:
 

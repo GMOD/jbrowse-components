@@ -151,9 +151,9 @@ def graph_tracks(names):
         {
             'type': 'GraphTrack',
             'trackId': 'arabidopsis_minigraph_tier',
-            'name': '1001G+ minigraph pangenome: bubble tier (one node per bubble)',
+            'name': '1001G+ minigraph pangenome: variants under 10 kb folded (coarse tier)',
             'assemblyNames': ['TAIR10'],
-            'adapter': {'type': 'RgfaTabixAdapter', 'uri': f'{GRAPH}.tier10000', **PANSN},
+            'adapter': {'type': 'RgfaTabixAdapter', 'uri': f'{GRAPH}.fold10000', **PANSN},
             'displays': graph_displays('arabidopsis_minigraph_tier'),
         },
         {

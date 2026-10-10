@@ -26,7 +26,8 @@ The graph view is a beta plugin. We welcome your [feedback](/contact).
 ## Prerequisites
 
 - [the GraphGenomeView plugin](#the-graphgenomeview-plugin)
-- htslib (`bgzip`, `tabix`), `bcftools`, `python3`, `sort`, `pigz`
+- htslib (`bgzip`, `tabix`), `bcftools`, `python3`, `sort`, `pigz`, and `node`
+  for the coarse tier
 - [`gfa-to-tabix`](https://github.com/GMOD/gfa-to-tabix), for the segment and
   link indexes, and 0.5.0 or later for the walk index
 - [`gfatools`](https://github.com/lh3/gfatools), for an rGFA's bubbles
@@ -143,19 +144,22 @@ The command writes these files beside the prefix:
 | `.segs.bed.gz`                                | one row per segment, at its reference coordinate                                                |
 | `.links.bed.gz`                               | one row per link per endpoint, both ends stated in full                                         |
 | `.bubbles.bed.gz`                             | where haplotypes diverge and rejoin, with each bubble's shortest and longest allele             |
-| `.tier10000.segs.bed.gz`                      | one node per bubble, so a whole chromosome draws                                                |
-| `.tier10000.links.bed.gz`                     | the tier's links                                                                                |
+| `.fold10000.segs.bed.gz`                      | the graph with variants under 10 kb folded into the reference, so a whole chromosome draws      |
+| `.fold10000.links.bed.gz`                     | the tier's links                                                                                |
 | `.contig.segs.bed.gz`, `.contig.links.bed.gz` | the segment and link rows under each segment's own coordinate, which the allele inventory reads |
 | `.alleles.bed.gz`                             | one row per allele, with a CIGAR that states its size                                           |
 | `.config.json`                                | the tracks below, with the plugin entry                                                         |
 
-### The bubble tier for whole-chromosome views {#a-whole-chromosome-the-bubble-tier}
+### The coarse tier for whole-chromosome views {#a-whole-chromosome-the-bubble-tier}
 
-The bubble tier is a coarse copy of the graph that draws each bubble as one node
-on the reference backbone and folds smaller bubbles into it. A bubble's size for
-that test is the larger of its reference span and its longest allele. The
-threshold is in the file name, 10,000 bp by default for an rGFA; `--tier` sets
-it, and a plain GFA defaults to 50, since most of its bubbles are single bases.
+The coarse tier is a copy of the graph with every variant under a threshold
+folded into the reference. It keeps each allele whose length, or the reference
+it replaces, reaches the threshold, and the way back to the reference from both
+of its ends. The graph track folds what it draws the same way at ten of the
+linear view's pixels, so zooming out onto the tier keeps every loop the fine cut
+drew. The threshold is in the file name, 10,000 bp by default for an rGFA;
+`--tier` sets it, and a plain GFA defaults to 50, since most of its variants are
+single bases.
 
 ## Configuring the graph track {#the-two-indexes-a-graph-track-reads}
 
@@ -163,7 +167,7 @@ The config's first track is the graph. Its adapter holds:
 
 - `uri`, the prefix
 - `coarse`, which names the tier the track draws past `aboveBpPerPx` bp per
-  pixel
+  pixel, the tier's threshold over ten
 - `assemblyNameToPanSN`, which maps your assembly name to the graph's PanSN
   sample; the command writes it only when the two differ
 
@@ -177,7 +181,7 @@ The config's first track is the graph. Its adapter holds:
     "type": "RgfaTabixAdapter",
     "uri": "hprc",
     "assemblyNameToPanSN": { "hg38": "GRCh38" },
-    "coarse": { "uri": "hprc.tier10000", "aboveBpPerPx": 1014 }
+    "coarse": { "uri": "hprc.fold10000", "aboveBpPerPx": 1000 }
   },
   "displayDefaults": { "showLabels": "none" },
   "displays": [
@@ -516,7 +520,7 @@ bash build_pangenome_graph.sh hprc-v2.1-mc-grch38.sv.gfa.gz hprc --assembly hg38
 [`build_pangenome_graph.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_pangenome_graph.sh)
 runs [`gfa-to-tabix`](https://github.com/GMOD/gfa-to-tabix) for the segments and
 links, then fetches and runs
-[`build_bubble_tier.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_bubble_tier.sh)
+[`build_fold_tier.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_fold_tier.sh)
 and
 [`build_rgfa_alleles.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_rgfa_alleles.sh),
 each runnable alone. The walk files come from the two commands under

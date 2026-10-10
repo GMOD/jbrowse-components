@@ -71,8 +71,8 @@
           "mm39": "mm39"
         },
         "coarse": {
-          "uri": "https://jbrowse.org/demos/mouse_pangenome/mouse-mm39-minigraph.tier10000",
-          "aboveBpPerPx": 328
+          "uri": "https://jbrowse.org/demos/mouse_pangenome/mouse-mm39-minigraph.fold10000",
+          "aboveBpPerPx": 1000
         }
       },
       "displayDefaults": {
@@ -99,11 +99,11 @@
     {
       "type": "GraphTrack",
       "trackId": "mouse_minigraph_tier",
-      "name": "Mouse strain pangenome: bubble tier (one node per bubble)",
+      "name": "Mouse strain pangenome: variants under 10 kb folded (coarse tier)",
       "assemblyNames": ["mm39"],
       "adapter": {
         "type": "RgfaTabixAdapter",
-        "uri": "https://jbrowse.org/demos/mouse_pangenome/mouse-mm39-minigraph.tier10000",
+        "uri": "https://jbrowse.org/demos/mouse_pangenome/mouse-mm39-minigraph.fold10000",
         "assemblyNameToPanSN": {
           "mm39": "mm39"
         }
@@ -196,8 +196,8 @@
           "bosTau9": "bosTau9"
         },
         "coarse": {
-          "uri": "https://jbrowse.org/demos/bovine_pangenome/bovine-arsucd12-minigraph.tier10000",
-          "aboveBpPerPx": 880
+          "uri": "https://jbrowse.org/demos/bovine_pangenome/bovine-arsucd12-minigraph.fold10000",
+          "aboveBpPerPx": 1000
         }
       },
       "displayDefaults": {
@@ -224,11 +224,11 @@
     {
       "type": "GraphTrack",
       "trackId": "bovine_minigraph_tier",
-      "name": "Bovine super-pangenome: bubble tier (one node per bubble)",
+      "name": "Bovine super-pangenome: variants under 10 kb folded (coarse tier)",
       "assemblyNames": ["bosTau9"],
       "adapter": {
         "type": "RgfaTabixAdapter",
-        "uri": "https://jbrowse.org/demos/bovine_pangenome/bovine-arsucd12-minigraph.tier10000",
+        "uri": "https://jbrowse.org/demos/bovine_pangenome/bovine-arsucd12-minigraph.fold10000",
         "assemblyNameToPanSN": {
           "bosTau9": "bosTau9"
         }
