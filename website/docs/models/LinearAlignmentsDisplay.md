@@ -139,8 +139,7 @@ Each section ends with the members a composed model contributes, linked to the p
 | <span id="getter-showmismatches">**showMismatches**</span><br><code>boolean</code> |  |
 | <span id="getter-showinterbaseindicators">**showInterbaseIndicators**</span><br><code>boolean</code> |  |
 | <span id="getter-showinterchrom">**showInterchrom**</span><br><code>boolean</code> |  |
-| <span id="getter-showproperpairarcs">**showProperPairArcs**</span><br><code>boolean</code> | Whether ordinary concordant pairs get an arc. Same definition of concordant as `filterBy.properPairs`, which hides the reads themselves — see `isConcordantPairRead`. |
-| <span id="getter-showmodalpairsincloud">**showModalPairsInCloud**</span><br><code>boolean</code> | Whether the read cloud keeps the pairs of ordinary insert size. |
+| <span id="getter-showordinarypairs">**showOrdinaryPairs**</span><br><code>boolean</code> | Whether the band draws its ordinary pairs: the arcs' concordant ones (`isConcordantPairRead`, the rule `filterBy.properPairs` hides reads by) and the cloud's modal-insert ones. Unset, arcs keep them and the cloud drops them. |
 | <span id="getter-mininterchromsupport">**minInterchromSupport**</span><br><code>number</code> | Reads a translocation must gather, within one fragment length on both sides, before its connector ticks are drawn. See `clusteredInterchromSupport` — the count is over a window because a mate-pair breakpoint is not localized to a base. |
 | <span id="getter-showlongrange">**showLongRange**</span><br><code>boolean</code> |  |
 | <span id="getter-readconnections">**readConnections**</span><br><code>"arc" &#124; "cloud" &#124; "off"</code> |  |
@@ -424,7 +423,7 @@ Each section ends with the members a composed model contributes, linked to the p
 | <span id="action-setshownoncanonicaljunctions">**setShowNonCanonicalJunctions**</span><br><code>(show: boolean) =&gt; void</code> |  |
 | <span id="action-setreadconnectionslinewidth">**setReadConnectionsLineWidth**</span><br><code>(width: number) =&gt; void</code> |  |
 | <span id="action-setshowinterchrom">**setShowInterchrom**</span><br><code>(draw: boolean) =&gt; void</code> |  |
-| <span id="action-setshowproperpairarcs">**setShowProperPairArcs**</span><br><code>(draw: boolean) =&gt; void</code> |  |
+| <span id="action-setshowordinarypairs">**setShowOrdinaryPairs**</span><br><code>(show?: boolean &#124; undefined) =&gt; void</code> |  |
 | <span id="action-setmininterchromsupport">**setMinInterchromSupport**</span><br><code>(support: number) =&gt; void</code> |  |
 | <span id="action-setshowlongrange">**setShowLongRange**</span><br><code>(draw: boolean) =&gt; void</code> |  |
 | <span id="action-setarccolorfield">**setArcColorField**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>(field: "" &#124; "insertSize" &#124; "insertSizeAndOrientation" &#124; "pairO…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>(field: "" &#124; "insertSize" &#124; "insertSizeAndOrientation" &#124; "pairOrientation") =&gt; void</code></pre></dialog></span> |  |

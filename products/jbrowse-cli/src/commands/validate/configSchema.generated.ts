@@ -7183,19 +7183,8 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "type": "boolean"
           }
         },
-        "showProperPairArcs": {
-          "description": "Draw arcs for ordinary concordant pairs. Uncheck to leave only the arcs that carry a category (abnormal insert size or orientation, split junctions), which on deep coverage is the difference between a readable band and a solid mass.",
-          "default": true,
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "type": "boolean"
-          }
-        },
-        "showModalPairsInCloud": {
-          "description": "Keep the pairs of ordinary insert size in the read cloud, as the band the abnormal pairs are read against.",
-          "default": false,
+        "showOrdinaryPairs": {
+          "description": "Draw the ordinary pairs alongside the abnormal ones: concordant pairs as arcs, pairs of modal insert size in the read cloud. Unset, the arcs draw them as context and the cloud leaves them out.",
           "if": {
             "type": "null"
           },
@@ -8427,19 +8416,8 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "type": "boolean"
           }
         },
-        "showProperPairArcs": {
-          "description": "Draw arcs for ordinary concordant pairs. Uncheck to leave only the arcs that carry a category (abnormal insert size or orientation, split junctions), which on deep coverage is the difference between a readable band and a solid mass.",
-          "default": true,
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "type": "boolean"
-          }
-        },
-        "showModalPairsInCloud": {
-          "description": "Keep the pairs of ordinary insert size in the read cloud, as the band the abnormal pairs are read against.",
-          "default": false,
+        "showOrdinaryPairs": {
+          "description": "Draw the ordinary pairs alongside the abnormal ones: concordant pairs as arcs, pairs of modal insert size in the read cloud. Unset, the arcs draw them as context and the cloud leaves them out.",
           "if": {
             "type": "null"
           },
@@ -15557,11 +15535,8 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "showInterchrom": {
               "$ref": "#/$defs/LinearAlignmentsDisplaySlots/properties/showInterchrom"
             },
-            "showProperPairArcs": {
-              "$ref": "#/$defs/LinearAlignmentsDisplaySlots/properties/showProperPairArcs"
-            },
-            "showModalPairsInCloud": {
-              "$ref": "#/$defs/LinearAlignmentsDisplaySlots/properties/showModalPairsInCloud"
+            "showOrdinaryPairs": {
+              "$ref": "#/$defs/LinearAlignmentsDisplaySlots/properties/showOrdinaryPairs"
             },
             "minInterchromSupport": {
               "$ref": "#/$defs/LinearAlignmentsDisplaySlots/properties/minInterchromSupport"
@@ -18833,11 +18808,8 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "showInterchrom": {
               "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/showInterchrom"
             },
-            "showProperPairArcs": {
-              "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/showProperPairArcs"
-            },
-            "showModalPairsInCloud": {
-              "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/showModalPairsInCloud"
+            "showOrdinaryPairs": {
+              "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/showOrdinaryPairs"
             },
             "minInterchromSupport": {
               "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/minInterchromSupport"

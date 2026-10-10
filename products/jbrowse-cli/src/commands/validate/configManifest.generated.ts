@@ -4042,12 +4042,8 @@ export const configManifest: ConfigManifest = {
           "type": "boolean"
         },
         {
-          "name": "showProperPairArcs",
-          "type": "boolean"
-        },
-        {
-          "name": "showModalPairsInCloud",
-          "type": "boolean"
+          "name": "showOrdinaryPairs",
+          "type": "(boolean | undefined)"
         },
         {
           "name": "minInterchromSupport",
@@ -4782,12 +4778,8 @@ export const configManifest: ConfigManifest = {
           "type": "boolean"
         },
         {
-          "name": "showProperPairArcs",
-          "type": "boolean"
-        },
-        {
-          "name": "showModalPairsInCloud",
-          "type": "boolean"
+          "name": "showOrdinaryPairs",
+          "type": "(boolean | undefined)"
         },
         {
           "name": "minInterchromSupport",
