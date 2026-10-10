@@ -16,12 +16,14 @@ function makeSelf(resolution: number) {
     calls,
     hasResolution: true,
     resolution,
-    effectiveAggregate: 'mean' as const,
+    aggregate: 'mean' as const,
+    extent: 'none' as const,
     isDensityMode: false,
     setResolution: (n: number) => {
       calls.push(n)
     },
     setAggregate: () => {},
+    setExtent: () => {},
   }
 }
 

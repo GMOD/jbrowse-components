@@ -98,6 +98,7 @@ const mappabilityTrack = {
   type: 'LinearWiggleDisplay',
   scales: { y: { domainMin: 0, domainMax: 1 } },
   aggregate: 'min' as const,
+  extent: 'none' as const,
   height: 70,
 }
 
@@ -120,21 +121,21 @@ const mappabilityTrack = {
 // share a scale and "a fraction of the depth next door" is legible without
 // reading the axis.
 //
-// `aggregate` matters only in the 2.5 Mb frame and it is the difference
-// between the figure working and not. At 2 kb a pixel the default `whiskers`
+// `extent` matters only in the 2.5 Mb frame and it is the difference
+// between the figure working and not. At 2 kb a pixel the default min-max extent
 // draws each pixel's min AND max, so a stretch that averages 4x but touches 40x
 // somewhere inside every pixel paints full height: the island came out as a
 // blue wall of the same height as the sequence either side of it, with only the
-// texture differing. `avg` draws the mean, and the block is then a plainly
+// texture differing. `extent: 'none'` draws the mean alone, and the block is then a plainly
 // shorter plateau between two full-height flanks, which is what the figure is
 // for (review: "i need to see the assembly quality increase on either side of
 // this problematic region").
-const gnomadCoverageTrack = (height = 70, aggregate?: string) => ({
+const gnomadCoverageTrack = (height = 70, extent?: string) => ({
   trackId: 'hg38-gnomad3MeanCoverage',
   type: 'LinearWiggleDisplay',
   scales: { y: { domainMin: 0, domainMax: 40 } },
   height,
-  ...(aggregate ? { aggregate } : {}),
+  ...(extent ? { extent } : {}),
 })
 
 const geneTrack = (height: number, showOnlyGenes: boolean) => ({
@@ -301,8 +302,8 @@ export const qcSpecs: ScreenshotSpec[] = [
   //
   // Two lanes came out on the way. Umap k100 is per-base and at 464 bp/px the
   // absent stretches average in with the present ones (the same reason it is not
-  // in the 2.5 Mb figure). The gnomAD lane stays but switches to `avg` for the
-  // same reason `whiskers` failed there: one 40x pixel inside a 4x stretch
+  // in the 2.5 Mb figure). The gnomAD lane stays but drops its min-max extent
+  // for the same reason it failed there: one 40x pixel inside a 4x stretch
   // paints the block full height.
   //
   // What is left is the comparison the compose made across a seam, made instead
@@ -327,7 +328,7 @@ export const qcSpecs: ScreenshotSpec[] = [
           tracks: [
             geneTrack(60, true),
             mappabilityTrack,
-            gnomadCoverageTrack(90, 'mean'),
+            gnomadCoverageTrack(90, 'none'),
             {
               trackId: 'na12878_qc_reads',
               type: 'LinearAlignmentsDisplay',
@@ -422,7 +423,7 @@ export const qcSpecs: ScreenshotSpec[] = [
             // into 2 kb pixels keeps it.
             // 100, from 120: the lane is read as a plateau against its flanks,
             // and the step is the same step at either height
-            gnomadCoverageTrack(100, 'mean'),
+            gnomadCoverageTrack(100, 'none'),
             // ONE flagged-region lane, where this had two (reviewer: "we are
             // mixing gnomad coverage, giab problematic regions, encode
             // problematic regions, 1000g nanopore, etc. kind of too many
@@ -529,7 +530,7 @@ export const qcSpecs: ScreenshotSpec[] = [
           highlight: SMN_HIGHLIGHT,
           tracks: [
             { ...geneTrack(60, true), displayMode: 'compact' },
-            gnomadCoverageTrack(90, 'mean'),
+            gnomadCoverageTrack(90, 'none'),
             {
               trackId: 'hg38-alllowmapandsegdupregions',
               type: 'LinearBasicDisplay',

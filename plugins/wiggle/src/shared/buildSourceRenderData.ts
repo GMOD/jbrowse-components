@@ -17,12 +17,13 @@ import type {
   WiggleSourceData,
 } from '@jbrowse/wiggle-core'
 
-// The render layers one source contributes, chosen by aggregate but
+// The render layers one source contributes, chosen by aggregate and extent but
 // independent of where the source sits on screen. buildSourceRenderData stamps
 // each with a rowIndex afterward, keeping row-placement in one place.
 function sourceLayers({
   source,
   aggregate,
+  extent,
   renderingType,
   posColor,
   negColor,
@@ -34,6 +35,7 @@ function sourceLayers({
 }: {
   source: WiggleSourceData
   aggregate: string
+  extent: string
   renderingType: WiggleRenderingType
   posColor: [number, number, number]
   negColor: [number, number, number]
@@ -47,20 +49,21 @@ function sourceLayers({
     renderingType === RENDERING_TYPE_LINE ||
     renderingType === RENDERING_TYPE_LINE_CENTER
   ) {
-    return lineLayers(source, aggregate, posColor, negColor)
+    return lineLayers(source, aggregate, extent, posColor, negColor)
   }
-  // whiskers draws min, mean and max; any other mode draws its one band. Every
-  // value is colored by its own sign against the pivot, so signed data reads
-  // as pos/neg on the main thread.
+  // A min-max extent draws min, the aggregate and max; without one the
+  // aggregate draws its one band. Every value is colored by its own sign
+  // against the pivot, so signed data reads as pos/neg on the main thread.
   //
-  // Density is the one mode that gets to 'mean' without the user picking it, and
-  // the model resolves that (see `effectiveAggregate`, which is what
-  // gpuProps carries) rather than this re-deciding it. The autoscale domain,
-  // the track menu's radio and the tooltip all read that same resolved mode, so
-  // a copy of the rule here could only drift from them.
+  // Density drops the extent without the user asking, and the model resolves
+  // that (`effectiveExtent`, which is what gpuProps carries) rather than this
+  // re-deciding it. The autoscale domain, the track menu and the tooltip all
+  // read that same resolved extent, so a copy of the rule here could only
+  // drift from them.
   return makeSummaryLayers({
     data: source,
     aggregate,
+    extent,
     posColor,
     negColor,
     pivot,
@@ -91,10 +94,11 @@ export interface WiggleGpuProps {
   wiggleColor: ResolvedWiggleColor
   // The score filled bars grow from, which orders a band's layers.
   origin: number
-  // The mode actually drawn, never the raw config slot, since density has no
-  // whiskers presentation and resolves to 'mean'. Named for the model getter
+  aggregate: string
+  // The extent actually drawn, never the raw config slot, since density has
+  // no min-max presentation and resolves to 'none'. Named for the model getter
   // that produces it so a new caller cannot skip the resolution.
-  effectiveAggregate: string
+  effectiveExtent: string
   renderingType: string
   // How many mean point spacings apart two interpolated-line points may be
   // before the span counts as a hole (see gapBreakLimit). Lives in gpuProps,
@@ -149,7 +153,8 @@ export function buildSourceRenderData(
     perSource,
     wiggleColor,
     origin,
-    effectiveAggregate: aggregate,
+    aggregate,
+    effectiveExtent: extent,
     renderingType,
     maxGapMultiple,
   } = gpuProps
@@ -191,6 +196,7 @@ export function buildSourceRenderData(
       const layers = sourceLayers({
         source,
         aggregate,
+        extent,
         renderingType: renderingTypeInt,
         posColor,
         negColor: perSource ? posColor : defaultNegColor,

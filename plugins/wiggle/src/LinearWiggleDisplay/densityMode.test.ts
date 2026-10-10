@@ -25,7 +25,7 @@ function makeDisplay() {
   const { createDisplay } = createTestEnvironment()
   const { display, view } = createDisplay()
   view.setCoarseDynamicBlocks(view.dynamicBlocks, view.bpPerPx)
-  display.configuration.setSlot('aggregate', 'whiskers')
+  display.configuration.setSlot('extent', 'min-max')
   display.setRpcData(
     0,
     { sources: [makeBinnedSource('a')] },
@@ -36,20 +36,28 @@ function makeDisplay() {
 
 it('scales a density domain to the averages it actually paints', () => {
   const display = makeDisplay()
-  // whiskers draws the min..max bands, so the domain covers them
+  // a min-max extent draws the min..max bands, so the domain covers them
   expect(display.domain).toEqual([-10, 50])
 
-  // density has no whiskers presentation (sourceLayers falls back to the
-  // average scores), so a domain over the whisker extremes would leave the
-  // color ramp — and the score legend printing it — describing a range nothing
-  // on screen reaches
+  // density has no min-max presentation, so a domain over the min and max
+  // would leave the color ramp — and the score legend printing it —
+  // describing a range nothing on screen reaches
   display.setRenderingType('density')
-  expect(display.effectiveAggregate).toBe('mean')
+  expect(display.effectiveExtent).toBe('none')
   expect(display.domain).toEqual([1, 2])
 
-  // and the render path is handed the same resolved mode, so it cannot draw a
-  // presentation the domain and the score legend were not scaled for
-  expect(display.gpuProps().effectiveAggregate).toBe('mean')
+  // and the render path is handed the same resolved extent, so it cannot draw
+  // a presentation the domain and the score legend were not scaled for
+  expect(display.gpuProps().effectiveExtent).toBe('none')
+})
+
+it("lists a bin's min and max in the tooltip only where the plot shows them", () => {
+  const display = makeDisplay()
+  expect(display.tooltipShowsMinMax).toBe(true)
+  display.setRenderingType('density')
+  expect(display.tooltipShowsMinMax).toBe(false)
+  display.setAggregate('max')
+  expect(display.tooltipShowsMinMax).toBe(true)
 })
 
 it('stops drawing cross hatches in density mode', () => {

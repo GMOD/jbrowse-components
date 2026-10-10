@@ -52,7 +52,7 @@
           "type": "LinearWiggleDisplay",
           "displayId": "synthetic_tiers_line_avg-LinearWiggleDisplay",
           "mark": "line",
-          "aggregate": "mean"
+          "extent": "none"
         }
       ]
     },
@@ -73,7 +73,7 @@
           "type": "LinearWiggleDisplay",
           "displayId": "synthetic_tiers_line_whiskers-LinearWiggleDisplay",
           "mark": "line",
-          "aggregate": "whiskers"
+          "extent": "min-max"
         }
       ]
     },
@@ -94,7 +94,7 @@
           "type": "LinearWiggleDisplay",
           "displayId": "synthetic_tiers_xyplot_avg-LinearWiggleDisplay",
           "mark": "bar",
-          "aggregate": "mean"
+          "extent": "none"
         }
       ]
     },
@@ -115,7 +115,7 @@
           "type": "LinearWiggleDisplay",
           "displayId": "synthetic_tiers_xyplot_whiskers-LinearWiggleDisplay",
           "mark": "bar",
-          "aggregate": "whiskers"
+          "extent": "min-max"
         }
       ]
     },
@@ -151,7 +151,7 @@
           "displayId": "synthetic_tiers_multiline_whiskers-LinearWiggleDisplay",
           "mark": "line",
           "rows": "",
-          "aggregate": "whiskers"
+          "extent": "min-max"
         }
       ]
     }

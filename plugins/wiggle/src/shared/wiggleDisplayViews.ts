@@ -30,7 +30,8 @@ export interface WiggleDisplayViewsHost extends WiggleRenderStateModel {
   plotGeometry: WigglePlotGeometry
   /** The `color` object resolved against the origin and the layout. */
   wiggleColor: ResolvedWiggleColor
-  effectiveAggregate: string
+  aggregate: string
+  effectiveExtent: string
   maxGapMultiple: number
   resolution: number
   scoreField: string
@@ -119,7 +120,8 @@ export function wiggleDisplayViews(self: WiggleDisplayViewsHost) {
       return {
         wiggleColor: self.wiggleColor,
         origin: self.origin,
-        effectiveAggregate: self.effectiveAggregate,
+        aggregate: self.aggregate,
+        effectiveExtent: self.effectiveExtent,
         renderingType: self.renderingType,
         maxGapMultiple: self.maxGapMultiple,
       }

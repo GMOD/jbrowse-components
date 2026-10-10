@@ -56,7 +56,7 @@ describe('findOverlayHit', () => {
       [{ name: 's1' }, { name: 's2' }, { name: 's3' }],
       50,
       'chr1',
-      'mean',
+      false,
     )
     expect(result).toEqual({
       refName: 'chr1',
@@ -77,7 +77,7 @@ describe('findOverlayHit', () => {
         makeSource('s2', [{ start: 0, end: 100, score: 10 }]),
       ],
     }
-    const result = findOverlayHit(data, [{ name: 's1' }], 50, 'chr1', 'mean')
+    const result = findOverlayHit(data, [{ name: 's1' }], 50, 'chr1', false)
     expect(result?.rows).toHaveLength(1)
     expect(result?.rows[0]?.source).toBe('s1')
   })
@@ -94,7 +94,7 @@ describe('findOverlayHit', () => {
       [{ name: 's1' }, { name: 's2' }],
       50,
       'chr1',
-      'mean',
+      false,
     )
     expect(result?.rows).toHaveLength(1)
     expect(result?.rows[0]?.source).toBe('s1')
@@ -104,7 +104,7 @@ describe('findOverlayHit', () => {
     const data = {
       sources: [makeSource('s1', [{ start: 200, end: 300, score: 5 }])],
     }
-    const result = findOverlayHit(data, [{ name: 's1' }], 50, 'chr1', 'mean')
+    const result = findOverlayHit(data, [{ name: 's1' }], 50, 'chr1', false)
     expect(result).toBeUndefined()
   })
 
@@ -114,13 +114,7 @@ describe('findOverlayHit', () => {
         makeSource('s1', [{ start: 0, end: 100, score: 5, min: 1, max: 9 }]),
       ],
     }
-    const result = findOverlayHit(
-      data,
-      [{ name: 's1' }],
-      50,
-      'chr1',
-      'whiskers',
-    )
+    const result = findOverlayHit(data, [{ name: 's1' }], 50, 'chr1', true)
     expect(result?.rows[0]).toEqual({
       source: 's1',
       score: 5,
@@ -136,7 +130,7 @@ describe('findOverlayHit', () => {
         makeSource('s1', [{ start: 0, end: 100, score: 5, min: 1, max: 9 }]),
       ],
     }
-    const result = findOverlayHit(data, [{ name: 's1' }], 50, 'chr1', 'mean')
+    const result = findOverlayHit(data, [{ name: 's1' }], 50, 'chr1', false)
     expect(result?.rows[0]).toEqual({ source: 's1', score: 5 })
   })
 
@@ -146,13 +140,7 @@ describe('findOverlayHit', () => {
         makeSource('s1', [{ start: 0, end: 100, score: 5, min: 5, max: 5 }]),
       ],
     }
-    const result = findOverlayHit(
-      data,
-      [{ name: 's1' }],
-      50,
-      'chr1',
-      'whiskers',
-    )
+    const result = findOverlayHit(data, [{ name: 's1' }], 50, 'chr1', true)
     expect(result?.rows[0]).toEqual({ source: 's1', score: 5 })
   })
 
@@ -163,7 +151,7 @@ describe('findOverlayHit', () => {
     const data = {
       sources: [makeSource('s1', [{ start: 0, end: 100, score: 5 }])],
     }
-    const result = findOverlayHit(data, [{ name: 's1' }], 50, 'chr1', 'mean')
+    const result = findOverlayHit(data, [{ name: 's1' }], 50, 'chr1', false)
     expect(result?.start).toBe(50)
     expect(result?.end).toBe(51)
     expect(assembleLocString({ refName: 'chr1', start: 50, end: 51 })).toBe(
@@ -184,7 +172,7 @@ describe('findRowHit', () => {
       ],
     }
     // rowHeight=20, offsetY=25 → row 1 (s2)
-    const result = findRowHit(data, sources, 50, 25, 20, 'chr1', 'mean')
+    const result = findRowHit(data, sources, 50, 25, 20, 'chr1', false)
     expect(result).toEqual({
       refName: 'chr1',
       start: 0,
@@ -204,7 +192,7 @@ describe('findRowHit', () => {
         makeSource(s.name, [{ start: 0, end: 100, score: i }]),
       ),
     }
-    const result = findRowHit(data, many, 50, 2, 0.4, 'chr1', 'mean')
+    const result = findRowHit(data, many, 50, 2, 0.4, 'chr1', false)
     expect(result?.rows).toEqual([{ source: 's6', score: 6 }])
   })
 
@@ -212,8 +200,8 @@ describe('findRowHit', () => {
     const data = {
       sources: [makeSource('s1', [{ start: 0, end: 100, score: 5 }])],
     }
-    const aboveAll = findRowHit(data, sources, 50, -1, 20, 'chr1', 'mean')
-    const belowAll = findRowHit(data, sources, 50, 200, 20, 'chr1', 'mean')
+    const aboveAll = findRowHit(data, sources, 50, -1, 20, 'chr1', false)
+    const belowAll = findRowHit(data, sources, 50, 200, 20, 'chr1', false)
     expect(aboveAll).toBeUndefined()
     expect(belowAll).toBeUndefined()
   })
@@ -223,7 +211,7 @@ describe('findRowHit', () => {
       sources: [makeSource('s1', [{ start: 0, end: 100, score: 5 }])],
     }
     // row 1 (s2) but data only has s1
-    const result = findRowHit(data, sources, 50, 25, 20, 'chr1', 'mean')
+    const result = findRowHit(data, sources, 50, 25, 20, 'chr1', false)
     expect(result).toBeUndefined()
   })
 
@@ -231,7 +219,7 @@ describe('findRowHit', () => {
     const data = {
       sources: [makeSource('s1', [{ start: 200, end: 300, score: 5 }])],
     }
-    const result = findRowHit(data, [{ name: 's1' }], 50, 5, 20, 'chr1', 'mean')
+    const result = findRowHit(data, [{ name: 's1' }], 50, 5, 20, 'chr1', false)
     expect(result).toBeUndefined()
   })
 
@@ -240,26 +228,18 @@ describe('findRowHit', () => {
       sources: [makeSource('s1', [{ start: 100, end: 500, score: 7 }])],
     }
     // bp 250 falls inside the [100, 500] feature
-    const result = findRowHit(
-      data,
-      [{ name: 's1' }],
-      250,
-      5,
-      20,
-      'chr1',
-      'mean',
-    )
+    const result = findRowHit(data, [{ name: 's1' }], 250, 5, 20, 'chr1', false)
     expect(result?.start).toBe(100)
     expect(result?.end).toBe(500)
   })
 
-  test('attaches summary fields in non-avg mode', () => {
+  test('attaches summary fields where the display shows min/max', () => {
     const data = {
       sources: [
         makeSource('s1', [{ start: 0, end: 100, score: 5, min: 1, max: 9 }]),
       ],
     }
-    const result = findRowHit(data, [{ name: 's1' }], 50, 5, 20, 'chr1', 'min')
+    const result = findRowHit(data, [{ name: 's1' }], 50, 5, 20, 'chr1', true)
     expect(result?.rows[0]).toMatchObject({
       summary: true,
       minScore: 1,
@@ -291,7 +271,7 @@ describe('findWiggleHit', () => {
           { sources: [makeSource('s1', [{ start: 0, end: 100, score: 5 }])] },
         ],
       ]),
-      effectiveAggregate: 'mean',
+      tooltipShowsMinMax: false,
       isOverlay: false,
       showTree: false,
       treeAreaWidth: 0,

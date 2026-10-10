@@ -201,7 +201,7 @@ export default function stateModelFactory(
     )
     .views(self => ({
       // overrides WiggleScoreConfigMixin's `false` base, which is what its
-      // effectiveAggregate getter keys on
+      // effectiveExtent getter keys on
       get isDensityMode() {
         return self.renderingType === 'density'
       },
@@ -582,9 +582,9 @@ export default function stateModelFactory(
       /**
        * #method
        * `aggregate` is a fetch key so an adapter that stores min/max
-       * apart from the mean can skip reading them. The raw slot, not the
-       * effective one, which moves with the rendering type and would refetch
-       * on every switch to density (WIGGLE_DISPLAY.md, "Effective vs raw").
+       * apart from the mean can skip reading them. The extent is not: it
+       * moves with the rendering type and would refetch on every switch to
+       * density (WIGGLE_DISPLAY.md, "`aggregate`, `extent`").
        */
       rpcProps() {
         return {
@@ -765,7 +765,7 @@ export default function stateModelFactory(
           pos,
           index => self.rpcDataMap.get(index),
           (sources, data) =>
-            sortSourcesByScoreAt(sources, data, pos, self.effectiveAggregate),
+            sortSourcesByScoreAt(sources, data, pos, self.aggregate),
         )
       },
     }))

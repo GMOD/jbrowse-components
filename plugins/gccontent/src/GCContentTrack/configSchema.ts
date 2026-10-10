@@ -12,9 +12,9 @@ const gcWiggleConfigSchema = ConfigurationSchema(
   'LinearWiggleDisplay',
   {
     ...aggregateConfigSchemaFields({
-      defaultMode: 'mean',
-      description:
-        "a GC window has one score and no min/max to draw, so 'mean'; 'whiskers' would force one color on every bin and draw a negative skew as positive",
+      extent: 'none',
+      extentDescription:
+        "a GC window has one score and no min or max to draw, so 'none'",
     }),
   },
   { baseConfiguration: linearWiggleDisplayConfigSchema },
@@ -64,7 +64,7 @@ const configSchema = (pluginManager: PluginManager) =>
       /**
        * #slot
        * As on [every track](../basetrack#slot-displays), except that a
-       * `LinearWiggleDisplay` entry defaults to `aggregate: 'mean'`.
+       * `LinearWiggleDisplay` entry defaults to `extent: 'none'`.
        */
       displays: types.array(
         types.union(

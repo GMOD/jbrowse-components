@@ -317,10 +317,9 @@ export const bigwigSpecs: ScreenshotSpec[] = [
           // finer binning (basesPerSpan = bpPerPx/resolution) so the
           // whole-genome scatter resolves copy-number structure
           resolution: 5,
-          // plot the per-bin average rather than the default whiskers
-          // (min/max/avg) — at whole-genome zoom the avg score reads the
-          // copy-number level cleanly without the noise band
-          aggregate: 'mean',
+          // the per-bin average without the min-max band: at whole-genome
+          // zoom the average reads the copy-number level cleanly
+          extent: 'none',
         },
       ],
     }),

@@ -57,12 +57,13 @@ export interface ScoreSpan {
   drawnKeys?: Uint8Array
 }
 
-/** The wiggle packer's arrays as a span, under an aggregate. */
+/** The wiggle packer's arrays as a span, under an aggregate and an extent. */
 export function datasetSpan(
   { data, visStart, visEnd }: Dataset,
   aggregate: string,
+  extent = 'none',
 ): ScoreSpan {
-  const { low, high } = boundArrays(aggregate)
+  const { low, high } = boundArrays(aggregate, extent)
   return {
     count: data.numFeatures,
     starts: data.featurePositions,
@@ -107,17 +108,17 @@ function overlaps(
   return fEnd > visStart && fStart < visEnd
 }
 
-// Which per-feature array each end of the domain comes from. Whiskers spreads
-// the two ends across the min/max summary arrays; every other mode draws both
-// from a single scalar. One table because the extent and the clipped bound have
-// to read the same arrays, or a domain clips its own data.
-function boundArrays(aggregate: string) {
-  const useWhiskers = aggregate === 'whiskers'
+// Which per-feature array each end of the domain comes from. A min-max extent
+// spreads the two ends across the min/max summary arrays; without one both come
+// from the aggregate's single array. One table because the data's span and the
+// clipped bound have to read the same arrays, or a domain clips its own data.
+function boundArrays(aggregate: string, extent: string) {
+  const minMax = extent === 'min-max'
   return {
     low: (data: FeatureArrays) =>
-      useWhiskers ? data.featureMinScores : getEffectiveScores(data, aggregate),
+      minMax ? data.featureMinScores : getEffectiveScores(data, aggregate),
     high: (data: FeatureArrays) =>
-      useWhiskers ? data.featureMaxScores : getEffectiveScores(data, aggregate),
+      minMax ? data.featureMaxScores : getEffectiveScores(data, aggregate),
   }
 }
 
@@ -210,8 +211,9 @@ export function computeSpanStats(spans: ScoreSpan[]): ScoreStats | undefined {
 export function computeScoreStats(
   aggregate: string,
   datasets: Dataset[],
+  extent = 'none',
 ): ScoreStats | undefined {
-  return computeSpanStats(datasets.map(d => datasetSpan(d, aggregate)))
+  return computeSpanStats(datasets.map(d => datasetSpan(d, aggregate, extent)))
 }
 
 /**
@@ -266,19 +268,21 @@ export function autoscaleDomainFromStats({
   quantile,
   zero,
   aggregate,
+  extent = 'none',
   visibleEntries,
 }: {
   stats: ScoreStats
   quantile: number
   zero: boolean
   aggregate: string
+  extent?: string
   visibleEntries: Dataset[]
 }): [number, number] {
   return autoscaleDomainFromSpans({
     stats,
     quantile,
     zero,
-    spans: visibleEntries.map(d => datasetSpan(d, aggregate)),
+    spans: visibleEntries.map(d => datasetSpan(d, aggregate, extent)),
   })
 }
 
@@ -297,8 +301,9 @@ export function computeAutoscaleDomain(
     visEnd: number
   }[],
   zero: boolean,
+  extent = 'none',
 ): [number, number] | undefined {
-  const spans = visibleEntries.map(d => datasetSpan(d, aggregate))
+  const spans = visibleEntries.map(d => datasetSpan(d, aggregate, extent))
   const stats = computeSpanStats(spans)
   return stats
     ? autoscaleDomainFromSpans({ stats, quantile, zero, spans })

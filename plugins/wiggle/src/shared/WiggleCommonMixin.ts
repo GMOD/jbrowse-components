@@ -20,6 +20,7 @@ import type { WiggleRendering } from '../renderingTypes.ts'
 import type { WiggleHoveredFeature } from '../util.ts'
 import type {
   Aggregate,
+  Extent,
   aggregateConfigSchemaFields,
 } from './aggregateConfigSchemaFields.ts'
 import type { wiggleConfigSchemaFields } from './wiggleConfigSchemaFields.ts'
@@ -146,6 +147,12 @@ export function WiggleCommonMixin() {
       /**
        * #getter
        */
+      get extent(): Extent {
+        return getConf(confNode(self), 'extent')
+      },
+      /**
+       * #getter
+       */
       get renderingType(): WiggleRendering {
         return renderingOf(
           getConf(confNode(self), 'mark'),
@@ -169,17 +176,23 @@ export function WiggleCommonMixin() {
       },
       /**
        * #getter
-       * The aggregate actually drawn. Density has no whiskers presentation
-       * — `sourceLayers` falls back to the average scores — so the autoscale
-       * domain reads this rather than the raw slot; otherwise the color ramp
-       * spans the whisker extremes while the plot paints averages, and the
-       * score legend reports a range nothing on screen reaches. Single-wiggle
-       * defaults to whiskers, so plain "plot type → Density" hit this.
+       * The extent actually drawn. Density maps score to color and has no
+       * min-max presentation, so the autoscale domain reads this rather than
+       * the raw slot; otherwise the color ramp spans the min and max while
+       * the plot paints the aggregate, and the score legend reports a range
+       * nothing on screen reaches. Single-wiggle defaults to min-max, so plain
+       * "plot type → Density" hit this.
        */
-      get effectiveAggregate() {
-        return self.isDensityMode && this.aggregate === 'whiskers'
-          ? 'mean'
-          : this.aggregate
+      get effectiveExtent(): Extent {
+        return self.isDensityMode ? 'none' : this.extent
+      },
+      /**
+       * #getter
+       * Whether a summary bin's tooltip lists its min and max: where they are
+       * drawn, or where the bar is one of them rather than the mean.
+       */
+      get tooltipShowsMinMax() {
+        return this.effectiveExtent === 'min-max' || this.aggregate !== 'mean'
       },
     }))
     .views(() => ({
@@ -225,14 +238,15 @@ export function WiggleCommonMixin() {
               source => names === undefined || names.has(source.name),
             ),
           accumulate: entries =>
-            computeScoreStats(self.effectiveAggregate, entries),
+            computeScoreStats(self.aggregate, entries, self.effectiveExtent),
           range: (stats, entries) =>
             widenRangeToRules(
               autoscaleDomainFromStats({
                 stats,
                 quantile: self.domainQuantile,
                 zero: self.axisReachesZero,
-                aggregate: self.effectiveAggregate,
+                aggregate: self.aggregate,
+                extent: self.effectiveExtent,
                 visibleEntries: entries,
               }),
               self.scoreRuleValues,
@@ -315,6 +329,12 @@ export function WiggleCommonMixin() {
        */
       setAggregate(val: Aggregate) {
         setConf(confNode(self), 'aggregate', val)
+      },
+      /**
+       * #action
+       */
+      setExtent(val: Extent) {
+        setConf(confNode(self), 'extent', val)
       },
       /**
        * #action

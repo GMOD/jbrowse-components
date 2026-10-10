@@ -5,7 +5,7 @@
 // wigToBigWig (v2.9) puts the first zoom level of this data at 34bp, so
 // BigWigAdapter serves 4bp bins from 2 to 8 bp/px and 16bp bins from 8 to 17.
 // Each file holds a signed signal with single-base spikes and dips, which avg
-// mode dilutes into its bin and whiskers keeps. Jitter held over 1-4bp runs
+// mode dilutes into its bin and a min-max extent keeps. Jitter held over 1-4bp runs
 // and -blockSize=16 keep each file near 20 KB; the defaults write 110 KB, most
 // of it empty index nodes.
 //

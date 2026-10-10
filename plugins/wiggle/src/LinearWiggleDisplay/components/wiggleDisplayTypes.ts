@@ -27,7 +27,7 @@ export interface WiggleDisplayModel extends WiggleGpuDisplayModel {
   // where the plot canvas sits inside the display's height — the same value
   // `valueScales` and the SVG export are laid out against
   plotGeometry: WigglePlotGeometry
-  effectiveAggregate: string
+  tooltipShowsMinMax: boolean
   isRowLayout: boolean
   isOverlay: boolean
   isDensityMode: boolean

@@ -282,7 +282,8 @@ describe('LinearWiggleDisplay SettingsInvalidate autorun', () => {
   })
 })
 
-// Signed data with real summary bands, so whiskers produces its full layer set.
+// Signed data with real summary bands, so a min-max extent produces its full
+// layer set.
 function makeSignedWiggleData(): WiggleDataResult {
   return {
     sources: [
@@ -320,12 +321,18 @@ describe('LinearWiggleDisplay solid color', () => {
   const isGreenHue = (c: readonly [number, number, number]) =>
     c[0] === c[2] && c[1] > c[0]
 
-  test.each(['whiskers', 'mean', 'min', 'max'] as const)(
-    'every layer keeps the single hue in %s mode',
-    mode => {
+  test.each([
+    ['mean', 'min-max'],
+    ['mean', 'none'],
+    ['min', 'none'],
+    ['max', 'none'],
+  ] as const)(
+    'every layer keeps the single hue under %s with extent %s',
+    (aggregate, extent) => {
       const display = loadedWithSignedData()
       display.applyPlot({ color: 'green' })
-      display.setAggregate(mode)
+      display.setAggregate(aggregate)
+      display.setExtent(extent)
 
       const layers = buildSourceRenderData(
         makeSignedWiggleData(),
@@ -366,9 +373,9 @@ describe('LinearWiggleDisplay solid color', () => {
     },
   )
 
-  test('bicolor still splits the whisker bands by sign', () => {
+  test('bicolor still splits the min-max bands by sign', () => {
     const display = loadedWithSignedData()
-    display.setAggregate('whiskers')
+    display.setExtent('min-max')
 
     const layers = buildSourceRenderData(
       makeSignedWiggleData(),

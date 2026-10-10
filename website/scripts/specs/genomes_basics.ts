@@ -78,7 +78,7 @@ const AXOLOTL_ASSEMBLY = 'GCF_040938575.1'
 //
 // - GC Percent wants UCSC's own trackDb parameters for gc5Base,
 //   `windowingFunction Mean` and `viewLimits 30:70`. That is a legible curve
-//   where the wiggle default (whiskers, autoscaled) is a solid block: the file
+//   where the wiggle default (a min-max extent, autoscaled) is a solid block: the file
 //   is 5-base bins, so every summary bin in a several-hundred-kb window spans a
 //   min near 0 and a max near 100. Both values ride in the hub config's
 //   `metadata.ucsc` and nothing translates them into `aggregate` or the

@@ -51,7 +51,8 @@ const baseGpuProps: WiggleGpuProps = {
   perSource: false,
   wiggleColor: baseColor,
   origin: 0,
-  effectiveAggregate: 'mean',
+  aggregate: 'mean',
+  effectiveExtent: 'none',
   renderingType: 'xyplot',
   maxGapMultiple: DEFAULT_GAP_BREAK_MULTIPLE,
 }
@@ -60,7 +61,8 @@ describe('buildSourceRenderData aggregate (bicolor, no solid color)', () => {
   test('avg mode is one layer colored by sign per instance', () => {
     const out = buildSourceRenderData(makeData(), {
       ...baseGpuProps,
-      effectiveAggregate: 'mean',
+      aggregate: 'mean',
+      effectiveExtent: 'none',
     })
     expect(out).toHaveLength(1)
     expect(out[0]!.featureScores).toEqual(new Float32Array([5, -5]))
@@ -68,16 +70,17 @@ describe('buildSourceRenderData aggregate (bicolor, no solid color)', () => {
     expect(above).not.toBe(below)
   })
 
-  // Regression: whiskers used to be silently dropped under the default bicolor
+  // Regression: the min-max bands used to be silently dropped under the default bicolor
   // (no solid color set). In filled xyplot each band is split by sign so the two
   // sides stack back-to-front independently: positive max..avg..min, then
   // negative min..avg..max (most-negative/lightest at the back). The one positive
   // feature (avg 5) and one negative feature (avg -5) yield a single value per
   // side per band.
-  test('whiskers mode splits each band by sign for stacking (xyplot)', () => {
+  test('a min-max extent splits each band by sign for stacking (xyplot)', () => {
     const out = buildSourceRenderData(makeData(), {
       ...baseGpuProps,
-      effectiveAggregate: 'whiskers',
+      aggregate: 'mean',
+      effectiveExtent: 'min-max',
     })
     expect(out.map(s => [...s.featureScores])).toEqual([
       [9], // pos max
@@ -92,11 +95,12 @@ describe('buildSourceRenderData aggregate (bicolor, no solid color)', () => {
   // A line plot draws its range as one band spanning both signs, split at the
   // pivot by the painter rather than here, with the mean stroke on top.
   test.each(['line', 'linecenter'])(
-    'whiskers mode is a band and a mean stroke for %s',
+    'a min-max extent is a band and a mean stroke for %s',
     renderingType => {
       const out = buildSourceRenderData(makeData(), {
         ...baseGpuProps,
-        effectiveAggregate: 'whiskers',
+        aggregate: 'mean',
+        effectiveExtent: 'min-max',
         renderingType,
       })
       expect(out.map(s => [...s.featureScores])).toEqual([
@@ -122,7 +126,8 @@ describe('buildSourceRenderData aggregate (bicolor, no solid color)', () => {
         ...baseGpuProps,
         sources: [{ name: 'default' }, { name: 'b' }],
         rowLayout: false,
-        effectiveAggregate: 'whiskers',
+        aggregate: 'mean',
+        effectiveExtent: 'min-max',
         renderingType: 'linecenter',
       },
     )
@@ -148,7 +153,8 @@ describe('buildSourceRenderData aggregate (bicolor, no solid color)', () => {
         ],
         rowLayout: false,
         perSource: true,
-        effectiveAggregate: 'whiskers',
+        aggregate: 'mean',
+        effectiveExtent: 'min-max',
         renderingType: 'linecenter',
       },
     )
@@ -157,7 +163,7 @@ describe('buildSourceRenderData aggregate (bicolor, no solid color)', () => {
 
   // Regression: min/max used to emit one layer in posColor, so a signed track
   // set to Minimum drew its below-pivot features in the positive color. The one
-  // band is now colored by its own sign, like every whiskers band. A lone filled
+  // band is now colored by its own sign, like every min-max band. A lone filled
   // band needs no split — its pos and neg bars grow away from the pivot in
   // opposite directions and never overlap — so the sign rides on the instance
   // colors and the layer count stays at one.
@@ -166,7 +172,7 @@ describe('buildSourceRenderData aggregate (bicolor, no solid color)', () => {
     mode => {
       const out = buildSourceRenderData(makeData(), {
         ...baseGpuProps,
-        effectiveAggregate: mode,
+        aggregate: mode,
       })
       expect(out).toHaveLength(1)
       expect([...out[0]!.featureScores]).toEqual(
@@ -189,7 +195,7 @@ describe('buildSourceRenderData aggregate (bicolor, no solid color)', () => {
     (mode, scores) => {
       const out = buildSourceRenderData(makeData(), {
         ...baseGpuProps,
-        effectiveAggregate: mode,
+        aggregate: mode,
         renderingType: 'linecenter',
       })
       expect(out.map(s => [...s.featureScores])).toEqual([scores])
@@ -203,7 +209,8 @@ describe('buildSourceRenderData aggregate (bicolor, no solid color)', () => {
   test('min mode splits the band into pos/neg layers in density', () => {
     const out = buildSourceRenderData(makeData(), {
       ...baseGpuProps,
-      effectiveAggregate: 'min',
+      aggregate: 'min',
+      effectiveExtent: 'none',
       renderingType: 'density',
     })
     expect(out.map(s => [...s.featureScores])).toEqual([[2], [-8]])
@@ -215,21 +222,23 @@ describe('buildSourceRenderData aggregate (bicolor, no solid color)', () => {
   test('min mode in density emits one layer when the band stays above the pivot', () => {
     const out = buildSourceRenderData(makePositiveData(), {
       ...baseGpuProps,
-      effectiveAggregate: 'min',
+      aggregate: 'min',
+      effectiveExtent: 'none',
       renderingType: 'density',
     })
     expect(out).toHaveLength(1)
     expect([...out[0]!.featureScores]).toEqual([2, 4])
   })
 
-  // density has no whiskers variant. The model resolves that before this ever
-  // sees it (`effectiveAggregate`, covered in densityMode.test.ts), so
-  // what arrives here is 'mean' — and density is the one mode that still needs
+  // density has no min-max variant. The model resolves that before this ever
+  // sees it (`effectiveExtent`, covered in densityMode.test.ts), so what
+  // arrives here is 'none' — and density is the one mode that still needs
   // solid-color layers, `drawDensity` building one gradient per layer.
   test('density + avg splits into solid pos/neg layers', () => {
     const out = buildSourceRenderData(makeData(), {
       ...baseGpuProps,
-      effectiveAggregate: 'mean',
+      aggregate: 'mean',
+      effectiveExtent: 'none',
       renderingType: 'density',
     })
     expect(out).toHaveLength(2)
@@ -242,7 +251,8 @@ describe('buildSourceRenderData pos/neg coloring', () => {
   test('faceted: the two sides of the pivot pack distinct colors', () => {
     const [layer] = buildSourceRenderData(makeData(), {
       ...baseGpuProps,
-      effectiveAggregate: 'mean',
+      aggregate: 'mean',
+      effectiveExtent: 'none',
     })
     const [above, below] = layer!.colorsAbgr!
     expect(above).not.toBe(below)
@@ -260,7 +270,8 @@ describe('buildSourceRenderData pos/neg coloring', () => {
       },
       {
         ...baseGpuProps,
-        effectiveAggregate: 'mean',
+        aggregate: 'mean',
+        effectiveExtent: 'none',
         sources: [
           { name: 'default', color: '#00ff00' },
           { name: 'b', color: '#ff00ff' },
@@ -278,7 +289,8 @@ describe('buildSourceRenderData pos/neg coloring', () => {
   test('a lone source keeps both pivot colors unfaceted', () => {
     const [layer] = buildSourceRenderData(makeData(), {
       ...baseGpuProps,
-      effectiveAggregate: 'mean',
+      aggregate: 'mean',
+      effectiveExtent: 'none',
       rowLayout: false,
     })
     const [above, below] = layer!.colorsAbgr!
@@ -305,7 +317,8 @@ describe('buildSourceRenderData source list', () => {
   test('a source missing from the payload keeps its row index', () => {
     const out = buildSourceRenderData(makeData(), {
       ...baseGpuProps,
-      effectiveAggregate: 'mean',
+      aggregate: 'mean',
+      effectiveExtent: 'none',
       sources: [{ name: 'absent' }, { name: 'default' }],
     })
     expect(out.map(s => s.rowIndex)).toEqual([1])

@@ -230,7 +230,7 @@
           "type": "LinearWiggleDisplay",
           "displayId": "HG008_log2ratio-LinearWiggleDisplay",
           "mark": "point",
-          "aggregate": "mean",
+          "extent": "none",
           "size": 1,
           "scales": { "y": { "domainMin": -2, "domainMax": 2 } },
           "height": 120

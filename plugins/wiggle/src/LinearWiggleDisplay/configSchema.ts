@@ -203,7 +203,7 @@ const linearWiggleDisplayConfigSchema = ConfigurationSchema(
         "Draw the key: density's score color ramp, or the source colors where several share one plot. Defaults to on",
       defaultValue: true,
     },
-    ...aggregateConfigSchemaFields({ defaultMode: 'whiskers' }),
+    ...aggregateConfigSchemaFields({ extent: 'min-max' }),
     ...treeSidebarConfigSchemaFields({
       tree: 'Show the subtrack clustering tree in the sidebar',
       rowLabels: 'Name each subtrack row down the left edge',

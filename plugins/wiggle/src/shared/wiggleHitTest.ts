@@ -35,16 +35,16 @@ export function findFeatureAtBp(
 }
 
 // Spread-friendly helper: returns `{ summary, minScore, maxScore }` when the
-// feature is a real summary (min/max diverge from score) and the user isn't
-// asking for plain 'mean'. Otherwise returns `{}` so the tooltip omits those
-// fields.
+// feature is a real summary (min/max diverge from score) and the display shows
+// them (`tooltipShowsMinMax`). Otherwise returns `{}` so the tooltip omits
+// those fields.
 function summaryFields(
   score: number,
   minScore: number | undefined,
   maxScore: number | undefined,
-  aggregate: string,
+  showsMinMax: boolean,
 ): { summary: true; minScore: number; maxScore: number } | { summary?: false } {
-  return aggregate !== 'mean' &&
+  return showsMinMax &&
     minScore !== undefined &&
     maxScore !== undefined &&
     (minScore !== score || maxScore !== score)
@@ -57,7 +57,7 @@ function summaryFields(
 export function makeTooltipRow(
   source: WiggleSourceData,
   i: number,
-  aggregate: string,
+  showsMinMax: boolean,
   name?: string,
   color?: string,
 ): WiggleTooltipRow {
@@ -70,7 +70,7 @@ export function makeTooltipRow(
       score,
       source.featureMinScores[i],
       source.featureMaxScores[i],
-      aggregate,
+      showsMinMax,
     ),
   }
 }
@@ -104,7 +104,7 @@ export function findSourceHit(
   source: WiggleSourceData,
   bp: number,
   refName: string,
-  aggregate: string,
+  showsMinMax: boolean,
   name?: string,
   color?: string,
 ): WiggleHoveredFeature | undefined {
@@ -116,7 +116,7 @@ export function findSourceHit(
         refName,
         start: featurePositions[i * 2]!,
         end: featurePositions[i * 2 + 1]!,
-        rows: [makeTooltipRow(source, i, aggregate, name, color)],
+        rows: [makeTooltipRow(source, i, showsMinMax, name, color)],
       }
 }
 

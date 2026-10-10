@@ -27,9 +27,9 @@ plugins draw a wiggle-shaped axis against it.
 ![How a wiggle score domain is resolved](diagrams/wiggle-domain.svg)
 
 - The visible features are walked **once** per domain recompute, and which
-  per-feature array each end reads comes from the resolved summary mode —
-  whiskers spreads the ends across the min and max arrays, everything else takes
-  both from one scalar.
+  per-feature array each end reads comes from the aggregate and the resolved
+  extent — a min-max extent spreads the ends across the min and max arrays,
+  none takes both from the aggregate's one array.
 - `domainQuantile` at 1 takes the visible extremes; below it each end is
   clipped to that quantile of the values on its side of 0 (`quantileExtent`,
   the rule a color ramp's `domainQuantile` reads too), and a linear or symlog
@@ -52,8 +52,8 @@ Config bounds are still checked first.
 - `facet` decides the layout, not the plot type: `'source'` gives each source a
   row (a row height, a scalebar and a dendrogram slot each), unset puts every
   source on row 0 of one box.
-- The plot type and the resolved summary mode together decide the **layers**:
-  three summary bands under whiskers, one under min/max or mean.
+- The plot type, the aggregate and the resolved extent together decide the
+  **layers**: three summary bands under a min-max extent, one without.
 - Nested filled bars and density split into solid layers drawn back to front,
   largest magnitude first. Everything else keeps one band with per-instance
   colors.
@@ -97,11 +97,11 @@ A row's `rowColor` draws its label bar in every layout that has row labels.
 
 ## Why the odd-looking branches are there
 
-- **Density resolves the summary mode to mean**, because it has no whiskers
+- **Density resolves the extent to none**, because it has no min-max
   presentation. The resolution happens on the model, so the autoscale domain,
-  the menu radio and the tooltip cannot each answer it differently.
-- **`rpcProps` carries the raw slot, not the resolved one.** The effective mode
-  moves with the plot type, so keying the fetch on it made a switch to density
+  the menu and the tooltip cannot each answer it differently.
+- **`rpcProps` carries no extent.** The effective extent moves with the plot
+  type, so keying the fetch on it made a switch to density
   re-download every visible region.
 - **Encode and render are separate autoruns**, and render is registered first —
   so the frame after a plot-type switch sees state that moved and a region that

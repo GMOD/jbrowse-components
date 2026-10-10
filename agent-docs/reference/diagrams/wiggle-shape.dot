@@ -17,12 +17,12 @@ digraph wiggle_shape {
   plot [label="plot type\nxyplot, density, line (step),\nline (interpolated), scatter"]
   single -> plot  multirow -> plot  overlay -> plot
 
-  summary [label="effectiveAggregate"]
+  summary [label="aggregate, effectiveExtent"]
   plot -> summary
   summary -> range [label=" any mode, line plots"]
-  summary -> bands [label=" whiskers, min, max, mean\l (density resolves to mean)"]
-  range [label="one line through every bin,\ncolored by the origin side it is on;\nwhiskers adds a translucent\nmin-max band under it"]
-  bands [label="one band under mean, min and max,\nthree under whiskers; each value\ncolored by its own sign\nagainst the origin"]
+  summary -> bands [label=" mean, min or max,\l min-max or none\l (density resolves to none)"]
+  range [label="one line through every bin,\ncolored by the origin side it is on;\na min-max extent adds a\ntranslucent band under it"]
+  bands [label="one band without an extent,\nthree under min-max; each value\ncolored by its own sign\nagainst the origin"]
 
   nests [label="density, or filled bars\nthat nest"]
   bands -> nests

@@ -42,14 +42,16 @@ describe('makeSummaryLayers', () => {
     cuts: [0],
     innerColors: [],
     origin: 0,
-    aggregate: 'whiskers',
+    aggregate: 'mean',
+    extent: 'min-max',
     gradient: false,
   }
 
-  test('line whiskers is a min-max band under the mean line', () => {
+  test('a min-max line is a band under the mean line', () => {
     const [band, mean, ...rest] = lineLayers(
       summaryData,
-      'whiskers',
+      'mean',
+      'min-max',
       posColor,
       negColor,
     )
@@ -65,8 +67,14 @@ describe('makeSummaryLayers', () => {
     }
   })
 
-  test('line whiskers with no summary spread draws the mean alone', () => {
-    const result = lineLayers(noSummaryData, 'whiskers', posColor, negColor)
+  test('a min-max line with no summary spread draws the mean alone', () => {
+    const result = lineLayers(
+      noSummaryData,
+      'mean',
+      'min-max',
+      posColor,
+      negColor,
+    )
     expect(result).toHaveLength(1)
     expect(result[0]!.band).toBeUndefined()
   })
@@ -76,13 +84,31 @@ describe('makeSummaryLayers', () => {
     ['min', minScores],
     ['max', maxScores],
   ] as const)('a %s line is one layer over every bin', (mode, expected) => {
-    const [line, ...rest] = lineLayers(summaryData, mode, posColor, negColor)
+    const [line, ...rest] = lineLayers(
+      summaryData,
+      mode,
+      'none',
+      posColor,
+      negColor,
+    )
     expect(rest).toEqual([])
     expect(line!.featureScores).toBe(expected)
     expect(line!.numFeatures).toBe(2)
   })
 
-  test('scatter whiskers keeps three whole bands, back to front', () => {
+  test('a max line keeps its min-max band, the line on its upper edge', () => {
+    const [band, line] = lineLayers(
+      summaryData,
+      'max',
+      'min-max',
+      posColor,
+      negColor,
+    )
+    expect(band!.band!.minScores).toBe(minScores)
+    expect(line!.featureScores).toBe(maxScores)
+  })
+
+  test('scatter min-max keeps three whole bands, back to front', () => {
     const result = makeSummaryLayers({
       data: summaryData,
       ...base,
@@ -156,7 +182,7 @@ describe('makeSummaryLayers', () => {
     const [layer] = makeSummaryLayers({
       data: noSummaryData,
       ...base,
-      aggregate: 'mean',
+      extent: 'none',
       pivot: 4,
       origin: 0,
       cuts: [4, 6],
@@ -174,6 +200,7 @@ describe('makeSummaryLayers', () => {
       data: summaryData,
       ...base,
       aggregate: 'min',
+      extent: 'none',
       pivot: 3,
       cuts: [3],
       innerColors: [],
@@ -200,6 +227,7 @@ describe('makeSummaryLayers', () => {
       data: summaryData,
       ...base,
       aggregate,
+      extent: 'none',
       pivot: 6,
       cuts: [6],
       innerColors: [],
@@ -218,7 +246,7 @@ describe('makeSummaryLayers', () => {
 
   // Untinted: with no sibling band there is no magnitude relationship for a
   // tint to carry, so the two colors are plain posColor/negColor — the very
-  // ones a whiskers render's avg band uses.
+  // ones a min-max render's mean band uses.
   test('the min/max band is untinted', () => {
     // noSummaryData collapses to the avg band alone; its scores [5, 8] straddle
     // pivot 6, so it yields both untinted colors in one layer.
@@ -279,7 +307,7 @@ describe('makeSummaryLayers', () => {
   })
 
   // pivot 6 with origin 0: without a gradient these bars part by color at 6
-  // and the whiskers bands tint.
+  // and the min-max bands tint.
   const gradientLayers = (renderingType: WiggleRenderingType) =>
     makeSummaryLayers({
       data: summaryData,

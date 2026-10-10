@@ -98,9 +98,9 @@
 <!-- mode -->
 <g id="node4" class="node">
 <title>mode</title>
-<polygon fill="none" stroke="black" points="260,-600 70,-600 70,-553.75 260,-553.75 260,-600"/>
-<text xml:space="preserve" text-anchor="middle" x="165" y="-586.5" font-family="monospace" font-size="10.00">effectiveAggregate</text>
-<text xml:space="preserve" text-anchor="middle" x="165" y="-573.75" font-family="monospace" font-size="10.00">picks which per&#45;feature array</text>
+<polygon fill="none" stroke="black" points="257,-600 73,-600 73,-553.75 257,-553.75 257,-600"/>
+<text xml:space="preserve" text-anchor="middle" x="165" y="-586.5" font-family="monospace" font-size="10.00">aggregate, effectiveExtent</text>
+<text xml:space="preserve" text-anchor="middle" x="165" y="-573.75" font-family="monospace" font-size="10.00">pick which per&#45;feature array</text>
 <text xml:space="preserve" text-anchor="middle" x="165" y="-561" font-family="monospace" font-size="10.00">each end of the domain reads</text>
 </g>
 <!-- vis&#45;&gt;mode -->
@@ -168,5 +168,5 @@
 <polygon fill="black" stroke="black" points="168.5,-137.2 165,-127.2 161.5,-137.2 168.5,-137.2"/>
 </g>
 </g>
-<!-- diagram-source-sha256 4b68439875046d8618126438d2aa9fd30a5237883e1d8fecd0b15bbb59a26c15 -->
+<!-- diagram-source-sha256 69482d35d6cdc529d61fdedaea524c0eb49798f898eb61a0cf4a30cb0871d10c -->
 </svg>

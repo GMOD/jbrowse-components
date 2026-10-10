@@ -202,22 +202,36 @@ describe('the wiggle display track menu', () => {
     expect(items.every(i => 'onClick' in i && staysOpenOnClick(i))).toBe(true)
   })
 
-  it('offers only the summary modes density draws, checking the effective one', () => {
-    const { display } = makeDisplay({ renderingType: 'density' })
-    display.configuration.setSlot('aggregate', 'whiskers')
-    const modes = subMenuOf(
-      subMenuOf(display.trackMenuItems(), 'Resolution'),
-      'Summary score mode',
-    )
-
-    // whiskers has no density presentation, so offering it would check a mode
-    // neither the plot nor the score domain uses — 'mean' is what both do
-    expect(labels(modes)).toEqual(['Minimum', 'Maximum', 'Average'])
-    expect(
-      modes
+  it('offers the min and max wherever the plot can draw them', () => {
+    const binSummary = (renderingType: string) =>
+      subMenuOf(
+        subMenuOf(
+          makeDisplay({ renderingType }).display.trackMenuItems(),
+          'Resolution',
+        ),
+        'Bin summary',
+      )
+    const checked = (items: MenuItem[]) =>
+      items
         .filter(i => 'checked' in i && i.checked)
-        .map(i => 'label' in i && i.label),
-    ).toEqual(['Average'])
+        .map(i => 'label' in i && i.label)
+
+    const bars = binSummary('xyplot')
+    expect(labels(bars)).toEqual([
+      'Minimum',
+      'Maximum',
+      'Average',
+      'Show min and max',
+    ])
+    expect(checked(bars)).toEqual(['Average', 'Show min and max'])
+
+    // density maps score to color and draws no min and max, so offering them
+    // would tick a setting nothing on screen follows
+    expect(labels(binSummary('density'))).toEqual([
+      'Minimum',
+      'Maximum',
+      'Average',
+    ])
   })
 
   // One source needs no key, and a faceted track names its sources beside

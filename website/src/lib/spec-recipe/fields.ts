@@ -1041,7 +1041,6 @@ const AGGREGATES: Record<string, string> = {
   min: 'Minimum',
   max: 'Maximum',
   mean: 'Average',
-  whiskers: 'Whiskers',
 }
 
 // The 'Plot type' menu radios come straight from the exported wiggle table, so
@@ -1866,10 +1865,15 @@ export const trackFields: Record<string, FieldRecipe> = {
   })),
   mark: markStep,
   interpolate: interpolateStep,
-  aggregate: fromTable(
-    'Resolution → Summary score mode',
-    AGGREGATES,
-  ),
+  aggregate: fromTable('Resolution → Bin summary', AGGREGATES),
+  extent: value =>
+    typeof value === 'string'
+      ? {
+          path: `${TRACK_MENU} → Resolution → Bin summary → Show min and max (${
+            value === 'min-max' ? 'checked' : 'unchecked'
+          })`,
+        }
+      : undefined,
   // `showDescriptions` has no entry on purpose. There is no "Show descriptions"
   // checkbox any more: it and the three-way name radio were folded into the one
   // Labels group, because the old pair let 'off' hide names while descriptions

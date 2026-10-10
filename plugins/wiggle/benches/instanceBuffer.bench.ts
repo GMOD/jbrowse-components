@@ -156,7 +156,7 @@ function payload(summary: boolean): WiggleDataResult {
 const data = payload(true)
 const dataAvg = payload(false)
 
-function props(renderingType: string, mode: string): WiggleGpuProps {
+function props(renderingType: string, extent: string): WiggleGpuProps {
   return {
     sources: sourceList,
     rowLayout: true,
@@ -171,15 +171,16 @@ function props(renderingType: string, mode: string): WiggleGpuProps {
       rampLut: null,
       rampMid: undefined,
     },
-    effectiveAggregate: mode,
+    aggregate: 'mean',
+    effectiveExtent: extent,
     renderingType,
     maxGapMultiple: 0,
   }
 }
-const xyProps = props('xyplot', 'mean')
-const lineProps = props('line', 'mean')
-const centerProps = props('linecenter', 'mean')
-const bandProps = props('line', 'whiskers')
+const xyProps = props('xyplot', 'none')
+const lineProps = props('line', 'none')
+const centerProps = props('linecenter', 'none')
+const bandProps = props('line', 'min-max')
 
 const xyLayers = buildSourceRenderData(dataAvg, xyProps)
 const lineLayers = buildSourceRenderData(dataAvg, lineProps)

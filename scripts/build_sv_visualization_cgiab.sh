@@ -271,7 +271,7 @@ fi
 # track legible are not things add-track can express. A bigWig zoom level carries
 # only min/avg/max per bin: a fair summary of read depth, a meaningless one for
 # BAF, whose per-bin values are a distribution. Every summary bin over an LOH arm
-# comes back min 0 / max 1 / avg noise, and the default whiskers rendering paints
+# comes back min 0 / max 1 / avg noise, and the default min-max extent paints
 # all three as one solid full-height wash. resolutionMultiplier scales the
 # bases-per-bin the adapter asks for; the finest zoom level in this file reduces
 # at 2560 bp and bbi takes a zoom level when reductionLevel <= 2*basesPerSpan, so

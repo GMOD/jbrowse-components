@@ -54,7 +54,7 @@ const CGIAB_FTP_READS =
 // resolutionMultiplier is what makes those bands survive being drawn. BAF per
 // bin is a distribution, not a signal with a meaningful mean, but a bigWig zoom
 // level can only carry min/avg/max: every summary bin over an LOH arm comes back
-// min 0, max 1, avg noise, and the default whiskers rendering paints that as a
+// min 0, max 1, avg noise, and the default min-max extent paints that as a
 // full-height wash. The bigWig's finest zoom level reduces at 2560 bp and bbi
 // takes a zoom level when reductionLevel <= 2*basesPerSpan, so 0.001 keeps the
 // fetch on raw per-site values out to ~1.28 Mbp/px. That covers every
@@ -1273,7 +1273,7 @@ export const svSpecs: ScreenshotSpec[] = [
               type: 'LinearWiggleDisplay',
               mark: 'bar',
               color: '#0068d1',
-              aggregate: 'mean',
+              extent: 'none',
               scales: { y: { domainMin: 0, domainMax: 140, grid: true } },
               height: 180,
             },
@@ -1834,7 +1834,7 @@ export const svSpecs: ScreenshotSpec[] = [
               type: 'LinearWiggleDisplay',
               mark: 'bar',
               color: '#0068d1',
-              aggregate: 'mean',
+              extent: 'none',
               scales: { y: { domainMin: 0, domainMax: 140 } },
               height: 110,
             },
@@ -1943,7 +1943,7 @@ export const svSpecs: ScreenshotSpec[] = [
               // min/max) since HiFiCNV depth is raw coverage, not a ±ratio
               mark: 'point',
               color: '#0068d1',
-              aggregate: 'mean',
+              extent: 'none',
               size: 1,
               resolution: 10,
               height: 180,
@@ -2124,7 +2124,7 @@ export const svSpecs: ScreenshotSpec[] = [
               trackId: 'hg008_tn_perbase',
               type: 'LinearWiggleDisplay',
               mark: 'bar',
-              aggregate: 'mean',
+              extent: 'none',
               // no cross hatches: the read is one filled profile against the
               // other, and the gridlines only add texture across both
               scales: { y: { domainMin: 0, domainMax: 80, grid: false } },
@@ -2216,7 +2216,7 @@ export const svSpecs: ScreenshotSpec[] = [
               type: 'LinearWiggleDisplay',
               mark: 'point',
               color: '#0068d1',
-              aggregate: 'mean',
+              extent: 'none',
               size: 3,
               height: 140,
               // request bigwig bins 10x finer than screen resolution so the
@@ -2295,7 +2295,7 @@ export const svSpecs: ScreenshotSpec[] = [
               type: 'LinearWiggleDisplay',
               mark: 'point',
               color: '#0068d1',
-              aggregate: 'mean',
+              extent: 'none',
               size: 1,
               height: 140,
               // finer bigwig bins so the 500bp-binned log2 shows across chr17

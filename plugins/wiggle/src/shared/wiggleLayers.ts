@@ -89,7 +89,8 @@ interface ScoreBand {
   negTint: Tint
 }
 
-// The bands an aggregate draws, ordered outermost-first (max, avg, min).
+// The bands an aggregate and its extent draw, ordered outermost-first (max,
+// the aggregate, min).
 //
 // The tint is mirrored across the pivot so lightness always tracks magnitude,
 // not signed value: on the positive side the max band lightens and the min band
@@ -97,29 +98,28 @@ interface ScoreBand {
 // most-negative min band lightens and the least-negative max band darkens (most
 // negative = lightest red, not a dark brown).
 //
-// avg and min/max draw one band, untinted: with no sibling band beside it
-// there is no magnitude relationship for a tint to carry. Whiskers
-// collapses to the avg band alone when the data has no summary variation, since
+// The aggregate alone draws one band, untinted: with no sibling band beside it
+// there is no magnitude relationship for a tint to carry. A min-max extent
+// collapses to that band too when the data has no summary variation, since
 // processFeaturesFromArrays aliases min/max onto featureScores there and the
 // other two bands would paint the same values twice more.
-function summaryBands(data: FeatureArrays, aggregate: string): ScoreBand[] {
-  if (aggregate !== 'whiskers') {
-    return [
-      {
-        scores: getEffectiveScores(data, aggregate),
-        posTint: noTint,
-        negTint: noTint,
-      },
-    ]
+function summaryBands(
+  data: FeatureArrays,
+  aggregate: string,
+  extent: string,
+): ScoreBand[] {
+  const value = {
+    scores: getEffectiveScores(data, aggregate),
+    posTint: noTint,
+    negTint: noTint,
   }
-  const avg = { scores: data.featureScores, posTint: noTint, negTint: noTint }
-  return data.hasSummaryScores
+  return extent === 'min-max' && data.hasSummaryScores
     ? [
         { scores: data.featureMaxScores, posTint: lighten, negTint: darken },
-        avg,
+        value,
         { scores: data.featureMinScores, posTint: darken, negTint: lighten },
       ]
-    : [avg]
+    : [value]
 }
 
 // One band split into its above-pivot and below-pivot solid-color layers,
@@ -216,6 +216,7 @@ function stackSides(
 export function makeSummaryLayers({
   data,
   aggregate,
+  extent,
   posColor,
   negColor,
   pivot,
@@ -227,6 +228,7 @@ export function makeSummaryLayers({
 }: {
   data: FeatureArrays
   aggregate: string
+  extent: string
   posColor: [number, number, number]
   negColor: [number, number, number]
   pivot: number
@@ -240,7 +242,7 @@ export function makeSummaryLayers({
   const { featurePositions, numFeatures } = data
   const isDensityMode = renderingType === RENDERING_TYPE_DENSITY
   const isFilled = renderingType === RENDERING_TYPE_XYPLOT
-  const bands = summaryBands(data, aggregate)
+  const bands = summaryBands(data, aggregate, extent)
 
   // Split each band into solid-color pos/neg layers, or keep it whole and color
   // per instance? Two things force the split:
@@ -346,6 +348,7 @@ export function makeSummaryLayers({
 export function lineLayers(
   data: FeatureArrays,
   aggregate: string,
+  extent: string,
   posColor: [number, number, number],
   negColor: [number, number, number],
 ): WiggleLayer[] {
@@ -357,7 +360,7 @@ export function lineLayers(
     color: posColor,
     negColor,
   }
-  return aggregate === 'whiskers' && data.hasSummaryScores
+  return extent === 'min-max' && data.hasSummaryScores
     ? [
         {
           featurePositions,

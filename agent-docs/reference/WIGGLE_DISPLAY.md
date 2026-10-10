@@ -28,7 +28,7 @@ and next scores, the center line the previous bin's span and score. Sharing one
 `ideas/ready/wiggle-instance-records-carry-per-row-constants.md` has the
 measurements.
 
-`wiggleBand.slang` fills a line plot's whiskers band on a 44-byte record. **The
+`wiggleBand.slang` fills a line plot's min-max band on a 44-byte record. **The
 GPU draws it after the lines with `blend: behind`**, because the interpolated
 line's max blend is only valid over an empty target. `MarkContext2D` exposes no
 compositing operator, so on Canvas2D band layers sort first and the line marks
@@ -55,7 +55,7 @@ the correct stale.
 
 The consequence differs by backend and the rule does not: on the GPU the record
 sizes mean a pass reading the wrong one reads past the end of its instances; on
-Canvas2D the layer SET is chosen by the rendering (`filled` splits whiskers by
+Canvas2D the layer SET is chosen by the rendering (`filled` splits the min-max bands by
 sign) and so is `gapLimitBp`, so the new painter over the old layers is a plot
 that is neither. Canvas2D read `state` once and drew chords across every hole
 for that frame.
@@ -207,12 +207,12 @@ floored at 1 or the shader seeds the row transform with Infinity.
   BigWig data is full of non-tiling bins); only a hole past `gapLimitBp` breaks
   it, computed once per layer and measured in **bp, not px** — px drifts from
   the encoded break wherever a block is clipped. `centerLinksToPrevious` applies
-  it for the stroke and the whiskers band on both backends, so the ribbon breaks
+  it for the stroke and the min-max band on both backends, so the ribbon breaks
   where the line does.
 - **`DEFAULT_GAP_BREAK_MULTIPLE` is 0 (off)** after shipping at 20;
   `gapBreak.ts`.
 
-## Effective vs raw `aggregate`
+## `aggregate`, `extent`, and the effective extent
 
 `aggregate` picks one of the three summaries a zoom bin already stores; it
 computes nothing. A BigWig tier and a synthetic tier both carry mean, min and
@@ -220,12 +220,15 @@ max, and `processFeaturesFromArrays` aliases a raw feature's min and max onto
 its score, so over a source with no tiers, a bedGraph, the setting has nothing
 to choose between.
 The mark display reads the same tiers through `y: 'maxScore'` (ADR-123), and
-its `aggregate` transform step is the one that computes.
+its `aggregate` transform step is the one that computes. `extent: 'min-max'`
+draws the bin's min and max around the aggregate, Vega-Lite's boxplot
+`extent`; it was the `whiskers` aggregate until it was split out, since it
+names a span and no operation.
 
-`effectiveAggregate` resolves whiskers to `mean` under density, and the
-autoscale domain, menu radio, tooltip and `gpuProps` all read it. **`rpcProps`
-carries the raw slot** — the effective one moves with the rendering type, so
-switching to density would re-download every region.
+`effectiveExtent` resolves to `none` under density, and the autoscale domain,
+the menu, the tooltip and `gpuProps` all read it. **`rpcProps` carries the raw
+`aggregate`** and no extent: the extent moves with the rendering type, and no
+adapter reads either.
 
 **No color setting is a fetch key.** `color` and `origin` are `gpuProps` alone:
 the worker ships one set of score arrays and the main thread colors each
@@ -241,7 +244,7 @@ magnitude first — the opposite order on each side of the origin, which a singl
 band order can't express. Filled bars split at the origin they grow from and
 carry `colorsAbgr` for the pivot where a threshold cuts elsewhere; density
 splits at the pivot. Under a gradient bars and points carry no color lane and
-no whiskers tint: the ramp is the whole color. Density needs it because
+no min-max tint: the ramp is the whole color. Density needs it because
 `drawDensity` builds one gradient per layer, and it is the only mode that
 reaches the split with a single band (`mean`). Everything else keeps each band
 whole and carries `colorsAbgr`, one packed color per instance — or none at all

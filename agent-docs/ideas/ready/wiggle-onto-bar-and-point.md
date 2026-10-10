@@ -1,6 +1,6 @@
 ---
 name: wiggle-onto-bar-and-point
-description: Move the wiggle display's plots onto render-core's bar, point, line and span marks, keeping LinearWiggleDisplay as a display type. The line (ADR-184), the pivot as a shader-side threshold (ADR-185), the heatmap as a span (ADR-113's amendment) and a constant color as one number (ADR-198) have landed. Colin's 2026-09-30 approval settled the rest of the shape - the row lane stays per instance, and whiskers become three translucent bar marks, shown as captures first. Left are a symlog ramp in markColor.slang, `resolution`, GC content's value domain, per-source color on the plot, wiggle's all-sources tooltip and a typed table for MultiWiggleAdapter. Sized at 7-10 days.
+description: Move the wiggle display's plots onto render-core's bar, point, line and span marks, keeping LinearWiggleDisplay as a display type. The line (ADR-184), the pivot as a shader-side threshold (ADR-185), the heatmap as a span (ADR-113's amendment) and a constant color as one number (ADR-198) have landed. Colin's 2026-09-30 approval settled the rest of the shape - the row lane stays per instance, and a min-max extent becomes three translucent bar marks, shown as captures first. Left are a symlog ramp in markColor.slang, `resolution`, GC content's value domain, per-source color on the plot, wiggle's all-sources tooltip and a typed table for MultiWiggleAdapter. Sized at 7-10 days.
 ---
 
 # Wiggle's plots onto render-core's marks

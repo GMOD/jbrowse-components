@@ -620,7 +620,8 @@ exports[`every registered schema slot default 1`] = `
     "showOutline": "boolean = false",
   },
   "display: LinearWiggleDisplay": {
-    "aggregate": "stringEnum = "whiskers" of ["max","min","mean","whiskers"]",
+    "aggregate": "stringEnum = "mean" of ["mean","min","max"]",
+    "extent": "stringEnum = "min-max" of ["min-max","none"]",
     "height": "number = 100",
     "interpolate": "stringEnum = "step" of ["step","linear"]",
     "mark": "stringEnum = "bar" of ["bar","point","line","span"]",

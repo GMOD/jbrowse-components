@@ -463,6 +463,7 @@ export const ldSpecs: ScreenshotSpec[] = [
               color: '#0068d1',
               size: 2,
               aggregate: 'max',
+              extent: 'none',
               scales: { y: { domainMin: 0.1, domainMax: 0.5 } },
               height: 140,
             },
@@ -653,6 +654,7 @@ export const ldSpecs: ScreenshotSpec[] = [
               color: '#0068d1',
               size: 2,
               aggregate: 'max',
+              extent: 'none',
               // The lane below's floor and ceiling, so the two are one axis
               // read at two scales and the peak is the same height in both.
               scales: { y: { domainMin: 0.1, domainMax: 0.5 } },

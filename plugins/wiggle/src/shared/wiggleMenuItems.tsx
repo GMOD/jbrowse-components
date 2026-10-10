@@ -1,6 +1,10 @@
 import { readConfObject } from '@jbrowse/core/configuration'
 import { makeSizeMenu } from '@jbrowse/core/ui'
-import { makeRadioSubMenu, radioItems } from '@jbrowse/core/ui/menuItems'
+import {
+  makeRadioSubMenu,
+  radioItems,
+  toggleItem,
+} from '@jbrowse/core/ui/menuItems'
 import {
   makePointSizeSubMenu,
   makeResolutionSubMenuItem,
@@ -17,7 +21,7 @@ import {
 } from './WiggleCommonMixin.ts'
 import { isLineMode, isScatterMode } from './wiggleComponentUtils.ts'
 
-import type { Aggregate } from './aggregateConfigSchemaFields.ts'
+import type { Aggregate, Extent } from './aggregateConfigSchemaFields.ts'
 import type { ConfigModelForFields } from '@jbrowse/core/configuration'
 import type { MenuItem } from '@jbrowse/core/ui'
 import type { RadioOption } from '@jbrowse/core/ui/menuItems'
@@ -145,12 +149,12 @@ function formatResolution(n: number) {
 interface WithResolution {
   hasResolution: boolean
   resolution: number
-  // the resolved mode, so the radio checks what the plot draws rather than a
-  // raw slot value density ignores
-  effectiveAggregate: Aggregate
+  aggregate: Aggregate
+  extent: Extent
   isDensityMode: boolean
   setResolution: (n: number) => void
   setAggregate: (v: Aggregate) => void
+  setExtent: (v: Extent) => void
 }
 
 // Resolution is a multiplier on the number of bins fetched (higher = finer),
@@ -188,27 +192,25 @@ const AGGREGATE_OPTIONS: RadioOption<Aggregate>[] = [
   { value: 'min', label: 'Minimum' },
   { value: 'max', label: 'Maximum' },
   { value: 'mean', label: 'Average' },
-  { value: 'whiskers', label: 'Whiskers' },
 ]
 
 // In the Resolution submenu: both say how the fetched bins are read, and both
-// exist only where the adapter serves bins.
+// exist only where the adapter serves bins. Density maps score to color and
+// draws no min and max, so it offers no extent.
 function makeAggregateItem(self: WithResolution): MenuItem {
   return {
-    label: 'Summary score mode',
-    subMenu: radioItems(
-      // density maps score to color rather than height, so it has no
-      // whiskers presentation at all — offering it would check a mode
-      // that neither the plot nor the score domain uses. The radio
-      // instead follows `effectiveAggregate`, which is the
-      // average a whiskers-configured density track really draws.
-      self.isDensityMode
-        ? AGGREGATE_OPTIONS.filter(m => m.value !== 'whiskers')
-        : AGGREGATE_OPTIONS,
-      self.effectiveAggregate,
-      v => {
+    label: 'Bin summary',
+    subMenu: [
+      ...radioItems(AGGREGATE_OPTIONS, self.aggregate, v => {
         self.setAggregate(v)
-      },
-    ),
+      }),
+      ...(self.isDensityMode
+        ? []
+        : [
+            toggleItem('Show min and max', self.extent === 'min-max', on => {
+              self.setExtent(on ? 'min-max' : 'none')
+            }),
+          ]),
+    ],
   }
 }

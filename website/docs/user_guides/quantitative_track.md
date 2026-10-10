@@ -28,7 +28,7 @@ offers these styles:
 
 **Plot type** and **Resolution** are top-level track menu items. Resolution
 steps how many points per pixel a BigWig is read at, finer or coarser than one
-per pixel, and holds **Summary score mode** beneath the stepper.
+per pixel, and holds **Bin summary** beneath the stepper.
 
 ### The Y axis panel
 
@@ -68,18 +68,19 @@ Include 0 and Clip extreme outliers move only an end left empty, so both grey
 out once Min and Max are both set; Include 0 also greys out on a log axis, which
 has no 0. Density mode offers neither Include 0 nor the guides.
 
-### Summary score mode
+### Bin summary
 
-Zoomed out, a BigWig serves precomputed summary bins, and **Resolution → Summary
-score mode** picks which of a bin's stored statistics is drawn: **Minimum**,
-**Maximum**, **Average**, or **Whiskers**
-([`aggregate`](/docs/config/linearwiggledisplay/#slot-aggregate)). Whiskers
-shows all three. An XY plot nests a darker average bar inside the lighter
-min-to-max range. A line plot fills min to max as a translucent band behind the
-average line, stepped or interpolated to match the line. Density mode draws the
-average, since it maps score to color. Where the source serves raw values, such
-as a bedGraph or a BigWig zoomed all the way in, the three are one number and
-the mode changes nothing.
+Zoomed out, a BigWig serves precomputed summary bins, and **Resolution → Bin
+summary** picks which of a bin's stored statistics is drawn: **Minimum**,
+**Maximum** or **Average**
+([`aggregate`](/docs/config/linearwiggledisplay/#slot-aggregate)). **Show min
+and max** draws the bin's min to max around it
+([`extent`](/docs/config/linearwiggledisplay/#slot-extent)): an XY plot nests
+the darker bar inside the lighter min-to-max range, and a line plot fills min to
+max as a translucent band behind the line, stepped or interpolated to match it.
+Density mode draws no min and max, since it maps score to color. Where the
+source serves raw values, such as a bedGraph or a BigWig zoomed all the way in,
+the three are one number and neither setting changes anything.
 
 A narrow peak fades out across a whole chromosome when averaged over a wide bin.
 **Maximum** keeps it visible.

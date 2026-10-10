@@ -85,8 +85,8 @@ and problematic-region tracks for hg38 only:
   at each position that are unique in the genome, computed from the reference
   alone. The file omits positions with no unique 100-mer, so the track goes
   blank there.
-  - **Resolution → Summary score mode → Minimum** draws the worst position in
-    each bin
+  - **Resolution → Bin summary → Minimum**, with **Show min and max** unchecked,
+    draws the worst position in each bin
   - **Y axis... → Range** pins the axis at 0 to 1
   - In the 2.5 Mb frame, at about a kilobase per pixel, even **Minimum** sits on
     the floor everywhere, so read this track in the narrower read view
@@ -114,6 +114,7 @@ The Umap config holds the **Minimum** score mode and the 0 to 1 axis:
       "type": "LinearWiggleDisplay",
       "displayId": "hg38-umap100Quantitative-LinearWiggleDisplay",
       "aggregate": "min",
+      "extent": "none",
       "scales": { "y": { "domainMin": 0, "domainMax": 1 } }
     }
   ]

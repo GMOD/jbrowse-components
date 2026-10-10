@@ -12,7 +12,7 @@ import type { WiggleDataResult } from '@jbrowse/wiggle-core'
 // candidate CNV puts the carriers together at the top, and a density matrix
 // sorted at a peak resolves the samples that have it.
 //
-// `getEffectiveScores` under the display's effective aggregate, which is the
+// `getEffectiveScores` under the display's aggregate, which is the
 // array the plot paints its main mark from — sorting the average while the rows
 // show min or max would order them by a number that isn't on screen.
 //

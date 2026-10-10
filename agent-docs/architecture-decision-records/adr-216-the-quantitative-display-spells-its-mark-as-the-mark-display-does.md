@@ -18,6 +18,13 @@ rather than computing one, which is what the mark display spells as
 `y: 'maxScore'` (ADR-123); the name stays because the drawing is that
 aggregate's, run ahead of time, and a top-level slot cannot meet the mark
 display's `aggregate` transform step. `summary` was the rename considered.
+`whiskers` named a span and no operation, so it left the enum the same day:
+`aggregate` is `mean`, `min` or `max`, and `extent` (`'min-max'` or `'none'`,
+Vega-Lite's boxplot word) says whether the bin's min-to-max span is drawn
+around it. The single-source display defaults to `min-max`, the multi track
+and GC content to `none`; v4's `whiskers` lifts to `mean` with `min-max`, and
+its other modes to `none`. The menu's row is "Bin summary", the three
+operations as a radio and "Show min and max" as a checkbox.
 
 ## Context
 

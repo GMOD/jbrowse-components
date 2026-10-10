@@ -89,7 +89,7 @@ describe('computeAutoscaleDomain', () => {
     expect(result).toEqual([42, 42])
   })
 
-  test('whiskers mode uses min/max scores', () => {
+  test('a min-max extent uses min/max scores', () => {
     const data = {
       featurePositions: new Uint32Array([0, 100, 100, 200]),
       featureScores: new Float32Array([5, 8]),
@@ -99,7 +99,7 @@ describe('computeAutoscaleDomain', () => {
       hasSummaryScores: true,
     }
     const entries = [{ data, visStart: 0, visEnd: 200 }]
-    const result = computeAutoscaleDomain(1, 'whiskers', entries, true)
+    const result = computeAutoscaleDomain(1, 'mean', entries, true, 'min-max')
     expect(result).toEqual([1, 15])
   })
 
@@ -147,7 +147,7 @@ describe('computeAutoscaleDomain', () => {
     expect(result![1]).toBeGreaterThan(0)
   })
 
-  test('a clipped whiskers domain uses min/max arrays for each side', () => {
+  test('a clipped min-max domain uses min/max arrays for each side', () => {
     // Bottom whiskers reach -8, top whiskers +12; the domain must open up to the
     // whisker spread on each side, not just the average scores.
     const data = {
@@ -159,7 +159,13 @@ describe('computeAutoscaleDomain', () => {
       hasSummaryScores: true,
     }
     const entries = [{ data, visStart: 0, visEnd: 200 }]
-    const result = computeAutoscaleDomain(0.99, 'whiskers', entries, true)
+    const result = computeAutoscaleDomain(
+      0.99,
+      'mean',
+      entries,
+      true,
+      'min-max',
+    )
     expect(result![0]).toBeLessThanOrEqual(-8)
     expect(result![1]).toBeGreaterThanOrEqual(12)
   })
