@@ -1064,10 +1064,14 @@ export default function stateModelFactory(
            * #getter
            * The sections' order, where the facet reads the field the reads are
            * colored by: a key over one field lists it as the sections stack.
+           * Not over `mapq`, whose sections are bins and whose key is its bins
+           * or its raw values.
            */
           get keySectionOrder() {
             const facet = this.effectiveFacet
-            return facet && facet.field === colorFieldOf(self.colorBy)
+            return facet &&
+              facet.field === colorFieldOf(self.colorBy) &&
+              self.colorBy.type !== 'mappingQuality'
               ? sectionOrder(facet.field, facet.domain)
               : undefined
           },

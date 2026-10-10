@@ -269,6 +269,15 @@ describe('keySectionOrder', () => {
     display.setFacet({ field: 'tags.RG', domain: [] })
     expect(display.keySectionOrder).toBeUndefined()
   })
+
+  test("a mapq facet's bins order no key of raw MAPQs", () => {
+    const display = createDisplay()
+    display.applyPlot({
+      color: { field: 'mapq', scale: 'categorical' },
+      facet: { field: 'mapq' },
+    })
+    expect(display.keySectionOrder).toBeUndefined()
+  })
 })
 
 // Toggling "view as pairs" auto-switches coloring for the common case but must
