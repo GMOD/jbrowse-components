@@ -124,3 +124,19 @@ describe('the slots v4 declared on the display', () => {
     expect(readConfObject(conf, ['color', 'value'])).toBe('purple')
   })
 })
+
+test.each([
+  [{ summaryScoreMode: 'avg' }, 'mean'],
+  [{ summaryScoreMode: 'min' }, 'min'],
+  [{ renderers: { XYPlotRenderer: { summaryScoreMode: 'max' } } }, 'max'],
+])('v4’s %j is aggregate %s', (v4, aggregate) => {
+  expect(readConfObject(create(v4), 'aggregate')).toBe(aggregate)
+})
+
+test('a v4 renderers block keeps its color beside its summary mode', () => {
+  const conf = create({
+    renderers: { XYPlotRenderer: { summaryScoreMode: 'avg', color: 'red' } },
+  })
+  expect(readConfObject(conf, 'aggregate')).toBe('mean')
+  expect(readConfObject(conf, ['color', 'value'])).toBe('red')
+})

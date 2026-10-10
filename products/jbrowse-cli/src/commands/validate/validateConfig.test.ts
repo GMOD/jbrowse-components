@@ -254,7 +254,7 @@ describe('validateConfig', () => {
     expect(warningsOf(config)[0]?.message).toContain('legacy value')
   })
 
-  it("warns on v4's avg summary mode, which the schema lifts to mean", () => {
+  it("warns on v4's summaryScoreMode, which the schema lifts to aggregate", () => {
     const config = baseConfig()
     config.tracks[0] = {
       ...config.tracks[0]!,
@@ -267,7 +267,7 @@ describe('validateConfig', () => {
     expect(warningsOf(config).map(w => w.where)).toEqual([
       'tracks[0].displays[0].summaryScoreMode',
     ])
-    expect(warningsOf(config)[0]?.message).toContain('legacy value')
+    expect(warningsOf(config)[0]?.message).toContain('legacy key')
   })
 
   // The same rewrites, from the validator's side: a warning naming the current

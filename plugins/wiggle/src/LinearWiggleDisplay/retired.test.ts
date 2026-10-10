@@ -1,4 +1,4 @@
-import { foldMultiWiggleRendering } from './retired.ts'
+import { foldMultiWiggleRendering, retiredState } from './retired.ts'
 
 test.each([
   ['multirowxy', 'xyplot', 'source'],
@@ -37,4 +37,14 @@ test.each(['multirowxy', 'multiline', 'multirowdensity'])(
 test('an entry with no rendering is left alone', () => {
   const entry = { height: 300 }
   expect(foldMultiWiggleRendering(entry)).toBe(entry)
+})
+
+test.each([
+  ['avg', 'mean'],
+  ['whiskers', 'whiskers'],
+])('a v4 session’s summaryScoreMode %s is aggregate %s', (mode, aggregate) => {
+  expect(retiredState.lift({ summaryScoreMode: mode })).toMatchObject({
+    aggregate,
+  })
+  expect(retiredState.keys).toContain('summaryScoreMode')
 })
