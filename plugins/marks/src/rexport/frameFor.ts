@@ -99,6 +99,7 @@ export const READERS = {
       'name',
       'score',
       'flags',
+      'cigar',
       'template_length',
       'pair_orientation',
       'next_ref',

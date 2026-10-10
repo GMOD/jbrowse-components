@@ -56,6 +56,43 @@ const absentContig = register(
   'c(nrow(reads_volvox_alignments), nrow(depth_volvox_alignments), nrow(mismatches_volvox_alignments))',
 )
 
+const READ_NAME = 'ctgA_1405_1888_3:0:0_5:0:0_21c4'
+const filtered = register(
+  'aln_filter',
+  scriptFor([
+    track(main, 'volvox_alignments', 'LinearAlignmentsDisplay', {
+      filter: { flagExclude: 1540 + 16, readName: READ_NAME },
+    }),
+  ]),
+  'c(unique(reads_volvox_alignments$name), unique(reads_volvox_alignments$strand))',
+)
+
+const SPLICED_REGION = [{ refName: 'ctgA', start: 400, end: 1200 }]
+const splicedReads = (spliced: 'only' | 'exclude') =>
+  register(
+    `aln_spliced_${spliced}`,
+    scriptFor(
+      [
+        track(main, 'spliced', 'LinearAlignmentsDisplay', {
+          filter: { spliced },
+        }),
+      ],
+      SPLICED_REGION,
+    ),
+    'c(nrow(reads_spliced), sum(grepl("N", reads_spliced$cigar)))',
+  )
+const splicedOnly = splicedReads('only')
+const splicedExcluded = splicedReads('exclude')
+
+const chainFilterNotes = exportTracksToR({
+  tracks: [
+    track(main, 'volvox_alignments', 'LinearAlignmentsDisplay', {
+      filter: { properPairs: 'exclude', split: 'only' },
+    }),
+  ],
+  regions: REGIONS,
+}).notes
+
 const collidingIds = register(
   'colliding_ids',
   scriptFor(
@@ -428,6 +465,22 @@ maybe('the emitted script, run under R', () => {
 
   it('reads no reads from a contig the BAM lacks, without dying', () => {
     expect(results.get(absentContig)).toBe('[1] 0 0 0')
+  })
+
+  it('keeps the reads the display\u2019s filter keeps', () => {
+    expect(results.get(filtered)).toBe(`[1] "${READ_NAME}" "1"`)
+    const [only, onlySkips] = results.get(splicedOnly)!.slice(4).split(/\s+/)
+    expect(Number(only)).toBeGreaterThan(0)
+    expect(onlySkips).toBe(only)
+    const [kept, keptSkips] = results
+      .get(splicedExcluded)!
+      .slice(4)
+      .split(/\s+/)
+    expect(Number(kept)).toBeGreaterThan(0)
+    expect(keptSkips).toBe('0')
+    expect(chainFilterNotes.join('\n')).toMatch(
+      /properPairs "exclude" is not translated[\s\S]*split "only" is not translated/,
+    )
   })
 
   it('keeps two track ids that sanitise alike apart', () => {

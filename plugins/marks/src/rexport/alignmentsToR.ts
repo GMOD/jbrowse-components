@@ -28,16 +28,28 @@ import type { Step } from './transformR.ts'
 /** The slice of a LinearAlignmentsDisplay config snapshot this translates. */
 export interface AlignmentsDisplaySnapshot {
   color?: string | ColorSpec
-  filterBy?: {
-    flagInclude?: number
-    flagExclude?: number
-    readName?: string
-    tagFilters?: { tag: string; value?: string }[]
-  }
+  filter?: ReadFilter
   showCoverage?: boolean
   showMismatches?: boolean
   [slot: string]: unknown
 }
+
+type CategoryFilter = 'only' | 'exclude'
+
+/** The display's `filter` object, as its `ReadFilter` config writes it. */
+interface ReadFilter {
+  flagInclude?: number
+  flagExclude?: number
+  readName?: string
+  tagFilters?: { tag: string; value?: string }[]
+  spliced?: CategoryFilter
+  properPairs?: CategoryFilter
+  singletons?: CategoryFilter
+  split?: CategoryFilter
+}
+
+/** The read categories the browser decides over a read's whole chain, which R does not group. */
+const CHAIN_CATEGORIES = ['properPairs', 'singletons', 'split'] as const
 
 /** Slots whose drawing this does not translate, reported when set off their default. */
 const UNTRANSLATED: Record<string, unknown> = {
@@ -232,13 +244,21 @@ function readColor(
   }
 }
 
-function filterArgs(filterBy: AlignmentsDisplaySnapshot['filterBy']) {
+function filterArgs(filter: ReadFilter | undefined, notes: string[]) {
   const {
     flagInclude = 0,
     flagExclude = 1540,
     readName,
     tagFilters = [],
-  } = filterBy ?? {}
+    spliced,
+  } = filter ?? {}
+  for (const category of CHAIN_CATEGORIES) {
+    if (filter?.[category]) {
+      notes.push(
+        `filter: ${category} "${filter[category]}" is not translated, so the figure draws the reads it filters`,
+      )
+    }
+  }
   return [
     `flag_include = ${flagInclude}`,
     `flag_exclude = ${flagExclude}`,
@@ -250,6 +270,7 @@ function filterArgs(filterBy: AlignmentsDisplaySnapshot['filterBy']) {
             .join(', ')})`,
         ]
       : []),
+    ...(spliced ? [`spliced = ${rStr(spliced)}`] : []),
   ].join(', ')
 }
 
@@ -303,7 +324,7 @@ export function alignmentsPanels({
     }
   }
   const color = readColor(display.color, notes)
-  const tagFilters = display.filterBy?.tagFilters ?? []
+  const tagFilters = display.filter?.tagFilters ?? []
   const base = frameFor({
     type: 'BamAdapter',
     uri,
@@ -334,7 +355,7 @@ export function alignmentsPanels({
     coords: base.coords,
     packages: base.packages,
     statements: [
-      `${readsName} <- alignments_fields(read_filter(${readsName}, ${filterArgs(display.filterBy)})${color.cuts ? `, cuts = c(${color.cuts.join(', ')})` : ''})`,
+      `${readsName} <- alignments_fields(read_filter(${readsName}, ${filterArgs(display.filter, notes)})${color.cuts ? `, cuts = c(${color.cuts.join(', ')})` : ''})`,
       ...(color.derive
         ? [
             `${readsName}$${rIdent(LEVEL_COLUMN)} <- ${color.derive.replaceAll('READS', readsName)}`,

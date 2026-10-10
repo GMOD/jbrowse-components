@@ -1,6 +1,6 @@
 # Read the alignments overlapping a region into data.frame(start, end, strand,
-# name, score, flags, template_length, pair_orientation, next_ref, next_pos,
-# refName, read_index), the fields a JBrowse read answers to under the same
+# name, score, flags, cigar, template_length, pair_orientation, next_ref,
+# next_pos, refName, read_index), the fields a JBrowse read answers to under the same
 # names, plus each read's position in readGAlignments order, which a per-read
 # overlay such as bam_mismatches joins on: start is 0-based
 # half-open over the reference span the CIGAR covers, strand is 1 or -1, score
@@ -29,7 +29,7 @@ read_bam <- function(uri, chrom, start, end, tags = character(0), index = uri) {
   df <- data.frame(start = start(ga) - 1L, end = end(ga),
     strand = ifelse(as.character(strand(ga)) == "-", -1L, 1L),
     name = m$qname, score = ifelse(m$mapq == 255L, NA_integer_, m$mapq),
-    flags = flag, template_length = m$isize,
+    flags = flag, cigar = cigar(ga), template_length = m$isize,
     pair_orientation = ifelse(oriented,
       ifelse(self_left, paste0(self, mate), paste0(mate, self)), NA_character_),
     next_ref = ifelse(paired, mate_chrom, NA_character_),
