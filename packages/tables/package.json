@@ -1,7 +1,6 @@
 {
   "name": "@jbrowse/tables",
   "version": "5.0.0-beta.13",
-  "private": true,
   "type": "module",
   "description": "JBrowse's track data as columnar tables, for a host that draws them itself, such as R through V8",
   "keywords": [
