@@ -190,9 +190,8 @@ const panel = (loc: string) => ({
     gnomadCoverageTrack(),
     {
       trackId: 'na12878_qc_reads',
-      // The current unified type. `LinearPileupDisplay` renders the same, since
-      // migrateAlignmentsSnapshot remaps it, but it leaves the spec-recipe
-      // check unable to resolve the display and so unable to give the figure's
+      // The current unified type: a retired one leaves the spec-recipe check
+      // unable to resolve the display and so unable to give the figure's
       // "Color by" and "Show legend" a click-path.
       type: 'LinearAlignmentsDisplay',
       // Mapping-quality coloring is the only thing on screen that separates

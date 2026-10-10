@@ -174,7 +174,6 @@ import {
   getSashimiMenuItem,
   getSortMenuItem,
 } from './menus/index.ts'
-import { migrateAlignmentsSnapshot } from './migrateAlignmentsSnapshot.ts'
 import {
   NO_QUALITY_SPAN,
   baseQualitySpanAcrossGroups,
@@ -385,9 +384,6 @@ export default function stateModelFactory(
            */
           configuration: ConfigurationReference(configSchema),
         }),
-      )
-      .preProcessSnapshot((snap: Record<string, unknown> | undefined) =>
-        migrateAlignmentsSnapshot(snap),
       )
       // Config-slot toggles live in `configSlotViews`.
       .views(configSlotViews)
