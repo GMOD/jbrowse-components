@@ -25312,6 +25312,26 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "type": "boolean"
         },
         "launch": {},
+        "reviewSchemaVersion": {
+          "const": 1
+        },
+        "reviewTrackId": {
+          "type": "string"
+        },
+        "reviewCursorId": {
+          "type": "string"
+        },
+        "reviewSpanBp": {
+          "type": "number"
+        },
+        "reviewDecisions": {
+          "type": "object",
+          "additionalProperties": {}
+        },
+        "reviewPriorDisplayState": {
+          "type": "object",
+          "additionalProperties": {}
+        },
         "loc": {
           "type": "string",
           "description": "The locus to navigate to, e.g. \`chr1:1-1000\`."
@@ -27916,6 +27936,128 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       },
       "additionalProperties": false
     },
+    "VariantReviewPluginConfigSchema": {
+      "title": "VariantReviewPluginConfigSchema",
+      "type": "object",
+      "properties": {
+        "reviewSpanBp": {
+          "default": 100,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "number"
+          }
+        },
+        "maxReviewWindowBp": {
+          "default": 50000,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "number"
+          }
+        },
+        "autoSortOnNavigate": {
+          "default": true,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "boolean"
+          }
+        },
+        "advanceOnDecide": {
+          "default": false,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "boolean"
+          }
+        },
+        "restoreSortOnExit": {
+          "default": true,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "boolean"
+          }
+        },
+        "targetTrackIds": {
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "infoFields": {
+          "default": [
+            "AF",
+            "DP"
+          ],
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "maxCandidates": {
+          "default": 50000,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "number"
+          }
+        },
+        "recordTimestamps": {
+          "default": false,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "boolean"
+          }
+        },
+        "shortcuts": {
+          "description": "Any JSON value: the slot is \`frozen\`, so its shape is not checked here.",
+          "default": {
+            "next": "j",
+            "previous": "k",
+            "nextUnreviewed": "n",
+            "restoreViewport": "Enter",
+            "sort": "s",
+            "accept": "a",
+            "reject": "r",
+            "flag": "f",
+            "clearDecision": "u",
+            "details": "Space"
+          },
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "not": {
+              "$ref": "#/$defs/JexlString"
+            }
+          }
+        }
+      },
+      "patternProperties": {
+        "^_+comment": {}
+      },
+      "additionalProperties": false
+    },
     "RootConfiguration": {
       "title": "RootConfiguration",
       "description": "Site-wide settings under the top-level \`configuration\` key.",
@@ -28016,6 +28158,14 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           },
           "else": {
             "$ref": "#/$defs/LinearGenomeViewConfigSchema"
+          }
+        },
+        "VariantReviewPlugin": {
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/VariantReviewPluginConfigSchema"
           }
         }
       },
