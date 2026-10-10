@@ -9,6 +9,13 @@ Auto-generated from the @jbrowse/mobx-state-tree model in the source — see the
 
 The writes a display's `color` object takes from a menu row or a picker: the field it paints by (`colorByField`) and the constant every feature paints (`setColorValue`). Each rewrites the object as written, so what a pick leaves alone stays as it was, and a pick of what already paints writes nothing, since every color tier keys on the object's arrays. A dialog's Apply button writes the whole object through `applyPlot`, which rebuilds the display's config for the draft, too dear for a picker writing once per drag frame
 
+## Getters
+
+<!-- prettier-ignore -->
+| Member | Description |
+| --- | --- |
+| <span id="getter-writtencolor">**writtenColor**</span><br><code>ColorSlots</code> | The `color` object as these writes and an Apply button read it, `writtenColorOf`. |
+
 ## Actions
 
 <!-- prettier-ignore -->

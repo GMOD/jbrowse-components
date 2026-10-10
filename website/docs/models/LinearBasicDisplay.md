@@ -118,6 +118,8 @@ Each section ends with the members a composed model contributes, linked to the p
 
 <span data-pagefind-ignore>From [LegendMixin](../legendmixin): <span id="getter-showlegend">[`showLegend`](../legendmixin#getter-showlegend)</span>, <span id="getter-legendtop">[`legendTop`](../legendmixin#getter-legendtop)</span>, <span id="getter-legendright">[`legendRight`](../legendmixin#getter-legendright)</span>, <span id="getter-legendspec">[`legendSpec`](../legendmixin#getter-legendspec)</span></span>
 
+<span data-pagefind-ignore>From [ColorWritesMixin](../colorwritesmixin): <span id="getter-writtencolor">[`writtenColor`](../colorwritesmixin#getter-writtencolor)</span></span>
+
 <span data-pagefind-ignore>From [CanvasFeatureGateMixin](../canvasfeaturegatemixin): <span id="getter-visiblefeaturedensityperpx">[`visibleFeatureDensityPerPx`](../canvasfeaturegatemixin#getter-visiblefeaturedensityperpx)</span>, <span id="getter-maxfeaturedensity">[`maxFeatureDensity`](../canvasfeaturegatemixin#getter-maxfeaturedensity)</span></span>
 
 <span data-pagefind-ignore>From [DensityBandMixin](../densitybandmixin): <span id="getter-densitybandlayer">[`densityBandLayer`](../densitybandmixin#getter-densitybandlayer)</span>, <span id="getter-densityhover">[`densityHover`](../densitybandmixin#getter-densityhover)</span>, <span id="getter-densitypeakreadout">[`densityPeakReadout`](../densitybandmixin#getter-densitypeakreadout)</span>, <span id="getter-densityreadout">[`densityReadout`](../densitybandmixin#getter-densityreadout)</span></span>
