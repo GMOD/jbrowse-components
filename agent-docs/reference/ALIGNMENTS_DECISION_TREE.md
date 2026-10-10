@@ -24,17 +24,18 @@ in the docs each section points at.
 it — not the shader's, not the legend's, not Canvas2D's. All three read the byte
 array it bakes.
 
-- **The overrides come first, and they are a ladder rather than three
-  independent rules.** The explicit chain coloring outranks everything; the
-  unpaired strand framing and the paired split markers are two classifiers
-  scoped to opposite data, since a pair has a mate to frame against and a long
-  read does not.
-- **Schemes that fill from data — mapping quality, tag, modifications — opt out
-  of the framing entirely**, because repainting a read by chain geometry answers
-  a different question than the one "color by HP" asked.
-- An unmapped mate outranks the scheme because a zero insert size would
-  otherwise read as a short insert; an interchromosomal mate outranks it because
-  orientation is meaningless across chromosomes.
+- **The overrides belong to the fields that read the mate**, insert size and
+  pair orientation, and they are levels of those fields, which a `color.domain`
+  names (`unmappedMate`, `splitInverted`, ...). Every other field paints its own
+  value and a constant paints one color, since repainting a read by chain
+  geometry answers a different question than the one "color by HP" asked.
+- **They are a ladder rather than independent rules.** The unpaired strand
+  framing and the paired split markers run only in a chain under an orientation
+  field, and are two classifiers scoped to opposite data, since a pair has a
+  mate to frame against and a long read does not.
+- An unmapped mate outranks the field's own value because a zero insert size
+  would otherwise read as a short insert; an interchromosomal mate outranks it
+  because orientation is meaningless across chromosomes.
 
 ## How a scheme reaches that ladder
 
@@ -44,9 +45,10 @@ array it bakes.
   the display renders stale data; over-declare it and flipping between three
   schemes costs three region reads to repaint arrays already in memory. A test
   asserts the flag against what the worker actually reads.
-- **Tag colors bake on the main thread**, which is what keeps a tag change a
-  repaint. In the worker they would enter the fetch props, and the old
-  discover → assign → refetch loop comes back.
+- **A value's color bakes on the main thread** through the `color` object's
+  scale, for a tag, an attribute, the mate's chromosome and MAPQ, which is what
+  keeps a recolor a repaint. In the worker the scale would enter the fetch
+  props, and the old discover → assign → refetch loop comes back.
 - **Category, then color.** Resolving a category takes no scheme: four
   categories resolve per read and every other one goes through the shared swatch
   table, which is also where the arc and linked-read overlays get their slot

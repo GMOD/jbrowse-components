@@ -5,7 +5,7 @@ digraph color_pipeline {
 
   slot [label="color config slot\ntrack, then session,\nthen the default", shape=oval]
   norm [label="colorByOf\nfield to scheme, with the\nmodifications slot beside it"]
-  reg  [label="COLOR_SCHEMES\nshader index, mate-aware,\npaired-only, worker-extracts"]
+  reg  [label="COLOR_SCHEMES\nshader index, mate-aware,\norientation, worker-extracts"]
   slot -> norm -> reg -> refetch
 
   refetch [label="the scheme needs data\nthe worker has not sent"]
@@ -14,10 +14,10 @@ digraph color_pipeline {
   fetch [label="refetch: per-base arrays,\nmodification marks, tag strings,\nreference sequence"]
   keep  [label="repaint from what is\nalready in memory"]
 
-  tags [label="tag colors baked on the\nmain thread, one packed color\nper read"]
+  tags [label="values baked on the main\nthread through the color scale:\na tag, an attribute, the mate's\nchromosome, MAPQ"]
   fetch -> tags  keep -> tags
   cats [label="one category per read,\nbaked into a byte array"]
-  tags -> cats [label=" tag colors first:\n no-value is read off\n the baked color"]
+  tags -> cats [label=" baked colors first:\n no-value is read off\n the baked color"]
 
   gpu [label="GPU: the category indexes\nthe palette uniform"]
   c2d [label="Canvas2D and SVG:\nthe same category, same table"]

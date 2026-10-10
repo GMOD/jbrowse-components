@@ -3,29 +3,29 @@ digraph synteny_color {
   node [shape=box fontname=monospace fontsize=10]
   { node [shape=diamond] mode; present }
 
-  colorby [label="colorBy", shape=oval]
+  colorby [label="color.field", shape=oval]
   colorby -> mode
-  mode [label="which kind of mode"]
+  mode [label="which kind of field"]
 
-  mode -> flat     [label=" default"]
+  mode -> flat     [label=" none"]
   mode -> strand   [label=" strand"]
   mode -> chrom    [label=" query, target,\n reference"]
-  mode -> preset   [label=" identity, mean identity,\n mapping quality, dN/dS"]
-  mode -> attr     [label=" attribute:<name>"]
+  mode -> preset   [label=" identity, mapq, dnds"]
+  mode -> attr     [label=" any other column"]
   mode -> track    [label=" track"]
 
   flat   [label="the match color;\nthe dotplot's flat point color"]
   strand [label="forward or reverse"]
   chrom  [label="the assembly's palette,\nhanded out BY POSITION\nin the chromosome order"]
-  preset [label="a named ramp carrying domain knowledge:\nidentity is a fraction, MAPQ tops at 60,\ndN/dS is read against 1"]
-  attr   [label="one generic ramp over the range\nthe fetched features actually cover"]
+  preset [label="a measurement preset carrying domain\nknowledge: identity is a fraction, MAPQ\ntakes four bins, dN/dS is read against 1"]
+  attr   [label="a ramp over the range the fetched\nfeatures cover, or a color per label"]
   track  [label="the track's own color"]
 
   present [label="the feature has a value\non this channel"]
   preset -> present  attr -> present
   present -> ramp    [label=" yes"]
   present -> missing [label=" no"]
-  ramp    [label="the ramp"]
+  ramp    [label="the ramp or bin"]
   missing [label="the missing-data color,\nnever the ramp's bottom"]
 
   cigar [label="CIGAR sub-instances keep their own\noperation colors: insertion, deletion,\nskip, mismatch"]
