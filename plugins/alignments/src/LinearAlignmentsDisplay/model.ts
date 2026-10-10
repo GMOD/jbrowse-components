@@ -418,8 +418,8 @@ export default function stateModelFactory(
           contextMenuFeature: undefined as Feature | undefined,
           /**
            * #volatile
-           * Group keys whose pileup is collapsed to its coverage band. Dropped
-           * with the mixin's `hiddenGroups` when `groupKeySpace` moves.
+           * Group keys whose pileup is collapsed to its coverage band, dropped
+           * when `groupKeySpace` moves (`dropGroupState`).
            */
           collapsedGroups: observable.set<string>(),
           /**
@@ -2954,33 +2954,29 @@ export default function stateModelFactory(
           ]
         },
       }))
-      .actions(self => {
-        const dropHiddenGroups = self.dropGroupState
-        return {
-          /**
-           * #action
-           * Collapse/expand a stacked group's pileup (coverage stays visible).
-           */
-          toggleGroupCollapsed(key: string) {
-            if (self.collapsedGroups.has(key)) {
-              self.collapsedGroups.delete(key)
-            } else {
-              self.collapsedGroups.add(key)
-            }
-          },
+      .actions(self => ({
+        /**
+         * #action
+         * Collapse/expand a stacked group's pileup (coverage stays visible).
+         */
+        toggleGroupCollapsed(key: string) {
+          if (self.collapsedGroups.has(key)) {
+            self.collapsedGroups.delete(key)
+          } else {
+            self.collapsedGroups.add(key)
+          }
+        },
 
-          /**
-           * #action
-           * The mixin's reset plus the collapses and per-group height
-           * overrides, which are keyed by group key too.
-           */
-          dropGroupState() {
-            dropHiddenGroups()
-            self.collapsedGroups.clear()
-            self.groupMaxHeightOverrides.clear()
-          },
-        }
-      })
+        /**
+         * #action
+         * The mixin's hook: the collapses and per-group height overrides,
+         * which are keyed by group key.
+         */
+        dropGroupState() {
+          self.collapsedGroups.clear()
+          self.groupMaxHeightOverrides.clear()
+        },
+      }))
       .actions(self => {
         const superSetError = self.setError
         const superSetHeightMode = self.setHeightMode

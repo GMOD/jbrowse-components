@@ -310,8 +310,8 @@ export function sashimiLegendItems(
 // is the order, the same way `FACET_DIMENSIONS`' is its menu order. The
 // swatch color is resolved from the live palette (categorySwatchColor), so
 // wording is the only thing the legend hard-codes. Categories absent from
-// `SwatchCategory` are keyed by `schemeLegend` ('plain', 'tag') or by a color
-// bar (`colorRampScales`, 'mapq') instead.
+// `SwatchCategory` are keyed by `schemeLegend` ('plain', 'tag', 'mapq')
+// instead.
 //
 // A `Record<SwatchCategory, …>` and not an array. `colorUtils` calls this pair
 // correct BY CONSTRUCTION — "the legend can never list a color the renderer
@@ -1125,9 +1125,9 @@ interface ReadDisplayLegendArgs {
  * `detectedModifications` (type code -> painted color), narrowed by
  * `presentModifications` because that map only ever grows. Tag /
  * chromosome-painting swatches are `presentTagValues` itself, colored through
- * the same pure function the reads are painted with; mapping and per-base
- * quality are color bars (`colorRampScales`) and key only their unavailable
- * buckets here.
+ * the same pure function the reads are painted with, and mapping quality's
+ * are its bins. A ramp over a field, and per-base quality's, is a color bar
+ * (`colorRampScales`), keying only its unavailable bucket here.
  */
 export function getReadDisplayLegendItems({
   colorBy,

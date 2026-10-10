@@ -27,7 +27,7 @@ const pileup = 'pileup-display'
 // The two dimensions are chosen against the fixture. At ctgA:1000-2000
 // volvox-sorted.bam holds 107 forward / 110 reverse reads, and MAPQ 37 (211
 // reads) / 25 (6) — so strand gives two well-populated lanes, and mapq gives
-// exactly two whose chips also pin the ordinal key order: the confident bucket
+// exactly two whose chips also pin the field's own order: the confident bin
 // stacks first, where sorting the labels would put "MAPQ 10-29" there.
 
 async function loadPileup(page: Page) {
@@ -100,9 +100,10 @@ const suite: TestSuite = {
       },
     },
     {
-      // The ordinal keys, read off the picture: `compareGroupKeys` stacks these
-      // by key ('0' then '1'), and nothing else would — sorting the labels puts
-      // "MAPQ 10-29" first, which is the confident reads BELOW the poor ones.
+      // The field's own order, read off the picture: `sectionOrder` stacks the
+      // bins as `MAPQ_BINS` lists them ('30' then '10'), and nothing else would
+      // — sorting the labels puts "MAPQ 10-29" first, which is the confident
+      // reads BELOW the poor ones.
       name: 'mapping-quality lanes stack by confidence, not by label',
       fn: async page => {
         await loadPileup(page)
