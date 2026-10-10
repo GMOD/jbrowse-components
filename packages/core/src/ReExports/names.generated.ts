@@ -308,6 +308,7 @@ const names: Record<string, string[]> = {
   '@jbrowse/core/util/frameCoalescer': ['createFrameCoalescer'],
   '@jbrowse/core/util/freezeDeep': ['freezeDeep'],
   '@jbrowse/core/util/geneticCodes': ['codonTable', 'defaultCodonTable', 'generateCodonTable', 'getGeneticCode', 'ncbiGeneticCodes', 'parseTranslExcept', 'parseTranslTable', 'relativizeTranslExcept'],
+  '@jbrowse/core/util/getLocationUri': ['downloadPhase', 'getLocationUri', 'redactSource', 'resolveUri'],
   '@jbrowse/core/util/getRelativeX': ['getRelativeX'],
   '@jbrowse/core/util/groupKeys': ['MAX_GROUPS', 'OVERFLOW_GROUP_KEY', 'capGroupKeys', 'carryGroupDomain', 'compareGroupKeys', 'groupKeyComparator', 'groupKeySpaceOf', 'overflowLabel', 'valueText'],
   '@jbrowse/core/util/highlights': ['coerceHighlight', 'getHighlightColor', 'highlightKey', 'isSameHighlight'],
