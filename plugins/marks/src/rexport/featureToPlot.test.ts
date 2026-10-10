@@ -54,7 +54,7 @@ describe('a feature filter crosses to R', () => {
   it('reads the attributes it compares', () => {
     expect(
       featureFields({ filter: [`jexl:get(feature,'biotype') == 'x'`] }),
-    ).toEqual(['biotype', 'gbkey', 'note'])
+    ).toEqual(['biotype', 'gbkey', 'note', 'description', 'function'])
   })
 
   it('names one it cannot translate in the header', () => {

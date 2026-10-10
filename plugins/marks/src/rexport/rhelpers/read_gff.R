@@ -25,14 +25,19 @@ read_gff <- function(uri, chrom, start, end, attrs = character(0), index = paste
       character(1))
     else as.character(v)
   }
-  parent <- if (is.null(m$Parent)) rep(NA_character_, length(g)) else
-    vapply(m$Parent, function(v) if (length(v)) as.character(v[[1]]) else NA_character_, character(1))
+  # A row with several parents (an exon two isoforms share) is a child of each.
+  parents <- if (is.null(m$Parent)) as.list(rep(NA_character_, length(g))) else
+    lapply(m$Parent, function(v) if (length(v)) as.character(v) else NA_character_)
+  each <- rep(seq_along(g), lengths(parents))
   df <- data.frame(start = start(g) - 1L, end = end(g), strand = unname(c("+" = 1L, "-" = -1L, "*" = 0L)[as.character(strand(g))]),
              type = col("type"), source = col("source"),
              score = suppressWarnings(as.numeric(col("score"))),
              phase = suppressWarnings(as.integer(col("phase"))),
-             id = col("ID"), parent = parent, name = col("Name"),
+             id = col("ID"), parent = rep(NA_character_, length(g)), name = col("Name"),
              stringsAsFactors = FALSE, check.names = FALSE)
   for (a in attrs) df[[a]] <- utils::type.convert(col(a), as.is = TRUE)
+  df <- df[each, , drop = FALSE]
+  df$parent <- unlist(parents)
+  rownames(df) <- NULL
   df
 }

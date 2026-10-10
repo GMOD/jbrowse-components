@@ -54,6 +54,8 @@ const CONTAINER_TYPES = ['proteoform_orf']
 const SUB_PARTS = 'CDS,UTR,five_prime_UTR,three_prime_UTR'
 const DEFAULT_NAME = `jexl:get(feature,'name') || get(feature,'id')`
 const DEFAULT_DESCRIPTION = `jexl:get(feature,'note') || get(feature,'description') || get(feature,'function')`
+/** The fields `DEFAULT_DESCRIPTION` reads, in its order. */
+const DESCRIPTION_FIELDS = ['note', 'description', 'function']
 /** `isGeneLikeType`'s pattern, which "Show only genes" admits by. */
 const GENE_LIKE = 'gene(_segment)?$|rna$|transcript$'
 /** The bp/px past which `auto` shows one transcript per gene. */
@@ -160,7 +162,7 @@ export function featureFields(
     ...new Set([
       ...translateFilters(display.filter ?? []).rules.map(r => r.attr),
       ...(display.hideSourceFeatures === false ? [] : ['gbkey']),
-      ...(shows(display).description ? ['note'] : []),
+      ...(shows(display).description ? DESCRIPTION_FIELDS : []),
       ...(collapses(display, bpPerPx)
         ? [
             display.canonicalTranscriptField ??
@@ -339,7 +341,9 @@ export function featurePlot({
   const bpPerPx = zoomOf(regions, viewBpPerPx)
   unsupported(display, notes)
   const n = base.name
-  const shaped = base.columns.includes('parent')
+  const shifted = regions.length > 1
+  const fromGff = base.columns.includes('parent')
+  const shaped = fromGff
     ? base
     : frame({
         name: n,
@@ -349,10 +353,22 @@ export function featurePlot({
         statements: `${n} <- bed_features(${n}${aggregate ? `, aggregate = ${rStr(aggregate)}` : ''})`,
         parent: base,
       })
-  const feats = admitted(shaped, display, bpPerPx, notes)
-  const described = feats.columns.includes('note')
+  const keyed = shifted
+    ? frame({
+        name: n,
+        columns: shaped.columns,
+        coords: shaped.coords,
+        packages: shaped.packages,
+        statements: `${n} <- region_keys(${n})`,
+        parent: shaped,
+      })
+    : shaped
+  const feats = admitted(keyed, display, bpPerPx, notes)
+  const described = DESCRIPTION_FIELDS.filter(c => feats.columns.includes(c))
   const show = shows(display)
-  const shifted = regions.length > 1
+  // The browser's default label is `name || id`; a BED record's id is ours.
+  const labelExpr = fromGff ? `first_set(${n}$name, ${n}$id)` : `${n}$name`
+  const descriptionExpr = `first_set(${described.map(c => `${n}$${rIdent(c)}`).join(', ')})`
   const lanes = frame({
     name: `${n}_lanes`,
     columns: [
@@ -373,8 +389,8 @@ export function featurePlot({
     statements: `${n}_lanes <- gene_layout(${n},
   bp_per_inch = (max(regions$cum_end) - min(regions$cum_start)) / ${PANEL_WIDTH_INCHES},
   text_size = ${TEXT_SIZE},
-  labels = ${show.name ? `${n}$name` : `rep(NA_character_, nrow(${n}))`},
-  descriptions = ${show.description && described ? `${n}$note` : `rep(NA_character_, nrow(${n}))`})`,
+  labels = ${show.name ? labelExpr : `rep(NA_character_, nrow(${n}))`},
+  descriptions = ${show.description && described.length ? descriptionExpr : `rep(NA_character_, nrow(${n}))`})`,
     parent: feats,
   })
   const colorSet = literalColor('color', colorValue(display.color), notes)
@@ -474,7 +490,7 @@ ${n}_parts <- clip_regions(${n}_parts, regions)`
       }),
     )
   }
-  if (show.description && described) {
+  if (show.description && described.length) {
     layers.push(
       layer({
         geom: 'text',

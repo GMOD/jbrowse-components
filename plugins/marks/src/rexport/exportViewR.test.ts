@@ -365,6 +365,60 @@ const bedSetColor = register(
   fillsOf,
 )
 
+const multiGff = path.join(dir, 'multi.gff3')
+const writeMultiGff = `writeLines(c("##gff-version 3",
+  "ctgA\\tt\\tgene\\t1001\\t5000\\t.\\t+\\t.\\tID=g1",
+  "ctgA\\tt\\tmRNA\\t1001\\t5000\\t.\\t+\\t.\\tID=tx1;Parent=g1;Name=tx1",
+  "ctgA\\tt\\tmRNA\\t1001\\t5000\\t.\\t+\\t.\\tID=tx2;Parent=g1;Name=tx2",
+  "ctgA\\tt\\texon\\t1001\\t1500\\t.\\t+\\t.\\tParent=tx1,tx2",
+  "ctgA\\tt\\tCDS\\t1201\\t1500\\t.\\t+\\t0\\tParent=tx1,tx2",
+  "ctgA\\tt\\texon\\t2001\\t2500\\t.\\t+\\t.\\tParent=tx1",
+  "ctgA\\tt\\tCDS\\t2001\\t2500\\t.\\t+\\t0\\tParent=tx1",
+  "ctgA\\tt\\texon\\t4001\\t5000\\t.\\t+\\t.\\tParent=tx1,tx2",
+  "ctgA\\tt\\tCDS\\t4001\\t4800\\t.\\t+\\t0\\tParent=tx1,tx2",
+  "ctgA\\tt\\tgene\\t6001\\t7000\\t.\\t-\\t.\\tID=g2;description=kinase thing",
+  "ctgA\\tt\\tncRNA\\t6001\\t7000\\t.\\t-\\t.\\tID=nc1;Parent=g2",
+  "ctgA\\tt\\texon\\t6001\\t6300\\t.\\t-\\t.\\tParent=nc1"),
+  ${JSON.stringify(multiGff)})
+invisible(Rsamtools::indexTabix(Rsamtools::bgzip(${JSON.stringify(multiGff)}, ${JSON.stringify(`${multiGff}.gz`)}, overwrite = TRUE), format = "gff"))
+`
+function multiGffScript(regions: Region[]) {
+  return `${writeMultiGff}${scriptFor(
+    [
+      {
+        ...track(main, 'gff3tabix_genes', 'LinearBasicDisplay', {
+          geneGlyphMode: 'all',
+        }),
+        trackId: 'multi',
+        adapter: {
+          type: 'Gff3TabixAdapter',
+          gffGzLocation: { localPath: `${multiGff}.gz` },
+        },
+      },
+    ],
+    regions,
+  )}`
+}
+const sharedExons = register(
+  'shared_exons',
+  multiGffScript([{ refName: 'ctgA', start: 0, end: 8000 }]),
+  `{ p <- genes_multi_parts; l <- genes_multi_lanes
+  tx2 <- p[p$lane == "tx2", ]
+  c(sum(tx2$part == "CDS"), sum(tx2$part == "box"), na.omit(l$label), na.omit(l$description)) }`,
+)
+const twoRegionGene = register(
+  'two_region_gene',
+  multiGffScript([
+    { refName: 'ctgA', start: 900, end: 1600 },
+    { refName: 'ctgA', start: 3900, end: 5100 },
+  ]),
+  `{ p <- genes_multi_parts; r <- regions
+  inside <- p$start >= r$cum_start[p$.region] & p$end <= r$cum_end[p$.region]
+  cds <- p[p$part == "CDS", ]
+  genomic <- cds$start - r$offset[cds$.region] + r$start[cds$.region]
+  c(all(inside), sum(p$part == "box"), any(genomic >= 2000 & genomic < 2500), sum(genes_multi_lanes$lane == 0)) }`,
+)
+
 maybe('the emitted script, run under R', () => {
   beforeAll(() => {
     for (const [k, v] of runCases(cases)) {
@@ -466,5 +520,15 @@ maybe('the emitted script, run under R', () => {
   it('paints a BED record its own color where the track sets none', () => {
     expect(results.get(bedOwnColor)).toBe('[1] "#FF0000 2"')
     expect(results.get(bedSetColor)).toBe('[1] "purple 1"')
+  })
+
+  it('hangs an exon two isoforms share on both, and labels by name || id', () => {
+    expect(results.get(sharedExons)).toBe(
+      '[1] "2"            "0"            "g1"           "g2"           "kinase thing"',
+    )
+  })
+
+  it('keeps a gene seen in two regions apart in each', () => {
+    expect(results.get(twoRegionGene)).toBe('[1] 1 0 0 2')
   })
 })
