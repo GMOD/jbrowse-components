@@ -49,7 +49,7 @@ without an explicit go.
 2. **A second adversarial review aimed at `alignmentsToR.ts` and
    `featureToPlot.ts`.** Brief it as the first one was (read-only, fresh, told
    to break it, repros required), pointed at those two and at the live path in
-   `exportLinearView.ts`. Expect colour, coordinate and strand bugs like the
+   `exportLinearView.ts`. Expect color, coordinate and strand bugs like the
    ones found in the mark path.
 3. **Try real data.** An hg38 hub gene track, a large remote BAM, a CRAM, a
    ten-track session, refName aliases (`chr1` against `1`), a flipped view, and
@@ -59,7 +59,7 @@ without an explicit go.
    draw boxes only and say so in the header. Most hub gene tracks are BigBed, so
    this decides how useful the export is on hosted data.
 5. **Gene glyph.** Collapse to one isoform in `auto` mode as the browser does
-   (dense windows now overprint labels), then colour by field, facet, compact
+   (dense windows now overprint labels), then color by field, facet, compact
    modes, and panel height that grows with the packed rows.
 6. **Alignments.** Indels, clips and splice gaps on reads; more than one region;
    sort; facet; modifications; CRAM. The old CRAM, modification and sort
@@ -78,7 +78,7 @@ without an explicit go.
 
 - `npx jest plugins/marks/src/rexport --reporters=default`. `exportViewR.test.ts`
   runs real scripts in one R session and asserts on what they read
-  (`ggplot_build` rows and literal colours), not on a PNG existing.
+  (`ggplot_build` rows and literal colors), not on a PNG existing.
 - **Also drive the real app.** Start the jbrowse-web dev server, open a volvox
   config with a few tracks, click the view menu's Export R script, run the
   downloaded file with `Rscript`, and read the figure beside a screenshot. The

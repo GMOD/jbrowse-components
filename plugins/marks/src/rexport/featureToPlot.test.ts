@@ -73,7 +73,7 @@ describe('the gene panel', () => {
     )
   })
 
-  it('paints a UTR the track colour when only that is set', () => {
+  it('paints a UTR the track color when only that is set', () => {
     expect(script({ color: 'purple' }).r).toMatch(
       /CDS = "purple", UTR = "purple"/,
     )

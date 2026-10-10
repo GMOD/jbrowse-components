@@ -42,7 +42,7 @@ describe('a mark becomes a geom', () => {
     expect(r).toContain('fill = "steelblue"')
   })
 
-  it('paints the browser’s blue where no colour is written', () => {
+  it('paints the browser’s blue where no color is written', () => {
     const { r } = render({ marks: [{ mark: 'bar', encoding: { y: 'score' } }] })
     expect(r).toContain('fill = "#0068d1"')
   })
@@ -232,7 +232,7 @@ describe('a channel scale becomes a ggplot scale', () => {
     )
   })
 
-  it('paints strand in its preset colours and names, as the browser keys it', () => {
+  it('paints strand in its preset colors and names, as the browser keys it', () => {
     const { r } = render({
       marks: [{ mark: 'bar', encoding: { y: 'score', color: 'strand' } }],
     })
@@ -335,13 +335,13 @@ describe('a channel scale becomes a ggplot scale', () => {
     })
     expect(r).toContain('cut(score, breaks = c(-Inf, 0.1, 0.5, Inf)')
     expect(r).toContain('scale_colour_manual(')
-    // the literal declared colours, not a gradient re-interpolated through them
+    // the literal declared colors, not a gradient re-interpolated through them
     expect(r).toContain('"#357ebd"')
     expect(r).toContain('"#eea236"')
     expect(r).toContain('"#d43f3a"')
   })
 
-  it('colours a point through colour and a bar through fill', () => {
+  it('colors a point through color and a bar through fill', () => {
     const point = render({
       marks: [
         { mark: 'point', encoding: { y: 'score', color: { value: 'red' } } },
@@ -415,7 +415,7 @@ describe('the display stages', () => {
 })
 
 describe('what the figure does not show', () => {
-  it('names a jexl colour rather than dropping it', () => {
+  it('names a jexl color rather than dropping it', () => {
     const { notes, r } = render({
       marks: [
         {
@@ -428,7 +428,7 @@ describe('what the figure does not show', () => {
     expect(r).not.toContain('jexl')
   })
 
-  it('names a jexl constant colour too', () => {
+  it('names a jexl constant color too', () => {
     const { notes } = render({
       marks: [
         {
@@ -469,7 +469,7 @@ describe('what the figure does not show', () => {
   /**
    * ggplot keeps one scale per aesthetic and silently replaces the earlier
    * one, so two marks each declaring a fill scale is a figure where the first
-   * mark's colouring vanishes. The plot's scale table is keyed by aesthetic,
+   * mark's coloring vanishes. The plot's scale table is keyed by aesthetic,
    * so the second cannot land — it is reported instead.
    */
   it('refuses a second scale on one aesthetic, and says so', () => {
@@ -594,7 +594,7 @@ describe('a mark reads the grammar’s own vocabulary', () => {
 })
 
 describe('a channel drawn as a constant', () => {
-  it('paints the colour value where the scale is none', () => {
+  it('paints the color value where the scale is none', () => {
     const { r, plot } = render({
       marks: [
         {
@@ -727,7 +727,7 @@ describe('rows, filters and rules', () => {
     expect(r).toContain('label = "significant"')
   })
 
-  it('rules in the chrome’s colour where none is named, a bare number too', () => {
+  it('rules in the chrome’s color where none is named, a bare number too', () => {
     const { r } = render({
       scales: { y: { rules: [{ value: 2 }, 5] } },
       marks: [{ mark: 'bar', encoding: { y: 'score' } }],

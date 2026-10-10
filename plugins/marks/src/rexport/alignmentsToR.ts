@@ -54,25 +54,25 @@ const UNTRANSLATED: Record<string, unknown> = {
   mismatchAlpha: false,
 }
 
-const LEVEL_COLUMN = '.colour'
+const LEVEL_COLUMN = '.color'
 const NO_VALUE = 'none'
 
 interface Level {
   value: string
-  colour: string
+  color: string
   label: string
 }
 
 const STRAND_LEVELS: Level[] = [
-  { value: '1', colour: colorFwdStrand, label: 'Forward strand' },
-  { value: '-1', colour: colorRevStrand, label: 'Reverse strand' },
+  { value: '1', color: colorFwdStrand, label: 'Forward strand' },
+  { value: '-1', color: colorRevStrand, label: 'Reverse strand' },
 ]
 
 const MATE_LEVELS: Level[] = [
-  { value: 'unmappedMate', colour: colorUnmappedMate, label: 'Mate unmapped' },
+  { value: 'unmappedMate', color: colorUnmappedMate, label: 'Mate unmapped' },
   {
     value: 'interchrom',
-    colour: colorInterchrom,
+    color: colorInterchrom,
     label: 'Mate on another contig',
   },
 ]
@@ -92,20 +92,20 @@ const READ_DIMENSIONS: Record<
     column: 'pairOrientation',
     mateAware: true,
     levels: [
-      { value: 'LR', colour: colorPairLR, label: 'LR' },
-      { value: 'RL', colour: colorPairRL, label: 'RL' },
-      { value: 'RR', colour: colorPairRR, label: 'RR' },
-      { value: 'LL', colour: colorPairLL, label: 'LL' },
-      { value: '', colour: colorPairLR, label: 'Unsplit read' },
+      { value: 'LR', color: colorPairLR, label: 'LR' },
+      { value: 'RL', color: colorPairRL, label: 'RL' },
+      { value: 'RR', color: colorPairRR, label: 'RR' },
+      { value: 'LL', color: colorPairLL, label: 'LL' },
+      { value: '', color: colorPairLR, label: 'Unsplit read' },
     ],
   },
   insertSize: {
     column: 'insertSize',
     mateAware: true,
     levels: [
-      { value: 'short', colour: colorShortInsert, label: 'Short insert' },
-      { value: 'normal', colour: colorPairLR, label: 'Normal' },
-      { value: 'long', colour: colorLongInsert, label: 'Long insert' },
+      { value: 'short', color: colorShortInsert, label: 'Short insert' },
+      { value: 'normal', color: colorPairLR, label: 'Normal' },
+      { value: 'long', color: colorLongInsert, label: 'Long insert' },
     ],
   },
 }
@@ -115,15 +115,15 @@ function deriveLevel(column: string, mateAware = false) {
   return mateAware ? `ifelse(is.na(READS$mate), ${level}, READS$mate)` : level
 }
 
-function writtenColour(color: AlignmentsDisplaySnapshot['color']): ColorSpec {
+function writtenColor(color: AlignmentsDisplaySnapshot['color']): ColorSpec {
   return typeof color === 'string' ? { value: color } : (color ?? {})
 }
 
 /**
  * The `color` object as a mark translator `ColorSpec` over a column the reads
  * frame holds. A read dimension's vocabulary becomes a manual scale of the
- * browser's category colours with `range` laid over them in `domain` order,
- * held apart from the categorical translation, which parts near colours where
+ * browser's category colors with `range` laid over them in `domain` order,
+ * held apart from the categorical translation, which parts near colors where
  * the category table repeats them on purpose.
  */
 function insertSizeCuts(domain: readonly string[] | undefined) {
@@ -133,7 +133,7 @@ function insertSizeCuts(domain: readonly string[] | undefined) {
     : undefined
 }
 
-function readColour(
+function readColor(
   color: AlignmentsDisplaySnapshot['color'],
   notes: string[],
 ): {
@@ -143,7 +143,7 @@ function readColour(
   tags: string[]
   cuts?: [number, number]
 } {
-  const written = writtenColour(color)
+  const written = writtenColor(color)
   const { field } = written
   if (!field || written.scale === 'none') {
     return { spec: { value: written.value ?? colorPairLR }, tags: [] }
@@ -192,8 +192,7 @@ function readColour(
       manual: {
         kind: 'manual',
         values: levels.map(
-          l =>
-            [l.value || NO_VALUE, declared.get(l.value) || l.colour] as const,
+          l => [l.value || NO_VALUE, declared.get(l.value) || l.color] as const,
         ),
         labels: levels.map(l => named.get(l.value) || l.label),
         name: written.title ?? field,
@@ -258,7 +257,7 @@ const BASES = ['A', 'C', 'G', 'T', 'N'] as const
 
 /**
  * A LinearAlignmentsDisplay config snapshot as R panels: a coverage band over
- * a pileup of reads packed as the browser packs them, coloured through its
+ * a pileup of reads packed as the browser packs them, colored through its
  * `color` object, with mismatch ticks on the reads.
  *
  * Reads only the first region: the mismatch overlay joins reads by their
@@ -303,7 +302,7 @@ export function alignmentsPanels({
       notes.push(`${slot}: not translated`)
     }
   }
-  const colour = readColour(display.color, notes)
+  const color = readColor(display.color, notes)
   const tagFilters = display.filterBy?.tagFilters ?? []
   const base = frameFor({
     type: 'BamAdapter',
@@ -313,7 +312,7 @@ export function alignmentsPanels({
     index,
     fields: [
       ...new Set([
-        ...colour.tags.map(t => `tags.${t}`),
+        ...color.tags.map(t => `tags.${t}`),
         ...tagFilters.map(f => `tags.${f.tag}`),
       ]),
     ],
@@ -330,15 +329,15 @@ export function alignmentsPanels({
     columns: [
       ...base.columns,
       ...fields,
-      ...(colour.derive ? [LEVEL_COLUMN] : []),
+      ...(color.derive ? [LEVEL_COLUMN] : []),
     ],
     coords: base.coords,
     packages: base.packages,
     statements: [
-      `${readsName} <- alignments_fields(read_filter(${readsName}, ${filterArgs(display.filterBy)})${colour.cuts ? `, cuts = c(${colour.cuts.join(', ')})` : ''})`,
-      ...(colour.derive
+      `${readsName} <- alignments_fields(read_filter(${readsName}, ${filterArgs(display.filterBy)})${color.cuts ? `, cuts = c(${color.cuts.join(', ')})` : ''})`,
+      ...(color.derive
         ? [
-            `${readsName}$${rIdent(LEVEL_COLUMN)} <- ${colour.derive.replaceAll('READS', readsName)}`,
+            `${readsName}$${rIdent(LEVEL_COLUMN)} <- ${color.derive.replaceAll('READS', readsName)}`,
           ]
         : []),
     ].join('\n'),
@@ -355,7 +354,7 @@ export function alignmentsPanels({
     {
       mark: 'span',
       rowProportion: 0.8,
-      encoding: { row: 'row', color: colour.spec },
+      encoding: { row: 'row', color: color.spec },
     },
     packed,
     expr('0'),
@@ -368,7 +367,7 @@ export function alignmentsPanels({
   const layers = reads ? [reads.layer] : []
   const scales: Plot['scales'] = {
     ...reads?.scales,
-    ...(colour.manual ? { fill: colour.manual } : {}),
+    ...(color.manual ? { fill: color.manual } : {}),
     y: { kind: 'reverse' },
   }
   const mismatchesName = named('mismatches')

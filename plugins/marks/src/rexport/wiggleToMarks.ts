@@ -41,7 +41,7 @@ function colorOf(
 
 /**
  * A wiggle display as the mark display that draws the same plot: the score
- * plotted as a bar, point or line, or a strip coloured by it.
+ * plotted as a bar, point or line, or a strip colored by it.
  */
 export function wiggleDisplaySpec(w: WiggleSettings): DisplaySpec {
   const mark = w.mark ?? 'bar'

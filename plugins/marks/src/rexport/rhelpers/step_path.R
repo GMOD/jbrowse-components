@@ -3,7 +3,7 @@
 # where that one starts at this one's end, and dropped to 'origin' across a
 # gap, as the browser draws a line mark. The rows of one group, one value of
 # every column 'by' names, draw as one path in 'x' order. Each vertex carries
-# its row's columns, so a colour mapped to one stays per span.
+# its row's columns, so a color mapped to one stays per span.
 step_path <- function(df, x, x2, y, origin = 0, by = ".region") {
   n <- nrow(df)
   df$.group <- if (n) interaction(lapply(df[by], addNA), drop = TRUE) else factor()

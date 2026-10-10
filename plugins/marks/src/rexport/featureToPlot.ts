@@ -10,7 +10,7 @@ import type { Layer, RFrame } from './rplot.ts'
 
 /**
  * The slots of a `LinearBasicDisplay` config snapshot that change what the
- * gene glyph draws. A colour slot is a CSS colour or a `jexl:` callback, and
+ * gene glyph draws. A color slot is a CSS color or a `jexl:` callback, and
  * `color` may also be the `{ value, field, ... }` object.
  */
 export interface FeatureDisplaySpec {
@@ -156,12 +156,12 @@ export function featureFields(
   ]
 }
 
-function colourValue(c: FeatureDisplaySpec['color']) {
+function colorValue(c: FeatureDisplaySpec['color']) {
   return typeof c === 'string' ? c : c?.value
 }
 
-/** A colour slot R can paint, or undefined with a note where it cannot. */
-function literalColour(
+/** A color slot R can paint, or undefined with a note where it cannot. */
+function literalColor(
   slot: string,
   value: string | undefined,
   notes: string[],
@@ -389,14 +389,14 @@ ${n}_parts <- clip_regions(${n}_parts, regions)`
     parent: lines,
   })
   const fill =
-    literalColour('color', colourValue(display.color), notes) ??
+    literalColor('color', colorValue(display.color), notes) ??
     featureDefaultColor
   const utrFill =
-    literalColour('utrColor', display.utrColor, notes) ??
-    literalColour('color', colourValue(display.color), []) ??
+    literalColor('utrColor', display.utrColor, notes) ??
+    literalColor('color', colorValue(display.color), []) ??
     utrDefaultColor
   const connector =
-    literalColour('connectorColor', display.connectorColor, notes) ?? CONNECTOR
+    literalColor('connectorColor', display.connectorColor, notes) ?? CONNECTOR
   const arrowBp = (span / FIGURE_WIDTH_PX) * 6
   const tip = expr('ifelse(strand > 0, end, start)')
   const layers: Layer[] = [

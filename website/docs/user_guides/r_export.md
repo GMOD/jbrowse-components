@@ -21,13 +21,13 @@ ggplot2 knowledge.
 
 ## What it draws
 
-| Track                                                     | Drawn                                                                                                       |
-| --------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------- |
-| Wiggle and mark displays over BigWig, GFF3, VCF, BED, BAM | Each mark, colour, shape and size scale, transform step, facet and row, as the display's config spells them |
-| Feature tracks (GFF3 and BED gene models)                 | Exons, thinner UTRs, intron lines, strand arrows, transcripts stacked under their gene, labels              |
-| Alignments tracks (BAM)                                   | A coverage band over the reads, packed as the browser packs them, with mismatch ticks                       |
+| Track                                                     | Drawn                                                                                                      |
+| --------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------- |
+| Wiggle and mark displays over BigWig, GFF3, VCF, BED, BAM | Each mark, color, shape and size scale, transform step, facet and row, as the display's config spells them |
+| Feature tracks (GFF3 and BED gene models)                 | Exons, thinner UTRs, intron lines, strand arrows, transcripts stacked under their gene, labels             |
+| Alignments tracks (BAM)                                   | A coverage band over the reads, packed as the browser packs them, with mismatch ticks                      |
 
-Alignments colour by strand, mapping quality, insert size, pair orientation or a
+Alignments color by strand, mapping quality, insert size, pair orientation or a
 SAM tag, and honour the **Filter by** flags, read name and tag filters.
 
 ## What it leaves out

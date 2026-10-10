@@ -34,8 +34,8 @@ export type Aesthetic =
   | 'label'
   | 'group'
 
-/** Which aesthetic a geom takes its colour through. */
-export function colourAesthetic(geom: Geom): 'fill' | 'colour' {
+/** Which aesthetic a geom takes its color through. */
+export function colorAesthetic(geom: Geom): 'fill' | 'colour' {
   return geom === 'rect' ? 'fill' : 'colour'
 }
 
@@ -132,14 +132,14 @@ export type Scale =
       palette: readonly (string | number)[]
       listed?: readonly (readonly [string, string | number])[]
       labels?: readonly string[]
-      /** The R expression for the values being coloured, bound by the layer that draws them. */
+      /** The R expression for the values being colored, bound by the layer that draws them. */
       of?: string
       name?: string
     }
   | { kind: 'linewidth'; range: [number, number]; log?: boolean; name?: string }
   | {
       kind: 'gradient'
-      colours: string[]
+      colors: string[]
       log?: boolean
       /** The declared domain, so the ramp does not stretch to the data. */
       limits?: [number | undefined, number | undefined]
@@ -154,7 +154,7 @@ export type Scale =
 /** A reference line across the panel at a value on the y axis. */
 export interface Rule {
   value: number
-  colour: string
+  color: string
   label?: string
 }
 
@@ -203,7 +203,7 @@ function renderConstant(key: string, v: string | number | RExpr) {
   if (typeof v === 'object') {
     return v.expr
   }
-  return rStr(key === 'fill' || key === 'colour' ? rColour(v) : v)
+  return rStr(key === 'fill' || key === 'colour' ? rColor(v) : v)
 }
 
 function renderLayer(l: Layer, primary: string) {
@@ -222,8 +222,8 @@ function renderLayer(l: Layer, primary: string) {
 
 function renderScale(aesthetic: Aesthetic, s: Scale) {
   // A shape scale hands out R `pch` codes, which are numbers; every other
-  // manual scale hands out colours, which are strings.
-  const value = (v: string) => (aesthetic === 'shape' ? v : rStr(rColour(v)))
+  // manual scale hands out colors, which are strings.
+  const value = (v: string) => (aesthetic === 'shape' ? v : rStr(rColor(v)))
   if (s.kind === 'log') {
     return `scale_${aesthetic}_log10()`
   }
@@ -232,7 +232,7 @@ function renderScale(aesthetic: Aesthetic, s: Scale) {
   }
   if (s.kind === 'hashed') {
     const entry = (v: string | number) =>
-      typeof v === 'number' ? String(v) : rStr(rColour(v))
+      typeof v === 'number' ? String(v) : rStr(rColor(v))
     const listed = s.listed?.length
       ? `, c(${s.listed.map(([k, v]) => `${rName(k)} = ${entry(v)}`).join(', ')})`
       : ''
@@ -262,7 +262,7 @@ function renderScale(aesthetic: Aesthetic, s: Scale) {
   if (s.kind === 'gradient') {
     const [lo, hi] = s.limits ?? []
     const args = [
-      `colours = c(${s.colours.map(c => rStr(rColour(c))).join(', ')})`,
+      `colours = c(${s.colors.map(c => rStr(rColor(c))).join(', ')})`,
       ...(s.limits ? [`limits = c(${lo ?? 'NA'}, ${hi ?? 'NA'})`] : []),
       // scales::rescale_mid puts the middle stop at the declared value rather
       // than halfway between the limits, which is what a diverging ramp means.
@@ -307,12 +307,12 @@ function renderFacet({ field, levels }: NonNullable<Plot['facetBy']>) {
 }
 
 function renderRule(r: Rule) {
-  const colour = rStr(rColour(r.colour))
+  const color = rStr(rColor(r.color))
   return [
-    `geom_hline(yintercept = ${r.value}, colour = ${colour}, linetype = "dashed")`,
+    `geom_hline(yintercept = ${r.value}, colour = ${color}, linetype = "dashed")`,
     ...(r.label
       ? [
-          `annotate("text", x = Inf, y = ${r.value}, label = ${rStr(r.label)}, hjust = 1.1, vjust = -0.4, colour = ${colour}, size = 3)`,
+          `annotate("text", x = Inf, y = ${r.value}, label = ${rStr(r.label)}, hjust = 1.1, vjust = -0.4, colour = ${color}, size = 3)`,
         ]
       : []),
   ]
@@ -421,11 +421,11 @@ export function rStr(s: string) {
 }
 
 /**
- * A colour R accepts. grDevices takes `#RRGGBB` or one of its own names and
- * rejects CSS `rgb(r,g,b)` outright — "Unknown colour name" at draw time, after
+ * A color R accepts. grDevices takes `#RRGGBB` or one of its own names and
+ * rejects CSS `rgb(r,g,b)` outright — "Unknown color name" at draw time, after
  * every read — which is the spelling the baked ramp LUT hands out.
  */
-export function rColour(css: string) {
+export function rColor(css: string) {
   const m = /^rgba?\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)/.exec(css)
   if (!m) {
     return css

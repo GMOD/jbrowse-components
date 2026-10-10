@@ -1,23 +1,23 @@
 import { rampLutOf, stopsFromRampLut } from '@jbrowse/core/util/colorRamp'
 
-import { rColour, rIdent, rName } from './rplot.ts'
+import { rColor, rIdent, rName } from './rplot.ts'
 
-describe('a colour reaches R in a spelling it takes', () => {
+describe('a color reaches R in a spelling it takes', () => {
   it('converts the ramp LUT spelling to hex', () => {
-    expect(rColour('rgb(68,1,84)')).toBe('#440154')
+    expect(rColor('rgb(68,1,84)')).toBe('#440154')
   })
 
   it('pads a channel R would otherwise misread', () => {
-    expect(rColour('rgb(0,1,255)')).toBe('#0001ff')
+    expect(rColor('rgb(0,1,255)')).toBe('#0001ff')
   })
 
   it('keeps the channel order', () => {
-    expect(rColour('rgb(255,0,0)')).toBe('#ff0000')
+    expect(rColor('rgb(255,0,0)')).toBe('#ff0000')
   })
 
   it('leaves hex and R’s own names alone', () => {
-    expect(rColour('#440154')).toBe('#440154')
-    expect(rColour('steelblue')).toBe('steelblue')
+    expect(rColor('#440154')).toBe('#440154')
+    expect(rColor('steelblue')).toBe('steelblue')
   })
 
   /**
@@ -27,7 +27,7 @@ describe('a colour reaches R in a spelling it takes', () => {
    */
   it('lands viridis on its published low end', () => {
     const stops = stopsFromRampLut(rampLutOf({ scheme: 'viridis' }), 16)
-    expect(rColour(stops[0]!.color)).toBe('#440154')
+    expect(rColor(stops[0]!.color)).toBe('#440154')
   })
 
   it('reverses when the declaration says to', () => {
@@ -36,7 +36,7 @@ describe('a colour reaches R in a spelling it takes', () => {
       rampLutOf({ scheme: 'viridis', reverse: true }),
       16,
     )
-    expect(rColour(back.at(-1)!.color)).toBe(rColour(forward[0]!.color))
+    expect(rColor(back.at(-1)!.color)).toBe(rColor(forward[0]!.color))
   })
 })
 

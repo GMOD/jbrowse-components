@@ -1,13 +1,13 @@
-# Add the read dimensions an alignments display colours and facets by, over a
+# Add the read dimensions an alignments display colors and facets by, over a
 # read_bam frame: firstOfPairStrand (a second mate's strand flipped), mapq (NA
 # for unavailable), pairOrientation (LR, RL, RR or LL, "" for a read with
 # none), insertSize (short, normal or long against the band below), and mate,
-# which names the reads every mate-aware colouring paints alike: unmappedMate,
+# which names the reads every mate-aware coloring paints alike: unmappedMate,
 # then interchrom, else NA.
 #
 # The insert-size band is JBrowse's: median +/- 3 * 1.4826 * MAD of |TLEN| over
 # primary proper pairs (mean +/- 3 sd where the MAD is 0), widened to at least
-# 2x and at most 0.5x its centre. A band with no width colours nothing, and
+# 2x and at most 0.5x its centre. A band with no width colors nothing, and
 # |TLEN| 0 is never short. 'cuts', the display's two insert-size cut points,
 # replace the band.
 alignments_fields <- function(reads, cuts = NULL) {

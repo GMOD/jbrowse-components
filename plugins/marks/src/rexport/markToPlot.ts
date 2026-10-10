@@ -39,7 +39,7 @@ import {
 import { stepChannels } from '../LinearMarkDisplay/stepChannels.ts'
 import { FIGURE_WIDTH_PX } from './rScript.ts'
 import {
-  colourAesthetic,
+  colorAesthetic,
   expr,
   layer,
   rIdent,
@@ -68,7 +68,7 @@ import type { Step } from './transformR.ts'
 import type { ColorSchemeName } from '@jbrowse/core/util/colorSchemes'
 
 /**
- * A colour object as a config writes one: `value` the constant, `field`
+ * A color object as a config writes one: `value` the constant, `field`
  * through `scale` the mapping. A bare string on the encoding is the field.
  */
 export interface ColorSpec {
@@ -228,7 +228,7 @@ function rampScale(color: ColorSpec, notes: string[]): Scale {
   }
   return {
     kind: 'gradient',
-    colours: stopsFromRampLut(lut, RAMP_STOPS).map(s => s.color),
+    colors: stopsFromRampLut(lut, RAMP_STOPS).map(s => s.color),
     log,
     limits:
       domainMin === undefined && domainMax === undefined
@@ -254,12 +254,12 @@ function categories(field: string) {
 }
 
 /**
- * The colour each listed value takes is the browser's own answer: `range` in
+ * The color each listed value takes is the browser's own answer: `range` in
  * `domain` order, continued into the wide palette past its end. A domain
  * left unlisted walks that palette in the data's order, as ggplot's own
  * discrete scale would walk its hue wheel.
  */
-function categoricalColour(color: ColorSpec, field: string): Scale {
+function categoricalColor(color: ColorSpec, field: string): Scale {
   const domain = color.domain ?? []
   if (!domain.length) {
     return {
@@ -268,20 +268,20 @@ function categoricalColour(color: ColorSpec, field: string): Scale {
       name: color.title ?? field,
     }
   }
-  const colourOf = categoricalColorScale(domain, color.range)
+  const colorOf = categoricalColorScale(domain, color.range)
   return {
     kind: 'hashed',
     palette: categoricalPalette,
-    listed: domain.map(v => [v, colourOf(v)] as const),
+    listed: domain.map(v => [v, colorOf(v)] as const),
     labels: color.labels?.length ? color.labels : undefined,
     name: color.title ?? field,
   }
 }
 
 /**
- * A threshold paints each bin the literal colour its `range` names, so it is
+ * A threshold paints each bin the literal color its `range` names, so it is
  * `cut()` into a manual scale and not `scale_*_stepsn`, which bins an
- * interpolated gradient and hands back colours nobody declared — measured at
+ * interpolated gradient and hands back colors nobody declared — measured at
  * `#357ebd` coming out `#4F80B6`.
  *
  * `thresholdCuts` sorts the domain ascending and drops non-finite cuts, which
@@ -307,17 +307,17 @@ function thresholdScale(color: ColorSpec, field: string) {
 }
 
 /**
- * A mark's colour as either a constant or a scale over a field, by the
+ * A mark's color as either a constant or a scale over a field, by the
  * browser's rule: a bare string is a field, `{ value }` the constant, and a
  * field whose `scale` is unset paints through its preset — `score` a ramp,
- * `strand` and `svType` their own colours and names, any other field
+ * `strand` and `svType` their own colors and names, any other field
  * categories.
  *
  * The continuous arm reads the same baked LUT the legend and both rendering
  * backends index, so a stop in the R figure is byte-identical to the browser's
  * at that fraction rather than a second reading of the scheme name.
  */
-function colourOf(
+function colorOf(
   color: Encoding['color'],
   aesthetic: 'fill' | 'colour',
   notes: string[],
@@ -358,13 +358,13 @@ function colourOf(
     return { reads: field, ...thresholdScale(bound, field) }
   }
   if (scale !== 'categorical') {
-    notes.push(`${aesthetic}: an ${scale} scale is not a mark display's colour`)
+    notes.push(`${aesthetic}: an ${scale} scale is not a mark display's color`)
     return {}
   }
   return {
     field: categories(field),
     reads: field,
-    scale: categoricalColour(bound, field),
+    scale: categoricalColor(bound, field),
   }
 }
 
@@ -669,10 +669,10 @@ export function markLayer(
     : frame
   // geom_line draws in x order, which the linear line joins its centres in.
   const geom = m.mark === 'line' && !stepLine ? 'line' : GEOM_OF[m.mark]
-  const colourAes = colourAesthetic(geom)
-  const colour = colourOf(
+  const colorAes = colorAesthetic(geom)
+  const color = colorOf(
     encoding.color,
-    colourAes,
+    colorAes,
     notes,
     m.mark === 'text' ? undefined : DEFAULT_MARK_COLOR,
   )
@@ -681,8 +681,8 @@ export function markLayer(
     scale?.kind === 'hashed' && reads
       ? { ...scale, of: `${drawn.name}$${rIdent(reads)}` }
       : scale
-  if (colour.scale) {
-    scales[colourAes] = over(colour.scale, colour.reads)
+  if (color.scale) {
+    scales[colorAes] = over(color.scale, color.reads)
   }
   if (m.source === 'density') {
     notes.push(`${m.mark}: drawn from the density sidecar, not the features`)
@@ -704,19 +704,19 @@ export function markLayer(
     frame: drawn,
     aes: {
       ...markAes(m, origin, { y, row, minWidthBp }),
-      ...(colour.field ? { [colourAes]: colour.field } : {}),
+      ...(color.field ? { [colorAes]: color.field } : {}),
       ...(shape.field ? { shape: shape.field } : {}),
       ...(size.field ? { linewidth: size.field } : {}),
     },
     constants: {
       ...size.constants,
-      ...(colour.constant ? { [colourAes]: colour.constant } : {}),
+      ...(color.constant ? { [colorAes]: color.constant } : {}),
       ...(shape.constant !== undefined ? { shape: shape.constant } : {}),
     },
     params: markParams(m),
   })
   const missing = missingColumns(
-    { ...l.aes, colour: colour.reads, shape: shape.reads },
+    { ...l.aes, colour: color.reads, shape: shape.reads },
     drawn,
   )
   if (missing.length) {
@@ -914,10 +914,10 @@ export function markPlot({
   }
   const rules = (y?.rules ?? []).map(r =>
     typeof r === 'number'
-      ? { value: r, colour: DEFAULT_RULE_COLOR }
+      ? { value: r, color: DEFAULT_RULE_COLOR }
       : {
           value: r.value ?? 0,
-          colour: r.color ?? DEFAULT_RULE_COLOR,
+          color: r.color ?? DEFAULT_RULE_COLOR,
           label: r.label || undefined,
         },
   )

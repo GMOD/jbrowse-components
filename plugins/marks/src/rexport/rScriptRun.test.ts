@@ -262,7 +262,7 @@ maybe('the emitted script runs', () => {
     uri: BIGWIG,
     regions: ONE_REGION,
   })
-  it('draws a colour ramp over the same data', () => {
+  it('draws a color ramp over the same data', () => {
     ran(ramp.name)
     expect(existsSync(ramp.png)).toBe(true)
   })
@@ -708,7 +708,7 @@ maybe('the fields the display names reach R', () => {
     uri: GFF,
     regions: [{ refName: 'ctgA', start: 0, end: 50000 }],
   })
-  it('colours GFF spans by an attribute the file carries', () => {
+  it('colors GFF spans by an attribute the file carries', () => {
     expect(gffattr.source).toContain('attrs = c("Note")')
     ran(gffattr.name)
     expect(existsSync(gffattr.png)).toBe(true)
@@ -1109,7 +1109,7 @@ maybe('an alignments display draws as a pileup', () => {
     { color: { field: 'tags.NM', scale: 'linear', scheme: 'viridis' } },
     BAM,
   )
-  it('draws coverage over a coloured pileup with mismatch ticks', () => {
+  it('draws coverage over a colored pileup with mismatch ticks', () => {
     for (const f of [strand, insert, nm]) {
       ran(f.name)
       expect(existsSync(f.png)).toBe(true)

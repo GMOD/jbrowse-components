@@ -161,8 +161,8 @@ for (const [trackId, conf] of marks) {
   }
 }
 
-const strandColours = register(
-  'strand_colours',
+const strandColors = register(
+  'strand_colors',
   scriptFor([
     track(main, 'volvox_alignments', 'LinearAlignmentsDisplay', {
       color: { field: 'strand' },
@@ -208,15 +208,15 @@ function wiggle(display: Record<string, unknown>) {
 }
 
 const layerRows = 'nrow(ggplot_build(p_wiggle_track_posneg)$data[[1]])'
-const layerColours = (aes: string) =>
+const layerColors = (aes: string) =>
   `sort(unique(ggplot_build(p_wiggle_track_posneg)$data[[1]]$${aes}))`
 
-const wiggleBar = register('wiggle_bar', wiggle({}), layerColours('fill'))
+const wiggleBar = register('wiggle_bar', wiggle({}), layerColors('fill'))
 const wiggleBarRows = register('wiggle_bar_rows', wiggle({}), layerRows)
 const wiggleLine = register(
   'wiggle_line',
   wiggle({ mark: 'line' }),
-  layerColours('colour'),
+  layerColors('colour'),
 )
 const wiggleHeat = register(
   'wiggle_heatmap',
@@ -226,7 +226,7 @@ const wiggleHeat = register(
 const wigglePlain = register(
   'wiggle_plain',
   wiggle({ color: 'darkgreen' }),
-  layerColours('fill'),
+  layerColors('fill'),
 )
 
 function oracleStrings() {
@@ -249,8 +249,8 @@ function oracleStrings() {
 }
 
 const strings = oracleStrings().filter(v => v !== '')
-const colourOracle = register(
-  'colour_oracle',
+const colorOracle = register(
+  'color_oracle',
   `${HELPERS.category_values}
 vals <- c(${strings.map(v => JSON.stringify(v)).join(', ')})
 pal <- c(${categoricalPalette.map(c => JSON.stringify(c)).join(', ')})
@@ -259,8 +259,8 @@ expected <- c(${strings.map(v => JSON.stringify(categoricalValueColor(v))).join(
   'sum(unname(category_values(vals, pal)[vals]) != expected)',
 )
 
-const barsColours = register(
-  'bars_colours',
+const barsColors = register(
+  'bars_colors',
   scriptFor(
     [
       track(
@@ -314,9 +314,9 @@ maybe('the emitted script, run under R', () => {
     expect(results.get(presigned)).toBe('[1] TRUE')
   })
 
-  it('colours categories by the browser\u2019s hash, value for value', () => {
-    expect(results.get(colourOracle)).toBe('[1] 0')
-    expect(results.get(barsColours)?.replaceAll(/\s+/g, ' ')).toBe(
+  it('colors categories by the browser\u2019s hash, value for value', () => {
+    expect(results.get(colorOracle)).toBe('[1] 0')
+    expect(results.get(barsColors)?.replaceAll(/\s+/g, ' ')).toBe(
       `EDEN.1 EDEN.3 "${categoricalValueColor('EDEN.1')}" "${categoricalValueColor('EDEN.3')}"`,
     )
   })
@@ -331,11 +331,11 @@ maybe('the emitted script, run under R', () => {
     expect(empty).toEqual([])
   })
 
-  it('paints reads in the strand colours the browser does', () => {
+  it('paints reads in the strand colors the browser does', () => {
     const wanted = [colorFwdStrand, colorRevStrand]
       .map(c => c.toLowerCase())
       .sort()
-    expect(results.get(strandColours)?.toLowerCase()).toBe(
+    expect(results.get(strandColors)?.toLowerCase()).toBe(
       `[1] ${wanted.map(c => `"${c}"`).join(' ')}`,
     )
   })
@@ -371,7 +371,7 @@ maybe('the emitted script, run under R', () => {
     expect(results.get(wiggleBar)).toBe('[1] "#0068d1" "#e01e26"')
   })
 
-  it('draws a wiggle line, heatmap and plain colour', () => {
+  it('draws a wiggle line, heatmap and plain color', () => {
     expect(results.get(wiggleLine)).toBe('[1] "#0068d1" "#e01e26"')
     expect(results.get(wiggleHeat)).toBe('[1] TRUE')
     expect(results.get(wigglePlain)).toBe('[1] "darkgreen"')
