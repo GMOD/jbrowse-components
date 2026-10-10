@@ -100,8 +100,8 @@ Files
                                              published hprc-v2.1-mc-grch38.gbz.db,
                                              which stores no map from a GBWT
                                              position back to a sample; built
-                                             by scripts/build_hprc_gbz_index.sh
-                                             with gbz-haplotype-index 0.3.0.
+                                             with gbz-haplotype-index 0.3.0,
+                                             whose docs give the command.
                                              Its anchors sit every 131 kb along
                                              GRCh38 and CHM13, so a window for
                                              a chosen set of lanes walks those
@@ -165,9 +165,9 @@ How they were built
     | sort -k1,1 -k2,2n | bgzip > hprc-v2.1-mc-grch38.bubbles.bed.gz
   tabix -p bed hprc-v2.1-mc-grch38.bubbles.bed.gz
 
-  # the coarse tier, via scripts/build_fold_tier.sh (bandage-fold, gfa-to-tabix)
-  bash build_fold_tier.sh hprc-v2.1-mc-grch38.sv.gfa.gz \
-    hprc-v2.1-mc-grch38.fold10000 10000
+  # the coarse tier, via bandage-fold (@jbrowse/bandage-core) and gfa-to-tabix
+  npx -p @jbrowse/bandage-core bandage-fold hprc-v2.1-mc-grch38.sv.gfa.gz \
+    --below 10000 | gfa-to-tabix - -o hprc-v2.1-mc-grch38.fold10000
 
   # alleles
   gfa-to-tabix alleles hprc-v2.1-mc-grch38

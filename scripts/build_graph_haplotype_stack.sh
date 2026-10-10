@@ -18,7 +18,7 @@
 # names, GRCh38#0 for the reference itself. Any of the release 2 haplotypes
 # works: jbrowse.org/pangenome/hprc-grch38 hosts an assembly and CAT genes for
 # each. For another graph, point GBZ_DB and GBZ_INDEX at a database built by
-# build_hprc_gbz_index.sh and replace the config step's assemblies.
+# gbz-haplotype-index and replace the config step's assemblies.
 
 set -euo pipefail
 

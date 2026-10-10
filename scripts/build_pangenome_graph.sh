@@ -28,7 +28,7 @@
 #                                  and a lane on a non-reference assembly needs
 #   .bubbles.bed.gz                where the graph varies
 #   .fold<N>.segs/links.bed.gz     the graph with variants under N bp folded
-#                                  into the reference (build_fold_tier.sh)
+#                                  into the reference (bandage-fold)
 #   .alleles.bed.gz                what the variation is, one CIGAR per allele
 #   .config.json                   the tracks, ready to merge into a config
 #
@@ -38,14 +38,6 @@
 # SV-resolution graph, 50 for a base-level one, which is what the builder used
 # on HPRC and on the five-strain E. coli pggb graph.
 set -euo pipefail
-
-SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
-
-HELPERS=(build_fold_tier.sh)
-for h in "${HELPERS[@]}"; do
-  [ -f "$SCRIPT_DIR/$h" ] || curl -fsSL -o "$SCRIPT_DIR/$h" \
-    "https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/$h"
-done
 
 usage() {
   sed -n '2,32p' "$0" | sed 's/^# \{0,1\}//' >&2
@@ -131,8 +123,8 @@ if [ -z "$TIER" ]; then
   [ "$ROUTE" = rgfa ] && TIER=10000 || TIER=50
 fi
 echo "== $PREFIX.fold$TIER"
-gfa | bash "$SCRIPT_DIR/build_fold_tier.sh" - "$PREFIX.fold$TIER" "$TIER" \
-  ${REFERENCE:+--reference "$REFERENCE"}
+gfa | npx -y -p @jbrowse/bandage-core@^10.0.0 bandage-fold - --below "$TIER" ${REFERENCE:+--reference "$REFERENCE"} |
+  gfa-to-tabix - -o "$PREFIX.fold$TIER"
 
 gfa-to-tabix alleles "$PREFIX.contig"
 mv "$PREFIX.contig.alleles.bed.gz" "$PREFIX.alleles.bed.gz"

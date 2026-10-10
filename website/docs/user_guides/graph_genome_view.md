@@ -204,7 +204,7 @@ The graph track draws only what the zoom can show: variants smaller than ten of
 the linear view's pixels fold into the reference, the legend says how small, and
 zooming in brings them back. A track whose adapter names `coarse` gives the
 graph a second tier to cut, built by the same fold
-([`build_fold_tier.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_fold_tier.sh)).
+([`bandage-fold`](https://github.com/GMOD/bandage-core/blob/main/docs/coarse-tier.md)).
 Once the linear view is zoomed out past `aboveBpPerPx`, the graph track cuts the
 tier and the size limit no longer applies; the drawing does not change across
 the handover, since the fine cut has folded the same variants by then. The

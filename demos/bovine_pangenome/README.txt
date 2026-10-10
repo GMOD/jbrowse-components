@@ -216,9 +216,10 @@ How they were built
     | sort -k1,1 -k2,2n | bgzip > bovine-arsucd12-minigraph.bubbles.bed.gz
   tabix -p bed bovine-arsucd12-minigraph.bubbles.bed.gz
 
-  # coarse tier, via scripts/build_fold_tier.sh (bandage-fold, gfa-to-tabix)
-  bash build_fold_tier.sh bovine-arsucd12-minigraph.rgfa.gz \
-    bovine-arsucd12-minigraph.fold10000 10000 --layout contig
+  # coarse tier, via bandage-fold (@jbrowse/bandage-core) and gfa-to-tabix
+  npx -p @jbrowse/bandage-core bandage-fold bovine-arsucd12-minigraph.rgfa.gz \
+    --below 10000 | gfa-to-tabix - --layout contig \
+    -o bovine-arsucd12-minigraph.fold10000
 
   gfatools: https://github.com/lh3/gfatools
   Built 2026-09-02 with gfatools 0.5-r296 (git HEAD, reported as 0.5-r296-dirty),

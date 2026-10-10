@@ -50,7 +50,7 @@ SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 
 # Sibling helpers, fetched next to this one when absent, so a bare `curl -fO` of
 # this single file behaves the same as a repo checkout.
-HELPERS=(gfa_paths_to_rgfa.py build_fold_tier.sh)
+HELPERS=(gfa_paths_to_rgfa.py)
 for h in "${HELPERS[@]}"; do
   [ -f "$SCRIPT_DIR/$h" ] || curl -fsSL -o "$SCRIPT_DIR/$h" \
     "https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/$h"
@@ -181,7 +181,8 @@ echo "=== coarse tier: variants under 10 kb folded into the reference ==="
 # where the fine cut had it. Contig rows, as gfa-to-tabix --layout contig writes the fine
 # pair, so a tier window returns what a fine one does.
 [ -s "$PREFIX.fold10000.segs.bed.gz" ] ||
-  bash "$SCRIPT_DIR/build_fold_tier.sh" "$PREFIX.rgfa.gz" "$PREFIX.fold10000" 10000 --layout contig
+  npx -y -p @jbrowse/bandage-core@^10.0.0 bandage-fold "$PREFIX.rgfa.gz" --below 10000 |
+  gfa-to-tabix - --layout contig -o "$PREFIX.fold10000"
 
 echo "=== variant route: vg deconstruct per chromosome ==="
 # The graph route above and this are the two halves the HPRC tutorial names:

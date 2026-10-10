@@ -49,9 +49,8 @@ takes the graph as a local file.
 - the SV-resolution rGFA:
   https://s3-us-west-2.amazonaws.com/human-pangenomics/pangenomes/freeze/release2/minigraph-cactus/v2.1/hprc-v2.1-mc-grch38/hprc-v2.1-mc-grch38.sv.gfa.gz
 
-`build_hprc_gbz_index.sh`, under
-[Reproduce it end to end](#reproduce-it-end-to-end), fetches the graph in vg's
-format and its gbz-base database itself.
+The gbz-base sections below read the graph in vg's format and its gbz-base
+database.
 
 - the same graph in vg's format:
   https://s3-us-west-2.amazonaws.com/human-pangenomics/pangenomes/freeze/release2/minigraph-cactus/v2.1/hprc-v2.1-mc-grch38/hprc-v2.1-mc-grch38.gbz
@@ -453,8 +452,6 @@ Name the haplotypes. `gbz-base` reports the walks in a subgraph as `unknown#1`,
 `unknown#2`, and `gbz-haplotype-index` writes their names to a companion file.
 It reads the database beside the GBZ to check that the two match:
 
-<!-- from: scripts/build_hprc_gbz_index.sh -->
-
 ```bash
 # --interval: bp between recorded GBWT positions per path; denser is bigger
 #   and faster
@@ -521,18 +518,20 @@ bash build_pangenome_graph.sh hprc-v2.1-mc-grch38.sv.gfa.gz hprc --assembly hg38
 
 [`build_pangenome_graph.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_pangenome_graph.sh)
 runs [`gfa-to-tabix`](https://github.com/GMOD/gfa-to-tabix) for the segments and
-links, and `gfa-to-tabix alleles` for the allele inventory, then fetches and
-runs
-[`build_fold_tier.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_fold_tier.sh),
-which runs alone too. The walk files come from the two commands under
-[Indexing haplotype walks](#haplotype-walks-tabix). A separate script builds the
-[gbz-base companion](#haplotype-walks-a-gbz-base-database) from HPRC's 5.5 GB
-`.gbz` and 10 GB gbz-base database:
+links, and `gfa-to-tabix alleles` for the allele inventory. The coarse tier is
+[`bandage-fold`](https://github.com/GMOD/bandage-core/blob/main/docs/coarse-tier.md)
+piped into `gfa-to-tabix`, which runs alone too:
 
 ```bash
-curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/build_hprc_gbz_index.sh
-bash build_hprc_gbz_index.sh out
+npx -p @jbrowse/bandage-core bandage-fold hprc-v2.1-mc-grch38.sv.gfa.gz \
+  --below 10000 | gfa-to-tabix - -o hprc.fold10000
 ```
+
+The walk files come from the two commands under
+[Indexing haplotype walks](#haplotype-walks-tabix). The
+[gbz-base companion](#haplotype-walks-a-gbz-base-database) for HPRC's 5.5 GB
+`.gbz` and 10 GB gbz-base database has its recipe, with the download urls, in
+[gbz-haplotype-index](https://github.com/GMOD/gbz-haplotype-index/blob/main/docs/haplotype-index.md#building-hprc-release-21s-index).
 
 ## See also
 
