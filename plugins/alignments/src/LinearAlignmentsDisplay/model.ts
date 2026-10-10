@@ -121,6 +121,7 @@ import {
 } from './colorUtils.ts'
 import { buildColorPaletteFromPalette } from './components/alignmentComponentUtils.ts'
 import { computeVisibleLabels } from './components/computeVisibleLabels.ts'
+import { nonReferenceAt } from './components/positionStats.ts'
 import {
   readHighlightInk,
   readsToLight,
@@ -129,7 +130,6 @@ import {
 import { SASHIMI_FEATURE_ID_PREFIX } from './components/sashimiArcs.ts'
 import { selectedSashimiHighlight } from './components/sashimiHitTest.ts'
 import { bandScreenTop } from './components/sectionScreen.ts'
-import { nonReferenceAt } from './components/tooltipUtils.ts'
 import { configSlotViews } from './configSlotViews.ts'
 import {
   applyChainStrandFrames,

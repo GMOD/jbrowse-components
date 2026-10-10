@@ -1,4 +1,4 @@
-import { getCoverageBin } from './tooltipUtils.ts'
+import { getCoverageBin } from './positionStats.ts'
 
 import type { PileupDataResult } from '../../RenderAlignmentDataRPC/types.ts'
 

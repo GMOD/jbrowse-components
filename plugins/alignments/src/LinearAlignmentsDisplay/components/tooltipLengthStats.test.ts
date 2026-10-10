@@ -3,7 +3,7 @@ import {
   INTERBASE_INSERTION,
   INTERBASE_SOFTCLIP,
 } from '../../shared/types.ts'
-import { getInterbaseBin, getCoverageBin } from './tooltipUtils.ts'
+import { getInterbaseBin, getCoverageBin } from './positionStats.ts'
 
 import type { PileupDataResult } from '../../RenderAlignmentDataRPC/types.ts'
 

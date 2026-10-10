@@ -2,7 +2,7 @@ import { coverageRows } from '@jbrowse/alignments-core'
 
 import { coverageWidgetFields } from './detailWidgets.ts'
 
-import type { CoverageBin } from './tooltipUtils.ts'
+import type { CoverageBin } from './positionStats.ts'
 
 function bin(overrides: Partial<CoverageBin> = {}): CoverageBin {
   return {
