@@ -139,7 +139,7 @@ Each section ends with the members a composed model contributes, linked to the p
 | <span id="getter-showmismatches">**showMismatches**</span><br><code>boolean</code> |  |
 | <span id="getter-showinterbaseindicators">**showInterbaseIndicators**</span><br><code>boolean</code> |  |
 | <span id="getter-showinterchrom">**showInterchrom**</span><br><code>boolean</code> |  |
-| <span id="getter-showordinarypairs">**showOrdinaryPairs**</span><br><code>boolean</code> | Whether the band draws its ordinary pairs: the arcs' concordant ones (`isConcordantPairRead`, the rule `filterBy.properPairs` hides reads by) and the cloud's modal-insert ones. Unset, arcs keep them and the cloud drops them. |
+| <span id="getter-showordinarypairs">**showOrdinaryPairs**</span><br><code>boolean</code> | Whether the band draws its ordinary pairs: the arcs' concordant ones (`isConcordantPairRead`, the rule `filter.properPairs` hides reads by) and the cloud's modal-insert ones. Unset, arcs keep them and the cloud drops them. |
 | <span id="getter-mininterchromsupport">**minInterchromSupport**</span><br><code>number</code> | Reads a translocation must gather, within one fragment length on both sides, before its connector ticks are drawn. See `clusteredInterchromSupport` — the count is over a window because a mate-pair breakpoint is not localized to a base. |
 | <span id="getter-showlongrange">**showLongRange**</span><br><code>boolean</code> |  |
 | <span id="getter-readconnections">**readConnections**</span><br><code>"arc" &#124; "cloud" &#124; "off"</code> |  |
@@ -410,7 +410,7 @@ Each section ends with the members a composed model contributes, linked to the p
 | <span id="action-setshowsashimiarcs">**setShowSashimiArcs**</span><br><code>(show: boolean) =&gt; void</code> | Writes this slot alone. The arcs draw only with the coverage band (`showSashimiArcs`), and the menu greys the row out without it rather than turning the band back on behind the user's back. |
 | <span id="action-setshowcoverage">**setShowCoverage**</span><br><code>(show: boolean) =&gt; void</code> |  |
 | <span id="action-setreadconnections">**setReadConnections**</span><br><code>(mode?: "arc" &#124; "cloud" &#124; "off" &#124; undefined) =&gt; void</code> |  |
-| <span id="action-setreadconnectionsdown">**setReadConnectionsDown**</span><br><code>(down: boolean) =&gt; void</code> | Orientation of the below-coverage band, shared by read-connection arcs and sashimi arcs. |
+| <span id="action-setreadconnectionsdown">**setReadConnectionsDown**</span><br><code>(down: boolean) =&gt; void</code> | Whether the read-connection band hangs below the coverage band. |
 | <span id="action-setshowpileup">**setShowPileup**</span><br><code>(show: boolean) =&gt; void</code> |  |
 | <span id="action-setcoverageheight">**setCoverageHeight**</span><br><code>(height: number) =&gt; void</code> |  |
 | <span id="action-setcoveragesnpminfrequency">**setCoverageSnpMinFrequency**</span><br><code>(fraction: number) =&gt; void</code> |  |
