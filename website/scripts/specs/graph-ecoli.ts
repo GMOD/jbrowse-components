@@ -1520,7 +1520,7 @@ export const ecoliGraphSpecs: ScreenshotSpec[] = [
   // many-event are opposite directions here.
   //
   // Filling the gaps would mean emitting inter-bubble reference rows from
-  // build_minigraph_paths.sh -- and doing that honestly needs each sample's
+  // `gfa-to-tabix paths` -- and doing that honestly needs each sample's
   // per-bubble contig coordinates chained across the gap, since "no bubble
   // here" is a statement about the graph and not evidence that a given sample
   // aligned there. That is a rebuild and a re-upload of the hosted demo BED,

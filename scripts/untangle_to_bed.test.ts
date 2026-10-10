@@ -11,8 +11,8 @@ import {
   tsvRows,
 } from './pythonHelperScript.ts'
 
-// The 17 shared columns build_minigraph_paths.sh defines, then this producer's
-// one addition. Spelled out here rather than read from the script, so a
+// The 17 shared columns `gfa-to-tabix paths` defines, then this producer's
+// one addition. Spelled out here rather than read from the tool, so a
 // reordering has to be made twice on purpose.
 const SHARED = [
   '#chrom',

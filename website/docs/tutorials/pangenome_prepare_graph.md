@@ -246,8 +246,6 @@ comes from one of two sources.
 With the **assemblies**, map each one back through the graph, reference first,
 and read the path it takes:
 
-<!-- from: scripts/build_minigraph_paths.sh -->
-
 ```bash
 # --call: the path this sample takes through every bubble, one line per
 #   `gfatools bubble` line, in the same order for every sample
@@ -256,9 +254,13 @@ and read the path it takes:
 minigraph -cxasm --call -t 8 graph.rgfa.gz sample.fa > sample.call.bed
 ```
 
-[`build_minigraph_paths.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_minigraph_paths.sh)
-runs that per assembly and joins the output into one tabix-indexed row per
-bubble per sample, drawn as one row per haplotype.
+[`gfa-to-tabix paths`](https://github.com/GMOD/gfa-to-tabix#paths) joins the
+call files, the reference's first, into one tabix-indexed row per bubble per
+sample, drawn as one row per haplotype:
+
+```bash
+gfa-to-tabix paths -o graph.paths ref.call.bed sample.call.bed
+```
 
 With a **plain GFA**, the command records the haplotypes whose paths visit each
 segment as an `SM:Z:` tag while it reads the paths.

@@ -4,7 +4,7 @@ already publishes, so a multi-row lane can draw it.
 
 This is a **second producer of an existing contract**, not a new format. The
 schema, and the reasoning behind each column, is documented once in
-`build_minigraph_paths.sh`; that file's "Other producers" list points here. If
+gfa-to-tabix's README (https://github.com/GMOD/gfa-to-tabix#paths). If
 you are adding a third producer, fill the same header rather than inventing one.
 The last graph effort in this repo died partly of designing a bespoke linearized
 pangenome format (adr-024, `synteny_build`) and the lesson stuck: read the
@@ -37,7 +37,7 @@ import sys
 
 # Orientation, the one thing this lane is for: grey runs the same way as the
 # reference, red runs backwards through it. Same convention as the `itemRgb`
-# column in build_minigraph_paths.sh — the color is in the file so the track
+# column of `gfa-to-tabix paths` — the color is in the file so the track
 # needs no color config, and a `color` jexl on `strand` overrides it.
 FORWARD_RGB = "153,153,153"
 REVERSE_RGB = "214,39,40"

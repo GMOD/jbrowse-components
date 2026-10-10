@@ -578,13 +578,16 @@ Which strains have each segment is not in them, because rGFA's `SR` tag is build
 order, not sample. minigraph can recompute the walks by aligning each assembly
 back to the graph (`minigraph -cxasm --call`). The call writes one line per
 bubble per sample, with the path that sample takes and its length.
-[`build_minigraph_paths.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_minigraph_paths.sh)
-runs the call for every strain and projects the results into one tabix-indexed
-BED, with a row per bubble per strain:
+[`gfa-to-tabix paths`](https://github.com/GMOD/gfa-to-tabix#paths) projects the
+call files of every strain into one tabix-indexed BED, with a row per bubble per
+strain:
 
 ```bash
-bash build_minigraph_paths.sh ecoli_minigraph.rgfa ecoli_minigraph_paths \
-  K12.pansn.fa Sakai.pansn.fa CFT073.pansn.fa NCTC86.pansn.fa IAI39.pansn.fa
+for s in K12 Sakai CFT073 NCTC86 IAI39; do
+  minigraph -cxasm --call -t8 ecoli_minigraph.rgfa $s.pansn.fa > $s.call.bed
+done
+gfa-to-tabix paths -o ecoli_minigraph_paths \
+  K12.call.bed Sakai.call.bed CFT073.call.bed NCTC86.call.bed IAI39.call.bed
 ```
 
 The reference goes first, because its path through a bubble is the reference

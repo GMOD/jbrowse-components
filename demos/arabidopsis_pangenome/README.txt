@@ -155,7 +155,7 @@ How the graph was built
     bandage-fold | gfa-to-tabix         .fold10000.segs.bed.gz, the graph with
                                         variants under 10 kb folded into the
                                         reference
-    scripts/build_minigraph_paths.sh    .paths.bed.gz, each accession's path
+    gfa-to-tabix paths                  .paths.bed.gz, each accession's path
                                         through every bubble (minigraph --call
                                         per accession), rows by `strain`
 

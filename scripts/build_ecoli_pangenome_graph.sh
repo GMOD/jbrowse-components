@@ -29,7 +29,7 @@
 #
 # Requires: docker or singularity (the pggb image, which also carries odgi for
 #           the depth projection, and the cactus image for minigraph/gfatools),
-#           gfa-to-tabix 0.7.0 or later, the NCBI `datasets` CLI, samtools,
+#           gfa-to-tabix 0.9.0 or later, the NCBI `datasets` CLI, samtools,
 #           bedGraphToBigWig (UCSC kentUtils), python3, bgzip/tabix (htslib), unzip, and node (JBrowse CLI, via npx
 #           unless `jbrowse` is on PATH).
 # Usage:    bash scripts/build_ecoli_pangenome_graph.sh [outdir]
@@ -43,7 +43,6 @@ SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"   # so reroot_maf.py resolves after 
 # `curl -fO` of this one file behaves the same as a repo checkout.
 # build_pangenome_graph.sh fetches its helpers the same way.
 HELPERS=(reroot_maf.py maf_to_bed.py gfa_nodes_to_bed.py build_pangenome_graph.sh
-  build_minigraph_paths.sh
   odgi_similarity_to_newick.py untangle_to_bed.py)
 # The JBrowse CLI, installed or via npx. Defined HERE rather than at the JBrowse
 # setup section far below, because `make-pif` runs during the projections and a
@@ -457,13 +456,17 @@ gfa-to-tabix alleles ecoli_minigraph
 # (SR is build order, not sample). minigraph recomputes the walks by aligning the
 # assemblies back to the graph, so it works on a graph carrying no P/W lines.
 # Reference first: its path through a bubble IS the reference allele.
-PATHS_FA="/data/$REF.pansn.fa"
+PATHS_ORDER="$REF"
 for strain in $STRAINS; do
-  [ "$strain" = "$REF" ] || PATHS_FA="$PATHS_FA /data/$strain.pansn.fa"
+  [ "$strain" = "$REF" ] || PATHS_ORDER="$PATHS_ORDER $strain"
 done
-cp "$SCRIPT_DIR/build_minigraph_paths.sh" .
-in_cactus bash /data/build_minigraph_paths.sh /data/ecoli_minigraph.rgfa \
-  /data/ecoli_minigraph_paths $PATHS_FA
+CALLS=()
+for strain in $PATHS_ORDER; do
+  in_cactus minigraph -cxasm --call "-t$(getconf _NPROCESSORS_ONLN)" \
+    /data/ecoli_minigraph.rgfa "/data/$strain.pansn.fa" >"$strain.call.bed"
+  CALLS+=("$strain.call.bed")
+done
+gfa-to-tabix paths -o ecoli_minigraph_paths "${CALLS[@]}"
 
 # ── Set up JBrowse ────────────────────────────────────────────────────────────
 APP=jbrowse2

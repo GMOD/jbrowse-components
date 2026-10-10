@@ -11,8 +11,8 @@
 # Requires: curl, unzip, awk (gawk), python3, samtools, minimap2, minigraph,
 #           gfatools, bgzip and tabix, bedGraphToBigWig, the NCBI `datasets`
 #           CLI, and SyRI (`syri` on the PATH, or Docker, which runs the
-#           biocontainers image), node (npx) and gfa-to-tabix for the coarse
-#           tier
+#           biocontainers image), node (npx) and gfa-to-tabix 0.9.0 or
+#           later
 # Usage:    bash build_arabidopsis_pangenome.sh [outdir]
 #
 # ROWS is one `<id> <name> <country> <admixture group>` line per accession,
@@ -23,7 +23,7 @@
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-HELPERS=(syri_to_paf.py arabidopsis_pangenome_config.py build_minigraph_paths.sh)
+HELPERS=(syri_to_paf.py arabidopsis_pangenome_config.py)
 for h in "${HELPERS[@]}"; do
   [ -f "$SCRIPT_DIR/$h" ] || curl -fsSL -o "$SCRIPT_DIR/$h" \
     "https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/$h"
@@ -185,7 +185,14 @@ fi
     gfa-to-tabix - --layout contig -o "$GRAPH.fold10000"
 PANSN_FASTAS=()
 for fa in "${FASTAS[@]}"; do PANSN_FASTAS+=("$(basename "$fa")"); done
-[ -s "$GRAPH.paths.bed.gz" ] || bash "$SCRIPT_DIR/build_minigraph_paths.sh" "$GRAPH.rgfa.gz" "$GRAPH.paths" "${PANSN_FASTAS[@]}"
+CALLS=()
+for fa in "${PANSN_FASTAS[@]}"; do
+  name=$(basename "$fa" .pansn.fa)
+  [ -s "$name.call.bed" ] ||
+    minigraph -cxasm --call -t"$THREADS" "$GRAPH.rgfa.gz" "$fa" >"$name.call.bed"
+  CALLS+=("$name.call.bed")
+done
+[ -s "$GRAPH.paths.bed.gz" ] || gfa-to-tabix paths -o "$GRAPH.paths" "${CALLS[@]}"
 cd ..
 for f in graph/"$GRAPH".*.bed.gz graph/"$GRAPH".*.tbi graph/"$GRAPH".rgfa.gz; do cp "$f" .; done
 

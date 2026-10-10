@@ -583,7 +583,7 @@ def refusal(mod, argv, expect):
     return "wrote a file"
 
 
-# untangle_to_bed.py: a second producer of build_minigraph_paths.sh's schema.
+# untangle_to_bed.py: a second producer of `gfa-to-tabix paths`' schema.
 # Consumers reach these columns POSITIONALLY as well as by name, so a dropped
 # blank slides selfCov into `class` and a jexl on class reads a float.
 untangle = load("scripts/untangle_to_bed.py", "untangle_to_bed")
