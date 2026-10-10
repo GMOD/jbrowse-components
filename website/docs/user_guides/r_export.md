@@ -28,7 +28,9 @@ ggplot2 knowledge.
 | Alignments tracks (BAM)                                           | A coverage band over the reads, packed as the browser packs them, with mismatch ticks                      |
 
 Alignments color by strand, mapping quality, insert size, pair orientation or a
-SAM tag, and honor the **Filter by** flags, read name and tag filters.
+SAM tag, and honor the **Filter by** flags, read name and tag filters. A view of
+several regions draws them end to end on one axis, each track's panel spanning
+all of them.
 
 ## What it leaves out
 
