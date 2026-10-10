@@ -41,7 +41,7 @@ set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 
-HELPERS=(build_fold_tier.sh build_rgfa_alleles.sh snarls_to_bubble_bed.py)
+HELPERS=(build_fold_tier.sh snarls_to_bubble_bed.py)
 for h in "${HELPERS[@]}"; do
   [ -f "$SCRIPT_DIR/$h" ] || curl -fsSL -o "$SCRIPT_DIR/$h" \
     "https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/$h"
@@ -70,8 +70,8 @@ while [ $# -gt 0 ]; do
   esac
 done
 [ -s "$GRAPH" ] || { echo "no such graph: $GRAPH" >&2; exit 1; }
-command -v gfa-to-tabix >/dev/null && gfa-to-tabix --help | grep -q -- --layout || {
-  echo "gfa-to-tabix 0.2.0 or later is not on PATH. Install it with" >&2
+command -v gfa-to-tabix >/dev/null && gfa-to-tabix alleles --help >/dev/null 2>&1 || {
+  echo "gfa-to-tabix 0.7.0 or later is not on PATH. Install it with" >&2
   echo "  cargo install gfa-to-tabix" >&2
   echo "or download a binary from https://github.com/GMOD/gfa-to-tabix/releases" >&2
   exit 1
@@ -137,7 +137,7 @@ echo "== $PREFIX.fold$TIER"
 gfa | bash "$SCRIPT_DIR/build_fold_tier.sh" - "$PREFIX.fold$TIER" "$TIER" \
   ${REFERENCE:+--reference "$REFERENCE"}
 
-bash "$SCRIPT_DIR/build_rgfa_alleles.sh" "$PREFIX.contig"
+gfa-to-tabix alleles "$PREFIX.contig"
 mv "$PREFIX.contig.alleles.bed.gz" "$PREFIX.alleles.bed.gz"
 mv "$PREFIX.contig.alleles.bed.gz.tbi" "$PREFIX.alleles.bed.gz.tbi"
 

@@ -655,11 +655,11 @@ in the graph, because each L-line row records both of its endpoints in full. A
 link between two backbone segments that leaves a coordinate _gap_ is a deletion.
 A link from the backbone into a rank>0 segment enters an allele, and the
 allele's length is the total of the segments it walks before rejoining.
-[`build_rgfa_alleles.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_rgfa_alleles.sh)
-does that walk in awk and needs only the two files:
+[`gfa-to-tabix alleles`](https://github.com/GMOD/gfa-to-tabix#alleles) does that
+walk and needs only the two files, indexed with `--layout contig`:
 
 ```bash
-bash build_rgfa_alleles.sh ecoli_minigraph   # -> ecoli_minigraph.alleles.bed.gz
+gfa-to-tabix alleles ecoli_minigraph   # -> ecoli_minigraph.alleles.bed.gz
 ```
 
 Each row describes an allele against the reference it replaces, which makes the

@@ -519,11 +519,10 @@ bash build_pangenome_graph.sh hprc-v2.1-mc-grch38.sv.gfa.gz hprc --assembly hg38
 
 [`build_pangenome_graph.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_pangenome_graph.sh)
 runs [`gfa-to-tabix`](https://github.com/GMOD/gfa-to-tabix) for the segments and
-links, then fetches and runs
-[`build_fold_tier.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_fold_tier.sh)
-and
-[`build_rgfa_alleles.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_rgfa_alleles.sh),
-each runnable alone. The walk files come from the two commands under
+links, and `gfa-to-tabix alleles` for the allele inventory, then fetches and
+runs
+[`build_fold_tier.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_fold_tier.sh),
+which runs alone too. The walk files come from the two commands under
 [Indexing haplotype walks](#haplotype-walks-tabix). A separate script builds the
 [gbz-base companion](#haplotype-walks-a-gbz-base-database) from HPRC's 5.5 GB
 `.gbz` and 10 GB gbz-base database:
