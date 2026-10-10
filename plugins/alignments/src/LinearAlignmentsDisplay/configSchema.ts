@@ -354,24 +354,10 @@ export default function configSchemaFactory(_pluginManager: PluginManager) {
       /**
        * #slot
        */
-      showProperPairArcs: {
-        type: 'boolean',
-        // "Concordant" here is `isConcordantPairRead`, the same rule
-        // `filter.properPairs` uses — that setting hides the reads, this one
-        // hides their arcs. Default true, so the band is unchanged
-        // until asked.
-        defaultValue: true,
+      showOrdinaryPairs: {
+        type: 'maybeBoolean',
         description:
-          'Draw arcs for ordinary concordant pairs. Uncheck to leave only the arcs that carry a category (abnormal insert size or orientation, split junctions), which on deep coverage is the difference between a readable band and a solid mass',
-      },
-      /**
-       * #slot
-       */
-      showModalPairsInCloud: {
-        type: 'boolean',
-        defaultValue: false,
-        description:
-          'Keep the pairs of ordinary insert size in the read cloud, as the band the abnormal pairs are read against',
+          'Draw the ordinary pairs alongside the abnormal ones: concordant pairs as arcs, pairs of modal insert size in the read cloud. Unset, the arcs draw them as context and the cloud leaves them out',
       },
       /**
        * #slot

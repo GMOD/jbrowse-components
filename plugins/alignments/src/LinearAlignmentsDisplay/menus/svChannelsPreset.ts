@@ -11,16 +11,20 @@ export interface SvChannelsSettings {
   showPileup: boolean
   facet: Facet | undefined
   readConnections: ReadConnectionsMode
-  showProperPairArcs: boolean
+  showOrdinaryPairs: boolean
 }
 
 /**
- * What a preset WRITES, which is not the same shape: `readConnections`'s getter
- * always answers a mode, while its setter also takes `undefined`, meaning "back
- * to the slot's default".
+ * What a preset WRITES, which is not the same shape: the `readConnections` and
+ * `showOrdinaryPairs` getters always answer, while their setters also take
+ * `undefined`, meaning "back to the slot's default".
  */
-export type SvChannelsWrite = Omit<SvChannelsSettings, 'readConnections'> & {
+export type SvChannelsWrite = Omit<
+  SvChannelsSettings,
+  'readConnections' | 'showOrdinaryPairs'
+> & {
   readConnections: ReadConnectionsMode | undefined
+  showOrdinaryPairs: boolean | undefined
 }
 
 export const SV_CHANNELS_LABEL = 'SV channels (pairs by orientation)'
@@ -49,12 +53,12 @@ export const SV_CHANNELS_ON: SvChannelsWrite = {
   showPileup: false,
   facet: { field: 'pairOrientation' },
   readConnections: 'arc',
-  showProperPairArcs: false,
+  showOrdinaryPairs: false,
 }
 
 // Leaving the arrangement UNSETS what it can unset rather than asserting a
-// state: `readConnections` goes back to inheriting, and the two plain booleans
-// go back to their schema defaults, which is the closest thing they have.
+// state: `readConnections` and `showOrdinaryPairs` go back to inheriting, and
+// `showPileup` to its schema default, which is the closest thing it has.
 //
 // It is still not a restore — a tag grouping or a read cloud in place before
 // the row was ticked does not come back, since nothing banks what it displaced.
@@ -62,7 +66,7 @@ export const SV_CHANNELS_OFF: SvChannelsWrite = {
   showPileup: true,
   facet: undefined,
   readConnections: undefined,
-  showProperPairArcs: true,
+  showOrdinaryPairs: undefined,
 }
 
 export function isSvChannelsActive(current: SvChannelsSettings) {
@@ -70,6 +74,6 @@ export function isSvChannelsActive(current: SvChannelsSettings) {
     current.showPileup === SV_CHANNELS_ON.showPileup &&
     current.facet?.field === SV_CHANNELS_ON.facet?.field &&
     current.readConnections === SV_CHANNELS_ON.readConnections &&
-    current.showProperPairArcs === SV_CHANNELS_ON.showProperPairArcs
+    current.showOrdinaryPairs === SV_CHANNELS_ON.showOrdinaryPairs
   )
 }

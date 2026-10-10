@@ -27,8 +27,8 @@ interface ReadConnectionsModel {
   setShowLongRange: (draw: boolean) => void
   showInterchrom: boolean
   setShowInterchrom: (draw: boolean) => void
-  showProperPairArcs: boolean
-  setShowProperPairArcs: (draw: boolean) => void
+  showOrdinaryPairs: boolean
+  setShowOrdinaryPairs: (show?: boolean) => void
   minInterchromSupport: number
   setMinInterchromSupport: (support: number) => void
   showBezierConnections: boolean
@@ -104,14 +104,14 @@ export function getReadConnectionsMenuItem(
           },
         ),
         toggleItem(
-          'Show concordant-pair arcs',
-          model.showProperPairArcs,
-          draw => {
-            model.setShowProperPairArcs(draw)
+          'Show ordinary pairs',
+          model.showOrdinaryPairs,
+          show => {
+            model.setShowOrdinaryPairs(show)
           },
           {
             helpText:
-              'Uncheck to draw only the arcs that carry a category — abnormal insert size or orientation, and split junctions — leaving out the ordinary pairs. "Concordant" means exactly what it means for the Proper pairs filter under Filter by...: the aligner flagged the pair proper (SAM 0x2), it is not a chimeric segment, and its mates face each other. That setting hides the reads; this one hides their arcs, so you can keep the pileup whole and still read the band. On deep coverage it is the difference between a readable band and a solid mass — at 300x roughly 99 arcs in 100 are the ordinary case.',
+              'Draw the ordinary pairs alongside the ones that carry a category — abnormal insert size or orientation, and split junctions. For arcs, ordinary means concordant, as it does for the Proper pairs filter under Filter by...: the aligner flagged the pair proper (SAM 0x2), it is not a chimeric segment, and its mates face each other. That filter hides the reads and this hides their arcs, so you can keep the pileup whole and still read the band. For the read cloud, ordinary means an insert size inside the usual band, whatever the flags say. Arcs draw them unless you uncheck this and the cloud leaves them out unless you check it; on deep coverage, unchecking it for arcs is the difference between a readable band and a solid mass.',
           },
         ),
         toggleItem(

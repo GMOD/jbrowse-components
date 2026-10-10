@@ -32,9 +32,9 @@ function makeModel() {
     setShowBezierConnections(v: boolean) {
       this.showBezierConnections = v
     },
-    showProperPairArcs: true,
-    setShowProperPairArcs(v: boolean) {
-      this.showProperPairArcs = v
+    showOrdinaryPairs: true,
+    setShowOrdinaryPairs(v?: boolean) {
+      this.showOrdinaryPairs = v ?? true
     },
     minInterchromSupport: DEFAULT_MIN_INTERCHROM_SUPPORT,
     setMinInterchromSupport(v: number) {

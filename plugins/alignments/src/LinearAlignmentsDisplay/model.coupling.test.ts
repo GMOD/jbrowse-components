@@ -161,6 +161,25 @@ describe('alignments display cross-feature coupling', () => {
     expect(display.showSashimiArcs).toBe(false)
     expect(display.readConnectionsDown).toBe(false)
   })
+
+  // One slot for both overlays: unset, each keeps its own default, and a
+  // value the user picked carries across a switch.
+  test('showOrdinaryPairs resolves per overlay until set', () => {
+    const display = createDisplay()
+    display.setReadConnections('arc')
+    expect(display.showOrdinaryPairs).toBe(true)
+    display.setReadConnections('cloud')
+    expect(display.showOrdinaryPairs).toBe(false)
+
+    display.setShowOrdinaryPairs(true)
+    expect(display.showOrdinaryPairs).toBe(true)
+    display.setReadConnections('arc')
+    expect(display.showOrdinaryPairs).toBe(true)
+
+    display.setShowOrdinaryPairs(undefined)
+    display.setReadConnections('cloud')
+    expect(display.showOrdinaryPairs).toBe(false)
+  })
 })
 
 // Color by used to also manage a discovered-value map: clear it when

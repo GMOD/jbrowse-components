@@ -1842,9 +1842,9 @@ export const trackFields: Record<string, FieldRecipe> = {
   readConnectionsDown: checkbox(
     'Read connections → Arc / read cloud band options → Draw arcs below coverage band',
   ),
-  showProperPairArcs: checkbox(
-    'Read connections → Arc / read cloud band options → Show concordant-pair arcs',
-    'Unchecked, the band keeps only the arcs that carry a category — an abnormal insert size or orientation, or a split junction — which on deep coverage is the difference between a readable band and a solid mass.',
+  showOrdinaryPairs: checkbox(
+    'Read connections → Arc / read cloud band options → Show ordinary pairs',
+    'Unchecked, the band keeps only the pairs that carry a category — an abnormal insert size or orientation, or a split junction — which on deep coverage is the difference between a readable band and a solid mass.',
   ),
   minSashimiScore: numberField(n => ({
     path: `${TRACK_MENU} → Sashimi arcs → Min read support → ${n}`,

@@ -45,14 +45,11 @@ export interface ArcSettings {
   cloud?: boolean
   showInterchrom: boolean
   showLongRange: boolean
-  // Whether ordinary concordant pairs get an arc. Shares its definition of
-  // "concordant" with the read filter behind "Show proper pairs"
-  // (`isConcordantPairRead`). Defaults true — every arc drawn, as before the
-  // setting existed.
-  showProperPairArcs?: boolean
-  // Whether the read cloud keeps the pairs of ordinary insert size, the band
-  // the abnormal ones are read against. Defaults false.
-  showModalPairsInCloud?: boolean
+  // Whether the band draws its ordinary pairs, each mode by its own rule:
+  // concordant flags for arcs (`isConcordantPairRead`, shared with "Show proper
+  // pairs"), a modal |TLEN| for the cloud. Defaults to arcs drawing them and
+  // the cloud not.
+  showOrdinaryPairs?: boolean
   // Reads a translocation breakpoint must gather before its marks are drawn —
   // see `clusteredInterchromSupport`. 1 (or 0) draws every one, which is what
   // this did before the setting existed.

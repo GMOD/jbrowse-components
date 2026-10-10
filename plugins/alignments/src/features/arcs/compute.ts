@@ -250,8 +250,7 @@ function resolveArcs(
     colorField,
     cloud = false,
     showInterchrom,
-    showProperPairArcs = true,
-    showModalPairsInCloud = false,
+    showOrdinaryPairs = !cloud,
     minInterchromSupport = 1,
   } = settings
   const arcs: ComputedArc[] = []
@@ -577,18 +576,13 @@ function resolveArcs(
       continue
     }
 
-    // Read cloud suppresses the modal-insert FR pairs so SV signals stand out.
-    // Split junctions have no template length, so they never qualify.
-    //
-    // NOT the same test as the one above, deliberately: this asks whether |TLEN|
-    // sits in the modal band, that one asks what the aligner concluded. The
-    // cloud exists to surface anything anomalous in SIZE, so it must catch a
-    // pair the flags call proper; `isConcordantPairRead`'s comment has the full
-    // split. Both can apply — the cloud's is unconditional in cloud mode and the
-    // setting above still filters on top of it.
+    // The cloud's ordinary pair is one of modal |TLEN|, not one the aligner
+    // flagged proper: the cloud surfaces anything anomalous in SIZE, so it
+    // must keep a proper pair of odd length (`isConcordantPairRead` has the
+    // split). A split junction has no template length and never qualifies.
     if (
       cloud &&
-      !showModalPairsInCloud &&
+      !showOrdinaryPairs &&
       !arc.isSplit &&
       isConcordantFRPair(arc.pairOrientationNum, arc.tlen, arc.stats)
     ) {
@@ -604,13 +598,9 @@ function resolveArcs(
     // the rounded arc. (showLongRange only gates connections to mates that
     // aren't loaded in the current view; see `offScreenMateArcs`.)
     const colorType = getArcColorType({ arc, colorField, hasPaired })
-    // The user's own suppression of the ordinary case, and the reason it is a
-    // setting where the cloud's is not: in ARC mode the concordant domes are the
-    // context a discordant pair is read against, so on shallow data they earn
-    // their ink. At depth they stop being context and become the picture — 9138
-    // of 9204 arcs at 1:2,000,000 on HG002 300x, all painting the baseline slot,
-    // with the 66 that mean something riding on top of them
-    // (agent-docs/reference/DEEP_COVERAGE.md).
+    // The arcs' ordinary pair, which at depth stops being context and becomes
+    // the picture — 9138 of 9204 arcs at 1:2,000,000 on HG002 300x, all
+    // painting the baseline slot (agent-docs/reference/DEEP_COVERAGE.md).
     //
     // TWO conditions, and the second is what keeps the setting honest.
     //
@@ -632,7 +622,8 @@ function resolveArcs(
     // A split junction has no pair to call proper and is never suppressed: it is
     // evidence whatever the reads around it are flagged.
     if (
-      !showProperPairArcs &&
+      !cloud &&
+      !showOrdinaryPairs &&
       !arc.isSplit &&
       arcPaintRank(colorType) === 0 &&
       isConcordantPairRead(arc.flags, arc.pairOrientationNum)

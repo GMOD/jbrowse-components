@@ -697,7 +697,7 @@ describe('computeArcsFromPileupData', () => {
   // At depth the concordant domes stop being context and become the picture —
   // 9138 of 9204 arcs on HG002 300x. The setting drops them, and what it must
   // NOT drop is anything carrying evidence, whatever the flags say.
-  describe('showProperPairArcs hides the ordinary pairs and nothing else', () => {
+  describe('showOrdinaryPairs hides the ordinary arcs and nothing else', () => {
     const regions = [
       { refName: 'chr1', start: 1000, end: 9000, displayedRegionIndex: 0 },
     ]
@@ -716,12 +716,12 @@ describe('computeArcsFromPileupData', () => {
         readNextPositions: new Uint32Array(entries.map(() => 3000)),
       })
     }
-    const run = (data: PileupDataResult, showProperPairArcs: boolean) =>
+    const run = (data: PileupDataResult, showOrdinaryPairs: boolean) =>
       computeArcsFromPileupData(new Map([[0, data]]), regions, {
         colorField: 'insertSizeAndOrientation',
         showInterchrom: false,
         showLongRange: true,
-        showProperPairArcs,
+        showOrdinaryPairs,
       })
 
     const PROPER = SAM_FLAG_PAIRED | SAM_FLAG_PROPER_PAIR
@@ -791,6 +791,48 @@ describe('computeArcsFromPileupData', () => {
       ])
       expect(run(data, true).arcs).toHaveLength(4)
       expect(run(data, false).arcs).toHaveLength(2)
+    })
+  })
+
+  // The cloud asks the same question by |TLEN|, not by flags, and unset it
+  // answers the other way.
+  describe('showOrdinaryPairs in the read cloud', () => {
+    const regions = [
+      { refName: 'chr1', start: 1000, end: 9000, displayedRegionIndex: 0 },
+    ]
+    const PROPER = SAM_FLAG_PAIRED | SAM_FLAG_PROPER_PAIR
+    const data = makePileupData({
+      readPositions: new Uint32Array([1000, 1100, 1200, 1300]),
+      readFlags: new Uint16Array(2).fill(PROPER),
+      readStrands: new Int8Array([1, 1]),
+      readInsertSizes: new Float32Array([20, 500]),
+      readPairOrientations: new Uint8Array([1, 1]),
+      ...namesToBlock(['short', 'modal']),
+      ...nextRefsToTable(['chr1', 'chr1']),
+      readNextPositions: new Uint32Array([3000, 3000]),
+      insertSizeStats: { upper: 900, lower: 100 },
+    })
+    const run = (showOrdinaryPairs?: boolean) =>
+      computeArcsFromPileupData(new Map([[0, data]]), regions, {
+        // under pairOrientation the short pair paints the baseline slot, which
+        // the arcs' rule would hide; the cloud keeps it for its size
+        colorField: 'pairOrientation',
+        cloud: true,
+        showInterchrom: false,
+        showLongRange: true,
+        showOrdinaryPairs,
+      }).arcs.map(a => a.spanBp)
+
+    test('unset, the modal pair goes and the short one stays', () => {
+      expect(run()).toEqual([20])
+    })
+
+    test('false, the same as unset', () => {
+      expect(run(false)).toEqual([20])
+    })
+
+    test('true, both stay', () => {
+      expect(run(true).sort((a, b) => a - b)).toEqual([20, 500])
     })
   })
 

@@ -193,7 +193,7 @@ const readEvidence = ({
             showPileup: false,
             showCoverage: false,
             readConnections: 'cloud',
-            showModalPairsInCloud: true,
+            showOrdinaryPairs: true,
             readConnectionsHeight: 200,
             height: 215,
             showLegend: true,

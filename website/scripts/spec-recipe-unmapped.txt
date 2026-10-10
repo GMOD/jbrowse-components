@@ -21,7 +21,6 @@ repeatKey
 repeatTrackId
 rows
 showAlignment
-showModalPairsInCloud
 showProteinTracks
 sideBySide
 size

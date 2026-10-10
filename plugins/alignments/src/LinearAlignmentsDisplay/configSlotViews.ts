@@ -108,19 +108,15 @@ export function configSlotViews(self: ConfigSlotSelf) {
     },
     /**
      * #getter
-     * Whether ordinary concordant pairs get an arc. Same definition of
-     * concordant as `filterBy.properPairs`, which hides the reads themselves —
-     * see `isConcordantPairRead`.
+     * Whether the band draws its ordinary pairs: the arcs' concordant ones
+     * (`isConcordantPairRead`, the rule `filterBy.properPairs` hides reads by)
+     * and the cloud's modal-insert ones. Unset, arcs keep them and the cloud
+     * drops them.
      */
-    get showProperPairArcs(): boolean {
-      return getConf(self, 'showProperPairArcs')
-    },
-    /**
-     * #getter
-     * Whether the read cloud keeps the pairs of ordinary insert size.
-     */
-    get showModalPairsInCloud(): boolean {
-      return getConf(self, 'showModalPairsInCloud')
+    get showOrdinaryPairs(): boolean {
+      return (
+        getConf(self, 'showOrdinaryPairs') ?? this.readConnections !== 'cloud'
+      )
     },
     /**
      * #getter

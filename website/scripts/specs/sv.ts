@@ -874,7 +874,7 @@ export const svSpecs: ScreenshotSpec[] = [
               facet: 'pairOrientation',
               readConnections: 'arc',
               readConnectionsDown: true,
-              showProperPairArcs: false,
+              showOrdinaryPairs: false,
               // No `arcColor` or `color`, so the arcs paint
               // insertSizeAndOrientation, and the legend is what says what the
               // four bands' arc colors mean.

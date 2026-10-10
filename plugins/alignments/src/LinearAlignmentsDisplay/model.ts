@@ -1731,8 +1731,7 @@ export default function stateModelFactory(
               cloud: self.readConnections === 'cloud',
               showInterchrom: self.showInterchrom,
               showLongRange: self.showLongRange,
-              showProperPairArcs: self.showProperPairArcs,
-              showModalPairsInCloud: self.showModalPairsInCloud,
+              showOrdinaryPairs: self.showOrdinaryPairs,
               minInterchromSupport: self.minInterchromSupport,
               canonicalRefName: this.canonicalRefName,
             }
@@ -3407,8 +3406,8 @@ export default function stateModelFactory(
           /**
            * #action
            */
-          setShowProperPairArcs(draw: boolean) {
-            setConf(self, 'showProperPairArcs', draw)
+          setShowOrdinaryPairs(show?: boolean) {
+            setConf(self, 'showOrdinaryPairs', show)
           },
 
           /**
