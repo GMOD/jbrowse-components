@@ -1,4 +1,5 @@
-import { copyFileSync, mkdtempSync } from 'node:fs'
+import { execFileSync } from 'node:child_process'
+import { copyFileSync, mkdtempSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import path from 'node:path'
 
@@ -123,6 +124,73 @@ const crossRegionTicks = register(
   `{ m <- mismatches_volvox_alignments; r <- reads_volvox_alignments
   i <- match(paste(m$.region, m$read_index), paste(r$.region, r$read_index))
   c(nrow(m) > 0, all(m$refpos >= r$start[i] & m$refpos < r$end[i]), all(m$row == r$row[i])) }`,
+)
+
+function samtools(...args: string[]) {
+  return execFileSync('samtools', args, { stdio: ['ignore', 'pipe', 'ignore'] })
+}
+const hasSamtools = (() => {
+  try {
+    samtools('--version')
+    return true
+  } catch {
+    return false
+  }
+})()
+
+function splicedFrom(bam: string, refNames?: Record<string, string>) {
+  return {
+    ...track(main, 'spliced', 'LinearAlignmentsDisplay', {}),
+    adapter: {
+      type: 'BamAdapter',
+      bamLocation: { localPath: bam },
+      index: { location: { localPath: `${bam}.bai` } },
+    },
+    refNames,
+  }
+}
+
+const spliced = path.join(dir, 'spliced-calmd.bam')
+const noMd = path.join(dir, 'spliced-nomd.bam')
+const aliasedNoMd = path.join(dir, 'spliced-chrA-nomd.bam')
+if (hasSamtools) {
+  samtools(
+    'view',
+    '-b',
+    '--remove-tag',
+    'MD',
+    '-o',
+    noMd,
+    path.join(VOLVOX, 'spliced.bam'),
+  )
+  writeFileSync(
+    spliced,
+    samtools('calmd', '-b', noMd, path.join(VOLVOX, 'volvox.fa')),
+  )
+  samtools('index', spliced)
+  samtools('index', noMd)
+  const header = path.join(dir, 'chrA.sam')
+  writeFileSync(
+    header,
+    samtools('view', '-H', spliced).toString().replace('SN:ctgA', 'SN:chrA'),
+  )
+  writeFileSync(aliasedNoMd, samtools('reheader', header, noMd))
+  samtools('index', aliasedNoMd)
+}
+const tickSet =
+  'paste(sort(paste(mismatches_spliced$refpos, mismatches_spliced$base)), collapse = " ")'
+const splicedTicks = [
+  splicedFrom(spliced),
+  splicedFrom(noMd),
+  splicedFrom(aliasedNoMd, { ctgA: 'chrA' }),
+].map((t, i) =>
+  hasSamtools
+    ? register(
+        `aln_spliced_ticks_${i}`,
+        scriptFor([t], SPLICED_REGION),
+        tickSet,
+      )
+    : '',
 )
 
 const collidingIds = register(
@@ -523,6 +591,18 @@ maybe('the emitted script, run under R', () => {
     }
     expect(results.get(crossRegionTicks)).toBe('[1] TRUE TRUE TRUE')
   })
+
+  ;(hasSamtools ? it : it.skip)(
+    'ticks a spliced read with no MD tag where its MD tag would, under an aliased contig too',
+    () => {
+      const [withMd, withoutMd, aliased] = splicedTicks.map(n =>
+        results.get(n)!,
+      )
+      expect(withMd.split(' ').length).toBeGreaterThan(10)
+      expect(withoutMd).toBe(withMd)
+      expect(aliased).toBe(withMd)
+    },
+  )
 
   it('keeps two track ids that sanitise alike apart', () => {
     expect(results.get(collidingIds)).toBe('[1] TRUE TRUE')

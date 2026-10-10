@@ -2,8 +2,10 @@
 # refpos 0-based and read_index the read's position in readGAlignments order,
 # as read_bam numbers it. Read off the MD tag where a read carries one and, as
 # BamAdapter does, against 'ref' (an indexed FASTA or 2bit) where it does not;
-# with no 'ref' an MD-less read contributes nothing.
-bam_mismatches <- function(uri, chrom, start, end, ref = NULL, index = uri) {
+# with no 'ref' an MD-less read contributes nothing. 'ref_chrom' is the contig's
+# name in 'ref', where the BAM spells it another way.
+bam_mismatches <- function(uri, chrom, start, end, ref = NULL, index = uri,
+                           ref_chrom = chrom) {
   bf <- BamFile(uri, index = index)
   if (!chrom %in% seqlevels(bf)) {
     return(data.frame(read_index = integer(0), refpos = integer(0),
@@ -17,10 +19,14 @@ bam_mismatches <- function(uri, chrom, start, end, ref = NULL, index = uri) {
   has_md <- !is.na(md)
   refseq <- NULL; refoff <- 0L; proj <- NULL
   if (any(!has_md) && !is.null(ref) && nzchar(ref)) {
-    span <- GRanges(chrom, IRanges(min(refstart[!has_md]), max(end(ga)[!has_md])))
-    refseq <- getSeq(open_reference(ref), span)[[1]]
+    span <- IRanges(min(refstart[!has_md]), max(end(ga)[!has_md]))
+    refseq <- getSeq(open_reference(ref), GRanges(ref_chrom, span))[[1]]
     refoff <- start(span)
-    proj <- sequenceLayer(mcols(ga)$seq, cig, to = "reference")
+    proj <- if (requireNamespace("cigarillo", quietly = TRUE)) {
+      cigarillo::project_sequences(mcols(ga)$seq, cig)
+    } else {
+      sequenceLayer(mcols(ga)$seq, cig, to = "reference")
+    }
   }
   out <- vector("list", length(ga))
   for (i in seq_along(ga)) {
@@ -50,9 +56,9 @@ bam_mismatches <- function(uri, chrom, start, end, ref = NULL, index = uri) {
       if (length(pos)) out[[i]] <- data.frame(read_index = i, refpos = pos - 1L, base = base)
     } else if (!is.null(proj)) {
       q <- strsplit(as.character(proj[[i]]), "")[[1]]
-      r <- strsplit(as.character(subseq(
-        refseq, refstart[i] - refoff + 1L, width = length(q))), "")[[1]]
-      d <- which(q != r & q != "-")
+      r <- strsplit(toupper(as.character(subseq(
+        refseq, refstart[i] - refoff + 1L, width = length(q)))), "")[[1]]
+      d <- which(q != r & !q %in% c("-", "."))
       if (length(d)) out[[i]] <- data.frame(
         read_index = i, refpos = refstart[i] + d - 2L, base = toupper(q[d]))
     }

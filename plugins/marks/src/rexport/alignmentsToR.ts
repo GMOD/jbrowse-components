@@ -379,6 +379,9 @@ export function alignmentsPanels({
     { steps: [pileup] },
   )
   const indexArg = index ? `, index = ${rStr(index)}` : ''
+  const refChromArg = Object.keys(aliases ?? {}).length
+    ? ', ref_chrom = chrom'
+    : ''
   const at = `${fileChrom('chrom', aliases)}, start, end`
   const layers = reads ? [reads.layer] : []
   const scales: Plot['scales'] = {
@@ -393,7 +396,7 @@ export function alignmentsPanels({
       columns: ['read_index', 'refpos', 'base', '.region', 'row'],
       packages: ['GenomicAlignments'],
       statements: `${mismatchesName} <- read_regions(
-  function(chrom, start, end) bam_mismatches(${rStr(uri)}, ${at}, ${reference ? rStr(reference) : 'NULL'}${indexArg}),
+  function(chrom, start, end) bam_mismatches(${rStr(uri)}, ${at}, ${reference ? rStr(reference) : 'NULL'}${indexArg}${refChromArg}),
   regions, "refpos")
 ${mismatchesName}$row <- ${readsName}$row[match(
   paste(${mismatchesName}$.region, ${mismatchesName}$read_index),
