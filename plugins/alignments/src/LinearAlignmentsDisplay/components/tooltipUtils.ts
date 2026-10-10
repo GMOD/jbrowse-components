@@ -8,6 +8,7 @@ import {
   SAM_FLAG_SUPPLEMENTARY,
 } from '@jbrowse/cigar-utils'
 import { toLocale } from '@jbrowse/core/util'
+import { escapeHTML } from '@jbrowse/core/util/htmlText'
 
 import {
   ARC_SHAPE_FLAT,
@@ -271,7 +272,7 @@ export function formatReadTooltip(
   const mapq = rpcData.readMapqs[idx]
 
   const lines = [
-    `<b>${name}</b>`,
+    `<b>${escapeHTML(name)}</b>`,
     `${formatLocationRange(refName, start, end)} (${rpcData.readStrands[idx] === -1 ? '-' : '+'})`,
   ]
 
@@ -497,5 +498,5 @@ export interface TooltipFeatureInfo {
 // "name chr1:1,001-1,100" for one read, for the bezier overlay's two-endpoint
 // tooltip. No strand: the curve's own color already encodes orientation.
 export function formatFeatureLabel(info: TooltipFeatureInfo) {
-  return `${info.name || info.id} ${formatLocationRange(info.refName, info.start, info.end)}`
+  return `${escapeHTML(info.name || info.id)} ${formatLocationRange(info.refName, info.start, info.end)}`
 }

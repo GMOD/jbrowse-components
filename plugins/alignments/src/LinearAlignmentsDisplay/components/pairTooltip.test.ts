@@ -287,3 +287,23 @@ describe('formatReadTooltip names the color bucket', () => {
     expect(tip).not.toContain('Color:')
   })
 })
+
+// The SAM spec admits `<` and `>` in a QNAME, and the tooltip is HTML.
+test('a read name with angle brackets renders as itself', () => {
+  const tip = formatReadTooltip(
+    makeRpcData(namesToBlock(['read<1>'])),
+    0,
+    'chr1',
+  )
+  expect(tip).toContain('<b>read&lt;1&gt;</b>')
+  expect(
+    formatFeatureLabel({
+      name: 'read<1>',
+      id: 'x',
+      refName: 'chr1',
+      start: 0,
+      end: 10,
+      strand: 1,
+    }),
+  ).toContain('read&lt;1&gt;')
+})
