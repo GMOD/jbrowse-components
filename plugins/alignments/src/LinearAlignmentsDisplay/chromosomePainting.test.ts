@@ -121,7 +121,7 @@ test('the order reaches the baked read colors', async () => {
   const display = await loadedDisplay()
   const [byRegion] = [...display.laidOutByGroup.values()]
   const [region] = [...byRegion!.values()]
-  expect([...region!.readTagColors]).toEqual([
+  expect([...region!.readFillColors]).toEqual([
     packed(refNamePaletteColorAt(0)),
     packed(refNamePaletteColorAt(1)),
   ])

@@ -54,7 +54,7 @@ const base = {
   readStrands: Int8Array.from(reads.map(r => r.strand)),
   readFlags: new Uint16Array(3),
   readPairOrientations: new Uint8Array(3),
-  readTagColors: new Uint32Array(3),
+  readFillColors: new Uint32Array(3),
   readMapqs: new Uint8Array(3),
   readInsertSizes: new Float32Array(3),
   readChainHasSupp: undefined,

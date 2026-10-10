@@ -19,7 +19,7 @@ export interface ReadUploadData {
   readInsertSizes: Float32Array
   readPairOrientations: Uint8Array
   readStrands: Int8Array
-  readTagColors: Uint32Array
+  readFillColors: Uint32Array
   readColorCategories: Uint8Array
   readInterchrom: Uint8Array // 1 = mate on a different chromosome
   readKeys: ReadKeys

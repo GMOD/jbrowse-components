@@ -2,14 +2,14 @@ import { buildReadColorCategories } from './colorUtils.ts'
 
 import type {
   PileupDataResult,
-  TagColoredPileupData,
+  FillColoredPileupData,
 } from '../RenderAlignmentDataRPC/types.ts'
 import type { ColorSchemeType } from '../shared/types.ts'
 import type { ReadColorOpts } from './colorUtils.ts'
 
 // Bake one RC_* index per read (see colorUtils `buildReadColorCategories`).
-// Runs on the main thread, right after `overlayReadTagColors`, because the
-// `noTagValue` category is decided from the freshly baked `readTagColors` —
+// Runs on the main thread, right after `overlayReadFillColors`, because the
+// `noTagValue` category is decided from the freshly baked `readFillColors` —
 // classify before that and every tag-colored read lands in the wrong bucket.
 //
 // Main thread rather than the worker for the same reason tag colors are: the
@@ -21,7 +21,7 @@ import type { ReadColorOpts } from './colorUtils.ts'
 // ahead of this in `applyChainStrandFrames` (groupLayout), memoized on what it
 // depends on.
 export function overlayReadColorCategories(
-  map: Map<number, TagColoredPileupData>,
+  map: Map<number, FillColoredPileupData>,
   colorScheme: ColorSchemeType,
   opts: ReadColorOpts,
 ): Map<number, PileupDataResult> {

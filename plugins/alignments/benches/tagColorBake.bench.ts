@@ -1,13 +1,13 @@
 // Did deleting `colorTagMap` move work onto the main thread?
 //
-//   node --expose-gc plugins/alignments/benches/tagColorBake.bench.ts
+//   node --expose-gc plugins/alignments/benches/fillColorBake.bench.ts
 //
 // Flags: --rounds=<n> (default 40), --reads=<n> (default 200000)
 //
 // The harness rules — interleave, min-of-rounds, run a control, check identity
 // before believing timing — are in `agent-docs/reference/BENCHMARKING.md`.
 //
-// THE QUESTION. `buildReadTagColors` bakes one packed ABGR per read on the main
+// THE QUESTION. `buildReadFillColors` bakes one packed ABGR per read on the main
 // thread, per region, whenever the layout re-runs under a CPU-baked color
 // scheme (tag values, or mate refNames under chromosome painting). It used to
 // resolve each read through a model-held `colorTagMap` of every value the track

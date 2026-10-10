@@ -55,7 +55,7 @@ function oneRead(start: number, end: number, strand: number) {
     readStrands: Int8Array.from([strand]),
     readFlags: new Uint16Array(1),
     readPairOrientations: new Uint8Array(1),
-    readTagColors: new Uint32Array(1),
+    readFillColors: new Uint32Array(1),
     readMapqs: new Uint8Array(1),
     readInsertSizes: new Float32Array(1),
     readInterchrom: new Uint8Array(1),

@@ -139,7 +139,7 @@ export function extractFeatureArrays<T extends FeatureData>(
       ? undefined
       : fieldValueReader(colorAttribute, opts.jexl)
   // Chromosome painting reuses the tag channel: both resolve one string per
-  // read that the main thread bakes into a color (see buildReadTagColors), so
+  // read that the main thread bakes into a color (see buildReadFillColors), so
   // the mate refName travels as a `tagColorValues` entry rather than earning a
   // parallel array. The `?? ''` is a feature with neither of the two sources
   // `getMateRefName` reads — a synteny block's `mate`, a BAM read's `next_ref`

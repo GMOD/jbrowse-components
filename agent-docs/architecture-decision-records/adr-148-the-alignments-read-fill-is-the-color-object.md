@@ -43,7 +43,7 @@ precedence among its levels, a `case_when` before the plot, and the mate and
 split overrides are further levels of it. What was missing was the declaration.
 
 The tag and mate-reference schemes already resolve a color per read on the main
-thread after layout (`overlayReadTagColors`), a tier that reruns on a color
+thread after layout (`overlayReadFillColors`), a tier that reruns on a color
 change and touches neither the fetch nor the layout.
 
 ## Decision

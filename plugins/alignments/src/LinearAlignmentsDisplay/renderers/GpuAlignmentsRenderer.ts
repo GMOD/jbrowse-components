@@ -75,9 +75,9 @@ interface UploadedRegion {
   // every pass but the read pass is the same object the GPU already holds.
   // `undefined` for an arcs-only region.
   layout: Uint16Array | undefined
-  // The two per-read arrays the color tier rebakes (`overlayReadTagColors` /
+  // The two per-read arrays the color tier rebakes (`overlayReadFillColors` /
   // `overlayReadColorCategories`). Only the read pass carries them.
-  tagColors: Uint32Array | undefined
+  fillColors: Uint32Array | undefined
   colorCategories: Uint8Array | undefined
   // The straight-line pass's records, which spread over the laid-out data
   // after the color bake (`attachLinkedReadLinesByGroup`), so a
@@ -223,7 +223,7 @@ export class GpuAlignmentsRenderer
    * spreads over it can differ. Two things do, and each rewrites its own passes:
    *
    * - the two per-read color arrays the color tier rebakes
-   *   (`overlayReadTagColors` / `overlayReadColorCategories`) → the read pass.
+   *   (`overlayReadFillColors` / `overlayReadColorCategories`) → the read pass.
    *   Same shape as `syntenyInstanceCache`'s geometry/color split.
    * - the band's feed → `ARC_PASSES`. The feeds are rebuilt for every
    *   arc-tier setting (`minInterchromSupport` is a live slider), so without
@@ -242,7 +242,7 @@ export class GpuAlignmentsRenderer
     const prev = this.uploaded.get(idx)
     this.uploaded.set(idx, {
       layout: data?.readYs,
-      tagColors: data?.readTagColors,
+      fillColors: data?.readFillColors,
       colorCategories: data?.readColorCategories,
       lines: data?.linkedReadLinePositions,
       arcs,
@@ -258,7 +258,7 @@ export class GpuAlignmentsRenderer
     if (sameLayoutRun) {
       if (
         data &&
-        (prev.tagColors !== data.readTagColors ||
+        (prev.fillColors !== data.readFillColors ||
           prev.colorCategories !== data.readColorCategories)
       ) {
         uploadPass(this.hal, idx, READ_MARK.pass, data)
@@ -307,7 +307,7 @@ export class GpuAlignmentsRenderer
     const prev = this.uploaded.get(idx)
     this.uploaded.set(idx, {
       layout: undefined,
-      tagColors: undefined,
+      fillColors: undefined,
       colorCategories: undefined,
       lines: undefined,
       arcs: undefined,

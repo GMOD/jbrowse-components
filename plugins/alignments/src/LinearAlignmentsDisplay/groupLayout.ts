@@ -11,7 +11,7 @@ import {
 import { buildLaidOutChainMap, chainLayoutMaxY } from './computeChainLayout.ts'
 import { NORMAL_PITCH } from './menus/compactnessPresets.ts'
 import { overlayReadColorCategories } from './readColorCategories.ts'
-import { overlayReadTagColors } from './readTagColors.ts'
+import { overlayReadFillColors } from './readFillColors.ts'
 
 import type { RegionBounds } from '../RenderAlignmentDataRPC/sortLayout.ts'
 import type {
@@ -320,7 +320,7 @@ export function attachLinkedReadLinesByGroup(
  * read pass, and it is what keeps a color flip off the layout path entirely.
  *
  * Tag colors first: the `noTagValue` category is decided from the baked
- * `readTagColors`, so classifying before that buckets every tag-colored read
+ * `readFillColors`, so classifying before that buckets every tag-colored read
  * wrong. One place so the two passes can't be reordered by accident.
  */
 export function applyReadColorsByGroup(
@@ -332,7 +332,7 @@ export function applyReadColorsByGroup(
     out.set(
       key,
       overlayReadColorCategories(
-        overlayReadTagColors(map, ctx.colorBy, ctx.bakedScale),
+        overlayReadFillColors(map, ctx.colorBy, ctx.bakedScale),
         ctx.bodyScheme,
         ctx.readColorOpts,
       ),
@@ -404,7 +404,7 @@ export function stacksRows(
 // needs just each group's stack depth to size reads, so it skips the dominant
 // `cloneWithLayout` cost (per-base *Ys arrays) that `buildLaidOutByGroup` pays.
 // Row counts match `groupMaxY(buildLaidOutByGroup(...).get(key))` exactly:
-// `attachLinkedReadLinesByGroup`/`overlayReadTagColors` never change `maxY`.
+// `attachLinkedReadLinesByGroup`/`overlayReadFillColors` never change `maxY`.
 // A plain row count in, because no entry comes out: `rowCap`'s source labels a
 // clip on a laid-out region and there are none here. The caller's cap is the
 // display ceiling.

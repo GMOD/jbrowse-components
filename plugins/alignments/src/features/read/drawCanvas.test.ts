@@ -63,7 +63,7 @@ function makeRegion(reads: ReadSpec[], ys?: number[]) {
     readStrands,
     readFlags,
     readPairOrientations: new Uint8Array(n),
-    readTagColors: new Uint32Array(n),
+    readFillColors: new Uint32Array(n),
     readMapqs: new Uint8Array(n),
     readInsertSizes,
     readChainHasSupp: undefined,

@@ -104,7 +104,7 @@ function makeMinimalReadData() {
     readPairOrientations: new Uint8Array([]),
     readStrands: new Int8Array([]),
     readInterchrom: new Uint8Array([]),
-    readTagColors: new Uint32Array(0),
+    readFillColors: new Uint32Array(0),
     readColorCategories: new Uint8Array(0),
     readChainHasSupp: undefined,
     readKeys: [],
@@ -529,7 +529,7 @@ describe('GPU sync skips regions whose data is unchanged', () => {
       readInsertSizes: new Float32Array([0]),
       readStrands: new Int8Array([1]),
       readInterchrom: new Uint8Array([0]),
-      readTagColors: new Uint32Array([0]),
+      readFillColors: new Uint32Array([0]),
       readColorCategories: new Uint8Array([0]),
       segmentPositions: new Uint32Array([REGION_START, REGION_START + 10]),
       segmentReadIndices: new Uint32Array([0]),
@@ -546,7 +546,7 @@ describe('GPU sync skips regions whose data is unchanged', () => {
       'sources',
       oneRegion({
         ...laidOut,
-        readTagColors: new Uint32Array([0xff00ff00]),
+        readFillColors: new Uint32Array([0xff00ff00]),
         readColorCategories: new Uint8Array([3]),
       }),
     )

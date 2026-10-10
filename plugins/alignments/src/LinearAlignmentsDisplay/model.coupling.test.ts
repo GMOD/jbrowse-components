@@ -1465,8 +1465,8 @@ describe('upload tiers: what a settings change does to the laid-out payloads', (
     expect(after).not.toBe(before)
     expect(after.readYs).toBe(before.readYs)
     expect(after.mismatchYs).toBe(before.mismatchYs)
-    expect(after.readTagColors).not.toBe(before.readTagColors)
-    expect(after.readTagColors[0]).toBe(0xff0000ff)
+    expect(after.readFillColors).not.toBe(before.readFillColors)
+    expect(after.readFillColors[0]).toBe(0xff0000ff)
   })
 
   test('a color write that leaves a pinned insert-size band alone keeps the layout', () => {

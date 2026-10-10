@@ -53,7 +53,7 @@ interface ReadColorData {
   readMapqs: Uint8Array
   readInsertSizes: Float32Array
   readPairOrientations: Uint8Array
-  readTagColors: Uint32Array
+  readFillColors: Uint32Array
   readChainHasSupp?: Uint8Array
   readInterchrom: Uint8Array
   insertSizeStats?: InsertSizeBand
@@ -284,7 +284,7 @@ function schemeCategory(
       // of leaving it as the one painted color with no entry. Guarded on the
       // array being baked at all: until the main thread bakes it, it is empty
       // and every read is on the fallback for a different reason.
-      return data.readTagColors.length > 0 && data.readTagColors[i] === 0
+      return data.readFillColors.length > 0 && data.readFillColors[i] === 0
         ? 'noTagValue'
         : 'tag'
   }
@@ -302,7 +302,7 @@ function categoryColor(
   switch (cat) {
     case 'mapq':
     case 'tag': {
-      const packed = data.readTagColors[i]
+      const packed = data.readFillColors[i]
       return packed
         ? abgrToCssRgba(packed)
         : rgb255(palette.readCategoryColors[cat])

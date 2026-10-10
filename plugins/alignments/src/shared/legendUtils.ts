@@ -498,7 +498,7 @@ const BASE_LEGEND: { key: PaletteColorKey; label: string }[] = [
   { key: 'colorBaseN', label: 'N' },
 ]
 
-// Tags that encode strand rather than a categorical value; buildReadTagColors
+// Tags that encode strand rather than a categorical value; buildReadFillColors
 // paints these from the fixed strand colors rather than from the value, so their
 // legend is the strand key, not a per-value list.
 const STRAND_TAGS = new Set(['XS', 'TS', 'ts'])

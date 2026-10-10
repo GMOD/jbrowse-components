@@ -126,7 +126,7 @@ function deepPileup() {
     segmentEdgeFlags: new Uint8Array(n),
     numSegments: n,
     readYs,
-    readTagColors: new Uint32Array(n),
+    readFillColors: new Uint32Array(n),
     readColorCategories: new Uint8Array(n),
 
     mismatchPositions: pos(mismatches),

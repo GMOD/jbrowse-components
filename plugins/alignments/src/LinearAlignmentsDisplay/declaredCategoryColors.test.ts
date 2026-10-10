@@ -68,7 +68,7 @@ const ONE_READ = {
   readMapqs: Uint8Array.of(0),
   readInsertSizes: Float32Array.of(0),
   readPairOrientations: Uint8Array.of(0),
-  readTagColors: new Uint32Array(0),
+  readFillColors: new Uint32Array(0),
   readInterchrom: Uint8Array.of(0),
 }
 

@@ -214,8 +214,8 @@ async function buildGroupResult(
     ...perBaseQualityArrays,
     ...perBaseLetterArrays,
 
-    // The raw per-read strings the main thread bakes `readTagColors` from
-    // (`overlayReadTagColors`), so no color table crosses this boundary. The
+    // The raw per-read strings the main thread bakes `readFillColors` from
+    // (`overlayReadFillColors`), so no color table crosses this boundary. The
     // baked arrays themselves are not this tier's to state — see
     // `WorkerPileupData`.
     readTagValues: tagColorValues,

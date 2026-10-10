@@ -65,7 +65,7 @@ test('values naming prototype members take real colors', () => {
 })
 
 // Chromosome painting resolves through `refNameColor`, so the legend swatch
-// matches what buildReadTagColors bakes into the reads — and matches what the
+// matches what buildReadFillColors bakes into the reads — and matches what the
 // synteny view's Query mode paints the same contig, which is the whole reason
 // the rule lives in core.
 test('a refName takes its assembly position, not a hash of its name', () => {

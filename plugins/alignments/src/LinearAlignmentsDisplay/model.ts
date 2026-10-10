@@ -945,7 +945,7 @@ export default function stateModelFactory(
             const present = new Set<ReadColorCategory>()
             if (self.showLegend) {
               // Baked categories off the laid-out groups, not a second
-              // classification of `rpcDataMap`: `readTagColors` is empty until
+              // classification of `rpcDataMap`: `readFillColors` is empty until
               // the main thread bakes it.
               for (const idx of collectAcrossGroups(
                 this.laidOutByGroup,
@@ -2811,7 +2811,7 @@ export default function stateModelFactory(
          * Fields that invalidate the fetched data, every one worker-bound.
          * Arc-only fields (`arcColor`, `showInterchrom`, `showLongRange`) are
          * NOT here: `arcsResult` reads them and they need no refetch. Non-tag
-         * sort changes and tag coloring (`readTagColors`, baked in
+         * sort changes and tag coloring (`readFillColors`, baked in
          * `laidOutByGroup`) stay main-thread. Its own views block, after every
          * field it reads, so it reads them off `self`: a subclass override
          * captures the base as a bare function, which would lose a `this`.

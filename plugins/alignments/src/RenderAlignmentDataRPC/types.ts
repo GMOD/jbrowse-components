@@ -238,7 +238,7 @@ export interface WorkerPileupData {
 
   // Raw per-read tag value strings (parallel to readKeys), populated by the
   // worker only in tag color mode. The main thread bakes these into
-  // readTagColors via colorTagMap.
+  // readFillColors via colorTagMap.
   readTagValues?: string[]
 
   // Modification data (MM tag) - absolute genomic uint32
@@ -449,23 +449,24 @@ export type ChainPileupData = WorkerPileupData & ChainFields
 export interface LaidOutPileupData
   extends ChainedPileupData, PileupLayoutArrays {}
 
-// Tag colors, packed ABGR u32 per read (0 = no tag color). Baked on the main
-// thread by `overlayReadTagColors` from `readTagValues`, so no color table
+// The per-read fill under a baked scheme, a tag's or mapq's: packed ABGR u32
+// per read (0 = no color). Baked on the main thread by `overlayReadFillColors`
+// from `readTagValues` or `readMapqs`, so no color table
 // crosses the worker boundary — the discover→assign→refetch loop that made
 // `colorTagMap` a tier-1 trap is structurally impossible. Empty under the schemes
 // that bake no per-read color, which leaves the shader on its palette fallback.
-export interface TagColoredPileupData extends LaidOutPileupData {
-  readTagColors: Uint32Array
+export interface FillColoredPileupData extends LaidOutPileupData {
+  readFillColors: Uint32Array
 }
 
 // The whole tiered value: worker arrays + layout + both color bakes. What every
 // renderer, hit test and overlay reads.
 //
 // `readColorCategories` is one RC_* index per read (read.slang), baked by
-// `overlayReadColorCategories` — which takes `TagColoredPileupData` because the
-// `noTagValue` bucket is decided from the baked `readTagColors`. That ordering
+// `overlayReadColorCategories` — which takes `FillColoredPileupData` because the
+// `noTagValue` bucket is decided from the baked `readFillColors`. That ordering
 // used to be a comment; it is now the signature.
-export interface PileupDataResult extends TagColoredPileupData {
+export interface PileupDataResult extends FillColoredPileupData {
   readColorCategories: Uint8Array
 }
 

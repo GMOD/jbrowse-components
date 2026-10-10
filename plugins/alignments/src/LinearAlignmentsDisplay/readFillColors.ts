@@ -6,7 +6,7 @@ import { MAPQ_UNAVAILABLE } from '../shared/util.ts'
 
 import type {
   LaidOutPileupData,
-  TagColoredPileupData,
+  FillColoredPileupData,
   WorkerPileupData,
 } from '../RenderAlignmentDataRPC/types.ts'
 import type { ColorBy } from '../shared/types.ts'
@@ -28,10 +28,10 @@ const revStrand = packRgb(cssColorToRgb(colorRevStrand))
 type ColorResolver = (val: string, strand: number) => number
 
 // One array for every region of every scheme that bakes nothing, because the
-// renderer's upload memo compares `readTagColors` by IDENTITY to decide whether
+// renderer's upload memo compares `readFillColors` by IDENTITY to decide whether
 // the read pass needs rewriting — a fresh empty array per region would report a
 // recolor that didn't happen.
-const NO_TAG_COLORS = new Uint32Array(0)
+const NO_FILL_COLORS = new Uint32Array(0)
 
 // Build the per-read color resolver once for a given scheme. The scheme
 // dispatch and the value→pack cache happen here, so both leave the per-read hot
@@ -90,11 +90,11 @@ function applyResolver(
   const strands = data.readStrands
   // No values to bake from — a region fetched under a scheme that extracts none,
   // which the mid-switch window leaves laid out while the new colorBy is already
-  // applied. Shares NO_TAG_COLORS rather than minting an empty array, for the
+  // applied. Shares NO_FILL_COLORS rather than minting an empty array, for the
   // reason that constant exists: a fresh one reports a recolor by identity and
   // rewrites the read pass.
   if (tagValues === undefined) {
-    return NO_TAG_COLORS
+    return NO_FILL_COLORS
   }
   const n = tagValues.length
   const out = new Uint32Array(n)
@@ -109,7 +109,7 @@ function applyResolver(
 // the worker boundary — keeping it out of `rpcProps()` makes the old
 // discover→assign→refetch feedback loop structurally impossible. The shader
 // reads `uint tagColor` and unpacks; 0 means "no color" (palette fallback).
-export function buildReadTagColors(
+export function buildReadFillColors(
   data: WorkerPileupData,
   colorBy: ColorBy,
   scale: BakedColorScale,
@@ -146,7 +146,7 @@ function bakerFor(colorBy: ColorBy, scale: BakedColorScale) {
   return (data: WorkerPileupData) => applyResolver(data, resolve)
 }
 
-// Overlay freshly-baked `readTagColors` onto each laid-out region. Baking here
+// Overlay freshly-baked `readFillColors` onto each laid-out region. Baking here
 // rather than in the worker is what makes tag coloring a tier-2 (main-thread
 // recompute) setting rather than a tier-1 refetch. The resolver is built once and
 // shared across regions.
@@ -157,20 +157,20 @@ function bakerFor(colorBy: ColorBy, scale: BakedColorScale) {
 // read" is its answer to give, and `overlayReadColorCategories` — which reads the
 // baked array to decide the `noTagValue` bucket — cannot be handed a region that
 // never went through here.
-export function overlayReadTagColors(
+export function overlayReadFillColors(
   map: Map<number, LaidOutPileupData>,
   colorBy: ColorBy | undefined,
   scale: BakedColorScale | undefined,
-): Map<number, TagColoredPileupData> {
+): Map<number, FillColoredPileupData> {
   const bake =
     colorBy && scale && isBakedScheme(colorBy)
       ? bakerFor(colorBy, scale)
       : undefined
-  const out = new Map<number, TagColoredPileupData>()
+  const out = new Map<number, FillColoredPileupData>()
   for (const [idx, data] of map) {
     out.set(idx, {
       ...data,
-      readTagColors: bake ? bake(data) : NO_TAG_COLORS,
+      readFillColors: bake ? bake(data) : NO_FILL_COLORS,
     })
   }
   return out

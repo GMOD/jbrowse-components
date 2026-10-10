@@ -6,7 +6,7 @@ import {
   buildReadColorCategories,
   readColorFromCategoryIndex,
 } from '../LinearAlignmentsDisplay/colorUtils.ts'
-import { buildReadTagColors } from '../LinearAlignmentsDisplay/readTagColors.ts'
+import { buildReadFillColors } from '../LinearAlignmentsDisplay/readFillColors.ts'
 import { makeTestPalette } from '../LinearAlignmentsDisplay/testUtils.ts'
 import { baseWorkerPileupData } from '../RenderAlignmentDataRPC/testPileupData.ts'
 import { packReadSegments } from '../features/read/mark.ts'
@@ -26,7 +26,7 @@ function mapqRegion(written: { domain?: string[] } = {}) {
     readStrands: new Int8Array(n).fill(1),
     readFlags: new Uint16Array(n),
     readPairOrientations: new Uint8Array(n),
-    readTagColors: new Uint32Array(0),
+    readFillColors: new Uint32Array(0),
     readMapqs: Uint8Array.from({ length: n }, (_, i) => i),
     readInsertSizes: new Float32Array(n),
     readInterchrom: new Uint8Array(n),
@@ -53,12 +53,12 @@ function mapqRegion(written: { domain?: string[] } = {}) {
     undefined,
     undefined,
   )
-  const readTagColors = buildReadTagColors(
+  const readFillColors = buildReadFillColors(
     { ...baseWorkerPileupData(n), readMapqs: base.readMapqs },
     colorBy,
     scale,
   )
-  const colored = { ...base, readTagColors }
+  const colored = { ...base, readFillColors }
   return {
     ...colored,
     readPositions: new Uint32Array(n * 2),

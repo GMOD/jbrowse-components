@@ -135,7 +135,7 @@ function pileupData(): PileupDataResult {
       READ_COLOR_CATEGORY.revStrand,
     ]),
     readInterchrom: new Uint8Array([0, 0]),
-    readTagColors: new Uint32Array(0),
+    readFillColors: new Uint32Array(0),
     readChainHasSupp: undefined,
     readKeys: ['r1', 'r2'],
     insertSizeStats: undefined,

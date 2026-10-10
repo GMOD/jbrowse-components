@@ -61,7 +61,7 @@ function tagValueColor(value: string) {
 
 /**
  * The color one CPU-baked value paints, for whichever scheme is active. The
- * paint path (`buildReadTagColors`) and the legend's swatch list both resolve
+ * paint path (`buildReadFillColors`) and the legend's swatch list both resolve
  * through this, so a swatch is the color drawn by construction.
  *
  * A pure function of the value, which is what lets the display hold no

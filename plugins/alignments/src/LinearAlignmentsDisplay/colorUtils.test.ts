@@ -65,7 +65,7 @@ function makeData(
     readMapqs: Uint8Array.of(spec.mapq ?? 0),
     readInsertSizes: Float32Array.of(spec.insertSize ?? 0),
     readPairOrientations: Uint8Array.of(spec.pairOrientation ?? 0),
-    readTagColors: Uint32Array.of(spec.tagColor ?? 0),
+    readFillColors: Uint32Array.of(spec.tagColor ?? 0),
     readChainHasSupp: Uint8Array.of(spec.chainHasSupp ?? 0),
     readInterchrom: Uint8Array.of(spec.interchrom ?? 0),
     insertSizeStats,
@@ -356,11 +356,11 @@ describe('readColorCategory', () => {
     expect(readColorCategory(0, makeData({}), 'tag')).toBe('noTagValue')
   })
 
-  // Before the main thread bakes readTagColors the array is empty, and every
+  // Before the main thread bakes readFillColors the array is empty, and every
   // read is on the fallback for a different reason — don't report them all as
   // unvalued, which would key a "No HP value" swatch over the whole pileup.
   test('an unbaked (empty) color array is not reported as missing values', () => {
-    const data = { ...makeData({}), readTagColors: new Uint32Array(0) }
+    const data = { ...makeData({}), readFillColors: new Uint32Array(0) }
     expect(readColorCategory(0, data, 'tag')).toBe('tag')
   })
 })

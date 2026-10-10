@@ -72,7 +72,7 @@ function onePileup() {
     readKeys: ['r1'],
     readPositions: new Uint32Array([START, START + 100]),
     readYs: new Uint16Array([0]),
-    readTagColors: new Uint32Array([0xff0000ff]),
+    readFillColors: new Uint32Array([0xff0000ff]),
     readColorCategories: new Uint8Array([0]),
   })
 }
@@ -131,7 +131,7 @@ describe('an arc-only change uploads only the arc passes', () => {
     renderer.upload(
       'sources',
       sources(
-        { ...data, readTagColors: new Uint32Array([0xff00ff00]) },
+        { ...data, readFillColors: new Uint32Array([0xff00ff00]) },
         oneArc(START + 80),
       ),
     )

@@ -68,7 +68,7 @@ export function makePileupDataResult(
 export function basePileupDataResult(numReads: number): PileupDataResult {
   return {
     ...withoutLayout(baseWorkerPileupData(numReads)),
-    readTagColors: new Uint32Array(0),
+    readFillColors: new Uint32Array(0),
     readColorCategories: new Uint8Array(0),
   }
 }

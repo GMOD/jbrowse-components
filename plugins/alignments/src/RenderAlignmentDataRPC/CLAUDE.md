@@ -71,7 +71,7 @@ nameless read likewise.
 `WorkerPileupData` is what this RPC returns. `ChainFields` is what chain mode
 attaches on the main thread ahead of layout (`ChainedPileupData`, the layout's
 input), `PileupLayoutArrays` is what main-thread layout adds,
-`readTagColors`/`readColorCategories` what the two color bakes add, and
+`readFillColors`/`readColorCategories` what the two color bakes add, and
 `PileupDataResult` is the whole of it — the value a renderer, hit test or
 overlay reads. The display's tier rule
 (`agent-docs/reference/LINEAR_ALIGNMENTS_DISPLAY.md` §"Which getter decides what
@@ -84,7 +84,7 @@ a setting invalidates") is therefore type-checked rather than remembered:
   reads `readYs` cannot be handed raw data. `withoutLayout` is the zero-row
   answer for the two cases that place nothing (an empty region, a lane collapsed
   to its coverage band) — a real layout, not a gap.
-- **`overlayReadColorCategories` takes `TagColoredPileupData`**, which is how
+- **`overlayReadColorCategories` takes `FillColoredPileupData`**, which is how
   the "tag colors first, the `noTagValue` bucket is read off them" ordering
   stopped being a comment.
 

@@ -169,7 +169,7 @@ describe('getReadDisplayLegendItems', () => {
         readMapqs: Uint8Array.of(60),
         readInsertSizes: Float32Array.of(0),
         readPairOrientations: Uint8Array.of(0),
-        readTagColors: Uint32Array.of(0),
+        readFillColors: Uint32Array.of(0),
         readChainHasSupp: Uint8Array.of(CHAIN_SUPP_PRESENT | CHAIN_FRAME_REV),
         readInterchrom: Uint8Array.of(0),
       }

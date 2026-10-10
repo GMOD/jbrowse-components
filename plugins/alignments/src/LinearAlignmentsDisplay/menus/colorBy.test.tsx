@@ -454,7 +454,7 @@ describe('color by menu curation', () => {
   })
 
   // Everything behind the scheme is already wired for a BAM (the worker reads
-  // the mate refName off next_ref, readTagColors bakes it, the legend names its
+  // the mate refName off next_ref, readFillColors bakes it, the legend names its
   // empty bucket "No mate"); it just had no row to reach it from.
   test('mate chromosome is reachable from the paired-end submenu', () => {
     const model = makeModel()

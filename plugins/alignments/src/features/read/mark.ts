@@ -40,7 +40,7 @@ export interface ReadMarkRegion {
   readStrands: Int8Array
   readFlags: Uint16Array
   readPairOrientations: Uint8Array
-  readTagColors: Uint32Array
+  readFillColors: Uint32Array
   readColorCategories: Uint8Array
   readMapqs: Uint8Array
   readInsertSizes: Float32Array
@@ -64,8 +64,8 @@ export function packReadSegments(data: ReadMarkRegion): ArrayBuffer {
   const u32 = new Uint32Array(buf)
   const f32 = new Float32Array(buf)
   const i32 = new Int32Array(buf)
-  const tagColors = data.readTagColors
-  const hasTagColors = tagColors.length > 0
+  const fillColors = data.readFillColors
+  const hasFillColors = fillColors.length > 0
   const colorCategories = data.readColorCategories
   const interchrom = data.readInterchrom
   const readYs = data.readYs
@@ -85,7 +85,7 @@ export function packReadSegments(data: ReadMarkRegion): ArrayBuffer {
     u32[o + F_U32.flags] = readFlags[ri]!
     f32[o + F_F32.insertSize] = readInsertSizes[ri]!
     i32[o + F_I32.strand] = readStrands[ri]!
-    u32[o + F_U32.fillColor] = hasTagColors ? tagColors[ri]! : 0
+    u32[o + F_U32.fillColor] = hasFillColors ? fillColors[ri]! : 0
     u32[o + F_U32.edgeFlags] = segmentEdgeFlags[j]!
     u32[o + F_U32.interchrom] = interchrom[ri]!
     u32[o + F_U32.colorCategory] = category

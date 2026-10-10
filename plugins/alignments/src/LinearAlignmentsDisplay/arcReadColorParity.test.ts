@@ -64,7 +64,7 @@ function readCategory(
       readMapqs: Uint8Array.of(0),
       readInsertSizes: Float32Array.of(tlen),
       readPairOrientations: Uint8Array.of(pairOrientationNum),
-      readTagColors: Uint32Array.of(0),
+      readFillColors: Uint32Array.of(0),
       readChainHasSupp: Uint8Array.of(0),
       readInterchrom: Uint8Array.of(0),
       insertSizeStats: stats,

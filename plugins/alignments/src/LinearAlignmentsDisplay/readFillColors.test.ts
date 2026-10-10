@@ -9,7 +9,7 @@ import {
 } from '../shared/alignmentsColor.ts'
 import { bakedColorScale } from './bakedColorScale.ts'
 import { bakedValueColor } from './colorTagUtils.ts'
-import { buildReadTagColors, overlayReadTagColors } from './readTagColors.ts'
+import { buildReadFillColors, overlayReadFillColors } from './readFillColors.ts'
 
 import type { AlignmentsColorSetting } from '../shared/alignmentsColor.ts'
 import type { ColorBy } from '../shared/types.ts'
@@ -73,7 +73,7 @@ describe('mateRefName (chromosome painting) colors', () => {
     names: string[],
     position?: (n: string) => number | undefined,
   ) =>
-    buildReadTagColors(
+    buildReadFillColors(
       pileupWith(names),
       { type: 'mateRefName' },
       scaleFor({ type: 'mateRefName' }, {}, position),
@@ -119,7 +119,7 @@ describe('mateRefName (chromosome painting) colors', () => {
 
 describe('categorical tag colors', () => {
   const build = (values: string[]) =>
-    buildReadTagColors(pileupWith(values), TAG, scaleFor(TAG))
+    buildReadFillColors(pileupWith(values), TAG, scaleFor(TAG))
 
   // The color comes from the value itself (`bakedValueColor`), so a read paints
   // the moment its value is known rather than once some earlier fetch had
@@ -151,17 +151,16 @@ describe('categorical tag colors', () => {
       domain: ['', '1'],
       range: ['#ff0000', '#00ff00'],
     })
-    expect([...buildReadTagColors(pileupWith(['1', '']), TAG, scale)]).toEqual([
-      packed('#00ff00'),
-      0,
-    ])
+    expect([...buildReadFillColors(pileupWith(['1', '']), TAG, scale)]).toEqual(
+      [packed('#00ff00'), 0],
+    )
   })
 })
 
 describe('strand tag colors', () => {
   test('a value that is neither strand packs the palette fallback', () => {
     const colorBy: ColorBy = { type: 'tag', tag: 'XS' }
-    const [fwd, rev, dot, absent] = buildReadTagColors(
+    const [fwd, rev, dot, absent] = buildReadFillColors(
       pileupWith(['+', '-', '.', '']),
       colorBy,
       scaleFor(colorBy),
@@ -172,13 +171,13 @@ describe('strand tag colors', () => {
   })
 })
 
-describe('overlayReadTagColors', () => {
-  const overlay = (colorBy: Parameters<typeof overlayReadTagColors>[1]) =>
-    overlayReadTagColors(
+describe('overlayReadFillColors', () => {
+  const overlay = (colorBy: Parameters<typeof overlayReadFillColors>[1]) =>
+    overlayReadFillColors(
       new Map([[0, pileupWith(['chr1'])]]),
       colorBy,
       colorBy && scaleFor(colorBy),
-    ).get(0)!.readTagColors.length
+    ).get(0)!.readFillColors.length
 
   test('bakes colors for mateRefName', () => {
     expect(overlay({ type: 'mateRefName' })).toBe(1)
@@ -206,7 +205,7 @@ describe('a declared scale', () => {
       range: ['#ff0000', '#0000ff'],
     })
     expect([
-      ...buildReadTagColors(pileupWith(['1', '2', '']), TAG, scale),
+      ...buildReadFillColors(pileupWith(['1', '2', '']), TAG, scale),
     ]).toEqual([packed('#0000ff'), packed('#ff0000'), 0])
   })
 
@@ -217,7 +216,7 @@ describe('a declared scale', () => {
       domainMax: 10,
       range: ['#000000', '#ffffff'],
     })
-    const [low, high, past, text] = buildReadTagColors(
+    const [low, high, past, text] = buildReadFillColors(
       pileupWith(['0', '10', '99', 'x']),
       NM,
       scale,
@@ -235,7 +234,7 @@ describe('a declared scale', () => {
       undefined,
       [4, 8],
     )
-    const [low, high] = buildReadTagColors(pileupWith(['4', '8']), NM, scale)
+    const [low, high] = buildReadFillColors(pileupWith(['4', '8']), NM, scale)
     expect([low, high]).toEqual([packed('#000000'), packed('#ffffff')])
   })
 
@@ -243,7 +242,7 @@ describe('a declared scale', () => {
   // stretched over the reads instead; reverse is now the one way to turn it.
   test('ends written high to low still pin, and reverse turns the ramp round', () => {
     const colorsOf = (declared: Partial<AlignmentsColorSetting>) =>
-      buildReadTagColors(
+      buildReadFillColors(
         pileupWith(['0', '10']),
         NM,
         bakedColorScale(
@@ -277,7 +276,7 @@ describe('a declared scale', () => {
       undefined,
       [4, 8],
     )
-    const [floor, ceiling] = buildReadTagColors(
+    const [floor, ceiling] = buildReadFillColors(
       pileupWith(['0', '8']),
       NM,
       scale,
@@ -292,7 +291,7 @@ describe('a declared scale', () => {
       range: ['#00ff00', '#ff0000'],
     })
     expect([
-      ...buildReadTagColors(pileupWith(['1', '5', '9']), NM, scale),
+      ...buildReadFillColors(pileupWith(['1', '5', '9']), NM, scale),
     ]).toEqual([packed('#00ff00'), packed('#ff0000'), packed('#ff0000')])
   })
 
@@ -318,7 +317,7 @@ describe('a declared scale', () => {
   test('a declared scale over a strand tag replaces the strand vocabulary', () => {
     const XS: ColorBy = { type: 'tag', tag: 'XS' }
     const scale = scaleFor(XS, { domain: ['+'], range: ['#123456'] })
-    expect(buildReadTagColors(pileupWith(['+']), XS, scale)[0]).toBe(
+    expect(buildReadFillColors(pileupWith(['+']), XS, scale)[0]).toBe(
       packed('#123456'),
     )
   })
