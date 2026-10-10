@@ -5,7 +5,12 @@ import { resolveSubMenu, staysOpenOnClick } from '@jbrowse/core/ui'
 import { colorFieldOptions } from '../../shared/colorFieldOptions.ts'
 import { getColorByMenuItem } from './colorBy.ts'
 
-import type { BaseLayer, ReadColorBy } from '../../shared/types.ts'
+import type {
+  BaseLayer,
+  BaseLayerType,
+  ModificationColorBy,
+  ReadColorBy,
+} from '../../shared/types.ts'
 import type { Plot } from '@jbrowse/core/configuration'
 import type { MenuItem } from '@jbrowse/core/ui'
 
@@ -21,9 +26,24 @@ function makeModel() {
       this.colorField = field
     },
     applyPlot(_draft: Plot) {},
-    baseLayer: undefined as BaseLayer | undefined,
+    // Mirrors the display: the layer is the `baseColor` field, its settings
+    // the `modifications` slot, which outlives a switch to another layer.
+    layerType: undefined as BaseLayerType | undefined,
+    modificationSettings: {} as ModificationColorBy,
+    get baseLayer(): BaseLayer | undefined {
+      return this.layerType === 'modifications' ||
+        this.layerType === 'bisulfite'
+        ? { type: this.layerType, modifications: this.modificationSettings }
+        : this.layerType && { type: this.layerType }
+    },
+    set baseLayer(layer: BaseLayer | undefined) {
+      this.setBaseLayer(layer)
+    },
     setBaseLayer(layer?: BaseLayer) {
-      this.baseLayer = layer
+      this.layerType = layer?.type
+      if (layer?.modifications) {
+        this.modificationSettings = layer.modifications
+      }
     },
     modificationsReady: false,
     regionTooLarge: false,
@@ -138,6 +158,26 @@ describe('color by modifications menu', () => {
       }
     },
   )
+
+  test('switching to another layer and back keeps the threshold and type filter', () => {
+    const model = makeModModel(['m', 'h'])
+    const refined = { threshold: 40, shownModifications: ['m'] }
+    model.baseLayer = { type: 'modifications', modifications: refined }
+    model.setBaseLayer()
+    clickRadio(model, BY_TYPE)
+    expect(model.modificationSettings).toMatchObject(refined)
+
+    clickRadio(model, 'CHG')
+    expect(model.baseLayer).toEqual({
+      type: 'bisulfite',
+      modifications: expect.objectContaining({
+        ...refined,
+        cytosineContext: 'CHG',
+      }),
+    })
+    clickRadio(model, BY_TYPE)
+    expect(model.modificationSettings).toMatchObject(refined)
+  })
 
   test('the Probability view fills unmarked cytosines for methylation data', () => {
     const model = makeModModel(['m', 'h'])

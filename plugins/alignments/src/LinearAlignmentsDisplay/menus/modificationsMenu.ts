@@ -30,16 +30,16 @@ import type { CytosineContext } from '@jbrowse/modifications-utils'
 // named a shared axis — and it collided with "Probability threshold" below,
 // which gates only the by-type view.
 //
-// `patchMods` is the single writer: it merges a patch into the current
-// modifications and normalizes, dropping defaults so a saved session carries no
-// redundant fields. Mode switches and refinement edits are both just patches, so
-// switching the view keeps threshold/context/type-filter intact and vice versa.
+// `patchMods` is the single writer: it merges a patch into the slot. Mode
+// switches and refinement edits are both just patches, so switching the view
+// keeps threshold/context/type-filter intact and vice versa.
 
 // What this submenu reads, and no more. The caller's fuller
 // `ModificationsModel` (which also carries the readiness flags gating whether
 // this submenu is built at all) extends it.
 export interface ModificationsMenuModel {
   baseLayer: BaseLayer | undefined
+  modificationSettings: ModificationColorBy
   setBaseLayer: (layer?: BaseLayer) => void
   detectedModificationTypes: string[]
   modificationThreshold: number
@@ -47,10 +47,10 @@ export interface ModificationsMenuModel {
 
 const DIVIDER: MenuItem = { type: 'divider' }
 
+// The slot, not `baseLayer.modifications`: a layer switched away and back keeps
+// its threshold, type filter and context.
 function currentMods(model: ModificationsMenuModel) {
-  return model.baseLayer?.type === 'modifications'
-    ? (model.baseLayer.modifications ?? {})
-    : {}
+  return model.modificationSettings
 }
 
 // The 2-color view fills unmarked cytosines when the data is methylation —
@@ -125,11 +125,8 @@ export function modificationsMenu(model: ModificationsMenuModel): MenuItem {
   // so it cannot outlive the section it separates (the rule `withSubHeader`
   // states for a heading).
   //
-  // `patchMods` is the single writer and it always writes
-  // `type: 'modifications'`, so a refinement clicked from another layer both
-  // switched the layer and rebuilt it from `{}` — which silently threw away a
-  // `bisulfite` selection, its own cytosine context included, from the row
-  // directly beneath. That is what the shared reveal is protecting.
+  // `patchMods` always writes `type: 'modifications'`, so a refinement offered
+  // under another layer would switch the layer as a side effect.
   const refinements: MenuItem[] = isActive
     ? [
         ...(types.length > 1

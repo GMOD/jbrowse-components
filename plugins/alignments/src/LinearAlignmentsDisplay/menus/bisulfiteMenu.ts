@@ -2,7 +2,7 @@ import { checkboxItem, radioItems } from '@jbrowse/core/ui/menuItems'
 
 import { cytosineContextOptions } from '../../shared/modificationData.ts'
 
-import type { BaseLayer } from '../../shared/types.ts'
+import type { BaseLayer, ModificationColorBy } from '../../shared/types.ts'
 import type { MenuItem } from '@jbrowse/core/ui'
 import type { CytosineContext } from '@jbrowse/modifications-utils'
 
@@ -12,14 +12,12 @@ import type { CytosineContext } from '@jbrowse/modifications-utils'
 // for the same reason: it shares the cytosine-context vocabulary with the MM/ML
 // submenu but none of its state, writer, or readiness gating.
 //
-// Picking a cytosine context activates it; CpG (context) and two-color (both
-// defaults) are omitted from the scheme so a default session carries no
-// redundant fields.
-
-// The scheme is written whole on every click — no patch/merge step like the
-// MM/ML submenu's — so this reads and writes the slot and nothing else.
+// Picking a cytosine context activates it. The `modifications` slot is shared
+// with the MM/ML layer, so a click merges its two members into the slot rather
+// than replacing it, keeping that layer's threshold and type filter.
 interface BisulfiteModel {
   baseLayer: BaseLayer | undefined
+  modificationSettings: ModificationColorBy
   setBaseLayer: (layer?: BaseLayer) => void
 }
 
@@ -27,9 +25,9 @@ const DIVIDER: MenuItem = { type: 'divider' }
 
 export function bisulfiteItem(model: BisulfiteModel): MenuItem {
   const isBis = model.baseLayer?.type === 'bisulfite'
-  const mods = isBis ? (model.baseLayer?.modifications ?? {}) : {}
+  const mods = model.modificationSettings
   const context = mods.cytosineContext ?? 'CG'
-  const twoColor = !!mods.twoColor
+  const twoColor = isBis && !!mods.twoColor
 
   const setBisulfite = (
     nextContext: CytosineContext,
@@ -38,8 +36,9 @@ export function bisulfiteItem(model: BisulfiteModel): MenuItem {
     model.setBaseLayer({
       type: 'bisulfite',
       modifications: {
-        ...(nextContext === 'CG' ? {} : { cytosineContext: nextContext }),
-        ...(nextTwoColor ? { twoColor: true } : {}),
+        ...mods,
+        cytosineContext: nextContext,
+        twoColor: nextTwoColor,
       },
     })
   }

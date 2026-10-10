@@ -19,6 +19,7 @@ import type { ColorFieldOption } from '../../shared/colorFieldOptions.ts'
 import type {
   ArcColorField,
   BaseLayer,
+  ModificationColorBy,
   ReadColorBy,
   TagColorScale,
 } from '../../shared/types.ts'
@@ -37,6 +38,7 @@ interface ColorByModel {
   colorByField: (field: string) => void
   applyPlot: (draft: Plot) => void
   baseLayer: BaseLayer | undefined
+  modificationSettings: ModificationColorBy
   setBaseLayer: (layer?: BaseLayer) => void
 }
 
