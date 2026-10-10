@@ -1,11 +1,11 @@
 ---
 name: r-export-next-steps
-description: "The R exporter (view menu → Export R script, plugins/marks/src/rexport/) is built and live-verified on volvox but not landed. Open: Colin's call on landing, an external plugin or holding; trying it on real tracks with R users; an adversarial pass over the alignments and gene-glyph translators, which the first review barely touched; BigBed; the gene glyph's isoform collapse; CI for the Rscript suite."
+description: "The R exporter (view menu → Export R script, plugins/marks/src/rexport/) is built, reviewed twice and live-verified on volvox but not landed. Open: Colin's call on landing, an external plugin or holding; R tests in CI; real data with R users; per-position base counts for the coverage band; insertions, clips, sort, facet, modifications and CRAM on alignments."
 ---
 
 # R export: what is left
 
-Written 2026-10-05. The exporter turns the open tracks of a linear genome view
+Written 2026-10-05, revised 2026-10-10. The exporter turns the open tracks of a linear genome view
 into a self-contained `.R` that redraws them in rtracklayer, Rsamtools and
 ggplot2. Where the code is, what it draws and the parity rules are in
 [R_EXPORT.md](../reference/R_EXPORT.md); the user-facing page is
@@ -15,13 +15,16 @@ without an explicit go.
 
 ## State
 
-- Mark displays (BigWig, GFF3, VCF, BED, BAM), the wiggle display, the gene
-  glyph (GFF3 and BED) and a basic alignments pileup (coverage, reads, mismatch
-  ticks) export, checked in the running app against the browser.
-- One adversarial review (a fresh read-only reviewer) hunted the mark path
-  hardest. Its findings are fixed except BigBed and the type-duplication cleanup.
-- Everything was verified on volvox. Nothing has run on an hg38 hub, a large
-  remote BAM, a CRAM or a session of ten tracks.
+- Mark displays (BigWig, GFF3, VCF, BED, BigBed, BAM), the wiggle display, the
+  gene glyph (GFF3, BED, BigBed) and an alignments pileup export, checked in
+  the running app against the browser, over one region or several.
+- Reads draw their deletions and splice gaps, mismatch ticks (MD or the
+  reference), and the browser's read colors, MAPQ bins and insert-size bands.
+- Two fresh adversarial reviews have run. The second, over the alignments and
+  gene-glyph translators, found no wrong picture in the fixes it was given;
+  its other findings are fixed or listed below.
+- Everything ran on volvox and a remote GENCODE bigBed. Nothing has run on an
+  hg38 BAM, a CRAM or a ten-track session.
 
 ## Decide first (Colin)
 
@@ -38,41 +41,33 @@ without an explicit go.
    the seam.
 3. **Whether R belongs in CI.** `rScriptRun.test.ts` and `exportViewR.test.ts`
    skip themselves where R is absent, which is every CI run, so a regression
-   stays green.
+   stays green. A job with R, Bioconductor and samtools would run both.
 
 ## Next, in order
 
-1. **Put it in front of two or three R users with their own tracks.** The open
-   question is demand, not correctness. Ask what they hit first: an
-   unsupported track, a figure that differs from the browser, or a script they
-   could not extend.
-2. **A second adversarial review aimed at `alignmentsToR.ts` and
-   `featureToPlot.ts`.** Brief it as the first one was (read-only, fresh, told
-   to break it, repros required), pointed at those two and at the live path in
-   `exportLinearView.ts`. Expect color, coordinate and strand bugs like the
-   ones found in the mark path.
-3. **Try real data.** An hg38 hub gene track, a large remote BAM, a CRAM, a
-   ten-track session, refName aliases (`chr1` against `1`), a flipped view, and
-   a view of two regions. Read each figure against the browser.
-4. **BigBed.** rtracklayer fails on BED12 block lists inside a bigBed, so gene
-   tracks from hubs would lose their exons. Options: read blocks another way, or
-   draw boxes only and say so in the header. Most hub gene tracks are BigBed, so
-   this decides how useful the export is on hosted data.
-5. **Gene glyph.** Collapse to one isoform in `auto` mode as the browser does
-   (dense windows now overprint labels), then color by field, facet, compact
-   modes, and panel height that grows with the packed rows.
-6. **Alignments.** Indels, clips and splice gaps on reads; more than one region;
-   sort; facet; modifications; CRAM. The old CRAM, modification and sort
-   helpers and their oracles are described in R_EXPORT.md and need only their
-   imports fixed.
-7. **The class of bug, not the instances.** The translators re-derive the
-   browser's rules by hand (palettes, zoom gates, domain fallbacks, SO terms).
-   Anything that can be read from the browser's own code or config at export
-   time, such as the tag palette's 30 shades or the browser's collision
-   avoidance for unlisted domain values, should be, and each rule kept by a
-   test that compares R with the TypeScript original.
-8. **Cosmetics.** A 1 bp mark in a wide window antialiases grey; legend order is
-   ggplot's, not the browser's.
+1. **Put it in front of two or three R users with their own tracks.** Ask what
+   they hit first: an unsupported track, a figure that differs from the browser,
+   or a script they could not extend.
+2. **Real data.** An hg38 BAM at a deep locus (time it: `bam_mismatches` is
+   vectorized, `read_bam` and the pileup packing are not measured), a CRAM, a
+   ten-track session, `chr1` against `1` aliases.
+3. **Per-position base counts** (`Rsamtools::pileup`) as their own frame. They
+   would color the coverage band by allele as the browser does, which the
+   header now admits it does not, and give each mismatch its frequency. That
+   frequency is data, so it survives a resized figure, unlike a fade keyed to
+   pixels per bp, which the second review advised against porting.
+4. **Mismatch geometry.** A tick is a fixed-width line; a base cell zoomed in
+   is wider. A 1 bp `geom_rect` needs a fill scale of its own beside the reads'.
+5. **Insert-size cuts from the browser.** The R estimator re-derives the band
+   per region; the live display already holds it and could bake its cuts into
+   the script.
+6. **Alignments.** Insertions and clips on reads, sashimi arcs, sort, facet,
+   modifications, CRAM. The old CRAM, modification and sort helpers and their
+   oracles are described in R_EXPORT.md and need only their imports fixed.
+7. **The class of bug, not the instances.** Read a rule off the browser's code
+   or config at export time where possible (as MAPQ now reads
+   `colorEncodingOf`), and keep each one by a test against the TypeScript
+   original.
 
 ## Verify a change
 
