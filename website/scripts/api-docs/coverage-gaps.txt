@@ -42,7 +42,7 @@ Dotplot1DView
 LinearSyntenyViewHelper
 TimeTraveller
 
-# model members with no description (1355)
+# model members with no description (1354)
 # fix: write a sentence under the member’s #property/#volatile/#getter/#method/#action tag
 AddTrackModel.adapterHint
 AddTrackModel.altAssemblyName
@@ -556,7 +556,6 @@ LGVSyntenyDisplay.trackMenuItems
 LinearAlignmentsDisplay.TooltipComponent
 LinearAlignmentsDisplay.clearMouseoverState
 LinearAlignmentsDisplay.clearSelection
-LinearAlignmentsDisplay.colorSchemeIndex
 LinearAlignmentsDisplay.colorSetting
 LinearAlignmentsDisplay.configuredFeatureHeight
 LinearAlignmentsDisplay.contextMenuFeature
