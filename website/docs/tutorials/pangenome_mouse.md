@@ -74,8 +74,8 @@ each file holds.
 ## Load the graph
 
 We'll load the reference, then the graph and its bubbles. The graph track names
-the file prefix `build_pangenome_graph.sh` writes, and the `uri`s below are our
-hosted copy, so swap the prefix for your own build.
+the file prefix `gfa-to-tabix build` writes, and the `uri`s below are our hosted
+copy, so swap the prefix for your own build.
 
 ```json addassembly
 {
@@ -184,7 +184,7 @@ minigraph -cxggs -t 8 mm39.chr13.fa strain1.chr13.fa strain2.chr13.fa > chr13.gf
 ```
 
 [](/docs/tutorials/pangenome_prepare_graph) then turns the graph into the files
-above with one command, `build_pangenome_graph.sh`.
+above with one command, `gfa-to-tabix build`.
 [`build_mouse_pangenome.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_mouse_pangenome.sh)
 runs the whole build, and the alignment takes most of a day. It:
 

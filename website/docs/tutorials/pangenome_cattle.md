@@ -68,8 +68,8 @@ file and how to produce it.
 ## Load the genome and the graph
 
 We'll load the reference the graph is anchored to, then the graph track. Swap
-the prefix in `uri` for your own build of `build_pangenome_graph.sh`, which
-writes the tabix-indexed segments and links and the overview.
+the prefix in `uri` for your own `gfa-to-tabix build`, which writes the
+tabix-indexed segments and links and the overview.
 
 ```json addassembly
 {
@@ -306,8 +306,8 @@ difference.
 ## Building the bovine graph files
 
 [](/docs/tutorials/pangenome_prepare_graph) turns a graph into the files above
-with one command, `build_pangenome_graph.sh`. The published bovine graphs need
-three steps beyond it, which
+with one command, `gfa-to-tabix build`. The published bovine graphs need three
+steps beyond it, which
 [`build_bovine_pangenome.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_bovine_pangenome.sh)
 runs:
 
@@ -326,8 +326,8 @@ hosted files records the source and every modification.
 
 Leonard et al. also built pggb and Minigraph-Cactus graphs of the same twelve
 assemblies, base-level GFAs with path lines and no rGFA tags.
-`build_pangenome_graph.sh` writes an `SM:Z:` tag per segment listing the
-assemblies that pass through it.
+`gfa-to-tabix build` writes an `SM:Z:` tag per segment listing the assemblies
+that pass through it.
 
 ## See also
 

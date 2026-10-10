@@ -56,10 +56,10 @@ adapter.
 
 To index a graph, convert it once into tabix-indexed BED files that JBrowse can
 query by locus: `.segs.bed.gz` for the segments and `.links.bed.gz` for the
-links between them. One command, `build_pangenome_graph.sh`, builds them and
-writes a track config for them, as [](/docs/tutorials/pangenome_prepare_graph)
-describes. Then **Add track** with that config, whose adapter is
-`RgfaTabixAdapter`, and the track opens as the graph.
+links between them. One command, `gfa-to-tabix build`, builds them and writes a
+track config for them, as [](/docs/tutorials/pangenome_prepare_graph) describes.
+Then **Add track** with that config, whose adapter is `RgfaTabixAdapter`, and
+the track opens as the graph.
 [Route 1](#route-1-a-graph-track-browsable-by-locus) builds the index. Skip to
 [Seven layouts](#three-layouts) if you just need to know what the track menu's
 items do.
@@ -103,24 +103,23 @@ layout here, was built for assembly graphs. Use Bandage for one.
 
 Once indexed, the graph loads as a `GraphTrack` that draws whatever window is on
 screen as a graph.
-[`build_pangenome_graph.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_pangenome_graph.sh)
-builds the index, the format decides which route it takes, and every step after
-that is the same. It needs
-[`gfa-to-tabix`](https://github.com/GMOD/gfa-to-tabix), `bgzip`, `tabix` and
-`python3`, plus [`gfatools`](https://github.com/lh3/gfatools) for an rGFA's
-bubbles:
+[`gfa-to-tabix build`](https://github.com/GMOD/gfa-to-tabix#build) 0.11.0 or
+later builds the index, the format decides which route it takes, and every step
+after that is the same. An rGFA's bubbles also need
+[`gfatools`](https://github.com/lh3/gfatools) on PATH:
 
 ```bash
-curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/build_pangenome_graph.sh
+# or a binary from https://github.com/GMOD/gfa-to-tabix/releases
+cargo install gfa-to-tabix
 
 # rGFA: the tags are already coordinates, so this is a projection
-bash build_pangenome_graph.sh ecoli_minigraph.rgfa ecoli_minigraph
+gfa-to-tabix build ecoli_minigraph.rgfa -o ecoli_minigraph
 
 # plain GFA: walk the P (or W) lines to derive the same thing, with K12 as the
 # backbone, and take the bubbles from the snarl VCF that pggb -V wrote
 gfa=$(ls pggb/*.smooth.final.gfa)
 vcf=$(ls pggb/*.smooth.final.K12.vcf)
-bash build_pangenome_graph.sh "$gfa" ecoli_pggb --reference K12 --snarls "$vcf"
+gfa-to-tabix build "$gfa" -o ecoli_pggb --reference K12 --snarls "$vcf"
 ```
 
 The rGFA in these figures is a minigraph graph of five strains, built by the
@@ -133,12 +132,12 @@ command can query by strain.
 The plain-GFA walk makes four choices:
 
 - `--reference` names an **assembly**, not a path. Every contig that assembly
-  contributes is reference, and the script walks those contigs first, at rank 0.
-  A genome with more than one contig has one reference path per contig.
+  contributes is reference, and the command walks those contigs first, at
+  rank 0. A genome with more than one contig has one reference path per contig.
   Anchoring on only one of those paths would leave the other contigs' segments
   to whichever donor path reaches them first. A bare sample (`GRCh38`) is enough
   where the reference is haploid. For a diploid reference, write the haplotype
-  (`HG002#1`), or the script picks one and names it on stderr.
+  (`HG002#1`), or the command picks one and names it on stderr.
 - The walk also records **which haplotypes visit each segment**, as `SM:Z:` in
   the index. rGFA has no field for them. On this route that value fills
   `samples` in the node popup.
@@ -162,7 +161,7 @@ and `<prefix>.config.json` holds the track:
   "adapter": {
     "type": "RgfaTabixAdapter",
     "uri": "ecoli_minigraph",
-    "coarse": { "uri": "ecoli_minigraph.fold10000", "aboveBpPerPx": 1000 }
+    "coarse": { "uri": "ecoli_minigraph.fold10000", "foldBelowBp": 10000 }
   },
   "displays": [
     {
@@ -179,8 +178,11 @@ and `<prefix>.config.json` holds the track:
 
 The `uri` is the shared prefix, from which the adapter resolves `.segs.bed.gz`,
 `.links.bed.gz` and both `.tbi` files. `coarse` names the tier by a prefix of
-its own, and `aboveBpPerPx` is the handover, the linear view's zoom in bp per
-pixel past which the graph track cuts the tier: the tier's fold size over ten.
+its own and its fold size, `foldBelowBp`. A tenth of that is the handover, the
+linear view's zoom in bp per pixel past which the graph track cuts the tier;
+`aboveBpPerPx` in `coarse` sets the handover directly. `<prefix>.graph.json`
+names the same files and fold size, and Add pangenome graph track reads it
+beside the segments file, so a track opened there gets the tier with no config.
 These stable names are PanSN (`K12#1#chr`), and their sample prefix is already
 the assembly name, so the track needs no `assemblyNameToPanSN` mapping.
 [HPRC's graph track](/docs/tutorials/pangenome_prepare_graph#the-two-indexes-a-graph-track-reads)
@@ -205,7 +207,7 @@ the linear view's pixels fold into the reference, the legend says how small, and
 zooming in brings them back. A track whose adapter names `coarse` gives the
 graph a second tier to cut, built by the same fold
 ([`gfa-to-tabix fold`](https://github.com/GMOD/gfa-to-tabix#fold)). Once the
-linear view is zoomed out past `aboveBpPerPx`, the graph track cuts the tier and
+linear view is zoomed out past the handover, the graph track cuts the tier and
 the size limit no longer applies; the drawing does not change across the
 handover, since the fine cut has folded the same variants by then. The segments
 lane draws segments at every zoom, so load the tier's prefix as a track of its
@@ -241,9 +243,9 @@ has no traversals to read. There `samples` is empty, and the panel reports
 `contributingAssembly`, the one assembly `SN` names for the segment.
 
 Route 1 gives the same answer without the GFA file when the index came from a
-plain GFA. On that route `build_pangenome_graph.sh` does the traversal walk
-offline and writes each segment's haplotypes into the index as `SM:Z:`. Only an
-index built from a minigraph rGFA lacks them.
+plain GFA. On that route `gfa-to-tabix build` does the traversal walk offline
+and writes each segment's haplotypes into the index as `SM:Z:`. Only an index
+built from a minigraph rGFA lacks them.
 
 **Sample rows** draws a row per contributing assembly. Each node is drawn once,
 on the row of the first path that reaches it, and the other haplotypes stay in

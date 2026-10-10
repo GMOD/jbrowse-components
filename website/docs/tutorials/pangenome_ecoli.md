@@ -32,7 +32,8 @@ The graph view is a beta plugin. We welcome your [feedback](/contact).
 - the NCBI
   [`datasets`](https://www.ncbi.nlm.nih.gov/datasets/docs/v2/download-and-install/)
   CLI
-- the GraphGenomeView plugin, for
+- the GraphGenomeView plugin and
+  [`gfa-to-tabix`](https://github.com/GMOD/gfa-to-tabix) 0.11.0 or later, for
   [the graph track](#opening-the-graph-in-the-graph-genome-view)
 
 `apt install samtools tabix unzip python3` covers four of those on
@@ -483,19 +484,19 @@ a single labelled deletion.
 
 The [graph genome view plugin](/docs/user_guides/graph_genome_view) draws the
 graph itself as a track of the linear view.
-[`build_pangenome_graph.sh`](/docs/tutorials/pangenome_prepare_graph) indexes it
-by following the K12 path, and takes the bubbles from pggb's undecomposed VCF,
+[`gfa-to-tabix build`](/docs/tutorials/pangenome_prepare_graph) indexes it by
+following the K12 path, and takes the bubbles from pggb's undecomposed VCF,
 renamed like the decomposed one:
 
 ```bash
 in_pggb bash -c "bcftools annotate --rename-chrs /data/rename_chrs.tsv \
   /data/pggb/*.smooth.final.K12.vcf \
   | bcftools sort -Oz -o /data/ecoli_pggb_snarls.vcf.gz && tabix -p vcf /data/ecoli_pggb_snarls.vcf.gz"
-curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/build_pangenome_graph.sh
-bash build_pangenome_graph.sh pggb/*.smooth.final.gfa ecoli_pggb --reference K12 --snarls ecoli_pggb_snarls.vcf.gz
+cargo install gfa-to-tabix
+gfa-to-tabix build pggb/*.smooth.final.gfa -o ecoli_pggb --reference K12 --snarls ecoli_pggb_snarls.vcf.gz
 ```
 
-The script writes the segments and links, a coarse tier with variants under 50
+The command writes the segments and links, a coarse tier with variants under 50
 bp folded into the reference, and `ecoli_pggb.config.json`. The `uri`s below are
 our hosted copy; a local build uses `ecoli_pggb`:
 

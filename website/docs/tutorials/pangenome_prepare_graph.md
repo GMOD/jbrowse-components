@@ -26,10 +26,9 @@ The graph view is a beta plugin. We welcome your [feedback](/contact).
 ## Prerequisites
 
 - [the GraphGenomeView plugin](#the-graphgenomeview-plugin)
-- htslib (`bgzip`, `tabix`), `bcftools`, `python3`, `sort`, `pigz`, and `node`
-  for the coarse tier
-- [`gfa-to-tabix`](https://github.com/GMOD/gfa-to-tabix), for the segment and
-  link indexes, and 0.5.0 or later for the walk index
+- htslib (`bgzip`, `tabix`), `bcftools` and `pigz`
+- [`gfa-to-tabix`](https://github.com/GMOD/gfa-to-tabix) 0.11.0 or later, for
+  the graph's files and the walk index
 - [`gfatools`](https://github.com/lh3/gfatools), for an rGFA's bubbles
 - [`minigraph`](https://github.com/lh3/minigraph), for each assembly's path
   through the graph
@@ -43,8 +42,8 @@ The graph view is a beta plugin. We welcome your [feedback](/contact).
 [HPRC release 2](https://doi.org/10.64898/2026.07.21.739710)'s Minigraph-Cactus
 graph, which every HPRC page on this site reads.
 
-Download the SV-resolution rGFA before starting: `build_pangenome_graph.sh`
-takes the graph as a local file.
+Download the SV-resolution rGFA before starting: `gfa-to-tabix build` takes the
+graph as a local file.
 
 - the SV-resolution rGFA:
   https://s3-us-west-2.amazonaws.com/human-pangenomics/pangenomes/freeze/release2/minigraph-cactus/v2.1/hprc-v2.1-mc-grch38/hprc-v2.1-mc-grch38.sv.gfa.gz
@@ -91,23 +90,23 @@ On [JBrowse Desktop](/docs/quickstart_desktop) v5.0.0-beta.1 or later, install
 it once at **Global plugins... → Add custom plugin**: open **Advanced options**,
 paste that `esmUrl` into **ESM build URL** and leave the rest empty.
 
-## Indexing a graph with build_pangenome_graph.sh {#what-your-graph-can-produce}
+## Indexing a graph with gfa-to-tabix build {#what-your-graph-can-produce}
 
-Install [`gfa-to-tabix`](https://github.com/GMOD/gfa-to-tabix), which writes the
-segment and link indexes (its
+Install [`gfa-to-tabix`](https://github.com/GMOD/gfa-to-tabix) 0.11.0 or later,
+whose `build` command writes every file below (its
 [releases](https://github.com/GMOD/gfa-to-tabix/releases) have Linux and macOS
-binaries if you have no Rust toolchain), and fetch the script:
+binaries if you have no Rust toolchain):
 
 ```bash
 cargo install gfa-to-tabix
-curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/build_pangenome_graph.sh
 ```
 
 An **rGFA**, from minigraph or the minigraph stage of Minigraph-Cactus, needs an
-output prefix and the assembly name your config uses:
+output prefix and the assembly name your config uses. Its bubbles come from
+`gfatools bubble`, so put `gfatools` on PATH:
 
 ```bash
-bash build_pangenome_graph.sh graph.rgfa.gz out --assembly hg38
+gfa-to-tabix build graph.rgfa.gz -o out --assembly hg38
 ```
 
 A **plain GFA**, from pggb, odgi, vg or base-level Minigraph-Cactus, also needs
@@ -132,7 +131,7 @@ bcftools annotate --rename-chrs rename_chrs.tsv graph.snarls.vcf \
 ```
 
 ```bash
-bash build_pangenome_graph.sh graph.gfa out --reference K12 --assembly K12 --snarls graph.snarls.vcf.gz
+gfa-to-tabix build graph.gfa -o out --reference K12 --assembly K12 --snarls graph.snarls.vcf.gz
 ```
 
 At human-chromosome scale, index the SV-resolution rGFA; a pggb graph's index
@@ -149,6 +148,7 @@ The command writes these files beside the prefix:
 | `.fold10000.links.bed.gz`                     | the tier's links                                                                                |
 | `.contig.segs.bed.gz`, `.contig.links.bed.gz` | the segment and link rows under each segment's own coordinate, which the allele inventory reads |
 | `.alleles.bed.gz`                             | one row per allele, with a CIGAR that states its size                                           |
+| `.graph.json`                                 | a manifest naming the files above and the tier's fold size                                      |
 | `.config.json`                                | the tracks below, with the plugin entry                                                         |
 
 ### The coarse tier for whole-chromosome views {#a-whole-chromosome-the-bubble-tier}
@@ -167,8 +167,8 @@ single bases.
 The config's first track is the graph. Its adapter holds:
 
 - `uri`, the prefix
-- `coarse`, which names the tier the track draws past `aboveBpPerPx` bp per
-  pixel, the tier's threshold over ten
+- `coarse`, which names the tier and its threshold, `foldBelowBp`; the track
+  draws the tier past a tenth of that in bp per pixel
 - `assemblyNameToPanSN`, which maps your assembly name to the graph's PanSN
   sample; the command writes it only when the two differ
 
@@ -182,7 +182,7 @@ The config's first track is the graph. Its adapter holds:
     "type": "RgfaTabixAdapter",
     "uri": "hprc",
     "assemblyNameToPanSN": { "hg38": "GRCh38" },
-    "coarse": { "uri": "hprc.fold10000", "aboveBpPerPx": 1000 }
+    "coarse": { "uri": "hprc.fold10000", "foldBelowBp": 10000 }
   },
   "displayDefaults": { "showLabels": "none" },
   "displays": [
@@ -199,7 +199,9 @@ its track menu draws the same segments as a row.
 
 The command writes `out.config.json`. Merge its `plugins` and `tracks` entries
 into your own config, then run `jbrowse validate config.json`, which reports a
-misspelled or undeclared slot JBrowse otherwise ignores.
+misspelled or undeclared slot JBrowse otherwise ignores. Without a config, the
+plugin's Add pangenome graph track workflow reads `out.graph.json` beside
+`out.segs.bed.gz`, so a track opened from that url gets the coarse tier too.
 
 The other three tracks in the config draw the bubbles as a row and as a curve,
 and the allele inventory, one row per alternative path, as an alignments track.
@@ -514,17 +516,14 @@ inventory, with the tools under [Prerequisites](#prerequisites). It:
    sequence the allele passes through give the CIGAR its size
 
 ```bash
-curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/build_pangenome_graph.sh
-bash build_pangenome_graph.sh hprc-v2.1-mc-grch38.sv.gfa.gz hprc --assembly hg38
+gfa-to-tabix build hprc-v2.1-mc-grch38.sv.gfa.gz -o hprc --assembly hg38
 ```
 
-[`build_pangenome_graph.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_pangenome_graph.sh)
-runs [`gfa-to-tabix`](https://github.com/GMOD/gfa-to-tabix) for the segments and
-links, and `gfa-to-tabix alleles` for the allele inventory. The coarse tier is
+[`gfa-to-tabix build`](https://github.com/GMOD/gfa-to-tabix#build) reads the
+graph once and writes the index, the tier, the alleles and the bubbles
+concurrently. The coarse tier is also
 [`gfa-to-tabix fold`](https://github.com/GMOD/gfa-to-tabix#fold), which runs
-alone too:
-
-<!-- from: scripts/build_pangenome_graph.sh -->
+alone:
 
 ```bash
 gfa-to-tabix fold hprc-v2.1-mc-grch38.sv.gfa.gz --below 10000 -o hprc.fold10000

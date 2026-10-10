@@ -31,7 +31,7 @@ The graph view is a beta plugin. We welcome your [feedback](/contact).
 - `node`, for the [JBrowse CLI](/docs/cli)
 - the GraphGenomeView plugin, for
   [drawing the graph as a graph](#opening-the-graph-in-the-graph-genome-view)
-- [`gfa-to-tabix`](https://github.com/GMOD/gfa-to-tabix) and
+- [`gfa-to-tabix`](https://github.com/GMOD/gfa-to-tabix) 0.11.0 or later and
   [`gfatools`](https://github.com/lh3/gfatools), for
   [indexing the graph](#indexing-the-graph)
 - for the [whole build](#reproduce-it-end-to-end): the NCBI
@@ -466,30 +466,30 @@ covers installing the plugin and the one command that indexes a graph for it.
 `cactus-pangenome` also wrote `mc/ecoli.sv.gfa.gz`, the graph its minigraph
 stage built. This rGFA of the structural variation states each segment's place
 on a genome in `SN`/`SO`/`SR` tags, so
-[`build_pangenome_graph.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_pangenome_graph.sh)
-indexes it with no further arguments:
+[`gfa-to-tabix build`](https://github.com/GMOD/gfa-to-tabix#build) indexes it
+with no further arguments:
 
 ```bash
-curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/build_pangenome_graph.sh
-# the script runs gfa-to-tabix and gfatools, so both have to be on PATH
-bash build_pangenome_graph.sh mc/ecoli.sv.gfa.gz ecoli_cactus_sv
+# gfa-to-tabix build runs gfatools for the bubbles, so it has to be on PATH
+gfa-to-tabix build mc/ecoli.sv.gfa.gz -o ecoli_cactus_sv
 ```
 
-The script writes the segments and links, the bubbles, a coarse tier (one node
-per bubble), the allele inventory (one row per alternative path) and
-`ecoli_cactus_sv.config.json`, whose graph track names the tier under `coarse`.
+The command writes the segments and links, the bubbles, a coarse tier (one node
+per bubble), the allele inventory (one row per alternative path),
+`ecoli_cactus_sv.config.json`, whose graph track names the tier under `coarse`,
+and `ecoli_cactus_sv.graph.json`, from which Add pangenome graph track picks up
+the tier.
 
 The figures below draw the base-level graph, where every SNP is a bubble. That
-GFA has no rGFA tags, so `--reference` makes the script place segments by
+GFA has no rGFA tags, so `--reference` makes the command place segments by
 following the reference's path lines:
 
 ```bash
-bash build_pangenome_graph.sh mc/ecoli.gfa.gz ecoli_cactus --reference K12
+gfa-to-tabix build mc/ecoli.gfa.gz -o ecoli_cactus --reference K12
 ```
 
-Without `--snarls` the script writes just the segments and links, which the
-graph track needs. Our hosted copy of the index loads as one `GraphTrack` at the
-shared prefix:
+Without `--snarls` the command writes no bubble file. Our hosted copy of the
+index loads as one `GraphTrack` at the shared prefix:
 
 ```json addtrack
 {

@@ -12,7 +12,7 @@
 #                  `odgi similarity` UPGMA tree
 #   depth          `odgi depth`, core vs accessory over K12 as a bigWig
 #   presence       `odgi pav`, one bigWig per strain as a MultiWiggle
-#   graph          `build_pangenome_graph.sh`, the whole graph as a track with
+#   graph          `gfa-to-tabix build`, the whole graph as a track with
 #                  its coarse tier (variants under 50 bp folded), plus a lane
 #                  colored by carriage
 #
@@ -29,7 +29,7 @@
 #
 # Requires: docker or singularity (the pggb image, which also carries odgi for
 #           the depth projection, and the cactus image for minigraph/gfatools),
-#           gfa-to-tabix 0.9.0 or later, the NCBI `datasets` CLI, samtools,
+#           gfa-to-tabix 0.11.0 or later, the NCBI `datasets` CLI, samtools,
 #           bedGraphToBigWig (UCSC kentUtils), python3, bgzip/tabix (htslib), unzip, and node (JBrowse CLI, via npx
 #           unless `jbrowse` is on PATH).
 # Usage:    bash scripts/build_ecoli_pangenome_graph.sh [outdir]
@@ -41,14 +41,20 @@ SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"   # so reroot_maf.py resolves after 
 
 # Sibling helpers this script runs, fetched next to it when absent, so a bare
 # `curl -fO` of this one file behaves the same as a repo checkout.
-# build_pangenome_graph.sh fetches its helpers the same way.
-HELPERS=(reroot_maf.py maf_to_bed.py gfa_nodes_to_bed.py build_pangenome_graph.sh
+HELPERS=(reroot_maf.py maf_to_bed.py gfa_nodes_to_bed.py
   odgi_similarity_to_newick.py untangle_to_bed.py)
 # The JBrowse CLI, installed or via npx. Defined HERE rather than at the JBrowse
 # setup section far below, because `make-pif` runs during the projections and a
 # bare `jbrowse` there kills the script under `set -e` on an npx-only machine —
 # right after pggb has finished, which is the most expensive place to fail.
 if command -v jbrowse >/dev/null 2>&1; then jb() { jbrowse "$@"; }; else jb() { npx -y @jbrowse/cli "$@"; }; fi
+
+# Checked up front, since the graph track is built after pggb has run.
+gfa-to-tabix build --help >/dev/null 2>&1 || {
+  echo "gfa-to-tabix 0.11.0 or later is not on PATH: cargo install gfa-to-tabix," >&2
+  echo "or a binary from https://github.com/GMOD/gfa-to-tabix/releases" >&2
+  exit 1
+}
 
 for h in "${HELPERS[@]}"; do
   [ -f "$SCRIPT_DIR/$h" ] || curl -fsSL -o "$SCRIPT_DIR/$h" \
@@ -406,8 +412,8 @@ tabix -f -p bed ecoli_pggb_subgraph_nodes.bed.gz
 # The same walk over the WHOLE pggb graph, so it is browsable by locus: the
 # segment and link indexes RgfaTabixAdapter reads, with each segment's haplotypes
 # as an SM:Z: tag, and the coarse tier with variants under 50 bp folded into the
-# reference (ecoli_pggb.fold50). Runs on the host (python3 and node, no docker).
-bash "$SCRIPT_DIR/build_pangenome_graph.sh" "$GFA" ecoli_pggb --reference "$REF" \
+# reference (ecoli_pggb.fold50). Runs on the host, no docker.
+gfa-to-tabix build "$GFA" -o ecoli_pggb --reference "$REF" \
   --snarls ecoli_pggb_snarls.vcf.gz
 
 # The rGFA counterpart. minigraph tags every segment with the stable sequence it

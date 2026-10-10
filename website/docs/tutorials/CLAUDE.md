@@ -241,10 +241,11 @@ under a provenance heading does not tell a reader whether to start downloading:
   command (`tp53_structures`, `agent_synteny`, `hg002_haplotypes`).
 
 **A Reproduce section does not mean the script fetches the data.** Read how the
-script gets each file before writing the sentence: `build_pangenome_graph.sh`
-takes its graph as a local path, so `pangenome_prepare_graph` tells the reader
-to download it, and `build_repeatmasker_classes.sh` takes the reader's own
-genome, so the hosted files on that page are only read by URL.
+script or command gets each file before writing the sentence:
+`gfa-to-tabix build` takes its graph as a local path, so
+`pangenome_prepare_graph` tells the reader to download it, and
+`build_repeatmasker_classes.sh` takes the reader's own genome, so the hosted
+files on that page are only read by URL.
 
 A `<details>` under a visible list is summarised "Read by URL (no download
 needed)". A page with nothing to list at all drops the section
