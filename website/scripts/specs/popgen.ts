@@ -415,6 +415,7 @@ export const popgenSpecs: ScreenshotSpec[] = [
             {
               trackId: 'dgrp_In2Lt_sv',
               type: 'LinearMultiSampleVariantDisplay',
+              showVariantLane: true,
               // 2 px a row: 19 carriers of 180 lines is ~10% of any height,
               // and auto-fit rows under a pixel alias into a smear
               rowHeight: 2,

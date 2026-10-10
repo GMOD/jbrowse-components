@@ -364,6 +364,7 @@ const rhdPanel = sessionSpec('test_data/1000g_cnv/config.json', {
         {
           trackId: 'kgp_sv_matrix',
           type: 'LinearMultiSampleVariantDisplay',
+          showVariantLane: true,
           forceLoad: true,
           // 400 -> 290 (reviewer: "reduce height of both the
           // multisamplevariantdisplay, the multiwiggledisplay"). 3202
@@ -730,6 +731,7 @@ export const uiSpecs: ScreenshotSpec[] = [
             {
               trackId: '1KGP_3202.Illumina_ensemble_callset.freeze_V1.vcf',
               type: 'LinearMultiSampleVariantDisplay',
+              showVariantLane: true,
               forceLoad: true,
               height: 400,
             },
@@ -802,6 +804,7 @@ export const uiSpecs: ScreenshotSpec[] = [
             {
               trackId: '1KGP_3202.Illumina_ensemble_callset.freeze_V1.vcf',
               type: 'LinearMultiSampleVariantDisplay',
+              showVariantLane: true,
               forceLoad: true,
               height: 400,
               color: { field: 'svType' },

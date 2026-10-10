@@ -139,6 +139,7 @@ export const pangenomeSpecs: ScreenshotSpec[] = [
               // tier. Keeping the filter would now drop real indels instead.
               trackId: 'ecoli_pggb_variants',
               type: 'LinearMultiSampleVariantDisplay',
+              showVariantLane: true,
               // Phased, because each strain is one haplotype: the key then
               // reads Reference / Alt allele / No call instead of a diploid
               // dosage. 170 holds that key and its Insertions section, which
