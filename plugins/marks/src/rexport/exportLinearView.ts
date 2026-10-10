@@ -1,6 +1,7 @@
 import { fullConfSnapshot, getConf } from '@jbrowse/core/configuration'
 import { getSession } from '@jbrowse/core/util'
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
+import { getSnapshot } from '@jbrowse/mobx-state-tree'
 
 import { markPlotSettingsOf } from '../LinearMarkDisplay/markPlot.ts'
 import { exportTracksToR } from './exportView.ts'
@@ -92,6 +93,7 @@ async function tracksOf(view: LinearGenomeViewModel) {
         displayType: display.type,
         adapter: getConf(track, 'adapter') as Record<string, unknown>,
         display: displaySettings(display),
+        writtenDisplay: getSnapshot(display.configuration),
         reference,
         viewBpPerPx: view.bpPerPx,
         refNames: await refNamesOf(view, track),

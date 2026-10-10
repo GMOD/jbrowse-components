@@ -1169,10 +1169,41 @@ cat(paste(names(t), t, sep = "=", collapse = " "), paste(names(o), o, sep = "=",
   it('names the settings it does not draw', () => {
     expect(unread).toEqual(
       expect.arrayContaining([
-        'facet: not translated',
+        'not translated: facet',
         'color: mateRefName is not translated, so reads draw plain',
         'mismatches: a read with no MD tag draws no ticks, since no reference was given',
       ]),
     )
+  })
+
+  it('names a setting the config writes, not one its defaults fill', () => {
+    const resolved = {
+      modifications: { threshold: 10, twoColor: false, cytosineContext: 'CG' },
+      featureHeight: 7,
+      height: 250,
+    }
+    const notes = (written: Record<string, unknown>) =>
+      alignmentsPanels({
+        display: { ...resolved, ...written },
+        written,
+        uri: BAM,
+        regions: region,
+      }).notes.filter(n => n.startsWith('not translated'))
+    expect(notes({})).toEqual([])
+    expect(notes({ height: 400, showCoverage: false })).toEqual([])
+    expect(
+      notes({ modifications: { threshold: 20 }, featureHeight: 3 }),
+    ).toEqual(['not translated: modifications, featureHeight'])
+  })
+
+  it('draws the coverage band alone where the pileup is hidden', () => {
+    const { panels } = alignmentsPanels({
+      display: { showPileup: false },
+      uri: BAM,
+      regions: region,
+    })
+    expect(panels.map(p => [p.variable, p.plot.labs?.x])).toEqual([
+      ['coverage', `${region[0]!.refName} (bp)`],
+    ])
   })
 })

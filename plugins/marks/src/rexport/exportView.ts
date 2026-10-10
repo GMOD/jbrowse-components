@@ -25,6 +25,8 @@ export interface RExportTrack {
   displayType: string
   adapter: Record<string, unknown>
   display: Record<string, unknown>
+  /** `display` as written, its defaults left out, where it was resolved. */
+  writtenDisplay?: Record<string, unknown>
   /** The assembly's FASTA or 2bit, for a read with no MD tag. */
   reference?: string
   /** Canonical refName to the name the track's file spells it with, where they differ. */
@@ -219,6 +221,7 @@ const alignmentsExporter: RExporter = (track, regions) => {
   const { uri, index } = located
   const { panels, notes } = alignmentsPanels({
     display: track.display,
+    written: track.writtenDisplay,
     uri,
     index,
     regions,

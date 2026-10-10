@@ -39,6 +39,7 @@ export interface AlignmentsDisplaySnapshot {
   filter?: ReadFilter
   showCoverage?: boolean
   showMismatches?: boolean
+  showPileup?: boolean
   [slot: string]: unknown
 }
 
@@ -59,20 +60,26 @@ interface ReadFilter {
 /** The read categories the browser decides over a read's whole chain, which R does not group. */
 const CHAIN_CATEGORIES = ['properPairs', 'singletons', 'split'] as const
 
-/** Slots whose drawing this does not translate, reported when set off their default. */
-const UNTRANSLATED: Record<string, unknown> = {
-  baseColor: undefined,
-  facet: undefined,
-  sortedBy: undefined,
-  modifications: undefined,
-  arcColor: undefined,
-  unit: 'read',
-  layoutOrder: 'position',
-  readConnections: 'off',
-  showBezierConnections: false,
-  showSoftClipping: false,
-  mismatchAlpha: false,
-}
+/** Slots the panels read. */
+const TRANSLATED = new Set([
+  'color',
+  'filter',
+  'showCoverage',
+  'showMismatches',
+  'showPileup',
+])
+
+/** Slots that size the browser's track, where a figure sizes itself. */
+const LAYOUT = new Set([
+  'type',
+  'displayId',
+  'height',
+  'maxHeight',
+  'coverageHeight',
+  'sashimiArcsHeight',
+  'readConnectionsHeight',
+  'showLegend',
+])
 
 const LEVEL_COLUMN = '.color'
 const NO_VALUE = 'none'
@@ -331,6 +338,7 @@ const BASES = ['A', 'C', 'G', 'T', 'N'] as const
  */
 export function alignmentsPanels({
   display,
+  written,
   uri,
   regions,
   reference,
@@ -339,6 +347,8 @@ export function alignmentsPanels({
   index,
 }: {
   display: AlignmentsDisplaySnapshot
+  /** The config as written, its defaults left out, which names the settings the figure drops; `display` where unset. */
+  written?: Record<string, unknown>
   uri: string
   regions: readonly Region[]
   /** Suffixes every R name, so several alignments tracks share one script. */
@@ -355,15 +365,11 @@ export function alignmentsPanels({
   const notes = [
     'reads: each draws as one bar over its reference span, without its deletions, insertions, clips or splice gaps',
   ]
-  for (const [slot, fallback] of Object.entries(UNTRANSLATED)) {
-    const v = display[slot]
-    const set =
-      v !== undefined &&
-      v !== fallback &&
-      !(typeof v === 'object' && v !== null && !Object.keys(v).length)
-    if (set) {
-      notes.push(`${slot}: not translated`)
-    }
+  const dropped = Object.keys(written ?? display).filter(
+    slot => !TRANSLATED.has(slot) && !LAYOUT.has(slot),
+  )
+  if (dropped.length) {
+    notes.push(`not translated: ${dropped.join(', ')}`)
   }
   const color = readColor(display.color, notes)
   const tagFilters = display.filter?.tagFilters ?? []
@@ -436,7 +442,8 @@ export function alignmentsPanels({
     y: { kind: 'reverse' },
   }
   const mismatchesName = named('mismatches')
-  if (display.showMismatches !== false) {
+  const pileupShown = display.showPileup !== false
+  if (pileupShown && display.showMismatches !== false) {
     const mismatches = frame({
       name: mismatchesName,
       columns: ['read_index', 'refpos', 'base', '.region', 'row'],
@@ -481,21 +488,18 @@ ${mismatchesName} <- ${mismatchesName}[!is.na(${mismatchesName}$row), ]`,
   const xlim = shifted
     ? expr('min(regions$cum_start), max(regions$cum_end)')
     : { start: regions[0]!.start, end: regions[0]!.end }
-  const panels: Panel[] = [
-    {
-      variable: named('pileup'),
-      plot: {
-        layers,
-        scales,
-        xlim,
-        labs: {
-          x: shifted ? 'bp, regions end to end' : `${regions[0]!.refName} (bp)`,
-          y: null,
+  const xLabel = shifted
+    ? 'bp, regions end to end'
+    : `${regions[0]!.refName} (bp)`
+  const panels: Panel[] = pileupShown
+    ? [
+        {
+          variable: named('pileup'),
+          plot: { layers, scales, xlim, labs: { x: xLabel, y: null } },
+          heightWeight: 2,
         },
-      },
-      heightWeight: 2,
-    },
-  ]
+      ]
+    : []
   if (display.showCoverage !== false) {
     const coverage = frame({
       name: named('depth'),
@@ -520,7 +524,7 @@ ${mismatchesName} <- ${mismatchesName}[!is.na(${mismatchesName}$row), ]`,
         ],
         xlim,
         expandY: 0,
-        labs: { x: null, y: 'depth' },
+        labs: { x: pileupShown ? null : xLabel, y: 'depth' },
       },
       heightWeight: 0.6,
     })
