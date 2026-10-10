@@ -61,7 +61,7 @@ test.each([
     { type: 'methylation' },
     {
       baseColor: { field: 'modifications' },
-      modifications: { fillUnmarked: true },
+      modifications: { unmodified: 'all' },
     },
   ],
   [

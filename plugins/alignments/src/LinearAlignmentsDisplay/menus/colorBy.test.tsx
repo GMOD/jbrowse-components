@@ -146,8 +146,11 @@ describe('color by modifications menu', () => {
 
   test.each([
     ['by type', { type: 'modifications' }],
-    ['2-color', { type: 'modifications', modifications: { twoColor: true } }],
-    ['fill', { type: 'modifications', modifications: { fillUnmarked: true } }],
+    [
+      '2-color',
+      { type: 'modifications', modifications: { unmodified: 'calls' } },
+    ],
+    ['fill', { type: 'modifications', modifications: { unmodified: 'all' } }],
   ] as [string, BaseLayer][])(
     'shows the same controls regardless of the active view (%s)',
     (_name, layer) => {
@@ -179,13 +182,35 @@ describe('color by modifications menu', () => {
     expect(model.modificationSettings).toMatchObject(refined)
   })
 
+  // One `unmodified` member serves both layers: bisulfite's "Show
+  // unmethylated" reads it and a context pick leaves it be, so the
+  // methylation view survives a visit to bisulfite.
+  test('the fill view comes back after bisulfite, and bisulfite reads it as on', () => {
+    const model = makeModModel(['m', 'h'])
+    model.baseLayer = {
+      type: 'modifications',
+      modifications: { unmodified: 'all' },
+    }
+    clickRadio(model, 'CHG')
+    const unmethylated = byLabel(model, 'Show unmethylated (blue)')
+    expect(
+      unmethylated && 'checked' in unmethylated && unmethylated.checked,
+    ).toBe(true)
+    clickRadio(model, TWO_COLOR)
+    expect(model.modificationSettings.unmodified).toBe('all')
+
+    clickRadio(model, 'CHH')
+    clickRadio(model, 'Show unmethylated (blue)')
+    expect(model.modificationSettings.unmodified).toBe('hidden')
+  })
+
   test('the Probability view fills unmarked cytosines for methylation data', () => {
     const model = makeModModel(['m', 'h'])
     model.baseLayer = { type: 'modifications' }
     clickRadio(model, TWO_COLOR)
     expect(model.baseLayer).toEqual({
       type: 'modifications',
-      modifications: { twoColor: false, fillUnmarked: true },
+      modifications: { unmodified: 'all' },
     })
   })
 
@@ -195,7 +220,7 @@ describe('color by modifications menu', () => {
     clickRadio(model, TWO_COLOR)
     expect(model.baseLayer).toEqual({
       type: 'modifications',
-      modifications: { twoColor: true, fillUnmarked: false },
+      modifications: { unmodified: 'calls' },
     })
   })
 
@@ -203,7 +228,7 @@ describe('color by modifications menu', () => {
     const model = makeModModel()
     model.baseLayer = {
       type: 'modifications',
-      modifications: { fillUnmarked: true },
+      modifications: { unmodified: 'all' },
     }
     const prob = byLabel(model, TWO_COLOR)
     expect(prob && 'checked' in prob && prob.checked).toBe(true)
@@ -213,16 +238,12 @@ describe('color by modifications menu', () => {
     const model = makeModModel()
     model.baseLayer = {
       type: 'modifications',
-      modifications: { fillUnmarked: true, cytosineContext: 'CHH' },
+      modifications: { unmodified: 'all', cytosineContext: 'CHH' },
     }
     clickRadio(model, BY_TYPE)
     expect(model.baseLayer).toEqual({
       type: 'modifications',
-      modifications: {
-        twoColor: false,
-        fillUnmarked: false,
-        cytosineContext: 'CHH',
-      },
+      modifications: { unmodified: 'hidden', cytosineContext: 'CHH' },
     })
   })
 

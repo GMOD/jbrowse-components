@@ -153,8 +153,8 @@ const SPECIAL_COLOR_MENUS: Record<string, string> = {
 }
 
 // The two radios inside the Modifications submenu (modificationsMenu.ts). Which
-// one a value means is the same `twoColor || fillUnmarked` test the menu uses to
-// decide which radio reads as checked.
+// one a value means is the calls-or-all test `paintsUnmodifiedCalls` makes when
+// the menu decides which radio reads as checked.
 const MODIFICATION_BY_TYPE = 'One color per modification type'
 const MODIFICATION_TWO_COLOR =
   'One color per type, plus low-probability & unmodified in blue'
@@ -257,7 +257,7 @@ const modificationsStep: FieldRecipe = value => {
   return [
     {
       path: `${TRACK_MENU} → Color by... → Modifications → ${
-        mods.twoColor || mods.fillUnmarked
+        mods.unmodified === 'calls' || mods.unmodified === 'all'
           ? MODIFICATION_TWO_COLOR
           : MODIFICATION_BY_TYPE
       }`,

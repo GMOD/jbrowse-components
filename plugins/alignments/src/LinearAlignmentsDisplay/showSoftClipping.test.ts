@@ -338,14 +338,14 @@ describe('alignments colorBy', () => {
   it('the methylation view draws its calls, with the fill unmarked', () => {
     const { display } = createDisplay({
       baseColor: 'modifications',
-      modifications: { fillUnmarked: true },
+      modifications: { unmodified: 'all' },
     })
     expect(display.showModifications).toBe(true)
     expect(display.rpcProps()).toMatchObject({
       colorBy: undefined,
       baseLayer: {
         type: 'modifications',
-        modifications: { fillUnmarked: true },
+        modifications: { unmodified: 'all' },
       },
     })
   })

@@ -20,6 +20,7 @@ import { forEachMaxProbMod } from '../../shared/getMaxProbModAtEachPosition.ts'
 import {
   DEFAULT_MODIFICATION_THRESHOLD,
   isModificationTypeVisible,
+  paintsUnmodifiedCalls,
 } from '../../shared/types.ts'
 import { getFlags } from '../../shared/util.ts'
 import { getColorForModification } from '../../util.ts'
@@ -135,9 +136,9 @@ export function extractModifications(
     window.readStart,
     window.readEnd,
   )
-  const fillUnmarked = !!colorBy.modifications?.fillUnmarked
+  const fillUnmarked = colorBy.modifications?.unmodified === 'all'
 
-  // fillUnmarked hands 5mC/5hmC to extractMethylation (the getMethBins context
+  // `unmodified: 'all'` hands 5mC/5hmC to extractMethylation (the getMethBins context
   // walk paints every cytosine, called or not), so those two types are dropped
   // here to avoid double marks — matching the old standalone methylation scheme.
   //
@@ -159,7 +160,7 @@ export function extractModifications(
     const modStrand = strand === -1 ? -1 : 1
     const modThreshold =
       (colorBy.modifications?.threshold ?? DEFAULT_MODIFICATION_THRESHOLD) / 100
-    const twoColor = fillUnmarked || (colorBy.modifications?.twoColor ?? false)
+    const twoColor = paintsUnmodifiedCalls(colorBy.modifications)
     forEachMaxProbMod(
       drawn,
       getModProbabilityBytes(feature),

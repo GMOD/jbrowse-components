@@ -1,6 +1,7 @@
 import { checkboxItem, radioItems } from '@jbrowse/core/ui/menuItems'
 
 import { cytosineContextOptions } from '../../shared/modificationData.ts'
+import { paintsUnmodifiedCalls } from '../../shared/types.ts'
 
 import type { BaseLayer, ModificationColorBy } from '../../shared/types.ts'
 import type { MenuItem } from '@jbrowse/core/ui'
@@ -27,19 +28,12 @@ export function bisulfiteItem(model: BisulfiteModel): MenuItem {
   const isBis = model.baseLayer?.type === 'bisulfite'
   const mods = model.modificationSettings
   const context = mods.cytosineContext ?? 'CG'
-  const twoColor = isBis && !!mods.twoColor
+  const twoColor = isBis && paintsUnmodifiedCalls(mods)
 
-  const setBisulfite = (
-    nextContext: CytosineContext,
-    nextTwoColor: boolean,
-  ) => {
+  const setBisulfite = (patch: Partial<ModificationColorBy>) => {
     model.setBaseLayer({
       type: 'bisulfite',
-      modifications: {
-        ...mods,
-        cytosineContext: nextContext,
-        twoColor: nextTwoColor,
-      },
+      modifications: { ...mods, ...patch },
     })
   }
 
@@ -52,7 +46,7 @@ export function bisulfiteItem(model: BisulfiteModel): MenuItem {
         cytosineContextOptions,
         isBis ? context : undefined,
         next => {
-          setBisulfite(next, twoColor)
+          setBisulfite({ cytosineContext: next })
         },
       ),
       ...(isBis
@@ -62,7 +56,7 @@ export function bisulfiteItem(model: BisulfiteModel): MenuItem {
               'Show unmethylated (blue)',
               twoColor,
               () => {
-                setBisulfite(context, !twoColor)
+                setBisulfite({ unmodified: twoColor ? 'hidden' : 'calls' })
               },
               {
                 helpText:

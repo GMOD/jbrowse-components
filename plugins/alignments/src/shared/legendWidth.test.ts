@@ -46,8 +46,8 @@ const budget = (marks: number) =>
 // unmodified swatch), so each sub-mode is swept as well.
 const MODIFICATION_MODES: (ModificationColorBy | undefined)[] = [
   undefined,
-  { twoColor: true },
-  { fillUnmarked: true },
+  { unmodified: 'calls' },
+  { unmodified: 'all' },
 ]
 const COLOR_BYS: ColorBy[] = Object.values(COLOR_SCHEMES).flatMap(({ type }) =>
   isModificationScheme(type)

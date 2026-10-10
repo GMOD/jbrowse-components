@@ -255,7 +255,7 @@ export function computeModificationCoverage(
  *
  * `callCounts` (position -> methylated + unmethylated calls, from
  * `extractBisulfite`) is the denominator, and counting it at extraction is what
- * makes the level independent of `twoColor`. Deriving it from the marks instead
+ * makes the level independent of `unmodified`. Deriving it from the marks instead
  * looks equivalent and is not: single-color mode paints only the methylated
  * state, so the marks at a position are its numerator and every bar came out at
  * height 1.

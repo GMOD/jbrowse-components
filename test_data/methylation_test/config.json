@@ -70,7 +70,7 @@
             "field": "modifications"
           },
           "modifications": {
-            "fillUnmarked": true
+            "unmodified": "all"
           }
         }
       ],

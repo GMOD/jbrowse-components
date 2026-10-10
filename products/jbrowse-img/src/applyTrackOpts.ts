@@ -270,7 +270,7 @@ interface DisplaySnapshot {
   heightMode?: HeightMode
   growMaxHeight?: number
   baseColor?: { field: string }
-  modifications?: { fillUnmarked?: boolean }
+  modifications?: { unmodified?: 'hidden' | 'calls' | 'all' }
   sort?:
     | string
     | {
@@ -659,7 +659,7 @@ const modifiers: Record<string, Modifier> = {
         field: value === 'methylation' ? 'modifications' : value,
       }
       if (value === 'methylation') {
-        r.snap.modifications = { fillUnmarked: true }
+        r.snap.modifications = { unmodified: 'all' }
       }
     },
   },

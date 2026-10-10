@@ -23,7 +23,7 @@ import { BASE_COLOR_FIELDS } from '../shared/alignmentsColor.ts'
  *   type: 'LinearAlignmentsDisplay',
  *   color: { field: 'tags.HP' },
  *   baseColor: { field: 'modifications' },
- *   modifications: { twoColor: true },
+ *   modifications: { unmodified: 'calls' },
  * }
  * ```
  */

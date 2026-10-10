@@ -1,6 +1,8 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import { types } from '@jbrowse/mobx-state-tree'
 
+import { MODIFICATION_UNMODIFIED } from '../shared/types.ts'
+
 import type { CytosineContext } from '@jbrowse/modifications-utils'
 
 // Spelled out so the slot's type is the literal union and not the alias: a
@@ -19,16 +21,16 @@ const CYTOSINE_CONTEXTS = [
  * The alignments displays' `modifications` setting: what the `modifications`
  * and `bisulfite` fields of [AlignmentsBaseColor](../alignmentsbasecolor)
  * draw. The by-type view paints each MM/ML call its type's color above
- * `threshold`; `twoColor` paints the unmodified side blue as well, and
- * `fillUnmarked` paints every cytosine in `cytosineContext` whether the
- * basecaller listed it or not, which is the methylation view.
+ * `threshold`; `unmodified: 'calls'` paints the unmodified side blue as well,
+ * and `unmodified: 'all'` paints every cytosine in `cytosineContext` whether
+ * the basecaller listed it or not, which is the methylation view.
  *
  * #example
  * ```js
  * {
  *   type: 'LinearAlignmentsDisplay',
  *   baseColor: 'modifications',
- *   modifications: { fillUnmarked: true, cytosineContext: 'CHG' },
+ *   modifications: { unmodified: 'all', cytosineContext: 'CHG' },
  * }
  * ```
  * ```js
@@ -54,20 +56,14 @@ export const alignmentsModificationsConfigSchema = ConfigurationSchema(
     /**
      * #slot
      */
-    twoColor: {
-      type: 'boolean',
-      defaultValue: false,
+    unmodified: {
+      type: 'stringEnum',
+      model: types.enumeration('ModificationUnmodified', [
+        ...MODIFICATION_UNMODIFIED,
+      ]),
+      defaultValue: 'hidden',
       description:
-        'paint the unmodified side blue as well as the modified side its color, under modifications and bisulfite alike',
-    },
-    /**
-     * #slot
-     */
-    fillUnmarked: {
-      type: 'boolean',
-      defaultValue: false,
-      description:
-        'paint every cytosine in the context as methylated or unmethylated, the ones the basecaller left implicit included; the methylation view',
+        "which unmodified sites paint blue: 'hidden' none, 'calls' the calls more likely unmodified, under modifications and bisulfite alike, and 'all' every cytosine in the context as well, the ones the basecaller left implicit included; 'all' is the methylation view",
     },
     /**
      * #slot

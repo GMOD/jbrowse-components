@@ -6,13 +6,18 @@ export type { ArcColorField } from './arcColorOptions.ts'
 // is omitted at this value so default sessions don't carry a redundant field.
 export const DEFAULT_MODIFICATION_THRESHOLD = 10
 
+export const MODIFICATION_UNMODIFIED = ['hidden', 'calls', 'all'] as const
+
+export type ModificationUnmodified = (typeof MODIFICATION_UNMODIFIED)[number]
+
 export interface ModificationColorBy {
-  // Paint the not-modified side blue instead of leaving it blank. One meaning,
-  // one default (off), in every mode that reads it — modifications and
-  // bisulfite alike. Bisulfite used to default this ON and spell the check as
-  // `twoColor !== false`, so the same field name meant opposite things with
-  // opposite defaults in the two modes.
-  twoColor?: boolean
+  // Which unmodified sites paint blue. `calls` paints the calls more likely
+  // unmodified, under modifications and bisulfite alike. `all` also paints
+  // every cytosine in the context, implicit ones included, merging 5mC/5hmC to
+  // the most likely state and ignoring the threshold: the former standalone
+  // 'methylation' scheme as a level of this one. Under bisulfite, which already
+  // walks every cytosine, `all` paints as `calls` does.
+  unmodified?: ModificationUnmodified
   // Allow-list of modification type codes to draw: ONLY these render, so a "6mA
   // only" view (shownModifications: ['a']) stays 6mA-only even if the basecaller
   // also emits 5mC/5hmC on the same reads. Empty or absent means every
@@ -20,17 +25,14 @@ export interface ModificationColorBy {
   // shows up; the menu turns the layer off in place of an empty list.
   shownModifications?: readonly string[]
   threshold?: number
-  // cytosine context for the fill-unmarked view; absent means CpG. CHG/CHH
+  // cytosine context for `unmodified: 'all'`; absent means CpG. CHG/CHH
   // support plant methylation. Only consumed when filling (getMethBins) or in
   // bisulfite mode.
   cytosineContext?: CytosineContext
-  // Paint every cytosine in the chosen context — including implicitly
-  // unmodified ones — as methylated/unmethylated, merging 5mC/5hmC to the
-  // most-likely state and ignoring the probability threshold. This is the former
-  // standalone 'methylation' scheme expressed as a sub-mode of modifications, so
-  // a user only has to think about "color by modifications". General-ready: the
-  // fill currently covers cytosine mods (getMethBins) only.
-  fillUnmarked?: boolean
+}
+
+export function paintsUnmodifiedCalls(mods: ModificationColorBy | undefined) {
+  return mods?.unmodified === 'calls' || mods?.unmodified === 'all'
 }
 
 // Single source for "is this modification type visible?" given a colorBy.
@@ -122,13 +124,14 @@ export interface BaseLayer extends ColorBy {
   attribute?: undefined
 }
 
-// True when modification coloring should fill in unmarked canonical bases (the
-// implicit-unmethylated cytosine walk) — the modifications+fillUnmarked sub-mode
-// that subsumes the former standalone 'methylation' scheme. Reads only reach
-// this through `colorByOf`, so the retired `methylation` name is never seen here.
+// True when modification coloring fills in unmarked canonical bases (the
+// implicit-unmethylated cytosine walk): `unmodified: 'all'` under
+// modifications. Reads only reach this through `colorByOf`, so the retired
+// `methylation` name is never seen here.
 export function isFillUnmarkedMode(colorBy: ColorBy | undefined) {
   return (
-    colorBy?.type === 'modifications' && !!colorBy.modifications?.fillUnmarked
+    colorBy?.type === 'modifications' &&
+    colorBy.modifications?.unmodified === 'all'
   )
 }
 
@@ -141,15 +144,12 @@ export function usesMethylationLegend(colorBy: ColorBy | undefined) {
 }
 
 // True when the mode actually paints the explicit "not modified" (blue) state,
-// gating that legend swatch. The fill-unmarked walk always does; every other
-// mode does exactly when `twoColor` is on — including two-color over a
-// non-cytosine mod, which paints blue low-probability 6mA calls (extract.ts) and
-// used to key no swatch for them at all.
+// gating that legend swatch — including two-color over a non-cytosine mod,
+// which paints blue low-probability 6mA calls (extract.ts).
 export function paintsUnmodifiedState(colorBy: ColorBy | undefined) {
   return (
-    isFillUnmarkedMode(colorBy) ||
-    ((colorBy?.type === 'modifications' || colorBy?.type === 'bisulfite') &&
-      !!colorBy.modifications?.twoColor)
+    (colorBy?.type === 'modifications' || colorBy?.type === 'bisulfite') &&
+    paintsUnmodifiedCalls(colorBy.modifications)
   )
 }
 

@@ -91,7 +91,7 @@ export function colorSlotsOf(value: unknown): DisplayEntry {
           ...(typeof isolatedModification === 'string'
             ? { shownModifications: [isolatedModification] }
             : {}),
-          ...(type === 'methylation' ? { fillUnmarked: true } : {}),
+          ...(type === 'methylation' ? { unmodified: 'all' } : {}),
         }
       : undefined
   return {

@@ -159,7 +159,7 @@ const ARABIDOPSIS_CONTEXT_LANES = [
 // the only property that differs, so both come out of one builder rather than
 // out of two hand-kept copies. videos/methylation.ts films the route between
 // them and starts from the same `grouped: false` this pair's upper half shows.
-const snrpnReadsPanel = ({ grouped = false, fillUnmarked = true } = {}) =>
+const snrpnReadsPanel = ({ grouped = false, unmarked = true } = {}) =>
   lgvSession(DEMO_CONFIG, {
     assembly: 'hg38',
     loc: 'chr15:24,948,000-24,962,000',
@@ -177,7 +177,7 @@ const snrpnReadsPanel = ({ grouped = false, fillUnmarked = true } = {}) =>
         forceLoad: true,
         ...(grouped ? { facet: 'tags.HP' } : {}),
         baseColor: { field: 'modifications' },
-        modifications: { fillUnmarked },
+        modifications: { unmodified: unmarked ? 'all' : 'hidden' },
       },
     ],
   })
@@ -554,7 +554,7 @@ export const methylationSpecs: ScreenshotSpec[] = [
 
   // The two modification color modes, which the page describes and no figure
   // held: the default paints the positions the MM tag calls modified, and
-  // `fillUnmarked` also paints every CpG the tag left implicit. The claim is
+  // `unmodified: 'all'` also paints every CpG the tag left implicit. The claim is
   // that an unmethylated region reads as solid blue, and only the pair shows
   // it -- the upper half's blank stretch is the same molecules as the lower
   // half's blue one.
@@ -564,7 +564,7 @@ export const methylationSpecs: ScreenshotSpec[] = [
   {
     mode: 'url',
     name: 'methylation/hg002_snrpn_marked_only',
-    url: snrpnReadsPanel({ fillUnmarked: false }),
+    url: snrpnReadsPanel({ unmarked: false }),
     readySelector: displayPainted('pileup-display'),
     readyTimeout: 90000,
     // 730 cut 10 css px off the bottom
@@ -645,7 +645,7 @@ export const methylationSpecs: ScreenshotSpec[] = [
               forceLoad: true,
               facet: 'tags.HP',
               baseColor: { field: 'modifications' },
-              modifications: { fillUnmarked: true },
+              modifications: { unmodified: 'all' },
             },
           ],
         },

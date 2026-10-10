@@ -56,7 +56,7 @@ import type { Instance } from '@jbrowse/mobx-state-tree'
  *   adapter: { type: 'CramAdapter', uri: 'https://example.com/sample.cram' },
  *   displayDefaults: {
  *     baseColor: { field: 'modifications' },
- *     modifications: { fillUnmarked: true },
+ *     modifications: { unmodified: 'all' },
  *   },
  * }
  * ```
@@ -171,7 +171,7 @@ export default function configSchemaFactory(_pluginManager: PluginManager) {
       /**
        * #slot modifications
        * What the `modifications` and `bisulfite` color fields draw:
-       * `threshold` (percent, default 10), `twoColor`, `fillUnmarked`,
+       * `threshold` (percent, default 10), `unmodified`,
        * `cytosineContext` and `shownModifications`.
        */
       modifications: alignmentsModificationsConfigSchema,

@@ -40,7 +40,7 @@ export default function MethylationByHaplotype() {
               height: 360,
               facet: 'tags.HP',
               baseColor: { field: 'modifications' },
-              modifications: { fillUnmarked: true },
+              modifications: { unmodified: 'all' },
             },
           },
         ],

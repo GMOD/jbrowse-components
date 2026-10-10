@@ -185,7 +185,7 @@ const marksColorBy: ColorBy = {
 }
 const fillColorBy: ColorBy = {
   type: 'modifications',
-  modifications: { fillUnmarked: true },
+  modifications: { unmodified: 'all' },
 }
 const colorBy = MODE === 'fill' ? fillColorBy : marksColorBy
 const ON_REF = { assemblyName: 'bench', refName: REFNAME }
@@ -203,7 +203,7 @@ function driveOld(arm: Arm, reads: Reads, region: Region, c: ColorBy) {
   const out: ModificationEntry[] = []
   const detected = new Set<string>()
   const seen = new Map()
-  const fill = c.modifications?.fillUnmarked
+  const fill = c.modifications?.unmodified === 'all'
   for (let i = 0; i < features.length; i++) {
     const f = features[i]!
     const s = strands[i]!
@@ -220,7 +220,7 @@ function driveBounded(arm: Arm, reads: Reads, region: Region, c: ColorBy) {
   const out: ModificationEntry[] = []
   const detected = new Set<string>()
   const seen = new Map()
-  const fill = c.modifications?.fillUnmarked
+  const fill = c.modifications?.unmodified === 'all'
   for (let i = 0; i < features.length; i++) {
     const f = features[i]!
     const s = strands[i]!
@@ -237,7 +237,7 @@ function driveControl(arm: Arm, reads: Reads, region: Region, c: ColorBy) {
   const out: ModificationEntry[] = []
   const detected = new Set<string>()
   const seen = new Map()
-  const fill = c.modifications?.fillUnmarked
+  const fill = c.modifications?.unmodified === 'all'
   for (let i = 0; i < features.length; i++) {
     const f = features[i]!
     const s = strands[i]!

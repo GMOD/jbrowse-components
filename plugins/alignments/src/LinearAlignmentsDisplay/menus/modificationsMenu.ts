@@ -8,6 +8,7 @@ import {
 import {
   DEFAULT_MODIFICATION_THRESHOLD,
   isModificationTypeVisible,
+  paintsUnmodifiedCalls,
 } from '../../shared/types.ts'
 
 import type { BaseLayer, ModificationColorBy } from '../../shared/types.ts'
@@ -112,12 +113,8 @@ function setModTypeShown(
 export function modificationsMenu(model: ModificationsMenuModel): MenuItem {
   const mods = currentMods(model)
   const isActive = model.baseLayer?.type === 'modifications'
-  const byTwoColor = isActive && (!!mods.twoColor || !!mods.fillUnmarked)
-  const twoColorView: ModificationColorBy = hasCytosineMeth(model)
-    ? { fillUnmarked: true }
-    : { twoColor: true }
+  const byTwoColor = isActive && paintsUnmodifiedCalls(mods)
   const types = model.detectedModificationTypes
-  const clearView = { twoColor: false, fillUnmarked: false }
 
   // The three refinements, revealed together once this is the active scheme and
   // each present only where it bites. One `isActive` rather than one per row:
@@ -207,7 +204,7 @@ export function modificationsMenu(model: ModificationsMenuModel): MenuItem {
         'One color per modification type',
         isActive && !byTwoColor,
         () => {
-          patchMods(model, clearView)
+          patchMods(model, { unmodified: 'hidden' })
         },
         {
           helpText: `Colors each call by which modification it is (5mC, 5hmC, 6mA…). Only positions the basecaller called, at or above the probability threshold (${model.modificationThreshold}%), are drawn — everything else stays blank.`,
@@ -217,7 +214,9 @@ export function modificationsMenu(model: ModificationsMenuModel): MenuItem {
         'One color per type, plus low-probability & unmodified in blue',
         byTwoColor,
         () => {
-          patchMods(model, { ...clearView, ...twoColorView })
+          patchMods(model, {
+            unmodified: hasCytosineMeth(model) ? 'all' : 'calls',
+          })
         },
         {
           helpText:

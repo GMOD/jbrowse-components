@@ -402,7 +402,7 @@ describe('color routing', () => {
     ).toEqual({
       color: { field: 'mapq' },
       baseColor: { field: 'modifications' },
-      modifications: { fillUnmarked: true },
+      modifications: { unmodified: 'all' },
     })
     expect(
       buildDisplaySnapshot('alignments', ['baseColor:baseQuality']).snap,

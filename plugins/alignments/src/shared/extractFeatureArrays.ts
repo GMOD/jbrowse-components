@@ -16,7 +16,7 @@ import {
 } from './extractCigarFeatures.ts'
 import { extractFeatureTagValue } from './extractFeatureTagValue.ts'
 import { fieldValueReader } from './groupFeatures.ts'
-import { isFillUnmarkedMode } from './types.ts'
+import { isFillUnmarkedMode, paintsUnmodifiedCalls } from './types.ts'
 import { getStrand } from './util.ts'
 
 import type { BaseLayer, ReadColorBy } from './types.ts'
@@ -269,7 +269,7 @@ export function extractFeatureArrays<T extends FeatureData>(
         regionSequence,
         regionSequenceStart ?? region.start,
         baseLayer.modifications?.cytosineContext ?? 'CG',
-        baseLayer.modifications?.twoColor ?? false,
+        paintsUnmodifiedCalls(baseLayer.modifications),
         modifications,
         bisulfiteCallCounts,
       )
