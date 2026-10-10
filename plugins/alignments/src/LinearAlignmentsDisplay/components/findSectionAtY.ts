@@ -10,13 +10,13 @@ export function findSectionAtY<T extends { coverageTop: number }>(
   sections: T[],
   canvasY: number,
   opts: { isGrouped: boolean; scrollTop: number; contentHeight: number },
-): { section: T; coverageTopOffset: number } | undefined {
+): { section: T; index: number; coverageTopOffset: number } | undefined {
   const first = sections[0]
   if (!first) {
     return undefined
   }
   if (!opts.isGrouped) {
-    return { section: first, coverageTopOffset: 0 }
+    return { section: first, index: 0, coverageTopOffset: 0 }
   }
   const { scrollTop, contentHeight } = opts
   for (let i = 0; i < sections.length; i++) {
@@ -24,7 +24,7 @@ export function findSectionAtY<T extends { coverageTop: number }>(
     const next = sections[i + 1]
     const bottom = (next ? next.coverageTop : contentHeight) - scrollTop
     if (canvasY >= top && canvasY < bottom) {
-      return { section: sections[i]!, coverageTopOffset: top }
+      return { section: sections[i]!, index: i, coverageTopOffset: top }
     }
   }
   return undefined

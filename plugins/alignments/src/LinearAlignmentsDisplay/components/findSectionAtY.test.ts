@@ -18,6 +18,7 @@ describe('findSectionAtY', () => {
     const opts = { isGrouped: false, scrollTop: 0, contentHeight: 300 }
     expect(findSectionAtY(sections, 250, opts)).toEqual({
       section: sections[0],
+      index: 0,
       coverageTopOffset: 0,
     })
   })
@@ -27,6 +28,7 @@ describe('findSectionAtY', () => {
   it('grouped maps a Y in the second band to the second section', () => {
     expect(findSectionAtY(sections, 120, grouped)).toEqual({
       section: sections[1],
+      index: 1,
       coverageTopOffset: 100,
     })
   })
@@ -34,6 +36,7 @@ describe('findSectionAtY', () => {
   it('grouped maps a Y in the last band to the last section', () => {
     expect(findSectionAtY(sections, 250, grouped)).toEqual({
       section: sections[2],
+      index: 2,
       coverageTopOffset: 200,
     })
   })
@@ -43,6 +46,7 @@ describe('findSectionAtY', () => {
     // Second band now spans screen-Y 20..120; a Y of 30 lands in it.
     expect(findSectionAtY(sections, 30, opts)).toEqual({
       section: sections[1],
+      index: 1,
       coverageTopOffset: 20,
     })
   })

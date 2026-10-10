@@ -40,6 +40,9 @@ import type React from 'react'
 
 export type { LinearAlignmentsDisplayModel }
 
+type RenderStateOf = LinearAlignmentsDisplayModel['renderState']
+type SectionRenderOf = RenderStateOf['sections'][number]
+
 export interface FeatureHit {
   id: string
   index: number
@@ -87,10 +90,19 @@ export function useAlignmentsBase(model: LinearAlignmentsDisplayModel) {
     //
     // A splice junction outranks both by the same argument: its mark paints
     // last.
-    const arc = picked
-      ? (resolveSashimiHit(canvasX, canvasY, picked.section) ??
-        resolveArcHover(canvasX, canvasY, picked.section))
-      : undefined
+    const { renderState } = model
+    const sec = picked ? renderState.sections[picked.index] : undefined
+    const arc =
+      picked && sec
+        ? (resolveSashimiHit(
+            canvasX,
+            canvasY,
+            picked.section,
+            renderState,
+            sec,
+          ) ??
+          resolveArcHover(canvasX, canvasY, picked.section, renderState, sec))
+        : undefined
     // No section under the cursor, or no fetched block at that x, is a miss.
     // Answering it here is what lets performHitTest take a definite block and
     // read the section's real offsets rather than standing in for a missing one.
@@ -102,7 +114,7 @@ export function useAlignmentsBase(model: LinearAlignmentsDisplayModel) {
             // offsets in place — the frame `coverageTopOffset` puts the cursor
             // in, and the pileup top its rows are counted from.
             state: {
-              ...model.renderState,
+              ...renderState,
               pileupTopOffset: picked.section.topOffset,
               coverageTopOffset: picked.coverageTopOffset,
             },
@@ -159,22 +171,17 @@ export function useAlignmentsBase(model: LinearAlignmentsDisplayModel) {
     canvasX: number,
     canvasY: number,
     section: LinearAlignmentsDisplayModel['renderSections'][number],
+    renderState: RenderStateOf,
+    sec: SectionRenderOf,
   ): SashimiMarkHit | undefined {
     const feeds = model.sashimiFeedsByGroup.get(section.groupKey)
     if (!feeds || feeds.size === 0) {
       return undefined
     }
-    const { renderState } = model
-    const sec =
-      renderState.sections[
-        model.renderSections.findIndex(s => s.groupKey === section.groupKey)
-      ]
-    const hover = sec
-      ? resolveSashimiHover(canvasX, canvasY, feeds, {
-          ...renderState,
-          sashimi: sashimiBandsOf(renderState, sec),
-        })
-      : undefined
+    const hover = resolveSashimiHover(canvasX, canvasY, feeds, {
+      ...renderState,
+      sashimi: sashimiBandsOf(renderState, sec),
+    })
     return hover
       ? {
           type: 'sashimi',
@@ -199,21 +206,16 @@ export function useAlignmentsBase(model: LinearAlignmentsDisplayModel) {
     canvasX: number,
     canvasY: number,
     section: LinearAlignmentsDisplayModel['renderSections'][number],
+    renderState: RenderStateOf,
+    sec: SectionRenderOf,
   ) {
     // The setting first: this runs ahead of `performHitTest` on every hover
     // frame, so a display with the band off must not pay for it.
     if (model.readConnections === 'off' || !view.initialized) {
       return undefined
     }
-    const { renderState } = model
-    // By key rather than identity: read outside a reaction, `renderSections`
-    // is a fresh array on every access.
-    const sec =
-      renderState.sections[
-        model.renderSections.findIndex(s => s.groupKey === section.groupKey)
-      ]
-    const arcBand = sec?.arcBand
-    if (!sec || !arcBand) {
+    const { arcBand } = sec
+    if (!arcBand) {
       return undefined
     }
     const hover = resolveArcBandHover(
