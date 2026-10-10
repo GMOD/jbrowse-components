@@ -20,7 +20,7 @@
 # archive carries three graph sets built by three methods from the same twelve;
 # only `minigraph` is projected here (2.6 GB of the 12 GB). `pggb` (23.7 GB) and
 # `cactus` (26.1 GB) are base-level and state their coordinates in P/W lines
-# rather than rGFA tags, so build_pggb_tabix.sh is what would read them — see
+# rather than rGFA tags, so gfa-to-tabix, which reads P and W lines, is what would read them — see
 # "Going base-level" at the foot of this file, which is also the route to
 # carriage.
 #
@@ -36,7 +36,8 @@
 # carriage.
 #
 # Requires: curl, tar, md5sum, python3, gfatools, vg, gawk (as `awk`), sort,
-#           bgzip/tabix (htslib), node (npx) and gfa-to-tabix for the coarse tier
+#           bgzip/tabix (htslib), node (npx) and gfa-to-tabix 0.7.0 or later,
+#           for the index and the coarse tier
 # Usage:    bash scripts/build_bovine_pangenome.sh [outdir]
 #
 # Roughly 30 min after the download, most of it the rGFA reconstruction and the
@@ -49,8 +50,7 @@ SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 
 # Sibling helpers, fetched next to this one when absent, so a bare `curl -fO` of
 # this single file behaves the same as a repo checkout.
-HELPERS=(gfa_paths_to_rgfa.py build_rgfa_tabix.sh build_rgfa_alleles.sh
-  build_fold_tier.sh)
+HELPERS=(gfa_paths_to_rgfa.py build_fold_tier.sh)
 for h in "${HELPERS[@]}"; do
   [ -f "$SCRIPT_DIR/$h" ] || curl -fsSL -o "$SCRIPT_DIR/$h" \
     "https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/$h"
@@ -158,11 +158,11 @@ echo "  rank-0 total $got_rank0 bp == sum of bosTau9 chr1..chr29"
 
 echo "=== segments + links (RgfaTabixAdapter reads this pair by shared prefix) ==="
 [ -s "$PREFIX.segs.bed.gz" ] ||
-  bash "$SCRIPT_DIR/build_rgfa_tabix.sh" "$PREFIX.rgfa.gz" "$PREFIX"
+  gfa-to-tabix "$PREFIX.rgfa.gz" --layout contig -o "$PREFIX"
 
 echo "=== allele inventory ==="
 [ -s "$PREFIX.alleles.bed.gz" ] ||
-  bash "$SCRIPT_DIR/build_rgfa_alleles.sh" "$PREFIX"
+  gfa-to-tabix alleles "$PREFIX"
 
 echo "=== bubbles (feature track and the segments-per-bubble curve) ==="
 # gfatools counts paths through a bubble combinatorially and CLAMPS at
@@ -178,7 +178,7 @@ fi
 echo "=== coarse tier: variants under 10 kb folded into the reference ==="
 # What makes a whole chromosome drawable: the graph track folds each window it
 # draws the same way, so zooming out onto this tier keeps every loop over 10 kb
-# where the fine cut had it. Contig rows, as build_rgfa_tabix.sh writes the fine
+# where the fine cut had it. Contig rows, as gfa-to-tabix --layout contig writes the fine
 # pair, so a tier window returns what a fine one does.
 [ -s "$PREFIX.fold10000.segs.bed.gz" ] ||
   bash "$SCRIPT_DIR/build_fold_tier.sh" "$PREFIX.rgfa.gz" "$PREFIX.fold10000" 10000 --layout contig
@@ -272,7 +272,7 @@ Published variants the callset reproduces, carriers read off its GT columns:
                      (Leonard et al. 2022)
 
 GOING BASE-LEVEL. The tarball's `pggb` and `cactus` sets state per-assembly
-walks, so build_pggb_tabix.sh over one of them emits the same five files WITH the
+walks, so gfa-to-tabix over one of them emits the same five files WITH the
 SM:Z: carriage tag that rGFA cannot express, and `vg deconstruct` a base-level
 VCF where this one stops at structure. That would make the bovine set a peer of
 demos/hprc rather than a structural-resolution sibling, and it needs no new

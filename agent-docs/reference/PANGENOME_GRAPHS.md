@@ -55,7 +55,7 @@ the rule.
   `+ +` left the E. coli pggb tier 89,473 backbone segments; it is 3,919
   segments in all at 50 bp.
 - **`gfatools bubble` returns 0 bubbles on a pggb GFA** (it needs `SN`/`SO`/`SR`).
-  `scripts/snarls_to_bubble_bed.py` builds the bubble BED from the `pggb -V`
+  `gfa-to-tabix bubbles` builds the bubble BED from the `pggb -V`
   `vg deconstruct` VCF (`LV=0` records) for the bubble track.
 - **A pggb bubble id needs qualifying** (`<source>@<refStart>`): pggb folds
   repeats, so a snarl can appear twice on the reference path.
@@ -159,8 +159,8 @@ the `jexl:` ternary, since they load in older releases.
 ## The hosted HPRC link index
 
 **The hosted index is dominated by donor-contig index weight**, which every graph
-track downloads before cutting. A `GRCh38`-only pair (`build_rgfa_tabix.sh` third
-argument; `demos/hprc/hprc-v2.1-mc-grch38.ref.*`) returns identical rows for far
+track downloads before cutting. A `GRCh38`-only pair (`demos/hprc/hprc-v2.1-mc-grch38.ref.*`, filtered
+from the contig pair as `demos/hprc/README.txt` shows) returns identical rows for far
 less index, **but only at `subgraphContext: 0`.** The default is 1 hop, which
 follows an allele's interior segments indexed under the donor contig; on the
 small pair the expansion finds nothing and the cut silently degrades to context 0

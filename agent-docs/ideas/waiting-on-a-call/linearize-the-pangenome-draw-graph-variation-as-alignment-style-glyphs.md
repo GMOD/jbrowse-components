@@ -24,7 +24,7 @@ runs ~7% narrower than the linear view above it, and that is accepted.
 The closest existing per-sample linearized display is
 `plugins/maf/src/LinearMafDisplay` (including its `coverageInsertion.ts`).
 
-The data is mostly there, in the two BEDs `scripts/build_rgfa_tabix.sh` emits:
+The data is mostly there, in the two BEDs `gfa-to-tabix --layout contig` emits:
 
 - **Insertions** fall out of `links.bed.gz`. Each L-line is written twice, once
   under each endpoint, and carries *both* endpoints in full with their own
@@ -49,7 +49,7 @@ without walking the chain, and the volume is tens of records per window.
 
 `refConsumed = refEnd - refStart` against `altLen`, so `altLen > refConsumed` is
 an insertion, `<` a deletion, and either end falling outside the window is a
-clip (6 of 78 in MHC). `scripts/build_rgfa_alleles.sh` emits exactly that record
+clip (6 of 78 in MHC). `gfa-to-tabix alleles` emits exactly that record
 — offline awk over the two BEDs, 845 alleles on the five-strain E. coli graph
 and 208,308 on HPRC in 23 s from the hosted indexes alone, columns named
 `firstSeenIn`/`discoveryRank` so the name carries the caveat above.

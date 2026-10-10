@@ -83,7 +83,7 @@ const ECOLI_SEGMENTS_SESSION_TRACK = {
 // This is the same `RgfaTabixAdapter` the minigraph tracks use, on the same two
 // BEDs, and that is the point: a plain GFA carries no SN/SO/SR tags, but
 // walking its P lines assigns every segment it visits an interval, which is the
-// same information in a different encoding. scripts/build_pggb_tabix.sh does
+// same information in a different encoding. gfa-to-tabix does
 // that walk offline and emits the exact files the adapter already reads
 // (verified against the independent `odgi extract` route: at
 // chr:1,004,500-1,004,961 every interval matches). So region query, the subgraph cut, both
@@ -151,7 +151,7 @@ const PGGB_TIER_REGION = {
 const PGGB_TIER_TRACK = 'ecoli_pggb_tier50'
 // The one node in the tier that stands for the IS5 element, arrowed in
 // pangenome/pggb_bubble_tier. The id is the tier's own -- source segment
-// qualified by reference start, which is what snarls_to_bubble_bed.py emits.
+// qualified by reference start, which is what `gfa-to-tabix bubbles` emits.
 const PGGB_TIER_IS5_NODE = '79945@1299497'
 
 // The coarse level-of-detail tier of the pggb graph: one node per bubble, with
@@ -164,7 +164,7 @@ const PGGB_TIER_IS5_NODE = '79945@1299497'
 // rGFA SN/SO/SR to place a bubble on a reference), which left the graph that
 // most needs coarsening as the one that could not be coarsened. The
 // decomposition this is built from is the one the graph already ships:
-// `scripts/snarls_to_bubble_bed.py` turns the hosted `vg deconstruct` snarl VCF
+// `gfa-to-tabix bubbles` turns the hosted `vg deconstruct` snarl VCF
 // into the bubble BED `bubbles_to_tier_bed.py` reads, and `build_bubble_tier.sh`
 // does the rest. Measured: 143,964 top-level snarls over the whole 4.64 Mb
 // graph, 544 of them at `--min-content 50`, so the ENTIRE pangenome is 1,088

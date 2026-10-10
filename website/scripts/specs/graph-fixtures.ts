@@ -256,7 +256,7 @@ export const STRAINS_PER_SEGMENT_DISPLAY = {
 //    all, and the pair of rows a dense lane draws is the layout packing rank-0
 //    blocks, not rank. The branch is there for a lane opened on a contributing
 //    assembly, where those segments do appear.
-//  - A BUBBLE TIER. Every window, by construction: `snarls_to_bubble_bed.py`
+//  - A BUBBLE TIER. Every window, by construction: `gfa-to-tabix bubbles`
 //    anchors each bubble at its REFERENCE span, so a tier row alternates rank-0
 //    backbone with rank-1 bubbles tiling the same axis. Those are the charcoal
 //    blocks, and they are the point of the lane — the bubbles are what the

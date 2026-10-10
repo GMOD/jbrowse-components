@@ -115,8 +115,10 @@ A **plain GFA**, from pggb, odgi, vg or base-level Minigraph-Cactus, also needs
 the backbone sample and its bubbles. The bubbles come from a snarl VCF (vg's
 word for a bubble is snarl):
 
-- `vg deconstruct` writes one record per top-level snarl against the reference
-  path, and `pggb -V` writes the same file.
+- `vg deconstruct -a` writes one record per snarl against the reference path,
+  tagged `LV` for its level in the snarl tree, and `pggb -V` writes the same
+  file. `gfa-to-tabix bubbles` keeps the `LV=0` records, so the tag has to be
+  there.
 - The VCF's CHROM must be the assembly's refName, so rename the PanSN path
   (`sample#haplotype#contig`) as the
   [pggb tutorial](/docs/tutorials/pangenome_ecoli#opening-the-graph-in-the-graph-genome-view)
@@ -124,7 +126,7 @@ word for a bubble is snarl):
 
 ```bash
 # -p: the reference path to decompose against
-vg deconstruct -p K12#1#chr graph.gbz > graph.snarls.vcf
+vg deconstruct -a -p K12#1#chr graph.gbz > graph.snarls.vcf
 printf 'K12#1#chr\tchr\n' > rename_chrs.tsv
 bcftools annotate --rename-chrs rename_chrs.tsv graph.snarls.vcf \
   | bcftools sort -Oz -o graph.snarls.vcf.gz

@@ -566,7 +566,7 @@ def refusal(mod, argv, expect):
     """`expect` when a helper refuses this input FOR THAT REASON, else what it did.
 
     Asserting the message rather than the exit status is the point. Removing
-    pggb_gfa_to_bed's LN:i: guard left the run still exiting nonzero, three
+    a helper's LN:i: guard left the run still exiting nonzero, three
     steps later, on "visits segment s2, which has no S line" -- a segment that
     has one. A bare `exits nonzero` check passed either way, which is the same
     plausible-wrong-answer shape the rest of this file exists to catch.
@@ -624,153 +624,6 @@ check("two target paths are refused, since out-refname renames all of them",
       refusal(untangle, ["untangle_to_bed.py", two_targets, "chr"],
               "more than one target path"), "more than one target path")
 
-# pggb_gfa_to_bed.py: the index behind every by-locus graph cut on a plain GFA.
-pggb_bed = load("scripts/pggb_gfa_to_bed.py", "pggb_gfa_to_bed")
-gfa = os.path.join(pangenome_dir, "graph.gfa")
-with open(gfa, "w") as fh:
-    fh.write("H\tVN:Z:1.0\n"
-             "S\ts1\t" + "A" * 10 + "\nS\ts2\t" + "C" * 5 + "\n"
-             "S\ts3\t" + "G" * 10 + "\nS\ts4\t" + "T" * 7 + "\n"
-             # the reference visits s2 TWICE: a collapsed repeat
-             "P\tK12#1#chr\ts1+,s2+,s3+,s2+\t*,*,*\n"
-             # Sakai contributes s4, which the reference never visits
-             "P\tSakai#1#chr\ts1+,s4+,s3+\t*,*\n"
-             # a W line, the spelling vg and base-level Minigraph-Cactus use
-             "W\tCFT073\t1\tchr\t0\t20\t>s1>s3\n"
-             "L\ts1\t+\ts2\t+\t0M\nL\ts1\t+\ts4\t+\t0M\nL\ts4\t+\ts3\t+\t0M\n")
-walk_prefix = os.path.join(pangenome_dir, "walk")
-run_helper(pggb_bed, ["pggb_gfa_to_bed.py", gfa, walk_prefix, "--reference", "K12"])
-walk = {r[3]: r for r in (l.split("\t") for l in
-                          open(f"{walk_prefix}.segs.bed").read().splitlines())}
-# A node draws as one tube at one x, so recording both visits would claim
-# reference the segment does not occupy. The repeat stays visible as depth.
-check("first visit wins, so a collapsed repeat does not span both copies",
-      walk["s2"][:3], ["K12#1#chr", "10", "15"])
-# The same asymmetry rGFA has: an off-reference segment sits on its own carrier,
-# and a reference query reaches it through the links file.
-check("a segment the reference never visits sits on its carrier's coordinates",
-      walk["s4"][:3], ["Sakai#1#chr", "10", "17"])
-check("rank is 0 or 1 and nothing more, since a path GFA has no build order",
-      sorted({r[4] for r in walk.values()}), ["0", "1"])
-# PanSN names an assembly with two fields, and keying carriage on the sample
-# alone merges a diploid's two haplotypes.
-check("a carrier is a haplotype, not a sample, and W lines carry too",
-      walk["s1"][5], "SM:Z:K12.1,Sakai.1,CFT073.1")
-check("carriage names only the paths that actually walk the segment",
-      walk["s2"][5], "SM:Z:K12.1")
-# Summing lengths along a path is the path's coordinate only when segments abut.
-# On an overlapped graph every segment after the first is misplaced, in a BED
-# that indexes and draws, so the script refuses instead of guessing.
-overlapped = os.path.join(pangenome_dir, "overlapped.gfa")
-with open(overlapped, "w") as fh:
-    fh.write(open(gfa).read().replace("L\ts1\t+\ts2\t+\t0M", "L\ts1\t+\ts2\t+\t5M"))
-check("a non-blunt graph is refused rather than silently misplaced",
-      refusal(pggb_bed, ["pggb_gfa_to_bed.py", overlapped,
-                         os.path.join(pangenome_dir, "bad")],
-              "non-blunt overlap"), "non-blunt overlap")
-check("a --reference matching no path is named, not ignored",
-      refusal(pggb_bed, ["pggb_gfa_to_bed.py", gfa,
-                         os.path.join(pangenome_dir, "bad2"),
-                         "--reference", "NOPE"],
-              "matches no path"), "matches no path")
-# The reference is an ASSEMBLY, not one path. A genome with more than one contig
-# states it as one path per contig, and taking only the matched path left every
-# LATER reference contig to whichever donor reached its segments first: they
-# were placed on that donor's contig at rank 1, so a reference query for chr2
-# came back empty. Nothing reports it -- the index builds, tabix accepts it, and
-# chr1 is correct -- so the whole symptom is one chromosome quietly missing.
-# The donor path is written FIRST here, which is what makes it win.
-multi = os.path.join(pangenome_dir, "multi.gfa")
-with open(multi, "w") as fh:
-    fh.write("S\ts1\t" + "A" * 5 + "\nS\ts2\t" + "C" * 5 + "\n"
-             "S\ts3\t" + "G" * 5 + "\nS\ts4\t" + "T" * 5 + "\n"
-             "P\tHG1#1#chr2\ts3+,s4+\t*,*\n"
-             "P\tGRCh38#0#chr1\ts1+,s2+\t*,*\n"
-             "P\tGRCh38#0#chr2\ts3+,s4+\t*,*\n"
-             "L\ts1\t+\ts2\t+\t0M\nL\ts3\t+\ts4\t+\t0M\n")
-
-
-def placed(prefix):
-    return {r[3]: (r[0], r[4]) for r in
-            (l.split("\t") for l in
-             open(f"{prefix}.segs.bed").read().splitlines())}
-
-
-multi_prefix = os.path.join(pangenome_dir, "multi")
-run_helper(pggb_bed, ["pggb_gfa_to_bed.py", multi, multi_prefix,
-                      "--reference", "GRCh38"])
-check("every contig of the reference is placed on itself, at rank 0",
-      placed(multi_prefix),
-      {"s1": ("GRCh38#0#chr1", "0"), "s2": ("GRCh38#0#chr1", "0"),
-       "s3": ("GRCh38#0#chr2", "0"), "s4": ("GRCh38#0#chr2", "0")})
-# ...and naming any one of its paths names the assembly, so the spelling a
-# reader copies off a P line does the same thing as the sample.
-one_path = os.path.join(pangenome_dir, "multi_one")
-run_helper(pggb_bed, ["pggb_gfa_to_bed.py", multi, one_path,
-                      "--reference", "GRCh38#0#chr1"])
-check("naming one path of the reference selects the whole assembly",
-      placed(one_path), placed(multi_prefix))
-# ...but an assembly is where it stops. A diploid reference matched by SAMPLE
-# would put both haplotypes at rank 0, and rank 0 is the backbone the graph view
-# draws its x axis on, so that is one row holding two interleaved chains. The
-# bare sample resolves to one assembly and says which on stderr; naming the
-# haplotype outright picks it and says nothing, having been told.
-diploid = os.path.join(pangenome_dir, "diploid.gfa")
-with open(diploid, "w") as fh:
-    fh.write("S\ts1\t" + "A" * 5 + "\nS\ts2\t" + "C" * 5 + "\n"
-             "S\ts3\t" + "G" * 5 + "\n"
-             "P\tHG2#1#chr1\ts1+,s2+\t*,*\n"
-             "P\tHG2#2#chr1\ts1+,s3+\t*,*\n"
-             "L\ts1\t+\ts2\t+\t0M\nL\ts1\t+\ts3\t+\t0M\n")
-dip_prefix = os.path.join(pangenome_dir, "diploid")
-run_helper(pggb_bed, ["pggb_gfa_to_bed.py", diploid, dip_prefix,
-                      "--reference", "HG2"])
-check("a diploid reference anchors on ONE haplotype, not both",
-      placed(dip_prefix),
-      {"s1": ("HG2#1#chr1", "0"), "s2": ("HG2#1#chr1", "0"),
-       "s3": ("HG2#2#chr1", "1")})
-check("and says which one it took, since the sample did not settle it",
-      "HG2.2 of the same sample stay rank 1" in
-      run_helper(pggb_bed, ["pggb_gfa_to_bed.py", diploid,
-                            os.path.join(pangenome_dir, "diploid_note"),
-                            "--reference", "HG2"], want_err=True), True)
-dip_hap = os.path.join(pangenome_dir, "diploid_hap")
-run_helper(pggb_bed, ["pggb_gfa_to_bed.py", diploid, dip_hap,
-                      "--reference", "HG2#2"])
-check("naming the haplotype anchors on that one instead",
-      placed(dip_hap),
-      {"s1": ("HG2#2#chr1", "0"), "s3": ("HG2#2#chr1", "0"),
-       "s2": ("HG2#1#chr1", "1")})
-
-# The default is still the FIRST path -- but its sample, for the same reason.
-default_prefix = os.path.join(pangenome_dir, "multi_default")
-run_helper(pggb_bed, ["pggb_gfa_to_bed.py", multi, default_prefix])
-check("with no --reference the first path's sample is the reference, whole",
-      placed(default_prefix),
-      {"s1": ("GRCh38#0#chr1", "1"), "s2": ("GRCh38#0#chr1", "1"),
-       "s3": ("HG1#1#chr2", "0"), "s4": ("HG1#1#chr2", "0")})
-# An elided sequence states its length in LN:i:. Defaulting to 0 without one
-# shifts every later segment on that path left, so it is refused the same way a
-# non-blunt overlap is; with the tag, the segment places normally.
-elided = os.path.join(pangenome_dir, "elided.gfa")
-with open(elided, "w") as fh:
-    fh.write(open(gfa).read().replace("S\ts2\t" + "C" * 5, "S\ts2\t*"))
-check("a segment with no sequence and no LN:i: is refused, and says so",
-      refusal(pggb_bed, ["pggb_gfa_to_bed.py", elided,
-                         os.path.join(pangenome_dir, "bad3")],
-              "no LN:i: tag"), "no LN:i: tag")
-tagged = os.path.join(pangenome_dir, "tagged.gfa")
-with open(tagged, "w") as fh:
-    fh.write(open(gfa).read().replace("S\ts2\t" + "C" * 5, "S\ts2\t*\tLN:i:5"))
-tagged_prefix = os.path.join(pangenome_dir, "tagged")
-run_helper(pggb_bed, ["pggb_gfa_to_bed.py", tagged, tagged_prefix,
-                      "--reference", "K12"])
-check("an elided sequence with LN:i: places exactly as the spelled-out one does",
-      [l.split("\t")[:3] for l in
-       open(f"{tagged_prefix}.segs.bed").read().splitlines()],
-      [l.split("\t")[:3] for l in
-       open(f"{walk_prefix}.segs.bed").read().splitlines()])
-
 # gfa_nodes_to_bed.py walks a cut subgraph rather than a whole graph, but it
 # places segments by summing lengths the same way, so `len("*")` == 1 misplaces
 # the node and everything after it. Same guard, same wording, as its sibling.
@@ -801,135 +654,10 @@ check("a gzipped subgraph reads the same as the plain one",
       run_helper(gfa_nodes,
                  ["gfa_nodes_to_bed.py", nodes_gfa, "K12#1#chr", "chr"]))
 
-# build_rgfa_tabix.sh, run for real. bgzip and tabix both succeed on ZERO rows,
-# so every way this script can project nothing ends the same: four well-formed
-# files, exit 0, and a track that draws nothing. Two of them are reachable by
-# hand -- pointing it at a plain GFA (HPRC ships both flavours side by side
-# under names one character apart, which is what the script's header warns
-# about), and a `ref-prefix` that is not a PanSN sample. Neither is visible to
-# `bash -n` or shellcheck, and the third check here is the exit-1 bug itself,
-# which only a run can see. `gfatools` is stubbed to the one thing this uses:
-# `gfa2bed -m` projects SN/SO/SR, and writes nothing for a segment carrying none.
 gfatools_ran = shutil.which("gfatools") is not None
-rgfa_missing = [t for t in ("bgzip", "tabix") if shutil.which(t) is None]
-if rgfa_missing:
-    # Loud and counted: a check that quietly skips has stopped being one.
-    print(f"note: {', '.join(rgfa_missing)} not installed, "
-          f"SKIPPING the build_rgfa_tabix.sh guards")
-    rgfa_ran = False
-else:
-    rgfa_ran = True
-    rgfa_dir = tempfile.mkdtemp()
-    # The real binary when it is there, the stub when it is not. The stub models
-    # exactly one command: `gfa2bed -m` projects SN/SO/SR and writes nothing for
-    # a segment carrying none, which is what the plain-GFA guard rests on.
-    # Verified against gfatools 0.5-r296 rather than assumed -- handed a plain
-    # GFA it writes no rows, exits 0, and says nothing on stderr, and on the
-    # rGFA fixture below its output is byte-identical to the stub's. CI has no
-    # gfatools, so the stub keeps these guards covered there; a machine that has
-    # it runs the real thing, and drift between them surfaces here.
-    stub_dir = os.path.join(rgfa_dir, "bin")
-    os.mkdir(stub_dir)
-    stub = os.path.join(stub_dir, "gfatools")
-    with open(stub, "w") as fh:
-        fh.write(
-            "#!/usr/bin/env bash\n"
-            "awk -F'\\t' '$1 == \"S\" {\n"
-            '  sn = ""; so = ""; sr = ""\n'
-            "  for (i = 4; i <= NF; i++) {\n"
-            '    if ($i ~ /^SN:Z:/) sn = substr($i, 6)\n'
-            '    if ($i ~ /^SO:i:/) so = substr($i, 6)\n'
-            '    if ($i ~ /^SR:i:/) sr = substr($i, 6)\n'
-            "  }\n"
-            '  if (sn != "" && so != "" && sr != "")\n'
-            '    print sn "\\t" so "\\t" so + length($3) "\\t" $2 "\\t" sr\n'
-            "}' \"$3\"\n"
-        )
-    os.chmod(stub, 0o755)
-    with open(os.path.join(rgfa_dir, "in.rgfa"), "w") as fh:
-        fh.write("S\ts1\tAAAAA\tSN:Z:K12#1#chr\tSO:i:0\tSR:i:0\n"
-                 "S\ts2\tCCCCC\tSN:Z:K12#1#chr\tSO:i:5\tSR:i:0\n"
-                 "S\ts3\tGGGGG\tSN:Z:Sakai#1#chr\tSO:i:100\tSR:i:1\n"
-                 "L\ts1\t+\ts3\t+\t0M\nL\ts3\t+\ts2\t+\t0M\n")
-    with open(os.path.join(rgfa_dir, "in.gfa"), "w") as fh:
-        fh.write(re.sub(r"\tSN:Z:\S+\tSO:i:\S+\tSR:i:\S+", "",
-                        open(os.path.join(rgfa_dir, "in.rgfa")).read()))
-
-    rgfa_env = {**os.environ}
-    if not gfatools_ran:
-        rgfa_env["PATH"] = stub_dir + os.pathsep + os.environ["PATH"]
-
-    def rgfa_run(*argv):
-        return subprocess.run(
-            ["bash", os.path.abspath("scripts/build_rgfa_tabix.sh"), *argv],
-            cwd=rgfa_dir, capture_output=True, text=True, env=rgfa_env)
-
-    def rgfa_rows(name):
-        return subprocess.run(["gzip", "-dc", os.path.join(rgfa_dir, name)],
-                              capture_output=True, text=True).stdout.splitlines()
-
-    # The headline bug: the script ended on `[ -n "$REF_PREFIX" ] && ls -l`, and
-    # a failing test in an AND-list is exempt from errexit but is still the last
-    # command, so every run WITHOUT the optional third argument exited 1 with all
-    # four indexes written correctly -- which is how the tutorial documents it
-    # and how build_ecoli_pangenome_graph.sh calls it under `set -e`.
-    check("an rGFA with no ref-prefix succeeds, which is how the tutorial calls it",
-          rgfa_run("in.rgfa", "out").returncode, 0)
-    check("both indexes are written and carry every segment",
-          (len(rgfa_rows("out.segs.bed.gz")), len(rgfa_rows("out.links.bed.gz"))),
-          (3, 4))
-    # A plain GFA has no SN/SO/SR, so gfa2bed projects nothing and exits 0. Name
-    # the flavour and the sibling script rather than shipping an empty index.
-    plain = rgfa_run("in.gfa", "outplain")
-    check("a plain GFA is refused by flavour, not indexed as zero segments",
-          (plain.returncode, "plain GFA rather than an rGFA" in plain.stderr,
-           "build_pggb_tabix.sh" in plain.stderr),
-          (1, True, True))
-    # A prefix that matches nothing is a typo, not an empty result: `chr` and any
-    # non-sample spelling keep zero rows, and both bgzip and tabix accept that.
-    typo = rgfa_run("in.rgfa", "outtypo", "chr")
-    check("a ref-prefix matching no sequence is refused, and names the samples",
-          (typo.returncode, "matches no stable sequence" in typo.stderr,
-           re.findall(r"^  (\S+)$", typo.stderr, re.M)),
-          (1, True, ["K12", "Sakai"]))
-    check("the refused run leaves no empty ref pair behind",
-          sorted(os.path.basename(p) for p in
-                 glob.glob(os.path.join(rgfa_dir, "outtypo.ref.*"))), [])
-    # ...and the sample it does have keeps exactly that sample's rows.
-    check("a ref-prefix that is a sample keeps only that sample's rows",
-          (rgfa_run("in.rgfa", "outref", "K12").returncode,
-           [r.split("\t")[0] for r in rgfa_rows("outref.ref.segs.bed.gz")]),
-          (0, ["K12#1#chr", "K12#1#chr"]))
-
-    # Two scripts write this one pair and nothing else pins that they agree.
-    # build_rgfa_tabix.sh is the shape the adapter was built for; the path
-    # walker appends tags AFTER it, one column on segs and two on links, so the
-    # shared prefix is positionally identical and a reader that stops at 5 or 13
-    # reads both. A producer that inserted a column instead of appending one
-    # would keep every row well formed and every index valid, and move a
-    # coordinate under a rank.
-    def arity(rows):
-        return sorted({len(r.split("\t")) for r in rows})
-
-    def bed_rows(path):
-        return open(path).read().splitlines()
-
-    check("both producers write the same segs columns, tags appended last",
-          [arity(rgfa_rows("out.segs.bed.gz")),
-           arity(bed_rows(f"{multi_prefix}.segs.bed"))], [[5], [6]])
-    check("both producers write the same links columns, tags appended last",
-          [arity(rgfa_rows("out.links.bed.gz")),
-           arity(bed_rows(f"{multi_prefix}.links.bed"))], [[13], [15]])
-    # The shared prefix is the same fields in the same places: chrom/start/end
-    # then the endpoint pair, then both endpoints stated in full.
-    check("the shared links prefix means the same thing in each",
-          [rgfa_rows("out.links.bed.gz")[0].split("\t")[:6],
-           bed_rows(f"{multi_prefix}.links.bed")[0].split("\t")[:6]],
-          [["K12#1#chr", "0", "5", "s1+", "s3+", "K12#1#chr"],
-           ["GRCh38#0#chr1", "0", "5", "s1+", "s2+", "GRCh38#0#chr1"]])
 
 # MinigraphBubbleAdapter reads `gfatools bubble` POSITIONALLY, and
-# snarls_to_bubble_bed.py writes that layout for a pggb graph, which was written
+# `gfa-to-tabix bubbles` writes that layout for a pggb graph, which was written
 # down from a file rather than from the tool. With gfatools present, check it
 # against the tool.
 if not gfatools_ran:
@@ -1663,5 +1391,4 @@ print(f"ok: {len(scripts)} build scripts + {len(helpers)} python helpers valid, 
       f"{behavior} helper behavior checks pass, {cited} doc curl targets exist, "
       f"{runnable} reader-facing docs run no script out of scripts/, "
       f"{view_objects} authored view objects write only keys a view reads, "
-      f"build_rgfa_tabix {'guards hold' if rgfa_ran else 'SKIPPED'}"
-      f"{' (real gfatools)' if gfatools_ran else ' (gfa2bed stubbed)'}")
+      f"gfatools bubble contract {'checked' if gfatools_ran else 'SKIPPED'}")

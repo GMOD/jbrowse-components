@@ -45,7 +45,7 @@ set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 
-HELPERS=(build_rgfa_tabix.sh build_rgfa_alleles.sh build_fold_tier.sh)
+HELPERS=(build_fold_tier.sh)
 for h in "${HELPERS[@]}"; do
   [ -f "$SCRIPT_DIR/$h" ] || curl -fsSL -o "$SCRIPT_DIR/$h" \
     "https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/$h"
@@ -288,11 +288,11 @@ echo "  no duplicate segment ids"
 
 echo "=== segments + links ==="
 [ -s "$PREFIX.segs.bed.gz" ] ||
-  bash "$SCRIPT_DIR/build_rgfa_tabix.sh" "$PREFIX.rgfa.gz" "$PREFIX"
+  gfa-to-tabix "$PREFIX.rgfa.gz" --layout contig -o "$PREFIX"
 
 echo "=== allele inventory ==="
 [ -s "$PREFIX.alleles.bed.gz" ] ||
-  bash "$SCRIPT_DIR/build_rgfa_alleles.sh" "$PREFIX"
+  gfa-to-tabix alleles "$PREFIX"
 
 echo "=== bubbles ==="
 if [ ! -s "$PREFIX.bubbles.bed.gz" ]; then
@@ -338,7 +338,7 @@ equivalent:
 
   minigraph-cactus, a rebuild. Writes per-haplotype W lines, so carriage, a
   base-level graph, a VCF and a GBZ all follow from one pass, and
-  build_pggb_tabix.sh emits the five files above with SM:Z: on them. Multi-day
+  gfa-to-tabix emits the five files above with SM:Z: on them. Multi-day
   on one box. This is what makes mouse a peer of demos/hprc rather than a
   structural-resolution sibling.
 NOTES

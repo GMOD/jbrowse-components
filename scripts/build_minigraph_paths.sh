@@ -71,7 +71,7 @@
 #     strain traverses the reference, which is how a large inversion reads. It
 #     leaves the bubble-decomposition columns empty rather than inventing them.
 #   - An rGFA with neither paths nor the assemblies to re-map still yields an
-#     allele inventory from the links index (`build_rgfa_tabix.sh`), but the
+#     allele inventory from the links index (`gfa-to-tabix --layout contig`), but the
 #     only haplotype label there is the one that first contributed each allele,
 #     which is build order rather than carriage. One lane, not rows.
 #

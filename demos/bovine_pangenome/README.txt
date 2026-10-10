@@ -204,14 +204,12 @@ How they were built
   python3 make_rgfa.py bosTau9.chrom.sizes Zenodo/minigraph $(seq -s, 1 29) \
     | bgzip -@ 8 > bovine-arsucd12-minigraph.rgfa.gz
 
-  # segs + links, via scripts/build_rgfa_tabix.sh in GMOD/jbrowse-components
-  gfatools gfa2bed -m <(gzip -dc bovine-arsucd12-minigraph.rgfa.gz) \
-    | sort -k1,1 -k2,2n | bgzip > bovine-arsucd12-minigraph.segs.bed.gz
-  tabix -p bed bovine-arsucd12-minigraph.segs.bed.gz
-  # (links.bed.gz joins each L line against the segment table; see the script)
+  # segs + links, via gfa-to-tabix (https://github.com/GMOD/gfa-to-tabix)
+  gfa-to-tabix bovine-arsucd12-minigraph.rgfa.gz --layout contig \
+    -o bovine-arsucd12-minigraph
 
-  # alleles, via scripts/build_rgfa_alleles.sh
-  bash build_rgfa_alleles.sh bovine-arsucd12-minigraph
+  # alleles
+  gfa-to-tabix alleles bovine-arsucd12-minigraph
 
   # bubbles
   gzip -dc bovine-arsucd12-minigraph.rgfa.gz | gfatools bubble - \

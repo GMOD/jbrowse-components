@@ -10,7 +10,7 @@
 # bigWig per strain as a MultiWiggle). It also maps a fifth isolate's short reads
 # (E. coli KTa004, ENA DRR063408) through the graph with `--giraffe`/`vg giraffe`
 # and surjects them onto K12, and copies the `--viz` odgi 1D raster as a figure.
-# The graph itself goes in too, indexed by locus (build_pggb_tabix.sh) and drawn
+# The graph itself goes in too, indexed by locus (gfa-to-tabix) and drawn
 # by the graph genome view plugin, which the config declares by url.
 #
 # It downloads the same five RefSeq E. coli chromosomes as the pggb tutorial
@@ -25,7 +25,7 @@
 # Requires: docker or singularity (the cactus image, which also carries odgi,
 #           halSynteny, hal2maf, and vg), the NCBI `datasets` CLI, samtools,
 #           bedGraphToBigWig (UCSC kentUtils), python3, bgzip/tabix (htslib),
-#           unzip, wget, ImageMagick (`convert`/`identify`, for the
+#           gfa-to-tabix, unzip, wget, ImageMagick (`convert`/`identify`, for the
 #           correspondence band), and node (JBrowse CLI, via npx unless
 #           `jbrowse` is on PATH).
 # Usage:    bash scripts/build_ecoli_pangenome_cactus.sh [outdir]
@@ -37,8 +37,7 @@ SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"   # so maf_to_bed.py resolves after 
 
 # Sibling helpers this script runs, fetched next to it when absent, so a bare
 # `curl -fO` of this one file behaves the same as a repo checkout.
-# build_pggb_tabix.sh fetches its own helper the same way.
-HELPERS=(maf_to_bed.py build_pggb_tabix.sh)
+HELPERS=(maf_to_bed.py)
 for h in "${HELPERS[@]}"; do
   [ -f "$SCRIPT_DIR/$h" ] || curl -fsSL -o "$SCRIPT_DIR/$h" \
     "https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/$h"
@@ -221,8 +220,8 @@ done
 # Every projection above flattens the graph onto K12; this indexes the graph so
 # it can be drawn AS a graph, at any locus, with no per-window extraction step.
 # Only the minigraph stage of Minigraph-Cactus writes rGFA, so mc/ecoli.gfa.gz
-# carries no SN/SO/SR tags and pggb_gfa_to_bed.py's walk stands in for them: it
-# derives each segment's reference interval from the path lines, and $REF anchors
+# carries no SN/SO/SR tags and gfa-to-tabix's walk of the paths stands in for
+# them: it derives each segment's reference interval from the path lines, and $REF anchors
 # rank 0 on the K12 path. Cactus writes the reference as a P line and the
 # haplotypes as W lines, which the walk reads alike; the trailing subpath tag on
 # a non-reference path (Sakai#0#chr#0) changes nothing, since PanSN still
@@ -230,11 +229,11 @@ done
 # query, the subgraph cut, both anchored layouts and hover sync all work off
 # these. Host-side (python3 only, no container).
 # --gfa writes mc/ecoli.gfa.gz; fall back to whatever GFA the run did write, so
-# a cactus bump that renames it fails in build_pggb_tabix.sh with the name it
+# a cactus bump that renames it fails in gfa-to-tabix with the name it
 # looked for rather than here with a glob.
 GRAPH_GFA=mc/ecoli.gfa.gz
 [ -f "$GRAPH_GFA" ] || GRAPH_GFA=$(ls mc/*.gfa.gz | awk 'NR <= 1')
-bash "$SCRIPT_DIR/build_pggb_tabix.sh" "$GRAPH_GFA" ecoli_cactus "$REF"
+gfa-to-tabix "$GRAPH_GFA" --layout contig --reference "$REF" -o ecoli_cactus
 
 # ── Graph overview: odgi viz (the "vs odgi viz" comparison figure) ────────────
 # --viz already wrote mc/ecoli.viz/chr.full.viz.png, but its default layout is

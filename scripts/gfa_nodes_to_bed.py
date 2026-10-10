@@ -55,7 +55,7 @@ def read_gfa(path):
                 # `*` is an elided sequence, whose length is in LN:i:. `len("*")`
                 # is 1, which places the node and every node after it on the
                 # path at the wrong coordinate, in a BED that indexes and draws.
-                # Same guard, same wording, as pggb_gfa_to_bed.py.
+                # Same guard, same wording, as gfa-to-tabix.
                 if f[2] == "*":
                     length = next(
                         (int(c[5:]) for c in f[3:] if c.startswith("LN:i:")), None

@@ -81,8 +81,8 @@ position, so an index alone cannot make them range-requestable.
 bands (order the reference between them), and beyond that a pangenome is a
 multiple alignment.
 
-**The per-chromosome pggb graphs do not fit in memory.** `pggb_gfa_to_bed.py`
-holds every segment, link and path step at once, so chrY, the smallest, exhausted
+**The per-chromosome pggb graphs do not fit in memory.** The old `pggb_gfa_to_bed.py`
+held every segment, link and path step at once, so chrY, the smallest, exhausted
 a 30 GB machine. For human, use `odgi extract` on a window or the minigraph rGFA.
 
 **taffy dies on a byte-cut slice.** A truncated last MAF block trips

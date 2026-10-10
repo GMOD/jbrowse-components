@@ -148,9 +148,8 @@ How the graph was built
 
   Projections, each tabix-indexed:
 
-    scripts/build_rgfa_tabix.sh         .segs.bed.gz, .links.bed.gz, and the
-                                        .ref.* pair keyed under TAIR10 only
-    scripts/build_rgfa_alleles.sh       .alleles.bed.gz, one row per allele the
+    gfa-to-tabix --layout contig        .segs.bed.gz, .links.bed.gz
+    gfa-to-tabix alleles                .alleles.bed.gz, one row per allele the
                                         graph holds, with a CIGAR for its size
     gfatools bubble                     .bubbles.bed.gz
     scripts/build_fold_tier.sh          .fold10000.segs.bed.gz, the graph with

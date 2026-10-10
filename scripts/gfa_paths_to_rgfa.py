@@ -5,8 +5,8 @@ rGFA states each segment's stable sequence, offset and rank in tags. A plain
 GFA states the same thing in path order: walking a P line with a cumulative
 offset assigns every segment it visits an interval on that path's own sequence,
 and the first path to reach a segment is the one that names it. So the tags are
-recoverable rather than absent, and everything downstream -- build_rgfa_tabix.sh,
-build_rgfa_alleles.sh, gfatools bubble -- works unchanged.
+recoverable rather than absent, and everything downstream -- gfa-to-tabix,
+gfatools bubble -- works unchanged.
 
 Written for the bovine super-pangenome (Leonard et al. 2023, Zenodo 7737904),
 whose published minigraph graphs are GFA 1.1 with 12 P lines and no rGFA tag

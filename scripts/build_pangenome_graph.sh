@@ -5,9 +5,9 @@
 # tier a whole chromosome draws from, the allele inventory, and a config that
 # puts them on one graph track with the tier beside it.
 #
-# Requires: gfa-to-tabix (https://github.com/GMOD/gfa-to-tabix), bgzip, tabix,
+# Requires: gfa-to-tabix 0.8.0 or later (https://github.com/GMOD/gfa-to-tabix), bgzip, tabix,
 #           sort, python3, node (npx); gfatools for an rGFA's bubbles; a
-#           `vg deconstruct` snarl VCF for a plain GFA's bubbles
+#           `vg deconstruct -a` snarl VCF for a plain GFA's bubbles
 # Usage:    bash scripts/build_pangenome_graph.sh <graph.gfa[.gz]> <out-prefix> \
 #             [--reference SAMPLE] [--assembly NAME] [--snarls snarls.vcf.gz] [--tier N]
 #
@@ -41,7 +41,7 @@ set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 
-HELPERS=(build_fold_tier.sh snarls_to_bubble_bed.py)
+HELPERS=(build_fold_tier.sh)
 for h in "${HELPERS[@]}"; do
   [ -f "$SCRIPT_DIR/$h" ] || curl -fsSL -o "$SCRIPT_DIR/$h" \
     "https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/$h"
@@ -70,8 +70,8 @@ while [ $# -gt 0 ]; do
   esac
 done
 [ -s "$GRAPH" ] || { echo "no such graph: $GRAPH" >&2; exit 1; }
-command -v gfa-to-tabix >/dev/null && gfa-to-tabix alleles --help >/dev/null 2>&1 || {
-  echo "gfa-to-tabix 0.7.0 or later is not on PATH. Install it with" >&2
+command -v gfa-to-tabix >/dev/null && gfa-to-tabix bubbles --help >/dev/null 2>&1 || {
+  echo "gfa-to-tabix 0.8.0 or later is not on PATH. Install it with" >&2
   echo "  cargo install gfa-to-tabix" >&2
   echo "or download a binary from https://github.com/GMOD/gfa-to-tabix/releases" >&2
   exit 1
@@ -115,10 +115,7 @@ case "$ROUTE" in
     gfa | gfa-to-tabix - --layout contig -o "$PREFIX.contig" ${REFERENCE:+--reference "$REFERENCE"}
     if [ -n "$SNARLS" ]; then
       echo "== $PREFIX.bubbles.bed.gz, from the snarl VCF"
-      python3 "$SCRIPT_DIR/snarls_to_bubble_bed.py" "$SNARLS" "$PREFIX.bubbles.bed"
-      sort -k1,1 -k2,2n "$PREFIX.bubbles.bed" | bgzip > "$PREFIX.bubbles.bed.gz"
-      rm -f "$PREFIX.bubbles.bed"
-      tabix -f -p bed "$PREFIX.bubbles.bed.gz"
+      gfa-to-tabix bubbles --snarls "$SNARLS" -o "$PREFIX"
     else
       echo "== no --snarls given, so no bubble file or bubble tracks for this graph" >&2
     fi

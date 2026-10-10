@@ -614,7 +614,7 @@
           }
         }
       ],
-      "description": "The same segments as the track above, colored by how many haplotypes walk each one. build_pggb_tabix.sh records the carriers as an SM:Z: tag while it walks the graph's paths, so membership travels with the index. The depth track answers the same question as a smoothed count over windows; this answers it per segment, and clicking one lists the strains by name."
+      "description": "The same segments as the track above, colored by how many haplotypes walk each one. gfa-to-tabix records the carriers as an SM:Z: tag while it walks the graph's paths, so membership travels with the index. The depth track answers the same question as a smoothed count over windows; this answers it per segment, and clicking one lists the strains by name."
     },
     {
       "type": "SyntenyTrack",
@@ -741,7 +741,7 @@
           "showLabels": "none"
         }
       ],
-      "description": "The Minigraph-Cactus graph itself, indexed by locus the same way the pggb segments track is: build_pggb_tabix.sh walks the graph's P and W lines offline and writes the two tabix BEDs RgfaTabixAdapter reads. It opens as a graph cut over whatever window is on screen, so the two builders' graphs can be compared over the same locus."
+      "description": "The Minigraph-Cactus graph itself, indexed by locus the same way the pggb segments track is: gfa-to-tabix walks the graph's P and W lines offline and writes the two tabix BEDs RgfaTabixAdapter reads. It opens as a graph cut over whatever window is on screen, so the two builders' graphs can be compared over the same locus."
     },
     {
       "type": "AlignmentsTrack",

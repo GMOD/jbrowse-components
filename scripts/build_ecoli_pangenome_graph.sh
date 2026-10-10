@@ -29,8 +29,8 @@
 #
 # Requires: docker or singularity (the pggb image, which also carries odgi for
 #           the depth projection, and the cactus image for minigraph/gfatools),
-#           the NCBI `datasets` CLI, samtools, bedGraphToBigWig (UCSC kentUtils),
-#           python3, bgzip/tabix (htslib), unzip, and node (JBrowse CLI, via npx
+#           gfa-to-tabix 0.7.0 or later, the NCBI `datasets` CLI, samtools,
+#           bedGraphToBigWig (UCSC kentUtils), python3, bgzip/tabix (htslib), unzip, and node (JBrowse CLI, via npx
 #           unless `jbrowse` is on PATH).
 # Usage:    bash scripts/build_ecoli_pangenome_graph.sh [outdir]
 #           CONTAINER=singularity bash scripts/build_ecoli_pangenome_graph.sh
@@ -43,7 +43,7 @@ SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"   # so reroot_maf.py resolves after 
 # `curl -fO` of this one file behaves the same as a repo checkout.
 # build_pangenome_graph.sh fetches its helpers the same way.
 HELPERS=(reroot_maf.py maf_to_bed.py gfa_nodes_to_bed.py build_pangenome_graph.sh
-  build_rgfa_tabix.sh build_rgfa_alleles.sh build_minigraph_paths.sh
+  build_minigraph_paths.sh
   odgi_similarity_to_newick.py untangle_to_bed.py)
 # The JBrowse CLI, installed or via npx. Defined HERE rather than at the JBrowse
 # setup section far below, because `make-pif` runs during the projections and a
@@ -443,16 +443,13 @@ in_cactus gfatools view -R "${REF}#1#chr:1445000-1474500" -r 1 \
 
 # Index the whole rGFA so the graph is browsable by locus instead of one cut
 # window at a time: the graph becomes a track on REF, cut from whatever is on
-# screen. The same script the HPRC tutorial points at, run in the cactus image
-# because it needs gfatools.
-cp "$SCRIPT_DIR/build_rgfa_tabix.sh" .
-in_cactus bash /data/build_rgfa_tabix.sh /data/ecoli_minigraph.rgfa /data/ecoli_minigraph
+# screen. The same command the HPRC tutorial points at.
+gfa-to-tabix ecoli_minigraph.rgfa --layout contig -o ecoli_minigraph
 
 # What the graph holds, read out of those two indexes alone: one row per allele,
-# anchored on the reference. Plain awk on the host (no gfatools), and unlike the
-# per-strain paths below it needs no assemblies, which is what makes it the
-# fallback for someone else's rGFA.
-bash "$SCRIPT_DIR/build_rgfa_alleles.sh" ecoli_minigraph
+# anchored on the reference. Unlike the per-strain paths below it needs no
+# assemblies, which is what makes it the fallback for someone else's rGFA.
+gfa-to-tabix alleles ecoli_minigraph
 
 # Each strain's actual path through every bubble of that graph, one row per
 # (bubble x strain). The segments/links indexes above say what the graph

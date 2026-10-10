@@ -23,8 +23,7 @@
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-HELPERS=(syri_to_paf.py arabidopsis_pangenome_config.py build_rgfa_tabix.sh
-  build_rgfa_alleles.sh build_fold_tier.sh
+HELPERS=(syri_to_paf.py arabidopsis_pangenome_config.py build_fold_tier.sh
   build_minigraph_paths.sh)
 for h in "${HELPERS[@]}"; do
   [ -f "$SCRIPT_DIR/$h" ] || curl -fsSL -o "$SCRIPT_DIR/$h" \
@@ -177,8 +176,8 @@ cd graph
 gfatools stat "$GRAPH.rgfa" | tee "$GRAPH.stat.txt"
 bad=$(awk '$1=="S"' "$GRAPH.rgfa" | grep -oP 'SN:Z:\K\S+' | sort -u | grep -vcE '^[A-Za-z0-9_.-]+#1#Chr[1-5]$' || true)
 [ "$bad" -eq 0 ] || { echo "refusing: $bad SN tags do not match <genome>#1#Chr[1-5]" >&2; exit 1; }
-[ -s "$GRAPH.segs.bed.gz" ] || bash "$SCRIPT_DIR/build_rgfa_tabix.sh" "$GRAPH.rgfa.gz" "$GRAPH" $REF
-[ -s "$GRAPH.alleles.bed.gz" ] || bash "$SCRIPT_DIR/build_rgfa_alleles.sh" "$GRAPH"
+[ -s "$GRAPH.segs.bed.gz" ] || gfa-to-tabix "$GRAPH.rgfa.gz" --layout contig -o "$GRAPH"
+[ -s "$GRAPH.alleles.bed.gz" ] || gfa-to-tabix alleles "$GRAPH"
 if [ ! -s "$GRAPH.bubbles.bed.gz" ]; then
   gzip -dc "$GRAPH.rgfa.gz" | gfatools bubble - | sort -k1,1 -k2,2n | bgzip >"$GRAPH.bubbles.bed.gz"
   tabix -f -p bed "$GRAPH.bubbles.bed.gz"

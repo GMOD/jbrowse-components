@@ -140,7 +140,7 @@ Files
   hg38 assembly needs assemblyNameToPanSN: { "hg38": "GRCh38" }, and one on
   T2T-CHM13 needs { "hs1": "CHM13" } beside it. That covers segs, links, the
   ref pair, the tier and bubbles. The alleles file is the exception: its rows
-  carry the reference's own refNames (chr1), since build_rgfa_alleles.sh drops
+  carry the reference's own refNames (chr1), since gfa-to-tabix alleles drops
   the prefix, so its track takes a plain BedTabixAdapter with no mapping.
 
 How they were built
@@ -148,10 +148,17 @@ How they were built
 
   wget <source URL above>
 
-  # segs + links (+ the ref pair), via scripts/build_rgfa_tabix.sh in
-  # GMOD/jbrowse-components; needs gawk as awk, BSD awk takes hours here
-  bash build_rgfa_tabix.sh hprc-v2.1-mc-grch38.sv.gfa.gz \
-    hprc-v2.1-mc-grch38 GRCh38
+  # segs + links, via gfa-to-tabix (https://github.com/GMOD/gfa-to-tabix)
+  gfa-to-tabix hprc-v2.1-mc-grch38.sv.gfa.gz --layout contig \
+    -o hprc-v2.1-mc-grch38
+
+  # the ref pair: the same rows keyed under GRCh38's stable sequences only
+  for kind in segs links; do
+    gzip -dc hprc-v2.1-mc-grch38.$kind.bed.gz \
+      | awk -F'\t' 'index($1, "GRCh38#") == 1' \
+      | bgzip > hprc-v2.1-mc-grch38.ref.$kind.bed.gz
+    tabix -p bed hprc-v2.1-mc-grch38.ref.$kind.bed.gz
+  done
 
   # bubbles
   gzip -dc hprc-v2.1-mc-grch38.sv.gfa.gz | gfatools bubble - \
@@ -162,8 +169,8 @@ How they were built
   bash build_fold_tier.sh hprc-v2.1-mc-grch38.sv.gfa.gz \
     hprc-v2.1-mc-grch38.fold10000 10000
 
-  # alleles, via scripts/build_rgfa_alleles.sh
-  bash build_rgfa_alleles.sh hprc-v2.1-mc-grch38
+  # alleles
+  gfa-to-tabix alleles hprc-v2.1-mc-grch38
 
   gfatools: https://github.com/lh3/gfatools
   Built 2026-09-06 with gfatools 0.5-r296 from git HEAD.
