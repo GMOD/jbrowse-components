@@ -195,6 +195,31 @@ const splicedTicks = [
     : '',
 )
 
+const SV_REGIONS = [
+  { refName: 'ctgA', start: 0, end: 50000 },
+  { refName: 'ctgB', start: 0, end: 6000 },
+]
+const insertClasses = (name: string, regions: Region[], region: number) =>
+  register(
+    `insert_classes_${name}`,
+    scriptFor(
+      [
+        track(main, 'volvox_sv', 'LinearAlignmentsDisplay', {
+          color: { field: 'insertSize' },
+        }),
+      ],
+      regions,
+    ),
+    `{ r <- reads_volvox_sv[reads_volvox_sv$.region == ${region}, ]
+  paste(names(table(r$insertSize)), table(r$insertSize), collapse = " ") }`,
+  )
+const pooledInsertClasses = SV_REGIONS.map((_, i) =>
+  insertClasses(`pooled_${i + 1}`, SV_REGIONS, i + 1),
+)
+const aloneInsertClasses = SV_REGIONS.map((r, i) =>
+  insertClasses(`alone_${i + 1}`, [r], 1),
+)
+
 const collidingIds = register(
   'colliding_ids',
   scriptFor(
@@ -629,6 +654,13 @@ maybe('the emitted script, run under R', () => {
       expect(aliased).toBe(withMd)
     },
   )
+
+  it('bands insert sizes in each region apart, as the browser samples them', () => {
+    for (const [i, name] of pooledInsertClasses.entries()) {
+      expect(results.get(name)).toMatch(/normal/)
+      expect(results.get(name)).toBe(results.get(aloneInsertClasses[i]!))
+    }
+  })
 
   it('keeps two track ids that sanitise alike apart', () => {
     expect(results.get(collidingIds)).toBe('[1] TRUE TRUE')
