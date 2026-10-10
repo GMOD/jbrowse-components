@@ -120,11 +120,6 @@ is no longer shared with anything.
 | `aaHalfPx` | tests only — `arcHull.test.ts`, `buttSegmentCoverage.test.ts`, `dotplotCapsulePad.test.ts`, `glyphEdgeAlpha.test.ts`, `pointGlyphPad.test.ts` |
 | `aaPx` | nothing |
 | `aaRamp` | tests only — `pointGlyphPad.test.ts` |
-| `connectorBudgetPx` | nothing |
-| `connectorHandlePx` | nothing |
-| `connectorLiftPx` | nothing |
-| `connectorStrokePx` | nothing |
-| `connectorTangent` | nothing |
 | `discExpand` | tests only — `pointGlyphPad.test.ts` |
 | `edgeCoverage` | tests only — `arcHull.test.ts`, `buttSegmentCoverage.test.ts`, `dotplotCapsulePad.test.ts`, `sdEllipse.test.ts` |
 | `ellipseHullPoint` | tests only — `arcHull.test.ts` |
