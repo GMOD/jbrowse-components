@@ -6361,6 +6361,10 @@ export const configManifest: ConfigManifest = {
           "type": "Aggregate"
         },
         {
+          "name": "extent",
+          "type": "Extent"
+        },
+        {
           "name": "showTree",
           "type": "boolean"
         },

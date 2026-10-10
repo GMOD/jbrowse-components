@@ -33,7 +33,7 @@ under `zero`.
 
 ```js
 // type signature
-(quantile: number, aggregate: string, visibleEntries: { data: FeatureArrays; visStart: number; visEnd: number; }[], zero: boolean) => [number, number] | undefined
+(quantile: number, aggregate: string, visibleEntries: { data: FeatureArrays; visStart: number; visEnd: number; }[], zero: boolean, extent?: string) => [number, number] | undefined
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/wiggle-core/src/autoscale.ts)

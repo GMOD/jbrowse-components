@@ -12592,17 +12592,29 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           }
         },
         "aggregate": {
-          "description": "which of a zoom bin's stored summaries is drawn: max, min, mean, or whiskers, which draws all three. A BigWig's zoom levels, and the bins JBrowse makes over its raw section, store all three; where the source serves raw values they are one number and the setting changes nothing.",
-          "default": "whiskers",
+          "description": "which of a zoom bin's stored summaries is drawn: mean, min or max. A BigWig's zoom levels, and the bins JBrowse makes over its raw section, store all three; where the source serves raw values they are one number and the setting changes nothing.",
+          "default": "mean",
           "if": {
             "type": "null"
           },
           "else": {
             "enum": [
-              "max",
-              "min",
               "mean",
-              "whiskers"
+              "min",
+              "max"
+            ]
+          }
+        },
+        "extent": {
+          "description": "the span drawn around each bin's aggregate: 'min-max' draws the bin's stored min and max with it, as a lighter band.",
+          "default": "min-max",
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "enum": [
+              "min-max",
+              "none"
             ]
           }
         },
@@ -15135,6 +15147,9 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "aggregate": {
               "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/aggregate"
             },
+            "extent": {
+              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/extent"
+            },
             "displayCrossHatches": {
               "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/displayCrossHatches"
             },
@@ -16971,6 +16986,9 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "aggregate": {
               "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/aggregate"
             },
+            "extent": {
+              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/extent"
+            },
             "showTree": {
               "anyOf": [
                 {
@@ -17385,6 +17403,9 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "aggregate": {
               "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/aggregate"
             },
+            "extent": {
+              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/extent"
+            },
             "showTree": {
               "anyOf": [
                 {
@@ -17756,6 +17777,9 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             },
             "aggregate": {
               "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/aggregate"
+            },
+            "extent": {
+              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/extent"
             },
             "showTree": {
               "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/showTree"

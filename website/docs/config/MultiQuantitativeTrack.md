@@ -45,7 +45,7 @@ These slots are top-level fields of the track config, alongside `trackId` and `n
 <!-- prettier-ignore -->
 | Slot | Description |
 | --- | --- |
-| <span id="slot-displays">**displays**</span><br><code>multiQuantitativeDisplaySchemas(pluginManager)</code> | As on [every track](../basetrack#slot-displays), except that a `LinearWiggleDisplay` entry defaults to `rows: 'source'`, `aggregate: 'mean'` and `height: 200`. |
+| <span id="slot-displays">**displays**</span><br><code>multiQuantitativeDisplaySchemas(pluginManager)</code> | As on [every track](../basetrack#slot-displays), except that a `LinearWiggleDisplay` entry defaults to `rows: 'source'`, `extent: 'none'` and `height: 200`. |
 | <span class="slot-group">Inherited from [BaseTrack](../basetrack)</span> | <span class="slot-group-count">12 slots</span> |
 | <span id="slot-name">**name**</span><br>[`string`](/docs/config_guides/slot_types#string) = <code>''</code> | descriptive name of the track, falls back to the trackId when unset |
 | <span id="slot-assemblynames">**assemblyNames**</span><br>[`stringArray`](/docs/config_guides/slot_types#stringarray) = <code>['assemblyName']</code> | name of the assembly (or assemblies) track belongs to |
