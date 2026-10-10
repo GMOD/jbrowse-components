@@ -148,6 +148,8 @@ export type Scale =
       name?: string
     }
   | { kind: 'log' }
+  /** The column already holds the color each row paints. */
+  | { kind: 'identity' }
   /** Rows counted down from the top, as a track stacks them. */
   | { kind: 'reverse' }
 
@@ -229,6 +231,9 @@ function renderScale(aesthetic: Aesthetic, s: Scale) {
   }
   if (s.kind === 'reverse') {
     return `scale_${aesthetic}_reverse()`
+  }
+  if (s.kind === 'identity') {
+    return `scale_${aesthetic}_identity()`
   }
   if (s.kind === 'hashed') {
     const entry = (v: string | number) =>

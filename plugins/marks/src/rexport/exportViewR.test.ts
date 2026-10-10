@@ -333,6 +333,38 @@ const denseLabels = register(
   c(clashes, nrow(text) > 40) }`,
 )
 
+const rgbBed = path.join(dir, 'rgb.bed')
+const writeRgbBed = `writeLines(c(
+  "ctgA\\t1000\\t3000\\tred\\t0\\t+\\t1200\\t2800\\t255,0,0\\t2\\t500,800\\t0,1200",
+  "ctgA\\t4000\\t6000\\tplain\\t0\\t+\\t4200\\t5800\\t0,0,0\\t2\\t500,800\\t0,1200"),
+  ${JSON.stringify(rgbBed)})
+invisible(Rsamtools::indexTabix(Rsamtools::bgzip(${JSON.stringify(rgbBed)}, ${JSON.stringify(`${rgbBed}.gz`)}, overwrite = TRUE), format = "bed"))
+`
+function rgbBedScript(display: Record<string, unknown>) {
+  return `${writeRgbBed}${scriptFor(
+    [
+      {
+        ...track(main, 'gff3tabix_genes', 'LinearBasicDisplay', display),
+        trackId: 'rgb',
+        adapter: {
+          type: 'BedTabixAdapter',
+          bedGzLocation: { localPath: `${rgbBed}.gz` },
+        },
+      },
+    ],
+    [{ refName: 'ctgA', start: 0, end: 7000 }],
+  )}`
+}
+const fillsOf = `{ p <- genes_rgb_parts; l <- genes_rgb_lanes
+  name <- l$name[match(p$lane, l$id)]
+  paste(unique(p$fill[name == "red"]), length(unique(p$fill[name == "plain"]))) }`
+const bedOwnColor = register('bed_own_color', rgbBedScript({}), fillsOf)
+const bedSetColor = register(
+  'bed_set_color',
+  rgbBedScript({ color: 'purple' }),
+  fillsOf,
+)
+
 maybe('the emitted script, run under R', () => {
   beforeAll(() => {
     for (const [k, v] of runCases(cases)) {
@@ -429,5 +461,10 @@ maybe('the emitted script, run under R', () => {
 
   it('keeps every label in a dense window clear of its neighbours', () => {
     expect(results.get(denseLabels)).toBe('[1] 0 1')
+  })
+
+  it('paints a BED record its own color where the track sets none', () => {
+    expect(results.get(bedOwnColor)).toBe('[1] "#FF0000 2"')
+    expect(results.get(bedSetColor)).toBe('[1] "purple 1"')
   })
 })

@@ -377,19 +377,30 @@ export function featurePlot({
   descriptions = ${show.description && described ? `${n}$note` : `rep(NA_character_, nrow(${n}))`})`,
     parent: feats,
   })
+  const colorSet = literalColor('color', colorValue(display.color), notes)
+  const utrSet = literalColor('utrColor', display.utrColor, notes)
+  const fill = colorSet ?? featureDefaultColor
+  const utrFill = utrSet ?? colorSet ?? utrDefaultColor
+  // An unset slot lets the record's own color paint its part, as in the browser.
+  const own = [
+    ...(colorSet ? [] : ['CDS', 'box']),
+    ...((utrSet ?? colorSet) ? [] : ['UTR']),
+  ]
+  const palette = `c(CDS = ${rStr(fill)}, UTR = ${rStr(utrFill)}, box = ${rStr(fill)})`
   const parts = frame({
     name: `${n}_parts`,
-    columns: ['start', 'end', 'part', 'lane', 'y'],
+    columns: ['start', 'end', 'part', 'lane', 'y', 'fill'],
     coords: base.coords,
     packages: feats.packages,
     statements: `${n}_parts <- gene_parts(${n}, ${n}_lanes,
   sub_parts = ${rVector((display.subParts ?? SUB_PARTS).split(',').map(s => s.trim()))},
-  implied_utrs = ${display.impliedUTRs === false ? 'FALSE' : 'TRUE'})${
-    shifted
-      ? `
+  implied_utrs = ${display.impliedUTRs === false ? 'FALSE' : 'TRUE'})
+${n}_parts$fill <- part_fills(${n}_parts, ${n}_lanes, ${palette}${own.length === 3 ? '' : `, own = ${rVector(own)}`})${
+      shifted
+        ? `
 ${n}_parts <- clip_regions(${n}_parts, regions)`
-      : ''
-  }`,
+        : ''
+    }`,
     parent: lanes,
   })
   const lines = shifted
@@ -410,13 +421,6 @@ ${n}_parts <- clip_regions(${n}_parts, regions)`
     statements: `${n}_arrows <- ${lines.name}[${lines.name}$strand != 0, ]`,
     parent: lines,
   })
-  const fill =
-    literalColor('color', colorValue(display.color), notes) ??
-    featureDefaultColor
-  const utrFill =
-    literalColor('utrColor', display.utrColor, notes) ??
-    literalColor('color', colorValue(display.color), []) ??
-    utrDefaultColor
   const connector =
     literalColor('connectorColor', display.connectorColor, notes) ?? CONNECTOR
   const arrowBp = (Math.max(spanOf(regions), 1) / FIGURE_WIDTH_PX) * 6
@@ -436,7 +440,7 @@ ${n}_parts <- clip_regions(${n}_parts, regions)`
         xmax: 'end',
         ymin: expr(`y - ifelse(part == "UTR", ${UTR_HALF}, 0.5)`),
         ymax: expr(`y + ifelse(part == "UTR", ${UTR_HALF}, 0.5)`),
-        fill: 'part',
+        fill: 'fill',
       },
     }),
     layer({
@@ -485,14 +489,7 @@ ${n}_parts <- clip_regions(${n}_parts, regions)`
     plot: {
       layers,
       scales: {
-        fill: {
-          kind: 'manual',
-          values: [
-            ['CDS', fill],
-            ['UTR', utrFill],
-            ['box', fill],
-          ],
-        },
+        fill: { kind: 'identity' },
         y: { kind: 'reverse' },
       },
       xlim: shifted

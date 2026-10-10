@@ -1,5 +1,6 @@
 # Read the BigBed records in a region into read_bed()'s data.frame(start, end,
-# strand, name, score, thick_start, thick_end, block_starts, block_sizes), plus
+# strand, name, score, thick_start, thick_end, block_starts, block_sizes,
+# item_rgb), plus
 # one column per name in 'fields', the file's autoSql columns the display
 # reads, numeric where every value parses as a number. 'score_column' names
 # the column the adapter reads score from. A contig the file lacks reads as no
@@ -106,6 +107,12 @@ read_bigbed <- function(uri, chrom, start, end, fields = character(0), score_col
   bed <- function(i, f) if (defined >= i + 3) f(col(i)) else f(rep(NA_character_, length(rows)))
   num <- function(v) suppressWarnings(as.numeric(v))
   list_col <- function(v) sub(",$", "", v)
+  rgb_col <- function(v) {
+    t <- regmatches(v, regexec("^\\s*(\\d+),(\\d+),(\\d+)\\s*$", v))
+    vapply(t, function(m) if (length(m) == 4 && all(as.integer(m[2:4]) <= 255) &&
+      any(as.integer(m[2:4]) > 0)) grDevices::rgb(as.integer(m[2]), as.integer(m[3]),
+      as.integer(m[4]), maxColorValue = 255) else NA_character_, "")
+  }
   df <- data.frame(
     start = vapply(rows, function(r) as.integer(r[[1]]), 0L),
     end = vapply(rows, function(r) as.integer(r[[2]]), 0L),
@@ -113,6 +120,7 @@ read_bigbed <- function(uri, chrom, start, end, fields = character(0), score_col
     name = bed(1, identity), score = bed(2, num),
     thick_start = bed(4, num), thick_end = bed(5, num),
     block_starts = bed(9, list_col), block_sizes = bed(8, list_col),
+    item_rgb = bed(6, rgb_col),
     stringsAsFactors = FALSE)
   named <- function(f) {
     i <- match(f, names) - 3

@@ -1,8 +1,9 @@
 # Read the BED records in a region through the file's tabix index into a
 # data.frame(start, end, strand, name, score, thick_start, thick_end,
-# block_starts, block_sizes), one row per record: start is 0-based half-open,
-# strand 1, -1 or 0, and the block columns are BED12's comma lists, block
-# starts relative to the record's start, NA on a record without blocks. A
+# block_starts, block_sizes, item_rgb), one row per record: start is 0-based
+# half-open, strand 1, -1 or 0, and the block columns are BED12's comma lists,
+# block starts relative to the record's start, NA on a record without blocks.
+# item_rgb is the record's own color, NA where it is 0, as UCSC reads it. A
 # contig the index lacks reads as no records, as the browser draws it.
 read_bed <- function(uri, chrom, start, end, index = paste0(uri, ".tbi")) {
   tf <- TabixFile(uri, index = index)
@@ -24,5 +25,7 @@ read_bed <- function(uri, chrom, start, end, index = paste0(uri, ".tbi")) {
       vapply(blocks, function(b) paste(start(b) - 1L, collapse = ","), ""),
     block_sizes = if (is.null(blocks)) na else
       vapply(blocks, function(b) paste(width(b), collapse = ","), ""),
+    item_rgb = if (is.null(m$itemRgb)) na else
+      ifelse(m$itemRgb %in% "#000000", NA_character_, as.character(m$itemRgb)),
     stringsAsFactors = FALSE)
 }
