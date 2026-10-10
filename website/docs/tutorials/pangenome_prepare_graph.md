@@ -521,14 +521,13 @@ bash build_pangenome_graph.sh hprc-v2.1-mc-grch38.sv.gfa.gz hprc --assembly hg38
 [`build_pangenome_graph.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_pangenome_graph.sh)
 runs [`gfa-to-tabix`](https://github.com/GMOD/gfa-to-tabix) for the segments and
 links, and `gfa-to-tabix alleles` for the allele inventory. The coarse tier is
-[`bandage-fold`](https://github.com/GMOD/bandage-core/blob/main/docs/coarse-tier.md)
-piped into `gfa-to-tabix`, which runs alone too:
+[`gfa-to-tabix fold`](https://github.com/GMOD/gfa-to-tabix#fold), which runs
+alone too:
 
 <!-- from: scripts/build_pangenome_graph.sh -->
 
 ```bash
-npx -p @jbrowse/bandage-core bandage-fold hprc-v2.1-mc-grch38.sv.gfa.gz \
-  --below 10000 | gfa-to-tabix - -o hprc.fold10000
+gfa-to-tabix fold hprc-v2.1-mc-grch38.sv.gfa.gz --below 10000 -o hprc.fold10000
 ```
 
 The walk files come from the two commands under

@@ -296,8 +296,7 @@ fi
 
 echo "=== coarse tier: variants under 10 kb folded into the reference ==="
 [ -s "$PREFIX.fold10000.segs.bed.gz" ] ||
-  npx -y -p @jbrowse/bandage-core@^10.0.0 bandage-fold "$PREFIX.rgfa.gz" --below 10000 |
-  gfa-to-tabix - --layout contig -o "$PREFIX.fold10000"
+  gfa-to-tabix fold "$PREFIX.rgfa.gz" --below 10000 --layout contig -o "$PREFIX.fold10000"
 
 echo
 echo "Built in $PWD:"

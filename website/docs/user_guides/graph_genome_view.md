@@ -204,13 +204,12 @@ The graph track draws only what the zoom can show: variants smaller than ten of
 the linear view's pixels fold into the reference, the legend says how small, and
 zooming in brings them back. A track whose adapter names `coarse` gives the
 graph a second tier to cut, built by the same fold
-([`bandage-fold`](https://github.com/GMOD/bandage-core/blob/main/docs/coarse-tier.md)).
-Once the linear view is zoomed out past `aboveBpPerPx`, the graph track cuts the
-tier and the size limit no longer applies; the drawing does not change across
-the handover, since the fine cut has folded the same variants by then. The
-segments lane draws segments at every zoom, so load the tier's prefix as a track
-of its own too, a lane that draws a whole chromosome where the segments lane
-refuses.
+([`gfa-to-tabix fold`](https://github.com/GMOD/gfa-to-tabix#fold)). Once the
+linear view is zoomed out past `aboveBpPerPx`, the graph track cuts the tier and
+the size limit no longer applies; the drawing does not change across the
+handover, since the fine cut has folded the same variants by then. The segments
+lane draws segments at every zoom, so load the tier's prefix as a track of its
+own too, a lane that draws a whole chromosome where the segments lane refuses.
 
 Each line in the graph is one graph link. The track draws a link only when both
 endpoints are inside the cut, so an allele near the window's edge draws only the

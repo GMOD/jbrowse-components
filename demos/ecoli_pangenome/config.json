@@ -578,7 +578,7 @@
           "showLabels": "none"
         }
       ],
-      "description": "The same graph as the segments track with every variant under 50 bp folded into the reference, so a window far too wide for the fine index is still drawable. Built by bandage-fold, the same fold the graph track runs on what it draws, so the segments track hands over to this tier without the drawing changing."
+      "description": "The same graph as the segments track with every variant under 50 bp folded into the reference, so a window far too wide for the fine index is still drawable. Built by gfa-to-tabix fold, the same fold the graph track runs on what it draws, so the segments track hands over to this tier without the drawing changing."
     },
     {
       "type": "FeatureTrack",

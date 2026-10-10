@@ -5,7 +5,7 @@
 # tier a whole chromosome draws from, the allele inventory, and a config that
 # puts them on one graph track with the tier beside it.
 #
-# Requires: gfa-to-tabix 0.8.0 or later (https://github.com/GMOD/gfa-to-tabix), bgzip, tabix,
+# Requires: gfa-to-tabix 0.10.0 or later (https://github.com/GMOD/gfa-to-tabix), bgzip, tabix,
 #           sort, python3, node (npx); gfatools for an rGFA's bubbles; a
 #           `vg deconstruct -a` snarl VCF for a plain GFA's bubbles
 # Usage:    bash scripts/build_pangenome_graph.sh <graph.gfa[.gz]> <out-prefix> \
@@ -28,7 +28,7 @@
 #                                  and a lane on a non-reference assembly needs
 #   .bubbles.bed.gz                where the graph varies
 #   .fold<N>.segs/links.bed.gz     the graph with variants under N bp folded
-#                                  into the reference (bandage-fold)
+#                                  into the reference (gfa-to-tabix fold)
 #   .alleles.bed.gz                what the variation is, one CIGAR per allele
 #   .config.json                   the tracks, ready to merge into a config
 #
@@ -62,8 +62,8 @@ while [ $# -gt 0 ]; do
   esac
 done
 [ -s "$GRAPH" ] || { echo "no such graph: $GRAPH" >&2; exit 1; }
-command -v gfa-to-tabix >/dev/null && gfa-to-tabix bubbles --help >/dev/null 2>&1 || {
-  echo "gfa-to-tabix 0.8.0 or later is not on PATH. Install it with" >&2
+command -v gfa-to-tabix >/dev/null && gfa-to-tabix fold --help >/dev/null 2>&1 || {
+  echo "gfa-to-tabix 0.10.0 or later is not on PATH. Install it with" >&2
   echo "  cargo install gfa-to-tabix" >&2
   echo "or download a binary from https://github.com/GMOD/gfa-to-tabix/releases" >&2
   exit 1
@@ -123,8 +123,7 @@ if [ -z "$TIER" ]; then
   [ "$ROUTE" = rgfa ] && TIER=10000 || TIER=50
 fi
 echo "== $PREFIX.fold$TIER"
-gfa | npx -y -p @jbrowse/bandage-core@^10.0.0 bandage-fold - --below "$TIER" ${REFERENCE:+--reference "$REFERENCE"} |
-  gfa-to-tabix - -o "$PREFIX.fold$TIER"
+gfa | gfa-to-tabix fold - --below "$TIER" ${REFERENCE:+--reference "$REFERENCE"} -o "$PREFIX.fold$TIER"
 
 gfa-to-tabix alleles "$PREFIX.contig"
 mv "$PREFIX.contig.alleles.bed.gz" "$PREFIX.alleles.bed.gz"

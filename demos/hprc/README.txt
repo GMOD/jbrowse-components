@@ -165,9 +165,9 @@ How they were built
     | sort -k1,1 -k2,2n | bgzip > hprc-v2.1-mc-grch38.bubbles.bed.gz
   tabix -p bed hprc-v2.1-mc-grch38.bubbles.bed.gz
 
-  # the coarse tier, via bandage-fold (@jbrowse/bandage-core) and gfa-to-tabix
-  npx -p @jbrowse/bandage-core bandage-fold hprc-v2.1-mc-grch38.sv.gfa.gz \
-    --below 10000 | gfa-to-tabix - -o hprc-v2.1-mc-grch38.fold10000
+  # the coarse tier
+  gfa-to-tabix fold hprc-v2.1-mc-grch38.sv.gfa.gz --below 10000 \
+    -o hprc-v2.1-mc-grch38.fold10000
 
   # alleles
   gfa-to-tabix alleles hprc-v2.1-mc-grch38

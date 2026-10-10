@@ -11,8 +11,8 @@
 # Requires: curl, unzip, awk (gawk), python3, samtools, minimap2, minigraph,
 #           gfatools, bgzip and tabix, bedGraphToBigWig, the NCBI `datasets`
 #           CLI, and SyRI (`syri` on the PATH, or Docker, which runs the
-#           biocontainers image), node (npx) and gfa-to-tabix 0.9.0 or
-#           later
+#           biocontainers image), node (npx) and gfa-to-tabix 0.10.0
+#           or later
 # Usage:    bash build_arabidopsis_pangenome.sh [outdir]
 #
 # ROWS is one `<id> <name> <country> <admixture group>` line per accession,
@@ -181,8 +181,8 @@ if [ ! -s "$GRAPH.bubbles.bed.gz" ]; then
   gzip -dc "$GRAPH.rgfa.gz" | gfatools bubble - | sort -k1,1 -k2,2n | bgzip >"$GRAPH.bubbles.bed.gz"
   tabix -f -p bed "$GRAPH.bubbles.bed.gz"
 fi
-[ -s "$GRAPH.fold10000.segs.bed.gz" ] || npx -y -p @jbrowse/bandage-core@^10.0.0 bandage-fold "$GRAPH.rgfa.gz" --below 10000 |
-    gfa-to-tabix - --layout contig -o "$GRAPH.fold10000"
+[ -s "$GRAPH.fold10000.segs.bed.gz" ] ||
+  gfa-to-tabix fold "$GRAPH.rgfa.gz" --below 10000 --layout contig -o "$GRAPH.fold10000"
 PANSN_FASTAS=()
 for fa in "${FASTAS[@]}"; do PANSN_FASTAS+=("$(basename "$fa")"); done
 CALLS=()

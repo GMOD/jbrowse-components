@@ -35,8 +35,8 @@ package, bundle, repo and hosted prefix all spell `graphgenomeview**er**`, only
 ## Level of detail: the fold
 
 The graph track folds every cut at ten of the linear view's pixels, and a coarse
-tier is the same fold of the whole graph (bandage-core's `bandage-fold` piped into
-`gfa-to-tabix`), so the handover changes what is fetched and not
+tier is the same fold of the whole graph (`gfa-to-tabix fold`, a port of bandage-core's
+`foldVariants`), so the handover changes what is fetched and not
 what is drawn. The plugin's `GRAPH_TRACK.md` "Level of detail: the fold" states
 the rule.
 

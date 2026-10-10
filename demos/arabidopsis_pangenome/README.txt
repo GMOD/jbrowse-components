@@ -152,7 +152,7 @@ How the graph was built
     gfa-to-tabix alleles                .alleles.bed.gz, one row per allele the
                                         graph holds, with a CIGAR for its size
     gfatools bubble                     .bubbles.bed.gz
-    bandage-fold | gfa-to-tabix         .fold10000.segs.bed.gz, the graph with
+    gfa-to-tabix fold                   .fold10000.segs.bed.gz, the graph with
                                         variants under 10 kb folded into the
                                         reference
     gfa-to-tabix paths                  .paths.bed.gz, each accession's path

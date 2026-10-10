@@ -36,7 +36,7 @@
 # carriage.
 #
 # Requires: curl, tar, md5sum, python3, gfatools, vg, gawk (as `awk`), sort,
-#           bgzip/tabix (htslib), node (npx) and gfa-to-tabix 0.7.0 or later,
+#           bgzip/tabix (htslib), node (npx) and gfa-to-tabix 0.10.0 or later,
 #           for the index and the coarse tier
 # Usage:    bash scripts/build_bovine_pangenome.sh [outdir]
 #
@@ -181,8 +181,7 @@ echo "=== coarse tier: variants under 10 kb folded into the reference ==="
 # where the fine cut had it. Contig rows, as gfa-to-tabix --layout contig writes the fine
 # pair, so a tier window returns what a fine one does.
 [ -s "$PREFIX.fold10000.segs.bed.gz" ] ||
-  npx -y -p @jbrowse/bandage-core@^10.0.0 bandage-fold "$PREFIX.rgfa.gz" --below 10000 |
-  gfa-to-tabix - --layout contig -o "$PREFIX.fold10000"
+  gfa-to-tabix fold "$PREFIX.rgfa.gz" --below 10000 --layout contig -o "$PREFIX.fold10000"
 
 echo "=== variant route: vg deconstruct per chromosome ==="
 # The graph route above and this are the two halves the HPRC tutorial names:
