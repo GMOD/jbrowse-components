@@ -419,7 +419,7 @@ export const popgenSpecs: ScreenshotSpec[] = [
               // 2 px a row: 19 carriers of 180 lines is ~10% of any height,
               // and auto-fit rows under a pixel alias into a smear
               rowHeight: 2,
-              height: 360,
+              height: 400,
             },
           ],
         },
@@ -455,7 +455,7 @@ export const popgenSpecs: ScreenshotSpec[] = [
     readySelector: displayPainted('variant-display'),
     readyText: IN2LT_SV_TRACK.name,
     readyTimeout: 120000,
-    viewportHeight: 1194,
+    viewportHeight: 1234,
   },
 
   // The tutorial's figure: the six arms over Fst, then chr2L with the pi ratio. popgen/in2lt_inversion above carries the per-line genotype
