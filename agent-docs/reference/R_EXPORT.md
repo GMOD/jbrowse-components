@@ -16,9 +16,9 @@ All of it is in `plugins/marks/src/rexport/`, because the grammar's translator l
 - `exportLinearView.ts` reads the live view (visible regions, each track's first display, adapter, the assembly's reference, refName aliases). `index.ts` adds the menu item through `addViewMenuItems`.
 - `exportView.ts` dispatches by display type (`BUILTIN_EXPORTERS`) and assembles one script. A track no exporter reads, or one that throws, becomes a header note.
 - `markToPlot.ts` + `transformR.ts` (`LinearMarkDisplay`), `wiggleToMarks.ts` (`LinearWiggleDisplay`, as the mark display that draws the same plot), `featureToPlot.ts` (`LinearBasicDisplay`, the gene glyph), `alignmentsToR.ts` (`LinearAlignmentsDisplay`).
-- `rplot.ts` (typed plot model), `rScript.ts` (assembler), `frameFor.ts` (the `READERS` table: BigWig, GFF3, VCF, BED, BAM), `rhelpers/*.R` bundled by `pnpm gen:rhelpers`.
+- `rplot.ts` (typed plot model), `rScript.ts` (assembler), `frameFor.ts` (the `READERS` table: BigWig, GFF3, VCF, BED, BigBed, BAM), `rhelpers/*.R` bundled by `pnpm gen:rhelpers`.
 
-Not exported yet: modifications, CRAM, linked reads and chains, sort and facet on the alignments display, indels, clips and splice gaps on reads, the gene glyph's color by field, facet and compact modes, BigBed (rtracklayer cannot read BED12's block lists from a bigBed, so a gene track would lose its exons), and `LinearManhattanDisplay` (no GWAS reader). Each lands in the script header when set.
+Not exported yet: modifications, CRAM, linked reads and chains, sort and facet on the alignments display, indels, clips and splice gaps on reads, the gene glyph's color by field, facet and compact modes, and `LinearManhattanDisplay` (no GWAS reader). Each lands in the script header when set.
 
 The live path reads each display's resolved config (`fullConfSnapshot`), drops the empty strings, lists and objects an unset slot resolves to (`withoutUnset`), and hands the translators that. The translators keep their own defaults for the partial specs the unit tests build; a live export never needs them.
 
@@ -58,6 +58,8 @@ A reader takes `(uri, chrom, start, end)` and returns a **genomic**-coordinate f
 **Categorical colors and shapes hash as the browser does.** A value with no listed entry takes `valueSlot`'s palette slot (a non-negative integer takes the slot it names anchored at 1, anything else hashes), which `category_values` ports and `exportViewR.test.ts` holds to `categoricalValueColor` over 200 strings. An unlisted value beside a partial `domain` hashes the same way, without the browser's collision avoidance, which depends on the order values streamed in. A facet's unlisted values keep a panel each after the listed ones.
 
 **A mark with a zoom range draws only at the view's `bpPerPx`**, taken from the live view (lower bound inclusive, upper exclusive), so a figure shows the one mark the view showed.
+
+**A BigBed reads through `read_bigbed`, not rtracklayer**, whose BigBed reader fails on any list column and so on every BED12 bigBed. It walks the file itself (chrom B+ tree, R-tree, zlib blocks, HTTP ranges through `curl` for a URL), and `exportViewR.test.ts` holds it to the BED12 file volvox.bb was built from. A BigBed's records group into genes by the adapter's `aggregateField` in `bed_features`, overlapping ones under one gene as `BigBedAdapter` groups them.
 
 **A tabix file reads through the index its adapter names**, and a BAM always passes one; the readers default to `<file>.tbi`.
 
