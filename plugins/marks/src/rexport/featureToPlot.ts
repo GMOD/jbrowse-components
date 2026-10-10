@@ -329,12 +329,15 @@ export function featurePlot({
   frame: base,
   regions,
   aggregate,
+  geneHeuristic,
   viewBpPerPx,
 }: {
   display: FeatureDisplaySpec
   frame: RFrame
   regions: readonly Region[]
   aggregate?: string
+  /** False where the BED adapter's `disableGeneHeuristic` keeps BED12 blocks plain. */
+  geneHeuristic?: boolean
   viewBpPerPx?: number
 }): TranslatedPlot & { heightWeight: string } {
   const notes: string[] = []
@@ -350,7 +353,7 @@ export function featurePlot({
         columns: [...base.columns, 'type', 'id', 'parent'],
         coords: base.coords,
         packages: base.packages,
-        statements: `${n} <- bed_features(${n}${aggregate ? `, aggregate = ${rStr(aggregate)}` : ''})`,
+        statements: `${n} <- bed_features(${n}${aggregate ? `, aggregate = ${rStr(aggregate)}` : ''}${geneHeuristic === false ? ', gene_heuristic = FALSE' : ''})`,
         parent: base,
       })
   const keyed = shifted

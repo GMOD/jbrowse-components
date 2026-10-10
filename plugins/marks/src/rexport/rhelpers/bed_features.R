@@ -1,26 +1,47 @@
 # read_bed()'s records in read_gff()'s shape (start, end, strand, type, id,
-# parent, name), so the gene glyph draws either. A BED12 record becomes an
-# mRNA with an exon per block and a CDS per block's stretch inside the thick
-# range; any other record is one 'feature'. Columns past the shared ones ride
-# on the record's own row.
+# parent, name), so the gene glyph draws either, by generateUcscTranscript's
+# rule. A stranded BED12 record is an mRNA whose blocks split into CDS inside
+# the thick range and five_prime_UTR or three_prime_UTR outside it, or, where
+# it codes nothing, a transcript of exons: an empty thick range, or bigGenePred
+# writing cdsStartStat and cdsEndStat "none" with no exonFrames at or above 0,
+# as GENCODE does on every transcript. An unstranded one, or any under
+# 'gene_heuristic' FALSE, is a feature of plain blocks; a record without blocks
+# is one 'feature'. Columns past the shared ones ride on the record's own row.
 #
 # 'aggregate' names the column a BigBed groups records by, as the browser
 # does: records sharing a value, other than "" or "none", that overlap become
 # transcripts of one gene named by it; ones that do not overlap get a gene each.
-bed_features <- function(b, aggregate = NULL) {
+bed_features <- function(b, aggregate = NULL, gene_heuristic = TRUE) {
   if (!nrow(b)) return(cbind(b, type = character(0), id = character(0),
     parent = character(0)))
   b$id <- paste0("bed", seq_len(nrow(b)))
   b$parent <- NA_character_
-  b$type <- ifelse(is.na(b$block_starts), "feature", "mRNA")
-  kids <- lapply(which(!is.na(b$block_starts)), function(i) {
+  blocked <- !is.na(b$block_starts)
+  transcript <- blocked & gene_heuristic & b$strand != 0 &
+    !is.na(b$thick_start) & !is.na(b$thick_end)
+  frames_code <- if (is.null(b$exonFrames)) rep(FALSE, nrow(b)) else
+    vapply(strsplit(as.character(b$exonFrames), ","),
+      function(f) any(suppressWarnings(as.integer(f)) >= 0, na.rm = TRUE), TRUE)
+  stat_none <- if (is.null(b$cdsStartStat) || is.null(b$cdsEndStat))
+    rep(FALSE, nrow(b)) else b$cdsStartStat %in% "none" & b$cdsEndStat %in% "none"
+  coding <- transcript & b$thick_start != b$thick_end & !(stat_none & !frames_code)
+  b$type <- ifelse(coding, "mRNA", ifelse(transcript, "transcript", "feature"))
+  kids <- lapply(which(blocked), function(i) {
     s <- b$start[i] + as.integer(strsplit(b$block_starts[i], ",")[[1]])
     e <- s + as.integer(strsplit(b$block_sizes[i], ",")[[1]])
-    exon <- data.frame(start = s, end = e, type = "exon")
-    lo <- pmax(s, b$thick_start[i]); hi <- pmin(e, b$thick_end[i])
-    keep <- !is.na(lo) & hi > lo
-    out <- rbind(exon, data.frame(start = lo[keep], end = hi[keep],
-      type = rep("CDS", sum(keep))))
+    out <- if (coding[i]) {
+      ts <- b$thick_start[i]; te <- b$thick_end[i]
+      up <- if (b$strand[i] > 0) "five_prime_UTR" else "three_prime_UTR"
+      down <- if (b$strand[i] > 0) "three_prime_UTR" else "five_prime_UTR"
+      lo <- s < ts; mid <- s < te & e > ts; hi <- e > te
+      rbind(
+        data.frame(start = s[lo], end = pmin(e[lo], ts), type = rep(up, sum(lo))),
+        data.frame(start = pmax(s[mid], ts), end = pmin(e[mid], te),
+          type = rep("CDS", sum(mid))),
+        data.frame(start = pmax(s[hi], te), end = e[hi], type = rep(down, sum(hi))))
+    } else {
+      data.frame(start = s, end = e, type = if (transcript[i]) "exon" else "block")
+    }
     row <- b[rep(i, nrow(out)), , drop = FALSE]
     row$start <- out$start; row$end <- out$end; row$type <- out$type
     row$parent <- b$id[i]; row$name <- NA_character_

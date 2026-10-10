@@ -104,6 +104,9 @@ function locate(
   }
 }
 
+/** The bigGenePred columns that tell a coding transcript from a non-coding one. */
+const BIGGENEPRED_CODING_FIELDS = ['cdsStartStat', 'cdsEndStat', 'exonFrames']
+
 /** `BigBedAdapter`'s `aggregateField` default, bigGenePred's gene name. */
 const BIGBED_AGGREGATE_FIELD = 'geneName2'
 
@@ -194,7 +197,7 @@ const featureExporter: RExporter = (track, regions) => {
     fields: [
       ...new Set([
         ...featureFields(display, regions, track.viewBpPerPx),
-        ...(aggregate ? [aggregate] : []),
+        ...(aggregate ? [aggregate, ...BIGGENEPRED_CODING_FIELDS] : []),
       ]),
     ],
     args: readerArgs(track.adapter),
@@ -205,6 +208,7 @@ const featureExporter: RExporter = (track, regions) => {
     frame: base,
     regions,
     aggregate,
+    geneHeuristic: track.adapter.disableGeneHeuristic !== true,
     viewBpPerPx: track.viewBpPerPx,
   })
   return {

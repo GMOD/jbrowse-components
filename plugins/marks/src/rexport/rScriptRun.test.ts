@@ -974,11 +974,66 @@ e1 <- genes_parts[genes_parts$lane == genes_lanes$id[genes_lanes$name == "EDEN.1
 cat(nrow(genes_lanes), sum(e1$part == "CDS"), sum(e1$part == "UTR"))
 `,
   )
+  const bedPartsNoImplied = geneProbe(
+    'bedpartsnoimplied',
+    {
+      display: { impliedUTRs: false },
+      type: 'BedTabixAdapter',
+      uri: BED,
+      regions: GENE_WINDOW,
+    },
+    `
+e1 <- genes_parts[genes_parts$lane == genes_lanes$id[genes_lanes$name == "EDEN.1"], ]
+cat(nrow(genes_lanes), sum(e1$part == "CDS"), sum(e1$part == "UTR"))
+`,
+  )
   it('draws a BED12 record as a transcript', () => {
     ran(bed.name)
     expect(existsSync(bed.png)).toBe(true)
-    // EDEN.1: four blocks, thick 1200-7608, so a UTR either end
+    // EDEN.1: four blocks, thick 1200-7608, so a UTR either end, which the
+    // record states itself and impliedUTRs does not take away
     expect(ran(bedParts)).toBe('4 4 2')
+    expect(ran(bedPartsNoImplied)).toBe('4 4 2')
+  })
+
+  // Blocks 100-250, 500-600 and 850-1000, thick 200-900 where it codes.
+  const ucscParts = helperProbe(
+    'ucscparts',
+    `
+b <- data.frame(start = 100L, end = 1000L, strand = c(1L, 0L, -1L, -1L, -1L),
+  name = NA_character_, score = NA, thick_start = c(200, 200, 100, 200, 200),
+  thick_end = c(900, 900, 100, 900, 900), block_starts = "0,400,750",
+  block_sizes = "150,100,150", item_rgb = NA_character_,
+  cdsStartStat = c(NA, NA, NA, "none", "none"), cdsEndStat = c(NA, NA, NA, "none", "none"),
+  exonFrames = c(NA, NA, NA, "-1,-1,-1,", "0,1,-1,"), stringsAsFactors = FALSE)
+shape <- function(f, id) {
+  k <- f[f$parent %in% id, ]; k <- k[order(k$start), ]
+  paste(f$type[f$id == id], paste(k$type, k$start, k$end, collapse = ","))
+}
+f <- bed_features(b)
+plain <- bed_features(b[1, ], gene_heuristic = FALSE)
+cat(c(vapply(paste0("bed", 1:5), function(id) shape(f, id), ""), shape(plain, "bed1")), sep = "\n")
+`,
+  )
+  it('shapes BED12 records as generateUcscTranscript does', () => {
+    const blocks = (type: string) =>
+      [
+        [100, 250],
+        [500, 600],
+        [850, 1000],
+      ]
+        .map(([s, e]) => `${type} ${s} ${e}`)
+        .join(',')
+    const coding = (up: string, down: string) =>
+      `mRNA ${up} 100 200,CDS 200 250,CDS 500 600,CDS 850 900,${down} 900 1000`
+    expect(ran(ucscParts).split('\n')).toEqual([
+      coding('five_prime_UTR', 'three_prime_UTR'),
+      `feature ${blocks('block')}`,
+      `transcript ${blocks('exon')}`,
+      `transcript ${blocks('exon')}`,
+      coding('three_prime_UTR', 'five_prime_UTR'),
+      `feature ${blocks('block')}`,
+    ])
   })
 })
 
