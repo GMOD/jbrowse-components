@@ -11,6 +11,7 @@
 # 'aggregate' names the column a BigBed groups records by, as the browser
 # does: records sharing a value, other than "" or "none", that overlap become
 # transcripts of one gene named by it; ones that do not overlap get a gene each.
+# Records in different regions of a multi-region frame never share a gene.
 bed_features <- function(b, aggregate = NULL, gene_heuristic = TRUE) {
   if (!nrow(b)) return(cbind(b, type = character(0), id = character(0),
     parent = character(0)))
@@ -51,7 +52,9 @@ bed_features <- function(b, aggregate = NULL, gene_heuristic = TRUE) {
   key <- if (is.null(aggregate) || is.null(b[[aggregate]])) rep(NA, nrow(b)) else
     as.character(b[[aggregate]])
   key[key %in% c("", "none")] <- NA
-  genes <- lapply(split(seq_len(nrow(b)), key), function(i) {
+  group <- if (is.null(b$.region)) key else
+    ifelse(is.na(key), NA, paste(b$.region, key, sep = "\r"))
+  genes <- lapply(split(seq_len(nrow(b)), group), function(i) {
     i <- i[order(b$start[i])]
     overlap <- length(i) > 1 && any(b$start[i][-1] < cummax(b$end[i])[-length(i)])
     groups <- if (overlap) list(i) else as.list(i)

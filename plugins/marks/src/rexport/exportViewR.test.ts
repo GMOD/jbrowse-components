@@ -463,6 +463,18 @@ const bigBedGenes = register(
   c(sum(g$type == "gene"), length(eden), sum(g$type == "mRNA" & g$parent %in% eden)) }`,
 )
 
+const bigBedTwoRegions = register(
+  'bigbed_two_regions',
+  scriptFor(
+    [track(main, 'bigbed_genes', 'LinearBasicDisplay', {})],
+    TWO_REGIONS,
+  ),
+  `{ g <- genes_bigbed_genes
+  per <- function(r) { e <- g$id[g$type == "gene" & g$name == "EDEN" & g$.region == r]
+    c(length(e), sum(g$type == "mRNA" & g$parent %in% e), sum(genes_bigbed_genes_parts$.region == r) > 0) }
+  c(per(1), per(2)) }`,
+)
+
 const denseLabels = register(
   'dense_labels',
   scriptFor(
@@ -612,7 +624,7 @@ maybe('the emitted script, run under R', () => {
       const [withMd, withoutMd, aliased] = splicedTicks.map(n =>
         results.get(n)!,
       )
-      expect(withMd.split(' ').length).toBeGreaterThan(10)
+      expect(withMd?.split(' ').length).toBeGreaterThan(10)
       expect(withoutMd).toBe(withMd)
       expect(aliased).toBe(withMd)
     },
@@ -658,7 +670,13 @@ maybe('the emitted script, run under R', () => {
 
   it('paints MAPQ in the browser\u2019s bins, keyed from high to low', () => {
     const { range, labels } = colorEncodingOf(
-      { value: undefined, field: 'mapq', domain: [], range: [] },
+      {
+        value: undefined,
+        field: 'mapq',
+        scale: undefined,
+        domain: [],
+        range: [],
+      },
       { mapq: MEASURE_FIELD_PRESETS.mapq },
     ) as { range: string[]; labels: string[] }
     const hex = (rgb: string) =>
@@ -719,6 +737,10 @@ maybe('the emitted script, run under R', () => {
 
   it('groups a BigBed’s transcripts into genes by its aggregate field', () => {
     expect(results.get(bigBedGenes)).toBe('[1] 2 1 3')
+  })
+
+  it('groups a BigBed gene in each of two regions apart', () => {
+    expect(results.get(bigBedTwoRegions)).toBe('[1] 1 3 1 1 3 1')
   })
 
   it('keeps every label in a dense window clear of its neighbours', () => {

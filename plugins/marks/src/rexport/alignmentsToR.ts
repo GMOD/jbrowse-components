@@ -272,7 +272,7 @@ function mapqColor(written: ColorSpec) {
   if (typeof encoding !== 'object' || encoding.scale !== 'threshold') {
     return { spec: { ...written, title }, tags: [] }
   }
-  const cuts = thresholdCuts(encoding.domain)
+  const cuts = thresholdCuts(encoding.domain ?? [])
   const colors = thresholdPalette(cuts.length + 1, encoding.range)
   const labels = encoding.labels ?? thresholdLabels(cuts)
   const bins = colors.map((color, i) => ({
