@@ -1,6 +1,6 @@
 import { rowPaletteColorAt } from '@jbrowse/core/ui/colors'
 import { pairedColorsOf } from '@jbrowse/display-kit/colorConfigSchema'
-import { SIDEBAR_HINT_LINE_PX } from '@jbrowse/tree-sidebar'
+import { SIDEBAR_HINT_LINE_PX, sidebarPanelWidth } from '@jbrowse/tree-sidebar'
 import { waitFor } from '@testing-library/react'
 
 import { createTestEnvironment, makeSource } from './testEnv.ts'
@@ -141,6 +141,15 @@ test('rows: a focus starts the rows under the focus chip s line', async () => {
   expect(firstRowTop()).toBe(SIDEBAR_HINT_LINE_PX)
   expect(yTop + plotHeight).toBe(display.height)
   expect(display.effectiveRowHeight * 2).toBe(plotHeight)
+})
+
+test('rows: the scale sits past the row labels, and at the edge without them', async () => {
+  const display = await loaded(GROUPED, rowsPerSource())
+  const left = () => display.valueScales[0]!.left
+  expect(left()).toBe(sidebarPanelWidth(display.sidebarPanel))
+  expect(left()).toBeGreaterThan(0)
+  display.setShowRowLabels(false)
+  expect(left()).toBe(0)
 })
 
 test('rows: the declared order leads and the rest keep adapter order', async () => {

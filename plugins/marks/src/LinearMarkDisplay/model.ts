@@ -76,7 +76,6 @@ import {
   setupTreeSidebarAutoruns,
   sortRowsAtColumn,
   sidebarPanelWidth,
-  treeSidebarOffset,
 } from '@jbrowse/tree-sidebar'
 import {
   DEFAULT_POINT_DIAMETER_PX,
@@ -1037,18 +1036,20 @@ export function stateModelFactory(
          * #getter
          * The dendrogram, band strip and row labels at the display's left,
          * which the axis sits past on screen and the export parks left of the
-         * figure.
+         * figure; none while the rows are not drawn.
          */
-        get sidebarPanel(): SvgSidebarProps {
-          return {
-            showTree: self.showTree,
-            hierarchy: self.hierarchy,
-            sources: self.sources,
-            rowHeight: self.effectiveRowHeight,
-            treeAreaWidth: self.treeAreaWidth,
-            showLabels: self.showRowLabels,
-            bands: self.rowBands,
-          }
+        get sidebarPanel(): SvgSidebarProps | undefined {
+          return self.drawsKeyedRows
+            ? {
+                showTree: self.showTree,
+                hierarchy: self.hierarchy,
+                sources: self.sources,
+                rowHeight: self.effectiveRowHeight,
+                treeAreaWidth: self.treeAreaWidth,
+                showLabels: self.showRowLabels,
+                bands: self.rowBands,
+              }
+            : undefined
         },
       }))
       .views(self => ({
@@ -1117,9 +1118,9 @@ export function stateModelFactory(
               scaleType: self.scaleType,
               symlogConstant: self.symlogConstant,
               ...band,
-              left: self.drawsKeyedRows
+              left: self.sidebarPanel
                 ? sidebarPanelWidth(self.sidebarPanel)
-                : treeSidebarOffset(self),
+                : 0,
               minimalTicks,
               caption: self.scaleTitle,
               rules: self.scoreRules,
@@ -1676,11 +1677,9 @@ export function stateModelFactory(
          * #getter
          */
         get svgSidebar(): SvgSidebarProps | undefined {
-          return self.drawsKeyedRows
-            ? {
-                ...self.sidebarPanel,
-                leftInset: leftAxisGutterWidth(self.axes),
-              }
+          const { sidebarPanel } = self
+          return sidebarPanel
+            ? { ...sidebarPanel, leftInset: leftAxisGutterWidth(self.axes) }
             : undefined
         },
       }))

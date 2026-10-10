@@ -193,9 +193,8 @@ export function SvgPinnedHighlight({ rects }: { rects: HighlightRect[] }) {
  * off the same ticks the chrome draws on screen: for each scale, once per band
  * it rules, the cross-hatch guide lines across the band when the display
  * shows them, the scale's reference lines over those, and the axis in its
- * gutter; once per scale, its caption beside the bands. A
- * left-side axis nothing pushes right sits in the export margin with its
- * spine on the content edge, so the numbers land outside the plot. A scale
+ * gutter; once per scale, its caption beside the bands. A left-side axis
+ * sits in the export margin, so the numbers land outside the plot. A scale
  * whose bands are too short for an axis is captioned `[min, max]` once at
  * the top-right, as on screen. Tick y-positions carry the plot box's inset,
  * so a band's `top` is the only translate.
@@ -218,7 +217,7 @@ export function SvgYAxis({
         const { ruleMarks = [] } = axis
         const bandTops = bandsOnScreen(axis, height)
         const gutterLeft = axisGutterLeft(
-          { ...axis, left: 0 },
+          axis,
           width,
           AXIS_RIGHT_INSET_PX,
           contentLeft,

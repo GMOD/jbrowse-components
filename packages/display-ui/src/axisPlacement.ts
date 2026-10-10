@@ -95,10 +95,9 @@ export const AXIS_RIGHT_INSET_PX = 4
  * gutter inside the plot's right edge, less `rightInset` (the vertical
  * scrollbar a display may mount on screen; a margin in an export). A left-side
  * axis takes the gutter at the display's left edge, past whatever panel the
- * scale's `left` reserves — except in an export, whose margin is the gutter,
- * so an axis nothing pushes right sits in the margin with its numbers outside
- * the plot and its spine on the content edge, or past it by what
- * `axisGutterWidth` grew.
+ * scale's `left` reserves — except in an export, whose margin is the gutter:
+ * the export parks that panel left of the margin, so the axis sits between
+ * the two with its numbers outside the plot.
  */
 export function axisGutterLeft(
   axis: Pick<YAxis, 'side' | 'left' | 'ticks' | 'caption'>,
@@ -109,8 +108,7 @@ export function axisGutterLeft(
   if (axis.side === 'right') {
     return width - rightInset - axisGutterWidth(axis)
   }
-  const left = axis.left ?? 0
-  return exportContentLeft !== undefined && left === 0
+  return exportContentLeft !== undefined
     ? exportContentLeft - AXIS_GUTTER_WIDTH_PX
-    : left
+    : (axis.left ?? 0)
 }

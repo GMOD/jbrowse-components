@@ -44,6 +44,7 @@ export interface WiggleDisplayModel extends WiggleGpuDisplayModel {
   showTree: boolean
   showRowSeparators: boolean
   showRowLabels: boolean
+  drawsRowLabels: boolean
   rowFocus?: readonly string[]
   hoveredTreeNode?: HoveredTreeNode
   treeCanvas?: HTMLCanvasElement | null

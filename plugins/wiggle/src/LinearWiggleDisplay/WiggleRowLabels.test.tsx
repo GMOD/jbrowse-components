@@ -8,10 +8,8 @@ test('the live row labels sit on the wash over the plot', () => {
       <WiggleRowLabels
         model={{
           sources: [{ name: 'a' }, { name: 'b' }],
-          isOverlay: false,
           effectiveRowHeight: 40,
-          numSources: 2,
-          showRowLabels: true,
+          drawsRowLabels: true,
         }}
         labelOffset={0}
       />

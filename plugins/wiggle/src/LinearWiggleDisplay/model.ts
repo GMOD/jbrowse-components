@@ -519,6 +519,15 @@ export default function stateModelFactory(
     .views(self => ({
       /**
        * #getter
+       * Overlay draws every source on one row, so it names none.
+       */
+      get drawsRowLabels() {
+        return self.numSources > 1 && !self.isOverlay && self.showRowLabels
+      },
+    }))
+    .views(self => ({
+      /**
+       * #getter
        * The dendrogram and row labels at the display's left, which the axis
        * sits past on screen and the export parks left of the figure.
        */
@@ -529,8 +538,7 @@ export default function stateModelFactory(
           sources: self.sources,
           rowHeight: self.effectiveRowHeight,
           treeAreaWidth: self.treeAreaWidth,
-          showLabels:
-            self.numSources > 1 && !self.isOverlay && self.showRowLabels,
+          showLabels: self.drawsRowLabels,
         }
       },
     }))

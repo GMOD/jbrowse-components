@@ -7,10 +7,8 @@ interface LabelModel {
     label?: string
     rowColor?: string
   }[]
-  isOverlay: boolean
   effectiveRowHeight: number
-  numSources: number
-  showRowLabels: boolean
+  drawsRowLabels: boolean
 }
 
 // Row labels (non-overlay mode) for the live WiggleComponent, starting past the
@@ -22,17 +20,13 @@ export default observer(function WiggleRowLabels({
   model: LabelModel
   labelOffset: number
 }) {
-  const { sources, isOverlay, effectiveRowHeight, numSources, showRowLabels } =
-    model
-  if (numSources <= 1 || isOverlay || !showRowLabels) {
-    return null
-  }
-  return (
+  const { sources, effectiveRowHeight, drawsRowLabels } = model
+  return drawsRowLabels ? (
     <SvgRowLabels
       sources={sources}
       rowHeight={effectiveRowHeight}
       labelOffset={labelOffset}
       backdrop="wash"
     />
-  )
+  ) : null
 })
