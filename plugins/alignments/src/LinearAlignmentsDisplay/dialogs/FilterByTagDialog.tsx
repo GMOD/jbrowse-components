@@ -3,6 +3,7 @@ import { Fragment, useState } from 'react'
 import { samFlagDescriptions, samFlagLabels } from '@jbrowse/cigar-utils'
 import { Dialog, TagTextField } from '@jbrowse/core/ui'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
+import CloseIcon from '@mui/icons-material/Close'
 import ExpandLessIcon from '@mui/icons-material/ExpandLess'
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore'
 import {
@@ -11,6 +12,7 @@ import {
   Collapse,
   DialogActions,
   DialogContent,
+  IconButton,
   Link,
   Paper,
   TextField,
@@ -190,44 +192,82 @@ const FlagFilterSection = observer(function FlagFilterSection(props: {
   )
 })
 
-const TagFilterSection = observer(function TagFilterSection(props: {
+interface TagRow {
+  id: number
   tag: string
-  tagValue: string
-  setTag: (arg: string) => void
-  setTagValue: (arg: string) => void
+  value: string
+}
+
+function tagRowsOf(tagFilters: ReadFilter['tagFilters']): TagRow[] {
+  return tagFilters?.length
+    ? tagFilters.map((f, id) => ({ id, tag: f.tag, value: f.value ?? '' }))
+    : [{ id: 0, tag: '', value: '' }]
+}
+
+// One row per tag filter, AND-ed. TagTextField is uncontrolled, so each row is
+// keyed by a stable id rather than its index.
+const TagFilterSection = observer(function TagFilterSection(props: {
+  rows: TagRow[]
+  setRows: (rows: TagRow[]) => void
 }) {
   const { classes } = useStyles()
-  const { tag, tagValue, setTag, setTagValue } = props
+  const { rows, setRows } = props
+  const update = (id: number, patch: Partial<TagRow>) => {
+    setRows(rows.map(r => (r.id === id ? { ...r, ...patch } : r)))
+  }
 
   return (
     <Paper className={classes.paper} variant="outlined">
       <Typography>Filter by tag</Typography>
       <Typography variant="body2" color="text.secondary">
-        Keeps only reads that carry the tag with this value.
+        Keeps only reads that carry every tag with its value.
       </Typography>
-      <div className={classes.tagRow}>
-        <TagTextField
-          variant="outlined"
-          size="small"
-          defaultValue={tag}
-          helperText="e.g. HP, RG, NM"
-          onValueChange={value => {
-            setTag(value ?? '')
-          }}
-        />
-        <TextField
-          label="Tag value"
-          variant="outlined"
-          size="small"
-          margin="none"
-          value={tagValue}
-          placeholder="*"
-          helperText="* matches any value"
-          onChange={event => {
-            setTagValue(event.target.value)
-          }}
-        />
-      </div>
+      {rows.map(row => (
+        <div key={row.id} className={classes.tagRow}>
+          <TagTextField
+            variant="outlined"
+            size="small"
+            defaultValue={row.tag}
+            helperText="e.g. HP, RG, NM"
+            onValueChange={value => {
+              update(row.id, { tag: value ?? '' })
+            }}
+          />
+          <TextField
+            label="Tag value"
+            variant="outlined"
+            size="small"
+            margin="none"
+            value={row.value}
+            placeholder="*"
+            helperText="* matches any value"
+            onChange={event => {
+              update(row.id, { value: event.target.value })
+            }}
+          />
+          {rows.length > 1 ? (
+            <IconButton
+              aria-label="Remove tag filter"
+              onClick={() => {
+                setRows(rows.filter(r => r.id !== row.id))
+              }}
+            >
+              <CloseIcon />
+            </IconButton>
+          ) : null}
+        </div>
+      ))}
+      <Button
+        size="small"
+        onClick={() => {
+          setRows([
+            ...rows,
+            { id: Math.max(...rows.map(r => r.id)) + 1, tag: '', value: '' },
+          ])
+        }}
+      >
+        Add tag filter
+      </Button>
     </Paper>
   )
 })
@@ -264,9 +304,9 @@ const ReadNameFilterSection = observer(function ReadNameFilterSection(props: {
 // meant the same filter applied on click in the menu and only on Submit here,
 // with Cancel undoing one and not the other.
 //
-// Which is also why this dialog's Submit and Reset touch only the three fields
+// Which is also why this dialog's Submit and Reset touch only the fields
 // below: everything it does not show, it preserves. The menu's "Clear all
-// filters" is what resets the whole of `filterBy`.
+// filters" is what resets the whole filter.
 //
 // Sections run in the order a user reaches for them, the flag masks last —
 // they used to open the dialog and outweigh the rest of it put together.
@@ -278,52 +318,38 @@ const FilterByTagDialog = observer(function FilterByTagDialog(props: {
   handleClose: () => void
 }) {
   const { model, handleClose } = props
-  const { readFilter: filterBy } = model
-  const [flagInclude, setFlagInclude] = useState(filterBy.flagInclude)
-  const [flagExclude, setFlagExclude] = useState(filterBy.flagExclude)
-  const [tag, setTag] = useState(filterBy.tagFilters?.[0]?.tag ?? '')
-  const [tagValue, setTagValue] = useState(
-    filterBy.tagFilters?.[0]?.value ?? '',
-  )
-  // Additional tag filters (e.g. HP/RG set from the right-click quick filters)
-  // aren't shown in this single-tag editor; preserve them across a submit so
-  // opening this dialog to tweak a flag doesn't drop them.
-  const [otherTagFilters, setOtherTagFilters] = useState(
-    filterBy.tagFilters?.slice(1) ?? [],
-  )
-  const [readName, setReadName] = useState(filterBy.readName ?? '')
-  // TagTextField is uncontrolled (seeds from defaultValue on mount), so clearing
-  // `tag` state alone leaves its visible text stale. Bump this to remount it.
-  const [resetNonce, setResetNonce] = useState(0)
+  const { readFilter } = model
+  const [flagInclude, setFlagInclude] = useState(readFilter.flagInclude)
+  const [flagExclude, setFlagExclude] = useState(readFilter.flagExclude)
+  const [tagRows, setTagRows] = useState(() => tagRowsOf(readFilter.tagFilters))
+  const [readName, setReadName] = useState(readFilter.readName ?? '')
 
   const handleReset = () => {
     setFlagInclude(defaultFilterFlags.flagInclude)
     setFlagExclude(defaultFilterFlags.flagExclude)
-    setTag('')
-    setTagValue('')
-    setOtherTagFilters([])
+    setTagRows([
+      { id: Math.max(...tagRows.map(r => r.id)) + 1, tag: '', value: '' },
+    ])
     setReadName('')
-    setResetNonce(nonce => nonce + 1)
   }
 
   const handleSubmit = () => {
-    const tagFilters = [
-      // An empty value box means `*`, the "carries this tag" spelling
-      // (filterTagValue); a literal '' would match no read and empty the track.
-      ...(tag !== '' ? [{ tag, value: tagValue === '' ? '*' : tagValue }] : []),
-      ...otherTagFilters,
-    ]
+    // An empty value box means `*`, the "carries this tag" spelling
+    // (filterTagValue); a literal '' would match no read and empty the track.
+    const tagFilters = tagRows
+      .filter(r => r.tag !== '')
+      .map(r => ({ tag: r.tag, value: r.value === '' ? '*' : r.value }))
     model.setReadFilter({
-      // Spread first: the read categories live in `filterBy` too and are edited
+      // Spread first: the read categories live in `readFilter` too and are edited
       // from the track menu, so a Submit here must carry them through rather
       // than rebuild the object from what this dialog happens to show.
-      ...filterBy,
+      ...readFilter,
       flagInclude,
       flagExclude,
       // An empty field means "no read-name filter", so omit it rather than
       // storing ''. Consumers test `readName !== undefined` to decide whether a
       // filter is active (the context menu's "Clear read/tag filters"), and ''
-      // would also change `filterBy` identity and trigger a pointless refetch.
+      // would also change `readFilter` identity and trigger a pointless refetch.
       readName: readName === '' ? undefined : readName,
       tagFilters: tagFilters.length > 0 ? tagFilters : undefined,
     })
@@ -351,13 +377,7 @@ const FilterByTagDialog = observer(function FilterByTagDialog(props: {
             readName={readName}
             setReadName={setReadName}
           />
-          <TagFilterSection
-            key={resetNonce}
-            tag={tag}
-            tagValue={tagValue}
-            setTag={setTag}
-            setTagValue={setTagValue}
-          />
+          <TagFilterSection rows={tagRows} setRows={setTagRows} />
           <FlagFilterSection
             flagInclude={flagInclude}
             flagExclude={flagExclude}

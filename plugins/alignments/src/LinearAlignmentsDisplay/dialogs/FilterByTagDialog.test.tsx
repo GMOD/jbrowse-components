@@ -67,8 +67,24 @@ test('no tag name stores no tag filter', () => {
   )
 })
 
-// Quick filters set from the read right-click menu aren't editable here, but
-// submitting after tweaking a flag must not drop them.
+// Two right-click quick filters (HP, then RG) are both listed, so the dialog
+// never applies a filter it does not show.
+test('every tag filter is listed, and one can be removed', () => {
+  const { setReadFilter } = renderDialog({
+    tagFilters: [
+      { tag: 'HP', value: '1' },
+      { tag: 'RG', value: 'x' },
+    ],
+  })
+  expect(screen.getByDisplayValue('RG')).toBeTruthy()
+  expect(screen.getByDisplayValue('x')).toBeTruthy()
+  fireEvent.click(screen.getAllByLabelText('Remove tag filter')[0]!)
+  submit()
+  expect(setReadFilter).toHaveBeenCalledWith(
+    expect.objectContaining({ tagFilters: [{ tag: 'RG', value: 'x' }] }),
+  )
+})
+
 test('tag filters beyond the first survive a submit', () => {
   const { setReadFilter } = renderDialog({
     tagFilters: [
