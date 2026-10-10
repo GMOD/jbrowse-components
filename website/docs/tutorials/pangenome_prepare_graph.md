@@ -524,6 +524,8 @@ links, and `gfa-to-tabix alleles` for the allele inventory. The coarse tier is
 [`bandage-fold`](https://github.com/GMOD/bandage-core/blob/main/docs/coarse-tier.md)
 piped into `gfa-to-tabix`, which runs alone too:
 
+<!-- from: scripts/build_pangenome_graph.sh -->
+
 ```bash
 npx -p @jbrowse/bandage-core bandage-fold hprc-v2.1-mc-grch38.sv.gfa.gz \
   --below 10000 | gfa-to-tabix - -o hprc.fold10000
