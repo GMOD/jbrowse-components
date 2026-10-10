@@ -102,6 +102,19 @@ function locate(
   }
 }
 
+/** `BigBedAdapter`'s `aggregateField` default, bigGenePred's gene name. */
+const BIGBED_AGGREGATE_FIELD = 'geneName2'
+
+/** An adapter's settings its reader takes as arguments. */
+function readerArgs(adapter: Record<string, unknown>): Record<string, string> {
+  const { type, scoreColumn } = adapter
+  return type === 'BigBedAdapter' &&
+    typeof scoreColumn === 'string' &&
+    scoreColumn
+    ? { score_column: scoreColumn }
+    : {}
+}
+
 function markExporter(
   accepted: readonly string[],
   specOf: (track: KeyedTrack) => DisplaySpec,
@@ -137,6 +150,7 @@ function markPanels(
     type,
     uri,
     index,
+    args: readerArgs(track.adapter),
     name: `df_${key}`,
     aliases: track.refNames,
     fields: fieldsRead(display),
@@ -154,23 +168,42 @@ function markPanels(
 }
 
 const featureExporter: RExporter = (track, regions) => {
-  const located = locate(track, ['Gff3TabixAdapter', 'BedTabixAdapter'])
+  const located = locate(track, [
+    'Gff3TabixAdapter',
+    'BedTabixAdapter',
+    'BigBedAdapter',
+  ])
   if ('skipped' in located) {
     return located
   }
   const { type, uri, index } = located
   const { key } = track
   const display = track.display as unknown as FeatureDisplaySpec
+  const aggregate =
+    type === 'BigBedAdapter'
+      ? String(track.adapter.aggregateField ?? BIGBED_AGGREGATE_FIELD)
+      : undefined
   const base = frameFor({
     type,
     uri,
     index,
     name: `genes_${key}`,
     aliases: track.refNames,
-    fields: featureFields(display, regions),
+    fields: [
+      ...new Set([
+        ...featureFields(display, regions),
+        ...(aggregate ? [aggregate] : []),
+      ]),
+    ],
+    args: readerArgs(track.adapter),
     wholeFeatures: true,
   })
-  const { plot, notes } = featurePlot({ display, frame: base, regions })
+  const { plot, notes } = featurePlot({
+    display,
+    frame: base,
+    regions,
+    aggregate,
+  })
   return {
     panels: [{ variable: `p_${key}`, plot }],
     notes: [...sourceNotes(uri), ...notes],

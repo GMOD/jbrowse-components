@@ -60,6 +60,24 @@ export const READERS = {
     coords: ['start', 'end', 'thick_start', 'thick_end'],
     extra: undefined,
   },
+  BigBedAdapter: {
+    helper: 'read_bigbed',
+    location: 'bigBedLocation',
+    packages: [],
+    columns: [
+      'start',
+      'end',
+      'strand',
+      'name',
+      'score',
+      'thick_start',
+      'thick_end',
+      'block_starts',
+      'block_sizes',
+    ],
+    coords: ['start', 'end', 'thick_start', 'thick_end'],
+    extra: { arg: 'fields', prefix: '' },
+  },
   VcfTabixAdapter: {
     helper: 'read_vcf',
     location: 'vcfGzLocation',
@@ -184,6 +202,7 @@ export function frameFor<K extends ReaderName>({
   wholeFeatures = false,
   aliases,
   index,
+  args = {},
 }: {
   type: K
   uri: string
@@ -193,6 +212,8 @@ export function frameFor<K extends ReaderName>({
   aliases?: Record<string, string>
   /** The BAM's index, which R cannot find beside a remote file. */
   index?: string
+  /** The reader's own arguments, as R string values. */
+  args?: Record<string, string>
 }): RFrame {
   const reader = READERS[type]
   const held = new Set<string>(reader.columns)
@@ -203,9 +224,11 @@ export function frameFor<K extends ReaderName>({
   const fieldArgs = asked.length
     ? `, ${extra!.arg} = c(${asked.map(f => rStr(f.slice(extra!.prefix.length))).join(', ')})`
     : ''
-  const args = index ? `${fieldArgs}, index = ${rStr(index)}` : fieldArgs
+  const named = Object.entries({ ...args, ...(index ? { index } : {}) })
+    .map(([k, v]) => `, ${k} = ${rStr(v)}`)
+    .join('')
   const coords = reader.coords.map(c => rStr(c)).join(', ')
-  const read = `${reader.helper}(${rStr(uri)}, ${fileChrom('chrom', aliases)}, start, end${args})`
+  const read = `${reader.helper}(${rStr(uri)}, ${fileChrom('chrom', aliases)}, start, end${fieldArgs}${named})`
   return frame({
     name,
     columns: [...reader.columns, ...asked, '.region'],

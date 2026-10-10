@@ -302,16 +302,19 @@ function admitted(
  *
  * `frame` is the reader's: a GFF3 frame, a BED one, which `bed_features`
  * turns into the same shape, or any frame with `id`, `parent`, `type`, `name`
- * and `strand` columns.
+ * and `strand` columns. `aggregate` is the column a BigBed adapter groups
+ * transcripts into genes by, which the frame must hold.
  */
 export function featurePlot({
   display,
   frame: base,
   regions,
+  aggregate,
 }: {
   display: FeatureDisplaySpec
   frame: RFrame
   regions: readonly Region[]
+  aggregate?: string
 }): TranslatedPlot {
   const notes: string[] = []
   const span = Math.max(spanOf(regions), 1)
@@ -325,7 +328,7 @@ export function featurePlot({
         columns: [...base.columns, 'type', 'id', 'parent'],
         coords: base.coords,
         packages: base.packages,
-        statements: `${n} <- bed_features(${n})`,
+        statements: `${n} <- bed_features(${n}${aggregate ? `, aggregate = ${rStr(aggregate)}` : ''})`,
         parent: base,
       })
   const feats = admitted(shaped, display, bpPerPx, notes)

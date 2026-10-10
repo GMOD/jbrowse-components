@@ -291,6 +291,26 @@ const pointsShapes = register(
   'table(ggplot_build(p_marks_points)$data[[1]]$shape, useNA = "ifany")',
 )
 
+const bigBedReader = register(
+  'bigbed_reader',
+  `${HELPERS.read_bed}
+${HELPERS.read_bigbed}
+bb <- read_bigbed(${JSON.stringify(path.join(VOLVOX, 'volvox.bb'))}, "ctgA", 0, 50001)
+tb <- read_bed(${JSON.stringify(path.join(VOLVOX, 'volvox-bed12.bed.gz'))}, "ctgA", 0, 50001)
+`,
+  'c(nrow(bb) > 0, isTRUE(all.equal(bb, tb, check.attributes = FALSE)))',
+)
+
+const bigBedGenes = register(
+  'bigbed_genes',
+  scriptFor(
+    [track(main, 'bigbed_genes', 'LinearBasicDisplay', {})],
+    [{ refName: 'ctgA', start: 0, end: 24000 }],
+  ),
+  `{ g <- genes_bigbed_genes; eden <- g$id[g$type == "gene" & g$name == "EDEN"]
+  c(sum(g$type == "gene"), length(eden), sum(g$type == "mRNA" & g$parent %in% eden)) }`,
+)
+
 maybe('the emitted script, run under R', () => {
   beforeAll(() => {
     for (const [k, v] of runCases(cases)) {
@@ -375,5 +395,13 @@ maybe('the emitted script, run under R', () => {
     expect(results.get(wiggleLine)).toBe('[1] "#0068d1" "#e01e26"')
     expect(results.get(wiggleHeat)).toBe('[1] TRUE')
     expect(results.get(wigglePlain)).toBe('[1] "darkgreen"')
+  })
+
+  it('reads a BigBed as the same records its BED12 source holds', () => {
+    expect(results.get(bigBedReader)).toBe('[1] TRUE TRUE')
+  })
+
+  it('groups a BigBed’s transcripts into genes by its aggregate field', () => {
+    expect(results.get(bigBedGenes)).toBe('[1] 2 1 3')
   })
 })

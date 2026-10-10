@@ -3,7 +3,11 @@
 # mRNA with an exon per block and a CDS per block's stretch inside the thick
 # range; any other record is one 'feature'. Columns past the shared ones ride
 # on the record's own row.
-bed_features <- function(b) {
+#
+# 'aggregate' names the column a BigBed groups records by, as the browser
+# does: records sharing a value, other than "" or "none", that overlap become
+# transcripts of one gene named by it; ones that do not overlap get a gene each.
+bed_features <- function(b, aggregate = NULL) {
   if (!nrow(b)) return(cbind(b, type = character(0), id = character(0),
     parent = character(0)))
   b$id <- paste0("bed", seq_len(nrow(b)))
@@ -23,7 +27,25 @@ bed_features <- function(b) {
     row$id <- paste0(b$id[i], ".", seq_len(nrow(out)))
     row
   })
-  out <- do.call(rbind, c(list(b), kids))
+  key <- if (is.null(aggregate) || is.null(b[[aggregate]])) rep(NA, nrow(b)) else
+    as.character(b[[aggregate]])
+  key[key %in% c("", "none")] <- NA
+  genes <- lapply(split(seq_len(nrow(b)), key), function(i) {
+    i <- i[order(b$start[i])]
+    overlap <- length(i) > 1 && any(b$start[i][-1] < cummax(b$end[i])[-length(i)])
+    groups <- if (overlap) list(i) else as.list(i)
+    lapply(groups, function(g) {
+      gene <- b[g[1], , drop = FALSE]
+      gene$id <- paste0(b$id[g[1]], ".gene"); gene$parent <- NA_character_
+      gene$type <- "gene"; gene$name <- key[g[1]]
+      gene$start <- min(b$start[g]); gene$end <- max(b$end[g])
+      s <- b$strand[g][b$strand[g] != 0]
+      gene$strand <- if (length(s)) s[1] else 1L
+      b$parent[g] <<- gene$id
+      gene
+    })
+  })
+  out <- do.call(rbind, c(unlist(genes, recursive = FALSE), list(b), kids))
   rownames(out) <- NULL
   out
 }
