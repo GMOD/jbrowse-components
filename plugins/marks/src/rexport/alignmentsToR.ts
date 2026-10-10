@@ -81,6 +81,15 @@ const LAYOUT = new Set([
   'showLegend',
 ])
 
+/** A color object switched off, as clearing a base layer or arc color writes it. */
+function paintsNothing(value: unknown) {
+  return (
+    typeof value === 'object' &&
+    value !== null &&
+    (value as { scale?: unknown }).scale === 'none'
+  )
+}
+
 const LEVEL_COLUMN = '.color'
 const NO_VALUE = 'none'
 
@@ -347,8 +356,8 @@ export function alignmentsPanels({
   index,
 }: {
   display: AlignmentsDisplaySnapshot
-  /** The config as written, its defaults left out, which names the settings the figure drops; `display` where unset. */
-  written?: Record<string, unknown>
+  /** The config as written, its defaults left out, which names the settings the figure drops. */
+  written: Record<string, unknown>
   uri: string
   regions: readonly Region[]
   /** Suffixes every R name, so several alignments tracks share one script. */
@@ -362,16 +371,29 @@ export function alignmentsPanels({
 }): { panels: Panel[]; notes: string[] } {
   const named = (name: string) => (key ? `${name}_${key}` : name)
   const readsName = named('reads')
-  const notes = [
-    'reads: each draws as one bar over its reference span, without its deletions, insertions, clips or splice gaps',
-  ]
-  const dropped = Object.keys(written ?? display).filter(
-    slot => !TRANSLATED.has(slot) && !LAYOUT.has(slot),
-  )
+  const pileupShown = display.showPileup !== false
+  const coverageShown = display.showCoverage !== false
+  const notes: string[] = []
+  if (pileupShown) {
+    notes.push(
+      'reads: each draws as one bar over its reference span, without its deletions, insertions, clips or splice gaps',
+    )
+  }
+  if (coverageShown) {
+    notes.push(
+      `coverage: one grey band, without the browser's allele colors${display.showSashimiArcs === false ? '' : ' or sashimi arcs'}`,
+    )
+  }
+  const dropped = Object.entries(written)
+    .filter(
+      ([slot, value]) =>
+        !TRANSLATED.has(slot) && !LAYOUT.has(slot) && !paintsNothing(value),
+    )
+    .map(([slot]) => slot)
   if (dropped.length) {
     notes.push(`not translated: ${dropped.join(', ')}`)
   }
-  const color = readColor(display.color, notes)
+  const color = readColor(display.color, pileupShown ? notes : [])
   const tagFilters = display.filter?.tagFilters ?? []
   const base = frameFor({
     type: 'BamAdapter',
@@ -442,7 +464,6 @@ export function alignmentsPanels({
     y: { kind: 'reverse' },
   }
   const mismatchesName = named('mismatches')
-  const pileupShown = display.showPileup !== false
   if (pileupShown && display.showMismatches !== false) {
     const mismatches = frame({
       name: mismatchesName,
@@ -500,7 +521,7 @@ ${mismatchesName} <- ${mismatchesName}[!is.na(${mismatchesName}$row), ]`,
         },
       ]
     : []
-  if (display.showCoverage !== false) {
+  if (coverageShown) {
     const coverage = frame({
       name: named('depth'),
       columns: ['start', 'end', 'depth', '.region'],

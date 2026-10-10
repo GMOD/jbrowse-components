@@ -1146,7 +1146,13 @@ maybe('an alignments display draws as a pileup', () => {
   ) =>
     assembleRScript({
       regions: region,
-      ...alignmentsPanels({ display, uri, regions: region, reference: FASTA }),
+      ...alignmentsPanels({
+        display,
+        written: display,
+        uri,
+        regions: region,
+        reference: FASTA,
+      }),
       out,
     })
   const pileupFigure = (
@@ -1216,8 +1222,13 @@ cat(paste(names(t), t, sep = "=", collapse = " "), paste(names(o), o, sep = "=",
     expect(ran(classes)).toBe('long=19 normal=236 short=2 LR=220 RL=5 RR=32')
   })
 
+  const unreadDisplay = {
+    color: { field: 'mateRefName' },
+    facet: { field: 'strand' },
+  }
   const unread = alignmentsPanels({
-    display: { color: { field: 'mateRefName' }, facet: { field: 'strand' } },
+    display: unreadDisplay,
+    written: unreadDisplay,
     uri: BAM,
     regions: region,
   }).notes
@@ -1246,17 +1257,22 @@ cat(paste(names(t), t, sep = "=", collapse = " "), paste(names(o), o, sep = "=",
       }).notes.filter(n => n.startsWith('not translated'))
     expect(notes({})).toEqual([])
     expect(notes({ height: 400, showCoverage: false })).toEqual([])
+    expect(notes({ baseColor: { field: 'mapq', scale: 'none' } })).toEqual([])
     expect(
       notes({ modifications: { threshold: 20 }, featureHeight: 3 }),
     ).toEqual(['not translated: modifications, featureHeight'])
   })
 
   it('draws the coverage band alone where the pileup is hidden', () => {
-    const { panels } = alignmentsPanels({
-      display: { showPileup: false },
+    const { panels, notes } = alignmentsPanels({
+      display: { showPileup: false, color: { field: 'mateRefName' } },
+      written: { showPileup: false, color: { field: 'mateRefName' } },
       uri: BAM,
       regions: region,
     })
+    expect(notes).toEqual([
+      "coverage: one grey band, without the browser's allele colors or sashimi arcs",
+    ])
     expect(panels.map(p => [p.variable, p.plot.labs?.x])).toEqual([
       ['coverage', `${region[0]!.refName} (bp)`],
     ])
