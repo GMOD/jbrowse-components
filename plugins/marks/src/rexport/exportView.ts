@@ -198,7 +198,7 @@ const featureExporter: RExporter = (track, regions) => {
     args: readerArgs(track.adapter),
     wholeFeatures: true,
   })
-  const { plot, notes } = featurePlot({
+  const { plot, notes, heightWeight } = featurePlot({
     display,
     frame: base,
     regions,
@@ -206,7 +206,7 @@ const featureExporter: RExporter = (track, regions) => {
     viewBpPerPx: track.viewBpPerPx,
   })
   return {
-    panels: [{ variable: `p_${key}`, plot }],
+    panels: [{ variable: `p_${key}`, plot, heightWeight }],
     notes: [...sourceNotes(uri), ...notes],
   }
 }

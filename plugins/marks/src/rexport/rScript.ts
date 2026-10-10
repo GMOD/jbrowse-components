@@ -12,17 +12,22 @@ export interface Region {
 export interface Panel {
   variable: string
   plot: Plot
-  /** Relative vertical share, carried from the display height. */
-  heightWeight?: number
+  /**
+   * Relative vertical share, `INCHES_PER_WEIGHT` inches each: a number, or an
+   * R expression for a panel whose height follows what it reads.
+   */
+  heightWeight?: number | string
 }
 
 /** ggsave refuses a dimension over 50 inches, and a panel stack can ask for more. */
 const MAX_INCHES = 50
-const INCHES_PER_WEIGHT = 2
+export const INCHES_PER_WEIGHT = 2
 const WIDTH_INCHES = 10
 const DPI = 150
 /** The figure's width in device px, the zoom an `auto` bin follows. */
 export const FIGURE_WIDTH_PX = WIDTH_INCHES * DPI
+/** The data area's width, inside theme_minimal's plot margins. */
+export const PANEL_WIDTH_INCHES = WIDTH_INCHES - 0.3
 
 /**
  * The helpers a piece of R calls, and the helpers those call, so a script
@@ -52,18 +57,15 @@ function regionsFrame(regions: readonly Region[]) {
   end = c(${col(r => r.end)})))`
 }
 
-function figureHeight(panels: readonly Panel[]) {
-  const weight = panels.reduce((a, p) => a + (p.heightWeight ?? 1), 0)
-  return Math.min(MAX_INCHES, Math.max(2, weight * INCHES_PER_WEIGHT))
+function heightsFrame(panels: readonly Panel[]) {
+  return `heights <- c(${panels.map(p => p.heightWeight ?? 1).join(', ')})`
 }
 
 function stacked(panels: readonly Panel[]) {
-  if (panels.length === 1) {
-    return panels[0]!.variable
-  }
-  const weights = panels.map(p => p.heightWeight ?? 1).join(', ')
-  return `${panels.map(p => p.variable).join(' / ')} +
-  patchwork::plot_layout(heights = c(${weights}))`
+  return panels.length === 1
+    ? panels[0]!.variable
+    : `${panels.map(p => p.variable).join(' / ')} +
+  patchwork::plot_layout(heights = heights)`
 }
 
 function rootOf(f: RFrame): RFrame {
@@ -154,8 +156,9 @@ ${[...packages]
     '',
     plots.join('\n\n'),
     '',
+    heightsFrame(panels),
     `ggsave(${rStr(out)}, ${stacked(panels)},
-  width = ${WIDTH_INCHES}, height = ${figureHeight(panels)}, dpi = ${DPI})`,
+  width = ${WIDTH_INCHES}, height = min(${MAX_INCHES}, max(2, sum(heights) * ${INCHES_PER_WEIGHT})), dpi = ${DPI})`,
     '',
   ].join('\n')
 }

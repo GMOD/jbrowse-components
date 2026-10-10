@@ -148,10 +148,14 @@ function geneScript({ display, type, uri, regions }: GeneBuild, out?: string) {
     fields: featureFields(display, regions),
     wholeFeatures: true,
   })
-  const { plot, notes } = featurePlot({ display, frame: f, regions })
+  const { plot, notes, heightWeight } = featurePlot({
+    display,
+    frame: f,
+    regions,
+  })
   return assembleRScript({
     regions,
-    panels: [{ variable: 'p1', plot }],
+    panels: [{ variable: 'p1', plot, heightWeight }],
     notes: [...sourceNotes(uri), ...notes],
     out,
   })

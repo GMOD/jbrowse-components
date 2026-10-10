@@ -18,6 +18,7 @@ import {
 } from './exportView.fixture.ts'
 import { exportTracksToR } from './exportView.ts'
 import { HELPERS } from './rHelpers.generated.ts'
+import { PANEL_WIDTH_INCHES } from './rScript.ts'
 
 import type { RCase } from './exportView.fixture.ts'
 import type { RExportTrack } from './exportView.ts'
@@ -311,6 +312,27 @@ const bigBedGenes = register(
   c(sum(g$type == "gene"), length(eden), sum(g$type == "mRNA" & g$parent %in% eden)) }`,
 )
 
+const denseLabels = register(
+  'dense_labels',
+  scriptFor(
+    [track(main, 'gff3tabix_genes', 'LinearBasicDisplay', {})],
+    [{ refName: 'ctgA', start: 0, end: 24000 }],
+  ),
+  `{ png(tempfile(), width = 1500, height = 500, res = 150)
+  l <- genes_gff3tabix_genes_lanes
+  bp <- 24000 / ${PANEL_WIDTH_INCHES}
+  w <- function(s) strwidth(s, units = "inches", cex = 3 * ggplot2::.pt / par("ps")) * bp
+  text <- rbind(
+    with(l[!is.na(l$label), ], data.frame(y = y, x0 = start, x1 = start + w(label))),
+    with(l[!is.na(l$description), ], data.frame(y = description_y, x0 = start, x1 = start + w(description))))
+  text$x0 <- pmax(text$x0, 0)
+  clashes <- sum(vapply(split(text, text$y), function(t) {
+    t <- t[order(t$x0), ]
+    sum(t$x0[-1] < t$x1[-nrow(t)])
+  }, 0))
+  c(clashes, nrow(text) > 40) }`,
+)
+
 maybe('the emitted script, run under R', () => {
   beforeAll(() => {
     for (const [k, v] of runCases(cases)) {
@@ -403,5 +425,9 @@ maybe('the emitted script, run under R', () => {
 
   it('groups a BigBed’s transcripts into genes by its aggregate field', () => {
     expect(results.get(bigBedGenes)).toBe('[1] 2 1 3')
+  })
+
+  it('keeps every label in a dense window clear of its neighbours', () => {
+    expect(results.get(denseLabels)).toBe('[1] 0 1')
   })
 })

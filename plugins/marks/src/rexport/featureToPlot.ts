@@ -1,7 +1,11 @@
 import { featureDefaultColor, utrDefaultColor } from '@jbrowse/core/ui/palette'
 import { DEFAULT_CANONICAL_TRANSCRIPTS } from '@jbrowse/core/util/isoformRank'
 
-import { FIGURE_WIDTH_PX } from './rScript.ts'
+import {
+  FIGURE_WIDTH_PX,
+  INCHES_PER_WEIGHT,
+  PANEL_WIDTH_INCHES,
+} from './rScript.ts'
 import { expr, frame, layer, rIdent, rStr } from './rplot.ts'
 
 import type { TranslatedPlot } from './markToPlot.ts'
@@ -55,7 +59,12 @@ const GENE_LIKE = 'gene(_segment)?$|rna$|transcript$'
 /** The bp/px past which `auto` shows one transcript per gene. */
 const AUTO_COLLAPSE_BP_PER_PX = 100
 const UTR_HALF = 0.5 * 0.65
-const CHAR_PX = 6.5
+/** ggplot2's size for the name and description, which gene_layout measures. */
+const TEXT_SIZE = 3
+/** One glyph-height unit of gene_layout's rows, so a label line clears the text it holds. */
+const ROW_UNIT_INCHES = 0.12
+/** The axis under a gene panel. */
+const AXIS_INCHES = 0.6
 const CONNECTOR = 'grey30'
 
 /** One `filter` entry the R side can apply: an attribute against a literal. */
@@ -325,7 +334,7 @@ export function featurePlot({
   regions: readonly Region[]
   aggregate?: string
   viewBpPerPx?: number
-}): TranslatedPlot {
+}): TranslatedPlot & { heightWeight: string } {
   const notes: string[] = []
   const bpPerPx = zoomOf(regions, viewBpPerPx)
   unsupported(display, notes)
@@ -362,7 +371,8 @@ export function featurePlot({
     coords: base.coords,
     packages: feats.packages,
     statements: `${n}_lanes <- gene_layout(${n},
-  char_bp = (max(regions$cum_end) - min(regions$cum_start)) / ${FIGURE_WIDTH_PX} * ${CHAR_PX},
+  bp_per_inch = (max(regions$cum_end) - min(regions$cum_start)) / ${PANEL_WIDTH_INCHES},
+  text_size = ${TEXT_SIZE},
   labels = ${show.name ? `${n}$name` : `rep(NA_character_, nrow(${n}))`},
   descriptions = ${show.description && described ? `${n}$note` : `rep(NA_character_, nrow(${n}))`})`,
     parent: feats,
@@ -455,7 +465,7 @@ ${n}_parts <- clip_regions(${n}_parts, regions)`
         geom: 'text',
         frame: lines,
         aes: { x: textX, y: expr('y + 0.6'), label: 'label' },
-        constants: { size: 3 },
+        constants: { size: TEXT_SIZE },
         params: { hjust: 0, vjust: 1, 'na.rm': expr('TRUE') },
       }),
     )
@@ -466,7 +476,7 @@ ${n}_parts <- clip_regions(${n}_parts, regions)`
         geom: 'text',
         frame: lines,
         aes: { x: textX, y: 'description_y', label: 'description' },
-        constants: { size: 3, colour: 'grey40' },
+        constants: { size: TEXT_SIZE, colour: 'grey40' },
         params: { hjust: 0, vjust: 1, 'na.rm': expr('TRUE') },
       }),
     )
@@ -501,5 +511,6 @@ ${n}_parts <- clip_regions(${n}_parts, regions)`
       hideY: true,
     },
     notes,
+    heightWeight: `(max(c(1, ${n}_lanes$bottom)) * ${ROW_UNIT_INCHES} + ${AXIS_INCHES}) / ${INCHES_PER_WEIGHT}`,
   }
 }

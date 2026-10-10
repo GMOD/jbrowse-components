@@ -137,7 +137,8 @@ describe('the assembled script', () => {
       regions: [{ refName: 'ctgA', start: 0, end: 100 }],
       panels: [{ variable: 'p1', plot, heightWeight: 2504 }],
     })
-    expect(r).toContain('height = 50,')
+    expect(r).toContain('heights <- c(2504)')
+    expect(r).toContain('height = min(50, max(2, sum(heights) * 2))')
   })
 
   it('names in the header what it could not draw', () => {
