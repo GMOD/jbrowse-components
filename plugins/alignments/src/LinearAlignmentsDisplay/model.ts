@@ -177,6 +177,7 @@ import {
   NO_QUALITY_SPAN,
   baseQualitySpanAcrossGroups,
   mapqExtentAcrossGroups,
+  mapqQuantileExtentAcrossGroups,
   presentMapqs,
 } from './qualitySpans.ts'
 import { chainReadIdsAt, findRead, readInfo } from './readLookup.ts'
@@ -1475,7 +1476,13 @@ export default function stateModelFactory(
                     d => d.readTagValues,
                     encoding.domainQuantile!,
                   )
-                : this.tagValueExtent
+                : (encoding.domainQuantile ?? 1) < 1 &&
+                    self.colorBy.type === 'mappingQuality'
+                  ? mapqQuantileExtentAcrossGroups(
+                      this.laidOutByGroupFramed,
+                      encoding.domainQuantile!,
+                    )
+                  : this.tagValueExtent
               : undefined
           },
 

@@ -2,6 +2,7 @@ import { makePileupDataResult } from '../RenderAlignmentDataRPC/testPileupData.t
 import {
   baseQualitySpanAcrossGroups,
   mapqExtentAcrossGroups,
+  mapqQuantileExtentAcrossGroups,
 } from './qualitySpans.ts'
 
 import type { PileupDataResult } from '../RenderAlignmentDataRPC/types.ts'
@@ -18,6 +19,16 @@ test('the MAPQ extent spans every read with one, 255 held out', () => {
     { readMapqs: Uint8Array.of(3, 45) },
   )
   expect(mapqExtentAcrossGroups(groups)).toEqual([3, 70])
+})
+
+test('a MAPQ quantile extent trims the outliers, 255 held out', () => {
+  const mapqs = Uint8Array.from({ length: 100 }, (_, i) => (i < 98 ? 60 : 0))
+  const groups = byGroup(
+    { readMapqs: mapqs },
+    { readMapqs: Uint8Array.of(255) },
+  )
+  expect(mapqQuantileExtentAcrossGroups(groups, 1)).toEqual([0, 60])
+  expect(mapqQuantileExtentAcrossGroups(groups, 0.95)).toEqual([60, 60])
 })
 
 test('reads with no MAPQ are no MAPQ extent', () => {

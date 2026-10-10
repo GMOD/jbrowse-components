@@ -1,3 +1,5 @@
+import { quantileExtent } from '@jbrowse/core/util/quantileExtent'
+
 import { BASE_QUALITY_UNAVAILABLE } from '../features/perBaseQuality/colors.ts'
 import { MAPQ_UNAVAILABLE } from '../shared/util.ts'
 
@@ -21,6 +23,33 @@ export function mapqExtentAcrossGroups(
       }
     }
   }
+  return min <= max ? [min, max] : undefined
+}
+
+/** The MAPQ span holding `quantile` of the reads with one. */
+export function mapqQuantileExtentAcrossGroups(
+  byGroup: LaidOutByGroup,
+  quantile: number,
+): NumericExtent | undefined {
+  let n = 0
+  for (const map of byGroup.values()) {
+    for (const { readMapqs } of map.values()) {
+      n += readMapqs.length
+    }
+  }
+  const values = new Float32Array(n)
+  let count = 0
+  for (const map of byGroup.values()) {
+    for (const { readMapqs } of map.values()) {
+      for (let i = 0; i < readMapqs.length; i++) {
+        const mapq = readMapqs[i]!
+        if (mapq !== MAPQ_UNAVAILABLE) {
+          values[count++] = mapq
+        }
+      }
+    }
+  }
+  const [min, max] = quantileExtent(values, count, quantile)
   return min <= max ? [min, max] : undefined
 }
 
