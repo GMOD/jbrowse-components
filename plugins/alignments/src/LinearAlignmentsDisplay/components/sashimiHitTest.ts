@@ -1,6 +1,6 @@
 import {
   backToFront,
-  instanceColor,
+  linkInstance,
   nearestMarkHit,
   recordPath,
 } from '@jbrowse/render-core/marks'
@@ -18,7 +18,6 @@ import type { MergedJunction } from '../../features/sashimi/junctions.ts'
 import type { SashimiBandState } from '../renderers/sashimiMarks.ts'
 import type { ArcHighlight } from './arcHitTest.ts'
 import type { TooltipPayload } from './tooltipUtils.ts'
-import type { LinkChannels } from '@jbrowse/render-core/marks'
 import type { RenderBlock } from '@jbrowse/render-core/renderBlock'
 
 // How far off a junction's stroke the cursor still answers for it. Tighter
@@ -46,19 +45,7 @@ function oneInstance(
   side: SashimiSide,
   i: number,
 ): SashimiBandFeed {
-  const c: LinkChannels = feed[side]
-  return {
-    ...feed,
-    [side]: {
-      x: c.x.subarray(i, i + 1),
-      x2: c.x2.subarray(i, i + 1),
-      x2Region: c.x2Region.subarray(i, i + 1),
-      y: c.y?.subarray(i, i + 1),
-      size: c.size?.subarray(i, i + 1),
-      color: instanceColor(c.color, i),
-      count: 1,
-    },
-  }
+  return { ...feed, [side]: linkInstance(feed[side], i) }
 }
 
 /**

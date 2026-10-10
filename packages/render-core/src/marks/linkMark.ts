@@ -36,7 +36,12 @@ import { slangPass } from '../slangPass.ts'
 import { abgrToCssRgba } from './colorFill.ts'
 import { ellipseNearest } from './ellipseDistance.ts'
 import { nearestInk } from './markHit.ts'
-import { colorBits, paintColors, rampUniforms } from './markRamp.ts'
+import {
+  colorBits,
+  instanceColor,
+  paintColors,
+  rampUniforms,
+} from './markRamp.ts'
 import {
   bandHeightPx,
   rowColor,
@@ -77,6 +82,21 @@ export interface LinkChannels extends ColorChannel, RowChannel {
 }
 
 export { LINK_FOOT_FORWARD, LINK_FOOT_REVERSE, linkFeet } from '../linkFeet.ts'
+
+/** The channels cut down to instance `i`, for its own painter to trace alone. */
+export function linkInstance(c: LinkChannels, i: number): LinkChannels {
+  return {
+    x: c.x.subarray(i, i + 1),
+    x2: c.x2.subarray(i, i + 1),
+    x2Region: c.x2Region.subarray(i, i + 1),
+    y: c.y?.subarray(i, i + 1),
+    size: c.size?.subarray(i, i + 1),
+    feet: c.feet?.subarray(i, i + 1),
+    row: c.row?.subarray(i, i + 1),
+    color: instanceColor(c.color, i),
+    count: 1,
+  }
+}
 
 /**
  * One displayed region as a foot places through it: the canvas px of an

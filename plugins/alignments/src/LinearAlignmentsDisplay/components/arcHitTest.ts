@@ -1,7 +1,8 @@
 import {
   backToFront,
-  instanceColor,
+  linkInstance,
   nearestMarkHit,
+  pointInstance,
   recordPath,
 } from '@jbrowse/render-core/marks'
 import { ARC_HIT_SLOP_PX } from '@jbrowse/sv-core'
@@ -11,7 +12,6 @@ import { ARC_BAND_MARKS } from '../renderers/arcMarks.ts'
 import type { ArcBandFeed, ArcBandHit } from '../../features/arcs/bandFeed.ts'
 import type { ArcBandState } from '../renderers/arcMarks.ts'
 import type { TooltipPayload } from './tooltipUtils.ts'
-import type { LinkChannels, PointChannels } from '@jbrowse/render-core/marks'
 import type { RenderBlock } from '@jbrowse/render-core/renderBlock'
 
 /** The band's rect on screen, as the four SVG `<rect>` attributes. */
@@ -64,39 +64,13 @@ function hitsOf(feed: ArcBandFeed, mark: number) {
   return feed[ARC_BAND_FIELDS[mark]!.hits]
 }
 
-function sliceLink(c: LinkChannels, i: number): LinkChannels {
-  const one = <T extends { subarray(a: number, b: number): T }>(a?: T) =>
-    a?.subarray(i, i + 1)
-  return {
-    x: one(c.x)!,
-    x2: one(c.x2)!,
-    x2Region: one(c.x2Region)!,
-    y: one(c.y),
-    size: one(c.size),
-    color: instanceColor(c.color, i),
-    feet: one(c.feet),
-    count: 1,
-  }
-}
-
-function slicePoint(c: PointChannels, i: number): PointChannels {
-  return {
-    x: c.x.subarray(i, i + 1),
-    x2: c.x2.subarray(i, i + 1),
-    y: c.y.subarray(i, i + 1),
-    color: instanceColor(c.color, i),
-    glyph: c.glyph.subarray(i, i + 1),
-    count: 1,
-  }
-}
-
 // The feed with mark `mark` cut down to its instance `i`, so that mark's
 // painter traces the one connection.
 function oneInstance(feed: ArcBandFeed, mark: number, i: number): ArcBandFeed {
   const key = ARC_BAND_FIELDS[mark]!.channels
   return key === 'markers'
-    ? { ...feed, markers: slicePoint(feed.markers, i) }
-    : { ...feed, [key]: sliceLink(feed[key], i) }
+    ? { ...feed, markers: pointInstance(feed.markers, i) }
+    : { ...feed, [key]: linkInstance(feed[key], i) }
 }
 
 /**

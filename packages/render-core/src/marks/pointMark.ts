@@ -7,7 +7,12 @@ import { slangPass } from '../slangPass.ts'
 import { abgrToCssRgba } from './colorFill.ts'
 import { appendGlyph, glyphBox } from './glyphPaint.ts'
 import { inkAtPoint, nearestInk } from './markHit.ts'
-import { colorBits, paintColors, rampUniforms } from './markRamp.ts'
+import {
+  colorBits,
+  instanceColor,
+  paintColors,
+  rampUniforms,
+} from './markRamp.ts'
 import { valueWindow } from './nearestMarkHit.ts'
 import {
   bandHeightPx,
@@ -36,6 +41,19 @@ export interface PointChannels extends ColorChannel, RowChannel {
   y: Float32Array
   glyph: Uint8Array
   count: number
+}
+
+/** The channels cut down to instance `i`, for its own painter to trace alone. */
+export function pointInstance(c: PointChannels, i: number): PointChannels {
+  return {
+    x: c.x.subarray(i, i + 1),
+    x2: c.x2.subarray(i, i + 1),
+    y: c.y.subarray(i, i + 1),
+    glyph: c.glyph.subarray(i, i + 1),
+    row: c.row?.subarray(i, i + 1),
+    color: instanceColor(c.color, i),
+    count: 1,
+  }
 }
 
 /** What the point and rule shapes share: a value scale, rows and a color scale. */

@@ -4,7 +4,7 @@ export { planMarks } from './markPlan.ts'
 export { inkOfInstances, shiftInk } from './markInk.ts'
 export { backToFront, nearestMarkHit, valueWindow } from './nearestMarkHit.ts'
 export { barMark } from './barMark.ts'
-export { pointMark } from './pointMark.ts'
+export { pointInstance, pointMark } from './pointMark.ts'
 export { ruleMark } from './ruleMark.ts'
 export { spanMark } from './spanMark.ts'
 export { lineCenterMark, lineMarkOf, lineStepMark } from './lineMark.ts'
@@ -12,6 +12,7 @@ export {
   linkApex,
   linkLabelAnchor,
   linkFeet,
+  linkInstance,
   linkMark,
   LINK_ELSEWHERE,
   LINK_NO_REGION,
