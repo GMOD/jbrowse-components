@@ -18,7 +18,7 @@ RpcOptions
 TabixIndex
 TagFilter
 
-# display/view models with no #example (10)
+# display/view models with no #example (11)
 # fix: add an #example to the type’s #stateModel JSDoc
 BaseChordDisplay
 BaseDisplay
@@ -29,6 +29,7 @@ LinearCanvasBaseDisplay
 LinearManhattanDisplay
 LinearMarkDisplay
 LinearMultiRowFeatureDisplay
+LinearReferenceSequenceDisplay
 MultiWaySyntenyDisplay
 
 # configs that fell back to the General category (0)
@@ -41,7 +42,7 @@ Dotplot1DView
 LinearSyntenyViewHelper
 TimeTraveller
 
-# model members with no description (1359)
+# model members with no description (1355)
 # fix: write a sentence under the member’s #property/#volatile/#getter/#method/#action tag
 AddTrackModel.adapterHint
 AddTrackModel.altAssemblyName
@@ -959,13 +960,9 @@ LinearMultiSampleVariantDisplay.svgSidebar
 LinearMultiSampleVariantDisplay.trackMenuItems
 LinearMultiSampleVariantDisplay.unit
 LinearMultiSampleVariantDisplay.view
-LinearReferenceSequenceDisplay.effectiveShowReverse
-LinearReferenceSequenceDisplay.effectiveShowTranslation
 LinearReferenceSequenceDisplay.fetchNeeded
 LinearReferenceSequenceDisplay.numRows
 LinearReferenceSequenceDisplay.renderSvg
-LinearReferenceSequenceDisplay.rowHeight
-LinearReferenceSequenceDisplay.sequenceHeight
 LinearReferenceSequenceDisplay.sequenceType
 LinearReferenceSequenceDisplay.showForward
 LinearReferenceSequenceDisplay.showReverse

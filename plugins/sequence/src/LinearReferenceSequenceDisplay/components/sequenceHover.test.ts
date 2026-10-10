@@ -175,3 +175,54 @@ test('a peptide residue on a reversed block is not complemented', () => {
     ),
   ).toEqual({ type: 'base', strand: 1, base: 'T' })
 })
+
+test('a soft-masked base and codon keep the case they are drawn in', () => {
+  expect(
+    hoverDetailForRow(
+      { type: 'base', strand: -1 },
+      'atggcc',
+      0,
+      0,
+      false,
+      true,
+      standard,
+    ),
+  ).toEqual({ type: 'base', strand: -1, base: 't' })
+  expect(
+    hoverDetailForRow(
+      { type: 'translation', frame: 1 },
+      'atggcc',
+      0,
+      0,
+      false,
+      true,
+      standard,
+    ),
+  ).toEqual({
+    type: 'codon',
+    frame: 1,
+    codon: 'atg',
+    aminoAcid: 'M',
+    kind: 'start',
+  })
+})
+
+test('a codon holding an N reads as X, as the cell draws it', () => {
+  expect(
+    hoverDetailForRow(
+      { type: 'translation', frame: 1 },
+      'ANG',
+      0,
+      0,
+      false,
+      true,
+      standard,
+    ),
+  ).toEqual({
+    type: 'codon',
+    frame: 1,
+    codon: 'ANG',
+    aminoAcid: 'X',
+    kind: 'normal',
+  })
+})

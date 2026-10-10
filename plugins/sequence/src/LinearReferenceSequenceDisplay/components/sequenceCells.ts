@@ -1,10 +1,10 @@
-import { complementTable, revcom } from '@jbrowse/core/util'
+import { complementTable } from '@jbrowse/core/util'
 import { getGeneticCode } from '@jbrowse/core/util/geneticCodes'
 
 import {
   baseRowComplemented,
-  codonKind,
   frameShiftBounds,
+  readCodon,
   rowLayout,
 } from './sequenceGeometry.ts'
 
@@ -54,11 +54,7 @@ export function baseCell(
   return { letter, color }
 }
 
-/**
- * The amino acid and color of the codon starting at `i`. A negative frame
- * reads the other strand, so its triplet is the reverse complement of the
- * forward one whatever the block's orientation.
- */
+/** The amino acid and color of the codon starting at `i`. */
 export function codonCell(
   seq: string,
   i: number,
@@ -66,16 +62,14 @@ export function codonCell(
   codonTable: Record<string, string>,
   palette: ColorPalette,
 ) {
-  const raw = seq.slice(i, i + 3)
-  const codon = frame < 0 ? revcom(raw) : raw
-  const kind = codonKind(codon.toUpperCase(), codonTable)
+  const { aminoAcid, kind } = readCodon(seq, i, frame, codonTable)
   const color: SeqColor =
     kind === 'start'
       ? palette.start
       : kind === 'stop'
         ? palette.stop
         : frameColor(frame, palette)
-  return { aminoAcid: codonTable[codon] ?? '', color }
+  return { aminoAcid, color }
 }
 
 export function frameColor(frame: Frame, palette: ColorPalette) {

@@ -1,5 +1,5 @@
 import { getContrastRatio, getContrastText } from '@jbrowse/core/ui/palette'
-import { defaultStarts } from '@jbrowse/core/util'
+import { defaultStarts, revcom } from '@jbrowse/core/util'
 import { cssColorToABGR } from '@jbrowse/core/util/colorBits'
 
 import type { SequenceMarkState } from './sequenceMarks.ts'
@@ -160,6 +160,33 @@ export function codonKind(
     : codonTable[upperCodon] === '*'
       ? 'stop'
       : 'normal'
+}
+
+export interface Codon {
+  codon: string
+  aminoAcid: string
+  kind: CodonKind
+}
+
+/**
+ * The codon at index `i` of `seq`, read on `frame`'s strand: a negative frame's
+ * triplet is the reverse complement of the forward one whatever the block's
+ * orientation. A triplet the table has no entry for, such as one holding an N,
+ * translates to X.
+ */
+export function readCodon(
+  seq: string,
+  i: number,
+  frame: Frame,
+  codonTable: Record<string, string>,
+): Codon {
+  const raw = seq.slice(i, i + 3)
+  const codon = frame < 0 ? revcom(raw) : raw
+  return {
+    codon,
+    aminoAcid: codonTable[codon] ?? 'X',
+    kind: codonKind(codon.toUpperCase(), codonTable),
+  }
 }
 
 /**

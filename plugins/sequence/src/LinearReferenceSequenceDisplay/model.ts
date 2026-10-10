@@ -77,30 +77,6 @@ export interface SequenceRegionData {
  * #stateModel LinearReferenceSequenceDisplay
  * #displayFoundation MultiRegionDisplayMixin
  * base model `BaseDisplay` + `TrackHeightMixin` + `MultiRegionDisplayMixin`
- *
- * #example
- * A complete `ReferenceSequenceTrack` config to paste into `tracks` (an
- * assembly's `sequence` track takes the same shape). `showForward`,
- * `showReverse`, and `showTranslation` toggle the strand/translation rows:
- * ```js
- * {
- *   type: 'ReferenceSequenceTrack',
- *   trackId: 'refseq',
- *   name: 'Reference sequence',
- *   assemblyNames: ['hg38'],
- *   adapter: {
- *     type: 'IndexedFastaAdapter',
- *     uri: 'https://example.com/genome.fa',
- *   },
- *   displays: [
- *     {
- *       type: 'LinearReferenceSequenceDisplay',
- *       displayId: 'refseq-LinearReferenceSequenceDisplay',
- *       showTranslation: false,
- *     },
- *   ],
- * }
- * ```
  */
 export function modelFactory(
   configSchema: LinearReferenceSequenceDisplayConfigModel,
@@ -131,8 +107,6 @@ export function modelFactory(
       get sequenceData(): ReadonlyMap<number, SequenceRegionData> {
         return self.regionPayloads as ReadonlyMap<number, SequenceRegionData>
       },
-    }))
-    .views(self => ({
       /**
        * #getter
        */
@@ -189,25 +163,13 @@ export function modelFactory(
       },
       /**
        * #getter
-       */
-      get effectiveShowReverse() {
-        return this.isDna && this.showReverse
-      },
-      /**
-       * #getter
-       */
-      get effectiveShowTranslation() {
-        return this.isDna && this.showTranslation
-      },
-      /**
-       * #getter
        * Which rows the stack is showing, as the one value `rowLayout` takes
        */
       get rowVisibility(): RowVisibility {
         return {
           showForward: this.showForward,
-          showReverse: this.effectiveShowReverse,
-          showTranslation: this.effectiveShowTranslation,
+          showReverse: this.isDna && this.showReverse,
+          showTranslation: this.isDna && this.showTranslation,
         }
       },
       /**
@@ -256,16 +218,13 @@ export function modelFactory(
       get numRows() {
         return rowCount(self.rowVisibility)
       },
-      get sequenceHeight() {
-        return this.numRows * ROW_HEIGHT_PX
-      },
       /**
        * #getter
        * fits the visible rows, or 50px while a message shows
        */
       get computedHeight() {
         return this.placeholderMessage === undefined
-          ? this.sequenceHeight
+          ? this.numRows * ROW_HEIGHT_PX
           : COLLAPSED_HEIGHT_PX
       },
       /**
@@ -275,11 +234,13 @@ export function modelFactory(
       get height() {
         return getConf(self, 'height') ?? this.computedHeight
       },
+      /**
+       * #getter
+       * the track height split evenly across the shown rows
+       */
       get rowHeight() {
         return this.numRows > 0 ? this.height / this.numRows : 0
       },
-    }))
-    .views(self => ({
       /**
        * #getter
        * everything the marks and the letters need to paint a frame
@@ -288,35 +249,39 @@ export function modelFactory(
         return {
           ...self.cellEncoding,
           showLetters: showsLetters(self.view.bpPerPx),
-          rowHeight: self.rowHeight,
+          rowHeight: this.rowHeight,
           canvasWidth: self.canvasWidthPx,
-          canvasHeight: self.height,
+          canvasHeight: this.height,
         }
       },
     }))
-    .actions(self => ({
-      /**
-       * #action
-       */
-      toggleShowForward() {
-        setConf(self, 'showForward', !self.showForward)
+    .actions(self => {
+      // a row toggle drops a manual resize, so the track refits its rows
+      function toggleRow(key: keyof RowVisibility) {
+        setConf(self, key, !self[key])
         setConf(self, 'height', undefined)
-      },
-      /**
-       * #action
-       */
-      toggleShowReverse() {
-        setConf(self, 'showReverse', !self.showReverse)
-        setConf(self, 'height', undefined)
-      },
-      /**
-       * #action
-       */
-      toggleShowTranslation() {
-        setConf(self, 'showTranslation', !self.showTranslation)
-        setConf(self, 'height', undefined)
-      },
-    }))
+      }
+      return {
+        /**
+         * #action
+         */
+        toggleShowForward() {
+          toggleRow('showForward')
+        },
+        /**
+         * #action
+         */
+        toggleShowReverse() {
+          toggleRow('showReverse')
+        },
+        /**
+         * #action
+         */
+        toggleShowTranslation() {
+          toggleRow('showTranslation')
+        },
+      }
+    })
     .actions(self => ({
       /**
        * #action

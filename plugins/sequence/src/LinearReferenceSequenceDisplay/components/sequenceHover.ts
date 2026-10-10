@@ -1,25 +1,19 @@
-import { complement, revcom } from '@jbrowse/core/util'
+import { complement } from '@jbrowse/core/util'
 
 import {
   baseRowComplemented,
-  codonKind,
   codonPhase,
+  readCodon,
 } from './sequenceGeometry.ts'
 
-import type { CodonKind, SequenceRow } from './sequenceGeometry.ts'
+import type { Codon, SequenceRow } from './sequenceGeometry.ts'
 import type { Frame } from '@jbrowse/core/util'
 
 export type HoverDetail =
   // `strand` is the strand the reported `base` belongs to, which is not always
   // the strand of the row it was read from — see hoverDetailForRow.
   | { type: 'base'; strand: 1 | -1; base: string }
-  | {
-      type: 'codon'
-      frame: Frame
-      codon: string
-      aminoAcid: string
-      kind: CodonKind
-    }
+  | ({ type: 'codon'; frame: Frame } & Codon)
 
 export interface SequenceHover {
   refName: string
@@ -43,8 +37,8 @@ export function hoverDetailForRow(
   isDna: boolean,
   codonTable: Record<string, string>,
 ): HoverDetail | undefined {
-  const fwdBase = seq[coord0 - seqStart]?.toUpperCase()
   if (row.type === 'base') {
+    const fwdBase = seq[coord0 - seqStart]
     const complemented = baseRowComplemented(row.strand, reversed, isDna)
     return fwdBase
       ? {
@@ -54,17 +48,12 @@ export function hoverDetailForRow(
         }
       : undefined
   }
-  const start = coord0 - codonPhase(coord0, row.frame)
-  const raw = seq.slice(start - seqStart, start - seqStart + 3)
-  const codon = (row.frame > 0 ? raw : revcom(raw)).toUpperCase()
-  const aminoAcid = codon.length === 3 ? codonTable[codon] : undefined
-  return aminoAcid
+  const i = coord0 - codonPhase(coord0, row.frame) - seqStart
+  return i >= 0 && i + 3 <= seq.length
     ? {
         type: 'codon',
         frame: row.frame,
-        codon,
-        aminoAcid,
-        kind: codonKind(codon, codonTable),
+        ...readCodon(seq, i, row.frame, codonTable),
       }
     : undefined
 }

@@ -7,32 +7,6 @@ sidebar_label: Display -> LinearReferenceSequenceDisplay
 
 Auto-generated from the @jbrowse/mobx-state-tree model in the source — see the [developer guide](/docs/developer_guide/) for concepts. Provided by the `sequence` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/sequence/src/LinearReferenceSequenceDisplay/model.ts).
 
-## Example usage
-
-A complete `ReferenceSequenceTrack` config to paste into `tracks` (an
-assembly's `sequence` track takes the same shape). `showForward`,
-`showReverse`, and `showTranslation` toggle the strand/translation rows:
-
-```js
-{
-  type: 'ReferenceSequenceTrack',
-  trackId: 'refseq',
-  name: 'Reference sequence',
-  assemblyNames: ['hg38'],
-  adapter: {
-    type: 'IndexedFastaAdapter',
-    uri: 'https://example.com/genome.fa',
-  },
-  displays: [
-    {
-      type: 'LinearReferenceSequenceDisplay',
-      displayId: 'refseq-LinearReferenceSequenceDisplay',
-      showTranslation: false,
-    },
-  ],
-}
-```
-
 base model `BaseDisplay` + `TrackHeightMixin` + `MultiRegionDisplayMixin`
 
 The configuration slots for this model are documented on its [config schema page](../../config/linearreferencesequencedisplay).
@@ -73,21 +47,18 @@ Each section ends with the members a composed model contributes, linked to the p
 | <span id="getter-showforward">**showForward**</span><br><code>boolean</code> |  |
 | <span id="getter-showreverse">**showReverse**</span><br><code>boolean</code> |  |
 | <span id="getter-showtranslation">**showTranslation**</span><br><code>boolean</code> |  |
-| <span id="getter-sequencetype">**sequenceType**</span><br><code>string</code> |  |
+| <span id="getter-sequencetype">**sequenceType**</span><br><code>"dna" &#124; "pep"</code> |  |
 | <span id="getter-colorpalette">**colorPalette**</span><br><code>ColorPalette</code> | Theme-derived fill and text color for every cell this display paints |
 | <span id="getter-isdna">**isDna**</span><br><code>boolean</code> | the reverse-complement and translation rows are DNA-only |
-| <span id="getter-effectiveshowreverse">**effectiveShowReverse**</span><br><code>boolean</code> |  |
-| <span id="getter-effectiveshowtranslation">**effectiveShowTranslation**</span><br><code>boolean</code> |  |
 | <span id="getter-rowvisibility">**rowVisibility**</span><br><code>RowVisibility</code> | Which rows the stack is showing, as the one value `rowLayout` takes |
 | <span id="getter-cellencoding">**cellEncoding**</span><br><code>CellEncoding</code> | What the cells' encode reads beyond the sequence itself |
 | <span id="getter-zoomedout">**zoomedOut**</span><br><code>boolean</code> | the view is too zoomed out to show individual bases |
 | <span id="getter-placeholdermessage">**placeholderMessage**</span><br><code>string &#124; undefined</code> | The message shown where the canvas would go: zoomed past base resolution, or every row toggled off (which would otherwise collapse the track to 0px). Undefined when the sequence paints. |
 | <span id="getter-fetchinert">**fetchInert**</span><br><code>boolean</code> | A shown message means no paint is coming. See FetchMixin.fetchInert. |
 | <span id="getter-numrows">**numRows**</span><br><code>number</code> |  |
-| <span id="getter-sequenceheight">**sequenceHeight**</span><br><code>number</code> |  |
 | <span id="getter-computedheight">**computedHeight**</span><br><code>number</code> | fits the visible rows, or 50px while a message shows |
 | <span id="getter-height">**height**</span><br><code>number</code> | a manual resize if set, else `computedHeight` |
-| <span id="getter-rowheight">**rowHeight**</span><br><code>number</code> |  |
+| <span id="getter-rowheight">**rowHeight**</span><br><code>number</code> | the track height split evenly across the shown rows |
 | <span id="getter-renderstate">**renderState**</span><br><code>SequenceRenderState</code> | everything the marks and the letters need to paint a frame |
 
 <span data-pagefind-ignore>From [BaseDisplay](../basedisplay): <span id="getter-parenttrack">[`parentTrack`](../basedisplay#getter-parenttrack)</span>, <span id="getter-renderingcomponent">[`RenderingComponent`](../basedisplay#getter-renderingcomponent)</span>, <span id="getter-displayblurb">[`DisplayBlurb`](../basedisplay#getter-displayblurb)</span>, <span id="getter-adapterconfig">[`adapterConfig`](../basedisplay#getter-adapterconfig)</span>, <span id="getter-isminimized">[`isMinimized`](../basedisplay#getter-isminimized)</span>, <span id="getter-hoveredfeature">[`hoveredFeature`](../basedisplay#getter-hoveredfeature)</span>, <span id="getter-featurenoun">[`featureNoun`](../basedisplay#getter-featurenoun)</span>, <span id="getter-featurewidgettype">[`featureWidgetType`](../basedisplay#getter-featurewidgettype)</span>, <span id="getter-plotkeys">[`plotKeys`](../basedisplay#getter-plotkeys)</span>, <span id="getter-plot">[`plot`](../basedisplay#getter-plot)</span>, <span id="getter-plotexamples">[`plotExamples`](../basedisplay#getter-plotexamples)</span>, <span id="getter-configdocsurl">[`configDocsUrl`](../basedisplay#getter-configdocsurl)</span></span>
