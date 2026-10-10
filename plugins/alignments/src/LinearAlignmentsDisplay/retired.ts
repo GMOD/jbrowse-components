@@ -173,12 +173,6 @@ export const retiredConfigSpellings: Record<string, RetiredSpelling> = {
 }
 // #endregion
 
-// The `*Setting` names are what v4.3.0 sessions carry: its mixin declared
-// `colorBySetting`/`filterBySetting` and wrote them back out under those
-// names. The bare names are for hand-written snapshots.
-//
-// `hideSmallIndelsSetting` and `hideLargeIndelsSetting` have no slot to go to:
-// the feature went rather than moved.
 // v4 named a sort by its menu label and counted the position from 1; a
 // `Start location` sort was the default order and names nothing here.
 const V4_SORT_TYPES: Record<string, string> = {
@@ -198,6 +192,12 @@ function sortSlot(value: unknown): DisplayEntry {
     : {}
 }
 
+// The `*Setting` names are what v4.3.0 sessions carry: its mixin declared
+// `colorBySetting`/`filterBySetting` and wrote them back out under those
+// names. The bare names are for hand-written snapshots.
+//
+// `hideSmallIndelsSetting` and `hideLargeIndelsSetting` have no slot to go to:
+// the feature went rather than moved.
 const INSTANCE_SLOTS: Record<string, (value: unknown) => DisplayEntry> = {
   colorBy: colorSlotsOf,
   colorBySetting: colorSlotsOf,

@@ -67,11 +67,6 @@ export function contentScreenY(contentY: number, m: ScrollModel) {
   return contentY - m.scrollTop
 }
 
-// Whether a screen-space band [top, top+height] intersects the canvas.
-export function bandOnScreen(top: number, height: number, m: ScrollModel) {
-  return top + height >= 0 && top <= m.canvasHeight
-}
-
 // Screen Y of a stacked section's pileup band bottom, clamped to the canvas.
 // Collapsed groups have pileupHeight 0, so this collapses to the band top and
 // nothing in the band stays visible. Shared by the label / highlight / bezier

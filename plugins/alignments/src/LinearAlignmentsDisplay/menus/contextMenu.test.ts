@@ -249,7 +249,7 @@ describe('a gap cigar hit sorts at the clicked column, not the gap start', () =>
     })
     const items = run(model)
     firstSubMenuItem(items[0]).onClick()
-    findSubMenu(items, 'Sort by')
+    findSubMenu(items, 'Sort by...')
       .find(i => i.label === 'Base pair')!
       .onClick()
     expect(model.sortCalls).toEqual([
@@ -386,7 +386,7 @@ test('a read hit offers a "Sort by" submenu anchored at the clicked column', () 
     contextMenuFeature: makeFeature({ name: 'readABC' }),
     genomicPos: 150,
   })
-  const sortBy = findSubMenu(run(model), 'Sort by')
+  const sortBy = findSubMenu(run(model), 'Sort by...')
   expect(sortBy.map(i => i.label)).toEqual([
     'Read strand',
     'Base pair',
@@ -406,7 +406,7 @@ test('the read "Sort by" fires after the block is cleared (captured pos/refName)
     contextMenuFeature: makeFeature({ name: 'readABC' }),
     genomicPos: 150,
   })
-  const sortBy = findSubMenu(run(model), 'Sort by')
+  const sortBy = findSubMenu(run(model), 'Sort by...')
   const strand = sortBy.find(i => i.label === 'Read strand')!
   model.contextMenuHit = undefined
   strand.onClick()
@@ -421,7 +421,7 @@ test('no "Sort by" submenu without a resolved hit', () => {
     noHit: true,
   })
   expect(run(model).map(i => (i as { label: string }).label)).not.toContain(
-    'Sort by',
+    'Sort by...',
   )
 })
 
@@ -436,7 +436,7 @@ test('sort: false drops the read "Sort by" but keeps the rest', () => {
   const labels = getContextMenuItems(model, { sort: false }).map(
     i => (i as { label?: string }).label,
   )
-  expect(labels).not.toContain('Sort by')
+  expect(labels).not.toContain('Sort by...')
   expect(labels).toContain('Open feature details')
   expect(labels).toContain('Copy')
 })
@@ -452,7 +452,7 @@ describe('what the menu offers before the feature fetch lands', () => {
       genomicPos: 150,
     })
     const labels = run(model).map(i => (i as { label?: string }).label)
-    expect(labels).toEqual(['Open feature details', 'Sort by'])
+    expect(labels).toEqual(['Open feature details', 'Sort by...'])
   })
 
   test('the read-field items are absent until it does', () => {
@@ -464,7 +464,7 @@ describe('what the menu offers before the feature fetch lands', () => {
     ).map(i => (i as { label?: string }).label)
     expect(withFeat).toEqual([
       'Open feature details',
-      'Sort by',
+      'Sort by...',
       'Filter',
       'Copy',
     ])

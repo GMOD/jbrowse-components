@@ -35,7 +35,7 @@ interface ReadsModel extends CollapseGroupRowsModel, HiddenGroupsModel {
 // **Layers only.** Which reads exist is "Filter by..." — the three read-category
 // toggles that used to end this menu (proper pairs, singletons, split
 // alignments) drop reads in the worker rather than hiding drawn ones, and now
-// live in `filterBy` with the rest of the filters. What is left is one kind of
+// live in `filter` with the rest of the filters. What is left is one kind of
 // thing: a switch on something already fetched.
 //
 // **Toggles only, and flat.** What makes a long menu hard to scan is rows that

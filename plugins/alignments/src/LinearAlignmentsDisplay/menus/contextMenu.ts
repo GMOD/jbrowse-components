@@ -471,7 +471,7 @@ export function getContextMenuItems(
       const { genomicPos: pos, block } = menuHit
       const { refName } = block
       items.push({
-        label: 'Sort by',
+        label: 'Sort by...',
         icon: SwapVertIcon,
         type: 'subMenu',
         subMenu: [

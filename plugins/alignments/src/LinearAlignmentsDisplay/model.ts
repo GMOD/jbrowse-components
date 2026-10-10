@@ -77,7 +77,6 @@ import { junctionSupportingReadSlots } from '../features/sashimi/supportingReads
 import { arcSlotCategory } from '../shaders/palettes.ts'
 import {
   BASE_COLOR_FIELDS,
-  colorFieldOf,
   writtenReadCategoryColors,
   declaredReadLabels,
   isBakedScheme,
@@ -1076,7 +1075,7 @@ export default function stateModelFactory(
           get keySectionOrder() {
             const facet = this.effectiveFacet
             return facet &&
-              facet.field === colorFieldOf(self.colorBy) &&
+              facet.field === self.colorField &&
               self.colorBy.type !== 'mappingQuality'
               ? sectionOrder(facet.field, facet.domain)
               : undefined
@@ -3281,8 +3280,7 @@ export default function stateModelFactory(
 
           /**
            * #action
-           * Orientation of the below-coverage band, shared by read-connection
-           * arcs and sashimi arcs.
+           * Whether the read-connection band hangs below the coverage band.
            */
           setReadConnectionsDown(down: boolean) {
             setConf(self, 'readConnectionsDown', down)

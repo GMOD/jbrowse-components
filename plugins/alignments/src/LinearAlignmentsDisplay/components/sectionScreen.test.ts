@@ -1,5 +1,4 @@
 import {
-  bandOnScreen,
   bandScreenTop,
   contentScreenY,
   onPileupBand,
@@ -34,18 +33,6 @@ describe('sectionBandBottom', () => {
   })
   it('collapses to the band top for a collapsed group (height 0)', () => {
     expect(sectionBandBottom(100, 0, grouped)).toBe(bandScreenTop(100, grouped))
-  })
-})
-
-describe('bandOnScreen', () => {
-  it('is true when the band intersects [0, canvasHeight]', () => {
-    expect(bandOnScreen(10, 50, grouped)).toBe(true)
-    expect(bandOnScreen(-50, 60, grouped)).toBe(true) // bottom edge at 10
-    expect(bandOnScreen(600, 20, grouped)).toBe(true) // top edge exactly at canvas bottom
-  })
-  it('is false when the band is fully above or below the canvas', () => {
-    expect(bandOnScreen(-60, 50, grouped)).toBe(false) // bottom at -10
-    expect(bandOnScreen(601, 20, grouped)).toBe(false)
   })
 })
 

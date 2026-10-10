@@ -1,5 +1,4 @@
 export {
-  INSERTION_SERIF_MIN_PX_PER_BP,
   LABEL_FADE_FLOOR,
   LONG_INSERTION_MIN_LENGTH,
   LONG_INSERTION_TEXT_THRESHOLD_PX,
@@ -23,7 +22,8 @@ export type AlignmentsUnit = (typeof ALIGNMENTS_UNITS)[number]
 
 // How read connections (mate pairs + split/chimeric reads) are rendered.
 // Orthogonal to direction (readConnectionsDown): 'arc' draws regular arcs;
-// 'cloud' (read cloud) draws flat lines at Y=|tlen|, discordant pairs only.
+// 'cloud' (read cloud) draws flat lines at Y=|tlen|, the modal pairs left out
+// unless `showOrdinaryPairs` keeps them.
 // Both color by `arcColorField` (red/green/teal/navy by insert size + orientation).
 // One list for the schema enumeration and the "Connection overlay" radio
 // group, so the menu cannot offer a mode the slot refuses. The members are
@@ -42,7 +42,7 @@ export type ReadConnectionsMode =
 // Sashimi junction-arc placement, owned by sashimi alone (decoupled from the
 // paired-end `readConnectionsDown`). Defined next to the side-assignment
 // algorithm it selects and re-exported here for the display-layer model and
-// menus. 'auto' is the default.
+// menus. 'up' is the default.
 export {
   SASHIMI_ARCS_MODES,
   type SashimiArcsMode,

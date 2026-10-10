@@ -24,7 +24,7 @@ interface SashimiModel {
   minSashimiScore: number
   setMinSashimiScore: (score: number) => void
   showNonCanonicalJunctions: boolean
-  setShowNonCanonicalJunctions: (hide: boolean) => void
+  setShowNonCanonicalJunctions: (show: boolean) => void
 }
 
 // All sashimi (splice-junction arc) controls in one place. The labels,
@@ -93,7 +93,7 @@ export function getSashimiMenuItem(model: SashimiModel) {
             ),
           },
           makeSizeSubMenu({
-            label: 'min read support',
+            label: 'Min read support',
             title: 'Min read support',
             // read support spans small integers to thousands on deep RNA-seq, so
             // log-scale. 1 already shows every arc (filter is `count >= min` and

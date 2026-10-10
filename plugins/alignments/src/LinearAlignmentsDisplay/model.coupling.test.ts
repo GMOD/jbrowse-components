@@ -615,10 +615,10 @@ describe('ordering controls in chain mode', () => {
       hit: { block: makeContextMenuBlock(), genomicPos: 50 },
       featureId: 'read1',
     })
-    expect(hasMenuItem(display.contextMenuItems(), 'Sort by')).toBe(true)
+    expect(hasMenuItem(display.contextMenuItems(), 'Sort by...')).toBe(true)
 
     display.setUnit('chain')
-    expect(hasMenuItem(display.contextMenuItems(), 'Sort by')).toBe(false)
+    expect(hasMenuItem(display.contextMenuItems(), 'Sort by...')).toBe(false)
     // the rest of the menu is untouched — only the ordering rows go
     expect(
       hasMenuItem(display.contextMenuItems(), 'Open feature details'),
