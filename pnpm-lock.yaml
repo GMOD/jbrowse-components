@@ -733,6 +733,22 @@ importers:
         specifier: '>=19.0.0'
         version: 19.3.0(react@19.3.0)
 
+  packages/tables:
+    dependencies:
+      '@jbrowse/core':
+        specifier: workspace:^
+        version: link:../core
+      '@jbrowse/plugin-alignments':
+        specifier: workspace:^
+        version: link:../../plugins/alignments
+      '@jbrowse/plugin-sequence':
+        specifier: workspace:^
+        version: link:../../plugins/sequence
+    devDependencies:
+      esbuild:
+        specifier: ^0.28.2
+        version: 0.28.2
+
   packages/text-indexing:
     dependencies:
       '@jbrowse/core':

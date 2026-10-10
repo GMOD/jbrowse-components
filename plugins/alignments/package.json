@@ -19,7 +19,8 @@
   "main": "src/index.ts",
   "exports": {
     ".": "./src/index.ts",
-    "./LinearAlignmentsDisplay/stateModel": "./src/LinearAlignmentsDisplay/model.ts"
+    "./LinearAlignmentsDisplay/stateModel": "./src/LinearAlignmentsDisplay/model.ts",
+    "./tables": "./src/tables.ts"
   },
   "files": [
     "esm"
@@ -69,7 +70,8 @@
     "types": "esm/index.d.ts",
     "exports": {
       ".": "./esm/index.js",
-      "./LinearAlignmentsDisplay/stateModel": "./esm/LinearAlignmentsDisplay/model.js"
+      "./LinearAlignmentsDisplay/stateModel": "./esm/LinearAlignmentsDisplay/model.js",
+      "./tables": "./esm/tables.js"
     }
   },
   "sideEffects": false

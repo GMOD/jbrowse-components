@@ -1,0 +1,72 @@
+# The repos that build against this one, run against this commit. JBrowseR and
+# jbrowse-anywidget link packages out of a jbrowse-components checkout beside
+# them and commit the bundle they build; ggjbrowse bundles @jbrowse/tables the
+# same way. A change here that breaks one fires no event there, so each repo's
+# own nightly job found it a day late and in the wrong place: a mobx major sat
+# broken in JBrowseR for two weeks.
+#
+# Each downstream repo keeps its checks in scripts/check-against-jbrowse.sh,
+# which its own CI runs too, so the two cannot drift; this only puts this
+# checkout beside it as `jbrowse-components`. Both sit side by side under the
+# workspace rather than one inside the other, or Node resolution from the
+# downstream repo would climb into this repo's node_modules and hide a
+# dependency it forgot to declare. Off the PR path, like blat-canary.yml: a
+# red run names a downstream repo this commit broke, and the fix goes here or
+# there. On a `v*` tag rather than a release, since a beta's release is a
+# draft and publishes no event.
+name: Downstream canary
+
+on:
+  push:
+    tags: ['v*']
+  schedule:
+    # 05:30 UTC daily, before the downstream repos' own 06:00 nightlies
+    - cron: '30 5 * * *'
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  downstream:
+    name: ${{ matrix.repo }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - repo: JBrowseR
+          - repo: jbrowse-anywidget
+          - repo: ggjbrowse
+            apt:
+              r-base-core r-cran-v8 r-cran-jsonlite r-cran-curl r-cran-ggplot2
+              r-cran-testthat
+    steps:
+      - if: matrix.apt
+        run:
+          sudo apt-get update && sudo apt-get -y install --no-install-recommends
+          ${{ matrix.apt }}
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        with:
+          path: jbrowse-components
+          persist-credentials: false
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        with:
+          repository: GMOD/${{ matrix.repo }}
+          path: ${{ matrix.repo }}
+          persist-credentials: false
+      - uses: pnpm/action-setup@0ebf47130e4866e96fce0953f49152a61190b271 # v6.0.9
+        with:
+          package_json_file: jbrowse-components/package.json
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: '24'
+      - run: pnpm install --frozen-lockfile
+        working-directory: jbrowse-components
+      - run: scripts/check-against-jbrowse.sh
+        working-directory: ${{ matrix.repo }}

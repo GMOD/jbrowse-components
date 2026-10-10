@@ -1,0 +1,60 @@
+{
+  "name": "@jbrowse/tables",
+  "version": "5.0.0-beta.13",
+  "private": true,
+  "type": "module",
+  "description": "JBrowse's track data as columnar tables, for a host that draws them itself, such as R through V8",
+  "keywords": [
+    "jbrowse",
+    "jbrowse2",
+    "genomics",
+    "r",
+    "v8"
+  ],
+  "license": "Apache-2.0",
+  "homepage": "https://jbrowse.org",
+  "bugs": "https://github.com/GMOD/jbrowse-components/issues",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/GMOD/jbrowse-components.git",
+    "directory": "packages/tables"
+  },
+  "author": "JBrowse Team",
+  "main": "src/index.ts",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "files": [
+    "esm",
+    "dist"
+  ],
+  "scripts": {
+    "build:esm": "node ../../node_modules/typescript7/bin/tsc --build tsconfig.build.esm.json",
+    "build:bundle": "node scripts/build-bundle.mjs",
+    "build": "pnpm build:esm && pnpm build:bundle",
+    "test": "cd ../..; jest --passWithNoTests packages/tables",
+    "clean": "rimraf esm dist *.tsbuildinfo",
+    "prebuild": "pnpm clean",
+    "prepack": "pnpm build"
+  },
+  "dependencies": {
+    "@jbrowse/core": "workspace:^",
+    "@jbrowse/plugin-alignments": "workspace:^",
+    "@jbrowse/plugin-sequence": "workspace:^"
+  },
+  "devDependencies": {
+    "esbuild": "^0.28.2"
+  },
+  "publishConfig": {
+    "access": "public",
+    "main": "esm/index.js",
+    "types": "esm/index.d.ts",
+    "exports": {
+      ".": "./esm/index.js"
+    }
+  },
+  "sideEffects": [
+    "**/hostGlobals.*",
+    "**/bundle.*"
+  ]
+}
