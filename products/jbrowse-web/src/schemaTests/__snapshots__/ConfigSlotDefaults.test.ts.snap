@@ -620,6 +620,7 @@ exports[`every registered schema slot default 1`] = `
     "showOutline": "boolean = false",
   },
   "display: LinearWiggleDisplay": {
+    "aggregate": "stringEnum = "whiskers" of ["max","min","mean","whiskers"]",
     "height": "number = 100",
     "interpolate": "stringEnum = "step" of ["step","linear"]",
     "mark": "stringEnum = "bar" of ["bar","point","line","span"]",
@@ -632,7 +633,6 @@ exports[`every registered schema slot default 1`] = `
     "showRowSeparators": "boolean = false",
     "showTree": "boolean = true",
     "size": "maybeNumber = undefined",
-    "summaryScoreMode": "stringEnum = "whiskers" of ["max","min","mean","whiskers"]",
     "treeAreaWidth": "number = 80",
     "y": "featureField = "score"",
   },
