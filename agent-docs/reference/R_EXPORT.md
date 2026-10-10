@@ -89,7 +89,7 @@ Each cost a wrong figure to find.
 
 Codegen string checks miss the bugs that matter. Run the *actual* generated script through `Rscript` against `test_data/volvox/*`, assert the figure exists, then run a probe script that calls one helper and asserts a known biological fact. Cross-implementation oracles run the real JS and the R helpers over identical data and assert read-for-read agreement (`computeSortedLayout` against `sorted_pileup_layout`, the modification readings against `bam_modifications`, `read_base_counts` against `Rsamtools::pileup()`). Stripping MD from a BAM and requiring the reference path to reproduce the mismatches of `samtools calmd` against the same FASTA is the mismatch oracle; `spliced.bam`'s own MD tags were written against another reference. The pileup layout matches `placeRect` exactly, with the `pileup` step's `padding: 2` reproducing its 2bp gap between reads sharing a row.
 
-`rScriptRun.test.ts` uses one R session for every case, since attaching Bioconductor is slow, and skips itself where R is absent, **which is every CI run**: treat it as a local gate.
+`rScriptRun.test.ts` and `exportViewR.test.ts` each use one R session for every case, since attaching Bioconductor is slow, and skip themselves where R is absent. The `R export` workflow runs them on Ubuntu's apt R stack with `REQUIRE_R=1`, which turns that skip into a failure, on a push touching `rexport/` and nightly. Its Bioconductor is older than a researcher's, so a helper calling a newer function needs a fallback, as `bam_mismatches` falls back from `cigarillo` to `sequenceLayer`; and R's `sort()` collates by locale, so a probe that prints sorted names orders them itself.
 
 ## What the grammar supplies
 

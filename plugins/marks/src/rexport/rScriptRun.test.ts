@@ -12,6 +12,7 @@ import path from 'node:path'
 import { placeRect } from '@jbrowse/core/util/layouts/placeRect'
 
 import { alignmentsPanels } from './alignmentsToR.ts'
+import { hasR } from './exportView.fixture.ts'
 import { featureFields, featurePlot } from './featureToPlot.ts'
 import { frameFor, sourceNotes } from './frameFor.ts'
 import { fieldsRead, markPlot } from './markToPlot.ts'
@@ -46,7 +47,7 @@ const PACKAGES = [
   'patchwork',
 ]
 
-const R = hasR()
+const R = hasR(PACKAGES)
 const BIGWIG = path.resolve('test_data/volvox/volvox.bw')
 const GFF = path.resolve('test_data/volvox/volvox.sort.gff3.gz')
 const VCF = path.resolve('test_data/volvox/volvox.filtered.vcf.gz')
@@ -59,19 +60,6 @@ const MARKS_CONFIG = JSON.parse(
 
 function marksDisplay(trackId: string) {
   return MARKS_CONFIG.tracks.find(t => t.trackId === trackId)!.displays[0]!
-}
-
-function hasR() {
-  try {
-    execFileSync(
-      'Rscript',
-      ['-e', PACKAGES.map(p => `library(${p})`).join('; ')],
-      { stdio: 'ignore' },
-    )
-    return true
-  } catch {
-    return false
-  }
 }
 
 const DIR = mkdtempSync(path.join(tmpdir(), 'rexport-'))

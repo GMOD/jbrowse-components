@@ -39,9 +39,6 @@ without an explicit go.
    without a cycle. A per-display export slot with a shared package would put
    each next to the settings it reads. `BUILTIN_EXPORTERS` in `exportView.ts` is
    the seam.
-3. **Whether R belongs in CI.** `rScriptRun.test.ts` and `exportViewR.test.ts`
-   skip themselves where R is absent, which is every CI run, so a regression
-   stays green. A job with R, Bioconductor and samtools would run both.
 
 ## Next, in order
 

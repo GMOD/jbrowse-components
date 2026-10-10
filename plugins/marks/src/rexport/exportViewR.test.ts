@@ -14,6 +14,7 @@ import { colorEncodingOf } from '@jbrowse/display-kit/colorConfigSchema'
 import {
   REGIONS,
   VOLVOX,
+  available,
   configTracks,
   hasR,
   runCases,
@@ -131,14 +132,7 @@ const crossRegionTicks = register(
 function samtools(...args: string[]) {
   return execFileSync('samtools', args, { stdio: ['ignore', 'pipe', 'ignore'] })
 }
-const hasSamtools = (() => {
-  try {
-    samtools('--version')
-    return true
-  } catch {
-    return false
-  }
-})()
+const hasSamtools = available('samtools', () => samtools('--version'))
 
 function splicedFrom(bam: string, refNames?: Record<string, string>) {
   return {
@@ -398,7 +392,8 @@ const variantTypes = register(
     ],
     wide,
   ),
-  'table(df_marks_variants$type)',
+  `{ t <- table(df_marks_variants$type)
+  paste(paste(names(t), t)[order(tolower(names(t)))], collapse = "|") }`,
 )
 
 function wiggle(display: Record<string, unknown>) {
@@ -762,8 +757,8 @@ maybe('the emitted script, run under R', () => {
   })
 
   it('names a variant by the browser\u2019s sequence-ontology term', () => {
-    expect(results.get(variantTypes)?.replaceAll(/\s+/g, ' ')).toBe(
-      'deletion insertion SNV 2 2 41',
+    expect(results.get(variantTypes)).toBe(
+      '[1] "deletion 2|insertion 2|SNV 41"',
     )
   })
 

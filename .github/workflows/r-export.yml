@@ -1,0 +1,48 @@
+name: R export
+
+# The R exporter's suites run each emitted script under Rscript and skip where R
+# is absent, which is every other job. Here REQUIRE_R=1 makes a missing R,
+# package or samtools a failure, so a broken install cannot pass as a skip.
+#
+# The exporter reads the browser's own rules at export time (palettes, color
+# encodings, presets), so a change outside rexport/ can break it without
+# touching these paths; the nightly run is what catches that.
+on:
+  push:
+    branches:
+      - '**'
+    paths:
+      - 'plugins/marks/src/rexport/**'
+      - 'test_data/volvox/**'
+      - '.github/workflows/r-export.yml'
+  schedule:
+    - cron: '0 7 * * *'
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  r-export:
+    name: R export
+    # Pinned rather than -latest: the R stack comes from this release's apt
+    # archive, so its package names and Bioconductor versions move with it.
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - run:
+          sudo apt-get update && sudo apt-get -y install --no-install-recommends
+          r-base-core r-bioc-rtracklayer r-bioc-rsamtools
+          r-bioc-genomicalignments r-cran-ggplot2 r-cran-patchwork r-cran-curl
+          samtools tabix
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        with:
+          persist-credentials: false
+      - uses: ./.github/actions/setup
+      - run: pnpm exec jest plugins/marks/src/rexport --reporters=default
+        env:
+          REQUIRE_R: '1'

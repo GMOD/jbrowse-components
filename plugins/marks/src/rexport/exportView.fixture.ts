@@ -53,17 +53,33 @@ export function track(
   }
 }
 
-export function hasR() {
+/**
+ * Whether a tool the R suites need is present: false skips them, except
+ * under `REQUIRE_R=1`, where the R CI job sets it, so a broken install fails
+ * rather than going green.
+ */
+export function available(tool: string, run: () => void) {
   try {
-    execFileSync(
-      'Rscript',
-      ['-e', 'library(rtracklayer); library(Rsamtools)'],
-      { stdio: 'ignore' },
-    )
+    run()
     return true
-  } catch {
+  } catch (e) {
+    if (process.env.REQUIRE_R === '1') {
+      throw new Error(`REQUIRE_R is set but ${tool} is unavailable: ${e}`, {
+        cause: e,
+      })
+    }
     return false
   }
+}
+
+export function hasR(packages = ['rtracklayer', 'Rsamtools']) {
+  return available(`R with ${packages.join(', ')}`, () => {
+    execFileSync(
+      'Rscript',
+      ['-e', packages.map(p => `library(${p})`).join('; ')],
+      { stdio: 'ignore' },
+    )
+  })
 }
 
 export interface RCase {
