@@ -1,6 +1,6 @@
 ---
 name: wiggle-display
-description: How the wiggle display lays out rows, sizes bars, handles gaps, summary modes, bands and color. Read before touching plugins/wiggle.
+description: How the wiggle display lays out rows, sizes bars, handles gaps, aggregates, bands and color. Read before touching plugins/wiggle.
 kind: spec
 ---
 
@@ -242,7 +242,7 @@ solid-color track is.
 
 ## A line plot is one line, colored by the band between two cuts it is in
 
-Every summary mode on `line`/`linecenter` draws one layer through all the bins
+Every aggregate on a `line` draws one layer through all the bins
 (`lineLayers`), with no per-instance color lane. **Color comes from the band
 the line is in, not the bin**: the shader tests each fragment's centre-line y
 against the cut heights its vertex placed (`bandColorAt`), and Canvas2D strokes

@@ -74,8 +74,8 @@
 <!-- summary -->
 <g id="node3" class="node">
 <title>summary</title>
-<polygon fill="none" stroke="black" points="315,-679.25 171.36,-661.25 315,-643.25 458.64,-661.25 315,-679.25"/>
-<text xml:space="preserve" text-anchor="middle" x="315" y="-658.12" font-family="monospace" font-size="10.00">effectiveSummaryScoreMode</text>
+<polygon fill="none" stroke="black" points="315,-679.25 207.7,-661.25 315,-643.25 422.3,-661.25 315,-679.25"/>
+<text xml:space="preserve" text-anchor="middle" x="315" y="-658.12" font-family="monospace" font-size="10.00">effectiveAggregate</text>
 </g>
 <!-- range -->
 <g id="node9" class="node">
@@ -89,7 +89,7 @@
 <!-- summary&#45;&gt;range -->
 <g id="edge9" class="edge">
 <title>summary&#45;&gt;range</title>
-<path fill="none" stroke="black" d="M260.64,-649.56C247.73,-644.38 235.42,-636.68 227.5,-625.25 203.69,-590.91 206.97,-541.52 213.54,-507.13"/>
+<path fill="none" stroke="black" d="M265.21,-651.29C250.69,-646.14 236.36,-638.02 227.5,-625.25 203.69,-590.91 206.97,-541.52 213.54,-507.13"/>
 <polygon fill="black" stroke="black" points="216.91,-508.07 215.54,-497.57 210.06,-506.64 216.91,-508.07"/>
 <text xml:space="preserve" text-anchor="middle" x="301.75" y="-603.33" font-family="Times,serif" font-size="14.00"> any mode, line plots</text>
 </g>
@@ -105,7 +105,7 @@
 <!-- summary&#45;&gt;bands -->
 <g id="edge10" class="edge">
 <title>summary&#45;&gt;bands</title>
-<path fill="none" stroke="black" d="M351.15,-647.28C361.76,-641.91 372.51,-634.69 380,-625.25 389.29,-613.54 394.67,-598.21 397.78,-584.04"/>
+<path fill="none" stroke="black" d="M348.78,-648.44C360.14,-642.97 371.95,-635.39 380,-625.25 389.29,-613.54 394.67,-598.21 397.78,-584.04"/>
 <polygon fill="black" stroke="black" points="401.17,-584.98 399.54,-574.51 394.28,-583.7 401.17,-584.98"/>
 <text xml:space="preserve" text-anchor="start" x="395.61" y="-611.95" font-family="Times,serif" font-size="14.00"> whiskers, min, max, mean</text>
 <text xml:space="preserve" text-anchor="middle" x="492.36" y="-594.7" font-family="Times,serif" font-size="14.00"> (density resolves to mean)</text>
@@ -238,5 +238,5 @@
 <polygon fill="black" stroke="black" points="345.5,-58.1 342,-48.1 338.5,-58.1 345.5,-58.1"/>
 </g>
 </g>
-<!-- diagram-source-sha256 935d0a277ef0847d2fbc3d944f02c519cb0c1314f2e48fdb4e09ed9db6fb3cde -->
+<!-- diagram-source-sha256 1f6aa8f001e68226c4021499f7527ebc1a1304b90aaaf88981b1d74da966d3ba -->
 </svg>

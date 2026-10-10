@@ -320,7 +320,7 @@ describe('LinearWiggleDisplay solid color', () => {
   const isGreenHue = (c: readonly [number, number, number]) =>
     c[0] === c[2] && c[1] > c[0]
 
-  test.each(['whiskers', 'mean', 'min', 'max'])(
+  test.each(['whiskers', 'mean', 'min', 'max'] as const)(
     'every layer keeps the single hue in %s mode',
     mode => {
       const display = loadedWithSignedData()
@@ -347,7 +347,7 @@ describe('LinearWiggleDisplay solid color', () => {
   // from white towards the one color, so the claim here is only that one
   // color comes out, not which. The split around the origin is where a second
   // color got in.
-  test.each(['mean', 'min', 'max'])(
+  test.each(['mean', 'min', 'max'] as const)(
     'density under a constant color stays one color in %s mode',
     mode => {
       const display = loadedWithSignedData()

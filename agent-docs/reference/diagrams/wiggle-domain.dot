@@ -4,7 +4,7 @@ digraph wiggle_domain {
   { node [shape=diamond] auto; scale }
 
   vis   [label="visible feature arrays", shape=oval]
-  mode  [label="effectiveSummaryScoreMode\npicks which per-feature array\neach end of the domain reads"]
+  mode  [label="effectiveAggregate\npicks which per-feature array\neach end of the domain reads"]
   stats [label="computeScoreStats\nmin, max"]
   vis -> mode -> stats -> auto
 

@@ -99,7 +99,7 @@ const ResolutionStepper = observer(function ResolutionStepper({
 // A "Resolution" submenu whose single row is the inline stepper, so it sits
 // alongside the other track-menu submenus but keeps the menu open while
 // stepping. Callers own the label formatting, step bounds, and step actions;
-// `trailingItems` follow the stepper (wiggle's summary score mode, which reads
+// `trailingItems` follow the stepper (wiggle's aggregate, which reads
 // the same bins).
 export function makeResolutionSubMenuItem(opts: {
   getState: () => ResolutionStepperState

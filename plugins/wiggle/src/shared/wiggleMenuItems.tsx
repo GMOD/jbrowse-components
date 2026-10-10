@@ -17,8 +17,10 @@ import {
 } from './WiggleCommonMixin.ts'
 import { isLineMode, isScatterMode } from './wiggleComponentUtils.ts'
 
+import type { Aggregate } from './aggregateConfigSchemaFields.ts'
 import type { ConfigModelForFields } from '@jbrowse/core/configuration'
 import type { MenuItem } from '@jbrowse/core/ui'
+import type { RadioOption } from '@jbrowse/core/ui/menuItems'
 
 const LAYOUTS = [
   ['rows', 'Multi-row'],
@@ -145,10 +147,10 @@ interface WithResolution {
   resolution: number
   // the resolved mode, so the radio checks what the plot draws rather than a
   // raw slot value density ignores
-  effectiveAggregate: string
+  effectiveAggregate: Aggregate
   isDensityMode: boolean
   setResolution: (n: number) => void
-  setAggregate: (v: string) => void
+  setAggregate: (v: Aggregate) => void
 }
 
 // Resolution is a multiplier on the number of bins fetched (higher = finer),
@@ -182,7 +184,7 @@ export function makeResolutionSubMenu(self: WithResolution): MenuItem[] {
     : []
 }
 
-const AGGREGATES = [
+const AGGREGATE_OPTIONS: RadioOption<Aggregate>[] = [
   { value: 'min', label: 'Minimum' },
   { value: 'max', label: 'Maximum' },
   { value: 'mean', label: 'Average' },
@@ -201,8 +203,8 @@ function makeAggregateItem(self: WithResolution): MenuItem {
       // instead follows `effectiveAggregate`, which is the
       // average a whiskers-configured density track really draws.
       self.isDensityMode
-        ? AGGREGATES.filter(m => m.value !== 'whiskers')
-        : AGGREGATES,
+        ? AGGREGATE_OPTIONS.filter(m => m.value !== 'whiskers')
+        : AGGREGATE_OPTIONS,
       self.effectiveAggregate,
       v => {
         self.setAggregate(v)

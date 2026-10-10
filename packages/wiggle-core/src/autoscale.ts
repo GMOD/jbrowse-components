@@ -57,7 +57,7 @@ export interface ScoreSpan {
   drawnKeys?: Uint8Array
 }
 
-/** The wiggle packer's arrays as a span, under a summary mode. */
+/** The wiggle packer's arrays as a span, under an aggregate. */
 export function datasetSpan(
   { data, visStart, visEnd }: Dataset,
   aggregate: string,
@@ -79,7 +79,7 @@ export function datasetSpan(
 
 /**
  * #api
- * Per-feature scalar score array for a summary mode: the min/max summary array
+ * Per-feature scalar score array for an aggregate: the min/max summary array
  * for `'min'`/`'max'`, otherwise the average score.
  */
 export function getEffectiveScores(

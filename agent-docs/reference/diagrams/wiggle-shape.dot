@@ -17,7 +17,7 @@ digraph wiggle_shape {
   plot [label="plot type\nxyplot, density, line (step),\nline (interpolated), scatter"]
   single -> plot  multirow -> plot  overlay -> plot
 
-  summary [label="effectiveSummaryScoreMode"]
+  summary [label="effectiveAggregate"]
   plot -> summary
   summary -> range [label=" any mode, line plots"]
   summary -> bands [label=" whiskers, min, max, mean\l (density resolves to mean)"]

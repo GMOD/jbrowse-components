@@ -9,7 +9,11 @@ summary: "The quantitative display's one mark is spelt as the mark display spell
 
 Accepted (2026-10-07). Settles call 3 of the 2026-10-07 grammar audit. Amends
 [ADR-174](adr-174-the-quantitative-display-spells-its-rendering-as-a-mark.md)'s
-`heatmap`.
+`heatmap`. Amended 2026-10-10: `summaryScoreMode` is `aggregate`, joins
+`PLOT_VOCABULARY`, and lifts with its `avg` through the display's `retired`
+spellings (`LinearWiggleDisplay/retired.ts`) instead of `preProcessSnapshot`,
+which also reaches the slot inside a v4 `renderers` block. The menu label stays
+"Summary score mode".
 
 ## Context
 

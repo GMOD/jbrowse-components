@@ -18,7 +18,10 @@ import { wiggleFeatureWidgetData } from './wiggleHitTest.ts'
 
 import type { WiggleRendering } from '../renderingTypes.ts'
 import type { WiggleHoveredFeature } from '../util.ts'
-import type { aggregateConfigSchemaFields } from './aggregateConfigSchemaFields.ts'
+import type {
+  Aggregate,
+  aggregateConfigSchemaFields,
+} from './aggregateConfigSchemaFields.ts'
 import type { wiggleConfigSchemaFields } from './wiggleConfigSchemaFields.ts'
 import type { ConfigModelForFields } from '@jbrowse/core/configuration'
 import type { Region } from '@jbrowse/core/util'
@@ -70,7 +73,7 @@ export const RESOLUTION_STEP = 2
  *
  * Extends `ScoreFieldConfigMixin` with the narrowed rpcDataMap, the autoscale
  * domain and the wiggle-specific config: the origin, rendering type,
- * summary mode, resolution and the line/gap settings. Extended on this chain
+ * aggregate, resolution and the line/gap settings. Extended on this chain
  * with `.props()`/`.views()` rather than a mixin composed in, so no
  * `types.compose` layer is added (ADR-041).
  *
@@ -137,7 +140,7 @@ export function WiggleCommonMixin() {
       /**
        * #getter
        */
-      get aggregate(): string {
+      get aggregate(): Aggregate {
         return getConf(confNode(self), 'aggregate')
       },
       /**
@@ -166,7 +169,7 @@ export function WiggleCommonMixin() {
       },
       /**
        * #getter
-       * The summary mode actually drawn. Density has no whiskers presentation
+       * The aggregate actually drawn. Density has no whiskers presentation
        * — `sourceLayers` falls back to the average scores — so the autoscale
        * domain reads this rather than the raw slot; otherwise the color ramp
        * spans the whisker extremes while the plot paints averages, and the
@@ -310,7 +313,7 @@ export function WiggleCommonMixin() {
       /**
        * #action
        */
-      setAggregate(val: string) {
+      setAggregate(val: Aggregate) {
         setConf(confNode(self), 'aggregate', val)
       },
       /**

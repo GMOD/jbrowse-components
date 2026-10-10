@@ -1,5 +1,5 @@
 // Turning one source's score arrays into the render layers a backend draws:
-// which bands a summary mode shows, how each is tinted, and whether a band
+// which bands an aggregate shows, how each is tinted, and whether a band
 // splits into solid-color layers or stays whole with per-instance colors.
 // Consumed by buildSourceRenderData, which places the layers in rows.
 import { normalizedRgbToABGR } from '@jbrowse/core/util/colorBits'
@@ -89,7 +89,7 @@ interface ScoreBand {
   negTint: Tint
 }
 
-// The bands a summary mode draws, ordered outermost-first (max, avg, min).
+// The bands an aggregate draws, ordered outermost-first (max, avg, min).
 //
 // The tint is mirrored across the pivot so lightness always tracks magnitude,
 // not signed value: on the positive side the max band lightens and the min band

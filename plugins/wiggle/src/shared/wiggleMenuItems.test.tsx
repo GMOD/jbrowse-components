@@ -16,7 +16,7 @@ function makeSelf(resolution: number) {
     calls,
     hasResolution: true,
     resolution,
-    effectiveAggregate: 'mean',
+    effectiveAggregate: 'mean' as const,
     isDensityMode: false,
     setResolution: (n: number) => {
       calls.push(n)
