@@ -103,7 +103,10 @@ import {
   readColorCategoryLabel,
   sashimiLegendItems,
 } from '../shared/legendUtils.ts'
-import { DEFAULT_MODIFICATION_THRESHOLD } from '../shared/types.ts'
+import {
+  DEFAULT_MODIFICATION_THRESHOLD,
+  isLayoutOrder,
+} from '../shared/types.ts'
 import { getMismatchContrastMap } from '../shared/util.ts'
 import { getColorForModification } from '../util.ts'
 import {
@@ -170,7 +173,7 @@ import {
   getReadConnectionsMenuItem,
   getReadsMenuItems,
   getSashimiMenuItem,
-  getSortByMenuItem,
+  getSortMenuItem,
 } from './menus/index.ts'
 import { migrateAlignmentsSnapshot } from './migrateAlignmentsSnapshot.ts'
 import {
@@ -210,8 +213,10 @@ import type {
   BaseLayer,
   ReadFilter,
   Facet,
-  LayoutOrder,
-  SortedBy,
+  ColumnSortType,
+  SortColumn,
+  SortSetting,
+  SortType,
 } from '../shared/types'
 import type { NumericExtent } from './bakedColorScale.ts'
 import type { ReadColorCategory } from './colorUtils.ts'
@@ -652,22 +657,29 @@ export default function stateModelFactory(
 
           /**
            * #getter
-           * The single read of the `sortedBy` slot. Normalizes the refName,
-           * since a spec can write an alias (`chr1` for `1`) that
-           * `sortLayout`'s gate would never match. A slot missing `refName` or
-           * `pos` reads as no sort; a missing refName would throw in
-           * `canonicalizeViewRefName`.
+           * The column sort `sort` names, or undefined under a whole-window
+           * order. Normalizes the refName, since a spec can write an alias
+           * (`chr1` for `1`) that `sortLayout`'s gate would never match. A
+           * column type missing `refName` or `pos` reads as no sort.
            */
-          get sortedBy(): SortedBy | undefined {
-            const sortedBy = getConf(self, 'sortedBy') as SortedBy | undefined
-            return sortedBy &&
-              typeof sortedBy.refName === 'string' &&
-              typeof sortedBy.pos === 'number'
-              ? {
-                  ...sortedBy,
-                  refName: canonicalizeViewRefName(self, sortedBy.refName),
+          get sortColumn(): SortColumn | undefined {
+            const type: SortType = getConf(self, ['sort', 'type'])
+            const pos: number | undefined = getConf(self, ['sort', 'pos'])
+            const refName: string | undefined = getConf(self, [
+              'sort',
+              'refName',
+            ])
+            const tag: string | undefined = getConf(self, ['sort', 'tag'])
+            return isLayoutOrder(type) ||
+              pos === undefined ||
+              refName === undefined
+              ? undefined
+              : {
+                  type,
+                  pos,
+                  refName: canonicalizeViewRefName(self, refName),
+                  tag,
                 }
-              : undefined
           },
 
           /**
@@ -729,8 +741,8 @@ export default function stateModelFactory(
            * #getter
            * Why an explicit read ordering cannot take effect, or `undefined`:
            * one value carries both the gate and the copy naming the switch that
-           * brings it back. Chain layout takes neither `sortedBy` nor
-           * `layoutOrder`; its rows are chains.
+           * brings it back. Chain layout takes no `sort`; its rows are
+           * chains.
            */
           get sortReadsBlockedReason(): string | undefined {
             return self.unit === 'chain'
@@ -1427,7 +1439,7 @@ export default function stateModelFactory(
               order: this.groupOrder,
               rawByGroup: this.chainedByGroup,
               unit: self.unit,
-              sortedBy: this.sortedBy,
+              sortColumn: this.sortColumn,
               showSoftClipping: self.showSoftClipping,
               layoutOrder: self.layoutOrder,
               regions: self.loadedRegions,
@@ -2533,7 +2545,9 @@ export default function stateModelFactory(
          * the tag changes, not when the sort position or a non-tag type flips.
          */
         get sortTag() {
-          return self.sortedBy?.type === 'tag' ? self.sortedBy.tag : undefined
+          return self.sortColumn?.type === 'tag'
+            ? self.sortColumn.tag
+            : undefined
         },
 
         /**
@@ -2996,9 +3010,12 @@ export default function stateModelFactory(
             self.highlightedChainReadIds = []
           }
         }
-        function setSortSlot(sortedBy: SortedBy) {
-          setConf(self, 'layoutOrder', 'position')
-          setConf(self, 'sortedBy', sortedBy)
+        function writeSort(sort: SortSetting) {
+          setConf(
+            self,
+            'sort',
+            typeof sort === 'string' ? { type: sort } : sort,
+          )
         }
         return {
           /**
@@ -3103,15 +3120,14 @@ export default function stateModelFactory(
           /**
            * #action
            */
-          setSortedBy(type: string, tag?: string) {
+          sortAtCenterLine(type: ColumnSortType, tag?: string) {
             const view = self.view
             const { centerLineInfo } = view
-            // Every sort type here anchors on the position (`partitionBySort`
-            // ranks by membership at `sortPos`), so reveal the center line
-            // either way.
+            // Every column sort ranks by membership at `pos`
+            // (`partitionBySort`), so reveal the center line either way.
             view.setShowCenterLine(true)
             if (centerLineInfo && !centerLineInfo.oob) {
-              setSortSlot({
+              writeSort({
                 type,
                 // `offset` counts bp INTO the region, the worker compares
                 // absolute `readPositions`, and a reversed region mirrors the
@@ -3131,20 +3147,9 @@ export default function stateModelFactory(
 
           /**
            * #action
-           * Commit a sort, the one place the `sortedBy` slot is written. Also
-           * resets `layoutOrder`: the two are one radio group.
+           * The one writer of `sort`: a whole-window order, or a column sort.
            */
-          setSortedByAtPosition: setSortSlot,
-
-          /**
-           * #action
-           * The orderings that are not a `sortedBy` column sort, and the
-           * clear of that sort, which the radio group needs together.
-           */
-          setLayoutOrder(order: LayoutOrder) {
-            setConf(self, 'layoutOrder', order)
-            setConf(self, 'sortedBy', null)
-          },
+          setSort: writeSort,
 
           /**
            * #action
@@ -3712,7 +3717,7 @@ export default function stateModelFactory(
                     },
             }),
             ...editPlotMenuItems(self),
-            getSortByMenuItem(self, {
+            getSortMenuItem(self, {
               disabledHelpText: self.sortReadsBlockedReason,
             }),
             ...getFiltersMenuItems(self, { readCategories: true }),

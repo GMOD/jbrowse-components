@@ -37,6 +37,7 @@ export default class AlignmentsPlugin extends Plugin {
 // the point of the lazy registration. It is reachable at
 // '@jbrowse/plugin-alignments/LinearAlignmentsDisplay/stateModel'.
 export { alignmentsColorConfigSchema } from './LinearAlignmentsDisplay/alignmentsColorConfigSchema.ts'
+export { alignmentsSortConfigSchema } from './LinearAlignmentsDisplay/alignmentsSortConfigSchema.ts'
 export { ALIGNMENTS_FIELD_PRESETS } from './shared/alignmentsColor.ts'
 export { linearAlignmentsDisplayConfigSchemaFactory } from './LinearAlignmentsDisplay/index.ts'
 export type {
@@ -62,7 +63,7 @@ export {
   getFiltersMenuItems,
   getHitMenuItems,
   getSectionOrderMenuItems,
-  getSortByMenuItem,
+  getSortMenuItem,
   groupByRadioMenuItem,
   hiddenGroupsItems,
   withContextMenuFeature,
@@ -138,8 +139,8 @@ export type {
 } from './RenderAlignmentDataRPC/types.ts'
 export type { ChainedByGroup } from './LinearAlignmentsDisplay/chainFields.ts'
 export type { HoverCoverageBand } from './LinearAlignmentsDisplay/model.ts'
-export { LAYOUT_ORDERS } from './shared/types.ts'
-export type { LayoutOrder } from './shared/types.ts'
+export { SORT_TYPES } from './shared/types.ts'
+export type { LayoutOrder, SortSetting } from './shared/types.ts'
 export type { CoverageRegionFields } from './features/coverage/types.ts'
 export type {
   BakedColorScale,
@@ -161,7 +162,7 @@ export type {
   Facet,
   ModificationColorBy,
   ReadColorBy,
-  SortedBy,
+  SortColumn,
   TagColorScale,
   WorkerFacet,
 } from './shared/types.ts'

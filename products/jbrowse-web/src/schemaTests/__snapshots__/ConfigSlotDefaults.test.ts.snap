@@ -384,7 +384,6 @@ exports[`every registered schema slot default 1`] = `
     "height": "number = 250",
     "heightMode": "stringEnum = "fixed" of ["fixed","grow","fit"]",
     "hideSelfAlignments": "boolean = false",
-    "layoutOrder": "stringEnum = "length" of ["position","length","spliced","split"]",
     "lodMode": "stringEnum = "auto" of ["auto","fine","coarse"]",
     "maxHeight": "number = 6000",
     "minInterchromSupport": "number = 2",
@@ -411,7 +410,6 @@ exports[`every registered schema slot default 1`] = `
     "showSashimiArcs": "boolean = true",
     "showSashimiLabels": "boolean = false",
     "showSoftClipping": "boolean = false",
-    "sortedBy": "maybeFrozen = undefined",
     "unit": "stringEnum = "read" of ["read","chain"]",
   },
   "display: LinearAlignmentsDisplay": {
@@ -427,7 +425,6 @@ exports[`every registered schema slot default 1`] = `
     "growMaxHeight": "number = 800",
     "height": "number = 250",
     "heightMode": "stringEnum = "fixed" of ["fixed","grow","fit"]",
-    "layoutOrder": "stringEnum = "position" of ["position","length","spliced","split"]",
     "maxHeight": "number = 6000",
     "minInterchromSupport": "number = 2",
     "minSashimiScore": "number = 2",
@@ -453,7 +450,6 @@ exports[`every registered schema slot default 1`] = `
     "showSashimiArcs": "boolean = true",
     "showSashimiLabels": "boolean = false",
     "showSoftClipping": "boolean = false",
-    "sortedBy": "maybeFrozen = undefined",
     "unit": "stringEnum = "read" of ["read","chain"]",
   },
   "display: LinearBasicDisplay": {

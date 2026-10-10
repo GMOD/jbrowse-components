@@ -21,7 +21,7 @@ function context(groups: { key: string; rows: number }[]): GroupLayoutContext {
     order: groups.map(g => ({ key: g.key, label: g.key })),
     rawByGroup: new Map(groups.map(g => [g.key, stackedReads(g.rows)])),
     unit: 'read',
-    sortedBy: undefined,
+    sortColumn: undefined,
     showSoftClipping: false,
     layoutOrder: 'position' as const,
     regions: new Map([[0, { refName: 'ctgA', start: 0, end: 1000 }]]),

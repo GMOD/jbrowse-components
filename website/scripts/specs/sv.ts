@@ -1538,11 +1538,10 @@ export const svSpecs: ScreenshotSpec[] = [
               height: 300,
               featureHeight: 3,
               // sort reads by the base at the screen-center column
-              sortedBy: {
+              sort: {
                 type: 'basePair',
                 pos: 122836434,
                 refName: 'chr10',
-                assemblyName: 'GRCh38_GIABv3',
               },
             },
           ],
@@ -1625,11 +1624,10 @@ export const svSpecs: ScreenshotSpec[] = [
               height: 260,
               featureHeight: 5,
               forceLoad: true,
-              sortedBy: {
+              sort: {
                 type: 'basePair',
                 pos: 165755150,
                 refName: 'chr5',
-                assemblyName: 'GRCh38_GIABv3',
               },
             },
             {
@@ -1641,11 +1639,10 @@ export const svSpecs: ScreenshotSpec[] = [
               height: 260,
               featureHeight: 5,
               forceLoad: true,
-              sortedBy: {
+              sort: {
                 type: 'basePair',
                 pos: 165755150,
                 refName: 'chr5',
-                assemblyName: 'GRCh38_GIABv3',
               },
             },
           ],

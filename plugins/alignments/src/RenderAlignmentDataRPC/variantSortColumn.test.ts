@@ -5,7 +5,7 @@ import { INTERBASE_INSERTION } from '../shared/types.ts'
 import { computeSortedLayout } from './sortLayout.ts'
 import { baseWorkerPileupData } from './testPileupData.ts'
 
-import type { SortedBy } from '../shared/types.ts'
+import type { SortColumn } from '../shared/types.ts'
 import type { WorkerPileupData } from './types.ts'
 
 test.each([
@@ -83,35 +83,35 @@ function withInsertion(followingBase: number) {
   })
 }
 
-function topRows(data: WorkerPileupData, sortedBy: SortedBy) {
-  const { readYs } = computeSortedLayout(data, sortedBy)
+function topRows(data: WorkerPileupData, sortColumn: SortColumn) {
+  const { readYs } = computeSortedLayout(data, sortColumn)
   return [...readYs.keys()]
     .sort((a, b) => readYs[a]! - readYs[b]!)
     .slice(0, CARRIERS.length)
     .sort((a, b) => a - b)
 }
 
-function sortedByFor(ref: string, alt: string): SortedBy {
+function sortColumnFor(ref: string, alt: string): SortColumn {
   return { ...variantSortColumn(100, ref, [alt])!, refName: 'ctgA' }
 }
 
 test('an anchored deletion sorts its carriers first, and its anchor does not', () => {
   const data = withDeletion(101, 104)
-  expect(topRows(data, sortedByFor('ACGT', 'A'))).toEqual(CARRIERS)
+  expect(topRows(data, sortColumnFor('ACGT', 'A'))).toEqual(CARRIERS)
   expect(
     topRows(data, { type: 'basePair', pos: 100, refName: 'ctgA' }),
   ).not.toEqual(CARRIERS)
 })
 
 test('an unanchored deletion sorts its carriers first', () => {
-  expect(topRows(withDeletion(100, 103), sortedByFor('ACGT', 'T'))).toEqual(
+  expect(topRows(withDeletion(100, 103), sortColumnFor('ACGT', 'T'))).toEqual(
     CARRIERS,
   )
 })
 
 test('an insertion sorts its carriers first, and its anchor does not', () => {
   const data = withInsertion(101)
-  expect(topRows(data, sortedByFor('A', 'ACCC'))).toEqual(CARRIERS)
+  expect(topRows(data, sortColumnFor('A', 'ACCC'))).toEqual(CARRIERS)
   expect(
     topRows(data, { type: 'insertion', pos: 100, refName: 'ctgA' }),
   ).not.toEqual(CARRIERS)

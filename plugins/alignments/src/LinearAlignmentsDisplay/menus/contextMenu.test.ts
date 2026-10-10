@@ -113,7 +113,7 @@ function makeModel(
       filterCalls.push(filterBy)
       model.readFilter = filterBy
     },
-    setSortedByAtPosition(arg: { type: string; pos: number; refName: string }) {
+    setSort(arg: { type: string; pos: number; refName: string }) {
       sortCalls.push([arg.type, arg.pos, arg.refName])
     },
     selectFeature(feature: Feature) {
@@ -149,7 +149,7 @@ function findSubMenu(items: unknown[], label: string) {
 }
 
 // the model mock only needs to be structurally valid for the sort branch; the
-// onClicks exercised here call the plain setSortedByAtPosition mock, not
+// onClicks exercised here call the plain setSort mock, not
 // getSession/getContainingView
 function run(model: ReturnType<typeof makeModel>) {
   return getContextMenuItems(model)
@@ -425,7 +425,7 @@ test('no "Sort by" submenu without a resolved hit', () => {
   )
 })
 
-// Chain layout is handed no `sortedBy`, so the display curates every
+// Chain layout is handed no `sort`, so the display curates every
 // position-anchored sort out — the read submenu here alongside the hit ones,
 // and the track menu's "Sort by..." alongside both.
 test('sort: false drops the read "Sort by" but keeps the rest', () => {

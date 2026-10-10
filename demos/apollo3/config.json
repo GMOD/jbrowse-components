@@ -94,7 +94,7 @@
           "displayId": "rnaseq_1-LinearAlignmentsDisplay",
           "height": 170,
           "featureHeight": 3,
-          "layoutOrder": "spliced"
+          "sort": "spliced"
         }
       ]
     },
@@ -114,7 +114,7 @@
           "displayId": "rnaseq_2-LinearAlignmentsDisplay",
           "height": 170,
           "featureHeight": 3,
-          "layoutOrder": "spliced"
+          "sort": "spliced"
         }
       ]
     }

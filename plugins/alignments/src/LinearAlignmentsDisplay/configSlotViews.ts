@@ -16,6 +16,7 @@ import {
 } from '../shared/alignmentsColor.ts'
 import { arcColorFieldOf } from '../shared/arcColorOptions.ts'
 import { facetUnitNotices } from '../shared/groupFeatures.ts'
+import { isLayoutOrder } from '../shared/types.ts'
 import { readFilterOf } from './readFilterConfigSchema.ts'
 
 import type {
@@ -31,6 +32,7 @@ import type {
   LayoutOrder,
   ModificationColorBy,
   ReadColorBy,
+  SortType,
 } from '../shared/types.ts'
 import type { LinearAlignmentsDisplayConfigSchema } from './configSchema.ts'
 import type {
@@ -360,10 +362,13 @@ export function configSlotViews(self: ConfigSlotSelf) {
     },
     /**
      * #getter
-     * The row order where no `sortedBy` sort applies (a tier-2 relayout).
+     * The whole-window row order: `sort`'s type, or `position` under a column
+     * sort, which lays the reads off its column out by start (a tier-2
+     * relayout).
      */
     get layoutOrder(): LayoutOrder {
-      return getConf(self, 'layoutOrder')
+      const type: SortType = getConf(self, ['sort', 'type'])
+      return isLayoutOrder(type) ? type : 'position'
     },
     /**
      * #getter

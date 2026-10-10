@@ -1,6 +1,6 @@
 // Linked-read connecting line for `linkedReadBezier` mode. Per-instance
 // 6-vertex quad with per-endpoint Y (mates can sit on different rows when
-// sortedBy is in effect) and palette-indexed color (8 slots, see
+// a column sort is in effect) and palette-indexed color (8 slots, see
 // `linkedReadColor*` in alignmentsUniforms.slang).
 //
 // **A quad, because a native line cannot carry a width.** This was a 2-vertex

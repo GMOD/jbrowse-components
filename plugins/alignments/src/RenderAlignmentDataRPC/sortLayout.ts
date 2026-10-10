@@ -15,7 +15,7 @@ import {
 } from '../shared/types.ts'
 import { UNCAPPED } from './types.ts'
 
-import type { LayoutOrder, SortedBy } from '../shared/types.ts'
+import type { LayoutOrder, SortColumn } from '../shared/types.ts'
 import type {
   LaidOutPileupData,
   RowCap,
@@ -30,7 +30,7 @@ const DELETION_CHAR = 42 // '*'
 // position, mapped to the interbase kind each one measures. A lookup miss is
 // what identifies the comparator-based types (position/strand/tag), so this
 // table is the whole "is this an interbase sort" test.
-const INTERBASE_SORT_TYPES: Partial<Record<SortedBy['type'], number>> = {
+const INTERBASE_SORT_TYPES: Partial<Record<SortColumn['type'], number>> = {
   insertion: INTERBASE_INSERTION,
   softclip: INTERBASE_SOFTCLIP,
   hardclip: INTERBASE_HARDCLIP,
@@ -184,10 +184,10 @@ function remapYs(readIndices: Uint32Array, readYs: Uint16Array) {
 // call at `sortPos` (basePair) or the longest interbase length at `sortPos`
 // (insertion/softclip/hardclip). `desc` is true for interbases (longest first)
 // and false for base calls. Returns undefined for the comparator-based types
-// (position/strand/tag), which don't go through a key map.
+// (strand/tag), which don't go through a key map.
 function buildSortKeyMap(
   data: WorkerPileupData,
-  type: SortedBy['type'],
+  type: SortColumn['type'],
   sortPos: number,
 ): { map: Map<number, number>; desc: boolean } | undefined {
   let result: { map: Map<number, number>; desc: boolean } | undefined
@@ -238,10 +238,10 @@ function buildSortKeyMap(
 function sortOverlappingByIndex(
   overlapping: number[],
   data: WorkerPileupData,
-  sortedBy: SortedBy,
+  sortColumn: SortColumn,
   keyMap: { map: Map<number, number>; desc: boolean } | undefined,
 ) {
-  const { type } = sortedBy
+  const { type } = sortColumn
   const { readPositions, readKeys, sortTagValues } = data
   const canonical = (a: number, b: number) =>
     compareReadsCanonically(readPositions, readKeys, a, b)
@@ -277,9 +277,8 @@ function sortOverlappingByIndex(
       )
     }
   } else {
-    // 'position', and any unrecognized type (a legacy or misspelled
-    // `sortedBy.type`, which is a bare string): canonically, so an unknown type
-    // degrades to a deterministic layout rather than an unstable one.
+    // A tag sort whose values never arrived: canonically, so it degrades to a
+    // deterministic layout rather than an unstable one.
     overlapping.sort(canonical)
   }
 }
@@ -303,8 +302,8 @@ function sortOverlappingByIndex(
  * Shared by both layout paths for the same reason `sortForRegions` is: the two
  * spelled the span test separately, and a rule spelled twice is one that drifts.
  */
-function partitionBySort(data: WorkerPileupData, sortedBy: SortedBy) {
-  const { type, pos: sortPos } = sortedBy
+function partitionBySort(data: WorkerPileupData, sortColumn: SortColumn) {
+  const { type, pos: sortPos } = sortColumn
   const { readPositions } = data
   const keyMap = buildSortKeyMap(data, type, sortPos)
   const ranked: number[] = []
@@ -318,7 +317,7 @@ function partitionBySort(data: WorkerPileupData, sortedBy: SortedBy) {
       rest.push(i)
     }
   }
-  sortOverlappingByIndex(ranked, data, sortedBy, keyMap)
+  sortOverlappingByIndex(ranked, data, sortColumn, keyMap)
   return { ranked, rest }
 }
 
@@ -682,14 +681,14 @@ export function computeLayout(
 }
 
 /**
- * Compute pileup row layout with a custom sort at `sortedBy.pos`. The reads the
+ * Compute pileup row layout with a custom sort at `sortColumn.pos`. The reads the
  * sort ranks are placed first, in criterion order (each gets its own row since
  * they all collide pairwise at sortPos), then the rest fills gaps around them.
  * `partitionBySort` decides which reads those are.
  */
 export function computeSortedLayout(
   data: WorkerPileupData,
-  sortedBy: SortedBy,
+  sortColumn: SortColumn,
   showSoftClipping?: boolean,
   maxRows = Number.POSITIVE_INFINITY,
 ) {
@@ -701,7 +700,7 @@ export function computeSortedLayout(
 
   const { ranked: overlapping, rest: nonOverlapping } = partitionBySort(
     data,
-    sortedBy,
+    sortColumn,
   )
   // The gap-filling reads are placed after the sorted ones, and first-fit is
   // order-sensitive, so they need a canonical order for the same reason.
@@ -746,16 +745,16 @@ export interface RegionBounds {
 // through it; see CLAUDE.md. No bounds to check against means the caller's sort
 // stands.
 function sortForRegions(
-  sortedBy: SortedBy | undefined,
+  sortColumn: SortColumn | undefined,
   regionIndices: number[],
   regions: ReadonlyMap<number, RegionBounds> | undefined,
 ) {
-  if (!sortedBy || !regions) {
-    return sortedBy
+  if (!sortColumn || !regions) {
+    return sortColumn
   }
   const refNames = new Set(regionIndices.map(i => regions.get(i)?.refName))
   const commonRefName = refNames.size === 1 ? [...refNames][0] : undefined
-  return commonRefName === sortedBy.refName ? sortedBy : undefined
+  return commonRefName === sortColumn.refName ? sortColumn : undefined
 }
 
 interface ReadExtent {
@@ -840,8 +839,8 @@ function segmentExtentsByRefName(extents: Map<ReadKey, ReadExtent>) {
  * distributing rows back to each region's readYs array.
  *
  * `showSoftClipping` expands each read's extent by its soft clips (unioned
- * across the regions it appears in). `sortedBy` applies the localized sort at
- * `sortedBy.pos` — but only when every region shares one refName (the
+ * across the regions it appears in). `sortColumn` applies the localized sort at
+ * `sortColumn.pos` — but only when every region shares one refName (the
  * collapse-introns case), where reads live on a single coordinate axis so the
  * sort can't false-match a same-numbered position on another chromosome.
  * Mixed-refName multi-region views keep plain dedup order.
@@ -849,14 +848,14 @@ function segmentExtentsByRefName(extents: Map<ReadKey, ReadExtent>) {
 export function computeMultiRegionLayout({
   entries,
   regions,
-  sortedBy,
+  sortColumn,
   showSoftClipping,
   maxRows = Number.POSITIVE_INFINITY,
   layoutOrder = 'position',
 }: {
   entries: [number, WorkerPileupData][]
   regions?: ReadonlyMap<number, RegionBounds>
-  sortedBy?: SortedBy
+  sortColumn?: SortColumn
   showSoftClipping?: boolean
   maxRows?: number
   layoutOrder?: LayoutOrder
@@ -914,7 +913,7 @@ export function computeMultiRegionLayout({
   // `regions` twice over: the refName gate, and structurally to locate the
   // region holding the sort position.
   const activeSort = sortForRegions(
-    sortedBy,
+    sortColumn,
     entries.map(([idx]) => idx),
     regions,
   )
@@ -1060,7 +1059,7 @@ export function withoutLayout(data: WorkerPileupData): LaidOutPileupData {
 
 export interface PileupLayoutArgs {
   dataMap: ReadonlyMap<number, WorkerPileupData>
-  sortedBy: SortedBy | undefined
+  sortColumn: SortColumn | undefined
   showSoftClipping: boolean | undefined
   regions?: ReadonlyMap<number, RegionBounds>
   // The cap AND which policy set it, so a clipped region can record what clipped
@@ -1078,7 +1077,7 @@ export interface PileupLayoutArgs {
 function computePileupRowLayout(
   {
     dataMap,
-    sortedBy,
+    sortColumn,
     showSoftClipping,
     regions,
     rowCap = UNCAPPED,
@@ -1111,7 +1110,7 @@ function computePileupRowLayout(
   }
   if (withReads.length === 1) {
     const [idx, data] = withReads[0]!
-    const activeSort = sortForRegions(sortedBy, [idx], regions)
+    const activeSort = sortForRegions(sortColumn, [idx], regions)
     const { readYs, maxY, truncated } = activeSort
       ? computeSortedLayout(data, activeSort, showSoftClipping, maxRows)
       : computeLayout(data, showSoftClipping, maxRows, layoutOrder)
@@ -1125,7 +1124,7 @@ function computePileupRowLayout(
   const { rowMap, maxY, truncated } = computeMultiRegionLayout({
     entries: withReads,
     regions,
-    sortedBy,
+    sortColumn,
     showSoftClipping,
     maxRows,
     layoutOrder,
@@ -1148,7 +1147,7 @@ function computePileupRowLayout(
  * input, each carrying the Y arrays and `maxY` this pass derived.
  *
  * Intended to be called from a MobX-cached getter so layout recomputes only
- * when `rpcDataMap`, `sortedBy`, or `showSoftClipping` change.
+ * when `rpcDataMap`, `sortColumn`, or `showSoftClipping` change.
  */
 export function buildLaidOutPileupMap(
   args: PileupLayoutArgs,

@@ -10,10 +10,15 @@ import {
   isReadDimension,
   pickFacetOptions,
 } from '../../shared/groupFeatures.ts'
-import { isInterbaseType } from '../../shared/types.ts'
 import { groupByRadioMenuItem } from './groupByMenu.ts'
 
-import type { Facet, LayoutOrder, SortedBy } from '../../shared/types.ts'
+import type {
+  ColumnSortType,
+  Facet,
+  LayoutOrder,
+  SortColumn,
+  SortSetting,
+} from '../../shared/types.ts'
 import type { AlignmentsUnit } from '../constants.ts'
 import type { GroupByDialogModel } from '../dialogs/GroupByDialog.tsx'
 import type { RadioMenuItem } from '@jbrowse/core/ui'
@@ -21,27 +26,20 @@ import type { RadioMenuItem } from '@jbrowse/core/ui'
 const TagDialog = lazy(() => import('../dialogs/TagDialog.tsx'))
 const GroupByDialog = lazy(() => import('../dialogs/GroupByDialog.tsx'))
 
-interface SortByModel {
-  sortedBy?: SortedBy
-  setSortedBy: (type: string, tag?: string) => void
+interface SortMenuModel {
+  sortColumn?: SortColumn
   layoutOrder: LayoutOrder
-  setLayoutOrder: (order: LayoutOrder) => void
+  setSort: (sort: SortSetting) => void
+  sortAtCenterLine: (type: ColumnSortType, tag?: string) => void
 }
 
-// One ordering at a time, so a single radio group. Most modes write a `sortedBy`
-// type; "Start location", "Longest reads first", "Spliced reads first" and
-// "Split reads first" are the `layoutOrder` slot, folded in as peer radios because they compete for the
-// same ordering. "Start location" is the unsorted default, so it doubles as the
-// reset — no separate "Clear".
+// One `sort` slot, so a single radio group. "Start location" is the unsorted
+// default, so it doubles as the reset — no separate "Clear".
 //
-// Those three go through `setLayoutOrder`, which also clears the sort.
-// `setSortedByAtPosition` resets `layoutOrder` as it writes `sortedBy`, so a
-// sort that never lands (no valid center line, a cancelled tag dialog) leaves
-// the ordering alone instead of unchecking every radio.
-//
-// Strand / base pair / tag anchor on the center-line column, which `setSortedBy`
-// reveals when applied. Interbase types from the context menu's "sort at
-// position" keep "Base pair" checked.
+// Strand / base pair / tag anchor on the center-line column, which
+// `sortAtCenterLine` reveals when applied; a sort that never lands (no valid
+// center line, a cancelled tag dialog) leaves the slot alone. Interbase types
+// from the context menu's "sort at position" keep "Base pair" checked.
 //
 // Callers pick the applicable modes and the label noun (like colorFieldOptions):
 // alignments takes every mode with 'read'; LGVSyntenyDisplay drops base pair /
@@ -62,19 +60,17 @@ const ALL_SORT_MODES: SortMode[] = [
   'tag',
 ]
 
-function getSortMode(model: SortByModel): SortMode {
-  const type = model.sortedBy?.type
+function getSortMode(model: SortMenuModel): SortMode {
+  const type = model.sortColumn?.type
   return type === undefined
     ? model.layoutOrder
     : type === 'strand' || type === 'tag'
       ? type
-      : type === 'basePair' || isInterbaseType(type)
-        ? 'basePair'
-        : 'position'
+      : 'basePair'
 }
 
-export function getSortByMenuItem(
-  model: SortByModel,
+export function getSortMenuItem(
+  model: SortMenuModel,
   opts?: {
     noun?: string
     modes?: SortMode[]
@@ -97,7 +93,7 @@ export function getSortByMenuItem(
   // radio: tag is the only mode whose choice has a parameter, and it was
   // otherwise invisible without reopening the dialog.
   const sortTag =
-    model.sortedBy?.type === 'tag' ? model.sortedBy.tag : undefined
+    model.sortColumn?.type === 'tag' ? model.sortColumn.tag : undefined
   // Rows that only write an ordering keep the menu open by their radio type;
   // `tag` opens a dialog, so it passes false — the one asymmetry in the group,
   // and the only thing spelled out per row.
@@ -115,29 +111,29 @@ export function getSortByMenuItem(
   })
   const items: Record<SortMode, RadioMenuItem> = {
     position: radio('position', 'Start location', () => {
-      model.setLayoutOrder('position')
+      model.setSort('position')
     }),
     length: radio('length', `Longest ${noun}s first`, () => {
-      model.setLayoutOrder('length')
+      model.setSort('length')
     }),
     spliced: radio('spliced', `Spliced ${noun}s first`, () => {
-      model.setLayoutOrder('spliced')
+      model.setSort('spliced')
     }),
     split: radio('split', `Split ${noun}s first`, () => {
-      model.setLayoutOrder('split')
+      model.setSort('split')
     }),
     strand: radio('strand', `${capitalizeFirst(noun)} strand`, () => {
-      model.setSortedBy('strand')
+      model.sortAtCenterLine('strand')
     }),
     basePair: radio('basePair', 'Base pair', () => {
-      model.setSortedBy('basePair')
+      model.sortAtCenterLine('basePair')
     }),
     tag: radio(
       'tag',
       sortTag ? `Tag (${sortTag})...` : 'Tag...',
       () => {
         queueSortByTagDialog(model, sortTag, tag => {
-          model.setSortedBy('tag', tag)
+          model.sortAtCenterLine('tag', tag)
         })
       },
       false,

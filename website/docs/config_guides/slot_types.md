@@ -108,8 +108,8 @@ color, the empty string included, fails the load and names the slot.
 ## frozen
 
 An arbitrary JSON value (object or array) stored as-is, for structured settings
-such as a `sortedBy` of `{ "type": "basePair", "pos": 100 }`. The shape a given
-`frozen` slot expects is described in that slot's own text.
+such as an adapter's `assemblyNameToPanSN` map. The shape a given `frozen` slot
+expects is described in that slot's own text.
 
 ## text
 

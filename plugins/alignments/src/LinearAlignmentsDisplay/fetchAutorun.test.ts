@@ -796,11 +796,10 @@ describe('FetchVisibleRegions autorun', () => {
 
     const callsBefore = mockRpcCall.mock.calls.length
     // Non-tag sort types relayout in place from existing data.
-    display.configuration.setSlot('sortedBy', {
-      type: 'Start Location',
+    display.setSort({
+      type: 'strand',
       pos: 5000,
       refName: 'ctgA',
-      assemblyName: 'volvox',
     })
     jest.advanceTimersByTime(800)
     await jest.runAllTimersAsync()
@@ -819,11 +818,10 @@ describe('FetchVisibleRegions autorun', () => {
     })
 
     const callsBefore = mockRpcCall.mock.calls.length
-    display.configuration.setSlot('sortedBy', {
+    display.setSort({
       type: 'tag',
       pos: 5000,
       refName: 'ctgA',
-      assemblyName: 'volvox',
       tag: 'HP',
     })
     jest.advanceTimersByTime(400)
@@ -839,11 +837,10 @@ describe('FetchVisibleRegions autorun', () => {
     mockRpcCall.mockResolvedValue(makeEmptyGroupedData())
     const { display } = createDisplay()
 
-    display.configuration.setSlot('sortedBy', {
+    display.setSort({
       type: 'tag',
       pos: 5000,
       refName: 'ctgA',
-      assemblyName: 'volvox',
       tag: 'HP',
     })
     jest.advanceTimersByTime(400)
@@ -855,11 +852,10 @@ describe('FetchVisibleRegions autorun', () => {
     // Moving the sort position within the same tag sort re-runs main-
     // thread layout via laidOutPileupMap; the worker data (per-read tag
     // values) is unchanged.
-    display.configuration.setSlot('sortedBy', {
+    display.setSort({
       type: 'tag',
       pos: 6000,
       refName: 'ctgA',
-      assemblyName: 'volvox',
       tag: 'HP',
     })
     jest.advanceTimersByTime(800)

@@ -24,12 +24,12 @@ interface SortReadsMenuSelf extends IStateTreeNode {
   ) => Promise<Feature | undefined>
 }
 
-// The alignments display's sort action, by duck type: this plugin does not
-// depend on the alignments plugin.
+// The alignments display's sort actions, by duck type: this plugin does not
+// depend on the alignments plugin. `sortAtCenterLine` is asked for too, since
+// `setSort` alone is a generic name.
 interface SortableDisplay {
-  setSortedByAtPosition: (
-    sortedBy: VariantSortColumn & { refName: string },
-  ) => void
+  setSort: (sort: VariantSortColumn & { refName: string }) => void
+  sortAtCenterLine: unknown
 }
 
 interface ViewWithTracks {
@@ -42,8 +42,8 @@ function sortableDisplays(view: ViewWithTracks) {
     .flatMap(track => track.displays)
     .filter(
       (d): d is SortableDisplay =>
-        typeof (d as Partial<SortableDisplay>).setSortedByAtPosition ===
-        'function',
+        typeof (d as Partial<SortableDisplay>).setSort === 'function' &&
+        typeof (d as Partial<SortableDisplay>).sortAtCenterLine === 'function',
     )
 }
 
@@ -66,7 +66,7 @@ export function sortReadsAtVariant(
     return false
   }
   for (const display of sortableDisplays(view)) {
-    display.setSortedByAtPosition({ ...column, refName })
+    display.setSort({ ...column, refName })
   }
   return true
 }

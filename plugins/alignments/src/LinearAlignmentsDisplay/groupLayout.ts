@@ -26,7 +26,7 @@ import type {
   ColorBy,
   ColorSchemeType,
   LayoutOrder,
-  SortedBy,
+  SortColumn,
 } from '../shared/types.ts'
 import type { BakedColorScale } from './bakedColorScale.ts'
 import type { ReadColorOpts } from './colorUtils.ts'
@@ -143,7 +143,7 @@ export interface GroupLayoutContext {
   // chain mode (the model's `chainedByGroup`).
   rawByGroup: ReadonlyMap<string, ReadonlyMap<number, ChainedPileupData>>
   unit: AlignmentsUnit
-  sortedBy: SortedBy | undefined
+  sortColumn: SortColumn | undefined
   showSoftClipping: boolean
   layoutOrder: LayoutOrder
   // Region bounds by displayed-region index, so multi-region layout can locate
@@ -195,7 +195,7 @@ function layoutOneGroup(
     ? buildLaidOutChainMap({ dataMap, regions: ctx.regions, rowCap: cap })
     : buildLaidOutPileupMap({
         dataMap,
-        sortedBy: ctx.sortedBy,
+        sortColumn: ctx.sortColumn,
         showSoftClipping: ctx.showSoftClipping,
         regions: ctx.regions,
         rowCap: cap,
@@ -426,7 +426,7 @@ export function layoutGroupRowCounts(
           ? chainLayoutMaxY({ dataMap, regions: ctx.regions, maxRows })
           : pileupLayoutMaxY({
               dataMap,
-              sortedBy: ctx.sortedBy,
+              sortColumn: ctx.sortColumn,
               showSoftClipping: ctx.showSoftClipping,
               regions: ctx.regions,
               rowCap: ceilingCap(maxRows),

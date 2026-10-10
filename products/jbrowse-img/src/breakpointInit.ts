@@ -96,8 +96,8 @@ export function breakpointTracks(
       trackId,
       // The reads the connectors are drawn for take the top rows, so a pileup
       // deeper than its track cuts off the ones that cross nothing. Ahead of
-      // the snapshot, so a `layoutOrder=position` of the track's own wins.
-      ...(category === 'alignments' ? { layoutOrder: 'split' } : {}),
+      // the snapshot, so a `sort=position` of the track's own wins.
+      ...(category === 'alignments' ? { sort: 'split' } : {}),
       ...snap,
       ...(displayType ? { type: displayType } : {}),
     }

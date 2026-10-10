@@ -17,7 +17,7 @@ import {
 } from './sortLayout.ts'
 import { baseWorkerPileupData } from './testPileupData.ts'
 
-import type { SortedBy } from '../shared/types.ts'
+import type { ColumnSortType, SortColumn } from '../shared/types.ts'
 import type { WorkerPileupData } from './types.ts'
 
 interface Read {
@@ -153,7 +153,11 @@ function makePileupData(opts: {
   }
 }
 
-function makeSortedBy(pos: number, type = 'basePair', tag?: string): SortedBy {
+function makeSortColumn(
+  pos: number,
+  type: ColumnSortType = 'basePair',
+  tag?: string,
+): SortColumn {
   return { type, pos, refName: 'chr1', tag }
 }
 
@@ -629,7 +633,7 @@ describe('computeSortedLayout', () => {
         { start: 450, end: 600, baseAtSortPos: 'A' },
       ],
     })
-    const { readYs, maxY } = computeSortedLayout(data, makeSortedBy(500))
+    const { readYs, maxY } = computeSortedLayout(data, makeSortColumn(500))
     // Each overlapping read gets its own row
     expect(maxY).toBe(3)
     expect(readYs[2]).toBe(0) // A first
@@ -652,7 +656,7 @@ describe('computeSortedLayout', () => {
         { start: 10, end: 100 }, // non-overlap before everything
       ],
     })
-    const { readYs } = computeSortedLayout(data, makeSortedBy(500))
+    const { readYs } = computeSortedLayout(data, makeSortColumn(500))
     // Non-overlap should fit in row 0 (gap [0, 400) is free)
     expect(readYs[2]).toBe(0)
     assertNonOverlappingLayout(data, readYs)
@@ -677,7 +681,7 @@ describe('computeSortedLayout', () => {
         { start: 160, end: 195 },
       ],
     })
-    const { readYs } = computeSortedLayout(data, makeSortedBy(500))
+    const { readYs } = computeSortedLayout(data, makeSortColumn(500))
     assertNonOverlappingLayout(data, readYs)
   })
 
@@ -692,12 +696,12 @@ describe('computeSortedLayout', () => {
         { start: 420, end: 620, baseAtSortPos: 'C' },
       ],
     })
-    const { readYs } = computeSortedLayout(data, makeSortedBy(500))
+    const { readYs } = computeSortedLayout(data, makeSortColumn(500))
     expect(readYs[1]).toBe(0)
     expect(readYs[0]).toBe(1)
   })
 
-  test('position sort: overlapping reads placed in start order', () => {
+  test('a tag sort whose values never arrived places reads in start order', () => {
     const data = makePileupData({
       regionStart: 0,
       sortPos: 500,
@@ -707,8 +711,8 @@ describe('computeSortedLayout', () => {
         { start: 480, end: 700 },
       ],
     })
-    const { readYs } = computeSortedLayout(data, makeSortedBy(500, 'position'))
-    // sort by position ascending → read 1 (400), read 0 (450), read 2 (480)
+    const { readYs } = computeSortedLayout(data, makeSortColumn(500, 'tag'))
+    // no sortTagValues, so canonical order → read 1 (400), read 0 (450), read 2 (480)
     expect(readYs[1]).toBe(0)
     expect(readYs[0]).toBe(1)
     expect(readYs[2]).toBe(2)
@@ -724,7 +728,7 @@ describe('computeSortedLayout', () => {
         { start: 450, end: 600, baseAtSortPos: 'A' },
       ],
     })
-    const { readYs, maxY } = computeSortedLayout(data, makeSortedBy(500))
+    const { readYs, maxY } = computeSortedLayout(data, makeSortColumn(500))
     // Row indices 0,1,2 all used
     const rows = new Set([readYs[0], readYs[1], readYs[2]])
     expect(rows.size).toBe(3)
@@ -747,7 +751,7 @@ describe('computeSortedLayout', () => {
     })
     const { readYs, maxY } = computeSortedLayout(
       data,
-      makeSortedBy(500, 'tag', 'HP'),
+      makeSortColumn(500, 'tag', 'HP'),
     )
     expect(maxY).toBe(4)
     const hp1Rows = [readYs[1]!, readYs[3]!].sort()
@@ -767,7 +771,10 @@ describe('computeSortedLayout', () => {
         { start: 440, end: 740, tagValue: '0' },
       ],
     })
-    const { readYs } = computeSortedLayout(data, makeSortedBy(500, 'tag', 'HP'))
+    const { readYs } = computeSortedLayout(
+      data,
+      makeSortColumn(500, 'tag', 'HP'),
+    )
     expect([readYs[0], readYs[2], readYs[1]]).toEqual([0, 1, 2])
     assertNonOverlappingLayout(data, readYs)
   })
@@ -785,7 +792,10 @@ describe('computeSortedLayout', () => {
         { start: 460, end: 760, tagValue: '-3' },
       ],
     })
-    const { readYs } = computeSortedLayout(data, makeSortedBy(500, 'tag', 'AS'))
+    const { readYs } = computeSortedLayout(
+      data,
+      makeSortColumn(500, 'tag', 'AS'),
+    )
     expect([readYs[2], readYs[3], readYs[0], readYs[1]]).toEqual([0, 1, 2, 3])
   })
 
@@ -802,7 +812,7 @@ describe('computeSortedLayout', () => {
     })
     const { readYs, maxY } = computeSortedLayout(
       data,
-      makeSortedBy(500, 'tag', 'HP'),
+      makeSortColumn(500, 'tag', 'HP'),
     )
     expect(readYs[0]).toBe(0)
     expect(readYs[1]).toBe(1)
@@ -821,7 +831,10 @@ describe('computeSortedLayout', () => {
         { start: 420, end: 720, tagValue: 'sampleB' },
       ],
     })
-    const { readYs } = computeSortedLayout(data, makeSortedBy(500, 'tag', 'RG'))
+    const { readYs } = computeSortedLayout(
+      data,
+      makeSortColumn(500, 'tag', 'RG'),
+    )
     // 'sampleB' > 'sampleA' → sampleB gets row 0
     expect(readYs[1]).toBe(0)
     expect(readYs[0]).toBe(1)
@@ -840,7 +853,10 @@ describe('computeSortedLayout', () => {
         { start: 440, end: 740, tagValue: 'barcodeA' },
       ],
     })
-    const { readYs } = computeSortedLayout(data, makeSortedBy(500, 'tag', 'BX'))
+    const { readYs } = computeSortedLayout(
+      data,
+      makeSortColumn(500, 'tag', 'BX'),
+    )
     // localeCompare descending: 'barcodeB' > 'barcodeA' > '10'
     expect(readYs[1]).toBe(0)
     expect(readYs[2]).toBe(1)
@@ -879,7 +895,7 @@ describe('computeSortedLayout', () => {
       })
       const { readYs } = computeSortedLayout(
         data,
-        makeSortedBy(200, 'softclip'),
+        makeSortColumn(200, 'softclip'),
       )
       // longest clip first, then the shorter, then the reads through the column
       expect(readYs[3]).toBe(0)
@@ -902,7 +918,7 @@ describe('computeSortedLayout', () => {
       })
       const { readYs } = computeSortedLayout(
         data,
-        makeSortedBy(100, 'softclip'),
+        makeSortColumn(100, 'softclip'),
       )
       expect(readYs[1]).toBe(0)
       expect(readYs[0]).toBe(1)
@@ -923,7 +939,7 @@ describe('computeSortedLayout', () => {
       })
       const { readYs } = computeSortedLayout(
         data,
-        makeSortedBy(200, 'hardclip'),
+        makeSortColumn(200, 'hardclip'),
       )
       expect(readYs[1]).toBe(0)
       expect(readYs[0]).toBe(1)
@@ -944,7 +960,7 @@ describe('computeSortedLayout', () => {
       })
       const { readYs } = computeSortedLayout(
         data,
-        makeSortedBy(200, 'insertion'),
+        makeSortColumn(200, 'insertion'),
       )
       expect(readYs[1]).toBe(0)
       expect(readYs[0]).toBe(1)
@@ -968,7 +984,7 @@ describe('computeSortedLayout', () => {
       })
       const { readYs, maxY } = computeSortedLayout(
         data,
-        makeSortedBy(200, 'softclip'),
+        makeSortColumn(200, 'softclip'),
       )
       expect(readYs[0]).toBe(0)
       expect(readYs[1]).toBe(0)
@@ -1085,7 +1101,7 @@ describe('computeMultiRegionLayout', () => {
         [0, chr1(0, 100)],
         [1, chr1(200, 300)],
       ]),
-      sortedBy: {
+      sortColumn: {
         type: 'basePair',
         pos: 250,
         refName: 'chr1',
@@ -1124,7 +1140,7 @@ describe('computeMultiRegionLayout', () => {
         [0, chr1(0, 100)],
         [1, chr1(200, 300)],
       ]),
-      sortedBy: {
+      sortColumn: {
         type: 'softclip',
         pos: 260,
         refName: 'chr1',
@@ -1226,7 +1242,7 @@ describe('computeMultiRegionLayout', () => {
     const { rowMap } = computeMultiRegionLayout({
       entries: [[0, exon]],
       regions: new Map([[0, chr1(200, 300)]]),
-      sortedBy: {
+      sortColumn: {
         type: 'basePair',
         pos: 250,
         refName: 'chr1',
@@ -1279,7 +1295,7 @@ describe('computeMultiRegionLayout', () => {
   })
 
   test('does not sort when regions span different refNames', () => {
-    const args = (sortedBy?: SortedBy) =>
+    const args = (sortColumn?: SortColumn) =>
       computeMultiRegionLayout({
         entries: [
           [
@@ -1306,7 +1322,7 @@ describe('computeMultiRegionLayout', () => {
           [0, { refName: 'chr1', start: 0, end: 100 }],
           [1, { refName: 'chr2', start: 200, end: 300 }],
         ]),
-        sortedBy,
+        sortColumn,
       })
     // mixed refNames → sort is skipped, so layout matches the unsorted result
     const sorted = args({
@@ -1513,23 +1529,23 @@ describe('layout is independent of read arrival order', () => {
     ['position', { type: 'position', pos: 160 }],
     ['basePair', { type: 'basePair', pos: 160 }],
     ['tag', { type: 'tag', pos: 160, tag: 'HP' }],
-    // `sortedBy.type` is a bare string, so an unknown value must still lay out
+    // `sortColumn.type` is a bare string, so an unknown value must still lay out
     // deterministically rather than falling back to arrival order.
     ['an unrecognized type', { type: 'not-a-sort-type', pos: 160 }],
-  ] as [string, SortedBy][])(
+  ] as [string, SortColumn][])(
     'sort by %s is order-independent',
-    (_name, sortedBy) => {
+    (_name, sortColumn) => {
       const layout = (d: WorkerPileupData) =>
-        computeSortedLayout(d, sortedBy).readYs
-      expect(rowsByOriginalIndex(reversed, layout, sortedBy.pos)).toEqual(
-        rowsByOriginalIndex(identity, layout, sortedBy.pos),
+        computeSortedLayout(d, sortColumn).readYs
+      expect(rowsByOriginalIndex(reversed, layout, sortColumn.pos)).toEqual(
+        rowsByOriginalIndex(identity, layout, sortColumn.pos),
       )
     },
   )
 })
 
-// `sortedBy` names a genomic COLUMN — a refName as well as a position — and the
-// multi-region path gates on it (`commonRefName === sortedBy.refName`). The
+// `sortColumn` names a genomic COLUMN — a refName as well as a position — and the
+// multi-region path gates on it (`commonRefName === sortColumn.refName`). The
 // single-region path is the ordinary one and has to gate the same way: the slot
 // is config, so a sort committed on one contig is still set after the view
 // navigates to another, and a position number means something different there.
@@ -1551,7 +1567,7 @@ describe('the pileup sort is gated on refName in the single-region path too', ()
   function rowsFor(regionRefName: string, sortRefName: string) {
     const out = buildLaidOutPileupMap({
       dataMap: new Map([[0, readsAtSortPos()]]),
-      sortedBy: {
+      sortColumn: {
         type: 'basePair',
         pos: 50,
         refName: sortRefName,
@@ -1576,7 +1592,7 @@ describe('the pileup sort is gated on refName in the single-region path too', ()
   test('applies when the caller supplies no regions to check against', () => {
     const out = buildLaidOutPileupMap({
       dataMap: new Map([[0, readsAtSortPos()]]),
-      sortedBy: {
+      sortColumn: {
         type: 'basePair',
         pos: 50,
         refName: 'chr1',

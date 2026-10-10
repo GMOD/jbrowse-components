@@ -60,7 +60,7 @@ describe('alignments modifiers', () => {
     // `base` normalizes to the layout's `basePair` key so the sort isn't a
     // silent no-op (the layout only recognizes `basePair`)
     expect(sort).toEqual({ type: 'basePair', tag: undefined })
-    expect(snap.sortedBy).toBeUndefined()
+    expect(snap.sort).toBeUndefined()
   })
 
   test('sort:basePair passes through unchanged', () => {

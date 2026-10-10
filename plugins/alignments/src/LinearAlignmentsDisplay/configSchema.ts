@@ -6,11 +6,11 @@ import { sectionFacetConfigSchema } from '@jbrowse/display-kit/sectionFacetConfi
 import { types } from '@jbrowse/mobx-state-tree'
 import { scalesSchema, valueScaleSchema } from '@jbrowse/wiggle-core'
 
-import { LAYOUT_ORDERS } from '../shared/types.ts'
 import { alignmentsArcColorConfigSchema } from './alignmentsArcColorConfigSchema.ts'
 import { alignmentsBaseColorConfigSchema } from './alignmentsBaseColorConfigSchema.ts'
 import { alignmentsColorConfigSchema } from './alignmentsColorConfigSchema.ts'
 import { alignmentsModificationsConfigSchema } from './alignmentsModificationsConfigSchema.ts'
+import { alignmentsSortConfigSchema } from './alignmentsSortConfigSchema.ts'
 import {
   ALIGNMENTS_UNITS,
   READ_CONNECTIONS_MODES,
@@ -258,30 +258,10 @@ export default function configSchemaFactory(_pluginManager: PluginManager) {
         defaultValue: false,
       },
       /**
-       * #slot
+       * #slot sort
+       * The pileup's row order: a whole-window order (`position`, `length`, `spliced`, `split`) or a column sort at one base (`{ type: "strand", pos, refName }`).
        */
-      sortedBy: {
-        type: 'maybeFrozen',
-        description:
-          'Sort reads at a genomic position, e.g. by base, strand, or a tag (unset = unsorted)',
-        advanced: true,
-      },
-      /**
-       * #slot
-       * The row order where no `sortedBy` sort applies. `length` puts the
-       * widest features in the lowest rows, so large alignments cluster at the
-       * top rather than interleaving with small ones (LGVSyntenyDisplay's
-       * default); `spliced` does the same for reads whose CIGAR carries a skip,
-       * for RNA-seq, and `split` for reads aligned in pieces or carrying a
-       * deletion of 50 bp or more, which are the ones crossing a breakpoint.
-       */
-      layoutOrder: {
-        type: 'stringEnum',
-        model: types.enumeration('LayoutOrder', [...LAYOUT_ORDERS]),
-        defaultValue: 'position',
-        description:
-          'Pileup row order where no sort applies: by start (position), widest first (length), spliced reads first (spliced), or reads aligned in pieces or across a deletion of 50 bp or more first (split)',
-      },
+      sort: alignmentsSortConfigSchema,
       /**
        * #slot
        * null = auto: outline is drawn only under `unit: 'chain'`. Set

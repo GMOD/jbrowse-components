@@ -27,6 +27,6 @@ export { getSashimiMenuItem } from './sashimi.ts'
 export {
   getGroupByMenuItem,
   getSectionOrderMenuItems,
-  getSortByMenuItem,
+  getSortMenuItem,
 } from './sortGroup.ts'
 export type { SectionOrderMenuModel } from './sortGroup.ts'

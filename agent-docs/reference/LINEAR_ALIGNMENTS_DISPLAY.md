@@ -211,8 +211,7 @@ an `onClick` gets nothing, `closeContextMenu` ran first.
 
 ## Layout and draw paths
 
-- Chain layout is handed **neither `sortedBy` nor `layoutOrder`** — its rows are
-  chains. Every ordering control curates itself out in chain mode; a new one
+- Chain layout is handed **no `sort`** — its rows are chains. Every ordering control curates itself out in chain mode; a new one
   that doesn't is a silent no-op, and a tag sort additionally refetches.
 - `placeRect` cannot use a levels / right-edge-only array: features arrive out
   of start order in both layouts.

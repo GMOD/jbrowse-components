@@ -330,12 +330,6 @@ describe('the schema', () => {
 
   it('accepts anything in a frozen slot', () => {
     const config = baseConfig()
-    config.tracks[0]!.displays = [
-      {
-        type: 'LinearAlignmentsDisplay',
-        sortedBy: { type: 'tag', anything: [1, { deep: true }] },
-      },
-    ]
     config.tracks[0]!.metadata = 'a string where an object is usual'
     expect(schemaProblems(config)).toEqual([])
   })

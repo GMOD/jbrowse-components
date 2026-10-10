@@ -1,22 +1,27 @@
-import { getSortByMenuItem } from './sortGroup.ts'
+import { getSortMenuItem } from './sortGroup.ts'
 
-import type { LayoutOrder, SortedBy } from '../../shared/types.ts'
+import type {
+  ColumnSortType,
+  LayoutOrder,
+  SortColumn,
+} from '../../shared/types.ts'
 
-// A stub of the slice of the display model the sort menu reads/writes. The menu
-// coordinates two config slots (`sortedBy` and `layoutOrder`) so the pileup
-// never holds two orderings at once; these tests pin that coordination and the
-// derived `checked` state without spinning up a real view.
-function makeModel(init?: { sortedBy?: SortedBy; layoutOrder?: LayoutOrder }) {
+// A stub of the slice of the display model the sort menu reads/writes, so the
+// writes and the derived `checked` state are pinned without a real view.
+function makeModel(init?: {
+  sortColumn?: SortColumn
+  layoutOrder?: LayoutOrder
+}) {
   return {
-    sortedBy: init?.sortedBy,
+    sortColumn: init?.sortColumn,
     layoutOrder: init?.layoutOrder ?? 'position',
-    setSortedBy: jest.fn(),
-    setLayoutOrder: jest.fn(),
+    setSort: jest.fn(),
+    sortAtCenterLine: jest.fn(),
   }
 }
 
 function radios(model: ReturnType<typeof makeModel>) {
-  return getSortByMenuItem(model).subMenu
+  return getSortMenuItem(model).subMenu
 }
 
 function radio(model: ReturnType<typeof makeModel>, label: string) {
@@ -27,7 +32,7 @@ function radio(model: ReturnType<typeof makeModel>, label: string) {
   return item
 }
 
-function sorted(type: string): SortedBy {
+function sorted(type: ColumnSortType): SortColumn {
   return { type, pos: 100, refName: 'chr1' }
 }
 
@@ -65,14 +70,16 @@ describe('sort menu radio selection', () => {
     ['strand', 'Read strand'],
     ['basePair', 'Base pair'],
     ['tag', 'Tag...'],
-  ])('a %s sort selects "%s"', (type, label) => {
-    expect(checkedLabel(makeModel({ sortedBy: sorted(type) }))).toEqual([label])
+  ] as const)('a %s sort selects "%s"', (type, label) => {
+    expect(checkedLabel(makeModel({ sortColumn: sorted(type) }))).toEqual([
+      label,
+    ])
   })
 
-  test.each(['insertion', 'softclip', 'hardclip'])(
+  test.each(['insertion', 'softclip', 'hardclip'] as const)(
     'a context-menu %s sort keeps "Base pair" checked',
     type => {
-      expect(checkedLabel(makeModel({ sortedBy: sorted(type) }))).toEqual([
+      expect(checkedLabel(makeModel({ sortColumn: sorted(type) }))).toEqual([
         'Base pair',
       ])
     },
@@ -81,7 +88,7 @@ describe('sort menu radio selection', () => {
   // Like the color menu's tag radio: the tag in use is otherwise invisible
   // without reopening the dialog.
   test('the tag radio names the tag being sorted on', () => {
-    const model = makeModel({ sortedBy: { ...sorted('tag'), tag: 'HP' } })
+    const model = makeModel({ sortColumn: { ...sorted('tag'), tag: 'HP' } })
     expect(checkedLabel(model)).toEqual(['Tag (HP)...'])
   })
 
@@ -91,9 +98,9 @@ describe('sort menu radio selection', () => {
       makeModel({ layoutOrder: 'length' }),
       makeModel({ layoutOrder: 'spliced' }),
       makeModel({ layoutOrder: 'split' }),
-      makeModel({ sortedBy: sorted('strand') }),
-      makeModel({ sortedBy: sorted('basePair') }),
-      makeModel({ sortedBy: sorted('tag') }),
+      makeModel({ sortColumn: sorted('strand') }),
+      makeModel({ sortColumn: sorted('basePair') }),
+      makeModel({ sortColumn: sorted('tag') }),
     ]) {
       expect(checkedLabel(model)).toHaveLength(1)
     }
@@ -111,7 +118,7 @@ describe('curated modes', () => {
 
   test('offers only the requested modes, in the requested order', () => {
     expect(
-      getSortByMenuItem(makeModel(), {
+      getSortMenuItem(makeModel(), {
         ...opts,
         modes: [...opts.modes],
       }).subMenu.map(i => i.label),
@@ -120,10 +127,10 @@ describe('curated modes', () => {
 
   // Mirrors the group-by radios, which tick "None" for a stored dimension they
   // don't offer: a blank radio group reads as a broken menu.
-  test.each(['basePair', 'tag'])(
+  test.each(['basePair', 'tag'] as const)(
     'a stored %s sort this menu does not offer falls back to Start location',
     type => {
-      const item = getSortByMenuItem(makeModel({ sortedBy: sorted(type) }), {
+      const item = getSortMenuItem(makeModel({ sortColumn: sorted(type) }), {
         ...opts,
         modes: [...opts.modes],
       })
@@ -134,7 +141,7 @@ describe('curated modes', () => {
   )
 
   test('still tracks the checked mode', () => {
-    const item = getSortByMenuItem(makeModel({ layoutOrder: 'length' }), {
+    const item = getSortMenuItem(makeModel({ layoutOrder: 'length' }), {
       ...opts,
       modes: [...opts.modes],
     })
@@ -144,30 +151,29 @@ describe('curated modes', () => {
   })
 })
 
-describe('sort menu keeps the two ordering slots mutually exclusive', () => {
+describe('sort menu writes', () => {
   test.each([
     ['Start location', 'position'],
     ['Longest reads first', 'length'],
     ['Spliced reads first', 'spliced'],
     ['Split reads first', 'split'],
-  ])('%s is one setLayoutOrder(%s) write', (label, order) => {
+  ])('%s is one setSort(%s) write', (label, order) => {
     const model = makeModel({ layoutOrder: 'length' })
     radio(model, label).onClick()
-    expect(model.setLayoutOrder).toHaveBeenCalledWith(order)
-    expect(model.setSortedBy).not.toHaveBeenCalled()
+    expect(model.setSort).toHaveBeenCalledWith(order)
+    expect(model.sortAtCenterLine).not.toHaveBeenCalled()
   })
 
-  // The sort radios delegate the mutual exclusion to setSortedByAtPosition, which resets
-  // layoutOrder only as it writes the slot. Clearing it here instead would
-  // wipe the current ordering even when the sort never lands (no valid center
-  // line), leaving every radio unchecked.
+  // A column sort goes through sortAtCenterLine, which writes the slot only once
+  // it has a column. Writing here instead would wipe the current ordering even
+  // when the sort never lands (no valid center line).
   test.each([
     ['Read strand', 'strand'],
     ['Base pair', 'basePair'],
-  ])('%s sets the sort without pre-clearing layoutOrder', (label, type) => {
+  ])('%s sorts at the center line without writing the slot', (label, type) => {
     const model = makeModel({ layoutOrder: 'length' })
     radio(model, label).onClick()
-    expect(model.setSortedBy).toHaveBeenCalledWith(type)
-    expect(model.setLayoutOrder).not.toHaveBeenCalled()
+    expect(model.sortAtCenterLine).toHaveBeenCalledWith(type)
+    expect(model.setSort).not.toHaveBeenCalled()
   })
 })

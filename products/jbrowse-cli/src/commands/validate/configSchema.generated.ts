@@ -6731,6 +6731,87 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       },
       "additionalProperties": false
     },
+    "AlignmentsSort": {
+      "title": "AlignmentsSort",
+      "anyOf": [
+        {
+          "description": "Shorthand for \`{ \\"type\\": ... }\`.",
+          "default": "position",
+          "enum": [
+            "position",
+            "length",
+            "spliced",
+            "split",
+            "strand",
+            "basePair",
+            "tag",
+            "insertion",
+            "softclip",
+            "hardclip"
+          ],
+          "type": "string"
+        },
+        {
+          "title": "AlignmentsSort",
+          "type": "object",
+          "x-closed": true,
+          "properties": {
+            "type": {
+              "description": "position, length, spliced or split order the whole window; strand, basePair, tag, insertion, softclip or hardclip rank the reads over the column at pos.",
+              "default": "position",
+              "if": {
+                "type": "null"
+              },
+              "else": {
+                "enum": [
+                  "position",
+                  "length",
+                  "spliced",
+                  "split",
+                  "strand",
+                  "basePair",
+                  "tag",
+                  "insertion",
+                  "softclip",
+                  "hardclip"
+                ]
+              }
+            },
+            "pos": {
+              "description": "a column sort's 0-based position.",
+              "if": {
+                "type": "null"
+              },
+              "else": {
+                "type": "number"
+              }
+            },
+            "refName": {
+              "description": "a column sort's reference sequence.",
+              "if": {
+                "type": "null"
+              },
+              "else": {
+                "$ref": "#/$defs/PlainString"
+              }
+            },
+            "tag": {
+              "description": "the SAM tag a tag sort ranks by.",
+              "if": {
+                "type": "null"
+              },
+              "else": {
+                "$ref": "#/$defs/PlainString"
+              }
+            }
+          },
+          "patternProperties": {
+            "^_+comment": {}
+          },
+          "additionalProperties": false
+        }
+      ]
+    },
     "AlignmentsArcColor": {
       "title": "AlignmentsArcColor",
       "anyOf": [
@@ -6992,30 +7073,12 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "type": "boolean"
           }
         },
-        "sortedBy": {
-          "description": "Sort reads at a genomic position, e.g. by base, strand, or a tag (unset = unsorted). Any JSON value: the slot is \`frozen\`, so its shape is not checked here.",
+        "sort": {
           "if": {
             "type": "null"
           },
           "else": {
-            "not": {
-              "$ref": "#/$defs/JexlString"
-            }
-          }
-        },
-        "layoutOrder": {
-          "description": "Pileup row order where no sort applies: by start (position), widest first (length), spliced reads first (spliced), or reads aligned in pieces or across a deletion of 50 bp or more first (split).",
-          "default": "position",
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "enum": [
-              "position",
-              "length",
-              "spliced",
-              "split"
-            ]
+            "$ref": "#/$defs/AlignmentsSort"
           }
         },
         "showOutline": {
@@ -7954,6 +8017,87 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         }
       ]
     },
+    "LGVSyntenySort": {
+      "title": "LGVSyntenySort",
+      "anyOf": [
+        {
+          "description": "Shorthand for \`{ \\"type\\": ... }\`.",
+          "default": "length",
+          "enum": [
+            "position",
+            "length",
+            "spliced",
+            "split",
+            "strand",
+            "basePair",
+            "tag",
+            "insertion",
+            "softclip",
+            "hardclip"
+          ],
+          "type": "string"
+        },
+        {
+          "title": "LGVSyntenySort",
+          "type": "object",
+          "x-closed": true,
+          "properties": {
+            "type": {
+              "description": "position, length, spliced or split order the whole window; strand, basePair, tag, insertion, softclip or hardclip rank the reads over the column at pos.",
+              "default": "length",
+              "if": {
+                "type": "null"
+              },
+              "else": {
+                "enum": [
+                  "position",
+                  "length",
+                  "spliced",
+                  "split",
+                  "strand",
+                  "basePair",
+                  "tag",
+                  "insertion",
+                  "softclip",
+                  "hardclip"
+                ]
+              }
+            },
+            "pos": {
+              "description": "a column sort's 0-based position.",
+              "if": {
+                "type": "null"
+              },
+              "else": {
+                "type": "number"
+              }
+            },
+            "refName": {
+              "description": "a column sort's reference sequence.",
+              "if": {
+                "type": "null"
+              },
+              "else": {
+                "$ref": "#/$defs/PlainString"
+              }
+            },
+            "tag": {
+              "description": "the SAM tag a tag sort ranks by.",
+              "if": {
+                "type": "null"
+              },
+              "else": {
+                "$ref": "#/$defs/PlainString"
+              }
+            }
+          },
+          "patternProperties": {
+            "^_+comment": {}
+          },
+          "additionalProperties": false
+        }
+      ]
+    },
     "LGVSyntenyDisplaySlots": {
       "type": "object",
       "properties": {
@@ -8173,30 +8317,12 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "type": "boolean"
           }
         },
-        "sortedBy": {
-          "description": "Sort reads at a genomic position, e.g. by base, strand, or a tag (unset = unsorted). Any JSON value: the slot is \`frozen\`, so its shape is not checked here.",
+        "sort": {
           "if": {
             "type": "null"
           },
           "else": {
-            "not": {
-              "$ref": "#/$defs/JexlString"
-            }
-          }
-        },
-        "layoutOrder": {
-          "description": "Row order where no sort applies: by start (position), widest first (length), or spliced first (spliced).",
-          "default": "length",
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "enum": [
-              "position",
-              "length",
-              "spliced",
-              "split"
-            ]
+            "$ref": "#/$defs/LGVSyntenySort"
           }
         },
         "showOutline": {
@@ -15402,11 +15528,8 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
                 }
               ]
             },
-            "sortedBy": {
-              "$ref": "#/$defs/LinearAlignmentsDisplaySlots/properties/sortedBy"
-            },
-            "layoutOrder": {
-              "$ref": "#/$defs/LinearAlignmentsDisplaySlots/properties/layoutOrder"
+            "sort": {
+              "$ref": "#/$defs/LinearAlignmentsDisplaySlots/properties/sort"
             },
             "showOutline": {
               "$ref": "#/$defs/LinearAlignmentsDisplaySlots/properties/showOutline"
@@ -18672,11 +18795,8 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
                 }
               ]
             },
-            "sortedBy": {
-              "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/sortedBy"
-            },
-            "layoutOrder": {
-              "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/layoutOrder"
+            "sort": {
+              "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/sort"
             },
             "showOutline": {
               "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/showOutline"

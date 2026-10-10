@@ -1,14 +1,16 @@
+import { readConfObject } from '@jbrowse/core/configuration'
 import { createJBrowseTheme } from '@jbrowse/core/ui'
 import { resolvePalette } from '@jbrowse/core/ui/palette'
 import { getSession } from '@jbrowse/core/util'
 
+import { alignmentsSortConfigSchema } from './alignmentsSortConfigSchema.ts'
 import {
   bootAlignmentsDisplay,
   makeEmptyAlignmentsResult,
 } from './testUtils.ts'
 
 // The track-menu sort anchors on the base under the center line. `pxToBp`
-// answers with `offset`, a bp count INTO the region, while `sortedBy.pos` is
+// answers with `offset`, a bp count INTO the region, while the sort's `pos` is
 // compared against absolute genomic `readPositions` in the worker. The two
 // coincide only on a region starting at 0 and drawn forward — which is what
 // `navToLocString` builds, and why this survived. Every region here therefore
@@ -56,10 +58,10 @@ function createDisplay({
 test('the sort anchors at an absolute genomic coordinate', () => {
   const { display, view } = createDisplay({ start: 1000, end: 2000 })
 
-  display.setSortedBy('basePair')
+  display.sortAtCenterLine('basePair')
 
   expect(view.centerLineInfo!.offset).toBeCloseTo(400)
-  expect(display.sortedBy?.pos).toBe(1400)
+  expect(display.sortColumn?.pos).toBe(1400)
 })
 
 // A flip keeps the region's bounds and reverses only the drawing, so `offset`
@@ -72,32 +74,31 @@ test('a reversed region anchors on the base drawn under the center line', () => 
     reversed: true,
   })
 
-  display.setSortedBy('basePair')
+  display.sortAtCenterLine('basePair')
 
-  expect(display.sortedBy?.pos).toBe(1599)
+  expect(display.sortColumn?.pos).toBe(1599)
 })
 
 test('a region starting at zero is unaffected', () => {
   const { display } = createDisplay({ start: 0, end: 50_000 })
 
-  display.setSortedBy('basePair')
+  display.sortAtCenterLine('basePair')
 
-  expect(display.sortedBy?.pos).toBe(400)
+  expect(display.sortColumn?.pos).toBe(400)
 })
 
-// `setSortedByAtPosition` resets `layoutOrder`, since a sort and the layout
-// order are peer radios. The old no-center-line fallback wrote `{pos: -1, refName: ''}`
-// AFTER that drop — a slot no layout can use (`sortForRegions` matches no
+// A column sort replaces the whole-window order in the one `sort` slot. The
+// old no-center-line fallback wrote `{pos: -1, refName: ''}` over it — a slot no layout can use (`sortForRegions` matches no
 // region named '', and nothing ranks at -1), so picking a strand sort out of
 // range threw away an active ordering and replaced it with nothing.
 test('a sort with no center line warns and leaves the ordering alone', () => {
   const { display, view } = createDisplay({ start: 1000, end: 2000 })
-  display.setLayoutOrder('length')
+  display.setSort('length')
   view.setDisplayedRegions([])
 
-  display.setSortedBy('strand')
+  display.sortAtCenterLine('strand')
 
-  expect(display.sortedBy).toBeUndefined()
+  expect(display.sortColumn).toBeUndefined()
   expect(display.layoutOrder).toBe('length')
   expect(getSession(display).notify).toHaveBeenCalledWith(
     expect.stringContaining('Cannot sort'),
@@ -105,17 +106,29 @@ test('a sort with no center line warns and leaves the ordering alone', () => {
   )
 })
 
-// One radio group: a layout order is written with the clear of the sort, so a
-// caller cannot leave the pileup holding two orderings at once.
+// One slot: a whole-window order replaces a column sort, so the pileup cannot
+// hold two orderings at once.
 test.each(['position', 'length', 'spliced'] as const)(
-  'setLayoutOrder(%s) writes the order and drops the sort',
+  'setSort(%s) writes the order and drops the column sort',
   order => {
     const { display } = createDisplay({ start: 0, end: 50_000 })
-    display.setSortedBy('basePair')
+    display.sortAtCenterLine('basePair')
 
-    display.setLayoutOrder(order)
+    display.setSort(order)
 
     expect(display.layoutOrder).toBe(order)
-    expect(display.sortedBy).toBeUndefined()
+    expect(display.sortColumn).toBeUndefined()
   },
 )
+
+test('a string sort is the type, and reads as the layout order', () => {
+  // the shorthand lifts on the way in, so the snapshot type does not name it
+  const node = alignmentsSortConfigSchema.create('spliced' as never)
+  expect(readConfObject(node, 'type')).toBe('spliced')
+  expect(readConfObject(node, 'pos')).toBeUndefined()
+
+  const { display } = createDisplay({ start: 0, end: 50_000 })
+  display.setSort('split')
+  expect(display.layoutOrder).toBe('split')
+  expect(display.sortColumn).toBeUndefined()
+})

@@ -113,16 +113,16 @@ collides regions that never overlap. Pileup shifts each read's unioned extent as
 a unit; chain shifts each region's bounds **before** merging by name, because a
 chain can span refNames. Chain had this bug after pileup's was fixed.
 
-## `sortedBy` names a column, not an offset — `sortForRegions` is the gate
+## `sortColumn` names a column, not an offset — `sortForRegions` is the gate
 
-It applies **only when every region being laid out is on `sortedBy.refName`**,
+It applies **only when every region being laid out is on `sortColumn.refName`**,
 so a localized sort can't false-match the same number on another chromosome.
 Both layout paths call it: the gate lived in the multi-region path alone while
-the single-region path — most browsing — passed `sortedBy` straight through, and
-the slot is **config**, so a sort set at chr1:1000 silently reordered chr2's
+the single-region path — most browsing — passed `sortColumn` straight through,
+and the slot is **config**, so a sort set at chr1:1000 silently reordered chr2's
 reads with the menu still showing a sort as active.
 
-It is also what the display's `sortedBy` getter promises: it canonicalizes the
+It is also what the display's `sortColumn` getter promises: it canonicalizes the
 refName because a session spec can carry an alias, and says an unresolvable one
 leaves the reads _unsorted_. The multi-region path keeps its own `regions &&`
 check on top — structural, not policy.

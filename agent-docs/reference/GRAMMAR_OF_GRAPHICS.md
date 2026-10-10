@@ -170,7 +170,7 @@ the result, since it is what a later audit need not redo:
   in the JSON schema: its `if/then` dispatch passes a type it does not know.
 - `displayDefaults` expand into the display config, so `plot` and "Reset track
   settings" see them.
-- Alignments `layoutOrder` and `sortedBy` are not a second spelling of
+- Alignments `sort` is not a second spelling of
   `rows.domain`, since pileup rows have no keys; `displayMode`, `lodMode`,
   `conservationMode` and `heightMode` are layout or fetch modes, not marks.
 

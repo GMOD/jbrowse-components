@@ -33,7 +33,7 @@ export interface RenderAlignmentDataArgs extends GatedFetchArgs {
   // the per-base layer, which extracts beside whatever `colorBy` fills reads with
   baseLayer?: BaseLayer
   // Tag name for tag-sort. Only the tag is sent to the worker (not the
-  // full SortedBy), so changing sort position within a tag sort doesn't
+  // full SortColumn), so changing sort position within a tag sort doesn't
   // invalidate the fetched data — main-thread layout re-runs instead.
   sortTag?: string
   showSoftClipping?: boolean
@@ -296,7 +296,7 @@ export interface WorkerPileupData {
   // as "everything normal".
   insertSizeStats?: InsertSizeBand
 
-  // Per-read tag values for tag sort, parallel to readKeys (only populated when sortedBy.type === 'tag').
+  // Per-read tag values for tag sort, parallel to readKeys (only populated when sortColumn.type === 'tag').
   // Main thread uses these to compute sorted layout without needing a re-fetch.
   sortTagValues?: string[]
 
@@ -399,7 +399,7 @@ export interface PileupLayoutArrays {
 
   // Linked-read straight-line connections. Sibling pass to `connectingLine*`
   // because the bezier overlay's GPU pass differs: per-endpoint Y (mates can sit
-  // on different rows when `sortedBy` is in effect), and a per-line palette index
+  // on different rows when `sortColumn` is in effect), and a per-line palette index
   // instead of a hard-coded color. Cross-region pairs are excluded — those keep
   // being drawn as SVG straight paths via PileupBezierOverlay (the GPU pass is
   // one region per buffer). Absolute genomic uint32 like all worker output (per

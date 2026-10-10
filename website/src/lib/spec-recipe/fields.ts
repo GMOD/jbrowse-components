@@ -870,14 +870,33 @@ const ARC_COLORS: Record<string, string> = Object.fromEntries([
 
 // The alignments 'Sort by...' radios (menus/sortGroup.ts). The strand row is
 // titled from the track's noun, as the height submenus are.
+// Spelled as menus/sortGroup.ts builds each radio, noun included.
 function sortByLabel(type: string, noun: string) {
-  return type === 'basePair'
-    ? 'Base pair'
-    : type === 'strand'
-      ? `${capitalizeFirst(noun)} strand`
-      : type === 'tag'
-        ? 'Tag...'
-        : undefined
+  return type === 'length'
+    ? `Longest ${noun}s first`
+    : type === 'spliced'
+      ? `Spliced ${noun}s first`
+      : type === 'split'
+        ? `Split ${noun}s first`
+        : type === 'basePair'
+          ? 'Base pair'
+          : type === 'strand'
+            ? `${capitalizeFirst(noun)} strand`
+            : type === 'tag'
+              ? 'Tag...'
+              : undefined
+}
+
+const CENTRE_LINE_NOTE =
+  'The sort is taken at the base under the centre line, so navigate to the position you want before sorting.'
+const SORT_NOTES: Record<string, string> = {
+  spliced:
+    'Gives every read whose CIGAR carries a skip the lowest rows, so the junction-spanning reads sit together at the top of a deep pileup.',
+  split:
+    'Gives the reads aligned in pieces, and the reads carrying a deletion of 50 bp or more, the lowest rows, so the reads crossing a breakpoint sit together at the top of a deep pileup.',
+  basePair: CENTRE_LINE_NOTE,
+  strand: CENTRE_LINE_NOTE,
+  tag: CENTRE_LINE_NOTE,
 }
 
 // 'Show legend' and 'Show coverage' are spelled identically in the alignments
@@ -923,7 +942,7 @@ const CANVAS_DISPLAYS = new Set(['LinearBasicDisplay', 'LinearVariantDisplay'])
 // LD heatmap. They share one menu-item helper, so they share the label.
 const SQUASH_TO_HEIGHT_DISPLAYS = new Set(['LinearHicDisplay', 'LDTrackDisplay'])
 
-// showInterchrom, showLongRange, readConnectionsHeight and sortedBy are
+// showInterchrom, showLongRange, readConnectionsHeight and sort are
 // declared by LinearAlignmentsDisplay and nothing else, so unlike the fields
 // above them the name settles the display on its own: an entry carrying one is
 // either that display or a spec naming a slot no display has. That is what lets
@@ -1566,32 +1585,17 @@ export const trackFields: Record<string, FieldRecipe> = {
       ? { path: `${TRACK_MENU} → Color by... → Arc color → ${label}` }
       : undefined
   },
-  sortedBy: (value, { displayType, noun }) => {
-    const type = asString(asRecord(value)?.type)
+  sort: (value, { displayType, noun }) => {
+    const type =
+      typeof value === 'string' ? value : asString(asRecord(value)?.type)
     const label = type ? sortByLabel(type, noun) : undefined
     return label && isAlignmentsOnlyField(displayType)
       ? {
           path: `${TRACK_MENU} → Sort by... → ${label}`,
-          note: 'The sort is taken at the base under the centre line, so navigate to the position you want before sorting.',
+          note: SORT_NOTES[type!],
         }
       : undefined
   },
-  // Peer radios of `sortedBy`'s own modes in the same group (menus/sortGroup.ts),
-  // so each reads as a Sort by... row rather than a setting of its own.
-  layoutOrder: (value, { displayType }) =>
-    value === 'spliced' && isAlignmentsOnlyField(displayType)
-      ? {
-          path: `${TRACK_MENU} → Sort by... → Spliced reads first`,
-          note: 'Gives every read whose CIGAR carries a skip the lowest rows, so the junction-spanning reads sit together at the top of a deep pileup. One ordering at a time: this and the sort modes are one radio group.',
-        }
-      : value === 'split' && isAlignmentsOnlyField(displayType)
-        ? {
-            path: `${TRACK_MENU} → Sort by... → Split reads first`,
-            note: 'Gives the reads aligned in pieces, and the reads carrying a deletion of 50 bp or more, the lowest rows, so the reads crossing a breakpoint sit together at the top of a deep pileup.',
-          }
-        : value === 'length' && isAlignmentsOnlyField(displayType)
-          ? { path: `${TRACK_MENU} → Sort by... → Longest reads first` }
-          : undefined,
   showLegend: (value, { displayType }) =>
     typeof value === 'boolean' &&
     displayType &&

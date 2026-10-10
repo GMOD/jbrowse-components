@@ -85,7 +85,7 @@ function createDisplay({ withRegions = false } = {}) {
     // the feature-details lookup asks for the region's sequence adapter, and
     // reports a failed lookup through notify — hence no `sequence` here.
     // `getCanonicalRefName2` carries one alias because user-authored refName
-    // text (the `sortedBy` slot) is normalized through it, and a stub that
+    // text (the `sort` slot) is normalized through it, and a stub that
     // only ever answered identity could not tell a reader that normalizes
     // from one that doesn't. It reads `.toLowerCase()` off its argument for the
     // same kind of reason: the real one does, so anything but a string throws
@@ -515,66 +515,63 @@ describe('the row cap sits with the other sizing controls', () => {
   })
 })
 
-// `sortLayout` gates the sort on `sortedBy.refName` matching the loaded
+// `sortLayout` gates the sort on its `refName` matching the loaded
 // regions' own refName, which is canonical. The center-line menu writes a
 // canonical one (it reads the view's region), but this is a config slot, so a
 // config or session spec writes whatever the author typed. Unnormalized, an
 // aliased spec leaves the reads unsorted with the menu still showing the sort
 // as active — no error, and assembly-dependent, so it works on one config and
 // not the next.
-describe('sortedBy refName normalization', () => {
+describe('sort refName normalization', () => {
   // The assembly is resolved off the VIEW, which names one only once it has
   // regions — so a display whose view is still empty reads the slot back raw.
   // That is the same window in which nothing has been laid out to sort.
   test('an aliased refName resolves to the canonical one', () => {
     const display = createDisplay({ withRegions: true })
     // 'chrA' is the test assembly's alias for the canonical 'ctgA'
-    display.setSortedByAtPosition({
-      type: 'base',
+    display.setSort({
+      type: 'basePair',
       pos: 100,
       refName: 'chrA',
     })
 
-    expect(display.sortedBy?.refName).toBe('ctgA')
+    expect(display.sortColumn?.refName).toBe('ctgA')
     // everything else on the slot rides through untouched
-    expect(display.sortedBy?.pos).toBe(100)
-    expect(display.sortedBy?.type).toBe('base')
+    expect(display.sortColumn?.pos).toBe(100)
+    expect(display.sortColumn?.type).toBe('basePair')
   })
 
-  // The slot is `frozen`, so a config or session spec can write half a sort. A
-  // column is a refName AND a position, so either half missing is no sort — and
+  // A config or session spec can write half a column sort. A column is a refName AND a position, so either half missing is no sort — and
   // the refName half has to be answered here, because normalizing it instead
   // threw a TypeError out of a getter the fetch autorun and the render both
   // read, replacing the whole track with an error over a typo in a spec.
   test.each([
-    ['refName', { type: 'base', pos: 100 }],
-    ['pos', { type: 'base', refName: 'ctgA' }],
+    ['refName', { type: 'basePair', pos: 100 }],
+    ['pos', { type: 'basePair', refName: 'ctgA' }],
   ])('a slot naming no %s is no sort, not a throw', (_half, slot) => {
     const display = createDisplay({ withRegions: true })
     // Cast because this is the one writer the action's signature can't
-    // describe: `sortedBy` is a frozen slot, so a config or session spec can
-    // put half a sort in it, and that is exactly the input under test.
-    display.setSortedByAtPosition(
-      slot as Parameters<typeof display.setSortedByAtPosition>[0],
-    )
+    // describe: a config or session spec can put half a sort in the slot, and
+    // that is exactly the input under test.
+    display.setSort(slot as Parameters<typeof display.setSort>[0])
 
-    expect(display.sortedBy).toBeUndefined()
+    expect(display.sortColumn).toBeUndefined()
   })
 
   test('a canonical refName is left alone, and no sort stays undefined', () => {
     const display = createDisplay({ withRegions: true })
-    expect(display.sortedBy).toBeUndefined()
+    expect(display.sortColumn).toBeUndefined()
 
-    display.setSortedByAtPosition({
-      type: 'base',
+    display.setSort({
+      type: 'basePair',
       pos: 100,
       refName: 'ctgA',
     })
-    expect(display.sortedBy?.refName).toBe('ctgA')
+    expect(display.sortColumn?.refName).toBe('ctgA')
   })
 })
 
-// Chain layout is handed neither `sortedBy` nor `layoutOrder` — its rows
+// Chain layout is handed no `sort` — its rows
 // are chains — so every ordering control has to curate itself out the way
 // `canCollapseGroupRows` already does, or a sort is a silent no-op (and a tag
 // sort refetches the region for values nothing reads).
@@ -614,7 +611,7 @@ describe('ordering controls in chain mode', () => {
   // layout reads neither soft clipping nor the sort tag.
   test('the sort tag leaves the fetch key when chain mode drops it', () => {
     const display = createDisplay()
-    display.setSortedByAtPosition({
+    display.setSort({
       type: 'tag',
       pos: 50,
       refName: 'ctgA',

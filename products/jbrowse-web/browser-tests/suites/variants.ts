@@ -499,7 +499,7 @@ const suite: TestSuite = {
                   views: {
                     tracks: {
                       displays: {
-                        sortedBy?: {
+                        sortColumn?: {
                           type: string
                           pos: number
                           refName: string
@@ -510,11 +510,11 @@ const suite: TestSuite = {
                 }
               }
             ).JBrowseSession
-            const sortedBy = views[0]!.tracks[1]!.displays[0]!.sortedBy
+            const sort = views[0]!.tracks[1]!.displays[0]!.sortColumn
             return (
-              sortedBy?.type === 'basePair' &&
-              sortedBy.pos === 276 &&
-              sortedBy.refName === 'ctgA'
+              sort?.type === 'basePair' &&
+              sort.pos === 276 &&
+              sort.refName === 'ctgA'
             )
           },
           { timeout: 15000 },

@@ -94,7 +94,7 @@ describe('breakpointTracks', () => {
     ).toEqual([
       {
         trackId: 'tumor_bam',
-        layoutOrder: 'split',
+        sort: 'split',
         height: 240,
         forceLoad: true,
       },
@@ -104,19 +104,17 @@ describe('breakpointTracks', () => {
   // A split view is about the reads joining its panels, and a pileup deeper
   // than its track otherwise cuts off whichever reads start last.
   it('lays an alignments track out split reads first, unless the track says otherwise', () => {
-    const layoutOrderOf = (opts: string[], category: 'alignments' | 'other') =>
+    const sortOf = (opts: string[], category: 'alignments' | 'other') =>
       (
         breakpointTracks(
           undefined,
           [{ trackId: 't', opts }],
           () => category,
-        )[0] as { layoutOrder?: string }
-      ).layoutOrder
-    expect(layoutOrderOf([], 'alignments')).toBe('split')
-    expect(layoutOrderOf(['layoutOrder=position'], 'alignments')).toBe(
-      'position',
-    )
-    expect(layoutOrderOf([], 'other')).toBeUndefined()
+        )[0] as { sort?: string }
+      ).sort
+    expect(sortOf([], 'alignments')).toBe('split')
+    expect(sortOf(['sort=position'], 'alignments')).toBe('position')
+    expect(sortOf([], 'other')).toBeUndefined()
   })
 })
 

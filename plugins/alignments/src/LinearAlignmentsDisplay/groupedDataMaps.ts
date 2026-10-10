@@ -133,7 +133,7 @@ export function hasNamedGroups(order: readonly GroupId[]) {
 // Ordered, de-duplicated group identities across every fetched region, by the
 // same `sectionOrder` the worker's per-region partition uses. Membership,
 // order and labels are a property of the *fetch*, so deriving them straight from
-// `rpcDataMap` keeps them stable across every relayout (sortedBy / softclip /
+// `rpcDataMap` keeps them stable across every relayout (sortColumn / softclip /
 // per-group height drag) rather than recomputing them in the layout pass.
 //
 // The explicit re-sort is load-bearing across regions: the worker sorts each

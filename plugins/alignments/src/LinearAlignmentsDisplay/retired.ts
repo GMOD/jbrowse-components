@@ -184,14 +184,14 @@ const V4_SORT_TYPES: Record<string, string> = {
   tag: 'tag',
 }
 
-function sortedBySlot(value: unknown): DisplayEntry {
+function sortSlot(value: unknown): DisplayEntry {
   if (!isObject(value)) {
     return {}
   }
   const { type, pos, refName, tag } = value
   const sortType = V4_SORT_TYPES[String(type)]
   return sortType && typeof pos === 'number' && typeof refName === 'string'
-    ? { sortedBy: { type: sortType, pos: pos - 1, refName, tag } }
+    ? { sort: { type: sortType, pos: pos - 1, refName, tag } }
     : {}
 }
 
@@ -200,7 +200,7 @@ const INSTANCE_SLOTS: Record<string, (value: unknown) => DisplayEntry> = {
   colorBySetting: colorSlotsOf,
   filterBy: value => ({ filter: value }),
   filterBySetting: value => ({ filter: value }),
-  sortedBy: sortedBySlot,
+  sortedBy: sortSlot,
   trackMaxHeight: value => ({ maxHeight: value }),
   hideMismatchesSetting: value => ({ showMismatches: !value }),
 }

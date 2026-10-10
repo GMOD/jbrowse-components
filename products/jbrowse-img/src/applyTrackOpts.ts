@@ -271,15 +271,15 @@ interface DisplaySnapshot {
   growMaxHeight?: number
   baseColor?: { field: string }
   modifications?: { fillUnmarked?: boolean }
-  sortedBy?: {
-    type: string
-    pos: number
-    refName: string
-    assemblyName: string
-    tag?: string
-  }
+  sort?:
+    | string
+    | {
+        type: string
+        pos: number
+        refName: string
+        tag?: string
+      }
   readConnections?: 'off' | 'arc' | 'cloud'
-  layoutOrder?: string
   readConnectionsDown?: boolean
   showSashimiArcs?: boolean
   sashimiArcsMode?: 'up' | 'down' | 'auto'
@@ -292,14 +292,15 @@ interface DisplaySnapshot {
 
 // Compile-time guard that every DisplaySnapshot key exists on a display model, so
 // a property renamed upstream fails the build instead of going dead. `color`,
-// `forceLoad`, `modifications` and `baseColor` are config slots read through
-// differently named getters, which `keyof` the instance misses.
+// `forceLoad`, `modifications`, `baseColor` and `sort` are config slots read
+// through differently named getters, which `keyof` the instance misses.
 type ConfigSlotKey =
   | 'color'
   | 'forceLoad'
   | 'modifications'
   | 'baseColor'
   | 'filter'
+  | 'sort'
 type DisplayKeys =
   | keyof LinearAlignmentsDisplayModel
   | keyof LinearBasicDisplayModel
@@ -801,7 +802,7 @@ export async function applyDisplayOpts(
   // reads it is drawn for take the top rows. A track saying otherwise keeps it.
   if (joined && category === 'alignments') {
     snap.readConnections ??= 'arc'
-    snap.layoutOrder ??= 'split'
+    snap.sort ??= 'split'
   }
 
   // Resolve the center-line sort against the view (the pivot is the genomic
@@ -811,11 +812,10 @@ export async function applyDisplayOpts(
   if (sort) {
     const center = view.centerLineInfo
     if (center && !center.oob) {
-      snap.sortedBy = {
+      snap.sort = {
         type: sort.type,
         pos: basePaintedAt(center, center.offset),
         refName: center.refName,
-        assemblyName: center.assemblyName,
         tag: sort.tag,
       }
     } else {
@@ -826,11 +826,7 @@ export async function applyDisplayOpts(
   } else if (sortAt && category === 'alignments') {
     const [region] = view.displayedRegions
     if (region) {
-      snap.sortedBy = {
-        ...sortAt,
-        refName: region.refName,
-        assemblyName: region.assemblyName,
-      }
+      snap.sort = { ...sortAt, refName: region.refName }
     }
   }
   // One row height on every card of a run: a shallow pileup takes the room it

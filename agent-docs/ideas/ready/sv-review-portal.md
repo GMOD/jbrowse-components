@@ -327,7 +327,7 @@ the page is for the subset a filter leaves.
   `height:240` is an 1100 by 1183 image, so the page scales each image to the
   window and a click restores it. A shorter track used to cut off the rows the
   split reads sit in; a breakpoint panel now lays its pileup out split reads
-  first (`layoutOrder: split`), so at `height:150` the reads the connectors join
+  first (`sort: split`), so at `height:150` the reads the connectors join
   fill the rows shown and the same card is about 820 px. With the three context
   tracks at `height:50` a card of one row is 637 px and one of two contigs
   about 1,250.

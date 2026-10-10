@@ -16,10 +16,9 @@ const pileup = 'pileup-display'
 // exposed by JBrowse.tsx.
 //
 // The actions are `Pick`ed off the real model rather than restated, because a
-// restated one is checked against nothing: this suite went on calling
-// `setSortedByAtPosition(type, pos, refName)` for six weeks after it became one
-// object, passing green the whole time because the sort it set named no column
-// and so sorted nothing. `tsc` does cover this directory — it just had no way to
+// restated one is checked against nothing: this suite went on calling the sort
+// action positionally for six weeks after it took one object, passing green the
+// whole time because the sort it set named no column and so sorted nothing. `tsc` does cover this directory — it just had no way to
 // know these signatures were meant to be the model's. Now it does.
 //
 // The read-back shape below stays hand-written and deliberately narrow. It is a
@@ -27,7 +26,7 @@ const pileup = 'pileup-display'
 // drag in the whole PileupDataResult to say it.
 interface Display extends Pick<
   LinearAlignmentsDisplayModel,
-  'colorByField' | 'setSortedByAtPosition'
+  'colorByField' | 'setSort'
 > {
   // One entry per stacked group; ungrouped (this suite) is the single section.
   sourceSections: {
@@ -66,7 +65,7 @@ async function reshapeToTwoRegions(page: Page, sort: boolean) {
     const display = view.tracks[0]!.displays[0]!
     display.colorByField('strand')
     if (doSort) {
-      display.setSortedByAtPosition({
+      display.setSort({
         type: 'strand',
         pos: 34600,
         refName: 'ctgA',

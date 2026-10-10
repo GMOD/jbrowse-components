@@ -39,7 +39,11 @@ import {
 import { queueSortByTagDialog } from './sortGroup.ts'
 
 import type { ResolvedBlock } from '../../shared/hitTestTypes.ts'
-import type { ReadFilter } from '../../shared/types.ts'
+import type {
+  ColumnSortType,
+  ReadFilter,
+  SortColumn,
+} from '../../shared/types.ts'
 import type { ContextMenuHit } from '../components/hitTestPipeline.ts'
 import type { AlignmentsUnit } from '../constants.ts'
 import type { FeatureLookupModel } from './contextMenuFeature.ts'
@@ -57,19 +61,14 @@ interface HitMenuModel extends IStateTreeNode {
   // is built so its onClicks operate on a snapshot — closeContextMenu runs
   // before the click callback, so reading it live would see undefined.
   contextMenuHit: ContextMenuHit | undefined
-  setSortedByAtPosition: (arg: {
-    type: string
-    pos: number
-    refName: string
-    tag?: string
-  }) => void
+  setSort: (sort: SortColumn) => void
 }
 
 // The read/tag quick-filter rows read and merge into the same slot, and nothing
 // else.
 interface FilterModel {
   readFilter: ReadFilter
-  setReadFilter: (filterBy: ReadFilter) => void
+  setReadFilter: (filter: ReadFilter) => void
 }
 
 interface ContextMenuModel
@@ -82,7 +81,7 @@ interface ContextMenuModel
   contextMenuFeatureId: string | undefined
   // The active ordering, read only to pre-fill the tag dialog so this entry
   // point and the track menu's "Tag..." open with the same field filled.
-  sortedBy?: { type: string; tag?: string }
+  sortColumn?: SortColumn
   selectFeature: (feature: Feature) => void
   // Read by the two "Split current view" items, which enter chain layout so
   // the pieces they lay side by side get their connector.
@@ -132,7 +131,7 @@ function sortAndDetailsSubMenu({
   block: ResolvedBlock
   label: string
   sortLabel: string
-  sortType: string
+  sortType: ColumnSortType
   position: number
   detailsLabel: string
   openDetails: () => void
@@ -154,7 +153,7 @@ function sortAndDetailsSubMenu({
             label: sortLabel,
             icon: SwapVertIcon,
             onClick: () => {
-              self.setSortedByAtPosition({
+              self.setSort({
                 type: sortType,
                 pos: position,
                 refName: block.refName,
@@ -296,7 +295,7 @@ export function getHitMenuItems(
           sortLabel: isInterbase
             ? `Sort by ${typeLabel.toLowerCase()} at position`
             : 'Sort by base at position',
-          sortType: isInterbase ? cigarHit.type : 'basePair',
+          sortType: isInterbaseType(cigarHit.type) ? cigarHit.type : 'basePair',
           // An interbase mark IS its position, so the sort anchors on the mark.
           // A base-pair sort anchors on the clicked COLUMN instead: a deletion
           // or skip reports `position` as the op's start, which for a 5kb
@@ -436,7 +435,7 @@ function openSplitViewItems(
 //
 // `sort` false drops every position-anchored sort, the same option
 // `getHitMenuItems` takes — for chain mode, whose rows are chains and whose
-// layout is handed no `sortedBy` at all, so the items would set a slot nothing
+// layout is handed no `sort` at all, so the items would set a slot nothing
 // reads (the track menu's "Sort by..." is gated on the same condition).
 export function getContextMenuItems(
   self: ContextMenuModel,
@@ -479,13 +478,13 @@ export function getContextMenuItems(
           {
             label: 'Read strand',
             onClick: () => {
-              self.setSortedByAtPosition({ type: 'strand', pos, refName })
+              self.setSort({ type: 'strand', pos, refName })
             },
           },
           {
             label: 'Base pair',
             onClick: () => {
-              self.setSortedByAtPosition({ type: 'basePair', pos, refName })
+              self.setSort({ type: 'basePair', pos, refName })
             },
           },
           {
@@ -493,9 +492,11 @@ export function getContextMenuItems(
             onClick: () => {
               queueSortByTagDialog(
                 self,
-                self.sortedBy?.type === 'tag' ? self.sortedBy.tag : undefined,
+                self.sortColumn?.type === 'tag'
+                  ? self.sortColumn.tag
+                  : undefined,
                 tag => {
-                  self.setSortedByAtPosition({ type: 'tag', pos, refName, tag })
+                  self.setSort({ type: 'tag', pos, refName, tag })
                 },
               )
             },

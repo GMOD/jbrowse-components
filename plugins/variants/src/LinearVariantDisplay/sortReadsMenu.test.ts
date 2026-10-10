@@ -17,9 +17,10 @@ function variant(start: number, REF: string, ALT: string[]) {
 function viewWithReads() {
   const sorts: unknown[] = []
   const pileup = {
-    setSortedByAtPosition(sortedBy: unknown) {
-      sorts.push(sortedBy)
+    setSort(sort: unknown) {
+      sorts.push(sort)
     },
+    sortAtCenterLine() {},
   }
   return {
     sorts,
@@ -37,8 +38,8 @@ function viewWithReads() {
 test('sorts every pileup at the variant, under the view’s refName', () => {
   const { view, sorts } = viewWithReads()
   expect(sortReadsAtVariant(view, variant(100, 'ACGT', ['A']), 1)).toBe(true)
-  const sortedBy = { type: 'basePair', pos: 101, refName: 'ctgA' }
-  expect(sorts).toEqual([sortedBy, sortedBy])
+  const sort = { type: 'basePair', pos: 101, refName: 'ctgA' }
+  expect(sorts).toEqual([sort, sort])
 })
 
 test('an insertion sorts on the insertion column', () => {

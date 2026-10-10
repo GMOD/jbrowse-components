@@ -1,12 +1,9 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
-import { types } from '@jbrowse/mobx-state-tree'
-import {
-  LAYOUT_ORDERS,
-  linearAlignmentsDisplayConfigSchemaFactory,
-} from '@jbrowse/plugin-alignments'
+import { linearAlignmentsDisplayConfigSchemaFactory } from '@jbrowse/plugin-alignments'
 import { lodModeSlot } from '@jbrowse/synteny-core'
 
 import { lgvSyntenyColorConfigSchema } from './lgvSyntenyColorConfigSchema.ts'
+import { lgvSyntenySortConfigSchema } from './lgvSyntenySortConfigSchema.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 
@@ -87,18 +84,10 @@ function configSchemaF(pluginManager: PluginManager) {
           "Hide the group matching the view's own assembly when grouping by mate assembly",
       },
       /**
-       * #slot
-       * Synteny lays large alignments out first so big syntenic blocks cluster
-       * at the top instead of interleaving with small ones; overrides the base
-       * alignments display's `position` default.
+       * #slot sort
+       * The row order, with `length` the default so big syntenic blocks cluster at the top; a string is the `type`.
        */
-      layoutOrder: {
-        type: 'stringEnum',
-        model: types.enumeration('LayoutOrder', [...LAYOUT_ORDERS]),
-        defaultValue: 'length',
-        description:
-          'Row order where no sort applies: by start (position), widest first (length), or spliced first (spliced)',
-      },
+      sort: lgvSyntenySortConfigSchema,
     },
     {
       /**

@@ -236,17 +236,45 @@ export interface WorkerFacet {
   unit?: 'read' | 'chain'
 }
 
-export interface SortedBy {
-  type: string
+// Names in code order (index = code - 1). Single source for turning the numeric
+// interbase code back into a name — used by the indicator hit-test and the
+// coverage/indicator tooltip so the two can't drift.
+const INTERBASE_TYPE_NAMES = ['insertion', 'softclip', 'hardclip'] as const
+
+// The pileup's row orders over the whole window: by start, widest first,
+// spliced reads first, or reads aligned in pieces or across a large deletion
+// first.
+export const LAYOUT_ORDERS = ['position', 'length', 'spliced', 'split'] as const
+export type LayoutOrder = (typeof LAYOUT_ORDERS)[number]
+
+// The orders that rank the reads over one column, `pos` on `refName`: by
+// strand, by the base there, by a tag's value, or by the interbase mark there.
+export const COLUMN_SORT_TYPES = [
+  'strand',
+  'basePair',
+  'tag',
+  ...INTERBASE_TYPE_NAMES,
+] as const
+export type ColumnSortType = (typeof COLUMN_SORT_TYPES)[number]
+
+// Every value of the `sort` slot's `type`, one radio group in the menu.
+export const SORT_TYPES = [...LAYOUT_ORDERS, ...COLUMN_SORT_TYPES] as const
+export type SortType = (typeof SORT_TYPES)[number]
+
+export interface SortColumn {
+  type: ColumnSortType
   pos: number
   refName: string
   tag?: string
 }
 
-// The pileup's row order where no `sortedBy` column sort applies: by start,
-// widest first, spliced reads first, or reads aligned in pieces or across a large deletion first.
-export const LAYOUT_ORDERS = ['position', 'length', 'spliced', 'split'] as const
-export type LayoutOrder = (typeof LAYOUT_ORDERS)[number]
+// What `setSort` writes: a whole-window order, or a column sort.
+export type SortSetting = LayoutOrder | SortColumn
+
+export function isLayoutOrder(type: string): type is LayoutOrder {
+  const orders: readonly string[] = LAYOUT_ORDERS
+  return orders.includes(type)
+}
 
 // Bit flags stored in the Uint8Array `readChainHasSupp`, describing how a read's
 // chain is split. Built by `attachChainFields` from every displayed region,
@@ -311,10 +339,6 @@ export const INTERBASE_INSERTION = 1
 export const INTERBASE_SOFTCLIP = 2
 export const INTERBASE_HARDCLIP = 3
 
-// Names in code order (index = code - 1). Single source for turning the numeric
-// interbase code back into a name — used by the indicator hit-test and the
-// coverage/indicator tooltip so the two can't drift.
-const INTERBASE_TYPE_NAMES = ['insertion', 'softclip', 'hardclip'] as const
 export type InterbaseTypeName = (typeof INTERBASE_TYPE_NAMES)[number]
 
 export function interbaseTypeName(code: number): InterbaseTypeName {

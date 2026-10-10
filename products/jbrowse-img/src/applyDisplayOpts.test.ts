@@ -83,11 +83,11 @@ describe("batch's one-row junction", () => {
     }
     expect(await snapOf([])).toEqual({
       readConnections: 'arc',
-      layoutOrder: 'split',
+      sort: 'split',
     })
-    expect(await snapOf(['arcs:off', 'layoutOrder=position'])).toEqual({
+    expect(await snapOf(['arcs:off', 'sort=position'])).toEqual({
       readConnections: 'off',
-      layoutOrder: 'position',
+      sort: 'position',
     })
     expect(await snapOf([], 'feature')).toEqual({})
   })
@@ -112,7 +112,7 @@ describe("batch's per-record sort", () => {
     const { view, calls } = sortableView()
     await applyDisplayOpts(view, 't', 'alignments', [], sortAt)
     expect(calls[0]).toEqual({
-      sortedBy: { ...sortAt, refName: 'chr3', assemblyName: 'hg38' },
+      sort: { ...sortAt, refName: 'chr3' },
       heightMode: 'grow',
       growMaxHeight: 250,
     })
@@ -127,7 +127,7 @@ describe("batch's per-record sort", () => {
       await applyDisplayOpts(view, 't', 'alignments', [modifier], sortAt)
       expect(calls[0]).toEqual({
         ...expected,
-        sortedBy: { ...sortAt, refName: 'chr3', assemblyName: 'hg38' },
+        sort: { ...sortAt, refName: 'chr3' },
       })
     }
   })
@@ -136,7 +136,7 @@ describe("batch's per-record sort", () => {
     const { view, calls } = sortableView()
     await applyDisplayOpts(view, 't', 'alignments', ['sort:strand'], sortAt)
     expect(calls[0]).toMatchObject({
-      sortedBy: { type: 'strand' },
+      sort: { type: 'strand' },
       heightMode: 'grow',
       growMaxHeight: 250,
     })

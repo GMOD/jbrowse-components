@@ -607,7 +607,7 @@ export function buildBatchHelp(scriptName: string) {
     'a linear view and as curves in a breakpoint view, and the manifest counts',
     'them. Each alignments track lays out its split reads first, beside the',
     'reads carrying a deletion of 50 bases or more, unless the track sets',
-    'arcs: or layoutOrder= itself.',
+    'arcs: or sort= itself.',
     '',
     'Where a record on one contig spells out its alleles, or is a symbolic',
     '<DEL> or <INS>, the manifest also counts the reads with the ALT at its',

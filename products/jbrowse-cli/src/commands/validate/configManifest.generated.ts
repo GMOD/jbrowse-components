@@ -3977,12 +3977,29 @@ export const configManifest: ConfigManifest = {
           "type": "boolean"
         },
         {
-          "name": "sortedBy",
-          "type": "(frozen | undefined)"
-        },
-        {
-          "name": "layoutOrder",
-          "type": "LayoutOrder"
+          "name": "sort",
+          "type": "AlignmentsSortConfigurationSchema",
+          "subSlots": [
+            {
+              "name": "type",
+              "type": "AlignmentsSortType"
+            },
+            {
+              "name": "pos",
+              "type": "(number | undefined)"
+            },
+            {
+              "name": "refName",
+              "type": "(string | undefined)"
+            },
+            {
+              "name": "tag",
+              "type": "(string | undefined)"
+            }
+          ],
+          "shorthand": {
+            "string": "type"
+          }
         },
         {
           "name": "showOutline",
@@ -4700,12 +4717,29 @@ export const configManifest: ConfigManifest = {
           "type": "boolean"
         },
         {
-          "name": "sortedBy",
-          "type": "(frozen | undefined)"
-        },
-        {
-          "name": "layoutOrder",
-          "type": "LayoutOrder"
+          "name": "sort",
+          "type": "LGVSyntenySortConfigurationSchema",
+          "subSlots": [
+            {
+              "name": "type",
+              "type": "LGVSyntenySortType"
+            },
+            {
+              "name": "pos",
+              "type": "(number | undefined)"
+            },
+            {
+              "name": "refName",
+              "type": "(string | undefined)"
+            },
+            {
+              "name": "tag",
+              "type": "(string | undefined)"
+            }
+          ],
+          "shorthand": {
+            "string": "type"
+          }
         },
         {
           "name": "showOutline",

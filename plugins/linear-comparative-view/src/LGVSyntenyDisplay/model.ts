@@ -14,7 +14,7 @@ import {
   getFiltersMenuItems,
   getHitMenuItems,
   getSectionOrderMenuItems,
-  getSortByMenuItem,
+  getSortMenuItem,
   NO_HIDDEN_GROUPS,
 } from '@jbrowse/plugin-alignments'
 // the subpath, not the barrel: the barrel is eager, and a value edge from it
@@ -297,10 +297,8 @@ function stateModelFactory(schema: LGVSyntenyDisplayConfigModel) {
             }),
             ...editPlotMenuItems(self),
             // No base pair / tag: a PAF block has no per-base sequence to sort a
-            // column by, and no SAM tags. 'Longest features first' is the
-            // `layoutOrder` length, folded in as a peer radio because
-            // it competes with a real sort for the same ordering.
-            getSortByMenuItem(self, {
+            // column by, and no SAM tags.
+            getSortMenuItem(self, {
               noun: self.featureNoun,
               modes: ['position', 'length', 'strand'],
             }),

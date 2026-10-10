@@ -1658,7 +1658,7 @@ export const alignmentsSpecs: ScreenshotSpec[] = [
   ...(
     [
       { suffix: 'file_order', display: {} },
-      { suffix: 'spliced_first', display: { layoutOrder: 'spliced' } },
+      { suffix: 'spliced_first', display: { sort: 'spliced' } },
     ] as const
   ).map(({ suffix, display }) => ({
     mode: 'url' as const,

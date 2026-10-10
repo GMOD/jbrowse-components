@@ -225,10 +225,10 @@ diff — the hypothesis those numbers were read as supporting.
 One input to that was fixed on 2026-07-22: every placement order in
 `sortLayout.ts` now ends in a total tiebreak on genomic span + read id, so
 layout is a pure function of the read _set_ rather than of array position. That
-was a real defect — an unrecognized `sortedBy.type` also used to leave reads
-entirely unsorted — and the invariant is pinned by "layout is independent of
-read arrival order" in `sortLayout.test.ts`, a unit test that can't rot the way
-an unrun browser suite does.
+was a real defect — an unrecognized sort type also used to leave reads entirely
+unsorted — and the invariant is pinned by "layout is independent of read arrival
+order" in `sortLayout.test.ts`, a unit test that can't rot the way an unrun
+browser suite does.
 
 It was never the cause of the golden drift, and the doubt recorded at the time
 was right: nothing was ever shown to reorder reads between two runs (`@gmod/bam`
@@ -310,17 +310,14 @@ A suite reaching `window.JBrowseSession` inside `page.evaluate` needs a type for
 it. **`Pick` the actions off the real model rather than restating them** — `tsc`
 covers this directory, and a restated signature is the only reason it can't
 catch a changed one. `suites/multi-region-sort.ts` is the worked example, and
-the reason for the rule: it called `setSortedByAtPosition` positionally for six
-weeks after it took one object, staying green because the sort it set named no
-column and so sorted nothing.
+the reason for the rule: it called the sort action positionally for six weeks
+after it took one object, staying green because the sort it set named no column
+and so sorted nothing.
 
 ```typescript
 import type { LinearAlignmentsDisplayModel } from '@jbrowse/plugin-alignments'
 
-interface Display extends Pick<
-  LinearAlignmentsDisplayModel,
-  'setSortedByAtPosition'
-> {
+interface Display extends Pick<LinearAlignmentsDisplayModel, 'setSort'> {
   // read-back shapes stay hand-written and narrow — it is the calls that rot
   sourceSections: { laidOutPileupMap: ReadonlyMap<number, /* … */ unknown> }[]
 }
