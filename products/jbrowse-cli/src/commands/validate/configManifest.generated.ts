@@ -6371,8 +6371,8 @@ export const configManifest: ConfigManifest = {
           "type": "boolean"
         },
         {
-          "name": "summaryScoreMode",
-          "type": "Score type"
+          "name": "aggregate",
+          "type": "Aggregate"
         },
         {
           "name": "showTree",
@@ -6410,6 +6410,7 @@ export const configManifest: ConfigManifest = {
         "numStdDev",
         "inverted",
         "renderers",
+        "summaryScoreMode",
         "defaultRendering",
         "lineWidth"
       ],
@@ -6421,11 +6422,6 @@ export const configManifest: ConfigManifest = {
         "numStdDev",
         "inverted"
       ],
-      "legacyValues": {
-        "summaryScoreMode": [
-          "avg"
-        ]
-      },
       "aliases": [
         "MultiLinearWiggleDisplay",
         "LinearGCContentDisplay",

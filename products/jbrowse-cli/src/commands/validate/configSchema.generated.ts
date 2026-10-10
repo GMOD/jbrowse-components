@@ -12611,29 +12611,18 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "type": "boolean"
           }
         },
-        "summaryScoreMode": {
+        "aggregate": {
           "description": "which summary of a bin is drawn: max, min, mean, or whiskers, which draws all three.",
           "default": "whiskers",
           "if": {
             "type": "null"
           },
           "else": {
-            "anyOf": [
-              {
-                "enum": [
-                  "max",
-                  "min",
-                  "mean",
-                  "whiskers"
-                ]
-              },
-              {
-                "enum": [
-                  "avg"
-                ],
-                "deprecated": true,
-                "description": "Legacy spellings a migration rewrites when the config loads."
-              }
+            "enum": [
+              "max",
+              "min",
+              "mean",
+              "whiskers"
             ]
           }
         },
@@ -12740,6 +12729,10 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "description": "Legacy key: a migration rewrites it into current slots when the config loads."
         },
         "renderers": {
+          "deprecated": true,
+          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+        },
+        "summaryScoreMode": {
           "deprecated": true,
           "description": "Legacy key: a migration rewrites it into current slots when the config loads."
         },
@@ -15159,8 +15152,8 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
                 }
               ]
             },
-            "summaryScoreMode": {
-              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/summaryScoreMode"
+            "aggregate": {
+              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/aggregate"
             },
             "displayCrossHatches": {
               "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/displayCrossHatches"
@@ -15188,6 +15181,9 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             },
             "renderers": {
               "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/renderers"
+            },
+            "summaryScoreMode": {
+              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/summaryScoreMode"
             },
             "defaultRendering": {
               "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/defaultRendering"
@@ -16992,8 +16988,8 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
                 }
               ]
             },
-            "summaryScoreMode": {
-              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/summaryScoreMode"
+            "aggregate": {
+              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/aggregate"
             },
             "showTree": {
               "anyOf": [
@@ -17114,6 +17110,9 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             },
             "renderers": {
               "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/renderers"
+            },
+            "summaryScoreMode": {
+              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/summaryScoreMode"
             },
             "defaultRendering": {
               "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/defaultRendering"
@@ -17403,8 +17402,8 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
                 }
               ]
             },
-            "summaryScoreMode": {
-              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/summaryScoreMode"
+            "aggregate": {
+              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/aggregate"
             },
             "showTree": {
               "anyOf": [
@@ -17525,6 +17524,9 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             },
             "renderers": {
               "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/renderers"
+            },
+            "summaryScoreMode": {
+              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/summaryScoreMode"
             },
             "defaultRendering": {
               "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/defaultRendering"
@@ -17772,8 +17774,8 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "showLegend": {
               "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/showLegend"
             },
-            "summaryScoreMode": {
-              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/summaryScoreMode"
+            "aggregate": {
+              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/aggregate"
             },
             "showTree": {
               "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/showTree"
@@ -17831,6 +17833,9 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             },
             "renderers": {
               "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/renderers"
+            },
+            "summaryScoreMode": {
+              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/summaryScoreMode"
             },
             "defaultRendering": {
               "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/defaultRendering"

@@ -12181,23 +12181,14 @@
             "type": "boolean"
           }
         },
-        "summaryScoreMode": {
+        "aggregate": {
           "description": "which summary of a bin is drawn: max, min, mean, or whiskers, which draws all three.",
           "default": "whiskers",
           "if": {
             "type": "null"
           },
           "else": {
-            "anyOf": [
-              {
-                "enum": ["max", "min", "mean", "whiskers"]
-              },
-              {
-                "enum": ["avg"],
-                "deprecated": true,
-                "description": "Legacy spellings a migration rewrites when the config loads."
-              }
-            ]
+            "enum": ["max", "min", "mean", "whiskers"]
           }
         },
         "showTree": {
@@ -12303,6 +12294,10 @@
           "description": "Legacy key: a migration rewrites it into current slots when the config loads."
         },
         "renderers": {
+          "deprecated": true,
+          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+        },
+        "summaryScoreMode": {
           "deprecated": true,
           "description": "Legacy key: a migration rewrites it into current slots when the config loads."
         },
@@ -14667,8 +14662,8 @@
                 }
               ]
             },
-            "summaryScoreMode": {
-              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/summaryScoreMode"
+            "aggregate": {
+              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/aggregate"
             },
             "displayCrossHatches": {
               "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/displayCrossHatches"
@@ -14696,6 +14691,9 @@
             },
             "renderers": {
               "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/renderers"
+            },
+            "summaryScoreMode": {
+              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/summaryScoreMode"
             },
             "defaultRendering": {
               "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/defaultRendering"
@@ -16459,8 +16457,8 @@
                 }
               ]
             },
-            "summaryScoreMode": {
-              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/summaryScoreMode"
+            "aggregate": {
+              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/aggregate"
             },
             "showTree": {
               "anyOf": [
@@ -16581,6 +16579,9 @@
             },
             "renderers": {
               "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/renderers"
+            },
+            "summaryScoreMode": {
+              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/summaryScoreMode"
             },
             "defaultRendering": {
               "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/defaultRendering"
@@ -16862,8 +16863,8 @@
                 }
               ]
             },
-            "summaryScoreMode": {
-              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/summaryScoreMode"
+            "aggregate": {
+              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/aggregate"
             },
             "showTree": {
               "anyOf": [
@@ -16984,6 +16985,9 @@
             },
             "renderers": {
               "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/renderers"
+            },
+            "summaryScoreMode": {
+              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/summaryScoreMode"
             },
             "defaultRendering": {
               "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/defaultRendering"
@@ -17223,8 +17227,8 @@
             "showLegend": {
               "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/showLegend"
             },
-            "summaryScoreMode": {
-              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/summaryScoreMode"
+            "aggregate": {
+              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/aggregate"
             },
             "showTree": {
               "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/showTree"
@@ -17282,6 +17286,9 @@
             },
             "renderers": {
               "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/renderers"
+            },
+            "summaryScoreMode": {
+              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/summaryScoreMode"
             },
             "defaultRendering": {
               "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/defaultRendering"

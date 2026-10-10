@@ -31,7 +31,7 @@ reaches 0 under `zero`.
 
 ```js
 // type signature
-(quantile: number, summaryScoreMode: string, visibleEntries: { data: FeatureArrays; visStart: number; visEnd: number; }[], zero: boolean) => [number, number] | undefined
+(quantile: number, aggregate: string, visibleEntries: { data: FeatureArrays; visStart: number; visEnd: number; }[], zero: boolean) => [number, number] | undefined
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/wiggle-core/src/autoscale.ts)
@@ -104,7 +104,7 @@ for `'min'`/`'max'`, otherwise the average score.
 
 ```js
 // type signature
-(data: { featureScores: Float32Array<ArrayBufferLike>; featureMinScores: Float32Array<ArrayBufferLike>; featureMaxScores: Float32Array<ArrayBufferLike>; }, summaryScoreMode: string) => Float32Array<ArrayBufferLike>
+(data: { featureScores: Float32Array<ArrayBufferLike>; featureMinScores: Float32Array<ArrayBufferLike>; featureMaxScores: Float32Array<ArrayBufferLike>; }, aggregate: string) => Float32Array<ArrayBufferLike>
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/wiggle-core/src/autoscale.ts)
