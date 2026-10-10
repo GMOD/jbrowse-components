@@ -3965,11 +3965,11 @@ export const configManifest: ConfigManifest = {
           ]
         },
         {
-          "name": "mismatchAlpha",
+          "name": "fadeLowQualityMismatches",
           "type": "boolean"
         },
         {
-          "name": "fadeLowFreqMismatches",
+          "name": "fadeLowFrequencyMismatches",
           "type": "boolean"
         },
         {
@@ -4124,6 +4124,7 @@ export const configManifest: ConfigManifest = {
         "lineWidth",
         "hideSmallIndels",
         "hideMismatches",
+        "mismatchAlpha",
         "hideLargeIndels",
         "minSubfeatureWidth",
         "flipStrandLongReadChains"
@@ -4701,11 +4702,11 @@ export const configManifest: ConfigManifest = {
           ]
         },
         {
-          "name": "mismatchAlpha",
+          "name": "fadeLowQualityMismatches",
           "type": "boolean"
         },
         {
-          "name": "fadeLowFreqMismatches",
+          "name": "fadeLowFrequencyMismatches",
           "type": "boolean"
         },
         {
@@ -4868,6 +4869,7 @@ export const configManifest: ConfigManifest = {
         "lineWidth",
         "hideSmallIndels",
         "hideMismatches",
+        "mismatchAlpha",
         "hideLargeIndels",
         "minSubfeatureWidth",
         "flipStrandLongReadChains"

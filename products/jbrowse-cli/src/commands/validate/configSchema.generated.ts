@@ -7043,7 +7043,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "$ref": "#/$defs/Scales"
           }
         },
-        "mismatchAlpha": {
+        "fadeLowQualityMismatches": {
           "description": "Fade mismatch bases by their per-base Phred quality. Defaults to off.",
           "default": false,
           "if": {
@@ -7053,7 +7053,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "type": "boolean"
           }
         },
-        "fadeLowFreqMismatches": {
+        "fadeLowFrequencyMismatches": {
           "description": "Fade the sub-pixel mismatches, insertions and clip bars in the pileup that fall below the depth-dependent frequency threshold; off draws them all at full opacity. Does not affect the coverage band (see runCoveragePipeline).",
           "default": true,
           "if": {
@@ -7144,7 +7144,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           }
         },
         "coverageSnpMinFrequency": {
-          "description": "Hide a coverage-band allele segment whose share of that position's depth is below this fraction, so the band stops painting a sliver for every sequencing error at high depth. 0 (the default) colors every mismatch. Distinct from \`fadeLowFreqMismatches\`, the pileup's fade of sub-pixel marks against a depth-dependent threshold; this is a flat allele-fraction floor on the band, and the grey depth bar still shows through where a segment is hidden.",
+          "description": "Hide a coverage-band allele segment whose share of that position's depth is below this fraction, so the band stops painting a sliver for every sequencing error at high depth. 0 (the default) colors every mismatch. Distinct from \`fadeLowFrequencyMismatches\`, the pileup's fade of sub-pixel marks against a depth-dependent threshold; this is a flat allele-fraction floor on the band, and the grey depth bar still shows through where a segment is hidden.",
           "default": 0,
           "if": {
             "type": "null"
@@ -7401,6 +7401,10 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "description": "Legacy key: a migration rewrites it into current slots when the config loads."
         },
         "hideMismatches": {
+          "deprecated": true,
+          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+        },
+        "mismatchAlpha": {
           "deprecated": true,
           "description": "Legacy key: a migration rewrites it into current slots when the config loads."
         },
@@ -8276,7 +8280,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "$ref": "#/$defs/Scales"
           }
         },
-        "mismatchAlpha": {
+        "fadeLowQualityMismatches": {
           "description": "Fade mismatch bases by their per-base Phred quality. Defaults to off.",
           "default": false,
           "if": {
@@ -8286,7 +8290,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "type": "boolean"
           }
         },
-        "fadeLowFreqMismatches": {
+        "fadeLowFrequencyMismatches": {
           "description": "Fade the sub-pixel mismatches, insertions and clip bars in the pileup that fall below the depth-dependent frequency threshold; off draws them all at full opacity. Does not affect the coverage band (see runCoveragePipeline).",
           "default": true,
           "if": {
@@ -8377,7 +8381,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           }
         },
         "coverageSnpMinFrequency": {
-          "description": "Hide a coverage-band allele segment whose share of that position's depth is below this fraction, so the band stops painting a sliver for every sequencing error at high depth. 0 (the default) colors every mismatch. Distinct from \`fadeLowFreqMismatches\`, the pileup's fade of sub-pixel marks against a depth-dependent threshold; this is a flat allele-fraction floor on the band, and the grey depth bar still shows through where a segment is hidden.",
+          "description": "Hide a coverage-band allele segment whose share of that position's depth is below this fraction, so the band stops painting a sliver for every sequencing error at high depth. 0 (the default) colors every mismatch. Distinct from \`fadeLowFrequencyMismatches\`, the pileup's fade of sub-pixel marks against a depth-dependent threshold; this is a flat allele-fraction floor on the band, and the grey depth bar still shows through where a segment is hidden.",
           "default": 0,
           "if": {
             "type": "null"
@@ -8658,6 +8662,10 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "description": "Legacy key: a migration rewrites it into current slots when the config loads."
         },
         "hideMismatches": {
+          "deprecated": true,
+          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+        },
+        "mismatchAlpha": {
           "deprecated": true,
           "description": "Legacy key: a migration rewrites it into current slots when the config loads."
         },
@@ -15486,11 +15494,11 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
                 }
               ]
             },
-            "mismatchAlpha": {
-              "$ref": "#/$defs/LinearAlignmentsDisplaySlots/properties/mismatchAlpha"
+            "fadeLowQualityMismatches": {
+              "$ref": "#/$defs/LinearAlignmentsDisplaySlots/properties/fadeLowQualityMismatches"
             },
-            "fadeLowFreqMismatches": {
-              "$ref": "#/$defs/LinearAlignmentsDisplaySlots/properties/fadeLowFreqMismatches"
+            "fadeLowFrequencyMismatches": {
+              "$ref": "#/$defs/LinearAlignmentsDisplaySlots/properties/fadeLowFrequencyMismatches"
             },
             "showLegend": {
               "anyOf": [
@@ -15670,6 +15678,9 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             },
             "hideMismatches": {
               "$ref": "#/$defs/LinearAlignmentsDisplaySlots/properties/hideMismatches"
+            },
+            "mismatchAlpha": {
+              "$ref": "#/$defs/LinearAlignmentsDisplaySlots/properties/mismatchAlpha"
             },
             "hideLargeIndels": {
               "$ref": "#/$defs/LinearAlignmentsDisplaySlots/properties/hideLargeIndels"
@@ -18756,11 +18767,11 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
                 }
               ]
             },
-            "mismatchAlpha": {
-              "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/mismatchAlpha"
+            "fadeLowQualityMismatches": {
+              "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/fadeLowQualityMismatches"
             },
-            "fadeLowFreqMismatches": {
-              "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/fadeLowFreqMismatches"
+            "fadeLowFrequencyMismatches": {
+              "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/fadeLowFrequencyMismatches"
             },
             "showLegend": {
               "anyOf": [
@@ -18968,6 +18979,9 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             },
             "hideMismatches": {
               "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/hideMismatches"
+            },
+            "mismatchAlpha": {
+              "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/mismatchAlpha"
             },
             "hideLargeIndels": {
               "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/hideLargeIndels"
