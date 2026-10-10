@@ -23,5 +23,5 @@ Written 2026-10-10. The design and hooks are in
    through prettier.
 4. Until 2 and 3 land, the downstream canary is red for those repos.
 
-The R exporter work (plugins/marks/src/rexport) is separate and still
+The R exporter work is separate and still
 unlanded; its handoff travels with it.
