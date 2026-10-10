@@ -30,8 +30,8 @@ it.
 Ag1000G phase 2 AR1
 ([Anopheles gambiae 1000 Genomes Consortium 2020](https://doi.org/10.1101/gr.262790.120)).
 
-The [build script](#reproduce-it-end-to-end) takes these files from their URLs,
-so there is nothing to download by hand.
+The [build script](#reproduce-it-end-to-end) fetches these files, so there is
+nothing to download by hand.
 
 - the phased haplotypes and their sample list for chromosome arm 2L, which the
   commands subset to one population at a time:
@@ -49,8 +49,7 @@ so there is nothing to download by hand.
 ## Loading the AgamP4 assembly and genes
 
 The LD table and the inversion calls use 2L coordinates of the AgamP4 reference,
-so we load that assembly and its gene models first. The gene track reads the
-`AgamP4.12` annotation.
+so we load that assembly and its `AgamP4.12` gene models first.
 
 ```json addassembly
 {
@@ -81,8 +80,8 @@ so we load that assembly and its gene models first. The gene track reads the
 
 JBrowse draws LD from a precomputed table: PLINK correlates the variants and
 [`PlinkLDTabixAdapter`](/docs/config/plinkldtabixadapter) reads its output.
-PLINK reads a binary fileset, so we first convert the phased VCF of common
-variants into one. `--double-id` sets each family id to the sample id:
+PLINK reads a binary fileset, so we first convert the common variants' phased
+VCF with `--double-id`, which sets each family id to the sample id:
 
 <!-- from: scripts/build_ag1000g_ld.sh -->
 
@@ -90,9 +89,9 @@ variants into one. `--double-id` sets each family id to the sample id:
 plink2 --vcf common.vcf --double-id --allow-extra-chr --make-bed --out common
 ```
 
-Then thin the variants, correlate them, and index the table. `keep.CMgam.txt`
-lists the Cameroon samples, two tab-separated columns of the same sample id, the
-family/individual pair plink asks for.
+Then we thin, correlate and index. `keep.CMgam.txt` lists the Cameroon samples
+in two tab-separated columns of the same sample id, the family/individual pair
+plink asks for.
 
 <!-- from: scripts/build_ag1000g_ld.sh -->
 
@@ -123,8 +122,9 @@ jbrowse sort-bed < ag1000g_2L_CMgam.vcor |
 tabix -s 1 -b 2 -e 2 -f ag1000g_2L_CMgam.vcor.gz
 ```
 
-The track over that file is an `LDTrack`, and `color.field` picks which of the
-two metric columns, r² or D', the display reads:
+The track over that file is an `LDTrack`. In grammar-of-graphics terms, its
+`color` is a color scale, and `color.field` picks r² or D', the two metric
+columns, as its input:
 
 ```json addtrack
 {
@@ -150,8 +150,8 @@ two metric columns, r² or D', the display reads:
 
 ## The inversion genotyped per mosquito
 
-The 2La inversion also loads as one `<INV>` record spanning the breakpoints,
-genotyped across every mosquito. The
+The 2La inversion also loads as one `<INV>` record, genotyped across every
+mosquito, that spans the breakpoints. The
 [regular multi-sample variant display](/docs/user_guides/multivariant_track#regular-best-for-full-sv-detail)
 draws each genotype at the call's true span. `END` is the far breakpoint and
 each sample column holds one `GT`:
@@ -195,14 +195,17 @@ with a `LinearMultiSampleVariantDisplay`:
 }
 ```
 
-[`facet`](/docs/config/linearmultisamplevariantdisplay/#slot-facet) gives each
-karyotype class its own labelled band, and its `domain` orders the bands by
-dosage.
+In grammar-of-graphics terms,
+[`facet`](/docs/config/linearmultisamplevariantdisplay/#slot-facet) splits the
+display into one section per `karyotype` value, `facet.domain` orders them by
+dosage, and `rowColor` is a color scale on each row's label bar.
 [`referenceDrawingMode`](/docs/config/linearmultisamplevariantdisplay/#slot-referencedrawingmode)
-`skip` fills the track with the reference color and paints alt cells on top. The
-display draws a row for every sample in the file and divides the track height
-among them, so each population gets its own track. Gabon's two tracks are the
-same configs with `CMgam` replaced by `GAgam` in the trackIds and file names:
+`skip` fills the track with the reference color and paints alt cells on top.
+
+The display draws a row for every sample in the file and divides the track
+height among them, so each population goes in a separate track. Gabon's two
+tracks are the same configs with `CMgam` replaced by `GAgam` in the trackIds and
+file names:
 
 - `https://jbrowse.org/demos/popgen/ag1000g_2L_GAgam.vcor.gz`
 - `https://jbrowse.org/demos/popgen/ag1000g_2La_GAgam.vcf.gz`
@@ -220,7 +223,7 @@ trimodal, which the [reproduce script](#reproduce-it-end-to-end) checks.
 ## Comparing the 2La LD block with karyotypes in Cameroon and Gabon {#reading-the-2la-ld-block-against-the-karyotype-rows}
 
 Stack the r² track of each population over the karyotype track of the same
-population, one row per mosquito.
+population.
 
 <Figure src="/img/ld/anopheles_2la.png" caption="Ag1000G chromosome arm 2L, the same window and settings throughout. Top: the published extents of 2La and of Vgsc, the two loci the blocks below sit on. r² fills the 2La extent in Cameroon, which segregates both arrangements, and is empty over that span in Gabon, which is near-fixed for the standard arrangement."/>
 

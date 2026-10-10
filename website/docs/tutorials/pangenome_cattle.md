@@ -37,11 +37,8 @@ The graph view is a beta plugin. We welcome your [feedback](/contact).
 
 ## Where the data comes from
 
-The graph's index files, the callset and its sample table are hosted beside the
-graph, and OMIA supplies the curated causal variants.
-
-The [OMIA build script](#the-celtic-polled-allele) fetches this dump itself, and
-the track configs below read the hosted files by URL.
+The [OMIA build script](#the-celtic-polled-allele) fetches OMIA's dump, and the
+track configs below read the hosted files by URL.
 
 - OMIA's database dump, the source of the curated variant track:
   https://omia.org/static/omia.sql.gz
@@ -114,9 +111,9 @@ the assemblies' paths split and rejoin.
 
 <Figure caption="Chromosome 23 on ARS-UCD1.2, one axis: RefSeq genes, a curve of how many segments each bubble holds (higher means more variation), and the graph with one node per bubble. The curve peaks over BoLA." src="/img/pangenome/bovine_whole_chromosome.png" />
 
-The curve peaks over BoLA, the cattle major histocompatibility complex (immune
-genes that vary a lot between breeds), which contains the heat shock gene
-_HSPA1A_, the subject of the next section.
+BoLA, the cattle major histocompatibility complex (immune genes that vary a lot
+between breeds), contains the heat shock gene _HSPA1A_, the subject of the next
+section.
 
 ## HSPA1A in the graph and the callset
 
@@ -124,7 +121,7 @@ ARS-UCD1.2 lacks an 11 kb segment beside the heat shock gene _HSPA1A_, which
 contains _HSPA1B_, its near-identical copy. Leonard et al. (2022) recovered it
 in every assembly they built. The **graph** lists that segment in the allele
 inventory. These graphs record no build order, so its `firstSeenIn` column names
-the first assembly in a fixed list, which need not carry the segment.
+the first assembly in a fixed list, which need not contain the segment.
 
 The **callset** gives a genotype per assembly. We ran `vg deconstruct` once per
 chromosome over the same graph:
@@ -141,8 +138,8 @@ vg deconstruct -p chr1 -a -t 8 chr1.vg > chr1.vcf
 
 The VCF's CHROM column is the `-p` path name, which has to equal the assembly's
 refName. Its sample names are the three-letter codes on each assembly's path,
-and the sample table's first column has to match them; a mismatch leaves the row
-unlabelled without an error:
+and the sample table's first column has to match them. A mismatch leaves the row
+unlabelled and raises no error:
 
 ```text
 name	breed	lineage
@@ -150,11 +147,12 @@ ANG	Angus	taurine
 BIS	Bison	bison
 ```
 
-The track config tints each row through `rowColor`, whose `field` is the sample
-table's `lineage` column, and `rows.labels` writes each breed beside its row. It
-also sets:
+In grammar-of-graphics terms, `rowColor` in the track config is a color scale on
+each row's label bar, mapping the sample table's `lineage` column through
+`domain` to `range`. The config also sets:
 
-- `rows.domain`, which lists the cattle breeds above the wild species
+- `rows.domain` lists the cattle breeds above the wild species, and
+  `rows.labels` writes each breed beside its row
 - `unit: "haplotype"` draws one row per assembly, each being one haplotype, with
   a second alternate allele in a separate color
 - `showVariantLane` draws each call once in a lane above the rows, across the
@@ -217,8 +215,8 @@ also sets:
 }
 ```
 
-In the chr23 view the portal opened, type `chr23:27,508,000-27,536,000`, and the
-graph track draws the segments around _HSPA1A_. Then:
+In the chr23 view the portal opened, type `chr23:27,508,000-27,536,000` to draw
+the graph around _HSPA1A_. Then:
 
 - Turn on the callset and the allele inventory in the track selector.
 - Open **Settings** in the graph track's menu and set **Bubble spread** to
@@ -227,8 +225,8 @@ graph track draws the segments around _HSPA1A_. Then:
 
 <Figure caption="HSPA1A on ARS-UCD1.2: RefSeq genes, the deconstructed callset with one row per assembly, the allele inventory, and the graph track. The variant lane over the rows marks the insertion beside HSPA1A. Every row but the yak has the insertion, which the inventory lists once, and the graph draws it as the charcoal loop off the backbone at HSPA1A." src="/img/pangenome/bovine_bola.png" />
 
-The yak row has the reference allele. Leonard et al. built no yak assembly, so
-their result does not cover it.
+The yak row has the reference allele, and Leonard et al. built no yak assembly,
+so their result does not cover it.
 
 ## Published variants in the callset
 
@@ -272,7 +270,7 @@ Then open `chr1:2,428,800-2,429,800`. The figure shades
 `chr1:2,429,109-2,429,320`, the stretch OMIA's record says the allele
 duplicates.
 
-<Figure caption="The POLLED locus on ARS-UCD1.2: OMIA's record of the Celtic polled allele, and the callset. The Angus row alone carries the insertion, at the right edge of the shaded sequence it copies; every other row is reference." src="/img/pangenome/bovine_polled.png" />
+<Figure caption="The POLLED locus on ARS-UCD1.2: OMIA's record of the Celtic polled allele, and the callset. The Angus row alone has the insertion, at the right edge of the shaded sequence it copies; every other row is reference." src="/img/pangenome/bovine_polled.png" />
 
 OMIA also records the Friesian polled allele, an 80 kb duplication 200 kb
 further along, which Holstein cattle have. The panel has no Holstein, and the
@@ -312,13 +310,13 @@ three steps beyond it, which
 [`build_bovine_pangenome.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_bovine_pangenome.sh)
 runs:
 
-- **Join the autosomes.** The archive holds one graph per autosome, each
-  numbering its segments from 1, so the script renumbers and concatenates them.
-- **Recover rGFA tags.** The graphs state their coordinates in P lines, and
+- Join the autosomes. The archive holds one graph per autosome, each numbering
+  its segments from 1, so the script renumbers and concatenates them.
+- Recover rGFA tags. The graphs state their coordinates in P lines, and
   [`gfa_paths_to_rgfa.py`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/gfa_paths_to_rgfa.py)
   converts them back into `SN`/`SO`/`SR` tags (each segment's contig, offset and
   rank).
-- **Deconstruct the callset**, with the `vg deconstruct` call above.
+- Deconstruct the callset with the `vg deconstruct` call above.
 
 The script stops if the reference path does not reproduce bosTau9's chromosome
 lengths, and a

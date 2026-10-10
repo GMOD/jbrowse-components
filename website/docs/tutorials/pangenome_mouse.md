@@ -27,8 +27,8 @@ launches the JBrowse 5 development build until JBrowse 5 ships.
 
 The graph view is a beta plugin. We welcome your [feedback](/contact).
 
-This graph records no strain's path. It shows that an allele exists, and never
-which strains carry it.
+The mouse graph records no strain's path, so it lists the alleles that exist and
+leaves out which strains have them.
 
 :::
 
@@ -41,8 +41,7 @@ which strains carry it.
 ## Where the data comes from
 
 The reference is UCSC's mm39 and the strains are the Mouse Genomes Project
-assemblies as UCSC GenArk rehosts them. We host the graph as the index files
-below.
+assemblies as UCSC GenArk rehosts them.
 
 Nothing to download: the track configs below read the index files by URL.
 
@@ -129,8 +128,7 @@ The bubbles track reads the same build's bubble index:
 Click **chr13** on the **Whole chromosomes** line of the
 [portal page](https://genomes.jbrowse.org/pangenomes/mouse), which opens the
 whole chromosome with the graph drawn as one node per bubble. Type
-`chr13:119,440,000-119,600,000`, and the graph track draws the segments there.
-Then:
+`chr13:119,440,000-119,600,000` to draw the segments there. Then:
 
 - in the graph track's menu, tick **Show... → Show bubble halos**
 - turn on the bubbles track in the track selector
@@ -148,17 +146,17 @@ The whole-chromosome overview records how many segments each bubble holds.
 Ranking the bubbles that overlap a gene by that count recovers the vomeronasal
 receptor and Speer families and the immunoglobulin heavy chain locus, each too
 wide for one window. _Dock2_ is the densest bubble that fits in one, inside one
-intron at `chr11:34,516,045-34,560,497`. Paste that region into the portal
-page's **Gene or region** box, click **Graph**, and tick this entry in the graph
-track menu:
+intron at `chr11:34,516,045-34,560,497`. To open it:
 
-**Show... → Show bubble halos**
+- Paste that region into the portal page's **Gene or region** box and click
+  **Graph**.
+- In the graph track's menu, tick **Show... → Show bubble halos**.
 
-<Figure caption="The Dock2 intron bubble, the densest in the mouse graph that fits in one window. The bubbles track is a single row, the allele inventory draws each alternative path at its size, and the graph carries one label for the whole bubble, with Dock2 pinned under the backbone. The colored path is C57BL/6J, the reference, and each charcoal loop is sequence other strains have and the reference lacks." src="/img/pangenome/mouse_dock2.png" />
+<Figure caption="The Dock2 intron bubble, the densest in the mouse graph that fits in one window. The bubbles track is a single row, the allele inventory draws each alternative path at its size, and the graph has one label for the whole bubble, with Dock2 pinned under the backbone. The colored path is C57BL/6J, the reference, and each charcoal loop is sequence other strains have and the reference lacks." src="/img/pangenome/mouse_dock2.png" />
 
 `minigraph` writes no path lines, so the graph does not record which strains
-carry an allele; the allele inventory's `firstSeenIn` names the first assembly
-to contribute it.
+have an allele. The allele inventory's `firstSeenIn` lists the first assembly to
+contribute it.
 
 ## Looking up the Dock2 bubble in the hosted bubbles BED
 
@@ -200,7 +198,7 @@ The script runs two audits on the joined graph and stops if:
 - renumbering leaves a duplicate segment id
 
 Either failure produces a graph with wrong coordinates that every later check
-accepts. Copy these audits into your own build.
+accepts, so copy these audits into your own build.
 
 ## See also
 

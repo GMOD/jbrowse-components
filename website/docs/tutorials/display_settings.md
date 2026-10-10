@@ -20,8 +20,8 @@ session JSON, and use those names in a shareable link, a saved session file and
 
 ## Open the volvox structural-variant CRAM track
 
-Volvox is the small demo dataset the JBrowse test builds ship, and
-`volvox-sv (cram)` is its structural-variant CRAM. Open
+`volvox-sv (cram)` is the structural-variant CRAM in volvox, the small demo
+dataset the JBrowse test builds ship. Open
 [volvox at ctgA:1-10,000](https://jbrowse.org/code/jb2/main/?config=test_data/volvox/config.json&assembly=volvox&loc=ctgA:1-10000&tracks=volvox_sv_cram).
 The track opens as a pileup of short reads at the default height, in the default
 gray.
@@ -38,16 +38,18 @@ a config you open unchanged and saves your edits to a separate session file.
 
 ## Change height, color and read pairing from the track menu
 
-Open the track's menu from the track label, and set:
+Open the track's menu from the track label, then:
 
-- **Color by... → Paired end → Insert size and orientation**, which leaves
-  normally-paired reads gray and colors the rest by how they disagree with the
-  reference.
-- **Read connections → View as pairs / link supplementary alignments**, which
-  puts each read on the same row as its mate.
+- Choose **Color by... → Paired end → Insert size and orientation**, which
+  leaves normally-paired reads gray and colors the rest by how they disagree
+  with the reference.
+- Choose **Read connections → View as pairs / link supplementary alignments**,
+  which puts each read on the same row as its mate.
+- Drag the bottom edge of the track down to about 250px, so the deeper stack of
+  paired rows fits.
 
-Drag the bottom edge of the track down to about 250px, so the deeper stack of
-paired rows fits.
+**Advanced → Edit plot...** is a second route to the `color` and `unit`: it
+shows them as text and applies edits live.
 
 <Figure caption="The volvox-sv (cram) track at ctgA:1-10,000 as a 250px-tall pileup, reads viewed as pairs and colored by insert size and orientation. The colored cluster at the left flags a structural variant." src="/img/display_settings_url_snapshot.png" />
 
@@ -81,19 +83,22 @@ the id of the track you edited:
 
 Choose **File → Session → Save session as...**, save a `volvox.jbrowse` file,
 and open it in a text editor. A `.jbrowse` file is a whole config with the
-session under `defaultSession`. Desktop writes a track edit into that config, so
-the three keys appear in the `volvox_sv_cram` entry of the file's `tracks`
-array. Desktop autosaves the open session to the file about a second after each
-edit, and reopening the file restores every setting.
+session under `defaultSession`, and Desktop writes a track edit into it, so the
+three keys appear in the `volvox_sv_cram` entry of its `tracks` array. Desktop
+autosaves the open session to the file about a second after each edit, and
+reopening the file restores every setting.
 
 </details>
 
-`height`, `unit` and `color` are the setting names in both apps. The
+`height`, `unit` and `color` are the setting names in both apps. In
+grammar-of-graphics terms, `color` is a color scale, a field mapped to colors,
+and `unit` is the observation unit, a read or a chain. The
 [config schema docs](/docs/config_guide) list the names and values each display
 takes (e.g. [](/docs/config/linearalignmentsdisplay),
-[](/docs/config/linearwiggledisplay)). The same read-back finds the key for any
-setting on any track: change it in the menu, share, and read the new key in the
-JSON.
+[](/docs/config/linearwiggledisplay)).
+
+Reading the JSON back finds the key for any setting on any track: change it in
+the menu, share, and read the new key.
 
 ## Put the three settings in a track's displayDefaults
 
@@ -155,9 +160,6 @@ their labels still read `seg04 [match]` from `displayDefaults`.[^snapshot]
 | **Share** link (`?session=`)       | the URL             | whoever opens that link |
 | **Save session as...** (Desktop)   | the `.jbrowse` file | whoever opens that file |
 | `displayDefaults` in `config.json` | the config file     | everyone, every session |
-
-[URL parameters](/docs/urlparams) has the full session-spec format, including
-`trackSnapshot` and multi-view specs.
 
 <details>
 <summary>In JBrowse Desktop</summary>

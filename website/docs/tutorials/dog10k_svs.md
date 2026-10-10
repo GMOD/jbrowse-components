@@ -27,8 +27,8 @@ in:
 - `curl`
 - `python3`
 - htslib (`tabix`)
-- `minimap2`, for the [FGF4 alignments](#aligning-the-retrocopies-to-fgf4)
-- `samtools`, for the [FGF4 alignments](#aligning-the-retrocopies-to-fgf4)
+- `minimap2` and `samtools`, for the
+  [FGF4 alignments](#aligning-the-retrocopies-to-fgf4)
 - the UCSC `liftOver` binary for the OMIA track, which the build script fetches
   itself
 
@@ -100,7 +100,7 @@ Schall and Kidd genotyped long-read-discovered structural variants across the
 Dog10K collection and flagged those whose allele frequencies track breed clades
 (groups of related breeds). One is a 7.8 kb deletion in an intron of _NHEJ1_,
 the variant [Parker et al. (2007)](https://doi.org/10.1101/gr.6772807) tied to
-Collie eye anomaly. It should be common in Collies and their relatives and
+Collie eye anomaly, which should be common in Collies and their relatives and
 absent from unrelated breeds and wolves. The anomaly is recessive, so the darker
 cells below are affected animals and the lighter ones carriers.
 
@@ -109,7 +109,7 @@ cells below are affected animals and the lighter ones carriers.
 The Paragraph callset (Manta's structural variant calls, genotyped in every
 sample with Illumina's Paragraph) is a 5.9 GB VCF across 1,879 dogs and wolves,
 published on [Zenodo](https://doi.org/10.5281/zenodo.14968873) with a tabix
-index, and `bcftools` fetches only the locus. Zenodo serves the data and index
+index, so `bcftools` fetches only the locus. Zenodo serves the data and index
 from separate URLs, so the index is named explicitly:
 
 <!-- from: scripts/build_dog10k_nhej1_sv.sh -->
@@ -141,9 +141,9 @@ bcftools query -r chr37:25574005-25574006 -f '[%SAMPLE=%GT ]\n' \
   dog10k_nhej1_svs.vcf.gz | tr ' ' '\n' | grep -v '=0/0'
 ```
 
-Most of the Collies have it, some homozygous, along with some of the Shetland
-Sheepdogs and Silken Windhounds. Every other animal is homozygous reference,
-including the four Lancashire Heelers.
+Most Collies have it, some homozygous, as do some Shetland Sheepdogs and Silken
+Windhounds. Every other animal, including the four Lancashire Heelers, is
+homozygous reference.
 
 ## Loading the NHEJ1 slice with breed labels
 
@@ -160,10 +160,12 @@ is a 7.8 kb block.
 }
 ```
 
-The VCF names each sample by its Dog10K ID. The session below labels and colors
-rows for two animals to show the shape, and the figure names every row the same
-way. **Edit colors/arrangement...** in the track menu writes the same two
-settings, `rows` and `rowColor`, as you rename and recolor rows by hand.
+The VCF names each sample by its Dog10K ID. In grammar-of-graphics terms, `rows`
+orders the sample rows and names them, and `rowColor` is a color scale on each
+row's label bar. The session below sets both for two animals, and the figure
+does so for every row. **Edit colors/arrangement...** in the track menu writes
+both as you rename and recolor rows by hand, and **Advanced → Edit plot...**
+shows them as text.
 
 ```json session config=test_data/dog10k/config.json
 {
@@ -196,8 +198,8 @@ settings, `rows` and `rowColor`, as you rename and recolor rows by hand.
 
 ## NHEJ1 deletion genotypes across breeds
 
-Open the session above and add the assembly's gene annotation over the variants
-to see where the deletion falls in _NHEJ1_.
+Open the session above and add the assembly's gene annotation to see where the
+deletion falls in _NHEJ1_.
 
 <Figure caption="A 7.8 kb deletion inside an NHEJ1 intron, genotyped across breeds from the Dog10K structural-variant callset. Every animal with the deletion is a Collie-clade breed; the other breeds and the four wolves are homozygous reference. The track between the genes and the genotypes is OMIA's curated record of the same variant." src="/img/dog10k-nhej1-cea-deletion.png" />
 
@@ -228,8 +230,9 @@ wc -l < unmapped.bed   # records the chain could not place
 }
 ```
 
-The label under the bar gives the mode of inheritance. Click the bar for the
-rest of the record, including whether the build lifted it from CanFam3.1.
+The label under the bar gives the mode of inheritance, and clicking the bar
+opens the rest of the record, including whether the build lifted it from
+CanFam3.1.
 
 ### Filtering the NHEJ1 window to the deletion record
 
@@ -269,9 +272,8 @@ A 14.9 kb duplication (`DUP`) at chr6:47,375,677 in the Michigan Manta callset
 spans the pancreatic amylase gene _AMY2B_ end to end. Extra copies help dogs
 digest starch, a change
 [Axelsson et al. (2013)](https://doi.org/10.1038/nature11837) tied to
-domestication. Across the whole collection, the record separates dogs from
-wolves almost completely: nearly every dog is homozygous for it and nearly every
-wolf lacks it.
+domestication. Across the whole collection, nearly every dog is homozygous for
+the record and nearly every wolf lacks it.
 
 A 223 bp SINE (short interspersed nuclear element) insertion in pancreatic
 ribonuclease (_RNASE1_), at chr15:18,164,072 in the Zenodo Paragraph set, occurs
@@ -309,9 +311,9 @@ so the two tracks line up row for row:
 }
 ```
 
-A samples TSV supplies the labels for these 86 rows. Its first column is the
-sample name and every other column is an attribute that `rowColor` can name. The
-_RNASE1_ track is the same config with the other slice's `uri`.
+A samples TSV labels these 86 rows. Its first column is the sample name and
+every other column is an attribute that `rowColor` can name. The _RNASE1_ track
+is the same config with the other slice's `uri`.
 
 <Figure caption="Left: a 14.9 kb duplication over pancreatic amylase. Right: a 223 bp insertion in pancreatic ribonuclease. The same animals are in the same order in both, so each row is one animal: the dogs have the amylase duplication and the wolves the ribonuclease insertion." src="/img/dog10k-diet-genes.png" />
 
@@ -397,7 +399,7 @@ still on both chromosomes, so each such animal's pileup is always a mixture.
 
 ### The two known FGF4 retrocopies
 
-Two _FGF4_ retrocopies are known in dogs. Both leave the same records at the
+Dogs have two known _FGF4_ retrocopies. Both leave the same records at the
 parent gene, so a genotype here cannot say which copy an animal has:
 
 - one, tied to short legs by Parker et al.
@@ -406,8 +408,9 @@ parent gene, so a genotype here cannot say which copy an animal has:
   [Brown et al. (2017)](https://doi.org/10.1073/pnas.1709082114), which is why
   breeds of ordinary proportions have a copy too
 
-The spaniels are the rows where body proportions and genotype disagree. Placing
-either insertion needs the other side of the junction, from a different callset.
+The spaniels are the rows where body proportions and genotype disagree, and
+placing either insertion needs the other side of the junction from a different
+callset.
 
 ### Aligning the retrocopies to FGF4
 
@@ -474,8 +477,8 @@ Each alignment is a `SyntenyTrack` between its retrocopy and the dog assembly:
 ```
 
 `assemblyNames` is ordered `[query, target]`, the reverse of minimap2's argument
-order. The build script then turns each `FGF4retro-*.paf` into the file the
-track loads, `dog10k_fgf4_retro_cfa12.paf` and its CFA18 twin. For each file it:
+order. The build script turns each `FGF4retro-*.paf` into the file the track
+loads, `dog10k_fgf4_retro_cfa12.paf` and its CFA18 twin. For each file it:
 
 - renames the target to `chr18` and shifts its coordinates by the window's start
 - rewrites each CIGAR `N` to `D`, since those bases are absent from the

@@ -8,8 +8,8 @@ guide_category: Tutorials
 tutorial_category: Cancer genomics
 ---
 
-A fusion caller outputs a table of gene pairs, each with the coordinate of the
-transcript junction, where the RNA joins the two genes. We load STAR-Fusion's
+A fusion caller writes a table of gene pairs, each with the coordinate of the
+transcript junction where the RNA joins the two genes. We load STAR-Fusion's
 short-read calls beside long RNA reads from the same cell line and count the
 molecules crossing each junction. Then we find where the chromosome broke. In
 K562, the BCR-ABL1 DNA break lies in the first intron of _ABL1_, well before the
@@ -81,8 +81,8 @@ bedGraphToBigWig K562_cn.sorted.bedGraph hg38.chrom.sizes K562_cn.bw
 ```
 
 The DNA breakpoints arrive on hg19. A breakend record has a second coordinate
-inside its `ALT` string, so a plain `liftOver` of the `POS` column produces a
-valid VCF whose partner coordinates still point at hg19.
+inside its `ALT` string, so a plain `liftOver` of the `POS` column leaves the
+partner coordinates on hg19.
 [`lift_bnd_vcf.py`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/lift_bnd_vcf.py)
 moves both:
 
@@ -96,8 +96,8 @@ bgzip calls.hg38.vcf && tabix -p vcf calls.hg38.vcf.gz
 
 ## Loading hg38 and the merged Iso-Seq reads
 
-The DNA breakpoints are lifted to hg38 and the Iso-Seq molecules align to it, so
-we load that assembly first.
+The lifted DNA breakpoints and the Iso-Seq molecules are on hg38, so we load
+that assembly first.
 
 ```json addassembly
 {
@@ -124,8 +124,8 @@ samtools merge -f K562_isoseq.bam s_run1.bam s_run2.bam s_run3.bam s_run4.bam
 samtools index K562_isoseq.bam
 ```
 
-The merged BAM is one read track. For your own long RNA reads, swap `uri` for
-your BAM, with its `.bai` beside it and alignments to the same assembly:
+The merged BAM loads as one read track. For your own long RNA reads, swap `uri`
+for a BAM aligned to the same assembly, with its `.bai` beside it:
 
 ```json addtrack
 {
@@ -138,9 +138,9 @@ your BAM, with its `.bai` beside it and alignments to the same assembly:
 
 ## Triaging the STAR-Fusion calls in the SV inspector
 
-The SV inspector opens the STAR-Fusion table beside a circular view of it, one
-chord per row. **Add → SV inspector**, then the file. The import form reads the
-**File Type** from the filename or the table's header line; the menu sets it by
+**Add → SV inspector**, then the file, opens the STAR-Fusion table beside a
+circular view of it, one chord per row. The import form reads the **File Type**
+from the filename or the table's header line, and its menu sets the type by
 hand.
 
 Searching the SV inspector's table filters the table and the circular view
@@ -181,7 +181,7 @@ The build script adds the STAR-Fusion calls as a track:
 ## Split RNA reads at BCR-ABL1 across three regions
 
 The transcript reaches _ABL1_ at more than one place, so the view uses three
-regions: the _BCR_ donor (where the transcript starts) and two _ABL1_ acceptor
+regions: the _BCR_ donor, where the transcript starts, and two _ABL1_ acceptor
 windows. Right-click a read that crosses the junction and choose **Split current
 view to show split alignments**, or type the three locations into the location
 box separated by spaces:
@@ -206,9 +206,9 @@ in neither window.
 
 ## Where the DNA broke under BCR-ABL1 and NUP214-XKR3
 
-A fusion caller reports transcribed junctions, so its breakpoints sit on exon
-edges. Two DNA assays on the same cells show where the chromosome broke and how
-much of it is amplified:
+A fusion caller reports transcribed junctions, which sit on exon edges. Two DNA
+assays on the same cells show where the chromosome broke and how much of it is
+amplified:
 
 - **10X Chromium linked reads** from ENCODE (ENCSR053AXS,
   [Zhou et al. 2019](https://doi.org/10.1101/gr.234948.118)) call the breakends,
@@ -246,8 +246,9 @@ The build script lifts the breakends to hg38 and adds both as tracks:
 ```
 
 Open chr9 from _ABL1_ to past _NUP214_ with the copy-number track under both
-call tracks, and pick **Display types → Marks** from each call track's menu. A
-record that names its partner breakend draws as a `link` with nothing configured
+call tracks, and pick **Display types → Marks** from each call track's menu. In
+grammar-of-graphics terms, a `mark` is the shape drawn per record. A record that
+names its partner breakend draws as a `link` with nothing configured
 ([mark display](/docs/config_guides/mark_display#links)), and a call whose
 partner is on another chromosome draws a stem at its breakpoint.
 
@@ -261,12 +262,11 @@ partner is on another chromosome draws a stem at its breakpoint.
 | _XKR3_ acceptor | chr22:16,808,083, start of exon 3 | chr22:16,819,350          | 11 kb, in intron 2    |
 | none            | no call                           | chr9:131,280,138 to chr13 | no gene at either end |
 
-The amplified block on chr9 ends where the DNA breaks do. The _ABL1_ intron 1
-break is also the locus that
-[a Hi-C scan](/docs/tutorials/hic_structural_variants) pairs with _BCR_.
-DepMap's segmentation has no interval over _BCR_, so the donor window shows an
-arc and no copy-number step. SplitThreader matched copy-number steps to
-breakpoints the same way in the SK-BR-3 _ERBB2_ amplicon
+The amplified block on chr9 ends where the DNA breaks do. A
+[Hi-C scan](/docs/tutorials/hic_structural_variants) also pairs the _ABL1_
+intron 1 break with _BCR_. DepMap's segmentation has no interval over _BCR_, so
+the donor window shows an arc and no copy-number step. SplitThreader matched
+copy-number steps to breakpoints the same way in the SK-BR-3 _ERBB2_ amplicon
 ([Nattestad et al. 2018](https://doi.org/10.1101/gr.231100.117)).
 
 ## Reproduce it end to end

@@ -87,19 +87,23 @@ so there is nothing to download by hand.
 ## Reading the LPA kringle repeat as a graph
 
 _LPA_ contains a tandem array of kringle IV type 2 (KIV-2) copies, tied to
-lipoprotein(a) levels, a heart-disease risk factor (Schmidt et al. 2016). Open
-the [HPRC page](https://genomes.jbrowse.org/pangenomes/hprc), click the **LPA**
-example and press **Graph**. JBrowse opens on `chr6:160,525,000-160,655,000`.
-Tick **Show... → Show bubble halos** in the graph track's menu. The strip along
-the top of the track draws each reference segment at its position on the ruler,
-in the color of its node below.
+lipoprotein(a) levels, a heart-disease risk factor (Schmidt et al. 2016). We'll
+open it from the HPRC page:
+
+- Open the [HPRC page](https://genomes.jbrowse.org/pangenomes/hprc), click the
+  **LPA** example and press **Graph**. JBrowse opens on
+  `chr6:160,525,000-160,655,000`.
+- Tick **Show... → Show bubble halos** in the graph track's menu.
+
+The strip along the top of the track draws each reference segment at its
+position on the ruler, in the color of its node below.
 
 <Figure caption="The LPA window with the RefSeq genes, UniProt's kringle domains and the HPRC bubbles above the force-directed graph track. The kringle array is the knot of loops in the middle, haloed and labelled as a repeat array, and LPA is pinned under the backbone with its exons along it." src="/img/pangenome/hprc_lpa_kiv2.png" />
 
 Each loop in the knot is a different number of copies. Click the array's purple
 label to lay the bubble's segments out alone, with a button back to the window.
-The rGFA records segments and links; each haplotype's route through them, its
-walk, is in the haplotypes track.
+The rGFA records segments and links, and the haplotypes track records each
+haplotype's route through them, its walk.
 
 ## Eight haplotypes' routes through the KIV-2 array {#one-haplotypes-copies}
 
@@ -109,11 +113,11 @@ reads one per haplotype from tabix-indexed files. In the same window:
 - Type `chr6:160,616,002-160,646,753`, the array.
 - **Display types → Feature display** puts the rGFA graph track back to a row of
   segments.
-- Turn the haplotypes track on in the track selector, then take **Display types
-  → Graph** in its menu for a force-directed graph of the walks.
+- Turn the haplotypes track on in the track selector. **Display types → Graph**
+  in its menu draws a force-directed graph of the walks.
 - Check **Haplotypes → The track's 8 assemblies** <!-- menu-path-ok --> in the
-  same menu. Every haplotype's walks through the array hold more nodes than a
-  force-directed drawing takes, so this step keeps the eight HPRC assemblies the
+  same menu. Every haplotype's walks through the array have more nodes than a
+  force-directed drawing handles, so this keeps the eight HPRC assemblies the
   hosted config loads, and walk rows below draw them all.
 
 A node draws thicker the more walks visit it (as in Bandage), so the shared
@@ -151,9 +155,9 @@ Three controls change which bars show:
   full size.
 - **Samples → Choose samples...** under the **Layout** row picks names, and
   **Samples → Every sample** brings the cohort back.
-- **Group by... → superpopulation** under the **Layout** row splits the bars
-  into a section per superpopulation, from the samples table the track names,
-  every section on one ruler and row height.
+- **Group by... → superpopulation** under the **Layout** row adds a `facet`: the
+  bars split into one stacked section per superpopulation in the samples table
+  the track names, every section on one ruler and row height.
 
 ## Telling KIV-2A from KIV-2B {#which-copy-is-which}
 
@@ -185,23 +189,22 @@ haplotype, and a samples table gives each sample's population:
 
 Turn the track on, right-click the record and choose **Show repeat copies**. The
 TandemRepeat plugin, which the hosted config loads beside the graph plugin,
-opens a view with one bar per haplotype, each on its own bp axis and each copy
+opens a view with one bar per haplotype, each with a bp axis and each copy
 colored by its type. Hover a copy for its haplotype.
 
 <Figure caption="The KIV-2 record over every HPRC haplotype, those with the most KIV-2B copies first, then longest, each copy colored by its type. KIV-2B leads every array that holds it; the lone bar whose KIV-2B copy sits fourth is GRCh38's." src="/img/pangenome/hprc_kiv2_copies_all_by_unit.png" />
 
 **Group by… → superpopulation** in the view's menu splits the bars by that
-column of the samples table, every section on the same ruler and row height:
+column of the samples table:
 
 <Figure caption="The same record grouped by superpopulation. Arrays opening with a block of KIV-2B copies gather in the AMR, EAS and SAS sections; in EUR, KIV-2B is mostly a single opening copy, and most AFR arrays hold none." src="/img/pangenome/hprc_kiv2_copies_by_superpopulation.png" />
 
 The track selector also holds `LPA KIV-2 copies by unit, eight HPRC haplotypes`,
 few enough bars to label each by name.
 
-We wrote the KIV-2 record from the walks above. To write one for your own array,
-we'll first cut the walks over it out of the gbz-base database as a GFA
-subgraph, with enough context that the cut reaches the reference nodes on either
-side:
+To write a record like it for your own array, we'll first cut the walks over it
+out of the gbz-base database as a GFA subgraph, with enough context that the cut
+reaches the reference nodes on either side:
 
 ```bash
 # the reference walk is PanSN GRCh38#0#chr6; the interval is the array
@@ -357,8 +360,7 @@ also divide into motif-length units.
 To compare seven samples, keep the _ABCA7_ record picked under **Repeat**.
 **Samples → Choose samples...**, under the **Layout** row of the graph track's
 menu, takes HG00099, HG03688, HG00741, HG02647, HG01943, HG02559 and HG04199 in
-that order. Their walks show in pairs, in the order picked, and fall into three
-groups:
+that order. Their walks show in pairs in that order and fall into three groups:
 
 - HG00099, HG03688 and HG00741 tick at each bar's end: reads and assemblies
   agree.
@@ -416,9 +418,9 @@ hovering a copy names its sample.
 
 ## Checking HG00099's allele lengths against TRGT's AL field
 
-HG00099's genotype in the sample table is `1/2` with `AL` `387,3161`. Hovering a
-copy in the card names its allele with that allele's length: ALT 1's bar gives
-387 bp and ALT 2's 3.2 kb, so the alleles' lengths match what TRGT measured.
+HG00099's genotype in the sample table is `1/2` with `AL` `387,3161`. In the
+card, hovering ALT 1's bar gives 387 bp and ALT 2's 3.2 kb, matching what TRGT
+measured.
 
 ## Amylase: counting AMY1 copies per haplotype {#amylase}
 
@@ -436,9 +438,12 @@ label gives that span as a multiple of the window.
 
 <Figure caption="The amylase locus from the HPRC page's haplotypes launch with five lanes chosen, one per amylase structure, under the RefSeq genes. Each lane is drawn on the haplotype's contig under its CAT genes; a lane longer than the window gives its span as a multiple in its label." src="/img/multiway_synteny/hprc_amylase_lanes.png" />
 
-To read the lengths, take **Display types → Graph**, enter the five names in
-**Settings → Haplotypes**, then pick **Walk rows** under the **Layout** row and
-**Uniform** under the **Color** row to draw each haplotype's route as a bar.
+To read the lengths, switch the track to walk rows:
+
+- **Display types → Graph** in the track menu.
+- Enter the five names in **Settings → Haplotypes**.
+- **Walk rows** under the **Layout** row and **Uniform** under the **Color** row
+  draw each haplotype's route as a bar.
 
 <Figure caption="The five haplotypes' walks across the amylase array in walk rows, longest first, under GRCh38's bar, each boxed with its own CAT genes so its AMY1 copies can be counted on the bar. Blue is on GRCh38's path through the graph and purple off it. Each readout gives the walk's length and its excess over GRCh38." src="/img/pangenome/hprc_amylase_walk_rows.png" />
 

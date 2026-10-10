@@ -107,8 +107,8 @@ track:
 Because `densityAdapter` sits on the adapter, every display of the track draws
 the band. The optional `densityTierBpPerPx` switches the gene track to the band
 from 50 kb per pixel outward, since on the smaller chromosomes the band reads
-more easily than a screen of genes. It has no menu entry, the **Density band**
-choices below override it, and the repeat tracks leave it unset.
+more easily than a screen of genes. The setting has no menu entry, the **Density
+band** choices below override it, and the repeat tracks leave it unset.
 
 The three repeat tracks come from cutting the RepeatMasker table into one BED
 per `repFamily`, so the Alu track and its sidecar hold only Alus. The same
@@ -200,10 +200,10 @@ The track menu of a track with a sidecar has a **Density band** entry:
 ## Checking the bands against counts from the files
 
 The bands are counts, so counting the files checks them. Each band prints its
-peak in its corner, and hovering it shows the sidecar value under the cursor.
-Take one megabase under the tallest run of the gene band, at 155 Mb, and one
-under a trough, at 60 Mb, and count what falls in each. A gene's transcripts and
-exons have `Parent=`, so the gene line drops them and counts each gene once:
+peak in its corner, and hovering shows the sidecar value under the cursor. Count
+one megabase under the tallest run of the gene band, at 155 Mb, and one under a
+trough, at 60 Mb. A gene's transcripts and exons have `Parent=`, so the gene
+line drops them and counts each gene once:
 
 ```bash
 tabix genes.gff.gz chr1:155,000,000-156,000,000 | grep -vc 'Parent='
@@ -222,18 +222,19 @@ about the same in both, the same pattern the four bands show.
 
 ## Reproduce it end to end
 
-Every step above is wrapped in one script,
-[`build_gene_density.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_gene_density.sh):
+[`build_gene_density.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_gene_density.sh)
+wraps every step above. It:
+
+1. fetches the two UCSC tables and the reference lengths
+2. cuts the RepeatMasker table into the three family BEDs
+3. builds a sidecar for each of the four files
+4. writes a JBrowse with the four tracks
 
 ```bash
 curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/build_gene_density.sh
 bash build_gene_density.sh                # builds ./gene_density_build/jbrowse2
 npx --yes serve gene_density_build/jbrowse2 # then open the printed URL
 ```
-
-The script fetches the two UCSC tables and the reference lengths, cuts the
-RepeatMasker table into the three family BEDs, builds a sidecar for each of the
-four files, and writes a JBrowse with the four tracks.
 
 ## See also
 

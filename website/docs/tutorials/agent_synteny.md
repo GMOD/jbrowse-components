@@ -69,11 +69,9 @@ The agent runs this aligner command:
 minimap2 -t 8 -cx asm20 --cs mau.fa.gz sim.fa.gz > sim_vs_mau.paf
 ```
 
-The whole-genome alignment takes several minutes, so the request runs it in the
-background.
-
-Indexing the PAF lets the browser read one region of it without parsing the
-whole file:
+The alignment takes several minutes, so the agent runs it in the background.
+Indexing the PAF then lets the browser read one region without parsing the whole
+file:
 
 <!-- from: scripts/build_fly_agent_synteny.sh -->
 
@@ -81,10 +79,10 @@ whole file:
 jbrowse make-pif sim_vs_mau.paf
 ```
 
-The agent's config merges the two genomes.jbrowse.org configs listed above,
-keeping each gene track, and adds this alignment as a synteny track. For your
-own pair, swap `uri` for your `.pif.gz` (its `.tbi` beside it), load both
-assemblies, and check the order of `assemblyNames` on the track:
+The agent's config merges the two genomes.jbrowse.org hub configs, keeping each
+gene track, and adds this alignment as a synteny track. For your own pair, swap
+`uri` for your `.pif.gz` (its `.tbi` beside it), load both assemblies, and check
+the order of `assemblyNames` on the track:
 
 ```json addtrack
 {
@@ -131,9 +129,9 @@ Where do the two genomes run in opposite directions? Answer from the
 alignment file, not from the dotplot, and show me the numbers.
 ```
 
-A reverse-strand block a few hundred kilobases wide is a few pixels at
-whole-genome zoom. The same information is in the PAF as numbers: aligned bases
-per arm, split by strand, at mapping quality (MAPQ) 30 or better:
+At whole-genome zoom a reverse-strand block a few hundred kilobases wide is a
+few pixels, so the request asks for numbers from the PAF: aligned bases per arm,
+split by strand, at mapping quality (MAPQ) 30 or better:
 
 ```bash
 awk -F'\t' '
@@ -164,8 +162,8 @@ END {
 X    21.04 Mb aligned,  4.44% reverse
 ```
 
-Four arms have essentially no reverse-strand alignment, and they are the
-control: 2R and X sit an order of magnitude above them.
+Four arms have essentially no reverse-strand alignment and are the control: 2R
+and X sit an order of magnitude above them.
 
 Grouping the reverse-strand blocks of 5 kb or more, and cutting a group wherever
 half a megabase passes with none, gives three regions:
@@ -201,15 +199,15 @@ Three instructions each prevent a failure that raises no error:
   `run_javascript`, and the agent reports a failure that did not happen.
 - **Restrict the dotplot axes to the arms.** Otherwise a few hundred unplaced
   scaffolds (not assigned to a chromosome) interleave both axes.
-- **Answer counted from the alignment file.** Otherwise the agent describes the
-  dotplot.
+- **Ask for answers counted from the alignment file.** Otherwise the agent
+  describes the dotplot.
 
 Two more are worth asking for:
 
 - **Screenshot what you build and read the image back.** A wrong track id or an
   empty region still renders as a plausible browser.
-- **Say the numbers before navigating.** What you then see is a claim you can
-  check.
+- **Ask for the numbers before navigating.** The view you then see is a claim
+  you can check.
 
 ## Running the whole pipeline as a script
 

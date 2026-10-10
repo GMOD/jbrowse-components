@@ -62,9 +62,8 @@ one, or none.
 
 ## Loading the callset, the reads and the copy-number store
 
-The CRAMs decode against the assembly's sequence, so the assembly must be the
-GRCh38 sequence the reads were aligned to, with the chromosome names the VCF
-uses.
+The CRAMs decode against the assembly's sequence, so it must be the GRCh38
+sequence the reads were aligned to, with the chromosome names the VCF uses.
 
 ```json addassembly
 {
@@ -146,8 +145,9 @@ builds one from your own BigWigs:
 }
 ```
 
-Navigate to `chr1:25,200,000-25,400,000`, the window of the genotype figure
-below.
+Navigate to `chr1:25,200,000-25,400,000`, the genotype figure's window. In
+grammar-of-graphics terms, the copy-number track's `mark` is the shape drawn,
+`scales.y` its y scale and `color` a color scale on `score`.
 
 ## Sorting the cohort by genotype at the RHD deletion
 
@@ -155,26 +155,24 @@ Switch the callset track to **Display types → Multi-sample variant display**
 from the track menu. Each sample becomes a row drawn at the variant's genomic
 span, so the deletion is a wide block. Clicking it opens the feature details
 panel, whose **SAMPLES** section lists every sample's genotype, read depth and
-other per-sample fields.
+other fields.
 
 Rows start in the callset's order. Right-click the deletion and pick **Sort by
 genotype** to order rows by genotype at that call, then by how far each keeps
 matching its neighbours. **Clustering → Cluster rows by genotype...** in the
-track menu clusters rows by genotypes across the whole window, with a
+track menu instead clusters rows by genotypes across the whole window, with a
 dendrogram.
 
-In the matrix, dark blue is no copy of _RHD_, light blue one, grey two, and the
-olive stripe is a separate nested call. The olive stripe is `HGSV_1823`, a small
-copy-number record inside the deletion. The callset gives most of the cohort a
-no-call there (no genotype reported), but QuicK-mer2 measures copy number per
-bin from the reads, so the column that is an olive no-call in the matrix is a
-red gain in the copy-number track.
+In the matrix, dark blue is no copy of _RHD_, light blue one and grey two. The
+olive stripe is `HGSV_1823`, a small copy-number record nested inside the
+deletion. The callset gives most of the cohort a no-call there (no genotype
+reported), but QuicK-mer2 measures copy number per bin from the reads, so the
+olive no-call column is a red gain in the copy-number track.
 
-A matrix cell marks that a sample has some call at that column. To see which
-call, load the same VCF again in the ordinary variant display, which draws each
-record on a separate row with its id, class and size, or color cells by **SV
-type**, as the [multi-variant track guide](/docs/user_guides/multivariant_track)
-shows.
+A matrix cell marks some call at that column. To see which call, load the same
+VCF again in the ordinary variant display, which draws each record on a separate
+row with its id, class and size, or color cells by **SV type**, as the
+[multi-variant track guide](/docs/user_guides/multivariant_track) shows.
 
 The figure below has three tracks over NCBI RefSeq genes:
 
@@ -196,9 +194,9 @@ HG00096 heterozygous, HG00097 homozygous reference. Two settings make them
 comparable:
 
 - Turn the pileup off with **Show... → Show pileup** in the track menu, since at
-  this width the coverage curve shows the difference
-- Put the three tracks on one axis from **Coverage axis... → Share axis with**,
-  ticking the other two, so they compare by height
+  this width the coverage curve shows the difference.
+- Share one axis from **Coverage axis... → Share axis with**, ticking the other
+  two tracks, so the samples compare by height.
 
 <Figure caption="Coverage over the RHD deletion in three samples on one shared axis, with the RHD span banded. Top, HG00113 with no copy; middle, HG00096 with one; bottom, HG00097 with two." src="/img/multisv_rhd_dosage.png" />
 
@@ -208,15 +206,17 @@ _RHCE_ reads land in the empty _RHD_ footprint.
 
 ## Reading a complex call in HG02768 from read-pair orientation
 
-Balanced rearrangements such as inversions leave coverage unchanged but change
-read-pair orientation, meaning which strand each mate maps to. HG02768 has a
-complex call, an inversion with a duplicated copy, with coverage like the rest
-of its arm.
+A balanced rearrangement such as an inversion leaves coverage unchanged but
+changes read-pair orientation, meaning which strand each mate maps to. HG02768
+has a complex call, an inversion with a duplicated copy, with coverage like the
+rest of its arm.
 
 Put `1:39,658,200-39,661,800` in the location box and add HG02768's CRAM as a
-track the same way as HG00113's. Turn on **Read connections → SV channels (pairs
-by orientation)** from the track menu: the reads split into one band per
-orientation class, each with a separate coverage curve and arcs.
+track the same way as HG00113's.
+
+**Read connections → SV channels (pairs by orientation)** in the track menu
+splits the reads into one band per orientation class, each with a separate
+coverage curve and arcs:
 
 - The normal-orientation band holds the flat coverage profile
 - The two same-strand bands (both mates on one strand) each draw a bundle of
@@ -227,7 +227,7 @@ orientation class, each with a separate coverage curve and arcs.
 <Figure caption="HG02768's reads at the complex call, split into one band per pair orientation. The two same-strand bands hold arc bundles ending on one pair of breakpoints, the normal band shows the ordinary coverage, and the outward-pointing band is near empty. The last band holds reads whose mate is unmapped or on another chromosome, drawn as inter-chromosomal ticks." src="/img/sv_channels.png" />
 
 The call also lists a duplicated copy in `INFO.CPX_INTERVALS`, which no band
-shows: a copy inserted beside its origin leaves pair orientation unchanged, so
+shows. A copy inserted beside its origin leaves pair orientation unchanged, so
 that half of the call rests on coverage, where noise at this size makes bumps as
 wide as the duplication.
 

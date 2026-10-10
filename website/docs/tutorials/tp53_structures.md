@@ -18,10 +18,8 @@ transcript, and Mol\* draws the structures.
 
 ## Where the data comes from
 
-The links open a hosted hg38 config with NCBI RefSeq genes, and the protein3d
-plugin fetches the structures, annotations and mappings from these services.
-
-Nothing to download: the plugin fetches these files when a link opens.
+Nothing to download: the links open a hosted hg38 config with NCBI RefSeq genes,
+and the protein3d plugin fetches these files when a link opens.
 
 <details>
 <summary>The files</summary>
@@ -51,10 +49,11 @@ the structure's sequence to the transcript's translation.
 [Open the three structures of TP53](https://jbrowse.org/code/jb2/main/?config=test_data/protein3d_config.json&session=spec-%7B%22views%22%3A%5B%7B%22type%22%3A%22ProteinView%22%2C%22structures%22%3A%5B%7B%22uniprotId%22%3A%22P04637%22%7D%2C%7B%22pdbId%22%3A%221TUP%22%7D%2C%7B%22pdbId%22%3A%221YCR%22%7D%5D%2C%22transcriptId%22%3A%22NM_000546.6%22%2C%22zoomToBaseLevel%22%3Afalse%2C%22connectedView%22%3A%7B%22assembly%22%3A%22hg38%22%2C%22loc%22%3A%22chr17%3A7%2C671%2C000-7%2C684%2C500%22%2C%22tracks%22%3A%5B%22hg38-ncbiRefSeq%22%5D%7D%2C%22colorScheme%22%3A%22mapped-chain%22%7D%5D%7D).
 The plugin superposes the structures with TM-align, and the **Color** menu is
 set to Mapped chain, which colors the chain the transcript encodes blue and
-everything else grey. The arrow beside each structure in the header opens its
-alignment panel, with the transcript's translation on the GENOME row, the
-structure's sequence on the STRUCT row and a ruler in the authors' residue
-numbering:
+everything else grey.
+
+The arrow beside each structure in the header opens its alignment panel, with
+the transcript's translation on the GENOME row, the structure's sequence on the
+STRUCT row and a ruler in the authors' residue numbering:
 
 - **AlphaFold** is one unbroken match. Under its STRUCT row, pLDDT (AlphaFold's
   per-residue confidence) is high across the core and falls away at both ends,
@@ -134,7 +133,7 @@ The protein3d plugin is in the [plugin store](/docs/user_guides/plugin_store):
 install **Protein3d** from the Tools menu, then right-click a gene and choose
 **Launch protein view** to open its AlphaFold model. For several structures at
 once, write the view as a session spec. This is the spec behind the
-three-structure link; swap the UniProt accession, the PDB ids, the transcript
+three-structure link. Swap the UniProt accession, the PDB ids, the transcript
 and the locus for your gene's, and name a gene track your config has:
 
 ```json live config=test_data/protein3d_config.json

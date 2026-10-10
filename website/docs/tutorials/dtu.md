@@ -12,7 +12,7 @@ Differential transcript usage tests whether a gene changes which of its isoforms
 it expresses between two conditions, here skeletal muscle and liver. We run the
 test with satuRn, a Bioconductor package, on ENCODE quantifications, write each
 transcript's statistic into the GFF3 attribute column, and color the gene track
-by it, with a key listing each interval.
+by it.
 
 ## Prerequisites
 
@@ -29,8 +29,8 @@ by it, with a key listing each interval.
 ENCODE's ENTEx panel, four skeletal-muscle and four liver donors, quantified
 with RSEM against GENCODE v29.
 
-The [build script](#reproduce-it-end-to-end) takes these files from their URLs,
-so there is nothing to download by hand.
+The [build script](#reproduce-it-end-to-end) fetches these files, so there is
+nothing to download by hand.
 
 - eight RSEM per-transcript quantification tables, the four muscle donors then
   the four liver donors:
@@ -121,12 +121,12 @@ expressed, since a fraction can swing widely on a handful of reads. It subsets
 those genes out of the GENCODE v29 GFF3 and appends each transcript's numbers to
 its attribute column.
 
-To do the same join over your own results, write the table as `results.tsv` with
-one row per transcript and the columns `isoform_id`, `regular_FDR` and `dIF`
-(the isoform-fraction change). This version keeps every GENCODE row. It appends
-`dif`, `fdr`, `dtu` and `dif_called` to each transcript row, and
-`dtu_transcripts` and `dtu_top_dif` to the gene row of each gene with a called
-transcript. Those are the keys the track reads:
+To do the same join over your own results, write `results.tsv` with one row per
+transcript and the columns `isoform_id`, `regular_FDR` and `dIF` (the
+isoform-fraction change). This version keeps every GENCODE row, appending `dif`,
+`fdr`, `dtu` and `dif_called` to each transcript row and `dtu_transcripts` and
+`dtu_top_dif` to the gene row of each gene with a called transcript. The track
+reads those keys:
 
 <!-- from: scripts/build_dtu_demo.sh -->
 
@@ -183,8 +183,8 @@ tabix -f -p gff dtu_muscle_vs_liver.gff3.gz
 
 ### satuRn's statistics in the GFF3 attribute column
 
-The track configuration reads each transcript's statistics from the attribute
-column. A transcript row from the finished file, wrapped:
+The track reads each transcript's statistics from the attribute column. A
+transcript row from the finished file, wrapped:
 
 ```text
 chr10  HAVANA  transcript  7788129  7807815  .  +  .
@@ -223,12 +223,15 @@ hg38 assembly before either track.
 
 ## Coloring each isoform by its usage change
 
-The track's `color` paints `dif_called`, a called transcript's isoform-fraction
-change, through a `threshold` scale, liver-preferred below zero and
-muscle-preferred above. A value on a cut takes the interval above it. The key
-lists every interval under the `title`, plus a `(no value)` row for uncalled
-transcripts, and a UTR follows `color` unless `utrColor` is set. Clicking an
-isoform opens its numbers in the details panel.
+In grammar-of-graphics terms, `color` is a color scale: its `field`,
+`dif_called` (a called transcript's isoform-fraction change), goes through the
+`threshold` cuts in `domain` to the colors in `range`, liver-preferred below
+zero and muscle-preferred above. A value on a cut takes the interval above it.
+
+- The key lists every interval under the `title`, plus a `(no value)` row for
+  uncalled transcripts.
+- A UTR follows `color` unless `utrColor` is set.
+- Clicking an isoform opens its numbers in the details panel.
 
 ```json addtrack loc=chr10:7,787,600-7,812,400
 {
@@ -270,14 +273,15 @@ isoform opens its numbers in the details panel.
 
 Add the four coverage tracks below and open them with the transcript track at
 `chr10:7,787,600-7,812,400`, the whole of _ATP5F1C_, an ATP synthase subunit.
-The gene is on the plus strand, so the two plus-strand tracks carry its reads.
+The gene is on the plus strand, so the two plus-strand tracks have its reads.
 satuRn used no genomic coordinates, so the coverage is an independent check on
 the color.
 
-Each coverage track scales to its own peak until the tracks share an axis. **Y
-axis... → Share axis with** on one track, with the other ticked, gives both one
-axis that follows the view, so the two tissues compare by height. In a config,
-each track names the same group:
+Each coverage track scales to its peak until the tracks share an axis.
+
+**Y axis... → Share axis with** on one track, with the other ticked, gives both
+one axis that follows the view, so the two tissues compare by height. In a
+config, each track names the same group:
 
 ```json addtrack loc=chr10:7,787,600-7,812,400
 {
@@ -341,10 +345,10 @@ curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/
 bash build_dtu_demo.sh dtu_build   # writes ./dtu_build/
 ```
 
-The script writes `dtu_muscle_vs_liver.gff3.gz` with its `.tbi` index, a local
-build of the file the track configuration above loads from jbrowse.org. Point
-the track's `uri` at the local copy to open your own run. The script needs the
-[Prerequisites](#prerequisites) on your `PATH`.
+The script needs the [Prerequisites](#prerequisites) on your `PATH` and writes
+`dtu_muscle_vs_liver.gff3.gz` with its `.tbi` index, a local build of the file
+the track configuration above loads from jbrowse.org. Point the track's `uri` at
+the local copy to open your own run.
 
 ## See also
 

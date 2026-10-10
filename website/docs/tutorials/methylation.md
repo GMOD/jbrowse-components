@@ -21,8 +21,8 @@ apart.
   [web quickstart](/docs/quickstart_web) or the
   [desktop quickstart](/docs/quickstart_desktop))
 - [modkit](https://github.com/nanoporetech/modkit/releases) 0.6 or later, Oxford
-  Nanopore's tool for tallying per-read calls into per-CpG methylation
-  fractions, for the aggregate section only; a single-binary download
+  Nanopore's single-binary tool for tallying per-read calls into per-CpG
+  methylation fractions, for the aggregate section only
 - [WhatsHap](https://whatshap.readthedocs.io/), to haplotag reads of your own
   that have no `HP` tag
 
@@ -59,8 +59,8 @@ the aggregate profile should agree on which allele is methylated.
 
 ## Loading GRCh38
 
-The reads are aligned to GRCh38, and the track's `assemblyNames` has to name the
-assembly they were aligned to.
+The track's `assemblyNames` has to name the assembly the reads were aligned to,
+GRCh38.
 
 ```json addassembly
 {
@@ -98,8 +98,8 @@ assembly:
 
 **File → Open track...** also opens the file by URL and infers the `.bai`.
 
-Set **Color by... → Modifications** from the track menu to paint each read with
-its 5mC calls, in one of two modes:
+**Color by... → Modifications** in the track menu paints each read with its 5mC
+calls, in one of two modes:
 
 - **One color per modification type** paints the positions the MM tag reports as
   modified
@@ -114,9 +114,6 @@ covers both modes, the probability threshold, and the cytosine-context submenu.
 <Video src="/media/methylation/open_modbam.mp4" caption="The modBAM opened by URL and colored from its new track menu: Color by..., Modifications, and the two-color mode painting methylated CpGs red and unmethylated ones blue." />
 
 <Figure caption="HG002 ONT reads over the SNRPN CpG island in both modification color modes. Top, the MM tag's modified positions alone, red against bare read bodies. Bottom, the same reads with every unmarked CpG filled in, so a read with no methylation reads blue where it was blank." src="/img/methylation/hg002_snrpn_mod_modes.png" links="Modified only=methylation/hg002_snrpn_marked_only,Every CpG=methylation/hg002_snrpn_fill_unmarked" />
-
-[Splitting the alleles apart](#splitting-the-alleles-apart) groups the reads by
-their `HP` haplotype tag.
 
 ## Aggregate methylation with modkit bedMethyl
 
@@ -173,8 +170,11 @@ subtrack per type, with a vertical bar per CpG on a percent-methylation axis:
 ## Splitting the alleles apart
 
 Each long read is one DNA molecule, so reads with an `HP` haplotype tag (from
-WhatsHap, HiPhase or ONT's `wf-human-variation`) separate by allele. Pick
-**Group by... → Tag...** from the track menu and enter `HP`. The pileup then
+WhatsHap, HiPhase or ONT's `wf-human-variation`) separate by allele. In
+grammar-of-graphics terms, **Group by...** sets a `facet`, which splits the
+display into stacked sections, one per value of a field.
+
+Pick **Group by... → Tag...** in the track menu and enter `HP`. The pileup then
 stacks into:
 
 - one band per haplotype, one methylated over the island and the other
@@ -183,6 +183,7 @@ stacks into:
 
 The dialog also offers to color reads by the tag; with methylation coloring on,
 that box starts unchecked, and leaving it unchecked keeps the coloring.
+**Advanced → Edit plot...** shows the resulting `facet` as text.
 
 <Video src="/media/methylation/group_by_hp.mp4" caption="The split as the menu does it: the interleaved pileup, the tag dialog finding HP values 1 and 2 in the reads themselves, and one methylated band resolving over one unmethylated." />
 

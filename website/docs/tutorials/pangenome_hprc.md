@@ -29,10 +29,6 @@ GRCh38, and:
 - back at C4, read the same alleles as aligned bases in HPRC's multiple
   alignment
 
-Two more pages start from the same HPRC page:
-[haplotypes against each other](/docs/tutorials/pangenome_hprc_haplotypes) and
-[repeat lengths](/docs/tutorials/pangenome_hprc_repeats).
-
 :::caution Experimental
 
 The graph view is a beta plugin, and the
@@ -55,11 +51,9 @@ empty or simple picture.
 
 ## Where the data comes from
 
-[HPRC release 2](https://doi.org/10.64898/2026.07.21.739710), with tabix index
-files cut from its graph that we host.
-
-Nothing to download: the HPRC page's launches read these files, and our index of
-the graph, by URL.
+Nothing to download: the HPRC page's launches read the files of
+[HPRC release 2](https://doi.org/10.64898/2026.07.21.739710), and our tabix
+index of its graph, by URL.
 
 <details>
 <summary>The files</summary>
@@ -75,15 +69,15 @@ the graph, by URL.
 
 ## Launching tracks from the HPRC page
 
-Open the [HPRC page](https://genomes.jbrowse.org/pangenomes/hprc). It has one
-**Gene or region** box, with a row of **Examples** under it. Click an example,
-or type a gene symbol or a region such as `chr6:32,510,001-32,600,000` and press
-**Show**. The page answers with the window drawn in JBrowse, and a row of
-buttons choosing what it draws:
+Open the [HPRC page](https://genomes.jbrowse.org/pangenomes/hprc). Click an
+**Examples** entry, or type a gene symbol or a region such as
+`chr6:32,510,001-32,600,000` into the **Gene or region** box and press **Show**.
+The page draws the window in JBrowse, with a row of buttons choosing what it
+draws:
 
 - **Graph**: the region drawn as a graph, with the structural variants each
-  haplotype carries under it
-- **Variants**: the structural variants each haplotype carries, over the genes
+  haplotype has under it
+- **Variants**: the structural variants each haplotype has, over the genes
 - **Haplotypes**: one lane per structural form, commonest first
 - **BandageJS**: the same haplotypes in
   [BandageJS](https://jbrowse.org/demos/bandagejs/)
@@ -92,17 +86,16 @@ buttons choosing what it draws:
 view, a sentence counts the structural forms the 464 haplotypes fall into in the
 window, and a **Lane / Structure / Haplotypes / Share** table names the
 haplotype that stands for each form, how the form differs from GRCh38 and how
-many share it. Those are the lanes **Haplotypes** and **BandageJS** open. A
-window over 150 kb offers the graph alone.
+many share it. **Haplotypes** and **BandageJS** open those lanes. A window over
+150 kb offers the graph alone.
 
-<Figure caption="The HPRC page answering its HLA / MHC example: the Gene or region box and its examples, then the Graph view drawn in the page and the structural forms its haplotypes carry. The boxed button is Graph." src="/img/pangenome/genomes_hprc_loci.png" />
+<Figure caption="The HPRC page answering its HLA / MHC example: the Gene or region box and its examples, then the Graph view drawn in the page and the structural forms its haplotypes have. The boxed button is Graph." src="/img/pangenome/genomes_hprc_loci.png" />
 
 ## What the graph and the page do not show {#limits}
 
-The examples are loci where at least one launch draws something readable. Other
-loci do not, and a picture that looks simple or empty is often one of the cases
-below, not a locus without variation. We measured each on HPRC release 2.1 in
-October 2026.
+The examples are loci where at least one launch draws something readable. At
+other loci, a picture that looks simple or empty is often one of the cases
+below. We measured each on HPRC release 2.1 in October 2026.
 
 - **Near-identical duplications draw as a single thread.** The graph puts the
   copies at RHD / RHCE and CYP2D6 on one path, so those examples offer no
@@ -110,7 +103,7 @@ October 2026.
   not examples at all: the graph over each is a thread, and no launch showed
   their copy number. A gene-level graph is the better tool for that question.
 - **The graph does not align every haplotype everywhere.** A haplotype the graph
-  does not carry through a window gets no lane, and the page counts them: "116
+  does not align across a window gets no lane, and the page counts them: "116
   haplotypes are not aligned at any of them and have no lane" at FLNA / EMD,
   where those are the haplotypes without an X chromosome. Elsewhere the sequence
   exists in the assembly and the graph leaves it out. At NPHP1, 326 of the 462
@@ -119,26 +112,26 @@ October 2026.
 - **The VCF has no record for the largest events.** HPRC removes every site with
   an allele over 100 kb from the VCF and keeps the smaller sites nested inside
   it. The **Variants** launch therefore cannot show UGT2B17's 117 kb deletion,
-  which 229 haplotypes carry. AMY1, GYPA / GYPB, PRSS1 / PRSS2, UGT2B17 and
-  NPHP1 offer no **Variants** launch, because the matrix over each is blank. The
+  which 229 haplotypes have. AMY1, GYPA / GYPB, PRSS1 / PRSS2, UGT2B17 and NPHP1
+  offer no **Variants** launch, because the matrix over each is blank. The
   page's table restores those sites from the release's unfiltered VCF, so the
   table can name a deletion the **Variants** launch does not draw.
 - **The Structure column is a summary.** A size is rounded to two figures, and a
-  state fewer than 5 haplotypes carry is folded into the commonest one. At a
+  state fewer than 5 haplotypes have is folded into the commonest one. At a
   complex locus a row reads "14 size changes, largest a 10 kb deletion", which
   says little, and the HLA / MHC example has 34 forms of which the commonest
-  holds 11% of haplotypes and the page lists 8. Two rows can carry the same
-  words for changes at different sites: four of PRSS1 / PRSS2's lanes read "20
-  kb insertion".
+  holds 11% of haplotypes and the page lists 8. Two rows can have the same words
+  for changes at different sites: four of PRSS1 / PRSS2's lanes read "20 kb
+  insertion".
 - **A size in the table can be wrong where sites nest.** A restored site's size
   is what the sites inside it leave unexplained. That subtraction checked out
   for 92.5% of the cases we could test and gave a size the haplotype does not
-  carry in 189, most of them at 8p23.1.
+  have in 189, most of them at 8p23.1.
 - **Only the examples are checked.** We looked at every launch of every example.
   A gene or region you type can still land where the graph is a thread or the
   VCF is blank, and the page will offer the launch anyway.
-- **No one launch shows the whole locus.** The graph shows which sequence
-  exists, the VCF which haplotypes carry it, and the lanes how a few haplotypes
+- **No single launch shows the whole locus.** The graph shows which sequence
+  exists, the VCF which haplotypes have it, and the lanes how a few haplotypes
   are arranged. Reading a locus means opening more than one.
 
 ## Overview of chr1 with one node per variant region {#a-chromosome-and-back}
@@ -158,8 +151,8 @@ overview and writes the `coarse` slot.
 
 Click the **HLA / MHC** example on the HPRC page, then **Open in full JBrowse**.
 The Graph view opens three tracks: genes, the graph in the force-directed
-layout, and under it a matrix of the structural variants each haplotype carries,
-one row per haplotype. Then:
+layout, and under it a matrix of the structural variants each haplotype has, one
+row per haplotype. Then:
 
 - Hide the variant matrix in the track selector, leaving the genes over the
   graph.
@@ -244,19 +237,22 @@ that allele. We'll add it to the graph launch's session:
 }
 ```
 
-- `unit: "haplotype"` gives each haplotype its own row.
-- `alleleLength(feature)>=50` keeps alleles of 50 bp and up, the size of the
-  bubbles minigraph draws. `alleleLength` is the length of the record's longest
-  allele, so it counts an insertion's inserted bases. **Filter by... → Edit
-  filters...** in the track menu shows the filter and changes it.
+- `unit: "haplotype"` draws one row per haplotype.
+- `filter` drops records, and `alleleLength(feature)>=50` keeps alleles of 50 bp
+  and up, the size of the bubbles minigraph draws. `alleleLength` is the length
+  of the record's longest allele, so it counts an insertion's inserted bases.
 - `fetchSizeLimit` raises the download cap past
   [its default](/docs/config/vcftabixadapter/#slot-fetchsizelimit). The VCF
   spells out each inserted allele, which puts the MHC class II window over the
   default.
+- **Filter by... → Edit filters...** in the track menu shows the filter and
+  changes it.
+- **Advanced → Edit plot...** in the track menu shows `unit` and `filter` as
+  text and applies edits live.
 
-Open the track menu again and take **Clustering → Cluster rows by genotype...**,
-then **Run clustering**: the rows reorder so haplotypes with the same alleles
-sit together, with a dendrogram beside them.
+Take **Clustering → Cluster rows by genotype...** in the track menu and press
+**Run clustering**. The rows reorder so haplotypes with the same alleles sit
+together, with a dendrogram beside them.
 
 <Video src="/media/pangenome/hprc_cluster_callset.mp4" caption="The 462-haplotype VCF at MHC class II clustered from the track menu: Clustering, Cluster rows by genotype, Run clustering, and the rows arriving in their new order with a dendrogram beside them." />
 

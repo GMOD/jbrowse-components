@@ -129,8 +129,9 @@ draws.
 ```
 
 Opening the assembly with no location shows all of its regions at once, so the
-display lays the autosomes out side by side. The red line is a reference line on
-the axis; **Y axis... → Reference lines** adds one to a track already open.
+display lays the autosomes out side by side. The red line is a rule on
+`scales.y`, the y scale; **Y axis... → Reference lines** adds one to a track
+already open.
 
 Rerunning the same script over one region rebins it, which is the lower half of
 the figure below: the same panel and the same estimator at 20 kb over two
@@ -195,7 +196,8 @@ STBD000001	Saint Bernard	Giant
 CLUPGR000001	Greek gray wolf	Gray wolf
 ```
 
-`rowColor` names the column that paints the sidebar swatch:
+`rowColor` is a color scale on each row's label bar, and here it names the
+column that paints the swatch:
 
 ```json addtrack
 {
@@ -286,8 +288,7 @@ Reading the matrix against the Fst track above it:
 - The Fst track is the same Hudson Fst as the genome scan, between the same two
   size classes, computed one site at a time over this VCF, with one point per
   matrix column. The matrix gives each record equal width and the Fst track
-  keeps genomic spacing, so the sloped lines between them tie each column to its
-  coordinate.
+  keeps genomic spacing, so sloped lines tie each column to its coordinate.
 - Rows depart from their size-class color in both directions: single orange rows
   sit within the giant cluster and single blue rows within the small one.
 - The wolves form a contiguous band of their own directly below the toy and

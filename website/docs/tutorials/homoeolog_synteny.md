@@ -70,9 +70,9 @@ awk -F'\t' '$1 ~ /^[1-7][ACD]$/' oat.all.bed > oat.bed
 The [end-to-end script](#reproduce-it-end-to-end) translates the proteome from
 the CDS, keeping the transcript ids the BED uses.
 
-The assembly needs no sequence. We'll load it from the chromosome lengths in the
-GFF3's `##sequence-region` header, written to `oat.chrom.sizes` (a name and a
-length per line):
+The assembly needs no sequence, so we'll load it from the chromosome lengths in
+the GFF3's `##sequence-region` header, written to `oat.chrom.sizes` (a name and
+a length per line):
 
 ```json addassembly
 { "name": "oat", "uri": "oat.chrom.sizes" }
@@ -109,13 +109,12 @@ Three choices decide which pairs survive:
 
 - Chaining keeps a gene pair (an anchor) only where its neighbours agree, which
   removes the off-diagonal noise of gene families' best hits.
-- The script keeps the pairs whose chromosomes carry different subgenome
-  letters, since a self-comparison also chains tandem and segmental duplicates
-  within a subgenome, and writes them, two transcript ids per line, to
-  `oat.pairs.tsv`.
-- Take `oat.oat.anchors` and skip `oat.oat.lifted.anchors`: liftover recruits
-  extra pairs near an established block, and their dS runs far above the chained
-  ones', which marks them as paralogs.
+- The script keeps the pairs whose chromosomes have different subgenome letters,
+  since a self-comparison also chains tandem and segmental duplicates within a
+  subgenome, and writes them, two transcript ids per line, to `oat.pairs.tsv`.
+- The script reads `oat.oat.anchors` and skips `oat.oat.lifted.anchors`, because
+  liftover recruits extra pairs near an established block, and their dS runs far
+  above the chained ones', which marks them as paralogs.
 
 ### Measuring dN and dS on each homoeolog pair
 
@@ -140,11 +139,11 @@ method and the filters.
 
 ## Loading the homoeolog table as a dotplot track
 
-The `oat.kaks.tsv` output lists gene pairs, then dN, dS, the synonymous
-substitution count and a Fisher exact p, the `.blocks` shape
+`oat.kaks.tsv` lists gene pairs, then dN, dS, the synonymous substitution count
+and a Fisher exact p, which is the `.blocks` layout
 [`MCScanBlocksAdapter`](/docs/config_guides/synteny_track) reads. The script
 copies it to `oat.homoeologs.blocks` and gzips that and `oat.bed` for the track.
-A self-comparison names one assembly twice, in `blockAssemblies`, in the track's
+A self-comparison names one assembly twice: in `blockAssemblies`, in the track's
 `assemblyNames` and in both entries of `bedLocations`:
 
 ```json addtrack
@@ -163,9 +162,9 @@ A self-comparison names one assembly twice, in `blockAssemblies`, in the track's
 }
 ```
 
-`attributeColumns` names the columns after the two gene columns, and each
+`attributeColumns` lists the columns after the two gene columns, and each
 becomes a feature attribute in the detail panel. `dn` and `ds` drive the palette
-button's **dN/dS**; `syn_subs` and `fisher_p` are the evidence behind a color.
+button's **dN/dS**.
 
 **Add → Dotplot view** with oat on both axes opens the track as a dotplot, and
 the session [below](#checking-the-rates-against-the-raw-data) does the same.
@@ -178,9 +177,12 @@ subgenome pair, the numbers behind the picture below.
 **Color by value → ds** <!-- menu-path-ok --> on the palette button paints each
 pair by its dS. Oat's A and D subgenomes descend from closely related diploid
 _Avena_ species and its C subgenome from a more distant one, so A-D pairs should
-come out at a lower dS than A-C or C-D pairs. The session pins the ramp's ends
-with `domainMin` and `domainMax`, so a color means one dS wherever the view
-goes; the menu has no field for them:
+come out at a lower dS than A-C or C-D pairs.
+
+In grammar-of-graphics terms, the dotplot's `color` is a color scale, here the
+`ds` field mapped to a ramp. The session pins the ramp's ends with `domainMin`
+and `domainMax`, so a color means one dS wherever the view goes; the menu has no
+field for them:
 
 ```json session config=https://jbrowse.org/demos/oat_homoeologs/config.json
 {

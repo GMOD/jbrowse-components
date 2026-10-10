@@ -35,8 +35,8 @@ caller runs first.
 TAIR10 (RefSeq `GCF_000001735.4`) and one wild-type Col-0 WGBS run from the
 European Nucleotide Archive, `DRR029742` (paired-end 150 bp).
 
-The [build script](#reproduce-it-end-to-end) takes these files from their URLs,
-so there is nothing to download by hand.
+The [build script](#reproduce-it-end-to-end) fetches these files, so there is
+nothing to download by hand.
 
 - the TAIR10 reference the reads align to, fetched by accession with the
   `datasets` CLI:
@@ -121,9 +121,7 @@ done
 ```
 
 A `MultiQuantitativeTrack` with a subadapter per context draws the three bigWigs
-as labeled rows, the Aggregate methylation track in the figure below. The
-[long-read methylation tutorial](/docs/tutorials/methylation#aggregate-methylation-with-modkit-bedmethyl)
-loads its modkit aggregate the same way.
+as labeled rows, the Aggregate methylation track in the figure below.
 
 ```json addtrack
 {
@@ -241,6 +239,8 @@ opens on, and the track menu switches it afterwards:
 }
 ```
 
+In grammar-of-graphics terms, `baseColor` is a color channel for each base, here
+set from the `bisulfite` field.
 [`cytosineContext`](/docs/config/linearalignmentsdisplay/#slot-modifications)
 takes `CG`, `CHG`, `CHH` or `all`.
 
@@ -290,14 +290,14 @@ No RefSeq transcript overlaps it:
 }
 ```
 
-Choose **Filter by...** in the RepeatMasker track menu and enter
+**Filter by...** in the RepeatMasker track menu takes a `filter`. Enter
 `jexl:feature.end-feature.start>1000` to keep repeats longer than 1 kb. The
 short simple repeats in the window drop out and the LTR element stays.
 
-The figure below shows the three contexts side by side: the same reads open as
-three tracks that share one file and differ in `trackId` and in the context
-their `displayDefaults` pin. The CHG copy looks like this, and the CpG and CHH
-copies change the `trackId`, the name and `cytosineContext`:
+The figure below shows the three contexts side by side as three tracks that
+share one file and differ in `trackId` and in the context their
+`displayDefaults` pin. The CHG copy looks like this; the CpG and CHH copies
+change the `trackId`, the name and `cytosineContext`:
 
 ```json addtrack
 {

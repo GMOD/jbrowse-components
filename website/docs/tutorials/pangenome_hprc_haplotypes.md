@@ -11,8 +11,8 @@ tutorial_subcategory: HPRC release 2
 ---
 
 We draw human haplotypes from the Human Pangenome Reference Consortium's release
-2 side by side, one lane per haplotype drawn in the coordinates of its own
-assembly, and use the pangenome graph to show where neighbouring lanes match.
+2 side by side, one lane per haplotype drawn in that haplotype's assembly
+coordinates, and use the pangenome graph to show where neighbouring lanes match.
 With that view we:
 
 - at CFH, find haplotypes missing two genes
@@ -39,10 +39,9 @@ lane as a deletion.
 
 ## Where the data comes from
 
-[HPRC release 2](https://doi.org/10.64898/2026.07.21.739710).
-
-The [build script](#reproduce-it-end-to-end) takes these files from their URLs,
-so there is nothing to download by hand.
+The [build script](#reproduce-it-end-to-end) takes these files from
+[HPRC release 2](https://doi.org/10.64898/2026.07.21.739710) by URL, so there is
+nothing to download by hand.
 
 - the release's minigraph-cactus graph as a GFA:
   https://s3-us-west-2.amazonaws.com/human-pangenomics/pangenomes/freeze/release2/minigraph-cactus/v2.1/hprc-v2.1-mc-grch38/hprc-v2.1-mc-grch38.gfa.gz
@@ -73,7 +72,7 @@ adds it, and the config below is the one to adapt for your own graph:
   declares.
 - **`assemblyNameToPanSN`** names the walk of an assembly with no such alias,
   here GRCh38's.
-- **The walk files** for a graph of your own come from
+- The walk files for a graph of your own come from
   [Hosting your own graph](/docs/tutorials/pangenome_prepare_graph#haplotype-walks-tabix).
 
 ```json addtrack
@@ -106,36 +105,39 @@ HG00253's second haplotype, breaks across both genes.
 
 ## GSTT1: a gene GRCh38's chromosome lacks
 
-GRCh38's chromosome 22 carries the common _GSTT1_ deletion, so the gene sits on
-an alternate contig and no chr22 track draws it. From any **Haplotypes** launch,
+GRCh38's chromosome 22 has the common _GSTT1_ deletion, so the gene sits on an
+alternate contig and no chr22 track draws it. From any **Haplotypes** launch,
 we'll move to `chr22:23,950,001-24,060,000`, choose `HG00128.2`, `HG01960.1`,
 `HG00146.2`, `HG01109.1`, `HG00099.1`, `HG00232.1`, `HG00133.1`, `HG00126.2`,
 `HG00146.1` and `HG00097.1` under **Lanes → Choose lanes...**, and then:
 
 - **Lanes → Order lanes by structure** stacks each lane beside the one whose
-  deletions and insertions against GRCh38 are most alike, so the haplotypes
-  carrying _GSTT1_ sit as one block.
+  deletions and insertions against GRCh38 are most alike, so the haplotypes with
+  _GSTT1_ sit as one block.
 - **The band between two lanes** aligns the two haplotypes to each other, read
-  off the nodes both walks share. It fans open where the lower lane carries
-  sequence the upper one lacks, and runs unbroken between two carriers.
+  off the nodes both walks share. It fans open where the lower lane has sequence
+  the upper one lacks, and runs unbroken between two haplotypes that both have
+  it.
 
-<Figure caption="The GSTT1 window from the haplotypes launch with ten lanes ordered by structure, under the RefSeq genes. The lanes that match GRCh38 come first; under the last of them the band fans open across the inserted sequence, and the carriers below join in unbroken bands." src="/img/multiway_synteny/hprc_gstt1_lanes.png" />
+<Figure caption="The GSTT1 window from the haplotypes launch with ten lanes ordered by structure, under the RefSeq genes. The lanes that match GRCh38 come first; under the last of them the band fans open across the inserted sequence, and the haplotypes below with the gene join in unbroken bands." src="/img/multiway_synteny/hprc_gstt1_lanes.png" />
 
 ## FLNA / EMD: two genes in the opposite order {#inversions}
 
 An inversion keeps the same sequence and reverses it, so no lane changes length.
 _FLNA_ and _EMD_ sit between two inverted repeats on Xq28, and the block between
 them is inverted on many X chromosomes (Small et al. 1997). From any
-**Haplotypes** launch, we'll move to `chrX:154,320,001-154,410,000`, choose
-`HG00097.1`, `HG00099.1`, `HG00099.2` and `HG01978.1` under **Lanes → Choose
-lanes...**, and then:
+**Haplotypes** launch, we'll move to `chrX:154,320,001-154,410,000`.
+
+**Lanes → Choose lanes...** takes `HG00097.1`, `HG00099.1`, `HG00099.2` and
+`HG01978.1`. Then:
 
 - **The band between two lanes** crosses itself where the lower lane runs the
   block in the other direction.
 - **HPRC release 2 bubbles** in the track selector adds the graph's bubbles, the
   places where haplotype paths split and rejoin. `gfatools bubble` flags one as
-  `inversion` when its paths disagree about orientation, and **Filter by... →
-  Edit filters...** on that track keeps the flagged ones:
+  `inversion` when its paths disagree about orientation.
+- **Filter by... → Edit filters...** on that track keeps the flagged ones with
+  this filter:
 
   ```text
   jexl:feature.inversion
@@ -144,12 +146,12 @@ lanes...**, and then:
 - **HPRC v2.1 graph (rGFA segments)** in the track selector draws the window's
   graph in the force-directed layout.
 
-<Figure caption="The FLNA / EMD window with the RefSeq genes, the bubbles track filtered to inversions, four lanes and the force-directed graph, the flagged bubble shaded. The band crosses between HG00099's two haplotypes and runs straight between the two lanes under it, which both carry EMD ahead of FLNA. The graph draws the block as a loop off the backbone." src="/img/pangenome/hprc_inversion.png" />
+<Figure caption="The FLNA / EMD window with the RefSeq genes, the bubbles track filtered to inversions, four lanes and the force-directed graph, the flagged bubble shaded. The band crosses between HG00099's two haplotypes and runs straight between the two lanes under it, which both have EMD ahead of FLNA. The graph draws the block as a loop off the backbone." src="/img/pangenome/hprc_inversion.png" />
 
 ## What the lanes leave out {#limits}
 
-The three loci above are ones the lanes draw well. These are the cases where
-they mislead, each measured on HPRC release 2.1 in October 2026;
+The three loci above are ones the lanes draw well. The cases below mislead, each
+measured on HPRC release 2.1 in October 2026;
 [part 1](/docs/tutorials/pangenome_hprc#limits) lists the limits of the graph
 and the VCF behind them.
 
@@ -170,7 +172,7 @@ and the VCF behind them.
   smaller.
 - **Near-identical gene copies are not told apart.** The graph puts the copies
   at RHD / RHCE and CYP2D6 on one path, so a lane there cannot show how many
-  copies a haplotype carries.
+  copies a haplotype has.
 
 ## Whole-genome synteny from a GFA's walks
 

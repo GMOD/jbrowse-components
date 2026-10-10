@@ -54,10 +54,10 @@ track's height holds. Two controls trim the isoforms:
 
 ## Finding the phyloP conservation track in the catalog
 
-The track selector is the drawer down the right; the button at the top left of
-the view header closes and reopens it. It lists the catalog under UCSC's
-categories, and **Filter tracks** searches all of them. Type `phyloP` and tick
-**Basewise Conservation (phyloP) - 100-way vertebrate alignment**, under
+The track selector is the drawer down the right, which the button at the top
+left of the view header closes and reopens. The selector lists the catalog under
+UCSC's categories, and **Filter tracks** searches all of them. Type `phyloP` and
+tick **Basewise Conservation (phyloP) - 100-way vertebrate alignment**, under
 Comparative Genomics.
 
 <Video src="/media/genomes_basics/find_a_track.mp4" caption="The hg38 track catalog in the selector, narrowed by typing phyloP into Filter tracks, with the 100-way vertebrate alignment ticked under Comparative Genomics. The conservation track appears under the TP53 transcript." />
@@ -96,7 +96,7 @@ human at those bases, and conserved columns give a positive score. phyloP counts
 substitution events on the tree:
 
 - under S240 (serine 240), nearly every species differs from human, but all have
-  the _same_ base, which is one substitution on the human branch, so the score
+  the same base, which is one substitution on the human branch, so the score
   stays above the line
 - under T256 and G244 (threonine 256, glycine 244), fewer rows differ and those
   that do disagree with each other, and the score goes red
@@ -114,10 +114,12 @@ Zoom out to the whole gene, and tick five Regulation and Expression tracks:
 - **Layered H3K27Ac (hg19)**
 - **EPDnew Promoters - EPDnew v6**
 
-The Layered H3K4Me3 and H3K27Ac tracks each hold seven cell lines, and open with
-all seven in one plot box, UCSC's layered arrangement. **Plot type → Multi-row →
-XY plot** in the track menu gives each cell line a row of its own. Their names
-include hg19 from ENCODE3's release; the config points at the hg38 files.
+The Layered H3K4Me3 and H3K27Ac tracks each hold seven cell lines and open with
+all seven in one plot box, UCSC's layered arrangement. Their names include hg19
+from ENCODE3's release, but the config points at the hg38 files.
+
+**Plot type → Multi-row → XY plot** in the track menu gives each cell line a
+row.
 
 <Figure src="/img/genomes_basics/promoter_regulation.png" caption="TP53 and its promoter, with CpG islands, ENCODE cCREs colored by class, H3K4me3, H3K27ac and EPDnew's promoter calls. Left: the two marks with their seven cell lines in one plot box, and the Plot type menu that separates them. Right: the same six tracks with a row per cell line." />
 

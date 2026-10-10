@@ -11,11 +11,11 @@ tutorial_subcategory: Ortholog tables
 
 We look at one K-12 operon across forty-three other E. coli and Shigella genomes
 at once, without aligning any of them. RefSeq's bacterial pipeline gives an
-orthologous gene the same symbol in every strain it names, so the ortholog table
-is a join on the gene name over the GFF3 files, and each genome becomes a lane
+orthologous gene the same symbol in every strain that names it, so the ortholog
+table is a join on the gene name over the GFF3 files. Each genome becomes a lane
 under the K-12 view, holding the gene models annotated in that genome. The join
 connects genes that share a symbol, which covers the core genome, and joins a
-symbol K-12 lacks between the strains that carry it. The page ends at a cluster
+symbol K-12 lacks between the strains that have it. The page ends at a cluster
 that differs between strains, where many genes in each lane draw grey with no
 ribbon.
 
@@ -68,12 +68,9 @@ datasets download genome accession --inputfile accessions.txt \
 unzip genomes.zip
 ```
 
-The build script keeps each genome's longest sequence as its chromosome, so a
-lane follows one contig and no plasmid, and sorts, bgzips and tabix-indexes the
-GFF3 as in the [web quickstart](/docs/quickstart_web) to make that genome's gene
-track. Each lane takes its name from the strain field of the assembly report:
-MG1655 for "K-12 substr. MG1655", and `Sflexneri_301` for the Shigella so it
-does not read as an E. coli strain.
+Each lane takes its name from the strain field of the assembly report: MG1655
+for "K-12 substr. MG1655", and `Sflexneri_301` for the Shigella so it does not
+read as an E. coli strain.
 
 PGAP writes a gene's locus tag into its `Name` when it has no symbol for it, so
 the join has to be told what an unnamed gene looks like, or every hypothetical
@@ -92,7 +89,7 @@ python3 symbols_to_blocks.py --anchor MG1655 -o ecoli.blocks --unnamed '_RS[0-9]
 ```
 
 PGAP also renames genes between releases, so most strains here call K-12's _gnd_
-_gndA_. Each CDS records the protein PGAP annotated the gene from
+_gndA_. Each CDS lists the protein PGAP annotated the gene from
 (`similar to AA sequence:RefSeq:NP_416533.1`, the K-12 _gnd_ protein), and
 `--merge-cited` joins the two symbols when that protein is in the table under
 the other name. Two symbols one genome has side by side, such as K-12's _narH_
@@ -171,20 +168,21 @@ forty-four:
 ## Reading the atp operon across forty-four genomes
 
 At the _atp_ operon (the ATP synthase genes) on K-12, the track draws a lane per
-genome under the K-12 axis. Each lane uses its own genome's coordinates, and its
-header names the strain, contig and span shown, with `[rev]` where the lane runs
-against K-12
+genome under the K-12 axis. Each lane is drawn in its genome's coordinates, and
+its header names the strain, contig and span shown, with `[rev]` where the lane
+runs against K-12
 ([lane headers](/docs/tutorials/multiway_synteny_grape_peach_cacao#what-a-lane-header-shows)).
-The colors read as follows:
+In grammar-of-graphics terms, the display's `color` is a color scale, here the
+`cluster` field mapped to colors:
 
 - Every gene is colored by its ortholog group, which the table names after the
   K-12 gene anchoring it, so a conserved gene is one color running down the
   whole stack.
 - A gene no group claims is grey, which marks the genes specific to a strain at
   a glance.
-- **Show... → Show legend** on the track menu turns on the key, which the demo
-  config hides because the cluster window holds dozens of groups. The display
-  omits it in any window holding more than thirty groups.
+- **Show... → Show legend** in the track menu turns on the key. The demo config
+  hides it because the cluster window holds dozens of groups, and the display
+  omits it in any window with more than thirty.
 
 Lanes stack with the genome placing the most of the window's genes first. The
 default height scrolls the stack inside the track, so the session sets `height`
@@ -253,12 +251,12 @@ Read the lanes from the top:
 - The interior is grey, except the _rfb_ genes, _wzx_ and _wzy_, which join
   wherever a strain has them.
 
-A row for a symbol K-12 lacks joins only the lanes that carry it, so a serotype
+A row for a symbol K-12 lacks joins only the lanes with that gene, so a serotype
 gene a few strains share, such as _vioB_ in IAI39 and the BL21 lanes, runs down
 those lanes and skips the rest. A gene PGAP left under its locus tag, such as
 `ECOLC_RS24020` in the ATCC_8739 lane, has no row.
 
-Most of the grey is biology: each serotype's sugar genes arrived by horizontal
+Most of the grey is each serotype's sugar genes, which arrived by horizontal
 transfer and have no K-12 counterpart to join. An
 [OrthoFinder](/docs/tutorials/orthofinder_synteny) run would add genes the
 annotations named differently, and the
@@ -275,7 +273,8 @@ four steps:
 2. Name each lane after the report's strain field, and drop a genome the report
    calls neither _E. coli_ nor one of the four _Shigella_ species.
 3. Keep each genome's longest sequence as its chromosome, so a lane follows one
-   contig and no plasmid, and sort and index the GFF3 for it.
+   contig and no plasmid, and sort and index the GFF3 as in the
+   [web quickstart](/docs/quickstart_web).
 4. Join the annotations on gene symbol, treating PGAP's locus-tag names as
    unnamed and merging the symbols PGAP renamed, and write the config.
 

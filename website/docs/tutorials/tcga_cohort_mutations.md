@@ -24,8 +24,8 @@ subtype shares line up.
 TCGA-BRCA open-access somatic mutation calls from the GDC
 ([TCGA 2012](https://doi.org/10.1038/nature11412)).
 
-The [build script](#reproduce-it-end-to-end) takes these files from their URLs,
-so there is nothing to download by hand.
+The [build script](#reproduce-it-end-to-end) fetches these files, so there is
+nothing to download by hand.
 
 - primary-tumor **Masked Somatic Mutation** MAFs (mutation annotation format),
   queried and downloaded through the GDC API: https://api.gdc.cancer.gov/files
@@ -122,9 +122,9 @@ The track config sets three things:
 - [`variantLayout: 'columns'`](/docs/user_guides/multivariant_track#matrix-best-for-snpindel-patterns)
   uses one column per mutation, so a gene's mutations pack together however far
   apart they sit, with a connector band from each column to its position
-- [`color`](/docs/config/linearmultisamplevariantdisplay/#slot-color) set to the
-  `impact` field colors each cell by its VEP impact tier from `CSQ`, the same as
-  **Color by... → Consequence impact** in the track menu
+- [`color`](/docs/config/linearmultisamplevariantdisplay/#slot-color) is a color
+  scale, and its `field` set to `impact` colors each cell by its VEP impact tier
+  from `CSQ`, the same as **Color by... → Consequence impact** in the track menu
 - [`samplesTsvLocation`](/docs/config/vcftabixadapter/#slot-samplestsvlocation)
   makes the clinical columns available to facet and color rows by
 
@@ -135,12 +135,16 @@ its darkness.
 
 ## Facet the rows by clinical annotation
 
-[`facet`](/docs/config/linearmultisamplevariantdisplay/#slot-facet) names a
-column of the samples TSV and makes each of its values a contiguous band of
-rows, sorted; its `domain` pins the bands you want first.
-[`rowColor`](/docs/config/linearmultisamplevariantdisplay/#slot-rowcolor) puts
-the matching color strip in the gutter. Both have a track-menu row too: **Group
-by...** and **Color by... → Samples**.
+In grammar-of-graphics terms,
+[`facet`](/docs/config/linearmultisamplevariantdisplay/#slot-facet) splits the
+display into stacked sections, one per value of a samples TSV column, sorted,
+and `facet.domain` pins the sections you want first.
+[`rowColor`](/docs/config/linearmultisamplevariantdisplay/#slot-rowcolor) is a
+color scale on each row's label bar, so it puts the matching color strip in the
+gutter.
+
+**Group by...** and **Color by... → Samples** in the track menu set the same two
+keys.
 
 ```json addtrack loc=chr16:68,730,000-68,842,000
 {
@@ -170,9 +174,10 @@ by...** and **Color by... → Samples**.
 }
 ```
 
-Open the matrix over _CDH1_'s exons: right-click _CDH1_ in the gene track,
-choose **Collapse introns**, and **Replace current view** (see
-[](/docs/user_guides/gene_track)):
+We open the matrix over _CDH1_'s exons (see [](/docs/user_guides/gene_track)):
+
+- Right-click _CDH1_ in the gene track.
+- Choose **Collapse introns**, then **Replace current view**.
 
 <Video src="/media/tcga/mutations_collapse_introns.mp4" caption="The whole CDH1 transcript reshaped to its exons from the gene's context menu, and the 979-tumor matrix redrawn over the coding sequence." />
 
@@ -230,11 +235,6 @@ helical domain. All three run through every band, densest in HR+/HER2-.
 
 <Figure caption="PIK3CA's exons (introns collapsed), rows banded and colored by receptor subtype. Three columns, two in the helical domain and one in the kinase domain, hold most of the cohort's calls, against the private columns spread around them." src="/img/tcga/mutations_pik3ca_grouped.png" />
 
-The
-[copy-number cohort](/docs/tutorials/tcga_cohort_cnv#split-the-recurrence-by-clinical-group)
-splits its gain and loss frequency by the same clinical TSV, so its subtype rows
-line up with these bands.
-
 ## Add a track of mutation frequency per gene
 
 The bands above differ in height, so their darkness does not compare as a rate.
@@ -288,10 +288,12 @@ of the consequence impact that colors the matrix. The rate has no background
 model, and gene length enters directly: _TTN_, a very long gene, ranks near the
 top on passenger mutations alone.
 
-On the matrix, **Clustering → Cluster rows by genotype...** gathers every
-mutated sample into one block (see [](/docs/user_guides/clustering)), and
-**Filter by... → Minor allele frequency** keeps the recurrent mutations (see
-[filtering by allele frequency and missingness](/docs/user_guides/multivariant_track#filtering-by-allele-frequency-and-missingness)).
+On the matrix:
+
+- **Clustering → Cluster rows by genotype...** gathers every mutated sample into
+  one block (see [](/docs/user_guides/clustering)).
+- **Filter by... → Minor allele frequency** keeps the recurrent mutations (see
+  [filtering by allele frequency and missingness](/docs/user_guides/multivariant_track#filtering-by-allele-frequency-and-missingness)).
 
 ## Use your own cohort
 

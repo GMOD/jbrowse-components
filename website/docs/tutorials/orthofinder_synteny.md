@@ -12,11 +12,10 @@ tutorial_subcategory: Ortholog tables
 Genomes too far apart to align base by base still keep their genes in order
 along the chromosomes. We stack related genomes on OrthoFinder orthogroups, sets
 of genes descended from one ancestral gene and inferred from protein similarity
-alone, and read where gene order holds and where a duplication doubles it. We
-convert the orthogroups to a `.blocks` table that JBrowse reads. The page builds
-the `wheat` set from `orthofinder` through the table to a stacked view, then
-opens four more sets: vertebrates, drosophila, nightshades (`solanaceae`) and
-grasses.
+alone, and read where gene order holds and where a duplication doubles it. The
+page converts the orthogroups to a `.blocks` table that JBrowse reads and builds
+the `wheat` set through to a stacked view, then opens four more sets:
+vertebrates, drosophila, nightshades (`solanaceae`) and grasses.
 
 ## Prerequisites
 
@@ -175,7 +174,7 @@ One track backs each pair of adjacent rows in the stack:
 ```
 
 A mismatch between `blockAssemblies` and the column order the conversion printed
-reports a track error naming both lists.
+raises a track error naming both lists.
 
 ### Assemblies from a chrom.sizes
 
@@ -191,11 +190,11 @@ names:
 
 ### Gene tracks, one per genome
 
-The multi-way display draws a lane per genome, and each lane takes gene models
-from a gene track under that genome's assembly name. The grasses session below
-names a hosted one (`rice_genes`); for your own annotation, add one per genome
-with a bgzipped, tabix-indexed GFF3 ([prep](/docs/quickstart_web)) that uses the
-assembly's refNames:
+The multi-way display draws a lane per genome, with gene models from a gene
+track on that genome's assembly. The grasses session below names a hosted one
+(`rice_genes`). For your own annotation, add one per genome from a bgzipped,
+tabix-indexed GFF3 ([prep](/docs/quickstart_web)) that uses the assembly's
+refNames:
 
 ```json addtrack
 {
@@ -223,8 +222,8 @@ dialog. Two view-menu items shape the stack, and the session below sets both:
   each row's chromosomes against its neighbour so the links run along a
   diagonal.
 
-The wheat stack as a session over the hosted wheat config. It is the page's
-heaviest stack, so the bands take a while to draw:
+The wheat stack as a session over the hosted wheat config, the page's heaviest,
+so the bands take a while to draw:
 
 ```json session config=https://jbrowse.org/demos/orthofinder_wheat/config.json
 {
@@ -262,14 +261,17 @@ heaviest stack, so the bands take a while to draw:
 
 ### Coloring wheat 4A by its tauschii chromosomes
 
-Open tauschii over wheat from **Add → Linear synteny view** with
-`wheat_orthogroups` between them, navigate the wheat row to `4A`, and pick
-**Query** in the palette button menu, which paints each link by its tauschii
-chromosome.
+We'll open tauschii over wheat from **Add → Linear synteny view**, with
+`wheat_orthogroups` between them. Then:
+
+- Navigate the wheat row to `4A`.
+- Pick **Query** in the palette button menu. The palette sets the links'
+  `color`, a color scale from a field to colors, and **Query** paints each link
+  by its tauschii chromosome.
 
 <Figure caption="Aegilops tauschii's seven D-genome chromosomes over bread wheat chromosome 4A, from the same wheat_orthogroups track. Color by → Query gives each chromosome a distinct color, and 4A resolves into three runs of genes in order along it: 4D, then 5D, then 7D." src="/img/orthofinder_synteny/wheat_4a.png" />
 
-Other chromosomes reach 4A only as single genes. The 5D and 7D runs are the
+Other chromosomes appear on 4A only as single genes. The 5D and 7D runs are the
 4AL/5AL and 4AL/7BS translocations (Devos et al. 1995; Dvorak et al. 2018).
 
 ## Vertebrates: runs of conserved genes out to zebrafish {#vertebrates}
@@ -437,9 +439,6 @@ need a FASTA and a GFF3 per genome.
 [gffread](https://github.com/gpertea/gffread) translates each CDS into the
 proteome and prints the transcript-to-gene map and FASTA index alongside.
 
-Column 2 also takes a proteome directly (skipping translation); its headers then
-need a `gene:<id>` tag matching `ID=gene:<id>` in the GFF3.
-
 Name the files in a manifest, one line per genome:
 
 ```bash
@@ -456,6 +455,8 @@ npx --yes serve orthofinder_my_genomes_build/jbrowse2  # then open the printed U
 - Column 1 names the assembly, and columns 2 and 3 take a local path or URL.
 - Column 4 is optional. An INSDC accession fetches NCBI's sequence report for
   chromosome names, and a file name supplies a two-column alias table.
+- Column 2 also takes a proteome directly, which skips translation; its headers
+  then need a `gene:<id>` tag matching `ID=gene:<id>` in the GFF3.
 - Two genomes make a valid manifest.
 
 ## See also

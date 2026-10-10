@@ -65,7 +65,7 @@ jbrowse add-track variants.vcf.gz --load copy --out myproject --name "My variant
 | `inPlace` | Reference a file already staged in the directory, no file ops.     |
 | _(omit)_  | For a remote `https://…` URL, referenced directly, nothing copied. |
 
-`myproject/` is now self-contained, with the config next to every file it needs:
+`myproject/` is now self-contained:
 
 ```text
 myproject/
@@ -93,9 +93,9 @@ myproject/
 
 ## Open the folder on a default view with a session
 
-A config with tracks but no session loads the assembly and tracks but displays
-nothing until you launch a view and tick tracks in the selector. To open the
-folder ready to read, write a session and hand it to the CLI. In the session:
+A config with tracks but no session displays nothing until you launch a view and
+tick tracks in the selector. To open the folder ready to read, write a session
+and hand it to the CLI. In the session:
 
 - **`assembly`** is the `--name` you gave `add-assembly`
 - **`tracks`** takes the `trackId`s the CLI derived from your filenames;
@@ -119,13 +119,14 @@ folder ready to read, write a session and hand it to the CLI. In the session:
 jbrowse set-default-session --session session.json --out myproject
 ```
 
-`session.json` itself stays outside the folder; the CLI copies its contents into
-`config.json`.
+`session.json` stays outside the folder, and the CLI copies its contents into
+`config.json`. `jbrowse validate myproject/config.json` reports a misspelled key
+that JBrowse would otherwise ignore.
 
 ## Open the CLI-built folder in JBrowse Desktop
 
-In JBrowse Desktop, choose **File → Session → Open config.json or .jbrowse
-file...** (or the **Open file or link** button on the start screen) and pick
+Choose **File → Session → Open config.json or .jbrowse file...** in JBrowse
+Desktop (or use the **Open file or link** button on the start screen) and pick
 `myproject/config.json`. Desktop resolves each relative path against the
 config's folder and loads the copied files from local disk, with no web server.
 

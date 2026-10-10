@@ -12,9 +12,8 @@ We draw the human mitochondrial genome as a circular map, the way plasmid and
 organelle genomes are usually pictured, with base-pair ticks around one closed
 ring and the genes along it in a row per strand, colored by feature type. The
 same steps make a map of any small circular sequence that NCBI annotates, from a
-chloroplast to a plasmid. JBrowse's circular view draws a feature track as a
-ring around the circle, and closes a sequence its assembly marks as circular
-with no gap at its origin.
+chloroplast to a plasmid. The circular view draws a feature track as a ring and
+closes a sequence its assembly marks as circular, leaving no gap at its origin.
 
 ## Prerequisites
 
@@ -87,10 +86,8 @@ samtools faidx genome.fa
 ```
 
 The assembly is named `human_mito`, and two of its settings name the sequence
-`NC_012920.1`. `circularRefNames` marks it circular, so the circular view closes
-it into a ring with no gap at its origin. `geneticCodes` translates it with
-NCBI's vertebrate mitochondrial code, table 2, wherever JBrowse shows a protein.
-The add-genome form has a field for neither, so add both in the JSON:
+`NC_012920.1`. The add-genome form has a field for neither, so the JSON adds
+both:
 
 ```json addassembly
 {
@@ -101,7 +98,12 @@ The add-genome form has a field for neither, so add both in the JSON:
 }
 ```
 
-The GFF3 gets sorted, compressed and indexed, with the pragma kept at the top
+- `circularRefNames` marks the sequence circular, so the circular view closes it
+  into a ring with no gap at its origin.
+- `geneticCodes` translates it with NCBI's vertebrate mitochondrial code, table
+  2, wherever JBrowse shows a protein.
+
+We'll sort, compress and index the GFF3, keeping the pragma at the top
 ([Quickstart](/docs/quickstart_web) has the general recipe):
 
 ```bash
@@ -112,9 +114,10 @@ jbrowse sort-gff genes.gff3 | bgzip > genes.gff.gz
 tabix -p gff genes.gff.gz
 ```
 
-The gene track splits its features into one row per strand and colors them by
-their GFF3 type. Its name label falls back through the GFF3 attributes, so a
-record with no `gene` or `product`, like the D-loop, takes its `gbkey`:
+In grammar-of-graphics terms, the gene track's `facet` splits it into a section
+per `strand`, and its `color` is a color scale mapping the GFF3 `type` field to
+colors. The name label falls back through the GFF3 attributes, so a record with
+no `gene` or `product`, like the D-loop, takes its `gbkey`:
 
 ```json addtrack
 {
@@ -139,8 +142,8 @@ record with no `gene` or `product`, like the D-loop, takes its `gbkey`:
 
 ## Opening the genome as a circle
 
-We'll open the assembly in a circular view with the gene track. A circle of one
-circular sequence closes at position 1, ticks its bases, and prints the
+We'll open the assembly in a circular view with the gene track. A circular view
+of one circular sequence closes at position 1, ticks its bases, and prints the
 sequence's name and length in the middle:
 
 ```json session config=test_data/human_mito/config.json
@@ -159,13 +162,12 @@ sequence's name and length in the middle:
 }
 ```
 
-The track's grouping and colors come from its config, and both are on the
-track's menu too, which the circular view keeps under its view menu's **Tracks**
-item:
+The config sets the track's facet and color, and the track menu offers both too,
+under the circular view menu's **Tracks** item:
 
-- **Group by...**, choosing `strand`, splits the ring into a row per strand
-- **Color by... → Attribute...**, choosing `type`, colors each feature by its
-  GFF3 type
+- **Group by...** with `strand` splits the ring into a row per strand
+- **Color by... → Attribute...** with `type` colors each feature by its GFF3
+  type
 
 The track's `height` is how much of the circle it asks for. A ring takes at most
 half the circle's radius, and a track that asks for more lays its rows and

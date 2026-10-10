@@ -9,11 +9,11 @@ tutorial_category: Population genomics
 
 The [BXD mice](https://genenetwork.org) are about 200 recombinant-inbred strains
 bred down from two parents, C57BL/6J (B6, the "B" parent) and DBA/2J (the "D"
-parent), so each strain is a mosaic of blocks from one or the other. GeneNetwork
-has phenotyped the same strains for thousands of traits. We paint each strain by
-which parent gave it each block and stack that under a GeneNetwork QTL scan of
-coat color (a QTL is a region linked to variation in a trait). Banding the
-strains by coat color then shows which blocks under each peak set it.
+parent), so each strain is a mosaic of blocks from one or the other. We paint
+each strain by which parent gave it each block and stack the painting under a
+GeneNetwork QTL scan of coat color (a QTL is a region linked to variation in a
+trait). Banding the strains by coat color then shows which blocks under each
+peak set it.
 
 ## Prerequisites
 
@@ -32,8 +32,8 @@ On Debian/Ubuntu, `apt install curl jq python3 tabix` covers it.
 BXD consensus genotypes and QTL scans from GeneNetwork
 ([Wang et al. 2016](https://doi.org/10.1038/ncomms10464)).
 
-The [build script](#reproduce-it-end-to-end) takes these files from their URLs,
-so there is nothing to download by hand.
+The [build script](#reproduce-it-end-to-end) fetches these files, so there is
+nothing to download by hand.
 
 - the BXD consensus genotypes, 198 strains:
   https://gn1.genenetwork.org/genotypes/BXD.geno
@@ -76,7 +76,7 @@ chr1    20291558    53451539   D     0     .      20291558   53451539 220,60,50 
 chr1    53451539    69355875   B     0     .      53451539   69355875 65,105,225   BXD1    B
 ```
 
-Run it on the downloaded `.geno`, then sort, `bgzip` and `tabix` the result:
+Run it on the `.geno`, then sort, `bgzip` and `tabix` the result:
 
 <!-- from: scripts/bxd_build_demo.sh -->
 
@@ -87,12 +87,12 @@ jbrowse sort-bed bxd_painting.bed | bgzip > bxd_painting.bed.gz
 tabix -p bed bxd_painting.bed.gz
 ```
 
-[`sort-bed`](/docs/cli#jbrowse-sort-bed) keeps the `#`-header line on top and
-sorts the rest under `LC_ALL=C`, so the adapter can read the column names off
-the file and the order does not shift with your locale.
+[`sort-bed`](/docs/cli#jbrowse-sort-bed) keeps the `#` header on top and sorts
+the rest under `LC_ALL=C`, so the adapter reads the column names off the file
+whatever your locale.
 
-Both tracks on this page use the `mm10` assembly, whose chromosome names the
-marker positions follow:
+Both tracks use the `mm10` assembly, whose chromosome names the marker positions
+follow:
 
 ```json addassembly
 {
@@ -107,9 +107,10 @@ marker positions follow:
 ```
 
 The painting track is a `FeatureTrack` with a
-[`LinearMultiRowFeatureDisplay`](/docs/user_guides/multirow_feature_track). For
-your own panel, swap `uri` for the bgzipped, tabix-indexed BED your conversion
-wrote.
+[`LinearMultiRowFeatureDisplay`](/docs/user_guides/multirow_feature_track). In
+grammar-of-graphics terms, `rows` assigns one row per `sample` and `color` is a
+color scale. For your own panel, swap `uri` for the bgzipped, tabix-indexed BED
+your conversion wrote.
 
 ```json addtrack loc=chr4
 {
@@ -148,11 +149,9 @@ wrote.
 ## Loading the coat-color QTL scan as a Manhattan track
 
 GeneNetwork maps these traits itself, and its API serves the per-marker result
-of a GEMMA run.
-
-Fetch the scan for one trait by its GeneNetwork id and reshape it with `jq`.
-Each record has a marker, its mm10 position in Mb, a LOD score (log odds of
-linkage) and a p-value:
+of a GEMMA run. We fetch the scan for one trait by its GeneNetwork id and
+reshape it with `jq` into records of a marker, its mm10 position in Mb, a LOD
+score (log odds of linkage) and a p-value:
 
 <!-- from: scripts/bxd_build_demo.sh -->
 
@@ -177,7 +176,7 @@ The commands write a tabix-indexed BED-like table, one line per marker:
 chr4    81304223  81304224  rs3708061   .     .      48.1126
 ```
 
-The trait id is the number in the GeneNetwork URL for that trait, and
+The trait id is the number in the GeneNetwork URL, and
 [`bxd_phenocovar.csv`](https://github.com/rqtl/qtl2data/tree/master/BXD) in the
 qtl2data BXD release lists the ids with their descriptions.
 
@@ -210,12 +209,12 @@ Manhattan score ([GWAS track guide](/docs/config_guides/gwas_track)):
 
 ## Faceting the strains by coat color
 
-The scan puts a plateau of tied markers on chr4, whose interval contains
-_Tyrp1_, the brown coat-color gene, and a second, lower peak on chr9.
-GeneNetwork scores coat color on a four-step scale: black is 4, grey 3, brown 2
-and DBA/2's dilute brown 1. We'll fetch each strain's score and turn the four
-values into four bands of painting rows, so the phenotype orders the rows and
-the genotype stays free to agree with it or not.
+The scan has a plateau of tied markers on chr4, whose interval contains _Tyrp1_,
+the brown coat-color gene, and a lower peak on chr9. GeneNetwork scores coat
+color on a four-step scale: black is 4, grey 3, brown 2 and DBA/2's dilute
+brown 1. We'll fetch each strain's score and turn the four values into four
+sections of painting rows, so the phenotype orders the rows and the painted
+genotypes can agree with it or not.
 
 The scores come from GeneNetwork's sample-data API. `jq` turns them into one
 [`rowGroups`](/docs/config/linearmultirowfeaturedisplay/#slot-rowgroups) entry
@@ -241,16 +240,19 @@ Add both keys to the painting's display entry, beside `rows` and `color`,
 together with `facet: "group"`:
 
 - `rowGroups` tags each strain with its coat color as its `group`.
-- `facet: "group"` stacks the four groups in labelled bands, black at the top.
-  The few strains scored between two steps match no entry and sit in a band of
-  their own at the bottom.
-- `rowColor` by `group` draws each strain's coat color as a bar beside its
-  label. The blocks keep their genotype colors, and the unscored strains, with
-  no group, take no color.
+- `facet: "group"` splits the display into one section per `group`, black at the
+  top. The few strains scored between two steps match no entry and form a
+  section at the bottom.
+- `rowColor` by `group` is a color scale on each row's label bar, showing the
+  strain's coat color. The blocks keep their genotype colors, and the unscored
+  strains, with no group, get no color.
 
 The fence below holds those new keys, `coatColor.json` with `facet` added.
 `https://jbrowse.org/code/jb2/main/test_data/config_bxd.json` holds the whole
 track, as `bxd_chromosome_painting_mm10`.
+
+**Advanced → Edit plot...** in the track menu shows these keys as text and
+applies edits live.
 
 <details>
 <summary>The generated coatColor.json keys</summary>
@@ -293,21 +295,23 @@ track, as `bxd_chromosome_painting_mm10`.
 
 Add the mm10 RefSeq genes
 (`https://jbrowse.org/demos/bxd/mm10.ncbiRefSeq.sorted.gtf.gz`, with its `.tbi`
-beside it), filter them to _Tyrp1_ with **Filter by...** in their track menu
-(`jexl:feature.name=='Tyrp1'`), and open chr4 with the genes, the scan and the
-grouped painting:
+beside it), then:
+
+- Filter them to _Tyrp1_ with **Filter by...** in their track menu
+  (`jexl:feature.name=='Tyrp1'`).
+- Open chr4 with the genes, the scan and the painting.
 
 <Figure src="/img/qtl/bxd_tyrp1_locus.png" caption="The whole of chr4, with the painting's rows banded by coat color. Under the peak at Tyrp1 the black and grey bands are nearly all B (blue) and both brown bands nearly all D (red). Away from the peak every band is a mix of the two."/>
 
-Under the peak, black and grey strains carry B6's copy of _Tyrp1_ and brown and
-dilute brown strains DBA/2's. The rest of chr4 is the control, where nothing
+Under the peak, black and grey strains have B6's copy of _Tyrp1_ and brown and
+dilute brown strains DBA/2's; the rest of chr4 is the control, where nothing
 sets coat color.
 
 ## Myo5a, the dilute locus, under the chr9 peak
 
 The chr9 peak falls on _Myo5a_, the dilute locus (its mutation lightens coat
 color). The same grouped painting, with the gene track filtered to _Myo5a_,
-splits the bands the other way:
+splits the sections the other way:
 
 <Figure src="/img/qtl/bxd_myo5a_locus.png" caption="The whole of chr9, same bands. Under the peak at Myo5a the black and brown bands are B and the grey and dilute brown bands D, while the rest of chr9 is mixed."/>
 

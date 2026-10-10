@@ -13,4 +13,3 @@ tutorials/genomes_basics.md 4
 tutorials/genomes_proteins.md 2
 tutorials/ld_mosquitoes.md 1
 tutorials/local_ancestry.md 2
-tutorials/synteny_visualization.md 1

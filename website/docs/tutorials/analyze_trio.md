@@ -62,8 +62,8 @@ coordinates, so we load that assembly first.
 
 ## Loading the trio's phased VCF
 
-A phased VCF tags each variant with the haplotype it sits on (`0|1` vs `1|0`),
-so you can follow each variant to the copy of the genome it came from.
+In a phased VCF each genotype is written `0|1` or `1|0`, which assigns each
+allele to a haplotype.
 
 The VCF loads on `hg38` as an ordinary `VariantTrack`
 ([variant track guide](/docs/config_guides/variant_track)). For your own trio,
@@ -90,20 +90,15 @@ naming as the assembly. In JBrowse Web you can instead paste the URL into **File
 
 In the track menu, choose **Display types → Multi-sample variant display** (the
 [multi-sample variant display](/docs/user_guides/multivariant_track)), then
-check **Show... → Show as genotype matrix**. Each sample becomes a row and each
-variant a column, with black lines tying the columns back to their genomic
-positions.
+check **Show... → Show as genotype matrix**.
 
 <Figure caption="The multi-sample variant display as a genotype matrix. One row per sample, one column per variant, black lines connecting columns to their genome positions." src="/img/trio-matrix.png"/>
 
 ## Splitting each sample into two haplotype rows
 
-Choose **Rows → Per haplotype** from the track menu:
-
-- each sample splits into its two haplotypes, so the three trio members become
-  six rows
-- per-haplotype rows need phased genotypes, written `0|1`; unphased calls
-  (`0/1`) need a phasing program such as SHAPEIT first
+Choose **Rows → Per haplotype** from the track menu, which splits each sample
+into its two haplotypes. Per-haplotype rows need phased genotypes, written
+`0|1`; unphased calls (`0/1`) need a phasing program such as SHAPEIT first.
 
 <Figure caption="One row per haplotype: the two haplotypes (HP0, HP1) of child HG02024, mother HG02025 and father HG02026, top to bottom, under the RefSeq genes, with connector lines tying each matrix column back to the position it came from." src="/img/trio-matrix-phased-clean.png"/>
 
@@ -111,12 +106,10 @@ Choose **Rows → Per haplotype** from the track menu:
 
 ## Running hap-ibd to find segments shared with each parent
 
-[hap-ibd](https://github.com/browning-lab/hap-ibd) computes the matching
-stretches as "identical by descent" (IBD) segments. It takes a phased VCF and a
-genetic map in PLINK format.
-
-The trio VCF calls its chromosome `1`, with no `chr` prefix, so the run uses the
-`no_chr_in_chrom_field` variant of the GRCh38 PLINK map:
+[hap-ibd](https://github.com/browning-lab/hap-ibd) takes a phased VCF and a
+PLINK-format genetic map, and reports the matching stretches as "identical by
+descent" (IBD) segments. The trio VCF calls its chromosome `1`, so the run uses
+the `no_chr_in_chrom_field` variant of the GRCh38 map:
 
 <!-- from: scripts/build_khv_trio_hapibd.sh -->
 
@@ -155,11 +148,11 @@ merges them into clean blocks. Per child haplotype it:
 - snaps each remaining crossover to the midpoint of the gap between runs so the
   blocks abut; a gap too wide to bridge stays blank
 
-The script writes one BED9 line per block plus a `parenthap` label for the
-painted track's four rows (father copy 1, father copy 2, mother copy 1, mother
-copy 2), and its `itemRgb` colors the father's two copies blue and the mother's
-red. It takes `trio.ibd.gz` and the child, father and mother sample IDs; `bgzip`
-and `tabix -p bed` then index the output:
+The script writes one BED9 line per block, with a `parenthap` label naming one
+of the painted track's four rows (father copy 1 or 2, mother copy 1 or 2) and an
+`itemRgb` that colors the father's copies blue and the mother's red. The
+commands below run it with the child, father and mother sample IDs, then sort,
+compress and index the output:
 
 <!-- from: scripts/build_khv_trio_hapibd.sh -->
 
@@ -175,8 +168,9 @@ sorts the rest under `LC_ALL=C`, so the adapter reads the column names from the
 header, needs no `columnNames`, and sees the same order in every locale.
 
 Load `trio.hapibd.bed.gz` as a `FeatureTrack` with a
-`LinearMultiRowFeatureDisplay` that draws one row per `parenthap` value, in
-`rows.domain` order, painting each block with its BED `itemRgb`.
+`LinearMultiRowFeatureDisplay`. In grammar-of-graphics terms, `rows` assigns one
+row per value of the `parenthap` field and `rows.domain` orders them, while each
+block takes its BED `itemRgb` color.
 [`showLegend`](/docs/config/linearmultirowfeaturedisplay/#slot-showlegend) is
 off because the row labels already name the four categories:
 
@@ -211,10 +205,10 @@ HG02026 and red for mother HG02025:
 
 <Figure caption="hap-ibd inheritance blocks in the multi-row feature display. Blue rows are father HG02026's two haplotypes, red rows are mother HG02025's. Each crossover is a spot where a painted block steps from one row to its partner." src="/img/trio-hapibd-painting.png"/>
 
-The blue rows together are the child's paternal chromosome. Where one of them is
-filled, it is the father's copy the child inherited there, so hap-ibd places a
-paternal crossover at each step between the blue rows. The red rows are the
-maternal chromosome in the same way.
+The blue rows together are the child's paternal chromosome. A filled blue row
+marks the father's copy the child inherited there, so hap-ibd places a paternal
+crossover at each step between the blue rows. The red rows are the maternal
+chromosome in the same way.
 
 The control in the figure is that no position has both blue rows filled, or both
 red rows, which would mean hap-ibd matched one child haplotype to both of a
@@ -238,6 +232,9 @@ To line the painted blocks up with the genotypes underneath:
   `rows.labels` to
   `{ "HG02024 HP0": "Child hap1", "HG02024 HP1": "Child hap2", "HG02025 HP0": "Mother hap1", "HG02025 HP1": "Mother hap2", "HG02026 HP0": "Father hap1", "HG02026 HP1": "Father hap2" }`,
   or rename the rows in **Edit colors/arrangement...** in its track menu.
+
+**Advanced → Edit plot...** in the track menu shows both `rows` edits as text
+and applies them live.
 
 Zoom to a few hundred kb around one boundary, where the block-step is obvious
 and the genotype columns resolve into individual variants. Start with the

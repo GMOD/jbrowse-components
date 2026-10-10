@@ -9,16 +9,21 @@ tutorial_category: Population genomics
 ---
 
 In _Drosophila melanogaster_, a selective sweep at the insecticide-resistance
-gene _Cyp6g1_ and the `In(2L)t` inversion on chromosome 2L each leave a mark in
-population-genetic statistics. From a multi-sample VCF of 205 inbred lines we
-compute three statistics per window:
+gene _Cyp6g1_ ([Daborn et al. 2002](https://doi.org/10.1126/science.1074170))
+and the `In(2L)t` inversion on chromosome 2L each leave a mark in
+population-genetic statistics: π dips at the sweep and Fst rises across the
+inversion. The inversion flips a stretch of 2L end to end and suppresses
+recombination between the inverted and standard arrangements in a heterozygote
+([Corbett-Detig & Hartl 2012](https://doi.org/10.1371/journal.pgen.1003056)).
+From a multi-sample VCF of 205 inbred lines we compute three statistics per
+window:
 
 - Fst, how far apart two groups' allele frequencies sit
 - nucleotide diversity (π), how much sequences differ within a group
 - Tajima's D, below zero where rare variants are in excess, as after a sweep
 
-We load each as a bigWig track on dm6, read the _Cyp6g1_ sweep against the
-genes, then read the inversion.
+We load each as a [quantitative track](/docs/user_guides/quantitative_track) on
+dm6, read the _Cyp6g1_ sweep against the genes, then read the inversion.
 
 ## Prerequisites
 
@@ -26,28 +31,25 @@ genes, then read the inversion.
   file by path, [Web](/docs/quickstart_web) through **Add track**
 - `curl`
 - `node`, for the [JBrowse CLI](/docs/cli)
-- [vcftools](https://vcftools.github.io/) - windowed Fst, π, and Tajima's D from
-  a VCF
-- [bcftools](https://samtools.github.io/bcftools/) - reading the VCF header and
+- [vcftools](https://vcftools.github.io/), for the windowed statistics
+- [bcftools](https://samtools.github.io/bcftools/), to read the VCF header and
   sample list
-- [htslib](https://www.htslib.org/) (`bgzip`, `tabix`) - compressing and
-  indexing the VCF built in the per-sample section
-- [`bedGraphToBigWig`](https://hgdownload.soe.ucsc.edu/admin/exe/) - UCSC
-  utility that packs a bedGraph into an indexed bigWig
+- [htslib](https://www.htslib.org/) (`bgzip`, `tabix`), to index the VCF built
+  in the per-sample section
+- [`bedGraphToBigWig`](https://hgdownload.soe.ucsc.edu/admin/exe/), to pack a
+  bedGraph into a bigWig
 
 On Debian/Ubuntu, `apt install vcftools bcftools tabix curl` covers everything
-but `node` and `bedGraphToBigWig`, which is a
+but `node` and `bedGraphToBigWig`, a
 [single static binary from UCSC](https://hgdownload.soe.ucsc.edu/admin/exe/).
 Homebrew has the first three tools (`brew install vcftools bcftools htslib`),
-and all four are on [bioconda](https://bioconda.github.io/) if you already run
-conda.
+and [bioconda](https://bioconda.github.io/) has all four.
 
 ## Where the data comes from
 
-The Drosophila Genetic Reference Panel, 205 inbred lines
-([Mackay et al. 2012](https://doi.org/10.1038/nature10811)), lifted to dm6.
-
-The [build script](#reproduce-it-end-to-end) takes these files from their URLs,
+The [Drosophila Genetic Reference Panel](https://dgrpool.epfl.ch/) (DGRP) has
+205 inbred lines ([Mackay et al. 2012](https://doi.org/10.1038/nature10811)),
+lifted to dm6. The [build script](#reproduce-it-end-to-end) fetches these files,
 so there is nothing to download by hand.
 
 - the DGRP freeze-2 genotype calls:
@@ -55,41 +57,23 @@ so there is nothing to download by hand.
 - the `In(2L)t` inversion karyotype for each line, from DGRPool's phenotype
   record: https://dgrpool.epfl.ch/phenotypes/1520/download
 
-The dm6 assembly and gene track are the hosted UCSC
-[hub](/docs/user_guides/hub_url)'s own entries.
-
-## Windowed statistics as tracks
-
-Any per-window output loads as a
-[quantitative track](/docs/user_guides/quantitative_track). We stack Fst, π and
-Tajima's D in one view over the
-[Drosophila Genetic Reference Panel](https://dgrpool.epfl.ch/) (DGRP) on dm6 and
-look at two signals:
-
-- π dips at loci under selection, such as the insecticide-resistance gene
-  _Cyp6g1_ ([Daborn et al. 2002](https://doi.org/10.1126/science.1074170)).
-- Fst rises across the `In(2L)t` inversion, a stretch of chromosome 2L flipped
-  end to end. The inversion suppresses recombination between the inverted and
-  standard arrangements in a heterozygote
-  ([Corbett-Detig & Hartl 2012](https://doi.org/10.1371/journal.pgen.1003056)),
-  so Fst tracks the arrangement boundary.
+The dm6 assembly and gene track come from the hosted UCSC
+[hub](/docs/user_guides/hub_url).
 
 ## Building Fst, π and Tajima's D bigWigs with vcftools
 
-DGRPool's inversion karyotypes, each line's `In(2L)t` arrangement
-([Gardeux et al. 2023](https://doi.org/10.7554/eLife.88981)), harmonize the
+DGRPool records each line's `In(2L)t` arrangement
+([Gardeux et al. 2023](https://doi.org/10.7554/eLife.88981)), harmonizing the
 typing of [Huang et al. 2015](https://doi.org/10.1534/g3.115.019554): `0` for
-standard homozygotes, `2` for inverted, `1` for heterozygotes, which the script
-drops.
+standard homozygotes, `2` for inverted and `1` for heterozygotes.
 [`build_dgrp_popgen.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_dgrp_popgen.sh)
-derives the two sample lists, one name per line as
-[vcftools](https://vcftools.github.io/) takes for `--weir-fst-pop` and `--keep`,
-normalizing DGRPool's `DGRP_021` to the VCF's `DGRP-021`. DGRPool also types
-`In(3R)Payne`, so repeating the grouping step with that phenotype scans `3R` the
-same way.
+drops the heterozygotes and writes the two sample lists, one name per line, that
+[vcftools](https://vcftools.github.io/) takes for `--weir-fst-pop` and `--keep`.
+It also renames DGRPool's `DGRP_021` to the VCF's `DGRP-021`. DGRPool types
+`In(3R)Payne` too, so the same grouping on that phenotype scans `3R`.
 
-Each scan is one vcftools run, an awk turning its table into a bedGraph, and a
-pack into a bigWig. Fst uses the Weir & Cockerham estimator[^hudson]
+Each scan is a vcftools run, an `awk` step that turns its table into a bedGraph,
+and a `bedGraphToBigWig` pack. Fst uses the Weir & Cockerham estimator[^hudson]
 ([Weir & Cockerham 1984](https://doi.org/10.2307/2408641)):
 
 <!-- from: scripts/build_dgrp_popgen.sh -->
@@ -133,8 +117,8 @@ vcftools --gzvcf dgrp2.vcf.gz --keep In2Lt_INV.txt --window-pi 2000 --out pi_INV
 π, packed into a bigWig by the same `awk` and `bedGraphToBigWig` pair.
 
 Tajima's D ([Tajima 1989](https://doi.org/10.1093/genetics/123.3.585)) reports
-`BIN_START` 0-based, so no `-1` shift, and no `BIN_END`, so the window end is
-constructed before the clamp:
+`BIN_START` 0-based, so there is no `-1` shift, and has no `BIN_END`, so the
+`awk` builds the window end before the clamp:
 
 <!-- from: scripts/build_dgrp_popgen.sh -->
 
@@ -154,11 +138,10 @@ bedGraphToBigWig tajimad_all.bedgraph dm6.chrom.sizes tajimad_all.bw
 2 kb windows resolve a single-gene sweep like _Cyp6g1_; widen toward 5-10 kb for
 genome-wide overviews.
 
-A contig-name mismatch draws an empty track with no error. The bigWigs take
-contig names from the VCF header (`2L`, `2R`, `X`, FlyBase style), where UCSC
-dm6 writes `chr2L`, and
+The bigWigs take contig names from the VCF header (`2L`, `2R`, `X`, FlyBase
+style) while UCSC dm6 writes `chr2L`, and
 [refname aliasing](/docs/developer_guides/refname_aliasing) maps one to the
-other.
+other. A mismatch with no alias draws an empty track and raises no error.
 
 The DGRP VCF holds variant sites only, so `--window-pi` counts every position
 missing from the file as invariant and callable, and a window that lost sites to
@@ -168,8 +151,8 @@ of Tajima's D, so read D at a locus against the genome-wide background of the
 
 ## Loading the scans in JBrowse
 
-We load the dm6 assembly from UCSC. Its reference names arms `chr2L`, and the
-alias file maps them to the bare `2L` the scans use:
+We load dm6 from UCSC, whose reference names the arms `chr2L`. The alias file
+maps them to the bare `2L` the scans use:
 
 ```json addassembly
 {
@@ -202,9 +185,9 @@ The gene track is UCSC's RefSeq annotation of dm6:
 }
 ```
 
-Each scan loads as a [quantitative track](/docs/user_guides/quantitative_track)
-over its bigWig. To load your own, swap `uri` for the bigWig your build wrote;
-its contig names must match the assembly or its aliases.
+Each scan is a quantitative track over its bigWig. To load your own, swap `uri`
+for the bigWig your build wrote, whose contig names must match the assembly or
+its aliases.
 
 ```json addtrack
 {
@@ -219,10 +202,10 @@ its contig names must match the assembly or its aliases.
 }
 ```
 
-Fst and π sit on very different scales, so each loads as its own track with its
-own y-axis. A [multi-wiggle](/docs/config_guides/quantitative_track) shares one
-axis across rows, which suits the same statistic across groups, so the per-group
-π bigWigs load as one track:
+Fst and π are on different scales, so each gets a track and a y-axis. A
+[multi-wiggle](/docs/config_guides/quantitative_track) track shares one axis
+across rows, which suits one statistic across groups, so the per-group π bigWigs
+load as one track:
 
 ```json addtrack
 {
@@ -248,11 +231,11 @@ axis across rows, which suits the same statistic across groups, so the per-group
 }
 ```
 
-In 2 kb windows each arrangement's π swings several fold from one window to the
-next, far more than the two arrangements differ, so two rows of it look alike.
-Pooling the windows into 250 kb bins and taking log2 of inverted over standard
-gives one track that sits at zero wherever the arrangements have equal
-diversity. The build script's `awk` step writes it from the two π bedGraphs:
+Each arrangement's π swings several fold between 2 kb windows, far more than the
+two arrangements differ, so two rows of it look alike. Pooling into 250 kb bins
+and taking log2 of inverted over standard gives one track that sits at zero
+where the arrangements have equal diversity. An `awk` step writes it from the
+two π bedGraphs:
 
 <!-- from: scripts/build_dgrp_popgen.sh -->
 
@@ -272,8 +255,9 @@ awk -F'\t' -v OFS='\t' -v B=250000 '
 bedGraphToBigWig pi_ratio_In2Lt.bedgraph dm6.chrom.sizes pi_ratio_In2Lt.bw
 ```
 
-The π ratio track colors bins by their side of zero with a `threshold` scale, on
-a y scale pinned to ±1.5:
+In grammar-of-graphics terms, `color` is a color scale: a `field` mapped through
+a `domain` to a `range` of colors. Here a `threshold` scale colors each bin by
+its side of zero, and `scales.y` pins the y scale to ±1.5:
 
 ```json addtrack
 {
@@ -301,12 +285,14 @@ a y scale pinned to ±1.5:
 }
 ```
 
+**Advanced → Edit plot...** in the track menu shows `color` and `scales` as text
+and applies edits live.
+
 ## Reading the Cyp6g1 sweep in Tajima's D and π
 
-Search `Cyp6g1`, an insecticide-resistance gene on `2R`, in the location box.
-Add three `QuantitativeTrack`s shaped like the Fst track above: Tajima's D, π,
-and the called-variant count per window (column 4 of the table π comes from),
-each over all 205 lines.
+Search `Cyp6g1` in the location box and add three `QuantitativeTrack`s shaped
+like the Fst track above, each over all 205 lines: Tajima's D, π, and the
+called-variant count per window (column 4 of the table π comes from).
 
 ```json addtrack loc=chr2R:12,000,000-12,400,000
 {
@@ -371,10 +357,10 @@ field holds the far breakpoint:
 2L      2225744  In2Lt  N    <INV>  .     PASS    SVTYPE=INV;END=13154180  GT      1/1       0/0
 ```
 
-The samples TSV pairs each line with its `karyotype` (standard or inverted).
-`facet` gives each karyotype its own band of rows, with `domain` listing the
-bands in order, and `rowColor` colors the bar beside each row's label by the
-same column:
+The samples TSV pairs each line with its `karyotype` (standard or inverted). In
+grammar-of-graphics terms, `facet` splits the display into sections, one per
+`karyotype` value, `facet.domain` orders them, and `rowColor` is a color scale
+on each row's label bar:
 
 ```json addtrack
 {
@@ -430,9 +416,8 @@ Open `chr2L` alone, with the π ratio track under Fst:
 The inverted lines have less diversity than the standard ones across the
 inverted region, most near the breakpoints, where the suppressed recombination
 is strongest. Toward the centromere past the inversion, where the arrangements
-recombine freely, the ratio sits at zero.
-
-Differentiation decays gradually outside the breakpoints
+recombine freely, the ratio sits at zero. Differentiation decays gradually
+outside the breakpoints
 ([Corbett-Detig & Hartl](https://doi.org/10.1371/journal.pgen.1003056)).
 
 ## Reproduce it end to end

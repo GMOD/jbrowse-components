@@ -62,8 +62,7 @@ so there is nothing to download by hand.
 
 SyRI reads a whole-genome alignment of two chromosome-level assemblies whose
 homologous chromosomes share a name, which the
-[script](#reproduce-it-end-to-end) arranges. For each pair the script aligns,
-the commands are:
+[script](#reproduce-it-end-to-end) arranges. For each pair, the commands are:
 
 <!-- from: scripts/build_syri_synteny.sh -->
 
@@ -90,8 +89,8 @@ writes each region as one:
 - **Sequence names** are `<genome>#1#<chrom>`, so records from many pairs can
   share a file.
 - **Inverted types** go on the minus strand.
-- **Two tags** carry `syri`, the type, and `color`, the color plotsr gives that
-  type.
+- **Two tags** hold the type (`syri`) and the color plotsr gives that type
+  (`color`).
 - **Sequence lengths** come from a `.chrom.sizes` file beside `syri.out`, the
   first two columns of the FASTA index.
 
@@ -111,7 +110,7 @@ cat Col-0_*.paf Ler_Cvi.paf Cvi_Eri.paf Eri_Kyo.paf Kyo_Sha.paf >syri_pangenome.
 
 The ribbons need no sequence, so each accession gets an assembly with a
 `ChromSizesAdapter` over its `.chrom.sizes`. Col-0 is one; Ler, Cvi, Eri, Kyo
-and Sha repeat it with their own name and file:
+and Sha repeat it with their names and files:
 
 ```json addassembly
 {
@@ -122,12 +121,13 @@ and Sha repeat it with their own name and file:
 
 Two entries in the track config matter here:
 
-- `attributeColumns` names the PAF tags the palette button offers: `syri`
+- `attributeColumns` lists the PAF tags the palette button offers: `syri`
   becomes a color-by mode, and `color` is the color the file puts beside each
   type
 - the `MultiWaySyntenyDisplay` entry sets up the
-  [lanes view](#every-accession-in-columbia-coordinates): `rows.domain` names
-  the lanes and `ribbonColor` colors the bands by `syri`
+  [lanes view](#every-accession-in-columbia-coordinates): `rows.domain` orders
+  the lanes, and `ribbonColor` is a color scale on the bands, mapping the `syri`
+  field through a `domain` of the six types
 
 ```json addtrack
 {
@@ -238,11 +238,10 @@ between the two genomes it joins:
 
 ## Every accession in Columbia coordinates
 
-Each band in the stack compares an accession with its neighbour. To compare
-every accession with Col-0 in Col-0 coordinates, `syri_to_paf.py` also writes
-each pair's regions in reference coordinates, one BED row per region, named by
-its type, colored by `itemRgb` and holding the accession name in a `query`
-column. The rows against Col-0 concatenate into one track:
+To compare every accession with Col-0 in Col-0 coordinates, `syri_to_paf.py`
+also writes each pair's regions in reference coordinates, one BED row per
+region. A row is named by its type, colored by `itemRgb`, and has the accession
+name in a `query` column. The rows against Col-0 concatenate into one track:
 
 <!-- from: scripts/build_syri_synteny.sh -->
 
@@ -256,7 +255,8 @@ column. The rows against Col-0 concatenate into one track:
 tabix -p bed syri_regions.bed.gz
 ```
 
-`rows.field` gives the track one row per accession:
+In grammar-of-graphics terms, `rows` assigns one row per value of a field, here
+`query`, the accession, and `rows.domain` orders them:
 
 ```json addtrack
 {
@@ -282,15 +282,16 @@ tabix -p bed syri_regions.bed.gz
 }
 ```
 
-Open a linear genome view on Col-0 at `Chr4:1-6,000,000` and turn on **SyRI
-regions on Col-0, by accession** and **SyRI regions**. Switch **SyRI regions**
-to **Display types → Multi-way synteny display**, which takes its lanes and
-colors from the track's `MultiWaySyntenyDisplay` entry:
+We'll open a linear genome view on Col-0 at `Chr4:1-6,000,000`. Then:
 
-- each accession is a lane, drawn in the coordinates of its assembly and placed
-  by the SyRI run against Col-0
-- the band between two lanes comes from the run between those two accessions, so
-  it has the type SyRI gave that pair
+- Turn on **SyRI regions on Col-0, by accession** and **SyRI regions**.
+- Switch **SyRI regions** to **Display types → Multi-way synteny display**,
+  which takes its lanes and colors from the track's `MultiWaySyntenyDisplay`
+  entry.
+
+Each accession is a lane, drawn in its assembly's coordinates and placed by the
+SyRI run against Col-0. The band between two lanes comes from the run between
+those two accessions, so it has the type SyRI gave that pair.
 
 ```json session config=test_data/syri/config.json
 {

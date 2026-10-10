@@ -57,20 +57,20 @@ We'll load hg38, the assembly the RepeatMasker coordinates are on.
 ```
 
 The track reads any BED-like file, bgzipped and tabix-indexed, with a `#` header
-line naming the columns; a mark refers to a column by name. The track below
-lists three marks:
+line naming the columns; a mark refers to a column by name. In
+grammar-of-graphics terms, `encoding` maps columns to a mark's channels, and
+`color` is a color scale from a `field` through a `domain` to a `range`. The
+track below lists three marks:
 
 - **Per-copy bars** (below `maxBpPerPx`): a `bar` per copy with `milliDiv` as
   the height. A `formula` step writes the first four characters of the name into
   `lineage` (AluJ, AluS, AluY: oldest to youngest, and AluY is still inserting),
-  and the categorical `domain` fixes the legend order while `range` sets the
-  colors
+  and the categorical `domain` fixes the legend order
 - **Copies per bin** (past `minBpPerPx`): every Alu copy counted per bin, in
   grey, from the density sidecar
 - **AluY per bin**: the same count behind a `filter` for AluY, in red
 
-The adapter's `densityAdapter` names the sidecar, built in
-[Zooming out](#zooming-out).
+`densityAdapter` names the sidecar built in [Zooming out](#zooming-out).
 
 ```json addtrack loc=chr1:151,000,000-151,030,000
 {
@@ -148,8 +148,8 @@ The adapter's `densityAdapter` names the sidecar, built in
 }
 ```
 
-Open it on `chr1:151,000,000-151,030,000`, 30 kb of 1q21. Hover a bar for its
-values; click it to open the row.
+Open `chr1:151,000,000-151,030,000`, 30 kb of 1q21, and click a bar to open its
+row.
 
 <Figure src="/img/alu_age/locus.png" caption="Alu copies over a window of 1q21, one bar per copy with its divergence from its consensus as the height and its lineage as the color. The AluY bars are among the shortest in the window and the AluJ bars the tallest, with AluS between; FLAM, the older free left Alu monomer, is as tall as AluJ." />
 
@@ -172,12 +172,12 @@ jbrowse make-density Alu.bed.gz --chrom-sizes hg38.chrom.sizes
 
 ## AluY share per megabase, against the genome-wide share
 
-The red AluY count is too small to read against a total that varies several-fold
-between bins. A script instead writes a BED with two log2 columns: the AluY
-share per megabase against the genome-wide share, and the plus-strand share
-against one half as the control.
+The red AluY count is too small to read against a total that varies between
+bins. A script instead writes a BED with two log2 columns, the AluY share per
+megabase against the genome-wide share and the plus-strand share against one
+half as the control.
 
-Fetch the script, then run it:
+Fetch the script:
 
 ```bash
 curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/alu_young_share.py
@@ -194,8 +194,8 @@ bgzip -f Alu.young_share.bed
 tabix -f -p bed Alu.young_share.bed.gz
 ```
 
-**Edit plot...** in the track menu sets the cut, colors and key names on an open
-track. The config below sets them in the track:
+**Advanced → Edit plot...** in the track menu applies edits to the cut, colors
+and key names live. The config below sets them in the track:
 
 ```json addtrack
 {
@@ -267,7 +267,7 @@ tabix https://jbrowse.org/demos/gene_density/Alu.bed.gz chr1:151,000,000-151,030
 | FLAM    |      4 |           140 |
 | AluJ    |     12 |           150 |
 
-Count the copies in one red megabase and one blue one of the share track:
+Count the copies in one red and one blue megabase of the share track:
 
 ```bash
 tabix https://jbrowse.org/demos/gene_density/Alu.bed.gz chr1:191,000,001-192,000,000 |
@@ -294,10 +294,9 @@ bash build_alu_age.sh                     # builds ./alu_age_build/jbrowse2
 npx --yes serve alu_age_build/jbrowse2    # then open the printed URL
 ```
 
-With no arguments the script builds the tracks over UCSC's table.
-`bash build_alu_age.sh rmsk.bed.gz genome.fa` builds them over your own
-RepeatMasker BED, and `FAMILY` and `YOUNG` pick another family and its youngest
-lineage.
+By default the script builds the tracks over UCSC's table.
+`bash build_alu_age.sh rmsk.bed.gz genome.fa` uses your own RepeatMasker BED,
+and `FAMILY` and `YOUNG` pick another family and its youngest lineage.
 
 ## See also
 

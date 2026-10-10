@@ -86,8 +86,8 @@ variant. The truncating allele acts recessively: liver microsomes from dogs
 homozygous for it have no CYP1A2 protein and those dogs are poor metabolizers of
 drugs the enzyme clears, while heterozygotes express the enzyme normally
 ([Mise et al. 2004](https://pubmed.ncbi.nlm.nih.gov/15564884/)). We ask which
-breeds carry the allele and whether wild canids do. Wolves are the control: an
-allele they share predates domestication.
+breeds have the allele and whether wild canids do. Wolves are the control,
+because an allele they share predates domestication.
 
 ## Deriving the CYP1A2 stop codon's coordinate from the reference
 
@@ -145,12 +145,14 @@ An SNV VCF loads as an ordinary `VariantTrack`:
 }
 ```
 
-The display draws one row per sample, labelled with the Dog10K IDs. The figure
-below names them by breed with the display's `rows`, which takes the order in
-`domain` and a name per ID in `labels` (`{ "GHND000001": "German Hound 1" }`),
-and tints them with `rowColor`. **Edit colors/arrangement...** in the track menu
-writes both keys as you rename and recolor rows. For a larger panel, a
-`samplesTsvLocation` on the adapter supplies the names instead.
+The display draws one row per sample, labelled with the Dog10K IDs. In
+grammar-of-graphics terms, the figure's `rows` orders the rows through `domain`
+and names them through `labels` (`{ "GHND000001": "German Hound 1" }`), and
+`rowColor`, a color scale on each row's label bar, tints them.
+
+**Edit colors/arrangement...** in the track menu writes both as you rename and
+recolor rows, and **Advanced → Edit plot...** shows them as text. For a larger
+panel, a `samplesTsvLocation` on the adapter supplies the names instead.
 
 A whole-gene view of the slice is a field of one-pixel ticks, so zoom to the
 codon. At base level each sample's call is a block, and the gene track shows
@@ -158,7 +160,7 @@ which exon it sits in.
 
 ## CYP1A2 stop-gained genotypes across breeds and wolves
 
-<Figure caption="The CYP1A2 stop-gained variant at base level: the reference sequence and its translation, the site as an ordinary variant track, then one row per dog. Five breeds carry the allele; the Labrador Retrievers, Boxers and all four wolves are homozygous reference." src="/img/dog10k-cyp1a2-nonsense.png" />
+<Figure caption="The CYP1A2 stop-gained variant at base level: the reference sequence and its translation, the site as an ordinary variant track, then one row per dog. Five breeds have the allele; the Labrador Retrievers, Boxers and all four wolves are homozygous reference." src="/img/dog10k-cyp1a2-nonsense.png" />
 
 The build script genotypes the stop site over every canid in the callset. Dozens
 of breeds have the allele and it reaches homozygosity in several: every German
@@ -222,11 +224,12 @@ checks it against the 15 CRAMs the Dog10K share publishes. Over the shared
 windows the two depth sources agree closely, with no bias. The CRAM-based
 painting is in the config as `dog10k_cyp1a2_cn`.
 
-The output is a BED with the color in the `itemRgb` column and the rounded call
-in `copyNumber`. The identity color scale pairs each color in the file with a
-copy number label, so the key reads as copy number. The figure draws one key,
-from the named-animals track above this one (described below), so this track
-sets `showLegend` to `false`. Drop that line to get a key on this track:
+The output is a BED with the color in `itemRgb` and the rounded call in
+`copyNumber`. The `identity` color scale uses the file's own colors, and its
+`labels` pair each color with a copy number so the key reads as copy number. The
+figure draws one key, from the named-animals track above this one (described
+below), so this track sets `showLegend` to `false`. Drop that line to get a key
+on this track:
 
 ```json addtrack
 {
@@ -287,7 +290,7 @@ names in drawing order.
 The upper track holds every Golden Retriever, Labrador Retriever and Boxer in
 the collection, plus the four wolves from the genotype figure. Every Golden has
 the expansion, every Boxer has two copies, and the Labradors split one dog to
-the next. Row labels come from the sample column, the order from `domain`.
+the next.
 
 The four wolves, the control, all have the expansion, so unlike the stop-gained
 allele it is shared with wild canids and predates domestication. Their calls

@@ -16,9 +16,9 @@ strains line up. The steps work the same on any pair of assemblies.
 
 ## Prerequisites
 
-- a JBrowse 2 instance (see the [web quickstart](/docs/quickstart_web), or the
-  [desktop quickstart](/docs/quickstart_desktop); the steps below are identical
-  on both, and on Desktop the alignments are local files)
+- a JBrowse instance ([web](/docs/quickstart_web) or
+  [desktop](/docs/quickstart_desktop) quickstart); the steps are identical on
+  both, and Desktop reads the alignments as local files
 - [minimap2](https://github.com/lh3/minimap2)
 - `python3`, which the build script uses to copy the hub configs
 - `node`, for the [JBrowse CLI](/docs/cli)
@@ -129,8 +129,8 @@ indexed needs only its `uri`; swap in your own file.
 }
 ```
 
-A track with its `assemblyNames` in the wrong order draws an empty band, and the
-warning in the view header names the remedy:
+A track whose `assemblyNames` are in the wrong order draws an empty band and
+shows a warning in the view header:
 
 <Figure caption="A synteny track whose assemblyNames are reversed. No chromosome name resolves, so the band is empty, and the warning icon in the header opens a dialog reporting the reversal." src="/img/sv_synteny/assembly_order_warning.png" />
 
@@ -185,21 +185,19 @@ NZ_CP011330v1:305,000-415,000[rev]
 
 <Figure caption="Three H. pylori strains stacked with a gene track on each genome, across the stretch inverted in CHC155. The ribbons into the middle row cross from both sides, since the same stretch runs one way in 26695 and J99 and the other way in CHC155." src="/img/sv_synteny/linear_synteny_genes.png" />
 
-See [](/docs/user_guides/linear_synteny_view) for ribbon options and
-[URL parameters → linear synteny view](/docs/urlparams#linear-synteny-view) for
-building one from a URL.
-
 ## Coloring genes by ortholog
 
 NCBI reuses standardized gene symbols across bacterial strains, so the symbol is
-effectively an ortholog id. On each gene track, pick **Color by... →
-Attribute...** from the track menu and enter `gene`. An ortholog is one color
+effectively an ortholog id. In grammar-of-graphics terms, a track's `color` is a
+color scale, a `field` mapped to colors. Pick **Color by... → Attribute...** on
+each gene track's menu and enter `gene` as the field. An ortholog is one color
 down all three panels, and features with no `gene` value (most genes here have
-only a locus tag) stay grey.
+only a locus tag) stay grey. **Advanced → Edit plot...** in the same menu shows
+the setting as text and applies edits live.
 
 <Figure caption="The click and its result. Left, the Color by attribute dialog on the first strain's gene track with the attribute name set to gene. Right, the same three strains after applying it: a shared symbol holds one color down all three panels, and the middle row shows the colors in reverse order." src="/img/sv_synteny/color_by_attribute_steps.png" links="Dialog=sv_synteny/color_by_attribute,Result=sv_synteny/ortholog_colors" />
 
-The same setting as config on the hub's gene track:
+The config below is the same setting on the hub's gene track:
 
 ```json addtrack
 {
@@ -253,8 +251,6 @@ curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/
 bash build_hpylori_synteny.sh          # builds ./hpylori_synteny_build/jbrowse2
 npx --yes serve hpylori_synteny_build/jbrowse2 # then open the printed URL
 ```
-
-The script needs the tools under [Prerequisites](#prerequisites).
 
 ## See also
 

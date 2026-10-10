@@ -48,10 +48,10 @@ Dryad has no direct download URL, so download the two tarballs by hand. The
 
 Simakov et al. 2022 named a set of gene families the BCnS linkage groups. A gene
 belongs to one group or to none. odp searches every proteome it is given against
-a database of the groups' protein models and writes the group each ortholog
-landed in as a column beside it, which a synteny track can read. Your own
-genomes need odp's table with its `gene_group` and `color` columns, written when
-odp runs with `plot_LGs: True`, and a `.chrom` file per genome.
+a database of the groups' protein models and writes the group each ortholog was
+assigned as a column beside it, which a synteny track can read. Your own genomes
+need odp's table with its `gene_group` and `color` columns, written when odp
+runs with `plot_LGs: True`, and a `.chrom` file per genome.
 
 The dotplot uses two genomes and the stack at the end adds four:
 
@@ -155,17 +155,21 @@ each.
 }
 ```
 
-The build script adds one such track per pair: this one for the dotplot, then
-one for each neighbouring pair of the six-genome stack.
+The build script adds one such track per pair.
 
 ## Dotplot of jellyfish against sponge, colored by linkage group
 
-Open the jellyfish-against-sponge table as a dotplot and pick **gene_group**
-under **Color by value** on the palette button in the view header; the legend
-comes up with it. Then **Re-order chromosomes** on the view menu sorts the
-vertical genome's chromosomes by where their orthologs land along the horizontal
-one, turning one block per group into a diagonal. As a session, the same dotplot
-with the sponge's unplaced scaffolds left off its axis:
+We'll open the jellyfish-against-sponge table as a dotplot, then:
+
+- Pick **gene_group** under **Color by value** on the palette button in the view
+  header. The legend comes up with it.
+- Choose **Re-order chromosomes** on the view menu to sort the vertical genome's
+  chromosomes by where their orthologs land along the horizontal one, which
+  turns one block per group into a diagonal.
+
+As a session, the same dotplot with the sponge's unplaced scaffolds left off its
+axis. In grammar-of-graphics terms, the session's `color` is a color scale, a
+`field` mapped to colors:
 
 ```json session config=https://jbrowse.org/demos/odp_linkage_groups/config.json
 {
@@ -206,7 +210,9 @@ and the session below sets what the figure needs.
 odp tests each pair of chromosomes for more shared orthologs than chance
 (Fisher's exact test, corrected for the number of pairs, in the `break_FET`
 column). Like the paper's figure, the stack draws orthologs on a chromosome pair
-under 0.05 at opacity 0.8 and the rest at 0.15.
+under 0.05 at opacity 0.8 and the rest at 0.15. In grammar-of-graphics terms,
+that is an `opacity` scale, which maps the `break_FET` field, cut at 0.05, to a
+`range` of two opacities.
 
 Each setting in the session has a menu route except `fadeThinAlignmentsMode` and
 the `opacity` mapping:
@@ -220,9 +226,8 @@ the `opacity` mapping:
 - `fadeThinAlignmentsMode` turns off the fade a whole-genome view applies to
   sub-pixel ribbons, since their colors are what the figure shows. It has no
   menu item.
-- `opacity` reads `break_FET` through a threshold at 0.05. **Opacity** on the
-  sliders button scales both opacities together; the mapping itself has no menu
-  item.
+- `opacity` is the scale above. **Opacity** on the sliders button scales both
+  opacities together; the mapping itself has no menu item.
 
 ```json session config=https://jbrowse.org/demos/odp_linkage_groups/config.json
 {
@@ -271,13 +276,12 @@ the `opacity` mapping:
 
 Amphioxus and _Ephydatia_ helped build the group database, so the bundles
 running through them are expected. The cladorhizid sponge took no part, and in
-the bottom band the groups still reach it as bundles.
+the bottom band the groups still run to it as bundles.
 
 ## Checking the linkage-group counts against the odp tables
 
-The counts behind the pictures come straight from the tables. For one group,
-tally the chromosomes its orthologs sit on in the genome a table's file name
-leads with:
+To count one group, tally the chromosomes its orthologs sit on in the genome a
+table's file name leads with:
 
 ```bash
 # gene_group is column 4; column 5 is the chromosome in the genome the
@@ -290,8 +294,8 @@ awk -F'\t' 'NR>1 && $4=="A1a" {print $5}' \
 Swapping in another table and group gives the counts behind the stack. In
 _Hormiphora_ (`HCA_RES`), even the chromosome holding the largest share of a
 group holds less than half of it, which is why most of the stack's second band
-is faint. In the cladorhizid (`CLAa_EMU`), which took no part in building the
-group database, most of each group still sits on one chromosome.
+is faint. In the cladorhizid (`CLAa_EMU`), most of each group still sits on one
+chromosome.
 
 ## Reproduce it end to end
 

@@ -8,14 +8,13 @@ guide_category: Tutorials
 tutorial_category: Structural variation
 ---
 
-Two chromosomes joined by a translocation touch each other all along the join,
-so Hi-C reads linking them run far above background. We look for the
-Philadelphia chromosome, the _BCR_-_ABL1_ fusion, in the Hi-C of the K562
-leukemia line against GM12878's normal karyotype. JBrowse fetches a Hi-C matrix
-for every _pair_ of regions on screen, so a chr9 window and a chr22 window in
-one linear view draw the contacts between the two. Over the same matrices, we
-then compare the two lines' compartment calls at _EBF1_, a gene B cells depend
-on for their identity.
+Two chromosomes joined by a translocation touch along the join, so Hi-C reads
+linking them run far above background. We look for the Philadelphia chromosome,
+the _BCR_-_ABL1_ fusion, in the Hi-C of the K562 leukemia line against GM12878's
+normal karyotype. JBrowse fetches a Hi-C matrix for every _pair_ of regions on
+screen, so a chr9 window and a chr22 window in one linear view draw the contacts
+between the two. Over the same matrices, we then compare the two lines'
+compartment calls at _EBF1_, a gene B cells depend on for their identity.
 
 ## Prerequisites
 
@@ -173,13 +172,13 @@ and chr22 each fold normally in K562.
 
 ## Choosing the control and normalization for the translocation scan
 
-**Control depth.** The scan script below compares a case `.hic` with a control,
-and ships with ENCODE's deep GM12878 in situ file, `ENCSR410MDC`, as the
-control. The script leaves the much shallower GM12878 "supernatant" fraction,
-`ENCSR730CER`, commented out, because a wedge empty for want of reads looks the
-same as one empty for want of a translocation. With the deep file, the scan
-finds GM12878 with more contact than K562 across the whole chr9-chr22 block
-except the junction bin, where the order inverts.
+**Control depth.** The scan script below compares a case `.hic` against a
+control, ENCODE's deep GM12878 in situ file `ENCSR410MDC` by default. The script
+leaves the much shallower GM12878 "supernatant" fraction, `ENCSR730CER`,
+commented out, because a wedge empty for want of reads looks the same as one
+empty for want of a translocation. With the deep file, the scan finds GM12878
+with more contact than K562 across the whole chr9-chr22 block except the
+junction bin, where the order inverts.
 
 **Normalization.** Matrix balancing divides out per-bin coverage differences,
 and an amplified fusion is such a difference, so balancing hides it. Re-run the
@@ -251,13 +250,14 @@ next to the matrix it was called from.
 ## A and B compartments at EBF1 in GM12878 and K562
 
 The genome sorts into two interleaved sets of regions, the gene-rich, active A
-compartment and the inactive B compartment, and regions contact others in the
-same set most. ENCODE publishes that call for every experiment as a
+compartment and the inactive B compartment, and each region contacts regions in
+the same set most. ENCODE publishes that call for every experiment as a
 [compartment eigenvector and a set of subcompartment classes](/docs/user_guides/hic_track#compartments-and-subcompartments).
 
 We load each line's eigenvector, a score per bin whose sign marks the
-compartment, as a bigWig. Both tracks pin to one symmetric scale, so they
-compare directly and 0, where the compartment flips, sits in the middle of each:
+compartment, as a bigWig. Both tracks pin `scales.y`, the y scale, to one
+symmetric range, so they compare directly and 0, where the compartment flips,
+sits in the middle of each:
 
 ```json addtrack
 {

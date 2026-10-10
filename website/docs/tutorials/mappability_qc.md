@@ -12,9 +12,9 @@ A pileup looks the same whether its reads belong at a locus or merely landed
 there. At the _SMN1_/_SMN2_ duplication on chromosome 5, we tell the two apart
 with tracks that genomes.jbrowse.org publishes for hg38 (reference mappability,
 gnomAD coverage and problematic-region annotations) and a public 1000 Genomes
-CRAM, added as a session track and colored by mapping quality. We then ask
-whether the finished T2T-CHM13 reference resolves the duplication, and compare
-the locus against a control window from the same sample.
+CRAM colored by mapping quality. We then ask whether the finished T2T-CHM13
+reference resolves the duplication, and compare the locus against a control
+window from the same sample.
 
 ## Prerequisites
 
@@ -68,18 +68,18 @@ so there is nothing to download by hand.
 _SMN1_ and _SMN2_ sit about 900 kb apart on chromosome 5 and are roughly 99.9%
 identical across their ~28 kb. Spinal muscular atrophy turns on the copy number
 of _SMN1_, so which copy a read came from is the clinical question. An aligner
-given a 150 bp read from either copy has two equally good places to put it, and
-reports that as mapping quality 0 (MAPQ 0). MAPQ is
+given a 150 bp read from either copy has two equally good places to put it and
+reports mapping quality 0 (MAPQ 0). MAPQ is
 `-10 log10 Pr{mapping position is wrong}`
 ([SAM specification](https://samtools.github.io/hts-specs/SAMv1.pdf)), so MAPQ 0
 means the chosen position is about as likely wrong as right.
 
 ## Mappability, coverage and read tracks across the SMN1 and SMN2 region
 
-Turn on these tracks from the track selector of the hosted hg38 config at
-[genomes.jbrowse.org](https://genomes.jbrowse.org), or add them to any JBrowse
-with the hg38 assembly loaded using the configs below. UCSC publishes the
-mappability and problematic-region tracks for hg38 only:
+Turn these tracks on from the track selector of the hosted hg38 config at
+[genomes.jbrowse.org](https://genomes.jbrowse.org), or add them with the configs
+below to any JBrowse that has the hg38 assembly. UCSC publishes the mappability
+and problematic-region tracks for hg38 only:
 
 - **Multi-read mappability - Umap M100**, the fraction of overlapping 100-mers
   at each position that are unique in the genome, computed from the reference
@@ -147,9 +147,9 @@ The Umap config holds the **Minimum** score mode and the 0 to 1 axis:
 }
 ```
 
-Then add the NA12878 reads, colored by mapping quality. The CRAM needs its
-`.crai` beside it and decodes against the hg38 assembly; for your own sample,
-swap the `uri`:
+Then add the NA12878 reads. The CRAM needs its `.crai` beside it and decodes
+against hg38; for your own sample, swap the `uri`. In grammar-of-graphics terms,
+the track's `color` is a color scale on the `mapq` field:
 
 ```json addtrack loc=chr5:70,889,000-70,989,000
 {
@@ -166,33 +166,33 @@ Open `chr5:69,200,000-71,700,000` for the whole region, and a second view at
 
 <Figure src="/img/qc/smn_block_and_reads.png" caption="Two scales of the same place. Top, the region on chr5 with SMN2 and SMN1 banded: RefSeq genes, gnomAD mean coverage, GIAB's low-mappability and segmental-duplication regions, and the 1000 Genomes long-read SV callset. Below it, a second view from SMN1 to where the reads recover, with Umap k100 mappability and NA12878 reads colored by mapping quality." links="Open the wide view=qc/smn_problematic_regions,Open the read view=qc/smn_read_placement" />
 
-GIAB flags a sequence much larger than the gene, as two long intervals, and the
-gnomAD track stays low across both. Beyond them, GIAB flags nothing larger than
-a few kilobases for megabases in either direction. In the read view, the reads
-stay at MAPQ 0 until well past the end of _SMN1_, where the Umap track steps up
-at the same coordinate as the gnomAD coverage.
+GIAB flags two long intervals, much larger than the gene, and the gnomAD track
+stays low across both. Beyond them, GIAB flags nothing larger than a few
+kilobases for megabases in either direction. In the read view, the reads stay at
+MAPQ 0 until well past the end of _SMN1_, where the Umap track steps up at the
+same coordinate as the gnomAD coverage.
 
 Zoom the read view to the SMN cassette, `chr5:70,889,000-70,989,000`.
 
 <Figure src="/img/qc/smn1_evidence.png" caption="The SMN cassette, holding SERF1A, SMN1 and NAIP, with the same four tracks and one read per row. Almost every read is dark blue, mapped where it is drawn and fitting somewhere else just as well." links="Open this view=qc/smn1_evidence" />
 
-Dark blue is MAPQ 0; yellow is MAPQ 30 and above.
+Dark blue is MAPQ 0; yellow is MAPQ 30 and above. **Advanced → Edit plot...** on
+the reads track shows this `color` as text and applies edits live.
 
 ## Does T2T-CHM13 resolve the SMN duplication?
 
 T2T-CHM13, the telomere-to-telomere assembly, is finished on this chromosome.
-UCSC's hg38-to-CHM13 liftOver chains over the region form several long chains
-that overlap each other, some of them reversed:
+UCSC's hg38-to-CHM13 liftOver forms several long, overlapping chains over the
+region, some of them reversed:
 
 ```bash
 tabix https://jbrowse.org/ucsc/hg38/liftOver/hg38ToHs1.over.pif.gz \
   tchr5:69200000-71700000
 ```
 
-Drawn as a synteny view between the two assemblies, each chain is a ribbon. The
-hosted hg38 config already has the track and loads hs1 with it. On another
-JBrowse, load the hs1 assembly and the chain file, which names the genome it
-lifts to as its query:
+A synteny view between the two assemblies draws each chain as a ribbon. The
+hosted hg38 config has the track and loads hs1 with it. On another JBrowse, load
+the hs1 assembly and the chain file, whose query is the genome it lifts to:
 
 ```json addassembly
 {
@@ -224,20 +224,20 @@ crossing chains join each GRCh38 copy to both CHM13 copies, so CHM13 has the
 same duplication, with the two genes closer together.
 
 Long reads test whether T2T-CHM13 places reads at _SMN1_ better than GRCh38
-does. The 1000 Genomes ONT release aligned GM18501 to both references with the
-same minimap2 pipeline, and `scan_mappability_qc.sh` prints the share of its
-records over _SMN1_ at MAPQ 0 and at MAPQ 60 on each. The long reads place
-better than the short reads at the same gene, and the MAPQ 0 share is the same
-on both references.
+does. The 1000 Genomes ONT release aligned GM18501 to both references with one
+minimap2 pipeline, and `scan_mappability_qc.sh` prints the share of its records
+over _SMN1_ at MAPQ 0 and MAPQ 60 on each. The long reads place better than the
+short reads at the same gene, and the MAPQ 0 share is the same on both
+references.
 
 ## Depth and MAPQ at SMN1 and at a control window
 
 `scan_mappability_qc.sh` counts the reads in equal windows over _SMN1_ and over
-the right-hand end of the read view, from the same library, and the two come
-back at the same depth. A coverage track with no MAPQ filter draws flat across
-both. The MAPQ 0 share separates them, with most reads at _SMN1_ at MAPQ 0 and
-almost none at the control; the gnomAD depth over _SMN1_ falls to a fraction of
-the control's for the same reason.
+the right-hand end of the read view, from the same library, and finds the same
+depth in both. A coverage track with no MAPQ filter draws flat across both. The
+MAPQ 0 share separates them, with most reads at _SMN1_ at MAPQ 0 and almost none
+at the control; the gnomAD depth over _SMN1_ falls to a fraction of the
+control's for the same reason.
 
 ## Long-read SV calls across the SMN1 and SMN2 region
 
@@ -259,7 +259,7 @@ settings, add your reads colored by mapping quality, and put a second window of
 the same width, from the same sample and outside every flagged interval, beside
 the first.
 
-In numbers, the comparison is three `samtools` counts per window, `-q` being a
+In numbers, the comparison is three `samtools` counts per window, with `-q` a
 minimum MAPQ:
 
 <!-- from: scripts/scan_mappability_qc.sh -->
@@ -315,8 +315,8 @@ curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/
 bash scan_mappability_qc.sh
 ```
 
-The script prints its sections in the order this page uses them, and measures a
-locus added to its `LOCI` list the same way.
+The script prints its sections in this page's order, and measures a locus added
+to its `LOCI` list the same way.
 
 ## See also
 

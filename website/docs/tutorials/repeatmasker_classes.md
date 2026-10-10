@@ -16,8 +16,8 @@ difference is hard to read. The same file opened as a
 labelled row per class.
 
 JBrowse reads the classes from the file, so no data preparation is needed. Every
-genome at [genomes.jbrowse.org](https://genomes.jbrowse.org), and any other
-UCSC/GenArk hub config, has a RepeatMasker track to try it on.
+genome at [genomes.jbrowse.org](https://genomes.jbrowse.org), and any UCSC or
+GenArk hub config, has a RepeatMasker track to try.
 
 ## Prerequisites
 
@@ -53,7 +53,8 @@ as its FASTA and RepeatMasker's `.out`.
 
 ## Where UCSC and GenArk hubs store the repeat class
 
-UCSC golden-path and GenArk hubs store the repeat class differently:
+The multi-row display's `rows` assigns one row per value of a `field`. UCSC
+golden-path and GenArk hubs store the repeat class in different places:
 
 - A **UCSC golden-path** assembly ships a BED whose header names its columns,
   `repClass` among them. That column is a feature attribute, so `rows` is
@@ -69,12 +70,16 @@ window with no satellite repeats has no satellite row.
 
 ## Switching hg38's RepeatMasker track to one row per class
 
-Open hg38 on [genomes.jbrowse.org](https://genomes.jbrowse.org), turn on
-**RepeatMasker**, type `chr17:45,700,000-45,750,000` into the location box, then
-pick **Display types → Multi-row feature display (painting)** in the track menu.
-The multi-row display partitions on `repClass` whenever the file has that
-column; **One row per...** in the same menu lists every column the loaded
-features have, `repFamily` among them. <!-- menu-path-ok -->
+We'll open hg38 on [genomes.jbrowse.org](https://genomes.jbrowse.org) and switch
+the track:
+
+- Turn on **RepeatMasker** and type `chr17:45,700,000-45,750,000` into the
+  location box.
+- **Display types → Multi-row feature display (painting)** in the track menu.
+
+The display partitions on `repClass` whenever the file has that column, and
+**One row per...** in the same menu lists every column the loaded features have,
+`repFamily` among them. <!-- menu-path-ok -->
 
 <Figure src="/img/multirow/display_types_menu.png" caption="Top: the track menu's Display types submenu on the UCSC RepeatMasker track; any feature track offers the multi-row display beside its default one. Bottom: the same window after picking it, one row per repeat class." />
 
@@ -84,10 +89,11 @@ features have, `repFamily` among them. <!-- menu-path-ok -->
 
 ## Pinning row order and colors in a track config
 
-A track config can open the track in the partitioned view. Two settings keep the
-rows stable as the window's class list changes: `rows.domain` lists the classes
-that come first, in order, and `rowColor` pairs a class with a color. A class
-`rows.domain` leaves out follows the listed ones.
+A track config can open the track in the partitioned view, and two settings keep
+the rows stable as the window's class list changes. `rows.domain` lists the
+classes that come first, in order, and a class it leaves out follows the listed
+ones. `rowColor` is a color scale on each row's label bar, pairing each class in
+its `domain` with a color in its `range`.
 
 ```json addtrack
 {
@@ -137,14 +143,13 @@ that come first, in order, and `rowColor` pairs a class with a color. A class
 A row not named in `rowColor` paints in the default block color. Setting
 `unknown` in `rowColor` gives every unnamed row one color.
 
-The track opens with the display listed **first**, so the multi-row entry makes
-rows the default. Putting a bare `{ "type": "LinearBasicDisplay" }` ahead of it
-keeps the packed form as the default and leaves the rows one menu click away.
+The track opens with the first display listed, so the multi-row entry makes rows
+the default. Putting a bare `{ "type": "LinearBasicDisplay" }` ahead of it keeps
+the packed form as the default and leaves the rows one menu click away.
 
 ## Checking the rows against the RepeatMasker file {#checking-the-rows-against-the-file}
 
-To check the row heights, count the classes in the file over the window in the
-figures:
+To check the rows, count the classes in the file over the figures' window:
 
 ```bash
 tabix https://jbrowse.org/ucsc/hg38/rmsk.bed.gz chr17:45,700,000-45,750,000 |
@@ -168,9 +173,8 @@ The `Unknown` row is the control. Neither the `rowColor` above nor the
 because the rows come from the file. Pan to a window whose output has no
 `Unknown` line and the row goes away.
 
-The same command with `$6` instead of `$7` counts `repFamily`, which is the
-finer partition (`L1`, `Alu`, `MIR`) if the classes turn out to be too coarse
-for what you are reading.
+The same command with `$6` in place of `$7` counts `repFamily`, the finer
+partition (`L1`, `Alu`, `MIR`).
 
 ## Serving your own RepeatMasker output
 
@@ -203,8 +207,8 @@ jbrowse sort-bed rmsk.bed | bgzip > rmsk.bed.gz
 tabix -p bed rmsk.bed.gz
 ```
 
-The bed's columns are UCSC's first seven columns in UCSC's order, so the
-`tabix | awk` check above reads the result unchanged.
+The bed's first seven columns match UCSC's, so the `tabix | awk` check above
+reads the result unchanged.
 
 ## Reproduce it end to end
 
@@ -230,8 +234,8 @@ diff <(gzip -dc repeatmasker_build/rmsk.bed.gz | grep -v '^#' | cut -f1-7 | sort
 ```
 
 No output means every interval, name, strand, family and class agrees with the
-UCSC conversion of the same `.out`. A disagreement usually traces to the `.out`
-quirks the awk comments name.
+UCSC conversion. A disagreement usually traces to the `.out` quirks the awk
+comments name.
 
 ## See also
 

@@ -30,8 +30,8 @@ paint the result as one colored row per haplotype (one copy of a chromosome).
 - `node`, for the [JBrowse CLI](/docs/cli)
 
 On Debian/Ubuntu, `apt install bcftools tabix curl python3 default-jre` covers
-all of it, and the packaged `bcftools` is linked against libcurl. `flare.jar` is
-a single download from FLARE's
+all of it, including a `bcftools` linked against libcurl. `flare.jar` is a
+single download from FLARE's
 [releases page](https://github.com/browning-lab/flare/releases). The painted BED
 is a local file, so [JBrowse Desktop](/docs/quickstart_desktop) opens it by
 path, while JBrowse Web needs it served.
@@ -42,8 +42,8 @@ The Dog10K consortium's public phased reference panel
 ([Meadows et al. 2023](https://doi.org/10.1186/s13059-023-03023-7)), plus a
 canFam4 genetic map published separately.
 
-The [build script](#reproduce-it-end-to-end) takes these files from their URLs,
-so there is nothing to download by hand.
+The [build script](#reproduce-it-end-to-end) fetches these files, so there is
+nothing to download by hand.
 
 - the phased reference panel of 1929 canids FLARE runs against:
   https://kiddlabshare.med.umich.edu/dog10K/phased-imputation-panel/AutoAndXPAR.Dog10K.phased.bcf
@@ -56,9 +56,9 @@ so there is nothing to download by hand.
 
 ## Loading the UU_Cfam_GSD_1.0 dog assembly
 
-The tracks name `UU_Cfam_GSD_1.0`, the Dog10K reference that UCSC calls canFam4.
-We load it from UCSC's 2bit, with the alias file that maps the `chr` names to
-GenBank accessions:
+`UU_Cfam_GSD_1.0` is the Dog10K reference that UCSC calls canFam4. We load it
+from UCSC's 2bit, with the alias file that maps the `chr` names to GenBank
+accessions:
 
 ```json addassembly
 {
@@ -78,12 +78,12 @@ GenBank accessions:
 
 ## Two wolfdog breeds and their wolf blocks
 
-The [Dog10K consortium](https://www.dog10kgenomes.org/) publishes a phased panel
-of 1929 canids on `UU_Cfam_GSD_1.0`, including both wolfdog breeds, 57 gray
-wolves, and hundreds of breed dogs. Local ancestry labels each stretch of a
-chromosome with the reference panel (a labelled set of animals) it most
-resembles. As targets, FLARE paints one dog from each of the 219 breeds with
-four or more sequenced animals, to catch a wolf cross in any breed, plus:
+Local ancestry labels each stretch of a chromosome with the reference panel (a
+labelled set of animals) it most resembles. The
+[Dog10K consortium](https://www.dog10kgenomes.org/)'s panel of 1929 canids
+includes both wolfdog breeds, 57 gray wolves and hundreds of breed dogs. As
+targets, FLARE paints one dog from each of the 219 breeds with four or more
+sequenced animals, to catch a wolf cross in any breed, plus:
 
 - **The two wolfdog breeds**: the Saarloos Wolfdog and the Czechoslovakian
   Wolfdog are 20th-century crosses between German Shepherd Dogs and captive gray
@@ -98,19 +98,18 @@ four or more sequenced animals, to catch a wolf cross in any breed, plus:
 
 ## The files FLARE reads and writes
 
-Every file between the phased panel and the painted track is plain text, VCF or
-BED:
+Every file between the phased panel and the painted track is text, VCF or BED:
 
 <Figure caption="The Dog10K sample table and phased BCF at the top, the panel lists and per-chromosome VCFs FLARE takes as input in the middle, and the BED9 files the track reads at the bottom." src="/img/wolfdog_ancestry_pipeline.png" />
 
 ### Choosing the wolf and dog reference panels
 
-FLARE compares each target animal against two panels, wolves and dogs. The build
-script derives both lists from the sample table's breed and category per animal:
-European gray wolves for the wolf panel, and one dog from every breed for the
-dog panel, minus the targets and both wolfdog breeds. The dog panel has to
-include the breed of each target, or the ordinary haplotypes of that target have
-no close match there.
+FLARE compares each target animal against a wolf panel and a dog panel. The
+build script derives both lists from the sample table's breed and category per
+animal: European gray wolves for the wolf panel, and one dog from every breed
+for the dog panel, minus the targets and both wolfdog breeds. The dog panel has
+to include the breed of each target, or the ordinary haplotypes of that target
+have no close match there.
 
 No animal is painted against a panel that contains it:
 
@@ -130,7 +129,7 @@ AFGH000001	Dog
 
 ### Slicing one chromosome out of the phased BCF
 
-The panel is a single 6 GB BCF, and `bcftools` reads it over HTTP by range
+The panel is a single 6 GB BCF, which `bcftools` reads over HTTP by range
 request. The chromosome subset splits into `chr1.ref.vcf.gz` (the two panels)
 and `chr1.gt.vcf.gz` (the 243 targets).
 
@@ -150,16 +149,16 @@ bcftools view -S targets.txt --force-samples -Oz -o chr1.gt.vcf.gz chr1.subset.v
 
 ### Reshaping the Campbell genetic map for FLARE
 
-FLARE requires a genetic map. The build script reshapes the Campbell pedigree
-map's `POS`/`rate`/`Map(cM)` columns into the four PLINK columns FLARE reads:
-chromosome, marker ID, genetic position in cM and base-pair position. The
+FLARE requires a genetic map in four PLINK columns: chromosome, marker ID,
+genetic position in cM and base-pair position. The build script reshapes the
+Campbell pedigree map's `POS`/`rate`/`Map(cM)` columns into them, and the
 chromosome names must match the VCF's. With no map for your organism, write one
 at a constant rate per megabase from the assembly's `chrom.sizes`; segment edges
 are then approximate.
 
 ### Running FLARE
 
-FLARE takes the two panel VCFs, the `ref-panel` file, and the map, and writes
+FLARE takes the two panel VCFs, the `ref-panel` file and the map, and writes
 `wolfdog_chr1.anc.vcf.gz` plus a summary:
 
 <!-- from: scripts/build_dog10k_wolfdog_ancestry.sh -->
@@ -189,8 +188,8 @@ TMSK000001      0.033   0.967     Tamaskan
 GRSD000002      0       1         German Shepherd Dog
 ```
 
-Nearly all swept breeds come in at a trace of wolf, and seven of the eight
-wolfdogs (four Saarloos, four Czechoslovakian) sit far above them. The eighth,
+Nearly all swept breeds show a trace of wolf, and seven of the eight wolfdogs
+(four Saarloos, four Czechoslovakian) sit far above them. The eighth,
 Czechoslovakian 2 (`CZEC000002`), lands inside the range of the sweep with no
 long block anywhere.
 
@@ -209,8 +208,8 @@ curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/
 python3 flare_anc_to_bed.py wolfdog_chr1.anc.vcf.gz labels.tsv ancestry.chr1.bed
 ```
 
-The BED sorts and indexes like any other BED track. The build script does the
-same sort inline with `sort`, so it runs without node:
+The BED sorts and indexes like any other BED track. The build script sorts
+inline to run without node:
 
 ```bash
 jbrowse sort-bed ancestry.chr1.bed | bgzip > ancestry.chr1.bed.gz
@@ -224,18 +223,20 @@ Each output line looks like this:
 chr1	49135137	57939751	Wolf	0	.	49135137	57939751	230,159,0	Czechoslovakian 1 hap1	Wolf
 ```
 
-The last two columns name the row of the block and the called ancestry. The `#`
+The last two columns hold the block's row and its called ancestry, and the `#`
 header names them, so the track config needs no `columnNames`. The build script
-runs the converter twice: `labels.tsv` over every target into
-`dog10k_wolfdog_ancestry.chr1.bed.gz`, and `named.tsv` over the animals the
-figure names into `dog10k_wolfdog_named.chr1.bed.gz`, the file the track below
-loads.
+runs the converter twice:
+
+- `labels.tsv` over every target, into `dog10k_wolfdog_ancestry.chr1.bed.gz`
+- `named.tsv` over the animals the figure names, into
+  `dog10k_wolfdog_named.chr1.bed.gz`, the file the track below loads
 
 ## Loading the blocks as a multi-row track
 
 The multi-row feature display (`LinearMultiRowFeatureDisplay`) draws one row per
-value of `rows.field`, here `sample`, ordered by `rows.domain`. An identity
-`color` names the BED's `itemRgb` colors in the key.
+`sample`. In grammar-of-graphics terms, `rows` assigns the rows and
+`rows.domain` orders them, and `color` is a color scale whose
+`scale: "identity"` names the BED's `itemRgb` colors in the key.
 
 ```json addtrack
 {
@@ -275,6 +276,9 @@ value of `rows.field`, here `sample`, ordered by `rows.domain`. An identity
 }
 ```
 
+**Advanced → Edit plot...** in the track menu shows `rows` and `color` as text
+and applies edits live.
+
 `rows.domain` is abbreviated here; the build script writes all sixty-four rows
 in descending order of chr1 wolf fraction from FLARE's summary. For your own
 animals:
@@ -290,21 +294,21 @@ animals:
 
 Each pair of rows is the two chromosome copies of one animal. Orange marks a
 stretch resembling a present-day gray wolf more than a breed dog. Wolf on one
-row and dog on the other is heterozygous; both orange is homozygous
+row and dog on the other is heterozygous, and both orange is homozygous
 wolf-derived.
 
-Blocks break up towards the end of chr1, tracking the genetic map. The build
+Blocks break up towards the end of chr1, tracking the genetic map: the build
 script tiles the chromosome and prints block-edge count and recombination per
 tile, and the tile with the most block edges has recombination far above the
-median tile's.
+median.
 
 ### Held-out wolves where FLARE and allele counts disagree
 
 Most held-out wolves come out essentially all wolf. The two Swedish museum
-specimens come out partly dog in FLARE's calls, yet they score highest of the
-held-out wolves on a second measure the build script prints: the fraction of
-near-fixed differing sites carrying the wolf allele. That measure scores alleles
-one site at a time, while FLARE matches whole haplotypes against a panel.
+specimens come out partly dog in FLARE's calls, yet score highest of the
+held-out wolves on a second measure the build script prints, the fraction of
+near-fixed differing sites with the wolf allele. That measure scores one site at
+a time, where FLARE matches whole haplotypes against a panel.
 
 ### How long the Tamaskan's and Shiloh Shepherd's wolf blocks run
 
@@ -319,8 +323,8 @@ one line per animal:
   puts it among the three dogs with the longest, most recent wolf tracts
   ([Lin et al. 2025](https://doi.org/10.1073/pnas.2421768122)).
 
-On the full 243-animal track, **Clustering** → **Cluster rows by similarity...**
-in the track menu orders the rows by their blocks and puts the held-out wolves
+**Clustering** → **Cluster rows by similarity...** in the track menu orders the
+rows of the full 243-animal track by their blocks. It puts the held-out wolves
 on a small branch with the wolfdog haplotypes with the most wolf, apart from the
 breed dogs. Clustering runs over the region in view, and a chip in the corner of
 the tree shows the locus.

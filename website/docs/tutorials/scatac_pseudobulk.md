@@ -18,8 +18,8 @@ marker genes.
   BAM) plus a barcode-to-label table, or the project object your analysis tool
   already holds, an `AnnData` in SnapATAC2 (Python), an `ArchRProject` in ArchR,
   or a Seurat/Signac object in R
-- the pseudobulk tool that follows from whichever of those you have:
-  `pip install snapatac2`, `pip install deeptools sinto`, or
+- the pseudobulk tool that matches what you have: `pip install snapatac2`,
+  `pip install deeptools sinto`, or
   [`bedGraphToBigWig`](https://hgdownload.soe.ucsc.edu/admin/exe/) for the
   fragments-file route (ArchR and Signac install from R)
 - a JBrowse instance to load the finished BigWigs into (see the
@@ -48,8 +48,8 @@ SnapATAC2, so there is nothing to download by hand.
 
 ## Pooling cells into one coverage track per cell type
 
-One ATAC cell contributes only a few thousand fragments, so its own coverage is
-almost entirely zero. JBrowse stacks the pooled files as rows of one
+One ATAC cell contributes only a few thousand fragments, so a single cell's
+coverage is almost entirely zero. JBrowse stacks the pooled files as rows of one
 track.[^inline]
 
 PBMC marker genes are the control. At a T-cell marker the T-cell rows have
@@ -64,8 +64,8 @@ whether the rows compare:
 - **Normalization.** Groups differ in cell count and total fragments, so each
   track needs normalizing (CPM / RPKM, or per-cell-count) for a peak's height to
   mean accessibility
-- **Bin size**, which trades resolution against file size. The bin has to stay
-  well inside one peak; `export_coverage` below uses 25 bp
+- **Bin size** trades resolution against file size and has to stay well inside
+  one peak; `export_coverage` below uses 25 bp
 
 SnapATAC2's `export_coverage` splits cells by a metadata column and writes one
 normalized BigWig per group in a single call:
@@ -131,9 +131,9 @@ draws empty unless the assembly has a name-alias table.
 ## Loading the BigWigs as a MultiWiggle track
 
 All the per-cell-type BigWigs go into one `MultiQuantitativeTrack` whose
-`MultiWiggleAdapter` holds one `BigWigAdapter` per file, each with a `name`, an
-optional `color`, and an optional `group`. Swap each `uri` for the BigWig your
-pooling step wrote.
+`MultiWiggleAdapter` holds one `BigWigAdapter` per file, each with a `name` and
+an optional `color` and `group`. Swap each `uri` for the BigWig your pooling
+step wrote.
 
 The fence lists three of the twelve cell types the figure draws; the
 [build script](#reproduce-it-end-to-end) writes the whole list, and the hosted
@@ -176,7 +176,7 @@ it as `pbmc5k_scatac_pseudobulk_hg38`:
 }
 ```
 
-The `subadapters` list has three things only you can set:
+The `subadapters` list has three things to set yourself:
 
 - the order: subadapters draw in the order given, so group them by lineage
 - `color`: copy the cluster color from your analysis, so a cell type matches its
@@ -211,10 +211,10 @@ go into the `subadapters` list like the PBMC files. Percent-encode the `+` in a
 cell-type name (`T_lymphocyte_2_CD4%2B.bw`); left unencoded, the URL breaks and
 the row loads with no data.
 
-The track menu switches [`mark`](/docs/config/linearwiggledisplay/#slot-mark)
-between drawing modes. `bar` (the default, and the figures here) compares peak
-shape; `span` maps score to color and fits more rows.
-[](/docs/user_guides/quantitative_track) covers the rest of the menu.
+In grammar-of-graphics terms, a
+[`mark`](/docs/config/linearwiggledisplay/#slot-mark) is the shape drawn, and
+the track menu switches it between modes: `bar` (the default, and the figures
+here) compares peak shape, and `span` maps score to color and fits more rows.
 
 To check the rows against marker genes, paste two loci into the location box to
 open them side by side in one view, a T-cell marker (_CD8A_) and a B-cell marker

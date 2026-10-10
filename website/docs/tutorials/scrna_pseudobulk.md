@@ -24,7 +24,7 @@ the pooled rows.
   split-the-BAM route; the [reproduce script](#reproduce-it-end-to-end) bins the
   reads itself, so it needs `bedGraphToBigWig` but neither of the other two
 - a JBrowse instance to load the finished BigWigs into (see the
-  [web quickstart](/docs/quickstart_web), or the
+  [web quickstart](/docs/quickstart_web) or the
   [desktop quickstart](/docs/quickstart_desktop))
 
 ## Where the data comes from
@@ -34,8 +34,8 @@ the pooled rows.
 experiment, which the build script streams and pools by cell type without
 writing the BAM to disk.
 
-The [build script](#reproduce-it-end-to-end) takes these files from their URLs,
-so there is nothing to download by hand.
+The [build script](#reproduce-it-end-to-end) fetches these files, so there is
+nothing to download by hand.
 
 - the barcoded alignments, which the script reads by region over HTTPS:
   https://cf.10xgenomics.com/samples/cell-exp/3.0.2/5k_pbmc_v3/5k_pbmc_v3_possorted_genome_bam.bam
@@ -198,18 +198,20 @@ as `pbmc5k_scrna_pseudobulk_hg38`:
 }
 ```
 
-The `log` axis keeps the dim rows readable. _LYZ_ in monocytes sits an order of
-magnitude above _IL7R_ in CD4 T cells, and the rows share one axis.
+In grammar-of-graphics terms, `scales.y` is the y scale, and its `log` type
+keeps the dim rows readable: _LYZ_ in monocytes sits an order of magnitude above
+_IL7R_ in CD4 T cells, and the rows share one axis.
 
 Take the row order and colors from the single-cell object, so related lineages
-stay adjacent and a row keeps the color its cluster had on the UMAP.
+stay adjacent and each row keeps its cluster's UMAP color.
 
 The clusters were named by scoring them against marker panels, so those markers
-would light up their own rows by construction. To test the labels, open nine
-markers the panels leave out, one per cell type: _CD40LG_, _LINC02446_, _SPON2_,
-_CD22_, _S100A12_, _HES4_, _ENHO_, _LRRC26_ and _GNG11_. 10x 3' kits sequence
-the 3' end of each transcript, so coverage is a spike near the polyadenylation
-site; paste each gene's 3' end into the location box to open them side by side:
+have signal in the rows of their cell types by construction. To test the labels,
+we open nine markers the panels leave out, one per cell type: _CD40LG_,
+_LINC02446_, _SPON2_, _CD22_, _S100A12_, _HES4_, _ENHO_, _LRRC26_ and _GNG11_.
+10x 3' kits sequence the 3' end of each transcript, so coverage is a spike near
+the polyadenylation site; paste each gene's 3' end into the location box to open
+them side by side:
 
 ```text
 chrX:136,658,390-136,662,390 chr12:10,556,794-10,560,794 chr4:1,164,931-1,168,931 chr19:35,345,361-35,349,361 chr1:153,371,710-153,375,710 chr1:996,963-1,000,963 chr9:34,519,042-34,523,042 chr9:137,166,757-137,170,757 chr7:93,926,610-93,930,610
@@ -217,11 +219,11 @@ chrX:136,658,390-136,662,390 chr12:10,556,794-10,560,794 chr4:1,164,931-1,168,93
 
 <Figure caption="Nine per-cell-type BigWigs from the 10x 5k PBMC dataset, loaded as one MultiQuantitativeTrack, over nine marker loci the cluster labelling did not use, in the same order as the rows they mark. The signal runs down the diagonal." src="/img/scrna/marker_panel.png" />
 
-`jbrowse add-track --multiwig` takes a comma-separated list of the BigWigs and
-builds the same track, labeling each row from its filename, and the **Add
-multi-row track** workflow under **Add track** takes the same URLs one per line.
-[](/docs/tutorials/scatac_pseudobulk) shows both with per-row names, colors and
-groups.
+Two other routes build the same track:
+
+- `jbrowse add-track --multiwig` takes a comma-separated list of the BigWigs and
+  labels each row from its filename.
+- **Add multi-row track** under **Add track** takes the same URLs one per line.
 
 ## Per-cell coverage rows from a Zarr store
 
@@ -292,8 +294,8 @@ Two settings decide whether the speckle is visible:
   `group` each cell has in the store's attributes seeds that and drives the
   sidebar tree
 - **Pin the score axis.** A low `domainMax` puts one UMI a visible fraction up
-  the color ramp, as in [](/docs/tutorials/population_cnv). Autoscale takes its
-  maximum from the tallest single cell in view
+  the color ramp, whereas autoscale takes its maximum from the tallest single
+  cell in view
 
 ## Reproduce it end to end
 

@@ -10,8 +10,8 @@ transcript, and the aligner records each jump in the read's CIGAR string. In a
 stranded library the pair flags also mark which strand the transcript came from.
 JBrowse draws splice arcs and strand coloring from those two BAM fields, with no
 extra files or configuration. We read spliced alignments over _ACTB_, transcript
-strand at the surfeit locus and a long-read alignment, and then load a
-pipeline's junction table as a track.
+strand at the surfeit locus and a long-read alignment, then load a pipeline's
+junction table as a track.
 
 ## Prerequisites
 
@@ -39,10 +39,10 @@ Nothing to download: the track configs below read these files by URL.
 
 ## Loading hg19, the stranded reads and RefSeq genes
 
-The alignments are against hg19, so we load that assembly, with an alias file
-that resolves the chromosome names in the BAM and the gene models to the
-assembly's, then the stranded paired-end reads and the RefSeq gene models, each
-with its index beside it:
+The alignments are against hg19, so we load that assembly with an alias file
+that maps the chromosome names in the BAM and the gene models to the assembly's.
+Then we add the stranded paired-end reads and the RefSeq gene models, each with
+its index beside it:
 
 ```json addassembly
 {
@@ -87,16 +87,14 @@ one `uri`, and JBrowse finds the `.bai` or `.crai` beside the file:
 }
 ```
 
-Your own reads load like the track above once four things are in place:
+Your own reads load like the track above once three things are in place:
 
 - **Assembly.** `assemblyNames` must match an assembly already configured in
   JBrowse; see the
   [assemblies configuration guide](/docs/config_guides/assemblies).
 - **Alignment.** Align reads with a spliced aligner such as STAR, then
   `samtools sort` and `samtools index` so the `.bai` sits beside the BAM.
-- **Options.** The
-  [alignments track config guide](/docs/config_guides/alignments_track) covers
-  adapter and display options.
+
 - **Coverage signal.** A precomputed signal, such as a strand-specific BigWig
   from the aligner, loads separately as a
   [quantitative track](/docs/user_guides/quantitative_track).
@@ -114,9 +112,9 @@ them.
 
 ## Read coverage and read height
 
-The histogram counts the reads in the pileup below it at each position. Pick
-**Read height → Compact** in the track menu to pack the full read stack into
-view:
+The histogram counts the reads in the pileup below it at each position.
+
+**Read height → Compact** in the track menu packs the full read stack into view:
 
 <Figure caption="ACTB under compact read height: the whole read stack fits the track, under the per-position coverage histogram and the hg19 NCBI RefSeq gene model." src="/img/rnaseq/compact_stacked.png" />
 
@@ -134,12 +132,11 @@ this, spaced out for readability:
 ```
 
 The CIGAR reads as 18 bp (`M`, match) aligned to one exon, a 95 bp skip (`N`)
-across the intron, and 33 bp (`M`) aligned to the next. Every `N` in a read's
-CIGAR is one skipped intron.
+across the intron, and 33 bp (`M`) aligned to the next.
 
 JBrowse computes the arcs on the fly from the skips in the reads in view, and
-colors each arc by transcript strand, salmon for forward and purple for reverse,
-the colors the reads of each strand take. It finds the strand two ways:
+colors each arc by transcript strand, salmon for forward and purple for reverse.
+It finds the strand two ways:
 
 - **Tags.** `XS` and `TS` record the strand directly. minimap2's `ts` is
   relative to the read, so JBrowse combines it with the strand the read aligned
@@ -153,8 +150,8 @@ the colors the reads of each strand take. It finds the strand two ways:
 
 ## Picking out spliced reads in a deep pileup
 
-In a deep pileup, reads with a skip sit among many more that have none, so the
-splicing evidence is hard to see. Three track-menu settings pull it out.
+In a deep pileup, reads with a skip sit among many more that have none. Three
+track-menu settings pull the splicing evidence out.
 
 **Sort by... → Spliced reads first** gives every read whose CIGAR has a skip the
 lowest rows, so the junction-spanning reads sit together at the top of the
@@ -162,8 +159,8 @@ pileup.
 
 <Figure caption="The ACTB pileup in file order above, and sorted with spliced reads first below. Teal lines mark reads whose CIGAR has a skip. File order scatters them down the stack, and the sort gathers them into the top rows." src="/img/rnaseq/sort_spliced_first.png" links="File order=rnaseq/deep_pileup_file_order,Spliced first=rnaseq/deep_pileup_spliced_first" />
 
-**Filter by... → Spliced reads → Only spliced reads** keeps just those reads,
-and the coverage histogram follows, so what is left is a histogram of the
+**Filter by... → Spliced reads → Only spliced reads** sets a `filter` that drops
+every read without a skip, and the coverage histogram follows, leaving the
 junction-spanning evidence alone. **Hide spliced reads** in the same submenu is
 the complement.
 
@@ -176,9 +173,10 @@ junction few reads support.
 
 ## Strand-specific RNA-seq
 
-Splice-arc colors give the strand of spliced reads. A _strand-specific_ library
-records the transcript strand in which mate of the pair a read is, so every read
-has it, which separates genes close together or overlapping on opposite strands.
+Splice-arc colors give the strand of spliced reads only. A _strand-specific_
+library records the transcript strand in which mate of the pair a read is, so
+every read has it, which separates genes close together or overlapping on
+opposite strands.
 
 The surfeit locus is a tight cluster of genes on alternating strands (_RPL7A_,
 _SURF1_, _SURF2_, _SURF4_). Type `chr9:136,214,000-136,229,000` into the
@@ -189,7 +187,9 @@ location box, then pick this path from the track menu:
 <Figure caption="The surfeit locus colored by first-of-pair strand. The pileup splits into two colors, and the switch falls where the genes change strand: RPL7A forward, SURF1 reverse, SURF2 forward." src="/img/rnaseq/strand_specific.png" />
 
 Grouping the reads by first-of-pair strand shows transcript strand over a whole
-gene. Pick **Group by... → First-of-pair strand** to draw one band per group,
+gene.
+
+**Group by... → First-of-pair strand** applies a `facet`, one section per group,
 each with a coverage histogram from only that group's reads, forward and reverse
 on one autoscaled axis. Turning off **Show... → Show pileup** leaves the two
 histograms alone.
@@ -202,9 +202,9 @@ On chr6, _NELFE_ and _SKIV2L_ sit back to back on opposite strands. Type
 ## Long-read splicing: IsoSeq over ACTB
 
 A long read (PacBio IsoSeq, Nanopore) often spans a whole transcript, aligning
-across every exon with one `N` skip per intron. JBrowse derives the same arcs
-and connectors from those skips. The IsoSeq alignments are a second BAM on the
-same assembly:
+across every exon with one `N` skip per intron, and JBrowse derives the same
+arcs and connectors from those skips. The IsoSeq alignments are a second BAM on
+the same assembly:
 
 ```json addtrack loc=chr7:5,567,000-5,570,000
 {
@@ -219,12 +219,12 @@ same assembly:
 
 ## Loading STAR, regtools and portcullis junction tables
 
-A junction table from an RNA-seq pipeline adds values JBrowse cannot compute
-from the reads in view: whole-library read counts, an annotated-or-novel flag,
-or portcullis's filtering verdict. One `awk` line converts each table to BED,
-which draws as arcs on a feature track, with the intron as the interval, the
-read count as the score, the strand, and the tool's own columns after them. Sort
-and index all three the same way:
+A junction table from an RNA-seq pipeline adds what JBrowse cannot compute from
+the reads in view: whole-library read counts, an annotated-or-novel flag and
+portcullis's filtering verdict. One `awk` line converts each table to BED, with
+the intron as the interval, the read count as the score, then the strand and the
+tool's own columns, and the BED draws as arcs on a feature track. Sort and index
+all three the same way:
 
 ```bash
 sort -k1,1 -k2,2n junctions.bed | bgzip > junctions.bed.gz
@@ -279,9 +279,10 @@ awk -F'\t' -v OFS='\t' '
 ```
 
 This config loads the regtools file built from this page's BAM as a feature
-track whose `link` mark draws each junction, colored by the known-junction flag
-against RefSeq. `columnNames` names the extra columns so the color encoding can
-read them:
+track. In grammar-of-graphics terms, the `link` mark is the shape drawn for each
+junction, `size` scales with read count, `color` is a color scale on the
+known-junction flag against RefSeq, and `filter` drops records. `columnNames`
+names the extra columns so the color scale can read them:
 
 ```json addtrack loc=chr11:49,220,500-49,231,500
 {
@@ -342,18 +343,22 @@ that wrong-strand reads give a junction on the opposite strand. The color's
 `domain` lists the `known_junction` values as strings because the adapter reads
 extra columns as text.
 
+**Advanced → Edit plot...** in the track menu edits the same marks, colors and
+filter on an open track.
+
 Type `chr11:49,220,500-49,231,500` into the location box, the 5' end of _FOLH1_,
 where the file separates what RefSeq annotates from what this library also
 splices:
 
 <Figure caption="The 5' end of FOLH1 on hg19: RefSeq transcripts above, the library's junctions below, blue where an annotated transcript joins the two ends and red where none does. The large red arc joins a donor and an acceptor RefSeq uses, skipping the exons between them, and it is about as thick as the blue arcs beside it." src="/img/rnaseq/junction_track.png" links="Open this view=rnaseq/junction_track" />
 
-For the STAR file, the `columnNames` end in `motif` and `annotated`, and the
-color's `field` is `annotated`. For the portcullis file, the color's `field` is
-`canonical_ss`, its `domain` `["C", "S", "N"]`, and its `labels` canonical,
-semi-canonical and non-canonical, with a third color in `range`. **Edit
-plot...** in the track menu edits the same marks, colors and filter on a track
-already open.
+To load the other tables:
+
+- For the STAR file, the `columnNames` end in `motif` and `annotated`, and the
+  color's `field` is `annotated`.
+- For the portcullis file, the color's `field` is `canonical_ss`, its `domain`
+  `["C", "S", "N"]`, and its `labels` canonical, semi-canonical and
+  non-canonical, with a third color in `range`.
 
 ## See also
 

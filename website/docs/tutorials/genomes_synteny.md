@@ -22,8 +22,8 @@ alignments** → **liftOver** in the track selector and turn on **hg38 to Human
 (hs1) liftOver**. Type `TNNT3` into the location box; the hosted config ships a
 name index. The liftOver track draws one feature per chain block.
 
-The hg38 config declares one assembly, hg38. When a track names another genome,
-the site loads that genome's config the first time a view needs it.
+The hg38 config declares one assembly, and the site loads another genome's
+config when a track names it.
 
 ## Launching a synteny view
 
@@ -38,12 +38,10 @@ Right-click any chain block and choose **Launch → Linear synteny view with
   reverse-strand block.
 - **Open in new view** appends the result below the linear view, and **Replace
   current view** puts it in that view's place.
+- **Copy this view's tracks into its panel** sets whether the panel you launched
+  from keeps the tracks that view had on.
 
 <Video src="/media/synteny/liftover_launch.mp4" caption="Launching from a chain block on the hg38 to Human (hs1) liftOver track at TNNT3: the block's right-click menu, the dialog that frames the second panel, and Replace current view putting the two-panel synteny view in the linear view's place. The hg38 panel opens with the gene track that was open above; the hs1 panel opens empty." />
-
-**Copy this view's tracks into its panel** controls whether the panel you
-launched from keeps the tracks that view had on. The view header's track
-selector button lists one selector per panel.
 
 For a locus no single chain block covers, drag-select it on the scale bar and
 pick **Launch → Linear synteny view**, whose dialog offers every assembly the
@@ -59,8 +57,9 @@ ribbon settings:
 - **CIGAR indels** → **Transparent indels** leaves insertions and deletions
   inside each block as see-through gaps
 
-The palette button in the same header sets what ribbons are colored by.
-**Strand** paints each block by its orientation; the figures below use it.
+The palette button in the same header sets the ribbons' `color`, a color scale
+that maps a field to colors. **Strand** paints each block by its orientation;
+the figures below use it.
 
 <Figure src="/img/genomes_synteny/ribbon_settings.png" links="As it opens=genomes_synteny/ribbons_default,Curved + transparent indels=genomes_synteny/ribbons_curved" caption="The same TNNT3 comparison before and after both settings, with the menu that holds them open on top. Top: straight ribbons with colored indels. Bottom: curved ribbons with transparent indels." />
 
@@ -106,8 +105,8 @@ alignment exists.
 
 A liftOver track pairs hg38 with one other genome. hg38's staging config also
 has **hg38 vs 240 genomes (liftOver, multi-way)**, one track over all of hg38's
-liftOver chains. It draws hg38 on top and a lane per genome below, each lane
-with the gene models annotated on that genome, and lives on
+liftOver chains. The track draws hg38 on top and a lane per genome below, each
+lane with the gene models annotated on that genome, and lives on
 [staging.genomes.jbrowse.org](https://staging.genomes.jbrowse.org) until JBrowse
 5 ships.
 
@@ -124,12 +123,12 @@ page's assembly for a species has no chain, its lane is the newest build of that
 species that does. The link opens a lane for every species it found, too many to
 read at once, so in the track menu:
 
-- **Lanes → Choose lanes...** and tick chimp, orangutan, rhesus, gray mouse
+- Pick **Lanes → Choose lanes...** and tick chimp, orangutan, rhesus, gray mouse
   lemur, Chinese tree shrew, naked mole-rat, elephant and platypus, a span from
   the apes to the monotremes
-- **Color by... → Strand**, under **Ribbons**, paints a ribbon red where the two
-  lanes it joins run the same way and blue where one is inverted against the
-  other
+- Pick **Color by... → Strand**, under **Ribbons**, to paint a ribbon red where
+  the two lanes it joins run the same way and blue where one is inverted against
+  the other
 
 <Figure src="/img/genomes_synteny/star_lanes.png" caption="hg38 at TNNT3 over eight genomes from chimp to platypus, ribbons colored by strand. Down to elephant the ribbons run nearly all red and the genes that lanes name keep hg38's order, while the gaps between ribbons widen down the stack. The platypus lane spreads over many sequences, and its ribbons are blue." />
 
@@ -156,18 +155,18 @@ mm39 is C57BL/6J, the strain that lost _Nnt_ exons 7 to 11 (Freeman et al.
 
 hg38's multi-way track holds both haplotypes of the H9 T2T assembly, so a stack
 can put one person's two chromosomes under the reference. At 17q21.31 the H2
-haplotype is a 900 kb inversion (Stefansson et al. 2005), and H9 carries one of
+haplotype is a 900 kb inversion (Stefansson et al. 2005), and H9 has one of
 each. On hg38 at
 [staging.genomes.jbrowse.org](https://staging.genomes.jbrowse.org), turn on
 **hg38 vs 240 genomes (liftOver, multi-way)**, type
 `chr17:45,300,000-46,800,000` into the location box, then in the track menu:
 
-- **Lanes → Choose lanes...** and tick the two H9 haplotypes, the HG002 maternal
-  assembly, the NA24631 maternal assembly and T2T-CHM13 (hs1)
-- drag the H9 hap2 lane's label to the top of the stack, beside hg38
-- **Color by... → Strand**, under **Ribbons**
-- **Show... → Show gene labels** off, since the RefSeq track above names the
-  genes
+- Pick **Lanes → Choose lanes...** and tick the two H9 haplotypes, the HG002
+  maternal assembly, the NA24631 maternal assembly and T2T-CHM13 (hs1)
+- Drag the H9 hap2 lane's label to the top of the stack, beside hg38
+- Pick **Color by... → Strand**, under **Ribbons**
+- Turn off **Show... → Show gene labels**, since the RefSeq track above names
+  the genes
 
 <Figure src="/img/genomes_synteny/human_17q21_haplotypes.png" caption="hg38 from MAPT to NSF over five T2T haplotypes, ribbons colored by strand. The H9 hap2 lane, beside hg38, is the inverted H2 haplotype: its ribbons turn blue across MAPT and KANSL1. Its partner hap1 and the other three haplotypes run red throughout." />
 

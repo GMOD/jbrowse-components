@@ -74,11 +74,10 @@ bedGraphToBigWig cov.bg hg38.chrom.sizes COLO829_tumor.coverage.bw
 
 A series of junctions can bring two genes together, as in the KLHDC2-SNTB1
 fusion of the SK-BR-3 breast cancer line
-([Nattestad et al. 2018](https://doi.org/10.1101/gr.231100.117)).
-
-COLO829's der(3), a derivative chromosome 3 assembled from pieces of three
-chromosomes, is the chain the rest of this page follows. Three junctions close a
-triangle across chr3, chr10 and chr12:
+([Nattestad et al. 2018](https://doi.org/10.1101/gr.231100.117)). The chain this
+page follows is COLO829's der(3), a derivative chromosome 3 assembled from
+pieces of three chromosomes, whose three junctions close a triangle across chr3,
+chr10 and chr12:
 
 ```text
 chr3:25,359,111  <-> chr12:72,273,112
@@ -139,10 +138,12 @@ beside them:
 Open the SV calls and the tumor and normal read tracks at
 `chr3:25,357,600-25,361,000`. The tumor reads end in soft clipping, an end the
 aligner left unaligned, because every read crossing the junction continues on
-another chromosome; the matched normal is clean.
+another chromosome. The matched normal is clean.
 
 - **Show... → Show soft clipping** in the track menu draws the clipped ends,
   which are off by default.
+- **Sort by... → Split reads first** lifts the reads that continue on another
+  chromosome to the top of the pileup.
 - **Force load** approves the download when the track asks first because the
   pileup is deep, and holds for the rest of the session.
 
@@ -164,14 +165,14 @@ A breakend (BND) record names one partner, so on its own it opens two panels.
 Check **Follow further breakends at each end** to add the rest of the chain:
 
 - The dialog searches the callset at each end for another junction leaving from
-  the same place, and adds it when exactly one exists.
+  the same place and adds it when exactly one exists.
 - The search stops at a locus with two candidates, or at one leading back into
   the chain.
 - The search assumes two junctions leaving one locus belong to one molecule, and
   reads crossing both are the evidence.
-- From the chr3 record this chain starts at, it finds three panels: the chr10
-  breakend has a second junction a couple of hundred bases away, and that
-  junction's far end is on chr12.
+- From the chr3 record this chain starts at, the search finds three panels: the
+  chr10 breakend has a second junction a couple of hundred bases away, and its
+  far end is on chr12.
 
 <Figure caption="Opening the split view from the record itself: right-click the breakend, set the shape and window in the dialog, and get three panels because the chain runs chr3 to chr10 to chr12." src="/img/cancer_sv/split_view_from_breakend.png" />
 
@@ -184,9 +185,8 @@ introduced.
 ## Assembling the der(3) derivative allele and aligning it to GRCh38 {#the-derivative-allele}
 
 The cancer SV demo config, https://jbrowse.org/demos/cancer_sv/config.json,
-includes a der(3) contig (derivative chromosome 3, the rearranged copy)
-assembled from the tumor reads that span all three loci, so every base in it
-comes from those reads.
+includes a der(3) contig assembled from the tumor reads that span all three
+loci, so every base in it comes from those reads.
 
 To build one from your own data, pull the reads crossing the loci with
 `samtools view`, assemble them with
@@ -280,20 +280,20 @@ track. The view shows:
 - the tumor's split reads under the reference row, one row per molecule, with
   the truth set's validated calls above them
 - each junction drawn once as an arc, with a tick at each end over the sequence
-  that end keeps. Ticks pointing apart mark a deletion-type join, ticks pointing
+  retained there. Ticks pointing apart mark a deletion-type join, ticks pointing
   toward each other a duplication-type join, and parallel ticks an inversion.
 
 <Figure caption="The reconstructed derivative against its three source loci: RefSeq genes, the truth set and the tumor's split reads above, with each junction drawn once as an arc; the same annotation projected onto the allele below, each segment labelled with the interval it came from." src="/img/cancer_sv/derivative_synteny.png" />
 
 ## Checking the der(3) contig against the reads and the truth set
 
-Zoom the synteny view to the kilobase holding the junctions; at that zoom each
-of the two inserts has a ribbon of its own. The truth set has a validated call
-at each place the split reads stop against hg38. Realigned to the derivative,
-most of the same reads cross all three junctions in one alignment.
+Zoom the synteny view to the kilobase holding the junctions, where the two
+inserts have separate ribbons. The truth set has a validated call at each place
+the split reads stop against hg38, and most of the same reads cross all three
+junctions in one alignment when realigned to the derivative.
 
 The consensus was polished from these reads, so the realignment shows that they
-agree with each other; the truth set, called from other platforms, is the
+agree with each other. The truth set, called from other platforms, is the
 independent check.
 
 Each hg38 window is wider than the piece the allele uses, and the read track
@@ -301,10 +301,6 @@ shows split alignments only, so its coverage counts reads that cross a junction
 and steps down as each arm ends.
 
 <Figure caption="The stitching at base scale: chr3 runs out, chr10 follows, then chr12 inverted, then chr3 resumes backwards. Above, the truth set's validated calls over the same molecules against hg38, split alignments only, each row stopping at a call with a connector to the piece it continues on; below, the allele's segments over the reads realigned to them." src="/img/cancer_sv/derivative_inserts.png" />
-
-In a breakpoint split view, soft clipping shows on both sides of a junction and
-a curve joins the pieces of each read. A dashed connector marks a read passing
-through a segment no panel shows.
 
 <Figure caption="COLO829 tumor ONT reads over one junction, twice. Against hg38 (left, split alignments only) they stop at the chr3 junction with their tails clipped; realigned to the derivative (right) they cross at flat depth. The panes are at different zooms." src="/img/cancer_sv/realigned_reads.png" links="hg38=cancer_sv/realigned_reads_reference,derivative=cancer_sv/realigned_reads_derivative" />
 

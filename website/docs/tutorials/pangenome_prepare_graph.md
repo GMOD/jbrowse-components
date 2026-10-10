@@ -193,7 +193,8 @@ its track menu draws the same segments as a row.
 <Figure caption="The HPRC graph's segment index drawn over the C4 region on hg38. The segments tile the window end to end and break where the graph branches. The slivers fall among the C4 and CYP21 copies, with long unbroken segments either side." src="/img/pangenome/prepare_graph_segments.png" />
 
 The command writes `out.config.json`. Merge its `plugins` and `tracks` entries
-into your own config.
+into your own config, then run `jbrowse validate config.json`, which reports a
+misspelled or undeclared slot JBrowse otherwise ignores.
 
 The other three tracks in the config draw the bubbles as a row and as a curve,
 and the allele inventory, one row per alternative path, as an alignments track.
@@ -287,8 +288,9 @@ segment as an `SM:Z:` tag while it reads the paths.
 }
 ```
 
-The count is per haplotype (`HG002.1`), so a diploid sample's two copies count
-separately.
+The `color` block is a color scale that maps the `sampleCount` field linearly
+from `domainMin` onto the two colors of `range`. The count is per haplotype
+(`HG002.1`), so a diploid sample's two copies count separately.
 
 ## Indexing haplotype walks with gfa-to-tabix {#haplotype-walks-tabix}
 
@@ -338,8 +340,8 @@ walk file then lists its reference sample and every other haplotype with rows in
 it, the other reference included, once each.
 
 A track's `walksUri` names one reference's set by its prefix,
-`<prefix>.<sample>`. This track draws the graph and, as a second display, one
-lane per haplotype. Each haplotype in `assemblyNames` is an assembly whose
+`<prefix>.<sample>`. The track below draws the graph and, as a second display,
+one lane per haplotype. Each haplotype in `assemblyNames` is an assembly whose
 aliases include its `sample#haplotype` name, as
 [the HPRC tutorial](/docs/tutorials/pangenome_hprc#opening-the-haplotype-an-allele-came-from)
 declares one; `assemblyNameToPanSN` covers the reference, which has none:
@@ -365,8 +367,6 @@ declares one; `assemblyNameToPanSN` covers the reference, which has none:
 
 The lanes align each walk to the reference's on the nodes both visit, so the
 track needs no sequence beyond the three files.
-[Haplotypes against each other](/docs/tutorials/pangenome_hprc_haplotypes) draws
-the lanes this track produces.
 
 A graph track with no lanes names the same set through `RgfaTabixAdapter`, here
 T2T-CHM13's:
@@ -463,11 +463,8 @@ tools. The browser reads only the format 3 companion that `gbz-haplotype-index`
 0.3.0 and later writes.[^gbz-cost]
 
 Serve the database and the companion from URLs that answer range requests, and
-point the track's `uri` and `haplotypeIndexLocation` at them. Each haplotype in
-`assemblyNames` is an assembly whose aliases include its `sample#haplotype`
-name, as
-[the HPRC tutorial](/docs/tutorials/pangenome_hprc#opening-the-haplotype-an-allele-came-from)
-declares one; `assemblyNameToPanSN` covers the reference, which has none:
+point the track's `uri` and `haplotypeIndexLocation` at them. `assemblyNames`
+and `assemblyNameToPanSN` work as in the walk-file track above:
 
 ```json addtrack
 {

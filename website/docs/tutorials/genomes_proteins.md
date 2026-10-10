@@ -19,12 +19,9 @@ the genome.
 
 ## Where the data comes from
 
-The hosted hg38 config on genomes.jbrowse.org has the gene track the examples
-below launch from. The protein3d and msaview plugins fetch everything else live,
-per gene, from the services listed here.
-
-Nothing to download: the plugins fetch from these services when you launch a
-structure or an alignment.
+Nothing to download: the protein3d and msaview plugins fetch from these
+services, per gene, when you launch a structure or an alignment. The examples
+launch from the gene track in the hosted hg38 config on genomes.jbrowse.org.
 
 <details>
 <summary>The files</summary>
@@ -44,16 +41,20 @@ structure or an alignment.
 
 Open the [protein browser](https://genomes.jbrowse.org/protein-browser/) and
 search for `TP53`, or arrive with the gene resolved at
-[?gene=TP53](https://genomes.jbrowse.org/protein-browser/?gene=TP53). It builds
-one session with three linked views: the coding exons back to back in a linear
-genome view, the AlphaFold structure, and a cross-species protein alignment.
-Hover a residue in any of them and its codon lights up in the other two.
+[?gene=TP53](https://genomes.jbrowse.org/protein-browser/?gene=TP53). The
+browser builds one session with three linked views: the coding exons back to
+back in a linear genome view, the AlphaFold structure, and a cross-species
+protein alignment. Hover a residue in any of them and its codon lights up in the
+other two.
 
-**Opens on** takes a residue for the session to open on:
-[?gene=TP53&residue=248&align=live](https://genomes.jbrowse.org/protein-browser/?gene=TP53&residue=248&align=live)
-opens on R248 with TP53's orthologs from NCBI, which **Build cross-species
-alignment** aligns. **Open in JBrowse** hands the session to the full app, where
-every view takes the menus described below.
+Two controls on the page shape the session:
+
+- **Opens on** takes a residue:
+  [?gene=TP53&residue=248&align=live](https://genomes.jbrowse.org/protein-browser/?gene=TP53&residue=248&align=live)
+  opens on R248 with TP53's orthologs from NCBI, which **Build cross-species
+  alignment** aligns.
+- **Open in JBrowse** hands the session to the full app, where every view takes
+  the menus described below.
 
 <Figure caption="TP53 as the protein browser lays it out: the coding exons back to back above ClinVar and AlphaMissense, an alignment of TP53's NCBI orthologs under them, and the AlphaFold structure beside. R248 is magenta on the structure and a line through its codon in the genome view." src="/img/protein/protein_browser_tp53.png" />
 
@@ -106,13 +107,15 @@ panel's **Motif** row to select its residues and band their codons on the gene.
 
 ### Other views and structure sources in the Launch dialog
 
-The arrow beside **Launch** lists everything the dialog can build. **Launch 1D
-protein annotation view** opens a linear genome view whose genome is the
-protein: the plugin registers the UniProt accession as a temporary assembly with
-the amino-acid sequence as its reference, so coordinates are residues. It adds a
-track per UniProt feature type, plus Antigen, Variation, AlphaFold confidence
-(pLDDT) and AlphaMissense (variant effect) scores. The view opens with none of
-them on; find them in the track selector under **Session tracks**.
+The arrow beside **Launch** lists everything the dialog can build.
+
+**Launch 1D protein annotation view** opens a linear genome view whose genome is
+the protein, because the plugin registers the UniProt accession as a temporary
+assembly with the amino-acid sequence as its reference, so coordinates are
+residues. The view has a track per UniProt feature type, plus Antigen,
+Variation, AlphaFold confidence (pLDDT) and AlphaMissense (variant effect)
+scores. None is on at first, so turn them on in the track selector under
+**Session tracks**.
 
 <Figure src="/img/protein/annotation_1d.png" caption="TP53 on hg38 above the 1D protein view its gene menu launched, with four of the session tracks turned on: the DNA binding call, UniProt natural variants, AlphaFold pLDDT and AlphaMissense substitution scores, all in residue coordinates. Confidence and variant density both fall away over the terminal tails." />
 

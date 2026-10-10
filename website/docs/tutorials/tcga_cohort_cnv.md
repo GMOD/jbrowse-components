@@ -9,7 +9,7 @@ tutorial_category: Cancer genomics
 Tumors from different patients tend to gain and lose the same regions, because
 those regions contain a gene driving the cancer. We stack copy-number segment
 calls for 1104 TCGA breast tumors, one row per tumor colored by gain or loss, so
-a recurrent event reads as a vertical stripe down the stack.
+a recurrent event shows as a vertical stripe.
 
 ## Prerequisites
 
@@ -24,8 +24,8 @@ TCGA-BRCA, from the GDC's open-access **Masked Copy Number Segment** files
 (Affymetrix SNP 6.0, harmonized to GRCh38), so no dbGaP application or token is
 needed.
 
-The [build script](#reproduce-it-end-to-end) takes these files from their URLs,
-so there is nothing to download by hand.
+The [build script](#reproduce-it-end-to-end) fetches these files, so there is
+nothing to download by hand.
 
 - primary-tumor segment calls for 1104 tumors, queried and downloaded through
   the GDC API: https://api.gdc.cancer.gov/files
@@ -34,8 +34,7 @@ so there is nothing to download by hand.
 
 The build script copies the hg38 reference and the MANE gene track from the
 [hosted UCSC hg38 hub](https://genomes.jbrowse.org/ucsc/hg38/)'s config, so it
-downloads no reference; the assembly fence below loads GRCh38 from jbrowse.org
-instead.
+downloads no reference; the fence below loads GRCh38 from jbrowse.org.
 
 ## The segment BED format, one call per line
 
@@ -49,8 +48,8 @@ chr1    3301764   30796057   +0.15   TCGA-3C-AAAU-01A   0.1480
 chr1    3301764   7589655    -0.98   TCGA-3C-AALI-01A   -0.9761
 ```
 
-`sample` is a TCGA barcode and splits the rows; `segmean` is the caller's log2
-tumor/normal ratio and colors them.
+`sample` is a TCGA barcode that splits the rows, and `segmean` is the caller's
+log2 tumor/normal ratio that colors them.
 
 ## Load the segments into JBrowse
 
@@ -106,27 +105,28 @@ The segments themselves are a `FeatureTrack` whose
 ```
 
 [`rowHeight`](/docs/config/linearmultirowfeaturedisplay/#slot-rowheight)
-auto-fits, which at this row count makes each tumor under a pixel tall. Two
-settings do the rest:
+auto-fits, which at this row count makes each tumor under a pixel tall. In
+grammar-of-graphics terms, two settings draw the rows and colors:
 
-- [`rows`](/docs/config/linearmultirowfeaturedisplay/#slot-rows) splits the file
-  into one labeled row per `sample`
-- [`color`](/docs/config/linearmultirowfeaturedisplay/#slot-color) paints
-  `segmean` through a `threshold` scale, since this BED has no `itemRgb`: the
+- [`rows`](/docs/config/linearmultirowfeaturedisplay/#slot-rows) assigns one
+  labeled row per value of `sample`
+- [`color`](/docs/config/linearmultirowfeaturedisplay/#slot-color) is a
+  `threshold` color scale on `segmean`, since this BED has no `itemRgb`: the
   four cuts in `domain` open five intervals, `range` gives each a color on a
   diverging blue-to-red scale, and `labels` names each interval in the key
 
 ## Cluster tumors by copy-number profile
 
-Open the track over _ERBB2_ and choose **Clustering → Cluster rows by
-similarity...** from the track menu (see [](/docs/user_guides/clustering)).
-JBrowse averages `segmean` across each bin in view and sorts the rows into
-blocks with a shared copy-number profile, so the tumors amplified at _ERBB2_
-gather into one band.
+Open the track over _ERBB2_.
+
+Choose **Clustering → Cluster rows by similarity...** in the track menu (see
+[](/docs/user_guides/clustering)). JBrowse averages `segmean` across each bin in
+view and sorts the rows into blocks with a shared copy-number profile, which
+gathers the tumors amplified at _ERBB2_ into one band.
 
 Clustered at whole-genome zoom, the stack groups tumors by their genome-wide
 profile, and the heavily aneuploid tumors, whose rows run red or blue end to
-end, form a band of their own.
+end, form a separate band.
 
 <Video src="/media/tcga/cohort_cnv_clustering.mp4" caption="The ERBB2 window, clustered from the track menu: 1104 tumors in barcode order, the Clustering item, and the bands the run leaves behind." />
 
@@ -146,8 +146,9 @@ chr16   89200000   89300000   3.26   -46.38
 ```
 
 `BedGraphTabixAdapter` reads every column past `end` as a separate signal. Loss
-is written negative, so a `threshold` color with no `domain`, which cuts at the
-default `origin` of 0, draws gains up in one color and losses down in the other.
+is written negative, so a `threshold` color scale with no `domain`, which cuts
+at the default `origin` of 0, draws gains up in one color and losses down in the
+other.
 
 ```json addtrack
 {
@@ -195,10 +196,11 @@ python3 cnv_recurrence.py tcga_brca_cnv.bed.gz by_subtype.bedGraph \
 The `--groups` file is the
 [clinical TSV](/docs/tutorials/tcga_cohort_mutations#what-the-two-files-hold)
 the mutation cohort also uses. Four subtypes give eight signals, each named for
-its subtype and direction, with losses stored below zero. We'll draw them on a
-[mark display](/docs/config_guides/mark_display), one row per subtype with its
-gain above the line and its loss below. A `formula` step reads the subtype off
-each signal's column name:
+its subtype and direction, with losses below zero. We'll draw them on a
+[mark display](/docs/config_guides/mark_display), where a `mark` is the shape
+drawn (here a bar) and `rows` assigns one row per subtype, with its gain above
+the line and its loss below. A `formula` step reads the subtype off each
+signal's column name:
 
 ```json addtrack config=test_data/tcga_cnv/config.json
 {
@@ -250,9 +252,12 @@ each signal's column name:
 }
 ```
 
-On a track already open, **Display types → Marks** draws one row per column and
-**Edit plot...** adds the step and the rows. The bottom row is the tumors whose
-receptor calls do not resolve a subtype.
+On a track already open:
+
+- **Display types → Marks** draws one row per column.
+- **Advanced → Edit plot...** adds the `formula` step and the rows.
+
+The bottom row is the tumors with no resolved subtype.
 
 <Figure caption="Gain and loss frequency per 100 kb (bars up for gain, down for loss) across the 22 autosomes and chrX, one row per receptor subtype. 17q gain is confined to the HER2+ row, 5q loss and 10p gain to the triple-negative row; 1q and 8q gain are in every row." src="/img/tcga/cohort_cnv_recurrence_subtype.png" />
 
@@ -262,15 +267,15 @@ draws both.
 
 Two options adjust the split:
 
-- `--min-group` sets how many tumors a subtype needs before it is plotted, and
-  the script names each group it dropped.
+- `--min-group` sets how many tumors a subtype needs to be plotted, and the
+  script names each group it dropped.
 - `--groups` takes any other column for a different split: `histology` and
   `stage` work for any TCGA project, while `subtype` is breast specific.
 
 ## Use your own cohort
 
 Any caller that writes per-sample segments works. Reshape its output into a BED
-with a sample column and a numeric column to color by, one segment per line:
+with one segment per line, a sample column and a numeric column to color by:
 
 ```text
 #chrom  start      end        name   sample    segmean
@@ -290,8 +295,8 @@ tabix cohort.bed.gz
 ```
 
 Add the segment track config from
-[Load the segments into JBrowse](#load-the-segments-into-jbrowse) with `uri`
-pointing at `cohort.bed.gz`.
+[Load the segments into JBrowse](#load-the-segments-into-jbrowse) with `uri` set
+to `cohort.bed.gz`.
 
 ## Reproduce it end to end
 
@@ -307,7 +312,7 @@ One script builds every file above for any project id,
 3. It joins every tumor's segments into one BED with the barcode as `sample`,
    adding `chr` to the contig names and moving the 1-based `.seg` starts to
    BED's 0-based ones. `Segment_Mean` passes through unchanged, so each row's
-   color is the caller's own log2 ratio.
+   color is the caller's log2 ratio.
 4. [`cnv_recurrence.py`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/cnv_recurrence.py)
    tallies the gained and lost share of the cohort per 100 kb bin, pooled and
    per clinical group. A tumor counts in a bin when its segment covers the bin's
@@ -329,7 +334,7 @@ The script writes a `jbrowse2/` opening on _ERBB2_. Swap in any other project id
 (`TCGA-OV`, `TCGA-LUAD`, ...), with a third argument to group the recurrence by
 a different clinical column.
 
-You can run `cnv_recurrence.py` alone on a cohort BED. The clinical table comes
+`cnv_recurrence.py` also runs alone on a cohort BED. The clinical table comes
 from
 [`tcga_clinical_tsv.py`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/tcga_clinical_tsv.py),
 shared with the [mutation cohort](/docs/tutorials/tcga_cohort_mutations).

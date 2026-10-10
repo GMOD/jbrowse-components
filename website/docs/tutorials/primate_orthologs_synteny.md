@@ -13,9 +13,9 @@ We look at one human locus across seven other primates at once. NCBI gives an
 orthologous gene the same symbol in every species it annotates, so an ortholog
 table is a join on the gene name, built from eight GFF3 files in seconds. Each
 primate then becomes a lane under the human view, laid out in the coordinates of
-its genome, with the gene models annotated there. We read the TP53 neighbourhood
-and a 17q window across the eight primates, then human chromosome 2 as two fused
-ape chromosomes.
+its genome, with the gene models annotated there. We read the _TP53_
+neighbourhood and a 17q window across the eight primates, then human chromosome
+2 as two fused ape chromosomes.
 
 ## Prerequisites
 
@@ -96,8 +96,7 @@ python3 symbols_to_blocks.py --anchor human -o primates.blocks \
 - **Open reading frame genes** spell differently in the apes (human _C1orf35_ is
   chimp _C1H1orf35_), and the helper reads that back.
 
-The helper prints how much of each column it filled, nearly full for these eight
-because the annotations share one naming pipeline.
+The helper prints how much of each column it filled.
 
 ## Setting up each lane's assembly from its hub
 
@@ -154,9 +153,9 @@ GenArk hub, so the human lane is [hg38](https://genomes.jbrowse.org/ucsc/hg38/):
 }
 ```
 
-Each lane draws gene models from a gene track under its own assembly name. For
-your own annotation, add one per genome, with a GFF3 that is bgzipped,
-tabix-indexed ([prep](/docs/quickstart_web)) and uses the assembly's refNames:
+Each lane draws gene models from a gene track on its assembly. For your own
+annotation, add one per genome from a bgzipped, tabix-indexed GFF3
+([prep](/docs/quickstart_web)) that uses the assembly's refNames:
 
 ```json addtrack
 {
@@ -173,13 +172,17 @@ tabix-indexed ([prep](/docs/quickstart_web)) and uses the assembly's refNames:
 
 ## Loading the eight-genome ortholog track
 
-One `SyntenyTrack` names all eight assemblies. `blockAssemblies` and
+One `SyntenyTrack` names all eight assemblies, and `blockAssemblies` and
 `bedLocations` hold one entry per table column, in the order the helper printed.
-`{ "field": "cluster" }` colors each gene by its ortholog group, named by its
-gene symbol: a conserved gene is one color down the whole stack, a lane missing
-it breaks the column, and a gene no group claims is grey. A key naming the
-groups appears in the top right once the window holds few enough to list; untick
-**Show... → Show legend** on the track menu to hide it:
+In grammar-of-graphics terms, the display's `color` is a color scale, and
+`{ "field": "cluster" }` maps each gene's ortholog group, named by its gene
+symbol, to a color:
+
+- A conserved gene is one color down the whole stack, and a lane missing it
+  breaks the column.
+- A gene no group claims is grey.
+- A key naming the groups appears in the top right once the window holds few
+  enough to list. Untick **Show... → Show legend** in the track menu to hide it.
 
 ```json addtrack
 {
@@ -232,12 +235,12 @@ groups appears in the top right once the window holds few enough to list; untick
 ## Reading the TP53 neighbourhood across eight primates
 
 In a linear genome view on human, the track draws a lane per primate under the
-human axis, each in its own genome's coordinates. Each lane's header names the
+human axis, each in that genome's coordinates. Each lane's header names the
 chromosome and span, with `[rev]` where the lane runs against human
 ([lane headers](/docs/tutorials/multiway_synteny_grape_peach_cacao#what-a-lane-header-shows)).
 **Color by... → Strand**, under **Ribbons** on the track menu, colors each
 ribbon by whether its two lanes agree in orientation. The session below opens
-the TP53 neighbourhood with it:
+the _TP53_ neighbourhood with it:
 
 ```json session config=https://jbrowse.org/demos/primate_orthologs/config.json
 {
@@ -262,7 +265,7 @@ the TP53 neighbourhood with it:
 }
 ```
 
-<Figure caption="The TP53 neighbourhood on human chr17 over seven primate lanes, each drawing its own RefSeq gene models. Every lane has the block in order. The siamang lane is reversed, so its header shows [rev] and its ribbons, drawn straight because the lane is mirrored, carry the reverse-strand color." src="/img/multiway_synteny/primate_tp53_lanes.png" />
+<Figure caption="The TP53 neighbourhood on human chr17 over seven primate lanes, each drawing its own RefSeq gene models. Every lane has the block in order. The siamang lane is reversed, so its header shows [rev] and its ribbons, drawn straight because the lane is mirrored, are in the reverse-strand color." src="/img/multiway_synteny/primate_tp53_lanes.png" />
 
 Navigate to `chr17:34,000,000-38,000,000` on 17q, where the strand color
 separates forward blocks from reversed ones.

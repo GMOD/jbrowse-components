@@ -90,8 +90,7 @@ types, a different bundler, or working demo repos, see
 
 ## Using your own data files in the embedded view
 
-The browser fetches each file itself, so each file has to be reachable and
-indexed:
+The browser fetches each file itself, so each must be reachable and indexed:
 
 - A relative `uri` such as `uri: 'sample.bam'` resolves against the page, so
   with `npx serve -S .` a file beside `index.html` loads. Use a full URL for a
@@ -100,7 +99,7 @@ indexed:
   index beside the file under the same name plus its suffix. A VCF or GFF is
   bgzipped; a FASTA has its `.fai`, and a bgzipped one its `.gzi`.
 - A file on another origin needs CORS headers allowing the page's origin and
-  `Range` requests, since the browser reads slices rather than whole files.
+  `Range` requests, because the browser reads slices.
 - Sequence names in tracks match the assembly's, or the assembly's
   `refNameAliases` map them.
 
@@ -204,8 +203,7 @@ const view = {
 Drop these into the `index.html` from [Quick start](#quick-start) in place of
 the smaller `assembly`/`tracks`/`view`.
 
-- CRAM decodes reads against the assembly's sequence, which the component takes
-  from the enclosing assembly. See the
+- CRAM decodes reads against the enclosing assembly's sequence. See the
   [alignments track config guide](/docs/config_guides/alignments_track).
 - JBrowse looks for the index next to the data file; add `index` or `type`
   beside `uri` to override the guess.

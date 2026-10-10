@@ -10,19 +10,19 @@ tutorial_category: Grammar of graphics
 
 A read pair that straddles a deletion maps with a long insert (the distance
 between its reads), and a heterozygous deletion halves the read depth. We plot
-those two fields straight from NA12878's reads to find a deletion on chromosome
-20 without a variant caller, scan the whole chromosome for the same signature,
-and check the hits against the 1000 Genomes callset. The plots use JBrowse's
-mark display, which maps feature fields to plot channels, as in the
-[Alu tutorial](/docs/tutorials/alu_age). The mark display is experimental, and
-its config shape may change.
+those two fields from NA12878's reads to find a deletion on chromosome 20
+without a variant caller, scan the whole chromosome for the same signature, and
+check the hits against the 1000 Genomes callset. The plots use JBrowse's mark
+display, which maps feature fields to plot channels. In grammar-of-graphics
+terms, a `mark` is the shape drawn and `scales.y` the y scale. The mark display
+is experimental and its config shape may change.
 
 ## Prerequisites
 
 - a JBrowse to open the figures' sessions in ([Web](/docs/quickstart_web) or
   [Desktop](/docs/quickstart_desktop))
 - [samtools](https://www.htslib.org/) and htslib (`bgzip`, `tabix`), for cutting
-  the pairs out of the file and for checking a window by hand
+  the pairs out and checking a window by hand
 - [bcftools](https://www.htslib.org/), for reading the callset at the end
 - [Node.js](https://nodejs.org/) and the [JBrowse CLI](/docs/cli), for the build
   script
@@ -137,17 +137,17 @@ the mapping quality, which colors the points.
 }
 ```
 
-Open it under the depth track, on the same window.
+Open it under the depth track in the same window.
 
 <Figure src="/img/read_marks/insert_size.png" caption="The same window, the depth as bars above and each pair's insert size as a point below, each track with a separate y axis. The pairs sit in a low band, and over the left edge of the dip a second group appears well above it, in full blue." />
 
-Each pair in the upper group straddles the missing 3.9 kb; click a point to open
+Each pair in the upper group straddles the missing 3.9 kb. Click a point to open
 its read.
 
 ## Scanning chromosome 20 for clusters of long-insert pairs
 
-Fetching every read of a chromosome overruns the track's size limit, so cut the
-long pairs out once, one row per pair, into a BED with a header naming its
+Fetching every read of a chromosome overruns the track's size limit, so we cut
+the long pairs out once, one row per pair, into a BED with a header naming its
 columns.
 
 <!-- from: scripts/build_read_marks.sh -->
@@ -249,12 +249,12 @@ Open both tracks on the whole of `chr20`.
 <Figure src="/img/read_marks/chromosome.png" caption="Chromosome 20 end to end. Every pair with an insert under 20 kb is a point at its insert size, and the red bars on the track under it count the pairs between 2 and 10 kb per bin. The centromere, pinched in the banding above the ruler, and the repeats flanking it saturate both; outside them the bars rise in a handful of places, each under a short stack of dark points." />
 
 The bar at 34.2 Mb is a homozygous deletion, and the one at 32.9 Mb is the
-_EFCAB8_ deletion from the sections above.
+_EFCAB8_ deletion.
 
 ## Checking the chr20 bars against the 1000 Genomes SV callset
 
-`bcftools` lists every deletion over 2 kb that the callset gives NA12878 on the
-chromosome:
+`bcftools` lists every deletion over 2 kb that the callset gives NA12878 on
+chr20:
 
 <!-- from: scripts/build_read_marks.sh -->
 

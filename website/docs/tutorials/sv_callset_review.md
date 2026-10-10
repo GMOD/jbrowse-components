@@ -50,11 +50,11 @@ hand.
 
 ## Rendering every tumor junction with jb2export batch
 
-`jb2export batch` renders one image per record, a chromosome a row. A deletion,
-duplication or inversion has both ends on one chromosome, so it is one row: the
-two ends side by side under the arc of the reads joining them. A junction
-between two chromosomes is a breakpoint split view, one panel a chromosome, with
-the reads joining them drawn as curves:
+`jb2export batch` renders one image per record. A deletion, duplication or
+inversion has both ends on one chromosome, so its image is one row: the two ends
+side by side under the arc of the reads joining them. A junction between two
+chromosomes is a breakpoint split view, with one panel per chromosome and the
+reads joining them drawn as curves:
 
 ```bash
 curl -fO https://jbrowse.org/demos/cancer_sv/COLO829.somatic-sv.vcf.gz
@@ -70,8 +70,8 @@ jb2export batch --vcf COLO829.somatic-sv.vcf.gz \
 wrote 135/135 images to tumor
 ```
 
-For your own callset, point `--config` at a JBrowse config that holds the
-assembly and an alignments track:
+For your own callset, point `--config` at a JBrowse config with the assembly and
+an alignments track:
 
 - `--assembly` is the assembly's `name` in that config and `--track` the track's
   `trackId`.
@@ -84,22 +84,21 @@ jb2export batch --vcf calls.vcf.gz \
   --outDir out
 ```
 
-A record that fits one window is drawn as a single panel: an insertion names one
+A record that fits one window draws as a single panel: an insertion names one
 locus, and a deletion shorter than `--flank` has both ends in one frame.
 
 `batch` reads the breakend notation in the ALT column with `@gmod/vcf`, and
 renders once a breakend pair that a caller writes as two records naming the same
 translocation.[^breakends]
 
-`batch` writes one image per record, named
-`002_chr1_33053494-chr6_2919922_r_0_0.png`: the record's index, so the directory
-sorts in callset order, then the coordinates and the caller's ID where the
-record has one.
+Each image is named `002_chr1_33053494-chr6_2919922_r_0_0.png`: the record's
+index, so the directory sorts in callset order, then the coordinates and the
+caller's ID where the record has one.
 
 A breakend is one base, so `--flank` sets the window drawn around it. Further
 options check the framing and manage a long run:
 
-- `--dryRun` prints the file and loci of every row and renders nothing, and
+- `--dryRun` prints the file and loci of every row without rendering, and
   `--limit 20` renders the first few, to check the framing before the whole
   callset
 - `--resume` skips a row whose image is already in `--outDir`. A `--limit` run
@@ -117,8 +116,8 @@ options check the framing and manage a long run:
     opens the same windows and tracks in JBrowse
 - `--passOnly` drops records the caller filtered out. `--limit` takes the first
   N in file order, so on an unfiltered callset the two go together
-- `--jobs` sets how many processes render, each about a gigabyte. The default is
-  half the cores, up to four
+- `--jobs` sets how many processes render, each about a gigabyte, and defaults
+  to half the cores, up to four
 
 During a run, `batch`:
 
@@ -131,7 +130,7 @@ During a run, `batch`:
 COLO829's der(3), a derivative chromosome 3 joined from pieces of chr3, chr10
 and chr12, has reads that visit all three loci. We render that event with
 `jb2export breakpoint` and one `--loc` per panel. The matched normal gets the
-same `--loc` list and `--width`, and sits beside it as the control:
+same `--loc` list and `--width`, as the control beside it:
 
 ```bash
 jb2export breakpoint \
@@ -150,8 +149,8 @@ read 1 px tall, which fits six pileups on one screen.
 
 A dashed connector marks a read with a segment at a locus outside the frame. The
 [complex rearrangements tutorial](/docs/tutorials/cancer_sv) builds the
-reconstructed contig from these reads, and rendering it is another `jb2export`
-run with the contig as `--assembly`.
+reconstructed contig from these reads, and another `jb2export` run with the
+contig as `--assembly` renders it.
 
 ## Rendering the matched normal as the control
 
@@ -164,8 +163,8 @@ jb2export batch --vcf COLO829.somatic-sv.vcf.gz \
   --outDir normal --flank 600 --width 1100
 ```
 
-A somatic call has curves in `tumor/` and none in `normal/`. The same file name
-in both directories puts each call beside its control:
+A somatic call has curves in `tumor/` and none in `normal/`. Each call and its
+control share a file name across the two directories:
 
 <Figure caption="Three rows of the two batch directories, tumor on the left and the matched normal on the right, each labelled with its file name. The chr7 junction has a fan of curves in the tumor and none in the normal. The chr1 to chr19 junction has curves in both. The chr2 deletion has no curve in either; one tumor read has it as a gap through both panels." src="/img/jbrowse-img/sv_callset_sheet.png" />
 
@@ -175,7 +174,7 @@ normal mark it as germline.
 ## Interpreting the curves: somatic, germline or unsupported
 
 - A fan of curves at both breakends is the junction as the reads describe it.
-- With no curve between the panels, the reads give no support for the caller's
+- With no curve between the panels, the reads do not support the caller's
   coordinates: either the call is false, or the breakpoint is far enough off
   that `--flank` missed it. Re-render that row wider.
 - Curves in the normal as well mean the variant is germline.
@@ -193,13 +192,13 @@ its reads are in `alt` and its `links` is zero.
 
 Take the coordinates from an image's filename, open the
 [SV inspector](/docs/user_guides/sv_inspector_view) on the same VCF, and click
-through to the breakpoint split view, with the gene track and read details
-attached.
+through to the breakpoint split view, which adds the gene track and read
+details.
 
 ## Rendering calls from other SV callers
 
-Anything that writes breakends or symbolic SVs (such as `<DEL>`) to a VCF goes
-through `jb2export batch` and `jb2export breakpoint`:
+`jb2export batch` and `jb2export breakpoint` take any caller that writes
+breakends or symbolic SVs (such as `<DEL>`) to a VCF:
 
 - cuteSV, Sniffles, pbsv, Delly, Manta and GRIDSS write a VCF that `--vcf` reads
   directly.

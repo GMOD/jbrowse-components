@@ -39,8 +39,8 @@ The assemblies are
 (rhesus macaque Mmul_10), with gene models and coding sequence from Ensembl
 release 116.
 
-The [build script](#reproduce-it-end-to-end) takes these files from their URLs,
-so there is nothing to download by hand.
+The [build script](#reproduce-it-end-to-end) fetches these files, so there is
+nothing to download by hand.
 
 - human gene models:
   https://ftp.ensembl.org/pub/release-116/gff3/homo_sapiens/Homo_sapiens.GRCh38.116.gff3.gz
@@ -97,8 +97,8 @@ Two input mistakes leave jcvi with no orthologs:
 
 `pairs.tsv` is the two gene columns of `human.rhesus.anchors`. The script skips
 `human.rhesus.lifted.anchors`, which recruits extra pairs near an established
-syntenic block. Their median dS is several times that of the chained ones, which
-marks them as paralogs.
+syntenic block. Their median dS is several times that of the chained pairs,
+which marks them as paralogs.
 
 ```bash
 curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/kaks_from_pairs.py
@@ -136,8 +136,8 @@ prescribes for small substitution counts. The track config below exposes both as
 
 A gene-level synteny view reads no sequence, so each assembly is a
 `.chrom.sizes` file (a name and a length per line) that the script writes from
-the GFF3's `##sequence-region` header. We'll load human; rhesus repeats the
-block under its own name:
+the GFF3's `##sequence-region` header. We load human here and rhesus the same
+way under the name `rhesus`:
 
 ```json addassembly
 { "name": "human", "uri": "human.chrom.sizes" }
@@ -187,8 +187,9 @@ panel lists each as a feature attribute:
 }
 ```
 
-**Color by value → dN/dS** in the palette button menu reads `dn` and `ds`, on a
-ramp with 1 at the middle and 2 at the top.
+**Color by value → dN/dS** in the palette button menu sets the link's `color`, a
+color scale that reads `dn` and `ds`, on a ramp with 1 at the middle and 2 at
+the top.
 
 Two view settings matter for a view this sparse:
 
@@ -244,15 +245,11 @@ lineages.
 ## YEATS4, a conserved neighbour, as the control for LYZ
 
 _YEATS4_ begins just past where _LYZ_ ends, so the two share a locus and a
-divergence time and land at opposite ends of the ramp. It is conserved and
+divergence time yet sit at opposite ends of the ramp. _YEATS4_ is conserved and
 compact, so its dS is low while its synonymous count clears the floor. Blue is
-the low end of the ramp, where the Fisher test does reach significance: a
-conserved gene accumulates measurable synonymous change while holding
-non-synonymous change near zero.
-
-The [script](#reproduce-it-end-to-end) ends by printing how many pairs
-genome-wide exceed 1, and dN/dS and dS for every pair around _LYZ_ on chromosome
-12, _LYZ_ and _YEATS4_ among them.
+the low end of the ramp, where the Fisher test does reach significance, because
+a conserved gene accumulates measurable synonymous change while its
+non-synonymous change stays near zero.
 
 ## Reproduce it end to end
 
@@ -266,8 +263,8 @@ tracks, the ortholog track and a session opening the locus:
    the chained anchors and not the lifted ones.
 3. Measure dN and dS on each pair, dropping pairs with too few synonymous
    differences or a dS far above the cluster.
-4. Print the genome-wide ratios and the pairs around _LYZ_, and write the
-   config.
+4. Print the count of pairs genome-wide with dN/dS above 1, and dN/dS and dS for
+   every pair around _LYZ_, and write the config.
 
 ```bash
 curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/build_primate_selection.sh

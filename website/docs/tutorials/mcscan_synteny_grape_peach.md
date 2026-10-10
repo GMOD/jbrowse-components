@@ -96,9 +96,9 @@ Column 1 must use the same reference sequence names as the JBrowse assembly.
 A gene id in the anchors file that no BED names breaks the join, and some such
 mismatches load with no error; the
 [synteny track guide](/docs/config_guides/synteny_track#gene-ids-are-the-join-in-the-mcscan-adapters)
-lists which. The one that bites here is jcvi stripping isoform suffixes from the
-ids unless run with `--no_strip_names`, which the command in the next section
-passes.
+lists which. The mismatch that matters here is jcvi stripping isoform suffixes
+from the ids unless run with `--no_strip_names`, which the command in the next
+section passes.
 
 ## Producing the BEDs and anchor files with jcvi {#producing-the-data}
 
@@ -124,8 +124,7 @@ working directory. The adapters read anchors and BED files plain or gzipped.
 ## Loading the grape and peach assemblies and gene tracks
 
 We'll load the two genomes the BEDs describe. `samtools faidx` writes each
-`.fai` the assembly needs beside its FASTA, and column 1 of each BED must name
-the same sequences as that FASTA.
+`.fai` the assembly needs beside its FASTA.
 
 ```json addassembly
 { "name": "grape", "uri": "grape.fa" }
@@ -199,9 +198,11 @@ enough for.
 
 ## Viewing gene pairs and blocks in one synteny view
 
-**Add → Linear synteny view**, pick peach and grape, and turn on both MCScan
-tracks in the band between them. Then turn on the simple-anchors track in each
-panel's own track selector, where it draws as a row of bars.
+We'll start with **Add → Linear synteny view** and pick peach and grape. Then:
+
+- Turn on both MCScan tracks in the band between them.
+- Turn on the simple-anchors track in each panel's track selector, where it
+  draws as a row of bars.
 
 <Figure caption="Peach and grape with both MCScan tracks loaded. In the band, wide ribbons are .anchors.simple blocks with the per-gene .anchors pairs over them; the strand-colored bars in each panel are the same blocks. Marks along the top of the band are gene pairs whose grape gene lies on a chromosome not shown. Most of this peach chromosome has counterparts elsewhere in grape." src="/img/mcscan_anchors.png" />
 
@@ -262,7 +263,7 @@ the diagonal, and its other partners stay off it. The
 
 [MCScanX](https://github.com/wyp1125/MCScanX) is a different program from jcvi's
 MCScan. It writes one `.collinearity` holding every block, self-synteny and
-cross-species together, telling genomes apart by a two-letter tag on each
+cross-species together, and tells genomes apart by a two-letter tag on each
 chromosome name.
 [`mcscanx_to_anchors.py`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/mcscanx_to_anchors.py)
 splits a run into the four files jcvi writes, in place of the

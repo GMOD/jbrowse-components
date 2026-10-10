@@ -10,7 +10,7 @@ tutorial_category: Structural variation
 Copy number varies from person to person, and we show the whole 1000 Genomes
 panel at once: one heatmap row per individual, colored by how far that person
 strays from the diploid baseline of 2. JBrowse draws the heatmap from per-sample
-BigWigs. Past a few hundred samples the per-file requests dominate the load
+BigWigs, and past a few hundred samples the per-file requests dominate the load
 time, so the second half of the page packs the values into one Zarr store.
 
 ## Prerequisites
@@ -19,8 +19,7 @@ time, so the second half of the page packs the values into one Zarr store.
   [web quickstart](/docs/quickstart_web) or the
   [desktop quickstart](/docs/quickstart_desktop))
 - `node` 24 or newer, to
-  [build a Zarr store](#building-a-zarr-store-from-per-sample-bigwigs); the
-  converter is one downloadable file that pulls two npm packages
+  [build a Zarr store](#building-a-zarr-store-from-per-sample-bigwigs)
 - QuicK-mer2 and a 30x alignment, to add
   [samples of your own](#your-own-samples)
 - `samtools` and `bedGraphToBigWig`, to turn QuicK-mer2's output into a bigWig
@@ -31,8 +30,8 @@ QuicK-mer2 copy-number estimates over the 30x 1000 Genomes panel, from the Kidd
 lab at the University of Michigan
 ([Shen and Kidd 2020](https://doi.org/10.3390/genes11020141)).
 
-The [build script](#reproduce-it-end-to-end) takes these files from their URLs,
-so there is nothing to download by hand.
+The [build script](#reproduce-it-end-to-end) fetches these files, so there is
+nothing to download by hand.
 
 - the sample list across 26 populations, from the lab's UCSC track hub:
   https://raw.githubusercontent.com/KiddLab/kmer_1KG/master/kmer-1kg.trackDb.txt
@@ -55,8 +54,7 @@ so there is nothing to download by hand.
 
 ## Load the hg38 assembly
 
-The copy-number bins are on GRCh38, so the tracks below attach to an hg38
-assembly:
+The copy-number bins are on GRCh38, so the tracks attach to hg38:
 
 ```json addassembly
 {
@@ -72,8 +70,8 @@ assembly:
 ## Load the panel as one heatmap track
 
 [QuicK-mer2](https://github.com/KiddLab/QuicK-mer2) counts k-mers that occur
-exactly once in the reference, so each estimate is specific to one _paralog_,
-one copy of a duplicated sequence. The config lists two of the panel's 104 PUR
+exactly once in the reference, so each estimate belongs to one _paralog_, one
+copy of a duplicated sequence. The config lists two of the panel's 104 PUR
 (Puerto Rican) bigWigs, and every file follows the
 `kidd_lab_cnv/<population>/<sample>.qm2.CN.1k.bw` pattern above:
 
@@ -105,8 +103,9 @@ one copy of a duplicated sequence. The config lists two of the panel's 104 PUR
 ```
 
 The [`bigWigs`](/docs/config/multiwiggleadapter/#slot-bigwigs) shorthand takes a
-plain list of absolute URLs and names each subtrack from its filename. These
-display settings turn that into a copy-number heatmap:
+plain list of absolute URLs and names each subtrack from its filename. In
+grammar-of-graphics terms, `color` is a color scale and `scales.y` the y scale,
+which these settings turn into a copy-number heatmap:
 
 - [`mark`](/docs/config/linearwiggledisplay/#slot-mark) `span` gives each sample
   one strip of color.
@@ -116,11 +115,11 @@ display settings turn that into a copy-number heatmap:
 - [`scales.y.domainMin`](/docs/config/valuescale/#slot-scalesydomainmin) and
   [`scales.y.domainMax`](/docs/config/valuescale/#slot-scalesydomainmax) pin the
   scale, so two copies are the same color in every window. Keep the bounds
-  **symmetric around the origin**. The ramp divides both sides by the longer
-  one, so 0 to 4 lets both extremes saturate, and gains past 4 clamp.
+  **symmetric around the origin**, because the ramp divides both sides by the
+  longer one: 0 to 4 lets both extremes saturate, and gains past 4 clamp.
 
-Rows stay in file order until **Clustering → Cluster rows by score...** in the
-track menu brings similar samples together.
+**Clustering → Cluster rows by score...** in the track menu brings similar
+samples together, since rows otherwise stay in file order.
 
 The full list is the `pur_copynumber_1000g` track in
 https://jbrowse.org/code/jb2/main/test_data/config_demo.json, so
@@ -131,8 +130,8 @@ with these settings already applied.
 
 Navigate to `chr17:36,080,000-36,270,000`, around _CCL3L1_ (a chemokine gene
 with a variable number of copies), and load six individuals spanning the range
-of copy number as a second track. The track draws step lines on one pinned axis,
-so each plateau lines up with a copy count:
+of copy number as a second track. It draws step lines on one pinned axis, so
+each plateau lines up with a copy count:
 
 ```json addtrack loc=chr17:36,080,000-36,270,000
 {
@@ -188,8 +187,8 @@ so each plateau lines up with a copy count:
 
 Two paralogous blocks hold the variation. The right-hand block spans the
 chemokine genes _CCL3L1_ and _CCL4L1_ (labelled _CCL3L3_ and _CCL4L2_ in the
-hg38 gene track), in a variable number of tandem copies. The left-hand block is
-a _TBC1D3_ repeat.
+hg38 gene track) in a variable number of tandem copies, and the left-hand block
+is a _TBC1D3_ repeat.
 
 ## UGT2B17, a simple deletion, against the 1000 Genomes SV map
 
@@ -214,13 +213,13 @@ VCF on the same assembly:
 
 ## Load the whole panel from one Zarr store {#a-zarr-store-for-the-whole-panel}
 
-The full PUR panel track in `config_demo.json` holds 104 individuals, and the
-full 1000 Genomes panel has 2504.
+The PUR panel track in `config_demo.json` holds 104 individuals, and the full
+1000 Genomes panel has 2504.
 [`measure_signal_latency.ts`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/measure_signal_latency.ts)
-measures the requests, bytes and time needed to fill the _CCL3L1_ window from
-all 2504 BigWigs and from a Zarr store holding the same samples, using the
-readers the browser uses. The script takes the same `name`/`group`/`url` TSV as
-the converter, which the [build script](#reproduce-it-end-to-end) writes:
+measures the requests, bytes and time to fill the _CCL3L1_ window from all 2504
+BigWigs and from a Zarr store of the same samples, using the readers the browser
+uses. It takes the converter's `name`/`group`/`url` TSV, which the
+[build script](#reproduce-it-end-to-end) writes:
 
 ```bash
 curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/measure_signal_latency.ts
@@ -244,13 +243,11 @@ so the cost grows with the number of files. The Zarr store is one array of
 samples by bins, read in two metadata requests and one chunk.
 
 [Zarr](https://zarr.dev/) v3 stores such arrays as chunk files on static
-hosting.
+hosting, and
 [`jbrowse-plugin-zarr`](https://github.com/cmdcolin/jbrowse-plugin-zarr) adds a
-`MultiWiggleZarrAdapter`, which takes the same display settings as the BigWig
-track.
-
-The plugin is in beta and is not yet in the
-[plugin store](/docs/user_guides/plugin_store). Load its hosted bundle with a
+`MultiWiggleZarrAdapter` that reads them with the same display settings as the
+BigWig track. The plugin is in beta and not yet in the
+[plugin store](/docs/user_guides/plugin_store), so load its hosted bundle with a
 `plugins` entry (see [configuring plugins](/docs/config_guides/plugins)):
 
 ```json
@@ -264,7 +261,7 @@ The plugin is in beta and is not yet in the
 }
 ```
 
-With the plugin loaded, a track points the adapter at the store:
+With the plugin loaded, the adapter's `uri` names the store:
 
 ```json addtrack
 {
@@ -297,8 +294,8 @@ your `config.json` takes `qm2_cn_1kb.zarr`.
 
 ## A deletion nested inside another on chr3, sorted by clustering
 
-The Zarr store also covers chr3:162.5-163.2 Mb, where a 22 kb deletion sits
-inside a 114 kb one:
+The Zarr store covers chr3:162.5-163.2 Mb, where a 22 kb deletion sits inside a
+114 kb one:
 
 - Navigate the Zarr track to `chr3:162,650,000-163,050,000`.
 - Run **Clustering → Cluster rows by score...** to sort individuals by which of
@@ -317,8 +314,11 @@ inside a 114 kb one:
 }
 ```
 
-The HGSVC3 track holds every insertion and deletion. To keep the long ones,
-enter this filter from **Filter by... → Edit filters...** in the track menu:
+The HGSVC3 track holds every insertion and deletion, and a filter keeps the long
+ones.
+
+**Filter by... → Edit filters...** in the track menu takes a `filter`. Enter
+this one to drop every record under 5 kb:
 
 ```text
 jexl:alleleLength(feature)>=5000
@@ -329,9 +329,9 @@ jexl:alleleLength(feature)>=5000
 ## Building a Zarr store from per-sample BigWigs
 
 [`build_signal_zarr.ts`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_signal_zarr.ts)
-turns a list of BigWigs into one store. It takes a TSV of `name` and `url`, with
-an optional `group` column between them (here the population, which labels and
-groups the rows). It imports two npm packages:
+turns a list of BigWigs into one store. Its input is a TSV of `name` and `url`,
+with an optional `group` column between them (here the population, which labels
+and groups the rows), and it imports two npm packages:
 
 ```bash
 curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/build_signal_zarr.ts
@@ -347,42 +347,41 @@ node build_signal_zarr.ts \
   --levels 1000,10000
 ```
 
-The command above built the hosted store from all 2504 samples, over the windows
-in the figures.
+This command built the hosted store from all 2504 samples over the windows in
+the figures.
 
 Three things shape the store:
 
 - **`--levels`** sets the resolution pyramid, one samples-by-bins array per
   entry, with coarser ones averaged from the finest. The adapter reads the
   coarsest level whose bins are no wider than a screen pixel, so a
-  whole-chromosome view costs the same couple of requests. Give the input's bin
+  whole-chromosome view costs the same couple of requests. List the input's bin
   size first, then steps of roughly 3x (`10000,30000,100000`, not
   `10000,100000`), since a 10x gap leaves a view fetching 10x the bins it can
   draw.
 - **`--region`** limits the build to the windows you pass. The converter holds
   the finest level in memory and derives the rest from it, so without `--region`
   this panel takes a few GB at 10 kb bins and tens of GB at the 1 kb of the
-  BigWigs; start a whole-genome pyramid coarse. The converter prints the size of
-  the finest level before allocating it, and exits if it will not fit.
+  BigWigs; start a whole-genome pyramid coarse. The converter prints the finest
+  level's size before allocating it and exits if it will not fit.
 - **Summary levels** above the finest store the minimum and maximum of the bins
   they average alongside the mean.
   [`summaryScoreMode`](/docs/config/linearwiggledisplay/#slot-summaryscoremode)
   picks which a view draws, so an amplification narrower than a bin is visible
   under `max` and averaged away under `mean`.
 
-The output is a folder of files. Copy it to any static host with CORS enabled
-and point a track at it. To write a store from something other than BigWigs, the
-plugin's
+The output is a folder of files, which any static host with CORS enabled can
+serve to a track. The plugin's
 [store format](https://github.com/cmdcolin/jbrowse-plugin-zarr#store-format)
-gives the layout.
+gives the layout for writing a store from something other than BigWigs.
 
 ## Run QuicK-mer2 on your own samples {#your-own-samples}
 
 Run [QuicK-mer2](https://github.com/KiddLab/QuicK-mer2) over your aligned reads.
 The lab's
 [tutorial](https://github.com/KiddLab/QuicK-mer2/blob/master/tutorial.md) takes
-one 30x 1000 Genomes CRAM through `count` and `est`, and for GRCh38 the k-mer
-index is
+one 30x 1000 Genomes CRAM through `count` and `est`, and the GRCh38 k-mer index
+is
 [prebuilt](https://kiddlabshare.med.umich.edu/QuicK-mer/QuicK-mer2-refs/GRCh38/).
 
 `est` writes copy number in 1 kb windows, and its four columns are bedGraph once
@@ -396,8 +395,8 @@ bedGraphToBigWig sample.bedgraph GRCh38_BSM.chrom.sizes sample.qm2.CN.1k.bw
 ```
 
 Host it, then add its URL to `bigWigs`, or a `name` and `url` row to
-`samples.tsv` for the Zarr build. Running an individual the panel already covers
-gives the lab's estimate as a check.
+`samples.tsv` for the Zarr build. An individual the panel already covers gives
+the lab's estimate as a check.
 
 ## Reproduce it end to end
 

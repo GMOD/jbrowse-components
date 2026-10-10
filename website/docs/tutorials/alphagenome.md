@@ -55,8 +55,7 @@ asking again gives a second prediction, and the difference is the variant's
 predicted effect.
 
 The window is a megabase centered on _TAL1_, which is on in K562, an
-erythroleukemia line, and off in GM12878, a lymphoblastoid line, the control in
-the locus figures below.
+erythroleukemia line, and off in GM12878, a lymphoblastoid line, the control.
 
 ## The AlphaGenome plugin
 
@@ -75,9 +74,9 @@ it loads by URL from the `plugins` array in `config.json` (see
 }
 ```
 
-On [JBrowse Desktop](/docs/quickstart_desktop), install it once from the start
-screen at **Global plugins... → Add custom plugin**, with that URL as the plugin
-URL and the name `AlphaGenome`.
+On [JBrowse Desktop](/docs/quickstart_desktop), install it from the start screen
+at **Global plugins... → Add custom plugin**, with that URL as the plugin URL
+and the name `AlphaGenome`.
 
 The plugin sends requests to a small service that holds the API key, runs the
 prediction and stores the arrays. The public instance is the default. To use
@@ -114,8 +113,9 @@ genes and the oncogenic _TAL1_ variants:
 ```
 
 The variants are a BED whose header names `REF` and `ALT` columns after the
-usual four. The right-click prediction item needs those alleles on each feature.
-For your own variants, swap `uri` for a VCF or a BED with the same columns:
+usual four, since the right-click prediction item needs those alleles on each
+feature. For your own variants, swap `uri` for a VCF or a BED with the same
+columns:
 
 ```json addtrack loc=chr1:47,189,833..47,259,832
 {
@@ -130,8 +130,8 @@ For your own variants, swap `uri` for a VCF or a BED with the same columns:
 }
 ```
 
-The session below loads the hosted config that holds the plugin and these
-tracks, and opens the locus with no predictions yet.
+The session below loads the hosted config with the plugin and these tracks and
+opens the locus with no predictions yet.
 
 ```json session config=https://jbrowse.org/demos/alphagenome/config.json
 {
@@ -161,15 +161,21 @@ four inputs:
 - **a variant**: left empty, the panel predicts the reference
 
 A wide request takes minutes, and the browser polls until it finishes. The
-service keys requests by content, so repeating a request this page already made
-returns at once.[^rounding]
+service keys each request by its content, so repeating a request this page
+already made returns at once.[^rounding]
 
 ## Predicted TAL1 expression in two cell lines on one axis
 
-A finished prediction lists its tracks, often thousands. Type `polyA plus` into
-the list's filter, tick K562 and GM12878, and **Add 2 selected** puts both in
-one multi-wiggle track on a shared y-axis. The panel stacks any tracks in the
-same units this way; untick **Stack on a shared scale** for one track per pick.
+Open the list of a finished prediction's tracks, often thousands, and stack two
+on one axis:
+
+- Type `polyA plus` into the list's filter.
+- Tick K562 and GM12878.
+- Click **Add 2 selected** to put both in one multi-wiggle track on a shared
+  y-axis.
+
+The panel stacks any tracks in the same units this way. For one track per pick,
+untick **Stack on a shared scale**.
 
 <Figure caption="Predicted polyA plus RNA-seq over TAL1 in K562 and GM12878, both rows on one y-axis. The K562 row shows a block of signal across the annotated exons that the GM12878 row does not." src="/img/alphagenome/expression_two_cell_lines.png" />
 
@@ -178,9 +184,11 @@ loaded.
 
 ## Where the chromatin is open
 
-Type `DNase` into the prediction's track filter and tick K562 and GM12878, then
-type `ATAC` and tick both again; ticks survive the filter change. **Add 4
-selected** puts all four in one track on one axis.
+Add four accessibility rows to the prediction:
+
+- Type `DNase` into the track filter and tick K562 and GM12878.
+- Type `ATAC` and tick both again; ticks survive the filter change.
+- Click **Add 4 selected** to put all four in one track on one axis.
 
 <Figure caption="Predicted DNase and ATAC for K562 and GM12878, four rows on one shared y-axis because accessibility is one set of units. The K562 ATAC row runs high across the whole window; the K562 DNase row below it resolves into peaks." src="/img/alphagenome/accessibility_shared_axis.png" />
 
@@ -205,13 +213,12 @@ predicted megabase:
 
 In T-cell acute lymphoblastic leukemia (T-ALL), _TAL1_ is switched on in a
 lineage where it should be silent. One route is a small insertion upstream of
-the gene that creates a binding site, and the variant track holds the insertions
+the gene that creates a binding site. The variant track holds the insertions
 reported in T-ALL patients and cell lines, all at one site.
 
-Right-click any variant and choose **Predict variant effect with AlphaGenome**,
-the last row of the menu. The query panel opens with the position and the two
-alleles loaded. Running it predicts the window twice, once for the reference and
-once with the variant.
+Right-click any variant and choose **Predict variant effect with AlphaGenome**.
+The query panel opens with the variant loaded, and running it predicts the
+window twice, once for the reference and once with the variant.
 
 <Figure caption="Right-clicking a variant in the oncogenic TAL1 variants track. The last row of the menu is the plugin's, and it opens the query panel with the variant under the cursor already loaded." src="/img/alphagenome/predict_variant_menu.png" />
 
@@ -230,11 +237,14 @@ variant to get the whole locus back.
 
 A variant prediction returns each assay as two tracks: the reference and
 alternate curves together, and a difference row (alternate minus reference)
-where positive is a gain from the insertion.[^mapping] Add the CD34+ DNase,
-polyA plus RNA-seq and H3K27ac tracks, zoom to _TAL1_ and the insertion, and
-close the reference and alternate tracks to keep the three difference rows. On
-the DNase difference row, untick **Y axis... → Clip extreme outliers**, because
-on a row this sparse the default clipping flattens the gain at the insertion.
+where positive is a gain from the insertion.[^mapping] To read the differences:
+
+- Add the CD34+ DNase, polyA plus RNA-seq and H3K27ac tracks.
+- Zoom to _TAL1_ and the insertion, and close the reference and alternate tracks
+  to keep the three difference rows.
+- Untick **Y axis... → Clip extreme outliers** on the DNase difference row,
+  because on a row this sparse the default clipping flattens the gain at the
+  insertion.
 
 <Figure caption="The Jurkat insertion scored in CD34+ progenitors: the alternate-minus-reference difference for DNase, polyA plus RNA-seq and H3K27ac, positive for a predicted gain." src="/img/alphagenome/variant_difference.png" />
 
@@ -244,10 +254,10 @@ rises across the locus, and predicted transcription rises over the _TAL1_ exons.
 ## Sharing prediction tracks between sessions
 
 The panel adds predictions as session tracks whose adapters read the stored
-arrays through presigned URLs, and those URLs expire within the hour. A track
-config copied into another session stops loading once they expire. To share a
-prediction, re-open the panel in the other session and repeat the query, which
-returns the same stored arrays with fresh URLs.
+arrays through presigned URLs that expire within the hour. A track config copied
+into another session stops loading once they expire, so to share a prediction,
+re-open the panel there and repeat the query, which returns the same stored
+arrays with fresh URLs.
 
 ## See also
 
@@ -282,8 +292,8 @@ returns the same stored arrays with fresh URLs.
 [^junctions]:
     AlphaGenome returns tens of thousands of junctions for a megabase. The
     adapter loads them all and draws only those scoring 0.5 or more, which over
-    one gene leaves the few strong arcs rather than dozens of faint ones. The
-    track colors arcs by strand and strokes them by score.
+    one gene leaves the few strong arcs. The track colors arcs by strand and
+    strokes them by score.
 
 [^mapping]:
     AlphaGenome lays out the alternate prediction along the alternate sequence,

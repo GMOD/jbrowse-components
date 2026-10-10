@@ -29,8 +29,8 @@ Two hg19 ChromHMM releases, both 15-state segmentations: UCSC's nine-cell-type
 ENCODE Broad HMM set, and the Roadmap Epigenomics compendium across 127
 epigenomes.
 
-The [build scripts](#reproduce-it-end-to-end) take these files from their URLs,
-so there is nothing to download by hand.
+The [build scripts](#reproduce-it-end-to-end) fetch these files, so there is
+nothing to download by hand.
 
 - the nine ENCODE Broad HMM segmentation BEDs, one per cell type, merged into
   the multi-row file below:
@@ -58,8 +58,8 @@ so there is nothing to download by hand.
 (`Gm12878.bed`, `K562.bed`, ...), with the state in `name` (for example
 `1_Active_Promoter`) and its color in `itemRgb`. The nine
 [UCSC ENCODE Broad HMM](http://hgdownload.soe.ucsc.edu/goldenPath/hg19/encodeDCC/wgEncodeBroadHmm/)
-15-state BEDs concatenate into one BED with a trailing `cellType` field, the
-label that becomes a row each in the multi-row feature display, so 9 cell types
+15-state BEDs concatenate into one BED with a trailing `cellType` field, which
+the multi-row feature display turns into one row per value, so 9 cell types
 (or 127) share one config, one adapter and one fetch:
 
 ```text
@@ -68,8 +68,8 @@ chr1    10000       10600     15_Repetitive/CNV  0      .       10000       1060
 chr1    10000       10600     15_Repetitive/CNV  0      .       10000       10600     245,245,245  K562
 ```
 
-The `#`-prefixed defline is part of the file, so the adapter takes the column
-names from it. The merge is one pass:
+The `#`-prefixed defline gives the adapter its column names. The merge is one
+pass:
 
 <!-- from: scripts/build_chromhmm_multirow.sh -->
 
@@ -107,8 +107,7 @@ of both merged files, as in the Roadmap track config below.
 
 ## Configuring a multi-row display, one row per cell type
 
-Both releases are on hg19, so we load that assembly and a RefSeq gene track for
-the figures to sit under:
+Both releases are on hg19, so we load that assembly and a RefSeq gene track:
 
 ```json addassembly
 {
@@ -168,18 +167,18 @@ bgzipped, tabix-indexed BED from the merge above:
 }
 ```
 
-JBrowse finds the `.bed.gz.tbi` beside the file.
-[`rows`](/docs/config/linearmultirowfeaturedisplay/#slot-rows) sets up the rows:
+JBrowse finds the `.bed.gz.tbi` beside the file. In grammar-of-graphics terms,
+[`rows`](/docs/config/linearmultirowfeaturedisplay/#slot-rows) assigns the rows:
 
-- `field` is the attribute to split rows by; every distinct `cellType` becomes a
-  labeled row
+- `field` is the attribute to split rows by, so every distinct `cellType`
+  becomes a labeled row
 - `domain` pins the rows to an order, here ENCODE's tiers; without it the rows
   sort by value
 
-JBrowse paints each feature with its `itemRgb`; the
-[`color`](/docs/config/linearmultirowfeaturedisplay/#slot-color) slot overrides
-that with a `field` whose values each take a color through its `domain` and
-`range`. The adapter needs
+JBrowse paints each feature with its `itemRgb`. The
+[`color`](/docs/config/linearmultirowfeaturedisplay/#slot-color) slot is a color
+scale that overrides this, mapping the values of a `field` through its `domain`
+to its `range`. The adapter needs
 [`columnNames`](/docs/config/bedtabixadapter/#slot-columnnames) only for a file
 without a defline.
 
@@ -197,22 +196,22 @@ lineage commits.
 
 JBrowse builds the key from the state colors, one entry per distinct color,
 labeled with the first state name seen in it. States sharing a color collapse
-into one entry; in the Broad 15-state model `4_Strong_Enhancer` shares its entry
-with `5_`. Turn the key off with **Show... → Show legend** in the track menu, or
-name the colors yourself with an identity
-[`color`](/docs/config/linearmultirowfeaturedisplay/#slot-color) scale, which
-keeps the file's colors and relabels them in the key.
+into one entry, so in the Broad 15-state model `4_Strong_Enhancer` shares its
+entry with `5_`. An identity
+[`color`](/docs/config/linearmultirowfeaturedisplay/#slot-color) scale keeps the
+file's colors and relabels them in the key.
 
-Most of any segmentation is quiescent or heterochromatic. The track menu's
-**Categories** submenu has a checkbox per legend entry; unchecking the quiescent
-and repressed states leaves only promoters, enhancers and transcription.
+Most of any segmentation is quiescent or heterochromatic. The track menu has
+these actions for reading the rest:
 
-Two more track-menu actions compare the rows:
-
+- **Show... → Show legend** turns the key off.
+- The **Categories** submenu has a checkbox per legend entry. Unchecking the
+  quiescent and repressed states leaves the promoters, enhancers and
+  transcription.
 - **Clustering → Cluster rows by similarity...** reorders the rows by the state
-  each has across the region in view and draws the dendrogram in the sidebar
+  each has across the region in view and draws the dendrogram in the sidebar.
 - Right-click a column and pick **Sort rows by color here** to rank the rows by
-  the state each has at that base
+  the state each has at that base.
 
 ## Roadmap's 127 epigenomes at PAX5 and HOXA
 
@@ -222,10 +221,10 @@ The
 one fetch. Their state names are mnemonics (`12_EnhBiv`, `14_ReprPCWk`), so this
 track labels its colors with `scale: "identity"`: the file's `itemRgb` still
 paints each block, and `labels` spells out the fifteen `domain` colors in order.
-The merged file is hosted, so the track loads as it stands. It omits the three
-settings the PAX5 figure uses to order the 127 rows and color their label bars
-(a `rows.domain` naming every epigenome, grouped by tissue, plus the `rowGroups`
-and `rowColor` built later in this section). The hosted demo config,
+The merged file is hosted, so the track loads as it stands. The track omits
+three settings the PAX5 figure uses: a `rows.domain` naming every epigenome,
+grouped by tissue, and the `rowGroups` and `rowColor` built later in this
+section that color the label bars. The hosted demo config,
 https://jbrowse.org/code/jb2/main/test_data/config_demo.json, has the track with
 all three:
 
@@ -300,9 +299,9 @@ epigenomes. Over _PAX5_:
 
 <Figure src="/img/chromhmm.png" caption="All 127 Roadmap epigenomes over chr9 from FAM205A to ALDH1B1, rows in the paper's tissue order and banded by tissue group with facet, each label tinted by its group. Promoters are red in every tissue; PAX5 (boxed) is transcribed with genic enhancers only in the B cell rows and GM12878."/>
 
-Listing six epigenome names in `rows.domain` and `rows.kept` narrows the same
-track to lung fibroblasts, foreskin fibroblasts and ES cells over HOXA, which
-reproduces the chromatin domains
+Listing six epigenome names in `rows.domain` (the order) and `rows.kept` (the
+subset) narrows the same track to lung fibroblasts, foreskin fibroblasts and ES
+cells over HOXA, which reproduces the chromatin domains
 [Rinn et al. 2007](https://doi.org/10.1016/j.cell.2007.05.022) mapped in
 fibroblasts from different parts of the body:
 
@@ -346,6 +345,9 @@ fibroblasts from different parts of the body:
 }
 ```
 
+**Advanced → Edit plot...** in the track menu shows `rows` with its `domain` and
+`kept` as text and applies the same subset to an open track live.
+
 <Figure src="/img/chromhmm_hoxa_fibroblasts.png" caption="Lung fibroblasts, foreskin fibroblasts and ES cells over HOXA. Lung fibroblasts keep HOXA1-A7 (red box) active and HOXA9-A13 (blue box) Polycomb-repressed, foreskin fibroblasts the reverse, and ES cells hold the whole cluster repressed."/>
 
 **Clustering → Cluster rows by similarity...** in the track menu replaces the
@@ -354,19 +356,21 @@ tissue order with one derived from the data at whatever locus is in view.
 <Video src="/media/epigenomics/chromhmm_cluster.mp4" caption="Clustering the 127-epigenome ChromHMM track over HOXA. The rows open in Roadmap's tissue order; the track menu's Cluster rows by similarity re-lays them out into blocks and draws the dendrogram beside them." />
 
 With 127 rows in one track a row is a few pixels tall and its label barely
-legible, so three settings group the rows by the 19 Roadmap tissue groups:
+legible, so we group the rows by the 19 Roadmap tissue groups with three
+settings:
 
 - [`rowGroups`](/docs/config/linearmultirowfeaturedisplay/#slot-rowgroups) tags
   each row with a `group`, taking one `{ match, group }` per tissue, where
   `match` is a regex over the row names
 - [`facet`](/docs/config/linearmultirowfeaturedisplay/#slot-facet) `"group"`
-  stacks the rows in one labelled band per tissue
+  splits the display into stacked sections, one per tissue
 - [`rowColor`](/docs/config/linearmultirowfeaturedisplay/#slot-rowcolor) with
-  `field: "group"` pairs each tissue with a color, drawn as a bar beside each
-  row's label
+  `field: "group"` is a color scale on each row's label bar that pairs each
+  tissue with a color
 
 The file's `itemRgb` still paints the blocks their state colors, so the tissue
-color lands on the label bar alone. Two of the nineteen tissues look like this:
+color appears on the label bar alone. Two of the nineteen tissues look like
+this:
 
 ```json
 {
@@ -403,8 +407,8 @@ match leaves as one row.
 
 The hosted track orders the rows by tissue group through `rows.domain` and
 leaves `facet` out, so clustering runs over all 127 together and the label bars
-show which tissues a cluster spans. The PAX5 figure adds `facet` to draw the
-bands, with a `domain` that stacks them in the paper's group order.
+show which tissues a cluster spans. The PAX5 figure adds `facet` with this
+`domain`, which stacks the groups in the paper's order:
 
 ```json
 {
@@ -437,10 +441,9 @@ bands, with a `domain` that stacks them in the paper's group order.
 
 The 19 groups in `EID_metadata.tab` include ENCODE2012. Roadmap folded the
 ENCODE 2012 reference epigenomes (GM12878, K562, HeLa-S3, HepG2, A549, HUVEC,
-NHEK and the rest) into the compendium as one group, so that group names a data
-source, and its members span several anatomies. The same file's `ANATOMY` column
-splits the epigenomes finer, and `TYPE` sorts them by how the sample was
-collected.
+NHEK and the rest) into the compendium as one group, which names a data source
+and spans several anatomies. The same file's `ANATOMY` column splits them finer,
+and `TYPE` sorts them by how the sample was collected.
 
 ## Reproduce it end to end
 
@@ -468,9 +471,9 @@ bare BED4, so the script fills in what the ENCODE files had:
 3. orders the rows by tissue group, so a tissue's epigenomes sit together under
    one label-bar color
 
-The color join for one epigenome is a single `awk` call. It looks each state's
-number, the part of the name before the underscore, up in the colormap and
-appends the `itemRgb` and `cellType` columns:
+One `awk` call joins the colors for an epigenome, looking each state's number
+(the part of the name before the underscore) up in the colormap and appending
+the `itemRgb` and `cellType` columns:
 
 <!-- from: scripts/build_chromhmm_roadmap.sh -->
 
