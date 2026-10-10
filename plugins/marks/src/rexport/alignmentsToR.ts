@@ -14,6 +14,13 @@ import {
   palettePresets,
   tagColorPalette,
 } from '@jbrowse/core/ui/palette'
+import { MEASURE_FIELD_PRESETS } from '@jbrowse/core/util/colorScale'
+import {
+  thresholdCuts,
+  thresholdLabels,
+  thresholdPalette,
+} from '@jbrowse/core/util/thresholdScale'
+import { colorEncodingOf } from '@jbrowse/display-kit/colorConfigSchema'
 
 import { fileChrom, frameFor } from './frameFor.ts'
 import { markLayer } from './markToPlot.ts'
@@ -24,6 +31,7 @@ import type { ColorSpec } from './markToPlot.ts'
 import type { Panel, Region } from './rScript.ts'
 import type { Plot, Scale } from './rplot.ts'
 import type { Step } from './transformR.ts'
+import type { ColorSetting } from '@jbrowse/display-kit/colorConfigSchema'
 
 /** The slice of a LinearAlignmentsDisplay config snapshot this translates. */
 export interface AlignmentsDisplaySnapshot {
@@ -161,18 +169,7 @@ function readColor(
     return { spec: { value: written.value ?? colorPairLR }, tags: [] }
   }
   if (field === 'mapq') {
-    return {
-      spec: {
-        field: 'mapq',
-        scale: 'linear',
-        scheme: 'cividis',
-        domainMin: 0,
-        domainMax: 60,
-        ...written,
-        title: written.title ?? 'MAPQ',
-      },
-      tags: [],
-    }
+    return mapqColor(written)
   }
   const dimension = READ_DIMENSIONS[field]
   if (dimension) {
@@ -241,6 +238,55 @@ function readColor(
           : written.range,
     },
     tags: [tag],
+  }
+}
+
+const MAPQ_PRESETS = { mapq: MEASURE_FIELD_PRESETS.mapq }
+const MAPQ_TITLE = MEASURE_FIELD_PRESETS.mapq.title
+
+/**
+ * MAPQ through the browser's own encoding: its preset's bins, each painted
+ * the color `colorEncodingOf` samples for it, with a read whose MAPQ is 255
+ * (NA in R) in the plain fill. A written ramp or category list paints as any
+ * numeric field does.
+ */
+function mapqColor(written: ColorSpec) {
+  const encoding = colorEncodingOf(
+    {
+      value: undefined,
+      domain: [],
+      range: [],
+      ...written,
+      field: 'mapq',
+    } as ColorSetting,
+    MAPQ_PRESETS,
+  )
+  const title = written.title ?? MAPQ_TITLE
+  if (typeof encoding !== 'object' || encoding.scale !== 'threshold') {
+    return { spec: { ...written, title }, tags: [] }
+  }
+  const cuts = thresholdCuts(encoding.domain)
+  const colors = thresholdPalette(cuts.length + 1, encoding.range)
+  const labels = encoding.labels ?? thresholdLabels(cuts)
+  const bins = colors.map((color, i) => ({
+    value: `bin${i}`,
+    color,
+    label: labels[i] ?? `bin ${i}`,
+  }))
+  const levels = [
+    ...(encoding.descending ? bins.toReversed() : bins),
+    { value: NO_VALUE, color: colorPairLR, label: 'MAPQ unavailable (255)' },
+  ]
+  return {
+    spec: { field: LEVEL_COLUMN, scale: 'categorical' },
+    manual: {
+      kind: 'manual',
+      values: levels.map(l => [l.value, l.color] as const),
+      labels: levels.map(l => l.label),
+      name: title,
+    } satisfies Scale,
+    derive: `ifelse(is.na(READS$mapq), ${rStr(NO_VALUE)}, paste0("bin", findInterval(READS$mapq, c(${cuts.join(', ')}))))`,
+    tags: [],
   }
 }
 

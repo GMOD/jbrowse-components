@@ -8,6 +8,8 @@ import {
   categoricalValueColor,
 } from '@jbrowse/core/ui/colors'
 import { colorFwdStrand, colorRevStrand } from '@jbrowse/core/ui/palette'
+import { MEASURE_FIELD_PRESETS } from '@jbrowse/core/util/colorScale'
+import { colorEncodingOf } from '@jbrowse/display-kit/colorConfigSchema'
 
 import {
   REGIONS,
@@ -307,6 +309,18 @@ const strandColors = register(
     }),
   ]),
   'sort(unique(ggplot_build(pileup_volvox_alignments)$data[[1]]$fill))',
+)
+
+const mapqBins = register(
+  'mapq_bins',
+  scriptFor([
+    track(main, 'volvox_alignments', 'LinearAlignmentsDisplay', {
+      color: { field: 'mapq' },
+    }),
+  ]),
+  `{ b <- ggplot_build(pileup_volvox_alignments)
+  u <- unique(data.frame(m = reads_volvox_alignments$mapq, f = toupper(b$data[[1]]$fill)))
+  paste(c(paste(u$m, u$f)[order(u$m)], b$plot$scales$get_scales("fill")$get_labels()), collapse = "|") }`,
 )
 
 const defaultMark = register(
@@ -640,6 +654,26 @@ maybe('the emitted script, run under R', () => {
     expect(results.get(strandColors)?.toLowerCase()).toBe(
       `[1] ${wanted.map(c => `"${c}"`).join(' ')}`,
     )
+  })
+
+  it('paints MAPQ in the browser\u2019s bins, keyed from high to low', () => {
+    const { range, labels } = colorEncodingOf(
+      { value: undefined, field: 'mapq', domain: [], range: [] },
+      { mapq: MEASURE_FIELD_PRESETS.mapq },
+    ) as { range: string[]; labels: string[] }
+    const hex = (rgb: string) =>
+      `#${rgb
+        .match(/\d+/g)!
+        .map(n => Number(n).toString(16).padStart(2, '0'))
+        .join('')
+        .toUpperCase()}`
+    const wanted = [
+      `25 ${hex(range[2]!)}`,
+      `37 ${hex(range[3]!)}`,
+      labels[3],
+      labels[2],
+    ]
+    expect(results.get(mapqBins)).toBe(`[1] "${wanted.join('|')}"`)
   })
 
   it('draws a mark whose type the config leaves at its default', () => {
