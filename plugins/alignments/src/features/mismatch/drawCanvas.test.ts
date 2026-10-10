@@ -47,8 +47,8 @@ function baseState(overrides: Partial<RenderState> = {}): RenderState {
     coverageSnpMinFrequency: 0,
     sashimiArcsHeight: 0,
     showMismatches: true,
-    filterMismatchesByFrequency: false,
-    mismatchAlpha: false,
+    fadeLowFrequencyMismatches: false,
+    fadeLowQualityMismatches: false,
     showSoftClipping: false,
     showInterbaseIndicators: false,
     showModifications: false,
@@ -137,36 +137,40 @@ describe('mismatch cell geometry', () => {
 })
 
 describe('mismatch quality fade', () => {
-  test('mismatchAlpha off: base is fully opaque regardless of quality', () => {
-    expect(drawOne(baseState({ mismatchAlpha: false }), 10)).toBe(
+  test('fadeLowQualityMismatches off: base is fully opaque regardless of quality', () => {
+    expect(drawOne(baseState({ fadeLowQualityMismatches: false }), 10)).toBe(
       'rgb(255,0,0)',
     )
   })
 
-  test('mismatchAlpha on: low quality fades toward transparent (qual/50)', () => {
+  test('fadeLowQualityMismatches on: low quality fades toward transparent (qual/50)', () => {
     // Phred 25 => alpha 0.5
-    expect(drawOne(baseState({ mismatchAlpha: true }), 25)).toBe(
+    expect(drawOne(baseState({ fadeLowQualityMismatches: true }), 25)).toBe(
       'rgba(255,0,0,0.5)',
     )
   })
 
-  test('mismatchAlpha on: Phred 50+ stays fully opaque', () => {
-    expect(drawOne(baseState({ mismatchAlpha: true }), 60)).toBe('rgb(255,0,0)')
-  })
-
-  test('mismatchAlpha on: the no-quality sentinel stays opaque', () => {
-    expect(drawOne(baseState({ mismatchAlpha: true }), QUAL_UNAVAILABLE)).toBe(
+  test('fadeLowQualityMismatches on: Phred 50+ stays fully opaque', () => {
+    expect(drawOne(baseState({ fadeLowQualityMismatches: true }), 60)).toBe(
       'rgb(255,0,0)',
     )
   })
 
-  test('mismatchAlpha on: Phred 0 fades all the way out', () => {
+  test('fadeLowQualityMismatches on: the no-quality sentinel stays opaque', () => {
+    expect(
+      drawOne(baseState({ fadeLowQualityMismatches: true }), QUAL_UNAVAILABLE),
+    ).toBe('rgb(255,0,0)')
+  })
+
+  test('fadeLowQualityMismatches on: Phred 0 fades all the way out', () => {
     // The worst score the file can carry, faded to nothing — and skipped rather
     // than filled at alpha 0, which is the same pixels for one fillStyle set and
     // one fillRect fewer. The pileup shape drops a zero-alpha mark for every
     // feature, as the gap painter always did. It used to share the sentinel's value and so
     // came out fully opaque — see qualityFadeParity.
-    expect(drawOne(baseState({ mismatchAlpha: true }), 0)).toBeUndefined()
+    expect(
+      drawOne(baseState({ fadeLowQualityMismatches: true }), 0),
+    ).toBeUndefined()
   })
 })
 

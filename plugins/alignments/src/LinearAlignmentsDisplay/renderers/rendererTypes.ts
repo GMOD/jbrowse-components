@@ -46,14 +46,14 @@ export interface RenderState {
   // Allele-fraction floor for the band's colored segments: a segment whose
   // share of its position's depth is below this is not drawn, and the grey
   // depth bar shows through where it would have been. 0 colors every
-  // mismatch. Nothing to do with `filterMismatchesByFrequency`, which is the
+  // mismatch. Nothing to do with `fadeLowFrequencyMismatches`, which is the
   // PILEUP's depth-dependent fade.
   coverageSnpMinFrequency: number
   sashimiArcsHeight: number
   showMismatches: boolean
-  filterMismatchesByFrequency: boolean
+  fadeLowFrequencyMismatches: boolean
   // Fade mismatch bases by their per-base Phred quality (advanced setting).
-  mismatchAlpha: boolean
+  fadeLowQualityMismatches: boolean
   showSoftClipping: boolean
   showInterbaseIndicators: boolean
   showModifications: boolean
@@ -308,7 +308,7 @@ export function frequencyFade(
   return frequencyFadeGate(
     base,
     frequencyByte / 255,
-    state.filterMismatchesByFrequency,
+    state.fadeLowFrequencyMismatches,
   )
 }
 

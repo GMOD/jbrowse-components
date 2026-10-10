@@ -9,14 +9,14 @@ import { qualityFade } from '../../shaders/slang/mismatch.js.generated.ts'
 // against a fresh reading of the shader — which is the same reading that would
 // have missed a drift.
 //
-// The whole mismatchAlpha setting is these three branches, and the two backends
+// The whole fadeLowQualityMismatches setting is these three branches, and the two backends
 // disagreeing would show as SVG exports whose mismatch columns are a different
 // weight from the screen. The sweep favours where they could: the sentinel (the
 // one value the ramp must NOT apply to), the boundary at the opaque threshold,
 // and quals past it, where `min` is the only thing keeping alpha at 1.
 
-function retiredQualAlpha(qual: number, mismatchAlpha: boolean) {
-  return mismatchAlpha && qual > 0 ? Math.min(1, qual / 50) : 1
+function retiredQualAlpha(qual: number, fadeLowQualityMismatches: boolean) {
+  return fadeLowQualityMismatches && qual > 0 ? Math.min(1, qual / 50) : 1
 }
 
 // 50 is the threshold; 93 the highest Phred a Sanger-encoded BAM can carry; 255

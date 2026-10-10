@@ -56,7 +56,7 @@ function run(rpcData: PileupDataResult, bpPerPx = 0.1, showMismatches = true) {
     featureHeight: 10,
     featureSpacing: 2,
     showMismatches,
-    mismatchAlpha: false,
+    fadeLowQualityMismatches: false,
     scrollTop: 0,
   })
 }
@@ -112,7 +112,7 @@ test('a collapsed section (pileupHeight 0) draws no labels', () => {
     featureHeight: 10,
     featureSpacing: 2,
     showMismatches: true,
-    mismatchAlpha: false,
+    fadeLowQualityMismatches: false,
     scrollTop: 0,
   })
   expect(labels).toHaveLength(0)
@@ -126,7 +126,7 @@ test('without the insertion all three SNP letters render', () => {
 // mismatch.slang). The letter drawn on top has to fade with it, or the setting
 // is a no-op at the only zoom letters appear at.
 describe('SNP letters carry the per-base quality fade', () => {
-  const qualLabels = (mismatchAlpha: boolean) =>
+  const qualLabels = (fadeLowQualityMismatches: boolean) =>
     computeVisibleLabels({
       view: {
         visibleRegions: [
@@ -163,7 +163,7 @@ describe('SNP letters carry the per-base quality fade', () => {
       featureHeight: 10,
       featureSpacing: 2,
       showMismatches: true,
-      mismatchAlpha,
+      fadeLowQualityMismatches,
       scrollTop: 0,
     }).filter(l => l.type === 'mismatch')
 
@@ -280,7 +280,7 @@ describe('a deletion wider than the view labels its visible part', () => {
       featureHeight: 10,
       featureSpacing: 2,
       showMismatches: true,
-      mismatchAlpha: false,
+      fadeLowQualityMismatches: false,
       scrollTop: 0,
     }).find(l => l.type === 'deletion')
 
@@ -456,7 +456,7 @@ describe('the zoom gate agrees with the per-feature fade', () => {
       featureHeight: 10,
       featureSpacing: 2,
       showMismatches: true,
-      mismatchAlpha: false,
+      fadeLowQualityMismatches: false,
       scrollTop: 0,
     })
 
@@ -564,7 +564,7 @@ test('a grouped section near the top of its band stays visible after scrolling',
     featureHeight: 10,
     featureSpacing: 2,
     showMismatches: true,
-    mismatchAlpha: false,
+    fadeLowQualityMismatches: false,
     scrollTop: 200,
   })
   expect(labels.filter(l => l.type === 'mismatch')).toHaveLength(3)

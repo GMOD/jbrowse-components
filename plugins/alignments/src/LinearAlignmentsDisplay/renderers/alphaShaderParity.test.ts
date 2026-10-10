@@ -70,9 +70,9 @@ test('is monotonic in both arguments', () => {
 function retiredFrequencyFade(
   base: number,
   freq: number,
-  filterByFrequency: boolean,
+  fadeLowFrequency: boolean,
 ) {
-  return filterByFrequency && base < 1 ? frequencyAlpha(base, freq) : 1
+  return fadeLowFrequency && base < 1 ? frequencyAlpha(base, freq) : 1
 }
 
 test('the fade gate matches the hand-written twin it replaced', () => {

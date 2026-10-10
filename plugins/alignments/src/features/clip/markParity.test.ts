@@ -60,13 +60,13 @@ const DATA: InterbaseUploadData = {
   numHardclips: HC_END - SC_END,
 }
 
-function state(filterByFrequency = true): RenderState {
+function state(fadeLowFrequency = true): RenderState {
   return {
     scrollTop: 0,
     featureHeight: FEATURE_HEIGHT,
     featureSpacing: 0,
     canvasHeight: 1000,
-    filterMismatchesByFrequency: filterByFrequency,
+    fadeLowFrequencyMismatches: fadeLowFrequency,
     pileupTopOffset: 0,
     colors: {
       colorSoftclip: [1, 0, 0],
@@ -144,13 +144,13 @@ function hitTestClip(
   canvasX: number,
   row: number,
   reversed: boolean,
-  filterByFrequency: boolean,
+  fadeLowFrequency: boolean,
 ) {
   const at = (kind: 'soft' | 'hard') =>
     CLIP_MARK.hitNearest!(
       DATA,
       block(reversed),
-      state(filterByFrequency),
+      state(fadeLowFrequency),
       canvasX,
       row * FEATURE_HEIGHT + 1,
       clipsOfKind(DATA, kind),

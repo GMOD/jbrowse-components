@@ -29,7 +29,7 @@ function baseState(overrides: Partial<RenderState> = {}): RenderState {
     featureHeight: 10,
     featureSpacing: 0,
     canvasHeight: 1000,
-    filterMismatchesByFrequency: false,
+    fadeLowFrequencyMismatches: false,
     showMismatches: true,
     pileupTopOffset: 0,
     colors: {

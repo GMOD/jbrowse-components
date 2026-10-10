@@ -53,7 +53,7 @@ const scrolled = {
   featureSpacing: 2,
   pileupTopOffset: 3,
   scrollTop: 5,
-  filterMismatchesByFrequency: true,
+  fadeLowFrequencyMismatches: true,
   chainMode: true,
   collapseGroupRows: false,
 }
@@ -63,7 +63,7 @@ const compact = {
   featureSpacing: 0,
   pileupTopOffset: 0,
   scrollTop: 0,
-  filterMismatchesByFrequency: false,
+  fadeLowFrequencyMismatches: false,
   chainMode: false,
   collapseGroupRows: true,
 }
@@ -72,7 +72,7 @@ function renderState(overrides: Partial<RenderState>) {
   return {
     canvasWidth: 240,
     canvasHeight: 62,
-    mismatchAlpha: false,
+    fadeLowQualityMismatches: false,
     showMismatches: true,
     showSoftClipping: true,
     showModifications: true,
@@ -204,7 +204,7 @@ function gapCase(
           passesFrequencyGate(
             length > 0 ? bpPerPx / length : bpPerPx,
             r.gapFrequencies[i]!,
-            state.filterMismatchesByFrequency,
+            state.fadeLowFrequencyMismatches,
           ))
       )
     },
@@ -247,7 +247,7 @@ function mismatchCase(
       passesFrequencyGate(
         bpPerPxOf(block),
         r.mismatchFrequencies[i]!,
-        state.filterMismatchesByFrequency,
+        state.fadeLowFrequencyMismatches,
       ),
   }
 }
@@ -439,7 +439,7 @@ function insertions(scale: number): Case<InterbaseUploadData> {
           passesFrequencyGate(
             bpPerPx,
             r.interbaseFrequencies[i]!,
-            state.filterMismatchesByFrequency,
+            state.fadeLowFrequencyMismatches,
           ))
       )
     },
@@ -468,7 +468,7 @@ function clips(scale: number): Case<InterbaseUploadData> {
         passesFrequencyGate(
           bpPerPx,
           r.interbaseFrequencies[i]!,
-          state.filterMismatchesByFrequency,
+          state.fadeLowFrequencyMismatches,
         )
       )
     },
@@ -539,7 +539,7 @@ describe.each([false, true])(
             [1005, 1, 255, 60],
           ]),
           blockOf(reversed, 10),
-          renderState({ mismatchAlpha: true }),
+          renderState({ fadeLowQualityMismatches: true }),
         ),
       ).toEqual([])
     })

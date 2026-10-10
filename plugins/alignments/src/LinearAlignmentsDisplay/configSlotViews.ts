@@ -347,14 +347,14 @@ export function configSlotViews(self: ConfigSlotSelf) {
     /**
      * #getter
      */
-    get fadeLowFreqMismatches(): boolean {
-      return getConf(self, 'fadeLowFreqMismatches')
+    get fadeLowFrequencyMismatches(): boolean {
+      return getConf(self, 'fadeLowFrequencyMismatches')
     },
     /**
      * #getter
      */
-    get mismatchAlpha(): boolean {
-      return getConf(self, 'mismatchAlpha')
+    get fadeLowQualityMismatches(): boolean {
+      return getConf(self, 'fadeLowQualityMismatches')
     },
     /**
      * #getter

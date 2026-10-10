@@ -76,7 +76,7 @@ interface ComputeVisibleLabelsParams {
   showMismatches: boolean
   // "Fade low quality mismatches". The SNP letter has to honor it as well as the
   // box under it, or the setting does nothing at the one zoom it applies at.
-  mismatchAlpha: boolean
+  fadeLowQualityMismatches: boolean
   scrollTop: number
 }
 
@@ -143,7 +143,7 @@ export function computeVisibleLabels(
     featureHeight,
     featureSpacing,
     showMismatches,
-    mismatchAlpha,
+    fadeLowQualityMismatches,
     scrollTop,
   } = params
 
@@ -433,7 +433,10 @@ export function computeVisibleLabels(
           // The box's OTHER multiplier, the low-frequency fade, is deliberately
           // absent: its gate is `pxPerBp < 1` and letters need pxPerBp >= 6.5,
           // so it resolves to 1 wherever this loop runs.
-          const opacity = qualityFade(mismatchQuals[i]!, mismatchAlpha)
+          const opacity = qualityFade(
+            mismatchQuals[i]!,
+            fadeLowQualityMismatches,
+          )
           if (opacity < MIN_QUALITY_LETTER_OPACITY) {
             continue
           }

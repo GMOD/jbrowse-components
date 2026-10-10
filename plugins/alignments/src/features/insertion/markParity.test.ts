@@ -60,13 +60,13 @@ const DATA: InterbaseUploadData = {
   numHardclips: 1,
 }
 
-function state(filterByFrequency = true): RenderState {
+function state(fadeLowFrequency = true): RenderState {
   return {
     scrollTop: 0,
     featureHeight: FEATURE_HEIGHT,
     featureSpacing: 0,
     canvasHeight: 1000,
-    filterMismatchesByFrequency: filterByFrequency,
+    fadeLowFrequencyMismatches: fadeLowFrequency,
     showMismatches: true,
     pileupTopOffset: 0,
     colors: { colorInsertion: [0.75, 0, 0.75] } as RenderState['colors'],
@@ -147,13 +147,13 @@ function hitAt(
   canvasX: number,
   row: number,
   reversed: boolean,
-  filterByFrequency = true,
+  fadeLowFrequency = true,
 ) {
   const at = (size: 'large' | 'small') =>
     INSERTION_MARK.hitNearest!(
       DATA,
       block(reversed),
-      state(filterByFrequency),
+      state(fadeLowFrequency),
       canvasX,
       row * FEATURE_HEIGHT + 1,
       insertionsOfSize(DATA, size, 1 / BP_PER_PX),

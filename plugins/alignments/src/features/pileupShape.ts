@@ -304,14 +304,14 @@ function hitPasses(
   c: PileupChannels,
   index: number,
   bpPerPx: number,
-  filterByFrequency: boolean,
+  fadeLowFrequency: boolean,
 ): boolean {
   switch (hit) {
     case Hit.always: {
       return true
     }
     case Hit.frequency: {
-      return passesFrequencyGate(bpPerPx, c.freqs![index]!, filterByFrequency)
+      return passesFrequencyGate(bpPerPx, c.freqs![index]!, fadeLowFrequency)
     }
     case Hit.spanFrequency: {
       const offset = index * c.stride
@@ -319,7 +319,7 @@ function hitPasses(
       return passesFrequencyGate(
         length > 0 ? bpPerPx / length : bpPerPx,
         c.freqs![index]!,
-        filterByFrequency,
+        fadeLowFrequency,
       )
     }
     case Hit.insertion: {
@@ -336,7 +336,7 @@ function hitPasses(
       // insertion is never frequency-gated, matching its fade.
       return (
         getInsertionType(length, pxPerBp) !== 'small' ||
-        passesFrequencyGate(bpPerPx, c.freqs![index]!, filterByFrequency)
+        passesFrequencyGate(bpPerPx, c.freqs![index]!, fadeLowFrequency)
       )
     }
   }
@@ -406,7 +406,7 @@ function walk(
   const { fade, point, cell, decorate, bandOffset, bandHeight } = f
   const { constantAlpha } = f
   const { rule, opaqueCss, fadedCss } = f.tables
-  const { featureHeight, mismatchAlpha, chainMode } = state
+  const { featureHeight, fadeLowQualityMismatches, chainMode } = state
   const constantCss =
     ctx !== undefined &&
     keys === undefined &&
@@ -448,7 +448,7 @@ function walk(
       case Fade.cellFrequencyQuality: {
         frequencyFades = true
         frequencyBase = widthPx
-        alpha = qualityFade(quals![i]!, mismatchAlpha)
+        alpha = qualityFade(quals![i]!, fadeLowQualityMismatches)
         break
       }
       case Fade.overlap: {
@@ -667,7 +667,7 @@ export function pileupShape(
       const { bpPerPx } = f
       const genomicPos = bpAtPxExact(xPx, block)
       const basePos = bpAtPx(xPx, block)
-      const filterByFrequency = state.filterMismatchesByFrequency
+      const fadeLowFrequency = state.fadeLowFrequencyMismatches
       const cellBased = pivot === 'cell'
       let best: MarkHit | undefined
       let bestDistSq = maxDistSq
@@ -689,7 +689,7 @@ export function pileupShape(
             : cellBased
               ? basePos === startBp
               : genomicPos >= startBp && genomicPos < positions[offset + 1]!
-        if (!contains || !hitPasses(hit, c, i, bpPerPx, filterByFrequency)) {
+        if (!contains || !hitPasses(hit, c, i, bpPerPx, fadeLowFrequency)) {
           continue
         }
         const r = inkOf(c, f, i)

@@ -41,8 +41,8 @@ function state(): RenderState {
     pileupTopOffset: 0,
     scrollTop: 0,
     canvasHeight: 500,
-    mismatchAlpha: false,
-    filterMismatchesByFrequency: true,
+    fadeLowQualityMismatches: false,
+    fadeLowFrequencyMismatches: true,
     showMismatches: true,
     colors: {
       colorBaseA: rgb(0, 1, 0),

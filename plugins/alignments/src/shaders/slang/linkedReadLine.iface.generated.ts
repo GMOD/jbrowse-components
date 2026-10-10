@@ -52,8 +52,8 @@ export const UNIFORM_OFFSET_I32 = {
   colorScheme: 10,
   chainMode: 11,
   showStroke: 12,
-  filterMismatchesByFrequency: 13,
-  mismatchAlpha: 14,
+  fadeLowFrequencyMismatches: 13,
+  fadeLowQualityMismatches: 14,
 } as const
 
 
@@ -113,8 +113,8 @@ export interface Uniforms {
   colorScheme: number
   chainMode: number
   showStroke: number
-  filterMismatchesByFrequency: number
-  mismatchAlpha: number
+  fadeLowFrequencyMismatches: number
+  fadeLowQualityMismatches: number
   reversed: number
   colorBaseA: number
   colorBaseC: number
@@ -152,8 +152,8 @@ export function writeUniforms(buf: ArrayBuffer, uniforms: Uniforms) {
   i32[10] = uniforms.colorScheme
   i32[11] = uniforms.chainMode
   i32[12] = uniforms.showStroke
-  i32[13] = uniforms.filterMismatchesByFrequency
-  i32[14] = uniforms.mismatchAlpha
+  i32[13] = uniforms.fadeLowFrequencyMismatches
+  i32[14] = uniforms.fadeLowQualityMismatches
   f32[15] = uniforms.reversed
   u32[16] = uniforms.colorBaseA
   u32[17] = uniforms.colorBaseC

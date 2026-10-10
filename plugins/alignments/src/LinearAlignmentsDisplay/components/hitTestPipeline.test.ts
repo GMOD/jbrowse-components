@@ -127,7 +127,7 @@ function opts(
       featureSpacing: 2,
       scrollTop: 0,
       chainMode: false,
-      filterMismatchesByFrequency: true,
+      fadeLowFrequencyMismatches: true,
       showMismatches: true,
       colorScheme: 0,
       coverageHeight: 50,
@@ -337,7 +337,7 @@ describe('detailed hit tests still fire when bpPerPx <= threshold', () => {
       100,
       60,
       lowFreqMismatchZoomedOut(),
-      opts({ filterMismatchesByFrequency: false }),
+      opts({ fadeLowFrequencyMismatches: false }),
     )
     expect(result.type).toBe('cigar')
     if (result.type === 'cigar') {
@@ -398,7 +398,7 @@ describe('detailed hit tests still fire when bpPerPx <= threshold', () => {
       100,
       60,
       lowFreqInsertionZoomedOut(),
-      opts({ filterMismatchesByFrequency: false }),
+      opts({ fadeLowFrequencyMismatches: false }),
     )
     expect(result.type).toBe('cigar')
     if (result.type === 'cigar') {
@@ -464,7 +464,12 @@ describe('a mismatch its quality fade leaves unpainted hands the hover to its re
   })
 
   it('answers as the read with the fade on', () => {
-    const hit = performHitTest(100, 60, resolved, opts({ mismatchAlpha: true }))
+    const hit = performHitTest(
+      100,
+      60,
+      resolved,
+      opts({ fadeLowQualityMismatches: true }),
+    )
     expect(hit.type === 'feature' && hit.hit).toStrictEqual({
       id: 'read1',
       index: 0,
@@ -945,7 +950,7 @@ describe('clip hit gates on frequency like every other mark', () => {
       100,
       60,
       lowFreqClip(),
-      opts({ filterMismatchesByFrequency: false }),
+      opts({ fadeLowFrequencyMismatches: false }),
     )
     expect(result.type).toBe('cigar')
     if (result.type === 'cigar') {
@@ -998,7 +1003,7 @@ describe('deletion hit gates on frequency like every other mark', () => {
       100,
       60,
       deletion(0),
-      opts({ filterMismatchesByFrequency: false }),
+      opts({ fadeLowFrequencyMismatches: false }),
     )
     expect(result.type).toBe('cigar')
     if (result.type === 'cigar') {

@@ -74,7 +74,7 @@ ColorVsOut vs_main(Instance inst, uint vid : SV_VertexID) {
   // per-site frequency so thinly-covered mismatches fade out. The softclip-base
   // pass shares this shader and packs full frequency, pinning its alpha at 1.
   float alpha = frequencyFade(u.pxPerBp, inst.frequency, u)
-              * qualityFade(inst.qual, u.mismatchAlpha != 0);
+              * qualityFade(inst.qual, u.fadeLowQualityMismatches != 0);
   if (alpha <= 0.0) { return discardVertex(); }
 
   // `pileupCellX` (alignmentsUniforms) is the snapped, anchored cell span every

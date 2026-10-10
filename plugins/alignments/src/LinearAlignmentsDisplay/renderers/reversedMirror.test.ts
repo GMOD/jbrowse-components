@@ -254,8 +254,8 @@ function state(overrides: Partial<RenderState> = {}): RenderState {
     coverageSymlogConstant: 1,
     coverageSnpMinFrequency: 0,
     showMismatches: true,
-    filterMismatchesByFrequency: false,
-    mismatchAlpha: false,
+    fadeLowFrequencyMismatches: false,
+    fadeLowQualityMismatches: false,
     // ON so the soft-clip-base cell layer (gated on this) is reachable; the
     // insertion layer rides showMismatches, already on.
     showSoftClipping: true,

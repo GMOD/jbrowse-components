@@ -61,10 +61,10 @@ public struct Uniforms {
   public int showStroke;
   // 1 = filter low-freq mismatches/insertions/gaps by coverage depth (default);
   // 0 = show all at full alpha (user has disabled frequency filtering)
-  public int filterMismatchesByFrequency;
+  public int fadeLowFrequencyMismatches;
   // 1 = fade mismatch bases by their per-base Phred quality (advanced setting);
   // 0 = full alpha regardless of quality.
-  public int mismatchAlpha;
+  public int fadeLowQualityMismatches;
   public float reversed;
 
   // Color palette — each uint is a packed ABGR value (1 byte per channel,
@@ -284,7 +284,7 @@ public float frequencyAlpha(float base, float freq) {
 //
 // Every fading pass must go through this rather than reassembling the gate
 // locally — a hand-rolled copy is how the clip pass silently lost its
-// filterMismatchesByFrequency check. `frequencyFade()` in rendererTypes.ts calls
+// fadeLowFrequencyMismatches check. `frequencyFade()` in rendererTypes.ts calls
 // the generated twin of this, adding the two things that are the CPU side's
 // alone: reading the toggle off the render state, and normalizing the worker's
 // frequency byte.
@@ -295,12 +295,12 @@ public float frequencyAlpha(float base, float freq) {
 // three facts that have to agree: the toggle, the sub-pixel test, and which one
 // short-circuits. Dropping the toggle is what silently disabled the clip pass's
 // filter.
-public float frequencyFadeGate(float base, float freq, bool filterByFrequency) {
-  return (filterByFrequency && base < 1.0) ? frequencyAlpha(base, freq) : 1.0;
+public float frequencyFadeGate(float base, float freq, bool fadeLowFrequency) {
+  return (fadeLowFrequency && base < 1.0) ? frequencyAlpha(base, freq) : 1.0;
 }
 
 public float frequencyFade(float base, float freq, Uniforms u) {
-  return frequencyFadeGate(base, freq, u.filterMismatchesByFrequency != 0);
+  return frequencyFadeGate(base, freq, u.fadeLowFrequencyMismatches != 0);
 }
 
 // How much of an indel marker this zoom has earned, from its own on-screen

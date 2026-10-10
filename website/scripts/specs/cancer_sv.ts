@@ -959,7 +959,7 @@ export const cancerSvSpecs: ScreenshotSpec[] = [
                 // derivative_synteny, where the same file over the whole allele
                 // is 53 non-secondary records from 29 molecules.
                 //
-                // `mismatchAlpha` was an earlier guess and was measured rather
+                // `fadeLowQualityMismatches` was an earlier guess and was measured rather
                 // than assumed -- it fades a tick by `min(1, qual/50)`, and this
                 // BAM's mismatch positions carry Q30-Q50, so it changed the
                 // picture by nothing visible. Don't reach for it on R10 data.

@@ -2171,7 +2171,7 @@ export default function stateModelFactory(
             featureHeight: self.featureHeight,
             featureSpacing: self.featureSpacing,
             showMismatches: self.showMismatches,
-            mismatchAlpha: self.mismatchAlpha,
+            fadeLowQualityMismatches: self.fadeLowQualityMismatches,
             scrollTop: self.scrollTop,
           })
         },
@@ -2574,8 +2574,8 @@ export default function stateModelFactory(
             coverageSnpMinFrequency: self.coverageSnpMinFrequency,
             sashimiArcsHeight: self.bandHeights.sashimiArcsHeight,
             showMismatches: self.showMismatches,
-            filterMismatchesByFrequency: self.fadeLowFreqMismatches,
-            mismatchAlpha: self.mismatchAlpha,
+            fadeLowFrequencyMismatches: self.fadeLowFrequencyMismatches,
+            fadeLowQualityMismatches: self.fadeLowQualityMismatches,
             showSoftClipping: self.showSoftClipping,
             showInterbaseIndicators: self.showInterbaseIndicators,
             showModifications: self.showModifications,
@@ -3112,8 +3112,8 @@ export default function stateModelFactory(
           /**
            * #action
            */
-          setMismatchAlpha(value: boolean) {
-            setConf(self, 'mismatchAlpha', value)
+          setFadeLowQualityMismatches(value: boolean) {
+            setConf(self, 'fadeLowQualityMismatches', value)
           },
 
           /**

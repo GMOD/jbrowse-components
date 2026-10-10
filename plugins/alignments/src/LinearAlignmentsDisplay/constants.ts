@@ -130,9 +130,9 @@ export const DEFAULT_MIN_INTERCHROM_SUPPORT = 2
 export function passesFrequencyGate(
   bpPerPx: number,
   frequencyByte: number,
-  filterByFrequency: boolean,
+  fadeLowFrequency: boolean,
 ) {
-  return bpPerPx <= 1 || !filterByFrequency || frequencyByte > 0
+  return bpPerPx <= 1 || !fadeLowFrequency || frequencyByte > 0
 }
 
 // Returns the minimum frequency at which a feature (mismatch, insertion, etc.)

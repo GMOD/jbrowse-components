@@ -79,13 +79,13 @@ function drawOne(
 
 describe('clip bar frequency fade', () => {
   test('filtering on, zoomed out: a low-frequency clip fades to pxPerBp', () => {
-    expect(drawOne(baseState({ filterMismatchesByFrequency: true }), 0)).toBe(
+    expect(drawOne(baseState({ fadeLowFrequencyMismatches: true }), 0)).toBe(
       'rgba(255,0,0,0.1)',
     )
   })
 
   test('filtering on, zoomed out: a full-frequency clip stays opaque', () => {
-    expect(drawOne(baseState({ filterMismatchesByFrequency: true }), 255)).toBe(
+    expect(drawOne(baseState({ fadeLowFrequencyMismatches: true }), 255)).toBe(
       'rgb(255,0,0)',
     )
   })
@@ -93,14 +93,14 @@ describe('clip bar frequency fade', () => {
   // The "show low frequency mismatches" toggle must reach the clip pass too —
   // clip.slang gated on nothing at all, so clips faded regardless of it.
   test('filtering off: a low-frequency clip stays opaque even zoomed out', () => {
-    expect(drawOne(baseState({ filterMismatchesByFrequency: false }), 0)).toBe(
+    expect(drawOne(baseState({ fadeLowFrequencyMismatches: false }), 0)).toBe(
       'rgb(255,0,0)',
     )
   })
 
   test('zoomed in past 1px/bp: no fade regardless of frequency', () => {
     expect(
-      drawOne(baseState({ filterMismatchesByFrequency: true }), 0, ZOOMED_IN),
+      drawOne(baseState({ fadeLowFrequencyMismatches: true }), 0, ZOOMED_IN),
     ).toBe('rgb(255,0,0)')
   })
 })

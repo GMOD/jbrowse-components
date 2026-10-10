@@ -112,7 +112,9 @@ function rendererSlotsOf(renderers: unknown): DisplayEntry {
   return {
     ...(height !== undefined ? { featureHeight: height } : {}),
     ...(maxHeight !== undefined ? { maxHeight } : {}),
-    ...(mismatchAlpha !== undefined ? { mismatchAlpha } : {}),
+    ...(mismatchAlpha !== undefined
+      ? { fadeLowQualityMismatches: mismatchAlpha }
+      : {}),
     ...(hideMismatches !== undefined
       ? { showMismatches: !hideMismatches }
       : {}),
@@ -164,6 +166,7 @@ export const retiredConfigSpellings: Record<string, RetiredSpelling> = {
   lineWidth: v => ({ readConnectionsLineWidth: v }),
   hideSmallIndels: () => ({}),
   hideMismatches: v => ({ showMismatches: !v }),
+  mismatchAlpha: v => ({ fadeLowQualityMismatches: v }),
   hideLargeIndels: () => ({}),
   minSubfeatureWidth: () => ({}),
   flipStrandLongReadChains: () => ({}),

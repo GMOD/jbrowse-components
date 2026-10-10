@@ -233,7 +233,7 @@ export default function configSchemaFactory(_pluginManager: PluginManager) {
       /**
        * #slot
        */
-      mismatchAlpha: {
+      fadeLowQualityMismatches: {
         type: 'boolean',
         description:
           'Fade mismatch bases by their per-base Phred quality. Defaults to off',
@@ -242,7 +242,7 @@ export default function configSchemaFactory(_pluginManager: PluginManager) {
       /**
        * #slot
        */
-      fadeLowFreqMismatches: {
+      fadeLowFrequencyMismatches: {
         type: 'boolean',
         defaultValue: true,
         description:
@@ -322,7 +322,7 @@ export default function configSchemaFactory(_pluginManager: PluginManager) {
         type: 'number',
         defaultValue: 0,
         description:
-          "Hide a coverage-band allele segment whose share of that position's depth is below this fraction, so the band stops painting a sliver for every sequencing error at high depth. 0 (the default) colors every mismatch. Distinct from `fadeLowFreqMismatches`, the pileup's fade of sub-pixel marks against a depth-dependent threshold; this is a flat allele-fraction floor on the band, and the grey depth bar still shows through where a segment is hidden",
+          "Hide a coverage-band allele segment whose share of that position's depth is below this fraction, so the band stops painting a sliver for every sequencing error at high depth. 0 (the default) colors every mismatch. Distinct from `fadeLowFrequencyMismatches`, the pileup's fade of sub-pixel marks against a depth-dependent threshold; this is a flat allele-fraction floor on the band, and the grey depth bar still shows through where a segment is hidden",
         advanced: true,
       },
       /**

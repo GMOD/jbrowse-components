@@ -125,25 +125,25 @@ describe('alignments fit-to-display-height', () => {
   })
 })
 
-// mismatchAlpha fades mismatch bases by their per-base Phred quality, and
+// fadeLowQualityMismatches fades mismatch bases by their per-base Phred quality, and
 // reaches the renderers via renderState (tier-4 rerender).
-describe('alignments mismatchAlpha (fade by base quality)', () => {
+describe('alignments fadeLowQualityMismatches (fade by base quality)', () => {
   it('is off by default', () => {
     const { display } = createDisplay()
-    expect(display.mismatchAlpha).toBe(false)
+    expect(display.fadeLowQualityMismatches).toBe(false)
   })
 
-  it('setMismatchAlpha sets the config slot on and off', () => {
+  it('setFadeLowQualityMismatches sets the config slot on and off', () => {
     const { display } = createDisplay()
-    display.setMismatchAlpha(true)
-    expect(display.mismatchAlpha).toBe(true)
-    display.setMismatchAlpha(false)
-    expect(display.mismatchAlpha).toBe(false)
+    display.setFadeLowQualityMismatches(true)
+    expect(display.fadeLowQualityMismatches).toBe(true)
+    display.setFadeLowQualityMismatches(false)
+    expect(display.fadeLowQualityMismatches).toBe(false)
   })
 
   it('follows a config default', () => {
-    const { display } = createDisplay({ mismatchAlpha: true })
-    expect(display.mismatchAlpha).toBe(true)
+    const { display } = createDisplay({ fadeLowQualityMismatches: true })
+    expect(display.fadeLowQualityMismatches).toBe(true)
   })
 
   it('the top-level Show menu exposes the fade-by-quality toggle', () => {
@@ -151,7 +151,7 @@ describe('alignments mismatchAlpha (fade by base quality)', () => {
     // Top-level Show item, not nested under Advanced.
     const show = menuSubItems(display.trackMenuItems(), 'Show...')
     clickMenuItem(show, 'Fade low quality mismatches')
-    expect(display.mismatchAlpha).toBe(true)
+    expect(display.fadeLowQualityMismatches).toBe(true)
   })
 })
 

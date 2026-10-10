@@ -219,8 +219,8 @@ interface FrameState {
   colorScheme: number
   chainMode: boolean
   showStroke: boolean
-  filterMismatchesByFrequency: boolean
-  mismatchAlpha: boolean
+  fadeLowFrequencyMismatches: boolean
+  fadeLowQualityMismatches: boolean
   dpr: number
 }
 
@@ -231,8 +231,8 @@ const STATE: FrameState = {
   colorScheme: 3,
   chainMode: false,
   showStroke: true,
-  filterMismatchesByFrequency: true,
-  mismatchAlpha: false,
+  fadeLowFrequencyMismatches: true,
+  fadeLowQualityMismatches: false,
   dpr: 2,
 }
 
@@ -281,8 +281,8 @@ function pokeFrame(
   f32[F.covOffset] = top
   f32[F.featHeight] = STATE.featureHeight
   f32[F.featSpacing] = STATE.featureSpacing
-  i32[I.filterMismatchesByFrequency] = STATE.filterMismatchesByFrequency ? 1 : 0
-  i32[I.mismatchAlpha] = STATE.mismatchAlpha ? 1 : 0
+  i32[I.fadeLowFrequencyMismatches] = STATE.fadeLowFrequencyMismatches ? 1 : 0
+  i32[I.fadeLowQualityMismatches] = STATE.fadeLowQualityMismatches ? 1 : 0
   i32[I.colorScheme] = STATE.colorScheme
   i32[I.chainMode] = STATE.chainMode ? 1 : 0
   i32[I.showStroke] = STATE.showStroke ? 1 : 0
@@ -347,8 +347,8 @@ function ctrlFrame(
   f32[F.covOffset] = top
   f32[F.featHeight] = STATE.featureHeight
   f32[F.featSpacing] = STATE.featureSpacing
-  i32[I.filterMismatchesByFrequency] = STATE.filterMismatchesByFrequency ? 1 : 0
-  i32[I.mismatchAlpha] = STATE.mismatchAlpha ? 1 : 0
+  i32[I.fadeLowFrequencyMismatches] = STATE.fadeLowFrequencyMismatches ? 1 : 0
+  i32[I.fadeLowQualityMismatches] = STATE.fadeLowQualityMismatches ? 1 : 0
   i32[I.colorScheme] = STATE.colorScheme
   i32[I.chainMode] = STATE.chainMode ? 1 : 0
   i32[I.showStroke] = STATE.showStroke ? 1 : 0
@@ -400,8 +400,8 @@ function totalValues(block: Block, top: number): Uniforms {
     colorScheme: STATE.colorScheme,
     chainMode: STATE.chainMode ? 1 : 0,
     showStroke: STATE.showStroke ? 1 : 0,
-    filterMismatchesByFrequency: STATE.filterMismatchesByFrequency ? 1 : 0,
-    mismatchAlpha: STATE.mismatchAlpha ? 1 : 0,
+    fadeLowFrequencyMismatches: STATE.fadeLowFrequencyMismatches ? 1 : 0,
+    fadeLowQualityMismatches: STATE.fadeLowQualityMismatches ? 1 : 0,
     reversed: block.reversed ? 1 : 0,
     colorBaseA: packRgb(c.named.colorBaseA!),
     colorBaseC: packRgb(c.named.colorBaseC!),
@@ -496,8 +496,8 @@ function templateValues(): Uniforms {
     colorScheme: STATE.colorScheme,
     chainMode: STATE.chainMode ? 1 : 0,
     showStroke: STATE.showStroke ? 1 : 0,
-    filterMismatchesByFrequency: STATE.filterMismatchesByFrequency ? 1 : 0,
-    mismatchAlpha: STATE.mismatchAlpha ? 1 : 0,
+    fadeLowFrequencyMismatches: STATE.fadeLowFrequencyMismatches ? 1 : 0,
+    fadeLowQualityMismatches: STATE.fadeLowQualityMismatches ? 1 : 0,
     reversed: 0,
     colorBaseA: packRgb(c.named.colorBaseA!),
     colorBaseC: packRgb(c.named.colorBaseC!),
@@ -612,8 +612,8 @@ function viewFrame(scratch: ArrayBuffer, block: Block, top: number) {
   f32[F.covOffset] = top
   f32[F.featHeight] = STATE.featureHeight
   f32[F.featSpacing] = STATE.featureSpacing
-  i32[I.filterMismatchesByFrequency] = STATE.filterMismatchesByFrequency ? 1 : 0
-  i32[I.mismatchAlpha] = STATE.mismatchAlpha ? 1 : 0
+  i32[I.fadeLowFrequencyMismatches] = STATE.fadeLowFrequencyMismatches ? 1 : 0
+  i32[I.fadeLowQualityMismatches] = STATE.fadeLowQualityMismatches ? 1 : 0
   i32[I.colorScheme] = STATE.colorScheme
   i32[I.chainMode] = STATE.chainMode ? 1 : 0
   i32[I.showStroke] = STATE.showStroke ? 1 : 0
@@ -713,8 +713,8 @@ function hoistValues(block: Block, top: number): Uniforms {
     colorScheme: STATE.colorScheme,
     chainMode: STATE.chainMode ? 1 : 0,
     showStroke: STATE.showStroke ? 1 : 0,
-    filterMismatchesByFrequency: STATE.filterMismatchesByFrequency ? 1 : 0,
-    mismatchAlpha: STATE.mismatchAlpha ? 1 : 0,
+    fadeLowFrequencyMismatches: STATE.fadeLowFrequencyMismatches ? 1 : 0,
+    fadeLowQualityMismatches: STATE.fadeLowQualityMismatches ? 1 : 0,
     reversed: block.reversed ? 1 : 0,
     colorBaseA: c.named.colorBaseA!,
     colorBaseC: c.named.colorBaseC!,
@@ -797,8 +797,8 @@ function gateFrame(
   f32[F.covOffset] = top
   f32[F.featHeight] = STATE.featureHeight
   f32[F.featSpacing] = STATE.featureSpacing
-  i32[I.filterMismatchesByFrequency] = STATE.filterMismatchesByFrequency ? 1 : 0
-  i32[I.mismatchAlpha] = STATE.mismatchAlpha ? 1 : 0
+  i32[I.fadeLowFrequencyMismatches] = STATE.fadeLowFrequencyMismatches ? 1 : 0
+  i32[I.fadeLowQualityMismatches] = STATE.fadeLowQualityMismatches ? 1 : 0
   i32[I.colorScheme] = STATE.colorScheme
   i32[I.chainMode] = STATE.chainMode ? 1 : 0
   i32[I.showStroke] = STATE.showStroke ? 1 : 0
@@ -815,12 +815,12 @@ const GATE_LAYERS: GateLayer[] = [
   { id: 'linkedReadLine', enabled: s => s.showStroke },
   { id: 'read', enabled: () => true },
   { id: 'overlap', enabled: s => s.showStroke },
-  { id: 'mod', enabled: s => s.filterMismatchesByFrequency },
-  { id: 'perBaseQual', enabled: s => s.filterMismatchesByFrequency },
+  { id: 'mod', enabled: s => s.fadeLowFrequencyMismatches },
+  { id: 'perBaseQual', enabled: s => s.fadeLowFrequencyMismatches },
   { id: 'skip', enabled: () => true },
-  { id: 'deletion', enabled: s => s.filterMismatchesByFrequency },
-  { id: 'mismatch', enabled: s => s.filterMismatchesByFrequency },
-  { id: 'insertion', enabled: s => s.filterMismatchesByFrequency },
+  { id: 'deletion', enabled: s => s.fadeLowFrequencyMismatches },
+  { id: 'mismatch', enabled: s => s.fadeLowFrequencyMismatches },
+  { id: 'insertion', enabled: s => s.fadeLowFrequencyMismatches },
   { id: 'clip', enabled: () => true },
   { id: 'softclipBases', enabled: s => s.showStroke },
   { id: 'perBaseLetter', enabled: s => s.showStroke },
@@ -890,8 +890,8 @@ function preseedFrame(
   f32[F.covOffset] = top
   f32[F.featHeight] = STATE.featureHeight
   f32[F.featSpacing] = STATE.featureSpacing
-  i32[I.filterMismatchesByFrequency] = STATE.filterMismatchesByFrequency ? 1 : 0
-  i32[I.mismatchAlpha] = STATE.mismatchAlpha ? 1 : 0
+  i32[I.fadeLowFrequencyMismatches] = STATE.fadeLowFrequencyMismatches ? 1 : 0
+  i32[I.fadeLowQualityMismatches] = STATE.fadeLowQualityMismatches ? 1 : 0
   i32[I.colorScheme] = STATE.colorScheme
   i32[I.chainMode] = STATE.chainMode ? 1 : 0
   i32[I.showStroke] = STATE.showStroke ? 1 : 0
@@ -945,12 +945,12 @@ const PRESEED_MARKS: MarkArm[] = [
   preseedMark('linkedReadLine', s => s.showStroke),
   preseedMark('read', () => true),
   preseedMark('overlap', s => s.showStroke),
-  preseedMark('mod', s => s.filterMismatchesByFrequency),
-  preseedMark('perBaseQual', s => s.filterMismatchesByFrequency),
+  preseedMark('mod', s => s.fadeLowFrequencyMismatches),
+  preseedMark('perBaseQual', s => s.fadeLowFrequencyMismatches),
   preseedMark('skip', () => true),
-  preseedMark('deletion', s => s.filterMismatchesByFrequency),
-  preseedMark('mismatch', s => s.filterMismatchesByFrequency),
-  preseedMark('insertion', s => s.filterMismatchesByFrequency),
+  preseedMark('deletion', s => s.fadeLowFrequencyMismatches),
+  preseedMark('mismatch', s => s.fadeLowFrequencyMismatches),
+  preseedMark('insertion', s => s.fadeLowFrequencyMismatches),
   preseedMark('clip', () => true),
   preseedMark('softclipBases', s => s.showStroke),
   preseedMark('perBaseLetter', s => s.showStroke),
@@ -1021,8 +1021,8 @@ function planFrame(
   f32[F.covOffset] = top
   f32[F.featHeight] = STATE.featureHeight
   f32[F.featSpacing] = STATE.featureSpacing
-  i32[I.filterMismatchesByFrequency] = STATE.filterMismatchesByFrequency ? 1 : 0
-  i32[I.mismatchAlpha] = STATE.mismatchAlpha ? 1 : 0
+  i32[I.fadeLowFrequencyMismatches] = STATE.fadeLowFrequencyMismatches ? 1 : 0
+  i32[I.fadeLowQualityMismatches] = STATE.fadeLowQualityMismatches ? 1 : 0
   i32[I.colorScheme] = STATE.colorScheme
   i32[I.chainMode] = STATE.chainMode ? 1 : 0
   i32[I.showStroke] = STATE.showStroke ? 1 : 0
@@ -1054,12 +1054,12 @@ const PLAN_MARKS: PlanMark[] = [
   planMark('linkedReadLine', s => s.showStroke),
   planMark('read', undefined),
   planMark('overlap', s => s.showStroke),
-  planMark('mod', s => s.filterMismatchesByFrequency),
-  planMark('perBaseQual', s => s.filterMismatchesByFrequency),
+  planMark('mod', s => s.fadeLowFrequencyMismatches),
+  planMark('perBaseQual', s => s.fadeLowFrequencyMismatches),
   planMark('skip', undefined),
-  planMark('deletion', s => s.filterMismatchesByFrequency),
-  planMark('mismatch', s => s.filterMismatchesByFrequency),
-  planMark('insertion', s => s.filterMismatchesByFrequency),
+  planMark('deletion', s => s.fadeLowFrequencyMismatches),
+  planMark('mismatch', s => s.fadeLowFrequencyMismatches),
+  planMark('insertion', s => s.fadeLowFrequencyMismatches),
   planMark('clip', undefined),
   planMark('softclipBases', s => s.showStroke),
   planMark('perBaseLetter', s => s.showStroke),

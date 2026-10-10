@@ -23,3 +23,15 @@ test('the current spelling beside a retired one wins', () => {
   const conf = create({ drawInter: false, showInterchrom: true })
   expect(readConfObject(conf, 'showInterchrom')).toBe(true)
 })
+
+test('mismatchAlpha lifts onto fadeLowQualityMismatches, top level and renderer', () => {
+  expect(
+    readConfObject(create({ mismatchAlpha: true }), 'fadeLowQualityMismatches'),
+  ).toBe(true)
+  expect(
+    readConfObject(
+      create({ renderers: { PileupRenderer: { mismatchAlpha: true } } }),
+      'fadeLowQualityMismatches',
+    ),
+  ).toBe(true)
+})

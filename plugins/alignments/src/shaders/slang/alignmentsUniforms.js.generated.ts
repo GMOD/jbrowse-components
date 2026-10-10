@@ -20,9 +20,9 @@ export function frequencyAlpha(base: number, freq: number): number {
   return (base + (freq * (1.0 - base)))
 }
 
-export function frequencyFadeGate(base: number, freq: number, filterByFrequency: boolean): number {
+export function frequencyFadeGate(base: number, freq: number, fadeLowFrequency: boolean): number {
   let _t0: boolean
-  if (filterByFrequency) {
+  if (fadeLowFrequency) {
     _t0 = (base < 1.0)
   } else {
     _t0 = false

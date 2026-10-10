@@ -219,7 +219,7 @@ function pileupHand(spec: PileupPaintSpec) {
       const bpLength = block.end - block.start
       const fullBlockWidth = block.screenEndPx - block.screenStartPx
       const featureHeight = state.featureHeight
-      const mismatchAlpha = state.mismatchAlpha
+      const fadeLowQualityMismatches = state.fadeLowQualityMismatches
       const chainMode = state.chainMode
       const constantAlpha =
         fade === Fade.intron ? intronAlpha(featureHeight) : 1
@@ -268,7 +268,7 @@ function pileupHand(spec: PileupPaintSpec) {
               case Fade.cellFrequencyQuality: {
                 alpha =
                   frequencyFade(state, widthPx, freqs![i]!) *
-                  qualityFade(quals![i]!, mismatchAlpha)
+                  qualityFade(quals![i]!, fadeLowQualityMismatches)
                 break
               }
               case Fade.overlap: {
@@ -348,7 +348,7 @@ function pileupControl(spec: PileupPaintSpec) {
       const bpLength = block.end - block.start
       const fullBlockWidth = block.screenEndPx - block.screenStartPx
       const featureHeight = state.featureHeight
-      const mismatchAlpha = state.mismatchAlpha
+      const fadeLowQualityMismatches = state.fadeLowQualityMismatches
       const chainMode = state.chainMode
       const constantAlpha =
         fade === Fade.intron ? intronAlpha(featureHeight) : 1
@@ -397,7 +397,7 @@ function pileupControl(spec: PileupPaintSpec) {
               case Fade.cellFrequencyQuality: {
                 alpha =
                   frequencyFade(state, widthPx, freqs![i]!) *
-                  qualityFade(quals![i]!, mismatchAlpha)
+                  qualityFade(quals![i]!, fadeLowQualityMismatches)
                 break
               }
               case Fade.overlap: {
@@ -517,8 +517,8 @@ function pileupState(): RenderState {
     scrollTop: 0,
     canvasWidth: FRAME.canvasWidth,
     canvasHeight: FRAME.canvasHeight,
-    mismatchAlpha: false,
-    filterMismatchesByFrequency: true,
+    fadeLowQualityMismatches: false,
+    fadeLowFrequencyMismatches: true,
     chainMode: true,
     showMismatches: true,
     showModifications: false,

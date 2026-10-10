@@ -54,14 +54,14 @@ const GAPS: GapUploadData = {
 
 function state(
   showMismatches = true,
-  filterMismatchesByFrequency = true,
+  fadeLowFrequencyMismatches = true,
 ): RenderState {
   return {
     scrollTop: 0,
     featureHeight: FEATURE_HEIGHT,
     featureSpacing: 0,
     canvasHeight: 1000,
-    filterMismatchesByFrequency,
+    fadeLowFrequencyMismatches,
     showMismatches,
     pileupTopOffset: 0,
     colors: {
@@ -129,9 +129,9 @@ function hitTestGap(
   row: number,
   reversed: boolean,
   includeDeletions: boolean,
-  filterByFrequency: boolean,
+  fadeLowFrequency: boolean,
 ) {
-  const s = state(includeDeletions, filterByFrequency)
+  const s = state(includeDeletions, fadeLowFrequency)
   const at = (mark: typeof SKIP_MARK) =>
     mark.hitNearest!(
       GAPS,
