@@ -190,13 +190,17 @@ export function processFeaturesFromArrays(
 }
 
 // Undefined when no feature is a summary, so `processFeaturesFromArrays`
-// aliases min/max onto the scores rather than shipping two copies.
+// aliases min/max onto the scores rather than shipping two copies. Undefined
+// too when the plot reads another field: a summary's minScore and maxScore
+// summarize `score`, and drawn around another y they would bound nothing it
+// plots.
 function summaryChannels(
   features: readonly Feature[],
   encoded: { featureIndex?: Uint32Array; y: Float32Array },
+  scoreField: string,
 ) {
   const scores = encoded.y
-  if (!features.some(f => f.get('summary'))) {
+  if (scoreField !== 'score' || !features.some(f => f.get('summary'))) {
     return { minScores: undefined, maxScores: undefined }
   }
   const n = scores.length
@@ -237,7 +241,7 @@ export function featuresToRaw(
     starts: x,
     ends: x2,
     scores: y,
-    ...summaryChannels(features, encoded),
+    ...summaryChannels(features, encoded, scoreField),
     count,
   }
 }

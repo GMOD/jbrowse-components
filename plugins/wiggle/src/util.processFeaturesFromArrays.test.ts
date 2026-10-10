@@ -184,6 +184,23 @@ describe('processFeaturesFromArrays', () => {
     expect(Array.from(raw.maxScores!)).toEqual([5, 9])
   })
 
+  test('featuresToRaw drops a summary min/max when y reads another field', () => {
+    const summary = feature(
+      { start: 0, end: 10, score: 7, summary: true, minScore: 3, maxScore: 9 },
+      0,
+    )
+    const logged = featuresToRaw(
+      [summary],
+      'jexl:log(get(feature,"score"))',
+      createJexlInstance(),
+    )
+    expect(logged.minScores).toBeUndefined()
+    expect(logged.maxScores).toBeUndefined()
+    expect(Array.from(featuresToRaw([summary], 'score').maxScores!)).toEqual([
+      9,
+    ])
+  })
+
   // The display's `scoreField` slot names which field a fallback adapter's
   // features plot; `score` stays the default so every existing config reads
   // as before, and a feature with nothing in the named field plots at 0.
@@ -223,30 +240,26 @@ describe('processFeaturesFromArrays', () => {
   // the encoder drops the feature, and the summary band follows `featureIndex`
   // through the drop.
   test('featuresToRaw is the encoder plus the summary band, index-aligned', () => {
-    const raw = featuresToRaw(
-      [
-        feature({ start: 0, end: 10, score: 5, v: 1.5 }, 0),
-        feature({ start: 10, end: 20, score: 7, v: 'NA' }, 1),
-        feature(
-          { start: 20, end: 30, score: 9, v: 2.5, summary: true, minScore: 1 },
-          2,
-        ),
-        feature({ start: 30, end: 40, score: 11 }, 3),
-        feature(
-          {
-            start: 40,
-            end: 50,
-            score: 13,
-            v: 4.5,
-            summary: true,
-            minScore: 3,
-            maxScore: 6,
-          },
-          4,
-        ),
-      ],
-      'v',
-    )
+    const raw = featuresToRaw([
+      feature({ start: 0, end: 10, score: 1.5 }, 0),
+      feature({ start: 10, end: 20, score: 'NA' }, 1),
+      feature(
+        { start: 20, end: 30, score: 2.5, summary: true, minScore: 1 },
+        2,
+      ),
+      feature({ start: 30, end: 40 }, 3),
+      feature(
+        {
+          start: 40,
+          end: 50,
+          score: 4.5,
+          summary: true,
+          minScore: 3,
+          maxScore: 6,
+        },
+        4,
+      ),
+    ])
 
     expect(raw.count).toBe(4)
     expect(Array.from(raw.starts)).toEqual([0, 20, 30, 40])
