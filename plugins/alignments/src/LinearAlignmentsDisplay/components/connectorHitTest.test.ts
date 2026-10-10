@@ -107,7 +107,7 @@ test('a hover on a connector names it and lights every hop of its read', () => {
   const i = hits.findIndex(h => h.readName === 'a')
   expect(i).toBeGreaterThanOrEqual(0)
   // probe along the first hop's chord near its first end
-  const hover = [...Array(400).keys()]
+  const hover = Array.from({ length: 400 }, (_, k) => k)
     .map(k => resolveConnectorHover(150 + k, 5 + (k % 30), feeds, sec, state))
     .find(h => h?.hit.readName === 'a')
   expect(hover).toBeDefined()
