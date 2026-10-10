@@ -40,7 +40,6 @@ function makeState(
     showOutline: false,
     readConnectionsDown: false,
     readConnectionsHeight: 100,
-    colorScheme: 0,
     featureHeight: 10,
     featureSpacing: 2,
     coverageReservedPx: 0,

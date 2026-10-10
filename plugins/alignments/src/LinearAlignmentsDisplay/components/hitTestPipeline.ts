@@ -427,7 +427,6 @@ export function performHitTest(
     featureSpacing,
     scrollTop,
     chainMode,
-    colorScheme,
   } = state
 
   // Coverage/indicator strip tests are relative to this section's coverage top
@@ -504,7 +503,6 @@ export function performHitTest(
   const chevrons: ChevronFrame = {
     pxPerBp: 1 / bpPerPx,
     chainMode,
-    colorScheme,
     featureHeight,
   }
   const inReadBand = isWithinReadBand(coords, featureHeight)

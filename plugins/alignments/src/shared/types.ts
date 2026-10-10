@@ -47,18 +47,13 @@ export function isModificationTypeVisible(
   return !shown?.length || shown.includes(type)
 }
 
-// Shader color-scheme dispatch paths — the distinct branches read.slang
-// actually implements. Several ColorSchemeTypes share one path: perBaseQuality/
-// perBaseLetter paint over the 'normal' body, methylation/bisulfite reuse
-// 'modifications' with different config.
-// 'tag' is the generic per-read explicit-color path — the shader just unpacks a
-// baked ABGR u32, so any scheme that resolves to one color per read on the CPU
-// (tag values, mateRefName) rides it without a new shader branch.
-// `COLOR_SCHEMES` (shared/colorSchemes.ts) maps each ColorSchemeType to one of
-// these names; `ColorScheme` (display constants) is typed
-// `Record<ShaderScheme, number>`, so the name list and the shader index map
-// cannot drift.
-export type ShaderScheme =
+// What a read body's fill classifies by, the buckets `schemeCategory`
+// (colorUtils.ts) switches on. Several ColorSchemeTypes share one:
+// perBaseQuality/perBaseLetter paint over the 'normal' body,
+// methylation/bisulfite reuse 'modifications' with different config. 'tag' is
+// the per-read explicit color, a baked ABGR u32, so any scheme that resolves to
+// one color per read on the CPU (tag values, mateRefName) rides it.
+export type BodyScheme =
   | 'normal'
   | 'strand'
   | 'mappingQuality'

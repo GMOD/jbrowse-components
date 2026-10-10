@@ -43,7 +43,7 @@ import type {
   RGBColor,
 } from '../shaders/colors.ts'
 import type { InsertSizeBand } from '../shared/insertSizeStats.ts'
-import type { ColorSchemeType, ShaderScheme } from '../shared/types.ts'
+import type { ColorSchemeType, BodyScheme } from '../shared/types.ts'
 
 export const rgb255 = normalizedRgbToCss
 
@@ -177,7 +177,7 @@ export function readColorCategory(
 ): ReadColorCategory {
   return (
     overrideCategory(i, data, colorScheme, opts) ??
-    schemeCategory(i, data, COLOR_SCHEMES[colorScheme].shaderScheme)
+    schemeCategory(i, data, COLOR_SCHEMES[colorScheme].bodyScheme)
   )
 }
 
@@ -225,19 +225,19 @@ function overrideCategory(
   return data.readInterchrom[i] === 1 ? 'interchrom' : undefined
 }
 
-// The scheme's own bucket, for a read no override claimed. Takes the SHADER
-// path, the granularity a body fill has: chromosome painting is the 'tag' body
-// with another value baked in. Exhaustive with no fallback, so a new path has to
-// say what its body is.
+// The scheme's own bucket, for a read no override claimed. Takes the body
+// scheme, the granularity a body fill has: chromosome painting is the 'tag' body
+// with another value baked in. Exhaustive with no fallback, so a new body scheme
+// has to say what it paints.
 function schemeCategory(
   i: number,
   data: ReadColorData,
-  shaderScheme: ShaderScheme,
+  bodyScheme: BodyScheme,
 ): ReadColorCategory {
   const flags = data.readFlags[i]!
   const strand = data.readStrands[i]!
 
-  switch (shaderScheme) {
+  switch (bodyScheme) {
     case 'normal':
       return 'plain'
 
@@ -265,7 +265,7 @@ function schemeCategory(
     case 'pairOrientation':
     case 'insertSizeAndOrientation':
       return pairCategory(
-        shaderScheme,
+        bodyScheme,
         data.readPairOrientations[i]!,
         data.readInsertSizes[i]!,
         data.insertSizeStats,

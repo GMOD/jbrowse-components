@@ -186,7 +186,6 @@ export function writePileupFrame(
   // `CoverageBandUniforms` into their own buffer before each of their passes.
   i32[UI.fadeLowFrequencyMismatches] = state.fadeLowFrequencyMismatches ? 1 : 0
   i32[UI.fadeLowQualityMismatches] = state.fadeLowQualityMismatches ? 1 : 0
-  i32[UI.colorScheme] = state.colorScheme
   // Chevron gating only — chain mode's effect on read COLOR is resolved on the
   // CPU into `readColorCategories`, so the shader no longer branches on it for
   // fills.

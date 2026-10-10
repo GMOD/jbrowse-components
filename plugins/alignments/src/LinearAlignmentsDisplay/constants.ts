@@ -1,18 +1,3 @@
-import {
-  CS_FIRST_OF_PAIR,
-  CS_INSERT_SIZE,
-  CS_IS_AND_ORIENT,
-  CS_MAPQ,
-  CS_MODIFICATIONS,
-  CS_NORMAL,
-  CS_PAIR_ORIENT,
-  CS_STRAND,
-  CS_TAG,
-} from '../shaders/slang/read.consts.generated.ts'
-import { COLOR_SCHEMES } from '../shared/colorSchemes.ts'
-
-import type { ColorSchemeType, ShaderScheme } from '../shared/types.ts'
-
 export {
   INSERTION_SERIF_MIN_PX_PER_BP,
   LABEL_FADE_FLOOR,
@@ -29,30 +14,6 @@ export {
   textWidthForNumber,
 } from '@jbrowse/alignments-core'
 export type { InsertionType } from '@jbrowse/alignments-core'
-
-// Maps each shader color-scheme name to its dispatch index. The values come
-// straight from read.slang's `export-consts` (see read.generated.ts), so this
-// map and the shader switch are generated from one source and cannot drift.
-// Typed `Record<ShaderScheme, number>` so it stays exhaustive over the shader
-// path names that `COLOR_SCHEMES` resolves through it.
-export const ColorScheme: Record<ShaderScheme, number> = {
-  normal: CS_NORMAL,
-  strand: CS_STRAND,
-  mappingQuality: CS_MAPQ,
-  insertSize: CS_INSERT_SIZE,
-  firstOfPairStrand: CS_FIRST_OF_PAIR,
-  pairOrientation: CS_PAIR_ORIENT,
-  insertSizeAndOrientation: CS_IS_AND_ORIENT,
-  modifications: CS_MODIFICATIONS,
-  tag: CS_TAG,
-}
-
-// colorBy.type → the shader's dispatch index, via the registry's shader path.
-// Total over ColorSchemeType, so no call site needs a fallback. Lossy — several
-// schemes share a path — so it feeds the shader uniform and nothing else.
-export function colorSchemeIndexFor(type: ColorSchemeType) {
-  return ColorScheme[COLOR_SCHEMES[type].shaderScheme]
-}
 
 // What one pileup row stands for: a read, or a chain of a read's mate and
 // split segments joined by QNAME. Bezier connection curves are the orthogonal

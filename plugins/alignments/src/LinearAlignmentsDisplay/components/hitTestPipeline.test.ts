@@ -5,6 +5,7 @@ import {
   GAP_DELETION,
   GAP_SKIP,
 } from '../../shaders/slang/gap.consts.generated.ts'
+import { RC_REV_STRAND } from '../../shaders/slang/read.consts.generated.ts'
 import {
   INTERBASE_HARDCLIP,
   INTERBASE_INSERTION,
@@ -129,7 +130,6 @@ function opts(
       chainMode: false,
       fadeLowFrequencyMismatches: true,
       showMismatches: true,
-      colorScheme: 0,
       coverageHeight: 50,
       ...state,
     }),
@@ -1125,7 +1125,7 @@ describe('clips stay hittable when zoomed out, as they stay drawn', () => {
 // reverse-strand read's head sits before its START, which on a reversed block
 // is screen-RIGHT of the body. Chain mode keeps the head drawn at this zoom.
 describe('the strand arrowhead answers a hover on a reversed block', () => {
-  const ARROW_OPTS = opts({ chainMode: true, colorScheme: 1 })
+  const ARROW_OPTS = opts({ chainMode: true })
   // Reversed: x=0 is bp 20000, so bp 9000 (the read's start) is x=110 and the
   // head runs to x=118.
   function reversedBlock(): ResolvedBlock {
@@ -1141,6 +1141,7 @@ describe('the strand arrowhead answers a hover on a reversed block', () => {
         segmentPositions: new Uint32Array([9000, 11000]),
         segmentReadIndices: new Uint32Array([0]),
         segmentEdgeFlags: new Uint8Array([0b11]),
+        readColorCategories: new Uint8Array([RC_REV_STRAND]),
       }),
       reversed: true,
     }

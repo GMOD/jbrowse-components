@@ -121,7 +121,6 @@ const OUTLINE_STYLE = `rgba(0,0,0,${Math.round((1 - READ_OUTLINE_SHADE) * 1e4) /
 export interface ChevronFrame {
   pxPerBp: number
   chainMode: boolean
-  colorScheme: number
   featureHeight: number
 }
 
@@ -131,6 +130,7 @@ export interface ChevronFrame {
 // is a difference between the screen and the SVG export.
 export function showChevron(
   f: ChevronFrame,
+  colorCategory: number,
   flags: number,
   interchrom: number,
   insertSize: number,
@@ -140,7 +140,7 @@ export function showChevron(
     f.chainMode,
     f.pxPerBp,
     f.featureHeight,
-    f.colorScheme,
+    colorCategory,
     flags,
     interchrom,
     insertSize,
@@ -239,7 +239,6 @@ function drawReads(
   const chevronFrame: ChevronFrame = {
     pxPerBp: pxPerBpOf(block),
     chainMode: state.chainMode,
-    colorScheme: state.colorScheme,
     featureHeight: fH,
   }
 
@@ -309,6 +308,7 @@ function drawReads(
       capsEdge !== 0 &&
       showChevron(
         chevronFrame,
+        region.readColorCategories[i]!,
         region.readFlags[i]!,
         region.readInterchrom[i]!,
         region.readInsertSizes[i]!,
@@ -384,9 +384,9 @@ const readShape: MarkShape<ReadMarkRegion, RenderState> = {
         {
           pxPerBp: pxPerBpOf(block),
           chainMode: state.chainMode,
-          colorScheme: state.colorScheme,
           featureHeight: state.featureHeight,
         },
+        region.readColorCategories[i]!,
         region.readFlags[i]!,
         region.readInterchrom[i]!,
         region.readInsertSizes[i]!,

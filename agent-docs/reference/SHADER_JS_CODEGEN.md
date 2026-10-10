@@ -23,7 +23,7 @@ stops being shared at all, never "nothing imports it".
 `<base>.consts.generated.ts`, or from the package a `consts-out`/`js-export-out`
 names, never through a module that passes it along. A shader with entry points
 emits three modules (`SOURCE` loaders, `iface`, `consts`) and a namespace import
-marks every export used, so importing `CS_NORMAL` from `read.generated.ts`
+marks every export used, so importing `RC_PLAIN` from `read.generated.ts`
 compiles and puts tens of KB in the always-loaded chunk
 ([EAGER_BUNDLE.md](EAGER_BUNDLE.md) §"A namespace import is the unit").
 

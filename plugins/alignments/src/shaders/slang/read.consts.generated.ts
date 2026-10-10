@@ -3,24 +3,6 @@
 
 export const READ_CATEGORY_SLOTS = 21
 
-export const CS_NORMAL = 0
-
-export const CS_STRAND = 1
-
-export const CS_MAPQ = 2
-
-export const CS_INSERT_SIZE = 3
-
-export const CS_FIRST_OF_PAIR = 4
-
-export const CS_PAIR_ORIENT = 5
-
-export const CS_IS_AND_ORIENT = 6
-
-export const CS_MODIFICATIONS = 7
-
-export const CS_TAG = 8
-
 export const RC_SPLIT_INVERSION = 1
 
 export const RC_SPLIT_DELETION = 2

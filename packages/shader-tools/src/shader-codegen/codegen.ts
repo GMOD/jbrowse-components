@@ -814,7 +814,7 @@ export function emitGlslText({
  * (`import * as readShader`), which marks every export used, so a module is
  * included or excluded whole: whatever the smallest eager consumer of a module
  * wants, the eager chunk pays for all of it. Three eager modules in
- * plugins/alignments importing only `CS_*` / `RC_*` held all 16 KB of
+ * plugins/alignments importing only `RC_*` held all 16 KB of
  * `read.iface.generated.ts` that way, which is why a consumer imports from the
  * SMALLEST module carrying what it wants, and the re-export chain runs one way
  * only.

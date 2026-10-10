@@ -131,7 +131,6 @@ import { selectedSashimiHighlight } from './components/sashimiHitTest.ts'
 import { bandScreenTop } from './components/sectionScreen.ts'
 import { nonReferenceAt } from './components/tooltipUtils.ts'
 import { configSlotViews } from './configSlotViews.ts'
-import { colorSchemeIndexFor } from './constants.ts'
 import {
   applyChainStrandFrames,
   applyReadColorsByGroup,
@@ -262,7 +261,6 @@ const AlignmentsTooltip = lazy(
   () => import('./components/AlignmentsTooltip.tsx'),
 )
 
-export { ColorScheme } from './constants.ts'
 export type { AlignmentLane }
 
 export interface HoverCoverageBand {
@@ -1809,13 +1807,6 @@ export default function stateModelFactory(
         /**
          * #getter
          */
-        get colorSchemeIndex() {
-          return colorSchemeIndexFor(self.bodyColorScheme)
-        },
-
-        /**
-         * #getter
-         */
         get showModifications() {
           return paintsModifications(self.baseLayer)
         },
@@ -2556,7 +2547,6 @@ export default function stateModelFactory(
           const palette = self.colorPalette
           return {
             scrollTop: self.scrollTop,
-            colorScheme: self.colorSchemeIndex,
             featureHeight: self.featureHeight,
             featureSpacing: self.featureSpacing,
             coverageHeight: self.belowCoverageBands.coverageHeight,

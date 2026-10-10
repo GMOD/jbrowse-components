@@ -3,7 +3,7 @@
 // clipped to the segment's leading (fwd) or trailing (rev) edge.
 //! targets: wgsl, glsl
 //! js-export: showChevron
-//! export-consts: READ_CATEGORY_SLOTS, CS_NORMAL, CS_STRAND, CS_MAPQ, CS_INSERT_SIZE, CS_FIRST_OF_PAIR, CS_PAIR_ORIENT, CS_IS_AND_ORIENT, CS_MODIFICATIONS, CS_TAG, RC_SPLIT_INVERSION, RC_SPLIT_DELETION, RC_UNMAPPED_MATE, RC_INTERCHROM, RC_FWD_STRAND, RC_REV_STRAND, RC_NON_SPLIT, RC_PAIR_LR, RC_PAIR_RL, RC_PAIR_RR, RC_PAIR_LL, RC_LONG_INSERT, RC_SHORT_INSERT, RC_NORMAL_INSERT, RC_PLAIN, RC_MAPQ, RC_TAG, RC_NO_TAG_VALUE, RC_MOD_FWD, RC_MOD_REV, RC_MAPQ_UNAVAILABLE, CHEVRON_DIRLESS_MIN_WIDTH_PX, PAIR_MIN_SPAN_PX, READ_OUTLINE_PX, READ_OUTLINE_SHADE, READ_OUTLINE_MIN_WIDTH_PX, READ_OUTLINE_MIN_HEIGHT_PX
+//! export-consts: READ_CATEGORY_SLOTS, RC_SPLIT_INVERSION, RC_SPLIT_DELETION, RC_UNMAPPED_MATE, RC_INTERCHROM, RC_FWD_STRAND, RC_REV_STRAND, RC_NON_SPLIT, RC_PAIR_LR, RC_PAIR_RL, RC_PAIR_RR, RC_PAIR_LL, RC_LONG_INSERT, RC_SHORT_INSERT, RC_NORMAL_INSERT, RC_PLAIN, RC_MAPQ, RC_TAG, RC_NO_TAG_VALUE, RC_MOD_FWD, RC_MOD_REV, RC_MAPQ_UNAVAILABLE, CHEVRON_DIRLESS_MIN_WIDTH_PX, PAIR_MIN_SPAN_PX, READ_OUTLINE_PX, READ_OUTLINE_SHADE, READ_OUTLINE_MIN_WIDTH_PX, READ_OUTLINE_MIN_HEIGHT_PX
 
 import alignmentsUniforms;
 import colorPack;
@@ -11,21 +11,8 @@ import hpmath;
 import readChevron;
 
 
-public static const uint VERTS_PER_INSTANCE = 9u;
-// Color scheme constants. SINGLE SOURCE OF TRUTH for the color-scheme index:
-// the `export-consts` directive above emits these into read.generated.ts, and
-// the TS `ColorScheme` map (constants.ts) is built from those exports — so the
-// shader switch below and the JS/Canvas2D path can never disagree on indices.
-static const int CS_NORMAL        = 0;
-static const int CS_STRAND        = 1;
-static const int CS_MAPQ          = 2;
-static const int CS_INSERT_SIZE   = 3;
-static const int CS_FIRST_OF_PAIR = 4;
-static const int CS_PAIR_ORIENT   = 5;
-static const int CS_IS_AND_ORIENT = 6;
-static const int CS_MODIFICATIONS = 7;
-static const int CS_TAG           = 8;
 
+public static const uint VERTS_PER_INSTANCE = 9u;
 // Read color categories. SINGLE SOURCE OF TRUTH for the category vocabulary:
 // `export-consts` emits these into read.generated.ts and the TS
 // `READ_COLOR_CATEGORY` map (colorUtils.ts) is built from those exports, so the
@@ -187,7 +174,7 @@ float3 categoryPaletteColor(uint cat, Uniforms u) {
 // Whether a read draws its strand arrowhead.
 //
 // Base gate: tall rows, and either chain mode (long reads stay wide even when
-// zoomed out) or >0.1 px/bp. Direction-uninformative reads (normal scheme, mate
+// zoomed out) or >0.1 px/bp. Direction-uninformative reads (a plain fill, mate
 // unmapped, or mate on another chromosome) additionally require enough
 // on-screen width, so their arrows disappear when zoomed out far instead of
 // cluttering the view. Paired reads whose mates have collapsed together on
@@ -198,10 +185,10 @@ float3 categoryPaletteColor(uint cat, Uniforms u) {
 // arrow drawn by one backend but not the other is a difference between what is
 // on screen and what an SVG export contains.
 bool showChevron(bool chainMode, float pxPerBp, float featHeight,
-                 uint colorScheme, uint flags, uint interchrom,
+                 uint colorCategory, uint flags, uint interchrom,
                  float insertSize, float featWPx) {
   bool baseShow = (chainMode || pxPerBp > 0.1) && featHeight >= 3.0;
-  bool dirMoot = colorScheme == CS_NORMAL
+  bool dirMoot = colorCategory == RC_PLAIN
       || (flags & 8u) != 0u
       || interchrom != 0u;
   bool isPaired = (flags & 1u) != 0u;
@@ -244,7 +231,7 @@ VsOut vs_main(Instance inst, uint vid : SV_VertexID) {
   o.featWPx = featWPx;
 
   bool showChev = showChevron(
-    u.chainMode == 1, u.pxPerBp, u.featHeight, u.colorScheme,
+    u.chainMode == 1, u.pxPerBp, u.featHeight, inst.colorCategory,
     inst.flags, inst.interchrom, inst.insertSize, featWPx);
 
   // Which edge the arrowhead caps, asked ONCE: the body quad spends the answer

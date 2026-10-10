@@ -40,7 +40,6 @@ const state = {
   scrollTop: 0,
   canvasHeight: 1000,
   chainMode: false,
-  colorScheme: 0,
 } as RenderState
 
 const readIdIndexMap = new Map([

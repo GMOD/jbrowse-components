@@ -1,5 +1,6 @@
 import { readIdAt } from '@jbrowse/alignments-core'
 
+import { RC_PLAIN } from '../../shaders/slang/read.consts.generated.ts'
 import {
   chevronCapsEdge,
   chevronContains,
@@ -62,6 +63,7 @@ function chevronContainsCursor(
     readFlags,
     readInterchrom,
     readInsertSizes,
+    readColorCategories,
   } = data
   const strand = readStrands[read]!
   const dyPx = coords.yWithinRow - frame.featureHeight / 2
@@ -79,6 +81,7 @@ function chevronContainsCursor(
         chevronContains(dxPx, dyPx, frame.featureHeight) &&
         showChevron(
           frame,
+          readColorCategories[read] ?? RC_PLAIN,
           readFlags[read]!,
           readInterchrom[read]!,
           readInsertSizes[read]!,

@@ -56,7 +56,6 @@ public struct Uniforms {
   // This struct carries only what the pileup and overlay passes read.
 
   // Flags (ints / float-as-bool)
-  public int colorScheme;
   public int chainMode;
   public int showStroke;
   // 1 = filter low-freq mismatches/insertions/gaps by coverage depth (default);

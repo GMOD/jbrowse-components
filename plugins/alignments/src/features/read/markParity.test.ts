@@ -1,7 +1,6 @@
 import { extendToMinWidthPx } from '@jbrowse/render-core/shaders/hpmath'
 
 import { buildReadColorCategories } from '../../LinearAlignmentsDisplay/colorUtils.ts'
-import { colorSchemeIndexFor } from '../../LinearAlignmentsDisplay/constants.ts'
 import { makeTestPalette } from '../../LinearAlignmentsDisplay/testUtils.ts'
 import { CHEVRON_PX } from '../../shaders/slang/readChevron.generated.ts'
 import { READ_MARK } from './mark.ts'
@@ -43,7 +42,6 @@ const state = {
   canvasHeight: 1000,
   showOutline: false,
   chainMode: false,
-  colorScheme: colorSchemeIndexFor('strand'),
   colors: makeTestPalette({
     colorFwdStrand: [1, 0, 0],
     colorRevStrand: [0, 0, 1],

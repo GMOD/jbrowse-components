@@ -4,7 +4,7 @@ import type {
   BaseLayer,
   ColorSchemeType,
   ReadColorBy,
-  ShaderScheme,
+  BodyScheme,
 } from './types.ts'
 
 export type ColorGroup = 'basic' | 'pairedEnd'
@@ -18,10 +18,7 @@ export type ColorSchemeMenu =
 
 export interface ColorSchemeDef {
   type: ColorSchemeType
-  // Shader dispatch path; resolved to a numeric index through `ColorScheme`
-  // (display constants), which is typed `Record<ShaderScheme, number>` so this
-  // name always names a real shader branch.
-  shaderScheme: ShaderScheme
+  bodyScheme: BodyScheme
   menu: ColorSchemeMenu
   // Color depends on the read's MATE (insert size / pair orientation), so an
   // unmapped mate (tlen=0) or inter-chromosomal mate is a level of its own
@@ -58,23 +55,23 @@ export interface ColorSchemeDef {
 export const COLOR_SCHEMES: Record<ColorSchemeType, ColorSchemeDef> = {
   normal: {
     type: 'normal',
-    shaderScheme: 'normal',
+    bodyScheme: 'normal',
     menu: { kind: 'radio', label: 'Normal', group: 'basic' },
   },
   strand: {
     type: 'strand',
-    shaderScheme: 'strand',
+    bodyScheme: 'strand',
     menu: { kind: 'radio', label: FACET_LABELS.strand, group: 'basic' },
   },
   mappingQuality: {
     type: 'mappingQuality',
-    shaderScheme: 'mappingQuality',
+    bodyScheme: 'mappingQuality',
     menu: { kind: 'radio', label: FACET_LABELS.mapq, group: 'basic' },
   },
   perBaseQuality: {
     type: 'perBaseQuality',
     // per-base overlay paints colored rects on top of a neutral 'normal' body
-    shaderScheme: 'normal',
+    bodyScheme: 'normal',
     menu: { kind: 'radio', label: 'Per-base quality', group: 'basic' },
     perBase: true,
     workerExtracts: true,
@@ -82,20 +79,20 @@ export const COLOR_SCHEMES: Record<ColorSchemeType, ColorSchemeDef> = {
   perBaseLetter: {
     type: 'perBaseLetter',
     // like perBaseQuality: nucleotide quads paint over the 'normal' body
-    shaderScheme: 'normal',
+    bodyScheme: 'normal',
     menu: { kind: 'radio', label: 'Per-base lettering', group: 'basic' },
     perBase: true,
     workerExtracts: true,
   },
   insertSize: {
     type: 'insertSize',
-    shaderScheme: 'insertSize',
+    bodyScheme: 'insertSize',
     menu: { kind: 'radio', label: 'Insert size', group: 'pairedEnd' },
     mateAware: true,
   },
   firstOfPairStrand: {
     type: 'firstOfPairStrand',
-    shaderScheme: 'firstOfPairStrand',
+    bodyScheme: 'firstOfPairStrand',
     menu: {
       kind: 'radio',
       label: FACET_LABELS.firstOfPairStrand,
@@ -104,7 +101,7 @@ export const COLOR_SCHEMES: Record<ColorSchemeType, ColorSchemeDef> = {
   },
   pairOrientation: {
     type: 'pairOrientation',
-    shaderScheme: 'pairOrientation',
+    bodyScheme: 'pairOrientation',
     menu: {
       kind: 'radio',
       label: FACET_LABELS.pairOrientation,
@@ -115,7 +112,7 @@ export const COLOR_SCHEMES: Record<ColorSchemeType, ColorSchemeDef> = {
   },
   insertSizeAndOrientation: {
     type: 'insertSizeAndOrientation',
-    shaderScheme: 'insertSizeAndOrientation',
+    bodyScheme: 'insertSizeAndOrientation',
     menu: {
       kind: 'radio',
       label: 'Insert size and orientation',
@@ -126,7 +123,7 @@ export const COLOR_SCHEMES: Record<ColorSchemeType, ColorSchemeDef> = {
   },
   tag: {
     type: 'tag',
-    shaderScheme: 'tag',
+    bodyScheme: 'tag',
     menu: { kind: 'special', label: 'Tag' },
     workerExtracts: true,
   },
@@ -147,7 +144,7 @@ export const COLOR_SCHEMES: Record<ColorSchemeType, ColorSchemeDef> = {
   // the one thing this scheme does not color by.
   mateRefName: {
     type: 'mateRefName',
-    shaderScheme: 'tag',
+    bodyScheme: 'tag',
     menu: { kind: 'radio', label: 'Mate chromosome', group: 'pairedEnd' },
     workerExtracts: true,
   },
@@ -155,13 +152,13 @@ export const COLOR_SCHEMES: Record<ColorSchemeType, ColorSchemeDef> = {
   // config (see model getMethBins / bisulfite is reference-based)
   modifications: {
     type: 'modifications',
-    shaderScheme: 'modifications',
+    bodyScheme: 'modifications',
     menu: { kind: 'special', label: 'Modification type' },
     workerExtracts: true,
   },
   bisulfite: {
     type: 'bisulfite',
-    shaderScheme: 'modifications',
+    bodyScheme: 'modifications',
     menu: { kind: 'special', label: 'Bisulfite' },
     workerExtracts: true,
   },
@@ -173,7 +170,7 @@ export const COLOR_SCHEMES: Record<ColorSchemeType, ColorSchemeDef> = {
 // membership lives in exactly one place instead of being re-spelled as a
 // three-way `||` at every consumer.
 export function isModificationScheme(type: ColorSchemeType) {
-  return COLOR_SCHEMES[type].shaderScheme === 'modifications'
+  return COLOR_SCHEMES[type].bodyScheme === 'modifications'
 }
 
 // True for the two schemes whose worker output is one entry per aligned base of
@@ -199,7 +196,7 @@ export function paintsEveryBase(layer: BaseLayer | undefined) {
 // orientation …) needs no worker data at all — the arrays it colors from are
 // produced on every fetch — so every one of them projects to `undefined` and
 // switching between them leaves `rpcProps` unchanged. That makes those switches
-// a redraw (`colorSchemeIndex` is in `renderState`) instead of dropping
+// a redraw (the read categories rebake) instead of dropping
 // `rpcDataMap` and re-reading the region, which is what sending the raw
 // `colorBy` did: flipping strand → mapping quality → insert size cost three
 // full refetches to paint arrays that were already in memory.

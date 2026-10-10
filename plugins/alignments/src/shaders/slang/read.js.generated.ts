@@ -4,7 +4,7 @@
 // Scalar twins of read.slang, transliterated from slangc's WGSL so
 // the Canvas2D and SVG paths run the shader's own math. See adr-051.
 
-export function showChevron(chainMode: boolean, pxPerBp: number, featHeight: number, colorScheme: number, flags: number, interchrom: number, insertSize: number, featWPx: number): boolean {
+export function showChevron(chainMode: boolean, pxPerBp: number, featHeight: number, colorCategory: number, flags: number, interchrom: number, insertSize: number, featWPx: number): boolean {
   let baseShow: boolean
   if (chainMode) {
     baseShow = true
@@ -17,7 +17,7 @@ export function showChevron(chainMode: boolean, pxPerBp: number, featHeight: num
     baseShow = false
   }
   let dirMoot: boolean
-  if ((colorScheme == 0)) {
+  if ((colorCategory == 0)) {
     dirMoot = true
   } else {
     dirMoot = (((flags & 8) >>> 0) != 0)

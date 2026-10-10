@@ -216,7 +216,6 @@ interface FrameState {
   scrollTop: number
   featureHeight: number
   featureSpacing: number
-  colorScheme: number
   chainMode: boolean
   showStroke: boolean
   fadeLowFrequencyMismatches: boolean
@@ -228,7 +227,6 @@ const STATE: FrameState = {
   scrollTop: 40,
   featureHeight: 7,
   featureSpacing: 1,
-  colorScheme: 3,
   chainMode: false,
   showStroke: true,
   fadeLowFrequencyMismatches: true,
@@ -283,7 +281,6 @@ function pokeFrame(
   f32[F.featSpacing] = STATE.featureSpacing
   i32[I.fadeLowFrequencyMismatches] = STATE.fadeLowFrequencyMismatches ? 1 : 0
   i32[I.fadeLowQualityMismatches] = STATE.fadeLowQualityMismatches ? 1 : 0
-  i32[I.colorScheme] = STATE.colorScheme
   i32[I.chainMode] = STATE.chainMode ? 1 : 0
   i32[I.showStroke] = STATE.showStroke ? 1 : 0
   f32[F.reversed] = block.reversed ? 1 : 0
@@ -349,7 +346,6 @@ function ctrlFrame(
   f32[F.featSpacing] = STATE.featureSpacing
   i32[I.fadeLowFrequencyMismatches] = STATE.fadeLowFrequencyMismatches ? 1 : 0
   i32[I.fadeLowQualityMismatches] = STATE.fadeLowQualityMismatches ? 1 : 0
-  i32[I.colorScheme] = STATE.colorScheme
   i32[I.chainMode] = STATE.chainMode ? 1 : 0
   i32[I.showStroke] = STATE.showStroke ? 1 : 0
   f32[F.reversed] = block.reversed ? 1 : 0
@@ -397,7 +393,6 @@ function totalValues(block: Block, top: number): Uniforms {
     covOffset: top,
     featHeight: STATE.featureHeight,
     featSpacing: STATE.featureSpacing,
-    colorScheme: STATE.colorScheme,
     chainMode: STATE.chainMode ? 1 : 0,
     showStroke: STATE.showStroke ? 1 : 0,
     fadeLowFrequencyMismatches: STATE.fadeLowFrequencyMismatches ? 1 : 0,
@@ -493,7 +488,6 @@ function templateValues(): Uniforms {
     covOffset: 0,
     featHeight: STATE.featureHeight,
     featSpacing: STATE.featureSpacing,
-    colorScheme: STATE.colorScheme,
     chainMode: STATE.chainMode ? 1 : 0,
     showStroke: STATE.showStroke ? 1 : 0,
     fadeLowFrequencyMismatches: STATE.fadeLowFrequencyMismatches ? 1 : 0,
@@ -614,7 +608,6 @@ function viewFrame(scratch: ArrayBuffer, block: Block, top: number) {
   f32[F.featSpacing] = STATE.featureSpacing
   i32[I.fadeLowFrequencyMismatches] = STATE.fadeLowFrequencyMismatches ? 1 : 0
   i32[I.fadeLowQualityMismatches] = STATE.fadeLowQualityMismatches ? 1 : 0
-  i32[I.colorScheme] = STATE.colorScheme
   i32[I.chainMode] = STATE.chainMode ? 1 : 0
   i32[I.showStroke] = STATE.showStroke ? 1 : 0
   f32[F.reversed] = block.reversed ? 1 : 0
@@ -710,7 +703,6 @@ function hoistValues(block: Block, top: number): Uniforms {
     covOffset: top,
     featHeight: STATE.featureHeight,
     featSpacing: STATE.featureSpacing,
-    colorScheme: STATE.colorScheme,
     chainMode: STATE.chainMode ? 1 : 0,
     showStroke: STATE.showStroke ? 1 : 0,
     fadeLowFrequencyMismatches: STATE.fadeLowFrequencyMismatches ? 1 : 0,
@@ -799,7 +791,6 @@ function gateFrame(
   f32[F.featSpacing] = STATE.featureSpacing
   i32[I.fadeLowFrequencyMismatches] = STATE.fadeLowFrequencyMismatches ? 1 : 0
   i32[I.fadeLowQualityMismatches] = STATE.fadeLowQualityMismatches ? 1 : 0
-  i32[I.colorScheme] = STATE.colorScheme
   i32[I.chainMode] = STATE.chainMode ? 1 : 0
   i32[I.showStroke] = STATE.showStroke ? 1 : 0
   f32[F.reversed] = block.reversed ? 1 : 0
@@ -892,7 +883,6 @@ function preseedFrame(
   f32[F.featSpacing] = STATE.featureSpacing
   i32[I.fadeLowFrequencyMismatches] = STATE.fadeLowFrequencyMismatches ? 1 : 0
   i32[I.fadeLowQualityMismatches] = STATE.fadeLowQualityMismatches ? 1 : 0
-  i32[I.colorScheme] = STATE.colorScheme
   i32[I.chainMode] = STATE.chainMode ? 1 : 0
   i32[I.showStroke] = STATE.showStroke ? 1 : 0
   f32[F.reversed] = block.reversed ? 1 : 0
@@ -1023,7 +1013,6 @@ function planFrame(
   f32[F.featSpacing] = STATE.featureSpacing
   i32[I.fadeLowFrequencyMismatches] = STATE.fadeLowFrequencyMismatches ? 1 : 0
   i32[I.fadeLowQualityMismatches] = STATE.fadeLowQualityMismatches ? 1 : 0
-  i32[I.colorScheme] = STATE.colorScheme
   i32[I.chainMode] = STATE.chainMode ? 1 : 0
   i32[I.showStroke] = STATE.showStroke ? 1 : 0
   f32[F.reversed] = block.reversed ? 1 : 0

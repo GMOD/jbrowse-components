@@ -4,7 +4,6 @@ import {
 } from '@jbrowse/render-core/marks/drawAgainstHit'
 
 import { buildReadColorCategories } from '../../LinearAlignmentsDisplay/colorUtils.ts'
-import { colorSchemeIndexFor } from '../../LinearAlignmentsDisplay/constants.ts'
 import { makeTestPalette } from '../../LinearAlignmentsDisplay/testUtils.ts'
 import { READ_MARK } from './mark.ts'
 
@@ -38,7 +37,6 @@ const state = {
   showMismatches: true,
   showOutline: false,
   chainMode: false,
-  colorScheme: colorSchemeIndexFor('strand'),
   colors: makeTestPalette({
     colorFwdStrand: [1, 0, 0],
     colorRevStrand: [0, 0, 1],

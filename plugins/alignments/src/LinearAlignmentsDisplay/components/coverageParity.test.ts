@@ -395,7 +395,6 @@ describe('coverage packing parity between GPU and Canvas2D', () => {
       start: REGION_START,
       end: REGION_START + 20,
       scrollTop: 0,
-      colorScheme: 0,
       coverageMaxDepth: COVERAGE_MAX_DEPTH,
     } as unknown as RenderState)
 
@@ -632,7 +631,6 @@ describe('renderBlocks canvasDrawn gating parity', () => {
       canvasWidth: 200,
       canvasHeight: 200,
       scrollTop: 0,
-      colorScheme: 0,
       featureHeight: 10,
       featureSpacing: 1,
       coverageHeight: 0,

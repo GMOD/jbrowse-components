@@ -1,9 +1,13 @@
 import { SvgCanvas } from '@jbrowse/core/util/SvgCanvas'
 
 import { buildReadColorCategories } from '../../LinearAlignmentsDisplay/colorUtils.ts'
-import { colorSchemeIndexFor } from '../../LinearAlignmentsDisplay/constants.ts'
 import { shouldOutlineReads } from '../../LinearAlignmentsDisplay/renderers/rendererTypes.ts'
 import { makeTestPalette } from '../../LinearAlignmentsDisplay/testUtils.ts'
+import {
+  RC_FWD_STRAND,
+  RC_NORMAL_INSERT,
+  RC_PLAIN,
+} from '../../shaders/slang/read.consts.generated.ts'
 import { READ_MARK, showChevron } from './mark.ts'
 
 import type { RenderState } from '../../LinearAlignmentsDisplay/renderers/rendererTypes.ts'
@@ -93,7 +97,6 @@ function draw(
     reversed: false,
     ...blockOverrides,
   }
-  const colorScheme = colorSchemeIndexFor(colorByType)
   // Categories come from the real classifier, so these assertions exercise
   // classify->paint end to end rather than a hand-written category byte.
   const base = makeRegion(reads)
@@ -107,7 +110,6 @@ function draw(
     pileupTopOffset: 0,
     scrollTop: 0,
     chainMode: false,
-    colorScheme,
     colors: palette,
     showOutline: false,
     ...state,
@@ -254,7 +256,6 @@ describe('drawReads visible-row-band cull', () => {
       pileupTopOffset: 0,
       scrollTop: 0,
       chainMode: false,
-      colorScheme: colorSchemeIndexFor('strand'),
       colors: palette,
       showOutline: false,
       canvasHeight: 100,
@@ -281,13 +282,15 @@ describe('drawReads visible-row-band cull', () => {
 // against — every combination of the five inputs that changes the answer.
 function shaderShowChev(
   f: ChevronFrame,
+  colorCategory: number,
   flags: number,
   interchrom: number,
   insertSize: number,
   widthPx: number,
 ) {
   const baseShow = (f.chainMode || f.pxPerBp > 0.1) && f.featureHeight >= 3
-  const dirMoot = f.colorScheme === 0 || (flags & 8) !== 0 || interchrom !== 0
+  const dirMoot =
+    colorCategory === RC_PLAIN || (flags & 8) !== 0 || interchrom !== 0
   const isPaired = (flags & 1) !== 0
   const pairTooTight = isPaired && Math.abs(insertSize) * f.pxPerBp < 10
   return baseShow && !pairTooTight && (!dirMoot || widthPx > 30)
@@ -297,21 +300,37 @@ test('showChevron matches the shader predicate across a grid', () => {
   const frames: ChevronFrame[] = []
   for (const pxPerBp of [0.05, 0.2, 5]) {
     for (const chainMode of [false, true]) {
-      for (const colorScheme of [0, 1, 3]) {
-        for (const featureHeight of [2, 3, 10]) {
-          frames.push({ pxPerBp, chainMode, colorScheme, featureHeight })
-        }
+      for (const featureHeight of [2, 3, 10]) {
+        frames.push({ pxPerBp, chainMode, featureHeight })
       }
     }
   }
   for (const f of frames) {
-    for (const flags of [0, 1, 8, 9]) {
-      for (const interchrom of [0, 1]) {
-        for (const insertSize of [0.5, 2, 500]) {
-          for (const widthPx of [5, 30, 100]) {
-            expect(showChevron(f, flags, interchrom, insertSize, widthPx)).toBe(
-              shaderShowChev(f, flags, interchrom, insertSize, widthPx),
-            )
+    for (const category of [RC_PLAIN, RC_FWD_STRAND, RC_NORMAL_INSERT]) {
+      for (const flags of [0, 1, 8, 9]) {
+        for (const interchrom of [0, 1]) {
+          for (const insertSize of [0.5, 2, 500]) {
+            for (const widthPx of [5, 30, 100]) {
+              expect(
+                showChevron(
+                  f,
+                  category,
+                  flags,
+                  interchrom,
+                  insertSize,
+                  widthPx,
+                ),
+              ).toBe(
+                shaderShowChev(
+                  f,
+                  category,
+                  flags,
+                  interchrom,
+                  insertSize,
+                  widthPx,
+                ),
+              )
+            }
           }
         }
       }

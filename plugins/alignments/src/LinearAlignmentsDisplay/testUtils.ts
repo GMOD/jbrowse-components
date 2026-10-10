@@ -104,7 +104,6 @@ export function makeTestRenderState(
     canvasWidth: 200,
     canvasHeight: 100,
     scrollTop: 0,
-    colorScheme: 0,
     featureHeight: 10,
     featureSpacing: 1,
     coverageHeight: 0,

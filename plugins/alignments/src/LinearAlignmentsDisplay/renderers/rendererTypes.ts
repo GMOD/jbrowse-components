@@ -27,7 +27,6 @@ export type {
 
 export interface RenderState {
   scrollTop: number
-  colorScheme: number
   featureHeight: number
   featureSpacing: number
   // The coverage band's RESERVED height — 0 when the band is off, so a painter

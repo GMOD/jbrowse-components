@@ -4,6 +4,10 @@
 // for the forward case gets wrong on a reversed region. The hit test now asks
 // readChevron.slang's own containment predicate, in bp, so both strands and
 // both orientations are one case.
+import {
+  RC_FWD_STRAND,
+  RC_PLAIN,
+} from '../../shaders/slang/read.consts.generated.ts'
 import { CHEVRON_PX } from '../../shaders/slang/readChevron.generated.ts'
 import { chevronContains } from '../../shaders/slang/readChevron.js.generated.ts'
 import { hitTestFeature } from './hitTest.ts'
@@ -14,17 +18,21 @@ import type { ChevronFrame } from './mark.ts'
 
 const FEATURE_HEIGHT = 10
 
-// One read on row 0, in a block at 1 px/bp so a bp offset reads as px.
+// One read on row 0, in a block at 1 px/bp so a bp offset reads as px. A
+// strand fill by default, so direction is informative and the arrowhead needs
+// no minimum width.
 function oneRead({
   start,
   end,
   strand,
   edgeFlags = 0b11,
+  category = RC_FWD_STRAND,
 }: {
   start: number
   end: number
   strand: number
   edgeFlags?: number
+  category?: number
 }): ResolvedBlock {
   const rpcData = {
     readPositions: new Uint32Array([start, end]),
@@ -37,6 +45,7 @@ function oneRead({
     segmentPositions: new Uint32Array([start, end]),
     segmentReadIndices: new Uint32Array([0]),
     segmentEdgeFlags: new Uint8Array([edgeFlags]),
+    readColorCategories: new Uint8Array([category]),
   } as unknown as PileupDataResult
   return {
     rpcData,
@@ -59,12 +68,9 @@ function at(genomicPos: number, yWithinRow: number): CigarCoords {
   }
 }
 
-// The strand scheme, so direction is informative and the arrowhead needs no
-// minimum width.
 const STRAND_SCHEME: ChevronFrame = {
   pxPerBp: 1,
   chainMode: false,
-  colorScheme: 1,
   featureHeight: FEATURE_HEIGHT,
 }
 
@@ -115,16 +121,13 @@ test('no arrowhead, no hit: strand-less, region-clipped, or gated off', () => {
       STRAND_SCHEME,
     ),
   ).toBeUndefined()
-  // Under the normal scheme a read narrower than CHEVRON_DIRLESS_MIN_WIDTH_PX
-  // draws no arrowhead, and the same `showChevron` says so here.
+  // A plain-filled read narrower than CHEVRON_DIRLESS_MIN_WIDTH_PX draws no
+  // arrowhead, and the same `showChevron` says so here.
   expect(
     hitTestFeature(
-      oneRead({ start: 100, end: 120, strand: 1 }),
+      oneRead({ start: 100, end: 120, strand: 1, category: RC_PLAIN }),
       at(124, MID_ROW),
-      {
-        ...STRAND_SCHEME,
-        colorScheme: 0,
-      },
+      STRAND_SCHEME,
     ),
   ).toBeUndefined()
 })

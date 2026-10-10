@@ -36,7 +36,6 @@ function recordingCtx() {
 function baseState(overrides: Partial<RenderState> = {}): RenderState {
   return {
     scrollTop: 0,
-    colorScheme: 0,
     featureHeight: 10,
     featureSpacing: 0,
     coverageHeight: 0,
