@@ -36,6 +36,16 @@ test('describeSession lists the types of views, their shown tracks and widgets',
   })
 })
 
+test("describeSession skips a plugin view's tracks that carry no type", () => {
+  const rowAnnotations = [{ id: 'conservation' }, { id: 'domains' }]
+  const shape = describeSession({
+    sessionTracks: [],
+    views: [{ type: 'MsaView', tracks: rowAnnotations }],
+  })
+  expect(shape.trackTypes).toEqual([])
+  expect(tallyTypes(shape.trackTypes)).toBe('')
+})
+
 test('tallyTypes counts each type and sorts by name', () => {
   expect(tallyTypes(['VariantTrack', 'FeatureTrack', 'VariantTrack'])).toBe(
     'FeatureTrack:1,VariantTrack:2',

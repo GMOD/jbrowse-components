@@ -2,10 +2,13 @@ import { autorun } from 'mobx'
 
 // What a usage report says about a session: the kinds of view, track and
 // drawer widget in it, never a name, a location or a file. A view's `tracks`
-// are the ones shown in it, as opposed to the config's full track list.
+// are the ones shown in it, as opposed to the config's full track list. A
+// plugin view can use the name for something else: an MsaView's `tracks` are
+// its own row annotations, with no type, and counting them threw inside the
+// analytics ping of every session that opened one.
 export interface ActivitySession {
   sessionTracks: { type: string }[]
-  views: { type: string; tracks?: { type: string }[] }[]
+  views: { type: string; tracks?: readonly object[] }[]
   widgets?: { values(): Iterable<{ type: string }> }
 }
 
@@ -21,7 +24,9 @@ export function describeSession(session: ActivitySession | undefined) {
     for (const view of session.views) {
       shape.viewTypes.push(view.type)
       for (const track of view.tracks ?? []) {
-        shape.trackTypes.push(track.type)
+        if ('type' in track && typeof track.type === 'string') {
+          shape.trackTypes.push(track.type)
+        }
       }
     }
     for (const widget of session.widgets?.values() ?? []) {
