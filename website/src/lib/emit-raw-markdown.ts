@@ -3,8 +3,9 @@ import path from 'node:path'
 
 import { absolutizeMarkdownLinks } from './absolutize-markdown-links.ts'
 import { retargetCodeBaseInMarkdown } from './code-base.ts'
-import { docId, slugFilename } from './doc-slug.ts'
+import { docId, docUrl, normalizeDocUrl, slugFilename } from './doc-slug.ts'
 import { plainReferenceMarkdown } from './plain-reference-markdown.ts'
+import { seeAlsoMarkdown } from './remark-see-also.ts'
 import { tutorialBetaNotice } from './tutorial-beta-notice.ts'
 
 // Writes each doc's raw Markdown to `dist/docs/<slug>.md` (introduction ->
@@ -41,6 +42,8 @@ export async function emitRawMarkdown({
   distDir: string
   origin: string
 }) {
+  const pages = []
+  const titles = new Map<string, string>()
   for await (const rel of glob('**/*.md', { cwd: docsDir })) {
     if (path.basename(rel).startsWith('CLAUDE.md')) {
       continue
@@ -50,8 +53,13 @@ export async function emitRawMarkdown({
     // The docs loader's own id/slug rules, not a copy of them — this hook's
     // filenames are what /llms.txt links and what the sidebar's URLs have to
     // match, so a re-derivation that drifted would 404 silently.
-    const slug = slugFilename(docId(rel, data.slug))
+    const id = docId(rel, data.slug)
+    const slug = slugFilename(id)
     const title = data.title ?? slug
+    titles.set(normalizeDocUrl(docUrl(id)), title)
+    pages.push({ rel, body, slug, title })
+  }
+  for (const { rel, body, slug, title } of pages) {
     const notice =
       tutorialBetaNotice && slug.startsWith('tutorials/')
         ? `${tutorialBetaNotice}\n\n`
@@ -59,7 +67,8 @@ export async function emitRawMarkdown({
     const text = /^(config|models)\//.test(rel)
       ? plainReferenceMarkdown(body)
       : body
-    const md = `# ${title}\n\n${retargetCodeBaseInMarkdown(absolutizeMarkdownLinks(notice + text.trimStart(), origin))}\n`
+    const linked = seeAlsoMarkdown(text, url => titles.get(url))
+    const md = `# ${title}\n\n${retargetCodeBaseInMarkdown(absolutizeMarkdownLinks(notice + linked.trimStart(), origin))}\n`
     const out = path.join(distDir, 'docs', `${slug}.md`)
     await fs.mkdir(path.dirname(out), { recursive: true })
     await fs.writeFile(out, md)

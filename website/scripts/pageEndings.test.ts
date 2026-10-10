@@ -40,3 +40,11 @@ test('See also links only pages on jbrowse.org', () => {
     ),
   ).toEqual([expect.stringContaining('move it to External links')])
 })
+
+test('a See also bullet does not type the kind the build adds', () => {
+  expect(
+    pageEndingProblems(
+      page('## See also\n\n- **Tutorial:** [](/docs/tutorials/rnaseq)\n'),
+    ),
+  ).toEqual([expect.stringContaining('types its own kind prefix')])
+})

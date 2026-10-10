@@ -32,13 +32,12 @@ function linkNode({ title, url }: GuideRef): Link {
   return { type: 'link', url, children: [{ type: 'text', value: title }] }
 }
 
-// One bullet per guide, prefixed with its kind — "Guide:" matches the
-// "**Kind:** link" convention the generator uses for its own entries
-// (Track/Adapter/Display/...) in the same list, so the merged list reads as
-// one consistent style. A guide whose title collides with another guide's
-// (config_guides/hic_track.md and user_guides/hic_track.md are both titled
-// "Hi-C track") gets its directory as the kind instead, so the two bullets
-// read as distinct rather than as the same link twice.
+// One bullet per guide, prefixed with its kind ("User guide:", "Tutorial:"),
+// which matches the "**Kind:** link" convention the generator uses for its own
+// entries (Track/Adapter/Display/...) in the same list, so the merged list reads
+// as one consistent style. The kind also tells apart two guides with one title
+// (config_guides/hic_track.md and user_guides/hic_track.md are both "Hi-C
+// track").
 function guideListItem(ref: GuideRef): ListItem {
   return {
     type: 'listItem',

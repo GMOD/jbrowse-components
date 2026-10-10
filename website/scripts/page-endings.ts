@@ -3,9 +3,12 @@
 // it has entries, and no `##` section after them; a See also bullet links a
 // page on jbrowse.org. website/docs/tutorials/CLAUDE.md says what goes in each.
 
+import { KINDS } from '../src/lib/remark-see-also.ts'
+
 const ENDINGS = ['See also', 'External links', 'Citations']
 const RETIRED = new Set(['References'])
 const OURS = /\]\((\/|https:\/\/jbrowse\.org\/)/
+const TYPED_KIND = new RegExp(`^- (\\*\\*)?(${KINDS.join('|')}):`)
 
 export function pageEndingProblems(text: string) {
   const problems: string[] = []
@@ -47,6 +50,9 @@ export function pageEndingProblems(text: string) {
         problems.push(
           `See also links off-site, move it to External links: ${line}`,
         )
+      }
+      if (TYPED_KIND.test(line)) {
+        problems.push(`See also bullet types its own kind prefix: ${line}`)
       }
     }
   }
