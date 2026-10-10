@@ -97,7 +97,7 @@ export function hitTestFeature(
   coords: CigarCoords,
   chevrons: ChevronFrame,
 ): { id: string; index: number } | undefined {
-  const { genomicPos, row } = coords
+  const { genomicPos, row, bpPerPx } = coords
   if (!isWithinReadBand(coords, chevrons.featureHeight)) {
     return undefined
   }
@@ -111,7 +111,8 @@ export function hitTestFeature(
     return (
       readStart !== undefined &&
       readEnd !== undefined &&
-      ((genomicPos >= readStart && genomicPos <= readEnd) ||
+      ((genomicPos >= readStart &&
+        genomicPos <= Math.max(readEnd, readStart + bpPerPx)) ||
         chevronContainsCursor(rpcData, i, coords, chevrons))
     )
   })

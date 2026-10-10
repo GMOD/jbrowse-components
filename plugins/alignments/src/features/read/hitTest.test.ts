@@ -148,3 +148,17 @@ test('chevronContains is the triangle the painters trace', () => {
     }
   }
 })
+
+// Zoomed out past a bp per px, the painter floors a read at 1px grown away
+// from its start, and the hover answers on that whole sliver.
+test('a read narrower than a pixel answers across its painted 1px', () => {
+  const block = oneRead({ start: 100, end: 101, strand: 1, category: RC_PLAIN })
+  const frame = { ...STRAND_SCHEME, pxPerBp: 1 / 50 }
+  const zoomedOut = (genomicPos: number) => ({
+    ...at(genomicPos, MID_ROW),
+    bpPerPx: 50,
+  })
+  expect(hitTestFeature(block, zoomedOut(140), frame)?.id).toBeDefined()
+  expect(hitTestFeature(block, zoomedOut(151), frame)).toBeUndefined()
+  expect(hitTestFeature(block, zoomedOut(99), frame)).toBeUndefined()
+})
