@@ -307,7 +307,7 @@ export interface GtfLineRecord {
  * A top-level parsed feature paired with the record it came from. The parser
  * stamps no identity onto the feature; callers that need a stable per-feature
  * id (e.g. a tabix byte offset) read it off their own `record`. Mirrors
- * gff-nostream's `ParsedRecord`.
+ * @gmod/gff-nostream's `ParsedRecord`.
  */
 export interface ParsedGtfRecord<R extends GtfLineRecord = GtfLineRecord> {
   feature: FeatureLoc

@@ -810,11 +810,11 @@ is dropped with a console warning, and its track opens on its default display.
 `LinearBareDisplay` are no longer registered**, and no migration maps them to a
 replacement.
 
-**`gff-nostream`'s record parser** now returns `{ feature, record }` pairs — the
-tabix adapter reads it as `parseRecordsLazy` — and the opaque `_lineHash` that
-used to be stamped onto `feature.data` is gone: the adapter mints its stable
-per-feature id from the byte offset on its own record. Plugin code reading
-`_lineHash` off feature data has nothing to read.
+**`@gmod/gff-nostream`'s record parser** now returns `{ feature, record }` pairs
+— the tabix adapter reads it as `parseRecordsLazy` — and the opaque `_lineHash`
+that used to be stamped onto `feature.data` is gone: the adapter mints its
+stable per-feature id from the byte offset on its own record. Plugin code
+reading `_lineHash` off feature data has nothing to read.
 
 ## What to check in your own plugin
 

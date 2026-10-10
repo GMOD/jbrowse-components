@@ -23,5 +23,5 @@ byte-offset/UBO layout invariants called out in CLAUDE.md and
 `.slang` source (run `pnpm gen:shaders`, never hand-edit `*.generated.ts`) with a
 matching Canvas2D fallback path. Worth a dedicated task with browser verification
 on a real NCBI eukaryote GFF (e.g. a partial gene near a contig edge) before
-sweeping the shader/packing layers. Companion to the gff-nostream parser fix that
+sweeping the shader/packing layers. Companion to the @gmod/gff-nostream parser fix that
 stopped dropping top-level discontinuous features (cDNA_match/EST_match).

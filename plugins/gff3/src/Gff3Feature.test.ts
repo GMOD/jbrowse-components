@@ -1,5 +1,5 @@
+import { parseLines, parseLinesLazy } from '@gmod/gff-nostream'
 import SimpleFeature from '@jbrowse/core/util/simpleFeature'
-import { parseLines, parseLinesLazy } from 'gff-nostream'
 
 import { Gff3Feature } from './Gff3Feature.ts'
 

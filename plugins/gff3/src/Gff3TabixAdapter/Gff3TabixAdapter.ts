@@ -1,3 +1,4 @@
+import { hasIdAttribute, parseRecordsLazy } from '@gmod/gff-nostream'
 import { TabixIndexedFile } from '@gmod/tabix'
 import {
   BaseFeatureDataAdapter,
@@ -8,7 +9,6 @@ import { decompressedBytesBudget } from '@jbrowse/core/util/cacheBudgets'
 import { openLocation, openTabixIndexFilehandle } from '@jbrowse/core/util/io'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 import { readTabixLinesRedispatched } from '@jbrowse/core/util/tabix'
-import { hasIdAttribute, parseRecordsLazy } from 'gff-nostream'
 
 import { Gff3Feature } from '../Gff3Feature.ts'
 import { cutAtOrigin, sequenceLengths } from '../originSpanning.ts'
@@ -82,7 +82,7 @@ export default class Gff3TabixAdapter extends BaseFeatureDataAdapter<Gff3TabixAd
         const { gff, dontRedispatchSet, lengths } = await this.configure(opts)
         // The bound exists to reach a record's children, so what disqualifies a
         // record is having none. `ID` answers that exactly — nothing can name a
-        // parent that has no name — and gff-nostream decides it with the scan
+        // parent that has no name — and @gmod/gff-nostream decides it with the scan
         // its linker uses, so a record the tree would attach children to is
         // never one the bound leaves out. `dontRedispatch` can only approximate
         // the same question by type: every NCBI `GCF_*_genomic.gff.gz` opens

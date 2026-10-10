@@ -78,7 +78,7 @@ minimumReleaseAge: '1440'
 minimumReleaseAgeExclude:
   - '@gmod/*'
   - 'ixixx'
-  - 'gff-nostream'
+  - '@gmod/gff-nostream'
   - 'electron'
   # Same publisher and same release train as `electron` above, so the two have
   # to clear the age gate together: the E2E jobs drive the packaged app through

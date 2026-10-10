@@ -35,7 +35,7 @@ describe('getSequenceData for a polyprotein CDS', () => {
     ])
   })
 
-  // gff-nostream folds SARS-CoV-2 ORF1ab into one CDS carrying a CDS row per
+  // @gmod/gff-nostream folds SARS-CoV-2 ORF1ab into one CDS carrying a CDS row per
   // reading frame, overlapping by the slipped base, beside its products.
   it('stitches the reading frames of a frameshift polyprotein, not its products', () => {
     expect(

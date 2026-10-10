@@ -471,7 +471,7 @@ describe('layoutSubfeatures layout', () => {
     })
 
     it('matches one member of a multi-valued attribute', () => {
-      // gff-nostream hands a comma list back as an array.
+      // @gmod/gff-nostream hands a comma list back as an array.
       expect(names({ tag: ['MANE Select', 'RefSeq Select'] })).toEqual([
         'short',
       ])

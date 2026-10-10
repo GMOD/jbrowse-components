@@ -58,6 +58,7 @@ lookup:
 <!-- include: plugins/gff3/src/Gff3Adapter/Gff3Adapter.ts -->
 
 ```ts
+import { parseLinesLazy } from '@gmod/gff-nostream'
 import {
   BaseFeatureDataAdapter,
   cachedSetup,
@@ -69,7 +70,6 @@ import {
   makeFeatureIntervalTreeMap,
 } from '@jbrowse/core/util/parseLineByLine'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
-import { parseLinesLazy } from 'gff-nostream'
 
 import { Gff3Feature } from '../Gff3Feature.ts'
 import { cutAtOrigin, sequenceLengths } from '../originSpanning.ts'

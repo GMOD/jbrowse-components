@@ -88,7 +88,7 @@ describe.each(['auto', 'all', 'longestCoding'] as const)(
       expect(findGlyph(cds, config)).toBe(layoutMatureProteinRegion)
     })
 
-    // gff-nostream folds a frameshift polyprotein (SARS-CoV-2 ORF1ab) into one CDS
+    // @gmod/gff-nostream folds a frameshift polyprotein (SARS-CoV-2 ORF1ab) into one CDS
     // carrying a CDS row per reading frame beside its cleavage products.
     it('routes a frameshift polyprotein CDS to MatureProteinRegion, nested or not', () => {
       const cds = mockFeature({

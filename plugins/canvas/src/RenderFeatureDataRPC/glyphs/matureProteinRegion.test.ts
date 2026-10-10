@@ -608,7 +608,7 @@ describe('collectRenderData for mature protein regions', () => {
   })
 })
 
-// NCBI's ORF1ab shape after gff-nostream folds it: the CDS carries one CDS row
+// NCBI's ORF1ab shape after @gmod/gff-nostream folds it: the CDS carries one CDS row
 // per reading frame, overlapping by the slipped base, and its cleavage
 // products. nspB straddles the frameshift, so NCBI writes it as two lines under
 // one ID.

@@ -1,10 +1,10 @@
-import { getAttribute, getAttributes } from 'gff-nostream'
+import { getAttribute, getAttributes } from '@gmod/gff-nostream'
 
+import type { LazyGffFeature } from '@gmod/gff-nostream'
 import type {
   Feature,
   SimpleFeatureSerialized,
 } from '@jbrowse/core/util/simpleFeature'
-import type { LazyGffFeature } from 'gff-nostream'
 
 /**
  * A {@link Feature} over a GFF3 feature whose attributes are still raw column-9

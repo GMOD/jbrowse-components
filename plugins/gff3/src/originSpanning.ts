@@ -1,7 +1,7 @@
 import { originTailId } from '@jbrowse/core/util/originCut'
 import { doesIntersect2 } from '@jbrowse/core/util/range'
 
-import type { LazyGffFeature } from 'gff-nostream'
+import type { LazyGffFeature } from '@gmod/gff-nostream'
 
 /** Each sequence's length, as the file's `##sequence-region` pragmas state it. */
 export function sequenceLengths(header: string) {

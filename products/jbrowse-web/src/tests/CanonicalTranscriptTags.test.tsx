@@ -22,7 +22,7 @@ setup()
 // Unit tests reach `layoutSubfeatures` with a hand-built feature whose
 // `get('tag')` answers whatever the test decided it answers. That is the one
 // question they cannot ask: whether a GFF3 attribute reaches the ranking under
-// the name it looks for and in the shape it expects. It does — gff-nostream
+// the name it looks for and in the shape it expects. It does — @gmod/gff-nostream
 // splits a comma list into an array and leaves a spaced single value a string,
 // both of which `canonicalRank` matches member-wise — and this is where that
 // stays true.
