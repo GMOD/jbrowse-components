@@ -36,7 +36,7 @@ export const PLOT_VOCABULARY: Readonly<Record<string, string>> = {
   interpolate:
     'how a line joins its values: held across each bin, or centre to centre',
   aggregate:
-    'what each bin draws of the values it covers: their max, min or mean, or whiskers, all three',
+    "which of a zoom bin's stored summaries is drawn: max, min or mean, or whiskers, all three",
   transform: 'the steps run over the features before any mark',
   unit: 'what one row stands for: a read or a chain, a sample or a haplotype',
   facet: 'one section per value of a field',

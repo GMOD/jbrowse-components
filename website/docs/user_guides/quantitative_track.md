@@ -71,13 +71,15 @@ has no 0. Density mode offers neither Include 0 nor the guides.
 ### Summary score mode
 
 Zoomed out, a BigWig serves precomputed summary bins, and **Resolution → Summary
-score mode** picks which statistic a pixel draws: **Minimum**, **Maximum**,
-**Average**, or **Whiskers**
+score mode** picks which of a bin's stored statistics is drawn: **Minimum**,
+**Maximum**, **Average**, or **Whiskers**
 ([`aggregate`](/docs/config/linearwiggledisplay/#slot-aggregate)). Whiskers
 shows all three. An XY plot nests a darker average bar inside the lighter
 min-to-max range. A line plot fills min to max as a translucent band behind the
 average line, stepped or interpolated to match the line. Density mode draws the
-average, since it maps score to color.
+average, since it maps score to color. Where the source serves raw values, such
+as a bedGraph or a BigWig zoomed all the way in, the three are one number and
+the mode changes nothing.
 
 A narrow peak fades out across a whole chromosome when averaged over a wide bin.
 **Maximum** keeps it visible.

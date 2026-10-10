@@ -214,6 +214,14 @@ floored at 1 or the shader seeds the row transform with Infinity.
 
 ## Effective vs raw `aggregate`
 
+`aggregate` picks one of the three summaries a zoom bin already stores; it
+computes nothing. A BigWig tier and a synthetic tier both carry mean, min and
+max, and `processFeaturesFromArrays` aliases a raw feature's min and max onto
+its score, so over a source with no tiers, a bedGraph, the setting has nothing
+to choose between.
+The mark display reads the same tiers through `y: 'maxScore'` (ADR-123), and
+its `aggregate` transform step is the one that computes.
+
 `effectiveAggregate` resolves whiskers to `mean` under density, and the
 autoscale domain, menu radio, tooltip and `gpuProps` all read it. **`rpcProps`
 carries the raw slot** — the effective one moves with the rendering type, so

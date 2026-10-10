@@ -13,7 +13,11 @@ Accepted (2026-10-07). Settles call 3 of the 2026-10-07 grammar audit. Amends
 `PLOT_VOCABULARY`, and lifts with its `avg` through the display's `retired`
 spellings (`LinearWiggleDisplay/retired.ts`) instead of `preProcessSnapshot`,
 which also reaches the slot inside a v4 `renderers` block. The menu label stays
-"Summary score mode".
+"Summary score mode". The slot picks a summary the source stored per zoom bin
+rather than computing one, which is what the mark display spells as
+`y: 'maxScore'` (ADR-123); the name stays because the drawing is that
+aggregate's, run ahead of time, and a top-level slot cannot meet the mark
+display's `aggregate` transform step. `summary` was the rename considered.
 
 ## Context
 

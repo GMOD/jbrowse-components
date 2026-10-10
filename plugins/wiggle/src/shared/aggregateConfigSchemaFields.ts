@@ -8,7 +8,7 @@ export type Aggregate = (typeof AGGREGATES)[number]
 export function aggregateConfigSchemaFields({
   defaultMode,
   description:
-    prose = 'which summary of a bin is drawn: max, min, mean, or whiskers, which draws all three',
+    prose = "which of a zoom bin's stored summaries is drawn: max, min, mean, or whiskers, which draws all three. A BigWig's zoom levels, and the bins JBrowse makes over its raw section, store all three; where the source serves raw values they are one number and the setting changes nothing",
 }: {
   defaultMode: Aggregate
   description?: string
