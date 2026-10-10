@@ -15679,13 +15679,16 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           }
         },
         "sequenceType": {
-          "description": "either dna or pep.",
+          "description": "\`pep\` for a protein sequence, which draws one row of residues with no reverse or translation rows.",
           "default": "dna",
           "if": {
             "type": "null"
           },
           "else": {
-            "$ref": "#/$defs/PlainString"
+            "enum": [
+              "dna",
+              "pep"
+            ]
           }
         },
         "description": {

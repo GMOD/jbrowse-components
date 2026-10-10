@@ -54,7 +54,7 @@ These slots are top-level fields of the track config, alongside `trackId` and `n
 | <span id="slot-adapter">**adapter**</span><br><code>pluginManager.pluggableConfigSchemaType('adapter')</code> | configuration for track adapter |
 | <span id="slot-displays">**displays**</span><br><code>types.array(pluginManager.pluggableConfigSchemaType('display'))</code> | configuration for the displays e.g. LinearReferenceSequenceDisplay |
 | <span id="slot-name">**name**</span><br>[`string`](/docs/config_guides/slot_types#string) = <code>''</code> | optional track name, otherwise uses the "Reference sequence (assemblyName)" |
-| <span id="slot-sequencetype">**sequenceType**</span><br>[`string`](/docs/config_guides/slot_types#string) = <code>'dna'</code> | either dna or pep |
+| <span id="slot-sequencetype">**sequenceType**</span><br>[`stringEnum`](/docs/config_guides/slot_types#stringenum) (dna, pep) = <code>'dna'</code> | `pep` for a protein sequence, which draws one row of residues with no reverse or translation rows |
 | <span id="slot-description">**description**</span><br>[`string`](/docs/config_guides/slot_types#string) = <code>''</code> | a description of the track |
 | <span id="slot-metadata">**metadata**</span><br>[`frozen`](/docs/config_guides/slot_types#frozen) = <code>{}</code> | anything to add about this track |
 | <span id="slot-formatabout">**formatAbout**</span><br>[FormatAbout](../formatabout) | jexl callbacks that add, rewrite or hide fields in this track's About dialog. |

@@ -742,7 +742,7 @@ exports[`every registered schema slot default 1`] = `
     "description": "string = """,
     "metadata": "frozen = {}",
     "name": "string = """,
-    "sequenceType": "string = "dna"",
+    "sequenceType": "stringEnum = "dna" of ["dna","pep"]",
   },
   "track: SyntenyTrack": {
     "assemblyNames": "stringArray = ["assemblyName"]",

@@ -1993,7 +1993,7 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "sequenceType",
-          "type": "string"
+          "type": "SequenceType"
         },
         {
           "name": "description",

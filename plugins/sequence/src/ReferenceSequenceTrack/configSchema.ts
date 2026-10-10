@@ -62,8 +62,10 @@ export function createReferenceSeqTrackConfig(pluginManager: PluginManager) {
        * #slot
        */
       sequenceType: {
-        type: 'string',
-        description: 'either dna or pep',
+        type: 'stringEnum',
+        model: types.enumeration('SequenceType', ['dna', 'pep']),
+        description:
+          '`pep` for a protein sequence, which draws one row of residues with no reverse or translation rows',
         defaultValue: 'dna',
       },
 
