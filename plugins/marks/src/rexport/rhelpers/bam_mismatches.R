@@ -1,8 +1,8 @@
-# Per-read mismatches, data.frame(read_index, refpos, base), refpos 0-based and
-# read_index the read's position in readGAlignments order, as read_bam numbers
-# it. Read off the MD tag where a read carries one and, as BamAdapter does,
-# against 'ref' (an indexed FASTA or 2bit) where it does not; with no 'ref' an
-# MD-less read contributes nothing.
+# Per-read mismatches inside the region, data.frame(read_index, refpos, base),
+# refpos 0-based and read_index the read's position in readGAlignments order,
+# as read_bam numbers it. Read off the MD tag where a read carries one and, as
+# BamAdapter does, against 'ref' (an indexed FASTA or 2bit) where it does not;
+# with no 'ref' an MD-less read contributes nothing.
 bam_mismatches <- function(uri, chrom, start, end, ref = NULL, index = uri) {
   bf <- BamFile(uri, index = index)
   if (!chrom %in% seqlevels(bf)) {
@@ -57,5 +57,6 @@ bam_mismatches <- function(uri, chrom, start, end, ref = NULL, index = uri) {
         read_index = i, refpos = refstart[i] + d - 2L, base = toupper(q[d]))
     }
   }
-  bind_groups(out, c("read_index", "refpos", "base"))
+  out <- bind_groups(out, c("read_index", "refpos", "base"))
+  out[out$refpos >= start & out$refpos < end, , drop = FALSE]
 }

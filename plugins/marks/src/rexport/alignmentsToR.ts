@@ -279,10 +279,9 @@ const BASES = ['A', 'C', 'G', 'T', 'N'] as const
 /**
  * A LinearAlignmentsDisplay config snapshot as R panels: a coverage band over
  * a pileup of reads packed as the browser packs them, colored through its
- * `color` object, with mismatch ticks on the reads.
- *
- * Reads only the first region: the mismatch overlay joins reads by their
- * per-region read index, and the multi-region join is not written yet.
+ * `color` object, with mismatch ticks on the reads. Several regions lie end
+ * to end on one axis; a read's `read_index` counts within its region, so the
+ * overlays join on it and `.region` together.
  */
 export function alignmentsPanels({
   display,
@@ -310,9 +309,6 @@ export function alignmentsPanels({
   const notes = [
     'reads: each draws as one bar over its reference span, without its deletions, insertions, clips or splice gaps',
   ]
-  if (regions.length > 1) {
-    notes.push('regions: only the first region is drawn')
-  }
   for (const [slot, fallback] of Object.entries(UNTRANSLATED)) {
     const v = display[slot]
     const set =
@@ -382,9 +378,8 @@ export function alignmentsPanels({
     notes,
     { steps: [pileup] },
   )
-  const region = regions[0]!
   const indexArg = index ? `, index = ${rStr(index)}` : ''
-  const at = `${fileChrom('regions$chrom[1]', aliases)}, regions$start[1], regions$end[1]`
+  const at = `${fileChrom('chrom', aliases)}, start, end`
   const layers = reads ? [reads.layer] : []
   const scales: Plot['scales'] = {
     ...reads?.scales,
@@ -395,10 +390,14 @@ export function alignmentsPanels({
   if (display.showMismatches !== false) {
     const mismatches = frame({
       name: mismatchesName,
-      columns: ['read_index', 'refpos', 'base', 'row'],
+      columns: ['read_index', 'refpos', 'base', '.region', 'row'],
       packages: ['GenomicAlignments'],
-      statements: `${mismatchesName} <- bam_mismatches(${rStr(uri)}, ${at}, ${reference ? rStr(reference) : 'NULL'}${indexArg})
-${mismatchesName}$row <- ${readsName}$row[match(${mismatchesName}$read_index, ${readsName}$read_index)]
+      statements: `${mismatchesName} <- read_regions(
+  function(chrom, start, end) bam_mismatches(${rStr(uri)}, ${at}, ${reference ? rStr(reference) : 'NULL'}${indexArg}),
+  regions, "refpos")
+${mismatchesName}$row <- ${readsName}$row[match(
+  paste(${mismatchesName}$.region, ${mismatchesName}$read_index),
+  paste(${readsName}$.region, ${readsName}$read_index))]
 ${mismatchesName} <- ${mismatchesName}[!is.na(${mismatchesName}$row), ]`,
       parent: packed,
     })
@@ -429,7 +428,10 @@ ${mismatchesName} <- ${mismatchesName}[!is.na(${mismatchesName}$row), ]`,
       )
     }
   }
-  const xlim = { start: region.start, end: region.end }
+  const shifted = regions.length > 1
+  const xlim = shifted
+    ? expr('min(regions$cum_start), max(regions$cum_end)')
+    : { start: regions[0]!.start, end: regions[0]!.end }
   const panels: Panel[] = [
     {
       variable: named('pileup'),
@@ -437,7 +439,10 @@ ${mismatchesName} <- ${mismatchesName}[!is.na(${mismatchesName}$row), ]`,
         layers,
         scales,
         xlim,
-        labs: { x: `${region.refName} (bp)`, y: null },
+        labs: {
+          x: shifted ? 'bp, regions end to end' : `${regions[0]!.refName} (bp)`,
+          y: null,
+        },
       },
       heightWeight: 2,
     },
@@ -445,9 +450,12 @@ ${mismatchesName} <- ${mismatchesName}[!is.na(${mismatchesName}$row), ]`,
   if (display.showCoverage !== false) {
     const coverage = frame({
       name: named('depth'),
-      columns: ['start', 'end', 'depth'],
+      columns: ['start', 'end', 'depth', '.region'],
       packages: ['GenomicAlignments'],
-      statements: `${named('depth')} <- bam_coverage(${rStr(uri)}, ${at}, keep = ${readsName}$read_index${indexArg})`,
+      statements: `${named('depth')} <- read_regions(
+  function(chrom, start, end, region) bam_coverage(${rStr(uri)}, ${at},
+    keep = ${readsName}$read_index[${readsName}$.region == region]${indexArg}),
+  regions, c("start", "end"))`,
       parent: packed,
     })
     panels.unshift({

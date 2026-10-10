@@ -93,6 +93,38 @@ const chainFilterNotes = exportTracksToR({
   regions: REGIONS,
 }).notes
 
+const TWO_REGIONS = [
+  { refName: 'ctgA', start: 1000, end: 3000 },
+  { refName: 'ctgA', start: 3000, end: 3500 },
+]
+const regionTotals = (region: string) =>
+  `{ d <- depth_volvox_alignments[depth_volvox_alignments$.region == ${region}, ]
+  m <- mismatches_volvox_alignments[mismatches_volvox_alignments$.region == ${region}, ]
+  r <- reads_volvox_alignments[reads_volvox_alignments$.region == ${region}, ]
+  c(nrow(r), sum((d$end - d$start) * d$depth), max(d$depth), nrow(m)) }`
+const alignmentsOver = (regions: Region[]) =>
+  scriptFor(
+    [track(main, 'volvox_alignments', 'LinearAlignmentsDisplay', {})],
+    regions,
+  )
+const bothRegions = TWO_REGIONS.map((_, i) =>
+  register(
+    `aln_two_regions_${i + 1}`,
+    alignmentsOver(TWO_REGIONS),
+    regionTotals(`${i + 1}`),
+  ),
+)
+const eachAlone = TWO_REGIONS.map((r, i) =>
+  register(`aln_region_alone_${i + 1}`, alignmentsOver([r]), regionTotals('1')),
+)
+const crossRegionTicks = register(
+  'aln_two_regions_ticks',
+  alignmentsOver(TWO_REGIONS),
+  `{ m <- mismatches_volvox_alignments; r <- reads_volvox_alignments
+  i <- match(paste(m$.region, m$read_index), paste(r$.region, r$read_index))
+  c(nrow(m) > 0, all(m$refpos >= r$start[i] & m$refpos < r$end[i]), all(m$row == r$row[i])) }`,
+)
+
 const collidingIds = register(
   'colliding_ids',
   scriptFor(
@@ -481,6 +513,15 @@ maybe('the emitted script, run under R', () => {
     expect(chainFilterNotes.join('\n')).toMatch(
       /properPairs "exclude" is not translated[\s\S]*split "only" is not translated/,
     )
+  })
+
+  it('draws each of two regions as it draws that region alone', () => {
+    for (const [i, name] of bothRegions.entries()) {
+      const totals = results.get(name)!.slice(4).trim().split(/\s+/).map(Number)
+      expect(totals.every(n => n > 0)).toBe(true)
+      expect(results.get(name)).toBe(results.get(eachAlone[i]!))
+    }
+    expect(results.get(crossRegionTicks)).toBe('[1] TRUE TRUE TRUE')
   })
 
   it('keeps two track ids that sanitise alike apart', () => {
