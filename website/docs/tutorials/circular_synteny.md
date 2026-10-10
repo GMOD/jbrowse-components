@@ -286,7 +286,7 @@ field to a `range` of two colors:
   "assemblyNames": ["hg38", "mm39"],
   "displayDefaults": {
     "mark": "span",
-    "summaryScoreMode": "mean",
+    "aggregate": "mean",
     "color": {
       "field": "score",
       "scale": "threshold",
@@ -343,7 +343,7 @@ before the synteny track:
             "trackId": "hg38ToMm39_gene_density",
             "type": "LinearWiggleDisplay",
             "mark": "span",
-            "summaryScoreMode": "mean",
+            "aggregate": "mean",
             "color": {
               "field": "score",
               "scale": "threshold",

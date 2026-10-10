@@ -17,12 +17,12 @@ import type {
   WiggleSourceData,
 } from '@jbrowse/wiggle-core'
 
-// The render layers one source contributes, chosen by summaryScoreMode but
+// The render layers one source contributes, chosen by aggregate but
 // independent of where the source sits on screen. buildSourceRenderData stamps
 // each with a rowIndex afterward, keeping row-placement in one place.
 function sourceLayers({
   source,
-  summaryScoreMode,
+  aggregate,
   renderingType,
   posColor,
   negColor,
@@ -33,7 +33,7 @@ function sourceLayers({
   gradient,
 }: {
   source: WiggleSourceData
-  summaryScoreMode: string
+  aggregate: string
   renderingType: WiggleRenderingType
   posColor: [number, number, number]
   negColor: [number, number, number]
@@ -47,20 +47,20 @@ function sourceLayers({
     renderingType === RENDERING_TYPE_LINE ||
     renderingType === RENDERING_TYPE_LINE_CENTER
   ) {
-    return lineLayers(source, summaryScoreMode, posColor, negColor)
+    return lineLayers(source, aggregate, posColor, negColor)
   }
   // whiskers draws min, mean and max; any other mode draws its one band. Every
   // value is colored by its own sign against the pivot, so signed data reads
   // as pos/neg on the main thread.
   //
   // Density is the one mode that gets to 'mean' without the user picking it, and
-  // the model resolves that (see `effectiveSummaryScoreMode`, which is what
+  // the model resolves that (see `effectiveAggregate`, which is what
   // gpuProps carries) rather than this re-deciding it. The autoscale domain,
   // the track menu's radio and the tooltip all read that same resolved mode, so
   // a copy of the rule here could only drift from them.
   return makeSummaryLayers({
     data: source,
-    summaryScoreMode,
+    aggregate,
     posColor,
     negColor,
     pivot,
@@ -94,7 +94,7 @@ export interface WiggleGpuProps {
   // The mode actually drawn, never the raw config slot, since density has no
   // whiskers presentation and resolves to 'mean'. Named for the model getter
   // that produces it so a new caller cannot skip the resolution.
-  effectiveSummaryScoreMode: string
+  effectiveAggregate: string
   renderingType: string
   // How many mean point spacings apart two interpolated-line points may be
   // before the span counts as a hole (see gapBreakLimit). Lives in gpuProps,
@@ -149,7 +149,7 @@ export function buildSourceRenderData(
     perSource,
     wiggleColor,
     origin,
-    effectiveSummaryScoreMode: summaryScoreMode,
+    effectiveAggregate: aggregate,
     renderingType,
     maxGapMultiple,
   } = gpuProps
@@ -190,7 +190,7 @@ export function buildSourceRenderData(
       // plot. Do NOT "fix" this to paint the whole row in the source's color.
       const layers = sourceLayers({
         source,
-        summaryScoreMode,
+        aggregate,
         renderingType: renderingTypeInt,
         posColor,
         negColor: perSource ? posColor : defaultNegColor,

@@ -42,9 +42,9 @@ function summaryFields(
   score: number,
   minScore: number | undefined,
   maxScore: number | undefined,
-  summaryScoreMode: string,
+  aggregate: string,
 ): { summary: true; minScore: number; maxScore: number } | { summary?: false } {
-  return summaryScoreMode !== 'mean' &&
+  return aggregate !== 'mean' &&
     minScore !== undefined &&
     maxScore !== undefined &&
     (minScore !== score || maxScore !== score)
@@ -57,7 +57,7 @@ function summaryFields(
 export function makeTooltipRow(
   source: WiggleSourceData,
   i: number,
-  summaryScoreMode: string,
+  aggregate: string,
   name?: string,
   color?: string,
 ): WiggleTooltipRow {
@@ -70,7 +70,7 @@ export function makeTooltipRow(
       score,
       source.featureMinScores[i],
       source.featureMaxScores[i],
-      summaryScoreMode,
+      aggregate,
     ),
   }
 }
@@ -104,7 +104,7 @@ export function findSourceHit(
   source: WiggleSourceData,
   bp: number,
   refName: string,
-  summaryScoreMode: string,
+  aggregate: string,
   name?: string,
   color?: string,
 ): WiggleHoveredFeature | undefined {
@@ -116,7 +116,7 @@ export function findSourceHit(
         refName,
         start: featurePositions[i * 2]!,
         end: featurePositions[i * 2 + 1]!,
-        rows: [makeTooltipRow(source, i, summaryScoreMode, name, color)],
+        rows: [makeTooltipRow(source, i, aggregate, name, color)],
       }
 }
 

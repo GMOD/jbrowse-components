@@ -30,7 +30,7 @@ export interface WiggleDisplayViewsHost extends WiggleRenderStateModel {
   plotGeometry: WigglePlotGeometry
   /** The `color` object resolved against the origin and the layout. */
   wiggleColor: ResolvedWiggleColor
-  effectiveSummaryScoreMode: string
+  effectiveAggregate: string
   maxGapMultiple: number
   resolution: number
   scoreField: string
@@ -49,7 +49,7 @@ export interface WiggleDisplayViewsHost extends WiggleRenderStateModel {
  * plot sits. Installed as a `.views()` layer of its own, under the layer where
  * the display spreads `sharedRpcProps`/`sharedGpuProps` into its own
  * `rpcProps()`/`gpuProps()` — the solid-color override, the row list and the
- * `summaryScoreMode` fetch key.
+ * `aggregate` fetch key.
  *
  * A plain function rather than another mixin: `types.compose` depth is a real
  * ceiling in these chains (ADR-041), and a mixin composed beside
@@ -119,7 +119,7 @@ export function wiggleDisplayViews(self: WiggleDisplayViewsHost) {
       return {
         wiggleColor: self.wiggleColor,
         origin: self.origin,
-        effectiveSummaryScoreMode: self.effectiveSummaryScoreMode,
+        effectiveAggregate: self.effectiveAggregate,
         renderingType: self.renderingType,
         maxGapMultiple: self.maxGapMultiple,
       }

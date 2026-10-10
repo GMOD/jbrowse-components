@@ -59,7 +59,7 @@ puts that at **82MB for a 1000-source multiwiggle at a 1Mb view**
 reads.** Color strings parse fine in a worker (`colorBits.ts` is a pure parser,
 and wiggle's colors are config slots, not theme reads — the theme-flip hazard
 was imported from MAF by analogy). Multi-wiggle already ships
-`summaryScoreMode` worker-side — but note that answers the *mode*, not the
+`aggregate` worker-side — but note that answers the *mode*, not the
 *pivot* the bands are colored around, which is the paragraph above and a
 separate input to the same call. `rowIndex` is genuinely main-thread-bound, and
 worse than stated: the ordered source list is derived from the fetched data

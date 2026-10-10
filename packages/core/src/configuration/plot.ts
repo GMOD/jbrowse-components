@@ -35,6 +35,8 @@ export const PLOT_VOCABULARY: Readonly<Record<string, string>> = {
   mark: 'what each value is drawn as: a bar, a point, a line or a span',
   interpolate:
     'how a line joins its values: held across each bin, or centre to centre',
+  aggregate:
+    'what each bin draws of the values it covers: their max, min or mean, or whiskers, all three',
   transform: 'the steps run over the features before any mark',
   unit: 'what one row stands for: a read or a chain, a sample or a haplotype',
   facet: 'one section per value of a field',

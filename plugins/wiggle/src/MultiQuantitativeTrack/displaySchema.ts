@@ -3,8 +3,8 @@ import { trackHeightConfigSchemaFields } from '@jbrowse/display-kit/trackHeightC
 import { types } from '@jbrowse/mobx-state-tree'
 
 import linearWiggleDisplayConfigSchema from '../LinearWiggleDisplay/configSchema.ts'
+import { aggregateConfigSchemaFields } from '../shared/aggregateConfigSchemaFields.ts'
 import { quantitativeRowsConfigSchema } from '../shared/quantitativeRowsConfigSchema.ts'
-import { summaryScoreModeConfigSchemaFields } from '../shared/summaryScoreModeConfigSchemaFields.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 
@@ -27,7 +27,7 @@ export const multiQuantitativeWiggleConfigSchema = ConfigurationSchema(
   {
     rows: rowPerSource,
     ...trackHeightConfigSchemaFields({ defaultHeight: 200 }),
-    ...summaryScoreModeConfigSchemaFields({ defaultMode: 'mean' }),
+    ...aggregateConfigSchemaFields({ defaultMode: 'mean' }),
   },
   { baseConfiguration: linearWiggleDisplayConfigSchema },
 )

@@ -12,8 +12,8 @@ import {
   retiredScaleSpellings,
 } from '@jbrowse/wiggle-core'
 
+import { aggregateConfigSchemaFields } from '../shared/aggregateConfigSchemaFields.ts'
 import { quantitativeRowsConfigSchema } from '../shared/quantitativeRowsConfigSchema.ts'
-import { summaryScoreModeConfigSchemaFields } from '../shared/summaryScoreModeConfigSchemaFields.ts'
 import { wiggleColorSchema } from '../shared/wiggleColorConfigSchema.ts'
 import {
   wiggleConfigSchemaFields,
@@ -203,7 +203,7 @@ const linearWiggleDisplayConfigSchema = ConfigurationSchema(
         "Draw the key: density's score color ramp, or the source colors where several share one plot. Defaults to on",
       defaultValue: true,
     },
-    ...summaryScoreModeConfigSchemaFields({ defaultMode: 'whiskers' }),
+    ...aggregateConfigSchemaFields({ defaultMode: 'whiskers' }),
     ...treeSidebarConfigSchemaFields({
       tree: 'Show the subtrack clustering tree in the sidebar',
       rowLabels: 'Name each subtrack row down the left edge',
@@ -222,11 +222,6 @@ const linearWiggleDisplayConfigSchema = ConfigurationSchema(
         markOf(String(rendering)) ?? { mark: rendering },
       lineWidth: size => ({ size }),
     },
-    // v4 named the mean summary `avg`
-    preProcessSnapshot: snap =>
-      snap.summaryScoreMode === 'avg'
-        ? { ...snap, summaryScoreMode: 'mean' }
-        : snap,
   },
 )
 

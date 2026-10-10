@@ -51,16 +51,16 @@ const baseGpuProps: WiggleGpuProps = {
   perSource: false,
   wiggleColor: baseColor,
   origin: 0,
-  effectiveSummaryScoreMode: 'mean',
+  effectiveAggregate: 'mean',
   renderingType: 'xyplot',
   maxGapMultiple: DEFAULT_GAP_BREAK_MULTIPLE,
 }
 
-describe('buildSourceRenderData summaryScoreMode (bicolor, no solid color)', () => {
+describe('buildSourceRenderData aggregate (bicolor, no solid color)', () => {
   test('avg mode is one layer colored by sign per instance', () => {
     const out = buildSourceRenderData(makeData(), {
       ...baseGpuProps,
-      effectiveSummaryScoreMode: 'mean',
+      effectiveAggregate: 'mean',
     })
     expect(out).toHaveLength(1)
     expect(out[0]!.featureScores).toEqual(new Float32Array([5, -5]))
@@ -77,7 +77,7 @@ describe('buildSourceRenderData summaryScoreMode (bicolor, no solid color)', () 
   test('whiskers mode splits each band by sign for stacking (xyplot)', () => {
     const out = buildSourceRenderData(makeData(), {
       ...baseGpuProps,
-      effectiveSummaryScoreMode: 'whiskers',
+      effectiveAggregate: 'whiskers',
     })
     expect(out.map(s => [...s.featureScores])).toEqual([
       [9], // pos max
@@ -96,7 +96,7 @@ describe('buildSourceRenderData summaryScoreMode (bicolor, no solid color)', () 
     renderingType => {
       const out = buildSourceRenderData(makeData(), {
         ...baseGpuProps,
-        effectiveSummaryScoreMode: 'whiskers',
+        effectiveAggregate: 'whiskers',
         renderingType,
       })
       expect(out.map(s => [...s.featureScores])).toEqual([
@@ -122,7 +122,7 @@ describe('buildSourceRenderData summaryScoreMode (bicolor, no solid color)', () 
         ...baseGpuProps,
         sources: [{ name: 'default' }, { name: 'b' }],
         rowLayout: false,
-        effectiveSummaryScoreMode: 'whiskers',
+        effectiveAggregate: 'whiskers',
         renderingType: 'linecenter',
       },
     )
@@ -148,7 +148,7 @@ describe('buildSourceRenderData summaryScoreMode (bicolor, no solid color)', () 
         ],
         rowLayout: false,
         perSource: true,
-        effectiveSummaryScoreMode: 'whiskers',
+        effectiveAggregate: 'whiskers',
         renderingType: 'linecenter',
       },
     )
@@ -166,7 +166,7 @@ describe('buildSourceRenderData summaryScoreMode (bicolor, no solid color)', () 
     mode => {
       const out = buildSourceRenderData(makeData(), {
         ...baseGpuProps,
-        effectiveSummaryScoreMode: mode,
+        effectiveAggregate: mode,
       })
       expect(out).toHaveLength(1)
       expect([...out[0]!.featureScores]).toEqual(
@@ -189,7 +189,7 @@ describe('buildSourceRenderData summaryScoreMode (bicolor, no solid color)', () 
     (mode, scores) => {
       const out = buildSourceRenderData(makeData(), {
         ...baseGpuProps,
-        effectiveSummaryScoreMode: mode,
+        effectiveAggregate: mode,
         renderingType: 'linecenter',
       })
       expect(out.map(s => [...s.featureScores])).toEqual([scores])
@@ -203,7 +203,7 @@ describe('buildSourceRenderData summaryScoreMode (bicolor, no solid color)', () 
   test('min mode splits the band into pos/neg layers in density', () => {
     const out = buildSourceRenderData(makeData(), {
       ...baseGpuProps,
-      effectiveSummaryScoreMode: 'min',
+      effectiveAggregate: 'min',
       renderingType: 'density',
     })
     expect(out.map(s => [...s.featureScores])).toEqual([[2], [-8]])
@@ -215,7 +215,7 @@ describe('buildSourceRenderData summaryScoreMode (bicolor, no solid color)', () 
   test('min mode in density emits one layer when the band stays above the pivot', () => {
     const out = buildSourceRenderData(makePositiveData(), {
       ...baseGpuProps,
-      effectiveSummaryScoreMode: 'min',
+      effectiveAggregate: 'min',
       renderingType: 'density',
     })
     expect(out).toHaveLength(1)
@@ -223,13 +223,13 @@ describe('buildSourceRenderData summaryScoreMode (bicolor, no solid color)', () 
   })
 
   // density has no whiskers variant. The model resolves that before this ever
-  // sees it (`effectiveSummaryScoreMode`, covered in densityMode.test.ts), so
+  // sees it (`effectiveAggregate`, covered in densityMode.test.ts), so
   // what arrives here is 'mean' — and density is the one mode that still needs
   // solid-color layers, `drawDensity` building one gradient per layer.
   test('density + avg splits into solid pos/neg layers', () => {
     const out = buildSourceRenderData(makeData(), {
       ...baseGpuProps,
-      effectiveSummaryScoreMode: 'mean',
+      effectiveAggregate: 'mean',
       renderingType: 'density',
     })
     expect(out).toHaveLength(2)
@@ -242,7 +242,7 @@ describe('buildSourceRenderData pos/neg coloring', () => {
   test('faceted: the two sides of the pivot pack distinct colors', () => {
     const [layer] = buildSourceRenderData(makeData(), {
       ...baseGpuProps,
-      effectiveSummaryScoreMode: 'mean',
+      effectiveAggregate: 'mean',
     })
     const [above, below] = layer!.colorsAbgr!
     expect(above).not.toBe(below)
@@ -260,7 +260,7 @@ describe('buildSourceRenderData pos/neg coloring', () => {
       },
       {
         ...baseGpuProps,
-        effectiveSummaryScoreMode: 'mean',
+        effectiveAggregate: 'mean',
         sources: [
           { name: 'default', color: '#00ff00' },
           { name: 'b', color: '#ff00ff' },
@@ -278,7 +278,7 @@ describe('buildSourceRenderData pos/neg coloring', () => {
   test('a lone source keeps both pivot colors unfaceted', () => {
     const [layer] = buildSourceRenderData(makeData(), {
       ...baseGpuProps,
-      effectiveSummaryScoreMode: 'mean',
+      effectiveAggregate: 'mean',
       rowLayout: false,
     })
     const [above, below] = layer!.colorsAbgr!
@@ -305,7 +305,7 @@ describe('buildSourceRenderData source list', () => {
   test('a source missing from the payload keeps its row index', () => {
     const out = buildSourceRenderData(makeData(), {
       ...baseGpuProps,
-      effectiveSummaryScoreMode: 'mean',
+      effectiveAggregate: 'mean',
       sources: [{ name: 'absent' }, { name: 'default' }],
     })
     expect(out.map(s => s.rowIndex)).toEqual([1])

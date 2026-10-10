@@ -431,7 +431,7 @@ function wiggleSlots(display: Parameters<typeof getConf>[0]) {
   return {
     rows: getConf(display, ['rows', 'field']),
     height: getConf(display, 'height'),
-    summaryScoreMode: getConf(display, 'summaryScoreMode'),
+    aggregate: getConf(display, 'aggregate'),
   }
 }
 
@@ -443,10 +443,10 @@ async function reload({ root, pluginManager }: ReturnType<typeof setup>) {
 }
 
 test.each([
-  [{}, { rows: 'source', height: 200, summaryScoreMode: 'mean' }],
+  [{}, { rows: 'source', height: 200, aggregate: 'mean' }],
   [
-    { rows: '', height: 100, summaryScoreMode: 'whiskers' },
-    { rows: '', height: 100, summaryScoreMode: 'whiskers' },
+    { rows: '', height: 100, aggregate: 'whiskers' },
+    { rows: '', height: 100, aggregate: 'whiskers' },
   ],
 ])(
   'a multi-wiggle session track spelling %j reads %j, before and after a reload',

@@ -81,7 +81,7 @@ const AXOLOTL_ASSEMBLY = 'GCF_040938575.1'
 //   where the wiggle default (whiskers, autoscaled) is a solid block: the file
 //   is 5-base bins, so every summary bin in a several-hundred-kb window spans a
 //   min near 0 and a max near 100. Both values ride in the hub config's
-//   `metadata.ucsc` and nothing translates them into `summaryScoreMode` or the
+//   `metadata.ucsc` and nothing translates them into `aggregate` or the
 //   display's `scales.y` domain, so a reader gets there through two track-menu
 //   trips or not at all.
 // - RepeatMasker wants one lane per repeat class.

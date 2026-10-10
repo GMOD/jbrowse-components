@@ -1273,7 +1273,7 @@ export const svSpecs: ScreenshotSpec[] = [
               type: 'LinearWiggleDisplay',
               mark: 'bar',
               color: '#0068d1',
-              summaryScoreMode: 'mean',
+              aggregate: 'mean',
               scales: { y: { domainMin: 0, domainMax: 140, grid: true } },
               height: 180,
             },
@@ -1834,7 +1834,7 @@ export const svSpecs: ScreenshotSpec[] = [
               type: 'LinearWiggleDisplay',
               mark: 'bar',
               color: '#0068d1',
-              summaryScoreMode: 'mean',
+              aggregate: 'mean',
               scales: { y: { domainMin: 0, domainMax: 140 } },
               height: 110,
             },
@@ -1943,7 +1943,7 @@ export const svSpecs: ScreenshotSpec[] = [
               // min/max) since HiFiCNV depth is raw coverage, not a ±ratio
               mark: 'point',
               color: '#0068d1',
-              summaryScoreMode: 'mean',
+              aggregate: 'mean',
               size: 1,
               resolution: 10,
               height: 180,
@@ -2124,7 +2124,7 @@ export const svSpecs: ScreenshotSpec[] = [
               trackId: 'hg008_tn_perbase',
               type: 'LinearWiggleDisplay',
               mark: 'bar',
-              summaryScoreMode: 'mean',
+              aggregate: 'mean',
               // no cross hatches: the read is one filled profile against the
               // other, and the gridlines only add texture across both
               scales: { y: { domainMin: 0, domainMax: 80, grid: false } },
@@ -2216,7 +2216,7 @@ export const svSpecs: ScreenshotSpec[] = [
               type: 'LinearWiggleDisplay',
               mark: 'point',
               color: '#0068d1',
-              summaryScoreMode: 'mean',
+              aggregate: 'mean',
               size: 3,
               height: 140,
               // request bigwig bins 10x finer than screen resolution so the
@@ -2295,7 +2295,7 @@ export const svSpecs: ScreenshotSpec[] = [
               type: 'LinearWiggleDisplay',
               mark: 'point',
               color: '#0068d1',
-              summaryScoreMode: 'mean',
+              aggregate: 'mean',
               size: 1,
               height: 140,
               // finer bigwig bins so the 500bp-binned log2 shows across chr17

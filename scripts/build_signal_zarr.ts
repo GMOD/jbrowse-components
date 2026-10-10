@@ -591,7 +591,7 @@ function writeLevel(
 // and there is nothing in a mean-only store that could bring it back. BigWig's
 // zoom records carry validCount/min/max/sum/sumSquares for exactly this reason,
 // and @jbrowse/plugin-wiggle already renders min and max as their own layers
-// when an adapter supplies them (`summaryScoreMode` whiskers/min/max).
+// when an adapter supplies them (`aggregate` whiskers/min/max).
 //
 // The min and max are over this store's own finer bins, not over whatever the
 // input was, and only levels above the base carry them. That keeps the claim

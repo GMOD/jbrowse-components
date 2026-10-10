@@ -343,15 +343,18 @@ workflow rather than in what they draw. `rows: 'source'` puts each source on a
 row of its own, with the tree sidebar, clustering, the row-order sort and the
 row labels, and `rows: ''` draws every source in one shared plot. A
 `MultiQuantitativeTrack` defaults its display to `rows: 'source'`,
-`summaryScoreMode: 'mean'` and `height: 200`, so a multi track that names no
-display setting still opens as a stack of rows.
+`aggregate: 'mean'` and `height: 200`, so a multi track that names no display
+setting still opens as a stack of rows.
 
 `defaultRendering` is now `mark`, in the mark display's words: `xyplot` loads as
 `bar`, `scatter` as `point`, `density` as `span`, `line` as `line`, and
-`linecenter` as a `line` with `interpolate: 'linear'`. A config or a session
-naming `MultiLinearWiggleDisplay` loads as `LinearWiggleDisplay`, its rendering
-read as the plot and the layout it drew: `multirowxy` is a `bar` on rows, and
-`xyplot` a `bar` with `rows: ""`.
+`linecenter` as a `line` with `interpolate: 'linear'`. `summaryScoreMode` is now
+`aggregate`, Vega-Lite's word for what a bin draws of the values it covers:
+`max`, `min`, `mean` (v4's `avg`) or `whiskers`. A config or session naming
+`summaryScoreMode`, on the display or in its `renderers` block, loads as
+`aggregate`. A config or a session naming `MultiLinearWiggleDisplay` loads as
+`LinearWiggleDisplay`, its rendering read as the plot and the layout it drew:
+`multirowxy` is a `bar` on rows, and `xyplot` a `bar` with `rows: ""`.
 
 `rows` also holds a reader's arrangement of the rows, which
 `MultiLinearWiggleDisplay` kept as display props. The arrangement is therefore

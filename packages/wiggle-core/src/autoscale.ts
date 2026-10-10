@@ -60,9 +60,9 @@ export interface ScoreSpan {
 /** The wiggle packer's arrays as a span, under a summary mode. */
 export function datasetSpan(
   { data, visStart, visEnd }: Dataset,
-  summaryScoreMode: string,
+  aggregate: string,
 ): ScoreSpan {
-  const { low, high } = boundArrays(summaryScoreMode)
+  const { low, high } = boundArrays(aggregate)
   return {
     count: data.numFeatures,
     starts: data.featurePositions,
@@ -88,11 +88,11 @@ export function getEffectiveScores(
     featureMinScores: Float32Array
     featureMaxScores: Float32Array
   },
-  summaryScoreMode: string,
+  aggregate: string,
 ) {
-  return summaryScoreMode === 'min'
+  return aggregate === 'min'
     ? data.featureMinScores
-    : summaryScoreMode === 'max'
+    : aggregate === 'max'
       ? data.featureMaxScores
       : data.featureScores
 }
@@ -111,17 +111,13 @@ function overlaps(
 // the two ends across the min/max summary arrays; every other mode draws both
 // from a single scalar. One table because the extent and the clipped bound have
 // to read the same arrays, or a domain clips its own data.
-function boundArrays(summaryScoreMode: string) {
-  const useWhiskers = summaryScoreMode === 'whiskers'
+function boundArrays(aggregate: string) {
+  const useWhiskers = aggregate === 'whiskers'
   return {
     low: (data: FeatureArrays) =>
-      useWhiskers
-        ? data.featureMinScores
-        : getEffectiveScores(data, summaryScoreMode),
+      useWhiskers ? data.featureMinScores : getEffectiveScores(data, aggregate),
     high: (data: FeatureArrays) =>
-      useWhiskers
-        ? data.featureMaxScores
-        : getEffectiveScores(data, summaryScoreMode),
+      useWhiskers ? data.featureMaxScores : getEffectiveScores(data, aggregate),
   }
 }
 
@@ -212,10 +208,10 @@ export function computeSpanStats(spans: ScoreSpan[]): ScoreStats | undefined {
 
 /** `computeSpanStats` over the wiggle packer's datasets. */
 export function computeScoreStats(
-  summaryScoreMode: string,
+  aggregate: string,
   datasets: Dataset[],
 ): ScoreStats | undefined {
-  return computeSpanStats(datasets.map(d => datasetSpan(d, summaryScoreMode)))
+  return computeSpanStats(datasets.map(d => datasetSpan(d, aggregate)))
 }
 
 /**
@@ -269,20 +265,20 @@ export function autoscaleDomainFromStats({
   stats,
   quantile,
   zero,
-  summaryScoreMode,
+  aggregate,
   visibleEntries,
 }: {
   stats: ScoreStats
   quantile: number
   zero: boolean
-  summaryScoreMode: string
+  aggregate: string
   visibleEntries: Dataset[]
 }): [number, number] {
   return autoscaleDomainFromSpans({
     stats,
     quantile,
     zero,
-    spans: visibleEntries.map(d => datasetSpan(d, summaryScoreMode)),
+    spans: visibleEntries.map(d => datasetSpan(d, aggregate)),
   })
 }
 
@@ -294,7 +290,7 @@ export function autoscaleDomainFromStats({
  */
 export function computeAutoscaleDomain(
   quantile: number,
-  summaryScoreMode: string,
+  aggregate: string,
   visibleEntries: {
     data: FeatureArrays
     visStart: number
@@ -302,7 +298,7 @@ export function computeAutoscaleDomain(
   }[],
   zero: boolean,
 ): [number, number] | undefined {
-  const spans = visibleEntries.map(d => datasetSpan(d, summaryScoreMode))
+  const spans = visibleEntries.map(d => datasetSpan(d, aggregate))
   const stats = computeSpanStats(spans)
   return stats
     ? autoscaleDomainFromSpans({ stats, quantile, zero, spans })

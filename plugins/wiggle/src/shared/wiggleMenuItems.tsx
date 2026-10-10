@@ -145,10 +145,10 @@ interface WithResolution {
   resolution: number
   // the resolved mode, so the radio checks what the plot draws rather than a
   // raw slot value density ignores
-  effectiveSummaryScoreMode: string
+  effectiveAggregate: string
   isDensityMode: boolean
   setResolution: (n: number) => void
-  setSummaryScoreMode: (v: string) => void
+  setAggregate: (v: string) => void
 }
 
 // Resolution is a multiplier on the number of bins fetched (higher = finer),
@@ -176,13 +176,13 @@ export function makeResolutionSubMenu(self: WithResolution): MenuItem[] {
           onReset: () => {
             self.setResolution(1)
           },
-          trailingItems: [makeSummaryScoreModeItem(self)],
+          trailingItems: [makeAggregateItem(self)],
         }),
       ]
     : []
 }
 
-const SUMMARY_SCORE_MODES = [
+const AGGREGATES = [
   { value: 'min', label: 'Minimum' },
   { value: 'max', label: 'Maximum' },
   { value: 'mean', label: 'Average' },
@@ -191,21 +191,21 @@ const SUMMARY_SCORE_MODES = [
 
 // In the Resolution submenu: both say how the fetched bins are read, and both
 // exist only where the adapter serves bins.
-function makeSummaryScoreModeItem(self: WithResolution): MenuItem {
+function makeAggregateItem(self: WithResolution): MenuItem {
   return {
     label: 'Summary score mode',
     subMenu: radioItems(
       // density maps score to color rather than height, so it has no
       // whiskers presentation at all — offering it would check a mode
       // that neither the plot nor the score domain uses. The radio
-      // instead follows `effectiveSummaryScoreMode`, which is the
+      // instead follows `effectiveAggregate`, which is the
       // average a whiskers-configured density track really draws.
       self.isDensityMode
-        ? SUMMARY_SCORE_MODES.filter(m => m.value !== 'whiskers')
-        : SUMMARY_SCORE_MODES,
-      self.effectiveSummaryScoreMode,
+        ? AGGREGATES.filter(m => m.value !== 'whiskers')
+        : AGGREGATES,
+      self.effectiveAggregate,
       v => {
-        self.setSummaryScoreMode(v)
+        self.setAggregate(v)
       },
     ),
   }

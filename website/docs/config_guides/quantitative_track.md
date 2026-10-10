@@ -153,9 +153,9 @@ per-subtrack `color`, `group`, and `source`.
 }
 ```
 
-The track type defaults its display to `rows: "source"`,
-`summaryScoreMode: "mean"` and a 200px height, so it opens as one row per source
-without saying so. `rows: ""` puts every source back in one shared plot box, and
+The track type defaults its display to `rows: "source"`, `aggregate: "mean"` and
+a 200px height, so it opens as one row per source without saying so. `rows: ""`
+puts every source back in one shared plot box, and
 `rows: { "field": "source", "domain": […] }` names the sources that lead the row
 order. The same object takes `labels`, a label per source by name, and
 [`rowColor`](/docs/config/linearwiggledisplay/#slot-rowcolor) gives a source a

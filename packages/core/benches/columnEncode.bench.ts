@@ -449,7 +449,7 @@ function runEncodeScenario(fixture: SourceColumns[]) {
       rampLut: null,
       rampMid: undefined,
     },
-    effectiveSummaryScoreMode: 'mean',
+    effectiveAggregate: 'mean',
     renderingType: 'xyplot',
     maxGapMultiple: 0,
   }

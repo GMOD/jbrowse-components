@@ -18,7 +18,7 @@ import { wiggleFeatureWidgetData } from './wiggleHitTest.ts'
 
 import type { WiggleRendering } from '../renderingTypes.ts'
 import type { WiggleHoveredFeature } from '../util.ts'
-import type { summaryScoreModeConfigSchemaFields } from './summaryScoreModeConfigSchemaFields.ts'
+import type { aggregateConfigSchemaFields } from './aggregateConfigSchemaFields.ts'
 import type { wiggleConfigSchemaFields } from './wiggleConfigSchemaFields.ts'
 import type { ConfigModelForFields } from '@jbrowse/core/configuration'
 import type { Region } from '@jbrowse/core/util'
@@ -39,7 +39,7 @@ export const wiggleCommonExtraSlots = {
 
 type WiggleCommonConfigModel = ConfigModelForFields<
   typeof wiggleConfigSchemaFields &
-    ReturnType<typeof summaryScoreModeConfigSchemaFields> &
+    ReturnType<typeof aggregateConfigSchemaFields> &
     typeof wiggleCommonExtraSlots
 >
 
@@ -137,8 +137,8 @@ export function WiggleCommonMixin() {
       /**
        * #getter
        */
-      get summaryScoreMode(): string {
-        return getConf(confNode(self), 'summaryScoreMode')
+      get aggregate(): string {
+        return getConf(confNode(self), 'aggregate')
       },
       /**
        * #getter
@@ -173,10 +173,10 @@ export function WiggleCommonMixin() {
        * score legend reports a range nothing on screen reaches. Single-wiggle
        * defaults to whiskers, so plain "plot type → Density" hit this.
        */
-      get effectiveSummaryScoreMode() {
-        return self.isDensityMode && this.summaryScoreMode === 'whiskers'
+      get effectiveAggregate() {
+        return self.isDensityMode && this.aggregate === 'whiskers'
           ? 'mean'
-          : this.summaryScoreMode
+          : this.aggregate
       },
     }))
     .views(() => ({
@@ -222,14 +222,14 @@ export function WiggleCommonMixin() {
               source => names === undefined || names.has(source.name),
             ),
           accumulate: entries =>
-            computeScoreStats(self.effectiveSummaryScoreMode, entries),
+            computeScoreStats(self.effectiveAggregate, entries),
           range: (stats, entries) =>
             widenRangeToRules(
               autoscaleDomainFromStats({
                 stats,
                 quantile: self.domainQuantile,
                 zero: self.axisReachesZero,
-                summaryScoreMode: self.effectiveSummaryScoreMode,
+                aggregate: self.effectiveAggregate,
                 visibleEntries: entries,
               }),
               self.scoreRuleValues,
@@ -310,8 +310,8 @@ export function WiggleCommonMixin() {
       /**
        * #action
        */
-      setSummaryScoreMode(val: string) {
-        setConf(confNode(self), 'summaryScoreMode', val)
+      setAggregate(val: string) {
+        setConf(confNode(self), 'aggregate', val)
       },
       /**
        * #action

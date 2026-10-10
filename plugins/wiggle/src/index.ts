@@ -55,7 +55,7 @@ export {
 export { bedGraphFormatOptions } from './saveTrackFormats/bedGraph.ts'
 // The one slot every score-summarizing display declares with a different
 // default, so gccontent states its default without restating the enumeration.
-export { summaryScoreModeConfigSchemaFields } from './shared/summaryScoreModeConfigSchemaFields.ts'
+export { aggregateConfigSchemaFields } from './shared/aggregateConfigSchemaFields.ts'
 export { wiggleCommonExtraSlots } from './shared/WiggleCommonMixin.ts'
 export { wiggleMouseHandlers } from './shared/wiggleMouseHandlers.ts'
 // Score-plot pieces that moved to `@jbrowse/wiggle-core`, re-exported under the

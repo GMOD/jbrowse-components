@@ -155,7 +155,7 @@ describe('LinearWiggleDisplay SettingsInvalidate autorun', () => {
   // The raw summary slot is a fetch key: an adapter that stores min/max beside
   // each mean can skip reading them for a mode that cannot show them, and only
   // the fetch can carry that. See the model's `rpcProps`.
-  it('refetches when summaryScoreMode changes', async () => {
+  it('refetches when aggregate changes', async () => {
     const { createDisplay, mockRpcCall } = createTestEnvironment()
     mockRpcCall.mockResolvedValue([makeEmptyWiggleData()])
     const { display } = createDisplay()
@@ -166,7 +166,7 @@ describe('LinearWiggleDisplay SettingsInvalidate autorun', () => {
     })
 
     const callsBefore = mockRpcCall.mock.calls.length
-    display.setSummaryScoreMode('max')
+    display.setAggregate('max')
     jest.advanceTimersByTime(800)
     await jest.runAllTimersAsync()
 
@@ -325,7 +325,7 @@ describe('LinearWiggleDisplay solid color', () => {
     mode => {
       const display = loadedWithSignedData()
       display.applyPlot({ color: 'green' })
-      display.setSummaryScoreMode(mode)
+      display.setAggregate(mode)
 
       const layers = buildSourceRenderData(
         makeSignedWiggleData(),
@@ -353,7 +353,7 @@ describe('LinearWiggleDisplay solid color', () => {
       const display = loadedWithSignedData()
       display.applyPlot({ color: 'green' })
       display.setRenderingType('density')
-      display.setSummaryScoreMode(mode)
+      display.setAggregate(mode)
 
       const layers = buildSourceRenderData(
         makeSignedWiggleData(),
@@ -368,7 +368,7 @@ describe('LinearWiggleDisplay solid color', () => {
 
   test('bicolor still splits the whisker bands by sign', () => {
     const display = loadedWithSignedData()
-    display.setSummaryScoreMode('whiskers')
+    display.setAggregate('whiskers')
 
     const layers = buildSourceRenderData(
       makeSignedWiggleData(),

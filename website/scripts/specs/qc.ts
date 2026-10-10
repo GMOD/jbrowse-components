@@ -84,7 +84,7 @@ const SMN_HIGHLIGHT = [
 // absent scales to whatever few values survive and the collapse reads as an
 // ordinary wiggle.
 //
-// `summaryScoreMode: 'min'`: a bigWig zoom bin carries min/avg/max, and `avg`
+// `aggregate: 'min'`: a bigWig zoom bin carries min/avg/max, and `avg`
 // over a bin that is mostly absent averages the few present positions, so the
 // lane comes out a solid wall near 1 across a region where almost nothing maps.
 // `min` is the worst position in the bin. In the read view (WIDE_LOC,
@@ -97,7 +97,7 @@ const mappabilityTrack = {
   trackId: 'hg38-umap100Quantitative',
   type: 'LinearWiggleDisplay',
   scales: { y: { domainMin: 0, domainMax: 1 } },
-  summaryScoreMode: 'min' as const,
+  aggregate: 'min' as const,
   height: 70,
 }
 
@@ -120,7 +120,7 @@ const mappabilityTrack = {
 // share a scale and "a fraction of the depth next door" is legible without
 // reading the axis.
 //
-// `summaryScoreMode` matters only in the 2.5 Mb frame and it is the difference
+// `aggregate` matters only in the 2.5 Mb frame and it is the difference
 // between the figure working and not. At 2 kb a pixel the default `whiskers`
 // draws each pixel's min AND max, so a stretch that averages 4x but touches 40x
 // somewhere inside every pixel paints full height: the island came out as a
@@ -129,12 +129,12 @@ const mappabilityTrack = {
 // shorter plateau between two full-height flanks, which is what the figure is
 // for (review: "i need to see the assembly quality increase on either side of
 // this problematic region").
-const gnomadCoverageTrack = (height = 70, summaryScoreMode?: string) => ({
+const gnomadCoverageTrack = (height = 70, aggregate?: string) => ({
   trackId: 'hg38-gnomad3MeanCoverage',
   type: 'LinearWiggleDisplay',
   scales: { y: { domainMin: 0, domainMax: 40 } },
   height,
-  ...(summaryScoreMode ? { summaryScoreMode } : {}),
+  ...(aggregate ? { aggregate } : {}),
 })
 
 const geneTrack = (height: number, showOnlyGenes: boolean) => ({

@@ -3,7 +3,7 @@ import { createBaseTrackConfig } from '@jbrowse/core/pluggableElementTypes/model
 import { types } from '@jbrowse/mobx-state-tree'
 import {
   linearWiggleDisplayConfigSchema,
-  summaryScoreModeConfigSchemaFields,
+  aggregateConfigSchemaFields,
 } from '@jbrowse/plugin-wiggle'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
@@ -11,7 +11,7 @@ import type PluginManager from '@jbrowse/core/PluginManager'
 const gcWiggleConfigSchema = ConfigurationSchema(
   'LinearWiggleDisplay',
   {
-    ...summaryScoreModeConfigSchemaFields({
+    ...aggregateConfigSchemaFields({
       defaultMode: 'mean',
       description:
         "a GC window has one score and no min/max to draw, so 'mean'; 'whiskers' would force one color on every bin and draw a negative skew as positive",
@@ -64,7 +64,7 @@ const configSchema = (pluginManager: PluginManager) =>
       /**
        * #slot
        * As on [every track](../basetrack#slot-displays), except that a
-       * `LinearWiggleDisplay` entry defaults to `summaryScoreMode: 'mean'`.
+       * `LinearWiggleDisplay` entry defaults to `aggregate: 'mean'`.
        */
       displays: types.array(
         types.union(

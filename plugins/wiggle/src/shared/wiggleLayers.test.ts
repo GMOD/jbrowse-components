@@ -42,7 +42,7 @@ describe('makeSummaryLayers', () => {
     cuts: [0],
     innerColors: [],
     origin: 0,
-    summaryScoreMode: 'whiskers',
+    aggregate: 'whiskers',
     gradient: false,
   }
 
@@ -156,7 +156,7 @@ describe('makeSummaryLayers', () => {
     const [layer] = makeSummaryLayers({
       data: noSummaryData,
       ...base,
-      summaryScoreMode: 'mean',
+      aggregate: 'mean',
       pivot: 4,
       origin: 0,
       cuts: [4, 6],
@@ -173,7 +173,7 @@ describe('makeSummaryLayers', () => {
     const result = makeSummaryLayers({
       data: summaryData,
       ...base,
-      summaryScoreMode: 'min',
+      aggregate: 'min',
       pivot: 3,
       cuts: [3],
       innerColors: [],
@@ -195,11 +195,11 @@ describe('makeSummaryLayers', () => {
 
   // min/max are the one-band case of the same machinery: the band the user
   // picked, colored by its own sign.
-  const bandOnly = (summaryScoreMode: string) =>
+  const bandOnly = (aggregate: string) =>
     makeSummaryLayers({
       data: summaryData,
       ...base,
-      summaryScoreMode,
+      aggregate,
       pivot: 6,
       cuts: [6],
       innerColors: [],

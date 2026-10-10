@@ -320,7 +320,7 @@ export const bigwigSpecs: ScreenshotSpec[] = [
           // plot the per-bin average rather than the default whiskers
           // (min/max/avg) — at whole-genome zoom the avg score reads the
           // copy-number level cleanly without the noise band
-          summaryScoreMode: 'mean',
+          aggregate: 'mean',
         },
       ],
     }),

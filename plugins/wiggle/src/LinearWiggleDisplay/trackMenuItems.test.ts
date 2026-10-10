@@ -204,7 +204,7 @@ describe('the wiggle display track menu', () => {
 
   it('offers only the summary modes density draws, checking the effective one', () => {
     const { display } = makeDisplay({ renderingType: 'density' })
-    display.configuration.setSlot('summaryScoreMode', 'whiskers')
+    display.configuration.setSlot('aggregate', 'whiskers')
     const modes = subMenuOf(
       subMenuOf(display.trackMenuItems(), 'Resolution'),
       'Summary score mode',

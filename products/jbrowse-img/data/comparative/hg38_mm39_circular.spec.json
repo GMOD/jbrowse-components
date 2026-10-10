@@ -9,7 +9,7 @@
       "trackId": "hg38ToMm39_gene_density",
       "type": "LinearWiggleDisplay",
       "mark": "span",
-      "summaryScoreMode": "mean",
+      "aggregate": "mean",
       "height": 40
     },
     "hg38ToMm39_liftover"

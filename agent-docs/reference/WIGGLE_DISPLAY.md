@@ -212,9 +212,9 @@ floored at 1 or the shader seeds the row transform with Infinity.
 - **`DEFAULT_GAP_BREAK_MULTIPLE` is 0 (off)** after shipping at 20;
   `gapBreak.ts`.
 
-## Effective vs raw `summaryScoreMode`
+## Effective vs raw `aggregate`
 
-`effectiveSummaryScoreMode` resolves whiskers to `mean` under density, and the
+`effectiveAggregate` resolves whiskers to `mean` under density, and the
 autoscale domain, menu radio, tooltip and `gpuProps` all read it. **`rpcProps`
 carries the raw slot** — the effective one moves with the rendering type, so
 switching to density would re-download every region.

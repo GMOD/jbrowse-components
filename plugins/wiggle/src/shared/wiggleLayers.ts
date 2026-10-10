@@ -102,14 +102,11 @@ interface ScoreBand {
 // collapses to the avg band alone when the data has no summary variation, since
 // processFeaturesFromArrays aliases min/max onto featureScores there and the
 // other two bands would paint the same values twice more.
-function summaryBands(
-  data: FeatureArrays,
-  summaryScoreMode: string,
-): ScoreBand[] {
-  if (summaryScoreMode !== 'whiskers') {
+function summaryBands(data: FeatureArrays, aggregate: string): ScoreBand[] {
+  if (aggregate !== 'whiskers') {
     return [
       {
-        scores: getEffectiveScores(data, summaryScoreMode),
+        scores: getEffectiveScores(data, aggregate),
         posTint: noTint,
         negTint: noTint,
       },
@@ -218,7 +215,7 @@ function stackSides(
 // all: filled bands still split at the origin for their painting order.
 export function makeSummaryLayers({
   data,
-  summaryScoreMode,
+  aggregate,
   posColor,
   negColor,
   pivot,
@@ -229,7 +226,7 @@ export function makeSummaryLayers({
   gradient,
 }: {
   data: FeatureArrays
-  summaryScoreMode: string
+  aggregate: string
   posColor: [number, number, number]
   negColor: [number, number, number]
   pivot: number
@@ -243,7 +240,7 @@ export function makeSummaryLayers({
   const { featurePositions, numFeatures } = data
   const isDensityMode = renderingType === RENDERING_TYPE_DENSITY
   const isFilled = renderingType === RENDERING_TYPE_XYPLOT
-  const bands = summaryBands(data, summaryScoreMode)
+  const bands = summaryBands(data, aggregate)
 
   // Split each band into solid-color pos/neg layers, or keep it whole and color
   // per instance? Two things force the split:
@@ -348,19 +345,19 @@ export function makeSummaryLayers({
 // which chorded the positive line across every negative stretch.
 export function lineLayers(
   data: FeatureArrays,
-  summaryScoreMode: string,
+  aggregate: string,
   posColor: [number, number, number],
   negColor: [number, number, number],
 ): WiggleLayer[] {
   const { featurePositions, numFeatures } = data
   const line = {
     featurePositions,
-    featureScores: getEffectiveScores(data, summaryScoreMode),
+    featureScores: getEffectiveScores(data, aggregate),
     numFeatures,
     color: posColor,
     negColor,
   }
-  return summaryScoreMode === 'whiskers' && data.hasSummaryScores
+  return aggregate === 'whiskers' && data.hasSummaryScores
     ? [
         {
           featurePositions,

@@ -52,7 +52,7 @@
           "type": "LinearWiggleDisplay",
           "displayId": "synthetic_tiers_line_avg-LinearWiggleDisplay",
           "mark": "line",
-          "summaryScoreMode": "mean"
+          "aggregate": "mean"
         }
       ]
     },
@@ -73,7 +73,7 @@
           "type": "LinearWiggleDisplay",
           "displayId": "synthetic_tiers_line_whiskers-LinearWiggleDisplay",
           "mark": "line",
-          "summaryScoreMode": "whiskers"
+          "aggregate": "whiskers"
         }
       ]
     },
@@ -94,7 +94,7 @@
           "type": "LinearWiggleDisplay",
           "displayId": "synthetic_tiers_xyplot_avg-LinearWiggleDisplay",
           "mark": "bar",
-          "summaryScoreMode": "mean"
+          "aggregate": "mean"
         }
       ]
     },
@@ -115,7 +115,7 @@
           "type": "LinearWiggleDisplay",
           "displayId": "synthetic_tiers_xyplot_whiskers-LinearWiggleDisplay",
           "mark": "bar",
-          "summaryScoreMode": "whiskers"
+          "aggregate": "whiskers"
         }
       ]
     },
@@ -151,7 +151,7 @@
           "displayId": "synthetic_tiers_multiline_whiskers-LinearWiggleDisplay",
           "mark": "line",
           "rows": "",
-          "summaryScoreMode": "whiskers"
+          "aggregate": "whiskers"
         }
       ]
     }

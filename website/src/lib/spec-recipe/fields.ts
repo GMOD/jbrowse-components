@@ -1025,7 +1025,7 @@ const READ_CONNECTIONS: Record<string, string> = {
   cloud: 'Read cloud',
 }
 
-// verified against the inline radio list in makeSummaryScoreModeSubMenu
+// verified against the inline radio list in makeAggregateSubMenu
 // (plugins/wiggle/src/shared/wiggleMenuItems.tsx)
 // The alignments coverage band's allele-fraction floor, keyed by the slot value
 // its radio row writes (SNP_FREQUENCY_OPTIONS in menus/coverage.ts).
@@ -1037,7 +1037,7 @@ const SNP_FREQUENCY_ROWS: Record<string, string> = {
   '0.2': 'Above 20%',
 }
 
-const SUMMARY_SCORE_MODES: Record<string, string> = {
+const AGGREGATES: Record<string, string> = {
   min: 'Minimum',
   max: 'Maximum',
   mean: 'Average',
@@ -1866,9 +1866,9 @@ export const trackFields: Record<string, FieldRecipe> = {
   })),
   mark: markStep,
   interpolate: interpolateStep,
-  summaryScoreMode: fromTable(
+  aggregate: fromTable(
     'Resolution → Summary score mode',
-    SUMMARY_SCORE_MODES,
+    AGGREGATES,
   ),
   // `showDescriptions` has no entry on purpose. There is no "Show descriptions"
   // checkbox any more: it and the three-way name radio were folded into the one

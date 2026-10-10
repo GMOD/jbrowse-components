@@ -41,9 +41,9 @@ function order(
   sources: { name: string }[],
   d: WiggleDataResult,
   bp: number,
-  summaryScoreMode = 'mean',
+  aggregate = 'mean',
 ) {
-  return sortSourcesByScoreAt(sources, d, bp, summaryScoreMode).map(s => s.name)
+  return sortSourcesByScoreAt(sources, d, bp, aggregate).map(s => s.name)
 }
 
 test('ranks the rows at the clicked base, highest score first', () => {

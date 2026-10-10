@@ -291,7 +291,7 @@ describe('findWiggleHit', () => {
           { sources: [makeSource('s1', [{ start: 0, end: 100, score: 5 }])] },
         ],
       ]),
-      effectiveSummaryScoreMode: 'mean',
+      effectiveAggregate: 'mean',
       isOverlay: false,
       showTree: false,
       treeAreaWidth: 0,

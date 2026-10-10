@@ -31,7 +31,7 @@ export function findOverlayHit(
   visibleSources: VisibleSource[],
   bp: number,
   refName: string,
-  summaryScoreMode: string,
+  aggregate: string,
 ): WiggleHoveredFeature | undefined {
   const dataByName = new Map(data.sources.map(s => [s.name, s]))
   const rows: WiggleTooltipRow[] = []
@@ -40,7 +40,7 @@ export function findOverlayHit(
     if (ds) {
       const i = findFeatureAtBp(ds.featurePositions, ds.numFeatures, bp)
       if (i !== -1) {
-        rows.push(makeTooltipRow(ds, i, summaryScoreMode, src.name, src.color))
+        rows.push(makeTooltipRow(ds, i, aggregate, src.name, src.color))
       }
     }
   }
@@ -65,7 +65,7 @@ export function findRowHit(
   offsetY: number,
   rowHeight: number,
   refName: string,
-  summaryScoreMode: string,
+  aggregate: string,
 ): WiggleHoveredFeature | undefined {
   if (rowHeight <= 0) {
     return undefined
@@ -74,7 +74,7 @@ export function findRowHit(
   const src = visibleSources[rowIndex]
   const ds = src ? data.sources.find(s => s.name === src.name) : undefined
   return src && ds
-    ? findSourceHit(ds, bp, refName, summaryScoreMode, src.name, src.color)
+    ? findSourceHit(ds, bp, refName, aggregate, src.name, src.color)
     : undefined
 }
 
@@ -86,10 +86,10 @@ export interface WiggleHitModel {
   // each visible source and the color its marks paint in
   markSources: VisibleSource[]
   rpcDataMap: ReadonlyMap<number, WiggleDataResult>
-  // the resolved mode, never the raw `summaryScoreMode` slot: density draws
+  // the resolved mode, never the raw `aggregate` slot: density draws
   // averages whatever the slot says, and the tooltip has to report what the
   // plot (and the track menu's radio) actually shows
-  effectiveSummaryScoreMode: string
+  effectiveAggregate: string
   isOverlay: boolean
   showTree: boolean
   hierarchy?: unknown
@@ -117,7 +117,7 @@ export function findWiggleHit(
     rowsTopOffset,
     markSources: sources,
     rpcDataMap,
-    effectiveSummaryScoreMode,
+    effectiveAggregate,
     isOverlay,
   } = model
   if (sources.length === 0 || offsetX < treeSidebarRightEdge(model)) {
@@ -129,13 +129,7 @@ export function findWiggleHit(
   }
   const { data, bp, region } = hit
   return isOverlay
-    ? findOverlayHit(
-        data,
-        sources,
-        bp,
-        region.refName,
-        effectiveSummaryScoreMode,
-      )
+    ? findOverlayHit(data, sources, bp, region.refName, effectiveAggregate)
     : findRowHit(
         data,
         sources,
@@ -143,7 +137,7 @@ export function findWiggleHit(
         offsetY - rowsTopOffset,
         effectiveRowHeight,
         region.refName,
-        effectiveSummaryScoreMode,
+        effectiveAggregate,
       )
 }
 

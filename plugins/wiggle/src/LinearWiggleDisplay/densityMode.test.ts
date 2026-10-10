@@ -25,7 +25,7 @@ function makeDisplay() {
   const { createDisplay } = createTestEnvironment()
   const { display, view } = createDisplay()
   view.setCoarseDynamicBlocks(view.dynamicBlocks, view.bpPerPx)
-  display.configuration.setSlot('summaryScoreMode', 'whiskers')
+  display.configuration.setSlot('aggregate', 'whiskers')
   display.setRpcData(
     0,
     { sources: [makeBinnedSource('a')] },
@@ -44,12 +44,12 @@ it('scales a density domain to the averages it actually paints', () => {
   // color ramp — and the score legend printing it — describing a range nothing
   // on screen reaches
   display.setRenderingType('density')
-  expect(display.effectiveSummaryScoreMode).toBe('mean')
+  expect(display.effectiveAggregate).toBe('mean')
   expect(display.domain).toEqual([1, 2])
 
   // and the render path is handed the same resolved mode, so it cannot draw a
   // presentation the domain and the score legend were not scaled for
-  expect(display.gpuProps().effectiveSummaryScoreMode).toBe('mean')
+  expect(display.gpuProps().effectiveAggregate).toBe('mean')
 })
 
 it('stops drawing cross hatches in density mode', () => {

@@ -67,7 +67,7 @@ function threeSlots(snap: Record<string, unknown>) {
     slots: {
       rows: readConfObject(display, ['rows', 'field']),
       height: readConfObject(display, 'height'),
-      summaryScoreMode: readConfObject(display, 'summaryScoreMode'),
+      aggregate: readConfObject(display, 'aggregate'),
     },
   }
 }
@@ -77,7 +77,7 @@ test('a MultiQuantitativeTrack reads a row per source, averaged, 200px', () => {
   expect(slots).toEqual({
     rows: 'source',
     height: 200,
-    summaryScoreMode: 'mean',
+    aggregate: 'mean',
   })
   expect(getSnapshot(track).displays).toEqual([
     { type: 'LinearWiggleDisplay', displayId: 't-LinearWiggleDisplay' },
@@ -88,14 +88,14 @@ test('a QuantitativeTrack reads one plot box, whiskers, 100px', () => {
   expect(threeSlots({ type: 'QuantitativeTrack' }).slots).toEqual({
     rows: '',
     height: 100,
-    summaryScoreMode: 'whiskers',
+    aggregate: 'whiskers',
   })
 })
 
 // The single-source values are not this track's defaults, so the snapshot
 // keeps them and a reload reads them back.
 test('the single-source values survive two round trips', () => {
-  const explicit = { rows: '', height: 100, summaryScoreMode: 'whiskers' }
+  const explicit = { rows: '', height: 100, aggregate: 'whiskers' }
   let snap: Record<string, unknown> = {
     type: 'MultiQuantitativeTrack',
     displays: [{ type: 'LinearWiggleDisplay', displayId: 'w', ...explicit }],

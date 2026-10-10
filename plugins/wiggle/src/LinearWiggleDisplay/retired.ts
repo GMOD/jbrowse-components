@@ -93,25 +93,35 @@ function colorOf({ color, posColor, negColor }: DisplayEntry) {
       : {}
 }
 
-const SAME_NAME = ['summaryScoreMode', 'displayCrossHatches', 'resolution']
+const SAME_NAME = ['displayCrossHatches', 'resolution']
+
+// v4's `summaryScoreMode`, which named the mean `avg`
+function aggregateOf(mode: unknown) {
+  return typeof mode === 'string'
+    ? { aggregate: mode === 'avg' ? 'mean' : mode }
+    : {}
+}
 
 // What a v4 menu wrote on the display instance, and a beta's arrangement.
 const V4_RENDERERS = ['XYPlotRenderer', 'LinePlotRenderer', 'DensityRenderer']
 
 /**
  * v4's `renderers` block, as the display's `retired` reads it: its colors
- * become `color`, and everything else in it is let go. The scale slots beside
- * it are `retiredScaleSpellings`.
+ * become `color` and its `summaryScoreMode` `aggregate`, and everything else in
+ * it is let go. The scale slots beside it are `retiredScaleSpellings`.
  */
 export const retiredConfigSpellings = {
   renderers: (renderers: unknown) => {
     const block = isRecord(renderers) ? renderers : {}
-    const colored = V4_RENDERERS.map(name => block[name])
-      .filter(isRecord)
-      .map(colorOf)
-      .find(lifted => 'color' in lifted)
-    return colored ?? {}
+    const named = V4_RENDERERS.map(name => block[name]).filter(isRecord)
+    return {
+      ...named
+        .map(r => aggregateOf(r.summaryScoreMode))
+        .find(a => 'aggregate' in a),
+      ...named.map(colorOf).find(lifted => 'color' in lifted),
+    }
   },
+  summaryScoreMode: aggregateOf,
 }
 
 // `rendererTypeNameState` is the plot a reader picked, which on a multi
@@ -125,6 +135,7 @@ export const retiredState: RetiredDisplayState = {
     'color',
     'posColor',
     'negColor',
+    'summaryScoreMode',
     ...SAME_NAME,
     ...RETIRED_ROW_STATE_KEYS,
   ],
@@ -134,6 +145,7 @@ export const retiredState: RetiredDisplayState = {
       : {}),
     ...valueScaleOf(instance),
     ...colorOf(instance),
+    ...aggregateOf(instance.summaryScoreMode),
     ...Object.fromEntries(
       SAME_NAME.filter(k => instance[k] !== undefined).map(k => [
         k,

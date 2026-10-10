@@ -308,5 +308,5 @@ export const cnv1000gSpecs: ScreenshotSpec[] = [
   // delete or something"). It was the whole-genome store drawn twice at one
   // slot's difference, mean over max, and the difference is a speckle of narrow
   // stripes in the lower half that a reader has to be told to look for. The
-  // prose above the embed already says what summaryScoreMode does.
+  // prose above the embed already says what aggregate does.
 ]

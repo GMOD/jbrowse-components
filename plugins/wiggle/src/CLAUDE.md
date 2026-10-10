@@ -26,7 +26,7 @@ which has the why — read that section before changing what it covers.
 - `makeScoreNormalizer` is the one `js-export` twin that doesn't retire
 - One fetch, and `rowIndex` is the position in the display's own `sources`
 - Three gap rules, one owner each
-- Effective vs raw `summaryScoreMode`
+- Effective vs raw `aggregate`
 - A band splits into solid layers only when the bars nest
 - A line plot is one line, colored by the band between two cuts it is in
 - The color key follows the scale

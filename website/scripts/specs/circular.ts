@@ -25,7 +25,7 @@ const DENSITY_RING = {
   trackId: 'hg38ToMm39_gene_density',
   type: 'LinearWiggleDisplay',
   mark: 'span',
-  summaryScoreMode: 'mean',
+  aggregate: 'mean',
   color: {
     field: 'score',
     scale: 'threshold',

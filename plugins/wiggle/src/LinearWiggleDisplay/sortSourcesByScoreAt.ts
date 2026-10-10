@@ -30,13 +30,13 @@ export function sortSourcesByScoreAt<T extends { name: string }>(
   sources: T[],
   data: WiggleDataResult,
   bp: number,
-  summaryScoreMode: string,
+  aggregate: string,
 ): T[] {
   const scoreByName = new Map<string, number>()
   for (const s of data.sources) {
     const i = findFeatureAtBp(s.featurePositions, s.numFeatures, bp)
     if (i !== -1) {
-      const score = getEffectiveScores(s, summaryScoreMode)[i]!
+      const score = getEffectiveScores(s, aggregate)[i]!
       if (!Number.isNaN(score)) {
         scoreByName.set(s.name, score)
       }

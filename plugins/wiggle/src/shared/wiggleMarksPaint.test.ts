@@ -1279,7 +1279,7 @@ describe('a cut outside the domain parts nothing', () => {
         numFeatures: scores.length,
         hasSummaryScores: false,
       },
-      summaryScoreMode: 'mean',
+      aggregate: 'mean',
       posColor,
       negColor,
       pivot: cutState.pivot,
