@@ -299,7 +299,10 @@ the data preparation it wraps up.
 
 **A `See also` entry is a bare link and nothing else**, one per bullet, text =
 page title. Relaxing this to allow a short qualifier has been tried, and the
-qualifiers grew into the sentences the relaxation was meant to exclude.
+qualifiers grew into the sentences the relaxation was meant to exclude. The
+build prefixes each bullet with its kind (Tutorial, User guide, Config guide,
+Developer guide, Reference) and groups them in that order
+(`remark-see-also.ts`), so write bullets in any order and never type the prefix.
 
 Don't restate the prerequisite tool list inside Reproduce, point at
 `[Prerequisites](#prerequisites)`. Don't write a generic troubleshooting table:

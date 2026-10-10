@@ -22,6 +22,7 @@ import remarkCustomHeadingId from './remark-custom-heading-id.ts'
 import remarkDocList from './remark-doc-list.ts'
 import remarkFigure from './remark-figure.ts'
 import remarkRelatedGuides from './remark-related-guides.ts'
+import remarkSeeAlso from './remark-see-also.ts'
 import remarkSpecExample from './remark-spec-example.ts'
 import remarkVideo, { type VideoRef } from './remark-video.ts'
 import remarkWikiTitle from './remark-wiki-title.ts'
@@ -59,6 +60,7 @@ export function createRenderMarkdown({
     .use(remarkAutolinkTypes)
     .use(remarkWikiTitle)
     .use(remarkRelatedGuides)
+    .use(remarkSeeAlso)
     // Footnotes come from remarkGfm above; these name what they render as. The
     // default label is an `sr-only` "Footnotes" heading, which is invisible here
     // (that class is scoped to DocsSidebarNav) and would leave the notes as an
