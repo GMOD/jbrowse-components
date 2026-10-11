@@ -27,13 +27,13 @@
 # Everything is pinned (fixed RefSeq accessions, pinned pggb image + parameters),
 # so re-running reproduces the same graph and views.
 #
-# Requires: docker or singularity (the pggb image, which also carries odgi for
+# Requires: docker, apptainer or singularity (the pggb image, which also carries odgi for
 #           the depth projection, and the cactus image for minigraph/gfatools),
 #           gfa-to-tabix 0.12.0 or later, the NCBI `datasets` CLI, samtools,
 #           bedGraphToBigWig (UCSC kentUtils), python3, bgzip/tabix (htslib), unzip, and node (JBrowse CLI, via npx
 #           unless `jbrowse` is on PATH).
 # Usage:    bash scripts/build_ecoli_pangenome_graph.sh [outdir]
-#           CONTAINER=singularity bash scripts/build_ecoli_pangenome_graph.sh
+#           CONTAINER=apptainer THREADS=16 bash scripts/build_ecoli_pangenome_graph.sh
 #
 set -euo pipefail
 
@@ -50,11 +50,16 @@ HELPERS=(reroot_maf.py maf_to_bed.py gfa_nodes_to_bed.py
 if command -v jbrowse >/dev/null 2>&1; then jb() { jbrowse "$@"; }; else jb() { npx -y @jbrowse/cli "$@"; }; fi
 
 # Checked up front, since the graph track is built after pggb has run.
-gfa-to-tabix build --help >/dev/null 2>&1 || {
-  echo "gfa-to-tabix 0.12.0 or later is not on PATH: cargo install gfa-to-tabix," >&2
+G2T_VERSION=$(gfa-to-tabix --version 2>/dev/null | awk '{print $2}')
+if [ "$(printf '0.12.0\n%s\n' "$G2T_VERSION" | sort -V | head -1)" != 0.12.0 ]; then
+  echo "need gfa-to-tabix 0.12.0 or later, found '${G2T_VERSION:-none}' on PATH: cargo install gfa-to-tabix," >&2
   echo "or a binary from https://github.com/GMOD/gfa-to-tabix/releases" >&2
   exit 1
-}
+fi
+
+# pggb, odgi and minigraph threads. On a shared host, also cap memory:
+# systemd-run --user --scope -p MemoryMax=64G -p MemorySwapMax=1G bash <this script>
+THREADS="${THREADS:-$(( $(nproc) < 8 ? $(nproc) : 8 ))}"
 
 for h in "${HELPERS[@]}"; do
   [ -f "$SCRIPT_DIR/$h" ] || curl -fsSL -o "$SCRIPT_DIR/$h" \
@@ -115,16 +120,17 @@ PGGB_IMAGE=ghcr.io/pangenome/pggb:202603141454453ade6b
 # rather than asking for two more host installs.
 CACTUS_IMAGE=quay.io/comparative-genomics-toolkit/cactus:v3.2.1
 
-# docker if it is there, else singularity/apptainer, which is what a cluster
-# usually has instead. Only this dispatch differs between the two: every
-# `in_pggb`/`in_cactus` call below is unchanged, because `--bind`/`--pwd` are
-# `-v`/`-w` and singularity already runs as the invoking user, so it needs no
-# `-u`. Set CONTAINER to pick one explicitly.
+# docker if this user can reach its daemon, else apptainer/singularity, which
+# run as the invoking user and so need no `-u`. Set CONTAINER to pick one.
 CONTAINER="${CONTAINER:-}"
 if [ -z "$CONTAINER" ]; then
-  for c in docker singularity apptainer; do
-    if command -v "$c" >/dev/null 2>&1; then CONTAINER="$c"; break; fi
-  done
+  if docker info >/dev/null 2>&1; then
+    CONTAINER=docker
+  else
+    for c in apptainer singularity; do
+      if command -v "$c" >/dev/null 2>&1; then CONTAINER="$c"; break; fi
+    done
+  fi
 fi
 case "$CONTAINER" in
   docker)
@@ -132,7 +138,7 @@ case "$CONTAINER" in
   singularity | apptainer)
     in_image() { local image="$1"; shift; "$CONTAINER" exec --cleanenv --bind "$PWD":/data --pwd /data "docker://$image" "$@"; } ;;
   *)
-    echo "need docker, singularity or apptainer on PATH to run $PGGB_IMAGE" >&2
+    echo "need docker, apptainer or singularity on PATH to run $PGGB_IMAGE" >&2
     exit 1 ;;
 esac
 in_pggb() { in_image "$PGGB_IMAGE" "$@"; }
@@ -218,7 +224,7 @@ NHAP=$(echo "$STRAINS" | wc -w)
 POP_LENGTH=10000
 if ! ls pggb/*.smooth.final.gfa >/dev/null 2>&1; then
   in_pggb pggb -i /data/all.fa.gz -o /data/pggb \
-    -n "$NHAP" -c "$((NHAP - 1))" -t "$(nproc)" -p 90 -s 5000 \
+    -n "$NHAP" -c "$((NHAP - 1))" -t "$THREADS" -p 90 -s 5000 \
     -V "$REF:$POP_LENGTH" -M
 fi
 
@@ -281,7 +287,7 @@ if [ ! -f ecoli_pggb_untangle.paf ]; then
     [ "$strain" = "$REF" ] || printf '%s#1#chr\n' "$strain" >> untangle_query.txt
   done
   in_pggb odgi untangle -i "/data/$OG" -R /data/untangle_target.txt \
-    -Q /data/untangle_query.txt -m 1000 -j 0.5 -e 5000 -p -t "$(nproc)" \
+    -Q /data/untangle_query.txt -m 1000 -j 0.5 -e 5000 -p -t "$THREADS" \
     > ecoli_pggb_untangle.paf.tmp
   mv ecoli_pggb_untangle.paf.tmp ecoli_pggb_untangle.paf
 fi
@@ -430,7 +436,7 @@ PANSN_FA=$(for strain in $STRAINS; do printf '/data/%s.pansn.fa ' "$strain"; don
 # tmp + mv so an interrupted run leaves no half-written graph for the next one
 # to skip over (minigraph is the slow step here, a few minutes on five genomes).
 if [ ! -f ecoli_minigraph.rgfa ]; then
-  in_cactus bash -c "minigraph -cxggs -t $(nproc) $PANSN_FA" > ecoli_minigraph.rgfa.tmp
+  in_cactus bash -c "minigraph -cxggs -t $THREADS $PANSN_FA" > ecoli_minigraph.rgfa.tmp
   mv ecoli_minigraph.rgfa.tmp ecoli_minigraph.rgfa
 fi
 in_cactus gfatools view -R "${REF}#1#chr:1000000-1300000" -r 1 \
