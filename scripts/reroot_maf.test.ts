@@ -175,7 +175,7 @@ test('PanSN names become sample.contig, derived rather than substituted', () => 
 
 test('blocks come out sorted by reference start', () => {
   const starts = blocks.map(b => b[0]!.start)
-  expect(starts).toEqual([50, 100, 600, 700, 800, 840, 900, 986])
+  expect(starts).toEqual([50, 100, 600, 700, 800, 900, 986])
 })
 
 test('no block overlaps its predecessor on the reference', () => {
@@ -259,19 +259,20 @@ test('a row holding its declared bases twice goes where it agrees with the block
   })
 })
 
-test('a row whose candidate offsets tie is dropped, unless it is the reference', () => {
+test('a row whose candidate offsets tie is dropped, the reference with its block', () => {
   // IAI39's GG fits at five offsets and no placed row agrees with any of them
   expect(blockAt(800).map(r => r.name)).not.toContain('IAI39.chr')
-  // K12's TT fits at three, none agreeing either, and the reference is kept
-  // at the first so its coverage stays complete
-  expect(blockAt(840)[0]).toMatchObject({
-    name: 'K12.chr',
-    start: 840,
-    seq: 'TT',
-  })
+  // K12's TT fits at three, none agreeing either: no block rather than a
+  // guessed one, and the gap is reported
+  expect(blocks.map(b => b[0]!.start)).not.toContain(840)
   expect(stderr).toMatch(
-    /3 input rows held them at several offsets: 1 placed by agreement with the block, 1 reference rows kept at a tie, 1 other rows dropped as ties/,
+    /3 input rows held them at several offsets: 1 placed by agreement with the block, 2 dropped as ties/,
   )
+})
+
+test('gaps in reference coverage are counted and measured', () => {
+  // the fixture's K12 blocks cover 27 of its 1000 bases, in 7 runs
+  expect(stderr).toMatch(/8 gaps \(973 bp\) in K12#1#chr coverage/)
 })
 
 test('cropping a row to the reference span moves its start past what it cut', () => {

@@ -194,11 +194,13 @@ def strip_block(rows, genome, stats):
     is the wrong one for at least 30 of them, which sit 311 bases in. Those are
     placed after every unambiguous row, at the offset whose bases agree with the
     most bases the placed rows have in the same columns. A row whose candidates
-    tie is dropped, since nothing in the block says where it goes, except the
-    reference row: its bases are its own at any offset and no other row agrees
-    with any candidate, so it keeps the first, and K12 coverage stays complete.
-    A row holding its declared bases nowhere is dropped too: 72 padded rows and
-    19 unpadded ones.
+    tie is dropped, since nothing in the block says where it goes. That
+    includes a reference row, which drops the block: keeping 8 tied K12 rows at
+    their first offset was tried, and checked against the graph's paths the
+    other strains in those blocks agreed in none of their columns. The 28 bp
+    they covered show no alignment rather than a wrong one; main() reports the
+    gaps. A row holding its declared bases nowhere is dropped too: 72 padded
+    rows and 19 unpadded ones.
     """
     placed, pending = {}, []
     for i, row in enumerate(rows):
@@ -216,9 +218,6 @@ def strip_block(rows, genome, stats):
         if scored[0][0] > (scored[1][0] if len(scored) > 1 else -1):
             placed[i] = blank_pad(rows[i], scored[0][1], genome)
             stats["placed by agreement"] += 1
-        elif rows[i][1] == REF:
-            placed[i] = blank_pad(rows[i], found[0], genome)
-            stats["reference kept at a tie"] += 1
         else:
             stats["ambiguous, dropped"] += 1
     return [placed[i] for i in sorted(placed)]
@@ -332,12 +331,9 @@ def main():
     sys.stderr.write("%d input rows did not carry their declared bases and were "
                      "dropped\n" % stats["no declared bases"])
     sys.stderr.write("%d input rows held them at several offsets: %d placed by "
-                     "agreement with the block, %d reference rows kept at a tie, "
-                     "%d other rows dropped as ties\n" % (
-                         stats["placed by agreement"] + stats["reference kept at a tie"]
-                         + stats["ambiguous, dropped"],
-                         stats["placed by agreement"], stats["reference kept at a tie"],
-                         stats["ambiguous, dropped"]))
+                     "agreement with the block, %d dropped as ties\n" % (
+                         stats["placed by agreement"] + stats["ambiguous, dropped"],
+                         stats["placed by agreement"], stats["ambiguous, dropped"]))
     # Should be 0, and NOT because blocks anchor on the leftmost copy -- they
     # anchor in row order and are sorted afterwards, which is the same choice
     # the module docstring records rejecting leftmost for. What makes them
@@ -347,16 +343,16 @@ def main():
     # interval index this file is retrieved through can no longer find
     # everything.
     sys.stderr.write("%d blocks overlap their predecessor on %s\n" % (overlaps, REF))
-    # Should be 0 too. A reference row dropped for not carrying its own bases
+    # A reference row dropped, for not carrying its own bases or for a tie,
     # leaves its interval in no block, which no other count reports.
-    gaps, end = 0, 0
-    for rows in blocks:
-        start = int(rows[0][2])
-        gaps += start > end
-        end = max(end, start + int(rows[0][3]))
     srcsize = int(blocks[0][0][5]) if blocks else 0
-    gaps += end < srcsize
-    sys.stderr.write("%d gaps in %s coverage\n" % (gaps, REF))
+    gaps, gap_bp, end = 0, 0, 0
+    for start, size in [(int(r[0][2]), int(r[0][3])) for r in blocks] + [(srcsize, 0)]:
+        if start > end:
+            gaps += 1
+            gap_bp += start - end
+        end = max(end, start + size)
+    sys.stderr.write("%d gaps (%d bp) in %s coverage\n" % (gaps, gap_bp, REF))
 
 
 if __name__ == "__main__":
