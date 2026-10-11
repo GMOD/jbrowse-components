@@ -98,4 +98,11 @@ export const COLOR_MODES: ColorModeEntry[] = [
     helpText:
       'Blue below 1 is purifying selection, red above it positive, clamped at 2. Needs dn and ds columns.',
   },
+  {
+    field: 'copies',
+    kind: 'value',
+    label: 'Copies',
+    helpText:
+      'Grey for a one-to-one ortholog, orange where several genes share one, as a tandem array does. Needs an MCScan blocks table.',
+  },
 ]

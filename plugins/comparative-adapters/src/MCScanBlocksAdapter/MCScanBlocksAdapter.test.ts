@@ -503,6 +503,34 @@ describe('a duplicated gene expanded across rows', () => {
       ['p4', 'c4'],
     ])
   })
+  test('copies counts the genes sharing an ortholog', async () => {
+    const pairs = async (assemblyNames: string[], region = grapeRegion) =>
+      (await expandFeats(assemblyNames, region)).map(f => [
+        f.get('name'),
+        f.get('copies'),
+      ])
+    expect(await pairs(['grape', 'peach'])).toEqual([
+      ['g1', 2],
+      ['g1', 2],
+      ['g4', 1],
+    ])
+    expect(await pairs(['grape', 'cacao'])).toEqual([
+      ['g1', 1],
+      ['g4', 1],
+    ])
+    expect(
+      await pairs(['peach', 'cacao'], {
+        refName: 'Pp1',
+        start: 0,
+        end: 2000,
+        assemblyName: 'peach',
+      }),
+    ).toEqual([
+      ['p1', 2],
+      ['p2', 2],
+      ['p4', 1],
+    ])
+  })
 })
 
 // `jcvi mcscan` writes a column per chain of synteny blocks rather than per
@@ -576,6 +604,27 @@ describe('a genome in several columns (mcscan --iter=2)', () => {
   test('naming the mate once per column does not double the links', async () => {
     const fa = await iterFeats(['grape', 'peach', 'peach'], grapeRegion)
     expect(fa.length).toBe(5)
+  })
+
+  test('copies counts every mate a gene has across copy columns', async () => {
+    const fa = await iterFeats(['grape', 'peach'], grapeRegion)
+    // g1's two peach copies sit in different columns, and p4 answers to g2 in
+    // one and g4 in the other
+    expect(
+      fa
+        .map(f => [
+          f.get('name'),
+          (f.get('mate') as { name: string }).name,
+          f.get('copies'),
+        ])
+        .sort(),
+    ).toEqual([
+      ['g1', 'p1', 2],
+      ['g1', 'p2', 2],
+      ['g2', 'p2', 2],
+      ['g2', 'p4', 2],
+      ['g4', 'p4', 2],
+    ])
   })
 
   test('getRefNames covers the copy columns too', async () => {

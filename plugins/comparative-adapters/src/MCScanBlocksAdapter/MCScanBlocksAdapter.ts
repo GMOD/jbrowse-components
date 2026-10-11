@@ -261,7 +261,60 @@ export default class MCScanBlocksAdapter extends ComparativeAdapterBase<MCScanBl
           parseRowAttrs(cols, blockAssemblies.length, attributeColumns),
         )
       : undefined
-    return { blockAssemblies, bedMaps, blockLines, rowAttrs, pairRows }
+    const partnerCounts = new Map<string, Map<string, number>>()
+    return {
+      blockAssemblies,
+      bedMaps,
+      blockLines,
+      rowAttrs,
+      pairRows,
+      partnerCounts,
+    }
+  }
+
+  // How many distinct genes each gene links to across every column pair of two
+  // genomes, keyed `assembly\tgene` so a self-comparison pools both columns of
+  // one genome. Built once per genome pair: a tandem array's copies can sit in
+  // different copy columns, so one column pair alone would undercount it.
+  private partnerCounts(
+    assemblyA: string,
+    assemblyB: string,
+    setup: Awaited<ReturnType<typeof this.setupPre>>,
+  ) {
+    const key = [assemblyA, assemblyB].sort().join('\t')
+    let counts = setup.partnerCounts.get(key)
+    if (!counts) {
+      const { blockAssemblies, bedMaps, blockLines } = setup
+      const partners = new Map<string, Set<string>>()
+      const link = (gene: string, partner: string) => {
+        let set = partners.get(gene)
+        if (!set) {
+          set = new Set()
+          partners.set(gene, set)
+        }
+        set.add(partner)
+      }
+      for (const [colA, colB] of columnPairs(
+        blockAssemblies,
+        assemblyA,
+        assemblyB,
+      )) {
+        for (const cols of blockLines) {
+          const nameA = cols[colA]
+          const nameB = cols[colB]
+          if (
+            joinBedPair(bedMaps[colA]!, bedMaps[colB]!, nameA, nameB) !==
+            undefined
+          ) {
+            link(`${assemblyA}\t${nameA}`, `${assemblyB}\t${nameB}`)
+            link(`${assemblyB}\t${nameB}`, `${assemblyA}\t${nameA}`)
+          }
+        }
+      }
+      counts = new Map([...partners].map(([gene, set]) => [gene, set.size]))
+      setup.partnerCounts.set(key, counts)
+    }
+    return counts
   }
 
   // The two columns of a pair joined into gene-link rows (both sides present),
@@ -276,16 +329,15 @@ export default class MCScanBlocksAdapter extends ComparativeAdapterBase<MCScanBl
   private pairRows(
     colA: number,
     colB: number,
-    {
-      bedMaps,
-      blockLines,
-      rowAttrs,
-      pairRows,
-    }: Awaited<ReturnType<typeof this.setupPre>>,
+    setup: Awaited<ReturnType<typeof this.setupPre>>,
   ) {
+    const { blockAssemblies, bedMaps, blockLines, rowAttrs, pairRows } = setup
     const key = `${colA}-${colB}`
     let rows = pairRows.get(key)
     if (!rows) {
+      const assemblyA = blockAssemblies[colA]!
+      const assemblyB = blockAssemblies[colB]!
+      const counts = this.partnerCounts(assemblyA, assemblyB, setup)
       const seen = new Set<string>()
       const joined = blockLines
         .map((cols, rowNum): BlockRow | undefined => {
@@ -307,6 +359,10 @@ export default class MCScanBlocksAdapter extends ComparativeAdapterBase<MCScanBl
             ...pair,
             rowNum,
             strand: pair.a.strand * pair.b.strand,
+            copies: Math.max(
+              counts.get(`${assemblyA}\t${pair.a.name}`)!,
+              counts.get(`${assemblyB}\t${pair.b.name}`)!,
+            ),
             attrs: rowAttrs?.[rowNum],
           }
         })

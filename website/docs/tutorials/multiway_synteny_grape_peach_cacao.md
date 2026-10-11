@@ -281,8 +281,9 @@ We'll stack peach over grape over cacao. Then:
   and `chr9:3,890,000-3,995,000`.
 - Turn on each genome's **NCBI RefSeq - RefSeq All** track with **Show only
   genes**.
+- Pick **Color by value → Copies** on the palette button in the view header.
 
-<Figure caption="Gene-level view of one conserved block, peach chrG7 over grape chr11 over cacao chr9, with the gene track for each genome on. The orthologs step across all three in the same order until the ribbons fan, where three grape copies meet one peach and one cacao ortholog." src="/img/multiway_synteny/grape_peach_cacao_gene_orthologs.png" />
+<Figure caption="Gene-level view of one conserved block, peach chrG7 over grape chr11 over cacao chr9, with the gene track for each genome on. Grey one-to-one orthologs step across all three in the same order, and orange marks grape genes that share an ortholog, darkest at the fan where a tandem array meets one peach and one cacao gene." src="/img/multiway_synteny/grape_peach_cacao_gene_orthologs.png" />
 
 ## One grape locus against all seven genomes
 

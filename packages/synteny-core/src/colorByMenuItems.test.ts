@@ -161,6 +161,7 @@ test('value modes live in one submenu whose row names the active one', () => {
     'Identity',
     'Mapping quality',
     'dN/dS',
+    'Copies',
   ])
   const active = labels(colorByMenuItems(target({ field: 'dnds' })))
   expect(active).toContain(`${VALUE_MODES_LABEL} — dN/dS`)
@@ -181,6 +182,7 @@ test('a value mode is disabled until the data has carried it', () => {
     Identity: false,
     'Mapping quality': true,
     'dN/dS': true,
+    Copies: true,
   })
   const dnds = rows.find(r => 'label' in r && r.label === 'dN/dS')!
   expect('disabledHelpText' in dnds && dnds.disabledHelpText).toBe(

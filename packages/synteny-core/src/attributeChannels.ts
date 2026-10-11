@@ -28,6 +28,7 @@ export const PRESET_ATTRIBUTES = [
   'meanIdentity',
   'mappingQual',
   'dnds',
+  'copies',
 ] as const
 
 // `attributeColumns` names an ortholog table's extra columns or a PAF's tags; a

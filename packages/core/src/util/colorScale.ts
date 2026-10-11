@@ -155,8 +155,10 @@ const MAPQ_BINS_ASCENDING = [...MAPQ_BINS].reverse()
  * middle that stays visible on a white page and under a faint ribbon, where
  * viridis's bright top washed out; and `dnds` read against 1, its ramp's pale
  * middle, up to 2, past which a few fast-evolving genes would flatten the
- * rest into one blue. Opt-in rather than universal, since a
- * column another file names `identity` need not be a fraction.
+ * rest into one blue; and `copies` grey where a gene pair is one-to-one, so
+ * a tandem array sharing one ortholog is what takes color. Opt-in rather
+ * than universal, since a column another file names `identity` need not be a
+ * fraction.
  */
 export const MEASURE_FIELD_PRESETS = {
   mapq: {
@@ -181,6 +183,13 @@ export const MEASURE_FIELD_PRESETS = {
     domainMid: 1,
     scheme: 'blueyellowred',
     title: 'dN/dS',
+  },
+  copies: {
+    scale: 'threshold',
+    domain: ['2', '3'],
+    range: ['#bdbdbd', '#fdae6b', '#e6550d'],
+    labels: ['One-to-one', 'Two copies', 'Three or more copies'],
+    title: 'Copies',
   },
 } as const satisfies FieldPresets<'linear' | 'threshold'>
 

@@ -79,6 +79,18 @@ test('mapq paints the alignments bins in cividis', () => {
   expect(mode?.scale === 'threshold' && mode.colors).toHaveLength(4)
 })
 
+// A one-to-one ortholog stays grey, so a gene family sharing one is what takes
+// color.
+test('copies bins a one-to-one link apart from a shared ortholog', () => {
+  const mode = resolveNumericMode('copies', { copies: { min: 1, max: 4 } })
+  expect(mode).toMatchObject({
+    scale: 'threshold',
+    attribute: 'copies',
+    cuts: [2, 3],
+    colors: ['#bdbdbd', '#fdae6b', '#e6550d'],
+  })
+})
+
 test('a written linear scale runs mapq along a ramp over the values seen', () => {
   const mode = ramp(
     'mapq',

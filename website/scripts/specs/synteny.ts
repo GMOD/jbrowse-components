@@ -1263,7 +1263,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
               ['grape_peach_cacao_blocks'],
             ],
             drawCurves: true,
-            color: { field: 'reference' },
+            color: { field: 'copies' },
           },
         ],
       },
@@ -1277,16 +1277,17 @@ export const syntenySpecs: ScreenshotSpec[] = [
     // Checked against the two files the track reads, not against the picture.
     // `grape.blocks.gz` is keyed on TRANSCRIPT ids (rna-XM_...), so the first
     // guess -- one gene's isoforms each drawing their own ribbon -- is the right
-    // shape and the wrong mechanism: over this window `grape.bed.gz` has 15
-    // grape transcripts at 15 distinct loci, one row each, no locus repeated.
-    // What repeats is the MATE. Of the 12 rows here that have a peach ortholog,
-    // three name the same peach transcript (rna-XM_007203660.2) and the same
-    // cacao one, from three grape loci 20 kb apart at 836 kb, 857 kb and 862 kb;
-    // two more share rna-XM_020568573.1 from 778 kb and 784 kb.
+    // shape and the wrong mechanism: over this window each grape transcript in
+    // `grape.bed.gz` sits at its own locus, one row each. What repeats is the
+    // MATE. Four grape loci (836, 857, 862 and 867 kb) name the same peach
+    // transcript (rna-XM_007203660.2) and the same cacao one; two more share
+    // rna-XM_020568573.1 (778 and 784 kb), and two rna-XM_020568287.1 (852 and
+    // 869 kb). `color: copies` paints exactly these, the fan darkest, and leaves
+    // the one-to-one rest grey.
     //
-    // Those three grape loci are the trimethyltridecatetraene synthase copies
-    // RefSeq names. So the fan is a tandem expansion in grape against a
-    // single ortholog in each of the other two genomes -- 3:1 and 2:1 anchors
+    // The 836, 857 and 862 kb loci are the trimethyltridecatetraene synthase
+    // copies RefSeq names. So the fan is a tandem expansion in grape against a
+    // single ortholog in each of the other two genomes -- 4:1 and 2:1 anchors
     // that MCScan is right to emit -- and it is the most interesting thing in
     // the frame rather than a rendering fault. Hence a pill instead of a fix.
     // The windows run on past the array so the pill sits right of the fan it
@@ -1294,7 +1295,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
     annotations: [
       {
         type: 'text',
-        text: 'three grape copies, one peach and one cacao ortholog: a tandem expansion',
+        text: 'grape copies sharing one peach and one cacao ortholog: a tandem expansion',
         fontSize: 18,
         maxWidth: 300,
         leader: true,
