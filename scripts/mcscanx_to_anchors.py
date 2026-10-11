@@ -41,6 +41,11 @@ Usage:
 
 Writes one <name>.bed per genome, plus <sp1>.<sp2>.anchors and
 <sp1>.<sp2>.anchors.simple for one or two genomes, or <sp1>.blocks for more.
+
+`--paf FILE` with two genomes also writes each block as one PAF line spanning
+its genes, named PanSN-style (`grape#1#chr1`), with `--chrom-sizes` giving the
+sequence lengths. Several pairs' files concatenated are one file
+MultiGenomePAFAdapter reads for every band of a stack, in any row order.
 """
 
 import argparse
@@ -217,6 +222,30 @@ def build_table(blocks, genes, tags, with_score=False):
     return rows, counts
 
 
+def read_sizes(path):
+    with opener(path) as fh:
+        return {f[0]: int(f[1]) for f in (line.split("\t") for line in fh)
+                if len(f) > 1}
+
+
+def paf_rows(converted, genes, tags, names, refname, sizes):
+    """One PAF row per block: the span of its genes on each side, the anchor
+    count as the match count and in a `genes` tag."""
+    rows = []
+    for cross, simple_row in converted:
+        sides = []
+        for i, (tag, name) in enumerate(zip(tags, names)):
+            placed = [genes[r[i]] for r in cross]
+            chrom = refname(placed[0][0], tag, name)
+            sides.append((f"{name}#1#{chrom}", sizes[name].get(chrom, 0),
+                          min(min(g[1], g[2]) for g in placed) - 1,
+                          max(max(g[1], g[2]) for g in placed)))
+        (q, qlen, qs, qe), (t, tlen, ts, te) = sides
+        rows.append([q, qlen, qs, qe, simple_row[5], t, tlen, ts, te, len(cross),
+                     max(qe - qs, te - ts), 255, f"genes:i:{len(cross)}"])
+    return rows
+
+
 def unmatched_refnames(rows, fai_path):
     """The BED refNames the assembly does not have, and what it does have.
 
@@ -259,8 +288,13 @@ def main():
                         "weakest pairing in each row, for the adapter's "
                         "attributeColumns to name. off by default, since jcvi's "
                         "own .blocks is gene ids and nothing else")
+    p.add_argument("--paf", help="also write the blocks as PanSN PAF, two genomes only")
+    p.add_argument("--chrom-sizes", action="append", default=[], metavar="NAME=FILE",
+                   help="that assembly's chrom.sizes, for the PAF's lengths")
     p.add_argument("--outdir", default=".")
     args = p.parse_args()
+    if args.paf and len(args.species) != 2:
+        sys.exit("--paf needs exactly two --species")
 
     species = parse_kv(args.species, "species")
     tags, names = list(species), list(species.values())
@@ -314,6 +348,19 @@ def main():
                 anchors.writelines(f"{g1}\t{g2}\t{s}\n" for g1, g2, s in cross)
                 simple.write("\t".join(simple_row) + "\n")
         written += [f"{stem}.anchors", f"{stem}.anchors.simple"]
+        if args.paf:
+            sizes = {n: read_sizes(f)
+                     for n, f in parse_kv(args.chrom_sizes, "chrom-sizes").items()}
+
+            def refname(chrom, tag, name):
+                return prefixes.get(name, "") + (
+                    chrom if args.keep_chr_tag else chrom[len(tag):])
+
+            with open(args.paf, "w") as fh:
+                fh.writelines("\t".join(map(str, r)) + "\n" for r in paf_rows(
+                    converted, genes, tags, names, refname,
+                    {n: sizes.get(n, {}) for n in names}))
+            written.append(args.paf)
         summary = (f"{counts['kept']} blocks kept, {counts['skipped']} blocks "
                    f"not joining {' and '.join(dict.fromkeys(names))} skipped")
 

@@ -931,6 +931,14 @@ check("convert_blocks scores the simple row with the anchor count",
 check("convert_blocks drops a pair on an unlisted genome",
       mcx.convert_blocks([("+", [("a1", "zz9", 5)])], mcx_genes, mcx_tags)[1],
       {"kept": 0, "skipped": 1, "unknown": 1})
+# MultiGenomePAFAdapter finds each side's assembly by the PanSN prefix, so the
+# tag has to come off the refName and the genome name has to go on
+check("paf_rows spans each side's genes under a PanSN name",
+      mcx.paf_rows(converted[:1], mcx_genes, mcx_tags, ["grape", "peach"],
+                   lambda chrom, tag, name: chrom[len(tag):],
+                   {"grape": {"1": 5000}, "peach": {"3": 9000}}),
+      [["grape#1#1", 5000, 99, 600, "-", "peach#1#3", 9000, 999, 3100, 3,
+        2101, 255, "genes:i:3"]])
 # one --species is MCScanX's whole-genome-duplication use, where the blocks the
 # pairwise case discards are the entire result
 self_out, self_counts = mcx.convert_blocks(

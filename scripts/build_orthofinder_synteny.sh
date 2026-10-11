@@ -577,9 +577,9 @@ ORTHOGROUPS=$(ls -1dt proteomes/OrthoFinder/Results_*/Orthogroups/Orthogroups.ts
 # pair and no column anchors the others.
 TABLE="${NAMES%%$'\n'*}.blocks"
 BEDARGS=$(echo "$NAMES" | awk '{printf " --bed %s=%s.bed", $1, $1}')
-BANDS=$(echo "$NAMES" | awk 'NR > 1 { print prev "." $1 } { prev = $1 }')
-for band in $BANDS; do mkdir -p "chain/$band"; done
-HOMARGS=$(echo "$BANDS" | awk '{ split($1, g, "."); printf " --homology %s:%s=chain/%s/x.homology", g[1], g[2], $1 }')
+PAIRS=$(echo "$NAMES" | awk '{ n[NR] = $1 } END { for (i = 1; i < NR; i++) for (j = i + 1; j <= NR; j++) print n[i] "." n[j] }')
+for pair in $PAIRS; do mkdir -p "chain/$pair"; done
+HOMARGS=$(echo "$PAIRS" | awk '{ split($1, g, "."); printf " --homology %s:%s=chain/%s/x.homology", g[1], g[2], $1 }')
 # shellcheck disable=SC2086  # BEDARGS is a built argument list, not one word
 # The column order in Orthogroups.tsv follows OrthoFinder's own proteome
 # discovery order (directory scan, typically alphabetical by filename), which
@@ -655,22 +655,28 @@ for a, b in zip(names, names[1:]):
               f'({r[1]} chromosomes)')
 PY
 
-# ── Collinear blocks per band: MCScanX_h over every within-orthogroup pair ───
+# ── Collinear blocks: MCScanX_h over every within-orthogroup pair ────────────
+# Every pair of genomes, not just neighbouring rows, so the one blocks track
+# backs a band between any two rows the way the orthogroups track does.
 # -m 24 skips at most 24 genes between anchors, and -s 10 with -g 0 keeps blocks
 # of 10 or more anchors whatever their gaps. The e-value filter decides nothing
 # at these settings, and MCScanX_h 1.0.0 computes it from uninitialized memory
 # (wyp1125/MCScanX#95). MCScanX tells genomes apart by a two-letter tag on the
 # chromosome name, which mcscanx_to_anchors.py strips again.
-for band in $BANDS; do
-  a=${band%%.*} b=${band#*.}
-  awk -v OFS='\t' '{ print "aa" $1, $4, $2 + 1, $3 }' "$a.bed" > "chain/$band/x.gff"
-  awk -v OFS='\t' '{ print "bb" $1, $4, $2 + 1, $3 }' "$b.bed" >> "chain/$band/x.gff"
-  MCScanX_h "chain/$band/x" -a -b 2 -s 10 -m 24 -g 0 > /dev/null
-  python3 "$SCRIPT_DIR/mcscanx_to_anchors.py" --gff "chain/$band/x.gff" \
-    --collinearity "chain/$band/x.collinearity" \
-    --species aa="$a" --species bb="$b" --outdir "chain/$band"
-  gzip -c "chain/$band/$band.anchors.simple" > "$band.anchors.simple.gz"
+: > "$SETNAME.blocks.paf"
+for pair in $PAIRS; do
+  a=${pair%%.*} b=${pair#*.}
+  awk -v OFS='\t' '{ print "aa" $1, $4, $2 + 1, $3 }' "$a.bed" > "chain/$pair/x.gff"
+  awk -v OFS='\t' '{ print "bb" $1, $4, $2 + 1, $3 }' "$b.bed" >> "chain/$pair/x.gff"
+  MCScanX_h "chain/$pair/x" -a -b 2 -s 10 -m 24 -g 0 > /dev/null
+  python3 "$SCRIPT_DIR/mcscanx_to_anchors.py" --gff "chain/$pair/x.gff" \
+    --collinearity "chain/$pair/x.collinearity" \
+    --species aa="$a" --species bb="$b" --outdir "chain/$pair" \
+    --paf "chain/$pair/x.paf" \
+    --chrom-sizes "$a=$a.chrom.sizes" --chrom-sizes "$b=$b.chrom.sizes"
+  cat "chain/$pair/x.paf" >> "$SETNAME.blocks.paf"
 done
+gzip -f "$SETNAME.blocks.paf"
 
 # ── Set up JBrowse (uses an installed `jbrowse`, else the CLI via npx) ───────
 if command -v jbrowse >/dev/null 2>&1; then
@@ -684,7 +690,7 @@ fi
 # The table + BEDs must sit beside config.json (add-track-json won't copy them)
 cp "$TABLE.gz" "$APP"/
 for name in $NAMES; do cp "$name.bed.gz" "$APP"/; done
-for band in $BANDS; do cp "$band.anchors.simple.gz" "$APP"/; done
+cp "$SETNAME.blocks.paf.gz" "$APP"/
 
 # One assembly per genome, names and lengths only
 for name in $NAMES; do
@@ -792,25 +798,24 @@ print(json.dumps({
 PY
 jb add-track-json blocks_track.json --update --out "$APP"
 
-for band in $BANDS; do
-  a=${band%%.*} b=${band#*.}
-  cat > chain_track.json <<JSON
-{
-  "type": "SyntenyTrack",
-  "trackId": "${a}_${b}_blocks",
-  "name": "$a - $b collinear blocks (MCScanX)",
-  "assemblyNames": ["$a", "$b"],
-  "adapter": {
-    "type": "MCScanSimpleAnchorsAdapter",
-    "uri": "$band.anchors.simple.gz",
-    "bed1": "$a.bed.gz",
-    "bed2": "$b.bed.gz",
-    "assemblyNames": ["$a", "$b"]
-  }
-}
-JSON
-  jb add-track-json chain_track.json --update --out "$APP"
-done
+python3 - "$SETNAME" $NAMES <<'PY' > chain_track.json
+import json
+import sys
+
+set_name, *names = sys.argv[1:]
+print(json.dumps({
+    "type": "SyntenyTrack",
+    "trackId": f"{set_name}_blocks",
+    "name": f"{set_name.capitalize()} collinear blocks (MCScanX)",
+    "assemblyNames": names,
+    "adapter": {
+        "type": "MultiGenomePAFAdapter",
+        "uri": f"{set_name}.blocks.paf.gz",
+        "assemblyNames": names,
+    },
+}, indent=2))
+PY
+jb add-track-json chain_track.json --update --out "$APP"
 
 python3 - "$SETNAME" $NAMES <<'PY' > session.json
 import json
