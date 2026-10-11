@@ -68,6 +68,11 @@ export interface ArcBandFeed {
 /** The read cloud's connector alpha, so a dense cloud still reads as density. */
 export const CLOUD_LINE_ALPHA = 0.7
 
+/** How opaque a connection of this shape draws: a read-cloud bar at `CLOUD_LINE_ALPHA`. */
+export function arcOpacity(shapeType: number) {
+  return isFlatArcShape(shapeType) ? CLOUD_LINE_ALPHA : 1
+}
+
 class LinkLanes {
   x: number[] = []
   x2: number[] = []
@@ -203,9 +208,8 @@ export function buildArcBandFeeds({
   )
   const colorOf = (colorType: number, shapeType: number) => {
     const c = palette[arcColorSlot(colorType)]!
-    return isFlatArcShape(shapeType)
-      ? withAbgrAlpha(c, Math.round(CLOUD_LINE_ALPHA * 255))
-      : c
+    const opacity = arcOpacity(shapeType)
+    return opacity < 1 ? withAbgrAlpha(c, Math.round(opacity * 255)) : c
   }
   const regionByIndex = new Map(displayed.map(r => [r.displayedRegionIndex, r]))
   const lanes = new Map<number, RegionLanes>()

@@ -9,9 +9,9 @@ import { getFeatureAdapterOrThrow } from '@jbrowse/core/data_adapters/getFeature
 import { resolvePalette } from '@jbrowse/core/ui/palette'
 import {
   abgrAlpha,
-  abgrBlue,
-  abgrGreen,
-  abgrRed,
+  abgrToHex,
+  cssColorToHex,
+  normalizedRgbToHex,
 } from '@jbrowse/core/util/colorBits'
 import { withPreset } from '@jbrowse/core/util/colorScale'
 import {
@@ -49,9 +49,8 @@ import {
   arcColorSlot,
 } from './features/arcs/arcColors.ts'
 import { arcStrokeScale } from './features/arcs/arcLineWidth.ts'
-import { CLOUD_LINE_ALPHA } from './features/arcs/bandFeed.ts'
+import { arcOpacity } from './features/arcs/bandFeed.ts'
 import { computeArcsByGroup } from './features/arcs/compute.ts'
-import { isFlatArcShape } from './features/arcs/shapes.ts'
 import { emptyArcsUploadData } from './features/arcs/types.ts'
 import { mergeJunctions } from './features/sashimi/junctions.ts'
 import { spliceMotifLabel } from './features/sashimi/motif.ts'
@@ -71,6 +70,7 @@ import {
 } from './shared/alignmentsColor.ts'
 import { arcColorFieldOf } from './shared/arcColorOptions.ts'
 import { sectionOrder, workerFacet } from './shared/groupFeatures.ts'
+import { joinSections } from './shared/joinSections.ts'
 import {
   arcLegendTitle,
   getArcLegendItems,
@@ -216,24 +216,6 @@ function alleleFrequencies(d: WorkerPileupData) {
   })
 }
 
-function hex(n: number) {
-  return n.toString(16).padStart(2, '0')
-}
-
-/** A CSS color as the palette and the bake spell them, as `#rrggbb`. */
-function hexOf(css: string) {
-  if (css.startsWith('#')) {
-    return css.length === 4
-      ? `#${css[1]}${css[1]}${css[2]}${css[2]}${css[3]}${css[3]}`
-      : css.slice(0, 7)
-  }
-  const [r, g, b] = css
-    .slice(css.indexOf('(') + 1, css.indexOf(')'))
-    .split(',')
-    .map(Number)
-  return `#${hex(r!)}${hex(g!)}${hex(b!)}`
-}
-
 /** The display's `sort` object as the layout and the worker read it. */
 function sortFor(node: AnyConfigurationModel, refName: string) {
   const type: SortType = readConfObject(node, 'type')
@@ -283,6 +265,7 @@ function colorReads(
   node: AnyConfigurationModel,
   baseLayer: BaseLayer | undefined,
   laidByGroup: ReadonlyMap<string, LaidOutPileupData>,
+  facet: { field: string; domain?: readonly string[] } | undefined,
 ) {
   const { labels, title, ...setting } = colorSnapshotOf(node)
   const encoding = alignmentsColorEncoding(setting)
@@ -319,7 +302,7 @@ function colorReads(
         i => READ_COLOR_CATEGORY_BY_INDEX[i]!,
       )
       const color = category.map((_, i) =>
-        hexOf(
+        cssColorToHex(
           readColorFromCategoryIndex(
             data.readColorCategories[i]!,
             i,
@@ -356,6 +339,12 @@ function colorReads(
     palette,
     presentTagValues,
     bakedScale,
+    sectionOrder:
+      facet &&
+      facet.field === colorFieldOf(colorBy) &&
+      colorBy.type !== 'mappingQuality'
+        ? sectionOrder(facet.field, facet.domain)
+        : undefined,
     labels: declared,
     descending: withPreset(
       { ...setting, descending: readConfObject(node, 'descending') },
@@ -370,7 +359,7 @@ function colorReads(
     insertSizeBand: band,
     legend: {
       label: legend.map(item => item.label),
-      color: legend.map(item => hexOf(item.color!)),
+      color: legend.map(item => cssColorToHex(item.color!)),
     },
     legendTitle:
       withPreset({ ...setting, title }, ALIGNMENTS_FIELD_PRESETS).title ??
@@ -410,10 +399,7 @@ function modifications(d: WorkerPileupData) {
       (_, i) => (d.modificationProbabilities?.[i] ?? 0) / 255,
     ),
     unmodified,
-    color: Array.from(
-      d.modificationColors,
-      c => `#${hex(abgrRed(c))}${hex(abgrGreen(c))}${hex(abgrBlue(c))}`,
-    ),
+    color: Array.from(d.modificationColors, c => abgrToHex(c)),
     opacity: Array.from(d.modificationColors, c => abgrAlpha(c) / 255),
   }
 }
@@ -442,10 +428,7 @@ function coverageStacks(d: WorkerPileupData) {
       from: modifications.map(m => m.yOffset),
       to: modifications.map(m => m.yOffset + m.height),
       depth: modifications.map(m => depthOf(m.relDepth)),
-      color: modifications.map(
-        m =>
-          `#${hex(abgrRed(m.packedColor))}${hex(abgrGreen(m.packedColor))}${hex(abgrBlue(m.packedColor))}`,
-      ),
+      color: modifications.map(m => abgrToHex(m.packedColor)),
       opacity: modifications.map(m => abgrAlpha(m.packedColor) / 255),
     },
   }
@@ -527,10 +510,6 @@ function junctions(d: WorkerPileupData, refName: string) {
 const ARC_SHAPE_NAMES = ['arc', 'flat', 'flatSplit', 'unplaced'] as const
 const DPR_PAST_THE_ANTIALIASING_FLOOR = Number.POSITIVE_INFINITY
 
-function hexOfNormalized([r, g, b]: readonly number[]) {
-  return `#${hex(Math.round(r! * 255))}${hex(Math.round(g! * 255))}${hex(Math.round(b! * 255))}`
-}
-
 /** One section's arcs and interchromosomal ticks, in the band's paint. */
 function sectionConnections(
   a: ArcsUploadData,
@@ -556,7 +535,7 @@ function sectionConnections(
       shape: shape.map(s => ARC_SHAPE_NAMES[s] ?? 'arc'),
       category: colorSlot.map(c => arcSlotCategory(c, colorField)),
       color: colorSlot.map(c => slotColor[c]!),
-      opacity: shape.map(s => (isFlatArcShape(s) ? CLOUD_LINE_ALPHA : 1)),
+      opacity: shape.map(arcOpacity),
       y: a.arcYBp.subarray(0, n),
       span: a.arcSpanBp.subarray(0, n),
       support,
@@ -615,7 +594,7 @@ function readConnectionTables(
           },
         )
   const slotColor = buildArcColorPalette(colors.palette, colorField).map(
-    hexOfNormalized,
+    normalizedRgbToHex,
   )
   const lineWidth: number = readConfObject(conf, 'readConnectionsLineWidth')
   const stroke = arcStrokeScale(lineWidth)
@@ -655,7 +634,7 @@ function readConnectionTables(
     bySection,
     arcLegend: {
       label: legend.map(item => item.label),
-      color: legend.map(item => hexOf(item.color!)),
+      color: legend.map(item => cssColorToHex(item.color!)),
     },
     arcLegendTitle: arcLegendTitle(mode),
     arcSpanMax: result?.maxFlatArcSpanBp ?? 0,
@@ -727,44 +706,6 @@ function sectionTables(
   }
 }
 
-type SectionTables = ReturnType<typeof sectionTables> &
-  ReturnType<typeof sectionConnections>
-
-/**
- * The sections' tables as one set, each row naming its `section` and each
- * `read` column offset to index the joined `reads`.
- */
-function joinSections(sections: { label: string; tables: SectionTables }[]) {
-  const joined: Record<string, Record<string, unknown[]>> = {}
-  let readOffset = 0
-  for (const { label, tables } of sections) {
-    for (const [name, table] of Object.entries(tables)) {
-      const out = (joined[name] ??= { section: [] })
-      let rows = 0
-      for (const [column, values] of Object.entries(table)) {
-        const list = Array.from(values as ArrayLike<unknown>)
-        rows = list.length
-        ;(out[column] ??= []).push(
-          ...(column === 'read'
-            ? list.map(r => (r as number) + readOffset)
-            : list),
-        )
-      }
-      out.section!.push(...new Array<string>(rows).fill(label))
-    }
-    readOffset += tables.reads.start.length
-  }
-  return joined as {
-    [K in keyof SectionTables]: {
-      [C in keyof SectionTables[K]]: SectionTables[K][C] extends ArrayLike<
-        infer V
-      >
-        ? V[]
-        : never
-    } & { section: string[] }
-  }
-}
-
 /**
  * #api
  * A region's reads as the alignments display fetches, filters, lays out and
@@ -798,6 +739,12 @@ export async function alignmentTables(
     conf.sort,
     region.refName,
   )
+  if (readConfObject(conf, 'unit') === 'chain') {
+    throw new Error(
+      'unit: "chain" joins a read to its mates and split segments, which the tables do not serve yet; read the region with unit "read"',
+    )
+  }
+  const showSoftClipping: boolean = readConfObject(conf, 'showSoftClipping')
   const facetNode = conf.facet
   const facetSetting = facetSettingOf({
     field: readConfObject(facetNode, 'field'),
@@ -813,6 +760,7 @@ export async function alignmentTables(
     baseLayer,
     sortTag,
     facet: workerFacet(facetSetting, 'read'),
+    showSoftClipping,
     byteLimit,
     statusCallback: () => {},
   }
@@ -829,7 +777,9 @@ export async function alignmentTables(
     sectionOrder(facetSetting?.field ?? '', facetSetting?.domain),
   )
   if (!order.length) {
-    throw new Error(`no reads came back for ${where}`)
+    throw new Error(
+      `every section at ${where} is hidden; facet.hidden lists them all`,
+    )
   }
   const dataOf = new Map(result.value.groups.map(g => [g.key, g.data]))
   const laidByGroup = new Map(
@@ -839,12 +789,12 @@ export async function alignmentTables(
         dataMap: new Map([[0, dataOf.get(key)!]]),
         sortColumn,
         layoutOrder,
-        showSoftClipping: false,
+        showSoftClipping,
         regions: new Map([[0, region]]),
       }).get(0)!,
     ]),
   )
-  const colors = colorReads(conf.color, baseLayer, laidByGroup)
+  const colors = colorReads(conf.color, baseLayer, laidByGroup, facetSetting)
   const connections = readConnectionTables(
     conf,
     new Map(
@@ -871,6 +821,7 @@ export async function alignmentTables(
           ...connections.bySection.get(key)!,
         },
       })),
+      tables => tables.reads.start.length,
     ),
     sections: {
       key: order.map(g => g.key),

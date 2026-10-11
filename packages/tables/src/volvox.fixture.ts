@@ -33,6 +33,17 @@ export const BAM: AlignmentTablesArgs = {
   region,
 }
 
+/** Reads in two read groups, `RG:Z:4` and `RG:Z:5`. */
+export const READ_GROUPS: AlignmentTablesArgs = {
+  adapterConfig: {
+    type: 'BamAdapter',
+    bamLocation: uri('volvox-rg.bam'),
+    index: { location: uri('volvox-rg.bam.bai'), indexType: 'BAI' },
+  },
+  sequenceAdapter,
+  region: { refName: 'ctgA', start: 0, end: 50000 },
+}
+
 export const SPLICED: AlignmentTablesArgs = {
   adapterConfig: {
     type: 'BamAdapter',
@@ -141,4 +152,18 @@ export const DOG_VCF: VariantTablesArgs = {
     index: { location: uri('dog10k_cyp1a2_snvs.vcf.gz.tbi', DOG10K) },
   },
   region: { refName: 'chr30', start: 38258000, end: 38265000 },
+}
+
+/** Three signed BigWigs as one multi-wiggle track, `posneg_rw1` to `3`. */
+export const MULTI_BIGWIG: WiggleTablesArgs = {
+  adapterConfig: {
+    type: 'MultiWiggleAdapter',
+    subadapters: [1, 2, 3].map(n => ({
+      type: 'BigWigAdapter',
+      name: `posneg_rw${n}`,
+      bigWigLocation: uri(`posneg_rw${n}.bw`),
+    })),
+  },
+  region: { refName: 'ctgA', start: 0, end: 50000 },
+  bpPerPx: 50,
 }

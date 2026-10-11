@@ -5,6 +5,7 @@ import {
   LONG_READS,
   METHYLATED,
   PAIRED_INVERSION,
+  READ_GROUPS,
   SPLICED,
 } from './volvox.fixture.ts'
 
@@ -98,6 +99,25 @@ test('a mismatch\u2019s frequency is its base\u2019s share of the depth there', 
   expect(mismatches.frequency.filter(f => f > 0).length).toBe(
     mismatches.position.filter(p => depthAt.get(p)).length,
   )
+})
+
+test('a key spells each color as the reads do, whatever CSS the config wrote', async () => {
+  const hex = /^#[0-9a-f]{6}$/
+  for (const color of [
+    { field: 'tags.RG' },
+    { field: 'strand', range: ['hsl(120, 100%, 25%)', 'RGB(0, 0, 255)'] },
+    { field: 'strand', range: ['#FF0000', '#0000FF'] },
+  ]) {
+    const t = await engine.alignments({ ...READ_GROUPS, display: { color } })
+    const painted = new Set(t.reads.color)
+    expect(t.legend.color.length).toBeGreaterThan(1)
+    for (const c of [...t.legend.color, ...painted]) {
+      expect(c).toMatch(hex)
+    }
+    for (const c of t.legend.color) {
+      expect(painted).toContain(c)
+    }
+  }
 })
 
 test('reads paint as the display\u2019s color object paints them, with its key', async () => {
@@ -371,6 +391,66 @@ test('the display’s facet object splits the reads into sections, each laid out
     display: { facet: { field: 'strand', hidden: [first!] } },
   })
   expect(hidden.sections.key).toEqual([second])
+})
+
+test('sections share one color scale, so a read paints as it does unfaceted', async () => {
+  const color = { field: 'tags.NM', scale: 'linear' }
+  const key = (t: { reads: { name: string[]; start: number[] } }, i: number) =>
+    `${t.reads.name[i]} ${t.reads.start[i]}`
+  const whole = await engine.alignments({
+    ...PAIRED_INVERSION,
+    display: { color },
+  })
+  const colorOf = new Map(
+    whole.reads.name.map((_, i) => [key(whole, i), whole.reads.color[i]]),
+  )
+  const faceted = await engine.alignments({
+    ...PAIRED_INVERSION,
+    display: { color, facet: { field: 'tags.NM' } },
+  })
+  expect(faceted.sections.label.length).toBeGreaterThan(2)
+  expect(new Set(faceted.reads.color).size).toBeGreaterThan(4)
+  faceted.reads.name.forEach((_, i) => {
+    expect(faceted.reads.color[i]).toBe(colorOf.get(key(faceted, i)))
+  })
+})
+
+test('a key over the facet’s own field lists its values as the sections stack', async () => {
+  const t = await engine.alignments({
+    ...READ_GROUPS,
+    display: {
+      color: { field: 'tags.RG' },
+      facet: { field: 'tags.RG', domain: ['5', '4'] },
+    },
+  })
+  expect(t.sections.key).toEqual(['5', '4'])
+  expect(t.legend.label).toEqual(['5', '4'])
+})
+
+test('settings the tables cannot serve are refused, not drawn some other way', async () => {
+  await expect(
+    engine.alignments({ ...BAM, display: { unit: 'chain' } }),
+  ).rejects.toThrow(/unit: "chain"/)
+  const t = await engine.alignments({
+    ...BAM,
+    display: { facet: { field: 'strand' } },
+  })
+  await expect(
+    engine.alignments({
+      ...BAM,
+      display: { facet: { field: 'strand', hidden: t.sections.key } },
+    }),
+  ).rejects.toThrow(/every section/)
+})
+
+test('the display’s showSoftClipping lays reads out by their clipped extent', async () => {
+  const plain = await engine.alignments(PAIRED_INVERSION)
+  const clipped = await engine.alignments({
+    ...PAIRED_INVERSION,
+    display: { showSoftClipping: true },
+  })
+  expect(clipped.reads.start).toEqual(plain.reads.start)
+  expect(clipped.reads.row).not.toEqual(plain.reads.row)
 })
 
 test('read connections come back as the display’s band draws them', async () => {
