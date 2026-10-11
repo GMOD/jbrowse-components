@@ -121,24 +121,23 @@ const suite: TestSuite = {
       },
     },
     {
-      name: 'bookmark grid rows stay clickable',
+      name: 'highlight list rows stay clickable',
       fn: async page => {
-        await navigateToApp(page)
+        const highlights = [1000, 3000, 5000, 7000]
+          .map(s => `ctgA:${s}-${s + 500}`)
+          .join('%20')
+        await navigateToUrl(
+          page,
+          `config=test_data/volvox/config.json&assembly=volvox&loc=ctgA:1-10000&highlight=${highlights}&sessionName=Grids`,
+        )
+        await findByText(page, 'ctgA')
         await delay(800)
-        for (let i = 0; i < 4; i++) {
-          if (i > 0) {
-            await page.keyboard.press('ArrowRight')
-            await delay(300)
-          }
-          await (await page.$('[data-testid="view_menu_icon"]'))?.click()
-          await delay(400)
-          await (await findByText(page, 'Bookmarks/highlights')).click()
-          await delay(400)
-          await (await findByText(page, 'Bookmark current region')).click()
-          await delay(600)
-        }
+        await (await findByText(page, 'Tools')).click()
+        await delay(400)
+        await (await findByText(page, 'Highlights')).click()
+        await delay(1500)
 
-        await expectNoCoveredControls(page, 'BookmarkGrid')
+        await expectNoCoveredControls(page, 'HighlightGrid')
       },
     },
     {
