@@ -3279,6 +3279,75 @@ describe('declarative launch: highlight, nav, unknown keys', () => {
     expect(getSnapshot(model)).not.toHaveProperty('showCenterLine')
   })
 
+  function storedEntries() {
+    return Object.fromEntries(
+      Object.keys(localStorage).map(k => [k, localStorage.getItem(k)]),
+    )
+  }
+
+  test('loading a view leaves the stored preferences alone', () => {
+    localStorage.clear()
+    const { Session, LinearGenomeModel } = initialize()
+    Session.create({ configuration: {} }).setView(
+      LinearGenomeModel.create({
+        type: 'LinearGenomeView',
+        showCytobands: false,
+        trackLabels: 'hidden',
+        colorByCDS: true,
+        showAminoAcids: false,
+        showTrackOutlines: false,
+      }),
+    )
+    expect(storedEntries()).toEqual({})
+  })
+
+  test('a setter records the choice for the next view, and only its own key', () => {
+    localStorage.clear()
+    const { Session, LinearGenomeModel } = initialize()
+    const session = Session.create({ configuration: {} })
+    const a = session.setView(
+      LinearGenomeModel.create({
+        type: 'LinearGenomeView',
+        showCytobands: false,
+      }),
+    )
+    a.setColorByCDS(true)
+    a.setTrackLabels('offset')
+    a.setShowCenterLine(true)
+    expect(storedEntries()).toEqual({
+      'lgv-colorByCDS': 'true',
+      'lgv-trackLabels': 'offset',
+      'lgv-showCenterLine': 'true',
+    })
+    const b = LinearGenomeModel.create({ type: 'LinearGenomeView' })
+    expect(b.colorByCDS).toBe(true)
+    expect(b.trackLabels).toBe('offset')
+    expect(b.showCenterLine).toBe(true)
+    expect(b.showCytobands).toBe(true)
+  })
+
+  test("a snapshot shows its reader the author's settings, defaults included", () => {
+    localStorage.clear()
+    const { Session, LinearGenomeModel } = initialize()
+    const snap = getSnapshot(
+      Session.create({ configuration: {} }).setView(
+        LinearGenomeModel.create({ type: 'LinearGenomeView' }),
+      ),
+    )
+    localStorage.setItem('lgv-showCytobands', 'false')
+    localStorage.setItem('lgv-trackLabels', 'hidden')
+    localStorage.setItem('lgv-colorByCDS', 'true')
+    localStorage.setItem('lgv-showAminoAcids', 'false')
+    localStorage.setItem('lgv-showTrackOutlines', 'false')
+    const reader = LinearGenomeModel.create(snap)
+    expect(reader.showCytobands).toBe(true)
+    expect(reader.trackLabels).toBe('')
+    expect(reader.colorByCDS).toBe(false)
+    expect(reader.showAminoAcids).toBe(true)
+    expect(reader.showTrackOutlines).toBe(true)
+    localStorage.clear()
+  })
+
   test('unknown init key warns instead of silently dropping', async () => {
     // deliberately typo'd key (tracksList vs tracks) to exercise the diagnostic
     const model = makeModel({

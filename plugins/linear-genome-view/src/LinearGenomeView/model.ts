@@ -12,6 +12,8 @@ import {
   isSessionModelWithWidgets,
   localStorageGetBoolean,
   localStorageGetItem,
+  localStorageSetBoolean,
+  localStorageSetItem,
   springAnimate,
   sum,
 } from '@jbrowse/core/util'
@@ -478,7 +480,10 @@ export function stateModelFactory(pluginManager: PluginManager) {
 
         /**
          * #property
-         * show the "center line"
+         * show the "center line". A personal preference: never in a session
+         * snapshot. It, showCytobands, trackLabels, colorByCDS, showAminoAcids
+         * and showTrackOutlines start from this browser's last choice, which
+         * their setters record.
          */
         showCenterLine: types.optional(types.boolean, () =>
           localStorageGetBoolean('lgv-showCenterLine', false),
@@ -1337,6 +1342,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
        */
       setShowTrackOutlines(arg: boolean) {
         self.showTrackOutlines = arg
+        localStorageSetBoolean('lgv-showTrackOutlines', arg)
       },
       /**
        * #action
@@ -1349,18 +1355,21 @@ export function stateModelFactory(pluginManager: PluginManager) {
        */
       setColorByCDS(flag: boolean) {
         self.colorByCDS = flag
+        localStorageSetBoolean('lgv-colorByCDS', flag)
       },
       /**
        * #action
        */
       setShowAminoAcids(flag: boolean) {
         self.showAminoAcids = flag
+        localStorageSetBoolean('lgv-showAminoAcids', flag)
       },
       /**
        * #action
        */
       setShowCytobands(flag: boolean) {
         self.showCytobands = flag
+        localStorageSetBoolean('lgv-showCytobands', flag)
       },
       /**
        * #action
@@ -1763,6 +1772,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
        */
       setTrackLabels(setting: ViewTrackLabelMode) {
         self.trackLabels = setting
+        localStorageSetItem('lgv-trackLabels', setting)
       },
 
       /**
@@ -1770,6 +1780,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
        */
       setShowCenterLine(b: boolean) {
         self.showCenterLine = b
+        localStorageSetBoolean('lgv-showCenterLine', b)
       },
 
       /**
@@ -3486,31 +3497,13 @@ export function stateModelFactory(pluginManager: PluginManager) {
       }
     })
     .postProcessSnapshot(snap => {
-      // showCenterLine is purely a localStorage-backed preference (see
-      // setupLocalStorageAutorun in afterAttach.ts) and is never persisted
-      // into session snapshots. The remaining fields are also
-      // localStorage-backed, but still persist when non-default: their strip
-      // baseline is the universal default (hardcoded here), not the
-      // localStorage-derived creation default, so a localStorage-set value
-      // stays portable across browsers.
-      const {
-        showCenterLine,
-        showCytobands,
-        trackLabels,
-        colorByCDS,
-        showAminoAcids,
-        showTrackOutlines,
-        ...rest
-      } = snap
-
-      return {
-        ...rest,
-        ...(!showCytobands ? { showCytobands } : {}),
-        ...(trackLabels ? { trackLabels } : {}),
-        ...(colorByCDS ? { colorByCDS } : {}),
-        ...(!showAminoAcids ? { showAminoAcids } : {}),
-        ...(!showTrackOutlines ? { showTrackOutlines } : {}),
-      }
+      // showCenterLine is a personal preference and stays out of the session.
+      // The other localStorage-seeded settings are always written: the
+      // receiving browser's localStorage fills an absent one, so stripping a
+      // default would show a share link's reader their own setting instead
+      // of the author's.
+      const { showCenterLine, ...rest } = snap
+      return rest
     })
 }
 

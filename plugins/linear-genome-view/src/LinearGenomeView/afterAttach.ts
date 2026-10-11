@@ -1,7 +1,6 @@
 import {
   getSession,
   isSessionModelWithWidgets,
-  localStorageSetItem,
   resolveNamedRegions,
 } from '@jbrowse/core/util'
 import { coerceHighlight } from '@jbrowse/core/util/highlights'
@@ -324,46 +323,10 @@ function setupCoarseDynamicBlocksAutorun(self: LinearGenomeViewModel) {
 }
 
 /**
- * Autorun that syncs view settings to localStorage
- */
-function setupLocalStorageAutorun(self: LinearGenomeViewModel) {
-  addDisposer(
-    self,
-    autorun(
-      function localStorageAutorun() {
-        const s = (s: unknown) => JSON.stringify(s)
-        const {
-          showCytobands,
-          showCenterLine,
-          colorByCDS,
-          showAminoAcids,
-          showTrackOutlines,
-          trackLabels,
-        } = self
-        localStorageSetItem('lgv-showCytobands', s(showCytobands))
-        localStorageSetItem('lgv-showCenterLine', s(showCenterLine))
-        localStorageSetItem('lgv-colorByCDS', s(colorByCDS))
-        localStorageSetItem('lgv-showAminoAcids', s(showAminoAcids))
-        localStorageSetItem('lgv-showTrackOutlines', s(showTrackOutlines))
-        // skip writing the empty default — otherwise reads later round-trip to
-        // '' instead of null, hiding the config-fallback path
-        if (trackLabels) {
-          localStorageSetItem('lgv-trackLabels', trackLabels)
-        }
-      },
-      {
-        name: 'LGVLocalStorage',
-      },
-    ),
-  )
-}
-
-/**
  * Sets up all afterAttach autoruns for the LinearGenomeView
  */
 export function doAfterAttach(self: LinearGenomeViewModel) {
   setupInitWarmup(self)
   setupInitAutorun(self)
   setupCoarseDynamicBlocksAutorun(self)
-  setupLocalStorageAutorun(self)
 }
