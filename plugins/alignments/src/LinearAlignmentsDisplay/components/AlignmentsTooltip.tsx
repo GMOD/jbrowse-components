@@ -6,7 +6,6 @@ import {
   CoverageTooltipTable,
   InterbaseTooltipTable,
 } from '@jbrowse/alignments-core/CoverageTooltipTables'
-import { SanitizedHTML } from '@jbrowse/core/ui'
 import BaseTooltip from '@jbrowse/core/ui/BaseTooltip'
 import { toLocale } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
@@ -33,6 +32,9 @@ const useStyles = makeStyles()(theme => ({
   },
   td: {
     whiteSpace: 'nowrap',
+  },
+  lines: {
+    whiteSpace: 'pre-wrap',
   },
   tooltipContent: {
     fontSize: theme.typography.fontSize * 0.85,
@@ -74,14 +76,6 @@ const CoverageHoverBar = observer(function CoverageHoverBar({
   ) : null
 })
 
-const SimpleTooltipContents = observer(function SimpleTooltipContents({
-  message,
-}: {
-  message: string
-}) {
-  return message ? <SanitizedHTML html={message} /> : null
-})
-
 /**
  * Custom Tooltip for LinearAlignmentsDisplay
  * Supports flag-style tooltip with vertical line indicator for coverage
@@ -112,17 +106,18 @@ const AlignmentsTooltip = observer(function AlignmentsTooltip({
   const x = mouseState.clientX
   const y = mouseState.clientY
 
-  if (typeof tooltipData === 'string') {
-    return (
-      <BaseTooltip clientPoint={{ x, y }}>
-        <div className={classes.tooltipContent} data-testid="pileup-tooltip">
-          <SimpleTooltipContents message={tooltipData} />
-        </div>
-      </BaseTooltip>
-    )
-  }
-
   switch (tooltipData.type) {
+    case 'text': {
+      const { title, lines } = tooltipData
+      return (
+        <BaseTooltip clientPoint={{ x, y }}>
+          <div className={classes.tooltipContent} data-testid="pileup-tooltip">
+            {title ? <b>{title}</b> : null}
+            <div className={classes.lines}>{lines.join('\n')}</div>
+          </div>
+        </BaseTooltip>
+      )
+    }
     case 'indicator': {
       // formatIndicatorTooltip only builds a payload when there are interbase
       // events, so the table always has rows.

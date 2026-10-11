@@ -10,6 +10,10 @@ import { formatReadTooltip, formatFeatureLabel } from './tooltipUtils.ts'
 
 import type { PileupDataResult } from '../../RenderAlignmentDataRPC/types.ts'
 
+function readTip(...args: Parameters<typeof formatReadTooltip>) {
+  return formatReadTooltip(...args).lines.join('\n')
+}
+
 // Single-read payload for the chain/pileup hover tooltip. The pair-anomaly rows
 // read flags / insert size / orientation / readInterchrom + insertSizeStats.
 // `readNextRefs` only names the mate in the message; whether the mate is on
@@ -39,7 +43,7 @@ function makeRpcData(
 
 describe('formatReadTooltip pair anomalies', () => {
   it('reports BOTH orientation and insert size when both are abnormal', () => {
-    const tip = formatReadTooltip(
+    const tip = readTip(
       makeRpcData({
         readPairOrientations: new Uint8Array([2]), // RL
         readInsertSizes: new Float32Array([5000]), // > upper
@@ -52,7 +56,7 @@ describe('formatReadTooltip pair anomalies', () => {
   })
 
   it('reports both for an abnormal-orientation short-insert pair', () => {
-    const tip = formatReadTooltip(
+    const tip = readTip(
       makeRpcData({
         readPairOrientations: new Uint8Array([3]), // RR
         readInsertSizes: new Float32Array([50]), // < lower
@@ -65,7 +69,7 @@ describe('formatReadTooltip pair anomalies', () => {
   })
 
   it('normal LR pair with a long insert shows only the insert row', () => {
-    const tip = formatReadTooltip(
+    const tip = readTip(
       makeRpcData({ readInsertSizes: new Float32Array([5000]) }),
       0,
       'chr1',
@@ -76,7 +80,7 @@ describe('formatReadTooltip pair anomalies', () => {
   })
 
   it('unmapped mate pre-empts insert/orientation anomalies', () => {
-    const tip = formatReadTooltip(
+    const tip = readTip(
       makeRpcData({
         readFlags: new Uint16Array([1 | 8]), // paired + mate unmapped
         readPairOrientations: new Uint8Array([2]),
@@ -91,7 +95,7 @@ describe('formatReadTooltip pair anomalies', () => {
   })
 
   it('inter-chromosomal mate pre-empts insert/orientation anomalies', () => {
-    const tip = formatReadTooltip(
+    const tip = readTip(
       makeRpcData({
         ...nextRefsToTable(['chr2']),
         readInterchrom: new Uint8Array([1]),
@@ -114,7 +118,7 @@ describe('formatReadTooltip pair anomalies', () => {
   // with both names in file space, and what the read fill already uses — is the
   // only thing that decides this.
   it('does not call an aliased same-chromosome mate inter-chromosomal', () => {
-    const tip = formatReadTooltip(
+    const tip = readTip(
       makeRpcData({
         ...nextRefsToTable(['chr1']), // file naming
         readInterchrom: new Uint8Array([0]), // worker: same chromosome
@@ -135,9 +139,7 @@ describe('read tooltip location', () => {
   // agree with the context menu's "Copy location", the feature detail widget,
   // and the SNP tooltip on the same read.
   it('renders the read start 1-based', () => {
-    expect(formatReadTooltip(makeRpcData(), 0, 'chr1')).toContain(
-      'chr1:1,001-1,100',
-    )
+    expect(readTip(makeRpcData(), 0, 'chr1')).toContain('chr1:1,001-1,100')
   })
 
   // `hitTestChain` answers with the chain's FIRST read, so reading the location
@@ -145,7 +147,7 @@ describe('read tooltip location', () => {
   // The connecting line between mates is a deliberate hover target — more so
   // now that chain mode draws one across displayed regions.
   it('spans the whole chain, not the read the hit test happened to name', () => {
-    const tip = formatReadTooltip(
+    const tip = readTip(
       makeRpcData({
         readChainIndices: new Uint32Array([0]),
         chainAbsMinStarts: new Uint32Array([1000]),
@@ -160,9 +162,7 @@ describe('read tooltip location', () => {
   // A hover on an ordinary read carries no chain arrays; the read's own span is
   // the right answer there and must still be what it reports.
   it('falls back to the read span with no chain metadata', () => {
-    expect(formatReadTooltip(makeRpcData(), 0, 'chr1')).toContain(
-      'chr1:1,001-1,100',
-    )
+    expect(readTip(makeRpcData(), 0, 'chr1')).toContain('chr1:1,001-1,100')
   })
 
   // The strand used to be the plain-pileup hover's alone, from a separate
@@ -171,34 +171,24 @@ describe('read tooltip location', () => {
   // chain mode dropped it entirely.
   it('prints the strand on the location line', () => {
     expect(
-      formatReadTooltip(
-        makeRpcData({ readStrands: Int8Array.from([-1]) }),
-        0,
-        'chr1',
-      ),
+      readTip(makeRpcData({ readStrands: Int8Array.from([-1]) }), 0, 'chr1'),
     ).toContain('chr1:1,001-1,100 (-)')
-    expect(formatReadTooltip(makeRpcData(), 0, 'chr1')).toContain(
-      'chr1:1,001-1,100 (+)',
-    )
+    expect(readTip(makeRpcData(), 0, 'chr1')).toContain('chr1:1,001-1,100 (+)')
   })
 
   // 0 is a real, and the most interesting, mapping quality — a multi-mapping
   // read — so the row is written from the value and not from its truthiness.
   it('reports the mapping quality', () => {
-    expect(formatReadTooltip(makeRpcData(), 0, 'chr1')).toContain('MAPQ: 60')
+    expect(readTip(makeRpcData(), 0, 'chr1')).toContain('MAPQ: 60')
     expect(
-      formatReadTooltip(
-        makeRpcData({ readMapqs: new Uint8Array([0]) }),
-        0,
-        'chr1',
-      ),
+      readTip(makeRpcData({ readMapqs: new Uint8Array([0]) }), 0, 'chr1'),
     ).toContain('MAPQ: 0')
   })
 
   // 255 is the spec's "not available" sentinel, named the same way the legend
   // and the MAPQ group-by name it.
   it('names an unavailable mapping quality rather than reporting 255', () => {
-    const tip = formatReadTooltip(
+    const tip = readTip(
       makeRpcData({ readMapqs: new Uint8Array([255]) }),
       0,
       'chr1',
@@ -244,7 +234,7 @@ describe('formatReadTooltip names the color bucket', () => {
   })
 
   it('reports the wording the legend uses, not the raw table', () => {
-    const tip = formatReadTooltip(framed, 0, 'chr1', c =>
+    const tip = readTip(framed, 0, 'chr1', c =>
       readColorCategoryLabel(c, readCategoryLabelOverrides(undefined)),
     )
     // the confusing pair, and the reason the row exists: a reverse-MAPPED
@@ -256,14 +246,14 @@ describe('formatReadTooltip names the color bucket', () => {
   })
 
   it('says nothing when no label resolver is supplied', () => {
-    expect(formatReadTooltip(framed, 0, 'chr1')).not.toContain('Color:')
+    expect(readTip(framed, 0, 'chr1')).not.toContain('Color:')
   })
 
   // `readColorCategories` ships EMPTY from the worker and is baked on the main
   // thread, so a hover can beat the bake. Every other row of this tooltip is
   // readable then, and this one has to be absent rather than "Color: undefined".
   it('says nothing before the categories are baked', () => {
-    const tip = formatReadTooltip(
+    const tip = readTip(
       makeRpcData({ readColorCategories: new Uint8Array(0) }),
       0,
       'chr1',
@@ -276,7 +266,7 @@ describe('formatReadTooltip names the color bucket', () => {
   it('omits the row for a bucket with no single name', () => {
     // the mapq/tag/modification ramps have no one swatch, so `undefined` must
     // append nothing rather than an empty row
-    const tip = formatReadTooltip(
+    const tip = readTip(
       makeRpcData({
         readColorCategories: Uint8Array.from([READ_COLOR_CATEGORY.mapq]),
       }),
@@ -288,22 +278,8 @@ describe('formatReadTooltip names the color bucket', () => {
   })
 })
 
-// The SAM spec admits `<` and `>` in a QNAME, and the tooltip is HTML.
-test('a read name with angle brackets renders as itself', () => {
-  const tip = formatReadTooltip(
-    makeRpcData(namesToBlock(['read<1>'])),
-    0,
-    'chr1',
-  )
-  expect(tip).toContain('<b>read&lt;1&gt;</b>')
-  expect(
-    formatFeatureLabel({
-      name: 'read<1>',
-      id: 'x',
-      refName: 'chr1',
-      start: 0,
-      end: 10,
-      strand: 1,
-    }),
-  ).toContain('read&lt;1&gt;')
+test('the read name is the title, not a line', () => {
+  const tip = formatReadTooltip(makeRpcData(), 0, 'chr1')
+  expect(tip.title).toBe('readA')
+  expect(tip.lines.join('\n')).not.toContain('readA')
 })

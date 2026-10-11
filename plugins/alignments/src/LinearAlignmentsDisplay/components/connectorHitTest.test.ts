@@ -161,14 +161,14 @@ test('the tooltip names the connection and both reads, and the loci a junction s
     id2: 'x2',
     hiddenSegmentsBetween: ['chr10:600,001-600,199'],
   }
-  const tip = formatConnectorTooltip(hit, info)
-  expect(tip).toContain('Split alignment: read-x1')
-  expect(tip).toContain('→ read-x2')
-  expect(tip).toContain('chr10:600,001-600,199')
+  const [connection, note] = formatConnectorTooltip(hit, info).lines
+  expect(connection).toContain('Split alignment: read-x1')
+  expect(connection).toContain('→ read-x2')
+  expect(note).toContain('chr10:600,001-600,199')
   expect(
     formatConnectorTooltip(
       { ...hit, hiddenSegmentsBetween: undefined },
       () => undefined,
-    ),
-  ).toBe('Split alignment')
+    ).lines,
+  ).toEqual(['Split alignment'])
 })

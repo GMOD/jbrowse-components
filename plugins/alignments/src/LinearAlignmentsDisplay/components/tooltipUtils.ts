@@ -8,7 +8,6 @@ import {
   SAM_FLAG_SUPPLEMENTARY,
 } from '@jbrowse/cigar-utils'
 import { toLocale } from '@jbrowse/core/util'
-import { escapeHTML } from '@jbrowse/core/util/htmlText'
 import { hiddenSegmentsNote } from '@jbrowse/sv-core'
 
 import {
@@ -32,6 +31,14 @@ import type { CigarHitResult } from '../../shared/hitTestTypes.ts'
 import type { InsertSizeBand } from '../../shared/insertSizeStats.ts'
 import type { ReadColorCategory } from '../colorUtils.ts'
 import type { CoverageBin, InterbaseBin } from './positionStats.ts'
+
+// Lines of plain text, rendered as text nodes: a read name or a tag value can
+// hold `<`, `>` or `&`, and there is no markup here for them to be mistaken for.
+export interface TextTooltipPayload {
+  type: 'text'
+  title?: string
+  lines: string[]
+}
 
 export interface IndicatorTooltipPayload {
   type: 'indicator'
@@ -141,11 +148,8 @@ export function supportLabel(support: number) {
   return `Supported by ${readCount(support)}`
 }
 
-// HTML/plain strings come from formatReadTooltip / formatCigarTooltip;
-// structured payloads come from the other formatters. The consumer dispatches on
-// typeof + .type.
 export type TooltipPayload =
-  | string
+  | TextTooltipPayload
   | IndicatorTooltipPayload
   | CoverageTooltipPayload
   | ModificationTooltipPayload
@@ -265,8 +269,7 @@ export function formatReadTooltip(
   idx: number,
   refName: string,
   categoryLabel?: (c: ReadColorCategory) => string | undefined,
-) {
-  const name = readNameAt(rpcData, idx)
+): TextTooltipPayload {
   const { start, end } = chainSpan(rpcData, idx)
   const flags = rpcData.readFlags[idx] ?? 0
   const insertSize = rpcData.readInsertSizes[idx] ?? 0
@@ -274,7 +277,6 @@ export function formatReadTooltip(
   const mapq = rpcData.readMapqs[idx]
 
   const lines = [
-    `<b>${escapeHTML(name)}</b>`,
     `${formatLocationRange(refName, start, end)} (${rpcData.readStrands[idx] === -1 ? '-' : '+'})`,
   ]
 
@@ -321,10 +323,16 @@ export function formatReadTooltip(
     lines.push(`Color: ${category}`)
   }
 
-  return lines.join('<br>')
+  return { type: 'text', title: readNameAt(rpcData, idx), lines }
 }
 
-export function formatCigarTooltip(cigarHit: CigarHitResult) {
+export function formatCigarTooltip(
+  cigarHit: CigarHitResult,
+): TextTooltipPayload {
+  return { type: 'text', lines: [cigarLabel(cigarHit)] }
+}
+
+function cigarLabel(cigarHit: CigarHitResult) {
   const pos = toLocale(cigarHit.position + 1)
   switch (cigarHit.type) {
     case 'mismatch': {
@@ -496,7 +504,7 @@ export function formatArcLineTooltip(
 export function formatConnectorTooltip(
   hit: Pick<ConnectorHit, 'label' | 'id1' | 'id2' | 'hiddenSegmentsBetween'>,
   infoOf: (id: string) => TooltipFeatureInfo | undefined,
-) {
+): TextTooltipPayload {
   const parts: string[] = []
   for (const id of [hit.id1, hit.id2]) {
     const info = infoOf(id)
@@ -506,9 +514,12 @@ export function formatConnectorTooltip(
   }
   const connection =
     parts.length > 0 ? `${hit.label}: ${parts.join(' → ')}` : hit.label
-  return hit.hiddenSegmentsBetween?.length
-    ? `${connection}<br/>${hiddenSegmentsNote(hit.hiddenSegmentsBetween)}`
-    : connection
+  return {
+    type: 'text',
+    lines: hit.hiddenSegmentsBetween?.length
+      ? [connection, hiddenSegmentsNote(hit.hiddenSegmentsBetween)]
+      : [connection],
+  }
 }
 
 export interface TooltipFeatureInfo {
@@ -523,5 +534,5 @@ export interface TooltipFeatureInfo {
 // "name chr1:1,001-1,100" for one read, for the connector mark's two-endpoint
 // tooltip. No strand: the curve's own color already encodes orientation.
 export function formatFeatureLabel(info: TooltipFeatureInfo) {
-  return `${escapeHTML(info.name || info.id)} ${formatLocationRange(info.refName, info.start, info.end)}`
+  return `${info.name || info.id} ${formatLocationRange(info.refName, info.start, info.end)}`
 }
