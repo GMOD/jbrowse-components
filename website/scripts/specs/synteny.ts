@@ -1183,7 +1183,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
     viewportHeight: 433,
   },
 
-  // Gene-level ortholog zoom: drill into a ~75 kb window of the conserved
+  // Gene-level ortholog zoom: drill into a window of the conserved
   // block (grape chr11 / peach chrG7 / cacao chr9). showOnlyGenes collapses each locus
   // to its gene glyph and compact displayMode packs the rows, so the ribbons
   // read one ortholog at a time. All three run in the same (forward)
@@ -1204,7 +1204,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
             views: [
               {
                 assembly: 'GCF_000346465.2',
-                loc: 'chrG7:18,555,000-18,690,000',
+                loc: 'chrG7:18,565,100-18,700,100',
                 tracks: [
                   {
                     trackId: 'GCF_000346465.2-ncbiRefSeq',
@@ -1228,7 +1228,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
               },
               {
                 assembly: 'GCF_030704535.1',
-                loc: 'chr11:778,000-905,000',
+                loc: 'chr11:787,000-914,000',
                 tracks: [
                   {
                     trackId: 'GCF_030704535.1-ncbiRefSeq',
@@ -1243,7 +1243,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
               },
               {
                 assembly: 'GCF_000208745.1',
-                loc: 'chr9:3,890,000-3,995,000',
+                loc: 'chr9:3,898,700-4,003,700',
                 tracks: [
                   {
                     trackId: 'GCF_000208745.1-ncbiRefSeq',
@@ -1262,7 +1262,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
               ['grape_peach_cacao_blocks'],
             ],
             drawCurves: true,
-            color: { field: 'copies' },
+            color: { field: 'syntenicDepth' },
           },
         ],
       },
@@ -1278,23 +1278,24 @@ export const syntenySpecs: ScreenshotSpec[] = [
     // guess -- one gene's isoforms each drawing their own ribbon -- is the right
     // shape and the wrong mechanism: over this window each grape transcript in
     // `grape.bed.gz` sits at its own locus, one row each. What repeats is the
-    // MATE. Four grape loci (836, 857, 862 and 867 kb) name the same peach
-    // transcript (rna-XM_007203660.2) and the same cacao one; two more share
-    // rna-XM_020568573.1 (778 and 784 kb), and two rna-XM_020568287.1 (852 and
-    // 869 kb). `color: copies` paints exactly these, the fan darkest, and leaves
-    // the one-to-one rest grey.
+    // MATE. Four grape loci (836, 857, 862 and 867 kb), all
+    // trimethyltridecatetraene (TMTT) synthase copies by their RefSeq names,
+    // name the same peach transcript (rna-XM_007203660.2) and the same cacao
+    // one, both annotated flavonoid 3'-monooxygenase; two more (852 and 869 kb)
+    // share rna-XM_020568287.1. So
+    // the fan is a tandem expansion in grape against a single ortholog in each
+    // of the other two genomes, and the most interesting thing in the frame
+    // rather than a rendering fault.
     //
-    // The 836, 857 and 862 kb loci are the trimethyltridecatetraene synthase
-    // copies RefSeq names. So the fan is a tandem expansion in grape against a
-    // single ortholog in each of the other two genomes -- 4:1 and 2:1 anchors
-    // that MCScan is right to emit -- and it is the most interesting thing in
-    // the frame rather than a rendering fault. Hence a pill instead of a fix.
-    // The windows run on past the array so the pill sits right of the fan it
-    // names rather than over it.
+    // `color: syntenicDepth` paints exactly these: the fan's links at depth 4
+    // in the darkest bin, the pair at 2 in the lighter one, the rest grey. The
+    // depth counts the whole table, so the windows start past a second array
+    // (grape 774-784 kb against peach 18,561.9 kb and cacao 3,895.4 kb, depth 3)
+    // that would otherwise paint the same dark orange from the frame's edge.
     annotations: [
       {
         type: 'text',
-        text: 'grape copies sharing one peach and one cacao ortholog: a tandem expansion',
+        text: 'grape TMTT synthase array: tandem copies against one peach and one cacao gene',
         fontSize: 18,
         maxWidth: 300,
         leader: true,
@@ -1319,8 +1320,8 @@ export const syntenySpecs: ScreenshotSpec[] = [
   // Baked into the session (facet on the track entry) rather than driven
   // through the menu, so the figure can't drift from it.
   //
-  // Same window as the gene-ortholog figure above (grape 11), so the two are the
-  // same locus read the two ways: as a stack of three genomes, and as one genome
+  // Overlaps the gene-ortholog figure's window above (grape 11), so the two are
+  // the same locus read the two ways: as a stack of three genomes, and as one genome
   // with a lane per mate.
   {
     mode: 'url',

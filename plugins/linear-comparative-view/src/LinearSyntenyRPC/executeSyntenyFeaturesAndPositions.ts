@@ -356,7 +356,7 @@ export async function executeSyntenyFeaturesAndPositions({
   const endsArray = new Uint32Array(count)
   const mateStartsArray = new Uint32Array(count)
   const mateEndsArray = new Uint32Array(count)
-  // Every numeric channel a continuous mode can paint, keyed by name: the four
+  // Every numeric channel a continuous mode can paint, keyed by name: the
   // presets plus whatever the track declares. `identity` is in here too and
   // aliases identitiesArray below, so identity fade and the detail panel keep
   // their named field without a second copy or a second transfer.

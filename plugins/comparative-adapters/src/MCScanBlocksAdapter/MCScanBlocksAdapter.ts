@@ -359,7 +359,7 @@ export default class MCScanBlocksAdapter extends ComparativeAdapterBase<MCScanBl
             ...pair,
             rowNum,
             strand: pair.a.strand * pair.b.strand,
-            copies: Math.max(
+            syntenicDepth: Math.max(
               counts.get(`${assemblyA}\t${pair.a.name}`)!,
               counts.get(`${assemblyB}\t${pair.b.name}`)!,
             ),

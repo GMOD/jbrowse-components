@@ -33,7 +33,7 @@ export interface BlockRow {
   // How many genes share this link's ortholog, the larger side's count: 1 for a
   // one-to-one pair, 3 for each link of a tandem triple against one gene.
   // Only the blocks adapter counts it.
-  copies?: number
+  syntenicDepth?: number
   // Numeric columns the source file carried past its gene columns, named by
   // config — `identity`, `dn`/`ds`, `goc_score`. They ride onto the feature so a
   // colorBy mode or the detail panel can read them; the format itself is only
@@ -221,7 +221,7 @@ export function makeBlockFeatures(
     const first = side === 0
     const assemblyName = assemblyNames[side]!
     const mateAssemblyName = assemblyNames[first ? 1 : 0]!
-    for (const { a, b, rowNum, strand, score, copies, attrs } of rows) {
+    for (const { a, b, rowNum, strand, score, syntenicDepth, attrs } of rows) {
       const f1 = first ? a : b
       if (doesIntersect2(region.start, region.end, f1.start, f1.end)) {
         out.push(
@@ -236,7 +236,7 @@ export function makeBlockFeatures(
             strand,
             assemblyName,
             ...(score === undefined ? undefined : { score }),
-            ...(copies === undefined ? undefined : { copies }),
+            ...(syntenicDepth === undefined ? undefined : { syntenicDepth }),
             mate: {
               ...(first ? b : a),
               assemblyName: mateAssemblyName,

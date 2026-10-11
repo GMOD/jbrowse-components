@@ -503,11 +503,11 @@ describe('a duplicated gene expanded across rows', () => {
       ['p4', 'c4'],
     ])
   })
-  test('copies counts the genes sharing an ortholog', async () => {
+  test('syntenicDepth counts the genes sharing an ortholog', async () => {
     const pairs = async (assemblyNames: string[], region = grapeRegion) =>
       (await expandFeats(assemblyNames, region)).map(f => [
         f.get('name'),
-        f.get('copies'),
+        f.get('syntenicDepth'),
       ])
     expect(await pairs(['grape', 'peach'])).toEqual([
       ['g1', 2],
@@ -606,7 +606,7 @@ describe('a genome in several columns (mcscan --iter=2)', () => {
     expect(fa.length).toBe(5)
   })
 
-  test('copies counts every mate a gene has across copy columns', async () => {
+  test('syntenicDepth counts every mate a gene has across copy columns', async () => {
     const fa = await iterFeats(['grape', 'peach'], grapeRegion)
     // g1's two peach copies sit in different columns, and p4 answers to g2 in
     // one and g4 in the other
@@ -615,7 +615,7 @@ describe('a genome in several columns (mcscan --iter=2)', () => {
         .map(f => [
           f.get('name'),
           (f.get('mate') as { name: string }).name,
-          f.get('copies'),
+          f.get('syntenicDepth'),
         ])
         .sort(),
     ).toEqual([

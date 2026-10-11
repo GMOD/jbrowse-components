@@ -197,9 +197,11 @@ ribbon band; close it with its own button and it stays away for that mode.
     purifying selection, red above it positive selection, clamped at 2. It needs
     an [ortholog table](/docs/tutorials/homoeolog_synteny) with `dn` and `ds`
     per link
-  - Copies - grey for a one-to-one ortholog, orange where several genes share
-    one, darker from three on, so a tandem array stands out against the
-    collinear rest. It needs an MCScan `.blocks` table
+  - Syntenic depth - grey for a one-to-one ortholog, orange where several genes
+    share one, darker from three on, so a tandem array stands out against the
+    collinear rest. It needs an MCScan `.blocks` table, and counts over the
+    whole table, so a gene sharing an ortholog with one off screen still takes
+    color
   - Any column the table declares - an ortholog table's `attributeColumns` each
     become an entry named after the column. A numeric column paints a viridis
     ramp labelled with the values seen; a text column, an ancestral linkage

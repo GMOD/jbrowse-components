@@ -19,6 +19,8 @@ export interface ColorModeEntry {
   label: string
   helpText: string
   surfaceHelpText?: Partial<Record<ColorModeSurface, string>>
+  /** the surfaces whose data can carry the field; unset is every one */
+  surfaces?: ColorModeSurface[]
 }
 
 export const COLOR_MODES: ColorModeEntry[] = [
@@ -99,10 +101,11 @@ export const COLOR_MODES: ColorModeEntry[] = [
       'Blue below 1 is purifying selection, red above it positive, clamped at 2. Needs dn and ds columns.',
   },
   {
-    field: 'copies',
+    field: 'syntenicDepth',
     kind: 'value',
-    label: 'Copies',
+    label: 'Syntenic depth',
     helpText:
-      'Grey for a one-to-one ortholog, orange where several genes share one, as a tandem array does. Needs an MCScan blocks table.',
+      'Grey for a one-to-one ortholog, orange where several genes share one, often a tandem array. Counted over the whole MCScan blocks table, so a gene sharing with one off screen still takes color.',
+    surfaces: ['ribbons', 'points'],
   },
 ]

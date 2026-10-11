@@ -85,7 +85,8 @@ export function syntenyColorSlots({
  * alignment carries — its strand, the sequence at either end, the anchor
  * assembly's, the track it came from, a measurement through its preset
  * (`identity` and `dnds` on a ramp, `mapq` in the alignments display's bins,
- * `copies` grey for a one-to-one ortholog and orange where genes share one),
+ * `syntenicDepth` grey for a one-to-one ortholog and orange where genes share
+ * one),
  * or a column the tracks declare in `attributeColumns`. A string is the
  * constant.
  *
@@ -133,7 +134,7 @@ export const syntenyColorConfigSchema = ConfigurationSchema(
     ...syntenyColorSlots({
       scaleName: 'SyntenyColorScale',
       field:
-        'what colors an alignment: strand paints forward and reverse; query and target one color per sequence on that side, reference one per chromosome of the anchor assembly across a stack, track one per overlaid track (pinned under Track colors); identity and dnds paint their preset ramps, mapq its bins and copies grey for a one-to-one MCScan blocks link and orange where genes share an ortholog; any other name is a column the tracks declare in attributeColumns, a ramp over the values seen for numbers and one color per label for text (or the color a color column put beside it)',
+        'what colors an alignment: strand paints forward and reverse; query and target one color per sequence on that side, reference one per chromosome of the anchor assembly across a stack, track one per overlaid track (pinned under Track colors); identity and dnds paint their preset ramps, mapq its bins and syntenicDepth grey for a one-to-one MCScan blocks link and orange where genes share an ortholog; any other name is a column the tracks declare in attributeColumns, a ramp over the values seen for numbers and one color per label for text (or the color a color column put beside it)',
     }),
   },
   colorChannelOptions('color', MEASURE_FIELD_PRESETS),

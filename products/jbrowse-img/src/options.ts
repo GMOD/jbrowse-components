@@ -73,7 +73,7 @@ const syntenyColorByModes = [
   'identity',
   'mapq',
   'dnds',
-  'copies',
+  'syntenicDepth',
 ] as const satisfies readonly SyntenyColorField[]
 
 // The theme names, pinned to core's own registry so a palette added or renamed

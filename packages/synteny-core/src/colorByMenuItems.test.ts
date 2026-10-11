@@ -161,7 +161,7 @@ test('value modes live in one submenu whose row names the active one', () => {
     'Identity',
     'Mapping quality',
     'dN/dS',
-    'Copies',
+    'Syntenic depth',
   ])
   const active = labels(colorByMenuItems(target({ field: 'dnds' })))
   expect(active).toContain(`${VALUE_MODES_LABEL} — dN/dS`)
@@ -182,12 +182,23 @@ test('a value mode is disabled until the data has carried it', () => {
     Identity: false,
     'Mapping quality': true,
     'dN/dS': true,
-    Copies: true,
+    'Syntenic depth': true,
   })
   const dnds = rows.find(r => 'label' in r && r.label === 'dN/dS')!
   expect('disabledHelpText' in dnds && dnds.disabledHelpText).toBe(
     'The loaded alignments carry no dN/dS',
   )
+})
+
+// The multi-way display's grouped features keep one set of attributes per
+// anchor gene, so a per-link measurement has nowhere to ride.
+test('a value mode is left off a surface whose data cannot carry it', () => {
+  expect(
+    labels(valueModes(colorByMenuItems(target({ surface: 'lanes' })))),
+  ).not.toContain('Syntenic depth')
+  expect(
+    labels(valueModes(colorByMenuItems(target({ surface: 'points' })))),
+  ).toContain('Syntenic depth')
 })
 
 test('the mapq field is offered once the adapters carry mappingQual', () => {

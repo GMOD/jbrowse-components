@@ -277,13 +277,14 @@ pair, the rows where both cells resolve.
 
 We'll stack peach over grape over cacao. Then:
 
-- Navigate the rows to `chrG7:18,555,000-18,690,000`, `chr11:778,000-905,000`
-  and `chr9:3,890,000-3,995,000`.
+- Navigate the rows to `chrG7:18,565,100-18,700,100`, `chr11:787,000-914,000`
+  and `chr9:3,898,700-4,003,700`.
 - Turn on each genome's **NCBI RefSeq - RefSeq All** track with **Show only
   genes**.
-- Pick **Color by value → Copies** on the palette button in the view header.
+- Pick **Color by value → Syntenic depth** on the palette button in the view
+  header.
 
-<Figure caption="Gene-level view of one conserved block, peach chrG7 over grape chr11 over cacao chr9, with the gene track for each genome on. Grey one-to-one orthologs step across all three in the same order, and orange marks grape genes that share an ortholog, darkest at the fan where a tandem array meets one peach and one cacao gene." src="/img/multiway_synteny/grape_peach_cacao_gene_orthologs.png" />
+<Figure caption="Gene-level view of one conserved block, peach chrG7 over grape chr11 over cacao chr9, with the gene track for each genome on. Ribbons colored by syntenic depth: grey one-to-one orthologs step across all three in the same order, and orange marks grape genes that share an ortholog, darkest at the fan where a tandem array meets one peach and one cacao gene." src="/img/multiway_synteny/grape_peach_cacao_gene_orthologs.png" />
 
 ## One grape locus against all seven genomes
 

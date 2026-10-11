@@ -42,8 +42,11 @@ function valueModes({
   attributes,
   attributeRanges,
   structuralFields,
+  surface,
 }: ColorByMenuTarget): ModeEntry[] {
-  const presets = COLOR_MODES.filter(m => m.kind === 'value')
+  const presets = COLOR_MODES.filter(
+    m => m.kind === 'value' && (m.surfaces?.includes(surface) ?? true),
+  )
   // one radio per field: a column an aligner happened to name `identity` or
   // `strand` is the preset or the structural radio already listed, since both
   // write the same field

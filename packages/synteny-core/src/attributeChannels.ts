@@ -6,7 +6,7 @@ import type { Feature } from '@jbrowse/core/util'
 /**
  * The per-feature channels a color-by mode can paint.
  *
- * The four presets are always collected, because their modes exist whatever the
+ * The presets are always collected, because their modes exist whatever the
  * data is. Anything else comes from the track's own declaration — an ortholog
  * table's `attributeColumns` — rather than from whatever keys the features
  * happen to carry: a whole-genome PAF puts every `xx:i:` tag (NM, ms, AS, nn,
@@ -28,7 +28,7 @@ export const PRESET_ATTRIBUTES = [
   'meanIdentity',
   'mappingQual',
   'dnds',
-  'copies',
+  'syntenicDepth',
 ] as const
 
 // `attributeColumns` names an ortholog table's extra columns or a PAF's tags; a
@@ -69,8 +69,8 @@ export function colorableColumns(declared: readonly string[]) {
  * because both workers write every channel of every feature, which makes this
  * their innermost loop. Reaching a channel by name cost a dictionary lookup for
  * the buffer and a `Map.get`/`Map.set` pair for each end of the range, per
- * channel per feature — four preset channels over a whole-genome fetch is
- * millions of hash lookups to write four floats.
+ * channel per feature — over a whole-genome fetch, millions of hash lookups to
+ * write one float per preset.
  */
 export interface AttributeChannel {
   name: string

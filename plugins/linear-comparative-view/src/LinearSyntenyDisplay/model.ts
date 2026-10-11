@@ -54,9 +54,8 @@ import type {
 // and marked for renaming. Only the irregular fields are declared here.
 export interface SyntenyFeatureData extends SyntenyFeatureLanes {
   // Every numeric channel a continuous color-by mode can paint, keyed by
-  // attribute name. Holds the four presets — `identity`, `meanIdentity`,
-  // `mappingQual`, and the derived `dnds` — plus whatever columns the track
-  // declares, so switching between them recolors on the main thread with no
+  // attribute name. Holds the presets (`PRESET_ATTRIBUTES`) plus whatever
+  // columns the track declares, so switching between them recolors on the main thread with no
   // refetch. Float32 with NaN for missing, which is why there is no valid bitmap.
   attributes: Record<string, Float32Array>
   // What each channel actually spanned, ignoring the NaNs. The domain a

@@ -42,7 +42,7 @@ export interface DotplotFeaturesAndPositionsResult {
   // same name LinearSyntenyDisplay's geometry already uses.
   alignmentLengths: Uint32Array
   // every numeric channel a continuous mode can paint, keyed by attribute name:
-  // the four presets plus whatever the track declares
+  // the presets plus whatever the track declares
   attributes: Record<string, Float32Array>
   attributeRanges: Record<string, AttributeRange>
   // Per-feature refNames, dictionary-encoded: `refNameIds[i]` indexes
