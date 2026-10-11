@@ -141,6 +141,7 @@ import {
   laneContentHeight,
   laneGeometry,
 } from './laneStack.ts'
+import { patternNamesTrack } from './laneTrackPattern.ts'
 import {
   anchorlessGroupsOf,
   clipGroupToAnchor,
@@ -1287,7 +1288,8 @@ export function stateModelFactory(
        */
       get laneGeneTracks() {
         const session = getSession(self)
-        const named = new Set<string>(getConf(self, 'laneGeneTracks'))
+        const entries: string[] = getConf(self, 'laneGeneTracks')
+        const named = new Set(entries)
         const lanesByKey = new Map<string, string[]>()
         for (const lane of [self.anchorAssemblyName, ...self.rowAssemblies]) {
           const key = self.laneKey(lane)
@@ -1298,8 +1300,13 @@ export function stateModelFactory(
           const names = getConfAssemblyNamesOrNone(track)
           const type = (track.adapter as { type?: unknown } | undefined)?.type
           const rank = named.has(track.trackId)
-            ? -1
-            : annotationRank(typeof type === 'string' ? type : undefined)
+            ? -2
+            : patternNamesTrack(entries, track.trackId, [
+                  ...names,
+                  ...names.map(self.laneKey),
+                ])
+              ? -1
+              : annotationRank(typeof type === 'string' ? type : undefined)
           if (names.length === 1 && rank !== undefined) {
             const key = self.laneKey(names[0]!)
             const held = best.get(key)
@@ -1897,26 +1904,32 @@ export function stateModelFactory(
     .views(self => ({
       /** #getter */
       get laneLayerSources(): Map<string, LaneLayerSource>[] {
+        const sessionTracks = allSessionTracks(getSession(self))
         const byId = new Map(
-          allSessionTracks(getSession(self)).map(track => [
-            track.trackId as string,
-            track,
-          ]),
+          sessionTracks.map(track => [track.trackId as string, track]),
         )
         const lanes = [self.anchorAssemblyName, ...self.rowAssemblies]
         return self.configuration.laneLayers.map((layer, i) => {
           const out = new Map<string, LaneLayerSource>()
-          for (const trackId of layer.tracks) {
-            const track = byId.get(trackId)
-            const names = track ? getConfAssemblyNamesOrNone(track) : []
+          const named = [
+            ...layer.tracks.flatMap(id => byId.get(id) ?? []),
+            ...sessionTracks.filter(track => {
+              const names = getConfAssemblyNamesOrNone(track)
+              return patternNamesTrack(layer.tracks, track.trackId, [
+                ...names,
+                ...names.map(self.laneKey),
+              ])
+            }),
+          ]
+          for (const track of named) {
+            const names = getConfAssemblyNamesOrNone(track)
             for (const lane of lanes) {
               if (
-                track &&
                 !out.has(lane) &&
                 names.some(name => self.laneKey(name) === self.laneKey(lane))
               ) {
                 out.set(lane, {
-                  source: trackId,
+                  source: track.trackId,
                   adapterConfig: toTrackConfigEntry(track).adapter as Record<
                     string,
                     unknown

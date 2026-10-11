@@ -287,6 +287,43 @@ describe('a template layer', () => {
     ])
   })
 
+  test('an `{assembly}` entry names each lane the track spelt with its genome, and a plain id outranks it', async () => {
+    const geneTracks = [
+      { trackId: 'volvox-scores', assemblyNames: ['volvox'] },
+      { trackId: 'volvox_random-scores', assemblyNames: ['volvox_random'] },
+      { trackId: 'volvox_random-other', assemblyNames: ['volvox_random'] },
+    ]
+    const sourcesOf = (display: {
+      laneLayerSources: Map<string, { source: string }>[]
+    }) =>
+      [...display.laneLayerSources[0]!].map(([lane, { source }]) => [
+        lane,
+        source,
+      ])
+    expect(
+      sourcesOf(
+        await templateDisplay(GC, {
+          geneTracks,
+          tracks: ['{assembly}-scores'],
+        }),
+      ),
+    ).toEqual([
+      ['volvox', 'volvox-scores'],
+      ['volvox_random', 'volvox_random-scores'],
+    ])
+    expect(
+      sourcesOf(
+        await templateDisplay(GC, {
+          geneTracks,
+          tracks: ['{assembly}-scores', 'volvox_random-other'],
+        }),
+      ),
+    ).toEqual([
+      ['volvox_random', 'volvox_random-other'],
+      ['volvox', 'volvox-scores'],
+    ])
+  })
+
   test('an adapter that computes from no sequence is read by no lane, since each would read the one file at its own coordinates', async () => {
     const display = await templateDisplay({ type: 'Gff3TabixAdapter' })
     expect(reads(display)).toEqual([])

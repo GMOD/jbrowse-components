@@ -810,17 +810,7 @@
           "laneLayers": [
             {
               "name": "GC %",
-              "tracks": [
-                "hg38-gc5Base",
-                "panTro6-gc5Base",
-                "gorGor6-gc5Base",
-                "ponAbe3-gc5Base",
-                "rheMac10-gc5Base",
-                "calJac4-gc5Base",
-                "mm39-gc5Base",
-                "canFam6-gc5Base",
-                "bosTau9-gc5Base"
-              ],
+              "tracks": ["{assembly}-gc5Base"],
               "height": 24,
               "marks": [
                 {

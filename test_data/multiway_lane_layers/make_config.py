@@ -10,10 +10,8 @@ def gc_uri(db):
     return f'https://hgdownload.soe.ucsc.edu/gbdb/{db}/bbi/gc5BaseBw/gc5Base.bw'
 
 dbs = [a['name'] for a in config['assemblies']]
-gc_ids = []
 for db in dbs:
     track_id = f'{db}-gc5Base'
-    gc_ids.append(track_id)
     config['tracks'].append({
         'type': 'QuantitativeTrack',
         'trackId': track_id,
@@ -29,7 +27,7 @@ for track in config['tracks']:
             if display['type'] == 'MultiWaySyntenyDisplay':
                 display['laneLayers'] = [{
                     'name': 'GC %',
-                    'tracks': gc_ids,
+                    'tracks': ['{assembly}-gc5Base'],
                     'height': 24,
                     'marks': [{'mark': 'bar', 'encoding': {'y': 'score'}}],
                 }]

@@ -1219,6 +1219,27 @@ test('a lane draws the gene track the display names for its genome', () => {
   ])
 })
 
+test('an `{assembly}` entry names each lane its own gene track, and a plain id outranks it', () => {
+  const { display } = createDisplayWithSession({
+    geneTracks: [
+      { trackId: 'volvox-genes', assemblyNames: ['volvox'] },
+      { trackId: 'volvox-refseq', assemblyNames: ['volvox'] },
+      { trackId: 'volvox_random-genes', assemblyNames: ['volvox_random'] },
+      { trackId: 'volvox_random-refseq', assemblyNames: ['volvox_random'] },
+    ],
+  })
+  display.setFeatures([mateRecord('f1', 'volvox_random', 'gene1')])
+  const trackIdOf = (lane: string) => display.laneGeneTracks.get(lane)?.trackId
+
+  setConf(display, 'laneGeneTracks', ['{assembly}-refseq'])
+  expect(trackIdOf('volvox')).toBe('volvox-refseq')
+  expect(trackIdOf('volvox_random')).toBe('volvox_random-refseq')
+
+  setConf(display, 'laneGeneTracks', ['{assembly}-refseq', 'volvox-genes'])
+  expect(trackIdOf('volvox')).toBe('volvox-genes')
+  expect(trackIdOf('volvox_random')).toBe('volvox_random-refseq')
+})
+
 test('a lane selection reaches the adapter under every name the session knows the genome by', () => {
   const { display } = createDisplayWithSession({
     syntenyAdapter: { type: 'GbzBaseSyntenyAdapter' },

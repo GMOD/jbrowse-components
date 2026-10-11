@@ -10,7 +10,7 @@ Auto-generated from the config schema in the source — see the [config guide](/
 ## Example usage
 
 GC percent as bars above every lane's genes, from each genome's UCSC
-gc5Base bigWig added as a track:
+gc5Base bigWig added as a track with the trackId `<genome>-gc5Base`:
 
 ```js
 {
@@ -19,7 +19,7 @@ gc5Base bigWig added as a track:
   laneLayers: [
     {
       name: 'GC %',
-      tracks: ['hg38-gc5Base', 'panTro6-gc5Base', 'mm39-gc5Base'],
+      tracks: ['{assembly}-gc5Base'],
       marks: [{ mark: 'bar', encoding: { y: 'score' } }],
     },
   ],
@@ -56,7 +56,7 @@ Slot types (`fileLocation`, `frozen`, ...) are explained in the [config slot typ
 | Slot | Description |
 | --- | --- |
 | <span id="slot-name">**name**</span><br>[`string`](/docs/config_guides/slot_types#string) = <code>''</code> | what the layer's band is labelled |
-| <span id="slot-tracks">**tracks**</span><br>[`stringArray`](/docs/config_guides/slot_types#stringarray) = <code>[]</code> | the trackId each lane draws the layer from, one per genome, matched to a lane by the track's assembly. A lane no entry names draws an empty band |
+| <span id="slot-tracks">**tracks**</span><br>[`stringArray`](/docs/config_guides/slot_types#stringarray) = <code>[]</code> | the trackIds the lanes draw the layer from, matched to a lane by the track's assembly. An entry spelling `{assembly}`, such as `{assembly}-gc5Base`, names in each lane the track whose id has that lane's genome written there; a plain id outranks it. A lane no entry names draws an empty band |
 | <span id="slot-adapter">**adapter**</span><br>[`maybeFrozen`](/docs/config_guides/slot_types#the-maybe-types) = <code>undefined</code> | an adapter computing from the sequence, such as `{ type: 'GCContentAdapter' }`, that every lane `tracks` names nothing for reads through its own genome. A lane reads it only while its window is under 5 Mb, since that window is the sequence it downloads, and the band's title says to zoom in past that |
 | <span id="slot-height">**height**</span><br>[`number`](/docs/config_guides/slot_types#number) = <code>24</code> | px of band the layer takes in each lane |
 | <span id="slot-marks">**marks**</span><br><code>markListSchema([{ mark: 'bar', encoding: { y: 'score' } }])</code> | The mark display's marks, drawn over each lane's features; a mean such as a bigWig's `score` compares across lanes, where a `count` or `sum` reads denser on a zoomed-out lane. |

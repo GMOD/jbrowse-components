@@ -9,7 +9,7 @@ import { markListSchema } from '@jbrowse/plugin-marks'
  *
  * #example
  * GC percent as bars above every lane's genes, from each genome's UCSC
- * gc5Base bigWig added as a track:
+ * gc5Base bigWig added as a track with the trackId `<genome>-gc5Base`:
  * ```js
  * {
  *   type: 'MultiWaySyntenyDisplay',
@@ -17,7 +17,7 @@ import { markListSchema } from '@jbrowse/plugin-marks'
  *   laneLayers: [
  *     {
  *       name: 'GC %',
- *       tracks: ['hg38-gc5Base', 'panTro6-gc5Base', 'mm39-gc5Base'],
+ *       tracks: ['{assembly}-gc5Base'],
  *       marks: [{ mark: 'bar', encoding: { y: 'score' } }],
  *     },
  *   ],
@@ -59,7 +59,7 @@ export const laneLayerConfigSchema = ConfigurationSchema(
       type: 'stringArray',
       defaultValue: [],
       description:
-        "the trackId each lane draws the layer from, one per genome, matched to a lane by the track's assembly. A lane no entry names draws an empty band",
+        "the trackIds the lanes draw the layer from, matched to a lane by the track's assembly. An entry spelling `{assembly}`, such as `{assembly}-gc5Base`, names in each lane the track whose id has that lane's genome written there; a plain id outranks it. A lane no entry names draws an empty band",
     },
     /**
      * #slot adapter

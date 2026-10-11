@@ -10436,7 +10436,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           }
         },
         "tracks": {
-          "description": "the trackId each lane draws the layer from, one per genome, matched to a lane by the track's assembly. A lane no entry names draws an empty band.",
+          "description": "the trackIds the lanes draw the layer from, matched to a lane by the track's assembly. An entry spelling \`{assembly}\`, such as \`{assembly}-gc5Base\`, names in each lane the track whose id has that lane's genome written there; a plain id outranks it. A lane no entry names draws an empty band.",
           "if": {
             "type": "null"
           },
@@ -10587,7 +10587,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           }
         },
         "laneGeneTracks": {
-          "description": "the trackId of the gene track each lane draws, one per genome. A lane whose genome no entry names draws the session's best-ranked annotation track for it, which on a config holding several gene sets per genome is whichever is declared first.",
+          "description": "the trackId of the gene track each lane draws, one per genome, or an entry spelling \`{assembly}\`, such as \`{assembly}-ncbiRefSeq\`, naming in each lane the track whose id has that lane's genome written there; a plain id outranks it. A lane whose genome no entry names draws the session's best-ranked annotation track for it, which on a config holding several gene sets per genome is whichever is declared first.",
           "if": {
             "type": "null"
           },
