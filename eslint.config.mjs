@@ -388,6 +388,21 @@ const noShaderTextImport = {
   message:
     "Import the shader's `<name>.generated.ts` and pass it to slangPass; its `SOURCE` loads the text when a HAL is built with the pass.",
 }
+// `SanitizedHTML` decides markup-or-text by sniffing the whole string, so a
+// read name beside a `<br>` is parsed as markup and a `<abc>` in it vanishes,
+// while an escaped one beside no tag reaches the screen as `&lt;abc&gt;`.
+const htmlStitchingMessage =
+  'Do not stitch `<br>`/`<b>` around data into an HTML string: `SanitizedHTML` sniffs the whole string, so a value holding `<` is eaten or shown escaped depending on its neighbours. Pass lines as `string[]` and render them as text (`ComparativeTooltip`, the alignments `text` tooltip payload).'
+const noHtmlStitching = [
+  {
+    selector: String.raw`TemplateElement[value.raw=/<b>|<br\b/]`,
+    message: htmlStitchingMessage,
+  },
+  {
+    selector: String.raw`Literal[value=/<b>|<br\b/]`,
+    message: htmlStitchingMessage,
+  },
+]
 
 const sourceRestrictedSyntax = [
   ...restrictedSyntax,
@@ -407,6 +422,7 @@ const sourceRestrictedSyntax = [
   noTenthComposePart,
   noUnexplainedUntracked,
   noPayloadThroughAProp,
+  ...noHtmlStitching,
 ]
 
 export default defineConfig(
@@ -930,6 +946,18 @@ export default defineConfig(
       'no-restricted-syntax': [
         'error',
         ...sourceRestrictedSyntax.filter(s => s !== noSamFlagReverse),
+      ],
+    },
+  },
+  // The doc generators write markdown and static pages, where a `<br>` is the
+  // output itself and no `SanitizedHTML` sniffs it.
+  {
+    files: ['website/scripts/**/*'],
+    ignores: ['**/*.test.{ts,tsx}', '**/tests/**', '**/browser-tests/**'],
+    rules: {
+      'no-restricted-syntax': [
+        'error',
+        ...sourceRestrictedSyntax.filter(s => !noHtmlStitching.includes(s)),
       ],
     },
   },
