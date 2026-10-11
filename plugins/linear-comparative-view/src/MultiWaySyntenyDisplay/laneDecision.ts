@@ -200,7 +200,9 @@ const weightOf = (placements: WeighedPlacement[]) =>
 
 // Isolated clusters come off either end, the lighter end first, while the
 // weight dropped stays within the budget; an inner cluster never widens the
-// extent, so it stays.
+// extent, so it stays. A cluster on the budget can flip the rung for a step;
+// skipping the peel while the held rung covers the unpeeled bulk steadied it
+// and drew a third more steps at 3x or wider (multiway-lane-fit).
 function peelEnds(placements: WeighedPlacement[], gapBp: number) {
   const clusters = clustersOf(placements, gapBp)
   const budget = PEEL_BUDGET * weightOf(placements)
