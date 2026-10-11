@@ -744,6 +744,12 @@ importers:
       '@jbrowse/plugin-sequence':
         specifier: workspace:^
         version: link:../../plugins/sequence
+      react:
+        specifier: '>=19.0.0'
+        version: 19.3.0
+      react-dom:
+        specifier: '>=19.0.0'
+        version: 19.3.0(react@19.3.0)
     devDependencies:
       esbuild:
         specifier: ^0.28.2
