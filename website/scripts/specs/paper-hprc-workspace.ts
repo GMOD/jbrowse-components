@@ -140,7 +140,7 @@ const callouts: Annotation[] = [
     fontSize: 20,
     anchor: { graphNode: DELETION_NODE },
     dx: -230,
-    dy: 95,
+    dy: 60,
   },
 ]
 
