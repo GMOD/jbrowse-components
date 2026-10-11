@@ -153,6 +153,52 @@ test('serves a self-alignment naming one assembly twice', async () => {
   ])
 })
 
+// A tandem pair in grape against one peach gene, beside a one-to-one ortholog.
+// The same pair named in two blocks still counts once.
+test('each link carries its syntenic depth', async () => {
+  const dir = mkdtempSync(join(tmpdir(), 'mcscan-depth-'))
+  const write = (name: string, text: string) => {
+    const path = join(dir, name)
+    writeFileSync(path, `${text}\n`)
+    return { localPath: path, locationType: 'LocalPathLocation' as const }
+  }
+  const adapter = new Adapter(
+    configSchema.create({
+      bed1Location: write(
+        'a.bed',
+        [
+          'chr1\t100\t200\tg1\t0\t+',
+          'chr1\t300\t400\tg1b\t0\t+',
+          'chr1\t900\t1000\tg3\t0\t+',
+        ].join('\n'),
+      ),
+      bed2Location: write(
+        'b.bed',
+        ['ctgA\t500\t600\tg2\t0\t+', 'ctgA\t700\t800\tg4\t0\t+'].join('\n'),
+      ),
+      mcscanAnchorsLocation: write(
+        'in.anchors',
+        [
+          '###',
+          'g1\tg2\t100',
+          'g1b\tg2\t90',
+          'g3\tg4\t80',
+          '###',
+          'g1\tg2\t70',
+        ].join('\n'),
+      ),
+      assemblyNames: ['grape', 'peach'],
+    }),
+  )
+  const fa = await gets(adapter)
+  expect(fa.map(f => [f.get('name'), f.get('syntenicDepth')])).toEqual([
+    ['g1', 2],
+    ['g1b', 2],
+    ['g3', 1],
+    ['g1', 2],
+  ])
+})
+
 // a row without a usable score column is a missing value, not a NaN: `+score`
 // on an absent column put NaN on the feature and into the detail panel, which
 // is the same case parseBed already guards for the BED's own score column

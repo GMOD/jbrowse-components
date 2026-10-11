@@ -26,6 +26,7 @@ export default class MCScanAnchorsAdapter extends McscanAnchorsAdapterBase<MCSca
               score: anchorScore(score),
             }
       },
+      genePairs: true,
     }
   }
 }

@@ -47,6 +47,7 @@ export default class MCScanSimpleAnchorsAdapter extends McscanAnchorsAdapterBase
               score: anchorScore(score),
             }
       },
+      genePairs: false,
     }
   }
 }

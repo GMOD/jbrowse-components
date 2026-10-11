@@ -9,6 +9,8 @@ import {
   joinBedPair,
   makeBlockFeatures,
   makeGroupedFeatures,
+  partnerCounts,
+  syntenicDepthOf,
 } from '../mcscanUtil.ts'
 import { parseBed, readFiles } from '../util.ts'
 
@@ -272,10 +274,9 @@ export default class MCScanBlocksAdapter extends ComparativeAdapterBase<MCScanBl
     }
   }
 
-  // How many distinct genes each gene links to across every column pair of two
-  // genomes, keyed `assembly\tgene` so a self-comparison pools both columns of
-  // one genome. Built once per genome pair: a tandem array's copies can sit in
-  // different copy columns, so one column pair alone would undercount it.
+  // `partnerCounts` across every column pair of two genomes, built once per
+  // genome pair: a tandem array's copies can sit in different copy columns, so
+  // one column pair alone would undercount it.
   private partnerCounts(
     assemblyA: string,
     assemblyB: string,
@@ -285,33 +286,29 @@ export default class MCScanBlocksAdapter extends ComparativeAdapterBase<MCScanBl
     let counts = setup.partnerCounts.get(key)
     if (!counts) {
       const { blockAssemblies, bedMaps, blockLines } = setup
-      const partners = new Map<string, Set<string>>()
-      const link = (gene: string, partner: string) => {
-        let set = partners.get(gene)
-        if (!set) {
-          set = new Set()
-          partners.set(gene, set)
-        }
-        set.add(partner)
-      }
-      for (const [colA, colB] of columnPairs(
-        blockAssemblies,
+      counts = partnerCounts(
         assemblyA,
         assemblyB,
-      )) {
-        for (const cols of blockLines) {
-          const nameA = cols[colA]
-          const nameB = cols[colB]
-          if (
-            joinBedPair(bedMaps[colA]!, bedMaps[colB]!, nameA, nameB) !==
-            undefined
-          ) {
-            link(`${assemblyA}\t${nameA}`, `${assemblyB}\t${nameB}`)
-            link(`${assemblyB}\t${nameB}`, `${assemblyA}\t${nameA}`)
+        (function* () {
+          for (const [colA, colB] of columnPairs(
+            blockAssemblies,
+            assemblyA,
+            assemblyB,
+          )) {
+            for (const cols of blockLines) {
+              const pair = joinBedPair(
+                bedMaps[colA]!,
+                bedMaps[colB]!,
+                cols[colA],
+                cols[colB],
+              )
+              if (pair) {
+                yield [pair.a.name, pair.b.name] as const
+              }
+            }
           }
-        }
-      }
-      counts = new Map([...partners].map(([gene, set]) => [gene, set.size]))
+        })(),
+      )
       setup.partnerCounts.set(key, counts)
     }
     return counts
@@ -359,9 +356,12 @@ export default class MCScanBlocksAdapter extends ComparativeAdapterBase<MCScanBl
             ...pair,
             rowNum,
             strand: pair.a.strand * pair.b.strand,
-            syntenicDepth: Math.max(
-              counts.get(`${assemblyA}\t${pair.a.name}`)!,
-              counts.get(`${assemblyB}\t${pair.b.name}`)!,
+            syntenicDepth: syntenicDepthOf(
+              counts,
+              assemblyA,
+              pair.a.name,
+              assemblyB,
+              pair.b.name,
             ),
             attrs: rowAttrs?.[rowNum],
           }

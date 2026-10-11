@@ -31,14 +31,52 @@ export interface BlockRow {
   strand: number
   score?: number
   // How many genes share this link's ortholog, the larger side's count: 1 for a
-  // one-to-one pair, 3 for each link of a tandem triple against one gene.
-  // Only the blocks adapter counts it.
+  // one-to-one pair, 3 for each link of a tandem triple against one gene. Unset
+  // on an `.anchors.simple` row, which bounds a block rather than naming a pair.
   syntenicDepth?: number
   // Numeric columns the source file carried past its gene columns, named by
   // config — `identity`, `dn`/`ds`, `goc_score`. They ride onto the feature so a
   // colorBy mode or the detail panel can read them; the format itself is only
   // gene ids, so a table with none is the ordinary case.
   attrs?: Record<string, number | string> | undefined
+}
+
+// How many distinct genes each gene links to over `links` (gene name pairs
+// between two genomes), keyed `assembly\tgene` so a self-comparison pools both
+// sides of one genome.
+export function partnerCounts(
+  assemblyA: string,
+  assemblyB: string,
+  links: Iterable<readonly [string, string]>,
+) {
+  const partners = new Map<string, Set<string>>()
+  const link = (gene: string, partner: string) => {
+    let set = partners.get(gene)
+    if (!set) {
+      set = new Set()
+      partners.set(gene, set)
+    }
+    set.add(partner)
+  }
+  for (const [nameA, nameB] of links) {
+    link(`${assemblyA}\t${nameA}`, `${assemblyB}\t${nameB}`)
+    link(`${assemblyB}\t${nameB}`, `${assemblyA}\t${nameA}`)
+  }
+  return new Map([...partners].map(([gene, set]) => [gene, set.size]))
+}
+
+// A link's syntenic depth under `partnerCounts`: the larger of its two genes'.
+export function syntenicDepthOf(
+  counts: Map<string, number>,
+  assemblyA: string,
+  nameA: string,
+  assemblyB: string,
+  nameB: string,
+) {
+  return Math.max(
+    counts.get(`${assemblyA}\t${nameA}`) ?? 1,
+    counts.get(`${assemblyB}\t${nameB}`) ?? 1,
+  )
 }
 
 // The two BED sides of a link joined by name, or undefined when either gene is

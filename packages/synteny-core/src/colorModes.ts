@@ -105,7 +105,7 @@ export const COLOR_MODES: ColorModeEntry[] = [
     kind: 'value',
     label: 'Syntenic depth',
     helpText:
-      'Grey for a one-to-one ortholog, orange where several genes share one, often a tandem array. Counted over the whole MCScan blocks table, so a gene sharing with one off screen still takes color.',
+      'Grey for a one-to-one ortholog, orange where several genes share one, often a tandem array. Counted over the whole MCScan .anchors or .blocks file, so a gene sharing with one off screen still takes color.',
     surfaces: ['ribbons', 'points'],
   },
 ]

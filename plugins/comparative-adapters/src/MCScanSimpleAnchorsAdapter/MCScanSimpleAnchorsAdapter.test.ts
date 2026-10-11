@@ -52,6 +52,8 @@ test('a block spans its first and last gene on each side', async () => {
   // the file's own orientation column, not the product of the BED strands
   expect(f!.get('strand')).toBe(-1)
   expect(f!.get('score')).toBe(50)
+  // a row bounds a block rather than naming a gene pair, so it has no depth
+  expect(f!.get('syntenicDepth')).toBeUndefined()
   expect(f!.get('mate')).toEqual({
     refName: 'ctgA',
     start: 500,

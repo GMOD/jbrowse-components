@@ -69,7 +69,8 @@ plus one open arm:
   name cannot: identity is a fraction on a ramp, mapping quality takes the four
   bins the alignments display paints and stacks, dN/dS is read against 1, and a
   syntenic depth of 1 is a one-to-one ortholog whatever else is on screen. The
-  MCScan blocks adapter computes syntenicDepth over the whole table.
+  MCScan `.anchors` and `.blocks` adapters compute syntenicDepth over the whole
+  file.
 - **Any other column** the track declares is the open arm, a ramp over the
   range the fetched features actually cover where its values are numbers and a
   color per label where they are text.
