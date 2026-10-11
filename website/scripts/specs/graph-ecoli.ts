@@ -126,8 +126,8 @@ const PGGB_DEPTH_SESSION_TRACK = ecoliPageTrack(ECOLI_DOC, PGGB_DEPTH_TRACK)
 //   zcat ecoli_pggb.segs.bed.gz | awk -F'\t' '$1 ~ /^K12/' | sort -k2,2n
 //
 // puts K12 chr:1,299,498-1,300,697 (1,199 bp) in that list, and the links file
-// has both arms explicitly: 79945+ -> 79946+ -> 79947+ is K12 through the
-// element, 79945+ -> 79947+ is the edge the other four take past it. The K12
+// has both arms explicitly: 160194+ -> 160195+ -> 160196+ is K12 through the
+// element, 160194+ -> 160196+ is the edge the other four take past it. The K12
 // GFF names it — `mobile_element_type=insertion sequence:IS5`, carrying the
 // insH21 transposase, so the gene lane labels the arm.
 const PGGB_LOCUS = {
@@ -149,10 +149,10 @@ const PGGB_TIER_REGION = {
   end: 1307500,
 }
 const PGGB_TIER_TRACK = 'ecoli_pggb_tier50'
-// The one node in the tier that stands for the IS5 element, arrowed in
-// pangenome/pggb_bubble_tier. The id is the tier's own -- source segment
-// qualified by reference start, which is what `gfa-to-tabix bubbles` emits.
-const PGGB_TIER_IS5_NODE = '79945@1299497'
+// The IS5 element's node in the tier, boxed in pangenome/pggb_bubble_tier.
+// `gfa-to-tabix build`'s fold keeps the element's own segment whole, so the id
+// is the fine graph's.
+const PGGB_TIER_IS5_NODE = '160195'
 
 // The coarse level-of-detail tier of the pggb graph: one node per bubble, with
 // the invariant reference between bubbles as backbone. Same two files and same
@@ -986,7 +986,7 @@ export const ecoliGraphSpecs: ScreenshotSpec[] = [
             {
               assemblyName: 'K12',
               refName: 'chr',
-              start: 1299497,
+              start: 1299498,
               end: 1300697,
               // light enough that the MAF rows under it still read blank
               color: 'rgba(21,101,192,0.12)',
